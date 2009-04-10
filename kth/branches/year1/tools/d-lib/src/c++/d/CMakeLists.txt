@@ -1,0 +1,7 @@
+SET(SOURCES Rendezvous.cpp Semaphore.cpp)
+SET(HEADERS Rendezvous.h Semaphore.h OverwriterProcess.hpp OverwriterFunctor.hpp)
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${CAST_LIBRARIES})
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+
