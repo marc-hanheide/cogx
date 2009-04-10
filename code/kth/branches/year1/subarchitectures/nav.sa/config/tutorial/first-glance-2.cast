@@ -1,0 +1,17 @@
+HOST 127.0.0.1
+
+COMPONENT CPP laser.server LaserServerPlayer --log #--player-host irobot0
+COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host irobot0
+
+SUBARCHITECTURE nav.sa
+CPP WM SubarchitectureWorkingMemory 
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG trans.process TranslationProcess --log
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/mrchips.ccf --log 
+
+CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/mrchips.ccf --log 
+
+CPP GD navgraph.process NavGraphProcess -c subarchitectures/nav.sa/config/mrchips.ccf --log 
+
