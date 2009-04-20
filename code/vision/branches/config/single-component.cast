@@ -1,0 +1,2 @@
+HOST localhost
+COMPONENT CPP not.really ExampleComponent --log  #--debug

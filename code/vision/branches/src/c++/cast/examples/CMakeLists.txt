@@ -1,0 +1,11 @@
+add_cast_component_internal(ExampleManagedComponent ExampleManagedComponent.hpp ExampleManagedComponent.cpp)
+link_cast_component(ExampleManagedComponent CDL)
+link_cast_component(ExampleManagedComponent CASTCore)
+link_cast_component(ExampleManagedComponent CASTArchitecture)
+
+
+add_cast_component_internal(ExampleComponent ExampleComponent.hpp ExampleComponent.cpp)
+link_cast_component(ExampleComponent CDL)
+link_cast_component(ExampleComponent CASTCore)
+link_cast_component(ExampleComponent CASTArchitecture)
+
