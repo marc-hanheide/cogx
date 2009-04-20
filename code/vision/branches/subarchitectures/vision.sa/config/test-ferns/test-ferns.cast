@@ -1,0 +1,30 @@
+HOST localhost
+
+# reading stored images
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 250
+
+# live images
+COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "subarchitectures/vision.sa/config/test-ferns/tea.jpg subarchitectures/vision.sa/config/test-ferns/poster.jpg" --mode DETECT_ONLY --displaylevel 2 #--log
+
+#CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "subarchitectures/vision.sa/config/test-ferns/tea.jpg" --mode DETECT_ONLY --displaylevel 2 --log
+
+#CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "subarchitectures/vision.sa/config/test1/phone.png subarchitectures/vision.sa/config/test1/label.png subarchitectures/vision.sa/config/test1/keyboard.png subarchitectures/vision.sa/config/test1/mouse.png" --mode DETECT_ONLY --displaylevel 2 --log
+
+CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "subarchitectures/vision.sa/config/test1/phone.png subarchitectures/vision.sa/config/test1/keyboard.png" --mode DETECT_ONLY --displaylevel 2 --log
+
+
+#CPP MG Dummy DummyDriver --labels "phone label keyboard mouse" --log
+
+CPP MG Dummy DummyDriver --labels "phone keyboard" --log
+
+
+SUBARCHITECTURE nav.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
