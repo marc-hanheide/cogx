@@ -19,6 +19,27 @@ module VisionData {
 
   sequence<VisualObjectView> VisualObjectViewSeq;
 
+  sequence<int> IntSeq;
+
+  struct Vertex {
+    Vector3 pos;
+    Vector3 normal;
+    Vector2 texCoord;
+  };
+
+  sequence<Vertex> VertexSeq;
+
+  struct Face {
+    IntSeq vertices;
+  };
+
+  sequence<Face> FaceSeq;
+
+  struct ObjectGeometry {
+    VertexSeq vertices;
+    FaceSeq faces;
+  };
+
   class VisualObject {
     // 3D position and orientation, in the robot ego coordinate system.
     cogx::Math::Pose3 pose;
