@@ -38,6 +38,8 @@ module VisionData {
   class ObjectGeometry {
     VertexSeq vertices;
     FaceSeq faces;
+    
+    string label;
   };
 
   class VisualObject {
