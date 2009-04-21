@@ -30,6 +30,14 @@ build system, list of subdirs, and each subdir contains a file listing
 slice files, source, libraries
 
 
+vision
+
+see "Changes_Nick_Vision.txt" to see the changes from "cast-0.2.0rc2.tar.gz" in the cogx-request email (15.04.2009) from Nick Hawes
+in subarchitectures/vision.sa/src/slice/VisionData.ice added new struct ObjectGeometry, Face and Vertex and related sequences (lists)
+
+ 
+
+
 todo
 use ice mutexes in SubarchitectureWorkingMemory - overwrite has deadlock on exception
 
