@@ -10,8 +10,8 @@
 // Ice version 3.3.0
 // Generated from file `Math.ice'
 
-#ifndef ___home_tm_Programs_cogx_code_vision_branches_tools_math_src_c___autogen_Math_hpp__
-#define ___home_tm_Programs_cogx_code_vision_branches_tools_math_src_c___autogen_Math_hpp__
+#ifndef ___home_tm_Work_03_CogX_tools_math_src_c___autogen_Math_hpp__
+#define ___home_tm_Work_03_CogX_tools_math_src_c___autogen_Math_hpp__
 
 #include <Ice/LocalObjectF.h>
 #include <Ice/ProxyF.h>

@@ -10,8 +10,8 @@
 // Ice version 3.3.0
 // Generated from file `VisionData.ice'
 
-#ifndef ___home_tm_Programs_cogx_code_vision_branches_subarchitectures_vision_sa_src_c___vision_autogen_VisionData_hpp__
-#define ___home_tm_Programs_cogx_code_vision_branches_subarchitectures_vision_sa_src_c___vision_autogen_VisionData_hpp__
+#ifndef ___home_tm_Work_03_CogX_subarchitectures_vision_sa_src_c___vision_autogen_VisionData_hpp__
+#define ___home_tm_Work_03_CogX_subarchitectures_vision_sa_src_c___vision_autogen_VisionData_hpp__
 
 #include <Ice/LocalObjectF.h>
 #include <Ice/ProxyF.h>
@@ -132,6 +132,100 @@ struct VisualObjectView
 typedef ::std::vector< ::VisionData::VisualObjectView> VisualObjectViewSeq;
 void __writeVisualObjectViewSeq(::IceInternal::BasicStream*, const ::VisionData::VisualObjectView*, const ::VisionData::VisualObjectView*);
 void __readVisualObjectViewSeq(::IceInternal::BasicStream*, VisualObjectViewSeq&);
+
+typedef ::std::vector< ::Ice::Int> IntSeq;
+
+struct Vertex
+{
+    ::cogx::Math::Vector3 pos;
+    ::cogx::Math::Vector3 normal;
+    ::cogx::Math::Vector2 texCoord;
+
+    bool operator==(const Vertex&) const;
+    bool operator<(const Vertex&) const;
+    bool operator!=(const Vertex& __rhs) const
+    {
+        return !operator==(__rhs);
+    }
+    bool operator<=(const Vertex& __rhs) const
+    {
+        return operator<(__rhs) || operator==(__rhs);
+    }
+    bool operator>(const Vertex& __rhs) const
+    {
+        return !operator<(__rhs) && !operator==(__rhs);
+    }
+    bool operator>=(const Vertex& __rhs) const
+    {
+        return !operator<(__rhs);
+    }
+
+    void __write(::IceInternal::BasicStream*) const;
+    void __read(::IceInternal::BasicStream*);
+};
+
+typedef ::std::vector< ::VisionData::Vertex> VertexSeq;
+void __writeVertexSeq(::IceInternal::BasicStream*, const ::VisionData::Vertex*, const ::VisionData::Vertex*);
+void __readVertexSeq(::IceInternal::BasicStream*, VertexSeq&);
+
+struct Face
+{
+    ::VisionData::IntSeq vertices;
+
+    bool operator==(const Face&) const;
+    bool operator<(const Face&) const;
+    bool operator!=(const Face& __rhs) const
+    {
+        return !operator==(__rhs);
+    }
+    bool operator<=(const Face& __rhs) const
+    {
+        return operator<(__rhs) || operator==(__rhs);
+    }
+    bool operator>(const Face& __rhs) const
+    {
+        return !operator<(__rhs) && !operator==(__rhs);
+    }
+    bool operator>=(const Face& __rhs) const
+    {
+        return !operator<(__rhs);
+    }
+
+    void __write(::IceInternal::BasicStream*) const;
+    void __read(::IceInternal::BasicStream*);
+};
+
+typedef ::std::vector< ::VisionData::Face> FaceSeq;
+void __writeFaceSeq(::IceInternal::BasicStream*, const ::VisionData::Face*, const ::VisionData::Face*);
+void __readFaceSeq(::IceInternal::BasicStream*, FaceSeq&);
+
+struct ObjectGeometry
+{
+    ::VisionData::VertexSeq vertices;
+    ::VisionData::FaceSeq faces;
+
+    bool operator==(const ObjectGeometry&) const;
+    bool operator<(const ObjectGeometry&) const;
+    bool operator!=(const ObjectGeometry& __rhs) const
+    {
+        return !operator==(__rhs);
+    }
+    bool operator<=(const ObjectGeometry& __rhs) const
+    {
+        return operator<(__rhs) || operator==(__rhs);
+    }
+    bool operator>(const ObjectGeometry& __rhs) const
+    {
+        return !operator<(__rhs) && !operator==(__rhs);
+    }
+    bool operator>=(const ObjectGeometry& __rhs) const
+    {
+        return !operator<(__rhs);
+    }
+
+    void __write(::IceInternal::BasicStream*) const;
+    void __read(::IceInternal::BasicStream*);
+};
 
 typedef ::std::vector< ::std::string> StringSeq;
 

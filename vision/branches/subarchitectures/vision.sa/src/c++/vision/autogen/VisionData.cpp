@@ -163,6 +163,252 @@ VisionData::__readVisualObjectViewSeq(::IceInternal::BasicStream* __is, ::Vision
     }
 }
 
+bool
+VisionData::Vertex::operator==(const Vertex& __rhs) const
+{
+    if(this == &__rhs)
+    {
+        return true;
+    }
+    if(pos != __rhs.pos)
+    {
+        return false;
+    }
+    if(normal != __rhs.normal)
+    {
+        return false;
+    }
+    if(texCoord != __rhs.texCoord)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool
+VisionData::Vertex::operator<(const Vertex& __rhs) const
+{
+    if(this == &__rhs)
+    {
+        return false;
+    }
+    if(pos < __rhs.pos)
+    {
+        return true;
+    }
+    else if(__rhs.pos < pos)
+    {
+        return false;
+    }
+    if(normal < __rhs.normal)
+    {
+        return true;
+    }
+    else if(__rhs.normal < normal)
+    {
+        return false;
+    }
+    if(texCoord < __rhs.texCoord)
+    {
+        return true;
+    }
+    else if(__rhs.texCoord < texCoord)
+    {
+        return false;
+    }
+    return false;
+}
+
+void
+VisionData::Vertex::__write(::IceInternal::BasicStream* __os) const
+{
+    pos.__write(__os);
+    normal.__write(__os);
+    texCoord.__write(__os);
+}
+
+void
+VisionData::Vertex::__read(::IceInternal::BasicStream* __is)
+{
+    pos.__read(__is);
+    normal.__read(__is);
+    texCoord.__read(__is);
+}
+
+void
+VisionData::__writeVertexSeq(::IceInternal::BasicStream* __os, const ::VisionData::Vertex* begin, const ::VisionData::Vertex* end)
+{
+    ::Ice::Int size = static_cast< ::Ice::Int>(end - begin);
+    __os->writeSize(size);
+    for(int i = 0; i < size; ++i)
+    {
+        begin[i].__write(__os);
+    }
+}
+
+void
+VisionData::__readVertexSeq(::IceInternal::BasicStream* __is, ::VisionData::VertexSeq& v)
+{
+    ::Ice::Int sz;
+    __is->readSize(sz);
+    __is->checkFixedSeq(sz, 64);
+    v.resize(sz);
+    for(int i = 0; i < sz; ++i)
+    {
+        v[i].__read(__is);
+    }
+}
+
+bool
+VisionData::Face::operator==(const Face& __rhs) const
+{
+    if(this == &__rhs)
+    {
+        return true;
+    }
+    if(vertices != __rhs.vertices)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool
+VisionData::Face::operator<(const Face& __rhs) const
+{
+    if(this == &__rhs)
+    {
+        return false;
+    }
+    if(vertices < __rhs.vertices)
+    {
+        return true;
+    }
+    else if(__rhs.vertices < vertices)
+    {
+        return false;
+    }
+    return false;
+}
+
+void
+VisionData::Face::__write(::IceInternal::BasicStream* __os) const
+{
+    if(vertices.size() == 0)
+    {
+        __os->writeSize(0);
+    }
+    else
+    {
+        __os->write(&vertices[0], &vertices[0] + vertices.size());
+    }
+}
+
+void
+VisionData::Face::__read(::IceInternal::BasicStream* __is)
+{
+    __is->read(vertices);
+}
+
+void
+VisionData::__writeFaceSeq(::IceInternal::BasicStream* __os, const ::VisionData::Face* begin, const ::VisionData::Face* end)
+{
+    ::Ice::Int size = static_cast< ::Ice::Int>(end - begin);
+    __os->writeSize(size);
+    for(int i = 0; i < size; ++i)
+    {
+        begin[i].__write(__os);
+    }
+}
+
+void
+VisionData::__readFaceSeq(::IceInternal::BasicStream* __is, ::VisionData::FaceSeq& v)
+{
+    ::Ice::Int sz;
+    __is->readSize(sz);
+    __is->startSeq(sz, 1);
+    v.resize(sz);
+    for(int i = 0; i < sz; ++i)
+    {
+        v[i].__read(__is);
+        __is->checkSeq();
+        __is->endElement();
+    }
+    __is->endSeq(sz);
+}
+
+bool
+VisionData::ObjectGeometry::operator==(const ObjectGeometry& __rhs) const
+{
+    if(this == &__rhs)
+    {
+        return true;
+    }
+    if(vertices != __rhs.vertices)
+    {
+        return false;
+    }
+    if(faces != __rhs.faces)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool
+VisionData::ObjectGeometry::operator<(const ObjectGeometry& __rhs) const
+{
+    if(this == &__rhs)
+    {
+        return false;
+    }
+    if(vertices < __rhs.vertices)
+    {
+        return true;
+    }
+    else if(__rhs.vertices < vertices)
+    {
+        return false;
+    }
+    if(faces < __rhs.faces)
+    {
+        return true;
+    }
+    else if(__rhs.faces < faces)
+    {
+        return false;
+    }
+    return false;
+}
+
+void
+VisionData::ObjectGeometry::__write(::IceInternal::BasicStream* __os) const
+{
+    if(vertices.size() == 0)
+    {
+        __os->writeSize(0);
+    }
+    else
+    {
+        ::VisionData::__writeVertexSeq(__os, &vertices[0], &vertices[0] + vertices.size());
+    }
+    if(faces.size() == 0)
+    {
+        __os->writeSize(0);
+    }
+    else
+    {
+        ::VisionData::__writeFaceSeq(__os, &faces[0], &faces[0] + faces.size());
+    }
+}
+
+void
+VisionData::ObjectGeometry::__read(::IceInternal::BasicStream* __is)
+{
+    ::VisionData::__readVertexSeq(__is, vertices);
+    ::VisionData::__readFaceSeq(__is, faces);
+}
+
 const ::std::string&
 IceProxy::VisionData::VisualObject::ice_staticId()
 {
