@@ -18,6 +18,7 @@ add_subdirectory(src/c++/vision/autogen)
 
 #add_subdirectory (src/c++/vision/components/VisualWMVisualisation)
 #add_subdirectory (src/c++/vision/components/ObjectDetectorFERNS)
+#add_subdirectory (src/c++/vision/components/ObjectTracker)
 add_subdirectory (src/c++/vision/components/VideoViewer)
 add_subdirectory (src/c++/vision/components/DummyDriver)
 
