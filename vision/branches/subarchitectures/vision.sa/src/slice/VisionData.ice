@@ -35,7 +35,7 @@ module VisionData {
 
   sequence<Face> FaceSeq;
 
-  struct ObjectGeometry {
+  class ObjectGeometry {
     VertexSeq vertices;
     FaceSeq faces;
   };
