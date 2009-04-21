@@ -22,9 +22,9 @@ module VisionData {
   sequence<int> IntSeq;
 
   struct Vertex {
-    Vector3 pos;
-    Vector3 normal;
-    Vector2 texCoord;
+    cogx::Math::Vector3 pos;
+    cogx::Math::Vector3 normal;
+    cogx::Math::Vector2 texCoord;
   };
 
   sequence<Vertex> VertexSeq;
