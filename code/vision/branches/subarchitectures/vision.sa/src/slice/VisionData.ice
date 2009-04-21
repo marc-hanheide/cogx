@@ -67,8 +67,11 @@ module VisionData {
   
   // Plane Detected by Kai's Software
   class DominantPlane{
-  	double a,b,c,d;
-  }
+  	double a;
+  	double b;
+  	double c;
+  	double d;
+  };
 
   sequence<string> StringSeq;
 
