@@ -42,11 +42,6 @@ void ObjectTrackerDriver::configure(const map<string,string> & _config)
 
 void ObjectTrackerDriver::start()
 {
-  // we want to receive detected objects
-  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-      new MemberFunctionChangeReceiver<ObjectTrackerDriver>(this,
-        &ObjectTrackerDriver::receiveVisualObject));
-  // .. and when they change
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<ObjectTrackerDriver>(this,
         &ObjectTrackerDriver::receiveVisualObject));
@@ -58,8 +53,9 @@ void ObjectTrackerDriver::runComponent()
                        // object observations too soon.
   
   // Load Geometry to Tracker
-  VisionData::GeometryModelPtr geom = new VisionData::GeometryModel;
-  addToWorkingMemory(newDataID(), geom);
+  VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+  obj->label = "a visual object";
+  addToWorkingMemory(newDataID(), obj);
   
   // Start Tracking
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
@@ -77,16 +73,11 @@ void ObjectTrackerDriver::runComponent()
 
 void ObjectTrackerDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisionData::VisualObjectPtr obj =
-    getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+  VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
   if(obj->detectionConfidence >= 0.5)
     log("ok, detected '%s'", obj->label.c_str());
   else
     log("nah, did not detect '%s'", obj->label.c_str());
-
-  VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;
-  cmd->labels.push_back(obj->label);
-  addToWorkingMemory(newDataID(), cmd);
 }
 
 }
