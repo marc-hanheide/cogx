@@ -39,7 +39,7 @@ ObjectTracker::~ObjectTracker(){
 
 void ObjectTracker::receiveGeometryModel(const cdl::WorkingMemoryChange & _wmc){
 	GeometryModelPtr geom = getMemoryEntry<GeometryModel>(_wmc.address);
-	log("new GeometryModel received: '%s'", geom->label.c_str());
+	log("new GeometryModel received");
 	
 }
 

@@ -59,7 +59,6 @@ void ObjectTrackerDriver::runComponent()
   
   // Load Geometry to Tracker
   VisionData::GeometryModelPtr geom = new VisionData::GeometryModel;
-  geom->label = "box";
   addToWorkingMemory(newDataID(), geom);
   
   // Start Tracking
