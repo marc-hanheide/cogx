@@ -1,0 +1,277 @@
+
+#include "Particles.h"
+
+bool compare_particles(Particle first, Particle second){
+
+	return true;
+}
+
+Particle::Particle(){
+	Particle(0.0);
+}
+
+Particle::Particle(float val){
+	rX = val;
+	rY = val;
+	rZ = val;
+	
+	tX = val;
+	tY = val;
+	tZ = val;
+	
+	w = val;
+}
+
+Particle::Particle(float* mv){
+	rX = atan2(-mv[9], mv[10]) * 180.0 / PI;
+	rY = asin(mv[8]) * 180.0 / PI;
+	rZ = atan2(-mv[4], mv[0]) * 180.0 / PI;
+	
+	tX = mv[12];
+	tY = mv[13];
+	tZ = mv[14];
+	
+	w = 0.0;
+}
+
+Particle& Particle::operator=(const Particle& p2){
+	rX = p2.rX;
+	rY = p2.rY;
+	rZ = p2.rZ;
+	
+	tX = p2.tX;
+	tY = p2.tY;
+	tZ = p2.tZ;
+	
+	w = p2.w;
+}
+
+bool Particle::operator==(const Particle& p2){
+	float fTol = 0.01;
+	if( (rX - p2.rX) > fTol ||
+		(rY - p2.rY) > fTol ||
+		(rZ - p2.rZ) > fTol ||
+		(rX - p2.tX) > fTol ||
+		(rY - p2.tY) > fTol ||
+		(rZ - p2.tZ) > fTol ||
+		(w - p2.w) > fTol 		){
+		return false;
+	}
+	
+	return true;		
+}
+
+void Particle::print(){
+	printf("r: %f %f %f\n", rX, rY, rZ);
+	printf("t: %f %f %f\n", tX, tY, tZ);
+	printf("w: %f\n", w);
+}
+
+// PARTICLES
+
+// *** private ***
+
+float Particles::noise(float rMin, float rMax, unsigned int precision, unsigned int distribution){
+    float random = 0.0;
+    
+    if(rMax <= rMin)
+        return 0.0f;
+    
+    // Gaussian noise
+    if(distribution == GAUSS){
+		for(int i=0; i<10; i++){
+			random += float(rand() % precision)/precision;
+		}
+		random = random / 10.0;
+    }
+    
+    // Uniform distributed noise
+    if(distribution == NORMAL){
+    	random = float(rand() % precision)/precision;
+    }
+    
+    // Adjusting to range
+    random = (random*(rMax-rMin) + rMin);
+    
+    return random;
+}
+
+// *** public ***
+Particles::Particles(int num, Particle p){
+	m_num_particles = num;
+	id_max = 0;
+	m_frustum_offset = 0.0;
+	
+	m_particlelist = (Particle*)malloc(sizeof(Particle) * num);
+	
+	queryD = (unsigned int*)malloc(sizeof(unsigned int) * num);
+	queryV = (unsigned int*)malloc(sizeof(unsigned int) * num);
+	
+	// Generate Occlusion Queries
+    for(int i=0; i<num; i++){
+        glGenOcclusionQueriesNV(1, &queryD[i]);
+        glGenOcclusionQueriesNV(1, &queryV[i]);
+    }
+    
+	setAll(p);
+}
+
+Particles::~Particles(){
+	free(m_particlelist);
+	free(queryD);
+	free(queryV);
+}
+
+void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int distribution){
+	Particle pMax(0.0);
+	Particle* pIt;
+	
+	float noiseRotX=0.0, noiseRotY=0.0, noiseRotZ=0.0;
+    float noiseTransX=0.0, noiseTransY=0.0, noiseTransZ=0.0;
+        
+    if(!p_ref)
+    	pMax = m_particlelist[id_max];
+    else
+    	pMax = *p_ref;
+    
+    m_particlelist[0] = pMax;
+    	
+    //float maximaRange = MAXIMA_RANGE;
+    
+    // for all other particles add noise
+    for(int i=1; i<m_num_particles; i++){
+    	pIt = &m_particlelist[i];
+        
+        // Generate noise
+        noiseRotX   = noise(-noise_particle.rX, noise_particle.rX, 100, distribution);
+        noiseRotY   = noise(-noise_particle.rY, noise_particle.rY, 100, distribution);
+        noiseRotZ   = noise(-noise_particle.rZ, noise_particle.rZ, 100, distribution);
+        noiseTransX = noise(-noise_particle.tX, noise_particle.tX, 100, distribution);
+        noiseTransY = noise(-noise_particle.tY, noise_particle.tY, 100, distribution);
+        noiseTransZ = noise(-noise_particle.tZ, noise_particle.tZ, 100, distribution);
+                
+        // Apply noise to particles
+        pIt->rX = pMax.rX + noiseRotX;
+        pIt->rY = pMax.rY + noiseRotY;
+        pIt->rZ = pMax.rZ + noiseRotZ;
+        
+        pIt->tX = pMax.tX + noiseTransX;
+        pIt->tY = pMax.tY + noiseTransY;
+        pIt->tZ = pMax.tZ + noiseTransZ;
+        
+        // with the last particles perform special movement to get out of local maxima
+        //if(i > NUM_PARTICLES - maximaRange){
+        //    rot[i].x = rot[0].x;
+        //    rot[i].y = rot[0].y + 180.0 * ((rand() % 2) -0.5);
+        //    rot[i].z = rot[0].z;
+        //    
+        //    trans[i].x = trans[i].x + ((rand() % 2) - 0.5) * 0.05;
+        //    trans[i].y = trans[i].y;
+        //    trans[i].z = trans[i].z + ((rand() % 2) - 0.5) * 0.05;
+        //}
+        
+        // limit search to view area of camera (frustum culling)
+        if(!g_Resources->GetFrustum()->SphereInFrustum( pIt->tX, pIt->tY, pIt->tZ, -m_frustum_offset))
+        {
+            pIt->tX = pIt->tX - noiseTransX;
+            pIt->tY = pIt->tY - noiseTransY;
+            pIt->tZ = pIt->tZ - noiseTransZ;
+        }
+    }
+}
+
+void Particles::activate(int id){
+	glPushMatrix();
+		glTranslatef(m_particlelist[id].tX, m_particlelist[id].tY, m_particlelist[id].tZ);
+		glRotatef(m_particlelist[id].rX, 1.0, 0.0, 0.0);
+		glRotatef(m_particlelist[id].rY, 0.0, 1.0, 0.0);
+		glRotatef(m_particlelist[id].rZ, 0.0, 0.0, 1.0);
+}
+
+void Particles::deactivate(){
+	glPopMatrix();
+}
+
+void Particles::startCountD(int id){
+	glBeginOcclusionQueryNV(queryD[id]);
+}
+
+void Particles::startCountV(int id){
+	glBeginOcclusionQueryNV(queryV[id]);
+}
+
+void Particles::endCountD(){
+	glEndOcclusionQueryNV();
+}
+
+void Particles::endCountV(){
+	glEndOcclusionQueryNV();
+}
+
+void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_particles){
+	unsigned int v, d;
+	int id;
+	v_max = 0;
+	id_max = 0;
+	
+	for(id=0; id<num_particles; id++){
+		glGetOcclusionQueryuivNV(queryV[id], GL_PIXEL_COUNT_NV, &v);
+		glGetOcclusionQueryuivNV(queryD[id], GL_PIXEL_COUNT_NV, &d);
+		
+		if(v>v_max)
+			v_max = v;
+			
+		if(v != 0)
+			m_particlelist[id].w = float(d)/float(v) + float(d)/1000;
+		
+		if(m_particlelist[id].w > m_particlelist[id_max].w)
+			id_max = id;
+						
+		//printf("d: %f, v: %f, w: %f\n", float(d), float(v), m_particlelist[id].w);
+	}
+	
+	if(num_avaraged_particles > 1){
+		std::sort(m_particlelist, m_particlelist+m_num_particles);
+		std::reverse(m_particlelist, m_particlelist+m_num_particles);
+		int mean_range = 5;
+		float divider = 1 / float(mean_range);
+		Particle p(0.0);
+		for(id=0; id<mean_range; id++){
+			p.rX += m_particlelist[id].rX;
+			p.rY += m_particlelist[id].rY;
+			p.rZ += m_particlelist[id].rZ;
+			p.tX += m_particlelist[id].tX;
+			p.tY += m_particlelist[id].tY;
+			p.tZ += m_particlelist[id].tZ;
+		}
+		p.rX = p.rX * divider;
+		p.rY = p.rY * divider;
+		p.rZ = p.rZ * divider;
+		p.tX = p.tX * divider;
+		p.tY = p.tY * divider;
+		p.tZ = p.tZ * divider;
+		p.w = m_particlelist[0].w;
+		
+		m_particlelist[0] = p;
+		id_max = 0;
+			
+		//printf("\n\n\n");
+		//for(id=0; id<m_num_particles; id++){
+		//	printf("[%i] %f\n", id, m_particlelist[id].w);
+		//}
+	}
+	
+	
+	//printf("w_0: %f, w_max: %f\n", m_particlelist[0].w, m_particlelist[id_max].w);
+}
+
+void Particles::setAll(Particle p){
+	
+	for(int i=0; i<m_num_particles; i++){
+		m_particlelist[i] = p;		
+	}
+
+}
+
+
+
