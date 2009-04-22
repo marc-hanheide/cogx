@@ -46,6 +46,14 @@ module Math {
     Vector3 pos;
     Matrix33 rot;
   };
+  
+  struct Plane3 {
+  	double a;
+  	double b;
+  	double c;
+  	double d;
+  };
+  
 };
 };
 
