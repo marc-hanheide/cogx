@@ -1,0 +1,61 @@
+/**
+ * @author Thomas Mörwald
+ * @date April 2009
+ *
+ * Tracks Objects using either edge or texture features
+ */
+
+#ifndef OBJECT_TRACKER_H
+#define OBJECT_TRACKER_H
+
+#include <ManagedComponent.hpp>
+#include <VideoClient.h>
+#include <VisionData.hpp>
+
+#include "Tracker.h"
+#include "Timer.h"
+
+
+
+namespace cast
+{
+
+class ObjectTracker : public VideoClient, public ManagedComponent
+{
+private:
+  /**
+   * Which camera to get images from
+   */
+  Timer m_timer;
+  Model* m_model;
+  int camId;  
+  bool track;
+  
+  void receiveGeometryModel(const cdl::WorkingMemoryChange & _wmc);
+  void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
+
+protected:
+  /**
+   * called by the framework to configure our component
+   */
+  virtual void configure(const std::map<std::string,std::string> & _config);
+  /**
+   * called by the framework after configuration, before run loop
+   */
+  virtual void start();
+  /**
+   * called by the framework to start compnent run loop
+   */
+  virtual void runComponent();
+
+public:
+  ObjectTracker();
+  virtual ~ObjectTracker();
+};
+
+}
+
+#endif
+
+
+
