@@ -40,7 +40,7 @@ ObjectTracker::~ObjectTracker(){
 void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	log("adding VisualObject '%s'", obj->label.c_str());
-	/*
+	
 	// Convert VisualObject::GeometryModel to ObjectTracker::ModelData
 	int i,j;
 	ModelData* md = new ModelData();
@@ -77,7 +77,7 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	istringstream istr(_wmc.address.id);
 	istr >> ids.cast_ID;
 	m_modellist.push_back(ids);
-	*/
+	
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
