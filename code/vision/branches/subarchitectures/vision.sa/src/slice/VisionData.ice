@@ -35,7 +35,7 @@ module VisionData {
 
   sequence<Face> FaceSeq;
 
-  class ObjectGeometry {
+  class GeometryModel {
     VertexSeq vertices;
     FaceSeq faces;
     
@@ -60,6 +60,9 @@ module VisionData {
 
     // List of views of the object from different cameras
     VisualObjectViewSeq views;
+    
+    // Geometric representation in 3D space
+    GeometryModel model;
 
     // The name with which we refer to the object linguistically
     string label;
