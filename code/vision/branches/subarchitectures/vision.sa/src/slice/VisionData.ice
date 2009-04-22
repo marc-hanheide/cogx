@@ -64,14 +64,6 @@ module VisionData {
     // The name with which we refer to the object linguistically
     string label;
   };
-  
-  // Plane Detected by Kai's Software
-  class DominantPlane{
-  	double a;
-  	double b;
-  	double c;
-  	double d;
-  };
 
   sequence<string> StringSeq;
 
