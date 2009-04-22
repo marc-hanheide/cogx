@@ -15,6 +15,7 @@
 
 #include "Tracker.h"
 #include "Timer.h"
+#include "ObjectTrackerUtils.hpp"
 
 
 
@@ -37,7 +38,8 @@ private:
   	int cast_ID;
   };
   
-  std::vector<IDList> m_modellist;
+  std::vector<IDList> m_model_list;
+  std::vector<VisualObjectPtr> m_visobj_list;
   
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
