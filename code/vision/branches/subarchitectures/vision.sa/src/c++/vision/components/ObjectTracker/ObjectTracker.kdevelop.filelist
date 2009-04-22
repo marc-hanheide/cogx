@@ -2,6 +2,7 @@
 CMakeLists.txt
 ObjectTracker.cpp
 ObjectTracker.h
+ObjectTrackerUtils.hpp
 include
 include/Camera.h
 include/Frustum.h

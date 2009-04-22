@@ -40,29 +40,10 @@ ObjectTracker::~ObjectTracker(){
 void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	log("adding VisualObject '%s'", obj->label.c_str());
-	/*
-	// Convert VisualObject::GeometryModel to ObjectTracker::ModelData
-	int i,j;
+	
 	ModelData* md = new ModelData();
-	md->num_vertices = obj->model->vertices.size();
-	md->num_faces = obj->model->faces.size();
-	md->m_vertexlist = (ModelData::Vertex*)malloc(sizeof(ModelData::Vertex) * md->num_vertices);
-	md->m_facelist = (ModelData::Face*)malloc(sizeof(ModelData::Face) * md->num_faces);
-	for(i=0; i<md->num_vertices; i++){
-		md->m_vertexlist[i].x = obj->model->vertices[i].pos.x;
-		md->m_vertexlist[i].y = obj->model->vertices[i].pos.y;
-		md->m_vertexlist[i].z = obj->model->vertices[i].pos.z;
-		md->m_vertexlist[i].nx = obj->model->vertices[i].normal.x;
-		md->m_vertexlist[i].ny = obj->model->vertices[i].normal.y;
-		md->m_vertexlist[i].nz = obj->model->vertices[i].normal.z;
-		md->m_vertexlist[i].s = obj->model->vertices[i].texCoord.x;
-		md->m_vertexlist[i].t = obj->model->vertices[i].texCoord.y;
-	}
-	for(i=0; i<md->num_faces; i++){
-		md->m_facelist[i].nverts = obj->model->faces[i].vertices.size();
-		for(j=0; j<md->m_facelist[i].nverts; j++)
-			md->m_facelist[i].v[j] = obj->model->faces[i].vertices[j];		
-	}
+	if(!convert_GeometryModel_to_ModelData(obj->model, md))
+		return;
 	
 	// Generate new Model using ModelData
 	Model* model = new Model();
@@ -71,13 +52,16 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	model->computeEdges();
 	model->computeNormals();
 	
-	// Save ID of working memory and resource manager
+	// Get IDs of working memory object and resources object
 	IDList ids;
 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());
 	istringstream istr(_wmc.address.id);
 	istr >> ids.cast_ID;
-	m_modellist.push_back(ids);
-	*/
+	
+	// add IDs and visual object to lists
+	m_model_list.push_back(ids);
+	m_visobj_list.push_back(obj);
+	
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
