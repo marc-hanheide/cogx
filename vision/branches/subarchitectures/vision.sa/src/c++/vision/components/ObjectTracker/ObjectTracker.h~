@@ -37,7 +37,7 @@ private:
   	int cast_ID;
   };
   
-  std::vector<IDList> m_modellist;
+  std::vector<ModelIDList> m_modellist;
   
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
