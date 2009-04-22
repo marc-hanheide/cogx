@@ -70,6 +70,14 @@ module VisionData {
   class DetectionCommand {
     StringSeq labels;
   };
+  
+  /** Commands for Object Tracker
+   *  @author Thomas Mörwald
+   */
+  enum TrackingCommandType{ START, STOP, RELEASEMODELS };
+  class TrackingCommand {
+    TrackingCommandType cmd;
+  };
 };
 
 #endif
