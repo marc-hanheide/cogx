@@ -13,6 +13,9 @@
 #include <ManagedComponent.hpp>
 #include <VisionData.hpp>
 
+#include "ObjectTrackerUtils.hpp"
+#include "PlyModel.h"
+
 namespace cast
 {
 
@@ -24,6 +27,7 @@ private:
    */
   std::vector<std::string> labels;
 
+  PlyModel m_model;
   /**
    * callback function called whenever a new object appears ore an object
    * changes

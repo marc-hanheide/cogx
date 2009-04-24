@@ -207,7 +207,30 @@ Frustum* Resources::GetFrustum(){
 
 // *** Add-functions ***
 
-int	Resources::AddModel(const char* filename){
+int Resources::AddModel(Model* model, const char* name){
+	// check if texture allready loaded before by comparing filename
+	int modelID = SearchModelName(name);
+	if(modelID != -1){
+		printf("[Resources::AddModel] Warning model allready exists: '%s'", name);
+		return modelID;	// return existing texture ID
+	}
+	
+	char* tmp_name = new char[FN_LEN];
+	strcpy(tmp_name, name);
+	
+	// put model into texture list
+	m_modelNameList.push_back(tmp_name);
+	m_modelList.push_back(model);
+	
+	modelID = m_modelList.size()-1;
+	
+	printf("Model %i loaded: %s\n", modelID, name);
+	
+	return modelID;
+}
+
+
+int	Resources::AddPlyModel(const char* filename){
 	bool loaded = false;
 	
 	// check if texture allready loaded before by comparing filename
@@ -218,7 +241,7 @@ int	Resources::AddModel(const char* filename){
 	// texture doesn't exist and needs to be loaded
 	char fullname[FN_LEN];
 	sprintf(fullname, "%s%s", m_modelPath, filename);
-	Model* model = new Model();
+	PlyModel* model = new PlyModel();
 	
 	loaded = model->load(fullname);
 	
@@ -242,6 +265,7 @@ int	Resources::AddModel(const char* filename){
 	
 	return modelID;
 }
+
 
 int	Resources::AddTexture(const char* filename, const char* texturename){
 	bool loaded = false;
@@ -299,6 +323,9 @@ int	Resources::AddShader(	const char* shadername,
 							const char* fragment_file,
 							const char* header)
 {
+	
+	
+	
 	// check if texture allready loaded before by comparing filename
 	int shaderID = SearchShaderName(shadername);
 	if(shaderID != -1)
@@ -361,27 +388,7 @@ int	Resources::AddCamera(const char* camname){
 	return camID;	
 }
 
-int Resources::AddModel(Model* model, const char* name){
-	// check if texture allready loaded before by comparing filename
-	int modelID = SearchModelName(name);
-	if(modelID != -1){
-		printf("[Resources::AddModel] Warning model allready exists: '%s'", name);
-		return modelID;	// return existing texture ID
-	}
-	
-	char* tmp_name = new char[FN_LEN];
-	strcpy(tmp_name, name);
-	
-	// put model into texture list
-	m_modelNameList.push_back(tmp_name);
-	m_modelList.push_back(model);
-	
-	modelID = m_modelList.size()-1;
-	
-	printf("Model %i loaded: %s\n", modelID, name);
-	
-	return modelID;
-}
+
 
 // *** Release
 void Resources::ReleaseModel(){

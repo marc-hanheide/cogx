@@ -449,6 +449,10 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 							Particle* p_estimate,		// position estimate of model (R,t)
 							Particle* p_result)		// storage to write tracked position
 {
+	if(!image || !model){
+		printf("[Tracker::trackTexture] Error model not valid\n");
+		return false;
+	}
 	m_model = model;
 	
 	// Process image from camera (edge detection)
@@ -507,6 +511,10 @@ bool Tracker::trackEdge(	unsigned char* image,
 							Particle* p_estimate,
 							Particle* p_result)		// storage to write tracked position
 {
+	if(!image || !model){
+		printf("[Tracker::trackTexture] Error model not valid\n");
+		return false;
+	}
 	m_model = model;
 	
 	// Process image from camera (edge detection)
