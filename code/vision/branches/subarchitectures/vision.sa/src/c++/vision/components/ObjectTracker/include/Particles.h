@@ -24,6 +24,7 @@ public:
 	Particle();
 	Particle(float val);
 	Particle(float* mv);
+	Particle(mat3 rot, vec3 pos);
 	
 	Particle& operator=(const Particle& p2);
 	bool operator==(const Particle& p2);
