@@ -264,6 +264,8 @@ bool Tracker::inputs(){
 	int id_max = m_particles->getMaxID();
 	float alpha, beta, gamma;
 	Particle p;
+	mat3 rot;
+	vec3 pos;
     
 	SDL_Event event;
 	while(SDL_PollEvent(&event)){
@@ -299,20 +301,14 @@ bool Tracker::inputs(){
 					glGetFloatv(GL_MODELVIEW_MATRIX, mv);
 					m_particles->deactivate();
 					
-					p = Particle(mv);
+					rot[0] = mv[0]; rot[1] = mv[1]; rot[2] = mv[2];  // mv[3]
+					rot[3] = mv[4]; rot[4] = mv[5]; rot[5] = mv[6];  // mv[7]
+					rot[6] = mv[8]; rot[7] = mv[9]; rot[8] = mv[10]; // mv[11]
+					pos.x = mv[12]; pos.y = mv[13]; pos.z = mv[14];  // mv[15]
+					
+					p = Particle(rot, pos);
 					p.print();
 					m_particles->getMax()->print();
-					
-					break;
-				case SDLK_x:
-					printf("\n\nModelview Matrix:\n");
-					v1 = vec4(0.0,0.0,1.0,1.0);
-					v2 = m_modelviewprojection * v1;
-					
-					c = m_cam_perspective->GetF();
-					
-					printf("%f %f %f\n", c.x, c.y, c.z);
-					printf("%f %f %f\n", v2.x, v2.y, v2.z);
 					
 					break;
 				case SDLK_z:

@@ -27,7 +27,6 @@ using namespace VisionData;
 
 ObjectTracker::ObjectTracker(){
   camId = 0;
-  m_model = 0;
   track = false;
 }
 
@@ -48,8 +47,6 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 		return;
 	}
 	
-	m_model = model;
-	
 	// Get IDs of working memory object and resources object
 	IDList ids;
 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());
@@ -57,8 +54,8 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	istr >> ids.cast_ID;
 	
 	// add IDs and visual object to lists
-	m_model_list.push_back(ids);
-	m_visobj_list.push_back(obj);
+	m_modelID_list.push_back(ids);
+	//m_visobj_list.push_back(obj);
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -122,15 +119,14 @@ void ObjectTracker::runComponent(){
   Tracker tracker;
   Video::Image image;
   IplImage* cvImage;
-  Model* model;
-  Particle m_result = Particle(0.0);
+  m_trackpose = Particle(0.0);
   
   // Set pathes of resource manager
   g_Resources->SetModelPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/");
   g_Resources->SetTexturePath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/texture/");
   g_Resources->SetShaderPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/shader/");
 
-  // Grab one image from video server for initialisation
+  // Grab one image from VideoServer for initialisation
   getImage(camId, image);
   cvImage = convertImageToIpl(image);
     
@@ -150,22 +146,33 @@ void ObjectTracker::runComponent(){
   cvReleaseImage(&cvImage);
   
   // *** Tracking ***
+  Model* model;
   float fTimeImage;
   float fTimeTracker;
+  float fTimeStamp;
+  int i;
   
   while(isRunning())
   {
   	if(track){
   	  m_timer.Update();
   	  
+  	  // Grab image from VideoServer
+  	  fTimeStamp = m_timer.GetApplicationTime();
   	  getImage(camId, image);
   	  cvImage = convertImageToIpl(image);
   	  cvConvertImage(cvImage, cvImage, CV_CVTIMG_FLIP);
   	  fTimeImage = m_timer.Update();
 	  
-	  tracker.trackEdge((unsigned char*)cvImage->imageData, m_model, &m_result, &m_result);
-	  fTimeTracker = m_timer.Update();
-	  
+	  // Get Models to track (track all)
+	  for(i=0; i<m_modelID_list.size(); i++){
+	    model = g_Resources->GetModel(i);
+	    
+  	    
+		// Track model
+		tracker.trackEdge((unsigned char*)cvImage->imageData, model, &m_trackpose, &m_trackpose);
+		fTimeTracker = m_timer.Update();
+	  }
 	  //printf("TimeImage:   %.0f ms\n", fTimeImage*1000.0);
 	  //printf("TimeTracker: %.0f ms\n\n", fTimeTracker*1000.0);
 	  

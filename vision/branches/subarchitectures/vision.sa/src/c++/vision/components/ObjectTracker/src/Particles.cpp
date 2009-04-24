@@ -23,13 +23,27 @@ Particle::Particle(float val){
 }
 
 Particle::Particle(float* mv){
+
 	rX = atan2(-mv[9], mv[10]) * 180.0 / PI;
 	rY = asin(mv[8]) * 180.0 / PI;
 	rZ = atan2(-mv[4], mv[0]) * 180.0 / PI;
-	
+
 	tX = mv[12];
 	tY = mv[13];
 	tZ = mv[14];
+	
+	w = 0.0;
+}
+
+Particle::Particle(mat3 rot, vec3 pos){
+
+	rX = atan2(-rot[7], rot[8]) * 180.0 / PI;
+	rY = asin(rot[6]) * 180.0 / PI;
+	rZ = atan2(-rot[3], rot[0]) * 180.0 / PI;
+
+	tX = pos.x;
+	tY = pos.y;
+	tZ = pos.z;
 	
 	w = 0.0;
 }
