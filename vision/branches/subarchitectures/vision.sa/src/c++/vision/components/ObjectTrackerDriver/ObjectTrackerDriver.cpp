@@ -54,27 +54,29 @@ void ObjectTrackerDriver::runComponent()
   sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
                        
-  
+  // Load geometry from ply-file
   log("loading model 'box_blender.ply'");
   m_model.load("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/box_blender.ply");
     
-  // Load Geometry to Tracker
+  // Generate VisualObject
   VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
   obj->model = new VisionData::GeometryModel;
   if(!convertTrackerModel(&m_model, obj->model))
 	log("no geometry model in Visual Object");
   obj->label = "box";
+  
+  // Add VisualObject to working memory
   addToWorkingMemory(newDataID(), obj);
   
-  // Start Tracking
+  // Send start tracking command
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = VisionData::START;
   addToWorkingMemory(newDataID(), track_cmd);
   
-  // for 10 seconds
+  // Track for 10 seconds
   sleepComponent(20000);
   
-  // Stop Tracking
+  // Send stop tracking command
   track_cmd->cmd = VisionData::STOP;
   addToWorkingMemory(newDataID(), track_cmd);
   
