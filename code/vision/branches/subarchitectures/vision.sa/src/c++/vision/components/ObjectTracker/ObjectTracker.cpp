@@ -41,16 +41,14 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
 	log("adding VisualObject '%s'", obj->label.c_str());
 	
-	ModelData* md = new ModelData();
-	if(!convert_GeometryModel_to_ModelData(obj->model, md))
-		return;
-	
-	// Generate new Model using ModelData
+	// Convert GeometryModel to Model for tracker
 	Model* model = new Model();
-	model->load(*md);
-	delete(md);
-	model->computeEdges();
-	model->computeNormals();
+	if(!convertGeometryModel(obj->model, model)){
+		delete(model);
+		return;
+	}
+	
+	m_model = model;
 	
 	// Get IDs of working memory object and resources object
 	IDList ids;
@@ -61,7 +59,6 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	// add IDs and visual object to lists
 	m_model_list.push_back(ids);
 	m_visobj_list.push_back(obj);
-	
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -149,15 +146,10 @@ void ObjectTracker::runComponent(){
 					0.0, 0.1,
 					17.0))
 	log("Initialisation failed!");
-	
-  // Load model with resource manager
-  int id;
-  if((id = g_Resources->AddModel("box_blender.ply")) == -1)
-	log("failed loading model!");
-  m_model = g_Resources->GetModel(id);
-  
+
   cvReleaseImage(&cvImage);
   
+  // *** Tracking ***
   float fTimeImage;
   float fTimeTracker;
   
@@ -172,7 +164,6 @@ void ObjectTracker::runComponent(){
   	  fTimeImage = m_timer.Update();
 	  
 	  tracker.trackEdge((unsigned char*)cvImage->imageData, m_model, &m_result, &m_result);
-	  glFlush();
 	  fTimeTracker = m_timer.Update();
 	  
 	  //printf("TimeImage:   %.0f ms\n", fTimeImage*1000.0);

@@ -6,47 +6,76 @@
  */
 
 #include <VisionData.hpp>
+#include "Tracker.h"
 
 namespace cast{
 
 using namespace VisionData;
 
-bool convert_GeometryModel_to_ModelData(GeometryModelPtr gm, ModelData* md){
+bool convertGeometryModel(GeometryModelPtr gm, Model* m){
 	int i,j;
 	
 	// Check if model structure is empty
 	if(!gm){
-		printf("no geometry found\n");
+		printf("[GeometryModel_Converter] no geometry found\n");
 		return false;
 	}
 	
-	// Convert VisualObject::GeometryModel to ObjectTracker::ModelData
-	md->num_vertices = gm->vertices.size();
-	md->num_faces = gm->faces.size();
-	
-	// Allocate memory for vertices and faces
-	md->m_vertexlist = (ModelData::Vertex*)malloc(sizeof(ModelData::Vertex) * md->num_vertices);
-	md->m_facelist = (ModelData::Face*)malloc(sizeof(ModelData::Face) * md->num_faces);
-	
-	// Parse through vertices and store content in ModelData
-	for(i=0; i<md->num_vertices; i++){
-		md->m_vertexlist[i].x = gm->vertices[i].pos.x;
-		md->m_vertexlist[i].y = gm->vertices[i].pos.y;
-		md->m_vertexlist[i].z = gm->vertices[i].pos.z;
-		md->m_vertexlist[i].nx = gm->vertices[i].normal.x;
-		md->m_vertexlist[i].ny = gm->vertices[i].normal.y;
-		md->m_vertexlist[i].nz = gm->vertices[i].normal.z;
-		md->m_vertexlist[i].s = gm->vertices[i].texCoord.x;
-		md->m_vertexlist[i].t = gm->vertices[i].texCoord.y;
+	// Parse through vertices and store content in Model
+	for(i=0; i<gm->vertices.size(); i++){
+		Model::Vertex v;
+		v.pos.x = gm->vertices[i].pos.x;
+		v.pos.y = gm->vertices[i].pos.y;
+		v.pos.z = gm->vertices[i].pos.z;
+		v.normal.x = gm->vertices[i].normal.x;
+		v.normal.y = gm->vertices[i].normal.y;
+		v.normal.z = gm->vertices[i].normal.z;
+		v.texCoord.x = gm->vertices[i].texCoord.x;
+		v.texCoord.y = gm->vertices[i].texCoord.y;
+		m->m_vertexlist.push_back(v);
 	}
 	
-	// Parse through faces and store content in ModelData
-	for(i=0; i<md->num_faces; i++){
-		md->m_facelist[i].nverts = gm->faces[i].vertices.size();
-		md->m_facelist[i].v = (unsigned int*)malloc(sizeof(unsigned int) * md->m_facelist[i].nverts);
-		for(j=0; j<md->m_facelist[i].nverts; j++)
-			md->m_facelist[i].v[j] = gm->faces[i].vertices[j];		
+	// Parse through faces and store content in Model
+	for(i=0; i<gm->faces.size(); i++){
+		Model::Face f;
+		f.v = gm->faces[i].vertices;	
+		m->m_facelist.push_back(f);	
 	}
+	
+	m->computeEdges();
+	
+	return true;
+}
+
+bool convertTrackerModel(Model* m, GeometryModelPtr gm){
+	int i,j;
+	
+	if(!m){
+		printf("[TrackerModel_Converter] no geometry found\n");
+		return false;
+	}
+	
+	// Parse through vertices and store content in Model
+	for(i=0; i<m->m_vertexlist.size(); i++){
+		VisionData::Vertex v;
+		v.pos.x = m->m_vertexlist[i].pos.x;
+		v.pos.y = m->m_vertexlist[i].pos.y;
+		v.pos.z = m->m_vertexlist[i].pos.z;
+		v.normal.x = m->m_vertexlist[i].normal.x;
+		v.normal.y = m->m_vertexlist[i].normal.y;
+		v.normal.z = m->m_vertexlist[i].normal.z;
+		v.texCoord.x = m->m_vertexlist[i].texCoord.x;
+		v.texCoord.y = m->m_vertexlist[i].texCoord.y;
+		gm->vertices.push_back(v);
+	}
+	
+	// Parse through faces and store content in Model
+	for(i=0; i<m->m_facelist.size(); i++){
+		VisionData::Face f;
+		f.vertices = m->m_facelist[i].v;	
+		gm->faces.push_back(f);	
+	}
+	
 	
 	return true;
 }

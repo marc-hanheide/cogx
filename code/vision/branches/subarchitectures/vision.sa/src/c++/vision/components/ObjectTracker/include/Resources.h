@@ -10,6 +10,7 @@
 
 #include "ImageProcessor.h"
 #include "Model.h"
+#include "PlyModel.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Camera.h"
@@ -96,7 +97,8 @@ public:
     Camera*		GetCamera(int id){ return m_cameraList[id]; }
     
     // Add-functions
-	int		AddModel(const char* filename);
+    int		AddModel(Model* model, const char* name);
+	int		AddPlyModel(const char* filename);
 	int		AddTexture(const char* filename, const char* texturename = NULL);
 	int		AddShader(	const char* shadername,
 						const char* vertex_file = NULL,
@@ -104,7 +106,7 @@ public:
 						const char* header = NULL);
 	int		AddCamera(const char* name);
 	
-	int		AddModel(Model* model, const char* name);
+	
 	
 	void ReleaseModel();
 	void ReleaseTexture();
