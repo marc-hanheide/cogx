@@ -81,6 +81,20 @@ void Particle::print(){
 	printf("w: %f\n", w);
 }
 
+void Particle::getModelView(float* matrix4x4){
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+		glLoadIdentity();
+		
+		glTranslatef(tX, tY, tZ);
+		glRotatef(rX, 1.0, 0.0, 0.0);
+		glRotatef(rY, 0.0, 1.0, 0.0);
+		glRotatef(rZ, 0.0, 0.0, 1.0);
+		
+		glGetFloatv(GL_MODELVIEW_MATRIX, matrix4x4);
+	glPushMatrix();
+}
+
 // PARTICLES
 
 // *** private ***
@@ -236,7 +250,7 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 			v_max = v;
 			
 		if(v != 0)
-			m_particlelist[id].w = float(d)/float(v) + float(d)/1000;
+			m_particlelist[id].w = float(d)/float(v);// + float(d)/1000;
 		
 		if(m_particlelist[id].w > m_particlelist[id_max].w)
 			id_max = id;
@@ -286,6 +300,5 @@ void Particles::setAll(Particle p){
 	}
 
 }
-
 
 
