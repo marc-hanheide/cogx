@@ -50,12 +50,10 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	// Get IDs of working memory object and resources object
 	IDList ids;
 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());
-	istringstream istr(_wmc.address.id);
-	istr >> ids.cast_ID;
+	ids.cast_AD = _wmc.address;
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
-	//m_visobj_list.push_back(obj);
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -116,6 +114,8 @@ void ObjectTracker::start(){
 }
 
 void ObjectTracker::runComponent(){
+  
+  // *** Initialisation of Tracker ***
   Tracker tracker;
   Video::Image image;
   IplImage* cvImage;
@@ -145,33 +145,45 @@ void ObjectTracker::runComponent(){
 
   cvReleaseImage(&cvImage);
   
-  // *** Tracking ***
+  // *** Tracking Loop ***
   Model* model;
-  float fTimeImage;
-  float fTimeTracker;
-  float fTimeStamp;
+  VisualObjectPtr obj;
+  float dTimeImage;
+  float dTimeTracker;
+  double dTimeStamp;
   int i;
   
   while(isRunning())
   {
   	if(track){
+  	// * Tracking *
   	  m_timer.Update();
+  	  dTimeStamp = m_timer.GetApplicationTime();
   	  
   	  // Grab image from VideoServer
-  	  fTimeStamp = m_timer.GetApplicationTime();
   	  getImage(camId, image);
   	  cvImage = convertImageToIpl(image);
   	  cvConvertImage(cvImage, cvImage, CV_CVTIMG_FLIP);
-  	  fTimeImage = m_timer.Update();
-	  
-	  // Get Models to track (track all)
+  	  
+	  // Track all models
 	  for(i=0; i<m_modelID_list.size(); i++){
-	    model = g_Resources->GetModel(i);
+	    model = g_Resources->GetModel(m_modelID_list[i].resources_ID);
+	    obj = getMemoryEntry<VisualObject>(m_modelID_list[i].cast_AD);
+	    obj->time = convertTime(dTimeStamp);
 	    
-  	    
+	    // conversion from CogX.vision coordinates to ObjectTracker coordinates
+	    convertPose2Particle(obj->pose, m_trackpose);
+	    
 		// Track model
 		tracker.trackEdge((unsigned char*)cvImage->imageData, model, &m_trackpose, &m_trackpose);
-		fTimeTracker = m_timer.Update();
+		
+		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
+		convertParticle2Pose(m_trackpose, obj->pose);
+		
+		obj->detectionConfidence = m_trackpose.w;
+		obj->time = convertTime(dTimeStamp);
+		
+		overwriteWorkingMemory(m_modelID_list[i].cast_AD.id, obj);
 	  }
 	  //printf("TimeImage:   %.0f ms\n", fTimeImage*1000.0);
 	  //printf("TimeTracker: %.0f ms\n\n", fTimeTracker*1000.0);
@@ -179,6 +191,7 @@ void ObjectTracker::runComponent(){
 	  cvReleaseImage(&cvImage);
 	  sleepComponent(10);
 	}else{
+	  // * Idle *
       sleepComponent(1000);
 	}
   }

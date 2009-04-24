@@ -81,8 +81,46 @@ bool convertTrackerModel(Model* model, GeometryModelPtr geom){
 	return true;
 }
 
-bool convertParticle2Pose(Particle* particle, Pose3 pose){
+bool convertParticle2Pose(Particle& particle, Pose3& pose){
+	float matrix4[16];
+	
+	particle.getModelView(matrix4);
+	
+	pose.rot.m00 = matrix4[0]; pose.rot.m01 = matrix4[1]; pose.rot.m02 = matrix4[2];
+	pose.rot.m10 = matrix4[4]; pose.rot.m11 = matrix4[5]; pose.rot.m12 = matrix4[6];
+	pose.rot.m20 = matrix4[8]; pose.rot.m21 = matrix4[9]; pose.rot.m22 = matrix4[10];
+	
+	pose.pos.x = matrix4[12];
+	pose.pos.y = matrix4[13];
+	pose.pos.z = matrix4[14];
 	
 	return true;
 }
 
+bool convertPose2Particle(Pose3& pose, Particle& particle){
+	mat3 rot;
+	vec3 pos;
+	
+	rot[0] = (float)pose.rot.m00; rot[1] = (float)pose.rot.m01; rot[2] = (float)pose.rot.m02;
+	rot[3] = (float)pose.rot.m10; rot[4] = (float)pose.rot.m11; rot[5] = (float)pose.rot.m12;
+	rot[6] = (float)pose.rot.m20; rot[7] = (float)pose.rot.m21; rot[8] = (float)pose.rot.m22;
+	
+	pos.x = pose.pos.x;
+	pos.y = pose.pos.y;
+	pos.z = pose.pos.z;
+	
+	Particle p(rot, pos);
+	
+	particle = p;
+	
+	return true;
+}
+
+cdl::CASTTime convertTime(double time_sec){
+	cdl::CASTTime casttime;
+	
+	casttime.s = floor(time_sec);
+	casttime.us = (time_sec - floor(time_sec)) * 1e6;
+	
+	return casttime;
+}

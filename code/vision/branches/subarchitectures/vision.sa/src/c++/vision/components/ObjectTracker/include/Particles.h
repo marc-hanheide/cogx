@@ -33,6 +33,7 @@ public:
 	inline bool operator>(const Particle& p2) const { return w > p2.w; }
 	
 	void print();
+	void getModelView(float* matrix4x4);
 
 };
 	
@@ -79,7 +80,7 @@ public:
 	void calcLikelihood(int num_particles, unsigned int num_avaraged_particles=1);
 	
 	void setAll(Particle p);
-	
+
 
 };
 

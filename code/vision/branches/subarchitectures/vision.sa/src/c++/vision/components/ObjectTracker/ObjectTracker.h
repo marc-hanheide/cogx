@@ -35,7 +35,7 @@ private:
   
   struct IDList{
   	int resources_ID;
-  	int cast_ID;
+  	cdl::WorkingMemoryAddress cast_AD;
   };
   
   std::vector<IDList> m_modelID_list;

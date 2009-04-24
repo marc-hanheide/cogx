@@ -14,10 +14,10 @@ Timer::Timer(void) {
 Timer::~Timer(void) {
 }
 
-float Timer::Update() {
+double Timer::Update() {
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_EndTicks));
-	fNow = (float)(m_EndTicks - m_StartTicks) / m_Frequency;
-	m_fTime = fNow - (float)m_fAppTime;
+	fNow = (double)(m_EndTicks - m_StartTicks) / m_Frequency;
+	m_fTime = fNow - m_fAppTime;
 	m_fAppTime = fNow;
 	return m_fTime;
 }
@@ -35,7 +35,7 @@ Timer::Timer(void) {
 Timer::~Timer(void) {
 }
 
-float Timer::Update() {
+double Timer::Update() {
 	clock_gettime(CLOCK_REALTIME, &act);
 	m_fTime = (act.tv_sec - old.tv_sec) + (act.tv_nsec - old.tv_nsec) / 1e9;
 	old = act;		

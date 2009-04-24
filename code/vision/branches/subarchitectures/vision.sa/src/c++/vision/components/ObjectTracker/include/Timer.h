@@ -41,17 +41,17 @@ class Timer
 private:
 	struct timespec AppStart, act, old;
 	double m_fAppTime;			// Time since application started
-	float m_fTime;				// Time between two Update calls
+	double m_fTime;				// Time between two Update calls
 
 
 public:
 	Timer(void);
 	~Timer(void);
 	
-	float Update();
+	double Update();
 	
-	float GetFrameTime(){ return m_fTime;}
-	float GetApplicationTime(){ return m_fAppTime;}
+	double GetFrameTime(){ return m_fTime;}
+	double GetApplicationTime(){ return m_fAppTime;}
 	
 };
 #endif
