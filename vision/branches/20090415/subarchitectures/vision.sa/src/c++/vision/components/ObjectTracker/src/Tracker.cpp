@@ -19,7 +19,7 @@ void Tracker::image_processing_texture(unsigned char* image){
 	m_ip->spreading(m_tex_frame_thinn, m_tex_frame_ip);
 	m_ip->spreading(m_tex_frame_ip, m_tex_frame_ip);
 	//m_ip->spreading(m_tex_frame_ip, m_tex_frame_ip);
-	m_ip->render(m_tex_frame);
+	//m_ip->render(m_tex_frame);
 }
 
 // Process camera image (gauss, sobel, thinning, spreading, rendering)
@@ -56,7 +56,7 @@ void Tracker::particle_motion_texture(float pow_scale, Particle* p_ref, unsigned
 	noise_particle.tY = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
 	noise_particle.tZ = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale * 5.0;
 	
-    if(!m_lockparticles){
+    if(!m_lock){
    		m_particles->perturb(noise_particle, p_ref, distribution);
    	}
 }
@@ -74,9 +74,7 @@ void Tracker::particle_motion_edge(float pow_scale, Particle* p_ref, unsigned in
 	noise_particle.tY = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
 	noise_particle.tZ = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
 	
-    if(!m_lockparticles){
-   		m_particles->perturb(noise_particle, p_ref, distribution);
-   	}
+	m_particles->perturb(noise_particle, p_ref, distribution);
 }
 
 // Draw Model to screen, extract modelview matrix, perform imageprocessing for model
@@ -243,15 +241,17 @@ void Tracker::draw_result_texture(){
 // Draw result of edge tracking (particle with maximum likelihood)
 void Tracker::draw_result_edge(){
 	if(m_showmodel){
+		m_cam_perspective->Activate();
 		m_particles->activateMax();
 		m_opengl.ClearBuffers(false, true);
 		m_opengl.RenderSettings(false, true);
 		m_model->drawFaces();
 		m_opengl.RenderSettings(true, true);
-		m_shadeEdgeCompare->bind();
-		m_shadeEdgeCompare->setUniform("analyze", true);
+		glColor3f(1.0,0.0,0.0);
+		//m_shadeEdgeCompare->bind();
+		//m_shadeEdgeCompare->setUniform("analyze", true);
 		m_model->drawEdges();
-		m_shadeEdgeCompare->unbind();
+		//m_shadeEdgeCompare->unbind();
 		m_particles->deactivate();
 	}
 }
@@ -264,6 +264,7 @@ bool Tracker::inputs(){
 	int id_max = m_particles->getMaxID();
 	float alpha, beta, gamma;
 	Particle p;
+	Particle* pmax;
 	mat3 rot;
 	vec3 pos;
     
@@ -276,8 +277,8 @@ bool Tracker::inputs(){
 					return false;
 					break;
 				case SDLK_l:
-					m_lockparticles = !m_lockparticles;
-					if(m_lockparticles){
+					m_lock = !m_lock;
+					if(m_lock){
 						printf("Tracker locked\n");
 						m_particles->setAll(*m_particles->getMax());
 					}else{
@@ -311,7 +312,14 @@ bool Tracker::inputs(){
 					m_particles->getMax()->print();
 					
 					break;
+				case SDLK_y:
+					float m[16];
+					pmax = m_particles->getMax();
+					pmax->getModelView(m);
+					
+					break;					
 				case SDLK_z:
+					printf("Zero particles\n");
 					m_particles->setAll(Particle(0.0));
 					break;
                 default:
@@ -332,7 +340,7 @@ bool Tracker::inputs(){
 // *** PUBLIC ***
 
 Tracker::Tracker(){
-	m_lockparticles = true;
+	m_lock = true;
 	m_showparticles = false;
 	m_showmodel = true;
 }
@@ -504,8 +512,8 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 
 bool Tracker::trackEdge(	unsigned char* image,
 							Model* model,
-							Particle* p_estimate,
-							Particle* p_result)		// storage to write tracked position
+							Particle& p_estimate,
+							Particle& p_result)		// storage to write tracked position
 {
 	if(!image || !model){
 		printf("[Tracker::trackTexture] Error model not valid\n");
@@ -516,20 +524,20 @@ bool Tracker::trackEdge(	unsigned char* image,
 	// Process image from camera (edge detection)
 	image_processing_edge(image);
 	
-	// Overwrite maximum particle (reference particle) with given estimate
-	Particle* p_max = m_particles->getMax();
-	if(p_estimate)
-		p_max = p_estimate;
+	if(!m_lock){ // tracker lock
+		// Overwrite maximum particle (reference particle) with given estimate
+		Particle* p_max = m_particles->getMax();
+		*p_max = p_estimate;
 		
-	// Draw particles and evaluate match likelihood
-	particle_motion_edge(1.0);
-	particle_processing_edge(params.number_of_particles * 0.75, 3);
-	particle_motion_edge(0.2, NULL, GAUSS);
-	particle_processing_edge(params.number_of_particles * 0.25, 50);
+		// Draw particles and evaluate match likelihood
+		particle_motion_edge(1.0);
+		particle_processing_edge(params.number_of_particles * 0.75, 1);
+		particle_motion_edge(0.2, NULL, GAUSS);
+		particle_processing_edge(params.number_of_particles * 0.25, 20);
+	}
 	
 	// Copy result to output
-	if(p_result)
-		*p_result = *m_particles->getMax();
+	p_result = *m_particles->getMax();
 	
 	// Draw result
 	draw_result_edge();

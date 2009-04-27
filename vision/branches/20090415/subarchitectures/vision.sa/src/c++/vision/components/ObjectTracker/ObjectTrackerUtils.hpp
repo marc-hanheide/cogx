@@ -82,17 +82,19 @@ bool convertTrackerModel(Model* model, GeometryModelPtr geom){
 }
 
 bool convertParticle2Pose(Particle& particle, Pose3& pose){
-	float matrix4[16];
 	
-	particle.getModelView(matrix4);
+	float rot[9];
+	float pos[3];
 	
-	pose.rot.m00 = matrix4[0]; pose.rot.m01 = matrix4[1]; pose.rot.m02 = matrix4[2];
-	pose.rot.m10 = matrix4[4]; pose.rot.m11 = matrix4[5]; pose.rot.m12 = matrix4[6];
-	pose.rot.m20 = matrix4[8]; pose.rot.m21 = matrix4[9]; pose.rot.m22 = matrix4[10];
+	particle.getPose(rot, pos);
 	
-	pose.pos.x = matrix4[12];
-	pose.pos.y = matrix4[13];
-	pose.pos.z = matrix4[14];
+	pose.rot.m00 = rot[0]; pose.rot.m01 = rot[1]; pose.rot.m02 = rot[2];
+	pose.rot.m10 = rot[3]; pose.rot.m11 = rot[4]; pose.rot.m12 = rot[5];
+	pose.rot.m20 = rot[6]; pose.rot.m21 = rot[7]; pose.rot.m22 = rot[8];
+	
+	pose.pos.x = pos[0];
+	pose.pos.y = pos[1];
+	pose.pos.z = pos[2];
 	
 	return true;
 }

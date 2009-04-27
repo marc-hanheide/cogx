@@ -57,7 +57,7 @@ private:
 	mat4 m_projection;
 	mat4 m_modelviewprojection;
 	
-	bool m_lockparticles;
+	bool m_lock;
 	bool m_showparticles;
 	bool m_showmodel;
 	float time_tracking;
@@ -95,8 +95,8 @@ public:
 	
 	bool trackEdge(	unsigned char* image,
 					Model* model,
-					Particle* p_estimate,
-					Particle* p_result);
+					Particle& p_estimate,
+					Particle& p_result);
 	
 	bool render(unsigned char* image);
 	bool render(Model* model); 

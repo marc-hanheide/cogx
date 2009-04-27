@@ -34,6 +34,7 @@ public:
 	
 	void print();
 	void getModelView(float* matrix4x4);
+	void getPose(float* matrix3x3, float* pos3);
 
 };
 	
