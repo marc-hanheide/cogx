@@ -138,7 +138,7 @@ void ObjectTracker::runComponent(){
  
   // Initialize tracking (parameters for edge-based tracking)
   if(!tracker.init(	cvImage->width, cvImage->height,
-					1000,
+					1500,
 					49.0,
 					0.25, 0.165, 0.25,
 					0.0, 40.0,
@@ -167,29 +167,31 @@ void ObjectTracker::runComponent(){
   	  getImage(camId, image);
   	  cvImage = convertImageToIpl(image);
   	  cvConvertImage(cvImage, cvImage, CV_CVTIMG_FLIP);
+  	  dTimeImage = m_timer.Update();
   	  
 	  // Track all models
 	  for(i=0; i<m_modelID_list.size(); i++){
 	    model = g_Resources->GetModel(m_modelID_list[i].resources_ID);
 	    obj = getMemoryEntry<VisualObject>(m_modelID_list[i].cast_AD);
-	    obj->time = convertTime(dTimeStamp);
 	    
 	    // conversion from CogX.vision coordinates to ObjectTracker coordinates
 	    convertPose2Particle(obj->pose, m_trackpose);
+	    m_trackpose.w = obj->detectionConfidence;
 	    
 		// Track model
-		tracker.trackEdge((unsigned char*)cvImage->imageData, model, &m_trackpose, &m_trackpose);
+		tracker.trackEdge((unsigned char*)cvImage->imageData, model, m_trackpose, m_trackpose);
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(m_trackpose, obj->pose);
 		
+		// Send new data to working memory
 		obj->detectionConfidence = m_trackpose.w;
 		obj->time = convertTime(dTimeStamp);
-		
 		overwriteWorkingMemory(m_modelID_list[i].cast_AD.id, obj);
 	  }
-	  //printf("TimeImage:   %.0f ms\n", fTimeImage*1000.0);
-	  //printf("TimeTracker: %.0f ms\n\n", fTimeTracker*1000.0);
+	  dTimeTracker = m_timer.Update();
+	  //printf("TimeImage:   %.0f ms\n", dTimeImage*1000.0);
+	  //printf("TimeTracker: %.0f ms\n\n", dTimeTracker*1000.0);
 	  
 	  cvReleaseImage(&cvImage);
 	  sleepComponent(10);

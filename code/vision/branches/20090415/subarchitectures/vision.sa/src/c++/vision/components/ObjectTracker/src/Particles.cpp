@@ -82,6 +82,8 @@ void Particle::print(){
 }
 
 void Particle::getModelView(float* matrix4x4){
+	mat3 Rx, Ry, Rz, R;
+	float d2r = PI/180;
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 		glLoadIdentity();
@@ -92,7 +94,44 @@ void Particle::getModelView(float* matrix4x4){
 		glRotatef(rZ, 0.0, 0.0, 1.0);
 		
 		glGetFloatv(GL_MODELVIEW_MATRIX, matrix4x4);
+		/*
+		printf("Modelview(rZ)\n");
+		printf("%f %f %f %f\n", matrix4x4[0], matrix4x4[1], matrix4x4[2], matrix4x4[3]);
+		printf("%f %f %f %f\n", matrix4x4[4], matrix4x4[5], matrix4x4[6], matrix4x4[7]);
+		printf("%f %f %f %f\n", matrix4x4[8], matrix4x4[9], matrix4x4[10], matrix4x4[11]);
+		printf("%f %f %f %f\n", matrix4x4[12], matrix4x4[13], matrix4x4[14], matrix4x4[15]);
+		printf("Rz:\n");
+		printf("%f %f %f\n", R[0], R[1], R[2]);
+		printf("%f %f %f\n", R[3], R[4], R[5]);
+		printf("%f %f %f\n", R[6], R[7], R[8]);
+		*/
 	glPushMatrix();
+}
+
+void Particle::getPose(float* matrix3x3, float* pos3){
+	mat3 Rx, Ry, Rz, R;
+	vec3 t;
+	float d2r = PI/180;
+
+	Rx[0] = 1; 			Rx[1] = 0; 				Rx[2] = 0; 
+	Rx[3] = 0; 			Rx[4] = cos(rX*d2r); 	Rx[5] = sin(rX*d2r); 
+	Rx[6] = 0; 			Rx[7] = -sin(rX*d2r); 	Rx[8] = cos(rX*d2r); 
+	
+	Ry[0] = cos(rY*d2r);	Ry[1] = 0;			Ry[2] = -sin(rY*d2r);
+	Ry[3] = 0;				Ry[4] = 1;			Ry[5] = 0;
+	Ry[6] = sin(rY*d2r);	Ry[7] = 0;			Ry[8] = cos(rY*d2r);
+	
+	Rz[0] = cos(rZ*d2r);	Rz[1] = sin(rZ*d2r);	Rz[2] = 0;
+	Rz[3] = -sin(rZ*d2r);	Rz[4] = cos(rZ*d2r);	Rz[5] = 0;
+	Rz[6] = 0;				Rz[7] = 0;				Rz[8] = 1;
+	
+	R = Rx * Ry * Rz;
+	
+	matrix3x3[0] = R[0]; matrix3x3[1] = R[1]; matrix3x3[2] = R[2];
+	matrix3x3[3] = R[3]; matrix3x3[4] = R[4]; matrix3x3[5] = R[5];
+	matrix3x3[6] = R[6]; matrix3x3[7] = R[7]; matrix3x3[8] = R[8];
+	
+	pos3[0] = tX; pos3[1] = tY; pos3[2] = tZ;
 }
 
 // PARTICLES
@@ -151,21 +190,21 @@ Particles::~Particles(){
 }
 
 void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int distribution){
-	Particle pMax(0.0);
+	Particle* pMax;
 	Particle* pIt;
 	
 	float noiseRotX=0.0, noiseRotY=0.0, noiseRotZ=0.0;
     float noiseTransX=0.0, noiseTransY=0.0, noiseTransZ=0.0;
         
     if(!p_ref)
-    	pMax = m_particlelist[id_max];
+    	pMax = &m_particlelist[id_max];
     else
-    	pMax = *p_ref;
+    	pMax = p_ref;
     
-    m_particlelist[0] = pMax;
-    	
     //float maximaRange = MAXIMA_RANGE;
     
+    // keep pMax at position 0
+    m_particlelist[0] = *pMax;
     // for all other particles add noise
     for(int i=1; i<m_num_particles; i++){
     	pIt = &m_particlelist[i];
@@ -179,13 +218,13 @@ void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int d
         noiseTransZ = noise(-noise_particle.tZ, noise_particle.tZ, 100, distribution);
                 
         // Apply noise to particles
-        pIt->rX = pMax.rX + noiseRotX;
-        pIt->rY = pMax.rY + noiseRotY;
-        pIt->rZ = pMax.rZ + noiseRotZ;
+        pIt->rX = pMax->rX + noiseRotX;
+        pIt->rY = pMax->rY + noiseRotY;
+        pIt->rZ = pMax->rZ + noiseRotZ;
         
-        pIt->tX = pMax.tX + noiseTransX;
-        pIt->tY = pMax.tY + noiseTransY;
-        pIt->tZ = pMax.tZ + noiseTransZ;
+        pIt->tX = pMax->tX + noiseTransX;
+        pIt->tY = pMax->tY + noiseTransY;
+        pIt->tZ = pMax->tZ + noiseTransZ;
         
         // with the last particles perform special movement to get out of local maxima
         //if(i > NUM_PARTICLES - maximaRange){

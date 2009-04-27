@@ -17,8 +17,7 @@ extern "C"
   }
 }
 
-namespace cast
-{
+using namespace cast;
 
 using namespace std;
 
@@ -64,7 +63,12 @@ void ObjectTrackerDriver::runComponent()
   if(!convertTrackerModel(&m_model, obj->model))
 	log("no geometry model in Visual Object");
   obj->label = "box";
-  
+  obj->detectionConfidence = 0.0;
+  Particle p = Particle(0.0);
+  p.tZ = 0.05;
+  p.rY = 45;
+  convertParticle2Pose(p, obj->pose);  
+  	
   // Add VisualObject to working memory
   addToWorkingMemory(newDataID(), obj);
   
@@ -85,11 +89,14 @@ void ObjectTrackerDriver::runComponent()
 void ObjectTrackerDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+  
+  /*
   if(obj->detectionConfidence >= 0.5)
     log("ok, detected '%s'", obj->label.c_str());
   else
     log("nah, did not detect '%s'", obj->label.c_str());
+    */
 }
 
-}
+
 
