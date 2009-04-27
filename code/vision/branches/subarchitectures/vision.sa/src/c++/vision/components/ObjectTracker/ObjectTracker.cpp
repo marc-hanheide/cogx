@@ -18,9 +18,9 @@ extern "C"
   }
 }
 
-namespace cast
-{
 
+
+using namespace cast;
 using namespace std;
 using namespace VisionData;
 
@@ -33,6 +33,7 @@ ObjectTracker::ObjectTracker(){
 ObjectTracker::~ObjectTracker(){
   delete(g_Resources);
 }
+
 
 // *** Working Memory Listeners ***
 
@@ -87,7 +88,9 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 	}	
 }
 
+
 // *** base functions *** (configure, start, runcomponent)
+
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
  
@@ -201,5 +204,4 @@ void ObjectTracker::runComponent(){
   delete(g_Resources);
 }
 
-}
 
