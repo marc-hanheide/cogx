@@ -7,5 +7,5 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
-CPP MG TrackerDriver ObjectTrackerDriver --labels "random" --log
+#CPP MG TrackerDriver ObjectTrackerDriver --labels "random" --log
 

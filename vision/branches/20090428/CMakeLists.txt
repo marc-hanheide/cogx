@@ -65,20 +65,20 @@ endif(BUILD_HAL_TESTS)
 
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
-
 add_subdirectory (tools/math)
 
-option(BUILD_HAL_VIDEO "Build hardware video" NO)
+option(BUILD_HAL_VIDEO "Build hardware video" YES)
 if(BUILD_HAL_VIDEO)
 add_subdirectory (tools/hardware/video)
 endif(BUILD_HAL_VIDEO)
 
-option(BUILD_SA_VISION "Build vision subarchitecure" NO)
+option(BUILD_SA_VISION "Build vision subarchitecure" YES)
 if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
 
 
+# UNCOMMENT THE FOLLOWING FOR THE NICK SUBARCHITECTURE
 
 option(BUILD_SA_NICK "Build nickigation subarchitecure" NO)
 if(BUILD_SA_NICK)

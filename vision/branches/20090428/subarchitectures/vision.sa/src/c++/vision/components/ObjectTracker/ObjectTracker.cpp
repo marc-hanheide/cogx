@@ -3,9 +3,11 @@
  * @date April 2009
  */
 
+#include <cast/architecture/ChangeFilterFactory.hpp>
+
 #include "ObjectTracker.h"
 #include <VideoUtils.h>
-#include <ChangeFilterFactory.hpp>
+
 
 /**
  * The function called to create a new instance of our component.
@@ -92,6 +94,8 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 // *** base functions *** (configure, start, runcomponent)
 
 void ObjectTracker::configure(const map<string,string> & _config){
+  
+  log("configure");
   map<string,string>::const_iterator it;
  
   // first let the base classes configure themselves
@@ -105,6 +109,7 @@ void ObjectTracker::configure(const map<string,string> & _config){
 }
 
 void ObjectTracker::start(){
+  log("start");
   startVideoCommunication(*this);
   
   addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::ADD),
@@ -117,7 +122,7 @@ void ObjectTracker::start(){
 }
 
 void ObjectTracker::runComponent(){
-  
+  log("run");
   // *** Initialisation of Tracker ***
   Tracker tracker;
   Video::Image image;
