@@ -9,11 +9,11 @@
 #include "Tracker.h"
 
 using namespace cast;
-using namespace VisionData;
+//using namespace VisionData;
 using namespace cogx;
 using namespace Math;
 
-bool convertGeometryModel(GeometryModelPtr geom, Model* model){
+bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	int i,j;
 	
 	// Check if model structure is empty
@@ -48,7 +48,7 @@ bool convertGeometryModel(GeometryModelPtr geom, Model* model){
 	return true;
 }
 
-bool convertTrackerModel(Model* model, GeometryModelPtr geom){
+bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 	int i,j;
 	
 	if(!model){

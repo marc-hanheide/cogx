@@ -1,0 +1,14 @@
+<project name="robotbase hal" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="ice" depends="prepare">
+                 <echo message="------ Robotbase.ice ---------" />
+		<idlgen file="PTU.ice" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dest}/Robotbase" />
+	</target>
+
+</project>
