@@ -8,11 +8,11 @@
 #ifndef OBJECT_TRACKER_H
 #define OBJECT_TRACKER_H
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
-#include <vector>
 
+#include <vector>
 #include "Tracker.h"
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"

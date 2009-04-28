@@ -8,9 +8,10 @@
 #ifndef DUMMY_DRIVER_H
 #define DUMMY_DRIVER_H
 
+#include <cast/architecture/ManagedComponent.hpp>
+
 #include <vector>
 #include <string>
-#include <ManagedComponent.hpp>
 #include <VisionData.hpp>
 
 #include "ObjectTrackerUtils.hpp"

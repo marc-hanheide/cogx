@@ -1,7 +1,7 @@
 #ifndef VISION_DATA_ICE
 #define VISION_DATA_ICE
 
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 #include <Math.ice>
 
 module VisionData {
