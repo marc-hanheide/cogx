@@ -72,6 +72,10 @@ module VisionData {
     StringSeq labels;
   };
   
+  class DominantPlane {
+  	cogx::Math::Plane3 plane;
+  };
+  
   /** Commands for Object Tracker
    *  @author Thomas Mörwald
    */
