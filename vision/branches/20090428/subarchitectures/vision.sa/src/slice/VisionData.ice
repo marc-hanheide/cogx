@@ -1,7 +1,7 @@
 #ifndef VISION_DATA_ICE
 #define VISION_DATA_ICE
 
-#include <cast/slice/CDL.ice>
+#include <CDL.ice>
 #include <Math.ice>
 
 module VisionData {
@@ -18,6 +18,27 @@ module VisionData {
   };
 
   sequence<VisualObjectView> VisualObjectViewSeq;
+
+  sequence<int> IntSeq;
+
+  struct Vertex {
+    cogx::Math::Vector3 pos;
+    cogx::Math::Vector3 normal;
+    cogx::Math::Vector2 texCoord;
+  };
+
+  sequence<Vertex> VertexSeq;
+
+  struct Face {
+    IntSeq vertices;
+  };
+
+  sequence<Face> FaceSeq;
+
+  class GeometryModel {
+    VertexSeq vertices;
+    FaceSeq faces;
+  };
 
   class VisualObject {
     // 3D position and orientation, in the robot ego coordinate system.
@@ -37,6 +58,9 @@ module VisionData {
 
     // List of views of the object from different cameras
     VisualObjectViewSeq views;
+    
+    // Geometric representation in 3D space
+    GeometryModel model;
 
     // The name with which we refer to the object linguistically
     string label;
@@ -46,6 +70,14 @@ module VisionData {
 
   class DetectionCommand {
     StringSeq labels;
+  };
+  
+  /** Commands for Object Tracker
+   *  @author Thomas Mörwald
+   */
+  enum TrackingCommandType{ START, STOP, RELEASEMODELS };
+  class TrackingCommand {
+    TrackingCommandType cmd;
   };
 };
 
