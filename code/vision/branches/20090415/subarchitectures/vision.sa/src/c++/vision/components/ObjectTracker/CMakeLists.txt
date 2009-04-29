@@ -18,4 +18,4 @@ SET(SOURCES ObjectTracker.cpp ${SRC})
 
 add_cast_component(ObjectTracker ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils VideoClient)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui SDL GL glut)
+link_cast_component(${CAST_COMPONENT_NAME} cv highgui SDL GLU glut)
