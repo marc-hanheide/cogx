@@ -5,7 +5,7 @@
 #include "Singleton.h"
 #include <vector>
 #include <stdio.h>
-#include <highgui.h>
+#include <opencv/highgui.h>
 #include <SDL.h>
 
 #include "ImageProcessor.h"
