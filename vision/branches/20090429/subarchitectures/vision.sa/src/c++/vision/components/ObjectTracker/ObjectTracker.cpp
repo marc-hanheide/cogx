@@ -3,9 +3,10 @@
  * @date April 2009
  */
 
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include "ObjectTracker.h"
 #include <VideoUtils.h>
-#include <cast/architecture/ChangeFilterFactory.hpp>
+
 
 /**
  * The function called to create a new instance of our component.
