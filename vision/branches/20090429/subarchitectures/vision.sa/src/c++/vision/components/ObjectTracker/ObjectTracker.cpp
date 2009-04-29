@@ -139,7 +139,7 @@ void ObjectTracker::runComponent(){
  
   // Initialize tracking (parameters for edge-based tracking)
   if(!tracker.init(	cvImage->width, cvImage->height,
-					1500,
+					700,
 					49.0,
 					0.25, 0.165, 0.25,
 					0.0, 40.0,
