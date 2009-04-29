@@ -14,7 +14,7 @@ using namespace cogx;
 using namespace Math;
 
 bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
-	int i,j;
+	unsigned int i;
 	
 	// Check if model structure is empty
 	if(!geom){
@@ -49,7 +49,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 }
 
 bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
-	int i,j;
+	unsigned int i;
 	
 	if(!model){
 		printf("[TrackerModel_Converter] no geometry found\n");
