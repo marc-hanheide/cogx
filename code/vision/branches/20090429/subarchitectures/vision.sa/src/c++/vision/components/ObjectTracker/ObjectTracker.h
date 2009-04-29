@@ -17,8 +17,6 @@
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"
 
-
-
 namespace cast
 {
 
