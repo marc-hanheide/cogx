@@ -3,7 +3,7 @@
 #define __TEXTURE_H__
 
 #include <stdio.h>
-#include <highgui.h>
+#include <opencv/highgui.h>
 #include <GL/gl.h>
 
 class Texture
