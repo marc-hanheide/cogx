@@ -4,7 +4,7 @@ have_mmxext yes
 have_sse yes
 have_sse2 yes
 have_sse3 yes
-have_32bit yes
+have_32bit
 have_assembler yes
 have_dc1394v2 yes
 have_dvbuffer
