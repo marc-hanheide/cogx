@@ -19,7 +19,7 @@ infodir = ${datarootdir}/info
 mandir = ${datarootdir}/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
-arch= i686
+arch= x86_64
 
 
 CC = @CC@
@@ -115,7 +115,7 @@ endif
 
 
 
-ifeq (i686,x86_64)
+ifeq (x86_64,x86_64)
     CPPFLAGS+=-fPIC
 endif
 
