@@ -1,9 +1,0 @@
-HOST localhost
-
-SUBARCHITECTURE test
-CPP WM SubarchitectureWorkingMemory #--log $TEST_LOG_OUTPUT
-CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
-CPP GD counter BasicTester --test count-100 --log $TEST_LOG_OUTPUT 
-CPP GD writer BasicTester --test write-100 --exit false
-
-
