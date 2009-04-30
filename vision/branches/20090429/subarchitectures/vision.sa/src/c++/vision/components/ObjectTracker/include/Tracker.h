@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <GL/gl.h>
-#include <highgui.h>
+//#include <highgui.h>
 
 #include "Timer.h"
 #include "OpenGLControl.h"
