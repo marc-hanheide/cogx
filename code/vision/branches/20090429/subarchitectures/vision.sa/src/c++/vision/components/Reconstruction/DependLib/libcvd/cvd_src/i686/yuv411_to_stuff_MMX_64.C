@@ -33,6 +33,7 @@ namespace ColourSpace
 
 void yuv411_to_rgb_y(const unsigned char* in, int size, unsigned char* out, unsigned char *lum_out)
 {
+/*
 	const unsigned char* in_end = in + size * 6 / 4;
 
 	size /=8;
@@ -243,10 +244,11 @@ void yuv411_to_rgb_y(const unsigned char* in, int size, unsigned char* out, unsi
 	: "m" (out), "m" (in), "g" (size), [luma] "m" (lum_out), [end] "m" (in_end)
 		: "eax", "ecx", "edx",  "rdi", "rsi", "mm0", "mm1", "mm2", "mm3", "mm4", "mm5", "mm6", "mm7", "rbp"
 	);
+*/
 }
 void yuv411_to_rgb(const unsigned  char* in, int size, unsigned char* out)
 {
-	//Time: 5.0ms memcpy on number of luma pixels only takes 1.5 ms
+/*	//Time: 5.0ms memcpy on number of luma pixels only takes 1.5 ms
 	size /=8;
 	__asm__ __volatile__(
 		//Put some zeros in mm7
@@ -261,7 +263,7 @@ void yuv411_to_rgb(const unsigned  char* in, int size, unsigned char* out)
 ".Lyuv411dec:						\n\t"
 		
 		"prefetchnta	64(%%rsi)	\n\t"
-		/*Convert yuv411 to rgb8	
+		Convert yuv411 to rgb8	
 		format is u1 y1 y2 v1 y3 y4
 		u, v are int8 - 128
 		y	   are uint8
@@ -277,7 +279,7 @@ void yuv411_to_rgb(const unsigned  char* in, int size, unsigned char* out)
 
 		The resultant 8 bit r,g,b values need to be saturated, since overflow occurs
 		and this leads to very ugly results.
-		*/
+		//
 		
 		////////////////////////////////////////////////////////////
 		//
@@ -459,11 +461,12 @@ void yuv411_to_rgb(const unsigned  char* in, int size, unsigned char* out)
 	: "m" (out), "m" (in), "g" (size)
 		: "eax", "ecx", "edx", "rbx", "rdi", "rsi", "mm0", "mm1", "mm2", "mm3", "mm4", "mm5", "rbp"
 	);
+	*/
 }
 
 void yuv411_to_y(const unsigned char* in, int size, unsigned char* out)
 {
-	//Time, 2.5ms. Comparison, memcpy on the same number of output bytes=1.5ms
+/*	//Time, 2.5ms. Comparison, memcpy on the same number of output bytes=1.5ms
 
 	size /=16;
 	__asm__ __volatile__(
@@ -502,6 +505,7 @@ void yuv411_to_y(const unsigned char* in, int size, unsigned char* out)
 	:
 		: "m" (out), "m" (in), "g" (size)
 		: "rax", "rcx", "rdi", "rsi", "mm0", "mm1", "mm2", "rbp", "rbx"   );
+		*/
 }
 
 }
