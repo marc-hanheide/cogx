@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<opencv_storage>
+	<ImageSize type_id="opencv-matrix">
+		<rows>1</rows>
+		<cols>2</cols>
+		<dt>f</dt>
+		<data>
+			640. 480.
+		</data>
+	</ImageSize>
+	<Intrinsic type_id="opencv-matrix">
+		<rows>3</rows>
+		<cols>3</cols>
+		<dt>d</dt>
+		<data>
+			553.61770     0.      316.74177 
+			0.        553.94382 251.88910
+			0.          0.        1.
+		</data>
+	</Intrinsic>
+	<Distortions type_id="opencv-matrix">
+		<rows>1</rows>
+		<cols>4</cols>
+		<dt>d</dt>
+		<data>
+			0.09220   -0.19936   0.01146   -0.00468
+		</data>
+	</Distortions>
+	<ReferencePoints type_id="opencv-matrix">
+		<rows>4</rows>
+		<cols>5</cols>
+		<dt>d</dt>
+		<data>
+			135 290		-12.	24. 	0.
+			515 295		12.	24.	0.
+			138  39		-24.	72.	0.
+			494  47		24.	72.	0.
+		</data>
+	</ReferencePoints>
+</opencv_storage>
