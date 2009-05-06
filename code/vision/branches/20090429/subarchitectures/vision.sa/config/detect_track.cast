@@ -9,4 +9,5 @@ CPP TM AlwaysPositiveTaskManager
 CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
 CPP MG TrackerDriver ObjectTrackerDriver --labels "random" --log
 CPP MG SfM Reconstructor --videohost localhost --videoname video --camid 0
+CPP MG vs3 VisionSystem3 --videohost localhost --videoname video --camid 0 --log --debug 
 
