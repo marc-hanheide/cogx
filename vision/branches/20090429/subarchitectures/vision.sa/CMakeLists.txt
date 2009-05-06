@@ -18,4 +18,6 @@ add_subdirectory (src/c++/vision/components/VideoViewer)
 add_subdirectory (src/c++/vision/components/ObjectTracker)
 add_subdirectory (src/c++/vision/components/ObjectTrackerDriver)
 add_subdirectory (src/c++/vision/components/Reconstruction)
+add_subdirectory (src/c++/vision/components/VisionSystem3)
+
 
