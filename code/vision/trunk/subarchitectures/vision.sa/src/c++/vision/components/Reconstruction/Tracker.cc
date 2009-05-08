@@ -1145,15 +1145,15 @@ void Tracker::DrawPointsOnDominantPlane()
 	if (objnumber != 1)
 	{
 		//DrawBundlingSphere(PointNumberOfObjects,objnumber-1);
-		//DrawCuboids(PointNumberOfObjects,objnumber-1);
-		DrawPoints_Objs(PointNumberOfObjects);
+		DrawCuboids(PointNumberOfObjects,objnumber-1);
+		//DrawPoints_Objs(PointNumberOfObjects);
 	}
 
-	DrawPoints_Plane(PointNumberOfPlane);
+	//DrawPoints_Plane(PointNumberOfPlane);
 ////////Global vector, need to be released/////////////////////////////	
 	PointNumberOfObjects.clear();
 	PointNumberOfPlane.clear();
-	mMessageForUser << "black squards refer to dominant plane,there might be "<<objnumber-1<<" objects"<< endl;
+	mMessageForUser << "there might be "<<objnumber-1<<" objects"<< endl;
 }
 
 //////////////////////////////from world coordinant to Image coordinant////////////////////
