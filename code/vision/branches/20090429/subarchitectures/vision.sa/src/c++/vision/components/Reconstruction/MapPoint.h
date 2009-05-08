@@ -33,10 +33,12 @@ struct MapPoint
     nMEstimatorOutlierCount = 0;
     nMEstimatorInlierCount = 0;
     dCreationTime = CVD::timer.get_time();
+    odjlabel = 0;
   };
   
   // Where in the world is this point? The main bit of information, really.
   Vector<3> v3WorldPos;
+  int odjlabel;
   // Is it a dud? In that case it'll be moved to the trash soon.
   bool bBad;
   

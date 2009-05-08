@@ -18,7 +18,7 @@ infodir = ${prefix}/share/info
 mandir = ${prefix}/share/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
-arch= x86_64
+arch= i686
 
 
 CC = gcc
@@ -28,7 +28,7 @@ RANLIB=ranlib
 CPPFLAGS =  -INONE/include
 CFLAGS = -g -O2
 CXXFLAGS = -g  -Wall -Wextra -ggdb -fPIC -mmmx -msse -msse -msse2 -msse3 -pthread
-OFLAGS= -O3 -march=nocona
+OFLAGS= -O3 -march=pentium-m
 LDFLAGS = 
 LOADLIBES = -ltiff -ljpeg -lpng -llapack -lGL -ldc1394  -L -lX11 -lXext -pthread
 INSTALL = /usr/bin/install -c
@@ -103,7 +103,7 @@ CVD_OBJS=   cvd_src/cvd_timer.o                             \
 			cvd_src/nonmax_suppression.o                    \
 			cvd_src/timeddiskbuffer.o                       \
 			cvd_src/videosource.o                           \
-			cvd_src/i686/yuv411_to_stuff_MMX_64.o cvd_src/noarch/convert_rgb_to_y.o cvd_src/i686/convolve_gaussian.o cvd_src/i686/gradient.o cvd_src/noarch/yuv422_wrapper.o cvd_src/i686/median_3x3.o cvd_src/i686/utility_float.o cvd_src/i686/utility_byte_differences.o cvd_src/i686/utility_double_int.o cvd_src/fast/fast_7_detect.o cvd_src/fast/fast_7_score.o cvd_src/slower_corner_7.o cvd_src/fast/fast_8_detect.o cvd_src/fast/fast_8_score.o cvd_src/slower_corner_8.o cvd_src/fast/fast_9_detect.o cvd_src/fast/fast_9_score.o cvd_src/fast_corner_9_nonmax.o cvd_src/fast/fast_10_detect.o cvd_src/fast/fast_10_score.o cvd_src/fast/fast_11_detect.o cvd_src/fast/fast_11_score.o cvd_src/slower_corner_11.o cvd_src/fast/fast_12_detect.o cvd_src/fast/fast_12_score.o cvd_src/faster_corner_9.o cvd_src/faster_corner_10.o cvd_src/faster_corner_12.o cvd_src/Linux/dvbuffer3_dc1394v2.o cvd_src/Linux/v4l1buffer.o cvd_src/Linux/v4lbuffer.o cvd_src/Linux/v4l2buffer.o cvd_src/Linux/v4lcontrol.o cvd_src/synchronized.o cvd_src/eventobject.o cvd_src/thread.o cvd_src/thread/runnable_batch.o cvd_src/noarch/posix_memalign.o cvd_src/videodisplay.o cvd_src/glwindow.o cvd_src/gltext.o pnm_src/jpeg.o pnm_src/tiff.o pnm_src/tiffwrite.o pnm_src/png.o cvd_src/globlist.o cvd_src/tensor_voting.o cvd_src/brezenham.o 
+			cvd_src/i686/yuv411_to_stuff_MMX.o cvd_src/i686/halfsample.o cvd_src/i686/rgb_to_gray.o cvd_src/i686/convert_rgb_to_y.o cvd_src/i686/convolve_gaussian.o cvd_src/i686/gradient.o cvd_src/i686/yuv422_to_rgb.o cvd_src/i686/yuv422_to_grey.o cvd_src/i686/yuv422_wrapper.o cvd_src/i686/median_3x3.o cvd_src/i686/utility_float.o cvd_src/i686/utility_byte_differences.o cvd_src/i686/utility_double_int.o cvd_src/fast/fast_7_detect.o cvd_src/fast/fast_7_score.o cvd_src/slower_corner_7.o cvd_src/fast/fast_8_detect.o cvd_src/fast/fast_8_score.o cvd_src/slower_corner_8.o cvd_src/fast/fast_9_detect.o cvd_src/fast/fast_9_score.o cvd_src/fast_corner_9_nonmax.o cvd_src/fast/fast_10_detect.o cvd_src/fast/fast_10_score.o cvd_src/fast/fast_11_detect.o cvd_src/fast/fast_11_score.o cvd_src/slower_corner_11.o cvd_src/fast/fast_12_detect.o cvd_src/fast/fast_12_score.o cvd_src/faster_corner_9.o cvd_src/faster_corner_10.o cvd_src/faster_corner_12.o cvd_src/Linux/dvbuffer3_dc1394v2.o cvd_src/Linux/v4l1buffer.o cvd_src/Linux/v4lbuffer.o cvd_src/Linux/v4l2buffer.o cvd_src/Linux/v4lcontrol.o cvd_src/synchronized.o cvd_src/eventobject.o cvd_src/thread.o cvd_src/thread/runnable_batch.o cvd_src/noarch/posix_memalign.o cvd_src/videodisplay.o cvd_src/glwindow.o cvd_src/gltext.o pnm_src/jpeg.o pnm_src/tiff.o pnm_src/tiffwrite.o pnm_src/png.o cvd_src/globlist.o cvd_src/tensor_voting.o cvd_src/brezenham.o 
 
 ################################################################################
 #
@@ -187,7 +187,7 @@ testprogs: $(TESTPROGS)
 progs: $(PROGS)
 
 
-no:
+docs:
 	doxygen Doxyfile
 
 test-fast:test/fast_test
