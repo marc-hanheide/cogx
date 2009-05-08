@@ -1,12 +1,16 @@
-/**
- * @author Michael Zillich
- * @date February 2009
- *
- * Just a dummy component to drive some vision functionality.
- */
+/* Dummy driver for the object tracker component
+*
+*  @author: Thomas Mörwald
+*  @date: April 2009
+*
+*  This component is an example on how to control the
+*  object tracker by loading a model from ply-file
+*  to the working memory and calling several tracking commands.
+*
+*/
 
-#ifndef DUMMY_DRIVER_H
-#define DUMMY_DRIVER_H
+#ifndef OBJECT_TRACKER_DRIVER_H
+#define OBJECT_TRACKER_DRIVER_H
 
 #include <vector>
 #include <string>
