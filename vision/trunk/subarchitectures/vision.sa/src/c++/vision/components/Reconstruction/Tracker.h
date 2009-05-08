@@ -55,6 +55,7 @@ public:
   double para_b;
   double para_c;
   double para_d;
+  int objnumber;
   
 protected:
   KeyFrame mCurrentKF;            // The current working frame as a keyframe struct
@@ -73,7 +74,7 @@ protected:
   // The following members are used for initial map tracking (to get the first stereo pair and correspondences):
   void TrackForInitialMap();      // This is called by TrackFrame if there is not a map yet.
   enum {TRAIL_TRACKING_NOT_STARTED, 
-	TRAIL_TRACKING_STARTED, 
+	TRAIL_TRACKING_STARTED,   
 	TRAIL_TRACKING_COMPLETE} mnInitialStage;  // How far are we towards making the initial map?
   void TrailTracking_Start();     // First frame of initial trail tracking. Called by TrackForInitialMap.
   int  TrailTracking_Advance();   // Steady-state of initial trail tracking. Called by TrackForInitialMap.
@@ -101,7 +102,7 @@ protected:
   
   bool mbDraw;                    // Should the tracker draw anything to OpenGL?
   
-  // Interface with map maker:
+  // Interface with map maker:1
   int mnFrame;                    // Frames processed since last reset
   int mnLastKeyFrameDropped;      // Counter of last keyframe inserted.
   void AddNewKeyFrame();          // Gives the current frame to the mapmaker to use as a keyframe
@@ -134,10 +135,19 @@ protected:
   std::vector<Command> mvQueuedCommands;
 
   void DrawPointsOnDominantPlane();
+  void DrawPoints_Objs(std::vector<int> PointNumberOfObjects);
+  void DrawPoints_Plane(std::vector<int> PointNumberOfPlane);
+  void DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_number);
+  void DrawBundlingSphere(std::vector<int> PointNumberOfObjects, int objects_number);
+  void DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, std::vector< Vector<3> > Min);
   Vector<2> ProjectW2I (Vector<3> pointW);
-  std::vector<TrackerData*> PointsInlier;
   std::vector<int> PointNumberOfObjects;
   std::vector<int> PointNumberOfPlane;
+
+  void SplitPoints(std::vector<int> &PointNumberOfObjects);
+  double CalDistOfTwoPoints(Vector<3> point1, Vector<3> point2);
+
+  double split_threshold;
 };
 
 #endif
