@@ -12,11 +12,14 @@
 #include <cvd/fast_corner.h>
 #include <cvd/vision.h>
 #include <TooN/wls_cholesky.h>
+#include <TooN/SymEigen.h>
 #include <gvars3/instances.h>
 #include <gvars3/GStringUtil.h>
 
 #include <fstream>
 #include <fcntl.h>
+#include <stack>
+#include <math.h>
 
 
 using namespace CVD;
@@ -40,6 +43,7 @@ Tracker::Tracker(ImageRef irVideoSize, const ATANCamera &c, Map &m, MapMaker &mm
 
   mpSBILastFrame = NULL;
   mpSBIThisFrame = NULL;
+  objnumber = 0;
 
 
   // Most of the initialisation is done in Reset()
@@ -1020,175 +1024,136 @@ ImageRef TrackerData::irImageSize;  // Static member of TrackerData lives here
 
 void Tracker::DrawPointsOnDominantPlane()
 {
-  unsigned int nPoints = mMap.vpPoints.size();
-  if(nPoints < 10)
-    {
-      cout << "  MapMaker: CalcPlane: too few points to calc plane." << endl;
-      return;
-    };
-  
-  int nRansacs = 100;
-  Vector<3> v3BestMean;
-  Vector<3> v3BestNormal;
-
-  int point1 = 0;
-  int point2 = 0;
-  int point3 = 0;
-
-  Zero(v3BestMean);
-  Zero(v3BestNormal);
-  double dBestDistSquared = 9999999999999999.9;
-  
-  for(int i=0; i<nRansacs; i++)
-    {
-      int nA = rand()%nPoints;
-      int nB = nA;
-      int nC = nA;
-      while(nB == nA)
-	nB = rand()%nPoints;
-      while(nC == nA || nC==nB)
-	nC = rand()%nPoints;
-      
-      Vector<3> v3Mean = 0.33333333 * (mMap.vpPoints[nA]->v3WorldPos + 
-				       mMap.vpPoints[nB]->v3WorldPos + 
-				       mMap.vpPoints[nC]->v3WorldPos);
-      
-      Vector<3> v3CA = mMap.vpPoints[nC]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
-      Vector<3> v3BA = mMap.vpPoints[nB]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
-      Vector<3> v3Normal = v3CA ^ v3BA;
-      if(v3Normal * v3Normal  == 0)
-	continue;
-      normalize(v3Normal);
-      
-      double dSumError = 0.0;
-      for(unsigned int i=0; i<nPoints; i++)
+	unsigned int nPoints = mMap.vpPoints.size();
+	if(nPoints < 10)
 	{
-	  Vector<3> v3Diff = mMap.vpPoints[i]->v3WorldPos - v3Mean;
-	  double dDistSq = v3Diff * v3Diff;
-	  if(dDistSq == 0.0)
-	    continue;
-	  double dNormDist = fabs(v3Diff * v3Normal);
-	  
-	  if(dNormDist > 0.05)
-	    dNormDist = 0.05;
-	  dSumError += dNormDist;
-	}
-      if(dSumError < dBestDistSquared)
+		cout << "  MapMaker: CalcPlane: too few points to calc plane." << endl;
+		return;
+	};
+	
+	int nRansacs = 100;
+	Vector<3> v3BestMean;
+	Vector<3> v3BestNormal;
+	
+	int point1 = 0;
+	int point2 = 0;
+	int point3 = 0;
+	
+	Zero(v3BestMean);
+	Zero(v3BestNormal);
+	double dBestDistSquared = 9999999999999999.9;
+	
+	for(int i=0; i<nRansacs; i++)
 	{
-	  dBestDistSquared = dSumError;
-
-	  v3BestMean = v3Mean;
-	  v3BestNormal = v3Normal;
-	  point1 = nA;
-	  point2 = nB;
-	  point3 = nC;
+		int nA = rand()%nPoints;
+		int nB = nA;
+		int nC = nA;
+		while(nB == nA)
+			nB = rand()%nPoints;
+		while(nC == nA || nC==nB)
+			nC = rand()%nPoints;
+		
+		Vector<3> v3Mean = 0.33333333 * (mMap.vpPoints[nA]->v3WorldPos + 
+						mMap.vpPoints[nB]->v3WorldPos + 
+						mMap.vpPoints[nC]->v3WorldPos);
+		
+		Vector<3> v3CA = mMap.vpPoints[nC]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
+		Vector<3> v3BA = mMap.vpPoints[nB]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
+		Vector<3> v3Normal = v3CA ^ v3BA;
+		if(v3Normal * v3Normal  == 0)
+			continue;
+		normalize(v3Normal);
+		
+		double dSumError = 0.0;
+		for(unsigned int i=0; i<nPoints; i++)
+		{
+			Vector<3> v3Diff = mMap.vpPoints[i]->v3WorldPos - v3Mean;
+			double dDistSq = v3Diff * v3Diff;
+			if(dDistSq == 0.0)
+			continue;
+			double dNormDist = fabs(v3Diff * v3Normal);
+			
+			if(dNormDist > 0.05)
+			dNormDist = 0.05;
+			dSumError += dNormDist;
+		}
+		if(dSumError < dBestDistSquared)
+		{
+			dBestDistSquared = dSumError;
+		
+			v3BestMean = v3Mean;
+			v3BestNormal = v3Normal;
+			point1 = nA;
+			point2 = nB;
+			point3 = nC;
+		}
 	}
-    }
-
+	
 ////////////////////////////////use three points to cal plane////
-
-
-   para_a = ( (mMap.vpPoints[point2]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1])*(mMap.vpPoints[point3]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2])-(mMap.vpPoints[point2]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2])*(mMap.vpPoints[point3]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1]) );
-   para_b = ( (mMap.vpPoints[point2]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2])*(mMap.vpPoints[point3]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0])-(mMap.vpPoints[point2]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0])*(mMap.vpPoints[point3]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2]) );
-   para_c = ( (mMap.vpPoints[point2]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0])*(mMap.vpPoints[point3]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1])-(mMap.vpPoints[point2]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1])*(mMap.vpPoints[point3]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0]) );
-   para_d = ( 0-(para_a*mMap.vpPoints[point1]->v3WorldPos[0]+para_b*mMap.vpPoints[point1]->v3WorldPos[1]+para_c*mMap.vpPoints[point1]->v3WorldPos[2]) );
+	para_a = ( (mMap.vpPoints[point2]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1])*(mMap.vpPoints[point3]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2])-(mMap.vpPoints[point2]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2])*(mMap.vpPoints[point3]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1]) );
+	para_b = ( (mMap.vpPoints[point2]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2])*(mMap.vpPoints[point3]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0])-(mMap.vpPoints[point2]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0])*(mMap.vpPoints[point3]->v3WorldPos[2]-mMap.vpPoints[point1]->v3WorldPos[2]) );
+	para_c = ( (mMap.vpPoints[point2]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0])*(mMap.vpPoints[point3]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1])-(mMap.vpPoints[point2]->v3WorldPos[1]-mMap.vpPoints[point1]->v3WorldPos[1])*(mMap.vpPoints[point3]->v3WorldPos[0]-mMap.vpPoints[point1]->v3WorldPos[0]) );
+	para_d = ( 0-(para_a*mMap.vpPoints[point1]->v3WorldPos[0]+para_b*mMap.vpPoints[point1]->v3WorldPos[1]+para_c*mMap.vpPoints[point1]->v3WorldPos[2]) );
 /////////////////////////////////end parameters calculation/////////////
-
-  // Done the ransacs, now collect the supposed inlier set
+// Done the ransacs, now collect the supposed inlier set
 	if (v3BestMean[0] != 0 || v3BestMean[1] != 0 || v3BestMean[2] != 0)
 	{
-		std::vector<TrackerData*>().swap(PointsInlier); //empty the vector
-		//cout<< "found new dominant plane, now store it" << endl;
 		for(unsigned int i=0; i<nPoints; i++)
 		{
 			Vector<3> v3Diff = mMap.vpPoints[i]->v3WorldPos - v3BestMean;
-			
 			double dNormDist = fabs(v3Diff * v3BestNormal);
 			if(dNormDist < 0.05)
-			{
-				MapPoint &p= *(mMap.vpPoints[i]);
-				if(!p.pTData) p.pTData = new TrackerData(&p);
-				TrackerData &TData = *p.pTData;
-				// Project according to current view, and if it's not in the image, skip.
-				TData.Project(mse3CamFromWorld, mCamera); 
-				if(!TData.bInImage)
-				continue;
-				// Calculate camera projection derivatives of this point.
-				TData.GetDerivsUnsafe(mCamera);
-				PointsInlier.push_back(&TData);
 				PointNumberOfPlane.push_back(i);
-			}
 			else
 				PointNumberOfObjects.push_back(i);
-
 		}
-		//cout<< "size of vv3Inliers is " << vv3Inliers.size() << endl;
 	}
 /////////////////////////select points at the same side of the camera//////////
-		Vector<3> v3PoseCam = mse3CamFromWorld.inverse().get_translation();
-		double d_parameter_cam = -(para_a*v3PoseCam[0]+para_b*v3PoseCam[1]+para_c*v3PoseCam[2]);
-		for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	Vector<3> v3PoseCam = mse3CamFromWorld.inverse().get_translation();
+	double d_parameter_cam = -(para_a*v3PoseCam[0]+para_b*v3PoseCam[1]+para_c*v3PoseCam[2]);
+	double max_x = -99999.0;
+	double min_x = 99999.0;
+	double max_y = -99999.0;
+	double min_y = 99999.0;
+	double max_z = -99999.0;
+	double min_z = 99999.0;
+
+	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	{
+		Vector<3> v3Obj = mMap.vpPoints[*it]->v3WorldPos;
+		double d_parameter = -(para_a*v3Obj[0]+para_b*v3Obj[1]+para_c*v3Obj[2]);
+		if ((d_parameter-para_d)*(d_parameter_cam-para_d)<0)  //different side with camera?
+			PointNumberOfObjects.erase(it);
+		else 
 		{
-			Vector<3> v3Obj = mMap.vpPoints[*it]->v3WorldPos;
-			double d_parameter = -(para_a*v3Obj[0]+para_b*v3Obj[1]+para_c*v3Obj[2]);
-			if ((d_parameter-para_d)*(d_parameter_cam-para_d)<0)  //different side with camera?
+			if (20*abs(d_parameter-para_d)<abs(d_parameter_cam-para_d) || abs(d_parameter-para_d)>20*abs(d_parameter_cam-para_d) ) // very close/far to the plane?
 				PointNumberOfObjects.erase(it);
-			else if (abs(d_parameter-para_d)<10*abs(d_parameter_cam-para_d) ||abs(d_parameter-para_d)>10*abs(d_parameter_cam-para_d) ) // very close/far to the plane?
-				PointNumberOfObjects.erase(it);
+			else 
+			{
+				if (v3Obj[0]>max_x) max_x = v3Obj[0];
+				if (v3Obj[0]<min_x) min_x = v3Obj[0];
+				if (v3Obj[1]>max_y) max_y = v3Obj[1];
+				if (v3Obj[1]<min_y) min_y = v3Obj[1];
+				if (v3Obj[2]>max_z) max_z = v3Obj[2];
+				if (v3Obj[2]<min_z) min_z = v3Obj[2];
+			}
 		}
+	}
+	split_threshold = sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/20;
+	SplitPoints(PointNumberOfObjects);
 
+	if (objnumber != 1)
+	{
+		//DrawBundlingSphere(PointNumberOfObjects,objnumber-1);
+		//DrawCuboids(PointNumberOfObjects,objnumber-1);
+		DrawPoints_Objs(PointNumberOfObjects);
+	}
 
-
-	glLineWidth(2);
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-//////////////////Draw the inliers on the dominant plane///////////////////
-for(vector<TrackerData*>::reverse_iterator it = PointsInlier.rbegin();
-	  it!= PointsInlier.rend(); 
-	  it++)
-    {
-	glBegin(GL_LINE_LOOP);
-	glColor3f(1.0,1.0,1.0);//white color
-	(*it)->v2Image[0] = (*it)->v2Image[0]+5;
-	glVertex((*it)->v2Image);
-	(*it)->v2Image[0] = (*it)->v2Image[0]-5;
-	(*it)->v2Image[1] = (*it)->v2Image[1]+5;
-	glVertex((*it)->v2Image);
-	(*it)->v2Image[1] = (*it)->v2Image[1]-5;
-	(*it)->v2Image[0] = (*it)->v2Image[0]-5;
-	glVertex((*it)->v2Image);
-	(*it)->v2Image[0] = (*it)->v2Image[0]+5;
-	(*it)->v2Image[1] = (*it)->v2Image[1]-5;
-	glVertex((*it)->v2Image);
-	(*it)->v2Image[1] = (*it)->v2Image[1]+5;
-	glEnd();
-
-    }
-/////////////////draw the candidants of objects/////////////////////////////////////
-for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
-    {
-	glBegin(GL_LINE_LOOP);
-	glColor3f(0.0,0.0,1.0);//blue color
-	Vector<2> point = ProjectW2I(mMap.vpPoints[*it]->v3WorldPos);
-	point[0] = point[0]+5;
-	glVertex(point);
-	point[0] = point[0]-5;
-	point[1] = point[1]+5;
-	glVertex(point);
-	point[1] = point[1]-5;
-	point[0] = point[0]-5;
-	glVertex(point);
-	point[0] = point[0]+5;
-	point[1] = point[1]-5;
-	glVertex(point);
-	point[1] = point[1]+5;
-	glEnd();
-
-    }
-mMessageForUser << "Blue and white squards refer to potential objects and dominant plane,respectively." << endl;
-      glDisable(GL_BLEND);
+	DrawPoints_Plane(PointNumberOfPlane);
+////////Global vector, need to be released/////////////////////////////	
+	PointNumberOfObjects.clear();
+	PointNumberOfPlane.clear();
+	mMessageForUser << "black squards refer to dominant plane,there might be "<<objnumber-1<<" objects"<< endl;
 }
 
 //////////////////////////////from world coordinant to Image coordinant////////////////////
@@ -1204,6 +1169,264 @@ Vector<2> Tracker::ProjectW2I (Vector<3> pointW)
 	return TData.v2Image;
 }
 
+void Tracker::SplitPoints(std::vector<int> &PointNumberOfObjects)
+{
+	std::vector<int> candidants = PointNumberOfObjects;
+	std::vector<int> one_obj;
+	objnumber = 1;
+	std::stack <int> objstack;
+	PointNumberOfObjects.clear();
 
+	while(!candidants.empty())
+	{
+		mMap.vpPoints[*candidants.begin()]->odjlabel = objnumber;
+		objstack.push(*candidants.begin());
+		one_obj.push_back(*candidants.begin());
+		candidants.erase(candidants.begin());
+		while(!objstack.empty())
+		{
+			int seed = objstack.top();
+			objstack.pop();
+			for(std::vector<int>::iterator it=candidants.begin(); it<candidants.end(); it++)
+			{
+				if (CalDistOfTwoPoints(mMap.vpPoints[seed]->v3WorldPos, mMap.vpPoints[*it]->v3WorldPos)<split_threshold)
+				{
+					mMap.vpPoints[*it]->odjlabel = mMap.vpPoints[seed]->odjlabel;
+					objstack.push(*it);
+					one_obj.push_back(*it);
+					candidants.erase(it);
+				}
+			}
+		}
+		if (one_obj.size()>10)
+		{
+			PointNumberOfObjects.insert(PointNumberOfObjects.begin(),one_obj.begin(),one_obj.end());
+			objnumber++;
+		}
+		one_obj.clear();		
+	}
+}
+
+inline double Tracker::CalDistOfTwoPoints(Vector<3> point1, Vector<3> point2)
+{
+	return sqrt((point1[0]-point2[0])*(point1[0]-point2[0])+(point1[1]-point2[1])*(point1[1]-point2[1])+(point1[2]-point2[2])*(point1[2]-point2[2]));
+}
+void Tracker::DrawPoints_Plane(std::vector<int> PointNumberOfPlane)
+{
+	glLineWidth(2);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//////////////////Draw the inliers on the dominant plane///////////////////
+	for(std::vector<int>::iterator it=PointNumberOfPlane.begin(); it<PointNumberOfPlane.end(); it++)
+	{
+		glBegin(GL_LINE_LOOP);
+		glColor3f(0.0,0.0,0.0);//black color
+		Vector<2> point = ProjectW2I(mMap.vpPoints[*it]->v3WorldPos);
+		point[0] = point[0]+5;
+		glVertex(point);
+		point[0] = point[0]-5;
+		point[1] = point[1]+5;
+		glVertex(point);
+		point[1] = point[1]-5;
+		point[0] = point[0]-5;
+		glVertex(point);
+		point[0] = point[0]+5;
+		point[1] = point[1]-5;
+		glVertex(point);
+		point[1] = point[1]+5;
+		glEnd();
+	}
+	glDisable(GL_BLEND);
+}
+void Tracker::DrawPoints_Objs(std::vector<int> PointNumberOfObjects)
+{
+	glLineWidth(2);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+/////////////////draw the candidants of objects/////////////////////////////////////
+	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	{
+		glBegin(GL_LINE_LOOP);
+		if (mMap.vpPoints[*it]->odjlabel == 1) glColor3f(0.0,0.0,1.0);
+		else if (mMap.vpPoints[*it]->odjlabel == 2) glColor3f(0.0,1.0,0.0);
+		else if (mMap.vpPoints[*it]->odjlabel == 3) glColor3f(0.0,1.0,1.0);
+		else if (mMap.vpPoints[*it]->odjlabel == 4) glColor3f(1.0,0.0,0.0);
+		else if (mMap.vpPoints[*it]->odjlabel == 5) glColor3f(1.0,0.0,1.0);
+		else if (mMap.vpPoints[*it]->odjlabel == 6) glColor3f(1.0,1.0,0.0);
+		else if (mMap.vpPoints[*it]->odjlabel == 7) glColor3f(1.0,1.0,1.0);
+
+		Vector<2> point = ProjectW2I(mMap.vpPoints[*it]->v3WorldPos);
+		point[0] = point[0]+5;
+		glVertex(point);
+		point[0] = point[0]-5;
+		point[1] = point[1]+5;
+		glVertex(point);
+		point[1] = point[1]-5;
+		point[0] = point[0]-5;
+		glVertex(point);
+		point[0] = point[0]+5;
+		point[1] = point[1]-5;
+		glVertex(point);
+		point[1] = point[1]+5;
+		glEnd();
+	}
+	glDisable(GL_BLEND);
+}
+
+void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_number)
+{
+	std::vector< Vector<3> > Max;
+	std::vector< Vector<3> > Min;
+	Vector<3> initial_vector;
+	initial_vector[0] = -9999;
+	initial_vector[1] = -9999;
+	initial_vector[2] = -9999;
+	Max.assign(objects_number, initial_vector);
+	initial_vector[0] = 9999;
+	initial_vector[1] = 9999;
+	initial_vector[2] = 9999;
+	Min.assign(objects_number, initial_vector);
+
+	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	{
+		Vector<3> v3Obj = mMap.vpPoints[*it]->v3WorldPos;
+		int label = mMap.vpPoints[*it]->odjlabel;
+
+		if (v3Obj[0]>Max.at(label-1)[0]) Max.at(label-1)[0] = v3Obj[0];
+		if (v3Obj[0]<Min.at(label-1)[0]) Min.at(label-1)[0] = v3Obj[0];
+
+		if (v3Obj[1]>Max.at(label-1)[1]) Max.at(label-1)[1] = v3Obj[1];
+		if (v3Obj[1]<Min.at(label-1)[1]) Min.at(label-1)[1] = v3Obj[1];
+
+		if (v3Obj[2]>Max.at(label-1)[2]) Max.at(label-1)[2] = v3Obj[2];
+		if (v3Obj[2]<Min.at(label-1)[2]) Min.at(label-1)[2] = v3Obj[2];
+	}
+	for (int i = 0; i<objects_number; i++)
+	{
+		DrawOneCuboid(i,Max,Min);
+	}
+}
+
+void Tracker::DrawBundlingSphere(std::vector<int> PointNumberOfObjects, int objects_number)
+{
+	std::vector< Vector<3> > center;
+	Vector<3> initial_vector;
+	initial_vector[0] = 0;
+	initial_vector[1] = 0;
+	initial_vector[2] = 0;
+	center.assign(objects_number,initial_vector);
+	std::vector<int> amount;
+	amount.assign(objects_number,0);
+	std::vector<double> radius;
+	radius.assign(objects_number,0);
+	std::vector<double> radius_on_image;
+	radius_on_image.assign(objects_number,0);
+
+	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	{
+		Vector<3> v3Obj = mMap.vpPoints[*it]->v3WorldPos;
+		int label = mMap.vpPoints[*it]->odjlabel;
+		center.at(label-1) = center.at(label-1) + v3Obj;
+		amount.at(label-1) = amount.at(label-1) + 1;
+	}
+	for (unsigned int i=0; i<center.size(); i++)
+	center.at(i) = center.at(i)/amount.at(i);
+
+	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	{
+		Vector<3> v3Obj = mMap.vpPoints[*it]->v3WorldPos;
+		int label = mMap.vpPoints[*it]->odjlabel;
+		if (CalDistOfTwoPoints(center.at(label-1), v3Obj) > radius.at(label-1))
+			radius.at(label-1) = CalDistOfTwoPoints(center.at(label-1), v3Obj);
+		Vector<2> cp = ProjectW2I(center.at(label-1));
+		Vector<2> op = ProjectW2I(v3Obj);
+		double dist = sqrt((cp[0]-op[0])*(cp[0]-op[0])+(cp[1]-op[1])*(cp[1]-op[1]));
+		if (dist > radius_on_image.at(label-1))
+			radius_on_image.at(label-1) = dist;
+	}
+	double PI = 3.1415926;
+
+	glLineWidth(1);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor3f(1.0,1.0,1.0);
+	for (unsigned int i=0; i<center.size(); i++)
+	{
+		glBegin(GL_LINE_LOOP);
+		Vector<2> center_on_image = ProjectW2I(center.at(i));
+		for(unsigned int a=0; a<360; a+=5)
+		glVertex2d(radius_on_image.at(i)*cos(a*PI/180)+center_on_image[0], radius_on_image.at(i)*sin(a*PI/180)+center_on_image[1]);
+		glEnd();
+	}
+	glDisable(GL_BLEND);
+}
+
+void Tracker::DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, std::vector< Vector<3> > Min)
+{
+	glLineWidth(1);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//////////////////////top/////////////////////////////////////
+	glBegin(GL_LINE_LOOP);
+	glColor3f(1.0,1.0,1.0);
+
+	glVertex(ProjectW2I(Max.at(objects_number)));
+
+	Vector<3> leftmax = Max.at(objects_number);
+	leftmax[0] = Min.at(objects_number)[0];
+	glVertex(ProjectW2I(leftmax));
+
+	Vector<3> diagonalmax = leftmax;
+	diagonalmax[1] = Min.at(objects_number)[1];
+	glVertex(ProjectW2I(diagonalmax));
+
+	Vector<3> upmax = Max.at(objects_number);
+	upmax[1] = Min.at(objects_number)[1];
+	glVertex(ProjectW2I(upmax));
+
+	glEnd();
+/////////////////////////////bottom///////////////////////
+	glBegin(GL_LINE_LOOP);
+	glColor3f(1.0,1.0,1.0);
+
+	glVertex(ProjectW2I(Min.at(objects_number)));
+
+	Vector<3> rightmin = Min.at(objects_number);
+	rightmin[0] = Max.at(objects_number)[0];
+	glVertex(ProjectW2I(rightmin));
+
+	Vector<3> diagonalmin = rightmin;
+	diagonalmin[1] = Max.at(objects_number)[1];
+	glVertex(ProjectW2I(diagonalmin));
+
+	Vector<3> downmin = Min.at(objects_number);
+	downmin[1] = Max.at(objects_number)[1];
+	glVertex(ProjectW2I(downmin));
+
+	glEnd();
+//////////////////////verticle lines//////////////////////////
+	glBegin(GL_LINES);
+	glVertex(ProjectW2I(Min.at(objects_number)));
+	glVertex(ProjectW2I(diagonalmax));
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex(ProjectW2I(Max.at(objects_number)));
+	glVertex(ProjectW2I(diagonalmin));
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex(ProjectW2I(leftmax));
+	glVertex(ProjectW2I(downmin));	glVertex(ProjectW2I(downmin));
+	glEnd();
+	glBegin(GL_LINES);
+	glVertex(ProjectW2I(upmax));
+	glVertex(ProjectW2I(rightmin));
+	glEnd();
+
+	glDisable(GL_BLEND);
+}
 
 

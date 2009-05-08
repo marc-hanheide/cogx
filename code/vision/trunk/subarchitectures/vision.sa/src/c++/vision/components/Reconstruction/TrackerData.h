@@ -36,7 +36,7 @@ TrackerData(MapPoint *pMapPoint)
   bool bDidSubPix;
   Vector<2> v2Found;      // Pixel coords of found patch (L0)
   double dSqrtInvNoise;   // Only depends on search level..
-  
+
   
   // Stuff for pose update:
   Vector<2> v2Error_CovScaled;
