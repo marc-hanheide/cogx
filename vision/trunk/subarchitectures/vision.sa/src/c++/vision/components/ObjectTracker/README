@@ -1,9 +1,12 @@
-Particle based object tracker using edge geometry models
-@author: Thomas Mörwald, 2009, moerwald@acin.tuwien.ac.at
-@idea of Georg Klein et al, Full-3D Edge Tracking with a Particle Filter
-
+/* Particle based object tracker using edge geometry models
+*
+*  @author: Thomas Mörwald, 2009, moerwald@acin.tuwien.ac.at
+*  @idea of Georg Klein et al, Full-3D Edge Tracking with a Particle Filter
+*  
+*/
 
 Installation prerequieries:
+---------------------------
 
 SDL:
 	libsdl1.2-dev
@@ -20,3 +23,8 @@ OpenGL implementation like:
 	
 	
 // if anything missing please inform me
+
+Usage:
+------
+Look up the implematation and the README of the ObjectTrackerDriver
+

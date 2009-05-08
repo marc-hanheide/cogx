@@ -40,7 +40,13 @@ ObjectTracker::~ObjectTracker(){
 
 void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
-	log("adding VisualObject '%s'", obj->label.c_str());
+	
+	// Test if model is valid
+	if(!obj->model || obj->model->vertices.size()<=0){
+		log("receive VisualObject: no valid model received, adding nothing");
+		return;
+	}
+	
 	
 	// Convert GeometryModel to Model for tracker
 	Model* model = new Model();
@@ -56,6 +62,8 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
+	
+	log("receive VisualObject: model added");
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -65,22 +73,26 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 	switch(track_cmd->cmd){
 		case VisionData::START:
 			if(track){
-				log("allready started tracking");
+				log("start tracking: I'm allready tracking");
 			}else{
-				log("starting tracking");
-				track = true;
+				if(g_Resources->GetNumModels()<=0)
+					log("start tracking: no model to track in memory");
+				else{
+					log("start tracking: ok");
+					track = true;
+				}
 			}
 			break;
 		case VisionData::STOP:
 			if(track){
-				log("stopping tracking");
+				log("stop tracking: ok");
 				track = false;
 			}else{
-				log("allready stopped tracking");
+				log("stop tracking: I'm not tracking");
 			}
 			break;
 		case VisionData::RELEASEMODELS:
-			log("releasing all models");
+			log("release models: releasing all models");
 			g_Resources->ReleaseModel();
 			break;
 		default:
@@ -139,12 +151,12 @@ void ObjectTracker::runComponent(){
  
   // Initialize tracking (parameters for edge-based tracking)
   if(!tracker.init(	cvImage->width, cvImage->height,
-					700,
-					49.0,
-					0.25, 0.165, 0.25,
-					0.0, 40.0,
-					0.0, 0.1,
-					17.0))
+					700,					// number of particles
+					49.0,					// camera field of view in degree
+					0.25, 0.3, 0.25,		// camera position from coordinate frame in meter
+					0.0, 40.0,				// particle noise range rotational in degree
+					0.0, 0.1,				// particle noise range translational in meter
+					17.0))					// edge match tolerance in degree
 	log("Initialisation failed!");
 
   cvReleaseImage(&cvImage);
