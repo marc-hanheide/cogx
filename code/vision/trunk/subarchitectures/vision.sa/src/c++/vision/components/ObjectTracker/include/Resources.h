@@ -96,6 +96,9 @@ public:
     Shader*		GetShader(int id){ return m_shaderList[id]; }
     Camera*		GetCamera(int id){ return m_cameraList[id]; }
     
+    int		GetNumModels(){ return m_modelList.size(); }
+    int		GetNumTextures(){ return m_textureList.size(); }
+
     // Add-functions
     int		AddModel(Model* model, const char* name);
 	int		AddPlyModel(const char* filename);
