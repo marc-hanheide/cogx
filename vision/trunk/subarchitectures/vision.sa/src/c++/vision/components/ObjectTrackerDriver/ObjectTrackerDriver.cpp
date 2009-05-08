@@ -1,7 +1,13 @@
-/**
- * @author Michael Zillich
- * @date February 2009
- */
+/* Dummy driver for the object tracker component
+*
+*  @author: Thomas Mörwald
+*  @date: April 2009
+*
+*  This component is an example on how to control the
+*  object tracker by loading a model from ply-file
+*  to the working memory and calling several tracking commands.
+*
+*/
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "ObjectTrackerDriver.h"
@@ -70,17 +76,21 @@ void ObjectTrackerDriver::runComponent()
   convertParticle2Pose(p, obj->pose);  
   	
   // Add VisualObject to working memory
+  log("add model to working memory: '%s'", obj->label.c_str());
   addToWorkingMemory(newDataID(), obj);
   
   // Send start tracking command
+  log("send tracking command: START");
   VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = VisionData::START;
   addToWorkingMemory(newDataID(), track_cmd);
   
   // Track for 10 seconds
+  log("tracking 20 seconds");
   sleepComponent(20000);
   
   // Send stop tracking command
+  log("send tracking command: STOP");
   track_cmd->cmd = VisionData::STOP;
   addToWorkingMemory(newDataID(), track_cmd);
   
