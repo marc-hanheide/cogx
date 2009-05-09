@@ -83,6 +83,15 @@ module VisionData {
   class TrackingCommand {
     TrackingCommandType cmd;
   };
+
+  /** 
+   * @brief Vision System 3 Commands
+   * @author Andreas Richtsfeld
+   */
+  enum ObjectDetectionCommandType{ DSTART, DSTOP};
+  class ObjectDetectionCommand {
+    ObjectDetectionCommandType cmd;
+  };
 };
 
 #endif
