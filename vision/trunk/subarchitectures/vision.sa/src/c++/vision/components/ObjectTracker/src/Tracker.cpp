@@ -45,12 +45,12 @@ void Tracker::particle_motion(float pow_scale, Particle* p_ref, unsigned int dis
 	float w = m_particles->getMax()->w;
 	Particle noise_particle;
 		
-	noise_particle.rX = params.noise_rot_max * pow_scale * (1-w);
-	noise_particle.rY = params.noise_rot_max * pow_scale * (1-w);
-	noise_particle.rZ = params.noise_rot_max * pow_scale * (1-w);
-	noise_particle.tX = params.noise_trans_max * pow_scale * (1-w);
-	noise_particle.tY = params.noise_trans_max * pow_scale * (1-w);
-	noise_particle.tZ = params.noise_trans_max * pow_scale * (1-w) * 3.0;
+	noise_particle.rX = params.noise_rot_max * pow_scale * (1.2-w);
+	noise_particle.rY = params.noise_rot_max * pow_scale * (1.2-w);
+	noise_particle.rZ = params.noise_rot_max * pow_scale * (1.2-w);
+	noise_particle.tX = params.noise_trans_max * pow_scale * (1.2-w);
+	noise_particle.tY = params.noise_trans_max * pow_scale * (1.2-w);
+	noise_particle.tZ = params.noise_trans_max * pow_scale * (1.2-w) * 3.0;
 	
     if(!m_lock){
    		m_particles->perturb(noise_particle, p_ref, distribution);
