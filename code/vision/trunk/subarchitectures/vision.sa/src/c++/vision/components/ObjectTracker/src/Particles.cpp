@@ -167,6 +167,9 @@ float Particles::noise(float rMin, float rMax, unsigned int precision, unsigned 
 Particles::Particles(int num, Particle p){
 	m_num_particles = num;
 	id_max = 0;
+	v_max = 0;
+	d_max = 0;
+	w_max = 1.0;
 	m_frustum_offset = 0.0;
 	
 	m_particlelist = (Particle*)malloc(sizeof(Particle) * num);
@@ -278,25 +281,31 @@ void Particles::endCountV(){
 void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_particles){
 	unsigned int v, d;
 	int id;
-	v_max = 0;
 	id_max = 0;
 	
 	for(id=0; id<num_particles; id++){
+		// Get number of pixels from GL_OCCLUSION_QUERY
 		glGetOcclusionQueryuivNV(queryV[id], GL_PIXEL_COUNT_NV, &v);
 		glGetOcclusionQueryuivNV(queryD[id], GL_PIXEL_COUNT_NV, &d);
 		
+		// get maximum visible pixles of edge representation
 		if(v>v_max)
 			v_max = v;
-			
-		if(v != 0)
-			m_particlelist[id].w = float(d)/float(v);// + float(d)/1000;
 		
+		// Likelihood calculation formula
+		if(v != 0)
+			m_particlelist[id].w = (float(d)/float(v) + float(d)/float(v_max)) / w_max;
+		
+		// store id of maximum likely particle
 		if(m_particlelist[id].w > m_particlelist[id_max].w)
 			id_max = id;
-						
-		//printf("d: %f, v: %f, w: %f\n", float(d), float(v), m_particlelist[id].w);
+			
+		// w_max scales likelihood to range [0 ... 1]
+		if(m_particlelist[id].w>1.0)
+			w_max = m_particlelist[id].w * w_max;
 	}
 	
+	// sort particles by likelihood and average most likely particles
 	if(num_avaraged_particles > 1){
 		std::sort(m_particlelist, m_particlelist+m_num_particles);
 		std::reverse(m_particlelist, m_particlelist+m_num_particles);
@@ -321,15 +330,7 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		
 		m_particlelist[0] = p;
 		id_max = 0;
-			
-		//printf("\n\n\n");
-		//for(id=0; id<m_num_particles; id++){
-		//	printf("[%i] %f\n", id, m_particlelist[id].w);
-		//}
 	}
-	
-	
-	//printf("w_0: %f, w_max: %f\n", m_particlelist[0].w, m_particlelist[id_max].w);
 }
 
 void Particles::setAll(Particle p){

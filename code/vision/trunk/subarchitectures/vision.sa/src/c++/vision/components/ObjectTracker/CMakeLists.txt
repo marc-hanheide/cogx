@@ -11,7 +11,7 @@ link_directories(/usr/local/lib)
 add_definitions(-DGL_GLEXT_PROTOTYPES)
 
 # Set the sources
-SET(SRC src/Camera.cpp src/Frustum.cpp src/ImageProcessor.cpp src/TM_Matrix3.cpp src/Model.cpp src/OpenGLControl.cpp src/Particles.cpp src/ply.c src/PlyModel.cpp src/Resources.cpp src/Shader.cpp src/ShaderUtils.cpp src/Texture.cpp src/Timer.cpp src/Tracker.cpp src/TM_Vector3.cpp)
+SET(SRC src/Camera.cpp src/Frustum.cpp src/ImageProcessor.cpp src/Kalman.cpp src/TM_Matrix3.cpp src/Model.cpp src/OpenGLControl.cpp src/Particles.cpp src/ply.c src/PlyModel.cpp src/Resources.cpp src/Shader.cpp src/ShaderUtils.cpp src/Texture.cpp src/Timer.cpp src/Tracker.cpp src/TM_Vector3.cpp)
 #SET(SRC src/*.cpp)
 SET(SOURCES ObjectTracker.cpp ${SRC})
 
