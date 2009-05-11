@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <GL/gl.h>
-//#include <highgui.h>
 
 #include "Timer.h"
 #include "OpenGLControl.h"
 #include "Resources.h"
+#include "Kalman.h"
 #include "math.h"
 #include "mathlib.h"
 
@@ -24,10 +24,11 @@ private:
 		float camera_initial_position_y;	// camera initial position in y in meters
 		float camera_initial_position_z;	// camera initial position in z in meters
 		
-		float	noise_rot_min, 				// minimal noise for rotation of particles in degrees
-				noise_rot_max;				// maximal noise for rotation of particles in degrees
-    	float 	noise_trans_min,			// minimal noise for translation of particles in meters
-    			noise_trans_max;			// maximal noise for translation of particles in meters
+		float	noise_rot_max;				// initial standard deviation for rotational noise of particles in degrees
+    	float 	noise_trans_max;			// initial standard deviation for translation noise of particles in meters
+    	
+    	int cascade_stages;					// number of cascading stages
+    	int cascade_mean_max;				// number of most likely particles to average
     	
     	float edge_tolerance;				// maximal angular deviation of edges to match in degrees
     	
@@ -37,6 +38,13 @@ private:
 	
 	Timer m_timer;
 	
+	float m_zk[6];
+	float m_xk[6];
+	Kalman m_kalman;
+	Timer m_kalmantimer;
+	FILE* pFile;
+	
+	
 	Parameter params;
 
 	ImageProcessor* m_ip;
@@ -44,6 +52,7 @@ private:
 	Texture* m_tex_frame;
 	Texture* m_tex_frame_ip;
 	Texture* m_tex_frame_thinn;
+	Texture* m_tex_frame_spread_1;
 	Texture* m_tex_model;
 	Texture* m_tex_model_ip;
 	Model* m_model;
@@ -60,12 +69,14 @@ private:
 	bool m_lock;
 	bool m_showparticles;
 	bool m_showmodel;
+	bool m_kalman_enabled;
+	bool m_cascaded;
+	bool m_draw_coordinates;
 	float time_tracking;
 	
 	void image_processing_texture(unsigned char* image);
 	void image_processing_edge(unsigned char* image);
-	void particle_motion_texture(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
-	void particle_motion_edge(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
+	void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
 	void model_processing();
 	void particle_processing_texture(int num_particles, unsigned int num_avaraged_particles=1);
 	void particle_processing_edge(int num_particles, unsigned int num_avaraged_particles=1);
@@ -82,22 +93,26 @@ public:
 	bool init(	int width, int height,
 				int nop=500,
 				float fovy=49.0,
-				float cipX=0.0, float cipY=0.165, float cipZ=0.34,
-				float n_r_min=0.0, float n_r_max=40.0,
-				float n_t_min=0.0, float n_t_max=0.05,
+				float cipX=0.3, float cipY=0.3, float cipZ=0.3,
+				float n_r_max=45.0,
+				float n_t_max=0.1,
+				int cs = 4, int cmm = 150,
 				float et=20.0,
-				int vw=256, int vh=256);
+				int vw=128, int vh=128,
+				bool kal=true,
+				bool dc = false);
 				
 	bool trackTexture(	unsigned char* image,
 						Model* model,
-						Particle* p_estimate,
-						Particle* p_result);
+						Particle p_estimate,
+						Particle& p_result);
 	
 	bool trackEdge(	unsigned char* image,
 					Model* model,
-					Particle& p_estimate,
+					Particle p_estimate,
 					Particle& p_result);
 	
+	void renderCoordinates();
 	bool render(unsigned char* image);
 	bool render(Model* model); 
 	bool run();

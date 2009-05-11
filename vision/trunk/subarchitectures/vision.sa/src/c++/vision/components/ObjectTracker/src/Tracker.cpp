@@ -15,11 +15,10 @@ void Tracker::image_processing_texture(unsigned char* image){
 	m_ip->gauss(m_tex_frame, m_tex_frame_ip);
 	m_ip->sobel(m_tex_frame_ip, m_tex_frame_ip);
 	m_ip->thinning(m_tex_frame_ip, m_tex_frame_ip);
-	m_ip->spreading(m_tex_frame_ip, m_tex_frame_thinn);
-	m_ip->spreading(m_tex_frame_thinn, m_tex_frame_ip);
 	m_ip->spreading(m_tex_frame_ip, m_tex_frame_ip);
-	//m_ip->spreading(m_tex_frame_ip, m_tex_frame_ip);
-	//m_ip->render(m_tex_frame);
+	m_ip->spreading(m_tex_frame_ip, m_tex_frame_ip);
+	m_ip->spreading(m_tex_frame_ip, m_tex_frame_ip);
+	//m_ip->render(m_tex_frame_thinn);
 }
 
 // Process camera image (gauss, sobel, thinning, spreading, rendering)
@@ -41,40 +40,21 @@ void Tracker::image_processing_edge(unsigned char* image){
 }
 
 // Calculate motion function (noise) and perturb particles
-void Tracker::particle_motion_texture(float pow_scale, Particle* p_ref, unsigned int distribution){
+void Tracker::particle_motion(float pow_scale, Particle* p_ref, unsigned int distribution){
 	// Perturbing noise function for rotation (powR) and translation (powT)
 	float w = m_particles->getMax()->w;
 	Particle noise_particle;
-	
-	if(m_particles->getMax()->w > 0.6)
-		pow_scale = 0.1;
 		
-	noise_particle.rX = params.noise_rot_min + (params.noise_rot_max - params.noise_rot_min) * (1-w) * pow_scale * 2.0;
-	noise_particle.rY = params.noise_rot_min + (params.noise_rot_max - params.noise_rot_min) * (1-w) * pow_scale * 2.0;
-	noise_particle.rZ = params.noise_rot_min + (params.noise_rot_max - params.noise_rot_min) * (1-w) * pow_scale;
-	noise_particle.tX = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
-	noise_particle.tY = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
-	noise_particle.tZ = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale * 5.0;
+	noise_particle.rX = params.noise_rot_max * pow_scale * (1-w);
+	noise_particle.rY = params.noise_rot_max * pow_scale * (1-w);
+	noise_particle.rZ = params.noise_rot_max * pow_scale * (1-w);
+	noise_particle.tX = params.noise_trans_max * pow_scale * (1-w);
+	noise_particle.tY = params.noise_trans_max * pow_scale * (1-w);
+	noise_particle.tZ = params.noise_trans_max * pow_scale * (1-w) * 3.0;
 	
     if(!m_lock){
    		m_particles->perturb(noise_particle, p_ref, distribution);
    	}
-}
-
-// Calculate motion function (noise) and perturb particles
-void Tracker::particle_motion_edge(float pow_scale, Particle* p_ref, unsigned int distribution){
-	// Perturbing noise function for rotation (powR) and translation (powT)
-	float w = m_particles->getMax()->w;
-	Particle noise_particle;
-	
-	noise_particle.rX = params.noise_rot_min + (params.noise_rot_max - params.noise_rot_min) * (1-w) * pow_scale;
-	noise_particle.rY = params.noise_rot_min + (params.noise_rot_max - params.noise_rot_min) * (1-w) * pow_scale;
-	noise_particle.rZ = params.noise_rot_min + (params.noise_rot_max - params.noise_rot_min) * (1-w) * pow_scale;
-	noise_particle.tX = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
-	noise_particle.tY = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
-	noise_particle.tZ = params.noise_trans_min + (params.noise_trans_max - params.noise_trans_min) * (1-w) * pow_scale;
-	
-	m_particles->perturb(noise_particle, p_ref, distribution);
 }
 
 // Draw Model to screen, extract modelview matrix, perform imageprocessing for model
@@ -116,16 +96,6 @@ void Tracker::model_processing(){
 
 // Draw each particle, count matching pixels, calculate likelihood for texture tracking
 void Tracker::particle_processing_texture(int num_particles, unsigned int num_avaraged_particles){
-
-	// Viewport adjustment
-	int v = m_particles->getVMax();
-	if( v>300 ){
-		params.viewport_width = params.viewport_width * 0.5;
-		params.viewport_height = params.viewport_height * 0.5;
-	}else if( v<100){
-		params.viewport_width = params.viewport_width * 2;
-		params.viewport_height = params.viewport_height * 2;
-	}
 	
 	// Set perspective mode and smaller viewport
 	m_opengl.RenderSettings(false, false);	// (color-enabled, depth-enabled)
@@ -164,16 +134,6 @@ void Tracker::particle_processing_texture(int num_particles, unsigned int num_av
 // Draw each particle, count matching pixels, calculate likelihood for edge tracking
 void Tracker::particle_processing_edge(int num_particles, unsigned int num_avaraged_particles){
 
-	// Viewport adjustment
-	int v = m_particles->getVMax();
-	if( v>300 ){
-		params.viewport_width = params.viewport_width * 0.5;
-		params.viewport_height = params.viewport_height * 0.5;
-	}else if( v<100){
-		params.viewport_width = params.viewport_width * 2;
-		params.viewport_height = params.viewport_height * 2;
-	}
-	
 	m_cam_perspective->Activate();
 	m_tex_frame_ip->bind();	// bind camera image
 	m_model->setTexture(0);
@@ -217,25 +177,24 @@ void Tracker::particle_processing_edge(int num_particles, unsigned int num_avara
 // Draw result of texture tracking (particle with maximum likelihood)
 void Tracker::draw_result_texture(){
 	
-	if(m_showmodel){
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glMultMatrixf(m_modelview);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glMultMatrixf(m_modelview);
+
+	m_opengl.ClearBuffers(true, true);
+	m_opengl.RenderSettings(true, false);
+	glDisable(GL_DEPTH_TEST);
 	
-		m_opengl.ClearBuffers(true, true);
-		m_opengl.RenderSettings(true, false);
-		glDisable(GL_DEPTH_TEST);
-		
-		//m_shadeTextureCompare->bind();
-		//m_shadeTextureCompare->setUniform("analyze", true);
-		//m_shadeTextureCompare->setUniform("compare", true);
-		m_model->restoreTexture();
-		m_model->drawFaces();
-		//m_shadeTextureCompare->unbind();
-		
-		glEnable(GL_DEPTH_TEST);
-		m_opengl.RenderSettings(true, true);
-	}
+	if(!m_showmodel) m_shadeTextureCompare->bind();
+	if(!m_showmodel) m_shadeTextureCompare->setUniform("analyze", true);
+	if(!m_showmodel) m_shadeTextureCompare->setUniform("compare", true);
+	if(m_showmodel) m_model->restoreTexture();
+	m_model->drawFaces();
+	if(!m_showmodel) m_shadeTextureCompare->unbind();
+	
+	glEnable(GL_DEPTH_TEST);
+	m_opengl.RenderSettings(true, true);
+
 }
 
 // Draw result of edge tracking (particle with maximum likelihood)
@@ -275,6 +234,27 @@ bool Tracker::inputs(){
             switch(event.key.keysym.sym){
 				case SDLK_ESCAPE:
 					return false;
+					break;
+				case SDLK_c:
+					m_cascaded = !m_cascaded;
+					printf("Cascaded: %i\n", m_cascaded);
+					break;
+				case SDLK_f:
+					m_draw_coordinates = !m_draw_coordinates;
+					printf("Draw Coordinates: %i\n", m_draw_coordinates);
+					break;
+				case SDLK_k:
+					m_kalman_enabled = !m_kalman_enabled;
+					if(m_kalman_enabled){
+						pmax = m_particles->getMax();
+						m_zk[0] = pmax->rX; m_zk[1] = pmax->rY; m_zk[2] = pmax->rZ; 
+						m_zk[3] = pmax->tX; m_zk[4] = pmax->tY; m_zk[5] = pmax->tZ;
+						m_kalman.init();
+						m_kalman.setX(m_zk);
+						printf("Kalman filter enabled\n");
+					}else{
+						printf("Kalman filter disabled\n");
+					}
 					break;
 				case SDLK_l:
 					m_lock = !m_lock;
@@ -320,7 +300,12 @@ bool Tracker::inputs(){
 					break;					
 				case SDLK_z:
 					printf("Zero particles\n");
-					m_particles->setAll(Particle(0.0));
+					p = Particle(0.0);
+					m_zk[0] = p.rX; m_zk[1] = p.rY; m_zk[2] = p.rZ; 
+					m_zk[3] = p.tX; m_zk[4] = p.tY; m_zk[5] = p.tZ;
+					m_kalman.init();
+					m_kalman.setX(m_zk);
+					m_particles->setAll(p);
 					break;
                 default:
 					break;
@@ -343,6 +328,11 @@ Tracker::Tracker(){
 	m_lock = true;
 	m_showparticles = false;
 	m_showmodel = true;
+	m_kalman_enabled = true;
+	m_cascaded = true;
+	m_draw_coordinates = false;
+	
+	pFile = fopen("../Results/analysis/kalman.txt","w");
 }
 
 Tracker::~Tracker(){
@@ -353,10 +343,13 @@ bool Tracker::init(	int width, int height,
 					int nop,
 					float fovy,
 					float cipX, float cipY, float cipZ,
-					float n_r_min, float n_r_max,
-					float n_t_min, float n_t_max,
+					float n_r_max,
+					float n_t_max,
+					int cs, int cmm,
 					float et,
-					int vw, int vh)
+					int vw, int vh,
+					bool kal,
+					bool dc)
 {	
 	// Parameter:
 	params.width = float(width);
@@ -366,13 +359,16 @@ bool Tracker::init(	int width, int height,
 	params.camera_initial_position_x = cipX;
 	params.camera_initial_position_y = cipY;
 	params.camera_initial_position_z = cipZ;
-	params.noise_rot_min = n_r_min;
 	params.noise_rot_max = n_r_max;
-	params.noise_trans_min = n_t_min;
 	params.noise_trans_max = n_t_max;
+	params.cascade_stages = cs;
+	params.cascade_mean_max = cmm;
 	params.edge_tolerance = et;
 	params.viewport_width = vw;
 	params.viewport_height = vh;
+	
+	m_kalman_enabled = kal;
+	m_draw_coordinates = dc;
 	
 	m_opengl.Init();
 	
@@ -397,10 +393,6 @@ bool Tracker::init(	int width, int height,
 	if((id = g_Resources->AddTexture(NULL, "m_tex_model_ip")) == -1)
 		return false;
 	m_tex_model_ip = g_Resources->GetTexture(id);
-	
-	if((id = g_Resources->AddTexture(NULL, "m_tex_frame_thinn")) == -1)
-		return false;
-	m_tex_frame_thinn = g_Resources->GetTexture(id);
 	
 	// Cameras
 	if((id = g_Resources->AddCamera("cam_ortho")) == -1)
@@ -450,8 +442,8 @@ bool Tracker::init(	int width, int height,
 // Tracking function for texture tracking
 bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, unsigned byte each)
 							Model* model,				// tracking model (textured, vertexlist, facelist) 
-							Particle* p_estimate,		// position estimate of model (R,t)
-							Particle* p_result)		// storage to write tracked position
+							Particle p_estimate,		// position estimate of model (R,t)
+							Particle& p_result)		// storage to write tracked position
 {
 	if(!image || !model){
 		printf("[Tracker::trackTexture] Error model not valid\n");
@@ -471,37 +463,55 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	m_ip->render(m_tex_frame);
 	
 	// Overwrite maximum particle (reference particle) with given estimate
-	Particle* p_max = m_particles->getMax();
-	if(p_estimate)
-		p_max = p_estimate;
-		
-	// Draw particles and evaluate match likelihood
-	m_tex_frame_ip->bind(1);	// bind camera image
-	particle_processing_texture(1);		// draw one particle to see if it still matches (object not moved)
+	//Particle* p_max = m_particles->getMax();
+	//if(p_estimate)
+	//	p_max = p_estimate;
 	
-	if(m_particles->getMax()->w < 0.75){
-		particle_motion_texture(1.0, NULL, GAUSS);
-		particle_processing_texture(params.number_of_particles * 0.5, 5);
-		particle_motion_texture(0.1, NULL, NORMAL);
-		particle_processing_texture(params.number_of_particles * 0.25, 5);
+	
+	// Setup cascading parameters
+	int range;
+	float distribution;
+	int mean;
+	range = params.number_of_particles/params.cascade_stages;
+	m_tex_frame_ip->bind(1);
+	
+	// Cascaded particle filter (motion, likelihood, cascading)
+	for(int i=0; i<params.number_of_particles; i+=range){
+		distribution = (1-float(i)/float(params.number_of_particles));
+		mean = floor(float(i+range) * params.cascade_mean_max/float(params.number_of_particles));
 		
-		particle_motion_texture(0.1, NULL, GAUSS);
-		particle_processing_texture(params.number_of_particles * 0.125, 5);
-		
-		
-		m_tex_frame_thinn->bind(1);	// bind image with thinn edges
-		particle_motion_texture(0.1, NULL, GAUSS);
-		particle_processing_texture(params.number_of_particles * 0.125, 1);
-		
+		particle_motion(distribution, NULL, GAUSS);
+		particle_processing_texture(range, params.cascade_mean_max);
 	}
 	
+	// Kalman filter
+	if(m_kalman_enabled){
+		Particle* pm = m_particles->getMax();
+		m_zk[0] = pm->rX; m_zk[1] = pm->rY; m_zk[2] = pm->rZ; 
+		m_zk[3] = pm->tX; m_zk[4] = pm->tY; m_zk[5] = pm->tZ; 
+		m_kalman.run(m_zk, m_kalmantimer.Update(), m_xk);
+		float apptime = m_kalmantimer.GetApplicationTime();
+		
+		// Put result to file
+		//fprintf(	pFile,	"%f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
+		//			apptime,
+		//			pm->rX, pm->rY, pm->rZ, pm->tX, pm->tY, pm->tZ,
+		//			m_xk[0], m_xk[1], m_xk[2], m_xk[3], m_xk[4], m_xk[5]);
+			
+		pm->rX = m_xk[0]; pm->rY = m_xk[1]; pm->rZ = m_xk[2]; 
+		pm->tX = m_xk[3]; pm->tY = m_xk[4]; pm->tZ = m_xk[5]; 
+	}
+	
+	
 	// Copy result to output
-	if(p_result)
-		*p_result = *m_particles->getMax();
+	//if(p_result)
+	//	*p_result = *m_particles->getMax();
 	
 	// Draw result
 	draw_result_texture();
-	
+	if(m_draw_coordinates)
+		renderCoordinates();
+		
 	time_tracking = m_timer.Update();
 	
 	SDL_GL_SwapBuffers();
@@ -512,7 +522,7 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 
 bool Tracker::trackEdge(	unsigned char* image,
 							Model* model,
-							Particle& p_estimate,
+							Particle p_estimate,
 							Particle& p_result)		// storage to write tracked position
 {
 	if(!image || !model){
@@ -524,16 +534,41 @@ bool Tracker::trackEdge(	unsigned char* image,
 	// Process image from camera (edge detection)
 	image_processing_edge(image);
 	
-	if(!m_lock){ // tracker lock
-		// Overwrite maximum particle (reference particle) with given estimate
-		Particle* p_max = m_particles->getMax();
-		*p_max = p_estimate;
+	// Overwrite maximum particle (reference particle) with given estimate
+	Particle* p_max = m_particles->getMax();
+	*p_max = p_estimate;
+	
+	// Setup cascading parameters
+	int range;
+	float distribution;
+	int mean;
+	range = params.number_of_particles/params.cascade_stages;
+	
+	// Draw particles and evaluate match likelihood
+	for(int i=0; i<params.number_of_particles; i+=range){
+		distribution = (1-float(i)/float(params.number_of_particles));
+		mean = floor(float(i+range) * params.cascade_mean_max/float(params.number_of_particles));
 		
-		// Draw particles and evaluate match likelihood
-		particle_motion_edge(1.0);
-		particle_processing_edge(params.number_of_particles * 0.75, 1);
-		particle_motion_edge(0.2, NULL, GAUSS);
-		particle_processing_edge(params.number_of_particles * 0.25, 20);
+		particle_motion(distribution, NULL, GAUSS);
+		particle_processing_edge(range, params.cascade_mean_max);
+	}
+	
+	// Kalman filter
+	if(m_kalman_enabled){
+		Particle* pm = m_particles->getMax();
+		m_zk[0] = pm->rX; m_zk[1] = pm->rY; m_zk[2] = pm->rZ; 
+		m_zk[3] = pm->tX; m_zk[4] = pm->tY; m_zk[5] = pm->tZ; 
+		m_kalman.run(m_zk, m_kalmantimer.Update(), m_xk);
+		float apptime = m_kalmantimer.GetApplicationTime();
+		
+		// Put result to file
+		//fprintf(	pFile,	"%f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
+		//			apptime,
+		//			pm->rX, pm->rY, pm->rZ, pm->tX, pm->tY, pm->tZ,
+		//			m_xk[0], m_xk[1], m_xk[2], m_xk[3], m_xk[4], m_xk[5]);
+			
+		pm->rX = m_xk[0]; pm->rY = m_xk[1]; pm->rZ = m_xk[2]; 
+		pm->tX = m_xk[3]; pm->tY = m_xk[4]; pm->tZ = m_xk[5]; 
 	}
 	
 	// Copy result to output
@@ -541,15 +576,81 @@ bool Tracker::trackEdge(	unsigned char* image,
 	
 	// Draw result
 	draw_result_edge();
+	if(m_draw_coordinates)
+		renderCoordinates();
 	
 	time_tracking = m_timer.Update();
-	
+		
 	SDL_GL_SwapBuffers();
 	
 	return inputs();
 
 }
 
+
+void Tracker::renderCoordinates(){
+	m_opengl.RenderSettings(true, false);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	m_cam_perspective->Activate();
+	
+	float l1 = 0.06;
+	float l2 = 0.02;
+	float b1 = 0.001;
+	float b2 = 0.003;
+	
+	// X - Axis
+	glPushMatrix();
+		glColor3f(1.0,0.0,0.0);
+		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(l1,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1-b2);
+			glVertex3f(l1+l2,	0.0,	0.0);
+			glVertex3f(l1,		0.0,	 b1+b2);
+		glEnd();
+	glPopMatrix();
+		
+	// Y - Axis
+	glPushMatrix();
+		glColor3f(0.0,1.0,0.0);
+		glRotatef(90, 0.0, 0.0, 1.0);
+		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(l1,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1-b2);
+			glVertex3f(l1+l2,	0.0,	0.0);
+			glVertex3f(l1,		0.0,	 b1+b2);
+		glEnd();
+	glPopMatrix();
+	
+	// Z - Axis
+	glPushMatrix();
+		glColor3f(0.0,0.0,1.0);
+		glRotatef(90, 0.0, 1.0, 0.0);
+		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(l1,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	 b1);
+			glVertex3f(0.0,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1);
+			glVertex3f(l1,		0.0,	-b1-b2);
+			glVertex3f(l1+l2,	0.0,	0.0);
+			glVertex3f(l1,		0.0,	 b1+b2);
+		glEnd();
+	glPopMatrix();
+	
+	
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	
+}
 
 bool Tracker::render(unsigned char* image){
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
@@ -573,6 +674,7 @@ bool Tracker::render(Model* model){
 }
 	
 bool Tracker::release(){
+	fclose(pFile);
 	return true;
 }
 

@@ -46,6 +46,8 @@ private:
 	int m_num_particles;
 	int id_max;
 	int v_max;
+	int d_max;
+	float w_max;
 	float m_frustum_offset;
 	
 	unsigned int* queryD; // query for all edge pixel count with NV_Occlusion_Query
