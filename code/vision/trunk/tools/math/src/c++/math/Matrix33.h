@@ -632,12 +632,12 @@ inline void toAngleAxis(const Matrix33 &m, double& angle, Vector3& axis)
   // otherwise be missed if the trace is very close to but not
   // exactly -1.
   const double EPS_ANGLE = 1e-6;
-  angle = acos((Trace(m) - 1.) / 2.);
+  angle = acos((trace(m) - 1.) / 2.);
   // if angle is 0
   if(equals(angle, 0., EPS_ANGLE))
   {
     // for zero angle, axis direction does not matter, any unit vector is fine
-    axis.Set(1., 0., 0.);
+    set(axis, 1., 0., 0.);
   }
   // if angle is PI
   else if(equals(angle, M_PI, EPS_ANGLE))
