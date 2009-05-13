@@ -130,6 +130,8 @@ module VisionData {
   class SOI {
     cogx::Math::Sphere3 boundingSphere;
     cogx::Math::Box3 boundingBox;
+    // time the SOI was last changed
+    cast::cdl::CASTTime time;
   };
 
 };
