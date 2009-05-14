@@ -1,0 +1,36 @@
+#! /usr/bin/env python
+# -*- coding: latin-1 -*-
+
+import sys, os, os.path
+
+absolute_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+DOMPATH = "domains"
+TMPL_DOMAIN = ".domain_template"
+DUMMY = "Dummy"
+
+def usage():
+    print "usage: create_domain DomainName [AgentClass]"
+    print "[Domain will be called domainname (lower case) and the main agent"
+    print " class is AgentClassAgent -- or DomainNameAgent if AgentClass is not given.]"
+    
+def main(domain_name, agent_class):
+    path = os.path.join(absolute_path, DOMPATH, domain_name.lower())
+    tmpl_path = os.path.join(absolute_path, DOMPATH, TMPL_DOMAIN)
+    if not os.path.exists(path):
+        os.mkdir(path)
+    cmd = "cp -r %s/* %s/" % (tmpl_path, path)
+    os.system(cmd)
+    print "Execute command:", cmd
+    cmd = "domains/change_name %s %s %s" % (DUMMY, domain_name, domain_name.lower())
+    os.system(cmd)
+    print "Execute command:", cmd
+    
+if __name__ == "__main__":
+    import sys
+    args = sys.argv[1:]
+    if not (1 <= len(args) <= 2):
+        usage()
+        sys.exit()
+    domain_name = args[0]
+    agent_class = args[len(args)-1]+"Agent"
+    main(domain_name, agent_class)

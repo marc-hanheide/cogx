@@ -1,0 +1,87 @@
+/*!
+\page main_featureLearning  Feature Learning Components
+
+\section desc_featureLearning  Description
+
+Feature Learning is actually made of two CAST components: FeatureExtractor
+and Recogniser. Most of the code is written in Matlab, while the CAST plug-ins
+are written in C++. The Matlab::Matrix structure is used for translation between IDL and Matlab data.
+
+
+\section conf_featureLearning  Configuration
+
+The configuration is done with 'ccmake'. To include the Feature Learning module into
+the build, the option 'BUILD_FEATURE_LEARNING' must  be 'ON'. This option will copy
+the prebuilt binaries of the Feature Learning modules to the output directory. This 
+is useful for users that don't have the Matlab Compiler Toolbox. Currently the prebuilt
+binaries are available for the Linux x86 platform (glnx86).
+
+If the user has Matlab Compiler Toolbox installed, she can build the modules from source.
+The advanced option  'BUILD_FEATURE_LEARNING_CTF' must be set to 'ON'.
+The build is performed in two steps:
+   
+   1. Matlab code is compiled into a Shared Object (.so), a Component Technology 
+       File (.ctf) and a header file (.h)
+       
+   2. The C++ modules that use the Matlab binaries from step 1 are compiled.
+
+For step 2 to work, the files from step 1 need to be published first with make install.
+When confiugring the build with 'ccmake' you may get a warning if the header
+file from step 1 is not in the output directory:
+
+         FeatureLearningCtf header not installed, yet.
+            Run 'make install' to generate and install it.
+            Then run 'ccmake' again.
+            (For now, FeatureLearning won't be built)
+            (see also: BUILD_FEATURE_LEARNING_CTF)
+
+This should only happen the first time the Feature Learning modules are being
+built. After a successfull 'make install' the required header should be present
+in the output directory and 'ccmake' should not complain any more.
+
+When you recieve the above warning, generate the makefiles (press g) and follow the
+instructions from the warning. 
+
+When building Feature Learning modules from source, 'ccmake' must find the path
+to the files 'mcc' and 'mbuild'. For this to work, the FindMatlabCompiler.cmake tool was 
+added to /tools/CMakeModules.
+If you know you have the Matlab Compiler Toolbox installed, but 'ccmake' doesn't find it
+you can add the required paths to the PATH environment variable or you can set the 
+following advanced options manually:
+   MATLAB_BIN_MCC
+   MATLAB_BIN_MBUILD
+
+The build system must also find the headers from the Matlab Compiler Toolbox to
+be used during compilation. It tries to search for these files in the paths defined in
+FindMatlabCompiler.cmake:
+
+	/usr/local/cosy/matlab
+	/usr/local/matlab
+	/opt/matlab
+	/usr/matlab
+	${MATLAB}
+
+If it doesn't find the headers, either add the correct path to the MATLAB environment
+variable or set the following advanced option in 'ccmake':
+   MATLAB_INCLUDE_DIR
+
+\section mcr_featureLearning Running Feature Learning with Matlab MCR
+
+It is possible to run FeatureExtractor and Segmentor components without full Matlab installation by installing the Matlab MCR instead (while you still need the full Matlab installation to build them). Matlab MCR can be freely distributed.
+
+Download and run the MCR installer (./MCRInstaller.bin). The following environment variables must be set:
+
+\code
+export MCR_ROOT=<MCR installation directory>
+export MCR_VER=v77
+export XAPPLRESDIR=${MCR_ROOT}/${MCR_VER}/X11/app-defaults
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:\
+${MCR_ROOT}/${MCR_VER}/runtime/glnx86:\
+${MCR_ROOT}/${MCR_VER}/sys/os/glnx86:\
+${MCR_ROOT}/${MCR_VER}/sys/java/jre/glnx86/jre1.6.0/lib/i386/native_threads:\
+${MCR_ROOT}/${MCR_VER}/sys/java/jre/glnx86/jre1.6.0/lib/i386/server:\
+${MCR_ROOT}/${MCR_VER}/sys/java/jre/glnx86/jre1.6.0/lib/i386
+\endcode
+
+*/

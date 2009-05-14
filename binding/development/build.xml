@@ -1,0 +1,167 @@
+<!-- Top level make file for CoSy system -->
+<project name="everything" default="compile" basedir=".">
+
+	<import file="./common.xml" />
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<target name="all" depends="configure,idl,expandlibs,compile" />
+
+	<target name="expandlibs" depends="global,prepare">
+          <echo message="Expanding external libraries to output/classes"/>
+	  <patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
+	  <unzip dest="${output.dest}">
+	    <fileset dir="." includes="*/*/lib/*.jar" excludesfile="${exclude.patterns.file}" />
+	  </unzip>
+        </target>
+
+	<target name="configure" depends="configure.filters,configure.idl.mappings, configure.idl.includes">
+	</target>
+
+	<target name="collect.src" depends="global">
+
+		<patternset id="include.patterns" includesfile="${include.patterns.file}" />
+		<patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
+
+		<dirset id="src.dirs" dir="${basedir}" casesensitive="yes" includes="**/openccg/src, */*/src/java, tools/*/*/src/java" excludesfile="${exclude.patterns.file}" />
+
+		<pathconvert property="src.dirs.path" refid="src.dirs" targetOS="unix" />
+		<!-- <echo message="${src.dirs.path}" /> -->
+	</target>
+
+	<target name="collect.idl" depends="global">
+
+		<patternset id="include.patterns" includesfile="${include.patterns.file}" />
+		<patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
+
+		<fileset id="included.source.dirs" dir="${basedir}" casesensitive="yes">
+			<patternset refid="include.patterns" />
+		</fileset>
+
+		<fileset id="idl.files" dir="${basedir}" casesensitive="yes" includes="*/*/src/idl/*.idl tools/*/*/src/idl/*.idl" excludesfile="${exclude.patterns.file}" />
+
+		<pathconvert property="idl.files.path" refid="idl.files" targetOS="unix" />
+		<!-- <echo message="${idl.files.path}" /> -->
+
+	</target>
+
+
+	<target name="main" depends="collect.idl">
+		<foreach list="${idl.dirs.path}" delimiter=":" param="foreach.prop" target="echo.prop" inheritall="true" />
+	</target>
+
+
+	<target name="echo.prop">
+		<echo message="echo.prop: ${foreach.prop}" />
+	</target>
+
+	<target name="configure.idl.mappings" depends="collect.idl, global">
+		<delete file="${idl.mappings.file}" />
+		<echo file="${idl.mappings.file}" append="true">idl.arg.mapping=${fixed.mappings} </echo>
+		<foreach list="${idl.files.path}" delimiter=":" param="idl.file" target="idl.mapping.conf" inheritall="true" inheritrefs="true" />
+	</target>
+
+
+	<target name="configure.filters" depends="global">
+		<delete file="${include.patterns.file}" />
+		<delete file="${exclude.patterns.file}" />
+		<dirset id="source.dirs" dir="${basedir}" casesensitive="yes">
+			<patternset includesfile="${includes.file}" />
+		</dirset>
+		<pathconvert property="source.dirs.path" refid="source.dirs" targetOS="unix" />
+		<foreach list="${source.dirs.path}" delimiter=":" param="filter.pattern" target="write.include.pattern" inheritall="true" inheritrefs="true" />
+		<dirset id="source.dirs.exclude" dir="${basedir}" casesensitive="yes" includes="*/*">
+			<patternset excludesfile="${includes.file}" />
+		</dirset>
+		<pathconvert property="source.dirs.exclude.path" refid="source.dirs.exclude" targetOS="unix" />
+		<foreach list="${source.dirs.exclude.path}" delimiter=":" param="filter.pattern" target="write.exclude.pattern" inheritall="true" inheritrefs="true" />
+
+	</target>
+
+	<target name="write.include.pattern">
+		<propertyregex property="include.pattern" input="${filter.pattern}" regexp="${basedir}\/(.*)" select="\1" casesensitive="false" />
+		<echo file="${include.patterns.file}" append="true">**/${include.pattern}/**${line.separator}</echo>
+	</target>
+
+	<target name="write.exclude.pattern">
+		<propertyregex property="exclude.pattern" input="${filter.pattern}" regexp="${basedir}\/(.*)" select="\1" casesensitive="false" />
+		<echo file="${exclude.patterns.file}" append="true">**/${exclude.pattern}/**${line.separator}</echo>
+	</target>
+
+	<target name="idl.mapping.conf">
+		<propertyregex property="idl.file.root" input="${idl.file}" regexp="^(.*)\.idl" select="\1" casesensitive="false" />
+		<propertyregex property="idl.file.name" input="${idl.file}" regexp="^(.*)\/(.*)\.idl" select="\2" casesensitive="false" />
+		<echo>trying to load: ${idl.file.root}.properties</echo>
+		<loadproperties srcFile="${idl.file.root}.properties" />
+		<propertyselector property="idl.mapping.list" delimiter="," select="\1" match="(.*)-module" casesensitive="true" />
+		<foreach delimiter="," list="${idl.mapping.list}" param="mapping.prefix" target="write.module.mapping" inheritall="true" />
+	</target>
+
+	<target name="write.module.mapping">
+		<propertycopy name="module" from="${mapping.prefix}-module" silent="true" /> 
+		<propertycopy name="prefix" from="${mapping.prefix}-prefix" silent="true" />
+
+		<condition property="goAhead">
+		  <and>
+		    <not>
+		      <equals arg1="${module}" arg2="" trim="true"/>		    
+		    </not>
+		    <not>
+		      <equals arg1="${prefix}" arg2="" trim="true"/>		    
+		    </not>
+		  </and>
+		</condition>
+		
+		<antcall target="goAhead.write.module.mapping"/>
+	</target>
+
+
+	<target  name="goAhead.write.module.mapping" if="goAhead">
+	  <echo file="${idl.mappings.file}" append="true">-pkgPrefix ${module} ${prefix} </echo>
+	</target>
+
+	<target name="configure.idl.includes" depends="collect.idl, global">
+		<echo file="${idl.mappings.file}" append="true">${line.separator}idl.arg.include=-I${output.dir}/include/idl </echo>
+		<foreach list="${idl.files.path}" delimiter=":" param="idl.file" target="idl.include.conf" inheritall="true" inheritrefs="true" />
+	</target>
+
+	<target name="idl.include.conf">
+		<propertyregex property="idl.include.dir" input="${idl.file}" regexp="^(.*)\/.*\.idl" select="\1" casesensitive="false" />
+		<echo file="${idl.mappings.file}" append="true">-I${idl.include.dir} </echo>
+	</target>
+
+	<target name="idl" depends="prepare,collect.idl,global">
+		<!-- load in configured mappings -->
+		<loadproperties srcFile="${idl.mappings.file}" />
+
+
+		<subant target="idl" inheritall="false">
+			<propertyset id="idl.args">
+				<propertyref prefix="idl.arg" />
+			</propertyset>
+			<fileset dir="." includes="*/*/build.xml tools/*/*/build.xml" excludesfile="${exclude.patterns.file}" />
+		</subant>
+	</target>
+
+	<target name="clean" depends="prepare,global">
+	  <subant target="clean" inheritall="true">
+	    <fileset dir="." includes="*/*/build.xml tools/*/*/build.xml" excludesfile="${exclude.patterns.file}" />
+	  </subant>
+	</target>
+
+	<target name="compile" depends="global,prepare,collect.src">
+
+		<depend srcdir="${src.dirs.path}" destdir="${output.dest}" cache="depcache" closure="yes">
+		</depend>
+
+		<javac classpathref="global.class.path" destdir="${output.dest}" optimize="false" debug="${debug}" debuglevel="lines,vars,source">
+			<src>
+				<dirset refid="src.dirs" />
+			</src>
+		</javac>
+	</target>
+
+</project>

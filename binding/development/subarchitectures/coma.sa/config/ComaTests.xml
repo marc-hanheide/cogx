@@ -1,0 +1,83 @@
+<tests>
+
+<test>
+<name>coma_test1</name>
+<file>subarchitectures/coma.sa/config/coma-test1.cast</file>
+<description>coma testing simple concept, instance and relation assertions: testing a simple office setting with 3 areas and some objects</description>
+<output>false</output>
+<timeout>60000</timeout>
+</test>
+
+<test>
+<name>coma_test2</name>
+<file>subarchitectures/coma.sa/config/coma-test2.cast</file>
+<description>coma testing subsequent assertions and inferences: adding some statements to the simple office setting</description>
+<output>false</output>
+<timeout>60000</timeout>
+</test>
+
+<test>
+<name>coma_test3</name>
+<file>subarchitectures/coma.sa/config/coma-test3.cast</file>
+<description>coma testing rules and topological relations: a static world description with many topological relations: inclusion and adjacency</description>
+<output>false</output>
+<timeout>60000</timeout>
+</test>
+
+<test>
+<name>coma_test4</name>
+<file>subarchitectures/coma.sa/config/coma-test4.cast</file>
+<description>testing some subsumption and equivalence queries</description>
+<output>false</output>
+<timeout>60000</timeout>
+</test>
+
+<test>
+<name>coma_test5</name>
+<file>subarchitectures/coma.sa/config/coma-test5.cast</file>
+<description>testing the feature comparison service for the binder</description>
+<output>false</output>
+<timeout>60000</timeout>
+</test>
+
+<test>
+<name>coma_test6</name>
+<file>subarchitectures/coma.sa/config/coma-test6.cast</file>
+<description>testing all previous tests in a single run!</description>
+<output>false</output>
+<timeout>120000</timeout>
+</test>
+
+<test>
+<name>coma_test7</name>
+<file>subarchitectures/coma.sa/config/coma-test7.cast</file>
+<description>testing deletion of instances and non-monotonicity of inferences</description>
+<output>false</output>
+<timeout>120000</timeout>
+</test>
+
+<test>
+<name>coma_test8</name>
+<file>subarchitectures/coma.sa/config/coma-test8.cast</file>
+<description>testing with two feature comparators present</description>
+<output>false</output>
+<timeout>120000</timeout>
+</test>
+
+<test>
+<name>coma_test9</name>
+<file>subarchitectures/coma.sa/config/coma-test9.cast</file>
+<description>testing with two feature comparators present</description>
+<output>false</output>
+<timeout>120000</timeout>
+</test>
+
+<test>
+<name>coma_test10</name>
+<file>subarchitectures/coma.sa/config/coma-test10.cast</file>
+<description>testing GRE</description>
+<output>true</output>
+<timeout>120000</timeout>
+</test>
+
+</tests>

@@ -1,0 +1,215 @@
+/*!
+\mainpage Specification for the conceptual mapping and reasoning subarchitecture
+
+\anchor coma_spec
+
+\section motivation Motivation
+
+The purpose of coma.sa, the subarchitecture for conceptual mapping and reasoning,
+is two-fold.
+
+The first, and original, purpose of coma.sa is to provide the conceptual
+map layer of the spatial representation. This conceptual layer is used to
+assign (linguistic) concepts to map entities (areas and objects) stemming
+from the lower layers of the map (i.e. the topological segmentation of the
+navigation graph plus the laser-based area classification, 
+and visually recognized objects). The standard example
+is that the conceptual map can infer that a 'room' that has a 'coffee machine'
+can be called 'kitchen'. Behind the scenes, the conceptual map uses a
+Description Logic reasoner, which has a handcrafted domain ontology (indoor office
+environment) as its TBox, and an ABox that contains the instances of areas
+and objects that the robot has encountered (and perceived/detected).
+
+This leads then to the second application of coma.sa.
+Given the DL-reasoner backend and the domain ontology, which mainly consists
+of a taxonomy of concepts (i.e. an "is-a" hierarchy), coma.sa offers the
+ability to compare concepts based on their taxonomical relation. This
+functionality is used by the binder to compare the concept features of two proxies.
+
+\section general General Information
+
+This subarchitecture is maintained by Hendrik Zender <zender@dfki.de>.
+The external reasoner is available under tools/reasoning.
+
+A good introduction to the mechanisms underlying coma.sa cam be found here:
+http://www.dfki.de/~zender/publications/zender_kruijff07-aaaisss.pdf
+
+The main page of the coma.sa documentation can be found here:
+<a href ="../../../subarchitectures/coma.sa/doc/java/html/index.html">Coma</a>
+
+In order to compile coma.sa and tools/reasoning properly, please have a look
+at the README files:
+<ul>
+<li><a href ="../../../subarchitectures/coma.sa/README">coma.sa README</a></li>
+<li><a href ="../../../tools/reasoning/README">tools/reasoning README</a></li>
+</ul>
+
+\section scenario Scenario
+The main application of coma.sa is to provide the conceptual map layer
+for the Explorer scenario. However, through its use as a "concept vs. concept"
+comparator for the binder, it is also part of the Playmate scenario instantiation.
+
+See scenarios: \ref main_scenarios
+\li Explorer scenarios: \ref explorer_scenarios
+\li PlayMate scenarios: \ref playmate_scenarios
+
+
+\section coma_requirements Requirements
+
+The requirements on the coma.sa are a result of the scenarios
+in which it is to be used.
+
+The simpler requirements are to compare two concepts. Concepts
+will be "TriTrue" comparable if they are identical or if they
+are taxonomically related, that is one of them is a sub-concept 
+(i.e. more special) than the other one (which is the super-concept,
+i.e. more general). They are "TriFalse" comparable if they are
+not taxonomically related. If one of the concepts is unknown to
+coma.sa, it will answer "TriIndeterminate".
+
+Other requirements are more closely related to the Explorer scenario.
+There, coma.sa is supposed to infer (linguistic) concepts for instances
+of spatial areas on the basis of encountered objects.
+Another use case is to provide default knowledge about which objects
+to expect in certain types of rooms.
+
+In general, coma.sa will also function as the interface between the
+(short-term?) memory represented on binding WM and the long-term
+memory of large-scale space in as far as linguistic concepts are involved.
+
+\section coma_representations Representations
+
+\todo go through the representations and relate them to the requirements
+
+There are different representations that are internal to coma.sa. Within the subarchitecture,
+all components exchange information using WorkingMemoryEntries on coma.sa WM.
+
+The communication with the "outside world", i.e. other subarchitectures, is
+handled via the binder. 
+
+
+\section coma_components Components
+
+\subsection coma_reasoner ComaReasoner
+
+This is the core of coma.sa. This component provides the interface to the DL-reasoner.
+(It has an object m_reasoner that contains a wrapper for the actual reasoner used.
+The current implementation uses the Pellet open source DL-reasoner).
+Other components query the ComaReasoner through WM entries of type COMA_REASONER_FUNCTION.
+
+ComaReasoner provides the following functions:
+\todo check that it actually does what is described here ;-)
+
+\li \c ComaReasonerFunctionType._AreConsEquivalent<br>
+	 checks equivalence of two concepts:
+	 \todo specify conditions
+	 
+	 
+\li \c ComaReasonerFunctionType._IsConSubcon<br>
+	 checks if a given concept is a sub-concept of a second given concept.
+	 
+	 
+\li \c ComaReasonerFunctionType._IsConSupercon<br>
+	 checks if a given concept is a super-concept of a second given concept.
+	 
+	 
+\li \c ComaReasonerFunctionType._GetAllConcepts<br>
+	 returns all concepts of a given instance
+	 
+	 
+\li \c ComaReasonerFunctionType._GetAllDirectConcepts<br>
+	 returns all direct concepts of a given instance
+	 
+	 
+\li \c ComaReasonerFunctionType._GetAllInstances<br>
+	 returns all instances of a given concept
+	 
+	 
+\li \c ComaReasonerFunctionType._GetAllRelatedInstances<br>
+	 \todo does this function work as intended?
+	 
+	 
+\li \c ComaReasonerFunctionType._GetBasicLevelConcept<br>
+	 returns the basic level concept (as defined in the ontology) of a given instance
+	 
+	 
+\li \c ComaReasonerFunctionType._CompareCons<br>
+	 compares two concepts, see ConceptVsConceptComparators!
+	 
+	 
+\li \c ComaReasonerFunctionType._GetTypicalObjects<br>
+	 returns a list of objects (Object sub-concepts) that can be 
+	 expected in a given Area sub-concept.
+
+
+\subsection coma_bindingmon ComaBindingMonitor
+
+This is the coma binding monitor. It should take care of retrieving
+items from the long term memory for large-scale space by their concepts.
+
+
+\subsection Concept vs Concept Comparison
+
+coma.sa provides the functionality to compare concepts using its
+ontology-based DL reasoner. This functionality is handled by two components,
+a "reader" and a "writer" component. 
+
+This is a specification of the comparison result:
+\li one of the concepts does not exist in the ontology: TriIndeterminate
+\li the concepts are equivalent: TriTrue
+\li first concept is a sub-concept of the second: TriTrue 
+\li first concept is a super-concept of the seconf: TriTrue
+\li otherwise (i.e. they both exist, but are not taxonomically related): TriFale 
+
+
+\code
+if (m_reasoner.areConceptsEquivalent(_con1,_con2)
+    || m_reasoner.isSubConcept(_con1, _con2)
+    || m_reasoner.isSuperConcept(_con1, _con2)) {
+        _result.m_tribool = TriBool.triTrue;
+}
+else if (m_reasoner.conceptExists(_con1) && m_reasoner.conceptExists(_con2)) {
+        _result.m_tribool = TriBool.triFalse;
+}
+// standard is TriIndeterminate!
+\endcode
+
+
+\subsubsection coma_convsconreader ConceptVsConceptBindingFeatureComparisonReader
+
+This component, the reader, waits for a
+\c BindingOntology.FEATURE_COMPARISON_TASK
+struct with \c BindingOntology.CONCEPT_TYPE as
+\c BindingOntology.FEATURE_COMPARISON_TYPE
+to be written to binding WM.
+
+It then extracts the two concepts to be compared. Before it asks the reasoner
+about the relation of two concepts, it checks whether it has a result in its
+cache that it can use. If the cache contains the result, it is written back to
+the respective \c ScoreWME. If it doesn't, then this task is passed on
+to the ComaReasoner via a ComaReasonerFunction of type CompareCons.
+
+After performing the concept comparison, the ComaReasoner writes back its
+answer to the ComaReasonerFunction struct.
+
+\subsubsection coma_convsconwriter ConceptVsConceptBindingFeatureComparisonWriter
+This component, called the comparison writer, waits for a
+\c COMA_REASONER_FUNCTION_TYPE 
+WME to be overwritten. It then checks whether this function belongs to
+a \c FEATURE_COMPARISON
+which is passed via the \c m_add_info_ptr
+of the function. In this case, after checking that it is indeed a concept
+comparison, it deletes the function WME and writes back the result of the
+concept comparison to the original \c FEATURE_COMPARISON_TASK
+struct on binding WM.
+
+
+
+
+\section coma_processes Processes
+
+\todo describe processes...
+
+\section coma_stuff Any Other Business...
+
+*/

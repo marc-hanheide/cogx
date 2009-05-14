@@ -1,0 +1,277 @@
+(define (domain explorer)
+
+	(:requirements :mapl :adl)
+	
+	(:types 
+		physical_agent subarchitecture - agent
+		human robot - physical_agent
+
+		area-id - object
+		movable - phys_obj
+      
+		area-name - feature
+
+		object-pos - object
+		agent area-id area-name - object-pos
+
+		localized_obj - object
+        agent movable - localized_obj        
+
+	)
+	
+	(:constants
+        unspecified-area-id - area-id
+	)
+	
+	(:predicates
+		(perceived-position ?obj -  localized_obj : ?p - object-pos)   
+		(asserted-position ?obj -  localized_obj : ?p - object-pos)   
+		(area-name ?a - area-id : ?c - area-name)
+		(area-id ?a - area-name : ?c - area-id)
+		(subarchitecture_of ?c - agent : ?a - agent)
+
+		;; special
+		(has-goal ?a - agent)
+
+    	(knows_about__asserted-position ?comp - subarchitecture)
+    	(not_knows_about__asserted-position ?comp - subarchitecture ?obj -  localized_obj)
+
+    	(knows_about__area-id ?comp - subarchitecture)
+    	(not_knows_about__area-id ?comp - subarchitecture ?a - area-name)
+
+	;;; makes life easier for moving between playmate and explorer
+    	(knows_about__colour ?comp - subarchitecture)
+    	(not_knows_about__colour ?comp - subarchitecture ?obj - movable)
+
+	 )
+	
+
+;;; axioms
+
+	(:derived (can_talk_to ?a1 ?a2 - agent)
+	   ;; (and )
+       (or
+		(exists (?a3 ?a4  - physical_agent ?ar - object-pos) (and
+		   (= ?a1 ?a3) (= ?a2 ?a4) (perceived-position ?a1 : ?ar) (perceived-position ?a2 : ?ar)
+		))
+		(subarchitecture_of ?a1 : ?a2)
+		(subarchitecture_of ?a2 : ?a1)
+       )
+       )
+
+
+;;; sensors ;;;
+
+	(:sensor sense-object-in-area-id
+	 :agent (?a - agent)
+	 :parameters (?obj - movable)
+	 :variables (?r - area-id)
+	 :precondition (and
+	     (perceived-position ?a : ?r)
+         (in_domain (perceived-position ?obj) ?r)
+		)
+     :negcondition (and
+	     (not (perceived-position ?obj : ?r))
+		)
+ 	 :sense (perceived-position ?obj))
+ 
+	(:sensor sense-object-in-area-id_a
+	 :agent (?a - agent)
+	 :parameters (?obj - movable)
+	 :variables (?pa - planning_agent ?r - area-id)
+	 :precondition (and
+	     (perceived-position ?a : ?r)
+		)
+	 :replan (and
+         (K ?pa (in_domain__perceived-position ?obj))
+	 )
+     :negcondition (and
+	     (not (perceived-position ?obj : ?r))
+		)
+ 	 :sense (perceived-position ?obj))
+ 
+
+
+;; speech acts 
+
+	(:action tell_val ??svar
+	 :agent (?speaker - agent)
+	 :parameters (?hearer - agent)
+	 :precondition (and
+        (can_talk_to ?speaker ?hearer)
+		(K ?speaker (??svar ??args))
+		)
+	 :effect (and
+		(K ?hearer (??svar ??args))
+	))
+
+
+;; special
+
+	(:action __realize_has_goal
+	 :agent (?a - agent)
+	 :variables (?sg - subgoal)
+	 :effect (and
+		(has-goal ?a)
+	))
+
+	(:action repos-area-name-to-unspecified-area-id
+	 :agent (?pa - planning_agent)
+	 :parameters (?arname - area-name)
+	 :precondition (and
+	      (K ?pa (area-id ?arname))
+	      (not (exists (?arid - area-id) (area-id ?arname : ?arid)))
+		)
+	 :effect (area-id ?arname : unspecified-area-id))
+
+	(:action __repos-id-to-room
+	 :agent (?a - planning_agent)
+	 :parameters (?to - area-name ?toid - area-id)
+	 :precondition (and 
+	 	(area-id ?to : ?toid)
+		(perceived-position ?a : ?toid) 
+		)
+	 :effect (and
+		(perceived-position ?a : ?to)
+	))
+
+	(:action __repos-obj-to-area-id
+	 :agent (?pa - planning_agent)
+	 :parameters (?obj - localized_obj ?arname - area-name ?arid - area-id)
+	 :precondition (and
+          (asserted-position ?obj : ?arname) 
+          (area-id ?arname : ?arid)
+		)
+	 :effect (asserted-position ?obj : ?arid))
+
+	(:action __assume_knowledge__area-id
+	 :agent (?ag - planning_agent)
+	 :parameters (?comp - subarchitecture ?arname - area-name)
+	 :precondition (and
+		  (knows_about__area-id ?comp)
+		  (not (not_knows_about__area-id ?comp ?arname : true))
+		)
+	 :effect (and
+	      (K ?comp (area-id ?arname))
+        ))
+
+	(:action __assume_knowledge__asserted-position
+	 :agent (?ag - planning_agent ?obj - localized_obj)
+	 :parameters (?comp - subarchitecture)
+	 :precondition (and
+		  (knows_about__asserted-position ?comp)
+		  (not (not_knows_about__asserted-position ?comp ?obj : true))
+		)
+	 :effect (and
+	      (K ?comp (asserted-position ?obj))
+        ))
+
+;;; actions ;;;
+
+	(:action move
+	 :agent (?a - robot)
+	 :parameters (?to - area-id)
+	 :variables (?from - area-id)
+	 :precondition (and 
+	    (not (= ?to unspecified-area-id))
+		(perceived-position ?a : ?from) 
+		)
+	 :effect (and
+		(perceived-position ?a : ?to)
+	))
+	
+	(:action move_to_room
+	 :agent (?a - robot)
+	 :parameters (?to - area-name ?toid - area-id)
+	 :variables (?from - area-id)
+	 :precondition (and 
+	 	(area-id ?to : ?toid)
+		(perceived-position ?a : ?from) 
+		)
+	 :effect (and
+		(perceived-position ?a : ?to)
+	))
+
+
+	(:action object-search-in-room
+	 :agent (?a - agent)
+	 :parameters (?obj - movable)
+	 :variables (?r - area-id)
+	 :precondition (and 
+		(perceived-position ?a : ?r) 
+	    (or (asserted-position ?obj : ?r) (perceived-position ?obj : ?r))
+		)
+	 :effect (and
+		(perceived-position ?obj : ?r)
+	))
+	
+	(:action object-search-in-room_A1
+	 :agent (?a - robot)
+	 :parameters (?obj - movable)
+	 :variables (?pa - planning_agent ?arname - area-name)
+	 :precondition (and 
+	    (perceived-position ?obj : ?arname)
+      )
+  	 :replan (and
+      	 (K ?pa (area-id ?arname))
+        )
+	 :effect (and
+		(K ?pa (perceived-position ?obj))
+	))
+	
+	(:action object-search-in-room_A2
+	 :agent (?a - robot)
+	 :parameters (?obj - movable)
+	 :variables (?pa - planning_agent ?arname - area-name)
+	 :precondition (and 
+	    (asserted-position ?obj : ?arname)
+      )
+  	 :replan (and
+      	 (K ?pa (area-id ?arname))
+        )
+	 :effect (and
+		(K ?pa (perceived-position ?obj))
+	))
+	
+	(:action find_A
+	 :agent (?a - robot)
+	 :parameters (?obj - movable)
+ 	 :variables (?pa - planning_agent)
+	 :replan (and
+    	 (K ?pa (asserted-position ?obj))
+      )
+	 :effect (and
+    	 (K ?pa (perceived-position ?obj))
+	))
+
+	(:action inform_A
+	 :agent (?a - robot)
+	 :parameters (?h - human ?obj - movable)
+ 	 :variables (?pa - planning_agent)
+	 :precondition (and 
+      )
+	 :replan (and
+    	 ;;(K ?pa (asserted-position ?obj))
+    	 (K ?pa (perceived-position ?obj))
+     	 (K ?pa (perceived-position ?h))
+      )
+	 :effect (and
+    	 (K ?h (perceived-position ?obj))
+	))
+
+	(:action move_A
+	 :agent (?a - robot)
+	 :parameters (?from - area-id ?to - area-name)
+ 	 :variables (?pa - planning_agent)
+	 :replan (and
+		(K ?pa (area-id ?to))
+		)
+	 :precondition (and 
+		(perceived-position ?a : ?from) 
+		)
+	 :effect (and
+		(perceived-position ?a : ?to)
+	))
+
+
+)

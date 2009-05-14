@@ -1,0 +1,11 @@
+<project name="reasoner API" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<path id="project.class.path" />
+
+	<target name="clean">
+		<delete dir="${build.dest}/org/cognitivesystems/reasoner" />
+	</target>
+
+</project>

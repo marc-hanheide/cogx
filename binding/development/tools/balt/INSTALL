@@ -1,0 +1,157 @@
+The connection framework requires:
+
+o omniORB 4.0 or greater 
+http://omniorb.sourceforge.net/
+(this also requires Python, which most systems should have as standard)
+
+o Java JDK 1.5 or greater 
+http://java.sun.com/j2se/1.5.0/
+
+o Apache Ant 1.6.2 or greater
+http://ant.apache.org/
+
+
+It has been successfully installed with:
+
+o omniORB: 
+  o 4.0.6-2  
+  o 4.0.7
+  o 4.1.0-beta2
+o Java: 
+  o 1.5.0_06 
+  o 1.5.0_07
+o Apache Ant: 
+  o 1.6.2 
+  o 1.6.5 
+
+It has been successfully tested on both i586 and amd64 architectures.
+
+
+Install all of the above packages following the standard
+instructions. Set the environment variable JAVA_HOME to point to the
+root of your Java installation, and the same for Ant, e.g. (in bash)
+
+export JAVA_HOME=/usr/local/java/<java version>
+export ANT_HOME=/usr/local/java/<ant version>
+
+Once all of the above packages are installed you should check they
+work with the following commands:
+
+To test omniORB:
+
+cmd$ omniidl -V
+omniidl version 1.0
+
+
+If you get a 'command not found' error, ensure omniidl is in your
+PATH, e.g. (in bash)
+
+export PATH=/usr/local/bin:$PATH
+
+
+If you get an error like "omniidl: Could not open IDL compiler module
+_omniidlmodule.so" locate _omniidlmodule.so and add the containing
+directory to the PYTHONPATH, e.g. (in bash)
+
+export PYTHONPATH=/usr/local/lib/<python version>/site-packages
+
+
+cmd$ pkg-config --cflags omniORB4
+-D__processor_unknown__ -D__linux__ -D__OSVERSION__=2 -I/usr/local/include
+
+If you get an error like "Package omniORB4 was not found in the
+pkg-config search path", locate omniORB4.pc and add the containing
+directory to the PKG_CONFIG_PATH, e.g. (in bash)
+
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
+
+To test Java:
+
+cmd$ java -version
+java version "1.5.0_07"
+
+If you get a "command not found", make sure you set JAVA_HOME to point
+to your installation of Java and add $JAVA_HOME/bin to you path, e.g.
+
+export JAVA_HOME=/usr/local/java/<java version>
+export PATH=$JAVA_HOME/bin:$PATH
+
+To test Ant:
+
+cmd$ ant -version
+Apache Ant version 1.6.5 compiled on June 2 2005
+
+If you get a "command not found", make sure you set ANT_HOME to point
+to your installation of Ant and add ANT_HOME/bin to you path, e.g.
+
+export ANT_HOME=/usr/local/java/<ant version>
+export PATH=$ANT_HOME/bin:$PATH
+
+
+
+Once you've got this far, you should be ready to install the framework
+code. Download the package:
+
+http://www.cs.bham.ac.uk/~nah/cosy/framework-0.5.0.tar.bz
+
+And unpack it on your system. This will create the directory
+framework-0.5.0
+
+
+First compile the code for the java components. To do this, change
+into the directory...
+
+$ cd framework-0.5.0
+
+... and run ant to compile the code...
+
+$ ant
+
+If you get any errors, check the above tests before emailing me.
+
+
+The next step is to compile the code for the C++ components. To do
+this, enter the commands...
+
+$ cd src/c++/balt
+$ make 
+
+This will create the directory...
+
+framework-0.5.0/src/c++/balt/lib/
+
+... which contains shared libraries containing the classes that will
+be used in the framework. If you get any errors compiling this, first
+check you can run all the above tests correctly, then email me with
+the errors.
+
+To allow the other parts of the framework to find this library, the
+directory containing it must be added to the library search path. The
+easiest way to achieve this is to add the directory to
+LD_LIBRARY_PATH, e.g.
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<full path to>/framework-0.5.0/src/c++/balt/lib
+
+
+The installation is now complete. For ways of testing the system,
+consult the TESTING file. 
+
+NOTE:
+
+It may be worth checking the file...
+
+/etc/hosts
+
+And looking at the first line. It may look like...
+
+127.0.0.1       <host name>      localhost.localdomain   localhost
+
+OR
+
+127.0.0.1       localhost.localdomain   localhost
+
+If it is the first case, you may need to remove the hostname
+(i.e. make it look like the second case) to ensure the CORBA
+connectivity works correctly (don't ask...). Only do this if you get
+errors about not being able to find a host at 127.0.0.1.

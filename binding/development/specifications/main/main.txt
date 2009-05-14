@@ -1,0 +1,67 @@
+/*!
+\mainpage CoSy implementation main page
+
+<a href = "../../../">Browse the directories containing all docs (including readme-files etc)</a>
+
+\section Specifications
+
+\subsection scenario_specs Scenarios
+
+\li <a href = "../../scenario/html/index.html">Scenario main page</a>
+\li Explorer Scenario from Feb-2008 Bham meeting (<a href = "../../bham_meeting/scenarios/explorer/explorer.pdf">pdf</a>)
+\li Playmate (UOL) Scenario from Feb-2008 Bham meeting (<a href = "../../bham_meeting/scenarios/playmate/uol_scripts.pdf">pdf</a>)
+\li Playmate (Bham) Scenario from Feb-2008 Bham meeting (<a href = "../../bham_meeting/scenarios/playmate/bham_scripts.pdf">pdf</a>)
+\li <i>Year 3 Scenario from Feb-2008 Bham meeting (<a href = "../../bham_meeting/scenarios/yr3example/example.pdf">pdf</a>)</i>
+
+\subsection subarch_spec Subarchitectures / subcomponents
+
+\li <a href = "../../coma_reasoning/html/index.html">COMA and reasoning</a>
+\li <a href = "../../comsys/html/index.html">ComSys</a>
+\li <a href = "../../binding/html/index.html">Binding</a>
+\li <a href = "../../motivation/html/index.html">Motivation</a>
+\li <a href = "../../navigation/html/index.html">Navigation</a>
+\li <a href = "../../planning/html/index.html">Planning</a>
+\li <a href = "../../vision/html/index.html">Vision</a>
+\li <a href = "../../laser_features_extractor/html/index.html">Laser Features Extractor</a>
+
+\section documentation Documentation
+
+\subsection cast_balt_docs CAST and BALT
+
+\li <a href = "../../../tools/balt/doc/cpp/html/index.html">BALT(C++)</a>
+\li <a href = "../../../tools/balt/doc/java/html/index.html">BALT(Java)</a>
+\li <a href = "../../../tools/cast/doc/cpp/html/index.html">CAST(C++)</a>
+\li <a href = "../../../tools/cast/doc/java/html/index.html">CAST(Java)</a>
+
+\subsection subarchitecture_docs Subarchitectures
+
+\li <a href = "../../../subarchitectures/comsys.mk4/doc/java/html/index.html">ComSys(Java)</a>
+\li <a href = "../../../subarchitectures/vision/doc/cpp/html/index.html">Vision(C++)</a>
+\li <a href = "../../../subarchitectures/vision/doc/java/html/index.html">Vision(Java)</a>
+\li <a href = "../../../subarchitectures/vision/doc/matlab/html/index.html">Vision(Matlab)</a>
+\li <a href = "../../../subarchitectures/spatial.sa/doc/cpp/html/index.html">Spatial reasoning(C++)</a>
+\li <a href = "../../../subarchitectures/spatial.sa/doc/java/html/index.html">Spatial reasoning(Java)</a>
+\li <a href = "../../../subarchitectures/planning.sa/doc/cpp/html/index.html">Planning(C++)</a>
+\li <a href = "../../../subarchitectures/planning.sa/doc/python/html/index.html">Planning(Python)</a>
+\li <a href = "../../../subarchitectures/planning.sa/doc/java/html/index.html">Planning(Java)</a>
+\li <a href = "../../../subarchitectures/nav.sa/doc/cpp/html/index.html">Navigation(C++)</a>
+\li <a href = "../../../subarchitectures/nav.sa/doc/java/html/index.html">Navigation(Java)</a>
+\li <a href = "../../../subarchitectures/coma.sa/doc/java/html/index.html">Coma and reasoning(Java)</a>
+\li <a href = "../../../subarchitectures/coma.sa/doc/cpp/html/index.html">Coma and reasoning(C++)</a>
+\li <a href = "../../../subarchitectures/central.mechanisms/doc/java/html/index.html">Central Mechanisms(Java)</a>
+\li <a href = "../../../subarchitectures/manipulation.sa/doc/cpp/html/index.html">Manipulation(C++)</a>
+\li <a href = "../../../subarchitectures/manipulation.sa/doc/java/html/index.html">Manipulation(Java)</a>
+\li <a href = "../../../subarchitectures/binding.sa/doc/cpp/html/index.html">Binding(C++)</a>
+\li <a href = "../../../subarchitectures/binding.sa/doc/java/html/index.html">Binding(Java)</a>
+
+\subsubsection subarch_examples Examples
+\li <a href = "../../../tools/comedian-architecture/doc/cpp/html/index.html">Comedian(C++)</a>
+\li <a href = "../../../tools/comedian-architecture/doc/java/html/index.html">Comedian(Java)</a>
+
+\section Software engineering practices
+
+\li \ref software_principles
+\li <a href = "https://bugzilla.cs.bham.ac.uk/">Bugzilla</a>
+
+
+*/

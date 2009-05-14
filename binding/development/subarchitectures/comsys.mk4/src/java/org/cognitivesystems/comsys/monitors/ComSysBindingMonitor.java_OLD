@@ -1,0 +1,1752 @@
+//=================================================================
+// Copyright (C) 2007 Geert-Jan M. Kruijff (gj@dfki.de)
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License
+// as published by the Free Software Foundation; either version 2.1 of
+// the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+// 02111-1307, USA.
+//=================================================================
+
+//=================================================================
+// PACKAGE DEFINITION 
+//=================================================================
+
+package org.cognitivesystems.comsys.monitors;
+
+//=================================================================
+// IMPORTS
+//=================================================================
+
+// ----------------------------------------------------------------
+// BINDING imports
+// ----------------------------------------------------------------
+
+import binding.BindingException;
+import binding.abstr.AbstractMonitor;
+import binding.abstr.AbstractMonitorState;
+import binding.abstr.GlobalIdentifier;
+import binding.abstr.LocalIdentifier;
+import binding.abstr.ProxyRelation;
+import BindingData.BindingProxy;
+import BindingData.BindingProxyType;
+import BindingData.BindingUnion;
+import BindingData.FeaturePointer;
+import BindingFeatures.*;
+import BindingFeaturesCommon.*;
+import BindingData.CommunicativeGoals.CommQuestion;
+import BindingData.CommunicativeGoals.CommunicativeGoal;
+import BindingData.CommunicativeGoals.CommunicativeGoalSort;
+import binding.common.BindingComponentException;
+import binding.ontology.BindingOntologyFactory;
+import binding.ontology.BindingOntology;
+import binding.ontology.CommunicativeGoalsOntology;
+//import binding.util.ProxyMonitor;
+//import binding.util.ProxyMonitorCallback;
+
+// ----------------------------------------------------------------
+// CAST imports
+// ----------------------------------------------------------------
+import cast.architecture.abstr.WorkingMemoryChangeReceiver;
+import cast.architecture.abstr.ChangeFilterFactory;
+import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.data.CASTData;
+import cast.core.CASTUtils;
+import cast.core.ontologies.CASTCompositeOntology;
+
+// ----------------------------------------------------------------
+// COMSYS imports
+// ----------------------------------------------------------------
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.Cache;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.ContextInfo;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.Event;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.EventDiscRefRelation;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.InterpretationSupport;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.Nucleus;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.PackedLFs;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.State;
+import org.cognitivesystems.comsys.autogen.ComsysEssentials.StateDiscRefRelation;
+import org.cognitivesystems.comsys.general.CacheWrapper;
+import org.cognitivesystems.comsys.general.EventStructureUtils;
+import org.cognitivesystems.comsys.ontology.ComsysOntology;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.ActionMotionProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.AnimateProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.AscriptionProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.CognitionProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.DefaultProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.DeicticPronounProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.DisConnectiveProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.EIdentifierProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.ELocationProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.EntityProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.LocNameProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.MCommentProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.MLocationProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.ModalProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.MWhereToProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.PhysicalProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.QColorProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.QLocationProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.QShapeProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.QSizeProxyFactory;
+// import org.cognitivesystems.comsys.monitors.proxyfactories.RestrictedEntityProxyFactory;
+import org.cognitivesystems.comsys.monitors.proxyfactories.ThingProxyFactory;
+
+
+// ----------------------------------------------------------------
+// JAVA imports
+// ----------------------------------------------------------------
+import java.util.*;
+
+// ----------------------------------------------------------------
+// LF imports
+// ----------------------------------------------------------------
+import org.cognitivesystems.repr.lf.autogen.LFEssentials.*;
+import org.cognitivesystems.repr.lf.autogen.LFPacking.*;
+import org.cognitivesystems.repr.lf.utils.LFUtils;
+
+import com.sun.tools.example.debug.expr.ExpressionParser.GetFrame;
+
+//=================================================================
+// JAVADOC CLASS DOCUMENTATION 
+//=================================================================
+
+/** 
+The class <b>ComSysBindingMonitor</b> monitors the ComSys.mk4 working 
+memory, and proposes binding proxies for cross-modal content
+interconnectivity on the basis of packed logical forms, possibly also 
+even structure interpretations as represented by event nuclei. The 
+monitor uses a monitor state to keep track of the proxies and proxy
+relations that have been introduced. 
+<p>
+Configure options for the monitor are: 
+<ul> 
+<li> <tt>--incrementalBinding</tt>: whether the binder should bind 
+     content generated at each incremental parsing step, or not. 
+	 the option takes boolean values "true" and "false", and int
+	 values "0", "1", and "2". "0" means incremental binding, 
+	 "1" means to wait for completed parses, and "2" completed, 
+	 completely pruned parses. </li> 
+<li> <tt>--hypoProxies</tt>: whether the binder should generate
+	 hypothetical proxies ("true", "false"). </li>
+<li> <tt>--unionMinSize</tt>: int value, indicating the minimal size of 
+	 the union in which a proxy participates, for the content represented
+	 by the proxy to be considered "supported." This value needs to be 
+	 "1" or higher.
+<li> <tt>--syncModel</tt>: the model to be adopted for synchronizing 
+     the exchange of information between binding and dialogue processing, 
+	 about what interpretations	are currently supported. The monitor currently 
+	 implements two synchronization models: <tt>SYNC_ALL</tt>, in which support 
+	 information about all the relations in a packed logical form is gathered 
+	 (via change notifications) before a <tt>ContextInfo</tt> struct is being 
+	 written out; and, <tt>SYNC_ONE</tt>, in which support information about 
+	 relations in a packed logical form is provided as a <tt>ContextInfo</tt> 
+	 struct on an individual basis, as this information becomes available (via change notifications). 
+	The flag takes values "sync_all" or "sync_one". The default value for the flag is "sync_one". </li>
+	 
+	 
+</ul>
+ 
+@version 080514
+@started 070907
+@author  Geert-Jan M. Kruijff (gj@dfki.de)
+@author  Henrik Jacobsson     (henrik.jacobsson@dfki.de)
+@author  Hendrik Zender       (zender@dfki.de)
+*/ 
+
+//=================================================================
+// CLASS DEFINITION 
+//=================================================================
+
+public class ComSysBindingMonitor 
+  extends AbstractMonitor {
+    
+    
+    //=================================================================
+    // CLASS-INTERNAL GLOBAL VARIABLES
+    //=================================================================
+
+	
+	/** The ontology with data types and proxy factory classes */ 
+	ComsysOntology comsysOntology;
+
+	/** The monitor state */
+	public AbstractMonitorState monitorState; 
+
+	public Object m_lockObject;
+
+	String currentPLFId;
+		
+	Hashtable changeListeners; 
+	
+	/** The mapping from local structures to binding SA objects */
+	LocalToBindingMapping localMapping;
+	
+	// ------------------------------------------------------------
+	// DATA STRUCTURES FOR TRACKING PROXY RELATIONS
+	// ------------------------------------------------------------			
+
+	/**
+		The table storedRelProxies maintains, for each relational 
+		proxy there is on the binder, a map from its address (used when 
+		notifying about changes) to an StoredProxyRelation object. This
+		object stores information about the source of the relation
+	*/ 
+	Hashtable<String,StoredProxyRelation> storedRelProxies; 
+	
+	/**
+		The table storedInterpretationSupport maintains, for each packed 
+		logical form (by plfId), a hashtable with InterpretationSupport
+		objects for the different (relational) proxies that the current 
+		version of the packed logical form has introduced. The support
+		hashtable for a packed logical form is reset every time a new
+		version is retrieved (by change notification). 
+	*/ 
+	Hashtable<String,Hashtable> storedInterpretationSupport;
+	
+	/** The "current" (i.e. last seen) packed logical form */ 
+	// String currentPLFId; 
+	
+	Hashtable<String,PackedLogicalForm> plfsTable;
+	
+	
+	// ------------------------------------------------------------
+	// PROXY FACTORIES
+	// ------------------------------------------------------------	
+
+	/** The table proxyFactoryTable maintains a list of proxy factories, 
+		each factory keyed by the ontological sort of the packed nominal on which 
+		it operates. 
+	*/ 
+	Hashtable<String,ProxyFactory> proxyFactoryTable; 
+	
+	/** The default factory for producing proxy content */ 
+	//DefaultProxyFactory defaultProxyFactory; 
+	DefaultProxyFactory defaultProxyFactory;
+	
+	// ------------------------------------------------------------
+	// CONFIGURATION FLAGS
+	// ------------------------------------------------------------	
+	
+	/** The flag to set whether binding should be incremental, or only done on complete PLFs.
+		This flag can be set using the boolean command-line option "--incrementalBinding". 
+	*/
+	boolean incrementalBinding;
+	
+	/** The flag which sets which completeness level a parse should have to be considered "complete". 
+		This allows for a more flexible "non-incremental" binding interaction -- either after parsing
+		is finished, or only after pruning is completely done. By default this level is set to 2 (
+		complete after pruning). This flag can be set as numerical value to the 
+		"--incrementalBinding" option (instead of "false", use "1" or "2"). 
+	*/ 
+	int	plfCompletenessLevel; 
+	
+	
+	/** This flag, set by the command-line option "--hypoProxies", marks whether hypothetical proxies
+		are to be put onto binding working memory or not. The default value is false. 
+		Note: proxy factories have makeProxyHypothetical set to true by default. 
+	*/ 
+	boolean hypoProxies; 
+	
+	/**
+		This flag, set by the command-line option "--unionSizeMin" sets the minimum size of a union in which 
+		a proxy relation takes part. If the union is at least of minimum size, the logical forms associated 
+		with the proxy relation will be kept; otherwise, they'll be marked for pruning. By default this size
+		is "1" (i.e. no pruning, as a proxy always is a member of the union with itself.
+	*/ 
+	int unionSizeMin; 
+	
+	
+	/**
+		This flag, set by the command-line option "--syncModel", sets the model to be adopted for 
+		synchronizing the exchange of information between binding and dialogue processing, about what interpretations
+		are currently supported. The monitor currently implements two synchronization models: 
+
+		<ol> 
+			<li> <tt>SYNC_ALL</tt>, in which support information about all the relations in a packed logical form 
+				 is gathered (via change notifications) before a <tt>ContextInfo</tt> struct is being written out. </li> 
+			<li> <tt>SYNC_ONE</tt>, in which support information about relations in a packed logical form is 
+				 provided as a <tt>ContextInfo</tt> struct on an individual basis, as this information becomes 
+				 available (via change notifications). </li> 
+		</ol>
+		
+		The flag takes values "sync_all" or "sync_one". The default value for the flag is "sync_one". 
+	*/ 
+	int syncModel;
+	
+	public final int SYNC_ALL = 0;
+	public final int SYNC_ONE = 1;
+	
+
+    //=================================================================
+    // CONSTRUCTOR METHODS
+    //=================================================================
+
+    /** 
+     *  The basic constructor calls the super class, and triggers
+	 *  initialization of the internal variables. 
+     */
+
+    public ComSysBindingMonitor (String _id) {
+		super(_id);
+		init();
+    } // end constructor
+
+	/** 
+		Initializes the internal variables 
+	*/ 
+	
+	private void init () { 
+		// ONTOLOGY 
+		comsysOntology = new ComsysOntology();
+		CASTCompositeOntology ontology = new CASTCompositeOntology(comsysOntology);
+		ontology.addOntology(BindingOntologyFactory.getOntology());
+		setOntology(ontology);
+
+		localMapping = new LocalToBindingMapping();
+
+		// MONITOR STATE
+		monitorState = new AbstractMonitorState();
+		monitorState.setLogging(m_bLogOutput);
+		currentPLFId = "";
+		changeListeners = new Hashtable();
+
+		// INTERPRETATION SUPPORT
+		storedRelProxies = new Hashtable();
+		storedInterpretationSupport = new Hashtable();
+		plfsTable = new Hashtable<String,PackedLogicalForm>();
+
+		// CONFIGURABEL FLAGS
+		incrementalBinding = true;
+		plfCompletenessLevel = 0; 
+		hypoProxies = false; 
+		unionSizeMin = 1;
+		syncModel = SYNC_ONE;
+
+		// FACTORIES
+		proxyFactoryTable = new Hashtable();
+		defaultProxyFactory = new DefaultProxyFactory(this);
+		// this.registerProxyFactory(new ActionMotionProxyFactory(this));						
+		// this.registerProxyFactory(new AnimateProxyFactory(this));				
+		// this.registerProxyFactory(new AscriptionProxyFactory(this));
+		// this.registerProxyFactory(new CognitionProxyFactory(this));				
+		// this.registerProxyFactory(new DeicticPronounProxyFactory(this));		
+		// this.registerProxyFactory(new DisConnectiveProxyFactory(this));										
+		// this.registerProxyFactory(new EIdentifierProxyFactory(this));						
+		// this.registerProxyFactory(new ELocationProxyFactory(this));
+		this.registerProxyFactory(new EntityProxyFactory(this));		
+		// this.registerProxyFactory(new LocNameProxyFactory(this));						
+		// this.registerProxyFactory(new MCommentProxyFactory(this));										
+		// this.registerProxyFactory(new MLocationProxyFactory(this));				
+		// this.registerProxyFactory(new ModalProxyFactory(this));								
+		// this.registerProxyFactory(new MWhereToProxyFactory(this));								
+		// this.registerProxyFactory(new PhysicalProxyFactory(this));			
+		this.registerProxyFactory(new QColorProxyFactory(this));
+		this.registerProxyFactory(new QLocationProxyFactory(this));
+		this.registerProxyFactory(new QShapeProxyFactory(this));
+		this.registerProxyFactory(new QSizeProxyFactory(this));
+		// this.registerProxyFactory(new RestrictedEntityProxyFactory(this));				
+		this.registerProxyFactory(new ThingProxyFactory(this));		
+	} // end init
+	
+    //=================================================================
+    // ACCESSOR METHODS
+    //=================================================================
+
+	/** 
+		The method <i>registerProxyFactory</i> registers a proxy factory 
+		with the binding monitor. 
+		
+		@param factory The factory to be registered
+	*/ 
+
+	public void registerProxyFactory (ProxyFactory factory) { 
+		String sort = factory.getRootSort();
+		if (sort == null) { 
+			System.out.println("Trying to register a proxy factory ["+(Object)factory.getClass().getName()+"] with an empty rootsort!"); 
+		} else { 
+			log("Registering a proxy factory for sort ["+sort+"]");
+			proxyFactoryTable.put(sort,factory); 
+		} // end if..else check for available sort 
+	} // end registerProxyFactory
+ 
+
+    //=================================================================
+    // CAST METHODS
+    //=================================================================
+
+    /** 
+     The <i>start</i> method registers change filters with the working
+	 memory, checking for added or overwritten packed logical forms. 
+	 Change filters for event nuclei are added if the monitor runs in
+	 non-incremental mode, looking for complete logical forms. 
+	 	 
+	 @see #handleWorkingMemoryChange(WorkingMemoryChange _wmc)
+	 @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+     */
+    @Override
+    public void start() {
+	super.start();
+	try {
+// HENRIK	    addChangeFilter(ComsysOntology.CACHE_TYPE,
+// HENRIK		    WorkingMemoryOperation.ADD, true,
+// HENRIK		    new WorkingMemoryChangeReceiver() {
+// HENRIK			public void workingMemoryChanged(
+// HENRIK				WorkingMemoryChange _wmc) {
+// HENRIK			    handleCacheChange(_wmc);
+// HENRIK			}
+// HENRIK		    });
+	    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Cache.class,								       
+								       WorkingMemoryOperation.ADD), 
+								       new WorkingMemoryChangeReceiver() {
+									   public void workingMemoryChanged(
+													    WorkingMemoryChange _wmc) {
+									       handleCacheChange(_wmc);
+									   }
+								       });
+// HENRIK	    addChangeFilter(ComsysOntology.CACHE_TYPE,
+// HENRIK		    WorkingMemoryOperation.OVERWRITE, true,
+// HENRIK		    new WorkingMemoryChangeReceiver() {
+// HENRIK			public void workingMemoryChanged(
+// HENRIK				WorkingMemoryChange _wmc) {
+// HENRIK			    handleCacheChange(_wmc);
+// HENRIK			}
+// HENRIK		    });
+	    
+	    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Cache.class,								       
+								       WorkingMemoryOperation.OVERWRITE), 
+								       new WorkingMemoryChangeReceiver() {
+									   public void workingMemoryChanged(
+													    WorkingMemoryChange _wmc) {
+									       handleCacheChange(_wmc);
+									   }
+								       }
+			    );
+
+	    
+	    // if the monitor handles complete PLFs, add
+	    // listeners for event nuclei
+	    // if (!incrementalBinding && plfCompletenessLevel > 0) {
+// HENRIK                   addChangeFilter(ComsysOntology.NUCLEUS_TYPE,
+// HENRIK			WorkingMemoryOperation.ADD, true,
+// HENRIK			new WorkingMemoryChangeReceiver() {
+// HENRIK			    public void workingMemoryChanged(
+// HENRIK				    WorkingMemoryChange _wmc) {
+// HENRIK				handleNucleusChange(_wmc);
+// HENRIK			    }
+// HENRIK			});
+	    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Nucleus.class,
+								       WorkingMemoryOperation.ADD),
+								       new WorkingMemoryChangeReceiver() {
+									   public void workingMemoryChanged(
+													    WorkingMemoryChange _wmc) {
+									       handleNucleusChange(_wmc);
+									   }
+								       }
+			    );
+
+// HENRIK		addChangeFilter(ComsysOntology.NUCLEUS_TYPE,
+// HENRIK			WorkingMemoryOperation.OVERWRITE, true,
+// HENRIK			new WorkingMemoryChangeReceiver() {
+// HENRIK			    public void workingMemoryChanged(
+// HENRIK				    WorkingMemoryChange _wmc) {
+// HENRIK				handleNucleusChange(_wmc);
+// HENRIK			    }
+// HENRIK			});
+	    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Nucleus.class,
+								       WorkingMemoryOperation.OVERWRITE),
+								       new WorkingMemoryChangeReceiver() {
+									   public void workingMemoryChanged(
+													    WorkingMemoryChange _wmc) {
+									       handleNucleusChange(_wmc);
+									   }
+								       }
+			    );
+
+	    //} // end if.. check for completeness
+	} catch (SubarchitectureProcessException e) {
+	    e.printStackTrace();
+	} // end try..catch
+    } // end method
+
+	/**
+         * The method <i>addBindingWMChangeFilters</i> adds two change filters
+         * that listens for changes to a proxy with the given address (ADD,
+         * OVERWRITE). This method is called in <i>createAndStoreBindingProxies</i>
+         * before updating the binding working memory.
+         */ 
+
+	protected void addBindingWMChangeFilters (String proxyAddr) { 
+		try { 
+			/**
+			log("Adding an ADD filter to binding WM for proxy ["+proxyAddr+"]");
+			addChangeFilter(BindingOntology.BINDING_PROXY_TYPE,
+					WorkingMemoryOperation.ADD,
+					"",
+					proxyAddr,
+					m_bindingSA,
+					true,
+					new WorkingMemoryChangeReceiver() {
+						public void workingMemoryChanged(
+							WorkingMemoryChange _wmc) {
+								handleBindingWMChange(_wmc);
+							}
+					}
+			); */
+			if (!changeListeners.contains(proxyAddr)) { 
+				log("Adding an OVERWRITE filter to binding WM for proxy ["+proxyAddr+"]");
+// HENRIK				addChangeFilter(BindingOntology.BINDING_PROXY_TYPE,
+// HENRIK						WorkingMemoryOperation.OVERWRITE,
+// HENRIK						"",
+// HENRIK						proxyAddr,
+// HENRIK						super.getBindingSA(),
+// HENRIK						false,
+// HENRIK						new WorkingMemoryChangeReceiver() {
+// HENRIK							public void workingMemoryChanged(
+// HENRIK								WorkingMemoryChange _wmc) {
+// HENRIK									handleBindingWMChange(_wmc);
+// HENRIK								}
+// HENRIK						}
+// HENRIK				); 	
+				WorkingMemoryChangeReceiver wmcChange = new WorkingMemoryChangeReceiver() {
+							public void workingMemoryChanged(
+								WorkingMemoryChange _wmc) {
+									handleBindingWMChange(_wmc);
+								}
+						}; 
+				addChangeFilter(ChangeFilterFactory.createAddressFilter(proxyAddr,super.getBindingSA(),WorkingMemoryOperation.OVERWRITE),
+							wmcChange
+				); 	
+				changeListeners.put(proxyAddr, wmcChange);	
+			} // end if.. check whether already added listener
+		} catch (SubarchitectureProcessException e) { 
+			log("Failed to add a change filter: "+e.getMessage());
+            e.printStackTrace();	
+		} 	
+	} // end addBindingWMChangeFilters
+
+	/**
+		The method <i>removeBindingWMChangeFilters</i> removes the change filters that 
+		have been specified to listen for changes to a proxy with the given address 
+		(ADD, OVERWRITE). This method is called in <i>createAndStoreBindingProxies</i> 
+		before updating	the binding working memory (removing the proxy). 
+		
+		@param proxyAddr	The address of the proxy for which the change filter should be removed
+	*/ 
+
+	protected void removeBindingWMChangeFilters (String proxyAddr) { 
+// HENRIK		try { 
+			/** log("Removing an ADD filter from binding WM for proxy ["+proxyAddr+"]");
+			removeChangeFilter(BindingOntology.BINDING_PROXY_TYPE,
+				WorkingMemoryOperation.ADD,
+				"",
+				proxyAddr,
+				m_bindingSA,
+				true);  */
+// HENRIK			log("Removing an OVERWRITE filter from binding WM for proxy ["+proxyAddr+"]");				
+// HENRIK			removeChangeFilter(BindingOntology.BINDING_PROXY_TYPE,
+// HENRIK				WorkingMemoryOperation.OVERWRITE,
+// HENRIK				"",
+// HENRIK				proxyAddr,
+// HENRIK				super.getBindingSA(),
+// HENRIK				false);  
+
+			try { 
+				WorkingMemoryChangeReceiver wmcChange = (WorkingMemoryChangeReceiver) changeListeners.get(proxyAddr); 
+				changeListeners.remove(proxyAddr);	
+				removeChangeFilter(wmcChange);
+			} catch (SubarchitectureProcessException e) {
+				log("Failed to remove a change filter: "+e.getMessage());
+				e.printStackTrace();
+			} 
+		
+	} // end removeBindingWMChangeFilters
+
+	/** 
+		The method <i>removeBindingWMChangeFilters</i> takes an iterator over
+		local identifiers, and removes for 
+		each proxy address the change filters registered on the binding working 
+		memory. 
+		
+	*/
+
+	protected void removeBindingWMChangeFilters (Iterator localIdIter, String spaceId) { 
+		while (localIdIter.hasNext()) { 
+			String locId = (String) localIdIter.next();
+			try { 
+				LocalIdentifier locVar = monitorState.getLocalSpaceIdentifier(locId,spaceId);
+				removeBindingWMChangeFilters (locVar._proxyAddress); 
+			} catch (BindingException be) { 
+				System.err.println(be.getMessage());
+			} // end 
+		} // end while over local identifiers
+	} // end removeBindingWMChangeFilters
+
+
+    /**
+     * @see cast.architecture.subarchitecture.ManagedProcess#taskAdopted(java.lang.String)
+     */
+    @Override
+    protected void taskAdopted(String _goalID) {
+
+    }
+
+    /**
+     * @see cast.architecture.subarchitecture.ManagedProcess#taskRejected(java.lang.String)
+     */
+    @Override
+    protected void taskRejected(String _goalID) {}
+
+    //=================================================================
+    // CAST WMC METHODS
+    //=================================================================
+    
+    
+    private void handleCacheChange(WorkingMemoryChange _wmc) {
+	
+		try {
+
+			// get the id of the working memory entry
+			String dataId = _wmc.m_address.m_id;
+			String subArchId = _wmc.m_address.m_subarchitecture;
+
+			// get the data from working memory
+			CASTData data = getWorkingMemoryEntry(dataId, subArchId);
+
+			log("Received notification for item [" + "Cache"
+				+ "] with address [" + _wmc.m_address + "] and id ["
+				+ dataId + "]");
+
+			Cache discRefs = (Cache) data.getData();
+
+			// get the packed logical forms
+			PackedLFs plfs = discRefs.plf;
+
+			boolean createAndStore = true;
+
+			int finalized = plfs.finalized; 
+
+			if (!incrementalBinding) { 
+				log("Packed logical form completeness level is ["+finalized+"], compare against ["+plfCompletenessLevel+"]");
+				if (finalized < plfCompletenessLevel) { 
+					createAndStore = false; 
+					log("PLF not complete yet, so don't create and store proxies");
+				} 
+			}
+
+			if (createAndStore) { 
+				// Reset the supported interpretations table for the PLF
+				storedInterpretationSupport.put(plfs.packedLF.packedLFId, new Hashtable());
+
+				// HZ_COMMGOAL
+				Vector<CommunicativeGoal> commGoals = createAndStoreBindingProxies(_wmc, plfs, discRefs, subArchId);
+				
+				// start old version
+				// Create and store the proxies
+				// createAndStoreBindingProxies(_wmc, plfs, discRefs, subArchId);
+				// end old version
+				
+				// now trigger the binder
+				bindNewProxies();
+				
+				// HZ_COMMGOAL add comm goals to WM
+				// NB this is a very ugly HACK!!!!!
+				for (CommunicativeGoal currGoal : commGoals) {
+					boolean _bound = false;
+					while(!_bound) {
+						BindingProxy _currProxy = (BindingProxy) getWorkingMemoryEntry(currGoal.m_question.m_restrictedProxyIDs[0], getBindingSA()).getData();
+						if (!_currProxy.m_unionID.equals("")) _bound = true;
+					}
+					String _commGoalID = newDataID();
+					addToWorkingMemory(_commGoalID, 
+							   getBindingSA(),
+							   currGoal);
+					log("added current communicative goal to binding WM");
+				}
+				// END_HZ
+			}
+			
+			if (finalized == 1) { 
+				// check whether any relations were introduced
+				// if none, store an empty interpretation support object
+				// to finalize the processing of the utterance
+				if (monitorState.getLocalSpaceProxyRelationsSize(plfs.id) < 1) { 
+					InterpretationSupport support = new InterpretationSupport(plfs.packedLF.packedLFId, "","","", true, new String[0]);
+					sendContextInfo(support);
+				} // end if.. check whether any relations
+			} // end check if final. 
+		} catch (SubarchitectureProcessException e) {
+			println(e.getLocalizedMessage());
+			e.printStackTrace();
+		} // end try .. catch
+    } // end method
+
+
+
+
+    private void handleNucleusChange(WorkingMemoryChange _wmc) {
+	try {
+	    // get the id of the working memory entry
+	    String dataId = _wmc.m_address.m_id;
+	    String subArchId = _wmc.m_address.m_subarchitecture;
+	    // get the data from working memory
+	    CASTData data = getWorkingMemoryEntry(dataId, subArchId);
+
+	    log("Received notification for item [" + "Nucleus"
+		    + "] with address [" + _wmc.m_address + "] and id ["
+		    + dataId + "]");
+
+	    Nucleus nucleus = (Nucleus) data.getData();
+	    // create the event structure for the packed logical
+	    // form
+	    createEventStructure(nucleus);
+	} catch (SubarchitectureProcessException e) {
+	    println(e.getLocalizedMessage());
+	    e.printStackTrace();
+	}
+    }// end method
+
+	/**
+         * The method <i>handleBindingWMChange</i> is called whenever a proxy,
+         * representing content of the current utterance (packed LF), is being
+         * modified (ADD, OVERWRITE).
+         * 
+         * @param _wmc
+         *                The change in working memory
+         */ 
+
+
+	public void handleBindingWMChange (WorkingMemoryChange _wmc) { 
+		try {
+	
+			// get the id of the working memory entry
+            String dataId  = _wmc.m_address.m_id;
+            String subArchId = _wmc.m_address.m_subarchitecture;
+            // get the data from working memory
+            CASTData data = getWorkingMemoryEntry(dataId, subArchId);
+			// get the type of data
+			String dType = data.getType();
+			// log("Received change on data ["+dType+"] with id ["+dataId+"]");
+			if (dType.equals(CASTUtils.typeName(BindingProxy.class))){//BindingOntology.BINDING_PROXY_TYPE)) {
+				BindingProxy proxy = (BindingProxy) data.getData();
+				// check whether it's a relation 
+				switch (proxy.m_type.value()) { 
+					case BindingProxyType._BASIC :		log("received change on BASIC proxy ["+dataId+"]"); break;
+					case BindingProxyType._GROUP :		break; 
+					case BindingProxyType._RELATION :	handleRelationProxyUpdate(proxy,dataId);
+														break;										
+				} 
+				// update the comsys WM with information on the stored relation 
+				
+			
+			} // end if check for proxy type
+		} catch (SubarchitectureProcessException e) {
+            println(e.getLocalizedMessage());
+            e.printStackTrace();
+		} // end try .. catch
+	} // end handleBindingWMChange
+
+
+    //=================================================================
+    // COMSYS COMMUNICATION METHODS
+    //=================================================================
+
+	/** 
+		The method <i>handleRelationProxyUpdate</i> takes an updated 
+		relation proxy, and checks it against the list of stored relations
+		the class knows about. After retrieving the union into which 
+		the proxy has been bound, the method checks whether the relation proxy
+		is bound to more than just itself. The method then constructs a 
+		ContextUpdate struct for the comsys working memory, with information
+		about which interpretations (for a particular PLF) are currently 
+		supported, and which ones are (presumably) not. 
+		<p>
+		The method accesses the global variable <tt>storedRelProxies</tt>
+		
+		@param BindingProxy The proxy
+	*/ 
+
+	public void handleRelationProxyUpdate (BindingProxy proxy, String proxyId) { 
+		log("Handling relation proxy update");
+		// set up the list of relations we want to consider
+		TreeSet<String> filter = new TreeSet<String>();
+		// filter.add("Dynamic");
+		filter.add("near");
+		filter.add("left");		
+		filter.add("right");				
+		// First, check whether we know anything about this proxy relation
+		if (storedRelProxies.containsKey(proxyId)) { 
+			// Get the ID of the union 
+			String unionWMID = proxy.m_unionID;
+			try { 
+				// Try to retrieve the union 
+				CASTData unionData = getWorkingMemoryEntry(unionWMID, super.getBindingSA());
+				BindingUnion union = (BindingUnion) unionData.getData();
+				// Get the list of proxy IDs
+				ArrayList<String> storedProxyIDs = new ArrayList<String>(Arrays.asList(union.m_proxyIDs));
+				// Initialize the interpretation support struct
+				StoredProxyRelation storedRel = (StoredProxyRelation) storedRelProxies.get(proxyId);
+				InterpretationSupport intSupport = null; 
+				if (filter.contains(storedRel.relMode)) { 
+					log("Construction interpretation support for relation of type ["+storedRel.relMode+"]");
+					 intSupport = new InterpretationSupport(storedRel.plfId, 
+																				 storedRel.headNomVar, storedRel.depNomVar, storedRel.relMode,
+																				 false, 
+																				 storedRel.lfIds.toArray(new String[0]));
+					// next, check whether the relation is actually a Location -- that's all we look at right now
+					// get the packed logical form
+					TreeMap packedNoms = null; 
+					PackedLogicalForm plf = (PackedLogicalForm) plfsTable.get(storedRel.plfId);
+					if (plf != null) { 
+						packedNoms = LFUtils.createNomTreeMap(plf);
+						PackedNominal head = (PackedNominal) packedNoms.get(storedRel.headNomVar);
+						if (hasDependent(head,"Location")) {
+							log("Mapped back mode ["+storedRel.relMode+"] to Location under ["+head.nomVar+"]");
+							intSupport.mode = "Location";
+							PackedNominal dep = getDependentNominal(head,intSupport.mode,packedNoms);
+							if (dep != null) { 
+								// now get the argument
+								PackedNominal arg = getDependentNominal(dep,"Arg",packedNoms);
+							
+								if (arg != null && arg.nomVar.equals(storedRel.depNomVar)) { 
+									// Check whether the size of the union is the required minimum to maintain the LFs 
+									log("Size of bound proxies in union ["+unionWMID+"] is ["+storedProxyIDs.size()+"]");
+									if (storedProxyIDs.size() >= unionSizeMin) { 
+										// Mark the interpretation as being supported
+										intSupport.isSupported = true;
+									} else { 
+										intSupport.isSupported = false; 
+									}  
+								} else { 
+									intSupport.isSupported = false; 
+								} 
+							} else { 
+								intSupport.isSupported = false;
+							} 
+						} else {
+							log("Cannot find Location under ["+head.nomVar+"]");
+						}
+					} else { 
+						System.err.println("[ERROR:ComsysBindingMonitor] Cannot retrieve PLF ["+storedRel.plfId+"] to establish interpretation support ");
+					} 
+					log("This relation is supported: ["+intSupport.isSupported+"]");
+				} else { 
+					log("Not considering interpretation support for relation of type ["+storedRel.relMode+"], producing positive support");
+					intSupport = new InterpretationSupport(storedRel.plfId, storedRel.headNomVar, storedRel.depNomVar, storedRel.relMode,true,storedRel.lfIds.toArray(new String[0]));
+				
+				} // end if..else filter
+				// Store the interpretation on the support table
+				Hashtable supportTable = (Hashtable) storedInterpretationSupport.get(storedRel.plfId);
+				if (supportTable != null) { 
+					// Store the interpretation support information 
+					supportTable.put(proxyId,intSupport);
+					// Check the synchronization mode
+					// If sync_all, and the support table contains as many items as relations for the PLF, 
+					// then create the ContextInfo object from all interpretation support data and send it off
+					switch (syncModel) { 
+						case SYNC_ONE : sendContextInfo(intSupport); break;
+						case SYNC_ALL : // if (supportTable.size() >= monitorState.getLocalSpaceProxyRelationsSize(storedRel.plfId)) { 
+
+										// SHAMELESS HACK!!!!
+										if (supportTable.size() >= 2) { 
+											sendContextInfo(supportTable); 
+										} // end if.. check for enough interpretations
+										break; 
+
+
+					} // end switch
+				} else { 
+					System.err.println("!!! No interpretation support table for PLF with id ["+storedRel.plfId+"]");
+				} // end if.. check for support table
+			} catch (SubarchitectureProcessException e) { 
+				System.err.println(e.getMessage());
+				e.printStackTrace();
+			} // end try..catch
+		} else { 
+			log("No information stored about this relation: ["+proxyId+"]");
+		} // end if..else			
+	} // end handleRelationProxyUpdate
+					
+	/**
+		The method <i>sendContextInfo</i> creates a ContextInfo struct with the given interpretation support, 
+		and adds it to the comsys working memory
+		
+		@param intSupport The interpretation support to be added
+		@throws SubarchitectureProcessException If the working memory operation fails. 
+	*/ 
+					
+	protected void sendContextInfo (InterpretationSupport intSupport) 
+		throws SubarchitectureProcessException
+	{ 
+		// Store the logical form Ids and the PLF id in a context info object
+		ContextInfo contextInfo = new ContextInfo();
+		contextInfo.plfId = intSupport.plfId;
+		// Add the support information to the context info
+		contextInfo = addInterpretationSupport(intSupport,contextInfo);
+		// Store the context info on the comsys working memory
+		addToWorkingMemory(newDataID(), contextInfo);
+		log("SYNC_ONC stored context info on comsys working memory"); 
+	} // end sendContextInfo
+	
+	/**
+		The method <i>sendContextInfo</i> creates a ContextInfo struct with the given interpretation supports, 
+		and adds it to the comsys working memory
+		
+		@param supportTable The table with interpretation support objects to be added
+		@throws SubarchitectureProcessException If the working memory operation fails. 
+	*/ 
+
+	protected void sendContextInfo (Hashtable supportTable) 
+		throws SubarchitectureProcessException	
+	{ 
+		// Store the logical form Ids and the PLF id in a context info object
+		ContextInfo contextInfo = new ContextInfo();		
+		ArrayList<InterpretationSupport> interpretations = new ArrayList<InterpretationSupport>();
+		Iterator stIter = supportTable.keySet().iterator();
+		while (stIter.hasNext()) { 
+			InterpretationSupport intSupport = (InterpretationSupport) stIter.next();
+			contextInfo.plfId = intSupport.plfId;
+			// Add the support information to the context info
+			// contextInfo = addInterpretationSupport(intSupport);		
+			interpretations.add(intSupport);	
+		} // end while over supports
+		// Add the interpretations to the conetxt info
+		contextInfo.interpretations = interpretations.toArray(contextInfo.interpretations) ;
+		// Add the context info to working memory
+		addToWorkingMemory(newDataID(), contextInfo);
+		log("SYNC_ALL stored context info on comsys working memory"); 		
+	} // end sendContextInfo
+
+
+	/** 
+		The method <i>addInterpretationSupport</i> adds the given support relation to the given context info object. 
+	
+		@param intSupport	The InterpretationSupport object to be added
+		@param contextInfo	The ContextInfo object to be updated with the InterpretationSupport 
+		@return ContextInfo	The updated context info object
+	*/ 
+	protected ContextInfo addInterpretationSupport (InterpretationSupport intSupport, ContextInfo contextInfo) { 
+		// Initialize the result
+		ContextInfo result = contextInfo;
+		if (result.interpretations != null) { 
+			ArrayList<InterpretationSupport> interpretations = new ArrayList<InterpretationSupport> (Arrays.asList(result.interpretations));
+			interpretations.add(intSupport);
+			result.interpretations = interpretations.toArray(result.interpretations) ;
+		} else {
+			result.interpretations = new InterpretationSupport[1];
+			result.interpretations[0] = intSupport;
+		} // end if..else check whether to update or initialize the array
+		return result;
+	} // end addInterpretationSupport
+
+    //=================================================================
+    // COMPUTATION METHODS
+    //=================================================================
+
+	/** 
+		The method <i>createEventStructure</i> takes a nucleus that has 
+		recently been added to the comsys working memory, and creates the
+		corresponding (compacted) event structure on binding working memory. 
+		The event structure on binding WM is tied to the proxies for the packed 
+		logical form on the basis of which the nucleus has been formulated. 
+	*/ 
+
+	private void createEventStructure (Nucleus nucleus) 
+		throws SubarchitectureProcessException
+	{ 
+		// Get the packed logical form id
+		String plfId = nucleus.plfId;
+		log("Creating event structure for packed logical form ["+plfId+"]");
+		// Get the discourse referent bindings
+		Cache drBindings = nucleus.discRefs;
+		CacheWrapper drWrapper = new CacheWrapper (drBindings);
+		// Get the state, state-type
+		State state = EventStructureUtils.getFirstState(nucleus);
+		String stateType = state.type; 
+		// Depending on state type, determine what the participant is
+		// FROM where the state relation should start, and TO what participant 
+		// it should go. 
+		String fromRel = ""; 
+		String toRel = "";
+		String stateRel = "";
+		if (stateType.equals("HAS")) { 
+			fromRel = "Actor";
+			toRel = "Patient";
+			stateRel = stateType;
+		} else if (stateType.startsWith("IS-")) { 
+			fromRel = "Actor|Patient"; // underspecified role
+			toRel = "Anchor"; 
+			stateRel = stateType.substring(3,stateType.length());
+		} else { 
+			System.err.println("[ERROR:ComsysBindingMonitor] Invalid nucleus type for comsys binding monitor: ["+stateType+"]");
+		} // end if.. else check for state-type
+		// Now cycle over the participants in the state, and get the discourse referents
+		String fromDiscRef = "";
+		String toDiscRef   = "";
+		Iterator partIter = EventStructureUtils.getParticipants(state);
+		while (partIter.hasNext()) { 
+			StateDiscRefRelation sdRel = (StateDiscRefRelation) partIter.next();
+			if (fromRel.indexOf(sdRel.mode) != -1) { 
+				fromDiscRef = sdRel.discRefId;
+			} else if (toRel.indexOf(sdRel.mode) != -1) { 
+				toDiscRef   = sdRel.discRefId;
+			} // end if..else check for mode
+		} // end while over participants
+		log("Referents for relations: from ["+fromDiscRef+"] and to ["+toDiscRef+"]");		
+		// Finally, get the proxy addresses for the discrefs, and introduce the proxy relation
+		try { 
+			String fromProxyAddress = monitorState.getGlobalSpaceProxyAddress(fromDiscRef);
+			String toProxyAddress = monitorState.getGlobalSpaceProxyAddress(toDiscRef);
+			// Add the compacted state relation 
+			String relAddr = addSimpleRelation(fromProxyAddress, toProxyAddress, stateRel, TemporalFrameType.DESIRED);
+			// Get the event, and create the compacted temporal-aspect relation 
+			Event event = EventStructureUtils.getFirstEvent(nucleus);
+			EventDiscRefRelation eventRel = EventStructureUtils.getParticipant(event,"event");
+			String eventProxyAddress = monitorState.getGlobalSpaceProxyAddress(eventRel.discRefId);
+			String consequenceAddr = addSimpleRelation(eventProxyAddress, relAddr, "Consequence", TemporalFrameType.DESIRED);
+		} catch (BindingException be) { 
+			System.err.println("[ERROR:ComsysBindingMonitor] "+be.getMessage());
+			be.printStackTrace();
+		} // end try..catch
+	} // end createEventStructure
+
+	/**
+		The method <i>createBindingProxies</i> creates binding proxies. We cycle over 
+		the packing nodes in a packed logical form, and within each node, we cycle 
+		over the packing nominals stored there. From this we then first of all create
+		a tree map, so that we have quick access to all the nominals in the packed 
+		representation (nominal variables are unique). Then, for each packing nominal we create a 
+		proxy. We need to check whether for this nominal we already added a proxy on 
+		a previous iteration in the incremental process; if so, this proxy is overwritten. 
+				
+		@param _wmc The received change
+		@param plfs The packed logical form
+		@param subArchId The id of the originating subarchitecture
+	
+	*/
+	// HZ_COMMGOAL changed return type from void to Vector of CommunicativeGoals 
+	private Vector createAndStoreBindingProxies (WorkingMemoryChange _wmc, PackedLFs plfs, Cache discRefCache, String subArchId) 
+		throws SubarchitectureProcessException
+    {   
+		// HZ_COMMGOAL init return vector
+		Vector returnCommGoals = new Vector();
+		
+		CacheWrapper discRefs = new CacheWrapper(discRefCache);
+		log("Starting to create and store binding proxies");
+		// Get the actual representation
+		PackedLogicalForm plf = plfs.packedLF;
+		log("Storing PLF ["+plf.packedLFId+"] to establish interpretation support ");
+		plfsTable.put(plf.packedLFId,plf);
+		
+		long finalized = plfs.finalized;
+		if (plf != null) { 
+			// create the treemap of the nominals
+			TreeMap packedNoms = LFUtils.createNomTreeMap(plf);
+			// check for incremental binding -- true is fine, or if we have a PLF which has the required completeness level
+			if (incrementalBinding || finalized > 0) { 
+			    log("updating binding working memory -- incrementalBinding mode ["+incrementalBinding+"] and finalized ["+finalized+"]");
+				// HZ_COMMGOAL changed return type of addNominalProxies to Vector[]
+			    Vector[] pendRelsAndCommGoals = this.addNominalProxies(plfs.id, plf,packedNoms,discRefs);
+			    returnCommGoals = pendRelsAndCommGoals[1];
+			    
+			    Vector pendingRelations = pendRelsAndCommGoals[0];
+			    // start old version!
+			    // Add the nominal proxies
+				//Vector pendingRelations = this.addNominalProxies(plfs.id, plf,packedNoms,discRefs); 
+				// end old version
+			    
+			    // Add the pending proxy relations
+				this.addPendingProxyRelations(plfs.id, pendingRelations,plf);
+				// Update tables, working memory
+				updateCurrentProxies (plfs.id,packedNoms); 
+				// update the discourse referents, i.e. global identifiers
+				addDiscourseReferents(discRefs, plfs.id, packedNoms);
+			} else {
+				log("Not yet updating binding working memory -- incrementalBinding mode ["+incrementalBinding+"] and finalized ["+finalized+"]");
+			} // end if..else check for incrementally updating binding working memory
+		} // end check for non-null plf packing nodes
+		// HZ_COMMGOAL added return statement!
+		return returnCommGoals;
+    } // end method
+
+	/** 
+		The method <i>addDiscourseReferents</i> adds discourse referents for the local identifiers, based on cycling over the 
+		packed nominals in the packed logical form. 
+		
+		@param discRefs	The discourse references 
+		@param plfsId	The id of the packed logical form, serving as local name space
+		@param packedNoms	The packed nominals in the packed logical form
+	*/ 
+
+	private void addDiscourseReferents (CacheWrapper discRefs, String plfsId, TreeMap packedNoms) { 
+		log("Adding discourse referents");
+		// cycle over the nominal variables
+		Iterator nomsIter = packedNoms.keySet().iterator();
+		while (nomsIter.hasNext()) { 
+			String nomVar = (String) nomsIter.next();
+			try { 
+				if (!nomVar.startsWith("rootNom")) {
+					// Get the discourse referent
+					String discRef = discRefs.getDiscRef(nomVar);
+					if (!discRef.equals("none") && !discRef.equals("unknown")) {
+						if (!monitorState.isExcluded(nomVar,plfsId)) { 
+							storeDiscourseReferent(nomVar,plfsId,discRef);
+						} // end if.. check whether to actually add a discourse referent			
+					} else { 		
+						System.err.println("[ERROR:ComsysBindingMonitor] In addDiscourseReferents, cannot find discourse referent for nomvar ["+nomVar+"]");
+					} // end if..else check for discourse referent
+				} // end if.. check the nomvar is not excluded
+			} catch (BindingException be) { 
+				// do nothing 
+			} // end try..catch
+		} // end while over nominal variables
+	} // end addDiscourseReferents
+
+	/** 
+		The method <i>addNominalProxies</i> takes a list of (packed) nominals from a packed logical form, and creates 
+		proxies for them. The method returns a vector with pending proxy relations. 
+	
+	
+	*/
+	// HZ_COMMGOAL changed return type from Vector to Vector[]
+	private Vector[] addNominalProxies(String plfsId, PackedLogicalForm plf, TreeMap packedNoms, CacheWrapper discRefs) 
+		throws SubarchitectureProcessException, BindingComponentException
+	{
+		log("Adding nominal proxies");
+		
+		if (plf == null) { System.err.println("[ERROR:ComsysBindingMonitor] received null PackedLogicalForm object! (l.1070)"); }
+		
+		// HZ_COMMGOAL added this to return communicative goals
+		Vector commGoals = new Vector();
+		
+		// Set up the set with pending relations
+		Vector pendingRelations = new Vector();
+		// Cycle over the packing nodes
+		Iterator pnomsIter = LFUtils.getNominalsIterator(plf,"DF",true);
+		while (pnomsIter.hasNext()) { 
+			PackedNominal nom = (PackedNominal) pnomsIter.next();
+			String nomVar = nom.nomVar;
+			boolean propOK = true;
+			if (nom.prop.prop == null || nom.prop.prop.equals("")) { propOK = false; } 
+			if (!monitorState.isExcluded(nomVar,plfsId) && !nomVar.equals("rootNom") && propOK) {
+				String sort = getPackedNominalSort(nom);
+				if (!sort.equals("") && sort != null) {
+					log("Proxy creation for ["+nomVar+"]: exists address ["+monitorState.existsLocalSpaceProxyAddress(nomVar,plfsId)+"], has dependents ["+hasDependents(nom)+"]");
+					// -----------------------------------------------------------------
+					// check whether this nominal already has a proxy in the local space
+					// if it does -- skip it, do not go and update
+					if (monitorState.existsLocalSpaceProxyAddress(nomVar,plfsId) && !hasDependents(nom)) { 
+						log("A proxy for ["+nomVar+"] already exists, and has no dependents, so skip");
+					} else { 
+					// -----------------------------------------------------------------
+						ProxyFactoryResults pfResults = new ProxyFactoryResults();
+						ProxyFactory factory = defaultProxyFactory; 
+						if (proxyFactoryTable.containsKey(sort)) { 
+							factory = (ProxyFactory) proxyFactoryTable.get(sort);
+							log("Applying proxy factory for the observed nominal sort ["+sort+"]");					
+						} else {
+							System.err.println("[ERROR:ComsysBindingMonitor] No proxy factory for the observed nominal sort ["+sort+"]");
+						} // end 
+						// Initialize the proxy for the factory; take discrefs into account
+						String proxyAddress = this.initializeProxyAddress(plfsId,nomVar,discRefs);
+						factory.setDiscRefs(discRefs);
+						factory.initializeProxy(proxyAddress,nom);						
+						try { 
+							log("Now applying the factory to create the content for the proxy for ["+sort+"]");
+							// Apply the factory to create the content for the proxy/proxies
+							
+							
+							// pfResults = factory.produceProxies(nom,plf,packedNoms); 
+							
+							pfResults = factory.produce(nom,plf,packedNoms); 
+							
+							
+							
+							///
+							
+							
+							if (pfResults == null) { 					
+								log("The proxy factory returned a NULL result");
+								cancelCurrentProxy();
+							} else if (!pfResults.generateProxy()) { 
+								// we haven't even started a proxy, so nothing to cancel, but add the pending relations
+								log("Updating the set of pending proxy relations with ["+pfResults.getPendingProxyRelations().size()+"] relations");
+								pendingRelations.addAll(pfResults.getPendingProxyRelations());
+							} else {
+								// Update the state with information about excludes
+								monitorState.excludeIdentifiers(pfResults.getExcludes().iterator(),plfsId);
+								// Update the set with pending proxy relations
+								log("Updating the set of pending proxy relations with ["+pfResults.getPendingProxyRelations().size()+"] relations");
+								pendingRelations.addAll(pfResults.getPendingProxyRelations());
+								// Store the proxy
+								String wmc_id = storeCurrentProxy();
+								// Check whether to add a change filter
+								addBindingWMChangeFilters(wmc_id);						
+								// store the wmc_id with the nominal variable in the monitor state
+								if (pfResults.getAddedNominals().hasNext()) { 
+									Iterator addedNomsIter = pfResults.getAddedNominals();
+									while (addedNomsIter.hasNext()) { 
+										String addedNomVar = (String) addedNomsIter.next();
+										log("Updating local name space ["+plfsId+"] with local identifier ["+addedNomVar+"] at proxy address ["+wmc_id+"]");								
+										monitorState.updateLocalSpaceIdentifier(addedNomVar,plfsId,wmc_id);
+										// Next we need to check whether we have added but also excluded a nominal 
+										// If so, we need to add a global identifier -- this case is not covered by the addDiscourseReferents method
+										if (monitorState.isExcluded(addedNomVar,plfsId)) { 
+											storeDiscourseReferent(addedNomVar,plfsId,discRefs.getDiscRef(addedNomVar));
+										} // end if.. check whether added but also excluded
+									} // end while
+								} else { 	
+									log("Updating local name space ["+plfsId+"] with local identifier ["+nom.nomVar+"] at proxy address ["+wmc_id+"]");								
+									monitorState.updateLocalSpaceIdentifier(nom.nomVar,plfsId,wmc_id);	
+								} // end if..else check what nomvar to add
+								// hz: store comm goal if present:
+								log("##### check if we have a communicative goal...");
+								if (pfResults.getCommGoals().size()>0) {
+									log("##### we have a communicative goal...");
+									for (String _currNomVar : pfResults.getCommGoals().keySet()) {
+									    CommunicativeGoal _currCGoal = pfResults.getCommGoal(_currNomVar);
+										String[] _resProxies = new String[1];
+										_resProxies[0] = wmc_id;
+										if (_currCGoal.m_sort.equals(CommunicativeGoalSort.Question)) {
+											_currCGoal.m_question.m_restrictedProxyIDs = _resProxies;
+										}
+										// HZ_COMMGOAL add the comm goal to the return vector
+										commGoals.add(_currCGoal);
+										
+										// HZ_COMMGOAL don't add the comm goal right now!
+										// start comment out
+										//String _commGoalID = newDataID();
+										//addToWorkingMemory(_commGoalID, getBindingSA(), CommunicativeGoalsOntology.COMMUNICATIVE_GOAL_TYPE, 
+										//		_currCGoal);
+										//log("added current communicative goal to binding WM");
+										// end comment out
+									}
+								}
+							} // end if.. else check how to update binding WM
+
+						} catch (BindingComponentException eb) { 
+							System.err.println("[WARNING] while trying to add nominal content for ["+nom.nomVar+"] to proxy: "+eb.getMessage());
+							// eb.printStackTrace();
+						} catch (SubarchitectureProcessException es) { 
+							System.err.println("[WARNING] while trying to add nominal content for ["+nom.nomVar+"] to proxy: "+es.getMessage());
+							// es.printStackTrace();					
+						} catch (AssertionError aes) { 
+							System.err.println("[WARNING] assertion error ["+nom.nomVar+"] to proxy: "+aes.getMessage());
+							aes.printStackTrace();					
+						} // end try..catch	// end try..catch	
+
+					// -----------------------------------------------------------------
+					} // end if.. check whether a proxy already exists
+					// -----------------------------------------------------------------
+					
+					
+					
+					
+					
+				} // end if.. check for non-empty sort
+			} // end if.. check whether the nominal hasn't already been processed
+		} // end while over packed nominals
+		// Return the results
+		Vector[] returnArray = new Vector[2];
+		returnArray[0] = pendingRelations;
+		returnArray[1] = commGoals;
+		return returnArray;
+	} // end addNominalProxies
+
+	/** 
+		The method <i>addPendingProxyRelations</i> takes a list of pending proxy relations, and then adds these relations using the 
+		proxy-addresses in the provided map (linking nominal variables with proxy addresses). 
+		
+		@param pendingRelations A vector with PendingProxyRelation objects
+	*/
+
+	private void addPendingProxyRelations (String plfsId, Vector pendingRelations, PackedLogicalForm plf) 
+		throws SubarchitectureProcessException, BindingComponentException	
+	{ 
+		log("Adding pending proxy relations");
+		Iterator pendingRelsIter = pendingRelations.iterator();
+		while (pendingRelsIter.hasNext()) { 
+			PendingProxyRelation rel = (PendingProxyRelation) pendingRelsIter.next();
+			log("Pending relation of type ["+rel.relMode+"] between ["+rel.headNomVar+"] and ["+rel.depNomVar+"]");
+			if (!rel.relMode.equals("")) {  
+				if (monitorState.existsLocalSpaceProxyAddress(rel.headNomVar,plfsId)) { 
+					String fromAddress = monitorState.getLocalSpaceProxyAddress(rel.headNomVar,plfsId);
+					if (monitorState.existsLocalSpaceProxyAddress(rel.depNomVar,plfsId)) { 
+						String toAddress = monitorState.getLocalSpaceProxyAddress(rel.depNomVar,plfsId);				
+						ProxyRelation proxyRel = new ProxyRelation("",rel.relMode,fromAddress,toAddress);
+						if (!monitorState.existsLocalSpaceProxyRelation(plfsId,proxyRel)) { 
+							log ("Adding relation ["+rel.relMode+"] between ["+rel.headNomVar+"] and ["+rel.depNomVar+"]");
+							// Add the relation, get its address, and store the address on the list for this nominal
+							if (toAddress != null && fromAddress != null) { 
+								TemporalFrameType tmpFT = (TemporalFrameType) localMapping.map("TemporalFrameType",rel.tempFrameType) ; 
+								proxyRel._proxyAddress = addSimpleRelation(fromAddress, toAddress, rel.relMode, tmpFT);			
+								monitorState.addLocalSpaceProxyRelation(proxyRel,plfsId);
+								// Add a change filter, so that we can monitor whether it is getting bound
+								log("Adding a change filter for a relation proxy.");
+								addBindingWMChangeFilters(proxyRel._proxyAddress);
+								// Retrieve the id's of logical forms that introduce this particular relation
+								Vector matchedLFs = LFUtils.getMatchedLFs(plf,rel.headNomVar,rel.depNomVar,rel.relMode);
+								// Store the id's with the relation address etc. 
+								StoredProxyRelation storedRel = new StoredProxyRelation (rel.headNomVar,rel.depNomVar,rel.relMode, plf.packedLFId, matchedLFs);
+								storedRelProxies.put(proxyRel._proxyAddress,storedRel);
+							} else { 
+								System.err.println("[ERROR:ComSysBindingMonitor] Invalid proxy addresses for ["+rel.headNomVar+"/"+fromAddress+"] and/or ["+rel.depNomVar+"/"+toAddress+"]");
+							} // end  		
+						} else {
+							// System.err.println ("[ERROR:ComSysBindingMonitor] Already introduced relation ["+rel.relMode+"] between ["+rel.headNomVar+"] and ["+rel.depNomVar+"]");						
+						} // end if..else
+					} // end if.. check for available TO proxy
+				} // end if .. check for available FROM proxy
+			} else { 
+				System.err.println ("[ERROR:ComSysBindingMonitor] Empty relation label for relation between ["+rel.headNomVar+"] and ["+rel.depNomVar+"]");
+			} // end if..else check for mode defined
+		} // end while over pending relations
+	} // end addPendingProxyRelations
+
+
+	/**
+		The method <i>updateCurrentProxies</i> removes out-of-date proxies and relation proxies from the binding working memory, and updates
+		the monitor state.  A proxy is considered to be "out-of-date" if its identifier (i.e. its nominal variable) no longer appears in the 
+		list of nominal variables for the current packed logical form, or if it is still in the packed logical form but it has been excluded
+		from further processing. We first check what identifiers to delete, and delete their relations. We just gather, and do not immediately 
+		delete, the identifiers, to avoid synchronization errors on the table with identifiers in the 
+		monitor state. Only after we have gathered the identifiers to be removed, we remove them.  
+		
+		@param plfsId	The ID of the current packed logical form
+		@param packedNoms	The nominals in the current packed logical form
+		@throws SubarchitectureProcessException Thrown if there is a problem deleting a proxy
+	*/ 
+
+	private void updateCurrentProxies (String plfsId, TreeMap packedNoms) 
+		throws SubarchitectureProcessException
+	{ 
+		log("Update current proxies");
+		// Cycle over what local identifiers the monitor maintains in the 
+		// local space for the PLF, and check which ones are still in the 
+		// current PLF. If a local identifier is not in the PLF, then 
+		// put it on the removal list, and delete the relations it is involved in. 
+		TreeSet removals = new TreeSet();
+		Iterator localIdentifiers = monitorState.getLocalSpaceIdentifiers(plfsId); 
+		while (localIdentifiers.hasNext()) { 
+			String varId = (String) localIdentifiers.next();
+			if (!packedNoms.containsKey(varId)) { 
+				try { 
+					// if the identifier is no longer in the plf, remove it and its relations
+					Iterator relsIter = monitorState.getLocalSpaceProxyRelations(varId,plfsId);
+					while (relsIter.hasNext()) {
+						// get the relation
+						String relLabel = (String)relsIter.next();
+						ProxyRelation proxyRel = monitorState.getLocalSpaceProxyRelation(relLabel,plfsId);
+						// remove the relation from the namespace
+						monitorState.removeLocalSpaceProxyRelation(relLabel,plfsId);
+						// remove any listeners on the proxy address
+						removeBindingWMChangeFilters(proxyRel._proxyAddress);
+						// remove the proxy itself
+						deleteExistingProxy(proxyRel._proxyAddress);
+					} // end while
+					removals.add(varId);
+				} catch (SubarchitectureProcessException e) { 
+					System.err.println ("[ERROR:ComSysBindingMonitor] Failing to delete a proxy :"+e.getMessage()); 
+				} // end try..catch
+			} // end if.. check whether still in PLF
+		} // end while over identifiers
+		// Now remove the identifiers that have been scheduled for removal
+		Iterator removalsIter = removals.iterator();
+		while (removalsIter.hasNext()) { 
+			String varId = (String) removalsIter.next();
+			// get the proxy address for the identifier
+			String idProxyAddress = monitorState.getLocalSpaceProxyAddress(varId,plfsId);
+			// remove the identifier from the namespace
+			monitorState.removeLocalSpaceIdentifier(varId,plfsId);
+			// remove any listeners on the proxy address
+			removeBindingWMChangeFilters(idProxyAddress);
+			// remove the proxy for the local identifier
+			deleteExistingProxy(idProxyAddress);
+		} // end while
+	} // end updateCurrentProxies
+	
+	/** 
+		The method <i>getPackedNominalSort</i> returns the (stable) ontological sort of the given nominal. 
+		
+		@param nom The packed nominal
+		@return String	The ontological sort
+	*/ 
+
+	private String getPackedNominalSort (PackedNominal nom) { 
+		TreeSet addedSorts = new TreeSet();
+		ArrayList<PackedOntologicalSort> packedSorts = new ArrayList<PackedOntologicalSort>(Arrays.asList(nom.packedSorts));
+		Iterator sortsIter = packedSorts.iterator();
+		while (sortsIter.hasNext()) { 
+			PackedOntologicalSort pSort = (PackedOntologicalSort) sortsIter.next();
+			String sort = pSort.sort;
+			if (!addedSorts.contains(sort)) { 
+				addedSorts.add(sort);
+			} // end if..check whether already added
+		} // end while over sorts
+		return (String) addedSorts.first();
+	} // end getPackedNominalSort
+
+
+	protected PackedNominal getDependentNominal (PackedNominal head, String relation, TreeMap packedNoms) { 
+		PackedNominal result = null; 
+		boolean depFound = false; 
+		ArrayList<LFRelation> relations = new ArrayList<LFRelation>(Arrays.asList(head.rels));
+		if (relation.equals("") && relations.size() > 0) { 
+			LFRelation rel = (LFRelation) relations.get(0); 
+			result = (PackedNominal) packedNoms.get(rel.dep);
+		} else { 
+			Iterator relsIter = relations.iterator();
+			while (relsIter.hasNext() && !depFound) { 
+				LFRelation rel = (LFRelation) relsIter.next();
+				if (rel.mode.equals(relation)) { 
+					// Get the dependent nominal
+					String depVar = rel.dep;
+					if (packedNoms.containsKey(depVar)) { 
+						result = (PackedNominal) packedNoms.get(depVar);
+						depFound = true;
+					} // end if check for availability of the nominal in the map
+				} // end if.. check whether the right relation 
+			} // end while over relations
+			// If we still haven't found a dependent, cycle over
+			// the packing edges
+			if (!depFound) { 
+				if (head.pEdges != null) { 
+					ArrayList<PackingEdge> packingEdges = new ArrayList<PackingEdge>(Arrays.asList(head.pEdges));
+					Iterator peIter = packingEdges.iterator();
+					while (peIter.hasNext() && !depFound) { 
+						PackingEdge packingEdge = (PackingEdge) peIter.next();
+						if (packingEdge.mode.equals(relation)) { 
+							ArrayList<PackingNodeTarget> targets = new ArrayList<PackingNodeTarget>(Arrays.asList(packingEdge.targets));
+							if (targets.size() > 0) { 
+								PackingNodeTarget target = targets.get(0);
+								String targetNV = target.pnId.substring(0,target.pnId.indexOf("_PN"));
+								result = (PackedNominal) packedNoms.get(targetNV);
+								log("[AbstractProxyFactory] Getting dependent nominal: scanning packing edge targets under head node ["+head.nomVar+"], taking the first of a total ["+targets.size()+"] with id ["+targetNV+"]");						
+							} // end if.. check for available targets
+						} // end if .. check for mode of packing edge
+					} // end while
+				} // end check for there being packing edges
+			} // end if.. check whether to check the packing edges 
+		} // end if..else check for type
+		return result;
+	} // end getDependentNominal
+
+
+
+	/** 
+		Returns whether the given packed nominal has dependents (LFRelation or PackingEdge)
+	*/ 
+
+	/** 
+		The method <i>hasDependent</i> returns a boolean indicating whether the nominal has a dependent of the given type. 
+		
+		@param head		The head nominal
+		@param relation	The type being looked for
+		@return boolean	Indicating whether the head has a relation of the given type
+	*/ 
+	protected boolean hasDependent (PackedNominal head, String relation) { 
+		boolean result = false; 
+		if (head != null) { 
+			if (head.rels != null) { 
+				ArrayList<LFRelation> relations = new ArrayList<LFRelation>(Arrays.asList(head.rels));
+				Iterator relsIter = relations.iterator();
+				while (relsIter.hasNext() && !result) { 
+					LFRelation rel = (LFRelation) relsIter.next();
+					log("Checking relation ["+rel.mode+"] against ["+relation+"]");
+					if (rel.mode.equals(relation)) { 
+							result = true;
+					} // end if.. check whether the right relation 
+				} // end while over relations
+			} 
+			if (head.pEdges != null) { 
+				boolean depFound = false;
+				ArrayList<PackingEdge> packingEdges = new ArrayList<PackingEdge>(Arrays.asList(head.pEdges));
+				Iterator peIter = packingEdges.iterator();
+				while (peIter.hasNext() && !depFound) { 
+					PackingEdge packingEdge = (PackingEdge) peIter.next();
+					log("Checking packing edge relation ["+packingEdge.mode+"] against ["+relation+"]");					
+					if (packingEdge.mode.equals(relation)) { 
+						ArrayList<PackingNodeTarget> targets = new ArrayList<PackingNodeTarget>(Arrays.asList(packingEdge.targets));
+						if (targets.size() > 0) { 
+							result = true;
+						} // end if.. check for available targets
+					} // end if .. check for mode of packing edge
+				} // end while
+			} else { 
+				log("The nominal has neither packing edges nor lf relations");
+			} // end check for there being packing edges
+		} else { 
+			System.err.println("ERROR [AbstractProxyFactory] cannot determine relation because head ["+head+"]");
+		} // end check for presence of relations
+		return result;
+	} // end hasDependent
+
+
+	/** 
+		Returns whether the given packed nominal has dependents (LFRelation or PackingEdge)
+	*/ 
+	
+	private boolean hasDependents (PackedNominal nom) { 
+		boolean result = false;
+		log("For nominal ["+nom.nomVar+"] rels are ["+nom.rels+"] and packing edges ["+nom.pEdges+"]");
+		if (nom.rels != null || nom.pEdges != null) { 
+			ArrayList<LFRelation> rels = new ArrayList<LFRelation>(Arrays.asList(nom.rels));
+			log("For nominal ["+nom.nomVar+"] rels are size ["+rels.size()+"]");
+			if (rels.size() > 0) { 
+				result = true;
+			} else { 
+				if (nom.pEdges != null) { 
+					ArrayList<PackingEdge> perels = new ArrayList<PackingEdge>(Arrays.asList(nom.pEdges));						
+					log("For nominal ["+nom.nomVar+"] packing edges are size ["+perels.size()+"]");				
+					if (perels.size() > 0) { 
+						result = true;
+					} // end if check for packing edges
+				}
+			} // end if check for lf relations
+		} // end if.. check for there being relations or packing edges
+		return result;
+	} // end hasDependents
+
+
+	/** 
+		The method <i>initializeProxyAddress</i> checks whether we have already introduced a proxy for the given nominal 
+		variable. If so, we return the address; otherwise, <tt>null</tt> is returned. 
+
+		
+	*/ 
+
+	private String initializeProxyAddress (String plfsId, String nomVar, CacheWrapper discRefs) { 
+		String nomVarProxyAddress = null;
+		try { 
+			// check whether there is a discourse referent
+			String discRef = discRefs.getDiscRef(nomVar);
+			// check whether there is a proxy for that referent (it may be new)
+			if (monitorState.existsGlobalSpaceProxyAddress(discRef)) { 
+				nomVarProxyAddress = monitorState.getGlobalSpaceProxyAddress(discRef);
+				log("Using discourse referent for initializing proxy  for ["+nomVar+"], ["+nomVarProxyAddress+"]");					
+			} else { 
+				nomVarProxyAddress = monitorState.getLocalSpaceProxyAddress(nomVar,plfsId);
+				log("Reusing existing local proxy address for initializing proxy for ["+nomVar+"], ["+nomVarProxyAddress+"]");			
+			} // end if..else check for global/discref or local proxy address 
+		} catch (BindingException be) {
+			// System.err.println("[ERROR: ComSysBindingMonitor] When trying to initialize proxy address: "+be.getMessage()); 
+		} // end try.. catch thrown if no such identifier
+		/*
+		// if we have an address, we need to see whether we can already update the proxy
+		if (nomVarProxyAddress != null) { 
+			try { 
+				log("Registering a proxy monitor on address ["+nomVarProxyAddress+"]");
+				ProxyMonitor monitor = ProxyMonitor.newProxyMonitor(this, nomVarProxyAddress, getBindingSA());
+				// create an object that we will use to sync with
+				Object lockObject = new Object();
+				// now lets register a callback that calls notify on this object
+				monitor.registerRebindCallback(new NotifyOnRebindCallback(lockObject));
+				// now wait for the monitor to inform us that the proxy has been bound
+				while (!monitor.proxyIsBound()) {
+					try { 
+						// get monitor ownership
+						synchronized (lockObject) {
+							lockObject.wait();
+						} // end synchronized wait
+					} catch (InterruptedException ie) { 
+						System.err.println("[ERROR: ComSysBindingMonitor] IE While trying to initialize a proxy address for updating: "+ie.getMessage());
+					} // end try.. catch
+				} // end while
+			} catch (BindingComponentException be) { 
+				System.err.println("[ERROR: ComSysBindingMonitor] BE While trying to initialize a proxy address for updating: "+be.getMessage());			
+			} catch (SubarchitectureProcessException se) {
+				System.err.println("[ERROR: ComSysBindingMonitor] SE While trying to initialize a proxy address for updating: "+se.getMessage());						
+			} // end try..catch
+		} // end check for updating an existing address
+		*/
+		log("Exiting proxy address initialization");
+		return nomVarProxyAddress;
+	} // end initializeProxyAddress
+
+
+	/**
+	
+	
+	*/ 
+
+	private void storeDiscourseReferent (String nomVar, String plfsId, String discRef) 
+		throws BindingException
+	{ 
+		LocalIdentifier localId = monitorState.getLocalSpaceIdentifier(nomVar,plfsId);
+		log("Updating global name space ["+plfsId+"] with global identifier ["+discRef+"]");
+		GlobalIdentifier gId = new GlobalIdentifier();
+		if (monitorState.existsGlobalSpaceProxyAddress(discRef)) { 
+			// Get the global identifier
+			gId = monitorState.getGlobalSpaceIdentifier(discRef);
+			// update the local identifier
+			localId._globalIdentifier = discRef;
+			// update the global identifier
+			gId.addLocalIdentifier(localId);
+		} else { 
+			// if not, create a new global identifier
+			gId._varId = discRef;		
+			gId._proxyAddress = localId._proxyAddress;
+			gId.addLocalIdentifier(localId);
+		} // end if..else
+		// Store the updated local and global identifiers
+		monitorState.updateLocalSpaceIdentifier(localId,plfsId);
+		monitorState.updateGlobalSpaceIdentifier(gId);		
+	} // end storeDiscourseReferent
+
+	
+	
+// HENRIK	// PRELIMIARY!!! (hz)
+// HENRIK	public <FeatureT> FeaturePointer createAndStoreFeatureInQuestion(FeatureT _featureInQuestion)
+// HENRIK	throws SubarchitectureProcessException {
+// HENRIK		log("createAndStoreFeatureInQuestion("+_featureInQuestion+") called.");
+// HENRIK		FeaturePointer ftrInQPointer = new FeaturePointer();
+// HENRIK		try {
+// HENRIK			String _featureID = newDataID();
+// HENRIK			String _featureType = featureToCASTFeatureTypeString(_featureInQuestion);
+// HENRIK			//setImmediateProxyID(_featureInQuestion, m_currentProxyID);
+// HENRIK			setImmediateProxyID(_featureInQuestion, "");
+// HENRIK			
+// HENRIK			addToWorkingMemory(_featureID, getBindingSA(), _featureType, _featureInQuestion);
+// HENRIK			log("added feature to WM: "+_featureID+","+getBindingSA()+","+_featureInQuestion);
+// HENRIK			
+// HENRIK			ftrInQPointer.m_address = _featureID;
+// HENRIK			ftrInQPointer.m_type = _featureType;
+// HENRIK			// ftrInQPointer.m_immediateProxyID =  m_currentProxyID;
+// HENRIK			ftrInQPointer.m_immediateProxyID = "";
+// HENRIK		}
+// HENRIK		catch (BindingComponentException e) {
+// HENRIK			e.printStackTrace();
+// HENRIK		}
+// HENRIK		log("returning the feature pointer... exiting createAndStoreFeatureInQuestion()");
+// HENRIK		return ftrInQPointer;
+// HENRIK	}
+
+
+    //=================================================================
+    // I/O METHODS
+    //=================================================================
+
+	/** Adds the given feature to the proxy */
+	public void addProxyFeature (Object feat) 
+		throws BindingComponentException, SubarchitectureProcessException
+	{
+		addFeatureToCurrentProxy(feat);
+	} // end addProxyFeature
+
+	public void cancelProxy() 
+		throws BindingComponentException , SubarchitectureProcessException
+	{
+		cancelCurrentProxy();
+	} 
+
+
+	/** Flags the current proxy as hypothetical */ 
+	public void makeProxyHypothetical () 
+		throws BindingComponentException
+	{ 
+		makeCurrentProxyHypothetical();
+	} // end makeProxyHypothetical
+
+	/** Starts a new proxy */ 
+	public void startNewProxy () 
+		throws BindingComponentException , SubarchitectureProcessException
+	{ 
+		startNewBasicProxy();
+	} // end startNewProxy
+
+	/** Indicates to the monitor we should update an already present proxy */
+	public void updateExistingProxy(String nomVarProxyAddress,HashSet delFeats) 
+		throws BindingComponentException, SubarchitectureProcessException 
+	{ 
+		changeExistingProxy(nomVarProxyAddress,delFeats);
+	} // end updateExistingProxy
+	
+	
+	/** makes the current proxy a group proxy */
+	
+	public void makeCurrentProxyGroup (short size) 
+		throws BindingComponentException, SubarchitectureProcessException 	
+	{
+		makeCurrentProxyAGroup(size); 
+	}
+	
+    //=================================================================
+    // MAIN METHOD
+    //=================================================================
+
+    // Methods that Henrik insists on:
+    @Override
+    public void configure(Properties _config) {
+        super.configure(_config);
+    
+		if (_config.containsKey("--incrementalBinding")) { 
+			String incrValue = _config.getProperty("--incrementalBinding");
+			if (incrValue.equals("false")) { 
+				incrementalBinding = false;
+				plfCompletenessLevel = 1;
+			} else if (incrValue.equals("0") || incrValue.equals("true")) {
+				incrementalBinding = true;
+				plfCompletenessLevel = 0;
+			} else if (incrValue.equals("1")) { 
+				incrementalBinding = false;
+				plfCompletenessLevel = 1;
+			} else if (incrValue.equals("2")) { 
+				incrementalBinding = false;
+				plfCompletenessLevel = 1;			
+			} else {
+				incrementalBinding = true;
+			} // end 
+		} // end if.. check for incremental binding 
+		
+		log("incremental binding: " + incrementalBinding);
+		log("plfCompletenessLevel: " + plfCompletenessLevel);
+		
+		if (_config.containsKey("--hypoProxies")) { 
+			String hypoValue = _config.getProperty("--hypoProxies");	
+			if (hypoValue.equals("true")) { 
+				hypoProxies = true;
+			} // end if check for true
+		} // end if.. check for hypothetical proxies
+	
+		if (_config.containsKey("--unionSizeMin")) { 
+			String sizeValue = _config.getProperty("--unionSizeMin");	
+			try { 
+				Integer Size = new Integer(sizeValue);
+				unionSizeMin = Size.intValue();
+				if (unionSizeMin < 1) { 
+					unionSizeMin = 1;
+					System.err.println("The command-line option --unionSizeMin has an invalid numerical value: ["+sizeValue+"]. Flag now set to default of 1.");				
+				} // end 
+			} catch (NumberFormatException ne) { 
+				System.err.println("The command-line option --unionSizeMin has an invalid, non-numerical value: ["+sizeValue+"]");
+			} // end try..catch
+		} // end if.. check for hypothetical proxies	
+	
+		if (_config.containsKey("--syncModel")) { 
+			String syncValue = _config.getProperty("--syncModel");	
+			if (syncValue.equals("sync_all")) { 
+				syncModel = SYNC_ALL;
+			} else if (syncValue.equals("sync_one")) { 
+				syncModel = SYNC_ONE;
+			} else { 
+				syncModel = SYNC_ONE;
+			} // end if check for true
+		} // end if.. check for hypothetical proxies
+
+        //set the source id to be this subarch id
+        m_sourceID = m_subarchitectureID;
+    }
+
+
+} // end class definition 

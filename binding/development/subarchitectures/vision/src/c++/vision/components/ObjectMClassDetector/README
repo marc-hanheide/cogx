@@ -1,0 +1,40 @@
+Multi Class Object Detection Component
+======================================
+
+* enable compilation during the toplevel configuration step (usually done by calling "ccmake -i .." from release5/BUILD directory)
+* component depends on opencv libraries only
+
+* some example models and config files can be found in the "../vision/config" and "../vision/config/objmodels" diectories
+  if component compilation was successful you can start a demo from "../vision/config" with:
+  "java -classpath $CLASSPATH:$OUTPUT_DIR/classes  cast.server.CASTProcessServer -h localhost  -f objectmc.cast"
+
+* following options  are supported:
+  -conf FILENAME            :load tripples of object class name, config and model file names as defined in FILENAME
+                             see "...vision/config/objectmc.conf" for an example
+  -fixwidth PIXELS          :rescale image frame (from the VideoServer component) to have a width of PIXELS
+  -alwayson                 :enables continous processing of image frames, as opposed to processin only upon request via WM
+  -vis                      :enables visualization of image frames and detection hypotheses
+  -nonmax                   :do not use non-maximum suppression. will usually lead to many overlapping hypotheses
+  -saveidl NUMBER           :save processed image frames to /tmp directory. object class hypotheses are saved in IDL file
+                             format every NUMBER of frames for each class (can be opened/viewed by the provided idleditor program)
+
+If visualization is enabled you can save one (more) frame by pressing the 's' key. If this is not working than you probably need to adjust the OpenCV key code in ObjectMClassDetector.cpp line 205.
+
+TRAINING
+========
+
+* You'll need Qt4.x installed on your machine for compilation
+
+From the current directory:
+
+* execute "qmake sw_svm.pro &&  make" to build a binary to train models.
+* enter the idl_edit2_qt4 directory and execute "qmake idl_edit.pro && make"
+* move the binaries to some directory that is in your PATH 
+
+Downlaod https://tahiti.mis.informatik.tu-darmstadt.de/public/cosy/objdb.tar and untar it. Follow descriptions in objdb/README.
+
+
+
+
+
+

@@ -1,0 +1,209 @@
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def pp_bare(args)       { pp<25>[M args] }
+  def pp(args)            { pp_bare(MOD-TYPE CC-TYPE args) }
+  def from-pp(args)       { pp<~25>[M args] }
+
+  # A preposition is a prep-phrase (pp) wanting a np argument
+  #
+  def prep(p-arg, np-arg) { pp(p-arg) /^ np_ma(np-arg acc-both) }
+  def prep+obl(p-arg, obl-arg) { pp(p-arg) /^ obl_ma(obl-arg, acc-both) }
+
+  def from-prep(p-arg, np-arg) { from-pp(p-arg) /^ np_ma(np-arg acc-both) }
+  def from-prep+obl(p-arg, obl-arg) { from-pp(p-arg) /^ obl_ma(obl-arg, acc-both) }
+
+ # def prep(p-arg, np-arg) { pp(p-arg) /^ np_ma(np-arg ) }
+ # def prep+obl(p-arg, obl-arg) { pp(p-arg) /^ obl_ma(obl-arg, ) }
+
+
+##############
+## FAMILIES ##
+##############
+
+  ## The Families ##
+
+  family Prep						 { entry:      prep(,)           :  M(* <Anchor>(A:physical) ) ;  }
+  family Prep+of-np-	    		 { entry:      prep+obl(, of)    :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+to-np-	    		 { entry:      prep+obl(, to)    :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+from-np-	    		 { entry:      prep+obl(, from)  :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+no-arg-				 { entry:      pp()              :  M(*)        ;}
+ 
+  family Prep--time-unit                { entry:      prep(,)           :  M(* <Anchor>(A:e-time-unit) ) ;  }
+  
+  # This is used for 'to your right' 'to the left of the ball'
+  #
+  # It is blocked from being questionable, so that 'what is the ball to' doesn't parse...
+  #
+  family Prep--region                   { entry:      prep(, Questionable=no)           :  M(* <Anchor>(A:e-region) ) ;  }
+	   
+  # Modifiers #
+   
+  family Mod-pre-prep-               { entry:  from-pp() /^ pp()   :  M( M-MOD(*) ) ;}
+  family Mod-post-prep-              { entry:  from-pp() \ pp()    :  M( M-MOD(*) ) ;}
+    
+  # Negation and Coordition #
+  
+  family Negation-prep-(indexRel=polarity)  { entry:  from-pp() \ pp()             :  M( NEG() )  ;}
+  family Coord-prep-                        { entry:  pp<~51>[R COM=yes] /^ pp<~51>[N] \* pp<51>[F COM=no] :  COORD(*)    ;}  
+
+###########
+## RULES ##
+###########
+
+  # The following rules convert the 'base-generated' atomic cat versions of pps and turns them
+  # into their complex-cat form (i.e. the form that actually attach to and modify nouns and sentences)
+  # Remember, this combinatorial capacity is specified in the actual dictionary entry of the word
+  # by assigning it to a particular cc-class
+ 
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() ) categories
+  # used in these rules  
+	    
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT: If either the dependency relation name (e.g. <Modifier> , <Location> ) or the
+  #            modifier section of the ontological hierarchy is changed, you will have to add
+  #            a new 'instance' of these rules for each.
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  ## Nominal Modifiying Rules ##
+ 
+  # All preps which can modify nouns, post-modify them ( 'the ball on the table', not 'the on the table ball')
+  #
+  def prep-rule-n(mod-type){
+      rule { typechange: pp(x-.mod-type post-n)$1        =>     post-n(, $1)   :  ENTITY( MODIFIER() ) ; }
+  }
+
+  # One 'instance' of the rule for each of the modifier classes (from ontology)
+  #
+  prep-rule-n(location)
+  prep-rule-n(comparison)
+  prep-rule-n(accompaniment)
+  prep-rule-n(benefactor)
+
+
+  ## Sentential Modifying Rules ##
+  #
+  # For each of the many sentential/clausal possibilities for prepositions, their is a corresponding rule.
+
+  def prep-rule-s(mod-type){
+      rule { typechange: pp(x-.mod-type pre-s)$1           =>   pre-s(s-.mod-type, $1)         :  EVENT( MODIFIER() ) ; } 
+      rule { typechange: pp(x-.mod-type pre-vp)$1          =>   pre-vp(s-.mod-type, $1)        :  EVENT( MODIFIER() ) ; } 
+      rule { typechange: pp(x-.mod-type post-s)$1          =>   post-s(s-.mod-type, $1)        :  EVENT( MODIFIER() ) ; } 
+      rule { typechange: pp(x-.mod-type post-vp)$1         =>   post-vp(s-.mod-type, $1)       :  EVENT( MODIFIER() ) ; } 
+	#  rule { typechange: pp(x-.mod-type post-s-loose)$1    =>   post-s-loose(s-.mod-type, $1) :  EVENT( MODIFIER() ) ; } 
+  }
+
+  # One 'instance' of the rule for each of the modifier classes (from ontology)
+  #
+  prep-rule-s(location)
+  prep-rule-s(dynamic)
+  prep-rule-s(comparison)
+  prep-rule-s(accompaniment)
+  prep-rule-s(instrumental)
+  prep-rule-s(benefactor)
+  prep-rule-s(manner)
+  prep-rule-s(time)
+  
+   
+  ### Other Rules ###
+  
+  # These rules handle 
+  # 1) nested locationals such as 'It is in the room on the table'
+  #    c.f.   get me the ball on the table
+  #    Note that this does not give the underlying semantics  (ball on table, table in room) but must be
+  #    built grammar externally. This was due to problems in incrementally building 
+  #   'inside out' semantic structures like this. 
+  #
+  # 2) sequences of dynamics: go into the hall, down the corrider ....
+  # 
+
+
+ #  rule { typechange: pp<52>[F x-dynamic CC-TYPE:CC-TYPE COM=no]   =>    pp<53>[R x-dynamic CC-TYPE:CC-TYPE COM=yes] /^   pp<54>[N x-dynamic CC-TYPE:CC-TYPE]  
+ #                                                                 : R:m-dynamic( list <First>(F:m-dynamic) ^ <Next>(N:m-dynamic) ) ; }
+
+ #  rule { typechange: pp<52>[F x-location CC-TYPE:CC-TYPE COM=no]   =>   pp<53>[R x-location CC-TYPE:CC-TYPE COM=yes] /^  pp<54>[N x-location CC-TYPE:CC-TYPE] 
+ #																   : R:m-location( list <First>(F:m-location) ^ <Next>(N:m-location) ) ; }
+
+
+
+ 
+
+
+	   
+#######################
+## DICTIONARY FORMS  ##
+#######################
+ 
+ ## For Prepositions with Physical Anchors
+ ##
+ def _prp(prd, form, class, args) {
+    word form.-prep-.class :Prep(m-.class, pred=prd) {
+      form : x-.class args;
+    }
+  }
+ def prp(form, class, args) { _prp(form, form, class, args) }
+
+ ##   
+ def _prp+(arg, prd, form, class, args) {
+    word form."-prep+".arg."-".class :"Prep+".arg."-" (m-.class, pred=prd) {
+      form : x-.class args;
+    }
+  }
+ def prp+(arg, form, class, args) { _prp+(arg, form, form, class, args) }
+
+ ### With degrees (closer to, farthest from)
+ #
+ def _prp-deg+(arg, prd, form, comp, sup, class, args) {
+    word form."-prep-deg+".arg."-".class :"Prep+".arg."-" (m-.class, pred=prd) {
+      form : x-.class args;
+	  comp : x-.class comparative args;
+	  sup : x-.class superlative args;
+
+    }
+  }
+ def prp-deg+(arg, form, comp, sup, class, args) { _prp-deg+(arg, form, form, comp, sup, class, args) }
+
+ ##
+ def _prp-deg(prd, form, comp, sup, class, args) {
+    word form."-prep-deg".class :Prep(m-.class, pred=prd) {
+      form : x-.class args;
+	  comp : x-.class comparative args;
+	  sup : x-.class superlative args;
+    }
+  }
+ def prp-deg(form, comp, sup, class, args) { _prp-deg(form, form, comp, sup, class, args) }
+
+
+ ## For Prepositions with Time-Unit Anchors
+ ##
+ def _prp--(subsort, prd, form, class, args) {
+    word form.-prep-.class.subsort :"Prep--".subsort(m-.class, pred=prd) {
+      form : x-.class args;
+    }
+  }
+ def prp--(subsort, form, class, args) { _prp--(subsort, form, form, class, args) }
+
+
+
+
+  
+# OLD ATTEMPTS at pp chain rules
+
+# THIS WORKS, but NOT INCREMENTALLY A 2nd entry for preps. Attempts at handling nested-locationals: emailed GJ
+#									   entry:      prep(,) \^ pp<52>[W x-location]    :  M(* ARG(<L-Mod>(W) ) ) ; 	  
+
+
+#  rule { typechange: pp(x-location)    =>  pp() /(pp<53>[R x-location] / np_ma()) :  R( <Arg>(A <Modifier>(M) ) ); }
+#  rule { typechange: pp<53>[R x-location]    =>  prep(x-location, ) :  A( <Modifier>(R) ) ; }
+# rule { typechange: pp<52>[F x-location]   =>   pp<53>[R x-location] /^  pp<54>[N x-location] : R:m-location( nested <Inside>(F:m-location) ^ <Outside>(N:m-location) ) ; }
+# rule { typechange: pp<52>[F x-location]    =>  from-pp() \* pp(x-location) :  M( <Modifier>(F) ) ; }
+#  rule { typechange: pp<53>[R x-location]$1    =>   pp<53>[R x-location] /^ prep(x-location, ) $1 :  M:m-location( <Arg>(A:entity <Modifier>(R) ) ); }
+#    rule { typechange: pp<52>[W x-location]$1           =>   from-pp(x-location) $1 \* pp()        :  M(<Scope>(W) ); } 
+#    rule { typechange: pp<52>[W x-dynamic]$1            =>   from-pp(x-dynamic) $1 \* pp()         :  M(<Scope>(W) ); } 
+#    rule { typechange: pp<52>[W x-location]$1           =>   from-pp(x-location) $1 \* pp()        :  M(<Scope>(W) ); } 
+#    rule { typechange: pp<52>[W x-dynamic]$1            =>   from-pp(x-dynamic) $1 \* pp()         :  M(<Scope>(W) ); } 
+
+#   rule { typechange: pp<52>[F x-location CC-TYPE:CC-TYPE]   =>   pp<53>[R x-location CC-TYPE:CC-TYPE] /^  pp<54>[N x-location CC-TYPE:CC-TYPE] 
+#																   : R:m-location( nested <Inside>(N:m-location) ^ <Outside>(F:m-location) ) ; }

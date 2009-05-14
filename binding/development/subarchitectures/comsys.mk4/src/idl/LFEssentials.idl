@@ -1,0 +1,341 @@
+/**=================================================================================
+
+LFEssentials.idl
+
+Author(s): Geert-Jan M. Kruijff
+Version	 : 061026 (Started: 061009)
+
+The file LFEssentials.idl provides an IDL specification of the data types for
+representing and communicating logical forms. A logical form is a formula in 
+hybrid logic, i.e. a modal (propositional) logic with nominals, multiple 
+modal relations, ontological sorting (including sorting of nominals), and 
+connectives. 
+
+The main data structures for logical forms are: 
+
+<ul> 
+<li> Proposition: atomic, or right-recursive complex propositional structure 
+<li> LFRelation: named modal relation between two nominal variables
+<li> LFNominal: structure of the formal form @_{nomVar:sort}(FORMULA)
+<li> LogicalForm: a uniquely identifiable collection of nominals
+</ul>
+
+The data structures are based on the former LogicalForm class and associated classes 
+from the org.cognitive.systems.repr.lf.* package. 
+
+Logical forms are often wrapped into a meta-level structure, which provides a 
+classification of the content. Earlier on, we had separate objects for commands 
+(CommandLF), assertions (AssertionLF) and questions (QuestionLF). Now we just have
+a single meta-level representation ("wrapper"). 
+
+<ul> 
+<li> MetaLogicalForm
+</ul>
+
+Finally, the IDL provides a structure to represent the dynamic comprehension status for 
+a logical form, or identifiable components thereof. 
+
+
+To compile the IDL to java: run <ant idl>
+Location of the java code:  
+=================================================================================
+*/
+										      
+module org {
+module cognitivesystems {
+module repr { 
+module lf { 
+module autogen{
+module LFEssentials {
+
+// -----------------------------------------------------------------
+// IDL SPECIFICATIONS FOR LOGICAL FORMS 
+// -----------------------------------------------------------------
+
+// The string Id represents the unique identifier
+typedef string Id; 
+
+// A nominal variable name is represented as a string
+typedef string nominalVariable;
+
+// An ontological sort is represented as a string
+typedef string ontologicalSort;
+
+// A connective can be none (atomic proposition), 
+// "DISJUNCTIVE" (OR), XDISJUNCTIVE ("XOR"), or 
+// CONJUNCTIVE ("AND"). 
+
+enum ConnectiveType {
+	NONE,
+	DISJUNCTIVE,
+	CONJUNCTIVE,
+	XDISJUNCTIVE
+}; // end ConnectiveType
+
+// A proposition is an atomic structure, or a complex structure consisting of 
+// a connective and two propositions. The lhs proposition is given as a string, 
+// the connective can be any of the ConnectiveType, and the rhs is again a 
+// proposition structure. This is not a fully general structure -- we only have
+// right-branching recursion this way, no left-branching recursion. However, 
+// given that most propositions are atomic in our setting, and complex propositions
+// usually only involve XOR for underspecification, this restriction should not 
+// be problematic. 
+
+
+//edit by nah 
+  struct Proposition; //forward declaration
+  
+  typedef sequence <Proposition> Propositions; //sequence decl
+
+  struct Proposition {
+    string prop;
+    ConnectiveType connective;
+    //Propositions rhsProp; //usage nah: removed as recursion was causing problems!
+  }; // end Proposition
+
+
+
+// A feature is a relation with an atomic propositional value. 
+
+struct Feature {
+	string feat;
+	string value;
+}; // end Feature
+
+
+// A list of features
+
+typedef sequence <Feature> Features; 
+
+// A relation is a sorted modal relation between two nominal variables. We have 
+// a boolean flag for whether the dependent "dep" is co-indexed. If we have at
+// least one co-indexed dependent in a logical form, the logical form is a graph, 
+// else it is a tree. 
+
+struct LFRelation { 
+	nominalVariable head;
+	string mode;
+	nominalVariable dep;
+	boolean coIndexedDep;
+}; // end relation 
+
+// A list of relations
+
+typedef sequence <LFRelation> Relations; 
+
+// A logical form nominal structure is an object representing a formula of the 
+// form @_{nomVar:sort}(FORMULA), with FORMULA being a (possibly complex) proposition, 
+// zero or more features (of the formal form <Attribute>Value) and zero or more 
+// relations (of the formal form <Relation>(nomVar_n:sort_n), with nomVar_n an
+// identifiable variable in the namespace of the logical form).   
+
+struct LFNominal {
+	nominalVariable nomVar;
+	ontologicalSort	sort;
+	Proposition prop;
+	Features feats;
+	Relations rels;
+}; // end LFNominal
+
+typedef sequence <LFNominal> Nominals;
+
+// A logical form is a uniquely identifiable collection of nominals. 
+
+struct LogicalForm { 
+	Id logicalFormId;
+	Nominals noms;
+	float preferenceScore;
+	LFNominal root;
+	long stringPos; 
+}; // end LogicalForm
+
+// A LFcomponent is a named logical form
+
+struct LFComponent {
+	string componentName;
+	LogicalForm lf;
+}; // end Component
+
+// Components  
+
+typedef sequence <LFComponent> LFComponents; 
+
+typedef sequence <LFComponents> LFComponentsVector;
+
+typedef sequence <LogicalForm> LogicalFormsVector;
+
+// -----------------------------------------------------------------
+// IDL SPECIFICATIONS FOR META-LEVEL LOGICAL FORM CHARACTERIZATION 
+// -----------------------------------------------------------------
+
+// The MetaType is the abstract type of logical form. The MetaTypeSort 
+// provides a more detailed ontology over these abstract types. We create
+// an explicit enumeration over the sorts in the ontologies, so that 
+// we get a minimal sort of type-checking over meta-characterizations. 
+
+enum MetaType { 
+	ASSERTION,
+	COMMAND,
+	QUESTION,
+	UNKNOWN
+}; // end LogicalFormMetaType
+
+
+
+
+enum MetaTypeSort { 
+	// ------------------------------
+	// assertion sorts
+	// ------------------------------
+    informative_attributive_endurant_instantiation, 
+    informative_attributive_endurant_quality, 
+    informative_attributive_endurant_perspective_spatial, 
+    informative_polar_positive, 
+    informative_polar_negative,
+    affective_state_physical, 
+    ability_cognition_perception_object, 
+    ability_cognition_perception_object_neg, 
+	affective_need_object, 
+    affective_desire_object,
+	affective_desire_action_general, 
+    affective_desire_action_specific, 
+	evaluative_positive, 
+	evaluative_negative, 
+	// ------------------------------
+	// command sorts
+	// ------------------------------
+	command_cognitive_analysis_location, 
+	command_cognitive_analysis_endurant,
+    command_manipulation_object, 
+    command_manipulation_subject,
+    command_movement_position_causative, 
+    command_movement_position_subjective,
+    command_movement_motion_locationchange_motion_subjective,
+    command_movement_motion_locationchange_motion_direction, 
+    command_movement_motion_locationchange_motion_destination,
+    command_movement_motion_locationchange_motion_guidance_person,
+    command_movement_motion_locationchange_motion_guidance_area, 
+    command_movement_motion_locationchange_transport_object, 
+    command_movement_motion_locationchange_transport_object_direction, 
+    command_movement_motion_locationchange_transport_object_destination, 
+    command_movement_motion_insitu_pose_relative, 
+    command_movement_motion_insitu_pose_facing, 
+    command_assist, 
+	command_obtain_object, 
+	command_obtain_object_recipient,
+	command_obtain_object_destination,
+	command_obtain_object_origin, 
+	// -------------------------------
+	// questions sorts
+	// -------------------------------
+	informative_factual_endurant_generic, 
+	informative_factual_endurant_instantiation, 
+	informative_factual_endurant_perspective_spatial, 
+	informative_factual_person_perspective_spatial, 
+	informative_factual_endurant_quality, 
+	informative_polar_endurant_perspective_spatial, 
+	informative_polar_endurant_quality, 
+	informative_polar_endurant_instantiation, 
+	informative_polar_person_perspective_spatial, 	
+	informative_polar_perm_poss_abil_movement_motion_locationchange_motion, 
+	informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object, 
+    informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object_direction, 
+    informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object_destination, 
+	informative_polar_perm_poss_abil_assist, 
+	informative_polar_perm_poss_abil_obtain_object, 
+	informative_polar_volit_predict_obtain_object, 
+	informative_polar_volit_predict_movement_motion_locationchange_motion,
+	informative_polar_volit_predict_movement_motion_locationchange_transport_object,
+	informative_polar_volit_predict_movement_motion_locationchange_transport_object_direction,
+	informative_polar_volit_predict_movement_motion_locationchange_transport_object_destination,
+	affective_factual_desire_object, 
+	affective_factual_desire_general, 
+	affective_factual_disposition_general, 	
+	affective_factual_mood, 	
+	affective_polar_desire_object,
+	affective_polar_disposition_object,	
+	affective_polar_mood, 			
+	affective_choice_desire_object,
+	affective_choice_disposition_object	
+}; // end 
+
+// The meta type is a characterization of the type of content of a possibly complex logical form
+// 
+
+struct MetaTypeCharacterization {
+	Id logicalFormId;
+	MetaType mType;
+	MetaTypeSort mSort;
+	LFComponents components;
+}; // end MetaTypeCharacterization
+
+
+
+
+typedef sequence <MetaTypeCharacterization> MetaTypeCharacterizationsVector;
+
+enum LogicalFormComplexityType { 
+	SIMPLEX,
+	COMPLX_CONJUNCTIVE,
+	COMPLEX_DISJUNCTIVE,
+	COMPLEX_MIXED
+}; 
+
+// The MetaLogicalForm structure provides a meta-level characterization
+// of a logical form_ This logical form may be COMPLEX in the sense that it
+// is a structured "list" over Logical Forms. We therefore have a Vector of
+// logical forms; if the logical form is complex, then these logical forms
+// are the subtrees in the structured "list". Correspondingly, we have a list
+// of meta-type characterizations and a list of components, one components 
+// structure per meta-type and logical form.  
+
+struct MetaLogicalForm { 
+	LogicalForm lf;
+	LogicalFormComplexityType complexityType; 
+	LogicalFormsVector lfsVector;
+	MetaTypeCharacterizationsVector characterizationsVector;
+	LFComponentsVector   componentsVector;
+}; // end MetaLogicalForm
+
+
+/** The struct DynCompStatus provides a data structure for representing dynamic 
+	comprehension status of part or all of a logical form. This status reflects the
+	"complex truth value" (Kruijff et al,PIT 2006) of the content. The content is
+	identified by the referent variable. The complex truth value itself is composed
+	of the epistemic status of the content (KNOWN or UNKNOWN) and its update status 
+	(TRUE, FALSE, AMB[iguous]). The variable statusSource identifies the source where
+	the complex truth value was determined (the "who"), with the variable statusGround
+	providing a reference to the ground for the truth value (the "why"). This reference
+	is to content in the source. 
+	*/
+
+enum EpistemicStatusFeature { 
+	EPI_KNOWN, 
+	EPI_UNKNOWN
+}; // EpistemicStatusFeature
+
+enum UpdateStatusFeature { 
+	T,
+	F,
+	AMB
+}; // UpdateStatusFeature
+
+struct DynCompStatus { 
+	string referent; 
+	EpistemicStatusFeature epistemicStatus; 
+	UpdateStatusFeature updateStatus;
+	string statusSource;
+	string statusGround;
+}; // DynCompStatus
+
+// The sequence DynCompStatusSeq represents a sequence of objects with dynamic 
+// comprehension status information for one or more nominal variables
+
+typedef sequence <DynCompStatus> DynCompStatusSeq; 
+
+}; //module 
+}; //module 
+}; //module 
+}; //module 
+}; //module 
+}; //module 

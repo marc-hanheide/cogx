@@ -1,0 +1,20 @@
+
+SUBARCHITECTURE comsys.subarch localhost
+JAVA WM			org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory #--log true
+JAVA TM			org.cognitivesystems.comsys.general.ComsysTaskManager --file ./config/test-configurations/test1-TM.sync #--log true
+JAVA GD speech.rec	org.cognitivesystems.comsys.components.asr.ASR --src gui #--log true --playback
+JAVA GD parser		org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar ./grammars/openccg/moloko.v4/grammar.xml #--log true 
+JAVA GD plfviz		org.cognitivesystems.comsys.components.PackedLFVisualizer --dir ./graphs/parser/ --series true # --log true 
+JAVA GD comsys.binding.monitor	org.cognitivesystems.comsys.monitors.ComSysBindingMonitor -bsa binding.subarch --log true
+
+
+SUBARCHITECTURE binding.subarch localhost
+CPP WM BindingWorkingMemory #--log true
+CPP TM AlwaysPositiveTaskManager 
+CPP GD binding.judge_motivator BindingJudgeMotivator #--log true --debug true
+CPP GD binding.scorer BindingScorer #--debug --log true
+CPP GD binding.judge BindingJudge #--debug --log true
+CPP GD binding.binder Binder #--debug --log true
+CPP GD binding.groups BindingGroupManager #--debug true --log true
+CPP GD binding.dot BindingDotViewer -d /project/cl/cosy/code/subarchitectures/comsys.mk4/graphs/binder --log true
+CPP GD binding.state BindingStatusMonitor #--debug

@@ -1,0 +1,43 @@
+HOST localhost
+
+SUBARCHITECTURE binding.sa 
+CPP  WM BindingWorkingMemory
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD binding.scorer BindingScorer -nth 0 -maxN 1 #--log
+CPP  GD binding.judge BindingJudge 
+CPP  GD binding.binder Binder 
+CPP  GD binding.groups BindingGroupManager
+CPP  GD binding.state BindingStatusMonitor #--log true
+CPP  GD binding.dot BindingDotViewer -d dotfiles --log true --proxy short --union short 
+CPP  GD binding.garbage GarbageCollector --log false --police-mode strict
+CPP  GD binding.ambiguity AmbiguityIdentifier --log 
+
+
+
+SUBARCHITECTURE motiv.sa 
+CPP  WM BindingWorkingMemory #--debug
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD binding.scorer_dummy BindingScorer -nth 0 -maxN 1 --dummy --log
+CPP  GD motiv.gen ExplorerBindingMotiveGenerator --log #--debug
+CPP  GD motmon MotivationMonitor -bsa binding.sa  --monitor comsys.sa,coma.sa,nav.sa,  #--log #--debug true
+CPP  GD state.gen BindingStateGenerator --log -bsa binding.sa  #--debug true
+CPP  GD motiv.dot BindingDotViewer -d dotfiles_motiv --log --proxy short --union short 
+CPP  GD motiv.garbage GarbageCollector --log --police-mode strict
+CPP  GD action.dispatcher ExplorerActionDispatcher  -bsa binding.sa  --log #--debug
+CPP  GD motiv.man MotiveManager --log
+JAVA MG cpp planning.components.ContinualPlanningComponent  --replan 4 --log
+
+
+SUBARCHITECTURE comsys.sa 
+JAVA WM             org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory --log false #--debug
+JAVA TM             org.cognitivesystems.comsys.general.ComsysTaskManager --file ./subarchitectures/comsys.mk4/config/test-suite/general-TM.sync #--log true
+JAVA GD speech.rec  org.cognitivesystems.comsys.components.asr.ASR --src config --utterance "go to GJ 's office" --sleep 5000 --log true
+JAVA GD parser      org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar ./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml #--log 
+#JAVA GD plfviz      org.cognitivesystems.comsys.components.PackedLFVisualizer --dir ./subarchitectures/comsys.mk4/graphs/parser/ --series true --sdrs true --dirSDRS ./subarchitectures/comsys.mk4/graphs/sdrs/ # --log true 
+JAVA GD comsys.binding.monitor	org.cognitivesystems.comsys.monitors.ComSysBindingMonitor -bsa binding.sa --msa motiv.sa --incrementalBinding false --syncModel sync_one #--log true
+#JAVA GD eventInt	org.cognitivesystems.comsys.components.EventStructureInterpretation --incrementalInterpretation false #--log true
+JAVA GD discRefBindings org.cognitivesystems.comsys.components.DiscRefBindingsComponent #--log true
+JAVA GD dialInt org.cognitivesystems.comsys.components.DialInt #--log true
+#dummy component demos the ack handling
+JAVA MG com.ack org.cognitivesystems.comsys.components.DummyCommunicativeGoalCreator --log 
+

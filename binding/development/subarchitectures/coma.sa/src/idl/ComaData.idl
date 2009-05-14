@@ -1,0 +1,159 @@
+#ifndef COMA_DATA_IDL
+#define COMA_DATA_IDL
+
+#include <CAST.idl>
+
+
+module ComaData {
+
+  // CONCEPTS
+ // const string COMA_CONCEPT_TYPE_STRING = "Coma:Concept";
+  struct ComaConcept {
+	string m_namespace;
+    string m_sep;
+    string m_name;
+  };
+  //const string COMA_CONCEPT_LIST_TYPE_STRING = "Coma:ConceptList";
+//  typedef sequence < ComaConcept > ComaConceptList;
+  typedef sequence < cast::cdl::WorkingMemoryPointer > ComaConceptList;
+
+
+  /// INSTANCES
+ // const string COMA_INSTANCE_TYPE_STRING = "Coma:Instance";
+  struct ComaInstance {
+    string m_namespace;
+    string m_sep;
+	string m_name;
+	sequence < string > m_mostSpecificConcepts;
+	sequence < string > m_givenNames;
+  };
+ // const string COMA_INSTANCE_LIST_TYPE_STRING = "Coma:InstanceList";
+ // typedef sequence < ComaInstance > ComaInstanceList;
+  typedef sequence < cast::cdl::WorkingMemoryPointer > ComaInstanceList;
+
+
+  /// RELATIONS
+ // const string COMA_RELATION_TYPE_STRING = "Coma:Relation";
+  struct ComaRelation {
+    string m_namespace;
+    string m_sep;
+	string m_name;
+	cast::cdl::WorkingMemoryPointer m_ins1ptr;
+	cast::cdl::WorkingMemoryPointer m_ins2ptr;
+  };
+ // const string COMA_RELATION_LIST_TYPE_STRING = "Coma:RelationList";
+ // typedef sequence < ComaRelation > ComaRelationList;
+  typedef sequence < cast::cdl::WorkingMemoryPointer > ComaRelationList;
+
+
+  /// These are the coma reasoner function types	
+  enum ComaReasonerFunctionType {
+    // INS -> CON
+    GetAllDirectConcepts, GetAllConcepts,
+    GetMostSpecificConcepts,
+    GetBasicLevelConcepts,
+    // CON -> INS
+    GetAllInstances,
+    // INS -> INS
+    GetRelatedInstances,
+    // String -> INS
+    GetInstancesByName,
+    // BOOLEAN QUERIES
+    AreConsEquivalent,
+    IsConSupercon,
+    IsConSubcon,
+    CompareCons,
+    GetObjectMobility,
+    GetTypicalObjects,
+    IsInstanceOf,
+    // Assertions
+	AddInstance,
+	DeleteInstance,
+	AddInstanceName,
+	AddInstanceNumberTag,
+    // Relations
+    AddRelation,
+    // special tasks, eg GRE
+    GenerateRefEx
+    // TBC!!
+  };
+
+  /// And this is the encapsulating struct that you should
+  /// use to request an evaluation result from the reasoner.
+  /// The result will be written back to WM and this struct
+  /// must be updated with the pointer to the result WME.
+  /// (e.g. Concept/Instance or ConceptList/InstanceList or TriBool)
+  struct ComaReasonerFunction {
+    ComaReasonerFunctionType m_functiontype;
+    cast::cdl::WorkingMemoryPointer m_arg1ptr;
+    cast::cdl::WorkingMemoryPointer m_arg2ptr;
+    cast::cdl::WorkingMemoryPointer m_resultptr;
+    cast::cdl::WorkingMemoryPointer m_add_info_ptr;
+  };
+
+  /// This struct is to be used by the planner
+  /// to make coma resolve a reference to an entity
+  /// initially, this will be pointing to a proxy
+  /// but it could also point somewhere else, 
+  /// like an entry on nav WM.
+  struct ResolveEntity {
+  	cast::cdl::WorkingMemoryPointer m_entityWMP;
+  };
+
+  /// This struct is called by the coma reasoner
+  /// when it has resolved a proxy to a coma instance.
+  /// The ComaResolverBindingMonitor then gets this
+  /// task and generates a proxy.
+  /// -- THIS SHLD BE EXTENDED TO COVER A LIST OF INSTANCES
+  /// -- AND RELATIONS
+  struct GenerateComaProxies {
+    ComaInstanceList m_instanceWMPs;
+    ComaConceptList m_conceptWMPs;
+    ComaRelationList m_relationWMPs;
+    sequence < string > m_conceptsOfDefaultProxy;
+  };
+
+  /// This is a struct that contains a string
+  struct StringWrapper {
+    string m_string;
+  };
+
+
+  /// This is a struct that contains TriBool evaluation results
+  struct TriBoolResult {
+    cast::cdl::TriBool m_tribool;
+  };
+  
+  // This struct is used for comparator-internal communication
+  // When the comparison writer gets the result for a feature
+  // comparison from the coma reasoner, it will write such a
+  // struct to coma WM so that the comparison reader can update
+  // its cache
+  struct ComaConceptComparisonResult {
+  	ComaConcept m_con1;
+  	ComaConcept m_con2;
+  	cast::cdl::TriBool m_result;
+  };
+  
+
+  /// These are the tasks the Coma SA can perform;
+  /// Tasks are usually a sequence of functions.
+  /// This struct will identify the type of the task
+  /// and WMPointers to the corresponding functions.
+  /// The m_add_info_ptr allows you to store additional
+  /// information relevant to the specific type of the task,
+  /// e.g. the WME-ptr to the original binding feature
+  /// comparison task in case of ConceptComparisonTask.
+  //enum ComaTaskType {
+  //  ConceptComparisonTask
+  //};
+  //struct ComaTask {
+  //  ComaTaskType m_tasktype;
+  //  sequence < cast::cdl::WorkingMemoryPointer > m_function_ptr_list;
+  //  cast::cdl::WorkingMemoryPointer m_add_info_ptr;
+  //};
+  //const string COMA_TASK_TYPE_STRING = "Coma:Task";
+
+};
+
+#endif

@@ -1,0 +1,18 @@
+<project name="spatial subarch" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="idl">
+		<idlgen file="SpatialData.idl" />
+	</target>
+
+
+	<target name="clean">
+	  <echo message="Cleaning autogen files"/>
+	  <delete dir="${basedir}/subarchitectures/spatial.sa/src/java/spatial/autogen"/>
+	  <echo message="Cleaning class files"/>
+	  <delete dir="${output.dest}/spatial" />
+	</target>
+
+
+</project>

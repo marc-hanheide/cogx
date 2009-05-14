@@ -1,0 +1,16 @@
+# This run was created calling './mapsim -t domains/coffee/scenarios/ivana/easy002-assert/ -r -a 3'
+# manually edited
+# Anne's goal: (and (k__pos r2d2 coffee) )
+# R2D2's goal: (and (has-goal r2d2 true) )
+
+There are 2 agents in this MAPSIM scenario: Anne and R2D2
+ (1) Anne: 'The coffee is in the kitchen, R2D2.'
+MAPSIM terminates unsuccessfully.
+
+# Currently OK
+# Should R2D2 give an acknowledgement?
+# In fact, he shold ask himself, why is Anne telling him that
+# --> goal inference! 
+# if R2D2 responds to theinferred goal, e.g., "Do you want me to bring it?"
+# then we are doing indirect speech acts of one sort
+

@@ -1,0 +1,46 @@
+/**
+ * @author Michael Zillich
+ * @date October 2006
+ */
+
+#ifndef MANIPULATION_IDL
+#define MANIPULATION_IDL
+
+#include <Math.idl>
+#include <CAST.idl>
+
+module Manipulation
+{
+
+//   const string PICK_AND_PLACE_CMD_TYPE_STRING =  "Manipulation:PickAndPlaceCmd";
+//   const string STOP_CMD_TYPE_STRING =  "Manipulation:StopCmd";
+//   const string PAUSE_CMD_TYPE_STRING =  "Manipulation:PauseCmd";
+//   const string RESUME_CMD_TYPE_STRING =  "Manipulation:ResumeCmd";
+//   const string CMD_COMPLETE_TYPE_STRING =  "Manipulation:CmdComplete";
+
+
+  // commands for manipulator
+  struct PickAndPlaceCmd {
+    //string m_objId;
+    cast::cdl::WorkingMemoryPointer m_objectPointer;
+    Math::Pose3D m_targetPose;
+    //long complete;
+  };
+
+  struct StopCmd {
+    long dummy;
+  };
+
+  // Pause the current behaviour (e.g. because we want to wait until human
+  // interaction ends)
+  struct PauseCmd {
+    long dummy;
+  };
+
+  // Resume whatever behaviour was active before the pause.
+  struct ResumeCmd {
+    long dummy;
+  };
+};
+
+#endif

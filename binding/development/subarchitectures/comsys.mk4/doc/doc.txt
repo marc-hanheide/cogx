@@ -1,0 +1,6 @@
+/*!
+\mainpage The Comsys Subarchitecture
+
+High-level intro to be written...
+
+*/

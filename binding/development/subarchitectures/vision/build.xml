@@ -1,0 +1,18 @@
+<!-- Simple test buildfile -->
+<project name="vision subarchitecture" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="idl">
+		<idlgen file="Vision.idl" />
+	</target>
+	
+	<target name="clean">
+	  <echo message="Cleaning autogen files"/>
+	  <delete dir="${basedir}/subarchitectures/vision/src/java/Vision"/>
+	  <echo message="Cleaning class files"/>
+	  <delete dir="${output.dest}/Vision" />
+	  <delete dir="${output.dest}/vision" />
+	</target>
+
+</project>

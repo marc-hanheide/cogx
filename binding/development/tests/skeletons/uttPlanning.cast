@@ -1,0 +1,14 @@
+SUBARCHITECTURE comsys.subarch localhost
+JAVA WM            	org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory --log false
+JAVA TM 	org.cognitivesystems.comsys.general.ComsysTaskManager --file subarchitectures/comsys.mk4/config/test-suite/general-TM.sync --log true
+#JAVA TM            	cast.architecture.subarchitecture.AlwaysPositiveTaskManager --file tests/TM.sync --log false
+#JAVA GD speech.rec 	org.cognitivesystems.comsys.components.asr.ASR --src gui --log false --playback
+#JAVA GD parser     	org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar subarchitectures/comsys.mk4//grammars/openccg/moloko.v4.1/grammar.xml --log true 
+#JAVA GD plfviz	   	org.cognitivesystems.comsys.components.PackedLFVisualizer --dir subarchitectures/comsys.mk4//graphs/parser/ --sdrs true --series true --log true 
+#JAVA GD discRefBindings	org.cognitivesystems.comsys.components.DiscRefBindingsComponent --log false
+#JAVA GD dialint		org.cognitivesystems.comsys.components.DialInt --log false
+#JAVA GD eventStructureInt	org.cognitivesystems.comsys.components.EventStructureInterpretation --log false
+#JAVA GD dialogueMoveInt	org.cognitivesystems.comsys.components.DialogueMoveInterpretation --log false
+#JAVA GD speech.synth 	org.cognitivesystems.comsys.components.tts.TTS --serverHost cosy01.win.dfki.uni-sb.de --serverPort 59125 --voice kevin16 --log false
+#JAVA GD sip   		org.cognitivesystems.comsys.components.asr.RemoteRecognizer --configASR_in config/cosy_in.cfg --configASR_out config/cosy_out.cfg --log false
+JAVA GD testing		org.cognitivesystems.comsys.general.testers.UttPlanningTester --testfile %s --test %i --log

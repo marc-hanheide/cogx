@@ -1,0 +1,13 @@
+/*!
+\mainpage The Vision Subarchitecture
+
+\subpage main_cameraServer \n
+\subpage main_videoServer \n
+\subpage main_changeDetector \n
+\subpage main_segmentor \n
+\subpage main_handpointer \n
+\subpage main_featureLearning \n
+\subpage main_featureExtractor \n
+\subpage main_recogniser \n
+
+*/

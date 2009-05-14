@@ -1,0 +1,389 @@
+<?xml version="1.0"?>
+<!-- 
+Copyright (C) 2005 Geert-Jan M. Kruijff (DFKI)
+version 050719
+-->
+
+<regression>
+
+   <!-- ============================================================== -->
+   <!-- DIALOGUE 1 --> 
+
+   <!-- H.1 --> 
+   <item numOfParses="1" string="what is this"/>
+
+   <!-- R.2 --> 
+   <item numOfParses="1" string="I am sorry"/>
+   <item numOfParses="1" string="I do not know this object"/>
+
+   <!-- H.3 --> 
+   <item numOfParses="1" string="this thing near the cube is a ball"/>
+
+   <!-- R.4 --> 
+   <item numOfParses="1" string="okay"/>
+
+   <!-- ============================================================== -->
+   <!-- DIALOGUE 2 --> 
+
+   <!-- H.1 --> 
+   <item numOfParses="1" string="do you see a box"/>
+
+   <!-- R.2 -->    
+   <item numOfParses="1" string="no I do not see a box"/>
+
+   <!-- H.3 --> 
+   <item numOfParses="1" string="what do you see"/>
+
+   <!-- R.4 --> 
+   <item numOfParses="1" string="I am not sure"/>
+   <item numOfParses="2" string="I see something like a ball or a box"/> 
+
+   <!-- ============================================================== -->
+   <!-- DIALOGUE 3 -->
+
+   <!-- H.1 --> 
+   <item numOfParses="1" string="where are you"/>
+
+   <!-- R.2 --> 
+   <item numOfParses="1" string="I am in the laboratory"/>
+
+   <!-- ============================================================== -->
+
+
+   <!-- ASSERTIONS --> 
+
+   <!-- Assertion: Property ascription: deictic reference --> 
+
+   <item numOfParses="1" string="this is a cube"/>
+   <item numOfParses="1" string="this is the laboratory"/>
+
+   <!-- Assertion: Property ascription: spatial demonstrative reference --> 
+
+   <item numOfParses="1" string="that box is the box near the green ball"/>
+   <item numOfParses="1" string="this box is a cube"/>
+   <item numOfParses="1" string="this room is an office"/>
+   <item numOfParses="1" string="this room is the lab"/>
+   <item numOfParses="1" string="these boxes are the cubes"/>
+   <item numOfParses="1" string="those boxes are the cubes"/>
+
+   <!-- COMMANDS  --> 
+
+   <!-- Commands: Movement --> 
+
+   <item numOfParses="1" string="go forward"/>
+   <item numOfParses="1" string="go straight"/>
+   <item numOfParses="1" string="go straightforward"/>
+   <item numOfParses="1" string="go to the left"/>
+   <item numOfParses="1" string="go to the right"/>
+   <item numOfParses="1" string="go to the corridor"/>
+   <item numOfParses="1" string="go to the laboratory"/>
+   <item numOfParses="1" string="go back to the laboratory"/>
+   <item numOfParses="1" string="go forward to the laboratory"/>
+   <item numOfParses="1" string="go left to the laboratory"/>
+   <item numOfParses="1" string="go right to the laboratory"/>
+   <item numOfParses="1" string="return to the laboratory"/>
+
+   <item numOfParses="1" string="explore the area"/>
+   <item numOfParses="1" string="investigate the area"/>
+   <item numOfParses="1" string="look around the room"/>
+   <item numOfParses="1" string="survey the location"/>
+
+   <item numOfParses="1" string="follow me"/>
+   <item numOfParses="1" string="follow the corridor"/>
+   <item numOfParses="1" string="follow me to the laboratory"/>
+   <item numOfParses="1" string="now follow me to the laboratory"/>
+   <item numOfParses="1" string="now follow me back to the laboratory"/>
+   <item numOfParses="1" string="now come to the laboratory"/>   
+   <item numOfParses="1" string="now come back to the laboratory"/>   
+
+   <item numOfParses="1" string="move to the left"/>
+   <item numOfParses="1" string="move to the right"/>
+   <item numOfParses="1" string="move to the corridor"/>
+   <item numOfParses="1" string="move to the laboratory"/>
+
+   <item numOfParses="4" string="turn around"/>
+   <item numOfParses="4" string="turn left"/>
+   <item numOfParses="4" string="turn right"/>
+   <item numOfParses="4" string="turn around to the hall"/>
+   <item numOfParses="4" string="turn back to the hall"/>
+   <item numOfParses="4" string="please turn back to the hall"/>
+
+
+   <!-- Commands: Object Manipulation --> 
+
+   <item numOfParses="1" string="move the bucket to the left"/>
+   <item numOfParses="1" string="move the bucket to the lab"/>
+   <item numOfParses="1" string="kick the bucket to me"/>
+   
+   <!-- Commands: Object Obtaining --> 
+   
+   <item numOfParses="1" string="bring the bucket to the lab"/>
+   <item numOfParses="1" string="bring the bucket from the lab"/>
+   <item numOfParses="1" string="bring me the bucket from the lab"/>
+   <item numOfParses="1" string="bring him the bucket to the lab"/>
+   
+    <!-- Questions: Object Obtaining --> 
+    
+    <item numOfParses="1" string="would you bring me tea"/>
+   <item numOfParses="1" string="could you bring me tea please"/>
+   <item numOfParses="1" string="will you please bring me tea"/>
+   
+   <!--  Help requests and answers -->
+   
+   <item numOfParses="1" string="help me"/>
+   <item numOfParses="1" string="I can help you"/>
+   <item numOfParses="1" string="I can not help you"/>
+   <item numOfParses="1" string="can you help me"/>
+   
+  
+   
+   <!-- CUE WORDS  --> 
+
+   <!-- Cue: Polarity --> 
+
+   <item numOfParses="1" string="yes"/>
+   <item numOfParses="1" string="no"/>
+   <item numOfParses="1" string="okay"/>
+   <item numOfParses="1" string="ok"/>
+
+   <!-- PARATACTIC CONSTRUCTIONS -->
+
+   <!-- Coordination: conjunction --> 
+
+   <item numOfParses="1" string="a box and a cube"/>
+   <item numOfParses="1" string="the box and a cube"/>
+   <item numOfParses="1" string="the cow , the box and a cube"/>
+   <item numOfParses="1" string="the cow , the box , a ball and a cube"/>
+   <item numOfParses="1" string="I see a cow , a box to the left of a ball and a cube"/>
+   <item numOfParses="2" string="a box and a cube to the left of the ball"/>
+
+   <!-- Coordination: disjunction --> 
+
+   <item numOfParses="1" string="a box or a cube"/>
+   <item numOfParses="2" string="a box or a cube to the left of the ball"/>
+
+   <!-- Coordination: mixed conjunction / disjunction --> 
+
+   <item numOfParses="3" string="a cow and a box or a cube to the left of the ball"/>
+
+   <!-- PREPOSITIONS --> 
+
+   <!-- Prepositions: spatial, dynamic -->
+
+   <item numOfParses="1" string="across the room"/>
+   <item numOfParses="1" string="along the hall"/>
+   <item numOfParses="1" string="over the table"/>
+
+
+   <!-- Prepositions: spatial, static horizontally projective, explicit landmark -->
+
+   <item numOfParses="1" string="the ball left of the pink box"/>
+   <item numOfParses="1" string="the box right of you"/>
+   <item numOfParses="1" string="the red ball in front of the blue box"/>
+   <item numOfParses="1" string="the blue ball in front of you"/>
+   <item numOfParses="1" string="a box in back of me"/>
+   <item numOfParses="1" string="a box in back of the green ball"/>
+   <item numOfParses="1" string="the green ball behind the blue box"/>
+   <item numOfParses="1" string="the box behind you"/>
+
+   <!-- Prepositions: spatial, static topological -->
+
+   <item numOfParses="1" string="the green ball at the box"/>
+   <item numOfParses="1" string="the green ball beside the box"/>
+   <item numOfParses="1" string="the green ball by the box"/>
+   <item numOfParses="1" string="the green ball near the box"/>
+
+   <!-- Prepositions: spatial, static topological with horizontally projective interpretation, explicit landmark -->
+
+   <item numOfParses="1" string="the green ball to the left of the red box"/>
+   <item numOfParses="1" string="the green ball to the right of the red box"/>
+   <item numOfParses="1" string="the green ball to the front of the red box"/>
+   <item numOfParses="1" string="the green ball at the left of the red box"/>
+   <item numOfParses="1" string="the green ball at the right of the red box"/>
+   <item numOfParses="1" string="the green ball at the right of the red box near you"/>
+
+   <!-- Prepositions: spatial, static vertically projective, explicit landmark -->
+
+   <item numOfParses="1" string="the blue box above the red box"/>
+   <item numOfParses="1" string="the blue box below the green ball"/>
+   <item numOfParses="1" string="the blue box beneath the green ball"/>
+   <item numOfParses="1" string="the box above you"/>
+   <item numOfParses="1" string="the box beneath me"/>
+
+   <!-- Questions: informative.factual.endurant.instantation --> 
+
+   <item numOfParses="1" string="what is behind the yellow ball"/>
+   <item numOfParses="1" string="what is left of the room"/>
+   <item numOfParses="1" string="what is near the lab"/>
+   <item numOfParses="1" string="what is nearest the ball"/>
+
+   <!-- Questions: informative.factual.endurant.perspective.spatial --> 
+
+   <item numOfParses="1" string="where is the cow"/>
+   <item numOfParses="1" string="where is the laboratory"/>
+   <item numOfParses="1" string="where are the blocks"/>
+   <item numOfParses="1" string="where in the room near the table are the blocks"/>
+
+   <!-- Questions: informative.factual.person.perspective.spatial --> 
+
+   <item numOfParses="1" string="where are you"/>
+
+   <!-- Questions: informative.factual.endurant.quality --> 
+
+   <item numOfParses="1" string="what color is the box"/>
+   <item numOfParses="1" string="what colors are the boxes"/>   
+
+   <!-- Questions: informative.polar.endurant.perspective.spatial --> 
+
+   <item numOfParses="4" string="is the box behind the ball"/>   
+   <item numOfParses="4" string="is the lab near the office"/>   
+   <item numOfParses="1" string="is there a door here"/>   
+   <item numOfParses="1" string="is there a laboratory here"/>   
+
+
+   <!-- Questions: informative.polar.endurant.quality --> 
+
+   <item numOfParses="1" string="is the box blue"/>   
+
+   <!-- Questions: informative.polar.person.perspective.spatial --> 
+
+   <item numOfParses="1" string="am I in the office"/>      
+   <item numOfParses="1" string="are we in the office"/>      
+   <item numOfParses="1" string="are you in the office"/>      
+
+   <!-- Verbs: transitive, indicative, agent/patient --> 
+
+   <item numOfParses="1" string="I see the box"/>
+   <item numOfParses="0" string="I sees the box"/>
+   <item numOfParses="1" string="you see the box"/>
+   <item numOfParses="0" string="you sees the box"/>
+   <item numOfParses="1" string="he sees the box"/>
+   <item numOfParses="0" string="he see the box"/>
+   
+   <!-- Verbs: transitive, indicative, agent/patient/direction --> 
+   
+   <item numOfParses="1" string="I bring you the box"/>
+   <item numOfParses="1" string="I bring the box to the office"/>
+   <item numOfParses="1" string="I bring you the box to the office"/>
+   <item numOfParses="1" string="I bring the box from the office"/>
+   <item numOfParses="1" string="I bring you the box from the office"/>
+   <item numOfParses="1" string="I bring you the box from him"/>
+   <item numOfParses="1" string="I bring you the box to the left"/>
+   
+
+   <!-- Verbs: auxiliaries with transitive, indicative, agent/patient --> 
+
+   <item numOfParses="1" string="I do see the box"/>
+   <item numOfParses="0" string="I do sees the box"/>
+   <item numOfParses="1" string="you can see the box"/>
+   <item numOfParses="0" string="you can sees the box"/>   
+
+   <!-- Verbs: copula, indicative, with adverbials --> 
+
+   <item numOfParses="1" string="the ball is big"/>   
+   <item numOfParses="1" string="the ball is red"/>   
+   <item numOfParses="1" string="that ball behind the green box is blue"/>   
+
+   <!-- Verbs: copula, indicative, with locations --> 
+
+   <item numOfParses="1" string="the blue ball is behind the green box"/>   
+   <item numOfParses="1" string="the blue ball is near the green box"/>   
+   <item numOfParses="1" string="that ball is to the left of the green box"/>   
+   <item numOfParses="1" string="the laboratory is near the office"/>   
+
+   <!-- Verbs: negation and auxiliaries with transitive, indicative, agent/patient --> 
+
+   <item numOfParses="1" string="I do not see the box"/>
+   <item numOfParses="1" string="you can not see the box"/>
+   <item numOfParses="0" string="I not see the box"/>
+   <item numOfParses="0" string="you not see the box"/>
+
+   <!-- Verbs: polarity discourse units with negation and auxiliaries with transitive, indicative, agent/patient --> 
+
+   <item numOfParses="1" string="no I do not see the box"/>
+   <item numOfParses="1" string="no you can not see the box"/>
+   <item numOfParses="1" string="yes I do not see the box"/>
+   <item numOfParses="1" string="yes you can not see the box"/>
+   <item numOfParses="1" string="yes I do see the box"/>
+   <item numOfParses="1" string="yes I see the box"/>
+   <item numOfParses="1" string="yes you can see the box"/>
+   <item numOfParses="1" string="yes you see the box"/>
+
+   <item numOfParses="3" string="yes I see the box and a cow or a cube to the left of the pink ball"/>
+   
+   <!-- Verbs: affectual evaluation -->
+   
+   <item numOfParses="1" string="I like the box"/>
+   <item numOfParses="1" string="I hate the box"/>
+   <item numOfParses="1" string="I love the lab"/>
+   <item numOfParses="1" string="I fear the cow"/>
+   
+   <item numOfParses="1" string="I feel good"/>
+   <item numOfParses="1" string="I feel bad"/>
+   <item numOfParses="1" string="I feel frustrated"/>
+   <item numOfParses="1" string="I feel guilty"/>
+   
+   <!-- Verbs: desiderates with nps or infinitival clauses as objects-->
+   
+    <item numOfParses="1" string="I want the ball"/>
+    <item numOfParses="1" string="I want tea"/>
+    <item numOfParses="1" string="I want tea please"/>
+    <item numOfParses="1" string="I please want tea"/>
+    <item numOfParses="1" string="I want a tea"/>
+    <item numOfParses="1" string="I would like a tea"/>
+    <item numOfParses="1" string="I would like to have a tea"/>
+    
+    <item numOfParses="1" string="I want to go"/>
+    <item numOfParses="1" string="I want to go left"/>
+    <item numOfParses="1" string="I want to see the ball"/>
+    <item numOfParses="1" string="I want to feel good"/>
+    <item numOfParses="1" string="I do not want to feel frustrated"/>
+ 
+    <!-- Verbs: control -->
+ 
+    <item numOfParses="1" string="I want you to feel good"/>
+    <item numOfParses="1" string="I want you to bring me coffee"/>
+    <item numOfParses="1" string="she wants you to bring her coffee"/>
+    <item numOfParses="1" string="I need you to help me"/>
+     <item numOfParses="1" string="do you want me to bring you coffee"/>
+    
+   <!-- Verbs: affectual evaluation verbs and desiderates with subjects restricted to pper or person-np  -->   
+ 
+    <item numOfParses="1" string="I hate the box"/>
+    <item numOfParses="1" string="rob hates the box"/>
+    <item numOfParses="0" string="the ball hates the box"/>
+    
+    <item numOfParses="1" string="I feel good"/>
+    <item numOfParses="1" string="she feels good"/>
+    <item numOfParses="1" string="rob feels good"/>
+    <item numOfParses="0" string="the ball feels good"/>
+      
+    <item numOfParses="1" string="I want the box"/>
+    <item numOfParses="1" string="rob wants the box"/>
+    <item numOfParses="0" string="the ball wants the box"/>
+   
+    <item numOfParses="1" string="I want to go"/>
+    <item numOfParses="1" string="rob wants to go"/>
+    <item numOfParses="0" string="the ball wants to go"/>
+     
+    <!-- Verbs: with subjects restricted to persons (pper and np of type person) -->
+     
+    <item numOfParses="1" string="I see the box"/>
+    <item numOfParses="1" string="rob sees the box"/>
+    <item numOfParses="0" string="the ball sees the box"/>
+     
+     <!-- Questions on affective states -->
+     <item numOfParses="1" string="what do you feel"/>
+     <item numOfParses="1" string="how do you feel"/>
+     
+      <!-- possessives -->
+     <item numOfParses="1" string="this is my tea"/>
+     <item numOfParses="1" string="here is your coffee"/>
+     
+     <!-- evaluative comments -->
+     <item numOfParses="1" string="stop it"/>
+     <item numOfParses="1" string="don't"/>
+     <item numOfParses="1" string="dont"/>
+     <item numOfParses="1" string="well done"/>
+
+</regression>

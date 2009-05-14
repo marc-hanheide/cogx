@@ -1,0 +1,208 @@
+first: all
+$(OBJECTS_DIR)main.o: main.cpp libHOG/HOG.h libHOG/HOGparams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libCmd/Options.h libCmd/BoolOption.h \
+  libCmd/CmdOption.h libCmd/CmdParser.h libCmd/NumericOption.h \
+  libCmd/NumericOption.hh libCmd/NumericArgument.h \
+  libCmd/NumericArgument.hh libCmd/StringOption.h libCmd/FileOption.h \
+  libCmd/StringOption.h libCmd/EnumOption.h libCmd/StringArgument.h \
+  libCmd/FileArgument.h libCmd/StringArgument.h libCmd/OptionList.h \
+  libCmd/OptionList.hh libPPProcess/nonmaxsuppression.h \
+  libPPProcess/preprocess.h libPPProcess/ppParams.h parameters.h \
+  libInifile/inifile.h sw_svm.h libSVMdense/svm.h \
+  libSVMdense/svm_common.h libSVMdense/svm_learn.h \
+  libFeatures/featurevector.hh ../../include/libGrayImage/grayimage.hh \
+  ../../include/libImage/image.h ../../include/libImage/rgbimage.h \
+  ../../include/libImage/hsiimage.h features_sw.h hog_features.h
+$(OBJECTS_DIR)parameters.o: parameters.cpp libInifile/inifile.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h parameters.h libPPProcess/preprocess.h \
+  libPPProcess/ppParams.h /usr/include/qt4/QtGui/QImage \
+  /usr/include/qt4/QtGui/qimage.h /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h
+$(OBJECTS_DIR)train.o: train.cpp libPPProcess/preprocess.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libPPProcess/ppParams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  libSVMdense/svm.h libSVMdense/svm_common.h libSVMdense/svm_learn.h \
+  sw_svm.h libFeatures/featurevector.hh \
+  ../../include/libGrayImage/grayimage.hh ../../include/libImage/image.h \
+  ../../include/libImage/rgbimage.h ../../include/libImage/hsiimage.h \
+  features_sw.h parameters.h libInifile/inifile.h
+$(OBJECTS_DIR)test.o: test.cpp ../../include/libTiffStreamReader/StreamReader.h \
+  ../../include/libTiffStreamReader/tiff.h \
+  ../../include/libTiffStreamReader/pacResult.h \
+  ../../include/libTiffStreamReader/camRot.h \
+  ../../include/libTiffStreamReader/colorConversion.h sw_svm.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libPPProcess/preprocess.h \
+  libPPProcess/ppParams.h /usr/include/qt4/QtGui/QImage \
+  /usr/include/qt4/QtGui/qimage.h /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  libSVMdense/svm.h libSVMdense/svm_common.h libSVMdense/svm_learn.h \
+  libFeatures/featurevector.hh ../../include/libGrayImage/grayimage.hh \
+  ../../include/libImage/image.h ../../include/libImage/rgbimage.h \
+  ../../include/libImage/hsiimage.h features_sw.h parameters.h \
+  libInifile/inifile.h
+$(OBJECTS_DIR)hog_features.o: hog_features.cpp libHOG/HOG.h libHOG/HOGparams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  libInifile/inifile.h hog_features.h features_sw.h
+$(OBJECTS_DIR)annorect.o: libAnnotation/annorect.cpp libAnnotation/annorect.h \
+  libAnnotation/xmlhelpers.h
+$(OBJECTS_DIR)annotation.o: libAnnotation/annotation.cpp libAnnotation/annotation.h \
+  libAnnotation/annorect.h libAnnotation/xmlhelpers.h
+$(OBJECTS_DIR)annotationlist.o: libAnnotation/annotationlist.cpp \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libAnnotation/xmlhelpers.h
+$(OBJECTS_DIR)xmlhelpers.o: libAnnotation/xmlhelpers.cpp libAnnotation/xmlhelpers.h
+$(OBJECTS_DIR)chisquare.o: libChiSquare/chisquare.cc libChiSquare/chisquare.hh \
+  libChiSquare/gamma.hh
+$(OBJECTS_DIR)gamma.o: libChiSquare/gamma.cc libChiSquare/gamma.hh
+$(OBJECTS_DIR)BoolOption.o: libCmd/BoolOption.C libCmd/BoolOption.h libCmd/CmdOption.h \
+  libCmd/CmdParser.h
+$(OBJECTS_DIR)CmdOption.o: libCmd/CmdOption.C libCmd/CmdOption.h libCmd/CmdParser.h
+$(OBJECTS_DIR)CmdParser.o: libCmd/CmdParser.C libCmd/CmdParser.h libCmd/CmdOption.h \
+  libCmd/BoolOption.h
+$(OBJECTS_DIR)EnumOption.o: libCmd/EnumOption.C libCmd/EnumOption.h libCmd/CmdOption.h \
+  libCmd/CmdParser.h
+$(OBJECTS_DIR)StringArgument.o: libCmd/StringArgument.C libCmd/StringArgument.h \
+  libCmd/CmdOption.h libCmd/CmdParser.h
+$(OBJECTS_DIR)StringOption.o: libCmd/StringOption.C libCmd/StringOption.h \
+  libCmd/CmdOption.h libCmd/CmdParser.h
+$(OBJECTS_DIR)featurevector.o: libFeatures/featurevector.cc libChiSquare/chisquare.hh \
+  libChiSquare/gamma.hh libFeatures/featurevector.hh \
+  ../../include/libGrayImage/grayimage.hh ../../include/libImage/image.h \
+  ../../include/libImage/rgbimage.h ../../include/libImage/hsiimage.h
+$(OBJECTS_DIR)hogConf.o: libHOG/hogConf.cpp libHOG/hogConf.h libHOG/HOGModel.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libHOG/HOG.h libHOG/HOGparams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  libSVMdense/svm.h libSVMdense/svm_common.h libSVMdense/svm_learn.h \
+  libPPProcess/preprocess.h libPPProcess/ppParams.h libInifile/inifile.h
+$(OBJECTS_DIR)HOG.o: libHOG/HOG.cpp libHOG/HOG.h libHOG/HOGparams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h
+$(OBJECTS_DIR)HOGModel.o: libHOG/HOGModel.cpp libHOG/HOGModel.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libHOG/HOG.h libHOG/HOGparams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  libSVMdense/svm.h libSVMdense/svm_common.h libSVMdense/svm_learn.h \
+  libPPProcess/preprocess.h libPPProcess/ppParams.h
+$(OBJECTS_DIR)HOGparams.o: libHOG/HOGparams.cpp libHOG/HOGparams.h
+$(OBJECTS_DIR)inifile.o: libInifile/inifile.cpp libInifile/inifile.h
+$(OBJECTS_DIR)nonmaxsuppression.o: libPPProcess/nonmaxsuppression.cpp \
+  libPPProcess/nonmaxsuppression.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h
+$(OBJECTS_DIR)preprocess.o: libPPProcess/preprocess.cpp libPPProcess/preprocess.h \
+  libAnnotation/annotationlist.h libAnnotation/annotation.h \
+  libAnnotation/annorect.h libPPProcess/ppParams.h \
+  /usr/include/qt4/QtGui/QImage /usr/include/qt4/QtGui/qimage.h \
+  /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  ../../include/libTiffStreamReader/StreamReader.h \
+  ../../include/libTiffStreamReader/tiff.h \
+  ../../include/libTiffStreamReader/pacResult.h \
+  ../../include/libTiffStreamReader/camRot.h \
+  ../../include/libTiffStreamReader/colorConversion.h
+$(OBJECTS_DIR)sharpen.o: libPPProcess/sharpen.cpp
+$(OBJECTS_DIR)binary_format.o: libSVMdense/binary_format.cpp libSVMdense/svm_common.h
+$(OBJECTS_DIR)svm_common.o: libSVMdense/svm_common.cpp libSVMdense/svm_common.h \
+  libSVMdense/kernel.h
+$(OBJECTS_DIR)svm.o: libSVMdense/svm.cpp libSVMdense/svm.h libSVMdense/svm_common.h \
+  libSVMdense/svm_learn.h
+$(OBJECTS_DIR)svm_hideo.o: libSVMdense/svm_hideo.cpp libSVMdense/svm_common.h
+$(OBJECTS_DIR)svm_learn.o: libSVMdense/svm_learn.cpp libSVMdense/svm_common.h \
+  libSVMdense/svm_learn.h

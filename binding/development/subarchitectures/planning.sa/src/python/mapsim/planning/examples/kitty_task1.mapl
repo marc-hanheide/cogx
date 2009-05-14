@@ -1,0 +1,63 @@
+(define (problem waypoints-example)
+(:domain waypoints)
+(:objects
+chips - robot
+chips - self_agent
+michael - human
+block1 block2 - block
+pyramid1 - pyramid
+wp1 wp2 wp3 wp4 wp5 wp6 - waypoint
+)
+
+(:init
+
+(near wp1 wp2)
+(near wp2 wp1)
+(near wp2 wp3)
+(near wp3 wp2)
+(near wp4 wp5)
+(near wp5 wp4)
+(near wp5 wp6)
+(near wp6 wp5)
+
+(left_of wp1 wp2)
+(left_of wp2 wp3)
+(left_of wp1 wp3)
+(left_of wp4 wp5)
+(left_of wp5 wp6)
+(left_of wp4 wp6)
+
+(right_of wp2 wp1)
+(right_of wp3 wp2)
+(right_of wp3 wp1)
+(right_of wp5 wp4)
+(right_of wp6 wp4)
+(right_of wp6 wp5)
+
+(red block1)
+(red block2)
+(blue pyramid1)
+
+(pos block1 wp2)
+(pos block2 wp3)
+(pos pyramid1 wp4)
+
+
+)
+
+(:goal 
+
+;; Logical form for 'put the red blocks to the right of the blue pyramid': 
+
+
+(forall (?o0 - block) (imply 
+  (and (initially (red ?o0)))
+  (exists (?p0 - waypoint) 
+(exists (?o1 - pyramid ?p1 - waypoint)
+  (and (initially (blue ?o1)) (pos ?o0 ?p0) (initially (pos ?o1 ?p1))  
+(right_of ?p0 ?p1)
+)))))
+
+
+))
+

@@ -1,0 +1,21 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST  localhost
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE vision.subarch #localhost
+
+CPP WM VisualWorkingMemory #--log true
+CPP TM AlwaysPositiveTaskManager
+
+#CPP UM video.server VideoServer  -o /dev/video0 --port 50000
+CPP UM video.server VideoServer -f "../../data/test.vid.002/image-0.%04d.ppm" -s 0 -e 225 -t 50 --downsample 1 --port 52200
+CPP MG change.detector ChangeDetector --videohost localhost --videoport 52200 --log true
+CPP MG segmentor Segmentor -s 0.5 -o 0.5 -a 600 --videohost localhost --videoport 52200 -w false #-c 2000
+CPP MG feature.extractor FeatureExtractor  --log true
+CPP MG recogniser Recogniser --log true --loadAV ./src/matlab/mAVs.mat
+
+CPP GD test VisionLrnTester  --log true --test rec_test --debug true #  -- exit true --log true --debug true
+
+CONNECTION Vision::ImageFrame segmentor PULL_FROM video.server
+CONNECTION Vision::ImageFrame change.detector PULL_FROM video.server

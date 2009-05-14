@@ -1,0 +1,49 @@
+ #########################
+ # Obliques (NP markers) #
+ #########################
+ 
+   family NP-marker (indexRel="*NoSem*")     { entry: obl<~55>[T MARK=*] /^ np<55>[T CASE=acc NUM PERS] ; 
+                                               entry: obln<~55>[T MARK=*] /^ n<55>[T NUM PERS] ; }
+
+ #####################
+ # Sentence markers  #
+ #####################
+   
+   # for that, whether, etc. May need to add semantics here (a tag on E) CURRENTLY OVER GENERATING. 
+   # MUST SORT OUT
+
+   # family Sent-marker (indexRel="*NoSem*")   { entry:  from-s(MARK= *) / s(MARK=no-mark) ; } 
+  
+ #########################
+ # Infinitive Marking To #
+ #########################
+  
+   # Two families: 1st takes a vf-base vp and the second doesn't, adding context pred to this event 
+   #       If this turns out to be too promiscous. Add another VFORM value  inf-ctxt, i.e. this
+   #       allows whatever chooses inf vps to choose whether or not its inf can be contextualized
+   #
+   family Infinitive-to (indexRel="*NoSem*") {  entry: ( from-s(inf) +subj() ) / ( s(vf-base) +subj() ) ; 
+												entry: s(inf) +subj()          : EVENT(context)         ;   } 
+   
+   family For-verb-ing     (indexRel="*NoSem*") { entry: ( from-s(for-ing) +subj() ) / ( s(ing) +subj() ) ; } 
+   # Should this just be a gerund?
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+ 

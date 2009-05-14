@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE test
+JAVA WM cast.testing.TestWorkingMemory --log $TEST_LOG_OUTPUT #--debug
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD locker cast.testing.LockTester --test lock-odr --log $TEST_LOG_OUTPUT --exit false #--debug
+JAVA GD sneaker cast.testing.LockTester --test sneak-r --log $TEST_LOG_OUTPUT --exit true #--debug
+

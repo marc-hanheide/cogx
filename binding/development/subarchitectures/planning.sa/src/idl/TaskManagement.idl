@@ -1,0 +1,69 @@
+#include "CAST.idl"
+
+module TaskManagement {
+
+
+  /**
+   * Interface that must be implemented by the internal cast task
+   * manager if it is to access functionality provided by an external
+   * task manager server.
+   */
+  interface InternalTaskManager {
+ 
+    /**
+     * Receive a decision that should be forwarded on to the src component.
+     */
+    void managementResult(in FrameworkBasics::FrameworkProcessID _srcComponent, 
+			  in cast::cdl::TaskManagementResult _result);
+    
+  };
+
+
+  /**
+   * The interface that must be implemented by external servers
+   * providing functionality to a cast SubarchitectureTaskManager.
+   */
+  interface ExternalTaskManager {
+
+    /**
+     * Method used to set up the reciprocal link between the two task
+     * managers.
+     */
+    void setInternalTaskManager(in InternalTaskManager _internalTM);
+
+    /**
+     * inform TM that a component can execute a particular list of tasks
+     **/
+    void registerTasks(in FrameworkBasics::FrameworkProcessID _srcComponent, 
+		       in cast::cdl::TaskDescriptionList _taskList);
+    
+
+    /**
+     * Receive an execution proposal from a particular component. The
+     * result is passed back through a separate method for
+     * flexibility.
+     */
+    void proposeTaskExecution(in FrameworkBasics::FrameworkProcessID _srcComponent, 
+			      in cast::cdl::InformationProcessingTask _task);
+
+
+    /**
+     * Receive a withdrawal of an execution proposal.
+     */
+    void withdrawTaskExecutionProposal(in FrameworkBasics::FrameworkProcessID _srcComponent, 
+				       in cast::cdl::TaskID _taskID);
+
+
+    /*
+     * Receive an update on the status of a task that is being executed.
+     */
+    void updateTaskExecutionStatus(in FrameworkBasics::FrameworkProcessID _srcComponent, 
+				   in cast::cdl::TaskID _taskID,
+				   in cast::cdl::TaskOutcome _outcome);
+
+
+  };
+  
+  
+  
+};

@@ -1,0 +1,19 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD counter cast.testing.BasicTester --test count-100 --log $TEST_LOG_OUTPUT 
+CPP GD writer1 BasicTester --test write-100 --exit false
+JAVA GD writer2 cast.testing.BasicTester --test write-100 --exit false
+CPP GD writer3 BasicTester --test write-100 --exit false
+JAVA GD writer4 cast.testing.BasicTester --test write-100 --exit false
+CPP GD writer5 BasicTester --test write-100 --exit false
+JAVA GD writer6 cast.testing.BasicTester --test write-100 --exit false
+CPP GD writer7 BasicTester --test write-100 --exit false
+JAVA GD writer8 cast.testing.BasicTester --test write-100 --exit false
+CPP GD writer9 BasicTester --test write-100 --exit false
+JAVA GD writer10 cast.testing.BasicTester --test write-100 --exit false
+
+
+

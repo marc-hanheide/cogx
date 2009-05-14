@@ -1,0 +1,29 @@
+;; Created automatically by MAPSIM
+(define (problem   playmate_task)
+(:domain   playmate)
+(:objects
+  MrChips - robot
+  Vision - subarchitecture
+  ComSys - subarchitecture  
+  motmon0 - movable
+  motmon2 - waypoint
+  motmon3 - movable
+  motmon5 - waypoint
+  motmon7 - waypoint
+  motmon8 - waypoint
+  motmon10 - movable
+)   ;; end objects
+(:init
+  (colour motmon0 : red)
+  (colour motmon3 : blue)
+  (pos motmon3 : motmon5)
+  (pos motmon0 : motmon2)
+  (pos motmon10 : motmon7)
+  (wp_left_of motmon5 motmon2 : true)
+  (wp_right_of motmon2 motmon5 : true)
+  (wp_left_of motmon8 motmon5 : true)
+  (knows_about__colour Vision)
+  (knows_about__colour ComSys)
+)   ;; end init
+(:goal (and
+))) ;; end problem

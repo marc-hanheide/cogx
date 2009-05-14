@@ -1,0 +1,43 @@
+Instruction for runing tests on vision.sa:
+
+0) "svn checkout" the code from the current tag.
+
+1) Run "./vision-test-prep" script.
+The script will download the test videos and 
+create the necessary link "config" to the test config directory.
+
+2) If Matlab MCR is not installed yet, run "./mcr-install" script to
+download and install it (put down the <MCR installation directory>).
+
+3) Make sure the following environment variables are set:
+
+export MCR_ROOT=<MCR installation directory>
+export MCR_VER=v77
+export XAPPLRESDIR=${MCR_ROOT}/${MCR_VER}/X11/app-defaults
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:\
+${MCR_ROOT}/${MCR_VER}/runtime/glnx86:\
+${MCR_ROOT}/${MCR_VER}/sys/os/glnx86:\
+${MCR_ROOT}/${MCR_VER}/sys/java/jre/glnx86/jre1.6.0/lib/i386/native_threads:\
+${MCR_ROOT}/${MCR_VER}/sys/java/jre/glnx86/jre1.6.0/lib/i386/server:\
+${MCR_ROOT}/${MCR_VER}/sys/java/jre/glnx86/jre1.6.0/lib/i386
+
+(the best method is to add this to ./bashrc of not yet there)
+
+4) Compile the code.
+
+The first time you build you will get the following warning when configuring
+the build with 'ccmake':
+
+FeatureLearningCtf header not installed, yet. Run 'make install' to generate 
+and install it. Then run 'ccmake' again. (For now, FeatureLearning won't be built)
+(see also: BUILD_FEATURE_LEARNING_CTF)
+
+This should only happen the first time the Feature Learning modules are being built.
+After a successfull 'make install' the required header will be in the output
+directory and 'ccmake' should not complain any more.
+
+When you receive the above warning, generate the makefiles (press g) and follow the
+instructions from the warning.
+
+4) Execute "./run-vision-tests".

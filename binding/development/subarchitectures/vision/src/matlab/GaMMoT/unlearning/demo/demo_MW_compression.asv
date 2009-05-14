@@ -1,0 +1,20 @@
+function demo_MW_compression() 
+installdemo_MW_compressionPaths() ;
+
+N = 20 ;
+Y = [-5.0:0.01:5.0] ; 
+[actual_density,x_pos] = marron_wand_normal_mixtures(3,Y,N) ;
+figure(1); clf; plot(Y,actual_density) ; hold on ;
+
+pdf_pos.mu = constructKDEfromData( x_pos, 'compression', 3 ) ;
+
+
+showPdfAutoBounds( N, pdf_pos.mu, pdf_pos.covariances, pdf_pos.weights, 'b--' );
+
+
+
+% ------------------------ %
+function installdemo_MW_compressionPaths() 
+% install Kernel learning
+newPath = '..\incrementalPDF\' ; rmpath(newPath) ; addpath(newPath) ;
+installIncrementalKDEUpdatePaths() ;

@@ -1,0 +1,147 @@
+
+#ifndef SPATIAL_DATA_IDL
+#define SPATIAL_DATA_IDL
+
+#include <Math.idl>
+#include <CAST.idl>
+#include <FrameworkBasics.idl>
+
+
+module spatial {
+  module autogen {
+
+    /**
+     * Enum used for identifying relationships
+     */
+    enum SpatialRelationshipType {
+      SPATIAL_PROXIMAL,
+      SPATIAL_FRONT,
+      SPATIAL_BACK,
+      SPATIAL_LEFT,
+      SPATIAL_RIGHT
+    };
+
+    struct SpatialRelationshipTargetQuery {
+      //cast::cdl::WorkingMemoryAddress m_queryAddress;
+      SpatialRelationshipType m_rel; //the relationship being queried
+      cast::cdl::WorkingMemoryID m_landmarkID;
+      long m_requestedTargets;
+      cast::cdl::WorkingMemoryAddress m_sceneAddress;
+      Math::Vector3DWithConfidenceSeq m_targets;
+    };
+
+
+    /**
+     * A struct to request that a location (in this case a proxy)
+     * should be moved relative to a particular landmark (another
+     * proxy).
+     */
+    struct RepositionLocation {
+
+      /// the location used for reference (a proxy id)
+      cast::cdl::WorkingMemoryID m_landmarkID;
+
+      /// the location to be updated (a proxy id)
+      cast::cdl::WorkingMemoryID m_targetID;
+
+      /// the relation to be achieved
+      SpatialRelationshipType m_rel; 
+      
+    };
+
+
+
+    struct SpatialLocation {
+      //what it was generated from
+      cast::cdl::WorkingMemoryPointer m_ptr;
+
+      //3D centroid of the location ... in metres
+      Math::Vector3D         m_centroid;
+    };
+
+
+    typedef sequence<SpatialLocation> SpatialLocationList;
+
+    /** 
+     *  A struct used to add a list of SpatialLocations to the scene.
+     */
+    struct AddToScene {
+      ///the fully created objects to add.
+      SpatialLocationList m_locations;
+    };
+
+
+
+    /**
+     * Struct that describes a spatial relationship between two objects.
+     */
+    struct SpatialRelationship {
+      cast::cdl::WorkingMemoryID m_target;
+      cast::cdl::WorkingMemoryID m_landmark;
+      float m_value;
+    };
+
+  
+
+    typedef sequence<SpatialRelationship> SpatialRelationshipSeq;
+    typedef sequence<FrameworkBasics::FrameworkProcessID> ComponentList;
+
+    /**
+     * A scene in spatial memory
+     */
+    struct SpatialScene {
+
+      /**
+       * The position of the viewer of the scene.
+       */
+      Math::Pose3D m_viewerPose;
+
+      /**
+       * The time at which the scene was added to spatial working memory
+       */
+      FrameworkBasics::BALTTime m_timestamp;
+
+      /**
+       * The addresses of the spatial objects in the scene. Local SA
+       * to the scene struct.
+       */
+      cast::cdl::WorkingMemoryIDList m_locations;
+
+      /**
+       * The proximity relationships in the current scene
+       */
+      SpatialRelationshipSeq m_proximityRelationships;
+
+      /**
+       * The proximity relationships in the current scene
+       */
+      SpatialRelationshipSeq m_leftRelationships;
+
+      /**
+       * The proximity relationships in the current scene
+       */
+      SpatialRelationshipSeq m_rightRelationships;
+
+      /**
+       * The proximity relationships in the current scene
+       */
+      SpatialRelationshipSeq m_frontRelationships;
+
+      /**
+       * The proximity relationships in the current scene
+       */
+      SpatialRelationshipSeq m_backRelationships;
+
+
+      /**
+       * The components that are still processing this scene       
+       */
+      ComponentList m_activeComponents;
+    };
+
+
+
+  };
+};
+
+#endif

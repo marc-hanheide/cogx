@@ -1,0 +1,10 @@
+# needs to look approx. like this:
+# a world file, i.e. the complete state of things :
+world world.mapl 
+# possible: a common knowledge file (knowledge shared by all agents)
+# the number of agents
+agents 3
+# a list of agent names (attention: same number as stated above)
+Vision
+MrChips
+ComSys

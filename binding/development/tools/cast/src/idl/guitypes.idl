@@ -1,0 +1,191 @@
+/*
+ * CAST - The CoSy Architecture Schema Toolkit
+ *
+ * Copyright (C) 2006-2007 Michael Zillich, Nick Hawes
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ *
+ */
+ 
+#ifndef GUI_TYPES_IDL
+#define GUI_TYPES_IDL
+
+module cast {
+
+  module cdl {
+
+    module guitypes {
+
+      // TODO: region2d
+      // TODO: polygon3d
+      // TODO: fancier "primitives": draw Katana, draw Camera
+      // TODO: flags SCALE_HALF, SCALE_QUART for images
+      // TODO: maybe have persistent drawing primitives (for drawing background
+      //   decorations like the VisualWM floor grid)
+
+      // some drawing flags
+      const long NONE = 0x0;
+      const long FAT = 0x1;
+      const long FILLED = 0x2;
+
+      struct RGBColor
+      {
+	long m_r;  // red value in the range [0, 255]
+	long m_g;  // green value in the range [0, 255]
+	long m_b;  // blue value in the range [0, 255]
+      };
+
+      struct RGBImage
+      {
+	long m_width;   // width of image
+	long m_height;  // height of image
+	sequence<octet> m_rgbBuffer;  // array of 3*width*height bytes
+	long m_flags;
+      };
+
+      struct Text2D
+      {
+	double m_x;
+	double m_y;
+	string m_text;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Point2D
+      {
+	double m_x;
+	double m_y;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Line2D
+      {
+	double m_x1;
+	double m_y1;
+	double m_x2;
+	double m_y2;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      /*
+       * An axis-parallel rectangle defined by its corners
+       */
+      struct Rect2D
+      {
+	double m_xmin;
+	double m_ymin;
+	double m_xmax;
+	double m_ymax;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Polygon2D
+      {
+	sequence<double> m_x;
+	sequence<double> m_y;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Text3D
+      {
+	double m_x;
+	double m_y;
+	double m_z;
+	string m_text;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Point3D
+      {
+	double m_x;
+	double m_y;
+	double m_z;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Line3D
+      {
+	double m_x1;
+	double m_y1;
+	double m_z1;
+	double m_x2;
+	double m_y2;
+	double m_z2;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Box3D
+      {
+	double m_cx;
+	double m_cy;
+	double m_cz;
+	double m_sx;
+	double m_sy;
+	double m_sz;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      struct Frame3D
+      {
+	double m_px;
+	double m_py;
+	double m_pz;
+	double m_rx;
+	double m_ry;
+	double m_rz;
+	RGBColor m_color;
+	long m_flags;
+      };
+
+      /*
+       * A batch of drawing primitives to be sent to the GUI.
+       */
+      struct DrawBatch
+      {
+	string m_compID;  // name of the sending component
+
+	// 2D drawing primitives
+	RGBImage m_image;
+	sequence<Text2D> m_text2Ds;
+	sequence<Point2D> m_point2Ds;
+	sequence<Line2D> m_line2Ds;
+	sequence<Rect2D> m_rect2Ds;
+	sequence<Polygon2D> m_poly2Ds;
+
+	// 3D drawing primitives
+	sequence<Text3D> m_text3Ds;
+	sequence<Point3D> m_point3Ds;
+	sequence<Line3D> m_line3Ds;
+	sequence<Box3D> m_box3Ds;
+	sequence<Frame3D> m_frame3Ds;
+
+	// Text
+	sequence<string> m_texts;
+      };
+    };
+  };
+};
+
+#endif

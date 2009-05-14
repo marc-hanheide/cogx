@@ -1,0 +1,10 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST  localhost
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE vision.subarch #localhost
+
+JAVA WM vision.wm.SimpleVisionWM
+CPP TM AlwaysPositiveTaskManager
+JAVA GD fakey vision.components.DummySceneObjectCreator --file subarchitectures/vision/config/scenes/kst3.fv  --test

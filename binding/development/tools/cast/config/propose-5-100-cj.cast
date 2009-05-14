@@ -1,0 +1,25 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM TestTaskManager #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier1 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier2 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier3 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier4 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier5 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier6 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier7 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier8 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier9 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier10 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier11 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier12 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier13 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier14 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier15 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier16 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier17 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier18 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier19 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier20 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug

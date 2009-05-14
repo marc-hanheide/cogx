@@ -1,0 +1,8 @@
+# This run should be replicable by running:
+# mapsim -t domains/coffee/scenarios/simple/prob000 -a 3 -r
+MAPSIM run starts. There are 2 agents: Anne and R2D2
+ (1) Anne: 'Please give me the coffee, R2D2.'
+ (2) R2D2: 'Okay, Anne.'
+ (3) R2D2 gives Anne the coffee.
+ (4) Anne: 'Thanks for giving me the coffee, R2D2.'
+MAPSIM terminates successfully.

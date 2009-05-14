@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<tests>
+
+  <test>
+    <name>comedian c++</name>
+    <file>./tools/comedian-architecture/config/test-c++.cast</file>
+    <description>Runs comedian arch for sanity check. All C++.</description>
+  </test>
+
+  <test>
+    <name>comedian java</name>
+    <file>./tools/comedian-architecture/config/test-java.cast</file>
+    <description>Runs comedian arch for sanity check. All Java.</description>
+  </test>
+
+  <test>
+    <name>comedian mixed 1</name>
+    <file>./tools/comedian-architecture/config/test-mixed-1.cast</file>
+    <description>Runs comedian arch for sanity check. Mixed languages.</description>
+  </test>
+
+  <test>
+    <name>comedian mixed 2</name>
+    <file>./tools/comedian-architecture/config/test-mixed-2.cast</file>
+    <description>Runs comedian arch for sanity check. Mixed languages.</description>
+  </test>
+    
+</tests>

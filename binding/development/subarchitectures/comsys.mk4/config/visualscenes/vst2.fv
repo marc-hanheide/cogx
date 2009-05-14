@@ -1,0 +1,26 @@
+## ============================================
+## Situated interaction testbed
+## Visual scene VST2: visual salience
+## --------------------------------------------
+## a red mug (m2), a white mug (m1), placed far
+## apart:  
+##
+##      m1      
+##              
+##         m2
+##         ^
+##        CAM
+## --------------------------------------------
+## Distractor features: 
+## - type (mug), shape (container)
+## ============================================
+
+#camera position
+0.22528142 -1.1281004 0.57014495
+#camera orientation
+-2.0106425 -0.19543846 0.20791425
+
+#object lines
+# reqd 3d position #optional features = colour size label + val & opt prob 
+-0.10 0.75 0, colour white 1.0, label mug 1.0
+0.0 0.25 0, colour red 1.0, label mug 1.0

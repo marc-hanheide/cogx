@@ -1,0 +1,74 @@
+/*!
+\page main_segmentor Segmentor Component
+
+\section desc_segmentor Description
+
+The \p Segmentor component is a managed (goal driven) component that segments the image identifying the regions of interest (Region of interest). The segmentation is based on the background subtraction.
+The component learns the background at system startup. The identification is triggered by \p ChangeDetector when the image becomes stable. After the identification the component tries to match the identified ROIs with the old ones. Then it creates and pushes to working memory the new ones and changes the old ones, if required.
+
+\section conf_segmentor Configuration
+
+CPP MG <name> Segmentor [-r x1 y1 x2 y2] [-a min_contour] [-s sensitivity] [-o overlap_thr] [-t no_img] [-n norm_img] [-c camera]
+\n
+
+Options: \n
+  -r .. ROI coordinates, e.g. \b "150 240 620 480" \n
+  -a .. minimum contour area, e.g. \b 1000 \n
+  -s .. shadow sensitivity, e.g. \b 0.5 \n
+  -o .. overlap threshold, e.g. \b 0.5 \n
+  -t .. number of training backround images, e.g. \b 30 \n
+  -n .. number of normalization backround images, e.g.\b 30 \n
+  -c .. specify which camera to observe, default \b 0 \n
+
+\section idl_segmentor Working Memory Items
+
+\p Vision::SceneChanged \n
+\p Vision::ROI \n
+\p Vision::SceneObject \n
+\p Vision::Camera \n
+
+\section op_segmentor Working Memory Operations
+
+Get(\p Vision::SceneChanged) \n
+Get(\p Vision::ROI) \n
+Get(\p Vision::Camera) \n
+\n
+Add(\p Vision::ROI) \n
+Add(\p Vision::SceneObject) \n
+\n
+Overwrite(\p Vision::SceneChanged) \n
+
+Delete(\p Vision::ROI) \n
+Delete(\p Vision::SceneObject) \n
+
+\section flt_segmentor Working Memory Filters
+
+Overwrite(\p Vision::SceneChanged)
+
+\section msc_segmentor Dataflow
+
+\msc
+    hscale = "2.0";
+    VS[URL="\ref VideoServer", label="VideoServer"],SC[URL="\ref Vision:SceneChanged", label="Vision:SceneChanged"], S[URL="\ref Segmentor", label="Segmentor"],
+	ROI[URL="\ref Vision:ROI", label="Vision:ROI"], SO[URL="\ref Vision:SceneObject", label="Vision:SceneObject"];
+    ...;
+    --- [label="Scene becomes stable"];
+    SC->S [label="flt:OVR"];
+    S->SC [label="GET"];
+    S=>VS [label="GetImage"];
+    VS>>S [label="image"];
+    S->ROI [label="GET"];
+    ... [label=|"image segmentation"];
+    S->ROI [label="DEL"];
+    S->SO [label="ADD"];
+    S->ROI [label="ADD"];
+    S->SC [label="OVR(SceneChanged=false)"];
+\endmsc
+
+
+\sa \p Segmentor \n \p ChangeDetector \n \p VideoServer \n \p Vision::SceneChanged \n
+\p Vision::ROI \n \p Vision::SceneObject
+
+*/
+
+

@@ -1,0 +1,414 @@
+/*!
+\page uol_spec Specification for the Visual Learning 
+
+\section scenario Scenario
+
+The work on continuous learning of basic visual concepts is based on
+the scientific issues, which are to be demonstrated in the following
+scenarios:
+
+ \li Tutor driven learning
+ \li Tutor supervised and exploratory leaning
+ \li Unlearning
+ \li Co-learning
+ \li Determination of salience
+ \li Implicit learning
+ \li Clarification
+
+The scripts for these scenarios can be found on the page \ref
+uol_scenarios .
+
+\section requirements Requirements
+
+The UOL part of Vision subarchitecture (visual learning) should be
+able to:
+
+ \li create representations of new concepts (visual properties and spatial relations) when
+ encountered. (required in all scenarios)
+ \li update the representations of the previously
+ learned concepts. (required in all scenarios)
+ \li deal with several objects. (required in many scenarios)
+ \li update the knowledge in the Tutor driven way.  (required in \ref TDlearning scenario.)
+ \li update the knowledge in the Tutor supervised way. (required in \ref TSlearning scenario.)
+ \li update the knowledge in the Exploratory way. (required in \ref TSlearning scenario.)
+ \li unlearn (correct) the representation with negative
+ information. (required in \ref unlearning scenario.)
+ \li colearn; learn spatial relations between two objects when their
+ object properties are recognized. (required in \ref colearning scenario.)
+ \li colearn; learn  object properties of two objects when the
+ spatial relationship between them is recognized. (required in \ref colearning scenario.)
+ \li determine the object the human is pointing at. (required in \ref salience scenario.)
+ \li determine multiple objects the human is indicating. (required in \ref salience scenario.)
+ \li determine the location the human is pointing at. (required in \ref salience scenario.)
+ \li determine the region the human is indicating. (required in \ref salience scenario.)
+ \li implicitly learn/update the current representations. (required in \ref implicitLearning scenario.)
+ \li determine when the robot needs to move the camera to another viewpoint to gather additional
+ information about the object. (required in \ref clarification scenario.)
+ \li determine when the robot needs to move/rotate the object to
+ gather additional information about the object. (required in \ref clarification scenario.)
+ \li determine when the robot needs to ask the human to move/rotate the object to
+ gather additional information about the object. (required in \ref clarification scenario.)
+ \li determine when the robot needs to pose a yes/no question to the human
+ to clarify the current situation. (required in \ref clarification scenario.)
+ \li determine when the robot needs to pose a more general question to the human
+ to clarify the current situation. (required in \ref clarification scenario.)
+
+
+\section representations Representations
+
+\subsection roi Region of interest
+In playmate scenario a ROI is a region of the working surface that was for some
+reason selected for further processing. In our case segmentor creates a ROI
+structure based on background subtraction. It contains the image of the region and
+the object segmentation mask within the region. Data about extracted visual features
+is kept in a special Matlab matrix and there are also a similar matrices for the recognised
+visual attributes' data (m_attributes) and for the partially recognised attributes (m_probableAttributes).
+The structure also contains the ID of the coresponding \ref object structure, 2D bounding box, camera ID
+and a sequence of contour points that can be used for shape analysis.
+
+\par IDL structure:
+
+\code
+/* region of interest*/
+struct ROI {
+    Image          m_region;    // The region of the original image.
+    Image          m_mask;      // The segmentation mask for this ROI.
+    Matlab::Matrix m_features;
+    Matlab::Matrix m_attributes;
+    Matlab::Matrix m_probableAttributes;
+    string         m_objId;   // working memory address of the corresponding
+                              // object
+    BBox2D         m_bbox; 
+    long           m_camNum;  // 0: left, 1: right, 2: arm-mounted
+    FrameworkBasics::BALTTime  m_time;
+
+    // Vector of points to store the contour points -- in case want to
+    // use for shape analysis...
+    vector2DSequence m_contourPoints;
+ };
+\endcode
+
+\sa \c Vision::ROI
+
+\subsection object SceneObject 
+The scene object structure contains high level visual features of a recognised object. This structure is
+the basis for crossmodal comparison via binder.
+
+\par IDL structure:
+
+\code
+struct SceneObject {
+    BBox3D           m_bbox;
+    Math::Pose3D     m_pose;
+    FrameworkBasics::BALTTime    m_time;
+
+    /* 
+     * Members for linguistically assigned values.
+     */
+    IntWithConfidence    m_color;
+    IntWithConfidence    m_shape;
+    IntWithConfidence    m_size;
+    IntWithConfidence    m_generic;
+
+    StringWithConfidence m_label;
+    sequence<Surface>    m_surfaces;
+};
+\endcode
+
+\sa \c Vision::SceneObject
+
+
+\subsection scene_changed SceneChanged 
+This structure is used by \ref change_detector and other components to signal to whether
+the scene is changing, static or already processed.
+
+\par IDL structure:
+
+\code
+  struct SceneChanged
+  {
+    boolean m_sceneChanging;  // scene is undergoing change
+    boolean m_sceneChanged;   // change has stopped, scene is static and changed
+    boolean m_sceneProcessed; // scene is static and processed (scene objects)
+    long    m_camNum;
+  }; // struct SceneChanged
+\endcode
+
+\sa \c Vision::SceneChanged
+
+\subsection learn_instruction LearnInstruction 
+This structure represents the instruction to learn some features from a particular
+working memory target. It contains target working memory adress and a matrix of features
+to learn. The type of learning (tutor initiated or tutor supervised) is determined by a flag.
+
+\par IDL structure:
+
+\code
+  struct LearnInstruction {
+    // A flag that indicates whether the tutor initiated this LearnInstruction
+    // or the robot itself (in case of tutor supervised learning).
+    boolean m_tutorInitiated;
+    cast::cdl::WorkingMemoryID m_targetAddress;
+    IntWithConfidenceSequence m_features;
+    string m_type; 
+  };
+
+\endcode
+
+\sa \c Vision::LearnInstruction
+
+
+\section components Components
+
+\subsection video_server Video Server
+
+\par Details:
+
+\par Component name: 
+Video Server
+
+\par Requirements satisfied: 
+A component necessary for all requirements.
+
+
+\subsection change_detector Change Detector
+
+The change detector is an unmanaged (data driven) process that is sensitive
+to the changes in the image. When the image is changing, the component forwards
+this information to the working memory. After the image becomes stable and is unchanged
+for a certain amount of time (a couple of seconds), the component changes the
+information in working memory accordingly. 
+
+\par Details:
+
+\par Component name: 
+Change Detector
+
+\par Requirements satisfied: 
+A component necessary for all requirements.
+
+\subsubsection change_func Units of functionality
+
+\subsection segmentor Segmentor
+
+The segmentor is a managed (goal driven) component that identifies the regions of
+interest (\ref roi) in the image. The identification is based on the background
+subtraction. The component learns the background at system startup. The identification
+is triggered by \ref change_detector when the image becomes stable. After the
+identification the component tries to match the identified ROIs with the old ones. Then
+it creates and pushes to working memory the new ones and changes the old ones, if required.
+
+\par Details:
+
+\par Component name: 
+Segmentor
+
+\par Requirements satisfied: 
+A component necessary for all requirements.
+
+\subsubsection segmentor_func Units of functionality
+
+
+
+\subsection feature_extractor Feature Extractor
+
+The feature extractor is a managed (goal driven) component that is used to extract object's
+(ROI's) visual features. 
+
+\par Details:
+
+\par Component name: 
+Feature Extractor
+
+\par Requirements satisfied: 
+A component necessary for all requirements.
+
+\subsubsection extractor_func Units of functionality
+
+\subsection learner_recogniser Learner-recogniser
+
+The learner-recogniser is a managed (goal driven) component that is used for learning and 
+recognising object's properties (such as colour, shape size, etc.) from visual features. The
+incremental learning is based on Kernel Density Estimation functions. 
+
+
+\par Details:
+
+\par Component name: 
+Learner-recogniser
+
+\par Requirements satisfied: 
+A component necessary for all requirements.
+
+\subsubsection recogniser_func Units of functionality
+
+
+\subsection binding_monitor Vision Binding Monitor
+
+The main taks of vision binding monitor is to create binding proxies based on visual WM entries. A proxy monitor
+that is created for each new proxy, reports Binding SA events concerning that proxy. Based on these events, data from
+other modalities is extracted and forwarded to the learning components.
+
+\par Details:
+
+\par Component name: 
+Binding Monitor
+
+\par Requirements satisfied: 
+	\li update the knowledge in the Tutor driven way.  (required in \ref TDlearning scenario.)
+	\li update the knowledge in the Tutor supervised way. (required in \ref TSlearning scenario.)
+	\li unlearn (correct) the representation with negative
+	 information. (required in \ref unlearning scenario.)
+	\li colearn; learn spatial relations between two objects when their
+	 object properties are recognized. (required in \ref colearning scenario.)
+	\li colearn; learn  object properties of two objects when the
+	spatial relationship between them is recognized. (required in \ref colearning scenario.)
+
+\subsubsection binding_func Units of functionality
+
+\subsection comparator Vision Comparator
+
+The main purpose of vision comparator component is to provide external comparing capability for Binding SA,
+but it also doubles as a binding features to visual attributes translator. The comparator maintains a
+translation table which is gradually compiled during the learning process.
+
+\par Details:
+
+\par Component name: 
+Vision Comparator
+
+\par Requirements satisfied: 
+	\li update the knowledge in the Tutor driven way.  (required in \ref TDlearning scenario.)
+	\li update the knowledge in the Tutor supervised way. (required in \ref TSlearning scenario.)
+	\li unlearn (correct) the representation with negative
+	 information. (required in \ref unlearning scenario.)
+	\li colearn; learn spatial relations between two objects when their
+	 object properties are recognized. (required in \ref colearning scenario.)
+	\li colearn; learn  object properties of two objects when the
+	spatial relationship between them is recognized. (required in \ref colearning scenario.)
+
+\subsubsection comparator_func Units of functionality
+
+\section  processes Processes
+
+\subsection obj_rec Object Recognition
+
+VS = VideoServer, CD = Change Detector, Seg = Segmentor, FE = Feature Extractor, LR = Learner-recogniser, BM = Vision Binding Monitor
+
+\msc
+
+	hscale = "1.4";
+	VS, CD, "<SceneChanged>", Seg, "<ROI>", FE, "<SceneObject>", LR, BM;
+	VS>>CD [label="images"];
+
+	... ;
+
+	--- [label="the scene is stable"];
+
+	CD=>"<SceneChanged>" [label="OVR"];
+	"<SceneChanged>"->Seg [label="wmc(OVR)"];
+
+	VS<=Seg [label="get image"];
+	VS>>Seg [label="image"];
+
+	--- [label="image segmentation"];
+
+	Seg=>"<ROI>" [label="ADD"];
+	Seg=>"<SceneObject>" [label="ADD"];
+
+	"<SceneObject>" -> BM [label="wmc(ADD)"];
+
+	BM=>"<SceneObject>" [label="GET"];
+	"<SceneObject>">>BM [label="data"];
+
+	--- [label="new binding proxy"];
+
+	"<ROI>"->FE [label="wmc(ADD)"];
+
+	FE=>"<ROI>" [label="GET"];
+	"<ROI>">>FE [label="data"];
+
+	--- [label="feature extraction"];
+
+	FE=>"<ROI>" [label="OVR"];
+	"<ROI>"->LR [label="wmc(OVR)"];
+
+	LR=>"<SceneChanged>" [label="GET"];
+	"<SceneChanged>">>LR [label="data"];
+	
+	LR=>"<ROI>" [label="GET"];
+	"<ROI>">>LR [label="data"];
+
+	LR=>"<SceneObject>" [label="GET"];
+	"<SceneObject>">>LR [label="data"];
+
+
+	--- [label="object recognition"];
+
+	LR=>"<ROI>" [label="OVR"];
+	LR=>"<SceneObject>" [label="OVR"];
+	LR=>"<SceneChanged>" [label="OVR"];
+	
+	"<SceneObject>"-> BM [label="wmc(OVR)"];
+
+	BM=>"<SceneObject>" [label="GET"];
+	"<SceneObject>">>BM [label="data"];
+
+	--- [label="binding proxy update"];
+
+
+\endmsc
+
+
+\subsection obj_lrn Tutor Driven Learning
+
+BWM = Binding Working Memory, BM = Vision Binding Monitor, C = Vision Comparator, LR = Learner-recogniser
+
+\msc
+
+	hscale = "1.4";
+	BWM, BM, "<BindingFeatureTransfer>", C, "<LearnInstruction>", LR, "<SceneObject>", "<ROI>";
+
+	BWM->BM [label="union updated"];
+	BM=>BWM [label="get features"];
+	BWM>>BM [label="data"];
+	...;
+	BM=>"<BindingFeatureTransfer>" [label="ADD"];
+
+	"<BindingFeatureTransfer>"-> C [label="wmc(ADD)"];
+
+	C=>"<BindingFeatureTransfer>" [label="GET"];
+	"<BindingFeatureTransfer>" >> C [label="data"];
+
+	--- [label="binding features translated to visual attributes"];
+
+	C=>"<LearnInstruction>" [label="ADD"];
+
+	"<LearnInstruction>"-> LR [label="wmc(ADD)"];
+
+	LR=>"<LearnInstruction>" [label="GET"];
+	"<LearnInstruction>" >> LR [label="data"];
+
+	LR=>"<ROI>" [label="GET"];
+	"<ROI>" >> LR [label="data"];
+
+	LR=>"<SceneObject>" [label="GET"];
+	"<SceneObject>" >> LR [label="data"];
+
+	--- [label="KDE update"];
+
+	LR=>"<ROI>" [label="OVR"];
+	LR=>"<SceneObject>" [label="OVR"];
+\endmsc
+
+
+		
+	
+
+
+
+
+
+
+
+*/

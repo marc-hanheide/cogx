@@ -1,0 +1,23 @@
+(define (domain playmate)
+
+	(:requirements :mapl :adl)
+	
+	(:types 
+	)
+	
+	(:constants
+	)
+	
+	(:predicates
+	 )
+	
+;;; sensors ;;;
+
+
+;;; speech acts 
+
+
+;;; actions ;;;
+
+
+)

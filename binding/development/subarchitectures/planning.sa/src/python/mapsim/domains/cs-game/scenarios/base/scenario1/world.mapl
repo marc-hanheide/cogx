@@ -1,0 +1,41 @@
+(define (problem cs-task)
+(:domain cs-game)
+(:objects
+  true - boolean
+  false - boolean
+  blue - colour
+  red - colour
+  circle - shape
+  square - shape
+  Robot - robot
+  wp1 - waypoint
+  wp2 - waypoint
+  wp3 - waypoint
+  wp4 - waypoint	
+  cir - block
+  sqr - block
+)
+
+(:init
+  (wp_left_of wp1 wp2)
+  (wp_right_of wp2 wp1)
+
+  (wp_left_of wp3 wp4)
+  (wp_right_of wp4 wp3)
+
+  (pos sqr : wp1)
+  (pos cir : wp3)
+
+  (colour sqr : red)
+  (colour cir : blue)
+
+  (shape sqr : square)
+  (shape cir : circle)
+
+)
+
+(:goal (and
+;;  (colour sqr : red)  ;; meaningless goal
+  (left_of sqr cir)  
+)
+))

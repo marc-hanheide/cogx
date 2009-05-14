@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<tests>
+
+  <test>
+    <name>lock-o-jjj</name>
+    <file>tools/cast/config/lock-o-jjj.cast</file>
+    <description>Verifies exception generation on lock
+    violation.</description>
+  </test>
+
+  <test>
+    <name>lock-od-jjj</name>
+    <file>tools/cast/config/lock-od-jjj.cast</file>
+    <description>Verifies exception generation on lock
+    violation.</description>
+  </test>
+
+      <test>
+    <name>lock-odr-jjj</name>
+    <file>tools/cast/config/lock-odr-jjj.cast</file>
+    <description>Verifies exception generation on lock
+    violation.</description>
+  </test>
+
+  <test>
+    <name>lock-o-ccc</name>
+    <file>tools/cast/config/lock-o-ccc.cast</file>
+    <description>Verifies exception generation on lock
+    violation.</description>
+  </test>
+
+  <test>
+    <name>lock-od-ccc</name>
+    <file>tools/cast/config/lock-od-ccc.cast</file>
+    <description>Verifies exception generation on lock
+    violation.</description>
+  </test>
+
+      <test>
+    <name>lock-odr-ccc</name>
+    <file>tools/cast/config/lock-odr-ccc.cast</file>
+    <description>Verifies exception generation on lock
+    violation.</description>
+  </test>
+
+
+  <test>
+    <name>lock-and-overwrite-jjj</name>
+    <file>tools/cast/config/lock-and-overwrite-jjj.cast</file>
+    <description>Tests the wm locking and permissions code in a single
+      all java subarch.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-xarch-jjj</name>
+    <file>tools/cast/config/lock-and-overwrite-xarch-jjj.cast</file>
+    <description>Tests the wm locking and permissions code in two all
+      java subarchs.</description>
+  </test>
+
+
+  <test>
+    <name>lock-and-overwrite-ccc</name>
+    <file>tools/cast/config/lock-and-overwrite-ccc.cast</file>
+    <description>Tests the wm locking and permissions code in a single
+      all c++ subarch.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-xarch-ccc</name>
+    <file>tools/cast/config/lock-and-overwrite-xarch-ccc.cast</file>
+    <description>Tests the wm locking and permissions code in two all
+      c++ subarchs.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-mixed-1</name>
+    <file>tools/cast/config/lock-and-overwrite-mixed-1.cast</file>
+    <description>Tests the wm locking and permissions code in a single
+      mixed code subarch.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-mixed-2</name>
+    <file>tools/cast/config/lock-and-overwrite-mixed-2.cast</file>
+    <description>Tests the wm locking and permissions code in a single
+      mixed code subarch.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-xarch-mixed-1</name>
+    <file>tools/cast/config/lock-and-overwrite-xarch-mixed-1.cast</file>
+    <description>Tests the wm locking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-xarch-mixed-2</name>
+    <file>tools/cast/config/lock-and-overwrite-xarch-mixed-2.cast</file>
+    <description>Tests the wm locking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-xarch-mixed-3</name>
+    <file>tools/cast/config/lock-and-overwrite-xarch-mixed-3.cast</file>
+    <description>Tests the wm locking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+  <test>
+    <name>lock-and-overwrite-xarch-mixed-4</name>
+    <file>tools/cast/config/lock-and-overwrite-xarch-mixed-4.cast</file>
+    <description>Tests the wm locking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+
+  <test>
+    <name>trylock-and-overwrite-jjj</name>
+    <file>tools/cast/config/trylock-and-overwrite-jjj.cast</file>
+    <description>Tests the wm trylocking and permissions code in a single
+      all java subarch.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-xarch-jjj</name>
+    <file>tools/cast/config/trylock-and-overwrite-xarch-jjj.cast</file>
+    <description>Tests the wm trylocking and permissions code in two all
+      java subarchs.</description>
+  </test>
+
+
+  <test>
+    <name>trylock-and-overwrite-ccc</name>
+    <file>tools/cast/config/trylock-and-overwrite-ccc.cast</file>
+    <description>Tests the wm trylocking and permissions code in a single
+      all c++ subarch.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-xarch-ccc</name>
+    <file>tools/cast/config/trylock-and-overwrite-xarch-ccc.cast</file>
+    <description>Tests the wm trylocking and permissions code in two all
+      c++ subarchs.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-mixed-1</name>
+    <file>tools/cast/config/trylock-and-overwrite-mixed-1.cast</file>
+    <description>Tests the wm trylocking and permissions code in a single
+      mixed code subarch.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-mixed-2</name>
+    <file>tools/cast/config/trylock-and-overwrite-mixed-2.cast</file>
+    <description>Tests the wm trylocking and permissions code in a single
+      mixed code subarch.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-xarch-mixed-1</name>
+    <file>tools/cast/config/trylock-and-overwrite-xarch-mixed-1.cast</file>
+    <description>Tests the wm trylocking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-xarch-mixed-2</name>
+    <file>tools/cast/config/trylock-and-overwrite-xarch-mixed-2.cast</file>
+    <description>Tests the wm trylocking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-xarch-mixed-3</name>
+    <file>tools/cast/config/trylock-and-overwrite-xarch-mixed-3.cast</file>
+    <description>Tests the wm trylocking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+  <test>
+    <name>trylock-and-overwrite-xarch-mixed-4</name>
+    <file>tools/cast/config/trylock-and-overwrite-xarch-mixed-4.cast</file>
+    <description>Tests the wm trylocking and permissions code in two
+      mixed code subarchs.</description>
+  </test>
+
+</tests>

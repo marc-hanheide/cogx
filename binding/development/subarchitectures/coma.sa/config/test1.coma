@@ -1,0 +1,56 @@
+REM add area instances
+instance,area1,Room,triTrue
+instance,area2,Corridor,triTrue
+instance,area3,Room,triTrue
+instance,area1,Office,triTrue
+REM create object instances
+instance,obj1,Couch,triTrue
+instance,obj2,Coffeemachine,triTrue
+REM create relations
+relation,area2,obj1,hasObject,triTrue
+relation,area3,obj2,hasObject,triTrue
+REM query getcons ALL
+getcons,area1,ALL,17
+getcons,area2,ALL,18
+getcons,area3,ALL,15
+getcons,obj1,ALL,19
+getcons,obj2,ALL,18
+REM query getcons DIRECT
+getcons,area1,DIRECT,1
+getcons,area2,DIRECT,1
+getcons,area3,DIRECT,1
+getcons,obj1,DIRECT,2
+getcons,obj2,DIRECT,2
+REM query getcons MOSTSPECIFIC
+getcons,area1,MOSTSPECIFIC,1
+getcons,area2,MOSTSPECIFIC,1
+getcons,area3,MOSTSPECIFIC,1
+getcons,obj1,MOSTSPECIFIC,2
+getcons,obj2,MOSTSPECIFIC,2
+REM query getcons BASICLEVEL
+getcons,area1,BASICLEVEL,1
+getcons,area2,BASICLEVEL,1
+getcons,area3,BASICLEVEL,1
+getcons,obj1,BASICLEVEL,0
+getcons,obj2,BASICLEVEL,0
+REM query getallins
+getallins,Area,3
+getallins,Room,2
+getallins,Kitchen,1
+getallins,Passage,1
+getallins,Object,2
+getallins,Kitsch,0
+getallins,Robot,0
+REM query getrelins
+getallrelins,area1,1
+getallrelins,area2,2
+getallrelins,area3,2
+getallrelins,obj1,2
+getallrelins,obj2,2
+getrelins,area1,hasObject,0
+getrelins,area2,hasObject,1
+getrelins,area3,hasObject,1
+getrelins,obj1,isObjectIn,1
+getrelins,obj2,isObjectIn,1
+REM basic inconsistency check!
+getallins,owl:Nothing,0

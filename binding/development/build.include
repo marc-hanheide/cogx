@@ -1,0 +1,13 @@
+**/subarchitectures/binding.sa/**
+**/subarchitectures/coma.sa/**
+**/subarchitectures/comsys.mk4/**
+**/subarchitectures/motivation/**
+**/subarchitectures/nav.sa/**
+**/subarchitectures/planning.sa/**
+**/tools/CoSyCommonIDLs/**
+**/tools/balt/**
+**/tools/cast/**
+**/tools/interconnectivity/**
+**/tools/matlab-helper/**
+**/tools/reasoning/**
+**/tools/testing/**

@@ -1,0 +1,122 @@
+(define (domain gridworld)
+(:requirements :typing :adl)
+
+(:types 
+
+   ;; should be added automatically
+   agent boolean - object
+   human robot planning_agent - agent
+   number - object
+
+   gridcell - object
+   gridcontent - object   
+   agent - gridcontent
+)
+
+(:constants
+   empty obstacle - gridcontent
+
+)
+
+(:predicates
+  (occupant ?c - gridcell : ?o - gridcontent)
+  (connected ?c1 ?c2 - gridcell)
+  (in-sensing-distance ?c1 ?c2 - gridcell)
+
+)
+
+;; speech acts 
+
+;; (:action tell_val ??svar
+;;  :agent (?speaker - agent)
+;;  :parameters (?hearer - agent ?cs ?ch - gridcell)
+;;  :precondition (and
+;;     (??svar ??args : ??val)
+;;     (in-sensing-distance ?cs ?ch)
+;;  	(occupant ?cs : ?speaker ) (occupant ?ch : ?hearer))
+;;  :effect (and
+;; 	(K ?hearer (??svar ??args))
+;; ))
+;; 
+;; (:action ask_val_factual ??svar
+;;  :agent (?speaker - agent)
+;;  :parameters (?hearer - agent ?cs ?ch - gridcell)
+;;  :precondition (and
+;; 	(K ?hearer (??svar ??args))
+;;     (in-sensing-distance ?cs ?ch)
+;;  	(occupant ?cs : ?speaker ) (occupant ?ch : ?hearer))
+;;  :effect (and
+;; 	(K ?speaker (??svar ??args))
+;; ))
+;; 
+;; (:action ask_val_polar ??svar
+;;  :agent (?speaker - agent)
+;;  :parameters (?hearer - agent ?cs ?ch - gridcell ??val - ??dom_type)
+;;  :precondition (and
+;; 	(K ?hearer (??svar ??args))
+;;     (in-sensing-distance ?cs ?ch)
+;;  	(occupant ?cs : ?speaker ) (occupant ?ch : ?hearer))
+;;  :effect (and
+;; 	(K ?speaker (??svar ??args))
+;; ))
+
+
+;;; sensors ;;;
+
+(:sensor sense-gridcell
+ :agent (?a - agent)
+ :parameters (?c - gridcell)
+ :variables (?ca - gridcell)
+ :precondition (and
+     (occupant ?ca : ?a)
+     (in-sensing-distance ?ca ?c))
+ :sense (occupant ?c))
+
+
+;;; actions ;;;
+
+(:action move
+ :agent (?a - agent)
+ :parameters (?c - gridcell)
+ :variables (?ca - gridcell)
+ :precondition (and
+     (occupant ?ca : ?a)
+     (occupant ?c : empty)
+     (connected ?c ?ca))
+ :effect (and 
+     (occupant ?c : ?a)
+     (occupant ?ca : empty)))
+
+(:action move_A
+ :agent (?_pa - planning_agent)
+ :parameters (?a - agent ?c - gridcell)
+ :variables (?ca - gridcell)
+ :precondition (and
+     (occupant ?ca : ?a)
+     )
+ :replan (and
+     (K ?_pa (occupant ?c))
+     )
+ :effect (and 
+     (occupant ?c : ?a)
+     (occupant ?ca : empty)
+))
+
+;; old version:
+;; (:action move_A
+;;  :agent (?_pa - planning_agent)
+;;  :parameters (?a - agent ?c - gridcell)
+;;  :variables (?ca - gridcell)
+;;  :precondition (and
+;;      (occupant ?ca : ?a)
+;;      (connected ?c ?ca))
+;;  :replan (and
+;;      (K ?_pa (occupant ?c)))
+;;  :effect (and 
+;;      (occupant ?c : ?a)
+;;      (occupant ?ca : empty)
+;; ))
+;; 
+
+
+)

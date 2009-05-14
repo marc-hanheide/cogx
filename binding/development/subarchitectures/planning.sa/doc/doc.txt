@@ -1,0 +1,6 @@
+/*!
+\mainpage The Planning Subarchitecture
+
+High-level intro to be written...
+
+*/

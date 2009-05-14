@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<tests>
+  <test>
+    <name>change detector c++</name>
+    <file>subarchitectures/vision/config/chad.test.cast</file>
+    <description>Tests change detector </description>
+  </test>
+
+  <test>
+    <name>segmentor dry c++</name>
+    <file>subarchitectures/vision/config/dryseg.test.cast</file>
+    <description>Tests change detector </description>
+  </test>
+  
+  <test>
+    <name>segmentor c++</name>
+    <file>subarchitectures/vision/config/seg.test.cast</file>
+    <description>Tests change detector </description>
+  </test>
+  
+  <test>
+    <name>hand pointer c++</name>
+    <file>subarchitectures/vision/config/handpointer.test.cast</file>
+    <description>Tests hand pointer </description>
+  </test>
+
+  <test>
+    <name>binding monitor dry c++</name>
+    <file>subarchitectures/vision/config/drymon.test.cast</file>
+    <description>Tests binding monitor </description>
+  </test>
+    
+
+</tests>

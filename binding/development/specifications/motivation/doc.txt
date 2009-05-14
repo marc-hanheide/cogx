@@ -1,0 +1,294 @@
+/*!
+\mainpage Specification for the planning subarchitecture
+
+\section scenario Scenario
+
+see other scenario: \ref main_scenarios
+
+\section requirements Requirements
+
+\li mt.1: Able to encode specific motivations for the whole system.
+
+\li mt.2: Able to link motivations to behaviour generating mechanisms.
+
+\li mt.3: Able to select between and manage a set of possibly
+conflicting motivations.
+
+The scenario doesn't feature multiple concurrent or conflicting
+motives, so this level of complexity can be ignored. What does seem
+like an issue is hierarchies of goal-directed behaviour. What
+motivates the robot to answer a question or perform an action? Is it
+considered an isolated goal or is it part some longer running motive.
+
+The motive manager, or at least the motive system may need to
+determine whether the system should be playing the game, observing the
+world or following commands. Given the ability to generate the motives
+correctly (how to do this is a relatively open question and it was
+pretty flaky in year 3), managing them shouldn't be too complex.
+
+
+\section representations Representations
+
+Motive: Motives are split into two parts: a general part used for
+management and other general purpose processes, and a specific part
+used to encode the actual details of the motive. We already have an
+IDL struct for the general part of the motive.
+
+ \code
+
+  /**
+   * A struct to represent a motive that is being processed by the
+   * mediation subarchitecture.
+   *
+   **/
+  struct Motive {    
+    /** What state the motive is in**/
+    MotiveStatus m_status;
+
+    /** What happened then? **/
+    cast::cdl::TriBool m_succeeded;
+
+    /** The initial "cause" of the motivation e.g. a binding **/
+    cast::cdl::WorkingMemoryPointer m_cause;
+
+//     /** The component that generated the cause **/
+//     cast::cdl::WorkingMemoryAddress m_creator;
+
+    /** The instance specific content **/
+    cast::cdl::WorkingMemoryPointer m_content;
+  };
+
+
+\endcode
+
+
+
+\section components Components
+
+The high-level design of the motivation subarchitecture is based on
+the idea that each high-level behaviour (i.e. motivation) required by
+the system should be encoded as a generator/handler pair. The
+generator creates a motive when the a specific state occurs. When the
+motive is selected for action the handler is called upon to generate
+the behaviour for the motive. Between these two behaviours the motive
+is held in a management queue. This design is based on previous work
+of the CogAff group at Birmingham,
+
+e.g. http://www.cs.bham.ac.uk/research/projects/cogaff/96-99.html#2
+
+
+\attention Whilst this design is implemented and works it is not
+immediately clear that this is best way to carve it up. A lot of
+components end up listening to changes to Motive structs, so a smarter
+way of doing this may be necessary.
+
+\subsection motive_generator Motive Generator Component
+
+Motive generators will monitor working memory (or sensors or whatever)
+for particular states which should trigger a particular motive. When
+this state occurs the component writes a motive to the working memory
+that contains the motive manager. The generator should also be kept
+updated on what is happening to the motive.
+
+
+
+\subsubsection details Details:
+
+\par Component name: Motive Generator
+
+\par Requirements satisfied: mt.1
+
+
+\subsubsection generate_mtv Functionality: Generate motive
+
+\b Behaviour: When a particular state occurs that requires the system
+to act. A motive generator will write a motive to wm. This will point
+at a more specific struct using the Motive.m_content pointer.
+
+\b Caused \b by: some arbitrary state
+
+\li \c getWorkingMemory:  whatever is required for the motive
+\li \c addToWorkingMemory: \c Motive and motive-specific part
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory: 
+
+\attention As the actual specific components will perform further
+operations on wm, other operations may occur. The above operations are
+the minimum that will occur.
+
+
+
+
+\subsection motive_manager Motive Manager Component
+
+The basic motive manager will be a filter that ensures only one motive
+is adopted at a time. It will be general purpose in that it only
+interacts with the general parts of the motive structures.
+
+
+\par Requirements satisfied: mt.3
+
+
+\subsubsection queue_mtv Functionality: Queue motive
+
+\b Behaviour: When a motive is first produced by a generator it is
+noticed by the manager and queued internally for processing. This is
+reflected on the motive struct by changing the m_status field.
+
+\b Caused \b by: \b wmc: \c MediationOntology.MOTIVE_TYPE, \c
+WorkingMemoryOperation.ADD, local
+
+\li \c getWorkingMemory: \c Motive
+\li \c addToWorkingMemory: (nothing, all management is internal) 
+\li \c overwriteWorkingMemory: \c Motive (m_status)
+\li \c deleteFromWorkingMemory:
+
+
+
+
+
+\subsubsection queue_mtv Functionality: Adopt motive
+
+\b Behaviour: If there is a motive in the queue and no other motive is
+being acted on, the motive manager adopts the motive for processing by
+the system. This is reflected on the motive struct by changing the
+m_status field.
+
+\b Caused \b by: internal
+
+\li \c getWorkingMemory:
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c Motive (m_status)
+\li \c deleteFromWorkingMemory:
+
+
+\subsubsection dequeue_mtv Functionality: Motive complete
+
+\b Behaviour: Once a motive is complete it can be removed from the
+management system
+
+\b Caused \b by: \b wmc: \c MediationOntology.MOTIVE_TYPE, \c
+WorkingMemoryOperation.OVERWRITE, local
+
+\li \c getWorkingMemory: Motive
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory:
+
+
+\attention This bit isn't implemented!!!
+
+\attention Note that nothing is deleted! 
+
+
+\subsection motive_manager Motive Handler Component
+
+Once a motive has been adopted it must be acted upon by the rest of
+the system. This usually involves a bunch of quite specific code
+(hacks!). A motive handler contains all of this task specific stuff so
+it doesn't have to be distributed across the system. To determine
+whether the motive handler is appropriate for the current motive it
+must check the ontological type of the motive specific content,
+i.e. Motive.m_content.m_type.
+
+\par Requirements satisfied: mt.2
+
+\subsubsection handle_mtv Functionality: Handle motive
+
+\b Behaviour: This describes the start of the handling process
+(i.e. what happens after a motive is adopted). Once this has happened,
+everything else is motive specific.
+
+
+\b Caused \b by: \b wmc: \c MediationOntology.MOTIVE_TYPE, \c
+WorkingMemoryOperation.OVERWRITE, local
+
+\li \c getWorkingMemory: \c Motive and motive-specific part
+\li \c addToWorkingMemory: 
+\li \c overwriteWorkingMemory:
+\li \c deleteFromWorkingMemory:
+
+
+\subsubsection mtv_complete Functionality: Motive complete
+
+\b Behaviour: Once a motive has been completed the original motive
+struct is overwritten by the handler to signify this. It alters
+Motive.m_status and Motive.m_succeeded.
+
+\b Caused \b by: internal (motive completion)
+
+\li \c getWorkingMemory:
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c Motive (m_status, m_succeeded)
+\li \c deleteFromWorkingMemory:
+
+
+\section  processes Processes
+
+
+\subsection Generation to management to handling
+
+
+MG = Motive Generator, MM = Motive Manager, MH1 = Motive handler 1,
+MH2, Motive handler 2. PutActionMotive is an example of specific
+motive content. 2 motive handlers are included to demonstrate that
+they are checking the motives in parallel. 
+
+\msc
+
+	hscale = "1.4";
+	MG, "m:Motive", "p:PutActionMotive", MM, MH1, MH2; 
+	... [label="Motive generation"];
+	MG->"m:Motive" [label="<<create>>"];
+	MG->"p:PutActionMotive" [label="<<create>>"];
+	... [label="Motive is noticed and queued"];
+	"m:Motive"->MM [label="wmc(ADD)"];
+	MM=>"m:Motive" [label="get(m)"];
+	MM<="m:Motive" [label="m"];
+	MM->"m:Motive" [label="overwrite(m)"];
+	... [label="Management happens, then motive is adopted"];
+	MM->"m:Motive" [label="overwrite(m)"];
+	... [label="Handlers become active"];
+	"m:Motive"->MH1 [label="wmc(OVR)"];
+	"m:Motive"->MH2 [label="wmc(OVR)"];	
+	MH1=>"m:Motive" [label="get(m)"];
+	MH2=>"m:Motive" [label="get(m)"];
+	MH1<="m:Motive" [label="m"];
+	MH2<="m:Motive" [label="m"];
+	... [label="MH2 handles the motive"];
+	MH2=>"p:PutActionMotive" [label="get(p)"];
+	MH2<="p:PutActionMotive" [label="p"];
+	... [label="Actual behaviour is performed"];	
+	... [label="Motive is complete"];
+	MH2->"m:Motive" [label="overwrite(m)"];
+
+\endmsc
+
+
+\section notes Scenario Notes
+
+In the previous playmate system we had two motive generators: one for
+learning visual properties, the other for following action commands.
+Basically each generator related to one of the top-level behaviours
+the system could do. For the action command motive generator it
+listened for a structure on the binding WM that indicated that a
+particular object had a desired position. It then cycled over that
+structure extracting the parts of it needed to generate a planning
+goal. Once it had all the necessary information (an ugly, inefficient
+process) it proposed a motive (essentially the planning goal) which
+was then acted upon.
+
+An important discussion for the meeting is to determine what general
+purpose mechanisms we need, and what scenario/task specific ones. For
+example we could generalise the aforementioned strategy into a series
+of behaviours for planning and acting, where people just have to
+provide a component that can generate a planning goal from binding
+structures. This may be too general to work without extra hacks
+though, in which case a collection of simpler, direct behaviour
+generators may be necessary.
+
+
+*/
+
+// LocalWords:  MotiveStatus endcode mtv li getWorkingMemory wmc dequeue MH msc
+// LocalWords:  MediationOntology PutActionMotive hscale OVR endmsc

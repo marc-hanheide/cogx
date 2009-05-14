@@ -1,0 +1,37 @@
+HOST localhost
+
+SUBARCHITECTURE test1
+JAVA WM cast.testing.TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD counter cast.testing.BasicTester --test count-100 --log $TEST_LOG_OUTPUT 
+JAVA GD writer1 cast.testing.BasicTester --test write-100 --exit false
+JAVA GD writer2 cast.testing.BasicTester --test write-100 --exit false
+
+SUBARCHITECTURE test2
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD writer3 BasicTester --test write-100 --exit false
+CPP GD writer4 BasicTester --test write-100 --exit false
+
+
+SUBARCHITECTURE test3
+JAVA WM cast.testing.TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD writer5 cast.testing.BasicTester --test write-100 --exit false
+JAVA GD writer6 cast.testing.BasicTester --test write-100 --exit false
+
+SUBARCHITECTURE test4
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD writer7 BasicTester --test write-100 --exit false
+CPP GD writer8 BasicTester --test write-100 --exit false
+
+
+SUBARCHITECTURE test5
+JAVA WM cast.testing.TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD writer9 cast.testing.BasicTester --test write-100 --exit false
+JAVA GD writer10 cast.testing.BasicTester --test write-100 --exit false
+
+
+

@@ -1,0 +1,16 @@
+<project name="Comedian example system" default="compile">
+
+	<import file="../../common.xml" />
+
+	<target name="compile.all" depends="idl,compile">
+	</target>
+
+	<target name="idl">
+	<idlgen file="ComedyEssentials.idl" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dest}/comedyarch" />
+	</target>
+	
+</project>

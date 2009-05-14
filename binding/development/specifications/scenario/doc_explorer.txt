@@ -1,0 +1,66 @@
+/*! 
+\page explorerscenario Explorer Scenario
+
+\section exscenario1 Scenario 1
+
+The user asks the robot to go find the/an X. The robot knows that X:es are usually found in areas of type Y so it goes through the known environment looking for X in areas of type Y. If it does not find it in the known part of the environment it looks for new areas of type Y to look in. The robot keeps its eyes open for X all the time but only does organized search in areas of type Y. If it does not know the area type it will have to find that and if not Y can move on. When X is found the robot moves back and explains where X is.
+
+\subsection reqexscen1 Requirements
+  \li Build map that supports localization
+  \li Perform localization
+  \li Reconize user again to deliver report
+  \li Goto position
+  \li Search and locate objects
+  \li Spatial representation including objects
+  \li Store object information for recognition/detection
+  \li Parsing verbal input and translate into command, assertions, questions, etc  
+  \li Ability to query the "knowledge base" for information. 
+    \li Can it recognize X? 
+    \li What s the position of X?
+    \li What are the possible positions for X? (Is the right question whhat area type to search for?)
+    \li Query for instances (e.g. the couch is in the living room)
+    \li Query for categories of objects in instances of areas
+    \li Query for instances of objects in instances of areas
+  \li Planning for searching for X
+  \li Planning for verbal feedback 
+  \li Spatial reasoning to generate and analyse verbal descriptions of spatial relations / locations ("X is ...")
+
+\section exscenario2 Scenario 2
+
+The user asks the robot to bring X from Y's office. The robot does not know where Y's office is and thus has to find it.
+
+\subsection reqexscen2 Requirements
+  \li Build map that supports localization
+  \li Perform localization
+  \li Detect that this is Y's office
+  \li Goto position
+  \li Search and locate objects
+  \li Parsing verbal input and translate into command, assertions, questions, etc
+  \li Ability to query the "knowledge base" for information. 
+    \li Can it recognize X? 
+    \li What is the position of X and Y?
+  \li Planning the object retrieval 
+
+\section exscenario3 Scenario 3
+
+The user takes the robot on a guided tour to do mapping of the space (HAM). As they pass object X the user says "This is X. The robot being busy tracking the user does not have time to find X and does not know anything about any X being close by so it created a "mental note" (called **tag** below) in its "mind" that there is an instance of X around here. The idea being that when the user is done showing it around it can come back and look for this X at its own pace. When the user finally finishes the guided tour and does not have more things for the robot to do the robot goes back and investigates the unknown tags.
+
+\subsection reqexscen3 Requirements
+  \li Build map that supports localization
+  \li Perform localization
+  \li Detect/track people
+  \li Goto position
+  \li Follow person
+  \li Search and locate objects
+  \li Spatial representation including objects
+  \li Store object information for recognition/detection
+  \li Detect situation when tags has to be generated (the mental notes)
+  \li Store the information defining the tag
+  \li Parsing verbal input and translate into command, assertions, questions, etc (there is much more here ...)
+  \li Planning for exploring the tags
+  \li Switch between tasks (for example going from HAM to explore tags). Several levels here with different prios. also need to monitor batteries and other hardware states so that the robot does not "die"
+  \li Ability to query the "knowledge base" for information. 
+    \li Can it recognize X? 
+    \li Does it know about an X near? 
+
+*/

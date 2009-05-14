@@ -1,0 +1,10 @@
+#camera position
+0.22528142 -1.1281004 0.57014495
+#camera orientation
+-2.0106425 -0.19543846 0.20791425
+
+#object lines
+# reqd 3d position #optional features = colour size label + val & opt prob 
+0.5 0.7 0.00, colour blue 1.0, label flag 1.0
+0.5 0.1 0.00, colour red 1.0, label flag 1.0
+0.2 0.45 0.00, colour blue 1.0, shape square 1.0

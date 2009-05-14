@@ -1,0 +1,2 @@
+first: all
+$(OBJECTS_DIR)inifile.o: inifile.cpp ../../include/libInifile/inifile.h

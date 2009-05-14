@@ -1,0 +1,194 @@
+
+/*colours previously too light. Darkened. AS. 7 Jan 2006*/
+
+body {
+     margin:0px;
+     padding:0px;
+     font-family:verdana, arial, helvetica, sans-serif;
+     font:13px/18px;
+     color:#000;
+     background-color:white;
+     }
+
+h1 {
+   margin:0px 0px 10px 0px;
+   padding:0px;
+   font-size:26px;
+   line-height:28px;
+   font-weight:900;
+   color:#555;
+   }
+
+/*Added AS 7 Jan 2006 */
+h2 {
+   margin:0px 0px 5px 0px;
+   padding:0px;
+   font-size:20px;
+   line-height:24px;
+   font-weight:900;
+   color:#000;
+   }
+
+/*Added AS 7 Jan 2006 */
+h3 {
+   margin:0px 0px 3px 0px;
+   padding:0px;
+   font-size:16px;
+   line-height:28px;
+   font-weight:900;
+   color:#000;
+   }
+
+
+p {
+  font:13px/18px verdana, arial, helvetica, sans-serif;
+  margin:0px 0px 5px 0px;
+  padding:0px;
+  }
+
+ul
+{
+  padding: 0px 0px 0px 20px;
+
+  list-style-type: circle
+}
+
+li {
+  padding: 0px 0px 0px 0px;
+  font:14px/18px verdana, arial, helvetica, sans-serif;
+}
+
+.content>p {margin:0px;}
+.content>p+p {padding-top:10px;}
+/*.content>p+p {text-indent:30px;}*/
+
+a {
+  color:#16314A;
+  font-size:13px;
+  text-decoration:none;
+  font-weight:600;
+  font-family:verdana, arial, helvetica, sans-serif;
+  }
+
+a:link {color:#16314A;}
+
+a:visited {color:#3D668B;}
+
+a:hover {background-color:#eee;}
+
+.imglink {
+border: 0;
+}
+
+#Header {
+        background: url(../images/logo.jpg) no-repeat top right;
+        margin: 10px 0px 10px 0px;
+        padding:0px 0px 0px 20px;
+        /* For IE5/Win's benefit height = [correct height] + [top
+        padding] + [top and bottom border widths] */
+        height:83px; /* 14px + 17px + 2px = 33px */
+        border-style:solid;
+        border-color:#16314A;
+    color:#16314A;
+        border-width:1px 0px; /* top and bottom borders: 1px; left and
+        right borders: 0px */
+        line-height:81px;
+        background-color:#eee; /*#16314A; #eee; #3D668B;*/
+
+/* Here is the ugly brilliant hack that protects IE5/Win from its own
+stupidity.
+Thanks to Tantek Celik for the hack and to Eric Costello for
+publicizing it.
+IE5/Win incorrectly parses the "\"}"" value, prematurely closing the
+style
+declaration. The incorrect IE5/Win value is above, while the correct
+value is
+below. See http://glish.com/css/hacks.asp for details. */
+       voice-family: "\"}\"";
+       voice-family:inherit;
+       height:81px; /* the correct height */
+       }
+
+
+
+
+/* I've heard this called the "be nice to Opera 5" rule. Basically, it
+feeds correct length values to user agents that exhibit the parsing error exploited
+above yet get the CSS box model right and understand the CSS2 parent-child
+selector. ALWAYS includea "be nice to Opera 5" rule every time you use the Tantek Celik hack
+(above). */
+body>#Header {height:81px;}
+
+
+
+.content {
+         margin:0px 50px 10px 200px;
+         padding:10px;
+         border:1px solid;
+         background-color:white;
+         border-color:#16314A;
+}
+
+.footerimg {
+             margin:0px 50px 0px 200px;
+         padding:10px;
+/*         border:1px solid black;*/
+border:1px dashed #3D668B;
+         background-color:white;
+         text-align:center;
+}
+
+.footertext {
+         margin:0px 50px 10px 200px;
+   color:#ccc;
+font-size:8px;
+         padding:0px;
+    border:none;
+         background-color:white;
+         text-align:right;
+}
+
+div.spottybox {
+  background-color:#eee;
+  border: 1px dashed #3D668B;
+  padding:10px;
+ }
+
+div.logobox {
+  padding:10px;
+  text-align:center;
+}
+
+
+#Menu {
+
+      position:absolute;
+      top:103px;
+      left:20px;
+      width:172px;
+      padding:0px;
+      background-color:#fff;
+      border:none;
+      line-height:17px;
+/* Again, the ugly brilliant hack. */
+   voice-family: "\"}\"";
+   voice-family:inherit;
+   width:150px;
+   }
+/* Again, "be nice to Opera 5". */
+body>#Menu {width:150px;}
+
+
+div.figure {
+  float: center;
+  //width: 100%;
+  border: thin silver solid;
+  margin: 0.5em;
+  padding: 0.5em;
+}
+div.figure p {
+  text-align: center;
+  font-style: italic;
+  font-size: smaller;
+  text-indent: 0;
+}

@@ -1,0 +1,128 @@
+(define (domain cs-game)
+	(:requirements :mapl :adl)
+	
+	(:types 
+	 agent physical_object object_pos feature - object	 
+	 movable fixed - physical_object
+	 agent waypoint - object_pos
+	 colour shape - feature
+	 block - movable
+	 flag - fixed
+	 robot  - agent
+	 )
+	
+	(:constants
+         colour shape - feature
+	 red blue - colour
+	 circle square - shape
+	 )
+	
+	(:predicates
+	 (wp_right_of ?wp1 ?wp2 - waypoint)
+	 (wp_left_of ?wp1 ?wp2 - waypoint)
+	 (wp_front_of ?wp1 ?wp2 - waypoint)
+	 (wp_back_of ?wp1 ?wp2 - waypoint)
+	 (wp_near ?wp1 ?wp2 - waypoint)
+
+	 (right_of ?o1 ?o2 - physical_object)
+	 (left_of ?o1 ?o2 - physical_object)
+	 (front_of ?o1 ?o2 - physical_object)
+	 (back_of ?o1 ?o2 - physical_object)
+	 (near ?o1 ?o2 - physical_object)
+
+	 (pos ?obj - physical_object : ?wp - object_pos)
+	 (colour ?obj - physical_object : ?col - colour)	
+	 (shape ?obj - movable : ?shp - shape)	
+	 
+	 (game ?feature - feature)
+	 (has_run_colour_sensor ?a - robot ?obj - physical_object)
+	 )
+	
+;;; sensors ;;;
+
+(:sensor sense-colour
+ :agent (?a - robot)
+ :parameters (?o - physical_object)
+ :precondition (has_run_colour_sensor ?a ?o)
+ :sense (colour ?o))
+
+(:sensor sense-pos
+ :agent (?a - robot)
+ :parameters (?o - physical_object)
+ :sense (pos ?o))
+
+;;; axioms ;;;
+
+	(:derived (right_of ?o1 ?o2 - physical_object) 
+		(exists (?wp1 ?wp2 - waypoint) (and
+			(pos ?o1 : ?wp1)
+			(pos ?o2 : ?wp2)
+			(wp_right_of ?wp1 ?wp2))
+		))
+
+	(:derived (left_of ?o1 ?o2 - physical_object) 
+		(exists (?wp1 ?wp2 - waypoint) (and
+			(pos ?o1 : ?wp1)
+			(pos ?o2 : ?wp2)
+			(wp_left_of ?wp1 ?wp2))
+		))
+
+	(:derived (front_of ?o1 ?o2 - physical_object) 
+		(exists (?wp1 ?wp2 - waypoint) (and
+			(pos ?o1 : ?wp1)
+			(pos ?o2 : ?wp2)
+			(wp_front_of ?wp1 ?wp2))
+		))
+
+	(:derived (back_of ?o1 ?o2 - physical_object) 
+		(exists (?wp1 ?wp2 - waypoint) (and
+			(pos ?o1 : ?wp1)
+			(pos ?o2 : ?wp2)
+			(wp_back_of ?wp1 ?wp2))
+		))
+
+	(:derived (near ?o1 ?o2 - physical_object) 
+		(exists (?wp1 ?wp2 - waypoint) (and
+			(pos ?o1 : ?wp1)
+			(pos ?o2 : ?wp2)
+			(wp_near ?wp1 ?wp2))
+		))
+
+
+;;; actions ;;;
+
+	(:action place
+	 :agent (?a - robot)	 
+	 :parameters (?obj - movable)
+	 :variables (?np - waypoint)
+	 :precondition (and
+		(pos ?obj : ?a) 
+		(not (exists (?obj2 - physical_object) (pos ?obj2 : ?np))))
+	 :effect (and
+		(pos ?obj : ?np)
+	))
+	
+	
+	(:action pick_up
+		 :agent (?a - robot)
+		 :parameters (?obj - movable)
+		 :variables (?op - waypoint)
+		 :precondition (and
+				(pos ?obj : ?op) 
+				(not (exists (?obj2 - physical_object) (pos ?obj2 : ?a))))
+		 :effect (and
+			  (pos ?obj : ?a)
+	))
+
+
+	;;; run colour sensor ;;;
+	(:action sense_colour
+		 :agent (?a - robot)
+		 :parameters (?object - physical_object)
+		 :effect (has_run_colour_sensor ?a ?object)
+		 			  
+	)
+
+
+
+)

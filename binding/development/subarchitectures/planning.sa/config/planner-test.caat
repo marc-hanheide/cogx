@@ -1,0 +1,4 @@
+SUBARCHITECTURE planning.subarch waterhouse
+JAVA WM org.cognitivesystems.planning.workingmemory.PlanningWorkingMemory
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager
+JAVA GD planner org.cognitivesystems.planning.components.PlannerComponent

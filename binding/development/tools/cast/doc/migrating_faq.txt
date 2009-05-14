@@ -1,0 +1,163 @@
+/*! \page migrating_faq FAQ: Migrating code from year3 system into the stable branch
+
+\section Creating and Managing a Development branch
+
+The assumption is that we are now moving away from the old shared
+'trunk'  (i.e. svn.cosy/code) and are all working in our own shared
+development branches. Because of this, I have *not* been propagating the
+changes in balt and cast back to the old trunk. Sorry if this was not
+clear before. To develop your code, I suggest following these steps...
+
+1. Create your own development branch (or a branch shared between n
+people for a particular task), by copying the latest stable branch. This
+will ensure you start from the current state.
+
+e.g.
+
+\code
+svn cp https://subversion.cs.bham.ac.uk/svn/nah/cosy/stable/latest
+https://subversion.cs.bham.ac.uk/svn/nah/cosy/development/my-dev-branch
+-m "creating my own dev branch from week 3 stable code"
+\endcode
+
+2. Copy (preferbaly via svn) all of the code you need into your new
+branch. This will be utterly dependent on what you're doing. Most of the
+code will come from the old trunk, but some may come from other testing
+or development branches.
+
+\code
+cd my-dev-branch
+
+svn mkdir subarchitectures
+
+svn cp
+https://subversion.cs.bham.ac.uk/svn/nah/cosy/code/subarchitectures/comsys.mk4
+subarchitectures
+
+svn cp
+https://subversion.cs.bham.ac.uk/svn/nah/cosy/code/subarchitectures/binding.sa
+subarchitectures
+\endcode
+
+etc. etc.
+
+Keep track of what you've c
+
+3. Commit back all these changes to your dev branch, noting the revision
+number you copied the changes at.
+
+e.g.
+
+\code
+svn ci -m "copied binding.sa at rev #4999 from old trunk"
+\endcode
+
+After this you need to enter a loop.
+
+4. Develop your code.
+
+5. Update your code from other sources as appropriate. This should mean updating at least once a week from the stable branch.
+
+e.g. To merge the differences between weeks 2 and 3 in stable into your dev branch you can use the following (--dry-run just simulates the results)
+
+\code
+svn merge --dry-run https://subversion.cs.bham.ac.uk/svn/nah/cosy/stable/tags/week2 https://subversion.cs.bham.ac.uk/svn/nah/cosy/stable/tags/week3 my-dev-branch/
+\endcode
+
+Admittedly this approach is a lot harder than the previous way we worked, but it means that overall your code is your responsibility, and that changes in one area of the system are isolated from everyone else except when merging occurs. 
+
+
+
+\section Interface Changes
+
+The version of CAST in the stable branch has a slightly changed
+interface to the old trunk. Changes that need to be made to user code
+are:
+
+\li Java: From CASTData: getId() -> getID() 
+\li Java: From ManagedProcess: waitForNotifications(Collection) -> waitForNotifications()
+\li C++ & Java: From LocalWorkingMemoryAttachedComponent & WorkingMemoryAttachedComponent: getOverwriteCount -> getVersionNumber
+\li C++ & Java: all removeChangeFilter methods have been removed except for the ones that take a receiver object.
+\li C++ & Java: in addChangeFilter the "local" boolean has been changed to an enum. true -> cdl::LOCAL_SA false -> cdl::ALL_SA 
+\li C++ & Java: in all the wm writing methods the "sync" boolean has been changed to an enum. true -> cdl::BLOCKING false -> cdl::NON_BLOCKING
+
+\section Build System Changes
+
+The version of CAST in the stable branch has slightly different
+libraries to the version in the old trunk. Changes that need to be
+made to user code are: 
+
+\li Link against CASTArchitecture (if necessary) instead of
+SubarchitectureWorkingMemory.
+
+
+To refactor calls to addToWorkingMemory (or overwrite), do the following:
+
+OLD JAVA:
+addToWorkingMemory(newDataID(), Ontology.OBJECT_TYPE, new Object(blah));
+NEW JAVA:
+addToWorkingMemory(newDataID(), new Object(blah));
+
+OLD JAVA:
+addToWorkingMemory(newDataID(), Ontology.OBJECT_TYPE, new Object(blah), true);
+NEW JAVA:
+addToWorkingMemory(newDataID(), new Object(blah), OperationMode.BLOCKING);
+
+OLD C++:
+addToWorkingMemory(newDataID(), Ontology::OBJECT_TYPE, new Object(blah));
+NEW C++:
+addToWorkingMemory<Object>(newDataID(), new Object(blah));
+
+OLD C++:
+addToWorkingMemory(newDataID(), Ontology::OBJECT_TYPE, new Object(blah), true);
+NEW C++:
+addToWorkingMemory<Object>(newDataID(), new Object(blah), cdl::BLOCKING);
+
+
+To refactor calls to addChangeReceiver do the following (there are many variations to this, so look at the doc if you're unsure)
+
+OLD JAVA:
+addChangeFilter(Ontology.OBJECT_TYPE, WorkingMemoryOperation.ADD, true, receiver);
+NEW JAVA: addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(Object.class, WorkingMemoryOperation.ADD), receiver);
+
+OLD JAVA:
+addChangeFilter(Ontology.OBJECT_TYPE, WorkingMemoryOperation.ADD, false, receiver);
+NEW JAVA: addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Object.class, WorkingMemoryOperation.ADD), receiver);
+
+OLD C++:
+addChangeFilter(Ontology::JOKE_TYPE, cdl::ADD, true, pReceiver);
+NEW C++:
+addChangeFilter(createLocalTypeFilter<Object>(WorkingMemoryOperation.ADD), pReceiver);
+
+OLD C++:
+addChangeFilter(Ontology::JOKE_TYPE, cdl::ADD, false, pReceiver);
+NEW C++:
+addChangeFilter(createGlobalTypeFilter<Object>(WorkingMemoryOperation.ADD), pReceiver);
+
+
+To refactor your ontology, do the following.
+
+1. replace "establish" with "add"
+2. replace "Mapping" with "Type"
+3. remove all type strings, both as parameters and as constants (as removing the constants will help highlight potential errors later)
+
+
+If you still need to get a type string you can do the following:
+
+JAVA: 
+CASTUtils::typeName(Object.class) 
+CASTUtils::typeName(myInstance)
+C++:
+typeName<Object>()
+
+
+
+
+
+\section Consistency Model
+
+If you get any ConsistencyExceptions when you run your code with
+recent versions of cast, please see the header of the
+ConsistencyException class in your language.
+
+*/

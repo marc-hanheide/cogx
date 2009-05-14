@@ -1,0 +1,115 @@
+# So.... 
+  # Deictic *
+  # entity( CONTEXT
+            features )
+    e.x.  this is big               (NP/n
+	entity (CONTEXT
+		    <unique, spec-sg, proximal>
+    e.x.  I want big ones
+	entity (CONTEXT
+			<mod>(big)
+		    <??, un-spec-pl>
+	e.x.   two are broken
+	       (CONTEXT
+		    <Quantity>(num two)
+		    <unique, spec-pl> 
+			
+	e.x    those two on the table are broken. Here: those is deictic-det, two is quantity
+	       (CONTEXT
+		    <Quantity>(num two)
+		    <unique, spec-pl, distal> 
+
+  
+
+  # Deictic from set  (some of the balls, two of those, etc)
+  # entity (CONTEXT
+			<Quantity>
+			<Set>( ) )
+			
+  # the one ball                   quantity 
+  #     one ball                   quantity?? quant&delim
+  #     one of the balls           deictic-quantity from quant&delim'd set  
+  #     one of those big balls
+                                   
+  # the one * on the table         quantity(sg)             modifiable
+  #     one * on the table         quantity + quant&delim   modifiable
+  #     one *
+
+  # the ones * on the table        quantity(pl)?? 
+  # big ones *                     quantity?? quant&delim
+
+  # the two balls                   quantity 
+  #     two balls                   quantity + quant&delim
+  #     two of the balls            deictic-quantity from quant&delim'd set  
+  #     two of those big balls
+                                   
+  # the two * on the table          quantity                    modifiable
+  #     two * on the table          quantity + quant&delim      modifiable
+  #     two *                          
+
+  # !the this balls                   quantity 
+  #     this  ball                    quant&delim
+  # !   this of the balls             deictic-quantity from quant&delim'd set  
+  #     this of those big balls
+                                   
+  # !the this * on the table          quantity                   modifiable
+  #      !this * on the table         quantity                   modifiable
+  #      this *                       quant&delim
+
+  # ! the some balls                  quantity 
+  #       some balls                  quant&delim
+  #       some of the balls           deictic-quantity from quant&delim'd set  
+  #       some of those big balls
+                                   
+  # ! the some * on the table          quantity                    modifiable
+  #       some * on the table          quantity + quant&delim      modifiable
+  #       some *                       quantity + quant&delim
+ 
+  # ! the more balls                   quantity 
+  #       more balls                   quantity + quant&delim
+  #       more of the balls            deictic-quantity from quant&delim'd set  
+  #       more of those big balls
+                                   
+  # ! the more * on the table          quantity                    modifiable
+  #       more * on the table          quantity + quant&delim      modifiable
+  #       more *                       quantity + quant&delim
+
+
+
+
+  , one  , big ones   , the big ones  , one ball,  one of the balls
+  # the two on the table , two  , two balls  , the two balls , two of the balls
+  #    .....               some , some balls ,               , some of the balls
+
+
+def quant(form, num, class) {
+    word form.quant: Quant(class) {
+      form : s-.num;
+    }
+    word form.quant-context: Quant-context {
+      form : s-.num num;
+    }
+ }
+
+def quant-det(form, num, class, args) {
+    word form.quant-det: Quant-Det(class) {
+      form : s-.num args;
+    }
+ }
+
+def quant-context(form, num, class, args) {
+    word form.quant-det-context: Quant-Det-context(class) {
+      form : s-.num num args;
+    }
+ }
+
+def quant-group(form, class, args) {
+    word form.quant-det-group: Quant-Det-group(class) {
+      form : s-pl args;
+    }
+ }
+
+def quant-det+context       (form, num, class, args) {quant-det(form, num, class, args) quant-context(form, num, class, args)}
+def quant-det+context+group (form, num, class, args) {quant+context(form,num,class,args) quant-group(form, class,args) }
+def quant-all               (form, num, class, args) {quant+context+group(form,num,class, args) quant(form, class, num) }
+

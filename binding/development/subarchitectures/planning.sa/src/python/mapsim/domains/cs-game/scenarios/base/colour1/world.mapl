@@ -1,0 +1,37 @@
+(define (problem cs-task)
+(:domain cs-game)
+(:objects
+  Robot - robot
+  fl1 - waypoint
+  fl2 - waypoint
+
+  target - waypoint
+  start - waypoint
+ 
+  flag1 - flag
+  flag2 - flag
+  
+  sqr - block
+)
+
+(:init
+
+  (game colour)
+
+  (pos flag1 : fl1)
+  (pos flag2 : fl2)
+
+  (colour flag1 : red)
+  (colour flag2 : blue)  
+
+  (colour sqr : red)  
+  (shape sqr : square)
+
+  (pos sqr : start)
+
+)
+
+(:goal (and
+  ;;; wtf?
+)
+))

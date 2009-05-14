@@ -1,0 +1,43 @@
+(define (problem coffee_prob)
+(:domain coffee)
+(:objects
+  agt1 - human
+  coffee - thing
+  livingroom kitchen - room
+  n0 n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 - number
+)
+
+(:init
+  ;; general knowledge
+  (connected livingroom kitchen)
+  (connected kitchen livingroom)
+
+  (succ n0 n1)
+  (succ n1 n2)
+  (succ n2 n3)
+  (succ n3 n4)
+  (succ n4 n5)
+  (succ n5 n6)
+  (succ n6 n7)
+  (succ n7 n8)
+  (succ n8 n9)
+  (succ n9 n10)
+  (timeout agt0 n0)
+  (timeout agt1 n10)
+
+  ;; current problem knowledge
+
+  (pos coffee : kitchen)
+  (knows agt0 (pos coffee))
+
+  (pos agt0 : livingroom)
+  (pos agt1 : livingroom)
+)
+
+(:goal   (and
+  (pos coffee : agt1)
+  (mb agt0 agt1 (pos coffee))
+
+
+)))
+

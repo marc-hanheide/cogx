@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+
+<utterancesToParse>
+
+<utterance>
+<string>now take the box</string>
+<parses>
+<parse>  @t1_0:action-non-motion(take ^ 
+                          /Mood\imp ^ 
+                          /Actor\(a1_0:entity ^ addressee) ^ 
+                          /Modifier\(n1_0:m-time-point ^ now) ^ 
+                          /Patient\(b1_0:thing ^ box ^ 
+                                    /Delimitation\unique ^ 
+                                    /Num\sg ^ 
+                                    /Quantification\specific) ^ 
+                          /Subject\a1_0:entity)
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>here is the ball</string>
+<parses>
+<parse>
+  @b1_0:presentational(be ^ 
+                       /Mood\ind ^ 
+                       /Tense\pres ^ 
+                       /Modifier\(c1_0:m-location ^ context ^ 
+                                  /Proximity\m-proximal) ^ 
+                       /Presented\(b22_0:thing ^ ball ^ 
+                                   /Delimitation\unique ^ 
+                                   /Num\sg ^ 
+                                   /Quantification\specific))
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>ok that is right</string>
+<parses>
+<parse>
+Parse 11: du : 
+  @l1_0:d-units(list ^ 
+                /First\(o1_0:marker ^ ok) ^ 
+                /Next\(b1_0:ascription ^ be ^ 
+                       /Mood\ind ^ 
+                       /Tense\pres ^ 
+                       /Cop-Restr\(c1_0:entity ^ context ^ 
+                                   /Delimitation\unique ^ 
+                                   /Num\sg ^ 
+                                   /Proximity\distal ^ 
+                                   /Quantification\specific) ^ 
+                       /Cop-Scope\(r1_0:q-location ^ right) ^ 
+                       /Subject\c1_0:entity))
+</parse>
+<parse>
+@l1_0:d-units(list ^ 
+                /First\(o1_0:marker ^ ok) ^ 
+                /Next\(b1_0:ascription ^ be ^ 
+                       /Mood\ind ^ 
+                       /Tense\pres ^ 
+                       /Cop-Restr\(c1_0:entity ^ context ^ 
+                                   /Delimitation\unique ^ 
+                                   /Num\sg ^ 
+                                   /Proximity\distal ^ 
+                                   /Quantification\specific) ^ 
+                       /Cop-Scope\(r1_0:q-attitude ^ right) ^ 
+                       /Subject\c1_0:entity))
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>go to the hallway</string>
+<parses>
+<parse>
+  @g1_0:action-motion(go ^ 
+                      /Mood\imp ^ 
+                      /Actor\(a1_0:entity ^ addressee) ^ 
+                      /Modifier\(t1_0:m-location ^ to ^ 
+                                 /Anchor\(h1_0:e-location ^ hall ^ 
+                                          /Delimitation\unique ^ 
+                                          /Num\sg ^ 
+                                          /Quantification\specific)) ^ 
+                      /Subject\a1_0:entity)
+</parse>
+<parse>
+  @g1_0:action-non-motion(go-loc ^ 
+                          /Mood\imp ^ 
+                          /Actor\(a1_0:entity ^ addressee) ^ 
+                          /Result\(t1_0:m-location ^ to ^ 
+                                   /Anchor\(h1_0:e-location ^ hall ^ 
+                                            /Delimitation\unique ^ 
+                                            /Num\sg ^ 
+                                            /Quantification\specific)) ^ 
+                          /Subject\a1_0:entity)
+</parse>
+<parse>
+  @g1_0:action-motion(go ^ 
+                      /Mood\imp ^ 
+                      /Actor\(a1_0:entity ^ addressee) ^ 
+                      /Modifier\(t1_0:m-whereto ^ to ^ 
+                                 /Anchor\(h1_0:e-location ^ hall ^ 
+                                          /Delimitation\unique ^ 
+                                          /Num\sg ^ 
+                                          /Quantification\specific)) ^ 
+                      /Subject\a1_0:entity)
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>robot please stop</string>
+<parses>
+<parse>
+  @l1_0:d-units(list ^ 
+                /First\(r1_0:animate ^ Robot) ^ 
+               /Next\(s1_0:modal ^ stop ^ 
+                       /Mood\imp ^ 
+                       /Actor\(a1_0:entity ^ addressee) ^ 
+                       /Modifier\(p1_0:m-comment ^ please) ^ 
+                       /Subject\a1_0:entity))
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>look at the ball</string>
+<parses>
+<parse>
+  @l1_0:perception(look ^ 
+                   /Mood\imp ^ 
+                   /Actor\(a1_0:entity ^ addressee) ^ 
+                   /Modifier\(a22_0:m-location ^ at ^ 
+                              /Anchor\(b1_0:thing ^ ball ^ 
+                                       /Delimitation\unique ^ 
+                                       /Num\sg ^ 
+                                       /Quantification\specific)) ^ 
+                   /Subject\a1_0:entity)
+</parse>
+<parse>
+  @s1_0:action-non-motion(search ^ 
+                          /Mood\imp ^ 
+                          /Actor\(a1_0:entity ^ addressee) ^ 
+                          /Modifier\(a22_0:m-location ^ at ^ 
+                                     /Anchor\(b1_0:thing ^ ball ^ 
+                                              /Delimitation\unique ^ 
+                                              /Num\sg ^ 
+                                              /Quantification\specific)) ^ 
+                          /Subject\a1_0:entity)
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>the ball is green and big</string>
+<parses>
+<parse>
+  @b1_0:ascription(be ^ 
+                   /Mood\ind ^ 
+                   /Tense\pres ^ 
+                   /Cop-Restr\(b22_0:thing ^ ball ^ 
+                               /Delimitation\unique ^ 
+                               /Num\sg ^ 
+                               /Quantification\specific) ^ 
+                   /Cop-Scope\(a1_0:quality ^ and ^ 
+                               /First\(g1_0:q-color ^ green) ^ 
+                               /Next\(b43_0:q-size ^ big)) ^ 
+                   /Subject\b22_0:thing)
+</parse>
+</parses>
+</utterance>
+
+<utterance>
+<string>robot take the one here</string>
+<parses>
+<parse>
+  @l1_0:d-units(list ^ 
+                /First\(r1_0:animate ^ Robot) ^ 
+                /Next\(t1_0:action-non-motion ^ take ^ 
+                       /Mood\imp ^ 
+                       /Actor\(a1_0:entity ^ addressee) ^ 
+                       /Patient\(c1_0:entity ^ context ^ 
+                                 /Delimitation\unique ^ 
+                                 /Num\sg ^ 
+                                 /Quantification\specific ^ 
+                                 /Modifier\(c22_0:m-location ^ context ^ 
+                                            /Proximity\m-proximal)) ^ 
+                       /Subject\a1_0:entity))
+</parse>
+<parse>
+  @l1_0:d-units(list ^ 
+                /First\(r1_0:animate ^ Robot) ^ 
+                /Next\(t1_0:action-non-motion ^ take ^ 
+                       /Mood\imp ^ 
+                       /Actor\(a1_0:entity ^ addressee) ^ 
+                       /Modifier\(c1_0:m-location ^ context ^ 
+                                  /Proximity\m-proximal) ^ 
+                       /Patient\(c22_0:entity ^ context ^ 
+                                 /Delimitation\unique ^ 
+                                 /Num\sg ^ 
+                                 /Quantification\specific) ^ 
+                       /Subject\a1_0:entity))
+</parse>
+<parse>
+  @l1_0:d-units(list ^ 
+                /First\(r1_0:animate ^ Robot) ^ 
+                /Next\(t1_0:action-non-motion ^ take ^ 
+                       /Mood\imp ^ 
+                       /Actor\(a1_0:entity ^ addressee) ^ 
+                       /Patient\(c1_0:entity ^ context ^ 
+                                 /Delimitation\unique ^ 
+                                 /Num\sg ^ 
+                                 /Quantification\specific) ^ 
+                       /Result\(c22_0:m-whereto ^ context ^ 
+                                /Proximity\m-proximal) ^ 
+                       /Subject\a1_0:entity))
+</parse>
+</parses>
+</utterance>
+
+</utterancesToParse>
+

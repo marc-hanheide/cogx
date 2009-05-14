@@ -1,0 +1,35 @@
+HOST donald
+
+SUBARCHITECTURE vision.sa
+
+irobot1 CPP WM VisualWorkingMemory #--log true --debug
+irobot1 CPP TM AlwaysPositiveTaskManager
+
+irobot1 CPP GD cam.server.0 CameraServer --calib subarchitectures/vision/config/camera/sony0.cal --camnum 0 --eyepose subarchitectures/vision/config/camera/ground.pose --headnum 0 --downsample 2 --log
+irobot1 CPP DD video.server.0 VideoServer -o 0 --port 50031 --downsample 2 --log
+
+irobot1 CPP MG change.detector ChangeDetector --videohost irobot1 --videoport 50031 --log true
+irobot1 CPP MG segmentor Segmentor -t 15 -s 0.5 -o 0.5 -a 600 --videohost irobot1 --videoport 50031  --log #-c 2000 
+irobot1 CPP GD object.tracker ObjectTracker  -m blob  --videohost irobot1 --videoport 50031 #--log #-v 1
+
+CPP MG feature.extractor FeatureExtractor  --log true --debug false
+CPP MG learner.recogniser Recogniser   --log true  --debug false --matWin false --loadAV subarchitectures/vision/src/matlab/mAVs.mat 
+
+CPP MG vision.bindmonitor VisionBindingMonitor -bsa binding.sa --log true --no-transfers  #--debug true
+
+
+
+SUBARCHITECTURE binding.sa 
+CPP  WM BindingWorkingMemory
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD binding.scorer BindingScorer -nth 0 -maxN 1
+CPP  GD binding.judge BindingJudge
+CPP  GD binding.binder Binder
+CPP  GD binding.groups BindingGroupManager
+CPP  GD binding.state BindingStatusMonitor #--log
+#CPP  GD binding.garbage GarbageCollector --log --police-mode strict
+#CPP  GD binding.ambiguity AmbiguityIdentifier --log
+CPP  GD binding.dot BindingDotViewer -d ./dotfiles --log --proxy short --union short
+
+
+

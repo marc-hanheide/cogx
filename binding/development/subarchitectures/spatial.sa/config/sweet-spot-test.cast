@@ -1,0 +1,45 @@
+HOST localhost
+
+SUBARCHITECTURE binding.sa 
+CPP  WM BindingWorkingMemory
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD binding.scorer BindingScorer -nth 0 -maxN 1
+CPP  GD binding.judge BindingJudge 
+CPP  GD binding.binder Binder 
+CPP  GD binding.groups BindingGroupManager
+CPP  GD binding.state BindingStatusMonitor --log false
+CPP  GD binding.dot BindingDotViewer -d dotfiles --log true --proxy short --union short 
+CPP  GD binding.garbage GarbageCollector --log false --police-mode strict
+CPP  GD binding.ambiguity AmbiguityIdentifier --log 
+
+
+
+SUBARCHITECTURE motiv.sa 
+CPP  WM BindingWorkingMemory #--debug
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD motiv.gen PlaymateBindingMotiveGenerator --log
+CPP  GD motmon MotivationMonitor --log -bsa binding.sa  --monitor comsys.sa,vision.sa,spatial.sa  #--debug true
+CPP  GD state.gen BindingStateGenerator --log -bsa binding.sa  #--debug true
+CPP  GD motiv.dot BindingDotViewer -d dotfiles_motiv --log --proxy short --union short 
+CPP  GD motiv.garbage GarbageCollector --log --police-mode strict
+JAVA MG cpp planning.components.ContinualPlanningComponent  --replan 2 --log
+
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM VisualWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+JAVA GD fakey visionsa.components.DummySceneObjectCreator --file ./subarchitectures/comsys.mk4/config/visualscenes/red-tri-right-of-blue-sq.fv -cb false --log true
+#JAVA GD fakey visionsa.components.DummySceneObjectCreator --scene 3 -cb false --log true
+CPP MG vision.bindmonitor VisionBindingMonitor -bsa binding.sa --no-transfers --log false --debug false 
+
+
+
+SUBARCHITECTURE spatial.sa localhost
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager --log
+JAVA WM spatial.workingmemory.SpatialWorkingMemory --log
+JAVA GD scene.change spatial.components.SceneManager --log #--debug
+#JAVA GD prox.comp spatial.components.ProximityComponent  -t 0.7 --log
+JAVA GD left.comp spatial.components.LeftProjectiveComponent  -t 0.5 --log
+#JAVA GD right.comp spatial.components.RightProjectiveComponent -t 0.5 --log
+JAVA GD binding.spatial binding.spatial.SpatialBindingMonitor -bsa binding.sa --log #--debug

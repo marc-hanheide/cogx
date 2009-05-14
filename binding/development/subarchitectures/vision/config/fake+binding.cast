@@ -1,0 +1,29 @@
+HOST localhost
+
+SUBARCHITECTURE binding.sa 
+CPP WM BindingWorkingMemory #--log true
+CPP TM AlwaysPositiveTaskManager
+CPP GD binding.scorer BindingScorer --log true -debug true
+CPP GD binding.judge BindingJudge --log true -debug true
+CPP GD binding.binder Binder --log true -debug true
+CPP GD binding.groups BindingGroupManager --log true -debug true
+CPP GD binding.dot BindingDotViewer --log true -d ./dotfiles -cand source -bind short
+CPP GD binding.state BindingStatusMonitor --log true -debug true
+
+
+# SUBARCHITECTURE comsys.sa 
+# JAVA WM				org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory --log true
+# JAVA TM				org.cognitivesystems.comsys.general.ComsysTaskManager --file ./subarchitectures/comsys.mk4/config/test-suite/general-TM.sync --log true
+# JAVA GD speech.rec	org.cognitivesystems.comsys.components.asr.ASR --src gui #--log true --playback
+# JAVA GD parser		org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar ./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml --log true 
+# JAVA GD comsys.binding.monitor	org.cognitivesystems.comsys.monitors.ComSysBindingMonitor -bsa binding.sa --incrementalBinding false --hypoProxies false --unionSizeMin 2 --syncModel sync_one --log true
+# JAVA GD discRefBindings	org.cognitivesystems.comsys.components.DiscRefBindingsComponent #--log true
+# JAVA GD dialInt		org.cognitivesystems.comsys.components.DialInt #--log true
+
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM VisualWorkingMemory #--log
+CPP TM AlwaysPositiveTaskManager
+JAVA GD fakey vision.components.DummySceneObjectCreator --file subarchitectures/vision/config/scenes/ambiguous.yellow.fv
+CPP MG vision.bindmonitor VisionBindingMonitor -bsa binding.sa --log true --debug false

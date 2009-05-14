@@ -1,0 +1,17 @@
+HOST localhost
+
+SUBARCHITECTURE test1
+CPP WM TestWorkingMemory --log $TEST_LOG_OUTPUT #--debug
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD writer LockTester --test write-40 --log $TEST_LOG_OUTPUT
+CPP GD overwriter-1 LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT
+CPP GD overwriter-2 LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT #--debug
+
+
+SUBARCHITECTURE test2
+JAVA WM cast.testing.TestWorkingMemory --log $TEST_LOG_OUTPUT #--debug
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD overwriter-3 cast.testing.LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT #--debug
+JAVA GD overwriter-4 cast.testing.LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT #--debug
+
+

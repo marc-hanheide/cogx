@@ -1,0 +1,174 @@
+
+<utterancesProxyFactories>
+
+<utterance>
+<string>this is GJ 's office</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>this is a red ball</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>this is the kitchen</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>that thing is round</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the ball is red</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the kitchen is big</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>this box is big</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the ball is to the left</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>the box is to the right of the ball</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>the box is right of the star</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>the box is right next to the star</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>the kitchen is near</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the kitchen will be to your left</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>the color of the ball is red</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the location of the kitchen is to your right</string>
+<unions>5</unions>
+</utterance>
+
+<utterance>
+<string>the size of the room is big</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the ball is red and big	</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>this ball is red and big and round</string>
+<unions>0</unions>
+</utterance>
+
+<utterance>
+<string>this ball and that box are green</string>
+<unions>0</unions>
+</utterance>
+
+<utterance>
+<string>the room on the left is the kitchen</string>
+<unions>5</unions>
+</utterance>
+
+<utterance>
+<string>the nearest room is the kitchen</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>the nearest room on the left will be the kitchen</string>
+<unions>5</unions>
+</utterance>
+
+<utterance>
+<string>the kitchen will be the room on your room</string>
+<unions>6</unions>
+</utterance>
+
+
+<utterance>
+<string>the ball is the thing on the right</string>
+<unions>5</unions>
+</utterance>
+
+
+
+<utterance>
+<string>the ball is that red object</string>
+<unions>1</unions>
+</utterance>
+
+
+<utterance>
+<string>the ball on the left is red</string>
+<unions>3</unions>
+</utterance>
+
+
+<utterance>
+<string>the ball on the left is big</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>I am GJ</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>I am a robot</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>you are a robot</string>
+<unions>3</unions>
+</utterance>
+
+<utterance>
+<string>the robot is happy</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>this is the red one</string>
+<unions>1</unions>
+</utterance>
+
+<utterance>
+<string>this one to the left is red</string>
+<unions>2</unions>
+</utterance>
+
+</utterancesProxyFactories>

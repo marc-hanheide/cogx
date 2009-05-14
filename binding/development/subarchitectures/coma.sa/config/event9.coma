@@ -1,0 +1,12 @@
+REM syntax for eventfiles:
+REM there are 4 known commands
+REM instance,<ins>,<con>
+REM relation,<ins1>,<ins2>,<rel>
+REM deleteins,<ins>
+REM creating test instances
+instance,area71,Room
+instance,area72,Office
+instance,area73,Corridor
+instance,area74,Room
+instance,obj71,Coffeemachine
+relation,area71,obj71,hasObject

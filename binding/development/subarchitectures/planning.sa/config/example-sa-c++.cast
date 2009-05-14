@@ -1,0 +1,21 @@
+HOST localhost
+
+
+SUBARCHITECTURE action.sa 
+JAVA WM planning.wm.PlanningWorkingMemory --log true #--debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+# the componemt that executes the actions for the example, --failure
+# gives the probabilty of the action not have the desired effects
+CPP MG actor SimpleActionGenerator --failure 0 --log #--debug
+# the component that provides the state for the planning problem
+CPP MG generator SimpleStateGenerator --log #--debug
+
+
+
+SUBARCHITECTURE planning.sa 
+JAVA WM planning.wm.PlanningWorkingMemory --log true #--debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+# the component that triggers the planning
+CPP MG trigger Trigger --log #--debug
+# the component that does the actual planning and execution monitoring
+JAVA MG cpp planning.components.ContinualPlanningComponent  --replan 2 --log  #--debug

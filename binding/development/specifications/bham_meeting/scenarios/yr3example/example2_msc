@@ -1,0 +1,23 @@
+
+msc {
+  hscale = "2";
+  user,environment,comsys,vision,spatial,binding,planning,motivator,manipulation;
+  environment->vision[label="change detection"];
+  vision->binding[label="visual object"];
+  vision->spatial[label="location, orientation"];
+  spatial->binding[label="spatial relations etc"];
+  user->comsys[label="command"];
+  comsys->binding[label="command"];
+  comsys->binding[label="objects"];
+  comsys->binding[label="desired relations"];
+  binding->motivator[label="command"];
+  motivator->planning[label="goal"];
+  planning->manipulation[label="execute action"];
+  manipulation->planning[label="action complete"];
+  vision->binding[label="update visual objects"];
+  binding->planning[label="visual object updated"];
+  planning->binding[label="action complete"];
+  ...[label="then possibly..."];
+  binding->comsys[label="action complete"];
+  comsys->user[label="action complete"];
+}

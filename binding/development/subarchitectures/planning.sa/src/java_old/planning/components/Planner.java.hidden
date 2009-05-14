@@ -1,0 +1,232 @@
+/**
+ * 
+ */
+package planning.components;
+
+import planning.autogen.Planner.Failure;
+import planning.autogen.PlanningData.Plan;
+import planning.autogen.PlanningData.PlanningProblem;
+import planning.components.abstr.PlanningComponent;
+import planning.ontology.PlanningOntology;
+import planning.util.PlanningException;
+import planning.util.PlanningUtils;
+import cast.architecture.abstr.WorkingMemoryChangeReceiver;
+import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.cdl.TaskOutcome;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.data.CASTData;
+
+/**
+ * @author nah
+ */
+public class Planner extends PlanningComponent {
+
+    /**
+     * @param _id
+     */
+    public Planner(String _id) {
+        super(_id);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+     */
+    @Override
+    public void start() {
+        super.start();
+
+        try {
+            // listen for planning problems
+            addChangeFilter(PlanningOntology.PLANNING_PROBLEM_TYPE,
+                WorkingMemoryOperation.ADD, true,
+                new WorkingMemoryChangeReceiver() {
+
+                    public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+                        handlePlanningProblem(_wmc);
+                    }
+                });
+        }
+        catch (SubarchitectureProcessException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see cast.architecture.subarchitecture.ManagedProcess#taskAdopted(java.lang.String)
+     */
+    @Override
+    protected void taskAdopted(String _goalID) {
+        CASTData planningProblemData = m_taskMap.remove(_goalID);
+
+        if (planningProblemData == null) {
+            println("received unknown goal rejection: " + _goalID);
+            return;
+        }
+
+        PlanningProblem planningProblem =
+                (PlanningProblem) planningProblemData.getData();
+
+        if (m_bLogOutput) {
+            log(PlanningUtils.toString(planningProblem));
+        }
+
+        boolean result = false;
+
+        try {
+            // not sure what to do with this yet...
+
+            String[] plan = createPlan(planningProblem);
+
+            if (plan.length == 0) {
+                log("0 step plan found");
+                result = true;
+            }
+            else if (plan[0].startsWith("NO PLAN")) {
+                result = false;
+                println("no plan found");
+            }
+            else {
+                log("plan found:");
+                for (int i = 0; i < plan.length; i++) {
+                    log(i + ": " + plan[i]);
+                }
+
+                addToWorkingMemory(newDataID(),
+                    PlanningOntology.PLAN_TYPE, new Plan(
+                    // this won't generalise to multi-subarch case
+                        new WorkingMemoryAddress(planningProblemData
+                            .getId(), m_subarchitectureID), plan));
+
+                result = true;
+
+            }
+
+        }
+        catch (SubarchitectureProcessException e) {
+            result = false;
+            e.printStackTrace();
+        }
+        catch (PlanningException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            if (result) {
+                taskComplete(_goalID,
+                    TaskOutcome.PROCESSING_COMPLETE_SUCCESS);
+            }
+            else {
+                taskComplete(_goalID,
+                    TaskOutcome.PROCESSING_COMPLETE_FAILURE);
+            }
+        }
+        catch (SubarchitectureProcessException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Do the actual planning
+     * 
+     * @param _planningProblem
+     * @return
+     * @throws PlanningException
+     */
+    private String[] createPlan(PlanningProblem _planningProblem)
+            throws PlanningException {
+        try {
+            String[] plan =
+                    m_plannerServer.find_plan(
+                        _planningProblem.m_objectList,
+                        _planningProblem.m_factList,
+                        _planningProblem.m_maplGoal,
+                        _planningProblem.m_domainFile);
+            return plan;
+        }
+        catch (Failure e) {
+            throw new PlanningException("failed to create a plan", e);
+        }
+
+    }
+
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see
+    // cast.core.components.CASTProcessingComponent#configure(java.util.Properties)
+    // */
+    // @Override
+    // public void configure(Properties _config) {
+    // super.configure(_config);
+    // }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see cast.architecture.subarchitecture.ManagedProcess#taskRejected(java.lang.String)
+     */
+    @Override
+    protected void taskRejected(String _goalID) {
+        CASTData lfgd = m_taskMap.remove(_goalID);
+        if (lfgd == null) {
+            println("received unknown goal rejection: " + _goalID);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see cast.architecture.abstr.WorkingMemoryReaderProcess#workingMemoryChanged(cast.corba.autogen.CAST.WorkingMemoryChange[])
+     */
+    protected void handlePlanningProblem(WorkingMemoryChange _wmc) {
+
+        try {
+
+            // only care about one type
+            CASTData planningProblemData =
+                    getWorkingMemoryEntry(_wmc.m_address);
+
+            // sanity check...
+            if (planningProblemData.getData() instanceof PlanningProblem) {
+                queuePlanningProblem(planningProblemData);
+            }
+            else {
+                throw new PlanningException("received unknown class: "
+                    + planningProblemData.getData().getClass());
+            }
+
+        }
+        catch (SubarchitectureProcessException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        catch (PlanningException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    /**
+     * @param _lfGoal
+     * @throws SubarchitectureProcessException
+     */
+    private void queuePlanningProblem(CASTData _lfGoal)
+            throws SubarchitectureProcessException {
+
+        String taskID = newTaskID();
+        m_taskMap.put(taskID, _lfGoal);
+        proposeInformationProcessingTask(taskID, "FindPlan");
+    }
+
+}

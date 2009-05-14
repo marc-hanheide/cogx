@@ -1,0 +1,17 @@
+HOST donald
+
+SUBARCHITECTURE vision.sa
+CPP WM VisualWorkingMemory #--log
+CPP TM AlwaysPositiveTaskManager
+
+# the left Sony camera of the B21 stereo head
+irobot1 CPP GD cam.server.0 CameraServer --calib subarchitectures/vision/config/camera/sony0.cal --camnum 0 --eyepose subarchitectures/vision/config/camera/ground.pose --headnum 0 --downsample 2 --log
+irobot1 CPP DD video.server.0 VideoServer -o 0 --port 50031 --downsample 2
+
+CPP MG change.detector ChangeDetector --videohost irobot1 --videoport 50031 --log #--debug
+CPP MG roi.detector Segmentor -t 15 -s 0.5 -o 0.5 -a 600 --videohost irobot1 --videoport 50031 --log #--debug
+#CPP MG object.tracker ObjectTracker -c subarchitectures/vision/config/tracker/trackblob.cfg  -t 100 -v 0 --videohost irobot1 --videoport 50031  #--log #--debug
+
+
+CPP MG feature.extractor FeatureExtractor  --log true
+CPP MG learner.recogniser Recogniser   --log true  --debug true --matWin true --loadAV subarchitectures/vision/src/matlab/mAVs.mat --log true --debug true

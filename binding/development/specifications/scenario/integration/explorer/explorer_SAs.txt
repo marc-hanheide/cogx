@@ -1,0 +1,143 @@
+/*! 
+\page explorerSAs Status of Explorer Subarchitecure
+
+\section navsa-int-head ================= Navigation.sa =================
+
+Responsible: Patric
+
+The navigation subarchitecure is responsible for building the map,
+keeping the robot localized in that map, track people and move the
+robot in the environment
+
+\subsection navsa-work Working and tested functionality
+
+  \li Can build map (metric and graph) and save these to file
+  \li Can load map from file and re-initialize position if position given in file
+  \li Can perform GOTO actions
+
+\subsection navsa-todo TODO
+
+  \li Provide interface to get laser map (Dorian(KTH))
+  \li Laser-based person detection (Daniel(ALU))
+  \li Laser-based people-tracker (Patric(KTH))
+  \li laser+vision place classifier (Daniel(ALU), Andrzej(KTH))
+  \li People detection and tracking, i.e. using the information from
+  laser and vision and fuse them to get an estimate of the people
+  around (Daniel(ALU), Niko(TUD) and Patric(KTH))
+  \li Interface for external SAs (Dorian(KTH))
+  \li Feedback to external SAs (Dorian(KTH))
+  \li Binding monitors (Kristoffer(KTH))
+  \li Binding proxy for robot pose (Kristoffer(KTH))
+
+\section visionsa-int-head ================= Vision.sa =================
+
+Responsible: Niko
+
+The vision subarchitecture in the explorer instantiation of the system
+has as primary tasks to detect/recognize people and objects.
+
+\subsection visionsa-work Working and tested functionality
+
+  \li ??
+
+\subsection visionsa-todo TODO
+
+  \li Mount stereo-camera on Minnie (Dorian(KTH))
+  \li How do we make the information here available to the rest of the system (Niko(TUD) + Dorian(KTH))
+  \li Visual person detection (Niko(TUD))
+  \li Face detection (Niko(TUD))
+
+\section objectsa-int-head ================= Object Search.sa =================
+
+Responsible: Kristoffer/Dorian
+
+The object search architecture will use the navigation and vision SAs
+to move the robot around and look for objects.
+
+\subsection objectsa-work Working and tested functionality
+
+  \li ??
+
+\subsection objectsa-todo TODO
+
+  \li View planning (Dorian(KTH)
+  \li Control of pan-tilt (Dorian(KTH)
+  \li View planning (Dorian(KTH)
+
+
+\section comsyssa-int-head ================= comsys.sa =================
+
+Responsible: GJ
+
+
+\subsection comsyssa-work Working and tested functionality
+
+  \li ??
+
+\subsection comsyssa-todo TODO
+
+  \li ??
+
+\section comasa-int-head ================= coma.sa =================
+
+Responsible: Hendrik
+
+
+\subsection comasa-work Working and tested functionality
+
+  \li ??
+
+\subsection comasa-todo TODO
+
+  \li ??
+
+\section bindersa-int-head ================= Binder.sa =================
+
+Responsible: Henrik
+
+Note that Henrik is only responsible for the binder itself. It is up
+to each an every SA to work out what needs to be written to the
+Binder, and how to bind stuff there. For the latter will be a
+discussion between the people from the involved SAs.
+
+\subsection bindersa-work Working and tested functionality 
+
+  \li ??
+
+\subsection bindersa-todo TODO
+
+  \li Robot pose from nav.sa (Kristoffer(KTH))
+  \li Detected people/person from nav.sa (Daniel(ALU) + Niko(TUD))
+  \li Add default knowledge from coma (Hendrik(DFKI))
+  \li Add object knowledge from vision.sa (Kristoffer(KTH))
+  \li Add area knowledge from nav.sa (Kristoffer(KTH))
+  \li State to planner (Michael/Patrick(ALU))
+
+\section motivatorsa-int-head ================= Motivator.sa =================
+
+Responsible: Patrick????????
+
+\subsection motivatorsa-work Working and tested functionality
+
+  \li ??
+
+\subsection motivatorsa-todo TODO
+
+  \li How much can be re-used from Playmate?
+
+
+
+\section spatialsa-int-head ================= spatial.sa =================
+
+Responsible: ??????????
+
+
+\subsection spatialsa-work Working and tested functionality
+
+  \li ??
+
+\subsection spatialsa-todo TODO
+
+  \li 
+
+*/

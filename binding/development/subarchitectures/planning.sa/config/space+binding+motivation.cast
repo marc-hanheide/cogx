@@ -1,0 +1,40 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM visionsa.wm.SimpleVisionWM
+CPP TM AlwaysPositiveTaskManager
+JAVA GD fakey visionsa.components.DummySceneObjectCreator --scene 3
+CPP MG vision.bindmonitor VisionBindingMonitor -bsa binding.sa --log true --debug false
+
+SUBARCHITECTURE spatial.sa localhost
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager --log
+JAVA WM spatial.workingmemory.SpatialWorkingMemory --log #change this for a c one later,,,
+JAVA GD scene.change spatial.components.SceneManager --log #--debug
+JAVA GD prox.comp spatial.components.ProximityComponent  -t 0.7 --log
+JAVA GD left.comp spatial.components.LeftProjectiveComponent  -t 0.5 --log
+JAVA GD right.comp spatial.components.RightProjectiveComponent -t 0.5 --log
+JAVA GD binding.spatial binding.spatial.SpatialBindingMonitor -bsa binding.sa --log #--debug
+
+SUBARCHITECTURE binding.sa localhost
+CPP  WM BindingWorkingMemory #--log --debug
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD binding.scorer0 BindingScorer -nth 0 -maxN 1
+CPP  GD binding.judge BindingJudge 
+CPP  GD binding.binder Binder #--log #--debug
+CPP  GD binding.groups BindingGroupManager
+CPP  GD binding.state BindingStatusMonitor #--log
+CPP  GD binding.dot BindingDotViewer -d ./dotfiles --log #-proxy source -union short
+
+SUBARCHITECTURE motivation.sa localhost
+CPP  WM BindingWorkingMemory #--log --debug
+CPP  TM AlwaysPositiveTaskManager
+CPP  MG motmon MotivationMonitor -bsa binding.sa --monitor vision.sa,spatial.sa  --log 
+#CPP  MG motmon MotivationMonitor -bsa binding.sa --monitor spatial.sa --log 
+#CPP  MG motmon MotivationMonitor -bsa binding.sa --monitor vision.sa --log 
+
+SUBARCHITECTURE planning.sa 
+JAVA WM planning.wm.PlanningWorkingMemory --log true #--debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA MG trigger planning.examples.Trigger --binding #--log
+JAVA MG cpp planning.components.ContinualPlanningComponent  --replan 2 --log  #--debug
+

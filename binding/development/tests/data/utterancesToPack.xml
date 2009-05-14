@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<utterancesToPack>
+
+
+<utterance>
+<string>put the ball to the left of the box</string>
+</utterance>
+
+<utterance>
+<string>put the ball to the left of the mug onto the box</string>
+</utterance>
+
+
+
+<utterance>
+<string>there is a mug on the table</string>
+</utterance>
+
+<utterance>
+<string>take the box and put it here</string>
+</utterance>
+
+<utterance>
+<string>the ball is green and big</string>
+</utterance>
+
+<utterance>
+<string>look at the table then take the green mug on it and give it to me</string>
+</utterance>
+
+
+</utterancesToPack>
+
+

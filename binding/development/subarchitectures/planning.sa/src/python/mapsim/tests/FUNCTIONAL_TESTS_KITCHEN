@@ -1,0 +1,5 @@
+# Each line in this file must have the format: report_fn param1 ... paramn
+# During testing 'mapsim -t param1 ... paramn' is called and validated against report file report_fn
+# You can add entries to this file automatically by running MAPSIM with the -c option.
+domains-kitchen-scenarios-base-scenario1--random1-a3-r.rep domains/kitchen/scenarios/base/scenario1 --random 1 -a 3 -r
+domains-kitchen-scenarios-base-scenario1--random7-a3-r.rep domains/kitchen/scenarios/base/scenario1 --random 7 -a 3 -r

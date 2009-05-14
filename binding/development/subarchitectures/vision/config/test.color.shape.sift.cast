@@ -1,0 +1,26 @@
+HOST localhost
+SUBARCHITECTURE vision.sa
+CPP WM TestWorkingMemory #--log
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG cam.server.0 CameraServer --downsample 2 --calib config/camera/sony0.cal --eyepose config/camera/ground.pose
+#CPP UM video.server.0 VideoServer -f "../../data/redSquareImgs/img%04d.ppm" -s 1 -e 60 -t 1000 --port  55000
+CPP UM video.server.0 VideoServer -f data/redSquareImgs/img%04d.ppm -s 1 -e 60 -t 1000 --port  55000
+
+CPP MG change.detector ChangeDetector --videohost localhost --videoport 55000 --log
+CPP MG roi.detector Segmentor -t 15 -n 15 -a 200 -nd 1 --videohost localhost --videoport 55000 --log 
+#CPP MG roi.detector Segmentor -t 15 -n 15 -a 200 -nd 1 -w --videohost localhost --videoport 55000  --log
+
+CPP GD color.detector ColorComponent -f config/color.config/colorhists.txt -c 3 -n 10 -e 0.33 -u 0.99 --videohost localhost --videoport 55000  --log
+CPP GD shape.detector ShapeComponent -f config/shape.config/shapevectors.txt -s 3 -n 10 -e 0.33 -u 0.99 --videohost localhost --videoport 55000 --log
+#CPP GD sift.detector SIFTComponent -f config/sift.config/test.db --videohost localhost --videoport 55000 --log
+#CPP GD percept.detector PerceptualGrouping --videohost localhost --videoport 55000 --log
+
+CPP GD allCSSTest VisionCSSTester --log --test allCSS_test  # -- exit true
+
+CONNECTION Vision::ImageFrame change.detector PULL_FROM video.server.0
+CONNECTION Vision::ImageFrame roi.detector PULL_FROM video.server.0
+CONNECTION Vision::ImageFrame color.detector PULL_FROM video.server.0
+CONNECTION Vision::ImageFrame shape.detector PULL_FROM video.server.0
+#CONNECTION Vision::ImageFrame sift.detector PULL_FROM video.server.0
+#CONNECTION Vision::ImageFrame percept.detector PULL_FROM video.server.0

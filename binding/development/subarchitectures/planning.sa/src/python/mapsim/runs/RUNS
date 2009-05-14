@@ -1,0 +1,14 @@
+domain gridworld
+settings SETTINGS_GRIDWORLD
+suite two_agents
+prob001
+prob000
+STOP
+
+domain coffee
+suite coffee1
+ALL
+
+
+domain nonexistent
+ALL

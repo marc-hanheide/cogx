@@ -1,0 +1,228 @@
+<?xml version="1.0"?>
+<tests>
+
+
+<test>
+<name>parsing "now take the box"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/parsing1.cast</file>
+<description>parsing the following utterance: "now take the box"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>parsing "here is the ball"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/parsing2.cast</file>
+<description>parsing the following utterance: "here is the ball"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>parsing "ok that is right"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/parsing3.cast</file>
+<description>parsing the following utterance: "ok that is right"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>parsing "go to the hallway"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/parsing4.cast</file>
+<description>parsing the following utterance: "go to the hallwayx"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>parsing "robot please stop"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/parsing5.cast</file>
+<description>parsing the following utterance: "robot please stop"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+
+<test>
+<name>packing "put the ball to the left of the box"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/packing1.cast</file>
+<description>packing the following utterance: "put the ball to the left of the box"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>packing "put the ball to the left of the mug onto the box"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/packing2.cast</file>
+<description>packing the following utterance: "put the ball to the left of the mug onto the box"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>packing "there is a mug on the table"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/packing3.cast</file>
+<description>packing the following utterance: "there is a mug on the table"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>packing "take the box and put it here"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/packing4.cast</file>
+<description>packing the following utterance: "take the box and put it here"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>packing "look at the table then take the green mug on it and give it to me"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/packing5.cast</file>
+<description>packing the following utterance: "look at the table then take the green mug on it and give it to me"</description>
+<output>false</output>
+<timeout>80000</timeout>
+</test>
+
+
+
+<test>
+<name>checking dialogue move for "hi robot"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/dialoguemoves1.cast</file>
+<description>checking dialogue move for the following utterance: "hi robot"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>checking dialogue move for "now take the box"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/dialoguemoves2.cast</file>
+<description>checking dialogue move for the following utterance: "now take the box"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>checking dialogue move for "no this is a mug"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/dialoguemoves3.cast</file>
+<description>checking dialogue move for the following utterance: "no this is a mug"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>checking dialogue move for "where is the box now"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/dialoguemoves4.cast</file>
+<description>checking dialogue move for the following utterance: "where is the box now"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+
+<test>
+<name>checking dialogue move for "are you there"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/dialoguemoves5.cast</file>
+<description>checking dialogue move for the following utterance: "are you there"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+
+
+<test>
+<name>checking discourse referent binding for 
+- "what is it?"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/discrefbinding1.cast</file>
+<description>checking discourse referent binding for the following dialogue: "what is it?"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>checking discourse referent binding for 
+- "here is the mug"
+- "is it green?"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/discrefbinding2.cast</file>
+<description>checking discourse referent binding for the following dialogue:"here is the mug", "is it green?"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+
+<test>
+<name>checking discourse referent binding for 
+- "here is the mug" 
+- "it is green"
+- "and there is a table"
+- "it is big and white"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/discrefbinding3.cast</file>
+<description>checking discourse referent binding for the following dialogue:"here is the mug", "it is green", "and there is a table", "it is big and white"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+
+<test>
+<name>checking discourse referent binding for 
+- "here is the mug"
+- "it is green"
+- "right it is also round"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/discrefbinding4.cast</file>
+<description>checking discourse referent binding for the following dialogue: "here is the mug", "it is green", "right it is also round"</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>checking discourse referent binding for 
+- "here is the mug"
+- "yes that is right"
+- "it is also round"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/discrefbinding5.cast</file>
+<description>checking discourse referent binding for the following dialogue: "here is the mug", "yes that is right", "t is also round"</description>
+<output> false </output>
+<timeout>30000</timeout>
+</test>
+
+
+<test>
+<name>check visual grounding with a "thing" object and the following linguistic reference: "the thing"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/visualgrounding1.cast</file>
+<description>check visual grounding</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>check visual grounding with a "triangle" object and the following linguistic reference: "the triangle"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/visualgrounding2.cast</file>
+<description>check visual grounding</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>check visual grounding with a "triangle" object and the following linguistic reference: "the thing"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/visualgrounding3.cast</file>
+<description>check visual grounding</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>check the absence of visual grounding with a "triangle" object and the following linguistic reference: "the ball"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/visualgrounding4.cast</file>
+<description>check visual grounding</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+<test>
+<name>check the absence of visual grounding with a "thing" object and the following linguistic reference: "the ball"</name>
+<file>subarchitectures/comsys.mk4/config/test-suite/visualgrounding5.cast</file>
+<description>check visual grounding</description>
+<output>false</output>
+<timeout>30000</timeout>
+</test>
+
+
+</tests>

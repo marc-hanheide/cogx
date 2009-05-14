@@ -1,0 +1,27 @@
+first: all
+$(OBJECTS_DIR)nonmaxsuppression.o: nonmaxsuppression.cpp \
+  ../../include/libPPProcess/nonmaxsuppression.h \
+  ../../include/libAnnotation/annotation.h \
+  ../../include/libAnnotation/annorect.h
+$(OBJECTS_DIR)preprocess.o: preprocess.cpp ../../include/libPPProcess/preprocess.h \
+  ../../include/libAnnotation/annotationlist.h \
+  ../../include/libAnnotation/annotation.h \
+  ../../include/libAnnotation/annorect.h \
+  ../../include/libPPProcess/ppParams.h /usr/include/qt4/QtGui/QImage \
+  /usr/include/qt4/QtGui/qimage.h /usr/include/qt4/QtGui/qpaintdevice.h \
+  /usr/include/qt4/QtGui/qwindowdefs.h \
+  /usr/include/qt4/QtCore/qobjectdefs.h \
+  /usr/include/qt4/QtCore/qnamespace.h /usr/include/qt4/QtCore/qglobal.h \
+  /usr/include/qt4/QtCore/qconfig.h /usr/include/qt4/QtCore/qfeatures.h \
+  /usr/include/qt4/QtCore/qrect.h /usr/include/qt4/QtCore/qsize.h \
+  /usr/include/qt4/QtCore/qpoint.h /usr/include/qt4/QtGui/qrgb.h \
+  /usr/include/qt4/QtCore/qbytearray.h /usr/include/qt4/QtCore/qatomic.h \
+  /usr/include/qt4/QtCore/qatomic_arch.h \
+  /usr/include/qt4/QtCore/qatomic_i386.h \
+  /usr/include/qt4/QtCore/qstring.h /usr/include/qt4/QtCore/qchar.h \
+  ../../include/libTiffStreamReader/StreamReader.h \
+  ../../include/libTiffStreamReader/tiff.h \
+  ../../include/libTiffStreamReader/pacResult.h \
+  ../../include/libTiffStreamReader/camRot.h \
+  ../../include/libTiffStreamReader/colorConversion.h
+$(OBJECTS_DIR)sharpen.o: sharpen.cpp

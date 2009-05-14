@@ -1,0 +1,41 @@
+
+SUBARCHITECTURE comsys.subarch localhost
+JAVA WM							org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory #--log true
+JAVA TM							org.cognitivesystems.comsys.general.ComsysTaskManager --file ./config/test-configurations/test1-TM.sync #--log true
+JAVA GD speech.rec				org.cognitivesystems.comsys.components.asr.ASR --src gui #--log true --playback
+JAVA GD parser					org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar ./grammars/openccg/moloko.v4/grammar.xml --log true 
+JAVA GD plfviz					org.cognitivesystems.comsys.components.PackedLFVisualizer --dir ./graphs/parser/ --series true # --log true 
+JAVA GD comsys.binding.monitor	org.cognitivesystems.comsys.monitors.ComSysBindingMonitor -bsa binding.subarch --log true
+
+
+SUBARCHITECTURE binding.subarch localhost
+CPP WM BindingWorkingMemory #--log true
+CPP TM AlwaysPositiveTaskManager 
+CPP GD binding.judge_motivator BindingJudgeMotivator #--log true --debug true
+#CPP MG binding.scorer BindingScorer #--log true #--debug 
+CPP GD binding.scorer0 BindingScorer -nth 0 -maxN 3 #--log true
+CPP GD binding.scorer1 BindingScorer -nth 1 -maxN 3 #--log true
+CPP GD binding.scorer2 BindingScorer -nth 2 -maxN 3 #--log true
+CPP GD binding.judge BindingJudge #--debug --log true
+CPP GD binding.binder Binder #--debug --log true
+CPP GD binding.groups BindingGroupManager #--debug true --log true
+CPP GD binding.dot BindingDotViewer -d /project/cl/cosy/code/subarchitectures/comsys.mk4/graphs/binder --log true
+CPP GD binding.state BindingStatusMonitor #--debug
+
+SUBARCHITECTURE fake.vision.sa localhost
+JAVA WM visionarch.workingmemory.SimpleVisionWM 
+#CPP WM VisualWorkingMemory #--log
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA MG dummy.so.creator visionarch.components.DummySceneObjectCreator --scene 1 --log false
+CPP MG binding.vision-monitor VisionBindingMonitor -bsa binding.subarch --log
+
+SUBARCHITECTURE spatial.sa localhost
+JAVA TM spatial.taskmanagement.SpatialSubarchitectureTaskManager #--log
+JAVA WM spatial.workingmemory.SpatialWorkingMemory #--log #change this for a c one later,,,
+JAVA GD scene.change spatial.components.SceneManager --log
+#JAVA GD prox.comp spatial.components.ProximityComponent  -t 0.5 #--log
+JAVA GD left.comp spatial.components.LeftProjectiveComponent  -t 0.5 #--log
+JAVA GD right.comp spatial.components.RightProjectiveComponent -t 0.5 --log
+#JAVA GD front.comp spatial.components.FrontProjectiveComponent -t 0.5 --log
+#JAVA GD back.comp spatial.components.BackProjectiveComponent -t 0.5 --log
+JAVA GD binding.spatial binding.spatial.SpatialBindingMonitor -bsa binding.subarch --log #--debug

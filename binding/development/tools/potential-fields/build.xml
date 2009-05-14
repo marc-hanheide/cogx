@@ -1,0 +1,11 @@
+<project name="potential field jni code" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+	
+	<target name="clean">
+	  <echo message="Cleaning class files"/>
+	  <delete dir="${output.dest}org/cognitivesystems/spatial" />
+	</target>
+
+
+</project>

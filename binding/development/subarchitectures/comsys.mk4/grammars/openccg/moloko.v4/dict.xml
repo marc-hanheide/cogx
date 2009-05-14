@@ -1,0 +1,4683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../dict.xsd" name="moloko">
+  <entry pos="COORD" stem="and__coord" pred="and">
+    <word form="and"/>
+    <word form=","/>
+    <word form="then"/>
+    <member-of family="coord.np.pl-result"/>
+    <member-of family="coord.n.pl-result"/>
+    <member-of family="coord.adj"/>
+  </entry>
+  <entry pos="COORD" stem="or__coord" pred="or">
+    <word form="or"/>
+    <member-of family="coord.np"/>
+    <member-of family="coord.n"/>
+    <member-of family="coord.adj"/>
+  </entry>
+  <entry class="relational" pos="COORD" stem="or__coord" pred="or">
+    <word form="or"/>
+    <member-of family="coord.s"/>
+  </entry>
+  <entry class="relational" pos="COORD" stem="then__coord" pred="and">
+    <word form="and"/>
+    <word form=","/>
+    <word form="then"/>
+    <word form="but"/>
+    <member-of family="coord.s"/>
+  </entry>
+  <entry pos="DET" stem="a__det" pred="a">
+    <word form="a"/>
+    <word form="an"/>
+    <member-of family="determiner.indefinite"/>
+  </entry>
+  <entry pos="DET" stem="another__det" pred="another">
+    <word form="another"/>
+    <member-of family="determiner.indefinite"/>
+  </entry>
+  <entry pos="DET" stem="the__det" pred="the">
+    <word form="the"/>
+    <member-of family="determiner.definite"/>
+  </entry>
+  <entry pos="DET" stem="these__det" pred="these">
+    <word macros="@proximity.proximal" form="these"/>
+    <member-of family="determiner.demonstrative.pl"/>
+  </entry>
+  <entry pos="DET" stem="this__det" pred="this">
+    <word macros="@proximity.proximal" form="this"/>
+    <member-of family="determiner.demonstrative.sg"/>
+  </entry>
+  <entry pos="DET" stem="those__det" pred="those">
+    <word macros="@proximity.distal" form="those"/>
+    <member-of family="determiner.demonstrative.pl"/>
+  </entry>
+  <entry pos="DET" stem="that__det" pred="that">
+    <word macros="@proximity.distal" form="that"/>
+    <member-of family="determiner.demonstrative.sg"/>
+  </entry>
+  <entry pos="DET" stem="all__det" pred="all">
+    <word form="all"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-np.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="some__det" pred="some">
+    <word form="some"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="none__det" pred="none">
+    <word form="none"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="no__det" pred="none">
+    <word form="no"/>
+    <member-of family="determiner.quantity"/>
+  </entry>
+  <entry pos="DET" stem="any__det" pred="any">
+    <word form="any"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="many__det" pred="many">
+    <word form="many"/>
+    <word form="much"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="more__det" pred="more">
+    <word form="more"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="less__det" pred="less">
+    <word form="less"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="a_lot__det" pred="a_lot">
+    <word macros="@mwe1-lot" form="a"/>
+    <word macros="@mwe1-bunch" form="a"/>
+    <word macros="@mwe1-load" form="a"/>
+    <member-of family="determiner-of-np.quantity_W"/>
+  </entry>
+  <entry pos="DET" stem="lots__det" pred="a_lot">
+    <word form="lots"/>
+    <word form="bunches"/>
+    <word form="loads"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="a_few__det" pred="a_few">
+    <word macros="@mwe1-few" form="a"/>
+    <member-of family="determiner.quantity_W"/>
+    <member-of family="determiner-of-np.quantity_W"/>
+  </entry>
+  <entry pos="DET" stem="a_couple__det" pred="a_couple">
+    <word macros="@mwe1-couple" form="a"/>
+    <member-of family="determiner.quantity_W"/>
+    <member-of family="determiner-of-np.quantity_W"/>
+  </entry>
+  <entry pos="DET" stem="one__det" pred="one">
+    <word form="one"/>
+    <member-of family="determiner.quantity.sg"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="two__det" pred="two">
+    <word form="two"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="three__det" pred="three">
+    <word form="three"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="four__det" pred="four">
+    <word form="four"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="five__det" pred="five">
+    <word form="five"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="six__det" pred="six">
+    <word form="six"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="seven__det" pred="seven">
+    <word form="seven"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="eight__det" pred="eight">
+    <word form="eight"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="nine__det" pred="nine">
+    <word form="nine"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="ten__det" pred="ten">
+    <word form="ten"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="DET" stem="eleven__det" pred="eleven">
+    <word form="eleven"/>
+    <member-of family="determiner.quantity"/>
+    <member-of family="determiner-of-np.quantity"/>
+  </entry>
+  <entry pos="MARKER" stem="that__relpro" pred="that">
+    <word form="that"/>
+    <word form="who"/>
+    <word form="whom"/>
+    <word form="which"/>
+    <member-of family="rel-pronoun"/>
+  </entry>
+  <entry pos="MARKER" stem="to__n-mod-purpose" pred="to">
+    <word form="to"/>
+    <member-of family="n-mod.purpose.non-fin-verb"/>
+  </entry>
+  <entry pos="MARKER" stem="for__n-mod-purpose" pred="for">
+    <word form="for"/>
+    <member-of family="n-mod.purpose.progr-verb"/>
+  </entry>
+  <entry class="person" pos="DET" pred="I" stem="my">
+    <member-of family="determiner.possessive.sg-owner"/>
+  </entry>
+  <entry class="person" pos="DET" pred="I" stem="our">
+    <member-of family="determiner.possessive.pl-owner"/>
+  </entry>
+  <entry class="person" pos="DET" pred="you" stem="your">
+    <member-of family="determiner.possessive.sg-owner"/>
+  </entry>
+  <entry class="person" pos="DET" pred="you" stem="your">
+    <member-of family="determiner.possessive.pl-owner"/>
+  </entry>
+  <entry class="person" pos="DET" pred="he" stem="his">
+    <member-of family="determiner.possessive.sg-owner"/>
+  </entry>
+  <entry class="person" pos="DET" pred="she" stem="her">
+    <member-of family="determiner.possessive.sg-owner"/>
+  </entry>
+  <entry class="thing" pos="DET" pred="it" stem="its">
+    <member-of family="determiner.possessive.sg-owner"/>
+  </entry>
+  <entry class="entity" pos="DET" pred="they" stem="their">
+    <member-of family="determiner.possessive.pl-owner"/>
+  </entry>
+  <entry class="m-owner" pos="MARKER" stem="'s__owner" pred="owner">
+    <word form="'s"/>
+    <member-of family="possessive-'s"/>
+  </entry>
+  <entry class="person" pos="N" pred="I" stem="I">
+    <word macros="@pers.1st" form="I"/>
+    <word macros="@pers.1st" form="me"/>
+    <member-of family="personal-pronoun.sg"/>
+  </entry>
+  <entry class="person" pos="N" stem="we">
+    <word macros="@pers.1st" form="we"/>
+    <word macros="@pers.1st" form="us"/>
+    <member-of family="personal-pronoun.pl"/>
+  </entry>
+  <entry class="person" pos="N" pred="you" stem="you">
+    <word macros="@pers.2nd" form="you"/>
+    <member-of family="personal-pronoun.sg"/>
+  </entry>
+  <entry class="person" pos="N" pred="you" stem="you-pl">
+    <word macros="@pers.2nd" form="you"/>
+    <member-of family="personal-pronoun.pl"/>
+  </entry>
+  <entry class="person" pos="N" pred="he" stem="he">
+    <word macros="@pers.3rd" form="he"/>
+    <word macros="@pers.3rd" form="him"/>
+    <member-of family="personal-pronoun.sg"/>
+  </entry>
+  <entry class="person" pos="N" pred="she" stem="she">
+    <word macros="@pers.3rd" form="she"/>
+    <word macros="@pers.3rd" form="her"/>
+    <member-of family="personal-pronoun.sg"/>
+  </entry>
+  <entry class="thing" pos="N" pred="it" stem="it">
+    <word macros="@pers.3rd" form="it"/>
+    <member-of family="personal-pronoun.sg"/>
+  </entry>
+  <entry class="entity" pos="N" pred="they" stem="they">
+    <word macros="@pers.3rd" form="they"/>
+    <word macros="@pers.3rd" form="them"/>
+    <member-of family="personal-pronoun.pl"/>
+  </entry>
+  <entry class="person" pos="N" pred="I" stem="mine">
+    <word form="mine"/>
+    <member-of family="possessed-pronoun.sg"/>
+  </entry>
+  <entry class="person" pos="N" pred="we" stem="ours">
+    <word form="ours"/>
+    <member-of family="possessed-pronoun.pl"/>
+  </entry>
+  <entry class="person" pos="N" pred="you" stem="yours">
+    <word form="yours"/>
+    <member-of family="possessed-pronoun.sg"/>
+  </entry>
+  <entry class="person" pos="N" pred="you" stem="yours-pl">
+    <word form="yours"/>
+    <member-of family="possessed-pronoun.pl"/>
+  </entry>
+  <entry class="person" pos="N" pred="he" stem="his-possessed">
+    <word form="his"/>
+    <member-of family="possessed-pronoun.sg"/>
+  </entry>
+  <entry class="person" pos="N" pred="she" stem="hers">
+    <word form="hers"/>
+    <member-of family="possessed-pronoun.sg"/>
+  </entry>
+  <entry class="thing" pos="N" pred="it" stem="its-possessed">
+    <word form="its"/>
+    <member-of family="possessed-pronoun.sg"/>
+  </entry>
+  <entry class="entity" pos="N" pred="they" stem="theirs">
+    <word form="theirs"/>
+    <member-of family="possessed-pronoun.pl"/>
+  </entry>
+  <entry class="thing" pos="N" stem="what-obj">
+    <word form="what"/>
+    <member-of family="question-word.obj"/>
+  </entry>
+  <entry class="event" pos="N" stem="what-event">
+    <word form="what"/>
+    <member-of family="question-word.scomp"/>
+  </entry>
+  <entry class="thing" pos="N" stem="which-obj">
+    <word form="which"/>
+    <member-of family="question-word.obj"/>
+  </entry>
+  <entry class="person" pos="N" stem="who-obj">
+    <word form="who"/>
+    <member-of family="question-word.obj"/>
+  </entry>
+  <entry class="person" pos="N" stem="who-subj">
+    <word macros="@nform-who-subj" form="who"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="region" pos="N" stem="where-location">
+    <word form="where"/>
+    <member-of family="question-word.mod"/>
+  </entry>
+  <entry class="thing" pos="N" stem="this__deictic" pred="this">
+    <word macros="@proximity.proximal @sem-num.sg @del.unique @quant.sg " form="this"/>
+    <member-of family="deictic-pronoun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="that__deictic" pred="that">
+    <word macros="@proximity.distal @sem-num.sg @del.unique @quant.sg" form="that"/>
+    <member-of family="deictic-pronoun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="these__deictic" pred="these">
+    <word macros="@proximity.proximal @sem-num.pl @del.unique @quant.nonsg" form="these"/>
+    <member-of family="deictic-pronoun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="those__deictic" pred="those">
+    <word macros="@proximity.distal @sem-num.pl @del.unique @quant.nonsg" form="those"/>
+    <member-of family="deictic-pronoun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="one-sg__deictic" pred="one">
+    <word macros="@num.sg-second" form="one"/>
+    <member-of family="one-pronoun.n"/>
+    <member-of family="one-pronoun.np"/>
+  </entry>
+  <entry class="thing" pos="N" stem="one-pl__deictic" pred="one">
+    <word macros="@num.pl-second" form="ones"/>
+    <member-of family="one-pronoun.n"/>
+    <member-of family="one-pronoun.np"/>
+  </entry>
+  <entry class="event" pos="S" stem="this__pro-sent" pred="this">
+    <word form="this"/>
+    <word form="that"/>
+    <word form="it"/>
+    <member-of family="pro-sentence"/>
+  </entry>
+  <entry class="thing" pos="N" stem="something">
+    <word macros="@num.sg @del.exist @quant.sg" form="anything"/>
+    <word macros="@num.sg @del.exist @quant.sg" form="something"/>
+    <member-of family="bare-np.modifiable"/>
+  </entry>
+  <entry class="person" pos="N" stem="someone">
+    <word macros="@num.sg @del.exist @quant.sg" form="anyone"/>
+    <word macros="@num.sg @del.exist @quant.sg" form="someone"/>
+    <member-of family="bare-np.modifiable"/>
+  </entry>
+  <entry class="person" pos="N" stem="everyone">
+    <word form="everyone"/>
+    <member-of family="bare-np.modifiable"/>
+  </entry>
+  <entry class="thing" pos="N" stem="everything">
+    <word form="everything"/>
+    <member-of family="bare-np.modifiable"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mobile_phone_W-sg" pred="mobile_phone">
+    <word macros="@mwe1-phone" form="mobile"/>
+    <word macros="@mwe1-phone" form="cell"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mobile_phone_W-pl" pred="mobile_phone">
+    <word macros="@mwe1-phones" form="mobile"/>
+    <word macros="@mwe1-phones" form="cell"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mobile_phone-sg" pred="mobile_phone">
+    <word form="mobile"/>
+    <word form="cell"/>
+    <word form="phone"/>
+    <word form="handy"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mobile_phone-pl" pred="mobile_phone">
+    <word form="mobiles"/>
+    <word form="cells"/>
+    <word form="phones"/>
+    <word form="handys"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="charging_station_W-sg" pred="charging_station">
+    <word macros="@mwe1-station" form="charging"/>
+    <word macros="@mwe1-point" form="charging"/>
+    <word macros="@mwe1-station" form="battery-charging"/>
+    <word macros="@mwe1-point" form="battery-charging"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="charger-sg" pred="charging_station">
+    <word form="charger"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="charging_station_W-pl" pred="charging_station">
+    <word macros="@mwe1-stations" form="charging"/>
+    <word macros="@mwe1-points" form="charging"/>
+    <word macros="@mwe1-stations" form="battery-charging"/>
+    <word macros="@mwe1-points" form="battery-charging"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="charger-pl" pred="charging_station">
+    <word form="chargers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea_kettle_W-sg" pred="tea_kettle">
+    <word macros="@mwe1-kettle" form="tea"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea_kettle_W-pl" pred="tea_kettle">
+    <word macros="@mwe1-kettles" form="tea"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea_kettle-sg" pred="tea_kettle">
+    <word form="kettle"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea_kettle-pl" pred="tea_kettle">
+    <word form="kettles"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="coffee_machine_W-sg" pred="coffee_machine">
+    <word macros="@mwe1-machine" form="coffee"/>
+    <word macros="@mwe1-maker" form="coffee"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="coffee_machine_W-pl" pred="coffee_machine">
+    <word macros="@mwe1-machines" form="coffee"/>
+    <word macros="@mwe1-makers" form="coffee"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="fax_machine_W-sg" pred="fax_machine">
+    <word macros="@mwe1-machine" form="fax"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="thing" pos="N" stem="fax_machine_W-pl" pred="fax_machine">
+    <word macros="@mwe1-machines" form="fax"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="living_room_W-sg" pred="living_room">
+    <word macros="@mwe1-room" form="living"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="living_room_W-pl" pred="living_room">
+    <word macros="@mwe1-rooms" form="living"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="dining_room_W-sg" pred="dining_room">
+    <word macros="@mwe1-room" form="dining"/>
+    <member-of family="noun_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="dining_room_W-pl" pred="dining_room">
+    <word macros="@mwe1-rooms" form="dining"/>
+    <member-of family="noun.plural_W"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="room_id" pred="room">
+    <word macros="@num.sg @pers.3rd" form="room"/>
+    <word macros="@num.sg @pers.3rd" form="Room"/>
+    <member-of family="compound-id-head"/>
+    <member-of family="compound-head-number"/>
+  </entry>
+  <entry class="loc-name" pos="N" stem="leibniz_id" pred="leibniz">
+    <word macros="@pers.3rd" form="Leibniz"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="loc-name" pos="N" stem="turing_id" pred="turing">
+    <word macros="@pers.3rd" form="Turing"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="number" pos="NUM" stem="[*NUM*]">
+    <member-of family="number"/>
+  </entry>
+  <entry class="number" pos="NUM" stem="100">
+    <member-of family="number"/>
+  </entry>
+  <entry class="number" pos="NUM" stem="200">
+    <member-of family="number"/>
+  </entry>
+  <entry pos="N" stem="pile__measure" pred="pile">
+    <word form="pile"/>
+    <member-of family="measure-word"/>
+  </entry>
+  <entry pos="N" stem="few__measure" pred="few">
+    <word form="few"/>
+    <member-of family="measure-word"/>
+  </entry>
+  <entry pos="N" stem="group__measure" pred="group">
+    <word form="group"/>
+    <member-of family="measure-word"/>
+  </entry>
+  <entry pos="PREP" stem="oblique-of">
+    <word macros="@pform-of" form="of"/>
+    <member-of family="prep-oblique"/>
+  </entry>
+  <entry pos="PREP" stem="oblique-at">
+    <word macros="@pform-at" form="at"/>
+    <member-of family="prep-oblique"/>
+  </entry>
+  <entry pos="PREP" stem="oblique-to">
+    <word macros="@pform-to" form="to"/>
+    <member-of family="prep-oblique"/>
+  </entry>
+  <entry pos="PREP" stem="oblique-for">
+    <word macros="@pform-for" form="for"/>
+    <member-of family="prep-oblique"/>
+  </entry>
+  <entry pos="PREP" stem="oblique-with">
+    <word macros="@pform-with" form="with"/>
+    <member-of family="prep-oblique"/>
+  </entry>
+  <entry pos="PREP" stem="oblique-about">
+    <word macros="@pform-about" form="about"/>
+    <member-of family="prep-oblique"/>
+  </entry>
+  <entry pos="PRT" stem="up__prt" pred="up">
+    <word form="up"/>
+    <member-of family="particle"/>
+  </entry>
+  <entry pos="MARKER" stem="than__comparative-adj" pred="than">
+    <word form="than"/>
+    <member-of family="comparative-adj-than"/>
+  </entry>
+  <entry class="relational" pos="V" stem="come__serial-verb" pred="serial-come">
+    <word macros="@finite @pres @imp " form="come"/>
+    <word macros="@finite @pres @ind @num.pl-agr" form="come"/>
+    <word macros="@nonfin" form="come"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp"/>
+  </entry>
+  <entry class="relational" pos="V" stem="come__serial-verb_NO-SUBJ" pred="serial-come">
+    <word macros="@finite @pres @imp" form="come"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="relational" pos="V" stem="go__serial-verb" pred="serial-go">
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr" form="go"/>
+    <word macros="@finite @pres @ind @num.pl-agr" form="go"/>
+    <word macros="@nonfin" form="go"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp"/>
+  </entry>
+  <entry class="relational" pos="V" stem="go__serial-verb_NO-SUBJ" pred="serial-go">
+    <word macros="@finite @pres @imp" form="go"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="relational" pos="V" stem="run__serial-verb" pred="serial-run">
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr" form="run"/>
+    <word macros="@finite @pres @ind @num.pl-agr" form="run"/>
+    <word macros="@nonfin" form="run"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp"/>
+  </entry>
+  <entry class="relational" pos="V" stem="run__serial-verb_NO-SUBJ" pred="serial-run">
+    <word macros="@finite @pres @imp" form="run"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="relational" pos="V" stem="come__serial-verb_W" pred="serial-come">
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr @mwe1-and" form="come"/>
+    <word macros="@finite @pres @ind @num.pl-agr @mwe1-and" form="come"/>
+    <word macros="@nonfin @mwe1-and" form="come"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp_W"/>
+  </entry>
+  <entry class="relational" pos="V" stem="go__serial-verb_W" pred="serial-go">
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr  @mwe1-and" form="go"/>
+    <word macros="@finite @pres @ind @num.pl-agr  @mwe1-and" form="go"/>
+    <word macros="@nonfin" form="go"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp_W"/>
+  </entry>
+  <entry class="relational" pos="V" stem="run__serial-verb_W" pred="serial-run">
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr  @mwe1-and" form="run"/>
+    <word macros="@finite @pres @ind @num.pl-agr  @mwe1-and" form="run"/>
+    <word macros="@nonfin  @mwe1-and" form="run"/>
+    <member-of family="v.subj-controlled-non-fin-verb-comp_W"/>
+  </entry>
+  <entry class="ascription" pos="V" stem="be-ind__ascription" pred="be">
+    <word macros="@nonfin" form="be"/>
+    <word macros="@vform.progr" form="being"/>
+    <word macros="@finite @pres @ind   @pers.3rd-agr @num.sg-agr" form="is"/>
+    <word macros="@finite @pres @ind  @pers.2nd-agr @num.sg-agr" form="are"/>
+    <word macros="@finite @pres @ind                @num.pl-agr" form="are"/>
+    <word macros="@finite @pres @ind   @pers.1st-agr @num.sg-agr" form="am"/>
+    <word macros="@finite @past @ind  @pers.1st-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @ind  @pers.3rd-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @ind @pers.2nd-agr" form="were"/>
+    <word macros="@finite @past @ind               @num.pl-agr" form="were"/>
+    <member-of family="copular"/>
+  </entry>
+  <entry class="ascription" pos="V" stem="be-NON-SUBJ__ascription" pred="be">
+    <word macros="@finite @imp" form="be"/>
+    <member-of family="copular.NO-SUBJ"/>
+  </entry>
+  <entry class="ascription" pos="V" stem="be-int__ascription" pred="be">
+    <word macros="@finite @pres @int   @pers.3rd-agr @num.sg-agr" form="is"/>
+    <word macros="@finite @pres @int  @pers.2nd-agr @num.sg-agr" form="are"/>
+    <word macros="@finite @pres @int                @num.pl-agr" form="are"/>
+    <word macros="@finite @pres @int   @pers.1st-agr @num.sg-agr" form="am"/>
+    <word macros="@finite @past @int  @pers.1st-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @int  @pers.3rd-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @int @pers.2nd-agr" form="were"/>
+    <word macros="@finite @past @int               @num.pl-agr" form="were"/>
+    <member-of family="copular.inverted"/>
+    <member-of family="copular.fronted-question"/>
+  </entry>
+  <entry pos="V" stem="do__pro-form" pred="pro-verb-do">
+    <word macros="@nonfin" form="do"/>
+    <word macros="@vform.progr" form="doing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr" form="do"/>
+    <word macros="@finite @pres @ind @num.pl-agr" form="do"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="does"/>
+    <word macros="@finite @past @ind" form="did"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="modal" pos="V" stem="do__aux" pred="do">
+    <word macros="@finite @pres @pers.non-3rd-agr @num.sg-agr" form="do"/>
+    <word macros="@finite @pres @num.pl-agr" form="do"/>
+    <word macros="@finite @pres @pers.3rd-agr @num.sg-agr" form="does"/>
+    <word macros="@finite @past" form="did"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="will__aux" pred="will">
+    <word macros="@finite @future" form="will"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="would__aux" pred="would">
+    <word macros="@finite @future" form="would"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="should__modal" pred="should">
+    <word macros="@finite @pres" form="should"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="shall__modal" pred="shall">
+    <word macros="@finite @pres" form="shall"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="may__modal" pred="may">
+    <word macros="@finite @pres" form="may"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="might__modal" pred="might">
+    <word macros="@finite @pres" form="might"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="modal" pos="V" stem="can__modal" pred="can">
+    <word macros="@finite @pres" form="can"/>
+    <word macros="@finite @past" form="could"/>
+    <member-of family="aux"/>
+    <member-of family="aux.polar-question"/>
+    <member-of family="aux.fronted-obj-question"/>
+    <member-of family="aux.fronted-scomp-question"/>
+    <member-of family="aux.fronted-location-question"/>
+    <member-of family="aux.fronted-whereto-question"/>
+  </entry>
+  <entry class="existence" pos="V" stem="be__existence-ind" pred="be">
+    <word macros="@nonfin" form="be"/>
+    <word macros="@vform.progr" form="being"/>
+    <word macros="@finite @pres @ind   @pers.3rd-agr @num.sg-agr" form="is"/>
+    <word macros="@finite @pres @ind  @pers.2nd-agr @num.sg-agr" form="are"/>
+    <word macros="@finite @pres @ind                @num.pl-agr" form="are"/>
+    <word macros="@finite @pres @ind   @pers.1st-agr @num.sg-agr" form="am"/>
+    <word macros="@finite @past @ind  @pers.1st-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @ind  @pers.3rd-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @ind @pers.2nd-agr" form="were"/>
+    <word macros="@finite @past @ind               @num.pl-agr" form="were"/>
+    <member-of family="existence.dummy-deic-subject"/>
+  </entry>
+  <entry class="existence" pos="V" stem="be__existence-int" pred="be">
+    <word macros="@finite @pres @int   @pers.3rd-agr @num.sg-agr" form="is"/>
+    <word macros="@finite @pres @int  @pers.2nd-agr @num.sg-agr" form="are"/>
+    <word macros="@finite @pres @int                @num.pl-agr" form="are"/>
+    <word macros="@finite @pres @int   @pers.1st-agr @num.sg-agr" form="am"/>
+    <word macros="@finite @past @int  @pers.1st-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @int  @pers.3rd-agr @num.sg-agr" form="was"/>
+    <word macros="@finite @past @int @pers.2nd-agr" form="were"/>
+    <word macros="@finite @past @int               @num.pl-agr" form="were"/>
+    <member-of family="existence.dummy-deic-subject.inverted"/>
+  </entry>
+  <entry class="existence" pos="V" stem="have__existence" pred="have">
+    <word macros="@finite @pres @ind" form="have"/>
+    <member-of family="existence.dummy-pers-subject"/>
+  </entry>
+  <entry class="existence" pos="V" stem="got__existence" pred="got">
+    <word macros="@finite @pres @ind" form="got"/>
+    <member-of family="existence.dummy-pers-subject"/>
+  </entry>
+  <entry class="entity" pos="N" stem="dummy-existential-subject">
+    <word macros="@dummy-deic" form="here"/>
+    <word macros="@dummy-deic" form="there"/>
+    <word macros="@dummy-pers" form="you"/>
+    <word macros="@dummy-pers" form="we"/>
+    <member-of family="dummy-np"/>
+  </entry>
+  <entry class="perception" pos="V" stem="take_a_look__perception" pred="look">
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr @mwe1-a @mwe2-look" form="take"/>
+    <word macros="@finite @pres @ind @num.pl-agr @mwe1-a @mwe2-look" form="take"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr @mwe1-a @mwe2-look" form="takes"/>
+    <word macros="@finite @past @ind @mwe1-a @mwe2-look" form="took"/>
+    <word macros="@nonfin @mwe1-a @mwe2-look" form="take"/>
+    <word macros="@vform.progr @pres @ind @mwe1-a @mwe2-look" form="taking"/>
+    <member-of family="tv.at-obj_W_W"/>
+  </entry>
+  <entry class="perception" pos="V" stem="take_a_look-NO-SUBJ" pred="look">
+    <word macros="@finite @pres @imp @mwe1-a @mwe2-look" form="take"/>
+    <member-of family="tv.at-obj.NO-SUBJ_W_W"/>
+  </entry>
+  <entry class="perception" pos="V" stem="look_around__perception" pred="explore">
+    <word macros="@nonfin @mwe1-around " form="look"/>
+    <word macros="@vform.progr @pres @ind @mwe1-around " form="looking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr @mwe1-around " form="look"/>
+    <word macros="@finite @pres @ind @num.pl-agr @mwe1-around " form="look"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr @mwe1-around " form="looks"/>
+    <word macros="@finite @past @ind @mwe1-around " form="looked"/>
+    <member-of family="tv_W"/>
+  </entry>
+  <entry class="perception" pos="V" stem="look_around__perception" pred="explore">
+    <word macros="@finite @pres @imp @mwe1-around " form="look"/>
+    <member-of family="tv.NO-SUBJ_W"/>
+  </entry>
+  <entry pos="ADV" stem="not__vp-negation" pred="-">
+    <word form="not"/>
+    <member-of family="aux-negation"/>
+    <member-of family="copular-negation"/>
+  </entry>
+  <entry pos="MARKER" stem="to__inf-marker">
+    <word form="to"/>
+    <member-of family="infinitive-to"/>
+  </entry>
+  <entry pos="MARKER" stem="that__s-marker" pred="that">
+    <word form="that"/>
+    <member-of family="sentence-marker"/>
+  </entry>
+  <entry pos="MARKER" stem="if__s-marker" pred="if">
+    <word form="if"/>
+    <member-of family="sentence-marker"/>
+  </entry>
+  <entry pos="MARKER" stem="whether__s-marker" pred="whether">
+    <word form="whether"/>
+    <member-of family="sentence-marker"/>
+  </entry>
+  <entry class="evaluative" pos="DU" stem="evaluative-good" pred="good">
+    <word macro="@mwe1-job" form="good"/>
+    <word macro="@mwe1-done" form="well"/>
+    <member-of family="dis-unit_W"/>
+  </entry>
+  <entry class="greeting" pos="DU" pred="hello" stem="hello">
+    <word form="hello"/>
+    <word form="hi"/>
+    <word form="hey"/>
+    <member-of family="dis-unit"/>
+    <member-of family="dis-unit.addressee"/>
+  </entry>
+  <entry class="dis-connective" pos="DU" stem="discourse-connective_W" pred="let's_see">
+    <word macro="@mwe1-see" form="let's"/>
+    <member-of family="dis-unit.connective_W"/>
+  </entry>
+  <entry class="suggestion" pos="DU" pred="let's" stem="let's">
+    <member-of family="dis-unit.suggestion"/>
+  </entry>
+  <entry class="suggestion" pos="DU" pred="let's" stem="let's">
+    <member-of family="dis-unit.suggestion"/>
+  </entry>
+  <entry class="cue" pos="DU" stem="yes__cue" pred="yes">
+    <word form="yes"/>
+    <word form="yeah"/>
+    <word form="sure"/>
+    <word form="ok"/>
+    <word form="okay"/>
+    <member-of family="cue.positive"/>
+    <member-of family="sentence-polarity.positive"/>
+  </entry>
+  <entry class="cue" pos="DU" stem="no__cue" pred="no">
+    <word form="no"/>
+    <word form="nope"/>
+    <member-of family="cue.negative"/>
+    <member-of family="sentence-polarity.negative"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="I_think__m-comment" pred="I_think">
+    <word macros="@mwe1-think" form="I"/>
+    <member-of family="adv.comment_W"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="I_hope__m-comment" pred="I_hope">
+    <word macros="@mwe1-hope" form="I"/>
+    <member-of family="adv.comment_W"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="I_guess__m-comment" pred="I_guess">
+    <word macros="@mwe1-guess" form="I"/>
+    <member-of family="adv.comment_W"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="you_know__m-comment" pred="you_know">
+    <word macros="@mwe1-know" form="you"/>
+    <member-of family="adv.comment_W"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="to_the_right__m-direction" pred="right">
+    <word macros="@mwe1-the @mwe1-right" form="to"/>
+    <member-of family="adv.direction_W_W"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="to_the_left__m-direction" pred="left">
+    <word macros="@mwe1-the @mwe1-left" form="to"/>
+    <member-of family="adv.direction_W_W"/>
+  </entry>
+  <entry pos="ADV" stem="really__mod-adj" pred="really">
+    <word form="really"/>
+    <word form="very"/>
+    <word form="extremely"/>
+    <member-of family="adj-modifier"/>
+  </entry>
+  <entry pos="ADV" stem="enough__mod-adj" pred="enough">
+    <word form="enough"/>
+    <member-of family="adj-modifier.forward.to-verb"/>
+    <member-of family="adj-modifier.forward"/>
+  </entry>
+  <entry pos="ADV" stem="too__mod-adj" pred="too">
+    <word form="too"/>
+    <member-of family="adj-modifier.to-verb"/>
+    <member-of family="adj-modifier"/>
+  </entry>
+  <entry class="quality" pos="ADJ" stem="proud" pred="proud">
+    <word form="proud"/>
+    <member-of family="adj.of-np.property"/>
+  </entry>
+  <entry class="quality" pos="ADJ" stem="careful" pred="careful">
+    <word form="careful"/>
+    <member-of family="adj.with-np.property"/>
+  </entry>
+  <entry class="quality" pos="ADJ" stem="allowed_adj" pred="allowed">
+    <word form="allowed"/>
+    <member-of family="adj.to-verb.property"/>
+  </entry>
+  <entry class="quality" pos="ADJ" stem="able_adj" pred="able">
+    <word form="able"/>
+    <member-of family="adj.to-verb.property"/>
+  </entry>
+  <entry pos="PREP" stem="here-mod" pred="here">
+    <word form="here"/>
+    <member-of family="here-and-there"/>
+  </entry>
+  <entry pos="PREP" stem="there-mod" pred="there">
+    <word form="there"/>
+    <member-of family="here-and-there"/>
+  </entry>
+  <entry pos="PREP" stem="here-mod_W" pred="here">
+    <word macros="@mwe1-here" form="over"/>
+    <member-of family="here-and-there_W"/>
+  </entry>
+  <entry pos="PREP" stem="there-mod_W" pred="there">
+    <word macros="@mwe1-there" form="over"/>
+    <member-of family="here-and-there_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="next_to__m-whereto" pred="next_to">
+    <word macros="@mwe1-to" form="next"/>
+    <member-of family="prep-mod-s.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="next_to__m-location" pred="next_to">
+    <word macros="@mwe1-to" form="next"/>
+    <member-of family="prep-mod-n.location_W"/>
+    <member-of family="prep-mod-s.location_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="connected_to__m-location" pred="connected_to">
+    <word macros="@mwe1-to" form="connected"/>
+    <member-of family="prep-mod-n.location_W"/>
+    <member-of family="prep-mod-s.location_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="surrounded_by__m-location" pred="surrounded_by">
+    <word macros="@mwe1-by" form="surrounded"/>
+    <member-of family="prep-mod-n.location_W"/>
+    <member-of family="prep-mod-s.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="close_to__m-whereto" pred="close_to">
+    <word macros="@mwe1-to" form="close"/>
+    <member-of family="prep-mod-s.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="close_to__m-location" pred="close_to">
+    <word macros="@mwe1-to" form="close"/>
+    <member-of family="prep-mod-n.location_W"/>
+    <member-of family="prep-mod-s.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="in_front_of__m-whereto" pred="in_front">
+    <word macros="@mwe1-front" form="in"/>
+    <member-of family="prep-mod-s.of-np.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="in_front_of__m-location" pred="in_front">
+    <word macros="@mwe1-front" form="in"/>
+    <member-of family="prep-mod-n.of-np.location_W"/>
+    <member-of family="prep-mod-s.of-np.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="in_front__m-whereto" pred="in_front">
+    <word form="in_front"/>
+    <member-of family="prep-mod-s.of-np.whereto"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="in_front__m-location" pred="in_front">
+    <word form="in_front"/>
+    <member-of family="prep-mod-n.of-np.location"/>
+    <member-of family="prep-mod-s.of-np.location"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="in_back_of__m-whereto" pred="in_back">
+    <word macros="@mwe1-back" form="in"/>
+    <member-of family="prep-mod-s.of-np.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="in_back_of__m-location" pred="in_back">
+    <word macros="@mwe1-back" form="in"/>
+    <member-of family="prep-mod-n.of-np.location_W"/>
+    <member-of family="prep-mod-s.of-np.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="on_back_of__m-whereto" pred="on_back">
+    <word macros="@mwe1-back" form="on"/>
+    <member-of family="prep-mod-s.of-np.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="on_back_of__m-location" pred="on_back">
+    <word macros="@mwe1-back" form="on"/>
+    <member-of family="prep-mod-n.of-np.location_W"/>
+    <member-of family="prep-mod-s.of-np.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="on_front_of__m-whereto" pred="on_front">
+    <word macros="@mwe1-front" form="on"/>
+    <member-of family="prep-mod-s.of-np.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="on_front_of__m-location" pred="on_front">
+    <word macros="@mwe1-front" form="on"/>
+    <member-of family="prep-mod-n.of-np.location_W"/>
+    <member-of family="prep-mod-s.of-np.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="on_bottom_of__m-whereto" pred="on_bottom">
+    <word macros="@mwe1-bottom" form="on"/>
+    <member-of family="prep-mod-s.of-np.whereto_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="on_bottom_of__m-location" pred="on_bottom">
+    <word macros="@mwe1-bottom" form="on"/>
+    <member-of family="prep-mod-n.of-np.location_W"/>
+    <member-of family="prep-mod-s.of-np.location_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="to_the_right_of__m-whereto" pred="right">
+    <word macros="@mwe1-the @mwe2-right" form="to"/>
+    <member-of family="prep-mod-s.of-np.whereto_W_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="to_the_right_of__m-location" pred="right">
+    <word macros="@mwe1-the @mwe2-right" form="to"/>
+    <member-of family="prep-mod-n.of-np.location_W_W"/>
+    <member-of family="prep-mod-s.of-np.location_W_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="to_the_left_of__m-whereto" pred="left">
+    <word macros="@mwe1-the @mwe2-left" form="to"/>
+    <member-of family="prep-mod-s.of-np.whereto_W_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="to_the_left_of__m-location" pred="left">
+    <word macros="@mwe1-the @mwe2-left" form="to"/>
+    <member-of family="prep-mod-n.of-np.location_W_W"/>
+    <member-of family="prep-mod-s.of-np.location_W_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="to_the_front_of__m-whereto" pred="front">
+    <word macros="@mwe1-the @mwe2-front" form="to"/>
+    <member-of family="prep-mod-s.of-np.whereto_W_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="to_the_front_of__m-location" pred="front">
+    <word macros="@mwe1-the @mwe2-front" form="to"/>
+    <member-of family="prep-mod-n.of-np.location_W_W"/>
+    <member-of family="prep-mod-s.of-np.location_W_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="to_the_back_of__m-whereto" pred="back">
+    <word macros="@mwe1-the @mwe2-back" form="to"/>
+    <member-of family="prep-mod-s.of-np.whereto_W_W"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="to_the_back_of__m-location" pred="back">
+    <word macros="@mwe1-the @mwe2-back" form="to"/>
+    <member-of family="prep-mod-n.of-np.location_W_W"/>
+    <member-of family="prep-mod-s.of-np.location_W_W"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="away_from_of__m-whereto" pred="away_from">
+    <word macros="@mwe1-from" form="away"/>
+    <member-of family="prep-mod-s.wherefrom_W"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="good__q-attitude" pred="good">
+    <word macros="@degree.base" form="good"/>
+    <word macros="@degree.comparative" form="better"/>
+    <word macros="@degree.superlative" form="best"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="bad__q-attitude" pred="bad">
+    <word macros="@degree.base" form="bad"/>
+    <word macros="@degree.comparative" form="worse"/>
+    <word macros="@degree.superlative" form="worst"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="guilty__q-attitude" pred="guilty">
+    <word macros="@degree.base" form="guilty"/>
+    <word macros="@degree.comparative" form="guiltier"/>
+    <word macros="@degree.superlative" form="guiltiest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="frustrated__q-attitude" pred="frustrated">
+    <word macros="@degree.base" form="frustrated"/>
+    <word macros="@degree.comparative" form="more_frustrated"/>
+    <word macros="@degree.superlative" form="most_frustrated"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="sure__q-attitude" pred="sure">
+    <word macros="@degree.base" form="sure"/>
+    <word macros="@degree.comparative" form="more_sure"/>
+    <word macros="@degree.superlative" form="most_sure"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="sorry__q-attitude" pred="sorry">
+    <word macros="@degree.base" form="sorry"/>
+    <word macros="@degree.comparative" form="sorrier"/>
+    <word macros="@degree.superlative" form="sorriest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="ok__q-attitude" pred="ok">
+    <word macros="@degree.base" form="ok"/>
+    <word macros="@degree.comparative" form="---"/>
+    <word macros="@degree.superlative" form="---"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="cool__q-attitude" pred="cool">
+    <word macros="@degree.base" form="cool"/>
+    <word macros="@degree.comparative" form="cooler"/>
+    <word macros="@degree.superlative" form="coolest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-attitude" pos="ADJ" stem="important__q-attitude" pred="important">
+    <word macros="@degree.base" form="important"/>
+    <word macros="@degree.comparative" form="more_important"/>
+    <word macros="@degree.superlative" form="most_important"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-size" pos="ADJ" stem="big__q-size" pred="big">
+    <word macros="@degree.base" form="big"/>
+    <word macros="@degree.comparative" form="bigger"/>
+    <word macros="@degree.superlative" form="biggest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-size" pos="ADJ" stem="small__q-size" pred="small">
+    <word macros="@degree.base" form="small"/>
+    <word macros="@degree.comparative" form="smaller"/>
+    <word macros="@degree.superlative" form="smallest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-size" pos="ADJ" stem="tiny__q-size" pred="tiny">
+    <word macros="@degree.base" form="tiny"/>
+    <word macros="@degree.comparative" form="tiny"/>
+    <word macros="@degree.superlative" form="tiniest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="red__q-color" pred="red">
+    <word macros="@degree.base" form="red"/>
+    <word macros="@degree.comparative" form="redder"/>
+    <word macros="@degree.superlative" form="reddest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="blue__q-color" pred="blue">
+    <word macros="@degree.base" form="blue"/>
+    <word macros="@degree.comparative" form="bluer"/>
+    <word macros="@degree.superlative" form="bluest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="green__q-color" pred="green">
+    <word macros="@degree.base" form="green"/>
+    <word macros="@degree.comparative" form="greener"/>
+    <word macros="@degree.superlative" form="greenest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="yellow__q-color" pred="yellow">
+    <word macros="@degree.base" form="yellow"/>
+    <word macros="@degree.comparative" form="yellower"/>
+    <word macros="@degree.superlative" form="yellowest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="pink__q-color" pred="pink">
+    <word macros="@degree.base" form="pink"/>
+    <word macros="@degree.comparative" form="pinker"/>
+    <word macros="@degree.superlative" form="pinkest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="black__q-color" pred="black">
+    <word macros="@degree.base" form="black"/>
+    <word macros="@degree.comparative" form="blacker"/>
+    <word macros="@degree.superlative" form="blackest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-color" pos="ADJ" stem="white__q-color" pred="white">
+    <word macros="@degree.base" form="white"/>
+    <word macros="@degree.comparative" form="whiter"/>
+    <word macros="@degree.superlative" form="whitest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-shape" pos="ADJ" stem="round__q-shape" pred="round">
+    <word macros="@degree.base" form="round"/>
+    <word macros="@degree.comparative" form="rounder"/>
+    <word macros="@degree.superlative" form="roundest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-shape" pos="ADJ" stem="square__q-shape" pred="square">
+    <word macros="@degree.base" form="square"/>
+    <word macros="@degree.comparative" form="more_square"/>
+    <word macros="@degree.superlative" form="squarest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-shape" pos="ADJ" stem="long__q-shape" pred="long">
+    <word macros="@degree.base" form="long"/>
+    <word macros="@degree.comparative" form="longer"/>
+    <word macros="@degree.superlative" form="longest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-shape" pos="ADJ" stem="short__q-shape" pred="short">
+    <word macros="@degree.base" form="short"/>
+    <word macros="@degree.comparative" form="shorter"/>
+    <word macros="@degree.superlative" form="shortest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-shape" pos="ADJ" stem="oval__q-shape" pred="oval">
+    <word macros="@degree.base" form="oval"/>
+    <word macros="@degree.comparative" form="more_oval"/>
+    <word macros="@degree.superlative" form="most_oval"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="open__q-physical" pred="open">
+    <word macros="@degree.base" form="open"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="closed__q-physical" pred="closed">
+    <word macros="@degree.base" form="closed"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="cluttered__q-physical" pred="cluttered">
+    <word macros="@degree.base" form="cluttered"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="accessible__q-physical" pred="accessible">
+    <word macros="@degree.base" form="accessible"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="inaccessible__q-physical" pred="inaccessible">
+    <word macros="@degree.base" form="inaccessible"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="reachable__q-physical" pred="reachable">
+    <word macros="@degree.base" form="reachable"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="unreachable__q-physical" pred="unreachable">
+    <word macros="@degree.base" form="unreachable"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="visible__q-physical" pred="visible">
+    <word macros="@degree.base" form="visible"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="invisible__q-physical" pred="invisible">
+    <word macros="@degree.base" form="invisible"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="graspable__q-physical" pred="graspable">
+    <word macros="@degree.base" form="graspable"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-physical" pos="ADJ" stem="ungraspable__q-physical" pred="ungraspable">
+    <word macros="@degree.base" form="ungraspable"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="right__q-location" pred="right">
+    <word macros="@degree.base" form="right"/>
+    <word macros="@degree.comparative" form="more_to_the_right"/>
+    <word macros="@degree.superlative" form="right_most"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="left__q-location" pred="left">
+    <word macros="@degree.base" form="left"/>
+    <word macros="@degree.comparative" form="more_to_the_left"/>
+    <word macros="@degree.superlative" form="left_most"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="top__q-location" pred="top">
+    <word macros="@degree.base" form="top"/>
+    <word macros="@degree.comparative" form="more_to_the_top"/>
+    <word macros="@degree.superlative" form="top_most"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="bottom__q-location" pred="bottom">
+    <word macros="@degree.base" form="bottom"/>
+    <word macros="@degree.comparative" form="more_to_the_bottom"/>
+    <word macros="@degree.superlative" form="bottom_most"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="middle__q-location" pred="middle">
+    <word macros="@degree.base" form="middle"/>
+    <word macros="@degree.comparative" form="more_to_the_middle"/>
+    <word macros="@degree.superlative" form="middle_most"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="close__q-location" pred="close">
+    <word macros="@degree.base" form="close"/>
+    <word macros="@degree.comparative" form="closer"/>
+    <word macros="@degree.superlative" form="closest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="near__q-location" pred="near">
+    <word macros="@degree.base" form="near"/>
+    <word macros="@degree.comparative" form="nearer"/>
+    <word macros="@degree.superlative" form="nearest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-location" pos="ADJ" stem="far__q-location" pred="far">
+    <word macros="@degree.base" form="far"/>
+    <word macros="@degree.comparative" form="farther"/>
+    <word macros="@degree.superlative" form="farthest"/>
+    <word macros="@degree.base" form="far"/>
+    <word macros="@degree.comparative" form="further"/>
+    <word macros="@degree.superlative" form="furtherest"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="first__q-number" pred="first">
+    <word macros="@degree.base" form="first"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="second__q-number" pred="second">
+    <word macros="@degree.base" form="second"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="third__q-number" pred="third">
+    <word macros="@degree.base" form="third"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="fourth__q-number" pred="fourth">
+    <word macros="@degree.base" form="fourth"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="fifth__q-number" pred="fifth">
+    <word macros="@degree.base" form="fifth"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="sixth__q-number" pred="sixth">
+    <word macros="@degree.base" form="sixth"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="seventh__q-number" pred="seventh">
+    <word macros="@degree.base" form="seventh"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="eighth__q-number" pred="eighth">
+    <word macros="@degree.base" form="eighth"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="ninth__q-number" pred="ninth">
+    <word macros="@degree.base" form="ninth"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="tenth__q-number" pred="tenth">
+    <word macros="@degree.base" form="tenth"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-number" pos="ADJ" stem="eleventh__q-number" pred="eleventh">
+    <word macros="@degree.base" form="eleventh"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-position" pos="ADJ" stem="first__q-position" pred="first">
+    <word macros="@degree.base" form="first"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-position" pos="ADJ" stem="last__q-position" pred="last">
+    <word macros="@degree.base" form="last"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-position" pos="ADJ" stem="next__q-position" pred="next">
+    <word macros="@degree.base" form="next"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-position" pos="ADJ" stem="previous__q-position" pred="previous">
+    <word macros="@degree.base" form="previous"/>
+    <word macros="@degree.comparative" form="--"/>
+    <word macros="@degree.superlative" form="--"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="q-relational" pos="ADJ" stem="other__q-relational" pred="other">
+    <word macros="@degree.base" form="other"/>
+    <word macros="@degree.comparative" form="---"/>
+    <word macros="@degree.superlative" form="---"/>
+    <member-of family="adj.property"/>
+  </entry>
+  <entry class="person" pos="N" stem="boy-sg" pred="boy">
+    <word macros="@pers.3rd" form="boy"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="boy-pl" pred="boy">
+    <word macros="@pers.3rd" form="boys"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="girl-sg" pred="girl">
+    <word macros="@pers.3rd" form="girl"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="girl-pl" pred="girl">
+    <word macros="@pers.3rd" form="girls"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="man-sg" pred="man">
+    <word macros="@pers.3rd" form="man"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="man-pl" pred="man">
+    <word macros="@pers.3rd" form="men"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="woman-sg" pred="woman">
+    <word macros="@pers.3rd" form="woman"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="woman-pl" pred="woman">
+    <word macros="@pers.3rd" form="women"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="person-sg" pred="person">
+    <word macros="@pers.3rd" form="person"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="person-pl" pred="person">
+    <word macros="@pers.3rd" form="people"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="guy-sg" pred="guy">
+    <word macros="@pers.3rd" form="guy"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="guy-pl" pred="guy">
+    <word macros="@pers.3rd" form="guys"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="child-sg" pred="child">
+    <word macros="@pers.3rd" form="child"/>
+    <word macros="@pers.3rd" form="kid"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="child-pl" pred="child">
+    <word macros="@pers.3rd" form="children"/>
+    <word macros="@pers.3rd" form="kids"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="secretary-sg" pred="secretary">
+    <word macros="@pers.3rd" form="secretary"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="secretary-pl" pred="secretary">
+    <word macros="@pers.3rd" form="secretaries"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="janitor-sg" pred="janitor">
+    <word macros="@pers.3rd" form="janitor"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="janitor-pl" pred="janitor">
+    <word macros="@pers.3rd" form="janitors"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="student-sg" pred="student">
+    <word macros="@pers.3rd" form="student"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="student-pl" pred="student">
+    <word macros="@pers.3rd" form="students"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="researcher-sg" pred="researcher">
+    <word macros="@pers.3rd" form="researcher"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="researcher-pl" pred="researcher">
+    <word macros="@pers.3rd" form="researchers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="pirate-sg" pred="pirate">
+    <word macros="@pers.3rd" form="pirate"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="person" pos="N" stem="pirate-pl" pred="pirate">
+    <word macros="@pers.3rd" form="pirates"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="person" pos="N" stem="GJ-bare__person" pred="GJ">
+    <word macros="@pers.3rd" form="GJ"/>
+    <word macros="@pers.3rd" form="gj"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Trevor-bare__person" pred="Trevor">
+    <word macros="@pers.3rd" form="Trevor"/>
+    <word macros="@pers.3rd" form="trevor"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Rob-bare__person" pred="Rob">
+    <word macros="@pers.3rd" form="Rob"/>
+    <word macros="@pers.3rd" form="rob"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Hendrik-bare__person" pred="Hendrik">
+    <word macros="@pers.3rd" form="Hendrik"/>
+    <word macros="@pers.3rd" form="hendrik"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Henrik-bare__person" pred="Henrik">
+    <word macros="@pers.3rd" form="Henrik"/>
+    <word macros="@pers.3rd" form="henrik"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Patric-bare__person" pred="Patric">
+    <word macros="@pers.3rd" form="Patric"/>
+    <word macros="@pers.3rd" form="patric"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Nick-bare__person" pred="Nick">
+    <word macros="@pers.3rd" form="Nick"/>
+    <word macros="@pers.3rd" form="nick"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Michael-bare__person" pred="Michael">
+    <word macros="@pers.3rd" form="Michael"/>
+    <word macros="@pers.3rd" form="michael"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Oscar-bare__person" pred="Oscar">
+    <word macros="@pers.3rd" form="Oscar"/>
+    <word macros="@pers.3rd" form="oscar"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Pierre-bare__person" pred="Pierre">
+    <word macros="@pers.3rd" form="Pierre"/>
+    <word macros="@pers.3rd" form="pierre"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Daniel-bare__person" pred="Daniel">
+    <word macros="@pers.3rd" form="Daniel"/>
+    <word macros="@pers.3rd" form="daniel"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Maria-bare__person" pred="Maria">
+    <word macros="@pers.3rd" form="Maria"/>
+    <word macros="@pers.3rd" form="maria"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Jeremy-bare__person" pred="Jeremy">
+    <word macros="@pers.3rd" form="Jeremy"/>
+    <word macros="@pers.3rd" form="jeremy"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Chandana-bare__person" pred="Chandana">
+    <word macros="@pers.3rd" form="Chandana"/>
+    <word macros="@pers.3rd" form="chandana"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="person" pos="N" stem="Aaron-bare__person" pred="Aaron">
+    <word macros="@pers.3rd" form="Aaron"/>
+    <word macros="@pers.3rd" form="aaron"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="animate" pos="N" stem="dog-sg" pred="dog">
+    <word macros="@pers.3rd" form="dog"/>
+    <word macros="@pers.3rd" form="canine"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="animate" pos="N" stem="dog-pl" pred="dog">
+    <word macros="@pers.3rd" form="dogs"/>
+    <word macros="@pers.3rd" form="canines"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="animate" pos="N" stem="fish-sg" pred="fish">
+    <word macros="@pers.3rd" form="fish"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="animate" pos="N" stem="fish-pl" pred="fish">
+    <word macros="@pers.3rd" form="fish"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="animate" pos="N" stem="cow-sg" pred="cow">
+    <word macros="@pers.3rd" form="cow"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="animate" pos="N" stem="cow-pl" pred="cow">
+    <word macros="@pers.3rd" form="cows"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="animate" pos="N" stem="Robot-bare__animate" pred="Robot">
+    <word macros="@pers.3rd" form="Robot"/>
+    <word macros="@pers.3rd" form="robot"/>
+    <member-of family="bare-np"/>
+  </entry>
+  <entry class="animate" pos="N" stem="robot-sg" pred="robot">
+    <word macros="@pers.3rd" form="robot"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="animate" pos="N" stem="robot-pl" pred="robot">
+    <word macros="@pers.3rd" form="robots"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="thing-sg" pred="thing">
+    <word macros="@pers.3rd" form="thing"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="thing-pl" pred="thing">
+    <word macros="@pers.3rd" form="things"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="book-sg" pred="book">
+    <word macros="@pers.3rd" form="book"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="book-pl" pred="book">
+    <word macros="@pers.3rd" form="books"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="ball-sg" pred="ball">
+    <word macros="@pers.3rd" form="ball"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="ball-pl" pred="ball">
+    <word macros="@pers.3rd" form="balls"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="block-sg" pred="block">
+    <word macros="@pers.3rd" form="block"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="block-pl" pred="block">
+    <word macros="@pers.3rd" form="blocks"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="box-sg" pred="box">
+    <word macros="@pers.3rd" form="box"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="box-pl" pred="box">
+    <word macros="@pers.3rd" form="boxes"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="bucket-sg" pred="bucket">
+    <word macros="@pers.3rd" form="bucket"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="bucket-pl" pred="bucket">
+    <word macros="@pers.3rd" form="buckets"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="pin-sg" pred="pin">
+    <word macros="@pers.3rd" form="pin"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="pin-pl" pred="pin">
+    <word macros="@pers.3rd" form="pins"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="cube-sg" pred="cube">
+    <word macros="@pers.3rd" form="cube"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="cube-pl" pred="cube">
+    <word macros="@pers.3rd" form="cubes"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="chocolate-sg" pred="chocolate">
+    <word macros="@pers.3rd" form="chocolate"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="chocolate-pl" pred="chocolate">
+    <word macros="@pers.3rd" form="chocolates"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="chocolate-mass__thing" pred="chocolate">
+    <word macros="@pers.3rd" form="chocolate"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="trophy-sg" pred="trophy">
+    <word macros="@pers.3rd" form="trophy"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="trophy-pl" pred="trophy">
+    <word macros="@pers.3rd" form="trophies"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tooth-sg" pred="tooth">
+    <word macros="@pers.3rd" form="tooth"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tooth-pl" pred="tooth">
+    <word macros="@pers.3rd" form="teeth"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea-sg" pred="tea">
+    <word macros="@pers.3rd" form="tea"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea-pl" pred="tea">
+    <word macros="@pers.3rd" form="teas"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tea-mass__thing" pred="tea">
+    <word macros="@pers.3rd" form="tea"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="coffee-sg" pred="coffee">
+    <word macros="@pers.3rd" form="coffee"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="coffee-pl" pred="coffee">
+    <word macros="@pers.3rd" form="coffees"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="coffee-mass__thing" pred="coffee">
+    <word macros="@pers.3rd" form="coffee"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mug-sg" pred="mug">
+    <word macros="@pers.3rd" form="mug"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mug-pl" pred="mug">
+    <word macros="@pers.3rd" form="mugs"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="cup-sg" pred="cup">
+    <word macros="@pers.3rd" form="cup"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="cup-pl" pred="cup">
+    <word macros="@pers.3rd" form="cups"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="keyboard-sg" pred="keyboard">
+    <word macros="@pers.3rd" form="keyboard"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="keyboard-pl" pred="keyboard">
+    <word macros="@pers.3rd" form="keyboards"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="laptop-sg" pred="laptop">
+    <word macros="@pers.3rd" form="laptop"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="laptop-pl" pred="laptop">
+    <word macros="@pers.3rd" form="laptops"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="screen-sg" pred="screen">
+    <word macros="@pers.3rd" form="screen"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="screen-pl" pred="screen">
+    <word macros="@pers.3rd" form="screens"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="computer-sg" pred="computer">
+    <word macros="@pers.3rd" form="computer"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="computer-pl" pred="computer">
+    <word macros="@pers.3rd" form="computers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mp3-player-sg" pred="mp3-player">
+    <word macros="@pers.3rd" form="mp3-player"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mp3-player-pl" pred="mp3-player">
+    <word macros="@pers.3rd" form="mp3-players"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="minidisc-recorder-sg" pred="minidisc-recorder">
+    <word macros="@pers.3rd" form="minidisc-recorder"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="minidisc-recorder-pl" pred="minidisc-recorder">
+    <word macros="@pers.3rd" form="minidisc-recorders"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="needle-sg" pred="needle">
+    <word macros="@pers.3rd" form="needle"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="needle-pl" pred="needle">
+    <word macros="@pers.3rd" form="needles"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="thread-mass__thing" pred="thread">
+    <word macros="@pers.3rd" form="thread"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="thread-sg" pred="thread">
+    <word macros="@pers.3rd" form="thread"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="thread-pl" pred="thread">
+    <word macros="@pers.3rd" form="threads"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="flower-sg" pred="flower">
+    <word macros="@pers.3rd" form="flower"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="flower-pl" pred="flower">
+    <word macros="@pers.3rd" form="flowers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="scissors-mass__thing" pred="scissors">
+    <word macros="@pers.3rd" form="scissors"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="food-mass__thing" pred="food">
+    <word macros="@pers.3rd" form="food"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="phone-sg" pred="phone">
+    <word macros="@pers.3rd" form="phone"/>
+    <word macros="@pers.3rd" form="telephone"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="phone-pl" pred="phone">
+    <word macros="@pers.3rd" form="phones"/>
+    <word macros="@pers.3rd" form="telephones"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="letter-sg" pred="letter">
+    <word macros="@pers.3rd" form="letter"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="letter-pl" pred="letter">
+    <word macros="@pers.3rd" form="letters"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mailbox-sg" pred="mailbox">
+    <word macros="@pers.3rd" form="mailbox"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="mailbox-pl" pred="mailbox">
+    <word macros="@pers.3rd" form="mailboxes"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="copier-sg" pred="copier">
+    <word macros="@pers.3rd" form="copier"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="copier-pl" pred="copier">
+    <word macros="@pers.3rd" form="copiers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="fax-sg" pred="fax">
+    <word macros="@pers.3rd" form="fax"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="fax-pl" pred="fax">
+    <word macros="@pers.3rd" form="faxes"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="printer-sg" pred="printer">
+    <word macros="@pers.3rd" form="printer"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="printer-pl" pred="printer">
+    <word macros="@pers.3rd" form="printers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="column-sg" pred="column">
+    <word macros="@pers.3rd" form="column"/>
+    <word macros="@pers.3rd" form="pillar"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="column-pl" pred="column">
+    <word macros="@pers.3rd" form="columns"/>
+    <word macros="@pers.3rd" form="pillars"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="furniture-mass__thing" pred="furniture">
+    <word macros="@pers.3rd" form="furniture"/>
+    <member-of family="noun.mass"/>
+  </entry>
+  <entry class="thing" pos="N" stem="floor-sg" pred="floor">
+    <word macros="@pers.3rd" form="floor"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="floor-pl" pred="floor">
+    <word macros="@pers.3rd" form="floors"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="door-sg" pred="door">
+    <word macros="@pers.3rd" form="door"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="door-pl" pred="door">
+    <word macros="@pers.3rd" form="doors"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="couch-sg" pred="couch">
+    <word macros="@pers.3rd" form="couch"/>
+    <word macros="@pers.3rd" form="sofa"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="couch-pl" pred="couch">
+    <word macros="@pers.3rd" form="couches"/>
+    <word macros="@pers.3rd" form="sofas"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tv-sg" pred="tv">
+    <word macros="@pers.3rd" form="tv"/>
+    <word macros="@pers.3rd" form="television"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tv-pl" pred="tv">
+    <word macros="@pers.3rd" form="tvs"/>
+    <word macros="@pers.3rd" form="televisions"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="oven-sg" pred="oven">
+    <word macros="@pers.3rd" form="oven"/>
+    <word macros="@pers.3rd" form="stove"/>
+    <word macros="@pers.3rd" form="cooker"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="oven-pl" pred="oven">
+    <word macros="@pers.3rd" form="ovens"/>
+    <word macros="@pers.3rd" form="stoves"/>
+    <word macros="@pers.3rd" form="cookers"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tabletop-sg" pred="tabletop">
+    <word macros="@pers.3rd" form="tabletop"/>
+    <word macros="@pers.3rd" form="desktop"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="tabletop-pl" pred="tabletop">
+    <word macros="@pers.3rd" form="tabletops"/>
+    <word macros="@pers.3rd" form="desktops"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="fridge-sg" pred="fridge">
+    <word macros="@pers.3rd" form="fridge"/>
+    <word macros="@pers.3rd" form="refrigerator"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="fridge-pl" pred="fridge">
+    <word macros="@pers.3rd" form="fridges"/>
+    <word macros="@pers.3rd" form="refrigerators"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="microwave-sg" pred="microwave">
+    <word macros="@pers.3rd" form="microwave"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="microwave-pl" pred="microwave">
+    <word macros="@pers.3rd" form="microwaves"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="shelf-sg" pred="shelf">
+    <word macros="@pers.3rd" form="shelf"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="shelf-pl" pred="shelf">
+    <word macros="@pers.3rd" form="shelves"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="cupboard-sg" pred="cupboard">
+    <word macros="@pers.3rd" form="cupboard"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="cupboard-pl" pred="cupboard">
+    <word macros="@pers.3rd" form="cupboards"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="closet-sg" pred="closet">
+    <word macros="@pers.3rd" form="closet"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="closet-pl" pred="closet">
+    <word macros="@pers.3rd" form="closets"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="desk-sg" pred="desk">
+    <word macros="@pers.3rd" form="desk"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="desk-pl" pred="desk">
+    <word macros="@pers.3rd" form="desks"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="table-sg" pred="table">
+    <word macros="@pers.3rd" form="table"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="table-pl" pred="table">
+    <word macros="@pers.3rd" form="tables"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="thing" pos="N" stem="chair-sg" pred="chair">
+    <word macros="@pers.3rd" form="chair"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="thing" pos="N" stem="chair-pl" pred="chair">
+    <word macros="@pers.3rd" form="chairs"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-event" pos="N" stem="competition-sg" pred="competition">
+    <word macros="@pers.3rd" form="competition"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-event" pos="N" stem="competition-pl" pred="competition">
+    <word macros="@pers.3rd" form="competitions"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="area-sg" pred="area">
+    <word macros="@pers.3rd" form="area"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="area-pl" pred="area">
+    <word macros="@pers.3rd" form="areas"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="location-sg" pred="location">
+    <word macros="@pers.3rd" form="location"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="location-pl" pred="location">
+    <word macros="@pers.3rd" form="locations"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="office-sg" pred="office">
+    <word macros="@pers.3rd" form="office"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="office-pl" pred="office">
+    <word macros="@pers.3rd" form="offices"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="room-sg" pred="room">
+    <word macros="@pers.3rd" form="room"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="room-pl" pred="room">
+    <word macros="@pers.3rd" form="rooms"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="hall-sg" pred="hall">
+    <word macros="@pers.3rd" form="hall"/>
+    <word macros="@pers.3rd" form="hallway"/>
+    <word macros="@pers.3rd" form="corridor"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="hall-pl" pred="hall">
+    <word macros="@pers.3rd" form="halls"/>
+    <word macros="@pers.3rd" form="hallways"/>
+    <word macros="@pers.3rd" form="corridors"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="bathroom-sg" pred="bathroom">
+    <word macros="@pers.3rd" form="bathroom"/>
+    <word macros="@pers.3rd" form="washroom"/>
+    <word macros="@pers.3rd" form="toilet"/>
+    <word macros="@pers.3rd" form="wc"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="bathroom-pl" pred="bathroom">
+    <word macros="@pers.3rd" form="bathrooms"/>
+    <word macros="@pers.3rd" form="washrooms"/>
+    <word macros="@pers.3rd" form="toilets"/>
+    <word macros="@pers.3rd" form="wcs"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="lab-sg" pred="lab">
+    <word macros="@pers.3rd" form="lab"/>
+    <word macros="@pers.3rd" form="laboratory"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="lab-pl" pred="lab">
+    <word macros="@pers.3rd" form="labs"/>
+    <word macros="@pers.3rd" form="laboratorys"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="kitchen-sg" pred="kitchen">
+    <word macros="@pers.3rd" form="kitchen"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="kitchen-pl" pred="kitchen">
+    <word macros="@pers.3rd" form="kitchens"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="library-sg" pred="library">
+    <word macros="@pers.3rd" form="library"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="library-pl" pred="library">
+    <word macros="@pers.3rd" form="librarys"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="secretariat-sg" pred="secretariat">
+    <word macros="@pers.3rd" form="secretariat"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="secretariat-pl" pred="secretariat">
+    <word macros="@pers.3rd" form="secretariats"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="lobby-sg" pred="lobby">
+    <word macros="@pers.3rd" form="lobby"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="lobby-pl" pred="lobby">
+    <word macros="@pers.3rd" form="lobbys"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="entrance-sg" pred="entrance">
+    <word macros="@pers.3rd" form="entrance"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="entrance-pl" pred="entrance">
+    <word macros="@pers.3rd" form="entrances"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="lift-sg" pred="lift">
+    <word macros="@pers.3rd" form="lift"/>
+    <word macros="@pers.3rd" form="elevator"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="lift-pl" pred="lift">
+    <word macros="@pers.3rd" form="lifts"/>
+    <word macros="@pers.3rd" form="elevators"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="staircase-sg" pred="staircase">
+    <word macros="@pers.3rd" form="staircase"/>
+    <word macros="@pers.3rd" form="stairs"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="staircase-pl" pred="staircase">
+    <word macros="@pers.3rd" form="staircases"/>
+    <word macros="@pers.3rd" form="--"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="floor-sg" pred="floor">
+    <word macros="@pers.3rd" form="floor"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="floor-pl" pred="floor">
+    <word macros="@pers.3rd" form="floors"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="way-sg" pred="way">
+    <word macros="@pers.3rd" form="way"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="way-pl" pred="way">
+    <word macros="@pers.3rd" form="ways"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="direction-sg" pred="direction">
+    <word macros="@pers.3rd" form="direction"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="direction-pl" pred="direction">
+    <word macros="@pers.3rd" form="directions"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="university-sg" pred="university">
+    <word macros="@pers.3rd" form="university"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-location" pos="N" stem="university-pl" pred="university">
+    <word macros="@pers.3rd" form="universities"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="top-sg" pred="top">
+    <word macros="@pers.3rd" form="top"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="top-pl" pred="top">
+    <word macros="@pers.3rd" form="tops"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="bottom-sg" pred="bottom">
+    <word macros="@pers.3rd" form="bottom"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="bottom-pl" pred="bottom">
+    <word macros="@pers.3rd" form="bottoms"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="front-sg" pred="front">
+    <word macros="@pers.3rd" form="front"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="front-pl" pred="front">
+    <word macros="@pers.3rd" form="fronts"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="back-sg" pred="back">
+    <word macros="@pers.3rd" form="back"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="back-pl" pred="back">
+    <word macros="@pers.3rd" form="backs"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="left-sg" pred="left">
+    <word macros="@pers.3rd" form="left"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="left-pl" pred="left">
+    <word macros="@pers.3rd" form="lefts"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="right-sg" pred="right">
+    <word macros="@pers.3rd" form="right"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="right-pl" pred="right">
+    <word macros="@pers.3rd" form="rights"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="part" pos="N" stem="side-sg" pred="side">
+    <word macros="@pers.3rd" form="side"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="part" pos="N" stem="side-pl" pred="side">
+    <word macros="@pers.3rd" form="sides"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="name-sg" pred="name">
+    <word macros="@pers.3rd" form="name"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="name-pl" pred="name">
+    <word macros="@pers.3rd" form="names"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="object-sg" pred="object">
+    <word macros="@pers.3rd" form="object"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="object-pl" pred="object">
+    <word macros="@pers.3rd" form="objects"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="color-sg" pred="color">
+    <word macros="@pers.3rd" form="color"/>
+    <word macros="@pers.3rd" form="colour"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="color-pl" pred="color">
+    <word macros="@pers.3rd" form="colors"/>
+    <word macros="@pers.3rd" form="colours"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="shape-sg" pred="shape">
+    <word macros="@pers.3rd" form="shape"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="shape-pl" pred="shape">
+    <word macros="@pers.3rd" form="shapes"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="size-sg" pred="size">
+    <word macros="@pers.3rd" form="size"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="size-pl" pred="size">
+    <word macros="@pers.3rd" form="sizes"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="e-time" pos="N" stem="time-sg" pred="time">
+    <word macros="@pers.3rd" form="time"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="e-time" pos="N" stem="time-pl" pred="time">
+    <word macros="@pers.3rd" form="times"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="name-sg" pred="name">
+    <word macros="@pers.3rd" form="name"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="name-pl" pred="name">
+    <word macros="@pers.3rd" form="names"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="object-sg" pred="object">
+    <word macros="@pers.3rd" form="object"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="object-pl" pred="object">
+    <word macros="@pers.3rd" form="objects"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="entity" pos="N" stem="color-sg" pred="color">
+    <word macros="@pers.3rd" form="color"/>
+    <word macros="@pers.3rd" form="colour"/>
+    <member-of family="noun"/>
+  </entry>
+  <entry class="entity" pos="N" stem="color-pl" pred="color">
+    <word macros="@pers.3rd" form="colors"/>
+    <word macros="@pers.3rd" form="colours"/>
+    <member-of family="noun.plural"/>
+  </entry>
+  <entry class="m-location" pos="ADV" stem="there__m-location" pred="there">
+    <word form="there"/>
+    <member-of family="adv.location"/>
+  </entry>
+  <entry class="m-location" pos="ADV" stem="here__m-location" pred="here">
+    <word form="here"/>
+    <member-of family="adv.location"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="now__m-time" pred="now">
+    <word form="now"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="today__m-time" pred="today">
+    <word form="today"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="yesterday__m-time" pred="yesterday">
+    <word form="yesterday"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="earlier__m-time" pred="earlier">
+    <word form="earlier"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="later__m-time" pred="later">
+    <word form="later"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="soon__m-time" pred="soon">
+    <word form="soon"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="still__m-time" pred="still">
+    <word form="still"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="already__m-time" pred="already">
+    <word form="already"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-time" pos="ADV" stem="yet__m-time" pred="yet">
+    <word form="yet"/>
+    <member-of family="adv.time"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="right__m-direction" pred="right">
+    <word form="right"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="left__m-direction" pred="left">
+    <word form="left"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="forward__m-direction" pred="forward">
+    <word form="forward"/>
+    <word form="forwards"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="straight__m-direction" pred="straight">
+    <word form="straight"/>
+    <word form="straightforward"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="backward__m-direction" pred="backward">
+    <word form="backward"/>
+    <word form="back"/>
+    <word form="backwards"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="around__m-direction" pred="around">
+    <word form="around"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="away__m-direction" pred="away">
+    <word form="away"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="close__m-direction" pred="close">
+    <word form="close"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-direction" pos="ADV" stem="proximal__m-direction" pred="proximal">
+    <word form="proximal"/>
+    <word form="up"/>
+    <word form="right"/>
+    <member-of family="adv.direction"/>
+  </entry>
+  <entry class="m-whereto" pos="ADV" stem="there__m-whereto" pred="there">
+    <word form="there"/>
+    <member-of family="adv.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="ADV" stem="here__m-whereto" pred="here">
+    <word form="here"/>
+    <member-of family="adv.whereto"/>
+  </entry>
+  <entry class="m-manner" pos="ADV" stem="quickly__m-manner" pred="quickly">
+    <word form="quickly"/>
+    <word form="quick"/>
+    <member-of family="adv.manner"/>
+  </entry>
+  <entry class="m-manner" pos="ADV" stem="slowly__m-manner" pred="slowly">
+    <word form="slowly"/>
+    <word form="slow"/>
+    <member-of family="adv.manner"/>
+  </entry>
+  <entry class="m-manner" pos="ADV" stem="over__m-manner" pred="over">
+    <word form="over"/>
+    <member-of family="adv.manner"/>
+  </entry>
+  <entry class="m-probability" pos="ADV" stem="maybe__m-probability" pred="maybe">
+    <word form="maybe"/>
+    <member-of family="adv.probability"/>
+  </entry>
+  <entry class="m-probability" pos="ADV" stem="probably__m-probability" pred="probably">
+    <word form="probably"/>
+    <member-of family="adv.probability"/>
+  </entry>
+  <entry class="m-probability" pos="ADV" stem="perhaps__m-probability" pred="perhaps">
+    <word form="perhaps"/>
+    <member-of family="adv.probability"/>
+  </entry>
+  <entry class="m-probability" pos="ADV" stem="certainly__m-probability" pred="certainly">
+    <word form="certainly"/>
+    <member-of family="adv.probability"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="please__m-comment" pred="please">
+    <word form="please"/>
+    <member-of family="adv.comment"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="kindly__m-comment" pred="kindly">
+    <word form="kindly"/>
+    <member-of family="adv.comment"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="actually__m-comment" pred="actually">
+    <word form="actually"/>
+    <member-of family="adv.comment"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="then__m-comment" pred="then">
+    <word form="then"/>
+    <member-of family="adv.comment"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="really__m-comment" pred="really">
+    <word form="really"/>
+    <member-of family="adv.comment"/>
+  </entry>
+  <entry class="m-comment" pos="ADV" stem="also__m-comment" pred="also">
+    <word form="also"/>
+    <word form="too"/>
+    <member-of family="adv.comment"/>
+  </entry>
+  <entry class="m-condition" pos="MARKER" stem="if__m-condition" pred="if">
+    <word form="if"/>
+    <member-of family="dep-clause-marker.condition"/>
+  </entry>
+  <entry class="m-cause" pos="MARKER" stem="because__m-cause" pred="because">
+    <word form="because"/>
+    <word form="cause"/>
+    <word form="cuz"/>
+    <member-of family="dep-clause-marker.cause"/>
+  </entry>
+  <entry class="m-result" pos="MARKER" stem="so__m-result" pred="so">
+    <word form="so"/>
+    <member-of family="dep-clause-marker.result"/>
+  </entry>
+  <entry class="m-purpose" pos="MARKER" stem="to__m-purpose" pred="to">
+    <word form="to"/>
+    <member-of family="dep-clause-marker.purpose"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="stop__action-motion" pred="stop">
+    <word macros="@nonfin" form="stop"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="stop"/>
+    <word macros="@vform.progr" form="stopped"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="stop"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="stop"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="stops"/>
+    <word macros="@finite @past @ind" form="stopping"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="stop-NO-SUBJ__action-motion" pred="stop">
+    <word macros="@finite @pres @imp-addressee" form="stop"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="go__action-motion" pred="go">
+    <word macros="@nonfin" form="go"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="go"/>
+    <word macros="@vform.progr" form="going"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="go"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="go"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="goes"/>
+    <word macros="@finite @past @ind" form="went"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="go-NO-SUBJ__action-motion" pred="go">
+    <word macros="@finite @pres @imp-addressee" form="go"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="come__action-motion" pred="come">
+    <word macros="@nonfin" form="come"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="come"/>
+    <word macros="@vform.progr" form="coming"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="come"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="come"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="comes"/>
+    <word macros="@finite @past @ind" form="came"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="come-NO-SUBJ__action-motion" pred="come">
+    <word macros="@finite @pres @imp-addressee" form="come"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="return__action-motion" pred="return">
+    <word macros="@nonfin" form="return"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="return"/>
+    <word macros="@vform.progr" form="returning"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="return"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="return"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="returns"/>
+    <word macros="@finite @past @ind" form="returned"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="return-NO-SUBJ__action-motion" pred="return">
+    <word macros="@finite @pres @imp-addressee" form="return"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="walk__action-motion" pred="walk">
+    <word macros="@nonfin" form="walk"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="walk"/>
+    <word macros="@vform.progr" form="walking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="walk"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="walk"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="walks"/>
+    <word macros="@finite @past @ind" form="walked"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="walk-NO-SUBJ__action-motion" pred="walk">
+    <word macros="@finite @pres @imp-addressee" form="walk"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="turn__action-motion" pred="turn">
+    <word macros="@nonfin" form="turn"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="turn"/>
+    <word macros="@vform.progr" form="turning"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="turn"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="turn"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="turns"/>
+    <word macros="@finite @past @ind" form="turned"/>
+    <member-of family="iv"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="turn-NO-SUBJ__action-motion" pred="turn">
+    <word macros="@finite @pres @imp-addressee" form="turn"/>
+    <member-of family="iv.NO-SUBJ"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="follow__action-motion" pred="follow">
+    <word macros="@nonfin" form="follow"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="follow"/>
+    <word macros="@vform.progr" form="following"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="follow"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="follow"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="follows"/>
+    <word macros="@finite @past @ind" form="followed"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="follow-NO-SUBJ__action-motion" pred="follow">
+    <word macros="@finite @pres @imp-addressee" form="follow"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="run__action-motion" pred="run">
+    <word macros="@nonfin" form="run"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="run"/>
+    <word macros="@vform.progr" form="running"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="run"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="run"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="runs"/>
+    <word macros="@finite @past @ind" form="ran"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="run-NO-SUBJ__action-motion" pred="run">
+    <word macros="@finite @pres @imp-addressee" form="run"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="move__action-motion" pred="move">
+    <word macros="@nonfin" form="move"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="move"/>
+    <word macros="@vform.progr" form="moving"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="move"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="move"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="moves"/>
+    <word macros="@finite @past @ind" form="moved"/>
+    <member-of family="iv"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="move-NO-SUBJ__action-motion" pred="move">
+    <word macros="@finite @pres @imp-addressee" form="move"/>
+    <member-of family="iv.NO-SUBJ"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="kick__action-motion" pred="kick">
+    <word macros="@nonfin" form="kick"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="kick"/>
+    <word macros="@vform.progr" form="kicking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="kick"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="kick"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="kicks"/>
+    <word macros="@finite @past @ind" form="kicked"/>
+    <member-of family="tv"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="kick-NO-SUBJ__action-motion" pred="kick">
+    <word macros="@finite @pres @imp-addressee" form="kick"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="put__action-motion" pred="put">
+    <word macros="@nonfin" form="put"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="put"/>
+    <word macros="@vform.progr" form="putting"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="put"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="put"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="puts"/>
+    <word macros="@finite @past @ind" form="put"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="put-NO-SUBJ__action-motion" pred="put">
+    <word macros="@finite @pres @imp-addressee" form="put"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="get__action-motion" pred="get">
+    <word macros="@nonfin" form="get"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="get"/>
+    <word macros="@vform.progr" form="getting"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="get"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="get"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="gets"/>
+    <word macros="@finite @past @ind" form="got"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="get-NO-SUBJ__action-motion" pred="get">
+    <word macros="@finite @pres @imp-addressee" form="get"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="take__action-motion" pred="take">
+    <word macros="@nonfin" form="take"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="take"/>
+    <word macros="@vform.progr" form="taking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="take"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="take"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="takes"/>
+    <word macros="@finite @past @ind" form="took"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="take-NO-SUBJ__action-motion" pred="take">
+    <word macros="@finite @pres @imp-addressee" form="take"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="bring__action-motion" pred="bring">
+    <word macros="@nonfin" form="bring"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="bring"/>
+    <word macros="@vform.progr" form="bringing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="bring"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="bring"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="brings"/>
+    <word macros="@finite @past @ind" form="brought"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-motion" pos="V" stem="bring-NO-SUBJ__action-motion" pred="bring">
+    <word macros="@finite @pres @imp-addressee" form="bring"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-directed-motion" pos="V" stem="myput__action-directed-motion" pred="myput">
+    <word macros="@nonfin" form="myput"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="myput"/>
+    <word macros="@vform.progr" form="myputing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="myput"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="myput"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="myputs"/>
+    <word macros="@finite @past @ind" form="myputed"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-directed-motion" pos="V" stem="myput-NO-SUBJ__action-directed-motion" pred="myput">
+    <word macros="@finite @pres @imp-addressee" form="myput"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="explore__action-non-motion" pred="explore">
+    <word macros="@nonfin" form="explore"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="explore"/>
+    <word macros="@vform.progr" form="exploring"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="explore"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="explore"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="explores"/>
+    <word macros="@finite @past @ind" form="explored"/>
+    <word macros="@nonfin" form="investigate"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="investigate"/>
+    <word macros="@vform.progr" form="investigating"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="investigate"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="investigate"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="investigates"/>
+    <word macros="@finite @past @ind" form="investigated"/>
+    <word macros="@nonfin" form="survey"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="survey"/>
+    <word macros="@vform.progr" form="surveying"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="survey"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="survey"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="surveys"/>
+    <word macros="@finite @past @ind" form="surveyed"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="explore-NO-SUBJ__action-non-motion" pred="explore">
+    <word macros="@finite @pres @imp-addressee" form="explore"/>
+    <word macros="@finite @pres @imp-addressee" form="investigate"/>
+    <word macros="@finite @pres @imp-addressee" form="survey"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="present__action-non-motion" pred="present">
+    <word macros="@nonfin" form="present"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="present"/>
+    <word macros="@vform.progr" form="presenting"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="present"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="present"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="presents"/>
+    <word macros="@finite @past @ind" form="presented"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="present-NO-SUBJ__action-non-motion" pred="present">
+    <word macros="@finite @pres @imp-addressee" form="present"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="give__action-non-motion" pred="give">
+    <word macros="@nonfin" form="give"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="give"/>
+    <word macros="@vform.progr" form="giving"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="give"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="give"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="gives"/>
+    <word macros="@finite @past @ind" form="gave"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="give-NO-SUBJ__action-non-motion" pred="give">
+    <word macros="@finite @pres @imp-addressee" form="give"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="pick__action-non-motion" pred="pick">
+    <word macros="@nonfin" form="pick"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="pick"/>
+    <word macros="@vform.progr" form="picking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="pick"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="pick"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="picks"/>
+    <word macros="@finite @past @ind" form="picked"/>
+    <member-of family="tv.prt"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="pick-NO-SUBJ__action-non-motion" pred="pick">
+    <word macros="@finite @pres @imp-addressee" form="pick"/>
+    <member-of family="tv.prt.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="play__action-non-motion" pred="play">
+    <word macros="@nonfin" form="play"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="play"/>
+    <word macros="@vform.progr" form="playing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="play"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="play"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="plays"/>
+    <word macros="@finite @past @ind" form="played"/>
+    <member-of family="tv.with-obj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="play-NO-SUBJ__action-non-motion" pred="play">
+    <word macros="@finite @pres @imp-addressee" form="play"/>
+    <member-of family="tv.with-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="win__action-non-motion" pred="win">
+    <word macros="@nonfin" form="win"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="win"/>
+    <word macros="@vform.progr" form="winning"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="win"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="win"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="wins"/>
+    <word macros="@finite @past @ind" form="won"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="win-NO-SUBJ__action-non-motion" pred="win">
+    <word macros="@finite @pres @imp-addressee" form="win"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="start__action-non-motion" pred="start">
+    <word macros="@nonfin" form="start"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="start"/>
+    <word macros="@vform.progr" form="starting"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="start"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="start"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="starts"/>
+    <word macros="@finite @past @ind" form="started"/>
+    <member-of family="tv"/>
+    <member-of family="tv.with-obj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="start-NO-SUBJ__action-non-motion" pred="start">
+    <word macros="@finite @pres @imp-addressee" form="start"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="tv.with-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="go__action-non-motion" pred="go">
+    <word macros="@nonfin" form="go"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="go"/>
+    <word macros="@vform.progr" form="going"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="go"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="go"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="goes"/>
+    <word macros="@finite @past @ind" form="went"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="go-NO-SUBJ__action-non-motion" pred="go">
+    <word macros="@finite @pres @imp-addressee" form="go"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="begin__action-non-motion" pred="begin">
+    <word macros="@nonfin" form="begin"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="begin"/>
+    <word macros="@vform.progr" form="beginning"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="begin"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="begin"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="begins"/>
+    <word macros="@finite @past @ind" form="began"/>
+    <member-of family="tv"/>
+    <member-of family="tv.with-obj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="begin-NO-SUBJ__action-non-motion" pred="begin">
+    <word macros="@finite @pres @imp-addressee" form="begin"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="tv.with-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="stop__action-non-motion" pred="stop">
+    <word macros="@nonfin" form="stop"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="stop"/>
+    <word macros="@vform.progr" form="stopping"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="stop"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="stop"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="stops"/>
+    <word macros="@finite @past @ind" form="stopped"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="stop-NO-SUBJ__action-non-motion" pred="stop">
+    <word macros="@finite @pres @imp-addressee" form="stop"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="bring__action-non-motion" pred="bring">
+    <word macros="@nonfin" form="bring"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="bring"/>
+    <word macros="@vform.progr" form="bringing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="bring"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="bring"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="brings"/>
+    <word macros="@finite @past @ind" form="brung"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="bring-NO-SUBJ__action-non-motion" pred="bring">
+    <word macros="@finite @pres @imp-addressee" form="bring"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="get__action-non-motion" pred="get">
+    <word macros="@nonfin" form="get"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="get"/>
+    <word macros="@vform.progr" form="getting"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="get"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="get"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="gets"/>
+    <word macros="@finite @past @ind" form="got"/>
+    <member-of family="tv"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+    <member-of family="v.adj-comp"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="get-NO-SUBJ__action-non-motion" pred="get">
+    <word macros="@finite @pres @imp-addressee" form="get"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+    <member-of family="v.adj-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="brush__action-non-motion" pred="brush">
+    <word macros="@nonfin" form="brush"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="brush"/>
+    <word macros="@vform.progr" form="brushing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="brush"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="brush"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="brushs"/>
+    <word macros="@finite @past @ind" form="brushed"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="brush-NO-SUBJ__action-non-motion" pred="brush">
+    <word macros="@finite @pres @imp-addressee" form="brush"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="stand__action-non-motion" pred="stand">
+    <word macros="@nonfin" form="stand"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="stand"/>
+    <word macros="@vform.progr" form="standing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="stand"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="stand"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="stands"/>
+    <word macros="@finite @past @ind" form="stood"/>
+    <member-of family="iv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="stand-NO-SUBJ__action-non-motion" pred="stand">
+    <word macros="@finite @pres @imp-addressee" form="stand"/>
+    <member-of family="iv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="show__action-non-motion" pred="show">
+    <word macros="@nonfin" form="show"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="show"/>
+    <word macros="@vform.progr" form="showing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="show"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="show"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="shows"/>
+    <word macros="@finite @past @ind" form="showed"/>
+    <member-of family="tv"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="show-NO-SUBJ__action-non-motion" pred="show">
+    <word macros="@finite @pres @imp-addressee" form="show"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="have__action-non-motion" pred="have">
+    <word macros="@nonfin" form="have"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="have"/>
+    <word macros="@vform.progr" form="having"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="have"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="have"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="has"/>
+    <word macros="@finite @past @ind" form="had"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="have-NO-SUBJ__action-non-motion" pred="have">
+    <word macros="@finite @pres @imp-addressee" form="have"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="break__action-non-motion" pred="break">
+    <word macros="@nonfin" form="break"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="break"/>
+    <word macros="@vform.progr" form="breaking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="break"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="break"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="breaks"/>
+    <word macros="@finite @past @ind" form="broke"/>
+    <member-of family="iv"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="break-NO-SUBJ__action-non-motion" pred="break">
+    <word macros="@finite @pres @imp-addressee" form="break"/>
+    <member-of family="iv.NO-SUBJ"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="find__action-non-motion" pred="find">
+    <word macros="@nonfin" form="find"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="find"/>
+    <word macros="@vform.progr" form="finding"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="find"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="find"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="finds"/>
+    <word macros="@finite @past @ind" form="found"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="find-NO-SUBJ__action-non-motion" pred="find">
+    <word macros="@finite @pres @imp-addressee" form="find"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="eat__action-non-motion" pred="eat">
+    <word macros="@nonfin" form="eat"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="eat"/>
+    <word macros="@vform.progr" form="eating"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="eat"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="eat"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="eats"/>
+    <word macros="@finite @past @ind" form="ate"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="eat-NO-SUBJ__action-non-motion" pred="eat">
+    <word macros="@finite @pres @imp-addressee" form="eat"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="drink__action-non-motion" pred="drink">
+    <word macros="@nonfin" form="drink"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="drink"/>
+    <word macros="@vform.progr" form="drinking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="drink"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="drink"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="drinks"/>
+    <word macros="@finite @past @ind" form="drank"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="drink-NO-SUBJ__action-non-motion" pred="drink">
+    <word macros="@finite @pres @imp-addressee" form="drink"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="make__action-non-motion" pred="make">
+    <word macros="@nonfin" form="make"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="make"/>
+    <word macros="@vform.progr" form="making"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="make"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="make"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="makes"/>
+    <word macros="@finite @past @ind" form="made"/>
+    <member-of family="tv"/>
+    <member-of family="dtv"/>
+    <member-of family="resultant-verb"/>
+  </entry>
+  <entry class="action-non-motion" pos="V" stem="make-NO-SUBJ__action-non-motion" pred="make">
+    <word macros="@finite @pres @imp-addressee" form="make"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="resultant-verb.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="want__cognition" pred="want">
+    <word macros="@nonfin" form="want"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="want"/>
+    <word macros="@vform.progr" form="wanting"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="want"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="want"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="wants"/>
+    <word macros="@finite @past @ind" form="wanted"/>
+    <member-of family="tv"/>
+    <member-of family="v.subj-controlled-inf-verb-comp"/>
+    <member-of family="v.obj-controlled-inf-verb-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="want-NO-SUBJ__cognition" pred="want">
+    <word macros="@finite @pres @imp-addressee" form="want"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="v.subj-controlled-inf-verb-comp.NO-SUBJ"/>
+    <member-of family="v.obj-controlled-inf-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="need__cognition" pred="need">
+    <word macros="@nonfin" form="need"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="need"/>
+    <word macros="@vform.progr" form="needing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="need"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="need"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="needs"/>
+    <word macros="@finite @past @ind" form="needed"/>
+    <member-of family="tv"/>
+    <member-of family="v.subj-controlled-inf-verb-comp"/>
+    <member-of family="v.obj-controlled-inf-verb-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="need-NO-SUBJ__cognition" pred="need">
+    <word macros="@finite @pres @imp-addressee" form="need"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="v.subj-controlled-inf-verb-comp.NO-SUBJ"/>
+    <member-of family="v.obj-controlled-inf-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="like__cognition" pred="like">
+    <word macros="@nonfin" form="like"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="like"/>
+    <word macros="@vform.progr" form="liking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="like"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="like"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="likes"/>
+    <word macros="@finite @past @ind" form="liked"/>
+    <member-of family="tv"/>
+    <member-of family="v.subj-controlled-inf-verb-comp"/>
+    <member-of family="v.obj-controlled-inf-verb-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="like-NO-SUBJ__cognition" pred="like">
+    <word macros="@finite @pres @imp-addressee" form="like"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="v.subj-controlled-inf-verb-comp.NO-SUBJ"/>
+    <member-of family="v.obj-controlled-inf-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="have__cognition" pred="have">
+    <word macros="@nonfin" form="have"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="have"/>
+    <word macros="@vform.progr" form="having"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="have"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="have"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="has"/>
+    <word macros="@finite @past @ind" form="had"/>
+    <member-of family="v.subj-controlled-inf-verb-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="have-NO-SUBJ__cognition" pred="have">
+    <word macros="@finite @pres @imp-addressee" form="have"/>
+    <member-of family="v.subj-controlled-inf-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="help__cognition" pred="help">
+    <word macros="@nonfin" form="help"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="help"/>
+    <word macros="@vform.progr" form="helping"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="help"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="help"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="helps"/>
+    <word macros="@finite @past @ind" form="helped"/>
+    <member-of family="tv"/>
+    <member-of family="v.obj-controlled-non-fin-verb-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="help-NO-SUBJ__cognition" pred="help">
+    <word macros="@finite @pres @imp-addressee" form="help"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="v.obj-controlled-non-fin-verb-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="hate__cognition" pred="hate">
+    <word macros="@nonfin" form="hate"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="hate"/>
+    <word macros="@vform.progr" form="hating"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="hate"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="hate"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="hates"/>
+    <word macros="@finite @past @ind" form="hated"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="hate-NO-SUBJ__cognition" pred="hate">
+    <word macros="@finite @pres @imp-addressee" form="hate"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="love__cognition" pred="love">
+    <word macros="@nonfin" form="love"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="love"/>
+    <word macros="@vform.progr" form="loving"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="love"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="love"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="loves"/>
+    <word macros="@finite @past @ind" form="loved"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="love-NO-SUBJ__cognition" pred="love">
+    <word macros="@finite @pres @imp-addressee" form="love"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="suppose__cognition" pred="suppose">
+    <word macros="@nonfin" form="suppose"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="suppose"/>
+    <word macros="@vform.progr" form="supposing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="suppose"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="suppose"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="supposes"/>
+    <word macros="@finite @past @ind" form="supposed"/>
+    <member-of family="v.sentence-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="suppose-NO-SUBJ__cognition" pred="suppose">
+    <word macros="@finite @pres @imp-addressee" form="suppose"/>
+    <member-of family="v.sentence-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="think__cognition" pred="think">
+    <word macros="@nonfin" form="think"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="think"/>
+    <word macros="@vform.progr" form="thinking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="think"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="think"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="thinks"/>
+    <word macros="@finite @past @ind" form="thought"/>
+    <member-of family="v.sentence-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="think-NO-SUBJ__cognition" pred="think">
+    <word macros="@finite @pres @imp-addressee" form="think"/>
+    <member-of family="v.sentence-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="know__cognition" pred="know">
+    <word macros="@nonfin" form="know"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="know"/>
+    <word macros="@vform.progr" form="knowing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="know"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="know"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="knows"/>
+    <word macros="@finite @past @ind" form="knew"/>
+    <member-of family="tv"/>
+    <member-of family="v.sentence-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="know-NO-SUBJ__cognition" pred="know">
+    <word macros="@finite @pres @imp-addressee" form="know"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="v.sentence-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="feel__cognition" pred="feel">
+    <word macros="@nonfin" form="feel"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="feel"/>
+    <word macros="@vform.progr" form="feeling"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="feel"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="feel"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="feels"/>
+    <word macros="@finite @past @ind" form="felt"/>
+    <member-of family="v.adj-comp"/>
+  </entry>
+  <entry class="cognition" pos="V" stem="feel-NO-SUBJ__cognition" pred="feel">
+    <word macros="@finite @pres @imp-addressee" form="feel"/>
+    <member-of family="v.adj-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="perception" pos="V" stem="see__perception" pred="see">
+    <word macros="@nonfin" form="see"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="see"/>
+    <word macros="@vform.progr" form="seeing"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="see"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="see"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="sees"/>
+    <word macros="@finite @past @ind" form="saw"/>
+    <member-of family="iv"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="perception" pos="V" stem="see-NO-SUBJ__perception" pred="see">
+    <word macros="@finite @pres @imp-addressee" form="see"/>
+    <member-of family="iv.NO-SUBJ"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="perception" pos="V" stem="watch__perception" pred="watch">
+    <word macros="@nonfin" form="watch"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="watch"/>
+    <word macros="@vform.progr" form="watching"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="watch"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="watch"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="watches"/>
+    <word macros="@finite @past @ind" form="watched"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="perception" pos="V" stem="watch-NO-SUBJ__perception" pred="watch">
+    <word macros="@finite @pres @imp-addressee" form="watch"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="perception" pos="V" stem="look__perception" pred="look">
+    <word macros="@nonfin" form="look"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="look"/>
+    <word macros="@vform.progr" form="looking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="look"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="look"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="looks"/>
+    <word macros="@finite @past @ind" form="looked"/>
+    <member-of family="tv.at-obj"/>
+  </entry>
+  <entry class="perception" pos="V" stem="look-NO-SUBJ__perception" pred="look">
+    <word macros="@finite @pres @imp-addressee" form="look"/>
+    <member-of family="tv.at-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="perception" pos="V" stem="listen__perception" pred="listen">
+    <word macros="@nonfin" form="listen"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="listen"/>
+    <word macros="@vform.progr" form="listening"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="listen"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="listen"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="listens"/>
+    <word macros="@finite @past @ind" form="listened"/>
+    <member-of family="tv.to-obj"/>
+  </entry>
+  <entry class="perception" pos="V" stem="listen-NO-SUBJ__perception" pred="listen">
+    <word macros="@finite @pres @imp-addressee" form="listen"/>
+    <member-of family="tv.to-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="communication" pos="V" stem="tell__communication" pred="tell">
+    <word macros="@nonfin" form="tell"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="tell"/>
+    <word macros="@vform.progr" form="telling"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="tell"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="tell"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="tells"/>
+    <word macros="@finite @past @ind" form="told"/>
+    <member-of family="tv"/>
+    <member-of family="v.obj-controlled-inf-verb-comp"/>
+    <member-of family="v.obj.sentence-comp"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="communication" pos="V" stem="tell-NO-SUBJ__communication" pred="tell">
+    <word macros="@finite @pres @imp-addressee" form="tell"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="v.obj-controlled-inf-verb-comp.NO-SUBJ"/>
+    <member-of family="v.obj.sentence-comp.NO-SUBJ"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="communication" pos="V" stem="say__communication" pred="say">
+    <word macros="@nonfin" form="say"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="say"/>
+    <word macros="@vform.progr" form="saying"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="say"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="say"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="says"/>
+    <word macros="@finite @past @ind" form="said"/>
+    <member-of family="v.sentence-comp"/>
+  </entry>
+  <entry class="communication" pos="V" stem="say-NO-SUBJ__communication" pred="say">
+    <word macros="@finite @pres @imp-addressee" form="say"/>
+    <member-of family="v.sentence-comp.NO-SUBJ"/>
+  </entry>
+  <entry class="communication" pos="V" stem="explain__communication" pred="explain">
+    <word macros="@nonfin" form="explain"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="explain"/>
+    <word macros="@vform.progr" form="explaining"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="explain"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="explain"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="explains"/>
+    <word macros="@finite @past @ind" form="explained"/>
+    <member-of family="tv"/>
+    <member-of family="dtv"/>
+    <member-of family="dtv.to-indobj"/>
+  </entry>
+  <entry class="communication" pos="V" stem="explain-NO-SUBJ__communication" pred="explain">
+    <word macros="@finite @pres @imp-addressee" form="explain"/>
+    <member-of family="tv.NO-SUBJ"/>
+    <member-of family="dtv.NO-SUBJ"/>
+    <member-of family="dtv.to-indobj.NO-SUBJ"/>
+  </entry>
+  <entry class="communication" pos="V" stem="talk__communication" pred="talk">
+    <word macros="@nonfin" form="talk"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="talk"/>
+    <word macros="@vform.progr" form="talking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="talk"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="talk"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="talks"/>
+    <word macros="@finite @past @ind" form="talked"/>
+    <member-of family="iv"/>
+    <member-of family="tv.to-obj"/>
+    <member-of family="tv.with-obj"/>
+  </entry>
+  <entry class="communication" pos="V" stem="talk-NO-SUBJ__communication" pred="talk">
+    <word macros="@finite @pres @imp-addressee" form="talk"/>
+    <member-of family="iv.NO-SUBJ"/>
+    <member-of family="tv.to-obj.NO-SUBJ"/>
+    <member-of family="tv.with-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="communication" pos="V" stem="speak__communication" pred="speak">
+    <word macros="@nonfin" form="speak"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="speak"/>
+    <word macros="@vform.progr" form="speaking"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="speak"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="speak"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="speaks"/>
+    <word macros="@finite @past @ind" form="spoke"/>
+    <member-of family="iv"/>
+    <member-of family="tv.to-obj"/>
+    <member-of family="tv.with-obj"/>
+  </entry>
+  <entry class="communication" pos="V" stem="speak-NO-SUBJ__communication" pred="speak">
+    <word macros="@finite @pres @imp-addressee" form="speak"/>
+    <member-of family="iv.NO-SUBJ"/>
+    <member-of family="tv.to-obj.NO-SUBJ"/>
+    <member-of family="tv.with-obj.NO-SUBJ"/>
+  </entry>
+  <entry class="symbolic" pos="V" stem="call__symbolic" pred="call">
+    <word macros="@nonfin" form="call"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="call"/>
+    <word macros="@vform.progr" form="calling"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="call"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="call"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="calls"/>
+    <word macros="@finite @past @ind" form="called"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="symbolic" pos="V" stem="call-NO-SUBJ__symbolic" pred="call">
+    <word macros="@finite @pres @imp-addressee" form="call"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="symbolic" pos="V" stem="name__symbolic" pred="name">
+    <word macros="@nonfin" form="name"/>
+    <word macros="@finite @pres @imp @pers.3rd-agr" form="name"/>
+    <word macros="@vform.progr" form="naming"/>
+    <word macros="@finite @pres @ind @pers.non-3rd-agr @num.sg-agr " form="name"/>
+    <word macros="@finite @pres @ind @num.pl-agr " form="name"/>
+    <word macros="@finite @pres @ind @pers.3rd-agr @num.sg-agr" form="names"/>
+    <word macros="@finite @past @ind" form="named"/>
+    <member-of family="tv"/>
+  </entry>
+  <entry class="symbolic" pos="V" stem="name-NO-SUBJ__symbolic" pred="name">
+    <word macros="@finite @pres @imp-addressee" form="name"/>
+    <member-of family="tv.NO-SUBJ"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="at__m-location" pred="at">
+    <word form="at"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="around__m-location" pred="around">
+    <word form="around"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="beside__m-location" pred="beside">
+    <word form="beside"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="near__m-location" pred="near">
+    <word form="near"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="on__m-location" pred="on">
+    <word form="on"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="in__m-location" pred="in">
+    <word form="in"/>
+    <word form="inside"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="out__m-location" pred="out">
+    <word form="out"/>
+    <word form="outside"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="over__m-location" pred="over">
+    <word form="over"/>
+    <word form="above"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="under__m-location" pred="under">
+    <word form="under"/>
+    <word form="underneath"/>
+    <word form="beneath"/>
+    <word form="below"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="by__m-location" pred="by">
+    <word form="by"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="behind__m-location" pred="behind">
+    <word form="behind"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="up__m-location" pred="up">
+    <word form="up"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="down__m-location" pred="down">
+    <word form="down"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="along__m-location" pred="along">
+    <word form="along"/>
+    <word form="alongside"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="opposite__m-location" pred="opposite">
+    <word form="opposite"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="between__m-location" pred="between">
+    <word form="between"/>
+    <member-of family="prep-mod-n.location"/>
+    <member-of family="prep-mod-s.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="right-of__m-location" pred="right">
+    <word form="right"/>
+    <member-of family="prep-mod-n.of-np.location"/>
+    <member-of family="prep-mod-s.of-np.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="left-of__m-location" pred="left">
+    <word form="left"/>
+    <member-of family="prep-mod-n.of-np.location"/>
+    <member-of family="prep-mod-s.of-np.location"/>
+  </entry>
+  <entry class="m-location" pos="PREP" stem="from__m-location" pred="from">
+    <word form="from"/>
+    <member-of family="prep-mod-n.location"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="to__m-whereto" pred="to">
+    <word form="to"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="into__m-whereto" pred="into">
+    <word form="into"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="onto__m-whereto" pred="onto">
+    <word form="onto"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="toward__m-whereto" pred="toward">
+    <word form="toward"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="around__m-whereto" pred="around">
+    <word form="around"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="beside__m-whereto" pred="beside">
+    <word form="beside"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="near__m-whereto" pred="near">
+    <word form="near"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="on__m-whereto" pred="on">
+    <word form="on"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="in__m-whereto" pred="in">
+    <word form="in"/>
+    <word form="inside"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="out__m-whereto" pred="out">
+    <word form="out"/>
+    <word form="outside"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="over__m-whereto" pred="over">
+    <word form="over"/>
+    <word form="above"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="under__m-whereto" pred="under">
+    <word form="under"/>
+    <word form="underneath"/>
+    <word form="beneath"/>
+    <word form="below"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="by__m-whereto" pred="by">
+    <word form="by"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="behind__m-whereto" pred="behind">
+    <word form="behind"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="up__m-whereto" pred="up">
+    <word form="up"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="down__m-whereto" pred="down">
+    <word form="down"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="along__m-whereto" pred="along">
+    <word form="along"/>
+    <word form="alongside"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="opposite__m-whereto" pred="opposite">
+    <word form="opposite"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="between__m-whereto" pred="between">
+    <word form="between"/>
+    <member-of family="prep-mod-s.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="right-of__m-whereto" pred="right">
+    <word form="right"/>
+    <member-of family="prep-mod-s.of-np.whereto"/>
+  </entry>
+  <entry class="m-whereto" pos="PREP" stem="left-of__m-whereto" pred="left">
+    <word form="left"/>
+    <member-of family="prep-mod-s.of-np.whereto"/>
+  </entry>
+  <entry class="m-wherefrom" pos="PREP" stem="from__m-wherefrom" pred="from">
+    <word form="from"/>
+    <member-of family="prep-mod-s.wherefrom"/>
+  </entry>
+  <entry class="m-wherefrom" pos="PREP" stem="off__m-wherefrom" pred="off">
+    <word form="off"/>
+    <member-of family="prep-mod-s.wherefrom"/>
+  </entry>
+  <entry class="m-through" pos="PREP" stem="across__m-through" pred="across">
+    <word form="across"/>
+    <member-of family="prep-mod-s.through"/>
+  </entry>
+  <entry class="m-through" pos="PREP" stem="through__m-through" pred="through">
+    <word form="through"/>
+    <member-of family="prep-mod-s.through"/>
+  </entry>
+  <entry class="m-accompaniment" pos="PREP" stem="with__m-accompaniment" pred="with">
+    <word form="with"/>
+    <member-of family="prep-mod-n.accompaniment"/>
+    <member-of family="prep-mod-s.accompaniment"/>
+  </entry>
+  <entry class="m-benefactor" pos="PREP" stem="for__m-benefactor" pred="for">
+    <word form="for"/>
+    <member-of family="prep-mod-n.benefactor"/>
+    <member-of family="prep-mod-s.benefactor"/>
+  </entry>
+  <entry class="m-comparison" pos="PREP" stem="like__m-comparison" pred="like">
+    <word form="like"/>
+    <member-of family="prep-mod-n.comparison"/>
+    <member-of family="prep-mod-s.comparison"/>
+  </entry>
+  <entry class="blah" pos="WORD" stem="look" pred="look">
+    <word form="look"/>
+  </entry>
+  <macro name="@mwe1-look">
+    <fs id="51">
+      <feat val="look" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-look">
+    <fs id="52">
+      <feat val="look" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-look">
+    <fs id="53">
+      <feat val="look" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="a" pred="a">
+    <word form="a"/>
+  </entry>
+  <macro name="@mwe1-a">
+    <fs id="51">
+      <feat val="a" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-a">
+    <fs id="52">
+      <feat val="a" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-a">
+    <fs id="53">
+      <feat val="a" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="think" pred="think">
+    <word form="think"/>
+  </entry>
+  <macro name="@mwe1-think">
+    <fs id="51">
+      <feat val="think" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-think">
+    <fs id="52">
+      <feat val="think" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-think">
+    <fs id="53">
+      <feat val="think" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="hope" pred="hope">
+    <word form="hope"/>
+  </entry>
+  <macro name="@mwe1-hope">
+    <fs id="51">
+      <feat val="hope" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-hope">
+    <fs id="52">
+      <feat val="hope" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-hope">
+    <fs id="53">
+      <feat val="hope" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="guess" pred="guess">
+    <word form="guess"/>
+  </entry>
+  <macro name="@mwe1-guess">
+    <fs id="51">
+      <feat val="guess" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-guess">
+    <fs id="52">
+      <feat val="guess" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-guess">
+    <fs id="53">
+      <feat val="guess" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="know" pred="know">
+    <word form="know"/>
+  </entry>
+  <macro name="@mwe1-know">
+    <fs id="51">
+      <feat val="know" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-know">
+    <fs id="52">
+      <feat val="know" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-know">
+    <fs id="53">
+      <feat val="know" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="lot" pred="lot">
+    <word form="lot"/>
+  </entry>
+  <macro name="@mwe1-lot">
+    <fs id="51">
+      <feat val="lot" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-lot">
+    <fs id="52">
+      <feat val="lot" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-lot">
+    <fs id="53">
+      <feat val="lot" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="bunch" pred="bunch">
+    <word form="bunch"/>
+  </entry>
+  <macro name="@mwe1-bunch">
+    <fs id="51">
+      <feat val="bunch" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-bunch">
+    <fs id="52">
+      <feat val="bunch" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-bunch">
+    <fs id="53">
+      <feat val="bunch" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="load" pred="load">
+    <word form="load"/>
+  </entry>
+  <macro name="@mwe1-load">
+    <fs id="51">
+      <feat val="load" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-load">
+    <fs id="52">
+      <feat val="load" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-load">
+    <fs id="53">
+      <feat val="load" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="few" pred="few">
+    <word form="few"/>
+  </entry>
+  <macro name="@mwe1-few">
+    <fs id="51">
+      <feat val="few" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-few">
+    <fs id="52">
+      <feat val="few" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-few">
+    <fs id="53">
+      <feat val="few" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="couple" pred="couple">
+    <word form="couple"/>
+  </entry>
+  <macro name="@mwe1-couple">
+    <fs id="51">
+      <feat val="couple" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-couple">
+    <fs id="52">
+      <feat val="couple" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-couple">
+    <fs id="53">
+      <feat val="couple" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="see" pred="see">
+    <word form="see"/>
+  </entry>
+  <macro name="@mwe1-see">
+    <fs id="51">
+      <feat val="see" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-see">
+    <fs id="52">
+      <feat val="see" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-see">
+    <fs id="53">
+      <feat val="see" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="front" pred="front">
+    <word form="front"/>
+  </entry>
+  <macro name="@mwe1-front">
+    <fs id="51">
+      <feat val="front" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-front">
+    <fs id="52">
+      <feat val="front" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-front">
+    <fs id="53">
+      <feat val="front" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="back" pred="back">
+    <word form="back"/>
+  </entry>
+  <macro name="@mwe1-back">
+    <fs id="51">
+      <feat val="back" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-back">
+    <fs id="52">
+      <feat val="back" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-back">
+    <fs id="53">
+      <feat val="back" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="behind" pred="behind">
+    <word form="behind"/>
+  </entry>
+  <macro name="@mwe1-behind">
+    <fs id="51">
+      <feat val="behind" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-behind">
+    <fs id="52">
+      <feat val="behind" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-behind">
+    <fs id="53">
+      <feat val="behind" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="bottom" pred="bottom">
+    <word form="bottom"/>
+  </entry>
+  <macro name="@mwe1-bottom">
+    <fs id="51">
+      <feat val="bottom" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-bottom">
+    <fs id="52">
+      <feat val="bottom" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-bottom">
+    <fs id="53">
+      <feat val="bottom" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="from" pred="from">
+    <word form="from"/>
+  </entry>
+  <macro name="@mwe1-from">
+    <fs id="51">
+      <feat val="from" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-from">
+    <fs id="52">
+      <feat val="from" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-from">
+    <fs id="53">
+      <feat val="from" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="the" pred="the">
+    <word form="the"/>
+  </entry>
+  <macro name="@mwe1-the">
+    <fs id="51">
+      <feat val="the" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-the">
+    <fs id="52">
+      <feat val="the" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-the">
+    <fs id="53">
+      <feat val="the" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="right" pred="right">
+    <word form="right"/>
+  </entry>
+  <macro name="@mwe1-right">
+    <fs id="51">
+      <feat val="right" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-right">
+    <fs id="52">
+      <feat val="right" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-right">
+    <fs id="53">
+      <feat val="right" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="left" pred="left">
+    <word form="left"/>
+  </entry>
+  <macro name="@mwe1-left">
+    <fs id="51">
+      <feat val="left" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-left">
+    <fs id="52">
+      <feat val="left" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-left">
+    <fs id="53">
+      <feat val="left" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="job" pred="job">
+    <word form="job"/>
+  </entry>
+  <macro name="@mwe1-job">
+    <fs id="51">
+      <feat val="job" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-job">
+    <fs id="52">
+      <feat val="job" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-job">
+    <fs id="53">
+      <feat val="job" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="done" pred="done">
+    <word form="done"/>
+  </entry>
+  <macro name="@mwe1-done">
+    <fs id="51">
+      <feat val="done" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-done">
+    <fs id="52">
+      <feat val="done" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-done">
+    <fs id="53">
+      <feat val="done" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="and" pred="and">
+    <word form="and"/>
+  </entry>
+  <macro name="@mwe1-and">
+    <fs id="51">
+      <feat val="and" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-and">
+    <fs id="52">
+      <feat val="and" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-and">
+    <fs id="53">
+      <feat val="and" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="around" pred="around">
+    <word form="around"/>
+  </entry>
+  <macro name="@mwe1-around">
+    <fs id="51">
+      <feat val="around" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-around">
+    <fs id="52">
+      <feat val="around" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-around">
+    <fs id="53">
+      <feat val="around" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="here" pred="here">
+    <word form="here"/>
+  </entry>
+  <macro name="@mwe1-here">
+    <fs id="51">
+      <feat val="here" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-here">
+    <fs id="52">
+      <feat val="here" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-here">
+    <fs id="53">
+      <feat val="here" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="there" pred="there">
+    <word form="there"/>
+  </entry>
+  <macro name="@mwe1-there">
+    <fs id="51">
+      <feat val="there" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-there">
+    <fs id="52">
+      <feat val="there" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-there">
+    <fs id="53">
+      <feat val="there" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="phones" pred="phones">
+    <word form="phones"/>
+  </entry>
+  <macro name="@mwe1-phones">
+    <fs id="51">
+      <feat val="phones" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-phones">
+    <fs id="52">
+      <feat val="phones" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-phones">
+    <fs id="53">
+      <feat val="phones" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="phone" pred="phone">
+    <word form="phone"/>
+  </entry>
+  <macro name="@mwe1-phone">
+    <fs id="51">
+      <feat val="phone" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-phone">
+    <fs id="52">
+      <feat val="phone" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-phone">
+    <fs id="53">
+      <feat val="phone" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="to" pred="to">
+    <word form="to"/>
+  </entry>
+  <macro name="@mwe1-to">
+    <fs id="51">
+      <feat val="to" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-to">
+    <fs id="52">
+      <feat val="to" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-to">
+    <fs id="53">
+      <feat val="to" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="room" pred="room">
+    <word form="room"/>
+  </entry>
+  <macro name="@mwe1-room">
+    <fs id="51">
+      <feat val="room" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-room">
+    <fs id="52">
+      <feat val="room" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-room">
+    <fs id="53">
+      <feat val="room" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="rooms" pred="rooms">
+    <word form="rooms"/>
+  </entry>
+  <macro name="@mwe1-rooms">
+    <fs id="51">
+      <feat val="rooms" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-rooms">
+    <fs id="52">
+      <feat val="rooms" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-rooms">
+    <fs id="53">
+      <feat val="rooms" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="machine" pred="machine">
+    <word form="machine"/>
+  </entry>
+  <macro name="@mwe1-machine">
+    <fs id="51">
+      <feat val="machine" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-machine">
+    <fs id="52">
+      <feat val="machine" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-machine">
+    <fs id="53">
+      <feat val="machine" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="maker" pred="maker">
+    <word form="maker"/>
+  </entry>
+  <macro name="@mwe1-maker">
+    <fs id="51">
+      <feat val="maker" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-maker">
+    <fs id="52">
+      <feat val="maker" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-maker">
+    <fs id="53">
+      <feat val="maker" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="machines" pred="machines">
+    <word form="machines"/>
+  </entry>
+  <macro name="@mwe1-machines">
+    <fs id="51">
+      <feat val="machines" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-machines">
+    <fs id="52">
+      <feat val="machines" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-machines">
+    <fs id="53">
+      <feat val="machines" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="makers" pred="makers">
+    <word form="makers"/>
+  </entry>
+  <macro name="@mwe1-makers">
+    <fs id="51">
+      <feat val="makers" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-makers">
+    <fs id="52">
+      <feat val="makers" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-makers">
+    <fs id="53">
+      <feat val="makers" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="station" pred="station">
+    <word form="station"/>
+  </entry>
+  <macro name="@mwe1-station">
+    <fs id="51">
+      <feat val="station" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-station">
+    <fs id="52">
+      <feat val="station" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-station">
+    <fs id="53">
+      <feat val="station" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="stations" pred="stations">
+    <word form="stations"/>
+  </entry>
+  <macro name="@mwe1-stations">
+    <fs id="51">
+      <feat val="stations" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-stations">
+    <fs id="52">
+      <feat val="stations" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-stations">
+    <fs id="53">
+      <feat val="stations" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="point" pred="point">
+    <word form="point"/>
+  </entry>
+  <macro name="@mwe1-point">
+    <fs id="51">
+      <feat val="point" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-point">
+    <fs id="52">
+      <feat val="point" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-point">
+    <fs id="53">
+      <feat val="point" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="points" pred="points">
+    <word form="points"/>
+  </entry>
+  <macro name="@mwe1-points">
+    <fs id="51">
+      <feat val="points" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-points">
+    <fs id="52">
+      <feat val="points" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-points">
+    <fs id="53">
+      <feat val="points" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="kettle" pred="kettle">
+    <word form="kettle"/>
+  </entry>
+  <macro name="@mwe1-kettle">
+    <fs id="51">
+      <feat val="kettle" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-kettle">
+    <fs id="52">
+      <feat val="kettle" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-kettle">
+    <fs id="53">
+      <feat val="kettle" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="kettles" pred="kettles">
+    <word form="kettles"/>
+  </entry>
+  <macro name="@mwe1-kettles">
+    <fs id="51">
+      <feat val="kettles" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-kettles">
+    <fs id="52">
+      <feat val="kettles" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-kettles">
+    <fs id="53">
+      <feat val="kettles" attr="wform"/>
+    </fs>
+  </macro>
+  <entry class="blah" pos="WORD" stem="by" pred="by">
+    <word form="by"/>
+  </entry>
+  <macro name="@mwe1-by">
+    <fs id="51">
+      <feat val="by" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe2-by">
+    <fs id="52">
+      <feat val="by" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@mwe3-by">
+    <fs id="53">
+      <feat val="by" attr="wform"/>
+    </fs>
+  </macro>
+  <macro name="@num.sg">
+    <fs val="sg" attr="num" id="1"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="sg"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@num.pl">
+    <fs val="pl" attr="num" id="1"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="pl"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@num.sg-second">
+    <fs val="sg" attr="num" id="8"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="sg"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@num.pl-second">
+    <fs val="pl" attr="num" id="8"/>
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="num">
+          <prop name="pl"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@syn-num.sg">
+    <fs val="sg" attr="num" id="1"/>
+  </macro>
+  <macro name="@syn-num.pl">
+    <fs val="pl" attr="num" id="1"/>
+  </macro>
+  <macro name="@sem-num.sg">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Number">
+          <prop name="sg"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@sem-num.pl">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Number">
+          <prop name="pl"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@pers.1st">
+    <fs val="1st" attr="pers" id="1"/>
+  </macro>
+  <macro name="@pers.2nd">
+    <fs val="2nd" attr="pers" id="1"/>
+  </macro>
+  <macro name="@pers.3rd">
+    <fs val="3rd" attr="pers" id="1"/>
+  </macro>
+  <macro name="@proximity.proximal">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Proximity">
+          <prop name="proximal"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@proximity.distal">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Proximity">
+          <prop name="distal"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@del.unique">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Delimitation">
+          <prop name="unique"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@del.exist">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Delimitation">
+          <prop name="existential"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@del.var">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Delimitation">
+          <prop name="variable2"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@quant.nonsg">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Quantification">
+          <prop name="specific_non-singular"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@quant.sg">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Quantification">
+          <prop name="specific_singular"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@quant.unspec.nonsg">
+    <lf>
+      <satop nomvar="T">
+        <diamond mode="Quantification">
+          <prop name="unspecific_non-singular2"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@degree.base">
+    <fs val="base" attr="aform" id="25"/>
+  </macro>
+  <macro name="@degree.comparative">
+    <fs val="comparative" attr="aform" id="25"/>
+    <lf>
+      <satop nomvar="M">
+        <diamond mode="Degree">
+          <prop name="comparative"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@degree.superlative">
+    <fs val="superlative" attr="aform" id="25"/>
+    <lf>
+      <satop nomvar="M">
+        <diamond mode="Degree">
+          <prop name="superlative"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@num.sg-agr">
+    <fs val="sg" attr="num" id="11"/>
+    <fs val="sg" attr="num" id="2"/>
+  </macro>
+  <macro name="@num.pl-agr">
+    <fs val="pl" attr="num" id="11"/>
+    <fs val="pl" attr="num" id="2"/>
+  </macro>
+  <macro name="@no-subj">
+    <fs val="pers-na" attr="pers" id="2"/>
+    <fs val="num-na" attr="num" id="2"/>
+  </macro>
+  <macro name="@pers.1st-agr">
+    <fs val="1st" attr="pers" id="11"/>
+    <fs val="1st" attr="pers" id="2"/>
+  </macro>
+  <macro name="@pers.2nd-agr">
+    <fs val="2nd" attr="pers" id="11"/>
+    <fs val="2nd" attr="pers" id="2"/>
+  </macro>
+  <macro name="@pers.3rd-agr">
+    <fs val="3rd" attr="pers" id="11"/>
+    <fs val="3rd" attr="pers" id="2"/>
+  </macro>
+  <macro name="@pers.non-3rd-agr">
+    <fs id="11">
+      <feat attr="pers">
+        <featvar name="PERS:non-3rd"/>
+      </feat>
+    </fs>
+    <fs id="2">
+      <feat attr="pers">
+        <featvar name="PERS:non-3rd"/>
+      </feat>
+    </fs>
+  </macro>
+  <macro name="@finite">
+    <fs val="fin" attr="vform" id="11"/>
+  </macro>
+  <macro name="@nonfin">
+    <fs val="non-fin" attr="vform" id="11"/>
+  </macro>
+  <macro name="@vform.progr">
+    <fs val="progr" attr="vform" id="11"/>
+  </macro>
+  <macro name="@imp-addressee">
+    <fs val="imp" attr="mood" id="11"/>
+    <lf>
+      <satop nomvar="X:animate">
+        <prop name="addressee"/>
+      </satop>
+      <satop nomvar="E">
+        <diamond mode="Mood">
+          <prop name="imp"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@imp">
+    <fs val="imp" attr="mood" id="11"/>
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Mood">
+          <prop name="imp"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@int">
+    <fs val="int" attr="mood" id="11"/>
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Mood">
+          <prop name="int"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@ind">
+    <fs val="ind" attr="mood" id="11"/>
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Mood">
+          <prop name="ind"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@progr">
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Aspect">
+          <prop name="progr"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@past">
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Tense">
+          <prop name="past"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@pres">
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Tense">
+          <prop name="pres"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@future">
+    <lf>
+      <satop nomvar="E">
+        <diamond mode="Tense">
+          <prop name="future"/>
+        </diamond>
+      </satop>
+    </lf>
+  </macro>
+  <macro name="@dummy-deic">
+    <fs id="1">
+      <feat val="dummy-deic" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@dummy-pers">
+    <fs id="1">
+      <feat val="dummy-pers" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@subj-dummy-deic">
+    <fs id="2">
+      <feat val="dummy-deic" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@subj-dummy-pers">
+    <fs id="2">
+      <feat val="dummy-pers" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@nform-who-obj">
+    <fs id="1">
+      <feat val="who-obj" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@nform-who-subj">
+    <fs id="2">
+      <feat val="who-subj" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@nform-what-obj">
+    <fs id="7">
+      <feat val="what-obj" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@nform-where-location">
+    <fs id="7">
+      <feat val="where-location" attr="nform"/>
+    </fs>
+  </macro>
+  <macro name="@pform-of">
+    <fs id="30">
+      <feat val="of" attr="pform"/>
+    </fs>
+  </macro>
+  <macro name="@pform-for">
+    <fs id="30">
+      <feat val="for" attr="pform"/>
+    </fs>
+  </macro>
+  <macro name="@pform-to">
+    <fs id="30">
+      <feat val="to" attr="pform"/>
+    </fs>
+  </macro>
+  <macro name="@pform-at">
+    <fs id="30">
+      <feat val="at" attr="pform"/>
+    </fs>
+  </macro>
+  <macro name="@pform-with">
+    <fs id="30">
+      <feat val="with" attr="pform"/>
+    </fs>
+  </macro>
+  <macro name="@pform-about">
+    <fs id="30">
+      <feat val="about" attr="pform"/>
+    </fs>
+  </macro>
+</dictionary>

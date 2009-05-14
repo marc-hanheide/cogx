@@ -1,0 +1,16 @@
+CAST file configuration parameters
+
+--calib file .. camera calibration file (internal camera parameters).
+                Mandatory.
+--camnum num .. camera number (e.g. 0 = left, 1 = right). Defaults to 0.
+--eyepose file .. pose calibration file: camera pose w.r.t. "head", which can 
+                  be a stereo head or a manipulator hand.
+                  If the camera is fixed (not mounted on any head) this pose
+                  is just the camera pose w.r.t. the world origin.
+                  Defaults to identity.
+--headnum num .. head number (e.g. 0 = stereo head, 1 = hand)
+--headpose file .. pose calibration file: head pose w.r.t. world origin.
+                   In case the head never moves, its pose can be specified
+                   here. Defaults to identity.
+--downsample .. downsample factor, optional, default 1
+

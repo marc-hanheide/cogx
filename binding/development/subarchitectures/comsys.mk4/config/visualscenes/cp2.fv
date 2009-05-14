@@ -1,0 +1,31 @@
+## ============================================
+## Situated interaction testbed
+## Visual scene CP2: contrastive properties
+## --------------------------------------------
+## a large red mug (m3), a small red mug (m1), 
+## and a medium-sized red mug (m2): 
+##  
+##    m3      m1
+##              m2
+##
+##         ^
+##        CAM
+## --------------------------------------------
+## Distractor features: 
+## - type (mug), color (red), shape (container)
+## - topological (ego-far:m3,m1)(allo-near:m3,m1)
+## - projective (ego-right:m1,m2)(allo-left:m1,m2)
+## - visual salience (2:m1,m3), 
+## - kinetic salience (2:m1,m2,m3)
+## ============================================
+
+#camera position
+0.22528142 -1.1281004 0.57014495
+#camera orientation
+-2.0106425 -0.19543846 0.20791425
+
+#object lines
+# reqd 3d position #optional features = colour size label + val & opt prob 
+-0.10 0.50 0, colour red 1.0, size big 1.0, label mug 1.0
+0.10 0.50 0, colour red 1.0, size small 1.0, label mug 1.0
+0.20 0.25 0, colour red 1.0, size big 0.50, label mug 1.0

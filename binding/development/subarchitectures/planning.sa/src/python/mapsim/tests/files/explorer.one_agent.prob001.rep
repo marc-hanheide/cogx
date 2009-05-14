@@ -1,0 +1,20 @@
+# This run should be replicable by running:
+# mapsim -t domains/explorer/scenarios/one_agent/prob001 -c explorer.one_agent.prob001 -r -s 3
+[config]
+reporter_verbalization = True
+test = 'domains/explorer/scenarios/one_agent/prob001'
+sensing_mode = 3
+[result]
+MAPSIM run starts. There is 1 agent: R2D2
+ (1) R2D2 senses (pos mug) != Patrics office.
+ (2) R2D2 moves to the corridor.
+ (3) R2D2 moves to Chandanas office.
+ (4) R2D2 senses (pos mug) != Chandanas office.
+ (5) R2D2 moves to the corridor.
+ (6) R2D2 moves to the kitchen.
+ (7) R2D2 senses (pos mug) = the kitchen.
+ (8) R2D2 grasps the mug.
+ (9) R2D2 moves to the corridor.
+(10) R2D2 moves to Patrics office.
+(11) R2D2 drops the mug in Patrics office.
+MAPSIM terminates successfully.

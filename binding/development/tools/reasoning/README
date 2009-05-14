@@ -1,0 +1,62 @@
+Reasoning 
+=========
+
+The "reasoning" package provides a generic API for reasoners/inference engines. It includes an
+abstract API definition and also an implementation for the Pellet open source OWL-DL reasoner.
+
+NB: this description is based on using Pellet 1.5.1 -- this replaces Pellet 1.5.0!
+
+The external reasoner Pellet is written in Java and can be obtained from [http://pellet.owldl.com/].
+Additional libraries, namely the OWLAPI, are now part of the Pellet distribution.
+
+CoSy users can get Pellet from the svn repository. Get "pellet-1.5.1.zip" from "packages".
+
+In any case, make sure the required external libraries (see below) are in your CLASSPATH, 
+e.g. by adding the following lines to your ~/.bashrc file:
+export PELLET_ROOT:<path_to_where_you_unzipped_pellet>
+export CLASSPATH=$CLASSPATH:$PELLET_ROOT/lib/pellet.jar
+export CLASSPATH=$CLASSPATH:$PELLET_ROOT/lib/aterm-java-1.6.jar
+export CLASSPATH=$CLASSPATH:$PELLET_ROOT/lib/owlapi/owlapi-api.jar
+export CLASSPATH=$CLASSPATH:$PELLET_ROOT/lib/owlapi/owlapi-apibinding.jar
+
+Version:   February 1 2008 (started June 28 2007)
+
+Author(s): Hendrik Zender (zender@dfki.de)
+
+Contact:   Hendrik Zender (zender@dfki.de)
+
+INSTALLATION 
+============
+
+Required software:
+
+o Apache Ant
+
+USAGE 
+=====
+
+Required software for the reference implementation PelletWrapper:
+
+PELLET (jars are in the "lib" directory of pellet; tested with Pellet 1.5.1) 
+o pellet.jar 
+o aterm-java-1.6.jar
+OWLAPI (jars are in the "lib/owlapi" directory of pellet; tested with Pellet 1.5.1) 
+o owlapi-api.jar 
+o owlapi-apibindings.jar
+
+RESOURCE STRUCTURE 
+==================
+
+o src - java     : java source code
+
+JAVA src code structure 
+-----------------------
+
+o org.cognitivesystems.reasoning : contains the interface definition 
+    --.-"-.--.pellet : contains the implementation for the Pellet reasoner
+
+
+DOCUMENTATION 
+=============
+
+TO DO...

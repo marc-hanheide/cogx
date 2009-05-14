@@ -1,0 +1,432 @@
+/*
+ * CAST - The CoSy Architecture Schema Toolkit
+ *
+ * Copyright (C) 2006-2007 Nick Hawes
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ *
+ */
+
+#include "FrameworkBasics.idl"
+
+#ifndef CAST_IDL
+#define CAST_IDL
+
+module cast {
+  
+  module cdl {
+
+    const string CAST_RELEASE_STRING = "19.0 (aka \"every fix is a bug in disguise\")";
+
+    const string GLOBAL_CONNECTION_PREFIX = "global";
+    const string XARCH_CONNECTION_PREFIX = "xarch";
+  
+    const string ID_QUERY_PREFIX = "id";
+    const string EXISTS_QUERY_PREFIX = "ex";
+    const string OVERWRITE_COUNT_QUERY_PREFIX = "oc";
+    const string ID_ARRAY_QUERY_PREFIX = "ia";
+    const string TYPE_QUERY_PREFIX = "tp";
+
+    const string SUBARCH_ID_KEY = "org.cognitivesystem.cast.subarchID"; 
+    const string COMPONENT_NUMBER_KEY = "org.cognitivesystem.cast.componentNumber";
+    const string CONFIG_FILE_KEY = "org.cognitivesystem.cast.config";
+    const string WM_IDS_KEY = "org.cognitivesystem.cast.wmids";
+    const string COMPONENT_IDS_KEY = "org.cognitivesystem.cast.compids";
+ 
+    const string LOG_KEY = "--log"; 
+    const string DEBUG_KEY = "--debug"; 
+    const string DEBUG_EVENTS_KEY =  "--debug-events";
+    const string IGNORE_SA_KEY =  "--ignore";
+  
+    typedef string OntologyEntry;
+    typedef string WorkingMemoryID;
+    typedef string SubarchitectureID;
+
+    typedef sequence < WorkingMemoryID > WorkingMemoryIDList;
+    typedef sequence < SubarchitectureID > SubarchitectureIDList;
+
+
+    enum ReceiverDeleteCondition {
+      DELETE_RECEIVER,
+      DO_NOT_DELETE_RECEIVER
+    };
+
+    enum WorkingMemoryOperation {
+      ADD,
+      OVERWRITE,
+      DELETE,
+      GET,
+      ///wildcard operation for use in filtering
+      WILDCARD
+    };
+
+    enum WorkingMemoryChangeQueueBehaviour {
+      DISCARD,
+      QUEUE
+    };
+
+
+    /*
+    * Enum indicating whether a change filter is applicable to just
+    * the locally attached wm or all wms.
+    */
+    enum FilterRestriction {
+      /**
+       * This change filter is applicable only to change events
+       * referring to data on the components local working memory.
+       */
+      LOCAL_SA,
+      /**
+       * This change filter is applicable only to change events from
+       * all working memories
+       */
+      ALL_SA
+    };
+
+    /*
+    * Enum indicating how a working memory operation should be
+    * performed.
+    */
+    enum OperationMode {
+      /**
+       * Blocking operations do not return until the working memory
+       * has completed the operation and sent change events. 
+       */
+      BLOCKING,
+      
+      /**
+       * Non-blocking operations return immediately after data is sent
+       * to the wm, so there is no guarantee that the operation has
+       * been performed after the call.
+       */
+      NON_BLOCKING
+    };
+
+
+    /*
+     * Enum indicating the result of a wm lock query.
+     */
+    enum WorkingMemoryPermissions {      
+      LOCKED_O,
+      LOCKED_OD,
+      LOCKED_ODR,      
+      UNLOCKED,
+      DOES_NOT_EXIST,
+
+      /**
+       * Result of a failed tryLock
+       */
+      ALREADY_LOCKED
+    };
+
+    /*
+     * Enum indicating the result of a wm lock query.
+     */
+    enum WorkingMemoryLockRequest {
+      REQUEST_LOCK_O,
+      REQUEST_LOCK_OD,
+      REQUEST_LOCK_ODR,
+      REQUEST_TRY_LOCK_O,
+      REQUEST_TRY_LOCK_OD,
+      REQUEST_TRY_LOCK_ODR,
+      REQUEST_UNLOCK,
+      REQUEST_STATUS
+    };
+    
+
+
+    struct WorkingMemoryAddress {
+      WorkingMemoryID m_id;
+      SubarchitectureID m_subarchitecture;
+    };
+
+
+    /**
+     * A structure that points to a item on working memory with a
+     * particular type. Obviously not a "real" pointer.
+     **/
+    struct WorkingMemoryPointer {
+      /** The type of the data **/
+      OntologyEntry m_type;
+      /** Points to the data **/
+      WorkingMemoryAddress m_address;
+    };
+
+    typedef sequence < WorkingMemoryPointer > WorkingMemoryPointerList;
+
+
+    struct WorkingMemoryEntry {
+      WorkingMemoryOperation m_operation;
+      WorkingMemoryAddress m_address;
+      OntologyEntry m_type;
+      long m_version;
+      any m_data;
+    };
+    
+
+    typedef sequence < WorkingMemoryEntry > WorkingMemoryEntryList;
+    typedef sequence < WorkingMemoryAddress > WorkingMemoryAddressList;
+
+
+    struct WorkingMemoryChange {
+      WorkingMemoryOperation m_operation;
+      FrameworkBasics::FrameworkProcessID m_src;
+      WorkingMemoryAddress m_address;
+      OntologyEntry m_type;
+    };
+
+    /**
+     * An object that represents a filter for filtering in changes from
+     * working memory.
+     */
+    struct WorkingMemoryChangeFilter {
+      /**
+       * 
+       */
+      WorkingMemoryOperation m_operation;
+
+
+      /**
+       * Source of change. If not "" then adhered to.
+       */
+      FrameworkBasics::FrameworkProcessID m_src;
+
+
+      /**
+       * If either of these are not "" then the filter will adhere to
+       * them.
+       */
+      WorkingMemoryAddress m_address;
+
+      OntologyEntry m_type;
+
+      /**
+       * Whether this filter should only accept changes from local
+       * sources.
+       */
+      FilterRestriction m_restriction;
+
+      /**
+       * What to do with this filter object.
+       */
+      WorkingMemoryOperation m_filterChange;
+
+      /**
+       * The component that originally created the change. Used to
+       * distinguish otherwise identical filters when aggregated.
+       */
+      FrameworkBasics::FrameworkProcessID m_origin;
+      
+    };
+
+
+
+
+  
+    typedef sequence < WorkingMemoryChange > WorkingMemoryChangeList;
+
+    typedef string TaskName;
+
+    typedef sequence < TaskName > TaskNameList;
+
+    typedef string TaskID;
+
+    typedef string TaskTag;
+
+    typedef sequence < TaskTag > TaskTagList;
+
+    /**
+     * Struct used to describe a task and its dependencies of other
+     * tasks. This is not prefixed by "InformationProcessing" because
+     * could be used for the general system.
+     */
+    struct TaskDescription {
+      TaskName m_taskName;    
+      TaskNameList m_predecessors;
+      TaskNameList m_superGoals;
+      TaskTagList m_tags;
+    };
+
+    typedef sequence < TaskDescription > TaskDescriptionList;
+
+    /**
+     *Struct used to propose a task for execution... BADLY named
+     */
+    struct InformationProcessingTask {
+      TaskID m_id;
+      TaskName m_taskName;
+      //sequence<string> m_readResources; //-- arbitrary resources
+      //sequence<string> m_writeresources; //-- arbitrary resources
+    };
+
+    struct TaskGoal {
+      TaskID m_id;
+      TaskName m_goalName;
+      WorkingMemoryAddressList m_taskAddresses;
+    };
+  
+    enum TaskManagementDecision {
+      GOAL_ADOPTED,
+      GOAL_REJECTED,
+      GOAL_WAITING
+    };
+
+    struct TaskManagementResult {
+      TaskID m_id;
+      TaskManagementDecision m_decision;
+    };
+
+    enum TaskOutcome {
+      PROCESSING_INCOMPLETE,
+      PROCESSING_COMPLETE,
+      PROCESSING_COMPLETE_SUCCESS,
+      PROCESSING_COMPLETE_FAILURE
+    };
+
+    struct TaskResult {
+      TaskID m_id;
+      TaskOutcome m_outcome;
+    };
+
+
+    /***
+     * A module containing code purely for test CAST and CAST systems.
+     ***/
+    module testing {
+
+      //moderately arbitrary values
+
+      const long CAST_TEST_PASS = 29;
+      const long CAST_TEST_FAIL = 30;
+
+      ///Struct used for basic testing
+      struct CASTTestStruct {
+	long m_count;	
+	WorkingMemoryChange m_change;
+      };
+
+      /// used only for testing WM interaction
+      struct TestDummyStruct {
+	string m_dummy;
+      };      
+    };
+
+    /**
+     * Data used to collect
+     */
+    module ui {
+
+      enum OutputType {
+	PRINT,
+	DEBUG,
+	LOG
+      };
+
+      struct TextOutput {
+	OutputType m_type;
+	string m_string;
+      };
+
+      enum ComponentEventType {
+	ADD,
+	OVERWRITE,
+	DELETE,
+	GET,
+	START,
+	END,
+	PROPOSED
+      };
+
+
+      //event add/ovr/del/get/start/stop/propop
+      //comp id
+      //type data type/ goal type
+      //time
+
+      struct ComponentEvent {
+
+	///the event type
+	ComponentEventType m_event; 
+
+	///the component that caused the event to happen
+	string m_componentID; 
+
+	////the target of the event usually wm or tm
+	string m_target; 
+
+	///a description of the data type .. either datatype, data id, goal name 
+	string m_dataType;
+
+	///a description of the data type .. either wm id, task id
+	string m_dataID;
+   
+	///the time the event happened .. start or end?
+	FrameworkBasics::BALTTime m_time;
+      };
+
+      struct ComponentStatus {
+
+	///Used for initial setup
+
+	//used to identify component
+	FrameworkBasics::FrameworkProcessID m_component;
+
+	//and what subarchitecture it's in
+	string m_subarchitecture;
+
+	//used by CASTComponent
+	boolean m_log;
+	boolean m_debug;
+
+
+	///used to get information at runtim
+
+	boolean m_locked;
+	boolean m_sleeping;           
+      
+
+	///used by WorkingMemoryReader/SubarchitectureWorkingMemory
+	long m_changeQueue; //wm size if a WM
+	long m_totalChangeEventsFiltered; //wm max if WM
+	long m_totalChangeEventsReceived; //blank if WM      
+
+	long m_totalAdds;
+	long m_totalOverwrites;
+	long m_totalDeletes;
+	long m_totalReads;
+
+	long m_totalProposals;
+	long m_totalStarts;
+	long m_totalEnds;
+
+
+      };
+
+    };
+
+    /// cf. boost::tribool. (http://www.boost.org/doc/html/tribool.html)
+    enum TriBool {
+      triTrue,         ///< corresponds to a boolean true
+      triFalse,        ///< corresponds to a boolean false
+      triIndeterminate ///< corresponds to a situation where an answer
+      ///is unknown, too uncertain, or undefined, etc.
+    };
+
+  }; // module cdl
+  
+}; // module cast
+
+#endif

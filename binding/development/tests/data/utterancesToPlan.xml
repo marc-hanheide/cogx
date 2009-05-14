@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<utterancesToPlan>
+
+<utterance>
+	<input>@b1:entity(ball)</input>
+	<realizations>
+		<string>a ball</string>
+		<string>one ball</string>
+	</realizations>
+</utterance>
+
+
+<utterance>
+	<input>@e1:action(walk ^ /Actor\(b1:physical ^ robot ^ /Size\(s1:quality ^ big)) )</input>
+</utterance>
+
+</utterancesToPlan>
+
+

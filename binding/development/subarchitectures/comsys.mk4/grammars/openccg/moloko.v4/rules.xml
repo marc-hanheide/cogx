@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../rules.xsd" name="moloko">
+  <application dir="forward"/>
+  <application dir="backward"/>
+  <composition harmonic="true" dir="forward"/>
+  <composition harmonic="false" dir="forward"/>
+  <composition harmonic="true" dir="backward"/>
+  <composition harmonic="false" dir="backward"/>
+  <typeraising useDollar="true" dir="forward"/>
+  <substitution harmonic="true" dir="forward"/>
+  <substitution harmonic="false" dir="forward"/>
+  <substitution harmonic="true" dir="backward"/>
+  <substitution harmonic="false" dir="backward"/>
+  <typechanging name="adj">
+    <arg>
+      <atomcat type="adj">
+        <fs id="25">
+          <feat attr="index">
+            <lf>
+              <nomvar name="M"/>
+            </lf>
+          </feat>
+        </fs>
+      </atomcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="n">
+          <fs inheritsFrom="1"/>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="n">
+          <fs id="1">
+            <feat attr="num">
+              <featvar name="NUM:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS:pers-vals"/>
+            </feat>
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="T:entity">
+            <diamond mode="Property">
+              <nomvar name="M"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+</rules>

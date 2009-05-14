@@ -1,0 +1,149 @@
+//=================================================================
+// Copyright (C) 2007 Geert-Jan M. Kruijff (gj@dfki.de)
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License
+// as published by the Free Software Foundation; either version 2.1 of
+// the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+// 02111-1307, USA.
+//=================================================================
+
+//=================================================================
+// PACKAGE DEFINITION 
+//=================================================================
+
+package org.cognitivesystems.comsys.monitors.proxyfactories;
+
+//=================================================================
+// IMPORTS
+//=================================================================
+
+// ----------------------------------------------------------------
+// BINDING imports
+// ----------------------------------------------------------------
+import binding.common.BindingComponentException;
+import binding.autogen.BindingData.Feature.DebugString;
+
+// ----------------------------------------------------------------
+// CAST imports
+// ----------------------------------------------------------------
+import cast.architecture.subarchitecture.SubarchitectureProcessException;
+
+// ----------------------------------------------------------------
+// COMSYS imports
+// ----------------------------------------------------------------
+import org.cognitivesystems.comsys.monitors.AbstractProxyFactory;
+import org.cognitivesystems.comsys.monitors.ComSysBindingMonitor;
+import org.cognitivesystems.comsys.monitors.PendingProxyRelation;
+import org.cognitivesystems.comsys.monitors.ProxyFactoryResults;
+
+// ----------------------------------------------------------------
+// JAVA imports
+// ----------------------------------------------------------------
+
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+
+// ----------------------------------------------------------------
+// LF imports
+// ----------------------------------------------------------------
+import org.cognitivesystems.repr.lf.autogen.LFEssentials.*;
+import org.cognitivesystems.repr.lf.autogen.LFPacking.*;
+import org.cognitivesystems.repr.lf.utils.LFUtils;
+
+//=================================================================
+// JAVADOC DOCUMENTATION
+//=================================================================
+
+
+
+public class CognitionProxyFactory 
+	extends AbstractProxyFactory 
+{
+
+    //=================================================================
+    // CONSTRUCTOR METHODS
+    //=================================================================
+
+	public CognitionProxyFactory () { 
+		super();
+		rootSort = "cognition";
+	} // end
+
+	public CognitionProxyFactory (ComSysBindingMonitor m) {
+		super(m);
+		rootSort = "cognition";		
+	} // end 
+	
+
+	/** Produces a proxy, or collection of proxies, starting from the given 
+		nominal, using the packed logical form and the treemap-index into the nominals. 
+		The method returns a result structure including variables of nominals for which we should no 
+		longer generate proxies, and the relations that should be introduced.
+		
+		@param nom The packed nominal from which proxy production should start
+		@param plf The packed logical form in which the nominal appears
+		@param packedNoms The map with nominal variables indexing into the packed logical form
+		@return ProxyFactoryResults A set with nominal variables of packed nominals for which proxies have been produced
+		@see org.cognitivesystems.comsys.monitors.AbstractProxyFactory#getRelProxiesTable		 
+		
+	*/
+	public ProxyFactoryResults produceProxies (PackedNominal nom, PackedLogicalForm plf, TreeMap packedNoms) 
+		throws BindingComponentException, SubarchitectureProcessException
+	
+	{ 
+		ProxyFactoryResults results = new ProxyFactoryResults();
+		// get the actor of the cognition act
+		PackedNominal actorNom = getDependentNominal(nom, "Actor", packedNoms);
+		if (actorNom != null) { 
+			// Add the cognition aspect as DEBUG feature
+			DebugString cognitionFeat = new DebugString();
+			cognitionFeat.m_debugString = "Cognition: "+nom.prop.prop+" Cognition-Actor: "+actorNom.prop.prop; 
+			monitor.addProxyFeature(cognitionFeat);				
+		} // end check for actor nom
+		// check whether we have a modal as EComp
+		PackedNominal eComp = getDependentNominal(nom,"EComp",packedNoms);
+		String eCompSort = LFUtils.getPackedNominalSort(eComp);
+		String modalNomVar = null;
+		if (eCompSort.equals("modal")) { 
+			modalNomVar = eComp.nomVar;
+			// Add the modality as a DEBUG feature
+			DebugString modalityFeat = new DebugString();
+			modalityFeat.m_debugString = "Modality: "+eComp.prop.prop; 
+			monitor.addProxyFeature(modalityFeat);			
+			// Descend one down
+			eComp = getDependentNominal(eComp,"Scope",packedNoms);
+		} // end if.. check for model
+		// Start the action at this proxy
+		String actionSort = LFUtils.getPackedNominalSort(eComp);
+		if (actionSort.equals("action-motion")) { 
+			ActionMotionProxyFactory actionMotionFactory = new ActionMotionProxyFactory(monitor);
+			actionMotionFactory.setDiscRefs(_discRefsAccess);				
+			results = actionMotionFactory.produceProxies(eComp,plf,packedNoms);			
+		} else { 
+			DefaultProxyFactory defaultFactory = new DefaultProxyFactory(monitor);
+			defaultFactory.setDiscRefs(_discRefsAccess);
+			results = defaultFactory.produceProxies(eComp,plf,packedNoms);
+		} // end if..else
+		TreeSet excludes = results.getExcludes();
+		if (modalNomVar != null) { 
+			excludes.add(modalNomVar);
+		}
+		excludes.add(actorNom.nomVar);
+		results.setExcludes(excludes);
+
+		results.addedNominals.add(eComp.nomVar);				
+		return results;
+	} // end produceProxies
+
+} // end ModalProxyFactory

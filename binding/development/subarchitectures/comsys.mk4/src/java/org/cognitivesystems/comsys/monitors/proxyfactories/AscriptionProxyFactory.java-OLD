@@ -1,0 +1,874 @@
+//=================================================================
+// Copyright (C) 2007 Geert-Jan M. Kruijff (gj@dfki.de)
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License
+// as published by the Free Software Foundation; either version 2.1 of
+// the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+// 02111-1307, USA.
+//=================================================================
+
+//=================================================================
+// PACKAGE DEFINITION 
+//=================================================================
+
+package org.cognitivesystems.comsys.monitors.proxyfactories;
+
+//=================================================================
+// IMPORTS
+//=================================================================
+
+// ----------------------------------------------------------------
+// BINDING imports
+// ----------------------------------------------------------------
+import binding.common.BindingComponentException;
+
+/*
+import binding.autogen.BindingData.FeaturePointer;
+import binding.autogen.BindingData.Feature.Colour;
+import binding.autogen.BindingData.Feature.DebugString;
+import binding.autogen.BindingData.Feature.Shape;
+import binding.autogen.BindingData.Feature.Size;
+import binding.autogen.BindingData.Feature.Reachable;
+import binding.autogen.BindingData.Feature.TemporalFrameType;
+import binding.autogen.BindingData.CommunicativeGoals.AssertionSort;
+import binding.autogen.BindingData.CommunicativeGoals.CommAssertion;
+import binding.autogen.BindingData.CommunicativeGoals.CommCommand;
+import binding.autogen.BindingData.CommunicativeGoals.CommQuestion;
+import binding.autogen.BindingData.CommunicativeGoals.CommandSort;
+import binding.autogen.BindingData.CommunicativeGoals.CommunicativeGoal;
+import binding.autogen.BindingData.CommunicativeGoals.CommunicativeGoalSort;
+import binding.autogen.BindingData.CommunicativeGoals.QuestionSort;
+*/
+
+// ----------------------------------------------------------------
+// CAST imports
+// ----------------------------------------------------------------
+import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.cdl.TriBool;
+
+// ----------------------------------------------------------------
+// COMSYS imports
+// ----------------------------------------------------------------
+import org.cognitivesystems.comsys.monitors.AbstractProxyFactory;
+import org.cognitivesystems.comsys.monitors.ComSysBindingMonitor;
+import org.cognitivesystems.comsys.monitors.PendingProxyRelation;
+import org.cognitivesystems.comsys.monitors.ProxyFactoryResults;
+
+
+
+// ----------------------------------------------------------------
+// JAVA imports
+// ----------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
+
+
+// ----------------------------------------------------------------
+// LF imports
+// ----------------------------------------------------------------
+import org.cognitivesystems.repr.lf.autogen.LFEssentials.*;
+import org.cognitivesystems.repr.lf.autogen.LFPacking.*;
+
+//=================================================================
+// JAVADOC CLASS DOCUMENTATION 
+//=================================================================
+
+/** 
+The class <b>AscriptionProxyFactory</b> implements the  mapping 
+for producing a proxy, or a collection of proxies and proxy relations, 
+for copula constructions.
+It also takes care of creating appropriate pragmatic side-effects,
+communicative goals, as entries on binding WM:
+In case of indicative ascriptions, we have an assertion.
+In case of interrogative ones, we are dealing with a questions.
+In case of imperative ascriptions, we have a command.
+This will also be reflected on the binder.
+
+@version 080708 (started 071002)
+@author  Geert-Jan M. Kruijff (gj@dfki.de)
+@author  Hendrik Zender (zender@dfki.de)
+*/ 
+
+//=================================================================
+// CLASS DEFINITION 
+//=================================================================
+
+public class AscriptionProxyFactory 
+	extends AbstractProxyFactory
+	
+{
+
+    //=================================================================
+    // CLASS-INTERNAL GLOBAL VARIABLES
+    //=================================================================
+
+	PackedNominal object = null; 
+	
+	String nomVarProxyAddress = null;
+
+	boolean logging  = true; 
+
+    //=================================================================
+    // CONSTRUCTOR METHODS
+    //=================================================================
+
+	public AscriptionProxyFactory () { 
+		super();
+		rootSort = "ascription";
+	} // end
+
+
+
+    //=================================================================
+    // MONITOR METHODS
+    //=================================================================
+
+
+
+	/**
+		The method <i>initializeProxy</i> does NOT set up the proxy to which we 
+		will be adding content from the given nominal. The problem with 
+		the ascription proxy factory is that we are not creating a 
+		proxy for the nominal on which the factory is called, but for
+		the Cop-Restrictor object! So, we need to check what the object is, 
+		whether it has a discourse referent, AND IF IT DOES, use the 
+		proxy corresponding to that referent. Otherwise, we would always
+		be creating a new proxy .... we do this in the production method, because
+		there we also have access to the PLF etc. 
+						
+		@param nomVarProxyAddress The (possibly null) address of the proxy 
+		@param nom	The packed nominal with which we are working
+		@throws SubarchitectureProcessException Thrown if the monitor has a problem with creating or updating a proxy
+	*/ 
+
+	public void initializeProxy (String nomVarProxyAddress, PackedNominal nom) 
+		throws SubarchitectureProcessException
+	{ 
+		this.nomVarProxyAddress = nomVarProxyAddress;
+
+	} // end initializeProxy
+
+
+
+    //=================================================================
+    // COMPUTATION METHODS
+    //=================================================================
+
+
+	/** Produces a proxy, or collection of proxies, starting from the given 
+		nominal, using the packed logical form and the treemap-index into the nominals. 
+		The method returns a result structure including variables of nominals for which we should no 
+		longer generate proxies, and the relations that should be introduced.
+		
+		@param nom The packed nominal from which proxy production should start
+		@param plf The packed logical form in which the nominal appears
+		@param packedNoms The map with nominal variables indexing into the packed logical form
+		@return ProxyFactoryResults A set with nominal variables of packed nominals for which proxies have been produced
+		@see org.cognitivesystems.comsys.monitors.AbstractProxyFactory#getRelProxiesTable		 
+		
+	*/
+	public ProxyFactoryResults produceProxies (PackedNominal nom, PackedLogicalForm plf, TreeMap packedNoms) 
+	
+	{  
+		log("Running the ascription proxy factory.");
+		ProxyFactoryResults result = new ProxyFactoryResults();
+		TreeSet excludes = new TreeSet();
+		// Start with getting the object, by nominal reference
+		Vector objectResult = getObject(nom,plf,packedNoms);
+		PackedNominal object = (PackedNominal) objectResult.get(0);
+		excludes.add(nom.nomVar);
+		if (object != null) {
+			// Now first initialize the proxy, based on the object
+			String objectDiscRef = _discRefsAccess.getDiscRef(object.nomVar);
+			log("Object nominal ["+object.nomVar+"] has discourse referent ["+objectDiscRef+"]");
+			// Create the proxy on the basis of the object
+			String objectSort = getPackedNominalSort(object);
+			if (objectSort.equals("thing")) { 
+				result = createThingProxy(object,plf,packedNoms);
+				log("Thing creation returned ["+result.getPendingProxyRelations().size()+"] proxy relations");
+			} else if (objectSort.equals("e-location")) {
+				result = createELocationProxy(object,plf,packedNoms);
+			} else {
+				result = createDefaultProxy(object,plf,packedNoms);
+			} // end if..else.. check what factory to use
+			// initiatilize proxy structure and -relations
+			proxyStructure = result.getProxyStructure();
+			pendingRels = result.getPendingProxyRelations();			
+			excludes.addAll(result.getExcludes());
+			
+			log("Proxy structure after creation of object proxy:\n"+proxyStructure.toString());
+			log("Excludes after proxy creation for the object: "+excludes.toString());
+			log("Pending proxy relations after object proxy: "+result.getPendingProxyRelations().size());
+			
+			
+			
+			// Then get the predication, by nominal reference to the root of the subtree
+			PackedNominal predication = getPredication(nom,plf,packedNoms);
+			if (predication != null) { 
+			// Finally, apply the predication, and reduce
+				ProxyFactoryResults applResult = null;
+				if (getFeatureValue(nom, "Mood").equals("int")) {
+					log("Interrogative mood, question");
+					// applResult = questionPredication(object,predication,plf,packedNoms);
+					applResult = applyPredication(object,predication,plf,packedNoms);
+					System.exit(0);
+				} else if (getFeatureValue(nom, "Mood").equals("ind")) {
+					log("Indicative mood, assertion");
+					applResult = applyPredication(object,predication,plf,packedNoms);
+				} else {
+					log("Mood feature = ["+getFeatureValue(nom, "Mood")+"]");
+					applResult = applyPredication(object,predication,plf,packedNoms);
+				}
+				// Fuse the proxy factory results
+				excludes.addAll(applResult.getExcludes());
+				
+				
+				// excludes.add(nom.nomVar);
+				// excludes.add(object.nomVar);
+
+				pendingRels.addAll(applResult.getPendingProxyRelations());
+
+				log("Excludes from the object result with relations: "+excludes.toString());				
+				
+				// exclude the immediate Cop-Scope, because that structure is not to be mapped. 
+				PackedNominal CopScope = getDependentNominal(nom, "Cop-Scope", packedNoms);
+				excludes.add(CopScope.nomVar);
+				
+				// Set the excludes and the pending relations
+				result.setExcludes(excludes);
+				result.setProxyStructure(proxyStructure);
+				result.setPendingProxyRelations(pendingRels);
+
+			} else { 
+				log(">>> empty predication!");
+			} 
+		} else { 
+			log("No object found for ascription!");
+			result = null;
+		} 
+		// end if..else check for there being an object
+		log("The excludes are: "+result.getExcludes());
+		log("The result contains ["+result.getPendingProxyRelations().size()+"] pending relations\n"+result.getPendingProxyRelations().toString());		
+		// return the result
+		return result;
+	} // end produceProxies
+
+	
+	
+
+	/**
+	Does not apply the predication to the object,
+	but makes it available for questions.
+	 */ 
+
+/**
+	private ProxyFactoryResults questionPredication (PackedNominal object, PackedNominal predication, PackedLogicalForm plf, TreeMap packedNoms)
+	throws BindingComponentException, SubarchitectureProcessException
+	{ 
+		log(">>>QQQ>>> QUESTION predication ["+predication.prop.prop+"]");
+		ProxyFactoryResults results = new ProxyFactoryResults();
+		Vector pendingProxyRelations = new Vector();
+		TreeSet excludes = new TreeSet();
+		// Check the type of predication: either we have a property sort or a type of location
+		String predSort = getPackedNominalSort(predication); 
+		if (predSort.equals("q-color")) { 
+			Colour colour = new Colour(predication.prop.prop, false, "");
+			log(">>>QQQ>>> not adding the color ["+predication.prop.prop+"] to the proxy!");
+			// generating the question + feature
+			FeaturePointer colourPointer = monitor.createAndStoreFeatureInQuestion(colour);
+			CommunicativeGoal _commGoal = null;
+			log(">>>QQQ>>> the color feature is: " + colour.m_colour);
+			if (colour.m_colour!="") {
+				log(">>>QQQ>>> we have a polar question. Going to construct the communicative goal...");
+				// we have a factual question!
+				String[] _noproxies = new String[1];
+				_noproxies[0] = "";
+				FeaturePointer[] _featPts = new FeaturePointer[1];
+				_featPts[0] = colourPointer;
+				_commGoal = new CommunicativeGoal(CommunicativeGoalSort.Question,
+						new CommQuestion(QuestionSort.Polar,
+								_noproxies,
+								_featPts),
+								new CommAssertion(AssertionSort.Attributive),
+								new CommCommand(CommandSort.Action, _noproxies),
+								TriBool.triIndeterminate);
+			}
+			results.addCommGoal(predication.nomVar, _commGoal);
+			log(">>>QQQ>>> storing the color feature on binding WM; adding the feature pointer and the nomVar of the predication ["+predication.nomVar+"] as discRef to the results!");
+			// end generating the question + feature
+			excludes.add(predication.nomVar);
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("q-size")) { 
+			Size sizeFeat = new Size(predication.prop.prop, false, "");
+			// monitor.addProxyFeature(sizeFeat);		
+			log(">>>QQQ>>> not adding the size ["+predication.prop.prop+"] to the proxy!");
+
+			// generating the question + feature
+			FeaturePointer sizePointer = monitor.createAndStoreFeatureInQuestion(sizeFeat);
+			CommunicativeGoal _commGoal = null;
+			log(">>>QQQ>>> the size feature is: " + sizeFeat.m_size);
+			if (sizeFeat.m_size!="") {
+				log(">>>QQQ>>> we have a polar question. Going to construct the communicative goal...");
+				// we have a factual question!
+				String[] _noproxies = new String[1];
+				_noproxies[0] = "";
+				FeaturePointer[] _featPts = new FeaturePointer[1];
+				_featPts[0] = sizePointer;
+				_commGoal = new CommunicativeGoal(CommunicativeGoalSort.Question,
+						new CommQuestion(QuestionSort.Polar,
+								_noproxies,
+								_featPts),
+								new CommAssertion(AssertionSort.Attributive),
+								new CommCommand(CommandSort.Action, _noproxies),
+								TriBool.triIndeterminate);
+			}
+			results.addCommGoal(predication.nomVar, _commGoal);
+			log(">>>QQQ>>> storing the size feature on binding WM; adding the feature pointer and the nomVar of the predication ["+predication.nomVar+"] as discRef to the results!");
+			// end generating the question + feature
+			
+			
+			excludes.addAll(getDependentNomVars(predication,packedNoms));			
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("q-location")) { 
+			DebugString sizeFeat = new DebugString();
+			sizeFeat.m_debugString = "QUESTION ABOUT location-feature: "+predication.prop.prop+" - NOT CONSTRUCTED A COMMUNICATIVE GOAL!"; 
+			monitor.addProxyFeature(sizeFeat);		
+			log(">>>QQQ>>> !!! not adding the question about q-location ["+predication.prop.prop+"]! It is in the proxy's DebugString..."); 
+			excludes.addAll(getDependentNomVars(predication,packedNoms));						
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("q-shape")) { 
+			Shape shape = new Shape(predication.prop.prop, false, "");
+			// monitor.addProxyFeature(shape);		
+			log(">>>QQQ>>> not adding the shape ["+predication.prop.prop+"] to the proxy!");
+
+			// generating the question + feature
+			FeaturePointer shapePointer = monitor.createAndStoreFeatureInQuestion(shape);
+			CommunicativeGoal _commGoal = null;
+			log(">>>QQQ>>> the shape feature is: " + shape.m_shape);
+			if (shape.m_shape!="") {
+				log(">>>QQQ>>> we have a polar question. Going to construct the communicative goal...");
+				// we have a factual question!
+				String[] _noproxies = new String[1];
+				_noproxies[0] = "";
+				FeaturePointer[] _featPts = new FeaturePointer[1];
+				_featPts[0] = shapePointer;
+				_commGoal = new CommunicativeGoal(CommunicativeGoalSort.Question,
+						new CommQuestion(QuestionSort.Polar,
+								_noproxies,
+								_featPts),
+								new CommAssertion(AssertionSort.Attributive),
+								new CommCommand(CommandSort.Action, _noproxies),
+								TriBool.triIndeterminate);
+			}
+			results.addCommGoal(predication.nomVar, _commGoal);
+			log(">>>QQQ>>> storing the shape feature on binding WM; adding the feature pointer and the nomVar of the predication ["+predication.nomVar+"] as discRef to the results!");
+			// end generating the question + feature			
+			
+			excludes.addAll(getDependentNomVars(predication,packedNoms));						
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (isDeictic(predication)) { 
+			PackedNominal visCtxt = getDependentNominal(predication,"VisCtxt", packedNoms);
+			if (visCtxt != null) { 
+				DebugString saliencyFeat = new DebugString();
+				saliencyFeat.m_debugString = "deictic saliency feature: "+predication.prop.prop+" - NOT CONSTRUCTED A COMMUNICATIVE GOAL!"; 
+				log(">>>QQQ>>> not adding the salient deixis ["+predication.prop.prop+"] to the proxy!");
+				monitor.addProxyFeature(saliencyFeat);
+				monitor.addSalienceToCurrentProxy();
+				log(">>>QQQ>>> !!! not adding the question about salience ["+predication.prop.prop+"]! It is in the proxy's DebugString..."); 
+
+				
+				// now establish the appropriate proximity, based on the Proximity feature 
+				ArrayList<PackedFeature> packedFeats = new ArrayList<PackedFeature>(Arrays.asList(visCtxt.feats));
+				Iterator featsIter = packedFeats.iterator();
+				while (featsIter.hasNext()) { 
+					PackedFeature pFeat = (PackedFeature) featsIter.next();
+					String feature = pFeat.feat;
+					if (feature.equals("Proximity")) { 
+						DebugString dFeat = new DebugString();
+						dFeat.m_debugString = "deictic proximity: "+pFeat.value+" - NOT CONSTRUCTED A COMMUNICATIVE GOAL!";
+						log(">>>QQQ>>> not adding the deictic proximity ["+pFeat.value+"] to the proxy!");
+						monitor.addProxyFeature(dFeat);		
+						if(pFeat.value.equals("proximal")) {
+							Reachable reachable = new Reachable();
+							reachable.m_reachable = true;
+							log(">>>QQQ>>> not adding the reachability ["+reachable+"] to the proxy!");
+							// monitor.addProxyFeature(reachable);		
+						
+							// generating the question + feature
+							FeaturePointer reachPointer = monitor.createAndStoreFeatureInQuestion(reachable);
+							CommunicativeGoal _commGoal = null;
+							log(">>>QQQ>>> the reachable feature is: " + reachable.m_reachable);
+							log(">>>QQQ>>> we have a polar question. Going to construct the communicative goal...");
+							// we have a polar question!
+							String[] _noproxies = new String[1];
+							_noproxies[0] = "";
+							FeaturePointer[] _featPts = new FeaturePointer[1];
+							_featPts[0] = reachPointer;
+							_commGoal = new CommunicativeGoal(CommunicativeGoalSort.Question,
+									new CommQuestion(QuestionSort.Polar,
+											_noproxies,
+											_featPts),
+											new CommAssertion(AssertionSort.Attributive),
+											new CommCommand(CommandSort.Action, _noproxies),
+											TriBool.triIndeterminate);
+							results.addCommGoal(predication.nomVar, _commGoal);
+							log(">>>QQQ>>> storing the reachable feature on binding WM; adding the feature pointer and the nomVar of the predication ["+predication.nomVar+"] as discRef to the results!");
+							// end generating the question + feature			
+						
+						}
+					} // end if.. check for proximity feature
+				} // end while over features 					
+			} // end if..check for vis ctxt
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("m-location")) {  	
+			PackedNominal anchor = getDependentNominal(predication,"Arg",packedNoms);
+			if (anchor != null) { 
+				// has one, so the "object" is the actual location
+				String amodalSpatialRelation = predication.prop.prop;
+				log("#### APPLICATION -- ADDING a spatial relation of type ["+amodalSpatialRelation+"]");				
+				PendingProxyRelation spatialRel = new PendingProxyRelation(object.nomVar,
+						anchor.nomVar,
+						amodalSpatialRelation, TemporalFrameType.NA);
+				pendingProxyRelations.addElement(spatialRel);
+			} // end if..check for anchor
+			excludes.add(predication.nomVar);
+		} else if (predSort.equals("entity")) {
+			log(">>>QQQ>>>QQQ seems as if we have a factual question here!");
+
+			if (predication.prop.prop.equals("color")) {
+				Colour colour = new Colour("", false, "");
+				log(">>>QQQ>>>QQQ we have a question about the color ["+predication.prop.prop+"]!");
+				// generating the question + feature
+				FeaturePointer colourPointer = monitor.createAndStoreFeatureInQuestion(colour);
+				CommunicativeGoal _commGoal = null;
+				log(">>>QQQ>>> we have a factual question. Going to construct the communicative goal...");
+				// we have a factual question!
+				String[] _noproxies = new String[1];
+				_noproxies[0] = "";
+				FeaturePointer[] _featPts = new FeaturePointer[1];
+				_featPts[0] = colourPointer;
+				_commGoal = new CommunicativeGoal(CommunicativeGoalSort.Question,
+						new CommQuestion(QuestionSort.Factual,
+								_noproxies,
+								_featPts),
+								new CommAssertion(AssertionSort.Attributive),
+								new CommCommand(CommandSort.Action, _noproxies),
+								TriBool.triIndeterminate);
+				results.addCommGoal(predication.nomVar, _commGoal);
+				log(">>>QQQ>>> storing the color feature on binding WM; adding the feature pointer and the nomVar of the predication ["+predication.nomVar+"] as discRef to the results!");
+				// end generating the question + feature
+				excludes.add(predication.nomVar);
+				excludes.addAll(getDependentNomVars(predication,packedNoms));
+
+			}
+			else {
+				log(">>>QQQ>>>QQQ Got a factual question about something I cannot hanlde: ["+predication.prop.prop+"]");
+			}
+		
+		
+		} // end if..else check for possible types of predication
+		// update the results
+		results.setExcludes(excludes);
+		results.setPendingProxyRelations(pendingProxyRelations);
+
+		// Return the results
+		return results;
+	} // end applyPredication
+
+*/
+
+
+	/**
+		Applies the predication to the object
+	*/ 
+
+	private ProxyFactoryResults applyPredication (PackedNominal object, PackedNominal predication, PackedLogicalForm plf, TreeMap packedNoms)
+	  { 
+		log("APPLY predication ["+predication.prop.prop+"]");
+		ProxyFactoryResults results = new ProxyFactoryResults();
+		Vector pendingProxyRelations = new Vector();
+		TreeSet excludes = new TreeSet();
+		// Check the type of predication: either we have a property sort or a type of location
+		String predSort = getPackedNominalSort(predication); 
+		if (predSort.equals("q-color")) { 
+			applyPropertyPredication (predication,packedNoms);
+		} else if (predSort.equals("q-size")) { 
+			applyPropertyPredication (predication,packedNoms);
+		} else if (predSort.equals("q-location")) { 
+			applyPropertyPredication (predication,packedNoms);
+		} else if (predSort.equals("q-shape")) { 
+			applyPropertyPredication (predication,packedNoms);
+		} else if (predSort.equals("q-location")) { 
+			applyPropertyPredication (predication,packedNoms);			
+		} else if (isDeictic(predication)) { 
+			proxyStructure.setFeature("Salience",predication.prop.prop);
+			// now establish the appropriate proximity, based on the Proximity feature 
+			ArrayList<PackedFeature> packedFeats = new ArrayList<PackedFeature>(Arrays.asList(predication.feats));
+			Iterator featsIter = packedFeats.iterator();
+			while (featsIter.hasNext()) { 
+				PackedFeature pFeat = (PackedFeature) featsIter.next();
+				String feature = pFeat.feat;
+				if (feature.equals("Proximity")) { 
+					if(pFeat.value.equals("proximal")) {
+						proxyStructure.setFeature("Proximity",pFeat.value);
+					}
+				} // end if.. check for proximity feature
+			} // end while over features 					
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+			log("Excludes after applying deictic predication: "+excludes.toString());
+		} else if (predSort.equals("m-location") || predSort.equals("m-whereto")) {  	
+			log("Applying ["+predSort+"] as predication");
+			PackedNominal anchor = getDependentNominal(predication,"Anchor",packedNoms);
+			if (anchor != null) { 
+				// has one, so the "object" is the actual location
+				String amodalSpatialRelation = predication.prop.prop;
+				log("#### APPLICATION -- ADDING a spatial relation of type ["+amodalSpatialRelation+"]");				
+				PendingProxyRelation spatialRel = new PendingProxyRelation(object.nomVar,
+																		   anchor.nomVar,
+																			amodalSpatialRelation);
+				pendingProxyRelations.addElement(spatialRel);
+			} else { 
+				applyPropertyPredication(predication,packedNoms);
+			} // end if..check for anchor
+			log("Excluding ["+predication.nomVar+"]");
+			excludes.add(predication.nomVar);
+			
+			
+			
+		} else if (predSort.equals("quality")) { 
+			// first check if we have a conjunction
+			if (predication.prop.prop.equals("and")) { 
+				log("Applying conjunctive list of properties");
+
+				excludes.add(predication.nomVar);
+				// get the first conjunct
+				PackedNominal conjunct = getDependentNominal(predication,"First",packedNoms); 
+				
+				if (hasDependent(conjunct,"First")) { 
+					// get the item under the conjunct
+					PackedNominal conjunctItem = getDependentNominal(conjunct,"First",packedNoms);
+					excludes.addAll(applyPropertyPredication (conjunctItem,packedNoms));
+					
+					conjunct = getDependentNominal(conjunct,"Next",packedNoms);
+					if (hasDependent(conjunct,"First")) { 
+						ProxyFactoryResults applyResults = applyPredication(object, conjunct, plf, packedNoms); 
+						excludes.addAll(applyResults.getExcludes());
+						excludes.add(conjunct.nomVar);						
+						pendingProxyRelations.addAll(applyResults.getPendingProxyRelations());
+					} else { 
+						excludes.addAll(applyPropertyPredication(conjunct,packedNoms));
+						excludes.add(conjunct.nomVar);								
+					} 
+				} else { 
+					// flat list of two conjuncts
+					excludes.addAll(applyPredication(object,conjunct,plf,packedNoms).getExcludes());
+					excludes.add(conjunct.nomVar);
+					conjunct = getDependentNominal(predication,"Next",packedNoms);
+					excludes.addAll(applyPredication(object,conjunct,plf,packedNoms).getExcludes());
+					excludes.add(conjunct.nomVar);					
+				} 
+				// end if.. check for First
+			}
+		} else if (predSort.equals("entity")) { 
+			if (predication.prop.prop.equals("")) { 
+				if (hasDependent(predication,"Owner")) { 
+					PackedNominal owner = getDependentNominal(predication,"Owner",packedNoms);
+					PendingProxyRelation ownerRel = new PendingProxyRelation(object.nomVar, owner.nomVar, "Owner");					
+					pendingProxyRelations.add(ownerRel);
+					excludes.add(predication.nomVar);
+				}
+			} else { 
+				log("Unknown entity proposition to apply as predication");
+			} 
+		} else {
+			System.err.println("[AscriptionProxyFactory] Unknown type of predication: sort ["+predSort+"] with proposition ["+predication.prop.prop+"]");
+		} // end if..else
+
+		log("Proxy structure after applying predication:\n"+proxyStructure.toString());
+
+
+		// update the results
+		results.setExcludes(excludes);
+		results.setPendingProxyRelations(pendingProxyRelations);
+		results.setProxyStructure(proxyStructure);
+		// Return the results
+		return results;
+	} // end applyPredication
+
+
+	/** 
+		Applies a property predication and returns the excludes. 
+	*/ 
+	
+	private TreeSet applyPropertyPredication (PackedNominal predication, TreeMap packedNoms) 
+	{ 
+		TreeSet excludes = new TreeSet();
+		// Check the type of predication: either we have a property sort or a type of location
+		String predSort = getPackedNominalSort(predication); 
+		log("Applying property predication of sort ["+predSort+"]");
+		if (predSort.equals("q-color")) { 
+			proxyStructure.setFeature("Colour",predication.prop.prop);	
+			excludes.add(predication.nomVar);
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("q-size")) { 
+			proxyStructure.setFeature("Size",predication.prop.prop);	
+			excludes.addAll(getDependentNomVars(predication,packedNoms));			
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("q-location") || predSort.equals("m-location") || predSort.equals("m-whereto") ) { 
+			proxyStructure.setFeature("Proximity",predication.prop.prop);	
+			excludes.addAll(getDependentNomVars(predication,packedNoms));						
+			excludes.addAll(getDependentNomVars(predication,packedNoms));
+		} else if (predSort.equals("q-shape")) { 
+			proxyStructure.setFeature("Shape",predication.prop.prop);				
+			excludes.addAll(getDependentNomVars(predication,packedNoms));						
+			excludes.addAll(getDependentNomVars(predication,packedNoms));		
+		} else { 
+			System.err.println("[AscriptionProxyFactory] Unknown type of property predication: sort ["+predSort+"] with proposition ["+predication.prop.prop+"]");
+		}
+		return excludes;
+	} // end applyPropertyPredication
+
+
+	/** 
+		Creates a proxy for an object by calling the DefaultProxyFactory
+	*/ 
+
+	private ProxyFactoryResults createDefaultProxy (PackedNominal CopScope, PackedLogicalForm plf, TreeMap packedNoms ) 
+	{ 
+		DefaultProxyFactory defaultFactory = new DefaultProxyFactory();
+		defaultFactory.setDiscRefs(_discRefsAccess);
+		return defaultFactory.produceProxies(CopScope,plf,packedNoms);
+	} // end createDefaultProxy
+
+
+	/** 
+		Creates a proxy for a location object by calling the ELocationProxyFactory
+	*/ 
+
+	private ProxyFactoryResults createELocationProxy (PackedNominal CopScope, PackedLogicalForm plf, TreeMap packedNoms ) 
+	{ 
+		ELocationProxyFactory elocFactory = new ELocationProxyFactory();
+		elocFactory.setDiscRefs(_discRefsAccess);		
+		return elocFactory.produceProxies(CopScope,plf,packedNoms);
+	} // end createELocationProxy
+
+
+
+	/** 
+		Creates a thing-type proxy, by calling the ThingProxyFactory. 
+	*/ 
+
+	private ProxyFactoryResults createThingProxy (PackedNominal CopScope, PackedLogicalForm plf, TreeMap packedNoms ) 
+	{ 
+		ThingProxyFactory thingFactory = new ThingProxyFactory();
+		thingFactory.setDiscRefs(_discRefsAccess);				
+		return thingFactory.produceProxies(CopScope,plf,packedNoms);
+	} // end createThingProxy
+
+
+
+	/**
+		The method returns a Vector with two pieces of information: the nominal of the object, to which the predication is being applied; 
+		and a TreeSet with excludes.  The object, deictic pronouns and property descriptions in the Cop-Restrictor ("the PROPERTY of the OBJECT") 
+		are put on the excludes list. 
+
+		@param nom The packed nominal from which we should start looking for the object
+		@param plf The packed logical form in which the nominal appears
+		@param packedNoms The map with nominal variables indexing into the packed logical form
+		@return PackedNominal The (root) nominal of the object description (note this may be a subtree); <tt>null</tt> if not found
+	*/ 
+
+	private Vector getObject (PackedNominal nom, PackedLogicalForm plf, TreeMap packedNoms) { 
+		Vector returnResult = new Vector();
+		TreeSet excludes = new TreeSet();
+		PackedNominal result = null; 
+		boolean found = false; 
+		// get the Cop-Restrictor; this usually contains the object
+		PackedNominal CopRestrictor = getDependentNominal(nom, "Cop-Restr", packedNoms);
+		if (CopRestrictor != null) { 
+			// Get the sort of the root of the Cop-Restrictor
+			String rSort = getPackedNominalSort(CopRestrictor);
+			log("Working on Cop-Restrictor of sort ["+rSort+"]");
+			
+		if(isDeictic(CopRestrictor)) {
+			log("Cop-Restrictor is deictic: ["+CopRestrictor.prop.prop+"]");
+			excludes.addAll(getDependentNomVars(CopRestrictor,packedNoms));	
+			PackedNominal CopScope = getDependentNominal(nom, "Cop-Scope", packedNoms);
+			if (CopScope != null) { 
+				// Get the sort of the root of the Cop-Restrictor
+				String sSort = getPackedNominalSort(CopScope);					
+				if (sSort.equals("thing") || sSort.equals("e-location")) { 
+					found = true;
+					result = CopScope;
+					excludes.add(CopRestrictor.nomVar);
+					excludes.addAll(getDependentNomVars(CopRestrictor,packedNoms));
+					// excludes.add(CopScope.nomVar);							
+					// excludes.addAll(getDependentNomVars(CopScope,packedNoms));						
+				} // end all
+			} // end if.. check for Cop-Scope	
+		
+		} else if (isWhatObj(CopRestrictor)) { 
+			log("Cop-Restrictor is a what-object: ["+CopRestrictor.prop.prop+"]");
+			excludes.addAll(getDependentNomVars(CopRestrictor,packedNoms));	
+			PackedNominal CopScope = getDependentNominal(nom, "Cop-Scope", packedNoms);
+			if (CopScope != null) { 
+				// Get the sort of the root of the Cop-Restrictor
+				String sSort = getPackedNominalSort(CopScope);					
+				if (sSort.equals("thing") || sSort.equals("e-location") || sSort.equals("entity")) { 
+					found = true;
+					result = CopScope;
+					excludes.add(CopRestrictor.nomVar);
+					excludes.addAll(getDependentNomVars(CopRestrictor,packedNoms));
+					// excludes.add(CopScope.nomVar);							
+					// excludes.addAll(getDependentNomVars(CopScope,packedNoms));						
+				} // end all
+			} // end if.. check for Cop-Scope	
+
+		} else if (rSort.equals("person")) { 
+			// dealing with a person
+			found = true;
+			result = CopRestrictor;
+			// excludes.addAll(getDependentNomVars(CopRestrictor,packedNoms));				
+		} else if (rSort.equals("entity") && !isDeictic(CopRestrictor)) { 
+			// dealing with a "property of object" construction
+			PackedNominal object = getDependentNominal(CopRestrictor, "Owner", packedNoms); 
+			if (object != null) { 
+				// we do not further check the type of object; 
+				// could be a thing (the color of the mug), an e-location (the size of the room)
+				found  = true; 
+				result = object;
+			} // end if.. check for non-empty object
+			excludes.add(CopRestrictor);
+			// excludes.addAll(getDependentNomVars(CopRestrictor,packedNoms));
+		} else if (rSort.equals("thing")) { 	
+			found = true;		
+			result = CopRestrictor;
+		} else if (rSort.equals("e-location")) { 
+			// dealing with a location (room, area, ...)
+			found  = true; 
+			result = CopRestrictor;
+					
+		} else { 
+			// not able to find anything here
+		} // end if..else check for type of Cop-Restrictor
+		} else { 
+			log("Under the node ["+nom.nomVar+"] no Cop-Restr dependent was found"); 
+		} // end if..check for non-null Cop-Restrictor
+		// return the result
+		returnResult.add(0,result);
+		returnResult.add(1,excludes);
+		return returnResult;
+	} // end getObject
+
+
+	/**
+		The method returns the root of the predication, as PackedNominal. By default we expect the predication to 
+		be in the Cop-Scope, but we also check the Cop-Restrictor for deictic pronouns. 
+
+		@param nom The packed nominal from which we should start looking for the object
+		@param plf The packed logical form in which the nominal appears
+		@param packedNoms The map with nominal variables indexing into the packed logical form
+		@return PackedNominal The (root) nominal of the predication description (note this may be a subtree); <tt>null</tt> if not found
+
+	*/ 
+	
+	private PackedNominal getPredication (PackedNominal nom, PackedLogicalForm plf, TreeMap packedNoms) {
+		PackedNominal result = null;
+		TreeSet excludes = new TreeSet();
+		boolean found = false; 
+		// First, check whether the Cop-Restrictor is a deictic, to use that as predication
+		PackedNominal CopRestrictor = getDependentNominal(nom, "Cop-Restr", packedNoms);
+		if (CopRestrictor != null) {
+			// Get the sort of the root of the Cop-Restrictor
+			if (isDeictic(CopRestrictor)) {
+				// Found our predication, return pointer to object
+				found = true;
+				result = CopRestrictor;
+			} // end if.. check for deictic
+			else if (isWhatObj(CopRestrictor)) { 
+				// found our predication, return pointer to Modifier!
+				PackedNominal modifier = getDependentNominal(CopRestrictor, "Modifier", packedNoms);
+				found=true;
+				result = modifier;
+			} // end if.. check for what-object
+		} // end if.. check for non-null Cop-Restrictor
+		// If no predication found yet, go to the Cop-Scope
+		if (!found) { 
+			PackedNominal CopScope = getDependentNominal(nom, "Cop-Scope", packedNoms);
+			if (CopScope != null) { 
+				if (hasDependent(CopScope,"Modifier")) { 
+					log("getting a predication based on a MODIFIER dependent");
+					result = getDependentNominal(CopScope, "Modifier", packedNoms);
+				} else if (hasDependent(CopScope,"Location")) { 
+					result = getDependentNominal(CopScope, "Location", packedNoms);				
+				} else { 
+					log ("Cannot find LOCATION, or MODIFIER under Cop-Scope, returning the entire scope");
+					result = CopScope;
+				} // end if..else check for type of predication
+			} else { 
+				log("Cannot locate Cop-Scope under nomvar ["+nom.nomVar+"]!"); 
+			} // check for non-null Cop-Scope
+		} // end if.. check whether to descent down the Cop-Scope
+		return result;
+	 } // end getPredication
+
+	/** 
+		Checks whether a nominal expresses a deictic pronoun
+	*/ 
+	private boolean isDeictic (PackedNominal nom) { 
+		boolean result = false; 
+		String nomSort = getPackedNominalSort(nom);
+		if (nomSort.equals("deictic-pronoun")) {
+			result = true;
+		} else if (nomSort.equals("entity")) { 
+			result = ( nom.prop.prop.equals("this") || 
+						nom.prop.prop.equals("that") ||
+						nom.prop.prop.equals("these") ||
+						nom.prop.prop.equals("those") ||
+						nom.prop.prop.equals("here") ||
+						nom.prop.prop.equals("context") ||
+						nom.prop.prop.equals("there"));	
+		} // end if.. check for appropriate semantic sort
+		return result; 
+	} // 
+
+	/** 
+	Checks whether a nominal expresses a deictic pronoun
+	 */ 
+	private boolean isWhatObj(PackedNominal nom) { 
+		boolean result = false; 
+		String nomSort = getPackedNominalSort(nom);
+		if (nomSort.equals("thing")) { 
+			result = ( nom.prop.prop.equals("what-obj")); 
+					//nom.prop.prop.equals("that") ||
+					//nom.prop.prop.equals("these") ||
+					//nom.prop.prop.equals("those") ||
+		} // end if.. check for appropriate semantic sort
+		return result; 
+	} // 
+
+//=================================================================
+    // I/O METHODS
+    //=================================================================
+
+	public void log (String msg) { 
+		if (logging) System.out.println("[AscriptionProxyFactory] "+msg);
+	} // end log
+
+} // end AscriptionProxyFactory
+
