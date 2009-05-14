@@ -1,0 +1,57 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+ 
+# This file contains the families for various markers, including
+# nominal markers (obliques), verbal markers (infintival to) ,
+# and dependent clause markers (that/if etc)
+
+#########################
+# Obliques (NP markers) #
+#########################
+ 
+   family NP-marker (indexRel="*NoSem*")     { entry: obl<~55>[T MARK=*] /^ np<55>[T CASE=acc NUM PERS] ; 
+                                               entry: obln<~55>[T MARK=*] /^ n<55>[T NUM PERS] ; }
+
+#####################
+# Dep-clause markers  #
+#####################
+   
+   # Should we add semantics??
+
+   family Dep-clause-marker  { entry:  from-s(MARK= *) / s<10>[G s-dependent MARK=none]: EVENT( * <Scope>(G) ) ; }   
+   family Dep-clause-marker-no-sem (indexRel="*NoSem*")   { entry:  from-s(MARK= *) / s(s-dependent MARK=none) ; }
+
+#########################
+# Infinitive Marking To #
+#########################
+  
+   # Two Entries: 1st takes a vf-base vp and the second doesn't, adding context pred to this event 
+   #       If this turns out to be too promiscous. Add another VFORM value  inf-ctxt, i.e. this
+   #       allows whatever chooses inf vps to choose whether or not its inf can be contextualized
+   #
+   #
+   family Infinitive-to (indexRel="*NoSem*") {  entry: ( from-s(inf) +subj() ) / ( s(vf-base) +subj() ) ; 
+                                                entry: s(inf) +subj()          : EVENT(context)         ;   } 
+   # I am ready for verb+ing   
+   #
+   family For-verb-ing     (indexRel="*NoSem*") { entry: ( from-s(for-ing) +subj() ) / ( s(ing) +subj() ) ; } 
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+ 

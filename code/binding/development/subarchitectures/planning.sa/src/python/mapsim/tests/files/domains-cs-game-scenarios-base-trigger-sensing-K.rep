@@ -1,0 +1,4 @@
+# This run was created calling 'mapsim domains/cs-game/scenarios/base/trigger-sensing-K'
+MAPSIM run starts. There is 1 agent: Robot
+ (1) Robot: execute 'sense_colour Robot flag1'.
+MAPSIM terminates successfully.

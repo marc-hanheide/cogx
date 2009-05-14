@@ -1,0 +1,14 @@
+#!/bin/bash
+path=`dirname $0`
+prefix=$1
+base_fn=${prefix%.*}
+extension="ps"
+
+for fn in `ls $1*`
+do
+  "$path/gen_graph" $fn $extension
+done
+for fn in `ls $base_fn*.$extension`
+do
+  "$path/show_dot" $fn
+done

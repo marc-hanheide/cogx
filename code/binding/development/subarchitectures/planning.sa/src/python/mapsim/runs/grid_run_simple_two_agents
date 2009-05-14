@@ -1,0 +1,18 @@
+domain gridworld
+settings SETTINGS_GRIDWORLD_ONLY_ONE
+
+suite two_agents
+prob001
+STOP
+
+suite two_agents
+two_agts_1
+STOP
+
+suite two_agents
+three_agts_1
+STOP
+
+domain coffee
+suite coffee1
+STOP

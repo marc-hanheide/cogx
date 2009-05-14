@@ -1,0 +1,127 @@
+(define (domain visualPlan)
+(:requirements :typing :adl)
+
+;;; Definition of the types involved in the domain -- everything is an
+;;; object to begin with!...
+(:types
+   ;; Types for general variables...
+   agent boolean - object
+   human robot planning_agent - agent
+
+   ;; Define visual regions and their properties...
+   visRegion - object
+   colorProp objectType shapeProp - object
+)
+
+
+
+;;; Constants involved in the domain...
+(:constants
+  ;;; Possible color labels...
+  ;;; blue black yellow - colorProp
+  red green blue yellow - colorProp
+
+  ;;; Possible object types detectable by SIFT...
+  picture cuboid mug - objectType
+
+  ;;; Possible shape types detectable by shape detector...
+  circular squared triangular starred - shapeProp
+
+  ;;; Boolean values that variables can take...
+  true false - boolean
+
+  ;;; Dummy agents to use for the operators...
+  mohan - robot
+  mohan - planning_agent
+)
+
+
+
+
+;;; Definition of the predicates involved in the process...
+(:predicates
+  ;;; Color property value of a particular visual region...
+  ( colorProp-val ?vr - visRegion ?c - colorProp ) 
+
+  ;;; Object property value, i.e. object type in the visual sense --
+  ;;; currently beaker, mug or jar...
+  ( objectType-val ?vr - visRegion ?objType - objectType )
+
+  ;;; Shape property value, i.e. object shape in the visual sense --
+  ;;; currently circle, square or  diamond...
+  ( shapeProp-val ?vr - visRegion ?s - shapeProp )
+
+  ;;; Sets the visual region's properties to reflect if the Sift
+  ;;; operators have been applied...
+  ( applied-Sift ?vr - visRegion )
+
+  ;;; Sets the visual region's properties to reflect if the Color
+  ;;; operators have been applied...
+  ( applied-Color ?vr - visRegion )
+
+  ;;; Sets the visual region's properties to reflect if the shape
+  ;;; operators have been applied...
+  ( applied-Shape ?vr - visRegion )
+
+  ;;; Predicates set to denote that an object or color or shape has
+  ;;; been detected in a visual region...
+  ( containsObject ?vr - visRegion ?objType - objectType )
+  ( containsColor ?vr - visRegion ?colorP - colorProp )
+  ( containsShape ?vr - visRegion ?shapeP - shapeProp )
+)
+
+
+
+
+;;; Definition of allowable actions...
+
+
+;;; Action that when triggered can find the object type (i.e. picture,
+;;; cuboid, mug) in an appropriate visual region...
+
+(:action sift-detector
+ :agent ( ?a - robot )
+ :parameters ( ?vr - visRegion  ?objT - objectType )
+ :precondition ( and
+	( not ( applied-Sift ?vr ) ) )
+ 	
+ :effect ( and 
+     ( applied-Sift ?vr )
+     ( containsObject ?vr ?objT	) ) 
+)
+
+
+
+;;; Action that when triggered can find the color label (red, green,
+;;; blue, yellow) in an appropriate visual region...
+
+(:action color-detector
+ :agent ( ?a - robot )
+ :parameters ( ?vr - visRegion  ?colorP - colorProp )
+ :precondition ( and
+	( not ( applied-Color ?vr ) ) )
+ 	
+ :effect ( and 
+     ( applied-Color ?vr )
+     ( containsColor ?vr ?colorP ) ) 
+)
+
+
+
+
+;;; Action that when triggered can find the object shape
+;;; (i.e. circular, squared, triangular, starred) in an appropriate
+;;; visual region...
+
+(:action shape-detector
+ :agent ( ?a - robot )
+ :parameters ( ?vr - visRegion ?shapeP - shapeProp )
+ :precondition ( and
+	( not ( applied-Shape ?vr ) ) )
+
+ :effect ( and
+     ( applied-Shape ?vr )
+     ( containsShape ?vr ?shapeP ) ) 
+)
+
+)

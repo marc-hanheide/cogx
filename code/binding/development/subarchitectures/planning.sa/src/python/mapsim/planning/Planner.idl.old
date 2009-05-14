@@ -1,0 +1,112 @@
+// #include <CAST.idl>
+
+module Planner {
+ 
+	/* object declation for use in MAPL/PDDL initial states*/
+	struct ObjectDeclaration {
+		string name;
+		string type;
+	};
+	typedef sequence<ObjectDeclaration> ObjectList;
+
+// 	///Ontological type for \p ObjectDeclaration
+// 	const cast::cdl::OntologyEntry OBJECT_DECLARATION_TYPE_STRING = "Planning:ObjectDeclaration";
+
+
+	/* Fact: name of a proposition or state variable + arguments.
+	   FactList: a set of facts, as used in the initial state of
+	   a planning problem. */
+	typedef string Fact;
+	typedef sequence<Fact> FactList;
+
+// 	///Ontological type for \p Fact
+// 	const cast::cdl::OntologyEntry FACT_TYPE_STRING = "Planning:Fact";
+
+
+	struct PlanningTask {
+		ObjectList objects;
+		FactList facts;
+		string goal;
+		string domain_fn;
+	};
+
+
+	/* GroundAction: operator name + parameters.  */
+	// typedef sequence<string> GroundAction;
+	typedef string GroundAction;  // currently we don't split strings in the planner
+
+	/* SeqPlan: a totally-ordered plan, i.e. a sequence of ground actions */
+	typedef sequence<GroundAction>  SeqPlan;
+
+	/* graph representation of partially-ordered plans.*/
+	typedef unsigned short Edge[2];
+	struct SimplePOPlan {
+		sequence<GroundAction> nodes;
+		sequence<Edge> edges;
+	};
+
+	/* MonitorOutput objects are returned by the validate_plan() 
+	   and goal_achieved() methods.  They describe whether a plan
+	   is still executable in a given state and whether it achieves
+	   the goal.  If one of these is not the case, the advice string
+	   contains some basic information about the cause of failure
+	   and possible means of repair.  Exact syntax and use for this
+	   will be specified later. */
+	struct MonitorOutput {
+		boolean executable;
+		boolean goal_achieved;
+		string advice;
+	};
+
+
+	exception Failure {
+		string message;
+	};
+	
+ 
+
+	/* The PlannerServer provides the external interface with the
+	   planner and monitoring components.  Additionally, it provides
+	   methods for storing and querying plan memories,
+	   i.e. histories of plan execution and plan changes.
+	*/
+	interface PlannerServer {
+
+		SimplePOPlan find_plan(in PlanningTask task) raises (Failure);
+
+		MonitorOutput monitor_plan(in SimplePOPlan plan, in PlanningTask task) raises (Failure);
+
+		/* register a new task with the planner; returns the id of a new planning memory */
+		string new_task(in PlanningTask task);
+
+		SimplePOPlan current_plan(in string pmID);
+
+		SimplePOPlan possible_next_steps(in string pmID);
+
+		void advance(in string pmID, in string step, in unsigned short time);
+
+		FactList current_state_estimation(in string pmID);
+
+		void set_pm_state(in string pmID, in FactList facts);
+
+		void update_pm_state(in string pmID, in FactList facts);
+
+		void add_plan(in string pmID, in SimplePOPlan simple_plan);
+
+		SeqPlan execution_history(in string pmID);
+		
+		void negative_sensing(in string pmID, in GroundAction sensing_action);
+		
+		/**
+		 * Do a test of all functionality with some sample input.
+		 **/
+		void self_test();
+
+		/**
+		 * Shut down the planner server
+		 **/
+		void kill_me();
+
+	};
+
+};

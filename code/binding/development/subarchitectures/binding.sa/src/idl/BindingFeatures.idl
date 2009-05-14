@@ -1,0 +1,311 @@
+#ifndef BINDING_FEATURES_IDL_
+#define BINDING_FEATURES_IDL_
+
+#include "BindingFeaturesCommon.idl"
+
+/// the module \p BindingFeatures encapsulates all abstract types of features
+/// together with their default castOntology names. This is where
+/// new feature types must be added if other modalities need them,
+/// e.g. bounding boxes, colours etc etc....
+/// \remark the binding features used to be in a module under BindingData, so if you have \c BindingData.Feature.XXX or in C++ \c BindingData::Feature::XXX (where XXX is the binding  feature)
+module BindingFeatures {    
+  
+  /// with this type of feature alone we would have only string
+  /// matching, just as the Stockholm version of the binder. This
+  /// kind of concept is not so good since it is impossible to infer
+  /// what type it is.
+  struct Concept {
+    string m_concept;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// The name of a proxy. Applicable in dialogue when objects or
+  /// persons or rooms etc. are being named.
+  struct Name {
+    string m_name;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// The label on a relation, cf. concept for objects...
+  struct RelationLabel {
+    string m_label;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// debug info string 
+  struct DebugString {
+    string m_debugString;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };        
+        
+  /// placeholder... unclear what type a colour should be. string? 
+  struct Colour {
+    string m_colour;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  struct Location {
+    ///The centroid of a bounding box centred on the location
+    Math::Vector3D m_location;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// A special form of feature that explicitly names an existing
+  /// Proxy as a feature. This is to make it possible for
+  /// subarchitectures to explicilty point out how they want their
+  /// proxy to be bound. This is in turn based on the possibility
+  /// that the underlying architecture may perform some intelligent
+  /// processing of its current information based on the contextual
+  /// information which the unions represent. This feature should
+  /// not be used carelessly, however, since feedback loops of this
+  /// kind may leed to unwanted dynamical behaviours.
+  struct ExistingProxyID {
+    cast::cdl::WorkingMemoryID m_existingProxyID;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+  
+  /// has a similar role as the 'this'-pointer in C++. It points
+  /// back to the proxy of which the feature is a member. Is
+  /// used to match against \p ExistingProxy
+  struct ThisProxyID {
+    cast::cdl::WorkingMemoryID m_thisProxyID;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+     
+  /// the ID of the source subarchitecture 
+  struct SourceID {
+    cast::cdl::SubarchitectureID m_sourceID;
+    FrameworkBasics::FrameworkProcessID m_monitorID;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+    
+
+  /// the ID of a source subarchitecture that you wish the proxy
+  /// to match with (or not, if negated)
+  struct OtherSourceID {
+    cast::cdl::SubarchitectureID m_otherSourceID;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+    
+  /// if the source ontlogy WM contains additional data that may be
+  /// of relevance, then this can be referred to in this
+  /// feature. The type and content are represented by the type
+  /// string and the WM adresses respectively so that any
+  /// subarcitecture can read the information as long as the
+  /// relevant ontology is accessible (the binder will not care
+  /// about the contents, however)
+  struct SourceData {
+    cast::cdl::OntologyEntry        m_type;
+    cast::cdl::WorkingMemoryAddress m_address;
+    /// if true, then the \p m_address must be matched if \p m_type
+    /// the same. if m_type not the same, then indeterminate
+    /// returned
+    boolean m_comparable;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// The time at which the proxy was created
+  struct CreationTime {
+    FrameworkBasics::BALTTime m_creationTime;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };    
+    
+  
+  /// A module just to encapsulate some details needed for the binder
+  module details {
+    struct GroupDetails {
+      /// points back to the group feature
+      cast::cdl::WorkingMemoryID m_groupFeatureID;
+      /// points back to the proxy (not necessary really, since the
+      /// group feature does this too, but it is conventient)
+      cast::cdl::WorkingMemoryID m_groupProxyID;
+      /// contains a link to all the members of the proxy. Gets
+      /// updated by the group manager.
+      sequence<cast::cdl::WorkingMemoryID> m_groupMemberProxyIDs;
+    };
+  };
+  
+  /// If a proxy has this feature, it means that it actually
+  /// represents a group of objects, e.g. "the cubes". All other
+  /// features will be copied and stored onto a singular member of
+  /// the group until it is bound in which case an additional copy
+  /// is made. An unbound singular copy of the group proxy will
+  /// always be kept on the WM. This will be handled by a
+  /// specialized internal Monitor (\p
+  /// Binding::BindingGroupMonitor).
+  struct Group {
+    /// if 0, then it means that the group is unbounded in size.
+    long m_size;
+    /// points to a \p details::GroupDetails. The pointee is created
+    /// by the AbstractMonitor and then updated by the GroupManager
+    /// when individuals are spawned from the group.
+    cast::cdl::WorkingMemoryID m_groupDetailsID;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+    
+  /// If a proxy has this feature, it means that it actually is
+  /// a member of a group (\p Group). 
+  struct Singular {
+    /// the group which this member belongs to
+    cast::cdl::WorkingMemoryID m_groupID;
+    /// the serial number of the id
+    long m_elementNumber;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };    
+
+  /// A time interval in which the proxy was salient, could also be
+  /// an instant (then start and end are identical)
+  struct Salience {
+    BindingFeaturesCommon::StartTime m_start;
+    BindingFeaturesCommon::EndTime m_end;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };    
+  
+  /// The temporal frame (of a relation, typically). This is used to
+  /// avoid matching desired relations with perceived or asserted
+  /// ones.
+  struct TemporalFrame {
+    BindingFeaturesCommon::TemporalFrameType m_temporalFrame;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  }; 
+
+  
+  /// placeholder... unclear what type a shape should be. string? 
+  struct Shape {
+    string m_shape;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };        
+
+  /// placeholder... unclear what type a size should be. string? 
+  struct Size {
+    string m_size;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+  
+  /// contains only an int that matches only if equivalent
+  struct AreaID {
+    long m_id;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// AspectualState... ask gj :-)
+  struct AspectualState {
+    string m_aspectualState;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+
+  /// contains only an int that matches only if equivalent
+  struct PersonID {
+    long m_id;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  
+  
+  // *************************************************************************
+  // The foLlowiNG Features are currently deprecated but migh be reconsidered *
+  // *************************************************************************
+  
+  /*
+  /// currently reachable or not
+  struct Reachable {
+    boolean m_reachable;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// currently visible or not...
+  struct Visible {
+    boolean m_visible;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// Visual colour attribute
+  struct VisualColour {
+    long m_visualColour;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// Visual shape attribute
+  struct VisualShape {
+    long m_visualShape;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// Visual size attribute
+  struct VisualSize {
+    long m_visualSize;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// The ontology name for \p VisualGeneric
+  const cast::cdl::OntologyEntry VISUAL_GENERIC_TYPE_STRING = "zU:VisualGeneric:Feature:Binding";
+  /// Visual generic attribute (all that is not colour or shape)
+  struct VisualGeneric {
+    long m_visualGeneric;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// A linguistic proposition. Should probably be different
+  struct Proposition {
+    string m_proposition;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+
+  
+  */
+
+//#ifdef EXPERIMENTAL_BINDING_FEATURES  
+  // *************************************************************************
+  // the following features are currently just experimental *******************
+  // *************************************************************************
+  
+  /// a point on a plane
+  struct Coordinate {
+    BindingFeaturesCommon::Vector2 m_coordinate;
+    BindingFeaturesCommon::ReferenceFrame m_frame;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  /// a point on a plane and a vector describing a line of sight from
+  /// that point
+  struct LineOfSight {
+    BindingFeaturesCommon::Vector2 m_from;
+    BindingFeaturesCommon::Vector2 m_direction;
+    BindingFeaturesCommon::ReferenceFrame m_frame;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+  
+  /// defines a circular area. 
+  struct CircularArea {
+    BindingFeaturesCommon::Vector2 m_center;
+    /// inside this, a coordinate would match
+    BindingFeaturesCommon::Vector2 m_innerRadius;
+    /// inside this, a coordinate would at least not mismatch
+    BindingFeaturesCommon::Vector2 m_outerRadius;
+    BindingFeaturesCommon::ReferenceFrame m_frame;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  struct RectangularArea {
+    BindingFeaturesCommon::Vector2 m_corner1;
+    BindingFeaturesCommon::Vector2 m_corner2;
+    BindingFeaturesCommon::ReferenceFrame m_frame;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+
+  struct PolygonArea {
+    /// a sequence of lines (user must make sure it is closed if they
+    /// so desire...)
+    sequence<BindingFeaturesCommon::Vector2> m_polygon;
+    BindingFeaturesCommon::ReferenceFrame m_frame;
+    BindingFeaturesCommon::ParentFeature m_parent;
+  };
+  
+//#endif //EXPERIMENTAL_BINDING_FEATURES
+  
+}; // module Feature
+
+#endif // BINDING_FEATURES_IDL_

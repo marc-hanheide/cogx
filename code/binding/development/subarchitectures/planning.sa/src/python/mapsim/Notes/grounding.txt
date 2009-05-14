@@ -1,0 +1,109 @@
+IKK: Pondering about acknowledgements and other grounding dialogue moves...
+				   
+Shall we try to implement Traum's 1994/1998 grounding model? It is a quite complex model, but then again, it's quite complete. We don't have to necessarily work out all transitions to full detail right from the start.
+
+If we go for that, we need to think about (among other things):
+
+(1) what "entities" are subject to grounding (e.g., whole propositions -- not fine-grained enough; every nominal in the HLDS -- very fine-grained, but ultimately probably the right thing to do (because entities, events as well as their properties, as well as any other aspect, such as specificity or quantification are in principle subject to grounding);
+btw, I am not aware of such a fine-grained grounding model in the literature
+ 
+(2) where to represent grounding status: it most likely belongs into the discourse model, rather than into the planner state; esp. because the planner does not want to represent every tiny bit of the communicated meaning (cf. point 1); however, see point 4
+
+(3) how to represent grounding status: my proposal: every nominal gets a grounding bit (actually: vector, see below) associated with it in the discourse model; the value of the grounding bit corresponds to the grounding status in Traum's model (roughly: intiated, continued, "in-between", completed=acknowledged/grounded, abandoned ...)
+
+now, just one bit is in fact not enough, because of different levels of grounding (e.g., acoustic, lexical, semantic, referential(=binding), intention level); so, perhaps a vector, with one bit for each level; such a representation would enable elegant manipulation of the grounding status by operations on the vectors (like one does with flags; nice: grounding flags)
+
+(4) To what extent does the planner need to know something about grounding? Well, mybe it does not need to know anything below the intention=plan level? Here is what I am proposing:
+
+When an agent gets a dialogue move M with its contents from another agent, the planner's task is to relate M to the current plan (if any) and to propose a next action or dialogue move, advancing the planning or the execution of a plan; of course, M could be an acknowledgement/acceptance/rejection that the agent has been waiting for (e.g., when the agent made a request to another agent, or conveyed some info to them); similarly, the next move could be an acknowledgement of some sort; in other words, the planner still needs a grounding model consisting at least of init-cont-completed-abandoned at the level of actions in the plan. 
+
+I somehow can't help thinking of the grounding statuses modeled by preconditions and effects of actions in the planning domain, but maybe it's something the planner will handle internally... 
+
+Now, some examples. I also tried to work out the grounding statuses for the planner, at least as a first stab. 
+(Ax are meant as actions in the plan.)
+
+Example 1:
+say, the robot participates in some game with the human where they move objects, e.g., something similar to Hannoy towers; in a situation s, the robot makes the following suggestion = offers and action (= action in a possible future plan P1):
+
+R: I will/would/could move the circle. 
+   R informs H of intention to 'move R circle ?end-position' ==>A1:init
+
+(now the robot needs to await a response (acknowledgement or otherwise);
+a verification/clarification subdialogue handled "outside" the planner might follow, e.g., to repair some speech recognition problem, or to resolve a reference ambiguity)
+
+H: No, move the square.
+
+(another verification /clarification subdialogue could be here; but eventually)
+ something like this goes to the planner: 
+  H: reject R 'move R circle1 ?end-position'    ==> A1:abandon
+  H: request R 'move R square1 ?end-position'   ==> A2:init
+as a consequence, R has to abandon plan P1 and look for a P2 with the action requested by H; R can accept (and acknowledge and/or carry out) the action, or can reject it (because it's nonsensical or because it cannot do it), e.g.:
+
+R: OK (I'll move the square).  
+  R accepts A2  ==> A2:compl
+ 
+note that if position is unknown and cannot be inferred (e.g., from the game rules), R has to initiate a clarification subdialogue = request the position info, e.g.,
+R': Ok. Where should I put the square? 
+   R accepts A2 ==> A2:compl
+   R: request H to tell the value of 'end-position square' ==> A3:init; but since this is an elaboration on A2, maybe also A2:cont (?)
+
+(now, before R actually does it, it should await a response (aknowledgement or otherwise) again to give the human a chance to protest in case something went wrong in interpretation; however, if everything goes smoothly, there is not likely to be any explicit Ack --> timeout needs to be taken as implicit Ack)**
+
+
+Example 2:
+Similarly for conveying information (inform dialogue move).
+				   
+H: Where is the coffee?  
+(possibly a verif/clarif subdial.)
+
+--> H: request R to tell the value of 'pos coffee' (==> A1:init)
+
+R: The coffee is in the kitchen. (==> A1:compl)
+(now, R should not immediately alter its representation of H's beliefs; it should await acknowledgement or otherwise, to give the human a chance to protest; even though, like always, silence can/must be taken as acknowledgement)**
+
+==> For the reason of interpreting silence as acknowledgement, we need to model an "empty dialogue move" = silence for a predefined timeout-amout of time. (Another reason is that when we expect a response and none comes, we may want to re-prompt.)
+
+** A note on how to interpret silence: 
+On the one hand, "silence means agreement". On the other hand, conversation structure theory tells us that the a delay of a response can mean hesitation to produce a dispreferred response.  OK, but this still means that silence (= no response) can be taken as acknowledgement (acceptance).
+
+Example 2':
+R: The coffee is in the kitchen.  (==> A1:compl)
+H: No, that's impossible.  (==> A1:cont; the rejection "returns" A1 to a state between init and compl)
+
+How do we want the robot to react in such a case?
+Ra: OK, I shall go and search for the coffee. (==> A1:cont; A2:init)
+Rb: OK, where do YOU think the coffee might be? (==> A1:cont; A2:init)
+Rc: ... ???
+
+Example 3:
+R: Where is the coffee?  (==> A1:init)
+(await ack; subdial. poss.)
+
+H: The coffee is in the bathroom. (==> A1:compl)
+(subdial. poss.)
+H: tells R the value of 'pos coffee': 'bathroom'
+bathroom not a possible location of coffee according to R
+--> based on knowledge represented in the planning domain, 
+R does not accept H's response (at least not right away)
+R needs to initiate a clarification subdialogue
+(and it needs to interface the belif conflict to comsys)
+
+R: In the bathroom? (or some other response)  (==> A1:cont; again, a "reopening")
+
+
+Example 4: 
+H: Please bring me the coffee R2D2.  (==> A1:init)
+R: OK, Anne. (==> A1:compl)
+   Can you please open the door for me?  (==> A2:init)
+(R has to await ack, not jump to the assumption that Anne will do it; model by assertion?)
+
+H: Sorry, can't.  (==> A2:abandon)
+   --> H: reject R open H kitchen_door
+
+Now, either R can find another plan, or has to reject the initial request!
+
+Ra: OK, never mind. (==> A2:abandon (it's actually an Ack for the abandon))
+Rb: Sorry, then I cannot bring you the coffee (because I cannot get to the kitchen). (==> A1:abandon)
+
+ 
+Okido. So much form now, as a first strawman for coments.

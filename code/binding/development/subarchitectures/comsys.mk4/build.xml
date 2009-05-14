@@ -1,0 +1,36 @@
+<project name="comsys.mk4" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="idl" depends="prepare">
+                 <echo message="------ ComsysEssentials.idl ---------" />
+		<idlgen file="ComsysEssentials.idl" />
+
+                 <echo message="------ Logical Forms and Packing ---------" />
+		<idlgen file="LFEssentials.idl" />
+		<idlgen file="LFPacking.idl" />		
+		
+
+	</target>
+
+
+
+
+
+  <target name="runIncr">
+        <java fork="true" classname="cast.server.CASTProcessServer">
+        <arg line="-h localhost"/>
+        <env key="DYLD_LIBRARY_PATH" value="/Users/plison/svn.cosy/code/output/lib"/>
+        <arg line="-f config/test-configurations/test1-SYS.cast"/>
+        <arg line="-Xms:200m"/>
+        </java>
+        </target>
+
+	<target name="clean">
+	  <echo message="Cleaning autogen files from ${basedir}subarchitectures/comsys.mk4/src/java/org/cognitivesystems/comsys/autogen" />
+          <delete dir="${basedir}/subarchitectures/comsys.mk4/src/java/org/cognitivesystems/comsys/autogen" />
+	  <delete dir="${output.dest}/org/cognitivesystems/comsys/" />
+	</target>
+
+
+</project>

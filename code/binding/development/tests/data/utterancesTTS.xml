@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<utterancesTTS>
+
+<utterance>
+<string>now please give me the ball, robot</string>
+</utterance>
+
+<utterance>
+<string>hi Pierre, how are you doing today?</string>
+</utterance>
+
+<utterance>
+<string>mm, it seems that the text-to-speech system is working very well!</string>
+</utterance>
+
+<utterance>
+<string>don't you agree?</string>
+</utterance>
+
+</utterancesTTS>
+
+

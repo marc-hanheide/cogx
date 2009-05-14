@@ -1,0 +1,19 @@
+# This run was created calling './mapsim -t domains/coffee/scenarios/ivana/easy003-requestcoffee-tellpos/'
+# manually edited
+There are 2 agents in this MAPSIM scenario: Anne and R2D2
+# Anne's goal: (and (pos coffee anne) )
+# R2D2's goal: (and (has-goal r2d2 true) )
+ (1) Anne: request R2D2 'give R2D2 coffee Anne living_room'.
+ (2) Anne tells R2D2 the value of 'pos coffee': 'kitchen'
+ (3) R2D2: execute 'move R2D2 kitchen kitchen_door living_room'.
+ (4) R2D2: execute 'grasp R2D2 coffee kitchen'.
+ (5) R2D2: execute 'move R2D2 living_room kitchen_door kitchen'.
+ (6) R2D2: execute 'give R2D2 coffee Anne living_room'.
+MAPSIM terminates unsuccessfully.
+
+# Anne knows that R2D2 doesn't know where coffee is
+# -> she can tell him right away
+# Even better future version would be that Anne does (1) and (2) in one step
+# such conjunction of speech acts could be realized as "Get me the coffe from the  kitchen" (= issue for NLG)
+
+

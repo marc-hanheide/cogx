@@ -1,0 +1,191 @@
+There are 2 sets of IDLS.
+
+1. For the componets to interact with the external CORBA servers for the planner etc.
+
+2. For the componets to interact with each other and the rest of the
+   architecture via the working memory.
+
+
+
+
+
+
+
+
+
+
+
+----
+Processing cycle of the sa for planning
+----
+
+Is given a goal specified as a logical form as input.
+--> struct for input, or maybe just string
+
+
+ProbGeneration component ,ust then generate intial state
+
+--> pulls current objects/types/attributes from category memory
+
+e.g.
+[current scene 
+  visible ID1 ID2 ID3 ID3
+]
+ID# -> [object type attrs...?]
+
+
+--> pulls current spatial organisation from spatial memory
+
+
+[current scene 
+  left ID1 ID2 ... where do these come from?
+  right ID1 ID2
+]
+
+when incremental preposition is detected, must generate spatial
+relationships in spatial working memory so that they are accessible
+later.
+
+Fine to here.
+ 
+Must also add in target waypoints for possible future positions. Where
+do these come from?
+
+Waypoints added to global working memory?
+
+
+
+EMAIL:
+
+Hi folks,
+
+I want to attempt to describe the approach I am expecting us to take
+to integrate manipulation planning into the architecture. I'm doing
+this to make explicit some of the requirements on various other
+subarchitectures so that we can try to get the interfaces and
+functionality sketched out asap.
+
+The first half should be relevant to DFKI folks (because it's about
+spatial and cross modal working memories) and everyone else. The
+second half is directed at Michael as it is more about how we generate
+initial states for the planner.
+
+The typical scenario is something like "put the red ball to the right
+of the blue ball". Before the utterance is even started I am assuming
+that the xmodal subarchitecture working memory contains references to
+the (proto) objects that are currently visible, and also the spatial
+subarchitecture working memory has preattentively extracted their
+proxitimity relations.
+
+The linguistic sa then incrementally processes the utterance and does
+its thing with categories, gaze etc. When the utterance is processed
+completely by these systems, if everything goes correctly am I right
+to assume that xmodal wm will contain a description of the current
+scene that could look something like....
+
+(ignore the details, i just want to get a general idea of what is
+going to be available for other systems to access)
+
+[Scene //some idea of what is current visible
+  id ="scene456";
+  visible = {id1, id2, id3, id4};
+]
+
+id1 = 
+[Object //an object with various properties 
+type  = "ball"
+attributes = "colour = red"
+//subarchitecture working memory references
+references = "lsa = id24", "vsa = id987"
+]
+
+id2 = 
+[ProtoObject 
+type  = "?"
+attributes = "?"
+references = "vsa = id1001"
+]
+
+And maybe in spatial working memory
+
+//relationships with pointers into xmodal wm
+[Near id1 id2]
+
+One question I have is does the (incrementally interpreted) use of a
+preposition (e.g. "right" in the example) cause that spatial
+relationship to be generated for (a subset of) the objects in the
+current scene? 
+
+At this point, the motive generator can identify the fully interpreted
+utterance as an action command that the system has been given. This
+triggers a goal for the global goal manager which decides a plan is
+needed to satify the command and then writes the interpreted logical
+form from language into the planning subarchitecture to trigger the
+planning process.
+
+Next the planning subarch component that interprets logical forms
+processes this input to generate a MAPL goal statement (using lf2mapl
+from the planner interface). The result of this is written back into
+planning working memory.
+
+This is the trigger for the planning problem generation component to
+generate a description of the current state in MAPL/PDDL. To do this
+it must do the following...
+
+1. Pull the currently visible object ids and attributes from xmodal
+   working memory.
+
+2. Pull their spatial arrangement from spatial working memory. 
+
+3. Add in new locations to which the object could be moved.
+
+4. Convert all this into MAPL/PDDL.
+
+
+1 & 2 seem pretty straight-forward (as I believe this is part of the
+proposed functionality for the system), 4 is already coded, but 3 is
+now a bit of a problem.
+
+As it currently stands, the planner uses waypoints to represent the
+positions of objects in the world (rather than coordinates). Each
+object is given a waypoint directly underneath it for the initial
+state, and these waypoint inherit the spatial configuration
+information of their supported objects (so waypoint 1 is to the right
+of waypoint 2, rather than the object @ waypoint 1 being to the right
+of the object @ waypoint 2). The initial state must also include any
+waypoints that the objects can be moved to that are not already
+occupied. So, for the example we would automatically add a waypoint to
+the right of the waypoint supporting blue ball and in trivial examples
+the planner will pick this waypoint as the target position for the
+move.
+
+In the original work we did all of this with direct access to the
+coordinates of objects and functions for generating spatial
+relationships, so we could use this information to generate a new
+position *in the real world* and map it to a waypoint in the initial
+state. Now it is no longer desirable (or even feasible really) for the
+planner to have access to such metrical information, so we need a new
+solution.
+
+In my head this is basically a point of checking for failure. In the
+original system we used the generation of target points as an
+additional check for the availability of a solution. If we couldn't
+generate target points, then no plan could exist. This was actually a
+fairly incorrect assumption, because the robot could freely rearrange
+the objects on the table to allow points to be generated (if
+appropriate...).
+
+Given the full architecture it seems like we have 2 options...
+
+A. Allow the problem generation component to "ask" the spatial wm
+whether it is possible to generate points for the target locations.
+
+B. Allow the planning problem generator to add target waypoints to the
+initial state with the assumption that they will be checked during
+execution.
+
+To me, B sounds more flexible, and more in keeping with an integrated
+system. Part of the plan execution process will be grounding the plan
+in sensor data anyway, so this is just a minor extension of that.
+
+OK, they are my thoughts so far ;)

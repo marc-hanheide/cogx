@@ -1,0 +1,6 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM TestTaskManager #--log $TEST_LOG_OUTPUT #--debug
+CPP GD copier1 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug

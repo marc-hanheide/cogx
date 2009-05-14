@@ -1,0 +1,35 @@
+REM creating area instances
+instance,area1,Room,triTrue
+instance,area2,Corridor,triTrue
+instance,area3,Room,triTrue
+instance,area1,Office,triTrue
+REM create object instances
+instance,obj1,Couch,triTrue
+instance,obj2,Coffeemachine,triTrue
+REM create relations
+relation,area2,obj1,hasObject,triTrue
+relation,area3,obj2,hasObject,triTrue
+REM query getcons MOSTSPECIFIC
+getcons,area1,MOSTSPECIFIC,1
+getcons,area2,MOSTSPECIFIC,1
+getcons,area3,MOSTSPECIFIC,1
+REM add another instance assertion and check inferences
+instance,area1,Secretariat,triTrue
+getcons,area1,MOSTSPECIFIC,2
+REM add an ambiguous instance assertion and check inferences
+instance,area1,Laboratory,triTrue
+getcons,area1,MOSTSPECIFIC,3
+REM add new object that should not lead to new inferences
+instance,obj3,Oven,triTrue
+relation,area3,obj3,hasObject,triTrue
+getcons,area3,MOSTSPECIFIC,1
+REM add new object that should lead to new inferences
+instance,obj4,Televisionset,triTrue
+relation,area3,obj4,hasObject,triTrue
+getcons,area3,MOSTSPECIFIC,2
+REM add new object that should lead to new inferences
+instance,obj5,Sofa,triTrue
+relation,area3,obj5,hasObject,triTrue
+getcons,area3,MOSTSPECIFIC,3
+REM basic inconsistency check!
+getallins,owl:Nothing,0

@@ -1,0 +1,7 @@
+set the TUDVISION_DIR path during the top level ccmake configuration step 
+to the directory where libTUDVision.a can be found.
+
+test cast file provided in vision/config directory. 
+car.test.cast assumes a relative path to vision/config/car.config/ directory so 
+start it from the vision/config directory or change paths ...
+

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+# export LD_PRELOAD=output/lib/libTestWorkingMemory.so 
+
+COUNTER=0
+while [  $COUNTER -lt 10 ]; do
+    echo "----------------------------------------------------"
+    java -Xmx512M -ea -classpath $CLASSPATH:output/classes/ cast.server.CASTProcessServer -h localhost -f $1
+    let COUNTER=COUNTER+1 
+    echo "----------------------------------------------------"
+done
+
+
+
+
+

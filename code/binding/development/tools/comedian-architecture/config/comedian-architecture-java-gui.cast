@@ -1,0 +1,19 @@
+HOST localhost
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE stage.subarch 
+JAVA WM comedyarch.subarchitectures.stage.StageWorkingMemory
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+#JAVA TM comedyarch.subarchitectures.stage.StageTaskManager --log
+JAVA DD straight.man comedyarch.subarchitectures.stage.StraightMan -s "what's brown and sticky"
+JAVA GD funny.man comedyarch.subarchitectures.stage.FunnyManGUI -p "a stick" --log
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+#SUBARCHITECTURE audience.subarch 
+#JAVA GD audience.member comedyarch.subarchitectures.audience.AudienceMember --reaction "YAY!"
+#JAVA WM comedyarch.subarchitectures.audience.AudienceWorkingMemory
+#JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+
+#ARCHITECTURE 
+#JAVA MG comedyarch.global.ComedyMotiveGenerator
+#JAVA GM comedyarch.global.ComedyGoalManager

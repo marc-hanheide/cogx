@@ -1,0 +1,46 @@
+REM querying the comparators
+comparecons,Ball,Thing,triTrue
+comparecons,Object,Ball,triTrue
+comparecons,Location,Room,triTrue
+comparecons,Location,Airport,triIndeterminate
+comparecons,Kitchen,Room,triTrue
+comparecons,Kitchen,Office,triFalse
+comparecons,Ball,Table,triFalse
+comparecons,Office,Desk,triFalse
+comparecons,Office,Desk,triFalse
+comparecons,Location,Airport,triIndeterminate
+REM basic inconsistency check!
+getallins,owl:Nothing,0
+getallins,owl:Thing,23
+REM add area instances
+instance,area1,Room,triTrue
+instance,area2,Corridor,triTrue
+REM querying the comparators
+compareareacon,1,Room,triTrue
+compareareacon,1,Corridor,triFalse
+compareareacon,2,Corridor,triTrue
+compareareacon,1,Kitchen,triFalse
+REM create object instances
+instance,obj1,Coffeemachine,triTrue
+REM create relations
+relation,area1,obj1,hasObject,triTrue
+REM querying the comparators
+compareareacon,1,Kitchen,triTrue
+compareareacon,27,Kitchen,triIndeterminate
+compareareacon,71,Kitchen,triTrue
+compareareacon,72,Kitchen,triFalse
+compareareacon,73,Kitchen,triFalse
+compareareacon,74,Kitchen,triFalse
+compareareacon,71,Room,triTrue
+compareareacon,72,Room,triTrue
+compareareacon,73,Room,triFalse
+compareareacon,74,Room,triTrue
+compareareacon,71,Corridor,triFalse
+compareareacon,72,Corridor,triFalse
+compareareacon,73,Corridor,triTrue
+compareareacon,74,Corridor,triFalse
+REM check if existing instances are found
+getallins,Room,4
+getallins,Corridor,2
+getallins,Kitchen,2
+getallins,owl:Thing,26

@@ -1,0 +1,418 @@
+/*!
+\page kth_spec Specification for the vision subarchitecture (KTH)
+
+\section scenario Scenario
+
+see other scenario: \ref main_scenarios
+
+\section requirements Requirements
+
+\li vis.1: Search for and find objects
+\li vis.2: Localize found objects 
+\li vis.3: Store object information for recognition/detection
+\li vis.4: Planning for searching for objects
+\li vis.5: Ability to query: can a certain object be recognized?
+
+\section representations Representations
+
+\par ObjCommand:
+Represents the task of locating and localizing a given object.
+Can be performed in the scope of the current room, 
+for a single or multiple objects at 
+once, and for a single or multiple instances.
+Contains the sought object's type.
+Also contains an "accomplished" field, which is changed to true when
+the task is fulfilled, and an "abort" field, which can be
+set in order to signal the component that a previously issued
+command should be aborted.
+Several ObjCommands can be sent, they will be queued and treated in order.
+
+We already have IDLs for these:
+
+\code
+typedef sequence<string> ObjectTypes;
+
+struct ObjCommand {
+    Command m_command;
+
+    ObjectTypes m_objectTypes;
+
+    bool m_abort;
+    
+    Completion m_completion;
+};
+\endcode
+
+\sa \c ObjectSearch::ObjCommand
+
+\code
+/* Command: Type of ObjCommand.
+*/
+enum Command {FIND_OBJECTS};
+
+/* Completion: Status of ObjCommand.
+*/
+enum Completion {PENDING,     // has not started 
+	IN_PROGRESS, // started but not finished
+	ABORTED,     // aborted by an external component
+	FAILED,      // finished unsuccessfully
+	SUCCEEDED};  // finished successfully
+\endcode
+
+\par ViewPlanningCommand:
+Represents the task of creating and executing a search plan
+for locating one or more objects.
+
+\code
+struct ViewPlanningCommand {
+    ObjectTypes m_objectTypes;
+    
+    bool m_abort;
+    
+    Completion m_completion;
+};
+\endcode
+
+\par VisualSearchCommand: 
+Represents the task of searching for an object in the current
+field of view of the robot.
+
+\code
+struct VisualSearchCommand {
+    ObjectTypes m_objectTypes;
+};
+\endcode
+
+\par FoundObject:
+A structure that is written to working memory in order to
+signal that object search has located an object.
+Other components may listen for the creation of FoundObject
+items and read the data accordingly.
+
+\code
+struct FoundObject {
+    string m_objectType;
+
+    FrameworkBasics::BALTTime m_time;
+
+    double m_object_x;
+    double m_object_y;
+    double m_object_z;
+    
+  };
+\endcode
+
+\par SIFTMatch:
+A structure that encapsulates a request for a SIFT matching
+done for a certain object on the current camera image, and
+the result of this matching.
+
+\attention This part is likely to change.
+
+\section components Components
+
+\subsection trans_proc Translation Process
+
+This component receives external commands and translates them
+into the proper internal format for further processing.
+
+\subsubsection details Details:
+
+\par Component name: 
+Translation Process
+
+\par Requirements satisfied: 
+Elements of all!
+
+\subsubsection func Start an object search
+
+\b Behaviour: The process is triggered by another component
+writing an ObjCommand item to the WM. 
+If able, the process translates this into a ViewPlanningCommand and
+writes IN_PROGRESS in the m_completion field of the ObjCommand.
+If unable, it either writes PENDING or FAILED, depending on the
+reason.
+
+\b Caused \b by: \c wmc: \c ObjectSearchOntology.OBJ_COMMAND_TYPE, \c ADD, non-local
+
+\li \c getWorkingMemory: \c ObjCommand
+\li \c addToWorkingMemory: \c ViewPlanningCommand
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory:
+
+\subsubsection complete Complete an object search
+
+\b Behaviour: When an object search has been completed the struct that
+initially triggered the process has its m_completion field overwritten,
+ with FAILED, SUCCEEDED or ABORTED. FAILED indicates some error occurred
+at a lower level, such as inability to navigate or an error generated
+by detection algorithms. SUCCEEDED indicates that the process finished
+properly, not necessarily that any object was found. ABORTED indicates
+an abort command was successfully executed. The external component which
+inserted the ObjCommand first is the responsible of its removal.
+
+Caused by: internal: object search process complete or internal error
+
+\li \c getWorkingMemory: 
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c ObjCommand.m_completion
+\li \c deleteFromWorkingMemory: 
+
+
+\subsubsection abort Abort
+
+\b Behaviour: Attempts to abort any ongoing activities relating to the
+object search task in question. Once aborted, the process will write
+ABORTED to the m_completion field of the ObjCommand.
+
+\b Caused \b by: \c wmc: \c ObjectSearchOntology.OBJ_COMMAND_TYPE, \c OVERWRITE, written id, non-local
+
+\b listens \b for: for each ObjCommand struct:
+\c ObjCommand.m_abort, \c OVERWRITE, written id, non-local
+
+\li \c getWorkingMemory:  \c ObjCommand.m_abort
+\li \c addToWorkingMemory: 
+\li \c overwriteWorkingMemory: \c ViewPlanningCommand.m_abort
+\li \c deleteFromWorkingMemory:
+
+
+\subsection view_planning View Planning Component
+
+The view planning component is responsible for creating and executing
+a plan of moves and turns for the robot to efficiently cover the area
+needed for the object search. In its turn it calls on the Visual Search
+component in order to acquire and examine camera images at the
+different locations.
+
+\subsubsection details Details:
+
+\par Component name: 
+View Planning
+
+\par Requirements satisfied: pl.1, pl.4
+
+\subsubsection find_object Object search: Find object
+
+\b Behaviour: When ordered by the Translation process, the 
+view planner sets up a plan for covering the desired map area
+with views from different vantage points, in order to find
+the specified object(s). Using a line map and node graph from
+the Navigation SA, it enumerates candidate views from all
+the relevant nodes and selects a subset that covers all
+features in the line map. It then sends commands to the Nav 
+SA to move the robot according to the plan.
+
+\b Caused \b by: \c wmc: \c
+ObjectSearchOntology.VIEW_PLANNING_TYPE, \c ADD, local
+
+\li \c getWorkingMemory:  \c ViewPlanningCommand \c NavData::NavGraph \c NavData::LineMap \attention Needs to access object database
+\li \c addToWorkingMemory: \c Nav::NavCommand
+\li \c overwriteWorkingMemory:
+\li \c deleteFromWorkingMemory:
+
+\subsubsection move_done Object search: Move done
+
+\b Behaviour: After a move has completed, it then 
+messages the Visual Search component
+to check for the presence of the object(s). 
+
+\b Caused \b by: \c wmc: \c
+NavigationOntology.NAV_COMMAND_TYPE, \c OVERWRITE, non-local
+
+\li \c getWorkingMemory:  \c Nav::NavCommand.m_completion
+\li \c addToWorkingMemory: \c VisualSearchCommand
+\li \c overwriteWorkingMemory:
+\li \c deleteFromWorkingMemory: \c Nav::NavCommand
+
+\subsubsection complete Complete
+
+\b Behaviour: Completion of a visual search leads to a new
+movement and a new search, or to ending the execution
+if the plan has been exhausted.
+
+\b Caused \b by: \c wmc: \c
+ObjectSearchOntology.VISUAL_SEARCH_TYPE, \c OVERWRITE, local
+
+\li \c getWorkingMemory:  \c VisualSearchCommand.m_completion,  
+\li \c addToWorkingMemory: \c Nac::NavCommand
+\li \c overwriteWorkingMemory: \c ViewPlanningCommand.m_completion
+\li \c deleteFromWorkingMemory: \c VisualSearchCommand
+
+\subsubsection abort Abort
+
+\b Behaviour: The mirror of the Abort functionality
+in the Translation Process.
+
+\b Caused \b by: \c wmc: \c
+ObjectSearchOntology.VIEW_PLANNING_TYPE, \c OVERWRITE, local
+
+\li \c getWorkingMemory:  \c ViewPlanningCommand.m_abort,  
+\li \c addToWorkingMemory: 
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory: \c Nav::NavCommand
+
+\subsection visual_search Visual Search Component
+
+The visual search component performs the actual object detection
+and recognition, using RFCH as an attentional mechanism and then SIFT 
+for positive identification and exact localization. It utilizes
+the robot camera's pan/tilt/zoom arguments to focus on regions of
+interest.
+
+\subsubsection details Details:
+
+\par Component name: 
+Visual Search
+
+\par Requirements satisfied: pl.2, pl.5
+
+\subsubsection find_object_2 Find object
+
+\b Behaviour: Having been positioned by the view planning
+component, the visual search component grabs camera images
+and tries to locate the objects requested within its current
+view. Whenever an object is located, a FoundObj struct is
+written with the object's ID and estimated position.
+Once the view is fully processed, sets its m_completion
+field to SUCCEEDED.
+
+\b Caused \b by: \c wmc: \c
+ObjectSearchOntology.VISUAL_SEARCH_TYPE, \c ADD, local
+
+\li \c getWorkingMemory:  \c VisualSearchCommand \attention Needs
+to access SIFT extraction, object database (and possibly image server)
+\li \c addToWorkingMemory: 
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory: 
+
+
+\subsubsection abort Abort
+
+\b Behaviour: This action cannot be aborted now. Its execution is considered
+to take a short time.
+
+\subsubsection object_found Object found
+
+\b Behaviour: Whenever an ongoing visual search locates and
+localizes an object, it writes a FoundObj struct which is the effective
+output of the object search SA as a whole.
+
+\b Caused \b by: internal: visual search found an object
+
+\li \c getWorkingMemory: \c NavData::RobotPose
+\li \c addToWorkingMemory: \c FoundObj
+\li \c overwriteWorkingMemory:
+\li \c deleteFromWorkingMemory:
+
+\subsubsection visual_search_done Visual search done
+
+\b Behaviour: When a visual search is finished, the Visual Search
+component removes the Visual Search command.
+
+\b Caused \b by: internal: visual search is finished
+
+\li \c getWorkingMemory:
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory:
+\li \c deleteFromWorkingMemory: \c VisualSearchCommand
+
+\subsection database Object database
+
+The object database stores per-object information that pertains
+to object search, including distance constraints for use in the
+view planning as well as SIFT keys and RFCH histograms and clusters.
+
+\attention This part is likely to change.
+
+\subsubsection details Details:
+
+\par Component name: 
+Object database
+
+\par Requirements satisfied: vis.3, vis.5
+
+\subsection sift_extractor SIFT extractor
+
+The SIFT extractor extracts SIFT keys from camera images
+taken by the robot, and matches them against those in the database.
+
+\attention This part is likely to change.
+
+\subsubsection details Details:
+
+\par Component name: 
+SIFT extractor
+
+\par Requirements satisfied: pl.1
+
+\subsection func Units of functionality:
+
+\subsubsection detect_object Detect object
+
+\b Behaviour: Matches the SIFT keys extracted from the current
+camera image against those of the object specified
+
+\b Caused \b by: internal: 
+
+\li \c getWorkingMemory: \c NavData::RobotPose \attention Needs 
+    access to object database
+\li \c addToWorkingMemory: FoundObj
+\li \c overwriteWorkingMemory: VisualSearchCommand.m_completion
+\li \c deleteFromWorkingMemory:
+
+
+
+
+\section  processes Processes
+
+\subsection Find Object
+
+TP = Translation Process, VP = View Planner, ODB = Object Database, SXT = SIFT Extractor, VS = Visual Search
+
+\msc
+	hscale = "2.4";
+	"oc:ObjCommand", TP, "vpc:ViewPlanningCommand", VP, ODB, "vsc:VisualSearchCommand", VS, SXT, "nc:NavCommand", NAV, "fo:FoundObject";
+	"oc:ObjCommand"->TP [label="wmc(ADD)"];
+	TP=>"oc:ObjCommand" [label="get(oc)"];
+	"oc:ObjCommand">>TP [label="oc"];
+	TP->"vpc:ViewPlanningCommand" [label="<<create>>"];
+	"vpc:ViewPlanningCommand"->VP [label="wmc(ADD)"];
+	VP=>"vpc:ViewPlanningCommand" [label="get(vpc)"];
+	"vpc:ViewPlanningCommand">>VP [label="vpc"];
+	VP=>ODB [label="get(object data)"];
+	ODB>>VP [label="object data"];
+	VP->"nc:NavCommand" [label="<<create>>"];
+	"nc:NavCommand"->NAV [label="wmc(ADD)"];
+	NAV=>"nc:NavCommand" [label="get(nc)"];
+	"nc:NavCommand">>NAV [label="nc"];
+	... [label="Robot moves"];
+	NAV->"nc:NavCommand" [label="overwrite(nc)"];
+	"nc:NavCommand"->VP [label="wmc(OVR)"];
+	VP->"nc:NavCommand" [label="<<destroy>>"];
+	VP->"vsc:VisualSearchCommand" [label="<<create>>"];
+	"vsc:VisualSearchCommand"->VS [label="wmc(ADD)"];
+	VS=>"vsc:VisualSearchCommand" [label="get(vsc)"];
+	"vsc:VisualSearchCommand">>VS [label="vsc"];
+	VS=>ODB [label="get(object data)"];
+	ODB>>VS [label="object data"];
+	... [label="Visual search"];
+	VS=>SXT [label="get(SIFT matches)"];
+	SXT>>VS [label="SIFT matches"];
+	VS->"fo:FoundObject" [label="<<create>>"];
+	... [label="Visual search"];
+	VS->"vsc:VisualSearchCommand" [label="<<destroy>>"];
+	#"vsc:VisualSearchCommand"->VP [label="wmc(OVR)"];
+	#VP=>"vsc:VisualSearchCommand" [label="get(vsc)"];
+	#"vsc:VisualSearchCommand">>VP [label="vsc"];
+	#VP->"vsc:VisualSearchCommand" [label="<<destroy>>"];
+	"vsc:VisualSearchCommand">>VP [label="<<signal>>"];
+	... [label="Repeat move, search until done"];
+	VP->"vpc:ViewPlanningCommand" [label="overwrite(vpc)"];
+	"vpc:ViewPlanningCommand"->TP [label="wmc(OVR)"];
+	TP=>"vpc:ViewPlanningCommand" [label="get(vpc)"];
+	"vpc:ViewPlanningCommand">>TP [label="vpc"];
+	TP->"vpc:ViewPlanningCommand" [label="<<destroy>>"];
+	TP->"oc:ObjCommand" [label="overwrite(oc)"];
+\endmsc
+
+*/

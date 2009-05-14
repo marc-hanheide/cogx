@@ -1,0 +1,38 @@
+REM querying concept equality
+consequi,Couch,Sofa,triTrue
+consequi,Couch,sofa,triTrue
+consequi,Ball,ball,triTrue
+consequi,Object,Area,triFalse
+consequi,Sofa,Couch,triTrue
+consequi,Ball,Object,triFalse
+consequi,Object,Ball,triFalse
+consequi,Object,wn:Object,triIndeterminate
+consequi,wn:Location,Location,triTrue
+REM querying concept taxonomies
+issupercon,Couch,Object,triFalse
+issubcon,Couch,Object,triTrue
+issupercon,Object,Couch,triTrue
+issubcon,Object,Couch,triFalse
+issubcon,Object,DummyCon,triIndeterminate
+comparable,Object,Area,triFalse
+comparable,Area,DummyCon,triIndeterminate
+comparable,Area,Room,triTrue
+comparable,Kitchen,Location,triTrue
+REM querying concept properties
+mobility,Kitchen,triIndeterminate
+mobility,Couch,triFalse
+mobility,Ball,triTrue
+mobility,DummyCon,triIndeterminate
+REM querying simplistic default reasoning
+instance,area1,Room,triTrue
+instance,area2,Kitchen,triTrue
+instance,area3,Corridor,triTrue
+instance,obj1,Coffeemachine,triTrue
+instance,obj2,Ball,triTrue
+typicalobjs,area1,0
+typicalobjs,area2,11
+typicalobjs,area3,0
+typicalobjs,obj1,0
+typicalobjs,obj2,0
+REM basic inconsistency check!
+getallins,owl:Nothing,0

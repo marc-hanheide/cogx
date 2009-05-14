@@ -1,0 +1,396 @@
+/*!
+ * \file Vision.idl
+ * \brief Module to define data structure in vision subarchitecture
+ * 
+ */
+
+#ifndef VISION_IDL
+#define VISION_IDL
+
+#include <Math.idl>
+#include <CAST.idl>
+#include <Matlab.idl>
+
+module Vision {
+    
+    /*! String label associated with a confidence value */ 
+    struct StringWithConfidence {
+	string m_string;
+	float  m_confidence;
+    };
+
+    /// Integer with confidence value
+    struct IntWithConfidence {
+	 long  m_int;
+	 float m_confidence;
+    };
+
+    /// A sequence of points (2D) for use in image analysis
+    typedef sequence<Math::Vector2D> vector2DSequence;
+    
+    /// A sequence of integers with confidence
+    typedef sequence<IntWithConfidence> IntWithConfidenceSequence;
+
+    const long CAM_LEFT = 0; /*!< Hand-coded ID of the left camera*/
+
+    const long CAM_RIGHT = 1; /*!< Hand-coded ID of the right camera*/
+
+    const long CAM_ARM = 2;  /*!< Hand-coded ID of the arm-mounted camera*/
+
+    /**
+     *   \brief Data structure for camera parameters
+     *
+     *   Camera contains calibration parameters of a camera hardware.
+     *   These parameters are maintained by CameraServer. Other
+     *   components can access the current 3D poses of camera 
+     *   sensors by sending a query to CameraServer with the 
+     *   appropriate camera ID.
+     */
+    struct Camera {
+	// FrameworkBasics::BALTTime  m_time;  TODO: time should be in there
+	long         m_num;
+	// pose of camera w.r.t. world (e.g. for PlayMate the robot arm base)
+	Math::Pose3D m_pose;
+	// image width and height
+	long m_width;
+	long m_height;
+	// the following are components of the camera projection matrix
+	//     | fx  0  cx |
+	// A = | 0  fy  cy |
+	//     | 0   0   1 |
+	float m_fx;
+	float m_fy;
+	float m_cx;
+	float m_cy;
+	// the following are distortion parameters (t1 and t2 typically 0):
+	// xd = xu (1 + k1 r^2 + k2 r^4 + k3 r^6) + tangx
+	// yd = yu (1 + k1 r^2 + k2 r^4 + k3 r^6) + tangy
+	// where:
+	// xd, yd are distorted, xu, yu undistorted image coords
+	// tangx = 2 t1 xu yu + t2 (r^2 + 2 xu^2)  (typically 0)
+	// tangy = 2 t2 xu yu + ti (r^2 + 2 yu^2)  (typically 0)
+	// r^2 = xu^2 + yu^2
+	float m_k1;
+	float m_k2;
+	float m_k3;
+	float m_t1;
+	float m_t2;
+    };
+    
+
+    /**
+     *  \brief Data structure for a head carrying a camera(s)
+     *  
+     *  Head Structure describes the 3D pose of a head carrying camera(s).
+     *  CameraServer uses the head pose to update the 3D pose
+     *  of the cameras that the head is carrying.
+     */
+    struct Head {
+	FrameworkBasics::BALTTime m_time; /*!< Timestamp of the head pose */
+	long m_num; /*!< Head ID */
+	Math::Pose3D m_pose; /*!< 3D pose */
+    };
+
+    
+    /*! Image data is represented as a sequence of bytes. */ 
+    typedef sequence<char> ImageData; 
+
+    /**
+     *  \brief A data structure of an image buffer.
+     *
+     *  Image is used for representing an image buffer.
+     *  It is used for representing a region within an image.
+     */ 
+    struct Image
+    {
+	long m_width; /**< Width of the image. */
+	long m_height; /**< Height of the image. */
+	long m_nChannels; /**< Number of channels. 3 for RGB or 1 for gray-scale. */
+	ImageData m_image; /**< Actual image data */
+    }; // struct Image
+
+
+    /**
+     *  \brief A data structure of an image frame. 
+     *
+     *  ImageFrame contains ImageData and some header information
+     *  about the size of image, cameraID, and 
+     *  the time when the image was captured.
+     *  Image format (or the byte sequence) is always BGR24.
+     */
+    struct ImageFrame {
+	long           m_width;
+	long           m_height;
+	ImageData      m_image;
+	FrameworkBasics::BALTTime  m_time;
+	long           m_camNum;
+    };
+
+
+    /**
+     *  \brief SceneChanged 
+     */
+    struct SceneChanged
+    {
+	boolean m_sceneChanging;  // scene is undergoing change
+	boolean m_sceneChanged;   // change has stopped, scene is static and changed
+	boolean m_sceneProcessed; // scene is static and processed (scene objects)
+
+	long    m_camNum;
+    }; // struct SceneChanged
+
+
+  struct HandPointingResults
+  {
+    boolean m_handInScene;         //hand is present in scene
+    boolean m_pointerDetected;     //pointed roi is detected
+    float m_ROIcenterX;            //center of pointed roi
+    float m_ROIcenterY;            //center of pointed roi
+    float m_ROIsizeX;              //size of pointed roi
+    float m_ROIsizeY;              //size of pointed roi
+    float m_PNTcenterX;            //pointer position 
+    float m_PNTcenterY;            //pointer position 
+    float m_PNTdirectX;            //pointer direction 
+    float m_PNTdirectY;            //pointer direction 
+    string m_ROIAddress;           //wm address of roi
+    string m_SceneObjAddress;      //wm address of the scene object
+    long m_cam;                    //number of camera
+  }; // struct HandPointingResults  
+
+
+    struct Vertex {
+	Math::Vector3D m_pos;
+	Math::Vector3D m_normal;
+    };
+    
+    struct Surface {
+	long  m_id;
+	sequence <Vertex> m_vertices;
+    };
+    
+    
+    struct BBox2D {
+	Math::Vector2D m_center;
+	Math::Vector2D m_size;
+    };
+
+    struct BBox3D {
+	Math::Vector3D m_centroid;
+	Math::Vector3D m_size;
+    };
+
+    struct ROI {
+	string  m_address; // Working memory address of roi. For debugging.
+
+	Image          m_region;    // The region of the original image.
+	Image          m_mask;      // The segmentation mask for this ROI.
+
+	Matlab::Matrix m_features;
+	/*
+	Matlab::Matrix m_attributes;
+	Matlab::Matrix m_probableAttributes;
+	*/
+
+	string         m_objId;  // working memory address of the corresponding
+	                         // object
+	BBox2D         m_bbox; 
+	long           m_camNum;  // 0: left, 1: right, 2: arm-mounted
+	FrameworkBasics::BALTTime  m_time;
+
+	// Vector of points to store the contour points -- in case want to
+	// use for shape analysis...
+	vector2DSequence m_contourPoints;
+    };
+
+    // For synchronizing data types between tracker and action analyser. 
+    const string TYPE_UNDEF = "UndefinedType";
+    const string TYPE_HAND = "Hand";  
+    const string TYPE_SHAPE = "Shape";
+    const string TYPE_FLAG = "Flag";
+    const string TYPE_CAR = "ToyCar";
+    const string TYPE_AGENT = "Agent";    
+    enum ObjType {
+	UNDEF, HAND, SHAPE, FLAG, CAR, AGENT
+    };
+
+    // global parameter shared between tracker and action analyser.
+    const long MAX_MISSING_COUNT=5;
+
+    struct SceneObject {
+	FrameworkBasics::BALTTime    m_time;
+	BBox3D           m_bbox;
+	Math::Pose3D     m_pose;
+
+	StringWithConfidence m_label;
+	sequence<Surface>    m_surfaces;
+
+	//Members for linguistically assigned values.
+
+      //All start with ObjectProperties::UNKNOWN
+      IntWithConfidence    m_color; //
+	IntWithConfidence    m_shape;
+	IntWithConfidence    m_size;
+        IntWithConfidence    m_pgshape;
+
+	//Members for visually recognised attributes 
+      //All start with ObjectProperties::UNKNOWN
+        IntWithConfidence    m_recognisedClass; //car / not car... err I mean flag
+      
+        //Member read by the event recogniser
+      //only read or written by Somboon
+	IntWithConfidence    m_objtype; // object classes: car,flag,shape
+	IntWithConfidence    m_activity; // play, scrub, push, etc.
+	IntWithConfidence    m_game; // color, shape, etc.
+
+        cast::cdl::WorkingMemoryIDList m_ROIsMemoryIDs; // Working memory addresses of ROIs
+
+	// Process with the right to delete SceneObject and its ROIs.
+	string  m_managingProcess; 
+    };
+
+
+    // String labels of ObjectProperties
+    const string PROP_UNKNOWN = "unknown";
+    const string COLOR_RED = "red";  
+    const string COLOR_GREEN = "green";
+    const string COLOR_BLUE = "blue";
+    const string COLOR_YELLOW = "yellow";
+    const string SHAPE_SQUARED = "square";  
+    const string SHAPE_CIRCULAR = "circle";
+    const string SHAPE_TRIANGULAR = "triangle";
+    const string SHAPE_RECTANGULAR = "rectangle";
+  const string SIZE_SMALL = "small";
+    const string SIZE_LARGE = "large";
+
+    const string STR_PLAY = "Play";
+    const string STR_COLOR_GAME = "ColorGame";
+    const string STR_SHAPE_GAME = "ShapeGame";
+    const string PROP_UNDEFINED = "Undefined";
+
+    // Enum of object properties...
+    enum ObjectProperties {
+	UNKNOWN,
+	
+	// Color properties...
+	RED,
+	GREEN,
+	BLUE,
+	YELLOW,
+		
+	// Shape properties...
+	SQUARED,
+	TRIANGULAR,
+	CIRCULAR,
+	RECTANGULAR, 
+	
+	// Size properties...
+	SMALL,
+	LARGE,
+
+	MAX_OBJECT_PROPERTIES, 
+
+	//ugly enums for car classifier
+	CAR_CLASS, //for things that are a car
+	GENERIC_THING_CLASS, //for things thar are not a car, but not UNKNOWN
+
+	// appearance classes
+		
+	// activities
+	PLAY,
+
+	// game types
+	COLOR_GAME,
+	SHAPE_GAME,
+
+	UNDEFINED // undefined means it's not one of the known properties.
+    };
+
+
+  struct ObjectPropertyUpdates { 
+    boolean m_position;
+    boolean m_shape;
+    boolean m_size;
+    boolean m_colour;
+    boolean m_class;
+    
+ };
+
+  /*
+   * A struct to describe what has changed in a SceneObject. These
+   * should be added to wm along after a SceneObject overwrite.
+   */
+  struct SceneObjectUpdate {
+    cast::cdl::WorkingMemoryID m_soID;
+    ObjectPropertyUpdates m_updates;
+  };
+
+
+    /** 
+     *  A data structure for identifying the SceneObjects that are tracked by
+     *  ObjectTracker at time m_time. The addition/writing of AttendedObjectList
+     *  to the visual working memory by ObjectTracker, will trigger 
+     *  EventAnalyser to analyze the dynamic scene.
+     */
+    struct AttendedObjectList {
+	sequence <string> m_memoryIDList; /*!< working memory addresses of SceneObjects. */
+	FrameworkBasics::BALTTime  m_time; 
+    };
+    
+     /**
+     * Instruction to learn some features from a particular target
+     * (ROI/proto-object)
+     */
+    struct LearnInstruction {
+    // A flag that indicates whether the tutor initiated this LearnInstruction
+    // or the robot itself (in case of tutor supervised learning).
+      boolean m_tutorInitiated;
+      cast::cdl::WorkingMemoryID m_targetAddress;
+      IntWithConfidenceSequence m_features;
+      string m_type; 
+//    IntSequence m_features;
+    };
+    
+     /**
+     * When attributes of target are recognised, they are added as
+     * RecognisedAttributes instead of the actual object. Unless another
+     * component is available to clarify attributes, the actual objects
+     * (ROI/proto object) will never get recognised attributes.
+     */
+    struct RecognisedAttributes
+    {
+      cast::cdl::WorkingMemoryID m_targetAddress;
+      Matlab::Matrix m_attributes;
+      Matlab::Matrix m_probableAttributes;
+    }; // struct RecognisedAttributes
+
+  
+  
+  /**
+   * A struct that is added to wn to state that scene processing
+   * should not take place. When this is deleted then processing is
+   * free to continue.
+   */
+  struct InhibitSceneProcessing {
+    FrameworkBasics::FrameworkProcessID m_component;
+  }; 
+
+
+    /**
+     * This struct describes the recognized activity (event rule).
+     */
+    struct RecognizedActivity {
+	string        m_activityName;  // name of the recognized event rule
+	string        m_agentMemoryID; // WM address of the agent's sceneobject
+	string        m_handMemoryID;  // WM address of hand's sceneobject 
+	string        m_targetMemoryID; // WM address of the target object
+	string        m_referenceMemoryID; // WM address of the reference object
+	string        m_executionStyle; 
+	boolean       m_bCompleted; 
+	FrameworkBasics::BALTTime  m_startTime;
+	FrameworkBasics::BALTTime  m_ProgressingTime;
+    };
+
+
+};
+
+#endif

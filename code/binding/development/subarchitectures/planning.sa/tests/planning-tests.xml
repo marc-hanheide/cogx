@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<tests>
+
+  <test>
+    <!-- name of the test --> 
+    <name>self-test</name>
+    <!-- cast file to run -->
+    <file>./subarchitectures/planning.sa/config/test-server.cast</file>
+    <!-- description of the test -->
+    <description>Runs the server self test</description>
+  </test>
+
+  <test>
+    <!-- name of the test --> 
+    <name>interface-test</name>
+    <!-- cast file to run -->
+    <file>subarchitectures/planning.sa/config/test-interface.cast</file>
+    <!-- description of the test -->
+    <description>Tests the java to python CORBA interface</description>
+  </test>
+
+  <test>
+    <!-- name of the test --> 
+    <name>agent-test</name>
+    <!-- cast file to run -->
+    <file>subarchitectures/planning.sa/config/test-agent.cast</file>
+    <!-- description of the test -->
+    <description>Tests the java wrapping of a mapsim agent.</description>
+  </test>
+
+  <test>
+    <!-- name of the test --> 
+    <name>sa-test-succeed</name>
+    <!-- cast file to run -->
+    <file>subarchitectures/planning.sa/config/example-sa-success.cast</file>
+    <!-- description of the test -->
+    <description>Tests the example planning subarch when a plan is
+    successfully executed.</description>
+  </test>
+
+  <test>
+    <!-- name of the test --> 
+    <name>sa-test-fail</name>
+    <!-- cast file to run -->
+    <file>subarchitectures/planning.sa/config/example-sa-failure.cast</file>
+    <!-- description of the test -->
+    <description>Tests the example planning subarch when a plan is
+    not successfully executed.</description>
+    <pass>30</pass>  
+  </test>
+
+
+  <test>
+    <!-- name of the test --> 
+    <name>sa-test-c++-succeed</name>
+    <!-- cast file to run -->
+    <file>subarchitectures/planning.sa/config/example-sa-c++-success.cast</file>
+    <!-- description of the test -->
+    <description>Tests the example planning subarch when a plan is
+    successfully executed.</description>
+  </test>
+
+  <test>
+    <!-- name of the test --> 
+    <name>sa-test-c++-fail</name>
+    <!-- cast file to run -->
+    <file>subarchitectures/planning.sa/config/example-sa-c++-failure.cast</file>
+    <!-- description of the test -->
+    <description>Tests the example planning subarch when a plan is
+    not successfully executed.</description>
+    <pass>30</pass>  
+  </test>
+
+</tests>

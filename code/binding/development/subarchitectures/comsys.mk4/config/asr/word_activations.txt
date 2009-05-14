@@ -1,0 +1,193 @@
+
+book {
+  OBJ_SG_LC [
+	(book)
+	(paperbook)
+  ]
+
+  ADJUNCT_LC [
+	(open)
+	(closed)
+	(black)
+  ]
+
+  ACTION_TRANS_LC [
+	(open)
+	(close)
+}
+
+
+
+book_PL {
+  OBJ_SG_LC [
+	(book)
+	(paperbook)
+	(pile of books)
+  ]
+
+  OBJ_PL_LC [
+	(books)
+	(paperbooks)
+  ]
+
+  ADJUNCT_LC [
+	(black)
+	(open)
+	(closed)
+
+  ACTION_TRANS_LC [
+	(open)
+	(close)
+}
+
+mug {
+  OBJ_SG_LC [
+	(mug)
+	(cup)
+	(coffee)
+  ]
+
+  ADJUNCT_LC [
+	(full)
+	(empty)
+	(hot)
+	(warm)
+	(cold)
+	(white)
+  ]
+
+  ACTION_TRANS_LC [
+	(pour)
+	(drink)
+  ]
+}
+
+coffee_maker {
+  OBJ_SG_LC [
+	(coffee maker)
+	(coffee machine)
+	(coffee)
+	(can)
+  ]
+
+  ADJUNCT_LC [
+	(on)
+	(off)
+	(empty)
+	(full)
+	(hot)
+	(warm)
+	(cold)
+	(black)
+  ]
+
+  ACTION_TRANS_LC [
+	(pour)
+	(switch on)
+	(switch off)
+  ]
+}
+
+
+pizza {
+  OBJ_SG_LC [
+	(pizza)
+	(tomato)
+  ]
+
+  ADJUNCT_LC [
+	(round)
+	(hot)
+	(cold)
+	(warm)
+	(tasty)
+	(red)
+  ]
+
+  ACTION_TRANS_LC [
+	(cut)
+  ]
+}
+
+chocolate_bar  {
+  OBJ_SG_LC [
+	(chocolate bar)
+	(chocolate)
+  ]
+
+  ADJUNCT_LC [
+	(tasty)
+	(brown)
+	(squared)
+  ]
+
+  ACTION_TRANS_LC [
+	(open)
+	(close)
+  ] 
+}
+
+box  {
+  OBJ_SG_LC [
+	(box)
+  ] 
+
+  ADJUNCT_LC [
+	(open)
+	(closed)
+	(brown)
+	(big)
+  ]
+
+  ACTION_TRANS_LC [
+	(lift)
+	(push)
+	(open)
+	(close)
+  ]
+}
+
+
+football {
+  OBJ_SG_LC [
+	(ball)
+	(football)
+	(soccer ball)
+	(soccer)
+  ]
+
+  ADJUNCT_LC  [
+	(round)
+	(white)
+	(black)
+  ]
+
+}
+  	 	
+laptop {
+  OBJ_SG_LC [
+	(laptop)
+	(notebook)
+	(computer)
+	(screen)
+	(keyboard)
+	(button)
+  ]
+  ADJUNCT_LC [
+	(i.b.m.)
+	(open)
+	(closed)
+	(on)
+	(off)
+	(shot)
+	(black)
+  ]
+	
+  ACTION_TRANS_LC [
+	(open)
+	(close)
+	(switch on)
+	(switch off)
+	(fold)
+  ]
+}

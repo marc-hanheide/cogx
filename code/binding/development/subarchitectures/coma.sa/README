@@ -1,0 +1,11 @@
+COMA.SA
+=======
+
+This is the concpetual mapping subarchitecture. You need the reasoning tools from code/tools/reasoning.
+Please read the README in that directory for instructions on how to install necessary external components.
+
+If you then have tools/reasoning and subarchitectures/coma.sa in your build.dirs, you should be able to run ant all.
+
+The coma.sa/config directory contains a few test CAST files. Make sure you edit the paths there.
+
+Author: Hendrik Zender, zender@dfki.de

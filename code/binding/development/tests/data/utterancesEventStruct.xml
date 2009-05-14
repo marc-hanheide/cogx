@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<utterancesEventStruct>
+
+<utterance>
+	<string>go to the kitchen</string>
+	<nucleus>
+		<eventtype>action-motion/go</eventtype>
+		<statetype>IS-in</statetype>
+	</nucleus>
+</utterance>
+
+<utterance>
+	<string>put the ball in the box</string>
+	<nucleus>
+		<eventtype>action-non-motion/put</eventtype>
+		<statetype>IS-in</statetype>
+	</nucleus>
+</utterance>
+
+<utterance>
+	<string>now take the box</string>
+	<nucleus>
+		<eventtype>action-non-motion/take</eventtype>
+		<statetype>HAS</statetype>
+	</nucleus>
+</utterance>
+
+
+
+</utterancesEventStruct>
+
+

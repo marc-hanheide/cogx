@@ -1,0 +1,22 @@
+(define (problem cs-task)
+(:domain cs-game)
+(:objects
+  true - boolean
+  false - boolean
+  blue - colour
+  red - colour
+  Robot - robot
+
+  flag1 - flag
+  fp1 - waypoint
+)
+
+(:init
+  (has_run_colour_sensor Robot flag1)
+)
+
+(:goal (and
+  ;;;  (K Robot (colour flag1))
+   (colour flag1 : red)
+)
+))

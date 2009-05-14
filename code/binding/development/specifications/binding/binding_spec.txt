@@ -1,0 +1,620 @@
+/*!
+\mainpage Specification for the binding subarchitecture
+
+\section motivation Motivation
+
+\subsection laws The laws of binding
+
+\li A proxy can only be changed or deleted by the monitor that created it (the binder can too).
+\li A relation can only be made between your own proxies.
+\li If a proxy does not seem to be useful to anyone (since it's not bound to anything or part of a relation until anyting bound AND it is internally considered obsolete or old) then flag it for deletion after some reasonable timeout.
+\li If a proxy explicitly refers to a deleted proxy, then delete it.
+\li Never refer to unions as they may change at any time. Always access the union of your proxy via your proxy. Always.
+\li ... to be completed
+
+\todo complete and move "the laws of binding" to an appropriate place.
+
+\todo spell check, proof-read and edit...
+
+The main purpose of the binding subarchitecture is to create a
+representation of the state of the system, shared among all the
+involved subarchitecture. The representation in the binding working
+memory should at all times reflect the currently best system-wide
+hypothesis of the world state. To do this, the representations withing
+each subarchitecture needs to \e bind to the corresponding
+representations of all other subarchitectures.
+
+Examples of involved subarchitectures are:
+
+\li <a href =
+"../../../subarchitectures/comsys.mk4/doc/java/html/index.html">ComSys</a>:
+What is spoken about needs to be grounded in the perceptual
+subarchitectures (objects, actions, and relationships between objects
+and objects and actions etc).
+\li <a href =
+"../../../subarchitectures/vision/doc/cpp/html/index.html">Vision</a>:
+The scene as perceived through cameras must be presented to the other
+subarchitectures (e.g. to ComSys in order to prime the search for
+possible interpretations).
+\li <a href =
+"../../../subarchitectures/spatial.sa/doc/java/html/index.html">Spatial
+reasoning</a>: The locations of objects perceived must be globally
+available (typivally by vision) in order for ComSys to reason about
+spatial interpretations and for Manipulations to get target
+coordinates.
+\li <a href =
+"../../../subarchitectures/planning.sa/doc/java/html/index.html">Planning</a>:
+In order to execute plans, the consituents of the plan (e.g. actions
+and objects involved in the actions) must be grounded in the
+subarchitectures' representations.
+\li <a href =
+"../../../subarchitectures/nav.sa/doc/java/html/index.html">Navigation</a>:
+A macroscopic version of spatial reasoning whose representation can be
+used in much the same manner but with regards to rooms and places.
+\li <a href =
+"../../../subarchitectures/coma.sa/doc/java/html/index.html">Coma</a>:
+Conceptual mapping is directly linked to Navigation, but it also
+provides an ontological reasoner that can in principal be used by all
+other SAs.
+\li <a href =
+"../../../subarchitectures/central.mechanisms/doc/java/html/index.html">Central
+Mechanisms</a>: Mediation of spoken commands into actions can be made
+possible by letting these be represented in a globally available
+manner.
+\li <a href =
+"../../../subarchitectures/manipulation.sa/doc/cpp/html/index.html">Manipulation</a>:
+Manipulation actions need to be triggered by plans (from the planner
+which gets its goals from the central mechanism mediator which may
+have been triggered by a spoken command) and need to have coordinates
+(from spatial reasoning) and visual feedback (from Vision).
+
+Apart from tight control loops (like visual servoing), most of the
+representations mentioned above (and some more) can be handled by the
+binding subarchitecture. And many already are.
+
+The binding subarchitecture is documented here: \ref binding_main and http://www.dfki.de/~henrikj/publications/hri2008binding.pdf 
+
+\section scenario Scenario
+
+See other scenario: \ref main_scenarios
+
+\section binding_requirements Requirements
+
+The requirements can roughly be divided into
+\li \ref binding_req_sub
+\li \ref binding_sa_req_sub
+\li \ref binding_interfaces
+
+\subsection binding_problems Problems with a common representation
+
+To create a common representation for the above mentioned 8
+subarchitectures plus a few not mentioned means a lot of problems: 
+
+\li they have completely different representations internally (e.g. visual features are quite different from plans and grammars).
+\li they typically have very small overlaps and share only minimal sets of data.
+\li they are all being redesigned and changed constantly.
+\li there is an open number of potential future subarchitectures, completely unknown presently.
+\li to change a subarchitecture \b A to take into account that the
+    representation of an interacting subarchitecture \b B has changed
+    is expensive in general (i.e. cross dependencies are expensive)
+
+\subsection binding_req_sub Requirements on the binder
+
+These problems must be taken into account when creating a common
+representation. The following list of requirements is an attempt to do
+so. These requirements describe what the \e binder must satisfy, but
+as the binder will require certain information from the
+involved subarchitectures, there will also be requirements for thee.
+
+\subsubsection bi_1 bi.1 Maximal nonintrusiveness
+
+The effort of integrating a subarchitecture with the binder must be
+minimized. The subarchitecture should essentially not have to be
+altered in any way in order to be able to contribute to the shared
+representation which the binder should endow. Integration with the
+binder should only mean an \e addition to the existing code in terms of 
+\li \b bi.1.a representations and 
+\li \b bi.1.b functionality.
+
+Involved in satisfying \b bi.1.a are the \c BindingData::BindingProxy,
+\c BindingData::BindingUnion and all the binding features in \c
+BindingData::Feature. These representations allow reuse of existing
+representations (e.g. explicitly through \c
+BindingData::Feature::SourceData) and the possibility to use whatever
+other representation that is appropriate for the involve
+subarchitecture (given that an implementation of an \c
+AbstractComparator is provided, more on that later)
+
+Involved in satisfying \b bi.1.b is the \c AbstractMonitor which is a
+component which should primarily filter the internal state of the
+subarchitecture and write appropriate information to the shared
+working memory of the binder.
+
+\subsubsection bi_2 bi.2 Appropriate level of abstraction
+
+This is the \e modal / \e amodal representation issue. We essentially
+have two contradicting requirements:
+
+<ol> 
+<li>In many situations, there is a need for very detailed and
+subarchitecture-specific information. For example, if the manipulation
+SA should move the arm to a specific location, then an appropriate
+representation for this location must be present (e.g., from the spatial SA).
+</li> 
+<li>For most SAs, most of the specific forms of representation lack
+any form of meaning and can therefore not be expected to be taken into
+account. For example, it's unlikely that comsys can or should be expected to
+make any sense of low-level visual features or coordinate systems. 
+</li> 
+</ol>
+
+Essentially, this means that we want to have the ability to represent
+anything without imposing anything onto the involved subarchitectures
+that have nothing to do with this representation. (This is essentially
+solved by the \c BindingData::FeaturePointer)
+
+To represent anything in any manner is of course not a good
+solution. What we need, is a common ground between all involved
+subarchitectures. Despite the requiement to allow subarchitectures to
+represent anything, there must also be common elements that bridge
+these representations. 
+
+These representation leads us to the following assumption, direclty
+translated into requirements. The involved subarchitectures, under the
+circumstances depicted in the scenarios, will need to jointly represent:
+
+\li \b bi.2.a Representation of entities \a bi_2_a
+  Entities such as objects, places, persons and the robot itself,
+\li \b bi.2.b
+  Groups of such entities,
+\li \b bi.2.c 
+  N-ary relations among such relations, and,
+\li \b bi.2.d 
+  Actions and relations to involved agent and objects of actions.
+\li \b bi.2.e 
+  Features defining the properties of all such entities.
+
+This assumption also forms a set of constraints under which the
+detailed representations can be used to \e fuse \e information from
+the subarchitectures. This information fusion is nynonymous with the
+process of binding cross subarchitecture contents.
+
+\subsubsection bi_3 bi.3 Stability of representation
+
+As the involved subarchitectures may constantly add, subtract and
+change information (due to the nature of perception, dialogue,
+reasoning etc.) it is possible that the shared information will appear
+quite volatile. There is for example normally no way for one
+subarchitecture to predict the actions or representations generated by
+another. Therefore there will be no chance to predict what the shared
+representation will be and when it will change.
+
+From the point of view of any suarchitecture, the representation
+should, despite this appearant volatility, appear as stable as
+possible. This means a number of things:
+
+\li <b>bi.3.a independence of state</b>
+  When information from a subarchitecture \b A or any other
+  information is bound/unbound in the binder, none of the information
+  in \b A should be invalidated, nor should any processing by \b A be
+  necessary.
+\li <b> bi.3.b lazy binding</b>
+  Whether or not the binder has succeeded in binding (fusing) the
+  information from SA \b A with anything else should not make any
+  difference in SA \b A. This will ake it possible to present
+  information to the binder well in advance to any possibility for
+  binding it, e.g. when referring to places that have yet not been
+  seen.
+
+\subsubsection bi_4 bi.4 Asynchronous, Anytime and Incremental processing
+
+Related to that of stability is the inherent asynchronicity of the
+cast architecture in general. The binder must be able to handle
+this. Moreover, for some uses of the binder it is important to take
+into account incrementally generated data (which may be initially
+partially incomplete or inaccurate). Moreover, the binder itself
+should generate results as soon as possible and then refine the
+results as more information becomes available.
+
+\subsection binding_sa_req_sub Requirements on subarchitectures that read/write to the binder
+
+\subsubsection bi_5 bi.5 Conformity with formats
+
+Requirements \b bi.1.a and \b bi.2 suggests that anything an SA can
+represent should also be representable in the shared binding WM. There
+are however some limitations. First of all, the SAs must stick to
+representing entities, groups, relations and actions (cf. <b>\ref bi_2
+"bi.2" .a-d</b>). And there must at least be a shared common location
+for all representations in use (which is in \c BindingData::Feature).
+
+\subsubsection bi_6 bi.6 Benign subarchitectures
+A fundamental assumption any subarchitecture must have on all other
+subarchitectures when building up a common representation is that the
+shared information represent the \e best current hypothesis of the
+state.
+
+A consequence of this requirement is that the binder cannot be used to
+test hypothesis by suggesting potentially relevant information and see
+if it binds. This could be used to prime visual processes in the
+context provided by comsys or vice versa. But if several SAs sugeest
+hypothetical representations simultaneously, they would all
+potentially provide false information to each other. To solve this it
+is possible to run a local binder, only accessible to one SA and which
+contains a local copy of the contents of the real binder (layered
+binding). (implemented using \c Binding::CopyCatBindingMonitor)
+
+\subsubsection bi_7 bi.7 Overlapping representations
+
+In order to make decisions about whether or not information stemming
+from different subarchitectures are referring to the same entity (or
+group, relation or action) there must at least be \e some overlapping
+information constituents from the involved subarchitectures. For
+example, if the subarchitectures \b A and \b b at least ``speak the
+same languae'' w.r.t. to colours of objects, then the colour feature
+can be used as a clue as to whether two representations of objects
+should bind or not.
+
+This means that:
+\li 
+  \b bi.7.a subarchitectures should strive for reusing as much as
+  possible of existing representations as possible, or
+\li 
+  \b bi.7.b when that is not possible, provide the binder with methods
+  for comparing different representations.
+
+\subsection binding_interfaces Interfaces to representations/processes in the binder
+
+The binder will implment a number of operations on the shared
+representations. These operations can in some cases be useful to other
+subarchitectures. Therefore the binder should have some interfaces
+that gives access to some of these capabilitities.
+
+For example:
+\li
+  to determine if two represented entities could refer to the same
+  thing
+\li 
+  to retrieve all represented entities matching a particular pattern
+  (like having a certain feature value, like colour = 'red')
+\li
+  identification of disambiguation issues, e.g. when there are several
+  similar visual objects that could refer to one and the same object
+  being mentioned in a dialogue
+\li 
+  etc...
+
+These requirements will not be addressed yet, however.
+
+\section binding_representations Representations
+
+The binding subarchitecture is primarily concerned with creating a
+common shared representation. This means that there are two levels of
+representations to discuss here: The \e basic representations of
+objects stored on the working memory and the \e shared
+representation that these basic elements implement (of entities such
+as objects etc.).
+
+The \ref binding_basic_repr "basic representations" are:
+\li \ref binding_proxies
+\li \ref binding_features
+\li \ref binding_unions
+\li \ref binding_score and
+\li \ref binding_feature_comparison
+
+and the \ref binding_shared_repr "shared representations" can be
+summarized as:
+\li \ref binding_shared_repr_basic
+\li \ref binding_shared_repr_groups
+\li \ref binding_shared_repr_relations
+
+
+\subsection binding_basic_repr Basic representations
+
+A subsubsection follows
+
+\subsubsection binding_proxies Proxies 
+
+To create representation of entities referring to objects etc (\ref
+bi_1 "bi.1.a") a subarchitecture creates instances of Proxies:
+
+\code
+struct BindingProxy {     
+  FeaturePointers m_proxyFeatures;
+  cast::cdl::WorkingMemoryID m_unionID;
+  cast::cdl::WorkingMemoryID m_bestUnionsForProxyID;
+  cast::cdl::WorkingMemoryID m_nonMatchingUnionID;
+  BindingProxyType m_type;
+  ProxyPorts m_outPorts;    
+  cast::cdl::WorkingMemoryID m_inPortsID;
+  boolean m_hypothetical;
+  long m_updates;
+  long m_bindingCount;
+};
+\endcode
+\sa \c BindingData::BindingProxy
+
+Essentially, the proxy contains a number of features that describe the
+entity. For example, if vision sees a red ball it may create a proxy
+which contains the features \c BindingData::Feature::Colour = "red"
+and \c BindingData::Feature::Shape = "round" (in reality, there are
+other features used, but this is a good example)
+
+The features are actually not stored \e within the proxy, instead the
+proxy has a list of feature pointers that refer to features stored on WM:
+\code
+struct FeaturePointer {
+  cast::cdl::OntologyEntry m_type;
+  cast::cdl::WorkingMemoryID m_address;
+  cast::cdl::WorkingMemoryID m_immediateProxyID;
+};
+\endcode
+\sa \c BindingData::FeaturePointer
+
+\subsubsection binding_features Features
+
+The features can essentially represent anything that can be
+represented in an IDL struct. For example, Concepts:
+\code
+struct Concept {
+  string m_concept;
+  boolean m_negated;
+  cast::cdl::WorkingMemoryID m_immediateProxyID;
+};
+\endcode
+\sa \c BindingData::Feature::Concept \c BindingData::Feature
+
+By giving several features to a proxy, we can give it descriptions in
+an arbitrary level of abstraction. If we just want to represent a
+"round thing", then we can give a proxy the feature shape = round and
+nothing else. Some "system" features will also be needed but that can
+be ignored for now (the AbstractMonitor takes care of details like
+that anyhow).
+
+\subsubsection binding_unions Unions
+
+When a subarchitecture has created a proxy, it's up to the binder to
+unify the proxy with other proxies that are possibly referring to the
+same entity in the external world. These unifications result in
+instances of \c BindingData::BindingUnion. The unions are very similar
+to the proxies since they contain a union of all the features
+contained in the proxy. They also contain references to the proxies
+that we unified in order to create them:
+\code
+struct BindingUnion {
+  WorkingMemoryIDList m_proxyIDs;
+  long m_updates;
+  FeaturePointers m_unionFeatures;
+  BindingProxyType m_type;
+  ProxyPorts m_outPorts;
+  ProxyPorts m_inPorts;
+};
+\endcode
+\sa \c BindingData::BindingUnion
+
+\par Relation to requirements 
+  The \ref binding_proxies, \ref binding_unions and \ref
+  binding_features are all involved in satisfying requirements \ref
+  bi_1 "bi.1" and \ref bi_2 "bi.2". The proxies also are involved in
+  "shielding" the SAs from the binding process which is essentially
+  only affecting unions. Thus the proxies are involved in satisfying
+  \ref bi_3 "bi.3" too.
+
+\subsubsection binding_score Binding Score
+
+In order to make a decision about how to bind information, a binding
+score is calculated for each pair of existing proxy and union. The
+union which gets the highest score for a new or updated proxy will
+bind to that proxy when all relevant scores have been calculated.
+
+\code
+struct BindingScore {
+  boolean m_comparable;
+  boolean m_mismatch;
+  long m_matches;
+  boolean m_relationMismatch;
+  long m_relationMatches;
+  long m_sticky;
+  double m_salienceHeuristics; 
+  long m_proxyUpdatesWhenThisComputed;
+  cast::cdl::WorkingMemoryID m_proxyID;
+  cast::cdl::WorkingMemoryID m_unionID;
+};
+\endcode
+
+What defines a high score is defined by this operator:
+\code
+Binding::operator<(const BindingData::BindingScore& _score1,const BindingData::BindingScore& _score2);
+\endcode
+which is currently defined as
+\code
+if(       _score1.m_comparable != _score2.m_comparable) {
+  return  _score1.m_comparable >  _score2.m_comparable; // comparable is better
+} else if(_score1.m_mismatch   != _score2.m_mismatch) {
+  return  _score1.m_mismatch   <  _score2.m_mismatch;  // no mismatch is better
+} else if(_score1.m_relationMismatch   != _score2.m_relationMismatch) {
+  return  _score1.m_relationMismatch   <  _score2.m_relationMismatch; // no mismatch w.r.t relations is better
+} else if(_score1.m_matches != _score2.m_matches) {
+  return  _score1.m_matches >  _score2.m_matches; // more matches is better
+} else if(_score1.m_relationMatches != _score2.m_relationMatches) {
+  return  _score1.m_relationMatches >  _score2.m_relationMatches; // more matches w.r.t relations is better
+} else if(_score1.m_sticky != _score2.m_sticky) {
+  return  _score1.m_sticky >  _score2.m_sticky; // more matches w.r.t stickiness is better
+} 
+\endcode
+
+In other words, mismatching features are regarded as bad and matching
+features as good. This specific representation of a score may change
+in the future, but it will most likely roughly remain the same. There
+is also a threshold score that must be exceeded in order for even
+considering binding (\c Binding::defaultThresholdScore()). The
+threshold essentially says that in order to bind, a union must have a
+score w.r.t. a proxy which at least is comparable, contains no
+mismatches and at least one match.
+
+\sa \c BindingData::BindingScore \c Binding::BindingScorer
+
+\subsubsection binding_feature_comparison Feature Comparisons
+
+The basis for calculating the binding score between a proxy \b P and a
+union \b U are the pairs of feature instances found in respecive
+struct. Each comparable feature pair results in a \c
+cast::cdl::TriBool which is essentially mirroring <a
+href="http://www.boost.org/doc/html/tribool.html">\c boost::tribool
+</a>. 
+
+The tribool has three possible values: \c true, \c false and \c
+indeterminate. And these values should reflect whether or not two
+features are equivalent:
+
+\li 
+  \c true: yes, they are definitely, or most likely, equivalent
+\li 
+  \c false: no, they are definitely, not or most likely, not
+  equivalent
+\li 
+  \c indeterminate: it is possible they are equivalent, or the
+  features can not be compared at all.
+
+The comparisons can in many cases be made by the binder itself, but in
+some cases (e.g. for onotolgical reasoning), it is better handled by
+other subarchitectures. In those cases the result of a comparison is
+stored in a separate struct that encapsulated the tribool:
+\code
+struct FeatureComparison {
+  FeaturePointer m_proxyFeature;
+  cast::cdl::WorkingMemoryID m_proxyID;
+  FeaturePointer m_unionFeature;
+  cast::cdl::TriBool m_featuresEquivalent;
+  cast::cdl::SubarchitectureID m_bindingSubarchitectureID;
+  boolean m_insistOnExternalComparison;
+};
+\endcode
+\sa \c BindingData::FeatureComparison
+
+\subsection binding_shared_repr Shared representations
+
+In the following text, different types of proxies will be
+discussed. But as the unions are formed from bound proxies (by
+unifying all features in each proxy), the descriprions apply to unions
+as well.
+
+The different kind of proxies differ in what features that they
+contain (although there are no obstacles if you want to give a
+relation proxy a colour feature). The primary difference is in the
+enum \c BindingData::BindingProxyType, but these details are shielded
+from the subarchitectures through the abstract monitor. More on that
+later.
+
+The different types of proxies can never bind with each other. A group
+never binds to an individual or relation etc etc.
+
+\subsubsection binding_shared_repr_basic Basic proxies/unions
+
+Basic proxies should represent singular entities such as a room, an
+object, a person, the robot, a location etc. The essential properties
+of a basic proxy are defined by its features.
+
+\todo add dot-files generated by the binder.
+
+\subsubsection binding_shared_repr_groups Group proxies/unions
+
+Group proxies represent multiple basic proxies. The comsys may for
+example create group proxies that refer to plural nouns such as "the
+green balls". In that particular example, comsys creates one group
+proxy with \c BindingData::Feature::Concept::m_concept = "ball", and
+\c BindingData::Feature::Colour::m_colour = "green". The binder then
+spawns off individual, basic proxies that inherit the features from
+the group. These individuals can then bind to other individuals,
+e.g. from other SAs. 
+
+Group proxies can also also bind to other matching groups proxies.
+
+All group proxies have the feature \c BindingData::Feature::Group
+which specifies the size of the group.
+
+\subsubsection binding_shared_repr_relations Relation proxies/unions
+
+Relationships between proxies are represented by anoher kind of
+proxy. This means that relationships can have features and can be
+bound to other relationship proxies just like any other form of
+proxy. 
+
+For example, if the user expresses that <i>"the blue ball is to the
+left of the red box"</i>, then there will be two proxies for
+describing the onjects as well as one for describing the relationship
+<i>"left of"</i> between the objects (where "left of" is of type \c
+RelationLabel::Feature::RelationLabel). In the spatial
+subarchitecture, the same relationship could be expressed in a similar
+manner but with some metric information (yet to be implemented).
+
+The relation proxies use \c BindingData::ProxyPorts to define labeled
+connections to other proxies (using their WM IDs). Only relation
+proxies have \ref BindingData::BindingProxy::m_outPorts "out-ports"
+whereas all proxies can have \ref
+BindingData::BindingProxy::m_inPortsID "in-ports". The number of
+outports defines the the arity of the relation. In most cases there
+are only binary relations, like "left of", but there is certainly
+reason for higher level relations too, for example, the "left of"
+relation may make more sense if it also includes a "with respect
+to"-port.
+
+The out-ports are labeled with, for example, "from", "to" etc to
+denote the role each ported proxy play in the relation. Two relation
+proxies match only if their features match \e and if their ported
+proxies are \e not \e mismatching.
+
+\todo Clarifying example of relation proxies...
+
+\section binding_components Components
+ 
+Most of the involved components can be considered implementation
+details. The exact number and arrangement of components within the
+binder is not so important w.r.t. requirements on the binder itself
+(\ref binding_req_sub). A brief summary of the components:
+\li Binding::BindingWorkingMemory contains all proxies, features, unions etc.
+\li Binding::BindingScorer scores all pairs of unions and proxies and keep the scores updated
+\li Binding::BindingJudge summarizes all the calculated scores and select the best union for each proxy
+\li Binding::Binder binds the best union with the proxy based on the decision made by the judge (if )
+\li Binding::BindingGroupManager takes care of 
+\li Binding::BindingStatusMonitor
+\li Binding::BindingDotViewer
+\li Binding::BindingStatusMonitor
+
+\section binding_processes Processes
+
+\todo refer to docs of how to use abstract binder etc...
+
+
+
+\page binding_low_level Some low level requirements on the binder
+
+<b>TOO LOW LEVEL</B>
+
+\li bi.1. Score existing unions w.r.t. proxies added/updated by implementations of \p Binding::AbstractMonitor (or \c binding.abstr.AbstractMonitor in java).
+\li bi.2. Bind proxies to the best matching unions or create new unions when none is matching
+\li bi 3. Delete proxies (and associated features, \c BindingData::Feature) when SAs request it (\c Binding::AbstractMonitor::deleteExistingProxy())
+\li bi 3. Update proxies when SAs request it (\c Binding::AbstractMonitor::changeExistingProxy())
+\li bi.4. Identify disambiguation issues when more than one union matches (\c BindingData::UnionDisambiguationIssue)
+\li bi.5. Handle certain clarification requests/questions (a first attempt here \p BindingData::CommunicativeGoals)
+
+Possibly also: 
+
+\li bi.6. Detailed specifications of why a pair of proxies bind or do not bind (via the binding score)
+\li bi.7. misc interfaces... what is needed? What is it subarchitectures need to know from the binder?
+
+\li bi.8. Layered binding. Full replica of the binding subarchitecture, but where anyone can test the effect of their their proxies without disturbing other SAs...
+
+\see \ref create_proxy
+
+\section binding_representations Representations
+
+Most of the involved representations already exist in \c
+BindingData. Most relevant are \c BindingData::BindingProxy, \c
+BindingData::BindingUnion and all features under the \c
+BindingData::Feature-namespace
+
+\section binding_components Components
+ 
+\section binding_processes Processes
+
+*/

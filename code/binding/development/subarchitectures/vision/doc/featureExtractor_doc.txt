@@ -1,0 +1,35 @@
+/*!
+\page main_featureExtractor Feature Extractor Component
+
+\section desc_featureExtractor Description
+
+The \p FeatureExtractor component is a managed (goal driven) component that extract visual features from segmented areas is ROIs. It is one of the two  \subpage main_featureLearning.
+
+\section conf_featureExtractor Configuration
+
+CPP MG <name> FeatureExtractor 
+\n
+
+\section idl_featureExtractor Working Memory Items
+
+\p Vision::ROI \n
+
+\section op_featureExtractor Working Memory Operations
+
+Get(\p Vision::ROI) \n
+\n
+Overwrite(\p Vision::ROI) \n
+
+\section flt_featureExtractor Working Memory Filters
+
+Add(\p Vision::ROI)
+
+\section msc_featureExtractor Dataflow
+
+
+\sa \subpage main_featureLearning \n \p Recogniser \n \p Segmentor \n 
+\p Vision::ROI \n 
+
+*/
+
+

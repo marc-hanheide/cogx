@@ -1,0 +1,232 @@
+/*!
+\mainpage 
+
+Specification for the laser-based feature extractor subarchitecture.
+
+\attention We need to decide whether the laser-based feature extractor
+should be implemented as a subarchitecture or as a component within
+some other architecture (i.e. navigation sa). Andrzej uses the laser
+features for place classification and Niko is planning on using them
+for people detection.
+
+\section scenario Scenario
+
+see other scenario: \ref main_scenarios
+
+\section requirements Requirements
+
+\li lbfe.1: Able to extract a set of features from a given laser
+scan. This features are used for place classification.
+
+\li lbfe.2: Able to segment a laser scan into sets of measurements
+that correspond to a person. Each segment has an associated set of
+features and a confidence value indicating the presence of a person.
+
+\section representations Representations
+
+\par Laser Feature:
+A laser feature consists of a unique name and a numeric value
+
+\code
+struct LaserFeature {
+       string name;
+       float value;
+};
+\endcode
+
+\par LaserFeatureArray:
+A series of laser features
+
+\code
+struct LaserFeatureArray {
+       long numFeatures;
+       LaserFeature features[100];
+};
+\endcode
+
+\par LaserSegment: 
+A structure that represents a set of consecutive measurements in a
+laser scan. A segment can be defined by the indexes and the
+measurements in the laser scan that constitute the segment. It should
+contain some reference to the corresponding laser scan.
+
+\code
+struct LaserSegment {
+       long numMeasurements;
+       float measurements[100];
+       int indexes[100];
+       // some reference to the laser scan where this segment corresponds
+};
+\endcode
+
+\par LaserPeopleSegment:
+A structure that represents an extended laser segment associated to a
+laser-based people detector. The segment has an associated confidence
+value for the detection of a person and a list of laser features
+associated to it.
+
+\code
+struct LaserPeopleSegment {
+       LaserSegment segment;
+       float confidenceValue;
+       LaserFeatureArray features;
+};
+\endcode
+
+\par LaserPlaceFeatureSequence:
+A series of laser features used for place classification
+
+\code
+
+typedef sequence<LaserFeature> LaserPlaceFeatureSequence;
+
+\endcode
+
+\par LaserPeopleSegmentSequence:
+A series of people segments
+
+\code
+
+typedef sequence<LaserPeopleSegment> LaserPeopleSegmentSequence;
+
+\endcode
+
+\par LaserFeatureRequestType
+Types of request that can be made to the laser-based feature extractor
+
+\code
+
+enum LaserFeatureRequestType {
+    PLACE,
+    PEOPLE
+  };
+
+\endcode
+
+\par LaserFeatureRequest:   
+A structure that is used to trigger the extraction of place features or people segments
+
+\code
+
+struct LaserFeatureRequest {
+    LaserFeatureRequestType requestType;   
+
+    //the address of the process that generated this request
+    cast::cdl::WorkingMemoryAddress m_pprAddr;
+  };
+
+\endcode
+
+\section components Components
+
+\subsection lbpc Laser-based Place-Feature Extractor
+
+This component extracts a set of features from a laser scan that are
+later used for place classification.
+
+\subsubsection lbpc_name Component Name: 
+LaserBasedPlaceFeatureExtractor
+
+\subsubsection lbpc_requirements_satisfied Requirements Satisfied: 
+lbc.1
+
+\subsubsection lbpc_func Units of functionality:
+
+\par Laser-based Place-Feature Extractor
+
+\par Functionality:
+Extracts a set of features from a laser scan
+
+\par Triggered by:
+See behavior below
+
+\par Behavior: 
+There are two possible behaviors. The component runs all the time,
+extracting features from all the laser scans it gets (pulling from the
+wm from other component) and putting the resulting features in our
+wm. Or the component only works after getting a request, extracting
+the features of the first scan it gets after getting the request. A
+third option could be to mixed bot behaviors: start and stop a
+pulling behavior via a start and end request.
+
+
+\subsection lbpd Laser-based People-Segments Extractor
+
+Able to segment a laser scan. Each segment has an
+associated set of features and a confidence value indicating the
+presence of a person.
+
+\subsubsection lbpd_name Component Name: 
+LaserBasedPoepleSegmentsExtractor
+
+\subsubsection lbpd_requirements_satisfied Requirements Satisfied: 
+lbc.2
+
+\subsubsection lbpd_func Units of functionality:
+
+\par Laser-based People-Segments Extractor
+Segments a laser scan into sets of measurements that correspond to a
+person. A segment corresponds to a consecutive set of measurements in
+the laser scan. The segments have an associated confidence value for
+the detection of a person and a list of laser features associated to
+them.
+
+\par Functionality:
+First the laser scan is segmented and then a people detector, based of
+features extracted from the segments is used to classify each segment
+into person/not person. Finally a confidence (obtained from the people
+detector) value is associated to each segment.
+
+\par Triggered by:
+See behavior below
+
+\par Behavior: 
+See behavior of the Laser-based Place-Feature Extractor component
+
+
+\section  processes Processes
+
+\attention I think the triggering processes for both the place feature
+and people segment cases should monitor our working memory for the
+result. We could, alternatively define some reply structure or
+overwrite the request when the process terminates setting some status
+variable indicating the result.
+
+\subsection lbpf_request Laser-based Place-Feature Extraction
+
+LBPFE = Laser-Based Place-Feature Extractor, RBS = Robot Base Server
+
+\msc
+
+        hscale = "1.4";
+        Trigger, LBPFE, RBS;
+	... [label="Triggering process creates a LaserFeatureRequest object of type PLACE"];
+	... [label="and adds it to our working memory"];
+        Trigger=>LBPFE [label="request laser-based place features"];
+	... [label="LBPFE gets the current laser scan from the RBS"];
+        RBS=>LBPFE [label="get current laser scan"];
+        ... [label="LBPFE extracts the place features from the laser scan"];
+        ... [label="and adds the resulting LaserPlaceFeatureSequence object in our working memory"];
+        LBPFE=>Trigger;
+\endmsc
+
+
+\subsection lbpd_request Laser-based People-Segments Extractor
+
+LBPSE = Laser-based People-Segments Extractor, RBS = Robot Base Server
+
+\msc
+
+        hscale = "1.4";
+        Trigger, LBPSE, RBS;
+	... [label="Triggering process creates a LaserFeatureRequest object of type PEOPLE"];
+	... [label="and adds it to our working memory"];
+        Trigger=>LBPSE [label="request laser-based people segments"];
+	... [label="LBPSE gets the current laser scan from the RBS"];
+        RBS=>LBPSE [label="get current laser scan"];
+        ... [label="LBPSE extracts the people segments from the laser scan"];
+        ... [label="and adds the resulting LaserPeopleSegmentSequence object in our working memory"];
+        LBPSE=>Trigger;
+\endmsc
+
+*/

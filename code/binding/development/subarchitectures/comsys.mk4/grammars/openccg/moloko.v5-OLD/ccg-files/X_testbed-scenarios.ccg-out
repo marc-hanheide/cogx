@@ -1,0 +1,60 @@
+# SCENARIO 1
+# H:	"Could you go and find the Borland book please?"
+# R: 	"I will go and look for it in a library where books are normally found." /
+				# problem: modifier 'extraction', same issue as where did you see him?
+#     	"Sure. I will go and look for it in the library, assuming it is there."
+# H:	"Ok."
+# R: 	"Excuse me."
+# R: 	"Do you know where the Borland book is?" /
+			# what kind of semantics (and syntax result?? do you want for this?)
+#	    "Do you where I could find the Borland book?"
+# H:	"I believe it is in GJ's office"
+# R:	"Ok. Thank you for helping me." /
+#    	"Ok. Thanks for helping me."
+# R:	"The book is in GJ's office, near the white mug."
+
+# Scenario 2 (adding route descriptions to Scenario 1)
+
+# H:	"Could you get me the Borland book please?"
+# R: 	"I assume that it would be in a library. However, I do not know where there is a library in this building.
+#    	 Could you tell me where there is one?"
+# H:	"Okay. Go out of the office, into the corridor. Turn left, and after a while you will pass through a hall.
+#        Continue straight ahead, along the corridor. You will pass by a fire extinguisher on your left, and
+#	     several lockers on your right. The library is at the end of the corridor."
+# R: 	"Okay. Thanks for helping me."
+
+
+# TO HANDLE:
+
+# 0) proper semantics for rel-clause (see GJ email)
+# 1) nested prepositons vs 'conjoined' prepositions (email)
+#		also get the many modifiers reading ( go to the table to the room to desk attaches 3 to same...)
+# 2) proper semantics for , assuming he came 
+# 3) semantics for 'know where I can find him'
+# 4) thanks & thanks for X-ing  (see GJ email)
+
+# 5) What do we do with 'aspectual' continue, start/stopped as in example above.
+#    I tried again with 'filling' in some context VPs....
+#    if we could just get a proper <Aspect>(start) type 'modifier' reading, then no problem
+#    BUT need to be able to scope onto these (I started in the hall and finished in the room)
+#    Alternatively, could add a generic Event reading, which accepts all types of modifiers....
+#    I started him reading... clearly here I is actor of 'start'....
+
+# 6) What semantics for: to the left of, left of, left, to my left, to your left etc.
+#               vs. on the left, on my left....  to the edge ....
+#            
+# In general: direction vs where-to... blocking of loc readings for some verbs? 
+#     also 
+#     over on the table up by the window  down under the table
+#     up to the table  right over there...
+#
+#     Also, semantics for I walked in, I walked over, I walked out, I walked around....
+#     Should these have a 'context' filled np?
+
+
+testbed {
+
+
+}
+
+# where x is, who x is, who John saw. where you put it (NO FINITE!)

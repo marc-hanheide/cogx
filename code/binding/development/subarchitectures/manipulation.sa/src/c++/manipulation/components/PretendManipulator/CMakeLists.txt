@@ -1,0 +1,23 @@
+# Start simple action generation project.
+PROJECT(PretendManipulator)
+
+SET(SOURCES PretendManipulator.cpp)
+
+SET(HEADERS PretendManipulator.hpp)
+
+# definitions for Geometry part
+ADD_DEFINITIONS(-DCENTIMETER)
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ManipulationIDL)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} VisionIDL)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PlanningData)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${OMNIORB4_LINK_FLAGS} ${OMNIORB4_CFLAGS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} FrameworkInterface FrameworkIDL FrameworkCore)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore CASTArchitecture CASTIDL)
+
+
+
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+INSTALL(FILES ${HEADERS} DESTINATION include/manipulation/components/PretendManipulator)

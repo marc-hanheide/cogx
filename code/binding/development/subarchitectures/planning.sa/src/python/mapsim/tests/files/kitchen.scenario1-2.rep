@@ -1,0 +1,29 @@
+# This run should be replicable by running:
+# mapsim -t domains/kitchen/scenarios/base/scenario1 --random 1 -a 7 -r
+[config]
+ack_mode = 7
+random = 1
+test = 'domains/kitchen/scenarios/base/scenario1'
+reporter_verbalization = True
+[result]
+MAPSIM run starts. There are 3 agents: Bill, Oven and Robot
+ (1) Bill goes home.
+ (2) Bill: 'Please bring me the pizza, Robot.'
+ (3) Robot brings Bill the pizza.
+ (4) Bill: 'Thanks.'
+ (5) Bill: 'Please bring me the pizza, Robot.'
+ (6) Robot: 'Okay, Bill.'
+ (7) Bill: 'Thanks.'
+ (8) Bill: 'Please bake the pizza, Oven.'
+ (9) Oven: 'Okay, Bill.'
+(10) Oven: 'Please bring me the pizza, Robot.'
+(11) Bill: 'Please bring me the pizza, Robot.'
+(12) Robot tries to bring Oven the pizza - but fails!
+(13) Bill: 'Thanks.'
+(14) Bill: 'Please bring me the pizza, Robot.'
+(15) Robot: 'Okay, Bill.'
+(16) Robot: 'Okay, Bill.'
+(17) Bill: 'Thanks.'
+(18) Bill: 'Please bring me the pizza, Robot.'
+(19) Robot: 'Okay, Bill.'
+MAPSIM terminates unsuccessfully.

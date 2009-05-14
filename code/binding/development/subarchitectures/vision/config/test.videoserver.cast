@@ -1,0 +1,12 @@
+HOST localhost
+SUBARCHITECTURE vision.sa
+CPP WM VisualWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD cam.server.0 CameraServer --downsample 2 --calib  config/camera/sony0.cal --eyepose config/camera/ground.pose
+
+CPP DD video.server.0 VideoServer -f "../../data/test.vid.005/image-0.%04d.ppm" -s 0 -e 257 -t 20
+
+CPP GD test2 VisionTester  --log --test VideoRead_test  # -- exit true
+
+CONNECTION Vision::ImageFrame test2 PULL_FROM video.server.0 

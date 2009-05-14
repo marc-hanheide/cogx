@@ -1,0 +1,24 @@
+PROJECT(ManipulationBindingMonitor)
+
+SET(SOURCES ManipulationBindingMonitor.cpp)
+
+SET(HEADERS ManipulationBindingMonitor.h)
+
+INCLUDE_DIRECTORIES(.)
+
+ADD_DEFINITIONS()
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+
+#ADD_DEPENDENCIES(ManipulationBindingMonitor ManipulationIDL)
+#ADD_DEPENDENCIES(ManipulationBindingMonitor Vision)
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${OMNIORB4_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} FrameworkInterface FrameworkIDL FrameworkCore)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore CASTArchitecture CASTIDL)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} BindingIDL BindingSubarch)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} Manipulation ManipulationIDL)
+
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+INSTALL(FILES ${HEADERS} DESTINATION include/manipulation/components/ManipulationBindingMonitor)
+

@@ -1,0 +1,29 @@
+HOST localhost #laptop-cosy1a
+ 
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE stage.subarch 
+JAVA WM comedyarch.subarchitectures.stage.StageWorkingMemory #--log true --debug false
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA UM straight.man comedyarch.subarchitectures.stage.StraightMan -s "what's brown and sticky"
+CPP MG funny.man FunnyMan -p "a stick" --log
+
+
+SUBARCHITECTURE director.subarch #jaina
+#in this case another wm is not necesasary
+#it just needs the correct ontology 
+CPP WM AudienceWorkingMemory #--log true --debug false
+#JAVA WM comedyarch.subarchitectures.stage.StageWorkingMemory #--log #--debug
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+#JAVA MG ass.director comedyarch.subarchitectures.director.AssistantDirector --log #--debug
+CPP MG ass.director AssistantDirector --log #--debug
+#JAVA MG director comedyarch.subarchitectures.director.Director --log  #--debug
+CPP MG director Director --log  --test #--debug
+
+
+SUBARCHITECTURE audience.subarch
+#CPP WM AudienceWorkingMemory #--log --debug
+JAVA WM comedyarch.subarchitectures.audience.AudienceWorkingMemory #--log --debug
+CPP TM AlwaysPositiveTaskManager  #--log
+CPP MG audience.member AudienceMember --reaction "YAY!" #--log #--debug
+#JAVA MG audience.member comedyarch.subarchitectures.audience.AudienceMember --reaction "YAY!" #--log #--debug
+

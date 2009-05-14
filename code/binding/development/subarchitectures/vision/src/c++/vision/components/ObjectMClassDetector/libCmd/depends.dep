@@ -1,0 +1,13 @@
+first: all
+$(OBJECTS_DIR)BoolOption.o: BoolOption.C ../../include/libCmd/BoolOption.h \
+  ../../include/libCmd/CmdOption.h ../../include/libCmd/CmdParser.h
+$(OBJECTS_DIR)CmdOption.o: CmdOption.C ../../include/libCmd/CmdOption.h \
+  ../../include/libCmd/CmdParser.h
+$(OBJECTS_DIR)CmdParser.o: CmdParser.C ../../include/libCmd/CmdParser.h \
+  ../../include/libCmd/CmdOption.h ../../include/libCmd/BoolOption.h
+$(OBJECTS_DIR)EnumOption.o: EnumOption.C ../../include/libCmd/EnumOption.h \
+  ../../include/libCmd/CmdOption.h ../../include/libCmd/CmdParser.h
+$(OBJECTS_DIR)StringArgument.o: StringArgument.C ../../include/libCmd/StringArgument.h \
+  ../../include/libCmd/CmdOption.h ../../include/libCmd/CmdParser.h
+$(OBJECTS_DIR)StringOption.o: StringOption.C ../../include/libCmd/StringOption.h \
+  ../../include/libCmd/CmdOption.h ../../include/libCmd/CmdParser.h

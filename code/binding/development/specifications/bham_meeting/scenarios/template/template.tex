@@ -1,0 +1,150 @@
+
+\documentclass{article}
+\usepackage{verbatim}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mdwlist}
+\usepackage{graphicx}
+
+\title{Template scenario specification for Bham meeting}
+\date{\today}
+\author{CoSy}
+
+
+\begin{document}
+\maketitle
+\begin{abstract}
+This template defines a structure for the documentation and workflow
+of the Wednesday meeting. Look at the \texttt{../yr3example/} for a
+more detailed example of what is expected. 'svn cp' this entire
+template dir to your own directory before you start (one per
+\emph{sub}scenario is desired, i.e.\ more than one for explorer and
+playmate respectively). Rename template.tex to sth. sensible and then
+get going and delete the instructions as you progress. Good luck and
+keep things simple! At least initially :-)
+\end{abstract}
+
+\section{Script -- level 1}
+\textit{
+  The script should describe the ``surface'' level of the interaction
+  between the robot, the user and the environment of the robot. This
+  serves as a basis for the more detailed account of the processes in
+  the architecture in the following sections.}
+
+\textit{
+  make sure you keep track of the \texttt{label}s... it will make it easier for
+  you to refer back to the script later on. }
+
+\begin{enumerate}
+\item \label{lvl1:sth}
+  sth happens
+\item \label{lvl1:sth2}
+  sth else happens
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{example1_msc.png}
+\caption{
+  Some simple msc-graph can be generated to clarify interaction
+  between things in the the scenario. Use the
+  \texttt{../gen\_msc.sh}-script to generate pngs from all
+  msc-files. mscgen is documented here:
+  \texttt{http://www.mcternan.me.uk/mscgen/}. It's VERY simple}
+\label{fig:lvl1}
+\end{figure}
+
+
+\section{Script -- level 2}
+\textit{
+  The level 1 script describes what can obviously be seen when the
+  robot is interacting, for example in a video uptake of the
+  scenario. The next level is to describe, without any technical
+  detail, what activities take place within the robot during this
+  interaction. }
+
+\textit{
+  make sure the enumeration from level 1 is preserved... it makes the
+  whole thing easier to read. Tip: finish level 1 first, and copy
+  paste the enumeration and make subenumerations as below.}
+
+\begin{enumerate}
+\item \label{lvl2:sth}
+  sth happens
+\begin{enumerate}
+\item \label{lvl2:sth:detail}
+    sth happens inside the robot
+\item \label{lvl2:sth:detail2}
+    sth else happens inside the robot
+\end{enumerate}
+\item \label{lvl2:sth2}
+  sth else happens
+\begin{enumerate}
+\item \label{lvl2:sth2:detail}
+    sth happens inside the robot
+\item \label{lvl2:sth2:detail2}
+    sth else happens inside the robot
+\end{enumerate}
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{example2_msc.png}
+\caption{
+A more detailed msc-graph could be used on this or next level...
+}
+\label{fig:lvl2}
+\end{figure}
+
+\section{Subarchitecture Level}
+\textit{
+  Describe for each step in the detailed lvl2 script what the involved
+  subarchitectures are and how they are involved.}
+
+\subsection{\ref{lvl2:sth}}
+\subsubsection{Subarchitecture X}
+\begin{itemize}
+\item do this
+\item do that
+\end{itemize}
+
+\subsubsection{Subarchitecture Y}
+\begin{itemize}
+\item do this
+\item do that
+\end{itemize}
+
+\subsection{\ref{lvl2:sth:detail}}
+...
+\subsection{\ref{lvl2:sth:detail2}}
+...
+\subsection{\ref{lvl2:sth2}}
+...
+\subsection{\ref{lvl2:sth2:detail}}
+...
+\subsection{\ref{lvl2:sth2:detail2}}
+...
+
+\section{Dependency Level}
+
+\textit{
+  What else is required to generate the above information and
+  behaviour. Remember the already existing specs prepared prior to the
+  meeting: \texttt{http://www.dfki.de/\~\ henrikj/doc\_test/specifications/main/html/}}
+
+
+\section{Component Level}
+
+\textit{
+  First pass as describing the behaviours in terms of the components
+  that are involved.}
+
+\section{Responsibility Level}
+
+\textit{
+  Who's doing what!}
+
+\end{document}
+
+
+\end{document}

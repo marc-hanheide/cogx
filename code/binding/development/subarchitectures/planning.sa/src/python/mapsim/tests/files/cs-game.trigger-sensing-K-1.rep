@@ -1,0 +1,9 @@
+# This run should be replicable by running:
+# mapsim -t domains/cs-game/scenarios/base/trigger-sensing-K -c cs-game.trigger-sensing-K-1 -r
+[config]
+reporter_verbalization = True
+test = 'domains/cs-game/scenarios/base/trigger-sensing-K'
+[result]
+MAPSIM run starts. There is 1 agent: Robot
+ (1) Robot senses colour flag1.
+MAPSIM terminates successfully.

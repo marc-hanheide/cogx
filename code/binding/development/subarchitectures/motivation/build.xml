@@ -1,0 +1,17 @@
+<project name="motivation subarch" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="idl">
+		<idlgen file="MotivationData.idl" />
+	</target>
+
+	<target name="clean">
+	  <echo message="Cleaning autogen files"/>
+	  <delete dir="${basedir}/subarchitectures/motivation/src/java/motivation/idl"/>
+	  <echo message="Cleaning class files"/>
+	  <delete dir="${output.dest}/motivation" />
+	</target>
+
+
+</project>

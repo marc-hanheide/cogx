@@ -1,0 +1,95 @@
+  #####################################  
+  ## The Copular & Presentational Be ##
+  #####################################
+
+  # NOTE: see modifiers.ccg for compliment and modifier definitions 
+  #       due to DotCCG ORDERING ISSUES, they had to be put there
+  
+  def RESTR(args)          { <Cop-Restr>(S args) }
+  def SCOPE(args)          { <Cop-Scope>(X args) }
+
+
+  def cop-entry(arg, sem)         {  entry: s(s-minor) +subj(nf-real) arg      : EVENT(* RESTR() sem)  ; 
+                                     entry: s(s-int) arg / subj(nf-real)       : EVENT(* INT() SUBJECT() RESTR() sem )  ; 
+									 entry: cop<10>[E] arg / subj(nf-real)     : EVENT(* RESTR() SUBJECT() sem )  ; # USED IN OPEN-QUESTIONS
+								   }
+
+ # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), we must
+ 
+ def cop-entry-no-ques-subj(arg, sem)         {  entry: s(s-minor) +subj(nf-real Questionable=no) arg      : EVENT(* RESTR() sem)  ; 
+                                                 entry: s(s-int) arg / subj(nf-real)       : EVENT(* INT() SUBJECT() RESTR() sem )  ; 
+								                 entry: cop<10>[E] arg / subj(nf-real)     : EVENT(* RESTR() SUBJECT() sem )  ;
+								              }
+ 
+ 
+  ## Need to sort out a way of having super semantic type 'm-mod-entity' which will then be subspecified when filled in
+  
+  family Copular(V)          {   
+                                cop-entry( +cop-pp()  , <Cop-Scope>(X:m-benefactor) )  
+								cop-entry( +cop-pp()  , <Cop-Scope>(X:m-accompaniment) )  
+								cop-entry( +cop-pp()  , <Cop-Scope>(X:m-comparison) )
+     							cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
+                            #    cop-entry-no-ques-subj( +cop-np()  , <Cop-Scope>(X:entity) )
+							
+							entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : EVENT(* RESTR() <Cop-Scope>(X:entity))  ; 
+                            entry: s(s-int) +cop-np() / subj(nf-real)                     : EVENT(* INT() SUBJECT() RESTR() <Cop-Scope>(X:entity) )  ; 
+						    entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)                   : EVENT(* RESTR() SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
+
+							
+         					 }
+
+ # A second family to control locational modifiers (i.e. I am hungry at work, but I am in the kitchen at work, will combine)
+ #
+ family Copular-location(V) { cop-entry( +cop-pp()  , <Cop-Scope>(X:m-location) ) }
+ 
+ # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
+ #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
+ #       NOTE: this is NOT INCREMENTAL! (**sigh**)
+
+  def wh-copular-entry(item, syn, sem)  {
+#	  entry: from-s(s-int)  /^ subj() /^ ( cop<10>[E] item / subj(nf-real) ) syn
+#    	   : E:ascription( INT() SUBJECT() <Wh-Restrrrrrrrrr>(sem) ); 
+  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn
+    	   : E:state( INT() <Wh-Restr>(sem) ); 
+  } 
+
+
+ 
+
+ family Cop-negation (indexRel=Polarity) { entry: pre-cop-pp  (s-neg, s-prov-pos, )  ;
+                                           entry: pre-cop-np  (s-neg, s-prov-pos, )  ;
+                                           entry: pre-cop-adj (s-neg, s-prov-pos, ) ;
+						     	         }
+					   							
+ family Presentational(V)           { entry: s(s-minor) \! np[D dummy-there] / subj()         : EVENT(* <Presented>(S) )  ;
+                                      entry: s(s-int)/ subj() / np[D dummy-there]             : EVENT(* INT() ^ <Subject>(D) <Presented>(S)); 
+									  entry: cop<10>[E] / subj() / np[D dummy-there]          : EVENT(*  <Subject>(D) <Presented>(S));  } 
+									   
+ family Presentational-inverted(V)  { entry: s(s-ind) / subj(nf-real) \ pp_1(CC-TYPE:post-n)  : EVENT(* IND() <Presented>(S:entity) ^ <Modifier>(X:m-location) )  ; }
+
+
+ # Handling Questions like 'when were you big' and 'where was there a ball', i.e. 's-modifier questions' for copula and presentational
+ # These are actually added in the appropriate wh family
+
+ def be-wh-sent-mod-entry(item){
+       entry: from-s(s-int) item  /^ subj() / vp-extr(be, item )
+            : E:state( INT() SUBJECT() WH-RESTR(V * <Scope>(E:event)) ); 
+ }
+ 
+ def be-wh-sent-mod-entries(){
+     be-wh-sent-mod-entry( +cop-pp() ) 
+     be-wh-sent-mod-entry( / np() ) 
+     be-wh-sent-mod-entry( +cop-adj() ) 
+ }
+
+ 
+   # Works, but would need loads separate for Presentational because it must be restricted to NP objects....Also should add
+ 
+  # must add this entry to Cop above		entry: caux<10>[E] : EVENT(*);
+    
+ # def wh-copular-entry(syn, sem)  {
+ #     entry: from-s(s-int)  /^ subj(nf-real) /  caux<10>[E] syn                   
+#		   : EVENT( INT() SUBJECT() WH-RESTR(sem) RESTR() <Cop-Scope>(F)  ); 
+#  } 
+
+ 

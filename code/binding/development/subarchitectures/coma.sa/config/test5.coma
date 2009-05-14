@@ -1,0 +1,13 @@
+REM querying the comparators
+comparecons,Ball,Thing,triTrue
+comparecons,Object,Ball,triTrue
+comparecons,Location,Room,triTrue
+comparecons,Location,Airport,triIndeterminate
+comparecons,Kitchen,Room,triTrue
+comparecons,Kitchen,Office,triFalse
+comparecons,Ball,Table,triFalse
+comparecons,Office,Desk,triFalse
+comparecons,Office,Desk,triFalse
+comparecons,Location,Airport,triIndeterminate
+REM basic inconsistency check!
+getallins,owl:Nothing,0

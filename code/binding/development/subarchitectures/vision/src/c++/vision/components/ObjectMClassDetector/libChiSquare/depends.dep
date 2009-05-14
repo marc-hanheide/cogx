@@ -1,0 +1,4 @@
+first: all
+$(OBJECTS_DIR)chisquare.o: chisquare.cc ../../include/libChiSquare/chisquare.hh \
+  ../../include/libChiSquare/gamma.hh
+$(OBJECTS_DIR)gamma.o: gamma.cc ../../include/libChiSquare/gamma.hh

@@ -1,0 +1,39 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa
+JAVA WM visionarch.workingmemory.SimpleVisionWM 
+#CPP WM VisualWorkingMemory
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA GD dummy.so.creator visionarch.components.DummySceneObjectCreator --log 
+CPP GD binding.vision VisionBindingMonitor --log -bsa binding.sa 
+## CPP GD cam.server.0 CameraServer --calib ./instantiations/vision.test/config/camera.config/sony0.cal --camnum 0 --eyepose ./instantiations/vision.test/config/camera.config/sony0.pose --headnum 0 --headpose ./instantiations/vision.test/config/camera.config/tcp.pose #--downsample 2
+
+SUBARCHITECTURE spatial.sa
+JAVA TM spatial.taskmanagement.SpatialSubarchitectureTaskManager #--log
+JAVA WM spatial.workingmemory.SpatialWorkingMemory #--log #change this for a c one later,,,
+JAVA GD scene.change spatial.components.SceneManager --log
+#JAVA GD prox.comp spatial.components.ProximityComponent  -t 0.5 #--log
+JAVA GD left.comp spatial.components.LeftProjectiveComponent  -t 0.5 #--log
+JAVA GD right.comp spatial.components.RightProjectiveComponent -t 0.5 --log
+#JAVA GD front.comp spatial.components.FrontProjectiveComponent -t 0.5 --log
+#JAVA GD back.comp spatial.components.BackProjectiveComponent -t 0.5 --log
+JAVA GD binding.spatial binding.spatial.SpatialBindingMonitor -bsa binding.sa --log #--debug
+
+
+# # language subarch
+SUBARCHITECTURE fake.comsys.subarch 
+JAVA WM org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory --log true
+CPP TM AlwaysPositiveTaskManager 
+JAVA GD speech.rec   org.cognitivesystems.comsys.components.asr.ASR --src gui --log false
+JAVA GD speech.binding-monitor binding.monitors.fakecomsys.FakeComSysBindingMonitor -bsa binding.sa --log true
+
+SUBARCHITECTURE binding.sa
+CPP WM BindingWorkingMemory #--log --debug
+CPP TM AlwaysPositiveTaskManager 
+CPP GD binding.judge_motivator BindingJudgeMotivator #--debug --log true
+CPP GD binding.scorer BindingScorer #--debug --log true
+CPP GD binding.judge BindingJudge #--debug --log true
+CPP GD binding.binder Binder #--debug --log true
+CPP GD binding.groups BindingGroupManager #--debug true --log true
+CPP GD binding.state BindingStatusMonitor --log
+CPP GD binding.dot BindingDotViewer  --log true -d /Users/henrikj/tmp/dotfiles

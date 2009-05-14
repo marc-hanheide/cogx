@@ -1,0 +1,323 @@
+<?xml version="1.0"?>
+<tests>
+
+  <test>
+    <name>change filters c++</name>
+    <file>tools/cast/config/receive-cc.cast</file>
+    <description>Tests overlapping filters and filter removal. All in
+    C++.</description>
+  </test>
+
+  <test>
+    <name>change filters java</name>
+    <file>tools/cast/config/receive-jj.cast</file>
+    <description>Tests overlapping filters and filter removal. All in
+    Java.</description>
+  </test>
+
+  <test>
+    <name>does-not-exist-jj</name>
+    <file>tools/cast/config/does-not-exist-jj.cast</file>
+    <description>Test generation of exceptions when item does not
+      exist on wm.</description>
+  </test>
+  
+    <test>
+      <name>does-not-exist-cj</name>
+      <file>tools/cast/config/does-not-exist-cj.cast</file>
+      <description>Test generation of exceptions when item does not
+	exist on wm.</description>
+    </test>   
+  <test>
+    <!-- name of the test --> 
+    <name>single write java</name>
+
+    <!-- cast file to run -->
+    <file>tools/cast/config/single-write-jjj.cast</file>
+
+    <!-- description of the test -->
+    <description>Tests a single component writing to working memory then
+      re-reading the written struct. All in Java.</description>
+
+    <!-- optional, time to run test before failing. default is 0 = no timeout-->
+    <timeout>20000</timeout>
+
+    <!-- optional, whether to print output from cast test. default is
+	 false = no output -->
+    <output>false</output>
+
+    <!-- optional, the exit value to treat as a pass. default is
+	 CASTTest.TEST_PASS ... use with caution-->
+    <!--  <pass>0</pass>  -->
+  </test>
+
+  <test>
+    <name>single write c++</name>
+    <file>tools/cast/config/single-write-ccc.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. All in C++.</description>
+  </test>
+
+  <test>
+    <name>single write ccj</name>
+    <file>tools/cast/config/single-write-ccj.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>single write cjj</name>
+    <file>tools/cast/config/single-write-cjj.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>single write cjc</name>
+    <file>tools/cast/config/single-write-cjc.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>single write jjc</name>
+    <file>tools/cast/config/single-write-jjc.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>single write jcc</name>
+    <file>tools/cast/config/single-write-jcc.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>single write jcj</name>
+    <file>tools/cast/config/single-write-jcj.cast</file>
+    <description>Tests a single component writing to working memory
+      then re-reading the written struct. Mixed languages.</description>
+
+  </test>
+
+
+
+  <test>
+    <name>read write java</name>
+    <file>tools/cast/config/read-write-jjj.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. All in Java.</description>
+
+  </test>
+
+
+  <test>
+    <name>read write c++</name>
+    <file>tools/cast/config/read-write-ccc.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. All in C++.</description>
+
+  </test>
+
+  <test>
+    <name>read write ccj</name>
+    <file>tools/cast/config/read-write-ccj.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>read write cjj</name>
+    <file>tools/cast/config/read-write-cjj.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>read write cjc</name>
+    <file>tools/cast/config/read-write-cjc.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>read write jcc</name>
+    <file>tools/cast/config/read-write-jcc.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>read write jjc</name>
+    <file>tools/cast/config/read-write-jjc.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>read write jcj</name>
+    <file>tools/cast/config/read-write-jcj.cast</file>
+    <description>Tests two components. One writes to working memory,
+      the second copies the written data, then the first component
+      re-reads the written struct. Mixed languages.</description>
+
+  </test>
+
+<test>
+  <name>count and sequence jjj</name>
+  <file>tools/cast/config/count-1000-10-jjj.cast</file>
+  <description>10 components all write 1000 test structs to working
+    memory. A single other component listens for the changes
+    associated with them and verifies that all the changes are
+    recieved in order. All in Java.
+  </description>
+</test>
+
+<test>
+  <name>count and sequence ccc</name>
+  <file>tools/cast/config/count-1000-10-ccc.cast</file>
+  <description>10 components all write 1000 test structs to working
+    memory. A single other component listens for the changes
+    associated with them and verifies that all the changes are
+    recieved in order. All in C++.
+  </description>
+</test>
+
+<test>
+  <name>count and sequence ccj</name>
+  <file>tools/cast/config/count-1000-10-ccj.cast</file>
+  <description>10 components all write 1000 test structs to working
+    memory. A single other component listens for the changes
+    associated with them and verifies that all the changes are
+    recieved in order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>count and sequence cjc</name>
+  <file>tools/cast/config/count-1000-10-cjc.cast</file>
+  <description>10 components all write 1000 test structs to working
+    memory. A single other component listens for the changes
+    associated with them and verifies that all the changes are
+    recieved in order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>count and sequence jcj</name>
+  <file>tools/cast/config/count-1000-10-jcj.cast</file>
+  <description>10 components all write 1000 test structs to working
+    memory. A single other component listens for the changes
+    associated with them and verifies that all the changes are
+    recieved in order. Mixed languages.
+  </description>
+    <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>count and sequence jjc</name>
+  <file>tools/cast/config/count-1000-10-jjc.cast</file>
+  <description>10 components all write 1000 test structs to working
+    memory. A single other component listens for the changes
+    associated with them and verifies that all the changes are
+    recieved in order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>xarch count and sequence jjj </name>
+  <file>tools/cast/config/count-1000-2x5-jjj.cast</file>
+  <description>10 components (2 each in 5 subarchitecture) all write
+    1000 test structs to working memory. A single other component in
+    the first subarchitecture listens for the changes associated with
+    them and verifies that all the changes are recieved in
+    order. All Java.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>xarch count and sequence ccc</name>
+  <file>tools/cast/config/count-1000-2x5-ccc.cast</file>
+  <description>10 components (2 each in 5 subarchitecture) all write
+    1000 test structs to working memory. A single other component in
+    the first subarchitecture listens for the changes associated with
+    them and verifies that all the changes are recieved in
+    order. All C++.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>xarch count and sequence cjc</name>
+  <file>tools/cast/config/count-1000-2x5-cjc.cast</file>
+  <description>10 components (2 each in 5 subarchitecture) all write
+    1000 test structs to working memory. A single other component in
+    the first subarchitecture listens for the changes associated with
+    them and verifies that all the changes are recieved in
+    order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>xarch count and sequence jcj</name>
+  <file>tools/cast/config/count-1000-2x5-jcj.cast</file>
+  <description>10 components (2 each in 5 subarchitecture) all write
+    1000 test structs to working memory. A single other component in
+    the first subarchitecture listens for the changes associated with
+    them and verifies that all the changes are recieved in
+    order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>xarch count and sequence ccj</name>
+  <file>tools/cast/config/count-1000-2x5-ccj.cast</file>
+  <description>10 components (2 each in 5 subarchitecture) all write
+    1000 test structs to working memory. A single other component in
+    the first subarchitecture listens for the changes associated with
+    them and verifies that all the changes are recieved in
+    order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+<test>
+  <name>xarch count and sequence jjc</name>
+  <file>tools/cast/config/count-1000-2x5-jjc.cast</file>
+  <description>10 components (2 each in 5 subarchitecture) all write
+    1000 test structs to working memory. A single other component in
+    the first subarchitecture listens for the changes associated with
+    them and verifies that all the changes are recieved in
+    order. Mixed languages.
+  </description>
+  <timeout>420000</timeout>
+</test>
+
+
+
+
+</tests>

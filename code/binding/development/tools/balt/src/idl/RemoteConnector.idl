@@ -1,0 +1,162 @@
+/*
+ * BALT - The Boxes and Lines Toolkit for component communication.
+ *
+ * Copyright (C) 2006-2007 Nick Hawes
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ *
+ */
+
+#ifndef BALT_REMOTE_CONNECTOR_IDL
+#define BALT_REMOTE_CONNECTOR_IDL
+
+
+#include "FrameworkData.idl"
+#include "FrameworkBasics.idl"
+
+
+/**
+ * Module that defines connection objects for connecting processes.
+ *
+ * @author nah
+ */
+module RemoteConnectors
+{
+
+
+
+
+    /**
+     * Interface to define a object that can receive data in a
+     * push-based manner from a remote object.
+     *
+     *
+     */
+    interface RemotePushReceiver {
+
+        /**
+         * Receive the push data.
+         * 
+         * @param  _src The process that has pushed the data.
+         * @param _data The actual data.
+         */
+        void receivePushData(in FrameworkBasics::FrameworkProcessID _src, in any _data);
+
+    };
+
+
+    /**
+     * Interface to define an object that connects two processes in a
+     * push-based manner..
+    **/
+    interface RemotePushConnector {
+
+        /**
+         * Push data on the connector.
+         *
+         * @param _src The ID of the process doing the pushing.
+         * @param _data The actual data.
+         */
+        void push(in FrameworkBasics::FrameworkProcessID _src, in any _data);
+
+        /**
+         * Flush all data from the connector.
+         *
+         */
+        void flush();
+
+
+        /**
+         * Register a push receiver process with the connector.
+         * 
+         * @param _pr The process that receives pushes.
+         */
+        void registerPushReceiver(in RemotePushReceiver _pr);
+
+    };
+
+    /**
+     * Interface to define an object that can send push information over
+     * a remote connection.
+    **/
+    interface RemotePushSender {
+
+        /**
+         * Set the connection object to be used. "set" is not correct, as
+         * it could be many-to-many.
+         *
+         * \todo Fix this,
+         *
+         * @param _out The connector to use.
+         */
+        void setPushConnector(in RemotePushConnector _out);
+
+    };
+
+
+
+  interface RemotePullReceiver {
+
+    /**
+     * Handle a pull query from a remote source.
+     *
+     * @param _src The source of the pull query.
+     * @param _query The query attached to the pull.
+     */
+    any receivePullQuery(in FrameworkBasics::FrameworkProcessID _src, in FrameworkData::RemoteFrameworkQuery _query);
+  };
+
+
+  interface RemotePullConnector {
+
+    /**
+     * Pull data from the connector.
+     *
+     * @param _src The ID of the process doing the pulling.
+     * @param _query The query attached to the pull.
+     */
+    any pull(in FrameworkBasics::FrameworkProcessID _src, in FrameworkData::RemoteFrameworkQuery _query);
+    
+    /**
+     * Register a pull receiver process with the connector.
+     * 
+     * @param _pr The process that receives pulls.
+     */
+    void registerPullReceiver(in RemotePullReceiver _pr);
+
+
+  };
+
+
+  
+  interface RemotePullSender {
+    
+    /**
+     * Set the connection object to be used. "set" is not correct, as
+     * it could be many-to-many.
+     *
+     * \todo Fix this,
+     *
+     * @param _out The connector to use.
+     */
+    void setPullConnector(in RemotePullConnector _out);
+  };
+  
+
+};
+
+
+#endif

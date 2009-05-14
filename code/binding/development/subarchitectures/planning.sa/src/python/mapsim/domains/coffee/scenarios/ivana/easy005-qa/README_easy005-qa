@@ -1,0 +1,20 @@
+question-answer pair
+  r2d2 asks anne where coffee is
+
+korbay:[~/Cosy/code/subarchitectures/planning.sa/src/python/mapsim] % ./mapsim -t domains/coffee/scenarios/ivana/easy005-qa/
+Anne has the following goal: (and (has-goal anne true) )
+R2D2 has the following goal: (and (k__pos r2d2 coffee) )
+ (1) R2D2: request Anne 'tell_val_pos Anne R2D2 living_room coffee'.
+ (2) Anne: execute 'tell_val_pos Anne R2D2 living_room coffee'.
+MAPSIM terminates successfully.
+Runtime for scenario coffee.ivana.easy005-qa.m1: 0.5 secs.
+
+
+korbay:[~/Cosy/code/subarchitectures/planning.sa/src/python/mapsim] % ./mapsim -t domains/coffee/scenarios/ivana/easy005-qa/ -r
+Anne has the following goal: (and (has-goal anne true) )
+R2D2 has the following goal: (and (k__pos r2d2 coffee) )
+ (1) R2D2: 'Where is the coffee, Anne?'
+ (2) Anne: 'The coffee is in the kitchen, R2D2.'
+MAPSIM terminates successfully.
+Runtime for scenario coffee.ivana.easy005-qa.m1: 0.5 secs.
+

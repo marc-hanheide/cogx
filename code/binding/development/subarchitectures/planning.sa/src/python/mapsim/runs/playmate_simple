@@ -1,0 +1,5 @@
+domain playmate
+settings settings_playmate_simple
+suite simple
+prob001
+STOP

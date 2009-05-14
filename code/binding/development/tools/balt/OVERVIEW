@@ -1,0 +1,55 @@
+The framework can be divided into three parts: a configuration
+interface, a process manager for each machine, and a number of
+processes on each machine. To run the framework, you must run a
+process manager on each machine you wish to run processes on. You then
+run the configuration client on any of these machines and this
+triggers the processes to be launched on the appropriate machines.
+
+The configuration interface is based around descriptions of processes
+and descriptions of connections between processes. At this prototype
+stage the framework only supports one-to-one connections using
+push-based transmission of data. It is simple to extend this to
+different numerical cases, and to use pull connections too. The system
+is modular, so additional communciation methods (such as
+change-triggered broadcasting) can be integrated with no disruption to
+the system.
+
+At an abstract level a process is an object that runs in its own
+thread and can send and receive data over its connections to other
+processes. For the configuration client, a process is defined using a
+unique process name, a class name (e.g. the type of process it is),
+the language it is written in (either C++ or Java), and the machine it
+is running on. The interface also supports the transmission of
+configuration, but the design of this functionality is still at a
+prototype stage.
+
+Given a list of processes and connections between them, the
+configuration client starts up each process on the appropriate
+machine, connects them together and then starts them running. It does
+this by sending information to the process managers running on each
+machine.
+
+This functionality is demonstrated in the file TESTING.
+
+Very simple example processing components can be found in the
+following places...
+
+Java: src/java/examples/*.java
+C++: src/c++/framework/processes/*.*
+
+These communicate using interfaces defined in...
+
+Java: src/java/framework/core/connectors/
+C++: src/c++/framework/core/PushInterfaces.h 
+     src/c++/framework/core/Connectors.h 
+
+
+The data the process exchange is massively simplified at this point
+(and how it extend it is an interesting challenge), but the single
+data type is defined in...
+
+Java: src/java/framework/core/data/FrameworkLocalData.java 
+C++: src/c++/framework/core/FrameworkLocalData.h 
+
+Although both those classes are generic, the connectors only support
+string instantiations of them.

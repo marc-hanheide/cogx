@@ -1,0 +1,9 @@
+# This run should be replicable by running:
+# mapsim -t domains/coffee/scenarios/ivana/easy001 -c coffe.ivana.easy001 -r
+[config]
+reporter_verbalization = True
+test = 'domains/coffee/scenarios/ivana/easy001'
+[result]
+MAPSIM run starts. There are 2 agents: Anne and R2D2
+ (1) Anne: 'The coffee is in the kitchen, R2D2.'
+MAPSIM terminates successfully.

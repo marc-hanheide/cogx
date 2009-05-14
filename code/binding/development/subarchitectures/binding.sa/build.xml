@@ -1,0 +1,25 @@
+<project name="binding subarch" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="idl" depends="prepare">
+                 <echo message="------ BindingFeaturesCommon.idl ---------" />
+		<idlgen file="BindingFeaturesCommon.idl" />
+                 <echo message="------ BindingData.idl ---------" />
+		<idlgen file="BindingData.idl" />
+                 <echo message="------ BindingFeatures.idl ---------" />
+		<idlgen file="BindingFeatures.idl" />
+                 <echo message="------ BindingQueries.idl ---------" />
+		<idlgen file="BindingQueries.idl" />
+	</target>
+
+	<target name="clean">
+	  <echo message="Cleaning autogen files from ${basedir}/subarchitectures/binding.sa/src/java/ ..." />
+	  <delete dir="${basedir}/subarchitectures/binding.sa/src/java/BindingData/" />
+	  <delete dir="${basedir}/subarchitectures/binding.sa/src/java/BindingFeatures" />
+	  <delete dir="${basedir}/subarchitectures/binding.sa/src/java/BindingFeaturesCommon" />
+	  <delete dir="${basedir}/subarchitectures/binding.sa/src/java/BindingQueries" />
+	  <delete dir="${output.dest}/binding/" />
+	</target>
+
+</project>

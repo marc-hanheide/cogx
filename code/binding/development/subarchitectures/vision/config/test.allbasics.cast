@@ -1,0 +1,17 @@
+HOST localhost
+SUBARCHITECTURE vision.sa
+CPP WM VisualWorkingMemory #--log
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG cam.server.0 CameraServer --downsample 2 --calib config/camera/sony0.cal --eyepose config/camera/ground.pose
+CPP UM video.server.0 VideoServer -f "../../data/test.vid.007/image-0.%04d.ppm"  -s 0 -e 369 -t 70 --port  55000
+
+CPP MG change.detector ChangeDetector --videohost localhost --videoport 55000 
+CPP MG roi.detector Segmentor -t 15 -n 15 -a 200 -nd 1 --videohost localhost --videoport 55000 
+CPP MG object.tracker ObjectTracker -c config/tracker/trackblob.cfg  -t 100 -v 0 --videohost localhost --videoport 55000
+
+CPP GD allBasicsTest VisionTester --log --test allBasics_test  # -- exit true
+
+CONNECTION Vision::ImageFrame change.detector PULL_FROM video.server.0
+CONNECTION Vision::ImageFrame roi.detector PULL_FROM video.server.0
+CONNECTION Vision::ImageFrame object.tracker PULL_FROM video.server.0

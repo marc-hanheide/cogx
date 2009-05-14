@@ -1,0 +1,471 @@
+/*!
+\mainpage Specification for the navigation subarchitecture
+
+\section scenario Scenario
+
+see other scenario: \ref main_scenarios
+
+\section requirements Requirements
+
+\li nav.1: Build a map of the environment to support localization
+\li nav.2: Stay localized given initial pose
+\li nav.3: Store object location
+\li nav.4: Detect and track people
+\li nav.5: Support planning for motion
+\li nav.6: Provide map information to plan for search and exploration
+\li nav.7a: Goto robot pose (x,y, theta)
+\li nav.7b: Goto robot position (x,y)
+\li nav.7c: Turnto angle (theta)
+\li nav.7d: Goto node
+\li nav.7e: Goto area
+\li nav.8: Follow person
+
+\section representations Representations
+
+IDLs exist for the following:
+
+\par RobotPose:
+Stores the position and orientation of a robot (in 2 dimensions),
+along with a timestamp and a covariance matrix.
+
+\code
+struct RobotPose {
+    FrameworkBasics::BALTTime  m_time;
+    double m_x;
+    double m_y;
+    double m_theta;
+    double m_cov[9];
+};
+\endcode
+
+\par Goal:
+A simple 2-D position, used as a target position.
+
+\code
+struct Goal {
+    double m_x;
+    double m_y;
+};
+\endcode
+
+\par Obj:
+Data structure representing an object as stored in the
+map.
+
+\code
+struct Obj {
+    FrameworkBasics::BALTTime  m_time;
+    double m_radius;
+    string m_category;
+    short m_mobility;
+    long m_objectID;
+};
+\endcode
+
+\par NavGraph:
+The navigation graph. Represented by a set of free and object
+nodes, and connecting these a set of accessibility and visibility
+edges.
+
+\code
+struct FNode {  // Free Node
+    double m_x;
+    double m_y;
+    double m_z;
+    double m_theta;
+    long m_areaID;
+    string m_areaType;
+    long m_nodeID;
+    short m_gateway; // gateway or not
+    double m_maxSpeed;
+    double m_width;
+};
+
+struct AEdge { // Accessibility Edge    
+    long m_startNodeID;
+    long m_endNodeID;
+    double m_w;   
+};
+
+
+struct ONode { // Object Node
+    double m_x;
+    double m_y;
+    double m_z;
+    long m_areaID;
+    string m_areaType;
+    long m_nodeID;
+    string m_category;
+    double m_radius;
+    double m_objectID;
+};
+
+struct VEdge { // Visibility Edge
+    FrameworkBasics::BALTTime  m_time;
+    long m_startNodeID;
+    long m_endNodeID;
+    double m_w;
+
+};
+  
+struct NavGraph {    
+    long m_numNodes;
+    long m_numEdges;
+    long m_numObjects;
+    long m_numFNodes;
+    long m_numAEdges;
+    long m_numONodes;
+    long m_numVEdges;
+    long m_maxLength;
+    Obj m_Objects[100];
+    FNode m_FNodes[100];
+    AEdge m_AEdges[100];
+    ONode m_ONodes[100];
+    VEdge m_VEdges[100];       
+};
+\endcode
+
+\par NavCommand:
+Top-level data structure which communicates commands from conceptual map.
+Translated into internal representation by the Translation Process.
+
+\code 
+enum Command {GOTO_OBJECT, 
+		GOTO_PLACE,
+		COME_FORWARD, 
+		GO_BACK, 
+		FOLLOW_PERSON, 
+		TURN, 
+		EXPLORE, 
+		STOP};
+
+enum Status {OBJECT_NOT_RECOGNIZED, 
+	       PLACE_NOT_RECOGNIZED, 
+	       PERSON_NOT_FOUND,
+	       TARGET_UNREACHABLE,
+               NONE};
+
+enum Completion {PENDING,     // hasnt started 
+		   IN_PROGRESS, // started but not finished
+		   ABORTED,     // aborted due to higher priority command
+		   FAILED,      // finished unsuccessfully
+		   SUCCEEDED};  // finished successfully
+
+enum Priority {URGENT,   // removes everything else from the queue
+		 HIGH,     // goes to the start of the queue
+		 NORMAL};  // gets done if nothing else of higher priority
+                           // is in the queue.  
+
+struct NavCommand {
+    Command m_command;
+    Priority m_priority;  
+    // the string can be things like "kitchen" or "tv" 
+    // for some of the commands the string will be used 
+    // and for others it will be ignored.    
+    string m_target;    
+    // for commands in terms of x, y, theta
+    // in case there are some humans that want to communicate
+    // in those terms
+    double m_xpos;
+    double m_ypos;
+    double m_theta;
+    // for commands in polar coordinates  
+    double m_angle;
+    // for movement commands in polar coordinates or 
+    // commands like "go forward 1m".   
+    double m_distance;
+    // Execution related feedback
+    Status m_status;   
+    Completion m_completion;      
+};
+\endcode
+  
+\par CtrlCommand:
+Used to communicate from the Nav translation process to 
+Nav Controller
+
+\code
+enum CtrlCommand {GOTO_XYA, 
+		    GOTO_XY,
+		    GOTO_POLAR,
+		    GOTO_AREA,
+		    GOTO_NODE,
+		    APPROACH_XY,
+		    APPROACH_XYA,
+		    ROTATE_REL, 
+		    ROTATE_ABS,
+		    BACK_OFF,
+		    STOP_ROBOT};
+  
+struct NavCtrlCommand {    
+    CtrlCommand m_command;    
+    double m_x, m_y, m_r, m_theta;
+    long m_areaID;
+    long m_nodeID;
+    Completion m_completion;       
+  };
+\endcode
+
+\section components Components
+
+\subsection trans_proc Translation Process
+
+This component receives external commands and translates them
+into the proper internal format for further processing.
+
+\subsection details Details:
+
+\par Component name: 
+Translation Process
+
+\par Requirements satisfied: 
+Elements of all!
+
+\subsection func Units of functionality:
+
+\subsubsection nav_command Excute a navigation command
+
+\b Behaviour: When a new nav command is written to WM,
+the translation process creates an internal NavCtrlCommand
+object that is executed by the robot nav controller.
+
+\b Caused \b by: \c wmc: \c NavigationOntology.NAV_COMMAND_TYPE, \c ADD, non-local
+
+\li \c getWorkingMemory: \c NavCommand
+\li \c addToWorkingMemory: \c NavCtrlCommand
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory:
+
+\subsubsection complete_nav_command Complete a navigation command
+
+\b Behaviour: Once the nav controller finishes processing a nav
+control command, this fact is propagated into the externally generated
+nav command so that its creator can react to its completion.
+
+\b Caused \b by: \c wmc: \c NavigationOntology.NAV_CTRL_COMMAND_TYPE, \c OVERWRITE, local
+
+\li \c getWorkingMemory: \c NavCtrlCommand
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c NavCommand
+\li \c deleteFromWorkingMemory: \c NavCtrlCommand
+
+\subsection nav_controller Navigation controller
+The navigation controller executes commands telling the
+robot to change its position, utilizing the map and pose
+provided by the SLAM server to do so.
+
+\subsection details Details:
+
+\par Component name: 
+Navigation controller
+
+\par Requirements satisfied: 
+Nav 5, 7
+
+\subsection func Units of functionality:
+
+\subsubsection nav_ctrl_command Excute a navigation control command
+
+\b Behaviour: Once the translation process creates a navigation
+control command, the navigation controller has to execute it.
+After successful (or failed) execution, it overwrites the completion
+field of the command.
+
+\b Caused \b by: \c wmc: \c NavigationOntology.NAV_CTRL_COMMAND_TYPE, \c ADD, local
+
+\li \c getWorkingMemory: \c NavCtrlCommand \c RobotPose, \c NavGraph
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c NavCtrlCommand
+\li \c deleteFromWorkingMemory:
+
+\subsection slam_server SLAM server
+The SLAM server performs simultaneous localization and mapping,
+i.e. it keeps track of the robot's position at the same time
+as it updates and extends its current map. It uses odometry
+and laser sensors to gather data on the robot's surroundings,
+and continually outputs to working memory the most up-to-date
+robot pose as well as a line map.
+
+\subsection details Details:
+
+\par Component name: 
+SLAM server
+
+\par Requirements satisfied: 
+Nav. 1, 2, 6
+
+\subsection func Units of functionality:
+
+\subsubsection SLAM SLAM
+
+\b Behaviour: Continuously processes sensor data (laser and odometry)
+to update both the robot pose and the line map in working memory.
+
+\subsection nav_graph_builder Nav graph builder
+
+The navigation graph builder works hand in hand
+with the SLAM server to produce a navigation map as
+the robot moves. It monitors the position of the robot
+and adds new edges and nodes when appropriate.
+
+\subsection details Details:
+
+\par Component name: 
+Nav graph builder
+
+\par Requirements satisfied: 
+Nav. 1, 3, 5, 7
+
+\subsection func Units of functionality:
+Continuously monitors the pose and the path of the
+robot and adds nodes and edges when appropriate.
+
+\subsection people_follower People follower
+This component implements tracking and following people using
+laser sensors. 
+
+\subsection details Details:
+
+\par Component name: 
+People follower
+
+\par Requirements satisfied: 
+Nav. 4, 8
+
+\subsection func Units of functionality:
+
+\subsubsection follow_person_command Begin following a person
+
+\b Behaviour: Starts directing the navigation controller to follow
+a person, using laser data to detect the person's presence and
+location. Will continue to function until superseded by another movement
+command.
+
+\b Caused \b by: \c wmc: \c NavigationOntology.PEOPLE_FOLLOWING_COMMAND_TYPE, \c ADD, local
+
+\li \c getWorkingMemory: \c PeopleFollowingCommand \c RobotPose, \c LaserData
+\li \c addToWorkingMemory: \c NavCtrlCommand
+\li \c overwriteWorkingMemory:
+\li \c deleteFromWorkingMemory:
+
+\section processes Processes
+
+\subsection go-to Go-to
+
+TP = Translation Process, NC = Nav Controller
+
+\msc
+	hscale="1.4";
+	"nc:NavCommand", TP, "ncc:NavCtrlCommand", NC, "ng:NavGraph";
+	"nc:NavCommand"->TP [label="wmc(ADD)"];
+	TP=>"nc:NavCommand" [label="get(nc)"];
+	"nc:NavCommand">>TP [label="nc"];
+	TP->"ncc:NavCtrlCommand" [label="<<create>>"];
+	"ncc:NavCtrlCommand"->NC [label="wmc(ADD)"];
+	NC=>"ncc:NavCtrlCommand" [label="get(ncc)"];
+	"ncc:NavCtrlCommand">>NC [label="ncc"];
+	... [label="perform movement"];
+	NC=>"ng:NavGraph" [label="get(ng)"];
+	"ng:NavGraph">>NC [label="ng"];
+	...;
+	NC->"ncc:NavCtrlCommand" [label="overwrite(ncc)"];
+	"ncc:NavCtrlCommand"->TP [label="wmc(OVR)"];
+	TP=>"ncc:NavCtrlCommand" [label="get(ncc)"];
+	"ncc:NavCtrlCommand">>TP [label="ncc"];
+	TP->"ncc:NavCtrlCommand" [label="<<destroy>>"];
+	TP->"nc:NavCommand" [label="overwrite(nc)"];
+\endmsc	
+
+\subsection follow_person Follow person
+
+TP = Translation Process, PF = People Follower, NC = Nav Controller, LS = Laser Server
+
+\msc
+	hscale="1.4";
+	"nc:NavCommand", TP, "pfc:PeopleFollowingCommand", PF, "ncc:NavCtrlCommand", NC, LS;
+	"nc:NavCommand"->TP [label="wmc(ADD)"];
+	TP=>"nc:NavCommand" [label="get(nc)"];
+	"nc:NavCommand">>TP [label="nc"];
+	TP->"pfc:PeopleFollowingCommand" [label="<<create>>"];
+	"pfc:PeopleFollowingCommand"->PF [label="wmc(ADD)"];
+	PF=>"pfc:PeopleFollowingCommand" [label="get(pfc)"];
+	"pfc:PeopleFollowingCommand">>PF [label="pfc"];
+	... [label="track person"];
+	LS>>PF [label="laser data"];
+	PF->"ncc:NavCtrlCommand" [label="<<create>>"];
+	"ncc:NavCtrlCommand"->NC [label="wmc(ADD)"];
+	NC=>"ncc:NavCtrlCommand" [label="get(ncc)"];
+	"ncc:NavCtrlCommand">>NC [label="ncc"];
+	... [label="perform movement"];
+	NC->"ncc:NavCtrlCommand" [label="overwrite(ncc)"];
+	"ncc:NavCtrlCommand"->PF [label="wmc(OVR)"];
+	PF=>"ncc:NavCtrlCommand" [label="get(ncc)"];
+	"ncc:NavCtrlCommand">>PF [label="ncc"];
+	PF->"ncc:NavCtrlCommand" [label="<<destroy>>"];
+	LS>>PF [label="laser data"];
+	... [label="repeat"];
+\endmsc	
+
+\subsection stop_following Stop following
+
+TP = Translation Process, PF = People Follower, NC = Nav Controller
+
+\msc
+	hscale="1.4";
+	"nc:NavCommand", TP, "pfc:PeopleFollowingCommand", PF, "ncc:NavCtrlCommand", NC;
+	"nc:NavCommand"->TP [label="wmc(ADD)"];
+	TP=>"nc:NavCommand" [label="get(nc)"];
+	"nc:NavCommand">>TP [label="nc"];
+	TP->"pfc:PeopleFollowingCommand" [label="overwrite(pfc)"];
+	"pfc:PeopleFollowingCommand"->PF [label="wmc(OVR)"];
+	PF=>"pfc:PeopleFollowingCommand" [label="get(pfc)"];
+	"pfc:PeopleFollowingCommand">>PF [label="pfc"];
+	PF->"ncc:NavCtrlCommand" [label="overwrite(ncc)"];
+	"ncc:NavCtrlCommand"->NC [label="wmc(OVR)"];
+	NC=>"ncc:NavCtrlCommand" [label="get(ncc)"];
+	"ncc:NavCtrlCommand">>NC [label="ncc"];
+	... [label="stop robot"];
+	NC->"ncc:NavCtrlCommand" [label="overwrite(ncc)"];
+	"ncc:NavCtrlCommand"->PF [label="wmc(OVR)"];
+	PF=>"ncc:NavCtrlCommand" [label="get(ncc)"];
+	"ncc:NavCtrlCommand">>PF [label="ncc"];
+	PF->"ncc:NavCtrlCommand" [label="<<destroy>>"];
+	PF->"pfc:PeopleFollowingCommand" [label="overwrite(pfc)"];
+	"pfc:PeopleFollowingCommand"->TP [label="wmc(OVR)"];
+	TP=>"pfc:PeopleFollowingCommand" [label="get(pfc)"];
+	"pfc:PeopleFollowingCommand">>TP [label="pfc"];
+	TP->"pfc:PeopleFollowingCommand" [label="<<destroy>>"];
+	... [label="start new control command"];
+\endmsc	
+
+\subsection SLAM SLAM
+
+OS = Odometry Server, LS = Laser Server, SLS = SLAM Server
+
+\msc
+	hscale="1.4";
+	OS, LS, SLS, "rp:RobotPose", "lm:LineMap";
+	OS>>SLS [label="odometry"];
+	LS>>SLS [label="laser data"];
+	... [label="SLAM processing"];
+	SLS->"rp:RobotPose" [label="overwrite(rp)"];
+	SLS->"lm:LineMap" [label="overwrite(lm)"];
+	... [label="repeat"];
+\endmsc
+
+\subsection build_graph Build Nav Graph
+
+SLS = SLAM Server, NGB = Nav Graph Builder
+
+\msc
+	hscale="1.4";
+	SLS, "rp:RobotPose", NGB, "ng:NavGraph";
+	SLS->"rp:RobotPose" [label="overwrite(rp)"];
+	"rp:RobotPose"->NGB [label="wsc(rp)"];
+	NGB=>"rp:RobotPose" [label="get(rp)"];
+	"rp:RobotPose">>NGB [label="rp"];
+	... [label="process"];
+	NGB->"ng:NavGraph" [label="overwrite(ng)"];
+	... [label="repeat"];
+\endmsc
+*/

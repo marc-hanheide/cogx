@@ -1,0 +1,52 @@
+playmate year 3
+
+
+pass one
+
+script
+
+1. human puts down red box
+
+2. human puts down blue box to left of right box
+
+3. human says "put the blue thing to the right of the red thing"
+
+4. robot does this sucessfully.
+
+
+pass two
+
+1. human puts down red box
+
+ 2. robot notices object, extracts colour and position information
+
+3. human puts down blue object to left of right box
+
+ 4. robot notices object, extracts colour and position information,
+  generates spatial relations between objects (blue object left of
+  right object, blue object near red object, red object near blue
+  object)
+
+5. human says "put the blue thing to the right of the red thing"
+
+ 6. robot recognises speech and creates a logical interpretation of it
+
+ 7. robot resolves the "thing" references in interpretation to the
+  objects in the scene
+
+8. robot does this sucessfully.
+
+ 9. robot detects that the utterance is a command, and represents the
+  the content of the command as a behaviour to perform.
+
+ 10. robot generates a plan to pick up the blue object and move it to
+ the right of the red object
+
+ 11. robot picks up the blue object and moves it to the right of the
+ red object
+  
+ 12. robot looks at the world to verify that the plan has been
+ executed correctly
+
+pass three
+

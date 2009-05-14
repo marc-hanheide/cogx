@@ -1,0 +1,19 @@
+DEVELOPMENT LOG "INTERCONNECTIVITY"
+
+061026 gj   upd'd [ src/org/cognitivesystems/interconnectivity/data/SyncState.java ]: supports
+061026 gj   upd'd [ src/org/cognitivesystems/interconnectivity/data/SyncStateModel.java ]: getCurrentStates, getState, isCurrentlySupported methods
+061020 gj   upd'd [ src/org/cognitivesystems/interconnectivity/data/SyncStateModel.java ]: updateOnData method
+061020 gj   upd'd [ src/org/cognitivesystems/interconnectivity/data/SyncStateModel.java ]: start, restart methods
+061020 gj   upd'd [ src/org/cognitivesystems/interconnectivity/data/SyncStateModel.java ]: model checks: start, end states; cycles 2bdone
+061019 gj   upd'd several files, to have toString() methods, and further accessor methods
+061019 gj   added [ src/org/cognitivesystems/interconnectivity/data/SyncStateModel.java ]: state-based synchronization model
+061018 gj   added [ examples/example.sync ]: example synchronization configuration file 
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/io/ConfigurationReader.java ]: synchronization configuration file reader
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/data/SyncConstraint.java ]: synchronization constraint
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/data/SyncProcess.java ]: process being synchronized
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/io/SyncNoSuchEdgeException.java ]: synchronization processing exception 
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/io/SyncException.java ]: basic exception type
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/data/SyncDataConstraint.java ]: transition label constraint
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/data/SyncEdge.java ]: transition in state-based synchronization model
+061018 gj   added [ src/org/cognitivesystems/interconnectivity/data/SyncState.java ]: state in state-based synchronization model
+061018 gj,nah set up basic structure for package, README and DEV_LOG files

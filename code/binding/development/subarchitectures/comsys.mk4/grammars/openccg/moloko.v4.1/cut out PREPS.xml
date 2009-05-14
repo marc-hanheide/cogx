@@ -1,0 +1,78 @@
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: PREPOSITIONS
+::
+:: It is assumed that each prep entry can modify both nouns
+:: and s/nps. If this not the case, and they can only modify
+:: 1 of these, add n or s after the entry
+
+:: If the argument of the prep is of-np, add -of to end entry
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+----pos PREP
+
+--class m-location
+at
+
+around
+beside
+near
+on
+in:inside
+out:outside
+over:above
+under:underneath:beneath:below
+by
+behind
+up
+down
+along:alongside
+opposite
+between
+right-of
+left-of
+
+from n
+
+--class m-whereto
+to s
+into s
+onto s
+toward s
+
+around s
+beside s
+near s
+on s
+in s:inside
+out s:outside
+over s:above
+under s:underneath:beneath:below
+by s
+behind s
+up s
+down s
+along s:alongside
+opposite s
+between s
+right-of s
+left-of s
+
+--class m-wherefrom
+from s
+off s
+
+--class m-through
+across s
+through s
+
+--class m-accompaniment
+with
+
+--class m-benefactor
+for
+
+:: - - class m-purpose
+:: for s
+
+--class m-comparison
+like

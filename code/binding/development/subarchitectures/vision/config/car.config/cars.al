@@ -1,0 +1,5906 @@
+<annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car1-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car1-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car1-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car1-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car1-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car1-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car1-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car1-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car1-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car1-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car1-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car1-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car1-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car1-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car1-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car1-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car1-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car1-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car1-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car1-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car1-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car1-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car1-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car1-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car1-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car1-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car1-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car1-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car1-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car1-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car1-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car1-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car1-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car1-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car1-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car1-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car1-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car1-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car1-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car1-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car1-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car2-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car2-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car2-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car2-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car2-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car2-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car2-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car2-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car2-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car2-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car2-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car2-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car2-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car2-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car2-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car2-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car2-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car2-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car2-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car2-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car2-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car2-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car2-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car2-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car2-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car2-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car2-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car2-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car2-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car2-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car2-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car2-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car2-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car2-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car2-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car2-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car2-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car2-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car2-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car2-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car2-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car3-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car3-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car3-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car3-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car3-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car3-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car3-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car3-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car3-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car3-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car3-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car3-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car3-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car3-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car3-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car3-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car3-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car3-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car3-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car3-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car3-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car3-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car3-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car3-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car3-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car3-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car3-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car3-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car3-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car3-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car3-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car3-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car3-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car3-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car3-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car3-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car3-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car3-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car3-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car3-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car3-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car5-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car5-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car5-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car5-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car5-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car5-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car5-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car5-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car5-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car5-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car5-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car5-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car5-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car5-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car5-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car5-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car5-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car5-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car5-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car5-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car5-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car5-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car5-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car5-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car5-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car5-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car5-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car5-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car5-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car5-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car5-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car5-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car5-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car5-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car5-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car5-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car5-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car5-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car5-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car5-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car5-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car6-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car6-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car6-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car6-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car6-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car6-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car6-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car6-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car6-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car6-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car6-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car6-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car6-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car6-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car6-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car6-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car6-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car6-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car6-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car6-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car6-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car6-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car6-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car6-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car6-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car6-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car6-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car6-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car6-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car6-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car6-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car6-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car6-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car6-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car6-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car6-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car6-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car6-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car6-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car6-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car6-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car7-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car7-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car7-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car7-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car7-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car7-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car7-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car7-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car7-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car7-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car7-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car7-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car7-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car7-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car7-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car7-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car7-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car7-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car7-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car7-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car7-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car7-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car7-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car7-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car7-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car7-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car7-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car7-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car7-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car7-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car7-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car7-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car7-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car7-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car7-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car7-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car7-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car7-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car7-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car7-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car7-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car9-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car9-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car9-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car9-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car9-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car9-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car9-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car9-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car9-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car9-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car9-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car9-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car9-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car9-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car9-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car9-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car9-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car9-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car9-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car9-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car9-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car9-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car9-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car9-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car9-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car9-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car9-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car9-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car9-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car9-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car9-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car9-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car9-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car9-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car9-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car9-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car9-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car9-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car9-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car9-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car9-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car11-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car11-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car11-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car11-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car11-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car11-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car11-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car11-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car11-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car11-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car11-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car11-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car11-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car11-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car11-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car11-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car11-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car11-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car11-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car11-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car11-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car11-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car11-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car11-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car11-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car11-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car11-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car11-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car11-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car11-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car11-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car11-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car11-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car11-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car11-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car11-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car11-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car11-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car11-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car11-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car11-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-01-car12-000-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>1</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-02-car12-022-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>2</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-03-car12-022-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>3</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-04-car12-022-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>4</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-05-car12-022-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>5</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-06-car12-035-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>6</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-07-car12-035-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>7</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-08-car12-035-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>8</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-09-car12-035-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>9</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-10-car12-045-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>10</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-11-car12-045-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>11</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-12-car12-045-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>12</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-13-car12-045-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>13</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-14-car12-066-027.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>14</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-15-car12-066-063.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>15</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-16-car12-066-117.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>16</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-17-car12-066-153.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>17</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-18-car12-066-207.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>18</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-19-car12-066-243.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>19</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-20-car12-066-297.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>20</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-21-car12-066-333.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>21</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-22-car12-068-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>22</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-23-car12-068-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>23</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-24-car12-068-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>24</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-25-car12-068-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>25</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-26-car12-090-000.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>26</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-27-car12-090-022.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>27</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-28-car12-090-045.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>28</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-29-car12-090-068.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>29</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-30-car12-090-090.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>30</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-31-car12-090-112.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>31</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-32-car12-090-135.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>32</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-33-car12-090-158.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>33</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-34-car12-090-180.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>34</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-35-car12-090-202.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>35</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-36-car12-090-225.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>36</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-37-car12-090-248.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>37</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-38-car12-090-270.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>38</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-39-car12-090-292.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>39</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-40-car12-090-315.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>40</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+<annotationlist>
+<annotation>
+    <image>
+       <name>/local/car_test/class-41-car12-090-338.png</name>
+    </image>
+    <annorect>
+        <x1>2</x1>
+        <y1>2</y1>
+        <x2>225</x2>
+        <y2>209</y2>
+        <viewpoint>
+            <id>41</id>
+        </viewpoint>
+    </annorect>
+</annotation>
+</annotationlist>
+</annotationlist>

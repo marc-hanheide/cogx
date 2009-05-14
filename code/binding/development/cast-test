@@ -1,0 +1,15 @@
+#!/bin/bash
+
+TEST_FILES=""
+
+for p in "$@";
+do
+    TEST_FILES="-f ${p} $TEST_FILES"
+done
+
+#echo $TEST_FILES
+
+export TEST_LOG_OUTPUT=true
+
+java -ea -classpath $CLASSPATH:output/classes/ cast.testing.CASTTestHarness -h localhost $TEST_FILES
+

@@ -1,0 +1,40 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST  localhost
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE vision.subarch #localhost
+
+CPP WM VisualWorkingMemory --log true --debug true
+CPP TM AlwaysPositiveTaskManager
+
+
+CPP UM video.server VideoServer  -o /dev/video0 --port 50000
+#CPP DD video.server VideoServer --log true --debug true -f "carimages/i_%02d.ppm" -s 0 -e 25 -t 3000 --port 50000
+CPP MG change.detector ChangeDetector --videohost localhost --videoport 50000 --log true
+CPP MG roi.detector Segmentor -w -s 0.9 -o 0.5 --videohost localhost --videoport 50000 #-c 2000
+
+#to retrain a classifier on the cosy data cd to cosyCarImages (4 viewpoints + bg class) uncomment next line
+#CPP MG car.classifier CarClassifier --log true --debug true -hconf ../car.config/cars.conf -modelout model-cosy.jbc -trainjb -il cosycars.al
+# and start
+# java -classpath $CLASSPATH:../../../../output/classes cast.server.CASTProcessServer -h localhost -f ../car.test.cast
+#
+#to retrain a classifier on the eth80 data cd to eth80CarImages (41 viewpoints no bg class) uncomment next line
+#CPP MG car.classifier CarClassifier --log true --debug true -hconf ../car.config/cars.conf -modelout model-eth80.jbc -trainjb -il eth80cars.al
+#
+# optional training parameters are
+# -boostrounds num, set number of boosting rounds to num (default 100)
+# -theta num, set linesearch feature dimension discretization to num  steps (default 50)
+
+# to run pretrained cosyCars classifier  located in the car.config directory
+# launch from current vision/config directory:
+#  java -classpath $CLASSPATH:../../../output/classes cast.server.CASTProcessServer -h localhost -f car.test.cast;
+CPP MG car.classifier CarClassifier --log true --debug true -hconf car.config/cars.conf -jbmodel car.config/model-cosy.jbc 
+
+#the pretrained eth80 model (assumes good, i.e. well centered segmentation)
+#CPP MG car.classifier CarClassifier --log true --debug true -hconf car.config/cars.conf -jbmodel car.config/model-eth80.jbc -cvimg car.config/classes-eth80.png
+
+CONNECTION Vision::ImageFrame change.detector PULL_FROM video.server
+CONNECTION Vision::ImageFrame roi.detector PULL_FROM video.server
+CONNECTION Vision::ImageFrame car.classifier PULL_FROM video.server
+

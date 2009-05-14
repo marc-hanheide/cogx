@@ -1,0 +1,50 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST localhost
+
+SUBARCHITECTURE vision.subarch 
+
+CPP WM VisualWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+
+#CPP DD video.server VideoServer -f "frame_%04d.ppm" -s 1 -e 2 -t 500
+#
+# CPP DD video.server VideoServer -f "/home/dorko/tmp/people_Test/kth_set1/frame%04d.ppm" -s 210 -e 400 -t 2000
+#CPP DD video.server VideoServer -f "/local/cosy/people_images/data/img_%04d.ppm" -s 0 -e 138 -t 3000
+#CPP DD video.server VideoServer -v /dev/video0 #usb
+CPP DD video.server VideoServer -o /dev/video1394/0 #--downsample 2 #firewire
+
+#CPP GD people.detector ObjectClassDetector -minconf 0.7 -savedetections /home/dorko/tmp/OD -alwayson -fixwidth 300 -sleep 200 -o Vision:Person2DLocation -hconf people-frontal-latest.conf -hmodel people-frontal-latest-modelfile
+#CPP GD people.detector ObjectClassDetector  -minconf 0.6 -alwayson -fixwidth 300 -sleep 20 -o Vision:Person2DLocation -hconf /local/mmarinov/mugs/mugs.conf -hmodel /local/mmarinov/TEST
+#CPP GD people.detector ObjectClassDetector  -minconf 0.6 -alwayson -fixwidth 320 -sleep 10 -o Vision:Person2DLocation -hconf /local/mmarinov/bottles/bottles32x96.conf -hmodel /local/mmarinov/BOTTLES.small
+CPP GD multiclass.detector ObjectMClassDetector -conf objectmc.conf -alwayson -fixwidth 480 -vis -saveidl 50 #save raw & detection frames to /tmp
+
+
+# ObjectClassDetector parameters:
+# -------------------------------
+# General options:
+# 	-fixwidth 300                           - (optional) downscale the image before detection
+# 	-alwayson -sleep 1000                   - (optional) constantly pull images and run detection, wait 1000 ms after each processing before the next ImageFrame pull
+# 	-o ontologyid                           - (required) use this ontologyid for the result (and goal requests), this allow to run multiple ObjectClassDetectors at the same time detectiong different objects
+# 	-savedetections /mypath/dets            - (optional) saves all detections as an image file in the directory /mypath/dets
+# 	-minconf 0.7                            - (optional) set the minimum confidance level to 70% for valid detections
+#
+# Model options (you have to chose exactly one of the following option set):
+# 	-hconf xxx.conf -hmodel yyymodelfile    - use configuration file xxx.conf and pretrained object-class model yyymodelfile (might want to use full path here)
+# 	-rset  zzz.rset                         - use pretrained model and settings from zzz.rset
+# 	-dummy 5                                - create 5 "dummy" detections on the image (all with size 20x20)
+
+#CPP GD people.detector ObjectClassDetector -fixwidth 300 -sleep 1000 -o Vision:Person2DLocation -hconf /home/dorko/proj/cast/subarchitectures/vision/src/c++/vision/components/ObjectClassDetector/pedestrian64x128.conf -hmodel /home/dorko/proj/cast/subarchitectures/vision/src/c++/vision/components/ObjectClassDetector/pedestrian64x128-modelFile
+
+#CPP GD people.detector ObjectClassDetector -alwayson -fixwidth 200 -sleep 1000 -o Vision:Person2DLocation -hconf /home/dorko/proj/cast/subarchitectures/vision/src/c++/vision/components/ObjectClassDetector/pedestrian32x64.conf -hmodel /home/dorko/proj/cast/subarchitectures/vision/src/c++/vision/components/ObjectClassDetector/pedestrian32-64-inriafrontal-modelfile
+
+#CPP GD people.visualizer ObjectClassInspector -o Vision:Person2DLocation
+# ObjectClassInspector (ObjectClassDetector result visualizer) parameters
+# -----------------------------------------------------------------------
+# General options:
+#   -o ontologyid                           - ontologyid of the ObjectClassDetector
+
+CONNECTION Vision::ImageFrame multiclass.detector PULL_FROM video.server
+# --> people.detector gets the images from the video.server directly
+#CONNECTION ImageFrame people.visualizer PULL_FROM people.detector
+# --> people.visualizer pull the latest image used for detection from the people.detector 

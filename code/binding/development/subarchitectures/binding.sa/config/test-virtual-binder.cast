@@ -1,0 +1,50 @@
+HOST localhost
+
+# # language subarch
+# SUBARCHITECTURE fake.comsys.subarch 
+#JAVA WM org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory --log true
+#CPP TM AlwaysPositiveTaskManager 
+#JAVA GD speech.rec   org.cognitivesystems.comsys.components.asr.ASR --src gui --log false
+
+
+## # binding subarch
+SUBARCHITECTURE binding.sa 
+CPP WM BindingWorkingMemory --ignore virtualbinding.sa #--log true
+CPP TM AlwaysPositiveTaskManager 
+CPP GD binding.scorer0 BindingScorer -nth 0 -maxN 1 #--log true
+#CPP GD binding.scorer1 BindingScorer -nth 1 -maxN 3 #--log true
+#CPP GD binding.scorer2 BindingScorer -nth 2 -maxN 3 #--log true
+CPP GD binding.judge BindingJudge #--debug --log true
+CPP GD binding.binder Binder #--log true #--debug
+CPP GD binding.dot BindingDotViewer -d /Users/henrikj/dotfiles  --log true # -proxy points -union short
+CPP GD binding.groups BindingGroupManager #--debug true --log true
+CPP GD binding.state BindingStatusMonitor --log
+#CPP GD binding.comparator_example FeatureComparatorExample --log
+CPP MG binding.disambiguation DisambiguationIdentifier #--log #--debug
+# for copying contents to virtual SAs
+CPP GD binding.copycat CopyCatBindingMonitor -bsa virtualbinding.sa --log true 
+
+JAVA GD speech.binding-monitor binding.monitors.fakecomsys.FakeComSysBindingMonitor -bsa binding.sa --log true
+
+SUBARCHITECTURE coma.sa localhost
+JAVA WM coma.components.ComaWorkingMemory --ignore virtualbinding.sa #--log true --debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager
+JAVA GD coma.reasoner coma.components.ComaReasoner --onto_file ./subarchitectures/coma.sa/ontologies/officeenv_wn.owl --onto_ns http://www.dfki.de/cosy/officeenv.owl # --log true
+JAVA GD coma.compawriter coma.components.ConceptVsConceptBindingFeatureComparisonWriter -bsa binding.sa #--log true
+JAVA GD coma.compareader coma.components.ConceptVsConceptBindingFeatureComparisonReader -bsa binding.sa #--log true
+
+
+## # binding subarch
+SUBARCHITECTURE virtualbinding.sa 
+CPP WM BindingWorkingMemory --ignore binding.sa #--log true
+CPP TM AlwaysPositiveTaskManager 
+CPP GD vbinding.scorer BindingScorer -nth 0 -maxN 1 #--log true
+#CPP GD vbinding.scorer1 BindingScorer -nth 1 -maxN 3 #--log true
+#CPP GD vbinding.scorer2 BindingScorer -nth 2 -maxN 3 #--log true
+CPP GD vbinding.judge BindingJudge #--debug --log true
+CPP GD vbinding.binder Binder #--log true #--debug
+CPP GD vbinding.dot BindingDotViewer -d /Users/henrikj/dotfiles  --log true # -proxy points -union short
+# CPP GD vbinding.groups BindingGroupManager #--debug true --log true
+CPP GD vbinding.state BindingStatusMonitor --log
+# #CPP GD binding.comparator_example FeatureComparatorExample --log
+#CPP MG vbinding.disambiguation DisambiguationIdentifier #--log #--debug

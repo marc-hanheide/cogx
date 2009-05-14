@@ -1,0 +1,12 @@
+module Matlab
+{
+	typedef sequence<long> longSeq;
+	typedef sequence<double> doubleSeq;
+
+	struct Matrix
+	{
+		longSeq dimensions_;
+		doubleSeq data_;
+	}; // struct Matrix
+}; // module Matlab
+

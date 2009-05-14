@@ -1,0 +1,9 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+JAVA GD generator cast.testing.BasicTester --test unsafe-overwrite --log $TEST_LOG_OUTPUT
+JAVA GD replacer cast.testing.BasicTester --test replace --exit false #--log $TEST_LOG_OUTPUT
+
+

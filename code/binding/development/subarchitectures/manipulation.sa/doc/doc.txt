@@ -1,0 +1,6 @@
+/*!
+\mainpage Manipulation Subarchitecture
+
+High-level intro to be written...
+
+*/

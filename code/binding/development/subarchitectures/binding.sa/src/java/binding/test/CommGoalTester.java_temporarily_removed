@@ -1,0 +1,167 @@
+package binding.test;
+
+import java.util.Properties;
+
+import javax.swing.JOptionPane;
+
+import com.sun.tools.example.debug.expr.ExpressionParser.GetFrame;
+
+import cast.architecture.abstr.WorkingMemoryChangeReceiver;
+import cast.architecture.subarchitecture.PrivilegedManagedProcess;
+import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.cdl.TriBool;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryChangeQueueBehaviour;
+import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
+import cast.core.data.CASTData;
+import binding.autogen.BindingData.FeaturePointer;
+import binding.autogen.BindingData.CommunicativeGoals.CommQuestion;
+import binding.autogen.BindingData.CommunicativeGoals.CommunicativeGoal;
+import binding.autogen.BindingData.CommunicativeGoals.CommunicativeGoalSort;
+import binding.autogen.BindingData.CommunicativeGoals.QuestionSort;
+import binding.ontology.CommunicativeGoalsOntology;
+import binding.ontology.CommunicativeGoalsOntologyFactory;
+
+
+public class CommGoalTester extends PrivilegedManagedProcess {
+
+	
+    /**
+     * @param _id
+     */
+    public CommGoalTester(String _id) {
+        super(_id);
+        setOntology(CommunicativeGoalsOntologyFactory.getOntology());
+        m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
+    }
+    
+    /*
+     * @see cast.core.components.CASTProcessingComponent#configure(java.util.Properties)
+     */
+    @Override
+    public void configure(Properties _config) {
+    	super.configure(_config);
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+     */
+    @Override
+    public void start() {
+        super.start();
+        log("****************************** starting the CommGoalTester");
+        try {
+            addChangeFilter(CommunicativeGoalsOntology.COMMUNICATIVE_GOAL_TYPE,
+                false,
+                new WorkingMemoryChangeReceiver() {
+                    public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+                    	log("I got ["+_wmc.m_operation+"] for a ["+_wmc.m_type+"]");
+                        processCommGoal(_wmc);
+                    }
+                });
+        }
+        catch (SubarchitectureProcessException e) {
+            e.printStackTrace();
+        }
+
+    }
+	
+
+    protected void processCommGoal(WorkingMemoryChange _wmc) {
+    	try {
+    		CASTData<?> wme;
+    		wme = getWorkingMemoryEntry(_wmc.m_address);
+    		CommunicativeGoal commGoal = (CommunicativeGoal) wme.getData();
+    		String wme_ID = wme.getId();
+    		log("************************************* got a communicative Goal: "+ commGoal);
+    		log("SORT:" + commGoal.m_sort);
+    		log("QUESTION SORT:" + commGoal.m_question.m_qsort);
+    		log("FEATURES IN QUESTION:" + commGoal.m_question.m_featuresInQuestion);
+    		
+    		for (String proxyID : commGoal.m_question.m_restrictedProxyIDs) {
+    			log("PROXY ID: " + proxyID);
+    		}
+
+    		if (_wmc.m_operation.equals(WorkingMemoryOperation.ADD)) {
+    			log("Showing an added communicative goal:");
+    			if (commGoal.m_sort.equals(CommunicativeGoalSort.Question)) {
+    				log("sort: QUESTION");
+    				if (commGoal.m_question.m_qsort.equals(QuestionSort.Factual)) {
+    					log("question sort: FACTUAL");
+    				} else if (commGoal.m_question.m_qsort.equals(QuestionSort.Polar)) {
+    					log("question sort: POLAR");
+    				} else log("ERROR: unknown question sort!");
+    			} else if (commGoal.m_sort.equals(CommunicativeGoalSort.Assertion)) {
+    				log("sort: ASSERTION");
+    			} else if (commGoal.m_sort.equals(CommunicativeGoalSort.Command)) {
+    				log("sort: COMMAND");
+    			} else log("ERROR: unknown communicative goal sort!");
+    		}
+    		else if (_wmc.m_operation.equals(WorkingMemoryOperation.OVERWRITE)) {
+    			log("Processing answer...");
+
+    			if (commGoal.m_sort.equals(CommunicativeGoalSort.Question)) {
+    				log("sort: QUESTION");
+    				if (commGoal.m_question.m_qsort.equals(QuestionSort.Factual)) {
+    					log("question sort: FACTUAL");
+    				} else if (commGoal.m_question.m_qsort.equals(QuestionSort.Polar)) {
+    					log("question sort: POLAR");
+    	    			String answer="hmmmmm....";
+    	    			if (commGoal.m_answer.equals(TriBool.triIndeterminate)) {
+    	    				answer = "I don't know.";
+    	    			} else if (commGoal.m_answer.equals(TriBool.triTrue)) {
+    	    				answer = "Yes.";
+    	    			} else if (commGoal.m_answer.equals(TriBool.triFalse)) {
+    	    				answer = "No.";
+    	    			}
+    	    			JOptionPane.showMessageDialog(null, answer, "My answer is...", JOptionPane.INFORMATION_MESSAGE);
+    				} else log("ERROR: unknown question sort!");
+    			} else if (commGoal.m_sort.equals(CommunicativeGoalSort.Assertion)) {
+    				log("sort: ASSERTION");
+    			} else if (commGoal.m_sort.equals(CommunicativeGoalSort.Command)) {
+    				log("sort: COMMAND");
+    			} else log("ERROR: unknown communicative goal sort!");
+    		}
+    	} catch (SubarchitectureProcessException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	}
+    }
+    
+    /**
+     * This is a helper class for producing a String of a TriBool value.
+     * 
+     * @param _tribool
+     * @return a String representation of the given TriBool
+     */
+    protected String triBool2String(TriBool _tribool) {
+        switch (_tribool.value()) {
+            case TriBool._triFalse:
+                return "triFalse";
+            case TriBool._triTrue:
+                return "triTrue";
+            case TriBool._triIndeterminate:
+                return "triIndeterminate";
+            default:
+                break;
+        }
+        return "Error converting TriBool!";
+    }
+  
+	@Override
+	protected void taskAdopted(String _taskID) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void taskRejected(String _taskID) {
+		// TODO Auto-generated method stub
+
+	}
+
+}

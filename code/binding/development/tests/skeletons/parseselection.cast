@@ -1,0 +1,21 @@
+
+## Comments to the COMSYS configuration
+## - one binding monitor, on the main [ binding.sa ]
+## - the monitor for the main binding working memory works only with completely parsed, pruned packed logical forms, as per the option [ --incrementalBinding 2 ]. 
+##   the value "2" means "parsed, and pruned" ("1" means just completely parsed; "0" is equal to incremental binding). 
+## - the flag [ --hypoProxies false ] for a binding monitor means that no proxies are generated for variables in a packed logical form. 
+
+SUBARCHITECTURE comsys.sa localhost
+JAVA WM			org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory  #--log true
+JAVA TM			org.cognitivesystems.comsys.general.ComsysTaskManager --file ./subarchitectures/comsys.mk4/config/parseselection.sync  #--log true
+#JAVA GD speech.rec	org.cognitivesystems.comsys.components.asr.ASR --src gui --log true 
+JAVA GD parser		org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar ./subarchitectures/comsys.mk4/grammars/openccg/robustmoloko/grammar.xml #--log true 
+#JAVA GD plfviz		org.cognitivesystems.comsys.components.PackedLFVisualizer --series true --sdrs true   --log true 
+#JAVA GD eventInt	org.cognitivesystems.comsys.components.EventStructureInterpretation --incrementalInterpretation false #--log true
+#JAVA GD discRefBindings	org.cognitivesystems.comsys.components.DiscRefBindingsComponent --log true
+#JAVA GD dialInt		org.cognitivesystems.comsys.components.DialInt #--log true
+#JAVA GD salience 	org.cognitivesystems.comsys.processing.saliency.SalienceModelHelper --fakesaliency ./subarchitectures/comsys.mk4/learning/saliententities.txt #--log true
+#JAVA GD lm 	org.cognitivesystems.comsys.processing.saliency.LanguageModelHelper --wordClasses ./subarchitectures/comsys.mk4/config/asr/classes_smallvoc_weighted.grammar --contextDependentWords ./subarchitectures/comsys.mk4/config/asr/context_dependent_words.txt --wordsActivationNetwork ./subarchitectures/comsys.mk4/config/asr/word_activations.txt --outputWordClasses  ./subarchitectures/comsys.mk4/config/asr/outputWordClasses/scene10_smallvoc.txt --alpha 0.04 --minWeight 0.15 #--log true
+JAVA  GD parseselection org.cognitivesystems.comsys.components.ParseSelection --parameterfile ./subarchitectures/comsys.mk4/learning/params.txt --log true
+#JAVA GD speech.synth 	org.cognitivesystems.comsys.components.tts.TTS --startserver --serverHost localhost --serverPort 59125 --voice jmk-arctic --log true
+JAVA GD testing		org.cognitivesystems.comsys.general.testers.ParseSelectionTester --testfile %s --test %i --log

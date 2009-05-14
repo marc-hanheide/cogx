@@ -1,0 +1,439 @@
+\documentclass{article}
+\usepackage{verbatim}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mdwlist}
+\usepackage{graphicx}
+
+\title{Bham scenario specification}
+\date{\today}
+\author{CoSy}
+
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Specification of the Bham scenarios...
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Script -- level 1}
+Some of the science demostrated through this scenario:
+\begin{enumerate}
+\item Planning of sensing actions and visual processing.
+\item Planning of clarifying questions.
+\item Ability to recognise objects from a variety of views.
+\item Ability to recognise complex actions (composed of sequences of
+  actions).  
+\item Ability to use learned categories for shape, colour and
+  projective spatial relations.
+\item Ability to understand which events in a sequence an utterance
+  refers to.
+\item Ability to reason about episodes and sequences of events.
+\end{enumerate}
+
+Before the demo we could record movies of the robot learning about
+shape, colour and projective relations using the objects to be used in
+the demonstration. Also, before the demo the games will be learned
+off-line, using the complex action recognition system developed at
+Birmingham. Learning on-line will be too challenging.
+
+The objects to be used in the demonstration are (other than the human):
+\begin{itemize}
+\item \emph{part1}: a red triangle, a blue triangle, a blue square,
+  and a red square, a blue car and a red car (cars being used as
+  beacons/flags to which the shapes will be moved to during the
+  color/shape game).
+\item \emph{part2}: a car, and an occluding object, say a wall (car
+  placed behind the wall) or a box (car placed within the box). 
+\end{itemize}
+
+In the shape game triangles go to the left, squares to the right.  In
+the color game shapes go to the car of their color, wherever it is.
+
+For Part1, the human sits next to the robot. There are two cars as
+landmarks either side of the table in front of the robot. A red one is
+on the left. A blue one is on the right. The script is as follows:
+
+Recognition of complex action sequences from vision + recognizing the
+game being played:
+\begin{enumerate}
+\item \label{lvl1:step1} 
+  H: ``I am playing a game.''\\
+  R: ``OK.''
+
+\item \label{lvl1:step2} The human puts a red triangle in front of the
+  robot. He retracts his arm.
+
+\item \label{lvl1:step3} The human reaches out, grasps the triangle,
+  and pushes it to the left car. He then pulls back the hand.
+
+\item \label{lvl1:step4} The human withdraws the shape away from the
+  left car (so that it is not in view).
+
+\item \label{lvl1:step5}
+  H: ``Which game am I playing?''\\
+  R: ``I do not know, the shape game or the colour game.''
+
+\item \label{lvl1:step6} The human puts a red square in front of the
+  robot.  Same as Step~\ref{lvl1:step2}
+
+\item \label{lv1:step7} The human moves the red square to the right
+  car.  Same as Step~\ref{lvl1:step3}.
+
+\item \label{lvl1:step8} The human withdraws the red square from the
+  right car.  Same as Step~\ref{lvl1:step4}.
+
+\item \label{lvl1:step9}
+  H: ``Which game am I playing?''\\
+  Same as Step~\ref{lvl1:step5}.
+
+\item \label{lvl1:step10}
+  R: ``You are playing the shape game.''\\
+  We could instead have Step~\ref{lvl1:step6} happen here.
+
+\item \label{lvl1:step11}
+  The human withdraws the red square from the right car.
+  same as Step~\ref{lvl1:step8}.
+
+\item \label{lvl1:step12}
+  The human swaps the cars.
+
+\item \label{lvl1:step13}
+  Human puts a red triangle down and withdraws hand.
+
+\item \label{lvl1:step14}
+  H reaches and pushes red triangle to the right car.
+
+\item \label{lvl1:step15}
+  H: ``Which game?''\\
+  R: ``The color game.''
+
+\item \label{lvl1:step16}
+  H withdraws the red triangle.
+  Same as in Step~\ref{lvl1:step4}
+
+\item \label{lvl1:step17} (We now start on the ability to play the
+  game, including the planning of sensory processing to support
+  action).\\
+  The human puts down the red triangle in front of the robot.
+  Analysis similar to Step~\ref{lvl1:step2}
+
+\item \label{lvl1:step18}  
+  H: ``Play the colour game.''
+  
+\item \label{lvl1:step19} 
+  The robot picks up the shape and puts it next to the red car on
+  the right.
+
+\item \label{lvl1:step20}
+  H removes the shape (red triangle) from the car.\\
+  See Step~\ref{lvl1:step4}.
+
+\item \label{lvl1:step21}
+  Human puts the blue square in front of the robot.\\
+  H: ``Play the shape game.''\\
+  The robot picks up the shape and puts it next to the right hand
+  (red) car.
+  See Step~\ref{lvl1:step17}-\ref{lvl1:step20}.
+\end{enumerate}
+
+% \begin{figure}[ht]
+% \centering
+% \includegraphics[width=\linewidth]{example1_msc.png}
+% \caption{
+%   Some simple msc-graph can be generated to clarify interaction
+%   between things in the the scenario. Use the
+%   \texttt{../gen\_msc.sh}-script to generate pngs from all
+%   msc-files. mscgen is documented here:
+%   \texttt{http://www.mcternan.me.uk/mscgen/}. It's VERY simple}
+% \label{fig:lvl1}
+% \end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Script -- level 2}
+The scripts are discussed here in 'slightly' more detail...
+
+\begin{enumerate}
+\item \label{lvl2:step1}
+  H: ``I am playing a game.''\\
+  R: ``OK.''
+  \begin{enumerate}
+  \item \label{lvl1:step1:detail0} The robot produces color and
+    position representations of the cars + Car recognition (viewpoint
+    planning may be involved here -- more details later).
+  \item \label{lvl2:step1:detail1} Robot produces a representation
+    (where?) that it is now ``in'' a game episode.
+  \item \label{lvl2:step1:detail2} Robot produces as acknowledgement
+    utterance.
+  \end{enumerate}
+
+\item \label{lvl2:step2}
+  The human puts a red triangle in front of the robot.
+  \begin{enumerate}
+  \item \label{lvl2:step2:detail} The robot has to notice the object
+    (and track the hand before this?).
+  \item \label{lvl2:step2:detail2} The robot has to extract color,
+    shape and position of objects.
+  \end{enumerate}
+
+\item \label{lvl2:step3}
+  The human reaches out, grasps the triangle, and pushes it to the
+  left car. He then pulls back the hand.
+  \begin{enumerate}
+  \item \label{lvl2:step3:detail1}
+    The robot tracks the hand and the object throughout the movement.
+  \item \label{lvl2:step3:detail2} The robot has to recognize the
+    ``reach'', ``push to car'', ``retract'' sequence as a 'game
+    move'.
+  \item \label{lvl2:step3:detail3} The robot should recognize that it
+    is playing the color game or the shape game.
+  \item \label{lvl2:step3:detail4} The robot extracts shape, color and
+    position in the new scene.
+  \end{enumerate}
+
+\item \label{lvl2:step4}
+  The human withdraws the shape from the left car.
+  \begin{enumerate}
+  \item \label{lvl2:step4:detail1} The robot recognizes complex
+    actions such as ``reach'', ``pull to human''.
+  \item \label{lvl2:step4:detail2} The robot extracts color and
+    position for the cars.
+  \end{enumerate}
+
+\item \label{lvl2:step5}
+  H: ``Which game am I playing?''\\
+  R: ``I do not know, the shape game or the color game.''
+  \begin{enumerate}
+  \item \label{lvl2:step5:detail1}Understand the utterance, and that
+    it is being asked a question, and that it refers to a game.
+  \item \label{lvl2:step5:detail2} Ascertain the answer and deliver
+    it.
+  \end{enumerate}
+
+\item \label{lvl2:step6}
+  The human puts a red square in front of the robot.
+  Same as Step~\ref{lvl2:step2}
+
+\item \label{lv2:step7}
+  The human moves the red square to the right car.\\
+  Same as Step~\ref{lvl2:step3}.
+
+\item \label{lvl2:step8}
+  The human withdraws the red square from the right car.\\
+  Same as Step~\ref{lvl2:step4} \emph{except} that it concludes that it is
+  playing the shape game.
+
+\item \label{lvl2:step9}
+  H: ``Which game am I playing?''\\
+  Same as Step~\ref{lvl2:step5}.
+
+\item \label{lvl2:step10}
+  R: "You are playing the shape game."\\
+  We could instead have Step~\ref{lvl2:step6} happen here.
+
+\item \label{lvl2:step11}
+  The human withdraws the red square from the right car. \\
+  Instead we could have Step~\ref{lvl2:step8} happen here.
+
+\item \label{lvl2:step12}
+  The human swaps the cars.
+  \begin{enumerate}
+  \item \label{lvl2:step12:detail1} The robot will track the hand and
+    cars. ``Reach'', ``pull'' actions.
+  \item \label{lvl2:step12:details2} The robot re-extracts the new
+    car positions, ``recognize car''.
+  \end{enumerate}
+
+\item \label{lvl2:step13}
+  Human puts a red triangle down and withdraws hand.
+  \begin{enumerate}
+  \item \label{lvl2:step13:detail1} Robot extracts color and shape.
+  \end{enumerate}
+  
+\item \label{lvl2:step14}
+  H reaches and pushed red triangle to the right hand car.
+  \begin{enumerate}
+  \item \label{lvl2:step14:detail1} Robot recognizes the component
+    actions ``reach'', ``push to car'', and the complex actions.
+  \item \label{lvl2:step14:detail2} The robto recognizes that it is
+    playing the color game.
+  \end{enumerate}
+
+\item \label{lvl2:step15}
+  H: ``Which game?''\\
+  R: ``The color game.''
+  Same as Step~\ref{lvl2:step5} and Step~\ref{lvl2:step6}.
+
+\item \label{lvl2:step16}
+  H withdraws the red triangle.
+  Same as in Step~\ref{lvl2:step4}
+
+\item \label{lvl2:step17} (We now start on the ability to play the
+  game, including the planning of sensory processing to support
+  action).\\
+  The human puts down the red triangle in front of the robot.
+  Same as in Step~\ref{lvl2:step2}
+
+\item \label{lvl2:step18}  
+  H: ``Play the colour game.''
+  \begin{enumerate}
+  \item \label{lvl2:step18:detail1} Recognizes utteranc and
+    understands that it is an imperative to play the color game.
+  \item \label{lvl2:step18:detail2} Produces a ``move the red triangle
+    to the red car (on the right)'' plan.
+  \end{enumerate}
+  
+\item \label{lvl2:step19} The robot picks up the shape and puts it
+  next to the red car on the right.
+  \begin{enumerate}
+  \item \label{lvl2:step19:detail1} Recognize the grasp
+    location/surface (might involve moving the hand camera).
+  \item \label{lvl2:step19:detail2} Plan a trajectory to grasp it.
+  \item \label{lvl2:step19:detail3} Execute the visual servoing.
+  \item \label{lvl2:step19:detail4} Check that it has succeeded in
+    grasping the red triangle.
+  \item \label{lvl2:step19:detail5} Move the red triangle to the red
+    car and put it down.
+  \item \label{lvl2:step19:detail6} Retract the arm.
+  \item \label{lvl2:step19:detail7} Re-extract the shape, color and
+    position of the red triangle.
+  \item \label{lvl2:step19:detail8} Check that the goal has been
+    reached.
+  \end{enumerate}
+
+\item \label{lvl2:step20}
+  H removes red triangle.\\
+  Analysis similar to Step~\ref{lvl2:step4}
+
+\item \label{lvl2:step21}
+  Human puts the blue square in front of the robot.\\
+  H: ``Play the shape game.''\\
+  The robot picks up the shape and puts it next to the right hand
+  (red) car.\\
+  See Step~\ref{lvl2:step17}-Step~\ref{lvl2:step20}.
+
+\end{enumerate}
+
+% \begin{figure}[!htcb]
+% \centering
+% \includegraphics[width=\linewidth]{example2_msc.png}
+% \caption{
+% A more detailed msc-graph could be used on this or next level...
+% }
+% \label{fig:lvl2}
+% \end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Subarchitecture Level}
+
+%%----------------------------------------------------------
+\subsection{Step~\ref{lvl2:step1}}
+Cars are in place when the system is switched on.
+
+\subsubsection{Vision SA}
+\begin{itemize}
+\item Change detection (Bham-done).
+\item ROIs + Scene Objects (Bham-done).
+\item Feature information from ROIs (UoL) matlab wrapped + (Bham-done) Mohan.
+\item ROIs - color classifier - Scene Object color (UoL) Alen + (Bham-done) Mohan.
+\item ROIs - Car recognizer - Scene Object 'type' (TUD) Nico.
+\end{itemize}
+
+\subsubsection{Comsys SA}
+\begin{itemize}
+\item Speech Signal - speech recognition - text string (DFKI-done) Pierre.
+\item Text - OpenCCG + Moloko mk4 - logical forms (DFKI-done) GJ, Trevor.
+\item Text - Dialogue analysis - type of dialogue, say assertion (DFKI-done).
+\end{itemize}
+
+\subsubsection{Spatial SA}
+\begin{itemize}
+\item Scene Objects (VSA) - positions on the ground plane.
+\item Positions - spatial relations.
+\end{itemize}
+
+\subsubsection{Binding SA}
+\begin{itemize}
+\item Proxies for car 1 and car2.
+\item Unions created for car1 and car2.
+\end{itemize}
+
+\subsubsection{Motivation SA}
+\begin{itemize}
+\item Logical forms - posts motivation that I am playing a game.
+\item Posts acknowledgement.
+\end{itemize}
+
+%%----------------------------------------------------------
+\subsection{Step~\ref{lvl2:step2}}
+Human puts red triangle in front of the robot.
+
+\subsubsection{Vision SA}
+\begin{itemize}
+\item Tracking information (Bham-done) Somboon.
+\item Change detection (Bham-done).
+\item ROIs + Scene Objects (Bham-done).
+\item Feature information: color, shape (Bham-done), possibly use
+  (UoL) when ready.
+\end{itemize}
+
+\subsubsection{Spatial SA}
+\begin{itemize}
+\item Recognize ``putting'' action based on hand (and object)
+  tracking.
+\item Realize that something is in front of the robot.
+\item Cars 1 and 2 recognized.
+\end{itemize}
+
+\subsubsection{Binding SA}
+\begin{itemize}
+\item Proxies for cars and objects.
+\item Unions.
+\end{itemize}
+
+
+%%----------------------------------------------------------
+\subsection{Step~\ref{lvl2:step3}}
+
+
+
+%%----------------------------------------------------------
+\subsection{Step~\ref{lvl2:step4}}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Dependency Level}
+
+\textit{
+  What else is required to generate the above information and
+  behaviour. Remember the already existing specs prepared prior to the
+  meeting: \texttt{http://www.dfki.de/\~\ henrikj/doc\_test/specifications/main/html/}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Component Level}
+
+\textit{
+  First pass as describing the behaviours in terms of the components
+  that are involved.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Responsibility Level}
+Some details specified at the subarchitecture-level specifications (level 3)...
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+

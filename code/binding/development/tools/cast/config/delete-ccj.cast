@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM TestWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD generator BasicTester --test write-100 --log $TEST_LOG_OUTPUT
+JAVA GD replacer cast.testing.BasicTester --test delete --exit false #--log $TEST_LOG_OUTPUT
+

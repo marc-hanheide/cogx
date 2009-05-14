@@ -1,0 +1,496 @@
+/*!
+\mainpage Specification for the planning subarchitecture
+
+\anchor main_planning
+
+\section scenario Scenario
+
+see other scenario: \ref main_scenarios
+
+\section requirements Requirements
+
+\li pl.1: Able to produce plans to achieve a desired future state.
+\li pl.2. Able to execute plans and monitor progress and results.
+\li pl.3: Able to obtain representation of current state in a planning
+formalism
+\li pl.4: Able to trigger individual actions from a plan, and determine
+whether they have completed (with some value)
+\li pl.5. Able to update state representation after an action has occurred.
+\li pl.6. Able to replan on various failures (both plan and execution).
+\li p1.7. Planning of sensing actions and visual processing.
+
+
+\section representations Representations
+
+State: A planning state will be made up of two list: a list of
+objects, and a list of facts about these objects. An object (in this
+sense) is a type (from a pre-defined list) and a name used to uniquely
+identify the object. An object can be anything that is involved in a
+planning problem. A fact is a predicate that involves a number of
+objects.
+
+We already have IDLs for these:
+
+\code
+/* object declaration for use in MAPL/PDDL initial states*/
+struct ObjectDeclaration {
+       string name;
+       string type;
+};
+\endcode
+
+\sa \c Planner::ObjectDeclaration
+
+\code
+/* Fact: name of a proposition or state variable + arguments.
+*/
+typedef string Fact;
+\endcode
+
+
+\par Action: 
+A planning action consists of a unique name, and a series of
+parameters. These parameters will be filled in using object names
+during the planning process. Actions will have preconditions and
+post-conditions, which are the facts that must be true before execution,
+and the facts that will be made be true by execution. Actions will be
+represented in two places: the planning domain, and in struct form
+used to send execution related signals between planning and execution
+components. Currently this latter form of action has a generic part
+and a specific part. The general part is represented using the
+\c PlanningData::Action struct.
+
+\code
+/**
+ * A general struct used to describe actions from a plan.
+ */
+struct PlanningData::Action {
+  /**
+   * A pointer to a more detailed specification of the action.
+   */
+  cast::cdl::WorkingMemoryPointer m_action;
+  
+  /**
+   * The current status of this action.
+   */
+  PlanningStatus m_status;
+  
+  /**
+   * Status after execution
+   */
+  cast::cdl::TriBool m_succeeded;
+};
+\endcode
+
+This struct is used to represent that an action needs to be
+performed. The m_action member points to a struct describing the action
+in detail. An example of such a struct is the \c PickAndPlaceCmd from the
+manipulator.
+
+\code
+// commands for manipulator
+struct PickAndPlaceCmd {
+  //string m_objId;
+  cast::cdl::WorkingMemoryPointer m_objectPointer;
+  Math::Pose3D m_targetPose;
+  //long complete;
+};
+\endcode
+
+\par Plans: 
+A plan will be a totally ordered series of actions (with
+parameters fully specified). These are currently only represented
+within the planning components, so they are not shared with other
+components (except as individual actions). If they were to be be
+shared, it could be as a list of the above actions and pointer to the
+current step.
+
+\par Goal: 
+A string describing a MAPL goal for the planning process to
+achieve. References objects and facts.
+
+\par Planning request: 
+A structure that is used to trigger a process of
+planning and execution. (more details later)
+
+\par State request: 
+A structure that is used to trigger the generation of a
+state.
+
+
+\section components Components
+
+The high-level design of the planning subarchitecture is based on the
+following assumptions:
+
+\li a) that planning, execution monitoring and replanning are integrated
+into a single component (mapsim/MAPL)
+\li b) that planning states are derived/translated from the contents of
+working memories in the system, and that any translation mappings are
+maintained to support future execution
+
+
+\subsection cont_planning Continual Planning Component (CPC)
+
+This is the core of all the planning processes. This component
+coordinates with other components to generate states, create plans,
+and execute actions. The idea is to keep it as a completely general
+component that is given all the information it needs to work through a
+planning process.
+
+Once triggered the component has a single run loop that has the
+following coarse structure:
+
+<ol>
+<li> generate state</li>
+<li> check termination conditions</li>
+<li> plan/replan if necessary</li>
+<li> execute next step</li>
+</ol>
+
+\subsection details Details:
+
+\attention HenrikJ comment: this could be easily complemented with some commented pseudocode defining the interface... This code would generate stuff..
+
+\par Component name: 
+Continual Planning Component
+
+\par Requirements satisfied: 
+Elements of all 6!
+
+\subsection func Units of functionality:
+
+\subsubsection start Start a planning process
+
+\b Behaviour: The whole process must be triggered by another component
+writing information into a working memory somewhere in the
+system. This information is used to define parameters for the whole
+process and must include: the MAPL goal, the domain file used to
+define the planning problem, a list of subarchitectures that will
+contribute to the current state representation for the planning
+problem (to satisfy assumption b), whether the resulting plan should
+be executed. After (and during if required) the execution process has
+completed the continual planning component will add to this list with
+information about whether the goal has been achieved or not.
+
+\b Caused \b by: \c wmc: \c PlanningOntology.PLANNING_PROCESS_REQUEST_TYPE, \c ADD, non-local
+
+\li \c getWorkingMemory: \c PlanningProcessRequest
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c PlanningProcessRequest::m_status 
+\li \c deleteFromWorkingMemory:
+
+\subsubsection complete Complete a planning process
+
+\b Behaviour: When a planning process has been completed the struct that
+initially triggered the process is overwritten with completion
+details. A planning process will finish because either a plan has been
+completely executed and the goal achieved, or enough planning or
+execution failures have occurred to pass a replan threshold.
+
+Caused by: internal: planning process complete or out of replans
+
+\li \c getWorkingMemory: 
+\li \c addToWorkingMemory:
+\li \c overwriteWorkingMemory: \c PlanningProcessRequest.m_status \attention should probably overwrite more!
+\li \c deleteFromWorkingMemory:
+
+
+\subsubsection generate Generate a state
+
+\b Behaviour: To generate a state the planning component writes state
+request structs to each of the participating subarchitectures (as
+specified in the triggering information). A component in that
+subarchitecture then (hopefully!) overwrites this with the current
+planning state from that working memory. Every time one of these
+structs is overwritten the planning component adds the state into it's
+current state. When all of the states have been overwritten (warning,
+deadlock alert!) the state is complete.
+
+\b Caused \b by: internal: state required
+
+\b listens \b for: for each PlanningStateRequest struct:
+\c PlanningOntology.PLANNING_STATE_REQUEST_TYPE, \c OVERWRITE, written id
+and subarchitecture, non-local
+
+getWorkingMemory:  PlanningStateRequest
+addToWorkingMemory: for each subarchitecture PlanningStateRequest
+overwriteWorkingMemory: 
+deleteFromWorkingMemory:
+
+\attention nothing deleted... lazy lazy
+
+
+\subsubsection planmon Planning and monitoring
+
+\b Behaviour: In the run loop the component communicates with an external
+(mapsim) server to perform all of the reasoning necessary.
+
+
+\subsubsection cpc_reg Action Registration
+
+\b Behaviour: So that the planner knows where in the system to write
+actions that must be executed, action components must register their
+availability with the planner. (nick: is this really necessary?) This
+should happen before execution occurs, otherwise the planner won't
+know what to do (an exception should occur in this case). NB: problems
+may occur if components try to register actions before the planner is
+ready to accept them. An action registration merely maps a action name
+to a subarchitecture name. 
+
+\b Caused \b by: \c wmc: \c PlanningOntology.ACTION_REGISTRATION_TYPE, \c ADD, non-local
+
+\li \c getWorkingMemory:  \c ActionRegistration
+\li addToWorkingMemory: 
+\li overwriteWorkingMemory: 
+\li deleteFromWorkingMemory:
+
+\subsubsection execute Step Execution
+
+\b Behaviour: To execute a plan step the planning component writes the
+corresponding action struct to the subarchitecture that was previously
+registered for that action. In the default mode this struct points to
+an action (via the m_action member) a string representation of the
+action (as obtained from the planner). It is expected that this this
+behaviour will be overridden to allow scenario-specific actions to be
+written in actual systems. Once the action struct has been written,
+the planner blocks until the struct is overwritten (which is assumed
+to happen by some action execution component). The planner then reads
+it back in (checking completeness and success information) before
+continuing in its run loop.
+
+\b Caused \b by: internal: ready for action execution
+
+\b listens \b for: \c PlanningOntology.ACTION_TYPE, \c OVERWRITE, written id and subarchitecture, non-local
+
+\li \c getWorkingMemory:  \c Action, 
+\li \c addToWorkingMemory: \c Action and \c String (or whatever specific type is used)
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory: \c Action, and \c String (or whatever specific type is used)
+
+\subsection state_gen State Generator Component
+
+A state generator component is a component that interacts with the
+\ref cont_planning "CPC" to provide some planning state based on the
+contents of the working memory. A state generating component can also
+do other things if required (so this is more like an interface than a
+dedicated component).
+
+\subsubsection details Details:
+
+\attention Nick comment: The implementation of this is now inconsistent across C++ and Java, with the C++ version being better. 
+
+\par Component name: 
+State Generator
+
+\par Requirements satisfied: pl.3, pl.5
+
+\subsubsection func Units of functionality:
+
+\subsubsubsection generate Generate state
+
+\b Behaviour: This is the complement of the state generation
+functionality in the CPC. A state generation component waits for a
+struct to appear in it's working memory indicating that a state is
+required, then it overwrites the struct with it's state.
+
+\b Caused \b by: \c wmc: \c
+PlanningOntology.PLANNING_STATE_REQUEST_TYPE, \c ADD, local
+
+\li \c getWorkingMemory:  \c PlanningStateRequest,  
+\li \c addToWorkingMemory: 
+\li \c overwriteWorkingMemory: \c PlanningStateRequest
+\li \c deleteFromWorkingMemory: 
+
+\attention As the actual specific components will perform further
+operations on wm, other operations may occur. The above operations are
+the minimum that will occur.
+
+
+\subsection act_exe Action Execution Component
+
+An action execution component is a component that takes planned action
+and performs that actual behaviour (whether this is internal or
+external). The component need not check the action's preconditions and
+effects (unless these are essential to it's operation), and these will
+be checked by the CPC. Instead all the component must do is report
+whether it thinks the action has been performed successfully or
+unsuccessfully. An action executing component can also do other things
+if required (so this is more like an interface than a dedicated
+component).
+
+
+\subsection details Details:
+
+\par Component name: Action Execution Component (AEC)
+
+\par Requirements satisfied: pl.2, pl.4
+
+
+
+\subsection func Units of functionality:
+
+
+
+\subsubsection execute Execute action
+
+\b Behaviour: This is the complement of the Step Execution
+functionality in the CPC. Waits for an \c Action struct to be written
+to its subarchitecture, then reads it in, reads in the specific action
+description (which is a string be default), performs the action as
+specified, then overwrites the struct with information about whether
+the execution was a success or not.
+
+\b Caused \b by: \b wmc: \c PlanningOntology.ACTION_TYPE, \c
+WorkingMemoryOperation.ADD, local
+
+\li \c getWorkingMemory:  \c Action and \c String (or whatever specific type is used)
+\li \c addToWorkingMemory: 
+\li \c overwriteWorkingMemory: \c Action 
+\li \c deleteFromWorkingMemory: 
+
+\attention As the actual specific components will perform further
+operations on wm, other operations may occur. The above operations are
+the minimum that will occur.
+
+
+\subsubsection register Register action
+
+\b Behaviour: This is the complement of the Action Registration
+functionality in the CPC.  To indicate to the CPC that a particular
+functionality is availble in the system this the AEC must register a
+mapping between it's subarchitecture and the planning action that it
+can perform. This could be done for more than one action pers
+subarchitecture.
+
+\b Caused \b by: internal: usually done in the at the start of the
+runComponent method. \attention (usage note for later) Do not do this
+in the start method, as the CPC may not have initialised filters by
+then.
+
+\li \c getWorkingMemory:  
+\li \c addToWorkingMemory: \c ActionRegistration
+\li \c overwriteWorkingMemory: 
+\li \c deleteFromWorkingMemory: 
+
+\attention As the actual specific components will perform further
+operations on wm, other operations may occur. The above operations are
+the minimum that will occur.
+
+
+\section  processes Processes
+
+\subsection Action Execution
+
+CPC = Continual Planning Process, AEC = Action Execution Process
+
+\msc
+
+	hscale = "1.4";
+	CPC, "a:Action", "s:ActionSpec", AEC;
+	CPC->"a:Action" [label="<<create>>"];
+	CPC->"s:ActionSpec" [label="<<create>>"];
+	"a:Action"->AEC [label="wmc(ADD)"];
+	AEC=>"a:Action" [label="get(a)"];
+	AEC<<"a:Action" [label="a"];
+	AEC=>"s:ActionSpec" [label="get(s)"];
+	AEC<<"s:ActionSpec" [label="s"];
+        ... [label = "AEC executes s"];
+	AEC->"a:Action" [label="overwrite(a)"];
+	"a:Action"->CPC [label="wmc(OVR)"];
+	CPC=>"a:Action" [label="get(a)"];
+	CPC<<"a:Action" [label="a"];
+	CPC->"a:Action" [label="<<destroy>>"];
+	CPC->"s:ActionSpec" [label="<<destroy>>"];
+        ... [label = "CPC reads status from a and continues"];
+
+\endmsc
+
+\subsection State Generation
+
+CPC = Continual Planning Process, SGn = nth State Generation Component
+
+\msc
+
+	hscale = "1.4";
+	CPC, "psr1:PlanningStateRequest", SG1, "psr2:PlanningStateRequest", SG2;
+	CPC->"psr1:PlanningStateRequest" [label="<<create>>"];
+	CPC->"psr2:PlanningStateRequest" [label="<<create>>"];
+	"psr1:PlanningStateRequest"->SG1 [label="wmc(ADD)"];
+	"psr2:PlanningStateRequest"->SG2 [label="wmc(ADD)"];
+	SG1=>"psr1:PlanningStateRequest" [label="get(psr1)"];
+	SG2=>"psr2:PlanningStateRequest" [label="get(psr2)"];
+	SG1<="psr1:PlanningStateRequest" [label="psr1"];
+	SG2<="psr2:PlanningStateRequest" [label="psr2"];
+	...  [label="SG1 and SG2 perform state generation actions"];
+	SG1->"psr1:PlanningStateRequest" [label="overwrite(psr1)"];
+	SG2->"psr2:PlanningStateRequest" [label="overwrite(psr2)"];
+	"psr1:PlanningStateRequest"->CPC [label="wmc(OVR)"];
+	CPC=>"psr1:PlanningStateRequest" [label="get(psr1)"];
+	CPC<="psr1:PlanningStateRequest" [label="psr1"];
+	... [label="CPC add psr1 to current state"];
+	"psr2:PlanningStateRequest"->CPC [label="wmc(OVR)"];
+	CPC<="psr2:PlanningStateRequest" [label="psr2"];
+	CPC=>"psr2:PlanningStateRequest" [label="get(psr2)"];
+	... [label="CPC add psr2 to current state"];
+	
+\endmsc
+
+
+\subsection Plan Generation and Execution
+
+CPC = Continual Planning Process, Trigger = any component that triggers a planning process
+
+\msc
+
+	hscale = "1.4";
+	Trigger, "ppr:PlanningProcessRequest", CPC;
+	Trigger->"ppr:PlanningProcessRequest" [label="<<create>>"];
+	"ppr:PlanningProcessRequest"->CPC [label="wmc(ADD)"];
+	CPC=>"ppr:PlanningProcessRequest" [label="get(ppr)"];
+	CPC<="ppr:PlanningProcessRequest" [label="ppr"];
+	... [label="CPC runs the planning and exection process as specified in ppr"];
+	CPC->"ppr:PlanningProcessRequest" [label="overwrite(ppr)"];
+	"ppr:PlanningProcessRequest"->Trigger [label="wmc(OVR)"];	
+	Trigger=>"ppr:PlanningProcessRequest" [label="get(ppr)"];
+	Trigger<="ppr:PlanningProcessRequest" [label="ppr"];
+	... [label="Trigger now knows the result of the CPC process"];	
+
+\endmsc
+
+
+
+\section Planning of sensing actions and visual processing.
+
+  In this section, we only provide a very brief outline of how we plan
+  to perform joint planning of information processing ans sensing
+  actions. Currently we are doing this through the same planning
+  scheme (Continual Planning) used by the rest of the system, which is
+  described above. But we aim to use a probabilistic planning scheme
+  developed at Bham for the scenarios described in \ref bham_scenarios
+  -- the colour and shape game. Unfortunately the planning scheme has
+  not yet been implemented completely (and of course not integrated
+  within CAST yet!) and hence complete specifications cannot yet be
+  provided. But a brief outline is as follows.
+
+  Essentially the problem is being posed as a POMDP (Partially
+  Observable Markov Decision Problem) -- actually it is an Information
+  state MDP -- with the corresponding formulation of states, actions,
+  observations and state transition. For instance, the feasible
+  actions are: colour-op, shape-op etc, while the states are of the
+  form: 'red <empty>', '<empty> square>, 'red triangle', 'blue square'
+  etc. The actions would have preconditions and we learn probabilistic
+  representations of the possible effects of actions. Since the actual
+  state of the system cannot be observed, we plan with
+  'belief-states', as is the norm with POMDPs. The 'plan' involves
+  determining the sequence of operators that gets us from the initial
+  belief state to the desired belief state (where we are able to
+  answer the user's query with a certain high probability) with the
+  minimal cost. The notion of cost includes the 'rewards' for getting
+  us to low entropy belief states, and the 'costs' for incorporating
+  actions that involve (relatively) high time complexity. 
+  
+  Complete specifications are being written in the form of a report
+  that will soon be made available.
+
+*/

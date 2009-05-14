@@ -1,0 +1,10 @@
+HOST localhost
+
+SUBARCHITECTURE test
+JAVA WM cast.testing.TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.testing.TestTaskManager #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier1 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier2 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier3 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier4 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier5 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug

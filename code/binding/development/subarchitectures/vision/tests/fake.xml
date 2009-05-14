@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<tests>
+<!--
+  <test>
+    <name>fake vision test 1</name>
+    <file>subarchitectures/vision/config/test.fake.1.cast</file>
+    <description>Testing fake vision on an random scene file from yr3</description>
+    <output>false</output>
+  </test>
+
+  <test>
+    <name>fake vision test 2</name>
+    <file>subarchitectures/vision/config/test.fake.2.cast</file>
+    <description>Testing fake vision on an random scene file from yr3</description>
+    <output>false</output>
+  </test>
+
+  <test>
+    <name>fake vision test 3</name>
+    <file>subarchitectures/vision/config/test.fake.3.cast</file>
+    <description>Testing fake vision on an random scene file from yr3</description>
+    <output>false</output>
+  </test>
+-->
+</tests>

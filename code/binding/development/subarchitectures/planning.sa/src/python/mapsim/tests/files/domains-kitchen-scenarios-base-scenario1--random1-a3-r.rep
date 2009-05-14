@@ -1,0 +1,8 @@
+# This run should be replicable by running:
+# mapsim -t domains/kitchen/scenarios/base/scenario1 --random 1 -a 3 -r
+MAPSIM run starts. There are 3 agents: Bill, Oven and Robot
+ (1) Bill goes home.
+ (2) Bill: 'Please bring me the pizza, Robot.'
+ (3) Robot: 'Okay, Bill.'
+ (4) Robot brings Bill the pizza.
+MAPSIM terminates unsuccessfully.

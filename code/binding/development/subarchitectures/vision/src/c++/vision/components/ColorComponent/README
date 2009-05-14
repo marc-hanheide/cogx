@@ -1,0 +1,37 @@
+Some Instructions for running the color component:
+---------------------------------------------------
+The component by default assumes there are four colors under
+consideration (Red, Blue, Green, Yellow). It also assumes that a
+training file exists with 4 training samples (histograms) per color,
+i.e. 4*4 = 16 samples in the training sample file.
+
+Basic operation: 
+-----------------
+A very simple attempt at designing a color classifier, written
+entirely in C++. For each input ROI, the pixels within it are used to
+determine a color histogram (in RGB for now) which is matched with the
+set of stored samples to determine the probability distribution of
+match probability over the color classes.
+
+
+Available options:
+-------------------
+-c = number of colors being considered.
+-n = number of training samples per color.
+
+-e = threshold on probability, below which the color class label of
+"empty" is assigned. Default = 1/numClasses.
+
+-u = threshold on ratio of probability of second-best match to
+first-best match. If the second-best match is very close to the
+first-best match, the class label of "unknown" is assigned.
+
+-f = path of the file which has the previously trained samples for the
+colors under consideration. There are '-n' samples for each of the
+'-c' colors.
+
+-t = path of the file to which the training samples can be written
+during training. If this flag is used, each subsequent application of
+the color component will automatically append a color histogram to the
+file.
+

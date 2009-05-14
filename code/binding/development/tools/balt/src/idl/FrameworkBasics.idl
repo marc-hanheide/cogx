@@ -1,0 +1,144 @@
+/*
+ * BALT - The Boxes and Lines Toolkit for component communication.
+ *
+ * Copyright (C) 2006-2007 Nick Hawes
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ *
+ */
+
+/**
+ * Module that defines the basic data types used to describe a
+ * connected framework. This is used by clients to configure processes
+ * and connections.
+ */
+
+
+#ifndef BALT_FRAMEWORK_BASICS_IDL
+#define BALT_FRAMEWORK_BASICS_IDL
+
+
+module FrameworkBasics
+{
+  /**
+   * Type used to uniquely identify processes. 
+   **/
+  typedef string FrameworkProcessID;
+
+
+
+  /**
+   * Type used to uniquely identify connections. 
+   **/
+  typedef string FrameworkConnectionID;
+
+
+
+  /**
+   * Type used to identify types. 
+   **/
+  typedef string FrameworkConnectionDataType;
+  
+
+  /**
+   * Definition of connection types.
+   */
+  enum FrameworkConnectionType {
+    PUSH_CONNECTION,
+    PULL_CONNECTION
+  };
+
+
+  /**
+   * Definition of process languages.
+   */
+  enum ProcessLanguage {
+    CPP_PROCESS,
+    JAVA_PROCESS
+  };
+
+  
+  typedef sequence<string> StringSeq;
+
+  /**
+   * A struct to hold map-like data for configuring a processes.
+   */
+  struct ProcessConfigurationMap {
+    StringSeq m_keys;
+    StringSeq m_values;
+  };
+
+  /**
+     The information necessary to start up a process in the framework.
+  **/
+  struct ProcessDescription {
+    string m_processName;
+    string m_className;
+    ProcessLanguage m_language;
+    string m_hostName;
+    ProcessConfigurationMap m_configuration; //tmp type
+  };
+
+
+  
+  /**
+   * Connection graph is a sequence of connections
+   **/
+  typedef sequence < ProcessDescription > DescriptionList;
+
+
+  /**
+   * The information necessary to start up a process in the framework.
+   **/
+  struct ProcessConnection {
+    DescriptionList m_senders;
+    DescriptionList m_receivers;
+    FrameworkConnectionType m_connectionType;
+    FrameworkConnectionDataType m_dataType;
+    FrameworkConnectionID m_connectionID;
+  };
+  
+
+  struct BALTTime {
+    long m_s;    // seconds
+    long m_us;   // microseconds
+  };
+
+
+  /**
+   * Connection graph is a sequence of connections
+   **/
+  typedef sequence < ProcessConnection > ConnectionGraph;
+
+  /**
+   * The process that sits on each machines and launches processes
+   **/
+  interface FrameworkProcessManager {
+      
+    void createGraph(in ConnectionGraph _graph);
+    void createRemoteConnections();
+    void connectGraph();
+    void startGraph();
+    void runGraph();
+    void stopGraph();
+      
+    //send a ping to tell all processes to reset clocks to 0
+    void synchroniseWatches();
+  };
+};
+
+
+#endif

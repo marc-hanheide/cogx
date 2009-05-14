@@ -1,0 +1,29 @@
+# problem_030.prob was created automatically by grid_generator.py
+# this problem has the following key parameters:
+# number of agents: 10
+# grid size: 8
+# obstacle ratio: 0.00 (= 0 obstacles)
+
+# initial state
+**********
+*        *
+* 7   38 *
+*4 51    *
+*        *
+*    9   *
+*   2    *
+*6     0 *
+*        *
+**********
+
+# goal state
+**********
+*2      6*
+*        *
+*3       *
+*7 0 5   *
+*      9 *
+*     1 4*
+*        *
+*      8 *
+**********

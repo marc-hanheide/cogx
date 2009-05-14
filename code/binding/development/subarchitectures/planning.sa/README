@@ -1,0 +1,19 @@
+To install the python/c++ parts, you must run `make` in...
+
+src/python/mapsim/planning/plan_monitor/VAL-4.1/
+src/python/mapsim/planning/planner_base/ContinualAxff/
+
+
+e.g. (from this dir)
+
+make -j2 -C src/python/mapsim/planning/plan_monitor/VAL-4.1/
+make -j2 -C src/python/mapsim/planning/planner_base/ContinualAxff/
+
+
+You will also need to ensure that your PYTHONPATH environment variable
+contains the path to...
+
+src/python/mapsim/planning
+
+... else the planning code won't be able to find the necessary python
+modules.

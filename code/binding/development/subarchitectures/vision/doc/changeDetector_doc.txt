@@ -1,0 +1,74 @@
+/*!
+\page main_changeDetector Change Detector Component
+
+\section desc_changeDetector Description
+
+The \p ChangeDetector component is a managed (goal driven) component that is is sensitive to the
+changes in the scene.
+\n \n
+The component gets a new image frame from the \p VideoServer and compares it to the previous frame.
+If the difference exceeds the threshold, the scene is considered to be under
+change for the current frame. After a certain number of unchanged frames (3 by default),
+the scene is considered stable.
+\n \n
+While the scene is changing, the component is constantly
+overwriting the \p Vision:SceneChanged struct in working memory, setting the
+\p m_sceneChanging flag to true and \p m_sceneChanged flag to false. After the scene has
+stabilised, the \p m_sceneChanging flag is set to false and \p m_sceneChanged flag to true.
+After that the \p Vision::SceneChanged struct is not overwriten until the scene starts
+changing again.
+
+\section conf_changeDetector Configuration
+
+CPP MG <name> ChangeDetector [-c camera] [-s frameskip] [-d delay] [-p processed] [-i id]
+
+Options: \n
+  -c .. specify which camera to observe, default \b 0 \n
+  -s .. frameskip (currently not used, \p sleepProcess(100) is used instead), deafult \b 2 \n
+  -d .. signal delay: how many consecutive still frames do we need to consider the scene stable (not changing), default \b 3 \n
+  -p .. value for the m_sceneProcessed flag in the \p Vision::SceneChanged struct (will be obsolete soon), default \b false \n
+  -i .. ID of observed component (currently not used), default \b "" \n
+
+\section idl_changeDetector Working Memory Items
+
+\p Vision::SceneChanged \n
+
+\section op_changeDetector Working Memory Operations
+
+Add(\p Vision::SceneChanged) \n
+Overwrite(\p Vision::SceneChanged) \n
+
+\section flt_changeDetector Working Memory Filters
+
+N/A
+
+\section msc_changeDetector Dataflow
+
+\msc
+    hscale = "2.0";
+    VS[URL="\ref VideoServer", label="VideoServer"],CD[URL="\ref ChangeDetector", label="ChangeDetector"],SC[URL="\ref Vision:SceneChanged", label="Vision:SceneChanged"];
+    CD->SC [label="ADD(SceneChanging=false)"];
+    CD=>VS [label="GetImage"];
+    VS>>CD [label="image"];
+    ...;
+    --- [label="Scene starts changing"];
+    CD=>VS [label="GetImage"];
+    VS>>CD [label="image"];
+    CD->SC [label="OVR(SceneChanging=true)"];
+    ...;
+    --- [label="Scene becomes stable"];
+    CD=>VS [label="GetImage"];
+    VS>>CD [label="image"];
+    CD=>VS [label="GetImage"];
+    VS>>CD [label="image"];
+    CD=>VS [label="GetImage"];
+    VS>>CD [label="image"];
+    CD->SC [label="OVR(SceneChanging=false)"];
+\endmsc
+
+
+\sa \p ChangeDetector \n \p VideoServer \n \p Vision::SceneChanged
+
+*/
+
+

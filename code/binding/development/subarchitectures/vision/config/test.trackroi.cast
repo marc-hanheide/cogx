@@ -1,0 +1,12 @@
+HOST localhost
+SUBARCHITECTURE vision.sa
+CPP WM VisualWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD cam.server.0 CameraServer --downsample 2 --calib  config/camera/sony0.cal --eyepose config/camera/ground.pose
+CPP DD video.server.0 VideoServer -f  "../../data/test.vid.000/image-0.%04d.ppm" -s 100 -e 726 -t 1000 --port 53000
+CPP GD object.tracker ObjectTracker -m blob -c config/tracker/trackblob.cfg --videohost localhost --videoport 53000
+
+CPP GD test3 VisionTester  --log --test TrackRoi_test  # -- exit true
+
+CONNECTION Vision::ImageFrame object.tracker PULL_FROM video.server.0 

@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE test
+JAVA WM cast.testing.TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD test1 BasicTester --test single-write
+
+

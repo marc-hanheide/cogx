@@ -1,0 +1,69 @@
+;; Created automatically by MAPSIM
+(define (problem playmate_prob)
+(:domain playmate)
+(:objects
+  MrChips Michael - agent
+  MrChips - planning_agent
+  vp1 vp2 vp3 - vision_proxy
+  lp1    - language_proxy
+) ;; end objects
+
+(:init
+ 
+  (in_feature_domain red colour)
+  (in_feature_domain blue colour)
+  (in_feature_domain green colour)
+  (in_feature_domain mug object_class)
+
+  (has_access_to_modality Michael vision)
+  (has_access_to_modality Michael language)
+  (has_access_to_modality vision_sa vision)
+
+  (has_access_to_modality vp1 vision)
+  (distinctive_feature colour vp1)
+  (distinctive_feature object_class vp1)
+  (kd__feature_val vision_sa colour vp1)
+  (kd__feature_val vision_sa object_class vp1)
+  (in_binding_candidates vp1 lp1)
+
+  (has_access_to_modality vp2 vision)
+  (distinctive_feature colour vp2)
+  (distinctive_feature object_class vp2)
+  (kd__feature_val vision_sa colour vp2)
+  (kd__feature_val vision_sa object_class vp2)
+  (in_binding_candidates vp2 lp1)
+
+  (has_access_to_modality vp3 vision)
+  (distinctive_feature colour vp3)
+  (distinctive_feature object_class vp3)
+  (kd__feature_val vision_sa colour vp3)
+  (kd__feature_val vision_sa object_class vp3)
+  (in_binding_candidates vp3 lp1)
+
+  (has_access_to_modality lp1 language)
+  (distinctive_feature colour lp1)
+  (distinctive_feature object_class lp1)
+  (kd__feature_val Michael colour lp1)
+  (kd__feature_val Michael object_class lp1)
+
+
+;; the following is NOT good yet - the world should know the real values,
+;; shouldn't it? at least in MAPL
+ 
+  (feature_val object_class vp1 : mug)
+  (feature_val colour vp1 : blue)
+  (feature_val object_class vp2 : mug)
+  (feature_val colour vp2 : red)
+  (feature_val object_class vp3 : mug)
+  (feature_val colour vp3 : green)
+  (feature_val object_class lp1 : mug)
+  (feature_val colour lp1 : blue)
+  
+
+)   ;; end init
+
+(:goal (and
+  (exists (?p - binding_proxy) (is_bound lp1 ?p))
+)) ;; eng goal
+
+) ;; end problem

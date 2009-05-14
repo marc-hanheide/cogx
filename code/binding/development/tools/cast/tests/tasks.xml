@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<tests>
+
+  <test>
+    <name>propose 1 java</name>
+    <file>tools/cast/config/propose-1-100-jj.cast</file>
+    <description>Tests a single component proposing 100 tasks and
+    checking they're adopted and completed in order. All in
+    Java.</description>
+    <timeout>90000</timeout>
+  </test>
+  <test>
+    <name>propose 5 java</name>
+    <file>tools/cast/config/propose-5-100-jj.cast</file>
+    <description>Tests five components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      Java.</description>
+    <timeout>90000</timeout>
+  </test>
+  <test>
+    <name>propose 20 java</name>
+    <file>tools/cast/config/propose-20-100-jj.cast</file>
+    <description>Tests twenty components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      Java.</description>
+    <timeout>90000</timeout>
+  </test>
+  <test>
+    <name>propose 1 c++</name>
+    <file>tools/cast/config/propose-1-100-cc.cast</file>
+    <description>Tests a single component proposing 100 tasks and
+    checking they're adopted and completed in order. All in
+    C++.</description>
+    <timeout>120000</timeout>
+  </test>
+  <test>
+    <name>propose 5 c++</name>
+    <file>tools/cast/config/propose-5-100-cc.cast</file>
+    <description>Tests five components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      C++.</description>
+    <timeout>120000</timeout>
+  </test>
+  <test>
+    <name>propose 20 c++</name>
+    <file>tools/cast/config/propose-20-100-cc.cast</file>
+    <description>Tests twenty components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      C++.</description>
+    <timeout>120000</timeout>
+  </test>
+  
+  <test>
+    <name>propose 1 mixed jtm</name>
+    <file>tools/cast/config/propose-1-100-jc.cast</file>
+    <description>Tests a single component proposing 100 tasks and
+    checking they're adopted and completed in order. All in
+    mixed.</description>
+    <timeout>120000</timeout>
+  </test>
+  <test>
+    <name>propose 5 mixed jtm</name>
+    <file>tools/cast/config/propose-5-100-jc.cast</file>
+    <description>Tests five components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      mixed.</description>
+    <timeout>120000</timeout>
+  </test>
+  <test>
+    <name>propose 20 mixed jtm</name>
+    <file>tools/cast/config/propose-20-100-jc.cast</file>
+    <description>Tests twenty components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      mixed.</description>
+    <timeout>120000</timeout>
+  </test>
+
+    <test>
+    <name>propose 1 mixed ctm</name>
+    <file>tools/cast/config/propose-1-100-cj.cast</file>
+    <description>Tests a single component proposing 100 tasks and
+    checking they're adopted and completed in order. All in
+    mixed.</description>
+    <timeout>120000</timeout>
+  </test>
+  <test>
+    <name>propose 5 mixed ctm</name>
+    <file>tools/cast/config/propose-5-100-cj.cast</file>
+    <description>Tests five components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      mixed.</description>
+    <timeout>120000</timeout>
+  </test>
+  <test>
+    <name>propose 20 mixed ctm</name>
+    <file>tools/cast/config/propose-20-100-cj.cast</file>
+    <description>Tests twenty components proposing 100 tasks and
+      checking they're adopted and completed in order. All in
+      mixed.</description>
+    <timeout>120000</timeout>
+  </test>
+
+
+<!-- <test> -->
+<!--   <name>xarch count and sequence jjc</name> -->
+<!--   <file>tools/cast/config/count-1000-2x5-jjc.cast</file> -->
+<!--   <description>10 components (2 each in 5 subarchitecture) all write -->
+<!--     1000 test structs to working memory. A single other component in -->
+<!--     the first subarchitecture listens for the changes associated with -->
+<!--     them and verifies that all the changes are recieved in -->
+<!--     order. Mixed languages. -->
+<!--   </description> -->
+<!--   <timeout>420000</timeout> -->
+<!-- </test> -->
+
+
+
+
+</tests>

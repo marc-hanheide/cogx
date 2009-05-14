@@ -1,0 +1,15 @@
+HOST localhost
+
+SUBARCHITECTURE action.sa 
+JAVA WM planning.wm.PlanningWorkingMemory --log true #--debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA MG actor planning.examples.SimpleActionGenerator --failure 0 --log
+JAVA MG generator planning.examples.SimpleStateGenerator --log #--debug
+
+SUBARCHITECTURE planning.sa 
+JAVA WM planning.wm.PlanningWorkingMemory --log true #--debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA MG trigger planning.examples.Trigger #--log
+JAVA MG cpp planning.components.ContinualPlanningComponent  --replan 2 --log  #--debug
+
+#CPP MG generator SimpleStateGenerator --log

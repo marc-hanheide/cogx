@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<!-- 
+Copyright (C) 2005 Geert-Jan M. Kruijff (DFKI)
+version 050719
+-->
+
+<regression>
+
+      
+   <item numOfParses="1" string="the boy kicked the ball to the table"/>
+   <item numOfParses="0" string="the boy kissed the girl to the table"/>
+   
+   <item numOfParses="3" string="the boy kicked the ball on the table"/>
+   <item numOfParses="2" string="the boy kissed the girl on the table"/>
+   <item numOfParses="1" string="the boy on the table ran to the door"/>
+   
+   <item numOfParses="2" string="run right"/>
+   <item numOfParses="0" string="kiss right"/>
+   
+      
+   <item numOfParses="1" string="the girl ran to the door"/>
+   <item numOfParses="1" string="the girl ran quickly to the door"/>
+   <item numOfParses="1" string="the girl ran to the door quickly"/>
+   
+   <item numOfParses="1" string="the girl wants to run to the door"/>
+   <item numOfParses="0" string="the girl wants to ran to the door"/>
+   <item numOfParses="1" string="the girl wants the boy to run to the door"/>
+   <item numOfParses="1" string="the girl will run to the door"/>
+   <item numOfParses="0" string="the girl will runs to the door"/>
+   
+   <item numOfParses="1" string="the girl ran to the door to kiss the boy"/>	 
+	     
+   <item numOfParses="1" string="the boy that kissed the girl picked up the ball"/>
+   <item numOfParses="1" string="if the boy kisses the girl she will be happy"/>
+   <item numOfParses="1" string="the girl will be happy if the boy kisses her"/>
+   <item numOfParses="1" string="if she picks the ball up the boy will give her a table"/>
+   <item numOfParses="1" string="the girl ran to the door then she kissed the boy"/>
+   
+   <item numOfParses="1" string="on the table the girl kissed the boy"/>
+   <item numOfParses="1" string="here the girl kissed the boy"/>
+   <item numOfParses="1" string="the girl kissed the boy here"/>
+
+   <item numOfParses="1" string="the girl is happy"/>   
+   <item numOfParses="1" string="the girl is proud of the boy"/>
+   <item numOfParses="1" string="the girl that was proud of the boy kissed him"/>   
+   <item numOfParses="1" string="the girl wants to be happy"/> 
+   <item numOfParses="1" string="he made the boy happy"/> 
+
+   <item numOfParses="1" string="there is a ball"/>
+   <item numOfParses="2" string="there is a ball on the table"/>
+   <item numOfParses="1" string="there is a ball here"/>
+   <item numOfParses="1" string="on the table we have a ball"/>
+   
+   
+   <item numOfParses="1" string="here there is a ball"/>
+   <item numOfParses="1" string="here we got a ball"/> 
+   <item numOfParses="1" string="here you see a ball"/>
+   <item numOfParses="1" string="here you will see a ball"/>
+    
+   <item numOfParses="1" string="the girl played with the ball"/>
+   <item numOfParses="0" string="the girl played to the ball"/>
+   
+   <item numOfParses="1" string="the girl saw the boy"/>
+   <item numOfParses="0" string="the girl saw at the boy"/>
+   <item numOfParses="1" string="the girl listened to the boy"/>
+   <item numOfParses="0" string="the girl listened the boy"/>
+   
+   <item numOfParses="1" string="the girl took a look at the boy"/>
+   <item numOfParses="0" string="the girl took a look to the boy"/>
+   
+   <item numOfParses="1" string="the girl took a look at the boy then she ran to the door"/>
+   
+   <item numOfParses="1" string="the girl does not kick the ball"/>
+   <item numOfParses="0" string="the girl does not kicks the ball"/>
+   <item numOfParses="1" string="the girl does kick the ball"/>
+
+   <item numOfParses="1" string="does the girl kick the ball"/>
+   <item numOfParses="2" string="where did the girl kick the ball"/>
+   <item numOfParses="1" string="where did the girl pick up the ball"/>   
+   <item numOfParses="1" string="what did the girl kick"/>
+   <item numOfParses="1" string="who did the girl kick"/>
+   <item numOfParses="1" string="what did the girl give the boy"/>
+
+
+   <item numOfParses="1" string="what does the girl want"/>
+   <item numOfParses="1" string="what does the girl want to kick"/>
+   <item numOfParses="1" string="what does the girl want the boy to kick"/>
+   <item numOfParses="1" string="what does the girl want the boy to want to kick"/>   
+   <item numOfParses="1" string="what did the girl play with"/>     
+   <item numOfParses="1" string="who did the girl take a look at"/>   
+   
+   <item numOfParses="1" string="which ball did you want"/>
+   <item numOfParses="1" string="what is this"/>   
+   <item numOfParses="1" string="where is the ball"/>   
+   <item numOfParses="1" string="where should I go"/>
+   <item numOfParses="1" string="where should I play with the ball"/>
+  
+	
+	    
+</regression>

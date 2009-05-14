@@ -1,0 +1,72 @@
+/*!
+\page main_videoServer Video Server Component
+
+\section desc_videoServer Description
+
+\p VideoServer component is unmanaged and
+has a \p VideoDevice that provides an abstraction for
+a variety of camera hardware settings, e.g., 
+firewire VS V4L, a single VS multiple cameras.
+It also provides a hardware simulation, where by  
+an image sequence is read from a harddrive
+to simulate a live video feed. 
+
+VideoServer continuously grabs image frames 
+from the cameras and stores (updates) them internally in VideoDevice.
+Other components can obtain a copy of image frames by sending a 
+request message to VideoServer with information about camera IDs
+that they need to access. 
+When VideoServer gets the requests,
+it retrieves images from its internal buffer
+and send them to the components that make the requests.
+
+\section conf_videoServer Configuration
+
+CPP DD <name> VideoServer [options]
+
+Options: \n
+
+-i <num>  camera ID of the first camera, other IDs by increment, default \b 0 \n
+-f <file pattern>  use mono image sequence device (stored images). Pattern 
+    is a C printf-style pattern, e.g.  demo-%03d.jpg  to get images 
+    demo-000.jpg, demo-001.jpg etc. \n
+-g <file pattern>  together with -f use stored stereo sequence, where '-f' is
+    assigned camera id '-i', and '-g' is assigned '-i' + 1
+    Note that -g alone is undefined. \n
+-s <num>  start number for image sequence, e.g. 2 -> demo002.jpg ...  \n
+-e <num>  end number for images sequence  \n
+-d <num>  increment (delta) for image sequence numbers, default \b 1  \n
+-t <num>  frame rate (in ms per frame) for image sequence, default \b 1000  \n
+-v <device>  Video4Linux device, e.g. /dev/video0  \n
+-w <device>  Video4Linux device, e.g. /dev/video1, together with -v for
+    stereo note that -w alone is undefined.  \n
+-o <num>  use OpenCv for video capture, use device <num> (e.g. /dev/video0)
+    note that OpenCv finds various devices automatically.  \n
+-p <num>  use OpenCv for video capture, use device <num> (e.g. /dev/video0)
+    together with -o for stereo.    Note that -p alone is undefined.  \n
+--bayer <format>  for OpenCV devce: whether raw Bayer to RGB converion
+    should be performed (e.g. for the Point Grey Flea). Format must be
+    one of:  BGGR  GBBR  RGGB  GRRB  \n
+--downsample .. downsample factor, optional, default \b 1  \n
+--videoport <num> .. a specific port through which the video data should 
+    be transported. If videoport is specified in VideoServer, the same port
+    number (and the hostname) must also be spcified for all components
+    that pull images from VideoServer. \n
+
+\section idl_videoServer IDLs
+
+\p Vision::ImageFrame \n
+
+\section op_videoServer Working Memory Operations
+
+VideoServer does not read or write data to working memory.
+
+\section flt_videoServer Working Memory Filters
+
+N/A
+
+\section msc_videoServer Dataflow
+
+N/A
+
+*/

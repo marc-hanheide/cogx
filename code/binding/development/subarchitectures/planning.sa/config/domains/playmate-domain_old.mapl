@@ -1,0 +1,58 @@
+(define (domain playmate)
+	(:requirements :mapl :adl)
+	
+	(:types 
+	 agent movable waypoint object_pos feature - object
+	 agent waypoint - object_pos
+	 visible colour size - feature
+	 ball cube block pyramid - movable
+	 robot human planning_agent - agent
+	 )
+	
+	(:constants
+	 true false - boolean
+	 blue red green black white - colour
+	 small big - size
+	 mr_chips - robot
+	 mr_chips - planning_agent
+	 michael - human
+	 )
+	
+	(:predicates
+	 (right_of ?wp1 ?wp2 - waypoint)
+	 (left_of ?wp1 ?wp2 - waypoint)
+	 (front_of ?wp1 ?wp2 - waypoint)
+	 (back_of ?wp1 ?wp2 - waypoint)
+	 (near ?wp1 ?wp2 - waypoint)
+	 (pos ?obj - movable : ?wp - object_pos)
+	 (colour ?obj - movable ?col - colour)	
+	 (size ?obj - movable ?s - size)	
+	 (visible ?obj - movable ?b - boolean)	
+	 )
+	
+	(:action place
+	 :agent (?a - robot)	 
+	 :parameters (?obj - movable)
+	 :variables (?np - waypoint)
+	 :precondition (and
+		(pos ?obj ?a) 
+		(not (exists (?obj2 - movable) (pos ?obj2 ?np))))
+	 :effect (and
+		(pos ?obj ?np) (not (pos ?obj ?a))
+	))
+	
+	
+	(:action pick
+		 :agent (?a - robot)
+		 :parameters (?obj - movable)
+		 :variables (?op - waypoint)
+		 :precondition (and
+				(pos ?obj ?op) 
+				(not (exists (?obj2 - movable) (pos ?obj2 ?a))))
+		 :effect (and
+			  (pos ?obj ?a) (not (pos ?obj ?op))
+			  )
+		 )
+	
+	
+	)

@@ -1,0 +1,608 @@
+
+
+# NOTE: In some of the cases below, the 'expected' number of parses will be incorrect
+#       This is because as new features get added, old ones removed, these numbers fluxuate
+#       this is especially true with various 'discourse phenomena' and 'complex constructions'
+
+testbed {
+
+  # And now on to the show....
+
+  ####################################
+  # The 3 moods & INCREMENTAL PARSES #
+  ####################################
+
+  # Indicative #
+
+  # Indicative mood is no longer attributed to an utterance by its verb.
+  # Instead, it is handled by type-changing rule which, essentially, adds
+  # some semantics to your standard np type-raising rule.
+  # Any 'floating' np can become the <Subject> of an indicative clause waiting for its verb+args (vp)
+
+  # Motivation: 1) early projection. When we 'see' an NP in first position in the clause we know it is
+  # either the 'Subject' of indicative, or it is a fronted object, or pre-np. See end of this for 
+  # these cases. Thus, there is no reason to 'wait' for the verb to explicitly represent this info
+  #             2) semantic integration. By placing the subject in a semantic slot, we now can avoid
+  # multiple un-integrated semantic fragments in simple sentences. Specifically 'I really' now recieves
+  # an integrated reading, which 'knows' it is part of a yet unspecified event.
+  #
+
+  # An example 
+
+  the: 6 ;                                            # free-np, subj-np of ind-clause, fronted-np of ind-clause, etc      x 2 for 2 readings of the
+  the pizza: 3 ;                                      # lose the plural readings of the
+  the pizza on: 3;                                    # "
+  the pizza on the: 6;                                # 2 readings of the
+  the pizza on the big: 6;                            # "
+  the pizza on the big red: 6;                        # "
+  the pizza on the big red table: 3;                  # lose the plural reading of the
+  the pizza on the big red table makes : 4;           # 4 readings of make ( make dinner, make me run, make me hungry (this one has 2 readings see verbs.ccg) ) 
+  the pizza on the big red table makes me : 3;        # "
+  the pizza on the big red table makes me hungry: 1;  # 
+  
+  
+  # Interrogatives #
+  
+  # Wh-questions are controlled by their Wh-word, i.e. the first word projects the structure of the clause.
+  # Moreover, to allow fully integrated incrental parsing, they 'select for' (i.e. have syn and/or sem slots for)
+  # the auxillary (which then fills in tense, aspect, verbal-agreemnt, polarity, etc), the 'Subject' and then
+  # the 'verb missing an arg' 
+	
+  # Note: Currently, only arguments, not modifiers, can be wh questioned. We can't handle 'extracted optional elements'
+  #       Of course, you can question pp args, like 'who did you walk with', b/c once they 'attach' to the verb, their
+  #       argument is treated as any old missing arg.
+  #       As a hack to handle where questions for motion verbs, I added to each a verbal family with an explicit <Dynamic>
+  #       argument. So you can now ask  Where are you going?  BUT NOT where are you playing?
+  		  
+  # An example (note increase of readings in 4 -> 5)
+    
+  what: 4;                              # aux-obj, aux-sent-comp, subj, copular-obj
+  what did: 4;                          # aux-obj, aux-sent-comp, subj (with did as aux), subj (with did as proverb, e.g. What did it )
+  what did GJ: 2;                       # aux-obj, aux-sent-comp
+  what did GJ see: 1;                   # aux-obj (transitive reading of see)  
+  what did GJ see under: 2;                # aux-obj (transitive reading of see), prep-arg (intranstive reading of see)  
+  what did GJ see under the: 2;         # aux-obj (transitive reading of see) with 2 readings of the
+  what did GJ see under the table: 1;   # aux-obj (transitive reading of see)
+
+  # Y-N Questions
+
+  # Here, the aux, as first element, controls the mood.
+  # Much like Wh-words, it selects for subject & then vp.
+  
+  are: 32;            # yeah... it's the be-verb and this english, whaddya expect
+  are you: 22;        # still loads of possibilities
+  are you coming: 4;  # sg/pl for you, with/out dynamic (see above)
+ 
+  # Imperatives (and alighted Subjects) 
+
+  # as the verb is the first element in an imperative clause, it controls the clause.
+  # this should be done as it was in moloko, i.e. with a separate verbal category and hence lexical family for each verb.
+  # HOWEVER, b-c it would lead to sheer messiness under Dot-CCG, I've added type-changing rules for this...sigh....
+    
+  # Also, by building verbs like this s\np /args instead of s /args \np  we will necessarily get all of the 'missing subject'
+  # readings. I did, however, shut off the subject slot (via !), so we don't see them in other places.
+  # A simple way to prune these silly readings is to check the mood. If it is un-specified, prune it. All readings that we 
+  # want will have a mood specified somehow (via rule, or via lexical items)
+  # For this reason, I added an 'alighted subject' reading as well. (see verbs.ccg for arguments for this.. can still of course remove)
+	
+  # NOTE: what should we 'call' the alighted subj & imperative actor (currently have em as context, see context entities below)
+  #       what about the tense of imperatives? obviously its a silly question, and answering it gets into silly philosophical discussions.
+  #       I left it out, is that ok?	
+	
+  go: 4;                        # imp-parse, 3 moodless parses (base, pl, 2nd-singular, see above)
+  go over: 30;                  # ummmmm... as it stands, with so many independent dep reln names being used for modifers (location, dynamic, etc) 
+                                # mod-modifiers like over lead to an explosin in readings 
+  go over to: 5;                # lose all but <dynamic>, get 1 imp and 4 moodless...
+  go over to your: 10;          # x2 b/c of sg-pl versions of your
+  go over to your station: 10;  # "
+
+   
+  #########################################
+  # Participant Roles/Argument Structures #
+  #########################################
+  
+  I slept: 1;                   # iv
+  
+  I want it: 4;                 # tv
+
+  give me the ball: 4;          # dtv
+  give the ball to GJ: 4;     
+
+  I picked it up: 1;  # object + particle 
+  I picked up the ball: 1;
+ 
+  I want it bigger: 1;          # resultant 'state'
+  make it black: 4;
+
+  I want it on the table: 2;    # 'goal'  (second reading is a post-np, see below)
+  put it on the table:    4;  
+
+  I want to sleep: 1;              # event compliment (subj controlled inf)
+  I want the robot to sleep: 2;    #                  (obj controlled inf)
+  I made it move off the table: 1; # base
+  keep moving: 16;                 # ing  (1 of these many parses is the simple s imperative                  
+  stop moving: 16;
+  I said I wanted to sleep: 1;     # s
+   	    	   
+  # Special
+  
+  # 'use X to do Y' Subj controlled inf-verb with patient as instrument
+
+  # Note: These kinds of specialized arg structures are actually quite easy to add
+  #       So if anyone think of anymore similar ones they'd like to add... 
+  
+  you use it to make coffee: 6;                  # open readings for make
+  you can use them to pick things up: 2; 
+
+
+  #############
+  # Modifiers #
+  #############
+ 
+  ## Modifiers themselves ## 
+ 
+  # Modifiers begin as atomic cats with a semantic index of their own
+  # via type-changing rules, the can be 'transformed' into complex cats for use in modifying
+  #     the combinatorial possibilities are lexically specified via CC-TYPE (complex-cat type)
+  #     see types-features.ccg   
+      
+  on the table: 8; # Prep-it can modify an entity as <Location>, or event as <Location> or <Dynamic> in multiple syntactic positions  
+  big: 2;          # Adj-it can only modify entities as <Property>
+  
+   
+  ## Modifying Modifiers ##
+  
+  # because modifiers always begin as atomic cats, 'before' they are transformed they can be modified
+  # thse mod-modifiers latch onto the atomic cat's index.
+  
+  over on the table: 8;   
+  really big: 2;
+
+
+  ## Using the Modifiers ##
+
+  # As modifiers (the rule-generated complex cat is used) #
+
+  the ball: 3;
+  the ball on the table: 3;
+  the ball over on the table: 3;
+  
+  the big ball: 3;
+  the really big ball: 3; 
+   	 
+  I slept: 1; 
+  I slept on the table: 1;
+  I slept over on the table: 1;
+      
+  # As compliments to verbs (the original atomic cat form used) #
+  
+  the ball is big: 1;
+  the ball is really big: 1;
+
+  I want it big: 1;
+  I want it really big: 1;
+	    
+  the ball is on the table: 1;
+  the ball is over on the table: 1;
+		
+  I want it on the table: 1;
+  I want it over on the table: 1;
+
+  ## Blocking Modifiers ##
+
+  ## Each verb has the right to choose its own 'potential modifiers', i.e., semantically restrict what kinds 
+  ## of things it can take. See the m-class in types-features.ccg for list of restriction classes.
+  
+  # Although Nouns, nor Modifiers are doing this right now, could in theory be implemented quite naturally.
+  
+  I am happy to the the table: 0;  # copulars can't take dynamics
+  I want it to the table: 0;       # neither can 'want' like modal/cog verbs
+  I went to the table: 1;          # motion verbs can
+  
+  I want it on the table: 1;       # this is a <goal> participant of want, but still blocks dynamic on.
+  I walked on the table: 3;           # currently motion verbs like this accept <location> (static) and <dynamic> readings
+  								   # Note: 3rd reading is due to hack handling of where questions..... 
+		
+			   
+    ## NOTE: A Suggestion ##
+  
+  # As it stands, we are using quite a few different dependency relations for 'optional modifiers'
+  #   ex. <Dynamic>  <Location>  <Time>  <Property> as well as the more general <Modifer>
+
+  # Instead, I suggest a single dependency relation (call it whatever you want to, <Modifer> is as good as any)
+  # which is used for each and every semantic relation. 
+  # The nature of the relation is specified by the ontological sort of the relation only.
+  #      so <Modifier>(m:color green)  <Modifier>(m:location on ...) <Modifier>(m:where-to onto <Arg> ...)
+  # The hierarchical information, i.e. that where-to is a dynamic, that color is a physical-property which is a property
+  # will be handled exclusively in the ontological sort hierarchy. Hence, external use will need to look this up
+  # instead of merely checking the dep-reln name.
+  #
+  # In the case of these same 'modifiers' playing sem-roles in arg structure, then we would need either one or more
+  # different names (like <Goal> or whatever) to handle these. This has the added benefit of allowing post-processing
+  # to know whether a locational was selected for and hence playing a core role, or was merely a 'modifier'
+  #     e.x.
+  # 'I want it on the table'  should not be interpreted as a want event located on the table, but instead like 'put' with a 
+  #  'goal' type locational argument.
+  #
+   
+  # Here are some reasons for why I think the single modifer dep-reln is a good idea:
+  
+  # 1) Uniformity:
+  #       -we are already using the type hierarchy to handle the vast majority of different kinds
+  #        of dep-relns, e.g. instrument, accompaniment, comment, etc
+  #       -this would allow me to clean up some of the grammar by removing multiple 'checks'
+  #	       i.e. if you are a location modifier, then become <Location>, if dynamic.....
+  #              else <Modifier>		
+  #       -modification of the dependency-relation hierarchy would have much less impact on the grammar
+  #        as it stands, if we decide to add 'instrument' as dep-reln (instead of say sub-type of modifier)
+  #        this would require going in and building a family. If we unify, just have to add to sort-hierarchy
+  #        and then to the new dictionary items.
+  #
+  # 2) Information Redundancy:
+  #       As it stands, we have readings like this <Location>(m:location on ...) & <Time>(m:time before ...) 
+  #       And as mentioned above, even in cases like <Dynamic>(m:where-to onto...) the sub-type info provided
+  #       here is already available in the sort-hierarchy
+  #
+  # 3) Parse reduction:
+  #       We currently get crap loads of readings for 'pre-modifier modifiers' like 'over on the table' or 'really'
+  #       The reason, is that as 'over' doesn't know if it is modifying a dynamic, a location, or whatever, then
+  #       it gets a reading for each possibility. Even if we eventually 'restrict' these modifiers to only modify 
+  #       the correct kinds, we'll still get one reading for each of these dependency-reln 'ambiguities'.
+  #       Compare this to if we had a different 'category' for animates and inanimates, then big would be ambiguous
+  #       to these two readings and have to generate both readings
+  # 
+  # 4) Simplification of the Copular
+  #       By returning to a uniform treatment of 'things which modify nouns', I could then revert to the much
+  #       cleaner copular which takes adj and pps instead of the complex ugliness we had in older moloko
+  #       This would mean much easier uniform handling of questions, among other things.
+  #             (note: I actually have this simpler version of copulars implemented, but could change back
+  #                    to the more complex version from old moloko)
+  # 
+  
+					   
+						   	   
+  ###############
+  # The Copular #
+  ###############
+
+  # Adj 
+  it is big: 1;
+  it "isn't" big: 1;
+  is it big: 1;
+  what is big: 1;
+  how is it: 2;    # 2nd reading with is as aux-verb
+
+  # With NP
+  it is a ball: 1;
+  is it a ball: 1;
+  what is a ball: 4; # question subj, obj & two other readings with is as aux-verb 
+  what is it:     4;   
+ 
+  # with PP
+  it is under the table: 1;
+  is it under the table: 1;
+  where is it: 4; 
+
+  # verbal-adjectives
+  
+  I am able to walk:    2;
+  am I able to walk:    2;
+
+  # inverted locational
+  under the table is a ball: 4;  # 1 inverted locational, 3 y-n with fronted locataional , e.g. under the table is there a cat?
+
+  # presentationals
+  
+  there is a ball: 2; # normal and inverted locational
+  there were some balls: 2;
+  there are a ball: 0;
+  there is a ball on the table: 2;
+  is there a ball: 1;  
+  is there a ball on the table: 2;
+  what is there: 1;
+  where is there a ball: 1;
+  
+  # note that dummy subj doesn't overgenerate
+  there walked in: 0;
+  there is big: 0;
+
+
+   
+
+
+  
+  #######################################################
+  # Entities: Context Entities, Determiners and Groups  #
+  #######################################################
+							   		    	  
+  # Context Entities #
+  
+  # I have modified and extended the old Moloko treatment of context nps. Before, we were
+  # handling them in two ways:
+  # 1) by attaching a dependency relation containing the entities semantic features
+  # with some sort of outside 'Shell' 
+  #   e.g.    one      @entity(one <Context> (<num, spec, delim>) )
+  # 2) with a ontological type of 'discourse-deictic'
+  #   e.g.    this     @discourse-deictic(this <proximity, spec, det, num> )
+  #
+  # I have unified these two types of contextual entities together with a few others (more below)
+  # and given them a simpler and more info-rich representation. First, some issues with these
+  # two old treatments
+  
+  # First, 1) was quite difficult to pull off, in the sense, it required gerry-rigging a lot 
+  # of extra categories, and as I wanted to expand the idea of contextual entities, it was a pain
+  # As well, when these shell nps were modifed 'big one', the 'semantic head' was the outside entity
+  # and hence the modifying information was separate from the lexically specified features.
+  # Second, 2) has the problem of loosing the ontological info that it is an entity. Furthermore, if
+  # we eventually want more semantically refined types of context nps, then this info wouldn't
+  # be visible (see also Context Events below)
+
+  # New represenation:  A context entity is exactly like any other entity except its propisition is 
+  # the word context. i.e. all of its 'grounding features' (num, spec, prox, etc) are there, along
+  # with any modifiers, the only thing that needs to be contextually found is the 'head', or the info
+  # that would be given in the 'nominal class'.
+  
+  # So....  this (as deictic entity)
+  #         @entity(context <Proximity>proximal <Num>sg <Quantification>specific_singular <Delimination> unique)
+  # what is nice is that now it has exactly the same semantics as 'determiner' this, except 'head' is filled in by context
+  # i.e. compare with
+  #			this       np/n
+  #         @entity(     <Proximity>proximal <Num>sg <Quantification>specific_singular <Delimination> unique)       
+  #         this ball  np
+  #         @entity(ball <Proximity>proximal <Num>sg <Quantification>specific_singular <Delimination> unique)
+  # and further, this as 'event deictic' only differs in its ontological sort.
+  #         @event(context <Proximity>proximal <Num>sg <Quantification>specific_singular <Delimination> unique)
+  #
+  
+  # Besides context being used in deictics, it is also used with
+  #   1)'discourse one' 
+  #   2) numbers (both cardinal and ordinal) 
+  #   3) in some Wh-questions (see below)
+  #
+  #  NOTE: We could extend this to cover other things like some adjectives ('colors' I want the green, etc)
+ 
+  # GROUPS #
+    
+  # In addition, I have added the handling of 'subgroups' of specified groups.
+  #  e.x. one of the balls,   some of GJ's money,   the first of the three balls.
+  # 
+  # The basic semantics is:    @entity(group
+  #                                    'subset specifying info'									
+  #                                    <Set>(info specifying the set)
+  #
+  # subset specifying info is handled by the 'pre-of' stuff (one, some, first, etc)
+  # and the set info, by the 'post-of' stuff.
+  # So in the cases, like some, where there is no propositional info attached, then only features 
+  # at top level. In other case, like numbers, it is contained in a <Modifier>() at this level.  
+		
+  this: 11;  # 'this' can be det, context-np, context-event from above. Multiply for each slot
+  this ball: 5;
+  the this ball: 0;
+  this of the balls: 0;
+  
+  some: 20;  # 'some' can be det (sg, pl), context-np(pl), and set-selector(pl)
+  some balls: 9;
+  the some balls: 0;
+  some of the balls: 9;
+
+  two: 22;  #  cardinals can be a det, context-np, context-n set-selector and simple modifier
+  two balls: 19;
+  the two balls: 9;
+  two of the balls: 5;
+  those two: 26;
+
+  the third: 20;  # ordinals can be context-n, set-selector, and simple modifier
+  the third ball: 5; 
+  the third of the three balls: 9; 
+  third ball is big:0 ;  # but they can't be dets
+  
+  the green ones: 5; # ones is a generic plural context-n
+ 	  
+  # Left to do: What about nothing, none, etc... how should we handle these?	  
+
+  ##################
+  # Context Events #
+  ##################
+    
+  I "didn't" say that: 6;   # 1 of these readings is an s, the rest are treating 'that' as 
+                            # the subj/front np (or its det) of the sent comp
+ 
+  who said it:  3;        # similar, but no det readings
+  what did he say: 1;
+
+  # pro-verb do #
+  
+  # NOTE: what should the prop be for this?  
+  
+  I "didn't" do it: 1;
+  I do I went: 0;                # the event compliment to accept context-events, so         
+  who did this: 1;
+  what is he doing: 1; 
+  what is he doing with the ball: 1; 
+
+  # Subj+Aux with context main events.
+  
+  I will: 2;
+  I do : 2;
+  I can not: 2;
+  will I: 2;
+  "won't" I: 2;
+  can I: 1;
+  
+  # contextualized inf comps
+  
+  I want to:  2;
+  I want him to: 2;
+  I hope to: 2;
+  do you want me to: 2;
+  
+  ###############################
+  # Context Locations and Anchors #
+  ###############################
+
+   I walked there: 1;  # full pro-pp location
+   I was here: 1;
+   I put it in there: 1 ; # anchor only
+   I picked up there: 0;    # here/there don't overgenerate (uses CASE = acc-loc)
+   
+  
+   
+  ################
+  # WH-QUESTIONS # 
+  ################
+
+  ## Questioning a complement (i.e. extracted argument) ##
+
+  # In some of these cases, context entities are used.
+  # For example, how much do you want. This is questioning the amount of a contextually defined
+  # entity playing the patient role in want.
+  
+  what should I pick up: 1;
+  
+  which ball should I pick up: 1;
+  what color ball should I pick up: 1;  
+  which color should I pick up: 1;
+  
+  how is it: 2;
+  how do you want it: 2;
+  
+  what color is it: 8;            # gotta look at this. Getting too many readings (both restr & scope (i.e. subj & obj) readings.)
+  what size should I make it: 1; 
+
+  how big is it: 2;
+  how big should I make it: 1; 
+  how much bigger should I make it: 1; 
+  how hungry do you want me to be: 1; 
+  
+  how_much coffee should I make for him: 1;
+  how_much should I make for him: 1;	   
+  how_many balls do you want me to pick up: 2;  # 2 readings you
+  
+  how_many coffee do you want: 0;
+  how_much balls do you want: 0;
+
+  ## Questioning a Modifier (i.e. no extracted argument) ##  
+
+  # These questions are handled semantically, i.e. the wh-word defines its own modifer type
+  # and this is then used to restrict it's scoped event by checking that it has a compatible 
+  # m-class
+  
+  where is he sleeping: 1;    # loc only
+  where is he going: 2;       # static & dynamic
+  where does he want it: 3;   # 1 the compliment reading, 2 scoping over Event comp since want can't take loc or dyn modifiers	  
+  where does he want it to sleep: 1;
+  
+  how does he sleep: 1;       # manner reading 
+  how did he make it: 2;      # manner reading + result-comp reading 
+  
+  ######################################
+  # Tense, Aspect, Modality & Polarity #
+  ######################################
+ 
+  
+  he sleeps: 1;
+  he does sleep: 1;
+  he "didn't" sleep: 1;  
+  does he sleep: 1;
+
+  he slept: 1;
+  he did sleep: 1;
+  he "didn't" sleep: 1;
+  did he sleep: 1;
+
+  he will sleep: 1;
+  he "won't" sleep: 1;
+  will he sleep: 1;
+
+  he is sleeping: 1;
+  he "isn't" sleeping: 1;
+  is he sleeping: 1;
+
+  he has slept: 1;
+  he "hasn't" slept: 1;
+  has he slept: 1;
+ 
+  he can sleep: 1;
+  he "can't" sleep: 1;
+  can he sleep: 1;
+
+  he is able to sleep: 1;
+  he "isn't" able to sleep: 1;
+  is he able to sleep: 1;  
+
+  # Combinations
+
+  he will have slept: 1;
+  will he be sleeping: 1;
+  
+  he will be sleeping: 1;
+  will he  be sleeping: 1;
+  
+  he has been sleeping: 1;
+  has he been sleeping: 1;
+
+  he "can't" have slept: 1;
+  he "can't" be sleeping:  1;
+
+  # Correctly Rejected #
+
+  I will can sleep: 0;
+  will he sleeps:  0;
+  he will sleeps:  0;
+  I am sleep:       0;
+  I have sleep:   0;
+   
+      
+  #########
+  # Voice #
+  #########
+   
+  # Currently no 'get form' (will require combining with aux 'do' for neg & questions)
+  # Currently can't handle wh-questions
+    
+  he "wasn't" seen: 3;
+  he "wasn't" seen by GJ: 6;    # 3 by Actor readings, 3 locational readings
+  
+  was he seen by anyone: 4; 
+   
+  ##################################
+  # Fronted NPs, Pre-NPs, Post-NPs #
+  ##################################
+  
+  
+  # THIS WILL ALL BE REPLACE via discourse-units
+
+  # Though certainly not the most important, or interesting feature of the new grammar
+  # I figured I should put it first. When you start looking at parses, you'll no doubt 
+  # be wondering 'What is all this crap?'
+
+  # Right.
+  # People like to place NPs outside clauses, both before and after. 
+
+  # Reasons? task separation (i.e. separating finding/building description of the referent from predicating it), 
+  #          info struc, mark logical relations (comparison, listing, etc) 
+  #          various interpersonal functions, discourse segmentation, 'repairing' reference etc.
+  #
+  # Of course all of these tasks are 'extra sentential' and mostly interactive (e.g. only add a 2nd description if
+  # they don't seem to get it after the first) but until we handle em in dialogue model, can have it here.
+  # clearly will involve some 'post processing' as they do not sub-categorize for these functions, nor does it 
+  # make any co-indexing proposals, i.e., treated as separate, i.e. as 'discourse anaphor'(ugh)
+    
+  # In any case, if you want to shut them off, go to discourse.ccg and comment out the lines.
+  
+  # there is often some sort of intonational break between clause and np, but not always, and
+  # its not like speech rec is going to give us that info anyway...
+  
+#  the ball I picked it up: 1;
+#  the ball I picked up: 2;
+#  put it on the table the big ball: 1;
+#  the big ball pick it up: 1;
+#  who is he that guy there: 1;
+    
+  # Also, of course, as Vocatives
+#  Robot I want you to go away: 2;
+#  I want you to go away Robot: 2;
+	
+	  
+        
+}

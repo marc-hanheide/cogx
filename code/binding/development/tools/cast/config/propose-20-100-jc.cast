@@ -1,0 +1,25 @@
+HOST localhost
+
+SUBARCHITECTURE test
+JAVA WM cast.testing.TestWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.testing.TestTaskManager #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier1 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier2 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier3 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier4 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier5 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier6 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier7 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier8 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier9 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier10 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier11 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier12 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier13 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier14 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier15 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier16 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier17 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier18 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug
+CPP GD copier19 Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT #--debug
+JAVA GD copier20 cast.testing.Proposer --count 100 --response ADOPTED #--log $TEST_LOG_OUTPUT --debug

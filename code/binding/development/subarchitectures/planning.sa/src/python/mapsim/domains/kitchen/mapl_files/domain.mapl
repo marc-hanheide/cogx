@@ -1,0 +1,150 @@
+(define (domain kitchen)
+
+	(:requirements :mapl :adl)
+	
+	(:types 
+		human artificial_agent - agent
+		robot appliance - artificial_agent
+		temperature mood position - feature
+
+		movable - phys_obj
+		food - movable
+		localized_obj - object
+        agent movable - localized_obj  ;; these things have positions
+		agent - position  ;; things can be "in" an agent
+	)
+	
+	(:constants
+		bad good - mood
+		hot cold - temperature
+		home away - position
+	)
+	
+	(:predicates
+	  (position ?o - localized_obj : ?p - position)
+	  (mood ?h - human : ?m - mood)
+	  (temperature ?f - food : ?t - temperature)
+	 )
+	
+;;; sensors ;;;
+
+ 	(:sensor sense-objects-held
+	 :agent (?a - agent)
+	 :parameters (?o - movable)
+     :negcondition (and
+	     (not (position ?o : ?a))
+		)
+	 :sense (position ?o))	
+
+	(:sensor sense-temperature
+	 :agent (?a - agent)
+	 :parameters (?f - food)
+	 :precondition (and
+	     (position ?f : ?a)
+		)
+	 :sense (temperature ?f))
+
+	(:sensor sense-human
+	 :agent (?a - agent)
+	 :parameters (?h - human)
+	 :negcondition (and
+	     (not (position ?h : home)))
+	 :sense (position ?h))
+
+	(:sensor sense-food
+	 :agent (?a - agent)
+	 :parameters (?f - food)
+	 :sense (position ?f))
+
+
+;;; axioms ;;;
+
+	(:derived (can_talk_to ?pa - planning_agent ?a - agent)
+		(exists (?pos - position) (and
+			(position ?pa : ?pos)
+			(position ?a : ?pos)
+		)))
+
+;; speech acts 
+
+	(:action tell_val ??svar
+	 :agent (?speaker - agent)
+	 :parameters (?hearer - agent)
+	 :variables (?p - position)
+	 :precondition (and
+		(K ?speaker (??svar ??args))
+        (not (= ?speaker ?hearer))
+		(position ?speaker : ?p)
+		(position ?hearer : ?p)
+		)
+	 :effect (and
+		(K ?hearer (??svar ??args))
+	))
+
+;;; actions ;;;
+
+	(:action bring
+	 :agent (?a - robot)
+	 :parameters (?to - agent ?f - food)
+	 :precondition (and 
+		(position ?a : home)
+		(not (position ?f : ?to))
+		(position ?to : home)
+		)
+	 :effect (and
+		(position ?f : ?to)
+	))
+
+;; 	(:action take
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?f - food ?from - agent)
+;; 	 :precondition (and 
+;; 		(position ?a : home)
+;; 		(position ?from : home)
+;; 		(position ?f : ?from)
+;; 		)
+;; 	 :effect (and
+;; 		(position ?f : ?a)
+;; 	))
+;; 
+;; 	(:action give
+;; 	 :agent (?a - robot)
+;; 	 :parameters (?to - human ?f - food)
+;; 	 :precondition (and 
+;; 		(position ?f : ?a)
+;; 		)
+;; 	 :effect (and
+;; 		(position ?f : ?to)
+;; 	))
+;; 
+	(:action bake
+	 :agent (?a - appliance)
+	 :parameters (?f - food)
+	 :precondition (and 
+		(position ?f : ?a)
+		(exists (?h - human) (position ?h : home))  ;; a human must be home for the oven to be turned on!
+		)
+	 :effect (and
+		(temperature ?f : hot)
+	))
+
+	(:action go
+	 :agent (?a - human)
+	 :parameters (?p - position)
+	 :precondition (and 
+		(not (position ?a : ?p))
+		)
+	 :effect (and
+		(position ?a : ?p)
+	))
+
+	(:action eat
+	 :agent (?a - human)
+	 :parameters (?f - food)
+	 :precondition (and 
+		(position ?f : ?a)
+		)
+	 :effect (and
+		(when (temperature ?f : hot) (mood ?a : good))
+	))
+)

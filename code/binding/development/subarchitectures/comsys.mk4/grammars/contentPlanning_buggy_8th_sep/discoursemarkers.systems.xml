@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+
+<system id="gre.thing" region="THING" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:gre"/>
+   </conditions>
+   <actions>
+      <action choice="default">
+		<identify-nomvar root="DVP" mode="Gre" dest="GRE" scope="global"/>
+		<generate-rfx nomvar="GRE"/>
+      </action>
+   </actions>
+</system>
+
+
+
+
+
+<!-- /**
+
+@system blabla
+
+*/ --> 
+
+<system id="relation-marker" region="DISCOURSE-MARKER" metafunction="textual">
+   <chooser id="c-relation-type"/> 
+   <conditions>
+      <condition features="@type:marker @feat:MarkerToProcess:true	"/> 
+   </conditions>
+   
+   <actions>
+   
+		<action choice="vision-ackno1">  <!-- what do we have here -->
+<!--			<add-lf lf="@h1:ascription(have ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c1:m-location ^ context ^ &lt;Proximity&gt;m-proximal) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> 
+-->
+		<!-- change type: no more just a plain marker -->
+         <assign-type type="ascription" />
+		 <add-proposition propositions="have" />
+		<!-- insert Actor  -->
+		 <add-relation mode="Actor" dest="VisionAckno1Actor" type="person" />
+		 <identify-nomvar mode="Actor" dest="VisionAckno1Actor" scope="global" />
+		 <add-proposition dest="VisionAckno1Actor" propositions="@I" />	
+<!--		 <add-feature dest="VisionAckno1Actor" feat="Num" val="pl" /> -->
+		<!-- Insert coref Subject -->
+		 <add-relation mode="Subject" dest="VisionAckno1Actor" type="*VAR*" />		 
+		<!-- insert Patient  -->
+		 <add-relation mode="Patient" dest="VisionAckno1Patient" type="entity" />
+		 <identify-nomvar mode="Patient" dest="VisionAckno1Patient" scope="global" />
+		 <add-proposition dest="VisionAckno1patient" propositions="@what" />	
+		<!-- Insert soref Wh-Restr -->
+		 <add-relation mode="Wh-Restr" dest="VisionAckno1Patient" type="*VAR*" />	
+		<!-- Insert Modifier -->
+		 <add-relation mode="Modifier" dest="VisionAckno1Modifier" type="m-location" />
+		 <identify-nomvar mode="VisionAckno1Modifier" dest="VisionAckno1Modifier" scope="global" />
+		 <add-proposition dest="VisionAckno1Modifier" propositions="@context" />
+		 <add-feature dest="VisionAckno1Modifier" feat="Proximity" val="m-proximal" />
+		</action>
+		
+		<action choice="vision-ackno2">  <!-- what can I see -->
+<!--			<add-lf lf="@s1:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(c1:modal ^ can) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/> 
+-->
+
+		<!-- change type: no more just a plain marker -->
+         <assign-type type="perception" />
+		 <add-proposition propositions="see"/>
+		<!-- insert Actor  -->
+		 <add-relation mode="Actor" dest="VisionAckno2Actor" type="person" />
+		 <identify-nomvar mode="Actor" dest="VisionAckno2Actor" scope="global" />
+		 <add-proposition dest="VisionAckno2Actor" propositions="@I" />	
+		 
+		<!-- Insert coref Subject -->
+		 <add-relation mode="Subject" dest="VisionAckno2Actor" type="*VAR*" />		 
+		<!-- insert Event  -->
+		 <add-relation mode="Event" dest="VisionAckno2Event" type="event" />
+		 <identify-nomvar mode="Event" dest="VisionAckno2Event" scope="global" />
+		 <add-proposition dest="VisionAckno2Event" propositions="@what" />	
+		<!-- Insert coref Wh-Restr -->
+		 <add-relation mode="Wh-Restr" dest="VisionAckno2Event" type="*VAR*" />		 	
+		<!-- Insert Modifier -->
+		 <add-relation mode="Modifier" dest="VisionAckno1Modifier" type="modal" />
+		 <identify-nomvar mode="VisionAckno1Modifier" dest="ActionAckno1Modifier" scope="global" />
+		 <add-proposition dest="VisionAckno1Modifier" propositions="can" />
+		</action>		
+		
+		<action choice="vision-ackno3"> <!-- what do I see -->
+<!--			<add-lf lf="@s1:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> -->
+
+		<!-- change type: no more just a plain marker -->
+         <assign-type type="perception" />
+		 <add-proposition propositions="see" />
+		<!-- insert Actor  -->
+		 <add-relation mode="Actor" dest="VisionAckno3Actor" type="person" />
+		 <identify-nomvar mode="Actor" dest="VisionAckno3Actor" scope="global" />
+		 <add-proposition dest="VisionAckno3Actor" propositions="@I" />	
+		<!-- Insert coref Subject -->
+		 <add-relation mode="Subject" dest="VisionAckno3Actor" type="*VAR*" />		 
+		<!-- insert Patient  -->
+		 <add-relation mode="Patient" dest="VisionAckno3Patient" type="entity" />
+		 <identify-nomvar mode="Patient" dest="VisionAckno3Patient" scope="global" />
+		 <add-proposition dest="VisionAckno3Patient" propositions="@what" />	
+		<!-- Insert coref Wh-Restr -->
+		 <add-relation mode="Wh-Restr" dest="VisionAckno3Patient" type="*VAR*" />		 	
+		</action>			
+	
+		<action choice="vision-rej1">
+			<add-lf lf="@b1:cognition(believe ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s1:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Subject&gt;i2:person) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+		</action>
+		<action choice="vision-rej2">
+			<add-lf lf="@s1:communication(say ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s2:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Subject&gt;i2:person) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 		
+		</action>		
+		<action choice="vision-rej3">
+			<add-lf lf="@l1:perception(look ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Modifier&gt;(m1:modal ^ must) ^ &lt;Modifier&gt;(a1:m-location ^ at ^ &lt;Anchor&gt;(t1:thing ^ table ^ &lt;Modifier&gt;(a2:quantity ^ another))) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+		</action>
+  
+		<action choice="action-ackno1">
+			<!-- <add-lf lf="@l1:d-units(list ^ &lt;First&gt;(o1:marker ^ ok) ^ &lt;Next&gt;(d11:event ^ do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>-->
+<!--			<add-lf lf="@d11:event(do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/>  -->
+
+			<!-- change type: no more just a plain marker -->
+	         <assign-type type="action" />
+			 <add-proposition propositions="do" />
+			<!-- insert Actor  -->
+			 <add-relation mode="Actor" dest="ActionAckno1Actor" type="person" />
+			 <identify-nomvar mode="Actor" dest="ActionAckno1Actor" scope="global" />
+			 <add-proposition dest="ActionAckno1Actor" propositions="@I" />	
+			<!-- insert Event-lf  -->
+			 <add-relation mode="Event" dest="ActionAckno1Event" type="event" />
+			 <identify-nomvar mode="Event" dest="ActionAckno1Event" scope="global" />
+			 <add-lf dest="ActionAckno1Event" lf="@ActionAckno1Event:event(context ^ &lt;Proximity&gt;e-distal)" />
+			<!-- Insert Modifier -->
+			 <add-relation mode="Modifier" dest="ActionAckno1Modifier" type="modal" />
+			 <identify-nomvar mode="ActionAckno1Modifier" dest="ActionAckno1Modifier" scope="global" />
+			 <add-proposition dest="ActionAckno1Modifier" propositions="can" />
+			<!-- Insert coref Subject -->
+			 <add-relation mode="Subject" dest="ActionAckno1Actor" type="*VAR*" />
+		</action>
+  
+		<action choice="action-ackno2">		
+<!--			<add-lf lf="@t1:thing(thing ^ &lt;Modifier&gt;(s1:q-attitude ^ sure))" dest="CONTENT"/> -->
+
+			<!-- change type: no more just a plain marker -->
+	         <assign-type type="thing" />
+			 <add-proposition propositions="thing" />
+			<!-- insert Modifier  -->
+			 <add-relation mode="Modifier" dest="ActionAckno2Modifier" type="q-attitude" />
+			 <identify-nomvar mode="Modifier" dest="ActionAckno2Modifier" scope="global" />
+			 <add-proposition dest="ActionAckno2Modifier" propositions="@sure" />			 
+		</action>
+
+		<action choice="action-ackno3">  <!-- complex du ackno -->
+<!--			<add-lf lf="@l1:d-units(list ^ &lt;First&gt;(y1:marker ^ yes) ^ &lt;Next&gt;(t1:modal ^ try ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c11:modal ^ could) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>
+-->
+			<!-- change type: no more just a plain marker -->
+	         <assign-type type="d-units" />
+			 <add-proposition propositions="list" />
+
+			<!-- insert first part of the complex du -->
+			 <add-relation mode="First" dest="ActionAckno3First" type="marker" />
+			 <identify-nomvar mode="First" dest="ActionAckno3First" scope="global" />
+			 <add-proposition dest="ActionAckno3First" propositions="@yes" />
+
+			<!-- insert second part of the complex du -->
+			 <add-relation mode="Next" dest="ActionAckno3Second" type="modal" />
+			 <identify-nomvar mode="Next" dest="ActionAckno3Second" scope="global" />
+			 <add-lf dest="ActionAckno3Second"  lf="@ActionAckno3Second:modal(try ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c11:modal ^ could) ^ &lt;Subject&gt;i1:person)" />			 
+
+		</action>  
+  
+      <action choice="accept">
+	   <add-proposition propositions="@ok" />
+      </action>      
+
+      <action choice="reject">
+	   <add-proposition propositions="@sorry" /> 
+      </action>
+
+      <action choice="already-true">
+		<assign-type type="ascription" />  
+                    <!-- change type from marker to event, this is going to be a sentence -->
+		<add-proposition propositions="@be" />  
+
+		<add-relation mode="Cop-Restr" dest="it" type="thing"/>
+		<identify-nomvar mode="Cop-Restr" dest="it" scope="global" />
+		<add-proposition propositions="@it" dest="it" />  
+		<add-feature feature="Num" value="sg" dest="it" />  
+
+		<add-relation mode="Cop-Scope" dest="case" type="entity"/>
+		<add-proposition propositions="@case" dest="case"/>
+ 		<add-feature feature="InfoStatus" value="familiar" dest="case"/>
+
+		<add-relation mode="Modifier" dest="already" type="m-time"/>
+		<add-proposition propositions="@already" dest="already" />  
+
+		<add-relation mode="Subject" dest="it" type="*VAR*" />
+      </action>
+
+   </actions>
+</system>
+
+<system id="speechact-greeting" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="c-speechact-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+   
+   <actions>
+      <action choice="hello">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hello" /> 
+      </action>
+      <action choice="hi">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hi" /> 
+      </action>	  
+      <action choice="hithere">
+			<add-lf lf="@h1:greeting(hi ^ &lt;Addressee&gt;(c1:e-location ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Num&gt;sg ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific))" dest="CONTENT"/> 
+			<identify-nomvar root="CONTENT" mode="Addressee" dest="ADDRESSEE" scope="global"/>
+      </action>	  
+
+
+   </actions>
+</system>
+
+
+
+<system id="speechact-feedback" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="c-feedback-type"/> 
+   <conditions>
+      <condition features="@type:feedback"/> 
+   </conditions>
+   
+   <actions>
+	  <!-- what did you just mean ? -->
+      <action choice="parser-neg-var1">
+			<add-lf lf="@m1:cognition(mean ^ &lt;Mood&gt;int ^ &lt;Tense&gt;past ^ &lt;Actor&gt;(y1:person ^ you ^ &lt;Num&gt;sg ) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(j1:m-time ^ just) ^ &lt;Subject&gt;y1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/> 
+      </action>	  
+
+	  <!-- I am sorry but I could not understand that -->
+      <action choice="parser-neg-var2">
+			<add-lf lf="@b1:event(but ^ &lt;First&gt;(b2:ascription ^ be ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Cop-Restr&gt;(i1:person ^ I ) ^ &lt;Cop-Scope&gt;(s1:q-attitude ^ sorry) ^ &lt;Subject&gt;i1:person) ^ &lt;Next&gt;(u1:cognition ^ understand ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i2:person ^ I ) ^ &lt;Modifier&gt;(c1:modal ^ could) ^ &lt;Patient&gt;(c2:entity ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ) ^ &lt;Subject&gt;i2:person))" dest="CONTENT"/> 
+      </action>	  
+ 
+   </actions>
+</system>
+
+
+
+<!--
+
+The idea is to insert the main structure, then identify the variables / slots in that structure, and insert the content later on the basis of the communicative goal. 
+
+
+
+<system id="speechact-question" region="QUESTIONS" metafunction="textual">
+   <chooser id="c-speechact-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+
+
+
+   <action choice="wh-property">
+		<add-lf lf="@b1:ascription(be ^ &lt;Mood&gt;int ^                  &lt;Tense&gt;pres ^                  &lt;Cop-Restr&gt;(c1:entity ^ PROPERTY ^          &lt;Delimitation&gt;unique ^          &lt;Num&gt;;sg ^          &lt;Quantification&gt;specific ^          &lt;Owner&gt;(b2:thing ^ OBJECT ^                  &lt;Delimitation&gt;unique ^                  &lt;Num&gt;sg ^                  &lt;Quantification&gt;specific)) ^                  &lt;Cop-Scope&gt;(w1:entity ^ what) ^                  &lt;Subject&gt;c1:entity ^                  &lt;Wh-Restr&gt;w1:entity)"
+				 dest="CONTENT"/>
+		<identify-nomvar root="CONTENT" mode="Cop-Restr" dest="PROPERTY" scope="global"/>
+		<identify-nomvar root="PROPERTY" mode="OWNER" dest="OBJECT" scope="global"/>
+		
+				 
+	</action>
+
+-->
+
+
+
+<!-- /**
+
+@system blabla
+
+*/ --> 
+
+<system id="marker-nonsense" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="default"/> 
+   <conditions>
+      <condition features="@type:nonsense"/> 
+<!--
+      <condition features="@type:event"/> 
+      <condition features="@type:relational"/>   
+      <condition features="@type:action"/>   
+      <condition features="@type:state"/>   
+      <condition features="@type:internal"/>   
+      <condition features="@type:modal"/>   
+      <condition features="@type:communication"/>   
+      <condition features="@type:symbolic"/>   
+      <condition features="@type:action-motion"/>   
+      <condition features="@type:action-non-motion"/>   
+      <condition features="@type:presentational"/>   
+      <condition features="@type:ascription"/>   
+      <condition features="@type:perception"/>   
+      <condition features="@type:cognition"/>   
+   -->
+   </conditions>
+   
+   <actions>
+      <action choice="nothing">
+	   <add-proposition propositions="@sorry" /> 
+      </action>
+   </actions>
+</system>
+
+
+</systems>

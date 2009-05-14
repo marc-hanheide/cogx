@@ -1,0 +1,17 @@
+<project name="coma  subarch (conceptual map)" default="compile" basedir=".">
+
+	<import file="../../common.xml" />
+
+	<target name="idl" depends="prepare">
+                 <echo message="------ ComaData.idl ---------" />
+		<idlgen file="ComaData.idl" />
+	</target>
+
+	<target name="clean">
+		<echo message="Cleaning autogen files from ${basedir}/subarchitectures/coma.sa/src/java/ComaData"/>
+	  	<delete dir="${basedir}/subarchitectures/coma.sa/src/java/ComaData"/>
+	  	<echo message="Cleaning class files from ${output.dest}/coma"/>
+	  	<delete dir="${output.dest}/coma" />
+	</target>
+
+</project>

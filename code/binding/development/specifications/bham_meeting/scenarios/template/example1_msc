@@ -1,0 +1,9 @@
+
+msc {
+  hscale = "2";
+  user,environment,robot;
+  environment->robot[label="change detection"];
+  user->robot[label="command"];
+  robot->environment[label="move"];
+  environment->robot[label="confirmation"];
+}

@@ -1,0 +1,243 @@
+#ifndef MEDIATION_DATA_IDL
+#define MEDIATION_DATA_IDL
+
+#include <CAST.idl>
+#include <PlanningData.idl>
+
+module motivation {
+  module idl {
+
+    //   /**
+    //    * A motive to learn something about an object
+    //    */
+    //   struct VisualLearningGoal {
+    //     //the ROI of the object
+    //     cast::cdl::WorkingMemoryAddress m_roi;
+    //     //the structural interpretation of the utterance
+    //     cast::cdl::WorkingMemoryAddress m_structInt;
+    //   };
+
+    //   /**
+    //    * A motive to put a set of objects somewhere relative to another one.
+    //    */
+    //   struct PutActionMotive {
+    //     //the proxy representing the objects to be moved
+    //     cast::cdl::WorkingMemoryPointer m_dynamic;
+    //     //the proxy for the spatial relation
+    //     cast::cdl::WorkingMemoryPointer m_spatialRelation;
+    //     //the landmark for the spatial relation (which could be obtained from the rel proxy)
+    //     cast::cdl::WorkingMemoryPointer m_landmark;
+    //   };
+
+
+      /**
+       * Various states that a motive can be in. This is not based on
+       * requirements yet, just a prototype structure.
+       **/
+      enum MotiveStatus {
+        //MOTIVE_INCOMPLETE,
+        
+	///the motive has been finished
+	MOTIVE_COMPLETE,
+
+	///the motive has been proposed
+        MOTIVE_PROPOSED,
+
+	///motive has been noticed by the manager and queued
+        MOTIVE_QUEUED,
+
+	///motive will not be acted on
+        MOTIVE_REJECTED,
+
+	///motive will now be acted on
+        MOTIVE_ADOPTED  
+      };
+
+    /**
+     * A useful shortcut to represent what type of behaviour the
+     * motive is intended to generate
+     */
+    enum MotiveType {
+
+      
+      POLAR_QUESTION,
+      FACTUAL_QUESTION,
+
+      CLARIFICATION,
+
+      PHYSICAL_ACTION
+
+    };
+
+
+      /**
+       * A struct to represent a motive that is being processed by the
+       * mediation subarchitecture.
+       *
+       **/
+      struct Motive {    
+        /** What state the motive is in**/
+        MotiveStatus m_status;
+
+        /** What type is the motive**/
+        MotiveType m_motiveType;
+
+	/** The initial "cause" of the motivation e.g. a binding **/
+	cast::cdl::WorkingMemoryPointerList m_motiveCause; 
+
+	/** The subarchitecture where the motive came from **/
+	cast::cdl::SubarchitectureID m_creator;
+
+        /** The instance specific content **/
+        cast::cdl::WorkingMemoryPointer m_content;
+	
+	/** What happened then? **/
+        cast::cdl::TriBool m_succeeded;
+
+      };
+
+
+    /**
+     * A struct used to maintain a list of mappings between an entry
+     * on wm and a literal used for planning.
+     */
+    struct AddressVariableMapping {
+      /**
+       * A pointer to the object on working memory.
+       */
+      cast::cdl::WorkingMemoryPointer m_pointer;
+
+      /**
+       * The planning literal that can be used to refer to this.
+       */
+      string m_variable;
+    };
+
+
+
+    typedef sequence <AddressVariableMapping> AddressVariableMappingList;
+
+    /**
+     * A struct for storing mappings are information about them
+     */
+    struct AddressVariableMappings {
+      ///the mappings themselves
+      AddressVariableMappingList m_mappings;
+      /// whether all mappings have been setup (in playmate whether they
+      /// are all bound)
+      boolean m_stable; 
+    };
+
+
+    /**
+     * A simple motive for achieving a planning goal.
+     */
+    struct AchieveGoalMotive {
+      /**
+       * The request for the planner.
+       **/
+      planning::autogen::PlanningProcessRequest m_ppr;
+    };
+
+
+    
+    enum MotiveAcknowledgement {
+      MOTIVE_ACK_ACCEPTED,
+      MOTIVE_ACK_REJECTED,
+      MOTIVE_ACK_ALREADY_HOLDS
+    };
+
+    /**
+     * A struct acknowledging that a motive has been considered.
+     */
+    struct AcknowledgeMotive {
+
+      /**
+       * The decision on the motive. Whether it has been accepted for
+       * execution, rejected, or was already true.
+       */
+      MotiveAcknowledgement m_ack;
+
+      /** 
+       * What type is the motive that is being acknowledged 
+       **/
+      MotiveType m_motiveType;
+
+      /**
+       * A list of source entries that contributed to the
+       * motive. E.g. the proxies in the motive sa.
+       */
+      cast::cdl::WorkingMemoryPointerList m_motiveCause;
+
+      /**
+       * The motive struct that is being worked on for you.
+       */
+      cast::cdl::WorkingMemoryAddress m_motiveAddress;
+
+    };
+
+    enum AttentionMotive {
+      ATTENTION_HELP,		// try to get help
+      ATTENTION_GREET,	// just say hi .. 
+      ATTENTION_CLOSE,	// or goodbye .. 
+      ATTENTION_KILL		// .. forever ..
+    };
+    
+    
+    struct GainAttentionMotive { 
+      
+      
+      /**	
+		The identifier for the person whose attention is to be gained. 
+      */ 
+      string m_personId;
+      
+      /**
+	 Basic reason for trying to gain attention 
+	 
+      */ 
+      
+      AttentionMotive m_attention;
+      
+      
+      /**
+	 A list of source entries that contributed to the
+	 motive. E.g. the proxies in the motive sa.
+      */
+      cast::cdl::WorkingMemoryPointerList m_source;
+      
+    };
+
+    
+    /**
+     * A set of pointers to data given in response to a planner query.
+     */
+    struct AnswerSet {
+      /**
+       * A list of wm entries for the answer.
+       */
+      cast::cdl::WorkingMemoryPointerList m_answerSet;      
+    };
+
+
+    /**
+     * A struct used to register a subarchitectures competence to
+     * handle a particular binding feature.
+     */
+    struct FeatureGenerationCompetence {
+      ///if this is true, treat the string as the value of a relation
+      ///label 
+      boolean m_isRelationLabel;
+      ///the type of feature that can be handled
+      cast::cdl::OntologyEntry m_type;
+      ///the component that can do the handling (not used)
+      FrameworkBasics::FrameworkProcessID m_component;
+      ///the subarchitecture that can handle the feature
+      cast::cdl::SubarchitectureID m_subarchitecture;
+    };
+
+
+  };
+};
+
+#endif

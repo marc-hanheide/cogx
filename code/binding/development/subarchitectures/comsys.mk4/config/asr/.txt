@@ -1,0 +1,258 @@
+ACTION_TRANS:dynaref [
+	(take~2.713)~0.25
+	(cut~0.670)~0.25
+	(look at~0.613)~0.25
+	(open~2.259)~0.25
+	(close~2.827)~0.25
+	(switch on~0.1)~0.25
+	(switch off~0.613)~0.25
+	(pass me~0.670)~0.25
+	(bring~1.294)~0.25
+	(bring me~0.783)~0.25
+	(grab~0.613)~0.25
+	(pick up~1.181)~0.25
+	(give me~0.613)~0.25
+	(describe~0.556)~0.25
+	(lift~0.670)~0.25
+	(push~0.840)~0.25
+	(get~0.783)~0.25
+	(get me~0.556)~0.25
+	(fold~0.613)~0.25
+	(pick up~0.567)~0.25
+	(pick~1.124)~0.25
+ ]
+
+OBJ_SG:dynaref:dynaref [
+	(book~2.470)~0.25
+	(pile of books~0.822)~0.25
+	(mug~2.148)~0.25
+	(coffee~1.390)~0.25
+	(button~0.537)~0.25
+	(coffee machine~1.011)~0.25
+	(coffee maker~0.518)~0.25
+	(pizza~1.939)~0.25
+	(stuff~0.518)~0.25
+	(laptop~2.166)~0.25
+	(trash bin~0.518)~0.25
+	(notebook~0.765)~0.25
+	(ball~0.822)~0.25
+	(box~1.579)~0.25
+	(bin~0.537)~0.25
+	(floor~0.518)~0.25
+	(cube~0.1)~0.25
+	(cup~0.613)~0.25
+	(stack~0.518)~0.25
+	(paperbook~0.518)~0.25
+	(left~1.125)~0.25
+	(right~2.053)~0.25
+	(top~2.470)~0.25
+	(bucket~0.1)~0.25
+	(chocolate~1.731)~0.25
+	(chocolate bar~0.822)~0.25
+	(soccer ball~0.537)~0.25
+	(football~0.575)~0.25
+	(table~1.636)~0.25
+	(can~0.061)~0.25
+	(place~0.575)~0.25
+	(keyboard~0.518)~0.25
+	(object~1.011)~0.25
+	(corner~0.556)~0.25
+	(position~0.518)~0.25
+	(key~0.556)~0.25
+	(computer~0.727)~0.25
+	(scene~0.556)~0.25
+	(side~0.689)~0.25
+	(robot~1.352)~0.25
+	(thing~0.727)~0.25
+	(something~0.556)~0.25
+	(tomato~0.518)~0.25
+ ]
+
+FILLER:dynaref [
+	(now)~2.107
+	(please)~1.076
+	(then)~0.609
+	(mm)~0.980
+	(yeah)~0.747
+	(aha)~0.541
+	(so)~1.200
+	(well)~0.623
+	(i mean)~0.554
+	(uh)~1.557
+ ]
+
+DEM_PL:dynaref [
+	(those)~0.730
+	(these)~0.961
+	(them)~1.307
+ ]
+
+LOCATION:dynaref [
+	(on top)~0.692
+	(to the right)~0.671
+	(to the left)~0.778
+	(to my left)~0.542
+	(to my right)~0.671
+	(to your left)~0.607
+	(to your right)~0.585
+	(here)~2.597
+	(there)~1.698
+	(around)~0.542
+	(away)~0.649
+	(right)~2.255
+	(left)~1.206
+	(aside)~0.25
+ ]
+
+DET_PL:dynaref [
+	(the)~4.722
+	(two)~0.526
+	(three)~0.517
+	(four)~0.517
+	(five)~0.517
+	(several)~0.25
+	(some)~0.580
+	(many)~0.589
+	(all the)~0.526
+ ]
+
+DEM_SG:dynaref [
+	(this)~0.597
+	(that)~0.953
+	(it)~1.448
+ ]
+
+CUEWORD:dynaref [
+	(ok)~4.111
+	(yes)~1.284
+	(yeah)~0.871
+	(no)~4.214
+	(wrong )~0.541
+	(right )~1.635
+	(sure)~0.561
+	(correct)~0.850
+	(good)~0.974
+	(very good )~0.520
+	(great )~0.582
+	(alright)~0.520
+	(true )~0.541
+	(false)~0.25
+	(nice)~0.520
+	(bad)~0.25
+	(fine)~0.520
+	(wonderful)~0.541
+	(excellent)~0.561
+	(exactly)~0.520
+	(indeed)~0.520
+	(well done)~0.603
+ ]
+
+PERSON:dynaref [
+	(me)~2.280
+	(you )~4.083
+	(pierre)~0.25
+	(trevor)~0.544
+	(hendrik)~0.25
+	(henrik)~0.25
+	(maria)~0.25
+	(sergio)~0.25
+	(dennis)~0.25
+	(ivana)~0.25
+	(gj)~0.566
+	(robot)~1.501
+	(partner)~0.522
+ ]
+
+DET_SG:dynaref [
+	(one)~0.572
+	(a)~2.126
+	(the)~1.682
+	(some)~0.522
+	(my)~0.540
+	(your)~0.555
+ ]
+
+GREETING:dynaref [
+	(hi)~3.864
+	(hello)~0.601
+	(bye)~0.25
+	(how are you)~0.25
+	(how are you doing)~0.25
+	(see you later)~0.533
+	(goodbye)~0.25
+ ]
+
+MODIFIER:dynaref:dynaref [
+	(white~0.878)~0.25
+	(black~0.900)~0.25
+	(blue~0.544)~0.25
+	(green~0.566)~0.25
+	(brown~0.700)~0.25
+	(red~0.700)~0.25
+	(paper~.7)~0.25
+	(yellow~0.522)~0.25
+	(open~1.189)~0.25
+	(closed~0.544)~0.25
+	(round~0.722)~0.25
+	(big~0.855)~0.25
+	(small~0.588)~0.25
+	(large~0.588)~0.25
+	(on~4.481)~0.25
+	(left~1.233)~0.25
+	(right~2.323)~0.25
+	(off~1.767)~0.25
+	(i.b.m.~0.588)~0.25
+	(shot~0.522)~0.25
+	(full~0.544)~0.25
+	(far~0.522)~0.25
+	(empty~0.588)~0.25
+	(better~0.544)~0.25
+	(topmost~0.611)~0.25
+	(top~2.813)~0.25
+	(same~0.633)~0.25
+	(last~0.522)~0.25
+ ]
+
+LOC_PREP:dynaref [
+	(above)~0.25
+	(along)~0.516
+	(around)~0.532
+	(at)~4.359
+	(away from)~0.532
+	(behind)~0.565
+	(below)~0.25
+	(by)~0.565
+	(close to)~0.516
+	(down)~0.565
+	(from)~0.597
+	(in)~3.300
+	(in front of)~0.955
+	(inside)~0.516
+	(into)~0.809
+	(left of)~0.646
+	(near)~0.646
+	(near to)~0.581
+	(next to)~0.597
+	(off)~1.428
+	(on)~3.414
+	(on the left of)~0.25
+	(on the right of)~0.516
+	(onto)~0.630
+	(on top of)~0.613
+	(out)~0.581
+	(right of)~0.646
+	(to)~4.277
+	(to the back of)~0.25
+	(to the left of)~0.630
+	(to the right of)~0.597
+	(under)~0.532
+	(below)~0.504
+	(up)~0.825
+ ]
+
+OBJ_PL:dynaref:dynaref [
+	(books~1.707)~0.25
+	(objects~0.753)~0.25
+	(others~0.538)~0.25
+ ]
+

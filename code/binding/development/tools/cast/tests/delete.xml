@@ -1,0 +1,297 @@
+<?xml version="1.0"?>
+<tests>
+  <test>
+    <!-- name of the test --> 
+    <name>delete java</name>
+
+    <!-- cast file to run -->
+    <file>tools/cast/config/delete-jjj.cast</file>
+
+    <!-- description of the test -->
+    <description>Tests two components writing to working memory then
+      re-reading the written struct. All in Java.</description>
+
+  </test>
+
+  <test>
+    <name>delete c++</name>
+    <file>tools/cast/config/delete-ccc.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. All in C++.</description>
+  </test>
+
+  <test>
+    <name>delete ccj</name>
+    <file>tools/cast/config/delete-ccj.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>delete cjj</name>
+    <file>tools/cast/config/delete-cjj.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>delete cjc</name>
+    <file>tools/cast/config/delete-cjc.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>delete jjc</name>
+    <file>tools/cast/config/delete-jjc.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>delete jcc</name>
+    <file>tools/cast/config/delete-jcc.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>delete jcj</name>
+    <file>tools/cast/config/delete-jcj.cast</file>
+    <description>Tests two components one writing, the other
+    deleting. Mixed languages.</description>
+
+  </test>
+
+  <test>
+    <name>delete readd jjj</name>
+    <file>tools/cast/config/readd-jjj.cast</file>
+    <description>Tests two components one writing, the other deleting,
+      then the first re-writing to the same place. C++.</description>
+  </test>
+
+  <test>
+    <name>delete readd ccc</name>
+    <file>tools/cast/config/readd-ccc.cast</file>
+    <description>Tests two components one writing, the other deleting,
+      then the first re-writing to the same place. Java.</description>
+  </test>
+
+    <test>
+    <name>delete readd cjj</name>
+    <file>tools/cast/config/readd-cjj.cast</file>
+    <description>Tests two components one writing, the other deleting,
+      then the first re-writing to the same place. Mixed.</description>
+  </test>
+
+  <test>
+    <name>delete readd jcc</name>
+    <file>tools/cast/config/readd-jcc.cast</file>
+    <description>Tests two components one writing, the other deleting,
+      then the first re-writing to the same place. Mixed.</description>
+  </test>
+
+  <test>
+    <name>xarch delete same java</name>
+    <file>tools/cast/config/delete-xarch-same-jjjj.cast</file>
+    <description>Tests whether the delete model disallows same
+      overwriting of a working memory entry by 2 different components in
+      different subarchitectures.</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same c++</name>
+    <file>tools/cast/config/delete-xarch-same-cccc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jccc</name>
+    <file>tools/cast/config/delete-xarch-same-jccc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same cjcc</name>
+    <file>tools/cast/config/delete-xarch-same-cjcc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same ccjc</name>
+    <file>tools/cast/config/delete-xarch-same-ccjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same cccj</name>
+    <file>tools/cast/config/delete-xarch-same-cccj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jjcc</name>
+    <file>tools/cast/config/delete-xarch-same-jjcc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same cjjc</name>
+    <file>tools/cast/config/delete-xarch-same-cjjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same ccjj</name>
+    <file>tools/cast/config/delete-xarch-same-ccjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jcjc</name>
+    <file>tools/cast/config/delete-xarch-same-jcjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same cjcj</name>
+    <file>tools/cast/config/delete-xarch-same-cjcj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jccj</name>
+    <file>tools/cast/config/delete-xarch-same-jccj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same cjjj</name>
+    <file>tools/cast/config/delete-xarch-same-cjjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jcjj</name>
+    <file>tools/cast/config/delete-xarch-same-jcjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jjcj</name>
+    <file>tools/cast/config/delete-xarch-same-jjcj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete same jjjc</name>
+    <file>tools/cast/config/delete-xarch-same-jjjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+
+  <test>
+    <name>xarch delete diff java</name>
+    <file>tools/cast/config/delete-xarch-diff-jjjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff c++</name>
+    <file>tools/cast/config/delete-xarch-diff-cccc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jccc</name>
+    <file>tools/cast/config/delete-xarch-diff-jccc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff cjcc</name>
+    <file>tools/cast/config/delete-xarch-diff-cjcc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff ccjc</name>
+    <file>tools/cast/config/delete-xarch-diff-ccjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff cccj</name>
+    <file>tools/cast/config/delete-xarch-diff-cccj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jjcc</name>
+    <file>tools/cast/config/delete-xarch-diff-jjcc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff cjjc</name>
+    <file>tools/cast/config/delete-xarch-diff-cjjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff ccjj</name>
+    <file>tools/cast/config/delete-xarch-diff-ccjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jcjc</name>
+    <file>tools/cast/config/delete-xarch-diff-jcjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff cjcj</name>
+    <file>tools/cast/config/delete-xarch-diff-cjcj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jccj</name>
+    <file>tools/cast/config/delete-xarch-diff-jccj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff cjjj</name>
+    <file>tools/cast/config/delete-xarch-diff-cjjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jcjj</name>
+    <file>tools/cast/config/delete-xarch-diff-jcjj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jjcj</name>
+    <file>tools/cast/config/delete-xarch-diff-jjcj.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+  <test>
+    <name>xarch delete diff jjjc</name>
+    <file>tools/cast/config/delete-xarch-diff-jjjc.cast</file>
+    <description>Tests two components one, writing, the other deleting, in different subarchitectures</description>    <output>false</output>
+  </test>
+
+
+
+
+</tests>

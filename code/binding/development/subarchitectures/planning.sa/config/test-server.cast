@@ -1,0 +1,7 @@
+HOST localhost
+
+SUBARCHITECTURE action.sa 
+JAVA WM planning.wm.PlanningWorkingMemory --log true #--debug true
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+JAVA GD planner.tester planning.components.testing.PlannerTester --log --test self-test
+
