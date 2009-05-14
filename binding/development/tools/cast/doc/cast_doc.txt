@@ -1,8 +1,0 @@
-/*! 
-\mainpage CAST 
-
-This is the mainpage for CAST... yada yada...
-
-\ref migrating_faq
-
-*/
