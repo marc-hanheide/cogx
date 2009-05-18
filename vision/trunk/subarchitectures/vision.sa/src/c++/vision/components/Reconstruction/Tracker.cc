@@ -75,6 +75,10 @@ void Tracker::Reset()
   para_b = 0.0;
   para_c = 0.0;
   para_d = 0.0;  
+
+  vdradius.assign(0,0);
+  mbdrawsphere = false;
+  mbdrawboundingbox = false;
   // Tell the MapMaker to reset itself.. 
   // this may take some time, since the mapmaker thread may have to wait
   // for an abort-check during calculation, so sleep while waiting.
@@ -1144,7 +1148,7 @@ void Tracker::DrawPointsOnDominantPlane()
 
 	if (objnumber != 1)
 	{
-		//DrawBundlingSphere(PointNumberOfObjects,objnumber-1);
+		DrawBoundingSphere(PointNumberOfObjects,objnumber-1);
 		DrawCuboids(PointNumberOfObjects,objnumber-1);
 		//DrawPoints_Objs(PointNumberOfObjects);
 	}
@@ -1303,13 +1307,23 @@ void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_num
 		if (v3Obj[2]>Max.at(label-1)[2]) Max.at(label-1)[2] = v3Obj[2];
 		if (v3Obj[2]<Min.at(label-1)[2]) Min.at(label-1)[2] = v3Obj[2];
 	}
-	for (int i = 0; i<objects_number; i++)
+	v3size.reserve(Min.size());
+	for (unsigned int i=0; i<v3size.size(); i++)
 	{
-		DrawOneCuboid(i,Max,Min);
+		v3size.at(i)[0] = (Max.at(i)[0]-Min.at(i)[0])/2;
+		v3size.at(i)[1] = (Max.at(i)[1]-Min.at(i)[1])/2;
+		v3size.at(i)[2] = (Max.at(i)[2]-Min.at(i)[2])/2;
+	}
+	if (mbdrawboundingbox)
+	{
+		for (int i = 0; i<objects_number; i++)
+		{
+			DrawOneCuboid(i,Max,Min);
+		}
 	}
 }
 
-void Tracker::DrawBundlingSphere(std::vector<int> PointNumberOfObjects, int objects_number)
+void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, int objects_number)
 {
 	std::vector< Vector<3> > center;
 	Vector<3> initial_vector;
@@ -1319,8 +1333,8 @@ void Tracker::DrawBundlingSphere(std::vector<int> PointNumberOfObjects, int obje
 	center.assign(objects_number,initial_vector);
 	std::vector<int> amount;
 	amount.assign(objects_number,0);
-	std::vector<double> radius;
-	radius.assign(objects_number,0);
+	std::vector<double> radius_world;
+	radius_world.assign(objects_number,0);
 	std::vector<double> radius_on_image;
 	radius_on_image.assign(objects_number,0);
 
@@ -1332,36 +1346,50 @@ void Tracker::DrawBundlingSphere(std::vector<int> PointNumberOfObjects, int obje
 		amount.at(label-1) = amount.at(label-1) + 1;
 	}
 	for (unsigned int i=0; i<center.size(); i++)
-	center.at(i) = center.at(i)/amount.at(i);
+	{	center.at(i) = center.at(i)/amount.at(i);
+		v3center.reserve(center.size());
+		v3center.push_back(center.at(i));
+	}
 
 	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
 	{
 		Vector<3> v3Obj = mMap.vpPoints[*it]->v3WorldPos;
 		int label = mMap.vpPoints[*it]->odjlabel;
-		if (CalDistOfTwoPoints(center.at(label-1), v3Obj) > radius.at(label-1))
-			radius.at(label-1) = CalDistOfTwoPoints(center.at(label-1), v3Obj);
+////////////////////calculte radius in the real world//////////////////
+		if (CalDistOfTwoPoints(center.at(label-1), v3Obj) > radius_world.at(label-1))
+			radius_world.at(label-1) = CalDistOfTwoPoints(center.at(label-1), v3Obj);
+///////////////////calculte radius on the image////////////////////////
 		Vector<2> cp = ProjectW2I(center.at(label-1));
 		Vector<2> op = ProjectW2I(v3Obj);
 		double dist = sqrt((cp[0]-op[0])*(cp[0]-op[0])+(cp[1]-op[1])*(cp[1]-op[1]));
 		if (dist > radius_on_image.at(label-1))
 			radius_on_image.at(label-1) = dist;
 	}
-	double PI = 3.1415926;
-
-	glLineWidth(1);
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor3f(1.0,1.0,1.0);
-	for (unsigned int i=0; i<center.size(); i++)
+	for (unsigned int i=0; i<radius_world.size(); i++)
 	{
-		glBegin(GL_LINE_LOOP);
-		Vector<2> center_on_image = ProjectW2I(center.at(i));
-		for(unsigned int a=0; a<360; a+=5)
-		glVertex2d(radius_on_image.at(i)*cos(a*PI/180)+center_on_image[0], radius_on_image.at(i)*sin(a*PI/180)+center_on_image[1]);
-		glEnd();
+		vdradius.reserve(radius_world.size());
+		vdradius.push_back(radius_world.at(i));
 	}
-	glDisable(GL_BLEND);
+
+	if (mbdrawsphere)
+	{
+		double PI = 3.1415926;
+	
+		glLineWidth(1);
+		glEnable(GL_BLEND);
+		glEnable(GL_LINE_SMOOTH);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glColor3f(1.0,1.0,1.0);
+		for (unsigned int i=0; i<center.size(); i++)
+		{
+			glBegin(GL_LINE_LOOP);
+			Vector<2> center_on_image = ProjectW2I(center.at(i));
+			for(unsigned int a=0; a<360; a+=5)
+			glVertex2d(radius_on_image.at(i)*cos(a*PI/180)+center_on_image[0], radius_on_image.at(i)*sin(a*PI/180)+center_on_image[1]);
+			glEnd();
+		}
+		glDisable(GL_BLEND);
+	}
 }
 
 void Tracker::DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, std::vector< Vector<3> > Min)

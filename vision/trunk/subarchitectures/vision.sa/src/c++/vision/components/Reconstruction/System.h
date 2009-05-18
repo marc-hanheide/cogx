@@ -34,6 +34,11 @@ public:
   double para_B;
   double para_C;
   double para_D;
+
+  std::vector< Vector<3> > WMcenter;
+  std::vector< Vector<3> > WMsize;
+  std::vector<double> WMradius;
+
   
 private:
   CVD::ImageRef defaultvideosize;

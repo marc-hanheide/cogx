@@ -6,7 +6,6 @@
 #include "MapMaker.h"
 #include "Tracker.h"
 #include "ARDriver.h"
-//#include "MapViewer.h"
 #include <cvd/colourspace_convert.h>
 
 using namespace CVD;
@@ -47,6 +46,8 @@ System::System()
   para_B = 0.0;
   para_C = 0.0;
   para_D = 0.0;
+
+
 };
 
 void System::Run(IplImage *iplImage)
@@ -90,6 +91,10 @@ void System::Run(IplImage *iplImage)
       para_B = mpTracker->para_b;
       para_C = mpTracker->para_c;
       para_D = mpTracker->para_d;
+
+      WMcenter = mpTracker->v3center;
+      WMsize = mpTracker->v3size;
+      WMradius = mpTracker->vdradius;
 /*      
       if(bDrawMap)
 	mpMapViewer->DrawMap(mpTracker->GetCurrentPose());
