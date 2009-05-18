@@ -56,6 +56,13 @@ public:
   double para_c;
   double para_d;
   int objnumber;
+
+  std::vector< Vector<3> > v3center;
+  std::vector< Vector<3> > v3size;
+  std::vector<double> vdradius;
+
+  bool mbdrawsphere;
+  bool mbdrawboundingbox;
   
 protected:
   KeyFrame mCurrentKF;            // The current working frame as a keyframe struct
@@ -138,7 +145,7 @@ protected:
   void DrawPoints_Objs(std::vector<int> PointNumberOfObjects);
   void DrawPoints_Plane(std::vector<int> PointNumberOfPlane);
   void DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_number);
-  void DrawBundlingSphere(std::vector<int> PointNumberOfObjects, int objects_number);
+  void DrawBoundingSphere(std::vector<int> PointNumberOfObjects, int objects_number);
   void DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, std::vector< Vector<3> > Min);
   Vector<2> ProjectW2I (Vector<3> pointW);
   std::vector<int> PointNumberOfObjects;

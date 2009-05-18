@@ -64,5 +64,43 @@ void Reconstructor::runComponent()
   }
 }
 
+SOIPtr Reconstructor::createObj(unsigned int i, const Video::Image &image, Vector<3> center, Vector<3> size, double radius)
+{
+	VisionData::SOIPtr obs = new VisionData::SOI;
+	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center[0];
+	obs->boundingBox.pos.y = obs->boundingSphere.pos.y = center[1];
+	obs->boundingBox.pos.z = obs->boundingSphere.pos.z = center[2];
+	obs->boundingBox.size.x = size[0];
+	obs->boundingBox.size.y = size[1];
+	obs->boundingBox.size.z = size[2];
+	obs->boundingSphere.rad = radius;
+
+	
+	return obs;
+}
+
+void Reconstructor::postObjectToWM(const vector<string> & labels, const Video::Image &image, Vector<3> center, Vector<3> size, double radius)
+{
+  for(unsigned int i = 0; i < model_labels.size(); i++)
+    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end())
+      postObjectToWM_Internal(i, image, center,size,radius);
+}
+
+void Reconstructor::postObjectToWM_Internal(unsigned int i, const Video::Image &image, Vector<3> center, Vector<3> size, double radius)
+{
+  SOIPtr obj = createObj(i, image, center, size, radius);
+
+  // if no WM ID yet for that object
+  if(objWMIds[i] == "")
+  {
+    objWMIds[i] = newDataID();
+    addToWorkingMemory(objWMIds[i], obj);
+  }
+  else
+  {
+    overwriteWorkingMemory(objWMIds[i], obj);
+  }
+}
+
 }
 
