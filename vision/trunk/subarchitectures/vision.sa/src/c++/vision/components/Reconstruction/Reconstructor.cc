@@ -113,7 +113,7 @@ void Reconstructor::runComponent()
 			
 			}
 		}
-		cout<<"number of SOIs = "<<PreviousObjList.size()<<endl;
+		//cout<<"number of SOIs = "<<PreviousObjList.size()<<endl;
 		cvReleaseImage(&iplImage);
 		//////////////////////////////////////////////////////////////////////////
 		// wait a bit so we don't hog the CPU
