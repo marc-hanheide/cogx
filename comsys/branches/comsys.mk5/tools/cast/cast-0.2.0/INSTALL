@@ -1,0 +1,137 @@
+Installation
+--------------
+
+CAST requires:
+
+* g++ (part of GCC, tested with v 4.3.2). On Ubuntu install package g++.
+
+* Sun's Java JDK, preferably version 6. On Ubuntu install package sun-java6-jdk
+
+* Cmake version 2.6 or above. On Ubuntu install package cmake.
+
+* Apache Ant. On Ubuntu install package ant.
+
+* Ice version 3.3 or above for C++ and Java. On Ubuntu you can install the packages libzeroc-ice33-dev and libzeroc-ice-java.
+
+* Boost version 1.35 or above. On Ubuntu you can install the package libboost1.35-dev.
+
+* Subversion (as all our code is stored in svn repositories). On Ubuntu install package subversion.
+
+On Ubuntu, you can just try something like:
+
+sudo apt-get install g++ sun-java6-jdk cmake ant libzeroc-ice33-dev libzeroc-ice-java libboost1.35-dev subversion
+
+It is important that the the Ice.jar and ant-ice.jar files installed
+by the Ice java package are included in your classpath. You can add...
+
+export CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:$CLASSPATH
+
+... to your .bashrc file, or similar. If you have multiple versions of
+Java installed on Ubuntu you can use
+
+sudo update-alternatives --config java
+
+... to select the correct installation.
+
+1. Untar the cast-*.tar.gz file. We'll call the resulting directory
+$CAST_ROOT. Change into that directory:
+
+2. Edit $CAST_ROOT/build.xml so that the "install.prefix" property is
+where you'd like to install CAST on your system.
+
+3. Compile the Java elements of CAST using ant:
+
+ant build
+
+This should produce a directory output/classes under $CAST_ROOT which
+contains all the Java parts of CAST.
+
+4. Install the jar file:
+
+sudo ant install
+
+This will copy the file cast.jar to <install.prefix>/share/java for
+later use.
+
+3. Configure the C++ parts of CAST using cmake. Do this creating the
+$CAST_ROOT/BUILD directory, changing into it, then running ccmake on
+the directory above:
+
+mkdir $CAST_ROOT/BUILD
+cd $CAST_ROOT/BUILD
+ccmake ..
+
+ccmake is a cross-platform tool which produces makefiles which we will
+later use to build CAST. The command will produce a GUI window with a
+number of options. The default values should be fine, unless you wish
+to change CMAKE_INSTALL_PREFIX to be a different install prefix. This should be the
+same as you've used in build.xml. To create the build files press 'c'
+(to configure the build files) until you are able to press 'g' (to
+generate the build files). If you encounter errors, follow the
+instructions in the error messages to fix them.
+
+4. Once you have configured the build with cmake you can build and
+install CAST. Do this by changing to $CAST_ROOT and running make
+install within the build directory:
+
+cd $CAST_ROOT
+make -C BUILD 
+sudo make -C BUILD install
+
+If this completes successfully, the file <install
+preix>/bin/cast-server-c++ should exist. If this does exist, then CAST
+is installed!
+
+
+5. Configure your system environment to find CAST. This means
+including <install prefix>/bin in your PATH, and
+<install.prefix>/share/java/cast.jar in your CLASSPATH.
+
+
+
+
+Running
+-------
+
+To run CAST, run 
+
+cast-server
+
+on all the machines you wish to run components. Then run
+
+cast-client <cast file>
+
+on one of these machines.
+
+Note that these commands have changed from the previous names.
+
+
+
+Common Installation Errors 
+----------------------------
+
+If ant exits with an error like:
+
+BUILD FAILED
+/tmp/cogx-code/build.xml:53: The following error occurred while executing this line:
+/tmp/cogx-code/build.xml:24: The following error occurred while executing this line:
+/tmp/cogx-code/tools/cast/build.xml:12: taskdef class Slice2JavaTask cannot be found
+
+you most likely forgot to set the CLASSPATH so that it include the location of ant-ice.jar (please see top of page)
+
+
+
+If you get compilation errors like:
+
+compile:
+    [javac] Compiling 280 source files to /tmp/cogx-code/output/classes
+    [javac] /tmp/cogx-code/tools/cast/src/java/cast/CASTException.java:14: package Ice does not exist
+    [javac] public class CASTException extends Ice.UserException
+    [javac]                                       ^
+    [javac] /tmp/cogx-code/tools/cast/src/java/cast/AlreadyExistsOnWMException.java:33: package IceInternal does not exist
+    [javac]     __write(IceInternal.BasicStream __os)
+    [javac]   
+    ...
+
+you forgot to add the path to Ice.jar to your CLASSPATH (please see
+install step 5.)
