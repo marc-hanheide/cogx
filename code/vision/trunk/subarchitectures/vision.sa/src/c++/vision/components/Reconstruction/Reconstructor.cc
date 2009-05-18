@@ -49,22 +49,79 @@ void Reconstructor::start()
 void Reconstructor::runComponent()
 {
 	System s;
-  while(isRunning())
-  {
-//////////////////////////////////////////////////////////////////////////
-    Video::Image image;
-    getImage(camId, image);
-    IplImage *iplImage = convertImageToIpl(image);
-    s.Run(iplImage);
+	while(isRunning())
+	{
+	//////////////////////////////////////////////////////////////////////////
+		Video::Image image;
+		getImage(camId, image);
+		IplImage *iplImage = convertImageToIpl(image);
+		s.Run(iplImage);
 
-    cvReleaseImage(&iplImage);
-//////////////////////////////////////////////////////////////////////////
-    // wait a bit so we don't hog the CPU
-    sleepComponent(100);
-  }
+		if (s.para_A!=0.0 || s.para_B!=0.0 || s.para_C!=0.0 || s.para_D!=0.0)
+		{
+			CurrentObjList.clear();
+
+			for(unsigned int i=0; i<s.WMcenter.size(); i++)
+			{
+				ObjPara OP;
+				OP.c = s.WMcenter.at(i);
+				OP.s = s.WMsize.at(i);
+				OP.r = s.WMradius.at(i);
+				OP.id = "";
+				CurrentObjList.push_back(OP);
+			}
+
+			if (PreviousObjList.empty())
+			{
+				for(unsigned int i=0; i<CurrentObjList.size(); i++)
+				{
+					CurrentObjList.at(i).id = newDataID();
+					SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r);
+					addToWorkingMemory(CurrentObjList.at(i).id, obj);
+				}
+				PreviousObjList = CurrentObjList;
+			}
+			else
+			{
+				std::vector <int> newObjList; //store the serial number of new objects in CurrentObjList
+				for(unsigned int i=0; i<CurrentObjList.size(); i++)
+				{
+					bool flag = false;
+					for(unsigned int j=0; j<PreviousObjList.size(); j++)
+					{
+						if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
+						{
+							flag = true;
+							SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r);
+							overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
+							break;
+						}
+					}
+					if (!flag) //there might be some new objects
+						newObjList.push_back(i);
+				}
+				if(!newObjList.empty())
+				{
+					for(unsigned int i=0; i<newObjList.size(); i++)// add all new objects
+					{
+						CurrentObjList.at(newObjList.at(i)).id = newDataID();
+						SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r);
+						addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
+						PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
+					}
+				}
+			
+			}
+		}
+		cout<<"number of SOIs = "<<PreviousObjList.size()<<endl;
+		cvReleaseImage(&iplImage);
+		//////////////////////////////////////////////////////////////////////////
+		// wait a bit so we don't hog the CPU
+		sleepComponent(100);
+	}
 }
 
-SOIPtr Reconstructor::createObj(unsigned int i, const Video::Image &image, Vector<3> center, Vector<3> size, double radius)
+SOIPtr Reconstructor::createObj(Vector<3> center, Vector<3> size, double radius)
 {
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center[0];
@@ -74,32 +131,16 @@ SOIPtr Reconstructor::createObj(unsigned int i, const Video::Image &image, Vecto
 	obs->boundingBox.size.y = size[1];
 	obs->boundingBox.size.z = size[2];
 	obs->boundingSphere.rad = radius;
-
 	
 	return obs;
 }
 
-void Reconstructor::postObjectToWM(const vector<string> & labels, const Video::Image &image, Vector<3> center, Vector<3> size, double radius)
+bool Reconstructor::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
-  for(unsigned int i = 0; i < model_labels.size(); i++)
-    if(find(labels.begin(), labels.end(), model_labels[i]) != labels.end())
-      postObjectToWM_Internal(i, image, center,size,radius);
-}
-
-void Reconstructor::postObjectToWM_Internal(unsigned int i, const Video::Image &image, Vector<3> center, Vector<3> size, double radius)
-{
-  SOIPtr obj = createObj(i, image, center, size, radius);
-
-  // if no WM ID yet for that object
-  if(objWMIds[i] == "")
-  {
-    objWMIds[i] = newDataID();
-    addToWorkingMemory(objWMIds[i], obj);
-  }
-  else
-  {
-    overwriteWorkingMemory(objWMIds[i], obj);
-  }
+	if (sqrt((obj1.c[0]-obj2.c[0])*(obj1.c[0]-obj2.c[0])+(obj1.c[1]-obj2.c[1])*(obj1.c[1]-obj2.c[1])+(obj1.c[2]-obj2.c[2])*(obj1.c[2]-obj2.c[2]))<0.25*obj1.r && obj1.r/obj2.r>0.5 && obj1.r/obj2.r<2)
+		return true; //the same object
+	else	
+		return false; //not the same one
 }
 
 }

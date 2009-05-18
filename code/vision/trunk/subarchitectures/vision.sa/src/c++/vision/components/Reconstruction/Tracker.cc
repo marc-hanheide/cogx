@@ -78,7 +78,7 @@ void Tracker::Reset()
 
   vdradius.assign(0,0);
   mbdrawsphere = false;
-  mbdrawboundingbox = false;
+  mbdrawboundingbox = true;
   // Tell the MapMaker to reset itself.. 
   // this may take some time, since the mapmaker thread may have to wait
   // for an abort-check during calculation, so sleep while waiting.
@@ -1307,12 +1307,14 @@ void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_num
 		if (v3Obj[2]>Max.at(label-1)[2]) Max.at(label-1)[2] = v3Obj[2];
 		if (v3Obj[2]<Min.at(label-1)[2]) Min.at(label-1)[2] = v3Obj[2];
 	}
-	v3size.reserve(Min.size());
-	for (unsigned int i=0; i<v3size.size(); i++)
+
+	for (unsigned int i=0; i<objects_number; i++)
 	{
-		v3size.at(i)[0] = (Max.at(i)[0]-Min.at(i)[0])/2;
-		v3size.at(i)[1] = (Max.at(i)[1]-Min.at(i)[1])/2;
-		v3size.at(i)[2] = (Max.at(i)[2]-Min.at(i)[2])/2;
+		Vector<3> s;
+		s[0] = (Max.at(i)[0]-Min.at(i)[0])/2;
+		s[1] = (Max.at(i)[1]-Min.at(i)[1])/2;
+		s[2] = (Max.at(i)[2]-Min.at(i)[2])/2;
+		v3size.push_back(s);
 	}
 	if (mbdrawboundingbox)
 	{
@@ -1365,7 +1367,7 @@ void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, int obje
 		if (dist > radius_on_image.at(label-1))
 			radius_on_image.at(label-1) = dist;
 	}
-	for (unsigned int i=0; i<radius_world.size(); i++)
+	for (unsigned int i=0; i<objects_number; i++)
 	{
 		vdradius.reserve(radius_world.size());
 		vdradius.push_back(radius_world.at(i));
