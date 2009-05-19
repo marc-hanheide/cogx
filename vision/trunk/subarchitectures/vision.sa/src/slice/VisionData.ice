@@ -3,33 +3,8 @@
 
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
-#include <Video.ice>
 
 module VisionData {
-
-  sequence<string> IdSeq;
-
-  // A planar surface patch
-  // An oriented disk of a certain size, which lies in the local x-y plane.
-  class SurfacePatch {
-    // note: the z-axis of the local coordinate system is the outwards pointing
-    // normal vector
-    cogx::Math::Pose3 pose;
-
-    // pose covariance matrix
-    // PoseVar3 var;
-
-    // size (diameter) of patch
-    double size;
-
-    // image patch on the surface (warped onto the surface from one of the
-    // cameras)
-    Video::Image image;
-
-    // all the features we need (SIFT, MSER, ...)
-    //Feature1 feature1;
-    //Feature2 feature2;
-  };
 
   struct VisualObjectView {
     // 2D bounding box in the image
@@ -69,14 +44,7 @@ module VisionData {
     // 3D position and orientation, in the robot ego coordinate system.
     cogx::Math::Pose3 pose;
 
-    // pose covariance matrix
-    // PoseVar3 var;
-
-    // working memory IDs of the surface patches that belong to this object
-    IdSeq patchIds;
-
     // a value between 0 and 1 indicating confidence in the pose
-    // in future: poseConfidence
     double detectionConfidence;
 
     // In case an exact pose can not be established (e.g. because the object
@@ -96,10 +64,6 @@ module VisionData {
 
     // The name with which we refer to the object linguistically
     string label;
-
-    // a value bwtween 0 and 1 indicating confidence in the label (i.e.
-    // typically confidence of the recognition process that produced the label)
-    double labelConfidence;
   };
 
   sequence<string> StringSeq;
@@ -120,20 +84,14 @@ module VisionData {
     TrackingCommandType cmd;
   };
 
-  /**
-   * Space of interest.
-   * Coarsely described by a bounding sphere.
-   * Somewhat finer (at least for some objects) described by a bounding box.
-   * Later on we might even add a bounding convex hull as a yet finer
-   * characterisation.
+  /** 
+   * @brief Object Detector Commands
+   * @author Andreas Richtsfeld
    */
-  class SOI {
-    cogx::Math::Sphere3 boundingSphere;
-    cogx::Math::Box3 boundingBox;
-    // time the SOI was last changed
-    cast::cdl::CASTTime time;
+  enum ObjectDetectionCommandType{ DSTART, DSTOP};
+  class ObjectDetectionCommand {
+    ObjectDetectionCommandType cmd;
   };
-
 };
 
 #endif
