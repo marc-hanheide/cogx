@@ -37,7 +37,8 @@
 #ifndef __PATCHFINDER_H
 #define __PATCHFINDER_H
 
-#include <TooN/numerics.h>
+#include <TooN/TooN.h>
+using namespace TooN;
 #include <TooN/se3.h>
 #include <cvd/image.h>
 #include <cvd/byte.h>
@@ -57,7 +58,7 @@ public:
   // It also calculates which pyramid level we should search in, and this is
   // returned as an int. Negative level returned denotes an inappropriate 
   // transformation.
-  int CalcSearchLevelAndWarpMatrix(MapPoint &p, SE3 se3CFromW, Matrix<2> &m2CamDerivs);
+  int CalcSearchLevelAndWarpMatrix(MapPoint &p, SE3<> se3CFromW, Matrix<2> &m2CamDerivs);
   inline int GetLevel() { return mnSearchLevel; }
   inline int GetLevelScale() { return LevelScale(mnSearchLevel); }
   
@@ -65,7 +66,7 @@ public:
   // Generates the NxN search template either from the pre-calculated warping matrix,
   // or an identity transformation.
   void MakeTemplateCoarseCont(MapPoint &p); // If the warping matrix has already been pre-calced, use this.
-  void MakeTemplateCoarse(MapPoint &p, SE3 se3CFromW, Matrix<2> &m2CamDerivs); // This also calculates the warp.
+  void MakeTemplateCoarse(MapPoint &p, SE3<> se3CFromW, Matrix<2> &m2CamDerivs); // This also calculates the warp.
   void MakeTemplateCoarseNoWarp(MapPoint &p);  // Identity warp: just copies pixels from the source KF.
   void MakeTemplateCoarseNoWarp(KeyFrame &k, int nLevel, CVD::ImageRef irLevelPos); // Identity warp if no MapPoint struct exists yet.
 
@@ -97,9 +98,7 @@ public:
   // This for just returns an appropriately-scaled identity!
   inline Matrix<2> GetCov()
   {
-    Matrix<2> m2;
-    Identity(m2, LevelScale(mnSearchLevel));
-    return m2;
+    return LevelScale(mnSearchLevel) * Identity;
   };
   
   int mnMaxSSD; // This is the max ZMSSD for a valid match. It's set in the constructor.

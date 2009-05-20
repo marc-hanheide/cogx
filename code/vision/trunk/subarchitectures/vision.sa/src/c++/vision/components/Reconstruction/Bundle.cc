@@ -1,10 +1,10 @@
 // Copyright 2008 Isis Innovation Limited
 #include "Bundle.h"
-#include "LapackCholesky.h"
 #include "MEstimator.h"
 #include <TooN/helpers.h>
 #include <TooN/Cholesky.h>
 #include <fstream>
+#include <iomanip>
 #include <gvars3/instances.h>
 
 using namespace GVars3;
@@ -43,14 +43,12 @@ Bundle::Bundle(const ATANCamera &TCam)
 };
 
 // Add a camera to the system, return value is the bundle adjuster's ID for the camera
-int Bundle::AddCamera(SE3 se3CamFromWorld, bool bFixed)
+int Bundle::AddCamera(SE3<> se3CamFromWorld, bool bFixed)
 {
   int n = mvCameras.size();
   Camera c;
   c.bFixed = bFixed;
   c.se3CfW = se3CamFromWorld;
-  Zero(c.m6U);
-  Zero(c.v6EpsilonA);
   if(!bFixed)
     {
       c.nStartRow = mnStartRow;
@@ -72,11 +70,9 @@ int Bundle::AddPoint(Vector<3> v3Pos)
   if(isnan(v3Pos * v3Pos))
     {
       cerr << " You sucker, tried to give me a nan " << v3Pos << endl;
-      Zero(v3Pos);
+      v3Pos = Zeros;
     }
   p.v3Pos = v3Pos;
-  Zero(p.m3V);
-  Zero(p.v3EpsilonB);
   mvPoints.push_back(p);
   return n;
 }
@@ -94,6 +90,21 @@ void Bundle::AddMeas(int nCam, int nPoint, Vector<2> v2Pos, double dSigmaSquared
   m.v2Found = v2Pos;
   m.dSqrtInvNoise = sqrt(1.0 / dSigmaSquared);
   mMeasList.push_back(m);
+}
+
+// Zero temporary quantities stored in cameras and points
+void Bundle::ClearAccumulators()
+{
+  for(size_t i=0; i<mvPoints.size(); ++i)
+    {
+      mvPoints[i].m3V = Zeros;
+      mvPoints[i].v3EpsilonB = Zeros;
+    }
+  for(size_t i=0; i<mvCameras.size(); ++i)
+    {
+      mvCameras[i].m6U = Zeros;
+      mvCameras[i].v6EpsilonA = Zeros;
+    }
 }
 
 // Perform bundle adjustment. The parameter points to a signal bool 
@@ -171,6 +182,9 @@ inline void Bundle::ProjectAndFindSquaredError(Meas &meas)
 template<class MEstimator>
 bool Bundle::Do_LM_Step(bool *pbAbortSignal)
 {
+  // Reset all accumulators to zero
+  ClearAccumulators();
+
   //  Do a LM step according to Hartley and Zisserman Algo A6.4 in MVG 2nd Edition
   //  Actual work starts a bit further down - first we have to work out the 
   //  projections and errors for each point, so we can do tukey reweighting
@@ -240,12 +254,12 @@ bool Bundle::Do_LM_Step(bool *pbAbortSignal)
       
       // Calculate A: (the proj derivs WRT the camera)
       if(cam.bFixed)
-	Zero(meas.m26A);
+	meas.m26A = Zeros;
       else 
 	{
 	  for(int m=0;m<6;m++)
 	    {
-	      const Vector<4> v4Motion = SE3::generator_field(m, v4Cam);
+	      const Vector<4> v4Motion = SE3<>::generator_field(m, v4Cam);
  	      Vector<2> v2CamFrameMotion;
  	      v2CamFrameMotion[0] = (v4Motion[0] - v4Cam[0] * v4Motion[2] * dOneOverCameraZ) * dOneOverCameraZ;
  	      v2CamFrameMotion[1] = (v4Motion[1] - v4Cam[1] * v4Motion[2] * dOneOverCameraZ) * dOneOverCameraZ;
@@ -277,7 +291,7 @@ bool Bundle::Do_LM_Step(bool *pbAbortSignal)
       point.v3EpsilonB += meas.m23B.T() * meas.v2Epsilon;
       
       if(cam.bFixed)
-	Zero(meas.m63W);
+	meas.m63W = Zeros;
       else
 	meas.m63W = meas.m26A.T() * meas.m23B;
     }
@@ -294,7 +308,7 @@ bool Bundle::Do_LM_Step(bool *pbAbortSignal)
 	  Point &point = *itr;
 	  Matrix<3> m3VStar = point.m3V;
 	  if(m3VStar[0][0] * m3VStar[1][1] * m3VStar[2][2] == 0)
-	    Zero(point.m3VStarInv);
+	    point.m3VStarInv = Zeros;
 	  else
 	    {
 	      // Fill in the upper-r triangle from the LL;
@@ -314,9 +328,9 @@ bool Bundle::Do_LM_Step(bool *pbAbortSignal)
       
       // Part (iii): Construct the the big block-matrix S which will be inverted.
       Matrix<> mS(mnCamsToUpdate * 6, mnCamsToUpdate * 6);
-      Zero(mS);
+      mS = Zeros;
       Vector<> vE(mnCamsToUpdate * 6);
-      Zero(vE);
+      vE = Zeros;
 
       Matrix<6> m6; // Temp working space
       Vector<6> v6; // Temp working space
@@ -404,22 +418,16 @@ bool Bundle::Do_LM_Step(bool *pbAbortSignal)
 	  mS[j][i] = mS[i][j];
       
       // Got fat matrix S and vector E from part(iii). Now Cholesky-decompose
-      // the sucker, and find the camera update vector.
+      // the matrix, and find the camera update vector.
       Vector<> vCamerasUpdate(mS.num_rows());
-      // This used to read as follows when I was using TooN's Cholesky:
-      //        Cholesky<> S_chol(mS);
-      //        vCamerasUpdate = S_chol.backsub(vE);
-      vCamerasUpdate = vE;
-      bool bSuccess  = LapackCholeskySolve_ReplaceArgs(mS, vCamerasUpdate);
-      if(!bSuccess)
-	return false;
+      vCamerasUpdate = Cholesky<>(mS).backsub(vE);
       
       // Part (iv): Compute the map updates
       Vector<> vMapUpdates(mvPoints.size() * 3);
       for(unsigned int i=0; i<mvPoints.size(); i++)
 	{
 	  Vector<3> v3Sum;
-	  Zero(v3Sum);
+	  v3Sum = Zeros;
 	  for(unsigned int j=0; j<mvCameras.size(); j++)
 	    {
 	      Camera &cam = mvCameras[j];
@@ -455,7 +463,7 @@ bool Bundle::Do_LM_Step(bool *pbAbortSignal)
 	  if(mvCameras[j].bFixed)
 	    mvCameras[j].se3CfWNew = mvCameras[j].se3CfW;
 	  else
-	    mvCameras[j].se3CfWNew = SE3::exp(vCamerasUpdate.slice(mvCameras[j].nStartRow, 6)) * mvCameras[j].se3CfW;
+	    mvCameras[j].se3CfWNew = SE3<>::exp(vCamerasUpdate.slice(mvCameras[j].nStartRow, 6)) * mvCameras[j].se3CfW;
 	}
       for(unsigned int i=0; i<mvPoints.size(); i++)
 	mvPoints[i].v3PosNew = mvPoints[i].v3Pos + vMapUpdates.slice(i*3, 3);
@@ -603,7 +611,7 @@ Vector<3> Bundle::GetPoint(int n)
   return mvPoints.at(n).v3Pos;
 }
 
-SE3 Bundle::GetCamera(int n)
+SE3<> Bundle::GetCamera(int n)
 {
   return mvCameras.at(n).se3CfW;
 }

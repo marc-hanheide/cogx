@@ -47,7 +47,7 @@ public:
   // TrackFrame is the main working part of the tracker: call this every frame.
   void TrackFrame(CVD::Image<CVD::byte> &imFrame, bool bDraw); 
 
-  inline SE3 GetCurrentPose() { return mse3CamFromWorld;}
+  inline SE3<> GetCurrentPose() { return mse3CamFromWorld;}
   
   // Gets messages to be printed on-screen for the user.
   std::string GetMessageForUser();
@@ -81,7 +81,7 @@ protected:
   // The following members are used for initial map tracking (to get the first stereo pair and correspondences):
   void TrackForInitialMap();      // This is called by TrackFrame if there is not a map yet.
   enum {TRAIL_TRACKING_NOT_STARTED, 
-	TRAIL_TRACKING_STARTED,   
+	TRAIL_TRACKING_STARTED, 
 	TRAIL_TRACKING_COMPLETE} mnInitialStage;  // How far are we towards making the initial map?
   void TrailTracking_Start();     // First frame of initial trail tracking. Called by TrackForInitialMap.
   int  TrailTracking_Advance();   // Steady-state of initial trail tracking. Called by TrackForInitialMap.
@@ -100,8 +100,8 @@ protected:
   Vector<6> CalcPoseUpdate(std::vector<TrackerData*> vTD, 
 			   double dOverrideSigma = 0.0, 
 			   bool bMarkOutliers = false); // Updates pose from found points.
-  SE3 mse3CamFromWorld;           // Camera pose: this is what the tracker updates every frame.
-  SE3 mse3StartPos;               // What the camera pose was at the start of the frame.
+  SE3<> mse3CamFromWorld;           // Camera pose: this is what the tracker updates every frame.
+  SE3<> mse3StartPos;               // What the camera pose was at the start of the frame.
   Vector<6> mv6CameraVelocity;    // Motion model
   double mdVelocityMagnitude;     // Used to decide on coarse tracking 
   double mdMSDScaledVelocityMagnitude; // Velocity magnitude scaled by relative scene depth.
@@ -109,7 +109,7 @@ protected:
   
   bool mbDraw;                    // Should the tracker draw anything to OpenGL?
   
-  // Interface with map maker:1
+  // Interface with map maker:
   int mnFrame;                    // Frames processed since last reset
   int mnLastKeyFrameDropped;      // Counter of last keyframe inserted.
   void AddNewKeyFrame();          // Gives the current frame to the mapmaker to use as a keyframe
