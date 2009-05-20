@@ -1,5 +1,5 @@
 <!-- Top level make file for CAST-based system -->
-<project name="cast-instantiation" default="all" basedir=".">
+<project name="cast-instantiation comsys.mk5 development branch" default="all" basedir=".">
 
   <!-- =================================================================== -->
   <!-- Init build system                                                   -->
@@ -24,7 +24,9 @@
        children modules. Need to automate later?
        ========================================= -->
   <target name="template">
-    <echo>Executing &quot;${target}&quot; target for comsys module (comsys.mk5)</echo>
+    <echo>Executing &quot;${target}&quot; target for interconnectivity module (tools/interconnectivity)</echo>
+    <ant target="${target}" dir="tools/interconnectivity" />
+    <echo>Executing &quot;${target}&quot; target for comsys module (comsys.mk5; subarchitectures/comsys)</echo>
     <ant target="${target}" dir="subarchitectures/comsys" />
   </target>
 
