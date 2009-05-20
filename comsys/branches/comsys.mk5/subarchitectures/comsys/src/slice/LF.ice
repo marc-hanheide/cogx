@@ -121,8 +121,151 @@ sequence<LFComponent> LFComponents;
 sequence<LFComponent> LFComponentsVector;
 sequence<LogicalForm> LogicalFormsVector;
 
+// -------------------------------------------------------------------
+// A packed logical form (PackedLogicalForm) is composed of:
+// - an identifier ;
+// - a collection of packing nodes ;
+// - a reference to the root packing node.
+//
+// A packing node (PackingNode) is composed of:
+// - an unique identifier ;
+// - a collection of packed nominals ;
+// - a reference (identifier) to the root packed nominal ;
+// - a set of LF identifiers specifying the logical forms in which the
+//   nominals in the packing node occur ;
+// - a set of packing edges connected to one nominal of the packing node;
+// - a preference score, ie. a number n, with 0 <= n <= 1.
+//  
+// A packing edge (PackingEdge) is composed of:
+// - an unique identifier ;
+// - an edge label ;
+// - a reference to the nominal from which the edge originates ;
+// - a collection of pairs <packing node, LF identifiers> describing the set of
+//   possible packing nodes as target for the edge, together with the LF identifiers
+//   in which this connection occur;
+// - a boolean flag indicating whether the edge if coindexed.
+// - a preference score,  ie. a number n, with 0 <= n <= 1.
+//   
+// A packed nominal (PackedNominal) is composed of:
+//  - an unique identifier ;
+//  - a packed ontological sort ;
+//  - a proposition ;
+//  - a set of packed features ;
+//  - a set of relations internal to the packing node.
+//  
+// A packed feature (PackedFeature) is composed of:
+// - a feature name ;
+// - a feature value ;
+// - a set of logical form identifiers in which the feature value occurs.
+// 
+// A packed ontotological sort (PackedOntologicalSort) is composed of:
+// - an ontological sort ;
+// - the set of identifiers in which this sort occur.
+// -------------------------------------------------------------------
+
+// sequence type declaration
+
+sequence <string> LogicalFormIds; 
+
+	// -----------------------
+	// PACKING EDGES
+	// -----------------------
+
+	// packing node targets 
+	class PackingNodeTarget {
+		string pnId ;
+		LogicalFormIds lfIds ;
+	} ;
+
+	// collection of packing node targets for a given packing edge
+	sequence <PackingNodeTarget> PackingNodeTargets ; 
+
+	// packing edge
+	class PackingEdge {
+		string peId ;
+		string mode ;
+		string head ;
+		PackingNodeTargets targets ;
+		bool coIndexedDep ;  
+		float preferenceScore ;
+	} ;
+	
+	// collection of packing edges 
+	sequence <PackingEdge> PackingEdges ;
+
+	// -----------------------
+	//	PACKED FEATURES, SORTS AND NOMINALS	
+	// -----------------------
+	
+	// packed feature 
+	class PackedFeature {
+		string feat ;
+		string value ;
+		LogicalFormIds lfIds ;
+	};
+
+	// packed ontological sort
+	class PackedOntologicalSort {
+    		string sort ;
+    		LogicalFormIds lfIds ;
+	};
+
+ 	sequence <PackedOntologicalSort> PackedOntologicalSorts;
+
+	// collection of packed featurs
+	sequence <PackedFeature> PackedFeatures ;
+	
+	// packed nominal
+	class PackedNominal {
+		string nomVar ;
+	 	PackedOntologicalSorts packedSorts ;
+		Proposition prop ;
+		Relations rels ;
+		PackedFeatures feats ;
+		PackingEdges pEdges;		
+	 } ;
+	 
+	// collection of packed nominals ;
+	sequence <PackedNominal> PackedNominals ;
+
+	// -----------------------
+	// PACKING NODES
+	// -----------------------
+
+	// <nominalVariable, PackingEdge> pair, indicating a packing
+	// edge originating at the given nominal
+	class NominalPackingEdgePair {
+		string head ;
+		PackingEdge pe ;
+	} ;
+
+	// 	collection of <nominalVariable, PackingEdge> pairs ;
+	sequence <NominalPackingEdgePair> NominalPackingEdgePairs ;
+
+ 	// packing node
+ 	class PackingNode {
+		string pnId ; 
+ 		LogicalFormIds lfIds ;
+ 		PackedNominals packedNoms ;
+		string root ;
+		NominalPackingEdgePairs nomsPePairs ;
+		float preferenceScore ;
+	};
+	
+	// collection of packing nodes
+	sequence <PackingNode> PackingNodes ;
 
 
+	// -----------------------
+	// PACKED LOGICAL FORM
+	// -----------------------
+	
+ 	// packed logical form
+	class PackedLogicalForm {
+		string packedLFId ;
+		PackingNodes pNodes ;
+		string root ;
+	};
 
 
 }; // end module
@@ -132,3 +275,7 @@ sequence<LogicalForm> LogicalFormsVector;
 
 
 //EDIT LOG
+// 090520	GJ	Added logical forms, packed logical forms
+
+
+
