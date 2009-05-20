@@ -13,7 +13,8 @@
 
 #ifndef __MAP_POINT_H
 #define __MAP_POINT_H
-#include <TooN/numerics.h>
+#include <TooN/TooN.h>
+using namespace TooN;
 #include <cvd/image_ref.h>
 #include <cvd/timer.h>
 #include <set>

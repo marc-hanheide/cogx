@@ -23,7 +23,8 @@
 // then reads results back to update the map.
 
 #include "ATANCamera.h"
-#include <TooN/numerics.h>
+#include <TooN/TooN.h>
+using namespace TooN;
 #include <TooN/se3.h>
 #include <vector>
 #include <map>
@@ -37,8 +38,8 @@
 struct Camera
 {
   bool bFixed;
-  SE3 se3CfW;
-  SE3 se3CfWNew;
+  SE3<> se3CfW;
+  SE3<> se3CfWNew;
   Matrix<6> m6U;          // Accumulator
   Vector<6> v6EpsilonA;   // Accumulator
   int nStartRow;
@@ -104,13 +105,13 @@ class Bundle
 public:
 
   Bundle(const ATANCamera &TCam);   // We need the camera model because we do full distorting projection in the bundle adjuster. Could probably get away with a linear approximation.
-  int AddCamera(SE3 se3CamFromWorld, bool bFixed); // Add a viewpoint. bFixed signifies that this one is not to be adjusted.
+  int AddCamera(SE3<> se3CamFromWorld, bool bFixed); // Add a viewpoint. bFixed signifies that this one is not to be adjusted.
   int AddPoint(Vector<3> v3Pos);       // Add a map point.
   void AddMeas(int nCam, int nPoint, Vector<2> v2Pos, double dSigmaSquared); // Add a measurement
   int Compute(bool *pbAbortSignal);    // Perform bundle adjustment. Aborts if *pbAbortSignal gets set to true. Returns number of accepted update iterations, or negative on error.
   inline bool Converged() { return mbConverged;}  // Has bundle adjustment converged?
   Vector<3> GetPoint(int n);       // Point coords after adjustment
-  SE3 GetCamera(int n);            // Camera pose after adjustment
+  SE3<> GetCamera(int n);            // Camera pose after adjustment
   std::vector<std::pair<int,int> > GetOutlierMeasurements();  // Measurements flagged as outliers
   std::set<int> GetOutliers();                                // Points flagged as outliers
   
@@ -121,6 +122,7 @@ protected:
   template<class MEstimator> double FindNewError();
   void GenerateMeasLUTs();
   void GenerateOffDiagScripts();
+  void ClearAccumulators(); // Zero temporary quantities stored in cameras and points
   void ModifyLambda_GoodStep();
   void ModifyLambda_BadStep();
   

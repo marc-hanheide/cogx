@@ -22,7 +22,7 @@ class Relocaliser
 public:
   Relocaliser(Map &map, ATANCamera &camera);
   bool AttemptRecovery(KeyFrame &k);
-  SE3 BestPose();
+  SE3<> BestPose();
   
 protected:
   void ScoreKFs(KeyFrame &kCurrentF);
@@ -30,8 +30,8 @@ protected:
   ATANCamera mCamera;
   int mnBest;
   double mdBestScore;
-  SE2 mse2;
-  SE3 mse3Best;
+  SE2<> mse2;
+  SE3<> mse3Best;
 
 };
 #endif

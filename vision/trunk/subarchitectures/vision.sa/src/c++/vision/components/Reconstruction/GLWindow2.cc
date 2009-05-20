@@ -10,6 +10,7 @@ using namespace CVD;
 using namespace std;
 using namespace GVars3;
 
+using namespace TooN;
 
 GLWindow2::GLWindow2(ImageRef irSize, string sTitle)
   : GLWindow(irSize, sTitle)
@@ -34,8 +35,8 @@ GLWindow2::GLWindow2(ImageRef irSize, string sTitle)
   mirVideoSize = irSize;
   GUI.RegisterCommand("GLWindow.AddMenu", GUICommandCallBack, this);
   glSetFont("sans");
-  Zero(mvMCPoseUpdate);
-  Zero(mvLeftPoseUpdate);
+  mvMCPoseUpdate=Zeros;
+  mvLeftPoseUpdate=Zeros;
 };
 
 
@@ -236,8 +237,8 @@ void GLWindow2::on_event(GLWindow& win, int event)
 pair<Vector<6>, Vector<6> > GLWindow2::GetMousePoseUpdate()
 {
   pair<Vector<6>, Vector<6> > result = make_pair(mvLeftPoseUpdate, mvMCPoseUpdate);
-  Zero(mvLeftPoseUpdate);
-  Zero(mvMCPoseUpdate);
+  mvLeftPoseUpdate = Zeros;
+  mvMCPoseUpdate = Zeros;
   return result;
 }
 

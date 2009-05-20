@@ -11,7 +11,7 @@
 #include <cvd/gl_helpers.h>
 #include <cvd/fast_corner.h>
 #include <cvd/vision.h>
-#include <TooN/wls_cholesky.h>
+#include <TooN/wls.h>
 #include <TooN/SymEigen.h>
 #include <gvars3/instances.h>
 #include <gvars3/GStringUtil.h>
@@ -68,7 +68,7 @@ void Tracker::Reset()
   mCurrentKF.mMeasurements.clear();
   mnLastKeyFrameDropped = -20;
   mnFrame=0;
-  Zero(mv6CameraVelocity);
+  mv6CameraVelocity = Zeros;
   mbJustRecoveredSoUseCoarse = false;
 
   para_a = 0.0;
@@ -207,9 +207,9 @@ bool Tracker::AttemptRecovery()
   if(!bRelocGood)
     return false;
   
-  SE3 se3Best = mRelocaliser.BestPose();
+  SE3<> se3Best = mRelocaliser.BestPose();
   mse3CamFromWorld = mse3StartPos = se3Best;
-  Zero(mv6CameraVelocity);
+  mv6CameraVelocity = Zeros;
   mbJustRecoveredSoUseCoarse = true;
   return true;
 }
@@ -598,7 +598,7 @@ void Tracker::TrackMap()
 	      // Calculate and apply the pose update...
 	      Vector<6> v6Update = 
 		CalcPoseUpdate(vIterationSet, dOverrideSigma);
-	      mse3CamFromWorld = SE3::exp(v6Update) * mse3CamFromWorld;
+	      mse3CamFromWorld = SE3<>::exp(v6Update) * mse3CamFromWorld;
 	    };
 	}
     };
@@ -650,7 +650,7 @@ void Tracker::TrackMap()
   
   // Again, ten gauss-newton pose update iterations.
   Vector<6> v6LastUpdate;
-  Zero(v6LastUpdate);
+  v6LastUpdate = Zeros;
   for(int iter = 0; iter<10; iter++)
     {
       bool bNonLinearIteration; // For a bit of time-saving: don't do full nonlinear
@@ -689,7 +689,7 @@ void Tracker::TrackMap()
       // Calculate and update pose; also store update vector for linear iteration updates.
       Vector<6> v6Update = 
 	CalcPoseUpdate(vIterationSet, dOverrideSigma, iter==9);
-      mse3CamFromWorld = SE3::exp(v6Update) * mse3CamFromWorld;
+      mse3CamFromWorld = SE3<>::exp(v6Update) * mse3CamFromWorld;
       v6LastUpdate = v6Update;
     };
   /*
@@ -853,7 +853,7 @@ Vector<6> Tracker::CalcPoseUpdate(vector<TrackerData*> vTD, double dOverrideSigm
   
   // No valid measurements? Return null update.
   if(vdErrorSquared.size() == 0)
-    return (make_Vector, 0,0,0,0,0,0);
+    return makeVector( 0,0,0,0,0,0);
   
   // What is the distribution of errors?
   double dSigmaSquared;
@@ -871,7 +871,7 @@ Vector<6> Tracker::CalcPoseUpdate(vector<TrackerData*> vTD, double dOverrideSigm
   
   // The TooN WLSCholesky class handles reweighted least squares.
   // It just needs errors and jacobians.
-  WLSCholesky<6> wls;
+  WLS<6> wls;
   wls.add_prior(100.0); // Stabilising prior
   for(unsigned int f=0; f<vTD.size(); f++)
     {
@@ -901,8 +901,8 @@ Vector<6> Tracker::CalcPoseUpdate(vector<TrackerData*> vTD, double dOverrideSigm
 	  TD.Point.nMEstimatorInlierCount++;
       
       Matrix<2,6> &m26Jac = TD.m26Jacobian;
-      wls.add_df(v2[0], TD.dSqrtInvNoise * m26Jac[0], dWeight); // These two lines are currently
-      wls.add_df(v2[1], TD.dSqrtInvNoise * m26Jac[1], dWeight); // the slowest bit of poseits
+      wls.add_mJ(v2[0], TD.dSqrtInvNoise * m26Jac[0], dWeight); // These two lines are currently
+      wls.add_mJ(v2[1], TD.dSqrtInvNoise * m26Jac[1], dWeight); // the slowest bit of poseits
     }
   
   wls.compute();
@@ -924,7 +924,7 @@ void Tracker::ApplyMotionModel()
       v6Velocity[0] = 0.0;
       v6Velocity[1] = 0.0;
     }
-  mse3CamFromWorld = SE3::exp(v6Velocity) * mse3StartPos;
+  mse3CamFromWorld = SE3<>::exp(v6Velocity) * mse3StartPos;
 };
 
 
@@ -932,8 +932,8 @@ void Tracker::ApplyMotionModel()
 // constant velocity model.
 void Tracker::UpdateMotionModel()
 {
-  SE3 se3NewFromOld = mse3CamFromWorld * mse3StartPos.inverse();
-  Vector<6> v6Motion = SE3::ln(se3NewFromOld);
+  SE3<> se3NewFromOld = mse3CamFromWorld * mse3StartPos.inverse();
+  Vector<6> v6Motion = SE3<>::ln(se3NewFromOld);
   Vector<6> v6OldVel = mv6CameraVelocity;
   
   mv6CameraVelocity = 0.9 * (0.5 * v6Motion + 0.5 * v6OldVel);
@@ -1017,9 +1017,9 @@ string Tracker::GetMessageForUser()
 void Tracker::CalcSBIRotation()
 {
   mpSBILastFrame->MakeJacs();
-  pair<SE2, double> result_pair;
+  pair<SE2<>, double> result_pair;
   result_pair = mpSBIThisFrame->IteratePosRelToTarget(*mpSBILastFrame, 6);
-  SE3 se3Adjust = SmallBlurryImage::SE3fromSE2(result_pair.first, mCamera);
+  SE3<> se3Adjust = SmallBlurryImage::SE3fromSE2(result_pair.first, mCamera);
   mv6SBIRot = se3Adjust.ln();
 }
 
@@ -1043,8 +1043,8 @@ void Tracker::DrawPointsOnDominantPlane()
 	int point2 = 0;
 	int point3 = 0;
 	
-	Zero(v3BestMean);
-	Zero(v3BestNormal);
+	v3BestMean = Zeros;
+	v3BestNormal = Zeros;
 	double dBestDistSquared = 9999999999999999.9;
 	
 	for(int i=0; i<nRansacs; i++)

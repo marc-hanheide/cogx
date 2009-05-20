@@ -17,7 +17,8 @@
 
 #ifndef __KEYFRAME_H
 #define __KEYFRAME_H
-#include <TooN/numerics.h>
+#include <TooN/TooN.h>
+using namespace TooN;
 #include <TooN/se3.h>
 #include <cvd/image.h>
 #include <cvd/byte.h>
@@ -77,7 +78,7 @@ struct KeyFrame
   {
     pSBI = NULL;
   }
-  SE3 se3CfromW;    // The coordinate frame of this key-frame as a Camera-From-World transformation
+  SE3<> se3CfromW;    // The coordinate frame of this key-frame as a Camera-From-World transformation
   bool bFixed;      // Is the coordinate frame of this keyframe fixed? (only true for first KF!)
   Level aLevels[LEVELS];  // Images, corners, etc lives in this array of pyramid levels
   std::map<MapPoint*, Measurement> mMeasurements;           // All the measurements associated with the keyframe

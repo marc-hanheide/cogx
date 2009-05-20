@@ -33,7 +33,7 @@ void ARDriver::Reset()
   mnCounter = 0;
 }
 
-void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3 se3CfromW)
+void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 {
   if(!mbInitialised)
     {

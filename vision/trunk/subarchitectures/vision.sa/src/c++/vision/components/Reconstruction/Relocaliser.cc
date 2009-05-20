@@ -14,7 +14,7 @@ Relocaliser::Relocaliser(Map &map, ATANCamera &camera)
 {
 };
 
-SE3 Relocaliser::BestPose()
+SE3<> Relocaliser::BestPose()
 {
   return mse3Best;
 }
@@ -31,11 +31,11 @@ bool Relocaliser::AttemptRecovery(KeyFrame &kCurrent)
   ScoreKFs(kCurrent);
 
   // And estimate a camera rotation from a 3DOF image alignment
-  pair<SE2, double> result_pair = kCurrent.pSBI->IteratePosRelToTarget(*mMap.vpKeyFrames[mnBest]->pSBI, 6);
+  pair<SE2<>, double> result_pair = kCurrent.pSBI->IteratePosRelToTarget(*mMap.vpKeyFrames[mnBest]->pSBI, 6);
   mse2 = result_pair.first;
   double dScore =result_pair.second;
   
-  SE3 se3KeyFramePos = mMap.vpKeyFrames[mnBest]->se3CfromW;
+  SE3<> se3KeyFramePos = mMap.vpKeyFrames[mnBest]->se3CfromW;
   mse3Best = SmallBlurryImage::SE3fromSE2(mse2, mCamera) * se3KeyFramePos;
   
   if(dScore < GV2.GetDouble("Reloc2.MaxScore", 9e6, SILENT))

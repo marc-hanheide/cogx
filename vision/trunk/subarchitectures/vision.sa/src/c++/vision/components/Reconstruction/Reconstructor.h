@@ -12,7 +12,9 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
-#include <TooN/numerics.h>
+#include <TooN/TooN.h>
+
+using namespace TooN;
 
 namespace cast
 {
