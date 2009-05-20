@@ -12,6 +12,8 @@
 //
 // ===================================================================
 
+#include <LF.ice>
+
 module comsys {
 
 
@@ -42,6 +44,91 @@ module comsys {
 		long	rank;
     };
 	
+	sequence<PhonString> PhonStrings;
+
+	//---------------------------------------------------------------------------
+	// Utterance processing
+	//---------------------------------------------------------------------------	
+	
+	class NonStandardRule {
+		string rulename;
+		long numberOfApplications;
+	};
+	
+	sequence<NonStandardRule> NonStandardRulesSeq;
+	
+	
+	class NonStandardRulesAppliedForLF {
+		string logicalFormId;
+		NonStandardRulesSeq nonStandardRules;
+	};
+	
+	sequence<NonStandardRulesAppliedForLF> NonStandardRulesAppliedForLFs; 
+	
+	class PhonStringLFPair {
+		string logicalFormId;
+		PhonString phonStr;
+	};
+	
+	sequence<PhonStringLFPair> PhonStringLFPairsSeq;
+		
+	//---------------------------------------------------------------------------	
+	// The struct PackedLFs provides a data structure for information about 
+	//	the logical form(s) that represent interpretations for the (given) 
+	//	PhonString.
+	//
+	//	@param UniqueId	  id					The unique identifier of the object
+	//	@param PhonString phon				The object representing the string (utterance) 
+	//	@param PackedLogicalForm packedLF	The object representing the interpretations
+	//	@param long finalized				Indicator whether the interpretations are finalized (0=unfinished; 1=finished parsing, 2=finished final pruning) 
+	//---------------------------------------------------------------------------	
+
+	
+	class PackedLFs { 
+		string id;
+		PhonStringLFPairsSeq phonStringLFPairs;
+		PhonStrings nonParsablePhonStrings;
+		long stringPos;
+		lf::PackedLogicalForm packedLF;
+		long finalized; 
+		string type;
+		NonStandardRulesAppliedForLFs nonStandardRulesForLF;
+	}; // end PackedLFs
+
+
+
+	// ----------------------------------------------------------------------
+	//	The struct InterpretationSupport provides info about a single relation (in a PLF), and provides
+	//	a list of supported or unsupported interpretations. Support is indicated by a boolean flag: "true" means
+	//	the interpretation is supported, false means it is not. 
+	// ----------------------------------------------------------------------
+
+	sequence<string> stringIds;
+	
+	class InterpretationSupport { 
+		string plfId;
+		string headNomVar;
+		string depNomVar;
+		string mode;
+		bool isSupported;
+		stringIds LFids;		
+	}; 
+
+	sequence<InterpretationSupport> InterpretationSupports;
+
+	// ----------------------------------------------------------------------
+	//	The struct ContextInfo provides info about supported and unsupported interpretations for a given 
+	//	packed logical form (by id). 
+	// ----------------------------------------------------------------------
+	 
+	class ContextInfo { 
+		string plfId; 
+		InterpretationSupports interpretations;
+	}; // end ContextInfo
+
+
+
+	
 	// ----------------------------------------------------------------------
 	//  RecogResult
 	//	The class RecogResult represents the result of a transaction with the Nuance
@@ -64,6 +151,9 @@ module comsys {
 		string ipAddress ;
 	  };	
 
+	
+	
+	
 	
 	
 	//---------------------------------------------------------------------------
