@@ -30,13 +30,13 @@ package opennlp.ccg.parse;
 // -----------------------------------------------------------------
 // CAST IMPORTS
 // -----------------------------------------------------------------
-import cast.core.data.CASTData;
+import cast.core.CASTData;
 
 // -----------------------------------------------------------------
 // COMSYS IMPORTS
 // -----------------------------------------------------------------
-import org.cognitivesystems.comsys.general.ComsysException;
-import org.cognitivesystems.comsys.data.SignHashParseResults;
+import comsys.arch.ComsysException;
+import comsys.processing.parse.SignHashParseResults;
 
 // -----------------------------------------------------------------
 // JAVA IMPORTS
