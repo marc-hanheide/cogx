@@ -46,12 +46,12 @@ inline TYPE sqr(TYPE x)
 
 inline bool equals(float a, float b, float eps)
 {
-  return (abs(a - b) < eps);
+  return (fabsf(a - b) < eps);
 }
 
 inline bool equals(double a, double b, double eps)
 {
-  return (abs(a - b) < eps);
+  return (fabs(a - b) < eps);
 }
 
 /**
