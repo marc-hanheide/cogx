@@ -344,10 +344,10 @@ public class cc_Parser
 	* @param _config The properties table
 	*/ 
 	
-    @Override
+    
     public void configure(Properties _config) {
         _config.list(System.out);
-        super.configure(_config);
+        configure(_config);
         String parserArg = "";
         if (_config.containsKey("--grammar")) {
             grammarFile = _config.getProperty("--grammar");
@@ -531,7 +531,7 @@ public class cc_Parser
 				
 				
         }
-        catch (SubarchitectureProcessException e) {
+        catch (SubarchitectureComponentException e) {
             e.printStackTrace();
         } // end try..catch
     }// end start
@@ -553,20 +553,20 @@ public class cc_Parser
     private void handleWorkingMemoryChange(WorkingMemoryChange _wmc, boolean isPhonString) {
         try {
             // get the id of the working memory entry
-            String id = _wmc.m_address.m_id;
+            String id = _wmc.address.id;
             // get the data from working memory and store it with its id
             
             CASTData data;
             if (isPhonString) {
                 if (asr_subarch != null) {
-            	data = new CASTData(id, getWorkingMemoryEntry(id, asr_subarch));
+            	data = getWorkingMemoryEntry(id, asr_subarch);
                 }
                 else {
-                    data = new CASTData(id, getWorkingMemoryEntry(id));
+                    data = getWorkingMemoryEntry(id);
                     }
             }
             else {
-            	data = new CASTData(id, getWorkingMemoryEntry(id));
+            	data = getWorkingMemoryEntry(id);
             }
             
 			// check whether this is data used by active processes; 
@@ -587,7 +587,7 @@ public class cc_Parser
 			// store the goal with its information
             proposeInformationProcessingTask(taskID, taskGoal);
         }
-        catch (SubarchitectureProcessException e) {
+        catch (SubarchitectureComponentException e) {
             e.printStackTrace();
         } // end try..catch
     } // end handleWorkingMemoryChange	
@@ -605,14 +605,13 @@ public class cc_Parser
 	private void handleActiveDataWorkingMemoryChange(WorkingMemoryChange _wmc) { 
         try {
             // get the id of the working memory entry
-            String id = _wmc.m_address.m_id;
+            String id = _wmc.address.id;
 			// check whether the change has already been processed
 			// (needed because both handling*WMC methods can be called concurrently)
 
 			if (!processedActiveData.contains(id)) { 
 				// get the data from working memory and store it with its id
-				CASTData data = new CASTData(id,
-					getWorkingMemoryEntry(id));			
+				CASTData data = getWorkingMemoryEntry(id);			
 				// get the relevant active processes
 				Vector processes = (Vector) activeDataMap.get(data.getType()); 
 				// iterate over the processes, informing each
@@ -624,7 +623,7 @@ public class cc_Parser
 				processedActiveData.add(id);
 			} // end if check whether wmc has already been handled
         }
-        catch (SubarchitectureProcessException e) {
+        catch (SubarchitectureComponentException e) {
             e.printStackTrace();
         } // end try..catch		
 	} // end handleActiveDataWorkingMemoryChange
@@ -655,7 +654,7 @@ public class cc_Parser
 			String packedLFId = plfToPackedLFsId.get(plf.packedLFId);
 			try { 
 				// try to get the packed lf from WM
-				CASTData data = new CASTData(packedLFId,getWorkingMemoryEntry(packedLFId));			
+				CASTData data = getWorkingMemoryEntry(packedLFId);			
 				String dataType = data.getType();
 				if (dataType.equals(CASTUtils.typeName(PackedLFs.class))) {
 					// get the object
@@ -665,14 +664,17 @@ public class cc_Parser
 					// set the finalized flag
 					packedLFs.finalized = finalizedFlag;
 					// store the object
+					//overwriteWorkingMemory(data.getID(),
+					//		packedLFs,
+					//		OperationMode.BLOCKING);
 					overwriteWorkingMemory(data.getID(),
-							packedLFs,
-							OperationMode.BLOCKING);
+										   packedLFs);
+					
 					log("Successfully stored packed logical form on working memory");
 				} else { 
 					System.err.println("[ERROR:UtteranceInterpretation] Retrieved data does not contain PackedLFs ["+packedLFId+"]");				
 				} // end if..else check for correct data type
-			}	catch (SubarchitectureProcessException e) {
+			}	catch (SubarchitectureComponentException e) {
 				System.err.println("[ERROR:UtteranceInterpretation] Could not retrieve PackedLFs ["+packedLFId+"]");
 				e.printStackTrace();
 			} // end try..catch		
@@ -876,8 +878,11 @@ public class cc_Parser
 	                	
 	                	log("Updating PackedLF in working memory, finalized flag is ["+results.finalized+"]");
 					try {
-						overwriteWorkingMemory(data.getID(),
-							plf, OperationMode.BLOCKING);
+						//overwriteWorkingMemory(data.getID(),
+						//	plf, OperationMode.BLOCKING);
+						// in CAST v2, BLOCKING seems to be gone .. .
+						overwriteWorkingMemory(data.getID(),plf);						
+						
 						lastAddedPLf = plf;
 						plfToPackedLFsId.put(results.plf.packedLFId,data.getID());							
 					}
@@ -925,9 +930,9 @@ public class cc_Parser
     public void runComponent() {
         try {
             log("Entering loop checking for data in utterance interpretation component");
-            while (m_status == ProcessStatus.RUN) {
+            while (this.isRunning()) {
                 // lock from external access
-                lockProcess();
+                lockComponent();
                 // check (synchronised) data objects queue
                 ListIterator<ProcessingData> i = m_dataObjects
                     .listIterator();
@@ -954,7 +959,7 @@ public class cc_Parser
                             try {
                                 taskComplete(
                                     taskID,
-                                    TaskOutcome.PROCESSING_COMPLETE_SUCCESS);
+                                    TaskOutcome.ProcessingCompleteSuccess);
                             }
                             catch (SubarchitectureProcessException e) {
                                 e.printStackTrace();
@@ -970,7 +975,7 @@ public class cc_Parser
                             try {
                                 taskComplete(
                                     taskID,
-                                    TaskOutcome.PROCESSING_COMPLETE_FAILURE);
+                                    TaskOutcome.ProcessingCompleteFailure);
                             }
                             catch (SubarchitectureProcessException ex) {
                                 ex.printStackTrace();
@@ -990,7 +995,7 @@ public class cc_Parser
 								// Indicate that the task could not be completed
 								taskComplete(
 											 taskID,
-											 TaskOutcome.PROCESSING_COMPLETE_FAILURE);
+											 TaskOutcome.ProcessingCompleteFailure);
 							}
 							catch (AlreadyExistsOnWMException ioe) { 
 								log("ERROR: "+ioe.getMessage());
@@ -1011,9 +1016,9 @@ public class cc_Parser
                     i.remove();
                 } // end while
                 // Free the process
-                unlockProcess();
+                unlockComponent();
 
-                sleepProcess(20);
+                sleepComponent(20);
 
                 // wait for new tasks!
                 // waitForNotifications(m_dataObjects);
