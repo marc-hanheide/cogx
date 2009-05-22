@@ -89,7 +89,7 @@ module comsys {
 		PhonStringLFPairsSeq phonStringLFPairs;
 		PhonStrings nonParsablePhonStrings;
 		long stringPos;
-		// lf::PackedLogicalForm packedLF;
+		lf::PackedLogicalForm packedLF;
 		long finalized; 
 		string type;
 		NonStandardRulesAppliedForLFs nonStandardRulesForLF;
