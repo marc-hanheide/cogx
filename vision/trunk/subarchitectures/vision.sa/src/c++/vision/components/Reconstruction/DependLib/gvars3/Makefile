@@ -19,7 +19,7 @@ infodir = ${datarootdir}/info
 mandir = ${datarootdir}/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
-arch= i686
+arch= x86_64
 
 
 CC = @CC@
@@ -29,7 +29,7 @@ CFLAGS = $(CPPFLAGS) @CFLAGS@
 CXXFLAGS = $(CPPFLAGS) -g -O2 -Wall -Wextra -pthread
 OFLAGS=@OFLAGS@
 LDFLAGS = 
-LIBS = -lreadline  -lm 
+LIBS = -lreadline  -lfltk -lm 
 HLIBS =  -lm 
 INSTALL = @INSTALL@
 AR=ar
@@ -95,7 +95,7 @@ OBJS=\
 	src/gvars2.o			\
 	src/GUI_language.o		\
 	src/serialize.o			\
-	src/GUI_none.o          \
+	src/GUI_Fltk.o          \
 	src/GUI_non_readline.o	\
 	src/inst.o\
 
@@ -115,7 +115,7 @@ endif
 
 
 
-ifeq (i686,x86_64)
+ifeq (x86_64,x86_64)
     CPPFLAGS+=-fPIC
 endif
 
