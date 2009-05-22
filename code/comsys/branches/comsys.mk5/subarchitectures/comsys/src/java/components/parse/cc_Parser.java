@@ -481,11 +481,11 @@ public class cc_Parser
 				try {
 				addChangeFilter(
 						ChangeFilterFactory.createLocalTypeFilter(Class.forName(adtsType.replace("::", ".")),  WorkingMemoryOperation.ADD),
-					new WorkingMemoryChangeReceiver() {
-						public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-							 handleActiveDataWorkingMemoryChange(_wmc);
-						}
-					});		
+								new WorkingMemoryChangeReceiver() {
+									public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+										handleActiveDataWorkingMemoryChange(_wmc);
+									}
+								});		
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -821,7 +821,7 @@ public class cc_Parser
 
                 	try {
                 		// addToWorkingMemory(packedLFsId,	ComsysOntology.PACKEDLFS_TYPE,	plf);
-						if (m_subarchitectureID!= null) addToWorkingMemory(packedLFsId,	plf); // refactored, data type determined from provided object
+						if (getSubarchitectureID() != null) addToWorkingMemory(packedLFsId,	plf); // refactored, data type determined from provided object
 						plfToPackedLFsId.put(plfId,packedLFsId);
 						lastAddedPLf = plf;
 						log("Insertion of PLF into working memory successful");
@@ -850,7 +850,7 @@ public class cc_Parser
 				// get the packed logical forms
 				PackedLFs plfs = (PackedLFs) data.getData();
                 // get the input string
-                PhonString phonString = plfs.phonStringLFPairs[0].phonString;
+                PhonString phonString = plfs.phonStringLFPairs[0].phonStr;
 				// the active process has already been updated with the PackedLFs 
 				// (if registered) through handling the working memory changes 
 				// trigger the parser to continue the incremental analysis
@@ -961,7 +961,7 @@ public class cc_Parser
                                     taskID,
                                     TaskOutcome.ProcessingCompleteSuccess);
                             }
-                            catch (SubarchitectureProcessException e) {
+                            catch (SubarchitectureComponentException e) {
                                 e.printStackTrace();
                             } // end try..catch
                         }
@@ -977,7 +977,7 @@ public class cc_Parser
                                     taskID,
                                     TaskOutcome.ProcessingCompleteFailure);
                             }
-                            catch (SubarchitectureProcessException ex) {
+                            catch (SubarchitectureComponentException ex) {
                                 ex.printStackTrace();
                             } // end try..catch
                         } 					
@@ -990,7 +990,7 @@ public class cc_Parser
 								// Send feedback to be realized
 								LogicalForm comGoal = LFUtils.convertFromString("@d1:dvp(cg ^ <FeedBackSource>parser ^ <Polarity>negative ^ <Content>(f1:feedback ))");
 								ContentPlanningGoal cpg = ComsysUtils.newContentPlanningGoal();
-								cpg.lf = comGoal;
+								cpg.lform = comGoal;
 								addToWorkingMemory(newDataID(), cpg); 
 								// Indicate that the task could not be completed
 								taskComplete(
@@ -1000,7 +1000,7 @@ public class cc_Parser
 							catch (AlreadyExistsOnWMException ioe) { 
 								log("ERROR: "+ioe.getMessage());
 							}
-							catch (SubarchitectureProcessException ex) {
+							catch (SubarchitectureComponentException ex) {
 								ex.printStackTrace();
 							} // end try..catch
 						} // end try..catch for processing exceptions
