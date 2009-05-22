@@ -80,8 +80,8 @@ private:
    */
   Timer timer;
 
-  void init(const std::vector<int> &devNums, const std::string &bayer)
-    throw(std::runtime_error);
+  void init(int dev_class, const std::vector<int> &dev_nums,
+      const std::string &bayer) throw(std::runtime_error);
   /**
    * Converts an IplImage to a system Image format.
    */
