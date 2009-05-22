@@ -116,8 +116,8 @@ OpenCvLiveServer::~OpenCvLiveServer()
  *               order of R,G and B pixels in the Bayer pattern: one of
  *               "BGGR" "GBBR" "RGGB" "GRRB" or "" (for no conversion).
  */
-void OpenCvLiveServer::init(const vector<int> &dev_nums, const string &bayer)
-  throw(runtime_error)
+void OpenCvLiveServer::init(int dev_class, const vector<int> &dev_nums,
+  const string &bayer) throw(runtime_error)
 {
   if(dev_nums.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__,
@@ -134,7 +134,7 @@ void OpenCvLiveServer::init(const vector<int> &dev_nums, const string &bayer)
     retrievedImages[i] = 0;
   for(size_t i = 0; i < dev_nums.size(); i++)
   {
-    captures[i] = cvCreateCameraCapture(dev_nums[i]);
+    captures[i] = cvCreateCameraCapture(dev_class + dev_nums[i]);
     if(captures[i] == 0)
       throw runtime_error(exceptionMessage(__HERE__,
         "failed to create capture for video device %d", dev_nums[i]));
@@ -186,11 +186,26 @@ void OpenCvLiveServer::configure(const map<string,string> & _config)
   throw(runtime_error)
 {
   vector<int> dev_nums;
+  int dev_class = CV_CAP_ANY;
   string bayer;
   map<string,string>::const_iterator it;
 
   // first let the base class configure itself
   VideoServer::configure(_config);
+
+  if((it = _config.find("--devclass")) != _config.end())
+  {
+    if(it->second == "FIREWIRE")
+      dev_class = CV_CAP_IEEE1394;
+    else if(it->second == "VIDEO4LINUX" || it->second == "USB")
+      dev_class = CV_CAP_V4L2;
+    else
+    {
+      ostringstream msg;
+      msg << "unknown device class '" << it->second << "'";
+      throw runtime_error(msg.str());
+    }
+  }
 
   if((it = _config.find("--devnums")) != _config.end())
   {
@@ -212,7 +227,7 @@ void OpenCvLiveServer::configure(const map<string,string> & _config)
   }
 
   // do some initialisation based on configured items
-  init(dev_nums, bayer);
+  init(dev_class, dev_nums, bayer);
 }
 
 void OpenCvLiveServer::grabFramesInternal()
@@ -252,7 +267,7 @@ void OpenCvLiveServer::grabFrames()
 /**
  */
 void OpenCvLiveServer::retrieveFrames(std::vector<Video::Image> &frames)
-  throw(std::runtime_error)
+  throw(runtime_error)
 {
   // needed to prevent retrieving while grabbing
   lockComponent();
@@ -274,7 +289,7 @@ void OpenCvLiveServer::retrieveFrames(std::vector<Video::Image> &frames)
 }
 
 void OpenCvLiveServer::retrieveFrame(int camId, Video::Image &frame)
-  throw(std::runtime_error)
+  throw(runtime_error)
 {
   // needed to prevent retrieving while grabbing
   lockComponent();
