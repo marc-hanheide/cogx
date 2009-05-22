@@ -33,8 +33,7 @@ PATH: /usr/sbin
 PATH: /usr/bin
 PATH: /sbin
 PATH: /bin
-PATH: /usr/games
-PATH: /opt/real/RealPlayer
+PATH: /usr/X11R6/bin
 
 
 ## ----------- ##
@@ -798,8 +797,8 @@ configure:9540: $? = 0
 configure:9557: result: yes
 configure:9568: checking for pthread_yield_np
 configure:9624: g++ -o conftest -g  -Wall -Wextra -pipe -ggdb -fPIC -mmmx -msse -msse -msse2 -msse3 -pthread  -INONE/include  conftest.cpp -llapack -lGLU -lGL -lrt -ldc1394  -L -lX11 -lXext -pthread >&5
-/tmp/ccGlxsaq.o: In function `main':
-/home/kz/libcvd/conftest.cpp:87: undefined reference to `pthread_yield_np'
+/tmp/ccY5lEnv.o: In function `main':
+/home/kz/Cogx/vision/trunk/subarchitectures/vision.sa/src/c++/vision/components/Reconstruction/DependLib/libcvd/conftest.cpp:87: undefined reference to `pthread_yield_np'
 collect2: ld returned 1 exit status
 configure:9630: $? = 1
 configure: failed program was:
