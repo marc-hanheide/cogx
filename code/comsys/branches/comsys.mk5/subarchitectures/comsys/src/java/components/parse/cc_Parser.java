@@ -480,7 +480,7 @@ public class cc_Parser
 				String adtsType = (String) adtsIter.next();
 				try {
 				addChangeFilter(
-						ChangeFilterFactory.createLocalTypeFilter(Class.forName(adtsType.replace("::", ".")),  WorkingMemoryOperation.ADD),
+						ChangeFilterFactory.createLocalTypeFilter(<Ice.Object>Class.forName(adtsType.replace("::", ".")),  WorkingMemoryOperation.ADD),
 								new WorkingMemoryChangeReceiver() {
 									public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 										handleActiveDataWorkingMemoryChange(_wmc);
