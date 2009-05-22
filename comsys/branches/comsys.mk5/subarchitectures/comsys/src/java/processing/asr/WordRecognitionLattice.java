@@ -13,19 +13,20 @@ import opennlp.ccg.parse.CategoryChartScorer;
 import opennlp.ccg.parse.FrontierCatFilter;
 import opennlp.ccg.parse.UnrestrictedBeamWidthFunction;
 
-import org.cognitivesystems.comsys.autogen.ComsysEssentials.PhonString;
-import org.cognitivesystems.comsys.processing.ActiveCCGLexicon;
-import org.cognitivesystems.comsys.processing.ActiveIncrCCGParser;
-import org.cognitivesystems.comsys.data.PackedLFParseResults;
+import comsys.PhonString;
+
+import comsys.processing.parse.ActiveCCGLexicon;
+import comsys.processing.parse.ActiveIncrCCGParser;
+import comsys.processing.parse.PackedLFParseResults;
 import opennlp.ccg.parse.ParseResults;
 
-import org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal;
-import org.cognitivesystems.repr.lf.autogen.LFEssentials.LFRelation;
-import org.cognitivesystems.repr.lf.autogen.LFEssentials.LogicalForm;
-import org.cognitivesystems.repr.lf.autogen.LFPacking.PackedLogicalForm;
-import org.cognitivesystems.repr.lf.autogen.LFPacking.PackedNominal;
-import org.cognitivesystems.repr.lf.autogen.LFPacking.PackingEdge;
-import org.cognitivesystems.repr.lf.utils.LFUtils;
+import lf.LFNominal;
+import lf.LFRelation;
+import lf.LogicalForm;
+import lf.PackedLogicalForm;
+import lf.PackedNominal;
+import lf.PackingEdge;
+import lf.utils.LFUtils;
 
 /**
  * A word recognition lattice builder from the ASR
