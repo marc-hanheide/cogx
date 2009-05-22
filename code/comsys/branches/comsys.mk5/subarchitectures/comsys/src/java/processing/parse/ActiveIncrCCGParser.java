@@ -207,7 +207,7 @@ implements ContextActiveProcess {
 	private final String UPDATE_STATE  = "updateState";
 	private final String PARSING_STATE = "parsingState";	
 
-	UtteranceInterpretation component;
+	cc_Parser component;
 
 	// set of dependencies whose interpretation is known to be unsupported
 	private Vector<InterpretationSupport> unsupportedDependencies ;
@@ -247,7 +247,7 @@ implements ContextActiveProcess {
 
 	/** Registers the owning component, for CAST interactions like storing objects on WM.*/ 
 
-	public void registerComponent (UtteranceInterpretation c) { 
+	public void registerComponent (cc_Parser c) { 
 		component = c;
 	} // end register component
 
