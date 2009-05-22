@@ -1,5 +1,5 @@
-#ifndef HWD_ICE
-#define HWD_ICE
+#ifndef COMSYS_ICE
+#define COMSYS_ICE
 
 // ===================================================================
 // MODULE: Comsys
