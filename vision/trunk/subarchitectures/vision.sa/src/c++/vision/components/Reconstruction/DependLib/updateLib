@@ -10,7 +10,7 @@ cd libcvd
 make
 sudo make install
 cd ..
-cd gvar3
+cd gvars3
 ./configure
 make
 sudo make install
