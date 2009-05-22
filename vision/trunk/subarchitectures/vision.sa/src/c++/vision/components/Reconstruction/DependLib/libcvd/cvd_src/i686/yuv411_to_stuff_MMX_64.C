@@ -33,6 +33,7 @@ namespace ColourSpace
 
 void yuv411_to_rgb_y(const unsigned char* in, int size, unsigned char* out, unsigned char *lum_out)
 {
+  /* Michael Zillich: does not compile on 64 Bit machines
 	const unsigned char* in_end = in + size * 6 / 4;
 
 	size /=8;
@@ -243,9 +244,12 @@ void yuv411_to_rgb_y(const unsigned char* in, int size, unsigned char* out, unsi
 	: "m" (out), "m" (in), "g" (size), [luma] "m" (lum_out), [end] "m" (in_end)
 		: "eax", "ecx", "edx",  "rdi", "rsi", "mm0", "mm1", "mm2", "mm3", "mm4", "mm5", "mm6", "mm7", "rbp"
 	);
+  */
 }
 void yuv411_to_rgb(const unsigned  char* in, int size, unsigned char* out)
 {
+#if 0
+  Michael Zillich: does not compile on 64 Bit machines
 	//Time: 5.0ms memcpy on number of luma pixels only takes 1.5 ms
 	size /=8;
 	__asm__ __volatile__(
@@ -459,10 +463,12 @@ void yuv411_to_rgb(const unsigned  char* in, int size, unsigned char* out)
 	: "m" (out), "m" (in), "g" (size)
 		: "eax", "ecx", "edx", "rbx", "rdi", "rsi", "mm0", "mm1", "mm2", "mm3", "mm4", "mm5", "rbp"
 	);
+#endif
 }
 
 void yuv411_to_y(const unsigned char* in, int size, unsigned char* out)
 {
+  /* Michael Zillich: does not compile on 64 Bit machines
 	//Time, 2.5ms. Comparison, memcpy on the same number of output bytes=1.5ms
 
 	size /=16;
@@ -502,6 +508,7 @@ void yuv411_to_y(const unsigned char* in, int size, unsigned char* out)
 	:
 		: "m" (out), "m" (in), "g" (size)
 		: "rax", "rcx", "rdi", "rsi", "mm0", "mm1", "mm2", "rbp", "rbx"   );
+  */
 }
 
 }
