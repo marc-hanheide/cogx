@@ -480,7 +480,7 @@ public class cc_Parser
 				String adtsType = (String) adtsIter.next();
 				try {
 				addChangeFilter(
-						ChangeFilterFactory.createLocalTypeFilter(<Ice.Object>Class.forName(adtsType.replace("::", ".")),  WorkingMemoryOperation.ADD),
+						ChangeFilterFactory.createLocalTypeFilter((Class<Ice.Object>)Class.forName(adtsType.replace("::", ".")),  WorkingMemoryOperation.ADD),
 								new WorkingMemoryChangeReceiver() {
 									public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 										handleActiveDataWorkingMemoryChange(_wmc);
@@ -503,7 +503,7 @@ public class cc_Parser
             
 			// register change filters for PhonString, which triggers parsing
             addChangeFilter(
-            		ChangeFilterFactory.createGlobalTypeFilter(WordRecognitionLattice.class,  WorkingMemoryOperation.ADD),
+            		ChangeFilterFactory.createGlobalTypeFilter((Class<Ice.Object>)WordRecognitionLattice.class,  WorkingMemoryOperation.ADD),
                 new WorkingMemoryChangeReceiver() {
                     public void workingMemoryChanged(WorkingMemoryChange _wmc) {
                     	log("Word recognition lattice successfully received!");
