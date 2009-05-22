@@ -44,9 +44,7 @@
 #ifndef __ATAN_CAMERA_H
 #define __ATAN_CAMERA_H
 
-#include <TooN/TooN.h>
-#include <cmath>
-using namespace TooN;
+#include <TooN/numerics.h>
 #include <cvd/vector_image_ref.h>
 #include <gvars3/gvars3.h>
 

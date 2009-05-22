@@ -45,7 +45,7 @@ TrackerData(MapPoint *pMapPoint)
   // Project point into image given certain pose and camera.
   // This can bail out at several stages if the point
   // will not be properly in the image.
-  inline void Project(const SE3<> &se3CFromW, ATANCamera &Cam)
+  inline void Project(const SE3 &se3CFromW, ATANCamera &Cam)
   {
     bInImage = bPotentiallyVisible = false;
     v3Cam = se3CFromW * Point.v3WorldPos;
@@ -73,7 +73,7 @@ TrackerData(MapPoint *pMapPoint)
   }
   
   // Does projection and gets camera derivs all in one.
-  inline void ProjectAndDerivs(SE3<> &se3, ATANCamera &Cam)
+  inline void ProjectAndDerivs(SE3 &se3, ATANCamera &Cam)
   {
     Project(se3, Cam);
     if(bFound)
@@ -88,7 +88,7 @@ TrackerData(MapPoint *pMapPoint)
     double dOneOverCameraZ = 1.0 / v3Cam[2];
     for(int m=0; m<6; m++)
       {
-	const Vector<4> v4Motion = SE3<>::generator_field(m, unproject(v3Cam));
+	const Vector<4> v4Motion = SE3::generator_field(m, unproject(v3Cam));
 	Vector<2> v2CamFrameMotion;
 	v2CamFrameMotion[0] = (v4Motion[0] - v3Cam[0] * v4Motion[2] * dOneOverCameraZ) * dOneOverCameraZ;
 	v2CamFrameMotion[1] = (v4Motion[1] - v3Cam[1] * v4Motion[2] * dOneOverCameraZ) * dOneOverCameraZ;

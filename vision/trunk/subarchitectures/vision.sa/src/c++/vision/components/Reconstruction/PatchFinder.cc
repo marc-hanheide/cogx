@@ -7,7 +7,7 @@
 #include <cvd/vector_image_ref.h>
 #include <cvd/image_interpolate.h>
 #include <TooN/Cholesky.h>
-// tmmintrin.h contains SSE3<> instrinsics, used for the ZMSSD search at the bottom..
+// tmmintrin.h contains SSE3 instrinsics, used for the ZMSSD search at the bottom..
 // If this causes problems, just do #define CVD_HAVE_XMMINTRIN 0
 #if CVD_HAVE_XMMINTRIN
 #include <tmmintrin.h>
@@ -24,14 +24,14 @@ PatchFinder::PatchFinder(int nPatchSize)
   int nMaxSSDPerPixel = 500; // Pretty arbitrary... could make a GVar out of this.
   mnMaxSSD = mnPatchSize * mnPatchSize * nMaxSSDPerPixel;
   // Populate the speed-up caches with bogus values:
-  mm2LastWarpMatrix = 9999.9 * Identity;
+  Identity(mm2LastWarpMatrix,9999.9);
   mpLastTemplateMapPoint = NULL;
 };
 
 
 // Find the warping matrix and search level
 int PatchFinder::CalcSearchLevelAndWarpMatrix(MapPoint &p,
-					      SE3<> se3CFromW,
+					      SE3 se3CFromW,
 					      Matrix<2> &m2CamDerivs)
 {
   // Calc point pos in new view camera frame
@@ -70,7 +70,7 @@ int PatchFinder::CalcSearchLevelAndWarpMatrix(MapPoint &p,
 // This is just a convenience function wich caluclates the warp matrix and generates
 // the template all in one call.
 void PatchFinder::MakeTemplateCoarse(MapPoint &p,
-				     SE3<> se3CFromW,
+				     SE3 se3CFromW,
 				     Matrix<2> &m2CamDerivs)
 {
   CalcSearchLevelAndWarpMatrix(p, se3CFromW, m2CamDerivs);
@@ -254,7 +254,8 @@ bool PatchFinder::FindPatchCoarse(ImageRef irPos, KeyFrame &kf, unsigned int nRa
 void PatchFinder::MakeSubPixTemplate()
 {
   mimJacs.resize(mimTemplate.size() - ImageRef(2,2));
-  Matrix<3> m3H = Zeros; // This stores jTj.
+  Matrix<3> m3H; // This stores jTj.
+  Zero(m3H);
   ImageRef ir;
   for(ir.x = 1; ir.x < mnPatchSize - 1; ir.x++)
     for(ir.y = 1; ir.y < mnPatchSize - 1; ir.y++)
@@ -271,10 +272,9 @@ void PatchFinder::MakeSubPixTemplate()
   // Invert JTJ..
   Cholesky<3> chol(m3H);
   mm3HInv = chol.get_inverse();
-  // TOON2 Does not have a get_rank for cholesky
-  // int nRank = chol.get_rank();
-  // if(nRank < 3)
-  // cout << "BAD RANK IN MAKESUBPIXELTEMPLATE!!!!" << endl; // This does not happen often (almost never!)
+  int nRank = chol.get_rank();
+  if(nRank < 3)
+    cout << "BAD RANK IN MAKESUBPIXELTEMPLATE!!!!" << endl; // This does not happen often (almost never!)
   
   mv2SubPixPos = mv2CoarsePos; // Start the sub-pixel search at the result of the coarse search..
   mdMeanDiff = 0.0;
@@ -315,7 +315,8 @@ double PatchFinder::IterateSubPix(KeyFrame &kf)
   Vector<2> v2Base = v2Center - vec(mirCenter);
   
   // I.C. JT*d accumulator
-  Vector<3> v3Accum = Zeros;
+  Vector<3> v3Accum;
+  Zero(v3Accum);
   
   ImageRef ir;
   

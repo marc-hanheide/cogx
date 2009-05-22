@@ -8,8 +8,7 @@
 
 #ifndef __LEVEL_HELPERS_H
 #define __LEVEL_HELPERS_H
-#include <TooN/TooN.h>
-using namespace TooN;
+#include <TooN/numerics.h>
 #include <cvd/image_ref.h>
 
 // Set of global colours useful for drawing stuff:

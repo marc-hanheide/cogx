@@ -14,8 +14,7 @@
 #include <cvd/image.h>
 #include <cvd/byte.h>
 #include <cvd/utility.h>
-#include <TooN/TooN.h>
-using namespace TooN;
+#include <TooN/numerics.h>
 #include <vector>
 
 struct MiniPatch

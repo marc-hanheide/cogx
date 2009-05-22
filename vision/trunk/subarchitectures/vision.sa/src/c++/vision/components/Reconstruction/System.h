@@ -16,8 +16,6 @@
 #include <cvd/image.h>
 #include <cvd/rgb.h>
 #include <cvd/byte.h>
-#include <TooN/TooN.h>
-using namespace TooN;
 
 class ATANCamera;
 class Map;

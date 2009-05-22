@@ -170,7 +170,7 @@ MapMaker::~MapMaker()
 
 
 // Finds 3d coords of point in reference frame B from two z=1 plane projections
-Vector<3> MapMaker::ReprojectPoint(SE3<> se3AfromB, const Vector<2> &v2A, const Vector<2> &v2B)
+Vector<3> MapMaker::ReprojectPoint(SE3 se3AfromB, const Vector<2> &v2A, const Vector<2> &v2B)
 {
   Matrix<3,4> PDash;
   PDash.slice<0,0,3,3>() = se3AfromB.get_rotation().get_matrix();
@@ -182,7 +182,7 @@ Vector<3> MapMaker::ReprojectPoint(SE3<> se3AfromB, const Vector<2> &v2A, const 
   A[2] = v2A[0] * PDash[2] - PDash[0];
   A[3] = v2A[1] * PDash[2] - PDash[1];
 
-  SVD<4,4> svd(A);
+  HV_SVD<4,4,Vertical> svd(A);
   Vector<4> v4Smallest = svd.get_VT()[3];
   if(v4Smallest[3] == 0.0)
     v4Smallest[3] = 0.00001;
@@ -196,7 +196,7 @@ Vector<3> MapMaker::ReprojectPoint(SE3<> se3AfromB, const Vector<2> &v2A, const 
 bool MapMaker::InitFromStereo(KeyFrame &kF,
 			      KeyFrame &kS,
 			      vector<pair<ImageRef, ImageRef> > &vTrailMatches,
-			      SE3<> &se3TrackerPose)
+			      SE3 &se3TrackerPose)
 {
   mdWiggleScale = *mgvdWiggleScale; // Cache this for the new map.
 
@@ -213,7 +213,7 @@ bool MapMaker::InitFromStereo(KeyFrame &kF,
       vMatches.push_back(m);
     }
 
-  SE3<> se3;
+  SE3 se3;
   bool bGood;
   HomographyInit HomographyInit;
   bGood = HomographyInit.Compute(vMatches, 5.0, se3);
@@ -240,7 +240,7 @@ bool MapMaker::InitFromStereo(KeyFrame &kF,
   *pkSecond = kS;
   
   pkFirst->bFixed = true;
-  pkFirst->se3CfromW = SE3<>();
+  pkFirst->se3CfromW = SE3();
   
   pkSecond->bFixed = false;
   pkSecond->se3CfromW = se3;
@@ -255,7 +255,7 @@ bool MapMaker::InitFromStereo(KeyFrame &kF,
       // Patch source stuff:
       p->pPatchSourceKF = pkFirst;
       p->nSourceLevel = 0;
-      p->v3Normal_NC = makeVector( 0,0,-1);
+      p->v3Normal_NC = (make_Vector, 0,0,-1);
       p->irCenter = vTrailMatches[i].first;
       p->v3Center_NC = unproject(mCamera.UnProject(p->irCenter));
       p->v3OneDownFromCenter_NC = unproject(mCamera.UnProject(p->irCenter + ImageRef(0,1)));
@@ -400,12 +400,12 @@ void MapMaker::AddSomeMapPoints(int nLevel)
 };
 
 // Rotates/translates the whole map and all keyframes
-void MapMaker::ApplyGlobalTransformationToMap(SE3<> se3NewFromOld)
+void MapMaker::ApplyGlobalTransformationToMap(SE3 se3NewFromOld)
 {
   for(unsigned int i=0; i<mMap.vpKeyFrames.size(); i++)
     mMap.vpKeyFrames[i]->se3CfromW = mMap.vpKeyFrames[i]->se3CfromW * se3NewFromOld.inverse();
   
-  SO3<> so3Rot = se3NewFromOld.get_rotation();
+  SO3 so3Rot = se3NewFromOld.get_rotation();
   for(unsigned int i=0; i<mMap.vpPoints.size(); i++)
     {
       mMap.vpPoints[i]->v3WorldPos = 
@@ -602,7 +602,7 @@ bool MapMaker::AddPointEpipolar(KeyFrame &kSrc,
   // Patch source stuff:
   pNew->pPatchSourceKF = &kSrc;
   pNew->nSourceLevel = nLevel;
-  pNew->v3Normal_NC = makeVector( 0,0,-1);
+  pNew->v3Normal_NC = (make_Vector, 0,0,-1);
   pNew->irCenter = irLevelPos;
   pNew->v3Center_NC = unproject(mCamera.UnProject(v2RootPos));
   pNew->v3OneRightFromCenter_NC = unproject(mCamera.UnProject(v2RootPos + vec(ImageRef(nLevelScale,0))));
@@ -1031,14 +1031,14 @@ bool MapMaker::IsDistanceToNearestKeyFrameExcessive(KeyFrame &kCurrent)
   return DistToNearestKeyFrame(kCurrent) > mdWiggleScale * 10.0;
 }
 
-// Find a dominant plane in the map, find an SE3<> to put it as the z=0 plane
-SE3<> MapMaker::CalcPlaneAligner()
+// Find a dominant plane in the map, find an SE3 to put it as the z=0 plane
+SE3 MapMaker::CalcPlaneAligner()
 {
   unsigned int nPoints = mMap.vpPoints.size();
   if(nPoints < 10)
     {
       cout << "  MapMaker: CalcPlane: too few points to calc plane." << endl;
-      return SE3<>();
+      return SE3();
     };
   
   int nRansacs = GV2.GetInt("MapMaker.PlaneAlignerRansacs", 100, HIDDEN|SILENT);
@@ -1102,12 +1102,14 @@ SE3<> MapMaker::CalcPlaneAligner()
     }
   
   // With these inliers, calculate mean and cov
-  Vector<3> v3MeanOfInliers = Zeros;
+  Vector<3> v3MeanOfInliers;
+  Zero(v3MeanOfInliers);
   for(unsigned int i=0; i<vv3Inliers.size(); i++)
     v3MeanOfInliers+=vv3Inliers[i];
   v3MeanOfInliers *= (1.0 / vv3Inliers.size());
   
-  Matrix<3> m3Cov = Zeros;
+  Matrix<3> m3Cov;
+  Zero(m3Cov);
   for(unsigned int i=0; i<vv3Inliers.size(); i++)
     {
       Vector<3> v3Diff = vv3Inliers[i] - v3MeanOfInliers;
@@ -1122,13 +1124,14 @@ SE3<> MapMaker::CalcPlaneAligner()
   if(v3Normal[2] > 0)
     v3Normal *= -1.0;
   
-  Matrix<3> m3Rot = Identity;
+  Matrix<3> m3Rot;
+  Identity(m3Rot);
   m3Rot[2] = v3Normal;
   m3Rot[0] = m3Rot[0] - (v3Normal * (m3Rot[0] * v3Normal));
   normalize(m3Rot[0]);
   m3Rot[1] = m3Rot[2] ^ m3Rot[0];
   
-  SE3<> se3Aligner;
+  SE3 se3Aligner;
   se3Aligner.get_rotation() = m3Rot;
   Vector<3> v3RMean = se3Aligner * v3MeanOfInliers;
   se3Aligner.get_translation() = -v3RMean;

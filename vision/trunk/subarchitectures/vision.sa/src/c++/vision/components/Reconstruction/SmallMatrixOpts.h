@@ -5,7 +5,6 @@
 // Must be invertible!
 #ifndef __SMALL_MATRIX_OPTS
 #define __SMALL_MATRIX_OPTS
-#include <cassert>
 
 inline Matrix<2> M2Inverse(const Matrix<2> &m)
 {

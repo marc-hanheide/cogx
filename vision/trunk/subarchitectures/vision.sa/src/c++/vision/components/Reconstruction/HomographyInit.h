@@ -12,8 +12,7 @@
 
 #ifndef __HOMOGRAPHY_INIT_H
 #define __HOMOGRAPHY_INIT_H
-#include <TooN/TooN.h>
-using namespace TooN;
+#include <TooN/numerics.h>
 #include <TooN/se3.h>
 #include <vector>
 
@@ -36,14 +35,14 @@ struct HomographyDecomposition
   Vector<3> v3n;
   
   // The resolved composition..
-  SE3<> se3SecondFromFirst;
+  SE3 se3SecondFromFirst;
   int nScore;
 };
 
 class HomographyInit
 {
 public:
-  bool Compute(std::vector<HomographyMatch> vMatches, double dMaxPixelError, SE3<> &se3SecondCameraPose);
+  bool Compute(std::vector<HomographyMatch> vMatches, double dMaxPixelError, SE3 &se3SecondCameraPose);
 protected:
   Matrix<3> HomographyFromMatches(std::vector<HomographyMatch> vMatches);
   void BestHomographyFromMatches_MLESAC();

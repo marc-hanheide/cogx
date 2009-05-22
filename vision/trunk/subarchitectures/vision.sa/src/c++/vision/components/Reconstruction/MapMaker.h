@@ -44,11 +44,11 @@ public:
   // Make a map from scratch. Called by the tracker.
   bool InitFromStereo(KeyFrame &kFirst, KeyFrame &kSecond, 
 		      std::vector<std::pair<CVD::ImageRef, CVD::ImageRef> > &vMatches,
-		      SE3<> &se3CameraPos);
+		      SE3 &se3CameraPos);
 
   bool InitFromStereo_OLD(KeyFrame &kFirst, KeyFrame &kSecond,  // EXPERIMENTAL HACK
 		      std::vector<std::pair<CVD::ImageRef, CVD::ImageRef> > &vMatches,
-		      SE3<> &se3CameraPos);
+		      SE3 &se3CameraPos);
   
   
   void AddKeyFrame(KeyFrame &k);   // Add a key-frame to the map. Called by the tracker.
@@ -65,8 +65,8 @@ protected:
   virtual void run();      // The MapMaker thread code lives here
 
   // Functions for starting the map from scratch:
-  SE3<> CalcPlaneAligner();
-  void ApplyGlobalTransformationToMap(SE3<> se3NewFromOld);
+  SE3 CalcPlaneAligner();
+  void ApplyGlobalTransformationToMap(SE3 se3NewFromOld);
   void ApplyGlobalScaleToMap(double dScale);
   
   // Map expansion functions:
@@ -75,7 +75,7 @@ protected:
   void AddSomeMapPoints(int nLevel);
   bool AddPointEpipolar(KeyFrame &kSrc, KeyFrame &kTarget, int nLevel, int nCandidate);
   // Returns point in ref frame B
-  Vector<3> ReprojectPoint(SE3<> se3AfromB, const Vector<2> &v2A, const Vector<2> &v2B);
+  Vector<3> ReprojectPoint(SE3 se3AfromB, const Vector<2> &v2A, const Vector<2> &v2B);
   
   // Bundle adjustment functions:
   void BundleAdjust(std::set<KeyFrame*>, std::set<KeyFrame*>, std::set<MapPoint*>, bool);

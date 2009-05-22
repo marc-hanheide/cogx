@@ -12,7 +12,7 @@ ATANCamera::ATANCamera(string sName)
 {
   // The camera name is used to find the camera's parameters in a GVar.
   msName = sName;
-  mgvvCameraParams =  makeVector(0.46881, 0.649292, 0.495359, 0.749042, -0.00200497);
+  mgvvCameraParams =  (make_Vector, 0.46881, 0.649292, 0.495359, 0.749042, -0.00200497);
   mvImageSize[0] = 640.0;
   mvImageSize[1] = 480.0;
   RefreshParams();
@@ -78,10 +78,10 @@ void ATANCamera::RefreshParams()
   {
     // First: Find out how big the linear bounding rectangle must be
     vector<Vector<2> > vv2Verts;
-    vv2Verts.push_back(UnProject(makeVector( -0.5, -0.5)));
-    vv2Verts.push_back(UnProject(makeVector( mvImageSize[0]-0.5, -0.5)));
-    vv2Verts.push_back(UnProject(makeVector( mvImageSize[0]-0.5, mvImageSize[1]-0.5)));
-    vv2Verts.push_back(UnProject(makeVector( -0.5, mvImageSize[1]-0.5)));
+    vv2Verts.push_back(UnProject((make_Vector, -0.5, -0.5)));
+    vv2Verts.push_back(UnProject((make_Vector, mvImageSize[0]-0.5, -0.5)));
+    vv2Verts.push_back(UnProject((make_Vector, mvImageSize[0]-0.5, mvImageSize[1]-0.5)));
+    vv2Verts.push_back(UnProject((make_Vector, -0.5, mvImageSize[1]-0.5)));
     Vector<2> v2Min = vv2Verts[0];
     Vector<2> v2Max = vv2Verts[0];
     for(int i=0; i<4; i++)
@@ -143,8 +143,8 @@ Vector<2> ATANCamera::UnProject(const Vector<2>& v2Im)
 // C.f. comment in top of ATANCamera.h
 Matrix<4> ATANCamera::MakeUFBLinearFrustumMatrix(double near, double far)
 {
-  Matrix<4> m4 = Zeros;
-  
+  Matrix<4> m4;
+  Zero(m4);
 
   double left = mvImplaneTL[0] * near;
   double right = mvImplaneBR[0] * near;
@@ -220,7 +220,7 @@ Matrix<2,NUMTRACKERCAMPARAMETERS> ATANCamera::GetCameraParameterDerivs()
       if(i == NUMTRACKERCAMPARAMETERS-1 && mdW == 0.0)
 	continue;
       Vector<NUMTRACKERCAMPARAMETERS> vNUpdate;
-      vNUpdate = Zeros;
+      Zero(vNUpdate);
       vNUpdate[i] += 0.001;
       UpdateParams(vNUpdate); 
       Vector<2> v2Out_B = Project(v2Cam);
@@ -229,7 +229,7 @@ Matrix<2,NUMTRACKERCAMPARAMETERS> ATANCamera::GetCameraParameterDerivs()
       RefreshParams();
     }
   if(mdW == 0.0)
-    m2NNumDerivs.T()[NUMTRACKERCAMPARAMETERS-1] = Zeros;
+    Zero(m2NNumDerivs.T()[NUMTRACKERCAMPARAMETERS-1]);
   return m2NNumDerivs;
 }
 
@@ -280,5 +280,5 @@ Vector<2> ATANCamera::UFBUnProject(const Vector<2>& v2Im)
   return mvLastCam;
 }
 
-const Vector<NUMTRACKERCAMPARAMETERS> ATANCamera::mvDefaultParams = makeVector(0.46881, 0.649292, 0.495359, 0.749042, -0.00200497);
+const Vector<NUMTRACKERCAMPARAMETERS> ATANCamera::mvDefaultParams = (make_Vector, 0.46881, 0.649292, 0.495359, 0.749042, -0.00200497);
 
