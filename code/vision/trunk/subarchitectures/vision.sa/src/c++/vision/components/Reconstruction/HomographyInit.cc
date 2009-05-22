@@ -5,7 +5,7 @@
 #include <TooN/se3.h>
 #include <TooN/SVD.h>
 #include <TooN/SymEigen.h>
-#include <TooN/wls.h>
+#include <TooN/wls_cholesky.h>
 #include "MEstimator.h"
 
 using namespace std;
@@ -30,7 +30,7 @@ double HomographyInit::MLESACScore(Matrix<3> m3Homography, HomographyMatch match
     return dSquaredError;
 }
 
-bool HomographyInit::Compute(vector<HomographyMatch> vMatches, double dMaxPixelError, SE3<> &se3SecondFromFirst)
+bool HomographyInit::Compute(vector<HomographyMatch> vMatches, double dMaxPixelError, SE3 &se3SecondFromFirst)
 {
   mdMaxPixelErrorSquared = dMaxPixelError * dMaxPixelError;
   mvMatches = vMatches;
@@ -105,10 +105,7 @@ Matrix<3> HomographyInit::HomographyFromMatches(vector<HomographyMatch> vMatches
   // The right null-space of the matrix gives the homography...
   SVD<> svdHomography(m2Nx9);
   Vector<9> vH = svdHomography.get_VT()[8];
-  Matrix<3> m3Homography;
-  m3Homography[0] = vH.slice<0,3>();
-  m3Homography[1] = vH.slice<3,3>();
-  m3Homography[2] = vH.slice<6,3>();
+  Matrix<3> m3Homography(vH.get_data_ptr());
   return m3Homography;
 };
 
@@ -117,7 +114,7 @@ Matrix<3> HomographyInit::HomographyFromMatches(vector<HomographyMatch> vMatches
 
 void HomographyInit::RefineHomographyWithInliers()
 {
-  WLS<9> wls;
+  WLSCholesky<9> wls;
   wls.add_prior(1.0);
   
   vector<Matrix<2,9> > vmJacobians;
@@ -142,11 +139,11 @@ void HomographyInit::RefineHomographyWithInliers()
       // Jacobians wrt to the elements of the homography:
       // For x:
       m29Jacobian[0].slice<0,3>() = unproject(v2First) / dDenominator;
-      m29Jacobian[0].slice<3,3>() = Zeros;
+      Zero(m29Jacobian[0].slice<3,3>());
       double dNumerator = v3Second[0];
       m29Jacobian[0].slice<6,3>() = -unproject(v2First) * dNumerator / (dDenominator * dDenominator);
       // For y:
-      m29Jacobian[1].slice<0,3>() = Zeros;
+      Zero(m29Jacobian[1].slice<0,3>());
       m29Jacobian[1].slice<3,3>()  = unproject(v2First) / dDenominator;;
       dNumerator = v3Second[1];
       m29Jacobian[1].slice<6,3>() = -unproject(v2First) * dNumerator / (dDenominator * dDenominator);
@@ -162,15 +159,12 @@ void HomographyInit::RefineHomographyWithInliers()
   for(unsigned int i=0; i<mvHomographyInliers.size(); i++)
     {
       double dWeight = Tukey::Weight(vdErrorSquared[i], dSigmaSquared);
-      wls.add_mJ(vvErrors[i][0], vmJacobians[i][0], dWeight);
-      wls.add_mJ(vvErrors[i][1], vmJacobians[i][1], dWeight);
+      wls.add_df(vvErrors[i][0], vmJacobians[i][0], dWeight);
+      wls.add_df(vvErrors[i][1], vmJacobians[i][1], dWeight);
     }
   wls.compute();
   Vector<9> v9Update = wls.get_mu();
-  Matrix<3> m3Update;
-  m3Update[0] = v9Update.slice<0,3>();
-  m3Update[1] = v9Update.slice<3,3>();
-  m3Update[2] = v9Update.slice<6,3>();
+  Matrix<3> m3Update(v9Update.get_data_ptr());
   mm3BestHomography += m3Update;
 }
 
@@ -186,7 +180,7 @@ void HomographyInit::BestHomographyFromMatches_MLESAC()
   // Enough matches? Run MLESAC.
   int anIndices[4];
   
-  mm3BestHomography = Identity;
+  Identity(mm3BestHomography);
   double dBestError = 999999999999999999.9;
   
   // Do 300 MLESAC trials.
@@ -280,7 +274,7 @@ void HomographyInit::DecomposeHomography()
   for(int signs=0; signs<4; signs++)
     {
       // Eq 13
-      decomposition.m3Rp = Identity;
+      Identity(decomposition.m3Rp);
       double dSinTheta = (d1 - d3) * x1_PM * x3_PM * e1[signs] * e3[signs] / d2;
       double dCosTheta = (d1 * x3_PM * x3_PM + d3 * x1_PM * x1_PM) / d2;
       decomposition.m3Rp[0][0] = dCosTheta;                
@@ -305,7 +299,7 @@ void HomographyInit::DecomposeHomography()
   for(int signs=0; signs<4; signs++)
     { 
       // Eq 15
-      decomposition.m3Rp = -1 * Identity;
+      Identity(decomposition.m3Rp, -1.0);
       double dSinPhi = (d1 + d3) * x1_PM * x3_PM * e1[signs] * e3[signs] / d2;
       double dCosPhi = (d3 * x1_PM * x1_PM - d1 * x3_PM * x3_PM) / d2;
       decomposition.m3Rp[0][0] = dCosPhi;                
@@ -407,7 +401,7 @@ void HomographyInit::ChooseBestDecomposition()
       double adSampsonusScores[2];
       for(int i=0; i<2; i++)
 	{
-	  SE3<> se3 = mvDecompositions[i].se3SecondFromFirst;
+	  SE3 se3 = mvDecompositions[i].se3SecondFromFirst;
 	  Matrix<3> m3Essential;
 	  for(int j=0; j<3; j++)
 	    m3Essential.T()[j] = se3.get_translation() ^ se3.get_rotation().get_matrix().T()[j];

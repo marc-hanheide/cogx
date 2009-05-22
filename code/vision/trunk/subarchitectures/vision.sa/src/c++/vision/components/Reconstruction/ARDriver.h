@@ -26,7 +26,7 @@ class ARDriver
 {
  public:
   ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw);
-  void Render(Image<Rgb<byte> > &imFrame, SE3<> se3CamFromWorld);
+  void Render(Image<Rgb<byte> > &imFrame, SE3 se3CamFromWorld);
   void Reset();
   void Init();
  protected:
@@ -46,7 +46,7 @@ class ARDriver
   int mnCounter;
   ImageRef mirFBSize;
   ImageRef mirFrameSize;
-  SE3<> mse3;
+  SE3 mse3;
   bool mbInitialised;
 
 

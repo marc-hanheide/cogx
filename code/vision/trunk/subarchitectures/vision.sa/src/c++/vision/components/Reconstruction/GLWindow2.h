@@ -9,7 +9,7 @@
 //  and a wrapper for CVD's text display routines.
 
 #include <cvd/glwindow.h>
-#include <TooN/TooN.h>
+#include <TooN/numerics.h>
 
 class GLWindowMenu;
 

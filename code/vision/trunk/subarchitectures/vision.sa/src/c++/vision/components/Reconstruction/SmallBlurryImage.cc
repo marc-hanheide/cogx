@@ -5,7 +5,7 @@
 #include <cvd/vision.h>
 #include <TooN/se2.h>
 #include <TooN/Cholesky.h>
-#include <TooN/wls.h>
+#include <TooN/wls_cholesky.h>
 
 using namespace CVD;
 using namespace std;
@@ -71,7 +71,7 @@ void SmallBlurryImage::MakeJacs()
 	  // N.b. missing 0.5 factor in above, this will be added later.
 	}
       else
-	v2Grad = Zeros;
+	Zero(v2Grad);
     }
   while(ir.next(mirSize));
   mbMadeJacs = true;
@@ -95,14 +95,14 @@ double SmallBlurryImage::ZMSSD(SmallBlurryImage &other)
 
 // Find an SE2 which best aligns an SBI to a target
 // Do this by ESM-tracking a la Benhimane & Malis
-pair<SE2<>,double> SmallBlurryImage::IteratePosRelToTarget(SmallBlurryImage &other, int nIterations)
+pair<SE2,double> SmallBlurryImage::IteratePosRelToTarget(SmallBlurryImage &other, int nIterations)
 {
-  SE2<> se2CtoC;
-  SE2<> se2WfromC;
+  SE2 se2CtoC;
+  SE2 se2WfromC;
   ImageRef irCenter = mirSize / 2;
   se2WfromC.get_translation() = vec(irCenter);
 
-  pair<SE2<>, double> result_pair;
+  pair<SE2, double> result_pair;
   if(!other.mbMadeJacs)
     {
       cerr << "You spanner, you didn't make the jacs for the target." << endl;
@@ -119,15 +119,15 @@ pair<SE2<>,double> SmallBlurryImage::IteratePosRelToTarget(SmallBlurryImage &oth
   for(int it = 0; it<nIterations; it++)
     {
       dFinalScore = 0.0;
-      v4Accum = Zeros;
-      v10Triangle = Zeros; // Holds the bottom-left triangle of JTJ
+      Zero(v4Accum);
+      Zero(v10Triangle); // Holds the bottom-left triangle of JTJ
       Vector<4> v4Jac;
       v4Jac[3] = 1.0;
       
-      SE2<> se2XForm = se2WfromC * se2CtoC * se2WfromC.inverse();
+      SE2 se2XForm = se2WfromC * se2CtoC * se2WfromC.inverse();
       
       // Make the warped current image template:
-      Vector<2> v2Zero = Zeros;
+      Vector<2> v2Zero;    Zero(v2Zero);
       CVD::transform(mimTemplate, imWarped, se2XForm.get_rotation().get_matrix(), se2XForm.get_translation(), v2Zero, -9e20f);
 
       // Now compare images, calc differences, and current image jacobian:
@@ -192,9 +192,9 @@ pair<SE2<>,double> SmallBlurryImage::IteratePosRelToTarget(SmallBlurryImage &oth
 	v4Update = chol.backsub(v4Accum);
       }
       
-      SE2<> se2Update;
+      SE2 se2Update;
       se2Update.get_translation() = -v4Update.slice<0,2>();
-      se2Update.get_rotation() = SO2<>::exp(-v4Update[2]);
+      se2Update.get_rotation() = SO2::exp(-v4Update[2]);
       se2CtoC = se2CtoC * se2Update;
       dMeanOffset -= v4Update[3];
     }
@@ -205,11 +205,11 @@ pair<SE2<>,double> SmallBlurryImage::IteratePosRelToTarget(SmallBlurryImage &oth
 }
 
 
-// What is the 3D camera rotation (zero trans) SE3<> which causes an
+// What is the 3D camera rotation (zero trans) SE3 which causes an
 // input image SO2 rotation?
-SE3<> SmallBlurryImage::SE3fromSE2(SE2<> se2, ATANCamera camera) 
+SE3 SmallBlurryImage::SE3fromSE2(SE2 se2, ATANCamera camera) 
 {
-  // Do this by projecting two points, and then iterating the SE3<> (SO3
+  // Do this by projecting two points, and then iterating the SE3 (SO3
   // actually) until convergence. It might seem stupid doing this so
   // precisely when the whole SE2-finding is one big hack, but hey.
   
@@ -223,10 +223,10 @@ SE3<> SmallBlurryImage::SE3fromSE2(SE2<> se2, ATANCamera camera)
   av3OrigPoints[0] = unproject(camera.UnProject(vec(mirSize / 2) + vec(ImageRef(5,0))));
   av3OrigPoints[1] = unproject(camera.UnProject(vec(mirSize / 2) + vec(ImageRef(-5,0))));
   
-  SO3<> so3;
+  SO3 so3;
   for(int it = 0; it<3; it++)
     {
-      WLS<3> wls;  // lazy; no need for the 'W'
+      WLSCholesky<3> wls;  // lazy; no need for the 'W'
       wls.add_prior(10.0);
       for(int i=0; i<2; i++)
 	{
@@ -241,22 +241,22 @@ SE3<> SmallBlurryImage::SE3fromSE2(SE2<> se2, ATANCamera camera)
 	  double dOneOverCameraZ = 1.0 / v3Cam[2];
 	  for(int m=0; m<3; m++)
 	    {
-	      const Vector<3> v3Motion = SO3<>::generator_field(m, v3Cam);
+	      const Vector<3> v3Motion = SO3::generator_field(m, v3Cam);
 	      Vector<2> v2CamFrameMotion;
 	      v2CamFrameMotion[0] = (v3Motion[0] - v3Cam[0] * v3Motion[2] * dOneOverCameraZ) * dOneOverCameraZ;
 	      v2CamFrameMotion[1] = (v3Motion[1] - v3Cam[1] * v3Motion[2] * dOneOverCameraZ) * dOneOverCameraZ;
 	      m23Jacobian.T()[m] = m2CamDerivs * v2CamFrameMotion;
 	    };
-	  wls.add_mJ(v2Error[0], m23Jacobian[0], 1.0);
-	  wls.add_mJ(v2Error[1], m23Jacobian[1], 1.0);
+	  wls.add_df(v2Error[0], m23Jacobian[0], 1.0);
+	  wls.add_df(v2Error[1], m23Jacobian[1], 1.0);
 	};
       
       wls.compute();
       Vector<3> v3Res = wls.get_mu();
-      so3 = SO3<>::exp(v3Res) * so3;
+      so3 = SO3::exp(v3Res) * so3;
     };
   
-  SE3<> se3Result;
+  SE3 se3Result;
   se3Result.get_rotation() = so3;
   return se3Result;
 }

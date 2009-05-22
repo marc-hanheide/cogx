@@ -120,11 +120,11 @@ struct LevelHelpersFiller // Code which should be initialised on init goes here;
   {
     for(int i=0; i<LEVELS; i++)
       {
-	if(i==0)  gavLevelColors[i] = makeVector(1.0, 0.0, 0.0);
-	else if(i==1)  gavLevelColors[i] = makeVector(1.0, 0.0, 0.0);
-	else if(i==2)  gavLevelColors[i] = makeVector(1.0, 0.0, 0.0);
-	else if(i==3)  gavLevelColors[i] = makeVector(1.0, 0.0, 0.0);
-	else gavLevelColors[i] =  makeVector(1.0, 0.0, 0.0); // In case I ever run with LEVELS > 4
+	if(i==0)  gavLevelColors[i] = (make_Vector, 1.0, 0.0, 0.0);
+	else if(i==1)  gavLevelColors[i] = (make_Vector, 1.0, 0.0, 0.0);
+	else if(i==2)  gavLevelColors[i] = (make_Vector, 1.0, 0.0, 0.0);
+	else if(i==3)  gavLevelColors[i] = (make_Vector, 1.0, 0.0, 0.0);
+	else gavLevelColors[i] =  (make_Vector, 1.0, 0.0, 0.0); // In case I ever run with LEVELS > 4
       }
   }
 };

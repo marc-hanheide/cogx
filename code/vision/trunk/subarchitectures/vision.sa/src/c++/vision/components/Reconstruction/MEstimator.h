@@ -9,11 +9,9 @@
 
 #ifndef __MESTIMATOR_H
 #define __MESTIMATOR_H
-#include <TooN/TooN.h>
-using namespace TooN;
+#include <TooN/numerics.h>
 #include <vector>
 #include <algorithm>
-#include <cassert>
 
 struct Tukey
 {
