@@ -152,7 +152,14 @@ module comsys {
 	  };	
 
 	
-	
+	//---------------------------------------------------------------------------
+	// Utterance planning and realization
+	//---------------------------------------------------------------------------
+
+	class ContentPlanningGoal { 
+		string cpgid;
+		lf::LogicalForm lform;
+	}; // end ProductionLF
 	
 	
 	

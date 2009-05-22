@@ -44,7 +44,7 @@ public class WordRecognitionLattice {
 
 	String Id;
 
-	int maxLength = 0;
+	long maxLength = 0;
 
 	static int idCount = 0;
 
@@ -163,7 +163,7 @@ public class WordRecognitionLattice {
 		return rawresults;
 	}
 
-	public int getMaximumLength() {
+	public long getMaximumLength() {
 		if (maxLength==0) {
 			log("WARNING: length of the lattice is set to zero");
 		}
