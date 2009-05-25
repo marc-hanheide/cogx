@@ -120,6 +120,15 @@ module VisionData {
     TrackingCommandType cmd;
   };
 
+  /** 
+   * @brief Object Detector Commands
+   * @author Andreas Richtsfeld
+   */
+  enum ObjectDetectionCommandType{ DSTART, DSTOP};
+  class ObjectDetectionCommand {
+    ObjectDetectionCommandType cmd;
+  };
+
   /**
    * Space of interest.
    * Coarsely described by a bounding sphere.
