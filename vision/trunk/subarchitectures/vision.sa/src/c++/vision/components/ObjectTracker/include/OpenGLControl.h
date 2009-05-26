@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <GL/gl.h>
+//#include <GL/glext.h>
+#include <string.h>
 
 class OpenGLControl
 {
@@ -13,7 +15,7 @@ private:
 public:
 	OpenGLControl();
 	
-	void Init();
+	bool Init();
 	void SetClearOptions(float clearcolor, float cleardepth);
 	
 	void RenderSettings(bool color, bool depth);

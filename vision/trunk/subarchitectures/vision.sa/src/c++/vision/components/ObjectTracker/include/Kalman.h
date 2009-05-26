@@ -13,7 +13,7 @@ class Kalman
 private:
 	CWSquareMatrix A, At, Pp, P, Q, R, I, S, Si;
 	CWMatrix B, H, Ht, K;
-	CWMatrix x, xp, z, a;
+	CWMatrix x0,x1,x2, xp, z, a[5];
 	
 	void setT(float dt);
 	
@@ -23,7 +23,7 @@ public:
 
 	void init();
 	void setX(float* xnew);
-	void run(float* zk, float dT, float xk[]);
+	void run(float* zk, float dT, float xk[], float mg=1);
 };
 
 #endif

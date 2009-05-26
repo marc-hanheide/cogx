@@ -48,6 +48,18 @@ Particle::Particle(mat3 rot, vec3 pos){
 	w = 0.0;
 }
 
+Particle::Particle(const Particle& p2){
+	rX = p2.rX;
+	rY = p2.rY;
+	rZ = p2.rZ;
+	
+	tX = p2.tX;
+	tY = p2.tY;
+	tZ = p2.tZ;
+	
+	w = p2.w;
+}
+
 Particle& Particle::operator=(const Particle& p2){
 	rX = p2.rX;
 	rY = p2.rY;
@@ -73,6 +85,18 @@ bool Particle::operator==(const Particle& p2){
 	}
 	
 	return true;		
+}
+
+void Particle::activate(){
+	glPushMatrix();
+		glTranslatef(tX, tY, tZ);
+		glRotatef(rX, 1.0, 0.0, 0.0);
+		glRotatef(rY, 0.0, 1.0, 0.0);
+		glRotatef(rZ, 0.0, 0.0, 1.0);
+}
+
+void Particle::deactivate(){
+	glPopMatrix();
 }
 
 void Particle::print(){
@@ -204,9 +228,7 @@ void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int d
     else
     	pMax = p_ref;
     
-    //float maximaRange = MAXIMA_RANGE;
-    
-    // keep pMax at position 0
+    // keep pMax at id 0
     m_particlelist[0] = *pMax;
     // for all other particles add noise
     for(int i=1; i<m_num_particles; i++){
@@ -229,17 +251,6 @@ void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int d
         pIt->tY = pMax->tY + noiseTransY;
         pIt->tZ = pMax->tZ + noiseTransZ;
         
-        // with the last particles perform special movement to get out of local maxima
-        //if(i > NUM_PARTICLES - maximaRange){
-        //    rot[i].x = rot[0].x;
-        //    rot[i].y = rot[0].y + 180.0 * ((rand() % 2) -0.5);
-        //    rot[i].z = rot[0].z;
-        //    
-        //    trans[i].x = trans[i].x + ((rand() % 2) - 0.5) * 0.05;
-        //    trans[i].y = trans[i].y;
-        //    trans[i].z = trans[i].z + ((rand() % 2) - 0.5) * 0.05;
-        //}
-        
         // limit search to view area of camera (frustum culling)
         if(!g_Resources->GetFrustum()->SphereInFrustum( pIt->tX, pIt->tY, pIt->tZ, -m_frustum_offset))
         {
@@ -251,15 +262,18 @@ void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int d
 }
 
 void Particles::activate(int id){
+/*
 	glPushMatrix();
 		glTranslatef(m_particlelist[id].tX, m_particlelist[id].tY, m_particlelist[id].tZ);
 		glRotatef(m_particlelist[id].rX, 1.0, 0.0, 0.0);
 		glRotatef(m_particlelist[id].rY, 0.0, 1.0, 0.0);
 		glRotatef(m_particlelist[id].rZ, 0.0, 0.0, 1.0);
+*/
+	m_particlelist[id].activate();
 }
 
-void Particles::deactivate(){
-	glPopMatrix();
+void Particles::deactivate(int id){
+	m_particlelist[id].deactivate();
 }
 
 void Particles::startCountD(int id){
@@ -282,11 +296,18 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 	unsigned int v, d;
 	int id;
 	id_max = 0;
+	int v_max_tmp = 0;
 	
-	for(id=0; id<num_particles; id++){
-		// Get number of pixels from GL_OCCLUSION_QUERY
+	if(m_num_particles<num_particles)
+		printf("[Particles::calcLikelihood] Warning to less storage for 'num_particles'. Please increase number of particles\n");
+	
+	for(id=0; (id<num_particles && id<m_num_particles); id++){
+		// Get number of pixels from Occlusion Query
 		glGetOcclusionQueryuivNV(queryV[id], GL_PIXEL_COUNT_NV, &v);
 		glGetOcclusionQueryuivNV(queryD[id], GL_PIXEL_COUNT_NV, &d);
+		
+		if(v>v_max_tmp)
+			v_max_tmp = v;
 		
 		// get maximum visible pixles of edge representation
 		if(v>v_max)
@@ -305,6 +326,10 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 			w_max = m_particlelist[id].w * w_max;
 	}
 	
+	// Adjust v_max to visible area of object
+	if(v_max_tmp < v_max)
+		v_max -= (v_max - v_max_tmp) / 100;
+	
 	// sort particles by likelihood and average most likely particles
 	if(num_avaraged_particles > 1){
 		std::sort(m_particlelist, m_particlelist+m_num_particles);
@@ -313,20 +338,22 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		float divider = 1 / float(mean_range);
 		Particle p(0.0);
 		for(id=0; id<mean_range; id++){
-			p.rX += m_particlelist[id].rX;
-			p.rY += m_particlelist[id].rY;
-			p.rZ += m_particlelist[id].rZ;
-			p.tX += m_particlelist[id].tX;
-			p.tY += m_particlelist[id].tY;
-			p.tZ += m_particlelist[id].tZ;
+			p.rX += (m_particlelist[id].rX * m_particlelist[id].w);
+			p.rY += (m_particlelist[id].rY * m_particlelist[id].w);
+			p.rZ += (m_particlelist[id].rZ * m_particlelist[id].w);
+			p.tX += (m_particlelist[id].tX * m_particlelist[id].w);
+			p.tY += (m_particlelist[id].tY * m_particlelist[id].w);
+			p.tZ += (m_particlelist[id].tZ * m_particlelist[id].w);
+			p.w  += m_particlelist[id].w;
 		}
+		divider = 1.0 / p.w;
 		p.rX = p.rX * divider;
 		p.rY = p.rY * divider;
 		p.rZ = p.rZ * divider;
 		p.tX = p.tX * divider;
 		p.tY = p.tY * divider;
 		p.tZ = p.tZ * divider;
-		p.w = m_particlelist[0].w;
+		p.w  = p.w / float(mean_range);
 		
 		m_particlelist[0] = p;
 		id_max = 0;

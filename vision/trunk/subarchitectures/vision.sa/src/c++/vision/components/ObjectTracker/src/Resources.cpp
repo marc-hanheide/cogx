@@ -64,6 +64,7 @@ IplImage* Resources::InitCapture(float width, float height, int camID){
 	
 	m_image = cvQueryFrame(m_capture);
 	cvConvertImage(m_image, m_image, CV_CVTIMG_FLIP | CV_CVTIMG_SWAP_RB);
+	//cvFlip(m_image, m_image, 1);
 	return m_image;
 }
 
@@ -162,6 +163,7 @@ IplImage* Resources::GetNewImage(){
 	}
 	m_image = cvQueryFrame(m_capture);
 	cvConvertImage(m_image, m_image, CV_CVTIMG_FLIP | CV_CVTIMG_SWAP_RB);
+	//cvFlip(m_image, m_image, 1);
 	return m_image;
 }
 

@@ -151,17 +151,20 @@ void ObjectTracker::runComponent(){
  
   // Initialize tracking (parameters for edge-based tracking)
   if(!tracker.init(	cvImage->width, cvImage->height,	// image size
-					600,								// number of particles
+					3000,								// number of particles
 					49.0,								// camera field of view in degree
-					0.25, 0.3, 0.25,					// camera position from coordinate frame in meter
-					40.0,								// standard deviation of rotational noise in degree
+					0.25, 0.25, 0.25,					// camera position from coordinate frame in meter
+					45.0,								// standard deviation of rotational noise in degree
 					0.1,								// standard deviation of translational noise in meter
 					2,									// cascading stages (expert)
 					300,								// cascading averaging range (expert)
 					20.0,								// edge matching tolerance in degree
 					128, 128,							// edge matching viewport in pixel (expert)
+					0.07,
 					false,								// kalman filtering enabled
 					true))								// draw coordinate frame at inertial 0-position
+
+							
 	log("Initialisation failed!");
 
   cvReleaseImage(&cvImage);
@@ -213,6 +216,7 @@ void ObjectTracker::runComponent(){
 	  
 	  cvReleaseImage(&cvImage);
 	  sleepComponent(10);
+	  
 	}else{
 	  // * Idle *
       sleepComponent(1000);

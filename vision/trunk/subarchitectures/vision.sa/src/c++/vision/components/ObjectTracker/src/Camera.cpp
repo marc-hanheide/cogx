@@ -66,7 +66,6 @@ void Camera::Activate()
 		Transform();
 		
 		g_Resources->GetFrustum()->ExtractFrustum();
-		
 	}
 }
 

@@ -61,7 +61,7 @@ void ObjectTrackerDriver::runComponent()
                        
   // Load geometry from ply-file
   log("loading model 'box_blender.ply'");
-  m_model.load("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/box_blender.ply");
+  m_model.load("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/jasmin.ply");
     
   // Generate VisualObject
   VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
