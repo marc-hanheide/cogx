@@ -12,7 +12,7 @@
 //				Pierre Lison			<pierre.lison@dfki.de>
 //
 // TO DO:
-//
+// 
 // 
 // For an edit log, see the bottom of this file. 
 //
