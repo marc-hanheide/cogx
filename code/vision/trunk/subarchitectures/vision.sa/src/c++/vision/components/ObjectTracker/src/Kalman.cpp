@@ -31,10 +31,16 @@ Kalman::Kalman(){
 	Ht.dimension(12,6);	// H_transposed
 	K.dimension(12,6);	// kalman gain
 	
-	x.dimension(12,1);	// system state
+	x0.dimension(12,1);	// system state
+	x1.dimension(12,1);	// previous state (x_{k-1})
+	x2.dimension(12,1);	// previous state (x_{k-2})
 	xp.dimension(12,1);	// predicted system state
 	z.dimension(6,1);	// measurement
-	a.dimension(6,1);	// acceleration
+	a[0].dimension(6,1);	// acceleration
+	a[1].dimension(6,1);	// acceleration
+	a[2].dimension(6,1);	// acceleration
+	a[3].dimension(6,1);	// acceleration
+	a[4].dimension(6,1);	// acceleration
 	
 	init();	
 }
@@ -55,18 +61,24 @@ Kalman::~Kalman(){
 	Ht.deallocate();
 	K.deallocate();
 	
-	x.deallocate();
+	x0.deallocate();
+	x1.deallocate();
+	x2.deallocate();
 	xp.deallocate();
 	z.deallocate();
-	a.deallocate();
+	a[0].deallocate();
+	a[1].deallocate();
+	a[2].deallocate();
+	a[3].deallocate();
+	a[4].deallocate();
 }
 
 void Kalman::init(){
-	float rR = 0.3;
-	float rT = 0.15;
+	float rR = 1.5;//0.3;
+	float rT = 1.5;//0.15;
 	
-	float qR = 0.3; //0.08;
-	float qT = 0.3;
+	float qR = 0.7; //0.08;
+	float qT = 0.7;
 	
 	A.fill(0.0);	// linear system matrix
 	At.fill(0.0);	// linear system matrix
@@ -83,10 +95,16 @@ void Kalman::init(){
 	Ht.fill(0.0);	// H_transposed
 	K.fill(0.0);	// kalman gain
 	
-	x.fill(0.0);	// system state
+	x0.fill(0.0);	// system state
+	x1.fill(0.0);	// previous state (x_{k-1})
+	x2.fill(0.0);	// previous state (x_{k-2})
 	xp.fill(0.0);	// predicted system state
 	z.fill(0.0);	// measurement
-	a.fill(0.0);	// acceleration
+	a[0].fill(0.0);	// acceleration
+	a[1].fill(0.0);	// acceleration
+	a[2].fill(0.0);	// acceleration
+	a[3].fill(0.0);	// acceleration
+	a[4].fill(0.0);	// acceleration
 	
 	A[0][0]= 1.0; A[1][1] = 1.0; A[2][2] = 1.0; A[3][3] = 1.0; A[4][4] = 1.0; A[5][5] = 1.0;
 	A[6][6]= 1.0; A[7][7] = 1.0; A[8][8] = 1.0; A[9][9] = 1.0; A[10][10] = 1.0; A[11][11] = 1.0;
@@ -119,37 +137,46 @@ void Kalman::setT(float dT){
 // set internal state
 void Kalman::setX(float* xnew){
 	
-	x[0][0] = xnew[0]; x[1][0] = xnew[1]; x[2][0] = xnew[2];
-	x[3][0] = xnew[3]; x[4][0] = xnew[4]; x[5][0] = xnew[5];
+	x0[0][0] = xnew[0]; x0[1][0] = xnew[1]; x0[2][0] = xnew[2];
+	x0[3][0] = xnew[3]; x0[4][0] = xnew[4]; x0[5][0] = xnew[5];
 	
-	x[6][0] = 0.0; x[7][0] = 0.0; x[8][0] = 0.0;
-	x[9][0] = 0.0; x[10][0] = 0.0; x[11][0] = 0.0;
+	x0[6][0] = 0.0; x0[7][0] = 0.0; x0[8][0] = 0.0;
+	x0[9][0] = 0.0; x0[10][0] = 0.0; x0[11][0] = 0.0;
 	
 }
 
-void Kalman::run(float* zk, float dT, float xk[]){
+void Kalman::run(float* zk, float dT, float xk[], float mg){
 	
 	// Load arguments to kalman variables (CWMatrix)
 	z[0][0]=zk[0]; z[1][0]=zk[1]; z[2][0]=zk[2]; 
 	z[3][0]=zk[3]; z[4][0]=zk[4]; z[5][0]=zk[5];
 	setT(dT);
 	
+	// store previous states
+	x2 = x1;
+	x1 = x0;
+	a[4] = a[3];
+	a[3] = a[2];
+	a[2] = a[1];
+	a[1] = a[0];
+	
 	// Time Update "Predict"
-	xp = (A*x) + (B*a);
+	xp = (A*x0) + (B*a[0]);
 	Pp = (A*(P*At)) + Q;
 	
 	// Measurement Update "Correct"
-	S = (H*(Pp*Ht)) + R;
+	S = (H*(Pp*Ht)) + R*mg;
 	Si.storeInverse(S);
 	K = Pp*(Ht*Si);
-	x = xp + (K*(z-(H*xp)));
+	x0 = xp + (K*(z-(H*xp)));
 	
 	// estimate input (=acceleration)
-	a = (x-xp)*(2/(dT*dT))*0.3;
+	a[0] = (x0-x1*2+x2)*(2/(dT*dT)) * 0.0;	
+	a[0] = (a[0]+a[1]+a[2]+a[3]+a[4]) * (1.0/5.0);
 	
 	// Store result in array for output
-	xk[0] = x[0][0]; xk[1] = x[1][0]; xk[2] = x[2][0];
-	xk[3] = x[3][0]; xk[4] = x[4][0]; xk[5] = x[5][0];
+	xk[0] = x0[0][0]; xk[1] = x0[1][0]; xk[2] = x0[2][0];
+	xk[3] = x0[3][0]; xk[4] = x0[4][0]; xk[5] = x0[5][0];
 }
 
 

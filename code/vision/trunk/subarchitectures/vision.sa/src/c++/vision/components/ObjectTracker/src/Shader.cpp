@@ -284,7 +284,7 @@ void Shader::setUniform(const char* var,int n,const float* f)
 void Shader::setUniform(const char* var,vec2 f)
 {
     int loc = glGetUniformLocationARB(program,var);
-    glUniform1fvARB(loc,2,f.v);
+    glUniform2fvARB(loc,1,f.v);
 }
 
 void Shader::setUniform(const char* var,int n,vec2* f)
@@ -308,7 +308,7 @@ void Shader::setUniform(const char* var,int n,vec3* f)
 void Shader::setUniform(const char* var,vec4 f)
 {
     int loc = glGetUniformLocationARB(program,var);
-    glUniform1fvARB(loc,4,f.v);
+    glUniform4fv(loc,1,f.v);
 }
 
 void Shader::setUniform(const char* var,int n,vec4* f)

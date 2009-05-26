@@ -25,12 +25,16 @@ public:
 	Particle(float val);
 	Particle(float* mv);
 	Particle(mat3 rot, vec3 pos);
+	Particle(const Particle& p2);
 	
 	Particle& operator=(const Particle& p2);
 	bool operator==(const Particle& p2);
 	
 	inline bool operator<(const Particle& p2) const { return w < p2.w; }
 	inline bool operator>(const Particle& p2) const { return w > p2.w; }
+	
+	void activate();
+	void deactivate();
 	
 	void print();
 	void getModelView(float* matrix4x4);
@@ -65,6 +69,7 @@ public:
 	Particle* getMax(){ return &m_particlelist[id_max]; }
 	int getMaxID(){ return id_max; }
 	int getVMax(){ return v_max; }
+	void setVMax(int val){ v_max = val; }
 	unsigned int* getQueryD(int id){ return &queryD[id]; }
 	unsigned int* getQueryV(int id){ return &queryV[id]; }
 	int getNumParticles(){ return m_num_particles; }
@@ -72,8 +77,9 @@ public:
 	
 	void perturb(Particle noise_particle, Particle* p_ref=NULL, unsigned int distribution=GAUSS);
 	void activate(int id);
+	void deactivate(int id);
 	void activateMax(){ activate(id_max); }
-	void deactivate();
+	void deactivateMax(){ deactivate(id_max); }
 	
 	void startCountD(int id);
 	void startCountV(int id);

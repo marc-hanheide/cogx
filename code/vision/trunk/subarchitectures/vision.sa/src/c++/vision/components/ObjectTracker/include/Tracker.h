@@ -3,6 +3,7 @@
 #define __TRACKER_H__
 
 #include <stdio.h>
+#include <math.h>
 #include <SDL.h>
 #include <GL/gl.h>
 
@@ -10,7 +11,6 @@
 #include "OpenGLControl.h"
 #include "Resources.h"
 #include "Kalman.h"
-#include "math.h"
 #include "mathlib.h"
 
 class Tracker{
@@ -34,25 +34,28 @@ private:
     	
     	int viewport_width;					// matching viewport width in pixels
     	int viewport_height;				// matching viewport height in pixels
+    	
+    	float track_time;					// time for one tracking pass (the less time given, the less particle will be used)
 	} Parameter;
 	
-	Timer m_timer;
+	Parameter params;
 	
+	Timer m_timer;
+	float time_tracking;
+	
+	// Kalman
 	float m_zk[6];
 	float m_xk[6];
 	Kalman m_kalman;
 	Timer m_kalmantimer;
+	float m_kalman_gain[4];
 	FILE* pFile;
 	
-	
-	Parameter params;
-
+	// Resources
 	ImageProcessor* m_ip;
 	Particles* m_particles;
 	Texture* m_tex_frame;
-	Texture* m_tex_frame_ip;
-	Texture* m_tex_frame_thinn;
-	Texture* m_tex_frame_spread_1;
+	Texture* m_tex_frame_ip[4];
 	Texture* m_tex_model;
 	Texture* m_tex_model_ip;
 	Model* m_model;
@@ -62,28 +65,39 @@ private:
 	Camera* m_cam_perspective;
 	OpenGLControl m_opengl;
 	
+	// Matrices
 	mat4 m_modelview;
 	mat4 m_projection;
 	mat4 m_modelviewprojection;
 	
+	// Controls
 	bool m_lock;
 	bool m_showparticles;
 	bool m_showmodel;
 	bool m_kalman_enabled;
 	bool m_cascaded;
 	bool m_draw_coordinates;
-	float time_tracking;
+	bool m_draw_edges;
+	bool m_zero_particles;
+	bool m_result_textured;
 	
+	bool m_tracker_initialized;
+	
+	// Functions (texture tracking)
 	void image_processing_texture(unsigned char* image);
-	void image_processing_edge(unsigned char* image);
-	void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
 	void model_processing();
 	void particle_processing_texture(int num_particles, unsigned int num_avaraged_particles=1);
+	
+	// Functions (edge tracking)
+	void image_processing_edge(unsigned char* image);
 	void particle_processing_edge(int num_particles, unsigned int num_avaraged_particles=1);
-	void draw_result_texture();
+	
+	// Functions (both)
+	void kalman_filtering(Particle* pm);
+	void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
+	void draw_result_texture(Particle* p);
 	void draw_result_edge();
 	
-	void getModelViewMatrix(float* mat4x4_modelview);
 	bool inputs();
 	
 public:
@@ -99,6 +113,7 @@ public:
 				int cs = 4, int cmm = 150,
 				float et=20.0,
 				int vw=128, int vh=128,
+				float tt=0.05,
 				bool kal=true,
 				bool dc = false);
 				
@@ -113,12 +128,8 @@ public:
 					Particle& p_result);
 	
 	void renderCoordinates();
-	bool render(unsigned char* image);
-	bool render(Model* model); 
-	bool run();
-	bool release();
-	
 	void showStatistics();
+	bool release();	
 
 };
 
