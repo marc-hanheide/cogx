@@ -151,6 +151,109 @@ module comsys {
 		string ipAddress ;
 	  };	
 
+
+	//---------------------------------------------------------------------------
+	// Abstract structs for Caching - i.e. multi-level representation
+	//---------------------------------------------------------------------------
+
+	sequence<long> LongIds; 
+
+	//	An index association relates two sequence of indices
+	class IndexAssociation { 
+		LongIds id1;
+		LongIds id2;
+		string relType ;
+	} ;
+
+	sequence<IndexAssociation> IndexAssociations;
+
+	//	A CacheMapping is a sequence of associations between indices.
+	class CacheMapping { 
+		IndexAssociations associations;
+	} ; 
+
+
+	//	A Cache is a pair of pointers to content representations (one of which is a set of graph structures
+	//	from the packed logical form) , and a mapping between indices in these representations 
+	//	to associate content. 
+
+	sequence<any> AnyContents;
+
+	class Cache {
+		string CacheId ;  			// the cache identifier 
+	    string cacheType ;			// the type of the cache, as per the comsys ontology types 
+		PackedLFs plf ;				//  the packed logical form associated to the cache 
+		AnyContents content1 ;	// a set of pointers (eg. discourse referents) 
+		AnyContents content2 ;	// a set of pointers (eg. graph structures within the packed logical form) 
+		CacheMapping mapping ;		// mapping between the indices of the two representations 
+	} ;
+
+	sequence<Cache> CacheSeq;
+
+	//---------------------------------------------------------------------------
+	// Structs for the discourse model representation
+	//---------------------------------------------------------------------------
+	
+	sequence<string> StringArgs;
+	
+	
+	// SDRS formula representing a rhetorical relation 
+	class SDRSRelation {
+		string relType ;		// Relation type 
+		StringArgs args ;		// Sequence of arguments - speech act discourse referents 
+		bool issubord ;			// is subordinated 
+	} ;
+	
+		
+	// IDL switch: a SDRS formula can store two (mutually exclusive)
+	// type of objects: a rhetorical relation, or a packed logical form 
+	// union SDRSType switch (short) {
+	//	case 1: SDRSRelation relation ;
+	//	case 2: PackedLFs plf ;
+	//} ;
+		
+	
+	// A SDRS formula 
+	class SDRSFormula {
+		string label ;				// Formula label 
+		string tprec ;				// Temporal precedence 
+		CacheSeq caches ;				// set of caches associated to the formula 
+		SDRSType type ;				// type of formula - either a rhetorical relation or a logical form 
+	} ;
+	
+	
+	// <label,formula> pair 
+	class LabelFormulaPair {
+		string label ;				// the label 
+		SDRSFormula formula ;		// the formula 
+	} ;
+	
+	sequence<LabelFormulaPair> LabelFormulaPairs;
+	
+	
+	// Mapping between a label and a formula 
+	class LabelFormulaMapping {
+		LabelFormulaPairs mapping ;
+	} ;
+		
+		
+	// A SDRS - Segmented Discourse Representation Structure 
+	class SDRS {
+		StringArgs A ;			// Set of speech act discourse referents 
+		string LAST ; 					// label of the content of the last clause  added to the LF 
+		LabelFormulaMapping F ;			// function assigning a SDRS-formula to each label in A 
+	} ;
+	
+	
+
+
+
+
+
+
+
+
+
 	
 	//---------------------------------------------------------------------------
 	// Utterance planning and realization
@@ -160,6 +263,8 @@ module comsys {
 		string cpgid;
 		lf::LogicalForm lform;
 	}; // end ProductionLF
+	
+	
 	
 	
 	
