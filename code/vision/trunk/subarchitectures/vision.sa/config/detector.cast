@@ -11,6 +11,6 @@ CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Detector ObjectDetector --videohost localhost --videoname video --camid 0 --log --debug 
 CPP MG DetectorDriver ObjectDetectorDriver --log
-#CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
+CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
 #CPP MG TrackerDriver ObjectTrackerDriver --labels "random" --log
 
