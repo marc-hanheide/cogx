@@ -26,6 +26,7 @@ private:
     int m_height;       // Image height in pixels
     int m_dlRect;       // Display list for rectification (distorted TexCoords)
     int m_dlImage;      // Display List for normal images (less geometry)
+    int m_dlUpsideDown; // Display List for flipping image upside down
     int m_lensMode;     // Enumeration for lens rectification algorithm (NONE, BARREL)
     
     Shader* m_shadeGauss;		// Fragment shader for blurring image using gaussian filter
@@ -34,8 +35,8 @@ private:
     Shader* m_shadeSpreading;   // Fragment shader for spreading edges
     
     bool initShader();
-    bool initTexture(GLuint* texture);
     bool dlImage();
+    bool dlFlipUpsideDown();
     bool dlRectification();
     bool transform(int i,int j,double *ix,double *iy);
 
@@ -45,16 +46,17 @@ public:
     ~ImageProcessor();
     
     // Image Processing functions
+    void flipUpsideDown(Texture* source, Texture* result);
     void rectification(Texture* source, Texture* result);
     void gauss(Texture* source, Texture* result);
     void sobel(Texture* source, Texture* result);
     void thinning(Texture* source, Texture* result);
     void spreading(Texture* source, Texture* result);
+    void render(Texture* tex);
     
     // Main functions
     bool init(int w, int h);
-    void render(Texture* tex);
-    
+
 };
 
 #endif

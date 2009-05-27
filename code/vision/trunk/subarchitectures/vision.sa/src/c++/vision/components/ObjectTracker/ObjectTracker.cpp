@@ -151,8 +151,8 @@ void ObjectTracker::runComponent(){
   g_Resources->InitScreen(cvImage->width, cvImage->height);
  
   // Initialize tracking (parameters for edge-based tracking)
-  if(!tracker.init(	cvImage->width, cvImage->height,	// image size
-					3000,								// number of particles in storage (will be adjusted by the tracker)
+  if(!tracker.init(	cvImage->width, cvImage->height,	// image size in pixels
+					3000,								// maximum number of particles
 					49.0,								// camera field of view in degree
 					0.25, 0.25, 0.25,					// camera position from coordinate frame in meter
 					30.0,								// standard deviation of rotational noise in degree
@@ -161,7 +161,7 @@ void ObjectTracker::runComponent(){
 					300,								// cascading averaging range (not in use)
 					20.0,								// edge matching tolerance in degree
 					256, 256,							// edge matching viewport in pixel (expert)
-					0.05,								// tracking time tolerance in seconds
+					0.05,								// goal tracking time in seconds
 					true,								// kalman filtering enabled
 					true))								// draw coordinate frame at inertial 0-position
 

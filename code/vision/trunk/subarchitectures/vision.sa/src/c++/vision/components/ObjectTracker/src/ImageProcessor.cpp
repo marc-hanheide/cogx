@@ -8,22 +8,9 @@ ImageProcessor::ImageProcessor(){
 }
 
 ImageProcessor::~ImageProcessor(){
-    
-}
-
-// Generate Textures and set parameters
-bool ImageProcessor::initTexture(GLuint* texture){
-    
-    // Generate texture
-	glGenTextures(1, texture);
-    glBindTexture(GL_TEXTURE_2D, *texture);
-    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); 
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	
-    return true;
+    glDeleteLists(m_dlRect, 1);
+    glDeleteLists(m_dlImage, 1);
+    glDeleteLists(m_dlUpsideDown, 1);
 }
 
 // Load and compile shaders and set parameters
@@ -108,7 +95,22 @@ bool ImageProcessor::dlImage(){
     float y = float(m_height)/2.0;
     
     glBegin(GL_QUADS);
-        glTexCoord2f(0,1); glVertex3f(-x,-y, 0.0);
+        glTexCoord2f(0,0); glVertex3f(-x,-y, 0.0);
+        glTexCoord2f(1,0); glVertex3f( x,-y, 0.0);
+        glTexCoord2f(1,1); glVertex3f( x, y, 0.0);
+        glTexCoord2f(0,1); glVertex3f(-x, y, 0.0);
+    glEnd();
+    
+    return true;
+}
+
+// Display list for flipping image upside down
+bool ImageProcessor::dlFlipUpsideDown(){
+    float x = float(m_width)/2.0;
+    float y = float(m_height)/2.0;
+    
+    glBegin(GL_QUADS);
+		glTexCoord2f(0,1); glVertex3f(-x,-y, 0.0);
         glTexCoord2f(1,1); glVertex3f( x,-y, 0.0);
         glTexCoord2f(1,0); glVertex3f( x, y, 0.0);
         glTexCoord2f(0,0); glVertex3f(-x, y, 0.0);
@@ -186,6 +188,14 @@ bool ImageProcessor::transform(int i,int j,double *ix,double *iy){
 
 // *** Image Processing functions ***
 
+void ImageProcessor::flipUpsideDown(Texture* source, Texture* result){
+	glEnable(GL_TEXTURE_2D);
+		source->bind();
+		glCallList(m_dlUpsideDown);
+		result->copyTexImage2D(source->getWidth(), source->getHeight());
+	glDisable(GL_TEXTURE_2D);
+}
+
 void ImageProcessor::rectification(Texture* source, Texture* result){
 	glEnable(GL_TEXTURE_2D);
 		source->bind();
@@ -234,6 +244,12 @@ void ImageProcessor::spreading(Texture* source, Texture* result){
     glDisable(GL_TEXTURE_2D);;
 }
 
+void ImageProcessor::render(Texture* tex){
+	glEnable(GL_TEXTURE_2D);
+		tex->bind();
+		glCallList(m_dlImage);
+	glDisable(GL_TEXTURE_2D);
+}
 
 // Main initialisation function
 bool ImageProcessor::init(int w, int h){
@@ -246,25 +262,23 @@ bool ImageProcessor::init(int w, int h){
         return false;
     }
     
-	// Setup display list for camera image
+	// Setup display lists
     m_dlRect = glGenLists(1);
 	m_lensMode = BARREL;
 	glNewList(m_dlRect, GL_COMPILE);
         dlRectification();
 	glEndList();
 	
-	// Setup display list for camera image
     m_dlImage = glGenLists(1);
 	glNewList(m_dlImage, GL_COMPILE);
         dlImage();
 	glEndList();
 	
+	m_dlUpsideDown = glGenLists(1);
+	glNewList(m_dlUpsideDown, GL_COMPILE);
+		dlFlipUpsideDown();
+	glEndList();
+	
     return true;
 }
 
-void ImageProcessor::render(Texture* tex){
-	glEnable(GL_TEXTURE_2D);
-		tex->bind();
-		glCallList(m_dlImage);
-	glDisable(GL_TEXTURE_2D);
-}

@@ -10,6 +10,7 @@ class Particles;
 #include <stdlib.h>
 #include <algorithm>
 #include <GL/gl.h>
+#include <vector>
 
 #define GAUSS 0
 #define NORMAL 1
@@ -41,7 +42,7 @@ public:
 	void getPose(float* matrix3x3, float* pos3);
 
 };
-	
+
 class Particles
 {
 private:

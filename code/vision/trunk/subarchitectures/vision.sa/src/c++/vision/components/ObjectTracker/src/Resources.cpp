@@ -30,19 +30,18 @@ Resources::Resources(){
 }
 
 Resources::~Resources(){
-	
 	ReleaseCapture();
 	ReleaseScreen();
 	ReleaseImageProcessor();
 	ReleaseParticles();
 	ReleaseFrustum();
-		
+	
 	ReleaseModel();
 	ReleaseTexture();
 	ReleaseShader();
 	ReleaseCamera();
 	
-	printf("\nResources released\n\n");
+	printf("Resources released\n");
 }
 
 // *** Initialisation ***
