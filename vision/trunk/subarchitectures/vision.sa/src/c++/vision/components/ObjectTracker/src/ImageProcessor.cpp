@@ -108,10 +108,10 @@ bool ImageProcessor::dlImage(){
     float y = float(m_height)/2.0;
     
     glBegin(GL_QUADS);
-        glTexCoord2f(0,0); glVertex3f(-x,-y, 0.0);
-        glTexCoord2f(1,0); glVertex3f( x,-y, 0.0);
-        glTexCoord2f(1,1); glVertex3f( x, y, 0.0);
-        glTexCoord2f(0,1); glVertex3f(-x, y, 0.0);
+        glTexCoord2f(0,1); glVertex3f(-x,-y, 0.0);
+        glTexCoord2f(1,1); glVertex3f( x,-y, 0.0);
+        glTexCoord2f(1,0); glVertex3f( x, y, 0.0);
+        glTexCoord2f(0,0); glVertex3f(-x, y, 0.0);
     glEnd();
     
     return true;
