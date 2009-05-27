@@ -75,7 +75,7 @@ public:
 	int getNumParticles(){ return m_num_particles; }
 	void printMax(){ m_particlelist[id_max].print(); }
 	
-	void perturb(Particle noise_particle, Particle* p_ref=NULL, unsigned int distribution=GAUSS);
+	void perturb(Particle noise_particle, int num_particles, Particle* p_ref=NULL, unsigned int distribution=GAUSS);
 	void activate(int id);
 	void deactivate(int id);
 	void activateMax(){ activate(id_max); }

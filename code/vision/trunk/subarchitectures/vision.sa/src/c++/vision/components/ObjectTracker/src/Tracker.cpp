@@ -65,7 +65,7 @@ void Tracker::particle_motion(float pow_scale, Particle* p_ref, unsigned int dis
 	noise_particle.tZ = params.noise_trans_max * pow_scale * (1.2-w);
 	
     if(!m_lock){
-   		m_particles->perturb(noise_particle, p_ref, distribution);
+   		m_particles->perturb(noise_particle, params.number_of_particles, p_ref, distribution);
    	}
 }
 
@@ -603,6 +603,7 @@ bool Tracker::trackEdge(	unsigned char* image,
 							Particle p_estimate,
 							Particle& p_result)		// storage to write tracked position
 {
+	
 	if(!m_tracker_initialized){
 		printf("[Tracker::trackTexture] Error tracker not initialized\n");
 		return false;
@@ -633,7 +634,7 @@ bool Tracker::trackEdge(	unsigned char* image,
 	glColor3f(1.0,0.0,0.0);
 	m_tex_frame_ip[1]->bind();	// bind camera image
 	particle_motion(0.1, NULL, GAUSS);
-	particle_processing_edge(params.number_of_particles*0.125, 10);
+	particle_processing_edge(params.number_of_particles*0.25, 10);
 	
 	// Kalman filter
 	if(m_kalman_enabled)
@@ -654,17 +655,16 @@ bool Tracker::trackEdge(	unsigned char* image,
 	if(m_draw_coordinates)
 		renderCoordinates();
 		
+	
 	SDL_GL_SwapBuffers();
 	
 	// adjust number of particles according to tracking speed
 	time_tracking = m_timer.Update();
 	params.number_of_particles += 10;
 	if(time_tracking > params.track_time && params.number_of_particles > 100)
-		params.number_of_particles += 1000 * (0.03 - time_tracking);
-	else if(time_tracking < 0.030)
-		params.number_of_particles += 1000 * (0.03 - time_tracking);
+		params.number_of_particles -= 50;		
 	
-	SDL_Delay(10);
+	//SDL_Delay(10);
 	return inputs();
 
 }

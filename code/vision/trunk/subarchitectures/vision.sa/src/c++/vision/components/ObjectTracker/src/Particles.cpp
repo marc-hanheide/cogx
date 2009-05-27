@@ -213,7 +213,7 @@ Particles::~Particles(){
 	free(queryV);
 }
 
-void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int distribution){
+void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_ref, unsigned int distribution){
 	Particle* pMax;
 	Particle* pIt;
 	
@@ -228,7 +228,7 @@ void Particles::perturb(Particle noise_particle, Particle* p_ref, unsigned int d
     // keep pMax at id 0
     m_particlelist[0] = *pMax;
     // for all other particles add noise
-    for(int i=1; i<m_num_particles; i++){
+    for(int i=1; i<num_particles; i++){
     	pIt = &m_particlelist[i];
         
         // Generate noise

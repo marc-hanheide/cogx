@@ -162,7 +162,7 @@ IplImage* Resources::GetNewImage(){
 		return 0;
 	}
 	m_image = cvQueryFrame(m_capture);
-	cvConvertImage(m_image, m_image, CV_CVTIMG_FLIP | CV_CVTIMG_SWAP_RB);
+	//cvConvertImage(m_image, m_image, CV_CVTIMG_SWAP_RB);
 	//cvFlip(m_image, m_image, 1);
 	return m_image;
 }
