@@ -163,10 +163,10 @@ void ObjectTracker::runComponent(){
 					256, 256,							// edge matching viewport in pixel (expert)
 					0.05,								// goal tracking time in seconds
 					true,								// kalman filtering enabled
-					true))								// draw coordinate frame at inertial 0-position
-
-							
+					true)){								// draw coordinate frame at inertial 0-position
 	log("Initialisation failed!");
+	running = false;
+  }
 
   cvReleaseImage(&cvImage);
   
