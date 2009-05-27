@@ -154,7 +154,7 @@ void ObjectTracker::runComponent(){
   if(!tracker.init(	cvImage->width, cvImage->height,	// image size in pixels
 					3000,								// maximum number of particles
 					49.0,								// camera field of view in degree
-					0.25, 0.25, 0.25,					// camera position from coordinate frame in meter
+					0.0, 0.25, 0.25,					// camera position from coordinate frame in meter
 					30.0,								// standard deviation of rotational noise in degree
 					0.07,								// standard deviation of translational noise in meter
 					2,									// cascading stages (not in use)
