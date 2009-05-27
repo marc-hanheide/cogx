@@ -201,12 +201,9 @@ Particles::Particles(int num, Particle p){
 	queryD = (unsigned int*)malloc(sizeof(unsigned int) * num);
 	queryV = (unsigned int*)malloc(sizeof(unsigned int) * num);
 	
-	// Generate Occlusion Queries
-    for(int i=0; i<num; i++){
-        glGenOcclusionQueriesNV(1, &queryD[i]);
-        glGenOcclusionQueriesNV(1, &queryV[i]);
-    }
-    
+	glGenQueriesARB(num, queryD);
+    glGenQueriesARB(num, queryV);
+
 	setAll(p);
 }
 
@@ -277,19 +274,19 @@ void Particles::deactivate(int id){
 }
 
 void Particles::startCountD(int id){
-	glBeginOcclusionQueryNV(queryD[id]);
+	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryD[id]);
 }
 
 void Particles::startCountV(int id){
-	glBeginOcclusionQueryNV(queryV[id]);
+	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryV[id]);
 }
 
 void Particles::endCountD(){
-	glEndOcclusionQueryNV();
+	glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 }
 
 void Particles::endCountV(){
-	glEndOcclusionQueryNV();
+	glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 }
 
 void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_particles){
