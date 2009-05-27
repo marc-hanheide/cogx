@@ -87,7 +87,7 @@ void ObjectTrackerDriver::runComponent()
   
   // Track for 10 seconds
   log("tracking 20 seconds");
-  sleepComponent(40000);
+  sleepComponent(120000);
   
   // Send stop tracking command
   log("send tracking command: STOP");
