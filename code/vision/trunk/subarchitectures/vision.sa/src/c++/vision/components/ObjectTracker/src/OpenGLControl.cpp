@@ -14,12 +14,12 @@ bool OpenGLControl::Init(){
 	//glDisable(GL_CULL_FACE);
 	
 	const GLubyte *str;
-	int glOcclusionQueryNVAvailable;
+	int glOcclusionQueryAvailable;
 	
 	str = glGetString(GL_EXTENSIONS);
-	glOcclusionQueryNVAvailable = (strstr((const char *)str, "GL_NV_occlusion_query") != NULL);
-	if(!glOcclusionQueryNVAvailable){
-		printf("[OpenGLControl] Error OpenGL extension 'GL_NV_occlusion_query' not available. Your graphic card does not support this extension or the hardware driver for your graphic card is not installed properly!\n");
+	glOcclusionQueryAvailable = (strstr((const char *)str, "GL_ARB_occlusion_query") != NULL);
+	if(!glOcclusionQueryAvailable){ 
+		printf("[OpenGLControl] Error OpenGL extension 'GL_ARB_occlusion_query' not available. Your graphic card does not support this extension or the hardware driver for your graphic card is not installed properly!\n");
 		return false;
 	}
 		
