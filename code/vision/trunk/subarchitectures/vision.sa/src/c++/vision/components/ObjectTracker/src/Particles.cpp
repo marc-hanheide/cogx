@@ -290,7 +290,7 @@ void Particles::endCountV(){
 }
 
 void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_particles){
-	unsigned int v, d;
+	int v, d;
 	int id;
 	id_max = 0;
 	int v_max_tmp = 0;
@@ -300,8 +300,8 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 	
 	for(id=0; (id<num_particles && id<m_num_particles); id++){
 		// Get number of pixels from Occlusion Query
-		glGetOcclusionQueryuivNV(queryV[id], GL_PIXEL_COUNT_NV, &v);
-		glGetOcclusionQueryuivNV(queryD[id], GL_PIXEL_COUNT_NV, &d);
+		glGetQueryObjectivARB(queryV[id], GL_QUERY_RESULT_ARB, &v);
+		glGetQueryObjectivARB(queryD[id], GL_QUERY_RESULT_ARB, &d);
 		
 		if(v>v_max_tmp)
 			v_max_tmp = v;
