@@ -49,7 +49,6 @@ private:
 	Kalman m_kalman;
 	Timer m_kalmantimer;
 	float m_kalman_gain[4];
-	FILE* pFile;
 	
 	// Resources
 	ImageProcessor* m_ip;
@@ -104,18 +103,19 @@ public:
 	Tracker();
 	~Tracker();
 	
-	bool init(	int width, int height,
-				int nop=500,
-				float fovy=49.0,
-				float cipX=0.3, float cipY=0.3, float cipZ=0.3,
-				float n_r_max=45.0,
-				float n_t_max=0.1,
-				int cs = 4, int cmm = 150,
-				float et=20.0,
-				int vw=128, int vh=128,
-				float tt=0.05,
-				bool kal=true,
-				bool dc = false);
+	bool init(	int width, int height,								// image size in pixels
+				int nop=2000,										// maximum number of particles
+				float fovy=49.0,									// camera field of view in degree
+				float cipX=0.3, float cipY=0.3, float cipZ=0.3,		// camera position from coordinate frame in meter
+				float n_r_max=45.0,									// standard deviation of rotational noise in degree
+				float n_t_max=0.1,									// standard deviation of translational noise in meter
+				int cs = 4,											// cascading stages (not in use)
+				int cmm = 150,										// cascading averaging range (not in use)
+				float et=20.0,										// edge matching tolerance in degree
+				int vw=128, int vh=128,								// edge matching viewport in pixel (expert)
+				float tt=0.05,										// goal tracking time in seconds
+				bool kal=true,										// kalman filtering enabled
+				bool dc = false);									// draw coordinate frame at inertial 0-position
 				
 	bool trackTexture(	unsigned char* image,
 						Model* model,

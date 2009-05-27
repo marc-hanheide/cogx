@@ -14,7 +14,9 @@ void Tracker::image_processing_texture(unsigned char* image){
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	m_cam_ortho->Activate();
+	m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
 	m_ip->gauss(m_tex_frame, m_tex_frame_ip[0]);
+	m_ip->render(m_tex_frame_ip[0]);
 	m_ip->sobel(m_tex_frame_ip[0], m_tex_frame_ip[0]);
 	m_ip->thinning(m_tex_frame_ip[0], m_tex_frame_ip[0]);
 	m_ip->spreading(m_tex_frame_ip[0], m_tex_frame_ip[1]);
@@ -34,6 +36,7 @@ void Tracker::image_processing_edge(unsigned char* image){
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	m_cam_ortho->Activate();
+	m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
 	m_ip->gauss(m_tex_frame, m_tex_frame_ip[0]);
 	m_ip->sobel(m_tex_frame_ip[0], m_tex_frame_ip[0]);
 	m_ip->thinning(m_tex_frame_ip[0], m_tex_frame_ip[0]);
@@ -373,8 +376,7 @@ Tracker::Tracker(){
 	m_draw_edges = false;
 	m_result_textured = true;
 	m_tracker_initialized = false;
-	
-	//pFile = fopen("../Results/analysis/kalman.txt","w");
+
 }
 
 Tracker::~Tracker(){
@@ -518,6 +520,7 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	}
 	m_model = model;
 	
+	
 	// Process image from camera (edge detection)
 	image_processing_texture(image);
 	
@@ -576,12 +579,10 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	else
 		draw_result_edge();
 	
-	
-	
 	// Draw coordinates
 	if(m_draw_coordinates)
 		renderCoordinates();
-
+	
 	// Swap GL-buffers (let CPU wait for GPU)
 	SDL_GL_SwapBuffers();
 	
@@ -589,9 +590,11 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	time_tracking = m_timer.Update();
 	params.number_of_particles += 10;
 	if(time_tracking > params.track_time && params.number_of_particles > 100)
-		params.number_of_particles += 1000 * (0.03 - time_tracking);
-	else if(time_tracking < 0.030)
-		params.number_of_particles += 1000 * (0.03 - time_tracking);
+		params.number_of_particles += 1000 * (params.track_time - time_tracking);
+	else if(time_tracking < params.track_time)
+		params.number_of_particles += 1000 * (params.track_time - time_tracking);
+	if(params.number_of_particles > m_particles->getNumParticles())
+		params.number_of_particles = m_particles->getNumParticles();
 	
 	SDL_Delay(10);
 	return inputs();
@@ -662,9 +665,13 @@ bool Tracker::trackEdge(	unsigned char* image,
 	time_tracking = m_timer.Update();
 	params.number_of_particles += 10;
 	if(time_tracking > params.track_time && params.number_of_particles > 100)
-		params.number_of_particles -= 50;		
+		params.number_of_particles += 1000 * (params.track_time - time_tracking);
+	else if(time_tracking < params.track_time)
+		params.number_of_particles += 1000 * (params.track_time - time_tracking);
+	if(params.number_of_particles > m_particles->getNumParticles())
+		params.number_of_particles = m_particles->getNumParticles();
 	
-	//SDL_Delay(10);
+	SDL_Delay(10);
 	return inputs();
 
 }
@@ -745,7 +752,6 @@ void Tracker::showStatistics(){
 }
 
 bool Tracker::release(){
-	//fclose(pFile);
 	return true;
 }
 
