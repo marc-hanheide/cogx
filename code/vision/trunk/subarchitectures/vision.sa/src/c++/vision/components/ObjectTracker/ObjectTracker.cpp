@@ -29,6 +29,7 @@ using namespace VisionData;
 ObjectTracker::ObjectTracker(){
   camId = 0;
   track = false;
+  running = true;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -154,13 +155,13 @@ void ObjectTracker::runComponent(){
 					3000,								// number of particles in storage (will be adjusted by the tracker)
 					49.0,								// camera field of view in degree
 					0.25, 0.25, 0.25,					// camera position from coordinate frame in meter
-					45.0,								// standard deviation of rotational noise in degree
-					0.1,								// standard deviation of translational noise in meter
+					30.0,								// standard deviation of rotational noise in degree
+					0.07,								// standard deviation of translational noise in meter
 					2,									// cascading stages (not in use)
 					300,								// cascading averaging range (not in use)
 					20.0,								// edge matching tolerance in degree
 					256, 256,							// edge matching viewport in pixel (expert)
-					0.04,								// tracking time tolerance in seconds
+					0.05,								// tracking time tolerance in seconds
 					true,								// kalman filtering enabled
 					true))								// draw coordinate frame at inertial 0-position
 
@@ -177,7 +178,7 @@ void ObjectTracker::runComponent(){
   double dTimeStamp;
   int i;
   
-  while(isRunning())
+  while(running)
   {
   	if(track){
   	// * Tracking *
@@ -198,7 +199,7 @@ void ObjectTracker::runComponent(){
 	    m_trackpose.w = obj->detectionConfidence;
 	    
 		// Track model
-		tracker.trackEdge((unsigned char*)(&image.data[0]), model, m_trackpose, m_trackpose);
+		running = tracker.trackEdge((unsigned char*)(&image.data[0]), model, m_trackpose, m_trackpose);
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(m_trackpose, obj->pose);
@@ -213,19 +214,20 @@ void ObjectTracker::runComponent(){
 	  //log("TimeImage:   %.0f ms", fTimeImage*1000.0);
 	  //log("TimeTracker: %.0f ms", fTimeTracker*1000.0);
 	  
-	  
+	  cvReleaseImage(&cvImage);
 	  sleepComponent(10);
 	  
 	}else{
 	  // * Idle *
       sleepComponent(1000);
+      log("sleeping");
 	}
   }
- 
-  // Releasing Resources here cause ~ObjectTracker() not called when [STRG+C]
-  tracker.release();
-  cvReleaseImage(&cvImage);
+  
   delete(g_Resources);
+  tracker.release();
+  log("stop");
+  
 }
 
 
