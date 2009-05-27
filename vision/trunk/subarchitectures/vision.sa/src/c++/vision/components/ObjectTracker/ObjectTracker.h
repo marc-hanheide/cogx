@@ -30,6 +30,7 @@ private:
   Particle m_trackpose;
   int camId;  
   bool track;
+  bool running;
   
   struct IDList{
   	int resources_ID;

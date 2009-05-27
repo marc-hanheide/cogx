@@ -374,7 +374,7 @@ Tracker::Tracker(){
 	m_result_textured = true;
 	m_tracker_initialized = false;
 	
-	pFile = fopen("../Results/analysis/kalman.txt","w");
+	//pFile = fopen("../Results/analysis/kalman.txt","w");
 }
 
 Tracker::~Tracker(){
@@ -745,7 +745,7 @@ void Tracker::showStatistics(){
 }
 
 bool Tracker::release(){
-	fclose(pFile);
+	//fclose(pFile);
 	return true;
 }
 
