@@ -424,13 +424,7 @@ bool Tracker::init(	int width, int height,
 	m_kalman_gain[1] = 1;
 	m_kalman_gain[0] = 1;
 	
-	// Singleton resources
-	g_Resources->InitImageProcessor(width, height);
-	g_Resources->InitParticles(params.number_of_particles, Particle(0.0));
-	g_Resources->InitFrustum();
 	
-	m_ip = g_Resources->GetImageProcessor();
-	m_particles = g_Resources->GetParticles();
 	
 	// Textures
 	int id;
@@ -489,7 +483,6 @@ bool Tracker::init(	int width, int height,
 	m_shadeTextureCompare->setUniform("fTol", params.edge_tolerance);
 	m_shadeTextureCompare->unbind();
 	
-	// Shader
 	if((id = g_Resources->AddShader("edgetest", "edgetest.vert", "edgetest.frag")) == -1)
 		return false;
 	m_shadeEdgeCompare = g_Resources->GetShader(id);
@@ -499,6 +492,13 @@ bool Tracker::init(	int width, int height,
 	m_shadeEdgeCompare->setUniform("height", params.height);
 	m_shadeEdgeCompare->setUniform("fTol", params.edge_tolerance);
 	m_shadeEdgeCompare->unbind();
+	
+	// Singleton resources
+	g_Resources->InitImageProcessor(width, height);
+	g_Resources->InitParticles(params.number_of_particles, Particle(0.0));
+	g_Resources->InitFrustum();
+	m_ip = g_Resources->GetImageProcessor();
+	m_particles = g_Resources->GetParticles();
 	
 	return (m_tracker_initialized = true);
 }
