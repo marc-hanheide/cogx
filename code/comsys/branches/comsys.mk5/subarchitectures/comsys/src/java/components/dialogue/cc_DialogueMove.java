@@ -83,7 +83,7 @@ import lf.*;
 	factories to create the event structure for the packed logical form. 
  */
 
-public class DialogueMoveInterpretation 
+public class cc_DialogueMove 
 	extends ManagedComponent 
 {
 
