@@ -177,14 +177,14 @@ module comsys {
 	//	from the packed logical form) , and a mapping between indices in these representations 
 	//	to associate content. 
 
-	sequence<any> AnyContents;
+	sequence<string> Pointers;
 
 	class Cache {
 		string CacheId ;  			// the cache identifier 
 	    string cacheType ;			// the type of the cache, as per the comsys ontology types 
 		PackedLFs plf ;				//  the packed logical form associated to the cache 
-		AnyContents content1 ;	// a set of pointers (eg. discourse referents) 
-		AnyContents content2 ;	// a set of pointers (eg. graph structures within the packed logical form) 
+		Pointers content1 ;	// a set of pointers (eg. discourse referents) 
+		Pointers content2 ;	// a set of pointers (eg. graph structures within the packed logical form) 
 		CacheMapping mapping ;		// mapping between the indices of the two representations 
 	} ;
 
@@ -204,21 +204,13 @@ module comsys {
 		bool issubord ;			// is subordinated 
 	} ;
 	
-		
-	// IDL switch: a SDRS formula can store two (mutually exclusive)
-	// type of objects: a rhetorical relation, or a packed logical form 
-	// union SDRSType switch (short) {
-	//	case 1: SDRSRelation relation ;
-	//	case 2: PackedLFs plf ;
-	//} ;
-		
 	
 	// A SDRS formula 
 	class SDRSFormula {
 		string label ;				// Formula label 
 		string tprec ;				// Temporal precedence 
 		CacheSeq caches ;				// set of caches associated to the formula 
-		SDRSType type ;				// type of formula - either a rhetorical relation or a logical form 
+		string type ;				// type of formula - either a rhetorical relation or a logical form 
 	} ;
 	
 	
