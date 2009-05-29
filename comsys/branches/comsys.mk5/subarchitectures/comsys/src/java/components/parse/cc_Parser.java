@@ -49,7 +49,7 @@ import comsys.processing.parse.PackedLFParseResults;
 import comsys.arch.ProcessingData;
 
 
-import comsys.processing.asr.WordRecognitionLattice;
+// import comsys.processing.asr.WordRecognitionLattice;
 import comsys.arch.ComsysException;
 import comsys.utils.ComsysUtils;
 import comsys.arch.ComsysGoals;
@@ -501,15 +501,15 @@ public class cc_Parser
                     }
                 });
             
-			// register change filters for PhonString, which triggers parsing
-            addChangeFilter(
+			// register change filters for WordRecognitionLattices, which triggers parsing
+      /**      addChangeFilter(
             		ChangeFilterFactory.createGlobalTypeFilter((Class<Ice.Object>)WordRecognitionLattice.class,  WorkingMemoryOperation.ADD),
                 new WorkingMemoryChangeReceiver() {
                     public void workingMemoryChanged(WorkingMemoryChange _wmc) {
                     	log("Word recognition lattice successfully received!");
                     	handleWorkingMemoryChange(_wmc, true);
                     }
-                });
+                }); */
 
 			// register change filters for PackedLFs, which triggers continuation of parsing				
      /**       addChangeFilter(
@@ -766,7 +766,7 @@ public class cc_Parser
             } // end if..else check for data object
         } 
         
-        
+       /** 
         else if (pdTypes.contains(CASTUtils.typeName(WordRecognitionLattice.class))) {
             CASTData data = pd
                 .getByType(CASTUtils.typeName(WordRecognitionLattice.class));
@@ -839,7 +839,7 @@ public class cc_Parser
             } // end if..else check for data object
         } 
         
-        
+        */
         
         else if (pdTypes.contains(CASTUtils.typeName(PackedLFs.class))) { 
 			CASTData data = pd
