@@ -204,16 +204,22 @@ module comsys {
 		bool issubord ;			// is subordinated 
 	} ;
 	
-	
+
+	class SDRSType {
+		string type ;
+		SDRSRelation relation ;
+		PackedLFs plf ;
+	} ;			
+
 	// A SDRS formula 
 	class SDRSFormula {
 		string label ;				// Formula label 
 		string tprec ;				// Temporal precedence 
 		CacheSeq caches ;				// set of caches associated to the formula 
-		string type ;				// type of formula - either a rhetorical relation or a logical form 
+		SDRSType type ;				// type of formula - either a rhetorical relation or a logical form 
 	} ;
 	
-	
+
 	// <label,formula> pair 
 	class LabelFormulaPair {
 		string label ;				// the label 
