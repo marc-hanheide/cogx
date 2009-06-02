@@ -379,10 +379,24 @@ void VisionCore::NewImage()
 //       principles[i]->ResetRunTime();
 //     }
 
+//   delete img;
+//   const IplImage *ipl = video->CurrentFramePtr();
+//   img = new Image(ipl->imageData, ipl->width, ipl->height,
+//       video->BytesPerPixel(), video->ColorFmt(), true, video->BytesPerLine());
+
+
   delete img;
   const IplImage *ipl = video->CurrentFramePtr();
   img = new Image(ipl->imageData, ipl->width, ipl->height,
-      video->BytesPerPixel(), video->ColorFmt(), true, video->BytesPerLine());
+      video->BytesPerPixel(), video->ColorFmt(), false, video->BytesPerLine());
+
+	IplImage *nipl = cvCreateImageHeader(cvSize(ipl->width, ipl->height), IPL_DEPTH_8U, 3);
+	nipl->imageData = img->Data();
+	cvConvertImage( ipl, nipl, CV_CVTIMG_SWAP_RB);
+	cvReleaseImageHeader(&nipl);
+
+
+
   ClearGestalts();
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
@@ -909,7 +923,7 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 {
 	if(NumObjects() > number)
 	{
-		if(Objects(number)->type == Gestalt::CUBE	&& !Objects(number)->IsMasked())
+		if(Objects(number)->type == Gestalt::CUBE && !Objects(number)->IsMasked())
 		{
 			cd = Objects(number)->cuD;
 			masked = false;
