@@ -9,7 +9,8 @@
 	<property name="slice.dir" value="./src/slice" />
 
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
-	<taskdef name="slice2java" classname="Slice2JavaTask"/>
+	<taskdef name="slice2java" classname="Slice2JavaTask">
+	</taskdef>
 
 	
 	<!-- =================================================================== -->
@@ -38,8 +39,8 @@
 	<!-- Source generation                                                   -->
 	<!-- =================================================================== -->
 	<target name="slice-lf" depends="prepare" description="generates source from slice">
-	  <slice2java tie="true" outputdir="${src.dir}">
-	    <fileset dir="${slice.dir}" includes="LF.ice"/>
+ 		 <slice2java tie="true" outputdir="${src.dir}">
+		    <fileset dir="${slice.dir}" includes="LF.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
 	    </includepath>
@@ -47,7 +48,7 @@
 	</target>
 
 	<target name="slice-comsys" depends="prepare" description="generates source from slice">
-	  <slice2java tie="true" outputdir="${src.dir}">
+		<slice2java tie="true" outputdir="${src.dir}">
 	    <fileset dir="${slice.dir}" includes="Comsys.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
