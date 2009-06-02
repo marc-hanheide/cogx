@@ -62,7 +62,7 @@ void ObjectDetectorDriver::runComponent()
     log("detection start-command sent!");
   
     // Detect for 10 seconds
-    sleepComponent(10000);
+    sleepComponent(30000);
   
     // Send stop tracking command
     detect_cmd->cmd = VisionData::DSTOP;
@@ -70,7 +70,7 @@ void ObjectDetectorDriver::runComponent()
     log("detection stop command sent!");
 
     // Sleep for 10 seconds
-    sleepComponent(10000);
+    sleepComponent(5000);
   }
 }
 
