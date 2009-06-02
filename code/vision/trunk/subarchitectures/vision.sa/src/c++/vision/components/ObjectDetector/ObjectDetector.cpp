@@ -224,14 +224,17 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	for(unsigned i=0; i<4; i++)
 	{
 		Vertex v0, v1; 
-		v0.pos.x = cd.corner_points[i][0].x;
-		v0.pos.y = cd.corner_points[i][0].y;
+		v0.pos.x = cd.corner_points3D[i][0].x;
+		v0.pos.y = cd.corner_points3D[i][0].y;
 		v0.pos.z = (cd.length_a + cd.length_b)/2.;	// currently not estimated ==> mean between side length
-		v1.pos.x = cd.corner_points[i][1].x;
-		v1.pos.y = cd.corner_points[i][1].y;
+		v1.pos.x = cd.corner_points3D[i][1].x;
+		v1.pos.y = cd.corner_points3D[i][1].y;
 		v1.pos.z = 0;																// on ground plane!
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
+
+printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2, v0.pos.x, v0.pos.y, v0.pos.z); 
+printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.z); 
 	}
 
 	// create faces
