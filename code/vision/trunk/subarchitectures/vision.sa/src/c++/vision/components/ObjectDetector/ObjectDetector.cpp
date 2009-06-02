@@ -233,8 +233,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2, v0.pos.x, v0.pos.y, v0.pos.z); 
-printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.z); 
+// printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2, v0.pos.x, v0.pos.y, v0.pos.z); 
+// printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.z); 
 	}
 
 	// create faces
