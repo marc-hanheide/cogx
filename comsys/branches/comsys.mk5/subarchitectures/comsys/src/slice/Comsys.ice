@@ -15,11 +15,12 @@
 #include <LF.ice>
 
 module comsys {
+module datastructs {
+module comsysEssentials {
 
-
-	// BaseData 
+	// BaseData
 	// The class BaseData provides fields shared by all Comsys objects
-
+	
 	class BaseData { 
 		string id;
 	};  
@@ -278,7 +279,8 @@ module comsys {
 	
 	
 };
-
+}; 
+};
 #endif
 
 

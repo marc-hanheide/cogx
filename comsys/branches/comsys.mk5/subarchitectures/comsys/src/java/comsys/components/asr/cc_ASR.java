@@ -37,9 +37,9 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-import comsys.PhonString;
-import comsys.RecogResult;
-import comsys.SpokenOutputItem;
+import comsys.datastructs.comsysEssentials.PhonString;
+import comsys.datastructs.comsysEssentials.RecogResult;
+import comsys.datastructs.comsysEssentials.SpokenOutputItem;
 
 import comsys.arch.ProcessingData;
 import comsys.processing.asr.RecognitionResult;

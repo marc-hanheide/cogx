@@ -44,7 +44,7 @@ import cast.core.CASTUtils;
 // COMSYS IMPORTS
 // -----------------------------------------------------------------
 
-import comsys.*;
+import comsys.datastructs.comsys.*;
 import comsys.processing.parse.PackedLFParseResults;
 import comsys.arch.ProcessingData;
 
@@ -87,9 +87,9 @@ import opennlp.ccg.parse.ParseException;
 // -----------------------------------------------------------------
 // REPRESENTATION IMPORTS
 // -----------------------------------------------------------------
-import lf.* ;
-import lf.utils.LFPacking ;
-import lf.utils.LFUtils ;
+import comsys.datastructs.lf.* ;
+import comsys.lf.utils.LFPacking ;
+import comsys.lf.utils.LFUtils ;
 import java.util.Arrays;
 // =================================================================
 // CLASS DOCUMENTATION
