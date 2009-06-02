@@ -8,6 +8,9 @@
 Installation prerequieries:
 ---------------------------
 
+MODERN GRAPHICS CARD
+	best: NVIDIA
+
 SDL:
 	libsdl1.2-dev
 
