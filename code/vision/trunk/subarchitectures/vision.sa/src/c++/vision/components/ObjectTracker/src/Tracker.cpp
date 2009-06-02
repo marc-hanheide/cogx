@@ -120,6 +120,7 @@ void Tracker::particle_processing_texture(int num_particles, unsigned int num_av
 	
 	// Set perspective mode and smaller viewport
 	m_opengl.RenderSettings(false, false);	// (color-enabled, depth-enabled)
+	
 	m_cam_perspective->Activate();
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0,0,params.viewport_width,params.viewport_height);
@@ -341,6 +342,7 @@ bool Tracker::inputs(){
 				case SDLK_z:
 					printf("Zero particles\n");
 					p = Particle(0.0);
+					p.tX = 0.0;
 					m_zk[0] = p.rX; m_zk[1] = p.rY; m_zk[2] = p.rZ; 
 					m_zk[3] = p.tX; m_zk[4] = p.tY; m_zk[5] = p.tZ;
 					m_kalman.init();
@@ -428,6 +430,7 @@ bool Tracker::init(	int width, int height,
 	g_Resources->InitImageProcessor(width, height);
 	g_Resources->InitParticles(params.number_of_particles, Particle(0.0));
 	g_Resources->InitFrustum();
+	
 	m_ip = g_Resources->GetImageProcessor();
 	m_particles = g_Resources->GetParticles();
 	
@@ -468,15 +471,16 @@ bool Tracker::init(	int width, int height,
 						0.1, 10.0,
 						GL_ORTHO);
 							
-	if((id = g_Resources->AddCamera("cam_perspective")) == -1)
+	
+	if((id = g_Resources->AddCamera("cam_default")) == -1)
 		return false;
-	m_cam_perspective = g_Resources->GetCamera(id);
-	m_cam_perspective->Set(	params.camera_initial_position_x, params.camera_initial_position_y, params.camera_initial_position_z,
-							0.0, 0.0, 0.0,
-							0.0, 1.0, 0.0,
-							params.camera_fovy, width, height,
-							0.1, 10.0,
-							GL_PERSPECTIVE);
+	m_cam_default = g_Resources->GetCamera(id);
+	m_cam_default->Set(	params.camera_initial_position_x, params.camera_initial_position_y, params.camera_initial_position_z,
+						0.0, 0.0, 0.0,
+						0.0, 1.0, 0.0,
+						params.camera_fovy, width, height,
+						0.1, 10.0,
+						GL_PERSPECTIVE);
 							
 	// Shader
 	if((id = g_Resources->AddShader("texturetest", "texturetest.vert", "texturetest.frag")) == -1)
@@ -488,6 +492,7 @@ bool Tracker::init(	int width, int height,
 	m_shadeTextureCompare->setUniform("fTol", params.edge_tolerance);
 	m_shadeTextureCompare->unbind();
 	
+	// Shader
 	if((id = g_Resources->AddShader("edgetest", "edgetest.vert", "edgetest.frag")) == -1)
 		return false;
 	m_shadeEdgeCompare = g_Resources->GetShader(id);
@@ -498,16 +503,15 @@ bool Tracker::init(	int width, int height,
 	m_shadeEdgeCompare->setUniform("fTol", params.edge_tolerance);
 	m_shadeEdgeCompare->unbind();
 	
-	
-	
 	return (m_tracker_initialized = true);
 }
 
 // Tracking function for texture tracking
 bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, unsigned byte each)
 							Model* model,				// tracking model (textured, vertexlist, facelist) 
+							Camera* camera,				// extrinsic camera (defining pose and projection)
 							Particle p_estimate,		// position estimate of model (R,t)
-							Particle& p_result)		// storage to write tracked position
+							Particle& p_result)			// storage to write tracked position
 {
 	if(!m_tracker_initialized){
 		printf("[Tracker::trackTexture] Error tracker not initialized\n");
@@ -520,6 +524,13 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	}
 	m_model = model;
 	
+	if(!camera){
+		printf("[Tracker::trackTexture] Warning camera not set, using default values\n");
+		m_cam_perspective = m_cam_default;
+	}else{
+		m_cam_perspective = camera;
+	}
+	
 	
 	// Process image from camera (edge detection)
 	image_processing_texture(image);
@@ -531,6 +542,7 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	
+	
 	if(m_draw_edges)
 		m_ip->render(m_tex_frame_ip[3]);
 	else
@@ -539,25 +551,25 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	
 	// Recursive particle filtering
 	m_shadeTextureCompare->bind();
-	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,0.0,0.0));
+	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
 	m_shadeTextureCompare->unbind();
 	m_tex_frame_ip[3]->bind(1);
 	particle_motion(1.0, &p_estimate, GAUSS);
-	particle_processing_texture(params.number_of_particles*0.75, 10);
+	particle_processing_texture(params.number_of_particles*0.75, 1);
 	
 	m_shadeTextureCompare->bind();
 	m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
 	m_shadeTextureCompare->unbind();
 	m_tex_frame_ip[3]->bind(1);
 	particle_motion(0.5, NULL, GAUSS);
-	particle_processing_texture(params.number_of_particles*0.125, 20);
-
+	particle_processing_texture(params.number_of_particles*0.125, 1);
+	
 	m_shadeTextureCompare->bind();
 	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,1.0,0.0,0.0));
 	m_shadeTextureCompare->unbind();
 	m_tex_frame_ip[3]->bind(1);
 	particle_motion(0.1, NULL, GAUSS);
-	particle_processing_texture(params.number_of_particles*0.125, 30);
+	particle_processing_texture(params.number_of_particles*0.125, 1);
 	
 	// Kalman filter
 	if(m_kalman_enabled)
@@ -574,6 +586,7 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 	}
 	
 	// Draw result
+	
 	if(m_result_textured)
 		draw_result_texture(&p_result);
 	else
@@ -603,20 +616,28 @@ bool Tracker::trackTexture(	unsigned char* image,		// camera image (3 channel, u
 
 bool Tracker::trackEdge(	unsigned char* image,
 							Model* model,
+							Camera* camera,
 							Particle p_estimate,
 							Particle& p_result)		// storage to write tracked position
 {
 	
 	if(!m_tracker_initialized){
-		printf("[Tracker::trackTexture] Error tracker not initialized\n");
+		printf("[Tracker::trackEdge] Error tracker not initialized\n");
 		return false;
 	}
-	
+
 	if(!image || !model){
-		printf("[Tracker::trackTexture] Error model not valid\n");
+		printf("[Tracker::trackEdge] Error model not valid\n");
 		return false;
 	}
 	m_model = model;
+	
+	if(!camera){
+		printf("[Tracker::trackEdge] Warning camera not set, using default values\n");
+		m_cam_perspective = m_cam_default;
+	}else{
+		m_cam_perspective = camera;
+	}
 	
 	// Process image from camera (edge detection)
 	image_processing_edge(image);

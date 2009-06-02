@@ -30,6 +30,7 @@ ObjectTracker::ObjectTracker(){
   camId = 0;
   track = false;
   running = true;
+  testmode = false;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -39,6 +40,7 @@ ObjectTracker::~ObjectTracker(){
 void ObjectTracker::initTracker(){
   // *** Initialisation of Tracker ***
   m_trackpose = Particle(0.0);
+  int id = 0;
   
   // Set pathes of resource manager
   g_Resources->SetModelPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/");
@@ -47,24 +49,39 @@ void ObjectTracker::initTracker(){
 
   // Grab one image from VideoServer for initialisation
   getImage(camId, m_image);
+  
+  // Load extrensic Camera
+  if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
+  	running = false;
+  m_camera = g_Resources->GetCamera(id);
+  m_camera->Set(m_image.camPars.pose.pos.x,
+				m_image.camPars.pose.pos.y,
+				m_image.camPars.pose.pos.z,
+				0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0,
+				45, m_image.width, m_image.height,
+				0.1, 10.0,
+				GL_PERSPECTIVE);
     
   // Initialize SDL screen
   g_Resources->InitScreen(m_image.width, m_image.height);
  
   // Initialize tracking (parameters for edge-based tracking)
   if(!m_tracker.init(	m_image.width, m_image.height,		// image size in pixels
-					3000,								// maximum number of particles
-					49.0,								// camera field of view in degree
-					0.25, 0.25, 0.25,					// camera position from coordinate frame in meter
-					30.0,								// standard deviation of rotational noise in degree
-					0.07,								// standard deviation of translational noise in meter
-					2,									// cascading stages (not in use)
-					300,								// cascading averaging range (not in use)
-					20.0,								// edge matching tolerance in degree
-					256, 256,							// edge matching viewport in pixel (expert)
-					0.05,								// goal tracking time in seconds
-					true,								// kalman filtering enabled
-					true)){								// draw coordinate frame at inertial 0-position
+						3000,								// maximum number of particles
+						49.0,								// camera field of view in degree
+						0.25, 								// camera x position from coordinate frame in meter
+						0.25, 								// camera y position from coordinate frame in meter
+						0.25,								// camera z position from coordinate frame in meter
+						30.0,								// standard deviation of rotational noise in degree
+						0.07,								// standard deviation of translational noise in meter
+						2,									// cascading stages (not in use)
+						300,								// cascading averaging range (not in use)
+						20.0,								// edge matching tolerance in degree
+						256, 256,							// edge matching viewport in pixel (expert)
+						0.05,								// goal tracking time in seconds
+						true,								// kalman filtering enabled
+						true)){								// draw coordinate frame at inertial 0-position
 	log("Initialisation failed!");
 	running = false;
   }
@@ -86,6 +103,18 @@ void ObjectTracker::runTracker(){
 	// Grab image from VideoServer
 	getImage(camId, m_image);
 	fTimeImage = m_timer.Update();
+	if(!testmode){
+		m_camera->Set(	m_image.camPars.pose.pos.x,
+						m_image.camPars.pose.pos.y,
+						m_image.camPars.pose.pos.z,
+						0.0, 0.0, 0.0,
+						0.0, 1.0, 0.0,
+						45, m_image.width, m_image.height,
+						0.1, 10.0,
+						GL_PERSPECTIVE);
+		//log("Cam_pos: %f %f %f", m_image.camPars.pose.pos.x, m_image.camPars.pose.pos.y, m_image.camPars.pose.pos.z);
+	}
+	
 
 	// Track all models
 	for(i=0; i<m_modelID_list.size(); i++){
@@ -97,7 +126,7 @@ void ObjectTracker::runTracker(){
 		m_trackpose.w = obj->detectionConfidence;
 
 		// Track model
-		running = m_tracker.trackEdge((unsigned char*)(&m_image.data[0]), model, m_trackpose, m_trackpose);
+		running = m_tracker.trackEdge((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
 
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(m_trackpose, obj->pose);

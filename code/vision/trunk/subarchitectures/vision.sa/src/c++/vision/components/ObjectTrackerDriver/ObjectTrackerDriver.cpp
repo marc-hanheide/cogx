@@ -71,8 +71,6 @@ void ObjectTrackerDriver::runComponent()
   obj->label = "box";
   obj->detectionConfidence = 0.0;
   Particle p = Particle(0.0);
-  p.tZ = 0.05;
-  p.rY = 45;
   convertParticle2Pose(p, obj->pose);  
   	
   // Add VisualObject to working memory

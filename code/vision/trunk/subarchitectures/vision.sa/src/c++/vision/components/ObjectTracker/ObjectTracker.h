@@ -27,12 +27,14 @@ private:
    * Which camera to get images from
    */
   Tracker m_tracker;
+  Camera* m_camera;
   Video::Image m_image;
   Timer m_timer;
   Particle m_trackpose;
   int camId;  
   bool track;
   bool running;
+  bool testmode;
   
   struct IDList{
   	int resources_ID;

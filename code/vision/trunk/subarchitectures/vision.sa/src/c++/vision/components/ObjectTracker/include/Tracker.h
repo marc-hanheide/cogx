@@ -61,6 +61,7 @@ private:
 	Shader* m_shadeTextureCompare;
 	Shader* m_shadeEdgeCompare;
 	Camera* m_cam_ortho;
+	Camera* m_cam_default;
 	Camera* m_cam_perspective;
 	OpenGLControl m_opengl;
 	
@@ -119,11 +120,13 @@ public:
 				
 	bool trackTexture(	unsigned char* image,
 						Model* model,
+						Camera* camera,
 						Particle p_estimate,
 						Particle& p_result);
 	
 	bool trackEdge(	unsigned char* image,
 					Model* model,
+					Camera* camera,
 					Particle p_estimate,
 					Particle& p_result);
 	
