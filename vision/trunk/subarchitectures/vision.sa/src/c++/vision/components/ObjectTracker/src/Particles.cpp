@@ -196,18 +196,21 @@ Particles::Particles(int num, Particle p){
 	w_max = 1.0;
 	m_frustum_offset = 0.0;
 	
-	m_particlelist = (Particle*)malloc(sizeof(Particle) * num);
+	m_particlelist = (Particle*)malloc(sizeof(Particle) * m_num_particles);
 	
-	queryD = (unsigned int*)malloc(sizeof(unsigned int) * num);
-	queryV = (unsigned int*)malloc(sizeof(unsigned int) * num);
+	queryD = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
+	queryV = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
 	
-	glGenQueriesARB(num, queryD);
-    glGenQueriesARB(num, queryV);
+	glGenQueriesARB(m_num_particles, queryD);
+    glGenQueriesARB(m_num_particles, queryV);
 
 	setAll(p);
 }
 
 Particles::~Particles(){
+	glDeleteQueriesARB(m_num_particles, queryD);
+	glDeleteQueriesARB(m_num_particles, queryV);
+
 	free(m_particlelist);
 	free(queryD);
 	free(queryV);
@@ -259,13 +262,6 @@ void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_
 }
 
 void Particles::activate(int id){
-/*
-	glPushMatrix();
-		glTranslatef(m_particlelist[id].tX, m_particlelist[id].tY, m_particlelist[id].tZ);
-		glRotatef(m_particlelist[id].rX, 1.0, 0.0, 0.0);
-		glRotatef(m_particlelist[id].rY, 0.0, 1.0, 0.0);
-		glRotatef(m_particlelist[id].rZ, 0.0, 0.0, 1.0);
-*/
 	m_particlelist[id].activate();
 }
 

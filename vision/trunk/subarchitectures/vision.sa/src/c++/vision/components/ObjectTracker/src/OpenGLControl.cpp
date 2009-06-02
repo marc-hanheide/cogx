@@ -16,6 +16,9 @@ bool OpenGLControl::Init(){
 	const GLubyte *str;
 	int glOcclusionQueryAvailable;
 	
+	// Check for OpenGL and GLSL
+	
+	// Check for Extension
 	str = glGetString(GL_EXTENSIONS);
 	glOcclusionQueryAvailable = (strstr((const char *)str, "GL_ARB_occlusion_query") != NULL);
 	if(!glOcclusionQueryAvailable){ 
