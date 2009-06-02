@@ -26,6 +26,8 @@ private:
   /**
    * Which camera to get images from
    */
+  Tracker m_tracker;
+  Video::Image m_image;
   Timer m_timer;
   Particle m_trackpose;
   int camId;  
@@ -39,6 +41,9 @@ private:
   
   std::vector<IDList> m_modelID_list;
   //std::vector<VisualObjectPtr> m_visobj_list;
+  
+  void initTracker();
+  void runTracker();
   
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
