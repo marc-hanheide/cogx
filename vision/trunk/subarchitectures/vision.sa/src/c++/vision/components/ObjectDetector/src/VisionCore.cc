@@ -479,11 +479,9 @@ bool VisionCore::PrevImage()
 
 void VisionCore::ClearImages()
 {
-  if(video->IsLive())
+  if(video->IsLive() || video->IsBuffer() )
     return;
-#ifdef HAVE_IMLIB
-  ((FileVideo*)video)->ClearFrames();
-#endif
+  video->ClearFrames();
   delete img;
   img = 0;
 }
