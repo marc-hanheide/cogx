@@ -34,6 +34,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 		v.texCoord.x = geom->vertices[i].texCoord.x;
 		v.texCoord.y = geom->vertices[i].texCoord.y;
 		model->m_vertexlist.push_back(v);
+		printf("Vertex: %f %f %f\n", v.pos.x, v.pos.y, v.pos.z);
 	}
 	
 	// Parse through faces and store content in Model

@@ -17,6 +17,7 @@ add_subdirectory(src/c++/vision/autogen)
 add_subdirectory (src/c++/vision/components/VideoViewer)
 add_subdirectory (src/c++/vision/components/ObjectTracker)
 add_subdirectory (src/c++/vision/components/ObjectTrackerDriver)
+add_subdirectory (src/c++/vision/components/VisionDriver)
 
 #add_subdirectory (src/c++/vision/components/Reconstruction)
 
