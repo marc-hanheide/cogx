@@ -1,14 +1,11 @@
 HOST localhost
 
 # reading stored images
-COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --files "subarchitectures/vision.sa/src/c++/vision/components/ObjectTrackerDriver/img/%08d.jpg" --start 1 --end 500 --framerate_ms 50
-
-# live images
-#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0
+COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --files "subarchitectures/vision.sa/src/c++/vision/components/ObjectTrackerDriver/img/%08d.jpg" --start 1 --end 220 --framerate_ms 100
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
+CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0
 CPP MG TrackerDriver ObjectTrackerDriver --labels "random" --log
 

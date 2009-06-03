@@ -19,6 +19,7 @@
 
 #include "ObjectTrackerUtils.hpp"
 #include "PlyModel.h"
+#include "Timer.h"
 
 namespace cast
 {
@@ -26,12 +27,26 @@ namespace cast
 class ObjectTrackerDriver : public ManagedComponent
 {
 private:
+
+  // trajectory file
+  FILE* pFile;
+  
+  Timer m_timer;
+  
   /**
    * list of objects we want to have detected
    */
   std::vector<std::string> labels;
-
+  
+  // Trajectory of tracked object
+  bool timerstarted;
+  std::vector<Pose3> trajectory;
+  std::vector<float> timestamps;
+  float m_error_pos, m_error_rot;
+  
+  // Model to detect from ply file
   PlyModel m_model;
+  
   /**
    * callback function called whenever a new object appears ore an object
    * changes

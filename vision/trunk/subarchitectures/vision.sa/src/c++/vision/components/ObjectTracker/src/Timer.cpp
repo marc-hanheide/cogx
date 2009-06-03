@@ -14,6 +14,13 @@ Timer::Timer(void) {
 Timer::~Timer(void) {
 }
 
+void Timer::Reset() {
+	QueryPerformanceFrequency((LARGE_INTEGER*) &m_Frequency);
+	QueryPerformanceCounter((LARGE_INTEGER*)(&m_StartTicks));
+	m_EndTicks = m_StartTicks;
+	m_fAppTime = 0.0f;
+}
+
 double Timer::Update() {
 	QueryPerformanceCounter((LARGE_INTEGER*)(&m_EndTicks));
 	fNow = (double)(m_EndTicks - m_StartTicks) / m_Frequency;
@@ -33,6 +40,12 @@ Timer::Timer(void) {
 }
 
 Timer::~Timer(void) {
+}
+
+void Timer::Reset() {
+	clock_gettime(CLOCK_REALTIME, &AppStart);
+	clock_gettime(CLOCK_REALTIME, &old);
+	m_fAppTime = 0.0f;
 }
 
 double Timer::Update() {

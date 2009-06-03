@@ -675,7 +675,8 @@ bool Tracker::trackEdge(	unsigned char* image,
 	}
 	
 	// Draw result
-	draw_result_edge();
+	if(m_result_textured)
+		draw_result_edge();
 	if(m_draw_coordinates)
 		renderCoordinates();
 		

@@ -27,6 +27,7 @@ Resources::Resources(){
 	m_ip = 0;
 	m_particles = 0;
 	m_frustum = 0;
+	m_showlog = false;
 }
 
 Resources::~Resources(){
@@ -41,7 +42,7 @@ Resources::~Resources(){
 	ReleaseShader();
 	ReleaseCamera();
 	
-	printf("Resources released\n");
+	if(m_showlog) printf("Resources released\n");
 }
 
 // *** Initialisation ***
@@ -59,7 +60,7 @@ IplImage* Resources::InitCapture(float width, float height, int camID){
 	float w = cvGetCaptureProperty( m_capture, CV_CAP_PROP_FRAME_WIDTH );
 	float h = cvGetCaptureProperty( m_capture, CV_CAP_PROP_FRAME_HEIGHT );
 	
-	printf("Camera settings: %.1f x %.1f\n", w, h);
+	if(m_showlog) printf("Camera settings: %.1f x %.1f\n", w, h);
 	
 	m_image = cvQueryFrame(m_capture);
 	cvConvertImage(m_image, m_image, CV_CVTIMG_FLIP | CV_CVTIMG_SWAP_RB);
@@ -225,7 +226,7 @@ int Resources::AddModel(Model* model, const char* name){
 	
 	modelID = m_modelList.size()-1;
 	
-	printf("Model %i loaded: %s\n", modelID, name);
+	if(m_showlog) printf("Model %i loaded: %s\n", modelID, name);
 	
 	return modelID;
 }
@@ -262,7 +263,7 @@ int	Resources::AddPlyModel(const char* filename){
 	
 	modelID = m_modelList.size()-1;
 	
-	printf("Model %i loaded: %s\n", modelID, name);
+	if(m_showlog) printf("Model %i loaded: %s\n", modelID, name);
 	
 	return modelID;
 }
@@ -314,7 +315,7 @@ int	Resources::AddTexture(const char* filename, const char* texturename){
 	
 	texID = m_textureList.size()-1;
 	
-	printf("Texture %i loaded: %s\n", texID, name);
+	if(m_showlog) printf("Texture %i loaded: %s\n", texID, name);
 	
 	return texID;	
 }
@@ -364,7 +365,7 @@ int	Resources::AddShader(	const char* shadername,
 	
 	shaderID = m_shaderList.size()-1;
 	
-	printf("Shader %i loaded: %s\n", shaderID, name);
+	if(m_showlog) printf("Shader %i loaded: %s\n", shaderID, name);
 	
 	return shaderID;
 }
@@ -384,7 +385,7 @@ int	Resources::AddCamera(const char* camname){
 	
 	camID = m_cameraList.size()-1;
 	
-	printf("Camera %i loaded: %s\n", camID, name);
+	if(m_showlog) printf("Camera %i loaded: %s\n", camID, name);
 	
 	return camID;	
 }

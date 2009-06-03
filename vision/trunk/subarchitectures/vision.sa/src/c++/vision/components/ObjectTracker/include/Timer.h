@@ -22,10 +22,11 @@ public:
 	Timer(void);
 	~Timer(void);
 
-	float Update();
+	void	Reset();
+	float	Update();
 	
-	float GetFrameTime(){ return m_fTime;}
-	float GetApplicationTime(){ return (float)m_fAppTime;}
+	float	GetFrameTime(){ return m_fTime;}
+	float	GetApplicationTime(){ return (float)m_fAppTime;}
 };
 #endif
 
@@ -48,10 +49,11 @@ public:
 	Timer(void);
 	~Timer(void);
 	
-	double Update();
+	void	Reset();
+	double	Update();
 	
-	double GetFrameTime(){ return m_fTime;}
-	double GetApplicationTime(){ return m_fAppTime;}
+	double	GetFrameTime(){ return m_fTime;}
+	double	GetApplicationTime(){ return m_fAppTime;}
 	
 };
 #endif

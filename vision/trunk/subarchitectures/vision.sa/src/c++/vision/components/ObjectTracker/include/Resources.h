@@ -56,6 +56,8 @@ private:
 	char			m_texturePath[FN_LEN];
 	char			m_shaderPath[FN_LEN];
 	
+	bool			m_showlog;
+	
 	int				SearchName(NameList* list, const char* filename);
 
 public:
@@ -82,6 +84,7 @@ public:
 	void	SetModelPath(const char* path){ sprintf(m_modelPath, "%s", path); }
 	void 	SetTexturePath(const char* path){ sprintf(m_texturePath, "%s", path); }
 	void 	SetShaderPath(const char* path){ sprintf(m_shaderPath, "%s", path); }
+	void	ShowLog(bool b){ m_showlog = b; }
 
     // Get-functions
     IplImage* 		GetNewImage();
