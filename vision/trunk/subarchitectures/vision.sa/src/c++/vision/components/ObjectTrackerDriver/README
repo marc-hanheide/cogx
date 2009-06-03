@@ -9,6 +9,15 @@
 */
 
 
+Testing the tracker
+-------------------
+
+The tracker can be tasted by using the "subarchitectures/vision.sa/config/tracker.cast".
+Do not press any button while the test is running.
+Wait until the message [LOG "TrackerDriver": Tracking test successfull] appears.
+If tracking fails please contact me: moerwald@acin.tuwien.ac.at
+
+
 Loading a ply model
 -------------------
 
