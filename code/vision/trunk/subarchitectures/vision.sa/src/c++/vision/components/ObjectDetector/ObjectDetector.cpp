@@ -244,36 +244,42 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	f.vertices.push_back(3);
 	f.vertices.push_back(2);
 	obj->model->faces.push_back(f);
+	f.vertices.clear();
 
 	f.vertices.push_back(4);									// front
 	f.vertices.push_back(2);
 	f.vertices.push_back(3);
 	f.vertices.push_back(5);
 	obj->model->faces.push_back(f);
+	f.vertices.clear();
 
 	f.vertices.push_back(4);									// left
 	f.vertices.push_back(5);
 	f.vertices.push_back(7);
 	f.vertices.push_back(6);
 	obj->model->faces.push_back(f);
+	f.vertices.clear();
 
 	f.vertices.push_back(0);									// back
 	f.vertices.push_back(1);
 	f.vertices.push_back(7);
 	f.vertices.push_back(6);
 	obj->model->faces.push_back(f);
+	f.vertices.clear();
 
 	f.vertices.push_back(0);									// top
 	f.vertices.push_back(2);
 	f.vertices.push_back(4);
 	f.vertices.push_back(6);
 	obj->model->faces.push_back(f);
+	f.vertices.clear();
 
 	f.vertices.push_back(1);									// front
 	f.vertices.push_back(3);
 	f.vertices.push_back(5);
 	f.vertices.push_back(7);
 	obj->model->faces.push_back(f);
+	f.vertices.clear();
 
 	obj->detectionConfidence = 1.0;						// detection confidence is always 1
 
