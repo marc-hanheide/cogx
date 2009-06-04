@@ -143,6 +143,14 @@ module VisionData {
     cast::cdl::CASTTime time;
   };
 
+  /**
+   * 2D rectangular image region of interest.
+   */
+  class ROI {
+    cogx::Math::Rect2 rect;
+    // time the ROI was last changed
+    cast::cdl::CASTTime time;
+  };
 };
 
 #endif
