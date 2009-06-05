@@ -42,7 +42,6 @@ private:
   };
   
   std::vector<IDList> m_modelID_list;
-  //std::vector<VisualObjectPtr> m_visobj_list;
   
   void initTracker();
   void runTracker();

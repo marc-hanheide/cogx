@@ -59,7 +59,11 @@ void ObjectTracker::initTracker(){
 											20.0,															// standard deviation of rotational noise in degree
 											0.05,															// standard deviation of translational noise in meter
 											20.0,															// edge matching tolerance in degree
-											0.05)){														// goal tracking time in seconds
+											0.05,															// goal tracking time in seconds
+											true,															// kalman filtering enabled
+											true,															// draw coordinate frame at inertial pose
+											true))														// locked particles (press 'l' to unlock)
+	{														
 		log("Initialisation failed!");
 		running = false;
   }
