@@ -55,36 +55,25 @@ void ObjectTracker::initTracker(){
  
   // Initialize tracking (parameters for edge-based tracking)
   if(!m_tracker.init(	m_image.width, m_image.height,		// image size in pixels
-						3000,								// maximum number of particles
-						49.0,								// camera field of view in degree
-						0.25, 								// camera x position from coordinate frame in meter
-						0.25, 								// camera y position from coordinate frame in meter
-						0.25,								// camera z position from coordinate frame in meter
-						20.0,								// standard deviation of rotational noise in degree
-						0.05,								// standard deviation of translational noise in meter
-						2,									// cascading stages (not in use)
-						300,								// cascading averaging range (not in use)
-						20.0,								// edge matching tolerance in degree
-						256, 256,							// edge matching viewport in pixel (expert)
-						0.05,								// goal tracking time in seconds
-						true,								// kalman filtering enabled
-						false)){								// draw coordinate frame at inertial 0-position
-	log("Initialisation failed!");
-	running = false;
+											3000,															// maximum number of particles (=storage size of particle list)
+											20.0,															// standard deviation of rotational noise in degree
+											0.05,															// standard deviation of translational noise in meter
+											20.0,															// edge matching tolerance in degree
+											0.05)){														// goal tracking time in seconds
+		log("Initialisation failed!");
+		running = false;
   }
   
   // Load extrensic Camera (has to be done AFTER tracker initialisation
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
-  m_camera->Set(0.2,
-				0.2,
-				0.2,
-				0.0, 0.0, 0.0,
-				0.0, 1.0, 0.0,
-				49, m_image.width, m_image.height,
-				0.1, 10.0,
-				GL_PERSPECTIVE);
+  m_camera->Set(	0.2, 0.2, 0.2,											// position of camera	
+									0.0, 0.0, 0.0,											// point camera looks at
+									0.0, 1.0, 0.0,											// up-vector of camera
+									49, m_image.width, m_image.height,	// vield of view in degree
+									0.1, 10.0,
+									GL_PERSPECTIVE);
 				
   log("initialisation successfull!");		
 }
@@ -106,15 +95,17 @@ void ObjectTracker::runTracker(){
 	getImage(camId, m_image);
 	fTimeImage = m_timer.Update();
 	if(!testmode){
-		m_camera->Set(	m_image.camPars.pose.pos.x,
-						m_image.camPars.pose.pos.y,
-						m_image.camPars.pose.pos.z,
-						0.0, 0.0, 0.0,
-						0.0, 1.0, 0.0,
-						45, m_image.width, m_image.height,
-						0.1, 10.0,
-						GL_PERSPECTIVE);
-		log("Cam_pos: %f %f %f", m_image.camPars.pose.pos.x, m_image.camPars.pose.pos.y, m_image.camPars.pose.pos.z);
+		// TODO Camera parameters from file
+		// TODO Camera parameters from image
+		m_camera->Set(	0.2,
+										0.2,
+										0.2,
+										0.0, 0.0, 0.0,
+										0.0, 1.0, 0.0,
+										45, m_image.width, m_image.height,
+										0.1, 10.0,
+										GL_PERSPECTIVE);
+		//log("Cam_pos: %f %f %f", m_image.camPars.pose.pos.x, m_image.camPars.pose.pos.y, m_image.camPars.pose.pos.z);
 	}
 	
 	
