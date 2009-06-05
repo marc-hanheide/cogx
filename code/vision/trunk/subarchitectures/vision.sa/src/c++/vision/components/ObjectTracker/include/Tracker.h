@@ -19,16 +19,9 @@ private:
 		float width;						// width of viewport (camera image, image processor, opengl, textures) in pixels
 		float height;						// height of viewport ( --"-- ) in pixels
 		int number_of_particles;			// number of particles to draw for each frame
-		float camera_fovy;					// camera field of view in y-direction in degrees
-		float camera_initial_position_x;	// camera initial position in x in meters
-		float camera_initial_position_y;	// camera initial position in y in meters
-		float camera_initial_position_z;	// camera initial position in z in meters
 		
 		float	noise_rot_max;				// initial standard deviation for rotational noise of particles in degrees
     	float 	noise_trans_max;			// initial standard deviation for translation noise of particles in meters
-    	
-    	int cascade_stages;					// number of cascading stages
-    	int cascade_mean_max;				// number of most likely particles to average
     	
     	float edge_tolerance;				// maximal angular deviation of edges to match in degrees
     	
@@ -105,18 +98,14 @@ public:
 	~Tracker();
 	
 	bool init(	int width, int height,								// image size in pixels
-				int nop=2000,										// maximum number of particles
-				float fovy=49.0,									// camera field of view in degree
-				float cipX=0.3, float cipY=0.3, float cipZ=0.3,		// camera position from coordinate frame in meter
+				int nop=3000,										// maximum number of particles
 				float n_r_max=45.0,									// standard deviation of rotational noise in degree
 				float n_t_max=0.1,									// standard deviation of translational noise in meter
-				int cs = 4,											// cascading stages (not in use)
-				int cmm = 150,										// cascading averaging range (not in use)
 				float et=20.0,										// edge matching tolerance in degree
-				int vw=128, int vh=128,								// edge matching viewport in pixel (expert)
 				float tt=0.05,										// goal tracking time in seconds
 				bool kal=true,										// kalman filtering enabled
-				bool dc = false);									// draw coordinate frame at inertial 0-position
+				bool coord=false,									// draw coordinate frame at inertial 0-position
+				bool lock=false);									// locked particles (press 'l' to unlock)
 				
 	bool trackTexture(	unsigned char* image,
 						Model* model,

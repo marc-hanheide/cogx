@@ -385,38 +385,32 @@ Tracker::~Tracker(){
 }
 
 // Initialise function (must be called before tracking)
-bool Tracker::init(	int width, int height,
-					int nop,
-					float fovy,
-					float cipX, float cipY, float cipZ,
-					float n_r_max,
-					float n_t_max,
-					int cs, int cmm,
-					float et,
-					int vw, int vh,
-					float tt,
-					bool kal,
-					bool dc)
+bool Tracker::init(	int width, int height,							// image size in pixels
+					int nop,										// maximum number of particles
+					float n_r_max,									// standard deviation of rotational noise in degree
+					float n_t_max,									// standard deviation of translational noise in meter
+					float et,										// edge matching tolerance in degree
+					float tt,										// goal tracking time in seconds
+					bool kal,										// kalman filtering enabled
+					bool coord,										// draw coordinate frame at inertial 0-position
+					bool lock)
 {	
 	// Parameter:
 	params.width = float(width);
 	params.height = float(height);
 	params.number_of_particles = nop;
-	params.camera_fovy = fovy;
-	params.camera_initial_position_x = cipX;
-	params.camera_initial_position_y = cipY;
-	params.camera_initial_position_z = cipZ;
 	params.noise_rot_max = n_r_max;
 	params.noise_trans_max = n_t_max;
-	params.cascade_stages = cs;
-	params.cascade_mean_max = cmm;
 	params.edge_tolerance = et;
-	params.viewport_width = vw;
-	params.viewport_height = vh;
+	
+	params.viewport_width = 256;
+	params.viewport_height = 256;
+	
 	params.track_time = tt;
 	
 	m_kalman_enabled = kal;
-	m_draw_coordinates = dc;
+	m_draw_coordinates = coord;
+	m_lock = lock;
 	
 	if(!m_opengl.Init())
 		return false;
@@ -467,7 +461,7 @@ bool Tracker::init(	int width, int height,
 	m_cam_ortho->Set(	0.0, 0.0, 1.0,
 						0.0, 0.0, 0.0,
 						0.0, 1.0, 0.0,
-						params.camera_fovy, width, height,
+						45, width, height,
 						0.1, 10.0,
 						GL_ORTHO);
 							
@@ -475,10 +469,10 @@ bool Tracker::init(	int width, int height,
 	if((id = g_Resources->AddCamera("cam_default")) == -1)
 		return false;
 	m_cam_default = g_Resources->GetCamera(id);
-	m_cam_default->Set(	params.camera_initial_position_x, params.camera_initial_position_y, params.camera_initial_position_z,
+	m_cam_default->Set(	0.2, 0.2, 0.2,
 						0.0, 0.0, 0.0,
 						0.0, 1.0, 0.0,
-						params.camera_fovy, width, height,
+						45, width, height,
 						0.1, 10.0,
 						GL_PERSPECTIVE);
 							
