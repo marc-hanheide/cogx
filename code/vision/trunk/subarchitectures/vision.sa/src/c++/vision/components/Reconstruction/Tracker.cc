@@ -1153,7 +1153,7 @@ void Tracker::DrawPointsOnDominantPlane()
 		//DrawPoints_Objs(PointNumberOfObjects);
 	}
 
-	//DrawPoints_Plane(PointNumberOfPlane);
+	DrawPoints_Plane(PointNumberOfPlane);
 ////////Global vector, need to be released/////////////////////////////	
 	PointNumberOfObjects.clear();
 	PointNumberOfPlane.clear();
