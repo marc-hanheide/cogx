@@ -12,14 +12,14 @@
 /**
  * Project a SOI in world co-ordinates to an image ROI.
  */
-inline ROI projectSOI(const CameraParameters &cam, const SOI &soi)
+inline VisionData::ROI projectSOI(const Video::CameraParameters &cam, const VisionData::SOI &soi)
 {
-  ROI roi;
-  roi.rect.pos = projectPoint(cam, SOI.boundingSphere.pos);
-  roi.rect.width = projectSize(cam, SOI.boundingSphere.rad);
-  roi.rect.height = projectSize(cam, SOI.boundingSphere.rad);
-  roi.time = soi.time;
-  return roi;
+   VisionData::ROI roi;
+   roi.rect.pos = projectPoint(cam, VisionData::SOI.boundingSphere.pos);
+   roi.rect.width = projectSize(cam, VisionData::SOI.boundingSphere.rad);
+   roi.rect.height = projectSize(cam, VisionData::SOI.boundingSphere.rad);
+   roi.time = soi.time;
+   return roi;
 }
 
 #endif
