@@ -3,14 +3,15 @@
  */
 package binding.abstr;
 
+import java.util.Map;
 import java.util.Properties;
 
 import BindingData.*;
 import binding.common.BindingComponentException;
 
-import cast.architecture.subarchitecture.PrivilegedManagedProcess;
-import cast.architecture.subarchitecture.SubarchitectureProcessException;
-import cast.core.data.CASTDataCache;
+import cast.architecture.WorkingMemoryReaderComponent;
+import cast.SubarchitectureComponentException;
+import cast.core.CASTData;
 
 /**
  * "Convenience" class for reading things from binding working memory.
@@ -18,22 +19,22 @@ import cast.core.data.CASTDataCache;
  * @author nah
  * 
  */
-public abstract class AbstractBindingReader extends PrivilegedManagedProcess {
+public abstract class AbstractBindingReader extends WorkingMemoryReaderComponent {
 
 	/**
 	 * defines the ID of binding SA, must be set via configure
 	 */
 	private String m_bindingSA;
 
-	private CASTDataCache<BindingProxy> m_proxyCache;
+	private CASTData<BindingProxy> m_proxyCache;
 
-	private CASTDataCache<BindingUnion> m_unionCache;
+	private CASTData<BindingUnion> m_unionCache;
 
 	/**
 	 * @param _id
 	 */
-	public AbstractBindingReader(String _id) {
-		super(_id);
+	public AbstractBindingReader() {
+		super();
 	}
 
 	/*
@@ -42,13 +43,13 @@ public abstract class AbstractBindingReader extends PrivilegedManagedProcess {
 	 * @see cast.architecture.abstr.WorkingMemoryReaderWriterProcess#configure(java.util.Properties)
 	 */
 	@Override
-	public void configure(Properties _config) {
+	public void configure(Map<String, String> _config) {
 		super.configure(_config);
 		if (_config.containsKey("-bsa")) {
-		    setBindingSA(_config.getProperty(BINDING_SUBARCH_CONFIG_KEY.value));
+		    setBindingSA(_config.get(BINDINGSUBARCHCONFIGKEY.value));
 		    log("setting binding subarch to: " + m_bindingSA);
 		} else if (_config.containsKey("--bsa")) {
-		    setBindingSA(_config.getProperty("--bsa"));
+		    setBindingSA(_config.get("--bsa"));
 		    log("setting binding subarch to: " + m_bindingSA);
 		}
 		else {
