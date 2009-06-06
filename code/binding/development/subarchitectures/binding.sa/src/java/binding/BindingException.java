@@ -3,14 +3,14 @@
  */
 package binding;
 
-import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.SubarchitectureComponentException;
 
 
 /**
  * @author nah
  *
  */
-public class BindingException extends SubarchitectureProcessException {
+public class BindingException extends SubarchitectureComponentException {
 
     /**
      * 
@@ -33,16 +33,16 @@ public class BindingException extends SubarchitectureProcessException {
     /**
      * @param _cause
      */
-    public BindingException(Throwable _cause) {
-        super(_cause);
-    }
+  //  public BindingException(Throwable _cause) {
+  //      super(_cause);
+  //  }
 
     /**
      * @param _message
      * @param _cause
      */
-    public BindingException(String _message, Throwable _cause) {
-        super(_message, _cause);
-    }
+ //   public BindingException(String _message, Throwable _cause) {
+  //      super(_message, _cause);
+ //   }
 
 }

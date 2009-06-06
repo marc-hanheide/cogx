@@ -444,7 +444,7 @@ module cast
 				   string component,
 				   out cdl::WorkingMemoryEntrySeq entries)
 	throws UnknownSubarchitectureException;
-      
+   
 
       void registerComponentFilter(cdl::WorkingMemoryChangeFilter filter);
       void removeComponentFilter(cdl::WorkingMemoryChangeFilter filter);
