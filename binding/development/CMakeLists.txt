@@ -32,14 +32,14 @@ INCLUDE(CoSyBuild)
 ADD_DEFINITIONS(-Wall)
 
 # Specify the list of subdirectories to process.
-ADD_COSY_DIR(tools/balt)
-ADD_COSY_DIR(tools/cast)
-ADD_COSY_DIR(tools/matlab-helper)
-ADD_COSY_DIR(tools/CoSyCommonIDLs)
+#ADD_COSY_DIR(tools/balt)
+#ADD_COSY_DIR(tools/cast)
+#ADD_COSY_DIR(tools/matlab-helper)
+#ADD_COSY_DIR(tools/CoSyCommonIDLs)
 
 # Specify the list of subdirectories to process.
-ADD_COSY_DIR(subarchitectures/comsys.mk4) # only for the idls
-#ADD_COSY_DIR(subarchitectures/binding.sa)
+#ADD_COSY_DIR(subarchitectures/comsys.mk4) # only for the idls
+ADD_COSY_DIR(subarchitectures/binding.sa)
 #ADD_COSY_DIR(subarchitectures/planning.sa)
 
 #ADD_COSY_DIR(subarchitectures/motivation)

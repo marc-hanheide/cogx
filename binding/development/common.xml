@@ -14,7 +14,7 @@
 
 	<!-- Where the source should be for individual projects -->
 	<property name="src.dir" value="./src/java" />
-	<property name="idl.dir" value="./src/idl" />
+	<property name="slice.dir" value="./src/slice" />
 	<property name="doc.dir" value="./doc" />
 
 	<property name="fixed.mappings" value="-pkgPrefix FrameworkBasics balt.corba.autogen -pkgPrefix FrameworkData balt.corba.autogen -pkgPrefix RemoteConnectors balt.corba.autogen -pkgPrefix cdl cast.cdl -pkgPrefix guitypes cast.cdl"/>
