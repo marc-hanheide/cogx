@@ -30,7 +30,7 @@ FIND_PACKAGE(OmniORB)
 
 # Set c++ and idl root.
 SET(CPP_ROOT ${CMAKE_SOURCE_DIR}/src/c++)
-SET(IDL_ROOT ${CMAKE_SOURCE_DIR}/src/idl)
+SET(SLICE_ROOT ${CMAKE_SOURCE_DIR}/src/slice)
 
 # Make sure to include all files from cosy.
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/c++)
@@ -61,7 +61,7 @@ IF (BINDING_DISABLE_TOKENS)
 ENDIF (BINDING_DISABLE_TOKENS)
 
 
-ADD_SUBDIRECTORY(src/c++/binding/idl)
+ADD_SUBDIRECTORY(src/c++/binding/slice)
 ADD_SUBDIRECTORY(src/c++/binding)
 ADD_SUBDIRECTORY(src/c++/binding/components/MultiTesterMonitor)
 ADD_SUBDIRECTORY(src/c++/binding/components/GarbageCollector)

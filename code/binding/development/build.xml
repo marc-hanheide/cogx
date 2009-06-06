@@ -8,7 +8,7 @@
 			<pathelement location="lib/ant-contrib-1.0b3.jar" />
 		</classpath>
 	</taskdef>
-	<target name="all" depends="configure,idl,expandlibs,compile" />
+	<target name="all" depends="configure,slice,expandlibs,compile" />
 
 	<target name="expandlibs" depends="global,prepare">
           <echo message="Expanding external libraries to output/classes"/>
@@ -18,7 +18,7 @@
 	  </unzip>
         </target>
 
-	<target name="configure" depends="configure.filters,configure.idl.mappings, configure.idl.includes">
+	<target name="configure" depends="configure.filters,configure.slice.mappings, configure.slice.includes">
 	</target>
 
 	<target name="collect.src" depends="global">
@@ -32,7 +32,7 @@
 		<!-- <echo message="${src.dirs.path}" /> -->
 	</target>
 
-	<target name="collect.idl" depends="global">
+	<target name="collect.slice" depends="global">
 
 		<patternset id="include.patterns" includesfile="${include.patterns.file}" />
 		<patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
@@ -41,16 +41,16 @@
 			<patternset refid="include.patterns" />
 		</fileset>
 
-		<fileset id="idl.files" dir="${basedir}" casesensitive="yes" includes="*/*/src/idl/*.idl tools/*/*/src/idl/*.idl" excludesfile="${exclude.patterns.file}" />
+		<fileset id="slice.files" dir="${basedir}" casesensitive="yes" includes="*/*/src/slice/*.slice tools/*/*/src/slice/*.slice" excludesfile="${exclude.patterns.file}" />
 
-		<pathconvert property="idl.files.path" refid="idl.files" targetOS="unix" />
-		<!-- <echo message="${idl.files.path}" /> -->
+		<pathconvert property="slice.files.path" refid="slice.files" targetOS="unix" />
+		<!-- <echo message="${slice.files.path}" /> -->
 
 	</target>
 
 
-	<target name="main" depends="collect.idl">
-		<foreach list="${idl.dirs.path}" delimiter=":" param="foreach.prop" target="echo.prop" inheritall="true" />
+	<target name="main" depends="collect.slice">
+		<foreach list="${slice.dirs.path}" delimiter=":" param="foreach.prop" target="echo.prop" inheritall="true" />
 	</target>
 
 
@@ -58,10 +58,10 @@
 		<echo message="echo.prop: ${foreach.prop}" />
 	</target>
 
-	<target name="configure.idl.mappings" depends="collect.idl, global">
-		<delete file="${idl.mappings.file}" />
-		<echo file="${idl.mappings.file}" append="true">idl.arg.mapping=${fixed.mappings} </echo>
-		<foreach list="${idl.files.path}" delimiter=":" param="idl.file" target="idl.mapping.conf" inheritall="true" inheritrefs="true" />
+	<target name="configure.slice.mappings" depends="collect.slice, global">
+		<delete file="${slice.mappings.file}" />
+		<echo file="${slice.mappings.file}" append="true">slice.arg.mapping=${fixed.mappings} </echo>
+		<foreach list="${slice.files.path}" delimiter=":" param="slice.file" target="slice.mapping.conf" inheritall="true" inheritrefs="true" />
 	</target>
 
 
@@ -91,13 +91,13 @@
 		<echo file="${exclude.patterns.file}" append="true">**/${exclude.pattern}/**${line.separator}</echo>
 	</target>
 
-	<target name="idl.mapping.conf">
-		<propertyregex property="idl.file.root" input="${idl.file}" regexp="^(.*)\.idl" select="\1" casesensitive="false" />
-		<propertyregex property="idl.file.name" input="${idl.file}" regexp="^(.*)\/(.*)\.idl" select="\2" casesensitive="false" />
-		<echo>trying to load: ${idl.file.root}.properties</echo>
-		<loadproperties srcFile="${idl.file.root}.properties" />
-		<propertyselector property="idl.mapping.list" delimiter="," select="\1" match="(.*)-module" casesensitive="true" />
-		<foreach delimiter="," list="${idl.mapping.list}" param="mapping.prefix" target="write.module.mapping" inheritall="true" />
+	<target name="slice.mapping.conf">
+		<propertyregex property="slice.file.root" input="${slice.file}" regexp="^(.*)\.slice" select="\1" casesensitive="false" />
+		<propertyregex property="slice.file.name" input="${slice.file}" regexp="^(.*)\/(.*)\.slice" select="\2" casesensitive="false" />
+		<echo>trying to load: ${slice.file.root}.properties</echo>
+		<loadproperties srcFile="${slice.file.root}.properties" />
+		<propertyselector property="slice.mapping.list" delimiter="," select="\1" match="(.*)-module" casesensitive="true" />
+		<foreach delimiter="," list="${slice.mapping.list}" param="mapping.prefix" target="write.module.mapping" inheritall="true" />
 	</target>
 
 	<target name="write.module.mapping">
@@ -120,27 +120,27 @@
 
 
 	<target  name="goAhead.write.module.mapping" if="goAhead">
-	  <echo file="${idl.mappings.file}" append="true">-pkgPrefix ${module} ${prefix} </echo>
+	  <echo file="${slice.mappings.file}" append="true">-pkgPrefix ${module} ${prefix} </echo>
 	</target>
 
-	<target name="configure.idl.includes" depends="collect.idl, global">
-		<echo file="${idl.mappings.file}" append="true">${line.separator}idl.arg.include=-I${output.dir}/include/idl </echo>
-		<foreach list="${idl.files.path}" delimiter=":" param="idl.file" target="idl.include.conf" inheritall="true" inheritrefs="true" />
+	<target name="configure.slice.includes" depends="collect.slice, global">
+		<echo file="${slice.mappings.file}" append="true">${line.separator}slice.arg.include=-I${output.dir}/include/slice </echo>
+		<foreach list="${slice.files.path}" delimiter=":" param="slice.file" target="slice.include.conf" inheritall="true" inheritrefs="true" />
 	</target>
 
-	<target name="idl.include.conf">
-		<propertyregex property="idl.include.dir" input="${idl.file}" regexp="^(.*)\/.*\.idl" select="\1" casesensitive="false" />
-		<echo file="${idl.mappings.file}" append="true">-I${idl.include.dir} </echo>
+	<target name="slice.include.conf">
+		<propertyregex property="slice.include.dir" input="${slice.file}" regexp="^(.*)\/.*\.slice" select="\1" casesensitive="false" />
+		<echo file="${slice.mappings.file}" append="true">-I${slice.include.dir} </echo>
 	</target>
 
-	<target name="idl" depends="prepare,collect.idl,global">
+	<target name="slice" depends="prepare,collect.slice,global">
 		<!-- load in configured mappings -->
-		<loadproperties srcFile="${idl.mappings.file}" />
+		<loadproperties srcFile="${slice.mappings.file}" />
 
 
-		<subant target="idl" inheritall="false">
-			<propertyset id="idl.args">
-				<propertyref prefix="idl.arg" />
+		<subant target="slice" inheritall="false">
+			<propertyset id="slice.args">
+				<propertyref prefix="slice.arg" />
 			</propertyset>
 			<fileset dir="." includes="*/*/build.xml tools/*/*/build.xml" excludesfile="${exclude.patterns.file}" />
 		</subant>
