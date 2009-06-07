@@ -11,6 +11,6 @@ make
 sudo make install
 cd ..
 cd gvars3
-./configure
+./configure --disable-widgets
 make
 sudo make install
