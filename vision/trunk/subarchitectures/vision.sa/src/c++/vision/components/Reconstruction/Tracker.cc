@@ -1112,6 +1112,21 @@ void Tracker::DrawPointsOnDominantPlane()
 				PointNumberOfObjects.push_back(i);
 		}
 	}
+//////////////delete all the map points which are not in the image now///////////////////////////////////
+	for(std::vector<int>::iterator it=PointNumberOfObjects.begin(); it<PointNumberOfObjects.end(); it++)
+	{
+		MapPoint &p= *(mMap.vpPoints[*it]); 
+		// Ensure that this map point has an associated TrackerData struct.
+		if(!p.pTData) p.pTData = new TrackerData(&p);   
+		TrackerData &TData = *p.pTData;
+		
+		// Project according to current view, and if it's not in the image, skip.
+		TData.Project(mse3CamFromWorld, mCamera); 
+		if(TData.bInImage)
+			continue;
+		PointNumberOfObjects.erase(it);
+//cout<<"delete some points now"<<endl;
+	}
 /////////////////////////select points at the same side of the camera//////////
 	Vector<3> v3PoseCam = mse3CamFromWorld.inverse().get_translation();
 	double d_parameter_cam = -(para_a*v3PoseCam[0]+para_b*v3PoseCam[1]+para_c*v3PoseCam[2]);
@@ -1153,7 +1168,7 @@ void Tracker::DrawPointsOnDominantPlane()
 		//DrawPoints_Objs(PointNumberOfObjects);
 	}
 
-	DrawPoints_Plane(PointNumberOfPlane);
+	//DrawPoints_Plane(PointNumberOfPlane);
 ////////Global vector, need to be released/////////////////////////////	
 	PointNumberOfObjects.clear();
 	PointNumberOfPlane.clear();
