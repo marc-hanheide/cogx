@@ -110,6 +110,34 @@ void Reconstructor::runComponent()
 						PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 					}
 				}
+				if (PreviousObjList.size()!=CurrentObjList.size()) //need to delete the disappeared objects
+				{
+					std::vector <int> disappearedObjList; //store the serial number of disappeared objects in PreviousObjList
+					for(unsigned int i=0; i<PreviousObjList.size(); i++)
+					{
+						bool flag = false;
+						for(unsigned int j=0; j<CurrentObjList.size(); j++)
+						{
+							if(Compare2SOI(CurrentObjList.at(j), PreviousObjList.at(i)))// if these two objects were the same
+							{
+								flag = true;
+								break;
+							}
+						}
+						if (!flag) //this is a disappeared object
+							disappearedObjList.push_back(i);
+					}
+					if(!disappearedObjList.empty())
+					{
+						for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all new objects
+						{
+							deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
+							PreviousObjList.erase(PreviousObjList.begin()+disappearedObjList.at(i));
+						}
+
+					}
+
+				}
 			
 			}
 		}
