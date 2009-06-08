@@ -1,9 +1,0 @@
-<project name="manipulation subarch" default="compile" basedir=".">
-
-	<import file="../../common.xml" />
-
-	<target name="idl">
-		<idlgen file="Manipulation.idl" />
-	</target>
-
-</project>

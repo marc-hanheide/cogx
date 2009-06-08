@@ -1,6 +1,0 @@
-first: all
-$(OBJECTS_DIR)featurevector.o: featurevector.cc ../../include/libChiSquare/chisquare.hh \
-  ../../include/libChiSquare/gamma.hh \
-  ../../include/libFeatures/featurevector.hh \
-  ../../include/libGrayImage/grayimage.hh ../../include/libImage/image.h \
-  ../../include/libImage/rgbimage.h ../../include/libImage/hsiimage.h

@@ -1,5 +1,0 @@
-CAST file configuration parameters
-
---katanapose posefile .. pose of katana arm base w.r.t. world origin,
-                         e.g. instantiations/bham/katana-20071113.pose
-

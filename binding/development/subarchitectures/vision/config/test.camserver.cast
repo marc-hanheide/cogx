@@ -1,9 +1,0 @@
-HOST localhost
-SUBARCHITECTURE vision.sa
-CPP WM VisualWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-
-CPP GD cam.server.0 CameraServer --calib  config/camera/ideal.cal --eyepose config/camera/ideal.pose 
-
-CPP GD test1 VisionTester  --log --test CameraIdealRead_test  # -- exit true
-

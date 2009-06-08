@@ -1,6 +1,0 @@
-SUBARCHITECTURE example.subarch localhost
-JAVA WM planning.wm.PlanningWorkingMemory #--log true --debug false
-JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
-JAVA MG example.client planning.components.ExamplePlannerClient --domain ./tools/planning-components/config/domains/kitty_domain.mapl --log
-#JAVA MG planner planning.components.Planner --server-exe ./tools/planning-components/src/python/caat_planner/server.py --log
-JAVA MG planner planning.components.Planne --server-exe /home/nah/Desktop/mapsim-0.alpha.whatever/planning/server.py
