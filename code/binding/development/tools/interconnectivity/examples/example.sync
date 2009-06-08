@@ -1,9 +1,0 @@
-# Example synchronization configuration file
-# 061019 gj 
-
-PROCESS DD speech.rec PhonString
-PROCESS GD parser     LFCollection
-PROCESS GD dialint    SDIBindings
-
-SYNC	parser	{WAIT:PhonString; 1000:LFCollection}
-SYNC 	dialint {WAIT:LFCollection}
