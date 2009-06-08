@@ -144,9 +144,10 @@ protected:
   void DrawPointsOnDominantPlane();
   void DrawPoints_Objs(std::vector<int> PointNumberOfObjects);
   void DrawPoints_Plane(std::vector<int> PointNumberOfPlane);
-  void DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_number);
-  void DrawBoundingSphere(std::vector<int> PointNumberOfObjects, int objects_number);
+  void DrawCuboids(std::vector<int> PointNumberOfObjects, unsigned int objects_number);
+  void DrawBoundingSphere(std::vector<int> PointNumberOfObjects, unsigned int objects_number);
   void DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, std::vector< Vector<3> > Min);
+  void DrawPlaneGrid(std::vector<int> PointNumberOfPlane, Vector<3> v3BestMean, Vector<3> v3BestNormal);
   Vector<2> ProjectW2I (Vector<3> pointW);
   std::vector<int> PointNumberOfObjects;
   std::vector<int> PointNumberOfPlane;
