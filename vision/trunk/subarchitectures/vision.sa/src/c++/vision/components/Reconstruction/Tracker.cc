@@ -1167,7 +1167,7 @@ void Tracker::DrawPointsOnDominantPlane()
 		DrawCuboids(PointNumberOfObjects,objnumber-1);
 		//DrawPoints_Objs(PointNumberOfObjects);
 	}
-
+	DrawPlaneGrid(PointNumberOfPlane, v3BestMean, v3BestNormal);
 	//DrawPoints_Plane(PointNumberOfPlane);
 ////////Global vector, need to be released/////////////////////////////	
 	PointNumberOfObjects.clear();
@@ -1294,7 +1294,7 @@ void Tracker::DrawPoints_Objs(std::vector<int> PointNumberOfObjects)
 	glDisable(GL_BLEND);
 }
 
-void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_number)
+void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, unsigned int objects_number)
 {
 	std::vector< Vector<3> > Max;
 	std::vector< Vector<3> > Min;
@@ -1333,14 +1333,14 @@ void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, int objects_num
 	}
 	if (mbdrawboundingbox)
 	{
-		for (int i = 0; i<objects_number; i++)
+		for (unsigned int i = 0; i<objects_number; i++)
 		{
 			DrawOneCuboid(i,Max,Min);
 		}
 	}
 }
 
-void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, int objects_number)
+void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, unsigned int objects_number)
 {
 	std::vector< Vector<3> > center;
 	Vector<3> initial_vector;
@@ -1474,4 +1474,100 @@ void Tracker::DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, st
 	glDisable(GL_BLEND);
 }
 
+void Tracker::DrawPlaneGrid(std::vector<int> PointNumberOfPlane, Vector<3> v3BestMean, Vector<3> v3BestNormal)
+{
+	unsigned int count = 0;
+	Vector<3> seed1;
+	seed1[0]=0.0;seed1[1]=0.0;seed1[2]=0.0;
+	Vector<3> seed2;
+	Vector<3> seed3;
+	for(std::vector<int>::iterator it=PointNumberOfPlane.begin(); it<PointNumberOfPlane.end(); it++)
+	{
+		Vector<3> point3 = mMap.vpPoints[*it]->v3WorldPos;
+		Vector<3> v3Diff = mMap.vpPoints[*it]->v3WorldPos - v3BestMean;
+		
+		double dNormDist = fabs(v3Diff * v3BestNormal);
+		if(dNormDist < 0.05)
+		{
+			MapPoint &p= *(mMap.vpPoints[*it]);
+			if(!p.pTData) p.pTData = new TrackerData(&p);
+			TrackerData &TData = *p.pTData;
+			// Project according to current view, and if it's not in the image, skip.
+			TData.Project(mse3CamFromWorld, mCamera); 
+			if(!TData.bInImage)
+			continue;
+			
+			double distance = sqrt ( (TData.v2Image[0]-mirSize[0]/2)*(TData.v2Image[0]-mirSize[0]/2) + (TData.v2Image[1]-mirSize[1]/2)*(TData.v2Image[1]-mirSize[1]/2) );
+			if (distance > 100)
+			continue;
+			
+			count++;
+			if (count == 1)  seed1 = mMap.vpPoints[*it]->v3WorldPos;
+			if (count == 2)  seed2 = mMap.vpPoints[*it]->v3WorldPos;
+			if (count == 3)  seed3 = mMap.vpPoints[*it]->v3WorldPos;
+			if (count == 4) break;
+		}
+	}
 
+	seed1[2] = ( -para_d - para_a*seed1[0] - para_b*seed1[1] )/para_c;
+	seed2[2] = ( -para_d - para_a*seed2[0] - para_b*seed2[1] )/para_c;
+	seed3[2] = ( -para_d - para_a*seed3[0] - para_b*seed3[1] )/para_c;
+
+	double delta_t = ( (seed2[0]-seed1[0])*(seed3[0]-seed1[0]) + (seed2[1]-seed1[1])*(seed3[1]-seed1[1]) + (seed2[2]-seed1[2])*(seed3[2]-seed1[2]) )/( (seed2[0]-seed1[0])*(seed2[0]-seed1[0]) + (seed2[1]-seed1[1])*(seed2[1]-seed1[1]) + (seed2[2]-seed1[2])*(seed2[2]-seed1[2]) );
+	Vector<3> intersection;
+	intersection[0] = seed1[0] + (seed2[0]-seed1[0])*delta_t;
+	intersection[1] = seed1[1] + (seed2[1]-seed1[1])*delta_t;
+	intersection[2] = seed1[2] + (seed2[2]-seed1[2])*delta_t;
+
+	std::vector < Vector<3> > gridpoints;
+	gridpoints.push_back(intersection);
+	double radius = 0.1;
+	Vector<3> temp4push;
+
+	for (unsigned int i=1; i<10; i++)
+	{
+		delta_t = 1 + i*radius*sqrt( 1/( (seed1[0]-intersection[0])*(seed1[0]-intersection[0])+(seed1[1]-intersection[1])*(seed1[1]-intersection[1])+(seed1[2]-intersection[2])*(seed1[2]-intersection[2]) ) );
+		temp4push[0] = seed1[0] +(intersection[0]-seed1[0])*delta_t;
+		temp4push[1] = seed1[1] +(intersection[1]-seed1[1])*delta_t;
+		temp4push[2] = seed1[2] +(intersection[2]-seed1[2])*delta_t;
+		gridpoints.push_back(temp4push);
+
+		delta_t = 1 + i*radius*sqrt( 1/( (seed3[0]-intersection[0])*(seed3[0]-intersection[0])+(seed3[1]-intersection[1])*(seed3[1]-intersection[1])+(seed3[2]-intersection[2])*(seed3[2]-intersection[2]) ) );
+		temp4push[0] = seed3[0] +(intersection[0]-seed3[0])*delta_t;
+		temp4push[1] = seed3[1] +(intersection[1]-seed3[1])*delta_t;
+		temp4push[2] = seed3[2] +(intersection[2]-seed3[2])*delta_t;
+		gridpoints.push_back(temp4push);
+
+		delta_t = 1 - i*radius*sqrt( 1/( (seed1[0]-intersection[0])*(seed1[0]-intersection[0])+(seed1[1]-intersection[1])*(seed1[1]-intersection[1])+(seed1[2]-intersection[2])*(seed1[2]-intersection[2]) ) );
+		temp4push[0] = seed1[0] +(intersection[0]-seed1[0])*delta_t;
+		temp4push[1] = seed1[1] +(intersection[1]-seed1[1])*delta_t;
+		temp4push[2] = seed1[2] +(intersection[2]-seed1[2])*delta_t;
+		gridpoints.push_back(temp4push);
+
+		delta_t = 1 - i*radius*sqrt( 1/( (seed3[0]-intersection[0])*(seed3[0]-intersection[0])+(seed3[1]-intersection[1])*(seed3[1]-intersection[1])+(seed3[2]-intersection[2])*(seed3[2]-intersection[2]) ) );
+		temp4push[0] = seed3[0] +(intersection[0]-seed3[0])*delta_t;
+		temp4push[1] = seed3[1] +(intersection[1]-seed3[1])*delta_t;
+		temp4push[2] = seed3[2] +(intersection[2]-seed3[2])*delta_t;
+		gridpoints.push_back(temp4push);
+	}
+
+//////////////////Draw grid///////////////////
+	glLineWidth(2);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor3f(1.0,1.0,1.0);
+
+	for (unsigned int j=1; j<10; j++)
+	{
+		if (ProjectW2I(gridpoints[4*j])[0]<5 || ProjectW2I(gridpoints[4*j])[1]<5 || ProjectW2I(gridpoints[4*j])[2]<5)
+		continue;
+	
+		glBegin(GL_LINE_LOOP);
+		for(unsigned int i=4*j-3; i<4*j+1; i++)
+		{
+			glVertex(ProjectW2I(gridpoints[i]));
+		}
+		glEnd();
+	}
+}
