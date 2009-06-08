@@ -1,6 +1,0 @@
-/*!
-\mainpage The Comedian Subarchitecture
-
-to be written...
-
-*/

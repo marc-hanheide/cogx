@@ -1,4 +1,0 @@
-MACRO (ADD_COSY_DIR _dir)
-  ADD_SUBDIRECTORY(${_dir})
-  INCLUDE_DIRECTORIES(${_dir}/src/c++)
-ENDMACRO (ADD_COSY_DIR _dir)

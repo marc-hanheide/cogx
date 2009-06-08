@@ -1,4 +1,0 @@
-#!/bin/sh
-
-java -ea -Dmary.base="tools/mary" -jar "tools/mary"/java/installvoices.jar
-
