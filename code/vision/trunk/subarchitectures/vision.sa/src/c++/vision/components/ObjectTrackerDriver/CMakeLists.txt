@@ -7,7 +7,6 @@ include_directories(/usr/include/SDL)
 
 
 # Set the sources.
-SET(SRC ../ObjectTracker/src/ply.c ../ObjectTracker/src/PlyModel.cpp ../ObjectTracker/src/Model.cpp)
 SET(SOURCES ObjectTrackerDriver.cpp)
 
 
