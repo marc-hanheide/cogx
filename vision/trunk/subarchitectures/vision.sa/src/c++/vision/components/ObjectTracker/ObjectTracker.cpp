@@ -49,6 +49,24 @@ void ObjectTracker::initTracker(){
 
   // Grab one image from VideoServer for initialisation
   getImage(camId, m_image);
+  
+  // Load calibration file for camera
+  confFile = "subarchitectures/vision.sa/src/c++/vision/components/calibration.xml";
+  m_cameraModel.LoadIntrinsic (confFile.data());
+  m_cameraModel.LoadDistortion (confFile.data());
+  m_cameraModel.LoadReferencePointsToComputeExtrinsic (confFile.data());
+  CvMat* pExtrinsic = m_cameraModel.GetExtrinsic();
+  R[0]=pExtrinsic->data.db[0];  R[1]=pExtrinsic->data.db[2];   R[2]=pExtrinsic->data.db[1];   T[0]=0.01*pExtrinsic->data.db[3];
+  R[3]=-pExtrinsic->data.db[8]; R[4]=-pExtrinsic->data.db[10]; R[5]=-pExtrinsic->data.db[9];  T[1]=0.01*pExtrinsic->data.db[7];
+  R[6]=pExtrinsic->data.db[4];  R[7]=pExtrinsic->data.db[6];   R[8]=pExtrinsic->data.db[5];   T[2]=0.01*pExtrinsic->data.db[11];
+  /*
+  R[0]=pExtrinsic->data.db[0];  R[1]=-pExtrinsic->data.db[1]; R[2]=pExtrinsic->data.db[2];  T[0]=0.01*pExtrinsic->data.db[3];
+  R[3]=pExtrinsic->data.db[4];  R[4]=-pExtrinsic->data.db[5]; R[5]=pExtrinsic->data.db[6];  T[1]=0.01*pExtrinsic->data.db[7];
+  R[6]=pExtrinsic->data.db[8];  R[7]=-pExtrinsic->data.db[9]; R[8]=pExtrinsic->data.db[10]; T[2]=0.01*pExtrinsic->data.db[11];
+  */
+  printf("%f %f %f, %f\n", R[0], R[1], R[2], T[0]);
+  printf("%f %f %f, %f\n", R[3], R[4], R[5], T[1]);
+  printf("%f %f %f, %f\n", R[6], R[7], R[8], T[2]);
     
   // Initialize SDL screen
   g_Resources->InitScreen(m_image.width, m_image.height);
@@ -72,12 +90,17 @@ void ObjectTracker::initTracker(){
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
-  m_camera->Set(	0.2, 0.2, 0.2,											// position of camera	
-									0.0, 0.0, 0.0,											// point camera looks at
-									0.0, 1.0, 0.0,											// up-vector of camera
-									49, m_image.width, m_image.height,	// vield of view in degree
+  log("setting camera parameters");
+  m_camera->Set(	0.0, 0.32, 0.0,
+									0.0, 0.0, -0.3,
+									0.0, 1.0, 0.0,
+									49, m_image.width, m_image.height,
 									0.1, 10.0,
 									GL_PERSPECTIVE);
+	m_camera->Print();
+	float t[3] = {0.0, 0.3, 0.0};
+	m_camera->SetExtrinsic(R, t);
+	m_camera->Print();
 				
   log("initialisation successfull!");		
 }
@@ -99,16 +122,14 @@ void ObjectTracker::runTracker(){
 	getImage(camId, m_image);
 	fTimeImage = m_timer.Update();
 	if(!testmode){
-		// TODO Camera parameters from file
-		// TODO Camera parameters from image
-		m_camera->Set(	0.2,
-										0.2,
-										0.2,
-										0.0, 0.0, 0.0,
+	/*
+		m_camera->Set(	0.0, 0.32, 0.0,
+										0.0, 0.0, -0.3,
 										0.0, 1.0, 0.0,
-										45, m_image.width, m_image.height,
+										49, m_image.width, m_image.height,
 										0.1, 10.0,
 										GL_PERSPECTIVE);
+										*/
 		//log("Cam_pos: %f %f %f", m_image.camPars.pose.pos.x, m_image.camPars.pose.pos.y, m_image.camPars.pose.pos.z);
 	}
 	

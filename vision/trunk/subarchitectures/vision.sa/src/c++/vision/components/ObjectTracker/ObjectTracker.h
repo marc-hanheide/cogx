@@ -12,10 +12,12 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 #include <vector>
+#include <string>
 
 #include "Tracker.h"
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"
+#include "mxCameraModel.h"
 
 namespace cast
 {
@@ -31,6 +33,10 @@ private:
   Video::Image m_image;
   Timer m_timer;
   Particle m_trackpose;
+  string confFile;											// configuration file for mxTools
+  mx::CCameraModel m_cameraModel;
+  float R[9];  float T[3];
+  
   int camId;  
   bool track;
   bool running;

@@ -25,7 +25,7 @@ void Camera::Set(	float posx,  float posy,  float posz,
 					unsigned short projection)
 {
 	m_vPos	= TM_Vector3(posx,  posy,  posz ); // set position
-	m_vView	= TM_Vector3(viewx, viewy, viewz); // set view
+	m_vView	= TM_Vector3(viewx, viewy, viewz); // set view point
 	m_vUp	= TM_Vector3(upx,   upy,   upz  ); // set the up vector
 	pvu2fsu();
 	
@@ -34,39 +34,64 @@ void Camera::Set(	float posx,  float posy,  float posz,
 	m_height = height;
 	m_zNear = zNear;
 	m_zFar = zFar;
-	m_projection = projection;    
+	m_projection = projection;
+}
+
+void Camera::SetExtrinsic(float* R, float* t){
+	
+	s.x=R[0]; u.x=R[1]; f.x=R[2];
+	s.y=R[3]; u.y=R[4]; f.y=R[5];
+	s.z=R[6]; u.z=R[7]; f.z=R[8];
+	
+	m_vPos.x=t[0]; m_vPos.y=t[1]; m_vPos.z=t[2];
+	fsu2pvu();
+	
+	//Transform();	
+}
+
+void Camera::SetIntrinsic(float fovy, float width, float height){
+	// TODO implement
+	m_fovy = fovy;
+	m_width = width;
+	m_height = height;
 }
 
 void Camera::Activate()
 {
 	if(m_projection == GL_ORTHO){
+		// Apply intrinsic parameters
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-m_width/2, m_width/2, -m_height/2, m_height/2, m_zNear, m_zFar);
 		
+		// Apply intrinsic parameters
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		
-		glViewport(0,0, m_width, m_height);
-		
 		Transform();
 		
+		// Extract frustum planes
 		g_Resources->GetFrustum()->ExtractFrustum();
 	}
 	else if(m_projection == GL_PERSPECTIVE){
+		// Apply intrinsic parameters
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective( m_fovy, m_width/m_height, m_zNear, m_zFar);
 		
+		// Apply extrinsic parameters
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		
-		glViewport(0,0, m_width, m_height);
-		
 		Transform();
 		
+		// Extract frustum planes
 		g_Resources->GetFrustum()->ExtractFrustum();
 	}
+}
+
+void Camera::Print(){
+	printf("%f %f %f, %f\n", s.x, u.x, f.x, m_vPos.x);
+	printf("%f %f %f, %f\n", s.y, u.y, f.y, m_vPos.y);
+	printf("%f %f %f, %f\n", s.z, u.z, f.z, m_vPos.z);
 }
 
 void Camera::pvu2fsu()

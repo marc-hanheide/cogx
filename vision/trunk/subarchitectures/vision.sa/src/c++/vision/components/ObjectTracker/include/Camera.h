@@ -47,7 +47,11 @@ public:
 				float fovy=45, float width=800, float height=600,
 				float zNear=0.1, float zFar=100,
 				unsigned short projection=GL_PERSPECTIVE );
+	void SetExtrinsic(float* R, float* t);
+	void SetIntrinsic(float fovy, float width, float height);
+	
 	void Activate();
+	void Print();
 	
 	void pvu2fsu();
 	void fsu2pvu();
@@ -82,7 +86,6 @@ public:
 	
 	// Movement
 	void Transform();
-	void TransformWorld();
 
 };
 
