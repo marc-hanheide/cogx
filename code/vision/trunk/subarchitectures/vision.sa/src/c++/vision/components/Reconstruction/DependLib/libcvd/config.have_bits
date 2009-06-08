@@ -6,9 +6,9 @@ have_sse2 yes
 have_sse3 yes
 have_32bit yes
 have_assembler yes
-have_dc1394v2 yes
+have_dc1394v2
 have_dvbuffer
-have_dvbuffer3 yes
+have_dvbuffer3
 have_v4l2buffer yes
 have_v4l1buffer yes
 have_linux_2_4
@@ -18,7 +18,7 @@ have_qtbuffer
 have_videodisplay yes
 have_tr1_shared_ptr yes
 have_toon yes
-have_lapack yes
+have_lapack
 have_pthread yes
 have_png yes
 have_jpeg yes

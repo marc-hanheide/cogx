@@ -80,7 +80,7 @@ void ObjectTracker::initTracker(){
 											0.05,															// goal tracking time in seconds
 											true,															// kalman filtering enabled
 											true,															// draw coordinate frame at inertial pose
-											true))														// locked particles (press 'l' to unlock)
+											false))														// locked particles (press 'l' to unlock)
 	{														
 		log("Initialisation failed!");
 		running = false;
@@ -91,15 +91,15 @@ void ObjectTracker::initTracker(){
   	running = false;
   m_camera = g_Resources->GetCamera(id);
   log("setting camera parameters");
-  m_camera->Set(	0.0, 0.32, 0.0,
-									0.0, 0.0, -0.3,
+  m_camera->Set(	0.2, 0.2, 0.2,
+									0.0, 0.0, 0.0,
 									0.0, 1.0, 0.0,
 									49, m_image.width, m_image.height,
 									0.1, 10.0,
 									GL_PERSPECTIVE);
 	m_camera->Print();
 	float t[3] = {0.0, 0.3, 0.0};
-	m_camera->SetExtrinsic(R, t);
+	//m_camera->SetExtrinsic(R, t);
 	m_camera->Print();
 				
   log("initialisation successfull!");		
