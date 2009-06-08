@@ -1,0 +1,25 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP TM AlwaysPositiveTaskManager
+CPP  WM BindingWorkingMemory #--log --debug
+JAVA MG re.test.1 binding.monitors.test.RelTest -bsa binding.sa --vision --log
+
+
+SUBARCHITECTURE spatial.sa localhost
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log
+CPP  WM BindingWorkingMemory #--log --debug
+JAVA MG re.test.2 binding.monitors.test.RelTest -bsa binding.sa --space --log
+
+
+SUBARCHITECTURE binding.sa localhost
+CPP  WM BindingWorkingMemory #--log --debug
+CPP  TM AlwaysPositiveTaskManager 
+CPP  GD binding.scorer0 BindingScorer -nth 0 -maxN 1 --log
+CPP  GD binding.judge BindingJudge 
+CPP  GD binding.binder Binder 
+CPP  GD binding.groups BindingGroupManager 
+CPP  GD binding.state BindingStatusMonitor --log
+CPP  GD binding.dot BindingDotViewer -d ./dotfiles --log --proxy short --union short 
+CPP  GD binding.garbage GarbageCollector --log --police-mode strict
+#CPP  GD binding.ambiguity AmbiguityIdentifier --log
