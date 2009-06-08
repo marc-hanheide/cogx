@@ -7,12 +7,6 @@
 #ifndef CVD_DISABLE_CPU_i686
     #define CVD_HAVE_CPU_i686 1
 #endif
-#ifndef CVD_DISABLE_DC1394V2
-    #define CVD_HAVE_DC1394V2 1
-#endif
-#ifndef CVD_DISABLE_DVBUFFER3
-    #define CVD_HAVE_DVBUFFER3 1
-#endif
 #ifndef CVD_DISABLE_FENV_H
     #define CVD_HAVE_FENV_H 1
 #endif
@@ -21,9 +15,6 @@
 #endif
 #ifndef CVD_DISABLE_JPEG
     #define CVD_HAVE_JPEG 1
-#endif
-#ifndef CVD_DISABLE_LAPACK
-    #define CVD_HAVE_LAPACK 1
 #endif
 #ifndef CVD_DISABLE_MEMALIGN
     #define CVD_HAVE_MEMALIGN 1
@@ -88,7 +79,7 @@
 #define CVD_INTERNAL_JPEG_BUFFER_SIZE 1
 #define CVD_KERNEL_MAJOR 2
 #define CVD_KERNEL_MINOR 6
-#define CVD_KERNEL_RELEASE 27
+#define CVD_KERNEL_RELEASE 28
 #define CVD_MAJOR_VERSION 0
 #define CVD_MINOR_VERSION 7
 #endif
