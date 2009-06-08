@@ -1,9 +1,0 @@
-/*!
-\mainpage COMA Subarchitecture
-
-This is the subarchitecture for conceptual spatial mapping.
-Since it contains a general-purpose Description Logics reasoner,
-it also offers its reasoning services via the 
-Concept vs. Concept Feature Comparator used by the Binder.
-
-*/

@@ -1,4 +1,0 @@
-export PATH=$PATH:../bin/
-export OPENCCG_HOME=..
-export CLASSPATH=$CLASSPATH:../../../../../output/classes/
-tccg

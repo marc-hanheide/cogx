@@ -1,6 +1,0 @@
-/*!
-\mainpage Spatial Subarchitecture
-
-High-level intro to be written...
-
-*/

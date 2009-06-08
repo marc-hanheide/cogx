@@ -1,5 +1,0 @@
-TYPE	Hand
-SHAPE   SH_CIRCLE
-R_MIN   35
-R_MAX   55
-PATCH	cam.%02d.object.000.ppm

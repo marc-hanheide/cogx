@@ -1,8 +1,0 @@
--s3
---brackets=linux 
---indent-preprocessor 
---max-instatement-indent=6 
---min-conditional-indent=3 
---pad=oper 
---one-line=keep-statements 
---convert-tabs
