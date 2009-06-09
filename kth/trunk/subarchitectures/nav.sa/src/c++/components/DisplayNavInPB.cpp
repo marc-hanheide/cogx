@@ -18,7 +18,7 @@
 #include <NavData.hpp>
 #include <Laser.hpp>
 #include <CureHWUtils.hpp>
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <Navigation/NavGraph.hh>
 #include <Transformation/Pose3D.hh>

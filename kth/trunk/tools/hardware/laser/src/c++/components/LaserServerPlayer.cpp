@@ -17,7 +17,7 @@
 #include <cstdlib>
 #include <sstream>
 
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 using namespace Laser;
 using namespace cast;

@@ -12,7 +12,7 @@
 #include <cassert>
 #include <sstream>
 #include <opencv/highgui.h>
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
 #include "ObjectDetectorFERNS.h"
 

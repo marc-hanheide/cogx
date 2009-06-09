@@ -3,7 +3,7 @@
  * @date February 2009
  */
 
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include "DummyDriver.h"
 
 /**

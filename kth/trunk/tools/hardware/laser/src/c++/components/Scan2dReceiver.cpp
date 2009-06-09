@@ -14,7 +14,7 @@
 
 #include "Scan2dReceiver.hpp"
 
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 using namespace Laser;
 using namespace cast;

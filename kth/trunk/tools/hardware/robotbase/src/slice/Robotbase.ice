@@ -6,7 +6,7 @@
 #ifndef ROBOTBASE_ICE
 #define ROBOTBASE_ICE
 
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 
 module Robotbase {
 

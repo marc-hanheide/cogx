@@ -16,13 +16,13 @@
 #ifndef SlamProcess_hpp
 #define SlamProcess_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
 #include <NavData.hpp>
 #include <Laser.hpp>
 #include <Robotbase.hpp>
-#include <CASTTimer.hpp>
+#include <cast/core/CASTTimer.hpp>
 
 // Cure stuff
 #include <Map/PoseProvider.hh>

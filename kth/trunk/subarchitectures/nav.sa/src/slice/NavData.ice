@@ -1,7 +1,7 @@
 #ifndef NAVDATA_ICE
 #define NAVDATA_ICE
 
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 
 /**
  * The NavData structures are the structures from the nav.sa and include 

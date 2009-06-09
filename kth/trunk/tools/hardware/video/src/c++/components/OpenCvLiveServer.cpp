@@ -4,7 +4,7 @@
  */
 
 #include <cmath>
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
 #include "OpenCvLiveServer.h"
 

@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "PullClientOdometry.hpp"
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 #include "RobotbaseClientUtils.hpp"
 

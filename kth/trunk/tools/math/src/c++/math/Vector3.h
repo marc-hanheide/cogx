@@ -16,7 +16,7 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 #include <cogxmath_base.h>
 #include <Math.hpp>
 

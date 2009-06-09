@@ -15,7 +15,7 @@
 /*----------------------------------------------------------------------*/
  
 #include "KeyCommander.hpp"
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <NavData.hpp>
 
 // Cure

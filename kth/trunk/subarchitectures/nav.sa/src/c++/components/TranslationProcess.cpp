@@ -16,7 +16,7 @@
 #include "TranslationProcess.hpp"
 #include <NavData.hpp>
 #include <Rendezvous.h>
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <list>
 #include <cmath>
 

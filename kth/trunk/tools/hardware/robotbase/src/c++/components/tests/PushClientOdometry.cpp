@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "PushClientOdometry.hpp"
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 using namespace Robotbase;
 using namespace cast;

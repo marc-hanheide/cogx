@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <string>
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 
 namespace cast

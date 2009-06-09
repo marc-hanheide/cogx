@@ -16,7 +16,7 @@
 
 #include <Laser.hpp>
 
-#include <CASTComponent.hpp>
+#include <cast/core/CASTComponent.hpp>
 #include <Scan2dReceiver.hpp>
 
 

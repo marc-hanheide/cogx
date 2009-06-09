@@ -4,7 +4,7 @@
  */
 
 #include <cassert>
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 #include "ConvertImage.h"
 
 namespace Video

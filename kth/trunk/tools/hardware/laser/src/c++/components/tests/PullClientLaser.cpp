@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "PullClientLaser.hpp"
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 #include "LaserClientUtils.hpp"
 

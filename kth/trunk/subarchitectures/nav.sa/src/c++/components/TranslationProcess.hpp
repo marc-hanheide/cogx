@@ -16,7 +16,7 @@
 #ifndef TranslationProcess_hpp
 #define TranslationProcess_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
 #include <string>
 #include <list>

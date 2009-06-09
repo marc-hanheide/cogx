@@ -5,7 +5,7 @@
 
 #include <sstream>
 #include <Ice/Ice.h>
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 #include "VideoClient.h"
 
 namespace cast

@@ -9,7 +9,7 @@
 #ifndef VIDEO_VIEWER_H
 #define VIDEO_VIEWER_H
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
 

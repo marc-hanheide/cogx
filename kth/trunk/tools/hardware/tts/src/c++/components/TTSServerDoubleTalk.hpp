@@ -1,7 +1,7 @@
 #ifndef TTS_SERVER_DOUBLETALK_HPP_
 #define TTS_SERVER_DOUBLETALK_HPP_
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 
 class TTSServerDoubleTalk : 
   public cast::ManagedComponent {

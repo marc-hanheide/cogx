@@ -15,7 +15,7 @@
 #include "NavGraphProcess.hpp"
 
 #include <CureHWUtils.hpp>
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <Utils/CureDebug.hh>
 #include <AddressBank/ConfigFileReader.hh>

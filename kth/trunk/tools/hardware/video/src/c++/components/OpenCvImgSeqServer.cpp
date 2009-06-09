@@ -4,7 +4,7 @@
  */
 
 #include <opencv/highgui.h>
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
 #include "OpenCvImgSeqServer.h"
 

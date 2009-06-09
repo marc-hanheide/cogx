@@ -1,6 +1,6 @@
 #include "TTSServerDoubleTalk.hpp"
 
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <autogen/TTS.hpp>
 #include <cstdlib> 
 

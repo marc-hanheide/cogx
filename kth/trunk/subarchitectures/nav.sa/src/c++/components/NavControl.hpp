@@ -17,7 +17,7 @@
 #ifndef NavControl_hpp
 #define NavControl_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
 #include <NavData.hpp>

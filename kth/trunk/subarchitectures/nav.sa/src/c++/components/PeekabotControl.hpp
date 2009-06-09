@@ -15,7 +15,7 @@
 #ifndef PeekabotControl_hpp
 #define PeekabotControl_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
 
 #include <peekabot.hh>

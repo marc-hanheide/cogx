@@ -13,7 +13,7 @@
 
 #include <vector>
 #include <string>
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
 #include <NavData.hpp>

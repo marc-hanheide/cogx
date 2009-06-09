@@ -18,7 +18,7 @@
 
 #include "NavControl.hpp"
 #include <CureHWUtils.hpp>
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
