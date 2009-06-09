@@ -31,7 +31,7 @@
 #ifndef __CAST_RENDEZ_VOUS__
 #define __CAST_RENDEZ_VOUS__
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <queue>
 #include <pthread.h>
 

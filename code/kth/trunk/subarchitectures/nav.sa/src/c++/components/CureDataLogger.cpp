@@ -15,7 +15,7 @@
 #include "CureDataLogger.hpp"
 #include <Laser.hpp>
 #include <Robotbase.hpp>
-#include <ChangeFilterFactory.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 // Cure includes
 #include <SensorData/LaserScan2d.hh>

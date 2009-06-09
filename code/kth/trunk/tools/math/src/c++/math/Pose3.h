@@ -206,7 +206,7 @@ inline Vector3 transformDirectionInverse(const Pose3 &p, const Vector3& a)
 inline void transform(const Pose3 &P, const Pose3& A, Pose3& B)
 {
   mult(P.rot, A.rot, B.rot);
-  B.pos = transform(P, B.pos);
+  B.pos = transform(P, A.pos);
 }
 
 /**
@@ -216,7 +216,7 @@ inline void transform(const Pose3 &P, const Pose3& A, Pose3& B)
 inline void transformInverse(const Pose3 &P, const Pose3& A, Pose3& B)
 {
   multByTranspose(P.rot, A.rot, B.rot);
-  B.pos = transformInverse(P, B.pos);
+  B.pos = transformInverse(P, A.pos);
 }
 
 /**

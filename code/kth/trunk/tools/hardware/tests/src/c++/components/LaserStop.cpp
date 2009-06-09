@@ -14,7 +14,7 @@
 
 #include "LaserStop.hpp"
 
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 #include <cmath>
 

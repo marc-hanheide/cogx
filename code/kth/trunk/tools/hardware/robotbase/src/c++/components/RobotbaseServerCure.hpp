@@ -20,8 +20,8 @@
 #include "JoystickDrivable.hpp"
 #include <Robotbase.hpp>
 
-#include <CASTComponent.hpp>
-#include <CASTTimer.hpp>
+#include <cast/core/CASTComponent.hpp>
+#include <cast/core/CASTTimer.hpp>
 
 #include <Hardware/Robot/P2OS/P2OSDeviceAddress.hh>
 

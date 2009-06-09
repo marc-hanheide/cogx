@@ -16,7 +16,7 @@
 #ifndef CureDataLogger_hpp
 #define CureDataLogger_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <CureHWUtils.hpp>
 #include <NavData.hpp>
 

@@ -14,7 +14,7 @@
 
 #include "RobotbaseServerPlayer.hpp"
 
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 
 #include <Utils/HelpFunctions.hh>
 

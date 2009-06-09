@@ -6,7 +6,7 @@
 #ifndef LASER_ICE
 #define LASER_ICE
 
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 
 module Laser {
 

@@ -16,7 +16,7 @@
 
 #include <Robotbase.hpp>
 
-#include <CASTComponent.hpp>
+#include <cast/core/CASTComponent.hpp>
 
 class PullClientOdometry : public cast::CASTComponent {
 public:

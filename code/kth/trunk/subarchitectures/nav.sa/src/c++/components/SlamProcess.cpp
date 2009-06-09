@@ -17,7 +17,6 @@
 #include "SlamProcess.hpp"
 
 #include <CureHWUtils.hpp>
-#include <CASTTimer.hpp>
 
 #include <Map/FeatureData.hh>
 #include <Geometry/Line2D.hh>

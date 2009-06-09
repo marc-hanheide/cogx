@@ -17,7 +17,7 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
-#include <CASTUtils.hpp>
+#include <cast/core/CASTUtils.hpp>
 #include <cogxmath_base.h>
 #include <Math.hpp>
 #include <Vector3.h>
@@ -628,12 +628,50 @@ inline void fromRotVector(Matrix33 &m, const Vector3& r)
  */
 inline void toAngleAxis(const Matrix33 &m, double& angle, Vector3& axis) 
 {
+  // Mote: Don't make this eps smaller! Case 2 (angle = pi) might
+  // otherwise be missed if the trace is very close to but not
+  // exactly -1.
+  const double EPS_ANGLE = 1e-6;
   angle = acos((trace(m) - 1.) / 2.);
-  double s = 2. * sin(angle);
-  if (!iszero(s))
-    set(axis, (m.m21 - m.m12)/s, (m.m02 - m.m20)/s, (m.m10 - m.m01)/s);
+  // if angle is 0
+  if(equals(angle, 0., EPS_ANGLE))
+  {
+    // for zero angle, axis direction does not matter, any unit vector is fine
+    set(axis, 1., 0., 0.);
+  }
+  // if angle is PI
+  else if(equals(angle, M_PI, EPS_ANGLE))
+  {
+    // this requires special attention as m.mij == m.mji, thus according to
+    // the general formula the axis would be zero
+    // if m00 is maximum
+    if(m.m00 > m.m11 && m.m00 > m.m22)
+    {
+      axis.x = sqrt(m.m00 - m.m11 - m.m22 + 1.)/2.;
+      axis.y = m.m01/(2.*axis.x);
+      axis.z = m.m02/(2.*axis.x);
+    }
+    // if m11 is maximum
+    else if(m.m11 > m.m22)
+    {
+      axis.y = sqrt(m.m11 - m.m00 - m.m22 + 1.)/2.;
+      axis.x = m.m01/(2.*axis.y);
+      axis.z = m.m12/(2.*axis.y);
+    }
+    // if m22 is maximum
+    else
+    {
+      axis.z = sqrt(m.m22 - m.m00 - m.m11 + 1.)/2.;
+      axis.x = m.m02/(2.*axis.z);
+      axis.y = m.m12/(2.*axis.z);
+    }
+  }
+  // general case
   else
-    setZero(axis);
+  {
+    double s = 2. * sin(angle);
+    set(axis, (m.m21 - m.m12)/s, (m.m02 - m.m20)/s, (m.m10 - m.m01)/s);
+  }
 }
 
 /**

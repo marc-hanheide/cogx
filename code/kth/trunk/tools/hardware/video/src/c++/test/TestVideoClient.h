@@ -6,7 +6,7 @@
 #ifndef TEST_VIDEO_CLIENT_H
 #define TEST_VIDEO_CLIENT_H
 
-#include <CASTComponent.hpp>
+#include <cast/core/CASTComponent.hpp>
 #include <VideoClient.h>
 
 namespace cast

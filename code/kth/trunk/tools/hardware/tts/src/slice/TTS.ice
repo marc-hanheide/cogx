@@ -6,7 +6,6 @@
 #ifndef TTS_ICE
 #define TTS_ICE
 
-#include <CDL.ice>
 
 module TTS {
   class Speak {	 

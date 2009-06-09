@@ -1,7 +1,7 @@
 #ifndef VIDEO_ICE
 #define VIDEO_ICE
 
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 #include <Math.ice>
 
 module Video {

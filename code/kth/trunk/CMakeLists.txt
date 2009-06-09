@@ -18,16 +18,8 @@ include(CASTBuild)
 # use cmake files packaged with CAST as well
 set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 
-# bad hack to make historical include paths work, components should use full paths really
-include_directories(${CAST_INCLUDE_DIR}/cast)
-include_directories(${CAST_INCLUDE_DIR}/cast/cdl)
-include_directories(${CAST_INCLUDE_DIR}/cast/core)
-include_directories(${CAST_INCLUDE_DIR}/cast/architecture)
-
-
 add_definitions(-Wall)
 
-# UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
 
 add_subdirectory (tools/d-lib)
 
@@ -47,11 +39,15 @@ if(BUILD_HAL_LASER)
 add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
 
-
 option(BUILD_HAL_TTS "Build hardware tts" NO)
 if(BUILD_HAL_TTS)
 add_subdirectory (tools/hardware/tts)
 endif(BUILD_HAL_TTS)
+
+option(BUILD_HAL_PTZ "Build hardware ptz" NO)
+if(BUILD_HAL_PTZ)
+add_subdirectory (tools/hardware/ptz)
+endif(BUILD_HAL_PTZ)
 
 option(BUILD_HAL_UTILS "Build hardware utils" NO)
 if(BUILD_HAL_UTILS)
@@ -64,7 +60,6 @@ add_subdirectory (tools/hardware/tests)
 endif(BUILD_HAL_TESTS)
 
 
-# UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
 
 add_subdirectory (tools/math)
@@ -78,4 +73,16 @@ option(BUILD_SA_VISION "Build vision subarchitecure" NO)
 if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
+
+
+# Spatial
+option(BUILD_SA_SPATIAL "Build vision subarchitecure" NO)
+if(BUILD_SA_SPATIAL)
+    add_subdirectory (subarchitectures/spatial.sa)
+endif(BUILD_SA_SPATIAL)
+
+option(BUILD_MULTI_TESTER "Build multi-sa tester" NO)
+if(BUILD_MULTI_TESTER)
+    add_subdirectory (tools/testing)
+endif(BUILD_MULTI_TESTER)
 

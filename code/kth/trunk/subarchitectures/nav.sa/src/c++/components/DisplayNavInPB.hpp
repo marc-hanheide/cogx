@@ -15,7 +15,7 @@
 #ifndef DisplayNavInPB_hpp
 #define DisplayNavInPB_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
 #include <string>
 #include <Scan2dReceiver.hpp>
@@ -143,7 +143,7 @@ private:
 
   peekabot::ObjectProxy m_ProxyRoot;
   
-  peekabot::RobotProxy m_ProxyRobot;
+  peekabot::GroupProxy m_ProxyRobot;
   peekabot::SensorProxy m_ProxyLaser;
   peekabot::GroupProxy m_ProxyGraph;
   peekabot::GroupProxy m_ProxyNodes;

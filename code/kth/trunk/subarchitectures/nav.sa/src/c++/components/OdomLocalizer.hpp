@@ -15,10 +15,10 @@
 #ifndef OdomLocalizer_hpp
 #define OdomLocalizer_hpp
 
-#include <ManagedComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <OdometryReceiver.hpp>
 #include <NavData.hpp>
-#include <CASTTimer.hpp>
+#include <cast/core/CASTTimer.hpp>
 
 // Cure include
 #include <Transformation/Pose3D.hh>

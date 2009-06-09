@@ -18,7 +18,7 @@
 #include <Ice/Ice.h>
 #include <string>
 
-#include <CASTComponent.hpp>
+#include <cast/core/CASTComponent.hpp>
 
 #include <Robotbase.hpp>
 

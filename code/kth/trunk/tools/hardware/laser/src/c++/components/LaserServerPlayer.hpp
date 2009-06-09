@@ -19,8 +19,8 @@
 
 #include <Laser.hpp>
 
-#include <CASTComponent.hpp>
-#include <CASTTimer.hpp>
+#include <cast/core/CASTComponent.hpp>
+#include <cast/core/CASTTimer.hpp>
 
 #include <libplayerc++/playerc++.h>
 

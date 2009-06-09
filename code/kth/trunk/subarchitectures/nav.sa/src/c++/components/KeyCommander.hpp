@@ -17,8 +17,8 @@
 #ifndef KeyCommander_hpp
 #define KeyCommander_hpp
 
-#include <ManagedComponent.hpp>
-#include <WorkingMemoryReaderComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
+#include <cast/architecture/WorkingMemoryReaderComponent.hpp>
 #include <NavData.hpp>
 
 namespace navsa {

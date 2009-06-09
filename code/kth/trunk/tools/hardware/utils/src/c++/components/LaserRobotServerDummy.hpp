@@ -17,7 +17,7 @@
 #include <Robotbase.hpp>
 #include <Laser.hpp>
 
-#include <CASTComponent.hpp>
+#include <cast/core/CASTComponent.hpp>
 
 #include <libplayerc++/playerc++.h>
 

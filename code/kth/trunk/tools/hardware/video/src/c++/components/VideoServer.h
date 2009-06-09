@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <CASTComponent.hpp>
+#include <cast/core/CASTComponent.hpp>
 #include <VideoUtils.h>
 #include "Video.hpp"
 
