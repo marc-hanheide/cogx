@@ -39,7 +39,7 @@ public class Recognizer extends ManagedComponent {
 	private EventConverter converter = new EventConverter();
 	private RecognitionManager recManager = null;
 
-	public Recognizer(String _id) {
+	public Recognizer() {
 		super();
 
 		recManager = new RecognitionManager();
