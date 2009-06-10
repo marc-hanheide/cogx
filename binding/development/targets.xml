@@ -1,0 +1,93 @@
+<!-- Common targets used by the CoSy build system -->
+<project name="java build targets">
+
+
+  <!-- =================================================================== -->
+  <!-- Sets up some variables                                      -->
+  <!-- =================================================================== -->
+  <target name="global">
+    <dirname property="output.path" file="${output}"/>
+    <basename property="output.base" file="${output}"/>
+    <property name="output.dir" value="${output.path}/${output.base}" />
+    <!-- <echo>****** ALL OUTPUT GOING TO ${output.dir} ******</echo>-->
+    <property name="output.dest" value="${output.dir}/classes" />
+
+    <!-- Classpath -->
+    <path id="global.class.path">
+      <pathelement location="${output.dest}" />
+      <fileset dir=".">
+	<!-- <include name="tools/openccg/lib/*.jar" /> -->
+	<include name="*/*/lib/*.jar" />
+	<include name="lib/*.jar" />		    
+      </fileset>
+    </path>
+
+    <property name="idl.mappings.file" value="./idl.properties" />
+    <property name="includes.file" value="./build.dirs" />
+    <property name="include.patterns.file" value="./build.include" />
+    <property name="exclude.patterns.file" value="./build.exclude" />
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Prepares the build directories                                      -->
+  <!-- =================================================================== -->
+  <target name="prepare" depends="global">
+    <!-- create directories -->
+    <mkdir dir="${output.dir}" />
+    <mkdir dir="${output.dest}" />
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Basic compilation                                                   -->
+  <!-- =================================================================== -->
+  <target name="compile" depends="prepare" description="compiles the source code">
+    <!-- <javac classpathref="project.class.path" srcdir="${src.dir}" destdir="${output.dest}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" /> -->
+    <javac srcdir="${src.dir}" destdir="${output.dest}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Documentation generation                                            -->
+  <!-- =================================================================== -->
+  <target name="doc">
+    <exec executable="doxygen" dir="${doc.dir}">
+    </exec>
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Default empty IDL target. This is overidden by project files        -->
+  <!-- =================================================================== -->
+  <target name="idl">
+    <!-- <echo>EMPTY!</echo> -->
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Macro for generating source code from IDL files                     -->
+  <!-- =================================================================== -->
+  <!--<macrodef name="idlgen">-->
+  <!--<attribute name="file" />-->
+  <!--<sequential>-->
+  <!--<exec executable="idlj" dir="${idl.dir}">-->
+  <!-- <arg line="-keep -td ../java ${idl.arg.include} ${idl.arg.mapping} -fallTie  @{file}" /> -->
+  <!--<arg line="-td ../java ${idl.arg.include} ${idl.arg.mapping} -fallTie  @{file}" />-->
+  <!--		</exec>-->
+  <!--</sequential>-->
+  <!--</macrodef>-->
+
+
+  <macrodef name="idlgen">
+    <attribute name="file" />
+    <sequential>
+      <echo message="Generating source from @{file}"/>
+      <!-- <java classname="org.cognitivesystems.idl.toJavaPortable.Compile" dir="${idl.dir}" fork="true"> -->
+      <java jar="../../lib/cosyidl.jar" dir="${idl.dir}" fork="true">
+	<arg line="-td ../java ${idl.arg.include} ${idl.arg.mapping} -fallTie  @{file}" />
+	<classpath>
+	  <pathelement location="../../output/classes"/>
+	</classpath>
+      </java>
+    </sequential>
+  </macrodef>
+
+</project>

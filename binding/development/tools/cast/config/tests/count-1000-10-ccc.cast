@@ -1,0 +1,19 @@
+HOST localhost 
+
+SUBARCHITECTURE test
+CPP WM SubarchitectureWorkingMemory --log $TEST_LOG_OUTPUT --debug $TEST_LOG_OUTPUT
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD counter BasicTester --test count-100 --log $TEST_LOG_OUTPUT 
+CPP GD writer1 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer2 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer3 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer4 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer5 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer6 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer7 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer8 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer9 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT 
+CPP GD writer10 BasicTester --test write-100 --exit false --log $TEST_LOG_OUTPUT
+
+
+

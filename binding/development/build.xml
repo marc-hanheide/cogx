@@ -1,0 +1,167 @@
+<!-- Top level make file for CoSy system -->
+<project name="everything" default="compile" basedir=".">
+
+	<import file="./common.xml" />
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<target name="all" depends="configure,slice,expandlibs,compile" />
+
+	<target name="expandlibs" depends="global,prepare">
+          <echo message="Expanding external libraries to output/classes"/>
+	  <patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
+	  <unzip dest="${output.dest}">
+	    <fileset dir="." includes="*/*/lib/*.jar" excludesfile="${exclude.patterns.file}" />
+	  </unzip>
+        </target>
+
+	<target name="configure" depends="configure.filters,configure.slice.mappings, configure.slice.includes">
+	</target>
+
+	<target name="collect.src" depends="global">
+
+		<patternset id="include.patterns" includesfile="${include.patterns.file}" />
+		<patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
+
+		<dirset id="src.dirs" dir="${basedir}" casesensitive="yes" includes="**/openccg/src, */*/src/java, tools/*/*/src/java" excludesfile="${exclude.patterns.file}" />
+
+		<pathconvert property="src.dirs.path" refid="src.dirs" targetOS="unix" />
+		<!-- <echo message="${src.dirs.path}" /> -->
+	</target>
+
+	<target name="collect.slice" depends="global">
+
+		<patternset id="include.patterns" includesfile="${include.patterns.file}" />
+		<patternset id="exclude.patterns" excludesfile="${exclude.patterns.file}" />
+
+		<fileset id="included.source.dirs" dir="${basedir}" casesensitive="yes">
+			<patternset refid="include.patterns" />
+		</fileset>
+
+		<fileset id="slice.files" dir="${basedir}" casesensitive="yes" includes="*/*/src/slice/*.slice tools/*/*/src/slice/*.slice" excludesfile="${exclude.patterns.file}" />
+
+		<pathconvert property="slice.files.path" refid="slice.files" targetOS="unix" />
+		<!-- <echo message="${slice.files.path}" /> -->
+
+	</target>
+
+
+	<target name="main" depends="collect.slice">
+		<foreach list="${slice.dirs.path}" delimiter=":" param="foreach.prop" target="echo.prop" inheritall="true" />
+	</target>
+
+
+	<target name="echo.prop">
+		<echo message="echo.prop: ${foreach.prop}" />
+	</target>
+
+	<target name="configure.slice.mappings" depends="collect.slice, global">
+		<delete file="${slice.mappings.file}" />
+		<echo file="${slice.mappings.file}" append="true">slice.arg.mapping=${fixed.mappings} </echo>
+		<foreach list="${slice.files.path}" delimiter=":" param="slice.file" target="slice.mapping.conf" inheritall="true" inheritrefs="true" />
+	</target>
+
+
+	<target name="configure.filters" depends="global">
+		<delete file="${include.patterns.file}" />
+		<delete file="${exclude.patterns.file}" />
+		<dirset id="source.dirs" dir="${basedir}" casesensitive="yes">
+			<patternset includesfile="${includes.file}" />
+		</dirset>
+		<pathconvert property="source.dirs.path" refid="source.dirs" targetOS="unix" />
+		<foreach list="${source.dirs.path}" delimiter=":" param="filter.pattern" target="write.include.pattern" inheritall="true" inheritrefs="true" />
+		<dirset id="source.dirs.exclude" dir="${basedir}" casesensitive="yes" includes="*/*">
+			<patternset excludesfile="${includes.file}" />
+		</dirset>
+		<pathconvert property="source.dirs.exclude.path" refid="source.dirs.exclude" targetOS="unix" />
+		<foreach list="${source.dirs.exclude.path}" delimiter=":" param="filter.pattern" target="write.exclude.pattern" inheritall="true" inheritrefs="true" />
+
+	</target>
+
+	<target name="write.include.pattern">
+		<propertyregex property="include.pattern" input="${filter.pattern}" regexp="${basedir}\/(.*)" select="\1" casesensitive="false" />
+		<echo file="${include.patterns.file}" append="true">**/${include.pattern}/**${line.separator}</echo>
+	</target>
+
+	<target name="write.exclude.pattern">
+		<propertyregex property="exclude.pattern" input="${filter.pattern}" regexp="${basedir}\/(.*)" select="\1" casesensitive="false" />
+		<echo file="${exclude.patterns.file}" append="true">**/${exclude.pattern}/**${line.separator}</echo>
+	</target>
+
+	<target name="slice.mapping.conf">
+		<propertyregex property="slice.file.root" input="${slice.file}" regexp="^(.*)\.slice" select="\1" casesensitive="false" />
+		<propertyregex property="slice.file.name" input="${slice.file}" regexp="^(.*)\/(.*)\.slice" select="\2" casesensitive="false" />
+		<echo>trying to load: ${slice.file.root}.properties</echo>
+		<loadproperties srcFile="${slice.file.root}.properties" />
+		<propertyselector property="slice.mapping.list" delimiter="," select="\1" match="(.*)-module" casesensitive="true" />
+		<foreach delimiter="," list="${slice.mapping.list}" param="mapping.prefix" target="write.module.mapping" inheritall="true" />
+	</target>
+
+	<target name="write.module.mapping">
+		<propertycopy name="module" from="${mapping.prefix}-module" silent="true" /> 
+		<propertycopy name="prefix" from="${mapping.prefix}-prefix" silent="true" />
+
+		<condition property="goAhead">
+		  <and>
+		    <not>
+		      <equals arg1="${module}" arg2="" trim="true"/>		    
+		    </not>
+		    <not>
+		      <equals arg1="${prefix}" arg2="" trim="true"/>		    
+		    </not>
+		  </and>
+		</condition>
+		
+		<antcall target="goAhead.write.module.mapping"/>
+	</target>
+
+
+	<target  name="goAhead.write.module.mapping" if="goAhead">
+	  <echo file="${slice.mappings.file}" append="true">-pkgPrefix ${module} ${prefix} </echo>
+	</target>
+
+	<target name="configure.slice.includes" depends="collect.slice, global">
+		<echo file="${slice.mappings.file}" append="true">${line.separator}slice.arg.include=-I${output.dir}/include/slice </echo>
+		<foreach list="${slice.files.path}" delimiter=":" param="slice.file" target="slice.include.conf" inheritall="true" inheritrefs="true" />
+	</target>
+
+	<target name="slice.include.conf">
+		<propertyregex property="slice.include.dir" input="${slice.file}" regexp="^(.*)\/.*\.slice" select="\1" casesensitive="false" />
+		<echo file="${slice.mappings.file}" append="true">-I${slice.include.dir} </echo>
+	</target>
+
+	<target name="slice" depends="prepare,collect.slice,global">
+		<!-- load in configured mappings -->
+		<loadproperties srcFile="${slice.mappings.file}" />
+
+
+		<subant target="slice" inheritall="false">
+			<propertyset id="slice.args">
+				<propertyref prefix="slice.arg" />
+			</propertyset>
+			<fileset dir="." includes="*/*/build.xml tools/*/*/build.xml" excludesfile="${exclude.patterns.file}" />
+		</subant>
+	</target>
+
+	<target name="clean" depends="prepare,global">
+	  <subant target="clean" inheritall="true">
+	    <fileset dir="." includes="*/*/build.xml tools/*/*/build.xml" excludesfile="${exclude.patterns.file}" />
+	  </subant>
+	</target>
+
+	<target name="compile" depends="global,prepare,collect.src">
+
+		<depend srcdir="${src.dirs.path}" destdir="${output.dest}" cache="depcache" closure="yes">
+		</depend>
+
+		<javac classpathref="global.class.path" destdir="${output.dest}" optimize="false" debug="${debug}" debuglevel="lines,vars,source">
+			<src>
+				<dirset refid="src.dirs" />
+			</src>
+		</javac>
+	</target>
+
+</project>
