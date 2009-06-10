@@ -1,0 +1,61 @@
+HOST localhost
+
+SUBARCHITECTURE binding.sa localhost
+CPP  WM BindingWorkingMemory #--log true --debug true
+#JAVA WM binding.test.SimpleWM --log true
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD binding.scorer BindingScorer -nth 0 -maxN 1 # --log
+CPP  GD binding.judge BindingJudge #--log
+CPP  GD binding.binder Binder #--log true 
+CPP  GD binding.groups BindingGroupManager #--log 
+CPP  GD binding.state BindingStatusMonitor #--log
+CPP  GD binding.dot BindingDotViewer -visfile vis_binding.dot -d comsys_test --log --proxy short --union short 
+CPP  GD binding.garbage GarbageCollector --police-mode strict #--log
+CPP  GD binding.ambiguity AmbiguityIdentifier --log
+
+
+SUBARCHITECTURE motiv.sa localhost
+CPP  WM BindingWorkingMemory
+CPP  TM AlwaysPositiveTaskManager
+CPP  GD motiv.binder Binder 
+CPP  GD binding.scorer_dummy BindingScorer -nth 0 -maxN 1 --dummy
+CPP  GD motiv.state BindingStatusMonitor #--log
+CPP  GD motiv.dot BindingDotViewer -visfile vis_motiv.dot -d binding_test/dotfiles_comsys_0 --proxy short --union short --log
+CPP  GD motiv.garbage GarbageCollector  --police-mode strict #--log
+
+## Comments to the COMSYS configuration
+## - one binding monitor, on the main [ binding.sa ]
+## - the monitor for the main binding working memory works only with completely parsed, pruned packed logical forms, as per the option [ --incrementalBinding 2 ]. 
+##   the value "2" means "parsed, and pruned" ("1" means just completely parsed; "0" is equal to incremental binding). 
+## - the flag [ --hypoProxies false ] for a binding monitor means that no proxies are generated for variables in a packed logical form. 
+
+SUBARCHITECTURE comsys.sa localhost
+JAVA WM             org.cognitivesystems.comsys.workingmemory.ComsysWorkingMemory #--log true
+JAVA TM             org.cognitivesystems.comsys.general.ComsysTaskManager --file ./subarchitectures/comsys.mk4/config/test-suite/general-TM.sync #--log true
+#JAVA GD speech.rec  org.cognitivesystems.comsys.components.asr.ASR --src gui #--log true --playback
+JAVA GD parser      org.cognitivesystems.comsys.components.UtteranceInterpretation --grammar ./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml #--log true 
+#JAVA GD plfviz      org.cognitivesystems.comsys.components.PackedLFVisualizer --dir ./subarchitectures/comsys.mk4/graphs/parser/ --series true --sdrs true --dirSDRS ./subarchitectures/comsys.mk4/graphs/sdrs/ # --log true 
+JAVA GD comsys.binding.monitor	org.cognitivesystems.comsys.monitors.ComSysBindingMonitor -bsa binding.sa --msa motiv.sa --incrementalBinding false --syncModel sync_one # --log true
+#JAVA GD eventInt	org.cognitivesystems.comsys.components.EventStructureInterpretation --incrementalInterpretation false #--log true
+JAVA GD discRefBindings org.cognitivesystems.comsys.components.DiscRefBindingsComponent #--log true
+JAVA GD dialInt org.cognitivesystems.comsys.components.DialInt #--log true
+#JAVA GD testing		org.cognitivesystems.comsys.general.ComsysTester --test parsing6 --log
+
+## Comments to the COMSYS configuration
+## - one binding monitor, on the main [ binding.sa ]
+## - the monitor for the main binding working memory works only with completely parsed, pruned packed logical forms, as per the option [ --incrementalBinding 2 ]. 
+##   the value "2" means "parsed, and pruned" ("1" means just completely parsed; "0" is equal to incremental binding). 
+## - the flag [ --hypoProxies false ] for a binding monitor means that no proxies are generated for variables in a packed logical form. 
+JAVA GD speech.rec	org.cognitivesystems.comsys.components.asr.ASR --src gui #--log true --playback
+
+#
+#SUBARCHITECTURE coma.sa
+#JAVA WM coma.components.ComaWorkingMemory --log true
+#JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager
+#JAVA GD coma.reasoner coma.components.ComaReasoner --onto_file subarchitectures/coma.sa/ontologies/coma_office.owl --onto_ns oe --onto_sep : --reasoner crowl --crowl_cfg subarchitectures/coma.sa/ontologies/crowl.cfg --log true 
+##JAVA GD coma.tester coma.components.ComaTester --log true --onto_ns oe --onto_sep : --testfile subarchitectures/coma.sa/config/test9.coma --debug false
+#JAVA GD coma.conconcompawriter coma.comparators.ConceptVsConceptBindingFeatureComparisonWriter -bsa binding.sa --onto_ns oe --onto_sep : --log true --debug false
+#JAVA GD coma.conconcompareader coma.comparators.ConceptVsConceptBindingFeatureComparisonReader -bsa binding.sa --onto_ns oe --onto_sep : --log true --debug false
+#JAVA GD coma.areaconcompawriter coma.comparators.AreaVsConceptComparisonWriter -bsa binding.sa --onto_ns oe --onto_sep : --log true --debug false
+#JAVA GD coma.areaconcompareader coma.comparators.AreaVsConceptComparisonReader -bsa binding.sa --onto_ns oe --onto_sep : --log true --debug false
+#JAVA GD coma.fakeevents coma.components.ComaFakeEventGenerator --log true --onto_ns oe --onto_sep : --eventfile subarchitectures/coma.sa/config/event9.coma --debug false

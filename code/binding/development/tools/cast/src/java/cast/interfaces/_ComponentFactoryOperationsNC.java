@@ -1,0 +1,30 @@
+// **********************************************************************
+//
+// Copyright (c) 2003-2009 ZeroC, Inc. All rights reserved.
+//
+// This copy of Ice is licensed to you under the terms described in the
+// ICE_LICENSE file included in this distribution.
+//
+// **********************************************************************
+
+// Ice version 3.3.1
+
+package cast.interfaces;
+
+public interface _ComponentFactoryOperationsNC
+{
+    CASTComponentPrx newComponent(String id, String type)
+        throws cast.ComponentCreationException;
+
+    ManagedComponentPrx newManagedComponent(String id, String type)
+        throws cast.ComponentCreationException;
+
+    UnmanagedComponentPrx newUnmanagedComponent(String id, String type)
+        throws cast.ComponentCreationException;
+
+    WorkingMemoryPrx newWorkingMemory(String id, String type)
+        throws cast.ComponentCreationException;
+
+    TaskManagerPrx newTaskManager(String id, String type)
+        throws cast.ComponentCreationException;
+}
