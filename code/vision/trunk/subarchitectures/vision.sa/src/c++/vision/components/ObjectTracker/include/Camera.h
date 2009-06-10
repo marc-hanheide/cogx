@@ -16,6 +16,7 @@ class Camera;
 #include <GL/glu.h>
 #include "TM_Vector3.h"
 #include "Resources.h"
+#include "mathlib.h"
 
 #define GL_ORTHO 0
 #define GL_PERSPECTIVE 1
@@ -36,6 +37,8 @@ private:
 	float m_fovy, m_width, m_height;
 	float m_zNear, m_zFar;
 	unsigned short m_projection;	
+	mat4 m_extrinsic;
+	mat4 m_intrinsic;
 	
 public:
 	Camera();
@@ -47,7 +50,8 @@ public:
 				float fovy=45, float width=800, float height=600,
 				float zNear=0.1, float zFar=100,
 				unsigned short projection=GL_PERSPECTIVE );
-	void SetExtrinsic(float* R, float* t);
+	void SetExtrinsic(float* M);
+	void SetIntrinsic(float* M);
 	void SetIntrinsic(float fovy, float width, float height);
 	
 	void Activate();
@@ -55,6 +59,9 @@ public:
 	
 	void pvu2fsu();
 	void fsu2pvu();
+	void fsu2extrinsic();
+	void extrinsic2fsu();
+	void fwh2intrinsic();
 	
 	// Gets
 	TM_Vector3 GetF(){return f;}

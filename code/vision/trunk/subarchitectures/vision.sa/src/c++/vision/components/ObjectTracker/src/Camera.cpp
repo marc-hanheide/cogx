@@ -35,63 +35,66 @@ void Camera::Set(	float posx,  float posy,  float posz,
 	m_zNear = zNear;
 	m_zFar = zFar;
 	m_projection = projection;
+	
+	fwh2intrinsic();
+	fsu2extrinsic();
 }
 
-void Camera::SetExtrinsic(float* R, float* t){
+void Camera::SetExtrinsic(float* M){
 	
-	s.x=R[0]; u.x=R[1]; f.x=R[2];
-	s.y=R[3]; u.y=R[4]; f.y=R[5];
-	s.z=R[6]; u.z=R[7]; f.z=R[8];
+	m_extrinsic = mat4(M);
 	
-	m_vPos.x=t[0]; m_vPos.y=t[1]; m_vPos.z=t[2];
+	extrinsic2fsu();
 	fsu2pvu();
 	
-	//Transform();	
+	Activate();
+}
+
+void Camera::SetIntrinsic(float* M)
+{
+	m_intrinsic = mat4(M);
 }
 
 void Camera::SetIntrinsic(float fovy, float width, float height){
-	// TODO implement
 	m_fovy = fovy;
 	m_width = width;
 	m_height = height;
+	
+	fwh2intrinsic();
 }
 
 void Camera::Activate()
 {
-	if(m_projection == GL_ORTHO){
-		// Apply intrinsic parameters
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-m_width/2, m_width/2, -m_height/2, m_height/2, m_zNear, m_zFar);
-		
-		// Apply intrinsic parameters
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		Transform();
-		
-		// Extract frustum planes
-		g_Resources->GetFrustum()->ExtractFrustum();
-	}
-	else if(m_projection == GL_PERSPECTIVE){
-		// Apply intrinsic parameters
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluPerspective( m_fovy, m_width/m_height, m_zNear, m_zFar);
-		
-		// Apply extrinsic parameters
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		Transform();
-		
-		// Extract frustum planes
-		g_Resources->GetFrustum()->ExtractFrustum();
-	}
+	// Apply intrinsic parameters
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(m_intrinsic);
+	
+	// Apply extrinsic parameters
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(m_extrinsic);
+	
+	// Extract frustum planes
+	g_Resources->GetFrustum()->ExtractFrustum();
 }
 
 void Camera::Print(){
-	printf("%f %f %f, %f\n", s.x, u.x, f.x, m_vPos.x);
-	printf("%f %f %f, %f\n", s.y, u.y, f.y, m_vPos.y);
-	printf("%f %f %f, %f\n", s.z, u.z, f.z, m_vPos.z);
+
+	float m[16];
+	float p[16];
+	
+	glGetFloatv(GL_MODELVIEW_MATRIX, m);
+	glGetFloatv(GL_PROJECTION_MATRIX, p);
+
+	printf("Modelview matrix:\n");
+	printf("%f %f %f %f\n", m[0], m[4], m[8],  m[12]);
+	printf("%f %f %f %f\n", m[1], m[5], m[9],  m[13]);
+	printf("%f %f %f %f\n", m[2], m[6], m[10], m[14]);
+	printf("%f %f %f %f\n", m[3], m[7], m[11], m[15]);
+	printf("Projection matrix:\n");
+	printf("%f %f %f %f\n", p[0], p[4], p[8],  p[12]);
+	printf("%f %f %f %f\n", p[1], p[5], p[9],  p[13]);
+	printf("%f %f %f %f\n", p[2], p[6], p[10], p[14]);
+	printf("%f %f %f %f\n", p[3], p[7], p[11], p[15]);
 }
 
 void Camera::pvu2fsu()
@@ -105,6 +108,44 @@ void Camera::fsu2pvu()
 {
 	m_vView = m_vPos + f;
 	m_vUp = u;
+}
+
+void Camera::fsu2extrinsic()
+{
+	float m[16] = {	 s.x,  u.x, -f.x,  0,
+				 	 s.y,  u.y, -f.y,  0,
+					 s.z,  u.z, -f.z,  0,
+				   	   0,	 0,	  0,  1};
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(m);
+	glTranslatef(-m_vPos.x,-m_vPos.y,-m_vPos.z);
+	
+	
+	glGetFloatv(GL_MODELVIEW_MATRIX, m);
+	m_extrinsic = mat4(m);
+}
+
+void Camera::extrinsic2fsu()
+{
+	s.x=m_extrinsic[0]; u.x=m_extrinsic[1]; f.x=m_extrinsic[2];  m_vPos.x=m_extrinsic[3];
+	s.y=m_extrinsic[4]; u.y=m_extrinsic[5]; f.y=m_extrinsic[6];	 m_vPos.y=m_extrinsic[7];
+	s.z=m_extrinsic[8]; u.z=m_extrinsic[9]; f.z=m_extrinsic[10]; m_vPos.z=m_extrinsic[11];	
+}
+
+void Camera::fwh2intrinsic()
+{
+	float m[16];
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	
+	if(m_projection == GL_ORTHO){
+		glOrtho(-m_width/2, m_width/2, -m_height/2, m_height/2, m_zNear, m_zFar);
+	}
+	else if(m_projection == GL_PERSPECTIVE){
+		gluPerspective( m_fovy, m_width/m_height, m_zNear, m_zFar);
+	}
+	glGetFloatv(GL_PROJECTION_MATRIX, m);
+	m_intrinsic = mat4(m);		
 }
 
 //****************************************************************************
@@ -206,26 +247,7 @@ void Camera::Orbit(TM_Vector3 vPoint, TM_Vector3 vAxis, float fAngle)
 // Movement
 void Camera::Transform()
 {
-	float m[16] = {	 s.x,  u.x, -f.x,  0,
-				 	 s.y,  u.y, -f.y,  0,
-					 s.z,  u.z, -f.z,  0,
-				   	   0,	 0,	   0,  1};
-	glMultMatrixf(m);
-	glTranslatef(-m_vPos.x,-m_vPos.y,-m_vPos.z);
-	
-	/*
-	float params[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, params);
-	
-	if(m_projection == GL_PERSPECTIVE){
-		printf("\nModelview\n");
-		printf("%f %f %f %f\n", params[0], params[4], params[8], params[12]);
-		printf("%f %f %f %f\n", params[1], params[5], params[9], params[13]);
-		printf("%f %f %f %f\n", params[2], params[6], params[10], params[14]);
-		printf("%f %f %f %f\n\n", params[3], params[7], params[11], params[15]);
-	}
-	*/
-
+	fsu2extrinsic();
 }
 
 
