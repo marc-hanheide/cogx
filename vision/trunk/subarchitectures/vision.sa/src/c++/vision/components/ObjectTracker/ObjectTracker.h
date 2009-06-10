@@ -36,6 +36,9 @@ private:
   string confFile;											// configuration file for mxTools
   mx::CCameraModel m_cameraModel;
   float R[9];  float T[3];
+  mat4 m_extrinsic;
+  mat4 m_intrinsic;
+  float fxp, fyp;
   
   int camId;  
   bool track;

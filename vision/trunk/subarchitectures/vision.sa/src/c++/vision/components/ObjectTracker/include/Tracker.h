@@ -97,6 +97,9 @@ public:
 	Tracker();
 	~Tracker();
 	
+	inline void lock(){ m_lock=true; }
+	inline void unlock(){ m_lock=false; }
+	
 	bool init(	int width, int height,								// image size in pixels
 				int nop=3000,										// maximum number of particles
 				float n_r_max=45.0,									// standard deviation of rotational noise in degree

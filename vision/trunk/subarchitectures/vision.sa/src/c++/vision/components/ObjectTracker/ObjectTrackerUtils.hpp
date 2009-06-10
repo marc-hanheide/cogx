@@ -26,11 +26,11 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	Model::Vertex v;
 	for(i=0; i<geom->vertices.size(); i++){
 		v.pos.x = geom->vertices[i].pos.x;
-		v.pos.y = geom->vertices[i].pos.z;
-		v.pos.z = -geom->vertices[i].pos.y;
+		v.pos.y = geom->vertices[i].pos.y;
+		v.pos.z = geom->vertices[i].pos.z;
 		v.normal.x = geom->vertices[i].normal.x;
-		v.normal.y = geom->vertices[i].normal.z;
-		v.normal.z = -geom->vertices[i].normal.y;
+		v.normal.y = geom->vertices[i].normal.y;
+		v.normal.z = geom->vertices[i].normal.z;
 		v.texCoord.x = geom->vertices[i].texCoord.x;
 		v.texCoord.y = geom->vertices[i].texCoord.y;
 		model->m_vertexlist.push_back(v);
@@ -42,7 +42,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	for(i=0; i<geom->faces.size(); i++){	
 		f.v = geom->faces[i].vertices;	
 		model->m_facelist.push_back(f);
-		printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
+		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
 	
 	model->computeEdges();
@@ -128,3 +128,82 @@ cdl::CASTTime convertTime(double time_sec){
 	
 	return casttime;
 }
+
+void transposeMatrix4(float* m1, float* m2){
+	m2[0]=m1[0];  m2[1]=m1[4];  m2[2]=m1[8];  m2[3]=m1[12];
+	m2[4]=m1[1];  m2[5]=m1[5];  m2[6]=m1[9];  m2[7]=m1[13];
+	m2[8]=m1[2];  m2[9]=m1[6];  m2[10]=m1[10]; m2[11]=m1[14];
+	m2[12]=m1[3]; m2[13]=m1[7]; m2[14]=m1[11]; m2[15]=m1[15];
+}
+
+/* Stuff for adjusting cube 
+vector<Model::Vertex> rotateY(vector<Model::Vertex> vertices, float alpha){
+	float m[9] = {	cos(alpha), 0, sin(alpha),
+									0, 					1, 0,
+									-sin(alpha), 0, cos(alpha) };
+	mat3 rotY(m);
+	
+	for(int i=0; i<vertices.size(); i++){
+		vec3 v1(vertices[i].pos.x, vertices[i].pos.y, vertices[i].pos.z);
+		vec3 v2 = rotY * v1;
+		
+		vertices[i].pos.x = v2.x;
+		vertices[i].pos.y = v2.y;
+		vertices[i].pos.z = v2.z;		
+	}
+
+	return vertices;
+}
+
+bool compareX(const Model::Vertex& v1, const Model::Vertex& v2){
+	return v1.pos.x < v2.pos.x;
+}
+
+bool makeCube(Model* rawCube, Model* resultCube){
+	float alpha = 3.1415926*0.25;
+	float beta = 0.0;
+	float gamma = 0.0;
+	int i;
+	
+	
+	
+	vector<Model::Vertex> vertexlist = rawCube->m_vertexlist;
+	
+	
+	vertexlist = rotateY(vertexlist, alpha);
+	
+	resultCube->m_vertexlist = vertexlist;
+	
+	std::sort(vertexlist.begin(), vertexlist.end(), compareX);
+		
+	printf("m_vertexlist (unsorted):\n");
+	for(i=0; i<rawCube->m_vertexlist.size(); i++){
+		printf("%f %f %f\n", rawCube->m_vertexlist[i].pos.x, rawCube->m_vertexlist[i].pos.y, rawCube->m_vertexlist[i].pos.z);
+	}
+	
+	printf("vertexlist (sorted):\n");
+	for(i=0; i<vertexlist.size(); i++){
+		printf("%f %f %f\n", vertexlist[i].pos.x, vertexlist[i].pos.y, vertexlist[i].pos.z);
+	}
+	
+	
+	printf("%f %f %f\n", rotX[0], rotX[1], rotX[2]);
+	printf("%f %f %f\n", rotX[3], rotX[4], rotX[5]);
+	printf("%f %f %f\n", rotX[6], rotX[7], rotX[8]);
+	
+	
+
+	
+	return true;
+}
+
+*/
+
+
+
+
+
+
+
+
+
