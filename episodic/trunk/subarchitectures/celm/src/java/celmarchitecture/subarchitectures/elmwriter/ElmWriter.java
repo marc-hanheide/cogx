@@ -44,7 +44,7 @@ public class ElmWriter extends ManagedComponent {
 	private EventConverter converter = new EventConverter();
 	private ELMDatabaseWriter dbWriter = null;
 
-	public ElmWriter(String _id) {
+	public ElmWriter() {
 		super();
 	}
 

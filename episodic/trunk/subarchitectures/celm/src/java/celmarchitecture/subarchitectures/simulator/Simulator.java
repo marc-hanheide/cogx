@@ -43,7 +43,7 @@ public class Simulator extends ManagedComponent {
 	private EventSimulator privSimulator = new EventSimulator();
 	private EventConverter converter = new EventConverter();
 
-	public Simulator(String _id) {
+	public Simulator() {
 		super();
 	}
 

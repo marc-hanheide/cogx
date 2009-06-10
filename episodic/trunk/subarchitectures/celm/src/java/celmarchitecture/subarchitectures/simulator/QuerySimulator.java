@@ -36,7 +36,7 @@ public class QuerySimulator extends ManagedComponent {
 	private boolean singleSA = true; // false;
 	private SANames saNames = new SANames();
 
-	public QuerySimulator(String _id) {
+	public QuerySimulator() {
 		super();
 	}
 

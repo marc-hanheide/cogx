@@ -54,7 +54,7 @@ public class Recollector extends ManagedComponent {
 
 	private EventLocationFactory elFactory = new EventLocationFactory();
 
-	public Recollector(String _id) {
+	public Recollector() {
 		super();
 	}
 

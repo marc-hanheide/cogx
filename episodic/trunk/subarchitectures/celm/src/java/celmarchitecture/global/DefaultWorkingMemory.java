@@ -26,7 +26,7 @@ public class DefaultWorkingMemory extends SubarchitectureWorkingMemory {
 	private boolean localVerbose = false;
 	private boolean verbose = GlobalSettings.verbose || localVerbose;
 
-	public DefaultWorkingMemory(String _id) {
+	public DefaultWorkingMemory() {
 		super();
 	}
 

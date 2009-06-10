@@ -23,7 +23,7 @@ public class EventMonitor extends ManagedComponent {
 	private boolean localVerbose = false;
 	private boolean verbose = GlobalSettings.verbose || localVerbose;
 
-	public EventMonitor(String _id) {
+	public EventMonitor() {
 
 		super();
 	}
