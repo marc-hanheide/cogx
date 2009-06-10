@@ -14,6 +14,7 @@ import celm.autogen.CELMPartialEventToStore;
 import celm.conversion.EventConverter;
 import celmarchitecture.global.GlobalSettings;
 import celmarchitecture.global.SANames;
+import dummy.RobotPose;
 import elm.event.Event;
 import elm.event.EventIDException;
 import elm.tests.EventSimulator;
@@ -92,25 +93,21 @@ public class Simulator extends ManagedComponent {
 		return ce;
 	}
 
-	// private RobotPose generateRobotPose() {
-	//
-	// RobotPose rp = new RobotPose();
-	//
-	// rp.time = balt.management.ComponentLauncher.getBALTTime();
-	//
-	// privSimulator.move();
-	// double[] pos = privSimulator.getPosition();
-	//
-	// rp.x = pos[0];
-	// rp.y = pos[1];
-	// rp.theta = 0;
-	//
-	// rp.cov = new double[9];
-	// for (int i = 0; i < rp.cov.length; i++)
-	// rp.cov[i] = 0;
-	//
-	// return rp;
-	// }
+	 private RobotPose generateRobotPose() {
+
+		RobotPose rp = new RobotPose();
+
+		rp.time = getCASTTime();
+
+		privSimulator.move();
+		double[] pos = privSimulator.getPosition();
+
+		rp.x = pos[0];
+		rp.y = pos[1];
+		rp.theta = 0;
+
+			return rp;
+	}
 
 	@Override
 	public void runComponent() {
@@ -138,14 +135,13 @@ public class Simulator extends ManagedComponent {
 									generateEventToStore());
 
 					if (createRobotPoses) {
-						assert false : "need RobotPose";
-						// for (int i = 0; i < robotPosesCnt; i++)
-						// if (storeEventsLocally)
-						// addToWorkingMemory(newDataID(),
-						// generateRobotPose());
-						// else
-						// addToWorkingMemory(newDataID(),
-						// saNames.writerSA, generateRobotPose());
+						 for (int i = 0; i < robotPosesCnt; i++)
+							if (storeEventsLocally)
+								addToWorkingMemory(newDataID(),
+										generateRobotPose());
+							else
+								addToWorkingMemory(newDataID(),
+										saNames.writerSA, generateRobotPose());
 					}
 
 					if (createPartialEvents)
