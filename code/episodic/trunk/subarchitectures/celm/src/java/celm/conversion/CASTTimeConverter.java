@@ -7,7 +7,13 @@ package celm.conversion;
 
 import java.util.Date;
 
+import Ice.Communicator;
+import Ice.Identity;
+import Ice.ObjectPrx;
 import cast.cdl.CASTTime;
+import cast.cdl.CPPSERVERPORT;
+import cast.interfaces.TimeServerPrx;
+import cast.interfaces.TimeServerPrxHelper;
 
 public class CASTTimeConverter {
 
@@ -24,12 +30,32 @@ public class CASTTimeConverter {
 
 	private static long offset = -1;
 
+	private static TimeServerPrx m_staticTimeServer;
+
+	/**
+	 * This resolves and stores a time server. This will be added to CASTUtils
+	 * in the next release.
+	 * 
+	 * @return
+	 */
+	public static final TimeServerPrx getTimeServer() {
+		if (m_staticTimeServer == null) {
+			String host = "localhost";
+			int port = CPPSERVERPORT.value;
+			Communicator ic = Ice.Util.initialize();
+			Identity id = new Identity("TimeServer", "TimeServer");
+			ObjectPrx base = ic.stringToProxy(ic.identityToString(id)
+					+ ":default -h " + host + " -p " + port);
+			m_staticTimeServer = TimeServerPrxHelper.checkedCast(base);
+		}
+		return m_staticTimeServer;
+	}
+
 	/**
 	 * Convert the given CASTTime bt to a Java Date object, guessing whether bt
 	 * is relative to Epoch or CAST startup time.
 	 */
 	public static Date toJavaDate(CASTTime bt) {
-
 		return new Date(toMillisecondsSinceEpochTime(bt));
 	}
 
@@ -53,9 +79,8 @@ public class CASTTimeConverter {
 	public static long computeCASTTimeOffset() {
 
 		long t1 = System.currentTimeMillis();
-		CASTTime bt = null; // balt.management.ProcessLauncher.getCASTTime();
-		assert bt != null : "need to implement gettime generally";
-
+		CASTTime bt = getTimeServer().getCASTTime();
+		
 		long t2 = System.currentTimeMillis();
 
 		long tm = (t1 + t2) / 2;

@@ -9,6 +9,13 @@ import elm.event.*;
 
 import java.util.Vector;
 
+/**
+ * Conversion event. 
+ * 
+ * 
+ * @author nah
+ *
+ */
 class ConvEvent extends Event {
 
     protected ConvEvent(EventID eventID,

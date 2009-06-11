@@ -125,7 +125,7 @@ public class NavMonitor extends SimpleAbstractWMMonitor {
 			if (data instanceof RobotPose) {
 				RobotPose rp = (RobotPose) data;
 				Date time = BALTTimeConverter.toJavaDate(rp.m_time);
-				EventSpecificFeatures esf = new EventSpecificFeatures(4);
+				EventSpecifi8cFeatures esf = new EventSpecificFeatures(4);
 
 				// for testing, debugging and profiling purposes:
 				esf.addKeyValuePair("event_reception_time", ""
