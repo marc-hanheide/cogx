@@ -33,7 +33,7 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 
 	private SANames saNames = new SANames();
 
-	public SimpleAbstractWMMonitor(String _id) {
+	public SimpleAbstractWMMonitor() {
 		super();
 	}
 
@@ -41,9 +41,8 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 		saNames.configure(config);
 	}
 
-	protected <Type extends Ice.Object> void addGlobalAddOverwriteFilter(Class<Type> c,
-			WorkingMemoryChangeReceiver wmcrProcessEvent) {
-
+	protected <Type extends Ice.Object> void addGlobalAddOverwriteFilter(
+			Class<Type> c, WorkingMemoryChangeReceiver wmcrProcessEvent) {
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(c,
 				WorkingMemoryOperation.ADD), wmcrProcessEvent);
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(c,
@@ -51,28 +50,21 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 	}
 
 	protected <Type extends Ice.Object> void addGlobalAddFilter(Class<Type> c,
-			WorkingMemoryChangeReceiver wmcrProcessEvent)
-			 {
-
+			WorkingMemoryChangeReceiver wmcrProcessEvent) {
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(c,
 				WorkingMemoryOperation.ADD), wmcrProcessEvent);
-
 	}
 
-	protected <Type extends Ice.Object> void addGlobalOverwriteFilter(Class<Type> c,
-			WorkingMemoryChangeReceiver wmcrProcessEvent)
- {
-
+	protected <Type extends Ice.Object> void addGlobalOverwriteFilter(
+			Class<Type> c, WorkingMemoryChangeReceiver wmcrProcessEvent) {
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(c,
 				WorkingMemoryOperation.OVERWRITE), wmcrProcessEvent);
 	}
 
-	protected <Type extends Ice.Object> void addGlobalDeleteFilter(Class<Type> c,
-			WorkingMemoryChangeReceiver wmcrProcessEvent) {
-
+	protected <Type extends Ice.Object> void addGlobalDeleteFilter(
+			Class<Type> c, WorkingMemoryChangeReceiver wmcrProcessEvent) {
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(c,
 				WorkingMemoryOperation.DELETE), wmcrProcessEvent);
-
 	}
 
 	/**
@@ -113,24 +105,6 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 		else
 			addToWorkingMemory(newDataID(), saNames.writerSA, partialCEvent);
 
-	}
-
-	/*
-	 * @see
-	 * cast.architecture.subarchitecture.PrivilegedManagedProcess#taskAdopted
-	 * (java.lang.String)
-	 */
-	@Override
-	protected void taskAdopted(String _taskID) {
-	}
-
-	/*
-	 * @see
-	 * cast.architecture.subarchitecture.PrivilegedManagedProcess#taskRejected
-	 * (java.lang.String)
-	 */
-	@Override
-	protected void taskRejected(String _taskID) {
 	}
 
 }
