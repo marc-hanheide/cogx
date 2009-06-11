@@ -3,6 +3,7 @@ package celmarchitecture.subarchitectures.simulator;
 import java.io.IOException;
 import java.util.Properties;
 
+import NavData.RobotPose2d;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
@@ -14,7 +15,6 @@ import celm.autogen.CELMPartialEventToStore;
 import celm.conversion.EventConverter;
 import celmarchitecture.global.GlobalSettings;
 import celmarchitecture.global.SANames;
-import dummy.RobotPose;
 import elm.event.Event;
 import elm.event.EventIDException;
 import elm.tests.EventSimulator;
@@ -93,9 +93,9 @@ public class Simulator extends ManagedComponent {
 		return ce;
 	}
 
-	 private RobotPose generateRobotPose() {
+	 private RobotPose2d generateRobotPose() {
 
-		RobotPose rp = new RobotPose();
+		RobotPose2d rp = new RobotPose2d();
 
 		rp.time = getCASTTime();
 

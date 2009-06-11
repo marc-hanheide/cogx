@@ -3,6 +3,8 @@ package celmarchitecture.subarchitectures.elmwriter;
 import java.util.Properties;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import NavData.RobotPose2d;
+
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -20,15 +22,14 @@ import celm.util.TimedPosition;
 import celm.util.TimedPositionBuffer;
 import celmarchitecture.global.GlobalSettings;
 import celmarchitecture.global.SANames;
-import dummy.RobotPose;
 import elm.event.EventLocation;
 import elm.event.EventLocationFactory;
 import elm.event.EventSpecificFeatures;
 
 /**
- * LocationMonitor keeps track of the robot's position via RobotPose updates and
+ * LocationMonitor keeps track of the robot's position via RobotPose2d updates and
  * stores this information to fuse it with partial event information. <br>
- * "RobotPose + CELMPartialEventToStore = CELMEventToStore"
+ * "RobotPose2d + CELMPartialEventToStore = CELMEventToStore"
  * 
  * @author Dennis Stachowicz
  */
@@ -93,9 +94,9 @@ public class LocationMonitor extends ManagedComponent {
 			};
 
 			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-					RobotPose.class, WorkingMemoryOperation.ADD), wmcrRobotPose);
+					RobotPose2d.class, WorkingMemoryOperation.ADD), wmcrRobotPose);
 			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-					RobotPose.class, WorkingMemoryOperation.OVERWRITE),
+					RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
 					wmcrRobotPose);
 
 			addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
@@ -109,16 +110,16 @@ public class LocationMonitor extends ManagedComponent {
 
 		try {
 			if (verbose)
-				println("found RobotPose");
+				println("found RobotPose2d");
 
 			CASTData<?> wme = getWorkingMemoryEntry(_ceventChange.address);
 
-			RobotPose pose = (RobotPose) wme.getData();
+			RobotPose2d pose = (RobotPose2d) wme.getData();
 
 			posBuffer.addPosition(new TimedPosition(pose));
 
 			if (verbose)
-				println("stored RobotPose");
+				println("stored RobotPose2d");
 		} catch (SubarchitectureComponentException e) {
 			e.printStackTrace();
 			if (GlobalSettings.exitOnException)

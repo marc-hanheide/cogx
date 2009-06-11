@@ -22,16 +22,6 @@
 
 #include <cast/slice/CDL.ice>
 
-module dummy {
-  class RobotPose {
-    cast::cdl::CASTTime  time;
-    double x;
-    double y;
-    double theta;
-  };
-
-};
-
 module celm {
 
   /**
