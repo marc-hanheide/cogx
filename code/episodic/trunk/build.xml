@@ -20,12 +20,12 @@
 	     children modules. Need to automate later?
 	     ========================================= -->
 	<target name="template" depends="init">
-		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
-		<!-- e.g. <ant target="${target}" dir="subarchitectures/nav.sa" /> -->
-		<ant target="${target}" dir="tools/elm" />
-		<ant target="${target}" dir="subarchitectures/nav.sa" />
-		<ant target="${target}" dir="subarchitectures/spatial.sa" />
-		<ant target="${target}" dir="subarchitectures/celm" />
+	  <echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
+	  <!-- e.g. <ant target="${target}" dir="subarchitectures/nav.sa" /> -->
+	  <ant target="${target}" dir="tools/elm" />
+	  <ant target="${target}" dir="subarchitectures/nav.sa" />
+	  <ant target="${target}" dir="subarchitectures/spatial.sa" />
+	  <ant target="${target}" dir="subarchitectures/celm" />
 	</target>
 
 
@@ -33,10 +33,10 @@
 	<!-- Cleans all subdirs                                                  -->
 	<!-- =================================================================== -->
 	<target name="clean" depends="init">
-		<echo>Cleaning all builds"</echo>
-		<antcall target="template">
-			<param name="target" value="clean" />
-		</antcall>
+	  <echo>Cleaning all builds"</echo>
+	  <antcall target="template">
+	    <param name="target" value="clean" />
+	  </antcall>
 	</target>
 
 	<!-- =================================================================== -->

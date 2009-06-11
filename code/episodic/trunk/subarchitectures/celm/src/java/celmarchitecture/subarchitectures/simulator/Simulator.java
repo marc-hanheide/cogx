@@ -93,7 +93,7 @@ public class Simulator extends ManagedComponent {
 		return ce;
 	}
 
-	 private RobotPose2d generateRobotPose() {
+	private RobotPose2d generateRobotPose() {
 
 		RobotPose2d rp = new RobotPose2d();
 
@@ -106,7 +106,7 @@ public class Simulator extends ManagedComponent {
 		rp.y = pos[1];
 		rp.theta = 0;
 
-			return rp;
+		return rp;
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public class Simulator extends ManagedComponent {
 									generateEventToStore());
 
 					if (createRobotPoses) {
-						 for (int i = 0; i < robotPosesCnt; i++)
+						for (int i = 0; i < robotPosesCnt; i++)
 							if (storeEventsLocally)
 								addToWorkingMemory(newDataID(),
 										generateRobotPose());
