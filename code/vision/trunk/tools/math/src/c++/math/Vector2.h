@@ -240,28 +240,28 @@ inline bool isFinite(const Vector2 &a)
   return isfinite(a.x) && isfinite(a.y);
 }
 
-Vector2& operator += (Vector2 &a, const Vector2 &b)
+inline Vector2& operator += (Vector2 &a, const Vector2 &b)
 {
   a.x += b.x;
   a.y += b.y;
   return a;
 }
 
-Vector2& operator -= (Vector2 &a, const Vector2 &b)
+inline Vector2& operator -= (Vector2 &a, const Vector2 &b)
 {
   a.x -= b.x;
   a.y -= b.y;
   return a;
 }
 
-Vector2& operator *= (Vector2 &a, double s)
+inline Vector2& operator *= (Vector2 &a, double s)
 {
   a.x *= s;
   a.y *= s;
   return a;
 }
 
-Vector2& operator /= (Vector2 &a, double s) throw(runtime_error)
+inline Vector2& operator /= (Vector2 &a, double s) throw(runtime_error)
 {
   if(iszero(s))
     throw runtime_error(exceptionMessage(__HERE__, "division by zero"));
