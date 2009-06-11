@@ -5,26 +5,26 @@
 
 package celm.util;
 
+import NavData.RobotPose2d;
 import celm.conversion.CASTTimeConverter;
-import dummy.RobotPose;
 
-//import NavData.RobotPose;
+//import NavData.RobotPose2d;
 
 public class TimedPosition {
 
 	// TODO: unset this
 	private final long milliseconds;
 
-	private final RobotPose rp;
+	private final RobotPose2d rp;
 
-	public TimedPosition(RobotPose rp) {
+	public TimedPosition(RobotPose2d rp) {
 
 		this.milliseconds = CASTTimeConverter
 				.toMillisecondsSinceEpochTime(rp.time);
 		this.rp = rp;
 	}
 
-	public TimedPosition(RobotPose rp, long milliseconds) {
+	public TimedPosition(RobotPose2d rp, long milliseconds) {
 
 		this.milliseconds = milliseconds;
 		this.rp = rp;
@@ -34,7 +34,7 @@ public class TimedPosition {
 		return milliseconds;
 	}
 
-	public RobotPose getRobotPose() {
+	public RobotPose2d getRobotPose() {
 		return rp;
 	}
 
