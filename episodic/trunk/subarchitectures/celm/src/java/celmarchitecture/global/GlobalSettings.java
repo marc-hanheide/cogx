@@ -7,7 +7,7 @@ package celmarchitecture.global;
 public class GlobalSettings {
 
     public static final boolean verbose               = true;
-    public static final boolean singleSA              = true; // true;
+    public static final boolean singleSA              = false; 
     
     // for debugging:
     public static final boolean exitOnException       = false;
