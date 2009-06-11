@@ -1,4 +1,4 @@
-package celmarchitecture.subarchitectures.monitors;
+package celmarchitecture.subarchitectures.abstr;
 
 import java.util.Date;
 import java.util.Properties;
@@ -67,6 +67,33 @@ public class SimpleAbstractWMMonitor extends ManagedComponent {
 				WorkingMemoryOperation.DELETE), wmcrProcessEvent);
 	}
 
+	
+	protected <Type extends Ice.Object> void addLocalAddOverwriteFilter(
+			Class<Type> c, WorkingMemoryChangeReceiver wmcrProcessEvent) {
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(c,
+				WorkingMemoryOperation.ADD), wmcrProcessEvent);
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(c,
+				WorkingMemoryOperation.OVERWRITE), wmcrProcessEvent);
+	}
+
+	protected <Type extends Ice.Object> void addLocalAddFilter(Class<Type> c,
+			WorkingMemoryChangeReceiver wmcrProcessEvent) {
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(c,
+				WorkingMemoryOperation.ADD), wmcrProcessEvent);
+	}
+
+	protected <Type extends Ice.Object> void addLocalOverwriteFilter(
+			Class<Type> c, WorkingMemoryChangeReceiver wmcrProcessEvent) {
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(c,
+				WorkingMemoryOperation.OVERWRITE), wmcrProcessEvent);
+	}
+
+	protected <Type extends Ice.Object> void addLocalDeleteFilter(
+			Class<Type> c, WorkingMemoryChangeReceiver wmcrProcessEvent) {
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(c,
+				WorkingMemoryOperation.DELETE), wmcrProcessEvent);
+	}
+	
 	/**
 	 * Report an event to the episodic-like memory system.
 	 * <p>
