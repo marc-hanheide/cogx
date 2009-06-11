@@ -723,7 +723,7 @@ inline void fromRotZ(Matrix33 &a, double angle)
 /**
  * Print as rotation vector in text form to a stream,
  */
-void writeTextRotVec(ostream &os, const Matrix33 &m)
+inline void writeTextRotVec(ostream &os, const Matrix33 &m)
 {
   Vector3 r;
   toRotVector(m, r);
@@ -733,7 +733,7 @@ void writeTextRotVec(ostream &os, const Matrix33 &m)
 /**
  * Read as rotation vector in text from from a streaa.
  */
-void readTextRotVec(istream &is, Matrix33 &m)
+inline void readTextRotVec(istream &is, Matrix33 &m)
 {
   Vector3 r;
   readText(is, r);
@@ -743,7 +743,7 @@ void readTextRotVec(istream &is, Matrix33 &m)
 /**
  * Print as rotation matrix in text form to a streaa.
  */
-void writeTextMatrix(ostream &os, const Matrix33 &a)
+inline void writeTextMatrix(ostream &os, const Matrix33 &a)
 {
   os << '|' << a.m00 << ' ' << a.m01 << ' ' << a.m02 << '|' << endl;
   os << '|' << a.m10 << ' ' << a.m11 << ' ' << a.m12 << '|' << endl;
