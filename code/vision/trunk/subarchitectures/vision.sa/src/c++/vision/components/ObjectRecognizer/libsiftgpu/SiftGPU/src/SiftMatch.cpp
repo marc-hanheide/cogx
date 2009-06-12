@@ -27,6 +27,8 @@
 #include <vector>
 #include <strstream>
 #include <algorithm>
+#include <stdio.h>
+#include <string.h>
 using namespace std;
 #include "GlobalUtil.h"
 
@@ -827,6 +829,7 @@ int SiftMatchGPU::VerifyContextGL()
 	return GlobalUtil::_GoodOpenGL;
 }
 
+/*
 void* SiftMatchGPU::operator new (size_t  size){
   void * p = malloc(size);
   if (p == 0)  
@@ -836,6 +839,7 @@ void* SiftMatchGPU::operator new (size_t  size){
   }
   return p; 
 }
+*/
 
 
 

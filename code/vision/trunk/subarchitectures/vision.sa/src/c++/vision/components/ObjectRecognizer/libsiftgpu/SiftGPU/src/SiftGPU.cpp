@@ -95,6 +95,7 @@ SiftGPUEX::SiftGPUEX()
 	RandomizeColor();
 }
 
+/*
 void* SiftGPU::operator new (size_t  size){
   void * p = malloc(size);
   if (p == 0)  
@@ -104,6 +105,7 @@ void* SiftGPU::operator new (size_t  size){
   }
   return p; 
 }
+*/
 
 void SiftGPU::SetActivePyramid(int index)
 {
