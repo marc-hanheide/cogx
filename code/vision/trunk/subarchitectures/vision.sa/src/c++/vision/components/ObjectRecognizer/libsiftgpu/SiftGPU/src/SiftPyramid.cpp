@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <fstream>
 #include <math.h>
+#include <string.h>
 using namespace std;
 
 #include "GlobalUtil.h"
