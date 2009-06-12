@@ -3,7 +3,7 @@ IDIR =../Include
 SRC_SIFTGPU = ../SiftGPU/src
 SRC_DRIVER = ../TestWin/src
 CC=gcc
-CFLAGS=  -I$(IDIR) -L/usr/lib -L./bin -Wall -Wno-deprecated -pthread  -march=naive -mfpmath=sse
+CFLAGS=  -I$(IDIR) -L/usr/lib -L./bin -fPIC -Wall -Wno-deprecated -pthread  -mfpmath=sse # -march=native 
 ODIR_SIFTGPU=siftgpu
 ODIR_DRIVER=driver
 #external header files
@@ -93,7 +93,7 @@ clean:
 	rm -f $(ODIR_SIFTGPU)/*.o
 	rm -f $(ODIR_DRIVER)/*.o
 	rm -f ./bin/libsiftgpu.a
-	fm -f ./bin/libsiftgpu.so
+	rm -f ./bin/libsiftgpu.so
 	rm -f ./bin/TestWinGlut
 	rm -f ./bin/SimpleSIFT
 	rm -f ./bin/speed

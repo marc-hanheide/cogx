@@ -53,6 +53,7 @@
 		#define _MAX_PATH 512
 	#endif
 #endif
+#include <cstddef>
 ///////////////////////////////////////////////////////////////////
 //clss SiftParam
 //description: SIFT parameters
@@ -209,7 +210,7 @@ public:
 	//compiler setting of /MT and /MTd). Without the overloaded operator
 	//deleting a SiftGPU object will cause a heap corruption in the 
 	//static link case (but not for the runtime dll loading).
-	SIFTGPU_EXPORT void* operator new (size_t size); 
+	// SIFTGPU_EXPORT void* operator new (size_t size); 
 };
 
 
@@ -327,7 +328,7 @@ public:
 
 public:
 	//overload the new operator, the same reason as SiftGPU above
-	SIFTGPU_EXPORT void* operator new (size_t size);
+	// SIFTGPU_EXPORT void* operator new (size_t size);
 };
 
 
