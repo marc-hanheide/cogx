@@ -28,7 +28,7 @@ GET_FILENAME_COMPONENT(CMAKE_SOURCE_DIR . ABSOLUTE CACHE INTERNAL "")
 # Find OmniORB package.
 FIND_PACKAGE(OmniORB)
 
-# Set c++ and idl root.
+# Set c++ and slice root.
 SET(CPP_ROOT ${CMAKE_SOURCE_DIR}/src/c++)
 SET(SLICE_ROOT ${CMAKE_SOURCE_DIR}/src/slice)
 
@@ -61,7 +61,7 @@ IF (BINDING_DISABLE_TOKENS)
 ENDIF (BINDING_DISABLE_TOKENS)
 
 
-ADD_SUBDIRECTORY(src/c++/binding/slice)
+#ADD_SUBDIRECTORY(src/c++/binding)
 ADD_SUBDIRECTORY(src/c++/binding)
 ADD_SUBDIRECTORY(src/c++/binding/components/MultiTesterMonitor)
 ADD_SUBDIRECTORY(src/c++/binding/components/GarbageCollector)
