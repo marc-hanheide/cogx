@@ -1,8 +1,9 @@
 package binding.monitors.test;
 
+import java.util.Map;
 import java.util.Properties;
 
-import org.cognitivesystems.common.autogen.Math.Vector3D;
+// import org.cognitivesystems.common.autogen.Math.Vector3D;
 
 import BindingData.BinderStatus;
 import BindingFeatures.Concept;
@@ -10,10 +11,10 @@ import BindingFeatures.Location;
 import BindingFeaturesCommon.TemporalFrameType;
 import binding.abstr.AbstractMonitor;
 import binding.common.BindingComponentException;
-import cast.architecture.subarchitecture.SubarchitectureProcessException;
-import cast.cdl.testing.CAST_TEST_FAIL;
-import cast.cdl.testing.CAST_TEST_PASS;
-import cast.core.data.CASTData;
+import cast.SubarchitectureComponentException;
+import cast.cdl.testing.CASTTESTFAIL;
+import cast.cdl.testing.CASTTESTPASS;
+import cast.core.CASTData;
 
 public class RelTest extends AbstractMonitor {
     
@@ -21,15 +22,6 @@ public class RelTest extends AbstractMonitor {
 	super(_id);
     }
     
-    @Override
-	protected void taskAdopted(String _taskID) {
-	
-    }
-    
-    @Override
-	protected void taskRejected(String _taskID) {
-	
-    }
     
     @Override
 	public void start() {
@@ -44,10 +36,10 @@ public class RelTest extends AbstractMonitor {
     private MonitorMode m_mode;
     
     @Override
-	public void configure(Properties _config) {
+	public void configure(Map<String, String> _config) {
 	super.configure(_config);
 	
-	m_sourceID = m_subarchitectureID;
+	sourceID = getSubarchitectureID();
 	
 	if (_config.containsKey("--vision")) {
 	    m_mode = MonitorMode.VISION;
@@ -65,31 +57,31 @@ public class RelTest extends AbstractMonitor {
 	
 	try {
 	    if (m_mode == MonitorMode.SPACE) {
-		sleepProcess(1000);
+		sleepComponent(1000);
 		
 		startNewBasicProxy();
 		Location loc1 = new Location();
-		loc1.m_location = new Vector3D(0.2f, 0.2f, 0.2f);
+	//	loc1.location = new Vector3D(0.2f, 0.2f, 0.2f);
 		addFeatureToCurrentProxy(loc1);
 		String location1 = storeCurrentProxy();
 		bindNewProxies();
 		
-		sleepProcess(5000);
+		sleepComponent(5000);
 		
 		startNewBasicProxy();
 		Location loc2 = new Location();
-		loc2.m_location = new Vector3D(0.3f, 0.3f, 0.3f);
+	//	loc2.location = new Vector3D(0.3f, 0.3f, 0.3f);
 		addFeatureToCurrentProxy(loc2);
 		String location2 = storeCurrentProxy();
 		bindNewProxies();
 		
-		sleepProcess(2000);
+		sleepComponent(2000);
 		
 		String rel1 = addSimpleRelation(location1, location2, "near", TemporalFrameType.PERCEIVED);
 		String rel2 = addSimpleRelation(location2, location1, "near", TemporalFrameType.PERCEIVED);
 		bindNewProxies();
 		
-		sleepProcess(3000);
+		sleepComponent(3000);
 		
 		
 		deleteExistingProxy(rel1);
@@ -97,79 +89,79 @@ public class RelTest extends AbstractMonitor {
 		
 		startNewBasicProxy();
 		Location loc3 = new Location();
-		loc3.m_location = new Vector3D(0.4f, 0.4f, 0.4f);
+	//	loc3.location = new Vector3D(0.4f, 0.4f, 0.4f);
 		addFeatureToCurrentProxy(loc3);
 		String location3 = storeCurrentProxy();
 		
 		bindNewProxies();
-		sleepProcess(1000);
+		sleepComponent(1000);
 		
 		rel1 = addSimpleRelation(location1, location2, "near", TemporalFrameType.PERCEIVED);
 		rel2 = addSimpleRelation(location2, location1, "near", TemporalFrameType.PERCEIVED);
 		bindNewProxies();
 		
 		//just wait a while
-		sleepProcess(3000);
+		sleepComponent(3000);
 		addToWorkingMemory(newDataID(), getBindingSA(),new BindingData.TriggerDotViewer());
 		//just wait a while
-		sleepProcess(3000);
+		sleepComponent(3000);
 		
 		CASTData<BinderStatus>[] workingMemoryEntries = getWorkingMemoryEntries(getBindingSA(), BinderStatus.class);
 		BinderStatus status = workingMemoryEntries[0].getData();
 		
-		if(status.m_unboundProxies > 0) {
-		    System.exit(CAST_TEST_FAIL.value);
+		if(status.unboundProxies > 0) {
+		    System.exit((int)CASTTESTFAIL.value);
 		}
 		else {
-		    System.exit(CAST_TEST_PASS.value);
+		    System.exit((int)CASTTESTPASS.value);
 		}
 		
 	    }
 	    else if (m_mode == MonitorMode.VISION) {
 		
 		
-		sleepProcess(1000);
+		sleepComponent(1000);
 		
 		startNewBasicProxy();
 		Concept con1 = new Concept();
-		con1.m_concept = "thing";
+		con1.conceptstr = "thing";
 		addFeatureToCurrentProxy(con1);
 		String thing1 = storeCurrentProxy();
 		startNewBasicProxy();
 		Location loc1 = new Location();
-		loc1.m_location = new Vector3D(0.2f, 0.2f, 0.2f);
+	//	loc1.location = new Vector3D(0.2f, 0.2f, 0.2f);
 		addFeatureToCurrentProxy(loc1);
 		String location1 = storeCurrentProxy();
 		addSimpleRelation(thing1, location1, "pos", TemporalFrameType.PERCEIVED);
 		
 		
 		bindNewProxies();
-		sleepProcess(5000);
+		sleepComponent(5000);
 		
 		
 		startNewBasicProxy();
 		Concept con2 = new Concept();
-		con1.m_concept = "thing";
+		con1.conceptstr = "thing";
 		addFeatureToCurrentProxy(con1);
 		String thing2 = storeCurrentProxy();
 		startNewBasicProxy();
 		Location loc2 = new Location();
-		loc2.m_location = new Vector3D(0.3f, 0.3f, 0.3f);
+	//	loc2.location = new Vector3D(0.3f, 0.3f, 0.3f);
 		addFeatureToCurrentProxy(loc2);
 		String location2 = storeCurrentProxy();
 		addSimpleRelation(thing2, location2, "pos", TemporalFrameType.PERCEIVED);
 		
 		bindNewProxies();
-		sleepProcess(5000);
+		sleepComponent(5000);
 		
 		startNewBasicProxy();
 		Concept con3 = new Concept();
-		con1.m_concept = "thing";
+		con1.conceptstr = "thing";
 		addFeatureToCurrentProxy(con1);
 		String thing3 = storeCurrentProxy();
 		startNewBasicProxy();
 		Location loc3 = new Location();
-		loc3.m_location = new Vector3D(0.4f, 0.4f, 0.4f);
+	//	loc3.location = new Vector3D(0.4f, 0.4f, 0.4f);
 		addFeatureToCurrentProxy(loc3);
 		String location3 = storeCurrentProxy();
 		addSimpleRelation(thing3, location3, "pos", TemporalFrameType.PERCEIVED);
@@ -181,7 +173,7 @@ public class RelTest extends AbstractMonitor {
 	catch (BindingComponentException e) {
 	    e.printStackTrace();
 	}
-	catch (SubarchitectureProcessException e) {
+	catch (SubarchitectureComponentException e) {
 	    e.printStackTrace();
 	}
 	

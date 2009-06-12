@@ -55,7 +55,7 @@ public class Director extends ManagedComponent {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+	 * @see cast.architecture.abstr.WorkingMemoryReaderComponent#start()
 	 */
 	@Override
 	public void start() {
@@ -103,7 +103,7 @@ public class Director extends ManagedComponent {
 	 * @throws PermissionException
 	 * @throws DoesNotExistOnWMException
 	 * @throws UnknownSubarchitectureException 
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 */
 	private void checkTheReaction(WorkingMemoryAddress _reactionAddress)
 			throws DoesNotExistOnWMException, PermissionException, UnknownSubarchitectureException {
@@ -119,10 +119,10 @@ public class Director extends ManagedComponent {
 
 		// if(m_testing) {
 		// if(reaction.equals("YAY!")) {
-		// System.exit(CAST_TEST_PASS.value);
+		// System.exit(CASTTESTPASS.value);
 		// }
 		// else {
-		// System.exit(CAST_TEST_FAIL.value);
+		// System.exit(CASTTESTFAIL.value);
 		// }
 		// }
 	}
@@ -132,7 +132,7 @@ public class Director extends ManagedComponent {
 	 * @throws PermissionException
 	 * @throws DoesNotExistOnWMException
 	 * @throws UnknownSubarchitectureException 
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 */
 	private void askTheAudience(WorkingMemoryAddress _jokeAddress)
 			throws DoesNotExistOnWMException, PermissionException,

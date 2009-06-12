@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import binding.BindingException;
-import BindingData.BINDING_SUBARCH_CONFIG_KEY;
+import BindingData.BINDINGSUBARCHCONFIGKEY;
 import BindingData.FeatureComparison;
 import BindingData.ComparisonTrust;
 import BindingData.ComparisonTrustSpecification;
@@ -15,20 +15,21 @@ import BindingData.FeatureComparisonCompetence;
 import BindingData.FeatureComparisonTask;
 import BindingFeatures.Concept;
 import binding.common.BindingComponentException;
-import cast.architecture.subarchitecture.DoesNotExistOnWMException;
-import cast.architecture.abstr.ChangeFilterFactory;
-import cast.architecture.abstr.WorkingMemoryChangeReceiver;
-import cast.architecture.subarchitecture.PrivilegedManagedProcess;
-import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.DoesNotExistOnWMException;
+import cast.SubarchitectureComponentException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.architecture.ManagedComponent;
+import cast.DoesNotExistOnWMException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryChangeQueueBehaviour;
 import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.TriBool;
+import BindingData.TriBool;
 import cast.cdl.FilterRestriction;
-import cast.cdl.OperationMode;
+// import cast.cdl.OperationMode;
 
-import cast.core.data.CASTData;
+import cast.core.CASTData;
 
 /**
  * inherit from this class. The class can expose three different
@@ -55,7 +56,7 @@ import cast.core.data.CASTData;
  */
 public abstract class AbstractFeatureComparator
         extends
-            PrivilegedManagedProcess {
+            ManagedComponent {
 
     // You must specify the behavior of your inheriting class
     // READWRITE means that one and the same component will
@@ -66,19 +67,19 @@ public abstract class AbstractFeatureComparator
         READ, WRITE, READWRITE
     };
 
-    protected Behavior m_behavior;
+    protected Behavior behavior;
 
-    protected Comparison m_currentComparison;
+    protected Comparison currentComparison;
 
     // maps from proxy feature type string to union feature type string
-    private Map<String, Map<String, ComparisonTrustSpecification>> m_filter;
+    private Map<String, Map<String, ComparisonTrustSpecification>> filter;
 
     // the ID of the binding subarchitecture
-    protected String Xm_bindingSA; // ???
+    protected String XbindingSA; // ???
 
     // / the IDs of all binding SAs on which the competence is
     // registered
-    protected Set<String> m_bindingSA;
+    protected Set<String> bindingSA;
 
     /**
      * If you inherit from this abstract class you must set the behavior
@@ -87,28 +88,28 @@ public abstract class AbstractFeatureComparator
      * @param _id
      */
     public AbstractFeatureComparator(String _id) {
-        super(_id);
-        m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
-        m_filter =
+        super();
+        WorkingMemoryChangeQueueBehaviour queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
+        filter =
                 new TreeMap<String, Map<String, ComparisonTrustSpecification>>();
-        m_currentComparison = new Comparison();
-        m_bindingSA = new TreeSet();
+        currentComparison = new Comparison();
+        bindingSA = new TreeSet();
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+     * @see cast.architecture.abstr.WorkingMemoryReaderComponent#start()
      */
     @Override
     public void start() {
-        if (m_behavior == null) {
+        if (behavior == null) {
             throw new RuntimeException("ERROR: NO BEHAVIOR SPECIFIED!");
         }
 
         super.start();
 
-        if (m_behavior!=Behavior.WRITE) { // to prevent too many
+        if (behavior!=Behavior.WRITE) { // to prevent too many
         	// registrations...
         	try {
         		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(FeatureComparisonTask.class, WorkingMemoryOperation.ADD),
@@ -120,7 +121,7 @@ public abstract class AbstractFeatureComparator
         			}
         		});
         	}
-        	catch (SubarchitectureProcessException e) {
+        	catch (Exception e) {
         		e.printStackTrace();
         		throw new RuntimeException("a SubarchitectureProcessException was thrown, aborting...");
         	}
@@ -141,17 +142,16 @@ public abstract class AbstractFeatureComparator
     // / If you overload configure, don't forget to call
     // / AbstractFeatureComparator::configure(...) too! (Maybe this
     // / should be made safer, as with start()...)
-    public void configure(Properties _config) {
+    public void configure(Map<String,String> _config) {
         super.configure(_config);
-        if (m_behavior != Behavior.WRITE) {
-            if (_config.containsKey(BINDING_SUBARCH_CONFIG_KEY.value)) {
+        if (behavior != Behavior.WRITE) {
+            if (_config.containsKey(BINDINGSUBARCHCONFIGKEY.value)) {
 
                 String ids =
-                        _config
-                            .getProperty(BINDING_SUBARCH_CONFIG_KEY.value);
+                        _config.get(BINDINGSUBARCHCONFIGKEY.value);
                 String[] subarchs = ids.split(",");
                 for (String subarch : subarchs) {
-                    m_bindingSA.add(subarch);
+                    bindingSA.add(subarch);
                     log("adding binding subarch: " + subarch);
                 }
             }
@@ -176,28 +176,27 @@ public abstract class AbstractFeatureComparator
                                               String _unionFeatureType,
                                               ComparisonTrustSpecification _comparisonTrustSpecification) {
         Map<String, ComparisonTrustSpecification> _value =
-                m_filter.get(_proxyFeatureType);
+                filter.get(_proxyFeatureType);
         if (_value == null) {
             _value =
                     new TreeMap<String, ComparisonTrustSpecification>();
         }
         _value.put(_unionFeatureType, _comparisonTrustSpecification);
-        m_filter.put(_proxyFeatureType, _value);
-        for (String subarch : m_bindingSA) {
+        filter.put(_proxyFeatureType, _value);
+        for (String subarch : bindingSA) {
             FeatureComparisonCompetence competence =
                     new FeatureComparisonCompetence();
-            competence.m_proxyFeatureType = _proxyFeatureType;
-            competence.m_unionFeatureType = _unionFeatureType;
-            competence.m_comparisonTrustSpecification =
+            competence.proxyFeatureType = _proxyFeatureType;
+            competence.unionFeatureType = _unionFeatureType;
+            competence.comparisonTrustSpecs =
                     _comparisonTrustSpecification;
             log("Registring competence on: " + subarch);
             try {
                 addToWorkingMemory(newDataID(), 
 				   subarch,
-				   competence,
-				   OperationMode.BLOCKING);
+				   competence);
             }
-            catch (SubarchitectureProcessException _e) {
+            catch (SubarchitectureComponentException _e) {
                 throw new RuntimeException("Not a subarch perhaps: "
                     + _e);
             }
@@ -251,18 +250,18 @@ public abstract class AbstractFeatureComparator
      */
     private void _processFeatureComparisonTask(WorkingMemoryChange _wmc) {
         // WRITE comparators are not supposed to call this method!
-        if (m_behavior == Behavior.WRITE) {
-        	log("_processFeatureComparisonTask(_wmc.m_address.m_id:"+_wmc.m_address.m_id+") called! WRITE comparators should not call this method!...exiting");
-        	throw new RuntimeException("_processFeatureComparisonTask(_wmc.m_address.m_id:"+_wmc.m_address.m_id+") called! WRITE comparators should not call this method!...exiting");
+        if (behavior == Behavior.WRITE) {
+        	log("_processFeatureComparisonTask(_wmc.address.id:"+_wmc.address.id+") called! WRITE comparators should not call this method!...exiting");
+        	throw new RuntimeException("_processFeatureComparisonTask(_wmc.address.id:"+_wmc.address.id+") called! WRITE comparators should not call this method!...exiting");
 //        	return;
         }
         try {
             CASTData<?> wme;
             try {
-                wme = getWorkingMemoryEntry(_wmc.m_address);
+                wme = getWorkingMemoryEntry(_wmc.address);
             }
             catch (DoesNotExistOnWMException _e) {
-                log("Task at: " + _wmc.m_address.m_id
+                log("Task at: " + _wmc.address.id
                     + " does not exist");
                 return;
             }
@@ -271,66 +270,66 @@ public abstract class AbstractFeatureComparator
 
             FeatureComparison comparison =
                     (FeatureComparison) getWorkingMemoryEntry(
-                        task.m_comparisonID,
-                        task.m_bindingSubarchitectureID).getData();
+                        task.comparisonID,
+                        task.bindingSubarchitectureID).getData();
 
             log(comparison);
 
-            m_currentComparison.featureComparison = comparison;
+            currentComparison.featureComparison = comparison;
 
-            log(currentComparison().m_proxyFeature.m_type + " vs. "
-                + currentComparison().m_unionFeature.m_type);
+            log(currentComparison().proxyFeature.type + " vs. "
+                + currentComparison().unionFeature.type);
 
             if (!currentComparisonIsMyTask()) {
                 // i.e., not our task... do nothing
                 log("not my task!"
-                    + currentComparison().m_proxyFeature.m_type
+                    + currentComparison().proxyFeature.type
                     + " vs. "
-                    + currentComparison().m_unionFeature.m_type);
-                m_currentComparison = new Comparison();
+                    + currentComparison().unionFeature.type);
+                currentComparison = new Comparison();
                 return;
             }
 
             // this is our task! delete the task specification right
             // away
-            deleteFromWorkingMemory(_wmc.m_address.m_id,
-                _wmc.m_address.m_subarchitecture);
+            deleteFromWorkingMemory(_wmc.address.id,
+                _wmc.address.subarchitecture);
 
-            m_currentComparison.id = task.m_comparisonID;
-            log("currentComparisonID = " + m_currentComparison.id);
-            m_currentComparison.originalValue =
-                    comparison.m_featuresEquivalent;
+            currentComparison.id = task.comparisonID;
+            log("currentComparisonID = " + currentComparison.id);
+            currentComparison.originalValue =
+                    comparison.featuresEquivalent;
 
             // FOR READWRITE COMPARATORS ONLY:
-            if (m_behavior == Behavior.READWRITE) {
-                m_currentComparison.newValue = executeComparison();
+            if (behavior == Behavior.READWRITE) {
+                currentComparison.newValue = executeComparison();
 
                 log("comparison result: "
-                    + triBool2String(m_currentComparison.newValue)
+                    + triBool2String(currentComparison.newValue)
                     + " (old value: "
-                    + triBool2String(m_currentComparison.originalValue)
+                    + triBool2String(currentComparison.originalValue)
                     + ")");
 
                 // only store if resulting value is actually different
-                if (m_currentComparison.featureComparison.m_insistOnExternalComparison
-                    || m_currentComparison.originalValue != m_currentComparison.newValue) {
+                if (currentComparison.featureComparison.insistOnExternalComparison
+                    || currentComparison.originalValue != currentComparison.newValue) {
                     updateScoreWME(
                         new WorkingMemoryAddress(
-                            m_currentComparison.id,
-                            m_currentComparison.featureComparison.m_bindingSubarchitectureID),
-                        m_currentComparison.newValue);
+                            currentComparison.id,
+                            currentComparison.featureComparison.bindingSubarchitectureID),
+                        currentComparison.newValue);
                 }
             }
             // FOR READ COMPARATORS ONLY:
             else {
-            	log("calling dispatchComparison("+m_currentComparison.id+")");
-                dispatchComparison(m_currentComparison.id);
+            	log("calling dispatchComparison("+currentComparison.id+")");
+                dispatchComparison(currentComparison.id);
             }
         }
-        catch (SubarchitectureProcessException e) {
+        catch (SubarchitectureComponentException e) {
             e.printStackTrace();
         }
-        m_currentComparison.featureComparison = new FeatureComparison();
+        currentComparison.featureComparison = new FeatureComparison();
         log("exiting _processFeatureComparison()");
     }
 
@@ -341,28 +340,27 @@ public abstract class AbstractFeatureComparator
             CASTData<?> featCompWME =
                     getWorkingMemoryEntry(_currentComparisonWMA); // new
             // WorkingMemoryAddress(_currentComparisonID,
-            // m_bindingSA));
+            // bindingSA));
             FeatureComparison featrComp =
                     (FeatureComparison) featCompWME.getData();
 
             // Concept _con1 =
             // (Concept) getWorkingMemoryEntry(featrComp.
-            // m_proxyFeature.m_address,m_bindingSA).getData();
+            // proxyFeature.address,bindingSA).getData();
             // Concept _con2 =
             // (Concept) getWorkingMemoryEntry(featrComp.
-            // m_unionFeature.m_address,m_bindingSA).getData();
+            // unionFeature.address,bindingSA).getData();
 
-            featrComp.m_featuresEquivalent = _result;
+            featrComp.featuresEquivalent = _result;
 
-            // log("updateScoreWME("+_currentComparisonID+","+_con1.m_concept+"
-            // vs. "+_con2.m_concept+" =>
+            // log("updateScoreWME("+_currentComparisonID+","+_con1.concept+"
+            // vs. "+_con2.concept+" =>
             // "+triBool2String(_result)+")");
-            overwriteWorkingMemory(_currentComparisonWMA.m_id, // _currentComparisonID,
-				   _currentComparisonWMA.m_subarchitecture, // m_bindingSA,
-				   featrComp,
-				   OperationMode.BLOCKING);
+            overwriteWorkingMemory(_currentComparisonWMA.id, // _currentComparisonID,
+				   _currentComparisonWMA.subarchitecture, // bindingSA,
+				   featrComp);
         }
-        catch (SubarchitectureProcessException e) {
+        catch (SubarchitectureComponentException e) {
             e.printStackTrace();
         }
     }
@@ -375,11 +373,11 @@ public abstract class AbstractFeatureComparator
      */
     protected String triBool2String(TriBool _tribool) {
         switch (_tribool.value()) {
-            case TriBool._triFalse:
+            case TriBool._FALSETB:
                 return "triFalse";
-            case TriBool._triTrue:
+            case TriBool._TRUETB:
                 return "triTrue";
-            case TriBool._triIndeterminate:
+            case TriBool._INDETERMINATETB:
                 return "triIndeterminate";
             default:
                 break;
@@ -396,10 +394,10 @@ public abstract class AbstractFeatureComparator
      */
     protected FeatureComparison currentComparison()
             throws BindingException {
-        if (m_currentComparison.featureComparison == null)
+        if (currentComparison.featureComparison == null)
             throw new BindingException(
                 "No current comparison loaded error.");
-        return m_currentComparison.featureComparison;
+        return currentComparison.featureComparison;
     }
 
     // nested "struct"
@@ -413,29 +411,29 @@ public abstract class AbstractFeatureComparator
 
     /**
      * returns true if the current comparison task is relevant for this
-     * comparator (according to \p m_filter)
+     * comparator (according to \p filter)
      * 
      * @return
      */
     protected boolean currentComparisonIsMyTask() {
-        if (m_currentComparison.featureComparison == null) {
-            debug("m_currentComparison.featureComparison == null -> current comparison is not my task");
+        if (currentComparison.featureComparison == null) {
+            debug("currentComparison.featureComparison == null -> current comparison is not my task");
         	return false;
         }
         try {
             String proxy_feature_type =
-                    currentComparison().m_proxyFeature.m_type;
-            if (!m_filter.containsKey(proxy_feature_type)) {
-            	debug("!m_filter.containsKey(proxy_feature_type = "+proxy_feature_type+") -> current comparison is not my task");
-            	debug(m_filter);
+                    currentComparison().proxyFeature.type;
+            if (!filter.containsKey(proxy_feature_type)) {
+            	debug("!filter.containsKey(proxy_feature_type = "+proxy_feature_type+") -> current comparison is not my task");
+            	debug(filter);
             	return false;
             }
             else {
                 String union_feature_type =
-                        currentComparison().m_unionFeature.m_type;
-                if (!m_filter.get(proxy_feature_type).containsKey(
+                        currentComparison().unionFeature.type;
+                if (!filter.get(proxy_feature_type).containsKey(
                     union_feature_type)) {
-                	debug("!m_filter.get(proxy_feature_type = "+proxy_feature_type+").containsKey(union_feature_type ="+union_feature_type+") -> current comparison is not my task");
+                	debug("!filter.get(proxy_feature_type = "+proxy_feature_type+").containsKey(union_feature_type ="+union_feature_type+") -> current comparison is not my task");
                 	return false;
                 }
             }

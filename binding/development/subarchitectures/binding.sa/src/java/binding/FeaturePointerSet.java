@@ -31,7 +31,7 @@ public class FeaturePointerSet extends TreeSet<FeaturePointer> {
          */
         public int compare(FeaturePointer _bfp1,
                 FeaturePointer _bfp2) {
-            return _bfp1.m_address.compareTo(_bfp2.m_address);
+            return _bfp1.address.compareTo(_bfp2.address);
         }
 
     }

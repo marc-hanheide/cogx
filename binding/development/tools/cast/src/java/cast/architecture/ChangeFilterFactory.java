@@ -12,7 +12,7 @@ import cast.core.CASTUtils;
 /**
  * 
  * Helper functions to create change filters for passing to
- * {@link WorkingMemoryReaderProcess}.addChangerFilter. If you primarily care
+ * {@link WorkingMemoryReaderComponent}.addChangerFilter. If you primarily care
  * about the type of the data look at the *TypeFilter* methods. If you primarily
  * care about the operation being performed look at the createOperationFilter
  * methods. For the id or address of the data, look at the createID and

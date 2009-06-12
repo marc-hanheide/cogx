@@ -208,7 +208,7 @@ public abstract class ManagedComponent extends WorkingMemoryReaderComponent
 	 * 
 	 * @param _taskID
 	 *            The id of the task.
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 *             if connection to goal manager is not set or on comms error.
 	 */
 	protected void retractInformationProcessingTask(String _taskID) {
@@ -234,7 +234,7 @@ public abstract class ManagedComponent extends WorkingMemoryReaderComponent
 	 *            The task id.
 	 * @param _outcome
 	 *            The task outcome.
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 *             if connection to goal manager is not set.`
 	 */
 	protected void taskComplete(String _taskID, TaskOutcome _outcome) {

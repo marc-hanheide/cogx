@@ -46,7 +46,7 @@ public class AudienceMember extends ManagedComponent {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see cast.architecture.abstr.WorkingMemoryReaderProcess#start()
+	 * @see cast.architecture.abstr.WorkingMemoryReaderComponent#start()
 	 */
 	@Override
 	public void start() {

@@ -16,7 +16,7 @@ public class CASTException extends Ice.UserException
     public CASTException()
     {
     }
-
+   
     public CASTException(String message)
     {
         this.message = message;

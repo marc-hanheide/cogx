@@ -3,6 +3,7 @@
  */
 package binding.abstr;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,9 +27,9 @@ public abstract class AbstractBindingReader extends WorkingMemoryReaderComponent
 	 */
 	private String m_bindingSA;
 
-	private CASTData<BindingProxy> m_proxyCache;
+	private HashMap<String, CASTData<BindingProxy>> m_proxyCache;
 
-	private CASTData<BindingUnion> m_unionCache;
+	private HashMap<String, CASTData<BindingUnion>> m_unionCache;
 
 	/**
 	 * @param _id
@@ -54,7 +55,7 @@ public abstract class AbstractBindingReader extends WorkingMemoryReaderComponent
 		}
 		else {
 		    log("binding subarch not specified, assuming it\'s local to monitor");
-		    setBindingSA(m_subarchitectureID);
+		    setBindingSA(getSubarchitectureID());
 		}
 	}
 
@@ -89,29 +90,27 @@ public abstract class AbstractBindingReader extends WorkingMemoryReaderComponent
 	 * @param _bindingSA
 	 */
 	private void initCaches(String _bindingSA) {
-		m_proxyCache = new CASTDataCache<BindingProxy>(this, _bindingSA,
-				BindingProxy.class);
-		m_unionCache = new CASTDataCache<BindingUnion>(this, _bindingSA,
-				BindingUnion.class);
+		m_proxyCache = new HashMap<String, CASTData<BindingProxy>>();
+		m_unionCache = new HashMap<String, CASTData<BindingUnion>>();
 	}
 
 	/**
 	 * @param _id
 	 * @return
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 */
 	public BindingProxy getProxy(String _id)
-			throws SubarchitectureProcessException {
+			throws SubarchitectureComponentException {
 		return m_proxyCache.get(_id).getData();
 	}
 
 	/**
 	 * @param _id
 	 * @return
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 */
 	public BindingUnion getUnion(String _id)
-			throws SubarchitectureProcessException {
+			throws SubarchitectureComponentException {
 		return m_unionCache.get(_id).getData();
 	}
 

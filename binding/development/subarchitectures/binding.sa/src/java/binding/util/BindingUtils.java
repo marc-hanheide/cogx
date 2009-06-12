@@ -3,16 +3,17 @@
  */
 package binding.util;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import binding.abstr.AbstractBindingReader;
 import BindingData.*;
 import BindingFeatures.RelationLabel;
 import binding.common.BindingComponentException;
-import cast.architecture.abstr.WorkingMemoryReaderProcess;
-import cast.architecture.subarchitecture.SubarchitectureProcessException;
+import cast.architecture.WorkingMemoryReaderComponent;
+import cast.SubarchitectureComponentException;
 import cast.cdl.WorkingMemoryAddress;
-import cast.core.data.CASTData;
+import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 /**
@@ -38,8 +39,8 @@ public class BindingUtils {
          */
     private static ProxyPort getPortWithLabel(ProxyPorts _proxyPorts,
 	    String _label) {
-	for (ProxyPort port : _proxyPorts.m_ports) {
-	    if (port.m_label.equals(_label)) {
+	for (ProxyPort port : _proxyPorts.ports) {
+	    if (port.label.equals(_label)) {
 		return port;
 	    }
 	}
@@ -55,11 +56,11 @@ public class BindingUtils {
          * @param _label
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     private static ArrayList<CASTData<BindingProxy>> getProxiesFromRelationViaLabeledPort(
 	    AbstractBindingReader _abr, String _label, BindingProxy _proxy)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	// not sure this is correct: in ports vs out ports
 	return getProxiesFromRelationViaLabeledPort(_abr, _abr.getBindingSA(),
 		_label, _proxy);
@@ -74,14 +75,14 @@ public class BindingUtils {
          * @param _label
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     private static ArrayList<CASTData<BindingProxy>> getProxiesFromRelationViaLabeledPort(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _label,
-	    BindingProxy _proxy) throws SubarchitectureProcessException {
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _label,
+	    BindingProxy _proxy) throws SubarchitectureComponentException {
 	// not sure this is correct: in ports vs out ports
 	return getProxiesFromRelationViaLabeledPort(_abr, _bindingSA, _label,
-		_proxy.m_outPorts.m_ports, _proxy.m_type);
+		_proxy.outPorts.ports, _proxy.type);
     }
 
     /**
@@ -93,14 +94,14 @@ public class BindingUtils {
          * @param _label
          * @param _union
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     private static ArrayList<CASTData<BindingProxy>> getProxiesFromRelationViaLabeledPort(
 	    AbstractBindingReader _abr, String _label, BindingUnion _union)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 
 	return getProxiesFromRelationViaLabeledPort(_abr, _label,
-		_union.m_inPorts.m_ports, _union.m_type);
+		_union.inPorts.ports, _union.type);
     }
 
     /**
@@ -112,27 +113,27 @@ public class BindingUtils {
          * @param _ports
          * @param _type
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     private static ArrayList<CASTData<BindingProxy>> getProxiesFromRelationViaLabeledPort(
 	    AbstractBindingReader _abr, String _label, ProxyPort[] _ports,
-	    BindingProxyType _type) throws SubarchitectureProcessException {
+	    BindingProxyType _type) throws SubarchitectureComponentException {
 	return getProxiesFromRelationViaLabeledPort(_abr, _abr.getBindingSA(),
 		_label, _ports, _type);
     }
 
     private static ArrayList<CASTData<BindingProxy>> getProxiesFromRelationViaLabeledPort(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _label,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _label,
 	    ProxyPort[] _ports, BindingProxyType _type)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 
 	assert (_type == BindingProxyType.RELATION);
 
 	ArrayList<CASTData<BindingProxy>> proxies = new ArrayList<CASTData<BindingProxy>>();
 
 	for (ProxyPort port : _ports) {
-	    if (port.m_label.equals(_label)) {
-		proxies.add(getProxyData(_abr, _bindingSA, port.m_proxyID));
+	    if (port.label.equals(_label)) {
+		proxies.add(getProxyData(_abr, _bindingSA, port.proxyID));
 	    }
 	}
 
@@ -141,39 +142,39 @@ public class BindingUtils {
 
     public static String findFeature(BindingProxy _bindingProxy,
 				     String _featureType) {
-	return findFeature(_bindingProxy.m_proxyFeatures, _featureType);
+	return findFeature(_bindingProxy.proxyFeatures, _featureType);
     }
     
     public static String findFeature(BindingProxy _bindingProxy,
-				     Class<?> _class) {	
+				     Class<? extends Ice.Object> _class) {	
 	return findFeature(_bindingProxy, CASTUtils.typeName(_class));
     }
 
     public static String findFeature(BindingProxy _bindingProxy,
-				     Object _object) {	
+				     Ice.Object _object) {	
 	return findFeature(_bindingProxy, CASTUtils.typeName(_object));
     }
 
     public static String findFeature(BindingUnion _bindingUnion,
 				     String _featureType) {
-	return findFeature(_bindingUnion.m_unionFeatures, _featureType);
+	return findFeature(_bindingUnion.unionFeatures, _featureType);
     }
 
     public static String findFeature(BindingUnion _bindingUnion,
-				     Class<?> _class) {	
+				     Class<? extends Ice.Object> _class) {	
 	return findFeature(_bindingUnion, CASTUtils.typeName(_class));
     }
 
     public static String findFeature(BindingUnion _bindingUnion,
-				     Object _object) {	
+				     Ice.Object _object) {	
 	return findFeature(_bindingUnion, CASTUtils.typeName(_object));
     }
 
 
     public static String findFeature(FeaturePointer[] _ptrs, String _type) {
 	for (FeaturePointer featurePointer : _ptrs) {
-	    if (featurePointer.m_type.equals(_type)) {
-		return featurePointer.m_address;
+	    if (featurePointer.type.equals(_type)) {
+		return featurePointer.address;
 	    }
 	}
 	return null;
@@ -181,37 +182,37 @@ public class BindingUtils {
 
     public static ArrayList<String> findFeatures(BindingProxy _bindingProxy,
 						 String _featureType) {
-	return findFeatures(_bindingProxy.m_proxyFeatures, _featureType);
+	return findFeatures(_bindingProxy.proxyFeatures, _featureType);
     }
     
     public static ArrayList<String> findFeatures(BindingUnion _bindingUnion,
 						 String _featureType) {
-	return findFeatures(_bindingUnion.m_unionFeatures, _featureType);
+	return findFeatures(_bindingUnion.unionFeatures, _featureType);
     }
     
     public static ArrayList<String> findFeatures(FeaturePointer[] _ptrs,
 						 String _type) {
 	ArrayList<String> ids = new ArrayList<String>();
 	for (FeaturePointer featurePointer : _ptrs) {
-	    if (featurePointer.m_type.equals(_type)) {
-		ids.add(featurePointer.m_address);
+	    if (featurePointer.type.equals(_type)) {
+		ids.add(featurePointer.address);
 	    }
 	}
 	return ids;
     }
 
-    public static <T> T getBindingFeature(AbstractBindingReader _abr,
+    public static <T extends Ice.Object> T getBindingFeature(AbstractBindingReader _abr,
 	    BindingProxy _proxy, Class<T> _featureClass)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return getBindingFeature(_abr, _abr.getBindingSA(), _proxy,
 		_featureClass);
     }
 
-    public static <T> T getBindingFeature(WorkingMemoryReaderProcess _abr,
+    public static <T extends Ice.Object> T getBindingFeature(WorkingMemoryReaderComponent _abr,
 					  String _bindingSA, 
 					  BindingProxy _proxy, 
 					  Class<T> _featureClass)
-	throws SubarchitectureProcessException {
+	throws SubarchitectureComponentException {
 	String featureID = findFeature(_proxy, 
 				       CASTUtils.typeName(_featureClass));
 	T feature = null;
@@ -222,9 +223,9 @@ public class BindingUtils {
 	return feature;
     }
 
-    public static <T> T getBindingFeature(WorkingMemoryReaderProcess _abr,
+    public static <T extends Ice.Object> T getBindingFeature(WorkingMemoryReaderComponent _abr,
 	    String _bindingSA, BindingUnion _union, Class<T> _featureClass)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	String featureID = findFeature(_union, 
 				       CASTUtils.typeName(_featureClass));
 	T feature = null;
@@ -248,22 +249,22 @@ public class BindingUtils {
 // deprecated	    CASTOntologyException {
 // deprecated	return (T) getObject(
 // deprecated		_abr,
-// deprecated		_fp.m_address,
+// deprecated		_fp.address,
 // deprecated		_abr.getBindingSA(),
 // deprecated		BindingOntologyFactory.getOntology().ontologicalTypeToDataType(
-// deprecated			_fp.m_type)).getData();
+// deprecated			_fp.type)).getData();
 // deprecated    }
 // deprecated
-// deprecated    public static <T> T getBindingFeature(WorkingMemoryReaderProcess _abr,
+// deprecated    public static <T> T getBindingFeature(WorkingMemoryReaderComponent _abr,
 // deprecated	    String _bindingSA, FeaturePointer _fp)
 // deprecated	    throws SubarchitectureProcessException, CASTOntologyException {
 // deprecated
 // deprecated	return (T) getObject(
 // deprecated		_abr,
-// deprecated		_fp.m_address,
+// deprecated		_fp.address,
 // deprecated		_bindingSA,
 // deprecated		BindingOntologyFactory.getOntology().ontologicalTypeToDataType(
-// deprecated			_fp.m_type)).getData();
+// deprecated			_fp.type)).getData();
 // deprecated    }
 
     /**
@@ -273,11 +274,11 @@ public class BindingUtils {
          * @param _union
          * @param _cls
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
-    public static <T> ArrayList<T> getBindingFeatures(
+    public static <T extends Ice.Object> ArrayList<T> getBindingFeatures(
 	    AbstractBindingReader _abr, BindingUnion _union, Class<T> _cls)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 
 	return getBindingFeatures(_abr, _abr.getBindingSA(), _union, _cls);
     }
@@ -289,12 +290,12 @@ public class BindingUtils {
          * @param _union
          * @param _cls
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
-    public static <T> ArrayList<T> getBindingFeatures(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
+    public static <T extends Ice.Object> ArrayList<T> getBindingFeatures(
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
 	    BindingUnion _union, Class<T> _cls)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 
 	ArrayList<String> ids = findFeatures(_union, CASTUtils.typeName(_cls));
 	ArrayList<T> features = new ArrayList<T>();
@@ -304,10 +305,10 @@ public class BindingUtils {
 	return features;
     }
     
-    public static <T> ArrayList<T> getBindingFeatures(
-    		WorkingMemoryReaderProcess _abr, String _bindingSA, 
+    public static <T extends Ice.Object> ArrayList<T> getBindingFeatures(
+    		WorkingMemoryReaderComponent _abr, String _bindingSA, 
     		BindingProxy _proxy, Class<T> _cls) 
-    		throws SubarchitectureProcessException {
+    		throws SubarchitectureComponentException {
 
     	ArrayList<String> ids = findFeatures(_proxy, CASTUtils.typeName(_cls));
     	ArrayList<T> features = new ArrayList<T>();
@@ -319,7 +320,7 @@ public class BindingUtils {
 
 
     public static ProxyPort getFromPort(BindingProxy _proxy) {
-	return getPortWithLabel(_proxy.m_outPorts, BindingUtils.FROM);
+	return getPortWithLabel(_proxy.outPorts, BindingUtils.FROM);
     }
 
     /**
@@ -328,11 +329,11 @@ public class BindingUtils {
          * @param _string
          * @param _rels
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     public static BindingProxy getLabeledRelation(AbstractBindingReader _abr,
 	    String _label, ArrayList<BindingProxy> _relations)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return getLabeledRelation(_abr, _abr.getBindingSA(), _label, _relations);
     }
 
@@ -341,14 +342,14 @@ public class BindingUtils {
          * 
          */
     public static BindingProxy getLabeledRelation(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _label,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _label,
 	    ArrayList<BindingProxy> _relations)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	for (BindingProxy proxy : _relations) {
 	    RelationLabel rl = getBindingFeature(_abr, _bindingSA, proxy,
 		    RelationLabel.class);
 	    if (rl != null) {
-		if (rl.m_label.equals(_label)) {
+		if (rl.labelstr.equals(_label)) {
 		    return proxy;
 		}
 	    }
@@ -357,9 +358,9 @@ public class BindingUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> CASTData<T> getObject(WorkingMemoryReaderProcess _abr,
+    public static <T extends Ice.Object> CASTData<T> getObject(WorkingMemoryReaderComponent _abr,
 	    String _id, String _subarch, Class<T> _objCls)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 
 	T obj = null;
 	CASTData<?> wme = _abr.getWorkingMemoryEntry(_id, _subarch);
@@ -368,7 +369,7 @@ public class BindingUtils {
 	    return (CASTData<T>) wme;
 	}
 
-	throw new SubarchitectureProcessException("Unable to cast wme of type "
+	throw new SubarchitectureComponentException("Unable to cast wme of type "
 		+ wme.getData().getClass() + " to " + _objCls);
 
     }
@@ -376,12 +377,12 @@ public class BindingUtils {
     /**
          * @param _objAddress
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
-    public static <T> CASTData<T> getObject(WorkingMemoryReaderProcess _abr,
+    public static <T extends Ice.Object> CASTData<T> getObject(WorkingMemoryReaderComponent _abr,
 	    WorkingMemoryAddress _objAddress, Class<T> _objCls)
-	    throws SubarchitectureProcessException {
-	return getObject(_abr, _objAddress.m_id, _objAddress.m_subarchitecture,
+	    throws SubarchitectureComponentException {
+	return getObject(_abr, _objAddress.id, _objAddress.subarchitecture,
 		_objCls);
 
     }
@@ -390,12 +391,12 @@ public class BindingUtils {
          * @param _objects
          * @param name
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
-    public static <T> ArrayList<CASTData<T>> getObjects(
+    public static <T extends Ice.Object> ArrayList<CASTData<T>> getObjects(
 	    AbstractBindingReader _abr,
 	    WorkingMemoryAddress[] _objectAddresses, Class<T> _objCls)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 
 	ArrayList<CASTData<T>> objects = new ArrayList<CASTData<T>>(
 		_objectAddresses.length);
@@ -420,18 +421,18 @@ public class BindingUtils {
          * @param _abr
          * @param _union
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     public static ArrayList<CASTData<BindingProxy>> getProxiesViaFromPort(
 	    AbstractBindingReader _abr, BindingProxy _proxy)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return getProxiesFromRelationViaLabeledPort(_abr, _abr.getBindingSA(),
 		BindingUtils.FROM, _proxy);
     }
 
     public static ArrayList<CASTData<BindingProxy>> getProxiesViaFromPort(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
-	    BindingProxy _proxy) throws SubarchitectureProcessException {
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
+	    BindingProxy _proxy) throws SubarchitectureComponentException {
 	return getProxiesFromRelationViaLabeledPort(_abr, _bindingSA,
 		BindingUtils.FROM, _proxy);
     }
@@ -443,11 +444,11 @@ public class BindingUtils {
          * @param _abr
          * @param _union
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     public static ArrayList<CASTData<BindingProxy>> getProxiesViaFromPort(
 	    AbstractBindingReader _abr, BindingUnion _union)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return getProxiesFromRelationViaLabeledPort(_abr, BindingUtils.FROM,
 		_union);
     }
@@ -458,13 +459,13 @@ public class BindingUtils {
     // String _label)
     // throws SubarchitectureProcessException {
     //
-    // assert (_rel.m_type == BindingProxyType.RELATION);
+    // assert (_rel.type == BindingProxyType.RELATION);
     //
     // ArrayList<BindingProxy> proxies = new ArrayList<BindingProxy>();
-    // ProxyPort[] outports = _rel.m_outPorts.m_ports;
+    // ProxyPort[] outports = _rel.outPorts.ports;
     // for (ProxyPort proxyPort : outports) {
-    // if (proxyPort.m_label.equals(_label)) {
-    // proxies.add(getProxy(_abr, proxyPort.m_proxyID));
+    // if (proxyPort.labelstr.equals(_label)) {
+    // proxies.add(getProxy(_abr, proxyPort.proxyID));
     // }
     // }
     //
@@ -479,17 +480,17 @@ public class BindingUtils {
          * @param _abr
          * @param _union
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     public static ArrayList<CASTData<BindingProxy>> getProxiesViaToPort(
 	    AbstractBindingReader _abr, BindingProxy _proxy)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return getProxiesViaToPort(_abr, _abr.getBindingSA(), _proxy);
     }
 
     public static ArrayList<CASTData<BindingProxy>> getProxiesViaToPort(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
-	    BindingProxy _proxy) throws SubarchitectureProcessException {
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
+	    BindingProxy _proxy) throws SubarchitectureComponentException {
 	return getProxiesFromRelationViaLabeledPort(_abr, _bindingSA,
 		BindingUtils.TO, _proxy);
     }
@@ -501,44 +502,44 @@ public class BindingUtils {
          * @param _abr
          * @param _union
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     public static ArrayList<CASTData<BindingProxy>> getProxiesViaToPort(
 	    AbstractBindingReader _abr, BindingUnion _union)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return getProxiesFromRelationViaLabeledPort(_abr, BindingUtils.TO,
 		_union);
     }
 
     public static BindingProxy getProxy(AbstractBindingReader _abr,
-	    String _proxyID) throws SubarchitectureProcessException {
+	    String _proxyID) throws SubarchitectureComponentException {
 	return getProxy(_abr, _abr.getBindingSA(), _proxyID);
     }
 
-    public static BindingProxy getProxy(WorkingMemoryReaderProcess _abr,
+    public static BindingProxy getProxy(WorkingMemoryReaderComponent _abr,
 	    String _bindingSA, String _proxyID)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return BindingUtils.getObject(_abr, _proxyID, _bindingSA,
 		BindingProxy.class).getData();
     }
 
     public static BindingProxy getProxy(AbstractBindingReader _abr,
 	    WorkingMemoryAddress _proxyAddr)
-	    throws SubarchitectureProcessException {
-	return BindingUtils.getObject(_abr, _proxyAddr.m_id,
-		_proxyAddr.m_subarchitecture, BindingProxy.class).getData();
+	    throws SubarchitectureComponentException {
+	return BindingUtils.getObject(_abr, _proxyAddr.id,
+		_proxyAddr.subarchitecture, BindingProxy.class).getData();
     }
 
     public static CASTData<BindingProxy> getProxyData(
 	    AbstractBindingReader _abr, String _proxyID)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return BindingUtils.getObject(_abr, _proxyID, _abr.getBindingSA(),
 		BindingProxy.class);
     }
 
     public static CASTData<BindingProxy> getProxyData(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _proxyID)
-	    throws SubarchitectureProcessException {
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _proxyID)
+	    throws SubarchitectureComponentException {
 	return BindingUtils.getObject(_abr, _proxyID, _bindingSA,
 		BindingProxy.class);
     }
@@ -549,12 +550,12 @@ public class BindingUtils {
          * @param _abr
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static ArrayList<BindingProxy> getRelations(
 	    AbstractBindingReader _abr, BindingProxy _proxy)
-	    throws BindingComponentException, SubarchitectureProcessException {
+	    throws BindingComponentException, SubarchitectureComponentException {
 	return getRelations(_abr, _abr.getBindingSA(), _proxy);
     }
 
@@ -564,24 +565,24 @@ public class BindingUtils {
          * @param _abr
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static ArrayList<BindingProxy> getRelations(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
 	    BindingProxy _proxy) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 
 	// may change to groups too later
-	assert (_proxy.m_type == BindingProxyType.BASIC);
+	assert (_proxy.type == BindingProxyType.BASIC);
 
-	ProxyPorts inports = getObject(_abr, _proxy.m_inPortsID, _bindingSA,
+	ProxyPorts inports = getObject(_abr, _proxy.inPortsID, _bindingSA,
 		ProxyPorts.class).getData();
 	ArrayList<BindingProxy> rels = new ArrayList<BindingProxy>();
-	for (ProxyPort inport : inports.m_ports) {
+	for (ProxyPort inport : inports.ports) {
 	    // System.out.println("added proxy from: " +
-	    // inport.m_label);
-	    rels.add(getProxy(_abr, _bindingSA, inport.m_proxyID));
+	    // inport.labelstr);
+	    rels.add(getProxy(_abr, _bindingSA, inport.proxyID));
 	}
 
 	return rels;
@@ -593,40 +594,40 @@ public class BindingUtils {
          * @param _abr
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static ArrayList<BindingProxy> getRelations(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
 	    BindingUnion _union) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 
 	// may change to groups too later
-	assert (_union.m_type == BindingProxyType.BASIC);
+	assert (_union.type == BindingProxyType.BASIC);
 
-	ProxyPorts inports = _union.m_inPorts;
+	ProxyPorts inports = _union.inPorts;
 	ArrayList<BindingProxy> rels = new ArrayList<BindingProxy>();
-	for (ProxyPort inport : inports.m_ports) {
+	for (ProxyPort inport : inports.ports) {
 	    // System.out.println("added proxy from: " +
-	    // inport.m_label);
-	    rels.add(getProxy(_abr, _bindingSA, inport.m_proxyID));
+	    // inport.labelstr);
+	    rels.add(getProxy(_abr, _bindingSA, inport.proxyID));
 	}
 
 	return rels;
     }
 
     public static ArrayList<BindingProxy> getRelationsViaLabeledPort(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
 	    BindingUnion _union, String _label)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	// may change to groups too later
-	assert (_union.m_type == BindingProxyType.BASIC);
+	assert (_union.type == BindingProxyType.BASIC);
 
-	ProxyPorts inports = _union.m_inPorts;
+	ProxyPorts inports = _union.inPorts;
 	ArrayList<BindingProxy> rels = new ArrayList<BindingProxy>();
-	for (ProxyPort inport : inports.m_ports) {
-	    if (inport.m_label.equals(_label)) {
-		rels.add(getProxy(_abr, _bindingSA, inport.m_proxyID));
+	for (ProxyPort inport : inports.ports) {
+	    if (inport.label.equals(_label)) {
+		rels.add(getProxy(_abr, _bindingSA, inport.proxyID));
 	    }
 	}
 
@@ -634,16 +635,16 @@ public class BindingUtils {
     }
 
     public static ArrayList<BindingProxy> getRelationsFromUnion(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
 	    BindingUnion _union) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 	return getRelationsViaLabeledPort(_abr, _bindingSA, _union, FROM);
     }
 
     public static ArrayList<BindingProxy> getRelationsToUnion(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA,
 	    BindingUnion _union) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 	return getRelationsViaLabeledPort(_abr, _bindingSA, _union, TO);
     }
 
@@ -651,15 +652,15 @@ public class BindingUtils {
          * @param _abr
          * @param _landmarkUnion
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
     public static ArrayList<BindingProxy> getRelations(
 	    AbstractBindingReader _abr, BindingUnion _landmarkUnion)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	ArrayList<BindingProxy> rels = new ArrayList<BindingProxy>();
-	ProxyPort[] inports = _landmarkUnion.m_inPorts.m_ports;
+	ProxyPort[] inports = _landmarkUnion.inPorts.ports;
 	for (ProxyPort in : inports) {
-	    rels.add(getProxy(_abr, in.m_proxyID));
+	    rels.add(getProxy(_abr, in.proxyID));
 	}
 
 	return rels;
@@ -667,11 +668,11 @@ public class BindingUtils {
 
     public static ArrayList<CASTData<BindingProxy>> getRelationsData(
 	    AbstractBindingReader _abr, BindingUnion _landmarkUnion)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	ArrayList<CASTData<BindingProxy>> rels = new ArrayList<CASTData<BindingProxy>>();
-	ProxyPort[] inports = _landmarkUnion.m_inPorts.m_ports;
+	ProxyPort[] inports = _landmarkUnion.inPorts.ports;
 	for (ProxyPort in : inports) {
-	    rels.add(getProxyData(_abr, in.m_proxyID));
+	    rels.add(getProxyData(_abr, in.proxyID));
 	}
 
 	return rels;
@@ -679,51 +680,51 @@ public class BindingUtils {
 
     public static ArrayList<CASTData<BindingProxy>> getRelationsData(
 	    AbstractBindingReader _abr, BindingProxy _proxy)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	ArrayList<CASTData<BindingProxy>> rels = new ArrayList<CASTData<BindingProxy>>();
 	// may change to groups too later
-	assert (_proxy.m_type == BindingProxyType.BASIC);
+	assert (_proxy.type == BindingProxyType.BASIC);
 
-	ProxyPorts inports = getObject(_abr, _proxy.m_inPortsID,
+	ProxyPorts inports = getObject(_abr, _proxy.inPortsID,
 		_abr.getBindingSA(), ProxyPorts.class).getData();
 
-	for (ProxyPort inport : inports.m_ports) {
+	for (ProxyPort inport : inports.ports) {
 	    // System.out.println("added proxy from: " +
-	    // inport.m_label);
-	    rels.add(getProxyData(_abr, _abr.getBindingSA(), inport.m_proxyID));
+	    // inport.labelstr);
+	    rels.add(getProxyData(_abr, _abr.getBindingSA(), inport.proxyID));
 	}
 
 	return rels;
     }
 
     public static ProxyPort getToPort(BindingProxy _proxy) {
-	return getPortWithLabel(_proxy.m_outPorts, BindingUtils.TO);
+	return getPortWithLabel(_proxy.outPorts, BindingUtils.TO);
     }
 
     public static BindingUnion getUnion(AbstractBindingReader _abr,
-	    String _unionID) throws SubarchitectureProcessException {
+	    String _unionID) throws SubarchitectureComponentException {
 	return BindingUtils.getObject(_abr, _unionID, _abr.getBindingSA(),
 		BindingUnion.class).getData();
     }
 
     public static BindingUnion getUnion(AbstractBindingReader _abr,
-	    BindingProxy _proxy) throws SubarchitectureProcessException {
-	return BindingUtils.getObject(_abr, _proxy.m_unionID,
+	    BindingProxy _proxy) throws SubarchitectureComponentException {
+	return BindingUtils.getObject(_abr, _proxy.unionID,
 		_abr.getBindingSA(), BindingUnion.class).getData();
     }
 
-    public static BindingUnion getUnion(WorkingMemoryReaderProcess _abr,
+    public static BindingUnion getUnion(WorkingMemoryReaderComponent _abr,
 	    String _bindingSA, String _unionID)
-	    throws SubarchitectureProcessException {
+	    throws SubarchitectureComponentException {
 	return BindingUtils.getObject(_abr, _unionID, _bindingSA,
 		BindingUnion.class).getData();
     }
 
     public static CASTData<BindingUnion> getUnionData(
 	    AbstractBindingReader _abr, String _unionID)
-	    throws SubarchitectureProcessException {
-	return BindingUtils.getObject(_abr, _unionID, _abr.getBindingSA(),
-		BindingUnion.class);
+	    throws SubarchitectureComponentException {
+	return ((CASTData<BindingUnion>) BindingUtils.getObject(_abr, _unionID, _abr.getBindingSA(),
+		BindingUnion.class));
     }
 
     /**
@@ -731,7 +732,7 @@ public class BindingUtils {
          * @return
          */
     public static final boolean isBasicProxy(BindingProxy _proxy) {
-	return _proxy.m_type == BindingProxyType.BASIC;
+	return _proxy.type == BindingProxyType.BASIC;
     }
 
     /**
@@ -739,7 +740,7 @@ public class BindingUtils {
          * @return
          */
     public static final boolean isRelationProxy(BindingProxy _proxy) {
-	return _proxy.m_type == BindingProxyType.RELATION;
+	return _proxy.type == BindingProxyType.RELATION;
     }
 
     /**
@@ -750,12 +751,12 @@ public class BindingUtils {
          * @param _label
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static BindingProxy getLabeledRelation(AbstractBindingReader _abr,
 	    String _label, BindingProxy _proxy)
-	    throws BindingComponentException, SubarchitectureProcessException {
+	    throws BindingComponentException, SubarchitectureComponentException {
 	return getLabeledRelation(_abr, _label, getRelations(_abr, _proxy));
     }
 
@@ -764,19 +765,19 @@ public class BindingUtils {
          * @param _label
          * @param _relationsData
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static CASTData<BindingProxy> getLabeledRelation(
 	    AbstractBindingReader _abr, String _label,
 	    ArrayList<CASTData<BindingProxy>> _relationsData)
-	    throws BindingComponentException, SubarchitectureProcessException {
+	    throws BindingComponentException, SubarchitectureComponentException {
 	for (CASTData<BindingProxy> proxyData : _relationsData) {
 	    BindingProxy proxy = proxyData.getData();
 	    RelationLabel rl = getBindingFeature(_abr, _abr.getBindingSA(),
 		    proxy, RelationLabel.class);
 	    if (rl != null) {
-		if (rl.m_label.equals(_label)) {
+		if (rl.labelstr.equals(_label)) {
 		    return proxyData;
 		}
 	    }
@@ -789,14 +790,14 @@ public class BindingUtils {
          * @param _desiredPos
          * @param name
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
-    public static <T> ArrayList<T> getBindingFeatures(
-	    AbstractBindingReader _abr, BindingProxy _union, Class<T> _cls)
-	    throws BindingComponentException, SubarchitectureProcessException {
+    public static <T> ArrayList<Ice.Object> getBindingFeatures(
+	    AbstractBindingReader _abr, BindingProxy _union, Class<Ice.Object> _cls)
+	    throws BindingComponentException, SubarchitectureComponentException {
 	ArrayList<String> ids = findFeatures(_union, CASTUtils.typeName(_cls));
-	ArrayList<T> features = new ArrayList<T>();
+	ArrayList<Ice.Object> features = new ArrayList<Ice.Object>();
 	for (String string : ids) {
 	    features.add(getObject(_abr, string, _abr.getBindingSA(), _cls)
 		    .getData());
@@ -809,13 +810,13 @@ public class BindingUtils {
          * @param _bindingSA
          * @param _label
          * @param _locationUnion
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static BindingProxy getLabeledRelation(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _label,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _label,
 	    BindingUnion _locationUnion) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 	return getLabeledRelation(_abr, _bindingSA, _label, getRelations(_abr,
 		_bindingSA, _locationUnion));
     }
@@ -825,31 +826,31 @@ public class BindingUtils {
          * @param _bindingSA
          * @param _proxy
          * @return
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          */
-    public static BindingUnion getUnion(WorkingMemoryReaderProcess _abr,
+    public static BindingUnion getUnion(WorkingMemoryReaderComponent _abr,
 	    String _bindingSA, BindingProxy _proxy)
-	    throws SubarchitectureProcessException {
-	return getUnion(_abr, _bindingSA, _proxy.m_unionID);
+	    throws SubarchitectureComponentException {
+	return getUnion(_abr, _bindingSA, _proxy.unionID);
     }
 
     /**
          * @param _abr
          * @param _label
          * @param _proxy
-         * @throws SubarchitectureProcessException
+         * @throws SubarchitectureComponentException
          * @throws BindingComponentException
          */
     public static ArrayList<BindingProxy> getLabeledRelations(
 	    AbstractBindingReader _abr, String _label, BindingProxy _proxy)
-	    throws BindingComponentException, SubarchitectureProcessException {
+	    throws BindingComponentException, SubarchitectureComponentException {
 	return getLabeledRelations(_abr, _abr.getBindingSA(), _label, _proxy);
     }
 
     public static ArrayList<BindingProxy> getLabeledRelations(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _label,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _label,
 	    BindingProxy _proxy) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 	ArrayList<BindingProxy> rels = new ArrayList<BindingProxy>();
 
 	ArrayList<BindingProxy> relations = getRelations(_abr, _bindingSA,
@@ -858,7 +859,7 @@ public class BindingUtils {
 	    RelationLabel rl = getBindingFeature(_abr, _bindingSA, proxy,
 		    RelationLabel.class);
 	    if (rl != null) {
-		if (rl.m_label.equals(_label)) {
+		if (rl.labelstr.equals(_label)) {
 		    rels.add(proxy);
 		}
 	    }
@@ -867,9 +868,9 @@ public class BindingUtils {
     }
 
     public static ArrayList<BindingProxy> getLabeledRelations(
-	    WorkingMemoryReaderProcess _abr, String _bindingSA, String _label,
+	    WorkingMemoryReaderComponent _abr, String _bindingSA, String _label,
 	    BindingUnion _union) throws BindingComponentException,
-	    SubarchitectureProcessException {
+	    SubarchitectureComponentException {
 	ArrayList<BindingProxy> rels = new ArrayList<BindingProxy>();
 
 	ArrayList<BindingProxy> relations = getRelations(_abr, _bindingSA,
@@ -878,7 +879,7 @@ public class BindingUtils {
 	    RelationLabel rl = getBindingFeature(_abr, _bindingSA, proxy,
 		    RelationLabel.class);
 	    if (rl != null) {
-		if (rl.m_label.equals(_label)) {
+		if (rl.labelstr.equals(_label)) {
 		    rels.add(proxy);
 		}
 	    }
@@ -891,10 +892,10 @@ public class BindingUtils {
          * @param _string
          * @param _proxy
          * @return
-     * @throws SubarchitectureProcessException 
+     * @throws SubarchitectureComponentException 
          */
     public static CASTData<BindingProxy> getLabeledRelationData(
-	    AbstractBindingReader _abr, String _label, BindingProxy _proxy) throws SubarchitectureProcessException {
+	    AbstractBindingReader _abr, String _label, BindingProxy _proxy) throws SubarchitectureComponentException {
 
 	ArrayList<CASTData<BindingProxy>> relations = getRelationsData(_abr,
 		_proxy);
@@ -903,7 +904,7 @@ public class BindingUtils {
 	    RelationLabel rl = getBindingFeature(_abr, proxy.getData(),
 		    RelationLabel.class);
 	    if (rl != null) {
-		if (rl.m_label.equals(_label)) {
+		if (rl.labelstr.equals(_label)) {
 		    return proxy;
 		}
 	    }
@@ -919,7 +920,7 @@ public class BindingUtils {
     // * @param _relations
     // * @return
     // */
-    // private static Object getLabeledRelation(WorkingMemoryReaderProcess
+    // private static Object getLabeledRelation(WorkingMemoryReaderComponent
     // _abr, String _bindingSA, String _label, ArrayList<BindingProxy>
     // _relations) {
     // // TODO Auto-generated method stub
