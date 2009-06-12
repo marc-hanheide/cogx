@@ -82,7 +82,7 @@ public class AssistantDirector extends ManagedComponent {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * cast.architecture.abstr.WorkingMemoryReaderProcess#workingMemoryChanged
+	 * cast.architecture.abstr.WorkingMemoryReaderComponent#workingMemoryChanged
 	 * (cast.corba.autogen.SubArchitecture.WorkingMemoryChange[])
 	 */
 	@Override

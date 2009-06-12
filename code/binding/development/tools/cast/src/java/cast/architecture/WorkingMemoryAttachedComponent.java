@@ -169,7 +169,7 @@ public abstract class WorkingMemoryAttachedComponent extends
 	 * @throws DoesNotExistOnWMException
 	 *             if the entry does not exist on working memory.
 	 * @throws UnknownSubarchitectureException
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 *             if communication goes awry
 	 * 
 	 * @remark Interface change: Renamed to reflect new role, behaviour still
@@ -395,7 +395,7 @@ public abstract class WorkingMemoryAttachedComponent extends
 	 * @throws DoesNotExistOnWMException
 	 *             if the _id does not exist on wm
 	 * @throws UnknownSubarchitectureException
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 *             if communication goes awry
 	 */
 	protected void checkConsistency(WorkingMemoryAddress _wma)
@@ -501,7 +501,7 @@ public abstract class WorkingMemoryAttachedComponent extends
 	 * @return
 	 * @throws DoesNotExistOnWMException
 	 * @throws UnknownSubarchitectureException
-	 * @throws SubarchitectureProcessException
+	 * @throws SubarchitectureComponentException
 	 */
 	protected boolean tryLockEntry(String _id, String _subarch,
 			WorkingMemoryPermissions _permissions)
