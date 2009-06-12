@@ -30,6 +30,7 @@
 #include <vector>
 #include <algorithm>
 #include <math.h>
+#include <string.h>
 using namespace std;
 
 #include "GlobalUtil.h"

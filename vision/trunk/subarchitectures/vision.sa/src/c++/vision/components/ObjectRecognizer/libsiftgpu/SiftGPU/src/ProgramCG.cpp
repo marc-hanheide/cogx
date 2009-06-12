@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 using namespace std;
 
 #include "GlobalUtil.h"

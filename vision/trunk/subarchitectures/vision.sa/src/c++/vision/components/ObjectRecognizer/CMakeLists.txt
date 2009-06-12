@@ -7,4 +7,5 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisionData Video VideoUtils VideoClient
    ${PYTHON_LIBRARY})
 
+add_subdirectory(libsiftgpu/SiftGPU)
 
