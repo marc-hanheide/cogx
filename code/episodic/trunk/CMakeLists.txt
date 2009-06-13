@@ -23,18 +23,18 @@ add_definitions(-Wall)
 
 add_subdirectory (tools/d-lib)
 
-option(BUILD_SA_NAV "Build navigation subarchitecure" NO)
+option(BUILD_SA_NAV "Build navigation subarchitecure" YES)
 if(BUILD_SA_NAV)
 add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
 
 
-option(BUILD_HAL_ROBOT "Build hardware robotbase" NO)
+option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
 if(BUILD_HAL_ROBOT)
 add_subdirectory (tools/hardware/robotbase)
 endif(BUILD_HAL_ROBOT)
 
-option(BUILD_HAL_LASER "Build hardware laser" NO)
+option(BUILD_HAL_LASER "Build hardware laser" YES)
 if(BUILD_HAL_LASER)
 add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
@@ -49,7 +49,7 @@ if(BUILD_HAL_PTZ)
 add_subdirectory (tools/hardware/ptz)
 endif(BUILD_HAL_PTZ)
 
-option(BUILD_HAL_UTILS "Build hardware utils" NO)
+option(BUILD_HAL_UTILS "Build hardware utils" YES)
 if(BUILD_HAL_UTILS)
 add_subdirectory (tools/hardware/utils)
 endif(BUILD_HAL_UTILS)
@@ -65,8 +65,15 @@ endif(BUILD_HAL_TESTS)
 add_subdirectory (tools/math)
 
 # Spatial
-option(BUILD_SA_SPATIAL "Build vision subarchitecure" NO)
+option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
 if(BUILD_SA_SPATIAL)
     add_subdirectory (subarchitectures/spatial.sa)
 endif(BUILD_SA_SPATIAL)
+
+
+# Celm
+option(BUILD_SA_CELM "Build CAST ELM subarchitecure" YES)
+if(BUILD_SA_CELM)
+    add_subdirectory (subarchitectures/celm)
+endif(BUILD_SA_CELM)
 
