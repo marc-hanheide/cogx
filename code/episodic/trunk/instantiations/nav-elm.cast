@@ -4,6 +4,7 @@ COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--ra
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
 
 SUBARCHITECTURE spatial.sa
+#JAVA WM celmarchitecture.global.DefaultWorkingMemory 
 CPP WM SubarchitectureWorkingMemory  #--log --debug
 CPP TM AlwaysPositiveTaskManager
 CPP MG spatial.translation SpatialTranslation --log

@@ -138,9 +138,9 @@ public class TimedPositionBuffer {
 		for (int i = 0; i < size; i++) {
 			// coordinatesArray[i] = new double[2];
 			
-			assert false : "need to put back in lines below";
-//			coordinatesArray[i][0] = buffer.get(beginIndex + i).getRobotPose().m_x;
-//			coordinatesArray[i][1] = buffer.get(beginIndex + i).getRobotPose().m_y;
+//			assert false : "need to put back in lines below";
+			coordinatesArray[i][0] = buffer.get(beginIndex + i).getRobotPose().x;
+			coordinatesArray[i][1] = buffer.get(beginIndex + i).getRobotPose().y;
 		}
 
 		return coordinatesArray;
