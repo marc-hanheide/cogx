@@ -24,7 +24,7 @@
 	<!-- Source generation                                                   -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
-	  <slice2java tie="true" outputdir="${src.dir}">
+	  <slice2java tie="true" outputdir="${src.dir}" stream="true">
 	    <fileset dir="${slice.dir}" includes="NavData.ice"/>
 	    <includepath> 
 	      <pathelement path="${slice.dir}"/>	
