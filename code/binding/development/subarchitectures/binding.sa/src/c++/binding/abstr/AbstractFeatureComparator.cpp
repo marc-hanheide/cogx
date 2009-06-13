@@ -18,7 +18,7 @@ AbstractFeatureComparator::AbstractFeatureComparator(const std::string &_id)
       WorkingMemoryAttachedComponent(_id),
       PrivilegedManagedProcess(_id)
 {
-  m_queueBehaviour = cdl::QUEUE;
+  queueBehaviour = cdl::QUEUE;
 }
 
 void
@@ -48,7 +48,7 @@ AbstractFeatureComparator::configure(map<string,string> & _config)
 	i < subarchs.end();
 	++i) {
       assert(*i != "");
-      m_bindingSA.insert(*i);
+      bindingSA.insert(*i);
       log("adding binding subarch: " + *i);
     }
   }
@@ -64,12 +64,12 @@ AbstractFeatureComparator::addFeatureComparisonFilter(const string& _proxyFeatur
 						      const string& _unionFeatureType,
 						      const BindingData::ComparisonTrustSpecification& _comparisonTrustSpecification)
 {
-  m_filter[_proxyFeatureType].insert(make_pair(_unionFeatureType,_comparisonTrustSpecification));
+  filter[_proxyFeatureType].insert(make_pair(_unionFeatureType,_comparisonTrustSpecification));
   for(set<string>::const_iterator i = bindingSA().begin() ; i != bindingSA().end() ; ++i) {
     BindingData::FeatureComparisonCompetence* competence = new BindingData::FeatureComparisonCompetence();
-    competence->m_proxyFeatureType = CORBA::string_dup(_proxyFeatureType.c_str());
-    competence->m_unionFeatureType = CORBA::string_dup(_unionFeatureType.c_str());
-    competence->m_comparisonTrustSpecification = _comparisonTrustSpecification;
+    competence->proxyFeatureType = CORBA::string_dup(_proxyFeatureType.c_str());
+    competence->unionFeatureType = CORBA::string_dup(_unionFeatureType.c_str());
+    competence->comparisonTrustSpecification = _comparisonTrustSpecification;
     assert(*i != "");
     addToWorkingMemory(newDataID(), 
 		       *i,
@@ -82,15 +82,15 @@ AbstractFeatureComparator::addFeatureComparisonFilter(const string& _proxyFeatur
 bool 
 AbstractFeatureComparator::currentComparisonIsMyTask() const
 {
-  if(m_currentComparison.featureComparison.get() == NULL)
+  if(currentComparison.featureComparison.get() == NULL)
     return false;
   
-  string proxy_feature_type(currentComparison().m_proxyFeature.m_type);
-  FilterMap::const_iterator i = m_filter.find(proxy_feature_type);
-  if(i == m_filter.end())
+  string proxy_feature_type(currentComparison().proxyFeature.type);
+  FilterMap::const_iterator i = filter.find(proxy_feature_type);
+  if(i == filter.end())
     return false;
 
-  string union_feature_type(currentComparison().m_unionFeature.m_type);
+  string union_feature_type(currentComparison().unionFeature.type);
   UnionToSpecMap::const_iterator j = i->second.find(union_feature_type);
   if(j == i->second.end())
     return false;
@@ -104,63 +104,63 @@ void
 AbstractFeatureComparator::_processFeatureComparisonTask(const cdl::WorkingMemoryChange & _wmc)
 {
   
-  log("------ CALLED (" +  string(_wmc.m_address.m_id) + "at" + string(_wmc.m_address.m_subarchitecture) + ")");
+  log("------ CALLED (" +  string(_wmc.address.id) + "at" + string(_wmc.address.subarchitecture) + ")");
 
   //store binding sa id for other processes
   
   shared_ptr<const BindingData::FeatureComparisonTask> task;
   shared_ptr<const BindingData::FeatureComparison> comparison;
   try{
-      task = getWorkingMemoryEntry<BindingData::FeatureComparisonTask>(string(_wmc.m_address.m_id),string(_wmc.m_address.m_subarchitecture))->getData();
+      task = getWorkingMemoryEntry<BindingData::FeatureComparisonTask>(string(_wmc.address.id),string(_wmc.address.subarchitecture))->getData();
   }
   catch(const DoesNotExistOnWMException& _e) {
     log(string("Task missing in AbstractFeatureComparator::_processFeatureComparisonTask: ") + _e.what());
     return;
   }
   try {
-    comparison = getWorkingMemoryEntry<BindingData::FeatureComparison>(string(task->m_comparisonID),string(task->m_bindingSubarchitectureID))->getData();
+    comparison = getWorkingMemoryEntry<BindingData::FeatureComparison>(string(task->comparisonID),string(task->bindingSubarchitectureID))->getData();
   } catch(const DoesNotExistOnWMException& _e) {
     throw(BindingException(string("in AbstractFeatureComparator::_processFeatureComparisonTask(...): FeatureComparisonTask referred to nonexisting FeatureComparison: ") + _e.what()));
   }
 
   
-  m_currentComparison.featureComparison = comparison;
+  currentComparison.featureComparison = comparison;
   
-  log(lexical_cast<string>(currentComparison().m_proxyFeature.m_type) + " vs. " + 
-      lexical_cast<string>(currentComparison().m_unionFeature.m_type));
+  log(lexical_cast<string>(currentComparison().proxyFeature.type) + " vs. " + 
+      lexical_cast<string>(currentComparison().unionFeature.type));
   
   if(!currentComparisonIsMyTask()) {  
     // i.e., not our task... do nothing
-    log("not my task!" + lexical_cast<string>(currentComparison().m_proxyFeature.m_type) + " vs. " + 
-	lexical_cast<string>(currentComparison().m_unionFeature.m_type));
-    m_currentComparison = Comparison();
+    log("not my task!" + lexical_cast<string>(currentComparison().proxyFeature.type) + " vs. " + 
+	lexical_cast<string>(currentComparison().unionFeature.type));
+    currentComparison = Comparison();
     return;
   }
   
   // this is our task! delete the task specification right away
-  deleteFromWorkingMemory(string(_wmc.m_address.m_id), string(_wmc.m_address.m_subarchitecture));  
+  deleteFromWorkingMemory(string(_wmc.address.id), string(_wmc.address.subarchitecture));  
   
-  m_currentComparison.id = task->m_comparisonID;
-  m_currentComparison.originalValue = tribool_cast(comparison->m_featuresEquivalent);
-  m_currentComparison.newValue = executeComparison();
+  currentComparison.id = task->comparisonID;
+  currentComparison.originalValue = tribool_cast(comparison->featuresEquivalent);
+  currentComparison.newValue = executeComparison();
   
-  log("comparison result: " + Binding::triboolToString(m_currentComparison.newValue) + 
-      " (old value: " + Binding::triboolToString(m_currentComparison.originalValue) + ")");
+  log("comparison result: " + Binding::triboolToString(currentComparison.newValue) + 
+      " (old value: " + Binding::triboolToString(currentComparison.originalValue) + ")");
   
   // only store if resulting value is actually different
-  if(m_currentComparison.featureComparison->m_insistOnExternalComparison ||
-     m_currentComparison.originalValue.value != m_currentComparison.newValue.value) {
+  if(currentComparison.featureComparison->insistOnExternalComparison ||
+     currentComparison.originalValue.value != currentComparison.newValue.value) {
     BindingData::FeatureComparison* result = 
-      new BindingData::FeatureComparison(*m_currentComparison.featureComparison);
-    result->m_featuresEquivalent = tribool_cast(m_currentComparison.newValue);
+      new BindingData::FeatureComparison(*currentComparison.featureComparison);
+    result->featuresEquivalent = tribool_cast(currentComparison.newValue);
     
-    overwriteWorkingMemory(string(m_currentComparison.id), 
-			   string(task->m_bindingSubarchitectureID),
+    overwriteWorkingMemory(string(currentComparison.id), 
+			   string(task->bindingSubarchitectureID),
 			   //BindingLocalOntology::FEATURE_COMPARISON_TYPE, 
 			   result,
 			   cdl::BLOCKING);
   }
-  m_currentComparison.featureComparison = boost::shared_ptr<const BindingData::FeatureComparison>();
+  currentComparison.featureComparison = boost::shared_ptr<const BindingData::FeatureComparison>();
 }
 
 

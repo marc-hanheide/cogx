@@ -10,15 +10,15 @@ SourceDataComparator::compare(const AbstractFeature& _proxyFeature,
   const BindingFeatures::SourceData& proxyData(getIDLFeature(_proxyFeature));
   const BindingFeatures::SourceData& unionData(getIDLFeature(_unionFeature));    
   // only compare those features that are specified to be comparable
-  if(!proxyData.m_comparable || !unionData.m_comparable)
+  if(!proxyData.comparable || !unionData.comparable)
     return indeterminate;
   // only compare those of the same type
-  if(string(proxyData.m_type) != string(unionData.m_type)) {
+  if(string(proxyData.type) != string(unionData.type)) {
     return indeterminate;
   }
   // otherwise, match their addresses
-  if(string(proxyData.m_address.m_id) == string(unionData.m_address.m_id) &&
-     string(proxyData.m_address.m_subarchitecture) == string(unionData.m_address.m_subarchitecture) ) 
+  if(string(proxyData.address.id) == string(unionData.address.id) &&
+     string(proxyData.address.subarchitecture) == string(unionData.address.subarchitecture) ) 
     return true;
   return false;
 }
@@ -26,9 +26,9 @@ SourceDataComparator::compare(const AbstractFeature& _proxyFeature,
 SourceDataHelper::SourceDataHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = false;
-  prop.m_isSimplex      = false;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = false;
+  prop.isSimplex      = false;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
@@ -36,9 +36,9 @@ ostream&
 SourceDataHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
   const BindingFeatures::SourceData& data(extract(_feat));
-  _out << "(" + toString(data.m_type) << "," 
-       << data.m_address.m_subarchitecture << ":" 
-       << data.m_address.m_id <<  ")";
+  _out << "(" + toString(data.type) << "," 
+       << data.address.subarchitecture << ":" 
+       << data.address.id <<  ")";
   return _out;
 }
 
@@ -48,13 +48,13 @@ SourceDataHelper::operatorLessImpl(const AbstractFeature& _feat1, const Abstract
   const BindingFeatures::SourceData& data1(extract(_feat1));
   const BindingFeatures::SourceData& data2(extract(_feat2));
   // primarily, compare ontological data type
-  if(      string(data1.m_type) != string(data2.m_type))
-    return string(data1.m_type) <  string(data2.m_type);
+  if(      string(data1.type) != string(data2.type))
+    return string(data1.type) <  string(data2.type);
   // secondarily, compare subarchitectures
-  if(      string(data1.m_address.m_subarchitecture) != string(data2.m_address.m_subarchitecture))
-    return string(data1.m_address.m_subarchitecture) <  string(data2.m_address.m_subarchitecture);
+  if(      string(data1.address.subarchitecture) != string(data2.address.subarchitecture))
+    return string(data1.address.subarchitecture) <  string(data2.address.subarchitecture);
   // and last, compare the adresses
-  return   string(data1.m_address.m_id) != string(data2.m_address.m_id);
+  return   string(data1.address.id) != string(data2.address.id);
 }
   
 

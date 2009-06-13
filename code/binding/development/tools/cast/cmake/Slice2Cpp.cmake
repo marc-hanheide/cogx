@@ -40,12 +40,12 @@ ENDMACRO( APPEND original new_bit )
 #
 # Each optional extra dir is added to the search path for includes
 
-MACRO( cast_slice2cpp generated_cpp_list generated_header_list src_name)
+MACRO(cast_slice2cpp generated_cpp_list generated_header_list src_name)
 
     SET( slice_cpp_suffixes        .cpp )
     SET( slice_header_suffixes     .hpp  )
     SET( slice_suffixes            ${slice_cpp_suffixes} ${slice_header_suffixes} )
-    SET( slice2cpp_command         ${ICE_HOME}/bin/slice2cpp${EXE_EXTENSION} )
+    SET( slice2cpp_command         ${ICE_HOME}/bin/slice2cpp${EXE_EXTENSION}  )
     
     SET( slice_src_dir        	   src/slice)
 
@@ -55,7 +55,6 @@ MACRO( cast_slice2cpp generated_cpp_list generated_header_list src_name)
     ENDFOREACH(slice_inc_dir ${ARGN})
 
     APPEND(slice_include_dirs "-I${PROJECT_SOURCE_DIR}/src/slice")
-
 
     # satellite projects need to include slice files from orca installation
     # NOTE: funky interaction between cmake and slice2cpp: cannot use "" around the slice_args!

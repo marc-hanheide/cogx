@@ -73,8 +73,8 @@ AbstractFeature::toDotLabel(FeatureDisplayMode _fs) const {
   default:
     throw BindingException("Incorrect Feature<T>::FeatureDisplayMode");
   }
-  //return "(" + featureID() + "[" + immediateProxyID() + "]):" + Binding::toDotLabel(m_idlFeature);    
-  //    return Binding::toDotLabel(m_idlFeature);    
+  //return "(" + featureID() + "[" + immediateProxyID() + "]):" + Binding::toDotLabel(idlFeature);    
+  //    return Binding::toDotLabel(idlFeature);    
 }
 
 
@@ -111,7 +111,7 @@ AbstractFeature::comparable(const AbstractFeature& _f) const {
   return NULL != ontology.internalComparator(this->typeInfo(), _f.typeInfo());
   
   //return this->properties().comparable(_f.name());
-  //const set<std::string>& comparable(this->properties().m_comparableInternally);
+  //const set<std::string>& comparable(this->properties().comparableInternally);
   //if(comparable.find(_f.name()) == comparable.end()) // i.e. the feature is not among the comparable
   //return false;
   //return true;
@@ -134,7 +134,7 @@ AbstractFeature::compare(const AbstractFeature& _f) const
   if(this->immediateProxyID() == _f.immediateProxyID()) {
     ret = boost::logic::indeterminate;
   } else {
-    //    ret = featuresEquivalent<IDLFeature>(m_idlFeature,_f);
+    //    ret = featuresEquivalent<IDLFeature>(idlFeature,_f);
     assert(ontology.internalComparator(this->typeInfo(), _f.typeInfo()));
     ret = ontology.internalComparator(this->typeInfo(), _f.typeInfo())->compare(*this,_f);
   }

@@ -31,8 +31,8 @@ struct BoundProxyFromProxyExtractor
   virtual std::set<std::string> operator()(const ProxyPtr& _ptr) const {
     std::set<std::string> ret;
     std::insert_iterator<std::set<std::string> > inserter = std::inserter(ret, ret.begin());
-    for(unsigned int i = 0 ; i < (*_ptr)->m_proxyIDs.length() ; ++i)
-      inserter = std::string((*_ptr)->m_proxyIDs[i]);
+    for(unsigned int i = 0 ; i < (*_ptr)->proxyIDs.length() ; ++i)
+      inserter = std::string((*_ptr)->proxyIDs[i]);
     return ret;
   }
 };
@@ -43,21 +43,21 @@ class AbstractPortMatcher {
   // port (if not allocated, all labels match). the regexp syntax is
   // like in perl
   // (http://www.boost.org/doc/libs/1_35_0/libs/regex/doc/html/boost_regex/syntax/perl_syntax.html)
-  std::auto_ptr<const boost::regex> m_regex;
+  std::auto_ptr<const boost::regex> regex;
 public:
   AbstractPortMatcher(){}
   AbstractPortMatcher(const AbstractPortMatcher& _m) {
-    if(_m.m_regex.get())
-      m_regex = std::auto_ptr<boost::regex>(new boost::regex(*_m.m_regex));
+    if(_m.regex.get())
+      regex = std::auto_ptr<boost::regex>(new boost::regex(*_m.regex));
   }
-  AbstractPortMatcher(const boost::regex& _regex) : m_regex(new boost::regex(_regex)) {}
+  AbstractPortMatcher(const boost::regex& _regex) : regex(new boost::regex(_regex)) {}
   /// creates a regex from the string
-  AbstractPortMatcher(const std::string& _str) : m_regex(new boost::regex(_str)) {}
+  AbstractPortMatcher(const std::string& _str) : regex(new boost::regex(_str)) {}
   //returns true if the port is a match
   bool match(const BindingData::ProxyPort& _port) const {
-    if(!m_regex.get())
+    if(!regex.get())
       return true;
-    return boost::regex_match(std::string(_port.m_label),*m_regex);
+    return boost::regex_match(std::string(_port.label),*regex);
   }
 };
 
@@ -72,9 +72,9 @@ struct OutPortsExtractor
   virtual std::set<std::string> operator()(const LocalBindingDataPtrT& _ptr) const {
     const BindingData::ProxyPorts& ports = _ptr->rawOutPorts();
     std::set<std::string> ret;
-    for(unsigned int i = 0; i < ports.m_ports.length() ; ++i)
-      if(match(ports.m_ports[i]))
-	ret.insert(std::string(ports.m_ports[i].m_proxyID));
+    for(unsigned int i = 0; i < ports.ports.length() ; ++i)
+      if(match(ports.ports[i]))
+	ret.insert(std::string(ports.ports[i].proxyID));
     return ret;
   }
 private:
@@ -92,8 +92,8 @@ struct InPortsExtractor
   virtual std::set<std::string> operator()(const LocalBindingDataPtrT& _ptr) const {
     std::set<std::string> ret;
     const BindingData::ProxyPorts& ports = _ptr->inPorts();
-    for(unsigned int i = 0; i < ports.m_ports.length() ; ++i)
-      ret.insert(std::string(ports.m_ports[i].m_proxyID));
+    for(unsigned int i = 0; i < ports.ports.length() ; ++i)
+      ret.insert(std::string(ports.ports[i].proxyID));
     return ret;
   }
 };
@@ -126,7 +126,7 @@ struct GroupProxyFromSingularExtractor
     if(sing != fset.end()) {
       std::insert_iterator<std::set<std::string> > inserter = std::inserter(ret, ret.begin());
       foreach(OneTypeOfFeatures::value_type f, sing->second) { // f is an AbstractFeature
-	inserter = std::string(extractIDLFeature<BindingFeatures::Singular>(f).m_groupID);
+	inserter = std::string(extractIDLFeature<BindingFeatures::Singular>(f).groupID);
       }
     }
     return ret;
@@ -157,7 +157,7 @@ struct ProxyFromThisProxyIDExtractor
     if(sing != fset.end()) {
       std::insert_iterator<std::set<std::string> > inserter = std::inserter(ret, ret.begin());
       foreach(OneTypeOfFeatures::value_type f, sing->second) { // f is an AbstractFeature
-	inserter = std::string(extractIDLFeature<BindingFeatures::ThisProxyID>(f).m_thisProxyID);
+	inserter = std::string(extractIDLFeature<BindingFeatures::ThisProxyID>(f).thisProxyID);
       }
     }
     return ret;
@@ -176,7 +176,7 @@ struct ProxyFromExistingProxyIDExtractor
     if(sing != fset.end()) {
       std::insert_iterator<std::set<std::string> > inserter = std::inserter(ret, ret.begin());
       foreach(OneTypeOfFeatures::value_type f, sing->second) { // f is an AbstractFeature
-	inserter = std::string(extractIDLFeature<BindingFeatures::ExistingProxyID>(f).m_existingProxyID);
+	inserter = std::string(extractIDLFeature<BindingFeatures::ExistingProxyID>(f).existingProxyID);
       }
     }
     return ret;

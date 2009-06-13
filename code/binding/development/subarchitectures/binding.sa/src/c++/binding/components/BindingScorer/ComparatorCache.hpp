@@ -24,15 +24,15 @@ class ComparatorCache {
   friend class BindingScorer;
   friend class ComparatorCacheCheck;
 
-  //CASTDataCache<BindingData::FeatureComparison> m_comparisonCache;
-  /// stores all computed comparisons m_comparison[_combinedID(featureID,unionID)]
-  cast::StringMap<boost::logic::tribool>::map m_internalCache;
-  BindingScorer& m_bindingScorer;
+  //CASTDataCache<BindingData::FeatureComparison> comparisonCache;
+  /// stores all computed comparisons comparison[_combinedID(featureID,unionID)]
+  cast::StringMap<boost::logic::tribool>::map internalCache;
+  BindingScorer& bindingScorer;
 
 private:
 
   ComparatorCache(BindingScorer& _bindingScorer)
-    : m_bindingScorer(_bindingScorer) {}
+    : bindingScorer(_bindingScorer) {}
   
   /// calls _get(...)
   boost::logic::tribool get(const AbstractFeature& _proxyFeaturePtr, 

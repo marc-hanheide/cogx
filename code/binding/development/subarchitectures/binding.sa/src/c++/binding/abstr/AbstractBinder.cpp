@@ -11,7 +11,7 @@ AbstractBinder::AbstractBinder(const string &_id) :
   PrivilegedManagedProcess(_id),
   AbstractBindingWMRepresenter(dynamic_cast<cast::WorkingMemoryReaderProcess&>(*this))
 {
-  m_queueBehaviour = cdl::QUEUE;
+  queueBehaviour = cdl::QUEUE;
 }
 
 AbstractBinder::~AbstractBinder() {
@@ -39,7 +39,7 @@ AbstractBinder::configure(std::map<std::string,std::string>& _config)
   }
  else {
     log("binding subarch not specified, assuming it\'s local to monitor");
-    setBindingSubarchID(m_subarchitectureID);
+    setBindingSubarchID(subarchitectureID);
   }
 }
 
@@ -49,16 +49,16 @@ AbstractBinder::changeProxyState(const LBindingProxy& _proxy,
 {
 #ifndef NDEBUG
   if(_state == BindingData::BOUND)
-    assert(!string(_proxy->m_unionID).empty());
-  if(string(_proxy->m_unionID).empty())
+    assert(!string(_proxy->unionID).empty());
+  if(string(_proxy->unionID).empty())
     assert(_state != BindingData::BOUND);
 #endif // NDEBUG
-  if(_proxy->m_proxyState == _state) { // do nothing if nothing needs doing...
+  if(_proxy->proxyState == _state) { // do nothing if nothing needs doing...
     return;
   }
   BindingData::BindingProxy* proxy_ptr = 
     new BindingData::BindingProxy(_proxy.get());
-  proxy_ptr->m_proxyState = _state;
+  proxy_ptr->proxyState = _state;
   overwriteWorkingMemory(_proxy.id(), 
 			 //BindingLocalOntology::BINDING_PROXY_TYPE, 
 			 proxy_ptr, 

@@ -2,7 +2,7 @@
 #define BINDING_SOURCEID_HELPER_H_
 
 #include <ostream>
-#include <binding/idl/BindingFeaturesCommon.hh>
+#include <BindingFeaturesCommon.hpp>
 #include <binding/idl/BindingFeatures.hh>
 #include "binding/feature-utils/FeatureHelper.hpp"
 #include "binding/feature-utils/AbstractInternalComparator.hpp"

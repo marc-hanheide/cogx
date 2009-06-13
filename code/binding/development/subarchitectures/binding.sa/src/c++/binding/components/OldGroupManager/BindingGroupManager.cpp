@@ -94,7 +94,7 @@ BindingGroupManager::start() {
 		  new MemberFunctionChangeReceiver<BindingGroupManager>(this,
 									&BindingGroupManager::unionDeleted));
   
-  m_sourceID = m_subarchitectureID; // we assume that this component is rrunning in the binding subarch
+  sourceID = subarchitectureID; // we assume that this component is rrunning in the binding subarch
 }
 
 BindingGroupManager::~BindingGroupManager() {}
@@ -107,24 +107,24 @@ BindingGroupManager::proxyAdded(const cdl::WorkingMemoryChange& _wmc) {
     shared_ptr<const BindingData::BindTheseProxies> 
       bindTheseProxies(loadBindingDataFromWM<BindingData::BindTheseProxies>(_wmc));
     
-    for(unsigned int i = 0; i < bindTheseProxies->m_proxyIDs.length(); ++i) {
-      string proxyID(bindTheseProxies->m_proxyIDs[i]);
+    for(unsigned int i = 0; i < bindTheseProxies->proxyIDs.length(); ++i) {
+      string proxyID(bindTheseProxies->proxyIDs[i]);
       log(string("proxyID[") + lexical_cast<string>(i) + "] : " + proxyID);
     }
     
-    for(unsigned int i = 0; i < bindTheseProxies->m_proxyIDs.length(); ++i) {
-      string proxyID(bindTheseProxies->m_proxyIDs[i]);
-      const LBindingProxy& proxy(m_proxyLocalCache[proxyID]);
+    for(unsigned int i = 0; i < bindTheseProxies->proxyIDs.length(); ++i) {
+      string proxyID(bindTheseProxies->proxyIDs[i]);
+      const LBindingProxy& proxy(proxyLocalCache[proxyID]);
       
-      //assert(proxy->m_proxyState != BindingData::BOUND);
+      //assert(proxy->proxyState != BindingData::BOUND);
       
-      if(proxy->m_type == BindingData::GROUP) {
+      if(proxy->type == BindingData::GROUP) {
 	const string& groupID(proxyID);
 	const LBindingProxy& group(proxy);
 	
 	log("proxy added, and it's a group: " + proxyID);
 	
-	if(m_group_info.find(groupID) == m_group_info.end()) {
+	if(group_info.find(groupID) == group_info.end()) {
 	  _create_and_store_singular(groupID, group);
 	} else {
 	  log("but it has already been added");
@@ -140,29 +140,29 @@ BindingGroupManager::proxyAdded(const cdl::WorkingMemoryChange& _wmc) {
   
 void 
 BindingGroupManager::proxyDeleted(const cdl::WorkingMemoryChange& _wmc) {
-  string proxyID(_wmc.m_address.m_id);
-  map<string,GroupInfo>::iterator itr(m_group_info.find(proxyID));
-  if(itr == m_group_info.end()) {
+  string proxyID(_wmc.address.id);
+  map<string,GroupInfo>::iterator itr(group_info.find(proxyID));
+  if(itr == group_info.end()) {
     return;
   }
-  for(set<string>::const_iterator i = itr->second.m_group_member_ids.begin() ; 
-      i != itr->second.m_group_member_ids.end(); ++i) {
+  for(set<string>::const_iterator i = itr->second.group_member_ids.begin() ; 
+      i != itr->second.group_member_ids.end(); ++i) {
     deleteExistingProxy(*i);
-    m_single2group.erase(*i);
+    single2group.erase(*i);
   }
-  m_group_info.erase(itr);
+  group_info.erase(itr);
 }
 
 void 
 BindingGroupManager::unionAdded(const cdl::WorkingMemoryChange& _wmc) {
-  string unionID(_wmc.m_address.m_id);
+  string unionID(_wmc.address.id);
   log(unionID + " added");
   _check_union(unionID);
 }
   
 void 
 BindingGroupManager::unionUpdated(const cdl::WorkingMemoryChange& _wmc) {
-  string unionID(_wmc.m_address.m_id);
+  string unionID(_wmc.address.id);
   log(unionID + " updated");
   _check_union(unionID);
 }
@@ -174,18 +174,18 @@ BindingGroupManager::unionDeleted(const cdl::WorkingMemoryChange& _wmc) {
 void 
 BindingGroupManager::_check_union(const string& _unionID) {
   try {
-    const LBindingUnion& binding_union(m_unionLocalCache[_unionID]);
-    if(binding_union->m_proxyIDs.length() == 1) {
+    const LBindingUnion& binding_union(unionLocalCache[_unionID]);
+    if(binding_union->proxyIDs.length() == 1) {
       // do nothing, since this binding obviously does not bind
       // an unbound proxy to anything but itself
-      log("binding_union->m_proxyIDs.length() == 1 for unionID" + _unionID);
+      log("binding_union->proxyIDs.length() == 1 for unionID" + _unionID);
     } else {
       set<string> new_non_singulars;
-      for(unsigned int i = 0; i < binding_union->m_proxyIDs.length() ; ++i) {
-	string proxyID(binding_union->m_proxyIDs[i]);
+      for(unsigned int i = 0; i < binding_union->proxyIDs.length() ; ++i) {
+	string proxyID(binding_union->proxyIDs[i]);
 	log("testing if " + proxyID + " is a new singular for binding " + _unionID);
-	if(m_uni2prox[_unionID].find(proxyID) == m_uni2prox[_unionID].end() && //i.e., it wasn't in the list
-	   m_single2group.find(proxyID) == m_single2group.end()) { // i.e. it's a singular
+	if(uni2prox[_unionID].find(proxyID) == uni2prox[_unionID].end() && //i.e., it wasn't in the list
+	   single2group.find(proxyID) == single2group.end()) { // i.e. it's a singular
 	  log("It is!");
 	  new_non_singulars.insert(proxyID);
 	}
@@ -194,18 +194,18 @@ BindingGroupManager::_check_union(const string& _unionID) {
       // updated with a new proxy ID that isn't a singular!    
       if(!new_non_singulars.empty()) {
 	//      set<string> groupIDs;
-	for(unsigned int i = 0; i < binding_union->m_proxyIDs.length() ; ++i) {
-	  string proxyID(binding_union->m_proxyIDs[i]);
-	  set<string>::iterator unbound = m_unbound_singles.find(proxyID);
-	  if(unbound != m_unbound_singles.end()) {
+	for(unsigned int i = 0; i < binding_union->proxyIDs.length() ; ++i) {
+	  string proxyID(binding_union->proxyIDs[i]);
+	  set<string>::iterator unbound = unbound_singles.find(proxyID);
+	  if(unbound != unbound_singles.end()) {
 	    log(*unbound + " is unbound");
-	    assert(m_single2group[*unbound] != "");
-	    string groupID(m_single2group[*unbound]);
-	    const LBindingProxy& group(m_proxyLocalCache[groupID]);
+	    assert(single2group[*unbound] != "");
+	    string groupID(single2group[*unbound]);
+	    const LBindingProxy& group(proxyLocalCache[groupID]);
 
 	    _create_and_store_singular(groupID, group);
 	    
-	    m_unbound_singles.erase(unbound); 
+	    unbound_singles.erase(unbound); 
 	  }
 	}   
       }
@@ -214,15 +214,15 @@ BindingGroupManager::_check_union(const string& _unionID) {
     }
     
     // very stupid coding nw... getting tired...
-    m_uni2prox.clear();
+    uni2prox.clear();
     bool any_singular = false;
-    for(unsigned int i = 0; i < binding_union->m_proxyIDs.length() ; ++i) {
-      m_uni2prox[_unionID].insert(string(binding_union->m_proxyIDs[i]));
-      if(m_single2group.find(string(binding_union->m_proxyIDs[i])) == m_single2group.end())
+    for(unsigned int i = 0; i < binding_union->proxyIDs.length() ; ++i) {
+      uni2prox[_unionID].insert(string(binding_union->proxyIDs[i]));
+      if(single2group.find(string(binding_union->proxyIDs[i])) == single2group.end())
 	any_singular = true;
     }
     if(!any_singular)
-      m_uni2prox.clear();
+      uni2prox.clear();
   }
   catch(const DoesNotExistOnWMException& _e) {
     log(string("DoesNotExistOnWMException caught in BindingGroupManager::_check_union: ") + _e.what());
@@ -235,11 +235,11 @@ BindingGroupManager::_copy_feature_pointers(const LBindingProxy& _proxy,
 {
   BindingData::FeaturePointers ptrs;
   for(unsigned int i = 0 ; 
-      i < _proxy->m_proxyFeatures.length(); 
+      i < _proxy->proxyFeatures.length(); 
       ++i) {
-    if(_exclude.find(string(_proxy->m_proxyFeatures[i].m_type)) == _exclude.end()) {
+    if(_exclude.find(string(_proxy->proxyFeatures[i].type)) == _exclude.end()) {
       ptrs.length(ptrs.length() + 1);
-      ptrs[ptrs.length() - 1] = _proxy->m_proxyFeatures[i];
+      ptrs[ptrs.length() - 1] = _proxy->proxyFeatures[i];
     }
   }
   return ptrs;
@@ -250,11 +250,11 @@ BindingGroupManager::_retrieve_group_info(const LBindingProxy& _proxy)
 {
   try{
     for(unsigned int i = 0 ; 
-	i < _proxy->m_proxyFeatures.length(); 
+	i < _proxy->proxyFeatures.length(); 
 	++i) {
       static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
-      if(string(_proxy->m_proxyFeatures[i].m_type) == ontology.featureName(typeid(Group))) {
-	const BindingFeatures::Group& group(extractIDLFeature<BindingFeatures::Group>(m_featureLoader.getFeature(_proxy->m_proxyFeatures[i])));
+      if(string(_proxy->proxyFeatures[i].type) == ontology.featureName(typeid(Group))) {
+	const BindingFeatures::Group& group(extractIDLFeature<BindingFeatures::Group>(featureLoader.getFeature(_proxy->proxyFeatures[i])));
 	return group;
       }
     }
@@ -273,7 +273,7 @@ BindingGroupManager::_create_and_store_singular(const string& _groupID,
   
   log("spawning off individual for group proxy: " + _groupID);
   
-  assert(_group->m_type == BindingData::GROUP);
+  assert(_group->type == BindingData::GROUP);
 
   startNewBasicProxy();
   static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
@@ -283,14 +283,14 @@ BindingGroupManager::_create_and_store_singular(const string& _groupID,
   exclude.insert(ontology.featureName(typeid(DebugString)));
   exclude.insert(ontology.featureName(typeid(ThisProxyID)));
   
-  m_currentlyBuiltProxy->m_proxyFeatures = _copy_feature_pointers(_group, exclude);
+  currentlyBuiltProxy->proxyFeatures = _copy_feature_pointers(_group, exclude);
   
   BindingFeatures::Singular sing_feat;
-  sing_feat.m_groupID = CORBA::string_dup(_groupID.c_str()); 
-  map<string,GroupInfo>::iterator g = m_group_info.find(_groupID);
-  if(g == m_group_info.end()) 
-    g = m_group_info.insert(make_pair(_groupID,GroupInfo(_retrieve_group_info(_group).m_size))).first;
-  sing_feat.m_elementNumber = g->second.m_current_size;
+  sing_feat.groupID = CORBA::string_dup(_groupID.c_str()); 
+  map<string,GroupInfo>::iterator g = group_info.find(_groupID);
+  if(g == group_info.end()) 
+    g = group_info.insert(make_pair(_groupID,GroupInfo(_retrieve_group_info(_group).size))).first;
+  sing_feat.elementNumber = g->second.current_size;
   addFeatureToCurrentProxy(sing_feat);
   //addCreationTimeToCurrentProxy(); // the creation time of the
   // individual is not the same as
@@ -299,12 +299,12 @@ BindingGroupManager::_create_and_store_singular(const string& _groupID,
   // now, store the proxy
   string singularID = storeCurrentProxy(false); // don't store system features
   // now some internal book-keeping
-  g->second.m_current_size++;
-  g->second.m_group_member_ids.insert(singularID);
-  m_single2group[singularID] = _groupID;
-  m_unbound_singles.insert(singularID);
-  for(unsigned int i = 0; i < _group.inPorts().m_ports.length() ; ++i) {
-    _copy_relation_proxy(string(_group.inPorts().m_ports[i].m_proxyID),singularID);
+  g->second.current_size++;
+  g->second.group_member_ids.insert(singularID);
+  single2group[singularID] = _groupID;
+  unbound_singles.insert(singularID);
+  for(unsigned int i = 0; i < _group.inPorts().ports.length() ; ++i) {
+    _copy_relation_proxy(string(_group.inPorts().ports[i].proxyID),singularID);
   }
   
   log("and the new individual proxy is: " + singularID);
@@ -318,9 +318,9 @@ BindingGroupManager::_copy_relation_proxy(const string& _relationID,
   
   log("spawning off relation to group proxy: " + _relationID);
   
-  const LBindingProxy& relation(m_proxyLocalCache[_relationID]);
+  const LBindingProxy& relation(proxyLocalCache[_relationID]);
   log("1: " + _relationID);
-  assert(relation->m_type == BindingData::RELATION);
+  assert(relation->type == BindingData::RELATION);
 
   startNewRelationProxy();
   
@@ -330,23 +330,23 @@ BindingGroupManager::_copy_relation_proxy(const string& _relationID,
   exclude.insert(ontology.featureName(typeid(DebugString)));
   exclude.insert(ontology.featureName(typeid(ThisProxyID)));
   
-  m_currentlyBuiltProxy->m_proxyFeatures = _copy_feature_pointers(relation, exclude);
+  currentlyBuiltProxy->proxyFeatures = _copy_feature_pointers(relation, exclude);
 
   // copy outports
-  m_currentlyBuiltProxy->m_outPorts.m_ports.length(relation->m_outPorts.m_ports.length());
-  assert(m_single2group.find(_singularID) != m_single2group.end());
-  string groupID = m_single2group.find(_singularID)->second;
+  currentlyBuiltProxy->outPorts.ports.length(relation->outPorts.ports.length());
+  assert(single2group.find(_singularID) != single2group.end());
+  string groupID = single2group.find(_singularID)->second;
   
-  for(unsigned int i = 0 ; i < m_currentlyBuiltProxy->m_outPorts.m_ports.length() ; ++i) {
-    string toProxy(relation->m_outPorts.m_ports[i].m_proxyID);
+  for(unsigned int i = 0 ; i < currentlyBuiltProxy->outPorts.ports.length() ; ++i) {
+    string toProxy(relation->outPorts.ports[i].proxyID);
     if(toProxy == groupID) {
       toProxy = _singularID;
     }
-    m_currentlyBuiltProxy->m_outPorts.m_ports[i] = relation->m_outPorts.m_ports[i];
-    m_currentlyBuiltProxy->m_outPorts.m_ports[i].m_proxyID = CORBA::string_dup(toProxy.c_str());
-    m_currentlyBuiltProxy->m_outPorts.m_ports[i].m_ownerProxyID = CORBA::string_dup(m_currentProxyID.c_str());
+    currentlyBuiltProxy->outPorts.ports[i] = relation->outPorts.ports[i];
+    currentlyBuiltProxy->outPorts.ports[i].proxyID = CORBA::string_dup(toProxy.c_str());
+    currentlyBuiltProxy->outPorts.ports[i].ownerProxyID = CORBA::string_dup(currentProxyID.c_str());
   }
-  updateInports(m_currentlyBuiltProxy->m_outPorts);
+  updateInports(currentlyBuiltProxy->outPorts);
   addCreationTimeToCurrentProxy(); 
   
   // now, store the proxy

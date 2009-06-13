@@ -44,7 +44,7 @@ public:
   void reportIllegalSignal(const cast::cdl::WorkingMemoryChange&);
   
   /// checks the status and starts deletion if stable and aborts as
-  /// soon as noo longer stable, the m_statusCache is used to keep
+  /// soon as noo longer stable, the statusCache is used to keep
   /// track of the status
   void statusUpdated(const cast::cdl::WorkingMemoryChange&);
 
@@ -54,24 +54,24 @@ protected:
   virtual void runComponent();
 private:
   /// checks that config has been called
-  bool m_confCalled;
+  bool confCalled;
   enum PoliceMode {
     STRICT, ///< aborts if something is fishy (default)
     WARNING, ///< prints warnings on stderr
     DISABLED ///< not used at all, cheaper but not good during testing
   };
-  PoliceMode m_policeMode;
+  PoliceMode policeMode;
   /// contains IDs associated to a proxy or union
   struct AssociatedIDs {
-    std::set<std::string> m_ids;
+    std::set<std::string> ids;
   };
-  cast::StringMap<AssociatedIDs>::map m_associatedToProxy;
-  cast::StringMap<AssociatedIDs>::map m_associatedToUnion;
-  std::deque<std::string> m_deletionQueue;
+  cast::StringMap<AssociatedIDs>::map associatedToProxy;
+  cast::StringMap<AssociatedIDs>::map associatedToUnion;
+  std::deque<std::string> deletionQueue;
   void deleteOneOnQueue();
 
   /// caches the status of the binder
-  std::auto_ptr<cast::CachedCASTData<BindingData::BinderStatus> > m_statusCache;
+  std::auto_ptr<cast::CachedCASTData<BindingData::BinderStatus> > statusCache;
 
 };
 

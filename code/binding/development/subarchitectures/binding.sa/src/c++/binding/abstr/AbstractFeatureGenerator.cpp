@@ -17,7 +17,7 @@ namespace Binding {
   AbstractFeatureGenerator::AbstractFeatureGenerator(const std::string & _id) 
     :WorkingMemoryAttachedComponent(_id),       
      AbstractMonitor(_id),      
-      m_filterUp(false) { 
+      filterUp(false) { 
   }
 
 

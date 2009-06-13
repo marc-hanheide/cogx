@@ -5,7 +5,7 @@
 #include <set>
 #include <binding/utils/GraphLoader.hpp>
 #include <binding/utils/Predicates.hpp>
-#include <binding/idl/BindingData.hh>
+#include <BindingData.hpp>
 #include <binding/idl/BindingFeatures.hh>
 #include <binding/idl/BindingQueries.hh>
 #include <binding/BindingException.hpp>
@@ -25,34 +25,34 @@ class TesterMonitor :
 {
 protected:
    /// the test number
-  int m_test;
+  int test;
   /// the proxies that are stored and need to be checked before exiting
-  std::set<std::string> m_proxyIDs;
+  std::set<std::string> proxyIDs;
   /// the proxies which have been signalled as added
-  std::set<std::string> m_addSignalledProxyIDs;
+  std::set<std::string> addSignalledProxyIDs;
   /// the proxies which have been signalled as overwritten
-  std::set<std::string> m_overwriteSignalledProxyIDs;
+  std::set<std::string> overwriteSignalledProxyIDs;
 
   /// the latest registered status of the binder
-  BindingData::BinderStatus m_status;
+  BindingData::BinderStatus status;
   /// the id of the status
-  std::string m_statusID;
+  std::string statusID;
   
   /// the IDs of the queries, in the order they were stated
-  std::vector<std::string> m_basicQueryIDs;
+  std::vector<std::string> basicQueryIDs;
   /// the IDs of the queries, in the order they were stated
-  std::vector<std::string> m_advancedQueryIDs;
+  std::vector<std::string> advancedQueryIDs;
   /// stores the answered queries 
-  std::map<std::string,BindingQueries::BasicQuery> m_basicQueryAnswers;
+  std::map<std::string,BindingQueries::BasicQuery> basicQueryAnswers;
   /// stores the answered queries 
-  std::map<std::string,BindingQueries::AdvancedQuery> m_advancedQueryAnswers;
+  std::map<std::string,BindingQueries::AdvancedQuery> advancedQueryAnswers;
   
   /// set to true when all proxies involved in the test have been
   /// created (default is true, as in most cases the test will not
   /// abort until really finished anyway)
-  bool m_testFinished;
+  bool testFinished;
 
-  BindingGraphHandler m_handler;
+  BindingGraphHandler handler;
   
 public:
   TesterMonitor(const std::string &_id);
@@ -79,8 +79,8 @@ protected:
   /// exits and signals success
   void successExit() {
     const_cast<TesterMonitor&>(*this).sleepProcess(100); // sleep for a while and test completeness again (10 times)
-    if(m_retest++ < 10) {
-      std::cout << "retesting #" << m_retest << std::endl;
+    if(retest++ < 10) {
+      std::cout << "retesting #" << retest << std::endl;
       testCompleteness();
     }
     addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
@@ -117,11 +117,11 @@ protected:
   std::string addTwoProxiesAndOneRelation(const std::string& _concept1 = "test_concept1", 
 					  const std::string& _concept2 = "test_concept2", 
 					  const std::string& _relation_label = "test_label");
-  unsigned int m_retest;
+  unsigned int retest;
   /// number of times a BinderStatus was added/updated
-  unsigned int m_statusUpdates;
+  unsigned int statusUpdates;
   /// number of times a stable BinderStatus was added/updated
-  unsigned int m_statusStableUpdates;
+  unsigned int statusStableUpdates;
 }; // TesterMonitor
 } // namespace Binding
 

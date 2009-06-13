@@ -27,7 +27,7 @@ namespace Binding {
     
     WorkingMemoryAttachedComponent(_id),
     AbstractBinder(_id),
-    m_handler(*this) { 
+    handler(*this) { 
   }
   
   void
@@ -58,30 +58,30 @@ namespace Binding {
 
   void
   FeatureGenerator::newFeatureRequest(const cdl::WorkingMemoryChange & _wmc) {
-    shared_ptr<const CASTData<FeatureRequest> > request(getWorkingMemoryEntry<FeatureRequest>(_wmc.m_address));
-    string type(request->getData()->m_type);
-    string reqSA(request->getData()->m_subarchitecture);
+    shared_ptr<const CASTData<FeatureRequest> > request(getWorkingMemoryEntry<FeatureRequest>(_wmc.address));
+    string type(request->getData()->type);
+    string reqSA(request->getData()->subarchitecture);
     log("feature %s requested by subarchitecture %s",type.c_str(),reqSA.c_str());
     
     
     //get the list of sas that can provide this feature
-    StringSetMap::const_iterator subarchsIt(m_feature2sa.find(type));
+    StringSetMap::const_iterator subarchsIt(feature2sa.find(type));
     
     //if we can't find this type
-    if(subarchsIt == m_feature2sa.end()) {
+    if(subarchsIt == feature2sa.end()) {
       log("no subarchitecture provides feature: %s", type.c_str());
-      answerRequest(_wmc.m_address,request,cast::cdl::triFalse);
+      answerRequest(_wmc.address,request,BindingData::FALSETB);
     }
     else {
 
       
       
       //load the relevant binding structures
-      //ProxyPtr& reqProxy(m_handler.loadProxy(string(request->getData()->m_proxyID)));
+      //ProxyPtr& reqProxy(handler.loadProxy(string(request->getData()->proxyID)));
       //it must be bound
       //assert(reqProxy->bound());
       //load the union with the proxy in it
-      //UnionPtr& reqUnion(m_handler.loadUnion(reqProxy->bindingUnionID()));
+      //UnionPtr& reqUnion(handler.loadUnion(reqProxy->bindingUnionID()));
       //get union features
       //const FeatureSetWithRepetitions& fs(reqUnion->featureSetWithRepetitions());
       //particularly the source id ones
@@ -92,12 +92,12 @@ namespace Binding {
       //load the proxy indicated in the request
       //long winded, but easier to reuse code
       set<string> reqIDs;
-      reqIDs.insert(string(request->getData()->m_proxyID));
-      ProxySet reqProxySet(m_handler.loadProxies(reqIDs)); 
+      reqIDs.insert(string(request->getData()->proxyID));
+      ProxySet reqProxySet(handler.loadProxies(reqIDs)); 
       assert(reqProxySet.size() == 1);
 
       //now load all the proxies bound to this one
-      ProxySet boundProxies(m_handler.extractProxiesFromProxies(reqProxySet,
+      ProxySet boundProxies(handler.extractProxiesFromProxies(reqProxySet,
 								BoundProxyFromProxyExtractor()));
 
       log("%d bound proxies", boundProxies.size());
@@ -127,7 +127,7 @@ namespace Binding {
 	      i != boundProxies.end(); ++i) {	    
 	    //load Source id for this proxy
 	    const SourceID & sid(i->second->getFeature<SourceID>());
-	    string sidSA(sid.m_sourceID);
+	    string sidSA(sid.sourceID);
 	    log("proxy %s has source id %s",i->first.c_str(), sidSA.c_str());
 	    if(sidSA == providingSA) {
 	      log("found a proxy for the sa");
@@ -162,11 +162,11 @@ namespace Binding {
   void 
   FeatureGenerator::answerRequest(const cast::cdl::WorkingMemoryAddress & _wma,
 				  boost::shared_ptr<const cast::CASTData<BindingQueries::FeatureRequest> > _request,
-				  const cast::cdl::TriBool & _successful)  {
+				  const BindingData::TriBool & _successful)  {
     //copy the req struct
     FeatureRequest * req = new FeatureRequest(*(_request->getData()));
-  req->m_processed = true;
-  req->m_successful = _successful;
+  req->processed = true;
+  req->successful = _successful;
   overwriteWorkingMemory(_wma,req);
 //   ostringstream os;
 //   os<<"request answered: "<<_wma<<" "<<_successful<<endl;
@@ -177,10 +177,10 @@ namespace Binding {
 void 
   FeatureGenerator::registerFeature(const cdl::WorkingMemoryChange & _wmc) {
 
-    shared_ptr<const CASTData<FeatureGenerationRegistration> > registration(getWorkingMemoryEntry<FeatureGenerationRegistration>(_wmc.m_address));
-    string type(registration->getData()->m_type);
-    string sa(registration->getData()->m_subarchitecture);
-    m_feature2sa[type].insert(sa);
+    shared_ptr<const CASTData<FeatureGenerationRegistration> > registration(getWorkingMemoryEntry<FeatureGenerationRegistration>(_wmc.address));
+    string type(registration->getData()->type);
+    string sa(registration->getData()->subarchitecture);
+    feature2sa[type].insert(sa);
     log("registering feature %s from subarchitecture %s",type.c_str(),sa.c_str());
     
     

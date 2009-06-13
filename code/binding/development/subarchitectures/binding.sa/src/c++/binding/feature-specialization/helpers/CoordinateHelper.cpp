@@ -9,24 +9,24 @@ CoordinateComparator::compare(const AbstractFeature& _proxyFeature,
 			      const AbstractFeature& _unionFeature) const {
   const BindingFeatures::Coordinate& proxyFeature(getIDLFeature(_proxyFeature));
   const BindingFeatures::Coordinate& unionFeature(getIDLFeature(_unionFeature));    
-  if(proxyFeature.m_frame != unionFeature.m_frame)
+  if(proxyFeature.frame != unionFeature.frame)
     return boost::indeterminate;
-  return proxyFeature.m_coordinate == unionFeature.m_coordinate;
+  return proxyFeature.coordinate == unionFeature.coordinate;
 }
 
 CoordinateHelper::CoordinateHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = true;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = true;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
 ostream& 
 CoordinateHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
-  _out << extract(_feat).m_coordinate << "["<< extract(_feat).m_frame <<"]";
+  _out << extract(_feat).coordinate << "["<< extract(_feat).frame <<"]";
   return _out;
 }
 
@@ -35,9 +35,9 @@ CoordinateHelper::operatorLessImpl(const AbstractFeature& _feat1, const Abstract
 {
   const BindingFeatures::Coordinate& feat1(extract(_feat1));
   const BindingFeatures::Coordinate& feat2(extract(_feat2));
-  if(feat1.m_frame != feat2.m_frame)
-    return feat1.m_frame < feat2.m_frame;
-  return feat1.m_coordinate < feat2.m_coordinate;
+  if(feat1.frame != feat2.frame)
+    return feat1.frame < feat2.frame;
+  return feat1.coordinate < feat2.coordinate;
 }
 
 

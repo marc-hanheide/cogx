@@ -33,15 +33,15 @@ OtherSourceIDvsSourceIDComparator::compare(const AbstractFeature& _proxyFeature,
   //const BindingFeatures::SourceID& unionFeature(getIDLFeature2(_unionFeature));    
   //  
   //cout << "comparing othersourceID \"" 
-  //     << other_source_id->m_otherSourceID 
+  //     << other_source_id->otherSourceID 
   //     << "\" vs. SourceID \"" 
-  //     << source_id->m_sourceID << "\"\n";
+  //     << source_id->sourceID << "\"\n";
   
   // do not compare if source id and other source id is in same proxy
   if(_proxyFeature.immediateProxyID() == _unionFeature.immediateProxyID()) {
     return indeterminate;
   }
-  if(string(other_source_id.m_otherSourceID) == string(source_id.m_sourceID)) {
+  if(string(other_source_id.otherSourceID) == string(source_id.sourceID)) {
     return true;
   } 
   return false;
@@ -50,23 +50,23 @@ OtherSourceIDvsSourceIDComparator::compare(const AbstractFeature& _proxyFeature,
 OtherSourceIDHelper::OtherSourceIDHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = true;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = true;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
 ostream& 
 OtherSourceIDHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
-    _out << extract(_feat).m_otherSourceID;
+    _out << extract(_feat).otherSourceID;
     return _out;
 }
 
 bool 
 OtherSourceIDHelper::operatorLessImpl(const AbstractFeature& _feat1, const AbstractFeature& _feat2) const 
 {
-  return string(extract(_feat1).m_otherSourceID) < string(extract(_feat2).m_otherSourceID);
+  return string(extract(_feat1).otherSourceID) < string(extract(_feat2).otherSourceID);
 }
 
 

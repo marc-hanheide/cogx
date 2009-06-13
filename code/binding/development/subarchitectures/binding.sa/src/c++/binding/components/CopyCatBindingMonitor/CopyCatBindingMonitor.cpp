@@ -31,8 +31,8 @@ CopyCatBindingMonitor::CopyCatBindingMonitor(const string& _id) :
     AbstractBindingWMRepresenter(dynamic_cast<WorkingMemoryReaderProcess&>(*this))
 {
   const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
-  m_excludedFeatures += ontology.featureName(typeid(SourceID));
-  m_excludedFeatures += ontology.featureName(typeid(ThisProxyID));
+  excludedFeatures += ontology.featureName(typeid(SourceID));
+  excludedFeatures += ontology.featureName(typeid(ThisProxyID));
 }
 
 void 
@@ -69,21 +69,21 @@ CopyCatBindingMonitor::bindTheseProxiesAdded(const cdl::WorkingMemoryChange& _wm
 {
   
   vector<BindingData::ProxyPorts> outports;
-  if (m_sourceID == "") {
-    m_sourceID = _wmc.m_address.m_subarchitecture;
+  if (sourceID == "") {
+    sourceID = _wmc.address.subarchitecture;
   }
   shared_ptr<const BindingData::BindTheseProxies> 
     bindTheseProxies(loadBindingDataFromWM<BindingData::BindTheseProxies>(_wmc));
-  for(unsigned int i = 0; i < bindTheseProxies->m_proxyIDs.length(); ++i) {
-    string proxyID(bindTheseProxies->m_proxyIDs[i]);
+  for(unsigned int i = 0; i < bindTheseProxies->proxyIDs.length(); ++i) {
+    string proxyID(bindTheseProxies->proxyIDs[i]);
     log("bindTheseProxy: " + lexical_cast<string>(i) + ": " + proxyID);
     if(!existsOnWorkingMemory(proxyID)) {
       // noop... someone deleted this one real fast...
     } else {
-      const LBindingProxy& proxy(m_proxyLocalCache[proxyID]);
+      const LBindingProxy& proxy(proxyLocalCache[proxyID]);
       const FeatureSetWithRepetitions& features(proxy.comparableFeatureSetWithRepetitions());
-      {StringMap<string>::map::iterator itr(m_proxyIDMap.find(proxyID));
-	if(itr != m_proxyIDMap.end()) {
+      {StringMap<string>::map::iterator itr(proxyIDMap.find(proxyID));
+	if(itr != proxyIDMap.end()) {
 	  // if the proxy already is replicated, we delete current
 	  // replica to replace it woth updated copy (expensive, but
 	  // safe for now)
@@ -95,50 +95,50 @@ CopyCatBindingMonitor::bindTheseProxiesAdded(const cdl::WorkingMemoryChange& _wm
 	 // }
 	  //itr->second = newDataID();
 	} else {
-	  itr = m_proxyIDMap.insert(make_pair(proxy.id(),newDataID())).first;
+	  itr = proxyIDMap.insert(make_pair(proxy.id(),newDataID())).first;
 	} 
-	if(m_createdProxyIDs.find(itr->second) == m_createdProxyIDs.end()) {
-	  startNewProxy(proxy->m_type,itr->second);
-	  m_createdProxyIDs.insert(itr->second);
+	if(createdProxyIDs.find(itr->second) == createdProxyIDs.end()) {
+	  startNewProxy(proxy->type,itr->second);
+	  createdProxyIDs.insert(itr->second);
 	} else {
 	  static BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
 	  changeExistingProxy(itr->second, ontology.features()); // exclude ALL features...
 	}
-	//cout << "m_proxyIDMap" << " 1\n";
-	//for_all(m_proxyIDMap,print_pair_fct<string,string>(cout,"->"));
+	//cout << "proxyIDMap" << " 1\n";
+	//for_all(proxyIDMap,print_pair_fct<string,string>(cout,"->"));
       }
       for(FeatureSetWithRepetitions::const_iterator i = features.begin() ; i != features.end() ; ++i) {
 	for(OneTypeOfFeaturesWithRepetitions::const_iterator j = i->second.begin() ; j != i->second.end() ; ++j) {
 	  //log("added a " + (*j)->name() + "to copied feature");
-	  if(m_excludedFeatures.find((*j)->name()) == m_excludedFeatures.end())
+	  if(excludedFeatures.find((*j)->name()) == excludedFeatures.end())
 	    (*j)->addFeatureToCurrentProxy(*this, (*j)->truthValue());
 	}
       }
       
-      m_currentlyBuiltProxy->m_outPorts.m_ports.length(proxy->m_outPorts.m_ports.length());
-      for(unsigned int i = 0 ; i < proxy->m_outPorts.m_ports.length() ; ++i) {
-	StringMap<string>::map::iterator itr2(m_proxyIDMap.find(string(proxy->m_outPorts.m_ports[i].m_proxyID)));
-	if(itr2 != m_proxyIDMap.end()) {
+      currentlyBuiltProxy->outPorts.ports.length(proxy->outPorts.ports.length());
+      for(unsigned int i = 0 ; i < proxy->outPorts.ports.length() ; ++i) {
+	StringMap<string>::map::iterator itr2(proxyIDMap.find(string(proxy->outPorts.ports[i].proxyID)));
+	if(itr2 != proxyIDMap.end()) {
 	  //itr2->second = newDataID();
 	} else {
-	  itr2 = (m_proxyIDMap.insert(make_pair(string(proxy->m_outPorts.m_ports[i].m_proxyID),newDataID()))).first;
+	  itr2 = (proxyIDMap.insert(make_pair(string(proxy->outPorts.ports[i].proxyID),newDataID()))).first;
 	}
-	m_currentlyBuiltProxy->m_outPorts.m_ports[i] = proxy->m_outPorts.m_ports[i];
-	m_currentlyBuiltProxy->m_outPorts.m_ports[i].m_proxyID = CORBA::string_dup(itr2->second.c_str());
-	//cout << "m_currentlyBuiltProxy->m_outPorts.m_ports["<<i<<"].m_proxyID: " << m_currentlyBuiltProxy->m_outPorts.m_ports[i].m_proxyID<<endl;
-	m_currentlyBuiltProxy->m_outPorts.m_ports[i].m_ownerProxyID = CORBA::string_dup(currentProxyID().c_str());
-	//cout << "m_currentlyBuiltProxy->m_outPorts.m_ports["<<i<<"].m_ownerProxyID:" << m_currentlyBuiltProxy->m_outPorts.m_ports[i].m_ownerProxyID <<endl;
+	currentlyBuiltProxy->outPorts.ports[i] = proxy->outPorts.ports[i];
+	currentlyBuiltProxy->outPorts.ports[i].proxyID = CORBA::string_dup(itr2->second.c_str());
+	//cout << "currentlyBuiltProxy->outPorts.ports["<<i<<"].proxyID: " << currentlyBuiltProxy->outPorts.ports[i].proxyID<<endl;
+	currentlyBuiltProxy->outPorts.ports[i].ownerProxyID = CORBA::string_dup(currentProxyID().c_str());
+	//cout << "currentlyBuiltProxy->outPorts.ports["<<i<<"].ownerProxyID:" << currentlyBuiltProxy->outPorts.ports[i].ownerProxyID <<endl;
       }
-      outports.push_back(m_currentlyBuiltProxy->m_outPorts);
+      outports.push_back(currentlyBuiltProxy->outPorts);
 
-//      cout << "m_proxyIDMap " << " 2\n";
-//      for_all(m_proxyIDMap,print_pair_fct<string,string>(cout,"->"));
+//      cout << "proxyIDMap " << " 2\n";
+//      for_all(proxyIDMap,print_pair_fct<string,string>(cout,"->"));
 	
       // store the original proxy as source data...
       SourceData sd;
-      sd.m_type = CORBA::string_dup(typeName<BindingData::BindingProxy>().c_str());//BindingLocalOntology::BINDING_PROXY_TYPE.c_str());
-      sd.m_address.m_id = CORBA::string_dup(proxyID.c_str());
-      sd.m_address.m_subarchitecture = CORBA::string_dup(m_subarchitectureID.c_str());
+      sd.type = CORBA::string_dup(typeName<BindingData::BindingProxy>().c_str());//BindingLocalOntology::BINDING_PROXY_TYPE.c_str());
+      sd.address.id = CORBA::string_dup(proxyID.c_str());
+      sd.address.subarchitecture = CORBA::string_dup(subarchitectureID.c_str());
       
       addFeatureToCurrentProxy(sd);
       storeCurrentProxy();
@@ -155,8 +155,8 @@ CopyCatBindingMonitor::bindTheseProxiesAdded(const cdl::WorkingMemoryChange& _wm
 void 
 CopyCatBindingMonitor::proxyDeleted(const cdl::WorkingMemoryChange& _wmc)
 {
-  StringMap<string>::map::iterator itr(m_proxyIDMap.find(string(_wmc.m_address.m_id)));
-  if(itr != m_proxyIDMap.end()) {
+  StringMap<string>::map::iterator itr(proxyIDMap.find(string(_wmc.address.id)));
+  if(itr != proxyIDMap.end()) {
     // if the proxy already is replicated, we delete current
     // replica to replace it woth updated copy (expensive, but
     // safe for now)

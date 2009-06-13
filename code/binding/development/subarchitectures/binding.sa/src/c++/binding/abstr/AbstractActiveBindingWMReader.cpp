@@ -1,5 +1,5 @@
 #include "AbstractActiveBindingWMReader.hpp"
-#include "binding/idl/BindingData.hh"
+#include "BindingData.hpp"
 #include "cast/architecture/ChangeFilterFactory.hpp"
 
 namespace Binding {
@@ -33,12 +33,12 @@ using namespace boost;
     ManagedProcess::configure(_config);
     
     if(_config[BindingData::BINDING_SUBARCH_CONFIG_KEY] != "") {
-      m_bindingSA = _config[BindingData::BINDING_SUBARCH_CONFIG_KEY];
-      log("setting binding subarch to: " + m_bindingSA);
+      bindingSA = _config[BindingData::BINDING_SUBARCH_CONFIG_KEY];
+      log("setting binding subarch to: " + bindingSA);
     }
     else {
       log("binding subarch not specified, assuming it\'s local to monitor");
-      m_bindingSA = m_subarchitectureID;
+      bindingSA = subarchitectureID;
     }
     
   }

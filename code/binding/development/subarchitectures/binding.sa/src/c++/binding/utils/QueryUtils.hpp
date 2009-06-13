@@ -7,21 +7,21 @@
 namespace Binding {
 /// helps creating queries
 class QueryUtils {
-  cast::PrivilegedManagedProcess& m_component;
-  const std::string m_bindingSubarchID;
-  const std::string& bindingSubarchID() {return m_bindingSubarchID;}
+  cast::PrivilegedManagedProcess& component;
+  const std::string bindingSubarchID;
+  const std::string& bindingSubarchID() {return bindingSubarchID;}
 public:
   QueryUtils(cast::PrivilegedManagedProcess& _component,
 	     const std::string& _bindingSubarchID) 
-    : m_component(_component),
-      m_bindingSubarchID(_bindingSubarchID){}
+    : component(_component),
+      bindingSubarchID(_bindingSubarchID){}
 
   static const BindingQueries::QueryParameters& 
   defaultQueryParameters() {
     static bool flag(false);
     static BindingQueries::QueryParameters par;
     if(!flag) {
-      par.m_boundProxyInclusion = BindingQueries::INCLUDE_BOUND;
+      par.boundProxyInclusion = BindingQueries::INCLUDE_BOUND;
     }
     return par;
   }
@@ -29,7 +29,7 @@ public:
   BindingQueries::QueryParameters
   constructQueryParameters(BindingQueries::IncludeBoundProxies _inc) {
     BindingQueries::QueryParameters par;
-    par.m_boundProxyInclusion = _inc;
+    par.boundProxyInclusion = _inc;
     return par;
   }
   
@@ -98,13 +98,13 @@ private:
 		    const std::string& _proxyID,
 		    const BindingQueries::QueryParameters& _par) {
     BindingQueries::BasicQuery* query = new BindingQueries::BasicQuery;
-    query->m_parameters = _par;
-    query->m_proxyID = CORBA::string_dup(_proxyID.c_str());
-    query->m_featurePointer = _ptr;
-    query->m_processed = false;
-    query->m_answer = cast::cdl::triIndeterminate;
-    std::string qid(m_component.newDataID());
-    m_component.addToWorkingMemory(qid, bindingSubarchID(), query);
+    query->parameters = _par;
+    query->proxyID = CORBA::string_dup(_proxyID.c_str());
+    query->featurePointer = _ptr;
+    query->processed = false;
+    query->answer = BindingData::INDETERMINATETB;
+    std::string qid(component.newDataID());
+    component.addToWorkingMemory(qid, bindingSubarchID(), query);
     return qid;
   }
   
@@ -112,17 +112,17 @@ private:
   addAdvancedQueryToWM(const BindingData::FeaturePointer& _ptr,
 		       const BindingQueries::QueryParameters& _par) {
     BindingQueries::AdvancedQuery* query = new BindingQueries::AdvancedQuery;
-    query->m_parameters = _par;
-    query->m_featurePointer = _ptr;
-    query->m_hasTheFeatureProxyIDs.length(0);
-    query->m_hasTheFeatureUnionIDs.length(0);
-    query->m_matchingProxyIDs.length(0);
-    query->m_matchingUnionIDs.length(0);
-    query->m_nonMatchingProxyIDs.length(0);
-    query->m_nonMatchingUnionIDs.length(0);
-    query->m_processed = false;
-    std::string qid(m_component.newDataID());
-    m_component.addToWorkingMemory(qid, bindingSubarchID(), query, cast::cdl::BLOCKING);
+    query->parameters = _par;
+    query->featurePointer = _ptr;
+    query->hasTheFeatureProxyIDs.length(0);
+    query->hasTheFeatureUnionIDs.length(0);
+    query->matchingProxyIDs.length(0);
+    query->matchingUnionIDs.length(0);
+    query->nonMatchingProxyIDs.length(0);
+    query->nonMatchingUnionIDs.length(0);
+    query->processed = false;
+    std::string qid(component.newDataID());
+    component.addToWorkingMemory(qid, bindingSubarchID(), query, cast::cdl::BLOCKING);
     //cout << "Advanced query added: " << qid << endl;
     return qid;
   }
@@ -133,15 +133,15 @@ private:
 		  BindingFeaturesCommon::TruthValue _truthValue) {
     BindingData::FeaturePointer ret;
     FeatureT* feature_ptr = new FeatureT(_feature);
-    feature_ptr->m_parent.m_immediateProxyID = CORBA::string_dup("");
-    feature_ptr->m_parent.m_truthValue = _truthValue;
-    ret.m_address = CORBA::string_dup(m_component.newDataID().c_str());
+    feature_ptr->parent.immediateProxyID = CORBA::string_dup("");
+    feature_ptr->parent.truthValue = _truthValue;
+    ret.address = CORBA::string_dup(component.newDataID().c_str());
     static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
     
-    ret.m_type    = CORBA::string_dup(ontology.featureName(typeid(FeatureT)).c_str());
-    ret.m_immediateProxyID = CORBA::string_dup("");
-    m_component.addToWorkingMemory(std::string(ret.m_address), 
-				   m_bindingSubarchID, 
+    ret.type    = CORBA::string_dup(ontology.featureName(typeid(FeatureT)).c_str());
+    ret.immediateProxyID = CORBA::string_dup("");
+    component.addToWorkingMemory(std::string(ret.address), 
+				   bindingSubarchID, 
 				   feature_ptr);
     
     return ret;
@@ -151,11 +151,11 @@ private:
   BindingData::FeaturePointer
   dummyQueryFeature() {
     BindingData::FeaturePointer ptr;
-    ptr.m_immediateProxyID = CORBA::string_dup("");
-    ptr.m_address= CORBA::string_dup("");
+    ptr.immediateProxyID = CORBA::string_dup("");
+    ptr.address= CORBA::string_dup("");
     static const BindingFeatureOntology& 
       ontology(BindingFeatureOntology::construct());
-    ptr.m_type = 
+    ptr.type = 
       CORBA::string_dup(ontology.featureName(typeid(FeatureT)).c_str());
     return ptr;
   }
@@ -178,17 +178,17 @@ operator<<(std::ostream& _out, const BindingData::WorkingMemoryIDList& _l)
 std::ostream&
 operator<<(std::ostream& _out, const BindingQueries::AdvancedQuery& _q) {
   _out << "AdvancedQuery[" 
-       << ((_q.m_parameters.m_boundProxyInclusion == 
+       << ((_q.parameters.boundProxyInclusion == 
 	    BindingQueries::INCLUDE_BOUND)?"INCLUDE_BOUND":"EXCLUDE_BOUND") 
        << "]{\n"
-       << "  feature: " << _q.m_featurePointer.m_address << " (" 
-       << _q.m_featurePointer.m_type << ")\n"
-       << "  hasTheFeatureProxyIDs: " << _q.m_hasTheFeatureProxyIDs << "\n"
-       << "  hasTheFeatureUnionIDs: " << _q.m_hasTheFeatureUnionIDs << "\n"
-       << "  m_matchingProxyIDs" << _q.m_matchingProxyIDs  << "\n"
-       << "  m_matchingUnionIDs" << _q.m_matchingUnionIDs  << "\n"
-       << "  m_nonMatchingProxyIDs" << _q.m_nonMatchingProxyIDs  << "\n"
-       << "  m_nonMatchingUnionIDs" << _q.m_nonMatchingUnionIDs << "\n"
+       << "  feature: " << _q.featurePointer.address << " (" 
+       << _q.featurePointer.type << ")\n"
+       << "  hasTheFeatureProxyIDs: " << _q.hasTheFeatureProxyIDs << "\n"
+       << "  hasTheFeatureUnionIDs: " << _q.hasTheFeatureUnionIDs << "\n"
+       << "  matchingProxyIDs" << _q.matchingProxyIDs  << "\n"
+       << "  matchingUnionIDs" << _q.matchingUnionIDs  << "\n"
+       << "  nonMatchingProxyIDs" << _q.nonMatchingProxyIDs  << "\n"
+       << "  nonMatchingUnionIDs" << _q.nonMatchingUnionIDs << "\n"
        << "}\n";
     return _out;
 }

@@ -3,7 +3,7 @@
 
 #include <ostream>
 #include <string>
-#include <binding/idl/BindingFeaturesCommon.hh>
+#include <BindingFeaturesCommon.hpp>
 #include <binding/idl/BindingFeatures.hh>
 
 namespace Binding {
@@ -13,13 +13,13 @@ namespace Binding {
 inline 
 bool 
 operator==(const BindingFeaturesCommon::ReferenceFrame& _r1,const BindingFeaturesCommon::ReferenceFrame& _r2){
-  return std::string(_r1.m_coordinateSystemID) == std::string(_r2.m_coordinateSystemID);
+  return std::string(_r1.coordinateSystemID) == std::string(_r2.coordinateSystemID);
 }
 
 inline 
 bool 
 operator<(const BindingFeaturesCommon::ReferenceFrame& _r1,const BindingFeaturesCommon::ReferenceFrame& _r2){
-  return std::string(_r1.m_coordinateSystemID) < std::string(_r2.m_coordinateSystemID);
+  return std::string(_r1.coordinateSystemID) < std::string(_r2.coordinateSystemID);
 }
 
 inline bool operator!=(const BindingFeaturesCommon::ReferenceFrame& _r1,const BindingFeaturesCommon::ReferenceFrame& _r2){
@@ -29,18 +29,18 @@ inline bool operator!=(const BindingFeaturesCommon::ReferenceFrame& _r1,const Bi
 inline 
 bool 
 operator<(const BindingFeaturesCommon::Vector2& _v1,const BindingFeaturesCommon::Vector2& _v2){
-  if(_v1.m_x != _v2.m_x)
-    return _v1.m_x < _v2.m_x;
-  if(_v1.m_y != _v2.m_y)
-    return _v1.m_y < _v2.m_y;
+  if(_v1.x != _v2.x)
+    return _v1.x < _v2.x;
+  if(_v1.y != _v2.y)
+    return _v1.y < _v2.y;
   return false;
 }
 
 inline 
 bool 
 operator==(const BindingFeaturesCommon::Vector2& _v1,const BindingFeaturesCommon::Vector2& _v2){
-  if(_v1.m_x == _v2.m_x && 
-     _v1.m_y == _v2.m_y)
+  if(_v1.x == _v2.x && 
+     _v1.y == _v2.y)
     return true;
   return false;
 }
@@ -53,10 +53,10 @@ inline bool operator!=(const BindingFeaturesCommon::Vector2& _v1,const BindingFe
 inline 
 bool 
 operator<(const BindingFeaturesCommon::Line2& _l1,const BindingFeaturesCommon::Line2& _l2){
-  if(_l1.m_point1 != _l2.m_point1)
-    return _l1.m_point1 < _l2.m_point1;
-  if(_l1.m_point2 != _l2.m_point2)
-    return _l1.m_point2 < _l2.m_point2;
+  if(_l1.point1 != _l2.point1)
+    return _l1.point1 < _l2.point1;
+  if(_l1.point2 != _l2.point2)
+    return _l1.point2 < _l2.point2;
   return false;
 }
 
@@ -64,21 +64,21 @@ operator<(const BindingFeaturesCommon::Line2& _l1,const BindingFeaturesCommon::L
 inline
 std::ostream&
 operator<<(std::ostream& _out, const BindingFeaturesCommon::Vector2& _v) {
-  _out << "(" << _v.m_x << "," << _v.m_y << ")";
+  _out << "(" << _v.x << "," << _v.y << ")";
   return _out;
 }
 
 inline
 std::ostream&
 operator<<(std::ostream& _out, const BindingFeaturesCommon::Line2& _l) {
-  _out << _l.m_point1 << "->" << _l.m_point2;
+  _out << _l.point1 << "->" << _l.point2;
   return _out;
 }
 
 inline
 std::ostream&
 operator<<(std::ostream& _out, const BindingFeaturesCommon::ReferenceFrame& _f) {
-  _out << _f.m_coordinateSystemID; 
+  _out << _f.coordinateSystemID; 
   return _out;
 }
 

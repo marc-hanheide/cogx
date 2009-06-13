@@ -2,7 +2,7 @@
 #define BINDING_GRAPH_LOADER_HPP_
 #include <binding/utils/Extractors.hpp>
 #include <binding/utils/Misc.hpp>
-#include <binding/idl/BindingData.hh>
+#include <BindingData.hpp>
 #include <binding/abstr/AbstractBindingWMRepresenter.hpp>
 #include <functional>
 #include <deque>
@@ -19,14 +19,14 @@ namespace Binding {
 template <typename ExtractorT> 
 class extractor_result_collector
 {
-  const ExtractorT& m_extractor;
-  std::set<std::string> m_ids;
+  const ExtractorT& extractor;
+  std::set<std::string> ids;
 public:
-  extractor_result_collector(const ExtractorT& _extractor) : m_extractor(_extractor) {}
-  const std::set<std::string>& ids() {return m_ids;}
+  extractor_result_collector(const ExtractorT& _extractor) : extractor(_extractor) {}
+  const std::set<std::string>& ids() {return ids;}
   void operator()(const std::pair<const std::string, typename ExtractorT::local_ptr_type>& _arg) {
-    std::set<std::string> new_ids(m_extractor(_arg.second));
-    m_ids.insert(new_ids.begin(), new_ids.end());
+    std::set<std::string> new_ids(extractor(_arg.second));
+    ids.insert(new_ids.begin(), new_ids.end());
   }
 };
 
@@ -49,16 +49,16 @@ result_collector(const ExtractorT& _extractor) {
 /// may actually have new links that should have been followed.
 struct 
 BindingGraphHandler {
-  BindingGraphHandler(AbstractBindingWMRepresenter& _component) : m_component(_component){}
+  BindingGraphHandler(AbstractBindingWMRepresenter& _component) : component(_component){}
   ProxySet allProxiesFromWM() {
     std::vector<boost::shared_ptr<const cast::CASTData<BindingData::BindingProxy> > > ptrs;
 #warning very inefficient way of loading data
-//    assert(!m_component.bindingSubarchID().empty());
-    if(m_component.bindingSubarchID().empty())
-      m_component.setBindingSubarchID(m_component.component().getSubarchitectureID());
-    m_component.component().getWorkingMemoryEntries<BindingData::BindingProxy>(m_component.bindingSubarchID(),0,ptrs); // sets ptrs
+//    assert(!component.bindingSubarchID().empty());
+    if(component.bindingSubarchID().empty())
+      component.setBindingSubarchID(component.component().getSubarchitectureID());
+    component.component().getWorkingMemoryEntries<BindingData::BindingProxy>(component.bindingSubarchID(),0,ptrs); // sets ptrs
     std::set<std::string> ids = 
-      for_all(ptrs,insert_getID<boost::shared_ptr<const cast::CASTData<BindingData::BindingProxy> > >()).m_set;
+      for_all(ptrs,insert_getID<boost::shared_ptr<const cast::CASTData<BindingData::BindingProxy> > >()).set;
     assert(ids.size() == ptrs.size());
     ProxySet ret = loadProxies(ids);
     return ret;
@@ -67,21 +67,21 @@ BindingGraphHandler {
   UnionSet allUnionssFromWM() {
     std::vector<boost::shared_ptr<const cast::CASTData<BindingData::BindingUnion> > > ptrs;
 #warning very inefficient way of loading data
-    m_component.component().getWorkingMemoryEntries<BindingData::BindingUnion>(m_component.bindingSubarchID(),0,ptrs); // sets ptrs
+    component.component().getWorkingMemoryEntries<BindingData::BindingUnion>(component.bindingSubarchID(),0,ptrs); // sets ptrs
     std::set<std::string> ids = 
-      for_all(ptrs,insert_getID<boost::shared_ptr<const cast::CASTData<BindingData::BindingUnion> > >()).m_set;
+      for_all(ptrs,insert_getID<boost::shared_ptr<const cast::CASTData<BindingData::BindingUnion> > >()).set;
     UnionSet ret = loadUnions(ids);
     return ret;
   }
 
   /// returns all proxies locally stored in the GraphLoader
   const ProxySet& allLoadedProxies() {
-    return m_allLoadedProxies;
+    return allLoadedProxies;
   }
 
   /// returns all unions locally stored in the GraphLoader
   const UnionSet& allLoadedUnions() {
-    return m_allLoadedUnions;
+    return allLoadedUnions;
   }
   
   ProxySet extractProxiesFromProxies(const ProxySet& _proxies, 
@@ -125,13 +125,13 @@ BindingGraphHandler {
 public:
 
   ProxyPtr& loadProxy(const std::string& _id) {
-    ProxySet::iterator itr = m_allLoadedProxies.find(_id);
-    if(itr == m_allLoadedProxies.end()) {
+    ProxySet::iterator itr = allLoadedProxies.find(_id);
+    if(itr == allLoadedProxies.end()) {
       try {
-	itr = m_allLoadedProxies.insert(make_pair(_id,m_component.m_proxyLocalCache.get(_id).getLocalPtr())).first;
+	itr = allLoadedProxies.insert(make_pair(_id,component.proxyLocalCache.get(_id).getLocalPtr())).first;
       } 
       catch (const cast::DoesNotExistOnWMException& _e ) {
-	m_component.component().log(std::string("while loading a proxy in BindingGraphHandler: (") + _e.what() +")");
+	component.component().log(std::string("while loading a proxy in BindingGraphHandler: (") + _e.what() +")");
 	throw _e;
       }
     }
@@ -147,17 +147,17 @@ private:
 public:
   /// returns a function pointer to \p loadProxy of \p this object
   boost::function<ProxyPtr& (boost::reference_wrapper<const std::string>)> loadProxyFctPtr() const {
-    return std::bind1st(mem_fun(&BindingGraphHandler::_loadProxy), this);
+    return std::bind1st(mefun(&BindingGraphHandler::_loadProxy), this);
   }
   
   UnionPtr& loadUnion(const std::string _id) {
-    UnionSet::iterator itr = m_allLoadedUnions.find(_id);
-    if(itr == m_allLoadedUnions.end()) {
+    UnionSet::iterator itr = allLoadedUnions.find(_id);
+    if(itr == allLoadedUnions.end()) {
       try {
-	itr = m_allLoadedUnions.insert(make_pair(_id,m_component.m_unionLocalCache.get(_id).getLocalPtr())).first;
+	itr = allLoadedUnions.insert(make_pair(_id,component.unionLocalCache.get(_id).getLocalPtr())).first;
       } 
       catch (const cast::DoesNotExistOnWMException& _e ) {
-	m_component.component().log(std::string("while loading a union in BindingGraphHandler: (") + _e.what() +")");
+	component.component().log(std::string("while loading a union in BindingGraphHandler: (") + _e.what() +")");
 	throw _e;
       }
     }
@@ -173,27 +173,27 @@ private:
 public:
   /// returns a function pointer to \p loadProxy of \p this object
   boost::function<UnionPtr& (boost::reference_wrapper<const std::string>)> loadUnionFctPtr() const {
-    return std::bind1st(mem_fun(&BindingGraphHandler::_loadUnion), this);
+    return std::bind1st(mefun(&BindingGraphHandler::_loadUnion), this);
   }
 
 private:  
   struct loadProxiesFct {
-    ProxySet m_proxies;
-    BindingGraphHandler& m_handler;
-    loadProxiesFct(BindingGraphHandler& _handler) : m_handler(_handler) {}
+    ProxySet proxies;
+    BindingGraphHandler& handler;
+    loadProxiesFct(BindingGraphHandler& _handler) : handler(_handler) {}
     ProxyPtr& operator()(const std::string& _id) {
-      ProxyPtr& ptr(m_handler.loadProxy(_id));
-      m_proxies.insert(make_pair(_id,ptr));
+      ProxyPtr& ptr(handler.loadProxy(_id));
+      proxies.insert(make_pair(_id,ptr));
       return ptr;
     }
   };
   struct loadUnionsFct {
-    UnionSet m_unions;
-    BindingGraphHandler& m_handler;
-    loadUnionsFct(BindingGraphHandler& _handler) : m_handler(_handler) {}
+    UnionSet unions;
+    BindingGraphHandler& handler;
+    loadUnionsFct(BindingGraphHandler& _handler) : handler(_handler) {}
     UnionPtr& operator()(const std::string& _id) {
-      UnionPtr& ptr(m_handler.loadUnion(_id));
-      m_unions.insert(make_pair(_id,ptr));
+      UnionPtr& ptr(handler.loadUnion(_id));
+      unions.insert(make_pair(_id,ptr));
       return ptr;
     }
   };
@@ -204,13 +204,13 @@ public:
   // nah: made templated for any iterable containing strings... hope it makes sense
   template <class StringContainer>
   ProxySet loadProxies(const StringContainer & _ids) {
-    return for_each(_ids.begin(),_ids.end(),loadProxiesFct(*this)).m_proxies;
+    return for_each(_ids.begin(),_ids.end(),loadProxiesFct(*this)).proxies;
   }
 
 
 //   /// loads a number of proxies from a set of ids (calls \p loadProxy)
 //   ProxySet loadProxies(const std::set<std::string>& _ids) {
-//     return for_each(_ids.begin(),_ids.end(),loadProxiesFct(*this)).m_proxies;
+//     return for_each(_ids.begin(),_ids.end(),loadProxiesFct(*this)).proxies;
 //   }
 
   /// loads a number of proxies from a set of ids (calls \p loadProxy)
@@ -227,27 +227,27 @@ public:
   ProxySet loadProxies(const std::string& _id) {
     loadProxiesFct loader(*this);
     loader(_id);
-    return loader.m_proxies;
+    return loader.proxies;
   }
   
   /// refreshes all loaded proxies from WM
   void reloadAllLoadedProxies() {
-    std::set<std::string> ids = for_all(m_allLoadedProxies,
-					insert_first<std::pair<const std::string,ProxyPtr> >()).m_set;
-    m_allLoadedProxies.clear();
+    std::set<std::string> ids = for_all(allLoadedProxies,
+					insert_first<std::pair<const std::string,ProxyPtr> >()).set;
+    allLoadedProxies.clear();
     loadProxies(ids);
   }
 
   /// loads a number of proxies from a set of ids (calls \p loadProxy)
   UnionSet loadUnions(const std::set<std::string>& _ids) {
-    return for_each(_ids.begin(),_ids.end(),loadUnionsFct(*this)).m_unions;
+    return for_each(_ids.begin(),_ids.end(),loadUnionsFct(*this)).unions;
   }
 
   /// refreshes all loaded unions from WM
   void reloadAllLoadedUnions() {
-    std::set<std::string> ids = for_all(m_allLoadedUnions,
-					insert_first<std::pair<const std::string,UnionPtr> >()).m_set;
-    m_allLoadedUnions.clear();
+    std::set<std::string> ids = for_all(allLoadedUnions,
+					insert_first<std::pair<const std::string,UnionPtr> >()).set;
+    allLoadedUnions.clear();
     loadUnions(ids);
   }
   
@@ -259,19 +259,19 @@ public:
   
   /// clears the loaded data completely
   void purgeAllLoadedData() {
-    m_allLoadedUnions.clear();
-    m_allLoadedProxies.clear();
+    allLoadedUnions.clear();
+    allLoadedProxies.clear();
   }
 
 
   
 private:
   /// contains already expanded proxies (used to avoid reloading, so that all parts of the graphs are frozen in time)
-  UnionSet m_allLoadedUnions;
+  UnionSet allLoadedUnions;
   /// contains already expanded unions (used to avoid reloading, so that all parts of the graphs are frozen in time)
-  ProxySet m_allLoadedProxies; 
+  ProxySet allLoadedProxies; 
   /// contains the resulting proxies
-  AbstractBindingWMRepresenter& m_component;
+  AbstractBindingWMRepresenter& component;
   /// not CopyConstructible
   BindingGraphHandler(const BindingGraphHandler&);
   /// not assignable

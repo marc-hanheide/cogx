@@ -18,22 +18,22 @@ class BindingFeatureOntology;
 class FeatureProperties {
 public:
   FeatureProperties() 
-    : m_isInvariant(false),
-      m_isSimplex(false),
-      m_isDemanded(false){}//,m_isImplemented(false) {};
+    : isInvariant(false),
+      isSimplex(false),
+      isDemanded(false){}//,isImplemented(false) {};
   /// an invariant feature should be constant for an binding union
   /// if true, then the feature type is considered
   /// invariant enough to be part of the binding
   /// score. Visibility is an example of a feature that is not
   /// invariant. Colour is an example of a feature that is invariant.
-  bool m_isInvariant;
+  bool isInvariant;
   /// if true, then the feature type can have only one value 
-  bool m_isSimplex;
+  bool isSimplex;
   /// A feature that is demanded must be defined in the proxy
-  bool m_isDemanded;
+  bool isDemanded;
   /// A property for features that are being defined in the binding
   /// IDL etc but are not yet meant to be used.
-//  bool m_isImplemented;
+//  bool isImplemented;
 
   friend std::ostream& operator<<(std::ostream&,const FeatureProperties&);
 
@@ -49,22 +49,22 @@ private:
   /// does not need to be compared to feature A.  If you want two
   /// features to be comparable "in both directions", you need to
   /// declare them both comparable in both feature declarations.
-  std::set<std::string> m_comparableInternally;
+  std::set<std::string> comparableInternally;
   /// conatins a set of features that are comparable by some other
   /// subarchitecture. This will result in a \p
   /// BindingData::FeatureComparison being added to WM and this will
   /// then (hopefully) be overwritten by the result of the external
-  /// evaluation. The \p m_comparableExternally set may overlap the \p
-  /// m_comparableInternally set in which case the result of the
+  /// evaluation. The \p comparableExternally set may overlap the \p
+  /// comparableInternally set in which case the result of the
   /// internal comparison will be used for scoring until the external
   /// result is received.
-  std::set<std::string> m_comparableExternally;
+  std::set<std::string> comparableExternally;
 
   /// returns true if \p _feature is a member of either \p
-  /// m_comparableExternally or \p m_comparableInternally
+  /// comparableExternally or \p comparableInternally
   bool comparable(const std::string& _feature) const {
-    return m_comparableExternally.find(_feature) != m_comparableExternally.end()
-      || m_comparableInternally.find(_feature) != m_comparableInternally.end();
+    return comparableExternally.find(_feature) != comparableExternally.end()
+      || comparableInternally.find(_feature) != comparableInternally.end();
   }
 };
 

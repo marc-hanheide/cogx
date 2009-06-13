@@ -1,7 +1,12 @@
 PROJECT(BindingSubarch)
 LINK_LIBRARIES(boost_regex)
 
-# Set the sources.
+
+include_directories(../autogen)
+include_directories(${COGX_ROOT}/tools/cast/src/c++/cast/slice)
+#include_directories(.)
+
+
 SET(SOURCES utils/BindingScoreUtils.cpp
 	    utils/LocalClasses.cpp
 	    utils/BindingUtils.cpp
@@ -55,9 +60,9 @@ ENDIF(BINDING_BUILD_EXPERIMENTAL_FEATURES)
 
 # Add libraries to link against.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${OMNIORB4_LINK_FLAGS} ${OMNIORB4_CFLAGS})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} FrameworkInterface FrameworkIDL FrameworkCore)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore CASTArchitecture CASTIDL)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} BindingIDL)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} FrameworkInterface FrameworkIce FrameworkCore)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore CASTArchitecture CDL)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} BindingIce)
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 

@@ -30,7 +30,7 @@ protected:
   } 
 
 private:
-  cast::CASTDataCache<BindingFeatures::Concept> m_featureCacheConcept;
+  cast::CASTDataCache<BindingFeatures::Concept> featureCacheConcept;
 };
 
 } // namespace Binding 

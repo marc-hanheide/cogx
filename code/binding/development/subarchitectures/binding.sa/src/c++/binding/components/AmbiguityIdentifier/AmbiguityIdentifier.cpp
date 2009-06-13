@@ -103,31 +103,31 @@ void
 AmbiguityIdentifier::identifyDisambiguation(const cdl::WorkingMemoryChange & _wmc) {
   shared_ptr<const BindingData::BestUnionsForProxy> 
     best(loadBindingDataFromWM<BindingData::BestUnionsForProxy>(_wmc));
-  if(best->m_unionIDs.length() == 1)
+  if(best->unionIDs.length() == 1)
     return; // i.e. do nothing...
 
-  assert(best->m_unionIDs.length() != 0);
+  assert(best->unionIDs.length() != 0);
   
   BindingData::Ambiguity* issue = new BindingData::Ambiguity;
   
   
-  issue->m_proxyID = CORBA::string_dup(best->m_proxyID);
-  issue->m_unionIDs.length(best->m_unionIDs.length());
-  for(unsigned int i = 0 ; i < issue->m_unionIDs.length() ; ++i) {
-    issue->m_unionIDs[i] = CORBA::string_dup(best->m_unionIDs[i]);
+  issue->proxyID = CORBA::string_dup(best->proxyID);
+  issue->unionIDs.length(best->unionIDs.length());
+  for(unsigned int i = 0 ; i < issue->unionIDs.length() ; ++i) {
+    issue->unionIDs[i] = CORBA::string_dup(best->unionIDs[i]);
   }
   
   try {
     
-    string proxyID(issue->m_proxyID);
-    const LBindingProxy& proxy(m_proxyLocalCache[proxyID]);
+    string proxyID(issue->proxyID);
+    const LBindingProxy& proxy(proxyLocalCache[proxyID]);
     const BindingFeatureOntology& ont(BindingFeatureOntology::construct());
     const map<string,set<string> >& proxy2unionComparable(ont.proxy2unionComparable());
     const map<string,set<string> >& union2proxyComparable(ont.union2proxyComparable());
     set<string> missing_union_features;
     set<string> missing_proxy_features;
-    for(unsigned int i = 0 ; i < proxy->m_proxyFeatures.length() ; ++i) {
-      const string type(proxy->m_proxyFeatures[i].m_type);
+    for(unsigned int i = 0 ; i < proxy->proxyFeatures.length() ; ++i) {
+      const string type(proxy->proxyFeatures[i].type);
       map<string,set<string> >::const_iterator comp(proxy2unionComparable.find(type));
       if(comp != proxy2unionComparable.end()) // comparable union features found
 	missing_union_features.insert(comp->second.begin(),comp->second.end());
@@ -136,12 +136,12 @@ AmbiguityIdentifier::identifyDisambiguation(const cdl::WorkingMemoryChange & _wm
     //  Binding::print_set(cout, missing_union_features);  
     
     
-    for(unsigned int i = 0 ; i < issue->m_unionIDs.length() ; ++i) {
-      string unionID(issue->m_unionIDs[i]); 
-      const LBindingUnion& binding_union(m_unionLocalCache[unionID]);
-      for(unsigned int j = 0 ; j < binding_union->m_unionFeatures.length() ; ++j) {
-	const string type(binding_union->m_unionFeatures[j].m_type);
-	const string immediate(binding_union->m_unionFeatures[j].m_immediateProxyID);
+    for(unsigned int i = 0 ; i < issue->unionIDs.length() ; ++i) {
+      string unionID(issue->unionIDs[i]); 
+      const LBindingUnion& binding_union(unionLocalCache[unionID]);
+      for(unsigned int j = 0 ; j < binding_union->unionFeatures.length() ; ++j) {
+	const string type(binding_union->unionFeatures[j].type);
+	const string immediate(binding_union->unionFeatures[j].immediateProxyID);
 	// erase types that actually are represented on the unions...
 	if(immediate != proxyID) {
 	  // ... but do not erase it if it's directly from the proxy, because then it wasn't used for scoring in the first place
@@ -157,12 +157,12 @@ AmbiguityIdentifier::identifyDisambiguation(const cdl::WorkingMemoryChange & _wm
     }
 
     /*#warning, serious optimization issue here
-      for(unsigned int i = 0 ; i < issue->m_unionIDs.length() ; ++i) {
-      string unionID(issue->m_unionIDs[i]); 
-      const LBindingUnion& binding_union(m_unionLocalCache[unionID]);
-      for(unsigned int j = 0 ; j < binding_union->m_unionFeatures.length() ; ++j) {
-      string type(binding_union->m_unionFeatures[j].m_type);
-      string ownerID(string(toFeature(binding_union->m_unionFeatures[j])->immediateProxyID())); // EXPENSIVE
+      for(unsigned int i = 0 ; i < issue->unionIDs.length() ; ++i) {
+      string unionID(issue->unionIDs[i]); 
+      const LBindingUnion& binding_union(unionLocalCache[unionID]);
+      for(unsigned int j = 0 ; j < binding_union->unionFeatures.length() ; ++j) {
+      string type(binding_union->unionFeatures[j].type);
+      string ownerID(string(toFeature(binding_union->unionFeatures[j])->immediateProxyID())); // EXPENSIVE
       if(ownerID == proxyID) { // do not count these!
       map<string,set<string> >::const_iterator comp(union2proxyComparable.find(type));
       if(comp != union2proxyComparable.end()) {
@@ -179,17 +179,17 @@ AmbiguityIdentifier::identifyDisambiguation(const cdl::WorkingMemoryChange & _wm
     // Binding::print_set(cout, missing_union_features);  
     {
       unsigned j = 0;
-      issue->m_missingUnionFeatures.length(missing_union_features.size());
+      issue->missingUnionFeatures.length(missing_union_features.size());
       for(set<string>::const_iterator i = missing_union_features.begin();
 	  i != missing_union_features.end();
 	  ++i,++j) {
-	issue->m_missingUnionFeatures[j] = CORBA::string_dup(i->c_str());
+	issue->missingUnionFeatures[j] = CORBA::string_dup(i->c_str());
       }
     }
     //  cout << "missing_proxy_features: ";
     //  Binding::print_set(cout,missing_proxy_features);
-    for(unsigned int i = 0 ; i < proxy->m_proxyFeatures.length() ; ++i) {
-      string type(proxy->m_proxyFeatures[i].m_type);
+    for(unsigned int i = 0 ; i < proxy->proxyFeatures.length() ; ++i) {
+      string type(proxy->proxyFeatures[i].type);
       // erase types that actually do exist in proxy
       missing_proxy_features.erase(type);
     }
@@ -197,14 +197,14 @@ AmbiguityIdentifier::identifyDisambiguation(const cdl::WorkingMemoryChange & _wm
     //Binding::print_set(cout,missing_proxy_features);
     {
       unsigned j = 0;
-      issue->m_missingProxyFeatures.length(missing_proxy_features.size());
+      issue->missingProxyFeatures.length(missing_proxy_features.size());
       for(set<string>::const_iterator i = missing_proxy_features.begin();
 	  i != missing_proxy_features.end();
 	  ++i,++j) {
-	issue->m_missingProxyFeatures[j] = CORBA::string_dup(i->c_str());
+	issue->missingProxyFeatures[j] = CORBA::string_dup(i->c_str());
       }
     }
-    if(m_bLogOutput) {
+    if(bLogOutput) {
       //cout << "storing the Ambiguity:\n " << *issue << endl;  
       analyseAmbiguity(cout,*this,*issue);
       cout << endl;
@@ -230,8 +230,8 @@ void
 AmbiguityIdentifier::proxyDeleted(const cdl::WorkingMemoryChange & _wmc)
 {
   try {
-    if(existsOnWorkingMemory(string(_wmc.m_address.m_id)+ambiguityIDPostFix())) {
-      deleteFromWorkingMemory(string(_wmc.m_address.m_id)+ambiguityIDPostFix());
+    if(existsOnWorkingMemory(string(_wmc.address.id)+ambiguityIDPostFix())) {
+      deleteFromWorkingMemory(string(_wmc.address.id)+ambiguityIDPostFix());
     }
   } catch(const DoesNotExistOnWMException& _e) {
     log("Caught this in AmbiguityIdentifier::proxyDeleted(..) " + string(_e.what()));

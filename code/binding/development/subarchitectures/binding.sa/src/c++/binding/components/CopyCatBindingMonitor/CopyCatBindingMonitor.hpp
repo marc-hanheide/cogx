@@ -18,11 +18,11 @@ class CopyCatBindingMonitor :
     public AbstractBindingWMRepresenter
 {
   /// maps from the IDs of the local binder's proxies to the corresponding IDs of the target binder
-  cast::StringMap<std::string>::map m_proxyIDMap;
+  cast::StringMap<std::string>::map proxyIDMap;
   // proxies that have actually been created on the virtual binder
-  StringSet m_createdProxyIDs;
+  StringSet createdProxyIDs;
   /// features that are excluded when copying proxies
-  std::set<std::string> m_excludedFeatures;
+  std::set<std::string> excludedFeatures;
 
 public:
   CopyCatBindingMonitor(const std::string &_id);

@@ -36,9 +36,9 @@ ComparatorCache::_get(const AbstractFeature& _proxyF,
   }
   
   /*  const std::set<std::string>& 
-      externally_comparable_set(_proxyF.properties().m_comparableExternally);
+      externally_comparable_set(_proxyF.properties().comparableExternally);
       const std::set<std::string>& 
-      internally_comparable_set(_proxyF.properties().m_comparableInternally);*/
+      internally_comparable_set(_proxyF.properties().comparableInternally);*/
   static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   
   const std::set<std::string>& 
@@ -66,12 +66,12 @@ ComparatorCache::_get(const AbstractFeature& _proxyF,
   const string comparisonID(combinedID(_proxyF.featureID(),_unionF.featureID()));
   
   cast::StringMap<boost::logic::tribool>::map::const_iterator 
-    pos(m_internalCache.find(comparisonID));
+    pos(internalCache.find(comparisonID));
   
   // if the comparison is already internally represented, then just
   // return what is cached
-  if(pos != m_internalCache.end()) {
-    m_bindingScorer.log("used internalcache for " + comparisonID);
+  if(pos != internalCache.end()) {
+    bindingScorer.log("used internalcache for " + comparisonID);
     return pos->second;
   }
 
@@ -79,30 +79,30 @@ ComparatorCache::_get(const AbstractFeature& _proxyF,
 
   if(internally_comparable && 
      (!spec ||
-      spec->m_trustInternalTrue != BindingData::DONT_USE && 
-      spec->m_trustInternalIndeterminate != BindingData::DONT_USE && 
-      spec->m_trustInternalFalse != BindingData::DONT_USE)) {    
+      spec->trustInternalTrue != BindingData::DONT_USE && 
+      spec->trustInternalIndeterminate != BindingData::DONT_USE && 
+      spec->trustInternalFalse != BindingData::DONT_USE)) {    
     equivalent = _proxyF.compare(_unionF);
-    m_internalCache[comparisonID] = equivalent;
+    internalCache[comparisonID] = equivalent;
   }
   
   if(externally_comparable) {
     // if it is externally comparable, but not on the internal cache,
     // the comparison must be stated as a task for whoever can do
     // it. The result will be written onto the WM which will change
-    // the m_internalCache eventually by an event.
+    // the internalCache eventually by an event.
     
     assert(spec != 0);
     BindingData::ComparisonTrust trust;
     switch(equivalent.value) {
     case boost::logic::tribool::true_value:
-      trust = spec->m_trustInternalTrue;
+      trust = spec->trustInternalTrue;
       break;
     case boost::logic::tribool::false_value:
-      trust = spec->m_trustInternalFalse;;
+      trust = spec->trustInternalFalse;;
       break;
     case  boost::logic::tribool::indeterminate_value:
-      trust = spec->m_trustInternalIndeterminate;
+      trust = spec->trustInternalIndeterminate;
       break;
     }
     if(trust == BindingData::TRUST_COMPLETELY) {
@@ -111,40 +111,40 @@ ComparatorCache::_get(const AbstractFeature& _proxyF,
     }
     // 1st, make sure comparison is not already being processed but
     // has not yet been received.
-    if(m_bindingScorer.existsOnWorkingMemory(comparisonID)) {
-      //      m_bindingScorer.lockEntry(comparisonID,cast::cdl::LOCKED_ODR);
+    if(bindingScorer.existsOnWorkingMemory(comparisonID)) {
+      //      bindingScorer.lockEntry(comparisonID,cast::cdl::LOCKED_ODR);
       throw(ExternalScoreNotReadyException(comparisonID));
       //return equivalent;
     }
 
     BindingData::FeatureComparison* comp = 
       new BindingData::FeatureComparison();
-    comp->m_proxyFeature.m_address = CORBA::string_dup(_proxyF.featureID().c_str());
-    comp->m_proxyFeature.m_type    = CORBA::string_dup(_proxyF.name().c_str());
-    comp->m_proxyID                = CORBA::string_dup(_proxyID.c_str());
-    comp->m_unionFeature.m_address = CORBA::string_dup(_unionF.featureID().c_str());
-    comp->m_unionFeature.m_type    = CORBA::string_dup(_unionF.name().c_str());
-    comp->m_featuresEquivalent = tribool_cast(equivalent);
-    comp->m_bindingSubarchitectureID = CORBA::string_dup(m_bindingScorer.m_subarchitectureID.c_str());
+    comp->proxyFeature.address = CORBA::string_dup(_proxyF.featureID().c_str());
+    comp->proxyFeature.type    = CORBA::string_dup(_proxyF.name().c_str());
+    comp->proxyID                = CORBA::string_dup(_proxyID.c_str());
+    comp->unionFeature.address = CORBA::string_dup(_unionF.featureID().c_str());
+    comp->unionFeature.type    = CORBA::string_dup(_unionF.name().c_str());
+    comp->featuresEquivalent = tribool_cast(equivalent);
+    comp->bindingSubarchitectureID = CORBA::string_dup(bindingScorer.subarchitectureID.c_str());
     if(trust == BindingData::TRUST_BUT_VALIDATE) {
-      comp->m_insistOnExternalComparison = false;
+      comp->insistOnExternalComparison = false;
     } else {
-      comp->m_insistOnExternalComparison = true;
+      comp->insistOnExternalComparison = true;
     }
-    m_bindingScorer.log("stored comparison (+task): " + _proxyF.featureID() +" vs. "+_unionF.featureID() + " : " + Binding::triboolToString(equivalent));
+    bindingScorer.log("stored comparison (+task): " + _proxyF.featureID() +" vs. "+_unionF.featureID() + " : " + Binding::triboolToString(equivalent));
     // store the comparison itself
-    m_bindingScorer.addToWorkingMemory(comparisonID,
+    bindingScorer.addToWorkingMemory(comparisonID,
 				       //BindingLocalOntology::FEATURE_COMPARISON_TYPE, 
 				       comp,
 				       cdl::BLOCKING);
-    m_bindingScorer.lockEntry(comparisonID,cast::cdl::LOCKED_ODR);
+    bindingScorer.lockEntry(comparisonID,cast::cdl::LOCKED_ODR);
 
     // and store the task
     BindingData::FeatureComparisonTask* task = 
       new BindingData::FeatureComparisonTask();
-    task->m_comparisonID = CORBA::string_dup(comparisonID.c_str());
-    task->m_bindingSubarchitectureID = CORBA::string_dup(m_bindingScorer.m_subarchitectureID.c_str());
-    m_bindingScorer.addToWorkingMemory(m_bindingScorer.newDataID(),
+    task->comparisonID = CORBA::string_dup(comparisonID.c_str());
+    task->bindingSubarchitectureID = CORBA::string_dup(bindingScorer.subarchitectureID.c_str());
+    bindingScorer.addToWorkingMemory(bindingScorer.newDataID(),
 				       //BindingLocalOntology::FEATURE_COMPARISON_TASK_TYPE, 
 				       task,
 				       cdl::BLOCKING);
@@ -168,52 +168,52 @@ ComparatorCache::set(const string& _comparisonID)
 {
   shared_ptr<const BindingData::FeatureComparison> comp;
   try{
-    comp = m_bindingScorer.loadBindingDataFromWM<BindingData::FeatureComparison>(_comparisonID);
+    comp = bindingScorer.loadBindingDataFromWM<BindingData::FeatureComparison>(_comparisonID);
   } catch(const DoesNotExistOnWMException& _e) {
-    m_bindingScorer.log("Caught this in ComparatorCache (FeatureComparison not existing in ComparatorCache::set(...), which is odd but may be normal, aborting now to see it in tests): " + string(_e.what()));
+    bindingScorer.log("Caught this in ComparatorCache (FeatureComparison not existing in ComparatorCache::set(...), which is odd but may be normal, aborting now to see it in tests): " + string(_e.what()));
     abort();
   }
 
-  m_internalCache[_comparisonID] = tribool_cast(comp->m_featuresEquivalent);
+  internalCache[_comparisonID] = tribool_cast(comp->featuresEquivalent);
 
-  BindingScorer& s(m_bindingScorer); // too lazy to type...
+  BindingScorer& s(bindingScorer); // too lazy to type...
   // 1st, check if the returned answer is part of a basic query
-  if(!s.m_openBasicQueryFeatureComparisonIDs.empty()) {
+  if(!s.openBasicQueryFeatureComparisonIDs.empty()) {
     map<string,string>::iterator itr = 
-      s.m_openBasicQueryFeatureComparisonIDs.find(_comparisonID);
-    if(itr != s.m_openBasicQueryFeatureComparisonIDs.end()) {
-      m_bindingScorer.log("results for a basic query received from an external comparator");
+      s.openBasicQueryFeatureComparisonIDs.find(_comparisonID);
+    if(itr != s.openBasicQueryFeatureComparisonIDs.end()) {
+      bindingScorer.log("results for a basic query received from an external comparator");
       string queryID(itr->second);
       shared_ptr<const BindingQueries::BasicQuery> 
 	query(s.loadBindingDataFromWM<BindingQueries::BasicQuery>(queryID));
-      s.m_openBasicQueryFeatureComparisonIDs.erase(itr);
+      s.openBasicQueryFeatureComparisonIDs.erase(itr);
       s._answerBasicQuery(*query,queryID);
     }
   }
   // 2nd, check if the returned answer is part of an advanced query
-  if(!s.m_openAdvancedQueryFeatureComparisonIDs.empty()) {
-    map<string,string>::iterator itr = s.m_openAdvancedQueryFeatureComparisonIDs.find(_comparisonID);
-    if(itr != s.m_openAdvancedQueryFeatureComparisonIDs.end()) {
-      m_bindingScorer.log("results for an advanced query received from an external comparator");
+  if(!s.openAdvancedQueryFeatureComparisonIDs.empty()) {
+    map<string,string>::iterator itr = s.openAdvancedQueryFeatureComparisonIDs.find(_comparisonID);
+    if(itr != s.openAdvancedQueryFeatureComparisonIDs.end()) {
+      bindingScorer.log("results for an advanced query received from an external comparator");
       string queryID(itr->second);
       shared_ptr<const BindingQueries::AdvancedQuery> 
 	query(s.loadBindingDataFromWM<BindingQueries::AdvancedQuery>(queryID));
-      s.m_openAdvancedQueryFeatureComparisonIDs.erase(itr);
+      s.openAdvancedQueryFeatureComparisonIDs.erase(itr);
       s._answerAdvancedQuery(*query,queryID);
     }
   }
 #warning rescoring blindly triggered, and this may be very inefficient
   BindingData::BindTheseProxies* bindThese = new BindingData::BindTheseProxies();
-  bindThese->m_proxyIDs.length(1);
-  bindThese->m_proxyIDs[0] = CORBA::string_dup(comp->m_proxyID);
-  m_bindingScorer.addToWorkingMemory(m_bindingScorer.newDataID(), 
-				     m_bindingScorer.m_subarchitectureID, 
+  bindThese->proxyIDs.length(1);
+  bindThese->proxyIDs[0] = CORBA::string_dup(comp->proxyID);
+  bindingScorer.addToWorkingMemory(bindingScorer.newDataID(), 
+				     bindingScorer.subarchitectureID, 
 				     //BindingLocalOntology::BIND_THESE_PROXIES_TYPE, 
 				     bindThese, 
 				     cdl::BLOCKING);
   
   
-  m_bindingScorer.log(_comparisonID + " results received: " + string(comp->m_proxyFeature.m_address) + " vs " + string(comp->m_unionFeature.m_address) + " for proxy " + string(comp->m_proxyID));
+  bindingScorer.log(_comparisonID + " results received: " + string(comp->proxyFeature.address) + " vs " + string(comp->unionFeature.address) + " for proxy " + string(comp->proxyID));
 
 }
 
@@ -222,35 +222,35 @@ bool
 ComparatorCacheCheck::test(const ProxyPtr& _ptr) const
 {
   const FeatureSetWithRepetitions* fset_ptr = NULL;
-  if(m_queryParameters.m_boundProxyInclusion == BindingQueries::EXCLUDE_BOUND) {
+  if(queryParameters.boundProxyInclusion == BindingQueries::EXCLUDE_BOUND) {
     fset_ptr = &(_ptr->comparableFeatureSetWithRepetitions());
   } else {
     fset_ptr = &(_ptr->bindingUnion().comparableFeatureSetWithRepetitions());
   }
   const FeatureSetWithRepetitions& fset(*fset_ptr);
-  FeatureSetWithRepetitions::const_iterator itr = fset.find(m_feature.name());
+  FeatureSetWithRepetitions::const_iterator itr = fset.find(feature.name());
   if(itr == fset.end()) { // no such feature, result is indeterminate, return true if that is what we're checking for
-    m_answer = indeterminate;
-    return m_desiredTribool.value == tribool::indeterminate_value;
+    answer = indeterminate;
+    return desiredTribool.value == tribool::indeterminate_value;
   } else {
     //tribool result = indeterminate;
-    m_answer = indeterminate;
+    answer = indeterminate;
     bool at_least_one_match = false; // assume no match as long as all results are indeterminate
     foreach(const OneTypeOfFeaturesWithRepetitions::value_type& feature, itr->second) { // feature is of type shared_ptr<AbstractFeature&>
       try {
-	m_answer = m_comparator.get(*feature,m_feature,string(feature->immediateProxyID()));
-	if(m_answer.value == tribool::false_value) { // no need to continue at a mismatch
-	  return m_desiredTribool.value == tribool::false_value;
-	} else 	if(m_answer.value == tribool::true_value) { 
+	answer = comparator.get(*feature,feature,string(feature->immediateProxyID()));
+	if(answer.value == tribool::false_value) { // no need to continue at a mismatch
+	  return desiredTribool.value == tribool::false_value;
+	} else 	if(answer.value == tribool::true_value) { 
 	  at_least_one_match = true;
 	}
       } catch(const ExternalScoreNotReadyException& _e) {
-	m_featureComparisonIDs.insert(_e.m_featureComparisonID);
+	featureComparisonIDs.insert(_e.featureComparisonID);
       }
       if(at_least_one_match)
-	m_answer = true;
+	answer = true;
     }
-    return m_answer.value == m_desiredTribool.value;
+    return answer.value == desiredTribool.value;
   }
 }
 

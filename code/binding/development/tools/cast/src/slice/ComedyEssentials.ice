@@ -28,7 +28,7 @@ module comedyarch {
       JokeList jokes;
     };
     
-    /**
+    /** 
      * These are the possible things the director can do.
      */
     enum DirectorActionType {

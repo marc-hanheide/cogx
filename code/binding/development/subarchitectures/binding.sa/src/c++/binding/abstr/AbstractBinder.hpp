@@ -5,7 +5,7 @@
 //#include "binding/feature-utils/Features.hpp"
 #include "AbstractBindingWMRepresenter.hpp"
 //#include "binding/utils/LocalClasses.hpp"
-//#include "binding/idl/BindingData.hh"
+//#include "BindingData.hpp"
 //#include "cast/core/CASTDataCache.hpp"
 //#include <cast/core/CASTDataLocalCache.hpp>
 #include "cast/architecture/ChangeFilterFactory.hpp"
@@ -32,14 +32,14 @@ public:
   template<typename T>
   void acquireEntry(const cast::cdl::WorkingMemoryChange & _wmc) {
     loadBindingDataFromWM<T>(_wmc); // for consistency
-    lockEntry(std::string(_wmc.m_address.m_id),std::string(_wmc.m_address.m_subarchitecture), cast::cdl::LOCKED_O);
+    lockEntry(std::string(_wmc.address.id),std::string(_wmc.address.subarchitecture), cast::cdl::LOCKED_O);
   }
 
   /// returns the address of the singular binder token
   virtual cast::cdl::WorkingMemoryAddress _binderTokenAddress() const {
     cast::cdl::WorkingMemoryAddress a;
-    a.m_subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
-    a.m_id = CORBA::string_dup(BindingData::binderTokenID);
+    a.subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
+    a.id = CORBA::string_dup(BindingData::binderTokenID);
     return a;
   }
 
@@ -57,8 +57,8 @@ public:
   /// returns the address of the singular binder token
   cast::cdl::WorkingMemoryAddress _internalBindingTokenAddress() const {
     cast::cdl::WorkingMemoryAddress a;
-    a.m_subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
-    a.m_id = CORBA::string_dup(BindingData::internalBindingTokenID);
+    a.subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
+    a.id = CORBA::string_dup(BindingData::internalBindingTokenID);
     return a;
   }
   
@@ -76,8 +76,8 @@ public:
   /// returns the address of the singular binder token
   virtual cast::cdl::WorkingMemoryAddress _binderLockTokenAddress() const {
     cast::cdl::WorkingMemoryAddress a;
-    a.m_subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
-    a.m_id = CORBA::string_dup(BindingData::binderLockTokenID);
+    a.subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
+    a.id = CORBA::string_dup(BindingData::binderLockTokenID);
     return a;
   }
 
@@ -99,8 +99,8 @@ private:
   friend class AbstractMonitor;
   virtual cast::cdl::WorkingMemoryAddress _binderTokenTokenAddress() const {
     cast::cdl::WorkingMemoryAddress a;
-    a.m_subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
-    a.m_id = CORBA::string_dup(BindingData::binderTokenTokenID);
+    a.subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
+    a.id = CORBA::string_dup(BindingData::binderTokenTokenID);
     return a;
   }
   /// acquires a token that will be owned by either the binding SA or a monitor

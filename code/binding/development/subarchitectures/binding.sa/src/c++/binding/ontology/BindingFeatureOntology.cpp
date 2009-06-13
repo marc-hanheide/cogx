@@ -3,7 +3,7 @@
 #include "binding/feature-specialization/FeatureRegistrant.hpp"
 #include "binding/utils/BindingUtils.hpp"
 #include "binding/feature-utils/AbstractInternalComparator.hpp"
-#include "binding/idl/BindingData.hh"
+#include "BindingData.hpp"
 #include "binding/feature-utils/FeatureHelper.hpp"
 
 #include <boost/assign.hpp>
@@ -18,13 +18,13 @@ using namespace boost;
 using namespace cast;
 
 
-/*set<string> BindingFeatureOntology::m_features = set<string>();
-set<string> BindingFeatureOntology::m_comparableFeatures = set<string>();
-map<string,set<string> > BindingFeatureOntology::m_proxy2unionComparable = map<string,set<string> >();
-map<string,set<string> > BindingFeatureOntology::m_union2proxyComparable = map<string,set<string> >();
-map<string,Binding::FeatureProperties> BindingFeatureOntology::m_featurePropertyMap = map<string,Binding::FeatureProperties>();
-BindingFeatureOntology::TrustSpecMap BindingFeatureOntology::m_internalTrust = TrustSpecMap();
-StringMap<BindingFeatureOntology::FeatureStats>::map BindingFeatureOntology::m_featureStats = StringMap<BindingFeatureOntology::FeatureStats>::map();
+/*set<string> BindingFeatureOntology::features = set<string>();
+set<string> BindingFeatureOntology::comparableFeatures = set<string>();
+map<string,set<string> > BindingFeatureOntology::proxy2unionComparable = map<string,set<string> >();
+map<string,set<string> > BindingFeatureOntology::union2proxyComparable = map<string,set<string> >();
+map<string,Binding::FeatureProperties> BindingFeatureOntology::featurePropertyMap = map<string,Binding::FeatureProperties>();
+BindingFeatureOntology::TrustSpecMap BindingFeatureOntology::internalTrust = TrustSpecMap();
+StringMap<BindingFeatureOntology::FeatureStats>::map BindingFeatureOntology::featureStats = StringMap<BindingFeatureOntology::FeatureStats>::map();
 */
 
 ostream& operator<<(ostream& out, const set<string>& strings) {
@@ -35,7 +35,7 @@ ostream& operator<<(ostream& out, const set<string>& strings) {
 
 BindingFeatureOntology::BindingFeatureOntology() 
   :
-    m_ontologyState(PRE_CONSTRUCT)
+    ontologyState(PRE_CONSTRUCT)
 {
   FeatureRegistrant::registerFeatures(*this);
   constructorFinished();
@@ -50,27 +50,27 @@ BindingFeatureOntology::updateFeatureProperties(const string& _featureType, cons
 void 
 BindingFeatureOntology::updateFeatureProperties(const string& _featureType, const Binding::FeatureProperties& _properties) 
 {
-  m_featurePropertyMap[_featureType] = _properties;
-  m_features.insert(_featureType);
+  featurePropertyMap[_featureType] = _properties;
+  features.insert(_featureType);
   
-  const set<string>& comparableInternally(_properties.m_comparableInternally);
-  const set<string>& comparableExternally(_properties.m_comparableExternally);
-  m_proxy2unionComparable[_featureType].insert(comparableInternally.begin(),comparableInternally.end());
-  m_proxy2unionComparable[_featureType].insert(comparableExternally.begin(),comparableExternally.end());
+  const set<string>& comparableInternally(_properties.comparableInternally);
+  const set<string>& comparableExternally(_properties.comparableExternally);
+  proxy2unionComparable[_featureType].insert(comparableInternally.begin(),comparableInternally.end());
+  proxy2unionComparable[_featureType].insert(comparableExternally.begin(),comparableExternally.end());
   if(!comparableInternally.empty() ||
      !comparableExternally.empty()) {
-    m_comparableFeatures.insert(_featureType);
-    m_comparableFeatures.insert(comparableInternally.begin(),comparableInternally.end());
-    m_comparableFeatures.insert(comparableExternally.begin(),comparableExternally.end());
+    comparableFeatures.insert(_featureType);
+    comparableFeatures.insert(comparableInternally.begin(),comparableInternally.end());
+    comparableFeatures.insert(comparableExternally.begin(),comparableExternally.end());
     for(set<string>::const_iterator itr = comparableInternally.begin() ; 
 	itr != comparableInternally.end() ; 
 	  ++itr) {
-      m_union2proxyComparable[*itr].insert(_featureType);
+      union2proxyComparable[*itr].insert(_featureType);
     }
     for(set<string>::const_iterator itr = comparableExternally.begin() ; 
 	itr != comparableExternally.end() ; 
 	  ++itr) {
-      m_union2proxyComparable[*itr].insert(_featureType);
+      union2proxyComparable[*itr].insert(_featureType);
     }
   } 
 }
@@ -78,37 +78,37 @@ BindingFeatureOntology::updateFeatureProperties(const string& _featureType, cons
 
 void 
 BindingFeatureOntology::registerComparatorCompetence(const BindingData::FeatureComparisonCompetence& _competence) {
-  assert(m_ontologyState == CONSTRUCTED);
+  assert(ontologyState == CONSTRUCTED);
       
   stringstream str;
   Binding::operator<<(str,_competence);
   cout << "\ncomparator competence registered:\n" << str.str() << endl;
 //  const map<string,Binding::FeatureProperties>& properties(BindingFeatureOntology::featurePropertyMap());
-  const string proxyFeatureType(_competence.m_proxyFeatureType);
-  const string unionFeatureType(_competence.m_unionFeatureType);
+  const string proxyFeatureType(_competence.proxyFeatureType);
+  const string unionFeatureType(_competence.unionFeatureType);
   
-  m_comparableExternally[featureNumber(proxyFeatureType)].insert(unionFeatureType);  
+  comparableExternally[featureNumber(proxyFeatureType)].insert(unionFeatureType);  
   Binding::FeatureProperties new_prop = featureHelper(proxyFeatureType).properties();//properties.find(proxyFeatureType)->second;
-  new_prop.m_comparableExternally.insert(unionFeatureType);
+  new_prop.comparableExternally.insert(unionFeatureType);
   BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   ontology.updateFeatureProperties(proxyFeatureType, new_prop);    
-  if(m_internalTrust.find(proxyFeatureType) != m_internalTrust.end() &&
-     m_internalTrust.find(proxyFeatureType)->second.find(unionFeatureType) != 
-     m_internalTrust.find(proxyFeatureType)->second.end()) {
+  if(internalTrust.find(proxyFeatureType) != internalTrust.end() &&
+     internalTrust.find(proxyFeatureType)->second.find(unionFeatureType) != 
+     internalTrust.find(proxyFeatureType)->second.end()) {
     stringstream str2;
-    Binding::operator<<(str2,m_internalTrust[proxyFeatureType][unionFeatureType]);
+    Binding::operator<<(str2,internalTrust[proxyFeatureType][unionFeatureType]);
     cerr << "WARNING! Same comparator competence registered twice:\n" <<  str.str() << " and previously with " << str2.str() << endl;
   }
-  m_internalTrust[proxyFeatureType][unionFeatureType]= _competence.m_comparisonTrustSpecification;
+  internalTrust[proxyFeatureType][unionFeatureType]= _competence.comparisonTrustSpecification;
 }
 
   
 const std::string& 
 BindingFeatureOntology::featureName(const std::type_info& _info) const 
 {
-  assert(m_ontologyState > FEATURE_REGISTRATION); 
-  TypeMap<std::string>::map::const_iterator itr = m_featureName.find(&_info);
-  if(itr == m_featureName.end()) {
+  assert(ontologyState > FEATURE_REGISTRATION); 
+  TypeMap<std::string>::map::const_iterator itr = featureName.find(&_info);
+  if(itr == featureName.end()) {
     throw(BindingException("in BindingFeatureOntology::featureName(const std::type_info& _info): Not a feature, it seems: " + string(_info.name())));
   }
   return itr->second;
@@ -117,9 +117,9 @@ BindingFeatureOntology::featureName(const std::type_info& _info) const
 unsigned int 
 BindingFeatureOntology::featureNumber(const std::type_info& _info) const 
 {
-  assert(m_ontologyState > FEATURE_REGISTRATION); 
-  TypeMap<unsigned int>::map::const_iterator itr = m_featureNumber.find(&_info);
-  if(itr == m_featureNumber.end()) {
+  assert(ontologyState > FEATURE_REGISTRATION); 
+  TypeMap<unsigned int>::map::const_iterator itr = featureNumber.find(&_info);
+  if(itr == featureNumber.end()) {
     throw(BindingException("in BindingFeatureOntology::featureNumber(const std::type_info& _info): Not a feature, it seems: " + string(_info.name())));
   }
   return itr->second;
@@ -128,9 +128,9 @@ BindingFeatureOntology::featureNumber(const std::type_info& _info) const
 unsigned int 
 BindingFeatureOntology::featureNumber(const std::string& _name) const 
 {
-  assert(m_ontologyState > FEATURE_REGISTRATION); 
-  StringMap<unsigned int>::map::const_iterator itr = m_featureNameNumber.find(_name);
-  if(itr == m_featureNameNumber.end()) {
+  assert(ontologyState > FEATURE_REGISTRATION); 
+  StringMap<unsigned int>::map::const_iterator itr = featureNameNumber.find(_name);
+  if(itr == featureNameNumber.end()) {
     throw(BindingException("BindingFeatureOntology::featureNumber(const std::string& _name): Not a feature, it seems: " + _name));
   }
   return itr->second;
@@ -139,10 +139,10 @@ BindingFeatureOntology::featureNumber(const std::string& _name) const
 const AbstractFeatureHelper& 
 BindingFeatureOntology::featureHelper(const std::type_info& _info) const
 {
-  assert(m_ontologyState > FEATURE_REGISTRATION); 
-  return *m_featureHelpers[featureNumber(_info)];
-  /*TypeMap<shared_ptr<const AbstractFeatureHelper> >::map::const_iterator itr = m_featureHelpers.find(&_info);
-  if(itr == m_featureHelpers.end()) {
+  assert(ontologyState > FEATURE_REGISTRATION); 
+  return *featureHelpers[featureNumber(_info)];
+  /*TypeMap<shared_ptr<const AbstractFeatureHelper> >::map::const_iterator itr = featureHelpers.find(&_info);
+  if(itr == featureHelpers.end()) {
     throw(BindingException("A binding feature without a helper: " + string(_info.name())));
   }
   return *(itr->second);
@@ -153,8 +153,8 @@ const AbstractInternalComparator*
 BindingFeatureOntology::internalComparator(const std::type_info& _proxyFeatureType, 
 					   const std::type_info& _unionFeatureType) const 
 {
-  assert(m_ontologyState > COMPARATOR_REGISTRATION); 
-  return m_internalComparators[featureNumber(_proxyFeatureType)][featureNumber(_unionFeatureType)].get();
+  assert(ontologyState > COMPARATOR_REGISTRATION); 
+  return internalComparators[featureNumber(_proxyFeatureType)][featureNumber(_unionFeatureType)].get();
 }
 
   
@@ -166,28 +166,28 @@ BindingFeatureOntology::registerInternalComparator(const std::type_info& _proxyF
   std::cout << std::string("Feature comparator registered: ") 
 	    << featureName(_proxyFeatureType) << " vs. \t" 
 	    << featureName(_unionFeatureType)  << std::endl; 
-  m_comparableFeatures.insert(this->featureName(_proxyFeatureType));
-  m_comparableFeatures.insert(this->featureName(_unionFeatureType));
-  assert(m_ontologyState == COMPARATOR_REGISTRATION); 
-  m_internalComparators[featureNumber(_proxyFeatureType)][featureNumber(_unionFeatureType)] = _comparator;
-  m_comparableInternally[featureNumber(_proxyFeatureType)].insert(featureName(_unionFeatureType));  
+  comparableFeatures.insert(this->featureName(_proxyFeatureType));
+  comparableFeatures.insert(this->featureName(_unionFeatureType));
+  assert(ontologyState == COMPARATOR_REGISTRATION); 
+  internalComparators[featureNumber(_proxyFeatureType)][featureNumber(_unionFeatureType)] = _comparator;
+  comparableInternally[featureNumber(_proxyFeatureType)].insert(featureName(_unionFeatureType));  
   
-  m_proxy2unionComparable[featureName(_proxyFeatureType)].insert(featureName(_unionFeatureType));
-  m_union2proxyComparable[featureName(_unionFeatureType)].insert(featureName(_proxyFeatureType));
+  proxy2unionComparable[featureName(_proxyFeatureType)].insert(featureName(_unionFeatureType));
+  union2proxyComparable[featureName(_unionFeatureType)].insert(featureName(_proxyFeatureType));
 }
 
 void 
 BindingFeatureOntology::openFeatureRegistration() { 
-  assert(m_ontologyState == PRE_CONSTRUCT); 
-  m_ontologyState = FEATURE_REGISTRATION; 
+  assert(ontologyState == PRE_CONSTRUCT); 
+  ontologyState = FEATURE_REGISTRATION; 
 };
 void 
 BindingFeatureOntology::freezeFeatures() { 
-  assert(m_ontologyState == FEATURE_REGISTRATION); 
-  m_ontologyState = COMPARATOR_REGISTRATION; 
+  assert(ontologyState == FEATURE_REGISTRATION); 
+  ontologyState = COMPARATOR_REGISTRATION; 
   //cout << "registered feature names:\n";
-  for(TypeMap<std::string>::map::const_iterator itr = m_featureName.begin() ;
-      itr != m_featureName.end() ;
+  for(TypeMap<std::string>::map::const_iterator itr = featureName.begin() ;
+      itr != featureName.end() ;
       ++itr) {
     //cout << (itr->first)  << " " << itr->first->name() << " " << itr->second << endl;
     assert(featureName(*(itr->first)) == itr->second);
@@ -195,41 +195,41 @@ BindingFeatureOntology::freezeFeatures() {
 };
 void 
 BindingFeatureOntology::freezeInternalComparators() { 
-  assert(m_ontologyState == COMPARATOR_REGISTRATION); 
-  m_ontologyState = REGISTRATION_FROZEN; 
+  assert(ontologyState == COMPARATOR_REGISTRATION); 
+  ontologyState = REGISTRATION_FROZEN; 
 };
 
 void 
 BindingFeatureOntology::constructorFinished() { 
-  assert(m_ontologyState == REGISTRATION_FROZEN); 
-  m_ontologyState = CONSTRUCTED; 
+  assert(ontologyState == REGISTRATION_FROZEN); 
+  ontologyState = CONSTRUCTED; 
 }
 
 const std::set<std::string>& 
 BindingFeatureOntology::comparableInternally(const std::type_info& _info) const
 {
-  //return featureHelper(_info).properties().m_comparableInternally;
-  return m_comparableInternally[featureNumber(_info)];
+  //return featureHelper(_info).properties().comparableInternally;
+  return comparableInternally[featureNumber(_info)];
 }
 
 const std::set<std::string>& 
 BindingFeatureOntology::comparableExternally(const std::type_info& _info) const
 {
-  //return featureHelper(_info).properties().m_comparableExternally;
-  return m_comparableExternally[featureNumber(_info)];
+  //return featureHelper(_info).properties().comparableExternally;
+  return comparableExternally[featureNumber(_info)];
 }
 const std::set<std::string>& 
 BindingFeatureOntology::comparableInternally(const std::string& _name) const
 {
-  //return featureHelper(_name).properties().m_comparableInternally;
-  return m_comparableInternally[featureNumber(_name)];
+  //return featureHelper(_name).properties().comparableInternally;
+  return comparableInternally[featureNumber(_name)];
 }
 
 const std::set<std::string>& 
 BindingFeatureOntology::comparableExternally(const std::string& _name) const
 {
-  //return featureHelper(_name).properties().m_comparableExternally;
-  return m_comparableExternally[featureNumber(_name)];
+  //return featureHelper(_name).properties().comparableExternally;
+  return comparableExternally[featureNumber(_name)];
 }
 
 

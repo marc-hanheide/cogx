@@ -35,7 +35,7 @@ BindingJudge::BindingJudge(const string &_id) :
   
   WorkingMemoryAttachedComponent(_id),
   AbstractBinder(_id),
-  m_bindingTask(false)
+  bindingTask(false)
 { 
 }
 
@@ -110,7 +110,7 @@ BindingJudge::~BindingJudge() {
 void 
 BindingJudge::scoreUpdated(const cdl::WorkingMemoryChange & _wmc)
 {  
-  log(string("scoreUpdated : ") + string(_wmc.m_address.m_id));
+  log(string("scoreUpdated : ") + string(_wmc.address.id));
   shared_ptr<const BindingData::ProxyUnionScore> puscore;
   try{
     puscore = loadBindingDataFromWM<BindingData::ProxyUnionScore>(_wmc);
@@ -119,50 +119,50 @@ BindingJudge::scoreUpdated(const cdl::WorkingMemoryChange & _wmc)
     return;
   }
   
-  assert(puscore->m_updated); // no motivator no more...
-  if(!puscore->m_updated) {
+  assert(puscore->updated); // no motivator no more...
+  if(!puscore->updated) {
     log("scoreUpdated by motivator, will need to wait for results, do nothing");
     return;
   }
-  string proxyID(puscore->m_proxyID);
-  string unionID(puscore->m_unionID);
+  string proxyID(puscore->proxyID);
+  string unionID(puscore->unionID);
   
-  log("Score received: " + proxyID + " vs. " + unionID + " : " + scoreToString(puscore->m_score));
+  log("Score received: " + proxyID + " vs. " + unionID + " : " + scoreToString(puscore->score));
   
-  if(m_deletedProxies.find(proxyID) != m_deletedProxies.end()) {
+  if(deletedProxies.find(proxyID) != deletedProxies.end()) {
     log("An updated score for deleted proxy " + proxyID + " received. Ignoring this.");
-    assert(m_proxyScores.find(proxyID) == m_proxyScores.end());
+    assert(proxyScores.find(proxyID) == proxyScores.end());
     return;
   }
-  if(m_deletedUnions.find(unionID) != m_deletedUnions.end()) {
+  if(deletedUnions.find(unionID) != deletedUnions.end()) {
     log("An updated score for deleted union " + unionID + " received. Ignoring this.");
     
 //#define NEVERMIND    
     //#ifndef NDEBUG    // getting paranoid
 #ifdef NEVERMIND
-    for(StringMap<ProxyScores>::map::iterator proxy_scores_itr = m_proxyScores.begin() ;
-	proxy_scores_itr != m_proxyScores.end() ;
+    for(StringMap<ProxyScores>::map::iterator proxy_scores_itr = proxyScores.begin() ;
+	proxy_scores_itr != proxyScores.end() ;
 	++proxy_scores_itr) {
-      assert(proxy_scores_itr->second.m_bestUnions.find(unionID) 
-	     == proxy_scores_itr->second.m_bestUnions.end());
-      assert(proxy_scores_itr->second.m_unionScore.find(unionID) 
-	     == proxy_scores_itr->second.m_unionScore.end());
+      assert(proxy_scores_itr->second.bestUnions.find(unionID) 
+	     == proxy_scores_itr->second.bestUnions.end());
+      assert(proxy_scores_itr->second.unionScore.find(unionID) 
+	     == proxy_scores_itr->second.unionScore.end());
     }
 #endif // NDEBUG
     return;
   }
   
-  const BindingData::BindingScore& score = puscore->m_score;  
+  const BindingData::BindingScore& score = puscore->score;  
   
-  if(m_proxyScores.find(proxyID) == m_proxyScores.end()) { // new proxy
-    m_proxyScores[proxyID] = ProxyScores();
+  if(proxyScores.find(proxyID) == proxyScores.end()) { // new proxy
+    proxyScores[proxyID] = ProxyScores();
   }
   
-  if(m_proxyScores[proxyID].m_unionScore.empty()) {
-    m_proxyScores[proxyID].m_bestBindingScore = defaultBindingScore();
+  if(proxyScores[proxyID].unionScore.empty()) {
+    proxyScores[proxyID].bestBindingScore = defaultBindingScore();
   }
   
-  m_proxyScores[proxyID].m_unionScore[unionID] = score;
+  proxyScores[proxyID].unionScore[unionID] = score;
   
   
   try{
@@ -179,30 +179,30 @@ BindingJudge::scoreUpdated(const cdl::WorkingMemoryChange & _wmc)
 void 
 BindingJudge::unionUpdated(const cdl::WorkingMemoryChange & _wmc) {
 //  cerr << "-   enter BindingJudge::unionUpdated\n"; cerr.flush();
-  const string unionID(_wmc.m_address.m_id);    
+  const string unionID(_wmc.address.id);    
   log("union updated: " + unionID);
 
   shared_ptr<const BindingData::BindingUnion> binding_union;
   try {
     binding_union = (loadBindingDataFromWM<BindingData::BindingUnion>(_wmc));
   } catch (const DoesNotExistOnWMException&) {return;}
-//  m_uni2prox[unionID].clear();
-  for(unsigned int i = 0; i < binding_union->m_proxyIDs.length(); i++) {
-    const string proxyID(binding_union->m_proxyIDs[i]);
-    m_prox2uni[proxyID] = unionID;
-    assert(m_prox2uni[proxyID] == unionID); // duh!
+//  uni2prox[unionID].clear();
+  for(unsigned int i = 0; i < binding_union->proxyIDs.length(); i++) {
+    const string proxyID(binding_union->proxyIDs[i]);
+    prox2uni[proxyID] = unionID;
+    assert(prox2uni[proxyID] == unionID); // duh!
     log("*** updated: " + proxyID + " -> " + unionID);
-//    m_uni2prox[unionID].insert(proxyID);
+//    uni2prox[unionID].insert(proxyID);
   }
-  //assert(m_uni2prox[unionID].size() == binding_union->m_proxyIDs.length());
+  //assert(uni2prox[unionID].size() == binding_union->proxyIDs.length());
 #ifndef NDEBUG
-/*  assert(m_uni2prox.find(unionID) != m_uni2prox.end());
-  const set<string>& proxies(m_uni2prox.find(unionID)->second);
+/*  assert(uni2prox.find(unionID) != uni2prox.end());
+  const set<string>& proxies(uni2prox.find(unionID)->second);
   for(set<string>::const_iterator i = proxies.begin() ;
       i != proxies.end();
       ++i){
-    assert(m_prox2uni.find(*i) != m_prox2uni.end());
-    assert(m_prox2uni[*i] == unionID);
+    assert(prox2uni.find(*i) != prox2uni.end());
+    assert(prox2uni[*i] == unionID);
   }*/
 #endif //NDEBUG
   //cerr << "-    exit BindingJudge::unionUpdated\n"; cerr.flush();
@@ -211,16 +211,16 @@ BindingJudge::unionUpdated(const cdl::WorkingMemoryChange & _wmc) {
 void 
 BindingJudge::unionDeleted(const cdl::WorkingMemoryChange & _wmc) {
 //  cerr << "-   enter BindingJudge::unionDeleted\n"; cerr.flush();
-  log(string("unionDeleted: ") + string(_wmc.m_address.m_id));
-  string unionID(_wmc.m_address.m_id);
-  m_deletedUnions.insert(unionID);
+  log(string("unionDeleted: ") + string(_wmc.address.id));
+  string unionID(_wmc.address.id);
+  deletedUnions.insert(unionID);
 
   
   // delete all references to the deleted union
-  for(StringMap<ProxyScores>::map::iterator proxy_scores_itr = m_proxyScores.begin() ;
-      proxy_scores_itr != m_proxyScores.end() ;
+  for(StringMap<ProxyScores>::map::iterator proxy_scores_itr = proxyScores.begin() ;
+      proxy_scores_itr != proxyScores.end() ;
       ++proxy_scores_itr) {
-    proxy_scores_itr->second.m_unionScore.erase(unionID);
+    proxy_scores_itr->second.unionScore.erase(unionID);
     // since a union has been removed, it possible that the
     // highscore unions for this proxy may have changed (or, an
     // unscored binding was deleted and the full high-score list can
@@ -235,25 +235,25 @@ BindingJudge::unionDeleted(const cdl::WorkingMemoryChange & _wmc) {
 
 void 
 BindingJudge::proxyDeleted(const cdl::WorkingMemoryChange & _wmc) {
-  log(string("proxyDeleted: ") + string(_wmc.m_address.m_id));
+  log(string("proxyDeleted: ") + string(_wmc.address.id));
   
-  string proxyID(_wmc.m_address.m_id);
-  m_proxyScores.erase(proxyID);
-  m_deletedProxies.insert(proxyID);
+  string proxyID(_wmc.address.id);
+  proxyScores.erase(proxyID);
+  deletedProxies.insert(proxyID);
   
 }
 
 
 struct HeuristicCmp {
   bool operator()(const BindingData::BindingScore& _score1, const BindingData::BindingScore& _score2) {
-    assert(_score1.m_comparable == _score2.m_comparable);
-    assert(_score1.m_mismatch == _score2.m_mismatch);
-    assert(_score1.m_matches == _score2.m_matches);
-    assert(_score1.m_relationMismatch == _score2.m_relationMismatch);
-    assert(_score1.m_relationMatches == _score2.m_relationMatches);
-    assert(_score1.m_sticky == _score2.m_sticky);
-    assert(string(_score1.m_proxyID) == string(_score2.m_proxyID));
-    return _score1.m_salienceHeuristics < _score2.m_salienceHeuristics;
+    assert(_score1.comparable == _score2.comparable);
+    assert(_score1.mismatch == _score2.mismatch);
+    assert(_score1.matches == _score2.matches);
+    assert(_score1.relationMismatch == _score2.relationMismatch);
+    assert(_score1.relationMatches == _score2.relationMatches);
+    assert(_score1.sticky == _score2.sticky);
+    assert(string(_score1.proxyID) == string(_score2.proxyID));
+    return _score1.salienceHeuristics < _score2.salienceHeuristics;
   }
 };
 
@@ -325,11 +325,11 @@ BindingJudge::_nonMatchingUnions(const string& _proxyID, const map<string,Bindin
   for(map<string,BindingData::BindingScore>::map::const_iterator bind = _bindingScores.begin() ; 
       bind != _bindingScores.end(); 
       ++bind) {
-    if(!bind->second.m_comparable || bind->second.m_mismatch || bind->second.m_relationMismatch) { 
+    if(!bind->second.comparable || bind->second.mismatch || bind->second.relationMismatch) { 
 /*      cout << "nonmatching score : " << scoreToString(bind->second) << endl;
-      const LBindingProxy& proxy(m_proxyLocalCache[_proxyID]);
-      if(proxy.bound() && string(proxy->m_unionID) != bind->first) {
-	cout << proxy.id() << " is bound to " << proxy->m_unionID << endl;
+      const LBindingProxy& proxy(proxyLocalCache[_proxyID]);
+      if(proxy.bound() && string(proxy->unionID) != bind->first) {
+	cout << proxy.id() << " is bound to " << proxy->unionID << endl;
 	cout << "ERROR BANANA ERROR!\n";
 	//abort();
       }*/
@@ -352,10 +352,10 @@ ttoString(const vector<string>& strings) {
 void 
 BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
 {
-  if(m_bindingTask) { // there is already a task, then just enqueue the proxy ID
-    m_proxyIDQueue.enqueue(_proxyID);
+  if(bindingTask) { // there is already a task, then just enqueue the proxy ID
+    proxyIDQueue.enqueue(_proxyID);
     string tmp;
-    for(non_repeating_queue<string>::const_iterator itr = m_proxyIDQueue.begin(); itr != m_proxyIDQueue.end() ; ++itr) {
+    for(non_repeating_queue<string>::const_iterator itr = proxyIDQueue.begin(); itr != proxyIDQueue.end() ; ++itr) {
       tmp += *itr + ", ";
     }
     log("proxy queue just grew: {" + tmp + "}");
@@ -367,9 +367,9 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
 			  0,
 			  unions);
   
-  cast::StringMap<ProxyScores>::map::iterator itr = m_proxyScores.find(_proxyID);
-  //assert(itr != m_proxyScores.end());
-  if(itr == m_proxyScores.end()) {
+  cast::StringMap<ProxyScores>::map::iterator itr = proxyScores.find(_proxyID);
+  //assert(itr != proxyScores.end());
+  if(itr == proxyScores.end()) {
     log("proxy score missing, assuming it was deleted but on the queue");
     return;
   }
@@ -378,11 +378,11 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
   
   const LBindingProxy* proxy_tmp = NULL;
   try {
-    proxy_tmp = &m_proxyLocalCache[_proxyID];
+    proxy_tmp = &proxyLocalCache[_proxyID];
   } 
   catch (const DoesNotExistOnWMException&) {
     BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-    p->m_proxyID = CORBA::string_dup(_proxyID.c_str());
+    p->proxyID = CORBA::string_dup(_proxyID.c_str());
     addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
     return;
   }
@@ -391,7 +391,7 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
 
   log(string("proxy: ") + _proxyID);
   log(string(" # of unions on WM: ") + lexical_cast<string>(unions.size()) + " + 1");
-  log(string("# of unions scored: ") + lexical_cast<string>(proxyScores.m_unionScore.size()));
+  log(string("# of unions scored: ") + lexical_cast<string>(proxyScores.unionScore.size()));
 #ifndef NDEBUG
 //#ifndef BLURB
   string on_wm;
@@ -403,8 +403,8 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     ids_on_wm.insert(string((*i)->getID()));
   }
   
-  for(map<string,BindingData::BindingScore>::map::const_iterator i = proxyScores.m_unionScore.begin();
-      i != proxyScores.m_unionScore.end() ; 
+  for(map<string,BindingData::BindingScore>::map::const_iterator i = proxyScores.unionScore.begin();
+      i != proxyScores.unionScore.end() ; 
       ++i) {
     scored+= i->first + " ";
     ids_on_wm.erase(i->first);    
@@ -422,10 +422,10 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
   
   // if all unions are scored, then generate a set of the best ones
   // for this proxy and store the result onto WM
-  if(proxyScores.m_unionScore.size() ==
+  if(proxyScores.unionScore.size() ==
      unions.size() + 1) { // the + 1 is for the comparison to BindingData::NO_UNION
     
-    const vector<string> last_best_unions(proxyScores.m_bestUnions);
+    const vector<string> last_best_unions(proxyScores.bestUnions);
     if(!last_best_unions.empty())
       assert(last_best_unions[0] != "");
 
@@ -433,23 +433,23 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     // tricky since there is no guarantee that the proxy "knows"
     // yet what it is bound to)
     string bound_to = BindingData::NO_UNION;
-    map<string,string>::const_iterator p2u = m_prox2uni.find(_proxyID);
-    if(p2u != m_prox2uni.end()) {
+    map<string,string>::const_iterator p2u = prox2uni.find(_proxyID);
+    if(p2u != prox2uni.end()) {
       bound_to = p2u->second;
     }
     
-    vector<string> nonmatching_unions = _nonMatchingUnions(_proxyID, proxyScores.m_unionScore);
+    vector<string> nonmatching_unions = _nonMatchingUnions(_proxyID, proxyScores.unionScore);
     BindingData::NonMatchingUnions* 
       new_nonmatch(new BindingData::NonMatchingUnions());
-    new_nonmatch->m_proxyID = CORBA::string_dup(_proxyID.c_str());
-    new_nonmatch->m_nonMatchingUnionIDs.length(nonmatching_unions.size());
+    new_nonmatch->proxyID = CORBA::string_dup(_proxyID.c_str());
+    new_nonmatch->nonMatchingUnionIDs.length(nonmatching_unions.size());
     vector<string>::const_iterator nonmatch_itr = nonmatching_unions.begin(); 
     for(unsigned int i = 0;
-	i < new_nonmatch->m_nonMatchingUnionIDs.length() ; 
+	i < new_nonmatch->nonMatchingUnionIDs.length() ; 
 	++i,++nonmatch_itr) {
-      new_nonmatch->m_nonMatchingUnionIDs[i] = CORBA::string_dup(nonmatch_itr->c_str());
+      new_nonmatch->nonMatchingUnionIDs[i] = CORBA::string_dup(nonmatch_itr->c_str());
     }
-    const string nonmatchID(proxy->m_nonMatchingUnionID);
+    const string nonmatchID(proxy->nonMatchingUnionID);
     // to pass the consistency check, the data must be loaded before
     // it's written. It's not strictly necessary for any other purpose
     // in this particular place.
@@ -466,16 +466,16 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     
     
     BindingData::BindingScore thresholdScore = defaultThresholdScore();
-    thresholdScore.m_proxyUpdatesWhenThisComputed = m_proxyScores[_proxyID].m_bestBindingScore.m_proxyUpdatesWhenThisComputed;
+    thresholdScore.proxyUpdatesWhenThisComputed = proxyScores[_proxyID].bestBindingScore.proxyUpdatesWhenThisComputed;
     
-    if(proxyScores.m_unionScore.find(string(BindingData::NO_UNION)) == proxyScores.m_unionScore.end()) {
+    if(proxyScores.unionScore.find(string(BindingData::NO_UNION)) == proxyScores.unionScore.end()) {
       log("oddly enough, the NIL union score was not found. This may happen during rapid deletion of proxies. Skipping this proxy.");
       BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-      p->m_proxyID = CORBA::string_dup(proxy.id().c_str());
+      p->proxyID = CORBA::string_dup(proxy.id().c_str());
       addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
       return;
     }
-    vector<string> best_unions = _bestUnions(proxyScores.m_unionScore, 
+    vector<string> best_unions = _bestUnions(proxyScores.unionScore, 
 					     score,
 					     thresholdScore,
 					     bound_to,
@@ -484,7 +484,7 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     
     log("     BEST for proxy: " + _proxyID);
     log("     BEST for this proxy: " + ttoString(best_unions) + " (" + scoreToString(score) + ")");
-    log("LAST BEST for this proxy: " + ttoString(last_best_unions) + " (" + scoreToString(proxyScores.m_bestBindingScore) + ")");
+    log("LAST BEST for this proxy: " + ttoString(last_best_unions) + " (" + scoreToString(proxyScores.bestBindingScore) + ")");
     
     if(!last_best_unions.empty())
       assert(last_best_unions[0] != "");
@@ -493,36 +493,36 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     // then there is no point in storing anything
     if(best_unions == last_best_unions) {
 
-      assert(proxy->m_proxyState != BindingData::NEW);
+      assert(proxy->proxyState != BindingData::NEW);
 
       bool alreadyBound = false;
 
-      if(proxy->m_proxyState == BindingData::BOUND) {
+      if(proxy->proxyState == BindingData::BOUND) {
 	log("state is bound already");
 	alreadyBound = true;
       }
       
-      if(proxy->m_proxyState == BindingData::REPROCESSED) {
+      if(proxy->proxyState == BindingData::REPROCESSED) {
 	changeProxyState(proxy, BindingData::BOUND);
       }
 
-      if(proxy->m_proxyState == BindingData::UPDATED) {
+      if(proxy->proxyState == BindingData::UPDATED) {
 	changeProxyState(proxy, BindingData::BOUND);
       }
 
 
       log("they are equal, no update needed, maybe of the score, though");
       
-      if(proxyScores.m_bestBindingScore == score) {
+      if(proxyScores.bestBindingScore == score) {
 	log("nope... score is the same... even the version numbers..., the proxy is bound and all is fine");	
 	BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-	p->m_proxyID = CORBA::string_dup(proxy.id().c_str());
+	p->proxyID = CORBA::string_dup(proxy.id().c_str());
 	addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
 	return;
       }  else if (alreadyBound) {
 	log("already bound but score has changed, signalling");
       	BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-      	p->m_proxyID = CORBA::string_dup(proxy.id().c_str());
+      	p->proxyID = CORBA::string_dup(proxy.id().c_str());
       	addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
       	return;
       }
@@ -532,35 +532,35 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
       
     }
     // store locally
-    proxyScores.m_bestUnions       = best_unions;
-    proxyScores.m_bestBindingScore = score;
+    proxyScores.bestUnions       = best_unions;
+    proxyScores.bestBindingScore = score;
     
     if(best_unions.size() == 1 && 
        *best_unions.begin() == BindingData::NO_UNION &&
        !last_best_unions.empty()) {
-      //      assert(proxyScores.m_unionScore.find(*last_best_unions.begin()) !=
-      //	     proxyScores.m_unionScore.end()); // this may be a faulty assumption... hmmm
+      //      assert(proxyScores.unionScore.find(*last_best_unions.begin()) !=
+      //	     proxyScores.unionScore.end()); // this may be a faulty assumption... hmmm
       log("!!!!!!!!!!!!!!!!!!! a situation occurred");
       log("Score for NIL         : " + scoreToString(score));
-      log("Score for last binding: " + scoreToString(proxyScores.m_unionScore[*last_best_unions.begin()]));
+      log("Score for last binding: " + scoreToString(proxyScores.unionScore[*last_best_unions.begin()]));
     }    
     
     BindingData::BestUnionsForProxy* 
       new_best(new BindingData::BestUnionsForProxy());
-    new_best->m_proxyID = CORBA::string_dup(_proxyID.c_str());
-    new_best->m_proxyFeatureSignature = CORBA::string_dup(proxy->m_featureSignature);
-    new_best->m_unionIDs.length(best_unions.size());
-    new_best->m_proxyUpdatesWhenThisComputed = proxy->m_updates;
+    new_best->proxyID = CORBA::string_dup(_proxyID.c_str());
+    new_best->proxyFeatureSignature = CORBA::string_dup(proxy->featureSignature);
+    new_best->unionIDs.length(best_unions.size());
+    new_best->proxyUpdatesWhenThisComputed = proxy->updates;
     
     vector<string>::const_iterator best_itr = best_unions.begin(); 
     for(unsigned int i = 0;
-	i < new_best->m_unionIDs.length() ; 
+	i < new_best->unionIDs.length() ; 
 	++i,++best_itr) {
-      new_best->m_unionIDs[i] = CORBA::string_dup(best_itr->c_str());
+      new_best->unionIDs[i] = CORBA::string_dup(best_itr->c_str());
     }
-    new_best->m_score = score;
+    new_best->score = score;
     
-    const string bestID(proxy->m_bestUnionsForProxyID);
+    const string bestID(proxy->bestUnionsForProxyID);
     // to pass the consistency check, the data must be loaded before
     // it's written. It's not strictly necessary for any other purpose
     // in this particular place.
@@ -572,8 +572,8 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     log(string("updated best union list: ") + bestID  + " for proxy "+ _proxyID);
     
 
-    if(string(new_best->m_proxyFeatureSignature) != 
-       string(proxyScores.m_bestBindingScore.m_proxyFeatureSignature) || 
+    if(string(new_best->proxyFeatureSignature) != 
+       string(proxyScores.bestBindingScore.proxyFeatureSignature) || 
        (
 	best_unions != last_best_unions && 
 	(last_best_unions.empty() || 
@@ -581,18 +581,18 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
 	 )
 	)
        ) {
-      //      if(m_bindingTask) { // there is already a task, then just enque the proxy ID
-      //	m_proxyIDQueue.push_back(_proxyID);
+      //      if(bindingTask) { // there is already a task, then just enque the proxy ID
+      //	proxyIDQueue.push_back(_proxyID);
       //	string tmp;
-      //	for(deque<string>::const_iterator itr = m_proxyIDQueue.begin(); itr != m_proxyIDQueue.end() ; ++itr) {
+      //	for(deque<string>::const_iterator itr = proxyIDQueue.begin(); itr != proxyIDQueue.end() ; ++itr) {
       //	  tmp += *itr + ", ";
       //	}
       //	log("proxy queue just grew: {" + tmp + "}");
       //      } else {	
       log("need a new binding task for " + _proxyID);
       BindingData::BindingTask* task = new BindingData::BindingTask();
-      task->m_bestUnionsForProxyID = CORBA::string_dup(bestID.c_str());
-      m_bindingTask = true;
+      task->bestUnionsForProxyID = CORBA::string_dup(bestID.c_str());
+      bindingTask = true;
       addToWorkingMemory(newDataID(), 
 			 //BindingLocalOntology::BINDING_TASK_TYPE,
 			 task//, cdl::BLOCKING
@@ -602,7 +602,7 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
     } else {
     log("not enough scores collected yet, do nothing...");
     BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-    p->m_proxyID = CORBA::string_dup(proxy.id().c_str());
+    p->proxyID = CORBA::string_dup(proxy.id().c_str());
     addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
   }
 }
@@ -610,13 +610,13 @@ BindingJudge::_calculateBestUnionsAndStoreIfNecessary(const string & _proxyID )
 void 
 BindingJudge::bindingTaskDeleted(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-  m_bindingTask = false;  
-  while(!m_bindingTask && !m_proxyIDQueue.empty()) {
-    const string id(m_proxyIDQueue.dequeue());
+  bindingTask = false;  
+  while(!bindingTask && !proxyIDQueue.empty()) {
+    const string id(proxyIDQueue.dequeue());
     _calculateBestUnionsAndStoreIfNecessary(id);
   }
   string tmp;
-  for(deque<string>::const_iterator itr = m_proxyIDQueue.begin(); itr != m_proxyIDQueue.end() ; ++itr) {
+  for(deque<string>::const_iterator itr = proxyIDQueue.begin(); itr != proxyIDQueue.end() ; ++itr) {
     tmp += *itr + ", ";
   }
   log("proxy queue just shrinked: {" + tmp + "}");

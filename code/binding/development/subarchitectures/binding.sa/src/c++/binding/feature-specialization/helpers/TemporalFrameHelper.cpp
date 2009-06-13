@@ -11,15 +11,15 @@ TemporalFrameComparator::compare(const AbstractFeature& _proxyFeature,
   const BindingFeatures::TemporalFrame& proxyFeature(getIDLFeature(_proxyFeature));
   const BindingFeatures::TemporalFrame& unionFeature(getIDLFeature(_unionFeature));    
   
-  if(proxyFeature.m_temporalFrame == BindingFeaturesCommon::NA ||
-     unionFeature.m_temporalFrame == BindingFeaturesCommon::NA)
+  if(proxyFeature.temporalFrame == BindingFeaturesCommon::NA ||
+     unionFeature.temporalFrame == BindingFeaturesCommon::NA)
     return indeterminate;
-  if(proxyFeature.m_temporalFrame == unionFeature.m_temporalFrame)
+  if(proxyFeature.temporalFrame == unionFeature.temporalFrame)
     return indeterminate;
-  switch(proxyFeature.m_temporalFrame) {
+  switch(proxyFeature.temporalFrame) {
   case BindingFeaturesCommon::PERCEIVED:
   case BindingFeaturesCommon::ASSERTED:
-    switch(unionFeature.m_temporalFrame) {
+    switch(unionFeature.temporalFrame) {
     case BindingFeaturesCommon::PERCEIVED:
     case BindingFeaturesCommon::ASSERTED:
       return indeterminate;
@@ -45,9 +45,9 @@ TemporalFrameComparator::compare(const AbstractFeature& _proxyFeature,
 TemporalFrameHelper::TemporalFrameHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = false;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = false;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
@@ -85,14 +85,14 @@ operator<<(ostream& _out, const BindingFeaturesCommon::TemporalFrameType _frame)
 ostream& 
 TemporalFrameHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
-  _out << extract(_feat).m_temporalFrame;
+  _out << extract(_feat).temporalFrame;
   return _out;
 }
 
 bool 
 TemporalFrameHelper::operatorLessImpl(const AbstractFeature& _feat1, const AbstractFeature& _feat2) const 
 {
-  return extract(_feat1).m_temporalFrame < extract(_feat2).m_temporalFrame;
+  return extract(_feat1).temporalFrame < extract(_feat2).temporalFrame;
 }
   
 

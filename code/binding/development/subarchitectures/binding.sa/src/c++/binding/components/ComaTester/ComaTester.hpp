@@ -5,7 +5,7 @@
 #include <set>
 #include <binding/utils/GraphLoader.hpp>
 #include <binding/utils/Predicates.hpp>
-#include <binding/idl/BindingData.hh>
+#include <BindingData.hpp>
 #include <binding/idl/BindingFeatures.hh>
 #include <binding/BindingException.hpp>
 #include <binding/feature-utils/AbstractFeature.hpp>

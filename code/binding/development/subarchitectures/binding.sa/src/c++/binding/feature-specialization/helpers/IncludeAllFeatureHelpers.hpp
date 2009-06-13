@@ -2,7 +2,7 @@
 #define BINDING_FEATURE_HELPERS_H_
 
 #include <ostream>
-#include <binding/idl/BindingFeaturesCommon.hh>
+#include <BindingFeaturesCommon.hpp>
 #include <binding/idl/BindingFeatures.hh>
 
 #include "SalienceHelper.hpp"

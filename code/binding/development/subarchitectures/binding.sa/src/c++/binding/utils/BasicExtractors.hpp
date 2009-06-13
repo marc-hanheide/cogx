@@ -32,15 +32,15 @@ protected:
 template<class LocalBindingDataPtrT>
 struct InclusiveOrExtractor 
   : public AbstractExtractor<LocalBindingDataPtrT> {
-  const AbstractExtractor<LocalBindingDataPtrT>& m_extractor_1;
-  const AbstractExtractor<LocalBindingDataPtrT>& m_extractor_2;
+  const AbstractExtractor<LocalBindingDataPtrT>& extractor_1;
+  const AbstractExtractor<LocalBindingDataPtrT>& extractor_2;
   InclusiveOrExtractor(const AbstractExtractor<LocalBindingDataPtrT>& _extractor_1,  
 		       const AbstractExtractor<LocalBindingDataPtrT>& _extractor_2) 
-    : m_extractor_1(_extractor_1), m_extractor_2(_extractor_2) {}
+    : extractor_1(_extractor_1), extractor_2(_extractor_2) {}
   
   virtual std::set<std::string> operator()(const LocalBindingDataPtrT& _ptr) const {
-    const std::set<std::string>& ids1(m_extractor_1(_ptr));
-    const std::set<std::string>& ids2(m_extractor_2(_ptr));
+    const std::set<std::string>& ids1(extractor_1(_ptr));
+    const std::set<std::string>& ids2(extractor_2(_ptr));
     std::set<std::string> ret;
     std::set_union(ids1.begin(),ids1.end(),
 		   ids2.begin(),ids2.end(),
@@ -68,15 +68,15 @@ operator||(const AbstractExtractor<UnionPtr>& _extractor_1,
 template<class LocalBindingDataPtrT>
 struct AndExtractor 
   : public AbstractExtractor<LocalBindingDataPtrT> {
-  const AbstractExtractor<LocalBindingDataPtrT>& m_extractor_1;
-  const AbstractExtractor<LocalBindingDataPtrT>& m_extractor_2;
+  const AbstractExtractor<LocalBindingDataPtrT>& extractor_1;
+  const AbstractExtractor<LocalBindingDataPtrT>& extractor_2;
   AndExtractor(const AbstractExtractor<LocalBindingDataPtrT>& _extractor_1,  
 	       const AbstractExtractor<LocalBindingDataPtrT>& _extractor_2) 
-    : m_extractor_1(_extractor_1), m_extractor_2(_extractor_2) {}
+    : extractor_1(_extractor_1), extractor_2(_extractor_2) {}
   
   virtual std::set<std::string> operator()(const LocalBindingDataPtrT& _ptr) const {
-    const std::set<std::string>& ids1(m_extractor_1(_ptr));
-    const std::set<std::string>& ids2(m_extractor_2(_ptr));
+    const std::set<std::string>& ids1(extractor_1(_ptr));
+    const std::set<std::string>& ids2(extractor_2(_ptr));
     std::set<std::string> ret;
     std::set_intersection(ids1.begin(),ids1.end(),
 			  ids2.begin(),ids2.end(),
@@ -104,25 +104,25 @@ operator&&(const AbstractExtractor<UnionPtr>& _extractor_1,
 template<class LocalBindingDataPtrT>
 struct RecursiveExtractor 
   : public AbstractExtractor<LocalBindingDataPtrT> {
-  const AbstractExtractor<LocalBindingDataPtrT>& m_extractor;
+  const AbstractExtractor<LocalBindingDataPtrT>& extractor;
   /// should refer to the handler's loading function
-  boost::function<LocalBindingDataPtrT& (boost::reference_wrapper<const std::string>)> m_loader;
+  boost::function<LocalBindingDataPtrT& (boost::reference_wrapper<const std::string>)> loader;
   
   RecursiveExtractor(const AbstractExtractor<LocalBindingDataPtrT>& _extractor,
-		     boost::function<LocalBindingDataPtrT& (boost::reference_wrapper<const std::string>)> _loader) : m_extractor(_extractor),
-														     m_loader(_loader) {}
+		     boost::function<LocalBindingDataPtrT& (boost::reference_wrapper<const std::string>)> _loader) : extractor(_extractor),
+														     loader(_loader) {}
 														     
   virtual std::set<std::string> operator()(const LocalBindingDataPtrT& _ptr) const {
     std::set<std::string> ids; 
     std::deque<LocalBindingDataPtrT> queue;
     queue.push_back(_ptr);
     while(!queue.empty()) {
-      std::set<std::string> new_ids = m_extractor(queue.front());
+      std::set<std::string> new_ids = extractor(queue.front());
       for(std::set<std::string>::const_iterator itr = new_ids.begin(); 
 	  itr != new_ids.end() ; 
 	  ++itr) {
 	if(ids.insert(*itr).second) { // if insertion was successful, i.e. it was not already expanded
-	  LocalBindingDataPtrT target = m_loader(boost::cref(*itr));
+	  LocalBindingDataPtrT target = loader(boost::cref(*itr));
 	  queue.push_back(target); // put onto queue for recursive processing
 	}
       }

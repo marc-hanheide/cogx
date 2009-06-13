@@ -9,14 +9,14 @@ namespace Binding {
 ostream& 
 operator<<(ostream& _out,const FeatureProperties& _p)
 {
-  _out << PRINTNAMED(_p.m_isInvariant) << endl;
-  _out << PRINTNAMED(_p.m_isSimplex) << endl;
-  _out << PRINTNAMED(_p.m_isDemanded) << endl;
-//  _out << PRINTNAMED(_p.m_isImplemented) << endl;
-  _out << BOOST_PP_STRINGIZE(_p.m_comparableInternally) << ": ";
-  print_set(_out,_p.m_comparableInternally);
-  _out << BOOST_PP_STRINGIZE(_p.m_comparableExternally) << ": ";
-  print_set(_out,_p.m_comparableExternally);
+  _out << PRINTNAMED(_p.isInvariant) << endl;
+  _out << PRINTNAMED(_p.isSimplex) << endl;
+  _out << PRINTNAMED(_p.isDemanded) << endl;
+//  _out << PRINTNAMED(_p.isImplemented) << endl;
+  _out << BOOST_PP_STRINGIZE(_p.comparableInternally) << ": ";
+  print_set(_out,_p.comparableInternally);
+  _out << BOOST_PP_STRINGIZE(_p.comparableExternally) << ": ";
+  print_set(_out,_p.comparableExternally);
   _out << endl;
   return _out;
 }

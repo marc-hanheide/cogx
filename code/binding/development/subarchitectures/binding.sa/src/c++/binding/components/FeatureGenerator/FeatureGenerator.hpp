@@ -41,13 +41,13 @@ private:
 
   void answerRequest(const cast::cdl::WorkingMemoryAddress & _wma,
 		     boost::shared_ptr<const cast::CASTData<BindingQueries::FeatureRequest> > _request,
-		     const cast::cdl::TriBool & _successful);
+		     const BindingData::TriBool & _successful);
   
 
-  StringSetMap m_feature2sa;
+  StringSetMap feature2sa;
 
   //handler for manipulating proxies and unions
-  BindingGraphHandler m_handler;
+  BindingGraphHandler handler;
 
 };
 

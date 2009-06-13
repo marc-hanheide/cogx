@@ -27,10 +27,10 @@ getTypeInfo(const AbstractFeature& _feat)
 
 void 
 AbstractFeatureHelper::setProperties(const FeatureProperties& _properties) {
-  if(m_properties.get() == NULL) {
-    m_properties = auto_ptr<FeatureProperties>(new FeatureProperties(_properties));
+  if(properties.get() == NULL) {
+    properties = auto_ptr<FeatureProperties>(new FeatureProperties(_properties));
   } else {
-    *m_properties = _properties;
+    *properties = _properties;
   }
 }
 

@@ -7,7 +7,7 @@
 #include <comsys/idl/ComsysEssentials.hh>
 #include <binding/utils/GraphLoader.hpp>
 #include <binding/utils/Predicates.hpp>
-#include <binding/idl/BindingData.hh>
+#include <BindingData.hpp>
 #include <binding/idl/BindingFeatures.hh>
 #include <binding/BindingException.hpp>
 #include <binding/feature-utils/AbstractFeature.hpp>
@@ -24,22 +24,22 @@ namespace Binding {
 class ComsysTester : 
     public AbstractBinder {
   /// the test number
-  int m_test;
+  int test;
   
   /// the latest registered status of the binder
-  BindingData::BinderStatus m_status;
+  BindingData::BinderStatus status;
     /// the id of the status
-  std::string m_statusID;
+  std::string statusID;
 
-  std::string m_comsysID;
+  std::string comsysID;
   /// all proxies currently on WM (as far as this component knows)
-  std::set<std::string> m_proxiesOnWM;
+  std::set<std::string> proxiesOnWM;
   /// all proxies signalled as added
-  std::set<std::string> m_addSignalledProxyIDs;
+  std::set<std::string> addSignalledProxyIDs;
 
-  BindingGraphHandler m_handler;
+  BindingGraphHandler handler;
 
-  bool m_testFinished;
+  bool testFinished;
 
 public:
   ComsysTester(const std::string &_id);
@@ -63,8 +63,8 @@ protected:
 /// exits and signals success
   void successExit() {
     const_cast<ComsysTester&>(*this).sleepProcess(100); // sleep for a while and test completeness again (10 times)
-    if(m_retest++ < 10) {
-      std::cout << "retesting #" << m_retest << " at time "
+    if(retest++ < 10) {
+      std::cout << "retesting #" << retest << " at time "
 		<< BALTTimer::getBALTTime() << std::endl;
       testCompleteness();
     }
@@ -93,13 +93,13 @@ private:
   /// writes the sentence to comsys's WM
   void passToComsys(const std::string& _sentence);
 
-  unsigned int m_retest;  
+  unsigned int retest;  
 
-  std::string m_dotTitle;
+  std::string dotTitle;
 
   void  trigger_dot() {
     BindingData::TriggerDotViewerWithTitle* trigger = new BindingData::TriggerDotViewerWithTitle;
-    trigger->m_title = CORBA::string_dup(m_dotTitle.c_str());
+    trigger->title = CORBA::string_dup(dotTitle.c_str());
     addToWorkingMemory(newDataID(), trigger, cast::cdl::BLOCKING);
     addToWorkingMemory(newDataID(), "motiv.sa", trigger, cast::cdl::BLOCKING);
   }

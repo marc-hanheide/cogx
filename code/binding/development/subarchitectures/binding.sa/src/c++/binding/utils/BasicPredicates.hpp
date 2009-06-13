@@ -61,8 +61,8 @@ struct TruePredicate : public AbstractPredicate<LocalBindingDataPtrT> {
 
 template<class LocalBindingDataPtrT>
 struct UnaryPredicate : public AbstractPredicate<LocalBindingDataPtrT> {
-  UnaryPredicate(const AbstractPredicate<LocalBindingDataPtrT>& _pred) : m_pred(_pred.clone()) {}
-  boost::shared_ptr<AbstractPredicate<LocalBindingDataPtrT> > m_pred;
+  UnaryPredicate(const AbstractPredicate<LocalBindingDataPtrT>& _pred) : pred(_pred.clone()) {}
+  boost::shared_ptr<AbstractPredicate<LocalBindingDataPtrT> > pred;
 protected:
   virtual ~UnaryPredicate() {};
 };
@@ -71,10 +71,10 @@ template<class LocalBindingDataPtrT>
 struct BinaryPredicate : public AbstractPredicate<LocalBindingDataPtrT> {
   BinaryPredicate(const AbstractPredicate<LocalBindingDataPtrT>& _pred1,
 		  const AbstractPredicate<LocalBindingDataPtrT>& _pred2) 
-    : m_predicate_1(_pred1.clone()),
-      m_predicate_2(_pred2.clone()){}
-  boost::shared_ptr<AbstractPredicate<LocalBindingDataPtrT> > m_predicate_1;
-  boost::shared_ptr<AbstractPredicate<LocalBindingDataPtrT> > m_predicate_2;
+    : predicate_1(_pred1.clone()),
+      predicate_2(_pred2.clone()){}
+  boost::shared_ptr<AbstractPredicate<LocalBindingDataPtrT> > predicate_1;
+  boost::shared_ptr<AbstractPredicate<LocalBindingDataPtrT> > predicate_2;
 protected:
   virtual ~BinaryPredicate() {};
 };
@@ -85,7 +85,7 @@ struct NegatedPredicate : public UnaryPredicate<LocalBindingDataPtrT> {
   NegatedPredicate(const AbstractPredicate<LocalBindingDataPtrT>& _pred) : 
     UnaryPredicate<LocalBindingDataPtrT>(_pred) {}
   bool test(const LocalBindingDataPtrT& _ptr) const {
-    return !(this->m_pred->test(_ptr));
+    return !(this->pred->test(_ptr));
   }
   virtual typename AbstractPredicate<LocalBindingDataPtrT>::abstract_predicate_ptr 
   clone() const {return clone_predicate(*this);}
@@ -113,7 +113,7 @@ struct AndPredicate : public BinaryPredicate<LocalBindingDataPtrT> {
 	       const AbstractPredicate<LocalBindingDataPtrT>& _predicate_2) 
     : BinaryPredicate<LocalBindingDataPtrT>(_predicate_1, _predicate_2) {}
   bool test(const LocalBindingDataPtrT& _ptr) const {
-    return this->m_predicate_1->test(_ptr) && this->m_predicate_2->test(_ptr);
+    return this->predicate_1->test(_ptr) && this->predicate_2->test(_ptr);
   }
   virtual typename AbstractPredicate<LocalBindingDataPtrT>::abstract_predicate_ptr 
   clone() const {return clone_predicate(*this);}
@@ -144,7 +144,7 @@ struct InclusiveOrPredicate : public BinaryPredicate<LocalBindingDataPtrT> {
 	       const AbstractPredicate<LocalBindingDataPtrT>& _predicate_2) 
     : BinaryPredicate<LocalBindingDataPtrT>(_predicate_1, _predicate_2) {}
   bool test(const LocalBindingDataPtrT& _ptr) const {
-    return this->m_predicate_1->test(_ptr) || this->m_predicate_2->test(_ptr);
+    return this->predicate_1->test(_ptr) || this->predicate_2->test(_ptr);
   }
   virtual typename AbstractPredicate<LocalBindingDataPtrT>::abstract_predicate_ptr 
   clone() const {return clone_predicate(*this);}
@@ -175,7 +175,7 @@ struct ImplicationPredicate : public BinaryPredicate<LocalBindingDataPtrT> {
 	       const AbstractPredicate<LocalBindingDataPtrT>& _predicate_2) 
     : BinaryPredicate<LocalBindingDataPtrT>(_predicate_1, _predicate_2) {}
   bool test(const LocalBindingDataPtrT& _ptr) const {
-    return !this->m_predicate_1->test(_ptr) || this->m_predicate_2->test(_ptr);
+    return !this->predicate_1->test(_ptr) || this->predicate_2->test(_ptr);
   }
   virtual typename AbstractPredicate<LocalBindingDataPtrT>::abstract_predicate_ptr
   clone() const {return clone_predicate(*this);}
@@ -208,7 +208,7 @@ struct EquivalencePredicate : public BinaryPredicate<LocalBindingDataPtrT> {
     : BinaryPredicate<LocalBindingDataPtrT>(_predicate_1, _predicate_2) {}
   
   bool test(const LocalBindingDataPtrT& _ptr) const {
-    return this->m_predicate_1->test(_ptr) == this->m_predicate_2->test(_ptr);
+    return this->predicate_1->test(_ptr) == this->predicate_2->test(_ptr);
   }
   virtual typename AbstractPredicate<LocalBindingDataPtrT>::abstract_predicate_ptr
   clone() const {return clone_predicate(*this);}
@@ -240,7 +240,7 @@ struct IdentityPredicate : public UnaryPredicate<LocalBindingDataPtrT> {
   IdentityPredicate(const AbstractPredicate<LocalBindingDataPtrT>& _pred) : 
     UnaryPredicate<LocalBindingDataPtrT>(_pred) {}
   bool test(const LocalBindingDataPtrT& _ptr) const {
-    return this->m_pred->test(_ptr);
+    return this->pred->test(_ptr);
   }
   virtual typename AbstractPredicate<LocalBindingDataPtrT>::abstract_predicate_ptr
   clone() const {return clone_predicate(*this);}

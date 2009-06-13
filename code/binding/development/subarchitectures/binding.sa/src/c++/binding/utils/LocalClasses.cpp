@@ -1,10 +1,10 @@
 #include "LocalClasses.hpp"
-#include "binding/feature-utils/AbstractFeature.hpp"
-#include "binding/feature-utils/FeatureExtractor.hpp"
-#include "binding/abstr/AbstractBinder.hpp"
+#include "../feature-utils/AbstractFeature.hpp"
+#include "../feature-utils/FeatureExtractor.hpp"
+#include "../abstr/AbstractBinder.hpp"
 //#include "ontology/BindingLocalOntology.hpp"
-#include "binding/ontology/BindingFeatureOntology.hpp"
-#include "binding/utils/Misc.hpp"
+#include "../ontology/BindingFeatureOntology.hpp"
+#include "../utils/Misc.hpp"
 //#include "binding/abstr/AbstractBindingWMRepresenter.hpp"
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
@@ -19,127 +19,126 @@
 
 
 
-
 namespace Binding {
 using namespace boost;
 using namespace std;
 using namespace cast;
 
 
-LBindingProxy::LBindingProxy(const LBindingProxy& _lprox) 
+LBindingProxy::LBindingProxy(const LBindingProxy& _lprox)
   : LocalBindingData(_lprox.bindingWMRepresenter(),
-		     _lprox.m_proxy->m_proxyFeatures,
-		     _lprox.id(), 
+		     _lprox.proxy->proxyFeatures,
+		     _lprox.id(),
 		     _lprox.subarchitecture_id(),
 		     _lprox.version()),
-    m_proxy(_lprox.m_proxy),
-    m_bestUnionsCache(_lprox.component(),string(_lprox.m_proxy->m_bestUnionsForProxyID)),
-    m_nonMatchingUnionsCache(_lprox.component(),string(_lprox.m_proxy->m_nonMatchingUnionID)),
-    m_inPortsCache(_lprox.component(),string(_lprox.m_proxy->m_inPortsID))
-{ 
+    proxy(_lprox.proxy),
+    bestUnionsCache(_lprox.component(),string(_lprox.proxy->bestUnionsForProxyID)),
+    nonMatchingUnionsCache(_lprox.component(),string(_lprox.proxy->nonMatchingUnionID)),
+    inPortsCache(_lprox.component(),string(_lprox.proxy->inPortsID))
+{
   //    cout << "LBindingProxy copy constructor called\n"; cout.flush();
-  //    cout << "_lprox.m_proxy.get(): " << _lprox.m_proxy.get() << endl;
+  //    cout << "_lprox.proxy.get(): " << _lprox.proxy.get() << endl;
   shared_ptr<string> str = shared_ptr<string>(new string(subarchitectureID()));
-  m_bestUnionsCache.setSubarchitectureID(str);
-  m_nonMatchingUnionsCache.setSubarchitectureID(str);
-  m_inPortsCache.setSubarchitectureID(str);
+  bestUnionsCache.setSubarchitectureID(str);
+  nonMatchingUnionsCache.setSubarchitectureID(str);
+  inPortsCache.setSubarchitectureID(str);
 }
-  
+
 LBindingProxy::LBindingProxy(AbstractBindingWMRepresenter& _bindingWMRepresenter,
 			     const shared_ptr<const BindingData::BindingProxy>& _proxy,
 			     const string& _id,
 			     const string& _subarchitecture_id,
 			     unsigned int _version)
   : LocalBindingData(_bindingWMRepresenter,
-		     _proxy->m_proxyFeatures,
-		     _id, 
+		     _proxy->proxyFeatures,
+		     _id,
 		     _subarchitecture_id,
 		     _version),
-    m_proxy(_proxy),
-    m_bestUnionsCache(component(),string(_proxy->m_bestUnionsForProxyID)),
-    m_nonMatchingUnionsCache(component(),string(_proxy->m_nonMatchingUnionID)),
-    m_inPortsCache(component(),string(_proxy->m_inPortsID)) 
-{ 
-  shared_ptr<string> str = shared_ptr<string>(new string(subarchitectureID()));
-  m_bestUnionsCache.setSubarchitectureID(str);
-  m_nonMatchingUnionsCache.setSubarchitectureID(str);
-  m_inPortsCache.setSubarchitectureID(str);
-
-}
-  
-
-const FeatureSet& 
-LocalBindingData::featureSet() const 
+    proxy(_proxy),
+    bestUnionsCache(component(),string(_proxy->bestUnionsForProxyID)),
+    nonMatchingUnionsCache(component(),string(_proxy->nonMatchingUnionID)),
+    inPortsCache(component(),string(_proxy->inPortsID))
 {
-  if(m_featureSet.get() == NULL) {
-    m_featureSet = auto_ptr<FeatureSet>(new FeatureSet(_toFeatureSet(m_features)));
-  }
-  return *m_featureSet;  
+  shared_ptr<string> str = shared_ptr<string>(new string(subarchitectureID()));
+  bestUnionsCache.setSubarchitectureID(str);
+  nonMatchingUnionsCache.setSubarchitectureID(str);
+  inPortsCache.setSubarchitectureID(str);
+
 }
 
-const FeatureSet& 
+
+const FeatureSet&
+LocalBindingData::featureSet() const
+{
+  if(featureSet.get() == NULL) {
+    featureSet = auto_ptr<FeatureSet>(new FeatureSet(_toFeatureSet(features)));
+  }
+  return *featureSet;
+}
+
+const FeatureSet&
 LocalBindingData::comparableFeatureSet() const
 {
-  if(m_comparableFeatureSet.get() == NULL) {
-    m_comparableFeatureSet = auto_ptr<FeatureSet>(new FeatureSet(_toComparableFeatureSet(m_features)));
+  if(comparableFeatureSet.get() == NULL) {
+    comparableFeatureSet = auto_ptr<FeatureSet>(new FeatureSet(_toComparableFeatureSet(features)));
   }
-  return *m_comparableFeatureSet;  
+  return *comparableFeatureSet;
 }
 
-const FeatureSetWithRepetitions& 
+const FeatureSetWithRepetitions&
 LocalBindingData::featureSetWithRepetitions() const
 {
-  if(m_featureSetWithRepetitions.get() == NULL) {
-    m_featureSetWithRepetitions = 
-      auto_ptr<FeatureSetWithRepetitions>(new FeatureSetWithRepetitions(_toFeatureSetWithRepetitions(m_features)));
+  if(featureSetWithRepetitions.get() == NULL) {
+    featureSetWithRepetitions =
+      auto_ptr<FeatureSetWithRepetitions>(new FeatureSetWithRepetitions(_toFeatureSetWithRepetitions(features)));
   }
-  return *m_featureSetWithRepetitions;  
+  return *featureSetWithRepetitions;
 }
 
-const FeatureSetWithRepetitions& 
+const FeatureSetWithRepetitions&
 LocalBindingData::comparableFeatureSetWithRepetitions() const
 {
-  if(m_comparableFeatureSetWithRepetitions.get() == NULL) {
-    m_comparableFeatureSetWithRepetitions = 
-      auto_ptr<FeatureSetWithRepetitions>(new FeatureSetWithRepetitions(_toComparableFeatureSetWithRepetitions(m_features)));
+  if(comparableFeatureSetWithRepetitions.get() == NULL) {
+    comparableFeatureSetWithRepetitions =
+      auto_ptr<FeatureSetWithRepetitions>(new FeatureSetWithRepetitions(_toComparableFeatureSetWithRepetitions(features)));
   }
-  return *m_comparableFeatureSetWithRepetitions;    
+  return *comparableFeatureSetWithRepetitions;
 }
 
-/*const OptimizedFeatureSet& 
+/*const OptimizedFeatureSet&
 LocalBindingData::optimizedComparableFeatureSet() const
 {
-  if(m_optimizedComparableFeatureSet.get() == NULL) {
-    m_optimizedComparableFeatureSet = auto_ptr<OptimizedFeatureSet>(new OptimizedFeatureSet(_toOptimizedComparableFeatureSet(m_features)));
+  if(optimizedComparableFeatureSet.get() == NULL) {
+    optimizedComparableFeatureSet = auto_ptr<OptimizedFeatureSet>(new OptimizedFeatureSet(_toOptimizedComparableFeatureSet(features)));
   }
-  return *m_optimizedComparableFeatureSet;  
+  return *optimizedComparableFeatureSet;
 }
 
 
-const OptimizedFeatureSetWithRepetitions& 
+const OptimizedFeatureSetWithRepetitions&
 LocalBindingData::optimizedComparableFeatureSetWithRepetitions() const
 {
-  if(m_optimizedComparableFeatureSetWithRepetitions.get() == NULL) {
-    m_optimizedComparableFeatureSetWithRepetitions = 
-      auto_ptr<OptimizedFeatureSetWithRepetitions>(new OptimizedFeatureSetWithRepetitions(_toOptimizedComparableFeatureSetWithRepetitions(m_features)));
+  if(optimizedComparableFeatureSetWithRepetitions.get() == NULL) {
+    optimizedComparableFeatureSetWithRepetitions =
+      auto_ptr<OptimizedFeatureSetWithRepetitions>(new OptimizedFeatureSetWithRepetitions(_toOptimizedComparableFeatureSetWithRepetitions(features)));
   }
-  return *m_optimizedComparableFeatureSetWithRepetitions;    
+  return *optimizedComparableFeatureSetWithRepetitions;
 }
 */
 
- 
-FeatureSet 
+
+FeatureSet
 LocalBindingData::_toFeatureSet(const BindingData::FeaturePointers& features) const
 {
   FeatureSet fset;
   for(unsigned int i = 0; i < features.length() ; ++i) {
     //    log(string("fset generation: ") + lexical_cast<string>(i) + " : "+ lexical_cast<string>(features.leng.hpp()));
-    //    log(string("features[i].m_type: ") + string(features[i].m_type));
-    OneTypeOfFeatures& fvalues(fset[string(features[i].m_type)]);
-    shared_ptr<AbstractFeature> ptr(m_bindingWMRepresenter.toFeature(features[i]));
+    //    log(string("features[i].type: ") + string(features[i].type));
+    OneTypeOfFeatures& fvalues(fset[string(features[i].type)]);
+    shared_ptr<AbstractFeature> ptr(bindingWMRepresenter.toFeature(features[i]));
     fvalues.insert(ptr);
-  }  
-  return fset; 
+  }
+  return fset;
 }
 
 FeatureSetWithRepetitions
@@ -148,29 +147,29 @@ LocalBindingData::_toFeatureSetWithRepetitions(const BindingData::FeaturePointer
   FeatureSetWithRepetitions fset;
   for(unsigned int i = 0; i < features.length() ; ++i) {
     //    log(string("fset generation: ") + lexical_cast<string>(i) + " : "+ lexical_cast<string>(features.leng.hpp()));
-    //    log(string("features[i].m_type: ") + string(features[i].m_type));
-    OneTypeOfFeaturesWithRepetitions& fvalues(fset[string(features[i].m_type)]);
-    shared_ptr<AbstractFeature> ptr(m_bindingWMRepresenter.toFeature(features[i]));
+    //    log(string("features[i].type: ") + string(features[i].type));
+    OneTypeOfFeaturesWithRepetitions& fvalues(fset[string(features[i].type)]);
+    shared_ptr<AbstractFeature> ptr(bindingWMRepresenter.toFeature(features[i]));
     fvalues.insert(ptr);
-  }  
-  return fset; 
+  }
+  return fset;
 }
 
-FeatureSet 
+FeatureSet
 LocalBindingData::_toComparableFeatureSet(const BindingData::FeaturePointers& features) const
 {
   const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   FeatureSet fset;
   for(unsigned int i = 0; i < features.length() ; ++i) {
-    if(ontology.comparable(string(features[i].m_type))) {
+    if(ontology.comparable(string(features[i].type))) {
       //log(string("fset comparable generation: ") + lexical_cast<string>(i) + " : "+ lexical_cast<string>(features.length()));
-      //log(string("features[i].m_type: ") + string(features[i].m_type));
-      OneTypeOfFeatures& fvalues(fset[string(features[i].m_type)]);
-      shared_ptr<AbstractFeature> ptr(m_bindingWMRepresenter.toFeature(features[i]));
+      //log(string("features[i].type: ") + string(features[i].type));
+      OneTypeOfFeatures& fvalues(fset[string(features[i].type)]);
+      shared_ptr<AbstractFeature> ptr(bindingWMRepresenter.toFeature(features[i]));
       fvalues.insert(ptr);
     }
-  }  
-  return fset; 
+  }
+  return fset;
 }
 
 FeatureSetWithRepetitions
@@ -179,126 +178,126 @@ LocalBindingData::_toComparableFeatureSetWithRepetitions(const BindingData::Feat
   const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   FeatureSetWithRepetitions fset;
   for(unsigned int i = 0; i < features.length() ; ++i) {
-    if(ontology.comparable(string(features[i].m_type))) {
+    if(ontology.comparable(string(features[i].type))) {
       //log(string("fset (comparable) generation: ") + lexical_cast<string>(i) + " : "+ lexical_cast<string>(features.length()));
-      //log(string("features[i].m_type: ") + string(features[i].m_type));
-      OneTypeOfFeaturesWithRepetitions& fvalues(fset[string(features[i].m_type)]);
-      shared_ptr<AbstractFeature> ptr(m_bindingWMRepresenter.toFeature(features[i]));
+      //log(string("features[i].type: ") + string(features[i].type));
+      OneTypeOfFeaturesWithRepetitions& fvalues(fset[string(features[i].type)]);
+      shared_ptr<AbstractFeature> ptr(bindingWMRepresenter.toFeature(features[i]));
       fvalues.insert(ptr);
     }
-  }  
-  return fset; 
+  }
+  return fset;
 }
 
 
 /// only includes features that can be compared with some other feature (sorted)
-/*OptimizedFeatureSet 
+/*OptimizedFeatureSet
 LocalBindingData::_toOptimizedComparableFeatureSet(const BindingData::FeaturePointers& features) const
 {
   const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   OptimizedFeatureSet fset;
   for(unsigned int i = 0; i < features.length() ; ++i) {
-    if(ontology.comparable(string(features[i].m_type))) {
+    if(ontology.comparable(string(features[i].type))) {
       //log(string("fset comparable generation: ") + lexical_cast<string>(i) + " : "+ lexical_cast<string>(features.length()));
-      //log(string("features[i].m_type: ") + string(features[i].m_type));
-      OptimizedOneTypeOfFeatures& fvalues(fset[string(features[i].m_type)]);
-      shared_ptr<AbstractFeature> ptr(m_bindingWMRepresenter.toFeature(features[i]));
+      //log(string("features[i].type: ") + string(features[i].type));
+      OptimizedOneTypeOfFeatures& fvalues(fset[string(features[i].type)]);
+      shared_ptr<AbstractFeature> ptr(bindingWMRepresenter.toFeature(features[i]));
       fvalues.insert(ptr);
     }
-  }  
-  return fset; 
+  }
+  return fset;
 }
 
-OptimizedFeatureSetWithRepetitions 
+OptimizedFeatureSetWithRepetitions
 LocalBindingData::_toOptimizedComparableFeatureSetWithRepetitions(const BindingData::FeaturePointers& features) const
 {
   const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   OptimizedFeatureSetWithRepetitions fset;
   for(unsigned int i = 0; i < features.length() ; ++i) {
-    if(ontology.comparable(string(features[i].m_type))) {
+    if(ontology.comparable(string(features[i].type))) {
       //log(string("fset (comparable) generation: ") + lexical_cast<string>(i) + " : "+ lexical_cast<string>(features.length()));
-      //log(string("features[i].m_type: ") + string(features[i].m_type));
-      OptimizedOneTypeOfFeaturesWithRepetitions& fvalues(fset[string(features[i].m_type)]);
-      shared_ptr<AbstractFeature> ptr(m_bindingWMRepresenter.toFeature(features[i]));
+      //log(string("features[i].type: ") + string(features[i].type));
+      OptimizedOneTypeOfFeaturesWithRepetitions& fvalues(fset[string(features[i].type)]);
+      shared_ptr<AbstractFeature> ptr(bindingWMRepresenter.toFeature(features[i]));
       fvalues.insert(ptr);
     }
-  }  
-  return fset; 
+  }
+  return fset;
 }
 */
 
-const LBindingUnion& 
+const LBindingUnion&
 LBindingProxy::bindingUnion() const throw(BindingException)
 {
   if(bindingUnionID().empty()) {
     throw(BindingException("LBindingProxy::bindingUnion() ... !bound()"));
   }
-  return bindingWMRepresenter().m_unionLocalCache[string(m_proxy->m_unionID)];
+  return bindingWMRepresenter().unionLocalCache[string(proxy->unionID)];
 }
 
-const string& 
+const string&
 LBindingProxy::bindingUnionID() const
 {
-  if(m_bindingUnionID.empty()) 
-    m_bindingUnionID = m_proxy->m_unionID;
-  return m_bindingUnionID;
+  if(bindingUnionID.empty())
+    bindingUnionID = proxy->unionID;
+  return bindingUnionID;
 }
 
-const std::set<std::string>& 
+const std::set<std::string>&
 LBindingProxy::bestUnionsForProxySet() const
 {
   const BindingData::BestUnionsForProxy& best(bestUnionsForProxy()); // updates the cache + cache version number
-  if(!m_bestUnionsForProxySet.get() || 
-     m_bestUnionsForProxySetLocalVersion != m_bestUnionsCache.getVersion()) {
-    m_bestUnionsForProxySetLocalVersion = m_bestUnionsCache.getVersion();
-    m_bestUnionsForProxySet = std::auto_ptr<std::set<std::string> >(new std::set<std::string>); // auto_ptr deletes old... if any
-    const BindingData::WorkingMemoryIDList& ids = best.m_unionIDs;
-    assert(string(best.m_proxyID) == id());
-    std::insert_iterator<std::set<std::string> > inserter = 
-      std::inserter(*m_bestUnionsForProxySet, m_bestUnionsForProxySet->begin());
+  if(!bestUnionsForProxySet.get() ||
+     bestUnionsForProxySetLocalVersion != bestUnionsCache.getVersion()) {
+    bestUnionsForProxySetLocalVersion = bestUnionsCache.getVersion();
+    bestUnionsForProxySet = std::auto_ptr<std::set<std::string> >(new std::set<std::string>); // auto_ptr deletes old... if any
+    const BindingData::WorkingMemoryIDList& ids = best.unionIDs;
+    assert(string(best.proxyID) == id());
+    std::insert_iterator<std::set<std::string> > inserter =
+      std::inserter(*bestUnionsForProxySet, bestUnionsForProxySet->begin());
     for(unsigned int i = 0; i < ids.length() ; ++i) {
       inserter = std::string(ids[i]);
     }
   }
-  return *m_bestUnionsForProxySet;
+  return *bestUnionsForProxySet;
 }
 
-const std::set<std::string>& 
+const std::set<std::string>&
 LBindingProxy::nonMatchingUnionsSet() const
 {
   const BindingData::NonMatchingUnions& nonmatch(nonMatchingUnions()); // updates the cache + cache version number
-  if(!m_nonMatchingUnionsSet.get() || 
-     m_nonMatchingUnionsSetLocalVersion != m_nonMatchingUnionsCache.getVersion()) {
-    m_nonMatchingUnionsSetLocalVersion = m_nonMatchingUnionsCache.getVersion();
-    m_nonMatchingUnionsSet = std::auto_ptr<std::set<std::string> >(new std::set<std::string>); // auto_ptr deletes old... if any
-    assert(string(nonmatch.m_proxyID) == id());
-    const BindingData::WorkingMemoryIDList& ids = nonmatch.m_nonMatchingUnionIDs;
-    std::insert_iterator<std::set<std::string> > inserter = 
-      std::inserter(*m_nonMatchingUnionsSet, m_nonMatchingUnionsSet->begin());
+  if(!nonMatchingUnionsSet.get() ||
+     nonMatchingUnionsSetLocalVersion != nonMatchingUnionsCache.getVersion()) {
+    nonMatchingUnionsSetLocalVersion = nonMatchingUnionsCache.getVersion();
+    nonMatchingUnionsSet = std::auto_ptr<std::set<std::string> >(new std::set<std::string>); // auto_ptr deletes old... if any
+    assert(string(nonmatch.proxyID) == id());
+    const BindingData::WorkingMemoryIDList& ids = nonmatch.nonMatchingUnionIDs;
+    std::insert_iterator<std::set<std::string> > inserter =
+      std::inserter(*nonMatchingUnionsSet, nonMatchingUnionsSet->begin());
     for(unsigned int i = 0; i < ids.length() ; ++i) {
       inserter = std::string(ids[i]);
     }
   }
-  return *m_nonMatchingUnionsSet;
+  return *nonMatchingUnionsSet;
 }
 
 
-WorkingMemoryReaderProcess& 
+WorkingMemoryReaderProcess&
 LocalBindingData::component() const {
-  return m_bindingWMRepresenter.component();
+  return bindingWMRepresenter.component();
 }
 
 bool
-proxyPortLess::operator()(const BindingData::ProxyPort& _port1,const BindingData::ProxyPort& _port2) const 
+proxyPortLess::operator()(const BindingData::ProxyPort& _port1,const BindingData::ProxyPort& _port2) const
 {
-  assert(std::string(_port1.m_label) == std::string(_port1.m_label)); // since this is the way it will be in the \p PortMap
-  if(_port1.m_type != _port2.m_type) {
-    return _port1.m_type < _port2.m_type;
-  } else if(string(_port1.m_ownerProxyID) != string(_port2.m_ownerProxyID)) {
-    return string(_port1.m_ownerProxyID) < string(_port2.m_ownerProxyID);
-  } else if(string(_port1.m_proxyID) != string(_port2.m_proxyID)) {
-    return string(_port1.m_proxyID) < string(_port2.m_proxyID);
-  } 
+  assert(std::string(_port1.label) == std::string(_port1.label)); // since this is the way it will be in the \p PortMap
+  if(_port1.type != _port2.type) {
+    return _port1.type < _port2.type;
+  } else if(string(_port1.ownerProxyID) != string(_port2.ownerProxyID)) {
+    return string(_port1.ownerProxyID) < string(_port2.ownerProxyID);
+  } else if(string(_port1.proxyID) != string(_port2.proxyID)) {
+    return string(_port1.proxyID) < string(_port2.proxyID);
+  }
   return false; // i.e. identical
 }
 
@@ -306,74 +305,74 @@ proxyPortLess::operator()(const BindingData::ProxyPort& _port1,const BindingData
 PortMap
 toPortMap(const BindingData::ProxyPorts& _ports) {
   PortMap ret;
-  for(unsigned int i = 0; i < _ports.m_ports.length() ; ++i) {
-    ret[std::string(_ports.m_ports[i].m_label)].insert(_ports.m_ports[i]);
+  for(unsigned int i = 0; i < _ports.ports.length() ; ++i) {
+    ret[std::string(_ports.ports[i].label)].insert(_ports.ports[i]);
   }
   return ret;
 }
 
-const PortMap& 
+const PortMap&
 LocalBindingData::
-outPorts() const { 
-  if(!m_outPortMap.get())
-    m_outPortMap = std::auto_ptr<const PortMap>(new PortMap(toPortMap(rawOutPorts())));
-  return *m_outPortMap;
+outPorts() const {
+  if(!outPortMap.get())
+    outPortMap = std::auto_ptr<const PortMap>(new PortMap(toPortMap(rawOutPorts())));
+  return *outPortMap;
 }
 
 const std::set<std::string>&
 LBindingUnion::proxyIDs() const {
-  if(!m_proxyIDs.get()) {
-    m_proxyIDs = auto_ptr<set<string> >(new set<string>);
-    for(unsigned int i = 0; i < m_union->m_proxyIDs.length(); ++i) 
-      m_proxyIDs->insert(string(m_union->m_proxyIDs[i]));
-  }  
-  return *m_proxyIDs;
+  if(!proxyIDs.get()) {
+    proxyIDs = auto_ptr<set<string> >(new set<string>);
+    for(unsigned int i = 0; i < union->proxyIDs.length(); ++i)
+      proxyIDs->insert(string(union->proxyIDs[i]));
+  }
+  return *proxyIDs;
 }
 
-LBindingUnion::LBindingUnion(const LBindingUnion& _lunion) 
+LBindingUnion::LBindingUnion(const LBindingUnion& _lunion)
     : LocalBindingData(_lunion.bindingWMRepresenter(),
-		       _lunion.m_union->m_unionFeatures,
-		       _lunion.id(), 
+		       _lunion.union->unionFeatures,
+		       _lunion.id(),
 		       _lunion.subarchitecture_id(),
 		       _lunion.version()),
-      m_union(_lunion.m_union) { }
+      union(_lunion.union) { }
 
-LBindingUnion::LBindingUnion(AbstractBindingWMRepresenter& _bindingWMRepresenter, 
+LBindingUnion::LBindingUnion(AbstractBindingWMRepresenter& _bindingWMRepresenter,
 		const boost::shared_ptr<const BindingData::BindingUnion>& _union,
 		const std::string& _id,
 		const std::string& _subarchitecture_id,
-		unsigned int _version) 
-    : LocalBindingData(_bindingWMRepresenter, 
-		       _union->m_unionFeatures, 
-		       _id, 
+		unsigned int _version)
+    : LocalBindingData(_bindingWMRepresenter,
+		       _union->unionFeatures,
+		       _id,
 		       _subarchitecture_id,
 		       _version),
-      m_union(_union) { }
+      union(_union) { }
 
 LocalBindingData::LocalBindingData(AbstractBindingWMRepresenter& _bindingWMRepresenter,
 				   const BindingData::FeaturePointers& _features,
 				   const std::string& _id,
 				   const std::string& _subarchitecture_id,
 				   unsigned int _version)
-  : m_bindingWMRepresenter(_bindingWMRepresenter),
-    m_features(_features),
-    m_id(_id),
-    m_subarchitecture_id(_subarchitecture_id),
-    m_version(_version) {}
-  
+  : bindingWMRepresenter(_bindingWMRepresenter),
+    features(_features),
+    id(_id),
+    subarchitecture_id(_subarchitecture_id),
+    version(_version) {}
 
-std::string 
+
+std::string
 LocalBindingData::getGroupDetailsID() const {
   const FeatureSet& fset(featureSet());
   assert(this->type() == BindingData::GROUP);
   FeatureSet::const_iterator itr = fset.find(typeName<BindingFeatures::Group>());
   assert(itr != fset.end());
   assert(!itr->second.empty());
-  return string(extractIDLFeature<BindingFeatures::Group>(*(itr->second.begin())).m_groupDetailsID);
+  return string(extractIDLFeature<BindingFeatures::Group>(*(itr->second.begin())).groupDetailsID);
 }
 
 const BindingFeatures::Singular&
-LocalBindingData::getSingularFeature() const 
+LocalBindingData::getSingularFeature() const
 {
   const FeatureSet& fset(featureSet());
   assert(this->type() != BindingData::GROUP);
@@ -384,7 +383,7 @@ LocalBindingData::getSingularFeature() const
 }
 
 const BindingFeatures::Group&
-LocalBindingData::getGroupFeature() const 
+LocalBindingData::getGroupFeature() const
 {
   const FeatureSet& fset(featureSet());
   assert(this->type() == BindingData::GROUP);
@@ -395,82 +394,82 @@ LocalBindingData::getGroupFeature() const
 }
 
 const std::set<std::string>&
-LocalBindingData::getGroupMemberIDs() const 
+LocalBindingData::getGroupMemberIDs() const
 {
-  if(!m_groupMemberIDs.get()) {
-    m_groupMemberIDs = auto_ptr<std::set<std::string> >(new std::set<std::string>());
+  if(!groupMemberIDs.get()) {
+    groupMemberIDs = auto_ptr<std::set<std::string> >(new std::set<std::string>());
   }
   const BindingFeatures::details::GroupDetails& details(getGroupDetails());
-  assert(string(details.m_groupProxyID) == id());
-  *m_groupMemberIDs = set<string>();
-  for(unsigned int i = 0 ; i < details.m_groupMemberProxyIDs.length(); ++i) {
-    m_groupMemberIDs->insert(string(details.m_groupMemberProxyIDs[i]));
+  assert(string(details.groupProxyID) == id());
+  *groupMemberIDs = set<string>();
+  for(unsigned int i = 0 ; i < details.groupMemberProxyIDs.length(); ++i) {
+    groupMemberIDs->insert(string(details.groupMemberProxyIDs[i]));
   }
-  return *m_groupMemberIDs;
+  return *groupMemberIDs;
 }
 
 const BindingFeatures::details::GroupDetails&
-LocalBindingData::getGroupDetails() const 
+LocalBindingData::getGroupDetails() const
 {
-  if(!m_groupDetailsCache.get()) {
-    m_groupDetailsCache = auto_ptr<CachedCASTData<BindingFeatures::details::GroupDetails> >
-      (new CachedCASTData<BindingFeatures::details::GroupDetails>(dynamic_cast<cast::WorkingMemoryReaderProcess&>(m_bindingWMRepresenter),
+  if(!groupDetailsCache.get()) {
+    groupDetailsCache = auto_ptr<CachedCASTData<BindingFeatures::details::GroupDetails> >
+      (new CachedCASTData<BindingFeatures::details::GroupDetails>(dynamic_cast<cast::WorkingMemoryReaderProcess&>(bindingWMRepresenter),
 								  getGroupDetailsID(),
 								  shared_ptr<string>(new string(subarchitecture_id())))
        );
   }
-  return **m_groupDetailsCache;
+  return **groupDetailsCache;
 }
 
 
-bool 
-LocalBindingData::hasFeature(const std::string& _typeName) const 
+bool
+LocalBindingData::hasFeature(const std::string& _typeName) const
 {
   FeatureSet::const_iterator itr = featureSet().find(_typeName);
   return itr != featureSet().end();
 }
 
-bool 
+bool
 LocalBindingData::hasFeature(const std::type_info& _type) const
 {
   static const BindingFeatureOntology& ont(BindingFeatureOntology::construct());
   return hasFeature(ont.featureName(_type));
 }
 
-BindingData::Ambiguity* 
+BindingData::Ambiguity*
 LBindingProxy::ambiguity() const {
-  std::auto_ptr<BindingData::Ambiguity> m_ambiguity;
+  std::auto_ptr<BindingData::Ambiguity> ambiguity;
   if(!shouldHaveAmbiguity()) {
-    m_ambiguity = auto_ptr<BindingData::Ambiguity>(NULL);
+    ambiguity = auto_ptr<BindingData::Ambiguity>(NULL);
     return NULL;
   }
   if(!bindingWMRepresenter().component().existsOnWorkingMemory(id()+ambiguityIDPostFix())) {
-    m_ambiguity = auto_ptr<BindingData::Ambiguity>(NULL);
-    return NULL;    
+    ambiguity = auto_ptr<BindingData::Ambiguity>(NULL);
+    return NULL;
   }
   try {
-    shared_ptr<const BindingData::Ambiguity> amb = 
+    shared_ptr<const BindingData::Ambiguity> amb =
       bindingWMRepresenter().loadBindingDataFromWM<BindingData::Ambiguity>(id()+ambiguityIDPostFix());
-    m_ambiguity = 
+    ambiguity =
       auto_ptr<BindingData::Ambiguity>(new BindingData::Ambiguity(*amb));
   } catch (const DoesNotExistOnWMException&) {
-    m_ambiguity = auto_ptr<BindingData::Ambiguity>(NULL);
-    return NULL;    
+    ambiguity = auto_ptr<BindingData::Ambiguity>(NULL);
+    return NULL;
   }
-  assert(m_ambiguity.get());
-  return m_ambiguity.get();
+  assert(ambiguity.get());
+  return ambiguity.get();
 }
 
 
-const FeatureSet 
+const FeatureSet
 LocalBindingData::getFeatureSetComparableTo(const string& _type) const {
   const FeatureSet& fset(featureSet());
   FeatureSet ret;
   const static BindingFeatureOntology&
     ont(BindingFeatureOntology::construct());
-  const std::set<std::string>& 
+  const std::set<std::string>&
     comparableInternally(ont.comparableInternally(_type));
-  const std::set<std::string>& 
+  const std::set<std::string>&
     comparableExternally(ont.comparableExternally(_type));
   typedef pair<string,OneTypeOfFeatures> Element;
   foreach(const Element& e, fset) {

@@ -36,8 +36,8 @@ public:
     return print(_out, _feat);
   }
 
-  /// returns \p m_properties
-  const FeatureProperties& properties() const {assert(m_properties.get());return *m_properties;}
+  /// returns \p properties
+  const FeatureProperties& properties() const {assert(properties.get());return *properties;}
   /// sets the properties
   void setProperties(const FeatureProperties&);
 
@@ -66,10 +66,10 @@ protected:
   
 private:
   /// returns a nonconst reference... used by the ontology... while refactoring...
-  FeatureProperties& mutable_properties() {assert(m_properties.get()); return *m_properties;}
+  FeatureProperties& mutable_properties() {assert(properties.get()); return *properties;}
   /// to allow that properties are set by the ontology... makes sense during refactoring...
   friend class BindingFeatureOntology;
-  std::auto_ptr<FeatureProperties> m_properties;
+  std::auto_ptr<FeatureProperties> properties;
 };
 
 const std::type_info& getTypeInfo(const AbstractFeature&);
@@ -88,7 +88,7 @@ public:
   virtual boost::shared_ptr<AbstractFeature> getFeatureFromWM(AbstractBindingWMRepresenter& _a, 
 							      const BindingData::FeaturePointer& _feat,
 							      const std::string& _bindingSubarchID) const {
-    std::string address(_feat.m_address);
+    std::string address(_feat.address);
     
     if(_bindingSubarchID == "")
       return boost::shared_ptr<AbstractFeature>(new Feature<IDLFeatureT>(*_a.loadBindingDataFromWM<IDLFeatureT>(address), address));

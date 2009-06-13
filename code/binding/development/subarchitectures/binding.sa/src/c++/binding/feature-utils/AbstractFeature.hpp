@@ -7,8 +7,8 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/logic/tribool.hpp>
-#include <binding/idl/BindingData.hh>
-#include <binding/idl/BindingFeaturesCommon.hh>
+#include <BindingData.hpp>
+#include <BindingFeaturesCommon.hpp>
 //#include "binding/ontology/BindingFeatureOntology.hpp"
 
 //BOOST_TRIBOOL_THIRD_STATE(possible)
@@ -62,17 +62,17 @@ public:
 
 protected:
   AbstractFeature(const std::string& _id) 
-    : m_id(_id) {};
+    : id(_id) {};
   
 public:
   virtual ~AbstractFeature() { };
   /// returns the id of the feature (i.e. it's adress on WM)
   const std::string& featureID() const {
-    return m_id;
+    return id;
   }
 
 private:
-  std::string m_id;
+  std::string id;
   AbstractFeature() {};
 };
 
@@ -135,11 +135,11 @@ mergeFeatureSets(FeatureSetT& _dst, const FeatureSetT& _src)
   }
 }
 
-/// returns ParentFeature's m_truthValue
+/// returns ParentFeature's truthValue
 template<typename FeatureT>
 BindingFeaturesCommon::TruthValue
 truthValue(const FeatureT& _f) {
-  return _f.m_parent.m_truthValue;
+  return _f.parent.truthValue;
 }
 
 /// returns based on TruthValue in ParentFeature
@@ -149,11 +149,11 @@ negated(const FeatureT& _f) {
   return Binding::truthValue(_f) == BindingFeaturesCommon::NEGATIVE;
 }
 
-/// returns based on ParentFeature's m_immediateProxyID
+/// returns based on ParentFeature's immediateProxyID
 template<typename FeatureT>
 std::string
 immediateProxyID(const FeatureT& _f) {
-  return std::string(_f.m_parent.m_immediateProxyID);
+  return std::string(_f.parent.immediateProxyID);
 }
 
 

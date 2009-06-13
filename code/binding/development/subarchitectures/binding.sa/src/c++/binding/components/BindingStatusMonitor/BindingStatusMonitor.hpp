@@ -9,7 +9,7 @@
 #include <ctime>
 #include <ext/hash_set>
 #include "binding/abstr/AbstractBinder.hpp"
-#include "binding/idl/BindingData.hh"
+#include "BindingData.hpp"
 
 namespace Binding {
 
@@ -26,13 +26,13 @@ public:
   virtual ~BindingStatusMonitor();
 
   virtual void runComponent(){
-    m_stateID = newDataID();
+    stateID = newDataID();
     
-    m_lastStableTime = clock();
-    addToWorkingMemory(m_stateID,
+    lastStableTime = clock();
+    addToWorkingMemory(stateID,
 		       //BindingLocalOntology::BINDER_STATUS_TYPE, 
 		       _newState());
-    lockEntry(m_stateID,cast::cdl::LOCKED_OD);
+    lockEntry(stateID,cast::cdl::LOCKED_OD);
   };
   void start();
   
@@ -46,14 +46,14 @@ public:
   void bindingProxyDeleted(const cast::cdl::WorkingMemoryChange & _wmc);
   
 protected:
-  int m_scoringTasks;
-  int m_bindingTasks;
+  int scoringTasks;
+  int bindingTasks;
   
-  std::string m_stateID;
+  std::string stateID;
 
-  clock_t m_lastStableTime;
-  clock_t m_totalUnstableTime;
-  bool m_lastValue;
+  clock_t lastStableTime;
+  clock_t totalUnstableTime;
+  bool lastValue;
   
   //virtual void workingMemoryChanged(const cast::cdl::WorkingMemoryChangeList & _wmcl){};
   virtual void taskAdopted(const std::string &_taskID){};
@@ -64,9 +64,9 @@ private:
   BindingData::BinderStatus* _newState(); 
   
   // IDs of unbound proxies
-  StringSet m_unbound;
+  StringSet unbound;
   // IDs of bound proxies
-  StringSet m_bound;
+  StringSet bound;
 };
 
 } // namespace Binding

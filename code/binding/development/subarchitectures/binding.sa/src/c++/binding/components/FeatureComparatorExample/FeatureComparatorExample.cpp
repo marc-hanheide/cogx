@@ -33,16 +33,16 @@ FeatureComparatorExample::FeatureComparatorExample(const std::string& _id)
   : 
     WorkingMemoryAttachedComponent(_id),
     AbstractFeatureComparator(_id),
-    m_featureCacheConcept(*this) { }
+    featureCacheConcept(*this) { }
 
 
 void
 FeatureComparatorExample::startComparator()
 {
   BindingData::ComparisonTrustSpecification comparisonTrustSpecification;
-  comparisonTrustSpecification.m_trustInternalFalse = BindingData::DONT_USE;
-  comparisonTrustSpecification.m_trustInternalIndeterminate = BindingData::DONT_USE;
-  comparisonTrustSpecification.m_trustInternalTrue = BindingData::TRUST_COMPLETELY;
+  comparisonTrustSpecification.trustInternalFalse = BindingData::DONT_USE;
+  comparisonTrustSpecification.trustInternalIndeterminate = BindingData::DONT_USE;
+  comparisonTrustSpecification.trustInternalTrue = BindingData::TRUST_COMPLETELY;
   const BindingFeatureOntology& ont(BindingFeatureOntology::construct());
   addFeatureComparisonFilter(ont.featureName(typeid(BindingFeatures::Concept)), 
 			     comparisonTrustSpecification);
@@ -53,15 +53,15 @@ FeatureComparatorExample::executeComparison()
 {
   
   const BindingFeatures::Concept& 
-    proxyConcept(m_featureCacheConcept[string(currentComparison().m_proxyFeature.m_address)]);
+    proxyConcept(featureCacheConcept[string(currentComparison().proxyFeature.address)]);
   const BindingFeatures::Concept& 
-    unionConcept(m_featureCacheConcept[string(currentComparison().m_unionFeature.m_address)]);
-  log("COMPARING " + string(proxyConcept.m_concept) + " vs " + string(unionConcept.m_concept));
+    unionConcept(featureCacheConcept[string(currentComparison().unionFeature.address)]);
+  log("COMPARING " + string(proxyConcept.concept) + " vs " + string(unionConcept.concept));
 
   if(negated(proxyConcept) == negated(unionConcept))
-    return string(proxyConcept.m_concept) == string(unionConcept.m_concept);
+    return string(proxyConcept.concept) == string(unionConcept.concept);
   else
-    return string(proxyConcept.m_concept) != string(unionConcept.m_concept);
+    return string(proxyConcept.concept) != string(unionConcept.concept);
 }
 
 } // namespace Binding
