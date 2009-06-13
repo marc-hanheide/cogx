@@ -4,8 +4,8 @@ COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--ra
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
 
 SUBARCHITECTURE spatial.sa
-#JAVA WM celmarchitecture.global.DefaultWorkingMemory 
-CPP WM SubarchitectureWorkingMemory  #--log --debug
+JAVA WM celmarchitecture.global.DefaultWorkingMemory 
+#CPP WM SubarchitectureWorkingMemory  #--log --debug
 CPP TM AlwaysPositiveTaskManager
 CPP MG spatial.translation SpatialTranslation --log
 CPP MG slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --log #-m tmpmap.metric --debug 
@@ -15,7 +15,8 @@ CPP MG spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --
 CPP MG display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --log #--debug 
 CPP MG path.query PathQueryProcessor --log --no-indirect-paths #--debug
 CPP MG peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query --log
-JAVA MG nav.elm nav.elm.NearestNodeMonitor --log
+#JAVA MG nav.elm.nnm nav.elm.NearestNodeMonitor --log
+JAVA MG nav.elm.tpm nav.elm.TopologicalPositionMonitor --log
 
 SUBARCHITECTURE celm.sa
 JAVA WM celmarchitecture.global.DefaultWorkingMemory 

@@ -6,7 +6,7 @@ package celmarchitecture.global;
  */
 public class GlobalSettings {
 
-    public static final boolean verbose               = true;
+    public static final boolean verbose               = false;
     public static final boolean singleSA              = false; 
     
     // for debugging:
