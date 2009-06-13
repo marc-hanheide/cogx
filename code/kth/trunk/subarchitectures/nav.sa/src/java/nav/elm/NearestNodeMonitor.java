@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
+import IceInternal.BasicStream;
+import IceInternal.Instance;
 import NavData.FNode;
 import NavData.RobotPose2d;
 import cast.DoesNotExistOnWMException;
@@ -154,6 +156,9 @@ public class NearestNodeMonitor extends SimpleAbstractWMMonitor {
 		esf.addKeyValuePair("x", "" + _node.x);
 		esf.addKeyValuePair("y", "" + _node.y);
 
+		
+		
+		
 		addPartialEvent("FNode", EventSpecificBinaryDataIO
 				.objectToByteArray(_node), time, time, null, esf);
 	}
