@@ -31,7 +31,7 @@ MultiTesterMonitor::MultiTesterMonitor(const string &_id) :
   TesterMonitor(_id)
 {
   setReceiveXarchChangeNotifications(true);
-  m_queueBehaviour = cdl::QUEUE;
+  queueBehaviour = cdl::QUEUE;
 }
 
 static const unsigned int MANY_PROXIES = 24;
@@ -46,9 +46,9 @@ void
 MultiTesterMonitor::configure(map<string,string> & _config) {
   TesterMonitor::configure(_config);
   map<string,string>::const_iterator itr = _config.find("--postConditionTester");
-  m_postConditionTester = true;
+  postConditionTester = true;
   if(itr == _config.end()) {
-    m_postConditionTester = false;
+    postConditionTester = false;
   }
 
   itr = _config.find("--noOfMultiTesters");
@@ -56,35 +56,35 @@ MultiTesterMonitor::configure(map<string,string> & _config) {
     cerr << "Error in MultiTesterMonitor: --noOfMultiTesters N must be given";
     abort();
   }
-  m_noOfMultiTesters = lexical_cast<unsigned int>(itr->second);
-  assert(m_noOfMultiTesters >= 0);
-//  cout << "m_noOfMultiTesters " << m_noOfMultiTesters <<  " " << itr->second << endl;
+  noOfMultiTesters = lexical_cast<unsigned int>(itr->second);
+  assert(noOfMultiTesters >= 0);
+//  cout << "noOfMultiTesters " << noOfMultiTesters <<  " " << itr->second << endl;
   
   itr = _config.find("--instance");
   if(itr == _config.end()) {
     cerr << "Error in MultiTesterMonitor: --instance N must be given";
     abort();
   }
-  m_instance = lexical_cast<unsigned int>(itr->second);
-  assert(m_instance >= 0);
-  assert(m_instance < m_noOfMultiTesters);
+  instance = lexical_cast<unsigned int>(itr->second);
+  assert(instance >= 0);
+  assert(instance < noOfMultiTesters);
   
 }
   
 void MultiTesterMonitor::runComponent() {
   sleepProcess(1000); // sleep for a second to allow the rest to be properly started
-  m_sourceID = subarchitectureID();
-  switch(m_test) {
+  sourceID = subarchitectureID();
+  switch(test) {
   case 0: 
     {
       log("testing to add a single basic proxy with one concept feature that should bind with the proxies of all other MultiTesterMonitor");
       startNewBasicProxy();
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("test_concept");
+      concept.concept = CORBA::string_dup("test_concept");
       addFeatureToCurrentProxy(concept);
-      m_proxyIDs.insert(storeCurrentProxy());
+      proxyIDs.insert(storeCurrentProxy());
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       readyCount()++;
     }
     break;
@@ -93,25 +93,25 @@ void MultiTesterMonitor::runComponent() {
       log("testing to add a single basic proxy with one concept feature that should NOT bind with the proxies of any other MultiTesterMonitor, then, after some time the proxy is updated such that it should bind with all other proxies.");
       startNewBasicProxy();
       BindingFeatures::Concept concept;
-      string c = "updated_test_concept_" + lexical_cast<string>(m_instance);
-      concept.m_concept = CORBA::string_dup(c.c_str());
+      string c = "updated_test_concept_" + lexical_cast<string>(instance);
+      concept.concept = CORBA::string_dup(c.c_str());
       addFeatureToCurrentProxy(concept);
       string proxyID = storeCurrentProxy();
-      m_proxyIDs.insert(proxyID);
+      proxyIDs.insert(proxyID);
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       sleepProcess(5000);
       // let every secon monitor sleep a little extra
-      if(m_instance % 2)
-	sleepProcess(50 * m_instance);
+      if(instance % 2)
+	sleepProcess(50 * instance);
       log("will update proxy now");    
       changeExistingProxy(proxyID,list_of(typeName<BindingFeatures::Concept>()));
-      concept.m_concept = CORBA::string_dup("test_concept");
+      concept.concept = CORBA::string_dup("test_concept");
       addFeatureToCurrentProxy(concept);
       storeCurrentProxy();
       bindNewProxies();
       log("finished updating");
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       readyCount()++;
     }
     break;
@@ -120,56 +120,56 @@ void MultiTesterMonitor::runComponent() {
       log("testing to add a single basic proxy with one concept feature that should bind with the proxies of all other MultiTesterMonitor, then, after some time the proxy is updated such that it should bind with no other proxy.");
       startNewBasicProxy();
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("test_concept");
+      concept.concept = CORBA::string_dup("test_concept");
       addFeatureToCurrentProxy(concept);
       string proxyID = storeCurrentProxy();
-      m_proxyIDs.insert(proxyID);
+      proxyIDs.insert(proxyID);
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       sleepProcess(5000);
       // let every second monitor sleep a little extra
-      if(m_instance % 2)
-	sleepProcess(500 * m_instance);
+      if(instance % 2)
+	sleepProcess(500 * instance);
       log("will update proxy now");
       changeExistingProxy(proxyID,list_of(typeName<BindingFeatures::Concept>()));
-      string c = "updated_test_concept_" + lexical_cast<string>(m_instance);
-      concept.m_concept = CORBA::string_dup(c.c_str());
+      string c = "updated_test_concept_" + lexical_cast<string>(instance);
+      concept.concept = CORBA::string_dup(c.c_str());
       addFeatureToCurrentProxy(concept);
       storeCurrentProxy();
       bindNewProxies();
       log("finished updating");
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       sleepProcess(10000);
       readyCount()++;
     }
     break;
   case 3: 
     {
-      log("adding a proxy, then wait for it to bind to at least m_noOfMultiTesters other proxies, then add a MakeProxyUnavailable for the first proxy in the union");
+      log("adding a proxy, then wait for it to bind to at least noOfMultiTesters other proxies, then add a MakeProxyUnavailable for the first proxy in the union");
       startNewBasicProxy();
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("test_concept");
+      concept.concept = CORBA::string_dup("test_concept");
       addFeatureToCurrentProxy(concept);
       string proxyID = storeCurrentProxy();
       static string static_proxyID = proxyID; // will in the end only have one correct proxyID
-      m_proxyIDs.insert(proxyID);
+      proxyIDs.insert(proxyID);
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       sleepProcess(5000);
       log("will request removal of a proxy now");
-      /*      const LBindingProxy& proxy (m_proxyLocalCache[proxyID]);
+      /*      const LBindingProxy& proxy (proxyLocalCache[proxyID]);
 	      cout << "proxy loaded" << endl;
 	      assert(!proxy.bindingUnionID().empty());
-	      const LBindingUnion& binding_union(m_unionLocalCache[proxy.bindingUnionID()]);
+	      const LBindingUnion& binding_union(unionLocalCache[proxy.bindingUnionID()]);
 	      cout << "union loaded" << endl;
       */
       BindingQueries::MakeProxyUnavailable* make_unavailable = new BindingQueries::MakeProxyUnavailable;
       cout << "alocated" << endl;
-      make_unavailable->m_proxyID = CORBA::string_dup(static_proxyID.c_str());
+      make_unavailable->proxyID = CORBA::string_dup(static_proxyID.c_str());
       cout << "assigned" << endl;
       cout << "proxyID = " << static_proxyID << endl;
-      cout << "proxyID = " << make_unavailable->m_proxyID << endl;
-      log(string("the proxy requested for removal:") + string(make_unavailable->m_proxyID));
+      cout << "proxyID = " << make_unavailable->proxyID << endl;
+      log(string("the proxy requested for removal:") + string(make_unavailable->proxyID));
       addToWorkingMemory(newDataID(), bindingSA(), make_unavailable, cast::cdl::BLOCKING);
       cout << "added" << endl;
       sleepProcess(5000);
@@ -178,7 +178,7 @@ void MultiTesterMonitor::runComponent() {
     }
     break;
   default:
-    cerr << "incorrect test number: " << m_test << endl;
+    cerr << "incorrect test number: " << test << endl;
     failExit();
   }
   addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);  //testCompleteness();
@@ -194,23 +194,23 @@ void MultiTesterMonitor::runComponent() {
   
 void 
 MultiTesterMonitor::testCompleteness() {
-  if(!m_postConditionTester)
+  if(!postConditionTester)
     return;
   // make sure we're loading fresh data
-  m_handler.purgeAllLoadedData();
+  handler.purgeAllLoadedData();
   try {
-    switch(m_test) {
+    switch(test) {
     case 0: 
       {
 	cout << "readyCount: " << readyCount() << endl;
-	cout << "m_noOfMultiTesters: " << m_noOfMultiTesters << endl;
-	cout << "m_addSignalledProxyIDs.size(): " << m_addSignalledProxyIDs.size() << endl;
+	cout << "noOfMultiTesters: " << noOfMultiTesters << endl;
+	cout << "addSignalledProxyIDs.size(): " << addSignalledProxyIDs.size() << endl;
 	
-	if(readyCount() == m_noOfMultiTesters && 
-	   m_addSignalledProxyIDs.size() == m_noOfMultiTesters && allBound(m_addSignalledProxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
-	  assert(proxies.size() == m_noOfMultiTesters);
+	if(readyCount() == noOfMultiTesters && 
+	   addSignalledProxyIDs.size() == noOfMultiTesters && allBound(addSignalledProxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
+	  assert(proxies.size() == noOfMultiTesters);
 	  assert(unions.size() == 1);
 	  successExit();
 	}
@@ -218,11 +218,11 @@ MultiTesterMonitor::testCompleteness() {
       break;
     case 1:
       {
-	if(readyCount() == m_noOfMultiTesters && 
-	   m_addSignalledProxyIDs.size() == m_noOfMultiTesters && allBound(m_addSignalledProxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
-	  assert(proxies.size() == m_noOfMultiTesters);
+	if(readyCount() == noOfMultiTesters && 
+	   addSignalledProxyIDs.size() == noOfMultiTesters && allBound(addSignalledProxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
+	  assert(proxies.size() == noOfMultiTesters);
 	  assert(unions.size() == 1);
 	  successExit();
 	}
@@ -230,12 +230,12 @@ MultiTesterMonitor::testCompleteness() {
       break;        
     case 2:
       {
-	if(readyCount() == m_noOfMultiTesters && 
-	   m_addSignalledProxyIDs.size() == m_noOfMultiTesters && allBound(m_addSignalledProxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
-	  assert(proxies.size() == m_noOfMultiTesters);
-	  assert(unions.size() == m_noOfMultiTesters);
+	if(readyCount() == noOfMultiTesters && 
+	   addSignalledProxyIDs.size() == noOfMultiTesters && allBound(addSignalledProxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
+	  assert(proxies.size() == noOfMultiTesters);
+	  assert(unions.size() == noOfMultiTesters);
 	  successExit();
 	}
       }
@@ -243,13 +243,13 @@ MultiTesterMonitor::testCompleteness() {
     case 3:
       {
 	cout << "readyCount: " << readyCount() << endl;
-	cout << "m_noOfMultiTesters: " << m_noOfMultiTesters << endl;
-	cout << "m_addSignalledProxyIDs.size(): " << m_addSignalledProxyIDs.size() << endl;
-	if(readyCount() == m_noOfMultiTesters && 
-	   m_addSignalledProxyIDs.size() == m_noOfMultiTesters) {
-	  ProxySet proxies = m_handler.allProxiesFromWM();
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
-	  assert(proxies.size() == m_noOfMultiTesters - 1);
+	cout << "noOfMultiTesters: " << noOfMultiTesters << endl;
+	cout << "addSignalledProxyIDs.size(): " << addSignalledProxyIDs.size() << endl;
+	if(readyCount() == noOfMultiTesters && 
+	   addSignalledProxyIDs.size() == noOfMultiTesters) {
+	  ProxySet proxies = handler.allProxiesFromWM();
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
+	  assert(proxies.size() == noOfMultiTesters - 1);
 	  assert(unions.size() == 1);
 	  successExit();
 	}
@@ -267,7 +267,7 @@ MultiTesterMonitor::testCompleteness() {
     log(string("Caught this while testing") + _e.what());
   }  
   // reset the retesting if successExit was not called.
-  m_retest = 0;  
+  retest = 0;  
   log("MultiTesterMonitor::testCompleteness() just failed");
 }
 

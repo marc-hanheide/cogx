@@ -1,5 +1,5 @@
-#ifndef BINDING_ABSTRACT_BINDING_WM_REPRESENTER_H_ 
-#define BINDING_ABSTRACT_BINDING_WM_REPRESENTER_H_ 
+#ifndef BINDING_ABSTRACT_BINDING_WREPRESENTER_H_ 
+#define BINDING_ABSTRACT_BINDING_WREPRESENTER_H_ 
 
 #include <cast/core/CASTDataCache.hpp>
 #include <cast/core/CASTDataLocalCache.hpp>
@@ -18,11 +18,11 @@ namespace Binding {
 struct WMALess {
   bool operator()(const cast::cdl::WorkingMemoryAddress& _a1,
 		  const cast::cdl::WorkingMemoryAddress& _a2) const{
-    std::string id1(_a1.m_id);
-    std::string id2(_a2.m_id);
+    std::string id1(_a1.id);
+    std::string id2(_a2.id);
     if(id1 != id2) return id1 < id2;
-    std::string sa1(_a1.m_subarchitecture);
-    std::string sa2(_a2.m_subarchitecture);
+    std::string sa1(_a1.subarchitecture);
+    std::string sa2(_a2.subarchitecture);
     return sa1 < sa2;
   }
 };
@@ -32,24 +32,24 @@ typedef std::set<cast::cdl::WorkingMemoryAddress, WMALess> WMASet;
 
 /// Contains the datatypes needed to store binding WM locally
 class AbstractBindingWMRepresenter {
-  mutable cast::WorkingMemoryReaderProcess& m_component;
+  mutable cast::WorkingMemoryReaderProcess& component;
 protected:
-  AbstractBindingWMRepresenter(cast::WorkingMemoryReaderProcess& m_component);
+  AbstractBindingWMRepresenter(cast::WorkingMemoryReaderProcess& component);
   virtual ~AbstractBindingWMRepresenter() { };
   
 public:
-  /// returns m_component
-  cast::WorkingMemoryReaderProcess& component() const {return m_component;}
+  /// returns component
+  cast::WorkingMemoryReaderProcess& component() const {return component;}
 protected:
 
   /// stores local copy of proxies (maps from CAST ID)
-//  std::map<std::string,LBindingProxy> m_proxies;
+//  std::map<std::string,LBindingProxy> proxies;
   /// stores local copy of bindings (maps from CAST ID)
-  //std::map<std::string,LBindingUnion> m_unions;
+  //std::map<std::string,LBindingUnion> unions;
   /// Maps from a binding to the bound proxies (CAST IDs)
-  std::map<std::string,std::set<std::string> > m_uni2prox;
+  std::map<std::string,std::set<std::string> > uni2prox;
   /// Maps from proxy to the binding of that proxy (CAST IDs)
-  std::map<std::string,std::string> m_prox2uni;
+  std::map<std::string,std::string> prox2uni;
   
   /// extracts local proxy from CAST ID
 //  const LBindingProxy& _localProxy(const std::string&) const;
@@ -66,11 +66,11 @@ protected:
 public:  
   template<class T>
   const boost::shared_ptr<const T> loadBindingDataFromWM(const cast::cdl::WorkingMemoryChange & _wmc) {
-    return loadBindingDataFromWM<T>(_wmc.m_address);
+    return loadBindingDataFromWM<T>(_wmc.address);
   }
   template<class T>
   const boost::shared_ptr<const T> loadBindingDataFromWM(const cast::cdl::WorkingMemoryAddress & _address) {
-    return loadBindingDataFromWM<T>(std::string(_address.m_subarchitecture), std::string(_address.m_id));
+    return loadBindingDataFromWM<T>(std::string(_address.subarchitecture), std::string(_address.id));
   }
   template<class T>
   const boost::shared_ptr<const T> loadBindingDataFromWM(const CORBA::String_member& _str) {
@@ -87,7 +87,7 @@ public:
   template<class T>
   const boost::shared_ptr<const T> loadBindingDataFromWM(const std::string& _subarchitecture, const std::string& _id) {
     //log("loadBindingDataFromWM: _subarchitecture: " + _subarchitecture + " _id: " + _id);
-    boost::shared_ptr<const cast::CASTData<T> > data_ptr(m_component.getWorkingMemoryEntry<T>(_id,_subarchitecture));
+    boost::shared_ptr<const cast::CASTData<T> > data_ptr(component.getWorkingMemoryEntry<T>(_id,_subarchitecture));
     //log("==================== UGLY TEST ++++++++++++++++++++");
     //boost::shared_ptr<const CASTData<T> >* data_ptr = new boost::shared_ptr<const CASTData<T> >(getWorkingMemoryEntry<T>(_id));
     //boost::shared_ptr<const CASTData<T> > data_ptr = getWorkingMemoryEntry<T>(_id);
@@ -96,9 +96,9 @@ public:
 protected:
   /// supertype for the local cache translator functor classes
   struct local_converter {
-    AbstractBindingWMRepresenter& m_bindingWMRepresenter;
+    AbstractBindingWMRepresenter& bindingWMRepresenter;
     local_converter(AbstractBindingWMRepresenter& _bindingWMRepresenter) 
-      : m_bindingWMRepresenter(_bindingWMRepresenter) {}
+      : bindingWMRepresenter(_bindingWMRepresenter) {}
   };
   
   /// translator functor for proxies into local representation
@@ -111,7 +111,7 @@ protected:
 			     const std::string& _subarchID,
 			     unsigned int _version) const 
     {
-      return LBindingProxy(m_bindingWMRepresenter, _proxy, _id, _subarchID, _version);
+      return LBindingProxy(bindingWMRepresenter, _proxy, _id, _subarchID, _version);
     }
   };
   
@@ -125,7 +125,7 @@ protected:
 			     const std::string& _subarchID,
 			     const unsigned int _version) const 
     {
-      return LBindingUnion(m_bindingWMRepresenter, _union, _id, _subarchID, _version); 
+      return LBindingUnion(bindingWMRepresenter, _union, _id, _subarchID, _version); 
     }
   };
   
@@ -143,8 +143,8 @@ protected:
 
   
 public:    
-  cast::CASTDataLocalCache<BindingData::BindingProxy,LBindingProxy,local_proxy_converter> m_proxyLocalCache;
-  cast::CASTDataLocalCache<BindingData::BindingUnion,LBindingUnion,local_union_converter> m_unionLocalCache;
+  cast::CASTDataLocalCache<BindingData::BindingProxy,LBindingProxy,local_proxy_converter> proxyLocalCache;
+  cast::CASTDataLocalCache<BindingData::BindingUnion,LBindingUnion,local_union_converter> unionLocalCache;
 
   /// loads using the cache. Returns null if the loading was not
   /// successful
@@ -153,23 +153,23 @@ public:
   /// successful
   const LBindingUnion* maybeLoadUnion(const std::string& _proxyID);
 
-  FeatureLoader m_featureLoader;
+  FeatureLoader featureLoader;
 
-  std::string m_bindingSubarchID;
-  const std::string& bindingSubarchID() const {return m_bindingSubarchID;}
+  std::string bindingSubarchID;
+  const std::string& bindingSubarchID() const {return bindingSubarchID;}
 public:
   void setBindingSubarchID(const std::string& _str) {
-    m_bindingSubarchID = _str;
-    m_proxyLocalCache.setSubarchitectureID(_str);
-    m_unionLocalCache.setSubarchitectureID(_str);
+    bindingSubarchID = _str;
+    proxyLocalCache.setSubarchitectureID(_str);
+    unionLocalCache.setSubarchitectureID(_str);
   }
 
 private:
   /// a list of the acquired tokens
-  WMASet m_tokens;
+  WMASet tokens;
 
 public:
-  const WMASet& tokens() const {return m_tokens;}
+  const WMASet& tokens() const {return tokens;}
 };
 
 
@@ -188,4 +188,4 @@ cast::CASTDataLocalCache<BindingData::BindingUnion,Binding::LBindingUnion,Bindin
 
 }
 
-#endif //  BINDING_ABSTRACT_BINDING_WM_REPRESENTER_H_ 
+#endif //  BINDING_ABSTRACT_BINDING_WREPRESENTER_H_ 

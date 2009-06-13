@@ -9,7 +9,7 @@ ExistingProxyIDvsThisProxyIDComparator::compare(const AbstractFeature& _proxyFea
 						const AbstractFeature& _unionFeature) const {
   const BindingFeatures::ExistingProxyID& existingproxy(getIDLFeature1(_proxyFeature,_unionFeature));
   const BindingFeatures::ThisProxyID& thisproxy(getIDLFeature2(_proxyFeature,_unionFeature));    
-  if(string(existingproxy.m_existingProxyID) == string(thisproxy.m_thisProxyID))
+  if(string(existingproxy.existingProxyID) == string(thisproxy.thisProxyID))
     return true;
   return indeterminate;
 }
@@ -17,23 +17,23 @@ ExistingProxyIDvsThisProxyIDComparator::compare(const AbstractFeature& _proxyFea
 ExistingProxyIDHelper::ExistingProxyIDHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = false;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = false;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
 ostream& 
 ExistingProxyIDHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
-  _out << extract(_feat).m_existingProxyID;
+  _out << extract(_feat).existingProxyID;
   return _out;
 }
 
 bool 
 ExistingProxyIDHelper::operatorLessImpl(const AbstractFeature& _feat1, const AbstractFeature& _feat2) const 
 {
-  return string(extract(_feat1).m_existingProxyID) < string(extract(_feat2).m_existingProxyID);
+  return string(extract(_feat1).existingProxyID) < string(extract(_feat2).existingProxyID);
 }
   
 

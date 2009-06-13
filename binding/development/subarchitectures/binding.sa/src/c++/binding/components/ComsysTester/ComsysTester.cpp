@@ -26,12 +26,12 @@ extern "C" {
 ComsysTester::ComsysTester(const string &_id) :
   WorkingMemoryAttachedComponent(_id),
   AbstractBinder(_id),
-  m_test(-1),
-  m_handler(*this),
-  m_testFinished(true),
-  m_retest(0)
+  test(-1),
+  handler(*this),
+  testFinished(true),
+  retest(0)
 {
-  m_queueBehaviour = cdl::QUEUE;
+  queueBehaviour = cdl::QUEUE;
 }
 
 void
@@ -72,24 +72,24 @@ ComsysTester::configure(map<string,string> & _config) {
     cerr << "Error in ComsysTester: --test N must be given";
     abort();
   }
-  m_test = lexical_cast<int>(itr->second);
-  assert(m_test >= 0);
+  test = lexical_cast<int>(itr->second);
+  assert(test >= 0);
   itr = _config.find("--comsys");
   if(itr == _config.end()) {
     cerr << "Error in ComsysTester: --comsys ID must be given, where ID is the subarchitecture ID of comsys";
     abort();
   }
-  m_comsysID = itr->second;
+  comsysID = itr->second;
 }
 
 
 void 
 ComsysTester::bindingProxyUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
-  string id(_wmc.m_address.m_id);
-  m_addSignalledProxyIDs.insert(id);
-  m_proxiesOnWM.insert(id);
+  string id(_wmc.address.id);
+  addSignalledProxyIDs.insert(id);
+  proxiesOnWM.insert(id);
   try {
-    m_status = *loadBindingDataFromWM<BindingData::BinderStatus>(m_statusID);  
+    status = *loadBindingDataFromWM<BindingData::BinderStatus>(statusID);  
     testCompleteness();
   } catch(const DoesNotExistOnWMException& _e) {
     log("Caught this in ComsysTester::bindingProxyUpdated: " + string(_e.what()));
@@ -99,14 +99,14 @@ ComsysTester::bindingProxyUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
 
 void 
 ComsysTester::bindingProxyDeleted(const cast::cdl::WorkingMemoryChange & _wmc) {
-  string id(_wmc.m_address.m_id);
+  string id(_wmc.address.id);
   
-  std::set<std::string>::iterator itr = m_proxiesOnWM.find(id);
-  assert(itr != m_proxiesOnWM.end());
-  m_proxiesOnWM.erase(itr);
+  std::set<std::string>::iterator itr = proxiesOnWM.find(id);
+  assert(itr != proxiesOnWM.end());
+  proxiesOnWM.erase(itr);
   
   try {
-    m_status = *loadBindingDataFromWM<BindingData::BinderStatus>(m_statusID);  
+    status = *loadBindingDataFromWM<BindingData::BinderStatus>(statusID);  
     testCompleteness();
   } catch(const DoesNotExistOnWMException& _e) {
     log("Caught this in ComsysTester::bindingProxyUpdated: " + string(_e.what()));
@@ -116,8 +116,8 @@ ComsysTester::bindingProxyDeleted(const cast::cdl::WorkingMemoryChange & _wmc) {
 
 void 
 ComsysTester::statusUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
-  m_status = *loadBindingDataFromWM<BindingData::BinderStatus>(_wmc);
-  m_statusID = string(_wmc.m_address.m_id);
+  status = *loadBindingDataFromWM<BindingData::BinderStatus>(_wmc);
+  statusID = string(_wmc.address.id);
   try {
     testCompleteness();    
   } catch(const DoesNotExistOnWMException& _e) {
@@ -128,40 +128,40 @@ ComsysTester::statusUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
 
 void ComsysTester::runComponent() {
   sleepProcess(3000); // sleep for a second to allow the rest to be properly started
-  switch(m_test) {
+  switch(test) {
   case 0: 
     {
       log("testing a single simple sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("the red triangle");
       sleepProcess(2000);
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 1: 
     {
       log("testing two simple sentences with a delay between");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("the red triangle");
       sleepProcess(2000);
       passToComsys("the green thing");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 2: 
     {
       log("testing two simple sentences with no delay between");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("the red triangle");
       passToComsys("the green thing");      
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 3: 
     {
       log("testing to add a number of simple sentences with a delay between each");
       log("will fail since all the excess updating before proxies are bound confuses the binder");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("the red triangle");
       sleepProcess(1000);
       passToComsys("the blue circle");      
@@ -185,14 +185,14 @@ void ComsysTester::runComponent() {
       passToComsys("the square");      
       sleepProcess(1000);
       passToComsys("the star");      
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 4: 
     {
       log("testing to add a number of simple sentences with no delay between each");
       log("will fail since all the excess updating before proxies are bound confuses the binder");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("the red triangle");
       passToComsys("the blue circle");      
       passToComsys("the green square");      
@@ -205,203 +205,203 @@ void ComsysTester::runComponent() {
       passToComsys("the circle");      
       passToComsys("the square");      
       passToComsys("the star");      
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 5: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("take the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 6: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("now take the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 7: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the ball to the left of the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 8: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the green ball to the left of the blue box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 9: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the balls to the left of the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 10: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the green ball to the left of the boxes");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 11: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the green things to the left of the red thing");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 12: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the green things to the left of the red things");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 13: 
     {
       log("testing to add single (tricky) imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the thing on the thing");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 14: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the green thing to the left of the mug onto the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 15: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("take the box and put it here");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 16: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("look at the table then take the green mug on it and give it to me");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 17: 
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("go to the kitchen");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;  
   case 18:
     {
       log("testing to add single imperative sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("go to the kitchen through the corridor and fetch me a cup of coffee");
       sleepProcess(200);
       passToComsys("and bring me a cookie too");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 19:
     {
       log("testing to add single simple sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("ok that is right");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 20:
     {
       log("testing to add single assertive sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("no that is wrong");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 21:
     {
       log("testing to add single assertive sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("there is a mug on the table");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 22:
     {
       log("testing to add single assertive sentence");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("no this is a mug");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 23:
     {
       log("testing to add single question");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("where is the box now");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 24:
     {
       log("testing to add single question");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("are you there");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;  
   case 25:
     {
       log("testing to add single question");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is it");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;  
   case 26:
     {
       log("testing to add an assertion, and a follow up assertion (delay between)");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("here is the mug");
       sleepProcess(3000);
       passToComsys("it is green");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 27:
     {
       log("testing to add an assertion, and a follow up question (delay between)");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("here is the mug");
       sleepProcess(3000);
       passToComsys("is it green");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;  
   case 28:
     {
       log("testing to add an assertion monologue (delays between)");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("here is the mug");
       sleepProcess(3000);
       passToComsys("it is green");
@@ -409,223 +409,223 @@ void ComsysTester::runComponent() {
       passToComsys("and there is a table");
       sleepProcess(3000);
       passToComsys("it is big and white");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 29:
     {
       log("testing to add an assertion monologue (delays between)");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("here is the mug");
       sleepProcess(3000);
       passToComsys("it is green");
       sleepProcess(3000);
       passToComsys("right it is also round");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 30:
     {
       log("testing to refer to a passed event");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("you picked up the green mug");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 31:
     {
       log("assert a passed fact");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("the mug was in the kitchen yesterday");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 32:
     {
       log("testing to refer to a passed fact");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("get the mug that was in the kitchen yesterday");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 33:
     {
       log("refer to passed events in a query (directed to the episodic memory)");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what did you do this morning");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 34:
     {
       log("refer to passed events in a query (directed to the episodic memory)");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("from where did you get the mug");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 35:
     {
       log("refer to a future event");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("when you get to the kitchen you should give the cup to hendrik");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 36:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the red thing to the left of the blue thing");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 37:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the red ball to the left of the blue objects");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;  
   case 38:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("move the ball to the left of the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 39:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("put the square near the red car");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 40:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is near the red ball");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 41:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is to the left of the red ball");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 42:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is round");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 43:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is red");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 44:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is big");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 45:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is reachable");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 46:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what is empty");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 47:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what colour is the ball");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 48:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("what size is the box");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 49:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("is the red square to the left of the triangle");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 50:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("is the red square left of the triangle");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 51:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("is the red square near the triangle");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 52:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("is the red thing a square");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 53:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("is this room the kitchen");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 54:
     {
       log("testing a critical playmate string");
-      m_testFinished = false;
+      testFinished = false;
       passToComsys("is the thing a square");
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   default:
-    cerr << "incorrect test number: " << m_test << endl;
+    cerr << "incorrect test number: " << test << endl;
     failExit();
   }
   sleepProcess(1000);
@@ -640,14 +640,14 @@ void ComsysTester::runComponent() {
   
 void 
 ComsysTester::testCompleteness() {
-  m_handler.purgeAllLoadedData();
+  handler.purgeAllLoadedData();
   try {
-    switch(m_test) {
+    switch(test) {
     case 0: 
       {
-	if(m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.allProxiesFromWM();
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound()) {
+	  ProxySet proxies = handler.allProxiesFromWM();
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  sleepProcess(100);
 	  if(!(true_for_all(proxies,ConsistencyCheck<ProxyPtr>(*this)) &&
 	       true_for_all(unions,ConsistencyCheck<UnionPtr>(*this)))) {
@@ -672,9 +672,9 @@ ComsysTester::testCompleteness() {
     case 1: // same as 2, but with no delay
     case 2: 
       {
-	if(m_addSignalledProxyIDs.size() >= 2 && m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.allProxiesFromWM();
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(addSignalledProxyIDs.size() >= 2 && testFinished && allBound()) {
+	  ProxySet proxies = handler.allProxiesFromWM();
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(proxies.size() == 2);
 	  assert(unions.size() == 2);
 	  assert(true_for_all(proxies, 
@@ -695,9 +695,9 @@ ComsysTester::testCompleteness() {
     case 3: 
     case 4: 
       {
-	if(m_addSignalledProxyIDs.size() >= 7 && m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.allProxiesFromWM();
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(addSignalledProxyIDs.size() >= 7 && testFinished && allBound()) {
+	  ProxySet proxies = handler.allProxiesFromWM();
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(proxies.size() == 7);
 	  successExit();
 	}
@@ -753,9 +753,9 @@ ComsysTester::testCompleteness() {
     case 52:
     case 53:
     case 54:
-      if(!m_proxiesOnWM.empty() && 
-	 !m_addSignalledProxyIDs.empty() 
-	 && m_testFinished 
+      if(!proxiesOnWM.empty() && 
+	 !addSignalledProxyIDs.empty() 
+	 && testFinished 
 	 && allBound()) {
 	log("everything is bound, right now that's enough");
 	successExit();
@@ -769,7 +769,7 @@ ComsysTester::testCompleteness() {
   catch(const BindingException & _e) {
     log(string("Caught this while testing") + _e.what());
   } 
-  m_retest = 0;
+  retest = 0;
 }
 
 
@@ -789,11 +789,11 @@ ComsysTester::passToComsys(const string& _sentence)
     ++words;
   }
   sentence->length = words; // seems redundant
-  addToWorkingMemoryHelper(id, m_comsysID, sentence, cast::cdl::BLOCKING);
+  addToWorkingMemoryHelper(id, comsysID, sentence, cast::cdl::BLOCKING);
   static int utterance_no(1);
-  if(!m_dotTitle.empty())
-    m_dotTitle += "\\n";
-  m_dotTitle += "utterance" + boost::lexical_cast<string>(utterance_no) + ": \\\"" + _sentence + "\\\"";
+  if(!dotTitle.empty())
+    dotTitle += "\\n";
+  dotTitle += "utterance" + boost::lexical_cast<string>(utterance_no) + ": \\\"" + _sentence + "\\\"";
 }
 
 
@@ -801,12 +801,12 @@ bool
 ComsysTester::allBound() 
 {  
   bool result = false;
-  if (m_status.m_stable &&
-      !m_proxiesOnWM.empty()) {
+  if (status.stable &&
+      !proxiesOnWM.empty()) {
     bool consistency_checked = false;
     while(!consistency_checked) {
       result = false;
-      ProxySet proxies = m_handler.loadProxies(m_proxiesOnWM);
+      ProxySet proxies = handler.loadProxies(proxiesOnWM);
       if(true_for_all(proxies,ProxyStateChecker(BindingData::BOUND) && !ProxyUnionIDChecker(""))) { // return true after some assertions
 	// some consistency checks:
 	assert(true_for_all(proxies,
@@ -817,19 +817,19 @@ ComsysTester::allBound()
 			    )
 	       );
 	// make sure all ThisProxyID points correctly (well... not a dead certain test, but well)
-	ProxySet proxies2 = m_handler.extractProxiesFromProxies(proxies,ProxyFromThisProxyIDExtractor<ProxyPtr>());
+	ProxySet proxies2 = handler.extractProxiesFromProxies(proxies,ProxyFromThisProxyIDExtractor<ProxyPtr>());
 	assert(proxies == proxies2);
 	// have a look at the singulars:
 	proxies = proxies | hasFeature<ProxyPtr,BindingFeatures::Singular>();
 	// and make sure they're all part of groups
-	proxies = m_handler.extractProxiesFromProxies(proxies,GroupProxyFromSingularExtractor<ProxyPtr>());
+	proxies = handler.extractProxiesFromProxies(proxies,GroupProxyFromSingularExtractor<ProxyPtr>());
 	assert(true_for_all(proxies, TypeCheck<ProxyPtr>(BindingData::GROUP)));
 	result = true;
       }
       if(true_for_all(proxies,ConsistencyCheck<ProxyPtr>(*this))) {
 	consistency_checked = true;
       } else {
-	m_handler.reloadAllLoadedData();
+	handler.reloadAllLoadedData();
       }
     }
   }

@@ -19,16 +19,16 @@ F for_all(T& _container, F _functor) {
 template <typename T> 
 struct insert_getID
 {
-  std::set<std::string> m_set;
-  void operator()(const T& _t) {m_set.insert(_t->getID());}
+  std::set<std::string> set;
+  void operator()(const T& _t) {set.insert(_t->getID());}
 };
 
 /// calls inserts the first of a pair in a set
 template <typename T> 
 struct insert_first
 {
-  std::set<std::string> m_set;
-  void operator()(const T& _t) {m_set.insert(_t.first);}
+  std::set<std::string> set;
+  void operator()(const T& _t) {set.insert(_t.first);}
 };
 
 

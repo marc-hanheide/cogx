@@ -31,7 +31,7 @@ public:
   /// union highscore if necessary
   void proxyDeleted(const cast::cdl::WorkingMemoryChange & _wmc);
   
-  /// together with \p unionDeleted, it makes sure \p m_prox2uni is
+  /// together with \p unionDeleted, it makes sure \p prox2uni is
   /// updated
   void unionUpdated(const cast::cdl::WorkingMemoryChange & _wmc);
 
@@ -47,37 +47,37 @@ protected:
   
   struct ProxyScores {
     ProxyScores() :
-      m_bestBindingScore(defaultThresholdScore()) {}
+      bestBindingScore(defaultThresholdScore()) {}
     /// maps from unionID to the score of that union, if recorded
-    std::map<std::string,BindingData::BindingScore> m_unionScore;
+    std::map<std::string,BindingData::BindingScore> unionScore;
     /// a list of the best unions of the proxy, should be empty
     /// if all union scores are not yet collected
-    BindingData::BindingScore m_bestBindingScore;
+    BindingData::BindingScore bestBindingScore;
     /// the list of the best_unions
-    std::vector<std::string> m_bestUnions;
+    std::vector<std::string> bestUnions;
     /// the list of the unions that do not match
-    std::vector<std::string> m_nonMatchingUnions;
+    std::vector<std::string> nonMatchingUnions;
   };
   
   /// maps from a proxyID to a map which maps from the unionID
   /// to the score of the comparison between the two
-    //map<std::string, map<std::string, BindingData::BindingScore> > m_proxy2Scores;
+    //map<std::string, map<std::string, BindingData::BindingScore> > proxy2Scores;
 
   /// maps from a proxy to the best unions of the proxy
-    //map<std::string, set<std::string> > m_proxy2bestUnions;
+    //map<std::string, set<std::string> > proxy2bestUnions;
 
   /// the resulting scores for a proxy
-  cast::StringMap<ProxyScores>::map m_proxyScores;
+  cast::StringMap<ProxyScores>::map proxyScores;
   /// maps from proxyID to already stored
   /// BestUnionsForProxy if it exists
-  //map<std::string, std::string> m_proxy2bestUnionsID;
+  //map<std::string, std::string> proxy2bestUnionsID;
   
   /// a set of all binding IDs of already deleted proxies, used to
   /// ignore stray scoring results of already deleted proxies (they
   /// may come in a bit too late)
-  std::set<std::string> m_deletedProxies;
-  /// same as \p m_deletedProxies, but for the deleted unions
-  std::set<std::string> m_deletedUnions;
+  std::set<std::string> deletedProxies;
+  /// same as \p deletedProxies, but for the deleted unions
+  std::set<std::string> deletedUnions;
   
   std::vector<std::string> _bestUnions(const std::map<std::string,BindingData::BindingScore>& _unionscores, ///< the calculated scores
 				       BindingData::BindingScore& _best_score, 
@@ -92,9 +92,9 @@ protected:
   
   
   /// a queue of proxies that may be appropriate for a binding task
-  non_repeating_queue<std::string> m_proxyIDQueue;
+  non_repeating_queue<std::string> proxyIDQueue;
   /// true iff WM has a binding task
-  bool m_bindingTask;
+  bool bindingTask;
 
 };
 

@@ -30,15 +30,15 @@ TesterMonitor::TesterMonitor(const string &_id) :
   WorkingMemoryAttachedComponent(_id),
   AbstractMonitor(_id),
 //  AbstractBindingWMRepresenter(dynamic_cast<WorkingMemoryReaderProcess&>(*this)),
-  m_test(-1),
-  m_testFinished(true),
-  m_handler(*this),
-  m_retest(0),
-  m_statusUpdates(0),
-  m_statusStableUpdates(0)
+  test(-1),
+  testFinished(true),
+  handler(*this),
+  retest(0),
+  statusUpdates(0),
+  statusStableUpdates(0)
 {
   setReceiveXarchChangeNotifications(true);
-  m_queueBehaviour = cdl::QUEUE;
+  queueBehaviour = cdl::QUEUE;
 }
 
 static const unsigned int MANY_PROXIES = 24;
@@ -131,106 +131,106 @@ TesterMonitor::configure(map<string,string> & _config) {
     cerr << "Error in TesterMonitor: --test N must be given";
     abort();
   }
-  m_test = lexical_cast<int>(itr->second);
-  assert(m_test >= 0);
+  test = lexical_cast<int>(itr->second);
+  assert(test >= 0);
   cout << "bindingSA: " << getBindingSA() << endl;
   dynamic_cast<AbstractBindingWMRepresenter*>(this)->setBindingSubarchID(getBindingSA());
 }
 
 void TesterMonitor::runComponent() {
   sleepProcess(1000); // sleep for a second to allow the rest to be properly started
-  m_sourceID = subarchitectureID();
-  m_testFinished = false;
-  switch(m_test) {
+  sourceID = subarchitectureID();
+  testFinished = false;
+  switch(test) {
   case 0: 
     {
       log("testing to add a single basic proxy with no features");
       startNewBasicProxy();
-      m_proxyIDs.insert(storeCurrentProxy());
+      proxyIDs.insert(storeCurrentProxy());
       bindNewProxies();
     }
     break;
   case 1:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies that should NOT bind, then add a couple of queries too");
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	BindingFeatures::Colour colour;
-	colour.m_colour = CORBA::string_dup("blue");
+	colour.colour = CORBA::string_dup("blue");
 	addFeatureToCurrentProxy(colour);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
 /*      {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	BindingFeatures::OtherSourceID other;
-	other.m_otherSourceID = CORBA::string_dup("binding.sa");
+	other.otherSourceID = CORBA::string_dup("binding.sa");
 	addFeatureToCurrentProxy(other, BindingFeaturesCommon::NEGATIVE);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }*/
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept, BindingFeaturesCommon::NEGATIVE); 
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       {
 	BindingFeatures::Concept* query_concept = new BindingFeatures::Concept;
-	query_concept->m_concept = CORBA::string_dup("test_concept");
-	query_concept->m_parent.m_truthValue = BindingFeaturesCommon::POSITIVE;
-	query_concept->m_parent.m_immediateProxyID = CORBA::string_dup("");;
+	query_concept->concept = CORBA::string_dup("test_concept");
+	query_concept->parent.truthValue = BindingFeaturesCommon::POSITIVE;
+	query_concept->parent.immediateProxyID = CORBA::string_dup("");;
 	string id(newDataID());
 	addToWorkingMemory(id,bindingSubarchID(),query_concept);
 	BindingQueries::BasicQuery* query = new BindingQueries::BasicQuery;
-	query->m_parameters.m_boundProxyInclusion = BindingQueries::INCLUDE_BOUND;
-	query->m_proxyID = CORBA::string_dup(m_proxyIDs.begin()->c_str());	
-	query->m_featurePointer.m_type = CORBA::string_dup(typeName<BindingFeatures::Concept>().c_str());
-	query->m_featurePointer.m_address = CORBA::string_dup(id.c_str());
-	query->m_featurePointer.m_immediateProxyID = CORBA::string_dup("");
-	query->m_answer = cast::cdl::triIndeterminate;
-	query->m_processed = false;
+	query->parameters.boundProxyInclusion = BindingQueries::INCLUDE_BOUND;
+	query->proxyID = CORBA::string_dup(proxyIDs.begin()->c_str());	
+	query->featurePointer.type = CORBA::string_dup(typeName<BindingFeatures::Concept>().c_str());
+	query->featurePointer.address = CORBA::string_dup(id.c_str());
+	query->featurePointer.immediateProxyID = CORBA::string_dup("");
+	query->answer = BindingData::INDETERMINATETB;
+	query->processed = false;
 	string qid(newDataID());
 	addToWorkingMemory(qid, bindingSubarchID(), query, cast::cdl::BLOCKING);
-	m_basicQueryIDs.push_back(qid);
+	basicQueryIDs.push_back(qid);
       }
       {
 	BindingFeatures::Concept* query_concept = new BindingFeatures::Concept;
-	query_concept->m_concept = CORBA::string_dup("test_concept");
-	query_concept->m_parent.m_truthValue = BindingFeaturesCommon::POSITIVE;
-	query_concept->m_parent.m_immediateProxyID = CORBA::string_dup("");;
+	query_concept->concept = CORBA::string_dup("test_concept");
+	query_concept->parent.truthValue = BindingFeaturesCommon::POSITIVE;
+	query_concept->parent.immediateProxyID = CORBA::string_dup("");;
 	string id(newDataID());
 	addToWorkingMemory(id,bindingSubarchID(),query_concept);
 	BindingData::FeaturePointer ptr;
-	ptr.m_type = CORBA::string_dup(typeName<BindingFeatures::Concept>().c_str());
-	ptr.m_address = CORBA::string_dup(id.c_str());
+	ptr.type = CORBA::string_dup(typeName<BindingFeatures::Concept>().c_str());
+	ptr.address = CORBA::string_dup(id.c_str());
 	BindingQueries::AdvancedQuery* query = new BindingQueries::AdvancedQuery;
-	query->m_parameters.m_boundProxyInclusion = BindingQueries::INCLUDE_BOUND;
-	query->m_featurePointer.m_type = CORBA::string_dup(typeName<BindingFeatures::Concept>().c_str());
-	query->m_featurePointer.m_address = CORBA::string_dup(id.c_str());
-	query->m_featurePointer.m_immediateProxyID = CORBA::string_dup("");	
-	query->m_hasTheFeatureProxyIDs.length(0);
-	query->m_hasTheFeatureUnionIDs.length(0);
-	query->m_matchingProxyIDs.length(0);
-	query->m_matchingUnionIDs.length(0);
-	query->m_nonMatchingProxyIDs.length(0);
-	query->m_nonMatchingUnionIDs.length(0);
-	query->m_processed = false;
+	query->parameters.boundProxyInclusion = BindingQueries::INCLUDE_BOUND;
+	query->featurePointer.type = CORBA::string_dup(typeName<BindingFeatures::Concept>().c_str());
+	query->featurePointer.address = CORBA::string_dup(id.c_str());
+	query->featurePointer.immediateProxyID = CORBA::string_dup("");	
+	query->hasTheFeatureProxyIDs.length(0);
+	query->hasTheFeatureUnionIDs.length(0);
+	query->matchingProxyIDs.length(0);
+	query->matchingUnionIDs.length(0);
+	query->nonMatchingProxyIDs.length(0);
+	query->nonMatchingUnionIDs.length(0);
+	query->processed = false;
 	
 	string qid(newDataID());
 	addToWorkingMemory(qid, bindingSubarchID(), query, cast::cdl::BLOCKING);
-	m_advancedQueryIDs.push_back(qid);
+	advancedQueryIDs.push_back(qid);
       }
       sleepProcess(2000);
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 2:
@@ -239,34 +239,34 @@ void TesterMonitor::runComponent() {
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
 	//bindNewProxies();
       }
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept); 
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
 	bindNewProxies();
       }
     }
     break;
   case 3:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation between them, no bindings");
       addTwoProxiesAndOneRelation();
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
-      m_testFinished = true;
+      awaitBinding(proxyIDs);
+      testFinished = true;
     }
     break;
   case 4:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation between them (twice, and the relation should bind as a consequence)");
       addTwoProxiesAndOneRelation();
       sleepProcess(3000);
@@ -275,7 +275,7 @@ void TesterMonitor::runComponent() {
       bindNewProxies();
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(1000);
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 5:
@@ -283,9 +283,9 @@ void TesterMonitor::runComponent() {
       log("testing a single unbounded group proxy");
       startNewGroupProxy(0);
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("test_concept");
+      concept.concept = CORBA::string_dup("test_concept");
       addFeatureToCurrentProxy(concept);
-      m_proxyIDs.insert(storeCurrentProxy());
+      proxyIDs.insert(storeCurrentProxy());
       log("about to bind the proxy");
       bindNewProxies();
     }
@@ -296,18 +296,18 @@ void TesterMonitor::runComponent() {
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
 	bindNewProxies();
       }
       sleepProcess(1000);
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept); 
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
 	bindNewProxies();
       }
     }
@@ -318,15 +318,15 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string("test_concept" + lexical_cast<string>(i)).c_str());
+	concept.concept = CORBA::string_dup(string("test_concept" + lexical_cast<string>(i)).c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
 	bindNewProxies();
       }
       sleepProcess(1000);
-      for(set<string>::const_iterator itr = m_proxyIDs.begin();
-	  itr != m_proxyIDs.end();
+      for(set<string>::const_iterator itr = proxyIDs.begin();
+	  itr != proxyIDs.end();
 	  ++itr) {
 	deleteExistingProxy(*itr);
       }
@@ -338,30 +338,30 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       }
       bindNewProxies();
     }
     break;
   case 9:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("Add two sets of proxies that all should bind within the sets, and call bindNewProxies only once");
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string(string("test_concept") + ((i%2)?"_1":"_2")).c_str());
+	concept.concept = CORBA::string_dup(string(string("test_concept") + ((i%2)?"_1":"_2")).c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       }
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
     }
-    m_testFinished = true;
+    testFinished = true;
     break;
   case 10:
     {
@@ -369,10 +369,10 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string(string("test_concept_") + lexical_cast<string>(i%3 + 1)).c_str());
+	concept.concept = CORBA::string_dup(string(string("test_concept_") + lexical_cast<string>(i%3 + 1)).c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       }
       bindNewProxies();
     }
@@ -383,15 +383,15 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       bindNewProxies();
       }
       sleepProcess(5000);
-      for(set<string>::const_iterator itr = m_proxyIDs.begin();
-	  itr != m_proxyIDs.end();
+      for(set<string>::const_iterator itr = proxyIDs.begin();
+	  itr != proxyIDs.end();
 	  ++itr) {
 	deleteExistingProxy(*itr);
       }
@@ -403,15 +403,15 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       }
       bindNewProxies();
       sleepProcess(5000);
-      for(set<string>::const_iterator itr = m_proxyIDs.begin();
-	  itr != m_proxyIDs.end();
+      for(set<string>::const_iterator itr = proxyIDs.begin();
+	  itr != proxyIDs.end();
 	  ++itr) {
 	deleteExistingProxy(*itr);
       }
@@ -423,14 +423,14 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
 	bindNewProxies();
       }
-      for(set<string>::const_iterator itr = m_proxyIDs.begin();
-	  itr != m_proxyIDs.end();
+      for(set<string>::const_iterator itr = proxyIDs.begin();
+	  itr != proxyIDs.end();
 	  ++itr) {
 	deleteExistingProxy(*itr);
       }
@@ -442,14 +442,14 @@ void TesterMonitor::runComponent() {
       for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	addFeatureToCurrentProxy(concept);
 	string id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       }
       bindNewProxies();
-      for(set<string>::const_iterator itr = m_proxyIDs.begin();
-	  itr != m_proxyIDs.end();
+      for(set<string>::const_iterator itr = proxyIDs.begin();
+	  itr != proxyIDs.end();
 	  ++itr) {
 	deleteExistingProxy(*itr);
       }
@@ -457,7 +457,7 @@ void TesterMonitor::runComponent() {
     break;
   case 15:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("for ten times in a row: Add few proxies that should bind, bind them incremently, and delete them right away (in a mixed order)");
       for(unsigned int j = 0 ; j < 10 ; ++j) {
 	log(string("gonna create ") + lexical_cast<string>(FEW_PROXIES) +" proxies");
@@ -465,10 +465,10 @@ void TesterMonitor::runComponent() {
 	for(unsigned int i = 0 ; i < FEW_PROXIES; ++i) {
 	  startNewBasicProxy();
 	  BindingFeatures::Concept concept;
-	  concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	  concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	  addFeatureToCurrentProxy(concept);
 	  string id = storeCurrentProxy();
-	  m_proxyIDs.insert(id);
+	  proxyIDs.insert(id);
 	  if((i+j)%2) 
 	    ids.push_back(id);
 	  else
@@ -482,11 +482,11 @@ void TesterMonitor::runComponent() {
 	  deleteExistingProxy(*itr);
 	}
       }
-      m_testFinished = true;
+      testFinished = true;
     }
   case 16:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("for ten times in a row: Add few proxies that should bind, bind them incremently, wait a bit and then delete them (in a mixed order)");
       for(unsigned int j = 0 ; j < 10 ; ++j) {
 	log(string("gonna create ") + lexical_cast<string>(FEW_PROXIES) +" proxies");
@@ -494,10 +494,10 @@ void TesterMonitor::runComponent() {
 	for(unsigned int i = 0 ; i < FEW_PROXIES; ++i) {
 	  startNewBasicProxy();
 	  BindingFeatures::Concept concept;
-	  concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	  concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	  addFeatureToCurrentProxy(concept);
 	  string id = storeCurrentProxy();
-	  m_proxyIDs.insert(id);
+	  proxyIDs.insert(id);
 	  if((i+j)%2) 
 	    ids.push_back(id);
 	  else
@@ -512,22 +512,22 @@ void TesterMonitor::runComponent() {
 	  deleteExistingProxy(*itr);
 	}
       }
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 17:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add a single basic proxy and then update it after some delay");
       string id;
       {
 	//addTwoProxiesAndOneRelation();
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
 	bindNewProxies();
       }
       sleepProcess(3000);
@@ -538,7 +538,7 @@ void TesterMonitor::runComponent() {
 	changeExistingProxy(id,list_of(typeName<BindingFeatures::Concept>()));
 	cout << "loaded proxy with: \"changeExistingProxy\"" << endl;
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("updated_test_concept");
+	concept.concept = CORBA::string_dup("updated_test_concept");
 	addFeatureToCurrentProxy(concept);
 	cout << "added update concept feature" << endl;
 	string id2 = storeCurrentProxy();
@@ -549,7 +549,7 @@ void TesterMonitor::runComponent() {
       }
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(4000);
-      m_testFinished = true;
+      testFinished = true;
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(2000);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
@@ -557,17 +557,17 @@ void TesterMonitor::runComponent() {
     break;  
   case 18:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add a single basic proxy and then update with no changes after some delay");
       string id;
       {
 	//addTwoProxiesAndOneRelation();
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
 	bindNewProxies();
       }
       sleepProcess(1000);
@@ -577,85 +577,85 @@ void TesterMonitor::runComponent() {
 	assert(id == id2);
 	bindNewProxies();
       }
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 19:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add many proxies (that should bind) and then update them after they are bound such that they don't bind anymore");
       {
 	for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	  startNewBasicProxy();
 	  BindingFeatures::Concept concept;
-	  concept.m_concept = CORBA::string_dup(string("test_concept").c_str());
+	  concept.concept = CORBA::string_dup(string("test_concept").c_str());
 	  addFeatureToCurrentProxy(concept);
 	  string id = storeCurrentProxy();
-	  m_proxyIDs.insert(id);
+	  proxyIDs.insert(id);
 	}
 	bindNewProxies();
       }
       sleepProcess(2000);
       // make sure all proxies are first bound
-      ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
+      ProxySet proxies = handler.loadProxies(proxyIDs);
       while(!true_for_all(proxies,ProxyStateChecker(BindingData::BOUND))) {
 	log("all not bound");
 	sleepProcess(1000);
-	m_handler.reloadAllLoadedData();
-	proxies = m_handler.loadProxies(m_proxyIDs);
+	handler.reloadAllLoadedData();
+	proxies = handler.loadProxies(proxyIDs);
       }
       log("Now the proxies will be updated");
-      UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+      UnionSet unions = handler.extractUnionsFromProxies(proxies);
       assert(unions.size() == 1);
       {
 	unsigned int nr = 0;
 	// now change them
-	foreach(string id,m_proxyIDs) {
+	foreach(string id,proxyIDs) {
 	  changeExistingProxy(id,list_of(typeName<BindingFeatures::Concept>()));
 	  BindingFeatures::Concept concept;
-	  concept.m_concept = CORBA::string_dup((string("updated_test_concept_") + lexical_cast<string>(nr++)).c_str());
+	  concept.concept = CORBA::string_dup((string("updated_test_concept_") + lexical_cast<string>(nr++)).c_str());
 	  addFeatureToCurrentProxy(concept);
 	  string id2 = storeCurrentProxy();
 	  assert(id == id2);
 	}
 	bindNewProxies();
       }
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 20:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add many proxies (that should NOT bind) and then update them after they are bound such that they DO bind");
       {
 	for(unsigned int i = 0 ; i < MANY_PROXIES; ++i) {
 	  startNewBasicProxy();
 	  BindingFeatures::Concept concept;
-	  concept.m_concept = CORBA::string_dup((string("test_concept_") + lexical_cast<string>(i)).c_str());
+	  concept.concept = CORBA::string_dup((string("test_concept_") + lexical_cast<string>(i)).c_str());
 	  addFeatureToCurrentProxy(concept);
 	  string id = storeCurrentProxy();
-	  m_proxyIDs.insert(id);
+	  proxyIDs.insert(id);
 	}
 	bindNewProxies();
       }
       sleepProcess(2000);
       // make sure all proxies are first bound
-      ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
+      ProxySet proxies = handler.loadProxies(proxyIDs);
       while(!true_for_all(proxies,ProxyStateChecker(BindingData::BOUND))) {
 	log("all not bound");
 	sleepProcess(1000);
-	m_handler.reloadAllLoadedData();
-	proxies = m_handler.loadProxies(m_proxyIDs);
+	handler.reloadAllLoadedData();
+	proxies = handler.loadProxies(proxyIDs);
       }
       log("Now the proxies will be updated");
-      UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+      UnionSet unions = handler.extractUnionsFromProxies(proxies);
       assert(unions.size() == MANY_PROXIES);
       {
 	// now change them
-	foreach(string id,m_proxyIDs) {
+	foreach(string id,proxyIDs) {
 	  changeExistingProxy(id,list_of(typeName<BindingFeatures::Concept>()));
 	  BindingFeatures::Concept concept;
-	  concept.m_concept = CORBA::string_dup(string("updated_test_concept").c_str());
+	  concept.concept = CORBA::string_dup(string("updated_test_concept").c_str());
 	  addFeatureToCurrentProxy(concept);
 	  string id2 = storeCurrentProxy();
 	  assert(id == id2);
@@ -663,7 +663,7 @@ void TesterMonitor::runComponent() {
 	bindNewProxies();
 	sleepProcess(10000);
       }
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 21:
@@ -672,38 +672,38 @@ void TesterMonitor::runComponent() {
       {
 	startNewBasicProxy(); // proxy blue
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	BindingFeatures::Colour colour;
-	colour.m_colour = CORBA::string_dup("blue");
+	colour.colour = CORBA::string_dup("blue");
 	addFeatureToCurrentProxy(colour);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       {
 	startNewBasicProxy(); // proxy red
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	BindingFeatures::Colour colour;
-	colour.m_colour = CORBA::string_dup("red");
+	colour.colour = CORBA::string_dup("red");
 	addFeatureToCurrentProxy(colour);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       bindNewProxies();
-      ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
+      ProxySet proxies = handler.loadProxies(proxyIDs);
       while(!true_for_all(proxies,ProxyStateChecker(BindingData::BOUND))) {
 	sleepProcess(10);
-	m_handler.reloadAllLoadedData();
-	proxies = m_handler.loadProxies(m_proxyIDs);
+	handler.reloadAllLoadedData();
+	proxies = handler.loadProxies(proxyIDs);
       }
       {
 	startNewBasicProxy(); // proxy with unknown colour
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
-      m_testFinished = true;   
+      testFinished = true;   
       bindNewProxies();  
     }
     break;
@@ -713,19 +713,19 @@ void TesterMonitor::runComponent() {
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	BindingFeatures::OtherSourceID other;
-	other.m_otherSourceID = CORBA::string_dup(subarchitectureID().c_str());
+	other.otherSourceID = CORBA::string_dup(subarchitectureID().c_str());
 	addFeatureToCurrentProxy(other, BindingFeaturesCommon::NEGATIVE);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       bindNewProxies();
     }
@@ -737,88 +737,88 @@ void TesterMonitor::runComponent() {
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	id1 = storeCurrentProxy();
-	m_proxyIDs.insert(id1);
+	proxyIDs.insert(id1);
       }
       {
 	startNewBasicProxy();
 	BindingFeatures::ExistingProxyID existing;
-	existing.m_existingProxyID = CORBA::string_dup(id1.c_str());
+	existing.existingProxyID = CORBA::string_dup(id1.c_str());
 	addFeatureToCurrentProxy(existing);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept");
+	concept.concept = CORBA::string_dup("test_concept");
 	addFeatureToCurrentProxy(concept);
 	BindingFeatures::ExistingProxyID existing;
-	existing.m_existingProxyID = CORBA::string_dup(id1.c_str());
+	existing.existingProxyID = CORBA::string_dup(id1.c_str());
 	addFeatureToCurrentProxy(existing, BindingFeaturesCommon::NEGATIVE);
-	m_proxyIDs.insert(storeCurrentProxy());
+	proxyIDs.insert(storeCurrentProxy());
       }
       bindNewProxies();      
     }
     break;  
   case 24:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation, then bind, then delete the relation");
       string rel_id = addTwoProxiesAndOneRelation();
       bindNewProxies();      
       // make sure all proxies are first bound
-      ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
+      ProxySet proxies = handler.loadProxies(proxyIDs);
       while(!true_for_all(proxies,ProxyStateChecker(BindingData::BOUND))) {
 	log("all not bound");
 	sleepProcess(1000);
-	m_handler.reloadAllLoadedData();
-	proxies = m_handler.loadProxies(m_proxyIDs);
+	handler.reloadAllLoadedData();
+	proxies = handler.loadProxies(proxyIDs);
       }
       deleteExistingProxy(rel_id);      
-      m_proxyIDs.erase(rel_id);
-      awaitBinding(m_proxyIDs);
+      proxyIDs.erase(rel_id);
+      awaitBinding(proxyIDs);
       sleepProcess(10000);
-      m_testFinished = true;
+      testFinished = true;
     }
     break;
   case 25:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation, then bind, then update one of the related proxies");
       string rel_id = addTwoProxiesAndOneRelation();
       bindNewProxies();      
       // make sure all proxies are first bound
-      ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
+      ProxySet proxies = handler.loadProxies(proxyIDs);
       while(!true_for_all(proxies,ProxyStateChecker(BindingData::BOUND))) {
 	log("all not bound");
 	sleepProcess(1000);
-	m_handler.reloadAllLoadedData();
-	proxies = m_handler.loadProxies(m_proxyIDs);
+	handler.reloadAllLoadedData();
+	proxies = handler.loadProxies(proxyIDs);
       }
-      const string& id(*m_proxyIDs.begin());
+      const string& id(*proxyIDs.begin());
       changeExistingProxy(id,list_of(typeName<BindingFeatures::Concept>()));
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("updated_test_concept");
+      concept.concept = CORBA::string_dup("updated_test_concept");
       addFeatureToCurrentProxy(concept);
       storeCurrentProxy();
       bindNewProxies();
-      m_testFinished = true;
-      awaitBinding(m_proxyIDs);
+      testFinished = true;
+      awaitBinding(proxyIDs);
     }
     break;  
   case 26:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation, then another two proxies and a relation of which one should match one of the first ones");
       string rel_id = addTwoProxiesAndOneRelation("test_concept1","test_concept2","test_label");
       bindNewProxies();      
       // make sure all proxies are first bound
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       addTwoProxiesAndOneRelation("test_concept1","test_concept_not2","test_label");
-      m_testFinished = true;
-      awaitBinding(m_proxyIDs);
+      testFinished = true;
+      awaitBinding(proxyIDs);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(4000);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
@@ -827,53 +827,53 @@ void TesterMonitor::runComponent() {
     break;
   case 27:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation, then another two proxies and a relation of which one should match one of the first ones (zip up)");
       string rel_id = addTwoProxiesAndOneRelation("test_concept1","test_concept2","test_label");
       // make sure all proxies are first bound
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       addTwoProxiesAndOneRelation("test_concept1","","test_label");
-      awaitBinding(m_proxyIDs);
-      m_testFinished = true;      
+      awaitBinding(proxyIDs);
+      testFinished = true;      
     }
     break;
   case 28:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and two relations, then remove the relations, add new proxy and add a relation to it instead");
       string id1,id2,id3;
       string rel_id1,rel_id2;
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept1");
+	concept.concept = CORBA::string_dup("test_concept1");
 	addFeatureToCurrentProxy(concept);
 	id1 = storeCurrentProxy();
-	m_proxyIDs.insert(id1);
+	proxyIDs.insert(id1);
       }
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept2");
+	concept.concept = CORBA::string_dup("test_concept2");
 	addFeatureToCurrentProxy(concept); 
 	id2 = storeCurrentProxy();
-	m_proxyIDs.insert(id2);
+	proxyIDs.insert(id2);
       }
       bindNewProxies();
       rel_id1 = addSimpleRelation(id1,id2,"rel_label1");
       rel_id2 = addSimpleRelation(id2,id1,"rel_label1");
-      m_proxyIDs.insert(rel_id1);
-      m_proxyIDs.insert(rel_id2);
+      proxyIDs.insert(rel_id1);
+      proxyIDs.insert(rel_id2);
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       log("BEFORE DELETION");
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(2000);
       deleteExistingProxy(rel_id1);
       deleteExistingProxy(rel_id2);
-      m_proxyIDs.erase(rel_id1);
-      m_proxyIDs.erase(rel_id2);
-      awaitBinding(m_proxyIDs);
+      proxyIDs.erase(rel_id1);
+      proxyIDs.erase(rel_id2);
+      awaitBinding(proxyIDs);
       sleepProcess(1000);
       log("AFTER DELETION OF RELATIONS");
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
@@ -881,40 +881,40 @@ void TesterMonitor::runComponent() {
       {
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("test_concept3");
+	concept.concept = CORBA::string_dup("test_concept3");
 	addFeatureToCurrentProxy(concept); 
 	id3 = storeCurrentProxy();
-	m_proxyIDs.insert(id3);
+	proxyIDs.insert(id3);
       }
       rel_id1 = addSimpleRelation(id1,id3,"rel_label2");
       rel_id2 = addSimpleRelation(id3,id1,"rel_label2");
       bindNewProxies();
-      m_proxyIDs.insert(rel_id1);
-      m_proxyIDs.insert(rel_id2);
+      proxyIDs.insert(rel_id1);
+      proxyIDs.insert(rel_id2);
       log("AFTER ADDITION OF NEW RELAIONS");
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(2000); // sleep for a while to allow dotviewer to finish
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
-      m_testFinished = true;      
+      testFinished = true;      
     }
     break;  
   case 29:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and one relations, and then remove the relation");
       string id;
       string rel_id;
       {
 	startNewBasicProxy();
 	id = storeCurrentProxy();
-	m_proxyIDs.insert(id);
+	proxyIDs.insert(id);
       }
       bindNewProxies();
       rel_id = addSimpleRelation(id,id,"rel_label");
-      m_proxyIDs.insert(rel_id);
+      proxyIDs.insert(rel_id);
       bindNewProxies();
-      awaitBinding(m_proxyIDs);
-      const LBindingProxy& da_proxy(m_proxyLocalCache[id]);
+      awaitBinding(proxyIDs);
+      const LBindingProxy& da_proxy(proxyLocalCache[id]);
       typedef vector<shared_ptr<const CASTData<BindingData::BindingUnion> > > UnionPtrs;
       UnionPtrs unions;
       getWorkingMemoryEntries<BindingData::BindingUnion>(0,
@@ -933,11 +933,11 @@ void TesterMonitor::runComponent() {
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(2000);
       deleteExistingProxy(rel_id);
-      m_proxyIDs.erase(rel_id);
+      proxyIDs.erase(rel_id);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(2000);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(1000);
       log("AFTER DELETION OF RELATIONS");
@@ -954,20 +954,20 @@ void TesterMonitor::runComponent() {
       assert(!existsOnWorkingMemory(rel_id));
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(1000);
-      m_testFinished = true;      
+      testFinished = true;      
     }
     break;
   case 30:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add two proxies and a relation, then another two proxies and a relation of which one should match one of the first ones (the zip-up, cf. test 26)");
       string rel_id = addTwoProxiesAndOneRelation("test_concept1","test_concept2","test_label");
       bindNewProxies();      
       // make sure all proxies are first bound
-      awaitBinding(m_proxyIDs);
+      awaitBinding(proxyIDs);
       addTwoProxiesAndOneRelation("test_concept1","","test_label");
-      m_testFinished = true;
-      awaitBinding(m_proxyIDs);
+      testFinished = true;
+      awaitBinding(proxyIDs);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(4000);
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
@@ -976,58 +976,58 @@ void TesterMonitor::runComponent() {
     break;
   case 31:
     {
-      m_testFinished = false;
+      testFinished = false;
       log("testing to add three proxies and a pair of relations. Nothing should bind");
       {
 	string id1,id2,id3;
 	startNewBasicProxy();
 	BindingFeatures::Concept concept;
-	concept.m_concept = CORBA::string_dup("concept1");
+	concept.concept = CORBA::string_dup("concept1");
 	addFeatureToCurrentProxy(concept);	
 	id1 = storeCurrentProxy();
-	m_proxyIDs.insert(id1);
+	proxyIDs.insert(id1);
 	bindNewProxies();
 	startNewBasicProxy();
-	concept.m_concept = CORBA::string_dup("concept2"); 
+	concept.concept = CORBA::string_dup("concept2"); 
 	addFeatureToCurrentProxy(concept); 
 	id2 = storeCurrentProxy();
-	m_proxyIDs.insert(id2);
+	proxyIDs.insert(id2);
 	bindNewProxies();
 	startNewRelationProxy();	      
 	BindingFeatures::RelationLabel label;	
-	label.m_label = CORBA::string_dup("label");
+	label.label = CORBA::string_dup("label");
 	addFeatureToCurrentProxy(label); 
 	addOutPortToCurrentProxy(id1, "from");
 	addOutPortToCurrentProxy(id2, "to");
 	string rel_id = storeCurrentProxy();
-	m_proxyIDs.insert(rel_id);	
+	proxyIDs.insert(rel_id);	
 	bindNewProxies();
 	startNewBasicProxy();
-	concept.m_concept = CORBA::string_dup("concept3"); 
+	concept.concept = CORBA::string_dup("concept3"); 
 	addFeatureToCurrentProxy(concept); 
 	id3 = storeCurrentProxy();
-	m_proxyIDs.insert(id3);
+	proxyIDs.insert(id3);
 	bindNewProxies();
 	startNewRelationProxy();
 	addFeatureToCurrentProxy(label); 
 	addOutPortToCurrentProxy(id3, "from");
 	addOutPortToCurrentProxy(id2, "to");
 	rel_id = storeCurrentProxy();
-	m_proxyIDs.insert(rel_id);	
+	proxyIDs.insert(rel_id);	
       }
       bindNewProxies();
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(1000);
-      m_testFinished = true;
+      testFinished = true;
       addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);
       sleepProcess(1000);
     }
     break;
   default:
-    cerr << "incorrect test number: " << m_test << endl;
+    cerr << "incorrect test number: " << test << endl;
     failExit();
   }
-  m_testFinished = true;
+  testFinished = true;
   addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);  //testCompleteness();
   sleepProcess(1000);
   addToWorkingMemory(newDataID(), getBindingSA(), new BindingData::TriggerDotViewer, cast::cdl::BLOCKING);  //testCompleteness();
@@ -1037,17 +1037,17 @@ void TesterMonitor::runComponent() {
   
 void 
 TesterMonitor::bindingProxyAdded(const cast::cdl::WorkingMemoryChange & _wmc) {
-  string id(_wmc.m_address.m_id);
-  //const LBindingProxy& binding_proxy(m_proxyLocalCache[id]);
-  m_addSignalledProxyIDs.insert(id);
+  string id(_wmc.address.id);
+  //const LBindingProxy& binding_proxy(proxyLocalCache[id]);
+  addSignalledProxyIDs.insert(id);
 }
 
 void 
 TesterMonitor::bindingProxyUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
-  string id(_wmc.m_address.m_id);
-  m_overwriteSignalledProxyIDs.insert(id);
+  string id(_wmc.address.id);
+  overwriteSignalledProxyIDs.insert(id);
   try {
-    m_status = *loadBindingDataFromWM<BindingData::BinderStatus>(getBindingSA(), m_statusID);      
+    status = *loadBindingDataFromWM<BindingData::BinderStatus>(getBindingSA(), statusID);      
   } catch(const DoesNotExistOnWMException& _e) {
     cerr << "Caught this in TesterMonitor::bindingProxyUpdated: " + string(_e.what());
     abort();
@@ -1058,7 +1058,7 @@ TesterMonitor::bindingProxyUpdated(const cast::cdl::WorkingMemoryChange & _wmc) 
 void 
 TesterMonitor::bindingUnionUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
   try {
-    m_status = *loadBindingDataFromWM<BindingData::BinderStatus>(getBindingSA(), m_statusID);  
+    status = *loadBindingDataFromWM<BindingData::BinderStatus>(getBindingSA(), statusID);  
   } catch(const DoesNotExistOnWMException& _e) {
     log("Caught this in TesterMonitor::bindingUnionUpdated: " + string(_e.what()));
     abort();
@@ -1069,14 +1069,14 @@ TesterMonitor::bindingUnionUpdated(const cast::cdl::WorkingMemoryChange & _wmc) 
 void 
 TesterMonitor::statusUpdated(const cast::cdl::WorkingMemoryChange & _wmc) {
   try {
-    m_statusUpdates++;
-    if(m_statusID.empty())
-      m_statusID = _wmc.m_address.m_id;
+    statusUpdates++;
+    if(statusID.empty())
+      statusID = _wmc.address.id;
     else
-      assert(m_statusID == string(_wmc.m_address.m_id));
-    m_status = *loadBindingDataFromWM<BindingData::BinderStatus>(getBindingSA(), m_statusID);  
-    if(m_status.m_stable)
-      m_statusStableUpdates++;    
+      assert(statusID == string(_wmc.address.id));
+    status = *loadBindingDataFromWM<BindingData::BinderStatus>(getBindingSA(), statusID);  
+    if(status.stable)
+      statusStableUpdates++;    
   } catch(const DoesNotExistOnWMException& _e) {
     log("Caught this in TesterMonitor::statusUpdated: " + string(_e.what()));
     abort();
@@ -1093,12 +1093,12 @@ TesterMonitor::somethingInterestingUpdated(const cast::cdl::WorkingMemoryChange 
 void 
 TesterMonitor::testCompleteness() {
   // make sure we're loading fresh data
-  m_handler.purgeAllLoadedData();
+  handler.purgeAllLoadedData();
   try {
-    switch(m_test) {
+    switch(test) {
     case 0: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 1);
+	assert(addSignalledProxyIDs.size() <= 1);
 	if(allBound()) {
 	  successExit();
 	}
@@ -1106,29 +1106,29 @@ TesterMonitor::testCompleteness() {
       break;  
     case 1: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 2);
+	assert(addSignalledProxyIDs.size() <= 2);
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(true_for_all(proxies, proxyCheck(BestListCountChecker<>(1))));
 	  assert(true_for_all(proxies, proxyCheck(NonMatchingListCountChecker<>(1))));
 	  assert(unions.size() == 2);
-	  if(!m_basicQueryAnswers.empty() &&
-	     !m_advancedQueryAnswers.empty() &&
+	  if(!basicQueryAnswers.empty() &&
+	     !advancedQueryAnswers.empty() &&
 	     true_for_all(unions, 
 			  UnionProxyCountCheck(1) && 
 			  !UnionIsBoundToAllOfProxies(proxies) &&
 			  UnionIsBoundToOneOfProxies(proxies))) {
 	    // some testing of the tests
-	    assert(m_basicQueryAnswers.begin()->second.m_answer == cast::cdl::triTrue);
-	    assert(m_advancedQueryAnswers.begin()->second.m_hasTheFeatureProxyIDs.length() == 2);
-	    assert(m_advancedQueryAnswers.begin()->second.m_hasTheFeatureUnionIDs.length() == 2);
-	    assert(m_advancedQueryAnswers.begin()->second.m_matchingProxyIDs.length() == 1);
-	    assert(m_advancedQueryAnswers.begin()->second.m_matchingUnionIDs.length() == 1);
+	    assert(basicQueryAnswers.begin()->second.answer == BindingData::TRUETB);
+	    assert(advancedQueryAnswers.begin()->second.hasTheFeatureProxyIDs.length() == 2);
+	    assert(advancedQueryAnswers.begin()->second.hasTheFeatureUnionIDs.length() == 2);
+	    assert(advancedQueryAnswers.begin()->second.matchingProxyIDs.length() == 1);
+	    assert(advancedQueryAnswers.begin()->second.matchingUnionIDs.length() == 1);
 	    
-	    assert(m_advancedQueryAnswers.begin()->second.m_nonMatchingProxyIDs.length() == 1);
-	    assert(m_advancedQueryAnswers.begin()->second.m_nonMatchingUnionIDs.length() == 1);
-	    ProxySet matching_proxies = m_handler.loadProxies(m_advancedQueryAnswers.begin()->second.m_matchingProxyIDs);
+	    assert(advancedQueryAnswers.begin()->second.nonMatchingProxyIDs.length() == 1);
+	    assert(advancedQueryAnswers.begin()->second.nonMatchingUnionIDs.length() == 1);
+	    ProxySet matching_proxies = handler.loadProxies(advancedQueryAnswers.begin()->second.matchingProxyIDs);
 	    assert(true_for_all(matching_proxies,
 				hasFeature<ProxyPtr,BindingFeatures::Colour>(1)));
 	    assert(true_for_all(unions,
@@ -1145,7 +1145,7 @@ TesterMonitor::testCompleteness() {
 	    assert(true_for_some(unions,
 				 *checker));	    
 	    checker = clone_predicate(*checker && 
-				      UnionIsBoundToProxy(*m_overwriteSignalledProxyIDs.begin()) &&
+				      UnionIsBoundToProxy(*overwriteSignalledProxyIDs.begin()) &&
 				      TypeCheck<UnionPtr>(BindingData::BASIC));
 	    
 	    assert(true_for_some(unions,
@@ -1163,7 +1163,7 @@ TesterMonitor::testCompleteness() {
 				 //ConsistencyCheck<UnionPtr>(*this) && 
 				 HasFeatureCheck<UnionPtr>(cast::typeName<BindingFeatures::Concept>()) &&
 				 HasFeatureCheck<UnionPtr>(cast::typeName<BindingFeatures::ThisProxyID>()) &&
-				 UnionIsBoundToProxy(*m_overwriteSignalledProxyIDs.begin()) &&
+				 UnionIsBoundToProxy(*overwriteSignalledProxyIDs.begin()) &&
 				 TypeCheck<UnionPtr>(BindingData::BASIC)
 				 )
 		   );
@@ -1224,10 +1224,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 2: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 2);
+	assert(addSignalledProxyIDs.size() <= 2);
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(true_for_all(unions, UnionProxyCountCheck(2))) {
 	    assert(unions.size() == 1);
 	    successExit();
@@ -1237,10 +1237,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 3: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 3);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 3);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(true_for_all(unions, UnionProxyCountCheck(1))) {
 	    // testing of test operators
 	    proxies = subset(proxies,
@@ -1248,13 +1248,13 @@ TesterMonitor::testCompleteness() {
 	    // alt:
 	    proxies = proxies | TypeCheck<ProxyPtr>(BindingData::BASIC);
 	    assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::BASIC)));
-	    proxies = m_handler.extractProxiesFromProxies(proxies, InPortsExtractor<ProxyPtr>()); // should now only contain the one relation
+	    proxies = handler.extractProxiesFromProxies(proxies, InPortsExtractor<ProxyPtr>()); // should now only contain the one relation
 	    assert(proxies.size() == 1);
 	    assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::RELATION)));
 	    assert(true_for_all(proxies,
 				TypeCheck<ProxyPtr>(BindingData::RELATION) ->* 
 				hasFeature<ProxyPtr,BindingFeatures::RelationLabel>()));	  
-	    proxies = m_handler.extractProxiesFromProxies(proxies, OutPortsExtractor<ProxyPtr>());  // should now contain only the related proxies
+	    proxies = handler.extractProxiesFromProxies(proxies, OutPortsExtractor<ProxyPtr>());  // should now contain only the related proxies
 	    assert(proxies.size() == 2);
 	    assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::BASIC)));
 	    ProxySet one_proxy; one_proxy.insert(*proxies.begin()); // store only one basic proxy
@@ -1262,28 +1262,28 @@ TesterMonitor::testCompleteness() {
 	    assert(one_proxy.size() == 1);
 	    // get the relation proxy again
 	    proxies = 
-	      m_handler.extractProxiesFromProxies(one_proxy,
+	      handler.extractProxiesFromProxies(one_proxy,
 						  InPortsExtractor<ProxyPtr>());
 	    assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::RELATION)));
 	    assert(true_for_all(one_proxy,TypeCheck<ProxyPtr>(BindingData::BASIC)));
 	    assert(proxies.size() == 1);
 	    // get all proxies via the out ports, one by one
 	    proxies = 
-	      m_handler.extractProxiesFromProxies(one_proxy,
+	      handler.extractProxiesFromProxies(one_proxy,
 						  InPortsExtractor<ProxyPtr>() || OutPortsExtractor<ProxyPtr>());
 	    cout << proxies << endl;
 	    assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::RELATION)));
 	    assert(proxies.size() == 1);
 	    proxies += // obs += here... 
-	      m_handler.extractProxiesFromProxies(proxies,
+	      handler.extractProxiesFromProxies(proxies,
 						  InPortsExtractor<ProxyPtr>() || OutPortsExtractor<ProxyPtr>());
 	    assert(proxies.size() == 3);
 	    
 	    // now, extract over all in and outports recursively instead
 	    proxies = 
-	      m_handler.extractProxiesFromProxies(one_proxy,
+	      handler.extractProxiesFromProxies(one_proxy,
 						  RecursiveExtractor<ProxyPtr>(OutPortsExtractor<ProxyPtr>()||InPortsExtractor<ProxyPtr>(),
-									       m_handler.loadProxyFctPtr()));
+									       handler.loadProxyFctPtr()));
 	    //should contain all proxies
 	    cout << proxies << endl;
 	    assert(proxies.size() == 3);
@@ -1301,10 +1301,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 4: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 6);
-	if(m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 6);
+	if(testFinished && allBound()) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(true_for_all(unions, UnionProxyCountCheck(2))) { // each union has two proxies
 	    assert(unions.size() == 3);
 	    assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::BASIC)    ->* InportsCountCheck<ProxyPtr>(1)));
@@ -1318,19 +1318,19 @@ TesterMonitor::testCompleteness() {
       break;
     case 5: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 2);
-	if(!m_proxyIDs.empty() && 
-	   m_status.m_stable &&
-	   m_overwriteSignalledProxyIDs.size() > 1 &&
-	   m_overwriteSignalledProxyIDs == m_addSignalledProxyIDs) 
+	assert(addSignalledProxyIDs.size() <= 2);
+	if(!proxyIDs.empty() && 
+	   status.stable &&
+	   overwriteSignalledProxyIDs.size() > 1 &&
+	   overwriteSignalledProxyIDs == addSignalledProxyIDs) 
 	  {
-	    ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	    UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	    ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	    UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	    if(true_for_all(proxies,ProxyStateChecker(BindingData::BOUND)) &&
 	       true_for_all(unions, UnionProxyCountCheck(1))) { // each union has one proxy
 	      // test 2 ways of extracting bound unions
-	      ProxySet proxies2 = m_handler.extractProxiesFromUnions(unions);
-	      ProxySet proxies3 = m_handler.extractProxiesFromProxies(proxies, BoundProxyFromProxyExtractor());
+	      ProxySet proxies2 = handler.extractProxiesFromUnions(unions);
+	      ProxySet proxies3 = handler.extractProxiesFromProxies(proxies, BoundProxyFromProxyExtractor());
 	      assert(proxies2 == proxies3);
 	      assert(unions.size() == 2);
 	      assert(true_for_all(proxies,
@@ -1354,18 +1354,18 @@ TesterMonitor::testCompleteness() {
 	      
 	      // lets focus on only the singulars:
 	      proxies = proxies | hasFeature<ProxyPtr,BindingFeatures::Singular>();
-	      assert(true_for_all(proxies, FreeSingular(m_handler))); // in this case they (it) should be free
-	      proxies = m_handler.extractProxiesFromProxies(proxies, GroupProxyFromSingularExtractor<ProxyPtr>());
+	      assert(true_for_all(proxies, FreeSingular(handler))); // in this case they (it) should be free
+	      proxies = handler.extractProxiesFromProxies(proxies, GroupProxyFromSingularExtractor<ProxyPtr>());
 	      assert(proxies.size() == 1);
 	      assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::GROUP)));
-	      proxies = m_handler.extractProxiesFromProxies(proxies, SingularProxiesFromGroupExtractor<ProxyPtr>());
+	      proxies = handler.extractProxiesFromProxies(proxies, SingularProxiesFromGroupExtractor<ProxyPtr>());
 	      assert(true_for_all(proxies, 
 				  hasFeature<ProxyPtr,BindingFeatures::Singular>() && 
-				  FreeSingular(m_handler))); 
+				  FreeSingular(handler))); 
 	      
 	      // lets focus on only the singulars, but this time via the unions:
 	      unions = unions | hasFeature<UnionPtr,BindingFeatures::Singular>();
-	      proxies = m_handler.extractProxiesFromUnions(unions, GroupProxyFromSingularExtractor<UnionPtr>());
+	      proxies = handler.extractProxiesFromUnions(unions, GroupProxyFromSingularExtractor<UnionPtr>());
 	      assert(proxies.size() == 1);
 	      assert(true_for_all(proxies,TypeCheck<ProxyPtr>(BindingData::GROUP)));
 	      
@@ -1376,10 +1376,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 6: 
       {
-	assert(m_addSignalledProxyIDs.size() <= 2);
+	assert(addSignalledProxyIDs.size() <= 2);
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(true_for_all(unions, UnionProxyCountCheck(2))) {
 	    assert(unions.size() == 1);
 	    successExit();
@@ -1397,8 +1397,8 @@ TesterMonitor::testCompleteness() {
     case 8: 
       {
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(unions.size() != 1) {
 	    log("failure: not exactly one union");
 	    failExit();
@@ -1411,9 +1411,9 @@ TesterMonitor::testCompleteness() {
       break;
     case 9:
       {
-	if(m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound()) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(unions.size() != 2) {
 	    log("failure: not exactly two unions");
 	    failExit();
@@ -1427,8 +1427,8 @@ TesterMonitor::testCompleteness() {
     case 10:
       {
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  if(unions.size() != 3) {
 	    log("failure: not exactly three unions");
 	    failExit();
@@ -1452,16 +1452,16 @@ TesterMonitor::testCompleteness() {
     case 15: 
     case 16:
       {
-	if(m_testFinished && binderEmptied()) {
+	if(testFinished && binderEmptied()) {
 	  successExit();
 	}
       }
       break;
     case 17:
       {
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(true_for_all(proxies,featureCheck<ProxyPtr,BindingFeatures::Concept>(ConceptRegexMatcher("updated_test_concept"))));	       	  
 	  assert(true_for_all(unions,featureCheck<UnionPtr,BindingFeatures::Concept>(ConceptRegexMatcher("updated_test_concept"))));
 	  successExit();
@@ -1470,9 +1470,9 @@ TesterMonitor::testCompleteness() {
       break;  
     case 18:
       {
-	if(m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound()) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(true_for_all(proxies,featureCheck<ProxyPtr,BindingFeatures::Concept>(ConceptRegexMatcher("test_concept"))));	       
 	  assert(true_for_all(unions,featureCheck<UnionPtr,BindingFeatures::Concept>(ConceptRegexMatcher("test_concept"))));	       
 	  successExit();
@@ -1481,9 +1481,9 @@ TesterMonitor::testCompleteness() {
       break;
     case 19:
       {
-	if(m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound()) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(unions.size() == proxies.size());
 	  assert(proxies.size() == MANY_PROXIES);
 	  assert(true_for_all(proxies,featureCheck<ProxyPtr,BindingFeatures::Concept>(ConceptRegexMatcher("updated_test_concept_\\d+"))));	       
@@ -1494,9 +1494,9 @@ TesterMonitor::testCompleteness() {
       break;
     case 20:
       {
-	if(m_testFinished && allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound()) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(unions.size() == 1);
 	  assert(proxies.size() == MANY_PROXIES);
 	  assert(true_for_all(proxies,featureCheck<ProxyPtr,BindingFeatures::Concept>(ConceptRegexMatcher("updated_test_concept"))));	       
@@ -1511,24 +1511,24 @@ TesterMonitor::testCompleteness() {
 	IssuePtrs issues;
 	getWorkingMemoryEntries<BindingData::Ambiguity>(0,
 							issues);
-	if(m_testFinished && allBound() && issues.size() > 0) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	if(testFinished && allBound() && issues.size() > 0) {
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(unions.size() == 2);
 	  assert(issues.size() == 1);
 	  const BindingData::Ambiguity& issue(*(issues[0]->getData()));
-	  //assert(issue.m_missingProxyFeatures.length() == 1);
-	  assert(string(issue.m_missingProxyFeatures[0]) == typeName<BindingFeatures::Colour>());
+	  //assert(issue.missingProxyFeatures.length() == 1);
+	  assert(string(issue.missingProxyFeatures[0]) == typeName<BindingFeatures::Colour>());
 	  successExit();
 	}
       }
       break;
     case 22:
       {
-	assert(m_addSignalledProxyIDs.size() <= 2);
+	assert(addSignalledProxyIDs.size() <= 2);
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(unions.size() == 2);
 	  successExit();
 	}
@@ -1536,10 +1536,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 23:
       {
-	assert(m_addSignalledProxyIDs.size() <= 3);
+	assert(addSignalledProxyIDs.size() <= 3);
 	if(allBound()) {
-	  ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	  ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(unions.size() == 2);
 	  assert(true_for_all(unions,hasFeature<UnionPtr,BindingFeatures::Concept>(1))); // only one concept per union if all is correct
 	  assert(true_for_all(unions,hasFeature<UnionPtr,BindingFeatures::ExistingProxyID>(1)));
@@ -1549,10 +1549,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 24:
       {
-	assert(m_addSignalledProxyIDs.size() <= 3);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 3);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(proxies.size() == 2);
 	  assert(unions.size() == 2);
 	  assert(true_for_all(proxies,InportsCountCheck<ProxyPtr>(0)));
@@ -1564,10 +1564,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 25:
       {
-	assert(m_addSignalledProxyIDs.size() <= 3);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 3);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  assert(proxies.size() == 3);
 	  assert(unions.size() == 3);
 	  assert(true_for_all(proxies,
@@ -1581,10 +1581,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 26:
       {
-	assert(m_addSignalledProxyIDs.size() <= 6);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 6);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  
 	  assert(proxies.size() == 6);
 	  assert(unions.size() == 5);
@@ -1596,10 +1596,10 @@ TesterMonitor::testCompleteness() {
  	  assert(true_for_all(proxies,
 			      (featureCheck<ProxyPtr,BindingFeatures::Concept,ConceptRegexMatcher >(ConceptRegexMatcher(".*1")) 
 			       && ProxyStateChecker(BindingData::BOUND))
-			      ->* ProxyBindingsCountCheckViaUnion<>(2, m_handler))
+			      ->* ProxyBindingsCountCheckViaUnion<>(2, handler))
 		 );
  	  assert(true_for_all(proxies,
-			      ProxyBindingsCountCheckViaUnion<>(2, m_handler) == ProxyBindingsCountCheck<>(2))
+			      ProxyBindingsCountCheckViaUnion<>(2, handler) == ProxyBindingsCountCheck<>(2))
 		 );
 	  assert(true_for_all(proxies,
 			      (featureCheck<ProxyPtr,BindingFeatures::Concept,ConceptRegexMatcher >(ConceptRegexMatcher(".*1")) 
@@ -1620,10 +1620,10 @@ TesterMonitor::testCompleteness() {
       break;    
     case 27:
       {
-	assert(m_addSignalledProxyIDs.size() <= 6);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 6);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  
 	  assert(proxies.size() == 6);
 	  assert(unions.size() == 3);
@@ -1650,10 +1650,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 28:
       {
-	assert(m_addSignalledProxyIDs.size() <= 8);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 8);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  
 	  assert(proxies.size() == 6);
 	  //assert(unions.size() == 3);
@@ -1680,10 +1680,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 29:
       {
-	assert(m_addSignalledProxyIDs.size() <= 3);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 3);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  
 	  assert(proxies.size() == 1);
 	  //assert(unions.size() == 3);
@@ -1698,10 +1698,10 @@ TesterMonitor::testCompleteness() {
       break;
     case 30:
       {
-	assert(m_addSignalledProxyIDs.size() <= 6);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 6);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  
 	  assert(proxies.size() == 6);
 	  assert(unions.size() == 3);
@@ -1728,10 +1728,10 @@ TesterMonitor::testCompleteness() {
       break;    
     case 31:
       {
-	assert(m_addSignalledProxyIDs.size() <= 6);
-	if(m_testFinished && allBound(m_proxyIDs)) {
-	  ProxySet proxies = m_handler.loadProxies(m_proxyIDs);
-	  UnionSet unions = m_handler.extractUnionsFromProxies(proxies);
+	assert(addSignalledProxyIDs.size() <= 6);
+	if(testFinished && allBound(proxyIDs)) {
+	  ProxySet proxies = handler.loadProxies(proxyIDs);
+	  UnionSet unions = handler.extractUnionsFromProxies(proxies);
 	  
 	  assert(proxies.size() == 5);
 	  assert(unions.size() == 5);
@@ -1761,7 +1761,7 @@ TesterMonitor::testCompleteness() {
   }
   
   // reset the retesting if successExit was not called.
-  m_retest = 0;  
+  retest = 0;  
   log("TesterMonitor::testCompleteness() just failed");
 }
   
@@ -1769,24 +1769,24 @@ bool
 TesterMonitor::binderEmptied() 
 {
   return 
-    !m_proxyIDs.empty() &&
-    m_status.m_stable && 
-    m_status.m_unboundProxies == 0 &&
-    m_status.m_boundProxies == 0;
+    !proxyIDs.empty() &&
+    status.stable && 
+    status.unboundProxies == 0 &&
+    status.boundProxies == 0;
 }
   
 bool
 TesterMonitor::allBound() 
 {  
   bool result = false;
-  if ( !m_proxyIDs.empty() && 
-       m_status.m_stable &&
-       m_overwriteSignalledProxyIDs == m_proxyIDs &&
-       m_overwriteSignalledProxyIDs == m_addSignalledProxyIDs) {
+  if ( !proxyIDs.empty() && 
+       status.stable &&
+       overwriteSignalledProxyIDs == proxyIDs &&
+       overwriteSignalledProxyIDs == addSignalledProxyIDs) {
     bool consistency_checked = false;
     while(!consistency_checked) {
       result = false;
-      ProxySet proxies = m_handler.loadProxies(m_overwriteSignalledProxyIDs);
+      ProxySet proxies = handler.loadProxies(overwriteSignalledProxyIDs);
       if(true_for_all(proxies,ProxyStateChecker(BindingData::BOUND) && !ProxyUnionIDChecker(""))) { // return true after some assertions
 	// some consistency checks:
 	assert(true_for_all(proxies,
@@ -1800,19 +1800,19 @@ TesterMonitor::allBound()
 			    featureCheck<ProxyPtr,BindingFeatures::ThisProxyID>(ThisProxyIDConsistencyChecker<>()))
 	       );
 	// make sure all ThisProxyID points correctly (well... not a dead certain test, but well)
-	ProxySet proxies2 = m_handler.extractProxiesFromProxies(proxies,ProxyFromThisProxyIDExtractor<ProxyPtr>());
+	ProxySet proxies2 = handler.extractProxiesFromProxies(proxies,ProxyFromThisProxyIDExtractor<ProxyPtr>());
 	assert(proxies == proxies2);
 	// have a look at the singulars:
 	proxies = proxies | hasFeature<ProxyPtr,BindingFeatures::Singular>();
 	// and make sure they're all part of groups
-	proxies = m_handler.extractProxiesFromProxies(proxies,GroupProxyFromSingularExtractor<ProxyPtr>());
+	proxies = handler.extractProxiesFromProxies(proxies,GroupProxyFromSingularExtractor<ProxyPtr>());
 	assert(true_for_all(proxies, TypeCheck<ProxyPtr>(BindingData::GROUP)));
 	result = true;
       }
       if(true_for_all(proxies,ConsistencyCheck<ProxyPtr>(*this))) {
 	consistency_checked = true;
       } else {
-	m_handler.reloadAllLoadedData();
+	handler.reloadAllLoadedData();
       }
     }
   }
@@ -1824,12 +1824,12 @@ TesterMonitor::allBound(const set<string>& _proxyIDs)
 {  
   bool result = false;
   if ( !_proxyIDs.empty() && 
-       m_status.m_stable) {
+       status.stable) {
     bool consistency_checked = false;
     ProxySet proxies;
     while(!consistency_checked) {
       result = false;
-      proxies = m_handler.loadProxies(_proxyIDs);
+      proxies = handler.loadProxies(_proxyIDs);
       if(true_for_all(proxies,ProxyStateChecker(BindingData::BOUND) && !ProxyUnionIDChecker(""))) { // return true after some assertions
 	// some consistency checks:
 	assert(true_for_all(proxies,
@@ -1843,32 +1843,32 @@ TesterMonitor::allBound(const set<string>& _proxyIDs)
 			    featureCheck<ProxyPtr,BindingFeatures::ThisProxyID>(ThisProxyIDConsistencyChecker<>()))
 	       );
 	// make sure all ThisProxyID points correctly (well... not a dead certain test, but well)
-	ProxySet proxies2 = m_handler.extractProxiesFromProxies(proxies,ProxyFromThisProxyIDExtractor<ProxyPtr>());
+	ProxySet proxies2 = handler.extractProxiesFromProxies(proxies,ProxyFromThisProxyIDExtractor<ProxyPtr>());
 	assert(proxies == proxies2);
 	// have a look at the singulars:
 	proxies = proxies | hasFeature<ProxyPtr,BindingFeatures::Singular>();
 	// and make sure they're all part of groups
-	proxies = m_handler.extractProxiesFromProxies(proxies,GroupProxyFromSingularExtractor<ProxyPtr>());
+	proxies = handler.extractProxiesFromProxies(proxies,GroupProxyFromSingularExtractor<ProxyPtr>());
 	assert(true_for_all(proxies, TypeCheck<ProxyPtr>(BindingData::GROUP)));
 	result = true;
       }
       if(true_for_all(proxies,ConsistencyCheck<ProxyPtr>(*this))) {
 	consistency_checked = true;
       } else {
-	m_handler.reloadAllLoadedData();
+	handler.reloadAllLoadedData();
       }
     }
     assert(true_for_all(proxies,
-			ProxyBindingsCountCheckViaUnion<>(0, m_handler) == ProxyBindingsCountCheck<>(0))
+			ProxyBindingsCountCheckViaUnion<>(0, handler) == ProxyBindingsCountCheck<>(0))
 	   );
     assert(true_for_all(proxies,
-			ProxyBindingsCountCheckViaUnion<>(1, m_handler) == ProxyBindingsCountCheck<>(1))
+			ProxyBindingsCountCheckViaUnion<>(1, handler) == ProxyBindingsCountCheck<>(1))
 	   );
     assert(true_for_all(proxies,
-			ProxyBindingsCountCheckViaUnion<>(2, m_handler) == ProxyBindingsCountCheck<>(2))
+			ProxyBindingsCountCheckViaUnion<>(2, handler) == ProxyBindingsCountCheck<>(2))
 	   );
     assert(true_for_all(proxies,
-			ProxyBindingsCountCheckViaUnion<>(3, m_handler) == ProxyBindingsCountCheck<>(3))
+			ProxyBindingsCountCheckViaUnion<>(3, handler) == ProxyBindingsCountCheck<>(3))
 	   );
   }
   return result;
@@ -1884,31 +1884,31 @@ TesterMonitor::addTwoProxiesAndOneRelation(const string& _concept1,
     startNewBasicProxy();
     if(!_concept1.empty()) {
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup(_concept1.c_str());
+      concept.concept = CORBA::string_dup(_concept1.c_str());
       addFeatureToCurrentProxy(concept);
     }
     id1 = storeCurrentProxy();
-    m_proxyIDs.insert(id1);
+    proxyIDs.insert(id1);
   }
   {
     startNewBasicProxy();
     if(!_concept2.empty()) {
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup(_concept2.c_str()); 
+      concept.concept = CORBA::string_dup(_concept2.c_str()); 
       addFeatureToCurrentProxy(concept); 
     }
     id2 = storeCurrentProxy();
-    m_proxyIDs.insert(id2);
+    proxyIDs.insert(id2);
   }
   {
     startNewRelationProxy();
     BindingFeatures::RelationLabel label;
-    label.m_label = CORBA::string_dup(_relation_label.c_str());
+    label.label = CORBA::string_dup(_relation_label.c_str());
     addFeatureToCurrentProxy(label); 
     addOutPortToCurrentProxy(id1, "from");
     addOutPortToCurrentProxy(id2, "to");
     rel_id = storeCurrentProxy();
-    m_proxyIDs.insert(rel_id);
+    proxyIDs.insert(rel_id);
     bindNewProxies();
   }
   return rel_id;
@@ -1918,7 +1918,7 @@ void
 TesterMonitor::basicQueryAnswered(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   shared_ptr<const BindingQueries::BasicQuery> query(loadBindingDataFromWM<BindingQueries::BasicQuery>(_wmc));
-  m_basicQueryAnswers[string(_wmc.m_address.m_id)] = *query;
+  basicQueryAnswers[string(_wmc.address.id)] = *query;
   testCompleteness();
 }
 void 
@@ -1926,16 +1926,16 @@ void
 TesterMonitor::advancedQueryAnswered(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   shared_ptr<const BindingQueries::AdvancedQuery> query(loadBindingDataFromWM<BindingQueries::AdvancedQuery>(_wmc));
-  m_advancedQueryAnswers[string(_wmc.m_address.m_id)] = *query;
-  /*  cout << "Advanced query answer received " << _wmc.m_address.m_id << endl;
-      cout << "P2 : " << query->m_hasTheFeatureProxyIDs.length() << endl;
-      cout << "U2 : " << query->m_hasTheFeatureUnionIDs.length() << endl;*/
+  advancedQueryAnswers[string(_wmc.address.id)] = *query;
+  /*  cout << "Advanced query answer received " << _wmc.address.id << endl;
+      cout << "P2 : " << query->hasTheFeatureProxyIDs.length() << endl;
+      cout << "U2 : " << query->hasTheFeatureUnionIDs.length() << endl;*/
   testCompleteness();
 }
 
 void
 TesterMonitor::awaitBinding(const set<string>& _proxies) {
-  awaitBinding(m_handler.loadProxies(_proxies));
+  awaitBinding(handler.loadProxies(_proxies));
 }
 
 void
@@ -1945,13 +1945,13 @@ TesterMonitor::awaitBinding(const ProxySet& _proxies)
   while(!true_for_all(proxies,ProxyStateChecker(BindingData::BOUND))) {
     log("all not bound");
     sleepProcess(1000);
-    m_handler.reloadAllLoadedData();
+    handler.reloadAllLoadedData();
     std::set<string> ids;
     insert_iterator<set<string> > inserter = std::inserter(ids,ids.begin());
     foreach(ProxySet::value_type prox , proxies) {
       inserter = prox.first;
     }
-    proxies = m_handler.loadProxies(ids);
+    proxies = handler.loadProxies(ids);
   }
 }
   

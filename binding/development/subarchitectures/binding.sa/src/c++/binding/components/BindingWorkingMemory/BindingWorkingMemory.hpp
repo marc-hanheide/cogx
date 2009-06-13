@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include <cast/architecture/SubarchitectureWorkingMemory.hpp>
-#include <binding/idl/BindingData.hh>
+#include <BindingData.hpp>
 #include <binding/ontology/BindingFeatureOntology.hpp>
 
 namespace Binding {

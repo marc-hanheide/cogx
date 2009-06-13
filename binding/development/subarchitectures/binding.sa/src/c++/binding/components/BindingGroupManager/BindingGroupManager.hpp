@@ -40,10 +40,10 @@ protected:
   virtual void taskRejected(const std::string &_taskID){};
   virtual void configure(std::map<std::string,std::string>& _config);
   
-  std::set<std::string> m_groupProxyIDs;
+  std::set<std::string> groupProxyIDs;
   /// maps from the group's ID to the individuals' IDs
-//  cast::StringMap<std::set<std::string> >::map m_individualProxyIDs;
-    std::set<std::string> m_individualProxyIDs;
+//  cast::StringMap<std::set<std::string> >::map individualProxyIDs;
+    std::set<std::string> individualProxyIDs;
 
   std::string _create_and_store_singular(const LBindingProxy& _group_original);
   

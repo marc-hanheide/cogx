@@ -3,7 +3,7 @@
 
 namespace Binding {
 //AbstractFeature::AbstractFeature(const cdl::WorkingMemoryID& _id)
-// : m_workingemoryID(_id) { }
+// : workingemoryID(_id) { }
 
 std::ostream& 
 operator<<(std::ostream& _out,const AbstractFeature& _f)

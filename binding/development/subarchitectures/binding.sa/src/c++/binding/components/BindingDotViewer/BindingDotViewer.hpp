@@ -52,12 +52,12 @@ private:
   //std::string _printDotRelations() const;
 
   /// where dot files will be saved
-  std::string m_dotPath;
+  std::string dotPath;
   /// counts number of dot-files
-  unsigned int m_dotCount;
+  unsigned int dotCount;
   /// DotParameters used to configure how the dot graph should look
   
-  DotParameters m_dotParameters;
+  DotParameters dotParameters;
 
   /// prints the relations
   std::string _dotRelations();
@@ -69,19 +69,19 @@ private:
 
   
   /*struct testFct {
-    std::string operator()(const boost::shared_ptr<const BindingData::BindingProxy>& _proxy) const {return std::string(_proxy->m_unionID);}
+    std::string operator()(const boost::shared_ptr<const BindingData::BindingProxy>& _proxy) const {return std::string(_proxy->unionID);}
   };*/
     
   /// Maps from proxy to the union of that proxy (CAST IDs)
-  std::map<std::string,std::string> m_prox2uni;
+  std::map<std::string,std::string> prox2uni;
 
   /// caches the status of the binder
-  std::auto_ptr<cast::CachedCASTData<BindingData::BinderStatus> > m_statusCache;
+  std::auto_ptr<cast::CachedCASTData<BindingData::BinderStatus> > statusCache;
   
   /// set by receiving a \p TriggerDotViewerWithTitle
-  std::string m_title;
+  std::string title;
 
-  std::string m_visualizationFile;
+  std::string visualizationFile;
 };
 
 } // namespace Binding

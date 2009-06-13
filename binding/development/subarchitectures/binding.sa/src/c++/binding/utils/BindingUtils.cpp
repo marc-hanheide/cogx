@@ -89,10 +89,10 @@ validateFeatureSet(const FeatureSet& _fset,
       ++i) {
     //const FeatureProperties& prop(ont.featurePropertyMap().find(i->first)->second);
     const FeatureProperties& prop(ont.featureHelper(i->first).properties());
-    if(prop.m_isSimplex && i->second.size() > 1) {
+    if(prop.isSimplex && i->second.size() > 1) {
       err << "Simplexness violated for " << i->first << endl;	
     }
-//    if(!prop.m_isImplemented) {
+//    if(!prop.isImplemented) {
 //     err << "Not implemented: " << i->first << "\n";	
 //    }
   }
@@ -101,7 +101,7 @@ validateFeatureSet(const FeatureSet& _fset,
       ++i) {
     //const FeatureProperties& prop(ont.featurePropertyMap().find(*i)->second);
     const FeatureProperties& prop(ont.featureHelper(*i).properties());
-    if(prop.m_isDemanded) {
+    if(prop.isDemanded) {
       if(_fset.find(*i) == _fset.end()) {
 	err << "Required feature is missing: " << *i << "\n";
       }
@@ -118,29 +118,29 @@ validateFeatureSet(const FeatureSet& _fset,
 ostream& operator<<(ostream& _out, const BindingData::Ambiguity& _issue) 
  {  
   _out << "Ambiguity {\\n";
-  _out << "  m_proxyID: " << _issue.m_proxyID << "\\n";
-  _out << "  m_unionIDs: {";
-  for(unsigned int i = 0 ; i < _issue.m_unionIDs.length() ; ++i) {    
-    _out << _issue.m_unionIDs[i] ;  
-    if(i < _issue.m_unionIDs.length() - 1)
+  _out << "  proxyID: " << _issue.proxyID << "\\n";
+  _out << "  unionIDs: {";
+  for(unsigned int i = 0 ; i < _issue.unionIDs.length() ; ++i) {    
+    _out << _issue.unionIDs[i] ;  
+    if(i < _issue.unionIDs.length() - 1)
       _out << ", ";
   }
   _out<< "}\\n";
-  _out << "  m_missingUnionFeatures: {";
-  for(unsigned int i = 0 ; i < _issue.m_missingUnionFeatures.length() ; ++i) {    
-    _out << trimFeatureName(string(_issue.m_missingUnionFeatures[i])) ;  
-    if(i < _issue.m_missingUnionFeatures.length() - 1)
+  _out << "  missingUnionFeatures: {";
+  for(unsigned int i = 0 ; i < _issue.missingUnionFeatures.length() ; ++i) {    
+    _out << trimFeatureName(string(_issue.missingUnionFeatures[i])) ;  
+    if(i < _issue.missingUnionFeatures.length() - 1)
       _out << ", ";
   }
   _out<< "}\\n";
-  _out << "  m_missingProxyFeatures: {";
-  for(unsigned int i = 0 ; i < _issue.m_missingProxyFeatures.length() ; ++i) {    
-    _out << trimFeatureName(string(_issue.m_missingProxyFeatures[i]));  
-    if(i < _issue.m_missingProxyFeatures.length() - 1)
+  _out << "  missingProxyFeatures: {";
+  for(unsigned int i = 0 ; i < _issue.missingProxyFeatures.length() ; ++i) {    
+    _out << trimFeatureName(string(_issue.missingProxyFeatures[i]));  
+    if(i < _issue.missingProxyFeatures.length() - 1)
       _out << ", ";
   }
   _out<< "}\\n";
-  _out << "  m_disambiguatingUnionFeatureInstances: {/*not yet implemented*/}\\n";
+  _out << "  disambiguatingUnionFeatureInstances: {/*not yet implemented*/}\\n";
   _out<< "}\\n";
 
   return _out;
@@ -167,18 +167,18 @@ operator<<(ostream& _out, const BindingData::ComparisonTrust& _trust)
 ostream& operator<<(ostream& _out, const BindingData::ComparisonTrustSpecification& _spec)
 {
   _out << "{";
-  _out << "m_trustInternalFalse = " << _spec.m_trustInternalFalse;
-  _out << ", m_trustInternalIndeterminate = " << _spec.m_trustInternalIndeterminate;
-  _out << ", m_trustInternalTrue = " << _spec.m_trustInternalTrue << "}";
+  _out << "trustInternalFalse = " << _spec.trustInternalFalse;
+  _out << ", trustInternalIndeterminate = " << _spec.trustInternalIndeterminate;
+  _out << ", trustInternalTrue = " << _spec.trustInternalTrue << "}";
   return _out;
 }
 
 ostream& operator<<(ostream& _out, const BindingData::FeatureComparisonCompetence& _competence)
 {
   _out << "FeatureComparisonCompetence{\n";
-  _out << "  m_proxyFeatureType = " << _competence.m_proxyFeatureType << endl; 
-  _out << "  m_unionFeatureType = " << _competence.m_unionFeatureType << endl; 
-  _out << "  m_comparisonTrustSpecification = " << _competence.m_comparisonTrustSpecification<<"\n}";
+  _out << "  proxyFeatureType = " << _competence.proxyFeatureType << endl; 
+  _out << "  unionFeatureType = " << _competence.unionFeatureType << endl; 
+  _out << "  comparisonTrustSpecification = " << _competence.comparisonTrustSpecification<<"\n}";
   return _out;
 }
 
@@ -208,8 +208,8 @@ combinedID(const std::string& _id1,
 string
 toString(const BindingData::FeaturePointer& _feat) {
   stringstream str;
-  str << PRINTNAMED(_feat.m_type) << ", ";
-  str << PRINTNAMED(_feat.m_address);
+  str << PRINTNAMED(_feat.type) << ", ";
+  str << PRINTNAMED(_feat.address);
   return str.str();
 }
 
@@ -224,8 +224,8 @@ toString(const BindingData::FeaturePointers& _feats) {
 string
 toString(const BindingData::BindingProxy& _proxy) {
   stringstream str;
-  str << "m_proxyFeatures: " << toString(_proxy.m_proxyFeatures) << ", ";
-  str << "m_unionID: " << _proxy.m_unionID;
+  str << "proxyFeatures: " << toString(_proxy.proxyFeatures) << ", ";
+  str << "unionID: " << _proxy.unionID;
   return str.str();
 }
 
@@ -332,7 +332,7 @@ analyseAmbiguity(std::ostream& _out,
   stringstream unions;
   _out << "We do have an ambiguity:\n"
        << _ambiguity << "\n";
-  const string proxyID(_ambiguity.m_proxyID);
+  const string proxyID(_ambiguity.proxyID);
   const LBindingProxy* ptr = repr.maybeLoadProxy(proxyID);
   if(!ptr) {
     component.log("no proxy despite it having an ambiguity");
@@ -340,9 +340,9 @@ analyseAmbiguity(std::ostream& _out,
   }
   const LBindingProxy& proxy(*ptr);
 
-  for(unsigned int i = 0; i < _ambiguity.m_unionIDs.length() ; ++i) {
-    unions << _ambiguity.m_unionIDs[i]
-	   << neator(i,_ambiguity.m_unionIDs.length());
+  for(unsigned int i = 0; i < _ambiguity.unionIDs.length() ; ++i) {
+    unions << _ambiguity.unionIDs[i]
+	   << neator(i,_ambiguity.unionIDs.length());
   }
   _out << "Proxy " << proxyID
        << " can in principle be bound with all of Unions " 
@@ -350,17 +350,17 @@ analyseAmbiguity(std::ostream& _out,
   stringstream dummy;
   (strategy_count(dummy)) = 1;
   FeatureSet important_features;
-  for(unsigned int i = 0; i < _ambiguity.m_missingProxyFeatures.length() ; ++i) {
-    const string featuretype(_ambiguity.m_missingProxyFeatures[i]);
+  for(unsigned int i = 0; i < _ambiguity.missingProxyFeatures.length() ; ++i) {
+    const string featuretype(_ambiguity.missingProxyFeatures[i]);
     strategy_count(_out);
     _out << "I wish I knew anything about the " 
 	 << trimFeatureName(featuretype)
 	 << " of proxy " << proxyID << "\n";
-    for(unsigned int j = 0; j < _ambiguity.m_unionIDs.length() ; ++j) {
-      const string unionID(_ambiguity.m_unionIDs[j]);
+    for(unsigned int j = 0; j < _ambiguity.unionIDs.length() ; ++j) {
+      const string unionID(_ambiguity.unionIDs[j]);
       try {
 	const LBindingUnion& 
-	  the_union(repr.m_unionLocalCache[unionID]);
+	  the_union(repr.unionLocalCache[unionID]);
 	if(the_union.hasFeature(featuretype)) {
 	  const FeatureSet 
 	    possibly_disambiguating_features
@@ -406,19 +406,19 @@ analyseAmbiguity(std::ostream& _out,
   }
   
   
-  for(unsigned int i = 0; i < _ambiguity.m_missingUnionFeatures.length() ; ++i) {
+  for(unsigned int i = 0; i < _ambiguity.missingUnionFeatures.length() ; ++i) {
     strategy_count(_out);
     _out << "I wish to know more about the " 
-	 << trimFeatureName(string(_ambiguity.m_missingUnionFeatures[i]))
+	 << trimFeatureName(string(_ambiguity.missingUnionFeatures[i]))
 	 << " of one of the unions " << unions.str() << "\n";
   }
-  for(unsigned int i = 0; i < _ambiguity.m_unionIDs.length() ; ++i) {
-    const string unionID(_ambiguity.m_unionIDs[i]);
+  for(unsigned int i = 0; i < _ambiguity.unionIDs.length() ; ++i) {
+    const string unionID(_ambiguity.unionIDs[i]);
     try {
-      for(unsigned int j = 0; j < _ambiguity.m_missingUnionFeatures.length() ; ++j) {
-	const string featuretype(_ambiguity.m_missingUnionFeatures[j]);
+      for(unsigned int j = 0; j < _ambiguity.missingUnionFeatures.length() ; ++j) {
+	const string featuretype(_ambiguity.missingUnionFeatures[j]);
 	const LBindingUnion& 
-	  the_union(repr.m_unionLocalCache[unionID]);
+	  the_union(repr.unionLocalCache[unionID]);
 	if(!the_union.hasFeature(featuretype)) {
 	  strategy_count(_out);
 	  _out << "I want to know more about union " << unionID << "'s " 
@@ -429,10 +429,10 @@ analyseAmbiguity(std::ostream& _out,
 	    const Feature<BindingFeatures::SourceID>& 
 	      s(extractFeature<BindingFeatures::SourceID>(*source));
 	    strategy_count(_out);
-	    _out << "Maybe the subarchitecture " << s->m_sourceID 
+	    _out << "Maybe the subarchitecture " << s->sourceID 
 		 << " could tell us more about the "  
 		 << trimFeatureName(featuretype) << " of its proxy " 
-		 << s->m_parent.m_immediateProxyID << " (which is a member of union "
+		 << s->parent.immediateProxyID << " (which is a member of union "
 		 << unionID << ")?\n";
 	    if(proxy.hasFeature(featuretype)) {
 	      const FeatureSet&
@@ -441,9 +441,9 @@ analyseAmbiguity(std::ostream& _out,
 	      typedef pair<string,OneTypeOfFeatures> Element;
 	      foreach(const Element& e, pset) {
 		foreach(const shared_ptr<AbstractFeature> f, e.second) {
-		  _out << "More specifically, maybe the subarchitecture " << s->m_sourceID 
+		  _out << "More specifically, maybe the subarchitecture " << s->sourceID 
 		       << " could even tell us if its proxy " 
-		       << s->m_parent.m_immediateProxyID  << "s "  
+		       << s->parent.immediateProxyID  << "s "  
 		       << trimFeatureName(featuretype) << " is " 
 		       << f->toString(AbstractFeature::only_feature) << "?\n";
 		    }

@@ -2,13 +2,13 @@
 #define BINDING_FEATURE_EXTRACTOR_H_
 
 #include <boost/shared_ptr.hpp>
-#include <balt/core/StringMap.hpp>
+// #include <balt/core/StringMap.hpp>
 #include <stdexcept>
 
 //#include "feature-utils/AbstractFeature.hpp"
-#include "binding/feature-utils/Features.hpp"
-#include "binding/ontology/BindingFeatureOntology.hpp"
-#include "binding/BindingException.hpp"
+#include "../feature-utils/Features.hpp"
+#include "../ontology/BindingFeatureOntology.hpp"
+#include "../BindingException.hpp"
 
 namespace Binding {
 
@@ -16,7 +16,7 @@ namespace Binding {
 /// A helper function to make it easier to cast from an abstract
 /// feature
 template <typename IDLFeatureT>
-const Feature<IDLFeatureT>& 
+const Feature<IDLFeatureT>&
 extractFeature(const AbstractFeature& _abstractFeature)
 {
   const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
@@ -28,7 +28,7 @@ extractFeature(const AbstractFeature& _abstractFeature)
 }
 
 template <typename IDLFeatureT>
-const Feature<IDLFeatureT>& 
+const Feature<IDLFeatureT>&
 extractFeature(const boost::shared_ptr<AbstractFeature>& _abstractFeature)
 {
   return extractFeature<IDLFeatureT>(*_abstractFeature);
@@ -37,17 +37,17 @@ extractFeature(const boost::shared_ptr<AbstractFeature>& _abstractFeature)
 /// A helper function to make it easier to cast from an abstract
 /// feature to the original feature type as specified in the IDL
 template <typename IDLFeatureT>
-const IDLFeatureT& 
-extractIDLFeature(const AbstractFeature& _abstractFeature) 
+const IDLFeatureT&
+extractIDLFeature(const AbstractFeature& _abstractFeature)
 {
   return extractFeature<IDLFeatureT>(_abstractFeature).idlFeature();
 }
 
 template <typename IDLFeatureT>
-const IDLFeatureT& 
-extractIDLFeature(const boost::shared_ptr<AbstractFeature>& _abstractFeature) 
+const IDLFeatureT&
+extractIDLFeature(const boost::shared_ptr<AbstractFeature>& _abstractFeature)
 {
-  return extractFeature<IDLFeatureT>(*_abstractFeature).idlFeature();  
+  return extractFeature<IDLFeatureT>(*_abstractFeature).idlFeature();
 }
 
 

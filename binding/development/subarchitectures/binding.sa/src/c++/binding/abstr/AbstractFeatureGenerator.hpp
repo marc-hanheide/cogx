@@ -7,7 +7,7 @@
 #include <cast/architecture/WorkingMemoryChangeReceiver.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cast/cdl/CAST.hh>
-#include <boost/mem_fn.hpp>
+#include <boost/mefn.hpp>
 
 namespace Binding {
 
@@ -17,7 +17,7 @@ namespace Binding {
     public AbstractMonitor {
     
   private:
-    bool m_filterUp;
+    bool filterUp;
     void handleGenerationCommand(const cast::cdl::WorkingMemoryChange & _wmc);
 
 
@@ -35,11 +35,11 @@ namespace Binding {
     registerFeatureGenerator(void (T::*pmf)(ProxyPtr)) {    
       
       //register the filter for receiving generation commands
-      if(!m_filterUp) {
+      if(!filterUp) {
 	addChangeFilter(cast::createLocalTypeFilter<BindingQueries::FeatureGenerationCommand>(cast::cdl::ADD),
 			new cast::MemberFunctionChangeReceiver<AbstractFeatureGenerator>(this,
 												     &AbstractFeatureGenerator::handleGenerationCommand));
-	m_filterUp = true;
+	filterUp = true;
       }
 
     //this is the type of feature we can add
@@ -47,8 +47,8 @@ namespace Binding {
 
     //now generate the registration struct and add it
     BindingQueries::FeatureGenerationRegistration *fr = new BindingQueries::FeatureGenerationRegistration();
-    fr->m_type = CORBA::string_dup(featureType.c_str());
-    fr->m_subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
+    fr->type = CORBA::string_dup(featureType.c_str());
+    fr->subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
     
     addToWorkingMemory(newDataID(), 
 		       getBindingSA(), 
@@ -60,7 +60,7 @@ namespace Binding {
   
   ///State that feature generation is complete
   template <class FeatureT>
-  void generationComplete(ProxyPtr _proxy, cast::cdl::TriBool _succeeded) {
+  void generationComplete(ProxyPtr _proxy, BindingData::TriBool _succeeded) {
 
   }
   

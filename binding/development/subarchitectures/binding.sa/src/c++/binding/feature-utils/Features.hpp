@@ -4,10 +4,10 @@
 #include <string>
 #include <sstream>
 #include <boost/shared_ptr.hpp>
-#include "binding/idl/BindingData.hh"
+#include "BindingData.hpp"
 //#include "feature-specialization/FeatureProperties.hpp"
 #include "AbstractFeature.hpp"
-#include "binding/utils/BindingScoreUtils.hpp"
+#include "../utils/BindingScoreUtils.hpp"
 //#include "binding/abstr/AbstractMonitor.hpp"
 
 namespace Binding {
@@ -15,33 +15,33 @@ namespace Binding {
 /// Implements an \p AbstractFeature and contains the actual feature (of
 /// type \p IDLFeature) defined in the IDL-file.
 template<class IDLFeature>
-class Feature 
+class Feature
   : public AbstractFeature
-{ 
+{
 public:
   typedef IDLFeature LocalFeatureType;
   Feature(const IDLFeature& _idl_feature,
-	  const std::string& _id) 
+	  const std::string& _id)
     : AbstractFeature(_id),
-      m_idlFeature(_idl_feature)
-      //m_featureProperties(featureProperties<IDLFeature>()) 
+      idlFeature(_idl_feature)
+      //featureProperties(featureProperties<IDLFeature>())
   {};
-  
-  
-  
+
+
+
 //  const std::string name() const {return featureName<IDLFeature>();}
 //  std::string shortName() const {return featureShortName<IDLFeature>();}
   /// returns typeid(IDLFeature)
   virtual const std::type_info& typeInfo() const {return typeid(IDLFeature);}
-  
-  //const FeatureProperties& properties() const; 
 
-  const IDLFeature& idlFeature() const {return m_idlFeature;}
-  const IDLFeature* operator->() const {return &m_idlFeature;}
+  //const FeatureProperties& properties() const;
+
+  const IDLFeature& idlFeature() const {return idlFeature;}
+  const IDLFeature* operator->() const {return &idlFeature;}
 
   /// returns result of address comparisons by default, this should be
   /// specialized in subclasses to take into accoun the contents of
-  /// these  
+  /// these
   /*  bool operator<(const AbstractFeature& _f) const {
   // first, sort according to name
   if(this->name() != _f.name())
@@ -49,28 +49,28 @@ public:
   // then, to not mix up negated with nonnegated features
   if(this->negated() != _f.negated())
   return this->negated() > _f.negated();
-  
+
   // then according to the idlFeature (which now should be known to
   // be of the same kind since the names are equal)
   return featureOperatorLess(idlFeature(), dynamic_cast<const Feature<IDLFeature>&>(_f).idlFeature());
   }
   */
   /*
-    
+
   /// returns true if this feature can be compared with \p _f
   bool comparable(const AbstractFeature& _f) const {
   return this->properties().comparable(_f.name());
-  //const set<std::string>& comparable(this->properties().m_comparableInternally);
+  //const set<std::string>& comparable(this->properties().comparableInternally);
   //if(comparable.find(_f.name()) == comparable.end()) // i.e. the feature is not among the comparable
   //return false;
   //return true;
   }
   */
-  
-  // calls the specialized \p featuresEquivalent<IDLFeature>(m_idlFeature,_f)
+
+  // calls the specialized \p featuresEquivalent<IDLFeature>(idlFeature,_f)
   /*  boost::logic::tribool identical(const AbstractFeature& _f) const {
       if(!comparable(_f))
-      throw("Attempting to compare the two uncomparable features: " + 
+      throw("Attempting to compare the two uncomparable features: " +
       name() + " and " + _f.name() + " in Feature<>::identical(...)");
       // if the feature is the one and same it will not be counted as a
       // match (this is slightly counterintuitive...)
@@ -80,21 +80,21 @@ public:
     if(this->immediateProxyID() == _f.immediateProxyID()) {
       ret = boost::logic::indeterminate;
     } else {
-      ret = featuresEquivalent<IDLFeature>(m_idlFeature,_f);
+      ret = featuresEquivalent<IDLFeature>(idlFeature,_f);
     }
-    
+
     // 'not red' will match 'not red', and 'not blue' vs.  'red' will
     // be indeterminate. 'not blue' vs. 'not blue' will also result in
     // indeterminate. Optional behaviours could be made part of the
     // feature properties...
     if(this->negated() != _f.negated()) {
-      if(ret.value == boost::logic::tribool::true_value) { 
+      if(ret.value == boost::logic::tribool::true_value) {
 	ret = false;
       } else {
 	ret = boost::logic::indeterminate;
       }
     } else if(this->negated() && _f.negated()) {
-      return boost::logic::indeterminate; 
+      return boost::logic::indeterminate;
     }
 
 //#define VERBOSE_COMPARISON
@@ -111,30 +111,30 @@ public:
 #endif //VERBOSE_COMPARISON
     return ret;
   }*/
-  
+
   // true iff the feature is actually negated, which inverts the
   // match (i.e. two objects that are 'not red' will actually match)
   virtual bool negated() const {
-    return Binding::negated(m_idlFeature);
+    return Binding::negated(idlFeature);
   }
   virtual std::string immediateProxyID() const {
-    return Binding::immediateProxyID(m_idlFeature);
+    return Binding::immediateProxyID(idlFeature);
   }
-  
+
   virtual BindingFeaturesCommon::TruthValue truthValue() const {
     return Binding::truthValue(idlFeature());
   }
-  
+
 /*
   virtual BindingData::FeaturePointer addFeatureToCurrentProxy(AbstractMonitor& _monitor, BindingFeaturesCommon::TruthValue _truthValue) const
   {
-    return _monitor.addFeatureToCurrentProxy(m_idlFeature, _truthValue);
+    return _monitor.addFeatureToCurrentProxy(idlFeature, _truthValue);
   }
 */
 
 private:
-  IDLFeature m_idlFeature;
-  //FeatureProperties m_featureProperties;
+  IDLFeature idlFeature;
+  //FeatureProperties featureProperties;
   Feature() {}
 };
 

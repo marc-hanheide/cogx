@@ -24,7 +24,7 @@ namespace Binding {
   DummyGenerator::DummyGenerator(const string &_id) :         
     WorkingMemoryAttachedComponent(_id),
     AbstractFeatureGenerator(_id),
-    m_requester(false)
+    requester(false)
   { 
   }
   
@@ -35,49 +35,49 @@ namespace Binding {
   
   void DummyGenerator::configure(map<string,string> & _config) {
     AbstractMonitor::configure(_config);
-    m_requester = (_config.find("--requester") != _config.end());
+    requester = (_config.find("--requester") != _config.end());
     setBindingSA("binding.sa");
   }
 
   void DummyGenerator::runComponent() {
 
-    m_sourceID = subarchitectureID();
+    sourceID = subarchitectureID();
 
     setBindingSA("binding.sa");
 
     //some dummy generators
     registerFeatureGenerator<BindingFeatures::Colour>(&DummyGenerator::generateColour);
 
-    if(!m_requester) {
+    if(!requester) {
 
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("thing");
+      concept.concept = CORBA::string_dup("thing");
 
       //add two thing proxies
 
       startNewBasicProxy();
       addFeatureToCurrentProxy(concept);
-      addOtherSourceIDToCurrentProxy(m_sourceID, BindingFeaturesCommon::NEGATIVE);
+      addOtherSourceIDToCurrentProxy(sourceID, BindingFeaturesCommon::NEGATIVE);
       storeCurrentProxy();
 
       startNewBasicProxy();
       addFeatureToCurrentProxy(concept);
-      addOtherSourceIDToCurrentProxy(m_sourceID, BindingFeaturesCommon::NEGATIVE);
+      addOtherSourceIDToCurrentProxy(sourceID, BindingFeaturesCommon::NEGATIVE);
       storeCurrentProxy();
 
       bindNewProxies();
     }
     else {
       BindingFeatures::Concept concept;
-      concept.m_concept = CORBA::string_dup("thing");
+      concept.concept = CORBA::string_dup("thing");
 
       //add two thing proxies
 
       startNewBasicProxy();
       addFeatureToCurrentProxy(concept);
-      addOtherSourceIDToCurrentProxy(m_sourceID, BindingFeaturesCommon::NEGATIVE);
+      addOtherSourceIDToCurrentProxy(sourceID, BindingFeaturesCommon::NEGATIVE);
       BindingFeatures::Colour colour;
-      colour.m_colour = CORBA::string_dup("red");
+      colour.colour = CORBA::string_dup("red");
       addFeatureToCurrentProxy(colour);
 
       string myProxy(storeCurrentProxy());

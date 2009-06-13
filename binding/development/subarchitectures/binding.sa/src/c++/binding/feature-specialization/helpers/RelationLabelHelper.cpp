@@ -8,7 +8,7 @@ RelationLabelComparator::compare(const AbstractFeature& _proxyFeature,
 			   const AbstractFeature& _unionFeature) const {
   const BindingFeatures::RelationLabel& proxyFeature(getIDLFeature(_proxyFeature));
   const BindingFeatures::RelationLabel& unionFeature(getIDLFeature(_unionFeature));    
-  if(string(proxyFeature.m_label) == string(unionFeature.m_label))
+  if(string(proxyFeature.label) == string(unionFeature.label))
     return true;
   return false;
 }
@@ -16,23 +16,23 @@ RelationLabelComparator::compare(const AbstractFeature& _proxyFeature,
 RelationLabelHelper::RelationLabelHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = true;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = true;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
 ostream& 
 RelationLabelHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
-    _out << "\\\"" << extract(_feat).m_label <<"\\\"";
+    _out << "\\\"" << extract(_feat).label <<"\\\"";
     return _out;
   }
 
 bool 
 RelationLabelHelper::operatorLessImpl(const AbstractFeature& _feat1, const AbstractFeature& _feat2) const 
 {
-  return string(extract(_feat1).m_label) < string(extract(_feat2).m_label);
+  return string(extract(_feat1).label) < string(extract(_feat2).label);
 }
   
 

@@ -37,12 +37,12 @@ namespace Binding {
       }
 
       SourceData * pSD = new SourceData();
-      pSD->m_type = CORBA::string_dup(tokens[4].c_str());
-      pSD->m_address.m_subarchitecture = CORBA::string_dup(tokens[5].c_str());
-      pSD->m_address.m_id = CORBA::string_dup(tokens[6].c_str());
+      pSD->type = CORBA::string_dup(tokens[4].c_str());
+      pSD->address.subarchitecture = CORBA::string_dup(tokens[5].c_str());
+      pSD->address.id = CORBA::string_dup(tokens[6].c_str());
  
       //cout<<endl;
-      //cout<<"m_id: "<<pSD->m_address.m_id<<endl;
+      //cout<<"id: "<<pSD->address.id<<endl;
       //cout<<endl;
 
       return new WorkingMemoryPullQuery<SourceData>(tokens[1], 

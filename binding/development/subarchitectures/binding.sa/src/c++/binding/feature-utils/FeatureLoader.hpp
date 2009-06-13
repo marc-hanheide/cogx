@@ -26,8 +26,8 @@ private:
   FeatureLoader& operator=(const FeatureLoader&);
 
 
-  AbstractBindingWMRepresenter& m_representer;
-  cast::StringMap<boost::shared_ptr<AbstractFeature> >::map m_features;
+  AbstractBindingWMRepresenter& representer;
+  cast::StringMap<boost::shared_ptr<AbstractFeature> >::map features;
 };
 
 

@@ -86,12 +86,12 @@ INLINE_INHERITED_MEMB  = NO
 
 FULL_PATH_NAMES        = NO
 
-# If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag 
+# If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROPATH tag 
 # can be used to strip a user-defined part of the path. Stripping is 
 # only done if one of the specified strings matches the left-hand part of 
 # the path. It is allowed to use relative paths in the argument list.
 
-STRIP_FROM_PATH        = 
+STRIP_FROPATH        = 
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter 
 # (but less readable) file names. This can be useful is your file systems 
@@ -468,11 +468,11 @@ REFERENCED_BY_RELATION = YES
 
 REFERENCES_RELATION    = YES
 
-# If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen 
+# If the VERBATIHEADERS tag is set to YES (the default) then Doxygen 
 # will generate a verbatim copy of the header file for each class for 
 # which an include is specified. Set to NO to disable this.
 
-VERBATIM_HEADERS       = YES
+VERBATIHEADERS       = YES
 
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
@@ -550,12 +550,12 @@ HTML_ALIGN_MEMBERS     = YES
 
 GENERATE_HTMLHELP      = NO
 
-# If the GENERATE_HTMLHELP tag is set to YES, the CHM_FILE tag can 
+# If the GENERATE_HTMLHELP tag is set to YES, the CHFILE tag can 
 # be used to specify the file name of the resulting .chm file. You 
 # can add a path in front of the file if the result should not be 
 # written to the html output dir.
 
-CHM_FILE               = 
+CHFILE               = 
 
 # If the GENERATE_HTMLHELP tag is set to YES, the HHC_LOCATION tag can 
 # be used to specify the location (absolute path including file name) of 
@@ -590,7 +590,7 @@ DISABLE_INDEX          = NO
 # This tag can be used to set the number of enum values (range [1..20]) 
 # that doxygen will group on one line in the generated HTML documentation.
 
-ENUM_VALUES_PER_LINE   = 4
+ENUVALUES_PER_LINE   = 4
 
 # If the GENERATE_TREEVIEW tag is set to YES, a side panel will be
 # generated containing a tree-like index structure (just like the one that 

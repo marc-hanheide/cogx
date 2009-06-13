@@ -37,10 +37,10 @@ namespace Binding {
 BindingDotViewer::BindingDotViewer(const string &_id) : 
   WorkingMemoryAttachedComponent(_id),
   AbstractBinder(_id),
-  m_dotPath(""),
-  m_dotCount(0)
+  dotPath(""),
+  dotCount(0)
 {
-  m_queueBehaviour = cdl::QUEUE;  
+  queueBehaviour = cdl::QUEUE;  
 }
 
 BindingDotViewer::~BindingDotViewer() {
@@ -77,57 +77,57 @@ void
 BindingDotViewer::configure(map<string, string>& _config)
 {
   AbstractBinder::configure(_config);
-  m_dotPath = _config["-d"];  
+  dotPath = _config["-d"];  
   
-  if(m_dotPath == "")
+  if(dotPath == "")
     cerr << "Warning: BindingDotViewer running without doing anything, specify file path with -d flag\n";
   
   string proxy(_config["-proxy"]);
   if(proxy == "debug") {
-    m_dotParameters.proxies = DotParameters::show_full;
+    dotParameters.proxies = DotParameters::show_full;
   } else if(proxy == "source") {
-    m_dotParameters.proxies = DotParameters::only_source;
+    dotParameters.proxies = DotParameters::only_source;
   } else if(proxy == "points") {
-    m_dotParameters.proxies = DotParameters::only_dots;
+    dotParameters.proxies = DotParameters::only_dots;
   } else if(proxy == "none") {
-    m_dotParameters.proxies = DotParameters::no_show;
+    dotParameters.proxies = DotParameters::no_show;
   }
 
   string binding_union(_config["-union"]);
   if(binding_union == "debug") {
-    m_dotParameters.unions = DotParameters::show_full;
+    dotParameters.unions = DotParameters::show_full;
 //  } else if(binding_union == "source") {
-//    m_dotParameters.unions = DotParameters::only_source;
+//    dotParameters.unions = DotParameters::only_source;
   } else if(binding_union == "short") {
-    m_dotParameters.unions = DotParameters::show_short;
+    dotParameters.unions = DotParameters::show_short;
   } 
 
   map<string, string>::const_iterator itr = _config.find("-visfile");
   if(itr != _config.end())
-    m_visualizationFile = itr->second;
+    visualizationFile = itr->second;
   
 }
 
 void 
 BindingDotViewer::generateDotGraph(const cdl::WorkingMemoryChange & _wmc) 
 {
-  if(string(_wmc.m_type) == typeName<BindingData::TriggerDotViewer>()) {
-    deleteFromWorkingMemory(string(_wmc.m_address.m_id));
+  if(string(_wmc.type) == typeName<BindingData::TriggerDotViewer>()) {
+    deleteFromWorkingMemory(string(_wmc.address.id));
   }
   // 1st, generate the graph
   stringstream dot;
   dot << dotGraph();
   // then store it
   stringstream filename;
-  filename << m_dotPath << "/bindingWM_" << m_subarchitectureID << "_" << setw(4) << setfill('0') << m_dotCount << ".dot";
+  filename << dotPath << "/bindingW" << subarchitectureID << "_" << setw(4) << setfill('0') << dotCount << ".dot";
   ofstream dot_file (filename.str().c_str());
   ofstream vis_file;
-  if(!m_visualizationFile.empty())
-    vis_file.open(m_visualizationFile.c_str());
+  if(!visualizationFile.empty())
+    vis_file.open(visualizationFile.c_str());
   if(!dot_file && !vis_file) {
     //    throw runtime_error("File error: " + filename.str() + "\n");
     log("File error: " + filename.str() + "\n");
-    log("File error: " + m_visualizationFile + "\n");
+    log("File error: " + visualizationFile + "\n");
     log("No dotfiles will be created");
     receiveNoChanges();
   } else {
@@ -139,16 +139,16 @@ BindingDotViewer::generateDotGraph(const cdl::WorkingMemoryChange & _wmc)
     if(vis_file) {
       vis_file << dot.str();
       vis_file.close();
-      log("Stored: " + m_visualizationFile);
+      log("Stored: " + visualizationFile);
     }
-    m_dotCount++;
+    dotCount++;
   }
 }
 
 void 
 BindingDotViewer::generateDotGraphWithTitle(const cdl::WorkingMemoryChange & _wmc) 
 {
-  m_title = string(loadBindingDataFromWM<BindingData::TriggerDotViewerWithTitle>(_wmc)->m_title);
+  title = string(loadBindingDataFromWM<BindingData::TriggerDotViewerWithTitle>(_wmc)->title);
   generateDotGraph(_wmc);
 }
 
@@ -156,13 +156,13 @@ BindingDotViewer::generateDotGraphWithTitle(const cdl::WorkingMemoryChange & _wm
 void
 BindingDotViewer::generateDotGraphIfStable(const cdl::WorkingMemoryChange& _wmc) {
   try {
-    if(!m_statusCache.get()) { // must allocate the cache when we know the address
-      m_statusCache = 
+    if(!statusCache.get()) { // must allocate the cache when we know the address
+      statusCache = 
 	auto_ptr<CachedCASTData<BindingData::BinderStatus> >
-	(new CachedCASTData<BindingData::BinderStatus>(*this,string(_wmc.m_address.m_id)));
+	(new CachedCASTData<BindingData::BinderStatus>(*this,string(_wmc.address.id)));
     }
-    const BindingData::BinderStatus& status(**m_statusCache);
-    if(m_statusCache->getVersion() > 0 && status.m_stable) { // || status->m_scoringTasks == 0) {
+    const BindingData::BinderStatus& status(**statusCache);
+    if(statusCache->getVersion() > 0 && status.stable) { // || status->scoringTasks == 0) {
       generateDotGraph(_wmc);
     }
   }
@@ -176,16 +176,16 @@ string
 bestUnionsToString(const BindingData::BestUnionsForProxy& _best) 
 {
   stringstream str;
-//  str << "\\nbest.m_proxy: " << _best.m_proxyID << "\\n";
-  str << "best.score: " << Binding::scoreToString(_best.m_score) << "\\n";
+//  str << "\\nbest.proxy: " << _best.proxyID << "\\n";
+  str << "best.score: " << Binding::scoreToString(_best.score) << "\\n";
   str << "best.unionIDs: {";
 
-  for(unsigned int i = 0; i < _best.m_unionIDs.length() ; ++i) {
-    str << _best.m_unionIDs[i];
-    if(i < _best.m_unionIDs.length() - 1)
+  for(unsigned int i = 0; i < _best.unionIDs.length() ; ++i) {
+    str << _best.unionIDs[i];
+    if(i < _best.unionIDs.length() - 1)
       str << ", ";
   }
-  str << ", v(" << _best.m_proxyUpdatesWhenThisComputed <<")}";
+  str << ", v(" << _best.proxyUpdatesWhenThisComputed <<")}";
   return str.str();
 }
 
@@ -194,9 +194,9 @@ nonMatchingUnionsToString(const BindingData::NonMatchingUnions& _nonmatching)
 {
   stringstream str;
   str << "nonmatching.unionIDs: {";
-  for(unsigned int i = 0; i < _nonmatching.m_nonMatchingUnionIDs.length() ; ++i) {
-    str << _nonmatching.m_nonMatchingUnionIDs[i];
-    if(i < _nonmatching.m_nonMatchingUnionIDs.length() - 1)
+  for(unsigned int i = 0; i < _nonmatching.nonMatchingUnionIDs.length() ; ++i) {
+    str << _nonmatching.nonMatchingUnionIDs[i];
+    if(i < _nonmatching.nonMatchingUnionIDs.length() - 1)
       str << ", ";
   }
   str << "}";
@@ -209,7 +209,7 @@ BindingDotViewer::dotGraph() {
 
   const BindingFeatureOntology& ont(BindingFeatureOntology::construct());
   
-  m_prox2uni.clear();
+  prox2uni.clear();
 
   stringstream str;
   //   typedef
@@ -217,7 +217,7 @@ BindingDotViewer::dotGraph() {
   //   CBV unions;
   //   getWorkingMemoryEntries(BindingOntology::BINDING_PROXY_TYPE,
   //   0, &unions);
-  str << dot_head("Binding WM contents " + lexical_cast<string>(m_dotCount) + " (" + m_subarchitectureID + ")\\n" + m_title);
+  str << dot_head("Binding WM contents " + lexical_cast<string>(dotCount) + " (" + subarchitectureID + ")\\n" + title);
   
   typedef vector<shared_ptr<const CASTData<BindingData::BindingUnion> > > UnionPtrs;
   UnionPtrs unions;
@@ -263,10 +263,10 @@ BindingDotViewer::dotGraph() {
       shared_ptr<const BindingData::FeatureSetComparison>
       comparison((*c_itr)->data());
 
-      str << boxed_dot_arrow(string(comparison->m_proxyID), 
-      string(comparison->m_unionID),
+      str << boxed_dot_arrow(string(comparison->proxyID), 
+      string(comparison->unionID),
       "->",
-      string("updated scoring: ") + lexical_cast<string>(comparison->m_updated) + " " + comparisonID);
+      string("updated scoring: ") + lexical_cast<string>(comparison->updated) + " " + comparisonID);
       }
   */
 
@@ -276,51 +276,51 @@ BindingDotViewer::dotGraph() {
     string unionID((*b_itr)->getID());
     //shared_ptr<const BindingData::BindingUnion> binding_union((*b_itr)->getData());
     try {
-      //shared_ptr<const BindingData::BindingUnion> binding_union(m_unionCache.getPtr(unionID));
-      const LBindingUnion& binding_union(m_unionLocalCache[unionID]);
+      //shared_ptr<const BindingData::BindingUnion> binding_union(unionCache.getPtr(unionID));
+      const LBindingUnion& binding_union(unionLocalCache[unionID]);
 
       const BindingData::ProxyPorts& inports(binding_union.inPorts());	    
-      for(unsigned int i = 0 ; i < inports.m_ports.length() ; ++i) {
+      for(unsigned int i = 0 ; i < inports.ports.length() ; ++i) {
 	try {
-	  string ID(inports.m_ports[i].m_proxyID);
-	  if(m_proxyLocalCache[ID].bound())
-	    ID = string(m_proxyLocalCache[ID]->m_unionID);
+	  string ID(inports.ports[i].proxyID);
+	  if(proxyLocalCache[ID].bound())
+	    ID = string(proxyLocalCache[ID]->unionID);
 	  str << dot_arrow(ID,
 			   unionID,
 			   "->",
 			   "",
-			   string("headlabel=\"INPORT:") + string(inports.m_ports[i].m_label) + "\"");
+			   string("headlabel=\"INPORT:") + string(inports.ports[i].label) + "\"");
 	}  catch(const DoesNotExistOnWMException&){
 	  static unsigned int x(0);
 	  str << dot_arrow(unionID + "_" + lexical_cast<string>(x++),
 			   unionID, "->",
-			   string("(INPORT TO NONEXISTING from proxy owner:") + string(inports.m_ports[i].m_ownerProxyID) + " (" + string(inports.m_ownerProxyID) + "))");
+			   string("(INPORT TO NONEXISTING from proxy owner:") + string(inports.ports[i].ownerProxyID) + " (" + string(inports.ownerProxyID) + "))");
 	}; // is ok
       }
       
       try {
 	const BindingData::ProxyPorts& outports(binding_union.rawOutPorts());	          
-	for(unsigned int i = 0 ; i < outports.m_ports.length() ; ++i) {
-	  string ID(outports.m_ports[i].m_proxyID);
-	  if(m_proxyLocalCache[ID].bound())
-	    ID = string(m_proxyLocalCache[ID]->m_unionID);
+	for(unsigned int i = 0 ; i < outports.ports.length() ; ++i) {
+	  string ID(outports.ports[i].proxyID);
+	  if(proxyLocalCache[ID].bound())
+	    ID = string(proxyLocalCache[ID]->unionID);
 	  
 	  str << dot_arrow(unionID,
 			   ID,
 			   "->",
 			   "",
-			   string("taillabel=\"") + string(outports.m_ports[i].m_label) + "\"");
+			   string("taillabel=\"") + string(outports.ports[i].label) + "\"");
 	  
 	}      
       } catch(const DoesNotExistOnWMException& _e) {} // is ok
       try{
 	string label; 
 	string feature_string;
-	if(m_dotParameters.unions == DotParameters::show_full) {
+	if(dotParameters.unions == DotParameters::show_full) {
 	  feature_string = featureSetToDotLabel(binding_union.featureSetWithRepetitions(),set<string>(),AbstractFeature::show_all);
-	  label = string(unionID) + " (" + to_string(binding_union->m_type) + ")\\n " + 
-	    feature_string + string("\\n updates: ") + lexical_cast<string>(binding_union->m_updates);
-	} else if(m_dotParameters.unions == DotParameters::show_short) {
+	  label = string(unionID) + " (" + to_string(binding_union->type) + ")\\n " + 
+	    feature_string + string("\\n updates: ") + lexical_cast<string>(binding_union->updates);
+	} else if(dotParameters.unions == DotParameters::show_short) {
 	  set<string> exclude;
 	  exclude.insert(ont.featureName(typeid(BindingFeatures::DebugString)));
 	  //BindingFeatureOntology::DEBUG_STRING_TYPE);
@@ -334,22 +334,22 @@ BindingDotViewer::dotGraph() {
 	  abort();
 	}
 	string prop;
-	if(binding_union->m_type == BindingData::GROUP) {
+	if(binding_union->type == BindingData::GROUP) {
 	  prop = "style=filled,fillcolor=lightgrey";
 	}
-	if(binding_union->m_type == BindingData::RELATION) {
+	if(binding_union->type == BindingData::RELATION) {
 	  prop = "style=filled,fillcolor=antiquewhite";
 	}
       
 	str << dot_node(string(unionID), label, "box", prop);
 	
 	
-	const BindingData::WorkingMemoryIDList& proxyIDs(binding_union->m_proxyIDs);
+	const BindingData::WorkingMemoryIDList& proxyIDs(binding_union->proxyIDs);
 	for(unsigned int i = 0 ; i < proxyIDs.length() ; i++) {
-	  if(m_dotParameters.proxies != DotParameters::no_show) {
-	    str << dot_arrow(string(proxyIDs[i]),unionID,"->",string(binding_union->m_featureSignatures[i]));
+	  if(dotParameters.proxies != DotParameters::no_show) {
+	    str << dot_arrow(string(proxyIDs[i]),unionID,"->",string(binding_union->featureSignatures[i]));
 	  }
-	  m_prox2uni[string(proxyIDs[i])] = unionID;
+	  prox2uni[string(proxyIDs[i])] = unionID;
 	}
       } catch(const DoesNotExistOnWMException& _e) {
 	cerr << "It does look like a feature or sth has been deleted despite the fact a unions is referring to it:\n" << _e.what() << endl;
@@ -370,13 +370,13 @@ BindingDotViewer::dotGraph() {
     string unionID((*b_itr)->getID());
     //shared_ptr<const BindingData::BindingUnion> binding_union((*b_itr)->getData());
     try {
-      //shared_ptr<const BindingData::BindingUnion> binding_union(m_unionCache.getPtr(unionID));
-      const LBindingUnion& binding_union(m_unionLocalCache[unionID]);
+      //shared_ptr<const BindingData::BindingUnion> binding_union(unionCache.getPtr(unionID));
+      const LBindingUnion& binding_union(unionLocalCache[unionID]);
       
       set<string> groupIDs = _retrieve_singular_groupIDs(binding_union);
       if(!groupIDs.empty()) {
 	for(set<string>::const_iterator i = groupIDs.begin() ; i != groupIDs.end(); ++i) {
-	  str << dot_arrow(m_prox2uni[*i],unionID,"->", "", "style=dotted");
+	  str << dot_arrow(prox2uni[*i],unionID,"->", "", "style=dotted");
 	}
       }
     }
@@ -398,24 +398,24 @@ BindingDotViewer::dotGraph() {
 
     try{
       
-      const LBindingProxy& proxy(m_proxyLocalCache[proxyID]);    
+      const LBindingProxy& proxy(proxyLocalCache[proxyID]);    
 
       string hypothetical;
-      if(proxy->m_hypothetical) {
+      if(proxy->hypothetical) {
 	hypothetical = "\\n*** HYPOTHETICAL PROXY ***";
       }
       
       string best_string;
-      if(string(proxy->m_bestUnionsForProxyID) != "") {
+      if(string(proxy->bestUnionsForProxyID) != "") {
 	shared_ptr<const BindingData::BestUnionsForProxy>
-	  best(loadBindingDataFromWM<BindingData::BestUnionsForProxy>(proxy->m_bestUnionsForProxyID));
+	  best(loadBindingDataFromWM<BindingData::BestUnionsForProxy>(proxy->bestUnionsForProxyID));
 	
 	best_string += bestUnionsToString(proxy.bestUnionsForProxy());
       }
       
 
 //      shared_ptr<const BindingData::NonMatchingUnions>
-//	nonmatching_ptr(loadBindingDataFromWM<BindingData::NonMatchingUnions>(proxy->m_nonMatchingUnionID));
+//	nonmatching_ptr(loadBindingDataFromWM<BindingData::NonMatchingUnions>(proxy->nonMatchingUnionID));
       
       const BindingData::NonMatchingUnions& nonMatchingUnions(proxy.nonMatchingUnions());
       
@@ -429,50 +429,50 @@ BindingDotViewer::dotGraph() {
       string groupID = _retrieve_singular_groupID(proxy);
       string style = "dashed";
       string colour;
-      if(proxy->m_type == BindingData::GROUP) {
+      if(proxy->type == BindingData::GROUP) {
 	style += ",filled";
 	colour = "fillcolor=lightgrey";
       }
-      if(proxy->m_type == BindingData::RELATION) {
+      if(proxy->type == BindingData::RELATION) {
 	style += ",filled";
 	colour = "fillcolor=antiquewhite";
       }
       
-      for(unsigned int i = 0 ; i < proxy->m_outPorts.m_ports.length() ; ++i) {
+      for(unsigned int i = 0 ; i < proxy->outPorts.ports.length() ; ++i) {
 	str << dot_arrow(proxyID,
-			 string(proxy->m_outPorts.m_ports[i].m_proxyID),
+			 string(proxy->outPorts.ports[i].proxyID),
 			 "->",
 			 "",
-			 string("taillabel=\"") + string(string(proxy->m_outPorts.m_ports[i].m_ownerProxyID)) + " " + string(proxy->m_outPorts.m_ports[i].m_label) + "\"");
+			 string("taillabel=\"") + string(string(proxy->outPorts.ports[i].ownerProxyID)) + " " + string(proxy->outPorts.ports[i].label) + "\"");
       }
       
       //shared_ptr<const BindingData::ProxyPorts> inports 
-//	(loadBindingDataFromWM<BindingData::ProxyPorts>(proxy->m_inPortsID));
+//	(loadBindingDataFromWM<BindingData::ProxyPorts>(proxy->inPortsID));
       
       const BindingData::ProxyPorts& inports(proxy.inPorts());
       
-      for(unsigned int i = 0 ; i < inports.m_ports.length() ; ++i) {
-	str << dot_arrow(string(inports.m_ports[i].m_proxyID),
+      for(unsigned int i = 0 ; i < inports.ports.length() ; ++i) {
+	str << dot_arrow(string(inports.ports[i].proxyID),
 			 proxyID,
 			 "->",
 			 "",
-			 string("headlabel=\"INPORT:") + string(string(inports.m_ports[i].m_ownerProxyID)) + " " + string(inports.m_ports[i].m_label) + "\"");
+			 string("headlabel=\"INPORT:") + string(string(inports.ports[i].ownerProxyID)) + " " + string(inports.ports[i].label) + "\"");
       }
       
-      switch(m_dotParameters.proxies) {
+      switch(dotParameters.proxies) {
       case DotParameters::show_full: 
 	{
 	  stringstream str2;
-	  for(unsigned int i = 0; i < proxy->m_proxyIDs.length(); ++i)
-	    str2 << proxy->m_proxyIDs[i] << ",";
+	  for(unsigned int i = 0; i < proxy->proxyIDs.length(); ++i)
+	    str2 << proxy->proxyIDs[i] << ",";
 	  str << dot_node(proxyID, 
-			  proxyID + " (" + to_string(proxy->m_type) + ")\\n " + 
+			  proxyID + " (" + to_string(proxy->type) + ")\\n " + 
 			  featureSetToDotLabel(proxy.featureSetWithRepetitions(),set<string>(),AbstractFeature::show_all) + 
-			  + "\\nSignature:" + string(proxy->m_featureSignature) +
-			  "\\nBound to: " + string(proxy->m_unionID) + +"\\n" 
+			  + "\\nSignature:" + string(proxy->featureSignature) +
+			  "\\nBound to: " + string(proxy->unionID) + +"\\n" 
 			  + best_string + hypothetical +
-			  string("\\n updates: ") + lexical_cast<string>(proxy->m_updates) + 
-			  ", bindingCount: " + lexical_cast<string>(proxy->m_bindingCount) +
+			  string("\\n updates: ") + lexical_cast<string>(proxy->updates) + 
+			  ", bindingCount: " + lexical_cast<string>(proxy->bindingCount) +
 			  "\\nstate: " + to_string(proxy.proxyState()) +
 			  "\\nBoundToProxies: " + str2.str()
 			  //(proxy.bound()?"bound":"\\n---* NOT BOUND *---")
@@ -563,13 +563,13 @@ string
 BindingDotViewer::_retrieve_singular_groupID(const LBindingProxy& _proxy)
 {
   for(unsigned int i = 0 ; 
-      i < _proxy->m_proxyFeatures.length(); 
+      i < _proxy->proxyFeatures.length(); 
       ++i) {
     static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
-    if(string(_proxy->m_proxyFeatures[i].m_type) == ontology.featureName(typeid(Singular))) {//featureName<Singular>()) {
+    if(string(_proxy->proxyFeatures[i].type) == ontology.featureName(typeid(Singular))) {//featureName<Singular>()) {
       shared_ptr<const BindingFeatures::Singular>
-	singular(loadBindingDataFromWM<BindingFeatures::Singular>(_proxy->m_proxyFeatures[i].m_address));
-      return string(singular->m_groupID);
+	singular(loadBindingDataFromWM<BindingFeatures::Singular>(_proxy->proxyFeatures[i].address));
+      return string(singular->groupID);
     }
   }
   return("");
@@ -580,14 +580,14 @@ BindingDotViewer::_retrieve_singular_groupIDs(const LBindingUnion& _union)
 {
   set<string> ret;
   for(unsigned int i = 0 ; 
-      i < _union->m_unionFeatures.length(); 
+      i < _union->unionFeatures.length(); 
       ++i) {
     static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
 
-    if(string(_union->m_unionFeatures[i].m_type) == ontology.featureName(typeid(Singular))) {
+    if(string(_union->unionFeatures[i].type) == ontology.featureName(typeid(Singular))) {
       shared_ptr<const BindingFeatures::Singular>
-	singular(loadBindingDataFromWM<BindingFeatures::Singular>(_union->m_unionFeatures[i].m_address));
-      ret.insert(string(singular->m_groupID));
+	singular(loadBindingDataFromWM<BindingFeatures::Singular>(_union->unionFeatures[i].address));
+      ret.insert(string(singular->groupID));
     }
   }
   return ret;

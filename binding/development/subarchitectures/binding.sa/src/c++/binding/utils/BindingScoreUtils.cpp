@@ -3,116 +3,117 @@
 namespace Binding {
 using namespace std;
 
-std::ostream& 
+std::ostream&
 operator<<(std::ostream& _out, const BindingData::BindingScore& _score)
 {
-  _out << "comparable(" << _score.m_comparable << "), ";
-  _out << "mismatch(" << _score.m_mismatch << "), ";
-  _out << "relationMismatch(" << _score.m_relationMismatch << "), ";
-//  _out << "existing_binding_match(" << _score.m_existing_binding_match << "), ";
-  _out << "matches(" << _score.m_matches << "), ";
-  _out << "relationMatches(" << _score.m_relationMatches << "), ";
-  _out << "sticky(" << _score.m_sticky << "),";
-  _out << "sH(" << _score.m_salienceHeuristics << "), ";
-  _out << "v(" << _score.m_proxyUpdatesWhenThisComputed << "), ";
-  _out << "(" << _score.m_proxyID << "["<< _score.m_proxyFeatureSignature << "]" << " vs "<< _score.m_unionID<< ")";
+  _out << "comparable(" << _score.comparable << "), ";
+  _out << "mismatch(" << _score.mismatch << "), ";
+  _out << "relationMismatch(" << _score.relationMismatch << "), ";
+//  _out << "existing_binding_match(" << _score.existing_binding_match << "), ";
+  _out << "matches(" << _score.matches << "), ";
+  _out << "relationMatches(" << _score.relationMatches << "), ";
+  _out << "sticky(" << _score.sticky << "),";
+  _out << "sH(" << _score.salienceHeuristics << "), ";
+  _out << "v(" << _score.proxyUpdatesWhenThisComputed << "), ";
+  _out << "(" << _score.proxyID << "["<< _score.proxyFeatureSignature << "]" << " vs "<< _score.unionID<< ")";
   return _out;
 }
 
-BindingData::BindingScore 
-defaultBindingScore() 
+
+BindingData::BindingScorePtr
+defaultBindingScore()
 {
-  BindingData::BindingScore score;
-  score.m_comparable = false;
-  score.m_mismatch = false;
-  //  score.m_existing_binding_match = false;
-  score.m_matches = 0;
-  score.m_relationMismatch = false;
-  score.m_relationMatches = 0;
-  score.m_sticky = false;
-  score.m_salienceHeuristics = 1.0E13;
-  score.m_proxyUpdatesWhenThisComputed = -1;
-  score.m_proxyID = "";
-  score.m_unionID = "";
-  return score;
+  BindingData::BindingScorePtr scoreP = new BindingData::BindingScore;
+  scoreP->comparable = false;
+  scoreP->mismatch = false;
+  //  score.existing_binding_match = false;
+  scoreP->matches = 0;
+  scoreP->relationMismatch = false;
+  scoreP->relationMatches = 0;
+  scoreP->sticky = false;
+  scoreP->salienceHeuristics = 1.0E13;
+  scoreP->proxyUpdatesWhenThisComputed = -1;
+  scoreP->proxyID = "";
+  scoreP->unionID = "";
+  return scoreP;
 }
 
-BindingData::BindingScore  
+BindingData::BindingScorePtr
 defaultThresholdScore() {
-  BindingData::BindingScore score(defaultBindingScore());
-  score.m_comparable = true;
-  score.m_sticky = true;
-  return score;
+  BindingData::BindingScorePtr scoreP(defaultBindingScore());
+  scoreP->comparable = true;
+  scoreP->sticky = true;
+  return scoreP;
 }
 
-bool 
-operator<(const BindingData::BindingScore& _score1, 
+bool
+operator<(const BindingData::BindingScore& _score1,
 	  const BindingData::BindingScore& _score2)
 {
-  if(       _score1.m_comparable != _score2.m_comparable) {
-    return  _score1.m_comparable >  _score2.m_comparable; // comparable is better
-  } else if(_score1.m_mismatch   != _score2.m_mismatch) {
-    return  _score1.m_mismatch   <  _score2.m_mismatch;  // no mismatch is better
-  } else if(_score1.m_relationMismatch   != _score2.m_relationMismatch) {
-    return  _score1.m_relationMismatch   <  _score2.m_relationMismatch; // no mismatch w.r.t relations is better
-  } else if(_score1.m_matches != _score2.m_matches) {
-    return  _score1.m_matches >  _score2.m_matches; // more matches is better
-  } else if(_score1.m_relationMatches != _score2.m_relationMatches) {
-    return  _score1.m_relationMatches >  _score2.m_relationMatches; // more matches w.r.t relations is better
-  } else if(_score1.m_sticky != _score2.m_sticky) {
+  if(       _score1.comparable != _score2.comparable) {
+    return  _score1.comparable >  _score2.comparable; // comparable is better
+  } else if(_score1.mismatch   != _score2.mismatch) {
+    return  _score1.mismatch   <  _score2.mismatch;  // no mismatch is better
+  } else if(_score1.relationMismatch   != _score2.relationMismatch) {
+    return  _score1.relationMismatch   <  _score2.relationMismatch; // no mismatch w.r.t relations is better
+  } else if(_score1.matches != _score2.matches) {
+    return  _score1.matches >  _score2.matches; // more matches is better
+  } else if(_score1.relationMatches != _score2.relationMatches) {
+    return  _score1.relationMatches >  _score2.relationMatches; // more matches w.r.t relations is better
+  } else if(_score1.sticky != _score2.sticky) {
 #ifdef EXTRANDEBUG
-    if(_score1.m_sticky) {
-      assert(_score1.m_comparable);
-      assert(!_score1.m_mismatch);
-      assert(!_score1.m_relationMismatch);
-      assert(_score1.m_matches == 0);
-      assert(_score1.m_relationMatches == 0);
+    if(_score1.sticky) {
+      assert(_score1.comparable);
+      assert(!_score1.mismatch);
+      assert(!_score1.relationMismatch);
+      assert(_score1.matches == 0);
+      assert(_score1.relationMatches == 0);
     }
-    if(_score2.m_sticky) {
-      assert(_score2.m_comparable);
-      assert(!_score2.m_mismatch);
-      assert(!_score2.m_relationMismatch);
-      assert(_score2.m_matches == 0);
-      assert(_score2.m_relationMatches == 0);
+    if(_score2.sticky) {
+      assert(_score2.comparable);
+      assert(!_score2.mismatch);
+      assert(!_score2.relationMismatch);
+      assert(_score2.matches == 0);
+      assert(_score2.relationMatches == 0);
     }
 #endif // NDEBUG
-    return  _score1.m_sticky >  _score2.m_sticky; // more matches w.r.t stickiness is better
-  } 
+    return  _score1.sticky >  _score2.sticky; // more matches w.r.t stickiness is better
+  }
 
-  
-  return false; // i.e. the scores are identical  
+
+  return false; // i.e. the scores are identical
 }
 
-boost::logic::tribool 
-tribool_cast(cast::cdl::TriBool _tri) {
+boost::logic::tribool
+tribool_cast(BindingData::TriBool _tri) {
   switch(_tri) {
-  case cast::cdl::triTrue:
+  case BindingData::TRUETB:
     return true;
     break;
-  case cast::cdl::triFalse:
+  case BindingData::FALSETB:
     return false;
     break;
-  case cast::cdl::triIndeterminate:
+  case BindingData::INDETERMINATETB:
     return boost::logic::indeterminate;
     break;
   }
-  throw Binding::BindingException("Error in cast::cdl::TriBool -> boost::tribool conversion");
+  throw Binding::BindingException("Error in BindingData::TriBool -> boost::tribool conversion");
 }
 
-cast::cdl::TriBool
+BindingData::TriBool
 tribool_cast(boost::logic::tribool _tri) {
   switch(_tri.value) {
   case boost::logic::tribool::true_value:
-    return cast::cdl::triTrue;
+    return BindingData::TRUETB;
     break;
   case boost::logic::tribool::false_value:
-    return cast::cdl::triFalse;
+    return BindingData::FALSETB;
     break;
   case  boost::logic::tribool::indeterminate_value:
-    return cast::cdl::triIndeterminate;
+    return BindingData::INDETERMINATETB;
     break;
   }
-  throw Binding::BindingException("Error in boost::tribool -> cast::cdl::TriBool conversion");
+  throw Binding::BindingException("Error in boost::tribool -> BindingData::TriBool conversion");
 }
 
 std::string&
@@ -131,7 +132,7 @@ triboolToString(boost::logic::tribool _tri) {
     return _indeterminate;
     break;
   }
-  throw Binding::BindingException("Error in boost::tribool -> cast::cdl::TriBool conversion");
+  throw Binding::BindingException("Error in boost::tribool -> BindingData::TriBool conversion");
 }
 
 std::string
@@ -142,31 +143,32 @@ scoreToString(const BindingData::BindingScore& _score) {
 }
 
 
-bool operator>(const BindingData::BindingScore& _score1, 
-	       const BindingData::BindingScore& _score2) 
+/**
+bool operator>(const BindingData::BindingScore& _score1,
+	       const BindingData::BindingScore& _score2)
 {
   return _score2 < _score1;
 }
 
-bool operator==(const BindingData::BindingScore& _score1, 
+bool operator==(const BindingData::BindingScore& _score1,
 		const BindingData::BindingScore& _score2)
 {
-  return !(_score1 < _score2) && !(_score2 < _score1) && 
-    _score1.m_salienceHeuristics == 
-    _score2.m_salienceHeuristics &&
-    _score1.m_proxyUpdatesWhenThisComputed ==
-    _score2.m_proxyUpdatesWhenThisComputed &&
-    _score1.m_proxyFeatureSignature ==
-    _score2.m_proxyFeatureSignature;
+  return !(_score1 < _score2) && !(_score2 < _score1) &&
+    _score1.salienceHeuristics ==
+    _score2.salienceHeuristics &&
+    _score1.proxyUpdatesWhenThisComputed ==
+    _score2.proxyUpdatesWhenThisComputed &&
+    _score1.proxyFeatureSignature ==
+    _score2.proxyFeatureSignature;
 ;
 }
 
-bool operator!=(const BindingData::BindingScore& _score1, 
+bool operator!=(const BindingData::BindingScore& _score1,
 		       const BindingData::BindingScore& _score2)
 {
   return !(_score1 == _score2);
 }
-
+*/
 
 } // namespace Binding
 

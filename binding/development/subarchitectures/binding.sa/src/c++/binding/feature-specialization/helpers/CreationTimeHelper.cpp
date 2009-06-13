@@ -7,23 +7,23 @@ using namespace std;
 CreationTimeHelper::CreationTimeHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = false;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = false;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
 ostream& 
 CreationTimeHelper::print(ostream& _out, const AbstractFeature& _feat) const 
 {
-  _out << extract(_feat).m_creationTime;
+  _out << extract(_feat).creationTime;
   return _out;
 }
 
 bool 
 CreationTimeHelper::operatorLessImpl(const AbstractFeature& _feat1, const AbstractFeature& _feat2) const 
 {
-  return extract(_feat1).m_creationTime < extract(_feat2).m_creationTime;
+  return extract(_feat1).creationTime < extract(_feat2).creationTime;
 }
 
 } // namespace Binding

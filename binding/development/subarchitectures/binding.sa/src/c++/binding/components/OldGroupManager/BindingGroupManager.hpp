@@ -40,25 +40,25 @@ protected:
   virtual void configure(std::map<std::string,std::string>& _config);
   
   struct GroupInfo {
-    GroupInfo(unsigned int _size) : m_size(_size), m_current_size(0) {}
-    unsigned int m_size;
-    unsigned int m_current_size;
-    std::set<std::string> m_group_member_ids;
+    GroupInfo(unsigned int _size) : size(_size), current_size(0) {}
+    unsigned int size;
+    unsigned int current_size;
+    std::set<std::string> group_member_ids;
   };
   
   /// all groups with som info
-  std::map<std::string,GroupInfo> m_group_info;
+  std::map<std::string,GroupInfo> group_info;
   /// all singles and their groups
-  std::map<std::string, std::string> m_single2group;
+  std::map<std::string, std::string> single2group;
   /// the IDs of all generated singularss that are only bound to themselves
-  std::set<std::string> m_unbound_singles;
+  std::set<std::string> unbound_singles;
   /// maps between groupIDs that have members that have been bound,
   /// which is only allowed once (otherwise unbound groups would grow
   /// infinitely). Maps both ways.
-  std::set<std::pair<std::string,std::string> > m_groups_bound_through_members;
+  std::set<std::pair<std::string,std::string> > groups_bound_through_members;
   
-  /// stores m_uni2prox only of singulars
-  std::map<std::string,std::set<std::string> > m_uni2prox; 
+  /// stores uni2prox only of singulars
+  std::map<std::string,std::set<std::string> > uni2prox; 
   
   const BindingFeatures::Group&
   _retrieve_group_info(const LBindingProxy&);

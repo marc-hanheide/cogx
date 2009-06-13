@@ -1,11 +1,11 @@
 #ifndef BINDING_LOCAL_CLASSES_H_
 #define BINDING_LOCAL_CLASSES_H_
 
-#include "binding/idl/BindingData.hh"
+#include "BindingData.hpp"
 //#include "binding/feature-utils/AbstractFeature.hpp"
 #include "cast/core/CASTDataCache.hpp"
-#include "binding/BindingException.hpp"
-#include "binding/feature-utils/FeatureExtractor.hpp"
+#include "../BindingException.hpp"
+#include "../feature-utils/FeatureExtractor.hpp"
 #include <set>
 
 namespace BindingFeatures {
@@ -28,7 +28,7 @@ static const std::string& ambiguityIDPostFix() {
 struct proxyPortLess {
   bool operator()(const BindingData::ProxyPort& _port1,const BindingData::ProxyPort& _port2) const;
 };
-  
+
 typedef std::map<std::string,std::set<BindingData::ProxyPort, proxyPortLess> > PortMap;
 
 /// used internally...
@@ -39,26 +39,26 @@ class AbstractBindingWMRepresenter;
 
 class LocalBindingData {
   /// contains all features
-  mutable std::auto_ptr<FeatureSet> m_featureSet;
+  mutable std::auto_ptr<FeatureSet> featureSet;
   /// contains only comparable features
-  mutable std::auto_ptr<FeatureSet> m_comparableFeatureSet;
+  mutable std::auto_ptr<FeatureSet> comparableFeatureSet;
   /// contains all features
-  mutable std::auto_ptr<FeatureSetWithRepetitions> m_featureSetWithRepetitions;
+  mutable std::auto_ptr<FeatureSetWithRepetitions> featureSetWithRepetitions;
   /// contains only comparable features
-  mutable std::auto_ptr<FeatureSetWithRepetitions> m_comparableFeatureSetWithRepetitions;
+  mutable std::auto_ptr<FeatureSetWithRepetitions> comparableFeatureSetWithRepetitions;
   /// contains all features (sorted)
-  //  mutable std::auto_ptr<OptimizedFeatureSet> m_optimizedComparableFeatureSet;
+  //  mutable std::auto_ptr<OptimizedFeatureSet> optimizedComparableFeatureSet;
   /// contains only comparable features (sorted)
-  //  mutable std::auto_ptr<OptimizedFeatureSetWithRepetitions> m_optimizedComparableFeatureSetWithRepetitions;
+  //  mutable std::auto_ptr<OptimizedFeatureSetWithRepetitions> optimizedComparableFeatureSetWithRepetitions;
 
   /// used for processing the featuresets primarily
-  mutable AbstractBindingWMRepresenter& m_bindingWMRepresenter;
+  mutable AbstractBindingWMRepresenter& bindingWMRepresenter;
   /// union or proxy features
-  const BindingData::FeaturePointers& m_features;
+  const BindingData::FeaturePointers& features;
   /// translates a feature set from the features stored on CAST WM
   FeatureSet _toFeatureSet(const BindingData::FeaturePointers& features) const;
   FeatureSetWithRepetitions _toFeatureSetWithRepetitions(const BindingData::FeaturePointers& features) const;
-  
+
   /// only includes features that can be compared with some other feature
   FeatureSet _toComparableFeatureSet(const BindingData::FeaturePointers& features) const;
   FeatureSetWithRepetitions _toComparableFeatureSetWithRepetitions(const BindingData::FeaturePointers& features) const;
@@ -67,22 +67,22 @@ class LocalBindingData {
 //  OptimizedFeatureSet _toOptimizedComparableFeatureSet(const BindingData::FeaturePointers& features) const;
 //  OptimizedFeatureSetWithRepetitions _toOptimizedComparableFeatureSetWithRepetitions(const BindingData::FeaturePointers& features) const;
 
-  mutable std::auto_ptr<const PortMap> m_outPortMap;
+  mutable std::auto_ptr<const PortMap> outPortMap;
 
-  const std::string m_id;
-  const std::string m_subarchitecture_id;
-  const unsigned int m_version;
+  const std::string id;
+  const std::string subarchitecture_id;
+  const unsigned int version;
 protected:
-  
+
   LocalBindingData(AbstractBindingWMRepresenter& _bindingWMRepresenter,
 		   const BindingData::FeaturePointers& _features,
 		   const std::string& _id,
 		   const std::string& _subarchitecture_id,
 		   unsigned int _version);
 
-  virtual const BindingData::ProxyPorts& inPorts() const = 0;    
+  virtual const BindingData::ProxyPorts& inPorts() const = 0;
   virtual const BindingData::ProxyPorts& rawOutPorts() const = 0;
-  
+
   virtual ~LocalBindingData(){}
 public:
   /// translates the unordered set of features into a \p FeatureSet (if a feature has several values, it will occur several times)
@@ -92,10 +92,10 @@ public:
   const FeatureSet& featureSet() const;
   /// translates the unordered set of features into a \p FeatureSet (but skips all features that are not comparable)
   const FeatureSet& comparableFeatureSet() const;
-  /// same as featureSet() but with repetitions (e.g. Colour red several times) 
+  /// same as featureSet() but with repetitions (e.g. Colour red several times)
   /// \remark primarily for internal use in the binder
   const FeatureSetWithRepetitions& featureSetWithRepetitions() const;
-  /// same as \p comparableFeatureSet() but with repetitions (e.g. Colour red several times) 
+  /// same as \p comparableFeatureSet() but with repetitions (e.g. Colour red several times)
   /// \remark primarily for internal use in the binder
   const FeatureSetWithRepetitions& comparableFeatureSetWithRepetitions() const;
   /// returns true if there is at least one feature with a matching typename
@@ -108,11 +108,11 @@ public:
   bool hasFeature() const {
     return hasFeature(typeid(FeatureT));
   }
-  
+
   template<typename FeatureT>
   const FeatureT&
   getFeature() const {
-    const FeatureSet& fset(featureSet());    
+    const FeatureSet& fset(featureSet());
     FeatureSet::const_iterator itr = fset.find(cast::typeName<FeatureT>());
     assert(itr != fset.end());
     assert(!itr->second.empty());
@@ -121,7 +121,7 @@ public:
 
   const OneTypeOfFeatures&
   getFeatures(const std::string& _type) const {
-    const FeatureSet& fset(featureSet());    
+    const FeatureSet& fset(featureSet());
     FeatureSet::const_iterator itr = fset.find(_type);
     assert(itr != fset.end());
     assert(!itr->second.empty());
@@ -138,18 +138,18 @@ public:
 
 //  const OptimizedFeatureSet& optimizedComparableFeatureSet() const;
 //  const OptimizedFeatureSetWithRepetitions& optimizedComparableFeatureSetWithRepetitions() const;
-  AbstractBindingWMRepresenter& bindingWMRepresenter() const {return m_bindingWMRepresenter;}
+  AbstractBindingWMRepresenter& bindingWMRepresenter() const {return bindingWMRepresenter;}
   cast::WorkingMemoryReaderProcess& component() const;
-  //AbstractBinder& abstractBinder() const {return m_abstractBinder;}
+  //AbstractBinder& abstractBinder() const {return abstractBinder;}
   const PortMap& outPorts() const;
-  const std::string& id() const {return m_id;}
+  const std::string& id() const {return id;}
   /// calls id()  (this is just for convenience elsewhere)
   const std::string& getID() const {return id();}
-  const std::string& subarchitecture_id() const {return m_subarchitecture_id;}
+  const std::string& subarchitecture_id() const {return subarchitecture_id;}
   /// calls subarchitecture_id
   const std::string& subarchitectureID() const {return subarchitecture_id();}
   /// returns the version number (which the data had when it was loaded from WM)
-  const unsigned int version() const {return m_version;}
+  const unsigned int version() const {return version;}
   virtual BindingData::BindingProxyType type() const = 0;
   /// this only works if the proxy/union is a group (aborts if not)
   std::string getGroupDetailsID() const;
@@ -161,73 +161,73 @@ public:
   const BindingFeatures::Group& getGroupFeature() const;
 
 private:
-  mutable std::auto_ptr<std::set<std::string> > m_groupMemberIDs;
-  mutable std::auto_ptr<cast::CachedCASTData<BindingFeatures::details::GroupDetails> > m_groupDetailsCache;
+  mutable std::auto_ptr<std::set<std::string> > groupMemberIDs;
+  mutable std::auto_ptr<cast::CachedCASTData<BindingFeatures::details::GroupDetails> > groupDetailsCache;
 };
 
 // forward devl
 class LBindingUnion;
 
-class LBindingProxy 
+class LBindingProxy
   : public LocalBindingData
 {
-  boost::shared_ptr<const BindingData::BindingProxy> m_proxy;
-  mutable cast::CachedCASTData<BindingData::BestUnionsForProxy> m_bestUnionsCache;
-  mutable cast::CachedCASTData<BindingData::NonMatchingUnions> m_nonMatchingUnionsCache;
-  mutable cast::CachedCASTData<BindingData::ProxyPorts> m_inPortsCache;
-  mutable std::auto_ptr<std::set<std::string> > m_bestUnionsForProxySet;
-  mutable int m_bestUnionsForProxySetLocalVersion;
-  mutable std::auto_ptr<std::set<std::string> > m_nonMatchingUnionsSet;
-  mutable int m_nonMatchingUnionsSetLocalVersion;
-  mutable std::auto_ptr<BindingData::Ambiguity> m_ambiguity;
+  boost::shared_ptr<const BindingData::BindingProxy> proxy;
+  mutable cast::CachedCASTData<BindingData::BestUnionsForProxy> bestUnionsCache;
+  mutable cast::CachedCASTData<BindingData::NonMatchingUnions> nonMatchingUnionsCache;
+  mutable cast::CachedCASTData<BindingData::ProxyPorts> inPortsCache;
+  mutable std::auto_ptr<std::set<std::string> > bestUnionsForProxySet;
+  mutable int bestUnionsForProxySetLocalVersion;
+  mutable std::auto_ptr<std::set<std::string> > nonMatchingUnionsSet;
+  mutable int nonMatchingUnionsSetLocalVersion;
+  mutable std::auto_ptr<BindingData::Ambiguity> ambiguity;
 
-  //mutable std::set<std::string> m_boundProxyIDs;
+  //mutable std::set<std::string> boundProxyIDs;
 public:
 
   LBindingProxy(const LBindingProxy& _lprox);
-  LBindingProxy(AbstractBindingWMRepresenter& m_bindingWMRepresenter,
+  LBindingProxy(AbstractBindingWMRepresenter& bindingWMRepresenter,
 		const boost::shared_ptr<const BindingData::BindingProxy>& _proxy,
 		const std::string& _id,
 		const std::string& _subarchitecture_id,
 		unsigned int _version);
   virtual ~LBindingProxy(){}
-//  const boost::shared_ptr<const BindingData::BindingProxy>& proxyPtr() const {return m_proxy;}
-  const BindingData::BindingProxy get() const {return *m_proxy;}
-  const boost::shared_ptr<const BindingData::BindingProxy>& operator->() const {return m_proxy;}
+//  const boost::shared_ptr<const BindingData::BindingProxy>& proxyPtr() const {return proxy;}
+  const BindingData::BindingProxy get() const {return *proxy;}
+  const boost::shared_ptr<const BindingData::BindingProxy>& operator->() const {return proxy;}
 
 public:
 
-  const BindingData::BestUnionsForProxy& bestUnionsForProxy() const {return *m_bestUnionsCache;}
+  const BindingData::BestUnionsForProxy& bestUnionsForProxy() const {return *bestUnionsCache;}
   const std::set<std::string>& bestUnionsForProxySet() const;
-  const BindingData::NonMatchingUnions& nonMatchingUnions() const {return *m_nonMatchingUnionsCache;}
+  const BindingData::NonMatchingUnions& nonMatchingUnions() const {return *nonMatchingUnionsCache;}
   const std::set<std::string>& nonMatchingUnionsSet() const;
-  virtual const BindingData::ProxyPorts& inPorts() const {return *m_inPortsCache;}  
+  virtual const BindingData::ProxyPorts& inPorts() const {return *inPortsCache;}
   /// returns the outports just as they are on the WM version of the proxy
-  virtual const BindingData::ProxyPorts& rawOutPorts() const {return m_proxy->m_outPorts;}  
-  
-  
+  virtual const BindingData::ProxyPorts& rawOutPorts() const {return proxy->outPorts;}
+
+
   /// returns true if bound
   bool bound() const {
 #ifndef NDEBUG
-    if(std::string(m_proxy->m_unionID).empty())
-      assert(m_proxy->m_proxyState != BindingData::BOUND);
+    if(std::string(proxy->unionID).empty())
+      assert(proxy->proxyState != BindingData::BOUND);
 #endif // NDEBUG
-    //return !(std::string(m_proxy->m_unionID).empty()); 
-    return m_proxy->m_proxyState == BindingData::BOUND;
+    //return !(std::string(proxy->unionID).empty());
+    return proxy->proxyState == BindingData::BOUND;
   }
 
   /// returns true if there is a best list
   bool scored() const {
-    return (bestUnionsForProxy().m_unionIDs.length() != 0);    
+    return (bestUnionsForProxy().unionIDs.length() != 0);
   }
-  /// returns the state of the proxy. 
-  BindingData::BindingProxyState proxyState() const {return m_proxy->m_proxyState;}
+  /// returns the state of the proxy.
+  BindingData::BindingProxyState proxyState() const {return proxy->proxyState;}
 
   const LBindingUnion& bindingUnion() const throw(BindingException);
   const std::string& bindingUnionID() const;
 
-  virtual BindingData::BindingProxyType type() const {return m_proxy->m_type;}
-  
+  virtual BindingData::BindingProxyType type() const {return proxy->type;}
+
   /// returns a pointer an ambiguity, if there is one to be found
   BindingData::Ambiguity* ambiguity() const;
   /// returns true if the best list constains more than one proxy
@@ -236,34 +236,34 @@ public:
     return bestUnionsForProxySet().size() > 1;
   }
 private:
-  mutable std::string m_bindingUnionID;
+  mutable std::string bindingUnionID;
 };
 
-class LBindingUnion 
+class LBindingUnion
   : public LocalBindingData
 {
 private:
-  boost::shared_ptr<const BindingData::BindingUnion> m_union;
-  mutable std::auto_ptr<std::set<std::string> > m_proxyIDs;
+  boost::shared_ptr<const BindingData::BindingUnion> union;
+  mutable std::auto_ptr<std::set<std::string> > proxyIDs;
 public:
   LBindingUnion(const LBindingUnion& _lunion);
-  LBindingUnion(AbstractBindingWMRepresenter& _bindingWMRepresenter, 
+  LBindingUnion(AbstractBindingWMRepresenter& _bindingWMRepresenter,
 		const boost::shared_ptr<const BindingData::BindingUnion>& _union,
 		const std::string& _id,
 		const std::string& _subarchitecture_id,
 		unsigned int _version);
   virtual ~LBindingUnion(){}
-  //const boost::shared_ptr<const BindingData::BindingUnion>& unionPtr() const {return m_union;}
-  const BindingData::BindingUnion& get() const {return *m_union;}
-  const boost::shared_ptr<const BindingData::BindingUnion>& operator->() const {return m_union;}
+  //const boost::shared_ptr<const BindingData::BindingUnion>& unionPtr() const {return union;}
+  const BindingData::BindingUnion& get() const {return *union;}
+  const boost::shared_ptr<const BindingData::BindingUnion>& operator->() const {return union;}
 
   // later... const vector<const LBindingProxy* const> proxies() const;
 
-  virtual const BindingData::ProxyPorts& inPorts() const {return m_union->m_inPorts;}  
-  virtual const BindingData::ProxyPorts& rawOutPorts() const {return m_union->m_outPorts;}  
-  
+  virtual const BindingData::ProxyPorts& inPorts() const {return union->inPorts;}
+  virtual const BindingData::ProxyPorts& rawOutPorts() const {return union->outPorts;}
+
   const std::set<std::string>& proxyIDs() const;
-  virtual BindingData::BindingProxyType type() const {return m_union->m_type;}
+  virtual BindingData::BindingProxyType type() const {return union->type;}
 };
 
 typedef boost::shared_ptr<const LBindingUnion> UnionPtr;

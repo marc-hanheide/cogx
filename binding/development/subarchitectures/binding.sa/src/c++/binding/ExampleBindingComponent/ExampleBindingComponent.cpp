@@ -20,7 +20,7 @@ ExampleBindingComponent::ExampleBindingComponent(const string &_id) :
   WorkingMemoryAttachedComponent(_id),
   ManagedProcess(_id) {
 
-  m_pOntology = BindingOntologyFactory::getOntology();
+  pOntology = BindingOntologyFactory::getOntology();
 
   boost::array<int,10> * pTest = new boost::array<int,10>();
 }

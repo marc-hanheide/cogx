@@ -29,11 +29,11 @@ namespace Binding {
     BindingQueries::FeatureRequest * 
     generateFeatureRequest(const std::string _proxyID) {
       BindingQueries::FeatureRequest * req = new BindingQueries::FeatureRequest();
-      req->m_type = CORBA::string_dup(cast::typeName<FeatureT>().c_str());
-      req->m_subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
-      req->m_proxyID = CORBA::string_dup(_proxyID.c_str());
-      req->m_processed = false;
-      req->m_successful = cast::cdl::triIndeterminate;
+      req->type = CORBA::string_dup(cast::typeName<FeatureT>().c_str());
+      req->subarchitecture = CORBA::string_dup(subarchitectureID().c_str());
+      req->proxyID = CORBA::string_dup(_proxyID.c_str());
+      req->processed = false;
+      req->successful = BindingData::INDETERMINATETB;
       return req;
     }
 
@@ -43,13 +43,13 @@ namespace Binding {
     generateColour(ProxyPtr _proxy) {
       println("generateColour");
       generationComplete<BindingFeatures::Colour>(_proxy,
-						   cast::cdl::triTrue);
+						   BindingData::TRUETB);
     };
 
     void
     requestAnswered(const cast::cdl::WorkingMemoryChange & _wmc);
 
-    bool m_requester;
+    bool requester;
  
   };
 

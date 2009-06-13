@@ -2,7 +2,7 @@
 #define BINDING_OTHERSOURCEID_HELPER_H_
 
 #include <ostream>
-#include <binding/idl/BindingFeaturesCommon.hh>
+#include <BindingFeaturesCommon.hpp>
 #include <binding/idl/BindingFeatures.hh>
 #include "binding/feature-utils/FeatureHelper.hpp"
 #include "binding/feature-utils/AbstractInternalComparator.hpp"
@@ -11,7 +11,7 @@
 namespace Binding {
   
 /// compares with the \p SourceID of existing unions. Only compares \p
-/// BindingFeatures::OtherSourceID::m_sourceID, not the monitor ID
+/// BindingFeatures::OtherSourceID::sourceID, not the monitor ID
 class OtherSourceIDvsSourceIDComparator 
   : public SymmetricInternalComparator<BindingFeatures::OtherSourceID, BindingFeatures::SourceID> 
 {

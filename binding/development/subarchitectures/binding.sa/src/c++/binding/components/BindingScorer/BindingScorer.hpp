@@ -13,11 +13,11 @@
 namespace Binding {
 
 /// thrown when the comparison betwee two features needs to be made externally
-/// \remark the \p m_featureComparisonID is always locked completely, so it must be unlocked when the exception is caught
+/// \remark the \p featureComparisonID is always locked completely, so it must be unlocked when the exception is caught
 struct ExternalScoreNotReadyException{
-  ExternalScoreNotReadyException(const std::string& _featureComparisonID) : m_featureComparisonID(_featureComparisonID) {}
+  ExternalScoreNotReadyException(const std::string& _featureComparisonID) : featureComparisonID(_featureComparisonID) {}
   /// the id f the comparison result that should be overwritten on WM.
-  const std::string m_featureComparisonID;
+  const std::string featureComparisonID;
 };
 
 /// Calculates scores between proxies and unions
@@ -53,7 +53,7 @@ public:
 
   /// ...
   void binderStatusReceived(const cast::cdl::WorkingMemoryChange & _wmc);
-  /// removes a proxyID from \p m_processedProxies
+  /// removes a proxyID from \p processedProxies
   void proxyProcessingFinished(const cast::cdl::WorkingMemoryChange & _wmc);
 
   
@@ -94,16 +94,16 @@ private:
   /// test... states that this is the nth process of the same
   /// kind... used to select if it should be triggered by a task or
   /// not
-  unsigned int m_nth;
+  unsigned int nth;
   /// total number of processes
-  unsigned int m_maxN;
+  unsigned int maxN;
 
-  ComparatorCache m_comparatorCache;
+  ComparatorCache comparatorCache;
 
   //const BindingFeatureOntology::TrustSpecMap& internalTrust() const {return BindingFeatureOntology::internalTrust();}
   
 
-//  CASTDataCache<BindingData::FeatureComparison> m_featureComparisonCache;
+//  CASTDataCache<BindingData::FeatureComparison> featureComparisonCache;
 
   /// used to guess which of several unions seems to be most salient
   double _salienceHeuristics(const std::vector<BindingFeatures::Salience>& proxy_saliences,
@@ -114,11 +114,11 @@ private:
   /// if a signalled comparisonID is in this list, it means that it an
   /// open BindingQueries::AdvancedQuery should be answered by it
   /// \remark maps into the queryID
-  std::map<std::string,std::string> m_openAdvancedQueryFeatureComparisonIDs;
+  std::map<std::string,std::string> openAdvancedQueryFeatureComparisonIDs;
   /// if a signalled comparisonID is in this list, it means that it an
   /// open BindingQueries::BasicQuery should be answered by it
   /// \remark maps into the queryID
-  std::map<std::string,std::string> m_openBasicQueryFeatureComparisonIDs;
+  std::map<std::string,std::string> openBasicQueryFeatureComparisonIDs;
   
   /// used internally
   void _answerBasicQuery(const BindingQueries::BasicQuery& _query,
@@ -129,7 +129,7 @@ private:
 private:
   /// a list of currently processed proxies (that were received in a
   /// \p BindingData::BindTheseProxies struct)
-  std::set<std::string> m_processedProxies;
+  std::set<std::string> processedProxies;
 
 
   /// acquires a token that will be owned by either the binding SA or a monitor
@@ -148,7 +148,7 @@ private:
   
   /// if true, then the scorer only runs until tokens are created,
   /// then locks forever.
-  bool m_dummy;
+  bool dummy;
 
 };
 

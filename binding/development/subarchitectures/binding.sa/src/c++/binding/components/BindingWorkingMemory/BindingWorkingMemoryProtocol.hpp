@@ -4,7 +4,7 @@
 #include <cast/architecture/SubarchitectureWorkingMemoryProtocol.hpp>
 
 #include "binding/idl/BindingFeatures.hh"
-#include "binding/idl/BindingData.hh"
+#include "BindingData.hpp"
 
 namespace Binding {
 

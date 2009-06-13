@@ -52,12 +52,12 @@ private:
   //std::string _printDotRelations() const;
 
   /// where dot files will be saved
-  std::string m_dotPath;
+  std::string dotPath;
   /// counts number of dot-files
-  unsigned int m_dotCount;
+  unsigned int dotCount;
   /// DotParameters used to configure how the dot graph should look
   
-  DotParameters m_dotParameters;
+  DotParameters dotParameters;
 
   /// prints the relations
   std::string _dotRelations();
@@ -69,13 +69,13 @@ private:
 
   
   /*struct testFct {
-    std::string operator()(const boost::shared_ptr<const BindingData::BindingProxy>& _proxy) const {return std::string(_proxy->m_unionID);}
+    std::string operator()(const boost::shared_ptr<const BindingData::BindingProxy>& _proxy) const {return std::string(_proxy->unionID);}
   };*/
     
   /// the version of status whan last plotting
-  int m_lastStatusVersion;
+  int lastStatusVersion;
   /// Maps from proxy to the binding of that proxy (CAST IDs)
-  std::map<std::string,std::string> m_prox2uni;
+  std::map<std::string,std::string> prox2uni;
   
 };
 

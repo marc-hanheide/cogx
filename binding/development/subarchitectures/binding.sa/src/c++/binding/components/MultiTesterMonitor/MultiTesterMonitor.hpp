@@ -20,16 +20,16 @@ public:
   virtual void configure(std::map<std::string,std::string> & _config);
   
   virtual void runComponent();
-  /// only does sth if m_postConditionTester is true
+  /// only does sth if postConditionTester is true
   virtual void testCompleteness();
   
   /// if true, this component will test the postcondition
-  bool m_postConditionTester;
+  bool postConditionTester;
   /// each multitester needs an instance number (so that they can
   /// write slightly different things)
-  unsigned int m_instance;
+  unsigned int instance;
   /// the total number of testers (primarily important information for the postConditionTester)
-  unsigned int m_noOfMultiTesters;
+  unsigned int noOfMultiTesters;
   
   /// returns the number of moniitors that think they are ready for post condition testing
   static unsigned int& readyCount() {

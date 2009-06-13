@@ -88,7 +88,7 @@ Binder::configure(map<string, string>& _config)
 void
 Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
   
-  string bindingTaskID(_wmc.m_address.m_id);
+  string bindingTaskID(_wmc.address.id);
 
   try {
     
@@ -96,15 +96,15 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
       bindingTask(loadBindingDataFromWM<BindingData::BindingTask>(bindingTaskID));
     
     
-    string bestUnionsID(bindingTask->m_bestUnionsForProxyID);
+    string bestUnionsID(bindingTask->bestUnionsForProxyID);
     log("Going to bind based on this BestUnionsForProxy list: " + bestUnionsID);
     
     shared_ptr<const BindingData::BestUnionsForProxy>
       best(loadBindingDataFromWM<BindingData::BestUnionsForProxy>(bestUnionsID));
     
-    assert(best->m_unionIDs.length() > 0);
+    assert(best->unionIDs.length() > 0);
     
-    const string proxyID(best->m_proxyID);
+    const string proxyID(best->proxyID);
     
     log("Proxy to bind: " + proxyID);  
     
@@ -114,7 +114,7 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
       log("Proxy does not exist on WM: " + proxyID + " ignoring its scoring");
 #warning SILLY TOKEN HACK, should not be necessary
       BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-      p->m_proxyID = CORBA::string_dup(proxyID.c_str());
+      p->proxyID = CORBA::string_dup(proxyID.c_str());
       addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
       // task is finished, delete it!
       deleteFromWorkingMemory(bindingTaskID);
@@ -127,10 +127,10 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
 
 #warning disabled a failed sanity test, insane mode activated
 /*    
-    if(proxy->m_updates != best->m_proxyUpdatesWhenThisComputed) {
-      log("WARNING!!! proxy->m_updates != best->m_proxyUpdatesWhenThisComputed\n");
+    if(proxy->updates != best->proxyUpdatesWhenThisComputed) {
+      log("WARNING!!! proxy->updates != best->proxyUpdatesWhenThisComputed\n");
       log("SKIPPING BINDING TASK DUE TO OUTDATED BEST-LIST");
-      cout << "WARNING!!! proxy->m_updates != best->m_proxyUpdatesWhenThisComputed\n";
+      cout << "WARNING!!! proxy->updates != best->proxyUpdatesWhenThisComputed\n";
       cout << "SKIPPING BINDING TASK DUE TO OUTDATED BEST-LIST";
       deleteFromWorkingMemory(bindingTaskID);
       return;
@@ -139,7 +139,7 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
     // always bind to whatever is the first on the list of best
     // bindings, even there may be multiple bindings that are the best,
     // but that's a disambiguation issue which the binder simply ignores
-    const string unionID(best->m_unionIDs[0]);
+    const string unionID(best->unionIDs[0]);
     
     log("unionID to bind to: " + unionID);
     if(unionID != string(BindingData::NO_UNION) && !existsOnWorkingMemory(unionID)) {
@@ -147,12 +147,12 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
       deleteFromWorkingMemory(bindingTaskID);
       return;
     }
-    if(best->m_unionIDs.length() > 1)
+    if(best->unionIDs.length() > 1)
       log("*************\nWarning: multiple instance bindings matched with proxy, this is a disambiguation issue...\n*************\n");
     // OK. ready to bind. 
     
     // if proxy is not bound, then just bind it
-    if(m_prox2uni.find(proxyID) == m_prox2uni.end()) {
+    if(prox2uni.find(proxyID) == prox2uni.end()) {
       log("not bound: " + proxyID + " let's bind it!");
       _bindProxy(proxy, unionID);
       // task is finished, delete it!
@@ -166,14 +166,14 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
     // not be completely true if scoring could increase implicitly due
     // to relations elsewhere...)
     bool already_bound_to_one_of_the_best_unions(false);
-    const string old_unionID(m_prox2uni[proxyID]);
+    const string old_unionID(prox2uni[proxyID]);
     assert(old_unionID != "");
     
     
     for(unsigned int i = 0 ; 
-	i < best->m_unionIDs.length() && !already_bound_to_one_of_the_best_unions; 
+	i < best->unionIDs.length() && !already_bound_to_one_of_the_best_unions; 
 	++i) {
-      if(old_unionID == string(best->m_unionIDs[i]) && old_unionID != string(BindingData::NO_UNION)) {
+      if(old_unionID == string(best->unionIDs[i]) && old_unionID != string(BindingData::NO_UNION)) {
 	already_bound_to_one_of_the_best_unions = true;
       }
     }
@@ -234,47 +234,47 @@ Binder::bindThisProxy(const cdl::WorkingMemoryChange & _wmc) {
 void 
 Binder::updateInports(const BindingData::ProxyPorts& _outports)
 {
-  for(unsigned int i = 0 ; i < _outports.m_ports.length() ; ++i) {
-    const BindingData::ProxyPort& the_outport(_outports.m_ports[i]);    
-    string proxyID(the_outport.m_proxyID);
-    string ownerProxyID(the_outport.m_ownerProxyID);
+  for(unsigned int i = 0 ; i < _outports.ports.length() ; ++i) {
+    const BindingData::ProxyPort& the_outport(_outports.ports[i]);    
+    string proxyID(the_outport.proxyID);
+    string ownerProxyID(the_outport.ownerProxyID);
     const LBindingProxy* proxy = maybeLoadProxy(proxyID);
     if(proxy) {
       log("updating inports of " + proxyID);
       std::set<BindingData::ProxyPort, proxyPortLess> new_inports;
-      const string inportsID((*proxy)->m_inPortsID);
+      const string inportsID((*proxy)->inPortsID);
       try {
 	static cast::CASTDataCache<BindingData::ProxyPorts> inportscache(*this);
 	const BindingData::ProxyPorts& old_inports(inportscache[inportsID]);
 	// 1st copy old relevant
-	for(unsigned int j; j < old_inports.m_ports.length() ; ++j) {
-	  const BindingData::ProxyPort& the_inport(old_inports.m_ports[j]);
-	  if(string(the_inport.m_proxyID) !=
+	for(unsigned int j; j < old_inports.ports.length() ; ++j) {
+	  const BindingData::ProxyPort& the_inport(old_inports.ports[j]);
+	  if(string(the_inport.proxyID) !=
 	     ownerProxyID)
 	    new_inports.insert(the_inport);
 	}
 	BindingData::ProxyPort new_port;
-	new_port.m_type = the_outport.m_type;
-	new_port.m_label = CORBA::string_dup(the_outport.m_label);
-	new_port.m_proxyID = CORBA::string_dup(the_outport.m_ownerProxyID);
-	//cout << "new_port.m_proxyID " << new_port.m_proxyID << endl;
-	new_port.m_ownerProxyID = CORBA::string_dup(the_outport.m_proxyID);
+	new_port.type = the_outport.type;
+	new_port.label = CORBA::string_dup(the_outport.label);
+	new_port.proxyID = CORBA::string_dup(the_outport.ownerProxyID);
+	//cout << "new_port.proxyID " << new_port.proxyID << endl;
+	new_port.ownerProxyID = CORBA::string_dup(the_outport.proxyID);
 	new_inports.insert(new_port);
 	BindingData::ProxyPorts* _new_inports = new BindingData::ProxyPorts(old_inports);
-	_new_inports->m_ports.length(new_inports.size());
+	_new_inports->ports.length(new_inports.size());
 	unsigned int k = 0;
 	foreach(const BindingData::ProxyPort p, new_inports) {
-	  _new_inports->m_ports[k++] = p;
-	  assert(string(p.m_proxyID) != "");
-	  assert(string(p.m_ownerProxyID) != "");
-	  assert(string(p.m_label) != "");
+	  _new_inports->ports[k++] = p;
+	  assert(string(p.proxyID) != "");
+	  assert(string(p.ownerProxyID) != "");
+	  assert(string(p.label) != "");
 	}
 	overwriteWorkingMemory(inportsID, 
 			       _new_inports,
 			       cast::cdl::BLOCKING);
       }
       catch(const DoesNotExistOnWMException& _e) {
-	if(string(_e.address().m_id) == inportsID)
+	if(string(_e.address().id) == inportsID)
 	  log(string("missing inport: ") + _e.what());
 	else
 	  throw _e;
@@ -284,49 +284,49 @@ Binder::updateInports(const BindingData::ProxyPorts& _outports)
 
   /*
     
-  for(unsigned int i = 0 ; i < _ports.m_ports.length() ; ++i) {
-  string proxyID(_ports.m_ports[i].m_proxyID);
+  for(unsigned int i = 0 ; i < _ports.ports.length() ; ++i) {
+  string proxyID(_ports.ports[i].proxyID);
   log("updating inports of " + proxyID);
   try {
-  map<string,string>::const_iterator inportsID_itr(m_proxyID2inportsID.find(proxyID));
+  map<string,string>::const_iterator inportsID_itr(proxyID2inportsID.find(proxyID));
   string inportsID;
-  if(inportsID_itr == m_proxyID2inportsID.end()) {
-  shared_ptr<const CASTData<BindingData::BindingProxy> > data_ptr(getWorkingMemoryEntry<BindingData::BindingProxy>(proxyID,m_bindingSA));
-  shared_ptr<const BindingData::BindingProxy> from_proxy(data_ptr->getData());
-  inportsID = from_proxy->m_inPortsID;
-  m_proxyID2inportsID[proxyID] = inportsID;
+  if(inportsID_itr == proxyID2inportsID.end()) {
+  shared_ptr<const CASTData<BindingData::BindingProxy> > data_ptr(getWorkingMemoryEntry<BindingData::BindingProxy>(proxyID,bindingSA));
+  shared_ptr<const BindingData::BindingProxy> froproxy(data_ptr->getData());
+  inportsID = froproxy->inPortsID;
+  proxyID2inportsID[proxyID] = inportsID;
   } else {
   inportsID = inportsID_itr->second;
   }
   log("inportsID: " + inportsID);
   
-  //      lockEntry(inportsID, m_bindingSA, cast::cdl::LOCKED_ODR);
+  //      lockEntry(inportsID, bindingSA, cast::cdl::LOCKED_ODR);
   shared_ptr<const CASTData<BindingData::ProxyPorts> > 
   inportsData = 
-  getWorkingMemoryEntry<BindingData::ProxyPorts>(inportsID, m_bindingSA);
+  getWorkingMemoryEntry<BindingData::ProxyPorts>(inportsID, bindingSA);
   shared_ptr<const BindingData::ProxyPorts> inports = inportsData->getData();
   BindingData::ProxyPorts* new_inports = new BindingData::ProxyPorts(*inports);
   
-  //ProxyPort[] new_inports = new ProxyPort[inports.m_ports.length + 1];
-  //System.arraycopy(inports.m_ports, 0, new_inports, 0, inports.m_ports.length);
-  //new_inports[inports.m_ports.length] = new ProxyPort(_portType,"",_relationID);
-  new_inports->m_ports.length(inports->m_ports.length() + 1);
+  //ProxyPort[] new_inports = new ProxyPort[inports.ports.length + 1];
+  //System.arraycopy(inports.ports, 0, new_inports, 0, inports.ports.length);
+  //new_inports[inports.ports.length] = new ProxyPort(_portType,"",_relationID);
+  new_inports->ports.length(inports->ports.length() + 1);
   BindingData::ProxyPort new_port;
-  new_port.m_type = _ports.m_ports[i].m_type;
-  new_port.m_label = CORBA::string_dup(_ports.m_ports[i].m_label);
-  new_port.m_proxyID = CORBA::string_dup(_ports.m_ports[i].m_ownerProxyID);
-  //cout << "new_port.m_proxyID " << new_port.m_proxyID << endl;
-  new_port.m_ownerProxyID = CORBA::string_dup(_ports.m_ports[i].m_proxyID);
+  new_port.type = _ports.ports[i].type;
+  new_port.label = CORBA::string_dup(_ports.ports[i].label);
+  new_port.proxyID = CORBA::string_dup(_ports.ports[i].ownerProxyID);
+  //cout << "new_port.proxyID " << new_port.proxyID << endl;
+  new_port.ownerProxyID = CORBA::string_dup(_ports.ports[i].proxyID);
   
-  new_inports->m_ports[inports->m_ports.length()] = new_port;
+  new_inports->ports[inports->ports.length()] = new_port;
   
   overwriteWorkingMemory(inportsID, 
-  m_bindingSA,
+  bindingSA,
   //BindingLocalOntology::PROXY_PORTS_TYPE,
   new_inports,
   BLOCKING);
   //insert the proxy to the unbound list.
-  m_unboundProxyAddresses.insert(proxyID);
+  unboundProxyAddresses.insert(proxyID);
   } catch(const DoesNotExistOnWMException& _e) {
   log("could not update inports of " + proxyID + " : " + _e.what());
   }
@@ -341,9 +341,9 @@ Binder::_createNewUnion(const LBindingProxy& _proxy) {
   //shared_ptr<const BindingData::BindingProxy>
   //proxy(loadBindingDataFromWM<BindingData::BindingProxy>(_proxyID));
 
-//  const LBindingProxy& proxy(m_proxyLocalCache[_proxyID]);    
+//  const LBindingProxy& proxy(proxyLocalCache[_proxyID]);    
 
-  //const FeatureSet fset(toFeatureSet(proxy.m_proxyFeatures));
+  //const FeatureSet fset(toFeatureSet(proxy.proxyFeatures));
   const FeatureSet& fset(_proxy.featureSet());
   
   const string& proxyID(_proxy.id());
@@ -351,35 +351,35 @@ Binder::_createNewUnion(const LBindingProxy& _proxy) {
   // create an instance binding and store it...
   BindingData::BindingUnion* ib = new BindingData::BindingUnion();
   
-  ib->m_proxyIDs.length(1);
-  ib->m_proxyIDs[0] = CORBA::string_dup(proxyID.c_str());
-  ib->m_featureSignatures.length(1);
-  ib->m_featureSignatures[0] = CORBA::string_dup(_proxy->m_featureSignature);
-  ib->m_updates = 0;
-  ib->m_type = _proxy->m_type;
+  ib->proxyIDs.length(1);
+  ib->proxyIDs[0] = CORBA::string_dup(proxyID.c_str());
+  ib->featureSignatures.length(1);
+  ib->featureSignatures[0] = CORBA::string_dup(_proxy->featureSignature);
+  ib->updates = 0;
+  ib->type = _proxy->type;
   
-  ib->m_outPorts = _proxy.rawOutPorts();
-  ib->m_inPorts = _proxy.inPorts();
+  ib->outPorts = _proxy.rawOutPorts();
+  ib->inPorts = _proxy.inPorts();
   
   unsigned int i = 0;
   for(FeatureSet::const_iterator feature_type_itr = fset.begin(); 
       feature_type_itr != fset.end() ; 
       ++feature_type_itr) {
-    ib->m_unionFeatures.length(ib->m_unionFeatures.length() + 
+    ib->unionFeatures.length(ib->unionFeatures.length() + 
 				 feature_type_itr->second.size());
     for(OneTypeOfFeatures::const_iterator feature_itr = feature_type_itr->second.begin() ;
 	feature_itr != feature_type_itr->second.end() ; 
 	++i,++feature_itr) {
-      assert(i < ib->m_unionFeatures.length());      
-      ib->m_unionFeatures[i].m_address = CORBA::string_dup((*feature_itr)->featureID().c_str());
-      ib->m_unionFeatures[i].m_type =    CORBA::string_dup((*feature_itr)->name().c_str());
-      ib->m_unionFeatures[i].m_immediateProxyID =    CORBA::string_dup((*feature_itr)->immediateProxyID().c_str());
-      //log(lexical_cast<string>(i) + " : " + lexical_cast<string>(ib->m_unionFeatures.length()));
+      assert(i < ib->unionFeatures.length());      
+      ib->unionFeatures[i].address = CORBA::string_dup((*feature_itr)->featureID().c_str());
+      ib->unionFeatures[i].type =    CORBA::string_dup((*feature_itr)->name().c_str());
+      ib->unionFeatures[i].immediateProxyID =    CORBA::string_dup((*feature_itr)->immediateProxyID().c_str());
+      //log(lexical_cast<string>(i) + " : " + lexical_cast<string>(ib->unionFeatures.length()));
     }
   }
   string unionID = newDataID();
   
-  _checkRelationsAndTriggerRescoring(ib->m_inPorts,ib->m_outPorts);
+  _checkRelationsAndTriggerRescoring(ib->inPorts,ib->outPorts);
   
   addToWorkingMemory(unionID,
 		     //BindingLocalOntology::BINDING_UNION_TYPE, 
@@ -389,8 +389,8 @@ Binder::_createNewUnion(const LBindingProxy& _proxy) {
   _updateProxyPointers(_proxy, unionID, *ib);
   log(string("New union ( ") + unionID + ") created for proxy " + proxyID);
   
-  m_prox2uni[proxyID] = unionID;
-  m_uni2prox[unionID].insert(proxyID);
+  prox2uni[proxyID] = unionID;
+  uni2prox[unionID].insert(proxyID);
 
 }
 
@@ -402,8 +402,8 @@ Binder::_addProxyFeaturesToUnionFeatures(const BindingData::FeaturePointers& _pr
     unsigned int ib_feature_length = _unionFeatures.length();
   
   // allocate space
-  //cout << "in binding:\n" << toString(ib->m_unionFeatures);
-  //cout << "in proxy:\n" << toString(proxy.m_proxyFeatures);
+  //cout << "in binding:\n" << toString(ib->unionFeatures);
+  //cout << "in proxy:\n" << toString(proxy.proxyFeatures);
   _unionFeatures.length(_unionFeatures.length() + _proxyFeatures.length());
       
   // add new features from proxy
@@ -419,50 +419,50 @@ Binder::_addProxyPortsToUnionPorts(const LBindingProxy& proxy, BindingData::Bind
     // copy the inports
     set<BindingData::ProxyPort, proxyPortLess> ports;
     insert_iterator<set<BindingData::ProxyPort, proxyPortLess> > inserter = std::inserter(ports,ports.begin());
-    for(unsigned int i = 0; i < new_union.m_inPorts.m_ports.length() ; ++i) {
-      inserter = new_union.m_inPorts.m_ports[i];
+    for(unsigned int i = 0; i < new_union.inPorts.ports.length() ; ++i) {
+      inserter = new_union.inPorts.ports[i];
     }
-    for(unsigned int i = 0; i < proxy.inPorts().m_ports.length() ; ++i) {
-      inserter = proxy.inPorts().m_ports[i];
+    for(unsigned int i = 0; i < proxy.inPorts().ports.length() ; ++i) {
+      inserter = proxy.inPorts().ports[i];
     }
     unsigned int j = 0;
-    new_union.m_inPorts.m_ports.length(ports.size());
+    new_union.inPorts.ports.length(ports.size());
     foreach(const BindingData::ProxyPort& port, ports) {
-      new_union.m_inPorts.m_ports[j++] = port;
+      new_union.inPorts.ports[j++] = port;
     }
   }
   {
     // copy the outports
     set<BindingData::ProxyPort, proxyPortLess> ports;
     insert_iterator<set<BindingData::ProxyPort, proxyPortLess> > inserter = std::inserter(ports,ports.begin());
-    for(unsigned int i = 0; i < new_union.m_outPorts.m_ports.length() ; ++i) {
-      inserter = new_union.m_outPorts.m_ports[i];
+    for(unsigned int i = 0; i < new_union.outPorts.ports.length() ; ++i) {
+      inserter = new_union.outPorts.ports[i];
     }
-    for(unsigned int i = 0; i < proxy.rawOutPorts().m_ports.length() ; ++i) {
-      inserter = proxy.rawOutPorts().m_ports[i];
+    for(unsigned int i = 0; i < proxy.rawOutPorts().ports.length() ; ++i) {
+      inserter = proxy.rawOutPorts().ports[i];
     }
     unsigned int j = 0;
-    new_union.m_outPorts.m_ports.length(ports.size());
+    new_union.outPorts.ports.length(ports.size());
     foreach(const BindingData::ProxyPort& port, ports) {
-      new_union.m_outPorts.m_ports[j++] = port;
+      new_union.outPorts.ports[j++] = port;
     }
   }
   
   
   /*  {
       const BindingData::ProxyPorts& proxy_inports(proxy.inPorts());	      
-      unsigned int in_length = new_union.m_inPorts.m_ports.length();
-      new_union.m_inPorts.m_ports.length(in_length + proxy_inports.m_ports.length());
-      for(unsigned int j = 0 ; j < proxy_inports.m_ports.length() ; ++j) {
-      new_union.m_inPorts.m_ports[in_length + j] = proxy_inports.m_ports[j];
+      unsigned int in_length = new_union.inPorts.ports.length();
+      new_union.inPorts.ports.length(in_length + proxy_inports.ports.length());
+      for(unsigned int j = 0 ; j < proxy_inports.ports.length() ; ++j) {
+      new_union.inPorts.ports[in_length + j] = proxy_inports.ports[j];
       }
       }
       {
       const BindingData::ProxyPorts& proxy_outports(proxy.rawOutPorts());	      
-      unsigned int out_length = new_union.m_outPorts.m_ports.length();
-      new_union.m_outPorts.m_ports.length(out_length + proxy_outports.m_ports.length());
-      for(unsigned int j = 0 ; j < proxy_outports.m_ports.length() ; ++j) {
-      new_union.m_outPorts.m_ports[out_length + j] = proxy_outports.m_ports[j];
+      unsigned int out_length = new_union.outPorts.ports.length();
+      new_union.outPorts.ports.length(out_length + proxy_outports.ports.length());
+      for(unsigned int j = 0 ; j < proxy_outports.ports.length() ; ++j) {
+      new_union.outPorts.ports[out_length + j] = proxy_outports.ports[j];
       }
       }
   */
@@ -487,9 +487,9 @@ Binder::_bindProxy(const LBindingProxy& _proxy,
   // look up old binding
   //  shared_ptr<const BindingData::BindingUnion>
     //old_union(loadBindingDataFromWM<BindingData::BindingUnion>(_unionID));
-  //  old_union(m_unionCache.getPtr(_unionID));
+  //  old_union(unionCache.getPtr(_unionID));
   
-  const LBindingUnion& old_union(m_unionLocalCache[_unionID]);
+  const LBindingUnion& old_union(unionLocalCache[_unionID]);
 
   BindingData::BindingUnion* new_union = new BindingData::BindingUnion(old_union.get());
   
@@ -498,52 +498,52 @@ Binder::_bindProxy(const LBindingProxy& _proxy,
   // from different subarchitectures are identical. Perhaps this
   // could be dealt with in a more optimal way. But it shouldn't
   // create a large overhead.
-  unsigned int ib_feature_length = old_union->m_unionFeatures.length();
+  unsigned int ib_feature_length = old_union->unionFeatures.length();
   // allocate space
-  //cout << "in binding:\n" << toString(ib->m_unionFeatures);
-  //cout << "in _proxy:\n" << toString(_proxy->m_proxyFeatures);
-  new_union->m_unionFeatures.length(old_union->m_unionFeatures.length() + _proxy->m_proxyFeatures.length());
+  //cout << "in binding:\n" << toString(ib->unionFeatures);
+  //cout << "in _proxy:\n" << toString(_proxy->proxyFeatures);
+  new_union->unionFeatures.length(old_union->unionFeatures.length() + _proxy->proxyFeatures.length());
   
   // copy old features
-  for(unsigned int j = 0 ; j < old_union->m_unionFeatures.length() ; ++j) {
-    new_union->m_unionFeatures[j] = old_union->m_unionFeatures[j];
+  for(unsigned int j = 0 ; j < old_union->unionFeatures.length() ; ++j) {
+    new_union->unionFeatures[j] = old_union->unionFeatures[j];
   }
     
   // add new features from proxy
-  for(unsigned int j = 0 ; j < _proxy->m_proxyFeatures.length() ; ++j) {
-    new_union->m_unionFeatures[ib_feature_length + j] = _proxy->m_proxyFeatures[j];
+  for(unsigned int j = 0 ; j < _proxy->proxyFeatures.length() ; ++j) {
+    new_union->unionFeatures[ib_feature_length + j] = _proxy->proxyFeatures[j];
   }
   // copy the ports
 
   log("copying ports when updating a union");  
-  new_union->m_inPorts = old_union->m_inPorts;
-  new_union->m_outPorts = old_union->m_outPorts;
+  new_union->inPorts = old_union->inPorts;
+  new_union->outPorts = old_union->outPorts;
   log("still copying ports when updating a union");  
   _addProxyPortsToUnionPorts(_proxy,*new_union);
   log("done copying ports when updating a union");  
 
   // copy the associated proxy IDs
-  new_union->m_proxyIDs.length(old_union->m_proxyIDs.length() + 1);
-  for(unsigned int j = 0 ; j < old_union->m_proxyIDs.length() ; ++j) {
-    new_union->m_proxyIDs[j] = old_union->m_proxyIDs[j];
+  new_union->proxyIDs.length(old_union->proxyIDs.length() + 1);
+  for(unsigned int j = 0 ; j < old_union->proxyIDs.length() ; ++j) {
+    new_union->proxyIDs[j] = old_union->proxyIDs[j];
   }
   // associate to the new proxy
-  new_union->m_proxyIDs[new_union->m_proxyIDs.length() - 1] = 
+  new_union->proxyIDs[new_union->proxyIDs.length() - 1] = 
     CORBA::string_dup(cdl::WorkingMemoryID(proxyID.c_str()));      
 
   // copy the associated proxy feature signatures
-  new_union->m_featureSignatures.length(old_union->m_featureSignatures.length() + 1);
-  for(unsigned int j = 0 ; j < old_union->m_featureSignatures.length() ; ++j) {
-    new_union->m_featureSignatures[j] = old_union->m_featureSignatures[j];
+  new_union->featureSignatures.length(old_union->featureSignatures.length() + 1);
+  for(unsigned int j = 0 ; j < old_union->featureSignatures.length() ; ++j) {
+    new_union->featureSignatures[j] = old_union->featureSignatures[j];
   }
-  new_union->m_featureSignatures[new_union->m_featureSignatures.length() - 1] = 
-    CORBA::string_dup(_proxy->m_featureSignature);      
+  new_union->featureSignatures[new_union->featureSignatures.length() - 1] = 
+    CORBA::string_dup(_proxy->featureSignature);      
   //insanity check
-  assert(new_union->m_proxyIDs.length() == new_union->m_featureSignatures.length());
+  assert(new_union->proxyIDs.length() == new_union->featureSignatures.length());
   
-  new_union->m_updates ++;
+  new_union->updates ++;
 
-  _checkRelationsAndTriggerRescoring(new_union->m_inPorts,new_union->m_outPorts);
+  _checkRelationsAndTriggerRescoring(new_union->inPorts,new_union->outPorts);
 
   // store on WM
 //#warning should have a lock here...
@@ -554,19 +554,19 @@ Binder::_bindProxy(const LBindingProxy& _proxy,
 			 cdl::BLOCKING);
   
   try{
-//    for(unsigned int i = 0; i < new_union->m_proxyIDs.length() ; ++i)
-    //     lockEntry(string(new_union->m_proxyIDs[i]), cast::cdl::LOCKED_ODR);
-    for(unsigned int i = 0; i < new_union->m_proxyIDs.length() ; ++i)
-      _updateProxyPointers(m_proxyLocalCache[string(new_union->m_proxyIDs[i])], _unionID, *new_union);
- //   for(unsigned int i = 0; i < new_union->m_proxyIDs.length() ; ++i)
- //     unlockEntry(string(new_union->m_proxyIDs[i]));
+//    for(unsigned int i = 0; i < new_union->proxyIDs.length() ; ++i)
+    //     lockEntry(string(new_union->proxyIDs[i]), cast::cdl::LOCKED_ODR);
+    for(unsigned int i = 0; i < new_union->proxyIDs.length() ; ++i)
+      _updateProxyPointers(proxyLocalCache[string(new_union->proxyIDs[i])], _unionID, *new_union);
+ //   for(unsigned int i = 0; i < new_union->proxyIDs.length() ; ++i)
+ //     unlockEntry(string(new_union->proxyIDs[i]));
     
   } catch(...) {
     cerr << "don't wanna catch nothing here!" << endl;
     abort();
   }
-  m_prox2uni[proxyID] = _unionID;
-  m_uni2prox[_unionID].insert(proxyID);  
+  prox2uni[proxyID] = _unionID;
+  uni2prox[_unionID].insert(proxyID);  
   
   log(string("bound proxy ") + proxyID + " with union "+ _unionID);
   
@@ -587,9 +587,9 @@ Binder::_updateProxyInUnion(const LBindingProxy& _proxy,
   // look up old binding
   //  shared_ptr<const BindingData::BindingUnion>
     //old_union(loadBindingDataFromWM<BindingData::BindingUnion>(_unionID));
-  //  old_union(m_unionCache.getPtr(_unionID));
+  //  old_union(unionCache.getPtr(_unionID));
   
-  const LBindingUnion& old_union(m_unionLocalCache[_unionID]);
+  const LBindingUnion& old_union(unionLocalCache[_unionID]);
 
   BindingData::BindingUnion* new_union = new BindingData::BindingUnion(old_union.get());
 
@@ -598,41 +598,41 @@ Binder::_updateProxyInUnion(const LBindingProxy& _proxy,
   // from different subarchitectures are identical. Perhaps this
   // could be dealt with in a more optimal way. But it shouldn't
   // create a large overhead.
-  new_union->m_unionFeatures.length(0);
+  new_union->unionFeatures.length(0);
   // copy old features (except the one from updated proxy)
   unsigned int i = 0;
-  for(unsigned int j = 0 ; j < old_union->m_unionFeatures.length() ; ++j) {
-    if(string(old_union->m_unionFeatures[j].m_immediateProxyID) != proxyID) {
-      new_union->m_unionFeatures.length(i+1);
-      new_union->m_unionFeatures[i++] = old_union->m_unionFeatures[j];
+  for(unsigned int j = 0 ; j < old_union->unionFeatures.length() ; ++j) {
+    if(string(old_union->unionFeatures[j].immediateProxyID) != proxyID) {
+      new_union->unionFeatures.length(i+1);
+      new_union->unionFeatures[i++] = old_union->unionFeatures[j];
     }
   }
   // add new features from proxy
-  for(unsigned int j = 0 ; j < _proxy->m_proxyFeatures.length() ; ++j) {
-    new_union->m_unionFeatures.length(i+1);
-    new_union->m_unionFeatures[i++] = _proxy->m_proxyFeatures[j];
+  for(unsigned int j = 0 ; j < _proxy->proxyFeatures.length() ; ++j) {
+    new_union->unionFeatures.length(i+1);
+    new_union->unionFeatures[i++] = _proxy->proxyFeatures[j];
   }
   // copy the ports
 
 #warning updating of unions are not really doing a good job on the ports...
-  new_union->m_inPorts = old_union->m_inPorts;
-  new_union->m_outPorts = old_union->m_outPorts;
+  new_union->inPorts = old_union->inPorts;
+  new_union->outPorts = old_union->outPorts;
   _addProxyPortsToUnionPorts(_proxy,*new_union);
 
   // copy the associated proxy IDs
-  /*  new_union->m_proxyIDs.length(old_union->m_proxyIDs.length() + 1);
-      for(unsigned int j = 0 ; j < old_union->m_proxyIDs.length() ; ++j) {
-      new_union->m_proxyIDs[j] = old_union->m_proxyIDs[j];
+  /*  new_union->proxyIDs.length(old_union->proxyIDs.length() + 1);
+      for(unsigned int j = 0 ; j < old_union->proxyIDs.length() ; ++j) {
+      new_union->proxyIDs[j] = old_union->proxyIDs[j];
       }
       
       // associate to the new proxy
-      new_union->m_proxyIDs[new_union->m_proxyIDs.length() - 1] = 
+      new_union->proxyIDs[new_union->proxyIDs.length() - 1] = 
       CORBA::string_dup(cdl::WorkingMemoryID(proxyID.c_str()));      
   */  
   
-  new_union->m_updates ++;
+  new_union->updates ++;
 
-  _checkRelationsAndTriggerRescoring(new_union->m_inPorts,new_union->m_outPorts);
+  _checkRelationsAndTriggerRescoring(new_union->inPorts,new_union->outPorts);
 
   // store on WM
   overwriteWorkingMemory(_unionID, 
@@ -642,8 +642,8 @@ Binder::_updateProxyInUnion(const LBindingProxy& _proxy,
   
   //_updateProxyPointers(_proxy, _unionID);
   
-  //m_prox2uni[proxyID] = _unionID;
-  //m_uni2prox[_unionID].insert(proxyID);  
+  //prox2uni[proxyID] = _unionID;
+  //uni2prox[_unionID].insert(proxyID);  
   
   log(string("rebound proxy ") + proxyID + " with binding "+ _unionID);
   
@@ -656,19 +656,19 @@ Binder::_updateProxyPointers(const LBindingProxy& _proxy,
 {
   BindingData::BindingProxy* new_proxy = new BindingData::BindingProxy(_proxy.get());
   
-  new_proxy->m_unionID = CORBA::string_dup(_unionID.c_str());
-  new_proxy->m_proxyIDs.length(_union.m_proxyIDs.length());
-  for(unsigned int i = 0; i < _union.m_proxyIDs.length() ; ++i) {
-    new_proxy->m_proxyIDs[i] = CORBA::string_dup(string(_union.m_proxyIDs[i]).c_str());
+  new_proxy->unionID = CORBA::string_dup(_unionID.c_str());
+  new_proxy->proxyIDs.length(_union.proxyIDs.length());
+  for(unsigned int i = 0; i < _union.proxyIDs.length() ; ++i) {
+    new_proxy->proxyIDs[i] = CORBA::string_dup(string(_union.proxyIDs[i]).c_str());
   }
 
-  //new_proxy->m_bestUnionsForProxyID = CORBA::string_dup(_bestUnionsID.c_str());
+  //new_proxy->bestUnionsForProxyID = CORBA::string_dup(_bestUnionsID.c_str());
   
-  new_proxy->m_bindingCount++;
+  new_proxy->bindingCount++;
   
-  //assert(new_proxy->m_proxyState != BindingData::BOUND);
+  //assert(new_proxy->proxyState != BindingData::BOUND);
   
-  new_proxy->m_proxyState = BindingData::BOUND;
+  new_proxy->proxyState = BindingData::BOUND;
 
   // to pass the consistency check, the data must be loaded before
   // it's written. It's not strictly necessary for any other purpose
@@ -682,7 +682,7 @@ Binder::_updateProxyPointers(const LBindingProxy& _proxy,
 
 #warning SILLY TOKEN HACK, should not be necessary
   BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-  p->m_proxyID = CORBA::string_dup(_proxy.id().c_str());
+  p->proxyID = CORBA::string_dup(_proxy.id().c_str());
   addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
 
 }
@@ -694,17 +694,17 @@ Binder::handleProxyDeletionTask(const cdl::WorkingMemoryChange & _wmc)
   shared_ptr<const BindingData::BindingProxyDeletionTask>
     deletion_task(loadBindingDataFromWM<BindingData::BindingProxyDeletionTask>(_wmc));
   // we don't need to keep the task after it has been read
-  deleteFromWorkingMemory(string(_wmc.m_address.m_id));
+  deleteFromWorkingMemory(string(_wmc.address.id));
 
-  const string proxyID(deletion_task->m_proxyID);
+  const string proxyID(deletion_task->proxyID);
   //shared_ptr<const BindingData::BindingProxy>
     //proxy(loadBindingDataFromWM<BindingData::BindingProxy>(proxyID));
-    //proxy(m_proxyCache.getPtr(proxyID));
+    //proxy(proxyCache.getPtr(proxyID));
   
   
   const LBindingProxy* proxy_ptr = NULL;
   try {
-    proxy_ptr = &(m_proxyLocalCache[proxyID]);
+    proxy_ptr = &(proxyLocalCache[proxyID]);
   } catch(const DoesNotExistOnWMException& _e) {
     cout << "\nCaught this in Binder::handleProxyDeletionTask: " << _e.what() 
 	 << "\nPossible cause: did you remove the proxy twice? Or did you remove it by any other means than AbstractMonitor::deleteExistingProxy(...)?\n" << endl;
@@ -715,8 +715,8 @@ Binder::handleProxyDeletionTask(const cdl::WorkingMemoryChange & _wmc)
 
   log("will attempt to remove proxy: " + proxyID);
   
-  map<string,string>::const_iterator c2b = m_prox2uni.find(proxyID);
-  if(c2b == m_prox2uni.end()) {
+  map<string,string>::const_iterator c2b = prox2uni.find(proxyID);
+  if(c2b == prox2uni.end()) {
     log("Binder thinks this proxy was never bound, so it will simply just remove it without updating any binding");
   } else {
     string unionID(c2b->second);
@@ -745,11 +745,11 @@ Binder::handleProxyDeletionTask(const cdl::WorkingMemoryChange & _wmc)
 
 
   // remove locally
-  m_prox2uni.erase(proxyID);
+  prox2uni.erase(proxyID);
   
   BindingData::DeletedBindingProxy* deleted_proxy = new BindingData::DeletedBindingProxy;
-  deleted_proxy->m_deletedProxy = proxy.get();
-  deleted_proxy->m_deletedProxyID = CORBA::string_dup(proxyID.c_str());
+  deleted_proxy->deletedProxy = proxy.get();
+  deleted_proxy->deletedProxyID = CORBA::string_dup(proxyID.c_str());
   const string newID(newDataID()); 
   log("Adding \"deleted\" proxy " + newID + " to replace the proxy " + proxyID);
 
@@ -765,8 +765,8 @@ void
 Binder::updatePortsInUnion(const cdl::WorkingMemoryChange & _wmc) {
 
   //begin nah change
-  /*  if(strcmp(_wmc.m_src,getProcessIdentifier().c_str()) == 0) {
-      log("Binder::updatePortsInUnion: ignoring own changes to %s", string(_wmc.m_address.m_id).c_str());
+  /*  if(strcmp(_wmc.src,getProcessIdentifier().c_str()) == 0) {
+      log("Binder::updatePortsInUnion: ignoring own changes to %s", string(_wmc.address.id).c_str());
       return;
       }*/
   //end nah change
@@ -776,68 +776,68 @@ Binder::updatePortsInUnion(const cdl::WorkingMemoryChange & _wmc) {
   
   //begin nah change
   /*  //on deletion of a proxy, could this legitimately be 0?
-      if(updated_inports->m_ports.length() == 0) {
-      log("Binder::updatePortsInUnion: %s -> no ports to update", string(_wmc.m_address.m_id).c_str());
+      if(updated_inports->ports.length() == 0) {
+      log("Binder::updatePortsInUnion: %s -> no ports to update", string(_wmc.address.id).c_str());
       return;
       }*/
   //end nah change
 
-  //  assert(updated_inports->m_ports.length() > 0);  
+  //  assert(updated_inports->ports.length() > 0);  
 
-  string updated_proxyID(updated_inports->m_ownerProxyID);
+  string updated_proxyID(updated_inports->ownerProxyID);
 
   try {
-    const LBindingProxy& proxy(m_proxyLocalCache[updated_proxyID]);
+    const LBindingProxy& proxy(proxyLocalCache[updated_proxyID]);
     
-    string unionID(proxy->m_unionID);
+    string unionID(proxy->unionID);
     if(unionID == "") { // i.e. not yet a bound proxy 
       log("Binder::updatePortsInUnion: the inport of an unbound proxy updated, do nothing");
       return;
     }
     
-    const LBindingUnion& binding_union(m_unionLocalCache[unionID]);
+    const LBindingUnion& binding_union(unionLocalCache[unionID]);
     // create a new union that will hold the new union
     BindingData::BindingUnion* new_union = 
       new BindingData::BindingUnion(binding_union.get()); 
     // remove old inports
-    new_union->m_inPorts.m_ports.length(0); 
+    new_union->inPorts.ports.length(0); 
     
-    //  new_union->m_inPorts.m_ports = 34; 
-    //  new_union->m_inPorts.m_ports = BindingData::ProxyPorts::_m_ports_seq();
+    //  new_union->inPorts.ports = 34; 
+    //  new_union->inPorts.ports = BindingData::ProxyPorts::_ports_seq();
     
     set<BindingData::ProxyPort, proxyPortLess> ports;
     insert_iterator<set<BindingData::ProxyPort, proxyPortLess> > inserter = std::inserter(ports,ports.begin());
-    for(unsigned int i = 0; i < binding_union.inPorts().m_ports.length() ; ++i) {
-      //      if(string(binding_union.inPorts().m_ownerProxyID) != updated_proxyID)
-      inserter = binding_union.inPorts().m_ports[i];
+    for(unsigned int i = 0; i < binding_union.inPorts().ports.length() ; ++i) {
+      //      if(string(binding_union.inPorts().ownerProxyID) != updated_proxyID)
+      inserter = binding_union.inPorts().ports[i];
     }
-    for(unsigned int i = 0; i < updated_inports->m_ports.length() ; ++i) {
-      inserter = updated_inports->m_ports[i];
-      assert(string(updated_inports->m_ports[i].m_ownerProxyID) == 
-	     string(updated_inports->m_ports[0].m_ownerProxyID));
-      assert(string(updated_inports->m_ports[i].m_ownerProxyID) == 
-	     string(updated_inports->m_ownerProxyID));
+    for(unsigned int i = 0; i < updated_inports->ports.length() ; ++i) {
+      inserter = updated_inports->ports[i];
+      assert(string(updated_inports->ports[i].ownerProxyID) == 
+	     string(updated_inports->ports[0].ownerProxyID));
+      assert(string(updated_inports->ports[i].ownerProxyID) == 
+	     string(updated_inports->ownerProxyID));
     }
     unsigned int j = 0;
-    new_union->m_inPorts.m_ports.length(ports.size());
+    new_union->inPorts.ports.length(ports.size());
     foreach(const BindingData::ProxyPort& port, ports) {
-      new_union->m_inPorts.m_ports[j++] = port;
+      new_union->inPorts.ports[j++] = port;
     }
     /*  unsigned int j = 0;
-	for(unsigned int i = 0; i < binding_union.inPorts().m_ports.length() ; ++i) {
-	if(string(binding_union.inPorts().m_ports[i].m_ownerProxyID) != updated_proxyID) { // i.e. no copy of old proxy IDs
-	new_union->m_inPorts.m_ports.length(j+1);
-	new_union->m_inPorts.m_ports[j++] = binding_union.inPorts().m_ports[i];
+	for(unsigned int i = 0; i < binding_union.inPorts().ports.length() ; ++i) {
+	if(string(binding_union.inPorts().ports[i].ownerProxyID) != updated_proxyID) { // i.e. no copy of old proxy IDs
+	new_union->inPorts.ports.length(j+1);
+	new_union->inPorts.ports[j++] = binding_union.inPorts().ports[i];
 	}
 	}
-	for(unsigned int i = 0; i < updated_inports->m_ports.length() ; ++i) {
-	new_union->m_inPorts.m_ports.length(j+1);
-	new_union->m_inPorts.m_ports[j++] = updated_inports->m_ports[i];
-	assert(string(updated_inports->m_ports[i].m_ownerProxyID) == string(updated_inports->m_ports[0].m_ownerProxyID));
+	for(unsigned int i = 0; i < updated_inports->ports.length() ; ++i) {
+	new_union->inPorts.ports.length(j+1);
+	new_union->inPorts.ports[j++] = updated_inports->ports[i];
+	assert(string(updated_inports->ports[i].ownerProxyID) == string(updated_inports->ports[0].ownerProxyID));
 	}
     */
     log("Binder::updatePortsInUnion: the inport of union " + unionID + " updated");
-    log("number of inports is now: " + lexical_cast<string>(new_union->m_inPorts.m_ports.length()));
+    log("number of inports is now: " + lexical_cast<string>(new_union->inPorts.ports.length()));
     
     //  cout << "OVERWRITING THE UNION NOW, EH!" << endl;
     
@@ -855,13 +855,13 @@ Binder::_removeProxyFromUnion(const LBindingProxy& _proxy,
 			      const string& _unionID)
 { 
   
-  const LBindingUnion& binding_union(m_unionLocalCache[_unionID]);
+  const LBindingUnion& binding_union(unionLocalCache[_unionID]);
   const string proxyID(_proxy.id());
   log(string("Removing proxy " + proxyID + " from union " + _unionID));
 
-  assert(binding_union->m_proxyIDs.length() > 0);
+  assert(binding_union->proxyIDs.length() > 0);
 
-  if(binding_union->m_proxyIDs.length() == 1) { // last proxy of this union
+  if(binding_union->proxyIDs.length() == 1) { // last proxy of this union
     log(string("Deleting union ") + _unionID + " since proxy " + proxyID + " was the last proxy.");
 
     deleteFromWorkingMemory(_unionID, cdl::BLOCKING); //nah: sync write to
@@ -869,10 +869,10 @@ Binder::_removeProxyFromUnion(const LBindingProxy& _proxy,
     //gone before we do
     //anything else
 
-    if(m_prox2uni[proxyID] == _unionID) {
-      m_prox2uni.erase(proxyID);
+    if(prox2uni[proxyID] == _unionID) {
+      prox2uni.erase(proxyID);
     }
-    m_uni2prox.erase(_unionID);
+    uni2prox.erase(_unionID);
     return;
   } 
   
@@ -884,30 +884,30 @@ Binder::_removeProxyFromUnion(const LBindingProxy& _proxy,
     new BindingData::BindingUnion(binding_union.get()); 
   
   // remove all old features
-  new_union->m_unionFeatures.length(0); 
+  new_union->unionFeatures.length(0); 
   // remove all old ports
-  new_union->m_inPorts.m_ports.length(0); 
-  new_union->m_outPorts.m_ports.length(0); 
+  new_union->inPorts.ports.length(0); 
+  new_union->outPorts.ports.length(0); 
   
-  assert(binding_union->m_proxyIDs.length() > 0);
+  assert(binding_union->proxyIDs.length() > 0);
 
   // number of proxies are 1 fewer
-  new_union->m_proxyIDs.length(binding_union->m_proxyIDs.length() - 1);
-  new_union->m_featureSignatures.length(binding_union->m_featureSignatures.length() - 1);
-  assert(new_union->m_proxyIDs.length() == new_union->m_featureSignatures.length());
+  new_union->proxyIDs.length(binding_union->proxyIDs.length() - 1);
+  new_union->featureSignatures.length(binding_union->featureSignatures.length() - 1);
+  assert(new_union->proxyIDs.length() == new_union->featureSignatures.length());
   
   unsigned int j = 0;
-  for(unsigned int i = 0 ; i < binding_union->m_proxyIDs.length() ; ++i) {
-    if(string(binding_union->m_proxyIDs[i]) != proxyID) {
-      assert(j < new_union->m_proxyIDs.length());
-      new_union->m_proxyIDs[j] = CORBA::string_dup((binding_union->m_proxyIDs)[i]);
-      new_union->m_featureSignatures[j] = 
-	CORBA::string_dup((binding_union->m_featureSignatures)[i]);
+  for(unsigned int i = 0 ; i < binding_union->proxyIDs.length() ; ++i) {
+    if(string(binding_union->proxyIDs[i]) != proxyID) {
+      assert(j < new_union->proxyIDs.length());
+      new_union->proxyIDs[j] = CORBA::string_dup((binding_union->proxyIDs)[i]);
+      new_union->featureSignatures[j] = 
+	CORBA::string_dup((binding_union->featureSignatures)[i]);
       //shared_ptr<const BindingData::BindingProxy>
-      //proxy(loadBindingDataFromWM<BindingData::BindingProxy>(binding_union->m_proxyIDs[i]));	
+      //proxy(loadBindingDataFromWM<BindingData::BindingProxy>(binding_union->proxyIDs[i]));	
       try {
-	const LBindingProxy& proxy(m_proxyLocalCache[string(binding_union->m_proxyIDs[i])]);    
-	_addProxyFeaturesToUnionFeatures(proxy->m_proxyFeatures,new_union->m_unionFeatures);
+	const LBindingProxy& proxy(proxyLocalCache[string(binding_union->proxyIDs[i])]);    
+	_addProxyFeaturesToUnionFeatures(proxy->proxyFeatures,new_union->unionFeatures);
 	_addProxyPortsToUnionPorts(proxy,*new_union);
 	j++; 
       } catch(const DoesNotExistOnWMException& _e) {
@@ -919,18 +919,18 @@ Binder::_removeProxyFromUnion(const LBindingProxy& _proxy,
 
   
 
-  new_union->m_updates ++;
-  _checkRelationsAndTriggerRescoring(new_union->m_inPorts,new_union->m_outPorts);
+  new_union->updates ++;
+  _checkRelationsAndTriggerRescoring(new_union->inPorts,new_union->outPorts);
   overwriteWorkingMemory(_unionID,
 			 //BindingLocalOntology::BINDING_UNION_TYPE,
 			 new_union//,cdl::BLOCKING
 			 ); 
   log(_unionID + " updated after proxy removal");
   
-  if(m_prox2uni[proxyID] == _unionID) {
-    m_prox2uni.erase(proxyID);
+  if(prox2uni[proxyID] == _unionID) {
+    prox2uni.erase(proxyID);
   }
-  m_uni2prox[_unionID].erase(proxyID);
+  uni2prox[_unionID].erase(proxyID);
 
 }
 
@@ -942,20 +942,20 @@ Binder::_checkRelationsAndTriggerRescoring(const BindingData::ProxyPorts& _inpor
 //#warning testing to disable _checkRelationsAndTriggerRescoring
 #warning testing to enable _checkRelationsAndTriggerRescoring
   set<string> ported_proxies;
-  for(unsigned int i = 0 ; i < _inports.m_ports.length() ; ++i) {
-    ported_proxies.insert(string(_inports.m_ports[i].m_proxyID));
+  for(unsigned int i = 0 ; i < _inports.ports.length() ; ++i) {
+    ported_proxies.insert(string(_inports.ports[i].proxyID));
   }
-  for(unsigned int i = 0 ; i < _outports.m_ports.length() ; ++i) {
-    ported_proxies.insert(string(_outports.m_ports[i].m_proxyID));
+  for(unsigned int i = 0 ; i < _outports.ports.length() ; ++i) {
+    ported_proxies.insert(string(_outports.ports[i].proxyID));
   }
   if(!ported_proxies.empty()) {
     BindingData::BindTheseProxies* bindThese = new BindingData::BindTheseProxies();
-    bindThese->m_proxyIDs.length(ported_proxies.size());
+    bindThese->proxyIDs.length(ported_proxies.size());
     set<string>::const_iterator proxy_itr = ported_proxies.begin();
-    for(unsigned int i = 0 ; i < bindThese->m_proxyIDs.length() ; ++i,++proxy_itr) {
-      bindThese->m_proxyIDs[i] = CORBA::string_dup(proxy_itr->c_str());
-      //const LBindingProxy& proxy(m_proxyLocalCache[string(bindThese->m_proxyIDs[i])]);
-      const LBindingProxy* proxy_ptr = maybeLoadProxy(string(bindThese->m_proxyIDs[i]));
+    for(unsigned int i = 0 ; i < bindThese->proxyIDs.length() ; ++i,++proxy_itr) {
+      bindThese->proxyIDs[i] = CORBA::string_dup(proxy_itr->c_str());
+      //const LBindingProxy& proxy(proxyLocalCache[string(bindThese->proxyIDs[i])]);
+      const LBindingProxy* proxy_ptr = maybeLoadProxy(string(bindThese->proxyIDs[i]));
       
       if(proxy_ptr && proxy_ptr->proxyState() == BindingData::BOUND) {
 	changeProxyState(*proxy_ptr,
@@ -963,7 +963,7 @@ Binder::_checkRelationsAndTriggerRescoring(const BindingData::ProxyPorts& _inpor
       }
     }
     addToWorkingMemory(newDataID(), 
-		       m_subarchitectureID, 
+		       subarchitectureID, 
 		       //BindingLocalOntology::BIND_THESE_PROXIES_TYPE, 
 		       bindThese, 
 		       cdl::BLOCKING);
@@ -986,53 +986,53 @@ void
 Binder::removeInports(const BindingData::ProxyPorts& _ports)
 {
   set<string> proxies;
-  for(unsigned int i = 0 ; i < _ports.m_ports.length() ; ++i) {
-    string proxyID(_ports.m_ports[i].m_proxyID);
+  for(unsigned int i = 0 ; i < _ports.ports.length() ; ++i) {
+    string proxyID(_ports.ports[i].proxyID);
     const LBindingProxy* proxy(maybeLoadProxy(proxyID));
     log("removing inports of related-to proxy %d, %s ",i,proxyID.c_str());
     if(proxy) {
       try {
 	
-	string inportsID((*proxy)->m_inPortsID);	
+	string inportsID((*proxy)->inPortsID);	
 	shared_ptr<const CASTData<BindingData::ProxyPorts> > inportsData = getWorkingMemoryEntry<BindingData::ProxyPorts>(inportsID);
 	shared_ptr<const BindingData::ProxyPorts> inports = inportsData->getData();
 	PortMap ppp;
 
 	//begin nah change -- this was one of the failure points
-	//log("length of inports on the relation proxy to be deleted: %d", _ports.m_ports.length());
-	//log("length of inports on the proxy being updated after relation deletion: %d", inports->m_ports.length());
-	//assert(_ports.m_ports.length() == inports->m_ports.length());
+	//log("length of inports on the relation proxy to be deleted: %d", _ports.ports.length());
+	//log("length of inports on the proxy being updated after relation deletion: %d", inports->ports.length());
+	//assert(_ports.ports.length() == inports->ports.length());
 	//end nah change
 	
 	// copy the inports, except for the
-	for(unsigned int j = 0; j < inports->m_ports.length() ; ++j) {
-	  if(string(inports->m_ports[j].m_ownerProxyID) == 
+	for(unsigned int j = 0; j < inports->ports.length() ; ++j) {
+	  if(string(inports->ports[j].ownerProxyID) == 
 	     //begin nah change j to i
-	     string(_ports.m_ports[i].m_proxyID) || 
+	     string(_ports.ports[i].proxyID) || 
 	     //end nah change
-	     string(inports->m_ports[j].m_proxyID) == 
+	     string(inports->ports[j].proxyID) == 
 	     //begin nah change j to i
-	     string(_ports.m_ports[i].m_ownerProxyID)
+	     string(_ports.ports[i].ownerProxyID)
 	     //end nah change
 	     ) {
 	    proxies.insert(proxyID); // since something was now not copied...x
 	  } else { // copy the old one
-	    ppp[string(inports->m_ports[j].m_label)].insert(inports->m_ports[j]);
+	    ppp[string(inports->ports[j].label)].insert(inports->ports[j]);
 	  }
 	  cout << i << " " << j << endl;
 	}
 	BindingData::ProxyPorts* new_inports = new BindingData::ProxyPorts(*inports);
-	new_inports->m_ports.length(ppp.size());
+	new_inports->ports.length(ppp.size());
 	unsigned int k = 0;
 	foreach(const PortMap::value_type& port, ppp){
 	  foreach(const BindingData::ProxyPort p, port.second) {
 	    //begin nah change
-	    assert(k < new_inports->m_ports.length());
+	    assert(k < new_inports->ports.length());
 	    //end nah change
-	    new_inports->m_ports[k++] = p;
-	    assert(string(p.m_proxyID) != "");
-	    assert(string(p.m_ownerProxyID) != "");
-	    assert(string(p.m_label) != "");
+	    new_inports->ports[k++] = p;
+	    assert(string(p.proxyID) != "");
+	    assert(string(p.ownerProxyID) != "");
+	    assert(string(p.label) != "");
 	  }
 	}
 	//cout << "NOW OVERWRITING INPORTS" << endl;
@@ -1048,11 +1048,11 @@ Binder::removeInports(const BindingData::ProxyPorts& _ports)
   }
   if(!proxies.empty()) {
     BindingData::BindTheseProxies* bindThese = new BindingData::BindTheseProxies();
-    bindThese->m_proxyIDs.length(proxies.size());
+    bindThese->proxyIDs.length(proxies.size());
     
     set<string>::const_iterator unbound_itr = proxies.begin();
-    for(unsigned int i = 0 ; i < bindThese->m_proxyIDs.length() ; ++i,++unbound_itr) {
-      bindThese->m_proxyIDs[i] = CORBA::string_dup(unbound_itr->c_str());
+    for(unsigned int i = 0 ; i < bindThese->proxyIDs.length() ; ++i,++unbound_itr) {
+      bindThese->proxyIDs[i] = CORBA::string_dup(unbound_itr->c_str());
     }
     addToWorkingMemory(newDataID(), 
 		       //BindingLocalOntology::BIND_THESE_PROXIES_TYPE, 

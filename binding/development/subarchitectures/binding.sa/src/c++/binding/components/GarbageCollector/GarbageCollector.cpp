@@ -41,16 +41,16 @@ namespace Binding {
 GarbageCollector::GarbageCollector(const string &_id) : 
   WorkingMemoryAttachedComponent(_id),
   AbstractBinder(_id),
-  m_confCalled(false)
+  confCalled(false)
 {
-  m_queueBehaviour = cdl::QUEUE;  
+  queueBehaviour = cdl::QUEUE;  
 }
 
 GarbageCollector::~GarbageCollector() {}
 
 void 
 GarbageCollector::start() {
-  assert(m_confCalled);
+  assert(confCalled);
 
   AbstractBinder::start();
 
@@ -74,7 +74,7 @@ GarbageCollector::start() {
 		  new MemberFunctionChangeReceiver<GarbageCollector>(this,
 								     &GarbageCollector::explicitFeatureDeletionAdded));
 
-  if(m_policeMode != DISABLED) {
+  if(policeMode != DISABLED) {
     const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
     foreach(string feature, ontology.allFeatureNames()) {
       addChangeFilter(createChangeFilter(feature,
@@ -99,24 +99,24 @@ GarbageCollector::start() {
 void 
 GarbageCollector::configure(map<string, string>& _config)
 {
-  m_policeMode = STRICT;
+  policeMode = STRICT;
   AbstractBinder::configure(_config);
   map<string, string>::const_iterator itr = _config.find("-p");
   if(itr == _config.end())
     itr = _config.find("--police-mode");
   if(itr!=_config.end()) {    
     if(itr->second == "disabled")
-      m_policeMode = DISABLED;
+      policeMode = DISABLED;
     else if (itr->second == "warning")
-      m_policeMode = WARNING;
+      policeMode = WARNING;
     else if (itr->second == "strict")
-      m_policeMode = STRICT;
+      policeMode = STRICT;
     else {
       cerr << "Illegal police mode: "  << itr->second << "(options are {strict,warning,disabled)" << endl;
       abort();
     }
   } 
-  m_confCalled = true;
+  confCalled = true;
 }
 
 
@@ -125,42 +125,42 @@ void GarbageCollector::runComponent() {
 
 /*void 
 GarbageCollector::deleteAllOnQueue() {
-  while(!m_deletionQueue.empty()) {
+  while(!deletionQueue.empty()) {
     deleteOneOnQueue();
   }
 }
 */
 void  
 GarbageCollector::deleteOneOnQueue() {
-  assert(!m_deletionQueue.empty());
-  log(string("deleting: ") + m_deletionQueue.front());
-  assert(!m_deletionQueue.front().empty());
-  deleteFromWorkingMemory(m_deletionQueue.front(),cdl::BLOCKING);
-  m_deletionQueue.pop_front();  
+  assert(!deletionQueue.empty());
+  log(string("deleting: ") + deletionQueue.front());
+  assert(!deletionQueue.front().empty());
+  deleteFromWorkingMemory(deletionQueue.front(),cdl::BLOCKING);
+  deletionQueue.pop_front();  
 }
 
 void 
 GarbageCollector::deletedProxyAdded(const cast::cdl::WorkingMemoryChange& _wmc) {
   shared_ptr<const DeletedBindingProxy> deleted = loadBindingDataFromWM<DeletedBindingProxy>(_wmc);
-  m_deletionQueue.push_back(string(deleted->m_deletedProxy.m_bestUnionsForProxyID));
-  assert(!m_deletionQueue.back().empty());
-  m_deletionQueue.push_back(string(deleted->m_deletedProxy.m_nonMatchingUnionID));
-  assert(!m_deletionQueue.back().empty());
-  m_deletionQueue.push_back(string(deleted->m_deletedProxy.m_inPortsID));
-  assert(!m_deletionQueue.back().empty());
-  for(unsigned int i=0 ; i < deleted->m_deletedProxy.m_proxyFeatures.length() ; ++i ) {
-    m_deletionQueue.push_back(string(deleted->m_deletedProxy.m_proxyFeatures[i].m_address));
-    assert(!m_deletionQueue.back().empty());
+  deletionQueue.push_back(string(deleted->deletedProxy.bestUnionsForProxyID));
+  assert(!deletionQueue.back().empty());
+  deletionQueue.push_back(string(deleted->deletedProxy.nonMatchingUnionID));
+  assert(!deletionQueue.back().empty());
+  deletionQueue.push_back(string(deleted->deletedProxy.inPortsID));
+  assert(!deletionQueue.back().empty());
+  for(unsigned int i=0 ; i < deleted->deletedProxy.proxyFeatures.length() ; ++i ) {
+    deletionQueue.push_back(string(deleted->deletedProxy.proxyFeatures[i].address));
+    assert(!deletionQueue.back().empty());
   }
   // should be called only when binder is stable an not busy...
   
-  StringMap<AssociatedIDs>::map::iterator itr = m_associatedToProxy.find(string(deleted->m_deletedProxyID));
-  if(itr != m_associatedToProxy.end()) {    
-    foreach(string id, itr->second.m_ids) {
+  StringMap<AssociatedIDs>::map::iterator itr = associatedToProxy.find(string(deleted->deletedProxyID));
+  if(itr != associatedToProxy.end()) {    
+    foreach(string id, itr->second.ids) {
       assert(!id.empty());
-      m_deletionQueue.push_back(id);
+      deletionQueue.push_back(id);
     }
-    m_associatedToProxy.erase(itr);
+    associatedToProxy.erase(itr);
   }
 }
 
@@ -168,72 +168,72 @@ GarbageCollector::deletedProxyAdded(const cast::cdl::WorkingMemoryChange& _wmc) 
 void 
 GarbageCollector::unionDeleted(const cast::cdl::WorkingMemoryChange& _wmc) 
 {
-  log("unionDeleted: " + string(_wmc.m_address.m_id));
-  StringMap<AssociatedIDs>::map::iterator itr = m_associatedToUnion.find(string(_wmc.m_address.m_id));
-  if(itr != m_associatedToUnion.end()) {    
-    foreach(string id, itr->second.m_ids) {
+  log("unionDeleted: " + string(_wmc.address.id));
+  StringMap<AssociatedIDs>::map::iterator itr = associatedToUnion.find(string(_wmc.address.id));
+  if(itr != associatedToUnion.end()) {    
+    foreach(string id, itr->second.ids) {
       assert(!id.empty());
-      m_deletionQueue.push_back(id);
+      deletionQueue.push_back(id);
     }
-    m_associatedToUnion.erase(itr);
+    associatedToUnion.erase(itr);
   }
 }
 
 void 
 GarbageCollector::bindingScoreAdded(const cast::cdl::WorkingMemoryChange& _wmc)
 {
-  log("bindingScoreAdded: " + string(_wmc.m_address.m_id));
+  log("bindingScoreAdded: " + string(_wmc.address.id));
   shared_ptr<const ProxyUnionScore> score = loadBindingDataFromWM<ProxyUnionScore>(_wmc);
-  m_associatedToUnion[string(score->m_unionID)].m_ids.insert(string(_wmc.m_address.m_id));
+  associatedToUnion[string(score->unionID)].ids.insert(string(_wmc.address.id));
 }
 
 void 
 GarbageCollector::featureComparisonAdded(const cast::cdl::WorkingMemoryChange& _wmc)
 {
   shared_ptr<const FeatureComparison> score = loadBindingDataFromWM<FeatureComparison>(_wmc);
-  m_associatedToProxy[string(score->m_proxyID)].m_ids.insert(string(_wmc.m_address.m_id));
+  associatedToProxy[string(score->proxyID)].ids.insert(string(_wmc.address.id));
 }
 
 void 
 GarbageCollector::explicitFeatureDeletionAdded(const cast::cdl::WorkingMemoryChange& _wmc) 
 {
-  string task_id(_wmc.m_address.m_id);
+  string task_id(_wmc.address.id);
   shared_ptr<const ExplicitFeatureDeletionTask> task_ptr(loadBindingDataFromWM<ExplicitFeatureDeletionTask>(task_id));
   const ExplicitFeatureDeletionTask& task(*task_ptr);
   assert(!task_id.empty());
   assert(boost::regex_match(task_id,boost::regex(".+:.+")));
-  string feature_id(task.m_featureID);
+  string feature_id(task.featureID);
   assert(!feature_id.empty());
   if(!boost::regex_match(feature_id,boost::regex(".+:.+"))) {
     cout << "\na very odd feature ID caught in GarbageCollector::explicitFeatureDeletionAdded: \"" 
 	 << feature_id << "\""<<endl;
     abort();
   }
-  m_deletionQueue.push_back(task_id);
-  m_deletionQueue.push_back(feature_id);
+  deletionQueue.push_back(task_id);
+  deletionQueue.push_back(feature_id);
 }
 
 
 void 
 GarbageCollector::statusUpdated(const cast::cdl::WorkingMemoryChange& _wmc)
 {
-  if(!m_statusCache.get()) { // must allocate the cache when we know the address
-    m_statusCache = 
+  if(!statusCache.get()) { // must allocate the cache when we know the address
+    statusCache = 
       auto_ptr<CachedCASTData<BindingData::BinderStatus> >
-      (new CachedCASTData<BindingData::BinderStatus>(*this,string(_wmc.m_address.m_id)));
+      (new CachedCASTData<BindingData::BinderStatus>(*this,string(_wmc.address.id)));
   }
   // now assert there is always only one BinderStatus
-  if(m_policeMode != DISABLED) {
-    assert(m_statusCache->id() == string(_wmc.m_address.m_id));
+  if(policeMode != DISABLED) {
+    assert(statusCache->id() == string(_wmc.address.id));
   }
   try {
-    while(!m_deletionQueue.empty() && 
-	  (*m_statusCache)->m_stable) { // the cache loads the status again if needed
+    while(!deletionQueue.empty() && 
+	  (*statusCache)->stable) { // the cache loads the status again if needed
       deleteOneOnQueue();
     }
   } catch (DoesNotExistOnWMException& _e){
     cerr << "Caught this in GarbageCollector::statusUpdated: " << _e.what() << endl 
-	 << "when loading BinderStatus on address: \"" << m_statusCache->id() << "\" (and/or deleting an element from the deletion queue)";
+	 << "when loading BinderStatus on address: \"" << statusCache->id() << "\" (and/or deleting an element from the deletion queue)";
     abort();
   }
 }
@@ -245,7 +245,7 @@ GarbageCollector::reportIllegalSignal(const cast::cdl::WorkingMemoryChange& _wmc
   using cast::operator<<;
   //cast::operator<<(cerr,_wmc) << endl;
   cerr << _wmc << endl << endl;
-  if(m_policeMode == STRICT)
+  if(policeMode == STRICT)
     abort();
 }
 

@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 #include <cast/architecture/ManagedProcess.hpp>
-#include <binding/idl/BindingData.hh>
+#include <BindingData.hpp>
 #include <binding/utils/LocalClasses.hpp>
 #include <binding/BindingException.hpp>
 #include <binding/feature-utils/AbstractFeature.hpp>
@@ -69,17 +69,17 @@ void for_all_nonconst(T& _container, const F& _functor) {
 template<class T1, class T2>
 struct print_pair_fct {
   print_pair_fct(std::ostream& _out, const std::string& _div = ": ", const std::string& _end = "\n") 
-    : m_out(_out),
-      m_div(_div),
-      m_end(_end) { };
+    : out(_out),
+      div(_div),
+      end(_end) { };
   
   void operator()(const std::pair<T1,T2>& _feature) const {
-    m_out << _feature.first << m_div << _feature.second << m_end;
+    out << _feature.first << div << _feature.second << end;
   }
 private:
-  mutable std::ostream& m_out;
-  const std::string& m_div;
-  const std::string& m_end;
+  mutable std::ostream& out;
+  const std::string& div;
+  const std::string& end;
 };
 
 
@@ -98,17 +98,17 @@ print_set(std::ostream& _out, const Set _set) {
 }
 
 struct to_dot_label_fct {
-  to_dot_label_fct(AbstractFeature::FeatureDisplayMode _mode = AbstractFeature::only_feature) : m_mode(_mode) {}
-  std::string operator()(const AbstractFeature& _f) const {return _f.toDotLabel(m_mode);}
+  to_dot_label_fct(AbstractFeature::FeatureDisplayMode _mode = AbstractFeature::only_feature) : mode(_mode) {}
+  std::string operator()(const AbstractFeature& _f) const {return _f.toDotLabel(mode);}
 private:
-  AbstractFeature::FeatureDisplayMode m_mode;
+  AbstractFeature::FeatureDisplayMode mode;
 };
   
 struct to_string_fct {
-  to_string_fct(AbstractFeature::FeatureDisplayMode _mode = AbstractFeature::only_feature) : m_mode(_mode) {}
-  std::string operator()(const AbstractFeature& _f) const {return _f.toString(m_mode);}
+  to_string_fct(AbstractFeature::FeatureDisplayMode _mode = AbstractFeature::only_feature) : mode(_mode) {}
+  std::string operator()(const AbstractFeature& _f) const {return _f.toString(mode);}
 private:
-  AbstractFeature::FeatureDisplayMode m_mode;
+  AbstractFeature::FeatureDisplayMode mode;
 };
 
 template<class Set, class Fct>
@@ -128,22 +128,22 @@ print_set_w_fct(std::ostream& _out, const Set& _set, const Fct& _fct) {
 
 template<class T>
 struct print_fct {
-  print_fct(std::ostream& out) : m_out(out) {};
+  print_fct(std::ostream& out) : out(out) {};
   void operator()(const T& _t) const {
-    m_out << _t;
+    out << _t;
   }
 private:
-  mutable std::ostream& m_out;
+  mutable std::ostream& out;
 };
 
 template<class Set>
 struct print_set_fct {
-  print_set_fct(std::ostream& out) : m_out(out) {};
+  print_set_fct(std::ostream& out) : out(out) {};
   void operator()(const Set& _set) const {
-    print_set(m_out,_set);
+    print_set(out,_set);
   }  
 private:
-  mutable std::ostream& m_out;
+  mutable std::ostream& out;
 };
 
 template<class T>
@@ -162,7 +162,7 @@ bool
 operator==(const BindingData::SimpleRelation& _rel1, 
 	   const BindingData::SimpleRelation& _rel2)
 {
-  return std::string(_re1.m_from) == ;
+  return std::string(_re1.from) == ;
 }*/
 
 /// makes a dot label out of a feature sets. exludes all features in

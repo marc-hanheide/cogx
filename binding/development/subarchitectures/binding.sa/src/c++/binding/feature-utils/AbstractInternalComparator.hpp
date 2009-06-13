@@ -34,13 +34,13 @@ protected:
   
 private: 
   /// keeps track of what features the comparator is for
-  //std::auto_ptr<const ComparatorIndex> m_comparatorIndex;
+  //std::auto_ptr<const ComparatorIndex> comparatorIndex;
 public:
   /*  const ComparatorIndex& comparatorIndex() const {
-      if(m_comparatorIndex.get() == NULL) {
+      if(comparatorIndex.get() == NULL) {
       throw BindingException("Error: Comparator index not set for internal comparator");
       }
-      return *m_comparatorIndex;
+      return *comparatorIndex;
       }
   */
 /*  template<typename ProxyIDLFeatureT, typename UnionIDLFeatureT>
@@ -105,7 +105,7 @@ protected:
 
   virtual void registerWithOntology(BindingFeatureOntology& _ontology,
 				    boost::shared_ptr<const AbstractInternalComparator>& _comp) const {
-    //_ontology.m_internalComparators.insert(std::make_pair(getComparatorIndex<ProxyIDLFeatureT,UnionIDLFeatureT>(_ontology),_comp)); 
+    //_ontology.internalComparators.insert(std::make_pair(getComparatorIndex<ProxyIDLFeatureT,UnionIDLFeatureT>(_ontology),_comp)); 
     _ontology.registerInternalComparator(typeid(ProxyIDLFeatureT),typeid(UnionIDLFeatureT), _comp);
   }
 

@@ -47,7 +47,7 @@ BindingScorer::BindingScorer(const string &_id) :
   
   WorkingMemoryAttachedComponent(_id),
   AbstractBinder(_id),
-  m_comparatorCache(*this)//  m_featureComparisonCache(this)
+  comparatorCache(*this)//  featureComparisonCache(this)
 { 
 }
 
@@ -109,25 +109,25 @@ void
 BindingScorer::configure(map<string, string>& _config)
 {
   AbstractBinder::configure(_config);
-  m_nth = 0;
-  m_maxN = 1;
+  nth = 0;
+  maxN = 1;
   if(_config["-nth"] != "") {
-    m_nth = lexical_cast<unsigned int>(_config["-nth"]);
-    log("nth: " + m_nth);
+    nth = lexical_cast<unsigned int>(_config["-nth"]);
+    log("nth: " + nth);
     if(_config["-maxN"] != "") {
-      m_maxN = lexical_cast<unsigned int>(_config["-maxN"]);
-      if(m_maxN <= m_nth)
+      maxN = lexical_cast<unsigned int>(_config["-maxN"]);
+      if(maxN <= nth)
 	throw(BindingException("-maxN <= nth!\n"));
     } else {
       throw(BindingException("-maxN must be specified if -nth is!\n"));
     }
   }
-  m_dummy = false;
+  dummy = false;
   if(_config["--dummy"] != "") {
-    m_dummy = true;
+    dummy = true;
   }
   
-  log("maxN = " + lexical_cast<string>(m_maxN) + " m_nth = " + lexical_cast<string>(m_nth));
+  log("maxN = " + lexical_cast<string>(maxN) + " nth = " + lexical_cast<string>(nth));
   setBindingSubarchID(subarchitectureID());
 } 
 
@@ -136,7 +136,7 @@ BindingScorer::~BindingScorer() {}
 
 void 
 BindingScorer::scoreThisUnion(const cdl::WorkingMemoryChange & _wmc) {
-  const string unionID(_wmc.m_address.m_id);
+  const string unionID(_wmc.address.id);
   log("scoreThisUnion: " + unionID);
   if(!existsOnWorkingMemory(unionID)) {
     log("union not existing in scoreThisUnion(...)): ");
@@ -144,7 +144,7 @@ BindingScorer::scoreThisUnion(const cdl::WorkingMemoryChange & _wmc) {
   }
   const LBindingUnion* uptr = NULL;
   try {
-    uptr = &(m_unionLocalCache[unionID]);
+    uptr = &(unionLocalCache[unionID]);
   } catch(const DoesNotExistOnWMException& _e) {
     log("Caught this in BindingScorer (union not existing in scoreThisUnion(...)): " + string(_e.what()));
   }
@@ -199,32 +199,32 @@ BindingScorer::scoreThisUnion(const cdl::WorkingMemoryChange & _wmc) {
 void
 BindingScorer::bindTheseProxiesAdded(const cdl::WorkingMemoryChange & _wmc) {
   //  cout << "BindingScorer::bindTheseProxiesAdded" << endl;
-  log("bindTheseProxiesAdded: " + string(_wmc.m_address.m_subarchitecture) + " id: " + string(_wmc.m_address.m_id));
-  if(string(_wmc.m_address.m_subarchitecture) != m_subarchitectureID)
+  log("bindTheseProxiesAdded: " + string(_wmc.address.subarchitecture) + " id: " + string(_wmc.address.id));
+  if(string(_wmc.address.subarchitecture) != subarchitectureID)
     throw BindingException("ERROR: bindTheseProxies written to wrong subarchitecture WM\nMake sure to set the -bsa flag to the binding subarchitecture ID");
   // get the data from working memory
   shared_ptr<const BindingData::BindTheseProxies> 
     bindTheseProxies(loadBindingDataFromWM<BindingData::BindTheseProxies>(_wmc));
   
-  log("bindThese.m_proxyIDs.length(): " + lexical_cast<string>(bindTheseProxies->m_proxyIDs.length()));
+  log("bindThese.proxyIDs.length(): " + lexical_cast<string>(bindTheseProxies->proxyIDs.length()));
     
   if(!hasBinderToken())
     acquireBinderToken(); // will be released again, when all seems bound
   //  try {
   
-  for(unsigned int i = 0; i < bindTheseProxies->m_proxyIDs.length(); ++i) {
-    string proxyID(bindTheseProxies->m_proxyIDs[i]);
+  for(unsigned int i = 0; i < bindTheseProxies->proxyIDs.length(); ++i) {
+    string proxyID(bindTheseProxies->proxyIDs[i]);
    
-    log("bindTheseProxies->m_proxyIDs[" +lexical_cast<string>(i)+ "]: " 
-	+ string(bindTheseProxies->m_proxyIDs[i]));
+    log("bindTheseProxies->proxyIDs[" +lexical_cast<string>(i)+ "]: " 
+	+ string(bindTheseProxies->proxyIDs[i]));
     log("gonna score " + proxyID);
     
     const LBindingProxy* proxy_ptr = maybeLoadProxy(proxyID);
     if(proxy_ptr) {
-      m_processedProxies.insert(proxyID);
+      processedProxies.insert(proxyID);
       const LBindingProxy& proxy(*proxy_ptr);
       
-      //      assert(proxy->m_proxyState != BindingData::BOUND);
+      //      assert(proxy->proxyState != BindingData::BOUND);
       
       scoreAndStoreVsNIL(proxy);
       vector<shared_ptr<const CASTData<BindingData::BindingUnion> > > unions;
@@ -239,7 +239,7 @@ BindingScorer::bindTheseProxiesAdded(const cdl::WorkingMemoryChange & _wmc) {
 	string unionID((*i)->getID());
 	try {
 	  if(lunions[j] == NULL) {
-	    lunions[j] = &(m_unionLocalCache[unionID]);
+	    lunions[j] = &(unionLocalCache[unionID]);
 	  }
 	} catch(const DoesNotExistOnWMException& _e) {
 	  log("Caught this in BindingScorer (union not existing in bindTheseProxiesAdded(...)): " + string(_e.what()));
@@ -259,19 +259,19 @@ BindingScorer::bindTheseProxiesAdded(const cdl::WorkingMemoryChange & _wmc) {
  // releaseBinderToken();
   // now delete the BindTheseProxies list
 #warning BindTheseProxies IS now deleted, beware!
-  deleteFromWorkingMemory(string(_wmc.m_address.m_id));
+  deleteFromWorkingMemory(string(_wmc.address.id));
 }
 
 void 
 BindingScorer::scoringTaskAdded(const cdl::WorkingMemoryChange & _wmc) {
-  log("scoringTaskAdded : " + string(_wmc.m_address.m_id));
+  log("scoringTaskAdded : " + string(_wmc.address.id));
   shared_ptr<const BindingData::ScoringTask>
-    ctask(loadBindingDataFromWM<BindingData::ScoringTask>(_wmc.m_address.m_id));
+    ctask(loadBindingDataFromWM<BindingData::ScoringTask>(_wmc.address.id));
 
-  const string proxyUnionScoreID(ctask->m_proxyUnionScoreID);
+  const string proxyUnionScoreID(ctask->proxyUnionScoreID);
 
   // We have what we need, delete the task
-  deleteFromWorkingMemory(string(_wmc.m_address.m_id));  
+  deleteFromWorkingMemory(string(_wmc.address.id));  
   shared_ptr<const BindingData::ProxyUnionScore> comparison;
   try {
     comparison = loadBindingDataFromWM<BindingData::ProxyUnionScore>(proxyUnionScoreID);
@@ -280,15 +280,15 @@ BindingScorer::scoringTaskAdded(const cdl::WorkingMemoryChange & _wmc) {
     abort();
   }
     
-  const string proxyID(comparison->m_proxyID);
-  const string unionID(comparison->m_unionID);
+  const string proxyID(comparison->proxyID);
+  const string unionID(comparison->unionID);
   
   log(string("BASED ON TASK: Going to score proxy ") + proxyID + " vs. binding " + unionID);
 
   try {
-    const LBindingProxy& proxy(m_proxyLocalCache[proxyID]);
+    const LBindingProxy& proxy(proxyLocalCache[proxyID]);
     if(unionID != string(BindingData::NO_UNION)) {
-      const LBindingUnion& binding_union(m_unionLocalCache[unionID]);
+      const LBindingUnion& binding_union(unionLocalCache[unionID]);
       scoreAndStore(proxy,binding_union);
     } else {
       scoreAndStoreVsNIL(proxy);
@@ -305,12 +305,12 @@ BindingScorer::scoreAndStoreVsNIL(const LBindingProxy& _proxy)
 {
   // default score with no matches or mismatches
   BindingData::BindingScore score = defaultBindingScore();
-  score.m_comparable = true;
-  score.m_sticky = 1;
-  score.m_proxyUpdatesWhenThisComputed = _proxy->m_updates;
-  score.m_proxyID = CORBA::string_dup(_proxy.id().c_str());
-  score.m_proxyFeatureSignature = CORBA::string_dup(_proxy->m_featureSignature);
-  score.m_unionID = CORBA::string_dup(BindingData::NO_UNION);
+  score.comparable = true;
+  score.sticky = 1;
+  score.proxyUpdatesWhenThisComputed = _proxy->updates;
+  score.proxyID = CORBA::string_dup(_proxy.id().c_str());
+  score.proxyFeatureSignature = CORBA::string_dup(_proxy->featureSignature);
+  score.unionID = CORBA::string_dup(BindingData::NO_UNION);
   _storeScore(_proxy.id(),string(BindingData::NO_UNION),score);
 }
 /// used to throw
@@ -325,15 +325,15 @@ BindingScorer::scoreAndStore(const LBindingProxy& _proxy,
   const string& unionID(_union.id());
   log("gonna to score proxy " + proxyID + " vs. binding " + unionID + "!");
   
-  if(proxyID[0] % m_maxN != m_nth) {
+  if(proxyID[0] % maxN != nth) {
     log("NOT my proxy: " + proxyID);
     abort();
   }
     
   BindingData::BindingScore score = defaultBindingScore();
-  score.m_proxyID = CORBA::string_dup(_proxy.id().c_str());
-  score.m_unionID = CORBA::string_dup(_union.id().c_str());
-  score.m_proxyUpdatesWhenThisComputed = _proxy->m_updates;
+  score.proxyID = CORBA::string_dup(_proxy.id().c_str());
+  score.unionID = CORBA::string_dup(_union.id().c_str());
+  score.proxyUpdatesWhenThisComputed = _proxy->updates;
       
   try {
     
@@ -341,16 +341,16 @@ BindingScorer::scoreAndStore(const LBindingProxy& _proxy,
       log("----- Attempting to score proxy " + proxyID + " vs. binding " + unionID + " but the former does not exist. Deleted? Doing nothing!");
 #warning SILLY TOKEN HACK, should not be necessary
       BindingData::ProxyProcessingFinished* p = new BindingData::ProxyProcessingFinished;
-      p->m_proxyID = CORBA::string_dup(proxyID.c_str());
+      p->proxyID = CORBA::string_dup(proxyID.c_str());
       addToWorkingMemory(newDataID(),p, cast::cdl::BLOCKING);
       return;
     }
     //  shared_ptr<const BindingData::BindingProxy>
-    //    proxy(m_proxyCache.getPtr(proxyID));
+    //    proxy(proxyCache.getPtr(proxyID));
     
     
     //shared_ptr<const BindingData::BindingProxy>
-    //  proxy(m_proxyCache.getPtr(proxyID));
+    //  proxy(proxyCache.getPtr(proxyID));
     
     //log(Binding::toString(*proxy));
     
@@ -360,7 +360,7 @@ BindingScorer::scoreAndStore(const LBindingProxy& _proxy,
       log("----- Attempting to score proxy " + proxyID + " vs. binding " + unionID + " but the latter does not exist. Deleted? Doing nothing!");
       return;
     }
-    if(_union->m_type == _proxy->m_type) {
+    if(_union->type == _proxy->type) {
       
       score = scoreProxyVsUnion(_proxy, _union);
       unsigned int relationMatches;
@@ -375,36 +375,36 @@ BindingScorer::scoreAndStore(const LBindingProxy& _proxy,
 	     << _e.what() << "\n should be caught earlier. Aborting." << endl; 
 	abort();
       }
-      score.m_relationMatches = relationMatches;
-      score.m_relationMismatch = relationMismatch;
+      score.relationMatches = relationMatches;
+      score.relationMismatch = relationMismatch;
       log("After relational_score: score between Proxy " + _proxy.id() + " and Union " + _union.id() + " : "+ Binding::scoreToString(score));
       if(relationMatches > 0 || relationMismatch)
-	score.m_comparable = true;
-      if(score.m_matches == 0 &&
-	 score.m_relationMatches == 0 &&
-	 score.m_mismatch == false &&
-	 score.m_relationMismatch == false &&
-	 string(_proxy->m_unionID) == _union.id()) {
+	score.comparable = true;
+      if(score.matches == 0 &&
+	 score.relationMatches == 0 &&
+	 score.mismatch == false &&
+	 score.relationMismatch == false &&
+	 string(_proxy->unionID) == _union.id()) {
 	log(_proxy.id() +  " is already bound to "+ _union.id() +", sticky score is increased");
 	score = defaultBindingScore();
-	score.m_comparable = true;
-	score.m_sticky = 2;
-	score.m_proxyUpdatesWhenThisComputed = _proxy->m_updates;
-	score.m_proxyID = CORBA::string_dup(_proxy.id().c_str());
-	score.m_proxyFeatureSignature = CORBA::string_dup(_proxy->m_featureSignature);
-	score.m_unionID = CORBA::string_dup(_union.id().c_str());
+	score.comparable = true;
+	score.sticky = 2;
+	score.proxyUpdatesWhenThisComputed = _proxy->updates;
+	score.proxyID = CORBA::string_dup(_proxy.id().c_str());
+	score.proxyFeatureSignature = CORBA::string_dup(_proxy->featureSignature);
+	score.unionID = CORBA::string_dup(_union.id().c_str());
       }
     } else { // not the same type of proxies/bindings
       score = defaultBindingScore();
-      score.m_comparable = false;
-      score.m_proxyUpdatesWhenThisComputed = _proxy->m_updates;
-      score.m_proxyID = CORBA::string_dup(_proxy.id().c_str());
-      score.m_proxyFeatureSignature = CORBA::string_dup(_proxy->m_featureSignature);
-      score.m_unionID = CORBA::string_dup(_union.id().c_str());
+      score.comparable = false;
+      score.proxyUpdatesWhenThisComputed = _proxy->updates;
+      score.proxyID = CORBA::string_dup(_proxy.id().c_str());
+      score.proxyFeatureSignature = CORBA::string_dup(_proxy->featureSignature);
+      score.unionID = CORBA::string_dup(_union.id().c_str());
     }
     
 //    if(!unionFeaturesUpToDate(_union,_proxy)) {
-//      score.m_mismatch = true;
+//      score.mismatch = true;
 //    }
     
     //log("going to update " + proxyUnionScoreID + " a (" + BindingLocalOntology::FEATURE_SET_COMPARISON_TYPE + ")");
@@ -421,7 +421,7 @@ BindingScorer::scoreAndStore(const LBindingProxy& _proxy,
   }
   catch(const ExternalScoreNotReadyException& _e) {
     log("ExternalScoreNotReadyException: " + _proxy.id() + " vs. " + _union.id());
-    unlockEntry(_e.m_featureComparisonID);
+    unlockEntry(_e.featureComparisonID);
   }
   catch(const BestListNotUpToDate&) {
     log("BestListNotUpToDate "  + _proxy.id() + " vs. " + _union.id()  + " (aborting now to catch this in testing, but this should be changed later)");
@@ -436,10 +436,10 @@ BindingScorer::scoreProxyVsUnion(const LBindingProxy& _proxy,
   const BindingFeatureOntology& ont(BindingFeatureOntology::construct());
   
   BindingData::BindingScore ret = defaultBindingScore();
-  ret.m_comparable = false;
-  ret.m_proxyUpdatesWhenThisComputed = _proxy->m_updates;
-  ret.m_proxyID = CORBA::string_dup(_proxy.id().c_str());
-  ret.m_unionID = CORBA::string_dup(_union.id().c_str());
+  ret.comparable = false;
+  ret.proxyUpdatesWhenThisComputed = _proxy->updates;
+  ret.proxyID = CORBA::string_dup(_proxy.id().c_str());
+  ret.unionID = CORBA::string_dup(_union.id().c_str());
   
   const string& proxyID(_proxy.id());
   //const string& unionID(_union.id());
@@ -472,8 +472,8 @@ BindingScorer::scoreProxyVsUnion(const LBindingProxy& _proxy,
   unsigned int union_element_nr = 0;
   static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
   while(p_i != proxyset.end() && !finished) {
-    //const set<string>& externally_comparable_set((*(p_i->second.begin()))->properties().m_comparableExternally);
-    //const set<string>& internally_comparable_set((*(p_i->second.begin()))->properties().m_comparableInternally);
+    //const set<string>& externally_comparable_set((*(p_i->second.begin()))->properties().comparableExternally);
+    //const set<string>& internally_comparable_set((*(p_i->second.begin()))->properties().comparableInternally);
     const set<string>& externally_comparable_set(ontology.comparableExternally((*p_i->second.begin())->typeInfo()));
     const set<string>& internally_comparable_set(ontology.comparableInternally((*p_i->second.begin())->typeInfo()));
 //    log("*** PROXY FEATURE:" + (*(p_i->second.begin()))->name());
@@ -486,13 +486,13 @@ BindingScorer::scoreProxyVsUnion(const LBindingProxy& _proxy,
       string unionFeatureType(u_i->first);
       if(unionFeatureType == ont.featureName(typeid(BindingFeatures::Singular))) {//BindingFeatureOntology::SINGULAR_TYPE) {
 	union_is_singular = true;
-	//union_element_nr = dynamic_cast<const Feature<BindingFeatures::Singular>* >((*(u_i->second.begin())).get())->idlFeature().m_elementNumber;
-	union_element_nr = extractIDLFeature<BindingFeatures::Singular>(*(u_i->second.begin())).m_elementNumber;
+	//union_element_nr = dynamic_cast<const Feature<BindingFeatures::Singular>* >((*(u_i->second.begin())).get())->idlFeature().elementNumber;
+	union_element_nr = extractIDLFeature<BindingFeatures::Singular>(*(u_i->second.begin())).elementNumber;
       }
       if(externally_comparable_set.find(u_i->first) != externally_comparable_set.end() ||
 	 internally_comparable_set.find(u_i->first) != internally_comparable_set.end() ) {
 	// whatever the results, the features are comparable
-	ret.m_comparable = true;
+	ret.comparable = true;
 	typedef OneTypeOfFeatures ProxyFeatures;
 	typedef OneTypeOfFeaturesWithRepetitions UnionFeatures;
 	const ProxyFeatures& proxy_features(p_i->second);
@@ -516,16 +516,16 @@ BindingScorer::scoreProxyVsUnion(const LBindingProxy& _proxy,
 	      union_creation_times.push_back(dynamic_cast<const Feature<BindingFeatures::CreationTime>* >((*uf_i).get())->idlFeature());
 	    }
 	    //cout << "calling comparator cache's get function" << endl;
-	    equivalent = m_comparatorCache.get(*(*pf_i),*(*uf_i), proxyID);
+	    equivalent = comparatorCache.get(*(*pf_i),*(*uf_i), proxyID);
 	    log("equivalent(" + (*pf_i)->featureID() + "," 
 		+ (*uf_i)->featureID() + ") = " 
 		+ Binding::triboolToString(equivalent));
 	    if(equivalent.value == tribool::true_value && !one_match_for_union_feature) {
-	      ret.m_matches++;
+	      ret.matches++;
 	      one_match_for_union_feature = true;
 	    }
 	    if(equivalent.value == tribool::false_value) {
-	      ret.m_mismatch = true;
+	      ret.mismatch = true;
 	      finished = true;
 	    }
 //	    if(equivalent.value != tribool::indeterminate_value) {
@@ -539,7 +539,7 @@ BindingScorer::scoreProxyVsUnion(const LBindingProxy& _proxy,
     p_i++;
   } // proxy features
   log(scoreToString(ret) + "\n");
-  ret.m_salienceHeuristics = _salienceHeuristics(proxy_saliences, union_saliences, proxy_creation_times, union_creation_times) 
+  ret.salienceHeuristics = _salienceHeuristics(proxy_saliences, union_saliences, proxy_creation_times, union_creation_times) 
     + static_cast<double>(union_element_nr); // a hack to make older singulars "look" better
   return ret;
 }
@@ -550,17 +550,17 @@ _salienceHeuristicsHelper(const BindingFeatures::Salience& _s1,
   if(overlap(_s1,_s2)) {
     return 0.0;
   }
-  BindingFeaturesCommon::EndTime diff1 = diff(_s1.m_start, _s2.m_end);
-  BindingFeaturesCommon::EndTime diff2 = diff(_s2.m_start, _s1.m_end);
+  BindingFeaturesCommon::EndTime diff1 = diff(_s1.start, _s2.end);
+  BindingFeaturesCommon::EndTime diff2 = diff(_s2.start, _s1.end);
   BindingFeaturesCommon::EndTime diff;
   if(end_time_leq(diff1,diff2)) {
     diff = diff1;
   } else {
     diff = diff2;
   }
-  if(diff.m_t.length() == 0)
-    return defaultBindingScore().m_salienceHeuristics;
-  return -baltTime(diff.m_t[0]); // negative since the intervals are crosschecked
+  if(diff.t.length() == 0)
+    return defaultBindingScore().salienceHeuristics;
+  return -baltTime(diff.t[0]); // negative since the intervals are crosschecked
 }
 
 double 
@@ -569,7 +569,7 @@ BindingScorer::_salienceHeuristics(const vector<BindingFeatures::Salience>& _pro
 				   const vector<BindingFeatures::CreationTime>& _proxy_creation_times,
 				   const vector<BindingFeatures::CreationTime>& _union_creation_times) const
 {
-  double ret = defaultBindingScore().m_salienceHeuristics;
+  double ret = defaultBindingScore().salienceHeuristics;
   const vector<BindingFeatures::Salience>& ps(_proxy_saliences);
   const vector<BindingFeatures::Salience>& us(_union_saliences);
   const vector<BindingFeatures::CreationTime>& pc(_proxy_creation_times);
@@ -584,8 +584,8 @@ BindingScorer::_salienceHeuristics(const vector<BindingFeatures::Salience>& _pro
     for(vector<BindingFeatures::CreationTime>::const_iterator j = uc.begin(); j != uc.end() ; ++j){
       if(immediateProxyID(*i) != immediateProxyID(*j)) {
 	BindingFeatures::Salience us;
-	us.m_start = startTime(j->m_creationTime);
-	us.m_end = endTime(j->m_creationTime);
+	us.start = startTime(j->creationTime);
+	us.end = endTime(j->creationTime);
 	double h = _salienceHeuristicsHelper(*i,us);
 	if(h < ret) ret = h;
       }
@@ -593,8 +593,8 @@ BindingScorer::_salienceHeuristics(const vector<BindingFeatures::Salience>& _pro
   }
   for(vector<BindingFeatures::CreationTime>::const_iterator i = pc.begin(); i != pc.end() ; ++i){
     BindingFeatures::Salience ps;
-    ps.m_start = startTime(i->m_creationTime);
-    ps.m_end = endTime(i->m_creationTime);    
+    ps.start = startTime(i->creationTime);
+    ps.end = endTime(i->creationTime);    
     for(vector<BindingFeatures::Salience>::const_iterator j = us.begin(); j != us.end() ; ++j){
       if(immediateProxyID(*i) != immediateProxyID(*j)) {	
 	double h = _salienceHeuristicsHelper(*j,ps);
@@ -604,8 +604,8 @@ BindingScorer::_salienceHeuristics(const vector<BindingFeatures::Salience>& _pro
     for(vector<BindingFeatures::CreationTime>::const_iterator j = uc.begin(); j != uc.end() ; ++j){
       if(immediateProxyID(*i) != immediateProxyID(*j)) {
 	BindingFeatures::Salience us;
-	us.m_start = startTime(j->m_creationTime);
-	us.m_end = endTime(j->m_creationTime);
+	us.start = startTime(j->creationTime);
+	us.end = endTime(j->creationTime);
 	double h = _salienceHeuristicsHelper(us,ps);
 	if(h < ret) ret = h;
       }
@@ -617,7 +617,7 @@ BindingScorer::_salienceHeuristics(const vector<BindingFeatures::Salience>& _pro
 void
 BindingScorer::updateComparison(const cdl::WorkingMemoryChange & _wmc) {
   log("BindingScorer::updateComparison(const cdl::WorkingMemoryChange & _wmc) {");
-  m_comparatorCache.set(string(_wmc.m_address.m_id));
+  comparatorCache.set(string(_wmc.address.id));
 }
 
 
@@ -625,8 +625,8 @@ BindingScorer::updateComparison(const cdl::WorkingMemoryChange & _wmc) {
 bool 
 unionInBestList(const string& _unionID, const BindingData::BestUnionsForProxy& _best)
 {
-  for(unsigned int i = 0 ; i < _best.m_unionIDs.length() ; ++i) {
-    if(string(_best.m_unionIDs[i]) == _unionID) { 
+  for(unsigned int i = 0 ; i < _best.unionIDs.length() ; ++i) {
+    if(string(_best.unionIDs[i]) == _unionID) { 
       return true;
     }
   }
@@ -636,8 +636,8 @@ unionInBestList(const string& _unionID, const BindingData::BestUnionsForProxy& _
 // returns true if the unionID is in the nonmatch-list
 bool unionInNonMatchingList(const string& _unionID, const BindingData::NonMatchingUnions& _nonmatch)
 {
-  for(unsigned int i = 0 ; i < _nonmatch.m_nonMatchingUnionIDs.length() ; ++i) {
-    if(string(_nonmatch.m_nonMatchingUnionIDs[i]) == _unionID) { 
+  for(unsigned int i = 0 ; i < _nonmatch.nonMatchingUnionIDs.length() ; ++i) {
+    if(string(_nonmatch.nonMatchingUnionIDs[i]) == _unionID) { 
       return true;
     }
   }
@@ -666,8 +666,8 @@ proxiesBound(const LBindingProxy& _proxy1,
     // related proxies should get rescored
     return false;
   }
-  string unionID1(_proxy1->m_unionID);
-  string unionID2(_proxy2->m_unionID);
+  string unionID1(_proxy1->unionID);
+  string unionID2(_proxy2->unionID);
   if(unionID1 == unionID2) { 
     // the proxies are bound to the same union,then they obviously match
     return true; 
@@ -691,8 +691,8 @@ proxyCompatibility(const LBindingProxy& _proxy1,
     // we can't know if they match if they're not scored yet
     return UNKNOWN;
   }
-  string unionID1(_proxy1->m_unionID);
-  string unionID2(_proxy2->m_unionID);
+  string unionID1(_proxy1->unionID);
+  string unionID2(_proxy2->unionID);
   if(unionID1 == unionID2) { 
     // the proxies are bound to the same union,then they obviously match
     return MATCH; 
@@ -700,14 +700,14 @@ proxyCompatibility(const LBindingProxy& _proxy1,
   const BindingData::BestUnionsForProxy& best1(_proxy1.bestUnionsForProxy());
   const BindingData::BestUnionsForProxy& best2(_proxy2.bestUnionsForProxy());  
 
-  if(!(best1.m_unionIDs.length() == 1 || unionInBestList(unionID1,best1)) ||
-     !(best2.m_unionIDs.length() == 1 || unionInBestList(unionID2,best2)))
+  if(!(best1.unionIDs.length() == 1 || unionInBestList(unionID1,best1)) ||
+     !(best2.unionIDs.length() == 1 || unionInBestList(unionID2,best2)))
     throw(BestListNotUpToDate());
 
   //#warning I don't understand what I did here, and thus do not understand what I now undo
-  assert(best1.m_unionIDs.length() == 1 || unionInBestList(unionID1,best1)); // should be true, unless some synchronization issue messes it up
-  //cout << "best2.m_unionIDs.length(): " << best2.m_unionIDs.length() << endl;
-  assert(best2.m_unionIDs.length() == 1 || unionInBestList(unionID2,best2)); // should be true, unless some synchronization issue messes it up
+  assert(best1.unionIDs.length() == 1 || unionInBestList(unionID1,best1)); // should be true, unless some synchronization issue messes it up
+  //cout << "best2.unionIDs.length(): " << best2.unionIDs.length() << endl;
+  assert(best2.unionIDs.length() == 1 || unionInBestList(unionID2,best2)); // should be true, unless some synchronization issue messes it up
 
   if(unionInBestList(unionID1,best2) || unionInBestList(unionID2,best1) ) {
     // the proxy is bound to a union which in principle COULD have been bound to the other proxy since it is equally scored
@@ -756,11 +756,11 @@ BindingScorer::_relational_score(const LBindingProxy& _proxy,
 	for(set<BindingData::ProxyPort, proxyPortLess>::const_iterator union_port(unionOutports_i->second.begin());
 	    union_port != unionOutports_i->second.end();
 	    ++union_port) {
-	  if(string(proxy_port->m_ownerProxyID) != string(union_port->m_ownerProxyID)) { // ports not compared to eachother if they stem from same proxy
+	  if(string(proxy_port->ownerProxyID) != string(union_port->ownerProxyID)) { // ports not compared to eachother if they stem from same proxy
 	    ProxyCompatibility comp = UNKNOWN;
 	    try{
-	      comp = proxyCompatibility(m_proxyLocalCache[string(proxy_port->m_proxyID)],
-					m_proxyLocalCache[string(union_port->m_proxyID)]);
+	      comp = proxyCompatibility(proxyLocalCache[string(proxy_port->proxyID)],
+					proxyLocalCache[string(union_port->proxyID)]);
 	    } catch(const DoesNotExistOnWMException& _e) {
 	      cerr << "This is sort of expected and should set comp to UNKNOWN here:\n" << _e.what() << endl;
 #warning changed this since Alen had this abortion a lot
@@ -797,14 +797,14 @@ BindingScorer::_relational_score(const LBindingProxy& _proxy,
   }
   const BindingData::ProxyPorts& proxyInports(*p_ptr);
   const BindingData::ProxyPorts& unionInports(*u_ptr);
-  for(unsigned int i = 0; i < unionInports.m_ports.length() ; ++i) {
+  for(unsigned int i = 0; i < unionInports.ports.length() ; ++i) {
     bool scored(false); // each union port only counted once
-    for(unsigned int j = 0; j < proxyInports.m_ports.length() && !scored ; ++j) {
-      if(string(unionInports.m_ports[i].m_ownerProxyID) != string(proxyInports.m_ports[j].m_ownerProxyID)) { // ports not compared to eachother if they stem from same proxy
-	if(string(unionInports.m_ports[i].m_label) == string(proxyInports.m_ports[j].m_label)) { // only if they're related in the same way 
+    for(unsigned int j = 0; j < proxyInports.ports.length() && !scored ; ++j) {
+      if(string(unionInports.ports[i].ownerProxyID) != string(proxyInports.ports[j].ownerProxyID)) { // ports not compared to eachother if they stem from same proxy
+	if(string(unionInports.ports[i].label) == string(proxyInports.ports[j].label)) { // only if they're related in the same way 
 	  /*ProxyCompatibility comp = 
-	    proxyCompatibility(m_proxyLocalCache[string(unionInports.m_ports[i].m_proxyID)],
-	    m_proxyLocalCache[string(proxyInports.m_ports[j].m_proxyID)]);
+	    proxyCompatibility(proxyLocalCache[string(unionInports.ports[i].proxyID)],
+	    proxyLocalCache[string(proxyInports.ports[j].proxyID)]);
 	    switch(comp) {
 	    case MISMATCH:
 	    //#warning inports causing mismatches...
@@ -820,8 +820,8 @@ BindingScorer::_relational_score(const LBindingProxy& _proxy,
 	    }
 	  */
 	  try {
-	    if(proxiesBound(m_proxyLocalCache[string(unionInports.m_ports[i].m_proxyID)],
-			    m_proxyLocalCache[string(proxyInports.m_ports[j].m_proxyID)])) 
+	    if(proxiesBound(proxyLocalCache[string(unionInports.ports[i].proxyID)],
+			    proxyLocalCache[string(proxyInports.ports[j].proxyID)])) 
 	      {	    
 		_score++;
 		scored = true;
@@ -845,10 +845,10 @@ BindingScorer::_storeScore(const string& _proxyID,
   
   BindingData::ProxyUnionScore* new_comparison = 
     new BindingData::ProxyUnionScore;
-  new_comparison->m_proxyID = CORBA::string_dup(_proxyID.c_str());
-  new_comparison->m_unionID = CORBA::string_dup(_unionID.c_str());
-  new_comparison->m_updated = true;
-  new_comparison->m_score = _score;
+  new_comparison->proxyID = CORBA::string_dup(_proxyID.c_str());
+  new_comparison->unionID = CORBA::string_dup(_unionID.c_str());
+  new_comparison->updated = true;
+  new_comparison->score = _score;
   string proxyUnionScoreID = combinedID(_proxyID, _unionID);
   log("proxyUnionScoreID: " + proxyUnionScoreID);
 
@@ -882,22 +882,22 @@ void
 BindingScorer::answerBasicQuery(const cdl::WorkingMemoryChange & _wmc) 
 {
   log("going to answer a BasicQuery");
-  lockEntry(string(_wmc.m_address.m_id), cast::cdl::LOCKED_ODR);
+  lockEntry(string(_wmc.address.id), cast::cdl::LOCKED_ODR);
   shared_ptr<const BindingQueries::BasicQuery> 
     query(loadBindingDataFromWM<BindingQueries::BasicQuery>(_wmc));
-  _answerBasicQuery(*query, string(_wmc.m_address.m_id));
-  unlockEntry(string(_wmc.m_address.m_id));
+  _answerBasicQuery(*query, string(_wmc.address.id));
+  unlockEntry(string(_wmc.address.id));
 }
 
 void 
 BindingScorer::_answerBasicQuery(const BindingQueries::BasicQuery& _query,
 				 const std::string& _queryID)
 {
-  assert(_query.m_processed == false);
-  const string proxyID(string(_query.m_proxyID));
+  assert(_query.processed == false);
+  const string proxyID(string(_query.proxyID));
   BindingGraphHandler handler(*this);
-  const BindingData::FeaturePointer& featurePointer(_query.m_featurePointer);
-  const string featureID(featurePointer.m_address);
+  const BindingData::FeaturePointer& featurePointer(_query.featurePointer);
+  const string featureID(featurePointer.address);
   bool loaded = false;
   ProxySet proxies;
   UnionSet unions;
@@ -910,7 +910,7 @@ BindingScorer::_answerBasicQuery(const BindingQueries::BasicQuery& _query,
       proxies = proxies | 
 	(!ProxyUnionIDChecker(""));
       unions = handler.extractUnionsFromProxies(proxies);
-      if(_query.m_parameters.m_boundProxyInclusion == BindingQueries::INCLUDE_BOUND) {
+      if(_query.parameters.boundProxyInclusion == BindingQueries::INCLUDE_BOUND) {
 //	included_proxies = 
 //	  auto_ptr<ProxySet>(new ProxySet(handler.extractProxiesFromUnions(unions)));
 	handler.extractProxiesFromUnions(unions);
@@ -926,25 +926,25 @@ BindingScorer::_answerBasicQuery(const BindingQueries::BasicQuery& _query,
     if(proxies.empty()) { // not bound yet, no answer
       answer = indeterminate;
     } 
-    else if(string(_query.m_featurePointer.m_address) == "") { // "null" pointer feature... only answer based on existence of proxy
+    else if(string(_query.featurePointer.address) == "") { // "null" pointer feature... only answer based on existence of proxy
       answer = false;
-      if(_query.m_parameters.m_boundProxyInclusion == BindingQueries::EXCLUDE_BOUND) {
-	if(true_for_all(proxies, HasFeatureCheck<ProxyPtr>(string(_query.m_featurePointer.m_type))))
+      if(_query.parameters.boundProxyInclusion == BindingQueries::EXCLUDE_BOUND) {
+	if(true_for_all(proxies, HasFeatureCheck<ProxyPtr>(string(_query.featurePointer.type))))
 	  answer = true;
       } else {
-	if(true_for_all(unions, HasFeatureCheck<UnionPtr>(string(_query.m_featurePointer.m_type)))) 
+	if(true_for_all(unions, HasFeatureCheck<UnionPtr>(string(_query.featurePointer.type)))) 
 	  answer = true;
       }
     } else {
-      if(m_bLogOutput)
+      if(bLogOutput)
 	cout << "Gonna answer the basic query on this set of proxies:" 
 	     << proxies << endl;
       
-      assert(_query.m_processed == false);
+      assert(_query.processed == false);
       
       boost::shared_ptr<AbstractFeature> feature;
       try {
-	feature = m_featureLoader.getFeature(featurePointer);
+	feature = featureLoader.getFeature(featurePointer);
       } catch (const DoesNotExistOnWMException& _e) {
 	cout << "caught this in BindingScorer::answerBasicQuery: " << _e.what() 
 	     << "\nthe reason was that a feature occuring in a BindingQueries::BasicQuery did not exist on Binding WM\naborting" << endl;
@@ -952,11 +952,11 @@ BindingScorer::_answerBasicQuery(const BindingQueries::BasicQuery& _query,
       }
       
       ComparatorCacheCheck 
-	checker(m_comparatorCache,*feature,true,_query.m_parameters);
+	checker(comparatorCache,*feature,true,_query.parameters);
       checker.test(proxies.begin()->second);
       if(!checker.cacheReady()) {
 	foreach(const string& id, checker.featureComparisonIDs()) {
-	  m_openBasicQueryFeatureComparisonIDs.insert(make_pair(id,_queryID));
+	  openBasicQueryFeatureComparisonIDs.insert(make_pair(id,_queryID));
 	  assert(!id.empty());
 	  assert(!_queryID.empty());
 	  unlockEntry(id);
@@ -970,8 +970,8 @@ BindingScorer::_answerBasicQuery(const BindingQueries::BasicQuery& _query,
     log("The answer is " + Binding::triboolToString(answer));
     
     BindingQueries::BasicQuery* ret(new BindingQueries::BasicQuery(_query)); 
-    ret->m_answer = tribool_cast(answer);
-    ret->m_processed = true;
+    ret->answer = tribool_cast(answer);
+    ret->processed = true;
     
     overwriteWorkingMemory(_queryID, 
 			   ret);
@@ -1009,7 +1009,7 @@ translateQueryResults(const BindingQueries::AdvancedQuery& _query,
   insert_iterator<set<string> > unionIDs_inserter = 
     inserter(unionIDs,unionIDs.begin());
   foreach(const ProxySet::value_type& proxy, _proxies) {
-    //    if(_query.m_parameters.m_boundProxyInclusion == 
+    //    if(_query.parameters.boundProxyInclusion == 
     //   BindingQueries::EXCLUDE_BOUND)
     proxyIDs_inserter = proxy.first;
     /*else // include the bound stuff in answer
@@ -1028,12 +1028,12 @@ BindingScorer::answerAdvancedQuery(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   cout << "BindingScorer::answerAdvancedQuery 1" << endl;
   log("going to answer an AdvancedQuery");
-  assert(string(_wmc.m_address.m_subarchitecture) != "");
+  assert(string(_wmc.address.subarchitecture) != "");
   cout << "BindingScorer::answerAdvancedQuery 2" << endl;
-  lockEntry(_wmc.m_address, cast::cdl::LOCKED_ODR);
+  lockEntry(_wmc.address, cast::cdl::LOCKED_ODR);
   shared_ptr<const BindingQueries::AdvancedQuery> query = loadBindingDataFromWM<BindingQueries::AdvancedQuery>(_wmc);
-  _answerAdvancedQuery(*query, string(_wmc.m_address.m_id));
-  unlockEntry(_wmc.m_address);
+  _answerAdvancedQuery(*query, string(_wmc.address.id));
+  unlockEntry(_wmc.address);
 }
   
 void 
@@ -1041,7 +1041,7 @@ BindingScorer::_answerAdvancedQuery(const BindingQueries::AdvancedQuery& _query,
 				    const std::string& _queryID)
 {
   log("answering an AdvancedQuery: " + _queryID);
-  assert(_query.m_processed == false);
+  assert(_query.processed == false);
   BindingGraphHandler handler(*this);
   bool loaded = false;
   ProxySet proxies;
@@ -1053,10 +1053,10 @@ BindingScorer::_answerAdvancedQuery(const BindingQueries::AdvancedQuery& _query,
       proxies = handler.allProxiesFromWM();
       cout << "did " << "proxies = handler.allProxiesFromWM();" << endl;
       proxies = proxies | 
-	(HasFeatureCheck<ProxyPtr>(string(_query.m_featurePointer.m_type)) && 
+	(HasFeatureCheck<ProxyPtr>(string(_query.featurePointer.type)) && 
 	 !ProxyUnionIDChecker(""));
       UnionSet unions = handler.extractUnionsFromProxies(proxies);
-      if(_query.m_parameters.m_boundProxyInclusion == BindingQueries::INCLUDE_BOUND) {
+      if(_query.parameters.boundProxyInclusion == BindingQueries::INCLUDE_BOUND) {
 	included_proxies = 
 	  auto_ptr<ProxySet>(new ProxySet(handler.extractProxiesFromUnions(unions)));
       }
@@ -1076,21 +1076,21 @@ BindingScorer::_answerAdvancedQuery(const BindingQueries::AdvancedQuery& _query,
       prxptr = &proxies;
     translateQueryResults(_query,
 			  *prxptr,
-			  answer->m_hasTheFeatureProxyIDs,
-			  answer->m_hasTheFeatureUnionIDs);
-    assert(prxptr->size() == answer->m_hasTheFeatureProxyIDs.length());
-    string featureID(_query.m_featurePointer.m_address);
+			  answer->hasTheFeatureProxyIDs,
+			  answer->hasTheFeatureUnionIDs);
+    assert(prxptr->size() == answer->hasTheFeatureProxyIDs.length());
+    string featureID(_query.featurePointer.address);
     log("testing vs. featureID:" + featureID);
     if(!featureID.empty()) {
       const AbstractFeature& 
-	feature(*m_featureLoader.getFeature(_query.m_featurePointer));
+	feature(*featureLoader.getFeature(_query.featurePointer));
       ComparatorCacheCheck 
-	checker(m_comparatorCache,feature,true,_query.m_parameters);
+	checker(comparatorCache,feature,true,_query.parameters);
       ProxySet matching_proxies = proxies | checker;
       cout << "for " << _query << "\n" << matching_proxies << endl;
       if(!checker.cacheReady()) {
 	foreach(const string& id, checker.featureComparisonIDs()) {
-	  m_openAdvancedQueryFeatureComparisonIDs.insert(make_pair(id,_queryID));
+	  openAdvancedQueryFeatureComparisonIDs.insert(make_pair(id,_queryID));
 	  assert(!id.empty());
 	  assert(!_queryID.empty());
 	  unlockEntry(id);
@@ -1103,48 +1103,48 @@ BindingScorer::_answerAdvancedQuery(const BindingQueries::AdvancedQuery& _query,
       log("All answers received, ready to answer");
       //cout << "matching proxies: " << matching_proxies << endl;
       assert(true_for_all(matching_proxies, 
-      			  ComparatorCacheCheck(m_comparatorCache,
+      			  ComparatorCacheCheck(comparatorCache,
 					       feature,
 					       tribool::true_value,
-					       _query.m_parameters)));
+					       _query.parameters)));
       assert(true_for_all(matching_proxies, 
-			  !ComparatorCacheCheck(m_comparatorCache,
+			  !ComparatorCacheCheck(comparatorCache,
 						feature,
 						tribool::false_value,
-						_query.m_parameters)));
+						_query.parameters)));
 
 
       UnionSet matching_unions = 
 	handler.extractUnionsFromProxies(matching_proxies);
       ProxySet nonmatching_proxies = 
 	proxies | 
-	ComparatorCacheCheck(m_comparatorCache,
+	ComparatorCacheCheck(comparatorCache,
 			     feature,
 			     false, 
-			     _query.m_parameters);
+			     _query.parameters);
       //cout << "nonmatching proxies: " << nonmatching_proxies << endl;
       assert(true_for_all(nonmatching_proxies, 
-      			  !ComparatorCacheCheck(m_comparatorCache,
+      			  !ComparatorCacheCheck(comparatorCache,
 						feature,
 						tribool::true_value,
-						_query.m_parameters) &&
-			  ComparatorCacheCheck(m_comparatorCache,
+						_query.parameters) &&
+			  ComparatorCacheCheck(comparatorCache,
 					       feature,
 					       tribool::false_value,
-					       _query.m_parameters))) ;
+					       _query.parameters))) ;
 	     
       UnionSet nonmatching_unions = 
 	handler.extractUnionsFromProxies(nonmatching_proxies);
       translateQueryResults(_query,
 			    matching_proxies,
-			    answer->m_matchingProxyIDs,
-			    answer->m_matchingUnionIDs);
+			    answer->matchingProxyIDs,
+			    answer->matchingUnionIDs);
       translateQueryResults(_query,
 			    nonmatching_proxies,
-			    answer->m_nonMatchingProxyIDs,
-			    answer->m_nonMatchingUnionIDs);
+			    answer->nonMatchingProxyIDs,
+			    answer->nonMatchingUnionIDs);
     }
-    answer->m_processed = true;
+    answer->processed = true;
     // now, provide the answer to WM, blocking, just for safety
     //    log("now the answer is written back to WM:");
     //cout << *answer << endl;
@@ -1170,7 +1170,7 @@ BindingScorer::runComponent()
   addToWorkingMemory(std::string(BindingData::binderTokenID), new BindingData::BinderToken(),cast::cdl::BLOCKING);
   addToWorkingMemory(std::string(BindingData::internalBindingTokenID), new BindingData::BinderToken(),cast::cdl::BLOCKING);
   acquireBinderTokenToken(); 
-  if(m_dummy) {
+  if(dummy) {
     //lockProcess();
     receiveNoChanges();
   }  
@@ -1179,13 +1179,13 @@ BindingScorer::runComponent()
       
   //OK... while cast is not working... let's do all testing here...
   BindingFeatures::Concept concept1;
-  concept1.m_concept = CORBA::string_dup("assertionconcept1");
+  concept1.concept = CORBA::string_dup("assertionconcept1");
   BindingFeatures::Concept concept2 = concept1;
   BindingFeatures::Concept concept3;
-  concept3.m_concept = CORBA::string_dup("assertionconcept2");  
+  concept3.concept = CORBA::string_dup("assertionconcept2");  
   BindingFeatures::Concept negated_concept3;
-  negated_concept3.m_concept = CORBA::string_dup("assertionconcept2");  
-  negated_concept3.m_parent.m_truthValue = BindingFeaturesCommon::NEGATIVE;
+  negated_concept3.concept = CORBA::string_dup("assertionconcept2");  
+  negated_concept3.parent.truthValue = BindingFeaturesCommon::NEGATIVE;
   
   shared_ptr<const AbstractFeature> feature1(new Feature<BindingFeatures::Concept>(concept1, "id1"));
   shared_ptr<const AbstractFeature> feature2(new Feature<BindingFeatures::Concept>(concept2, "id2"));
@@ -1214,7 +1214,7 @@ BindingScorer::runComponent()
   //assert(!static_cast<bool>(ontology.internalComparator(typeid(BindingFeatures::Concept),typeid(BindingFeatures::Concept))->compare(*negated_feature3,*feature3)));
 
   BindingFeatures::DebugString debugstring1;
-  debugstring1.m_debugString = CORBA::string_dup("testdebugstring");
+  debugstring1.debugString = CORBA::string_dup("testdebugstring");
   BindingFeatures::DebugString debugstring2 = debugstring1;
 
   shared_ptr<const AbstractFeature> feature4(new Feature<BindingFeatures::DebugString>(debugstring1, "id4"));
@@ -1229,25 +1229,25 @@ BindingScorer::runComponent()
 void 
 BindingScorer::proxyUpdateReceived(const cast::cdl::WorkingMemoryChange & _wmc) 
 {
-  string proxyID(_wmc.m_address.m_id);
+  string proxyID(_wmc.address.id);
   try{
-    if(_wmc.m_operation == cast::cdl::DELETE)
-      m_processedProxies.erase(proxyID);
-    else if(m_proxyLocalCache[proxyID].proxyState() == BindingData::BOUND)
-      m_processedProxies.erase(proxyID);
+    if(_wmc.operation == cast::cdl::DELETE)
+      processedProxies.erase(proxyID);
+    else if(proxyLocalCache[proxyID].proxyState() == BindingData::BOUND)
+      processedProxies.erase(proxyID);
     cout << "proxyUpdate received regarding proxy " << proxyID << endl;
-    cout << "Token issue (after proxy update): m_processedProxies.size(): " << m_processedProxies.size() << " {";
+    cout << "Token issue (after proxy update): processedProxies.size(): " << processedProxies.size() << " {";
     bool bla = false;
-    foreach(const string& p, m_processedProxies) { 
+    foreach(const string& p, processedProxies) { 
       cout << (bla?", ":"") << p; bla = true;
     }
     cout << "}\n";
   }
   catch(const DoesNotExistOnWMException& _e) {
     log(string("In BindingScorer::proxyUpdateReceived: ") + _e.what());
-    m_processedProxies.erase(proxyID);
+    processedProxies.erase(proxyID);
   }
-  if(m_processedProxies.empty()) {
+  if(processedProxies.empty()) {
     //    acquireBinderLockToken(); // the next parts must be atomic
     if(hasBinderToken())
       releaseBinderToken();  
@@ -1264,10 +1264,10 @@ BindingScorer::binderStatusReceived(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   /* const BindingData::BinderStatus
      status(*loadBindingDataFromWM<BindingData::BinderStatus>(_wmc));
-     //  cout << "binderStatusReceived: " << status.m_stable<< endl;
+     //  cout << "binderStatusReceived: " << status.stable<< endl;
      
-     if(status.m_stable) {
-     m_processedProxies.clear();
+     if(status.stable) {
+     processedProxies.clear();
      if(hasBinderToken())
      releaseBinderToken();
      assert(hasBinderTokenToken());
@@ -1281,18 +1281,18 @@ BindingScorer::binderStatusReceived(const cast::cdl::WorkingMemoryChange & _wmc)
 void
 BindingScorer::proxyProcessingFinished(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-  string proxyID(loadBindingDataFromWM<BindingData::ProxyProcessingFinished>(_wmc)->m_proxyID);
-  deleteFromWorkingMemory(_wmc.m_address);
-  m_processedProxies.erase(proxyID);
+  string proxyID(loadBindingDataFromWM<BindingData::ProxyProcessingFinished>(_wmc)->proxyID);
+  deleteFromWorkingMemory(_wmc.address);
+  processedProxies.erase(proxyID);
   cout << "in Scorer: ProxyProcessingFinished: " << proxyID << endl;
-  cout << "Token issue(after ProxyProcessingFinished add): m_processedProxies.size(): " << m_processedProxies.size() << " {";
+  cout << "Token issue(after ProxyProcessingFinished add): processedProxies.size(): " << processedProxies.size() << " {";
   bool bla = false;
-  foreach(const string& p, m_processedProxies) { 
+  foreach(const string& p, processedProxies) { 
     cout << (bla?", ":"") << p; bla = true;
   }
   cout << "}\n";
 
-  if(m_processedProxies.empty()) {
+  if(processedProxies.empty()) {
     //    acquireBinderLockToken(); // the next parts must be atomic
     if(hasBinderToken())
       releaseBinderToken();  

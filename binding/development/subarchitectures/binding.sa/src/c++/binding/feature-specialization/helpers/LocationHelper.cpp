@@ -7,9 +7,9 @@ using namespace std;
 
   inline double distance(const BindingFeatures::Location &v1, const BindingFeatures::Location &v2)
   {
-    double dx = v1.m_location.m_x - v2.m_location.m_x;
-    double dy = v1.m_location.m_y - v2.m_location.m_y;
-    double dz = v1.m_location.m_z - v2.m_location.m_z;
+    double dx = v1.location.x - v2.location.x;
+    double dy = v1.location.y - v2.location.y;
+    double dz = v1.location.z - v2.location.z;
     return std::sqrt(dx*dx + dy*dy + dz*dz);
   }
 
@@ -36,9 +36,9 @@ LocationComparator::compare(const AbstractFeature& _proxyFeature,
 LocationHelper::LocationHelper() 
 {
   FeatureProperties prop; 
-  prop.m_isInvariant    = true;
-  prop.m_isSimplex      = true;
-  prop.m_isDemanded     = false;
+  prop.isInvariant    = true;
+  prop.isSimplex      = true;
+  prop.isDemanded     = false;
   setProperties(prop);
 }
 
@@ -47,9 +47,9 @@ LocationHelper::print(ostream& _out, const AbstractFeature& _feat) const
 {
   const BindingFeatures::Location loc(extract(_feat));
   _out << "(" 
-       << loc.m_location.m_x << ", "
-       << loc.m_location.m_y << ", "
-       << loc.m_location.m_z << ")";
+       << loc.location.x << ", "
+       << loc.location.y << ", "
+       << loc.location.z << ")";
   return _out;
 }
 
@@ -60,13 +60,13 @@ LocationHelper::operatorLessImpl(const AbstractFeature& _feat1, const AbstractFe
   const BindingFeatures::Location loc1(extract(_feat1));
   const BindingFeatures::Location loc2(extract(_feat2));
   
-  if(loc1.m_location.m_x != loc2.m_location.m_x) {
-    return loc1.m_location.m_x < loc2.m_location.m_x;
+  if(loc1.location.x != loc2.location.x) {
+    return loc1.location.x < loc2.location.x;
   }
-  if(loc1.m_location.m_y != loc2.m_location.m_y) {    
-    return loc1.m_location.m_y < loc2.m_location.m_y;
+  if(loc1.location.y != loc2.location.y) {    
+    return loc1.location.y < loc2.location.y;
   }
-  return loc1.m_location.m_z < loc2.m_location.m_z;  
+  return loc1.location.z < loc2.location.z;  
 }
   
 

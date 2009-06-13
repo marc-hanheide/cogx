@@ -1,5 +1,5 @@
-#ifndef BINDING_ABSTRACT_ACTIVE_BINDING_WM_READER_H_ 
-#define BINDING_ABSTRACT_ACTIVE_BINDING_WM_READER_H_
+#ifndef BINDING_ABSTRACT_ACTIVE_BINDING_WREADER_H_ 
+#define BINDING_ABSTRACT_ACTIVE_BINDING_WREADER_H_
 
 #include <cast/architecture/ManagedProcess.hpp>
 
@@ -45,7 +45,7 @@ protected:
   virtual ~AbstractActiveBindingWMReader() { };
 
   /// defines the ID of binding SA, must be set via configure
-  std::string m_bindingSA;
+  std::string bindingSA;
 
 public:
   
@@ -55,4 +55,4 @@ public:
 
 } // namespace Binding
 
-#endif //  BINDING_ABSTRACT_ACTIVE_BINDING_WM_READER_H_
+#endif //  BINDING_ABSTRACT_ACTIVE_BINDING_WREADER_H_

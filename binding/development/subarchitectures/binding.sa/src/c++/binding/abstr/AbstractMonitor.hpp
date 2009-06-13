@@ -5,8 +5,8 @@
 #include "cast/cdl/CAST.hh"
 #include "cast/architecture/WorkingMemoryChangeReceiver.hpp"
 #include "cast/architecture/ChangeFilterFactory.hpp"
-//#include "binding/idl/BindingData.hh"
-//#include "binding/idl/BindingFeaturesCommon.hh"
+//#include "BindingData.hpp"
+//#include "BindingFeaturesCommon.hpp"
 //#include "binding/ontology/BindingFeatureOntology.hpp"
 //#include "feature-specialization/FeatureProperties.hpp"
 #include "binding/BindingException.hpp"
@@ -78,12 +78,12 @@ public:
   /// Stores a feature to WM and adds the adress to the set of features pointers of the proxy
   template<class FeatureType>
   BindingData::FeaturePointer addFeatureToCurrentProxy(const FeatureType& _feature, BindingFeaturesCommon::TruthValue _truthValue = BindingFeaturesCommon::POSITIVE) {
-    if(m_currentlyBuiltProxy.get() == NULL) {
-      throw(BindingException("Attempt to add feature to m_proxyFeatures before initiating it with startNewProxy"));
+    if(currentlyBuiltProxy.get() == NULL) {
+      throw(BindingException("Attempt to add feature to proxyFeatures before initiating it with startNewProxy"));
     }
     BindingData::FeaturePointer ptr = _storeFeature(_feature,_truthValue);
-    m_currentlyBuiltProxy->m_proxyFeatures.length(m_currentlyBuiltProxy->m_proxyFeatures.length() + 1); 
-    m_currentlyBuiltProxy->m_proxyFeatures[m_currentlyBuiltProxy->m_proxyFeatures.length() - 1] = ptr;
+    currentlyBuiltProxy->proxyFeatures.length(currentlyBuiltProxy->proxyFeatures.length() + 1); 
+    currentlyBuiltProxy->proxyFeatures[currentlyBuiltProxy->proxyFeatures.length() - 1] = ptr;
     return ptr;
   }
   
@@ -91,7 +91,7 @@ public:
   /// updating proxies and only one feature should be updated)
   void deleteFeatureFromCurrentProxy(const BindingData::FeaturePointer&);
 
-  /// adds the source ID to the proxy. Make sure your instantiated monitor sets m_sourceID first.
+  /// adds the source ID to the proxy. Make sure your instantiated monitor sets sourceID first.
   BindingData::FeaturePointer addSourceIDToCurrentProxy();
   
   /// Adds the creation time to the proxy
@@ -112,7 +112,7 @@ public:
   
   
   /// stores the current proxy onto WM and returns the address. It
-  /// also resets m_currentlyBuiltProxy to null.
+  /// also resets currentlyBuiltProxy to null.
   std::string storeCurrentProxy(bool _storeSystemFeatures = true);
   
    /// Adds a relation from proxy on WM address ID _from to
@@ -128,57 +128,57 @@ public:
   /// After all new proxies are added and relations between them
   /// defined it is time to bind them. This stores a
   /// BindTheseProxies object onto the WM and resets \p
-  /// m_unboundProxyAdresses to an empty list 
+  /// unboundProxyAdresses to an empty list 
   void bindNewProxies();
   
   /// defines the ID of the monitored SA, must be updated by derived class!!!
-  std::string m_sourceID; 
+  std::string sourceID; 
 
 
   /// The ID of the latest added sourceID, must be added to
   /// OtherSorceID so that the scorer can avoid scoring it with a
   /// SourceID of the same proxy
-  std::string m_sourceIDAddress;
+  std::string sourceIDAddress;
 
   /// the ID of the build proxy.
-  const std::string& currentProxyID() const {return m_currentProxyID;}
+  const std::string& currentProxyID() const {return currentProxyID;}
 
  
 private:
   
   /// defines the ID of binding SA, must be set via configure
-  std::string m_bindingSA;
+  std::string bindingSA;
 
   /// The proxy which is currently being built up by features being added to it (and WM)  
-  std::auto_ptr<BindingData::BindingProxy> m_currentlyBuiltProxy;  
+  std::auto_ptr<BindingData::BindingProxy> currentlyBuiltProxy;  
 
   /// if currently built proxy is a new one, this is false
-  bool m_updatingProxy;  
+  bool updatingProxy;  
   
   /// the ID of the build proxy.
-  std::string m_currentProxyID;  
+  std::string currentProxyID;  
   
   /// A list of proxies added to the WM but which have not yet been
   /// bound (bindNewProxies binds the proxies and empties the
   /// list)
-  std::set<std::string> m_unboundProxyAddresses;
+  std::set<std::string> unboundProxyAddresses;
 
-  BindingFeaturesCommon::TemporalFrameType m_temporalFrameOfCurrentProxy;
+  BindingFeaturesCommon::TemporalFrameType temporalFrameOfCurrentProxy;
   
   /// stores the feature onto the WM and returns the CAST pointer
   template<class FeatureType>
   BindingData::FeaturePointer _storeFeature(const FeatureType& _feature, BindingFeaturesCommon::TruthValue _truthValue) {
     BindingData::FeaturePointer ret;
     FeatureType* feature_ptr = new FeatureType(_feature);
-    feature_ptr->m_parent = defaultParentFeature();
-    feature_ptr->m_parent.m_truthValue = _truthValue;
-    ret.m_address = CORBA::string_dup(newDataID().c_str());
+    feature_ptr->parent = defaultParentFeature();
+    feature_ptr->parent.truthValue = _truthValue;
+    ret.address = CORBA::string_dup(newDataID().c_str());
     static const BindingFeatureOntology& ontology(BindingFeatureOntology::construct());
 
-    ret.m_type    = CORBA::string_dup(ontology.featureName(typeid(FeatureType)).c_str());
-    ret.m_immediateProxyID = CORBA::string_dup(m_currentProxyID.c_str());
-    addToWorkingMemory(std::string(ret.m_address), m_bindingSA, 
-		       //std::string(ret.m_type), 
+    ret.type    = CORBA::string_dup(ontology.featureName(typeid(FeatureType)).c_str());
+    ret.immediateProxyID = CORBA::string_dup(currentProxyID.c_str());
+    addToWorkingMemory(std::string(ret.address), bindingSA, 
+		       //std::string(ret.type), 
 		       feature_ptr);
     
     return ret;
@@ -187,7 +187,7 @@ private:
   struct cmpFeaturePointer {
     bool operator()(const BindingData::FeaturePointer& _bfp1, const BindingData::FeaturePointer& _bfp2)
     {
-      return(_bfp1.m_address < _bfp2.m_address);
+      return(_bfp1.address < _bfp2.address);
     }
   };
   
@@ -195,7 +195,7 @@ private:
   
   /// features from an updated proxy must be deleted to avoid
   /// memory leaks
-  FeaturePointerSet m_featuresToDelete;
+  FeaturePointerSet featuresToDelete;
 
 private:
   /// deletes the features from WM. Only to be used when cancelling an
@@ -244,15 +244,15 @@ private:
   virtual cast::cdl::WorkingMemoryAddress _binderTokenAddress() const
   {
     cast::cdl::WorkingMemoryAddress a;
-    a.m_subarchitecture = CORBA::string_dup(bindingSA().c_str());
-    a.m_id = CORBA::string_dup(BindingData::binderTokenID);
+    a.subarchitecture = CORBA::string_dup(bindingSA().c_str());
+    a.id = CORBA::string_dup(BindingData::binderTokenID);
     return a;
   }
   virtual cast::cdl::WorkingMemoryAddress _binderTokenTokenAddress() const
   {
     cast::cdl::WorkingMemoryAddress a;
-    a.m_subarchitecture = CORBA::string_dup(bindingSA().c_str());
-    a.m_id = CORBA::string_dup(BindingData::binderTokenTokenID);
+    a.subarchitecture = CORBA::string_dup(bindingSA().c_str());
+    a.id = CORBA::string_dup(BindingData::binderTokenTokenID);
     return a;
   }
 
@@ -267,13 +267,13 @@ public:
 
 protected:
   /// Maps from proxy IDs to the address of the inportlist
-  std::map<std::string,std::string> m_proxyID2inportsID;
+  std::map<std::string,std::string> proxyID2inportsID;
 
   const std::string& getBindingSA() const {
-    if(m_bindingSA == ""){ 
+    if(bindingSA == ""){ 
       throw(BindingException("Binding SA ID must be set."));
     }
-    return m_bindingSA;
+    return bindingSA;
   }
   
   /// returns getBindingSA (just a less verbose interface)
@@ -282,24 +282,24 @@ protected:
   }
 
   void setBindingSA(const std::string & _bindingSA) {
-    m_bindingSA = _bindingSA;
+    bindingSA = _bindingSA;
   }
   
   BindingFeaturesCommon::ParentFeature defaultParentFeature() const; 
   
 private:
-  bool m_binderReady;
-  /// sets m_binderReady to true
+  bool binderReady;
+  /// sets binderReady to true
   void binderReadySignal(const cast::cdl::WorkingMemoryChange & _wmc);
 
   /// true if \p start() is called
-  bool m_startCalled;
+  bool startCalled;
   friend class cast::MemberFunctionChangeReceiver<AbstractMonitor>;
   
 public: 
   /// returns true if the binder has signalled it is ready for proxies
   /// etc. Don't attempt to do anything until it is ready.
-  bool binderReady() const {return m_binderReady;}
+  bool binderReady() const {return binderReady;}
 
 private:
   /// for dealing with when \p BindingQueries::MakeProxyUnavailable
@@ -316,10 +316,10 @@ protected:
 private:
   /// a set of all proxies that have been created (and not yet
   /// deleted) by this monitor.
-  std::set<std::string> m_ownedProxyIDs;
+  std::set<std::string> ownedProxyIDs;
 public:
-  /// returns ref to \p m_ownedProxyIDs
-  const std::set<std::string>& ownedProxyIDs() {return m_ownedProxyIDs;}
+  /// returns ref to \p ownedProxyIDs
+  const std::set<std::string>& ownedProxyIDs() {return ownedProxyIDs;}
   
 }; // Abstract monitor
 } // namespace Binding
