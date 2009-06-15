@@ -18,7 +18,6 @@ private:
 	
 public:
 	EdgeTracker();
-	~EdgeTracker();
 	
 	virtual bool initInternal();
 				

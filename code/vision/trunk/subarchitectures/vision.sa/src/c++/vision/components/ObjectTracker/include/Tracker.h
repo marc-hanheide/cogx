@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GL/gl.h>
 
 #include "Timer.h"
@@ -66,13 +66,10 @@ protected:
 	bool m_showparticles;
 	bool m_showmodel;
 	bool m_kalman_enabled;
-	bool m_cascaded;
-	bool m_draw_coordinates;
-	bool m_draw_edges;
 	bool m_zero_particles;
-	bool m_result_textured;
-	
+	bool m_draw_edges;
 	bool m_tracker_initialized;
+
 	
 	// Functions (virtual)
 	virtual void image_processing(unsigned char* image)=0;
@@ -86,7 +83,6 @@ protected:
 	
 public:
 	Tracker();
-	~Tracker();
 	
 	inline void lock(){ m_lock=true; }
 	inline void unlock(){ m_lock=false; }
@@ -98,7 +94,6 @@ public:
 				float et=20.0,										// edge matching tolerance in degree
 				float tt=0.05,										// goal tracking time in seconds
 				bool kal=true,										// kalman filtering enabled
-				bool coord=false,									// draw coordinate frame at inertial 0-position
 				bool lock=false);									// locked particles (press 'l' to unlock)
 	
 	virtual bool initInternal()=0;
@@ -112,8 +107,10 @@ public:
 	virtual void drawResult(Particle* p)=0;
 	
 	void renderCoordinates();
+	void drawPixel(int u, int v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
 	void showStatistics();
-	bool release();	
+		
+	void swap();
 
 };
 

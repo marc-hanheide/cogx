@@ -49,10 +49,6 @@ bool Tracker::inputs(){
 					m_draw_edges = !m_draw_edges;
 					printf("Edges: %i\n", m_draw_edges);
 					break;
-				case SDLK_f:
-					m_draw_coordinates = !m_draw_coordinates;
-					printf("Draw Coordinates: %i\n", m_draw_coordinates);
-					break;
 				case SDLK_k:
 					m_kalman_enabled = !m_kalman_enabled;
 					if(m_kalman_enabled){
@@ -80,9 +76,6 @@ bool Tracker::inputs(){
 					break;
 				case SDLK_p:
 					m_showparticles = !m_showparticles;
-					break;
-				case SDLK_r:
-					m_result_textured = !m_result_textured;
 					break;
 				case SDLK_s:
 					showStatistics();
@@ -139,10 +132,7 @@ Tracker::Tracker(){
 	m_showparticles = false;
 	m_showmodel = true;
 	m_kalman_enabled = true;
-	m_cascaded = true;
-	m_draw_coordinates = false;
 	m_draw_edges = false;
-	m_result_textured = true;
 	m_tracker_initialized = false;
 	
 	// Textures
@@ -182,10 +172,6 @@ Tracker::Tracker(){
 
 }
 
-Tracker::~Tracker(){
-}
-
-
 // Initialise function (must be called before tracking)
 bool Tracker::init(	int width, int height,							// image size in pixels
 					int nop,										// maximum number of particles
@@ -194,7 +180,6 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 					float et,										// edge matching tolerance in degree
 					float tt,										// goal tracking time in seconds
 					bool kal,										// kalman filtering enabled
-					bool coord,										// draw coordinate frame at inertial 0-position
 					bool lock)
 {	
 	// Parameter:
@@ -211,7 +196,6 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	params.track_time = tt;
 	
 	m_kalman_enabled = kal;
-	m_draw_coordinates = coord;
 	m_lock = lock;
 	
 	if(!m_opengl.Init())
@@ -313,6 +297,29 @@ void Tracker::renderCoordinates(){
 	glEnable(GL_CULL_FACE);
 	m_opengl.RenderSettings(true, true);
 	
+}
+
+
+void Tracker::drawPixel(int u, int v, vec3 color, float size){
+	m_opengl.RenderSettings(true, false);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	m_cam_ortho->Activate();
+	glPointSize(size);
+	
+	glBegin(GL_POINTS);
+		glColor3fv(color);
+		glVertex3f(float(u),float(v),m_cam_ortho->GetZNear());
+	glEnd();
+	
+	glPointSize(1.0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	m_opengl.RenderSettings(true, true);
+}
+
+void Tracker::swap(){
+	SDL_GL_SwapBuffers();
 }
 
 // Show performance and likelihood
