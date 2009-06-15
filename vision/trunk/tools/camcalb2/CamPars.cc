@@ -94,6 +94,7 @@ bool CamPars::IsName(const char *str, size_t len, const char *name)
 void CamPars::Read(FILE *file) throw(runtime_error)
 {
   const char comment = '#';
+  const char separator = '=';
   const char *spaces = " \t\n";
   const size_t bufsize = 1024;
   char buf[bufsize];
@@ -106,32 +107,37 @@ void CamPars::Read(FILE *file) throw(runtime_error)
     {
       // move to first space (= end of name)
       size_t stop = start + strcspn(&buf[start], spaces);
-      size_t len = stop - start;
+      size_t namelen = stop - start;
       char *name = &buf[start];
-      char *value = &buf[stop];
+      // move to separator
+      char *value = index(&buf[stop], separator);
+      if(value == 0)
+        throw runtime_error("CamPars::Read: missing '='");
+      // move one beyond separator
+      value++;
       int scan = 0;
-      if(IsName(name, len, "fx"))
-        scan = sscanf(value, "= %lf", &fx);
-      else if(IsName(name, len, "fy"))
-        scan = sscanf(value, "= %lf", &fy);
-      else if(IsName(name, len, "cx"))
-        scan = sscanf(value, "= %lf", &cx);
-      else if(IsName(name, len, "cy"))
-        scan = sscanf(value, "= %lf", &cy);
-      else if(IsName(name, len, "f"))
-        scan = sscanf(value, "= %lf", &f);
-      else if(IsName(name, len, "w"))
-        scan = sscanf(value, "= %d", &w);
-      else if(IsName(name, len, "h"))
-        scan = sscanf(value, "= %d", &h);
-      else if(IsName(name, len, "k1"))
-        scan = sscanf(value, "= %lf", &k1);
-      else if(IsName(name, len, "k2"))
-        scan = sscanf(value, "= %lf", &k2);
-      else if(IsName(name, len, "p1"))
-        scan = sscanf(value, "= %lf", &p1);
-      else if(IsName(name, len, "p2"))
-        scan = sscanf(value, "= %lf", &p2);
+      if(IsName(name, namelen, "fx"))
+        scan = sscanf(value, "%lf", &fx);
+      else if(IsName(name, namelen, "fy"))
+        scan = sscanf(value, "%lf", &fy);
+      else if(IsName(name, namelen, "cx"))
+        scan = sscanf(value, "%lf", &cx);
+      else if(IsName(name, namelen, "cy"))
+        scan = sscanf(value, "%lf", &cy);
+      else if(IsName(name, namelen, "f"))
+        scan = sscanf(value, "%lf", &f);
+      else if(IsName(name, namelen, "w"))
+        scan = sscanf(value, "%d", &w);
+      else if(IsName(name, namelen, "h"))
+        scan = sscanf(value, "%d", &h);
+      else if(IsName(name, namelen, "k1"))
+        scan = sscanf(value, "%lf", &k1);
+      else if(IsName(name, namelen, "k2"))
+        scan = sscanf(value, "%lf", &k2);
+      else if(IsName(name, namelen, "p1"))
+        scan = sscanf(value, "%lf", &p1);
+      else if(IsName(name, namelen, "p2"))
+        scan = sscanf(value, "%lf", &p2);
     }
   }
   // check if values are valid
