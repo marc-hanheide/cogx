@@ -118,12 +118,12 @@ void CalibObj::SavePose(const char *filename)
       "# t .. 3x1 translation vector in [m]\n"
       "# r .. 3x1 rotation vector\n"
       "#      direction = axis of rotation, length = angle in [rad]\n\n");
-  fprintf(file, "t %f %f %f\n", t[0], t[1], t[2]);     
-  fprintf(file, "r %f %f %f\n", r[0], r[1], r[2]); 
+  fprintf(file, "t = %f %f %f\n", t[0], t[1], t[2]);     
+  fprintf(file, "r = %f %f %f\n", r[0], r[1], r[2]); 
   WriteRotationMatrix(file, r);
   fprintf(file, "\n# Pose of calibration object w.r.t. camera:\n");
-  fprintf(file, "# t %f %f %f\n", ti[0], ti[1], ti[2]);     
-  fprintf(file, "# r %f %f %f\n", ri[0], ri[1], ri[2]); 
+  fprintf(file, "# t = %f %f %f\n", ti[0], ti[1], ti[2]);     
+  fprintf(file, "# r = %f %f %f\n", ri[0], ri[1], ri[2]); 
   WriteRotationMatrix(file, ri);
   fclose(file);
 }
