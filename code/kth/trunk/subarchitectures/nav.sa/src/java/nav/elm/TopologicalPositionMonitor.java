@@ -12,6 +12,7 @@ import cast.SubarchitectureComponentException;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.core.CASTUtils;
 import celm.conversion.CASTTimeConverter;
 import celmarchitecture.subarchitectures.abstr.SimpleAbstractWMMonitor;
 import elm.event.EventSpecificBinaryDataIO;
@@ -78,7 +79,8 @@ public class TopologicalPositionMonitor extends SimpleAbstractWMMonitor {
 				+ m_df.format(new Date()));
 		esf.addKeyValuePair("area_id", "" + m_pose.areaId);
 
-		addPartialEvent("TopologicalRobotPose", EventSpecificBinaryDataIO
-				.objectToByteArray(m_pose), time, time, null, esf);
+		addPartialEvent(CASTUtils.typeName(TopologicalRobotPos.class),
+				EventSpecificBinaryDataIO.objectToByteArray(m_pose), time,
+				time, null, esf);
 	}
 }
