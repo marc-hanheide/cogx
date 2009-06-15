@@ -4,12 +4,6 @@
  * @author  Michael Zillich,
  *      <A HREF="http://www.cs.bham.ac.uk">The University Of Birmingham</A>
  * @date April 2007
- *
- * TODO: output in [m] ?
- * TODO: draw projected pose
- * TODO: error checking
- * TODO: save rotation matrix in comment
- * TODO: fully automate
  */
 
 #include <stdlib.h>
@@ -76,6 +70,7 @@ public:
       float X, float Y, float Z, float *x, float *y, float *cam_matrix);
   void InvertPose(float t[3], float r[3], float ti[3], float ri[3]);
   void DrawProjectedPoints(Camera &cam, IplImage *img);
+  void DrawObjectPose(Camera &cam, IplImage *img);
   void DrawImagePoints(IplImage *img);
 };
 
@@ -228,6 +223,41 @@ void CalibObj::DrawProjectedPoints(Camera &cam, IplImage *img)
   }
 }
 
+void CalibObj::DrawObjectPose(Camera &cam, IplImage *img)
+{
+  // find maximum extent of model in any axis direction
+  float _min = HUGE;
+  float _max = -HUGE;
+  for(int i = 0; i < npoints; i++)
+  {
+    _min = min(_min, model_points[i].x);
+    _min = min(_min, model_points[i].y);
+    _min = min(_min, model_points[i].z);
+    _max = max(_max, model_points[i].x);
+    _max = max(_max, model_points[i].y);
+    _max = max(_max, model_points[i].z);
+  }
+  // choose a visually pleasing proportion of the maxmum extent as length of
+  // coordinate axes
+  float len = 0.2*(_max - _min);
+  float Ri[9];
+  CvMat Rimat = cvMat(3, 3, CV_32FC1, Ri);
+  CvMat rimat = cvMat(3, 1, CV_32FC1, ri);
+  cvRodrigues2(&rimat, &Rimat);
+  for(int i = 0; i < 3; i++)
+  {
+    float ox, oy, x, y;
+    ProjectPoint(Ri, ti,
+        0., 0., 0.,
+        &ox, &oy, cam.cam_matrix);
+    ProjectPoint(Ri, ti,
+        i == 0 ? len : 0., i == 1 ? len : 0., i == 2 ? len : 0.,
+        &x, &y, cam.cam_matrix);
+    cvLine(img, cvPoint(ox, oy), cvPoint(x, y),
+        CV_RGB(i == 0 ? 255 : 0, i == 1 ? 255 : 0, i == 2 ? 255 : 0));
+  }
+}
+
 void CalibObj::DrawImagePoints(IplImage *img)
 {
   for(int i = 0; i < npoints; i++)
@@ -325,6 +355,7 @@ int main(int argc, char **argv)
   cvUnDistortOnce(img, undist, cam.cam_matrix, cam.distortion, 1);
   cvShowImage("posecalb", img);
 
+  printf("Click on the points as given in the model file in correct order.\n");
   while(!done)
   {
     int c = cvWaitKey(100);
@@ -338,16 +369,19 @@ int main(int argc, char **argv)
         // if all points available for pose calculation, and have no pose yet
         if(cal.cnt == cal.npoints && !cal.have_pose)
         {
+          printf("Have all points, calculating pose ...\n");
           cal.FindPose(cam, img);
+          cal.SavePose(argv[4]);
+          printf("Pose written to '%s'\n", argv[4]);
+          printf("Press <q> or <ESC> to exit.\n");
           //cal.FindPosePOSIT(cam, img);
           cal.DrawProjectedPoints(cam, undist);
+          cal.DrawObjectPose(cam, undist);
           cvShowImage("posecalb", undist);
         }
         break;
     }
   }
-  cal.SavePose(argv[4]);
-  printf("pose written to '%s'\n", argv[4]);
 
   cvDestroyWindow("posecalb");
   cvReleaseImage(&undist);
