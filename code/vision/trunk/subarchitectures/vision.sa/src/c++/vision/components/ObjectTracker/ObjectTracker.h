@@ -14,7 +14,7 @@
 #include <vector>
 #include <string>
 
-#include "Tracker.h"
+#include "EdgeTracker.h"
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"
 #include "mxCameraModel.h"
@@ -28,7 +28,7 @@ private:
   /**
    * Which camera to get images from
    */
-  Tracker m_tracker;
+  Tracker* m_tracker;
   Camera* m_camera;
   Video::Image m_image;
   Timer m_timer;

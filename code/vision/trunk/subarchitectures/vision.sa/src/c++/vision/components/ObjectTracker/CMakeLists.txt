@@ -15,10 +15,10 @@ add_definitions(-DGL_GLEXT_PROTOTYPES)
 # Set the sources
 SET(SRC
 	src/Camera.cpp
+	src/EdgeTracker.cpp
 	src/Frustum.cpp
 	src/ImageProcessor.cpp
 	src/Kalman.cpp
-	src/TM_Matrix3.cpp
 	src/Model.cpp
 	src/OpenGLControl.cpp
 	src/Particles.cpp
@@ -28,9 +28,11 @@ SET(SRC
 	src/Shader.cpp
 	src/ShaderUtils.cpp
 	src/Texture.cpp
+	src/TextureTracker.cpp
 	src/Timer.cpp
-	src/Tracker.cpp
-	src/TM_Vector3.cpp)
+	src/TM_Matrix3.cpp
+	src/TM_Vector3.cpp
+	src/Tracker.cpp)
 SET(SOURCES ObjectTracker.cpp ${SRC})
 
 
