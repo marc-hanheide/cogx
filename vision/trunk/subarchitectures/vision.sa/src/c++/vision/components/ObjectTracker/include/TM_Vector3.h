@@ -13,7 +13,7 @@
 #ifndef PI
 #define PI 3.14159265358979323846f
 #endif
-#define FLOAT_NULL 0.1
+#define FLOAT_NULL 0.01
 
 class TM_Vector3;
 

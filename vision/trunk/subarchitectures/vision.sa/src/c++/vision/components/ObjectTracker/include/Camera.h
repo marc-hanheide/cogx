@@ -14,6 +14,7 @@ class Camera;
 #include <stdio.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+
 #include "TM_Vector3.h"
 #include "Resources.h"
 #include "mathlib.h"
@@ -71,6 +72,9 @@ public:
 	TM_Vector3 GetPos(){return m_vPos;}
 	TM_Vector3 GetView(){return m_vView;}
 	TM_Vector3 GetUp(){return m_vUp;}
+	
+	float GetZNear(){ return m_zNear; }
+	float GetZFar(){ return m_zFar; }
 
 	// Translations
 	void Translate(TM_Vector3 v);

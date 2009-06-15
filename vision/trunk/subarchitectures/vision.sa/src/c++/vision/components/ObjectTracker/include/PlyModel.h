@@ -6,9 +6,6 @@ class PlyModel;
 
 #include <stdlib.h>
 #include <stddef.h>
-//#include <GL/gl.h>
-//#include <GL/glu.h>
-//#include <highgui.h>
 #include <ply.h>
 
 #include "Model.h"

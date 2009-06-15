@@ -101,10 +101,6 @@ EdgeTracker::EdgeTracker(){
 	m_showparticles = false;
 	m_showmodel = true;
 	m_kalman_enabled = true;
-	m_cascaded = true;
-	m_draw_coordinates = false;
-	m_draw_edges = false;
-	m_result_textured = true;
 	m_tracker_initialized = false;
 	
 	int id;
@@ -112,9 +108,6 @@ EdgeTracker::EdgeTracker(){
 	if((id = g_Resources->AddShader("edgetest", "edgetest.vert", "edgetest.frag")) == -1)
 		exit(1);
 	m_shadeEdgeCompare = g_Resources->GetShader(id);
-}
-
-EdgeTracker::~EdgeTracker(){
 }
 
 // Initialise function (must be called before tracking)
@@ -189,15 +182,6 @@ bool EdgeTracker::track(	unsigned char* image,
 	}else{
 		p_result = Particle(*m_particles->getMax());
 	}
-	
-	// Draw result
-	if(m_result_textured)
-		drawResult(m_particles->getMax());
-	if(m_draw_coordinates)
-		renderCoordinates();
-		
-	
-	SDL_GL_SwapBuffers();
 	
 	// adjust number of particles according to tracking speed
 	time_tracking = m_timer.Update();

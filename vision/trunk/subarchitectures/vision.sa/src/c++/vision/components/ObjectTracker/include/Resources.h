@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdio.h>
 #include <opencv/highgui.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 #include "ImageProcessor.h"
 #include "Model.h"

@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <GL/gl.h>
-//#include <GL/glext.h>
 #include <string.h>
 
 class OpenGLControl

@@ -51,72 +51,23 @@ void ObjectTracker::initTracker(){
   getImage(camId, m_image);
   
   // Load calibration file for camera
-  confFile = "subarchitectures/vision.sa/src/c++/vision/components/calibration.xml";
-  m_cameraModel.LoadIntrinsic (confFile.data());
-  m_cameraModel.LoadDistortion (confFile.data());
-  m_cameraModel.LoadReferencePointsToComputeExtrinsic (confFile.data());
-  CvMat* pExtrinsic = m_cameraModel.GetExtrinsic();
-  CvMat* pIntrinsic = m_cameraModel.GetIntrinsic();
-  fxp = pIntrinsic->data.db[0];
-  fyp = pIntrinsic->data.db[4];
+  float fx = m_image.camPars.fx;
+  float fy = m_image.camPars.fy;
+  log("fx: %.2f fy: %.2f", fx, fy);
   
-  mat4 ext;
-  mat4 intr;
-  /*
-  R[0]=pExtrinsic->data.db[0]; R[1]=pExtrinsic->data.db[2];  R[2]=-pExtrinsic->data.db[1]; T[0]=0.01*pExtrinsic->data.db[3];
-  R[3]=pExtrinsic->data.db[4]; R[4]=pExtrinsic->data.db[6];  R[5]=-pExtrinsic->data.db[5]; T[1]=0.01*pExtrinsic->data.db[11];
-  R[6]=pExtrinsic->data.db[8]; R[7]=pExtrinsic->data.db[10]; R[8]=-pExtrinsic->data.db[9]; T[2]=-0.01*pExtrinsic->data.db[7];
-  */
-  
-  printf("Extrinsic:\n");
-  printf("%f %f %f %f\n", pExtrinsic->data.db[0], pExtrinsic->data.db[1], pExtrinsic->data.db[2], pExtrinsic->data.db[3]);
-  printf("%f %f %f %f\n", pExtrinsic->data.db[4], pExtrinsic->data.db[5], pExtrinsic->data.db[6], pExtrinsic->data.db[7]);
-  printf("%f %f %f %f\n", pExtrinsic->data.db[8], pExtrinsic->data.db[9], pExtrinsic->data.db[10], pExtrinsic->data.db[11]);
-  
-  printf("Intrinsic:\n");
-  printf("%f %f %f\n", pIntrinsic->data.db[0], pIntrinsic->data.db[1], pIntrinsic->data.db[2]);
-  printf("%f %f %f\n", pIntrinsic->data.db[3], pIntrinsic->data.db[4], pIntrinsic->data.db[5]);
-  printf("%f %f %f\n", pIntrinsic->data.db[6], pIntrinsic->data.db[7], pIntrinsic->data.db[8]);
-  
-  ext[0]=pExtrinsic->data.db[0];	ext[1]=pExtrinsic->data.db[1];	ext[2]= pExtrinsic->data.db[2];		ext[3]= pExtrinsic->data.db[3];
-  ext[4]=pExtrinsic->data.db[4];	ext[5]=pExtrinsic->data.db[5];	ext[6]= pExtrinsic->data.db[6];		ext[7]= pExtrinsic->data.db[7];
-  ext[8]=pExtrinsic->data.db[8];	ext[9]=pExtrinsic->data.db[9];	ext[10]=pExtrinsic->data.db[10];	ext[11]=pExtrinsic->data.db[11];
- 	ext[12]=0.0;										ext[13]=0.0;										ext[14]=0.0;											ext[15]=1.0;
- 	ext = ext.transpose();
- 	m_extrinsic = ext;
- 		
- 	intr[0]=pIntrinsic->data.db[0];	intr[1]=pIntrinsic->data.db[1];	intr[2]=pIntrinsic->data.db[2];		intr[3]=0.0;
- 	intr[4]=pIntrinsic->data.db[3];	intr[5]=pIntrinsic->data.db[4];	intr[6]=pIntrinsic->data.db[5];		intr[7]=0.0;
- 	intr[8]=pIntrinsic->data.db[6];	intr[9]=pIntrinsic->data.db[7];	intr[10]=pIntrinsic->data.db[8];	intr[11]=0.0;
- 	intr[12]=0.0;										intr[13]=0.0;										intr[14]=0.0;											intr[15]=1.0;
- 	intr = intr.transpose();
- 	m_intrinsic=intr;
- 	
- 	
- 	vec4 v = vec4(0,0.25,0.02,1);
- 	vec4 vi = ext * v; 
- 	printf("ext  * v: %f %f %f %f\n", vi.x, vi.y, vi.z, vi.w);
- 	vi = intr * vi;
- 	printf("intr * v: %f %f %f %f\n", vi.x, vi.y, vi.z, vi.w);
- 	
- 	vi.x = vi.x / vi.z;
- 	vi.y = vi.y / vi.z;
- 	printf("vi/z: %f %f %f %f\n", vi.x, vi.y, vi.z, vi.w);
- 	
   // Initialize SDL screen
   g_Resources->InitScreen(m_image.width, m_image.height);
  
   // Initialize tracking (parameters for edge-based tracking)
   m_tracker = new EdgeTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
-											3000,															// maximum number of particles (=storage size of particle list)
-											20.0,															// standard deviation of rotational noise in degree
-											0.05,															// standard deviation of translational noise in meter
-											20.0,															// edge matching tolerance in degree
-											0.05,															// goal tracking time in seconds
-											true,															// kalman filtering enabled
-											true,															// draw coordinate frame at inertial pose
-											false))														// locked particles (press 'l' to unlock)
+												3000,															// maximum number of particles (=storage size of particle list)
+												20.0,															// standard deviation of rotational noise in degree
+												0.05,															// standard deviation of translational noise in meter
+												20.0,															// edge matching tolerance in degree
+												0.05,															// goal tracking time in seconds
+												true,															// kalman filtering enabled
+												false))														// locked particles (press 'l' to unlock)
 	{														
 		log("Initialisation failed!");
 		running = false;
@@ -129,20 +80,13 @@ void ObjectTracker::initTracker(){
   log("setting camera parameters");
 		
 	m_tracker->lock();
-	m_camera->Set(	0.0, 0.1, 0.2,
-									0.0, 0.3, 0.0,
+	m_camera->Set(	0.1, -0.13, 0.3,
+									0.1, 0.3, 0.0,
 									0.0, 0.0, 1.0,
 									49, m_image.width, m_image.height,
 									0.1, 100.0,
 									GL_PERSPECTIVE);
 	m_camera->Print();
-	//float t[3] = {0.0, 0.32, 0.0};
-	//m_camera->SetExtrinsic(m_extrinsic);
-	float fovy = 2*atan(m_image.height/fyp) * 180 / PI;
-	printf("fovy: %.2f fxp: %.1f fyp: %.1f\n", fovy, fxp, fyp);
-	m_camera->SetIntrinsic(fovy, fxp, fyp);
-	m_camera->Print();		
-
 				
   log("initialisation successfull!");		
 }
@@ -196,7 +140,11 @@ void ObjectTracker::runTracker(){
 
 		// Track model
 		running = m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
-
+		m_tracker->drawResult(&m_trackpose);
+		m_tracker->renderCoordinates();
+		//m_tracker->drawPixel(100,100,vec3(1.0,0.0,0.0),3.0);
+		m_tracker->swap();
+		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(m_trackpose, obj->pose);
 

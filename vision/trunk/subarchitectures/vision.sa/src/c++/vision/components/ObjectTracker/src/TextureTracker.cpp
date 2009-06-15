@@ -132,10 +132,6 @@ TextureTracker::TextureTracker(){
 	m_showparticles = false;
 	m_showmodel = true;
 	m_kalman_enabled = true;
-	m_cascaded = true;
-	m_draw_coordinates = false;
-	m_draw_edges = false;
-	m_result_textured = true;
 	m_tracker_initialized = false;
 
 	int id;
@@ -143,7 +139,6 @@ TextureTracker::TextureTracker(){
 	if((id = g_Resources->AddShader("texturetest", "texturetest.vert", "texturetest.frag")) == -1)
 		exit(1);
 	m_shadeTextureCompare = g_Resources->GetShader(id);
-	
 }
 
 
@@ -238,16 +233,6 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 		p_result = Particle(*m_particles->getMax());
 	}
 	
-	// Draw result
-	drawResult(&p_result);
-	
-	// Draw coordinates
-	if(m_draw_coordinates)
-		renderCoordinates();
-	
-	// Swap GL-buffers (let CPU wait for GPU)
-	SDL_GL_SwapBuffers();
-	
 	// adjust number of particles according to tracking speed
 	time_tracking = m_timer.Update();
 	params.number_of_particles += 10;
@@ -264,7 +249,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 
 // Draw result of texture tracking (particle with maximum likelihood)
 void TextureTracker::drawResult(Particle* p){
-	
+	m_cam_perspective->Activate();
 	p->activate();
 
 	m_opengl.RenderSettings(true, false);
@@ -281,7 +266,6 @@ void TextureTracker::drawResult(Particle* p){
 	m_opengl.RenderSettings(true, true);
 	
 	p->deactivate();
-
 }
 
 
