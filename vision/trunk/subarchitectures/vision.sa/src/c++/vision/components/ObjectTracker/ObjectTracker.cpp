@@ -107,7 +107,8 @@ void ObjectTracker::initTracker(){
   g_Resources->InitScreen(m_image.width, m_image.height);
  
   // Initialize tracking (parameters for edge-based tracking)
-  if(!m_tracker.init(	m_image.width, m_image.height,		// image size in pixels
+  m_tracker = new EdgeTracker();
+  if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 											3000,															// maximum number of particles (=storage size of particle list)
 											20.0,															// standard deviation of rotational noise in degree
 											0.05,															// standard deviation of translational noise in meter
@@ -127,7 +128,7 @@ void ObjectTracker::initTracker(){
   m_camera = g_Resources->GetCamera(id);
   log("setting camera parameters");
 		
-	m_tracker.lock();
+	m_tracker->lock();
 	m_camera->Set(	0.0, 0.1, 0.2,
 									0.0, 0.3, 0.0,
 									0.0, 0.0, 1.0,
@@ -194,7 +195,7 @@ void ObjectTracker::runTracker(){
 		m_trackpose.w = obj->detectionConfidence;
 
 		// Track model
-		running = m_tracker.trackEdge((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
+		running = m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
 
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(m_trackpose, obj->pose);
@@ -279,7 +280,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 			}else{
 				log("switching to testmode");
 				testmode = true;
-				m_tracker.unlock();
+				m_tracker->unlock();
 			}
 			break;
 		case VisionData::RELEASEMODELS:
@@ -348,7 +349,7 @@ void ObjectTracker::runComponent(){
   
   // Release Tracker
   delete(g_Resources);
-  m_tracker.release();
+  delete(m_tracker);
   log("stop");
   
 }

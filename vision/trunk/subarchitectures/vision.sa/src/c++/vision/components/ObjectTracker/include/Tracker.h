@@ -14,7 +14,7 @@
 #include "mathlib.h"
 
 class Tracker{
-private:
+protected:
 	typedef struct Parameter{
 		float width;						// width of viewport (camera image, image processor, opengl, textures) in pixels
 		float height;						// height of viewport ( --"-- ) in pixels
@@ -51,8 +51,6 @@ private:
 	Texture* m_tex_model;
 	Texture* m_tex_model_ip;
 	Model* m_model;
-	Shader* m_shadeTextureCompare;
-	Shader* m_shadeEdgeCompare;
 	Camera* m_cam_ortho;
 	Camera* m_cam_default;
 	Camera* m_cam_perspective;
@@ -76,21 +74,14 @@ private:
 	
 	bool m_tracker_initialized;
 	
-	// Functions (texture tracking)
-	void image_processing_texture(unsigned char* image);
-	void model_processing();
-	void particle_processing_texture(int num_particles, unsigned int num_avaraged_particles=1);
+	// Functions (virtual)
+	virtual void image_processing(unsigned char* image)=0;
+	virtual void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS)=0;
+	virtual void particle_processing(int num_particles, unsigned int num_avaraged_particles=1)=0;
 	
-	// Functions (edge tracking)
-	void image_processing_edge(unsigned char* image);
-	void particle_processing_edge(int num_particles, unsigned int num_avaraged_particles=1);
 	
-	// Functions (both)
+	// Functions
 	void kalman_filtering(Particle* pm);
-	void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS);
-	void draw_result_texture(Particle* p);
-	void draw_result_edge();
-	
 	bool inputs();
 	
 public:
@@ -109,18 +100,16 @@ public:
 				bool kal=true,										// kalman filtering enabled
 				bool coord=false,									// draw coordinate frame at inertial 0-position
 				bool lock=false);									// locked particles (press 'l' to unlock)
-				
-	bool trackTexture(	unsigned char* image,
+	
+	virtual bool initInternal()=0;
+	
+	virtual bool track(	unsigned char* image,
 						Model* model,
 						Camera* camera,
 						Particle p_estimate,
-						Particle& p_result);
+						Particle& p_result)=0;
 	
-	bool trackEdge(	unsigned char* image,
-					Model* model,
-					Camera* camera,
-					Particle p_estimate,
-					Particle& p_result);
+	virtual void drawResult(Particle* p)=0;
 	
 	void renderCoordinates();
 	void showStatistics();
