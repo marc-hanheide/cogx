@@ -16,6 +16,7 @@ import celmarchitecture.global.SANames;
 import elm.event.Event;
 import elm.event.WKTParseException;
 import elm.eventrecognition.RecognitionManager;
+import elm.eventrecognition.SuperEventRecognizer;
 
 /**
  * The Recognizer process is notified of events arrived in the ELM memory store
@@ -30,7 +31,7 @@ import elm.eventrecognition.RecognitionManager;
  */
 public class Recognizer extends ManagedComponent {
 
-	private boolean localVerbose = false;
+	private boolean localVerbose = true;
 	private boolean verbose = GlobalSettings.verbose || localVerbose;
 
 	private boolean singleSA = GlobalSettings.singleSA;
@@ -41,14 +42,14 @@ public class Recognizer extends ManagedComponent {
 
 	public Recognizer() {
 		super();
-
 		recManager = new RecognitionManager();
-		recManager.registerRecognizer(new DummyRecognizerC(this));
-		recManager.registerRecognizer(new BeWelcomedRecognizer(this));
+	}
+
+	protected void registerRecognizer(SuperEventRecognizer _recognizer) {
+		recManager.registerRecognizer(_recognizer);
 	}
 
 	public void configure(Properties config) {
-
 		saNames.configure(config);
 	}
 
