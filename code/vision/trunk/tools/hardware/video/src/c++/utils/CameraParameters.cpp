@@ -114,7 +114,6 @@ void loadCameraParameters(CameraParameters &cam, const string &configfile)
   cam.p1 = cfg.GetFloat("p1");
   cam.p2 = cfg.GetFloat("p2");
   istringstream istr(cfg.GetString("pose"));
-  cout << ">>> '" << istr.str() << "'" << endl;
   if(!istr.str().empty())
     istr >> cam.pose;
 }
