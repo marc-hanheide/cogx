@@ -1,8 +1,8 @@
 #ifndef CAM_PARS_HH
 #define CAM_PARS_HH
 
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <stdexcept>
 
 /**
@@ -60,9 +60,9 @@ public:
 
   CamPars(double f = 1.);
   virtual ~CamPars() {}
-  double sx() {return (isnormal(fx) ? f/fx : 0.);}
-  double sy() {return (isnormal(fy) ? f/fy : 0.);}
-  double r() {return (isnormal(fx) ? fy/fx : 0.);}
+  double sx() {return (std::isnormal(fx) ? f/fx : 0.);}
+  double sy() {return (std::isnormal(fy) ? f/fy : 0.);}
+  double r() {return (std::isnormal(fx) ? fy/fx : 0.);}
   void Save(const char *filename) throw(std::runtime_error);
   void Load(const char *filename) throw(std::runtime_error);
 };
