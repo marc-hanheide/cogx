@@ -29,7 +29,11 @@ public class EventTimeConverter {
 	}
 
 	public static EventTime toEventTime(CELMEventTime c) {
-		return new EventTime(c.begin.milliseconds, c.end.milliseconds);
+		if (c == null) {
+			return null;
+		} else {
+			return new EventTime(c.begin.milliseconds, c.end.milliseconds);
+		}
 	}
 
 }

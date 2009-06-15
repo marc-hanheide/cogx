@@ -206,7 +206,12 @@ public class EventConverter {
 		template.time = EventTimeConverter.toEventTime(cue.eventTime);
 		template.timeMatchMode = getMatchMode(cue.timeMatchMode);
 
-		template.location = elFactory.fromString(cue.location.wktString);
+		if (cue.location != null) {
+			template.location = elFactory.fromString(cue.location.wktString);
+		}
+		else {
+			assert(cue.locationMatchMode == CELMCueMatchMode.noMatch);
+		}
 		template.locationMatchMode = getMatchMode(cue.locationMatchMode);
 
 		template.esfMatchMode = getMatchMode(cue.esfMatchMode);

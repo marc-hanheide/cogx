@@ -23,3 +23,6 @@ JAVA WM celmarchitecture.global.DefaultWorkingMemory
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
 JAVA MG LocationMonitor celmarchitecture.subarchitectures.elmwriter.LocationMonitor
 JAVA MG ELMWriter celmarchitecture.subarchitectures.elmwriter.ElmWriter --server localhost --db elm --user elm --passwd elmpw
+JAVA MG nav.elm.rec nav.elm.NavEventRecognizer --writer-sa celm.sa --log
+JAVA MG EventRecollector celmarchitecture.subarchitectures.recollection.Recollector --log --server localhost --db elm --user elm --passwd elmpw
+JAVA MG test.rec nav.elm.TestRecollector --writer-sa celm.sa --log
