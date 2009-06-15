@@ -51,7 +51,13 @@ void VideoViewer::runComponent()
     Video::Image image;
     getImage(camId, image);
     IplImage *iplImage = convertImageToIpl(image);
+
+    //vector<Video::Image> images;
+    //getImages(images);
+    //IplImage *iplImage = convertImageToIpl(images[0]);
+
     cvShowImage(getComponentID().c_str(), iplImage);
+
     // needed to make the window appear
     // (an odd behaviour of OpenCV windows!)
     cvWaitKey(10);
