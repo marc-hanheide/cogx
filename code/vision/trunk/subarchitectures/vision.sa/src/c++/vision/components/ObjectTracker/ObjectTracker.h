@@ -37,12 +37,7 @@ private:
   mat4 m_cv2gl;
   mat4 m_extrinsic;
   mat4 m_intrinsic;
-  float zFar, zNear;
-  vec4 v1;
-  vec4 v2;
-  vec4 v3;
-  vec4 v4;
-  vec4 v5;
+  float m_zFar, m_zNear;
   
   int camId;  
   bool track;
