@@ -10,8 +10,6 @@
 #define Z_OBJECT_TRACKER_HH
 
 #include <mxCameraModel.h>
-#include "mxCameraModel.h"
-#include <mxDrawTools.h>
 
 #include "GestaltPrinciple.hh"
 #include "CubeDefinition.hh"
@@ -184,8 +182,9 @@ class TExit
 	Array<TExit*> tExits;									// exits to track
 	
 	string confFile;											// configuration file for mxTools
-  mx::CCameraModel m_cCamModel;							// camera model
+  mx::CCameraModel m_cCamModel;					// camera model
   CvSize m_tImgSize;										// CV image size
+	bool setCamParamsFromVC;							// camera parameters from vision core (or file)
 
 	// Age of objects
 	unsigned maxAge;											// maximum age for tracking
