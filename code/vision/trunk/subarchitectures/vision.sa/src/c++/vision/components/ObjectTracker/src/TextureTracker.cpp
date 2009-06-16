@@ -93,8 +93,8 @@ void TextureTracker::particle_processing(int num_particles, unsigned int num_ava
 	m_opengl.RenderSettings(false, false);	// (color-enabled, depth-enabled)
 	
 	m_cam_perspective->Activate();
-	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(0,0,params.viewport_width,params.viewport_height);
+	//glPushAttrib(GL_VIEWPORT_BIT);
+	//glViewport(0,0,params.viewport_width,params.viewport_height);
 	
 	// Draw particles and count pixels
 	m_shadeTextureCompare->bind();

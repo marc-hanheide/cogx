@@ -229,6 +229,8 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 						0.1, 10.0,
 						GL_PERSPECTIVE);
 	
+	m_cam_perspective = m_cam_default;
+	
 	return initInternal();
 }
 
@@ -300,7 +302,22 @@ void Tracker::renderCoordinates(){
 }
 
 
-void Tracker::drawPixel(int u, int v, vec3 color, float size){
+void Tracker::drawImage(unsigned char* image){
+	m_opengl.RenderSettings(true, false);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	m_cam_ortho->Activate();
+	
+	m_tex_frame->load(image, params.width, params.height);
+	m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
+	m_ip->render(m_tex_frame);
+	
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	m_opengl.RenderSettings(true, true);
+}
+
+void Tracker::drawPixel(float u, float v, vec3 color, float size){
 	m_opengl.RenderSettings(true, false);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -309,7 +326,7 @@ void Tracker::drawPixel(int u, int v, vec3 color, float size){
 	
 	glBegin(GL_POINTS);
 		glColor3fv(color);
-		glVertex3f(float(u),float(v),m_cam_ortho->GetZNear());
+		glVertex3f(u, v, m_cam_ortho->GetZNear());
 	glEnd();
 	
 	glPointSize(1.0);
@@ -317,6 +334,30 @@ void Tracker::drawPixel(int u, int v, vec3 color, float size){
 	glEnable(GL_CULL_FACE);
 	m_opengl.RenderSettings(true, true);
 }
+
+void Tracker::drawTest(){
+	m_opengl.RenderSettings(true, true);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	
+	m_cam_perspective->Activate();
+	glLineWidth(3.0);
+	
+	glBegin(GL_LINE_LOOP);
+		glColor3f(1.0,0.0,0.0);
+		glVertex3f(0.000, 0.000, 0.000);
+		glVertex3f(0.225, 0.000, 0.000);
+		glVertex3f(0.225, 0.113, 0.000);
+		glVertex3f(0.188, 0.151, 0.000);
+		glVertex3f(0.000, 0.151, 0.000);
+	glEnd();
+	
+	glLineWidth(1.0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+}
+
+
 
 void Tracker::swap(){
 	SDL_GL_SwapBuffers();

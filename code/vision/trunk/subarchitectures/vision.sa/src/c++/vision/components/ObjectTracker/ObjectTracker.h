@@ -33,12 +33,15 @@ private:
   Video::Image m_image;
   Timer m_timer;
   Particle m_trackpose;
-  string confFile;											// configuration file for mxTools
-  mx::CCameraModel m_cameraModel;
-  float R[9];  float T[3];
+  
   mat4 m_extrinsic;
   mat4 m_intrinsic;
-  float fxp, fyp;
+  float zFar, zNear;
+  vec4 v1;
+  vec4 v2;
+  vec4 v3;
+  vec4 v4;
+  vec4 v5;
   
   int camId;  
   bool track;

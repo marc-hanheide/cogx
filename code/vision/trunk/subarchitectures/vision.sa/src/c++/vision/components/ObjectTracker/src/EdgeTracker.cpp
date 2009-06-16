@@ -57,9 +57,6 @@ void EdgeTracker::particle_processing(int num_particles, unsigned int num_avarag
 	m_cam_perspective->Activate();
 	m_model->setTexture(0);
 	
-	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(0,0,params.viewport_width,params.viewport_height);
-	
 	for(int i=0; i<num_particles; i++){
 	
 		m_particles->activate(i);

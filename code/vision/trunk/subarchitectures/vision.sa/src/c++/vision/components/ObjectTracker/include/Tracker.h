@@ -79,13 +79,13 @@ protected:
 	
 	// Functions
 	void kalman_filtering(Particle* pm);
-	bool inputs();
 	
 public:
 	Tracker();
 	
 	inline void lock(){ m_lock=true; }
 	inline void unlock(){ m_lock=false; }
+	bool inputs();
 	
 	bool init(	int width, int height,								// image size in pixels
 				int nop=3000,										// maximum number of particles
@@ -107,8 +107,12 @@ public:
 	virtual void drawResult(Particle* p)=0;
 	
 	void renderCoordinates();
-	void drawPixel(int u, int v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
+	void drawImage(unsigned char* image);
+	void drawPixel(float u, float v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
+	void drawTest();
 	void showStatistics();
+	
+	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
 		
 	void swap();
 
