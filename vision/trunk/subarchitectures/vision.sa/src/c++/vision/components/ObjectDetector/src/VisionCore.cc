@@ -954,7 +954,7 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 		}
 		for(unsigned i=0; i<12; i++)
 		{
-			camExtrinsic[i] = distortion[i];
+			camExtrinsic[i] = extrinsic[i];
 		}
 	}
 
