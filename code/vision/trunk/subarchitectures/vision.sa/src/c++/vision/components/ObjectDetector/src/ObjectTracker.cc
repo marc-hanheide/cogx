@@ -205,7 +205,7 @@ ObjectTracker::ObjectTracker(Config *cfg) : GestaltPrinciple(cfg)
   firstCall = true;						// first call of ObjectTracker
 	maxAge = 2;									// maximum age for tracking
 
-	setCamParamsFromVC = false;	// set camera parameters from vision core params
+	setCamParamsFromVC = true;	// set camera parameters from vision core params
 
   trackCubes = false;
 	trackFlap2Cube = false;
