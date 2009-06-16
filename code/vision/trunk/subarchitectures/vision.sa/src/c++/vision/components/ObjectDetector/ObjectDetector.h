@@ -14,6 +14,7 @@
 #include <VisionData.hpp>
 #include <Vs3Interface.h>
 #include <VisionUtils.h>
+#include <Pose3.h>
 
 
 namespace cast

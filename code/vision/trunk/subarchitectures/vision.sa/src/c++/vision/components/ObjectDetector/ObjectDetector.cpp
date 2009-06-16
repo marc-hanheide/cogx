@@ -297,28 +297,30 @@ bool ObjectDetector::GetCameraParameter(const Video::Image & image)
 {
 	Video::CameraParameters camPars = image.camPars;
 
-	printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.fx, camPars.fy, camPars.cx, camPars.cy);
+// 	printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.fx, camPars.fy, camPars.cx, camPars.cy);
+// 	printf("Camera parameters: radial distortion: %4.2f - %4.2f - %4.2f\n", camPars.k1, camPars.k2, camPars.k3);
+// 	printf("Camera parameters: tangential distortion: %4.2f - %4.2f\n", camPars.p1, camPars.p2);
 
-	// set intrinsic parameters
 	double intrinsic[4];
 	intrinsic[0] = camPars.fx;
 	intrinsic[1] = camPars.fy;
 	intrinsic[2] = camPars.cx;
 	intrinsic[3] = camPars.cy;
 
-	printf("Camera parameters: radial distortion: %4.2f - %4.2f - %4.2f\n", camPars.k1, camPars.k2, camPars.k3);
-	printf("Camera parameters: tangential distortion: %4.2f - %4.2f\n", camPars.p1, camPars.p2);
 	double distortion[4];
 	distortion[0] = camPars.k1;
 	distortion[1] = camPars.k2;
 	distortion[2] = camPars.p1;
 	distortion[3] = camPars.p2;
 
-	vs3Interface->SetCamParameters(intrinsic, distortion);
+	double extrinsic[12];
+	getRow44(camPars.pose, extrinsic);
 
-	cogx::Math::Pose3 extrinsic;
-// vs3Interface->SetExtrinsic(extrinsic);
+// 	printf("Camera parameters: extrinsic:\n	%4.2f - %4.2f- %4.2f- %4.2f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
+// 	printf("	%4.2f - %4.2f- %4.2f- %4.2f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
+// 	printf("	%4.2f - %4.2f- %4.2f- %4.2f\n\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
 
+	vs3Interface->SetCamParameters(intrinsic, distortion, extrinsic);
 	return true;
 }
 
