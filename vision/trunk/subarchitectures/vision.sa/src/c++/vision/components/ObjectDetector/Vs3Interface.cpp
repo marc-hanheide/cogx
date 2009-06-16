@@ -97,9 +97,9 @@ void Vs3Interface::DrawGestalt(int type, int detail)
  * @param intrinsic Intrinsic parameters fx, fy, cx, cy
  * @param distortion Radial and tangential distortion: k1, k2, p1, p2
  */
-void Vs3Interface::SetCamParameters(double *intrinsic, double *distortion)
+void Vs3Interface::SetCamParameters(double *intrinsic, double *distortion, double *extrinsic)
 {
-	vcore->SetCamParameters(intrinsic, distortion);
+	vcore->SetCamParameters(intrinsic, distortion, extrinsic);
 }
 
 }
