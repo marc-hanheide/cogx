@@ -36,6 +36,7 @@ import java.util.*;
 import comsys.datastructs.lf.*;
 import comsys.datastructs.comsysEssentials.*;
 import comsys.lf.utils.LFUtils;
+import comsys.datastructs.CacheWrapper;
 
 //=================================================================
 // JAVADOC CLASS DOCUMENTATION 
@@ -97,8 +98,8 @@ public class  SDRSUtils {
 	
 	static int lCounter = 0 ;
 	
-	public static final short SDRS_DISCRIM_RELATION = 1;
-	public static final short SDRS_DISCRIM_PLF = 2;
+	public static final String PLF_TYPE = "plf";
+	public static final String RELATION_TYPE = "relation";
 	
     
     //-----------------------------------------------------------------
@@ -131,7 +132,7 @@ public class  SDRSUtils {
 		// end if.. check whether a label is needed
 		// Check for logical forms; if LF, then ensure proper naming
 		// of nominal identifiers.
-		short fType = getFormulaType(f); 
+		SDRSType fType = getFormulaType(f); 
 			f.tprec = sdrs.LAST;
 			sdrs.LAST = fLabel;
 		
@@ -149,7 +150,7 @@ public class  SDRSUtils {
 			}
 			sdrs.F.mapping[sdrs.F.mapping.length-1] = lfp;
 	
-			if (fType==SDRS_DISCRIM_PLF) { 
+			if (fType.type.equals(PLF_TYPE)) { 
 					
 			// ------------
 			log("Formula will be stored with id "+fLabel);
@@ -326,7 +327,7 @@ public class  SDRSUtils {
     public static String getFirstMention (SDRS sdrs, String nv) { 
 		String result = "unknown";
 		for (int i=0; i < sdrs.F.mapping.length ; i++) {
-			if (getFormulaType(sdrs.F.mapping[i].formula) == SDRS_DISCRIM_PLF) {
+			if (getFormulaType(sdrs.F.mapping[i].formula).type.equals(PLF_TYPE)) {
 				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf;
 				for (int j=0; j < plf.packedLF.pNodes.length;j++) {
 					for (int k=0 ; k < plf.packedLF.pNodes[j].packedNoms.length ; k++) {
@@ -389,11 +390,11 @@ public class  SDRSUtils {
        The method <i>getFormulaType</i> returns the formula type.
     */
 
-    public static short getFormulaType (SDRSFormula f) { 
+    public static SDRSType getFormulaType (SDRSFormula f) { 
     	if (f.type != null) {
-    		return f.type.discriminator ;
+    		return f.type;
     	}
-    		else return 0;
+    		else return null;
     	
     } // end method
 
@@ -421,7 +422,7 @@ public class  SDRSUtils {
     public static String getLastMention (SDRS sdrs, String nv) { 
 		String result = "unknown";
 		for (int i=sdrs.F.mapping.length-1; i <= 0 ; i--) {
-			if (getFormulaType(sdrs.F.mapping[i].formula) == SDRS_DISCRIM_PLF) {
+			if (getFormulaType(sdrs.F.mapping[i].formula).type.equals(PLF_TYPE)) {
 				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf;
 				for (int j=0; j < plf.packedLF.pNodes.length;j++) {
 					for (int k=0 ; k < plf.packedLF.pNodes[j].packedNoms.length ; k++) {
@@ -447,7 +448,7 @@ public class  SDRSUtils {
     public static Vector<String> getMentions (SDRS sdrs, String nv) { 
 		Vector<String> result = new Vector<String>();
 		for (int i=0; i < sdrs.F.mapping.length ; i++) {
-			if (getFormulaType(sdrs.F.mapping[i].formula) == SDRS_DISCRIM_PLF) {
+			if (getFormulaType(sdrs.F.mapping[i].formula).type.equals(PLF_TYPE)) {
 				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf;
 				for (int j=0; j < plf.packedLF.pNodes.length;j++) {
 					for (int k=0 ; k < plf.packedLF.pNodes[j].packedNoms.length ; k++) {
@@ -511,7 +512,7 @@ public class  SDRSUtils {
     	result += "subgraph clusterSDRSFormula" +" {\n";
    // 	result += "label = \"SDRS Label #" + "\";\n";
     	result += "color=red;\n";
-    	if (getFormulaType(formula) == SDRS_DISCRIM_PLF) {
+    	if (getFormulaType(formula).type.equals(PLF_TYPE)) {
     		result += "subgraph clusterPLF"+" {\n";
     		String specsPLF = LFUtils.createDOTSpecs(formula.type.plf.packedLF);
     		result += specsPLF.substring(12, specsPLF.length()-2);
@@ -528,8 +529,8 @@ public class  SDRSUtils {
         			if (formula.caches[j].mapping.associations[k].relType.equals("SINGULAR")) {
         				long id1 = formula.caches[j].mapping.associations[k].id1[0];
         				long id2 = formula.caches[j].mapping.associations[k].id2[0];
-        				String label = formula.caches[j].content1[id1].extract_string() ;
-        				String nominal = formula.caches[j].content2[id2].extract_string() ;
+        				String label = formula.caches[j].content1[(int)id1] ;
+        				String nominal = formula.caches[j].content2[(int)id2] ;
         				result += label + "c"  + "[label=\"" + label + "\"];\n";
         				result += label + "c"  + " -> " + nominal + " [style=dashed];\n";
         			}
@@ -537,7 +538,7 @@ public class  SDRSUtils {
         		result += "\n}\n";
         	}
     	}
-    	else if (getFormulaType(formula) == SDRS_DISCRIM_RELATION) {
+    	else if (getFormulaType(formula).type.equals(RELATION_TYPE)) {
     		result += formula.type.relation.relType + " [shape=box, label=\"" + 
     		formula.type.relation.relType + "(" + formula.type.relation.args[0] + ", " + 
     		formula.type.relation.args[1] + ")\"];\n"; 
@@ -607,7 +608,7 @@ public class  SDRSUtils {
     		result += "color=red;\n";
     		SDRSFormula formula = sdrs.F.mapping[i].formula;
     		
-    		if (getFormulaType(formula) == SDRS_DISCRIM_PLF) {
+    		if (getFormulaType(formula).type.equals(PLF_TYPE)) {
     			result += "ordering=out;\n";
 				result += "invis" + count + " [style=invis];\n";
 				result += "subgraph clusterPLF"+count+" {\n";
@@ -619,14 +620,14 @@ public class  SDRSUtils {
     			result += "\n}\n";
     		}
     		
-   			else if (getFormulaType(formula) == SDRS_DISCRIM_RELATION) {
+   			else if (getFormulaType(formula).type.equals(RELATION_TYPE)) {
     			result += "ordering=out;\n";
     			result += "invis" + count + " [style=invis];\n";	
     			result += formula.type.relation.relType  + count + " [shape=box, label=\"" + 
     	    		formula.type.relation.relType + "(" + formula.type.relation.args[0] + ", " + 
     	    		formula.type.relation.args[1] + ")\"];\n";
     			if ((i +1 < sdrs.F.mapping.length) && 
-    					getFormulaType(sdrs.F.mapping[i+1].formula) == SDRS_DISCRIM_PLF &&
+    					getFormulaType(sdrs.F.mapping[i+1].formula).type.equals(PLF_TYPE) &&
     					sdrs.F.mapping[i+1].formula.label.equals(formula.type.relation.args[1])) {
     				afterSpecs = "invis" + count + " -> " + "invis" + (new Integer(i+2)).toString() +
     				" [label=\"dialogue move\" ltail=clusterSDRSFormula"+count + " lhead=clusterSDRSFormula" + 
@@ -643,8 +644,8 @@ public class  SDRSUtils {
     				if (sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].relType.equals("SINGULAR")) {
     					long id1 = sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].id1[0];
     					long id2 = sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].id2[0];
-    					String label = sdrs.F.mapping[i].formula.caches[j].content1[id1].extract_string() ;
-    					String nominal = sdrs.F.mapping[i].formula.caches[j].content2[id2].extract_string() ;
+    					String label = sdrs.F.mapping[i].formula.caches[j].content1[(int)id1];
+    					String nominal = sdrs.F.mapping[i].formula.caches[j].content2[(int)id2];
     					result += label + "c" + count + "[label=\"" + label + "\"];\n";
     					result += label + "c" + count  + " -> " + nominal + " [style=dashed];\n";
     				}
@@ -664,7 +665,7 @@ public class  SDRSUtils {
     public static SDRSFormula getFormulaFromPLF (SDRS sdrs, String plfId) {
     	for (int i=0; i < sdrs.F.mapping.length ; i++) {
     		SDRSFormula form = sdrs.F.mapping[i].formula ;
-    		if (getFormulaType(form) == SDRS_DISCRIM_PLF) {
+    		if (getFormulaType(form).type.equals(PLF_TYPE)) {
     			String plfId2 = form.type.plf.id;
     			if (plfId2.equals(plfId)) {
     				return form;

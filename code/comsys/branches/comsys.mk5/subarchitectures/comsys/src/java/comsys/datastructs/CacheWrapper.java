@@ -6,7 +6,7 @@ import comsys.datastructs.comsysEssentials.IndexAssociation;
 import comsys.lf.utils.LFUtils;
 
 public class CacheWrapper {
-	
+
 	Cache cache;
 
 	public CacheWrapper(Cache cache) {
