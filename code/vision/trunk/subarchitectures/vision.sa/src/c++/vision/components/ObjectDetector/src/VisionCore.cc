@@ -165,7 +165,6 @@ Statistics VisionCore::stats;
 
 VisionCore::VisionCore(VideoType vid_type, const char *config_name, int cameraSource)
 {
-printf("VisionCore: Create Vision Core\n");
   // initialise math stuff (tables etc.)
   InitMath();
   switch(vid_type)
@@ -179,26 +178,17 @@ printf("VisionCore: Create Vision Core\n");
     case VIDEO_TYPE_BUFFER:
       video = new OpenCvBufferVideo();
       break;
-
-// #ifdef HAVE_IMLIB
-//     case VIDEO_TYPE_FILESEQ:
-//       video = new FileVideo();
-//       break;
-// #endif
-//     case VIDEO_TYPE_OPENCV:
-//       video = new OpenCvVideo(640, 480, cameraSource);
-//       break;
-// 		case VIDEO_TYPE_BUFFER:
-// 			video = new BufferVideo();
-// 			break;
-	default: 
-  throw Except(__HERE__, "unknown video type");
-	break;
+		default: 
+  		throw Except(__HERE__, "unknown video type");
+		break;
   }
   img = 0;
+
 //   wmap = 0;
   InitGestaltPrinciples();
   Configure(config_name);
+
+// 	ariCamModel = new mx::CCameraModel();
 
 // 	ice = new IceInterface();
 }
@@ -213,6 +203,8 @@ VisionCore::VisionCore(Video *vid, const char *config_name, int cameraSource)
   InitGestaltPrinciples();
   Configure(config_name);
 
+// 	ariCamModel = new mx::CCameraModel();
+
 // 	ice = new IceInterface();
 }
 
@@ -220,6 +212,11 @@ VisionCore::~VisionCore()
 {
   delete video;
   delete img;
+
+// 	delete ariCamModel;
+
+// 	delete ice;
+
 // 	delete wmap;
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     delete principles[i];
@@ -229,7 +226,6 @@ VisionCore::~VisionCore()
 
 void VisionCore::InitGestaltPrinciples()
 {
-printf("VisionCore::InitGestaltPrinciples\n");
   // Add all Gestalt principles we know
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     principles[i] = 0;
@@ -365,37 +361,18 @@ void VisionCore::ClearGestalts()
   }
 }
 
-// TODO: avoid reallocation of image
 void VisionCore::NewImage()
 {
-//   delete img;
-//   img = new Image(video->CurrentFramePtr(), video->Width(), video->Height(),
-//       video->BytesPerPixel(), video->ColorFmt(), false, video->BytesPerLine());
-//   ClearGestalts();
-//   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
-//     if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
-//     {
-//       principles[i]->Reset(img);
-//       principles[i]->ResetRunTime();
-//     }
-
-//   delete img;
-//   const IplImage *ipl = video->CurrentFramePtr();
-//   img = new Image(ipl->imageData, ipl->width, ipl->height,
-//       video->BytesPerPixel(), video->ColorFmt(), true, video->BytesPerLine());
-
-
   delete img;
   const IplImage *ipl = video->CurrentFramePtr();
   img = new Image(ipl->imageData, ipl->width, ipl->height,
       video->BytesPerPixel(), video->ColorFmt(), false, video->BytesPerLine());
 
+	/// Convert from RGB to BGR
 	IplImage *nipl = cvCreateImageHeader(cvSize(ipl->width, ipl->height), IPL_DEPTH_8U, 3);
 	nipl->imageData = img->Data();
 	cvConvertImage( ipl, nipl, CV_CVTIMG_SWAP_RB);
 	cvReleaseImageHeader(&nipl);
-
-
 
   ClearGestalts();
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
@@ -959,6 +936,41 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 //   ((FormJunctions*)principles[GestaltPrinciple::FORM_JUNCTIONS])->DrawVoteImg(img,use_colour);
 // }
 
+	/**
+	 * @brief Set camera parameters
+	 * @param intrinsic Intrinsic camera parameters: fx, fy, cx, cy
+	 * @param distortion Radial and tangential distortion: k1, k2, p1, p2
+	 */
+	void VisionCore::SetCamParameters(double *intrinsic, double *distortion)
+	{
+		test = 0.;
+p_e = 0.;
+/*		camIntrinsic[0] = intrinsic[0];
+		camIntrinsic[1] = intrinsic[1];
+		camIntrinsic[2] = 199.;
+		camIntrinsic[3] = 12.;
 
+		camDistortion[0] = distortion[0];
+		camDistortion[1] = distortion[1];
+		camDistortion[2] = distortion[2];
+		camDistortion[3] = distortion[3];*/
+	}
+
+	/**
+	 * @brief Get camera model
+	 * @param m_cCamModel Camera model with intrinsic, extrinsic and distortion matrix
+	 */
+	void VisionCore::GetCamModel(mx::CCameraModel &m_cCamModel)
+	{
+		// Preprocess distortion
+/*		CvSize m_tImgSize;
+		m_tImgSize.width = VisionCore::IW();
+		m_tImgSize.height = VisionCore::IH();
+		camModel.PreProcessing (m_tImgSize);
+
+		m_cCamModel = camModel;*/
+
+// 		m_cCamModel.SetIntrinsic(camIntrinsic);
+	}
 }
 
