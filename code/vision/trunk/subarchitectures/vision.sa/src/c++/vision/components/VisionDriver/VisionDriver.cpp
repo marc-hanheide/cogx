@@ -54,7 +54,6 @@ void VisionDriver::runComponent()
   sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   
-  /*
   // Send start detection command
   VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
   detect_cmd->cmd = VisionData::DSTART;
@@ -72,7 +71,6 @@ void VisionDriver::runComponent()
 	addToWorkingMemory(newDataID(), detect_cmd);
 	log("detection stop-command sent!");
   }
-  */
 }
 
 void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
