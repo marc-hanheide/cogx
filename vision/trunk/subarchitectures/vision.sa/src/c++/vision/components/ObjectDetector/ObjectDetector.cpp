@@ -113,6 +113,7 @@ void ObjectDetector::processImage()
 	Video::Image image;
 	getImage(camId, image);
 
+	GetCameraParameter(image);
 	IplImage *iplImage = convertImageToIpl(image);
 	vs3Interface->ProcessSingleImage(iplImage);
 
@@ -203,7 +204,7 @@ void ObjectDetector::processImage()
 
 
 		cvShowImage(getComponentID().c_str(), iplImage);
-// 		cvWaitKey(10);
+		// cvWaitKey(10);
 		cvReleaseImage(&iplImage);
 	}
 }
@@ -282,6 +283,41 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	f.vertices.clear();
 
 	obj->detectionConfidence = 1.0;						// detection confidence is always 1
+
+	return true;
+}
+
+
+/**
+ * @brief Extract camera parameters from video server.
+ * @param image Image from the image server
+ * @return True for success
+ */
+bool ObjectDetector::GetCameraParameter(const Video::Image & image)
+{
+	Video::CameraParameters camPars = image.camPars;
+
+	printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.fx, camPars.fy, camPars.cx, camPars.cy);
+
+	// set intrinsic parameters
+	double intrinsic[4];
+	intrinsic[0] = camPars.fx;
+	intrinsic[1] = camPars.fy;
+	intrinsic[2] = camPars.cx;
+	intrinsic[3] = camPars.cy;
+
+	printf("Camera parameters: radial distortion: %4.2f - %4.2f - %4.2f\n", camPars.k1, camPars.k2, camPars.k3);
+	printf("Camera parameters: tangential distortion: %4.2f - %4.2f\n", camPars.p1, camPars.p2);
+	double distortion[4];
+	distortion[0] = camPars.k1;
+	distortion[1] = camPars.k2;
+	distortion[2] = camPars.p1;
+	distortion[3] = camPars.p2;
+
+	vs3Interface->SetCamParameters(intrinsic, distortion);
+
+	cogx::Math::Pose3 extrinsic;
+// vs3Interface->SetExtrinsic(extrinsic);
 
 	return true;
 }

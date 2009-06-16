@@ -38,25 +38,38 @@ private:
 
   bool cmd_detect;		///< detection command
 
+  /**
+   * Receive a changed detection command, written to the working memory
+   */
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
+
+  /**
+   * Convert a object-detector cube to a cast visual object 
+   */
 	bool Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::CubeDef &cd);
+
+  /**
+   * Extract camera parameters from video server.
+   */
+	bool GetCameraParameter(const Video::Image & image);
+
 
 protected:
   /**
-   * called by the framework to configure our component
+   * Called by the framework to configure our component
    */
   virtual void configure(const std::map<std::string,std::string> & _config);
   /**
-   * called by the framework after configuration, before run loop
+   * Called by the framework after configuration, before run loop
    */
   virtual void start();
   /**
-   * called by the framework to start compnent run loop
+   * Called by the framework to start compnent run loop
    */
   virtual void runComponent();
 
   /**
-   * called to start processing of one image
+   * Called to start processing of one image
    */
 	virtual void processImage();
 
