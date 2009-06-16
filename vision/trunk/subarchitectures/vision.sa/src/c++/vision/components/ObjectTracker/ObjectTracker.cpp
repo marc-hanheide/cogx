@@ -50,8 +50,6 @@ void ObjectTracker::initTracker(){
   // Grab one image from VideoServer for initialisation
   getImage(camId, m_image);
   
-  
-  
   // Initialize SDL screen
   g_Resources->InitScreen(m_image.width, m_image.height);
  
@@ -72,15 +70,19 @@ void ObjectTracker::initTracker(){
   
   // *** Setting up camera ***
   log("setting up camera");
+  m_zNear=0.1;
+	m_zFar=100.0;
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
-  
-  m_zNear=0.1;
-	m_zFar=100.0;
-		
-	m_camera->Print();	
-	// intrinsic parameters
+  m_camera->Set(	0.2, 0.2, 0.2,
+									0.0, 0.0, 0.0,
+									0.0, 1.0, 0.0,
+									49, m_image.width, m_image.height,
+									m_zNear, m_zFar,
+									GL_PERSPECTIVE);
+	
+  // intrinsic parameters
 	float fx = 2.0*m_image.camPars.fx / m_image.width;					// scale range from [0 ... 640] to [0 ... 2]
   float fy = 2.0*m_image.camPars.fy / m_image.height;					// scale range from [0 ... 480] to [0 ...-2]
   float cx = 1.0-(2.0*m_image.camPars.cx / m_image.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
@@ -117,9 +119,6 @@ void ObjectTracker::initTracker(){
 	m_camera->SetExtrinsic(m_extrinsic);
 	m_camera->Print();
 	
-	m_tracker->lock();
-	track = true;
-	
   log("initialisation successfull!");		
 }
 
@@ -139,14 +138,14 @@ void ObjectTracker::runTracker(){
 	// Grab image from VideoServer
 	getImage(camId, m_image);
 	
+	/*
 	m_tracker->setCamPerspective(m_camera);
 	m_tracker->drawImage((unsigned char*)(&m_image.data[0]));
 	m_tracker->drawTest();
-	
 	m_tracker->swap();
 	running = m_tracker->inputs();
-	
-/*
+	*/
+
 	fTimeImage = m_timer.Update();
 	if(testmode){
 		m_camera->Set(	0.2, 0.2, 0.2,
@@ -172,8 +171,6 @@ void ObjectTracker::runTracker(){
 		running = m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
 		m_tracker->drawResult(&m_trackpose);
 		m_tracker->renderCoordinates();
-		m_tracker->drawTest();
-		//m_tracker->drawPixel(100,100,vec3(1.0,0.0,0.0),3.0);
 		m_tracker->swap();
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
@@ -188,7 +185,7 @@ void ObjectTracker::runTracker(){
 	fTimeTracker = m_timer.Update();
 	//log("TimeImage:   %.0f ms", fTimeImage*1000.0);
 	//log("TimeTracker: %.0f ms", fTimeTracker*1000.0);
-*/
+
 }
 
 
