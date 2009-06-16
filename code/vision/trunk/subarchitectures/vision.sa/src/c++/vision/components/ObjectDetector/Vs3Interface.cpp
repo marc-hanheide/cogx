@@ -25,6 +25,7 @@ Vs3Interface::Vs3Interface()
   vcore = new Z::VisionCore(Z::VIDEO_TYPE_BUFFER, config);
   assert(vcore != 0);	
 
+	// set processing time and canny parameters
 	processingTime = 400;
 	cannyAlpha = 600;
 	cannyOmega = 1;
@@ -89,6 +90,16 @@ void Vs3Interface::Draw(IplImage *iI)
 void Vs3Interface::DrawGestalt(int type, int detail)
 {
 	vcore->DrawGestalts((Z::Gestalt::Type) type, detail);
+}
+
+/**
+ * @brief Set parameters of the camera for the object detector
+ * @param intrinsic Intrinsic parameters fx, fy, cx, cy
+ * @param distortion Radial and tangential distortion: k1, k2, p1, p2
+ */
+void Vs3Interface::SetCamParameters(double *intrinsic, double *distortion)
+{
+	vcore->SetCamParameters(intrinsic, distortion);
 }
 
 }
