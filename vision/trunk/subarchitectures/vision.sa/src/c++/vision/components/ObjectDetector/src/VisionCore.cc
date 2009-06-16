@@ -158,8 +158,11 @@ Array<Gestalt*> VisionCore::gestalts[Gestalt::MAX_TYPE];
 Array<unsigned> VisionCore::ranked_gestalts[Gestalt::MAX_TYPE];
 
 double VisionCore::p_e = 0.;
-double VisionCore::test = 0.;
 double VisionCore::p_ee = 0.;
+
+double VisionCore::camIntrinsic[4];
+double VisionCore::camDistortion[4];
+double VisionCore::camExtrinsic[12];
 
 Statistics VisionCore::stats;
 
@@ -942,19 +945,17 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 	 * @param intrinsic Intrinsic camera parameters: fx, fy, cx, cy
 	 * @param distortion Radial and tangential distortion: k1, k2, p1, p2
 	 */
-	void VisionCore::SetCamParameters(double *intrinsic, double *distortion)
+	void VisionCore::SetCamParameters(double *intrinsic, double *distortion, double *extrinsic)
 	{
-		test = 0.;
-p_e = 0.;
-/*		camIntrinsic[0] = intrinsic[0];
-		camIntrinsic[1] = intrinsic[1];
-		camIntrinsic[2] = 199.;
-		camIntrinsic[3] = 12.;
-
-		camDistortion[0] = distortion[0];
-		camDistortion[1] = distortion[1];
-		camDistortion[2] = distortion[2];
-		camDistortion[3] = distortion[3];*/
+		for(unsigned i=0; i<4; i++)
+		{
+			camIntrinsic[i] = intrinsic[i];
+			camDistortion[i] = distortion[i];
+		}
+		for(unsigned i=0; i<12; i++)
+		{
+			camExtrinsic[i] = distortion[i];
+		}
 	}
 
 	/**
@@ -963,15 +964,10 @@ p_e = 0.;
 	 */
 	void VisionCore::GetCamModel(mx::CCameraModel &m_cCamModel)
 	{
-		// Preprocess distortion
-/*		CvSize m_tImgSize;
-		m_tImgSize.width = VisionCore::IW();
-		m_tImgSize.height = VisionCore::IH();
-		camModel.PreProcessing (m_tImgSize);
-
-		m_cCamModel = camModel;*/
-
-// 		m_cCamModel.SetIntrinsic(camIntrinsic);
+		// Set camera parameters
+		m_cCamModel.SetIntrinsic(camIntrinsic);
+		m_cCamModel.SetDistortion(camDistortion);
+		m_cCamModel.SetExtrinsic(camExtrinsic);
 	}
 }
 

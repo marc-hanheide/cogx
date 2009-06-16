@@ -86,10 +86,10 @@ class VisionCore
 private:
   static Image *img;													///< Images to process
   static Video *video;												///< Video to process
-	//mx::CCameraModel *ariCamModel;				///< Camera model
 
-// 	static double camIntrinsic[4];
-// 	static double camDistortion[4];
+	static double camIntrinsic[4];							///< Intrinsic parameters of the cam
+	static double camDistortion[4];							///< Distortion parameters of the cam
+	static double camExtrinsic[12];							///< Extrinsic parameters of the cam
 
 // 	static Tracker3D tracker;										///< Toms 3D tracker
 //	static IceInterface *ice;										///< Ice-Interface to following systems
@@ -112,8 +112,6 @@ public:
 //  static Vector2 roi_center;	///< Hannes code
 //  static double roi_sigma;		///< Hannes code
 //  static IplImage *wmap;			///< Hannes code
-
-static double test;
 
 public:
 
@@ -403,7 +401,7 @@ public:
 	/**
 	 * @brief Set camera parameters
 	 */
-	static void SetCamParameters(double *intrinsic, double *distortion);
+	static void SetCamParameters(double *intrinsic, double *distortion, double *extrinsic);
 
 	/**
 	 * @brief Get camera model
