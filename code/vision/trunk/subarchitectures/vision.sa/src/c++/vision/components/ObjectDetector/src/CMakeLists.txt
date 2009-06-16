@@ -207,27 +207,6 @@ SET(SOURCES
 )
 
 
-#LIBS += ../mxCvTools/libmxCvTools.a \
-#  ../ice_vision/slice_message/libslice_message.a \
-#  ../matas/libmatas.a \
-#  ../Tracker3D/libTracker3D.a \
-#  -L/usr/X11/lib \
-#  -lSDL \
-#  -lSDLmain \
-#  -lImlib \
-#  -lglut \
-#  -lGLU \
-#  -lIce \
-#  -lIceUtil \
-#  -lrt \
-#  -lm \
-#  -ldl \
-#  -lpthread \
-#  -lhighgui \
-#  -lcxcore \
-#  -lcv \
-#  -lqt-mt
-
 # INCLUDE DIRECTORIES WITH HEADERS (INTERN)
 #include_directories()
 
@@ -253,8 +232,9 @@ link_cast_component(${CAST_COMPONENT_NAME} cv)
 link_cast_component(${CAST_COMPONENT_NAME} qt-mt)
 
 
-link_cast_component(${CAST_COMPONENT_NAME} matas)
-link_cast_component(${CAST_COMPONENT_NAME} mxCvTools)
+#link_cast_component(${CAST_COMPONENT_NAME} matas)
+#link_cast_component(${CAST_COMPONENT_NAME} mxCvTools)
+#link_cast_component(${CAST_COMPONENT_NAME} Vs3Matas Vs3MxCvTools)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
