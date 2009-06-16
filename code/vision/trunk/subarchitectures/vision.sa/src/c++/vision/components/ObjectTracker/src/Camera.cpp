@@ -39,8 +39,7 @@ void Camera::Set(	float posx,  float posy,  float posz,
 	fwh2intrinsic();
 	fsu2extrinsic();
 	
-	glViewport(0,0,m_width,m_height);
-	glDepthRange(zNear, zFar);
+	SetViewport(0,0,m_width,m_height,zNear,zFar);
 }
 
 void Camera::SetExtrinsic(float* M){
@@ -66,6 +65,12 @@ void Camera::SetIntrinsic(float fovy, float width, float height){
 	m_height = height;
 	
 	fwh2intrinsic();
+}
+
+void Camera::SetViewport(float x, float y, float w, float h, float n, float f)
+{
+	glViewport(x,y,w,h);
+	glDepthRange(n,f);
 }
 
 void Camera::Activate()

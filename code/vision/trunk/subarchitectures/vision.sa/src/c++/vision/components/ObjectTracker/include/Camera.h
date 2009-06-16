@@ -54,6 +54,9 @@ public:
 	void SetExtrinsic(float* M);
 	void SetIntrinsic(float* M);
 	void SetIntrinsic(float fovy, float width, float height);
+	void SetViewport(float x, float y, float w, float h, float n, float f);
+	void SetPerspective(){m_projection=GL_PERSPECTIVE;}
+	void SetOrtho(){m_projection=GL_ORTHO;}
 	
 	void Activate();
 	void Print();
