@@ -30,21 +30,21 @@ package comsys.components.dialogue;
 //-----------------------------------------------------------------
 // CAST IMPORTS
 //-----------------------------------------------------------------
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.architecture.ManagedComponent;
+import cast.architecture.*;
 import cast.cdl.*;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
+import cast.SubarchitectureComponentException;
 //-----------------------------------------------------------------
 // COMSYS IMPORTS
 //-----------------------------------------------------------------
-import comsys.*;
+import comsys.datastructs.comsysEssentials.*;
 import comsys.arch.*;
-import comsys.utils.ComsysUtils;
 import comsys.utils.SDRSUtils;
 import comsys.utils.datastructs.*;
-
+import comsys.processing.dialogue.DialogueMoveFactory;
+import comsys.processing.dialogue.dialoguemovefactories.*;
+import comsys.processing.parse.*;
 
 //-----------------------------------------------------------------
 // JAVA IMPORTS
@@ -61,7 +61,8 @@ import java.util.ArrayList;
 //-----------------------------------------------------------------
 // LOGICAL FORM IMPORTS
 //-----------------------------------------------------------------
-import lf.*;
+import comsys.datastructs.lf.*;
+import comsys.lf.utils.*;
 
 //=================================================================
 //CLASS DOCUMENTATION
@@ -298,7 +299,7 @@ public class cc_DialogueMove
 	@Override
 	public void start() {
 		super.start();
-		try {
+//		try {
 			// Change filters for caches
 			addChangeFilter(
 					ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),
@@ -314,9 +315,9 @@ public class cc_DialogueMove
 					handlePackedLFs(_wmc);
 				}
 			});			
-		} catch (SubarchitectureProcessException e) {
-			e.printStackTrace();
-		} // end try..catch
+//		} catch (SubarchitectureComponentException e) {
+//			e.printStackTrace();
+//		} // end try..catch
 	} // end start
 	// =================================================================
 	// EXECUTION METHODS
@@ -325,9 +326,9 @@ public class cc_DialogueMove
 	private void handlePackedLFs(WorkingMemoryChange _wmc) {
 		try {
 			// get the id of the working memory entry
-			String id = _wmc.m_address.m_id;
+			String id = _wmc.address.id;
 			// get the data from working memory
-			CASTData plfWM = new CASTData(id, getWorkingMemoryEntry(id));
+			CASTData plfWM = getWorkingMemoryEntry(id);
 			PackedLFs plf = (PackedLFs) plfWM.getData();
 			
 			if (plf.type.equals("interpretation")) {
@@ -354,7 +355,7 @@ public class cc_DialogueMove
 			}
 			}
 				// Check what kind of type we are dealing with, only deal with disc refs
-		} catch (SubarchitectureProcessException e) {
+		} catch (SubarchitectureComponentException e) {
 			e.printStackTrace();
 		} // end try..catch
 	} // end handleCache
@@ -402,7 +403,7 @@ public class cc_DialogueMove
 						SDRSFormulaId2 = SDRSUtils.getNextLabel();						
 					}
 					else if (SDRSUtils.getFormulaType(lastFormula) == SDRSUtils.SDRS_DISCRIM_PLF &&
-							lastFormula.type.plf().id.equals(plf.id)) {
+							lastFormula.type.plf.id.equals(plf.id)) {
 						SDRSFormulaId1 = lastFormula.tprec;
 						SDRSFormulaId2 = lastFormula.label;
 					}
@@ -552,9 +553,9 @@ public class cc_DialogueMove
 	public void runComponent() {
 		try {
 			log("Entering loop checking for data in dialogue move interpretation component");
-			while (m_status == ProcessStatus.RUN) {
+			while (this.isRunning()) {
 				// lock from external access
-				lockProcess();
+				lockComponent();
 				// check (synchronised) processing data objects queue
 				ListIterator<ProcessingData> i = m_dataObjects
 				.listIterator();
@@ -591,14 +592,14 @@ public class cc_DialogueMove
 							} // end if..else check for task type
 							// inform the goal manager that the task has
 							// been completed, but unsuccessfully
-							try {
+							//try {
 								taskComplete(
 										taskID,
-										TaskOutcome.PROCESSING_COMPLETE_SUCCESS);
-							}
-							catch (SubarchitectureProcessException e) {
-								e.printStackTrace();
-							} // end try..catch
+										TaskOutcome.ProcessingCompleteSuccess);
+							//}
+							//catch (SubarchitectureComponentException e) {
+							//	e.printStackTrace();
+							//} // end try..catch
 						}
 						catch (ComsysException e) {
 							log("Exception while executing a task in dialogue interpretation: "
@@ -606,14 +607,14 @@ public class cc_DialogueMove
 							// inform the goal manager that the task has
 							// been completed, but unsuccessfully
 							// we may want to make this more specific
-							try {
+							//try {
 								taskComplete(
 										taskID,
-										TaskOutcome.PROCESSING_COMPLETE_FAILURE);
-							}
-							catch (SubarchitectureProcessException ex) {
-								ex.printStackTrace();
-							} // end try..catch
+										TaskOutcome.ProcessingCompleteFailure);
+							//}
+							//catch (SubarchitectureComponentException ex) {
+							//	ex.printStackTrace();
+							//} // end try..catch
 						} // end try..catch for processing exceptions
 					}
 					else {
@@ -626,9 +627,9 @@ public class cc_DialogueMove
 					m_taskToTaskTypeMap.remove(taskID);
 				} // end while
 				// Free the process
-				unlockProcess();
+				unlockComponent();
 				
-                sleepProcess(20);
+                sleepComponent(20);
 
 				// wait for new tasks!
 				//waitForNotifications(m_dataObjects);
@@ -651,10 +652,9 @@ public class cc_DialogueMove
 	 * 
 	 * @see cast.core.components.CASTProcessingComponent#configure(java.util.Properties)
 	 */
-	@Override
 	public void configure(Properties _config) {
 //		_config.list(System.out);
-		super.configure(_config);
+//		super.configure(_config);
 		if (_config.containsKey("--log")) {
 			String logFlag = _config.getProperty("--log");
 			if (logFlag.equals("") | logFlag.equals("true")) {

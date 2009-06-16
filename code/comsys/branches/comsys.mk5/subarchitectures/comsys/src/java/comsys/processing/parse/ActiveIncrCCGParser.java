@@ -36,9 +36,8 @@ import cast.core.CASTData;
 //COMSYS IMPORTS
 //-----------------------------------------------------------------
 
-import comsys.ContextInfo;
-import comsys.InterpretationSupport;
-import comsys.PhonString;
+import comsys.datastructs.comsysEssentials.*;
+import comsys.datastructs.lf.*;
 import comsys.components.parse.cc_Parser;
 import comsys.processing.parse.GrammarInterface;
 import comsys.processing.parse.OpenCCGGrammar;
@@ -93,10 +92,10 @@ import opennlp.ccg.unify.UnifyControl;
 //-----------------------------------------------------------------
 //REPRESENTATION IMPORTS
 //-----------------------------------------------------------------
-import lf.*;
-import lf.utils.ArrayIterator;
-import lf.utils.LFPacking;
-import lf.utils.LFUtils;
+import comsys.datastructs.lf.*;
+import comsys.lf.utils.ArrayIterator;
+import comsys.lf.utils.LFPacking;
+import comsys.lf.utils.LFUtils;
 import cast.core.CASTUtils;
 import java.util.Enumeration;
 

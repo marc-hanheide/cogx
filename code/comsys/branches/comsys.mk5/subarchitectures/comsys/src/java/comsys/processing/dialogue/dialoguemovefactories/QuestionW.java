@@ -1,8 +1,9 @@
 package comsys.processing.dialogue.dialoguemovefactories;
 
 import java.util.TreeMap;
-import comsys.*;
-import lf.*;
+import comsys.processing.dialogue.DialogueMoveFactory;
+import comsys.datastructs.comsysEssentials.*;
+import comsys.datastructs.lf.*;
 import comsys.utils.datastructs.*;
 import java.util.ArrayList;
 
@@ -32,7 +33,7 @@ public class QuestionW extends AbstractDialogueMoveFactory implements DialogueMo
 	
 	public DialogueMove produceDialogueMove (String SDRSFormulaId1, String SDRSFormulaId2, String dialogueMoveId) {
 		DialogueMove dm = new DialogueMove();
-		dm.mType = MoveType.QUESTION_W ;
+		dm.mType = MoveType.QUESTIONW ;
 		dm.SDRSFormulaId1 = SDRSFormulaId1 ;
 		dm.SDRSFormulaId2 = SDRSFormulaId2 ;	
 		return dm;	

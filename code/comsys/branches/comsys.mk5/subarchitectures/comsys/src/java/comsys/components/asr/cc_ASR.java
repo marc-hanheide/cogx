@@ -46,7 +46,7 @@ import comsys.processing.asr.RecognitionResult;
 
 import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
-import comsys.utils.ComsysUtils;
+//import comsys.utils.ComsysUtils;
 
 
 import cast.architecture.ChangeFilterFactory;
@@ -565,7 +565,7 @@ public class cc_ASR extends ManagedComponent {
 	 */
 	protected void speak(String str) {
 		try {
-			SpokenOutputItem spoi = ComsysUtils.newSpokenOutputItem();
+			SpokenOutputItem spoi = new SpokenOutputItem();
 			spoi.phonString = str;
 			addToWorkingMemory(newDataID(), spoi); // refactored
 		}

@@ -1,8 +1,9 @@
 
 package comsys.processing.parse;
 
-import lf.PackedLogicalForm;
-import comsys.*;
+import comsys.datastructs.lf.PackedLogicalForm;
+import comsys.datastructs.comsysEssentials.*;
+
 import opennlp.ccg.parse.ParseResults;
 import java.util.Hashtable;
 import java.util.Vector;

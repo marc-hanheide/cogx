@@ -7,16 +7,13 @@ import java.util.Vector;
 import opennlp.ccg.parse.ParseException;
 import opennlp.ccg.parse.ParseResults;
 
-import comsys.PhonString;
+import comsys.datastructs.comsysEssentials.PhonString;
 import comsys.processing.parse.PackedLFParseResults;
 import comsys.processing.parse.ActiveIncrCCGParser;
 import comsys.processing.asr.WordRecognitionLattice;
 import comsys.arch.ComsysException;
-import lf.LFNominal;
-import lf.LFRelation;
-import lf.LogicalForm;
-import lf.PackedLogicalForm;
-import lf.utils.LFPacking;
+import comsys.datastructs.lf.*;
+import comsys.lf.utils.LFPacking;
 
 public class ActiveWordLatticeParser extends ActiveIncrCCGParser {
 

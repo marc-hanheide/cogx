@@ -44,18 +44,17 @@ import cast.core.CASTUtils;
 // COMSYS IMPORTS
 // -----------------------------------------------------------------
 
-import comsys.datastructs.comsys.*;
+import comsys.datastructs.comsysEssentials.*;
 import comsys.processing.parse.PackedLFParseResults;
 import comsys.arch.ProcessingData;
 
 
 // import comsys.processing.asr.WordRecognitionLattice;
 import comsys.arch.ComsysException;
-import comsys.utils.ComsysUtils;
 import comsys.arch.ComsysGoals;
 import comsys.processing.parse.ActiveCCGLexicon;
 import comsys.processing.parse.ActiveWordLatticeParser;
-
+import comsys.utils.ComsysUtils;
 
 // -----------------------------------------------------------------
 // INTERCONNECTIVITY IMPORTS
@@ -472,7 +471,7 @@ public class cc_Parser
 		// now call the initialization method for the object
         init();
 		// now do the rest
-        try {
+        //try {
 
         	
 			// register change filters for the active data types
@@ -530,10 +529,10 @@ public class cc_Parser
                 });				
 				
 				
-        }
-        catch (SubarchitectureComponentException e) {
-            e.printStackTrace();
-        } // end try..catch
+        //}
+        //catch (SubarchitectureComponentException e) {
+        //    e.printStackTrace();
+        //} // end try..catch
     }// end start
 	
     /**
@@ -956,14 +955,14 @@ public class cc_Parser
                             executeParseTask(data);
                             // inform the goal manager that the task has
                             // been completed
-                            try {
+                            //try {
                                 taskComplete(
                                     taskID,
                                     TaskOutcome.ProcessingCompleteSuccess);
-                            }
-                            catch (SubarchitectureComponentException e) {
-                                e.printStackTrace();
-                            } // end try..catch
+                            //}
+                            //catch (SubarchitectureComponentException e) {
+                            //    e.printStackTrace();
+                            //} // end try..catch
                         }
                         catch (ComsysException e) {
                             log("Exception while executing a task in utterance interpretation: "
@@ -972,14 +971,14 @@ public class cc_Parser
                             // inform the goal manager that the task has
                             // been completed, but unsuccessfully
                             // we may want to make this more specific
-                            try {
+                            //try {
                                 taskComplete(
                                     taskID,
                                     TaskOutcome.ProcessingCompleteFailure);
-                            }
-                            catch (SubarchitectureComponentException ex) {
-                                ex.printStackTrace();
-                            } // end try..catch
+                            //}
+                            //catch (SubarchitectureComponentException ex) {
+                            //    ex.printStackTrace();
+                            //} // end try..catch
                         } 					
 						catch (ParseException pe) {
 							log("Parsing exception while executing a task in utterance interpretation: "
@@ -989,7 +988,7 @@ public class cc_Parser
 							try {
 								// Send feedback to be realized
 								LogicalForm comGoal = LFUtils.convertFromString("@d1:dvp(cg ^ <FeedBackSource>parser ^ <Polarity>negative ^ <Content>(f1:feedback ))");
-								ContentPlanningGoal cpg = ComsysUtils.newContentPlanningGoal();
+								ContentPlanningGoal cpg = new ContentPlanningGoal();
 								cpg.lform = comGoal;
 								addToWorkingMemory(newDataID(), cpg); 
 								// Indicate that the task could not be completed

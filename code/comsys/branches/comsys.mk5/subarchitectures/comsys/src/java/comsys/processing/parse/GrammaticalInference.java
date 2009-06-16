@@ -37,7 +37,7 @@ import cast.core.CASTData;
 // COMSYS IMPORTS
 // -----------------------------------------------------------------
 
-import comsys.PhonString;
+import comsys.datastructs.comsysEssentials.*;
 import comsys.arch.ComsysException;
 
 

@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.cognitivesystems.comsys.autogen.ComsysEssentials.SDRS;
-import org.cognitivesystems.repr.lf.utils.LFUtils;
+import comsys.datastructs.comsysEssentials.*;
+import comsys.lf.utils.LFUtils;
 import java.util.Vector ;
 import java.util.Enumeration ;
 

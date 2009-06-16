@@ -22,7 +22,7 @@
 
 package comsys.processing.asr;
 
-import comsys.RecogResult;
+import comsys.datastructs.comsysEssentials.RecogResult;
 
 /**
  * A Nuance recognition result. 
