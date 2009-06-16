@@ -69,7 +69,6 @@ void ObjectTracker::initTracker(){
   }
   
   // *** Setting up camera ***
-  log("setting up camera");
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
@@ -81,6 +80,7 @@ void ObjectTracker::initTracker(){
 	
   log("initialisation successfull!");		
 }
+
 
 void ObjectTracker::runTracker(){
 	// *** Tracking Loop ***
@@ -165,12 +165,6 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 		return;
 	}
 	
-	/*
-	if(!makeCube(model, model)){
-		log("makeCube: Warning could not make perfect cube");
-	}
-	*/
-
 	// Get IDs of working memory object and resources object
 	IDList ids;
 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());

@@ -46,7 +46,10 @@ void ObjectTrackerDriver::configure(const map<string,string> & _config)
   
   pFile = fopen("subarchitectures/vision.sa/src/c++/vision/components/ObjectTrackerDriver/img/trajectory.txt", "rb");
 	
-		if (pFile==NULL) {fputs ("File error",stderr); exit (1);}
+		if (pFile==NULL) {
+			log("error loading trajectory file");
+			exit (1);
+		}
 
 		// obtain file size:
 		fseek (pFile , 0 , SEEK_SET);

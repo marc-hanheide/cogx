@@ -34,11 +34,6 @@ private:
   Timer m_timer;
   Particle m_trackpose;
   
-  mat4 m_cv2gl;
-  mat4 m_extrinsic;
-  mat4 m_intrinsic;
-  float m_zFar, m_zNear;
-  
   int camId;  
   bool track;
   bool running;
