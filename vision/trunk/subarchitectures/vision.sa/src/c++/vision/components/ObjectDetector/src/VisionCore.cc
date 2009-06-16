@@ -158,6 +158,7 @@ Array<Gestalt*> VisionCore::gestalts[Gestalt::MAX_TYPE];
 Array<unsigned> VisionCore::ranked_gestalts[Gestalt::MAX_TYPE];
 
 double VisionCore::p_e = 0.;
+double VisionCore::test = 0.;
 double VisionCore::p_ee = 0.;
 
 Statistics VisionCore::stats;
