@@ -245,7 +245,23 @@ module comsysEssentials {
 	
 	
 
-
+	enum MoveType {
+		ASSERT,
+		ACTIONDIRECTIVE,
+		QUESTIONW,
+		QUESTIONYN,
+		OPENING,
+		CLOSING,
+		ACCEPT,
+		REJECT
+	};
+	
+	class DialogueMove {
+		string dmId;
+		MoveType mType;
+		string SDRSFormulaId1;
+		string SDRSFormulaId2;
+	};	
 
 
 

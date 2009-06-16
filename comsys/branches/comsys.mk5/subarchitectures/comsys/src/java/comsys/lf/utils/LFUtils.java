@@ -21,7 +21,7 @@
 //PACKAGE DEFINITION 
 //=================================================================
 
-package lf.utils;
+package comsys.lf.utils;
 
 //=================================================================
 //IMPORTS
@@ -36,7 +36,7 @@ package lf.utils;
 //LOGICAL FORM REPRESENTATION IMPORTS
 //-----------------------------------------------------------------
 
-import lf.*;
+import comsys.datastructs.lf.*;
 
 import comsys.arch.ComsysException;
 //-----------------------------------------------------------------
@@ -196,11 +196,11 @@ public class LFUtils {
 		@return Proposition the initialized object
 	 */ 
 
-	public static lf.Proposition newProposition () { 
-		lf.Proposition result = new lf.Proposition();
+	public static comsys.datastructs.lf.Proposition newProposition () { 
+		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
 		result.prop = "";
 		result.connective = ConnectiveType.NONE;
-//		result.rhsProp = new lf.Proposition[0];
+//		result.rhsProp = new comsys.datastructs.lf.Proposition[0];
 		return result;
 	} // end newProposition
 
@@ -211,11 +211,11 @@ public class LFUtils {
 		@return Proposition the initialized object
 	 */ 
 
-	public static lf.Proposition newProposition (String propLabel) { 
-		lf.Proposition result = new lf.Proposition();
+	public static comsys.datastructs.lf.Proposition newProposition (String propLabel) { 
+		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
 		result.prop = propLabel;
 		result.connective = ConnectiveType.NONE;
-//		result.rhsProp = new lf.Proposition[0];
+//		result.rhsProp = new comsys.datastructs.lf.Proposition[0];
 		return result;
 	} // end newProposition
 
@@ -915,15 +915,15 @@ public class LFUtils {
 		@return Proposition The updated proposition
 	 */
 
-	public static lf.Proposition lfNominalAddProposition (LFNominal nom, String prop) {
-		lf.Proposition result = newProposition(prop); 
+	public static comsys.datastructs.lf.Proposition lfNominalAddProposition (LFNominal nom, String prop) {
+		comsys.datastructs.lf.Proposition result = newProposition(prop); 
 
 		if (nom.prop == null ||
 				nom.prop.prop.equals("")) 
 		{ 
 			return result;
 		} else {
-			lf.Proposition nomProp = nom.prop;
+			comsys.datastructs.lf.Proposition nomProp = nom.prop;
 			// .... 
 			return result;
 		}
@@ -1313,8 +1313,8 @@ public class LFUtils {
 
 	/** Returns a clone of the given Proposition object */
 
-	public static lf.Proposition propositionClone (lf.Proposition prop) { 
-		lf.Proposition result = new lf.Proposition();
+	public static comsys.datastructs.lf.Proposition propositionClone (comsys.datastructs.lf.Proposition prop) { 
+		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
 		result.prop = prop.prop;
 		result.connective  = prop.connective;
 //		result.rhsProp	   = prop.rhsProp.clone();
@@ -1414,8 +1414,8 @@ public class LFUtils {
 		
 		Element prop = new Element("prop");
 		
-		for(Iterator<lf.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
-			lf.Feature nomFeature = featsIter.next();
+		for(Iterator<comsys.datastructs.lf.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
+			comsys.datastructs.lf.Feature nomFeature = featsIter.next();
 			if (nomFeature.feat.equals(feature)) {
 				prop = prop.setAttribute("name",LFUtils.lfNominalGetFeature(nom,nomFeature.feat));		
 			} // end if 
@@ -1484,7 +1484,7 @@ public class LFUtils {
 			if (LFUtils.lfNominalGetFeatures(helper).hasNext()) {
 				Iterator iter = LFUtils.lfNominalGetFeatures(helper);
 				while (iter.hasNext()) {
-					lf.Feature feature = (lf.Feature) iter.next();
+					comsys.datastructs.lf.Feature feature = (comsys.datastructs.lf.Feature) iter.next();
 					diamond = editFeatures(input,helper,feature.feat,diamond);
 				}
 			}
@@ -1572,7 +1572,7 @@ public class LFUtils {
 			if (LFUtils.lfNominalGetFeatures(inputNom).hasNext()) {
 				Iterator iter = LFUtils.lfNominalGetFeatures(inputNom); 
 				while (iter.hasNext()) {
-					lf.Feature feature = (lf.Feature) iter.next();
+					comsys.datastructs.lf.Feature feature = (comsys.datastructs.lf.Feature) iter.next();
 					sat = editFeatures(input,inputNom,feature.feat,sat);
 				}
 			} else { 
@@ -1634,7 +1634,7 @@ public class LFUtils {
 		@return LogicalForm the IDL-based object 
 	 */
 
-	public static lf.LogicalForm convertFromLF (LF lf) { 
+	public static comsys.datastructs.lf.LogicalForm convertFromLF (LF lf) { 
 		return convertFromString(lf.toString());
 	} // end convertFromLF
 
@@ -1665,7 +1665,7 @@ public class LFUtils {
 		@return LogicalForm the IDL-based object 
 	 */
 
-	public static lf.LogicalForm convertFromString(String s) { 
+	public static comsys.datastructs.lf.LogicalForm convertFromString(String s) { 
 
 		
 	//	System.out.println("Converting from String: ["+s+"]");
@@ -1796,7 +1796,7 @@ public class LFUtils {
 								log("proposition "+proposition+" for "+nom.nomVar);
 								// ----
 //								nom.prop = new lf.Proposition (proposition, ConnectiveType.NONE, rhsStub);
-								nom.prop = new lf.Proposition (proposition, ConnectiveType.NONE);
+								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE);
 								log("brackets: "+brackets+" length:"+brackets.length());
 								log("stack: "+nomstack.toString());
 								// for (int i=0; i < brackets.length()-1; i++) { if (!nomstack.empty()) { nom = (LFNominal) nomstack.pop(); log("pop - prop!--"+i);} }
@@ -1805,7 +1805,7 @@ public class LFUtils {
 								String proposition = conj;
 								proposition = strip(proposition);
 //								nom.prop = new lf.Proposition (proposition, ConnectiveType.NONE, rhsStub);
-								nom.prop = new lf.Proposition (proposition, ConnectiveType.NONE);
+								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE);
 								log("proposition "+proposition+" for "+nom.nomVar);
 							} // end if..else check need to pop stack
 						} else { // relation or feature
@@ -2124,7 +2124,7 @@ public class LFUtils {
 		JOptionPane.showMessageDialog(null,i,"Created graph",JOptionPane.INFORMATION_MESSAGE, null);
 	}
 
-	private static String getPropositionString(lf.Proposition prop) {		
+	private static String getPropositionString(comsys.datastructs.lf.Proposition prop) {		
 		String propString = prop.prop ;
 
 		// Since the recursive definition of the Proposition was removed by Nick, 

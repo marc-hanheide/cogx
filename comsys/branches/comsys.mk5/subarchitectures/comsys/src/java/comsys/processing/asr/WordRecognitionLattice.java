@@ -13,20 +13,15 @@ import opennlp.ccg.parse.CategoryChartScorer;
 import opennlp.ccg.parse.FrontierCatFilter;
 import opennlp.ccg.parse.UnrestrictedBeamWidthFunction;
 
-import comsys.PhonString;
+import comsys.datastructs.comsysEssentials.PhonString;
 
 import comsys.processing.parse.ActiveCCGLexicon;
 import comsys.processing.parse.ActiveIncrCCGParser;
 import comsys.processing.parse.PackedLFParseResults;
 import opennlp.ccg.parse.ParseResults;
 
-import lf.LFNominal;
-import lf.LFRelation;
-import lf.LogicalForm;
-import lf.PackedLogicalForm;
-import lf.PackedNominal;
-import lf.PackingEdge;
-import lf.utils.LFUtils;
+import comsys.datastructs.lf.*;
+import comsys.lf.utils.LFUtils;
 
 /**
  * A word recognition lattice builder from the ASR

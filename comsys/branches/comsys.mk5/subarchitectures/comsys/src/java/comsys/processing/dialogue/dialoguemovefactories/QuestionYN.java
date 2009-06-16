@@ -1,10 +1,9 @@
 package comsys.processing.dialogue.dialoguemovefactories;
 
 import java.util.TreeMap;
-import org.cognitivesystems.comsys.autogen.ComsysEssentials.DialogueMove;
-import org.cognitivesystems.comsys.autogen.ComsysEssentials.MoveType;
-import org.cognitivesystems.repr.lf.autogen.LFPacking.PackedNominal;
-import org.cognitivesystems.comsys.util.datastructs.*;
+import comsys.utils.datastructs.*;
+import comsys.processing.dialogue.DialogueMoveFactory;
+import comsys.datastructs.comsysEssentials.*;
 import java.util.ArrayList;
 
 /**
@@ -33,7 +32,7 @@ public class QuestionYN extends AbstractDialogueMoveFactory implements DialogueM
 	
 	public DialogueMove produceDialogueMove (String SDRSFormulaId1, String SDRSFormulaId2, String dialogueMoveId) {
 		DialogueMove dm = new DialogueMove();
-		dm.mType = MoveType.QUESTION_YN ;
+		dm.mType = MoveType.QUESTIONYN ;
 		dm.SDRSFormulaId1 = SDRSFormulaId1 ;
 		dm.SDRSFormulaId2 = SDRSFormulaId2 ;	
 		return dm;	

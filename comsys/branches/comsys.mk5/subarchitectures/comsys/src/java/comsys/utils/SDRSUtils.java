@@ -33,10 +33,9 @@ package comsys.utils;
 import java.util.*;
 
 
-import lf.*;
-import comsys.*;
-import comsys.utils.ComsysUtils;
-import lf.utils.LFUtils;
+import comsys.datastructs.lf.*;
+import comsys.datastructs.comsysEssentials.*;
+import comsys.lf.utils.LFUtils;
 
 //=================================================================
 // JAVADOC CLASS DOCUMENTATION 
@@ -155,7 +154,7 @@ public class  SDRSUtils {
 			// ------------
 			log("Formula will be stored with id "+fLabel);
 			//----
-			Iterator<PackedNominal> nomIter = Arrays.asList(LFUtils.plfGetNominals(lfp.formula.type.plf().packedLF)).iterator();
+			Iterator<PackedNominal> nomIter = Arrays.asList(LFUtils.plfGetNominals(lfp.formula.type.plf.packedLF)).iterator();
 
 			String nomseq = "";
 			while (nomIter.hasNext()) { 
@@ -328,7 +327,7 @@ public class  SDRSUtils {
 		String result = "unknown";
 		for (int i=0; i < sdrs.F.mapping.length ; i++) {
 			if (getFormulaType(sdrs.F.mapping[i].formula) == SDRS_DISCRIM_PLF) {
-				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf();
+				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf;
 				for (int j=0; j < plf.packedLF.pNodes.length;j++) {
 					for (int k=0 ; k < plf.packedLF.pNodes[j].packedNoms.length ; k++) {
 						if (plf.packedLF.pNodes[j].packedNoms[k].nomVar.equals(nv)) {
@@ -392,7 +391,7 @@ public class  SDRSUtils {
 
     public static short getFormulaType (SDRSFormula f) { 
     	if (f.type != null) {
-    		return f.type.discriminator() ;
+    		return f.type.discriminator ;
     	}
     		else return 0;
     	
@@ -423,7 +422,7 @@ public class  SDRSUtils {
 		String result = "unknown";
 		for (int i=sdrs.F.mapping.length-1; i <= 0 ; i--) {
 			if (getFormulaType(sdrs.F.mapping[i].formula) == SDRS_DISCRIM_PLF) {
-				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf();
+				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf;
 				for (int j=0; j < plf.packedLF.pNodes.length;j++) {
 					for (int k=0 ; k < plf.packedLF.pNodes[j].packedNoms.length ; k++) {
 						if (plf.packedLF.pNodes[j].packedNoms[k].nomVar.equals(nv)) {
@@ -449,7 +448,7 @@ public class  SDRSUtils {
 		Vector<String> result = new Vector<String>();
 		for (int i=0; i < sdrs.F.mapping.length ; i++) {
 			if (getFormulaType(sdrs.F.mapping[i].formula) == SDRS_DISCRIM_PLF) {
-				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf();
+				PackedLFs plf = sdrs.F.mapping[i].formula.type.plf;
 				for (int j=0; j < plf.packedLF.pNodes.length;j++) {
 					for (int k=0 ; k < plf.packedLF.pNodes[j].packedNoms.length ; k++) {
 						if (plf.packedLF.pNodes[j].packedNoms[k].nomVar.equals(nv)) {
@@ -497,8 +496,8 @@ public class  SDRSUtils {
     	String dmSpecs = createDOTSpecsLastFormula(dm);
     	result += dmSpecs.substring(12, dmSpecs.length()-2).replace("clusterSDRSFormula", "clusterSDRSFormula2");
     	String rootName = LFUtils.plfGetPackingNode
-    	(formula.type.plf().packedLF, formula.type.plf().packedLF.root).root;
-    	result += dm.type.relation().relType + " -> " + rootName + 
+    	(formula.type.plf.packedLF, formula.type.plf.packedLF.root).root;
+    	result += dm.type.relation.relType + " -> " + rootName + 
     		" [label=\"tprec\", lhead=clusterSDRSFormula, ltail=clusterSDRSFormula2];\n";
     	result += "\n}\n";
     	return result;
@@ -514,7 +513,7 @@ public class  SDRSUtils {
     	result += "color=red;\n";
     	if (getFormulaType(formula) == SDRS_DISCRIM_PLF) {
     		result += "subgraph clusterPLF"+" {\n";
-    		String specsPLF = LFUtils.createDOTSpecs(formula.type.plf().packedLF);
+    		String specsPLF = LFUtils.createDOTSpecs(formula.type.plf.packedLF);
     		result += specsPLF.substring(12, specsPLF.length()-2);
     		result += "color=blue;\n";
     		result += "label=\"Packed Logical Form " +"\";\n";
@@ -527,8 +526,8 @@ public class  SDRSUtils {
         		result += "label=\""+ formula.caches[j].CacheId +"\";\n";
         		for (int k=0; k < formula.caches[j].mapping.associations.length ; k++) {
         			if (formula.caches[j].mapping.associations[k].relType.equals("SINGULAR")) {
-        				int id1 = formula.caches[j].mapping.associations[k].id1[0];
-        				int id2 = formula.caches[j].mapping.associations[k].id2[0];
+        				long id1 = formula.caches[j].mapping.associations[k].id1[0];
+        				long id2 = formula.caches[j].mapping.associations[k].id2[0];
         				String label = formula.caches[j].content1[id1].extract_string() ;
         				String nominal = formula.caches[j].content2[id2].extract_string() ;
         				result += label + "c"  + "[label=\"" + label + "\"];\n";
@@ -539,9 +538,9 @@ public class  SDRSUtils {
         	}
     	}
     	else if (getFormulaType(formula) == SDRS_DISCRIM_RELATION) {
-    		result += formula.type.relation().relType + " [shape=box, label=\"" + 
-    		formula.type.relation().relType + "(" + formula.type.relation().args[0] + ", " + 
-    		formula.type.relation().args[1] + ")\"];\n"; 
+    		result += formula.type.relation.relType + " [shape=box, label=\"" + 
+    		formula.type.relation.relType + "(" + formula.type.relation.args[0] + ", " + 
+    		formula.type.relation.args[1] + ")\"];\n"; 
     	}
 
     	result += "\n}\n";
@@ -612,7 +611,7 @@ public class  SDRSUtils {
     			result += "ordering=out;\n";
 				result += "invis" + count + " [style=invis];\n";
 				result += "subgraph clusterPLF"+count+" {\n";
-    			String specsPLF = LFUtils.createDOTSpecs(formula.type.plf().packedLF);
+    			String specsPLF = LFUtils.createDOTSpecs(formula.type.plf.packedLF);
     			result += specsPLF.substring(12, specsPLF.length()-2);
     			result += "color=blue;\n";
     			result += "label=\"Packed Logical Form "+ countPLF +"\";\n";
@@ -623,12 +622,12 @@ public class  SDRSUtils {
    			else if (getFormulaType(formula) == SDRS_DISCRIM_RELATION) {
     			result += "ordering=out;\n";
     			result += "invis" + count + " [style=invis];\n";	
-    			result += formula.type.relation().relType  + count + " [shape=box, label=\"" + 
-    	    		formula.type.relation().relType + "(" + formula.type.relation().args[0] + ", " + 
-    	    		formula.type.relation().args[1] + ")\"];\n";
+    			result += formula.type.relation.relType  + count + " [shape=box, label=\"" + 
+    	    		formula.type.relation.relType + "(" + formula.type.relation.args[0] + ", " + 
+    	    		formula.type.relation.args[1] + ")\"];\n";
     			if ((i +1 < sdrs.F.mapping.length) && 
     					getFormulaType(sdrs.F.mapping[i+1].formula) == SDRS_DISCRIM_PLF &&
-    					sdrs.F.mapping[i+1].formula.label.equals(formula.type.relation().args[1])) {
+    					sdrs.F.mapping[i+1].formula.label.equals(formula.type.relation.args[1])) {
     				afterSpecs = "invis" + count + " -> " + "invis" + (new Integer(i+2)).toString() +
     				" [label=\"dialogue move\" ltail=clusterSDRSFormula"+count + " lhead=clusterSDRSFormula" + 
     				(new Integer(i+2)).toString() + "];\n";
@@ -642,8 +641,8 @@ public class  SDRSUtils {
     			result += "label=\""+ sdrs.F.mapping[i].formula.caches[j].CacheId +"\";\n";
     			for (int k=0; k < sdrs.F.mapping[i].formula.caches[j].mapping.associations.length ; k++) {
     				if (sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].relType.equals("SINGULAR")) {
-    					int id1 = sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].id1[0];
-    					int id2 = sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].id2[0];
+    					long id1 = sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].id1[0];
+    					long id2 = sdrs.F.mapping[i].formula.caches[j].mapping.associations[k].id2[0];
     					String label = sdrs.F.mapping[i].formula.caches[j].content1[id1].extract_string() ;
     					String nominal = sdrs.F.mapping[i].formula.caches[j].content2[id2].extract_string() ;
     					result += label + "c" + count + "[label=\"" + label + "\"];\n";
@@ -666,7 +665,7 @@ public class  SDRSUtils {
     	for (int i=0; i < sdrs.F.mapping.length ; i++) {
     		SDRSFormula form = sdrs.F.mapping[i].formula ;
     		if (getFormulaType(form) == SDRS_DISCRIM_PLF) {
-    			String plfId2 = form.type.plf().id;
+    			String plfId2 = form.type.plf.id;
     			if (plfId2.equals(plfId)) {
     				return form;
     			}

@@ -1,8 +1,10 @@
 package comsys.processing.dialogue.dialoguemovefactories;
 
+import comsys.processing.dialogue.DialogueMoveFactory;
+import comsys.datastructs.comsysEssentials.*;
+import comsys.datastructs.lf.*;
+
 import java.util.TreeMap;
-import lf.*;
-import comsys.*;
 import comsys.utils.datastructs.*;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -36,7 +38,7 @@ public class ActionDirective extends AbstractDialogueMoveFactory implements Dial
 	
 	public DialogueMove produceDialogueMove (String SDRSFormulaId1, String SDRSFormulaId2, String dialogueMoveId) {
 		DialogueMove dm = new DialogueMove();
-		dm.mType = MoveType.ACTION_DIRECTIVE ;
+		dm.mType = MoveType.ACTIONDIRECTIVE ;
 		dm.SDRSFormulaId1 = SDRSFormulaId1 ;
 		dm.SDRSFormulaId2 = SDRSFormulaId2 ;	
 		return dm;	

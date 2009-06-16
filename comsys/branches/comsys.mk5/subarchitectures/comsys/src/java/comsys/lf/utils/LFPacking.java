@@ -1,5 +1,5 @@
 
-package lf.utils ;
+package comsys.lf.utils;
 
 import java.util.Hashtable ;
 import java.util.ListIterator ;
@@ -14,10 +14,10 @@ import java.util.ArrayList ;
 import java.util.Enumeration ;
 import java.util.Arrays ;
 import java.util.Iterator; 
-import lf.*;
-import lf.utils.LFUtils ;
+import comsys.datastructs.lf.*;
+import comsys.lf.utils.LFUtils ;
 
-import comsys.*;
+import comsys.datastructs.comsysEssentials.*;
 
 /**
  * Class for building and updating *packed* logical forms, ie. compacted

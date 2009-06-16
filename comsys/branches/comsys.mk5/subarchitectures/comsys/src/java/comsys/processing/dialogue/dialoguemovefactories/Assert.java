@@ -1,8 +1,9 @@
 package comsys.processing.dialogue.dialoguemovefactories;
 
 import java.util.TreeMap;
-import comsys.*;
-import lf.*;
+import comsys.processing.dialogue.DialogueMoveFactory;
+import comsys.datastructs.comsysEssentials.*;
+import comsys.datastructs.lf.*;
 import comsys.utils.datastructs.*;
 import java.util.ArrayList;
 
