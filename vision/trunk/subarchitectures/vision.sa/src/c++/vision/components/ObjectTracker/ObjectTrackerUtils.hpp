@@ -136,68 +136,46 @@ void transposeMatrix4(float* m1, float* m2){
 	m2[12]=m1[3]; m2[13]=m1[7]; m2[14]=m1[11]; m2[15]=m1[15];
 }
 
-/* Stuff for adjusting cube 
-vector<Model::Vertex> rotateY(vector<Model::Vertex> vertices, float alpha){
-	float m[9] = {	cos(alpha), 0, sin(alpha),
-									0, 					1, 0,
-									-sin(alpha), 0, cos(alpha) };
-	mat3 rotY(m);
+void loadCameraParameters(Camera* camera, Video::Image image, float zNear, float zFar){
+	// intrinsic parameters
+	float fx = 2.0*image.camPars.fx / image.width;					// scale range from [0 ... 640] to [0 ... 2]
+  float fy = 2.0*image.camPars.fy / image.height;					// scale range from [0 ... 480] to [0 ...-2]
+  float cx = 1.0-(2.0*image.camPars.cx / image.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
+  float cy = (2.0*image.camPars.cy / image.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
+  float z1 = (zFar+zNear)/(zNear-zFar);								// entries for clipping planes
+  float z2 = 2*zFar*zNear/(zNear-zFar);
+  
+  // intrinsic matrix
+  mat4 intrinsic;
+  intrinsic[0]=fx;	intrinsic[1]=0;		intrinsic[2]=0;		intrinsic[3]=0;
+  intrinsic[4]=0;		intrinsic[5]=fy;	intrinsic[6]=0;		intrinsic[7]=0;
+  intrinsic[8]=cx;	intrinsic[9]=cy;	intrinsic[10]=z1;	intrinsic[11]=-1;
+  intrinsic[12]=0;	intrinsic[13]=0;	intrinsic[14]=z2;	intrinsic[15]=0;
+  
+  // computer vision coordinates to OpenGL coordinates transform (rotate 180° about x-axis)
+  mat4 cv2gl;
+  cv2gl[0]=1.0;  cv2gl[1]=0.0;  cv2gl[2]=0.0;   cv2gl[3]=0.0;  
+	cv2gl[4]=0.0;  cv2gl[5]=-1.0; cv2gl[6]=0.0;   cv2gl[7]=0.0;  
+	cv2gl[8]=0.0;  cv2gl[9]=0.0;  cv2gl[10]=-1.0; cv2gl[11]=0.0;  
+	cv2gl[12]=0.0; cv2gl[13]=0.0; cv2gl[14]=0.0;  cv2gl[15]=1.0;  
 	
-	for(int i=0; i<vertices.size(); i++){
-		vec3 v1(vertices[i].pos.x, vertices[i].pos.y, vertices[i].pos.z);
-		vec3 v2 = rotY * v1;
-		
-		vertices[i].pos.x = v2.x;
-		vertices[i].pos.y = v2.y;
-		vertices[i].pos.z = v2.z;		
-	}
-
-	return vertices;
+	// extrinsic parameters
+	cogx::Math::Matrix33 R = image.camPars.pose.rot;
+	cogx::Math::Vector3 t = image.camPars.pose.pos;
+	mat4 extrinsic;
+	extrinsic[0]=R.m00;	extrinsic[1]=R.m01;	extrinsic[2]=R.m02;		extrinsic[3]=0.0;
+	extrinsic[4]=R.m10;	extrinsic[5]=R.m11;	extrinsic[6]=R.m12;		extrinsic[7]=0.0;	
+	extrinsic[8]=R.m20;	extrinsic[9]=R.m21;	extrinsic[10]=R.m22;	extrinsic[11]=0.0;	
+	extrinsic[12]=0.0;	extrinsic[13]=0.0;	extrinsic[14]=0.0;		extrinsic[15]=1.0;
+	vec4 tp = -(extrinsic * vec4(t.x*0.001, t.y*0.001, t.z*0.001, 1.0));
+	extrinsic[12]=tp.x; extrinsic[13]=tp.y; extrinsic[14]=tp.z;
+	extrinsic = cv2gl * extrinsic;
+	
+	// set camera parameters
+	camera->SetViewport(0,0,image.width,image.height,zNear,zFar);
+	camera->SetIntrinsic(intrinsic);
+	camera->SetExtrinsic(extrinsic);
 }
-
-bool compareX(const Model::Vertex& v1, const Model::Vertex& v2){
-	return v1.pos.x < v2.pos.x;
-}
-
-bool makeCube(Model* rawCube, Model* resultCube){
-	float alpha = 3.1415926*0.25;
-	float beta = 0.0;
-	float gamma = 0.0;
-	int i;
-	
-	
-	
-	vector<Model::Vertex> vertexlist = rawCube->m_vertexlist;
-	
-	
-	vertexlist = rotateY(vertexlist, alpha);
-	
-	resultCube->m_vertexlist = vertexlist;
-	
-	std::sort(vertexlist.begin(), vertexlist.end(), compareX);
-		
-	printf("m_vertexlist (unsorted):\n");
-	for(i=0; i<rawCube->m_vertexlist.size(); i++){
-		printf("%f %f %f\n", rawCube->m_vertexlist[i].pos.x, rawCube->m_vertexlist[i].pos.y, rawCube->m_vertexlist[i].pos.z);
-	}
-	
-	printf("vertexlist (sorted):\n");
-	for(i=0; i<vertexlist.size(); i++){
-		printf("%f %f %f\n", vertexlist[i].pos.x, vertexlist[i].pos.y, vertexlist[i].pos.z);
-	}
-	
-	
-	printf("%f %f %f\n", rotX[0], rotX[1], rotX[2]);
-	printf("%f %f %f\n", rotX[3], rotX[4], rotX[5]);
-	printf("%f %f %f\n", rotX[6], rotX[7], rotX[8]);
-	
-	
-
-	
-	return true;
-}
-
-*/
 
 
 

@@ -70,54 +70,14 @@ void ObjectTracker::initTracker(){
   
   // *** Setting up camera ***
   log("setting up camera");
-  m_zNear=0.1;
-	m_zFar=100.0;
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
-  m_camera->Set(	0.2, 0.2, 0.2,
-									0.0, 0.0, 0.0,
-									0.0, 1.0, 0.0,
-									49, m_image.width, m_image.height,
-									m_zNear, m_zFar,
-									GL_PERSPECTIVE);
-	
-  // intrinsic parameters
-	float fx = 2.0*m_image.camPars.fx / m_image.width;					// scale range from [0 ... 640] to [0 ... 2]
-  float fy = 2.0*m_image.camPars.fy / m_image.height;					// scale range from [0 ... 480] to [0 ...-2]
-  float cx = 1.0-(2.0*m_image.camPars.cx / m_image.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
-  float cy = (2.0*m_image.camPars.cy / m_image.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
-  float z1 = (m_zFar+m_zNear)/(m_zNear-m_zFar);								// entries for clipping planes
-  float z2 = 2*m_zFar*m_zNear/(m_zNear-m_zFar);
+  loadCameraParameters(m_camera, m_image, 0.1, 100.0);
   
-  // intrinsic matrix
-  m_intrinsic[0]=fx;	m_intrinsic[1]=0;		m_intrinsic[2]=0;		m_intrinsic[3]=0;
-  m_intrinsic[4]=0;		m_intrinsic[5]=fy;	m_intrinsic[6]=0;		m_intrinsic[7]=0;
-  m_intrinsic[8]=cx;	m_intrinsic[9]=cy;	m_intrinsic[10]=z1;	m_intrinsic[11]=-1;
-  m_intrinsic[12]=0;	m_intrinsic[13]=0;	m_intrinsic[14]=z2;	m_intrinsic[15]=0;
-  
-  // computer vision coordinates to OpenGL coordinates transform (rotate 180° about x-axis)
-  m_cv2gl[0]=1.0;  m_cv2gl[1]=0.0;  m_cv2gl[2]=0.0;   m_cv2gl[3]=0.0;  
-	m_cv2gl[4]=0.0;  m_cv2gl[5]=-1.0; m_cv2gl[6]=0.0;   m_cv2gl[7]=0.0;  
-	m_cv2gl[8]=0.0;  m_cv2gl[9]=0.0;  m_cv2gl[10]=-1.0; m_cv2gl[11]=0.0;  
-	m_cv2gl[12]=0.0; m_cv2gl[13]=0.0; m_cv2gl[14]=0.0;  m_cv2gl[15]=1.0;  
-	
-	// extrinsic parameters
-	cogx::Math::Matrix33 R = m_image.camPars.pose.rot;
-	cogx::Math::Vector3 t = m_image.camPars.pose.pos * 0.001;
-	m_extrinsic[0]=R.m00;	m_extrinsic[1]=R.m01;	m_extrinsic[2]=R.m02;		m_extrinsic[3]=0.0;
-	m_extrinsic[4]=R.m10;	m_extrinsic[5]=R.m11;	m_extrinsic[6]=R.m12;		m_extrinsic[7]=0.0;	
-	m_extrinsic[8]=R.m20;	m_extrinsic[9]=R.m21;	m_extrinsic[10]=R.m22;	m_extrinsic[11]=0.0;	
-	m_extrinsic[12]=0.0;	m_extrinsic[13]=0.0;	m_extrinsic[14]=0.0;		m_extrinsic[15]=1.0;
-	vec4 tp = -(m_extrinsic * vec4(t.x, t.y, t.z, 1.0));
-	m_extrinsic[12]=tp.x; m_extrinsic[13]=tp.y; m_extrinsic[14]=tp.z;
-	m_extrinsic = m_cv2gl * m_extrinsic;
-	
-	m_camera->SetPerspective();
-	m_camera->SetViewport(0,0,m_image.width,m_image.height,m_zNear,m_zFar);
-	m_camera->SetIntrinsic(m_intrinsic);
-	m_camera->SetExtrinsic(m_extrinsic);
-	m_camera->Print();
+	m_tracker->setCamPerspective(m_camera);
+	//track = true;
+	//m_tracker->lock();
 	
   log("initialisation successfull!");		
 }
@@ -139,13 +99,11 @@ void ObjectTracker::runTracker(){
 	getImage(camId, m_image);
 	
 	/*
-	m_tracker->setCamPerspective(m_camera);
 	m_tracker->drawImage((unsigned char*)(&m_image.data[0]));
 	m_tracker->drawTest();
 	m_tracker->swap();
-	running = m_tracker->inputs();
 	*/
-
+	
 	fTimeImage = m_timer.Update();
 	if(testmode){
 		m_camera->Set(	0.2, 0.2, 0.2,
@@ -185,7 +143,6 @@ void ObjectTracker::runTracker(){
 	fTimeTracker = m_timer.Update();
 	//log("TimeImage:   %.0f ms", fTimeImage*1000.0);
 	//log("TimeTracker: %.0f ms", fTimeTracker*1000.0);
-
 }
 
 
