@@ -31,13 +31,12 @@
 #include "Video.hh"
 #include "Gestalt.hh"
 #include "GestaltPrinciple.hh"
-// #include "IceInterface.hh"
-
-//#include "Tracker3D.hh"
-
 #include "CubeDefinition.hh"
 
+#include <mxCameraModel.h>
 
+// #include "IceInterface.hh"
+//#include "Tracker3D.hh"
 
 namespace Z
 {
@@ -87,6 +86,11 @@ class VisionCore
 private:
   static Image *img;													///< Images to process
   static Video *video;												///< Video to process
+	//mx::CCameraModel *ariCamModel;				///< Camera model
+
+// 	static double camIntrinsic[4];
+// 	static double camDistortion[4];
+
 // 	static Tracker3D tracker;										///< Toms 3D tracker
 //	static IceInterface *ice;										///< Ice-Interface to following systems
 
@@ -104,9 +108,12 @@ public:
   static double p_ee; 												///< probability of an edgel given another edgel
   static Config config;												///< Class to configure the vision system, by the configure-file
   static Statistics stats;										///< Class to collect statistic relevant data 
+
 //  static Vector2 roi_center;	///< Hannes code
 //  static double roi_sigma;		///< Hannes code
 //  static IplImage *wmap;			///< Hannes code
+
+static double test;
 
 public:
 
@@ -393,13 +400,23 @@ public:
 	*/
   static double RunTime();
 
+	/**
+	 * @brief Set camera parameters
+	 */
+	static void SetCamParameters(double *intrinsic, double *distortion);
+
+	/**
+	 * @brief Get camera model
+	 */
+	static void GetCamModel(mx::CCameraModel &m_cCamModel);
+
+
+
 
 
 	/// TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 	void GetObject(Gestalt::Type type, unsigned number, CubeDef cd);
 	bool GetCube(unsigned number, CubeDef &cd, bool &masked);
-
-
 };
 
 
