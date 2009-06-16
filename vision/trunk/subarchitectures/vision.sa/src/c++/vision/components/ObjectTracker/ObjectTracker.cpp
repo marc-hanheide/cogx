@@ -70,31 +70,25 @@ void ObjectTracker::initTracker(){
 		running = false;
   }
   
-  // Load Camera
+  // *** Setting up camera ***
+  log("setting up camera");
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
   
-  log("setting camera parameters");
-	m_tracker->lock();
-	
-	m_camera->SetPerspective();
-	m_camera->Set(	0.0993, -0.12907, 0.3031,
-									0.1, 0.12, 0.0,
-									0.0, 0.0, 1.0,
-									49, m_image.width, m_image.height,
-									zNear=0.1, zFar=100.0,
-									GL_PERSPECTIVE);
-	
+  m_zNear=0.1;
+	m_zFar=100.0;
+		
 	m_camera->Print();	
 	// intrinsic parameters
-	float fx = 2.0*m_image.camPars.fx / m_image.width;				// scale range from [0 ... 640] to [0 ... 2]
-  float fy = 2.0*m_image.camPars.fy / m_image.height;				// scale range from [0 ... 480] to [0 ...-2]
-  float cx = 1.0-(2.0*m_image.camPars.cx / m_image.width);	// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
-  float cy = (2.0*m_image.camPars.cy / m_image.height)-1.0;	// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
-  float z1 = (zFar+zNear)/(zNear-zFar);											// entries for clipping planes
-  float z2 = 2*zFar*zNear/(zNear-zFar);
+	float fx = 2.0*m_image.camPars.fx / m_image.width;					// scale range from [0 ... 640] to [0 ... 2]
+  float fy = 2.0*m_image.camPars.fy / m_image.height;					// scale range from [0 ... 480] to [0 ...-2]
+  float cx = 1.0-(2.0*m_image.camPars.cx / m_image.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
+  float cy = (2.0*m_image.camPars.cy / m_image.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
+  float z1 = (m_zFar+m_zNear)/(m_zNear-m_zFar);								// entries for clipping planes
+  float z2 = 2*m_zFar*m_zNear/(m_zNear-m_zFar);
   
+  // intrinsic matrix
   m_intrinsic[0]=fx;	m_intrinsic[1]=0;		m_intrinsic[2]=0;		m_intrinsic[3]=0;
   m_intrinsic[4]=0;		m_intrinsic[5]=fy;	m_intrinsic[6]=0;		m_intrinsic[7]=0;
   m_intrinsic[8]=cx;	m_intrinsic[9]=cy;	m_intrinsic[10]=z1;	m_intrinsic[11]=-1;
@@ -117,10 +111,13 @@ void ObjectTracker::initTracker(){
 	m_extrinsic[12]=tp.x; m_extrinsic[13]=tp.y; m_extrinsic[14]=tp.z;
 	m_extrinsic = m_cv2gl * m_extrinsic;
 	
+	m_camera->SetPerspective();
+	m_camera->SetViewport(0,0,m_image.width,m_image.height,m_zNear,m_zFar);
 	m_camera->SetIntrinsic(m_intrinsic);
 	m_camera->SetExtrinsic(m_extrinsic);
 	m_camera->Print();
 	
+	m_tracker->lock();
 	track = true;
 	
   log("initialisation successfull!");		
@@ -145,7 +142,6 @@ void ObjectTracker::runTracker(){
 	m_tracker->setCamPerspective(m_camera);
 	m_tracker->drawImage((unsigned char*)(&m_image.data[0]));
 	m_tracker->drawTest();
-	m_tracker->drawPixel(v1.x, v1.y, vec3(0.0,1.0,0.0),3.0);
 	
 	m_tracker->swap();
 	running = m_tracker->inputs();
