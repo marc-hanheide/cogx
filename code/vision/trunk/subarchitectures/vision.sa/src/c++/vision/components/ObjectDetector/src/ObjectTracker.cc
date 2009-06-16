@@ -202,8 +202,10 @@ void ObjectTracker::TExit::NextTracked(unsigned id)
  */
 ObjectTracker::ObjectTracker(Config *cfg) : GestaltPrinciple(cfg)
 {
-	maxAge = 2;									///< maximum age for tracking
-  firstCall = true;
+  firstCall = true;						// first call of ObjectTracker
+	maxAge = 2;									// maximum age for tracking
+
+	setCamParamsFromVC = false;	// set camera parameters from vision core params
 
   trackCubes = false;
 	trackFlap2Cube = false;
@@ -433,11 +435,20 @@ void ObjectTracker::InitCamModel()
 
   m_tImgSize.width = VisionCore::IW();
   m_tImgSize.height = VisionCore::IH();
-	
-  m_cCamModel.LoadIntrinsic (confFile.data());
-  m_cCamModel.LoadDistortion (confFile.data());
-  m_cCamModel.LoadReferencePointsToComputeExtrinsic (confFile.data());
-  m_cCamModel.PreProcessing (m_tImgSize);
+
+	/// Set camera parameters from Vision core
+	if(setCamParamsFromVC)
+	{
+		VisionCore::GetCamModel(m_cCamModel);
+	}
+	else
+	{
+		m_cCamModel.LoadIntrinsic (confFile.data());
+		m_cCamModel.LoadDistortion (confFile.data());
+		m_cCamModel.LoadReferencePointsToComputeExtrinsic(confFile.data());
+	}
+
+	m_cCamModel.PreProcessing (m_tImgSize);
 }
 
 /**
@@ -449,7 +460,8 @@ void ObjectTracker::OperateNonIncremental()
   StartRunTime();
 //printf("ObjectTracker() - ");
 
-  if (firstCall) 																	// Initialisation of the camera model
+	// TODO Initialisation of the camera model: Changing parameters!!!
+  if (firstCall)
 	{	
 		InitCamModel();
 		firstCall = false;
