@@ -280,7 +280,10 @@ module comsysEssentials {
 	}; // end ProductionLF
 	
 	
-	
+	class ProductionLF { 
+		string plfid;
+		lf::LogicalForm lform;
+	}; // end ProductionLF	
 	
 	
 	//---------------------------------------------------------------------------
