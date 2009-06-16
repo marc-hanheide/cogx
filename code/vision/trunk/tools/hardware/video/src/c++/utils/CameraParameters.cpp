@@ -102,8 +102,8 @@ void loadCameraParameters(CameraParameters &cam, const string &configfile)
   initCameraParameters(cam);
 
   CDataFile cfg(configfile);
-  cam.width = cfg.GetFloat("width");
-  cam.height = cfg.GetFloat("height");
+  cam.width = cfg.GetFloat("w");
+  cam.height = cfg.GetFloat("h");
   cam.fx = cfg.GetFloat("fx");
   cam.fy = cfg.GetFloat("fy");
   cam.cx = cfg.GetFloat("cx");
