@@ -440,6 +440,7 @@ void ObjectTracker::InitCamModel()
 	if(setCamParamsFromVC)
 	{
 		VisionCore::GetCamModel(m_cCamModel);
+		m_cCamModel.Save("subarchitectures/vision.sa/src/c++/vision/components/ObjectDetector/cfg/calRef.xml");
 	}
 	else
 	{
