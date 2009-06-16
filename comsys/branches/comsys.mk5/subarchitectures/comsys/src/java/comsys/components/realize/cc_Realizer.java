@@ -177,7 +177,7 @@ public class cc_Realizer
 		 * @see #runComponent
 		 * @see cast.architecture.subarchitecture.ManagedProcess#taskAdopted(java.lang.String)
 		 */
-		@Override
+		// @Override
 		protected void taskAdopted(String _goalID) {
 			// get the data we stored for this goal
 			ProcessingData data = m_proposedProcessing.remove(_goalID);
@@ -202,7 +202,7 @@ public class cc_Realizer
 		 * 
 		 * @see cast.architecture.subarchitecture.ManagedProcess#taskRejected(java.lang.String)
 		 */
-		@Override
+		// @Override
 		protected void taskRejected(String _goalID) {
 			log("WARNING: The goal with ID [" + _goalID
 				+ "] has been rejected.");
@@ -220,13 +220,13 @@ public class cc_Realizer
 		 * @see #handleActiveDataWorkingMemoryChange(WorkingMemoryChange _wmc)
 		 * @see cast.architecture.abstr.WorkingMemoryReaderProcess#workingMemoryChanged(cast.corba.autogen.SubArchitecture.WorkingMemoryChange[])
 		 */
-		@Override
+		//@Override
 		public void start() {
 			super.start();
 			// now call the initialization method for the object
 			init();
 			// now do the rest
-			try {
+			// try {
 				// register change filters for ProductionLF, which triggers realization
 				addChangeFilter(
 								ChangeFilterFactory.createLocalTypeFilter(ProductionLF.class,  WorkingMemoryOperation.ADD),
@@ -236,10 +236,10 @@ public class cc_Realizer
 								}
 								});
 				
-			}
-			catch (SubarchitectureComponentException e) {
-				e.printStackTrace();
-			} // end try..catch
+			// }
+			// catch (SubarchitectureComponentException e) {
+			// 	e.printStackTrace();
+			// } // end try..catch
 		}// end start
 		
 		
@@ -317,7 +317,7 @@ public class cc_Realizer
 					// Get the input object
 					ProductionLF productionLF = (ProductionLF) data.getData();
 					// Get the logical form
-					LogicalForm logicalForm = productionLF.lf;
+					LogicalForm logicalForm = productionLF.lform;
 					
 					// Retrieve the content subtree
 					LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
@@ -363,7 +363,7 @@ public class cc_Realizer
 					// Forward the string to WM, to be synthesized
 					try { 
 						log("Sending on for synthesis: ["+realString+"]");
-						SpokenOutputItem spoi = ComsysUtils.newSpokenOutputItem();
+						SpokenOutputItem spoi = new SpokenOutputItem();
 						spoi.phonString = realString;
 						addToWorkingMemory(newDataID(), spoi); 
 					} catch (AlreadyExistsOnWMException ioe) { 
@@ -389,14 +389,13 @@ public class cc_Realizer
 			LogicalForm[] lfs = new LogicalForm[1];
 			lfs[0] = planLF;
 			plf.packedLF = packingTool.packLogicalForms(lfs);
-			plf.phonStringLFPairs[0].phonString = new PhonString();
-			plf.phonStringLFPairs[0].phonString.wordSequence = realization;
+			plf.phonStringLFPairs[0].phonStr = new PhonString();
+			plf.phonStringLFPairs[0].phonStr.wordSequence = realization;
 			plf.type = "production";
 			plf.finalized = ActiveIncrCCGParser.FINAL_PARSE;
 			
 			try {
-				addToWorkingMemory(newDataID(),
-					plf, OperationMode.BLOCKING);	
+				addToWorkingMemory(newDataID(), plf);	
 				log("Packed logical form containing the planned LF added to working memory");
 			}
 			catch (Exception e) {
@@ -418,7 +417,7 @@ public class cc_Realizer
 		 * 
 		 * @see cast.core.components.CASTComponent#runComponent()
 		 */
-		@Override
+		// @Override
 		public void runComponent() {
 			try {
 				log("Entering loop checking for data in utterance realization component");
@@ -451,7 +450,7 @@ public class cc_Realizer
 								//try {
 									taskComplete(
 												 taskID,
-												 TaskOutcome.PROCESSING_COMPLETE_SUCCESS);
+												 TaskOutcome.ProcessingCompleteSuccess);
 								//}
 								//catch (SubarchitectureComponentException e) {
 								//	e.printStackTrace();
@@ -467,7 +466,7 @@ public class cc_Realizer
 								//try {
 									taskComplete(
 												 taskID,
-												 TaskOutcome.PROCESSING_COMPLETE_FAILURE);
+												 TaskOutcome.ProcessingCompleteFailure);
 								//}
 								//catch (SubarchitectureComponentException ex) {
 								//	ex.printStackTrace();
@@ -508,10 +507,10 @@ public class cc_Realizer
 		 * @param _config The properties table
 		 */ 
 		
-		@Override
+		// @Override
 		public void configure(Properties _config) {
 			_config.list(System.out);
-			super.configure(_config);
+			// super.configure(_config);
 			String parserArg = "";
 			if (_config.containsKey("--ccg")) {
 				grammarfile = _config.getProperty("--ccg");
