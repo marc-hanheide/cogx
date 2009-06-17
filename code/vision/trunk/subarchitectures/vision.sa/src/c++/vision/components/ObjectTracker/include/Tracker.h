@@ -25,9 +25,6 @@ protected:
     	
     	float edge_tolerance;				// maximal angular deviation of edges to match in degrees
     	
-    	int viewport_width;					// matching viewport width in pixels
-    	int viewport_height;				// matching viewport height in pixels
-    	
     	float track_time;					// time for one tracking pass (the less time given, the less particle will be used)
 	} Parameter;
 	
@@ -113,6 +110,8 @@ public:
 	void showStatistics();
 	
 	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
+	void setTrackTime(float time){ params.track_time = time; }
+	void setNoise(float rot, float trans){ params.noise_rot_max=rot; params.noise_trans_max=trans; }
 		
 	void swap();
 

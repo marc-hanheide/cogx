@@ -57,7 +57,7 @@ void ObjectTracker::initTracker(){
   m_tracker = new EdgeTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
-												20.0,															// standard deviation of rotational noise in degree
+												25.0,															// standard deviation of rotational noise in degree
 												0.05,															// standard deviation of translational noise in meter
 												20.0,															// edge matching tolerance in degree
 												0.05,															// goal tracking time in seconds
@@ -104,6 +104,7 @@ void ObjectTracker::runTracker(){
 										49, m_image.width, m_image.height,
 										0.1, 10.0,
 										GL_PERSPECTIVE);
+		m_tracker->setTrackTime(0.1);
 	}
 	
 	// Track all models

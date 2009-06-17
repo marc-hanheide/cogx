@@ -190,9 +190,6 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	params.noise_trans_max = n_t_max;
 	params.edge_tolerance = et;
 	
-	params.viewport_width = 256;
-	params.viewport_height = 256;
-	
 	params.track_time = tt;
 	
 	m_kalman_enabled = kal;
