@@ -177,8 +177,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 		m_cam_perspective = m_cam_default;
 	}else{
 		m_cam_perspective = camera;
-	}
-	
+	}	
 	
 	// Process image from camera (edge detection)
 	image_processing(image);
@@ -189,7 +188,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	// Clear framebuffer and render image from camera
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
-	
+	//m_cam_perspective->SetViewport(128,128);
 	
 	if(m_draw_edges)
 		m_ip->render(m_tex_frame_ip[3]);
@@ -249,6 +248,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 
 // Draw result of texture tracking (particle with maximum likelihood)
 void TextureTracker::drawResult(Particle* p){
+	m_cam_perspective->SetViewport(params.width, params.height);
 	m_cam_perspective->Activate();
 	p->activate();
 

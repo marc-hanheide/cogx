@@ -5,7 +5,7 @@
 //			Function:		Header file for Viewing Camera
 //
 //			Author:			Thomas Mörwald
-//			Date:				09.01.2007
+//			Date:				17.06.2009
 // ----------------------------------------------------------------------------
 #ifndef CAMERA_H
 #define CAMERA_H

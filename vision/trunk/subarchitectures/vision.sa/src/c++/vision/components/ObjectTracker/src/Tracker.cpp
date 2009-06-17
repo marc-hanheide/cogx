@@ -79,24 +79,6 @@ bool Tracker::inputs(){
 					break;
 				case SDLK_s:
 					showStatistics();
-					break;
-				case SDLK_v:
-					glMatrixMode(GL_MODELVIEW);
-					glLoadIdentity();
-					
-					m_particles->activate(id_max);
-					glGetFloatv(GL_MODELVIEW_MATRIX, mv);
-					m_particles->deactivate(id_max);
-					
-					rot[0] = mv[0]; rot[1] = mv[1]; rot[2] = mv[2];  // mv[3]
-					rot[3] = mv[4]; rot[4] = mv[5]; rot[5] = mv[6];  // mv[7]
-					rot[6] = mv[8]; rot[7] = mv[9]; rot[8] = mv[10]; // mv[11]
-					pos.x = mv[12]; pos.y = mv[13]; pos.z = mv[14];  // mv[15]
-					
-					p = Particle(rot, pos);
-					p.print();
-					m_particles->getMax()->print();
-					
 					break;				
 				case SDLK_z:
 					printf("Zero particles\n");
