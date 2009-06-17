@@ -16,7 +16,7 @@
 
 #include "mathlib.h"
 
-#define FTOL 0.01
+#define FTOL 0.0001
 #define PIOVER180 PI/180.0
 
 class Quaternion
