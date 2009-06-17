@@ -72,10 +72,13 @@ void ObjectTracker::initTracker(){
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
+  
+  // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   loadCameraParameters(m_camera, m_image.camPars, 0.1, 100.0);
   
+  // link camera with tracker
 	m_tracker->setCamPerspective(m_camera);
-	
+	m_tracker->lock();
   log("initialisation successfull!");		
 }
 
@@ -105,6 +108,7 @@ void ObjectTracker::runTracker(){
 										0.1, 10.0,
 										GL_PERSPECTIVE);
 		m_tracker->setTrackTime(0.08);
+		m_tracker->unlock();
 	}
 	
 	// Track all models
@@ -132,8 +136,6 @@ void ObjectTracker::runTracker(){
 	}
 	  
 	fTimeTracker = m_timer.Update();
-	//log("TimeImage:   %.0f ms", fTimeImage*1000.0);
-	//log("TimeTracker: %.0f ms", fTimeTracker*1000.0);
 }
 
 
