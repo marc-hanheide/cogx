@@ -61,7 +61,7 @@ void ObjectTracker::initTracker(){
 												0.05,															// standard deviation of translational noise in meter
 												20.0,															// edge matching tolerance in degree
 												0.05,															// goal tracking time in seconds
-												true,															// kalman filtering enabled
+												false,															// kalman filtering enabled
 												false))														// locked particles (press 'l' to unlock)
 	{														
 		log("initialisation of tracker failed!");
@@ -107,7 +107,7 @@ void ObjectTracker::runTracker(){
 										49, m_image.width, m_image.height,
 										0.1, 10.0,
 										GL_PERSPECTIVE);
-		m_tracker->setTrackTime(0.08);
+		//m_tracker->setTrackTime(0.08);
 		m_tracker->unlock();
 	}
 	
