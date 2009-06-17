@@ -184,7 +184,7 @@ class TExit
 	string confFile;											// configuration file for mxTools
   mx::CCameraModel m_cCamModel;					// camera model
   CvSize m_tImgSize;										// CV image size
-	bool setCamParamsFromVC;							// camera parameters from vision core (or file)
+	bool getCamParamsFromVC;							// camera parameters from vision core (or file)
 
 	// Age of objects
 	unsigned maxAge;											// maximum age for tracking

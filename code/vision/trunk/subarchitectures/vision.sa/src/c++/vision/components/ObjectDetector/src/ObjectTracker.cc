@@ -205,7 +205,7 @@ ObjectTracker::ObjectTracker(Config *cfg) : GestaltPrinciple(cfg)
   firstCall = true;						// first call of ObjectTracker
 	maxAge = 2;									// maximum age for tracking
 
-	setCamParamsFromVC = true;	// set camera parameters from vision core params
+	getCamParamsFromVC = true;	// get camera parameters from vision core params
 
   trackCubes = false;
 	trackFlap2Cube = false;
@@ -436,8 +436,8 @@ void ObjectTracker::InitCamModel()
   m_tImgSize.width = VisionCore::IW();
   m_tImgSize.height = VisionCore::IH();
 
-	/// Set camera parameters from Vision core
-	if(setCamParamsFromVC)
+	// get camera parameters from vision core
+	if(getCamParamsFromVC)
 	{
 		VisionCore::GetCamModel(m_cCamModel);
 		m_cCamModel.Save("subarchitectures/vision.sa/src/c++/vision/components/ObjectDetector/cfg/calRef.xml");
@@ -447,9 +447,10 @@ void ObjectTracker::InitCamModel()
 		m_cCamModel.LoadIntrinsic (confFile.data());
 		m_cCamModel.LoadDistortion (confFile.data());
 		m_cCamModel.LoadReferencePointsToComputeExtrinsic(confFile.data());
+		m_cCamModel.Save("subarchitectures/vision.sa/src/c++/vision/components/ObjectDetector/cfg/calFromFile.xml");
 	}
-
 	m_cCamModel.PreProcessing (m_tImgSize);
+
 }
 
 /**
@@ -830,57 +831,57 @@ void ObjectTracker::GetCube3DProperties(CubeDef &cd)
 	tPointImg = cvPoint2D64f (cd.corner_points[0][0].x, cd.corner_points[0][0].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[0][0].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[0][0].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[0][0].x = tPointWorld3D.x;
+	cd.corner_points3D[0][0].y = tPointWorld3D.y;
 
 	// corner point [0][1] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[0][1].x, cd.corner_points[0][1].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[0][1].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[0][1].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[0][1].x = tPointWorld3D.x;
+	cd.corner_points3D[0][1].y = tPointWorld3D.y;
 
 	// corner point [1][0] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[1][0].x, cd.corner_points[1][0].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[1][0].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[1][0].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[1][0].x = tPointWorld3D.x;
+	cd.corner_points3D[1][0].y = tPointWorld3D.y;
 
 	// corner point [1][1] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[1][1].x, cd.corner_points[1][1].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[1][1].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[1][1].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[1][1].x = tPointWorld3D.x;
+	cd.corner_points3D[1][1].y = tPointWorld3D.y;
 
 	// corner point [2][0] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[2][0].x, cd.corner_points[2][0].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[2][0].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[2][0].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[2][0].x = tPointWorld3D.x;
+	cd.corner_points3D[2][0].y = tPointWorld3D.y;
 
 	// corner point [2][1] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[2][1].x, cd.corner_points[2][1].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[2][1].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[2][1].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[2][1].x = tPointWorld3D.x;
+	cd.corner_points3D[2][1].y = tPointWorld3D.y;
 
 	// corner point [3][0] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[3][0].x, cd.corner_points[3][0].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[3][0].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[3][0].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[3][0].x = tPointWorld3D.x;
+	cd.corner_points3D[3][0].y = tPointWorld3D.y;
 
 	// corner point [3][1] (3D) [m]
 	tPointImg = cvPoint2D64f (cd.corner_points[3][1].x, cd.corner_points[3][1].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-	cd.corner_points3D[3][1].x = tPointWorld3D.x / 100.;
-	cd.corner_points3D[3][1].y = tPointWorld3D.y / 100.;
+	cd.corner_points3D[3][1].x = tPointWorld3D.x;
+	cd.corner_points3D[3][1].y = tPointWorld3D.y;
 
 	// calculate dimension of the cube (3D) [m]
 	cd.length_a = (cd.corner_points3D[1][1] - cd.corner_points3D[0][1]).Norm();
