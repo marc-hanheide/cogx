@@ -139,11 +139,11 @@ cdl::CASTTime convertTime(double time_sec){
 void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float zNear, float zFar){
 	// intrinsic parameters
 	float fx = 2.0*camPars.fx / camPars.width;					// scale range from [0 ... 640] to [0 ... 2]
-  float fy = 2.0*camPars.fy / camPars.height;					// scale range from [0 ... 480] to [0 ...-2]
-  float cx = 1.0-(2.0*camPars.cx / camPars.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
-  float cy = (2.0*camPars.cy / camPars.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
+  float fy = 2.0*camPars.fy / camPars.height;					// scale range from [0 ... 480] to [0 ... 2]
+  float cx = 1.0-(2.0*camPars.cx / camPars.width);		// flip and move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
+  float cy = (2.0*camPars.cy / camPars.height)-1.0;		// move coordinates from top to middle of image: [0 ... 2] -> [-1 ... 1]
   float z1 = (zFar+zNear)/(zNear-zFar);								// entries for clipping planes
-  float z2 = 2*zFar*zNear/(zNear-zFar);
+  float z2 = 2*zFar*zNear/(zNear-zFar);								// google for gluPerspective
   
   // intrinsic matrix
   mat4 intrinsic;
@@ -152,7 +152,8 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
   intrinsic[8]=cx;	intrinsic[9]=cy;	intrinsic[10]=z1;	intrinsic[11]=-1;
   intrinsic[12]=0;	intrinsic[13]=0;	intrinsic[14]=z2;	intrinsic[15]=0;
   
-  // computer vision coordinates to OpenGL coordinates transform (rotate 180° about x-axis)
+  // computer vision camera coordinates to OpenGL camera coordinates transform 
+  // rotate 180° about x-axis
   mat4 cv2gl;
   cv2gl[0]=1.0;  cv2gl[1]=0.0;  cv2gl[2]=0.0;   cv2gl[3]=0.0;  
 	cv2gl[4]=0.0;  cv2gl[5]=-1.0; cv2gl[6]=0.0;   cv2gl[7]=0.0;  
@@ -160,6 +161,8 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	cv2gl[12]=0.0; cv2gl[13]=0.0; cv2gl[14]=0.0;  cv2gl[15]=1.0;  
 	
 	// extrinsic parameters
+	// look up comments in tools/hardware/video/src/slice/Video.ice
+	// p = R^T*(w - t) = (R^T, -R^T*t) * (w,1)
 	cogx::Math::Matrix33 R = camPars.pose.rot;
 	cogx::Math::Vector3 t = camPars.pose.pos;
 	mat4 extrinsic;
