@@ -234,8 +234,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-// printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2, v0.pos.x, v0.pos.y, v0.pos.z); 
-// printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.z); 
+printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2, v0.pos.x, v0.pos.y, v0.pos.z); 
+printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.z); 
 	}
 
 	// create faces
@@ -287,7 +287,6 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	return true;
 }
 
-
 /**
  * @brief Extract camera parameters from video server.
  * @param image Image from the image server
@@ -298,8 +297,8 @@ bool ObjectDetector::GetCameraParameter(const Video::Image & image)
 	Video::CameraParameters camPars = image.camPars;
 
 printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.fx, camPars.fy, camPars.cx, camPars.cy);
-// 	printf("Camera parameters: radial distortion: %4.2f - %4.2f - %4.2f\n", camPars.k1, camPars.k2, camPars.k3);
-// 	printf("Camera parameters: tangential distortion: %4.2f - %4.2f\n", camPars.p1, camPars.p2);
+// printf("Camera parameters: radial distortion: %4.2f - %4.2f - %4.2f\n", camPars.k1, camPars.k2, camPars.k3);
+// printf("Camera parameters: tangential distortion: %4.2f - %4.2f\n", camPars.p1, camPars.p2);
 
 	double intrinsic[4];
 	intrinsic[0] = camPars.fx;
@@ -307,20 +306,26 @@ printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.
 	intrinsic[2] = camPars.cx;
 	intrinsic[3] = camPars.cy;
 
-	double distortion[4];
-	distortion[0] = camPars.k1;
-	distortion[1] = camPars.k2;
-	distortion[2] = camPars.p1;
-	distortion[3] = camPars.p2;
+	double dist[4];
+	dist[0] = camPars.k1;
+	dist[1] = camPars.k2;
+	dist[2] = camPars.p1;
+	dist[3] = camPars.p2;
 
-	double extrinsic[12];
+	double extrinsic[16];
 	getRow44(camPars.pose, extrinsic);
 
-printf("Camera parameters: extrinsic:\n	%4.2f - %4.2f- %4.2f- %4.2f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
-printf("	%4.2f - %4.2f- %4.2f- %4.2f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
-printf("	%4.2f - %4.2f- %4.2f- %4.2f\n\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
+	// TODO correct extrinsic pose from mm to cm ???
+	extrinsic[3] = extrinsic[3];
+	extrinsic[7] = extrinsic[7];
+	extrinsic[11] = extrinsic[11];
 
-	vs3Interface->SetCamParameters(intrinsic, distortion, extrinsic);
+printf("Camera parameters: extrinsic:\n	%6.5f - %6.5f- %6.5f- %6.5f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
+printf("	%6.5f - %6.5f- %6.5f- %6.5f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
+printf("	%6.5f - %6.5f- %6.5f- %6.5f\n\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
+
+	vs3Interface->SetCamParameters(intrinsic, dist, extrinsic);
+
 	return true;
 }
 
