@@ -5,16 +5,17 @@ Quaternion::Quaternion(){
 	FromEuler(0.0,0.0,0.0);
 }
 
-Quaternion::Quaternion(float x, float y, float z, float w)
-{
+Quaternion::Quaternion(float x, float y, float z, float w){
 	this->x = x;
 	this->y = y;
 	this->z = z;
 	this->w = w;
 }
 
-void Quaternion::normalise()
-{
+// normalising a quaternion works similar to a vector. This method will not do anything
+// if the quaternion is close enough to being unit-length. define TOLERANCE as something
+// small like 0.00001f to get accurate results
+void Quaternion::normalise(){
 	// Don't normalize if we don't have to
 	float mag2 = w * w + x * x + y * y + z * z;
 	if (fabs(mag2 - 1.0f) > FTOL) {
@@ -26,14 +27,14 @@ void Quaternion::normalise()
 	}
 }
 
-Quaternion Quaternion::getConjugate()
-{
+// We need to get the inverse of a quaternion to properly apply a quaternion-rotation to a vector
+// The conjugate of a quaternion is the same as the inverse, as long as the quaternion is unit-length
+Quaternion Quaternion::getConjugate(){
 	return Quaternion(-x, -y, -z, w);
 }
 
 // Multiplying q1 with q2 applies the rotation q2 to q1
-Quaternion Quaternion::operator* (const Quaternion &rq)
-{
+Quaternion Quaternion::operator* (const Quaternion &rq){
 	// the constructor takes its arguments as (x, y, z, w)
 	return Quaternion(w * rq.x + x * rq.w + y * rq.z - z * rq.y,
 	                  w * rq.y + y * rq.w + z * rq.x - x * rq.z,
@@ -42,8 +43,7 @@ Quaternion Quaternion::operator* (const Quaternion &rq)
 }
 
 // Multiplying a quaternion q with a vector v applies the q-rotation to v
-vec3 Quaternion::operator* (const vec3 &vec)
-{
+vec3 Quaternion::operator* (const vec3 &vec){
 	vec3 vn(vec);
 	vn.normalize();
  
@@ -60,8 +60,7 @@ vec3 Quaternion::operator* (const vec3 &vec)
 }
 
 // Convert from Axis Angle
-void Quaternion::FromAxis(const vec3 &v, float angle)
-{
+void Quaternion::FromAxis(const vec3 &v, float angle){
 	float sinAngle;
 	angle *= 0.5f;
 	vec3 vn(v);
@@ -76,8 +75,7 @@ void Quaternion::FromAxis(const vec3 &v, float angle)
 }
 
 // Convert from Euler Angles
-void Quaternion::FromEuler(float pitch, float yaw, float roll)
-{
+void Quaternion::FromEuler(float pitch, float yaw, float roll){
 	// Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
 	// and multiply those together.
 	// the calculation below does the same, just shorter
@@ -101,8 +99,8 @@ void Quaternion::FromEuler(float pitch, float yaw, float roll)
 	normalise();
 }
 
-mat4 Quaternion::getMatrix()
-{
+// Convert to Matrix
+mat4 Quaternion::getMatrix(){
 	float x2 = x * x;
 	float y2 = y * y;
 	float z2 = z * z;
@@ -124,8 +122,7 @@ mat4 Quaternion::getMatrix()
 }
 
 // Convert to Axis/Angles
-void Quaternion::getAxisAngle(vec3 *axis, float *angle)
-{
+void Quaternion::getAxisAngle(vec3 *axis, float *angle){
 	float scale = sqrt(x * x + y * y + z * z);
 	axis->x = x / scale;
 	axis->y = y / scale;

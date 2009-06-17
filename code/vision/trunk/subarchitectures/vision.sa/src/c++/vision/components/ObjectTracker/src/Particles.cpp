@@ -91,8 +91,9 @@ void Particle::activate(){
 		glRotatef(rY, 0.0, 1.0, 0.0);
 		glRotatef(rZ, 0.0, 0.0, 1.0);
 		*/
-		glMultMatrixf(q.getMatrix());
 		glTranslatef(tX, tY, tZ);
+		glMultMatrixf(q.getMatrix());
+		
 }
 
 void Particle::deactivate(){
