@@ -170,7 +170,7 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	extrinsic[4]=R.m10;	extrinsic[5]=R.m11;	extrinsic[6]=R.m12;		extrinsic[7]=0.0;	
 	extrinsic[8]=R.m20;	extrinsic[9]=R.m21;	extrinsic[10]=R.m22;	extrinsic[11]=0.0;	
 	extrinsic[12]=0.0;	extrinsic[13]=0.0;	extrinsic[14]=0.0;		extrinsic[15]=1.0;
-	vec4 tp = -(extrinsic * vec4(t.x*0.001, t.y*0.001, t.z*0.001, 1.0));
+	vec4 tp = -(extrinsic * vec4(t.x, t.y, t.z, 1.0));
 	extrinsic[12]=tp.x; extrinsic[13]=tp.y; extrinsic[14]=tp.z;
 	extrinsic = cv2gl * extrinsic;
 	
