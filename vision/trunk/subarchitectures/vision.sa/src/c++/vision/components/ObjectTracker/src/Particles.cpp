@@ -24,6 +24,21 @@ Particle::Particle(float val){
 	w = val;
 }
 
+Particle::Particle(mat3 rot, vec3 pos){
+
+	rX = atan2(-rot[7], rot[8]) * 180.0 / PI;
+	rY = asin(rot[6]) * 180.0 / PI;
+	rZ = atan2(-rot[3], rot[0]) * 180.0 / PI;
+
+	tX = pos.x;
+	tY = pos.y;
+	tZ = pos.z;
+	
+	q.FromEuler(rX, rY, rZ);
+	
+	w = 0.0;
+}
+
 Particle::Particle(const Particle& p2){
 	rX = p2.rX;
 	rY = p2.rY;
@@ -89,6 +104,20 @@ void Particle::print(){
 	printf("t: %f %f %f\n", tX, tY, tZ);
 	printf("w: %f\n", w);
 }
+
+void Particle::getPose(float* matrix3x3, float* pos3){
+	
+	mat4 m = q.getMatrix();
+	matrix3x3[0]=m[0]; matrix3x3[1]=m[1]; matrix3x3[2]=m[2];
+	matrix3x3[3]=m[4]; matrix3x3[4]=m[5]; matrix3x3[5]=m[6];
+	matrix3x3[6]=m[8]; matrix3x3[7]=m[9]; matrix3x3[8]=m[10];
+	
+	pos3[0] = tX;
+	pos3[1] = tY;
+	pos3[2] = tZ;
+	
+}
+
 
 // PARTICLES
 
@@ -179,18 +208,21 @@ void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_
         noiseTransZ = noise(-noise_particle.tZ, noise_particle.tZ, 100, distribution);
                 
         // Apply noise to particles
-        /*
-        pIt->rX = pMax->rX + noiseRotX;
-        pIt->rY = pMax->rY + noiseRotY;
-        pIt->rZ = pMax->rZ + noiseRotZ;
-        */
+        pIt->rX = noiseRotX;
+        pIt->rY = noiseRotY;
+        pIt->rZ = noiseRotZ;
+
         Quaternion q2;
         q2.FromEuler(noiseRotX, noiseRotY, noiseRotZ);
         pIt->q = q2 * pMax->q;
+        //printf("%f %f %f %f\n", pMax->q.x, pMax->q.y, pMax->q.z, pMax->q.w);
+        //printf("%f %f %f %f\n\n", q2.x, q2.y, q2.z, q2.w);
+        //pIt->q.normalise();
         
        	pIt->tX = pMax->tX + noiseTransX;
         pIt->tY = pMax->tY + noiseTransY;
-        pIt->tZ = pMax->tZ + noiseTransZ;        
+        pIt->tZ = pMax->tZ + noiseTransZ;
+        
     }
 }
 
@@ -257,7 +289,7 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		v_max -= (v_max - v_max_tmp) / 100;
 	
 	// sort particles by likelihood and average most likely particles
-	/*
+	
 	if(num_avaraged_particles > 1){
 		std::sort(m_particlelist, m_particlelist+m_num_particles);
 		std::reverse(m_particlelist, m_particlelist+m_num_particles);
@@ -282,10 +314,13 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		p.tZ = p.tZ * divider;
 		p.w  = p.w / float(mean_range);
 		
+		Quaternion q2;
+		q2.FromEuler(p.rX, p.rY, p.rZ);
+		p.q = m_particlelist[0].q * q2;
+		
 		m_particlelist[0] = p;
 		id_max = 0;
 	}
-	*/
 }
 
 void Particles::setAll(Particle p){

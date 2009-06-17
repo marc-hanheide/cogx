@@ -24,6 +24,7 @@ SET(SRC
 	src/Particles.cpp
 	src/ply.c
 	src/PlyModel.cpp
+	src/Quaternion.cpp
 	src/Resources.cpp
 	src/Shader.cpp
 	src/ShaderUtils.cpp

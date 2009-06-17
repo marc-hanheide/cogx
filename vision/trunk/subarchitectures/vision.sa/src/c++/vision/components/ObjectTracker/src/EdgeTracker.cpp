@@ -165,7 +165,7 @@ bool EdgeTracker::track(	unsigned char* image,
 	glColor3f(1.0,0.0,0.0);
 	m_tex_frame_ip[1]->bind();	// bind camera image
 	particle_motion(0.1, NULL, GAUSS);
-	particle_processing(params.number_of_particles*0.25, 10);
+	particle_processing(params.number_of_particles*0.25, 1);
 	
 	// Kalman filter
 	if(m_kalman_enabled)

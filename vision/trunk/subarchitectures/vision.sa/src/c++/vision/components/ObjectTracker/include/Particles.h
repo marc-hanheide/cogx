@@ -27,12 +27,12 @@ public:
 
 	Particle();
 	Particle(float val);
-	Particle(float* mv);
+	//Particle(float* mv);
 	Particle(mat3 rot, vec3 pos);
 	Particle(const Particle& p2);
 	
 	Particle& operator=(const Particle& p2);
-	bool operator==(const Particle& p2);
+	//bool operator==(const Particle& p2);
 	
 	inline bool operator<(const Particle& p2) const { return w < p2.w; }
 	inline bool operator>(const Particle& p2) const { return w > p2.w; }
@@ -41,7 +41,7 @@ public:
 	void deactivate();
 	
 	void print();
-	void getModelView(float* matrix4x4);
+	//void getModelView(float* matrix4x4);
 	void getPose(float* matrix3x3, float* pos3);
 
 };
