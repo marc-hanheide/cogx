@@ -144,6 +144,7 @@ bool EdgeTracker::track(	unsigned char* image,
 	}else{
 		m_cam_perspective = camera;
 	}
+	m_cam_perspective->SetViewport(128, 128);
 	
 	// Process image from camera (edge detection)
 	image_processing(image);
@@ -198,10 +199,10 @@ bool EdgeTracker::track(	unsigned char* image,
 // Draw result of edge tracking (particle with maximum likelihood)
 void EdgeTracker::drawResult(Particle* p){
 	glLineWidth(3);
+	m_cam_perspective->SetViewport(params.width, params.height);
 	m_cam_perspective->Activate();
 	p->activate();
-	
-	
+		
 	m_opengl.RenderSettings(false, true);
 	m_opengl.ClearBuffers(false, true);
 	m_model->drawFaces();
