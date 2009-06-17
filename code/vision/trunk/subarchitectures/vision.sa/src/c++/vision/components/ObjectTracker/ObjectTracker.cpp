@@ -57,7 +57,7 @@ void ObjectTracker::initTracker(){
   m_tracker = new EdgeTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
-												25.0,															// standard deviation of rotational noise in degree
+												20.0,															// standard deviation of rotational noise in degree
 												0.05,															// standard deviation of translational noise in meter
 												20.0,															// edge matching tolerance in degree
 												0.05,															// goal tracking time in seconds
@@ -117,14 +117,14 @@ void ObjectTracker::runTracker(){
 		obj = getMemoryEntry<VisualObject>(m_modelID_list[i].cast_AD);
 
 		// conversion from CogX.vision coordinates to ObjectTracker coordinates
-		convertPose2Particle(obj->pose, m_trackpose);
-		m_trackpose.w = obj->detectionConfidence;
+		//convertPose2Particle(obj->pose, m_trackpose);
+		//m_trackpose.w = obj->detectionConfidence;
 
 		// Track model
 		running = m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
 		m_tracker->drawResult(&m_trackpose);
 		m_tracker->renderCoordinates();
-		m_tracker->drawTest();
+		//m_tracker->drawTest();
 		m_tracker->swap();
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
