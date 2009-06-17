@@ -38,8 +38,6 @@ void Camera::Set(	float posx,  float posy,  float posz,
 	
 	fwh2intrinsic();
 	fsu2extrinsic();
-	
-	SetViewport(0,0,m_width,m_height,zNear,zFar);
 }
 
 void Camera::SetExtrinsic(float* M){
@@ -59,18 +57,16 @@ void Camera::SetIntrinsic(float* M)
 	Activate();
 }
 
-void Camera::SetIntrinsic(float fovy, float width, float height){
-	m_fovy = fovy;
-	m_width = width;
-	m_height = height;
-	
-	fwh2intrinsic();
+void Camera::SetViewport(float w, float h)
+{
+	m_width = w;
+	m_height = h;
 }
 
-void Camera::SetViewport(float x, float y, float w, float h, float n, float f)
+void Camera::SetZRange(float near, float far)
 {
-	glViewport(x,y,w,h);
-	glDepthRange(n,f);
+	m_zNear = near;
+	m_zFar = far;
 }
 
 void Camera::Activate()
@@ -82,6 +78,9 @@ void Camera::Activate()
 	// Apply extrinsic parameters
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(m_extrinsic);
+	
+	glViewport(0,0,m_width,m_height);
+	glDepthRange(m_zNear,m_zFar);
 	
 	// Extract frustum planes
 	g_Resources->GetFrustum()->ExtractFrustum();

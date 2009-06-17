@@ -172,7 +172,8 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	extrinsic = cv2gl * extrinsic;
 	
 	// set camera parameters
-	camera->SetViewport(0,0,camPars.width,camPars.height,zNear,zFar);
+	camera->SetViewport(camPars.width,camPars.height);
+	camera->SetZRange(zNear, zFar);
 	camera->SetIntrinsic(intrinsic);
 	camera->SetExtrinsic(extrinsic);
 }
