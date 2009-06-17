@@ -124,7 +124,7 @@ void ObjectTracker::runTracker(){
 		running = m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
 		m_tracker->drawResult(&m_trackpose);
 		m_tracker->renderCoordinates();
-		//m_tracker->drawTest();
+		m_tracker->drawTest();
 		m_tracker->swap();
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates

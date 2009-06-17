@@ -4,6 +4,8 @@
 
 class Particle;
 class Particles;
+#include "Quaternion.h"
+#include "mathlib.h"
 #include "Resources.h"
 
 #include <stdio.h>
@@ -21,6 +23,7 @@ public:
 	float rX, rY, rZ;	// rotation
 	float tX, tY, tZ;	// translation
 	float w;			// Likelihood
+	Quaternion q;		// representing rotation with quaternions
 
 	Particle();
 	Particle(float val);
