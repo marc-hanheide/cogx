@@ -6,6 +6,6 @@ COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --file
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0
+CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --testmode
 CPP MG TrackerDriver ObjectTrackerDriver --labels "random" --log
 
