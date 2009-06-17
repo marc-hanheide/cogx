@@ -42,7 +42,7 @@ void ObjectTracker::initTracker(){
   m_trackpose = Particle(0.0);
   int id = 0;
   
-  // Set pathes of resource manager
+  // Set pathes for resource manager
   g_Resources->SetModelPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/");
   g_Resources->SetTexturePath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/texture/");
   g_Resources->SetShaderPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/shader/");
@@ -64,7 +64,7 @@ void ObjectTracker::initTracker(){
 												true,															// kalman filtering enabled
 												false))														// locked particles (press 'l' to unlock)
 	{														
-		log("Initialisation failed!");
+		log("initialisation of tracker failed!");
 		running = false;
   }
   
@@ -72,11 +72,9 @@ void ObjectTracker::initTracker(){
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
-  loadCameraParameters(m_camera, m_image, 0.1, 100.0);
+  loadCameraParameters(m_camera, m_image.camPars, 0.1, 100.0);
   
 	m_tracker->setCamPerspective(m_camera);
-	//track = true;
-	//m_tracker->lock();
 	
   log("initialisation successfull!");		
 }
@@ -98,12 +96,6 @@ void ObjectTracker::runTracker(){
 	// Grab image from VideoServer
 	getImage(camId, m_image);
 	
-	/*
-	m_tracker->drawImage((unsigned char*)(&m_image.data[0]));
-	m_tracker->drawTest();
-	m_tracker->swap();
-	*/
-	
 	fTimeImage = m_timer.Update();
 	if(testmode){
 		m_camera->Set(	0.2, 0.2, 0.2,
@@ -114,8 +106,6 @@ void ObjectTracker::runTracker(){
 										GL_PERSPECTIVE);
 	}
 	
-	
-
 	// Track all models
 	for(i=0; i<m_modelID_list.size(); i++){
 		model = g_Resources->GetModel(m_modelID_list[i].resources_ID);
@@ -201,16 +191,6 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				log("stop tracking: I'm not tracking");
 			}
 			break;
-		case VisionData::TESTMODE:
-			if(testmode){
-				log("switching from testmode to normal tracking");
-				testmode = false;
-			}else{
-				log("switching to testmode");
-				testmode = true;
-				m_tracker->unlock();
-			}
-			break;
 		case VisionData::RELEASEMODELS:
 			log("release models: releasing all models");
 			g_Resources->ReleaseModel();
@@ -235,6 +215,9 @@ void ObjectTracker::configure(const map<string,string> & _config){
     istringstream istr(it->second);
     istr >> camId;
   }
+  
+	if((it = _config.find("--testmode")) != _config.end())
+		testmode = true;
   
   /*
   if((it = _config.find("--log")) != _config.end())
@@ -271,8 +254,8 @@ void ObjectTracker::runComponent(){
   	  sleepComponent(10);
 		}else{
 			// * Idle *
-		    sleepComponent(1000);
-		    //log("sleeping");
+			running = m_tracker->inputs();	// ask for inputs (e.g. quit command)
+	    sleepComponent(1000);
 		}
   }
   
@@ -280,7 +263,6 @@ void ObjectTracker::runComponent(){
   delete(g_Resources);
   delete(m_tracker);
   log("stop");
-  
 }
 
 

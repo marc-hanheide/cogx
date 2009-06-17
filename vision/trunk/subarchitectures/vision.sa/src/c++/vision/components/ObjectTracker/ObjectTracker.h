@@ -17,7 +17,6 @@
 #include "EdgeTracker.h"
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"
-#include "mxCameraModel.h"
 
 namespace cast
 {

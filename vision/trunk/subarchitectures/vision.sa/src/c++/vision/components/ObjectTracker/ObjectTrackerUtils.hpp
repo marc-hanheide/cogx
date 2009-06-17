@@ -9,10 +9,10 @@
 #include "Tracker.h"
 
 using namespace cast;
-//using namespace VisionData;
 using namespace cogx;
 using namespace Math;
 
+// converts a VisionData::GeometryModel to a Tracker Model
 bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	unsigned int i;
 	
@@ -50,6 +50,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	return true;
 }
 
+// converts a Tracker Model to a VisionData::GeometryModel
 bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 	unsigned int i;
 	
@@ -83,6 +84,7 @@ bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 	return true;
 }
 
+// converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
 bool convertParticle2Pose(Particle& particle, Pose3& pose){
 	
 	float rot[9];
@@ -101,6 +103,7 @@ bool convertParticle2Pose(Particle& particle, Pose3& pose){
 	return true;
 }
 
+// converts a pose (R, t) to a particle (x,y,z,alpha,beta,gamma)
 bool convertPose2Particle(Pose3& pose, Particle& particle){
 	mat3 rot;
 	vec3 pos;
@@ -120,6 +123,7 @@ bool convertPose2Particle(Pose3& pose, Particle& particle){
 	return true;
 }
 
+// converts time in seconds to CASTTime structure
 cdl::CASTTime convertTime(double time_sec){
 	cdl::CASTTime casttime;
 	
@@ -129,19 +133,15 @@ cdl::CASTTime convertTime(double time_sec){
 	return casttime;
 }
 
-void transposeMatrix4(float* m1, float* m2){
-	m2[0]=m1[0];  m2[1]=m1[4];  m2[2]=m1[8];  m2[3]=m1[12];
-	m2[4]=m1[1];  m2[5]=m1[5];  m2[6]=m1[9];  m2[7]=m1[13];
-	m2[8]=m1[2];  m2[9]=m1[6];  m2[10]=m1[10]; m2[11]=m1[14];
-	m2[12]=m1[3]; m2[13]=m1[7]; m2[14]=m1[11]; m2[15]=m1[15];
-}
-
-void loadCameraParameters(Camera* camera, Video::Image image, float zNear, float zFar){
+// Converts Video::CameraParameters from Video::Image of VideoServer to 
+// Extrinsic- and Intrinsic- Matrix of OpenGL
+// zNear and zFar describe the near and far z values of the clipping plane
+void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float zNear, float zFar){
 	// intrinsic parameters
-	float fx = 2.0*image.camPars.fx / image.width;					// scale range from [0 ... 640] to [0 ... 2]
-  float fy = 2.0*image.camPars.fy / image.height;					// scale range from [0 ... 480] to [0 ...-2]
-  float cx = 1.0-(2.0*image.camPars.cx / image.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
-  float cy = (2.0*image.camPars.cy / image.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
+	float fx = 2.0*camPars.fx / camPars.width;					// scale range from [0 ... 640] to [0 ... 2]
+  float fy = 2.0*camPars.fy / camPars.height;					// scale range from [0 ... 480] to [0 ...-2]
+  float cx = 1.0-(2.0*camPars.cx / camPars.width);		// move coordinates from left to middle of image: [0 ... 2] -> [-1 ... 1]
+  float cy = (2.0*camPars.cy / camPars.height)-1.0;		// flip and move coordinates from top to middle of image: [0 ...-2] -> [-1 ... 1]
   float z1 = (zFar+zNear)/(zNear-zFar);								// entries for clipping planes
   float z2 = 2*zFar*zNear/(zNear-zFar);
   
@@ -160,8 +160,8 @@ void loadCameraParameters(Camera* camera, Video::Image image, float zNear, float
 	cv2gl[12]=0.0; cv2gl[13]=0.0; cv2gl[14]=0.0;  cv2gl[15]=1.0;  
 	
 	// extrinsic parameters
-	cogx::Math::Matrix33 R = image.camPars.pose.rot;
-	cogx::Math::Vector3 t = image.camPars.pose.pos;
+	cogx::Math::Matrix33 R = camPars.pose.rot;
+	cogx::Math::Vector3 t = camPars.pose.pos;
 	mat4 extrinsic;
 	extrinsic[0]=R.m00;	extrinsic[1]=R.m01;	extrinsic[2]=R.m02;		extrinsic[3]=0.0;
 	extrinsic[4]=R.m10;	extrinsic[5]=R.m11;	extrinsic[6]=R.m12;		extrinsic[7]=0.0;	
@@ -172,7 +172,7 @@ void loadCameraParameters(Camera* camera, Video::Image image, float zNear, float
 	extrinsic = cv2gl * extrinsic;
 	
 	// set camera parameters
-	camera->SetViewport(0,0,image.width,image.height,zNear,zFar);
+	camera->SetViewport(0,0,camPars.width,camPars.height,zNear,zFar);
 	camera->SetIntrinsic(intrinsic);
 	camera->SetExtrinsic(extrinsic);
 }

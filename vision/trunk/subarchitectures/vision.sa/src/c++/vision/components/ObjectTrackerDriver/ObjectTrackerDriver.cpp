@@ -123,16 +123,9 @@ void ObjectTrackerDriver::runComponent()
   
   sleepProcess(1000);
   
-  // Send tracking command: TESTMODE
-  log("send tracking command: TESTMODE");
-  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
-  track_cmd->cmd = VisionData::TESTMODE;
-  addToWorkingMemory(newDataID(), track_cmd);
-  
-  sleepProcess(1000);
-  
   // Send start tracking command
   log("send tracking command: START");
+  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
   track_cmd->cmd = VisionData::START;
   addToWorkingMemory(newDataID(), track_cmd);
   
