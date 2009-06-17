@@ -951,6 +951,7 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 		{
 			camIntrinsic[i] = intrinsic[i];
 			camDistortion[i] = distortion[i];
+printf("camDistortion %u: %4.3f\n", i, distortion[i]);
 		}
 		for(unsigned i=0; i<12; i++)
 		{
