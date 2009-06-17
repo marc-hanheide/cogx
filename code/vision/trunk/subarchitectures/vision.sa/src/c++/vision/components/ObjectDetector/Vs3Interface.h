@@ -45,7 +45,7 @@ public:
 	void Draw(IplImage *iI);
 	void DrawGestalt(int type, int detail);
 
-	void SetCamParameters(double *intrinsic, double *distortion, double *extrinsic);
+	void SetCamParameters(double *intrinsic, double *dist, double *extrinsic);
 };
 
 
