@@ -409,9 +409,6 @@ public:
 	static void GetCamModel(mx::CCameraModel &m_cCamModel);
 
 
-
-
-
 	/// TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 	void GetObject(Gestalt::Type type, unsigned number, CubeDef cd);
 	bool GetCube(unsigned number, CubeDef &cd, bool &masked);
