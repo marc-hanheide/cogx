@@ -34,9 +34,12 @@ public:
 	Quaternion operator* (const Quaternion &rq);
 	vec3 operator* (const vec3 &vec);
 	
-	void FromAxis(const vec3 &v, float angle);
-	void FromEuler(float pitch, float yaw, float roll);
-	mat4 getMatrix();
+	void fromAxis(const vec3 &v, float angle);
+	void fromEuler(float pitch, float yaw, float roll);
+	void fromMatrix(mat3 m);
+	void fromMatrix(mat4 m);
+	mat4 getMatrix4();
+	mat3 getMatrix3();
 	void getAxisAngle(vec3 *axis, float *angle);
 
 };

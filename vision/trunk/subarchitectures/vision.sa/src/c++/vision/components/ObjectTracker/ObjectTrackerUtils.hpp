@@ -86,9 +86,8 @@ bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 
 // converts a particle (x,y,z,alpha,beta,gamma) to a pose (R, t) 
 bool convertParticle2Pose(Particle& particle, Pose3& pose){
-	
-	float rot[9];
-	float pos[3];
+	mat3 rot;
+	vec3 pos;
 	
 	particle.getPose(rot, pos);
 	
@@ -115,10 +114,8 @@ bool convertPose2Particle(Pose3& pose, Particle& particle){
 	pos.x = pose.pos.x;
 	pos.y = pose.pos.y;
 	pos.z = pose.pos.z;
-	
-	Particle p(rot, pos);
-	
-	particle = p;
+
+	particle.setPose(rot, pos);
 	
 	return true;
 }
