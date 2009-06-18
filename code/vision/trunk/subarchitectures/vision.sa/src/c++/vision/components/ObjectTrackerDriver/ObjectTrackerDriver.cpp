@@ -29,21 +29,6 @@ using namespace std;
 
 void ObjectTrackerDriver::configure(const map<string,string> & _config)
 {
-  map<string,string>::const_iterator it;
-
-  if((it = _config.find("--labels")) != _config.end())
-  {
-    istringstream istr(it->second);
-    string label;
-    while(istr >> label)
-      labels.push_back(label);
-
-    ostringstream ostr;
-    for(size_t i = 0; i < labels.size(); i++)
-      ostr << " '" << labels[i] << "'";
-    log("detecting objects: %s", ostr.str().c_str());
-  }
-  
   pFile = fopen("subarchitectures/vision.sa/src/c++/vision/components/ObjectTrackerDriver/img/trajectory.txt", "rb");
 	
 		if (pFile==NULL) {

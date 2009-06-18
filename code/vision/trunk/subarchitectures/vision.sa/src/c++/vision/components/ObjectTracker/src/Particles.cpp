@@ -24,21 +24,6 @@ Particle::Particle(float val){
 	w = val;
 }
 
-Particle::Particle(mat3 rot, vec3 pos){
-
-	rX = atan2(-rot[7], rot[8]) * 180.0 / PI;
-	rY = asin(rot[6]) * 180.0 / PI;
-	rZ = atan2(-rot[3], rot[0]) * 180.0 / PI;
-
-	tX = pos.x;
-	tY = pos.y;
-	tZ = pos.z;
-	
-	q.FromEuler(rX, rY, rZ);
-	
-	w = 0.0;
-}
-
 Particle::Particle(const Particle& p2){
 	rX = p2.rX;
 	rY = p2.rY;
@@ -67,32 +52,10 @@ Particle& Particle::operator=(const Particle& p2){
 	w = p2.w;
 }
 
-/* Particle::operator==(const Particle& p2)
-bool Particle::operator==(const Particle& p2){
-	float fTol = 0.01;
-	if( (rX - p2.rX) > fTol ||
-		(rY - p2.rY) > fTol ||
-		(rZ - p2.rZ) > fTol ||
-		(rX - p2.tX) > fTol ||
-		(rY - p2.tY) > fTol ||
-		(rZ - p2.tZ) > fTol ||
-		(w - p2.w) > fTol 		){
-		return false;
-	}
-	
-	return true;		
-}
-*/
-
 void Particle::activate(){
 	glPushMatrix();
-		/*
-		glRotatef(rX, 1.0, 0.0, 0.0);
-		glRotatef(rY, 0.0, 1.0, 0.0);
-		glRotatef(rZ, 0.0, 0.0, 1.0);
-		*/
 		glTranslatef(tX, tY, tZ);
-		glMultMatrixf(q.getMatrix());
+		glMultMatrixf(q.getMatrix4());
 		
 }
 
@@ -106,18 +69,24 @@ void Particle::print(){
 	printf("w: %f\n", w);
 }
 
-void Particle::getPose(float* matrix3x3, float* pos3){
+void Particle::setPose(mat3 rot, vec3 pos){
 	
-	mat4 m = q.getMatrix();
-	m.transpose();
-	matrix3x3[0]=m[0]; matrix3x3[1]=m[1]; matrix3x3[2]=m[2];
-	matrix3x3[3]=m[4]; matrix3x3[4]=m[5]; matrix3x3[5]=m[6];
-	matrix3x3[6]=m[8]; matrix3x3[7]=m[9]; matrix3x3[8]=m[10];
+	q.fromMatrix(rot);
+		
+	tX = pos.x;
+	tY = pos.y;
+	tZ = pos.z;
 	
-	pos3[0] = tX;
-	pos3[1] = tY;
-	pos3[2] = tZ;
+	w = 0.0;
+}
+
+void Particle::getPose(mat3 &rot, vec3 &pos){
 	
+	rot = q.getMatrix3();
+	
+	pos[0] = tX;
+	pos[1] = tY;
+	pos[2] = tZ;
 }
 
 
@@ -185,6 +154,7 @@ Particles::~Particles(){
 void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_ref, unsigned int distribution){
 	Particle* pMax;
 	Particle* pIt;
+	Quaternion q2;
 	
 	float noiseRotX=0.0, noiseRotY=0.0, noiseRotZ=0.0;
     float noiseTransX=0.0, noiseTransY=0.0, noiseTransZ=0.0;
@@ -214,12 +184,8 @@ void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_
         pIt->rY = noiseRotY;
         pIt->rZ = noiseRotZ;
 
-        Quaternion q2;
-        q2.FromEuler(noiseRotX, noiseRotY, noiseRotZ);
+        q2.fromEuler(noiseRotX, noiseRotY, noiseRotZ);
         pIt->q = q2 * pMax->q;
-        //printf("%f %f %f %f\n", pMax->q.x, pMax->q.y, pMax->q.z, pMax->q.w);
-        //printf("%f %f %f %f\n\n", q2.x, q2.y, q2.z, q2.w);
-        //pIt->q.normalise();
         
        	pIt->tX = pMax->tX + noiseTransX;
         pIt->tY = pMax->tY + noiseTransY;
@@ -258,10 +224,12 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 	id_max = 0;
 	int v_max_tmp = 0;
 	
-	if(m_num_particles<num_particles)
+	if(m_num_particles<num_particles){
 		printf("[Particles::calcLikelihood] Warning to less storage for 'num_particles'. Please increase number of particles\n");
+		num_particles = m_num_particles;	
+	}
 	
-	for(id=0; (id<num_particles && id<m_num_particles); id++){
+	for(id=0; id<num_particles; id++){
 		// Get number of pixels from Occlusion Query
 		glGetQueryObjectivARB(queryV[id], GL_QUERY_RESULT_ARB, &v);
 		glGetQueryObjectivARB(queryD[id], GL_QUERY_RESULT_ARB, &d);
@@ -317,7 +285,7 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		p.w  = p.w / float(mean_range);
 		
 		Quaternion q2;
-		q2.FromEuler(p.rX, p.rY, p.rZ);
+		q2.fromEuler(p.rX, p.rY, p.rZ);
 		p.q = m_particlelist[0].q * q2;
 		
 		m_particlelist[0] = p;

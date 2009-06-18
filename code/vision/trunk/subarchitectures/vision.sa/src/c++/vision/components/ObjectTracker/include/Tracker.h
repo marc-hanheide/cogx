@@ -13,6 +13,10 @@
 #include "Kalman.h"
 #include "mathlib.h"
 
+#ifndef PIOVER180
+#define PIOVER180 3.14159265358979323846f/180.0
+#endif
+
 class Tracker{
 protected:
 	typedef struct Parameter{

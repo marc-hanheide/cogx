@@ -2,7 +2,10 @@
 #include "Quaternion.h"
 
 Quaternion::Quaternion(){
-	FromEuler(0.0,0.0,0.0);
+	x=0.0;
+	y=0.0;
+	z=0.0;
+	w=1.0;
 }
 
 Quaternion::Quaternion(float x, float y, float z, float w){
@@ -60,7 +63,7 @@ vec3 Quaternion::operator* (const vec3 &vec){
 }
 
 // Convert from Axis Angle
-void Quaternion::FromAxis(const vec3 &v, float angle){
+void Quaternion::fromAxis(const vec3 &v, float angle){
 	float sinAngle;
 	angle *= 0.5f;
 	vec3 vn(v);
@@ -75,14 +78,14 @@ void Quaternion::FromAxis(const vec3 &v, float angle){
 }
 
 // Convert from Euler Angles
-void Quaternion::FromEuler(float pitch, float yaw, float roll){
+void Quaternion::fromEuler(float roll, float pitch, float yaw){
 	// Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
 	// and multiply those together.
 	// the calculation below does the same, just shorter
  
-	float p = pitch * PIOVER180 / 2.0;
-	float y = yaw * PIOVER180 / 2.0;
-	float r = roll * PIOVER180 / 2.0;
+	float p = pitch / 2.0;
+	float y = yaw / 2.0;
+	float r = roll / 2.0;
  
 	float sinp = sin(p);
 	float siny = sin(y);
@@ -99,8 +102,26 @@ void Quaternion::FromEuler(float pitch, float yaw, float roll){
 	normalise();
 }
 
-// Convert to Matrix
-mat4 Quaternion::getMatrix(){
+// Convert from Matrix 4x4
+void Quaternion::fromMatrix(mat4 m){
+	w = sqrt(1.0 + m[0] + m[5] + m[10]) / 2.0;
+	float w4 = (4.0 * w);
+	x = (m[9] - m[6]) / w4 ;
+	y = (m[2] - m[8]) / w4 ;
+	z = (m[4] - m[1]) / w4 ;
+}
+
+// Convert from Matrix 3x3
+void Quaternion::fromMatrix(mat3 m){
+	w = sqrt(1.0 + m[0] + m[4] + m[8]) / 2.0;
+	float w4 = (4.0 * w);
+	x = (m[7] - m[5]) / w4 ;
+	y = (m[2] - m[6]) / w4 ;
+	z = (m[3] - m[1]) / w4 ;
+}
+
+// Convert to Matrix 4x4
+mat4 Quaternion::getMatrix4(){
 	float x2 = x * x;
 	float y2 = y * y;
 	float z2 = z * z;
@@ -111,15 +132,35 @@ mat4 Quaternion::getMatrix(){
 	float wy = w * y;
 	float wz = w * z;
  
-	// This calculation would be a lot more complicated for non-unit length quaternions
-	// Note: The constructor of Matrix4 expects the Matrix in column-major format like expected by
-	//   OpenGL
-	float m[16] = { 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
-					2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
-					2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
-					0.0f, 0.0f, 0.0f, 1.0f };
-	return mat4(m);
+	mat4 rot;
+	rot[0]=1.0f - 2.0f * (y2 + z2);	rot[1]=2.0f * (xy - wz);		rot[2]=2.0f * (xz + wy);			rot[3]=0.0f;
+	rot[4]=2.0f * (xy + wz); 		rot[5]=1.0f - 2.0f * (x2 + z2);	rot[6]=2.0f * (yz - wx);			rot[7]=0.0f;
+	rot[8]=2.0f * (xz - wy);		rot[9]=2.0f * (yz + wx);		rot[10]=1.0f - 2.0f * (x2 + y2);	rot[11]=0.0f;
+	rot[12]=0.0f;					rot[13]=0.0f;					rot[14]=0.0f;						rot[15]=1.0f;
+	
+	return rot;
 }
+
+// Convert to Matrix 3x3
+mat3 Quaternion::getMatrix3(){
+	float x2 = x * x;
+	float y2 = y * y;
+	float z2 = z * z;
+	float xy = x * y;
+	float xz = x * z;
+	float yz = y * z;
+	float wx = w * x;
+	float wy = w * y;
+	float wz = w * z;
+	
+	mat3 rot;
+	rot[0]=1.0f - 2.0f * (y2 + z2);	rot[1]=2.0f * (xy - wz);		rot[2]=2.0f * (xz + wy);
+	rot[3]=2.0f * (xy + wz); 		rot[4]=1.0f - 2.0f * (x2 + z2);	rot[5]=2.0f * (yz - wx);
+	rot[6]=2.0f * (xz - wy);		rot[7]=2.0f * (yz + wx);		rot[8]=1.0f - 2.0f * (x2 + y2);
+	
+	return rot;
+}
+
 
 // Convert to Axis/Angles
 void Quaternion::getAxisAngle(vec3 *axis, float *angle){
