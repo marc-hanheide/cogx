@@ -109,6 +109,7 @@ void Particle::print(){
 void Particle::getPose(float* matrix3x3, float* pos3){
 	
 	mat4 m = q.getMatrix();
+	m.transpose();
 	matrix3x3[0]=m[0]; matrix3x3[1]=m[1]; matrix3x3[2]=m[2];
 	matrix3x3[3]=m[4]; matrix3x3[4]=m[5]; matrix3x3[5]=m[6];
 	matrix3x3[6]=m[8]; matrix3x3[7]=m[9]; matrix3x3[8]=m[10];
