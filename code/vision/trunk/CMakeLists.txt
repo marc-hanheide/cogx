@@ -73,6 +73,11 @@ if(BUILD_HAL_VIDEO)
 add_subdirectory (tools/hardware/video)
 endif(BUILD_HAL_VIDEO)
 
+option(BUILD_HAL_STEREO "Build hardware stereo" YES)
+if(BUILD_HAL_STEREO)
+add_subdirectory (tools/hardware/stereo)
+endif(BUILD_HAL_STEREO)
+
 option(BUILD_SA_VISION "Build vision subarchitecure" YES)
 if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
