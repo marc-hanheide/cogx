@@ -107,7 +107,7 @@ void ObjectTracker::runTracker(){
 										49, m_image.width, m_image.height,
 										0.1, 10.0,
 										GL_PERSPECTIVE);
-		//m_tracker->setTrackTime(0.08);
+		m_tracker->setTrackTime(0.1);
 		m_tracker->unlock();
 	}
 	

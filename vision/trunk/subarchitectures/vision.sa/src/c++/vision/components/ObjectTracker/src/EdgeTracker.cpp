@@ -22,13 +22,6 @@ void EdgeTracker::image_processing(unsigned char* image){
 	m_ip->spreading(m_tex_frame_ip[0], m_tex_frame_ip[1]);
 	m_ip->spreading(m_tex_frame_ip[1], m_tex_frame_ip[2]);
 	m_ip->spreading(m_tex_frame_ip[2], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
-	m_ip->spreading(m_tex_frame_ip[3], m_tex_frame_ip[3]);
 	m_ip->render(m_tex_frame);
 }
 
@@ -39,12 +32,12 @@ void EdgeTracker::particle_motion(float pow_scale, Particle* p_ref, unsigned int
 	Particle noise_particle;
 	
 	// Standard deviation for gaussian noise
-	noise_particle.rX = params.noise_rot_max * pow_scale * (1.5-w);
-	noise_particle.rY = params.noise_rot_max * pow_scale * (1.5-w);
-	noise_particle.rZ = params.noise_rot_max * pow_scale * (1.5-w);
-	noise_particle.tX = params.noise_trans_max * pow_scale * (1.2-w);
-	noise_particle.tY = params.noise_trans_max * pow_scale * (1.2-w);
-	noise_particle.tZ = params.noise_trans_max * pow_scale * (1.2-w);
+	noise_particle.rX = params.noise_rot_max * pow_scale * (1-w);
+	noise_particle.rY = params.noise_rot_max * pow_scale * (1-w);
+	noise_particle.rZ = params.noise_rot_max * pow_scale * (1-w);
+	noise_particle.tX = params.noise_trans_max * pow_scale * (1-w);
+	noise_particle.tY = params.noise_trans_max * pow_scale * (1-w);
+	noise_particle.tZ = params.noise_trans_max * pow_scale * (1-w);
 	
     if(!m_lock){
    		m_particles->perturb(noise_particle, params.number_of_particles, p_ref, distribution);
@@ -155,16 +148,16 @@ bool EdgeTracker::track(	unsigned char* image,
 		m_ip->render(m_tex_frame);
 	
 	// Recursive particle filtering
-	glLineWidth(5);
+	glLineWidth(10);
 	glColor3f(0.0,0.0,0.0);
 	m_tex_frame_ip[2]->bind();	// bind camera image
 	particle_motion(1.0, &p_estimate, GAUSS);
 	particle_processing(params.number_of_particles*0.75, 1);
 	
-	glLineWidth(3);
+	glLineWidth(4);
 	glColor3f(1.0,0.0,0.0);
-	m_tex_frame_ip[1]->bind();	// bind camera image
-	particle_motion(0.1, NULL, GAUSS);
+	//m_tex_frame_ip[2]->bind();	// bind camera image
+	particle_motion(0.3, NULL, GAUSS);
 	particle_processing(params.number_of_particles*0.25, 1);
 	
 	// Kalman filter
@@ -211,6 +204,7 @@ void EdgeTracker::drawResult(Particle* p){
 	glColor3f(1.0,0.0,0.0);
 	if(!m_showmodel)m_shadeEdgeCompare->bind();
 	if(!m_showmodel)m_shadeEdgeCompare->setUniform("analyze", true);
+	glLineWidth(5);
 	m_model->drawEdges();
 	if(!m_showmodel)m_shadeEdgeCompare->unbind();
 	p->deactivate();
