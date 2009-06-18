@@ -56,6 +56,7 @@ public:
   double para_c;
   double para_d;
   int objnumber;
+  bool bTReset;
 
   std::vector< Vector<3> > v3center;
   std::vector< Vector<3> > v3size;
@@ -151,6 +152,7 @@ protected:
   Vector<2> ProjectW2I (Vector<3> pointW);
   std::vector<int> PointNumberOfObjects;
   std::vector<int> PointNumberOfPlane;
+  Vector<3> v3InitialPoseCam;
 
   void SplitPoints(std::vector<int> &PointNumberOfObjects);
   double CalDistOfTwoPoints(Vector<3> point1, Vector<3> point2);

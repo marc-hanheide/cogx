@@ -41,6 +41,8 @@ System::System()
   //GUI.ParseLine("Menu.AddMenuToggle Root \"Draw AR\" DrawAR Root");
   
   mbDone = false;
+  bReset_Tracker = false;
+  bReset_Component = false;
 
   para_A = 0.0;
   para_B = 0.0;
@@ -91,10 +93,13 @@ void System::Run(IplImage *iplImage)
       para_B = mpTracker->para_b;
       para_C = mpTracker->para_c;
       para_D = mpTracker->para_d;
+      if (mpTracker->bTReset)  bReset_Tracker = true;
+      if (bReset_Component)  mpTracker->bTReset = false;
 
       WMcenter = mpTracker->v3center;
       WMsize = mpTracker->v3size;
       WMradius = mpTracker->vdradius;
+
 /*      
       if(bDrawMap)
 	mpMapViewer->DrawMap(mpTracker->GetCurrentPose());

@@ -34,6 +34,8 @@ public:
   double para_B;
   double para_C;
   double para_D;
+  bool bReset_Tracker;
+  bool bReset_Component;
 
   std::vector< Vector<3> > WMcenter;
   std::vector< Vector<3> > WMsize;
