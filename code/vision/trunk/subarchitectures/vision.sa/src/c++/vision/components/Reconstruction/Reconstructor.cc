@@ -51,6 +51,17 @@ void Reconstructor::runComponent()
 	System s;
 	while(isRunning())
 	{
+		if (s.bReset_Tracker)
+		{
+			CurrentObjList.clear();
+			PreviousObjList.clear();
+			s.bReset_Component = true;
+			s.bReset_Tracker = false;
+			s.para_A = 0.0;
+			s.para_B = 0.0;
+			s.para_C = 0.0;
+			s.para_D = 0.0;
+		}
 	//////////////////////////////////////////////////////////////////////////
 		Video::Image image;
 		getImage(camId, image);
@@ -60,8 +71,7 @@ void Reconstructor::runComponent()
 		if (s.para_A!=0.0 || s.para_B!=0.0 || s.para_C!=0.0 || s.para_D!=0.0)
 		{
 			CurrentObjList.clear();
-
-			for(unsigned int i=0; i<s.WMcenter.size(); i++)
+			for(unsigned int i=0; i<s.WMcenter.size(); i++)  //create objects
 			{
 				ObjPara OP;
 				OP.c = s.WMcenter.at(i);
@@ -132,11 +142,26 @@ void Reconstructor::runComponent()
 						for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all new objects
 						{
 							deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
-							PreviousObjList.erase(PreviousObjList.begin()+disappearedObjList.at(i));
 						}
-
+						std::vector<ObjPara> new_PreviousList;
+						new_PreviousList.reserve(PreviousObjList.size()-disappearedObjList.size());
+						for(unsigned int i=0; i<PreviousObjList.size(); i++)
+						{
+							bool temp_flag = false;
+							for (unsigned int j=0; j<disappearedObjList.size(); j++)
+							{								
+								if (i == disappearedObjList.at(j))
+								{
+									temp_flag = true;
+									break;
+								}									
+							}
+							if (!temp_flag)
+								new_PreviousList.push_back( PreviousObjList.at(i) );
+						}
+						PreviousObjList = new_PreviousList;
+						new_PreviousList.clear();
 					}
-
 				}
 			
 			}

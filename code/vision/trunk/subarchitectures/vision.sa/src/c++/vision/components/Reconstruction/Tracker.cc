@@ -48,6 +48,7 @@ Tracker::Tracker(ImageRef irVideoSize, const ATANCamera &c, Map &m, MapMaker &mm
 
   // Most of the initialisation is done in Reset()
   Reset();
+  bTReset = false;
 }
 
 // Resets the tracker, wipes the map.
@@ -70,11 +71,15 @@ void Tracker::Reset()
   mnFrame=0;
   Zero(mv6CameraVelocity);
   mbJustRecoveredSoUseCoarse = false;
+  bTReset = true;
 
   para_a = 0.0;
   para_b = 0.0;
   para_c = 0.0;
   para_d = 0.0;  
+  v3center.clear();
+  v3size.clear();
+  vdradius.clear();
 
   vdradius.assign(0,0);
   mbdrawsphere = false;
@@ -348,10 +353,14 @@ void Tracker::TrackForInitialMap()
 	{
 	  mbUserPressedSpacebar = false;
 	  vector<pair<ImageRef, ImageRef> > vMatches;   // This is the format the mapmaker wants for the stereo pairs
+
 	  for(list<Trail>::iterator i = mlTrails.begin(); i!=mlTrails.end(); i++)
 	    vMatches.push_back(pair<ImageRef, ImageRef>(i->irInitialPos,
 							i->irCurrentPos));
 	  mMapMaker.InitFromStereo(mFirstKF, mCurrentKF, vMatches, mse3CamFromWorld);  // This will take some time!
+	  v3InitialPoseCam = mse3CamFromWorld.inverse().get_translation();  //store the initial pose of camera to
+									    //make sure that the plane is parallel to initialation motion of camera
+
 	  mnInitialStage = TRAIL_TRACKING_COMPLETE;
 	}
       else
@@ -1038,6 +1047,7 @@ void Tracker::DrawPointsOnDominantPlane()
 	int nRansacs = 100;
 	Vector<3> v3BestMean;
 	Vector<3> v3BestNormal;
+	Vector<3> v3InitialLineVector;
 	
 	int point1 = 0;
 	int point2 = 0;
@@ -1045,29 +1055,36 @@ void Tracker::DrawPointsOnDominantPlane()
 	
 	Zero(v3BestMean);
 	Zero(v3BestNormal);
+	v3InitialLineVector = v3InitialPoseCam;
 	double dBestDistSquared = 9999999999999999.9;
 	
 	for(int i=0; i<nRansacs; i++)
 	{
-		int nA = rand()%nPoints;
-		int nB = nA;
-		int nC = nA;
-		while(nB == nA)
-			nB = rand()%nPoints;
-		while(nC == nA || nC==nB)
-			nC = rand()%nPoints;
-		
+		Vector<3> v3Normal;
+		int nA;
+		int nB;
+		int nC;
+		do
+		{
+			nA = rand()%nPoints;
+			nB = nA;
+			nC = nA;
+			while(nB == nA)
+				nB = rand()%nPoints;
+			while(nC == nA || nC==nB)
+				nC = rand()%nPoints;
+	
+			Vector<3> v3CA = mMap.vpPoints[nC]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
+			Vector<3> v3BA = mMap.vpPoints[nB]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
+			v3Normal = v3CA ^ v3BA;
+			normalize(v3Normal);
+		}  while (fabs((v3Normal[0]*v3InitialLineVector[0]+v3Normal[1]*v3InitialLineVector[1]+v3Normal[2]*v3InitialLineVector[2])/(v3Normal*v3Normal+v3InitialLineVector*v3InitialLineVector))>0.1); //the plane should parallel with the initialisation motion of camera
+
+	
 		Vector<3> v3Mean = 0.33333333 * (mMap.vpPoints[nA]->v3WorldPos + 
 						mMap.vpPoints[nB]->v3WorldPos + 
 						mMap.vpPoints[nC]->v3WorldPos);
-		
-		Vector<3> v3CA = mMap.vpPoints[nC]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
-		Vector<3> v3BA = mMap.vpPoints[nB]->v3WorldPos  - mMap.vpPoints[nA]->v3WorldPos;
-		Vector<3> v3Normal = v3CA ^ v3BA;
-		if(v3Normal * v3Normal  == 0)
-			continue;
-		normalize(v3Normal);
-		
+				
 		double dSumError = 0.0;
 		for(unsigned int i=0; i<nPoints; i++)
 		{
@@ -1165,10 +1182,10 @@ void Tracker::DrawPointsOnDominantPlane()
 	{
 		DrawBoundingSphere(PointNumberOfObjects,objnumber-1);
 		DrawCuboids(PointNumberOfObjects,objnumber-1);
-		//DrawPoints_Objs(PointNumberOfObjects);
+		DrawPoints_Objs(PointNumberOfObjects);
 	}
-	DrawPlaneGrid(PointNumberOfPlane, v3BestMean, v3BestNormal);
-	//DrawPoints_Plane(PointNumberOfPlane);
+	//DrawPlaneGrid(PointNumberOfPlane, v3BestMean, v3BestNormal);
+	DrawPoints_Plane(PointNumberOfPlane);
 ////////Global vector, need to be released/////////////////////////////	
 	PointNumberOfObjects.clear();
 	PointNumberOfPlane.clear();
@@ -1184,8 +1201,10 @@ Vector<2> Tracker::ProjectW2I (Vector<3> pointW)
 	if(!p.pTData) p.pTData = new TrackerData(&p);
 	TrackerData &TData = *p.pTData;
 	// Project according to current view.
-	TData.Project(mse3CamFromWorld, mCamera); 
-	return TData.v2Image;
+	TData.Project(mse3CamFromWorld, mCamera);
+	Vector<2> returnValue = TData.v2Image;
+	delete q;
+	return returnValue;
 }
 
 void Tracker::SplitPoints(std::vector<int> &PointNumberOfObjects)
@@ -1222,7 +1241,7 @@ void Tracker::SplitPoints(std::vector<int> &PointNumberOfObjects)
 			PointNumberOfObjects.insert(PointNumberOfObjects.begin(),one_obj.begin(),one_obj.end());
 			objnumber++;
 		}
-		one_obj.clear();		
+		one_obj.clear();
 	}
 }
 
@@ -1322,7 +1341,7 @@ void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, unsigned int ob
 		if (v3Obj[2]>Max.at(label-1)[2]) Max.at(label-1)[2] = v3Obj[2];
 		if (v3Obj[2]<Min.at(label-1)[2]) Min.at(label-1)[2] = v3Obj[2];
 	}
-
+	v3size.clear();
 	for (unsigned int i=0; i<objects_number; i++)
 	{
 		Vector<3> s;
@@ -1338,6 +1357,8 @@ void Tracker::DrawCuboids(std::vector<int> PointNumberOfObjects, unsigned int ob
 			DrawOneCuboid(i,Max,Min);
 		}
 	}
+	Max.clear();
+	Min.clear();
 }
 
 void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, unsigned int objects_number)
@@ -1362,9 +1383,9 @@ void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, unsigned
 		center.at(label-1) = center.at(label-1) + v3Obj;
 		amount.at(label-1) = amount.at(label-1) + 1;
 	}
+	v3center.clear();
 	for (unsigned int i=0; i<center.size(); i++)
 	{	center.at(i) = center.at(i)/amount.at(i);
-		v3center.reserve(center.size());
 		v3center.push_back(center.at(i));
 	}
 
@@ -1382,11 +1403,9 @@ void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, unsigned
 		if (dist > radius_on_image.at(label-1))
 			radius_on_image.at(label-1) = dist;
 	}
+	vdradius.clear();
 	for (unsigned int i=0; i<objects_number; i++)
-	{
-		vdradius.reserve(radius_world.size());
 		vdradius.push_back(radius_world.at(i));
-	}
 
 	if (mbdrawsphere)
 	{
@@ -1407,6 +1426,10 @@ void Tracker::DrawBoundingSphere(std::vector<int> PointNumberOfObjects, unsigned
 		}
 		glDisable(GL_BLEND);
 	}
+	center.clear();
+	amount.clear();
+	radius_world.clear();
+	radius_on_image.clear();
 }
 
 void Tracker::DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, std::vector< Vector<3> > Min)
@@ -1464,7 +1487,7 @@ void Tracker::DrawOneCuboid(int objects_number, std::vector< Vector<3> > Max, st
 	glEnd();
 	glBegin(GL_LINES);
 	glVertex(ProjectW2I(leftmax));
-	glVertex(ProjectW2I(downmin));	glVertex(ProjectW2I(downmin));
+	glVertex(ProjectW2I(downmin));
 	glEnd();
 	glBegin(GL_LINES);
 	glVertex(ProjectW2I(upmax));
