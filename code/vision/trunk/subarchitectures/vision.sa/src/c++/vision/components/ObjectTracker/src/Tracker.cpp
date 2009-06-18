@@ -260,7 +260,7 @@ void Tracker::renderCoordinates(){
 	// Z - Axis
 	glPushMatrix();
 		glColor3f(0.0,0.0,1.0);
-		glRotatef(90, 0.0, 1.0, 0.0);
+		glRotatef(-90, 0.0, 1.0, 0.0);
 		//glRotatef(m_timer.GetApplicationTime() * PI * 100, 1.0,0.0,0.0);
 		glBegin(GL_TRIANGLE_FAN);
 			glVertex3f(l1,		0.0,	 b1);
@@ -320,7 +320,7 @@ void Tracker::drawTest(){
 	glDisable(GL_CULL_FACE);
 	
 	m_cam_perspective->Activate();
-	glLineWidth(3.0);
+	glLineWidth(1.0);
 	
 	glBegin(GL_LINE_LOOP);
 		glColor3f(1.0,0.0,0.0);

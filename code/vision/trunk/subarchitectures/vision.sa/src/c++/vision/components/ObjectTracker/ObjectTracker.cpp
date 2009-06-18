@@ -74,7 +74,7 @@ void ObjectTracker::initTracker(){
   m_camera = g_Resources->GetCamera(id);
   
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
-  loadCameraParameters(m_camera, m_image.camPars, 0.1, 100.0);
+  loadCameraParameters(m_camera, m_image.camPars, 0.1, 10.0);
   
   // link camera with tracker
 	m_tracker->setCamPerspective(m_camera);
