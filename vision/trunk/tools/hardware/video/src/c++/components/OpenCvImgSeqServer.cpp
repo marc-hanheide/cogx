@@ -171,7 +171,8 @@ void OpenCvImgSeqServer::grabFrames()
   unlockComponent();
 }
 
-void OpenCvImgSeqServer::retrieveFrames(vector<Video::Image> &frames)
+void OpenCvImgSeqServer::retrieveFrames(int width, int height,
+    vector<Video::Image> &frames)
 {
   // needed to prevent retrieving while grabbing
   lockComponent();
@@ -182,8 +183,19 @@ void OpenCvImgSeqServer::retrieveFrames(vector<Video::Image> &frames)
   frames.resize(grabbedImages.size());
   for(size_t i = 0; i < grabbedImages.size(); i++)
   {
-    // NOTE: later, subsampling would go here
-    convertImageFromIpl(grabbedImages[i], frames[i]);
+    // no size given, use native size
+    if(width == 0 || height == 0)
+    {
+      convertImageFromIpl(grabbedImages[i], frames[i]);
+    }
+    else
+    {
+      IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+      cvResize(grabbedImages[i], tmp);
+      convertImageFromIpl(tmp, frames[i]);
+      // TODO: avoid allocate/deallocating all the time
+      cvReleaseImage(&tmp);
+    }
     frames[i].time = grabTimes[i];
     frames[i].camId = camIds[i];
     frames[i].camPars = camPars[i];

@@ -7,6 +7,7 @@
 module Video {
 
   sequence<byte> ByteSeq;
+  sequence<int> IntSeq;
 
   /**
    * Camera class.
@@ -125,6 +126,10 @@ module Video {
     int getFramerateMilliSeconds();
     void getImage(int camId, out Image img);
     void getImages(out ImageSeq images);
+    //void getImages(IntSeq camIds, out ImageSeq images);
+    //void getScaledImage(int camId, int width, int height, out Image img);
+    void getScaledImages(int width, int height, out ImageSeq images);
+    //void getScaledImages(IntSeq camIds, int width, int height, out ImageSeq images);
   };
 };
 

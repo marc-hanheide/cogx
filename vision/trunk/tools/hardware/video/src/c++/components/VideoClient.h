@@ -71,6 +71,15 @@ public:
    *                      including timestamps
    */
   void getImages(Video::ImageSeq& images);
+
+  /**
+   * Get images from all sources scaled to given image size.
+   * \param width (in) size of output image
+   * \param height (in)
+   * \param images  (out) array of images, as many as num cameras,
+   *                      including timestamps
+   */
+  void getScaledImages(int width, int height, Video::ImageSeq& images);
 };
 
 }

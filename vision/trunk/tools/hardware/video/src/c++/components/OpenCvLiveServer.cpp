@@ -266,8 +266,8 @@ void OpenCvLiveServer::grabFrames()
 
 /**
  */
-void OpenCvLiveServer::retrieveFrames(std::vector<Video::Image> &frames)
-  throw(runtime_error)
+void OpenCvLiveServer::retrieveFrames(int width, int height,
+    std::vector<Video::Image> &frames) throw(runtime_error)
 {
   // needed to prevent retrieving while grabbing
   lockComponent();
@@ -279,7 +279,20 @@ void OpenCvLiveServer::retrieveFrames(std::vector<Video::Image> &frames)
     // load (on Core 2 Duo 2.4GHz) from 18% to virtually 0%
     //if(retrievedImages[i] == 0)
     //  retrievedImages[i] = cvRetrieveFrame(captures[i]);
-    copyImage(retrievedImages[i], frames[i]);
+
+    // no size given, use native size
+    if(width == 0 || height == 0)
+    {
+      copyImage(retrievedImages[i], frames[i]);
+    }
+    else
+    {
+      IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+      cvResize(retrievedImages[i], tmp);
+      copyImage(tmp, frames[i]);
+      // TODO: avoid allocate/deallocating all the time
+      cvReleaseImage(&tmp);
+    }
     frames[i].time = grabTimes[i];
     frames[i].camId = camIds[i];
     frames[i].camPars = camPars[i];
@@ -295,7 +308,7 @@ void OpenCvLiveServer::retrieveFrame(int camId, Video::Image &frame)
   lockComponent();
 
   bool haveCam = false;
-  for(size_t i = 0; i < captures.size(); i++)
+  for(size_t i = 0; i < captures.size() && !haveCam; i++)
   {
     if(camId == camIds[i])
     {
