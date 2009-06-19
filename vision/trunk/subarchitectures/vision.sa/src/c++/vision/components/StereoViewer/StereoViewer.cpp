@@ -29,6 +29,7 @@ void StereoViewer::configure(const map<string,string> & _config)
   // first let the base classes configure themselves
   configureStereoCommunication(_config);
 }
+
 void StereoViewer::start()
 {
   startStereoCommunication(*this);
@@ -43,7 +44,7 @@ void StereoViewer::runComponent()
     println("have %d points", (int)points.size());
 
     // wait a bit so we don't hog the CPU
-    sleepComponent(100);
+    sleepComponent(120);
   }
 }
 
