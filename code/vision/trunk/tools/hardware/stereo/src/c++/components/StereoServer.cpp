@@ -44,7 +44,6 @@ StereoServer::StereoServer()
   doDisplay = false;
   disparityImg = 0;
   disparityImg = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
-  cvSet(disparityImg, cvScalar(0));
 }
 
 StereoServer::~StereoServer()
@@ -161,7 +160,7 @@ void StereoServer::runComponent()
 
   while(isRunning())
   {
-    getImages(images);
+    getScaledImages(STEREO_WIDTH, STEREO_HEIGHT, images);
     assert(images.size() == 2);
     for(i = LEFT; i <= RIGHT; i++)
     {
@@ -169,6 +168,7 @@ void StereoServer::runComponent()
       stereoCam.RectifyImage(grey[i], rect[i], i);
     }
 
+    cvSet(disparityImg, cvScalar(0));
     census.setImages(rect[LEFT], rect[RIGHT]);
     census.match();
     // in case we are interested how blazingly fast the matching is :)
