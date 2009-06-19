@@ -8,4 +8,5 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${PYTHON_LIBRARY})
 
 add_subdirectory(libsiftgpu/SiftGPU)
+add_subdirectory(pysiftgpu)
 
