@@ -10,7 +10,7 @@ NVCCFLAGS += -Xcompiler -fPIC
 LDFLAGS += -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib
 LIBS += -lcudart -lcutil -lhighgui
 
-all : lib
+all : staticlib
 lib : $(LIB)
 staticlib : $(STATICLIB)
 prog : $(PROG)
