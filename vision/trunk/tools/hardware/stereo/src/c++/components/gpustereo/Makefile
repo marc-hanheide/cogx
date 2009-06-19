@@ -5,19 +5,21 @@ STATICLIB = libgpustereo.a
 PROG = testgpustereo
 
 CC = nvcc
-CFLAGS = -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc
-LDFLAGS = -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib
-LIBS = -lcudart -lcutil -lhighgui
+CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc
+NVCCFLAGS += -Xcompiler -fPIC
+LDFLAGS += -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib
+LIBS += -lcudart -lcutil -lhighgui
 
-all : lib prog
+all : lib
 lib : $(LIB)
+staticlib : $(STATICLIB)
 prog : $(PROG)
 
 CensusGPU.o : $(HEADERS) CensusGPU.h
-	$(CC) -c CensusGPU.cpp $(CFLAGS)
+	$(CC) -c CensusGPU.cpp $(CFLAGS) $(NVCCFLAGS)
 
 census.o : $(HEADERS) census.cu
-	$(CC) -c census.cu $(CFLAGS)
+	$(CC) -c census.cu $(CFLAGS) $(NVCCFLAGS)
 
 $(LIB) : CensusGPU.o census.o
 	g++ -shared CensusGPU.o census.o $(LDFLAGS) -o $(LIB)
