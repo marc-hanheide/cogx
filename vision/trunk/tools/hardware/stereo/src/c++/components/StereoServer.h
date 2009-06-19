@@ -67,6 +67,10 @@ private:
    */
   CensusGPU census;
 
+  IplImage *disparityImg;
+
+  bool doDisplay;
+
   /**
    * Create Ice video interface.
    */
