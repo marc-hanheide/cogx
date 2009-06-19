@@ -81,6 +81,8 @@ public:
 
   virtual void start();
 
+  virtual void runComponent();
+
   /**
    * Returns the 3D point cloud.
    */

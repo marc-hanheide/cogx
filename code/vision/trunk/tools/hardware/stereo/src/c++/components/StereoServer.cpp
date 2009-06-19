@@ -125,10 +125,15 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
 	disp = cvCreateImage(cvSize(grey[0]->width, grey[0]->height), IPL_DEPTH_8U, 1);
 
   cvSet(disp, cvScalar(0));
-  census.setImages(rect[LEFT], rect[RIGHT]);
+  /*census.setImages(rect[LEFT], rect[RIGHT]);
   census.match();
-  census.printTiming();
-  census.getDisparityMap(disp);
+  // in case we are interested how blazingly fast the matching is :)
+  // census.printTiming();
+  census.getDisparityMap(disp);*/
+
+  // use OpenCV stereo match
+  stereoCam.DisparityImage(rect[LEFT], rect[RIGHT], disp);
+ 
   // first count how many points we will have
   int cnt = 0;
   for(int y = 0; y < disp->height; y += 1)
@@ -167,6 +172,17 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
     cvReleaseImage(&rect[i]);
   }
   cvReleaseImage(&disp);
+}
+
+void StereoServer::runComponent()
+{
+  /*vector<cogx::Math::Vector3> points;
+  while(isRunning())
+  {
+    points.resize(0);
+    getPoints(points);
+    sleepComponent(30);
+  }*/
 }
 
 }
