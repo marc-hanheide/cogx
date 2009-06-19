@@ -41,16 +41,21 @@ StereoServer::StereoServer()
 {
   iceStereoName = "";
   iceStereoPort = cdl::CPPSERVERPORT;
-  cvNamedWindow("left", 1);
-  cvNamedWindow("right", 1);
-  cvNamedWindow("disparity", 1);
+  doDisplay = false;
+  disparityImg = 0;
+  disparityImg = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
+  cvSet(disparityImg, cvScalar(0));
 }
 
 StereoServer::~StereoServer()
 {
-  cvDestroyWindow("left");
-  cvDestroyWindow("right");
-  cvDestroyWindow("disparity");
+  cvReleaseImage(&disparityImg);
+  if(doDisplay)
+  {
+    cvDestroyWindow("left");
+    cvDestroyWindow("right");
+    cvDestroyWindow("disparity");
+  }
 }
 
 void StereoServer::setupMyIceCommunication()
@@ -93,6 +98,14 @@ void StereoServer::configure(const map<string,string> & _config)
     iceStereoName = it->second;
   }
 
+  if((it = _config.find("--display")) != _config.end())
+  {
+    doDisplay = true;
+    cvNamedWindow("left", 1);
+    cvNamedWindow("right", 1);
+    cvNamedWindow("disparity", 1);
+  }
+
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
   if(camIds.size() != 2)
@@ -111,44 +124,22 @@ void StereoServer::start()
 
 void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
 {
-  vector<Video::Image> images;
-  IplImage *grey[2], *rect[2], *disp;
-  getImages(images);
-  assert(images.size() == 2);
-  for(int i = LEFT; i <= RIGHT; i++)
-  {
-    grey[i] = convertImageToIplGray(images[i]);
-    rect[i] = cvCreateImage(cvSize(grey[i]->width, grey[i]->height),
-        IPL_DEPTH_8U, 1);
-    stereoCam.RectifyImage(grey[i], rect[i], i);
-  }
-	disp = cvCreateImage(cvSize(grey[0]->width, grey[0]->height), IPL_DEPTH_8U, 1);
-
-  cvSet(disp, cvScalar(0));
-  /*census.setImages(rect[LEFT], rect[RIGHT]);
-  census.match();
-  // in case we are interested how blazingly fast the matching is :)
-  // census.printTiming();
-  census.getDisparityMap(disp);*/
-
-  // use OpenCV stereo match
-  stereoCam.DisparityImage(rect[LEFT], rect[RIGHT], disp);
- 
+  lockComponent();
   // first count how many points we will have
   int cnt = 0;
-  for(int y = 0; y < disp->height; y += 1)
-    for(int x = 0; x < disp->width; x += 1)
+  for(int y = 0; y < disparityImg->height; y += 1)
+    for(int x = 0; x < disparityImg->width; x += 1)
     {
-      unsigned char d = *Video::cvAccessImageData(disp, x, y);
+      unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
       if(d != 0)
         cnt++;
     }
   points.resize(cnt);
   cnt = 0;
-  for(int y = 0; y < disp->height; y += 1)
-    for(int x = 0; x < disp->width; x += 1)
+  for(int y = 0; y < disparityImg->height; y += 1)
+    for(int x = 0; x < disparityImg->width; x += 1)
     {
-      unsigned char d = *Video::cvAccessImageData(disp, x, y);
+      unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
       if(d != 0)
       {
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
@@ -156,33 +147,51 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
         cnt++;
       }
     }
-
-  cvSaveImage("left.png", rect[LEFT], 0);
-  cvSaveImage("right.png", rect[RIGHT], 0);
-  cvSaveImage("disp.png", disp, 0);
-
-  cvShowImage("left", rect[LEFT]);
-  cvShowImage("right", rect[RIGHT]);
-  cvShowImage("disparity", disp);
-  cvWaitKey(10);
-
-  for(int i = LEFT; i <= RIGHT; i++)
-  {
-    cvReleaseImage(&grey[i]);
-    cvReleaseImage(&rect[i]);
-  }
-  cvReleaseImage(&disp);
+  unlockComponent();
 }
 
 void StereoServer::runComponent()
 {
-  /*vector<cogx::Math::Vector3> points;
+  vector<Video::Image> images;
+  IplImage *grey[2] = {0, 0}, *rect[2] = {0, 0};
+  int i;
+
+  for(i = LEFT; i <= RIGHT; i++)
+    rect[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
+
   while(isRunning())
   {
-    points.resize(0);
-    getPoints(points);
-    sleepComponent(30);
-  }*/
+    getImages(images);
+    assert(images.size() == 2);
+    for(i = LEFT; i <= RIGHT; i++)
+    {
+      grey[i] = convertImageToIplGray(images[i]);
+      stereoCam.RectifyImage(grey[i], rect[i], i);
+    }
+
+    census.setImages(rect[LEFT], rect[RIGHT]);
+    census.match();
+    // in case we are interested how blazingly fast the matching is :)
+    // census.printTiming();
+    lockComponent();
+    census.getDisparityMap(disparityImg);
+    unlockComponent();
+
+    // use OpenCV stereo match
+    //stereoCam.DisparityImage(rect[LEFT], rect[RIGHT], disparityImg);
+   
+    if(doDisplay)
+    {
+      cvShowImage("left", rect[LEFT]);
+      cvShowImage("right", rect[RIGHT]);
+      cvShowImage("disparity", disparityImg);
+      cvWaitKey(10);
+    }
+
+    for(i = LEFT; i <= RIGHT; i++)
+      cvReleaseImage(&grey[i]);
+  }
+  cvReleaseImage(&rect[i]);
 }
 
 }
