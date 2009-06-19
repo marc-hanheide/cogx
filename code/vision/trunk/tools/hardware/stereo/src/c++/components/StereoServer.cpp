@@ -43,7 +43,7 @@ StereoServer::StereoServer()
   iceStereoPort = cdl::CPPSERVERPORT;
   cvNamedWindow("left", 1);
   cvNamedWindow("right", 1);
-  cvNamedWindow("disparity", 0);
+  cvNamedWindow("disparity", 1);
 }
 
 StereoServer::~StereoServer()
@@ -111,17 +111,20 @@ void StereoServer::start()
 
 void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
 {
-  Video::Image image;
+  vector<Video::Image> images;
   IplImage *grey[2], *rect[2], *disp;
+  getImages(images);
+  assert(images.size() == 2);
   for(int i = LEFT; i <= RIGHT; i++)
   {
-    getImage(camIds[i], image);
-    grey[i] = convertImageToIplGray(image);
+    grey[i] = convertImageToIplGray(images[i]);
     rect[i] = cvCreateImage(cvSize(grey[i]->width, grey[i]->height),
         IPL_DEPTH_8U, 1);
     stereoCam.RectifyImage(grey[i], rect[i], i);
   }
 	disp = cvCreateImage(cvSize(grey[0]->width, grey[0]->height), IPL_DEPTH_8U, 1);
+
+  cvSet(disp, cvScalar(0));
   census.setImages(rect[LEFT], rect[RIGHT]);
   census.match();
   census.printTiming();
@@ -148,11 +151,16 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
         cnt++;
       }
     }
- 
+
+  cvSaveImage("left.png", rect[LEFT], 0);
+  cvSaveImage("right.png", rect[RIGHT], 0);
+  cvSaveImage("disp.png", disp, 0);
+
   cvShowImage("left", rect[LEFT]);
   cvShowImage("right", rect[RIGHT]);
   cvShowImage("disparity", disp);
   cvWaitKey(10);
+
   for(int i = LEFT; i <= RIGHT; i++)
   {
     cvReleaseImage(&grey[i]);
