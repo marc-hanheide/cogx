@@ -2,7 +2,7 @@ include_directories(.)
 link_directories (/usr/local/lib)
 link_directories (/usr/local/cuda/lib)
 link_directories (/usr/local/cuda/sdk/lib)
-link_directories (/home/mz/work/cogx/code/vision/trunk/tools/hardware/stereo/src/c++/components/gpustereo)
+link_directories (${COGX_ROOT}/tools/hardware/stereo/src/c++/components/gpustereo)
 
 add_cast_component(StereoServer StereoServer.cpp StereoCamera.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoClient VideoUtils)
