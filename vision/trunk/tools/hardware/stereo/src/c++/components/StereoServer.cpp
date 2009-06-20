@@ -153,16 +153,17 @@ void StereoServer::runComponent()
 {
   vector<Video::Image> images;
   IplImage *grey[2] = {0, 0}, *rect[2] = {0, 0};
-  int i;
+  IplImage *rawDisp;
 
-  for(i = LEFT; i <= RIGHT; i++)
+  for(int i = LEFT; i <= RIGHT; i++)
     rect[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
+  rawDisp = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
 
   while(isRunning())
   {
     getScaledImages(STEREO_WIDTH, STEREO_HEIGHT, images);
     assert(images.size() == 2);
-    for(i = LEFT; i <= RIGHT; i++)
+    for(int i = LEFT; i <= RIGHT; i++)
     {
       grey[i] = convertImageToIplGray(images[i]);
       stereoCam.RectifyImage(grey[i], rect[i], i);
@@ -173,8 +174,9 @@ void StereoServer::runComponent()
     census.match();
     // in case we are interested how blazingly fast the matching is :)
     // census.printTiming();
+    census.getDisparityMap(rawDisp);
     lockComponent();
-    census.getDisparityMap(disparityImg);
+    cvSmooth(rawDisp, disparityImg, CV_MEDIAN, 5);
     unlockComponent();
 
     // use OpenCV stereo match
@@ -188,10 +190,13 @@ void StereoServer::runComponent()
       cvWaitKey(10);
     }
 
-    for(i = LEFT; i <= RIGHT; i++)
+    for(int i = LEFT; i <= RIGHT; i++)
       cvReleaseImage(&grey[i]);
   }
-  cvReleaseImage(&rect[i]);
+
+  for(int i = LEFT; i <= RIGHT; i++)
+    cvReleaseImage(&rect[i]);
+  cvReleaseImage(&rawDisp);
 }
 
 }
