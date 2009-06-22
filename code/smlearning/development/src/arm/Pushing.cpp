@@ -29,7 +29,6 @@
 #include "Actuator.h"
 // #include "embodiment/Embodiment.h"
 
-//using namespace stl;
 using namespace std;
 using namespace msk;
 using namespace msk::ctrl;
