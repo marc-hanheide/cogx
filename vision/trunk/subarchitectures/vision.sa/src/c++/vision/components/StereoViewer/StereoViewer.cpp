@@ -107,13 +107,22 @@ void ResizeWin(int w, int h)
   glLoadIdentity();
 }
 
+void DrawText3D(const char *text, double x, double y, double z)
+{
+  glRasterPos3d(x, y, z);
+  while(*text != '\0')
+    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, *text++);
+}
+
 /**
  * Draw things like coord frames
  */
 void DrawOverlays()
 {
-  glBegin(GL_LINES);
   glColor4fv(col_overlay);
+
+  // draw coordinate axes
+  glBegin(GL_LINES);
   glVertex3d(-1000., 0., 0.);
   glVertex3d(1000., 0., 0.);
   glVertex3d(0., -1000., 0.);
@@ -121,6 +130,37 @@ void DrawOverlays()
   glVertex3d(0., 0., -1000.);
   glVertex3d(0., 0., 1000.);
   glEnd();
+  DrawText3D("x", 0.1, 0.02, 0.);
+  DrawText3D("y", 0., 0.1, 0.02);
+  DrawText3D("z", 0.02, 0., 0.1);
+
+  // draw tics every m, up to 10 m
+  const double tic_size = 0.05;
+  glBegin(GL_LINES);
+  for(int i = -10; i < 10; i++)
+  {
+    if(i != 0)
+    {
+      glVertex3d((double)i, 0, 0.);
+      glVertex3d((double)i, tic_size, 0.);
+      glVertex3d(0., (double)i, 0.);
+      glVertex3d(0., (double)i, tic_size);
+      glVertex3d(0., 0., (double)i);
+      glVertex3d(tic_size, 0., (double)i);
+    }
+  }
+  glEnd();
+  char buf[100];
+  for(int i = -10; i < 10; i++)
+  {
+    if(i != 0)
+    {
+      snprintf(buf, 100, "%d", i);
+      DrawText3D(buf, (double)i, 2.*tic_size, 0.);
+      DrawText3D(buf, 0., (double)i, 2.*tic_size);
+      DrawText3D(buf, 2.*tic_size, 0., (double)i);
+    }
+  }
 }
 
 void DrawPoints()
@@ -164,10 +204,6 @@ void KeyPress(unsigned char key, int x, int y)
 {
   switch(key)
   {
-    case 'q':
-      // a slightly harsh way to end a program ...
-      exit(EXIT_SUCCESS);
-      break;
     default:
       break;
   }
