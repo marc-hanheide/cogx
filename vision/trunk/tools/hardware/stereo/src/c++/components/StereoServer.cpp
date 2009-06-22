@@ -42,8 +42,8 @@ StereoServer::StereoServer()
   iceStereoName = "";
   iceStereoPort = cdl::CPPSERVERPORT;
   doDisplay = false;
-  disparityImg = 0;
   disparityImg = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
+  cvSet(disparityImg, cvScalar(0));
 }
 
 StereoServer::~StereoServer()
@@ -169,7 +169,7 @@ void StereoServer::runComponent()
       stereoCam.RectifyImage(grey[i], rect[i], i);
     }
 
-    cvSet(disparityImg, cvScalar(0));
+    cvSet(rawDisp, cvScalar(0));
     census.setImages(rect[LEFT], rect[RIGHT]);
     census.match();
     // in case we are interested how blazingly fast the matching is :)
@@ -180,7 +180,9 @@ void StereoServer::runComponent()
     unlockComponent();
 
     // use OpenCV stereo match
+    //lockComponent();
     //stereoCam.DisparityImage(rect[LEFT], rect[RIGHT], disparityImg);
+    //unlockComponent();
    
     if(doDisplay)
     {
@@ -192,6 +194,8 @@ void StereoServer::runComponent()
 
     for(int i = LEFT; i <= RIGHT; i++)
       cvReleaseImage(&grey[i]);
+
+    sleepComponent(50);
   }
 
   for(int i = LEFT; i <= RIGHT; i++)
