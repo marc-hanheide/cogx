@@ -134,3 +134,25 @@ bool read_database (string fileName, DataSet& data) {
 
 	
 }
+
+int main(int argc, char * argv[]) {
+	if (argc < 3) {
+		cerr << argv[0] << " [nr. of sequences] [sequences size]" << endl;
+		exit (0);
+	}
+	DataSet data;
+
+	//Generate artificial random sequences
+	int numSeq = atoi(argv[1]);
+	int seqSize = atoi(argv[2]);
+	generate_rand_sequences (data, numSeq, seqSize);
+	cout << "printing generated data: " << endl;
+	print_database<double> (data);
+	write_database ("training.dat", data);
+	cout << "printing stored data: " << endl;
+	DataSet savedData;
+	read_database ("training.dat", savedData);
+	print_database<double> (savedData);
+
+	
+}
