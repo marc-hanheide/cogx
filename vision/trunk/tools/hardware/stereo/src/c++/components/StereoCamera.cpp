@@ -103,10 +103,12 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z,
  */
 void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z)
 {
-  // NOTE: somewhere in the calib file and my code there is a confusion with mm
-  // and m. For the time being, just multiplying the disparity by 1000 here
-  // seems to correct for that. Further investigations are necessary!!!
-  d*=1000.;  // HACK
+  // HACK: disparity output is often scaled (streched) to support subpixel
+  // disparities. Here we just boldly assume a factor for this scaling and
+  // divide the given disparity accordingly.
+  const double disp_scale = 4.;
+  d /= disp_scale;
+
   // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
   // proj[0][3] = -fx*tx  (where fx = proj[0][0])
   // but there seems to be an error in the SVS calib file:
@@ -120,6 +122,8 @@ void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, dou
   Y = v - sy*cam[LEFT].proj[1][2];
   Z = sx*cam[LEFT].proj[0][0];
   double W = -d/tx + sx*(cam[LEFT].proj[0][2] - cam[RIGHT].proj[0][2])/tx;
+  // SVS calibration uses mm, we want m -> divide by 1000
+  W *= 1000.;
   X /= W;
   Y /= W;
   Z /= W;
