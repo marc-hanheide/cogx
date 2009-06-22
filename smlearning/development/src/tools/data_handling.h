@@ -13,9 +13,7 @@ typedef vector<Sequence> DataSet;
 
 // function that prints the passed argument
 template <typename T>
-void print_item (const T& elem) {
-    cout << elem << " ";
-}
+void print_item (const T& elem);
 
 template <typename T>
 void print_featvector (const FeatureVector& v);
