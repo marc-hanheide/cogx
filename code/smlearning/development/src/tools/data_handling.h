@@ -23,10 +23,10 @@ template <typename T>
 void print_sequence (const Sequence& s);
 
 template <typename T>
-void print_database (const DataSet& d);
+void print_dataset (const DataSet& d);
 
 void generate_rand_sequences (DataSet& data, long numSeq, long seqSize);
 
-bool write_database (string fileName, const DataSet& data);
+bool write_dataset (string fileName, const DataSet& data);
 
-bool read_database (string fileName, DataSet& data);
+bool read_dataset (string fileName, DataSet& data);

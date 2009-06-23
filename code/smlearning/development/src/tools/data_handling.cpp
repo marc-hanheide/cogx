@@ -31,7 +31,7 @@ void print_sequence (const Sequence& s) {
 }
 
 template <typename T>
-void print_database (const DataSet& d) {
+void print_dataset (const DataSet& d) {
 	for_each (d.begin(), d.end(), print_sequence<T>);
 }
 
@@ -61,7 +61,7 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
 
 }
 
-bool write_database (string fileName, const DataSet& data) {
+bool write_dataset (string fileName, const DataSet& data) {
 	ofstream writeFile(fileName.c_str(), ios::out | ios::binary);
 	if (!writeFile)
 		return false;
@@ -95,7 +95,7 @@ bool write_database (string fileName, const DataSet& data) {
 	return true;
 }
 
-bool read_database (string fileName, DataSet& data) {
+bool read_dataset (string fileName, DataSet& data) {
 	ifstream readFile(fileName.c_str(), ios::in | ios::binary);
 	if (!readFile)
 		return false;
@@ -147,12 +147,12 @@ int main(int argc, char * argv[]) {
 	int seqSize = atoi(argv[2]);
 	generate_rand_sequences (data, numSeq, seqSize);
 	cout << "printing generated data: " << endl;
-	print_database<double> (data);
-	write_database ("training.dat", data);
+	print_dataset<double> (data);
+	write_dataset ("training.dat", data);
 	cout << "printing stored data: " << endl;
 	DataSet savedData;
-	read_database ("training.dat", savedData);
-	print_database<double> (savedData);
+	read_dataset ("training.dat", savedData);
+	print_dataset<double> (savedData);
 
 	
 }
