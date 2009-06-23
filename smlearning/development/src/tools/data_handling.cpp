@@ -68,18 +68,18 @@ bool write_dataset (string fileName, const DataSet& data) {
 
 	long numSeqs = data.size();
 	writeFile.write ((const char*)&numSeqs, sizeof(numSeqs));
- 	cout << numSeqs << endl;
+//  	cout << numSeqs << endl;
 	DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
 		long seqSize = (*s).size();
 		writeFile.write ((const char*)&seqSize, sizeof (seqSize));
- 		cout << "\t" << seqSize << endl;
+//  		cout << "\t" << seqSize << endl;
 		Sequence::const_iterator v;
 
 		for (v=(*s).begin(); v!= (*s).end(); v++) {
 			long featvectorSize = (*v).size();
 			writeFile.write ((const char*)&featvectorSize, sizeof (featvectorSize));
- 			cout << "\t\t" << featvectorSize << endl;
+//  			cout << "\t\t" << featvectorSize << endl;
 			FeatureVector::const_iterator n;
 			for (n=(*v).begin(); n!= (*v).end(); n++) {
 				writeFile.write ((const char* )&(*n), sizeof (*n));
@@ -98,17 +98,17 @@ bool read_dataset (string fileName, DataSet& data) {
 
 	long numSeq;
 	readFile.read ((char* )&numSeq, sizeof(numSeq));
- 	cout << numSeq << endl;
+//  	cout << numSeq << endl;
 	for (int s=0; s<numSeq; s++) {
 		Sequence &currentSequence = *(new Sequence);
 		long seqSize;
 		readFile.read((char *)&seqSize, sizeof(seqSize));
- 		cout << "\t" << seqSize << endl;
+//  		cout << "\t" << seqSize << endl;
 		for (int v=0; v<seqSize; v++) {
 			FeatureVector &currentVector = *(new FeatureVector);
 			long featvectorSize;
 			readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
-			cout << "\t\t" << featvectorSize << endl;
+// 			cout << "\t\t" << featvectorSize << endl;
 			for (int n=0; n<featvectorSize; n++) {
 				double value;
 				readFile.read ((char* )&value, sizeof(value));
