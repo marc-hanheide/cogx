@@ -33,7 +33,7 @@ SET(KNI_LIBRARY /usr/local/lib CACHE PATH "Path prefix for KNI library")
 SET(GOLEM_INCLUDE /usr/local/include/Golem CACHE PATH "Path prefix for Golem include")
 SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 
-SET(SMLEARNING_INCLUDE /usr/local/include/SMLearning CACHE PATH "Path prefix for SMLearning include")
+SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem pthread rt GL glut expat)
@@ -59,20 +59,21 @@ SET(SMLEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/arm/Pushing.cpp
 )
 
-SET(TOOLS_SOURCES
-	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
-)
-
 SET(ARM_HEADERS
 #	${SMLEARNING_ROOT}/include/arm/Pushing.h
 )
+#INSTALL(FILES ${ARM_HEADERS} DESTINATION include/SMLearning/arm/)
 
 SET(ARM_FILES
 	${SMLEARNING_ROOT}/src/arm.xml
 )
 
+SET(TOOLS_SOURCES
+	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
+)
+
 SET(TOOLS_HEADERS
-	${SMLEARNING_ROOT}/src/tools/data_handling.h
+	${SMLEARNING_ROOT}/include/tools/data_handling.h
 )
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
@@ -86,7 +87,6 @@ ADD_EXECUTABLE(tools_test ${TOOLS_SOURCES})
 INSTALL(TARGETS arm RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS tools_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${ARM_FILES} DESTINATION bin/SMLearning)
-#INSTALL(FILES ${ARM_HEADERS} DESTINATION include/SMLearning/arm/)
 
 
 ## SMLearning tools library
