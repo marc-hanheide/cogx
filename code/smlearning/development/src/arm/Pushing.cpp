@@ -49,8 +49,6 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, m
 
 //------------------------------------------------------------------------------
 
-Actor *polyFlapActor;
-
 
 int pos = 1;
 
@@ -89,14 +87,16 @@ public:
 };
 
 
-bool setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
+//bool setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
 
-//bool setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context, Actor *polyFlapActor) {
+Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
 
 
 // Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
+
+	Actor *polyFlapActor;
 	
 	// Create ground plane.
 	pActorDesc = creator.createGroundPlaneDesc();
@@ -142,6 +142,7 @@ bool setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, m
 
 	context.getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d", set->get().size()));
 
+	return polyFlapActor;
 	
 }
 
@@ -584,8 +585,8 @@ int main(int argc, char *argv[]) {
 		Mat34 mojepose3;
 
 		// Setup objects
-		setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);		
-		//setupObjects(*pScene, polyflapPosition, polyflapRotation, polyflapDimensions, *context, polyFlapActor);
+		//setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);		
+		Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 		//setupObjects(*pScene, polyflapPosition, polyflapRotation, polyflapDimensions, *context, mojepose2, mojepose3);
 		
 		// Big Bang!
