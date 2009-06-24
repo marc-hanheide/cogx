@@ -1,7 +1,7 @@
 package comsys.processing.parse.parseselection;
 
 import comsys.processing.saliency.SalientEntity;
-import comsys.processing.saliency.VisualSalientEntity;
+// import comsys.processing.saliency.VisualSalientEntity;
 import comsys.datastructs.lf.*;
 
 import java.io.BufferedReader;

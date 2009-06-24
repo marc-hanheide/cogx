@@ -185,7 +185,7 @@ public class FeatureExtractionFromPLF extends FeatureExtraction {
 			for (int j=0; j < nonStandardRulesForLF.nonStandardRules.length; j++) {
 				NonStandardRule rule = nonStandardRulesForLF.nonStandardRules[j];
 				String rulename = rule.rulename;
-				int number = rule.numberOfApplications;
+				long number = rule.numberOfApplications;
 				String featName = getNonStandardRuleFeatName(rulename);
 				fv.addFeature(featName, number);
 			}
