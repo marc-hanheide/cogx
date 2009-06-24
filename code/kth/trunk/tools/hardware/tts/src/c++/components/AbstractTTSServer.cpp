@@ -24,7 +24,6 @@ AbstractTTSServer::handleSpeakCommand(const WorkingMemoryChange & _wmc) {
 void 
 AbstractTTSServer::start() {
   say("hello");
-  say("my name is mister chips");
   addChangeFilter(createGlobalTypeFilter<TTS::Speak>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<AbstractTTSServer>(this,&AbstractTTSServer::handleSpeakCommand));
 }
