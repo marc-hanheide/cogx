@@ -13,7 +13,7 @@ import comsys.processing.parse.parseselection.ParameterVector;
 import comsys.datastructs.lf.*;
 import comsys.lf.utils.LFUtils;
 import comsys.datastructs.comsysEssentials.PackedLFs;
-import comsys.components.tts.cc_TTSLocal;
+import comsys.components.tts.TTSLocal;
 import comsys.datastructs.testData.TestData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

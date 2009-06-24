@@ -206,11 +206,10 @@ public class LanguageModelHelper extends ManagedComponent {
 		// if we have a logical form collection string,
 		try {
 			// get the id of the working memory entry
-			String id = wmc.m_address.m_id;
+			String id = wmc.address.id;
 			// get the data from working memory and store it
 			// with its id
-			CASTData data = new CASTData(
-					id, getWorkingMemoryEntry(id));
+			CASTData data = getWorkingMemoryEntry(id);
 			SalienceModel salienceModel = (SalienceModel) data.getData() ;
 			log("Salience model received");
 			wordClasses.reset();
