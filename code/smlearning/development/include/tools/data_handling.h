@@ -2,8 +2,9 @@
 #include <ctime>
 #include <vector>
 #include <iostream>
-#include <fstream>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -30,3 +31,6 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize);
 bool write_dataset (string fileName, const DataSet& data);
 
 bool read_dataset (string fileName, DataSet& data);
+
+bool write_cdl_file_padding (string fileName, const DataSet& data);
+
