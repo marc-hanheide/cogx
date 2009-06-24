@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
 
 		
 		
-		//DataSet data;
+		
 
 		
 		const U32 numOfJoints = (U32)arm.getJoints().size();
@@ -632,7 +632,7 @@ int main(int argc, char *argv[]) {
 
 
 
-		const int numExperiments = 24;
+		const int numExperiments = 1;
 
 		for (int i=0; i<numExperiments; i++)
 		{
@@ -1102,9 +1102,58 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 			//context->getTimer()->sleep(2);
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration completed!"));
 		}
+/*	
+	int tm_year;
+	int tm_mon;
+	int tm_mday;
+	int tm_hour;
+	int tm_min;
+	int tm_sec;
+	
 
 
-	//write_dataset( ,data);
+	cout <<tm_year<< "\n";
+	cout <<tm_mon<< "\n";
+	cout <<tm_mday<< "\n";
+	cout <<tm_hour<< "\n";
+	cout <<tm_min<< "\n";
+	cout <<tm_sec<< "\n";
+	
+
+	stringstream stream;
+
+	stream << (tm_year+1900);
+
+	stream << tm_mon;
+	stream << tm_mday;
+	stream << tm_hour;
+	stream << tm_min;
+	stream << tm_sec;
+*/
+
+
+
+	time_t rawtime;
+	struct tm * timeinfo;
+  	char buffer [12];
+
+ 	time ( &rawtime );
+  	timeinfo = localtime ( &rawtime );
+
+  	strftime (buffer,12,"%y%m%d%H%M%s",timeinfo);
+  	puts(buffer);
+
+	string name;
+	name.append(buffer);
+	
+	//name = stream.str();
+	DataSet data;
+	
+	cout << name << "\n";
+
+	
+	// DOESN'T WORK!!!! compiles, but throws errors by linking executables
+	//write_dataset(name , data);
 
 
 	}
