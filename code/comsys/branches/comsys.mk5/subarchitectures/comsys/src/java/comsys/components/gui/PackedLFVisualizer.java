@@ -261,7 +261,7 @@ public class PackedLFVisualizer
     			SDRSFormula formula = SDRSUtils.getLastFormula(sdrs);
 
     			
-    			if (SDRSUtils.getFormulaType(formula) == SDRSUtils.SDRS_DISCRIM_RELATION&&
+    			if (SDRSUtils.getFormulaType(formula).type.equals(SDRSUtils.RELATION_TYPE) &&
     					!formula.label.equals(lastProcessedFormula.label)) {
     				log("dialogue move formula found");
     				String filename = "sdrs-" + sdrsIncr;
@@ -274,7 +274,7 @@ public class PackedLFVisualizer
 					log("finished processing DM formula");
 					}
     			
-    			else if (SDRSUtils.getFormulaType(formula) == SDRSUtils.SDRS_DISCRIM_PLF &&
+    			else if (SDRSUtils.getFormulaType(formula).type.equals(SDRSUtils.PLF_TYPE) &&
     					!formula.label.equals(lastProcessedFormula.label)) {
     				if (formula.caches.length > 0) {
     					log("generating graphical representation of the SDRS formula...");
@@ -330,7 +330,7 @@ public class PackedLFVisualizer
     			SDRSFormula dm = SDRSUtils.getFormula(lastReceivedSDRS, lastProcessedFormula.tprec);
 
     			if (dm != null &&
-    					SDRSUtils.getFormulaType(dm) == SDRSUtils.SDRS_DISCRIM_RELATION) {							
+    					SDRSUtils.getFormulaType(dm).type.equals(SDRSUtils.RELATION_TYPE)) {							
     				EventStructureUtils.nucleusAndFormulaAndDMToGraph
     				(nucleus, lastProcessedFormula, dm, graphsDirSDRS+filename, generatePNG);
     				log("Generation of the SDRS formula + last dialogue move + Nucleus successful, file written in " + graphsDirSDRS+filename);

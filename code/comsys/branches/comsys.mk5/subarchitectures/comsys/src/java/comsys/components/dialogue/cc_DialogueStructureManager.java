@@ -308,7 +308,7 @@ public class cc_DialogueStructureManager extends ManagedComponent {
                 });
 
         }
-        catch (SubarchitectureComponentException e) {
+        catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -390,7 +390,7 @@ public class cc_DialogueStructureManager extends ManagedComponent {
         		SDRSFormula associatedFormula = null;
         		while (it.hasNext()) {
         			SDRSFormula f = it.next();
-        			if (SDRSUtils.getFormulaType(f) == SDRSUtils.SDRS_DISCRIM_PLF &&
+        			if (SDRSUtils.getFormulaType(f).type.equals(SDRSUtils.PLF_TYPE) &&
         					f.type.plf.id.equals(cache.plf.id)) {
         				associatedFormula = f;
         			}
@@ -436,7 +436,9 @@ public class cc_DialogueStructureManager extends ManagedComponent {
      		String[] args= {dm.SDRSFormulaId1, dm.SDRSFormulaId2};
      		relation.args = args;
      		relation.relType = DialogueMoveUtils.convertMoveTypeToString(dm.mType);
-     		form.type.relation(relation);
+     		form.type = new SDRSType();
+     		form.type.type = SDRSUtils.RELATION_TYPE;
+     		form.type.relation = relation;
      		SDRSUtils.addFormula(sdrs, form);
     		overwriteWorkingMemory(Data[0].getID(), sdrs);
      		log("Context model updated with the dialogue move " + relation.relType) ;
@@ -462,7 +464,8 @@ public class cc_DialogueStructureManager extends ManagedComponent {
          		SDRSFormula form = new SDRSFormula();
          		form.label = SDRSUtils.generateLabel();
          		form.type = new SDRSType();
-         		form.type.plf(plf);
+         		form.type.type = SDRSUtils.PLF_TYPE;
+         		form.type.plf = plf;
          		if (uncommittedCache != null) {
     				SDRSUtils.addCacheToFormula(form, uncommittedCache);
     				uncommittedCache = null;

@@ -298,13 +298,13 @@ public class ContextualReferenceResolver  {
 			log("locus label: " + LOCUSFormula.label);
 			// In case the formula in locus is precisely the one we're analysing,
 			// we take the previous one
-			if (SDRSUtils.getFormulaType(LOCUSFormula) == SDRSUtils.SDRS_DISCRIM_PLF &&
+			if (SDRSUtils.getFormulaType(LOCUSFormula).type.equals(SDRSUtils.PLF_TYPE) &&
 					LOCUSFormula.type.plf.packedLF.packedLFId.equals(ref.packedLFId)) {
 				LOCUS = LOCUSFormula.tprec ;
 				LOCUSFormula = SDRSUtils.getFormula(ctxtmodel, LOCUS);
 			}
 			else if (LOCUSFormula != null) {
-				if (SDRSUtils.getFormulaType(LOCUSFormula) == SDRSUtils.SDRS_DISCRIM_PLF) {
+				if (SDRSUtils.getFormulaType(LOCUSFormula).type.equals(SDRSUtils.PLF_TYPE)) {
 					PackedLogicalForm plf = LOCUSFormula.type.plf.packedLF ;
 					if (plf != null) { 
 						String resolution = this.resolveAgainstAssertionLF(ref,plf); 
@@ -357,13 +357,13 @@ public class ContextualReferenceResolver  {
 			log("locus label: " + LOCUSFormula.label);
 			// In case the formula in locus is precisely the one we're analysing,
 			// we take the previous one
-			if (SDRSUtils.getFormulaType(LOCUSFormula) == SDRSUtils.SDRS_DISCRIM_PLF &&
+			if (SDRSUtils.getFormulaType(LOCUSFormula).type.equals(SDRSUtils.PLF_TYPE) &&
 					LOCUSFormula.type.plf.packedLF.packedLFId.equals(ref.packedLFId)) {
 				LOCUS = LOCUSFormula.tprec ;
 				LOCUSFormula = SDRSUtils.getFormula(ctxtmodel, LOCUS);
 			}
 			else if (LOCUSFormula != null) {
-				if (SDRSUtils.getFormulaType(LOCUSFormula) == SDRSUtils.SDRS_DISCRIM_PLF) {
+				if (SDRSUtils.getFormulaType(LOCUSFormula).type.equals(SDRSUtils.PLF_TYPE)) {
 					PackedLogicalForm plf = LOCUSFormula.type.plf.packedLF ;
 					if (plf != null) { 
 						String resolution = this.resolveRefAgainstPLFByProfile(ref,plf, template); 
@@ -485,13 +485,13 @@ public class ContextualReferenceResolver  {
 			SDRSFormula LOCUSFormula = SDRSUtils.getFormula(ctxtmodel, LOCUS);
 			// In case the formula in locus is precisely the one we're analysing,
 			// we take the previous one
-			if (SDRSUtils.getFormulaType(LOCUSFormula) == SDRSUtils.SDRS_DISCRIM_PLF &&
+			if (SDRSUtils.getFormulaType(LOCUSFormula).type.equals(SDRSUtils.PLF_TYPE) &&
 					LOCUSFormula.type.plf.packedLF.packedLFId.equals(packedLFId)) {
 				LOCUS = LOCUSFormula.tprec ;
 				LOCUSFormula = SDRSUtils.getFormula(ctxtmodel, LOCUS);
 			}
 			else if (LOCUSFormula != null)  {
-				if (SDRSUtils.getFormulaType(LOCUSFormula) == SDRSUtils.SDRS_DISCRIM_PLF) {
+				if (SDRSUtils.getFormulaType(LOCUSFormula).type.equals(SDRSUtils.PLF_TYPE)) {
 					PackedLogicalForm plf = LOCUSFormula.type.plf.packedLF ;
 					if (plf != null) { 
 						String resolution = this.resolveAnaphorAgainstLF(ref,plf); 
