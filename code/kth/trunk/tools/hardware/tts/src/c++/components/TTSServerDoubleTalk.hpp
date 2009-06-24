@@ -2,9 +2,10 @@
 #define TTS_SERVER_DOUBLETALK_HPP_
 
 #include <cast/architecture/ManagedComponent.hpp>
+#include "AbstractTTSServer.hpp"
 
 class TTSServerDoubleTalk : 
-  public cast::ManagedComponent {
+  public AbstractTTSServer {
   
 public:
 
@@ -16,23 +17,9 @@ public:
 
 protected:
 
-  virtual 
-  void 
-  start();
-
-  virtual 
-  void 
-  stop();
-
-
-private:
-
-  void 
-  handleSpeakCommand(const cast::cdl::WorkingMemoryChange & _wmc);
-
-  void 
+  virtual void 
   say(const std::string &_message);
-
+  
   std::string m_serialDevice;
 
 };
