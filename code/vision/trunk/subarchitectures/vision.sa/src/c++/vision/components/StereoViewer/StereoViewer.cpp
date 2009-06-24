@@ -272,10 +272,10 @@ void StereoViewer::runComponent()
   {
     points.resize(0);
     getPoints(points);
-    println("have %d points", (int)points.size());
 
     glutPostRedisplay();
     glutMainLoopEvent();
+
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
