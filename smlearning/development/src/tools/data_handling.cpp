@@ -1,7 +1,8 @@
 #include "tools/data_handling.h"
 #include <sstream>
 
-#define FEATUREVECTOR_SIZE 6
+#define FEATUREVECTOR_SIZE1 5
+#define FEATUREVECTOR_SIZE2 6
 
 // function that prints the passed argument
 template <typename T>
@@ -48,8 +49,13 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
 		for (int v=0; v<seqSize; v++) {
 
 			FeatureVector &currentVector = *(new FeatureVector);
+			int vectorSize;
+			if (v==0)
+				vectorSize = FEATUREVECTOR_SIZE1;
+			else
+				vectorSize = FEATUREVECTOR_SIZE2;
 		
-			for (int n=0; n< FEATUREVECTOR_SIZE; n++) {
+			for (int n=0; n< vectorSize; n++) {
 				randNr = (rand() % 10 + 1) / 10.0;
 				currentVector.push_back (randNr);			
 			}
@@ -134,11 +140,6 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 	if (!writeFile)
 		return false;
 
-	writeFile << fileName << " {" << endl;
-	int numSeqs = data.size();
-	writeFile << "dimensions:" << endl;
-	writeFile << "\tnumSeqs = " << numSeqs << ",\n";
-
 	long maxfeatvectorSize = -1;
 
 	//find max. feature vector size which will be inputPattSize and targetPattSize
@@ -148,25 +149,23 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 		if (featvectorSize > maxfeatvectorSize)
 			maxfeatvectorSize = featvectorSize;
 	}
-	writeFile << "\tinputPattSize = " << maxfeatvectorSize << endl;
-	writeFile << "\ttargetPattSize = " << maxfeatvectorSize << endl;
 		
 	stringstream seqLengthsStr;
 	stringstream inputsStr;
 	stringstream targetPatternsStr;
 	long numTimesteps = 0;
 	seqLengthsStr << "\tseqLengths = ";
-	inputsStr << "\tinputs =\t";
-	targetPatternsStr << "\ttargetPatterns = ";
+	inputsStr << "\tinputs =" << endl << "\t\t";
+	targetPatternsStr << "\ttargetPatterns = " << endl << "\t\t";
 	DataSet::const_iterator s;
 	for (s=data.begin(); s!= data.end(); s++) {
-		long seqSize = (*s).size();
+		long seqSize = (*s).size() - 1;
 		seqLengthsStr << seqSize;
 		numTimesteps += seqSize;
 		if (s+1 == data.end())
 			seqLengthsStr << ";";
 		else
-			seqLengthsStr << ",";
+			seqLengthsStr << ", ";
 
 		Sequence::const_iterator v;
 		for (v=(*s).begin(); v!= (*s).end(); v++) {
@@ -182,11 +181,11 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 				}
 				//zero padding
 				for (int i=0; i<paddingSize; i++)
-					inputsStr << ",0";
+					inputsStr << ", 0";
 				if (v+2 == (*s).end() && s+1 == data.end())
-					inputsStr << ";" << endl;
+					inputsStr << ";";
 				else
-					inputsStr << "," << endl << "\t\t\t";
+					inputsStr << "," << endl << "\t\t";
 			}
 			if (v != (*s).begin()) {
 				for (n=(*v).begin(); n!= (*v).end(); n++) {
@@ -198,19 +197,30 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 				for (int i=0; i<paddingSize; i++)
 					targetPatternsStr << ", 0";
 				if (v+1 == (*s).end() && s+1 == data.end())
-					targetPatternsStr << ";" << endl;
+					targetPatternsStr << ";";
 				else
-					targetPatternsStr << "," << endl << "\t\t\t";
+					targetPatternsStr << "," << endl << "\t\t";
 			}
 
 			
 		}
 	}
-	writeFile << "\tnumTimeSteps = " << numTimesteps << "," << endl;
+
+	writeFile << "netcdf " << fileName << " {" << endl;
+	int numSeqs = data.size();
+	writeFile << "dimensions:" << endl;
+	writeFile << "\tnumSeqs = " << numSeqs << ",\n";
+	writeFile << "\tnumTimesteps = " << numTimesteps << "," << endl;
+	writeFile << "\tinputPattSize = " << maxfeatvectorSize << "," << endl;
+	writeFile << "\ttargetPattSize = " << maxfeatvectorSize << ";" << endl;
+	writeFile << "variables:" << endl << "\tfloat inputs(numTimesteps, inputPattSize);" \
+		  << endl << "\tint seqLengths(numSeqs);" << endl \
+		  << "\tfloat targetPatterns(numTimesteps, targetPattSize);" << endl;
 	writeFile << "data:" << endl;
 	writeFile << inputsStr.str() << endl;
 	writeFile << seqLengthsStr.str() << endl;
 	writeFile << targetPatternsStr.str() << endl;
+	writeFile << "}" << endl;
 
 	writeFile.close ();
 	return true;
