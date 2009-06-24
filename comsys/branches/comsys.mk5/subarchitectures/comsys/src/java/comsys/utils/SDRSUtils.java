@@ -101,6 +101,8 @@ public class  SDRSUtils {
 	public static final String PLF_TYPE = "plf";
 	public static final String RELATION_TYPE = "relation";
 	
+	public static final short SDRS_DISCRIM_RELATION = 1;
+	public static final short SDRS_DISCRIM_PLF = 2;
     
     //-----------------------------------------------------------------
     // ADD METHODS
