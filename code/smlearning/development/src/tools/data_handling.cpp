@@ -1,7 +1,6 @@
 #include <tools/data_handling.h>
-//#include <sstream>
 
-#define FEATUREVECTOR_SIZE1 5
+#define FEATUREVECTOR_SIZE1 8
 #define FEATUREVECTOR_SIZE2 6
 
 // function that prints the passed argument
