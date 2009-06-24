@@ -264,7 +264,83 @@ module comsysEssentials {
 		string SDRSFormulaId2;
 	};	
 
+	//---------------------------------------------------------------------------
+	// Structs for the spatio-temporal representation
+	//---------------------------------------------------------------------------
+	
 
+	class EventDiscRefRelation {
+		string eventId;
+		string discRefId;
+		string mode;
+	};
+	
+	sequence<EventDiscRefRelation> EDRrelations;
+	
+	class Event {
+		string eventId;
+		string type;
+		EDRrelations participants;
+	};
+	
+	class StateDiscRefRelation {
+		string stateId;
+		string discRefId;
+		string mode;
+	};
+	
+	sequence<StateDiscRefRelation> SDRrelations;
+	
+	class State {
+		string stateId;
+		string type;
+		SDRrelations participants;
+	};
+	
+	class AspectualRelation {
+		string eventSourceId;
+		string stateTargetId;
+		string aspect;
+	};
+	
+	
+	class TemporalRelation {
+		string eventSourceId;
+		string stateTargetId;
+		string tempRelation;
+	};
+	
+	sequence<Event> eventsSeq;
+	sequence<State> statesSeq;
+	sequence<AspectualRelation> aspectualRelationsSeq;
+	sequence<TemporalRelation> temporalRelationsSeq;		
+	
+	class Nucleus {
+		string nucleusId;
+		string plfId;
+		Cache  discRefs;
+		eventsSeq events;
+		statesSeq states;
+		aspectualRelationsSeq aspectualRelations;
+		temporalRelationsSeq temporalRelations;		
+	};
+	
+	class InterNucleusRelation {
+		string sourceId;
+		string targetId;
+		string mode;
+	};
+	
+	sequence<Nucleus> nucleusSeq;
+	sequence<InterNucleusRelation> interNucleusRelationSeq;	
+	
+	
+	class SpatioTemporalRepresentation {
+		nucleusSeq nuclei;
+		interNucleusRelationSeq interNucleusRelations;
+		string currentNucleusId;
+	};
+	
 
 
 
