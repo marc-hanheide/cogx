@@ -402,7 +402,7 @@ public class cc_DialogueMove
 						SDRSFormulaId1 = "start";
 						SDRSFormulaId2 = SDRSUtils.getNextLabel();						
 					}
-					else if (SDRSUtils.getFormulaType(lastFormula) == SDRSUtils.SDRS_DISCRIM_PLF &&
+					else if (SDRSUtils.getFormulaType(lastFormula).type.equals(SDRSUtils.PLF_TYPE) &&
 							lastFormula.type.plf.id.equals(plf.id)) {
 						SDRSFormulaId1 = lastFormula.tprec;
 						SDRSFormulaId2 = lastFormula.label;
