@@ -1,0 +1,248 @@
+
+
+PARSER_BEGIN(SemCorpusParser)
+
+import java.util.Vector ;
+import java.util.Enumeration ;
+import java.io.* ;
+import java.util.Hashtable;
+
+public class SemCorpusParser {
+
+	static Hashtable<String, Integer> counts = new Hashtable<String, Integer>();
+	       public static void main(String args[]) throws ParseException {
+      	  try {
+                File f = new File ("data/CosyGrammar_classbased.txt") ;
+        SemCorpusParser parser = new SemCorpusParser((new FileInputStream(f)));
+        CFG cfg = parser.Input();
+  		log(cfg.toString());
+      }
+      catch (Exception e) {e.printStackTrace();}
+      }
+
+private static int getIndex(String str) {
+	int index= 1;
+	if (counts.containsKey(str)) {
+		counts.put(str, new Integer(counts.get(str)+1));
+		index = counts.get(str);	
+	}
+	else {
+		counts.put(str, new Integer(1));
+	}
+	return index;
+}
+
+  private static void log(String s) {
+  	System.out.println("[SemCorpusParser] " +s) ; 
+  }
+  
+  static int increment=0 ;
+  
+  static int semIncrement=1;
+
+}
+
+PARSER_END(SemCorpusParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <LBRACE: "{">
+|  <COLON: ":">
+| <RBRACE: "}">
+| <LBRACKET: "[">
+| <RBRACKET: "]">
+| <LPAR: "(">
+| <RPAR: ")">
+| <NT: ( [".", "A"-"Z","0"-"9","_"] )+ >
+| <T: ( ["a"-"z", "\'", "'","_", "-"] )+ | ( ["A"-"Z", "\'", "'","_","0"-"9"] )+"*"  >
+| <MOD: ("<" (["a"-"z","A"-"Z", "-"])+ ">") >
+| <IND: ("@" ["0"-"9"]) >
+| <LAND: "^" >
+| <NOMINAL: (["a"-"z"])+ (["0"-"9", "_"])+ >
+
+}
+
+String Ontology():
+{
+	String result = "";
+	Token tok;
+}
+{
+	(<COLON> tok = <T>
+	{result = ":" + tok.toString();}
+	)?
+
+{
+return result;
+}
+}
+	
+
+String Semantics():
+{
+	String semantics = "";
+	Token tok;
+	String sub;
+	String onto;
+}
+{
+	(tok = <T>
+	{semantics = semantics + tok.toString();} 
+	
+	|tok = <NT>
+	{semantics = semantics + tok.toString();} 
+	
+	|tok = <LPAR> sub=Semantics() <RPAR>
+	{semantics = semantics + "(" + sub + ")";} 
+	
+	|tok = <MOD> 
+	{semantics = semantics + " " + tok.toString() ;} 
+	
+	|tok = <LAND>
+	{semantics = semantics + " " + tok.toString()  + " ";} 
+	
+	|tok = <IND>
+	{semantics = semantics + " " + tok.toString();} 
+	
+	|tok= <NOMINAL>  onto=Ontology()
+	{semantics = semantics + tok.toString() + onto; } 
+	
+	 )*
+	 
+	 {
+	 return semantics.trim();
+	 }
+}
+
+Vector<Rule> ParPath():
+{
+	Vector<Rule> RHSs = new Vector<Rule>(); 
+		String sem ;
+}
+{ ( <LPAR> RHSs=Path() <RPAR> <COLON> <LBRACKET> sem=Semantics() <RBRACKET> 
+	{
+	for(Enumeration<Rule> e = RHSs.elements(); e.hasMoreElements(); ) {
+		Rule RHS = e.nextElement();
+		RHS.setSemantics(sem);
+	}
+	return RHSs;
+	
+	} ) }
+
+
+Vector<Rule> Path():
+{
+	Vector<Rule> RHSs = new Vector<Rule>(); 
+	Rule firstRHS = new Rule();
+	RHSs.add(firstRHS);
+	Vector<Rule> RHSs2 ; 
+	Token tok ;
+}
+{
+	(tok=<T>
+		{
+			for(Enumeration<Rule> e = RHSs.elements(); e.hasMoreElements(); ) {
+				Rule RHS = e.nextElement();
+				RHS.addToRHS(tok.toString());
+			}
+		}
+		| tok=<NT>
+		{
+			for(Enumeration<Rule> e = RHSs.elements(); e.hasMoreElements(); ) {
+				Rule RHS = e.nextElement();
+				RHS.addToRHS(tok.toString());
+			}
+		}
+		| <LPAR> RHSs2=Path() <RPAR> 
+		{
+			for(Enumeration<Rule> e = RHSs.elements(); e.hasMoreElements(); ) {
+				Rule RHS = e.nextElement();
+				for(Enumeration<Rule> f = RHSs2.elements(); f.hasMoreElements(); ) {
+					Rule RHS2 = f.nextElement();
+					RHS.addToRHS(RHS2);
+				}
+			}	
+		} 
+	
+		 | "?" <LPAR> RHSs2=Path() <RPAR>
+		{
+        				Vector<Rule> newRHSs = new Vector<Rule>();
+                        for(Enumeration<Rule> e = RHSs.elements(); e.hasMoreElements(); ) {
+                            Rule RHS = e.nextElement();
+                                Rule newRHS = new Rule();
+                                newRHS.addToRHS(RHS);
+                                newRHSs.add(newRHS);
+                                for(Enumeration<Rule> f = RHSs2.elements(); f.hasMoreElements(); ) {
+                                    Rule RHS2 = f.nextElement();
+                                    
+                                        RHS.addToRHS(RHS2);
+                                }
+                        }
+                        RHSs.addAll(newRHSs);	
+		} )+ 
+		{
+			return RHSs;
+		}
+}
+
+Vector<Rule> AlterList():
+{
+	Vector<Rule> RHSs = new Vector<Rule>();
+	Rule RHS;
+	Vector<Rule> RHSs2 ; 
+	Token tok ;
+}
+{
+	(RHSs2 = ParPath() 
+	{
+		RHSs.addAll(RHSs2);
+	} 
+	 )+ {return RHSs;}
+}
+
+CFG NTSpecification():
+{
+	CFG cfg = new CFG();
+	Token Id;
+	Vector<Rule> RHSs;
+}
+{
+Id=<NT> 
+	{
+		String NonTerm = Id.toString();
+		cfg.setStartSymbol(NonTerm);
+		
+	}
+	( (<LBRACKET> RHSs=AlterList() 
+	{
+		cfg.addRules2(NonTerm, RHSs);
+	}	
+	 <RBRACKET> ) ) {return cfg;}
+}
+   
+CFG Input():
+{
+	CFG cfg = new CFG();
+	CFG initCFG ;
+	CFG subCFG ;
+}
+{
+	(initCFG = NTSpecification() 
+	{
+		cfg.setStartSymbol(initCFG.getStartSymbol());
+		cfg.addRules(initCFG.getRules());	
+   	}
+   	
+   	(subCFG = NTSpecification() 
+   	{
+   		cfg.addRules(subCFG.getRules());
+   	} )* ) {return cfg;}
+}
