@@ -36,7 +36,7 @@ SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
-LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem pthread rt GL glut expat)
+LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem pthread rt GL glut expat SMLearning)
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}

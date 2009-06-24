@@ -1,4 +1,5 @@
 #include "tools/data_handling.h"
+#include <sstream>
 
 #define FEATUREVECTOR_SIZE 6
 
@@ -127,6 +128,95 @@ bool read_dataset (string fileName, DataSet& data) {
 	
 }
 
+//write a cdl file format with zero padding
+bool write_cdl_file_padding (string fileName, const DataSet& data) {
+	ofstream writeFile(fileName.c_str(), ios::out);
+	if (!writeFile)
+		return false;
+
+	writeFile << fileName << " {" << endl;
+	int numSeqs = data.size();
+	writeFile << "dimensions:" << endl;
+	writeFile << "\tnumSeqs = " << numSeqs << ",\n";
+
+	long maxfeatvectorSize = -1;
+
+	//find max. feature vector size which will be inputPattSize and targetPattSize
+	Sequence::const_iterator v = (*(data.begin())).begin();
+	for (int i=0; i<2; i++,v++) {
+		long featvectorSize = (*v).size();
+		if (featvectorSize > maxfeatvectorSize)
+			maxfeatvectorSize = featvectorSize;
+	}
+	writeFile << "\tinputPattSize = " << maxfeatvectorSize << endl;
+	writeFile << "\ttargetPattSize = " << maxfeatvectorSize << endl;
+		
+	stringstream seqLengthsStr;
+	stringstream inputsStr;
+	stringstream targetPatternsStr;
+	long numTimesteps = 0;
+	seqLengthsStr << "\tseqLengths = ";
+	inputsStr << "\tinputs =\t";
+	targetPatternsStr << "\ttargetPatterns = ";
+	DataSet::const_iterator s;
+	for (s=data.begin(); s!= data.end(); s++) {
+		long seqSize = (*s).size();
+		seqLengthsStr << seqSize;
+		numTimesteps += seqSize;
+		if (s+1 == data.end())
+			seqLengthsStr << ";";
+		else
+			seqLengthsStr << ",";
+
+		Sequence::const_iterator v;
+		for (v=(*s).begin(); v!= (*s).end(); v++) {
+			long featvectorSize = (*v).size();
+			long paddingSize = maxfeatvectorSize - featvectorSize;
+			FeatureVector::const_iterator n;
+			//put inputs and targetPatterns data
+			if (v+1 != (*s).end()) {
+				for (n=(*v).begin(); n!= (*v).end(); n++) {
+					if (n != (*v).begin())
+						inputsStr << ", ";
+					inputsStr << *n;
+				}
+				//zero padding
+				for (int i=0; i<paddingSize; i++)
+					inputsStr << ",0";
+				if (v+2 == (*s).end() && s+1 == data.end())
+					inputsStr << ";" << endl;
+				else
+					inputsStr << "," << endl << "\t\t\t";
+			}
+			if (v != (*s).begin()) {
+				for (n=(*v).begin(); n!= (*v).end(); n++) {
+					if (n != (*v).begin())
+						targetPatternsStr << ", ";
+					targetPatternsStr << *n;
+				}
+				//zero padding
+				for (int i=0; i<paddingSize; i++)
+					targetPatternsStr << ", 0";
+				if (v+1 == (*s).end() && s+1 == data.end())
+					targetPatternsStr << ";" << endl;
+				else
+					targetPatternsStr << "," << endl << "\t\t\t";
+			}
+
+			
+		}
+	}
+	writeFile << "\tnumTimeSteps = " << numTimesteps << "," << endl;
+	writeFile << "data:" << endl;
+	writeFile << inputsStr.str() << endl;
+	writeFile << seqLengthsStr.str() << endl;
+	writeFile << targetPatternsStr.str() << endl;
+
+	writeFile.close ();
+	return true;
+}
+
+
 int main(int argc, char * argv[]) {
 	if (argc < 3) {
 		cerr << argv[0] << " [nr. of sequences] [sequences size]" << endl;
@@ -145,6 +235,11 @@ int main(int argc, char * argv[]) {
 	DataSet savedData;
 	read_dataset ("training.dat", savedData);
 	print_dataset<double> (savedData);
+	//writing to cdl file
+	if (write_cdl_file_padding ("training.cdl", savedData))
+		cout << "cdl file written" << endl;
+	else
+		cout << "cdl file NOT written" << endl;
 
 	
 }
