@@ -206,21 +206,21 @@ public class FeatureExtractionFromPLF extends FeatureExtraction {
 			String lfId = pair.logicalFormId;
 			FeatureVector fv = featureVectors.get(lfId);
 			String featName1 = getConfidenceValueFeatName();
-			fv.addFeature(featName1, pair.phonString.confidenceValue);
+			fv.addFeature(featName1, pair.phonStr.confidenceValue);
 			String featName2 = getNLConfidenceValueFeatName();
-			fv.addFeature(featName2, pair.phonString.NLconfidenceValue);
+			fv.addFeature(featName2, pair.phonStr.NLconfidenceValue);
 			String featName3 = getRankFeatName();
-			fv.addFeature(featName3, pair.phonString.rank);	
-			if(pair.phonString.confidenceValue > 50.0) {
+			fv.addFeature(featName3, pair.phonStr.rank);	
+			if(pair.phonStr.confidenceValue > 50.0) {
 				String featName4 = getConfidenceValueHigherThan50FeatName();
 				fv.addFeature(featName4, 1.0);
 			}
-			if (pair.phonString.confidenceValue > highestConfValue) {
-				highestConfValue = pair.phonString.confidenceValue;
+			if (pair.phonStr.confidenceValue > highestConfValue) {
+				highestConfValue = pair.phonStr.confidenceValue;
 				lfIdWithHighestConfValue = lfId;
 			}		
-			else if (pair.phonString.confidenceValue > secondHighestConfValue) {
-				secondHighestConfValue = pair.phonString.confidenceValue;
+			else if (pair.phonStr.confidenceValue > secondHighestConfValue) {
+				secondHighestConfValue = pair.phonStr.confidenceValue;
 			}
 		}
 		for (int i = 0; i < plf.nonParsablePhonStrings.length; i++) {
@@ -280,7 +280,7 @@ public class FeatureExtractionFromPLF extends FeatureExtraction {
 			PhonStringLFPair pair = plf.phonStringLFPairs[i];
 			String lfId = pair.logicalFormId;
 			FeatureVector fv = featureVectors.get(lfId);
-			StringTokenizer tokenizer = new StringTokenizer(pair.phonString.wordSequence);
+			StringTokenizer tokenizer = new StringTokenizer(pair.phonStr.wordSequence);
 			double nonContextual = 0.0;
 			while (tokenizer.hasMoreTokens()) {
 				String word = tokenizer.nextToken();
@@ -296,7 +296,7 @@ public class FeatureExtractionFromPLF extends FeatureExtraction {
 			if (nonContextual > 0.0) {
 				String featname = getWordActivationNonContextualFeatName();
 				fv.addFeature(featname, nonContextual);
-		//		log("number of non-contextual words for " + pair.phonString.wordSequence + ": " + nonContextual);
+		//		log("number of non-contextual words for " + pair.phonStr.wordSequence + ": " + nonContextual);
 			}			
 		}
 

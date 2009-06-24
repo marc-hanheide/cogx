@@ -65,7 +65,7 @@ import cast.core.CASTUtils;
  * connection.
  */
 
-public class TTS extends ManagedComponent {
+public class cc_TTS extends ManagedComponent {
 
     // =================================================================
     // CLASS-INTERNAL GLOBAL VARIABLES
@@ -121,7 +121,7 @@ public class TTS extends ManagedComponent {
     // CONSTRUCTOR METHODS
     // =================================================================
 
-    public TTS(String _id) {
+    public cc_TTS(String _id) {
         init();
     } // end constructor
 
@@ -458,7 +458,6 @@ public class TTS extends ManagedComponent {
      * 
      * @see cast.core.components.CASTProcessingComponent#configure(java.util.Properties)
      */
-    @Override
     public void configure(Properties _config) {
 //         _config.list(System.out);
 

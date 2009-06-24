@@ -37,5 +37,51 @@ public class ComsysUtils {
 	}
 	
 	
+	public static PhonString getPhonStringFromPair (PackedLFs results, String lfId) {
+		
+		PhonStringLFPair[] pairs = results.phonStringLFPairs;
+		
+		for (int i = 0; i < pairs.length ; i++) {
+			PhonStringLFPair pair = pairs[i];
+			if (pair.logicalFormId.equals(lfId)) {
+				return pair.phonStr;
+			}
+		}
+		
+		if (lfId.contains("nonparsable-")) {
+			int index = new Integer(lfId.replace("nonparsable-", "")).intValue();
+			PhonString phon = results.nonParsablePhonStrings[index];
+			return phon;
+		}
+		
+		return null;
+	}
+	
+
+	public static NonStandardRulesAppliedForLF[] convertNonStandardRulesDataStructs (PackedLFParseResults results) {
+		Hashtable<String,Hashtable<String,Integer>> hash = results.nonStandardRulesApplied;
+		NonStandardRulesAppliedForLF[] nonStandardRulesForLf = new NonStandardRulesAppliedForLF[hash.size()];
+		int count = 0;
+		for (Enumeration<String> e = hash.keys(); e.hasMoreElements();) {
+			String lfId = e.nextElement();
+			Hashtable<String, Integer> minihash = hash.get(lfId);
+			NonStandardRule[] nonStandardRules = new NonStandardRule[minihash.size()];
+			
+			int count2 = 0;
+			for (Enumeration<String> f = minihash.keys(); f.hasMoreElements();) {
+				String rulename = f.nextElement();
+				int number = minihash.get(rulename).intValue();
+				NonStandardRule nonStandardRule = new NonStandardRule(rulename, number);
+				nonStandardRules[count2] = nonStandardRule;
+				count2++;
+			}
+			NonStandardRulesAppliedForLF nonStandardRulesForLF = new NonStandardRulesAppliedForLF(lfId, nonStandardRules);
+			nonStandardRulesForLf[count] = nonStandardRulesForLF;
+			count++;
+		}
+		return nonStandardRulesForLf;
+	}
+	
+	
 	
 }
