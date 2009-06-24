@@ -324,7 +324,7 @@ public class cc_DialogueStructureManager extends ManagedComponent {
         // immediately process this logical form,
         // add it to the context model
         try {
-            // get the id of the working memory entry
+        	// get the id of the working memory entry
             String id = _wmc.address.id;
             // get the data from working memory and store it
             // with its id

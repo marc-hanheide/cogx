@@ -31,7 +31,8 @@
            <unzip dest="${output.dir}" src="./lib/jdom.jar"/>       <!-- JDOM for openCCG  -->
            <unzip dest="${output.dir}" src="./lib/jline.jar"/>      <!-- JLINE for openCCG -->
            <unzip dest="${output.dir}" src="./lib/trove.jar"/>      <!-- TROVE for openCCG -->
-         </target>
+           <unzip dest="${output.dir}" src="./lib/maryclient.jar"/> <!-- Maryclient for TTS -->         
+</target>
 
 
 

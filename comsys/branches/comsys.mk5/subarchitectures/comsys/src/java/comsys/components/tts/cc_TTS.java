@@ -176,7 +176,7 @@ public class cc_TTS extends ManagedComponent {
 			
 			
         }
-        catch (SubarchitectureComponentException e) {
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -5,7 +5,7 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 
-public class SalienceModel {
+public class SalienceModel extends Ice.ObjectImpl {
 
 	Hashtable<SalientEntity, Float> distribution ;
 	
