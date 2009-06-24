@@ -13,6 +13,7 @@
 // ===================================================================
 
 #include <LF.ice>
+#include <cast/slice/CDL.ice>
 
 module comsys {
 module datastructs {
@@ -284,6 +285,12 @@ module comsysEssentials {
 		string plfid;
 		lf::LogicalForm lform;
 	}; // end ProductionLF	
+	
+	class GRETask {
+		string intendedReferentProxyID;
+		bool done;
+		string resultLF;
+	};
 	
 	
 	//---------------------------------------------------------------------------
