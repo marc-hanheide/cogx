@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+<!-- /**
+
+@system structure.dvp-identification
+
+*/ --> 
+
+   <system id="structure.dvp-identification" region="STRUCTURE" metafunction="ideational">
+      <chooser id="default"/>
+      <conditions>
+          <condition features="@type:dvp"/>
+      </conditions>
+      <actions>
+	  <action choice="default">
+	    <identify-nomvar mode="*LOCUS*" src="DVP" scope="global"/>
+	  </action>
+      </actions>
+   </system>
+
+   <system id="structure.content-presence" region="STRUCTURE" metafunction="ideational">
+	<chooser id="c-structure.content-presence"/>
+      <conditions>
+          <condition features="@type:dvp"/>
+      </conditions>
+      <actions>
+	  <action choice="content">
+		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />
+		<add-feature feature="DVPassigned" value="true" dest="CONTENT" />
+<!--		<move-locus nomvar="CONTENT" /> -->
+	  </action>
+	  <action choice="no-content">
+		<add-relation mode="Content" dest="content" type="marker" /> 
+		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />
+		<add-feature feature="DVPassigned" value="true" dest="CONTENT" />
+<!--		<move-locus nomvar="CONTENT" /> -->
+	  </action>
+      </actions>
+   </system>
+
+
+   <system id="structure.rfx-generation" region="STRUCTURE" metafunction="ideational">
+      <chooser id="default"/>
+      <conditions>
+          <condition features="@type:rfx"/>
+      </conditions>
+      <actions>
+	  <action choice="default">
+	    <generate-rfx/>
+	  </action>
+      </actions>
+   </system>
+
+   <system id="structure.pronominalization" region="STRUCTURE" metafunction="ideational">
+	<chooser id="c-structure.pronominalization"/>
+      <conditions>
+          <condition features="@type:entity @feat:Salient:true"/>
+      </conditions>
+      <actions>
+	  <action choice="pronoun-it">
+		<add-proposition propositions="@it" />
+		<add-feature feature="Num" value="sg"/>
+	  </action>
+
+	  <action choice="pronoun-this">
+		<add-proposition propositions="@context" />
+		<add-feature feature="Proximity" value="proximal"/>
+		<add-feature feature="Delimitation" value="unique"/>
+	  </action>
+      </actions>
+   </system>
+
+   <system id="structure.list" region="STRUCTURE" metafunction="ideational">
+	<chooser id="c-structure.list"/>
+      <conditions>
+          <condition features="@type:entity @feat:List:conjunction"/>
+          <condition features="@type:entity @feat:List:disjunction"/>
+      </conditions>
+      <actions>
+	  <action choice="conjunction">
+		<add-proposition propositions="@and" />
+	  </action>
+
+	  <action choice="disjunction">
+		<add-proposition propositions="@or" />
+	  </action>
+      </actions>
+   </system>
+
+
+</systems>
