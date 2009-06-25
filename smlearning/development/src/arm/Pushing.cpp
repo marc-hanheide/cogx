@@ -355,7 +355,15 @@ Real normalizeJnPos(Real r){
 
 
 
-Real normalize(int i, Real r, float* maxVel, float* minVel) {
+Real normalizeJnVel(int i, Real r, float* maxVel, float* minVel) {
+	Real minVelo = 	minVel[i];
+	Real interval = maxVel[i] - minVelo;
+	Real relativVel = r - minVelo;
+	Real res = relativVel / interval;
+	return -1.0 + (res*2.0);
+
+
+/*
 	if (r >= 0.0) {
 		Real res = r / maxVel[i];
 		return res;
@@ -363,7 +371,18 @@ Real normalize(int i, Real r, float* maxVel, float* minVel) {
 		Real res = -r / minVel[i];
 		return res;
 	}
+*/
 }
+
+
+
+
+Real normalizeWsPos(Real pos, Real max) {
+	return pos/max;
+}
+
+
+
 
 //--------------------------------------------------------------------------------
 
@@ -562,9 +581,14 @@ int main(int argc, char *argv[]) {
 		}
 
 
+
+		DataSet data;
+		Real maxRange = 0.6;
+		SecTmReal minDuration = SecTmReal(5.0);
+
 		//Polyflap Position and orientation
 		//-------------------------------------------------------
-		Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
+		Vec3 startPolyflapPosition(Real(0.6), Real(0.0), Real(0.0));
 		Vec3 startPolyflapRotation(Real(-0.0*REAL_PI), Real(-0.0*REAL_PI), Real(-0.0*REAL_PI));//Y,X,Z
 		Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
 		//-------------------------------------------------------
@@ -617,7 +641,9 @@ int main(int argc, char *argv[]) {
 		fromCartesianPose(home.pos, positionH, orientationH);
 		home.vel.setId(); // it doesn't move
 		//home.acc.setId(); // nor accelerate
-		home.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+		//home.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+		home.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+
 
 		// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 		reacPlanner.send(home, ReacPlanner::ACTION_GLOBAL);
@@ -631,14 +657,15 @@ int main(int argc, char *argv[]) {
 
 
 
-
-
 		const int numExperiments = 1;
 
 		for (int i=0; i<numExperiments; i++)
 		{
 
+		//Sequence &currentSequence = *(new Sequence);
 		Sequence seq;
+		FeatureVector& infoVector = *(new FeatureVector);
+		
 
 
 
@@ -767,9 +794,7 @@ positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side
 pos++;
 
 
-
-
-
+			
 
 
 			// and set target waypoint
@@ -781,7 +806,9 @@ pos++;
 			// ON/OFF collision detection
 			//planner.getHeuristic()->setCollisionDetection(false);
 
-			target.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+			//target.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+			target.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+
 			while (true) {
 				
 				if (reacPlanner.send(target , ReacPlanner::ACTION_GLOBAL)) {
@@ -795,6 +822,20 @@ pos++;
 			
 			// Trajectory profile can be defined by e.g. a simple 3rd degree polynomial
 			Trajectory::Ptr pTrajectory(Polynomial4::Desc().create());
+			
+
+			//initializing infoVestor
+			//Real coefs[4]  = pTrajectory.getCoefs();
+			infoVector.push_back(minDuration);
+			//initial position in worrkspace coordinates, not normalized
+			infoVector.push_back(positionT.v1);
+			infoVector.push_back(positionT.v2);
+			infoVector.push_back(positionT.v3);
+			//rotation info missing
+			//end pose info missing (must be added later 
+			
+
+
 			// It consists of 70 parts
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec]
@@ -967,11 +1008,11 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm));
 					//features[2*i] = norm;
 					//Real norm2 = Real(normalize(i, state.vel.j[i], maxVelocities, minVelocities));
-			//		features.pushBack(normalizeJnVel(i, state.vel.j[i]);
+					features.push_back(normalizeJnVel(i, state.vel.j[i], maxVelocities, minVelocities));
 					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm2));
 					//features[2*i+1] = norm2;
 				}
-/*
+
 				// add pose of polyflap to features!!
 
 				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "2"));
@@ -983,12 +1024,12 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 				mojepose2 = set->get().front()->getPose();
 				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "3"));
 				mojepose3 = set->get().back()->getPose();
-				features.push_back(normalizePfPos(mojepose2.p.v1, maxRange);
-				features.push_back(normalizePfPos(mojepose2.p.v2, maxRange);
-				features.push_back(normalizePfPos(mojepose2.p.v3, maxRange);
-				features.push_back(normalizePfPos(mojepose3.p.v1, maxRange);
-				features.push_back(normalizePfPos(mojepose3.p.v2, maxRange);
-				features.push_back(normalizePfPos(mojepose3.p.v3, maxRange);
+				features.push_back(normalizeWsPos(mojepose2.p.v1, maxRange));
+				features.push_back(normalizeWsPos(mojepose2.p.v2, maxRange));
+				features.push_back(normalizeWsPos(mojepose2.p.v3, maxRange));
+				features.push_back(normalizeWsPos(mojepose3.p.v1, maxRange));
+				features.push_back(normalizeWsPos(mojepose3.p.v2, maxRange));
+				features.push_back(normalizeWsPos(mojepose3.p.v3, maxRange));
 
 				
 
@@ -1001,7 +1042,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 				seq.push_back(features);
 
-*/	
+	
  
 
 
@@ -1026,7 +1067,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 			}
 		
-
+			data.push_back(seq);
 
 
 
@@ -1046,7 +1087,8 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 		fromCartesianPose(preHome.pos, positionPreH, orientationH);
 		home.vel.setId(); // it doesn't move
 		//home.acc.setId(); // nor accelerate
-		home.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+		//home.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+		home.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
 
 		// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 		reacPlanner.send(preHome, ReacPlanner::ACTION_GLOBAL);
@@ -1148,13 +1190,15 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 	name.append(buffer);
 	
 	//name = stream.str();
-	DataSet data;
+	
 	
 	cout << name << "\n";
 
 	
 	// DOESN'T WORK!!!! compiles, but throws errors by linking executables
-	//write_dataset(name , data);
+	write_dataset(name+".dat"  , data);
+
+	print_dataset<double> (data);
 
 
 	}
