@@ -1,0 +1,1260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ccg-lexicon xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../lexicon.xsd" name="moloko">
+  <family closed="true" pos="N" name="noun">
+    <entry name="default">
+      <atomcat type="n">
+        <fs id="30">
+          <feat attr="index">
+            <lf>
+              <nomvar name="T"/>
+            </lf>
+          </feat>
+          <feat attr="num">
+            <featvar name="NUM:num-vals"/>
+          </feat>
+          <feat attr="pers">
+            <featvar name="PERS:pers-vals"/>
+          </feat>
+          <feat val="basic" attr="nform"/>
+          <feat val="+" attr="modifiable"/>
+          <feat val="+" attr="coord"/>
+        </fs>
+        <lf>
+          <satop nomvar="T">
+            <prop name="[*DEFAULT*]"/>
+          </satop>
+        </lf>
+      </atomcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="ball" pred="ball"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="mug" pred="mug"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="table" pred="table"/>
+  </family>
+  <family closed="true" pos="N" name="bare-np">
+    <entry name="default">
+      <atomcat type="np">
+        <fs id="30">
+          <feat attr="index">
+            <lf>
+              <nomvar name="T"/>
+            </lf>
+          </feat>
+          <feat attr="num">
+            <featvar name="NUM:num-vals"/>
+          </feat>
+          <feat attr="pers">
+            <featvar name="PERS:pers-vals"/>
+          </feat>
+          <feat attr="case">
+            <featvar name="CASE:case-vals"/>
+          </feat>
+          <feat val="basic" attr="nform"/>
+          <feat val="+" attr="modifiable"/>
+        </fs>
+        <lf>
+          <satop nomvar="T">
+            <prop name="[*DEFAULT*]"/>
+          </satop>
+        </lf>
+      </atomcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="I" pred="I"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="he" pred="he"/>
+  </family>
+  <family closed="true" indexRel="First" pos="COORD" name="coord.noun.pl-result">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="n">
+          <fs id="23">
+            <feat attr="index">
+              <lf>
+                <nomvar name="CR"/>
+              </lf>
+            </feat>
+            <feat val="pl" attr="num"/>
+            <feat val="3rd" attr="pers"/>
+            <feat val="basic" attr="nform"/>
+            <feat val="+" attr="coord"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash mode="&gt;" dir="/"/>
+        <complexcat>
+          <atomcat type="n">
+            <fs id="22">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="C2"/>
+                </lf>
+              </feat>
+              <feat val="+" attr="coord"/>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+        <slash mode="&lt;" dir="\"/>
+        <complexcat>
+          <atomcat type="n">
+            <fs id="21">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="C1"/>
+                </lf>
+              </feat>
+              <feat val="+" attr="coord"/>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+        <lf>
+          <satop nomvar="CR">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="First">
+              <nomvar name="L1"/>
+              <prop name="elem"/>
+              <diamond mode="Item">
+                <nomvar name="C1"/>
+              </diamond>
+              <diamond mode="Next">
+                <nomvar name="L2"/>
+                <prop name="elem"/>
+                <diamond mode="Item">
+                  <nomvar name="C2"/>
+                </diamond>
+              </diamond>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="and__coord" pred="and"/>
+  </family>
+  <family closed="true" indexRel="First" pos="COORD" name="coord.noun">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="n">
+          <fs id="23">
+            <feat attr="index">
+              <lf>
+                <nomvar name="CR"/>
+              </lf>
+            </feat>
+            <feat attr="pers">
+              <featvar name="CR-PERS:pers-vals"/>
+            </feat>
+            <feat val="basic" attr="nform"/>
+            <feat val="+" attr="coord"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash mode="&gt;" dir="/"/>
+        <complexcat>
+          <atomcat type="n">
+            <fs id="22">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="C2"/>
+                </lf>
+              </feat>
+              <feat val="+" attr="coord"/>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+        <slash mode="&lt;" dir="\"/>
+        <complexcat>
+          <atomcat type="n">
+            <fs id="21">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="C1"/>
+                </lf>
+              </feat>
+              <feat val="+" attr="coord"/>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+        <lf>
+          <satop nomvar="CR">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="First">
+              <nomvar name="L1"/>
+              <prop name="elem"/>
+              <diamond mode="Item">
+                <nomvar name="C1"/>
+              </diamond>
+              <diamond mode="Next">
+                <nomvar name="L2"/>
+                <prop name="elem"/>
+                <diamond mode="Item">
+                  <nomvar name="C2"/>
+                </diamond>
+              </diamond>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="and__coord" pred="and"/>
+  </family>
+  <family closed="true" indexRel="First" pos="COORD" name="coord.np.pl-result">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="np">
+          <fs id="23">
+            <feat attr="index">
+              <lf>
+                <nomvar name="CR"/>
+              </lf>
+            </feat>
+            <feat val="pl" attr="num"/>
+            <feat val="3rd" attr="pers"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="22">
+            <feat attr="index">
+              <lf>
+                <nomvar name="C2"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="21">
+            <feat attr="index">
+              <lf>
+                <nomvar name="C1"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="CR">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="First">
+              <nomvar name="L1"/>
+              <prop name="elem"/>
+              <diamond mode="Item">
+                <nomvar name="C1"/>
+              </diamond>
+              <diamond mode="Next">
+                <nomvar name="L2"/>
+                <prop name="elem"/>
+                <diamond mode="Item">
+                  <nomvar name="C2"/>
+                </diamond>
+              </diamond>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="and__coord" pred="and"/>
+  </family>
+  <family closed="true" indexRel="First" pos="COORD" name="coord.np">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="np">
+          <fs id="23">
+            <feat attr="index">
+              <lf>
+                <nomvar name="CR"/>
+              </lf>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS:pervals"/>
+            </feat>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="22">
+            <feat attr="index">
+              <lf>
+                <nomvar name="C2"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="21">
+            <feat attr="index">
+              <lf>
+                <nomvar name="C1"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="CR">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="First">
+              <nomvar name="L1"/>
+              <prop name="elem"/>
+              <diamond mode="Item">
+                <nomvar name="C1"/>
+              </diamond>
+              <diamond mode="Next">
+                <nomvar name="L2"/>
+                <prop name="elem"/>
+                <diamond mode="Item">
+                  <nomvar name="C2"/>
+                </diamond>
+              </diamond>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="and__coord" pred="and"/>
+  </family>
+  <family closed="true" pos="PREP" name="prep">
+    <entry name="default">
+      <complexcat>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="30">
+            <feat attr="num">
+              <featvar name="NUMMA:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERSMA:pers-vals"/>
+            </feat>
+            <feat attr="case">
+              <featvar name="CASEMA:case-vals"/>
+            </feat>
+            <feat attr="index">
+              <lf>
+                <nomvar name="TMA"/>
+              </lf>
+            </feat>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Arg">
+              <nomvar name="TMA"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="on" pred="on"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="in" pred="in"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="from" pred="from"/>
+  </family>
+  <family closed="true" pos="PREP" name="pro-prep">
+    <entry name="default">
+      <atomcat type="pp">
+        <fs id="25">
+          <feat attr="index">
+            <lf>
+              <nomvar name="M"/>
+            </lf>
+          </feat>
+          <feat val="+" attr="modifiable"/>
+        </fs>
+        <lf>
+          <satop nomvar="M">
+            <prop name="[*DEFAULT*]"/>
+          </satop>
+        </lf>
+      </atomcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="here" pred="here"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="there" pred="there"/>
+  </family>
+  <family closed="true" indexRel="First" pos="COORD" name="coord.prep">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="pp">
+          <fs id="23">
+            <feat attr="index">
+              <lf>
+                <nomvar name="CR"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash mode="&gt;" dir="/"/>
+        <complexcat>
+          <atomcat type="pp">
+            <fs id="22">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="C2"/>
+                </lf>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+        <slash mode="&lt;" dir="\"/>
+        <complexcat>
+          <atomcat type="pp">
+            <fs id="21">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="C1"/>
+                </lf>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+        <lf>
+          <satop nomvar="CR">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="First">
+              <nomvar name="L1"/>
+              <prop name="elem"/>
+              <diamond mode="Item">
+                <nomvar name="C1"/>
+              </diamond>
+              <diamond mode="Next">
+                <nomvar name="L2"/>
+                <prop name="elem"/>
+                <diamond mode="Item">
+                  <nomvar name="C2"/>
+                </diamond>
+              </diamond>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="and__coord" pred="and"/>
+  </family>
+  <family closed="true" indexRel="Polarity" pos="MOD" name="negation.prep">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <diamond mode="Polarity">
+              <prop name="-"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="not__coord" pred="not"/>
+  </family>
+  <family closed="true" pos="MOD" name="mod-right.prep">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <diamond mode="Modifier">
+              <nomvar name="MM"/>
+              <prop name="[*DEFAULT*]"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="over" pred="over"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="up" pred="up"/>
+  </family>
+  <family closed="true" pos="ADJ" name="adj">
+    <entry name="default">
+      <atomcat type="adj">
+        <fs id="25">
+          <feat attr="index">
+            <lf>
+              <nomvar name="M"/>
+            </lf>
+          </feat>
+          <feat val="+" attr="modifiable"/>
+        </fs>
+        <lf>
+          <satop nomvar="M">
+            <prop name="[*DEFAULT*]"/>
+          </satop>
+        </lf>
+      </atomcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="big" pred="big"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="blue" pred="blue"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="red" pred="red"/>
+  </family>
+  <family closed="true" indexRel="First" pos="COORD" name="coord.adj">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="adj">
+          <fs id="23">
+            <feat attr="index">
+              <lf>
+                <nomvar name="CR"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="adj">
+          <fs id="22">
+            <feat attr="index">
+              <lf>
+                <nomvar name="C2"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="adj">
+          <fs id="21">
+            <feat attr="index">
+              <lf>
+                <nomvar name="C1"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="CR">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="First">
+              <nomvar name="L1"/>
+              <prop name="elem"/>
+              <diamond mode="Item">
+                <nomvar name="C1"/>
+              </diamond>
+              <diamond mode="Next">
+                <nomvar name="L2"/>
+                <prop name="elem"/>
+                <diamond mode="Item">
+                  <nomvar name="C2"/>
+                </diamond>
+              </diamond>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="and__coord" pred="and"/>
+  </family>
+  <family closed="true" indexRel="Polarity" pos="MOD" name="negation.adj2">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="adj">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="adj">
+          <fs id="26">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M2"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Scope">
+              <nomvar name="M2"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="not__coord" pred="not"/>
+  </family>
+  <family closed="true" indexRel="Polarity" pos="MOD" name="negation.adj">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="adj">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="adj">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <diamond mode="Polarity">
+              <prop name="-"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="not__coord" pred="not"/>
+  </family>
+  <family closed="true" pos="MOD" name="mod-right.adj">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="adj">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="adj">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <diamond mode="Modifier">
+              <nomvar name="MM"/>
+              <prop name="[*DEFAULT*]"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="really" pred="really"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="very" pred="very"/>
+  </family>
+  <family closed="true" pos="DET" name="det">
+    <entry name="default">
+      <atomcat type="det">
+        <fs id="25">
+          <feat attr="index">
+            <lf>
+              <nomvar name="M"/>
+            </lf>
+          </feat>
+        </fs>
+        <lf>
+          <satop nomvar="M">
+            <prop name="[*DEFAULT*]"/>
+          </satop>
+        </lf>
+      </atomcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="the" pred="the"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="that" pred="that"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="this" pred="this"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="five" pred="five"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="a" pred="a"/>
+  </family>
+  <family closed="true" pos="MOD" name="mod-right.det">
+    <entry name="primary">
+      <complexcat>
+        <atomcat type="det">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="det">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="M">
+            <diamond mode="Modifier">
+              <nomvar name="MM"/>
+              <prop name="[*DEFAULT*]"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="around" pred="around"/>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="nearly" pred="nearly"/>
+  </family>
+  <family closed="true" pos="V" name="iv">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Actor">
+              <nomvar name="X:entity"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+  </family>
+  <family closed="true" pos="V" name="tv">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+            <feat val="acc" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Actor">
+              <nomvar name="X:entity"/>
+            </diamond>
+            <diamond mode="Patient">
+              <nomvar name="V1:entity"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="hit" pred="hit"/>
+  </family>
+  <family closed="true" pos="V" name="resultant">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="adj">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V2"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+            <feat val="acc" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Actor">
+              <nomvar name="X:entity"/>
+            </diamond>
+            <diamond mode="Patient">
+              <nomvar name="V1:entity"/>
+            </diamond>
+            <diamond mode="Resultant">
+              <nomvar name="V2:quality"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="made" pred="made"/>
+  </family>
+  <family closed="true" pos="V" name="caused-motion.to">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V3"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+            <feat val="acc" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Actor">
+              <nomvar name="X:entity"/>
+            </diamond>
+            <diamond mode="Patient">
+              <nomvar name="V1:entity"/>
+            </diamond>
+            <diamond mode="Dir:WhereTo">
+              <nomvar name="V3:to"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="put" pred="put"/>
+  </family>
+  <family closed="true" pos="V" name="caused-motion.from.to">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V3"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="pp">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V2"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+            <feat val="acc" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Actor">
+              <nomvar name="X:entity"/>
+            </diamond>
+            <diamond mode="Patient">
+              <nomvar name="V1:entity"/>
+            </diamond>
+            <diamond mode="Dir:WhereFrom">
+              <nomvar name="V2:from"/>
+            </diamond>
+            <diamond mode="Dir:WhereTo">
+              <nomvar name="V3:to"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="move" pred="move"/>
+  </family>
+  <family closed="true" pos="V" name="copular.np">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="np">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+            <feat val="acc" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Restr">
+              <nomvar name="X"/>
+            </diamond>
+            <diamond mode="Scope">
+              <nomvar name="V1"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="be" pred="be"/>
+  </family>
+  <family closed="true" pos="V" name="copular.pp">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="pp">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Restr">
+              <nomvar name="X"/>
+            </diamond>
+            <diamond mode="Scope">
+              <nomvar name="V1"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="be" pred="be"/>
+  </family>
+  <family closed="true" pos="V" name="copular.adj">
+    <entry name="Primary">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="11">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash mode="&lt;" dir="\"/>
+        <atomcat type="np">
+          <fs id="0">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM0:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS0:pers-vals"/>
+            </feat>
+            <feat val="nom" attr="case"/>
+            <feat val="basic" attr="nform"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="adj">
+          <fs id="1">
+            <feat attr="index">
+              <lf>
+                <nomvar name="V1"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Restr">
+              <nomvar name="X"/>
+            </diamond>
+            <diamond mode="Scope">
+              <nomvar name="V1"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <member xmlns:xalan2="http://xml.apache.org/xslt" stem="be" pred="be"/>
+  </family>
+</ccg-lexicon>
