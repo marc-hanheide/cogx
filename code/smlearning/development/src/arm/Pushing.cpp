@@ -1195,10 +1195,10 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 	cout << name << "\n";
 
 	
-	// DOESN'T WORK!!!! compiles, but throws errors by linking executables
-	write_dataset(name+".dat"  , data);
-
-	print_dataset<double> (data);
+	write_dataset(name  , data);
+	DataSet savedData;
+	read_dataset(name, savedData);
+	print_dataset<double> (savedData);
 
 
 	}
