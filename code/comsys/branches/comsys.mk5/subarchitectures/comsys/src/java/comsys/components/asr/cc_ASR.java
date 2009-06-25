@@ -167,14 +167,15 @@ public class cc_ASR extends ManagedComponent {
 	/**
 	 * @param _id
 	 */
-	public cc_ASR (String _id) {
+/**	public cc_ASR (String _id) {
 		init();
 	} // end constructor
-
+*/ 
+	
 	private void init() {
 		// set the ontology for this method
 
-		asr_mode = ASR_SPEECHREC;
+//		asr_mode = ASR_SPEECHREC;
 		m_bLogOutput = true;
 		// general information processing structures
 		m_proposedProcessing = new Hashtable<String, ProcessingData>();
@@ -197,7 +198,7 @@ public class cc_ASR extends ManagedComponent {
 	 */
 	@Override
 	public void start() {
-		start();
+		init();
 
 		//try {
 			addChangeFilter(
@@ -574,14 +575,14 @@ public class cc_ASR extends ManagedComponent {
 		}
 	}
 
-	public void configure(Properties _config) {
-		_config.list(System.out);
-		configure(_config);
-
+	@Override
+	public void configure(Map<String, String> _config) {
+	//	_config.list(System.out);
+	
 		// Source of the data: either speech recognition or a dialogue
 		// window
 		if (_config.containsKey("--src")) {
-			String src = _config.getProperty("--src");
+			String src = _config.get("--src");
 
 			if (src.equals("gui")) {
 				configureGUI(_config);
@@ -596,7 +597,7 @@ public class cc_ASR extends ManagedComponent {
 		}
 	}
 
-	public void configureGUI(Properties _config) {
+	public void configureGUI(Map<String, String> _config) {
 		//nah: try resetting to default incase matlab has
 		//messed with it
 		try {
@@ -648,19 +649,19 @@ public class cc_ASR extends ManagedComponent {
 		asr_mode = ASR_GUI;
 	}
 
-	public void configureNuance(Properties _config) {
+	public void configureNuance(Map<String, String> _config) {
 
 		asr_mode = this.ASR_SPEECHREC; 
 
 		if (_config.containsKey("--timeout")) {
-			timeout = _config.getProperty("--timeout");
+			timeout = _config.get("--timeout");
 		}
 		else {
 			timeout = "8";
 		}
 
 		if (_config.containsKey("--port")) {
-			port = _config.getProperty("--port");
+			port = _config.get("--port");
 		}
 		else {
 			port = "5050";
@@ -668,7 +669,7 @@ public class cc_ASR extends ManagedComponent {
 
 		// merging sorts option
 		if (_config.containsKey("--package")) {
-			packageASR = _config.getProperty("--package");
+			packageASR = _config.get("--package");
 		}
 		else {
 			System.err.println("ERROR: you have to specify a package for the ASR");
@@ -677,35 +678,35 @@ public class cc_ASR extends ManagedComponent {
 
 
 		if (_config.containsKey("--grammarweight")) {
-			grammarweight = _config.getProperty("--grammarweight");
+			grammarweight = _config.get("--grammarweight");
 		}
 		else {
 			grammarweight = "8";
 		}
 
 		if (_config.containsKey("--WTW")) {
-			WTW = _config.getProperty("--WTW");
+			WTW = _config.get("--WTW");
 		}
 		else {
 			WTW = "-150";
 		}
 
 		if (_config.containsKey("--pruning")) {
-			pruning = _config.getProperty("--pruning");
+			pruning = _config.get("--pruning");
 		}
 		else {
 			pruning = "1800";
 		}
 
 		if (_config.containsKey("--recPPR")) {
-			recPPR = _config.getProperty("recPPR");
+			recPPR = _config.get("recPPR");
 		}
 		else {
 			recPPR = "TRUE";
 		}
 
 		if (_config.containsKey("--confidencethreshold")) {
-			confidencethreshold = _config.getProperty("confidencethreshold");
+			confidencethreshold = _config.get("confidencethreshold");
 		}
 		else {
 			confidencethreshold = "30";

@@ -69,6 +69,7 @@ import interconnectivity.processing.ContextActiveProcess;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -203,7 +204,7 @@ public class cc_Parser
      * 
      * @param _id
      */
-    public cc_Parser (String _id) {
+    public cc_Parser () {
 
     } // constructor/1
 
@@ -344,12 +345,12 @@ public class cc_Parser
 	*/ 
 	
     
-    public void configure(Properties _config) {
-        _config.list(System.out);
-        configure(_config);
+    public void configure(Map<String, String> _config) {
+     //   _config.list(System.out);
+     //   configure(_config);
         String parserArg = "";
         if (_config.containsKey("--grammar")) {
-            grammarFile = _config.getProperty("--grammar");
+            grammarFile = _config.get("--grammar");
         }
         else {
             grammarFile = "./grammars/openccg/moloko.v4/grammar.xml";
@@ -365,7 +366,7 @@ public class cc_Parser
 
       // merging sorts option
         if (_config.containsKey("--asr_subarch")) {
-            asr_subarch = _config.getProperty("--asr_subarch");
+            asr_subarch = _config.get("--asr_subarch");
            log("using the subarchitecture " + asr_subarch);
         }
         
@@ -398,7 +399,7 @@ public class cc_Parser
         }
         
         if (_config.containsKey("--graphsDir")) {
-            graphsDir = _config.getProperty("--graphsDir");
+            graphsDir = _config.get("--graphsDir");
         }
 		
 		
