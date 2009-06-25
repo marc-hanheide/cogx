@@ -288,14 +288,12 @@ bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_c
 		stringstream testingFileName;
 		testingFileName << baseFileName << "_" << n << "_foldcv_set-" << i << "_testing";
 		write_cdl_file (testingFileName.str(), partitions_testing[i]);
-		for (int j=0; j<n; j++) {
+		for (int j=0; j<n; j++)
 			if (i != j) {
 				DataSet::const_iterator s;
-				for (s=partitions_testing[j].begin(); s!=partitions_testing[j].end(); s++) {
+				for (s=partitions_testing[j].begin(); s!=partitions_testing[j].end(); s++)
 					partitions_training[i].push_back (*s);
-				}
 			}
-		}
 		cout << "size of training partition " << i << ": " << partitions_training[i].size() << endl;
 		print_dataset<double>(partitions_training[i]);
 		stringstream trainingFileName;
