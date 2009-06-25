@@ -12,7 +12,6 @@ typedef vector<double> FeatureVector;
 typedef vector<FeatureVector> Sequence;
 typedef vector<Sequence> DataSet;
 
-
 // function that prints the passed argument
 template <typename T>
 void print_item (const T& elem);
@@ -34,3 +33,5 @@ bool read_dataset (string fileName, DataSet& data);
 
 bool write_cdl_file_padding (string fileName, const DataSet& data);
 
+template <class Function>
+bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function f);
