@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM SubarchitectureWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM TestTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD test1 BasicTester --log $TEST_LOG_OUTPUT --test receive #--debug
+
+
