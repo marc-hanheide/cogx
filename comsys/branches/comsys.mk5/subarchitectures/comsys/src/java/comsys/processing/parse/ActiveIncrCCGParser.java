@@ -45,6 +45,7 @@ import comsys.processing.parse.OpenCCGGrammarData;
 import comsys.processing.parse.PackedLFParseResults;
 import comsys.processing.asr.WordRecognitionLattice;
 import comsys.processing.parse.SignHashParseResults;
+import comsys.utils.ParsingUtils;
 import comsys.arch.ComsysException;
 
 //-----------------------------------------------------------------
@@ -627,7 +628,8 @@ throws ComsysException, ParseException {
 					log(e.getMessage());
 				}
 
-				SignHashParseResults topCell = new SignHashParseResults(chart.get(0,stringPos));
+				SignHashParseResults topCell = 
+					new SignHashParseResults(chart.getSigns(0,stringPos));
 				// log("Top cell size before pruning: "+topCell.hash.size());
 				// prune the chart using a SignScorer over sign hashes.
 				if (chartScorer != null) {
@@ -871,7 +873,7 @@ private Hashtable<String,Integer> getNonStandardRules(Sign sign) {
 		new Hashtable<String,Integer>();
 
 	if (sign.getWords().size() == 1 && 
-			sign.numberOfRulesType0Applied > 0) {
+			sign.getDerivationHistory().NbLexicalCorrectionRulesApplied > 0) {
 		nonStandardRules.put("recogError-"+sign.getOrthography(), 1);
 	}
 
