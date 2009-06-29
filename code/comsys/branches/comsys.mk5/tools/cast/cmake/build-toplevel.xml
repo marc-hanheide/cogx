@@ -1,0 +1,62 @@
+<!-- Top level make file for CAST-based system -->
+<project name="cast-instantiation" default="all" basedir=".">
+
+  <!-- =================================================================== -->
+  <!-- Init build system                                                   -->
+  <!-- =================================================================== -->
+  <target name="init" description="compiles the source code">
+    <echo>"Preparing all builds"</echo>
+    <antcall target="template">
+      <param name="target" value="prepare" />
+    </antcall>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Calls compile                                                       -->
+  <!-- =================================================================== -->
+  <target name="all" depends="compile" description="compiles the source code">
+  </target>
+
+
+  <!-- =========================================
+       Template target.  Never called explicitly, 
+       only used to pass calls to underlying 
+       children modules. Need to automate later?
+       ========================================= -->
+  <target name="template">
+    <!-- <echo>Executing &quot;${target}&quot; target for subarchitectures/hello-world module...</echo> -->
+    <!-- <ant target="${target}" dir="subarchitectures/hello-world" /> -->
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Cleans all subdirs                                                  -->
+  <!-- =================================================================== -->
+  <target name="clean" depends="init">
+    <echo>"Cleaning all builds"</echo>
+    <antcall target="template">
+      <param name="target" value="clean" />
+    </antcall>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Generates source from slice in all subdirs                          -->
+  <!-- =================================================================== -->
+  <target name="slice" depends="init">
+    <echo>"Generating all sources"</echo>
+    <antcall target="template">
+      <param name="target" value="slice" />
+    </antcall>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles all subdirs                                                -->
+  <!-- =================================================================== -->
+  <target name="compile" depends="init">
+    <echo>"Compiling everything"</echo>
+    <antcall target="template">
+      <param name="target" value="compile" />
+    </antcall>
+  </target>
+  
+</project>
