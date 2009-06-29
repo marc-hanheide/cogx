@@ -844,7 +844,7 @@ implements ContextActiveProcess {
 
 		if (plf != null && plf.packedLF != null) {
 			log("Beam width applied: " + beamwidth);
-
+ 
 			/** STEP 1: "lock" the signs contained in the high-score analyses
 	    to ensure they are not deleted */
 			decoder.params = params;
