@@ -13,7 +13,7 @@
 // ===================================================================
 
 #include <LF.ice>
-#include <cast/slice/CDL.ice>
+#include <CDL.ice>
 
 module comsys {
 module datastructs {
