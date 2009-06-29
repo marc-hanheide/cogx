@@ -48,7 +48,7 @@ contains all the Java parts of CAST.
 
 4. Install the jar file:
 
-sudo ant install
+ sudo ant install
 
 This will copy the file cast.jar to <install.prefix>/share/java for
 later use.

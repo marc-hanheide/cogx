@@ -347,7 +347,7 @@ public class cc_Realizer
 					String bestRealization = "";
 					List bestEdges = chart.bestEdges();
 					for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
-						Edge edge = (Edge) beIter.next(); 
+						opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
 						// Sign sign = edge.getSign();
 						bestRealization = bestRealization+edge.toString()+"\n";
 					} // end for over best edges

@@ -207,7 +207,7 @@ public class UPDebugger
 	List bestEdges = chart.bestEdges();
 
 	for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
-	    Edge edge = (Edge) beIter.next(); 
+	    opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
 	    Sign sign = edge.getSign();
 	    output = output+sign.toString()+"\n";
 	} // end for over best edges
