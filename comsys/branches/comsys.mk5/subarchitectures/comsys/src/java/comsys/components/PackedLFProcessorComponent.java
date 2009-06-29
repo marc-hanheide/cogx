@@ -103,8 +103,7 @@ public abstract class PackedLFProcessorComponent
 		This method has been declared abstract, to enforce its implementation in the actual class that extends this one. 
 	*/
 	
-	public abstract void init (); 
-	
+    
 	/**
      * The method <i>taskAdopted</i> processes a parsing task once the
      * task manager has informed the parser component it can run. 
