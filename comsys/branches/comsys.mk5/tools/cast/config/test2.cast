@@ -1,0 +1,13 @@
+HOST localhost
+
+SUBARCHITECTURE test.sa.1
+CPP WM SubarchitectureWorkingMemory --log 
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP MG test1 ExampleManagedComponent --log 
+
+SUBARCHITECTURE test.sa.2
+CPP WM SubarchitectureWorkingMemory --log 
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP MG test2 ExampleManagedComponent --log 
+
+

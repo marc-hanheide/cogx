@@ -1,0 +1,12 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM SubarchitectureWorkingMemory --log $TEST_LOG_OUTPUT #--debug
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD writer LockTester --test write-40 --log $TEST_LOG_OUTPUT
+CPP GD overwriter-1 LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT
+CPP GD overwriter-2 LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT #--debug
+CPP GD overwriter-3 LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT #--debug
+CPP GD overwriter-4 LockTester --test overwrite-10 --exit false --log $TEST_LOG_OUTPUT #--debug
+
+

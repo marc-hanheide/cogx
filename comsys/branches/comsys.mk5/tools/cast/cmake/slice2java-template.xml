@@ -1,0 +1,6 @@
+<slice2java tie="true" outputdir="${src.dir}">
+  <fileset dir="${slice.dir}" includes="MYSLICEFILE.ice"/>
+  <includepath> 
+    <pathelement path="${slice.dir}"/> 
+  </includepath>
+</slice2java>

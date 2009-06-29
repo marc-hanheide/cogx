@@ -1,0 +1,9 @@
+HOST localhost
+
+SUBARCHITECTURE test
+CPP WM SubarchitectureWorkingMemory #--log $TEST_LOG_OUTPUT
+CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP GD generator BasicTester --test write-100 --log $TEST_LOG_OUTPUT
+CPP GD replacer BasicTester --test delete --exit false --log $TEST_LOG_OUTPUT
+
+

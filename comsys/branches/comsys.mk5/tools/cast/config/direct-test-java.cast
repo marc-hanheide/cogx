@@ -1,0 +1,5 @@
+HOST localhost
+
+COMPONENT JAVA aggregate.server cast.examples.SimpleAggregateServer 
+COMPONENT JAVA implements.server cast.examples.SimpleServer 
+COMPONENT JAVA word.client cast.examples.WordServerClient

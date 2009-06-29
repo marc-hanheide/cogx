@@ -1,0 +1,31 @@
+0.2.2
+
+Helpers are now provided for registering and resolving ice servers
+(i.e. connections between components that don't go via working
+memory). You can find generic registerIceServer and getIceServer
+methods in CASTComponent which do this for any server type and
+addressing mechanism you want. However, there are also versions of
+these methods which require only a component ID (the first string arg
+on a line in a cat file) and an interface type. These are simpler to
+use and register and resolve servers based on only the id of the
+component providing the server (i.e. the string available via
+getComponentID() which is specified in the cast file) and a template
+parameter for the interface type. You can see examples of this in
+action under src/*/cast/examples & config/direct-test-*.cast. One of
+the advantages of using this method is that Ice servants are
+automatically removed from a component when it is shut down (on the
+destroy() call) allowing the cast-server to be reused by repeated
+client calls.
+
+
+
+0.2.1
+
+Cached type strings in CASTUtils.typeName(Class) for efficiency
+
+Type-based change filters can now match against types within the type
+hierarchy of a particular class. E.g. given the hierarchy A -> B -> C
+you could filter for type C to only receive changes relating to
+instances of this class, type B to receive changes relating to
+instances of B and C, or type A to receive changes relating to any
+member of the hierarchy.
