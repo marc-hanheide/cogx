@@ -24,8 +24,8 @@
        children modules. Need to automate later?
        ========================================= -->
   <target name="template">
-    <echo>Executing &quot;${target}&quot; target for CAST module (tools/cast)</echo>
-    <ant target="${target}" dir="tools/cast" />
+    <!-- <echo>Executing &quot;${target}&quot; target for CAST module (tools/cast)</echo> -->
+    <!-- <ant target="${target}" dir="tools/cast" /> -->
     <echo>Executing &quot;${target}&quot; target for interconnectivity module (tools/interconnectivity)</echo>
     <ant target="${target}" dir="tools/interconnectivity" />
     <echo>Executing &quot;${target}&quot; target for comsys module (comsys.mk5; subarchitectures/comsys)</echo>
