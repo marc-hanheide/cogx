@@ -203,6 +203,7 @@ public abstract class PackedLFProcessorComponent
 			// set the goal
             String taskGoal = ComsysGoals.PACKEDLF_PROCESSING_TASK;
 			// store the goal with its information
+            log("YEAH RECEIVED PACKED LF!!!");
             proposeInformationProcessingTask(taskID, taskGoal);
         }
         catch (SubarchitectureComponentException e) {
@@ -319,7 +320,7 @@ public abstract class PackedLFProcessorComponent
 	
 
 	
-	protected void log(String msg) { System.out.println("[PLFProcessor] "+msg); }
+	protected void log(String msg) { System.out.println("[Visualizer] "+msg); }
 	
 	
 
