@@ -21,7 +21,7 @@
 //PACKAGE DEFINITION 
 //=================================================================
 
-package org.cognitivesystems.repr.lf.utils;
+package comsys.lf.utils;
 
 //=================================================================
 //IMPORTS
@@ -36,10 +36,6 @@ package org.cognitivesystems.repr.lf.utils;
 //LOGICAL FORM REPRESENTATION IMPORTS
 //-----------------------------------------------------------------
 
-import org.cognitivesystems.repr.lf.autogen.LFEssentials.*;
-import org.cognitivesystems.repr.lf.autogen.LFPacking.*;
-
-import org.cognitivesystems.comsys.general.ComsysException;
 //-----------------------------------------------------------------
 //JAVA IMPORTS
 //-----------------------------------------------------------------
@@ -59,6 +55,22 @@ import java.util.Enumeration;
 
 import org.jdom.*;
 import org.jdom.output.XMLOutputter;
+
+import comsys.arch.ComsysException;
+import comsys.datastructs.lf.ConnectiveType;
+import comsys.datastructs.lf.Feature;
+import comsys.datastructs.lf.LFComponent;
+import comsys.datastructs.lf.LFNominal;
+import comsys.datastructs.lf.LFRelation;
+import comsys.datastructs.lf.LogicalForm;
+import comsys.datastructs.lf.NominalPackingEdgePair;
+import comsys.datastructs.lf.PackedFeature;
+import comsys.datastructs.lf.PackedLogicalForm;
+import comsys.datastructs.lf.PackedNominal;
+import comsys.datastructs.lf.PackedOntologicalSort;
+import comsys.datastructs.lf.PackingEdge;
+import comsys.datastructs.lf.PackingNode;
+import comsys.datastructs.lf.PackingNodeTarget;
 
 //=================================================================
 //CLASS DOCUMENTATION 
@@ -95,7 +107,7 @@ public class LFUtils {
 		@return DynamicComprehensionStatus the initialized object
 	 */ 
 
-	public static DynCompStatus newDynCompStatus () { 
+/**	public static DynCompStatus newDynCompStatus () { 
 		DynCompStatus result = new DynCompStatus ();
 		result.referent = "";
 		result.epistemicStatus = EpistemicStatusFeature.EPI_UNKNOWN;
@@ -104,7 +116,7 @@ public class LFUtils {
 		result.statusGround = "";
 		return result;
 	} // end newDynCompStatus
-
+*/
 
 	/** Creates a new LFNominal object, with properly initialized 
 		(non-null) fields 
@@ -211,7 +223,7 @@ public class LFUtils {
 	/** Creates a new MetaTypeCharacterization object, with properly 
 		initialized (non-null) fields */
 
-	public static MetaTypeCharacterization newMetaTypeCharacterization () { 
+/**	public static MetaTypeCharacterization newMetaTypeCharacterization () { 
 		MetaTypeCharacterization result = new MetaTypeCharacterization();
 		result.logicalFormId = "";
 		result.mType = MetaType.UNKNOWN;
@@ -219,7 +231,7 @@ public class LFUtils {
 		result.components = new LFComponent[0];
 		return result;
 	} // end 
-
+*/
 
 	/** Creates a new Proposition object, with properly initialized 
 		(non-null) fields.
@@ -227,11 +239,11 @@ public class LFUtils {
 		@return Proposition the initialized object
 	 */ 
 
-	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition newProposition () { 
-		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition();
+	public static comsys.datastructs.lf.Proposition newProposition () { 
+		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
 		result.prop = "";
 		result.connective = ConnectiveType.NONE;
-//		result.rhsProp = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition[0];
+//		result.rhsProp = new comsys.datastructs.lf.Proposition[0];
 		return result;
 	} // end newProposition
 
@@ -242,11 +254,11 @@ public class LFUtils {
 		@return Proposition the initialized object
 	 */ 
 
-	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition newProposition (String propLabel) { 
-		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition();
+	public static comsys.datastructs.lf.Proposition newProposition (String propLabel) { 
+		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
 		result.prop = propLabel;
 		result.connective = ConnectiveType.NONE;
-//		result.rhsProp = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition[0];
+//		result.rhsProp = new comsys.datastructs.lf.Proposition[0];
 		return result;
 	} // end newProposition
 
@@ -1026,15 +1038,15 @@ public class LFUtils {
 		@return Proposition The updated proposition
 	 */
 
-	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition lfNominalAddProposition (LFNominal nom, String prop) {
-		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = newProposition(prop); 
+	public static comsys.datastructs.lf.Proposition lfNominalAddProposition (LFNominal nom, String prop) {
+		comsys.datastructs.lf.Proposition result = newProposition(prop); 
 
 		if (nom.prop == null ||
 				nom.prop.prop.equals("")) 
 		{ 
 			return result;
 		} else {
-			org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition nomProp = nom.prop;
+			comsys.datastructs.lf.Proposition nomProp = nom.prop;
 			// .... 
 			return result;
 		}
@@ -1443,7 +1455,7 @@ public class LFUtils {
 
 	/** Returns an LFComponent object for the given label, if any. If none, then null is returned */
 
-	public static LFComponent mtcGetComponent (MetaTypeCharacterization mtc, String label) { 
+/**	public static LFComponent mtcGetComponent (MetaTypeCharacterization mtc, String label) { 
 		Iterator compsIter = new ArrayIterator(mtc.components); 
 		LFComponent result = null;
 		while (compsIter.hasNext()) { 
@@ -1455,11 +1467,12 @@ public class LFUtils {
 		} // end while
 		return result;
 	} // end mtcGetComponent
-
+*/ 
+	
 	/** Returns a clone of the given Proposition object */
 
-	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition propositionClone (org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition prop) { 
-		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition();
+	public static comsys.datastructs.lf.Proposition propositionClone (comsys.datastructs.lf.Proposition prop) { 
+		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
 		result.prop = prop.prop;
 		result.connective  = prop.connective;
 //		result.rhsProp	   = prop.rhsProp.clone();
@@ -1559,8 +1572,8 @@ public class LFUtils {
 		
 		Element prop = new Element("prop");
 		
-		for(Iterator<org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
-			org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature nomFeature = featsIter.next();
+		for(Iterator<comsys.datastructs.lf.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
+			comsys.datastructs.lf.Feature nomFeature = featsIter.next();
 			if (nomFeature.feat.equals(feature)) {
 				prop = prop.setAttribute("name",LFUtils.lfNominalGetFeature(nom,nomFeature.feat));		
 			} // end if 
@@ -1629,7 +1642,7 @@ public class LFUtils {
 			if (LFUtils.lfNominalGetFeatures(helper).hasNext()) {
 				Iterator iter = LFUtils.lfNominalGetFeatures(helper);
 				while (iter.hasNext()) {
-					org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature feature = (org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature) iter.next();
+					comsys.datastructs.lf.Feature feature = (comsys.datastructs.lf.Feature) iter.next();
 					diamond = editFeatures(input,helper,feature.feat,diamond);
 				}
 			}
@@ -1717,7 +1730,7 @@ public class LFUtils {
 			if (LFUtils.lfNominalGetFeatures(inputNom).hasNext()) {
 				Iterator iter = LFUtils.lfNominalGetFeatures(inputNom); 
 				while (iter.hasNext()) {
-					org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature feature = (org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature) iter.next();
+					comsys.datastructs.lf.Feature feature = (comsys.datastructs.lf.Feature) iter.next();
 					sat = editFeatures(input,inputNom,feature.feat,sat);
 				}
 			} else { 
@@ -1779,7 +1792,7 @@ public class LFUtils {
 		@return LogicalForm the IDL-based object 
 	 */
 
-	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.LogicalForm convertFromLF (LF lf) { 
+	public static comsys.datastructs.lf.LogicalForm convertFromLF (LF lf) { 
 		return convertFromString(lf.toString());
 	} // end convertFromLF
 
@@ -1810,7 +1823,7 @@ public class LFUtils {
 		@return LogicalForm the IDL-based object 
 	 */
 
-	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.LogicalForm convertFromString(String s) { 
+	public static comsys.datastructs.lf.LogicalForm convertFromString(String s) { 
 
 		
 	//	System.out.println("Converting from String: ["+s+"]");
@@ -1823,7 +1836,7 @@ public class LFUtils {
 		int fatpos = s.indexOf("@");
 		int latpos = s.lastIndexOf("@");
 
-//		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition rhsStub[] = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition[0];
+//		comsys.datastructs.lf.Proposition rhsStub[] = new comsys.datastructs.lf.Proposition[0];
 
 		LFNominal nom  = newLFNominal();
 
@@ -1940,8 +1953,8 @@ public class LFUtils {
 								proposition = strip(proposition);
 								log("proposition "+proposition+" for "+nom.nomVar);
 								// ----
-//								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE, rhsStub);
-								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE);
+//								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE, rhsStub);
+								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE);
 								log("brackets: "+brackets+" length:"+brackets.length());
 								log("stack: "+nomstack.toString());
 								// for (int i=0; i < brackets.length()-1; i++) { if (!nomstack.empty()) { nom = (LFNominal) nomstack.pop(); log("pop - prop!--"+i);} }
@@ -1949,8 +1962,8 @@ public class LFUtils {
 							} else {
 								String proposition = conj;
 								proposition = strip(proposition);
-//								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE, rhsStub);
-								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE);
+//								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE, rhsStub);
+								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE);
 								log("proposition "+proposition+" for "+nom.nomVar);
 							} // end if..else check need to pop stack
 						} else { // relation or feature
@@ -2076,6 +2089,8 @@ public class LFUtils {
 
 
 
+	
+	/**
 	/** Returns the sort of assertion expressed by the given logical 
 		form. The sort is given in a MetaTypeCharacterization object, 
 		as value of the metaSort field. 
@@ -2085,7 +2100,7 @@ public class LFUtils {
 		@param lf The logical form
 		@return MetaTypeCharacterization 
 	 */
-
+	/*
 	public static MetaTypeCharacterization metaLFAssertionType (LogicalForm lf) { 
 		// a Vector of Strings containing possible sentence or verb modifiers (e.g. please)
 		Vector<String> qmodifs = new Vector<String>();
@@ -2227,7 +2242,7 @@ public class LFUtils {
 		} 		
 		return resultMTC;
 	} // end metaLFAssertionType
-
+	*/
 
 	/** Returns the sort of command expressed by the given logical 
 		form. The sort is given in a MetaTypeCharacterization object, 
@@ -2237,7 +2252,7 @@ public class LFUtils {
 		@return MetaTypeCharacterization 
 		@since 061101 (061101)		
 	 */
-
+	/**
 	public static MetaTypeCharacterization metaLFCommandType (LogicalForm lf) { 
 		// a Vector of Strings containing possible sentence or verb modifiers (e.g. please)
 		Vector<String> qmodifs = new Vector<String>();
@@ -2570,7 +2585,7 @@ public class LFUtils {
 		} 		
 		return resultMTC; 
 	} // end metaLFCommandType
-
+	*/
 
 	/** Returns the sort of question expressed by the given logical 
 		form. The sort is given in a MetaTypeCharacterization object, 
@@ -2588,7 +2603,7 @@ public class LFUtils {
 		@since 061101 (061101)
 
 	 */
-
+	/**
 	public static MetaTypeCharacterization metaLFQuestionType (LogicalForm lf) { 
 		String qscope = ""; // the nominal variable for the question scope
 		String qrestr = ""; // the nominal variable for the question restrictor
@@ -2924,7 +2939,7 @@ public class LFUtils {
 		} 
 		return resultMTC; 
 	} // end metaLFQuestionType
-
+	*/
 
 	/** The method <i>mtcDetermineMetaTypeCharacterization</i> vies for the longest method name, 
 		and provides a wrapper around the individual metaLF*Type methods for determining the type
@@ -2943,7 +2958,7 @@ public class LFUtils {
 		@return MetaTypeCharacterization The object with the characterization 
 		@since 061105 (061101)
 	 */ 
-
+	/**
 	public static MetaTypeCharacterization mtcDetermineMetaTypeCharacterization (LogicalForm lf) { 
 		MetaTypeCharacterization result = newMetaTypeCharacterization();
 		if (lf != null) { 
@@ -2992,6 +3007,8 @@ public class LFUtils {
 		return result;
 	} // end mtcDetermineMetaTypeCharacterization
 
+	*/ 
+	
 	//=================================================================
 	// MISC METHODS
 	//=================================================================
@@ -2999,7 +3016,7 @@ public class LFUtils {
 	/** Returns a string representation of the DynCompStatus object's 
 		epistemic and update status features. 
 	 */
-
+	/**
 	public static String dcsToString(DynCompStatus dcs) { 
 		String result = "*UNKNOWN*"; 
 		if (dcs.epistemicStatus == EpistemicStatusFeature.EPI_KNOWN) { 
@@ -3017,6 +3034,8 @@ public class LFUtils {
 		return result;
 	} // end dcsToString
 
+	*/
+	
 	/** Returns a string presentation of the given logical form. The
 		presentation is just a list of nominals! 
 
@@ -3206,7 +3225,7 @@ public class LFUtils {
 		JOptionPane.showMessageDialog(null,i,"Created graph",JOptionPane.INFORMATION_MESSAGE, null);
 	}
 
-	private static String getPropositionString(org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition prop) {		
+	private static String getPropositionString(comsys.datastructs.lf.Proposition prop) {		
 		String propString = prop.prop ;
 
 		// Since the recursive definition of the Proposition was removed by Nick, 
@@ -3980,7 +3999,7 @@ public class LFUtils {
 		@return String The string representation 
 		@since gj had brainsurgery (or close to braindead, after programming this)
 	 */ 
-
+	/**
 	public static String metaSortToString (MetaTypeSort sort) { 
 		String result = "*UNKNOWN*"; 
 		if (sort == MetaTypeSort.informative_attributive_endurant_instantiation) { 
@@ -4114,7 +4133,7 @@ public class LFUtils {
 		} // end if..then...bloody else
 		return result; 
 	} // end metaSortToString();
-
+	*/
 
 	private static String strip (String s) { 
 		StringTokenizer tok = new StringTokenizer(s);

@@ -30,36 +30,13 @@ package comsys.processing.parse;
 //-----------------------------------------------------------------
 //CAST IMPORTS
 //-----------------------------------------------------------------
-import cast.core.CASTData;
-
-//-----------------------------------------------------------------
-//COMSYS IMPORTS
-//-----------------------------------------------------------------
-
-import comsys.datastructs.comsysEssentials.*;
-import comsys.datastructs.lf.*;
-import comsys.components.parse.cc_Parser;
-import comsys.processing.parse.GrammarInterface;
-import comsys.processing.parse.OpenCCGGrammar;
-import comsys.processing.parse.OpenCCGGrammarData;
-import comsys.processing.parse.PackedLFParseResults;
-import comsys.processing.asr.WordRecognitionLattice;
-import comsys.processing.parse.SignHashParseResults;
-import comsys.utils.ParsingUtils;
-import comsys.arch.ComsysException;
-
-//-----------------------------------------------------------------
-//INTERCONNECTIVITY IMPORTS
-//-----------------------------------------------------------------
 import interconnectivity.processing.AttentionMechanism;
 import interconnectivity.processing.AttentionMechanismPipeline;
 import interconnectivity.processing.ContextActiveProcess;
 
-//-----------------------------------------------------------------
-//JAVA IMPORTS
-//-----------------------------------------------------------------
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -67,20 +44,30 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.Vector;
 
-//-----------------------------------------------------------------
-//OPENCCG IMPORTS
-//-----------------------------------------------------------------
+import comsys.arch.ComsysException;
+import comsys.components.parse.cc_Parser;
+import comsys.datastructs.comsysEssentials.ContextInfo;
+import comsys.datastructs.comsysEssentials.InterpretationSupport;
+import comsys.datastructs.comsysEssentials.PackedLFs;
+import comsys.datastructs.comsysEssentials.PhonString;
+import comsys.datastructs.lf.LogicalForm;
+import comsys.datastructs.lf.PackedLogicalForm;
+import comsys.lf.utils.ArrayIterator;
+import comsys.lf.utils.LFPacking;
+import comsys.lf.utils.LFUtils;
+import comsys.processing.parseselection.Decoder;
+import comsys.processing.parseselection.ParameterVector;
+import comsys.utils.ParsingUtils;
 
-import opennlp.ccg.grammar.RuleGroup;
 import opennlp.ccg.hylo.HyloHelper;
 import opennlp.ccg.hylo.Nominal;
 import opennlp.ccg.lexicon.DefaultTokenizer;
-import opennlp.ccg.lexicon.LexException;
 import opennlp.ccg.lexicon.Tokenizer;
 import opennlp.ccg.lexicon.Word;
 import opennlp.ccg.parse.Chart;
 import opennlp.ccg.parse.ChartScorer;
-import opennlp.ccg.parse.DerivationHistory;
+import opennlp.ccg.parse.Edge;
+import opennlp.ccg.parse.EdgeHash;
 import opennlp.ccg.parse.IncrCKYParser;
 import opennlp.ccg.parse.ParseException;
 import opennlp.ccg.parse.ParseResults;
@@ -90,15 +77,8 @@ import opennlp.ccg.synsem.Sign;
 import opennlp.ccg.synsem.SignHash;
 import opennlp.ccg.unify.UnifyControl;
 
-//-----------------------------------------------------------------
-//REPRESENTATION IMPORTS
-//-----------------------------------------------------------------
-import comsys.datastructs.lf.*;
-import comsys.lf.utils.ArrayIterator;
-import comsys.lf.utils.LFPacking;
-import comsys.lf.utils.LFUtils;
 import cast.core.CASTUtils;
-import java.util.Enumeration;
+import cast.core.CASTData;
 
 //=================================================================
 //CLASS DOCUMENTATION
@@ -139,8 +119,7 @@ implements ContextActiveProcess {
 	public final int LOG_VISUALIZE = 2;
 
 	/** Logging parameter */
-	private boolean logging = false;
-	private boolean visualization = false; 
+	protected boolean logging = false;
 
 	// last analysed utterance
 	String lastUtterance = "";
@@ -154,25 +133,31 @@ implements ContextActiveProcess {
 	// Charthistory is a collection of stacks with charts, the current 
 	// chart is on top. A stack is keyed by the ID of the PhonString for 
 	// which it maintains the (partial) analyses  
-	private Hashtable<String,Stack> chartHistories;
+	protected Hashtable<String,Stack> chartHistories;
 
 	// Hashtable with for each phon string (keyed by id) the final packed logical form
-	private Hashtable<String,PackedLogicalForm> finalPackedLFs; 
+	protected Hashtable<String,PackedLogicalForm> finalPackedLFs; 
 
 	// table with the string position for each phonString being parsed 
-	private Hashtable<String,Integer> phonStringPositions;
+	protected Hashtable<String,Integer> phonStringPositions;
 
 	// table with the tokenized phonStrings being parsed
-	private Hashtable<String,List> phonStringTokens;
+	protected Hashtable<String,List> phonStringTokens;
 
-	private Hashtable<String,Boolean> phonStringFinished;
-	
+	protected Hashtable<String,PackedLFParseResults> phonToCompletedPLFs;
+
+	protected Hashtable<String,Vector<PackedLFParseResults.SignInChart>> removedSigns;
+
 	// table matching plf id's with phon string id's
 	private Hashtable<String,String> plfToPhonStringId; 
 
+	// incremental chart pruning
+	public boolean incrementalPruning = false;
+	public ParameterVector params;
+	public int beamwidth;
+
 	// The interpretation support arrays, stored as a Vector per phon string id
 	private Hashtable<String,Vector> interpretationSupport; 
-
 
 	// Access to the grammar is factorized out
 	protected GrammarAccess grammar;
@@ -205,8 +190,10 @@ implements ContextActiveProcess {
 
 	private final String FREE_STATE    = "freeState";
 	private final String UPDATE_STATE  = "updateState";
-	private final String PARSING_STATE = "parsingState";	
 
+	
+	public Decoder decoder;
+	
 	cc_Parser component;
 
 	// set of dependencies whose interpretation is known to be unsupported
@@ -220,12 +207,12 @@ implements ContextActiveProcess {
 		init();
 	} // end constructor
 
+
 	private void init () { 
 		grammar = null;
 		chartHistories = new Hashtable<String,Stack>();
 		phonStringPositions = new Hashtable<String,Integer>();
 		phonStringTokens = new Hashtable<String,List>();
-		phonStringFinished = new Hashtable<String,Boolean>();
 		plfToPhonStringId = new Hashtable<String,String>();
 		attmech = new AttentionMechanismPipeline();
 		tokenizer = new DefaultTokenizer();
@@ -239,7 +226,11 @@ implements ContextActiveProcess {
 		interpretationSupport = new Hashtable<String,Vector>();
 		stateSemaphore = FREE_STATE;
 		component = null;
+		removedSigns = new Hashtable<String,Vector<PackedLFParseResults.SignInChart>>();
+		phonToCompletedPLFs = new Hashtable<String,PackedLFParseResults>();
+	 decoder = new Decoder(params);
 	} // end init
+
 
 	// =================================================================
 	// CONFIGURATION METHODS
@@ -286,10 +277,16 @@ implements ContextActiveProcess {
 	/**
 		The method <i>configure</i> takes a Properties list, to set any relevant parameters. 
 	 */ 
-
-	public void configure (Properties props) {  
-
-
+	public void configure (Properties props) { 
+		if (props.containsKey("parameterVector")) {
+			params = (ParameterVector)props.get("parameterVector");
+		}
+		if (props.containsKey("beamwidth")) {
+			beamwidth = ((Integer)props.get("beamwidth")).intValue();
+		}
+		if (params != null && beamwidth > 0) {
+			incrementalPruning = true;
+		}
 	} 
 
 	// =================================================================
@@ -313,17 +310,20 @@ implements ContextActiveProcess {
 		} // end if..else check for presence id
 	} // end getChartHistory
 
+
 	/** Returns the size of the given chart */
+	public int getChartSize (opennlp.ccg.parse.Chart table) {
+		return parser.getChartSize(table); 
+	}
 
-	public int getChartSize (opennlp.ccg.parse.Chart table) { return parser.getChartSize(table); }
 
-	/** The method <i>getFinalPackedLF</i> returns the final packed logical form for the given phon string id, 
-		or <tt>null</tt> if the id is unknown. 
+	/** The method <i>getFinalPackedLF</i> returns the final packed logical 
+	 * form for the given phon string id, or <tt>null</tt> if the id is unknown. 
 
 		@param id The identifier of the phon string
-		@return PackedLogicalForm The packed logical form for the final (complete) analyses of the phon string
+		@return PackedLogicalForm The packed logical form for the final 
+		(complete) analyses of the phon string
 	 */ 
-
 	public PackedLogicalForm getFinalPackedLF (String id) { 
 		if (finalPackedLFs.containsKey(id)) { 
 			return (PackedLogicalForm) finalPackedLFs.get(id);
@@ -352,6 +352,8 @@ implements ContextActiveProcess {
 		} // end if..else check for id 
 	} // end getTiming
 
+
+
 	// =================================================================
 	// ACTIVE PROCESSING METHODS [ ContextActiveProcess ]
 	// =================================================================
@@ -365,7 +367,7 @@ implements ContextActiveProcess {
 	 */
 	public Iterator getContextDataTypes() { 
 		Vector<String> dataTypes = new Vector<String>();
-//		dataTypes.addElement(CASTUtils.typeName(ContextInfo.class));
+		dataTypes.addElement(CASTUtils.typeName(ContextInfo.class));
 		return dataTypes.iterator();
 	} // end getContextDataTypes
 
@@ -449,7 +451,8 @@ implements ContextActiveProcess {
 	// =================================================================
 
 	/** 
-	 * The method <i>parse</i> parses the given PhonString, and returns the resulting analyses. 
+	 * The method <i>parse</i> parses the given PhonString, and 
+	 * returns the resulting analyses. 
 	 *
 	 * @param	str				The PhonString object with the utterance to be parsed
 	 * @return	ParseResults	The resulting analyses, provided as PackedLFParseResults
@@ -467,464 +470,595 @@ implements ContextActiveProcess {
 		PackedLFParseResults results = new PackedLFParseResults();
 		// tokenize the phonString
 		List words = tokenizer.tokenize(str.wordSequence);
+
 		// Run incremental parse steps over the length of the sentence
+		try {
+			UnifyControl.startUnifySequence();
+			Sign.resetCatInterner(false);
+			List entries = parser.lexicon.getEntriesFromWords(str.wordSequence);
+			//   List entries = grammar.getLexicalEntries(str.wordSequence);
 
-	       try {
-	            UnifyControl.startUnifySequence();
-	            Sign.resetCatInterner(false);
-	            List entries = parser.lexicon.getEntriesFromWords(str.wordSequence);
-	            //   List entries = grammar.getLexicalEntries(str.wordSequence);
+			log("Length: " + entries.size());
 
-	            log("Length: " + entries.size());
-	    		// initialize the chart and chart history
-	    		opennlp.ccg.parse.Chart table = new opennlp.ccg.parse.Chart(entries.size(), ((OpenCCGGrammar)grammar.getGrammar()).ccggrammar.rules);
-	    		
-				int i = 0;
-				for (Iterator entryIt=entries.iterator(); entryIt.hasNext(); i++) {
-					SignHash wh = (SignHash)entryIt.next();
-					for(Iterator whI=wh.iterator(); whI.hasNext();) {
-						Category cat = ((Sign)whI.next()).getCategory();
-						//cat.setSpan(i, i);
-						UnifyControl.reindex(cat);
-					}
-					table.set(i,i,wh);
+			// initialize the chart and chart history
+			opennlp.ccg.parse.Chart table = 
+				new opennlp.ccg.parse.Chart(entries.size(), 
+						((OpenCCGGrammar)grammar.getGrammar()).ccggrammar.rules);
+
+			int i = 0;
+			for (Iterator entryIt=entries.iterator(); entryIt.hasNext(); i++) {
+				SignHash wh = (SignHash)entryIt.next();
+				for(Iterator whI=wh.iterator(); whI.hasNext();) {
+					Category cat = ((Sign)whI.next()).getCategory();
+					//cat.setSpan(i, i);
+					UnifyControl.reindex(cat);
 				}
-				parser.parse(table, entries.size());
-				if (chartScorer != null) {
-					table = chartScorer.score(table, entries.size()-1);
-				}
-				results.stringPos = entries.size()-1;
-				results = packChartAnalyses(results, table);
-				results.finalized = this.FINAL_PARSE;
-	            
-	        } catch (ParseException e) {
-				log(e.getMessage());
+				table.set(i,i,wh);
 			}
-	        catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	        
-	        results.phon2LFsMapping = new Hashtable<PhonString,Vector<String>>();
-	        results.phon2LFsMapping.put(str, new Vector<String>());
-	        if (results != null && results.plf != null) {
-				LFPacking packingTool2 = new LFPacking();
-				LogicalForm[] unpackedLFs = packingTool2.unpackPackedLogicalForm(results.plf);			
-				Vector<String> vec = results.phon2LFsMapping.get(str);
-				for (int i = 0; i < unpackedLFs.length; i++) {		
-					vec.add(unpackedLFs[i].logicalFormId);
-				}
-	        }
+			parser.parse(table, entries.size());
+			if (chartScorer != null) {
+				table = chartScorer.score(table, entries.size()-1);
+			}
+			results.stringPos = entries.size()-1;
+			//		results = packChartAnalyses(results, table);
+			results.finalized = this.FINAL_PARSE;
+
+		} catch (ParseException e) {
+			log(e.getMessage());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		results = ParsingUtils.createPhon2LFsMapping (results, str);
 		return (ParseResults)results;
 	} // end parse
 
 
 
 
-/** 
- * The method <i>incrParse</i> parses the given PhonString, takes the next incremental
- * step in parsing the PhonString (either initialize, or continue), and returns the 
- * resulting analyses. If we're already at the end of the sentence, then we just perform
- * a final pruning step. The method sets the <tt>finalized</tt> flag for the <tt>PackedLFs</tt>
- * struct: if we're at the end, we're FINAL_PARSE (1), if after that we perform the last 
- * pruning, we're FINAL_PRUNING (2). By default, we're NOTFINISHED (0). 
- *
- * @param	str				The PhonString object with the utterance to be parsed
- * @return	ParseResults	The resulting analyses
- * @throws	ComsysException	Thrown when <tt>start</tt> &lt; 0 or end &gt; the end of the utterance, or when any other parsing error occurred
- * @see		org.cognitivesystems.comsys.data.ParseResults
- */ 	
-@Override
-public ParseResults incrParse (PhonString str) 
-throws ComsysException, ParseException { 
+	/** 
+	 * The method <i>incrParse</i> parses the given PhonString, takes the next incremental
+	 * step in parsing the PhonString (either initialize, or continue), and returns the 
+	 * resulting analyses. If we're already at the end of the sentence, then we just perform
+	 * a final pruning step. The method sets the <tt>finalized</tt> flag for the <tt>PackedLFs</tt>
+	 * struct: if we're at the end, we're FINAL_PARSE (1), if after that we perform the last 
+	 * pruning, we're FINAL_PRUNING (2). By default, we're NOTFINISHED (0). 
+	 *
+	 * @param	str				The PhonString object with the utterance to be parsed
+	 * @return	ParseResults	The resulting analyses
+	 * @throws	ComsysException	Thrown when <tt>start</tt> &lt; 0 or end &gt; the end of the utterance, or when any other parsing error occurred
+	 * @see		org.cognitivesystems.comsys.data.ParseResults
+	 */ 	
+	@Override
+	public ParseResults incrParse (PhonString str) 
+	throws ComsysException, ParseException { 
 
-	// declare the stringpos, chart, initialization as per below
-	int stringPos = -1;		
-	if (!str.wordSequence.equals(lastUtterance)) {
-		lastUtterance = str.wordSequence;
-		utteranceIncrement++;
-	}
-	boolean continueParsing;
-	Calendar rightNow;
-	opennlp.ccg.parse.Chart chart = null;
-	Stack chartHistory = null;
-	List words = null;
-	// the results
-	PackedLFParseResults results = new PackedLFParseResults();
-	results.finalized = this.NOTFINISHED;
-	// check whether we've already started to parse the string
-	// if so, initialize the string position and chart accordingly
-	if (phonStringPositions.containsKey(str.id)) { 
-		// get the string position (last analyzed position) and increment 
-		stringPos = ((Integer)phonStringPositions.get(str.id)).intValue();
-		// get the chart history for this phonString
-
-		chartHistory = (Stack) chartHistories.get(str.id);
-		chart = (opennlp.ccg.parse.Chart)chartHistory.peek();
-		// this is the point where we should prune the chart using context information 
-		
-		if (phonStringFinished.containsKey(str.id) && 
-				phonStringFinished.get(str.id)) {
-			return null;
+		// declare the stringpos, chart, initialization as per below
+		int stringPos = -1;		
+		if (!str.wordSequence.equals(lastUtterance)) {
+			lastUtterance = str.wordSequence;
+			utteranceIncrement++;
 		}
 
-		// get the list of words
-		words = (List)phonStringTokens.get(str.id);
-		// get the timing vector
-		timing = (Vector) timingMap.get(str.id);
-	} else { 
-		// tokenize the phonString, store the resulting tokenization for later reference
-		words = tokenizer.tokenize(str.wordSequence);
-		phonStringTokens.put(str.id,words);
-		phonStringFinished.put(str.id, new Boolean(false));
-		
-		// initialize the chart and chart history
-		chart = new opennlp.ccg.parse.Chart(words.size(), ((OpenCCGGrammar)grammar.getGrammar()).ccggrammar.rules);
-		chartHistory = new Stack();
-		// initialize the unification control of the parser
-		parser.initUnification();
-		// initialize the timing vector
-		timing = new Vector();
-		// reset the unsupported dependencies
+		boolean continueParsing;
+		Calendar rightNow;
+		opennlp.ccg.parse.Chart chart = null;
+		Stack chartHistory = null;
+		List<Word> words = new ArrayList<Word>();
+		// the results
+		PackedLFParseResults results = new PackedLFParseResults();
+		results.finalized = this.NOTFINISHED;
 
-		unsupportedDependencies = new Vector<InterpretationSupport>();
-	} // if...else for  retrieving, initializing string position, chart
-	// now, loop until a frontier is reached
-	try { 
-		// checkk whether we are at the end already
-		if (stringPos < words.size()-1) { 
-			log("Not yet at the end of the utterance, continue parsing");
-			continueParsing = true;
-			while (continueParsing) { 
-				rightNow = Calendar.getInstance();
-				long startTime = rightNow.getTime().getTime();
-				// move the string position one step forward
-				stringPos++;
-				// retrieve the lexical data for the word at the current position
-				Word word = (Word)words.get(stringPos);
+		// check whether we've already started to parse the string
+		// if so, initialize the string position and chart accordingly
+		if (phonStringPositions.containsKey(str.id)) { 
 
-				// We send some info about the current word position to the grammar
-				// (used to forge unique identifiers for the nominals)
-				grammar.setWordPosition(stringPos);
-				grammar.setUtteranceIncrement(utteranceIncrement);
+			// get the string position (last analyzed position) and increment 
+			stringPos = ((Integer)phonStringPositions.get(str.id)).intValue();
+			// get the chart history for this phonString
 
-				SignHash wordSigns = ((OpenCCGGrammarData)grammar.getLexicalEntries(word.getForm())).signHash;
-				// log("Getting signs for the word at position "+stringPos+" ["+word.toString()+"] -- "+wordSigns.size()+" signs found"); 				
+			chartHistory = (Stack) chartHistories.get(str.id);
+			chart = (opennlp.ccg.parse.Chart)chartHistory.peek();
+			// this is the point where we should prune the chart using context information 
 
-				// update the chart with the lexical data, re-indexing to provide unique indices 
-				for(Iterator signsIter=wordSigns.iterator(); signsIter.hasNext();) {
-					Category cat = ((Sign)signsIter.next()).getCategory();
-					UnifyControl.reindex(cat);
-				} // end for over categories to reindex
+			if (phonToCompletedPLFs.containsKey(str.id)) {
+				log("parse results are already available, simply retrieving it");
+				results = phonToCompletedPLFs.get(str.id);
+				results.finalized = FINAL_PRUNING;
+				return results;
+			}
 
-				chart.set(stringPos,stringPos,wordSigns);
-				// log("Chart after lexical insertion:\n"+chart.toString());
-				// initialize the parser, take a step, get the 
-
-				try {
-					chart = parser.stepIncrParser(chart,0,stringPos+1);
-					// log("Chart after parsing step:\n"+chart.toString());	
-				}
-				catch (ParseException e) {
-					log(e.getMessage());
-				}
-
-				SignHashParseResults topCell = 
-					new SignHashParseResults(chart.getSigns(0,stringPos));
-				// log("Top cell size before pruning: "+topCell.hash.size());
-				// prune the chart using a SignScorer over sign hashes.
-				if (chartScorer != null) {
-					// apply the scorer and get the revised chart
-					/**
-						SignHash prunedTopCellHash = signHashScorer.score(topCell.hash,complete);
-						log("Top cell size after pruning: "+prunedTopCellHash.size());					
-						// set the SignHash in the topcell of the chart
-						// to the revised hash
-						chart.set(0, stringPos, prunedTopCellHash);
-						topCell.hash = prunedTopCellHash;
-					 */
-					//log(">>>> START scoring the chart <<<<");
-					chart = chartScorer.score(chart,stringPos);
-
-					//log("Chart after pruning step:\n"+chart.toString());				
-					//log("<<<< END scoring the chart >>>>");						
-
-				} // end if check for chart scorer
-				// check whether to continue, on the top cell hash at position (0,stringPos) 
-				if (stringPos == (words.size()-1)) { 
-					log("Stop parsing, end of the utterance");
-					continueParsing = false; 
-					results.finalized = this.FINAL_PARSE;
-
-				} else { 
-					continueParsing = !a_iffilter.eligibleFrontierReached(topCell);
-					results.finalized = this.NOTFINISHED;
-				} 
-				log("Continue parsing? ["+continueParsing+"]");
-				rightNow = Calendar.getInstance();
-				long endTime = rightNow.getTime().getTime();
-				timing.add(stringPos,new Long(endTime-startTime));
-			} // end while 
+			// get the list of words
+			words = (List)phonStringTokens.get(str.id);
+			// get the timing vector
+			timing = (Vector) timingMap.get(str.id);
 		} else { 
-			log("At the end of the utterance, need to wait on interpretation support to perform final pruning steps");
-			results.finalized = this.FINAL_PRUNING;
-			// do the final pruning
-		} // end if..else check for whether we've reached the end already
+			// tokenize the phonString, store the resulting tokenization for later reference
+			List<Word> words_temp = tokenizer.tokenize(str.wordSequence);
 
-		// store the chart on the chart history, store the history and the string position for this phonString
-		chartHistory.push(chart);
-		chartHistories.put(str.id,chartHistory);
-		phonStringPositions.put(str.id,new Integer(stringPos));
-		timingMap.put(str.id,timing);
+			for (Iterator<Word> it = words_temp.iterator(); it.hasNext(); ) {
+				Word w = it.next();
+				if (((OpenCCGGrammarData)grammar.getLexicalEntries(w.getForm())).signHash.size()>0) {
+					words.add(w);
+				}
+			}
+			phonStringTokens.put(str.id,words);
 
-		// return the packed results
-		results.setStringPosition(stringPos);
-		results = packChartAnalyses(results, chart);
+			// initialize the chart and chart history
+			chart = new opennlp.ccg.parse.Chart(words.size(), ((OpenCCGGrammar)grammar.getGrammar()).ccggrammar.rules);
+			chartHistory = new Stack();
+			// initialize the unification control of the parser
+			parser.initUnification();
+			// initialize the timing vector
+			timing = new Vector();
+			// reset the unsupported dependencies
 
-		// now do the post pruning on the PLF 
-		PackedLogicalForm prunedPLF = prunePackedLogicalForm(results.plf,str.id);
+			unsupportedDependencies = new Vector<InterpretationSupport>();
+		} // if...else for  retrieving, initializing string position, chart
 
-		results.plf = prunedPLF;
-		if (results.plf != null) { 
-			finalPackedLFs.put(str.id,results.plf);
-			plfToPhonStringId.put(results.plf.packedLFId,str.id);
-			log("Storing link between packed LF id ["+results.plf.packedLFId+"] and phonstring id ["+str.id+"]");
-		} // end check for final packed LF
-		else {
-			System.err.println("[WARNING:ActiveIncrParser] phonString not parsable: \"" + str.wordSequence + "\"");
-			phonStringFinished.put(str.id, new Boolean(true));
-		}
-		log("Finalized flag for the PLF: "+results.finalized);
+		// now, loop until a frontier is reached
+		try {
 
-	} 
-	catch (IndexOutOfBoundsException iobe) { 
-		throw new ComsysException (iobe.getMessage()); 
-	} // end try..catch
+			results.parses = new ArrayList<Sign>();
 
-	results = ParsingUtils.createPhon2LFsMapping (results, str);
-	return results;
-} // end parse
+			// checkk whether we are at the end already
+			if (stringPos < words.size()-1) { 
+				log("Not yet at the end of the utterance, continue parsing");
+				continueParsing = true;
+
+				while (continueParsing) { 
+					rightNow = Calendar.getInstance();
+					long startTime = rightNow.getTime().getTime();
+					// move the string position one step forward
+					stringPos++;
+					// retrieve the lexical data for the word at the current position
+					Word word = (Word)words.get(stringPos);
+
+					// We send some info about the current word position to the grammar
+					// (used to forge unique identifiers for the nominals)
+					grammar.setWordPosition(stringPos);
+					grammar.setUtteranceIncrement(utteranceIncrement);
+
+					SignHash wordSigns = ((OpenCCGGrammarData)grammar.getLexicalEntries(word.getForm())).signHash;
+					// log("Getting signs for the word at position "+stringPos+" ["+word.toString()+"] -- "+wordSigns.size()+" signs found"); 				
+
+					// update the chart with the lexical data, re-indexing to provide unique indices 
+					for(Iterator signsIter=wordSigns.iterator(); signsIter.hasNext();) {
+						Category cat = ((Sign)signsIter.next()).getCategory();
+						UnifyControl.reindex(cat);
+					} // end for over categories to reindex
+
+					chart.set(stringPos,stringPos,wordSigns);
+					// log("Chart after lexical insertion:\n"+chart.toString());
+					// initialize the parser, take a step, get the 
+
+					try {
+						chart = parser.stepIncrParser(chart,0,stringPos+1);
+						if (chartScorer != null) {
+							chart = chartScorer.score(chart,stringPos);
+						} 
+						results.parses = parser.createResult(chart,stringPos+1);
+						if (results.parses.size() > 500) {
+							results.parses = new ArrayList<Sign>();
+						}
+						// log("Chart after parsing step:\n"+chart.toString());	
+					}
+					catch (ParseException e) {
+
+						Vector<PackedLFParseResults.SignInChart> removedSignsForId =
+							removedSigns.get(str.id);
+
+						if (incrementalPruning && removedSignsForId.size() > 0) {
+
+							log("[WARNING] First parsing attempt failed...");
+							log("Now adding the removed signs to the chart (" 
+									+ removedSignsForId.size() + " signs to reinsert)");
+
+							for (PackedLFParseResults.SignInChart sign : removedSignsForId ) {
+								chart.insert(sign.x, sign.y, sign.sign);
+							}
+							removedSignsForId = 
+								new Vector<PackedLFParseResults.SignInChart>();
+							log("Retry parsing...");
+
+							try {
+								chart = parser.stepIncrParser(chart,0,stringPos+1);
+								if (chartScorer != null) {
+									chart = chartScorer.score(chart,stringPos);
+								} 
+								results.parses = parser.createResult(chart,stringPos+1);
+								if (results.parses.size() > 500) {
+									results.parses = new ArrayList<Sign>();
+								}
+								log("Second parsing attempt successful");
+							}
+							catch (ParseException f) {
+								log("[WARNING] Unable to parse at this incremental step");
+							}
+						}
+						else {
+							log("[WARNING] Unable to parse at this incremental step");
+						}
+					}
+
+					SignHashParseResults topCell = 
+						new SignHashParseResults(chart.getSigns(0,stringPos));
+
+					// check whether to continue, on the top cell hash at position (0,stringPos) 
+					if (stringPos == (words.size()-1)) { 
+						log("Stop parsing, end of the utterance");
+						continueParsing = false; 
+						results.finalized = this.FINAL_PARSE;
+						phonToCompletedPLFs.put(str.id, results);
+
+					} else { 
+						continueParsing = !a_iffilter.eligibleFrontierReached(topCell);
+						results.finalized = this.NOTFINISHED;
+					} 
+					log("Continue parsing? ["+continueParsing+"]");
+					rightNow = Calendar.getInstance();
+					long endTime = rightNow.getTime().getTime();
+					timing.add(stringPos,new Long(endTime-startTime));
+				} // end while 
+			} else { 
+				log("At the end of the utterance, need to wait " +
+				"on interpretation support to perform final pruning steps");
+				results.finalized = this.FINAL_PRUNING;
+				// do the final pruning
+			} // end if..else check for whether we've reached the end already
+
+			// return the packed results
+			results.setStringPosition(stringPos);
+
+			results = packChartAnalyses(results);
+
+			// create a mapping between the phonological string and the LFs
+			results = ParsingUtils.createPhon2LFsMapping (results, str);
+
+			// store the chart on the chart history, store the history and the string position for this phonString
+			chartHistory.push(chart);
+			chartHistories.put(str.id,chartHistory);
+			phonStringPositions.put(str.id,new Integer(stringPos));
+			timingMap.put(str.id,timing);
+
+			// incremental chart scoring using parse selection
+			if (!removedSigns.containsKey(str.id)) {
+				Vector<PackedLFParseResults.SignInChart> removedSignsForId = 
+					new Vector<PackedLFParseResults.SignInChart>();
+				removedSigns.put(str.id, removedSignsForId);
+			}
+			if (incrementalPruning) {
+				pruneChartAnalyses(results);
+			}
+
+			// now do the post pruning on the PLF 
+			// PackedLogicalForm prunedPLF = prunePackedLogicalForm(results.plf,str.id);
+			// results.plf = prunedPLF;
+
+			if (results.finalized != this.FINAL_PRUNING && 
+					results.plf == null) {
+				log("Current incremental step failed, going directly to the next one");
+				results = (PackedLFParseResults)incrParse(str);
+			}
+
+			else if (results.plf != null) { 
+				finalPackedLFs.put(str.id,results.plf);
+				plfToPhonStringId.put(results.plf.packedLFId,str.id);
+				log("Storing link between packed LF id ["+
+						results.plf.packedLFId+"] and phonstring id ["+str.id+"]");
+			} 
+
+			else {
+				System.err.println("[WARNING:ActiveIncrParser] phonString" +
+						" not parsable: \"" + str.wordSequence + "\"");
+				phonToCompletedPLFs.put(str.id, new PackedLFParseResults());
+			}
+		} 
+		catch (IndexOutOfBoundsException iobe) { 
+			iobe.printStackTrace();
+			throw new ComsysException (iobe.getMessage()); 
+		} // end try..catch
 
 
-/** 
-		The method <i>prunePackedLogicalForm</i> checks whether relations in the packed logical form 
-		are supported or not, and if not, then they are deleted. Relations cover both LFRelation and 
+		return results;
+	} // end parse
+
+
+	/** 
+		The method <i>prunePackedLogicalForm</i> checks whether relations 
+		in the packed logical form are supported or not, and if not, 
+		then they are deleted. Relations cover both LFRelation and 
 		PackingEdge objects. 
- */ 
+	 */ 
+	public PackedLogicalForm prunePackedLogicalForm (PackedLogicalForm plf, 
+			String strId) { 
+		// Initialize the result
+		PackedLogicalForm result = plf;
 
-public PackedLogicalForm prunePackedLogicalForm (PackedLogicalForm plf, String strId) { 
-	// Initialize the result
-	PackedLogicalForm result = plf;
-	
-	if (interpretationSupport.containsKey(strId)) { 
-		// Get the supported interpretations
-		Vector interpretations = interpretationSupport.get(strId);
-		for (Iterator suppintIter = interpretations.iterator(); suppintIter.hasNext(); ) { 
-			InterpretationSupport[] supports = (InterpretationSupport[]) suppintIter.next();
-			for (ArrayIterator supportsIter = new ArrayIterator(supports); supportsIter.hasNext(); ) {
-				InterpretationSupport support = (InterpretationSupport) supportsIter.next();
-				if (!support.isSupported) {
-					log("Unsupported relation ["+support.mode+"] under nominal ["+support.headNomVar+"] ");
-					log("Pruning PLF -- number of packing nodes before pruning unsupported dependencies: ["+result.pNodes.length+"]");
-					result = LFUtils.plfRemoveDependence(result,support.headNomVar, support.depNomVar, support.mode); 
-					log("Pruning PLF -- number of packing nodes after pruning unsupported dependencies: ["+result.pNodes.length+"]");						
-					//		LFUtils.plfToGraph(plf,"./subarchitectures/comsys.mk4/graphs/parser/pruned-"+plf.packedLFId, true);
-					log("We keep the unsupported dependency in memory for later repruning");
-					unsupportedDependencies.add(support);
-				} // end if check whether unsupported
-				else { 
-					log("Supported relation ["+support.mode+"] under nominal ["+support.headNomVar+"] ");
-					log("Pruning PLF -- number of packing nodes before pruning using supported dependencies: ["+result.pNodes.length+"]");
-					result = LFUtils.plfRemoveIncompatibleDependencies(result,support.headNomVar, support.depNomVar, support.mode); 
-					log("Pruning PLF -- number of packing nodes after pruning using supported dependencies: ["+result.pNodes.length+"]");							
-				} 
-			} // end for over individual supports
-		} // end for
-	} else {
-		// System.err.println("[WARNING:ActiveIncrParser] There are no interpretation support objects yet for ["+strId+"]");
-	} // end if..else check for available supports 
-	if (result == null) { 
-		result = plf;
-	//	System.err.println("[WARNING:ActiveIncrParser] Pruned to null, returning original -");
+		if (interpretationSupport.containsKey(strId)) { 
+			// Get the supported interpretations
+			Vector interpretations = interpretationSupport.get(strId);
+			for (Iterator suppintIter = interpretations.iterator(); 
+			suppintIter.hasNext(); ) { 
+				InterpretationSupport[] supports = 
+					(InterpretationSupport[]) suppintIter.next();
+				for (ArrayIterator supportsIter = 
+					new ArrayIterator(supports); supportsIter.hasNext(); ) {
+					InterpretationSupport support = 
+						(InterpretationSupport) supportsIter.next();
+					if (!support.isSupported) {
+						log("Unsupported relation ["+support.mode+"] " +
+								"under nominal ["+support.headNomVar+"] ");
+						log("Pruning PLF -- number of packing nodes " +
+								"before pruning unsupported dependencies: ["
+								+result.pNodes.length+"]");
+						result = LFUtils.plfRemoveDependence(result,
+								support.headNomVar, support.depNomVar, support.mode); 
+						log("Pruning PLF -- number of packing nodes after pruning " +
+								"unsupported dependencies: ["+result.pNodes.length+"]");						
+						log("We keep the unsupported dependency in memory " +
+						"for later repruning");
+						unsupportedDependencies.add(support);
+					} // end if check whether unsupported
+					else { 
+						log("Supported relation ["+support.mode+"] under " +
+								"nominal ["+support.headNomVar+"] ");
+						log("Pruning PLF -- number of packing nodes before " +
+								"pruning using supported dependencies: ["+result.pNodes.length+"]");
+						result = LFUtils.plfRemoveIncompatibleDependencies
+						(result,support.headNomVar, support.depNomVar, support.mode); 
+						log("Pruning PLF -- number of packing nodes after pruning " +
+								"using supported dependencies: ["+result.pNodes.length+"]");							
+					} 
+				} // end for over individual supports
+			} // end for
+		} else {
+		} // end if..else check for available supports 
+		if (result == null) { 
+			result = plf;
+		}
+		return result;
+	} // end prunePackedLogicalForm
+
+
+
+	/**
+	 * Tool for incremental chart pruning: for each logical form contained in the
+	 * PLF, we compute their parse selection score, and we retain only the logical 
+	 * forms with a high score (where the number of LFs to be kept is determined 
+	 * by the <i>beamwidth</i> parameter).  The lower-score logical forms are 
+	 * removed, and all the intermediate signs which are associated to it in the 
+	 * chart are removed  as well.  
+	 * 
+	 * @param results the packed logical form results
+	 * @param chart the CKY chart
+	 * @return the pruned chart
+	 * @throws ParseException
+	 */
+	protected void pruneChartAnalyses(PackedLFParseResults results) throws ParseException {
+
+		log("Now pruning the chart analyses...");
+		
+		PackedLFs plf = ParsingUtils.createDummyPLF(results);
+
+		if (plf != null && plf.packedLF != null) {
+			log("Beam width applied: " + beamwidth);
+
+			/** STEP 1: "lock" the signs contained in the high-score analyses
+	    to ensure they are not deleted */
+			decoder.params = params;
+			Vector<String> LFsToKeep = decoder.getBestParses(plf, beamwidth);	
+
+			for (String lfId : LFsToKeep) {
+				PackedLFParseResults.SignInChart signInChart = results.lfIdToSignMapping.get(lfId);
+				if (signInChart != null) {
+					ParsingUtils.lockSignsInDerivationHistory(signInChart.sign, true);
+				}
+			}
+
+			/** STEP 2: get the logical forms NOT contained in the beam width
+        (ie. the parses with a low score) */
+			Vector<String> LFsToRemove = new Vector<String>();
+			String[] LFs = LFUtils.plfGetPackingNode(plf.packedLF,plf.packedLF.root).lfIds;
+			for (int i = 0; i < LFs.length ; i++) {
+				String lfId = LFs[i];
+				if (!LFsToKeep.contains(lfId)) {
+					LFsToRemove.add(lfId);
+				}
+			}
+
+			for (String lfId : LFsToRemove) {
+				LogicalForm lf = packingTool.extractLogicalForm(plf.packedLF, lfId);
+			}
+
+			for (PhonString phon :results.phon2LFsMapping.keySet()) {
+				String strId = phon.id;
+
+				log("currently under view: " + phon.wordSequence);
+
+				Stack chartHistory = (Stack) chartHistories.get(strId);
+				Chart chart = (opennlp.ccg.parse.Chart)chartHistory.peek();
+
+				Vector<Sign> signsToRemove = new Vector<Sign>();
+
+				Vector<PackedLFParseResults.SignInChart> removedSignsForId =
+					removedSigns.get(strId);
+				int initSize = removedSignsForId.size();
+
+				if (results.plf != null && params != null && 
+						beamwidth > 0 && 
+						results.lfIdToSignMapping.keySet().size() > beamwidth) {
+
+					/** STEP 3: collect all signs in the chart which are associated to 
+			            these low-score LFs, and which are to be removed */
+					for (String lfId : LFsToRemove) {
+						PackedLFParseResults.SignInChart signInChart = 
+							results.lfIdToSignMapping.get(lfId);
+						if (signInChart != null) {
+							signsToRemove.add(signInChart.sign);
+							List<Sign> signsToCheck = 
+								ParsingUtils.collectSignInDerivationHistory(signInChart.sign);
+							for (Iterator<Sign> it =  signsToCheck.iterator() ; it.hasNext(); ) {
+								Sign sign = it.next();
+								if (!sign.locked) {
+									signsToRemove.add(sign);
+								}
+							} 
+						}
+					}
+
+					/** STEP 4: remove the lock on the signs */
+					for (String lfId : LFsToKeep) {
+						PackedLFParseResults.SignInChart signInChart = 
+							results.lfIdToSignMapping.get(lfId);
+						if (signInChart != null) {
+							ParsingUtils.lockSignsInDerivationHistory(signInChart.sign, false);
+						}
+					}
+
+					int end = results.stringPos;
+					if (end >= chart._size) end = chart._size-1;
+
+					/** STEP 5: perform the removal */
+					for (int i = 0 ; i <= end; i++) {	
+						for (int j = i ; j <= end; j++) {	
+							EdgeHash oldSH = chart.unpack(i, j);
+							SignHash newSH = new SignHash();
+							for (Iterator<Edge> edges = oldSH.iterator(); edges.hasNext();) {
+								Edge edge = edges.next();
+
+								if (!signsToRemove.contains(edge.sign)) {
+									newSH.add(edge.sign);		
+								}
+								else {
+									PackedLFParseResults.SignInChart signInChart =
+										results.new SignInChart();
+									signInChart.sign = edge.sign;
+									signInChart.x = i;
+									signInChart.y = j;
+									removedSignsForId.add(signInChart);
+								}
+							}
+							chart.set(i, j, newSH);
+						}
+					}
+					log("Chart successfully pruned (" + (removedSignsForId.size() - initSize) 
+							+ " signs removed from chart)");
+				}
+			}
+		}
 	}
-	return result;
-} // end prunePackedLogicalForm
 
 
 
-
-/**
-		The method <i>packChartAnalyses</i> takes a chart, reads out the parses, and converts the
-		parses (particularly, the semantics in the parses) into logical forms from which we can 
+	/**
+		The method <i>packChartAnalyses</i> takes a chart, reads out 
+		the parses, and converts the parses (particularly, the semantics
+		 in the parses) into logical forms from which we can 
 		construct a packed representation. 
 
 		@param chart		The chart with the parses
 		@param stringPos	The position up to which there are analyses in the chart
 		@return PackedLogicalForm The packed logical form representation
 
- */ 
+	 */ 
 
-public PackedLFParseResults packChartAnalyses(PackedLFParseResults results, opennlp.ccg.parse.Chart chart) throws ParseException {
+	public PackedLFParseResults packChartAnalyses(PackedLFParseResults results) 
+	throws ParseException {
 
-	int stringPos = results.stringPos + 1;		
-	log("Packing parsing results at string position ["+stringPos+"]");
+		int stringPos = results.stringPos;		
+		log("Packing parsing results at string position ["+stringPos+"]");
 
-	Hashtable<String,Hashtable<String,Integer>> nonStandardRulesApplied = 
-		new Hashtable<String,Hashtable<String,Integer>>();
+		Hashtable<String,Hashtable<String,Integer>> nonStandardRulesApplied = 
+			new Hashtable<String,Hashtable<String,Integer>>();
 
-	PackedLogicalForm plf = null;
-	try { 
-		log("Retrieving parses from the chart");		 
+		PackedLogicalForm plf = null;
+		try { 
+			log("Retrieving parses from the chart");		 
 
-		List parses = (List<Sign>) parser.createResult(chart,stringPos); 
+			Sign[] signs = new Sign[results.parses.size()];
 
-		//log("Setting up sign array");		 			
+			if (results.parses.size()==0)
+				return results;
 
-		Sign[] signs = new Sign[parses.size()];
+			results.parses.toArray(signs);		
 
-		//log("Converting parses to array");
+			log("Going to pack "+results.parses.size()+" parses / logical forms");
 
-		parses.toArray(signs);		
+			int nbEmptyLFs = 0 ;
+			LogicalForm[] lfs = new LogicalForm[results.parses.size()];
+			for (int i=0; i < results.parses.size(); i++) { 
+				Category cat = signs[i].getCategory();
+				if (cat.getLF() != null) {
+					LF convertedLF = null;
+					Nominal index = cat.getIndexNominal();	
+					HyloHelper.setUtteranceIncrement(utteranceIncrement);
+					convertedLF = HyloHelper.compactAndConvertNominals(cat.getLF(), index);
+					//				log(convertedLF.prettyPrint(""));
+					LogicalForm lf = LFUtils.convertFromLF(convertedLF);
+					lf.logicalFormId = "lf"+i;
 
-		log("Going to pack "+parses.size()+" parses / logical forms");
+					// maintain a reference to the sign in the chart
+					// (necessary to perform later chart pruning)
+					PackedLFParseResults.SignInChart signInChart = results.new SignInChart();
+					signInChart.x = 0;
+					signInChart.y = stringPos;
+					signInChart.sign = signs[i];
+					results.lfIdToSignMapping.put(lf.logicalFormId, signInChart);
 
-		int nbEmptyLFs = 0 ;
-		LogicalForm[] lfs = new LogicalForm[parses.size()];
-		for (int i=0; i < parses.size(); i++) { 
-			Category cat = signs[i].getCategory();
-			if (cat.getLF() != null) {
-				LF convertedLF = null;
-				Nominal index = cat.getIndexNominal();	
-				HyloHelper.setUtteranceIncrement(utteranceIncrement);
-				convertedLF = HyloHelper.compactAndConvertNominals(cat.getLF(), index);
-			//				log(convertedLF.prettyPrint(""));
-				LogicalForm lf = LFUtils.convertFromLF(convertedLF);
-				lf.logicalFormId = "lf"+i;
+					nonStandardRulesApplied.put(lf.logicalFormId, 
+							ParsingUtils.getNonStandardRules(signs[i]));
 
-				nonStandardRulesApplied.put(lf.logicalFormId, getNonStandardRules(signs[i]));
+					// we verify the logical form is not known to be unsupported due to
+					// one of its dependencies
+					boolean supported = true;
+					/** for (Iterator<InterpretationSupport> it = 
+						unsupportedDependencies.iterator() ; it.hasNext() ;) {
 
-
-				/**	if (signs[i] !=null && signs[i].nonStandardRulesApplied != null) {
-					nonStandardRulesApplied.put(lf.logicalFormId, signs[i].nonStandardRulesApplied);
+						InterpretationSupport support = it.next();
+						if (LFUtils.hasDependency(lf, support.headNomVar,
+								support.depNomVar, support.mode)) {
+							supported = false;
+							log("Unsupported LF is discarded: " + lf.logicalFormId);
+						}
 					} */
-
-				// we verify the logical form is not known to be unsupported due to
-				// one of its dependencies
-				boolean supported = true;
-				for (Iterator<InterpretationSupport> it = unsupportedDependencies.iterator() ; it.hasNext() ;) {
-
-					InterpretationSupport support = it.next();
-					if (LFUtils.hasDependency(lf, support.headNomVar,support.depNomVar, support.mode)) {
-						supported = false;
-						log("Unsupported LF is discarded: " + lf.logicalFormId);
-					}
+					if (supported) {
+						lfs[i-nbEmptyLFs] = lf;
+					} 
 				}
-				if (supported) {
-					lfs[i-nbEmptyLFs] = lf;
+				else {
+					nbEmptyLFs++ ;
 				}
+			} // end for to convert the parse analyses into our logical forms
 
-				// log("final lf: " + lfs[i-nbEmptyLFs]);
-			}
-			else {
-				nbEmptyLFs++ ;
-			}
+			lfs = (LogicalForm[]) LFUtils.resizeArray(lfs, lfs.length-nbEmptyLFs);
 
-		} // end for to convert the parse analyses into our logical forms
+			packingTool.setUtteranceIncrement(utteranceIncrement);
 
-		lfs = (LogicalForm[]) LFUtils.resizeArray(lfs, lfs.length-nbEmptyLFs);
+			plf = packingTool.packLogicalForms(lfs); 
 
-		// log("LF array size: " + lfs.length);
+			log("Done packing");
+		} 
 
-		//log("Done converting the logical forms");
-		//log("Now starting packing logical forms");	
-		packingTool.setUtteranceIncrement(utteranceIncrement);
+		catch (Exception e) {
+			log("An exception occured while packing logical forms");
+			log(e.getMessage()); 
+			e.printStackTrace();
+		} // end try..catch for parse exceptions when reading out the chart
 
-		//	for (int i=0; i < lfs.length; i++) {
-		//		log("lfs"+i+": " + LFUtils.lfToString(lfs[i]));
-		//	}
+		results.plf = plf;
+		results.nonStandardRulesApplied = nonStandardRulesApplied;
 
-		plf = packingTool.packLogicalForms(lfs); 
-		//	LFUtils.plfToGraph(result, "testPS"+increment2, true);
-		//	log("PFL written to" + "testPS"+increment2);
-		//	increment2++;
-
-		// visualize(result);
-		log("Done packing");
-	} 
-	catch (ParseException e) {
-		log("Parse exception");
-		log(e.getMessage());
-		//	e.printStackTrace();
-	}
-	catch (Exception e) {
-		log("An exception occured while creating or packing the logical forms");
-		log(e.getMessage()); 
-		e.printStackTrace();
-	} // end try..catch for parse exceptions when reading out the chart
-
-	results.plf = plf;
-	results.nonStandardRulesApplied = nonStandardRulesApplied;
-
-	return results;
-} // end packChartAnalyses
+		return results;
+	} // end packChartAnalyses
 
 
-private Hashtable<String,Integer> getNonStandardRules(Sign sign) {
-	Hashtable<String,Integer> nonStandardRules = 
-		new Hashtable<String,Integer>();
+	//	=================================================================
+	//	LOG METHODS [  ]
+	//	=================================================================
 
-	if (sign.getWords().size() == 1 && 
-			sign.getDerivationHistory().NbLexicalCorrectionRulesApplied > 0) {
-		nonStandardRules.put("recogError-"+sign.getOrthography(), 1);
-	}
-
-	DerivationHistory dh = sign.getDerivationHistory();
-	Sign[] inputsigns = dh.getInputs();
-
-	if (dh != null && dh.getRule() != null && 
-			dh.getRule().name().contains("ROBUST")) {
-		String rulename = dh.getRule().name();
-		if (nonStandardRules.containsKey(rulename)) {
-			Integer oldValue = nonStandardRules.get(rulename);
-			nonStandardRules.put(rulename, 
-					new Integer(oldValue.intValue() + 1));
-		}
-		else {
-			nonStandardRules.put(rulename, new Integer(1));
-		}
-	}
-
-	// recursion
-	for (int i=0; inputsigns != null && i < inputsigns.length; i++) {
-		Hashtable<String,Integer> hash = getNonStandardRules(inputsigns[i]);
-		for (Enumeration<String> e = hash.keys(); e.hasMoreElements();) {
-			String rulename = e.nextElement();
-			Integer newValue = hash.get(rulename);
-			if (nonStandardRules.containsKey(rulename)) {
-				Integer oldValue = nonStandardRules.get(rulename);
-				nonStandardRules.put(rulename, 
-						new Integer(oldValue.intValue() + newValue.intValue()));
-			}
-			else {
-				nonStandardRules.put(rulename, 
-						new Integer(newValue.intValue()));
-			}
-		}
-	}
-
-	return nonStandardRules;
-}
-
-private void wait (int ms) { 
-	try {
-		Thread.sleep(ms);
-	} catch (InterruptedException ie) {}
-} // end wait
-
-// =================================================================
-// LOG METHODS [  ]
-// =================================================================
-
-/** 
+	/** 
 		The method <i>setLogLevel</i> defines the logging level for the parser: 
 		<ol>
 		<li value="0"> no logging </li>
@@ -934,42 +1068,37 @@ private void wait (int ms) {
 		To set the log level, it is best to use the public constants <tt>LOG_FALSE</tt>, <tt>LOG_TRUE</tt>, <tt>LOG_VISUALIZE</tt>. 
 
 		@param l The log level 
- */ 
+	 */ 
 
-public void setLogLevel (int l) {
-	logging = false; visualization = false; 
-	switch (l) {
-	case 0 : break; 
-	case 1 : logging = true; break ; 
-	case 2 : logging = true; visualization = true; break;
-	} // end switch
-	packingTool.logging = true;
-} //
+	public void setLogLevel (int l) {
+		logging = false; 
+		switch (l) {
+		case 0 : break; 
+		case 1 : logging = true; break ; 
+		case 2 : logging = true; break;
+		} // end switch
+		packingTool.logging = true;
+	} //
 
-/**
+	/**
 		The method <i>log</i> prints out the given message to system.out. 
 
 		@param msg The log message to be printed 
- */
+	 */
 
-public void log (String msg) { 
-	if (logging) { System.out.println("[LOG \"ActiveIncrCCGParser\"] "+msg); }
-} // end log
+	public void log (String msg) { 
+		if (logging) { System.out.println("[LOG \"ActiveIncrCCGParser\"] "+msg); }
+	} // end log
 
-/**
-		The method <i>visualize</i> visualizes the given packed logical form. 
-
-		@param msg The log message to be printed 
- */
-
-
-public void visualize (PackedLogicalForm plf) { 
-
-} // end visualize
+	static void wait (int ms) { 
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException ie) {}
+	} // end wait
 
 
-public LFPacking getPackingTool () {
-	return packingTool;
-}
+	public LFPacking getPackingTool () {
+		return packingTool;
+	}
 
 } // end class

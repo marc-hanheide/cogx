@@ -3,7 +3,7 @@ package comsys.datastructs;
 import comsys.datastructs.comsysEssentials.PhonString;
 import comsys.datastructs.lf.LogicalForm;
 
-public class SelectedLogicalForm {
+public class SelectedLogicalForm extends Ice.ObjectImpl {
 
 	public LogicalForm lf;
 	
