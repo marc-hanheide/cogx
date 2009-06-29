@@ -164,7 +164,7 @@ public class PackedLFVisualizer
 			
 			
 		});
-		
+	
 		lastProcessedFormula = new SDRSFormula();
 		lastProcessedFormula.label = "start";
 		}
