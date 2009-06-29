@@ -1,0 +1,167 @@
+
+
+GREETINGS_LC [
+	(hi)
+	(hello)
+	(bye)
+]
+
+CONNECTIVE_LC [
+	(then)
+	(and)
+	(or)
+	(now)
+	(so)
+	(well)
+]
+
+TEMPORAL_LC [
+	(now)
+	(first)
+	(again)
+	(afterwards)
+	(then)
+	(after that)
+	(next)
+]
+
+
+OBJ_SG_LC [
+	(one)
+	(ball)
+	(box)
+	(book)
+	(borland book)
+	(coffee)
+	(coffee machine)
+	(rice box)
+	(artificial intelligence book)
+	(computer)
+	(cup)
+	(laptop)
+	(mug)
+	(object)
+	(robot)
+	(table)
+	(thing)
+	(door)
+	(couch)
+	(bookcase)
+	(sofa)
+]
+
+
+OBJ_SG_LC [
+	(objects)
+	(things)
+]
+
+DET_SG_LC [
+	(the)
+	(a)
+]
+
+DEM_SG_LC [
+	(it)
+	(this)
+	(that)
+]
+
+DET_PL_LC [
+	(the)
+	(two)
+	(three)
+	(some)
+]
+
+
+DEM_PL_LC [
+	(those)
+	(these)
+]
+
+
+LOCATION_LC [
+	(to the right)
+	(to the left)
+	(here)
+	(there)
+]
+
+DIRECTION_LC [
+	(left)
+	(right)
+	(forward)
+	(backward)
+	(backwards)
+	(forwards)
+	(around)
+	(back)
+]
+
+LOC_PREP_LC [
+	(behind)
+	(close to)
+	(near)
+	(near to)
+	(next to)
+	(left of)
+	(right of)
+	(in front of)
+	(in)
+	(on)
+]
+
+
+CUEWORD_LC [
+	(wrong)
+	(right)
+	(sure)
+	(great)
+	(correct)
+	(good)
+	(very good)
+	(true)
+	(false)
+	(bad)
+	(ok)
+	(okay)
+	(fine)
+	(yes)
+	(no)
+	(right)
+	(good)
+	(sorry)
+]
+
+PERSON_LC [
+	(me)
+	(you)
+	(robot)
+	(pierre)
+	(gj)
+	(nick)
+	(henrik)
+	(hendrik)
+	(patric)
+	(jeremy)
+	(aaron)
+	(kristoffer)
+	(michael)
+]
+
+
+PLACE_LC [
+	(kitchen)
+	(office)
+	(room)
+	(area)
+	(corridor)
+	(floor)
+	(library)
+	(living room)
+	(lab)
+	(laboratory)
+	(hall)
+	(hallway)
+]
