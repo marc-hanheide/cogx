@@ -9,7 +9,7 @@
 # startup the CAST servers. 
 
 # where things are for runtime
-CAST_DIR=/Users/plison/svn.cogx/comsys.mk5/tools/cast
+CAST_DIR=tools/cast
 CAST_INSTALL_ROOT=${CAST_DIR}
 
 CAST_BIN_PREFIX=bin
