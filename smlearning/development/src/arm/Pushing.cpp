@@ -348,8 +348,12 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 
 
 
-Real normalizeJnPos(Real r){
-	return Real(r/MATH_PI);
+Real normalizeAngle(Real r){
+	if (r >= 0.0) {
+		return Real(fmod(r,MATH_PI));
+	} else {
+		return Real((r-ceil(r))/MATH_PI);
+	}
 }
 
 
@@ -380,6 +384,27 @@ Real normalizeJnVel(int i, Real r, float* maxVel, float* minVel) {
 Real normalizeWsPos(Real pos, Real max) {
 	return pos/max;
 }
+
+
+
+
+Real normalize(Real value, Real min, Real max) {
+	Real val;/*
+	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min) {
+		int d = value / MATH_PI;
+		int e = MATH_PI * d;
+		val = value - e;
+	}
+	else {
+		val = value;
+	}*/
+	val = fmod(value, MATH_PI);
+	Real interval = max - min;
+	Real relativeVal = val - min;
+	Real res = relativeVal/interval;
+	return -1.0 + (res*2.0);
+}
+	
 
 
 
@@ -585,6 +610,8 @@ int main(int argc, char *argv[]) {
 		DataSet data;
 		Real maxRange = 0.6;
 		SecTmReal minDuration = SecTmReal(5.0);
+		srand(context->getRandSeed()._U32[0]);
+		//cout <<context->getRandSeed()._U32[0];
 
 		//Polyflap Position and orientation
 		//-------------------------------------------------------
@@ -821,17 +848,34 @@ pos++;
 //sleep(2);
 			
 			// Trajectory profile can be defined by e.g. a simple 3rd degree polynomial
-			Trajectory::Ptr pTrajectory(Polynomial4::Desc().create());
+			Polynomial4::Desc& polynomDesc = *(new Polynomial4::Desc);
+			//polynom.create(Polynomial4::Desc());
 			
+			Trajectory::Ptr pTrajectory(/*Polynomial4::Desc().create()*/ polynomDesc.create());
+cout <<			polynomDesc.a[0] << "jednana\n";
+cout <<			polynomDesc.a[1] << "jednana\n";
+cout <<			polynomDesc.a[2] << "jednana\n";
+cout <<			polynomDesc.a[3] << "jednana\n";
 
-			//initializing infoVestor
-			//Real coefs[4]  = pTrajectory.getCoefs();
-			infoVector.push_back(minDuration);
-			//initial position in worrkspace coordinates, not normalized
-			infoVector.push_back(positionT.v1);
-			infoVector.push_back(positionT.v2);
-			infoVector.push_back(positionT.v3);
-			//rotation info missing
+			//initializing infoVector
+			
+Polynomial4& polynom = *(new Polynomial4);
+polynom.create(polynomDesc);
+const Real* coefs  = polynom.getCoeffs();
+cout << coefs[0] << "jedna\n";
+cout << coefs[1] << "dva\n";
+cout << coefs[2] << "tri\n";
+cout << coefs[3] << "ctyri\n";
+
+			infoVector.push_back(timeDelta);
+			//initial position in worrkspace coordinates, normalized
+			infoVector.push_back(normalizeWsPos(positionT.v1, maxRange));
+			infoVector.push_back(normalizeWsPos(positionT.v2, maxRange));
+			infoVector.push_back(normalizeWsPos(positionT.v3, maxRange));
+			//innitial orientation, normalized
+			infoVector.push_back(normalizeAngle(orientationT.v1));
+			infoVector.push_back(normalizeAngle(orientationT.v2));
+			infoVector.push_back(normalizeAngle(orientationT.v3));
 			//end pose info missing (must be added later 
 			
 
@@ -839,7 +883,7 @@ pos++;
 			// It consists of 70 parts
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec]
-			SecTmReal duration = timeDelta * n;
+			SecTmReal duration = timeDelta * n*2;
 			
 			// Trajectory end pose equals begin + shift along Y axis
 			WorkspaceCoord begin = target.pos, end = target.pos;
@@ -946,7 +990,19 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 			
 			};
 
+			
 
+
+
+			//add info about end position
+			infoVector.push_back(normalizeWsPos(end.p.v1, maxRange));
+			infoVector.push_back(normalizeWsPos(end.p.v2, maxRange));
+			infoVector.push_back(normalizeWsPos(end.p.v3, maxRange));
+			//end orientation, normalized
+			infoVector.push_back(normalizeAngle(orientationT.v1));
+			infoVector.push_back(normalizeAngle(orientationT.v2));
+			infoVector.push_back(normalizeAngle(orientationT.v3));
+			
 
 //sleep(10);
 
@@ -1004,7 +1060,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 				for (U32 i = 0; i < numOfJoints; i++) {
 					//const Joint &joint = *arm.getJoints()[i];
 					//Real norm = Real(state.pos.j[i]/ MATH_PI);
-					features.push_back(normalizeJnPos(state.pos[i]));
+					features.push_back(normalizeAngle(state.pos[i]));
 					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm));
 					//features[2*i] = norm;
 					//Real norm2 = Real(normalize(i, state.vel.j[i], maxVelocities, minVelocities));
