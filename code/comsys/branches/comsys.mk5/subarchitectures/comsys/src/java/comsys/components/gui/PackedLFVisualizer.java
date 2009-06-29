@@ -36,6 +36,8 @@ import java.util.Vector;
 
 import javax.swing.UIManager;
 
+import java.util.Map;
+
 import comsys.datastructs.comsysEssentials.*; 
 import comsys.arch.ProcessingData;
 import comsys.arch.ComsysException;
@@ -120,6 +122,8 @@ public class PackedLFVisualizer
 
 		super.start();
 		
+		log("Starting the Visualization module...");
+		
 	    //nah: try resetting to default incase matlab has
 		//messed with it
 		try {
@@ -179,11 +183,11 @@ public class PackedLFVisualizer
 	* @param _config The properties table
 	*/ 
 	
-    public void configure(Properties _config) {
-        _config.list(System.out);
+    public void configure(Map<String, String> _config) {
+        // _config.list(System.out);
         String parserArg = "";
         if (_config.containsKey("--series")) {
-            String value = _config.getProperty("--series");
+            String value = _config.get("--series");
 			if (value.equals("true")) { 
 				incrementalSeries = true;
 			} else { 
@@ -194,7 +198,7 @@ public class PackedLFVisualizer
         	incrementalSeries = false;
         } 
         if (_config.containsKey("--sdrs")) {
-            String value = _config.getProperty("--sdrs");
+            String value = _config.get("--sdrs");
 			if (value.equals("true")) { 
 				processSDRS = true;
 			} else { 
@@ -205,19 +209,19 @@ public class PackedLFVisualizer
         	processSDRS = false;
         } 		 
         if (_config.containsKey("--dir")) {
-            graphsDir = _config.getProperty("--dir");
+            graphsDir = _config.get("--dir");
         }
         else {
             graphsDir = "./graphs/parser/";
         }
         if (_config.containsKey("--dirSDRS")) {
-            graphsDirSDRS = _config.getProperty("--dirSDRS");
+            graphsDirSDRS = _config.get("--dirSDRS");
         }
         else {
             graphsDirSDRS = "./graphs/sdrs/";
         }
         if (_config.containsKey("--generatePNG")) {
-        	String value = _config.getProperty("--generatePNG");
+        	String value = _config.get("--generatePNG");
 			if (value.equals("true")) { 
 				generatePNG = true;
 				log("PNG files will be generated");
@@ -375,6 +379,7 @@ public class PackedLFVisualizer
 				id = id.substring(0,id.indexOf(":"));
 				String filename = "packedLF-"+id;
 				log("going to generate DOT file for " + filename);
+				log("incrementalSeries: " + incrementalSeries);
 				if (incrementalSeries) {
 					int step = 0;
 					if (plfIds.containsKey(id)) { 
