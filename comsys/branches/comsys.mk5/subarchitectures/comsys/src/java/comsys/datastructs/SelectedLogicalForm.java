@@ -1,7 +1,7 @@
-package org.cognitivesystems.comsys.data;
+package comsys.datastructs;
 
-import org.cognitivesystems.comsys.autogen.ComsysEssentials.PhonString;
-import org.cognitivesystems.repr.lf.autogen.LFEssentials.LogicalForm;
+import comsys.datastructs.comsysEssentials.PhonString;
+import comsys.datastructs.lf.LogicalForm;
 
 public class SelectedLogicalForm {
 

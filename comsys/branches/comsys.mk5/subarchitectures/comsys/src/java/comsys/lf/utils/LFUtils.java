@@ -21,7 +21,7 @@
 //PACKAGE DEFINITION 
 //=================================================================
 
-package comsys.lf.utils;
+package org.cognitivesystems.repr.lf.utils;
 
 //=================================================================
 //IMPORTS
@@ -36,9 +36,10 @@ package comsys.lf.utils;
 //LOGICAL FORM REPRESENTATION IMPORTS
 //-----------------------------------------------------------------
 
-import comsys.datastructs.lf.*;
+import org.cognitivesystems.repr.lf.autogen.LFEssentials.*;
+import org.cognitivesystems.repr.lf.autogen.LFPacking.*;
 
-import comsys.arch.ComsysException;
+import org.cognitivesystems.comsys.general.ComsysException;
 //-----------------------------------------------------------------
 //JAVA IMPORTS
 //-----------------------------------------------------------------
@@ -87,6 +88,23 @@ public class LFUtils {
 	//=================================================================
 	// CONSTRUCTOR METHODS
 	//=================================================================
+
+	/** Creates a new DynamicComprehensionStatus object, with properly
+		initialized (non-null) fields
+
+		@return DynamicComprehensionStatus the initialized object
+	 */ 
+
+	public static DynCompStatus newDynCompStatus () { 
+		DynCompStatus result = new DynCompStatus ();
+		result.referent = "";
+		result.epistemicStatus = EpistemicStatusFeature.EPI_UNKNOWN;
+		result.updateStatus = UpdateStatusFeature.T;
+		result.statusSource = "";
+		result.statusGround = "";
+		return result;
+	} // end newDynCompStatus
+
 
 	/** Creates a new LFNominal object, with properly initialized 
 		(non-null) fields 
@@ -190,17 +208,30 @@ public class LFUtils {
 	} // end newLFRelation
 
 
+	/** Creates a new MetaTypeCharacterization object, with properly 
+		initialized (non-null) fields */
+
+	public static MetaTypeCharacterization newMetaTypeCharacterization () { 
+		MetaTypeCharacterization result = new MetaTypeCharacterization();
+		result.logicalFormId = "";
+		result.mType = MetaType.UNKNOWN;
+		result.mSort = MetaTypeSort.informative_attributive_endurant_instantiation;
+		result.components = new LFComponent[0];
+		return result;
+	} // end 
+
+
 	/** Creates a new Proposition object, with properly initialized 
 		(non-null) fields.
 
 		@return Proposition the initialized object
 	 */ 
 
-	public static comsys.datastructs.lf.Proposition newProposition () { 
-		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
+	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition newProposition () { 
+		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition();
 		result.prop = "";
 		result.connective = ConnectiveType.NONE;
-//		result.rhsProp = new comsys.datastructs.lf.Proposition[0];
+//		result.rhsProp = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition[0];
 		return result;
 	} // end newProposition
 
@@ -211,11 +242,11 @@ public class LFUtils {
 		@return Proposition the initialized object
 	 */ 
 
-	public static comsys.datastructs.lf.Proposition newProposition (String propLabel) { 
-		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
+	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition newProposition (String propLabel) { 
+		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition();
 		result.prop = propLabel;
 		result.connective = ConnectiveType.NONE;
-//		result.rhsProp = new comsys.datastructs.lf.Proposition[0];
+//		result.rhsProp = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition[0];
 		return result;
 	} // end newProposition
 
@@ -255,14 +286,94 @@ public class LFUtils {
 
 
 	
+	public static boolean isLf1IncludedInLf2 (LogicalForm lf1, LogicalForm lf2) {
+	
+	//	System.out.println("LF1: " + LFUtils.lfToString(lf1));
+		
+		for (int i = 0 ; i < lf1.noms.length ; i++) {
+			boolean foundEquiv = false;
+			LFNominal nom1 = lf1.noms[i];
+			log("loop1 on nominal " + nom1.nomVar);
+			for (int j = 0 ; j < lf2.noms.length && !foundEquiv; j++) {
+				LFNominal nom2 = lf2.noms[j];
+				if (
+					//	nom1.sort.equals(nom2.sort) &&
+						nom1.feats.length <= nom2.feats.length && 
+						nom1.rels.length <= nom2.rels.length) {
+					
+					if (!nom1.prop.prop.equals("") && 
+							!nom1.prop.prop.equals(nom2.prop.prop)) {
+						foundEquiv = false;
+					}
+					
+					if (!nom1.sort.contains("event") && 
+							!nom1.sort.contains("entity") &&
+							!nom1.sort.equals(nom2.sort)) {
+								foundEquiv = false;
+					}
+					
+					log("found possible match");
+					
+					boolean EquivalentFeatures = true;
+					for (int k = 0 ; k < nom1.feats.length ; k++) {
+						boolean foundEquivFeat = false;
+						Feature feat1 = nom1.feats[k];
+						for (int l = 0 ; l < nom2.feats.length && !foundEquivFeat ; l++) {
+							Feature feat2 = nom2.feats[l];
+							if (feat1.feat.equals(feat2.feat) && 
+									feat1.value.equals(feat2.value)) {
+								foundEquivFeat = true;
+							}
+						}
+						
+						if (!foundEquivFeat) {
+							log("Missing feature: [" + feat1.feat + ":" + feat1.value + "]");
+							EquivalentFeatures = false;
+						}
+					}
+					
+					log("Equivalent features? " + EquivalentFeatures);
+					
+					boolean EquivalentRels = true;
+					for (int k = 0 ; k < nom1.rels.length ; k++) {
+						boolean foundEquivRel = false;
+						LFRelation rel1 = nom1.rels[k];
+						for (int l = 0 ; l < nom2.rels.length && !foundEquivRel ; l++) {
+							LFRelation rel2 = nom2.rels[l];
+							if (rel1.mode.equals(rel2.mode)) {
+								foundEquivRel = true;
+							}
+						}
+						
+						if (!foundEquivRel) {
+							log("Missing relation: [" + rel1.head + "->" + rel1.dep + ":" + rel1.mode + "]");
+							EquivalentRels = false;
+						}
+					}
+					
+					log("Equivalent relations? " + EquivalentRels);
+				
+				if (EquivalentFeatures && EquivalentRels) {
+					foundEquiv = true;
+				}
+					
+				}
+			}
+		
+			if (!foundEquiv) {
+				log("Unfortunately, not equivalent found for nominal " + nom1.nomVar);
+			return false;
+			}
+			
+		}		
+		
+		return true;
+	}
+	
 	/**
 	 * Verify the equivalence of two logical forms
 	 */
-	public static boolean compareLFs (LogicalForm lf1, LogicalForm lf2) {
-		
-		log("Logical form 1: " + LFUtils.lfToString(lf1));
-		log("Logical form 2: " + LFUtils.lfToString(lf2));
-		
+	public static boolean compareLFs (LogicalForm lf1, LogicalForm lf2) {		
 		
 		if (lf1.noms.length != lf2.noms.length) {
 			log("Different number of nominals in each LF");
@@ -915,15 +1026,15 @@ public class LFUtils {
 		@return Proposition The updated proposition
 	 */
 
-	public static comsys.datastructs.lf.Proposition lfNominalAddProposition (LFNominal nom, String prop) {
-		comsys.datastructs.lf.Proposition result = newProposition(prop); 
+	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition lfNominalAddProposition (LFNominal nom, String prop) {
+		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = newProposition(prop); 
 
 		if (nom.prop == null ||
 				nom.prop.prop.equals("")) 
 		{ 
 			return result;
 		} else {
-			comsys.datastructs.lf.Proposition nomProp = nom.prop;
+			org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition nomProp = nom.prop;
 			// .... 
 			return result;
 		}
@@ -1311,10 +1422,44 @@ public class LFUtils {
 		return result;
 	} // end lfNominalReplaceDependent
 
+	/** Adds a component to a meta type characterization. Returns an updated components array. */ 
+
+	public static LFComponent[] mtcAddComponent (LFComponent[] components, String label, LogicalForm lf) { 
+		LFComponent[] result; 
+		LFComponent component;
+		int newSize = 1; 
+		if (components != null) {
+			newSize = 1+java.lang.reflect.Array.getLength(components);
+			result = (LFComponent[]) resizeArray(components,newSize);
+		} else { 
+			result = new LFComponent[1];
+		} // end if..else check for non-null components
+		component = newLFComponent();
+		component.componentName=label;
+		component.lf = lf;
+		result[newSize-1] = component;
+		return result;
+	} // end mtcAddComponent
+
+	/** Returns an LFComponent object for the given label, if any. If none, then null is returned */
+
+	public static LFComponent mtcGetComponent (MetaTypeCharacterization mtc, String label) { 
+		Iterator compsIter = new ArrayIterator(mtc.components); 
+		LFComponent result = null;
+		while (compsIter.hasNext()) { 
+			LFComponent component = (LFComponent)compsIter.next();
+			if (component.componentName.equals(label)) { 
+				result = component; 
+				break;
+			} // end if..check for component found
+		} // end while
+		return result;
+	} // end mtcGetComponent
+
 	/** Returns a clone of the given Proposition object */
 
-	public static comsys.datastructs.lf.Proposition propositionClone (comsys.datastructs.lf.Proposition prop) { 
-		comsys.datastructs.lf.Proposition result = new comsys.datastructs.lf.Proposition();
+	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition propositionClone (org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition prop) { 
+		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition result = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition();
 		result.prop = prop.prop;
 		result.connective  = prop.connective;
 //		result.rhsProp	   = prop.rhsProp.clone();
@@ -1414,8 +1559,8 @@ public class LFUtils {
 		
 		Element prop = new Element("prop");
 		
-		for(Iterator<comsys.datastructs.lf.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
-			comsys.datastructs.lf.Feature nomFeature = featsIter.next();
+		for(Iterator<org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
+			org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature nomFeature = featsIter.next();
 			if (nomFeature.feat.equals(feature)) {
 				prop = prop.setAttribute("name",LFUtils.lfNominalGetFeature(nom,nomFeature.feat));		
 			} // end if 
@@ -1484,7 +1629,7 @@ public class LFUtils {
 			if (LFUtils.lfNominalGetFeatures(helper).hasNext()) {
 				Iterator iter = LFUtils.lfNominalGetFeatures(helper);
 				while (iter.hasNext()) {
-					comsys.datastructs.lf.Feature feature = (comsys.datastructs.lf.Feature) iter.next();
+					org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature feature = (org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature) iter.next();
 					diamond = editFeatures(input,helper,feature.feat,diamond);
 				}
 			}
@@ -1572,7 +1717,7 @@ public class LFUtils {
 			if (LFUtils.lfNominalGetFeatures(inputNom).hasNext()) {
 				Iterator iter = LFUtils.lfNominalGetFeatures(inputNom); 
 				while (iter.hasNext()) {
-					comsys.datastructs.lf.Feature feature = (comsys.datastructs.lf.Feature) iter.next();
+					org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature feature = (org.cognitivesystems.repr.lf.autogen.LFEssentials.Feature) iter.next();
 					sat = editFeatures(input,inputNom,feature.feat,sat);
 				}
 			} else { 
@@ -1634,7 +1779,7 @@ public class LFUtils {
 		@return LogicalForm the IDL-based object 
 	 */
 
-	public static comsys.datastructs.lf.LogicalForm convertFromLF (LF lf) { 
+	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.LogicalForm convertFromLF (LF lf) { 
 		return convertFromString(lf.toString());
 	} // end convertFromLF
 
@@ -1665,7 +1810,7 @@ public class LFUtils {
 		@return LogicalForm the IDL-based object 
 	 */
 
-	public static comsys.datastructs.lf.LogicalForm convertFromString(String s) { 
+	public static org.cognitivesystems.repr.lf.autogen.LFEssentials.LogicalForm convertFromString(String s) { 
 
 		
 	//	System.out.println("Converting from String: ["+s+"]");
@@ -1678,7 +1823,7 @@ public class LFUtils {
 		int fatpos = s.indexOf("@");
 		int latpos = s.lastIndexOf("@");
 
-//		lf.Proposition rhsStub[] = new lf.Proposition[0];
+//		org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition rhsStub[] = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition[0];
 
 		LFNominal nom  = newLFNominal();
 
@@ -1795,8 +1940,8 @@ public class LFUtils {
 								proposition = strip(proposition);
 								log("proposition "+proposition+" for "+nom.nomVar);
 								// ----
-//								nom.prop = new lf.Proposition (proposition, ConnectiveType.NONE, rhsStub);
-								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE);
+//								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE, rhsStub);
+								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE);
 								log("brackets: "+brackets+" length:"+brackets.length());
 								log("stack: "+nomstack.toString());
 								// for (int i=0; i < brackets.length()-1; i++) { if (!nomstack.empty()) { nom = (LFNominal) nomstack.pop(); log("pop - prop!--"+i);} }
@@ -1804,8 +1949,8 @@ public class LFUtils {
 							} else {
 								String proposition = conj;
 								proposition = strip(proposition);
-//								nom.prop = new lf.Proposition (proposition, ConnectiveType.NONE, rhsStub);
-								nom.prop = new comsys.datastructs.lf.Proposition (proposition, ConnectiveType.NONE);
+//								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE, rhsStub);
+								nom.prop = new org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition (proposition, ConnectiveType.NONE);
 								log("proposition "+proposition+" for "+nom.nomVar);
 							} // end if..else check need to pop stack
 						} else { // relation or feature
@@ -1931,9 +2076,946 @@ public class LFUtils {
 
 
 
+	/** Returns the sort of assertion expressed by the given logical 
+		form. The sort is given in a MetaTypeCharacterization object, 
+		as value of the metaSort field. 
+
+		<b>Note</b>: currently, only 
+
+		@param lf The logical form
+		@return MetaTypeCharacterization 
+	 */
+
+	public static MetaTypeCharacterization metaLFAssertionType (LogicalForm lf) { 
+		// a Vector of Strings containing possible sentence or verb modifiers (e.g. please)
+		Vector<String> qmodifs = new Vector<String>();
+		// Set up the result object
+		MetaTypeCharacterization resultMTC = newMetaTypeCharacterization (); 
+		resultMTC.logicalFormId = lf.logicalFormId;
+		resultMTC.mType = MetaType.ASSERTION;
+		// Set up the meta sort
+		MetaTypeSort result  = null;
+		String attrKey = "unknown";
+		// Negation in logical form
+		boolean negated = false;
+		// Check whether the logical form is a state-expression ("copula")
+		String copNomvar = determineCopula(lf);
+		boolean copula = (copNomvar != null); 
+
+		// Handle copula constructions
+		if (copula) { 
+			LFNominal root = lfGetNominal(lf,copNomvar);
+			// First check whether we have an SDA-LF; if so, descend to the ContentBody. 
+			if (root.sort.equals("dvp")) { 
+				LFRelation cbrel = lfNominalGetRelation(root,"ContentBody"); 
+				if (cbrel != null) { 
+					String cbRootNV = cbrel.dep;
+					root = lfGetNominal(lf,cbRootNV); 
+				} // end if.. check for existing content body
+			} // end if.. check for dvp
+			// Second, check whether we have a root that is a discourse connective; if so, 
+			// descend to the Body. 
+			if (root.sort.equals("dconn")) {
+				LFRelation bodyR = lfNominalGetRelation(root,"Body");
+				if (bodyR != null) {
+					String bodyNV = bodyR.dep;
+					root = lfGetNominal(lf,bodyNV);
+				} // end if.. check for Body 
+			} // end if.. check for discourse connective
+			if (root != null) { 
+				System.out.println("MTC: Root for type: "+lfNominalToString(root));
+				if (lfNominalGetFeature(root,"Mood").equals("ind")) {
+					log("root.hasFeature(Modifier) "+lfNominalHasFeature(root,"Modifier"));
+					if(lfNominalHasFeature(root,"Modifier")){
+						qmodifs.add(lfNominalGetFeature(root,"Modifier"));                		
+					}
+					String restrNV = lfNominalGetRelation(root,"Restr").dep;
+					String scopeNV = lfNominalGetRelation(root,"Scope").dep;
+					LFNominal restr = lfGetNominal(lf,restrNV); 
+					LFNominal scope = lfGetNominal(lf,scopeNV);
+
+					System.out.println("Restr:"+LFUtils.lfNominalToString(restr));
+					System.out.println("Scope:"+LFUtils.lfNominalToString(scope));
+
+					LogicalForm restrLF = lfConstructSubtree(restr,lf);
+					LogicalForm scopeLF = lfConstructSubtree(scope,lf);
+					log("Restr: "+lfToString(restrLF));
+					log("Scope: "+lfToString(scopeLF));
+					String scopeType = scope.sort; 
+					if (scopeType.equals("thing") || scopeType.equals("person") ) { 
+						result  = MetaTypeSort.informative_attributive_endurant_instantiation;
+						attrKey = "type";
+					} else if (scopeType.equals("property") ||
+							scopeType.equals("color")    ||
+							scopeType.equals("size")) { 
+						result  = MetaTypeSort.informative_attributive_endurant_quality;
+						attrKey = "quality"; 
+					} else if (scopeType.equals("region") ||  
+							scopeType.equals("perp-orientation")) { 
+						result  = MetaTypeSort.informative_attributive_endurant_perspective_spatial;
+						attrKey = "perspective"; 
+					} else if (scopeType.equals("location")) {
+						result = MetaTypeSort.informative_attributive_endurant_instantiation;
+						attrKey = "type"; 
+					} else if (scopeType.equals("phys-state") ) { 
+						result  = MetaTypeSort.affective_state_physical;
+						attrKey = "state"; //TODO sw: not sure about what attrKey really means 
+						//TODO care for negation 
+					} // end if..else check for type
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"endurant",restrLF);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,attrKey,scopeLF);
+				} // end if.. check for for indicative mood
+			} // end if.. check for root not null
+		} else { 
+			// NOT A COPULA EXPRESSION
+
+			LFNominal root = lf.root;
+			// First check whether we have an SDA-LF; if so, descend to the ContentBody.                                                                                     
+			if (root.sort.equals("dvp")) {
+				LFRelation cbrel = lfNominalGetRelation(root,"ContentBody");
+				if (cbrel != null) {
+					String cbRootNV = cbrel.dep;
+					root = lfGetNominal(lf,cbRootNV);
+				} // end if.. check for existing content body                                                                                                          
+			} // end if.. check for dvp                                                                                                                                                    // Second, check whether we have a root that is a discourse connective; if so,                                                                                               // descend to the Body.                                                                                                                                           
+			if (root.sort.equals("dconn")) {
+				LFRelation bodyR = lfNominalGetRelation(root,"Body");
+				if (bodyR != null) {
+					String bodyNV = bodyR.dep;
+					root = lfGetNominal(lf,bodyNV);
+				} // end if.. check for Body                                                                                                                           
+			} // end if.. check for discourse connective                                                                                                                       
+			if (root != null) {
+				log("Root for type: "+lfNominalToString(root));	    
+				if (root.sort.equals("cue")) { 
+					if (root.prop.prop.equals("yes") || root.prop.prop.equals("okay")) { 
+						result = MetaTypeSort.informative_polar_positive;
+					} else if (root.prop.prop.equals("no")) { 
+						result = MetaTypeSort.informative_polar_negative;
+					} // end if..else check for simple yes/no  
+					LogicalForm subtree = lfConstructSubtree(root,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"polar",subtree);
+				} else if (root.sort.equals("polar")) {  
+					if (root.prop.prop.equals("yes")) { 
+						result = MetaTypeSort.informative_polar_positive;
+					} else if (root.prop.prop.equals("no")) {
+						result = MetaTypeSort.informative_polar_negative;
+					} // end if..else check for simple yes/no		 
+					LFRelation scopeR = LFUtils.lfNominalGetRelation(root,"Scope");
+					String scopeNV = scopeR.dep;
+					LFNominal scopeN = LFUtils.lfGetNominal(lf,scopeNV);
+					if (scopeN != null) { 
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"scope",lfConstructSubtree(scopeN,lf));
+					} // end check for scope
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"polar",lfConstructSubtree(root,lf));
+				} // end if..else check whether perhaps cue or polar statement
+				else if (root.prop.prop.equals("not")){ //check if negated, descend to content
+					negated = true;
+					log("negated");
+					LFRelation scorel = lfNominalGetRelation(root,"Scope");
+					if (scorel != null) {
+						String cbRootNV = scorel.dep;
+						root = lfGetNominal(lf,cbRootNV);
+					} // end if.. check for existing scope  
+				}// end check for negation and descending
+			} // end check we have a root
+		} // end if.. check for copula
+		if (result != null) { 
+			resultMTC.mSort = result;
+		} else {	
+			resultMTC.mType = MetaType.UNKNOWN;
+		} 		
+		return resultMTC;
+	} // end metaLFAssertionType
+
+
+	/** Returns the sort of command expressed by the given logical 
+		form. The sort is given in a MetaTypeCharacterization object, 
+		as value of the metaSort field. 
+
+		@param lf The logical form
+		@return MetaTypeCharacterization 
+		@since 061101 (061101)		
+	 */
+
+	public static MetaTypeCharacterization metaLFCommandType (LogicalForm lf) { 
+		// a Vector of Strings containing possible sentence or verb modifiers (e.g. please)
+		Vector<String> qmodifs = new Vector<String>();
+		// Set up the result object
+		MetaTypeCharacterization resultMTC = newMetaTypeCharacterization (); 
+		resultMTC.logicalFormId = lf.logicalFormId;
+		resultMTC.mType = MetaType.COMMAND;	
+		MetaTypeSort resultSort = null;
+
+		LFNominal root = lf.root;
+
+		if (root.sort.equals("dvp")) { 
+			LFRelation cbrel = lfNominalGetRelation(root,"ContentBody"); 
+			if (cbrel != null) { 
+				String cbRootNV = cbrel.dep;
+				root = lfGetNominal(lf,cbRootNV); 
+			} // end if.. check for existing content body
+		} // end if.. check for dvp
+		// Second, check whether we have a root that is a discourse connective; if so, 
+		// descend to the Body. 
+		if (root.sort.equals("dconn")) {
+			LFRelation bodyR = lfNominalGetRelation(root,"Body");
+			if (bodyR != null) {
+				String bodyNV = bodyR.dep;
+				root = lfGetNominal(lf,bodyNV);
+			} // end if.. check for Body 
+		} // end if.. check for discourse connective
+
+		// System.out.println(">>>> Root: "+lfNominalToString(root));
+
+		if (root != null && LFUtils.lfNominalGetFeature(root,"Mood").equals("imp")) { 
+			String propType = root.sort;
+			// get the proposition of the root
+			String prop = root.prop.prop;			
+			log("MTC: proposition type : ["+propType+"]");
+			if (prop.equals("put") || prop.equals("grab") || prop.equals("move")) { 
+				if (lfNominalHasRelation(root,"Patient")) {
+					LogicalForm processLF = lfConstructSubtree(root,lf); 
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"process",processLF);
+					LFRelation objR = lfNominalGetRelation(root,"Patient");
+					String objNV = objR.dep;
+					LFNominal objN = lfGetNominal(lf,objNV);
+					LogicalForm objLF = lfConstructSubtree(objN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+					resultSort = MetaTypeSort.command_manipulation_object;
+					if (lfNominalHasRelation(root,"Dir:WhereTo")) { 
+						LFRelation destR = LFUtils.lfNominalGetRelation(root,"Dir:WhereTo");
+						String depNV = destR.dep;
+						LFNominal depN = lfGetNominal(lf,depNV);
+						if (depN != null) { 
+							LogicalForm destLF = lfConstructSubtree(depN,lf); 
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"destination",destLF);
+						} // end if.. check for nominal existence
+					} // end if.. check for direction relation
+					if (lfNominalHasRelation(root,"Extent")) {
+						LFRelation extR = lfNominalGetRelation(root,"Extent");
+						String extNV = extR.dep;
+						LFNominal extN = lfGetNominal(lf,extNV);
+						LogicalForm extLF = lfConstructSubtree(extN,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"extent",extLF);
+					} // end if.. check for Extent
+				} // end if.. check for patient
+				if (propType.equals("manipulate_subj")) {  
+					if (lfNominalHasRelation(root,"Patient")) {
+						LFRelation objR = lfNominalGetRelation(root,"Patient");
+						String objNV = objR.dep;
+						LFNominal objN = lfGetNominal(lf,objNV);
+						LogicalForm objLF = lfConstructSubtree(objN,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+					} // end check for Patient
+					if (lfNominalHasRelation(root,"Extent")) {
+						LFRelation extR = lfNominalGetRelation(root,"Extent");
+						String extNV = extR.dep;
+						LFNominal extN = lfGetNominal(lf,extNV);
+						LogicalForm extLF = lfConstructSubtree(extN,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"extent",extLF);
+					} // end if.. check for Extent
+					resultSort = MetaTypeSort.command_manipulation_subject;
+				} // end subject manipulation
+			} // end if.. check for manipulation verbs 
+			if (prop.equals("explore")) { 
+				LogicalForm processLF = lfConstructSubtree(root,lf);
+				resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"process",processLF);
+				if (lfNominalHasRelation(root,"Patient")) {
+					LFRelation objR = lfNominalGetRelation(root,"Patient");
+					String objNV = objR.dep;
+					LFNominal objN = lfGetNominal(lf,objNV);
+					LogicalForm objLF = lfConstructSubtree(objN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+					if (objN.sort.equals("location")) { 
+						resultSort = MetaTypeSort.command_cognitive_analysis_location;
+					} else if (objN.sort.equals("thing")) { 
+						resultSort = MetaTypeSort.command_cognitive_analysis_endurant; 
+					} // /end if..check for type
+				} // end check for patient
+				if (lfNominalHasRelation(root,"Manner")) {  
+					LFRelation manR = lfNominalGetRelation(root,"Manner");
+					String manNV = manR.dep;
+					LFNominal manN = lfGetNominal(lf,manNV);
+					LogicalForm manLF = lfConstructSubtree(manN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"manner",manLF);
+				} // end check for patient
+			} // end if.. explore
+			if (prop.equals("stop") || prop.equals("stand")) { 
+				// check for "stop it" which should be of type "evaluative.negative"
+				if(prop.equals("stop") && lfNominalHasRelation(root,"Patient")) {
+					LFRelation objR = lfNominalGetRelation(root,"Patient");
+					String objNV = objR.dep;
+					LFNominal objN = lfGetNominal(lf,objNV);
+					LogicalForm objLF = lfConstructSubtree(objN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+					if(objN.prop.prop.equals("it")){
+						resultSort = MetaTypeSort.evaluative_negative;
+					} // end if.. check for it
+				} else {
+					LogicalForm moveLF = lfConstructSubtree(root,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+					resultSort = MetaTypeSort.command_movement_position_subjective; 
+				} //end of checking for "stop it"
+			} // end check for position.subjective
+			if (prop.equals("bow")) { 
+				LogicalForm moveLF = lfConstructSubtree(root,lf);
+				resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+				resultSort = MetaTypeSort.command_movement_position_subjective;
+			} // end check for position.subjective
+			if (prop.equals("wave")) {  
+				LogicalForm moveLF = lfConstructSubtree(root,lf);
+				resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+				resultSort = MetaTypeSort.command_movement_position_subjective;
+			} // end check for position.subjective
+
+			if(prop.equals("bring") || prop.equals("give")){
+				if (lfNominalHasRelation(root,"Patient")){
+					LFRelation objR = lfNominalGetRelation(root,"Patient");
+					String objNV = objR.dep;
+					LFNominal objN = lfGetNominal(lf,objNV);
+					LogicalForm objLF = lfConstructSubtree(objN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+					resultSort = MetaTypeSort.command_obtain_object;
+				}  // end if..check for patient 
+				if (lfNominalHasRelation(root,"Recipient")){
+					LFRelation objR = lfNominalGetRelation(root,"Recipient");
+					String objNV = objR.dep;
+					LFNominal objN = lfGetNominal(lf,objNV);
+					LogicalForm objLF = lfConstructSubtree(objN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"recipient",objLF);
+					resultSort = MetaTypeSort.command_obtain_object_recipient;
+				} // end if..check for recipient 
+				if (lfNominalHasRelation(root,"Dir:WhereTo")) { 
+					LFRelation dirR = lfNominalGetRelation(root,"Dir:WhereTo");
+					String dirNV = dirR.dep;
+					LFNominal dirN = lfGetNominal(lf,dirNV);
+					LogicalForm dirLF = lfConstructSubtree(dirN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"destination",dirLF);
+					resultSort = MetaTypeSort.command_obtain_object_destination;
+				} else if (lfNominalHasRelation(root,"Dir:WhereFrom")) { 
+					LFRelation dirR = lfNominalGetRelation(root,"Dir:WhereFrom");
+					String dirNV = dirR.dep;
+					LFNominal dirN = lfGetNominal(lf,dirNV);
+					LogicalForm dirLF = lfConstructSubtree(dirN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"origin",dirLF);
+					resultSort = MetaTypeSort.command_obtain_object_origin;
+				} // end of check for destination or origin 
+				//NB: destination and origin are exclusive, they cannot be given both at the moment 
+				// moloko would not allow it anyway
+			} //end of bring/give
+			else if (prop.equals("move") || prop.equals("go") || prop.equals("push") || prop.equals("kick") || prop.equals("nudge") || prop.equals("climb")) {
+				// first just default
+				LogicalForm movLF = lfConstructSubtree(root,lf);
+				resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",movLF);
+				resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_subjective;
+				if (lfNominalHasRelation(root,"Extent")) { 
+					LFRelation extR = lfNominalGetRelation(root,"Extent");
+					String extNV = extR.dep;
+					LFNominal extN = lfGetNominal(lf,extNV);
+					LogicalForm extLF = lfConstructSubtree(extN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"extent",extLF);
+				} // end if.. check for extent 
+				if (lfNominalHasRelation(root,"Manner")) { 
+					LFRelation manR = lfNominalGetRelation(root,"Manner");
+					String manNV = manR.dep;
+					LFNominal manN = lfGetNominal(lf,manNV);
+					LogicalForm manLF = lfConstructSubtree(manN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"manner",manLF);
+				} // end if.. check for manner
+				if (lfNominalHasRelation(root,"Dir:WhereTo")) { 
+					if (lfNominalHasRelation(root,"Patient")) { 
+						LogicalForm moveLF = lfConstructSubtree(root,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+						LFRelation objR = lfNominalGetRelation(root,"Patient");
+						String objNV = objR.dep;
+						LFNominal objN = lfGetNominal(lf,objNV);
+						LogicalForm objLF = lfConstructSubtree(objN,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+						LFRelation dirR = lfNominalGetRelation(root,"Dir:WhereTo");
+						String dirNV = dirR.dep;
+						LFNominal dirN = lfGetNominal(lf,dirNV);
+						LogicalForm dirLF = lfConstructSubtree(dirN,lf);
+						if (dirN.sort.equals("location")) { 
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"destination",dirLF);
+							resultSort = MetaTypeSort.command_movement_motion_locationchange_transport_object_destination;			
+						} else { 
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"direction",dirLF);
+							resultSort = MetaTypeSort.command_movement_motion_locationchange_transport_object_direction;			
+						} // end if..else check where to move to. 
+					} else {  					
+						LogicalForm moveLF = lfConstructSubtree(root,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+						LFRelation dirR = lfNominalGetRelation(root,"Dir:WhereTo");
+						String dirNV = dirR.dep;
+						LFNominal dirN = lfGetNominal(lf,dirNV);
+						LogicalForm dirLF = lfConstructSubtree(dirN,lf);
+						if (dirN.sort.equals("location")) { 
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"destination",dirLF);
+							resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_destination;	
+						} else { 
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"direction",dirLF);
+							resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_direction;								    
+						} // end if..else
+						if (lfNominalHasRelation(root,"Dir:WhichWay")) { 
+							LFRelation wayR = lfNominalGetRelation(root,"Dir:WhichWay");
+							String wayNV = wayR.dep;
+							LFNominal wayN = lfGetNominal(lf,wayNV);
+							LogicalForm wayLF = lfConstructSubtree(wayN,lf);
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"way",wayLF); 
+						} // end if.. check for optional whichway
+					} // check whether to move an object, or only the subject
+
+				} else if (lfNominalHasRelation(root,"Patient")) { 
+					LFRelation objR = lfNominalGetRelation(root,"Patient");
+					String objNV = objR.dep;
+					LFNominal objN = lfGetNominal(lf,objNV);
+					LogicalForm objLF = lfConstructSubtree(objN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"object",objLF);
+					resultSort = MetaTypeSort.command_movement_motion_locationchange_transport_object;
+				} // end check for directional or patient
+			} // end check for move or go
+			if (prop.equals("turn")) { 
+				LogicalForm moveLF = lfConstructSubtree(root,lf);
+				resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+				if (lfNominalHasRelation(root,"Dir:WhereTo")) { 
+					LFRelation dirR = lfNominalGetRelation(root,"Dir:WhereTo");
+					String dirNV = dirR.dep;
+					LFNominal dirN = lfGetNominal(lf,dirNV);
+					LogicalForm dirLF = lfConstructSubtree(dirN,lf);
+					if (dirN.sort.equals("location")) { 
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"face",dirLF);
+						resultSort = MetaTypeSort.command_movement_motion_insitu_pose_facing; 								    
+						if (lfNominalHasRelation(root,"Dir:WhichWay")) { 
+							LFRelation wayR = lfNominalGetRelation(root,"Dir:WhichWay");
+							String wayNV = wayR.dep;
+							LFNominal wayN = lfGetNominal(lf,wayNV);
+							LogicalForm wayLF = lfConstructSubtree(wayN,lf);
+							resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"way",wayLF);
+						} // end if.. check for optional whichway
+					} else { 
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"change",dirLF);
+						resultSort = MetaTypeSort.command_movement_motion_insitu_pose_relative;								    
+					} // end if..else		    
+				} else { 
+					LogicalForm dirLF = convertFromString("@a101:dir(around)");
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"change",dirLF);
+					resultSort = MetaTypeSort.command_movement_motion_insitu_pose_relative;
+				} // end if..else
+			} // end if check for turn
+			if (prop.equals("follow") || prop.equals("come")) { 
+				if (lfNominalHasRelation(root,"Patient")) {
+					LFRelation guiderR = lfNominalGetRelation(root,"Patient");
+					String guiderNV = guiderR.dep;
+					LFNominal guiderN = lfGetNominal(lf,guiderNV);
+					if (guiderN.sort.equals("person")) { 
+						resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_guidance_person;
+					} else if (guiderN.sort.equals("location")) { 
+						resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_guidance_area;
+					} else { 
+						resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_guidance_person;
+					} // end if..else check what type -- defaults to person
+					LogicalForm moveLF = lfConstructSubtree(root,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+					LogicalForm guiderLF = lfConstructSubtree(guiderN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"guider",guiderLF);
+					if (lfNominalHasRelation(root,"Dir:WhereTo")) { 
+						LFRelation dirR = lfNominalGetRelation(root,"Dir:WhereTo");
+						String dirNV = dirR.dep;
+						LFNominal dirN = lfGetNominal(lf,dirNV);
+						LogicalForm dirLF = lfConstructSubtree(dirN,lf);
+						resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"destination",dirLF);
+					} // end if.. check for destination
+				} else { 
+					resultSort = MetaTypeSort.command_movement_motion_locationchange_motion_guidance_person;
+					LogicalForm moveLF = lfConstructSubtree(root,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"movement",moveLF);
+					LogicalForm guiderLF = convertFromString("@i101:person(I)");
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"guider",guiderLF);
+				} // end if..else check for patient 
+				if (lfNominalHasRelation(root,"Dir:WhichWay")) { 
+					LFRelation wayR = lfNominalGetRelation(root,"Dir:WhichWay");
+					String wayNV = wayR.dep;
+					LFNominal wayN = lfGetNominal(lf,wayNV);
+					LogicalForm wayLF = lfConstructSubtree(wayN,lf);
+					resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"way",wayLF);
+				} // end if.. check for optional whichway
+			} // end if..check for follow
+			if(prop.equals("help")){
+				LFRelation objR = lfNominalGetRelation(root,"Recipient");
+				String objNV = objR.dep;
+				LFNominal objN = lfGetNominal(lf,objNV);
+				LogicalForm objLF = lfConstructSubtree(objN,lf);
+				resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"recipient",objLF);
+				resultSort = MetaTypeSort.command_assist;
+			} // end if.. check for help
+			if(prop.equals("do")){
+				if (lfNominalHasFeature(root,"Polarity")) { 
+					String polV = lfNominalGetFeature(root,"Polarity");
+					if(polV.equals("-")) {
+						resultSort = MetaTypeSort.evaluative_negative;
+					} // end if .. neg polarity
+				} // end if.. check for polarity feature
+			} // end if.. check for prop do
+		} // end if.. check for root with Mood.imp
+		if (resultSort != null) { 
+			resultMTC.mSort = resultSort;
+
+			// System.out.println(">>>>"+metaSortToString(resultSort));
+
+		} else {	
+			resultMTC.mType = MetaType.UNKNOWN;
+			// System.out.println(">>>>"+metaSortToString(resultSort));
+
+		} 		
+		return resultMTC; 
+	} // end metaLFCommandType
+
+
+	/** Returns the sort of question expressed by the given logical 
+		form. The sort is given in a MetaTypeCharacterization object, 
+		as value of the metaSort field. 
+		<p>
+		The resulting characterization contains as components the following:
+		<ul>
+		<li> "qscope": the logical form for the scope of the question
+		<li> "qrestr": the logical form for the restrictor of the question
+		</ul>
+
+
+		@param lf The logical form
+		@return MetaTypeCharacterization 
+		@since 061101 (061101)
+
+	 */
+
+	public static MetaTypeCharacterization metaLFQuestionType (LogicalForm lf) { 
+		String qscope = ""; // the nominal variable for the question scope
+		String qrestr = ""; // the nominal variable for the question restrictor
+		String qpred = "";  // the nominal variable for the predicate of the question (e.g. want, like,...)
+		String qauxmod = ""; // a String containing the modular/auxiliary verb (if any)	
+		boolean isChoice = false; // whether we have a disjunction list
+		// a Vector of Strings containing possible sentence or verb modifiers (e.g. please)
+		Vector<String> qmodifs = new Vector<String>();
+		// Set up the result object
+		MetaTypeCharacterization resultMTC = newMetaTypeCharacterization (); 
+		resultMTC.logicalFormId = lf.logicalFormId;
+		resultMTC.mType = MetaType.QUESTION;	
+		MetaTypeSort resultSort = null;
+		if (lf != null) { 
+			LFNominal root = lf.root;
+			if (root != null) {
+				// First check whether we have an SDA-LF; if so, descend to the ContentBody. 
+				if (root.sort.equals("dvp")) { 
+					LFRelation cbrel = lfNominalGetRelation(root,"ContentBody"); 
+					if (cbrel != null) { 
+						String cbRootNV = cbrel.dep;
+						root = lfGetNominal(lf,cbRootNV); 
+					} // end if.. check for existing content body
+				} // end if.. check for dvp
+				// Second, check whether we have a root that is a discourse connective; if so, 
+				// descend to the Body. 
+				if (root.sort.equals("dconn")) {
+					LFRelation bodyR = lfNominalGetRelation(root,"Body");
+					if (bodyR != null) {
+						String bodyNV = bodyR.dep;
+						root = lfGetNominal(lf,bodyNV);
+					} // end if.. check for Body 
+				} // end if.. check for discourse connective
+				if (root != null) { 
+					String mood = lfNominalGetFeature(root,"Mood");
+					log("root.hasFeature(Modifier) "+lfNominalHasFeature(root,"Modifier"));
+					if(lfNominalHasFeature(root,"Modifier")){
+						qmodifs.add(lfNominalGetFeature(root,"Modifier"));                		
+					}
+					if (mood.equals("int")) { 
+						// determine whether copula, or auxiliary+body
+						if (root.prop.prop.equals("be")) { 
+							LFRelation restrDepR = lfNominalGetRelation(root,"Restr");
+							String restrNomVar = restrDepR.dep;
+							LFNominal restrNom = lfGetNominal(lf,restrNomVar);
+							// The next one is not precisely how it should be --  
+							// the question lf doesn't mention polarity. 
+							if (restrNom.sort.equals("thing") && lfNominalHasRelation(restrNom,"VisCtxt")) {
+								LFRelation scopeDepR = lfNominalGetRelation(root,"Scope");
+								String scopeRootNV = scopeDepR.dep;								
+								qscope = restrNomVar;
+								qrestr = scopeRootNV;
+								LFNominal scopeRoot = lfGetNominal(lf,scopeRootNV);
+								if (scopeRoot.sort.equals("location")) { 
+									resultSort = MetaTypeSort.informative_polar_endurant_instantiation;
+								} // end if..else check for type) 
+							} else if (restrNom.sort.equals("person")) {  
+								LFRelation scopeDepR = lfNominalGetRelation(root,"Scope");
+								String scopeRootNV = scopeDepR.dep;																	
+								qscope = restrNomVar;
+								qrestr = scopeRootNV;
+								LFNominal scopeRoot = lfGetNominal(lf,scopeRootNV);
+								if (scopeRoot.sort.equals("region")) { 
+									resultSort = MetaTypeSort.informative_polar_person_perspective_spatial;
+								} // end if..else check for type) 
+								// the restrictor can be a state, with polarity; or a wh-word
+							} else if (restrNom.sort.equals("state")) { 
+								// if it is a state, then polar question
+								// check whether quality or spatial perspective
+								LFRelation scopeDepR = lfNominalGetRelation(root,"Scope");
+								String scopeRootNV = scopeDepR.dep;									
+								LFNominal scopeRoot = lfGetNominal(lf,scopeRootNV);
+								LFRelation qScopeR = lfNominalGetRelation(scopeRoot,"Restr");
+								qscope  = qScopeR.dep;
+								LFRelation qRestrR = lfNominalGetRelation(scopeRoot,"Scope");
+								qrestr  = qRestrR.dep;
+								LFNominal qRestrN = lfGetNominal(lf,qrestr);
+								if (qRestrN.sort.equals("region")) { 
+									resultSort = MetaTypeSort.informative_polar_endurant_perspective_spatial;
+								} if (qRestrN.sort.equals("perp-orientation")) { 
+									resultSort = MetaTypeSort.informative_polar_endurant_perspective_spatial;
+								} else if (qRestrN.sort.equals("color")) { 
+									resultSort = MetaTypeSort.informative_polar_endurant_quality;
+								} else if (qRestrN.sort.equals("size")) {  
+									resultSort = MetaTypeSort.informative_polar_endurant_quality;
+								} // end if..else check for type 
+							} else if (restrNom.prop.prop.startsWith("wh")) { 
+								// we're dealing with a factual question
+								// quality: wh-quality, perspective: wh-region
+								log("Checking for cop-restrictor/qscope of type wh...");
+								qscope = restrNom.nomVar;
+								LFRelation scopeR = lfNominalGetRelation(root,"Scope");
+								String scopeNomNV = scopeR.dep;
+								LFNominal scopeNom = lfGetNominal(lf,scopeNomNV);
+
+								// log("Scope prop/type ["+scopeNom.getProposition()+"/"+scopeNom.getType()+"] restrictor prop/type ["+restrNom.getProposition()+"/"+restrNom.getType()+"]");
+
+								qrestr = scopeNom.nomVar;
+
+								if (restrNom.sort.equals("region")) {
+									if (scopeNom.sort.equals("person")) {
+										resultSort = MetaTypeSort.informative_factual_person_perspective_spatial;
+									} else { 
+										resultSort = MetaTypeSort.informative_factual_endurant_perspective_spatial;				    
+									} // end if..else check for person/other 
+								} else if (restrNom.sort.equals("color")) { 
+									resultSort = MetaTypeSort.informative_factual_endurant_quality;
+								} else if (restrNom.sort.equals("size")) { 
+									resultSort = MetaTypeSort.informative_factual_endurant_quality;
+								} else if (restrNom.sort.equals("property")) {  
+									if (lfNominalHasRelation(restrNom,"Property")) { 
+										resultSort = MetaTypeSort.informative_factual_endurant_quality;
+									} else {
+										resultSort = MetaTypeSort.informative_factual_endurant_instantiation;
+									} // end if..else check whether specific property, or type 
+								} else if (restrNom.sort.equals("thing")) {
+									String scopeType = scopeNom.sort;
+									if (scopeType.equals("region")) { 
+										resultSort = MetaTypeSort.informative_factual_endurant_instantiation;
+									} else if (scopeType.equals("perp-orientation")) { 
+										resultSort = MetaTypeSort.informative_factual_endurant_instantiation;
+									} // end if..else 
+								} // end if.. check for thing
+								// end if..else check for type
+							} // end if..else check whether copula factual or polar question
+						} else if (root.prop.prop.equals("do")) {
+							if (lfNominalHasRelation(root,"Scope")) { 
+								// log("Looking under auxiliary at scope");
+								LFRelation scopeR = lfNominalGetRelation(root,"Scope");
+								String scopeNV = scopeR.dep;
+								LFNominal scopeN = lfGetNominal(lf,scopeNV);
+								if (scopeN != null) { 
+									if (scopeN.sort.equals("observation-process")) { 
+										// log("Dealing with an observation-process");
+										LFRelation phenR = lfNominalGetRelation(scopeN,"Phenomenon");
+										LFRelation sensR = lfNominalGetRelation(scopeN,"Senser");
+										qrestr = phenR.dep;
+										qscope = sensR.dep;
+										LFNominal phenN = lfGetNominal(lf,qrestr);
+										if (phenN.sort.equals("thing")) { 
+											if (phenN.prop.prop.startsWith("what")) { 
+												if (lfNominalHasRelation(root,"Location")) { 
+													resultSort = MetaTypeSort.informative_factual_endurant_instantiation;
+												} else { 
+													resultSort = MetaTypeSort.informative_factual_endurant_generic;
+												} // end if..else 
+											} else { 
+												resultSort = MetaTypeSort.informative_polar_endurant_instantiation;					    
+											} // end if..else check whether factual or polar
+										} // end if.. check for object 
+									} else if(scopeN.sort.equals("emotive-mental-process") 
+											|| scopeN.sort.equals("desiderate-mental-process")){
+										String disORdes = "UNVALID";
+										if (scopeN.sort.equals("emotive-mental-process")){
+											disORdes = "disposition";
+										} else if(scopeN.sort.equals("desiderate-mental-process")){
+											disORdes = "desire";
+										} // end if.. check if emotive or desiderate (like or want)
+										LFRelation phenR = lfNominalGetRelation(scopeN,"Phenomenon");
+										LFRelation sensR = lfNominalGetRelation(scopeN,"Senser");
+										qrestr = phenR.dep;
+										qscope = sensR.dep;
+										qpred = scopeN.nomVar;
+										LFNominal phenN = lfGetNominal(lf,qrestr);
+										if (phenN.sort.equals("thing")){
+											if (phenN.prop.prop.startsWith("what")) { 
+												if (disORdes.equals("disposition")) { 
+													resultSort = MetaTypeSort.affective_factual_disposition_general;
+												} else {
+													resultSort = MetaTypeSort.affective_factual_desire_general;												
+												} // end if..else 
+											} // end of what
+											else {
+												if (disORdes.equals("disposition")) { 
+													resultSort = MetaTypeSort.affective_polar_disposition_object;
+												} else {
+													resultSort = MetaTypeSort.affective_polar_desire_object;												
+												} // end if..else 											
+											} // end of type thing
+										} else if (phenN.sort.equals("disj-list")){
+											if (disORdes.equals("disposition")) { 
+												resultSort = MetaTypeSort.affective_choice_disposition_object;
+											} else {
+												resultSort = MetaTypeSort.affective_choice_desire_object;												
+											} // end if..else 										
+											isChoice = true;
+											// record the disjuncts
+											// clist = extractListItems(lf, phenN);                                            
+										} // end of type disj-list  
+										else if (phenN.sort.equals("attitude")){
+											if (phenN.prop.prop.startsWith("how")) { 
+												resultSort = MetaTypeSort.affective_factual_mood;
+											} else { 
+												resultSort = MetaTypeSort.affective_polar_mood;
+											} // end if.. check if "how" question 
+										} // end if..else check if "attitude"
+									}  //end if .. check of type of process 
+								} // end if.. safety check
+							} // end if.. check for Scope
+						} else if (root.prop.prop.equals("can") || 
+								root.prop.prop.equals("could") || 
+								root.prop.prop.equals("will") || 
+								root.prop.prop.equals("would")) { 
+							qauxmod = root.prop.prop;
+							String vtype = "novalidVType";
+							if(root.prop.prop.equals("can") || 
+									root.prop.prop.equals("could")){
+								vtype = "perm_poss_abil";
+							} else if(root.prop.prop.equals("will") || 
+									root.prop.prop.equals("would")){
+								vtype = "volit_predict";
+							} // end if..else check for modality on root
+							if (lfNominalHasRelation(root,"Scope")) { 
+								LFRelation scopeR = lfNominalGetRelation(root,"Scope");  
+								String scopeRootNV = scopeR.dep; 
+								LFNominal scopeRootN  = lfGetNominal(lf,scopeRootNV);
+								if(lfNominalHasFeature(scopeRootN,"Modifier")){
+									qmodifs.add(lfNominalGetFeature(scopeRootN,"Modifier"));                		
+								} // end if.. check for modifiers
+
+								if (scopeRootN.sort.equals("observation-process")) { 
+									// QRestr is the process and the Senser; 
+									// QScope is the object of observation/Phenomenon 
+									// QPred is the observation process
+									qrestr = scopeRootNV; 
+									LFRelation phenR = lfNominalGetRelation(scopeRootN,"Phenomenon");
+									qscope = phenR.dep;
+									LFNominal qscopeN = lfGetNominal(lf,qscope);
+									qpred = scopeRootNV;
+									if (qscopeN.sort.equals("thing")) { 
+										resultSort = MetaTypeSort.informative_polar_endurant_instantiation; 	
+									} // end if.. check for things 
+								} else if (scopeRootN.sort.equals("action")) { 
+									// QRestr is the process and the Actor
+									// QScope is the direction (WhereTo/WhichWay) or the affect object (Patient) (if not both occurr)
+									// if both or more occur, QScope is the lf for the whole action and all features can be retrieved by
+									// the Relations in the lf      					
+
+									// QPred is the action process
+
+									LogicalForm scopeLF = lfConstructSubtree(scopeRootN,lf);
+
+									qrestr = scopeRootNV;
+									qpred = scopeRootNV;
+									String predprop = scopeRootN.prop.prop;
+									if (lfNominalHasRelation(scopeRootN,"Actor")) { 
+										LFRelation actR = lfNominalGetRelation(scopeRootN,"Actor"); 
+										qscope = actR.dep;
+									}
+									if (lfNominalHasRelation(scopeRootN,"Patient")) { 
+										LFRelation patR = lfNominalGetRelation(scopeRootN,"Patient"); 
+										qrestr = patR.dep;
+										if (predprop.equals("push") || predprop.equals("kick") || predprop.equals("nudge") | predprop.equals("move")){ 
+											// movement.motion.locationchange.transport.object.X
+											if (vtype.equals("perm_poss_abil")) { 
+												resultSort = MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object;
+											} else {
+												resultSort = MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_transport_object;
+											}
+											if (lfNominalHasRelation(scopeRootN,"Dir:WhereTo")) {
+												qrestr = scopeRootNV; // as we have more relations than only Patient, the restriction must contain more 
+												LFRelation dirR = lfNominalGetRelation(scopeRootN,"Dir:WhereTo");
+												//qscope = dirR.getDependent();
+												String dirdep = dirR.dep;
+												LFNominal dirN = lfGetNominal(lf,dirdep);
+												if (dirN.sort.equals("perp-orientation")){
+													if (vtype.equals("perm_poss_abil")) { 
+														resultSort = MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object_direction;
+													} else {
+														resultSort = MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_transport_object_direction;
+													}												
+												} else if (dirN.sort.equals("location")){
+													if (vtype.equals("perm_poss_abil")) { 
+														resultSort = MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object_destination;
+													} else {
+														resultSort = MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_transport_object_destination;
+													}
+												} 
+											}
+										} else if(predprop.equals("bring") | predprop.equals("get")){ 
+											// obtain.object
+											if (vtype.equals("perm_poss_abil")) { 
+												resultSort = MetaTypeSort.informative_polar_perm_poss_abil_obtain_object; 
+											} else {
+												resultSort = MetaTypeSort.informative_polar_volit_predict_obtain_object; 
+											} // end check for modality											 
+											if(lfNominalHasRelation(scopeRootN,"Recipient") 
+													|| lfNominalHasRelation(scopeRootN,"Dir:WhereTo") 
+													|| lfNominalHasRelation(scopeRootN,"Dir:WhereFrom")){
+												qrestr = scopeRootNV; // as we have more relations than only Patient, the restriction must contain more
+											}
+										} // end of check prop of action verb
+									} else if (lfNominalHasRelation(scopeRootN,"Dir:WhereTo")) {
+										LFRelation dirR = lfNominalGetRelation(scopeRootN,"Dir:WhereTo"); 
+										qscope = dirR.dep;
+										if (vtype.equals("perm_poss_abil")) { 
+											resultSort = MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_motion;
+										} else {
+											resultSort = MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_motion;
+										}
+									} else if (lfNominalHasRelation(scopeRootN,"Dir:WhichWay")) { 
+										LFRelation dirR = lfNominalGetRelation(scopeRootN,"Dir:WhichWay"); 
+										qscope = dirR.dep;
+										if (vtype.equals("perm_poss_abil")) { 
+											resultSort = MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_motion;
+										} else {
+											resultSort = MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_motion;
+										}										
+									} // end if..else check what kind of action modifications
+								} // end if..else check for process for ability 
+							} // end if..check for scope
+						} // end if..else check for root proposition
+					} // end if.. check for interrogative
+				} // end if.. check for root to be non-null after possible descend
+			} // end if.. check for root to be present
+		} // end if.. check for lf to be present
+		// Construction the components for the question scope and restrictor
+		LFNominal qscopeLFN  = lfGetNominal(lf,qscope);
+		if (qscopeLFN != null) { 
+			LogicalForm qScopeLF = lfConstructSubtree(qscopeLFN,lf);
+			resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"qscope",qScopeLF);
+		} // end check for proper qscope nominal
+		LFNominal qrestrLFN  = lfGetNominal(lf,qrestr);
+		if (qrestrLFN != null) { 
+			LogicalForm qRestrLF = lfConstructSubtree(qrestrLFN,lf);
+			resultMTC.components = LFUtils.mtcAddComponent(resultMTC.components,"qrestr",qRestrLF);
+		} // end check for proper qrestr nominal
+		// Set the sort 
+		if (resultSort != null) { 
+			resultMTC.mSort = resultSort;
+		} else {	
+			resultMTC.mType = MetaType.UNKNOWN;
+		} 
+		return resultMTC; 
+	} // end metaLFQuestionType
+
+
+	/** The method <i>mtcDetermineMetaTypeCharacterization</i> vies for the longest method name, 
+		and provides a wrapper around the individual metaLF*Type methods for determining the type
+		of assertion, command, or question the given logical form expresses. The method returns
+		a MetaTypeCharacterization object, in which the type, sort, and components (dependent on 
+		the type and sort) are listed. 
+		<p>
+		The decision whether to consider an utterance <i>linguistically</i> a question, command, 
+		or assertion depends first of all on the mood feature at the root. If there is no such 
+		feature, then the method tries to determine the logical form as an assertion. 
+		<p>
+		If the method cannot determine the metaTypeSort for the logical form, then the metaType
+		is set to MetaType.UNKNOWN to indicate this. 
+
+		@param lf The logical form for which the meta type characterization is to be determined
+		@return MetaTypeCharacterization The object with the characterization 
+		@since 061105 (061101)
+	 */ 
+
+	public static MetaTypeCharacterization mtcDetermineMetaTypeCharacterization (LogicalForm lf) { 
+		MetaTypeCharacterization result = newMetaTypeCharacterization();
+		if (lf != null) { 
+			LFNominal root = lf.root;
+			if (root != null) {
+				// First check whether we have an SDA-LF; if so, descend to the ContentBody. 
+				if (root.sort.equals("dvp")) { 
+					LFRelation cbrel = lfNominalGetRelation(root,"ContentBody"); 
+					if (cbrel != null) { 
+						String cbRootNV = cbrel.dep;
+						root = lfGetNominal(lf,cbRootNV); 
+					} // end if.. check for existing content body
+				} // end if.. check for dvp
+				// Second, check whether we have a root that is a discourse connective; if so, 
+				// descend to the Body. 
+				if (root.sort.equals("dconn")) {
+					LFRelation bodyR = lfNominalGetRelation(root,"Body");
+					if (bodyR != null) {
+						String bodyNV = bodyR.dep;
+						root = lfGetNominal(lf,bodyNV);
+					} // end if.. check for Body 
+				} // end if.. check for discourse connective
+				if (root != null) { 
+					String mood = lfNominalGetFeature(root,"Mood");		
+
+					// System.out.println(">>> value for Mood feature under "+lfNominalToString(root)+" is ["+mood+"]");
+
+					if (mood.equals("int")) { 
+						result = metaLFQuestionType(lf); 
+					} else if (mood.equals("imp")) {
+						result = metaLFCommandType(lf);
+
+						// System.out.println(">>>"+metaSortToString(result.metaSort));
+
+
+					} else if (mood.equals("ind")) { 
+						result = metaLFAssertionType(lf);
+					} else {
+						// default to assertion type
+						// 
+						result = metaLFAssertionType(lf);
+					} // end if..else check for mood feature
+				} // end if.. check for root, still
+			} // end if.. check for root
+		} // end if.. check for lf
+		return result;
+	} // end mtcDetermineMetaTypeCharacterization
+
 	//=================================================================
 	// MISC METHODS
 	//=================================================================
+
+	/** Returns a string representation of the DynCompStatus object's 
+		epistemic and update status features. 
+	 */
+
+	public static String dcsToString(DynCompStatus dcs) { 
+		String result = "*UNKNOWN*"; 
+		if (dcs.epistemicStatus == EpistemicStatusFeature.EPI_KNOWN) { 
+			result = "known_";
+		} else if (dcs.epistemicStatus == EpistemicStatusFeature.EPI_UNKNOWN) { 
+			result = "unknown_";
+		} // end if.. check for epistemic status
+		if (dcs.updateStatus == UpdateStatusFeature.T) { 
+			result = result+"t";
+		} else if (dcs.updateStatus == UpdateStatusFeature.F) { 
+			result = result+"f";
+		} else if (dcs.updateStatus == UpdateStatusFeature.AMB) { 
+			result = result+"amb";
+		} // end if else; 
+		return result;
+	} // end dcsToString
 
 	/** Returns a string presentation of the given logical form. The
 		presentation is just a list of nominals! 
@@ -2124,7 +3206,7 @@ public class LFUtils {
 		JOptionPane.showMessageDialog(null,i,"Created graph",JOptionPane.INFORMATION_MESSAGE, null);
 	}
 
-	private static String getPropositionString(comsys.datastructs.lf.Proposition prop) {		
+	private static String getPropositionString(org.cognitivesystems.repr.lf.autogen.LFEssentials.Proposition prop) {		
 		String propString = prop.prop ;
 
 		// Since the recursive definition of the Proposition was removed by Nick, 
@@ -2891,6 +3973,148 @@ public class LFUtils {
 
 
 	
+	/** Returns a string representation of the given meta type sort, 
+		or *UNKNOWN* if the method does not know the sort. 
+
+		@param sort The meta type sort to be represented as String
+		@return String The string representation 
+		@since gj had brainsurgery (or close to braindead, after programming this)
+	 */ 
+
+	public static String metaSortToString (MetaTypeSort sort) { 
+		String result = "*UNKNOWN*"; 
+		if (sort == MetaTypeSort.informative_attributive_endurant_instantiation) { 
+			result = "informative.attributive.endurant.instantiation"; 
+		} else if (sort == MetaTypeSort.informative_attributive_endurant_quality) { 
+			result = "informative.attributive.endurant.quality";
+		} else if (sort == MetaTypeSort.informative_attributive_endurant_perspective_spatial) {
+			result = "informative.attributive.endurant.perspective.spatial";
+		} else if (sort == MetaTypeSort.informative_polar_positive) { 
+			result = "informative.polar.positive";
+		} else if (sort == MetaTypeSort.informative_polar_negative) { 
+			result = "informative.polar.negative";
+		} else if (sort == MetaTypeSort.affective_state_physical) { 
+			result = "affective.state.physical";
+		} else if (sort == MetaTypeSort.ability_cognition_perception_object) { 
+			result = "ability.cognition.perception.object";
+		} else if (sort == MetaTypeSort.ability_cognition_perception_object_neg) { 
+			result = "ability.cognition.perception.object.neg";
+		} else if (sort == MetaTypeSort.affective_need_object) { 
+			result = "affective.need.object";
+		} else if (sort == MetaTypeSort.affective_desire_object) { 
+			result = "affective.desire.object";
+		} else if (sort == MetaTypeSort.affective_desire_action_general) { 
+			result = "affective.desire.action.general";
+		} else if (sort == MetaTypeSort.affective_desire_action_specific) { 
+			result = "affective.desire.action.specific";
+		} else if (sort == MetaTypeSort.evaluative_positive) { 
+			result = "evaluative.positive";
+		} else if (sort == MetaTypeSort.evaluative_negative) { 
+			result = "evaluative.negative";
+		} else if (sort == MetaTypeSort.command_cognitive_analysis_location) { 
+			result = "command.cognitive.analysis.location";
+		} else if (sort == MetaTypeSort.command_cognitive_analysis_endurant) {
+			result = "command.cognitive.analysis.endurant";
+		} else if (sort == MetaTypeSort.command_manipulation_object) {
+			result = "command.manipulation.object";
+		} else if (sort == MetaTypeSort.command_manipulation_subject) {
+			result = "command.manipulation.subject";
+		} else if (sort == MetaTypeSort.command_movement_position_causative) {
+			result = "command.movement.position.causative";
+		} else if (sort == MetaTypeSort.command_movement_position_subjective) {
+			result = "command.movement.position.subjective";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_motion_subjective) {
+			result = "command.movement.motion.locationchange.motion.subjective";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_motion_direction) {
+			result = "command.movement.motion.locationchange.motion.direction";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_motion_destination) {
+			result = "command.movement.motion.locationchange.motion.destination";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_motion_guidance_person) {
+			result = "command.movement.motion.locationchange.motion.guidance.person";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_motion_guidance_area) {
+			result = "command.movement.motion.locationchange.motion.guidance.area";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_transport_object) {
+			result = "command.movement.motion.locationchange.motion.locationchange.transport.object";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_transport_object_direction) {
+			result = "command.movement.motion.locationchange.motion.locationchange.transport.object.direction";
+		} else if (sort == MetaTypeSort.command_movement_motion_locationchange_transport_object_destination) {
+			result = "command.movement.motion.locationchange.motion.locationchange.transport.object.destination";
+		} else if (sort == MetaTypeSort.command_movement_motion_insitu_pose_relative) {
+			result = "command.movement.motion.insitu.pose.relative";
+		} else if (sort == MetaTypeSort.command_movement_motion_insitu_pose_facing) {
+			result = "command.movement.motion.insitu.pose.facing";
+		} else if (sort == MetaTypeSort.command_assist) {
+			result = "command.assist";
+		} else if (sort == MetaTypeSort.command_obtain_object) {
+			result = "command.obtain.object";
+		} else if (sort == MetaTypeSort.command_obtain_object_recipient) {
+			result = "command.obtain.object.recipient";
+		} else if (sort == MetaTypeSort.command_obtain_object_destination) {
+			result = "command.obtain.object.destination";
+		} else if (sort == MetaTypeSort.command_obtain_object_origin) {
+			result = "command.obtain.object.origin";
+		} else if (sort == MetaTypeSort.informative_factual_endurant_generic) {
+			result = "informative.factual.endurant.generic";
+		} else if (sort == MetaTypeSort.informative_factual_endurant_instantiation) {
+			result = "informative.factual.endurant.instantiation"; 
+		} else if (sort == MetaTypeSort.informative_factual_endurant_perspective_spatial) {
+			result = "informative.factual.endurant.perspective.spatial";
+		} else if (sort == MetaTypeSort.informative_factual_person_perspective_spatial) {
+			result = "informative.factual.person.perspective.spatial";
+		} else if (sort == MetaTypeSort.informative_factual_endurant_quality) {
+			result = "informative.factual.endurant.quality";
+		} else if (sort == MetaTypeSort.informative_polar_endurant_perspective_spatial) {
+			result = "informative.polar.endurant.perspective.spatial";
+		} else if (sort == MetaTypeSort.informative_polar_endurant_quality) {
+			result = "informative.polar.endurant.endurant.quality";
+		} else if (sort == MetaTypeSort.informative_polar_endurant_instantiation) {
+			result = "informative.polar.endurant.endurant.instantiation";
+		} else if (sort == MetaTypeSort.informative_polar_person_perspective_spatial) {
+			result = "informative.polar.person.perspective.spatial"; 	
+		} else if (sort == MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_motion) {
+			result = "informative.polar.perm_poss_abil.movement.motion.locationchange.motion";
+		} else if (sort == MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object) {
+			result = "informative.polar.perm_poss_abil.movement.motion.locationchange.transport.object"; 
+		} else if (sort == MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object_direction) {
+			result = "informative.polar.perm_poss_abil.movement.motion.locationchange.transport.object.direction";  
+		} else if (sort == MetaTypeSort.informative_polar_perm_poss_abil_movement_motion_locationchange_transport_object_destination) {
+			result = "informative.polar.perm_poss_abil.movement.motion.locationchange.transport.object.destination";  
+		} else if (sort == MetaTypeSort.informative_polar_perm_poss_abil_assist) {
+			result = "informative.polar.perm_poss_abil.assist";  
+		} else if (sort == MetaTypeSort.informative_polar_perm_poss_abil_obtain_object) {
+			result = "informative.polar.perm_poss_abil.obtain.object"; 
+		} else if (sort == MetaTypeSort.informative_polar_volit_predict_obtain_object) {
+			result = "informative.polar.volit_predict.obtain.object"; 
+		} else if (sort == MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_motion) {
+			result = "informative.polar.volit_predict.movement.motion.locationchange.motion";
+		} else if (sort == MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_transport_object) {
+			result = "informative.polar.volit_predict.movement.motion.locationchange.transport.object";
+		} else if (sort == MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_transport_object_direction) {
+			result = "informative.polar.volit_predict.movement.motion.locationchange.transport.object.direction";
+		} else if (sort == MetaTypeSort.informative_polar_volit_predict_movement_motion_locationchange_transport_object_destination) {
+			result = "informative.polar.volit_predict.movement.motion.locationchange.transport.object.destination";
+		} else if (sort == MetaTypeSort.affective_factual_desire_object) {
+			result = "affective.factual.desire.object";
+		} else if (sort == MetaTypeSort.affective_factual_desire_general) {
+			result = "affective.factual.desire.general"; 
+		} else if (sort == MetaTypeSort.affective_factual_disposition_general) {
+			result = "affective.factual.disposition.general";
+		} else if (sort == MetaTypeSort.affective_factual_mood) {
+			result = "affective.factual.mood"; 	
+		} else if (sort == MetaTypeSort.affective_polar_desire_object) {
+			result = "affective.polar.desire.object";
+		} else if (sort == MetaTypeSort.affective_polar_disposition_object) {
+			result = "affective.polar.disposition.object";
+		} else if (sort == MetaTypeSort.affective_polar_mood) {
+			result = "affective.polar.mood"; 			
+		} else if (sort == MetaTypeSort.affective_choice_desire_object) {
+			result = "affective.choice.desire.object";
+		} else if (sort == MetaTypeSort.affective_choice_disposition_object) {
+			result = "affective.choice.disposition.object";
+		} // end if..then...bloody else
+		return result; 
+	} // end metaSortToString();
+
 
 	private static String strip (String s) { 
 		StringTokenizer tok = new StringTokenizer(s);
