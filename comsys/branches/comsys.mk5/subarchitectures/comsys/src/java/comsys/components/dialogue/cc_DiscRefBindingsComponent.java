@@ -119,9 +119,10 @@ public class cc_DiscRefBindingsComponent extends ManagedComponent {
 	 * 
 	 * @param _id
 	 */
-	public cc_DiscRefBindingsComponent(String _id) {
-		init();
-	} // constructor/1
+/**	public cc_DiscRefBindingsComponent() {
+
+	//	init();
+	} // constructor/1 */
 
 	/**
 	 * The method <i>init</i> initializes the global data structures,
@@ -204,6 +205,8 @@ public class cc_DiscRefBindingsComponent extends ManagedComponent {
 
 		super.start();
 
+		init();
+		
 		try {
 
 
