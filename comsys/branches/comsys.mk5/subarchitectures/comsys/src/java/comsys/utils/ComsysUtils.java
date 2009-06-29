@@ -15,8 +15,11 @@ import comsys.datastructs.comsysEssentials.*;
 
 public class ComsysUtils {
 
+	boolean LOGGING = true;
+	
 	public static PhonStringLFPair[] convertPhonString2LFPairs (PackedLFParseResults results) {
 		
+		if (results.phon2LFsMapping != null) {
 		Hashtable<PhonString,Vector<String>> hash = results.phon2LFsMapping;
 		Vector<PhonStringLFPair> pairs = new Vector<PhonStringLFPair>();
 		for (Enumeration<PhonString> e = hash.keys(); e.hasMoreElements();) {
@@ -33,6 +36,12 @@ public class ComsysUtils {
 		PhonStringLFPair[] pairsArray = new PhonStringLFPair[pairs.size()];
 		pairsArray = pairs.toArray(pairsArray);
 		return pairsArray;
+		}
+		else {
+			log("No phon2LFMapping!");
+			Vector<PhonStringLFPair> pairs = new Vector<PhonStringLFPair>();
+			return null;
+		}
 		
 	}
 	
@@ -82,6 +91,10 @@ public class ComsysUtils {
 		return nonStandardRulesForLf;
 	}
 	
+	
+	private static void log(String s) {
+		System.out.println ("[ComsysUtils] " + s);
+	}
 	
 	
 }

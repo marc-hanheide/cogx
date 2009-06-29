@@ -698,6 +698,7 @@ throws ComsysException, ParseException {
 		throw new ComsysException (iobe.getMessage()); 
 	} // end try..catch
 
+	results = ParsingUtils.createPhon2LFsMapping (results, str);
 	return results;
 } // end parse
 
