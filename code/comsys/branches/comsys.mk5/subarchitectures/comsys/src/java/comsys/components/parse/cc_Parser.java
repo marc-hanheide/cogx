@@ -511,13 +511,13 @@ public class cc_Parser
                 }); */
 
 			// register change filters for PackedLFs, which triggers continuation of parsing				
-     /**       addChangeFilter(
+            addChangeFilter(
             		ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),
                 new WorkingMemoryChangeReceiver() {
                     public void workingMemoryChanged(WorkingMemoryChange _wmc) {
                          handleWorkingMemoryChange(_wmc, false);
                     }
-                }); */
+                }); 
 				
 			// register change filters for PackedLFs, which triggers continuation or finalization of parsing				
             addChangeFilter(

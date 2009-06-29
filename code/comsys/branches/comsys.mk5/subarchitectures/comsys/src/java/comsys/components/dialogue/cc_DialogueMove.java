@@ -157,9 +157,9 @@ public class cc_DialogueMove
 	 * 
 	 * @param _id
 	 */
-	public cc_DialogueMove(String _id) {
+/**	public cc_DialogueMove(String _id) {
 		init();
-	} // constructor/1
+	} // constructor/1 */ 
 
 	/**
 	 * The method <i>init</i> initializes the global data structures,
@@ -299,6 +299,7 @@ public class cc_DialogueMove
 	@Override
 	public void start() {
 		super.start();
+		init();
 //		try {
 			// Change filters for caches
 			addChangeFilter(

@@ -136,9 +136,9 @@ public class cc_DialogueStructureManager extends ManagedComponent {
      * 
      * @param _id
      */
-    public cc_DialogueStructureManager(String _id) {
+ /**   public cc_DialogueStructureManager(String _id) {
         init();
-    } // constructor/1
+    } // constructor/1 */
 
     /**
      * The method <i>init</i> initializes the global data structures,
@@ -247,6 +247,8 @@ public class cc_DialogueStructureManager extends ManagedComponent {
     public void start() {
 
         super.start();
+        
+        init();
         
      // test
         SDRS sdrs = new SDRS();

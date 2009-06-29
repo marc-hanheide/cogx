@@ -7,13 +7,20 @@ SUBARCHITECTURE comsys
 JAVA WM			cast.architecture.SubarchitectureWorkingMemory --log true
 JAVA TM 		cast.architecture.AlwaysPositiveTaskManager --log --debug
 JAVA MG asr 	comsys.components.asr.cc_ASR --src gui --log #--debug
-JAVA GD parser			comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log true
+JAVA GD parser			comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --log true
 
-#JAVA GD discRefBindings org.cognitivesystems.comsys.components.DiscRefBindingsComponent #--log true
-#JAVA GD dialMoveInt		org.cognitivesystems.comsys.components.DialogueMoveInterpretation #--log true
-#JAVA GD dialstructure	org.cognitivesystems.comsys.components.DialogueStructureManager #--log true 
+
+## -------------------------------------------
+## Interpretation side
+## -------------------------------------------
+JAVA GD discRefBindings comsys.components.dialogue.cc_DiscRefBindingsComponent --log true
+JAVA GD dialMoveInt		comsys.components.dialogue.cc_DialogueMove --log true
+JAVA GD dialstructure	comsys.components.dialogue.cc_DialogueStructureManager --log true 
+
 ## JAVA GD eventInt		org.cognitivesystems.comsys.components.EventStructureInterpretation --incrementalInterpretation false #--log true
 #JAVA GD salience		org.cognitivesystems.comsys.processing.saliency.SalienceModelHelper #--log true
+
+
 ## -------------------------------------------
 ## Production side
 ## -------------------------------------------

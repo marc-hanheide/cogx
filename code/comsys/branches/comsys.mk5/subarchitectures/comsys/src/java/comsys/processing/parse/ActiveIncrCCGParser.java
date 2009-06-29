@@ -765,7 +765,7 @@ public PackedLogicalForm prunePackedLogicalForm (PackedLogicalForm plf, String s
 
 public PackedLFParseResults packChartAnalyses(PackedLFParseResults results, opennlp.ccg.parse.Chart chart) throws ParseException {
 
-	int stringPos = results.stringPos;		
+	int stringPos = results.stringPos + 1;		
 	log("Packing parsing results at string position ["+stringPos+"]");
 
 	Hashtable<String,Hashtable<String,Integer>> nonStandardRulesApplied = 
@@ -856,7 +856,7 @@ public PackedLFParseResults packChartAnalyses(PackedLFParseResults results, open
 		//	e.printStackTrace();
 	}
 	catch (Exception e) {
-		log("An exception occured while packing logical forms");
+		log("An exception occured while creating or packing the logical forms");
 		log(e.getMessage()); 
 		e.printStackTrace();
 	} // end try..catch for parse exceptions when reading out the chart
