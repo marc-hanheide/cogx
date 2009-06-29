@@ -80,11 +80,11 @@ public class PackedLFVisualizer
     // =================================================================
 
 	// the subdirectory in which to store the DOT and PNG files
-	String graphsDir;
+	String graphsDir = "./subarchitectures/comsys/graph/parser";
 
 
 	// the subdirectory in which to store the DOT and PNG files for the SDRS
-	String graphsDirSDRS;
+	String graphsDirSDRS = "./subarchitectures/comsys/graph/sdrs";
 	
 	// a hashtable with packedlf identifiers matched to counters, 
 	// to be able to produce series of graphs for an incrementally formed packedlf
@@ -116,8 +116,10 @@ public class PackedLFVisualizer
 
 
 	@Override
-	public void init () { 
+	public void start () { 
 
+		super.start();
+		
 	    //nah: try resetting to default incase matlab has
 		//messed with it
 		try {

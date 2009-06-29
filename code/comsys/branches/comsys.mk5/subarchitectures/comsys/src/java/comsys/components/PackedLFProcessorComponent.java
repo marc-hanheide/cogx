@@ -161,8 +161,6 @@ public abstract class PackedLFProcessorComponent
     public void start() {
         super.start();
 		// now call the init method. 
-		init();
-
             
            	addChangeFilter(
            			ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),

@@ -36,5 +36,5 @@ JAVA GD dialstructure	comsys.components.dialogue.cc_DialogueStructureManager --l
 ## -------------------------------------------
 ## Visualization
 ## -------------------------------------------
-##JAVA GD plfviz org.cognitivesystems.comsys.components.PackedLFVisualizer --series true --sdrs true --dir ./subarchitectures/comsys.mk4/graphs/parser/ --dirSDRS ./subarchitectures/comsys.mk4/graphs/sdrs/  --log true --generatePNG true
+JAVA GD plfviz comsys.components.gui.PackedLFVisualizer --series true --sdrs true --dir ./subarchitectures/comsys/graphs/parser/ --dirSDRS ./subarchitectures/comsys/graphs/sdrs/  --log true --generatePNG true
 
