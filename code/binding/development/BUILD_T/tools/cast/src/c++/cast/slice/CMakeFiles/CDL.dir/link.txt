@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -g  -shared -Wl,-soname,libCDL.so -o libCDL.so CMakeFiles/CDL.dir/CDL.cpp.o -lIce -lIceUtil 

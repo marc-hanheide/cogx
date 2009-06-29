@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="subarchitectures/binder/src/java"/>
+	<classpathentry kind="src" path="tools/cast/src/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/usr/share/java/ant-ice.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/Ice.jar"/>
+	<classpathentry kind="output" path="output"/>
+</classpath>
