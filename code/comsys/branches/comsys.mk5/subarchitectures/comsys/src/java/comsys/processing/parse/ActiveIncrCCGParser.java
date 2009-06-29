@@ -364,7 +364,7 @@ implements ContextActiveProcess {
 	 */
 	public Iterator getContextDataTypes() { 
 		Vector<String> dataTypes = new Vector<String>();
-		dataTypes.addElement(CASTUtils.typeName(ContextInfo.class));
+//		dataTypes.addElement(CASTUtils.typeName(ContextInfo.class));
 		return dataTypes.iterator();
 	} // end getContextDataTypes
 

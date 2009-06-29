@@ -229,7 +229,6 @@ public class cc_Parser
 		pdIdCounter = 0;
 		plfToPackedLFsId = new Hashtable<String,String>();
 		
-
 		try { 
 			activeProcesses = new Vector<ContextActiveProcess>();
 			activeDataMap	= new Hashtable<String,Vector>();
@@ -476,7 +475,7 @@ public class cc_Parser
 
         	
 			// register change filters for the active data types
-			for (Iterator adtsIter = activeDataMap.keySet().iterator(); adtsIter.hasNext(); ) { 					
+			for (Iterator adtsIter = activeDataMap.keySet().iterator(); adtsIter.hasNext(); ) { 
 				String adtsType = (String) adtsIter.next();
 				try {
 				addChangeFilter(
@@ -584,6 +583,8 @@ public class cc_Parser
             m_proposedProcessing.put(taskID, pd);
 			// set the goal
             String taskGoal = ComsysGoals.INCREMENTAL_PARSING_STEP_TASK;
+            System.out.println("ID: " + taskID);
+            System.out.println("goal: " + taskGoal);
 			// store the goal with its information
             proposeInformationProcessingTask(taskID, taskGoal);
         }
