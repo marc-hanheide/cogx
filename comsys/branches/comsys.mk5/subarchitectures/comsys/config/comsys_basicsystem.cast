@@ -9,7 +9,6 @@ JAVA TM 		cast.architecture.AlwaysPositiveTaskManager --log --debug
 JAVA MG asr 	comsys.components.asr.cc_ASR --src gui --log #--debug
 JAVA GD parser			comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --log true
 
-
 ## -------------------------------------------
 ## Interpretation side
 ## -------------------------------------------
@@ -17,24 +16,5 @@ JAVA GD discRefBindings comsys.components.dialogue.cc_DiscRefBindingsComponent -
 JAVA GD dialMoveInt		comsys.components.dialogue.cc_DialogueMove --log true
 JAVA GD dialstructure	comsys.components.dialogue.cc_DialogueStructureManager --log true 
 
-## JAVA GD eventInt		org.cognitivesystems.comsys.components.EventStructureInterpretation --incrementalInterpretation false #--log true
-#JAVA GD salience		org.cognitivesystems.comsys.processing.saliency.SalienceModelHelper #--log true
-
-
-## -------------------------------------------
-## Production side
-## -------------------------------------------
-#JAVA GD dialPlan		org.cognitivesystems.comsys.components.CommunicativeGoalPlanner --bsa binding.sa # --log true
-#JAVA GD contentPlanning	org.cognitivesystems.comsys.components.ContentPlanning --contentBody Content --redux ./subarchitectures/comsys.mk4/grammars/contentPlanning/modelredux.rdx --grammar ./subarchitectures/comsys.mk4/grammars/contentPlanning/grammar.xml --log true
-## JAVA GD gre				org.cognitivesystems.comsys.processing.ObjectGREProcess --distractorFeature Concept --bsa binding.sa --log
-#JAVA GD realization		org.cognitivesystems.comsys.components.UtteranceRealization --contentBody Content --ngrams ./subarchitectures/comsys.mk4/grammars/contentPlanning/ngram-corpus.txt --ccg ./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml --log true
-#JAVA GD speech.synth 	org.cognitivesystems.comsys.components.tts.TTS --startserver --serverHost localhost --serverPort 59125 --voice hmm-slt --log true
-## -------------------------------------------
-## Binding/motivation monitor
-## -------------------------------------------
-#JAVA GD comsys.binding.monitor	org.cognitivesystems.comsys.monitors.ComSysBindingMonitor -bsa binding.sa --msa motiv.sa --incrementalBinding false --syncModel sync_one --no-check motiv.sa --log true
-## -------------------------------------------
-## Visualization
-## -------------------------------------------
 JAVA GD plfviz comsys.components.gui.PackedLFVisualizer --series true --sdrs false --dir ./subarchitectures/comsys/graphs/parser/ --dirSDRS ./subarchitectures/comsys/graphs/sdrs/  --log true --generatePNG true
-
+JAVA  GD parseselection org.cognitivesystems.comsys.components.ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction true --discourse-level-composition true --disfluency-correction true --log true
