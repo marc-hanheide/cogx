@@ -26,9 +26,11 @@ void print_sequence (const Sequence& s) {
 		if (i+1 == s.end())
 			cout << "]";
 		else
-			cout << "], ";
+			cout << "], " << endl;
 	}
-	cout << "}" << endl;
+	cout << "}\n" << endl;
+
+
 }
 
 template <typename T>
