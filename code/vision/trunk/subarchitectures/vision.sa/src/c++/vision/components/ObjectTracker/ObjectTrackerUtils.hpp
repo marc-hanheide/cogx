@@ -40,7 +40,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	// Parse through faces and store content in Model
 	Model::Face f;
 	for(i=0; i<geom->faces.size(); i++){	
-		f.v = geom->faces[i].vertices;	
+		f.v = geom->faces[i].vertices;
 		model->m_facelist.push_back(f);
 		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
@@ -76,7 +76,7 @@ bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 	// Parse through faces and store content in Model
 	for(i=0; i<model->m_facelist.size(); i++){
 		VisionData::Face f;
-		f.vertices = model->m_facelist[i].v;	
+		f.vertices = model->m_facelist[i].v;
 		geom->faces.push_back(f);	
 	}
 	
@@ -182,8 +182,54 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	camera->SetExtrinsic(extrinsic);
 }
 
-
-
+// SDL - Keyboard and Mouse input control
+bool inputsControl(Tracker* tracker){
+ 
+	SDL_Event event;
+	while(SDL_PollEvent(&event)){
+		switch(event.type){
+		case SDL_KEYDOWN:
+            switch(event.key.keysym.sym){
+				case SDLK_ESCAPE:
+					return false;
+					break;
+				case SDLK_e:
+					tracker->showEdgesImage( !tracker->getEdgesImage() );
+					break;
+				case SDLK_k:
+					tracker->enableKalman();
+					break;
+				case SDLK_l:
+					tracker->lock( !tracker->getLock() );
+					break;
+				case SDLK_m:
+					tracker->showEdgesModel( !tracker->getEdgesModel() );
+					break;
+				case SDLK_p:
+					tracker->showParticles( !tracker->getParticlesVisible() );
+					break;
+				case SDLK_s:
+					tracker->showStatistics();
+					break;
+				case SDLK_t:
+					tracker->textureFromImage();
+					break;			
+				case SDLK_z:
+					tracker->zeroParticles();
+					break;
+                default:
+					break;
+			}
+			break;
+		case SDL_QUIT:
+			return false;
+			break;
+		default:
+			break;
+		}
+	}
+	return true;
+}
 
 
 

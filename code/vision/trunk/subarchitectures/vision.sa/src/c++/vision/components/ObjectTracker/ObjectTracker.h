@@ -14,7 +14,9 @@
 #include <vector>
 #include <string>
 
+#include "Tracker.h"
 #include "EdgeTracker.h"
+#include "TextureTracker.h"
 #include "Timer.h"
 #include "ObjectTrackerUtils.hpp"
 

@@ -133,22 +133,22 @@ Particles::Particles(int num, Particle p){
 	
 	m_particlelist = (Particle*)malloc(sizeof(Particle) * m_num_particles);
 	
-	queryD = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
-	queryV = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
+	queryMatches = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
+	queryEdges = (unsigned int*)malloc(sizeof(unsigned int) * m_num_particles);
 	
-	glGenQueriesARB(m_num_particles, queryD);
-    glGenQueriesARB(m_num_particles, queryV);
+	glGenQueriesARB(m_num_particles, queryMatches);
+    glGenQueriesARB(m_num_particles, queryEdges);
 
 	setAll(p);
 }
 
 Particles::~Particles(){
-	glDeleteQueriesARB(m_num_particles, queryD);
-	glDeleteQueriesARB(m_num_particles, queryV);
+	glDeleteQueriesARB(m_num_particles, queryMatches);
+	glDeleteQueriesARB(m_num_particles, queryEdges);
 
 	free(m_particlelist);
-	free(queryD);
-	free(queryV);
+	free(queryMatches);
+	free(queryEdges);
 }
 
 void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_ref, unsigned int distribution){
@@ -203,11 +203,11 @@ void Particles::deactivate(int id){
 }
 
 void Particles::startCountD(int id){
-	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryD[id]);
+	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryMatches[id]);
 }
 
 void Particles::startCountV(int id){
-	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryV[id]);
+	glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryEdges[id]);
 }
 
 void Particles::endCountD(){
@@ -231,8 +231,11 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 	
 	for(id=0; id<num_particles; id++){
 		// Get number of pixels from Occlusion Query
-		glGetQueryObjectivARB(queryV[id], GL_QUERY_RESULT_ARB, &v);
-		glGetQueryObjectivARB(queryD[id], GL_QUERY_RESULT_ARB, &d);
+		glGetQueryObjectivARB(queryEdges[id], GL_QUERY_RESULT_ARB, &v);
+		glGetQueryObjectivARB(queryMatches[id], GL_QUERY_RESULT_ARB, &d);
+		
+		m_particlelist[id].v = v;
+		m_particlelist[id].d = d;
 		
 		if(v>v_max_tmp)
 			v_max_tmp = v;
@@ -244,6 +247,7 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		// Likelihood calculation formula
 		if(v != 0)
 			m_particlelist[id].w = (float(d)/float(v) + float(d)/float(v_max)) / w_max;
+			//m_particlelist[id].w = (float(d)/float(v));			
 		
 		// store id of maximum likely particle
 		if(m_particlelist[id].w > m_particlelist[id_max].w)

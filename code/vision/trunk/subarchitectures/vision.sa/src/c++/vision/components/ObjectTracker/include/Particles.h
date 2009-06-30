@@ -23,6 +23,7 @@ public:
 	float rX, rY, rZ;	// rotation
 	float tX, tY, tZ;	// translation
 	float w;			// Likelihood
+	float v, d;
 	Quaternion q;		// representing rotation with quaternions
 
 	Particle();
@@ -56,8 +57,8 @@ private:
 	float w_max;
 	float m_frustum_offset;
 	
-	unsigned int* queryD; // query for all edge pixel count with NV_Occlusion_Query
-    unsigned int* queryV; // query for coinciding edge pixel count with NV_Occlusion_Query
+	unsigned int* queryMatches; // query for all edge pixel count with NV_Occlusion_Query
+    unsigned int* queryEdges; // query for coinciding edge pixel count with NV_Occlusion_Query
     
     float noise(float rMin, float rMax, unsigned int precision, unsigned int distribution=GAUSS);
 
@@ -72,8 +73,6 @@ public:
 	int getMaxID(){ return id_max; }
 	int getVMax(){ return v_max; }
 	void setVMax(int val){ v_max = val; }
-	unsigned int* getQueryD(int id){ return &queryD[id]; }
-	unsigned int* getQueryV(int id){ return &queryV[id]; }
 	int getNumParticles(){ return m_num_particles; }
 	void printMax(){ m_particlelist[id_max].print(); }
 	

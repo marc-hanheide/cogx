@@ -1,5 +1,6 @@
 
 #include "PlyModel.h"
+#include "Resources.h"
 
 // *** PRIVATE ***
 
@@ -57,6 +58,7 @@ bool PlyModel::read(const char* filename){
     	printf("[PlyModel::read] Error loading ply file %s\n", filename);
     	return false;
     }
+    sprintf(m_modelname, "%s", filename);
     
     // Load texture files from obj_info (=texture-filename)
     char** obj_info;
@@ -69,6 +71,7 @@ bool PlyModel::read(const char* filename){
    		id = g_Resources->AddTexture(obj_info[0]);
    		m_tex_original = g_Resources->GetTexture(id);
    		m_texture = m_tex_original;
+   		m_textured = true;
    	}
     if(num_obj_info > 1)
     	printf("[PlyModel::read] Warning only one texture per model supported\n");
@@ -196,6 +199,7 @@ bool PlyModel::convertPlyModel(){
 		for(j=0; j<m_plyfacelist[i].nverts; j++){
 			f.v.push_back(m_plyfacelist[i].v[j]);
 		}
+		f.max_pixels = 0;
 		m_facelist.push_back(f);
 	}
 	

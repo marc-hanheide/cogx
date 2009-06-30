@@ -3,6 +3,7 @@
 #define __TEXTURE_TRACKER_H__
 
 #include "Tracker.h"
+#include "Lighting.h"
 
 class TextureTracker : public Tracker
 {
@@ -10,6 +11,8 @@ private:
 	
 	// Resources
 	Shader* m_shadeTextureCompare;
+	Shader* m_shadeTexturing;
+	Lighting m_lighting;
 	
 	// Functions
 	void model_processing();
@@ -28,7 +31,11 @@ public:
 						Particle p_estimate,
 						Particle& p_result);
 						
+	virtual void textureFromImage();
+						
 	virtual void drawResult(Particle* p);
+	
+
 };
 
 #endif

@@ -14,7 +14,7 @@ void EdgeTracker::image_processing(unsigned char* image){
 	// Preprocessing for camera image
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
-	m_cam_ortho->Activate();
+	glColor3f(1,1,1);
 	m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
 	m_ip->gauss(m_tex_frame, m_tex_frame_ip[0]);
 	m_ip->sobel(m_tex_frame_ip[0], m_tex_frame_ip[0]);
@@ -22,7 +22,6 @@ void EdgeTracker::image_processing(unsigned char* image){
 	m_ip->spreading(m_tex_frame_ip[0], m_tex_frame_ip[1]);
 	m_ip->spreading(m_tex_frame_ip[1], m_tex_frame_ip[2]);
 	m_ip->spreading(m_tex_frame_ip[2], m_tex_frame_ip[3]);
-	m_ip->render(m_tex_frame);
 }
 
 // Calculate motion function (noise) and perturb particles
@@ -119,24 +118,10 @@ bool EdgeTracker::track(	unsigned char* image,
 							Particle p_estimate,
 							Particle& p_result)		// storage to write tracked position
 {
+	// Check if input is valid
+	isReady(image, model, camera, &p_estimate);	
 	
-	if(!m_tracker_initialized){
-		printf("[EdgeTracker::trackEdge] Error tracker not initialized\n");
-		return false;
-	}
-
-	if(!image || !model){
-		printf("[EdgeTracker::trackEdge] Error model not valid\n");
-		return false;
-	}
-	m_model = model;
-	
-	if(!camera){
-		printf("[EdgeTracker::trackEdge] Warning camera not set, using default values\n");
-		m_cam_perspective = m_cam_default;
-	}else{
-		m_cam_perspective = camera;
-	}
+	// Reduce viewport for higher performance
 	m_cam_perspective->SetViewport(128, 128);
 	
 	// Process image from camera (edge detection)
@@ -184,8 +169,7 @@ bool EdgeTracker::track(	unsigned char* image,
 	if(params.number_of_particles > m_particles->getNumParticles())
 		params.number_of_particles = m_particles->getNumParticles();
 	
-	SDL_Delay(10);
-	return inputs();
+	return true;
 
 }
 

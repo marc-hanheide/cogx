@@ -189,6 +189,7 @@ bool ImageProcessor::transform(int i,int j,double *ix,double *iy){
 // *** Image Processing functions ***
 
 void ImageProcessor::flipUpsideDown(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
 	glEnable(GL_TEXTURE_2D);
 		source->bind();
 		glCallList(m_dlUpsideDown);
@@ -196,7 +197,17 @@ void ImageProcessor::flipUpsideDown(Texture* source, Texture* result){
 	glDisable(GL_TEXTURE_2D);
 }
 
+void ImageProcessor::copy(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
+	glEnable(GL_TEXTURE_2D);
+		source->bind();
+		glCallList(m_dlImage);
+    	result->copyTexImage2D(source->getWidth(), source->getHeight());
+    glDisable(GL_TEXTURE_2D);
+}
+
 void ImageProcessor::rectification(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
 	glEnable(GL_TEXTURE_2D);
 		source->bind();
 		glCallList(m_dlRect);
@@ -205,6 +216,7 @@ void ImageProcessor::rectification(Texture* source, Texture* result){
 }
 
 void ImageProcessor::gauss(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
 	m_shadeGauss->bind();
     glEnable(GL_TEXTURE_2D);
 		source->bind();
@@ -215,6 +227,7 @@ void ImageProcessor::gauss(Texture* source, Texture* result){
 }
 
 void ImageProcessor::sobel(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
 	m_shadeSobel->bind();
     glEnable(GL_TEXTURE_2D);
 		source->bind();
@@ -225,6 +238,7 @@ void ImageProcessor::sobel(Texture* source, Texture* result){
 }
 
 void ImageProcessor::thinning(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
 	glEnable(GL_TEXTURE_2D);
 		source->bind();
 		m_shadeThinning->bind();
@@ -235,6 +249,7 @@ void ImageProcessor::thinning(Texture* source, Texture* result){
 }
 
 void ImageProcessor::spreading(Texture* source, Texture* result){
+	m_cam_ortho->Activate();
 	glEnable(GL_TEXTURE_2D);
 		source->bind();
 		m_shadeSpreading->bind();
@@ -245,6 +260,7 @@ void ImageProcessor::spreading(Texture* source, Texture* result){
 }
 
 void ImageProcessor::render(Texture* tex){
+	m_cam_ortho->Activate();
 	glEnable(GL_TEXTURE_2D);
 		tex->bind();
 		glCallList(m_dlImage);
@@ -252,10 +268,11 @@ void ImageProcessor::render(Texture* tex){
 }
 
 // Main initialisation function
-bool ImageProcessor::init(int w, int h){
+bool ImageProcessor::init(int w, int h, Camera* cam){
     
     m_width = w;
     m_height = h;
+    m_cam_ortho = cam;
     
     // Initialize shaders
     if(!initShader()){

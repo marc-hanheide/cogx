@@ -2,7 +2,6 @@
 #ifndef __PLYMODEL_H__
 #define __PLYMODEL_H__
 
-class PlyModel;
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -11,7 +10,6 @@ class PlyModel;
 #include "Model.h"
 #include "TM_Vector3.h"
 #include "mathlib.h"
-#include "Resources.h"
 
 class PlyModel : public Model
 {

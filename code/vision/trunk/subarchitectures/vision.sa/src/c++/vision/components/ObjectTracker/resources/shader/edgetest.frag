@@ -10,6 +10,8 @@ uniform float fTol;             // tolerance for deviation of angle of edge
 
 uniform bool analyze;
 
+uniform vec4 drawcolor;
+
 const float pi = 3.141592654;   
 const float dpi = 0.318309886;  // dpi = 1 / pi;
 const float inf = 100000.0;
@@ -37,9 +39,9 @@ void main(){
     // if pixel is not detected as edge pixel during preprocessing, drop pixel (gl_FragDepth = 1000.0)
     if(vColor.z < 0.01){
         gl_FragColor = black;
-        gl_FragDepth = gl_FragCoord.z;
+        //gl_FragDepth = gl_FragCoord.z;
         if(!analyze)
-        	gl_FragDepth = inf;
+        	discard;
         return;
     }
     
@@ -51,13 +53,13 @@ void main(){
     if( (alpha < (90.0 + fTol)) && (alpha > (90.0 - fTol)) ){
         // this pixel alignes with an edge pixel coinciding
 		gl_FragColor = red;
-		gl_FragDepth = gl_FragCoord.z;
+		//gl_FragDepth = gl_FragCoord.z;
 		return;
     }else{
         gl_FragColor = blue;
-        gl_FragDepth = gl_FragCoord.z;
+        //gl_FragDepth = gl_FragCoord.z;
         if(!analyze)
-        	gl_FragDepth = inf;
+        	discard;
         return;
     }
 }

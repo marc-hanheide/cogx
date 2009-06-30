@@ -9,6 +9,9 @@ uniform mat3 mOffsetY;
 // threshold for compare statement
 uniform float fThreshold = 0.0;
 
+// enable thinning, or just normalize
+uniform bool thinning_enabled = true;
+
 const vec4 vNull = vec4(0.5,0.5,0.0,0.0);
 const float pi = 3.141592;
 
@@ -43,31 +46,31 @@ vec4 thinning(){
     
     // get offset in texture coordinates for neighbouring pixel
     // in edge gradient direction
-    offset = getOffset(vG);
-    
-    // get color of neighbouring pixel
-    vN = texture2D(frame, gl_TexCoord[0].st + offset ).xy;
-    vN = (vN - 0.5) * 2.0;  // scale to  [-1 ... 1]
-    // remove this pixel if neighbouring pixel is stronger
-    f_len_1 = length(vN);
-    if(length(vG)+ft < f_len_1) 
-        return vNull;
-    
-    // Compare again for negative gradient direction 
-    vN = texture2D(frame, gl_TexCoord[0].st - offset ).xy;
-    vN = (vN - 0.5) * 2.0;
-    
-    // remove this pixel if neighbouring pixel is stronger
-    f_len_2 = length(vN);
-    if(length(vG)+ft < f_len_2) 
-        return vNull;
-        
-    
-    // remove this pixel if neighbouring pixels are no edges
-    if( (f_len_1 < 0.01) && (f_len_2 < 0.01) )
-    	return vNull;
-    
-    
+    if(thinning_enabled){
+		offset = getOffset(vG);
+		
+		// get color of neighbouring pixel
+		vN = texture2D(frame, gl_TexCoord[0].st + offset ).xy;
+		vN = (vN - 0.5) * 2.0;  // scale to  [-1 ... 1]
+		// remove this pixel if neighbouring pixel is stronger
+		f_len_1 = length(vN);
+		if(length(vG)+ft < f_len_1) 
+			return vNull;
+		
+		// Compare again for negative gradient direction 
+		vN = texture2D(frame, gl_TexCoord[0].st - offset ).xy;
+		vN = (vN - 0.5) * 2.0;
+		
+		// remove this pixel if neighbouring pixel is stronger
+		f_len_2 = length(vN);
+		if(length(vG)+ft < f_len_2) 
+			return vNull;
+			
+		
+		// remove this pixel if neighbouring pixels are no edges
+		if( (f_len_1 < 0.01) && (f_len_2 < 0.01) )
+			return vNull;
+    }
     // set magnitude to 1
     vG = normalize(vG);
     

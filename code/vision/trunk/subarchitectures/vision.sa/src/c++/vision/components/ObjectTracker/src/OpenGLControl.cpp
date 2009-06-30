@@ -2,7 +2,7 @@
 #include "OpenGLControl.h"
 
 OpenGLControl::OpenGLControl(){
-	m_clearcolor = 1.0;
+	m_clearcolor = 0.0;
 	m_cleardepth = 1000.0;
 }
 
@@ -11,8 +11,7 @@ bool OpenGLControl::Init(){
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	//glDisable(GL_CULL_FACE);
-	
+		
 	const GLubyte *str;
 	int glOcclusionQueryAvailable;
 	

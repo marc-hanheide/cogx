@@ -88,7 +88,7 @@ SDL_Surface* Resources::InitScreen(int width, int height){
 	return m_screen;
 }
 
-ImageProcessor* Resources::InitImageProcessor(int width, int height){
+ImageProcessor* Resources::InitImageProcessor(int width, int height, Camera* cam){
 	if(width==0||height==0){
 		printf("[Resources::GetImageProcessor] Error ImageProcessor needs width and height for initialisation\n");
 		return 0;
@@ -99,7 +99,7 @@ ImageProcessor* Resources::InitImageProcessor(int width, int height){
 	else
 		printf("[Resources::GetImageProcessor] Warning re-initialising ImageProcessor\n");
 		
-	if( !(m_ip->init(width, height)) ){
+	if( !(m_ip->init(width, height, cam)) ){
 		printf("[Resources::GetImageProcessor] Error could not initialise ImageProcessor\n");
 		delete(m_ip);
 		m_ip = 0;
