@@ -346,7 +346,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 
 };
 
-
+/*
 
 Real normalizeAngle(Real r){
 	if (r >= 0.0) {
@@ -366,7 +366,7 @@ Real normalizeJnVel(int i, Real r, float* maxVel, float* minVel) {
 	Real res = relativVel / interval;
 	return -1.0 + (res*2.0);
 
-
+*/
 /*
 	if (r >= 0.0) {
 		Real res = r / maxVel[i];
@@ -375,7 +375,7 @@ Real normalizeJnVel(int i, Real r, float* maxVel, float* minVel) {
 		Real res = -r / minVel[i];
 		return res;
 	}
-*/
+*//*
 }
 
 
@@ -385,7 +385,7 @@ Real normalizeWsPos(Real pos, Real max) {
 	return pos/max;
 }
 
-
+*/
 
 
 Real normalize(Real value, Real min, Real max) {
@@ -398,7 +398,12 @@ Real normalize(Real value, Real min, Real max) {
 	else {
 		val = value;
 	}*/
-	val = fmod(value, MATH_PI);
+	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min)) {
+		val = fmod(value, MATH_PI);
+	}
+	else {
+		val = value;
+	}
 	Real interval = max - min;
 	Real relativeVal = val - min;
 	Real res = relativeVal/interval;
@@ -589,7 +594,20 @@ int main(int argc, char *argv[]) {
 		sleep (1);
 
 		
-		
+
+
+
+/*
+cout << "\n" << normalize(0, -1, 1);
+cout << "\n" << normalize(-1, -1, 1);
+cout << "\n" << normalize(1, -1, 1);
+cout << "\n" << normalize(0.5691, -1, 1);
+cout << "\n" << normalize(-2.5, -5, 5);
+cout << "\n" << normalize(4, -5, 5);
+cout << "\n" << normalize(-MATH_PI/2, -MATH_PI, MATH_PI);
+cout << "\n" << normalize(MATH_PI*3/4, -MATH_PI, MATH_PI);
+cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
+*/		
 		
 
 		
@@ -608,14 +626,14 @@ int main(int argc, char *argv[]) {
 
 
 		DataSet data;
-		Real maxRange = 0.6;
+		Real maxRange = 0.7;
 		SecTmReal minDuration = SecTmReal(5.0);
-		srand(context->getRandSeed()._U32[0]);
+		//srand(context->getRandSeed()._U32[0]);
 		//cout <<context->getRandSeed()._U32[0];
 
 		//Polyflap Position and orientation
 		//-------------------------------------------------------
-		Vec3 startPolyflapPosition(Real(0.6), Real(0.0), Real(0.0));
+		Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
 		Vec3 startPolyflapRotation(Real(-0.0*REAL_PI), Real(-0.0*REAL_PI), Real(-0.0*REAL_PI));//Y,X,Z
 		Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
 		//-------------------------------------------------------
@@ -637,7 +655,7 @@ int main(int argc, char *argv[]) {
 
 		// Setup objects
 		//setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);		
-		Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+		//------Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 		//setupObjects(*pScene, polyflapPosition, polyflapRotation, polyflapDimensions, *context, mojepose2, mojepose3);
 		
 		// Big Bang!
@@ -684,10 +702,14 @@ int main(int argc, char *argv[]) {
 
 
 
-		const int numExperiments = 1;
+		const int numExperiments = 20;
 
 		for (int i=0; i<numExperiments; i++)
 		{
+
+
+
+Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 
 		//Sequence &currentSequence = *(new Sequence);
 		Sequence seq;
@@ -740,6 +762,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapNor
 			Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3 + over));
 		
 			//chose random point int the vicinity of the polyflap
+			srand(context->getRandSeed()._U32[0]  + i);
 			int startPosition = rand() % 24 + 1;
 
 			//distance from the front/back of the polyflap
@@ -752,7 +775,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapNor
 			Real top = polyflapDimensions.v2* 1.2;
 			
 			//set it's coordinates into target
-			switch (pos /*startPosition*/) {
+			switch (startPosition) {
 			case 1: 
 				positionT.v1 += (dist*polyflapNormalVec.v1); 
 				positionT.v2 += (dist*polyflapNormalVec.v2); 
@@ -867,15 +890,19 @@ cout << coefs[1] << "dva\n";
 cout << coefs[2] << "tri\n";
 cout << coefs[3] << "ctyri\n";
 
-			infoVector.push_back(timeDelta);
+			infoVector.push_back(normalize(coefs[0], -5, 5));
+			infoVector.push_back(normalize(coefs[1], -5, 5));
+			infoVector.push_back(normalize(coefs[2], -5, 5));
+			infoVector.push_back(normalize(coefs[3], -5, 5));
+			//infoVector.push_back(timeDelta);
 			//initial position in worrkspace coordinates, normalized
-			infoVector.push_back(normalizeWsPos(positionT.v1, maxRange));
-			infoVector.push_back(normalizeWsPos(positionT.v2, maxRange));
-			infoVector.push_back(normalizeWsPos(positionT.v3, maxRange));
+			infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
+			infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
+			infoVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
 			//innitial orientation, normalized
-			infoVector.push_back(normalizeAngle(orientationT.v1));
-			infoVector.push_back(normalizeAngle(orientationT.v2));
-			infoVector.push_back(normalizeAngle(orientationT.v3));
+			infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
 			//end pose info missing (must be added later 
 			
 
@@ -883,8 +910,13 @@ cout << coefs[3] << "ctyri\n";
 			// It consists of 70 parts
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec]
-			SecTmReal duration = timeDelta * n*2;
 			
+			int speed = -1 + (rand() % 3);
+			SecTmReal duration = timeDelta * n*(pow(2, (-speed)*2));
+			infoVector.push_back(Real(speed));
+			
+
+cout << speed << "\n";
 			// Trajectory end pose equals begin + shift along Y axis
 			WorkspaceCoord begin = target.pos, end = target.pos;
 
@@ -916,7 +948,9 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 			//the lenght of the movement
 			Real distance = 0.2;
-			
+			if (speed < 0) {
+				distance += 0.8;
+			}
 			//end.p.v1 += (distance*polyflapCenterNormalVec.v1); 
 			//end.p.v2 += (distance*polyflapCenterNormalVec.v2); 
 			//end.p.v3 += (distance*polyflapCenterNormalVec.v3); 
@@ -995,13 +1029,15 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 
 			//add info about end position
-			infoVector.push_back(normalizeWsPos(end.p.v1, maxRange));
-			infoVector.push_back(normalizeWsPos(end.p.v2, maxRange));
-			infoVector.push_back(normalizeWsPos(end.p.v3, maxRange));
+			infoVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
+			infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
+			infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
 			//end orientation, normalized
-			infoVector.push_back(normalizeAngle(orientationT.v1));
-			infoVector.push_back(normalizeAngle(orientationT.v2));
-			infoVector.push_back(normalizeAngle(orientationT.v3));
+			infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
+
+			seq.push_back(infoVector);
 			
 
 //sleep(10);
@@ -1020,7 +1056,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 
 
-
+//if (checkPfPosition()) {
 
 
 			
@@ -1060,11 +1096,11 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 				for (U32 i = 0; i < numOfJoints; i++) {
 					//const Joint &joint = *arm.getJoints()[i];
 					//Real norm = Real(state.pos.j[i]/ MATH_PI);
-					features.push_back(normalizeAngle(state.pos[i]));
+					features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
 					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm));
 					//features[2*i] = norm;
 					//Real norm2 = Real(normalize(i, state.vel.j[i], maxVelocities, minVelocities));
-					features.push_back(normalizeJnVel(i, state.vel.j[i], maxVelocities, minVelocities));
+					features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
 					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm2));
 					//features[2*i+1] = norm2;
 				}
@@ -1080,12 +1116,12 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 				mojepose2 = set->get().front()->getPose();
 				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "3"));
 				mojepose3 = set->get().back()->getPose();
-				features.push_back(normalizeWsPos(mojepose2.p.v1, maxRange));
-				features.push_back(normalizeWsPos(mojepose2.p.v2, maxRange));
-				features.push_back(normalizeWsPos(mojepose2.p.v3, maxRange));
-				features.push_back(normalizeWsPos(mojepose3.p.v1, maxRange));
-				features.push_back(normalizeWsPos(mojepose3.p.v2, maxRange));
-				features.push_back(normalizeWsPos(mojepose3.p.v3, maxRange));
+				features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
+				features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
+				features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
+				features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
+				features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
+				features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
 
 				
 
@@ -1129,6 +1165,12 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 			// wait until the arm stops
 			context->getTimer()->sleep(timeDeltaAsync - timeDelta);
+
+
+
+
+//}
+
 
 			// ON/OFF collision detection
 			planner.getHeuristic()->setCollisionDetection(true);
@@ -1199,6 +1241,21 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 		
 
 			//context->getTimer()->sleep(2);
+
+			//polyFlapActor->getBounds()->setEmpty();
+			//polyFlapActor->getBounds();
+			
+/*
+			Scene::Draw draw;
+			draw = pScene->getDraw();
+		Scene::Draw blank;
+		blank.setBlank();
+		pScene->setDraw(blank);
+*/
+			sleep(3);
+			pScene->releaseObject(*polyFlapActor);
+			sleep(3);
+
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration completed!"));
 		}
 /*	
