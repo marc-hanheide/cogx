@@ -46,11 +46,12 @@ protected:
 	
 	// Resources
 	ImageProcessor* m_ip;
+	unsigned char* m_image;
 	Particles* m_particles;
 	Texture* m_tex_frame;
 	Texture* m_tex_frame_ip[4];
 	Texture* m_tex_model;
-	Texture* m_tex_model_ip;
+	Texture* m_tex_model_ip[4];
 	Model* m_model;
 	Camera* m_cam_ortho;
 	Camera* m_cam_default;
@@ -70,54 +71,64 @@ protected:
 	bool m_zero_particles;
 	bool m_draw_edges;
 	bool m_tracker_initialized;
+	bool m_testflag;
 
 	
 	// Functions (virtual)
 	virtual void image_processing(unsigned char* image)=0;
 	virtual void particle_motion(float pow_scale = 1.0, Particle* p_ref=NULL, unsigned int distribution = GAUSS)=0;
 	virtual void particle_processing(int num_particles, unsigned int num_avaraged_particles=1)=0;
+	virtual bool initInternal()=0;
 	
 	
 	// Functions
+	bool isReady(unsigned char* image, Model* model, Camera* camera, Particle* p_estimate);
 	void kalman_filtering(Particle* pm);
 	
 public:
 	Tracker();
-	
-	inline void lock(){ m_lock=true; }
-	inline void unlock(){ m_lock=false; }
-	bool inputs();
-	
+		
 	bool init(	int width, int height,								// image size in pixels
 				int nop=3000,										// maximum number of particles
 				float n_r_max=45.0,									// standard deviation of rotational noise in degree
 				float n_t_max=0.1,									// standard deviation of translational noise in meter
 				float et=20.0,										// edge matching tolerance in degree
-				float tt=0.05,										// goal tracking time in seconds
-				bool kal=true,										// kalman filtering enabled
-				bool lock=false);									// locked particles (press 'l' to unlock)
-	
-	virtual bool initInternal()=0;
+				float tt=0.05);										// goal tracking time in seconds
 	
 	virtual bool track(	unsigned char* image,
 						Model* model,
 						Camera* camera,
 						Particle p_estimate,
 						Particle& p_result)=0;
+						
+	virtual void textureFromImage(){}
 	
 	virtual void drawResult(Particle* p)=0;
-	
-	void renderCoordinates();
+	void drawCoordinates();
 	void drawImage(unsigned char* image);
 	void drawPixel(float u, float v, vec3 color=vec3(1.0,1.0,1.0), float size=1.0);
 	void drawTest();
-	void showStatistics();
+	void swap();
 	
 	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
 	void setTrackTime(float time){ params.track_time = time; }
 	void setNoise(float rot, float trans){ params.noise_rot_max=rot; params.noise_trans_max=trans; }
-		
-	void swap();
+	
+	void lock(bool val){ m_lock=val; m_particles->setAll(*m_particles->getMax()); }
+	
+	bool getLock(){ return m_lock; }
+	bool getEdgesImage(){ return m_draw_edges; }
+	bool getEdgesModel(){ return m_showmodel; }
+	bool getParticlesVisible(){ return m_showparticles; }
+	
+	void showEdgesImage(bool val){ m_draw_edges = val; }
+	void showEdgesModel(bool val){ m_showmodel = val; }
+	void showParticles(bool val){ m_showparticles = val; }
+	void showStatistics();
+	
+	void zeroParticles();
+	void enableKalman();
+	void disableKalman(){ m_kalman_enabled = false; }	
 
 };
 

@@ -9,6 +9,8 @@ uniform float fTol; // tolerance for angle comparison
 uniform bool compare;
 uniform bool analyze;
 
+uniform vec4 drawcolor;
+
 const float inf = 100000.0;
 const float dpi = 0.318309886;  // dpi = 1 / pi;
 
@@ -41,24 +43,28 @@ void main(){
 	color_model = texture2D(tex_model, texcoords_model.xy);
 	color_frame = texture2D(tex_frame, texcoords_frame.xy);
 	
-	//gl_FragColor = color_model;
+	//gl_FragColor = color_frame;
 	//return;
 	
 	// pixel of model is not an edge pixel
 	if( color_model.z<0.01 ){
-		gl_FragDepth = inf;
-		return;
+		discard;
+		//gl_FragDepth = inf;
+		//return;
 	}
 			
 	if( !compare ){
+		gl_FragColor = drawcolor;
+			
 		return;
 	}
 	
 	// pixel of frame is not an edge pixel
 	if( color_frame.z<0.01 ){
+		//discard;
 		gl_FragColor = black;
 		if(!analyze)
-			gl_FragDepth = inf;
+			discard;
 		return;
 	}
 	
@@ -78,14 +84,14 @@ void main(){
 	alpha = acos(gradient_frame.x * gradient_model.x + gradient_frame.y * gradient_model.y) * 180.0 * dpi;
 	
 	// compare edges
-	if( (alpha < (0.0 + fTol)) || (alpha > (180.0 - fTol)) ){
-	//if( alpha < 0.2 ){
+	if( (alpha < (0.0 + fTol)) || (alpha > (180.0 - fTol)) ){	// more robust to rotations
+	//if( (alpha < (0.0 + fTol)) ){								// more robust to background clutter
 		gl_FragColor = red;
 		return;
 	}else{
 		gl_FragColor = blue;
 		if(!analyze)
-			gl_FragDepth = inf;
+			discard;
 		return;
 	}
 }

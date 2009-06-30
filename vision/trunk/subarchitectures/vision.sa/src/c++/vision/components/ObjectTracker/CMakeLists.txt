@@ -19,6 +19,7 @@ SET(SRC
 	src/Frustum.cpp
 	src/ImageProcessor.cpp
 	src/Kalman.cpp
+	src/Lighting.cpp
 	src/Model.cpp
 	src/OpenGLControl.cpp
 	src/Particles.cpp

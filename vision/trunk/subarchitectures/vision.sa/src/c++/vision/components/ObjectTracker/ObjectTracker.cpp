@@ -54,15 +54,13 @@ void ObjectTracker::initTracker(){
   g_Resources->InitScreen(m_image.width, m_image.height);
  
   // Initialize tracking (parameters for edge-based tracking)
-  m_tracker = new EdgeTracker();
+  m_tracker = new TextureTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
 												20.0*PIOVER180,										// standard deviation of rotational noise in degree
 												0.05,															// standard deviation of translational noise in meter
 												20.0,															// edge matching tolerance in degree
-												0.05,															// goal tracking time in seconds
-												false,														// kalman filtering enabled
-												false))														// locked particles (press 'l' to unlock)
+												0.05))														// goal tracking time in seconds
 	{														
 		log("initialisation of tracker failed!");
 		running = false;
@@ -78,7 +76,7 @@ void ObjectTracker::initTracker(){
   
   // link camera with tracker
 	m_tracker->setCamPerspective(m_camera);
-	m_tracker->lock();
+	m_tracker->lock(true);
   log("initialisation successfull!");		
 }
 
@@ -108,7 +106,7 @@ void ObjectTracker::runTracker(){
 										0.1, 10.0,
 										GL_PERSPECTIVE);
 		m_tracker->setTrackTime(0.1);
-		m_tracker->unlock();
+		m_tracker->lock(false);
 	}
 	
 	// Track all models
@@ -121,11 +119,12 @@ void ObjectTracker::runTracker(){
 		m_trackpose.w = obj->detectionConfidence;
 
 		// Track model
-		running = m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
+		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
 		m_tracker->drawResult(&m_trackpose);
-		m_tracker->renderCoordinates();
+		m_tracker->drawCoordinates();
 		//m_tracker->drawTest();
 		m_tracker->swap();
+		running = inputsControl(m_tracker);
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(m_trackpose, obj->pose);
@@ -258,7 +257,7 @@ void ObjectTracker::runComponent(){
   	  sleepComponent(10);
 		}else{
 			// * Idle *
-			running = m_tracker->inputs();	// ask for inputs (e.g. quit command)
+			running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
 	    sleepComponent(1000);
 		}
   }
@@ -268,5 +267,6 @@ void ObjectTracker::runComponent(){
   delete(m_tracker);
   log("stop");
 }
+
 
 

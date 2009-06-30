@@ -3,6 +3,38 @@
 
 // *** PRIVATE ***
 
+bool Tracker::isReady(unsigned char* image, Model* model, Camera* camera, Particle* p_estimate){
+	if(!m_tracker_initialized){
+		printf("[TextureTracker::isReady] Error tracker not initialized\n");
+		return false;
+	}
+	
+	if(!image){
+		printf("[TextureTracker::isReady] Error image not valid\n");
+		return false;
+	}else
+		m_image = image;
+	
+	if(!model){
+		printf("[TextureTracker::isReady] Error model not valid\n");
+		return false;
+	}else
+		m_model = model;
+	
+	if(!camera){
+		printf("[TextureTracker::isReady] Warning camera not set, using default values\n");
+		m_cam_perspective = m_cam_default;
+	}else
+		m_cam_perspective = camera;
+	
+	if(!p_estimate){
+		printf("[TextureTracker::isReady] Error pose estimation not valid\n");
+		return false;
+	}
+	
+	return true;
+}
+
 // Applies Kalman filter to maximum particle
 void Tracker::kalman_filtering(Particle* pm){
 	m_zk[0] = pm->rX; m_zk[1] = pm->rY; m_zk[2] = pm->rZ; 
@@ -25,87 +57,6 @@ void Tracker::kalman_filtering(Particle* pm){
 	pm->tX = m_xk[3]; pm->tY = m_xk[4]; pm->tZ = m_xk[5]; 
 }
 
-// Ask for mouse or keyboard inputs
-bool Tracker::inputs(){
-	vec4 v1,v2;
-	TM_Vector3 c;
-	float mv[16];
-	int id_max = m_particles->getMaxID();
-	float alpha, beta, gamma;
-	Particle p;
-	Particle* pmax;
-	mat3 rot;
-	vec3 pos;
-    
-	SDL_Event event;
-	while(SDL_PollEvent(&event)){
-		switch(event.type){
-		case SDL_KEYDOWN:
-            switch(event.key.keysym.sym){
-				case SDLK_ESCAPE:
-					return false;
-					break;
-				case SDLK_e:
-					m_draw_edges = !m_draw_edges;
-					printf("Edges: %i\n", m_draw_edges);
-					break;
-				case SDLK_k:
-					m_kalman_enabled = !m_kalman_enabled;
-					if(m_kalman_enabled){
-						pmax = m_particles->getMax();
-						m_zk[0] = pmax->rX; m_zk[1] = pmax->rY; m_zk[2] = pmax->rZ; 
-						m_zk[3] = pmax->tX; m_zk[4] = pmax->tY; m_zk[5] = pmax->tZ;
-						m_kalman.init();
-						m_kalman.setX(m_zk);
-						printf("Kalman filter enabled\n");
-					}else{
-						printf("Kalman filter disabled\n");
-					}
-					break;
-				case SDLK_l:
-					m_lock = !m_lock;
-					if(m_lock){
-						printf("Tracker locked\n");
-						m_particles->setAll(*m_particles->getMax());
-					}else{
-						printf("Tracker unlocked\n");
-					}
-					break;
-				case SDLK_m:
-					m_showmodel = !m_showmodel;
-					break;
-				case SDLK_p:
-					m_showparticles = !m_showparticles;
-					break;
-				case SDLK_s:
-					showStatistics();
-					break;				
-				case SDLK_z:
-					printf("Zero particles\n");
-					p = Particle(0.0);
-					p.tX = 0.0;
-					m_zk[0] = p.rX; m_zk[1] = p.rY; m_zk[2] = p.rZ; 
-					m_zk[3] = p.tX; m_zk[4] = p.tY; m_zk[5] = p.tZ;
-					m_kalman.init();
-					m_kalman.setX(m_zk);
-					m_particles->setAll(p);
-					m_particles->setVMax(0);
-					m_zero_particles = true;
-					break;
-                default:
-					break;
-			}
-			break;
-		case SDL_QUIT:
-			return false;
-			break;
-		default:
-			break;
-		}
-	}
-	return true;
-}
-
 
 // *** PUBLIC ***
 
@@ -116,6 +67,7 @@ Tracker::Tracker(){
 	m_kalman_enabled = true;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
+	m_testflag = false;
 	
 	// Textures
 	int id;
@@ -139,9 +91,25 @@ Tracker::Tracker(){
 		exit(1);
 	m_tex_frame_ip[3] = g_Resources->GetTexture(id);
 	
-	if((id = g_Resources->AddTexture(NULL, "m_tex_model_ip")) == -1)
+	if((id = g_Resources->AddTexture(NULL, "m_tex_model")) == -1)
 		exit(1);
-	m_tex_model_ip = g_Resources->GetTexture(id);
+	m_tex_model = g_Resources->GetTexture(id);
+	
+	if((id = g_Resources->AddTexture(NULL, "m_tex_model_ip[0]")) == -1)
+		exit(1);
+	m_tex_model_ip[0] = g_Resources->GetTexture(id);
+	
+	if((id = g_Resources->AddTexture(NULL, "m_tex_model_ip[1]")) == -1)
+		exit(1);
+	m_tex_model_ip[1] = g_Resources->GetTexture(id);
+	
+	if((id = g_Resources->AddTexture(NULL, "m_tex_model_ip[2]")) == -1)
+		exit(1);
+	m_tex_model_ip[2] = g_Resources->GetTexture(id);
+	
+	if((id = g_Resources->AddTexture(NULL, "m_tex_model_ip[3]")) == -1)
+		exit(1);
+	m_tex_model_ip[3] = g_Resources->GetTexture(id);
 	
 	// Cameras
 	if((id = g_Resources->AddCamera("cam_ortho")) == -1)
@@ -160,9 +128,7 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 					float n_r_max,									// standard deviation of rotational noise in degree
 					float n_t_max,									// standard deviation of translational noise in meter
 					float et,										// edge matching tolerance in degree
-					float tt,										// goal tracking time in seconds
-					bool kal,										// kalman filtering enabled
-					bool lock)
+					float tt)										// goal tracking time in seconds
 {	
 	// Parameter:
 	params.width = float(width);
@@ -171,11 +137,7 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	params.noise_rot_max = n_r_max;
 	params.noise_trans_max = n_t_max;
 	params.edge_tolerance = et;
-	
 	params.track_time = tt;
-	
-	m_kalman_enabled = kal;
-	m_lock = lock;
 	
 	if(!m_opengl.Init())
 		return false;
@@ -184,14 +146,6 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	m_kalman_gain[2] = 1;
 	m_kalman_gain[1] = 1;
 	m_kalman_gain[0] = 1;
-	
-	// Singleton resources
-	g_Resources->InitImageProcessor(width, height);
-	g_Resources->InitParticles(params.number_of_particles, Particle(0.0));
-	g_Resources->InitFrustum();
-	
-	m_ip = g_Resources->GetImageProcessor();
-	m_particles = g_Resources->GetParticles();	
 	
 	// Cameras
 	m_cam_ortho->Set(	0.0, 0.0, 1.0,
@@ -210,12 +164,20 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	
 	m_cam_perspective = m_cam_default;
 	
+	// Singleton resources
+	g_Resources->InitImageProcessor(width, height, m_cam_ortho);
+	g_Resources->InitParticles(params.number_of_particles, Particle(0.0));
+	g_Resources->InitFrustum();
+	
+	m_ip = g_Resources->GetImageProcessor();
+	m_particles = g_Resources->GetParticles();	
+	
 	return initInternal();
 }
 
 
 // render coordinate frame
-void Tracker::renderCoordinates(){
+void Tracker::drawCoordinates(){
 	m_opengl.RenderSettings(true, false);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -331,16 +293,14 @@ void Tracker::drawTest(){
 		glVertex3f(0.000, 0.151, 0.000);
 	glEnd();
 	
-	glLineWidth(1.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 }
 
-
-
 void Tracker::swap(){
 	SDL_GL_SwapBuffers();
 }
+
 
 // Show performance and likelihood
 void Tracker::showStatistics(){
@@ -350,8 +310,30 @@ void Tracker::showStatistics(){
 	printf("	Pixels of model: %i \n", m_particles->getVMax() );
 	printf("	Likelihood p[%i]: %.0f %%\n", m_particles->getMaxID(), m_particles->getMax()->w * 100.0 );
 }
+	
+void Tracker::zeroParticles(){
+	Particle p = Particle(0.0);
+	p.tX = 0.0;
+	m_zk[0] = p.rX; m_zk[1] = p.rY; m_zk[2] = p.rZ; 
+	m_zk[3] = p.tX; m_zk[4] = p.tY; m_zk[5] = p.tZ;
+	m_kalman.init();
+	m_kalman.setX(m_zk);
+	m_particles->setAll(p);
+	m_particles->setVMax(0);
+	m_zero_particles = true;
+	printf("Zero particles\n");
+}
 
-
+void Tracker::enableKalman(){
+	Particle* pmax;
+	pmax = m_particles->getMax();
+	m_zk[0] = pmax->rX; m_zk[1] = pmax->rY; m_zk[2] = pmax->rZ; 
+	m_zk[3] = pmax->tX; m_zk[4] = pmax->tY; m_zk[5] = pmax->tZ;
+	m_kalman.init();
+	m_kalman.setX(m_zk);
+	m_kalman_enabled = true;
+	printf("Kalman filter enabled\n");
+}
 
 
 

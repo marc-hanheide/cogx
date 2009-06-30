@@ -17,7 +17,10 @@
 #include "Particles.h"
 #include "Frustum.h"
 
+#ifndef FN_LEN
 #define FN_LEN 256
+#endif
+
 #define g_Resources Resources::GetInstance()
 
 typedef std::vector<Model*> ModelList;
@@ -69,7 +72,7 @@ public:
     // Initialisation
     IplImage* 		InitCapture(float width=320.0, float height=240.0, int camID = CV_CAP_ANY);
     SDL_Surface* 	InitScreen(int width, int height);
-    ImageProcessor*	InitImageProcessor(int width, int height);
+    ImageProcessor*	InitImageProcessor(int width, int height, Camera* cam);
     Particles*		InitParticles(int num, Particle p);
     Frustum*		InitFrustum();
     

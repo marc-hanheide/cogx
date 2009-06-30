@@ -9,6 +9,7 @@ class ImageProcessor;
 
 #include "Shader.h"
 #include "Texture.h"
+#include "Camera.h"
 #include "Resources.h"
 
 #define NONE 0          // No rectification
@@ -34,6 +35,8 @@ private:
     Shader* m_shadeThinning;    // Fragment shader for thinning edges
     Shader* m_shadeSpreading;   // Fragment shader for spreading edges
     
+    Camera* m_cam_ortho;
+    
     bool initShader();
     bool dlImage();
     bool dlFlipUpsideDown();
@@ -47,6 +50,7 @@ public:
     
     // Image Processing functions
     void flipUpsideDown(Texture* source, Texture* result);
+    void copy(Texture* source, Texture* result);
     void rectification(Texture* source, Texture* result);
     void gauss(Texture* source, Texture* result);
     void sobel(Texture* source, Texture* result);
@@ -55,7 +59,7 @@ public:
     void render(Texture* tex);
     
     // Main functions
-    bool init(int w, int h);
+    bool init(int w, int h, Camera* cam);
 
 };
 

@@ -1,6 +1,6 @@
 
 #include "Model.h"
-
+#include "Resources.h"
 
 
 // *** PROTECTED ***
@@ -84,6 +84,7 @@ void Model::genEdgeDisplayList(){
 Model::Model(){
 	m_tex_original = 0;
     m_texture = 0;
+    m_textured = false;
     edgeDisplayList = -1;
 }
 
@@ -91,9 +92,13 @@ Model::Model(const Model& m){
 	m_vertexlist = m.m_vertexlist;
 	m_facelist = m.m_facelist;
 	m_edgelist = m.m_edgelist;
+	m_passlist = m.m_passlist;
+	
+	sprintf(m_modelname, "%s", m.m_modelname);
 	
 	m_tex_original = m.m_tex_original;
 	m_texture = m.m_texture;
+	m_textured = true;
 }
 
 Model::~Model(){
@@ -152,8 +157,66 @@ void Model::computeNormals(){
 			m_vertexlist[f->v[j]].normal.x = n.x;
 			m_vertexlist[f->v[j]].normal.y = n.y;
 			m_vertexlist[f->v[j]].normal.z = n.z;
+			//printf("%f %f %f\n", n.x, n.y, n.z);
 		}		
 	}
+}
+
+// draws model using rendering passes
+void Model::drawPass(Shader* shadeTexturing){
+	int p,i,j;
+	Face* f;
+	
+	if(m_passlist.empty() || !m_textured){
+		//printf("[Model::drawPass] Warning no render pass defined. Rendering using Model::drawFaces()\n");
+		if(!m_texture)
+			shadeTexturing->unbind();
+		drawFaces();
+		return;
+	}
+	
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	
+	for(p=0; p<m_passlist.size(); p++){
+		
+		// bind texture of pass
+		m_passlist[p]->texture->bind();
+		
+		// set modelview matrix for texture
+		shadeTexturing->setUniform("modelviewprojection", m_passlist[p]->modelviewprojection, GL_FALSE);
+		
+		// parse through faces of pass
+		for(i=0; i<m_passlist[p]->f.size(); i++){
+			f = &m_facelist[m_passlist[p]->f[i]];
+			glBegin(GL_QUADS);
+				for(j=0; j<m_facelist[i].v.size(); j++){
+					glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+					glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+					glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+				}
+			glEnd();
+			
+			/*
+			glDisable(GL_TEXTURE_2D);
+			glBegin(GL_LINES);
+				float normal_length = 0.01;
+				for(j=0; j<m_facelist[i].v.size(); j++){
+					glColor3f(0.0, 0.0, 1.0);
+					glVertex3f( m_vertexlist[f->v[j]].pos.x,
+								m_vertexlist[f->v[j]].pos.y,
+								m_vertexlist[f->v[j]].pos.z );
+					glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
+								m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
+								m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
+				}
+			glEnd();
+			glEnable(GL_TEXTURE_2D);
+			*/
+		}
+	}
+	
+	glDisable(GL_TEXTURE_2D);
 }
 
 // draws only faces of model
@@ -161,16 +224,19 @@ void Model::drawFaces(){
 	int i,j;
 	Face* f;
 	
+	
 	if(m_texture){
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
 		m_texture->bind();
-	}
+	}	
+	
 	for(i=0; i<m_facelist.size(); i++){
 		f = &m_facelist[i];
 		glBegin(GL_QUADS);
 			for(j=0; j<m_facelist[i].v.size(); j++){
 				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 			}
 		glEnd();
@@ -179,14 +245,14 @@ void Model::drawFaces(){
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_LINES);
 			float normal_length = 0.01;
-			for(j=0; j<f->size(); j++){
+			for(j=0; j<m_facelist[i].v.size(); j++){
 				glColor3f(0.0, 0.0, 1.0);
-				glVertex3f( m_vertexlist[f->v[j]].x,
-							m_vertexlist[f->v[j]].y,
-							m_vertexlist[f->v[j]].z );
-				glVertex3f( m_vertexlist[f->v[j]].x + m_vertexlist[f->v[j]].nx * normal_length,
-							m_vertexlist[f->v[j]].y + m_vertexlist[f->v[j]].ny * normal_length,
-							m_vertexlist[f->v[j]].z + m_vertexlist[f->v[j]].nz * normal_length );				
+				glVertex3f( m_vertexlist[f->v[j]].pos.x,
+							m_vertexlist[f->v[j]].pos.y,
+							m_vertexlist[f->v[j]].pos.z );
+				glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
+							m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
+							m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
 			}
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
@@ -194,6 +260,49 @@ void Model::drawFaces(){
 	}
 	
 	
+	if(m_texture){
+		glDisable(GL_TEXTURE_2D);
+	}
+	
+}
+
+// draws face i of model
+void Model::drawFace(int i){
+	int j;
+	Face* f;
+	
+	if(m_texture){
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		m_texture->bind();
+	}
+	
+	
+	f = &m_facelist[i];
+	glBegin(GL_QUADS);
+		for(j=0; j<f->v.size(); j++){
+			glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+			glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+			glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+		}
+	glEnd();
+	
+	/*
+	glDisable(GL_TEXTURE_2D);
+	glBegin(GL_LINES);
+		float normal_length = 0.01;
+		for(j=0; j<m_facelist[i].v.size(); j++){
+			glColor3f(0.0, 0.0, 1.0);
+			glVertex3f( m_vertexlist[f->v[j]].pos.x,
+						m_vertexlist[f->v[j]].pos.y,
+						m_vertexlist[f->v[j]].pos.z );
+			glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
+						m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
+						m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
+		}
+	glEnd();
+	glEnable(GL_TEXTURE_2D);
+	*/
 	
 	if(m_texture){
 		glDisable(GL_TEXTURE_2D);
@@ -247,4 +356,101 @@ void Model::drawEdges(){
 void Model::restoreTexture(){
 	m_texture = m_tex_original;
 }
+
+// counts pixels of each face
+// if pixels of face are > than in any previouse view
+//   set update flag = true
+vector<int> Model::getFaceUpdateList(Particle* p_max){
+	int i, n;
+	vector<int> faceUpdateList;
+	
+	// generate occlusion queries
+	unsigned int* queryPixels;		// Occlussion query for counting pixels
+	queryPixels = (unsigned int*)malloc( sizeof(unsigned int) * m_facelist.size() );
+	glGenQueriesARB(m_facelist.size(), queryPixels);
+	
+	// count pixels for each face and choose if its texture has to be updated
+	p_max->activate();
+		
+		for(i=0; i<m_facelist.size(); i++){
+			glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
+			drawFace(i);
+			glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
+		}
+		
+		for(i=0; i<m_facelist.size(); i++){
+			glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
+			//printf("pixels[%d]: %d %d\n", i, n, m_facelist[i].max_pixels);
+			if(m_facelist[i].max_pixels < n){
+				faceUpdateList.push_back(i);
+				m_facelist[i].max_pixels = n;
+			}
+		}
+		
+	p_max->deactivate();
+	
+	glDeleteQueriesARB(m_facelist.size(), queryPixels);
+	free(queryPixels);
+	
+	return faceUpdateList;
+}
+
+void Model::textureFromImage(unsigned char* image, int width, int height, Particle* p_max){
+	int i,j,k, id;
+	vec4 texcoords_model;
+	vec4 vertex;
+	mat4 modelview, projection, modelviewprojection;
+	
+	vector<int> faceUpdateList = getFaceUpdateList(p_max);
+	if(faceUpdateList.empty())
+		return;
+	
+	// add new rendering pass
+	Pass* newpass = new Pass;
+	
+	// query modelview and projection matrix
+	p_max->activate();
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+	glGetFloatv(GL_PROJECTION_MATRIX, projection);
+	p_max->deactivate();
+	newpass->modelviewprojection = projection * modelview;
+	
+	// store texture
+	newpass->texture->load(image, width, height);
+	g_Resources->GetImageProcessor()->flipUpsideDown(newpass->texture, newpass->texture);	
+	
+	// add faces to pass
+	newpass->f = faceUpdateList;
+	
+	m_passlist.push_back(newpass);
+			
+	// clean up passes
+	vector<int> usedfaces;		// holds faces which are allready in use by another pass
+	for(i=(m_passlist.size()-1); i>=0; i--){		// parse through passlist topdown
+		Pass* p = m_passlist[i];					// current pass
+		bool destroy = true;
+		
+		for(j=0; j<p->f.size(); j++){				// for each face of pass
+			bool face_allready_in_use = false;
+			for(k=0; k<usedfaces.size(); k++){
+				if(p->f[j] == usedfaces[k])			// compare with each face in usedfaces
+					face_allready_in_use = true;
+			}
+			if(!face_allready_in_use){
+				usedfaces.push_back(p->f[j]);
+				destroy=false;
+			}
+		}
+		
+		if(destroy){
+			delete(p);
+			m_passlist.erase(m_passlist.begin()+i);
+		}
+	}	
+		
+}
+
+
+
+
 

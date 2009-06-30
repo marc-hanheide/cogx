@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <opencv/highgui.h>
 #include <GL/gl.h>
+#include <GL/glu.h>
 
 class Texture
 {
