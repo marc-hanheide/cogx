@@ -413,6 +413,32 @@ Real normalize(Real value, Real min, Real max) {
 
 
 
+bool checkPfPosition(Vec3 refPos1, Vec3 refPos2, Vec3 realPos1, Vec3 realPos2) {
+/*		
+		cout <<	(abs(refPos1.v1 - realPos1.v1)) << endl;
+		cout <<	(abs(refPos1.v2 - realPos1.v2)) << endl;
+		cout <<	(abs(refPos2.v1 - realPos2.v1)) << endl;
+		cout <<	(abs(refPos2.v2 - realPos2.v2)) << endl;
+
+		cout <<	(abs(refPos1.v1 - realPos1.v1) < 0.0001) << endl;
+		cout <<	(abs(refPos1.v2 - realPos1.v2) < 0.0001) << endl;
+		cout <<	(abs(refPos2.v1 - realPos2.v1) < 0.0001) << endl;
+		cout <<	(abs(refPos2.v2 - realPos2.v2) < 0.0001) << endl;
+	
+	cout <<	(refPos1.v1 == realPos1.v1 &&
+		refPos1.v2 == realPos1.v2 &&
+		refPos2.v1 == realPos2.v1 &&
+		refPos2.v2 == realPos2.v2)
+		<< endl;
+*/
+	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
+		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
+		abs(refPos2.v1 - realPos2.v1) < 0.00001 &&
+		abs(refPos2.v2 - realPos2.v2) < 0.00001;
+
+} 
+
+
 
 //--------------------------------------------------------------------------------
 
@@ -710,6 +736,10 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 
 Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+
+		Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
+		Vec3 referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
+
 
 		//Sequence &currentSequence = *(new Sequence);
 		Sequence seq;
@@ -1052,11 +1082,12 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 			// ON/OFF collision detection
 			planner.getHeuristic()->setCollisionDetection(false);
+		Vec3 realPolyflopPosVec1 = *(new Vec3);
+		Vec3 realPolyflopPosVec2 = *(new Vec3);
+		realPolyflopPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
+		realPolyflopPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 
-
-
-
-//if (checkPfPosition()) {
+if (checkPfPosition(referencePolyflapPosVec1, referencePolyflapPosVec2, realPolyflopPosVec1, realPolyflopPosVec2)) {
 
 
 			
@@ -1169,7 +1200,7 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 
 
 
-//}
+}
 
 
 			// ON/OFF collision detection
@@ -1252,9 +1283,11 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapCen
 		blank.setBlank();
 		pScene->setDraw(blank);
 */
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_ERR, "wait and see"));
 			sleep(3);
 			pScene->releaseObject(*polyFlapActor);
 			sleep(3);
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_ERR, "and, seen...?"));
 
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration completed!"));
 		}
