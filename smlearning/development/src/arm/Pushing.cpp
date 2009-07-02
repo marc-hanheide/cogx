@@ -28,25 +28,16 @@
 #include "XMLData.h"
 #include "Actuator.h"
 #include "tools/data_handling.h"
-// #include "embodiment/Embodiment.h"
 
-//using namespace stl;
+
 using namespace std;
 using namespace msk;
 using namespace msk::ctrl;
 using namespace msk::phys;
 using namespace msk::demo;
-// using namespace msk::embod;
+
 
 //------------------------------------------------------------------------------
-
-template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, msk::Context& context) {
-	// some planner parameter tuning
-	desc.plannerDesc.pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
-	// Enable signal synchronization (default value)
-	//desc.reacPlannerDesc.signalSync = true;
-}
-
 //------------------------------------------------------------------------------
 
 
@@ -85,15 +76,26 @@ public:
 };
 
 
-//bool setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
+//---------------------------------------------------------------------------------------------------------
 
+
+
+//planer setup
+template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, msk::Context& context) {
+	// some planner parameter tuning
+	desc.plannerDesc.pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
+	// Enable signal synchronization (default value)
+	//desc.reacPlannerDesc.signalSync = true;
+}
+
+
+
+//creates an object, in this case the polyflap
 Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
-
-
-// Creator
+	// Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
-
+	
 	Actor *polyFlapActor;
 	
 	// Create ground plane.
@@ -117,35 +119,16 @@ Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions,
 	pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&pose.R._m._11);	
 	
 	//-density
-	pActorDesc->nxActorDesc.density = NxReal(10.0);	
+	pActorDesc->nxActorDesc.density = NxReal(5.0);	
 
-
-	//scene.createObject(*pActorDesc);
 	polyFlapActor = dynamic_cast<Actor*>(scene.createObject(*pActorDesc));
-
-
-	Mat34 p2;
-	Mat34 p3;
-
-	msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
-	
-	p2 = set->get().front()->getPose();
-	p3 = set->get().back()->getPose();
-
-
-
-	context.getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", p2.p.v1, p2.p.v2, p2.p.v3/**, mojepose2.R.v1, mojepose2.R.v2, mojepose2.R.v3*/));
-
-	context.getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", p3.p.v1, p3.p.v2, p3.p.v3/**, mojepose2.R.v1, mojepose2.R.v2, mojepose2.R.v3*/));
-
-	context.getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d", set->get().size()));
 
 	return polyFlapActor;
 	
 }
 
 
-
+//methods needed to create and set finger
 template <typename Desc>
 void setupFingerActuator(Desc &desc) {
 	
@@ -344,58 +327,13 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 
 };
 
-/*
-
-Real normalizeAngle(Real r){
-	if (r >= 0.0) {
-		return Real(fmod(r,MATH_PI));
-	} else {
-		return Real((r-ceil(r))/MATH_PI);
-	}
-}
 
 
 
 
-Real normalizeJnVel(int i, Real r, float* maxVel, float* minVel) {
-	Real minVelo = 	minVel[i];
-	Real interval = maxVel[i] - minVelo;
-	Real relativVel = r - minVelo;
-	Real res = relativVel / interval;
-	return -1.0 + (res*2.0);
-
-*/
-/*
-	if (r >= 0.0) {
-		Real res = r / maxVel[i];
-		return res;
-	} else {
-		Real res = -r / minVel[i];
-		return res;
-	}
-*//*
-}
-
-
-
-
-Real normalizeWsPos(Real pos, Real max) {
-	return pos/max;
-}
-
-*/
-
-
+//function for normalizing values according to given bounds (before storing)
 Real normalize(Real value, Real min, Real max) {
-	Real val;/*
-	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min) {
-		int d = value / MATH_PI;
-		int e = MATH_PI * d;
-		val = value - e;
-	}
-	else {
-		val = value;
-	}*/
+	Real val;
 	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min)) {
 		val = fmod(value, MATH_PI);
 	}
@@ -410,31 +348,33 @@ Real normalize(Real value, Real min, Real max) {
 	
 
 
-
+//function that checks if arm hitted the polyflap while approaching it
 bool checkPfPosition(Vec3 refPos1, Vec3 refPos2, Vec3 realPos1, Vec3 realPos2) {
-/*		
-		cout <<	(abs(refPos1.v1 - realPos1.v1)) << endl;
-		cout <<	(abs(refPos1.v2 - realPos1.v2)) << endl;
-		cout <<	(abs(refPos2.v1 - realPos2.v1)) << endl;
-		cout <<	(abs(refPos2.v2 - realPos2.v2)) << endl;
-
-		cout <<	(abs(refPos1.v1 - realPos1.v1) < 0.0001) << endl;
-		cout <<	(abs(refPos1.v2 - realPos1.v2) < 0.0001) << endl;
-		cout <<	(abs(refPos2.v1 - realPos2.v1) < 0.0001) << endl;
-		cout <<	(abs(refPos2.v2 - realPos2.v2) < 0.0001) << endl;
-	
-	cout <<	(refPos1.v1 == realPos1.v1 &&
-		refPos1.v2 == realPos1.v2 &&
-		refPos2.v1 == realPos2.v1 &&
-		refPos2.v2 == realPos2.v2)
-		<< endl;
-*/
 	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
 		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
 		abs(refPos2.v1 - realPos2.v1) < 0.00001 &&
 		abs(refPos2.v2 - realPos2.v2) < 0.00001;
 
 } 
+
+
+/*
+void getAngleMinMaxVelocities(Joint* joints, float* minArray, float* maxArray, U32 numOfJoints) {
+	for (U32 i = 0; i < numOfJoints; i++) {
+			const Joint &joint = joints[i];
+			minArray[i] = joint.getMin().vel;
+			maxArray[i] = joint.getMax().vel;
+	}
+
+/*		for (U32 i = 0; i < numOfJoints; i++) {
+			const Joint &joint = *arm.getJoints()[i];
+			minVelocities[i] = joint.getMin().vel;
+		}
+		for (U32 i = 0; i < numOfJoints; i++) {
+			const Joint &joint = *arm.getJoints()[i];
+			maxVelocities[i] = joint.getMax().vel;
+		}
+*///}
 
 
 
@@ -533,6 +473,19 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 		
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// Setup PhysReacPlanner controller description
 		obj_ptr<Object::Desc> pPhysReacPlannerDesc;
 		if (!armType.compare("kat_serial_arm")) {
@@ -585,6 +538,19 @@ int main(int argc, char *argv[]) {
 		}
 
 		
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// some useful pointers
 		ReacPlanner &reacPlanner = pPhysReacPlanner->getReacPlanner();
 		Planner &planner = pPhysReacPlanner->getPlanner();
@@ -621,23 +587,12 @@ int main(int argc, char *argv[]) {
 
 
 
-/*
-cout << "\n" << normalize(0, -1, 1);
-cout << "\n" << normalize(-1, -1, 1);
-cout << "\n" << normalize(1, -1, 1);
-cout << "\n" << normalize(0.5691, -1, 1);
-cout << "\n" << normalize(-2.5, -5, 5);
-cout << "\n" << normalize(4, -5, 5);
-cout << "\n" << normalize(-MATH_PI/2, -MATH_PI, MATH_PI);
-cout << "\n" << normalize(MATH_PI*3/4, -MATH_PI, MATH_PI);
-cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
-*/		
-		
 
 		
 		const U32 numOfJoints = (U32)arm.getJoints().size();
 		float minVelocities [numOfJoints];
 		float maxVelocities [numOfJoints];
+		//getAngleMinMaxVelocities(arm.getJoints(), minVelocities, maxVelocities, numOfJoints);
 		for (U32 i = 0; i < numOfJoints; i++) {
 			const Joint &joint = *arm.getJoints()[i];
 			minVelocities[i] = joint.getMin().vel;
@@ -649,39 +604,21 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 
 
+///////////
+///DATA////
+///////////
 		DataSet data;
 		Real maxRange = 0.7;
 		SecTmReal minDuration = SecTmReal(5.0);
-		//srand(context->getRandSeed()._U32[0]);
-		//cout <<context->getRandSeed()._U32[0];
-
+	
 		//Polyflap Position and orientation
 		//-------------------------------------------------------
 		Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
 		Vec3 startPolyflapRotation(Real(-0.0*REAL_PI), Real(-0.0*REAL_PI), Real(-0.0*REAL_PI));//Y,X,Z
 		Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
 		//-------------------------------------------------------
-		//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-		//Vec3 polyflapNormalVec(Real(sin(polyflapRotation.v3)), Real(cos(polyflapRotation.v3)), Real(0.0));
-		//Vec3 polyflapOrthogonalVec(Real(polyflapNormalVec.v2), Real(-1.0*polyflapNormalVec.v1), Real(0.0));
-		//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f", polyflapNormalVec.v1, polyflapNormalVec.v2));		
-
-
-		// Actuator
-		//Experiment::Desc experimentDesc(*pScene);
-		//Embodiment embDesc = Embodiment(pScene);
-		//setupActuator(experimentDesc.pActuatorDesc);
-
-
-		//Actor *pfPolyflap;
-		Mat34 mojepose2;
-		Mat34 mojepose3;
-
-		// Setup objects
-		//setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);		
-		//------Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
-		//setupObjects(*pScene, polyflapPosition, polyflapRotation, polyflapDimensions, *context, mojepose2, mojepose3);
-		
+	
+	
 		// Big Bang!
 		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Launching Universe..."));
 		pUniverse->launch();
@@ -701,6 +638,12 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 		// Asynchronous Time Delta - a minimum elapsed time between the current time and the first waypoint sent to the controller
 		// (no matter what has been sent before)
 		SecTmReal timeDeltaAsync = reacPlanner.getTimeDeltaAsync();
+
+
+
+
+
+
 		
 		// Define the Home pose in the Cartesian workspace
 		Vec3 positionH(Real(0.0), Real(0.1), Real(0.1));
@@ -736,12 +679,12 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
 				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 			}
+			
 			Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
 			Vec3 referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 
 
-			//Sequence &currentSequence = *(new Sequence);
-			Sequence seq;
+			Sequence &seq = *(new Sequence);
 			FeatureVector& infoVector = *(new FeatureVector);
 		
 
@@ -761,21 +704,12 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 			Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
 		
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapPosition.v1, polyflapPosition.v2, polyflapPosition.v3));
-
+			
+			//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
 			Vec3 polyflapNormalVec(Real((curPolPos2.p.v1 - curPolPos1.p.v1)/sqrt(pow(curPolPos2.p.v1 - curPolPos1.p.v1,2) + pow(curPolPos2.p.v2 - curPolPos1.p.v2,2) + 0.0)),
 					       Real((curPolPos2.p.v2 - curPolPos1.p.v2)/sqrt(pow(curPolPos2.p.v1 - curPolPos1.p.v1,2) + pow(curPolPos2.p.v2 - curPolPos1.p.v2,2) + 0.0)),
 					       Real(0.0));
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", polyflapNormalVec.v1, polyflapNormalVec.v2, polyflapNormalVec.v3));
-
-
-			//sleep(10);
-
-
-
-
-			//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-			//Vec3 polyflapNormalVec(Real(sin(polyflapRotation.v3)), Real(cos(polyflapRotation.v3)), Real(0.0));
+			
 			Vec3 polyflapOrthogonalVec(Real(polyflapNormalVec.v2), Real(-1.0*polyflapNormalVec.v1), Real(0.0));
 
 
@@ -940,7 +874,7 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec]
 			
-			int speed = -1 + (rand() % 3);
+			int speed = 1;//-1 + (rand() % 3);
 			SecTmReal duration = timeDelta * n*(pow(2, (-speed)*2));
 			infoVector.push_back(Real(speed));
 			
@@ -1150,7 +1084,8 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 					//	const NxMat34 nxPose = pfPolyflap->getNxActor()->getGlobalPose();
 					//	nxPose.M.getRowMajor(&.pose.R._m._11);
 					//	nxPose.t.get(&rigidBodyData.pose.p.v1);
-				
+					Mat34 mojepose2;
+					Mat34 mojepose3;
 					mojepose2 = set->get().front()->getPose();
 					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "3"));
 					mojepose3 = set->get().back()->getPose();
@@ -1193,7 +1128,6 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 					//context->getTimer()->sleep(2);
 					//reacPlanner.wait();
 					//armState(arm, target);
-					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "*****************************************************************************************"));
 
 				}
 		
