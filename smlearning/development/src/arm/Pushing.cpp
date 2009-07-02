@@ -50,8 +50,6 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, m
 //------------------------------------------------------------------------------
 
 
-int pos = 1;
-
 class MyPRMPlanner : public PRMPlanner {
 
 	
@@ -792,7 +790,8 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 		
 			//chose random point int the vicinity of the polyflap
 			srand(context->getRandSeed()._U32[0]  + i);
-			int startPosition = rand() % 24 + 1;
+// 			int startPosition = rand() % 24 + 1;
+			int startPosition = rand() % 17 + 1;
 
 			//distance from the front/back of the polyflap
 			Real dist = 0.05;
@@ -869,8 +868,6 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 				positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)")); break;
 
 			};
-
-			pos++;
 
 
 			
@@ -988,74 +985,82 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 
 			//chose random horizontal and vertical angle
-			int horizontalAngle = rand() % 7;
+// 			int horizontalAngle = rand() % 7;
+			int horizontalAngle = rand() % 3;
+			horizontalAngle += 2;
+			
 			int verticalAngle = rand() % 7;
 		
 		
 
-			//change the movement end position accordingly
-			switch (horizontalAngle) {
-			case 0: 
+// 			//change the movement end position accordingly
+// 			switch (horizontalAngle) {
+// 			case 0: 
 
-				end.p.v1 += (sin(0.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(0.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(0.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
-				end.p.v2 += (cos(0.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
-				end.p.v3 += 0.0;
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "0 degree horizontaly (0)")); break;
+// 				end.p.v1 += (sin(0.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(0.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(0.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+// 				end.p.v2 += (cos(0.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+// 				end.p.v3 += 0.0;
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "0 degree horizontaly (0)")); break;
 			
-			case 1: 
-				end.p.v1 += (sin(1.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(1.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(1.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
-				end.p.v2 += (cos(1.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "30 degrees horizontaly (1)")); break;
+// 			case 1: 
+// 				end.p.v1 += (sin(1.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(1.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(1.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+// 				end.p.v2 += (cos(1.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+// 				positionT.v3 += 0.0; 
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "30 degrees horizontaly (1)")); break;
 				
-			case 2: 
-				end.p.v1 += (sin(2.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(2.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(2.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
-				end.p.v2 += (cos(2.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "60 degrees horizontaly (2)")); break;
+// 			case 2: 
+// 				end.p.v1 += (sin(2.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(2.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(2.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+// 				end.p.v2 += (cos(2.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+// 				positionT.v3 += 0.0; 
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "60 degrees horizontaly (2)")); break;
 				
-			case 3: 
-				end.p.v1 += (sin(3.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(3.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(3.0/6.0*REAL_PI))*(distance*polyflapCenterOrthogonalVec.v1); 
-				end.p.v2 += (cos(3.0/6.0*REAL_PI))*(distance*polyflapCenterOrthogonalVec.v2); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "90 degrees horizontaly (3)")); break;
+// 			case 3: 
+// 				end.p.v1 += (sin(3.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(3.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(3.0/6.0*REAL_PI))*(distance*polyflapCenterOrthogonalVec.v1); 
+// 				end.p.v2 += (cos(3.0/6.0*REAL_PI))*(distance*polyflapCenterOrthogonalVec.v2); 
+// 				positionT.v3 += 0.0; 
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "90 degrees horizontaly (3)")); break;
 				
-			case 4: 
-				end.p.v1 += (sin(4.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(4.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(4.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
-				end.p.v2 += (cos(4.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "120 degree horizontaly (4)")); break;
+// 			case 4: 
+// 				end.p.v1 += (sin(4.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(4.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(4.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+// 				end.p.v2 += (cos(4.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+// 				positionT.v3 += 0.0; 
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "120 degree horizontaly (4)")); break;
 			
-			case 5: 
-				end.p.v1 += (sin(5.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(5.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(5.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
-				end.p.v2 += (cos(5.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "150 degree horizontaly (5)")); break;
+// 			case 5: 
+// 				end.p.v1 += (sin(5.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(5.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(5.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+// 				end.p.v2 += (cos(5.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+// 				positionT.v3 += 0.0; 
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "150 degree horizontaly (5)")); break;
 				
-			case 6: 
-				end.p.v1 += (sin(6.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
-				end.p.v2 += (sin(6.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
-				end.p.v1 += (cos(6.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
-				end.p.v2 += (cos(6.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "180 degree horizontaly (6)")); break;
+// 			case 6: 
+// 				end.p.v1 += (sin(6.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+// 				end.p.v2 += (sin(6.0/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+// 				end.p.v1 += (cos(6.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+// 				end.p.v2 += (cos(6.0/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+// 				positionT.v3 += 0.0; 
+// 				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "180 degree horizontaly (6)")); break;
 			
-			};
+// 			};
 
-			
 
+			end.p.v1 += (sin(horizontalAngle/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v1)); 
+			end.p.v2 += (sin(horizontalAngle/6.0*REAL_PI)*(distance*polyflapCenterNormalVec.v2)); 
+			end.p.v1 += (cos(horizontalAngle/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v1)); 
+			end.p.v2 += (cos(horizontalAngle/6.0*REAL_PI)*(distance*polyflapCenterOrthogonalVec.v2)); 
+			positionT.v3 += 0.0;
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly (%d)", horizontalAngle*30,horizontalAngle));
 
 
 			//add info about end position
@@ -1091,79 +1096,79 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 
 			
-			// Generate and send a simple straight line trajectory
-			for (U32 i = 0; i <= n; i++) {
+				// Generate and send a simple straight line trajectory
+				for (U32 i = 0; i <= n; i++) {
 
-				// create a new target waypoint on a straight line at normalized time timeDelta * i
-				waypointFromLineTrajectory(target, *pTrajectory, begin, end, duration, timeDelta * i);
-				// set the target waypoint absolute time (in future)
-				target.t = timeBegin + timeDeltaAsync + timeDelta * i;
+					// create a new target waypoint on a straight line at normalized time timeDelta * i
+					waypointFromLineTrajectory(target, *pTrajectory, begin, end, duration, timeDelta * i);
+					// set the target waypoint absolute time (in future)
+					target.t = timeBegin + timeDeltaAsync + timeDelta * i;
 			
-				// send to the controller, force local movement (without planning in the entire arm workspace)
-				// reacPlanner.wait() will wait approx 'timeDelta' seconds, until a next waypoint can be sent
-				// reacPlanner.wait() can be used only if signal synchronization is enabled (see 'setupPlanner()' above)
-				if (!reacPlanner.send(target, ReacPlanner::ACTION_LOCAL) || !reacPlanner.wait()) {
-					// woops something went wrong
-				}
+					// send to the controller, force local movement (without planning in the entire arm workspace)
+					// reacPlanner.wait() will wait approx 'timeDelta' seconds, until a next waypoint can be sent
+					// reacPlanner.wait() can be used only if signal synchronization is enabled (see 'setupPlanner()' above)
+					if (!reacPlanner.send(target, ReacPlanner::ACTION_LOCAL) || !reacPlanner.wait()) {
+						// woops something went wrong
+					}
 
 
-				reacPlanner.wait();
+					reacPlanner.wait();
 
 
 
 
-				// arm state at a time t and finishes at some time later
-				msk::ctrl::GenJointState state;
-				arm.lookupInp(state, target.t  /*SEC_TM_REAL_INF)*/); // last sent trajectory waypoint
+					// arm state at a time t and finishes at some time later
+					msk::ctrl::GenJointState state;
+					arm.lookupInp(state, target.t  /*SEC_TM_REAL_INF)*/); // last sent trajectory waypoint
 			
-				//msk::demo::armPose(arm, state);
-				msk::demo::armState(arm, state);
+					//msk::demo::armPose(arm, state);
+					msk::demo::armState(arm, state);
 
-				//to get polyflap pose information
-				msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
+					//to get polyflap pose information
+					msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
 
-				FeatureVector& features = *(new FeatureVector);
-				// Read joints
-				for (U32 i = 0; i < numOfJoints; i++) {
-					//const Joint &joint = *arm.getJoints()[i];
-					//Real norm = Real(state.pos.j[i]/ MATH_PI);
-					features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
-					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm));
-					//features[2*i] = norm;
-					//Real norm2 = Real(normalize(i, state.vel.j[i], maxVelocities, minVelocities));
-					features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
-					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm2));
-					//features[2*i+1] = norm2;
-				}
+					FeatureVector& features = *(new FeatureVector);
+					// Read joints
+					for (U32 i = 0; i < numOfJoints; i++) {
+						//const Joint &joint = *arm.getJoints()[i];
+						//Real norm = Real(state.pos.j[i]/ MATH_PI);
+						features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
+						//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm));
+						//features[2*i] = norm;
+						//Real norm2 = Real(normalize(i, state.vel.j[i], maxVelocities, minVelocities));
+						features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
+						//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f", norm2));
+						//features[2*i+1] = norm2;
+					}
 
-				// add pose of polyflap to features!!
+					// add pose of polyflap to features!!
 
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "2"));
+					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "2"));
 
-				//	const NxMat34 nxPose = pfPolyflap->getNxActor()->getGlobalPose();
-				//	nxPose.M.getRowMajor(&.pose.R._m._11);
-				//	nxPose.t.get(&rigidBodyData.pose.p.v1);
+					//	const NxMat34 nxPose = pfPolyflap->getNxActor()->getGlobalPose();
+					//	nxPose.M.getRowMajor(&.pose.R._m._11);
+					//	nxPose.t.get(&rigidBodyData.pose.p.v1);
 				
-				mojepose2 = set->get().front()->getPose();
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "3"));
-				mojepose3 = set->get().back()->getPose();
-				features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
-				features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
-				features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
-				features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
-				features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
-				features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
+					mojepose2 = set->get().front()->getPose();
+					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "3"));
+					mojepose3 = set->get().back()->getPose();
+					features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
+					features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
+					features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
+					features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
+					features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
+					features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
 
 				
 
 
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", mojepose2.p.v1, mojepose2.p.v2, mojepose2.p.v3/**, mojepose2.R.v1, mojepose2.R.v2, mojepose2.R.v3/));
+					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", mojepose2.p.v1, mojepose2.p.v2, mojepose2.p.v3/**, mojepose2.R.v1, mojepose2.R.v2, mojepose2.R.v3/));
 					
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", mojepose3.p.v1, mojepose3.p.v2, mojepose3.p.v3/**, mojepose2.R.v1, mojepose2.R.v2, mojepose2.R.v3/));
+					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f", mojepose3.p.v1, mojepose3.p.v2, mojepose3.p.v3/**, mojepose2.R.v1, mojepose2.R.v2, mojepose2.R.v3/));
 
 
 
-				seq.push_back(features);
+					seq.push_back(features);
 
 	
  
@@ -1172,35 +1177,35 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
  
 
-				//begin.vel.setZero();
-				//begin.acc.setZero();
-				//begin.t += pPhysPlanner->getArm().getTimeDeltaAsync(); // concatenate trajectories
-				//end.t = begin.t + SecTmReal(5.0); // minimum trajectory duration
+					//begin.vel.setZero();
+					//begin.acc.setZero();
+					//begin.t += pPhysPlanner->getArm().getTimeDeltaAsync(); // concatenate trajectories
+					//end.t = begin.t + SecTmReal(5.0); // minimum trajectory duration
 			
 			
 
 
 
 
-				//armState(arm, );
-				//context->getTimer()->sleep(2);
-				//reacPlanner.wait();
-				//armState(arm, target);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "*****************************************************************************************"));
+					//armState(arm, );
+					//context->getTimer()->sleep(2);
+					//reacPlanner.wait();
+					//armState(arm, target);
+					//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "*****************************************************************************************"));
+
+				}
+		
+				data.push_back(seq);
+
+
+
+				// wait until the arm stops
+				context->getTimer()->sleep(timeDeltaAsync - timeDelta);
+
+
+
 
 			}
-		
-			data.push_back(seq);
-
-
-
-			// wait until the arm stops
-			context->getTimer()->sleep(timeDeltaAsync - timeDelta);
-
-
-
-
-}
 
 
 			// ON/OFF collision detection
@@ -1283,17 +1288,17 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 			blank.setBlank();
 			pScene->setDraw(blank);
 */
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_ERR, "wait and see"));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "wait and see"));
 
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				sleep(3);
+				sleep(1);
 				pScene->releaseObject(*polyFlapActor);
-				sleep(3);
+				sleep(1);
 			}
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_ERR, "and, seen...?"));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "and, seen...?"));
 
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration completed!"));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", i));
 		}
 /*	
 	int tm_year;
