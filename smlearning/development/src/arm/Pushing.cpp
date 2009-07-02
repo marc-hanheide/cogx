@@ -726,14 +726,16 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 
 
-		const int numExperiments = 20;
+		const int numExperiments = 1000;
 
 		for (int i=0; i<numExperiments; i++)
 		{
 
-
-			Actor* polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
-
+			Actor *polyFlapActor;
+			{
+				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+			}
 			Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
 			Vec3 referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 
@@ -1292,9 +1294,8 @@ cout << "\n" << normalize(MATH_PI*14/4, -MATH_PI, MATH_PI);
 
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				sleep(1);
 				pScene->releaseObject(*polyFlapActor);
-				sleep(1);
+				sleep(3);
 			}
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "and, seen...?"));
 
