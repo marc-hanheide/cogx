@@ -1,0 +1,276 @@
+ADJUNCT_LC:dynaref [
+	(white)~0.937
+	(black)~0.948
+	(blue)~1.102
+	(green)~1.080
+	(brown)~0.849
+	(red)~1.290
+	(yellow)~1.135
+	(round)~0.882
+	(big)~0.948
+	(small)~0.860
+	(left)~1.279
+	(right)~1.852
+	(full)~0.772
+	(last)~0.761
+	(other)~0.882
+	(elongated)~0.772
+	(same)~0.827
+	(orange)~1.047
+	(purple)~0.772
+ ]
+
+DET_PL_LC:dynaref [
+	(the)~2.334
+	(two)~0.763
+	(three)~0.755
+	(five)~0.757
+	(some)~0.776
+	(all)~0.852
+	(all the)~0.760
+ ]
+
+ADV_LC:dynaref [
+	(just)~0.848
+	(never)~0.762
+	(not)~1.388
+	(also)~0.884
+	(please)~1.277
+	(already)~0.762
+	(only)~0.848
+	(all)~1.228
+ ]
+
+DEM_SG_LC:dynaref [
+	(it)~1.274
+	(this)~0.839
+	(that)~1.019
+	(one)~0.866
+ ]
+
+NOUN_PL_LC:dynaref [
+	(balls)~0.8
+	(boxes)~0.907
+	(books)~3.188
+	(cups)~0.8
+	(mugs)~0.789
+	(objects)~1.339
+	(things)~0.907
+	(cubes)~0.8
+	(blocks)~0.8
+	(stars)~0.8
+	(triangles)~0.789
+	(squares)~0.8
+	(cars)~0.8
+	(circles)~0.828
+ ]
+
+DET_SG_LC:dynaref [
+	(the)~1.091
+	(a)~1.203
+	(an)~0.941
+	(your)~0.764
+ ]
+
+DEGREE_ADV_LC:dynaref [
+	(too)~1.071
+	(very)~0.928
+ ]
+
+NOUN_SG_LC:dynaref [
+	(game)~0.8
+	(size)~0.794
+	(colour)~1.053
+	(shape)~0.776
+	(colour game)~0.8
+	(shape game)~0.8
+	(one)~1.178
+	(ball)~0.901
+	(box)~1.748
+	(book)~1.677
+	(chocolate)~1.329
+	(coffee)~1.169
+	(coffee machine)~0.990
+	(computer)~0.857
+	(cup)~0.803
+	(laptop)~1.534
+	(mug)~1.525
+	(object)~1.240
+	(table)~1.356
+	(thing)~0.955
+	(cube)~0.892
+	(door)~0.8
+	(floor)~0.758
+	(block)~0.8
+	(star)~0.758
+	(triangle)~0.865
+	(square)~0.812
+	(car)~0.794
+	(circle)~0.928
+	(cylinder)~0.910
+	(cone)~0.865
+	(arm)~0.767
+ ]
+
+GREETING_LC:dynaref [
+	(hi)~1.785
+	(hello)~0.789
+	(bye)~0.8
+	(thanks)~0.757
+	(thank you)~0.917
+ ]
+
+DISFL_LC:dynaref [
+	(err)~0.812
+	(hum)~0.757
+	(mm)~1.025
+	(uh)~1.403
+ ]
+
+TEMPORAL_LC:dynaref [
+	(now)~2.023
+	(first)~0.787
+	(again)~0.816
+	(afterwards)~0.8
+	(after that)~0.759
+	(next)~0.863
+ ]
+
+COMPARATIVE_LC:dynaref [
+	(bigger)~0.985
+	(smaller)~0.8
+	(closer)~1.397
+	(nearer)~0.867
+ ]
+
+CUEWORD_LC:dynaref [
+	(wrong)~0.792
+	(right)~1.465
+	(sure)~0.771
+	(great)~0.807
+	(correct)~0.957
+	(incorrect)~0.757
+	(good)~1.093
+	(very good)~0.764
+	(true)~0.792
+	(false)~0.8
+	(bad)~0.8
+	(ok)~2.073
+	(okay)~1.243
+	(fine)~0.771
+	(yes)~1.107
+	(no)~2.344
+	(good)~0.757
+	(sorry)~0.764
+	(excellent)~0.785
+	(yeah)~0.900
+	(alright)~0.764
+	(well done)~0.792
+ ]
+
+PERSON_LC:dynaref [
+	(me)~0.900
+	(you)~1.225
+	(robot)~0.873
+ ]
+
+CONNECTIVE_LC:dynaref [
+	(then)~0.791
+	(and)~1.396
+	(or)~1.209
+	(but)~0.791
+	(so)~1.011
+	(well)~0.799
+ ]
+
+LOCATION_LC:dynaref [
+	(to the right)~1.134
+	(to the right)~0.763
+	(to my left)~0.774
+	(to my right)~0.846
+	(to your left)~0.822
+	(to your right)~0.810
+	(here)~2.157
+	(there)~1.507
+	(down)~0.858
+	(back)~0.918
+	(aside)~0.786
+	(somewhere)~0.774
+	(far)~0.774
+	(up)~1.086
+ ]
+
+VERB_LC:dynaref [
+	(play)~0.773
+	(take)~1.399
+	(bring me)~0.819
+	(pick)~0.981
+	(pick up)~0.889
+	(give me)~0.773
+	(get)~0.807
+	(get me)~0.761
+	(rotate)~0.773
+	(point at)~0.773
+	(move)~1.063
+	(remove)~0.761
+	(put)~2.303
+	(see)~1.364
+	(want)~0.842
+	(know)~0.912
+ ]
+
+PRONOUN_LC:dynaref [
+	(i)~1.286
+	(you)~0.946
+	(we)~0.767
+ ]
+
+PREP_LC:dynaref [
+	(behind)~0.780
+	(close to)~0.765
+	(closer to)~0.817
+	(near)~0.825
+	(near to)~0.795
+	(next to)~0.840
+	(left of)~0.908
+	(right of)~0.870
+	(in front of)~0.991
+	(in the middle of)~0.765
+	(on the middle of)~0.765
+	(under)~0.787
+	(on)~2.419
+	(on top of)~0.817
+	(from)~0.802
+	(on the left of)~0.772
+	(on the right of)~0.765
+	(to the left of)~0.878
+	(to the right of)~0.840
+	(to)~2.789
+ ]
+
+WH_WORD_LC:dynaref [
+	(how many)~0.933
+	(how much)~0.8
+	(what)~1.689
+	(where)~1.214
+	(which)~0.868
+	(when)~0.771
+	(why)~0.771
+ ]
+
+MODAL_LC:dynaref [
+	(can)~1.952
+	(could)~0.915
+	(should)~0.761
+	(can't)~0.805
+	(cannot)~0.805
+	(must)~0.761
+ ]
+
+DEM_PL_LC:dynaref [
+	(them)~1.083
+	(they)~1.130
+	(those)~0.845
+	(these)~0.940
+ ]
+

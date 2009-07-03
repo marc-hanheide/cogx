@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<regression name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testbed.xsd">
+  <item string="the" numOfParses="6"/>
+  <item string="the pizza" numOfParses="3"/>
+  <item string="the pizza on" numOfParses="3"/>
+  <item string="the pizza on the" numOfParses="6"/>
+  <item string="the pizza on the big" numOfParses="6"/>
+  <item string="the pizza on the big red" numOfParses="6"/>
+  <item string="the pizza on the big red table" numOfParses="3"/>
+  <item string="the pizza on the big red table makes" numOfParses="4"/>
+  <item string="the pizza on the big red table makes me" numOfParses="3"/>
+  <item string="the pizza on the big red table makes me hungry" numOfParses="1"/>
+  <item string="what" numOfParses="4"/>
+  <item string="what did" numOfParses="4"/>
+  <item string="what did GJ" numOfParses="2"/>
+  <item string="what did GJ see" numOfParses="1"/>
+  <item string="what did GJ see under" numOfParses="2"/>
+  <item string="what did GJ see under the" numOfParses="2"/>
+  <item string="what did GJ see under the table" numOfParses="1"/>
+  <item string="are" numOfParses="32"/>
+  <item string="are you" numOfParses="22"/>
+  <item string="are you coming" numOfParses="4"/>
+  <item string="go" numOfParses="4"/>
+  <item string="go over" numOfParses="30"/>
+  <item string="go over to" numOfParses="5"/>
+  <item string="go over to your" numOfParses="10"/>
+  <item string="go over to your station" numOfParses="10"/>
+  <item string="I slept" numOfParses="1"/>
+  <item string="I want it" numOfParses="4"/>
+  <item string="give me the ball" numOfParses="4"/>
+  <item string="give the ball to GJ" numOfParses="4"/>
+  <item string="I picked it up" numOfParses="1"/>
+  <item string="I picked up the ball" numOfParses="1"/>
+  <item string="I want it bigger" numOfParses="1"/>
+  <item string="make it black" numOfParses="4"/>
+  <item string="I want it on the table" numOfParses="2"/>
+  <item string="put it on the table" numOfParses="4"/>
+  <item string="I want to sleep" numOfParses="1"/>
+  <item string="I want the robot to sleep" numOfParses="2"/>
+  <item string="I made it move off the table" numOfParses="1"/>
+  <item string="keep moving" numOfParses="16"/>
+  <item string="stop moving" numOfParses="16"/>
+  <item string="I said I wanted to sleep" numOfParses="1"/>
+  <item string="you use it to make coffee" numOfParses="6"/>
+  <item string="you can use them to pick things up" numOfParses="2"/>
+  <item string="on the table" numOfParses="8"/>
+  <item string="big" numOfParses="2"/>
+  <item string="over on the table" numOfParses="8"/>
+  <item string="really big" numOfParses="2"/>
+  <item string="the ball" numOfParses="3"/>
+  <item string="the ball on the table" numOfParses="3"/>
+  <item string="the ball over on the table" numOfParses="3"/>
+  <item string="the big ball" numOfParses="3"/>
+  <item string="the really big ball" numOfParses="3"/>
+  <item string="I slept" numOfParses="1"/>
+  <item string="I slept on the table" numOfParses="1"/>
+  <item string="I slept over on the table" numOfParses="1"/>
+  <item string="the ball is big" numOfParses="1"/>
+  <item string="the ball is really big" numOfParses="1"/>
+  <item string="I want it big" numOfParses="1"/>
+  <item string="I want it really big" numOfParses="1"/>
+  <item string="the ball is on the table" numOfParses="1"/>
+  <item string="the ball is over on the table" numOfParses="1"/>
+  <item string="I want it on the table" numOfParses="1"/>
+  <item string="I want it over on the table" numOfParses="1"/>
+  <item string="I am happy to the the table" numOfParses="0"/>
+  <item string="I want it to the table" numOfParses="0"/>
+  <item string="I went to the table" numOfParses="1"/>
+  <item string="I want it on the table" numOfParses="1"/>
+  <item string="I walked on the table" numOfParses="3"/>
+  <item string="it is big" numOfParses="1"/>
+  <item string="it isn't big" numOfParses="1"/>
+  <item string="is it big" numOfParses="1"/>
+  <item string="what is big" numOfParses="1"/>
+  <item string="how is it" numOfParses="2"/>
+  <item string="it is a ball" numOfParses="1"/>
+  <item string="is it a ball" numOfParses="1"/>
+  <item string="what is a ball" numOfParses="4"/>
+  <item string="what is it" numOfParses="4"/>
+  <item string="it is under the table" numOfParses="1"/>
+  <item string="is it under the table" numOfParses="1"/>
+  <item string="where is it" numOfParses="4"/>
+  <item string="I am able to walk" numOfParses="2"/>
+  <item string="am I able to walk" numOfParses="2"/>
+  <item string="under the table is a ball" numOfParses="4"/>
+  <item string="there is a ball" numOfParses="2"/>
+  <item string="there were some balls" numOfParses="2"/>
+  <item string="there are a ball" numOfParses="0"/>
+  <item string="there is a ball on the table" numOfParses="2"/>
+  <item string="is there a ball" numOfParses="1"/>
+  <item string="is there a ball on the table" numOfParses="2"/>
+  <item string="what is there" numOfParses="1"/>
+  <item string="where is there a ball" numOfParses="1"/>
+  <item string="there walked in" numOfParses="0"/>
+  <item string="there is big" numOfParses="0"/>
+  <item string="this" numOfParses="11"/>
+  <item string="this ball" numOfParses="5"/>
+  <item string="the this ball" numOfParses="0"/>
+  <item string="this of the balls" numOfParses="0"/>
+  <item string="some" numOfParses="20"/>
+  <item string="some balls" numOfParses="9"/>
+  <item string="the some balls" numOfParses="0"/>
+  <item string="some of the balls" numOfParses="9"/>
+  <item string="two" numOfParses="22"/>
+  <item string="two balls" numOfParses="19"/>
+  <item string="the two balls" numOfParses="9"/>
+  <item string="two of the balls" numOfParses="5"/>
+  <item string="those two" numOfParses="26"/>
+  <item string="the third" numOfParses="20"/>
+  <item string="the third ball" numOfParses="5"/>
+  <item string="the third of the three balls" numOfParses="9"/>
+  <item string="third ball is big" numOfParses="0"/>
+  <item string="the green ones" numOfParses="5"/>
+  <item string="I didn't say that" numOfParses="6"/>
+  <item string="who said it" numOfParses="3"/>
+  <item string="what did he say" numOfParses="1"/>
+  <item string="I didn't do it" numOfParses="1"/>
+  <item string="I do I went" numOfParses="0"/>
+  <item string="who did this" numOfParses="1"/>
+  <item string="what is he doing" numOfParses="1"/>
+  <item string="what is he doing with the ball" numOfParses="1"/>
+  <item string="I will" numOfParses="2"/>
+  <item string="I do" numOfParses="2"/>
+  <item string="I can not" numOfParses="2"/>
+  <item string="will I" numOfParses="2"/>
+  <item string="won't I" numOfParses="2"/>
+  <item string="can I" numOfParses="1"/>
+  <item string="I want to" numOfParses="2"/>
+  <item string="I want him to" numOfParses="2"/>
+  <item string="I hope to" numOfParses="2"/>
+  <item string="do you want me to" numOfParses="2"/>
+  <item string="I walked there" numOfParses="1"/>
+  <item string="I was here" numOfParses="1"/>
+  <item string="I put it in there" numOfParses="1"/>
+  <item string="I picked up there" numOfParses="0"/>
+  <item string="what should I pick up" numOfParses="1"/>
+  <item string="which ball should I pick up" numOfParses="1"/>
+  <item string="what color ball should I pick up" numOfParses="1"/>
+  <item string="which color should I pick up" numOfParses="1"/>
+  <item string="how is it" numOfParses="2"/>
+  <item string="how do you want it" numOfParses="2"/>
+  <item string="what color is it" numOfParses="8"/>
+  <item string="what size should I make it" numOfParses="1"/>
+  <item string="how big is it" numOfParses="2"/>
+  <item string="how big should I make it" numOfParses="1"/>
+  <item string="how much bigger should I make it" numOfParses="1"/>
+  <item string="how hungry do you want me to be" numOfParses="1"/>
+  <item string="how_much coffee should I make for him" numOfParses="1"/>
+  <item string="how_much should I make for him" numOfParses="1"/>
+  <item string="how_many balls do you want me to pick up" numOfParses="2"/>
+  <item string="how_many coffee do you want" numOfParses="0"/>
+  <item string="how_much balls do you want" numOfParses="0"/>
+  <item string="where is he sleeping" numOfParses="1"/>
+  <item string="where is he going" numOfParses="2"/>
+  <item string="where does he want it" numOfParses="3"/>
+  <item string="where does he want it to sleep" numOfParses="1"/>
+  <item string="how does he sleep" numOfParses="1"/>
+  <item string="how did he make it" numOfParses="2"/>
+  <item string="he sleeps" numOfParses="1"/>
+  <item string="he does sleep" numOfParses="1"/>
+  <item string="he didn't sleep" numOfParses="1"/>
+  <item string="does he sleep" numOfParses="1"/>
+  <item string="he slept" numOfParses="1"/>
+  <item string="he did sleep" numOfParses="1"/>
+  <item string="he didn't sleep" numOfParses="1"/>
+  <item string="did he sleep" numOfParses="1"/>
+  <item string="he will sleep" numOfParses="1"/>
+  <item string="he won't sleep" numOfParses="1"/>
+  <item string="will he sleep" numOfParses="1"/>
+  <item string="he is sleeping" numOfParses="1"/>
+  <item string="he isn't sleeping" numOfParses="1"/>
+  <item string="is he sleeping" numOfParses="1"/>
+  <item string="he has slept" numOfParses="1"/>
+  <item string="he hasn't slept" numOfParses="1"/>
+  <item string="has he slept" numOfParses="1"/>
+  <item string="he can sleep" numOfParses="1"/>
+  <item string="he can't sleep" numOfParses="1"/>
+  <item string="can he sleep" numOfParses="1"/>
+  <item string="he is able to sleep" numOfParses="1"/>
+  <item string="he isn't able to sleep" numOfParses="1"/>
+  <item string="is he able to sleep" numOfParses="1"/>
+  <item string="he will have slept" numOfParses="1"/>
+  <item string="will he be sleeping" numOfParses="1"/>
+  <item string="he will be sleeping" numOfParses="1"/>
+  <item string="will he be sleeping" numOfParses="1"/>
+  <item string="he has been sleeping" numOfParses="1"/>
+  <item string="has he been sleeping" numOfParses="1"/>
+  <item string="he can't have slept" numOfParses="1"/>
+  <item string="he can't be sleeping" numOfParses="1"/>
+  <item string="I will can sleep" numOfParses="0"/>
+  <item string="will he sleeps" numOfParses="0"/>
+  <item string="he will sleeps" numOfParses="0"/>
+  <item string="I am sleep" numOfParses="0"/>
+  <item string="I have sleep" numOfParses="0"/>
+  <item string="he wasn't seen" numOfParses="3"/>
+  <item string="he wasn't seen by GJ" numOfParses="6"/>
+  <item string="was he seen by anyone" numOfParses="4"/>
+  <item string="the triangle" numOfParses="3"/>
+  <item string="the circle" numOfParses="3"/>
+  <item string="the square" numOfParses="9"/>
+  <item string="the star" numOfParses="3"/>
+  <item string="the red triangle" numOfParses="3"/>
+  <item string="the blue circle" numOfParses="3"/>
+  <item string="the green square" numOfParses="9"/>
+  <item string="the yellow star" numOfParses="3"/>
+  <item string="the red thing" numOfParses="3"/>
+  <item string="the blue thing" numOfParses="3"/>
+  <item string="the green thing" numOfParses="3"/>
+  <item string="the yellow thing" numOfParses="3"/>
+  <item string="a yellow flag" numOfParses="3"/>
+  <item string="a car" numOfParses="3"/>
+  <item string="I am playing a game" numOfParses="1"/>
+  <item string="which game am I playing" numOfParses="1"/>
+  <item string="I do not know" numOfParses="1"/>
+  <item string="the shape game or the colour game" numOfParses="1"/>
+  <item string="which game am I playing" numOfParses="1"/>
+  <item string="you are playing the shape game" numOfParses="1"/>
+  <item string="where should the blue triangle go" numOfParses="1"/>
+  <item string="it should go next to the left flag" numOfParses="1"/>
+  <item string="now I am playing the colour game" numOfParses="1"/>
+  <item string="where does the blue square go" numOfParses="1"/>
+  <item string="it should go next to the blue flag" numOfParses="1"/>
+  <item string="where is the blue flag" numOfParses="1"/>
+  <item string="it is on the right" numOfParses="1"/>
+  <item string="it is on the right of the red flag" numOfParses="1"/>
+  <item string="play the colour game" numOfParses="1"/>
+  <item string="play the shape game" numOfParses="1"/>
+  <item string="this is a car" numOfParses="1"/>
+  <item string="where is the car" numOfParses="1"/>
+  <item string="behind the wall" numOfParses="1"/>
+  <item string="what is behind the wall" numOfParses="1"/>
+  <item string="I see a car and a blue thing" numOfParses="1"/>
+  <item string="what is the blue thing" numOfParses="1"/>
+  <item string="it is a ball" numOfParses="1"/>
+  <item string="could you go and find the Borland book please" numOfParses="1"/>
+  <item string="I will go and look for it in a library where books are normally found" numOfParses="1"/>
+  <item string="do you know where the Borland book is" numOfParses="1"/>
+  <item string="I believe it is in GJ 's office" numOfParses="1"/>
+  <item string="the book is in GJ 's office near the Starbucks mug" numOfParses="1"/>
+</regression>
