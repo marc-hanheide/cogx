@@ -259,7 +259,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 
 	for (std::vector<Bounds::Desc::Ptr>::const_iterator i = bounds.begin(); i != bounds.end(); i++) {
 		NxShapeDesc *pNxShapeDesc = physReacPlanner.getScene().createNxShapeDesc(*i);
-		pNxShapeDesc->density = NxReal(1.0);
+		pNxShapeDesc->density = NxReal(10.0);
 		fingerActorDesc.nxActorDesc.shapes.push_back(pNxShapeDesc);
 	}
 
@@ -596,7 +596,7 @@ int main(int argc, char *argv[]) {
 		
 		// Display arm information
 		armInfo(arm);
-		sleep (1);
+		//sleep (1);
 
 		
 
@@ -708,7 +708,11 @@ int main(int argc, char *argv[]) {
 			Actor *polyFlapActor;
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				context->getTimer()->sleep(1);
+				//sleep(1);
 				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+				context->getTimer()->sleep(1);
+				//sleep(1);
 			}
 			
 			Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
@@ -1085,8 +1089,12 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly", 
 
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				context->getTimer()->sleep(1);
+				//sleep(1);
 				pScene->releaseObject(*polyFlapActor);
-				sleep(3);
+				// wait a bit before new actor is created to avoid simulation crash
+				context->getTimer()->sleep(3);
+				//sleep(3);
 			}
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
 
