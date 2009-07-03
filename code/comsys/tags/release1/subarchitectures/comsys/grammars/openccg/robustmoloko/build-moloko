@@ -1,0 +1,4 @@
+#!/bin/sh
+
+perl ./ccg-files/merge-ccg.pl ./ccg-files/ ./moloko.ccg
+ccg2xml -p "" moloko.ccg
