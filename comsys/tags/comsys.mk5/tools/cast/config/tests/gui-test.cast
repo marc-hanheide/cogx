@@ -1,0 +1,21 @@
+HOST localhost
+
+SUBARCHITECTURE gui.test 
+JAVA WM cast.architecture.subarchitecture.SubarchitectureWorkingMemory #--log $TEST_LOG_OUTPUT
+JAVA TM cast.architecture.subarchitecture.AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
+CPP DD guidemo1 GUIDemo --log $TEST_LOG_OUTPUT
+CPP DD guidemo2 GUIDemo --log $TEST_LOG_OUTPUT
+CPP DD guidemo3 GUIDemo --log $TEST_LOG_OUTPUT
+
+#COMPONENT JAVA gui cast.ui.inspectable.GUI
+#COMPONENT JAVA guidemo1 cast.ui.inspectable.GUIDemo
+
+#COMPONENT CPP guidemo2 GUIDemo
+#CONNECTION DrawBatch gui PULL_FROM guidemo1
+#CONNECTION DrawBatch gui PULL_FROM guidemo2
+#CONNECTION DrawBatch guidemo1 guidemo2 PUSH_TO gui
+#CONNECTION DrawBatch guidemo1 PUSH_TO gui
+#CONNECTION DrawBatch guidemo2 PUSH_TO gui
+
+#CONNECTION DrawBatch guidemo1 PUSH_TO gui
+#CONNECTION DrawBatch guidemo2 PUSH_TO gui
