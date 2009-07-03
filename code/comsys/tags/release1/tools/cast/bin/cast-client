@@ -4,4 +4,4 @@ if [ $# -ne 1 ] ; then
    exit $E_BADARGS
 fi
 
-/Users/plison/svn.cogx/comsys.mk5/output/bin/run-cast-client.sh /Users/plison/svn.cogx/comsys.mk5/output $1
+/Users/plison/svn.cogx/comsys_releases/tags/release1/output/bin/run-cast-client.sh /Users/plison/svn.cogx/comsys_releases/tags/release1/output $1

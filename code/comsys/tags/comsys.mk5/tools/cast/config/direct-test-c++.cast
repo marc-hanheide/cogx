@@ -1,5 +1,0 @@
-HOST localhost
-
-COMPONENT CPP implements.server SimpleServer 
-COMPONENT CPP aggregate.server SimpleAggregateServer 
-COMPONENT CPP word.client WordServerClient

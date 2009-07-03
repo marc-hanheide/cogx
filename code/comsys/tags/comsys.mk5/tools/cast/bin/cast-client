@@ -1,7 +1,0 @@
-# Auto-generated CAST client script
-if [ $# -ne 1 ] ; then
-   echo 'Usage: cast-client <cast file> '
-   exit $E_BADARGS
-fi
-
-/Users/plison/svn.cogx/comsys.mk5/output/bin/run-cast-client.sh /Users/plison/svn.cogx/comsys.mk5/output $1
