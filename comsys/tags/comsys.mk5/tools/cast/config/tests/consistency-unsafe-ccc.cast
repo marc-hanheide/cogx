@@ -1,8 +1,0 @@
-HOST localhost
-
-SUBARCHITECTURE test
-CPP WM SubarchitectureWorkingMemory #--log $TEST_LOG_OUTPUT
-CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
-CPP GD generator BasicTester --test unsafe-overwrite --log $TEST_LOG_OUTPUT
-CPP GD replacer BasicTester --test replace --exit false
-

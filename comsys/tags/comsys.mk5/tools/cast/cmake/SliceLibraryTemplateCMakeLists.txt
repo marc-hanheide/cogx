@@ -1,6 +1,0 @@
-include_directories(.)
-include(Slice2Cpp)
-
-cast_slice2cpp(GEN_CPP GEN_HPP MYSLICEFILE.ice)
-add_library(MYSLICEFILE SHARED ${GEN_CPP})
-install(TARGETS MYSLICEFILE LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
