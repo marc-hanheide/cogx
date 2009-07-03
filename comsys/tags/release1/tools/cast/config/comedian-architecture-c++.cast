@@ -1,0 +1,27 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST localhost
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE stage.subarch 
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager #--log --debug
+CPP DD straight.man StraightMan #--log --debug
+CPP GD funny.man FunnyMan --punchline "Two!" --log 
+
+
+# SUBARCHITECTURE <subarch name> <default host to be used>
+SUBARCHITECTURE audience.subarch 
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager  #--log #--debug
+CPP GD audience.member AudienceMember --reaction "Tsk tsk..." #--log
+
+
+SUBARCHITECTURE director.subarch 
+CPP WM SubarchitectureWorkingMemory  #--log true --debug false
+CPP TM AlwaysPositiveTaskManager #--log
+CPP GD ass.director AssistantDirector --log #--debug
+CPP GD director Director --log  #--debug
+
+
+#COMPONENT CPP not.really ExampleComponent --log  #--debug
