@@ -332,7 +332,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 
 
 //function for normalizing values according to given bounds (before storing)
-Real normalize(Real value, Real min, Real max) {
+Real normalize(const Real& value, const Real& min, const Real& max) {
 	Real val;
 	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min)) {
 		val = fmod(value, MATH_PI);
@@ -349,7 +349,7 @@ Real normalize(Real value, Real min, Real max) {
 
 
 //function that checks if arm hitted the polyflap while approaching it
-bool checkPfPosition(Vec3 refPos1, Vec3 refPos2, Vec3 realPos1, Vec3 realPos2) {
+bool checkPfPosition(const Vec3& refPos1, const Vec3& refPos2, const Vec3& realPos1, const Vec3& realPos2) {
 	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
 		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
 		abs(refPos2.v1 - realPos2.v1) < 0.00001 &&
@@ -376,7 +376,7 @@ void getAngleMinMaxVelocities(Joint* joints, float* minArray, float* maxArray, U
 		}
 *///}
 
-void setMovementAngle(int angle, msk::ctrl::WorkspaceCoord& pose, Real distance,const Vec3& normVec,const Vec3& orthVec) {
+void setMovementAngle(int angle, msk::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
 	pose.p.v1 += (sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
 	pose.p.v2 += (sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
 	pose.p.v1 += (cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 
@@ -393,7 +393,29 @@ Vec3 computeOrthogonalVec(const Vec3& normalVec) {
 
 
 
-//--------------------------------------------------------------------------------
+Vec3 computeNormalVector(const Vec3& vector1, const Vec3& vector2) {
+	Vec3 res(Real((vector2.v1 - vector1.v1)
+			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))),
+		Real((vector2.v2 - vector1.v2)
+			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))),
+		Real((vector2.v3 - vector1.v3)
+			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))));
+	return res;
+
+}
+
+
+void setPointCoordinates(Vec3 position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical) {
+	position.v1 += (spacing*normalVec.v1); 
+	position.v2 += (spacing*normalVec.v2); 
+	position.v1 += (horizontal*orthogonalVec.v1); 
+	position.v2 +=(horizontal*orthogonalVec.v2); 
+	position.v3 += vertical; 
+}
+
+
+
+//-------------------------------------------------------cout<<positionT.v1<<"pos"<<endl;-------------------------
 
 
 
@@ -645,6 +667,8 @@ int main(int argc, char *argv[]) {
 		Real top = polyflapDimensions.v2* 1.2;
 		//lenght of the movement		
 		Real distance = 0.2;
+		//number of loop runs
+		const int numExperiments = 1000;
 
 
 //////////
@@ -679,12 +703,12 @@ int main(int argc, char *argv[]) {
 		// Define the Home pose in the Cartesian workspace
 		Vec3 positionH(Real(0.0), Real(0.1), Real(0.1));
 		Vec3 orientationH(Real(-0.5*MATH_PI), Real(0.0*MATH_PI), Real(0.0*MATH_PI));
+		
 		// and set target waypoint
 		msk::ctrl::GenWorkspaceState home;
 		fromCartesianPose(home.pos, positionH, orientationH);
 		home.vel.setId(); // it doesn't move
-		//home.acc.setId(); // nor accelerate
-		//home.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+		
 		home.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
 
 
@@ -700,7 +724,6 @@ int main(int argc, char *argv[]) {
 
 
 
-		const int numExperiments = 1000;
 
 		for (int i=0; i<numExperiments; i++)
 		{
@@ -739,19 +762,14 @@ int main(int argc, char *argv[]) {
 		
 
 
-
-
-//computeNormalVector(Vec3 vector1, Vec3 vector2)
-//    \/
-			
 			//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-			Vec3 polyflapNormalVec(Real((curPolPos2.p.v1 - curPolPos1.p.v1)/sqrt(pow(curPolPos2.p.v1 - curPolPos1.p.v1,2) + pow(curPolPos2.p.v2 - curPolPos1.p.v2,2) + 0.0)),
-					       Real((curPolPos2.p.v2 - curPolPos1.p.v2)/sqrt(pow(curPolPos2.p.v1 - curPolPos1.p.v1,2) + pow(curPolPos2.p.v2 - curPolPos1.p.v2,2) + 0.0)),
-					       Real(0.0));
-//    /\
 
 
-Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);
+	Vec3 polyflapNormalVec = computeNormalVector(Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)), Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0)));
+			
+
+
+	Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
 
 
 
@@ -767,85 +785,139 @@ Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);
 		
 			//chose random point int the vicinity of the polyflap
 			srand(context->getRandSeed()._U32[0]  + i);
-			int startPosition = rand() % 17 + 1;
+			int startPosition = 1;//rand() % 17 + 1;
 
 			
 			
+//setPointCoordinates(PositionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, vert);
 
-//setPointCoordinates(Vec3 PositionT, Vec3 polyflapNormalVec, polyflapOrthogonalVec)
+
+
 //     \/
 
 
 			//set it's coordinates into target
 			switch (startPosition) {
 			case 1: 
-				positionT.v1 += (dist*polyflapNormalVec.v1); 
+				/*positionT.v1 += (dist*polyflapNormalVec.v1); 
 				positionT.v2 += (dist*polyflapNormalVec.v2); 
 				positionT.v1 += (side*polyflapOrthogonalVec.v1); 
 				positionT.v2 +=(side*polyflapOrthogonalVec.v2); 
-				positionT.v3 += 0.0; 
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down left (1)")); break;
+				positionT.v3 += 0.0;*/
+cout<<positionT.v1<<"pos"<<endl;
+cout<<positionT.v2<<"pos"<<endl;
+cout<<positionT.v3<<"pos"<<endl;
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, Real(0.0));
+cout<<positionT.v1<<"pos"<<endl;
+cout<<positionT.v2<<"pos"<<endl;
+cout<<positionT.v3<<"pos"<<endl;
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down left (1)")); break;
 
-			case 2: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down middle (2)")); break;
+			case 2:/* positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 += 0.0;*/
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), Real(0.0));
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down middle (2)")); break;
 
-			case 3: 
+			case 3: /*
 positionT.v1 += (dist*polyflapNormalVec.v1); 
 positionT.v2 += (dist*polyflapNormalVec.v2); 
 positionT.v1 += (-side*polyflapOrthogonalVec.v1); 
 positionT.v2 += (-side*polyflapOrthogonalVec.v2); 
-positionT.v3 += 0.0; 
+positionT.v3 += 0.0; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, Real(0.0));
 context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down right (3)")); break;
 
-			case 4: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center left (4)")); break;
+			case 4: /*positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center left (4)")); break;
 
-			case 5: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center middle (5)")); break;
+			case 5:/* positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center middle (5)")); break;
 
-			case 6: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center right (6)")); break;
+			case 6:/* positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center right (6)")); break;
 
-			case 7: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up left (7)")); break;
+			case 7:/* positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up left (7)")); break;
 
-			case 8: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up middle (8)")); break;
+			case 8:/* positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up middle (8)")); break;
 
-			case 9: positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up right (9)")); break;
+			case 9:/* positionT.v1 += (dist*polyflapNormalVec.v1); positionT.v2 += (dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up right (9)")); break;
 
-			case 10: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down left (10)")); break;
+			case 10:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, Real(0.0));
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down left (10)")); break;
 
-			case 11: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down middle (11)")); break;
+			case 11:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), Real(0.0));
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down middle (11)")); break;
 
-			case 12: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down right (12)")); break;
+			case 12:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, Real(0.0));
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down right (12)")); break;
 
-			case 13: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center left (13)")); break;
+			case 13:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center left (13)")); break;
 
-			case 14: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center middle (14)")); break;
+			case 14:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center middle (14)")); break;
 
-			case 15: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center right (15)")); break;
+			case 15:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center right (15)")); break;
 
-			case 16: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up left (16)")); break;
+			case 16:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up left (16)")); break;
 
-			case 17: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up middle (17)")); break;
+			case 17:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (0.0*polyflapOrthogonalVec.v1); positionT.v2 += (0.0*polyflapOrthogonalVec.v2); positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up middle (17)")); break;
 
-			case 18: positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up right (18)")); break;
+			case 18:/* positionT.v1 += (-dist*polyflapNormalVec.v1); positionT.v2 += (-dist*polyflapNormalVec.v2); positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up right (18)")); break;
 
-			case 19: positionT.v1 += 0.0; positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down left (19)")); break;
+			case 19:/* positionT.v1 += 0.0; positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, Real(0.0));
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down left (19)")); break;
 
-			case 20: positionT.v1 += 0.0; positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down right (20)")); break;
+			case 20:/* positionT.v1 += 0.0; positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 += 0.0; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, Real(0.0));
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down right (20)")); break;
 
-			case 21: positionT.v1 += 0.0; positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center left (21)")); break;
+			case 21:/* positionT.v1 += 0.0; positionT.v1 += (side*polyflapOrthogonalVec.v1); positionT.v2 += (side*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center left (21)")); break;
 
-			case 22: positionT.v1 += 0.0; positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = center; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center right (22)")); break;
+			case 22:/* positionT.v1 += 0.0; positionT.v1 += (-side*polyflapOrthogonalVec.v1); positionT.v2 += (-side*polyflapOrthogonalVec.v2); positionT.v3 = center; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center right (22)")); break;
 
-			case 23:
+			case 23:/*
 				positionT.v1 += 0.0;
 				positionT.v1 += (side*polyflapOrthogonalVec.v1);
 				positionT.v2 += (side*polyflapOrthogonalVec.v2);
-				positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up left (23)")); break;
+				positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up left (23)")); break;
 
-			case 24: 
+			case 24: /*
 				positionT.v1 += 0.0;
 				positionT.v2 += 0.0;
 				positionT.v1 += (-side*polyflapOrthogonalVec.v1); 
 				positionT.v2 += (-side*polyflapOrthogonalVec.v2); 
-				positionT.v3 = top; context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)")); break;
+				positionT.v3 = top; */
+setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
+context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)")); break;
 
 			};
 
@@ -916,14 +988,10 @@ context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down right (3)"));
 
 
 
-// use computeNormalVector
-			
-			//Normal standartized vector of the polyflap
-			Vec3 polyflapCenterNormalVec(Real((polyflapPosition.v1 - positionT.v1)/sqrt(pow(polyflapPosition.v1 - positionT.v1,2) + pow(polyflapPosition.v2 - positionT.v2,2) + pow(polyflapDimensions.v2*0.5 - positionT.v3,2))),
-						     Real((polyflapPosition.v2 - positionT.v2)/sqrt(pow(polyflapPosition.v1 - positionT.v1,2) + pow(polyflapPosition.v2 - positionT.v2,2) + pow(polyflapDimensions.v2*0.5 - positionT.v3,2))),
-						     Real((polyflapDimensions.v2*0.5 - positionT.v3)/sqrt(pow(polyflapPosition.v1 - positionT.v1,2) + pow(polyflapPosition.v2 - positionT.v2,2) + pow(polyflapDimensions.v2*0.5 - positionT.v3,2))));
 
-//use computeOrthogonalVector
+			//normal vector to the center of the polyflap
+			Vec3 polyflapCenterNormalVec = computeNormalVector(Vec3 (positionT.v1, positionT.v2, positionT.v3), Vec3 (polyflapPosition.v1, polyflapPosition.v2, polyflapDimensions.v2*0.5));
+
 			//and it's orthogonal
 			Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
 
