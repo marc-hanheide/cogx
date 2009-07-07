@@ -39,7 +39,7 @@ SonarServerPlayer::~SonarServerPlayer()
 void 
 SonarServerPlayer::configure(const std::map<std::string,std::string> & config)
 {
-  println("configure");
+  //  println("configure");
 
   std::map<std::string,std::string>::const_iterator it;
 
@@ -152,18 +152,11 @@ SonarServerPlayer::runComponent()
 
 
     m_Scan.ranges.resize(m_Sonar->GetCount());
-    println("scan:");
     for (unsigned int i = 0; i < m_Sonar->GetCount(); i++) {
       m_Scan.ranges[i] = m_Sonar->GetScan(i);
-      println("reading: %f", m_Scan.ranges[i]);
-
     }
     
-    unlockComponent();
-
-    //fixed framerate
-    sleepComponent(1500);
-    
+    unlockComponent();    
   }    
 }
 
