@@ -9,7 +9,7 @@ set(CMAKE_INSTALL_PREFIX "${OUTPUT}" CACHE INTERNAL "Prefix prepended to install
 
 
 # use cmake files packaged with CAST as well
-set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake;/opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
 
 find_package(CAST REQUIRED)
 include(UseCAST)
@@ -38,6 +38,11 @@ option(BUILD_HAL_LASER "Build hardware laser" NO)
 if(BUILD_HAL_LASER)
 add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
+
+option(BUILD_HAL_SONAR "Build hardware sonar" NO)
+if(BUILD_HAL_SONAR)
+add_subdirectory (tools/hardware/sonar)
+endif(BUILD_HAL_SONAR)
 
 option(BUILD_HAL_TTS "Build hardware tts" NO)
 if(BUILD_HAL_TTS)

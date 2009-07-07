@@ -24,14 +24,14 @@ module Sonar {
     RangeSequence ranges;
   };
 
-  interface SonarScan2dPushClient {
+//   interface SonarScan2dPushClient {
 
-    /**
-     * This function is called by the server when new Scan2D data is
-     * available to the client
-     */
-    void receiveSonarScan2d(SonarScan2d scan);
-  };
+//     /**
+//      * This function is called by the server when new Scan2D data is
+//      * available to the client
+//      */
+//     void receiveSonarScan2d(SonarScan2d scan);
+//   };
 
   interface SonarServer extends cast::interfaces::CASTComponent {
 
@@ -40,14 +40,14 @@ module Sonar {
      */
     SonarScan2d pullSonarScan2d();
 
-    /** 
-     * Use this function if you as a client want to get SonarScan2d data
-     * pushed to you with a certain interval
-     *
-     * @param client the client to push the data to
-     * @param the interval [s] for data to be pushed (-1 as fast as possible)
-     */
-    void registerSonarScan2dPushClient(SonarScan2dPushClient *client, double interval);
+//     /** 
+//      * Use this function if you as a client want to get SonarScan2d data
+//      * pushed to you with a certain interval
+//      *
+//      * @param client the client to push the data to
+//      * @param the interval [s] for data to be pushed (-1 as fast as possible)
+//      */
+//     void registerSonarScan2dPushClient(SonarScan2dPushClient *client, double interval);
   };
 
 };
