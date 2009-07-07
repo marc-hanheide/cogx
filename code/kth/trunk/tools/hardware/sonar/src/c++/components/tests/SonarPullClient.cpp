@@ -37,4 +37,18 @@ SonarPullClient::configure(const std::map<std::string,std::string> & config) {
 void
 SonarPullClient::runComponent() {
   SonarServerPrx server(getIceServer<SonarServer>(m_sonarServerName));
+  
+  //we'll probably get an exeption before this if fails
+  SonarScan2d scan;
+  if(server) {
+    while(isRunning()) {
+      scan = server->pullSonarScan2d();
+      println("scan: %d", scan.ranges.size());
+      for(RangeSequence::const_iterator i = scan.ranges.begin();
+	  i < scan.ranges.end(); ++i) {
+	println("reading: %f", *i);
+      }
+    }
+  }
+
 }
