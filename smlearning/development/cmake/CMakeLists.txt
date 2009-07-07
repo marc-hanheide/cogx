@@ -60,9 +60,9 @@ SET(SMLEARNING_SOURCES
 )
 
 SET(ARM_HEADERS
-#	${SMLEARNING_ROOT}/include/arm/Pushing.h
+	${SMLEARNING_ROOT}/include/arm/Pushing.h
 )
-#INSTALL(FILES ${ARM_HEADERS} DESTINATION include/SMLearning/arm/)
+INSTALL(FILES ${ARM_HEADERS} DESTINATION include/SMLearning/arm/)
 
 SET(ARM_FILES
 	${SMLEARNING_ROOT}/src/arm.xml

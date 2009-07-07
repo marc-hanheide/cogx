@@ -1,9 +1,10 @@
-/** @file Movement.cpp
+/** @file Pushing.cpp
  *
  * vHanz02
  *
- * Demonstration program which moves the arm along a straight line
+ * Program which moves the arm along a straight line
  * using reactive trajectory planner and collision detection
+ * simulating a pushing action on a polyflap
  * (also see DemoReacPlannerPhys and DemoRobotFinger).
  * 
  * Program can be run in two modes:
@@ -12,72 +13,16 @@
  * 
  * @author	Marek Kopicki (see copyright.txt),
  * 			<A HREF="http://www.cs.bham.ac.uk/~msk">The University Of Birmingham</A>
- *
+ * @author      Jan Hanzelka - DFKI
+ * @author      Sergio Roa - DFKI
  * @version 1.0
  *
  */
 
-#include "Common.h"
-#include "Tools.h"
-#include "Creator.h"
-#include "controller/PhysReacPlanner.h"
-#include "controller/Katana.h"
-#include "controller/Simulator.h"
-#include <iostream>
-#include "XMLParser.h"
-#include "XMLData.h"
-#include "Actuator.h"
-#include "tools/data_handling.h"
-
-
-using namespace std;
-using namespace msk;
-using namespace msk::ctrl;
-using namespace msk::phys;
-using namespace msk::demo;
-
+#include "arm/Pushing.h"
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-
-
-class MyPRMPlanner : public PRMPlanner {
-
-	
-protected:	
-	/** Planner constructor */
-	
-	MyPRMPlanner(msk::ctrl::Arm &arm) : PRMPlanner::PRMPlanner(arm) {}
-	
-public:	
-
-	virtual bool find(Path &path, Path::iterator iter, const msk::ctrl::GenJointState &begin, const msk::ctrl::GenWorkspaceState &wend) {
-		//while (!PRMPlanner::find (path, iter, begin, wend)) {
-		while (true) {
-			if (PRMPlanner::find (path, iter, begin, wend)) {
-				break;
-			}
-		
-			//cout << "unable to find path... trying again..." << endl;
-			context.getLogger()->post(PRMPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
-		}
-		
-	}
-
-	virtual bool find(Path &path, Path::iterator iter, const msk::ctrl::GenJointState &begin, const msk::ctrl::GenJointState &jend) {
-		//while (!PRMPlanner::find (path, iter, begin, jend)) {
-		while (true) {
-			if (PRMPlanner::find (path, iter, begin, jend)) {
-				break;
-			}
-			context.getLogger()->post(PRMPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
-		}
-	}
-};
-
-
-//---------------------------------------------------------------------------------------------------------
-
 
 
 //planer setup
@@ -128,46 +73,44 @@ Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions,
 }
 
 
-//methods needed to create and set finger
-template <typename Desc>
-void setupFingerActuator(Desc &desc) {
+// //methods needed to create and set finger
+// template <typename Desc>
+// void setupFingerActuator(Desc &desc) {
 	
 
-/**
-if (xmlContext == NULL)	{
-		context.getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "NULL Actuator context"));
-		return;
-	}
+// 	if (xmlContext == NULL)	{
+// 		context.getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "NULL Actuator context"));
+// 		return;
+// 	}
 	
-	XMLData(desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.p, xmlContext->getContextFirst("finger init_pos"));
-*/
+// 	XMLData(desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.p, xmlContext->getContextFirst("finger init_pos"));
 
 	
-	Mat33 initTrnR;
-	Vec3 tmp;
-	desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.q.toMat33(initTrnR);
-	initTrnR.toEuler(tmp.v1, tmp.v2, tmp.v3); // Y, X, Z
-	//XMLData(tmp, xmlContext->getContextFirst("finger init_rot_euler"));
-	initTrnR.fromEuler(tmp.v1, tmp.v2, tmp.v3); // Y, X, Z
-	desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.q.fromMat33(initTrnR);
+// 	Mat33 initTrnR;
+// 	Vec3 tmp;
+// 	desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.q.toMat33(initTrnR);
+// 	initTrnR.toEuler(tmp.v1, tmp.v2, tmp.v3); // Y, X, Z
+// 	//XMLData(tmp, xmlContext->getContextFirst("finger init_rot_euler"));
+// 	initTrnR.fromEuler(tmp.v1, tmp.v2, tmp.v3); // Y, X, Z
+// 	desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.q.fromMat33(initTrnR);
 
 
 
 
-	//XMLData(desc.fingerDesc.fingerActorDesc.appearance.solidColour, xmlContext->getContextFirst("finger colour"));
-}
+// 	//XMLData(desc.fingerDesc.fingerActorDesc.appearance.solidColour, xmlContext->getContextFirst("finger colour"));
+// }
 
-void setupActuator(Actuator::Desc::Ptr& pDesc) {
-	//Actuator pActuator = new Actuator
-	typedef FingerActuator::Desc<GenSimArm, MyPRMPlanner, ReacPlanner> FingerActuatorDesc;
-//  	typedef FingerActuator::Desc<GenSimArm, PRMPlanner, ReacPlanner> FingerActuatorDesc;
-	FingerActuatorDesc *pFingerActuatorDesc = new FingerActuatorDesc();
-	pDesc.reset(pFingerActuatorDesc);
-//	pDesc.appearance.solidColour = phys::RGBA::RED;
-	setupFingerActuator(*pFingerActuatorDesc);
-	//pActuatorDesc.release();
+// void setupActuator(Actuator::Desc::Ptr& pDesc) {
+// 	//Actuator pActuator = new Actuator
+// 	typedef FingerActuator::Desc<GenSimArm, MyPRMPlanner, ReacPlanner> FingerActuatorDesc;
+// //  	typedef FingerActuator::Desc<GenSimArm, PRMPlanner, ReacPlanner> FingerActuatorDesc;
+// 	FingerActuatorDesc *pFingerActuatorDesc = new FingerActuatorDesc();
+// 	pDesc.reset(pFingerActuatorDesc);
+// //	pDesc.appearance.solidColour = phys::RGBA::RED;
+// 	setupFingerActuator(*pFingerActuatorDesc);
+// 	//pActuatorDesc.release();
 
-}
+// }
 
 void trn(Vec3 v [], U32 n, const Mat34 &pose) {
 	while (n--)
@@ -287,11 +230,20 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 	// create finger Actor
 	Actor *pFingerActor = dynamic_cast<Actor*>(physReacPlanner.getScene().createObject(fingerActorDesc));
 	if (pFingerActor == NULL) {
+		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT,
+						    "FingerActor Object could not be created"
+						    ));
 		return;
 	}
 
-
 	Actor *effector = physReacPlanner.getJointActors()[jointIndex];
+	// take the controller end-effector Actor
+	if (effector == NULL) {
+		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT,
+						    "End-effector has no body"
+						    ));
+		return;
+	}
 
 	const NxU32 solverAccuracy = (NxU32)255;
 	const U32 numOfJointActors = physReacPlanner.getJointActors().size();
@@ -317,12 +269,12 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 	
 	NxVec3 anchor(0.0f);
 	fingerActorDesc.nxActorDesc.globalPose.multiply(anchor, anchor);
-	NxVec3 axis(NxReal(0.0), NxReal(0.0), NxReal(1.0)); // along Y-axis
+	NxVec3 axis(NxReal(0.0), NxReal(1.0), NxReal(0.0)); // along Y-axis
 	fingerActorDesc.nxActorDesc.globalPose.M.multiply(axis, axis);
 
 	NxJoint *pJoint = setupJoint(effector->getNxActor(), pFingerActor->getNxActor(), anchor, axis);
 	if (pJoint == NULL) {
-		physReacPlanner.getContext().getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "setupJoint(): Unable to create joint"));
+		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "setupJoint(): Unable to create joint"));
 	}
 
 };
@@ -887,17 +839,17 @@ int main(int argc, char *argv[]) {
 
 
 		//start of the experiment loop
-		for (int i=0; i<numExperiments; i++)
+		for (int e=0; e<numExperiments; e++)
 		{
 
 			//polyflap actor
 			Actor *polyFlapActor;
-			context->getTimer()->sleep(1);
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				context->getTimer()->sleep(1);
 				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+				context->getTimer()->sleep(1);
 			}
-			context->getTimer()->sleep(1);
 
 
 			//reference polyflap position for prooving if arm didn't hit it whil approaching
@@ -943,7 +895,7 @@ int main(int argc, char *argv[]) {
 
 
 			//chose random point int the vicinity of the polyflap
-			srand(context->getRandSeed()._U32[0]  + i);
+			srand(context->getRandSeed()._U32[0]  + e);
 			int startPosition = rand() % 17 + 1;
 	
 			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
@@ -958,7 +910,7 @@ int main(int argc, char *argv[]) {
 			//target.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
 			target.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
 
-			while (true) {
+			for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 				if (reacPlanner.send(target , ReacPlanner::ACTION_GLOBAL)) {
 					break;
 				}
@@ -1177,7 +1129,7 @@ int main(int argc, char *argv[]) {
 
 
 
-			while (true) {
+			for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 				if (reacPlanner.send(home, ReacPlanner::ACTION_GLOBAL)) {
 					break;
 				}
@@ -1195,17 +1147,15 @@ int main(int argc, char *argv[]) {
 
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
 
-			context->getTimer()->sleep(1);
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				context->getTimer()->sleep(1);
 				pScene->releaseObject(*polyFlapActor);
+				// wait a bit before new actor is created to avoid simulation crash
+				context->getTimer()->sleep(3);
 			}
-			// wait a bit before new actor is created to avoid simulation crash
-			context->getTimer()->sleep(3);
 			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", i));
-
-			delete polyFlapActor;
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));
 
 				
 		}// end of the for-loop (experiment loop)
