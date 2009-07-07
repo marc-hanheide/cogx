@@ -1046,7 +1046,11 @@ int main(int argc, char *argv[]) {
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
 					//to get polyflap pose information
-					msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
+					msk::obj_ptr<msk::BoundsSet> set;
+					{
+						CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+						set = polyFlapActor->getBounds();
+					}
 					
 					/////////////////////////////////////////////////
 					//creating current featureVector
