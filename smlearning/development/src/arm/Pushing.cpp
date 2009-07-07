@@ -317,7 +317,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 	
 	NxVec3 anchor(0.0f);
 	fingerActorDesc.nxActorDesc.globalPose.multiply(anchor, anchor);
-	NxVec3 axis(NxReal(0.0), NxReal(1.0), NxReal(0.0)); // along Y-axis
+	NxVec3 axis(NxReal(0.0), NxReal(0.0), NxReal(1.0)); // along Y-axis
 	fingerActorDesc.nxActorDesc.globalPose.M.multiply(axis, axis);
 
 	NxJoint *pJoint = setupJoint(effector->getNxActor(), pFingerActor->getNxActor(), anchor, axis);
@@ -400,130 +400,130 @@ void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orth
 	position.v3 += vertical; 
 }
 
-void setCoordinatesIntoTorget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top) {
+void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top) {
 
 
 			//set it's coordinates into target
 			switch (startPosition) {
 			case 1: 
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down left (1)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down left (1)"));
+				break;
 
 			case 2:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down middle (2)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down middle (2)"));
+				break;
 
 			case 3:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down right (3)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down right (3)"));
+				break;
 
 			case 4:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center left (4)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center left (4)"));
+				break;
 
 			case 5:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center middle (5)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center middle (5)"));
+				break;
 
 			case 6:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center right (6)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center right (6)"));
+				break;
 
 			case 7:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up left (7)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up left (7)"));
+				break;
 
 			case 8:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up middle (8)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up middle (8)"));
+				break;
 
 			case 9:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up right (9)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up right (9)"));
+				break;
 
 			case 10:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down left (10)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down left (10)"));
+				break;
 
 			case 11:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down middle (11)"));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)"));break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down middle (11)"));
+				break;
 
 			case 12:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down right (12)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down right (12)"));
+				break;
 
 			case 13:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center left (13)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center left (13)"));
+				break;
 
 			case 14:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center middle (14)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center middle (14)"));
+				break;
 
 			case 15:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center right (15)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center right (15)"));
+				break;
 
 			case 16:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up left (16)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up left (16)"));
+				break;
 
 			case 17:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up middle (17)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up middle (17)"));
+				break;
 
 			case 18:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up right (18)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up right (18)"));
+				break;
 
 			case 19:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down left (19)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down left (19)"));
+				break;
 
 			case 20:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, Real(0.0));
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down right (20)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, Real(0.0));
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down right (20)"));
+				break;
 
 			case 21:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center left (21)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center left (21)"));
+				break;
 
 			case 22:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center right (22)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center right (22)"));
+				break;
 
 			case 23:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up left (23)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up left (23)"));
+				break;
 
 			case 24:
-setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
-//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)"));
-break;
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
+				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)"));
+				break;
 
 			};
 
@@ -890,220 +890,211 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<numExperiments; i++)
 		{
 
+			//polyflap actor
+			Actor *polyFlapActor;
+			context->getTimer()->sleep(1);
+			{
+				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+			}
+			context->getTimer()->sleep(1);
 
 
+			//reference polyflap position for prooving if arm didn't hit it whil approaching
+			Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
+			Vec3 referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 
+			/////////////////////////////////////////////////
+			//create sequence for this loop run and initial vector
+			Sequence &seq = *(new Sequence);
+			FeatureVector& infoVector = *(new FeatureVector);
+			/////////////////////////////////////////////////
 
+			//find out bounds of polyflap and compute the position of the polyflap
+			msk::obj_ptr<msk::BoundsSet> curPol = polyFlapActor->getBounds();
+			Mat34 curPolPos1;
+			Mat34 curPolPos2;	
 
+			if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
+				curPolPos1 = curPol->get().front()->getPose();
+				curPolPos2 = curPol->get().back()->getPose();
+			}
+			else {
+				curPolPos1 = curPol->get().back()->getPose();
+				curPolPos2 = curPol->get().front()->getPose();
+			}
 
-
-	//polyflap actor
-	Actor *polyFlapActor;
-	{
-		CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-		context->getTimer()->sleep(1);
-		//sleep(1);
-		polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, 	polyflapDimensions, *context);
-		context->getTimer()->sleep(1);
-		//sleep(1);
-	}
-
-
-	//reference polyflap position for prooving if arm didn't hit it whil approaching
-	Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
-	Vec3 referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
-
-					/////////////////////////////////////////////////
-					//create sequence for this loop run and initial vector
-					Sequence &seq = *(new Sequence);
-					FeatureVector& infoVector = *(new FeatureVector);
-					/////////////////////////////////////////////////
-
-	//find out bounds of polyflap and compute the position of the polyflap
-	msk::obj_ptr<msk::BoundsSet> curPol = polyFlapActor->getBounds();
-	Mat34 curPolPos1;
-	Mat34 curPolPos2;	
-
-	if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
-		curPolPos1 = curPol->get().front()->getPose();
-		curPolPos2 = curPol->get().back()->getPose();
-	}
-	else {
-		curPolPos1 = curPol->get().back()->getPose();
-		curPolPos2 = curPol->get().front()->getPose();
-	}
-
-	Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
+			Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
 	
 
 
-	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-	Vec3 polyflapNormalVec =
-		computeNormalVector(
-			Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
-			Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
-					);
+			//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+			Vec3 polyflapNormalVec =
+				computeNormalVector(
+						    Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
+						    Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
+						    );
 			
-	Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
+			Vec3 polyflapOrthogonalVec = computeOrthogonalVec(polyflapNormalVec);	
 
 
-	//initial target of the arm: the center of the polyflap
-	Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3 + over));
+			//initial target of the arm: the center of the polyflap
+			Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3 + over));
 
 
-	//chose random point int the vicinity of the polyflap
-	srand(context->getRandSeed()._U32[0]  + i);
-	int startPosition = rand() % 17 + 1;
+			//chose random point int the vicinity of the polyflap
+			srand(context->getRandSeed()._U32[0]  + i);
+			int startPosition = rand() % 17 + 1;
 	
-	setCoordinatesIntoTorget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Position %i", startPosition));
+			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Position %i", startPosition));
 
 
-	// and set target waypoint
-	msk::ctrl::GenWorkspaceState target;
-	fromCartesianPose(target.pos, positionT, orientationT);
-	target.vel.setId(); // it doesn't mov
+			// and set target waypoint
+			msk::ctrl::GenWorkspaceState target;
+			fromCartesianPose(target.pos, positionT, orientationT);
+			target.vel.setId(); // it doesn't mov
 
-	//target.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
-	target.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+			//target.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(5.0); // i.e. the movement will last at least 5 sec
+			target.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
 
-	while (true) {
-		if (reacPlanner.send(target , ReacPlanner::ACTION_GLOBAL)) {
-			break;
-		}
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Unable to find path to polyflap, trying again."));
-	}
+			while (true) {
+				if (reacPlanner.send(target , ReacPlanner::ACTION_GLOBAL)) {
+					break;
+				}
+				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Unable to find path to polyflap, trying again."));
+			}
 
-	// wait for completion of the action (until the arm moves to the initial pose)
-	reacPlanner.wait();
+			// wait for completion of the action (until the arm moves to the initial pose)
+			reacPlanner.wait();
 		
-	// Trajectory profile can be defined by e.g. a simple 3rd degree polynomial
-	Polynomial4::Desc& polynomDesc = *(new Polynomial4::Desc);
-	Trajectory::Ptr pTrajectory(/*Polynomial4::Desc().create()*/ polynomDesc.create());
+			// Trajectory profile can be defined by e.g. a simple 3rd degree polynomial
+			Polynomial4::Desc& polynomDesc = *(new Polynomial4::Desc);
+			Trajectory::Ptr pTrajectory(/*Polynomial4::Desc().create()*/ polynomDesc.create());
 
-	//initializing infoVector
-	Polynomial4& polynom = *(new Polynomial4);
-	polynom.create(polynomDesc);
-	const Real* coefs  = polynom.getCoeffs();
+			//initializing infoVector
+			Polynomial4& polynom = *(new Polynomial4);
+			polynom.create(polynomDesc);
+			const Real* coefs  = polynom.getCoeffs();
 			
-				/////////////////////////////////////////////////
-				//writing in the initial vector
-				//Trajectory curve coefficients
-				infoVector.push_back(normalize(coefs[0], -5, 5));
-				infoVector.push_back(normalize(coefs[1], -5, 5));
-				infoVector.push_back(normalize(coefs[2], -5, 5));
-				infoVector.push_back(normalize(coefs[3], -5, 5));
-				//initial position, normalized
-				infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
-				infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
-				infoVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
-				//innitial orientation, normalized
-				infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
-				infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
-				infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
-				//end pose info missing (must be added later 
-				/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//writing in the initial vector
+			//Trajectory curve coefficients
+			infoVector.push_back(normalize(coefs[0], -5, 5));
+			infoVector.push_back(normalize(coefs[1], -5, 5));
+			infoVector.push_back(normalize(coefs[2], -5, 5));
+			infoVector.push_back(normalize(coefs[3], -5, 5));
+			//initial position, normalized
+			infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
+			infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
+			infoVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
+			//innitial orientation, normalized
+			infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
+			//end pose info missing (must be added later 
+			/////////////////////////////////////////////////
 
 
-	// It consists of 70 parts
-	U32 n = 70;
-	// Trajectory duration is a multiplicity of Time Delta [sec], but with a speed coefficient
-	int speed = -1 + (rand() % 3);
-	SecTmReal duration = timeDelta * n*(pow(2, (-speed)*2));
+			// It consists of 70 parts
+			U32 n = 70;
+			// Trajectory duration is a multiplicity of Time Delta [sec], but with a speed coefficient
+			int speed = -1 + (rand() % 3);
+			SecTmReal duration = timeDelta * n*(pow(2, (-speed)*2));
 				
-				/////////////////////////////////////////////////
-				//writing in the initial vector
-				infoVector.push_back(Real(speed));
-				/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//writing in the initial vector
+			infoVector.push_back(Real(speed));
+			/////////////////////////////////////////////////
 
-	// Trajectory end pose equals begin + shift along Y axis
-	WorkspaceCoord begin = target.pos, end = target.pos;
+			// Trajectory end pose equals begin + shift along Y axis
+			WorkspaceCoord begin = target.pos, end = target.pos;
 
-	//normal vector to the center of the polyflap
-	Vec3 polyflapCenterNormalVec =
-		computeNormalVector(
-			Vec3 (positionT.v1, positionT.v2, positionT.v3),
-			Vec3 (polyflapPosition.v1, polyflapPosition.v2, polyflapDimensions.v2*0.5)
-					);
-	//and it's orthogonal
-	Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
-
-
-	//the lenght of the movement
-	Real currDistance = distance;
-	if (speed < 0) {
-		currDistance *= 5.0;
-	}
+			//normal vector to the center of the polyflap
+			Vec3 polyflapCenterNormalVec =
+				computeNormalVector(
+						    Vec3 (positionT.v1, positionT.v2, positionT.v3),
+						    Vec3 (polyflapPosition.v1, polyflapPosition.v2, polyflapDimensions.v2*0.5)
+						    );
+			//and it's orthogonal
+			Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
 
 
-	//chose random horizontal and vertical angle
-	int horizontalAngle = rand() % 61 + 60;
+			//the lenght of the movement
+			Real currDistance = distance;
+			if (speed < 0) {
+				currDistance *= 5.0;
+			}
+
+
+			//chose random horizontal and vertical angle
+			int horizontalAngle = rand() % 61 + 60;
 			
-	//int verticalAngle = rand() % 7;
+			//int verticalAngle = rand() % 7;
 
-	setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly", horizontalAngle));
+			setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly", horizontalAngle));
 
-				/////////////////////////////////////////////////
-				//writing in the initial vector
-				//add info about end position
-				infoVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
-				infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
-				infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
-				//end orientation, normalized
-				infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
-				infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
-				infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
-				/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//writing in the initial vector
+			//add info about end position
+			infoVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
+			infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
+			infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
+			//end orientation, normalized
+			infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
+			/////////////////////////////////////////////////
 
-				/////////////////////////////////////////////////
-				//writing of the initial vector into sequence
-				seq.push_back(infoVector);
-				/////////////////////////////////////////////////
+			/////////////////////////////////////////////////
+			//writing of the initial vector into sequence
+			seq.push_back(infoVector);
+			/////////////////////////////////////////////////
 
 
-	// Current time is the same for all threads and it is the time that has elapsed since the start of the program
-	SecTmReal timeBegin = context->getTimer()->elapsed();
+			// Current time is the same for all threads and it is the time that has elapsed since the start of the program
+			SecTmReal timeBegin = context->getTimer()->elapsed();
 		
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Moving on the line..."));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Moving on the line..."));
 			
 
-	// ON/OFF collision detection
-	planner.getHeuristic()->setCollisionDetection(false);
+			// ON/OFF collision detection
+			planner.getHeuristic()->setCollisionDetection(false);
 
 
 
 			
-	//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
-	//otherwise we skip it
-	if (checkPfPosition(polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
+			//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
+			//otherwise we skip it
+			if (checkPfPosition(polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
 
 			
-		// Generate and send a simple straight line trajectory
-		for (U32 i = 0; i <= n; i++) {
+				// Generate and send a simple straight line trajectory
+				for (U32 i = 0; i <= n; i++) {
 
-		// create a new target waypoint on a straight line at normalized time timeDelta * i
-		waypointFromLineTrajectory(target, *pTrajectory, begin, end, duration, timeDelta * i);
-		// set the target waypoint absolute time (in future)
-		target.t = timeBegin + timeDeltaAsync + timeDelta * i;
+					// create a new target waypoint on a straight line at normalized time timeDelta * i
+					waypointFromLineTrajectory(target, *pTrajectory, begin, end, duration, timeDelta * i);
+					// set the target waypoint absolute time (in future)
+					target.t = timeBegin + timeDeltaAsync + timeDelta * i;
 		
-		// send to the controller, force local movement (without planning in the entire arm workspace)
-		// reacPlanner.wait() will wait approx 'timeDelta' seconds, until a next waypoint can be sent
-		// reacPlanner.wait() can be used only if signal synchronization is enabled (see 'setupPlanner()' above)
-		if (!reacPlanner.send(target, ReacPlanner::ACTION_LOCAL) || !reacPlanner.wait()) {
-			// woops something went wrong
-		}
+					// send to the controller, force local movement (without planning in the entire arm workspace)
+					// reacPlanner.wait() will wait approx 'timeDelta' seconds, until a next waypoint can be sent
+					// reacPlanner.wait() can be used only if signal synchronization is enabled (see 'setupPlanner()' above)
+					if (!reacPlanner.send(target, ReacPlanner::ACTION_LOCAL) || !reacPlanner.wait()) {
+						// woops something went wrong
+					}
 
 
-		reacPlanner.wait();
+					reacPlanner.wait();
 
 
-		// arm state at a time t and finishes at some time later
-		msk::ctrl::GenJointState state;
-		arm.lookupInp(state, target.t); // last sent trajectory waypoint
+					// arm state at a time t and finishes at some time later
+					msk::ctrl::GenJointState state;
+					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
-		//to get polyflap pose information
-		msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
+					//to get polyflap pose information
+					msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
 					
 					/////////////////////////////////////////////////
 					//creating current featureVector
@@ -1114,16 +1105,16 @@ int main(int argc, char *argv[]) {
 					//writing in the feature vector
 					// joint position and joint velocity
 					for (U32 i = 0; i < numOfJoints; i++) {
-					features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
-					features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
+						features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
+						features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
 					}
 					/////////////////////////////////////////////////
 
-		//reading out the position of the polyflap
-		Mat34 mojepose2;
-		Mat34 mojepose3;
-		mojepose2 = set->get().front()->getPose();
-		mojepose3 = set->get().back()->getPose();
+					//reading out the position of the polyflap
+					Mat34 mojepose2;
+					Mat34 mojepose3;
+					mojepose2 = set->get().front()->getPose();
+					mojepose3 = set->get().back()->getPose();
 
 					/////////////////////////////////////////////////
 					//writing in the feature vector
@@ -1143,82 +1134,81 @@ int main(int argc, char *argv[]) {
 
 	
  
-	//end of the movement
-		}
-					/////////////////////////////////////////////////
-					//writing the sequence into the dataset
-					data.push_back(seq);
-					/////////////////////////////////////////////////
+					//end of the movement
+				}
+				/////////////////////////////////////////////////
+				//writing the sequence into the dataset
+				data.push_back(seq);
+				/////////////////////////////////////////////////
 
 
 
-		// wait until the arm stops
-		context->getTimer()->sleep(timeDeltaAsync - timeDelta);
+				// wait until the arm stops
+				context->getTimer()->sleep(timeDeltaAsync - timeDelta);
 
 
 
-//end of the if(checkPosition...) block
-	}
+				//end of the if(checkPosition...) block
+			}
 
 
-	// ON/OFF collision detection
-	planner.getHeuristic()->setCollisionDetection(true);
+			// ON/OFF collision detection
+			planner.getHeuristic()->setCollisionDetection(true);
 
 
 				
 
 
-	Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
-	// and set target waypoint
-	msk::ctrl::GenWorkspaceState preHome;
-	fromCartesianPose(preHome.pos, positionPreH, orientationH);
-	home.vel.setId(); // it doesn't move
+			Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
+			// and set target waypoint
+			msk::ctrl::GenWorkspaceState preHome;
+			fromCartesianPose(preHome.pos, positionPreH, orientationH);
+			home.vel.setId(); // it doesn't move
 
-	home.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+			home.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
 
-	// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
-	reacPlanner.send(preHome, ReacPlanner::ACTION_GLOBAL);
-	// wait for completion of the action (until the arm moves to the initial pose)
-	reacPlanner.wait();
-
-
+			// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
+			reacPlanner.send(preHome, ReacPlanner::ACTION_GLOBAL);
+			// wait for completion of the action (until the arm moves to the initial pose)
+			reacPlanner.wait();
 
 
 
 
-	while (true) {
-		if (reacPlanner.send(home, ReacPlanner::ACTION_GLOBAL)) {
-			break;
-		}
+
+
+			while (true) {
+				if (reacPlanner.send(home, ReacPlanner::ACTION_GLOBAL)) {
+					break;
+				}
 			
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Unable to find path home, trying again."));
-	}
+				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Unable to find path home, trying again."));
+			}
 
 
 
 
 
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Moving home..."));
-	reacPlanner.wait();
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Done"));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Moving home..."));
+			reacPlanner.wait();
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Done"));
 
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
 
-	{
-		CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-		context->getTimer()->sleep(1);
-		//sleep(1);
-		pScene->releaseObject(*polyFlapActor);
-		// wait a bit before new actor is created to avoid simulation crash
-		context->getTimer()->sleep(3);
-		//sleep(3);
-	}
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", i));
+			context->getTimer()->sleep(1);
+			{
+				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				pScene->releaseObject(*polyFlapActor);
+			}
+			// wait a bit before new actor is created to avoid simulation crash
+			context->getTimer()->sleep(3);
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
+			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", i));
 
+			delete polyFlapActor;
 
-// end of the for-loop (experiment loop)	
-		}
+				
+		}// end of the for-loop (experiment loop)
 
 
 	/////////////////////////////////////////////////
