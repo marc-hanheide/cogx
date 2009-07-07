@@ -157,6 +157,8 @@ SonarServerPlayer::runComponent()
     }
     
     unlockComponent();    
+
+
   }    
 }
 
