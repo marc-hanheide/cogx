@@ -61,10 +61,6 @@ void InitWin()
   glEnable(GL_CULL_FACE);
   glShadeModel(GL_SMOOTH);
 
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
   // setup lighting
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
   glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
@@ -127,14 +123,11 @@ void DrawText3D(const char *text, double x, double y, double z)
   while(*text != '\0')
     glutBitmapCharacter(GLUT_BITMAP_9_BY_15, *text++);
 }
-
 /**
  * Draw things like coord frames
  */
 void DrawOverlays()
 {
-	glLineWidth(1);
-
   glColor4fv(col_overlay);
 
   // draw coordinate axes
@@ -181,17 +174,17 @@ void DrawOverlays()
 
 void DrawPoints()
 { 
-  glPointSize(1);
+  glPointSize(2);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < points10.size(); i++)
   {
-	if (points_label.at(i) == 0)  glColor3f(0.0,0.0,1.0); // plane
+	if (points_label.at(i) == 0)  glColor3f(1.0,1.0,0.0); // plane
 	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
-	else if (points_label.at(i) == 1)  glColor3f(0.0,1.0,0.0);  // 1st object
-	else if (points_label.at(i) == 2)  glColor3f(0.0,1.0,1.0);  //
-	else if (points_label.at(i) == 3)  glColor3f(1.0,0.0,0.0);  //
-	else if (points_label.at(i) == 4)  glColor3f(1.0,0.0,1.0);  //
-	else if (points_label.at(i) == 5)  glColor3f(1.0,1.0,0.0);  //
+	else if (points_label.at(i) == 1)  glColor3f(1.0,0.0,1.0);  // 1st object
+	else if (points_label.at(i) == 2)  glColor3f(1.0,0.0,0.0);  //
+	else if (points_label.at(i) == 3)  glColor3f(0.0,1.0,1.0);  //
+	else if (points_label.at(i) == 4)  glColor3f(0.0,1.0,0.0);  //
+	else if (points_label.at(i) == 5)  glColor3f(0.0,0.0,1.0);  //
 	else glColor3f(1.0,1.0,1.0);  //rest object
     glVertex3f(points10[i].x, points10[i].y, points10[i].z);
   }
@@ -208,6 +201,9 @@ glEnd();
 void DrawOneCuboid(Vector3 Max, Vector3 Min)
 {
 	glLineWidth(1);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //////////////////////top/////////////////////////////////////
 	glBegin(GL_LINE_LOOP);
 	glColor3f(1.0,1.0,1.0);
@@ -241,6 +237,8 @@ void DrawOneCuboid(Vector3 Max, Vector3 Min)
 	glVertex3f(Min.x, Max.y, Min.z);
 	glVertex3f(Min.x, Max.y, Max.z);
 	glEnd();
+
+	glDisable(GL_BLEND);
 }
 
 void DrawCuboids(std::vector<Vector3> &points, std::vector <int> &labels)
@@ -282,14 +280,22 @@ void DrawCuboids(std::vector<Vector3> &points, std::vector <int> &labels)
 		s.z = (Max.at(i).z-Min.at(i).z)/2;
 		v3size.push_back(s);
 	}
-	
+/*	
 	for (int i = 0; i<objnumber; i++)
 	{
 		DrawOneCuboid(Max.at(i),Min.at(i));
 	}
-
+*/
 	Max.clear();
 	Min.clear();
+}
+
+void DrawWireSphere(Vector3 center, double radius)
+{
+	glColor3f(1.0,1.0,1.0);
+	glTranslatef(center.x, center.y, center.z);
+	glutWireSphere(radius,10,10);
+	glTranslatef(-center.x, -center.y, -center.z);
 }
 
 void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
@@ -334,6 +340,11 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 		vdradius.clear();
 		for (int i=0; i<objnumber; i++)
 			vdradius.push_back(radius_world.at(i));
+	}
+
+	for (int i = 0; i<objnumber; i++)
+	{
+		DrawWireSphere(center.at(i),radius_world.at(i));
 	}
 	center.clear();
 	amount.clear();
@@ -455,6 +466,8 @@ void PlanePopOut::runComponent()
 	{
 		tempPoints.clear();
 		points10.clear();
+		v3center.clear();
+		v3size.clear();
 		for (std::vector<Vector3>::iterator it=points.begin(); it<points.end(); it+=10)
 			points10.push_back(*it);
 		points_label.clear();
@@ -538,7 +551,7 @@ void PlanePopOut::runComponent()
 				}
 				if(!disappearedObjList.empty())
 				{
-					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all new objects
+					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all objects
 					{
 						deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
 					}
@@ -568,7 +581,6 @@ void PlanePopOut::runComponent()
 
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
-
   }
 }
 
