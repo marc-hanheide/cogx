@@ -6,6 +6,9 @@
 #include <fstream>
 #include <sstream>
 
+#ifndef TOOLS_DATAHANDLING_H_
+#define TOOLS_DATAHANDLING_H_
+
 using namespace std;
 
 typedef vector<double> FeatureVector;
@@ -35,3 +38,5 @@ bool write_cdl_file_padding (string fileName, const DataSet& data);
 
 template <class Function>
 bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function f);
+
+#endif /* TOOLS_DATAHANDLING_H_*/

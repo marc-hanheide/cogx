@@ -24,7 +24,6 @@
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-
 //planer setup
 template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, msk::Context& context) {
 	// some planner parameter tuning
@@ -37,6 +36,13 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, m
 
 //creates an object, in this case the polyflap
 Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
+
+	//set physical parameters of simulation
+	NxMaterial* defaultMaterial = scene.getNxScene()->getMaterialFromIndex(0);
+	defaultMaterial->setRestitution((NxReal)0.05);
+	defaultMaterial->setStaticFriction((NxReal)0.9);
+	defaultMaterial->setDynamicFriction((NxReal)0.5);
+					
 	// Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
@@ -79,7 +85,7 @@ Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions,
 	
 
 // 	if (xmlContext == NULL)	{
-// 		context.getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "NULL Actuator context"));
+// 		context.getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "NULL Actuator context"));
 // 		return;
 // 	}
 	
@@ -230,7 +236,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 	// create finger Actor
 	Actor *pFingerActor = dynamic_cast<Actor*>(physReacPlanner.getScene().createObject(fingerActorDesc));
 	if (pFingerActor == NULL) {
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT,
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT,
 						    "FingerActor Object could not be created"
 						    ));
 		return;
@@ -239,7 +245,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 	Actor *effector = physReacPlanner.getJointActors()[jointIndex];
 	// take the controller end-effector Actor
 	if (effector == NULL) {
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT,
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT,
 						    "End-effector has no body"
 						    ));
 		return;
@@ -274,7 +280,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 
 	NxJoint *pJoint = setupJoint(effector->getNxActor(), pFingerActor->getNxActor(), anchor, axis);
 	if (pJoint == NULL) {
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "setupJoint(): Unable to create joint"));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "setupJoint(): Unable to create joint"));
 	}
 
 };
@@ -359,122 +365,122 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 			switch (startPosition) {
 			case 1: 
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down left (1)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front down left (1)"));
 				break;
 
 			case 2:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down middle (2)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front down middle (2)"));
 				break;
 
 			case 3:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front down right (3)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front down right (3)"));
 				break;
 
 			case 4:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center left (4)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front center left (4)"));
 				break;
 
 			case 5:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center middle (5)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front center middle (5)"));
 				break;
 
 			case 6:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front center right (6)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front center right (6)"));
 				break;
 
 			case 7:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up left (7)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front up left (7)"));
 				break;
 
 			case 8:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up middle (8)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front up middle (8)"));
 				break;
 
 			case 9:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Front up right (9)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front up right (9)"));
 				break;
 
 			case 10:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down left (10)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back down left (10)"));
 				break;
 
 			case 11:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down middle (11)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back down middle (11)"));
 				break;
 
 			case 12:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back down right (12)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back down right (12)"));
 				break;
 
 			case 13:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center left (13)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back center left (13)"));
 				break;
 
 			case 14:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center middle (14)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back center middle (14)"));
 				break;
 
 			case 15:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back center right (15)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back center right (15)"));
 				break;
 
 			case 16:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up left (16)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back up left (16)"));
 				break;
 
 			case 17:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up middle (17)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back up middle (17)"));
 				break;
 
 			case 18:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Back up right (18)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back up right (18)"));
 				break;
 
 			case 19:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down left (19)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side down left (19)"));
 				break;
 
 			case 20:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, Real(0.0));
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side down right (20)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side down right (20)"));
 				break;
 
 			case 21:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center left (21)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side center left (21)"));
 				break;
 
 			case 22:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side center right (22)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side center right (22)"));
 				break;
 
 			case 23:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up left (23)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side up left (23)"));
 				break;
 
 			case 24:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
-				//context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Side up right (24)"));
+				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side up right (24)"));
 				break;
 
 			};
@@ -585,7 +591,7 @@ int main(int argc, char *argv[]) {
 	//context->getLogger()->setInpFilter(MessageFilter::Ptr(new LevelFilter<StdMsg>(StdMsg::LEVEL_ERR)));
 
 	// Random number generator seed
-	context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Random number generator seed %d", context->getRandSeed()._U32[0]));
+	context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Random number generator seed %d", context->getRandSeed()._U32[0]));
 
 	//-----------------------------------------------------------------------------
 
@@ -607,7 +613,7 @@ int main(int argc, char *argv[]) {
 		// Determine arm type
 		std::string armType;
 		if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "Unspecified arm type"));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "Unspecified arm type"));
 			return 1;
 		}
 		
@@ -651,15 +657,15 @@ int main(int argc, char *argv[]) {
 			setupPlanner(*pDesc, xmlContext, *context);
 		}
 		else {
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "Unknown arm type"));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "Unknown arm type"));
 			return 1;
 		}
 
 		// Create PhysReacPlanner
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Initialising reactive planner..."));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Initialising reactive planner..."));
 		PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(*pPhysReacPlannerDesc));
 		if (pPhysReacPlanner == NULL) {
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_CRIT, "Unable to create ReacPlanner"));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "Unable to create ReacPlanner"));
 			return 1;
 		}
 
@@ -698,8 +704,8 @@ int main(int argc, char *argv[]) {
 // 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->get().front()->getPose();
 		Real roll, pitch, yaw;
 // 		p.R.toEuler (roll,pitch,yaw);
-// 		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Getting finger bounds pose..."));
-// 		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
+// 		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Getting finger bounds pose..."));
+// 		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
 
 		Mat34 p;
 		//arm.setReferencePose (p);
@@ -707,14 +713,14 @@ int main(int argc, char *argv[]) {
 		p = arm.getReferencePose ();
 		p.R.toEuler (roll, pitch, yaw);
 		
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Getting arm reference pose..."));
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Getting arm reference pose..."));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
 
 		p = arm.getGlobalPose ();
 		p.R.toEuler (roll, pitch, yaw);
 		
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Getting arm global pose..."));
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Getting arm global pose..."));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
 */
 		
 		// Display arm information
@@ -794,7 +800,7 @@ int main(int argc, char *argv[]) {
 
 
 		// Big Bang!
-		context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Launching Universe..."));
+		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Launching Universe..."));
 		pUniverse->launch();
 
 		// Reactive arm controller is capable to make the arm to move on almost arbirtary trajectories
@@ -899,7 +905,7 @@ int main(int argc, char *argv[]) {
 			int startPosition = rand() % 17 + 1;
 	
 			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Position %i", startPosition));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Position %i", startPosition));
 
 
 			// and set target waypoint
@@ -914,7 +920,7 @@ int main(int argc, char *argv[]) {
 				if (reacPlanner.send(target , ReacPlanner::ACTION_GLOBAL)) {
 					break;
 				}
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Unable to find path to polyflap, trying again."));
+				context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Unable to find path to polyflap, trying again."));
 			}
 
 			// wait for completion of the action (until the arm moves to the initial pose)
@@ -985,7 +991,7 @@ int main(int argc, char *argv[]) {
 			//int verticalAngle = rand() % 7;
 
 			setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly", horizontalAngle));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly", horizontalAngle));
 
 			/////////////////////////////////////////////////
 			//writing in the initial vector
@@ -1008,7 +1014,7 @@ int main(int argc, char *argv[]) {
 			// Current time is the same for all threads and it is the time that has elapsed since the start of the program
 			SecTmReal timeBegin = context->getTimer()->elapsed();
 		
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Moving on the line..."));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Moving on the line..."));
 			
 
 			// ON/OFF collision detection
@@ -1138,18 +1144,18 @@ int main(int argc, char *argv[]) {
 					break;
 				}
 			
-				context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Unable to find path home, trying again."));
+				context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Unable to find path home, trying again."));
 			}
 
 
 
 
 
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Moving home..."));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Moving home..."));
 			reacPlanner.wait();
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Done"));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Done"));
 
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
 
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
@@ -1158,8 +1164,8 @@ int main(int argc, char *argv[]) {
 				// wait a bit before new actor is created to avoid simulation crash
 				context->getTimer()->sleep(3);
 			}
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
-			context->getLogger()->post(DemoMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
+			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));
 
 				
 		}// end of the for-loop (experiment loop)
@@ -1176,7 +1182,7 @@ int main(int argc, char *argv[]) {
 		context->getLogger()->post(msg, false);
 	}
 	catch (const std::exception &ex) {
-		context->getLogger()->post(DemoMsg("C++ exception: %s", ex.what()));
+		context->getLogger()->post(StdMsg("C++ exception: %s", ex.what()));
 	}
 
 	return 0;

@@ -13,6 +13,9 @@
  *
  */
 
+#ifndef SMLEARNING_PUSHING_H_
+#define SMLEARNING_PUSHING_H_
+
 
 #include "Common.h"
 #include "Tools.h"
@@ -37,7 +40,6 @@ using namespace msk::demo;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-
 
 class MyPRMPlanner : public PRMPlanner {
 
@@ -75,6 +77,8 @@ public:
 
 
 //---------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------
+
 
 //planer setup
 template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, msk::Context& context);
@@ -110,8 +114,4 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 
 void writeDownCollectedData(DataSet data);
 
-
-
-
-
-
+#endif /*SMLEARNING_PUSHING_H_*/
