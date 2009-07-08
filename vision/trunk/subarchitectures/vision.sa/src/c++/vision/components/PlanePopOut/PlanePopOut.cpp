@@ -378,6 +378,12 @@ void DisplayWin()
 	DrawCuboids(points10,points_label);
 	BoundingSphere(points10,points_label);
   }
+  else
+  {
+	v3size.clear();
+	v3center.clear();
+	vdradius.clear();
+  }
   glDisable(GL_COLOR_MATERIAL);
 
   glutSwapBuffers();
@@ -466,8 +472,7 @@ void PlanePopOut::runComponent()
 	{
 		tempPoints.clear();
 		points10.clear();
-		v3center.clear();
-		v3size.clear();
+		objnumber = 0;
 		for (std::vector<Vector3>::iterator it=points.begin(); it<points.end(); it+=10)
 			points10.push_back(*it);
 		points_label.clear();
@@ -476,7 +481,7 @@ void PlanePopOut::runComponent()
 
 		if (RANSAC(points10,points_label))
 		{
-			SplitPoints(points10,points_label);
+			SplitPoints(points10,points_label);cout<<"obj number = "<<objnumber<<endl;
 			glutPostRedisplay();
 			glutMainLoopEvent();
 		}
@@ -578,7 +583,7 @@ void PlanePopOut::runComponent()
 		
 		}
 	}
-
+//cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
     // wait a bit so we don't hog the CPU
     sleepComponent(50);
   }
@@ -649,6 +654,13 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 	para_d = ( 0-(para_a*R_points.at(point1).x+para_b*R_points.at(point1).y+para_c*R_points.at(point1).z) );
 /////////////////////////////////end parameters calculation/////////////
 // Done the ransacs, now collect the supposed inlier set
+	if (para_d<0)
+	{
+		para_a = -para_a;
+		para_b = -para_b;
+		para_c = -para_c;
+		para_d = -para_d;
+	}
 	if (v3BestMean.x != 0 || v3BestMean.y != 0 || v3BestMean.z != 0)
 	{
 		for(unsigned int i=0; i<nPoints; i++)
