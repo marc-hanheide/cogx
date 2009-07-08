@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module list, set, pair, string.
+:- import_module list, set, string.
 :- import_module kb, formulae, abduction.
 
 :- type ref
@@ -21,9 +21,10 @@
 	;	axiom
 	.
 
-	% subsumes(C, C1)
-	% True iff C subsumes C1.
-	%
+:- pred string_as_ctx_ref(string, ctx_ref).
+:- mode string_as_ctx_ref(in, out) is semidet.
+:- mode string_as_ctx_ref(out, in) is det.
+
 :- pred compatible(list(ctx)::in, list(ctx)::in) is semidet.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -41,7 +42,7 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred effect(ctxterm) `with_type` ctx_change.
+:- pred effect(vsmprop) `with_type` ctx_change.
 :- mode effect(in) `with_inst` ctx_change.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -53,21 +54,25 @@
 :- implementation.
 
 :- import_module require.
-:- import_module set.
-:- import_module term.
+:- import_module set, pair.
+
+string_as_ctx_ref("e0", evt(this)).
+string_as_ctx_ref("e1", evt(next)).
+string_as_ctx_ref("a0", att(this)).
+string_as_ctx_ref("a1", att(next)).
+string_as_ctx_ref("i0", info(this)).
+string_as_ctx_ref("i1", info(next)).
+string_as_ctx_ref("all", axiom).
+
+%------------------------------------------------------------------------------%
 
 new_d_ctx = d_ctx(kb.init, set.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 	% TODO check this again to be sure.
-compatible(C, C1) :-
-	SC = set.from_list(C),
-	SC1 = set.from_list(C1),
-	(if member(axiom, SC)
-	then true
-	else superset(SC, SC1)
-	).
+	% TODO: "all"
+compatible(C, C).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -81,8 +86,8 @@ add_to_focus(A, DC0, DC) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-effect(Term, !DC) :-
-	(if Term = _Ctx-functor(atom(":"), [_, functor(atom("in_focus"), [functor(atom(Arg), [], _)], _)], _)
+effect(VSMProp, !DC) :-
+	(if VSMProp = vs(m(_, f("in_focus", [a(Arg)])), _VS)
 		%member(att(next), Ctx)
 	then add_to_focus(Arg, !DC)
 	else true
@@ -96,11 +101,11 @@ dialogue_turn(Pr, !DC) :-
 	% blank focus
 	!:DC = !.DC^d_focus := set.init,
 
-	(if Pr^p_goals = [LastGoal|_]
+	(if Pr^p_goals = vs([LastGoal|_], Varset)
 	then
 		% call the effects
-		list.foldl((pred((Ctx-Term)-Marking::in, !.DC::in, !:DC::out) is det :-
-			effect(Ctx-Term, !DC)
+		list.foldl((pred(MProp-_Marking::in, !.DC::in, !:DC::out) is det :-
+			effect(vs(MProp, Varset), !DC)  % XXX XXX XXX
 			), LastGoal, !DC)
 
 	else error("No goals in the proof.")
