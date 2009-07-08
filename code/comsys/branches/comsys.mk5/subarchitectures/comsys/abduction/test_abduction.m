@@ -32,19 +32,20 @@ main(!IO) :-
 		add_to_kb("r(X) -> q(X).", !KB),
 */
 
-		add_to_kb("a0:agent(robot).", !KB),
-		add_to_kb("a0:agent(human).", !KB),
+		kb.add_vsmprop(det_string_to_vsmprop("a0:agent(robot)."), !KB),
+		kb.add_vsmprop(det_string_to_vsmprop("a0:agent(human)."), !KB),
 
-		add_to_kb("axiom:(i0:actor(S, A), i0:content(S, C) -> i0:sentence(S, s(A, C))).", !KB),
-		add_to_kb("a0:agent(A), i0:sentence(S) -> i0:actor(S, A).", !KB),
-		add_to_kb("a0:agent(Ag), i0:sentence(X) -> e0:utter(Ag, X).", !KB),
+%		kb.add_vsmrule(det_string_to_vsmrule("all:(i0:actor(S, A), i0:content(S, C) -> i0:sentence(S, s(A, C)))."), !KB),
+		kb.add_vsmrule(det_string_to_vsmrule("a0:agent(A), i0:sentence(S) -> i0:actor(S, A)."), !KB),
+		kb.add_vsmrule(det_string_to_vsmrule("a0:agent(Ag), i0:sentence(X) -> e0:utter(Ag, X)."), !KB),
 
-		add_to_kb("i0:object(box).", !KB),
-		add_to_kb("i0:object(ball).", !KB),
-		add_to_kb("i0:object(O), i0:sentence(S) -> i0:content(S, O).", !KB),
-		add_to_kb("i0:topic(S, X) -> i0:content(S, X).", !KB),
+		kb.add_vsmprop(det_string_to_vsmprop("i0:object(box)."), !KB),
+		kb.add_vsmprop(det_string_to_vsmprop("a1:in_focus(box)."), !KB),
+		kb.add_vsmprop(det_string_to_vsmprop("i0:object(ball)."), !KB),
+		kb.add_vsmrule(det_string_to_vsmrule("i0:object(O), i0:sentence(S) -> i0:content(S, O)."), !KB),
+		kb.add_vsmrule(det_string_to_vsmrule("i0:topic(S, X) -> i0:content(S, X)."), !KB),
 
-		add_to_kb("e0:utter(Ag0, S), i0:topic(S, T) -> a1:in_focus(T).", !KB),
+		kb.add_vsmrule(det_string_to_vsmrule("e0:utter(Ag0, S), i0:topic(S, T) -> a1:in_focus(T)."), !KB),
 
 /*
 		add_to_kb("he(X), utter(\"utt\", E, P) -> add_to_cg(P).", !KB),
@@ -57,10 +58,10 @@ main(!IO) :-
 
 			% query
 %		GT-GVS = string_to_varterm("add_to_cg(X)."),
-		GT-GVS = string_to_term_varset("a1:in_focus(box)."),
+		vs(InitMProp, InitVarset) = det_string_to_vsmprop("a1:in_focus(box)."),
 %		GT-GVS = string_to_term_varset("e1:att(a)."),
 
-		P0 = proof([[([]-GT)-unsolved]], [], GVS),
+		P0 = proof(vs([[InitMProp-unsolved]], InitVarset), []),
 
 		print("KB = {\n", !IO),
 		print_kb(!.KB, !IO),
@@ -87,7 +88,7 @@ main(!IO) :-
 
 		set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
 			(if
-				Proof = proof([Goal|_], _, PVS)
+				Proof = proof(vs([_|_], _), _)
 			then
 				print("--------------------------------------------------------------------------------\n", !IO),
 				print_proof(Proof, !IO),
@@ -108,29 +109,18 @@ main(!IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func fact_to_string(kbfact) = string.
-
-fact_to_string(fact(Term, Varset)) = ctxvarterm_to_string(Term-Varset).
-
-:- func rule_to_string(kbrule) = string.
-
-rule_to_string(rule(RCtx, Ante, H, Varset)) = ctx_to_string(RCtx) ++ ":(" ++ string.join_list(", ", list.map(ctxterm_to_string(Varset), Ante))
-		++ " -> " ++ ctxterm_to_string(Varset, H) ++ ")".
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
 :- pred print_kb(kb::in, io::di, io::uo) is det.
 
 print_kb(KB, !IO) :-
-	set.fold((pred(fact(Fact, Varset)::in, !.IO::di, !:IO::uo) is det :-
+	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
-		print(ctxterm_to_string(Varset, Fact), !IO),
+		print(vsmprop_to_string(Fact), !IO),
 		nl(!IO)
 			), KB^kb_facts, !IO),
 	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
 			% XXX global context
 		print("  ", !IO),
-		print(rule_to_string(Rule), !IO),
+		print(vsmrule_to_string(Rule), !IO),
 		nl(!IO)
 			), KB^kb_rules, !IO).
 
@@ -138,31 +128,31 @@ print_kb(KB, !IO) :-
 
 :- func step_to_string(step) = string.
 
-step_to_string(assume(Term)) = "assume("
-		++ ctxterm_to_string(init, Term) ++ ")".
-step_to_string(resolve_rule(rule(RCtx, Ante, H, Varset), Subst)) = "resolve_rule(("
-		++ rule_to_string(rule(RCtx, Ante, H, Varset)) ++ "), " ++ subst_to_string(Varset, Subst) ++ ")".
-step_to_string(resolve_fact(fact(Fact, Varset), Subst)) = "resolve_fact("
-		++ fact_to_string(fact(Fact, Varset)) ++ ", " ++ subst_to_string(Varset, Subst) ++ ")".
+step_to_string(assume(P)) = "assume("
+		++ vsmprop_to_string(P) ++ ")".
+step_to_string(resolve_rule(vs(MRule, Varset), Subst)) = "resolve_rule(("
+		++ vsmrule_to_string(vs(MRule, Varset)) ++ "), " ++ subst_to_string(Varset, Subst) ++ ")".
+step_to_string(resolve_fact(vs(MProp, Varset), Subst)) = "resolve_fact("
+		++ vsmprop_to_string(vs(MProp, Varset)) ++ ", " ++ subst_to_string(Varset, Subst) ++ ")".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func subst_to_string(varset, substitution) = string.
+:- func subst_to_string(varset, subst) = string.
 
 subst_to_string(Varset, Subst) = Str :-
 	L = map.to_assoc_list(Subst),
-	L0 = list.map((func(Var-Term) = S :-
-		S = varset.lookup_name(Varset, Var) ++ "=" ++ term_to_string(Varset, Term)), L),
+	L0 = list.map((func(Var-Value) = S :-
+		S = varset.lookup_name(Varset, Var) ++ "=" ++ atomic_arg_to_string(Varset, Value)), L),
 	Str = string.join_list(", ", L0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred print_proof(proof::in, io::di, io::uo) is det.
 
-print_proof(proof(Goals, Steps, Varset), !IO) :-
+print_proof(proof(vs(Goals, Varset), Steps), !IO) :-
 	GoalsStr = list.map((func(Goal) = GStr :-
-		GStr = string.join_list(", ", list.map((func(Term-Marking) = S :-
-			S = ctxterm_to_string(Varset, Term) ++ "[" ++ string(Marking) ++ "]"
+		GStr = string.join_list(", ", list.map((func(MProp-Marking) = S :-
+			S = mprop_to_string(Varset, MProp) ++ "[" ++ string(Marking) ++ "]"
 				), Goal))), list.reverse(Goals)),
 	print(string.join_list("\n  >> ", GoalsStr), !IO),
 	nl(!IO),

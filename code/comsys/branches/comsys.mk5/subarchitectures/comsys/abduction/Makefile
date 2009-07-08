@@ -10,7 +10,7 @@ MFILES=test_abduction.m abduction.m lf.m kb.m context.m formulae.m costs.m test_
 
 # Mercury compiler flags
 #
-MCFLAGS=-E
+MCFLAGS=
 
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.

@@ -5,9 +5,9 @@
 :- interface.
 
 :- import_module list, pair.
-:- import_module term, varset.
+:- import_module varset.
 
-:- import_module kb, context, formulae.
+:- import_module kb, formulae.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -17,24 +17,24 @@
 	;	unsolved
 	.
 
-:- type goal == list(pair(ctxterm, marking)).
+:- type marked(T) == pair(T, marking).
 
 :- type step
-	--->	assume(ctxterm)
-	;	resolve_rule(kbrule, substitution)
-	;	resolve_fact(kbfact, substitution)
+	--->	assume(vsmprop)  % XXX no vars should be here!
+	;	resolve_rule(vsmrule, subst)
+	;	resolve_fact(vsmprop, subst)
 	.
 
 :- type proof
 	--->	proof(
-		p_goals :: list(goal),  % in reverse order
-		p_steps :: list(step),
-		p_varset :: varset
+			% think about variable scopes here
+		p_goals :: vscope(list(list(marked(mprop)))),  % in reverse order
+		p_steps :: list(step)  % in reverse order
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func new_proof(goal, varset) = proof.
+:- func new_proof(list(marked(mprop)), varset) = proof.
 
 :- pred prove(proof::in, proof::out, kb::in) is nondet.
 
@@ -44,13 +44,14 @@
 
 :- import_module map, set, assoc_list.
 :- import_module string.
+:- import_module context.
 
-new_proof(Goal, Varset) = proof([Goal], [], Varset).
+new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 prove(P0, P, KB) :-
-	P0 = proof([G0|Gs], Ss0, VS0),
+	P0 = proof(vs([G0|Gs], VS0), Ss0),
 
 	% find the leftmost unsolved query
 	list.takewhile((pred(_Q-M::in) is semidet :-
@@ -61,7 +62,7 @@ prove(P0, P, KB) :-
 		QUnsolved = [A-unsolved|Qs]
 	then
 		step(QDone, A, Qs, Ss0, VS0, G, Ss, VS, KB),
-		P1 = proof([G, G0|Gs], Ss, VS),
+		P1 = proof(vs([G, G0|Gs], VS), Ss),
 		prove(P1, P, KB)
 	else
 		% proof finished
@@ -70,81 +71,60 @@ prove(P0, P, KB) :-
 
 %------------------------------------------------------------------------------%
 
-:- pred step(goal::in, ctxterm::in, goal::in, list(step)::in, varset::in,
-		goal::out, list(step)::out, varset::out, kb::in) is nondet.
+:- pred step(list(marked(mprop))::in, mprop::in, list(marked(mprop))::in, list(step)::in, varset::in,
+		list(marked(mprop))::out, list(step)::out, varset::out, kb::in) is nondet.
 
 	% TODO: have a proper look at the context modalities
 
 	% assumption
-step(QY0, A, QN0, Steps, VS, QY0 ++ [A-assumed] ++ QN0, [assume(A)|Steps], VS, _KB) :-
+step(QY, A, QN, Steps, VS, QY ++ [A-assumed] ++ QN, [assume(vs(A, VS))|Steps], VS, _KB) :-
+%	term.is_ground(A),  % XXX this?
 	true.
-%	term.is_ground(A).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-	% resolution with a rule
-step(QY0, CtxA-A0, QN0, Steps, VS0, QY ++ NewQs ++ [(CtxA-A)-resolved] ++ QN, [resolve_rule(Rx, Unifier)|Steps], VS, KB) :-
-	member(R, KB^kb_rules),
-	R = rule(CtxR, RAnte, CtxRH-RH, RVS),
-
-	CtxA = CtxR ++ CtxRH,
-
-	varset.merge(VS0, RVS, [RH | list.map(snd, RAnte)], VS, [H|Ante0]),  % XXX: assert equal lengths
-
-	assoc_list.from_corresponding_lists(list.map(fst, RAnte), Ante0, Ante),
-
-	Rx = rule(CtxR, Ante, CtxRH-H, VS),
-	unify_term(H, A0, init, Unifier),
-
-	NewQ0 = apply_substitution_to_list(Ante0, Unifier),
-	assoc_list.from_corresponding_lists(list.map(fst, RAnte), NewQ0, NewQ1),
-	NewQs = list.map((func(T) = T-unsolved), NewQ1),
-
-	A = apply_rec_substitution(A0, Unifier),
-	QY = map_fst(applysubst(Unifier), QY0),
-	QN = map_fst(applysubst(Unifier), QN0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 	% resolution with a fact
-step(QY0, CtxA-A0, QN0, Steps, VS0, QY ++ [(CtxA-A)-resolved] ++ QN, [resolve_fact(Fx, Unifier)|Steps], VS, KB) :-
-	member(F, KB^kb_facts),
-	F = fact(CtxF-FTerm, FVS),
+step(QY0, m(MA, PA0), QN0, Steps, VS0,
+		QY ++ [m(MA, PA)-resolved] ++ QN, [resolve_fact(vs(m(MF, PF), VS), Unifier)|Steps], VS, KB) :-
+	member(vs(m(MF, PF0), VSF), KB^kb_facts),
+	compatible(MF, MA),
 
-	compatible(CtxF ++ CtxA, CtxA),
+	varset.merge_renaming(VS0, VSF, VS, Renaming),
+	PF = rename_vars_in_formula(Renaming, PF0),
 
-	varset.merge(VS0, FVS, [FTerm], VS, [Term]),  % XXX: this is det, not semidet
+	unify_formulas(PF, PA0, Unifier),
 
-	Fx = fact(CtxF-Term, VS),
-	unify_term(Term, A0, init, Unifier),
+	PA = apply_subst_to_formula(Unifier, PA0),
+	QY = map_fst(apply_subst_to_mprop(Unifier), QY0),
+	QN = map_fst(apply_subst_to_mprop(Unifier), QN0).
 
-	A = apply_rec_substitution(A0, Unifier),
-	QY = map_fst(applysubst(Unifier), QY0),
-	QN = map_fst(applysubst(Unifier), QN0).
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+	% resolution with a rule
+step(QY0, m(MA, PA0), QN0, Steps, VS0,
+		QY ++ QInsert ++ QN, [resolve_rule(vs(m(MR, Ante-m(MSucc, PSucc)), VS), Unifier)|Steps], VS, KB) :-
+
+	member(R0, KB^kb_rules),
+	R0 = vs(m(MR, Ante0-m(MSucc, PSucc0)), VSR),
+	compatible(MR ++ MSucc, MA),
+
+	varset.merge_renaming(VS0, VSR, VS, Renaming),
+	m(MR, Ante-m(MSucc, PSucc)) = rename_vars_in_mrule(Renaming, m(MR, Ante0-m(MSucc, PSucc0))),
+
+	unify_formulas(PSucc, PA0, Unifier),
+
+	QInsert = list.map((func(MP0) = MP-unsolved :-
+		MP = apply_subst_to_mprop(Unifier, MP0)
+			), Ante0) ++ [m(MA, apply_subst_to_formula(Unifier, PA0))-resolved],
+
+	QY = map_fst(apply_subst_to_mprop(Unifier), QY0),
+	QN = map_fst(apply_subst_to_mprop(Unifier), QN0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 	% TODO: factoring
 
-/*
-step(QY0, A0, QN0, Steps, VS0, QY ++ [A-resolved] ++ QN, [resolve_fact(Fx, Unifier)|Steps], VS, KB) :-
-
-	member(F, KB^kb_facts),
-	F = fact(FTerm, FVS),
-
-	varset.merge(VS0, FVS, [FTerm], VS, [Term]),  % XXX this is det, not semidet
-
-	Fx = fact(FTerm, VS),
-	unify_term(Term, A0, init, Unifier),
-	A = apply_rec_substitution(A0, Unifier),
-	QY = map_fst(applysubst(Unifier), QY0),
-	QN = map_fst(applysubst(Unifier), QN0).
-*/
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- func applysubst(substitution, ctxterm) = ctxterm.
-
-applysubst(Subst, Ctx-Term) = Ctx-apply_rec_substitution(Term, Subst).
 
 :- func map_fst(func(T) = V, list(pair(T, U))) = list(pair(V, U)).
 
