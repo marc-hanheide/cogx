@@ -497,7 +497,7 @@ void writeDownCollectedData(DataSet data) {
  	time ( &rawtime );
   	timeinfo = localtime ( &rawtime );
 
-  	strftime (buffer,12,"%y%m%d%H%M%s",timeinfo);
+  	strftime (buffer,12,"%y%m%d%H%M",timeinfo);
   	puts(buffer);
 
 	string name;
@@ -864,8 +864,8 @@ int main(int argc, char *argv[]) {
 
 			/////////////////////////////////////////////////
 			//create sequence for this loop run and initial vector
-			Sequence &seq = *(new Sequence);
-			FeatureVector& infoVector = *(new FeatureVector);
+			Sequence seq;
+			FeatureVector infoVector;
 			/////////////////////////////////////////////////
 
 			//find out bounds of polyflap and compute the position of the polyflap
@@ -927,11 +927,11 @@ int main(int argc, char *argv[]) {
 			reacPlanner.wait();
 		
 			// Trajectory profile can be defined by e.g. a simple 3rd degree polynomial
-			Polynomial4::Desc& polynomDesc = *(new Polynomial4::Desc);
+			Polynomial4::Desc polynomDesc;
 			Trajectory::Ptr pTrajectory(/*Polynomial4::Desc().create()*/ polynomDesc.create());
 
 			//initializing infoVector
-			Polynomial4& polynom = *(new Polynomial4);
+			Polynomial4 polynom;
 			polynom.create(polynomDesc);
 			const Real* coefs  = polynom.getCoeffs();
 			
