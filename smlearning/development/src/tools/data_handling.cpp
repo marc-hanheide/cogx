@@ -46,10 +46,10 @@ void generate_rand_sequences (DataSet& data, long numSeq, long seqSize) {
 	double randNr;
 
 	for (int s=0; s<numSeq; s++) {
-		Sequence &currentSequence = *(new Sequence);
+		Sequence currentSequence;
 		for (int v=0; v<seqSize; v++) {
 
-			FeatureVector &currentVector = *(new FeatureVector);
+			FeatureVector currentVector;
 			int vectorSize;
 			if (v==0)
 				vectorSize = FEATUREVECTOR_SIZE1;
@@ -110,12 +110,12 @@ bool read_dataset (string fileName, DataSet& data) {
 	readFile.read ((char* )&numSeq, sizeof(numSeq));
 //  	cout << numSeq << endl;
 	for (int s=0; s<numSeq; s++) {
-		Sequence &currentSequence = *(new Sequence);
+		Sequence currentSequence;
 		long seqSize;
 		readFile.read((char *)&seqSize, sizeof(seqSize));
 //  		cout << "\t" << seqSize << endl;
 		for (int v=0; v<seqSize; v++) {
-			FeatureVector &currentVector = *(new FeatureVector);
+			FeatureVector currentVector;
 			long featvectorSize;
 			readFile.read ((char *)&featvectorSize, sizeof(featvectorSize));
 // 			cout << "\t\t" << featvectorSize << endl;
