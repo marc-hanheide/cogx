@@ -868,11 +868,14 @@ int main(int argc, char *argv[]) {
 			FeatureVector infoVector;
 			/////////////////////////////////////////////////
 
-			//find out bounds of polyflap and compute the position of the polyflap
-			msk::obj_ptr<msk::BoundsSet> curPol = polyFlapActor->getBounds();
+			msk::obj_ptr<msk::BoundsSet> curPol;
 			Mat34 curPolPos1;
 			Mat34 curPolPos2;	
-
+			//find out bounds of polyflap and compute the position of the polyflap
+			{
+				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+				curPol = polyFlapActor->getBounds();
+			}
 			if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
 				curPolPos1 = curPol->get().front()->getPose();
 				curPolPos2 = curPol->get().back()->getPose();
@@ -883,8 +886,6 @@ int main(int argc, char *argv[]) {
 			}
 
 			Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
-	
-
 
 			//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
 			Vec3 polyflapNormalVec =
@@ -1053,10 +1054,15 @@ int main(int argc, char *argv[]) {
 			
 					//to get polyflap pose information
 					msk::obj_ptr<msk::BoundsSet> set;
+					Mat34 mojepose2;
+					Mat34 mojepose3;
 					{
 						CriticalSectionWrapper csw(pScene->getUniverse().getCS());
 						set = polyFlapActor->getBounds();
 					}
+					//reading out the position of the polyflap
+					mojepose2 = set->get().front()->getPose();
+					mojepose3 = set->get().back()->getPose();
 					
 					/////////////////////////////////////////////////
 					//creating current featureVector
@@ -1071,12 +1077,6 @@ int main(int argc, char *argv[]) {
 						features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
 					}
 					/////////////////////////////////////////////////
-
-					//reading out the position of the polyflap
-					Mat34 mojepose2;
-					Mat34 mojepose3;
-					mojepose2 = set->get().front()->getPose();
-					mojepose3 = set->get().back()->getPose();
 
 					/////////////////////////////////////////////////
 					//writing in the feature vector
