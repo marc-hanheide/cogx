@@ -142,7 +142,7 @@ step_to_string(resolve_fact(vs(MProp, Varset), Subst)) = "resolve_fact("
 subst_to_string(Varset, Subst) = Str :-
 	L = map.to_assoc_list(Subst),
 	L0 = list.map((func(Var-Value) = S :-
-		S = varset.lookup_name(Varset, Var) ++ "=" ++ atomic_arg_to_string(Varset, Value)), L),
+		S = varset.lookup_name(Varset, Var) ++ "=" ++ formula_term_to_string(Varset, Value)), L),
 	Str = string.join_list(", ", L0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

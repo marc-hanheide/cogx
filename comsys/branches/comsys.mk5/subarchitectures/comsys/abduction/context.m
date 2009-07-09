@@ -87,7 +87,7 @@ add_to_focus(A, DC0, DC) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 effect(VSMProp, !DC) :-
-	(if VSMProp = vs(m(_, f("in_focus", [a(Arg)])), _VS)
+	(if VSMProp = vs(m(_, p("in_focus", [t(Arg, [])])), _VS)
 		%member(att(next), Ctx)
 	then add_to_focus(Arg, !DC)
 	else true
