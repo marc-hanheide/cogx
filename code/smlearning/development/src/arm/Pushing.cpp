@@ -307,8 +307,10 @@ Real normalize(const Real& value, const Real& min, const Real& max) {
 
 
 //function that checks if arm hitted the polyflap while approaching it
-bool checkPfPosition(const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2) {
-	
+bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2) {
+
+	CriticalSectionWrapper csw(pScene->getUniverse().getCS());
+
 	Vec3 realPos1 = polyFlapActor->getBounds()->get().front()->getPose().p;
 	Vec3 realPos2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 	
@@ -847,20 +849,22 @@ int main(int argc, char *argv[]) {
 		//start of the experiment loop
 		for (int e=0; e<numExperiments; e++)
 		{
-
+				
 			//polyflap actor
 			Actor *polyFlapActor;
-			context->getTimer()->sleep(1);
+			Vec3 referencePolyflapPosVec1;
+			Vec3 referencePolyflapPosVec2;
+// 			context->getTimer()->sleep(1);
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
 				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+				//reference polyflap position for prooving if arm didn't hit it whil approaching
+				referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
+				referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 			}
-			context->getTimer()->sleep(1);
+// 			context->getTimer()->sleep(1);
 
 
-			//reference polyflap position for prooving if arm didn't hit it whil approaching
-			Vec3 referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
-			Vec3 referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
 
 			/////////////////////////////////////////////////
 			//create sequence for this loop run and initial vector
@@ -1026,7 +1030,7 @@ int main(int argc, char *argv[]) {
 			
 			//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
 			//otherwise we skip it
-			if (checkPfPosition(polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
+			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
 
 			
 				// Generate and send a simple straight line trajectory
@@ -1157,13 +1161,13 @@ int main(int argc, char *argv[]) {
 
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
 
-			context->getTimer()->sleep(1);
+// 			context->getTimer()->sleep(1);
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
 				pScene->releaseObject(*polyFlapActor);
 				// wait a bit before new actor is created to avoid simulation crash
 			}
-			context->getTimer()->sleep(3);
+// 			context->getTimer()->sleep(3);
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));
 
