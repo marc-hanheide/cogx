@@ -10,14 +10,14 @@
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- type atomic_formula
-	--->	f(
-		string,  % functor
-		list(atomic_arg)
+	--->	p(
+		string,  % predicate_symbol
+		list(formula.term)
 	).
 
-:- type atomic_arg
-	--->	a(string)  % atom
-	;	v(var)
+:- type term
+	--->	v(var)
+	;	t(string, list(formula.term))
 	.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -48,7 +48,7 @@
 :- func vsmprop_to_string(vscope(mprop)) = string.
 
 :- func atomic_formula_to_string(varset, atomic_formula) = string.
-:- func atomic_arg_to_string(varset, atomic_arg) = string.
+:- func formula_term_to_string(varset, formula.term) = string.
 
 
 :- pred string_as_vsmrule(string, vscope(mrule)).
@@ -61,11 +61,12 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- type subst == map(var, atomic_arg).
+:- type subst == map(var, formula.term).
 
 :- func apply_subst_to_formula(subst, atomic_formula) = atomic_formula.
 :- func apply_subst_to_mprop(subst, mprop) = mprop.
 
+:- func rename_vars_in_term(map(var, var), formula.term) = formula.term.
 :- func rename_vars_in_formula(map(var, var), atomic_formula) = atomic_formula.
 :- func rename_vars_in_mprop(map(var, var), mprop) = mprop.
 :- func rename_vars_in_mrule(map(var, var), mrule) = mrule.
@@ -136,7 +137,7 @@ vsmrule_to_string(vs(MR, Varset)) = Str :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_mprop(term::in, mprop::out) is semidet.
+:- pred term_to_mprop(term.term::in, mprop::out) is semidet.
 
 term_to_mprop(T, m(Mod, P)) :-
 	(if T = functor(atom(":"), [TM, TP], _)
@@ -148,7 +149,7 @@ term_to_mprop(T, m(Mod, P)) :-
 		term_to_atomic_formula(T, P)
 	).
 
-:- pred term_to_mrule(term::in, mrule::out) is semidet.
+:- pred term_to_mrule(term.term::in, mrule::out) is semidet.
 
 term_to_mrule(T, m(Mod, R)) :-
 	(if T = functor(atom(":"), [TM, TR], _)
@@ -162,27 +163,28 @@ term_to_mrule(T, m(Mod, R)) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_atomic_formula(term::in, atomic_formula::out) is semidet.
+:- pred term_to_atomic_formula(term.term::in, atomic_formula::out) is semidet.
 
-term_to_atomic_formula(functor(atom(Functor), TermArgs, _), f(Functor, Args)) :-
-	list.map((pred(TermArg::in, Arg::out) is semidet :-
-		( TermArg = functor(atom(Atom), [], _), Arg = a(Atom)
-		; TermArg = variable(Var, _), Arg = v(Var)
-		)), TermArgs, Args).
+term_to_atomic_formula(functor(atom(PredSym), TermArgs, _), p(PredSym, Args)) :-
+	list.map(term_to_formula_term, TermArgs, Args).
 
-atomic_formula_to_string(Varset, f(Functor, Args)) = Functor ++ Rest :-
+
+:- pred term_to_formula_term(term.term::in, formula.term::out) is semidet.
+
+term_to_formula_term(variable(Var, _), v(Var)).
+term_to_formula_term(functor(atom(Functor), TermArgs, _), t(Functor, Args)) :-
+	list.map(term_to_formula_term, TermArgs, Args).
+
+atomic_formula_to_string(Varset, p(PredSym, Args)) = PredSym ++ "(" ++ ArgStr ++ ")" :-
+	ArgStr = string.join_list(", ", list.map(formula_term_to_string(Varset), Args)).
+
+formula_term_to_string(Varset, Arg) = S :-
 	(
-		Args = [],
-		Rest = ""
+		Arg = t(Functor, []),
+		S = Functor
 	;
-		Args = [_|_],
-		Rest = "(" ++ string.join_list(", ", list.map(atomic_arg_to_string(Varset), Args)) ++ ")"
-	).
-
-atomic_arg_to_string(Varset, Arg) = S :-
-	(
-		Arg = a(Atom),
-		S = Atom
+		Arg = t(Functor, [H|T]),
+		S = Functor ++ "(" ++ string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])) ++ ")"
 	;
 		Arg = v(Var),
 		S = varset.lookup_name(Varset, Var)
@@ -190,7 +192,7 @@ atomic_arg_to_string(Varset, Arg) = S :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_list_of_ctx_refs(term::in, list(ctx_ref)::out) is semidet.
+:- pred term_to_list_of_ctx_refs(term.term::in, list(ctx_ref)::out) is semidet.
 
 term_to_list_of_ctx_refs(functor(atom(Ref), [], _), [CtxRef]) :-
 	string_as_ctx_ref(Ref, CtxRef).
@@ -206,13 +208,13 @@ modality_to_string([H|T]) = string.join_list(" : ", list.map((func(Ref) = S is d
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_nonmod_rule(term::in, pair(list(mprop), mprop)::out) is semidet.
+:- pred term_to_nonmod_rule(term.term::in, pair(list(mprop), mprop)::out) is semidet.
 
 term_to_nonmod_rule(functor(atom("->"), [TAnte, THead], _), Ante-Head) :-
 	term_to_list_of_mprops(TAnte, Ante),
 	term_to_mprop(THead, Head).
 
-:- pred term_to_list_of_mprops(term::in, list(mprop)::out) is semidet.
+:- pred term_to_list_of_mprops(term.term::in, list(mprop)::out) is semidet.
 
 term_to_list_of_mprops(T, List) :-
 	(if
@@ -230,11 +232,11 @@ term_to_list_of_mprops(T, List) :-
 
 apply_subst_to_mprop(Subst, m(M, Prop)) = m(M, apply_subst_to_formula(Subst, Prop)).
 
-apply_subst_to_formula(Subst, f(F, Args)) = f(F, SubstArgs) :-
+apply_subst_to_formula(Subst, p(F, Args)) = p(F, SubstArgs) :-
 	SubstArgs0 = list.map((func(Arg) = SubstArg :-
 		(
-			Arg = a(Atom),
-			SubstArg = a(Atom)
+			Arg = t(Functor, TermArgs),
+			SubstArg = t(Functor, TermArgs)
 		;
 			Arg = v(Var),
 			(if Value = Subst^elem(Var)
@@ -245,20 +247,17 @@ apply_subst_to_formula(Subst, f(F, Args)) = f(F, SubstArgs) :-
 
 	(if SubstArgs0 = Args
 	then SubstArgs = SubstArgs0
-	else f(_, SubstArgs) = apply_subst_to_formula(Subst, f(F, SubstArgs0))
+	else p(_, SubstArgs) = apply_subst_to_formula(Subst, p(F, SubstArgs0))
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-rename_vars_in_formula(Renaming, f(F, Args)) = f(F, SubstArgs) :-
-	SubstArgs = list.map((func(Arg) = SubstArg :-
-		(
-			Arg = a(Atom),
-			SubstArg = a(Atom)
-		;
-			Arg = v(Var),
-			SubstArg = v(map.lookup(Renaming, Var))
-		)), Args).
+rename_vars_in_term(Renaming, v(Var)) = v(map.lookup(Renaming, Var)).
+rename_vars_in_term(Renaming, t(F, Args)) = t(F, SubstArgs) :-
+	SubstArgs = list.map(rename_vars_in_term(Renaming), Args).
+
+rename_vars_in_formula(Renaming, p(PS, Args)) = p(PS, SubstArgs) :-
+	SubstArgs = list.map(rename_vars_in_term(Renaming), Args).
 
 rename_vars_in_mprop(Renaming, m(M, Prop)) = m(M, rename_vars_in_formula(Renaming, Prop)).
 
@@ -273,20 +272,20 @@ unify_formulas(A, B, U) :-
 
 	unify_term(TermA, TermB, init, TermU),
 	map.map_values((pred(_::in, TermTgt::in, Tgt::out) is det :-
-		(if
-			( TermTgt = functor(atom(Atom), [], _), Tgt0 = a(Atom)
-			; TermTgt = variable(Var, _), Tgt0 = v(Var)
-			)
-		then
-			Tgt = Tgt0
-		else
-			error("error in unify_formulas")
+		(if term_to_formula_term(TermTgt, Tgt0)
+		then Tgt = Tgt0
+		else error("error un unify_formulas")
 		)), TermU, U).
 
-:- pred atomic_formula_to_term(atomic_formula::in, term::out) is det.
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-atomic_formula_to_term(f(Functor, Args), functor(atom(Functor), TermArgs, context("", 0))) :-
-	list.map((pred(Arg::in, TermArg::out) is det :-
-		( Arg = a(Atom), TermArg = functor(atom(Atom), [], context("", 0))
-		; Arg = v(Var), TermArg = variable(Var, context("", 0))
-			)), Args, TermArgs).
+:- pred formula_term_to_term(formula.term::in, term.term::out) is det.
+
+formula_term_to_term(v(Var), variable(Var, context("", 0))).
+formula_term_to_term(t(F, Args), functor(atom(F), TermArgs, context("", 0))) :-
+	list.map(formula_term_to_term, Args, TermArgs).
+
+:- pred atomic_formula_to_term(atomic_formula::in, term.term::out) is det.
+
+atomic_formula_to_term(p(PredSym, Args), functor(atom(PredSym), TermArgs, context("", 0))) :-
+	list.map(formula_term_to_term, Args, TermArgs).
