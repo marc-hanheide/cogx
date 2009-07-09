@@ -99,7 +99,7 @@ void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bou
 Real normalize(const Real& value, const Real& min, const Real& max);	
 
 //function that checks if arm hitted the polyflap while approaching it
-bool checkPfPosition(const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2);
+bool checkPfPosition(Scene* Scene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2);
 
 void setMovementAngle(const int angle, msk::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
 
