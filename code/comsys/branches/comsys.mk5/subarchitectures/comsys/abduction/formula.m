@@ -1,6 +1,6 @@
 % $Id$
 
-:- module formulae.
+:- module formula.
 
 :- interface.
 

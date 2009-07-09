@@ -5,7 +5,7 @@
 :- interface.
 
 :- import_module set.
-:- import_module formulae.
+:- import_module formula.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
