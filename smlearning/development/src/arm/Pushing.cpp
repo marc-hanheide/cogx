@@ -872,21 +872,20 @@ int main(int argc, char *argv[]) {
 			FeatureVector infoVector;
 			/////////////////////////////////////////////////
 
-			msk::obj_ptr<msk::BoundsSet> curPol;
 			Mat34 curPolPos1;
 			Mat34 curPolPos2;	
 			//find out bounds of polyflap and compute the position of the polyflap
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				curPol = polyFlapActor->getBounds();
-			}
-			if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
-				curPolPos1 = curPol->get().front()->getPose();
-				curPolPos2 = curPol->get().back()->getPose();
-			}
-			else {
-				curPolPos1 = curPol->get().back()->getPose();
-				curPolPos2 = curPol->get().front()->getPose();
+				msk::obj_ptr<msk::BoundsSet> curPol = polyFlapActor->getBounds();
+				if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
+					curPolPos1 = curPol->get().front()->getPose();
+					curPolPos2 = curPol->get().back()->getPose();
+				}
+				else {
+					curPolPos1 = curPol->get().back()->getPose();
+					curPolPos2 = curPol->get().front()->getPose();
+				}
 			}
 
 			Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
@@ -1056,21 +1055,20 @@ int main(int argc, char *argv[]) {
 					msk::ctrl::GenJointState state;
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
-					//to get polyflap pose information
-					msk::obj_ptr<msk::BoundsSet> set;
 					Mat34 mojepose2;
 					Mat34 mojepose3;
 					{
 						CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-						set = polyFlapActor->getBounds();
+						//to get polyflap pose information
+						msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
+						//reading out the position of the polyflap
+						mojepose2 = set->get().front()->getPose();
+						mojepose3 = set->get().back()->getPose();
 					}
-					//reading out the position of the polyflap
-					mojepose2 = set->get().front()->getPose();
-					mojepose3 = set->get().back()->getPose();
 					
 					/////////////////////////////////////////////////
 					//creating current featureVector
-					FeatureVector& features = *(new FeatureVector);
+					FeatureVector features;
 					/////////////////////////////////////////////////
 
 					/////////////////////////////////////////////////
