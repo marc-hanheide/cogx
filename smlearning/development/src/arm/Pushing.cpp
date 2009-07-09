@@ -850,12 +850,12 @@ int main(int argc, char *argv[]) {
 
 			//polyflap actor
 			Actor *polyFlapActor;
+			context->getTimer()->sleep(1);
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				context->getTimer()->sleep(1);
 				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
-				context->getTimer()->sleep(1);
 			}
+			context->getTimer()->sleep(1);
 
 
 			//reference polyflap position for prooving if arm didn't hit it whil approaching
@@ -1157,13 +1157,13 @@ int main(int argc, char *argv[]) {
 
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
 
+			context->getTimer()->sleep(1);
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				context->getTimer()->sleep(1);
 				pScene->releaseObject(*polyFlapActor);
 				// wait a bit before new actor is created to avoid simulation crash
-				context->getTimer()->sleep(3);
 			}
+			context->getTimer()->sleep(3);
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));
 
