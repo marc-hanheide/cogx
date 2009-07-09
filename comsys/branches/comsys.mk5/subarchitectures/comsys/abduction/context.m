@@ -5,7 +5,7 @@
 :- interface.
 
 :- import_module list, set, string.
-:- import_module kb, formulae, abduction.
+:- import_module kb, formula, abduction.
 
 :- type ref
 	--->	this

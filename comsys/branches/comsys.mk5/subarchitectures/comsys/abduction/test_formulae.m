@@ -14,7 +14,7 @@
 
 :- import_module string, pair, list, map.
 :- import_module varset.
-:- import_module formulae.
+:- import_module formula.
 
 main(!IO) :-
 	test_mprop_parse("p(x).", !IO),

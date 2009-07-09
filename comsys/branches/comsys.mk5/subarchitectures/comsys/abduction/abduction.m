@@ -7,7 +7,7 @@
 :- import_module list, pair.
 :- import_module varset.
 
-:- import_module kb, formulae.
+:- import_module kb, formula.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
