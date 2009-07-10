@@ -35,23 +35,32 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, g
 
 
 //creates an object, in this case the polyflap
-Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context) {
+void setupObjects(Scene &scene, golem::Context &context) {
+	{
+		CriticalSectionWrapper csw(scene.getUniverse().getCS());
+		
+		//set physical parameters of simulation
+		NxMaterial* defaultMaterial = scene.getNxScene()->getMaterialFromIndex(0);
+		defaultMaterial->setRestitution((NxReal)0.05);
+		defaultMaterial->setStaticFriction((NxReal)0.9);
+		defaultMaterial->setDynamicFriction((NxReal)0.5);
+	}
 
-	//set physical parameters of simulation
-	NxMaterial* defaultMaterial = scene.getNxScene()->getMaterialFromIndex(0);
-	defaultMaterial->setRestitution((NxReal)0.05);
-	defaultMaterial->setStaticFriction((NxReal)0.9);
-	defaultMaterial->setDynamicFriction((NxReal)0.5);
-					
 	// Creator
 	Creator creator(scene);
 	Actor::Desc *pActorDesc;
 	
-	Actor *polyFlapActor;
-	
 	// Create ground plane.
 	pActorDesc = creator.createGroundPlaneDesc();
 	scene.createObject(*pActorDesc);
+}
+
+//creates an object, in this case the polyflap
+Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context) {
+	// Creator
+	Creator creator(scene);
+	Actor::Desc *pActorDesc;
+	Actor *polyFlapActor;
 	
 	// Create polyflap
 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.0002), REAL_PI_2);
@@ -65,7 +74,6 @@ Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions,
 		rotation.v3 
 	);
 
-
 	//-sets rotations	
 	pActorDesc->nxActorDesc.globalPose.M.setRowMajor(&pose.R._m._11);	
 	
@@ -75,7 +83,6 @@ Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions,
 	polyFlapActor = dynamic_cast<Actor*>(scene.createObject(*pActorDesc));
 
 	return polyFlapActor;
-	
 }
 
 
@@ -198,6 +205,8 @@ NxJoint *setupJoint(NxActor *effector, NxActor *tool, const NxVec3 &anchor, cons
 
 // Modify shape of the joint by adding a new Actor.
 void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bounds::Desc::Ptr> &bounds, golem::Context::Ptr context) {
+	CriticalSectionWrapper csw(physReacPlanner.getScene().getUniverse().getCS());
+	
 	Actor::Desc fingerActorDesc;
 	NxBodyDesc nxBodyDesc;
 	Arm &arm = physReacPlanner.getArm();
@@ -308,11 +317,9 @@ Real normalize(const Real& value, const Real& min, const Real& max) {
 
 //function that checks if arm hitted the polyflap while approaching it
 bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2) {
-
-	CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-
-	Vec3 realPos1 = polyFlapActor->getBounds()->get().front()->getPose().p;
-	Vec3 realPos2 = polyFlapActor->getBounds()->get().back()->getPose().p;
+	golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
+	Vec3 realPos1 = set->get().front()->getPose().p;
+	Vec3 realPos2 = set->get().back()->getPose().p;
 	
 	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
 		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
@@ -683,7 +690,7 @@ int main(int argc, char *argv[]) {
 			addFinger(*pPhysReacPlanner, jointIndex, bounds, context);
 		}
 
-		
+		setupObjects(*pScene, *context);
 
 
 
@@ -851,20 +858,14 @@ int main(int argc, char *argv[]) {
 		{
 				
 			//polyflap actor
-			Actor *polyFlapActor;
-			Vec3 referencePolyflapPosVec1;
-			Vec3 referencePolyflapPosVec2;
-// 			context->getTimer()->sleep(1);
-			{
-				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				polyFlapActor = setupObjects(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
-				//reference polyflap position for prooving if arm didn't hit it whil approaching
-				referencePolyflapPosVec1 = polyFlapActor->getBounds()->get().front()->getPose().p;
-				referencePolyflapPosVec2 = polyFlapActor->getBounds()->get().back()->getPose().p;
-			}
-// 			context->getTimer()->sleep(1);
+			Actor *polyFlapActor = setupPolyflap(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
+			golem::BoundsSet::Ptr curPol = polyFlapActor->getBounds();
 
-
+// 			context->getTimer()->sleep(1);
+			//reference polyflap position for prooving if arm didn't hit it whil approaching
+			Vec3 referencePolyflapPosVec1 = curPol->get().front()->getPose().p;
+			Vec3 referencePolyflapPosVec2 = curPol->get().back()->getPose().p;
+// 			context->getTimer()->sleep(1);
 
 			/////////////////////////////////////////////////
 			//create sequence for this loop run and initial vector
@@ -875,17 +876,13 @@ int main(int argc, char *argv[]) {
 			Mat34 curPolPos1;
 			Mat34 curPolPos2;	
 			//find out bounds of polyflap and compute the position of the polyflap
-			{
-				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				golem::obj_ptr<golem::BoundsSet> curPol = polyFlapActor->getBounds();
-				if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
-					curPolPos1 = curPol->get().front()->getPose();
-					curPolPos2 = curPol->get().back()->getPose();
-				}
-				else {
-					curPolPos1 = curPol->get().back()->getPose();
-					curPolPos2 = curPol->get().front()->getPose();
-				}
+			if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
+				curPolPos1 = curPol->get().front()->getPose();
+				curPolPos2 = curPol->get().back()->getPose();
+			}
+			else {
+				curPolPos1 = curPol->get().back()->getPose();
+				curPolPos2 = curPol->get().front()->getPose();
 			}
 
 			Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
@@ -1055,16 +1052,11 @@ int main(int argc, char *argv[]) {
 					golem::ctrl::GenJointState state;
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
-					Mat34 mojepose2;
-					Mat34 mojepose3;
-					{
-						CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-						//to get polyflap pose information
-						golem::obj_ptr<golem::BoundsSet> set = polyFlapActor->getBounds();
-						//reading out the position of the polyflap
-						mojepose2 = set->get().front()->getPose();
-						mojepose3 = set->get().back()->getPose();
-					}
+					//to get polyflap pose information
+					golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
+					//reading out the position of the polyflap
+					Mat34 mojepose2 = set->get().front()->getPose();
+					Mat34 mojepose3 = set->get().back()->getPose();
 					
 					/////////////////////////////////////////////////
 					//creating current featureVector
@@ -1160,11 +1152,8 @@ int main(int argc, char *argv[]) {
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
 
 // 			context->getTimer()->sleep(1);
-			{
-				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				pScene->releaseObject(*polyFlapActor);
-				// wait a bit before new actor is created to avoid simulation crash
-			}
+			pScene->releaseObject(*polyFlapActor);
+			// wait a bit before new actor is created to avoid simulation crash
 // 			context->getTimer()->sleep(3);
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));

@@ -86,8 +86,11 @@ public:
 //planer setup
 template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& context);
 
-//creates an object, in this case the polyflap
-Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context);
+//creates objects (groundplane)
+void setupObjects(Scene &scene, golem::Context &context);
+
+//creates polyflap
+Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context);
 
 //creates a finger actor and sets bounds
 void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, const Mat34 &pose, MemoryStream &buffer);
