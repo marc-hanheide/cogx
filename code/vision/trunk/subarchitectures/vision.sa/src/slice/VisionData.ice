@@ -151,6 +151,15 @@ module VisionData {
     // time the ROI was last changed
     cast::cdl::CASTTime time;
   };
+  
+  /**
+   * Proto Object
+   */
+  class ProtoObject {
+    IdSeq ROIList;
+    // time the object was last changed
+    cast::cdl::CASTTime time;
+  };
 };
 
 #endif
