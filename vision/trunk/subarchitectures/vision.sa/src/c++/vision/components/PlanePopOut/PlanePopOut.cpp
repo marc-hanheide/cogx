@@ -481,7 +481,7 @@ void PlanePopOut::runComponent()
 
 		if (RANSAC(points10,points_label))
 		{
-			SplitPoints(points10,points_label);cout<<"obj number = "<<objnumber<<endl;
+			SplitPoints(points10,points_label);
 			glutPostRedisplay();
 			glutMainLoopEvent();
 		}
@@ -766,6 +766,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius)
 	obs->boundingBox.size.y = size.y;
 	obs->boundingBox.size.z = size.z;
 	obs->boundingSphere.rad = radius;
+	obs->time = getCASTTime();
 	
 	return obs;
 }
