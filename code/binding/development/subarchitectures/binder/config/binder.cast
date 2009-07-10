@@ -5,5 +5,8 @@ SUBARCHITECTURE binder
 JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
 JAVA WM binder.BindingWorkingMemory --log
 
-JAVA MG binder.fakeproxygenerators.FakeVisualProxyGenerator --log
-JAVA MG binder.BindingMonitor --log
+JAVA MG fakevisualproxy binder.fakeproxygenerators.FakeVisualProxyGenerator --log
+#JAVA MG fakehapticproxy binder.fakeproxygenerators.FakeHapticProxyGenerator --log
+
+JAVA MG monitor binder.BinderMonitor --log
+#JAVA MG binder binder.bindingalgorithm.Binder --log
