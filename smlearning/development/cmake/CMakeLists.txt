@@ -57,6 +57,7 @@ LINK_DIRECTORIES(
 
 SET(SMLEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/arm/Pushing.cpp
+	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
 )
 
 SET(ARM_HEADERS
@@ -70,6 +71,7 @@ SET(ARM_FILES
 
 SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
+	${SMLEARNING_ROOT}/src/tools/tools_test.cpp
 )
 
 SET(TOOLS_HEADERS
