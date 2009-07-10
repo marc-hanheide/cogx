@@ -1,5 +1,7 @@
 project (VISIONSA)
 
+include_directories(/usr/local/include/opencv/)
+
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
@@ -29,6 +31,7 @@ add_subdirectory (src/c++/vision/components/ObjectDetector)
 add_subdirectory (src/c++/vision/components/ObjectDetectorDriver)
 if(BUILD_HAL_STEREO)
 add_subdirectory (src/c++/vision/components/PlanePopOut)
+add_subdirectory (src/c++/vision/components/SOIFilter)
 endif(BUILD_HAL_STEREO)
 
 
