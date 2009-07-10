@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------
 
 //planer setup
-template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, msk::Context& context) {
+template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& context) {
 	// some planner parameter tuning
 	desc.plannerDesc.pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
 	// Enable signal synchronization (default value)
@@ -35,7 +35,7 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, m
 
 
 //creates an object, in this case the polyflap
-Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, msk::Context &context) {
+Actor* setupObjects(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context) {
 
 	//set physical parameters of simulation
 	NxMaterial* defaultMaterial = scene.getNxScene()->getMaterialFromIndex(0);
@@ -197,7 +197,7 @@ NxJoint *setupJoint(NxActor *effector, NxActor *tool, const NxVec3 &anchor, cons
 }
 
 // Modify shape of the joint by adding a new Actor.
-void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bounds::Desc::Ptr> &bounds, msk::Context::Ptr context) {
+void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bounds::Desc::Ptr> &bounds, golem::Context::Ptr context) {
 	Actor::Desc fingerActorDesc;
 	NxBodyDesc nxBodyDesc;
 	Arm &arm = physReacPlanner.getArm();
@@ -323,7 +323,7 @@ bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Vec3& refP
 
 
 
-void setMovementAngle(const int angle, msk::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
+void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
 	pose.p.v1 += (sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
 	pose.p.v2 += (sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
 	pose.p.v1 += (cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 
@@ -560,9 +560,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Create program context
-	msk::Context::Desc contextDesc;
+	golem::Context::Desc contextDesc;
 	setupContext(contextDesc, xmlContext);
-	msk::Context::Ptr context = contextDesc.create();
+	golem::Context::Ptr context = contextDesc.create();
 	if (context == NULL) {
 		printf("unable to create program context");
 		return 1;
@@ -779,8 +779,8 @@ int main(int argc, char *argv[]) {
 
 		//getting the maximal and minimal Velocities of arm joints	
 		const U32 numOfJoints = (U32)arm.getJoints().size();
-		float minVelocities [numOfJoints];
-		float maxVelocities [numOfJoints];
+		Real minVelocities [MAX_JOINTS];
+		Real maxVelocities [MAX_JOINTS];
 		for (U32 i = 0; i < numOfJoints; i++) {
 			const Joint &joint = *arm.getJoints()[i];
 			minVelocities[i] = joint.getMin().vel;
@@ -827,7 +827,7 @@ int main(int argc, char *argv[]) {
 		Vec3 orientationH(Real(-0.5*MATH_PI), Real(0.0*MATH_PI), Real(0.0*MATH_PI));
 		
 		// and set target waypoint
-		msk::ctrl::GenWorkspaceState home;
+		golem::ctrl::GenWorkspaceState home;
 		fromCartesianPose(home.pos, positionH, orientationH);
 		home.vel.setId(); // it doesn't move
 		
@@ -877,7 +877,7 @@ int main(int argc, char *argv[]) {
 			//find out bounds of polyflap and compute the position of the polyflap
 			{
 				CriticalSectionWrapper csw(pScene->getUniverse().getCS());
-				msk::obj_ptr<msk::BoundsSet> curPol = polyFlapActor->getBounds();
+				golem::obj_ptr<golem::BoundsSet> curPol = polyFlapActor->getBounds();
 				if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
 					curPolPos1 = curPol->get().front()->getPose();
 					curPolPos2 = curPol->get().back()->getPose();
@@ -913,7 +913,7 @@ int main(int argc, char *argv[]) {
 
 
 			// and set target waypoint
-			msk::ctrl::GenWorkspaceState target;
+			golem::ctrl::GenWorkspaceState target;
 			fromCartesianPose(target.pos, positionT, orientationT);
 			target.vel.setId(); // it doesn't mov
 
@@ -962,7 +962,7 @@ int main(int argc, char *argv[]) {
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec], but with a speed coefficient
 			int speed = -1 + (rand() % 3);
-			SecTmReal duration = timeDelta * n*(pow(2, (-speed)*2));
+			SecTmReal duration = timeDelta * n*(Math::pow(Real(2.0), Real(-speed)*2));
 				
 			/////////////////////////////////////////////////
 			//writing in the initial vector
@@ -1052,7 +1052,7 @@ int main(int argc, char *argv[]) {
 
 
 					// arm state at a time t and finishes at some time later
-					msk::ctrl::GenJointState state;
+					golem::ctrl::GenJointState state;
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
 					Mat34 mojepose2;
@@ -1060,7 +1060,7 @@ int main(int argc, char *argv[]) {
 					{
 						CriticalSectionWrapper csw(pScene->getUniverse().getCS());
 						//to get polyflap pose information
-						msk::obj_ptr<msk::BoundsSet> set = polyFlapActor->getBounds();
+						golem::obj_ptr<golem::BoundsSet> set = polyFlapActor->getBounds();
 						//reading out the position of the polyflap
 						mojepose2 = set->get().front()->getPose();
 						mojepose3 = set->get().back()->getPose();
@@ -1125,7 +1125,7 @@ int main(int argc, char *argv[]) {
 
 			Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
 			// and set target waypoint
-			msk::ctrl::GenWorkspaceState preHome;
+			golem::ctrl::GenWorkspaceState preHome;
 			fromCartesianPose(preHome.pos, positionPreH, orientationH);
 			home.vel.setId(); // it doesn't move
 
