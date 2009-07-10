@@ -24,6 +24,11 @@
 	<!-- Expand libraries                                                    -->
 	<!-- =================================================================== -->
 
+    <target name="expandlibs" depends="prepare">
+           <echo message="Expanding external libraries for the binder to output/classes"/>
+           <unzip dest="${output.dir}" src="../../tools/jgraphx/lib/jgraphx.jar"/>
+    </target>
+
 
 	<!-- =================================================================== -->
 	<!-- Source generation                                                   -->
@@ -46,7 +51,7 @@
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
+	<target name="compile" depends="expandlibs,slice" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" />
 	</target>
 

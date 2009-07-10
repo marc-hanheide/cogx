@@ -26,7 +26,9 @@
   <target name="template">
 <echo>Executing &quot;${target}&quot; target for the CAST framework (tools/cast)</echo>
      <ant target="${target}" dir="tools/cast" />
-    <echo>Executing &quot;${target}&quot; target for the binder (subarchitectures/comsys)</echo>
+  	<echo>Executing &quot;${target}&quot; target for the JGraphX library (tools/jgraphx)</echo>
+  	     <ant target="${target}" dir="tools/jgraphx" />
+    <echo>Executing &quot;${target}&quot; target for the binder (subarchitectures/binder)</echo>
      <ant target="${target}" dir="subarchitectures/binder" />
   </target>
 
