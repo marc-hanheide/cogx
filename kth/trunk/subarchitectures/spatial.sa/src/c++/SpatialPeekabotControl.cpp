@@ -16,6 +16,8 @@
 
 #include <AddressBank/ConfigFileReader.hh>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <FrontierInterface.hpp>
+#include <float.h>
 
 using namespace std;
 using namespace spatial;
@@ -31,10 +33,9 @@ extern "C" {
   }
 }
 
-SpatialPeekabotControl::SpatialPeekabotControl() : m_pendingQueryReceiver(this), gadget_y(10) 
+SpatialPeekabotControl::SpatialPeekabotControl() : m_nMaxPlaces(0), m_pendingQueryReceiver(this), gadget_y(10)
 {
   m_CtrlAction = 0;
-  m_nPlaces = 1;
   m_doPathQuery = false;
 }
 
@@ -133,6 +134,7 @@ void SpatialPeekabotControl::runComponent() {
 
   // Create an "icon" to drag around and show where you want the robot
   // to go
+  debug("Adding target widget");
   peekabot::CylinderProxy target;
   target.add(m_controlmodule, "target", peekabot::REPLACE_ON_CONFLICT);
   target.set_scale(0.5*radius,0.5*radius,0.1);
@@ -140,12 +142,14 @@ void SpatialPeekabotControl::runComponent() {
   target.set_color(0.5,0.5,0.5);
 
   // Create an "icon" to mark if you want to control according to the marker
+  debug("Adding master control widget");
   peekabot::SphereProxy control;
   control.add(m_controlmodule, "control", peekabot::REPLACE_ON_CONFLICT);
   control.set_scale(0.5*radius,0.5*radius,0.1);
   control.set_position(xNoA,yNoA+2*radius,0.05);
   control.set_color(0,1,0);
 
+  debug("Adding control zone widget");
   peekabot::CylinderProxy actionZone;
   actionZone.add(m_controlmodule, "action-zone", 
                      peekabot::REPLACE_ON_CONFLICT);
@@ -158,6 +162,7 @@ void SpatialPeekabotControl::runComponent() {
   bool wasInCtrl = false;
   float xT, yT;
   
+  debug("Entering main loop");
   if (m_PeekabotClient.is_connected()) {
 
     while (isRunning()) {
@@ -174,7 +179,9 @@ void SpatialPeekabotControl::runComponent() {
       }
 
       // Get the position of the control marker
+      debug("Checking master control position");
       r = control.get_position(peekabot::WORLD_COORDINATES);
+      debug("Checked master control position");
 
       if (r.succeeded()) {
 
@@ -186,6 +193,7 @@ void SpatialPeekabotControl::runComponent() {
 	  // inside the action zone
 
 	  // Get position of the target marker
+	  debug("Checking target position");
 	  r = target.get_position(peekabot::WORLD_COORDINATES);
 
 	  if (r.succeeded()) {
@@ -227,8 +235,25 @@ void SpatialPeekabotControl::runComponent() {
 		  SpatialData::PathTransitionProbRequestPtr probRequest =
 		    new SpatialData::PathTransitionProbRequest;
 
-		  //TODO: Read the current Place correctly!
-		  probRequest->startPlaceID = 0;
+		  NavData::FNodePtr curNode = getCurrentNavNode();
+		  if (curNode == 0) {
+		    log("Could not compute current nav node!");
+		    probRequest->startPlaceID = 0;
+		  }
+		  else {
+		    FrontierInterface::PlaceInterfacePrx agg(getIceServer
+			<FrontierInterface::PlaceInterface>("place.manager"));
+		    SpatialData::PlacePtr curPlace =
+		      agg->getPlaceFromNodeID(curNode->nodeId);
+		    if (curPlace == 0) {
+		      log("Could not compute current Place!");
+		      probRequest->startPlaceID = 0;
+		    }
+		    else {
+		      probRequest->startPlaceID = curPlace->id;
+		    }
+		  }
+
 		  probRequest->goalPlaceID = cmd->destId[0];
 		  probRequest->noSuccessors = 1;
 		  probRequest->status = SpatialData::QUERYPENDING;
@@ -330,19 +355,21 @@ void
 SpatialPeekabotControl::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
   cast::CASTData<SpatialData::Place> data = getMemoryEntryWithData<SpatialData::Place>(_wmc.address);
-  if (data.getData()->id >= m_nPlaces) {
-    m_nPlaces = data.getData()->id+1;
+  int id = (int)data.getData()->id;
+  m_Places.insert(id);
 
-    updatePeekabotGadget();
-  }
+  updatePeekabotGadget();
 }
 
 void SpatialPeekabotControl::updatePeekabotGadget()
 {
+  int nPlaces = m_Places.size();
+  m_nMaxPlaces = (m_nMaxPlaces > nPlaces) ? m_nMaxPlaces : nPlaces;
+
   peekabot::PolygonProxy pp;
   pp.add(m_controlmodule, "placeidline", peekabot::REPLACE_ON_CONFLICT);
   pp.add_vertex(0,gadget_y-1,0);
-  double maxX = 0 + 1.0*(m_nPlaces-1);
+  double maxX = 0 + 1.0*(nPlaces-1);
   pp.add_vertex(maxX,gadget_y-1,0);
   pp.add_vertex(maxX,gadget_y-1+0.05,0);
   pp.add_vertex(0,gadget_y-1+0.05,0);
@@ -354,16 +381,57 @@ void SpatialPeekabotControl::updatePeekabotGadget()
   lp.set_pose(0,gadget_y-0.5,0,0,0,0);
   lp.set_scale(50);
   lp.set_alignment(peekabot::ALIGN_RIGHT);
-  for (int i = 0; i < m_nPlaces; i++) {
+  int i = 0;
+  for (set<int>::iterator it = m_Places.begin(); it != m_Places.end(); it++) {
     peekabot::LabelProxy lp;
     char identifier[100];
     sprintf(identifier, "label%d", i);
     lp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
-    sprintf(identifier, "%d", i);
+    sprintf(identifier, "%d", *it);
     lp.set_text(identifier);
     lp.set_pose(1.0*i,gadget_y-0.5,0,0,0,0);
     lp.set_scale(50);
     lp.set_alignment(peekabot::ALIGN_CENTER);
+    i++;
   }
+  for (;i < m_nMaxPlaces; i++) {
+    char identifier[100];
+    sprintf(identifier, "label%d", i);
+    lp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
+    lp.hide();
+  }
+}
 
+NavData::FNodePtr
+SpatialPeekabotControl::getCurrentNavNode()
+{
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  vector<NavData::RobotPose2dPtr> robotPoses;
+  getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+
+  if (robotPoses.size() == 0) {
+    log("Could not find RobotPose!");
+    return 0;
+  }
+  
+  //Find the node closest to the robotPose
+  double robotX = robotPoses[0]->x;
+  double robotY = robotPoses[0]->y;
+  double minDistance = FLT_MAX;
+  NavData::FNodePtr ret = 0;
+
+  for (vector<NavData::FNodePtr>::iterator it = nodes.begin();
+      it != nodes.end(); it++) {
+    double x = (*it)->x;
+    double y = (*it)->y;
+
+    double distance = (x - robotX)*(x-robotX) + (y-robotY)*(y-robotY);
+    if (distance < minDistance) {
+      ret = *it;
+      minDistance = distance;
+    }
+  }
+  return ret;
 }

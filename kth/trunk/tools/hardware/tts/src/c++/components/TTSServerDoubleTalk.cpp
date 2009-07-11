@@ -25,7 +25,28 @@ TTSServerDoubleTalk::TTSServerDoubleTalk() :
 {}
 
 void 
+TTSServerDoubleTalk::handleSpeakCommand(const WorkingMemoryChange & _wmc) {
+  SpeakPtr speak(getMemoryEntry<Speak>(_wmc.address));
+  log("going to speak: %s", speak->message.c_str());
+  say(speak->message);
+  deleteFromWorkingMemory(_wmc.address);
+}
+  
+void 
 TTSServerDoubleTalk::say(const string & _message) {
   string cmd("echo " + _message + " > " + m_serialDevice);
   system(cmd.c_str()); 
+}
+
+void 
+TTSServerDoubleTalk::start() {
+  say("hello");
+  say("my name is mister chips");
+  addChangeFilter(createGlobalTypeFilter<TTS::Speak>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<TTSServerDoubleTalk>(this,&TTSServerDoubleTalk::handleSpeakCommand));
+}
+
+void 
+TTSServerDoubleTalk::stop() {
+  say("good bye");
 }

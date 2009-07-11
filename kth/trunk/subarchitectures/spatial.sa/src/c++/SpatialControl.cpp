@@ -24,6 +24,7 @@
 
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
+#include <FrontierInterface.hpp>
 
 using namespace cast;
 using namespace std;
@@ -173,7 +174,12 @@ void SpatialControl::configure(const map<string,string>& _config)
 } 
 
 void SpatialControl::start() 
-{ 
+{
+  FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
+  registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
+  //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
+    //(getComponentPointer());
+ 
   addChangeFilter(createLocalTypeFilter<NavData::InternalNavCommand>(cdl::ADD), 
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
 								  &SpatialControl::newNavCtrlCommand));  
@@ -937,4 +943,43 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
   }   
   
   m_RobotServer->execMotionCommand(cmd);
+}
+
+//array<FrontierPt> 
+FrontierInterface::FrontierPtSeq
+SpatialControl::getFrontiers()
+{
+  log("SpatialControl::getFrontiers() called");
+  m_Explorer->updateFrontiers();
+  FrontierInterface::FrontierPtSeq outArray;
+  log("m_Fronts contains %i frontiers", m_Explorer->m_Fronts.size());
+  for (list<Cure::FrontierPt>::iterator it =  m_Explorer->m_Fronts.begin();
+      it != m_Explorer->m_Fronts.end(); it++) {
+    FrontierInterface::FrontierPtPtr newPt = new FrontierInterface::FrontierPt;
+    newPt->mWidth = it->m_Width;
+    switch (it->m_State) {
+      case Cure::FrontierPt::FRONTIER_STATUS_OPEN:
+	newPt->mState = FrontierInterface::FRONTIERSTATUSOPEN;
+	break;
+      case Cure::FrontierPt::FRONTIER_STATUS_CURRENT:
+	newPt->mState = FrontierInterface::FRONTIERSTATUSCURRENT;
+	break;
+      case Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE:
+	newPt->mState = FrontierInterface::FRONTIERSTATUSUNREACHABLE;
+	break;
+      case Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED:
+	newPt->mState = FrontierInterface::FRONTIERSTATUSPATHBLOCKED;
+	break;
+      case Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED:
+	newPt->mState = FrontierInterface::FRONTIERSTATUSGATEWAYBLOCKED;
+	break;
+      case Cure::FrontierPt::FRONTIER_STATUS_UNKNOWN:
+      default:
+	newPt->mState = FrontierInterface::FRONTIERSTATUSUNKNOWN;
+    }
+    newPt->x = it->getX();
+    newPt->y = it->getY();
+    outArray.push_back(newPt);
+  }
+  return outArray;
 }

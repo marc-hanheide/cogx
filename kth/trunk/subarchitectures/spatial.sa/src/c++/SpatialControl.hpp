@@ -40,6 +40,7 @@
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/LocalMap.hh>
 #include <SensorData/SensorPose.hh>
+#include <FrontierInterface.hpp>
 
 namespace spatial {
 
@@ -64,6 +65,17 @@ class SpatialControl : public cast::ManagedComponent ,
                    public Cure::NavControllerEventListener,
 		   public Cure::FrontierExplorerEventListener
 {
+  private:
+    class FrontierServer: public FrontierInterface::FrontierReader {
+      virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
+	return m_pOwner->getFrontiers();
+      }
+      SpatialControl *m_pOwner;
+      FrontierServer(SpatialControl *owner) : m_pOwner(owner)
+      {}
+      friend class SpatialControl;
+    };
+    friend class FrontierServer;
 
 public:
 
@@ -170,6 +182,8 @@ private:
   void deleteInhibitor(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonData(const cast::cdl::WorkingMemoryChange &objID);
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
+
+  FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
 
 }; // namespace navsa

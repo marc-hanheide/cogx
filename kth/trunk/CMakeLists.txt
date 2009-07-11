@@ -9,7 +9,7 @@ set(CMAKE_INSTALL_PREFIX "${OUTPUT}" CACHE INTERNAL "Prefix prepended to install
 
 
 # use cmake files packaged with CAST as well
-set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake;/opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake ${CMAKE_MODULE_PATH})
 
 find_package(CAST REQUIRED)
 include(UseCAST)
@@ -23,26 +23,21 @@ add_definitions(-Wall)
 
 add_subdirectory (tools/d-lib)
 
-option(BUILD_SA_NAV "Build navigation subarchitecure" NO)
+option(BUILD_SA_NAV "Build navigation subarchitecure" YES)
 if(BUILD_SA_NAV)
 add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
 
 
-option(BUILD_HAL_ROBOT "Build hardware robotbase" NO)
+option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
 if(BUILD_HAL_ROBOT)
 add_subdirectory (tools/hardware/robotbase)
 endif(BUILD_HAL_ROBOT)
 
-option(BUILD_HAL_LASER "Build hardware laser" NO)
+option(BUILD_HAL_LASER "Build hardware laser" YES)
 if(BUILD_HAL_LASER)
 add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
-
-option(BUILD_HAL_SONAR "Build hardware sonar" NO)
-if(BUILD_HAL_SONAR)
-add_subdirectory (tools/hardware/sonar)
-endif(BUILD_HAL_SONAR)
 
 option(BUILD_HAL_TTS "Build hardware tts" NO)
 if(BUILD_HAL_TTS)
@@ -81,7 +76,7 @@ endif(BUILD_SA_VISION)
 
 
 # Spatial
-option(BUILD_SA_SPATIAL "Build vision subarchitecure" NO)
+option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
 if(BUILD_SA_SPATIAL)
     add_subdirectory (subarchitectures/spatial.sa)
 endif(BUILD_SA_SPATIAL)
