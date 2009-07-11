@@ -30,6 +30,7 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, g
 	desc.plannerDesc.pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
 	// Enable signal synchronization (default value)
 	//desc.reacPlannerDesc.signalSync = true;
+	desc.armDesc.joints[2]->min.pos = Real(0.0*MATH_PI); // Katana hack to avoid sub-optimal inverse kinematics solutions
 }
 
 
@@ -37,7 +38,7 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, g
 //creates an object, in this case the polyflap
 void setupObjects(Scene &scene, golem::Context &context) {
 	{
-		CriticalSectionWrapper csw(scene.getUniverse().getCS());
+		CriticalSectionWrapper csw(scene.getUniverse().getCSPhysX());
 		
 		//set physical parameters of simulation
 		NxMaterial* defaultMaterial = scene.getNxScene()->getMaterialFromIndex(0);
@@ -130,171 +131,49 @@ void trn(Vec3 v [], U32 n, const Mat34 &pose) {
 		pose.multiply(v[n], v[n]);
 }
 
-void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, const Mat34 &pose, MemoryStream &buffer) {
+// create finger
+void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, Mat34 &referencePose, const Mat34 &pose, MemoryStream &buffer) {
 	// mace characteristic dimensions
 	const Real length = Real(0.1);
 	const Real begin = Real(0.01);
 	const Real end = Real(0.01);
-// 	const Real diam = Real(0.02);
-// 	const Real height = Real(0.05);
-	const Real pos = length - end;
+
+	// reference pose at the end (on Y-axis)
+	referencePose.setId();
+	referencePose.p.v2 += length;
+	referencePose.multiply(pose, referencePose);
 	
 	// objects data
-	Vec3 hilt[8];
+	Vec3 finger[8];
 	BoundingConvexMesh::Desc desc;
 	desc.verticesStrideBytes = sizeof(Vec3);
 	desc.bCook = true;
 
 	// create hilt (along Y-axis)
-	hilt[0].set(-begin, Real(0.0), -begin);
-	hilt[1].set(+begin, Real(0.0), -begin);
-	hilt[2].set(-begin, Real(0.0), +begin);
-	hilt[3].set(+begin, Real(0.0), +begin);
-	hilt[4].set(-end, length, -end);
-	hilt[5].set(+end, length, -end);
-	hilt[6].set(-end, length, +end);
-	hilt[7].set(+end, length, +end);
-	trn(hilt, 8, pose);
+	finger[0].set(-begin, Real(0.0), -begin);
+	finger[1].set(+begin, Real(0.0), -begin);
+	finger[2].set(-begin, Real(0.0), +begin);
+	finger[3].set(+begin, Real(0.0), +begin);
+	finger[4].set(-end, length, -end);
+	finger[5].set(+end, length, -end);
+	finger[6].set(-end, length, +end);
+	finger[7].set(+end, length, +end);
+	trn(finger, 8, pose);
 	desc.numOfVertices = 8;
-	buffer.write(hilt, 8);
+	buffer.write(finger, 8);
 	desc.vertices = buffer.get().back();
 	bounds.push_back(desc.clone());
-
 }
 
-
-
-NxJoint *setupJoint(NxActor *effector, NxActor *tool, const NxVec3 &anchor, const NxVec3 &axis) {
-	const NxReal angle = NxReal(Math::degToRad(0.001));
-	const NxReal spring = NxReal(0.01);
-	const NxReal damping = NxReal(0.0001);
-	
-// 	tool->raiseBodyFlag(NX_BF_DISABLE_GRAVITY);
-	
-	NxD6JointDesc jDesc;
-	jDesc.actor[0] = effector;
-	jDesc.actor[1] = tool;
-	jDesc.setGlobalAnchor(anchor);
-	jDesc.setGlobalAxis(axis);
-
-	jDesc.xMotion = NX_D6JOINT_MOTION_LOCKED;
-	jDesc.yMotion = NX_D6JOINT_MOTION_LOCKED;
-	jDesc.zMotion = NX_D6JOINT_MOTION_LOCKED;
-	jDesc.linearLimit.value = NxReal(0.0);//3locked/2locked/1locked/0locked = none/line/cylinder/sphere
-
-	jDesc.swing1Motion = NX_D6JOINT_MOTION_LOCKED;
-	jDesc.swing1Limit.value = angle;
-	jDesc.swing1Limit.spring = spring;
-	jDesc.swing1Limit.damping = damping;
-	
-	jDesc.swing2Motion = NX_D6JOINT_MOTION_LOCKED;
-	jDesc.swing2Limit.value = angle;
-	jDesc.swing2Limit.spring = spring;
-	jDesc.swing2Limit.damping = damping;
-	
-	jDesc.twistMotion = NX_D6JOINT_MOTION_LOCKED;//NX_D6JOINT_MOTION_LIMITED;
-	jDesc.twistLimit.low.value =  -angle;
-	jDesc.twistLimit.low.spring = spring;
-	jDesc.twistLimit.low.damping = damping;
-	jDesc.twistLimit.high.value = angle;
-	jDesc.twistLimit.high.spring = spring;
-	jDesc.twistLimit.high.damping = damping;
-
-	return effector->getScene().createJoint(jDesc);
-}
-
-// Modify shape of the joint by adding a new Actor.
-void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bounds::Desc::Ptr> &bounds, golem::Context::Ptr context) {
-	CriticalSectionWrapper csw(physReacPlanner.getScene().getUniverse().getCS());
-	
-	Actor::Desc fingerActorDesc;
-	NxBodyDesc nxBodyDesc;
+// Modify shape of the joint. The arm bounds will be modified as well.
+void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, const std::vector<Bounds::Desc::Ptr> &bounds) {
 	Arm &arm = physReacPlanner.getArm();
-
-
-	fingerActorDesc.nxActorDesc.body = &nxBodyDesc;
-	fingerActorDesc.nxActorDesc.density = NxReal(10.0);
-
-	for (std::vector<Bounds::Desc::Ptr>::const_iterator i = bounds.begin(); i != bounds.end(); i++) {
-		NxShapeDesc *pNxShapeDesc = physReacPlanner.getScene().createNxShapeDesc(*i);
-		pNxShapeDesc->density = NxReal(10.0);
-		fingerActorDesc.nxActorDesc.shapes.push_back(pNxShapeDesc);
-	}
-
-	// Find the current pose of the end-effector
-	GenJointState j;
-	arm.lookupInp(j, physReacPlanner.getContext().getTimer()->elapsed());
-	//arm.lookupInp (j, SEC_TM_REAL_ZERO);
-	Mat34 zeroPose;
-	arm.forwardTransform(zeroPose, j.pos);
-
-	zeroPose.multiply(zeroPose, arm.getReferencePose()); // reference pose
-	fingerActorDesc.nxActorDesc.globalPose.M.setRowMajor(&zeroPose.R._m._11);
-	fingerActorDesc.nxActorDesc.globalPose.t.set(&zeroPose.p.v1);
 	
-	Mat34 pose;
-	pose.setId();
-	pose.p.v2 = Real(0.1);
-	pose.multiply(pose, arm.getReferencePose());
-	arm.setReferencePose (pose);
-	
-	NxMat34 nxZeroPose(false);
-	nxZeroPose.t.set(&zeroPose.p.v1);
-	nxZeroPose.M.setRowMajor(&zeroPose.R._m._11);
-	
-	// create finger Actor
-	Actor *pFingerActor = dynamic_cast<Actor*>(physReacPlanner.getScene().createObject(fingerActorDesc));
-	if (pFingerActor == NULL) {
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT,
-						    "FingerActor Object could not be created"
-						    ));
-		return;
-	}
-
-	Actor *effector = physReacPlanner.getJointActors()[jointIndex];
-	// take the controller end-effector Actor
-	if (effector == NULL) {
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT,
-						    "End-effector has no body"
-						    ));
-		return;
-	}
-
-	const NxU32 solverAccuracy = (NxU32)255;
-	const U32 numOfJointActors = physReacPlanner.getJointActors().size();
-
-	fingerActorDesc.nxActorDesc.globalPose.multiply(nxZeroPose, fingerActorDesc.nxActorDesc.globalPose);
-	pFingerActor->getNxActor()->raiseBodyFlag(NX_BF_DISABLE_GRAVITY);
-	pFingerActor->getNxActor()->setSolverIterationCount(solverAccuracy);
-   
-		
-	// make the finger a part of the arm body, but not a part rigidly attached to the last joint
-	const U32 group = physReacPlanner.getArmBoundsGroup();
-	pFingerActor->setBoundsGroup(group);
-	for (NxArray<NxShapeDesc*, NxAllocatorDefault>::const_iterator i = fingerActorDesc.nxActorDesc.shapes.begin(); i != fingerActorDesc.nxActorDesc.shapes.end(); i++) {
-		Bounds::Desc::Ptr pBoundsDesc =  physReacPlanner.getScene().createBoundsDesc(**i);
-		if (pBoundsDesc != NULL) {
-			pBoundsDesc->group = group;
-			pBoundsDesc->pose.multiply(pBoundsDesc->pose, arm.getReferencePose());
-			arm.Arm::addBoundsDesc(numOfJointActors - 1, pBoundsDesc);// HACK: call only Arm::addBoundsDesc() so the bounds will be invisible
-		}
-	}
+	for (std::vector<Bounds::Desc::Ptr>::const_iterator i = bounds.begin(); i != bounds.end(); i++)
+		arm.addBoundsDesc(jointIndex, *i);
 
 	physReacPlanner.getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
-	
-	NxVec3 anchor(0.0f);
-	fingerActorDesc.nxActorDesc.globalPose.multiply(anchor, anchor);
-	NxVec3 axis(NxReal(0.0), NxReal(1.0), NxReal(0.0)); // along Y-axis
-	fingerActorDesc.nxActorDesc.globalPose.M.multiply(axis, axis);
-
-	NxJoint *pJoint = setupJoint(effector->getNxActor(), pFingerActor->getNxActor(), anchor, axis);
-	if (pJoint == NULL) {
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "setupJoint(): Unable to create joint"));
-	}
-
-};
-
-
+}
 
 
 
@@ -678,36 +557,24 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 
-		if (!armType.compare("kat_sim_arm")) {
-			// Create finger to be attached to the 5th joint 
-			const U32 jointIndex = 4;
-			std::vector<Bounds::Desc::Ptr> bounds;
-			MemoryWriteStream buffer;
-			Mat34 pose;
-			pose.setId();
-			createFinger(bounds, pose/*arm.getReferencePose()*/, buffer);
-			// Modify shape of the joint by adding a new Actor.
-			addFinger(*pPhysReacPlanner, jointIndex, bounds, context);
-		}
-
 		setupObjects(*pScene, *context);
-
-
-
-
-
-
-
-
-
-
-
-
 
 		// some useful pointers
 		ReacPlanner &reacPlanner = pPhysReacPlanner->getReacPlanner();
 		Planner &planner = pPhysReacPlanner->getPlanner();
 		Arm &arm = pPhysReacPlanner->getArm();
+
+		// Create bounds to be attached to the end-effector (the last joint) 
+		const U32 jointIndex = (U32)arm.getJoints().size() - 1;
+		std::vector<Bounds::Desc::Ptr> boundsSet;
+		MemoryWriteStream buffer;
+		Mat34 referencePose;
+		createFinger(boundsSet, referencePose, arm.getReferencePose(), buffer);
+		// set new arm reference pose
+		arm.setReferencePose(referencePose);
+		// Modify shape of the joint by adding a new Actor.
+		addFinger(*pPhysReacPlanner, jointIndex, boundsSet);
+
 
 /*		
 // 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->get().front()->getPose();
@@ -1045,9 +912,6 @@ int main(int argc, char *argv[]) {
 					}
 
 
-					reacPlanner.wait();
-
-
 					// arm state at a time t and finishes at some time later
 					golem::ctrl::GenJointState state;
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
@@ -1109,7 +973,7 @@ int main(int argc, char *argv[]) {
 
 
 			// ON/OFF collision detection
-			planner.getHeuristic()->setCollisionDetection(true);
+			planner.getHeuristic()->setCollisionDetection(false);
 
 
 				
@@ -1131,7 +995,8 @@ int main(int argc, char *argv[]) {
 
 
 
-
+			// ON/OFF collision detection
+			planner.getHeuristic()->setCollisionDetection(true);
 
 			for (int t=0; t<MAX_PLANNER_TRIALS; t++) {
 				if (reacPlanner.send(home, ReacPlanner::ACTION_GLOBAL)) {
