@@ -24,6 +24,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <list>
 #include <cmath>
+#include <FrontierInterface.hpp>
 
 using namespace cast;
 using namespace std;
@@ -253,6 +254,16 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	    break;
 	  default: break;
 	  }
+
+	  // For Place transitions, send completion message to
+	  // PlaceManager
+	  if ((finished || some_error)
+	      && cmd.second->cmd == SpatialData::GOTOPLACE) {
+	    FrontierInterface::PlaceInterfacePrx 
+	      agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+	    agg->endPlaceTransition(!finished);
+	  }
+
 	  debug(finished? "yes": "no");
 	}else{
 	  log("The InternalNavCommand suddenly disappeared...");
@@ -443,6 +454,7 @@ void SpatialTranslation::addTaskToQueue
   m_Tasks.lock();
   switch(cmd->prio){
   case SpatialData::NORMAL:
+  default:
     log("Adding task at the end of the queue");
     first = (m_Tasks.size() == 0);
     m_Tasks.push_back(idded);
@@ -550,9 +562,32 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
       status = SpatialData::CMDMALFORMATTED;
       return false;
     } else {
-      ctrl.cmd = NavData::lGOTONODE;
-      ctrl.nodeId = nav->destId[0];
-      ctrl.tolerance = nav->tolerance;
+      //TODO: make component name a config parameter
+      FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+      NavData::FNodePtr destNode = agg->getNodeFromPlaceID(nav->destId[0]);
+
+      if (destNode != 0) {
+	ctrl.cmd = NavData::lGOTONODE;
+	ctrl.nodeId = destNode->nodeId;
+	ctrl.tolerance = nav->tolerance;
+      }
+      else {
+	FrontierInterface::NodeHypothesisPtr destHyp = agg->getHypFromPlaceID(nav->destId[0]);
+	if (destHyp != 0) {
+
+	  ctrl.cmd = NavData::lGOTOXY;
+	  ctrl.x = destHyp->x;
+	  ctrl.y = destHyp->y;
+	  ctrl.tolerance = nav->tolerance;
+	}
+	else {//destNode == 0 && destHyp == 0
+	  log("cmd error; could not find destination Place");
+	  status = SpatialData::CMDMALFORMATTED;
+	  return false;
+	}
+      }
+      agg->beginPlaceTransition((int)nav->destId[0]);
+      log("Sending transition start signal (place ID=%i)",(int)nav->destId[0]);
     }
   //}else if (nav->cmd == NavData::GOTONODE){
   //  log("read navcommand: GOTONODE");

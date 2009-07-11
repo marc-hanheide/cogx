@@ -18,6 +18,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <SpatialData.hpp>
 #include <NavData.hpp>
+#include <set>
 
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
@@ -72,7 +73,8 @@ protected:
 
   std::string m_PbHost;
   int m_PbPort;
-  int m_nPlaces;
+  std::set<int> m_Places;
+  int m_nMaxPlaces;
 
   bool m_doPathQuery;
   PendingQueryReceiver m_pendingQueryReceiver;
@@ -84,6 +86,8 @@ protected:
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_controlmodule;
   const double gadget_y;
+private:
+  NavData::FNodePtr getCurrentNavNode();
 };
 
 }; // namespace spatial

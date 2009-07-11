@@ -73,3 +73,11 @@ link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase OdometryReceiver Cu
 # add_cast_component(Pusher Pusher.cpp)
 # link_cast_component(${CAST_COMPONENT_NAME} NavData)
 
+option(BUILD_SA_NAV_OBJECTSEARCH "Build objectsearch nav.sa comp" NO)
+if(BUILD_SA_NAV_OBJECTSEARCH)
+set(SOURCES ObjPdf.cpp)
+add_cast_component(ObjectSearch ObjectSearch.cpp ${SOURCES})
+link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils) 
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+endif(BUILD_SA_NAV_OBJECTSEARCH)

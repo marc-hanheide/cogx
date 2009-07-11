@@ -24,7 +24,7 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(SpatialControl SpatialControl.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
+link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
@@ -45,6 +45,11 @@ link_cast_component(${CAST_COMPONENT_NAME} NavData)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 
+add_cast_component(ExplorationTester ExplorationTester.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} NavData)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData)
+link_cast_component(${CAST_COMPONENT_NAME} DLIB)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 # add_cast_component(Pusher Pusher.cpp)
 # link_cast_component(${CAST_COMPONENT_NAME} NavData)
 

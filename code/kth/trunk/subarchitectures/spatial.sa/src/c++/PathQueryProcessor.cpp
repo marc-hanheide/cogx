@@ -15,6 +15,7 @@
 #include "PathQueryProcessor.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <Navigation/NavGraphNode.hh>
+#include <FrontierInterface.hpp>
 
 using namespace cast;
 using namespace std;
@@ -157,49 +158,106 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 {
   debug("newPathTransitionProbRequest called");
   CASTData<SpatialData::PathTransitionProbRequest> oobj =
-  getMemoryEntryWithData<SpatialData::PathTransitionProbRequest>(objID.address);
-  
-  //if (oobj != 0) {
-    
-    SpatialData::PathTransitionProbRequestPtr ptr = oobj.getData();
+    getMemoryEntryWithData<SpatialData::PathTransitionProbRequest>(objID.address);
 
-    // FIXME: Must check the src so that we do not react to our own change
+  SpatialData::PathTransitionProbRequestPtr ptr = oobj.getData();
 
-    if (ptr->status != SpatialData::QUERYPENDING) {
-      // For us to process this request we require that it is marked
-      // as pending.
-      log("Got a PathTransitionProbRequest already processed");
-      return;
+  // FIXME: Must check the src so that we do not react to our own change
+
+  if (ptr->status != SpatialData::QUERYPENDING) {
+    // For us to process this request we require that it is marked
+    // as pending.
+    log("Got a PathTransitionProbRequest already processed");
+    return;
+  }
+
+  m_GraphMutex.lock();
+
+  debug("1");
+
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+  debug("2");
+  //Firstly, check if start place is a placeholder
+  FrontierInterface::NodeHypothesisPtr startHyp =
+    agg->getHypFromPlaceID(ptr->startPlaceID);
+  if (startHyp != 0) {
+    debug("Requested path probability from Placeholder with Place ID %i",
+	ptr->startPlaceID);
+    //Return 0 probability for paths starting at placeholders
+    SpatialData::PlaceProbability pp;
+    pp.placeID = ptr->startPlaceID;
+    pp.prob = 1;
+    ptr->successProb = 0;
+    ptr->successors.push_back(pp);
+
+    // If we have asked for 
+    if (ptr->noSuccessors < 0) {
+      //Compute probabilities for all nav nodes
+      for (std::list<Cure::NavGraphNode*>::iterator i = 
+	  m_NavGraph.m_Nodes.begin(); i != m_NavGraph.m_Nodes.end(); i++) {
+	unsigned int nodeID = (*i)->getId();
+	SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeID);
+	if (place != 0) {
+	  pp.placeID = place->id;
+	  pp.prob = 0;
+	  ptr->successors.push_back(pp);
+	}
+      }
+      // Compute probabilities for all placeholders
+      std::vector<FrontierInterface::NodeHypothesisPtr> hypPts;
+      getMemoryEntries<FrontierInterface::NodeHypothesis>(hypPts,0);
+      for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
+	  hypPts.begin(); i != hypPts.end(); i++) {
+	if ((*i)->hypID == startHyp->hypID) {
+	  // Already added
+	}
+	else{
+	  unsigned int hypID = (*i)->hypID;
+	  SpatialData::PlacePtr place = agg->getPlaceFromHypID(hypID);
+	  if (place != 0) {
+	    pp.placeID = place->id;
+	    pp.prob = 0;
+	    ptr->successors.push_back(pp);
+	  }
+	}
+      }
+      NavData::FNodePtr startNode =
+	agg->getNodeFromPlaceID(ptr->startPlaceID);
+      if (startNode == 0) {
+	log("Could not find starting Place!");
+	ptr->status = SpatialData::QUERYPLACE1INVALID;
+      }
     }
+  }
 
-    m_GraphMutex.lock();
-
-    if (!m_NavGraph.getNode(ptr->startPlaceID)) {
-
-      log("Start place invalid");
+  else {
+    debug("Start Place was a node");
+    //Start Place is a node
+    NavData::FNodePtr startNode =
+      agg->getNodeFromPlaceID(ptr->startPlaceID);
+  debug("3");
+    if (startNode == 0) {
+      log("Could not find start Node!");
       ptr->status = SpatialData::QUERYPLACE1INVALID;
+    }
+    else {
+      //Start place is an extant node
+      //Secondly, check if goal place is a placeholder
+  debug("4");
+      FrontierInterface::NodeHypothesisPtr goalHyp =
+	agg->getHypFromPlaceID(ptr->goalPlaceID);
+      if (goalHyp != 0) {
+	//Goal place is a placeholder
+	int goalHypID = goalHyp->hypID;
 
-    } else if (!m_NavGraph.getNode(ptr->goalPlaceID)) {
+	SpatialData::PlaceProbability pp;
 
-      log("Goal place invalid");
-      ptr->status = SpatialData::QUERYPLACE2INVALID;
-
-    } else {
-
-      std::list<Cure::NavGraphNode> path;
-      double cost;
-      debug("findPath(%ld, %ld,...)", ptr->startPlaceID, ptr->goalPlaceID);
-      int ret = m_NavGraph.findPath(ptr->startPlaceID, ptr->goalPlaceID,
-                                    path, &cost);
-
-      SpatialData::PlaceProbability pp;
-
-      // We use a super simple model in which it is prob 1 to reach
-      // the goal (if reachable and 0 for the rest
-      if (m_noIndirectPaths) {
-	// Disallow paths that do not follow a NavGraph edge
-	// between two places directly
-	if (ret == 0 && path.size() < 3) {
+	// We use a super simple model in which it is prob 1 to reach
+	// the goal (if reachable and 0 for the rest)
+	bool reachable = goalHyp->originPlaceID == ptr->startPlaceID;
+  debug("5");
+	if (reachable) {
 	  pp.placeID = ptr->goalPlaceID;
 	  pp.prob = 1;
 	  ptr->successProb = 1;
@@ -209,52 +267,150 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	  pp.prob = 1;
 	  ptr->successProb = 0;
 	}
-      }
-      else { //m_noIndirectPaths
-	if (ret == 0) {
+	ptr->successors.push_back(pp);
 
-	  pp.placeID = ptr->goalPlaceID;
-	  pp.prob = 1;
-	  ptr->successProb = 1;
+  debug("6");
+	// If we have asked for 
+	if (ptr->noSuccessors < 0) {
+  debug("7");
 
-	} else {
-
-	  pp.placeID = ptr->startPlaceID;
-	  pp.prob = 1;
-	  ptr->successProb = 0;
+	  //Compute probabilities for all nav nodes
+	  for (std::list<Cure::NavGraphNode*>::iterator i = 
+	      m_NavGraph.m_Nodes.begin(); i != m_NavGraph.m_Nodes.end(); i++) {
+	    if ((*i)->getId() == startNode->nodeId) {
+	      // Already added
+	    } else {
+	      unsigned int nodeID = (*i)->getId();
+	      SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeID);
+	      if (place != 0) {
+		pp.placeID = place->id;
+		pp.prob = 0;
+		ptr->successors.push_back(pp);
+	      }
+	    }
+	  }
+	  // Compute probabilities for all placeholders
+	  std::vector<FrontierInterface::NodeHypothesisPtr> hypPts;
+	  getMemoryEntries<FrontierInterface::NodeHypothesis>(hypPts,0);
+	  for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
+	      hypPts.begin(); i != hypPts.end(); i++) {
+	    if ((*i)->hypID == goalHypID) {
+	      // Already added
+	    }
+	    else{
+	      unsigned int hypID = (*i)->hypID;
+	      SpatialData::PlacePtr place = agg->getPlaceFromHypID(hypID);
+	      if (place != 0) {
+		pp.placeID = place->id;
+		pp.prob = 0;
+		ptr->successors.push_back(pp);
+	      }
+	    }
+	  }
 	}
 
+	ptr->status = SpatialData::QUERYCOMPLETED;
       }
+      else {
+	//Goal place is not a placeholder
+	NavData::FNodePtr goalNode =
+	  agg->getNodeFromPlaceID(ptr->goalPlaceID);
+	if (goalNode == 0) {
+	  log("Could not find goal Place!");
+	  ptr->status = SpatialData::QUERYPLACE2INVALID;
+	}
+	else {
+	  //Goal place is a nav node
 
-      ptr->successors.push_back(pp);
-      
-      // If we have asked for 
-      if (ptr->noSuccessors < 0) {
+	  int startNodeID = startNode->nodeId;
+	  int goalNodeID = goalNode->nodeId;
+	  std::list<Cure::NavGraphNode> path;
+	  double cost;
+	  debug("findPath(%ld, %ld,...)", startNodeID, goalNodeID);
+	  int ret = m_NavGraph.findPath(startNodeID, goalNodeID,
+	      path, &cost);
 
-        for (std::list<Cure::NavGraphNode*>::iterator i = 
-               m_NavGraph.m_Nodes.begin(); i != m_NavGraph.m_Nodes.end(); i++) {
+	  SpatialData::PlaceProbability pp;
 
-          if ((*i)->getId() == ptr->startPlaceID && ret) {
-            // Already added
-          } else if ((*i)->getId() == ptr->goalPlaceID && !ret) {
-            // Already added
-          } else {
-            pp.placeID = (*i)->getId();
-            pp.prob = 0;
-            ptr->successors.push_back(pp);
-          }
-          
-        }
+	  // We use a super simple model in which it is prob 1 to reach
+	  // the goal (if reachable and 0 for the rest
+	  if (m_noIndirectPaths) {
+	    // Disallow paths that do not follow a NavGraph edge
+	    // between two places directly
+	    if (ret == 0 && path.size() < 3) {
+	      pp.placeID = ptr->goalPlaceID;
+	      pp.prob = 1;
+	      ptr->successProb = 1;
+	    }
+	    else {
+	      pp.placeID = ptr->startPlaceID;
+	      pp.prob = 1;
+	      ptr->successProb = 0;
+	    }
+	  }
+	  else { //m_noIndirectPaths
+	    if (ret == 0) {
 
+	      pp.placeID = ptr->goalPlaceID;
+	      pp.prob = 1;
+	      ptr->successProb = 1;
+
+	    } else {
+
+	      pp.placeID = ptr->startPlaceID;
+	      pp.prob = 1;
+	      ptr->successProb = 0;
+	    }
+
+	  }
+
+	  ptr->successors.push_back(pp);
+
+	  // If we have asked for 
+	  if (ptr->noSuccessors < 0) {
+
+	    // Compute probabilities for all nav nodes
+	    for (std::list<Cure::NavGraphNode*>::iterator i = 
+		m_NavGraph.m_Nodes.begin(); i != m_NavGraph.m_Nodes.end(); i++) {
+
+	      if ((*i)->getId() == startNodeID && ret) {
+		// Already added
+	      } else if ((*i)->getId() == goalNodeID && !ret) {
+		// Already added
+	      } else {
+		unsigned int nodeID = (*i)->getId();
+		SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeID);
+		if (place != 0) {
+		  pp.placeID = place->id;
+		  pp.prob = 0;
+		  ptr->successors.push_back(pp);
+		}
+	      }
+
+	    }
+	    // Compute probabilities for all placeholders
+	    std::vector<FrontierInterface::NodeHypothesisPtr> hypPts;
+	    getMemoryEntries<FrontierInterface::NodeHypothesis>(hypPts,0);
+	    for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
+		hypPts.begin(); i != hypPts.end(); i++) {
+	      unsigned int hypID = (*i)->hypID;
+	      SpatialData::PlacePtr place = agg->getPlaceFromHypID(hypID);
+	      if (place != 0) {
+		pp.placeID = place->id;
+		pp.prob = 0;
+		ptr->successors.push_back(pp);
+	      }
+	    }
+	  }
+	}
+	ptr->status = SpatialData::QUERYCOMPLETED;
       }
-
-      ptr->status = SpatialData::QUERYCOMPLETED;
-
     }
-    overwriteWorkingMemory<SpatialData::PathTransitionProbRequest>(objID.address, ptr);
+  }
+  debug("8");
+  overwriteWorkingMemory<SpatialData::PathTransitionProbRequest>(objID.address, ptr);
 
-    m_GraphMutex.unlock();
-  //}
+  m_GraphMutex.unlock();
 }
 
 void 
@@ -262,47 +418,102 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
 {
   CASTData<SpatialData::PathTransitionCostRequest> oobj =
     getMemoryEntryWithData<SpatialData::PathTransitionCostRequest>(objID.address);
-  
+
   //if (oobj != 0) {
-    
-    SpatialData::PathTransitionCostRequestPtr ptr = oobj.getData();
 
-    // FIXME: Must check the src so that we do not react to our own change
+  SpatialData::PathTransitionCostRequestPtr ptr = oobj.getData();
 
-    if (ptr->status != SpatialData::QUERYPENDING) {
-      // For us to process this request we require that it is marked
-      // as pending.
-      log("Got a PathTransitionCostRequest already processed");
-      return;
-    }
+  // FIXME: Must check the src so that we do not react to our own change
 
-    m_GraphMutex.lock();
+  if (ptr->status != SpatialData::QUERYPENDING) {
+    // For us to process this request we require that it is marked
+    // as pending.
+    log("Got a PathTransitionCostRequest already processed");
+    return;
+  }
 
-    if (!m_NavGraph.getNode(ptr->startPlaceID)) {
+  m_GraphMutex.lock();
 
-      log("Start place invalid");
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+  //Firstly, check if start place is a placeholder
+  FrontierInterface::NodeHypothesisPtr startHyp =
+    agg->getHypFromPlaceID(ptr->startPlaceID);
+  if (startHyp != 0) {
+    debug("Requested path cost from Placeholder with Place ID %i",
+	ptr->startPlaceID);
+    ptr->cost = 1e100;
+  }
+  else {
+    NavData::FNodePtr startNode =
+      agg->getNodeFromPlaceID(ptr->startPlaceID);
+    if (startNode == 0) {
+      log("Could not find starting Place!");
       ptr->status = SpatialData::QUERYPLACE1INVALID;
-
-    } else if (!m_NavGraph.getNode(ptr->goalPlaceID)) {
-
-      log("Goal place invalid");
-      ptr->status = SpatialData::QUERYPLACE2INVALID;
-
-    } else {
-
-      std::list<Cure::NavGraphNode> path;
-      double cost = 1e100;
-      debug("findPath(%ld, %ld,....)",ptr->startPlaceID, ptr->goalPlaceID);
-      int ret = m_NavGraph.findPath(ptr->startPlaceID, ptr->goalPlaceID,
-                                    path, &cost);
-
-      
-      ptr->cost = cost;
-      ptr->status = SpatialData::QUERYCOMPLETED;
-
     }
+    else { //startNode != 0
+      //Start place is an extant node
+      //Secondly, check if goal place is a placeholder
+      FrontierInterface::NodeHypothesisPtr goalHyp =
+	agg->getHypFromPlaceID(ptr->goalPlaceID);
+      if (goalHyp != 0) {
+	//Goal place is a placeholder
 
-    overwriteWorkingMemory<SpatialData::PathTransitionCostRequest>(objID.address, ptr);
-    m_GraphMutex.unlock();
+	//For unexplored edges, simply model cost as metric distance
+	//between the node and the frontier
+	bool reachable = goalHyp->originPlaceID == ptr->startPlaceID;
+	if (reachable) {
+	  double distSq = (goalHyp->x - startNode->x)*(goalHyp->x - startNode->x) +
+	    (goalHyp->y - startNode->y)*(goalHyp->y - startNode->y);
+	  ptr->cost = sqrt(distSq);
+	}
+	else
+	{
+	  ptr->cost = 1e100;
+	}
+	ptr->status = SpatialData::QUERYCOMPLETED;
+      }
+      else { //goalHyp == 0
+	NavData::FNodePtr goalNode =
+	  agg->getNodeFromPlaceID(ptr->goalPlaceID);
+	if (goalNode == 0) {
+	  log("Could not find goal Place!");
+	  ptr->status = SpatialData::QUERYPLACE2INVALID;
+	}
+	else { //goalNode != 0
+	  //Goal place is an extant node
+	  int startNodeID = startNode->nodeId;
+	  int goalNodeID = goalNode->nodeId;
+
+	  std::list<Cure::NavGraphNode> path;
+	  double cost = 1e100;
+	  debug("findPath(%ld, %ld,....)",startNodeID, goalNodeID);
+	  int ret = m_NavGraph.findPath(ptr->startPlaceID, ptr->goalPlaceID,
+	      path, &cost);
+
+	  if (m_noIndirectPaths) {
+	    if (ret == 0 && path.size() < 3) {
+	      ptr->cost = cost;
+	    }
+	    else {
+	      ptr->cost = 1e100;
+	    }
+	  }
+	  else { //m_noIndirectPaths
+	    if (ret == 0) {
+	      ptr->cost = cost;
+	    }
+	    else {
+	      ptr->cost = 1e100;
+	    }
+	  }
+	  ptr->status = SpatialData::QUERYCOMPLETED;
+	} //goalNode != 0
+      } //goalHyp == 0
+    } //startNode != 0
+  } //startHyp == 0
+
+  overwriteWorkingMemory<SpatialData::PathTransitionCostRequest>(objID.address, ptr);
+  m_GraphMutex.unlock();
   //}
 }

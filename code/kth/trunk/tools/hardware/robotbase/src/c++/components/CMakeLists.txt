@@ -26,6 +26,7 @@ SET(SOURCES RobotbaseClientUtils.cpp)
 SET(HEADERS RobotbaseClientUtils.hpp)
 ADD_LIBRARY(RobotbaseClientUtils SHARED ${SOURCES})
 # Add libraries to link against.
+target_link_libraries(RobotbaseClientUtils ${PLAYER_LIBRARIES})
 target_link_libraries(RobotbaseClientUtils Robotbase)
 target_link_libraries(RobotbaseClientUtils ${CAST_LIBRARIES})
 target_link_libraries(RobotbaseClientUtils Ice IceUtil)

@@ -501,14 +501,7 @@ module NavData {
     cast::cdl::CASTTime  time; // timestamp when last updated
     long id;                   // -1 means no person followed
   };
-
-
-  ///Module containing data structures used in the ELM
-  module elm {
-    ///Event string for being in an area
-    const string INAREAEVENT = "InArea";
-  }; 
-	
+ 
 };
 
 #endif // NAVDATA_ICE
