@@ -4,8 +4,8 @@
 
 :- interface.
 
-:- import_module term, varset, pair, list, map, string.
-:- import_module context.
+:- import_module term, varset, pair, list, map, string, bool.
+:- import_module context, costs.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -30,10 +30,13 @@
 :- type modalized(M, T)
 	--->	m(M, T).
 
+:- type with_cost_function(T)
+	--->	cf(T, cost_function).
+
 :- type mprop == modalized(list(ctx_ref), atomic_formula).
 :- type vsmprop == vscope(mprop).
 
-:- type mrule == modalized(list(ctx_ref), pair(list(mprop), mprop)).
+:- type mrule == pair(bool, modalized(list(ctx_ref), pair(list(with_cost_function(mprop)), mprop))).
 :- type vsmrule == vscope(mrule).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -69,11 +72,16 @@
 :- func rename_vars_in_term(map(var, var), formula.term) = formula.term.
 :- func rename_vars_in_formula(map(var, var), atomic_formula) = atomic_formula.
 :- func rename_vars_in_mprop(map(var, var), mprop) = mprop.
+:- func rename_vars_in_annot_mprop(map(var, var), with_cost_function(mprop)) = with_cost_function(mprop).
 :- func rename_vars_in_mrule(map(var, var), mrule) = mrule.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred unify_formulas(atomic_formula::in, atomic_formula::in, subst::out) is semidet.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred is_ground(atomic_formula::in) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -107,6 +115,11 @@ mprop_to_string(Varset, MP) = Str :-
 vsmprop_to_string(vs(MP, Varset)) = Str :-
 	string_as_vsmprop(Str, vs(MP, Varset)).
 
+:- func annot_vsmprop_to_string(vscope(with_cost_function(mprop))) = string.
+
+annot_vsmprop_to_string(vs(cf(MP, F), Varset)) = Str ++ "/" ++ cost_function_to_string(F) :-
+	string_as_vsmprop(Str, vs(MP, Varset)).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pragma promise_equivalent_clauses(string_as_vsmrule/2).
@@ -116,9 +129,10 @@ string_as_vsmrule(Str::in, vs(R, Varset)::out) :-
 	generic_term(T),
 	term_to_mrule(T, R).
 
-string_as_vsmrule(Str::out, vs(m(K, As-H), Varset)::in) :-
-	ModStr = modality_to_string(K),
-	RuleStr = string.join_list(", ", list.map((func(A) = vsmprop_to_string(vs(A, Varset))), As))
+string_as_vsmrule(Str::out, vs(Ax-m(K, As-H), Varset)::in) :-
+	(if Ax = yes then axiom(AxStr0), AxStr = AxStr0 ++ " : " else AxStr = ""),
+	ModStr = AxStr ++ modality_to_string(K),
+	RuleStr = string.join_list(", ", list.map((func(A) = annot_vsmprop_to_string(vs(A, Varset))), As))
 			++ " -> " ++ vsmprop_to_string(vs(H, Varset)),
 	(if ModStr = ""
 	then Rest = RuleStr
@@ -151,13 +165,30 @@ term_to_mprop(T, m(Mod, P)) :-
 
 :- pred term_to_mrule(term.term::in, mrule::out) is semidet.
 
-term_to_mrule(T, m(Mod, R)) :-
+term_to_mrule(T, Ax-m(Mod, R)) :-
+	axiom(AxStr),
 	(if T = functor(atom(":"), [TM, TR], _)
 	then 
-		term_to_list_of_ctx_refs(TM, Mod),
+		(if
+			TM = functor(atom(AxStr), [], _)
+		then
+			Ax = yes,
+			Mod = []
+		else
+			(if
+				TM = functor(atom(":"), [functor(atom(AxStr), [], _), TM1], _)
+			then
+				Ax = yes,
+				term_to_list_of_ctx_refs(TM1, Mod)
+			else
+				Ax = no,
+				term_to_list_of_ctx_refs(TM, Mod)
+			)
+		),
 		term_to_nonmod_rule(TR, R)
 	else
 		Mod = [],
+		Ax = no,
 		term_to_nonmod_rule(T, R)
 	).
 
@@ -208,25 +239,32 @@ modality_to_string([H|T]) = string.join_list(" : ", list.map((func(Ref) = S is d
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_nonmod_rule(term.term::in, pair(list(mprop), mprop)::out) is semidet.
+:- pred term_to_nonmod_rule(term.term::in, pair(list(with_cost_function(mprop)), mprop)::out) is semidet.
 
 term_to_nonmod_rule(functor(atom("->"), [TAnte, THead], _), Ante-Head) :-
-	term_to_list_of_mprops(TAnte, Ante),
+	term_to_list_of_annot_mprops(TAnte, Ante),
 	term_to_mprop(THead, Head).
 
-:- pred term_to_list_of_mprops(term.term::in, list(mprop)::out) is semidet.
+:- pred term_to_list_of_annot_mprops(term.term::in, list(with_cost_function(mprop))::out) is semidet.
 
-term_to_list_of_mprops(T, List) :-
+term_to_list_of_annot_mprops(T, List) :-
 	(if
 		T = functor(atom(","), [TMP, TMPs], _)
 	then
-		term_to_mprop(TMP, MP),
-		term_to_list_of_mprops(TMPs, MPs),
-		List = [MP|MPs]
+		func_annotation(TMP, F, MP1),
+		term_to_mprop(MP1, MP),
+		term_to_list_of_annot_mprops(TMPs, MPs),
+		List = [cf(MP, F)|MPs]
 	else
-		term_to_mprop(T, MP),
-		List = [MP]
+		func_annotation(T, F, T1),
+		term_to_mprop(T1, MP),
+		List = [cf(MP, F)]
 	).
+
+:- pred func_annotation(term.term::in, cost_function::out, term.term::out) is semidet.
+
+func_annotation(functor(atom("/"), [T, functor(atom(FName), [], _)], _), f(FName), T).
+func_annotation(functor(atom("/"), [T, functor(float(FValue), [], _)], _), const(FValue), T).
 
 %------------------------------------------------------------------------------%
 
@@ -261,8 +299,10 @@ rename_vars_in_formula(Renaming, p(PS, Args)) = p(PS, SubstArgs) :-
 
 rename_vars_in_mprop(Renaming, m(M, Prop)) = m(M, rename_vars_in_formula(Renaming, Prop)).
 
-rename_vars_in_mrule(Renaming, m(M, Ante-Succ)) =
-		m(M, list.map(rename_vars_in_mprop(Renaming), Ante)-rename_vars_in_mprop(Renaming, Succ)).
+rename_vars_in_annot_mprop(Renaming, cf(MProp, F)) = cf(rename_vars_in_mprop(Renaming, MProp), F).
+
+rename_vars_in_mrule(Renaming, Ax-m(M, Ante-Succ)) =
+		Ax-m(M, list.map(rename_vars_in_annot_mprop(Renaming), Ante)-rename_vars_in_mprop(Renaming, Succ)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -289,3 +329,13 @@ formula_term_to_term(t(F, Args), functor(atom(F), TermArgs, context("", 0))) :-
 
 atomic_formula_to_term(p(PredSym, Args), functor(atom(PredSym), TermArgs, context("", 0))) :-
 	list.map(formula_term_to_term, Args, TermArgs).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred term_ground(formula.term::in) is semidet.
+
+term_ground(t(_, Terms)) :-
+	list.all_true(term_ground, Terms).
+
+is_ground(p(_, Args)) :-
+	list.all_true(term_ground, Args).

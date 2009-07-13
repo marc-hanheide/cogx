@@ -13,7 +13,7 @@
 :- implementation.
 
 :- import_module string, pair, list, map.
-:- import_module varset.
+:- import_module varset, term_io, parser.
 :- import_module formula.
 
 main(!IO) :-
@@ -23,12 +23,20 @@ main(!IO) :-
 	test_mprop_parse("a(b(c)).", !IO),
 	test_mprop_parse("e0:p(x).", !IO),
 	test_mprop_parse("i0:a0:p(x).", !IO),
+	test_mprop_parse("axiom : p(x).", !IO),
 
 	nl(!IO),
 
-	test_mrule_parse("a -> b.", !IO),
-	test_mrule_parse("a, b, c -> d.", !IO),
-	test_mrule_parse("i0:(e0:first(x), e0:second(x) -> a0:head(x)).", !IO),
+	test_term_parse("axiom : p(x).", !IO),
+	test_term_parse("[] : (p(X), q(X) -> r(X)) / fax.", !IO),
+
+	nl(!IO),
+
+	test_mrule_parse("a / 0.1 -> b.", !IO),
+	test_mrule_parse("a / 0.1, b / 0.2, c / 0.3 -> d.", !IO),
+	test_mrule_parse("i0:(e0:first(x) / f1, e0:second(x) / 0.1 -> a0:head(x)).", !IO),
+	test_mrule_parse("[]:(e0:first(f(x)) / f1, e0:second(x) / f2 -> a0:head(x)).", !IO),
+	test_mrule_parse("[]:i0:(e0:first(f(x)) / f1, e0:second(x) / f2 -> a0:head(x)).", !IO),
 
 	nl(!IO),
 
@@ -44,13 +52,13 @@ main(!IO) :-
 	test_unify("p(X).", "p(p(y)).", !IO).
 	
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-/*
+
 :- pred test_term_parse(string::in, io::di, io::uo) is det.
 
 test_term_parse(S, !IO) :-
-	string_to_term_varset(S, T, V),
-	format("* `%s':\n  parsed=%s\n\n", [s(S), s(string(T-V))], !IO).
-*/
+	read_term_from_string("", S, _, Result),
+	format("* `%s':\n  result=%s\n\n", [s(S), s(string(Result))], !IO).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred test_mprop_parse(string::in, io::di, io::uo) is det.
