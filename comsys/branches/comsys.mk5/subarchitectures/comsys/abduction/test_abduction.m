@@ -14,7 +14,7 @@
 
 :- import_module require, solutions.
 :- import_module map, set, list, pair, assoc_list, string, float.
-:- import_module abduction, kb, lf, formula, context, costs.
+:- import_module abduction, kb, formula, context, costs.
 
 :- import_module parser, term_io, term, varset.
 
