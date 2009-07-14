@@ -340,8 +340,9 @@ void DisplayNavInPB::runComponent() {
 
 
       // Display the last laser scan 
-      if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {
+      if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {        
 
+        /*
         peekabot::SensorProxy::SensorData reading;
         double r[m_Scan.ranges.size()];
         for (unsigned int i = 0; i < m_Scan.ranges.size(); i++) {
@@ -349,7 +350,8 @@ void DisplayNavInPB::runComponent() {
         }
         reading.write(r, m_Scan.ranges.size());
         m_ProxyLaser.update(reading);
-        
+        */
+
       }
 
       // Display robot pose

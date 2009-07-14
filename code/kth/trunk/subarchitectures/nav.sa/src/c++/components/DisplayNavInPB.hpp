@@ -144,7 +144,7 @@ private:
   peekabot::ObjectProxy m_ProxyRoot;
   
   peekabot::GroupProxy m_ProxyRobot;
-  peekabot::SensorProxy m_ProxyLaser;
+  peekabot::PointCloudProxy m_ProxyLaser;
   peekabot::GroupProxy m_ProxyGraph;
   peekabot::GroupProxy m_ProxyNodes;
   peekabot::GroupProxy m_ProxyEdges;
