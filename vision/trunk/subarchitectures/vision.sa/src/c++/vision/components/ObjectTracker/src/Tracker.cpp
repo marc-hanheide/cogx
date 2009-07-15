@@ -119,8 +119,10 @@ Tracker::Tracker(){
 	if((id = g_Resources->AddCamera("cam_default")) == -1)
 		exit(1);
 	m_cam_default = g_Resources->GetCamera(id);
-
+	
 }
+
+
 
 // Initialise function (must be called before tracking)
 bool Tracker::init(	int width, int height,							// image size in pixels
@@ -324,15 +326,20 @@ void Tracker::zeroParticles(){
 	printf("Zero particles\n");
 }
 
-void Tracker::enableKalman(){
-	Particle* pmax;
-	pmax = m_particles->getMax();
-	m_zk[0] = pmax->rX; m_zk[1] = pmax->rY; m_zk[2] = pmax->rZ; 
-	m_zk[3] = pmax->tX; m_zk[4] = pmax->tY; m_zk[5] = pmax->tZ;
-	m_kalman.init();
-	m_kalman.setX(m_zk);
-	m_kalman_enabled = true;
-	printf("Kalman filter enabled\n");
+void Tracker::enableKalman(bool val){
+	if(val){
+		Particle* pmax;
+		pmax = m_particles->getMax();
+		m_zk[0] = pmax->rX; m_zk[1] = pmax->rY; m_zk[2] = pmax->rZ; 
+		m_zk[3] = pmax->tX; m_zk[4] = pmax->tY; m_zk[5] = pmax->tZ;
+		m_kalman.init();
+		m_kalman.setX(m_zk);
+		m_kalman_enabled = true;
+		printf("Kalman filter enabled\n");
+	}else{
+		m_kalman_enabled = false;
+		printf("Kalman filter disabled\n");
+	}
 }
 
 

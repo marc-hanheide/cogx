@@ -17,6 +17,8 @@
 #define PIOVER180 3.14159265358979323846f/180.0
 #endif
 
+#define DISTLEN 1000
+
 class Tracker{
 protected:
 	typedef struct Parameter{
@@ -113,6 +115,7 @@ public:
 	void setCamPerspective(Camera* camera){ m_cam_perspective = camera; }
 	void setTrackTime(float time){ params.track_time = time; }
 	void setNoise(float rot, float trans){ params.noise_rot_max=rot; params.noise_trans_max=trans; }
+	void setTestflag(bool val){ m_testflag = val; }
 	
 	void lock(bool val){ m_lock=val; m_particles->setAll(*m_particles->getMax()); }
 	
@@ -120,6 +123,7 @@ public:
 	bool getEdgesImage(){ return m_draw_edges; }
 	bool getEdgesModel(){ return m_showmodel; }
 	bool getParticlesVisible(){ return m_showparticles; }
+	bool getKalmanEnabled(){ return m_kalman_enabled; }
 	
 	void showEdgesImage(bool val){ m_draw_edges = val; }
 	void showEdgesModel(bool val){ m_showmodel = val; }
@@ -127,7 +131,7 @@ public:
 	void showStatistics();
 	
 	void zeroParticles();
-	void enableKalman();
+	void enableKalman(bool val);
 	void disableKalman(){ m_kalman_enabled = false; }	
 
 };

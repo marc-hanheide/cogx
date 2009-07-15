@@ -24,6 +24,7 @@ add_subdirectory (src/c++/vision/components/StereoViewer)
 endif(BUILD_HAL_STEREO)
 add_subdirectory (src/c++/vision/components/ObjectTracker)
 add_subdirectory (src/c++/vision/components/ObjectTrackerDriver)
+add_subdirectory (src/c++/vision/components/ObjectTrackerTest)
 add_subdirectory (src/c++/vision/components/VisionDriver)
 
 add_subdirectory (src/c++/vision/components/Reconstruction)

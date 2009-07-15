@@ -71,6 +71,7 @@ bool convertTrackerModel(Model* model, VisionData::GeometryModelPtr geom){
 		v.texCoord.x = model->m_vertexlist[i].texCoord.x;
 		v.texCoord.y = model->m_vertexlist[i].texCoord.y;
 		geom->vertices.push_back(v);
+		printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
 	}
 	
 	// Parse through faces and store content in Model
@@ -197,7 +198,7 @@ bool inputsControl(Tracker* tracker){
 					tracker->showEdgesImage( !tracker->getEdgesImage() );
 					break;
 				case SDLK_k:
-					tracker->enableKalman();
+					tracker->enableKalman( !tracker->getKalmanEnabled() );
 					break;
 				case SDLK_l:
 					tracker->lock( !tracker->getLock() );

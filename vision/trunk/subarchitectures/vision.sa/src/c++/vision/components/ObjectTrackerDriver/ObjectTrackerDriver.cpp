@@ -29,50 +29,12 @@ using namespace std;
 
 void ObjectTrackerDriver::configure(const map<string,string> & _config)
 {
-  pFile = fopen("subarchitectures/vision.sa/src/c++/vision/components/ObjectTrackerDriver/img/trajectory.txt", "rb");
-	
-		if (pFile==NULL) {
-			log("error loading trajectory file");
-			exit (1);
-		}
-
-		// obtain file size:
-		fseek (pFile , 0 , SEEK_SET);
-		
-		float t;
-		float x, y, z;
-		float m00, m01, m02,
-					m10, m11, m12,
-					m20, m21, m22;
-		Pose3 p;
-		int i;
-		
-		while(!feof(pFile))
-		{
-			fscanf(	pFile, "%f %f %f %f %f %f %f %f %f %f %f %f %f\n",
-							&t,
-							&x, &y, &z,
-							&m00, &m01, &m02,
-							&m10, &m11, &m12,
-							&m20, &m21, &m22);
-			
-			p.pos.x=x; p.pos.y=y; p.pos.z=z;
-			p.rot.m00=m00; p.rot.m01=m01; p.rot.m02=m02;
-			p.rot.m10=m10; p.rot.m11=m11; p.rot.m12=m12;
-			p.rot.m20=m10; p.rot.m21=m21; p.rot.m22=m22;
-			
-			trajectory.push_back(p);
-			timestamps.push_back(t);
-			i++;
-			//printf("Trajectory loaded at: %f %f %f %f\n", t, p.pos.x, p.pos.y, p.pos.z);	
-		}
-		
-		log("target trajectory loaded");
-  fclose(pFile);
-  
-  timerstarted = false;
-  m_error_pos = 0.0;
-  m_error_rot = 0.0;
+  map<string,string>::const_iterator it;
+  if((it = _config.find("--model")) != _config.end())
+  {
+  	istringstream istr(it->second);
+    istr >> model;
+  }
   
 }
 
@@ -89,8 +51,8 @@ void ObjectTrackerDriver::runComponent()
                        // object observations too soon.
                        
   // Load geometry from ply-file
-  log("loading model 'box_red.ply'");
-  m_model.load("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/box_red.ply");
+  log("loading model '%s'", model.c_str());
+  m_model.load(model.c_str());
     
   // Generate VisualObject
   VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
@@ -114,73 +76,11 @@ void ObjectTrackerDriver::runComponent()
   track_cmd->cmd = VisionData::START;
   addToWorkingMemory(newDataID(), track_cmd);
   
-  // Track for 10 seconds
-  log("tracking 20 seconds (20 images @ 10Hz)");
-  sleepComponent(20000);
-  
-  // Send stop tracking command
-  log("send tracking command: STOP");
-  track_cmd->cmd = VisionData::STOP;
-  addToWorkingMemory(newDataID(), track_cmd);
-  
-  sleepComponent(1000);
-  
-  float m_error_pos_tol = 10.0;
-  float m_error_rot_tol = 150.0;
-  if(m_error_pos < m_error_pos_tol && m_error_rot < m_error_rot_tol){
-  	log("Tracking test successfull");
-  }else{
-  	log("Tracking test failed");
-  }
-  log("  Position error: %.1f<%.1f ?, Rotation error: %.1f<%.1f ?)", m_error_pos/m_error_pos_tol, 1.0, m_error_rot/m_error_rot_tol,1.0);
-  
-  //fclose(pFile);
 }
 
 void ObjectTrackerDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  trajectory.push_back(obj->pose);
   
-  if(!timerstarted){
-  	timerstarted = true;
-  	m_timer.Reset();	
-  }
-  	
-  m_timer.Update();
-  
-  // Get time since reset
-  float t = m_timer.GetApplicationTime();
-  /*
-  fprintf(pFile, "%f %f %f %f %f %f %f %f %f %f %f %f %f\n",
-  					t,
-  					obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z, 
-  					obj->pose.rot.m00, obj->pose.rot.m01, obj->pose.rot.m02, 
-  					obj->pose.rot.m10, obj->pose.rot.m11, obj->pose.rot.m12, 
-  					obj->pose.rot.m20, obj->pose.rot.m21, obj->pose.rot.m22);
-  
-  */
-  int i;
-  
-  for(i=0; i<timestamps.size() && timestamps[i]<t; i++)
-  {;}
-  
-  m_error_pos +=	abs(trajectory[i].pos.x - obj->pose.pos.x) +
-  								abs(trajectory[i].pos.y - obj->pose.pos.y) + 
-  								abs(trajectory[i].pos.z - obj->pose.pos.z);
-  								
-  m_error_rot +=	abs(trajectory[i].rot.m00 - obj->pose.rot.m00) +
-  								abs(trajectory[i].rot.m01 - obj->pose.rot.m01) +
-  								abs(trajectory[i].rot.m02 - obj->pose.rot.m02) +
-  								abs(trajectory[i].rot.m10 - obj->pose.rot.m10) +
-  								abs(trajectory[i].rot.m11 - obj->pose.rot.m11) +
-  								abs(trajectory[i].rot.m12 - obj->pose.rot.m12) +
-  								abs(trajectory[i].rot.m20 - obj->pose.rot.m20) +
-  								abs(trajectory[i].rot.m21 - obj->pose.rot.m21) +
-  								abs(trajectory[i].rot.m22 - obj->pose.rot.m22);
-  								
-  //log("Pose error position: %f", m_error_pos);
-  //log("Pose error rotation: %f", m_error_rot);
 }
 
 

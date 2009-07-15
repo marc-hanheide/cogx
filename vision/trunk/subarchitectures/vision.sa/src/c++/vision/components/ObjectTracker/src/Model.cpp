@@ -137,35 +137,42 @@ void Model::computeEdges(){
 
 // Compute vertex normals
 void Model::computeNormals(){
+
 	int i,j;
 	Face* f;
 	vec3 v0, v1, v2, e1, e2, n;
 	
+	// calculate vertex normals using the face normal
 	for(i=0; i<m_facelist.size(); i++){
 		f = &m_facelist[i];
 		
-		v0 = vec3(m_vertexlist[f->v[0]].pos.x, m_vertexlist[f->v[0]].pos.y, m_vertexlist[f->v[0]].pos.z);
-		v1 = vec3(m_vertexlist[f->v[1]].pos.x, m_vertexlist[f->v[1]].pos.y, m_vertexlist[f->v[1]].pos.z);
-		v2 = vec3(m_vertexlist[f->v[2]].pos.x, m_vertexlist[f->v[2]].pos.y, m_vertexlist[f->v[2]].pos.z);
-		e1 = v1 - v0;
-		e2 = v2 - v0;
+		if(f->v.size() == 3){ // this is because of some bug in Blender flipping normals of triangles
 		
-		n.cross(e1,e2);
-		n.normalize();
-		
-		for(j=0; j<m_facelist[i].v.size(); j++){
-			m_vertexlist[f->v[j]].normal.x = n.x;
-			m_vertexlist[f->v[j]].normal.y = n.y;
-			m_vertexlist[f->v[j]].normal.z = n.z;
-			//printf("%f %f %f\n", n.x, n.y, n.z);
-		}		
+			v0 = vec3(m_vertexlist[f->v[0]].pos.x, m_vertexlist[f->v[0]].pos.y, m_vertexlist[f->v[0]].pos.z);
+			v1 = vec3(m_vertexlist[f->v[1]].pos.x, m_vertexlist[f->v[1]].pos.y, m_vertexlist[f->v[1]].pos.z);
+			v2 = vec3(m_vertexlist[f->v[2]].pos.x, m_vertexlist[f->v[2]].pos.y, m_vertexlist[f->v[2]].pos.z);
+			e1 = v1 - v0;
+			e2 = v2 - v0;
+			
+			n.cross(e1,e2);
+			n.normalize();
+			
+			for(j=0; j<m_facelist[i].v.size(); j++){
+				m_vertexlist[f->v[j]].normal.x = n.x;
+				m_vertexlist[f->v[j]].normal.y = n.y;
+				m_vertexlist[f->v[j]].normal.z = n.z;
+				//printf("%f %f %f\n", n.x, n.y, n.z);
+			}
+		}	
 	}
+	
 }
 
 // draws model using rendering passes
 void Model::drawPass(Shader* shadeTexturing){
 	int p,i,j;
 	Face* f;
+	vector<int> drawnFaces;
 	
 	if(m_passlist.empty() || !m_textured){
 		//printf("[Model::drawPass] Warning no render pass defined. Rendering using Model::drawFaces()\n");
@@ -178,6 +185,7 @@ void Model::drawPass(Shader* shadeTexturing){
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 	
+	// Draw render passes (textured)
 	for(p=0; p<m_passlist.size(); p++){
 		
 		// bind texture of pass
@@ -189,15 +197,25 @@ void Model::drawPass(Shader* shadeTexturing){
 		// parse through faces of pass
 		for(i=0; i<m_passlist[p]->f.size(); i++){
 			f = &m_facelist[m_passlist[p]->f[i]];
-			glBegin(GL_QUADS);
-				for(j=0; j<m_facelist[i].v.size(); j++){
+			drawnFaces.push_back(m_passlist[p]->f[i]);
+			
+			if(f->v.size() == 3)
+				glBegin(GL_TRIANGLES);
+			else if(f->v.size() == 4)
+				glBegin(GL_QUADS);
+			else
+				printf("[Model::drawFaces] Warning unsupported face structure");
+				
+				for(j=0; j<f->v.size(); j++){
 					glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 					glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 					glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 				}
+				
 			glEnd();
 			
 			/*
+			// Draw Normals
 			glDisable(GL_TEXTURE_2D);
 			glBegin(GL_LINES);
 				float normal_length = 0.01;
@@ -215,33 +233,33 @@ void Model::drawPass(Shader* shadeTexturing){
 			*/
 		}
 	}
-	
+		
 	glDisable(GL_TEXTURE_2D);
-}
-
-// draws only faces of model
-void Model::drawFaces(){
-	int i,j;
-	Face* f;
+	shadeTexturing->unbind();
 	
-	
-	if(m_texture){
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		m_texture->bind();
-	}	
-	
+	// Draw remaining faces for contours
 	for(i=0; i<m_facelist.size(); i++){
+		
 		f = &m_facelist[i];
-		glBegin(GL_QUADS);
-			for(j=0; j<m_facelist[i].v.size(); j++){
+		if(f->max_pixels == 0){
+		
+			if(f->v.size() == 3)
+				glBegin(GL_TRIANGLES);
+			else if(f->v.size() == 4)
+				glBegin(GL_QUADS);
+			else
+				printf("[Model::drawFaces] Warning unsupported face structure");
+				
+			for(j=0; j<f->v.size(); j++){
 				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 			}
-		glEnd();
-		
+			
+			glEnd();
+		}
 		/*
+		// Draw Normals
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_LINES);
 			float normal_length = 0.01;
@@ -259,11 +277,61 @@ void Model::drawFaces(){
 		*/
 	}
 	
+}
+
+// draws only faces of model
+void Model::drawFaces(){
+	int i,j;
+	Face* f;
+	bool drawNormals = false;
+	
 	
 	if(m_texture){
-		glDisable(GL_TEXTURE_2D);
-	}
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		m_texture->bind();
+	}	
 	
+	for(i=0; i<m_facelist.size(); i++){
+		f = &m_facelist[i];
+		
+		if(f->v.size() == 3)
+			glBegin(GL_TRIANGLES);
+		else if(f->v.size() == 4)
+			glBegin(GL_QUADS);
+		else
+			printf("[Model::drawFaces] Warning unsupported face structure");
+			
+			for(j=0; j<f->v.size(); j++){
+				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+			}
+			
+		glEnd();
+		
+		
+		//glDisable(GL_TEXTURE_2D);
+		if(drawNormals){
+			glColor3f(0.0, 0.0, 1.0);
+			glBegin(GL_LINES);
+				float normal_length = 0.01;
+				for(j=0; j<m_facelist[i].v.size(); j++){
+					glVertex3f( m_vertexlist[f->v[j]].pos.x,
+								m_vertexlist[f->v[j]].pos.y,
+								m_vertexlist[f->v[j]].pos.z );
+					glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
+								m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
+								m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
+				}
+			glEnd();
+			glColor3f(1.0, 1.0, 1.0);
+		}
+		//glEnable(GL_TEXTURE_2D);
+	}
+		
+	if(m_texture)
+		glDisable(GL_TEXTURE_2D);	
 }
 
 // draws face i of model
@@ -279,12 +347,19 @@ void Model::drawFace(int i){
 	
 	
 	f = &m_facelist[i];
-	glBegin(GL_QUADS);
-		for(j=0; j<f->v.size(); j++){
-			glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
-			glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
-			glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
-		}
+	if(f->v.size() == 3)
+		glBegin(GL_TRIANGLES);
+	else if(f->v.size() == 4)
+		glBegin(GL_QUADS);
+	else
+		printf("[Model::drawFaces] Warning unsupported face structure");
+	
+	for(j=0; j<f->v.size(); j++){
+		glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
+		glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+		glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
+	}
+		
 	glEnd();
 	
 	/*

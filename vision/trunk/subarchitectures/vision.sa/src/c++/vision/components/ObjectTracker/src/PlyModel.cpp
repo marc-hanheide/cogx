@@ -186,8 +186,8 @@ bool PlyModel::convertPlyModel(){
 		v.pos.y = m_plyvertexlist[i].y;
 		v.pos.z = m_plyvertexlist[i].z;
 		v.normal.x = m_plyvertexlist[i].nx;
-		v.normal.y = m_plyvertexlist[i].ny;
-		v.normal.z = m_plyvertexlist[i].nz;
+		v.normal.y = m_plyvertexlist[i].nz;
+		v.normal.z = m_plyvertexlist[i].ny;
 		v.texCoord.x = m_plyvertexlist[i].s;
 		v.texCoord.y = m_plyvertexlist[i].t;
 		m_vertexlist.push_back(v);
