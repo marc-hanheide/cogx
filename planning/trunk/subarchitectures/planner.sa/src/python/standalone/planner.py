@@ -120,16 +120,14 @@ class ContinualAxiomsFFWrapper(BasePlanner):
     """
     PDDL_REXP = re.compile("\((.*)\)")
     def _prepare_input(self, task):
-        planning_tmp_dir =  globals.config.base_planner.tmp_dir
+        planning_tmp_dir =  globals.config.tmp_dir
 #         unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
 #         tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, static_testing=True)
         DEBUGGING = True
         if DEBUGGING:
-            tmp_dir = "tmp/static_dir_for_debugging"
-            try:
+            tmp_dir = os.path.join(planning_tmp_dir, "static_dir_for_debugging")
+            if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)
-            except:
-                pass
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "plan.pddl", "stdout.out")]
         pddl_strs = task.pddl_domain_str(), task.pddl_problem_str()
         for path, content in zip(paths, pddl_strs):
