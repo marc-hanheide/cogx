@@ -1,8 +1,8 @@
-import os
+import os, sys
 import re
 
 import utils
-import globals
+import globals as global_vars
 
 from task import PlanningStatusEnum
 import plans
@@ -20,7 +20,8 @@ class Planner(object):
         self.tasks = set()
         self.task_queue = [] # replace by real PQ as soon as scheduling policy becomes clearer
         if base_planner is None:
-            base_planner = ContinualAxiomsFFWrapper(self)
+            base_planner_name = global_vars.config.base_planner.name
+            base_planner = globals()[base_planner_name](self)
         self._base_planner = base_planner
         self._emergency_stop = False
 
@@ -84,6 +85,11 @@ class BasePlanner(object):
     """
     def __init__(self, main_planner):
         self.main_planner = main_planner
+        self.executable = global_vars.config.base_planner.__dict__[self.__class__.__name__].executable
+        if not os.path.exists(self.executable):
+            print "Executable %s does not exist!" % self.executable
+            print "Please make sure it has been built and paths are set properly in config.ini."
+            sys.exit(1)
 
     def find_plan(self, task):
         """
@@ -115,12 +121,12 @@ def create_unique_dir(base_path, unique_dirname_fn):
             os.make_dirs(tmp_dir)
             return tmp_dir
     
-class ContinualAxiomsFFWrapper(BasePlanner):
+class ContinualAxiomsFF(BasePlanner):
     """
     """
     PDDL_REXP = re.compile("\((.*)\)")
     def _prepare_input(self, task):
-        planning_tmp_dir =  globals.config.tmp_dir
+        planning_tmp_dir =  global_vars.config.tmp_dir
 #         unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
 #         tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, static_testing=True)
         DEBUGGING = True
@@ -138,8 +144,7 @@ class ContinualAxiomsFFWrapper(BasePlanner):
 
     def _run(self, input_data, task):
         domain_path, problem_path, plan_path, stdout_path = input_data
-        executable = globals.config.base_planner.executable
-        executable = os.path.join(globals.src_path, executable)
+        executable = os.path.join(global_vars.src_path, self.executable)
         cmd = "%(executable)s -o %(domain_path)s -f %(problem_path)s -O %(plan_path)s" % locals()
         stdout_output = utils.run_command(cmd, output=stdout_path)
 #         print "Planner output:"
