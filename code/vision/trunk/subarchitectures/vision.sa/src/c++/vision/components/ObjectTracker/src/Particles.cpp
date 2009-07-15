@@ -70,7 +70,7 @@ void Particle::print(){
 }
 
 void Particle::setPose(mat3 rot, vec3 pos){
-	
+	// Set Pose doest not work correctly now
 	q.fromMatrix(rot);
 		
 	tX = pos.x;
@@ -78,6 +78,8 @@ void Particle::setPose(mat3 rot, vec3 pos){
 	tZ = pos.z;
 	
 	w = 0.0;
+	
+	printf("[Particle::setPose] Warning conversion from rotation matrix to quaternion not correct!\n");
 }
 
 void Particle::getPose(mat3 &rot, vec3 &pos){

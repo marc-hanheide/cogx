@@ -45,6 +45,7 @@ private:
   float m_error_pos, m_error_rot;
   
   // Model to detect from ply file
+  string model;
   PlyModel m_model;
   
   /**

@@ -57,9 +57,9 @@ void ObjectTracker::initTracker(){
   m_tracker = new TextureTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
-												20.0*PIOVER180,										// standard deviation of rotational noise in degree
+												30.0*PIOVER180,										// standard deviation of rotational noise in degree
 												0.05,															// standard deviation of translational noise in meter
-												20.0,															// edge matching tolerance in degree
+												45.0,															// edge matching tolerance in degree
 												0.05))														// goal tracking time in seconds
 	{														
 		log("initialisation of tracker failed!");
@@ -102,11 +102,9 @@ void ObjectTracker::runTracker(){
 		m_camera->Set(	0.2, 0.2, 0.2,
 										0.0, 0.0, 0.0,
 										0.0, 1.0, 0.0,
-										49, m_image.width, m_image.height,
+										45, m_image.width, m_image.height,
 										0.1, 10.0,
 										GL_PERSPECTIVE);
-		m_tracker->setTrackTime(0.1);
-		m_tracker->lock(false);
 	}
 	
 	// Track all models
@@ -115,8 +113,8 @@ void ObjectTracker::runTracker(){
 		obj = getMemoryEntry<VisualObject>(m_modelID_list[i].cast_AD);
 
 		// conversion from CogX.vision coordinates to ObjectTracker coordinates
-		convertPose2Particle(obj->pose, m_trackpose);
-		m_trackpose.w = obj->detectionConfidence;
+		//convertPose2Particle(obj->pose, m_trackpose);		// ATTENTION: NOT WORKING BY NOW
+		//m_trackpose.w = obj->detectionConfidence;
 
 		// Track model
 		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);

@@ -130,8 +130,7 @@ void TextureTracker::particle_processing(int num_particles, unsigned int num_ava
 	// Calculate likelihood of particles
 	m_particles->calcLikelihood(num_particles, num_avaraged_particles);
 	m_shadeTextureCompare->unbind();
-	glPopAttrib();
-	
+
 	m_opengl.RenderSettings(true, true);
 }
 
@@ -144,7 +143,8 @@ TextureTracker::TextureTracker(){
 	m_showmodel = true;
 	m_kalman_enabled = true;
 	m_tracker_initialized = false;
-	
+	m_testflag = false;
+		
 	int id;
 	// Shader
 	if((id = g_Resources->AddShader("texturetest", "texturetest.vert", "texturetest.frag")) == -1)
@@ -154,8 +154,8 @@ TextureTracker::TextureTracker(){
 	if((id = g_Resources->AddShader("texturing", "texturing.vert", "texturing.frag")) == -1)
 		exit(1);
 	m_shadeTexturing = g_Resources->GetShader(id);
-}
 
+}
 
 // Initialise function (must be called before tracking)
 bool TextureTracker::initInternal()
@@ -191,7 +191,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	
 	if(m_draw_edges)
-		m_ip->render(m_tex_model_ip[0]);
+		m_ip->render(m_tex_frame_ip[1]);
 	else
 		m_ip->render(m_tex_frame);
 	
@@ -203,7 +203,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	m_model->setTexture(m_tex_model_ip[3]);
 	particle_motion(1.0, &p_estimate, GAUSS);
 	particle_processing(params.number_of_particles*0.75, 1);
-	
+		
 	m_shadeTextureCompare->bind();
 	m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
 	m_shadeTextureCompare->unbind();
@@ -219,7 +219,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	m_model->setTexture(m_tex_model_ip[1]);
 	particle_motion(0.1, NULL, GAUSS);
 	particle_processing(params.number_of_particles*0.125, 1);
-	
+		
 	// Kalman filter
 	if(m_kalman_enabled)
 		kalman_filtering(m_particles->getMax());
@@ -261,8 +261,8 @@ void TextureTracker::textureFromImage()
 	m_model->setOriginalTexture(0);
 	m_model->setTexture(0);
 	m_model->enableTexture(false);
-	params.noise_rot_max = params.noise_rot_max * 0.5;
-	params.noise_trans_max = params.noise_trans_max * 0.5;
+	//params.noise_rot_max = params.noise_rot_max * 0.5;
+	//params.noise_trans_max = params.noise_trans_max * 0.5;
 	m_kalman_enabled=false;
 	
 	track(m_image, m_model, m_cam_perspective, p_estimate, p_result);
@@ -277,8 +277,8 @@ void TextureTracker::textureFromImage()
 	
 	m_model->enableTexture(true);
 	
-	params.noise_rot_max = params.noise_rot_max * 2;
-	params.noise_trans_max = params.noise_trans_max * 2;
+	//params.noise_rot_max = params.noise_rot_max * 2;
+	//params.noise_trans_max = params.noise_trans_max * 2;
 	m_kalman_enabled=true;	
 }
 
