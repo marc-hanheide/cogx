@@ -240,7 +240,7 @@ class cached_class_attribute(cached_attribute):
 
 ##################################################################
 
-def load_config_file(filename, as_struct=True):
+def load_config_file(filename, as_struct=True, base_dict={}):
     from configobj import ConfigObj
     def add_config_items(obj, adict):
         for key, val in adict.items():
@@ -248,8 +248,10 @@ def load_config_file(filename, as_struct=True):
                 nval = Struct()
                 add_config_items(nval, val)
                 val = nval
-            obj.__dict__[key] = val 
-    config_dict = ConfigObj(filename, file_error=True)
+            obj.__dict__[key] = val
+    base = ConfigObj(dict(DEFAULT=base_dict))
+    config_dict = ConfigObj(filename, file_error=True, interpolation="ConfigParser")
+    config_dict.merge(base)
     if not as_struct:
         return config_dict
     else:
