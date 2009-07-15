@@ -76,7 +76,7 @@ ff: $(OBJECTS) $(PDDL_PARSER_OBJ)
 
 # misc
 clean:
-	rm -f *.o *.bak *~ *% core *_pure_p9_c0_400.o.warnings \
+	rm -f ff *.o *.bak *~ *% core *_pure_p9_c0_400.o.warnings \
         \#*\#
 
 veryclean: clean
