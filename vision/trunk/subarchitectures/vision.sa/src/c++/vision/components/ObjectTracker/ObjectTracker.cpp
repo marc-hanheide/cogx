@@ -99,12 +99,12 @@ void ObjectTracker::runTracker(){
 	
 	fTimeImage = m_timer.Update();
 	if(testmode){
-		m_camera->Set(	0.2, 0.2, 0.2,
-										0.0, 0.0, 0.0,
-										0.0, 1.0, 0.0,
-										45, m_image.width, m_image.height,
-										0.1, 10.0,
-										GL_PERSPECTIVE);
+		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
+										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
+										0.0, 1.0, 0.0,											// Up vector (y-axis)
+										45, m_image.width, m_image.height,  // field of view angle, image width and height
+										0.1, 10.0,													// camera z-clipping planes (far, near)
+										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 	
 	// Track all models
