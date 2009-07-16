@@ -58,8 +58,8 @@ void ObjectTrackerDriver::runComponent()
   VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
   obj->model = new VisionData::GeometryModel;
   if(!convertTrackerModel(&m_model, obj->model))
-	log("no geometry model in Visual Object");
-  obj->label = "red box";
+		log("no geometry model in Visual Object");
+  obj->label = model.c_str();
   obj->detectionConfidence = 0.0;
   Particle p = Particle(0.0);
   convertParticle2Pose(p, obj->pose);  
