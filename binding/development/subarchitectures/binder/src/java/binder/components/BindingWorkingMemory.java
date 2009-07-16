@@ -1,5 +1,5 @@
 
-package binder;
+package binder.components;
 
 import cast.architecture.SubarchitectureWorkingMemory;
 
