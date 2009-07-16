@@ -19,7 +19,7 @@ module comedyarch {
       string punchline;
     };
     
-    
+     
    sequence < Joke > JokeList;
     
     class JokeBook {
