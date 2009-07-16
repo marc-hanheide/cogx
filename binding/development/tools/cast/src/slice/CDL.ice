@@ -26,7 +26,7 @@ module cast
 
     dictionary<string,string> StringMap;
 
-    /**
+    /** 
      * Definition of component languages.
      */
     enum ComponentLanguage {

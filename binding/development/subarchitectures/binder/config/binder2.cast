@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE binder 
+
+JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+JAVA WM binder.components.BindingWorkingMemory --log
+
+JAVA MG bnmanager binder.components.BayesianNetworkManager --log
