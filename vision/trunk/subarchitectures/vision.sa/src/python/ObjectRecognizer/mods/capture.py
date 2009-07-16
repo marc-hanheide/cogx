@@ -43,14 +43,14 @@ class CameraCapture(Capture):
         if not cap:
             raise "Could not open device #%d" % self.device
         try:
+            hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FPS, self.fps)
+        except:
+            print "Failed to set input framerate"
+        try:
             hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_WIDTH, self.width)
             hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_HEIGHT, self.height)
         except:
             print "Failed to set input image size"
-        try:
-            hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FPS, self.fps)
-        except:
-            print "Failed to set input framerate"
         self.capture = cap
 
     def _stop(self):

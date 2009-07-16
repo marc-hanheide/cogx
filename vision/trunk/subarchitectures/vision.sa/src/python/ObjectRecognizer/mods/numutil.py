@@ -4,6 +4,7 @@
 # Created: jan 2009 
 import numpy as np
 import scipy as sci
+import math
 
 # a, b - 2 arrays (of sift descriptors) being matched
 # maxdist - maximum alowed distance
@@ -63,4 +64,72 @@ def maxcovar2(a, b, maxcount=40, maxdist=0.5):
             result.append((f, ia, ib))
     result.sort(key = lambda x: x[0], reverse = True)
     return result[:maxcount]
+
+class CAngleAverage(object):
+    def __init__(self, default=None):
+        self.sumangle = [0.0, 0.0]
+        self.sumweight = [0.0, 0.0]
+        self.default = default
+
+    def add(self, angle, weight=1.0):
+        angle = math.fmod(angle, 2*math.pi)
+        i = 0 if angle < math.pi else 1
+        self.sumangle[i] += angle*weight
+        self.sumweight[i] += weight
+
+    def addDeg(self, angle, weight=1.0):
+        self.add(angle * math.pi / 180)
+
+    @property
+    def average(self):
+        if self.sumweight[0] == 0 and self.sumweight[1] == 0: return self.default
+        if self.sumweight[0] == 0: return self.sumangle[1] / self.sumweight[1]
+        if self.sumweight[1] == 0: return self.sumangle[0] / self.sumweight[0]
+        a = [self.sumangle[0] / self.sumweight[0], self.sumangle[1] / self.sumweight[1] ]
+        if (2*math.pi - a[1]) + a[0] <= math.pi:
+            self.sumangle[1] = -(2*math.pi - a[1]) * self.sumweight[1]
+            delta = 0
+        else:
+            self.sumangle[0] = - (math.pi - a[0]) * self.sumweight[0]
+            self.sumangle[1] = (a[1] - math.pi) * self.sumweight[1]
+            delta = math.pi
+        ave = (self.sumangle[0] + self.sumangle[1]) / (self.sumweight[0] + self.sumweight[1]) + delta
+        ave = math.fmod(ave, 2*math.pi)
+        if ave < 0: ave += 2*math.pi
+        return ave
+
+    @property
+    def averageDeg(self):
+        a = self.average
+        if a == None: return a
+        else: return a * 180 / math.pi
+
+
+if __name__=="__main__":
+    def testAngleAverage(angles, weights, result, eps=1e-3):
+        a = CAngleAverage()
+        for i in xrange(len(angles)):
+            ang = angles[i] * math.pi / 180
+            if weights == None or i >= len(weights): a.add(ang)
+            else: a.add(ang, weights[i])
+        rdeg = math.fmod(a.average * 180 / math.pi, 360)
+        res = abs(rdeg - result) < eps
+        return res, rdeg
+
+    angles = [10, 20, 30]; weights = None
+    print angles, testAngleAverage(angles, weights, 20)
+    angles = [210, 220, 230]; weights = None
+    print angles, testAngleAverage(angles, weights, 220)
+    angles = [170, 180, 190]; weights = None
+    print angles, testAngleAverage(angles, weights, 180)
+    angles = [350, 0, 10]; weights = None
+    print angles, testAngleAverage(angles, weights, 0)
+    angles = [10, 20, 30, 210, 220, 230]; weights = None
+    print angles, testAngleAverage(angles, weights, 300)
+    angles = [350, 0, 10]; weights = [3, 1, 3]
+    print angles, testAngleAverage(angles, weights, 0)
+    angles = [160, 180, 190]; weights = [2, 1, 1]
+    print angles, testAngleAverage(angles, weights, 172.5)
+    angles = [340, 0, 10]; weights = [2, 1, 1]
+    print angles, testAngleAverage(angles, weights, 352.5)
 
