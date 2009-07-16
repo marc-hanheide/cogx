@@ -4,31 +4,33 @@ project(PySiftGPU)
 
 find_package(PythonLibs)
 find_package(Boost)
+set(SIFTGPU_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../libsiftgpu)
 set(SIFTGPU_INCLUDE 
-   ${CMAKE_CURRENT_SOURCE_DIR}/../libsiftgpu/SiftGPU/src
+   ${SIFTGPU_DIR}/SiftGPU/src
    /usr/include/GL
    )
 
 include_directories(SYSTEM ${PYTHON_INCLUDE_PATH} ${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${SIFTGPU_INCLUDE})
 
-link_directories(/usr/lib Boost_LIBRARY_DIRS)
+link_directories(/usr/lib Boost_LIBRARY_DIRS ${COGX_ROOT}/output/lib)
 
 # -----------------------------------------------------------------
 # Commands and targets for wrapper generation.
 # Wrapper generation systems: Py++ or pyste.
 # -----------------------------------------------------------------
-set(select_wrapper "pyplusplus")
+set(select_wrapper "py++")
 
-if (${select_wrapper} STREQUAL "pyplusplus")
+if (${select_wrapper} STREQUAL "py++")
    set(siftgpu_wrapper pypp/xdata/bindings.cpp)
    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${siftgpu_wrapper}
       COMMAND python makewrapper.py
          --basedir "${CMAKE_CURRENT_SOURCE_DIR}"
-         --siftgpudir  "${CMAKE_CURRENT_SOURCE_DIR}/../libsiftgpu"
+         --siftgpudir  "${SIFTGPU_DIR}"
          --pyinclude "${PYTHON_INCLUDE_PATH}"
+      COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/${siftgpu_wrapper}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pypp
-      DEPENDS pypp/makewrapper.py pypp/wrap_*.cpp
+      DEPENDS pypp/makewrapper.py pypp/wrap_*.cpp ${SIFTGPU_DIR}/SiftGPU/src/*.h
       )
 elseif (${select_wrapper} STREQUAL "pyste")
    set(siftgpu_wrapper pyste/_siftgpuproxy_pywrap.cpp)
@@ -39,9 +41,9 @@ elseif (${select_wrapper} STREQUAL "pyste")
         --module=SiftGpu --out=../${siftgpu_wrapper} 
         SiftGpuProxy.pyste
      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pyste
-     DEPENDS pyste/SiftGpuProxy.pyste
+     DEPENDS pyste/SiftGpuProxy.pyste ${SIFTGPU_DIR}/SiftGPU/src/*.h
      )
-endif (${select_wrapper} STREQUAL "pyplusplus")
+endif (${select_wrapper} STREQUAL "py++")
 
 # -----------------------------------------------------------------
 # Python module extra initialization
@@ -59,14 +61,14 @@ add_custom_target(PythonInitModules
 # -----------------------------------------------------------------
 # The library
 # -----------------------------------------------------------------
-set(LIBSIFTGPU __PySiftGpu)
-add_library(${LIBSIFTGPU} SHARED
+set(PYSIFTGPU __PySiftGpu)
+add_library(${PYSIFTGPU} SHARED
    ${siftgpu_wrapper}
-   ${extra_sources} # SiftGpuProxy.cpp # TODO: is this really used or was it replaced by Python code?
+   ${extra_sources}
    )
-set_target_properties(${LIBSIFTGPU} PROPERTIES PREFIX "")
-add_dependencies(${LIBSIFTGPU} ${siftgpu_wrapper} PythonInitModules)
-target_link_libraries(${LIBSIFTGPU} 
+set_target_properties(${PYSIFTGPU} PROPERTIES PREFIX "")
+add_dependencies(${PYSIFTGPU} ${siftgpu_wrapper} PythonInitModules)
+target_link_libraries(${PYSIFTGPU} 
    Cg CgGL GLEW glut IL # OpenGL etc.
    boost_python # Boost
    siftgpu # SiftGPU shared library that we are wrapping, separate project
@@ -76,7 +78,7 @@ target_link_libraries(${LIBSIFTGPU}
 # Installation
 # -----------------------------------------------------------------
 set(pymodule "siftgpu")
-install(TARGETS ${LIBSIFTGPU} 
+install(TARGETS ${PYSIFTGPU} 
    DESTINATION ${COGX_ROOT}/output/python/${pymodule})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
    DESTINATION ${COGX_ROOT}/output/python/${pymodule})

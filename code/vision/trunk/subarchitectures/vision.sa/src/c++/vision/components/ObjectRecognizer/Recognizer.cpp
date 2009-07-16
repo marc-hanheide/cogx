@@ -107,11 +107,12 @@ void CRecognizer::configure(const map<string,string> & _config)
    configureVideoCommunication(_config);
 
    PyGILState_STATE state = PyGILState_Ensure();
-   PyRun_SimpleString("import castinit");
-   PyRun_SimpleString("import numpy");
-   PyRun_SimpleString("import ObjectRecognizer");
-   PyRun_SimpleString("import ObjectRecognizer.main as main");
-   PyRun_SimpleString("main.Manager.addModel('TwEarlGrey', '/home/mmarko/Documents/doc/Devel/CogX/code/apps/xdata/models/TwEarlGrey')");
+   PyRun_SimpleString(
+         "import castinit, numpy\n"
+         "from ObjectRecognizer import main, objectmodel, objectmatcher\n"
+         // "import ObjectRecognizer.main as main\n"
+         "main.Manager.addModel('TwEarlGrey', '/home/mmarko/Documents/doc/Devel/CogX/code/apps/xdata/models/TwEarlGrey')\n"
+         );
    PyGILState_Release(state);
  
    /*
@@ -159,7 +160,7 @@ void CRecognizer::_test_addRecognitionTask()
    addToWorkingMemory(id, getSubarchitectureID(), task);
 }
 
-// #include "embedded_py.inc"
+static int Processing = 0;
 void CRecognizer::runComponent()
 {
    log("Recognizer runComponent");
@@ -167,8 +168,8 @@ void CRecognizer::runComponent()
    sleepComponent(2000);
    log("Recognizer component thread is awake.");
 
-   while(1) {
-      _test_addRecognitionTask();
+   while(isRunning()) {
+      if (! Processing) _test_addRecognitionTask();
 
       PyGILState_STATE state = PyGILState_Ensure();
       PyRun_SimpleString(
@@ -179,9 +180,24 @@ void CRecognizer::runComponent()
       PyGILState_Release(state);
       sleepComponent(2000); // This will keep the GIL blocked if not explicitly released
    }
+   log("It looks like we've stopped running!");
 }
 
 void CRecognizer::onRecognitionTaskAdded(const cdl::WorkingMemoryChange & _wmc)
+{
+   log("Recognition task added.");
+   // TODO: add to queue and process in main loop
+   doRecognize(_wmc);
+   sleepComponent(500);
+   deleteFromWorkingMemory(_wmc.address);
+}
+
+void CRecognizer::onRecognitionTaskRemoved(const cdl::WorkingMemoryChange & _wmc)
+{
+   log("Recognition task removed.");
+}
+
+void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
 {
    log("Recognition task added.");
    ObjectRecognitionTaskPtr cmd = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
@@ -233,10 +249,20 @@ void CRecognizer::onRecognitionTaskAdded(const cdl::WorkingMemoryChange & _wmc)
          pimarray = PyArray_SimpleNewFromData(ndims, dims, NPY_UBYTE, &(img.data[0]));
          PyTuple_SetItem(pArgs, 0, pimarray);
 
+         Processing = 1;
          PyObject *pMatches = PyObject_CallObject(pFunc, pArgs);
          Py_DECREF(pArgs);
          // TODO: parse the result and update the RecogntionTask
-         if (pMatches != NULL) Py_DECREF(pMatches);
+         if (pMatches != NULL) {
+            if (PyList_Check(pMatches)) {
+               int len = PyList_Size(pMatches);
+               println("List length %d", len);
+               for (int i = 0; i < len; i++) {
+                  println("Tuple: %d", PyTuple_Check(PyList_GetItem(pMatches, 0)));
+               }
+            }
+            Py_DECREF(pMatches);
+         }
       }
       else 
          println("Failed to find the required python function.");
@@ -247,13 +273,7 @@ void CRecognizer::onRecognitionTaskAdded(const cdl::WorkingMemoryChange & _wmc)
 
    PyGILState_Release(state);
 
-   sleepComponent(500);
-   deleteFromWorkingMemory(_wmc.address);
-}
-
-void CRecognizer::onRecognitionTaskRemoved(const cdl::WorkingMemoryChange & _wmc)
-{
-   log("Recognition task removed.");
+   Processing = 0;
 }
 
 // vim:set fileencoding=utf-8 sw=3 ts=8 et:

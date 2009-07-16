@@ -24,6 +24,9 @@ protected:
    void onRecognitionTaskAdded(const cast::cdl::WorkingMemoryChange & _wmc);
    void onRecognitionTaskRemoved(const cast::cdl::WorkingMemoryChange & _wmc);
 
+   // Workers
+   void doRecognize(const cast::cdl::WorkingMemoryChange & _wmc);
+
    // Some helpers for testing
    void _test_addRecognitionTask();
 };
