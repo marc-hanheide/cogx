@@ -100,6 +100,7 @@ def export_SiftMatchGPU():
     cls.add_wrapper_code(fileContent("wrap_siftmatch.cpp"))
     cls.mem_funs("SetDescriptors").exclude()
     cls.mem_funs("GetSiftMatch").exclude()
+    cls.mem_funs("GetGuidedSiftMatch").exclude()
     cls.add_registration_code(
         """def("GetSiftMatch", (bp::object (::SiftMatchGPU_wrapper::*)(bp::object, bp::object))&::SiftMatchGPU_wrapper::x_GetSiftMatch)"""
         , works_on_instance=True )
