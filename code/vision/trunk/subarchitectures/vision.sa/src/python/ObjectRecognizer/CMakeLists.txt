@@ -34,7 +34,7 @@ macro(add_pylib_module _name)
       )
 
    add_custom_target(${PYLIB_MODULE}PyLib ALL
-      DEPENDS ${PYLIB_TARGET}
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PYLIB_TARGET}
       )
    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PYLIB_TARGET}
       DESTINATION ${COGX_ROOT}/output/python
@@ -43,44 +43,3 @@ endmacro(add_pylib_module _name)
 
 # This is the top level of the module ObjectRecognizer
 add_pylib_module(ObjectRecognizer)
-
-#set(PYLIB_MODULE ObjectRecognizer)
-#set(PYLIB_TARGET ${PYLIB_MODULE}.pylib)
-
-#file(GLOB_RECURSE moduleFiles *.py)
-#file(GLOB_RECURSE moduleFilesRel RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py)
-
-## Copy python files to binary dir
-#add_custom_command(
-#   OUTPUT __init__.py
-#   COMMAND cp --parents ${moduleFilesRel} ${CMAKE_CURRENT_BINARY_DIR}/
-#   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#   DEPENDS ${moduleFiles}
-#   )
-
-## Compile python files
-#add_custom_command(
-#   OUTPUT __init__.pyc
-#   COMMAND ${PYTHON_EXECUTABLE} -c 'import compileall\;compileall.compile_dir\("."\)'
-#   DEPENDS ${moduleFiles}
-#   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
-#   )
-
-## Put the compiled files in a zip archive
-#foreach(fn ${moduleFilesRel})
-#   LIST(APPEND compiledFilesRel "ObjectRecognizer/${fn}c")
-#endforeach(fn)
-#add_custom_command(
-#   OUTPUT ${PYLIB_TARGET}
-#   COMMAND zip -ru ${PYLIB_MODULE}/${PYLIB_TARGET} ${compiledFilesRel}
-#   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyc
-#   DEPENDS ${moduleFiles}
-#   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..
-#   )
-
-#add_custom_target(PyObjectRecognizer ALL
-#   DEPENDS ${PYLIB_TARGET}
-#   )
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PYLIB_TARGET}
-#   DESTINATION ${COGX_ROOT}/output/python
-#   )

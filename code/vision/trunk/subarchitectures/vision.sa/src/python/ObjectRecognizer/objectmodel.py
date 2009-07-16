@@ -80,47 +80,126 @@ class CMatchingFeatures(object):
             arr[i][4] = m[1][1][0] # dist
         return arr
 
+
+# Directory structure for models:
+# .../root/
+#   /ModelName
+#       /image/
+#           /ModelName_VPxxx_yyyy.png
+#       /features/
+#           /ModelName.view.nnnn.dat.gz
+#           /ModelName.model.dat.gz
+#       /preview/
+#           /ModelName.view.nnnn.png
+class CModelFileManager(object):
+    def __init__(self, model, modelStorePath="/tmp"):
+        self.model = model
+        self.rootpath = modelStorePath
+
+    def setModelStorePath(self, modelStorePath):
+        self.rootpath = modelStorePath
+
+    @property
+    def imageDir(self):
+        return "%s/%s/image" % (self.rootpath, self.model.name)
+
+    @property
+    def previewDir(self):
+        return "%s/%s/preview" % (self.rootpath, self.model.name)
+
+    @property
+    def featureDir(self):
+        return "%s/%s/features" % (self.rootpath, self.model.name)
+
+    #def _vpname(self, vp, index=-1):
+    #    if index < 0: return "%s_VP%03d_L%03d" % (vp.vpPhi, vp.vpLambda)
+    #    else: return "%s_VP%03d_I%03d" % (vp.vpPhi, index)
+    def viewpointBase(self, viewpoint):
+        return "%s_VP%03d_L%03d" % (self.model.name, viewpoint.vpPhi, viewpoint.vpLambda)
+
+    def parsePhiLambda(self, filename):
+        filename = os.path.basename(filename)
+        reId = re.compile(r"[a-z0-9]+_VP([0-9]+)_L([0-9]+)\.", re.IGNORECASE)
+        mo = reId.search(filename)
+        if mo != None: return ( int(mo.group(1)), int(mo.group(2)) )
+        return None
+
+    def parsePhiIndex(self, filename):
+        filename = os.path.basename(filename)
+        reId = re.compile(r"[a-z0-9]+_VP([0-9]+)_I([0-9]+)\.", re.IGNORECASE)
+        mo = reId.search(filename)
+        if mo != None: return ( int(mo.group(1)), int(mo.group(2)) )
+        return None
+
+    def vpFeaturePath(self, viewpoint):
+        base = self.viewpointBase(viewpoint)
+        return "%s/%s.view.dat.gz" % (self.featureDir, base)
+
+    def vpPreviewPath(self, viewpoint):
+        base = self.viewpointBase(viewpoint)
+        return "%s/%s.jpg" % (self.previewDir, base)
+
+    def vpImagePath(self, viewpoint):
+        base = self.viewpointBase(viewpoint)
+        return "%s/%s.png" % (self.imageDir, base)
+
+
 class CObjectModel(object):
     def __init__(self, name):
         self.name = name
         self.viewPoints = []
         self.viewPairMatches = []
+        self.FM = CModelFileManager(self)
 
-    def saveViews(self, dirname, basename):
+    def saveViews(self):
         for i, vp in enumerate(self.viewPoints):
-            vpname = "%s/%s.view.%04d" % (dirname, basename, i)
+            # TODO vpname = "%s/%s.view.%04d" % (dirname, basename, i)
             if isinstance(vp, camview.CViewPoint): # will not be saved if it wasn't loaded
-                vp.save(vpname)
-                vp.saveImages(vpname)
+                fname = self.FM.vpFeaturePath(vp)
+                vp.save(fname)
+                fname = self.FM.vpPreviewPath(vp)
+                vp.savePreview(fname)
+                # fname = self.FM.imagePath(vp)
+                # vp.saveImage(fname)
 
-    def __listViewpointFiles(self, dirname, basename):
+    def __listViewpointFiles(self, dirname):
         files = [
-            fn for fn in os.listdir(dirname)
-            if fn.startswith(basename + ".view.") and fn.endswith("dat.gz")
+            fn for fn in os.listdir(dirname) if fn.endswith(".view.dat.gz")
         ]
         files.sort()
         return files
 
-    def loadViews(self, dirname, basename, delayedLoad=False):
-        if delayedLoad: self.viewPoints = CLateViewpointLoader(dirname + "/")
+    def loadViews(self, delayedLoad=False):
+        delayedLoad = False # FIXME: delayedLoad NEEDS TO BE CHANGED
+        if delayedLoad: self.viewPoints = CLateViewpointLoader(self.FM.featureDir + "/")
         else: self.viewPoints = []
-        files = self.__listViewpointFiles(dirname, basename)
+        files = self.__listViewpointFiles(self.FM.featureDir)
         for fn in files:
             if delayedLoad: self.viewPoints.append(fn[:-7])
             else:
                 vp = camview.CViewPoint()
-                vpname = "%s/%s" % (dirname, fn[:-7])
-                vp.load(vpname)
-                vp.loadImages(vpname)
+                vp.load(self.FM.featureDir + "/" + fn)
+                print os.path.basename(fn), vp.vpPhi, vp.vpLambda
+                fnprev = self.FM.vpPreviewPath(vp)
+                if os.path.exists(fnprev): vp._previewpath = fnprev
+                fnimage = self.FM.vpImagePath(vp)
+                if os.path.exists(fnimage):
+                    vp._imagepath = fnimage
+                    if vp.vpPhi == None or vp.vpLambda == None:
+                        phil = self.FM.parsePhiLambda(fnimage)
+                        if phil != None:
+                            vp.vpPhi = phil[0]
+                            vp.vpLambda = phil[1]
                 self.viewPoints.append(vp)
 
     def savePairMatches(self, dirname, basename):
         pickleDict = {
             "ViewPairMatches": self.viewPairMatches
         }
-        stream = gzip.open("%s/%s.model.dat.gz" % (dirname, basename), "w")
-        pickle.dump(pickleDict, stream)
-        stream.close()
+        # FIXME save model
+        #stream = gzip.open("%s/%s.model.dat.gz" % (dirname, basename), "w")
+        #pickle.dump(pickleDict, stream)
+        #stream.close()
 
     def loadPairMatches(self, dirname, basename):
         self.viewPairMatches = []

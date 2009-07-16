@@ -133,14 +133,16 @@ class CFeatureGroup(object):
 # A feature pack is a tuple ( keypoints, descriptors )
 class CViewPoint(object):
     def __init__(self):
-        self.id = ""
-        self.image = None
-        self.preview = None
-        self.imageSize = None # To restore original size from preview
-        self._mask = None
+        self._id = None
+        self.vpPhi = None # lattitude
+        self.vpLambda = None # longitude
         self.featurePacks = []
-        self.vpLambda = None
-        self.vpPhi = None
+        self._image = None
+        self._imagepath = None    # from where to load the image
+        self.imageSize = None     # To restore original size from preview
+        self._preview = None
+        self._previewpath = None  # from where to load the preview
+        self._mask = None
 
     def checkTypes(self):
         assert(isinstance(self.featurePacks, list))
@@ -148,31 +150,114 @@ class CViewPoint(object):
             assert(isinstance(fp, CFeaturepack))
             assert(isinstance(fp.keypoints, np.ndarray))
             assert(isinstance(fp.descriptors, np.ndarray))
-
+    
     # keypoints, feature descriptors
     def addMeasurements(self, keypoints, descriptors):
         self.featurePacks.append( CFeaturepack(keypoints, descriptors) )
+    
+    @property
+    def image(self):
+        if self._image != None: return self._image
+        if self._imagepath != None:
+            self.loadImage(self._imagepath)
+            self._imagepath = None
+
+    @property
+    def preview(self):
+        if self._preview != None: return self._preview
+        if self._previewpath != None:
+            self.loadPreview(self._previewpath)
+            self._previewpath = None
 
     def setImage(self, image):
-        self.image = image
-        self.imageSize = (image.width, image.height)
+        self._image = image
+        if image != None: self.imageSize = (image.width, image.height)
         self._mask = None
 
-    def createPreview(self, maxSize = 320):
+    def clearAllFeatures(self):
+        self.featurePacks = []
+
+    def save(self, filename):
+        assert(filename.endswith(".dat.gz"))
+        basename = filename[:-7]
+        mask = self._mask
+        if mask != None:
+            mask = np.array(cvada.Ipl2NumPy(mask))
+            # mask = cvada.Ipl2NumPy(mask) # WARNING Numeric.array !!!!
+        preview = self.preview
+        if preview != None:
+            preview = np.array(cvada.Ipl2NumPy(preview))
+            # preview = cvada.Ipl2NumPy(preview) # WARNING Numeric.array !!!!
+
+        pickleDict = {
+            "ID": self._id,
+            "FeaturePacks": self.featurePacks,
+            "ImageSize": self.imageSize,
+            "Lambda": self.vpLambda,
+            "Phi": self.vpPhi
+            # "Preview": preview,
+            # "Mask": mask
+        }
+        print "Saving ", filename, self.vpLambda, self.vpPhi
+        stream = gzip.open(filename, "w")
+        pickle.dump(pickleDict, stream)
+
+    def load(self, filename):
+        assert(filename.endswith(".dat.gz"))
+        basename = filename[:-7]
+        DEBUG(filename)
+
+        stream = gzip.open(filename, "r")
+        pickleDict = pickle.load(stream)
+        def restore(key, default):
+            if not pickleDict.has_key(key): return default
+            return pickleDict[key]
+        self._id = restore("ID", "")
+        self.featurePacks = restore("FeaturePacks", [])
+        self.imageSize = restore("ImageSize", None)
+        self.vpLambda = restore("Lambda", None)
+        self.vpPhi = restore("Phi", None)
+
+        #self.preview = restore("Preview", None)
+        #self._mask = restore("Mask", None)
+        #print type(self.preview), self.preview.size, self.preview.shape
+        #if self.preview != None:
+        #    pass
+        #    NONE OF THESE WORKS: 
+        #    import ctypecv.interfaces as intrf
+        #    # self.preview = cvada.NumPy2Ipl(Numeric.array(self.preview))
+        #    # self.preview = intrf.cvCreateImageFromNumpyArray(self.preview)
+        #    # self.preview = intrf.cvCreateMatNDFromNumpyArray(self.preview)
+        #if self._mask != None: self._mask = cvada.NumPy2Ipl(self._mask)
+
+    def loadImage(self, filename):
+        if os.path.exists(filename):
+            img = hg.cvLoadImage(filename)
+            self.setImage(img)
+
+    def loadPreview(self, filename):
+        if os.path.exists(filename):
+            self._preview = hg.cvLoadImage(filename)
+
+    def savePreview(self, filename):
+        if self.preview != None:
+            hg.cvSaveImage(filename, self.preview)
+
+    def createPreview(self, maxSize = 200):
         if maxSize > 400: maxSize = 400
         if self.image == None:
             return # TODO Notify error
         image = self.image
         if max(image.width, image.height) <= maxSize:
-            self.preview = capture.copyFrame(image, copyData=True)
+            self._preview = capture.copyFrame(image, copyData=True)
         else:
             cx = 1.0 * maxSize / image.width
             cy = 1.0 * maxSize / image.height
             scale = min(cx, cy)
             cx = int(image.width * scale)
             cy = int(image.height * scale)
-            self.preview = cv.cvCreateImage(cv.cvSize(cx, cy), image.depth, image.nChannels)
-            cv.cvResize(image, self.preview)
+            self._preview = cv.cvCreateImage(cv.cvSize(cx, cy), image.depth, image.nChannels)
+            cv.cvResize(image, self._preview)
 
     @property
     def mask(self):
@@ -184,87 +269,12 @@ class CViewPoint(object):
 
     def isFeatureInMask(self, feature):
         if self.mask == None: return True # if no mask, every feature is ok
-        cx = self.image.width / self.mask.width
-        cy = self.image.height / self.mask.height
+        cx = self.imageSize[0] / self.mask.width
+        cy = self.imageSize[1] / self.mask.height
         x = int(feature.x / cx + 0.5)
         y = int(feature.y / cy + 0.5)
         if self.mask[y, x] != 0: return True
 
-    def clearAllFeatures(self):
-        self.featurePacks = []
-
-    def save(self, basename):
-        mask = self._mask
-        if mask != None:
-            mask = np.array(cvada.Ipl2NumPy(mask))
-            # mask = cvada.Ipl2NumPy(mask) # WARNING Numeric.array !!!!
-        preview = self.preview
-        if preview != None:
-            preview = np.array(cvada.Ipl2NumPy(preview))
-            # preview = cvada.Ipl2NumPy(preview) # WARNING Numeric.array !!!!
-
-        stream = gzip.open(basename + ".dat.gz", "w")
-        pickleDict = {
-            "ID": self.id,
-            "FeaturePacks": self.featurePacks,
-            "ImageSize": self.imageSize,
-            "Lambda": self.vpLambda,
-            "Phi": self.vpPhi
-            # "Preview": preview,
-            # "Mask": mask
-        }
-        pickle.dump(pickleDict, stream)
-
-    def load(self, basename):
-        DEBUG(basename)
-        if os.path.exists(basename + ".png"):
-            self.image = hg.cvLoadImage(basename + ".png")
-            self._mask = None
-        stream = gzip.open(basename + ".dat.gz", "r")
-        if os.path.exists(basename + ".dat.gz"):
-            pickleDict = pickle.load(stream)
-            def restore(key, default):
-                if not pickleDict.has_key(key): return default
-                return pickleDict[key]
-            self.id = restore("ID", "")
-            self.featurePacks = restore("FeaturePacks", [])
-            self.imageSize = restore("ImageSize", None)
-            self.vpLambda = restore("Lambda", None)
-            self.vpPhi = restore("Phi", None)
-
-            #self.preview = restore("Preview", None)
-            #self._mask = restore("Mask", None)
-            #print type(self.preview), self.preview.size, self.preview.shape
-            #if self.preview != None:
-            #    pass
-            #    NONE OF THESE WORKS: 
-            #    import ctypecv.interfaces as intrf
-            #    # self.preview = cvada.NumPy2Ipl(Numeric.array(self.preview))
-            #    # self.preview = intrf.cvCreateImageFromNumpyArray(self.preview)
-            #    # self.preview = intrf.cvCreateMatNDFromNumpyArray(self.preview)
-            #if self._mask != None: self._mask = cvada.NumPy2Ipl(self._mask)
-
-    def saveImages(self, basename, savePreview=True, saveMask=True, saveImage=False):
-        if self.preview == None:
-            if self.image != None: self.createPreview()
-            if self.preview == None: savePreview = False
-        if self._mask == None: saveMask = False
-        if saveImage and self.image != None:
-            hg.cvSaveImage(basename + ".png", self.image)
-        if savePreview:
-            hg.cvSaveImage(basename + ".small.png", self.preview)
-        if saveMask and self._mask != None:
-            hg.cvSaveImage(basename + ".mask.png", self._mask)
-
-    def loadImages(self, basename):
-        if os.path.exists(basename + ".png"):
-            self.image = hg.cvLoadImage(basename + ".png")
-            self._mask = None
-            self.preview = None
-        if os.path.exists(basename + ".small.png"):
-            self.preview = hg.cvLoadImage(basename + ".small.png")
-        if os.path.exists(basename + ".mask.png"):
-            self._mask = hg.cvLoadImage(basename + ".mask.png")
 
 class CViewPointFeatureEvaluator(object):
     def __init__(self, viewPoint):

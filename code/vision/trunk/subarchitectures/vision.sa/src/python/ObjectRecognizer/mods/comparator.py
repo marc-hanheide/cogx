@@ -5,6 +5,7 @@
 import os, sys
 import numpy as np
 import scipy as sci
+import heapq
 
 """
 Calculate distances between descriptors that are represented with vectors.
@@ -54,12 +55,16 @@ class CComparator(object):
 class CPriq(object):
     def __init__(self, maxcount=2, best=min):
         self.toplist = [] # list of tuples; one of tuple elements is the priority
+        self.totalSum = 0 # sum of all added priorities
+        self.pushOp = heapq.heappush
         self.order = 0 if best == min else 1
         if maxcount < 1: maxcount = 1
         self.maxcount = maxcount
 
     def clear(self):
         self.toplist = []
+        self.totalSum = 0
+        self.pushOp = heapq.heappush
 
     def _sortInsertTuple(self, elem, idxpri = 0):
         l = len(self.toplist)
@@ -71,7 +76,8 @@ class CPriq(object):
 
     # @param elem: tuple to be added
     # @param idxpri: index of tuple element with priority info
-    def addTuple(self, elem, idxpri = 0):
+    def _addTuple_slow(self, elem, idxpri = 0):
+        self.totalSum += elem[idxpri]
         l = len(self.toplist)
         if l < self.maxcount: self._sortInsertTuple(elem, idxpri)
         else:
@@ -82,33 +88,56 @@ class CPriq(object):
                 self.toplist = self.toplist[:last]
                 self._sortInsertTuple(elem, idxpri)
 
+    # implementation with the heap
+    def getTopItems(self):
+        elms = [ heapq.heappop(self.toplist)[1] for i in xrange(len(self.toplist)) ]
+        elms.reverse()
+        return elms
+
+    def getTopTuples(self):
+        elms = [ heapq.heappop(self.toplist) for i in xrange(len(self.toplist)) ]
+        if self.order == 0: elms = [ (-e[0], e[1]) for e in elms]
+        elms.reverse()
+        return elms
+
+    def _addTuple(self, elem):
+        self.totalSum += elem[0]
+        if self.pushOp == heapq.heappush and len(self.toplist) >= self.maxcount:
+            self.pushOp = lambda l,e: (heapq.heappush(l,e), heapq.heappop(l)) # 2.6 -> heapq.heappushpop
+        self.pushOp(self.toplist, elem)
+        pass
+
     def add(self, elem, priority):
-        self.addTuple( (priority, elem), 0)
+        if self.order == 0: self._addTuple( (-priority, elem))
+        else: self._addTuple( (priority, elem))
 
 
 class CDescriptorMatcher(object):
-    def __init__(self, nBest=2, comparator=None, priority=None):
+    def __init__(self, nBest=2, comparator=None, best=min):
         self.compare = CComparator() if comparator == None else comparator
-        if priority != None: self.priority = priority
-        else:
-            if nBest != None and nBest > 0: self.priority = CPriq(nBest)
-            else: priority = None
+        self.nBest = nBest
+        self.order = 0 if best == min else 1
 
     # Match feature f to all features in list1 and sort by distance
     def matchL(self, f, list1):
-        all = self.compare.distancesL(f, list1)
-        if self.priority == None: return all
-        self.priority.clear()
-        for e in all: self.priority.addTuple(e, 0)
-        return [e for e in self.priority.toplist]
+        tdists = self.compare.distancesL(f, list1)
+        tdists.sort()
+        if self.nBest < 1: return tdists
+        if self.order == 0: return tdists[:self.nBest]
+        else:
+            sub = tdists[-self.nBest:]; sub.reverse()
+            return sub
 
     # Match feature f to all features (rows) in array1 and sort by distance
     def matchA(self, f, array1):
-        all = self.compare.distancesA(f, array1)
-        if self.priority == None: return all
-        self.priority.clear()
-        for i, e in enumerate(all): self.priority.addTuple((e, i), 0)
-        return [e for e in self.priority.toplist]
+        dists = self.compare.distancesA(f, array1)
+        iidx = dists.argsort()
+        if self.nBest < 1: return [(dists[i], i) for i in iidx]
+        if self.order == 0:
+            return [(dists[i], i) for i in iidx[:self.nBest]]
+        else:
+            subidx = iidx[-self.nBest:]; subidx.reverse()
+            return [(dists[i], i) for i in subidx]
 
     # Match features from 2 lists, sort by distance and retain the ones with
     # an acceptable best-to-second-best ratio (1 - all are acceptable, 0 - nothing is acceptable)
@@ -127,7 +156,7 @@ class CDescriptorMatcher(object):
         for i, f in enumerate(list1):
             cool = fnMatch(f, list2)
             if maxRatio < 1.0 and len(cool) > 1:
-                if cool[0][0] / cool[1][0] > maxRatio: cool = None
+                if cool[1][0] > 0 and cool[0][0] / cool[1][0] > maxRatio: cool = None
             if cool != None and len(cool) > 0:
                 dists.append( (i, cool) )
         return dists
@@ -140,18 +169,19 @@ def test_cpriq():
             for e in elems: T.add(e, e); print e,
             print
             print "Best:"
-            for i, e in enumerate(T.toplist):
+            for i, e in enumerate(T.getTopItems()):
                 print "   ", e,
-                if e[0] == check[i][0] and e[1] == check[i][1]: print "ok"
+                if e == check[i]: print "ok"
                 else: print "error"
 
+    sizes = [1, 2, 5]
     elems = [ 8, 4, 2, 7, 1, 9, 2, 3, 11, 4, 17 ]
-    tests = [ CPriq(1), CPriq(2), CPriq(5) ]
-    check = [ (i, i) for i in [1, 2, 2, 3, 4]]
+    tests = [ CPriq(i) for i in sizes ]
+    check = [ i for i in [1, 2, 2, 3, 4]]
     print "*** CPriq: Lowest"
     _doit(tests, elems, check)
-    tests = [ CPriq(1, best=max), CPriq(2, best=max), CPriq(5, best=max) ]
-    check = [ (i, i) for i in [17, 11, 9, 8, 7]]
+    tests = [ CPriq(i, best=max) for i in sizes ]
+    check = [ i for i in [17, 11, 9, 8, 7]]
     print "*** CPriq: Highest"
     _doit(tests, elems, check)
     pass
