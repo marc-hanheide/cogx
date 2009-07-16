@@ -1,7 +1,7 @@
 #ifndef PLANNER_ICE
 #define PLANNER_ICE
 
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 
 module autogen {
 module Planner
@@ -46,8 +46,16 @@ module Planner
 	string getPlan();
   };
 
-  interface PlannerServer extends cast::interfaces::CASTComponent
+  // this is for planning-internal use only and takes care of the communication between (the c++ based) cast and the (python) components.
+  interface CppServer
   {
+    void deliverPlan(int taskID);
+  };
+
+  interface PythonServer extends cast::interfaces::CASTComponent
+  {
+    void registerClient(CppServer* client);
+    int addTask(string task);
     PlanningTask newTask();
     void registerTask(PlanningTask task);
 	void printString(string astring);
