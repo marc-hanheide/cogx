@@ -28,7 +28,6 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		addEntityToWM(p2);
 	}
 	
-	
 
 	private Proxy createProxyOne() {
 		Proxy proxy = new Proxy();
@@ -51,15 +50,15 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
 		return proxy;
 	}
-	
+
 
 	private Proxy createProxyTwo() {
 		Proxy proxy = new Proxy();
 		proxy.entityID = newDataID();
 		proxy.subarchId = "fakevision"; 
 		proxy.probExists = 0.9f;
-		
-		proxy.features = new Feature[2];
+	
+		proxy.features = new Feature[3];
 		proxy.features[0] = new Feature();
 		proxy.features[0].featlabel = "obj_label";
 		proxy.features[0].alternativeValues = new FeatureValue[1];
@@ -67,14 +66,14 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		
 		proxy.features[1] = new Feature();
 		proxy.features[1].featlabel = "colour";
-		proxy.features[1].alternativeValues = new FeatureValue[1];
+		proxy.features[1].alternativeValues = new FeatureValue[2];
 		proxy.features[1].alternativeValues[0] = new StringValue(0.6f,"red");
-	//	proxy.features[1].alternativeValues[1] = new StringValue(0.6f,"pink");
+		proxy.features[1].alternativeValues[1] = new StringValue(0.6f,"pink");
 		
-	//	proxy.features[2] = new Feature();
-	//	proxy.features[2].featlabel = "location";
-	//	proxy.features[2].alternativeValues = new FeatureValue[1];
-	//	proxy.features[2].alternativeValues[0] = new StringValue(0.5f,"on_table");
+		proxy.features[2] = new Feature();
+		proxy.features[2].featlabel = "location";
+		proxy.features[2].alternativeValues = new FeatureValue[1];
+		proxy.features[2].alternativeValues[0] = new StringValue(0.5f,"on_table");
 		
 		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
 
