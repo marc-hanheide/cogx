@@ -17,7 +17,7 @@ import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.core.Union;
-import binder.bindingalgorithm.GradientDescent;
+import binder.utils.GradientDescent;
 import binder.components.BinderMonitor;
 
 import com.mxgraph.swing.mxGraphComponent;
