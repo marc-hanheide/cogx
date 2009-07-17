@@ -24,8 +24,6 @@
        children modules. Need to automate later?
        ========================================= -->
   <target name="template">
-<echo>Executing &quot;${target}&quot; target for the CAST framework (tools/cast)</echo>
-     <ant target="${target}" dir="tools/cast" />
 
     <echo>Executing &quot;${target}&quot; target for the binder (subarchitectures/binder)</echo>
      <ant target="${target}" dir="subarchitectures/binder" />
