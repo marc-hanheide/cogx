@@ -14,6 +14,7 @@ import binder.autogen.core.Union;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.bayesiannetwork.BayesianNetworkManager;
 import binder.utils.GradientDescent;
 import binder.gui.BinderMonitorGUI;
 import binder.utils.ProbabilityDistributionUtils;
@@ -64,7 +65,7 @@ public class Binder extends ManagedComponent  {
 		union.includedProxies = includedProxies.toArray(union.includedProxies);
 		
 		Vector<Feature> features = new Vector<Feature>();
-		union.probExists = 0.0f;
+		union.probExists = 1.0f;
 		for (Enumeration<Proxy> e = includedProxies.elements(); e.hasMoreElements();) {
 			Proxy prox = e.nextElement();
 			for (int i = 0; i < prox.features.length ; i++) {
@@ -84,17 +85,17 @@ public class Binder extends ManagedComponent  {
 	private ProbabilityDistribution computeUnionDistribution(Union union) {
 		
 		DiscreteProbabilityDistribution priorDistrib =  BNManager.getPriorDistribution(union.features);
-	//	log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
+		log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
 		
 		
 		Vector<CombinedProbabilityDistribution> proxiesDistrib = new Vector<CombinedProbabilityDistribution>();
-	//	log("number of included proxies: " + union.includedProxies.length);
+		log("number of included proxies: " + union.includedProxies.length);
 		
 		for (int i = 0 ; i < union.includedProxies.length ; i++) {
 			Proxy proxy = union.includedProxies[i];
 	//		log("Maximum for observation-driven distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(proxy.distribution));
 			DiscreteProbabilityDistribution priorDistribForProxy =  BNManager.getPriorDistribution(proxy.features);
-	//		log("Maximum for prior distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(priorDistribForProxy));
+			log("Maximum for prior distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(priorDistribForProxy));
 			CombinedProbabilityDistribution finalProxyDistrib = new CombinedProbabilityDistribution();
 			finalProxyDistrib.opType = OperationType.DIVIDED;
 			finalProxyDistrib.distributions = new DiscreteProbabilityDistribution[2];
@@ -112,7 +113,7 @@ public class Binder extends ManagedComponent  {
 			finalDistrib.distributions[i] = proxiesDistrib.elementAt(i-1);
 		}
 		
-//		log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
+		log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
 		return finalDistrib;
 	}
 	
@@ -180,21 +181,22 @@ public class Binder extends ManagedComponent  {
 			
 			curBestUnions = getInitialUnions(proxiesV);
 			
+			sleepComponent(250);
+			
 			String[] keyArray = new String[curBestUnions.size()];
 			keyArray = curBestUnions.keySet().toArray(keyArray);
 			
-			for (int i = 0; i < (keyArray.length - 1 ); i++ ) {
-				String proxyID1 = keyArray[i];
-				for (int j = i+1 ; j < keyArray.length ; j++) {
-					String proxyID2 = keyArray[j];
+			for (int i = 0; i < proxies.length; i++ ) {
+				String proxyID1 = proxies[i].getData().entityID;
+				for (int j = i+1 ; j < proxies.length ; j++) {
+					String proxyID2 = proxies[j].getData().entityID;
 					if (!proxyID1.equals(proxyID2) && !proxySubarchs.get(proxyID1).equals(proxySubarchs.get(proxyID2))) {
 						Union union1 = curBestUnions.get(proxyID1);
 						Union union2 = curBestUnions.get(proxyID2);
 						Vector<Proxy> unions = new Vector<Proxy>();
-						unions.add(union1.includedProxies[0]);
-						unions.add(union2.includedProxies[0]);
+						unions.add(proxies[i].getData());
+						unions.add(proxies[j].getData());
 						Union newUnion = constructNewUnion(unions);
-						
 						float maxNewUnion = GradientDescent.getMaximum(newUnion.distribution);
 						maxValues.put(newUnion, maxNewUnion);
 						
@@ -213,7 +215,8 @@ public class Binder extends ManagedComponent  {
 			for (Iterator<String> e = curBestUnions.keySet().iterator() ; e.hasNext() ; ) {
 				String proxyID = e.next();
 				Union union = curBestUnions.get(proxyID);
-				if (! unionAlreadyOnWM(union)) {
+				
+				if (!unionAlreadyOnWM(union)) {
 					addEntityToWM(union);				
 				}
 				
@@ -259,11 +262,12 @@ public class Binder extends ManagedComponent  {
 	}
 	
 	
-	private void addEntityToWM(PerceivedEntity entity) {
+	private void addEntityToWM(Union entity) {
 
 		try {
 			addToWorkingMemory(entity.entityID, entity);
 			log("new Union succesfully added to the binding working memory");
+			log("Union has " + entity.includedProxies.length + " included proxies");
 
 		}
 		catch (Exception e) {

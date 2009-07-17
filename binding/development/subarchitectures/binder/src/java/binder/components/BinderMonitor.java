@@ -73,7 +73,6 @@ public class BinderMonitor extends ManagedComponent {
 		try {
 			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
 			for (int i = (proxies.length - 1) ; i >= 0 ; i--) {
-				log("I = " + i);
 				proxiesV.add(proxies[i].getData());
 			}
 			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
@@ -101,6 +100,8 @@ public class BinderMonitor extends ManagedComponent {
 		lastProxies = proxiesV;
 		lastUnions = unionsV;
 		
+		log("number of proxies: " + proxiesV.size());
+		log("number of unions: " + unionsV.size());
 		gui.updateGUI(proxiesV, unionsV, proxiesToDelete, unionsToDelete);
 	}
 	

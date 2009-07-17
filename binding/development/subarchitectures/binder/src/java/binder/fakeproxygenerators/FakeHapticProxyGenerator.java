@@ -18,27 +18,56 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	
 	public void run() {
 		
-		sleepComponent(1500);
+		sleepComponent(1000);
 		
 		Proxy p1 = createProxyOne();
 		addEntityToWM(p1);
 		
+		sleepComponent(2000);
+		
+		Proxy p2 = createProxyTwo();
+		addEntityToWM(p2);		
 	}
 
 
 	private Proxy createProxyOne() {
-		Proxy proxyOne = new Proxy();
-		proxyOne.entityID = newDataID();
-		proxyOne.subarchId = "fakehaptic";
-		proxyOne.probExists = 0.75f;
+		Proxy proxy = new Proxy();
+		proxy.entityID = newDataID();
+		proxy.subarchId = "fakehaptic";
+		proxy.probExists = 0.75f;
 	
-		proxyOne.features = new Feature[1];
-		proxyOne.features[0] = new Feature();
-		proxyOne.features[0].featlabel = "shape";
-		proxyOne.features[0].alternativeValues = new FeatureValue[1];
-		proxyOne.features[0].alternativeValues[0] = new StringValue(0.73f, "cylindrical");
-		proxyOne.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxyOne);
-		return proxyOne;
+		proxy.features = new Feature[1];
+		proxy.features[0] = new Feature();
+		proxy.features[0].featlabel = "shape";
+		proxy.features[0].alternativeValues = new FeatureValue[1];
+		proxy.features[0].alternativeValues[0] = new StringValue(0.73f, "cylindrical");
+		
+		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+		return proxy;
+	}
+	
+	
+
+	private Proxy createProxyTwo() {
+		Proxy proxy = new Proxy();
+		proxy.entityID = newDataID();
+		proxy.subarchId = "fakehaptic";
+		proxy.probExists = 0.75f;
+	
+		proxy.features = new Feature[2];
+		proxy.features[0] = new Feature();
+		proxy.features[0].featlabel = "shape";
+		proxy.features[0].alternativeValues = new FeatureValue[1];
+		proxy.features[0].alternativeValues[0] = new StringValue(0.67f, "spherical");
+		
+		proxy.features[1] = new Feature();
+		proxy.features[1].featlabel = "graspable";
+		proxy.features[1].alternativeValues = new FeatureValue[2];	
+		proxy.features[1].alternativeValues[0] = new StringValue(0.8f, "true");
+		proxy.features[1].alternativeValues[1] = new StringValue(0.15f, "false");
+		
+		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+		return proxy;
 	}
 	
 }
