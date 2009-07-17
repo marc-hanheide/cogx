@@ -18,8 +18,6 @@ import binder.autogen.core.Proxy;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.distributions.independentdiscrete.FeatureValuePairWithProb;
-import binder.autogen.distributions.independentdiscrete.IndependentProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.components.BinderMonitor;
 import binder.utils.ProbabilityDistributionUtils;
