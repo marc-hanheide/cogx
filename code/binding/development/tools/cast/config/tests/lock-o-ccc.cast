@@ -1,8 +1,0 @@
-HOST localhost
-
-SUBARCHITECTURE test
-CPP WM SubarchitectureWorkingMemory --log $TEST_LOG_OUTPUT #--debug
-CPP TM AlwaysPositiveTaskManager #--log $TEST_LOG_OUTPUT
-CPP GD locker LockTester --test lock-o --log $TEST_LOG_OUTPUT --exit false
-CPP GD sneaker LockTester --test sneak-o --log $TEST_LOG_OUTPUT --exit true
-
