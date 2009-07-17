@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Jun 24 15:10:09 2009
+# Created: Fri Jul 17 23:03:52 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(728, 600)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
@@ -172,6 +172,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addItem(spacerItem6)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.mainLogfileTxt = QtGui.QTextEdit(self.tab)
+        self.mainLogfileTxt.setUndoRedoEnabled(False)
+        self.mainLogfileTxt.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.mainLogfileTxt.setObjectName("mainLogfileTxt")
         self.verticalLayout.addWidget(self.mainLogfileTxt)
         self.tabWidget.addTab(self.tab, "")
@@ -288,15 +290,30 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_2, "")
         self.tab_4 = QtGui.QWidget()
         self.tab_4.setObjectName("tab_4")
+        self.verticalLayout_6 = QtGui.QVBoxLayout(self.tab_4)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
+        self.horizontalLayout_6 = QtGui.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.btBuild = QtGui.QPushButton(self.tab_4)
-        self.btBuild.setGeometry(QtCore.QRect(230, 40, 65, 24))
         self.btBuild.setObjectName("btBuild")
+        self.horizontalLayout_6.addWidget(self.btBuild)
+        self.btBuildInstall = QtGui.QPushButton(self.tab_4)
+        self.btBuildInstall.setObjectName("btBuildInstall")
+        self.horizontalLayout_6.addWidget(self.btBuildInstall)
+        spacerItem10 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem10)
+        self.verticalLayout_6.addLayout(self.horizontalLayout_6)
+        self.buildLogfileTxt = QtGui.QTextEdit(self.tab_4)
+        self.buildLogfileTxt.setUndoRedoEnabled(False)
+        self.buildLogfileTxt.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
+        self.buildLogfileTxt.setObjectName("buildLogfileTxt")
+        self.verticalLayout_6.addWidget(self.buildLogfileTxt)
         self.tabWidget.addTab(self.tab_4, "")
         self.verticalLayout_7.addWidget(self.tabWidget)
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 728, 23))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -304,7 +321,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -335,6 +352,7 @@ class Ui_MainWindow(object):
         self.btBrowsePlayerFile.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.btEditPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Edit", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Configure", None, QtGui.QApplication.UnicodeUTF8))
-        self.btBuild.setText(QtGui.QApplication.translate("MainWindow", "BUILD", None, QtGui.QApplication.UnicodeUTF8))
+        self.btBuild.setText(QtGui.QApplication.translate("MainWindow", "make", None, QtGui.QApplication.UnicodeUTF8))
+        self.btBuildInstall.setText(QtGui.QApplication.translate("MainWindow", "make install", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("MainWindow", "Build", None, QtGui.QApplication.UnicodeUTF8))
 
