@@ -36,10 +36,10 @@ public class BinderMonitorGUI extends JFrame
 	Object parent;
 
 
-	int curProxyPosition_X= 100;
+	int curProxyPosition_X= 50;
 	int curProxyPosition_Y = 600;	
 
-	int curUnionPosition_X = 250;
+	int curUnionPosition_X = 120;
 	int curUnionPosition_Y= 300;
 	
 	ControlPanel controlPanel;
@@ -266,7 +266,7 @@ public class BinderMonitorGUI extends JFrame
 			}
 		}
 
-		curUnionPosition_X += 250;
+		curUnionPosition_X += 220;
 
 		log("Visual representation of the union successfully inserted in the GUI");
 	}
@@ -281,6 +281,7 @@ public class BinderMonitorGUI extends JFrame
 			graph.getModel().beginUpdate();
 			graph.removeCells(cells);
 			graph.getModel().endUpdate();
+			curUnionPosition_X -= 40;
 		}
 	}
 	
@@ -309,6 +310,19 @@ public class BinderMonitorGUI extends JFrame
 			
 			graph.getModel().beginUpdate();
 			
+			
+			for (Enumeration<Proxy> e = proxiesToDelete.elements(); e.hasMoreElements();) {
+				Proxy proxy = e.nextElement();
+					deleteProxy(proxy);
+			}
+			
+			Thread.sleep(20);
+			
+			for (Enumeration<Union> e = unionsToDelete.elements(); e.hasMoreElements();) {
+				Union union = e.nextElement();
+					deleteUnion(union);
+			}
+			
 			for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
 				Proxy proxy = e.nextElement();
 				if (!insertedProxies.containsKey(proxy)) {
@@ -324,18 +338,7 @@ public class BinderMonitorGUI extends JFrame
 					addNewUnion(union);
 				}
 			}
-			
-			for (Enumeration<Proxy> e = proxiesToDelete.elements(); e.hasMoreElements();) {
-				Proxy proxy = e.nextElement();
-					deleteProxy(proxy);
-			}
-			
-			Thread.sleep(20);
-			
-			for (Enumeration<Union> e = unionsToDelete.elements(); e.hasMoreElements();) {
-				Union union = e.nextElement();
-					deleteUnion(union);
-			}
+
 
 		}
 		

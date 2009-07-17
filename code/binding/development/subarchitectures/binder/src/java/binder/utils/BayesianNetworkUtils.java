@@ -17,7 +17,6 @@ public class BayesianNetworkUtils {
 
 	public static String configurationFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
 	
-
 	public static BayesianNetwork constructNetwork(String configFile) {
 		
 		BayesianNetwork network = new BayesianNetwork();
@@ -40,34 +39,7 @@ public class BayesianNetworkUtils {
 	public static BayesianNetwork constructNetwork() {
 		return constructNetwork(configurationFile);
 	}
-	
-	/**
-	public static BayesianNetwork fillPriorProbabilities(BayesianNetwork network) {
-		
-		for (int i = 0 ; i < network.nodes.length ; i++) {
-			BayesianNetworkNode node = network.nodes[i];
-			float NbOfFeatvaluesWithoutProbs = 0;
-			float probToSubstract = 0.0f;
-			for (int j = 0; j < node.featuresvalues.length; j++) {
-				if (node.featuresvalues[j].prob > 0.0f) {
-					probToSubstract += node.featuresvalues[j].prob;
-				}
-				else {
-					NbOfFeatvaluesWithoutProbs++;
-				}
-			}
-			
-			float uniformProbability = (1.0f - probToSubstract) / NbOfFeatvaluesWithoutProbs;
-			for (int j = 0; j < node.featuresvalues.length; j++) {
-				if (node.featuresvalues[j].prob == 0.0f) {
-					node.featuresvalues[j].prob = uniformProbability;
-				}
-			}
-		}
-		
-		return network;
-	}
-	*/ 
+
 	
 	public static Vector<BayesianNetworkEdge> getIncomingEdges(BayesianNetwork network, BayesianNetworkNode node)  {
 		

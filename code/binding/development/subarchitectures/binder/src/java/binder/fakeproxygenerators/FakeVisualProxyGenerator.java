@@ -22,30 +22,63 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		Proxy p1 = createProxyOne();
 		addEntityToWM(p1);
 		
+		sleepComponent(1000);
+
+		Proxy p2 = createProxyTwo();
+		addEntityToWM(p2);
 	}
 	
 	
 
 	private Proxy createProxyOne() {
-		Proxy proxyOne = new Proxy();
-		proxyOne.entityID = newDataID();
-		proxyOne.subarchId = "fakevision"; 
-		proxyOne.probExists = 0.9f;
+		Proxy proxy = new Proxy();
+		proxy.entityID = newDataID();
+		proxy.subarchId = "fakevision"; 
+		proxy.probExists = 0.9f;
 		
-		proxyOne.features = new Feature[2];
-		proxyOne.features[0] = new Feature();
-		proxyOne.features[0].featlabel = "obj_label";
-		proxyOne.features[0].alternativeValues = new FeatureValue[1];
-		proxyOne.features[0].alternativeValues[0] = new StringValue(0.8f,"mug");
+		proxy.features = new Feature[2];
+		proxy.features[0] = new Feature();
+		proxy.features[0].featlabel = "obj_label";
+		proxy.features[0].alternativeValues = new FeatureValue[1];
+		proxy.features[0].alternativeValues[0] = new StringValue(0.8f,"mug");
 		
-		proxyOne.features[1] = new Feature();
-		proxyOne.features[1].featlabel = "colour";
-		proxyOne.features[1].alternativeValues = new FeatureValue[1];
-		proxyOne.features[1].alternativeValues[0] = new StringValue(0.6f,"blue");
+		proxy.features[1] = new Feature();
+		proxy.features[1].featlabel = "colour";
+		proxy.features[1].alternativeValues = new FeatureValue[1];
+		proxy.features[1].alternativeValues[0] = new StringValue(0.6f,"blue");
 		
-		proxyOne.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxyOne);
+		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
 
-		return proxyOne;
+		return proxy;
+	}
+	
+
+	private Proxy createProxyTwo() {
+		Proxy proxy = new Proxy();
+		proxy.entityID = newDataID();
+		proxy.subarchId = "fakevision"; 
+		proxy.probExists = 0.9f;
+		
+		proxy.features = new Feature[2];
+		proxy.features[0] = new Feature();
+		proxy.features[0].featlabel = "obj_label";
+		proxy.features[0].alternativeValues = new FeatureValue[1];
+		proxy.features[0].alternativeValues[0] = new StringValue(0.8f,"ball");
+		
+		proxy.features[1] = new Feature();
+		proxy.features[1].featlabel = "colour";
+		proxy.features[1].alternativeValues = new FeatureValue[1];
+		proxy.features[1].alternativeValues[0] = new StringValue(0.6f,"red");
+	//	proxy.features[1].alternativeValues[1] = new StringValue(0.6f,"pink");
+		
+	//	proxy.features[2] = new Feature();
+	//	proxy.features[2].featlabel = "location";
+	//	proxy.features[2].alternativeValues = new FeatureValue[1];
+	//	proxy.features[2].alternativeValues[0] = new StringValue(0.5f,"on_table");
+		
+		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+
+		return proxy;
 	}
 	
 	
