@@ -23,7 +23,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		Proxy p1 = createProxyOne();
 		addEntityToWM(p1);
 		
-		sleepComponent(2000);
+		sleepComponent(1200);
 		
 		Proxy p2 = createProxyTwo();
 		addEntityToWM(p2);		
