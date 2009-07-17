@@ -22,6 +22,7 @@ public class ProbabilityDistributionUtils {
 	public static ProbabilityDistribution generateProbabilityDistribution (PerceivedEntity entity) {
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
 
+		if (entity.features.length > 0) {
 		Vector<Feature> features = new Vector<Feature>();
 		for (int i = 0; i < entity.features.length ; i++) {
 			features.add(entity.features[i]);
@@ -35,6 +36,7 @@ public class ProbabilityDistributionUtils {
 		Vector<DiscreteProbabilityAssignment> assignments = generateProbabilityDistribution (features, new Vector<DiscreteProbabilityAssignment>());
 		distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];
 		distrib.assignments = assignments.toArray(distrib.assignments);
+		}
 		return distrib;
 	}
 

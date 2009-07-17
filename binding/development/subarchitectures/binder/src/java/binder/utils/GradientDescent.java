@@ -35,17 +35,20 @@ public class GradientDescent {
 	public static float getMaximum (DiscreteProbabilityDistribution distrib) {
 		
 		float maxProb = 0.0f;
-		for (int i = 0 ; i <distrib.assignments.length ; i++) {
+		if (distrib.assignments != null) {
+			for (int i = 0 ; i <distrib.assignments.length ; i++) {
 			DiscreteProbabilityAssignment assignment = distrib.assignments[i];
 			if (assignment.prob > maxProb) {
 				maxProb = assignment.prob;
 			}
+		}
 		}
 		return maxProb;
 	}
 	
 	
 public static float getMaximum (CombinedProbabilityDistribution distrib) {
+	
 	
 //	log("Searching maximum value for a combined probability distribution...");
 	float maxProb = 0.0f;
