@@ -64,6 +64,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.log.addSource(LOGGER)
 
+        self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
+        # self.buildLog.log.addSource(LOGGER)
+
         self.mruCfgCast = []
         self.mruCfgPlayer = []
 
@@ -88,14 +91,17 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
         self._manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
         self._manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
+        self.procBuild = procman.CProcess("BUILD", 'make [cmd]', workdir=options.xe("${SA_BUILD_DIR}"))
+        self.procBuild.allowTerminate = True
+        self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
         self.ui.processTree.expandAll()
-
 
     def statusUpdate(self):
         rv = self._manager.checkProcesses()
         self._manager.communicate()
         self.mainLog.pullLogs()
+        self.buildLog.pullLogs()
         # self.updateUi()
 
     def getServers(self, manager):
@@ -130,11 +136,20 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btBuild_clicked(self, valid=True):
         if not valid: return
-        #p = procman.CProcess("BUILD", "make", "/home/mmarko/Documents/doc/Devel/CogX/code/CAST/vision/trunk/BUILD")
-        #self.mainLog.log.addSource(p)
-        #self.mainLog.log.messages.append(messages.CMessage("-----------------"))
-        #p.start()
-        #self._manager.servers.append(p)
+        p = self._manager.getProcess("BUILD")
+        if p != None:
+            self.buildLog.clearOutput()
+            if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
+            p.start(params={"cmd": ""})
+            # p.start()
+
+    def on_btBuildInstall_clicked(self, valid=True):
+        if not valid: return
+        p = self._manager.getProcess("BUILD")
+        if p != None:
+            self.buildLog.clearOutput()
+            if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
+            p.start(params={"cmd": "install"})
 
     def on_btLogViewControl_clicked(self, valid=True):
         self.mainLog.log.removeAllSources()
@@ -146,7 +161,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.clearOutput()
         self.mainLog.log.addSource(LOGGER)
         for proc in self._manager.proclist:
-            self.mainLog.log.addSource(proc)
+            if proc != self.procBuild: self.mainLog.log.addSource(proc)
 
     def editFile(self, fn):
         shell = "/bin/sh"

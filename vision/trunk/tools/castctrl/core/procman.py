@@ -37,24 +37,31 @@ class CProcessObserver(object):
         pass
 
 class CProcess(object):
+    DYING = 1
+    STOPPED = 0
+    TERM = -1
+    ERROR = -2
     def  __init__(self, name, command, params=None, workdir=None):
         self.name = name
         self.command = command
         self.params = params   # Configurable parameters
         self.workdir = workdir
         self.process = None
-        self.status = 0 # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
+        self.status = CProcess.STOPPED # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
         self.lastPollState = 0
         self.keepalive = False
+        self.allowTerminate = False # CAST apps should not autoTerm; others may
         self.restarted = 0
-        self.messages = deque(maxlen=500)
-        self.errors = deque(maxlen=200)
+        self.messages = deque() # 2.6 deque(maxlen=500)
+        self.errors = deque() # 2.6 deque(maxlen=200)
         self.msgOrder = 0
         self.observers = []
+        self.willClearAt = None
 
     def getStatusStr(self):
-        if self.status == -1: return "Terminated unexpectedly"
-        if self.status == -2: return "Internal error"
+        if self.status == CProcess.DYING: return "Dying"
+        if self.status == CProcess.TERM:  return "Terminated unexpectedly"
+        if self.status == CProcess.ERROR: return "Internal error"
         if self.process == None: return "Not started"
         if self.restarted > 0: return "%d (r%d)" % (self.process.pid, self.restarted)
         return "%d" % self.process.pid
@@ -87,16 +94,17 @@ class CProcess(object):
                 command = command.replace("[%s]" % par, params[par])
         command = command.split()
         log("Command '%s'" % " ".join(command))
+        if self.workdir != None: log("PWD='%s'" % self.workdir)
         self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
-        self._setStatus(max(1, self.process.pid))
+        self._setStatus(max(2, self.process.pid))
         log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
         time.sleep(0.01)
 
     def _clear(self, notify = True):
         self.restarted = 0
         self.process = None
-        if not notify: self.status = 0
-        else: self._setStatus(0)
+        if not notify: self.status = CProcess.STOPPED
+        else: self._setStatus(CProcess.STOPPED)
 
     def stop(self):
         if self.process == None:
@@ -105,7 +113,7 @@ class CProcess(object):
         try:
             for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
                 try:
-                    self.process.send_signal(sig)
+                    os.kill(self.process.pid, sig) # self.process.send_signal(sig) # Not in 2.5
                     time.sleep(0.05)
                 except: pass
                 tries = 100
@@ -113,9 +121,10 @@ class CProcess(object):
                     tries -= 1; time.sleep(0.02)
                 if self.isRunning():
                     warn("Process '%s' did not respond to SIG -%d." % (self.name, sig))
-        except Exception as e:
+        except Exception:
+            # 2.6 except Exception as e:
             error("Failed to terminate process '%s' (%d)" % (self.name, self.process.pid))
-            error("Reason: %s", e)
+            # error("Reason: %s", e)
         if not self.isRunning():
             log("Process '%s' stopped" % (self.name))
             self._clear()
@@ -123,51 +132,69 @@ class CProcess(object):
 
     def getPipes(self):
         pipes = []
-        if self.isRunning():
+        if self.process != None:
             if self.process.stdout != None: pipes.append(self.process.stdout)
             if self.process.stderr != None: pipes.append(self.process.stderr)
         return pipes
 
     def readPipes(self, pipes, maxcount=9999):
-        if not self.isRunning(): return 0
+        # if not self.isRunning(): return 0
+        if self.process == None: return 0
         nl = 0
         for pipe in pipes:
             if pipe == self.process.stdout:
                 # select() is used because readline() is blocking
                 while len(select.select([pipe], [], [], 0.0)[0]) > 0:
-                    msg = pipe.readline(); nl += 1
+                    msg = pipe.readline();
+                    if not self.isRunning() and msg == "":
+                        nl += 1
+                        if nl > 200: break
+                        continue
+                    nl += 1
                     mo = messages.reColorEscape.match(msg)
                     if mo != None:
                         typ = messages.CMessage.CASTLOG
                     else: typ = messages.CMessage.MESSAGE
                     self.msgOrder += 1
+                    msg = msg.decode("utf-8", "replace")
                     self.messages.append(messages.CMessage(msg, typ, self.msgOrder))
                     if nl > maxcount: break
             elif pipe == self.process.stderr:
                 while len(select.select([pipe], [], [], 0.0)[0]) > 0:
                     msg = pipe.readline()
+                    if not self.isRunning() and msg == "":
+                        nl += 1
+                        if nl > 200: break
+                        continue
                     self.msgOrder += 1
+                    msg = msg.decode("utf-8", "replace")
                     self.errors.append(messages.CMessage(msg, messages.CMessage.ERROR, self.msgOrder))
                     nl += 1
                     if nl > maxcount: break
         return nl
 
     def check(self):
-        if (self.status != 0) != (self.process != None):
+        if (self.status != self.STOPPED) != (self.process != None):
             error("Internal error: Process '%s' in invalid state" % (self.name))
-            if self.isRunning(): self.status = self.process.pid
+            if self.isRunning(): self.status = max(2, self.process.pid)
             else:
                 self.process = None
-                self._setStatus(-2)
+                self._setStatus(CProcess.ERROR)
             return
         if self.isRunning(): return
-        if self.status > 0:
+        if self.status > 0 or self.status == CProcess.DYING:
+            if self.allowTerminate:
+                if self.status != CProcess.DYING:
+                    self._setStatus(CProcess.DYING)
+                    self.willClearAt = time.time() + 3
+                if time.time() > self.willClearAt: self._clear()
+                return
             error("Process %s terminated unexpectedly, signal=%d" % (self.name, self.lastPollState))
             if self.keepalive:
                 log("Restarting process %s" % self.name)
                 self.start()
                 self.restarted += 1
-            else: self._setStatus(-1)
+            else: self._setStatus(CProcess.TERM)
 
 class CProcessManager(object):
     def __init__(self, name="localhost"):

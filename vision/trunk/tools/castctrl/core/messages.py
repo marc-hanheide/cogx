@@ -117,6 +117,11 @@ class CLogMerger(object):
         srcs = [s for s in self.sources if s.process == process]
         for s in srcs: self.sources.remove(s)
 
+    def hasSource(self, process):
+        for s in self.sources:
+            if s.process == process: return True
+        return False
+
     def removeAllSources(self):
         self.sources = []
 
@@ -134,13 +139,13 @@ class CLogMerger(object):
                     heapq.heapify(heap)
                     while len(heap): yield heapq.heappop(heap)
 
-                for msg in xmerge3(its): self.messages.append(msg)
+                for msg in xmerge3(*its): self.messages.append(msg)
 
 class CInternalLogger(object):
     def __init__(self):
         # Modelled like CProcess
-        self.messages = deque(maxlen=500)
-        self.errors = deque(maxlen=200)
+        self.messages = deque() # 2.6 deque(maxlen=500)
+        self.errors = deque() # 2.6 deque(maxlen=200)
 
     def log(self, msg):
         self.messages.append(CMessage(msg))

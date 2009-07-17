@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'configdlg.ui'
 #
-# Created: Wed Jun 24 11:51:00 2009
+# Created: Fri Jul 17 21:20:58 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -156,7 +156,7 @@ class Ui_ConfigDlg(object):
         self.verticalLayout_3.addWidget(self.buttonBox)
 
         self.retranslateUi(ConfigDlg)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), ConfigDlg.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), ConfigDlg.reject)
         QtCore.QMetaObject.connectSlotsByName(ConfigDlg)
