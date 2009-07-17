@@ -26,7 +26,7 @@
 
     <target name="expandlibs" depends="prepare">
            <echo message="Expanding external libraries for the binder to output/classes"/>
-           <unzip dest="${output.dir}" src="../../tools/jgraphx/lib/jgraphx.jar"/>
+           <unzip dest="${output.dir}" src="./lib/jgraphx.jar"/>
     </target>
 
 
