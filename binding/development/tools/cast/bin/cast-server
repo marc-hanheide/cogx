@@ -1,3 +1,0 @@
-# Auto-generated CAST server script
-#!/bin/bash
-/usr/local/bin/run-cast-server.sh /usr/local

@@ -1,8 +1,0 @@
-# Auto-generated CAST client script
-#!/bin/bash
-if [ $# -ne 1 ] ; then
-   echo 'Usage: cast-client <cast file> '
-   exit $E_BADARGS
-fi
-
-/usr/local/bin/run-cast-client.sh /usr/local $1
