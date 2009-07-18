@@ -41,37 +41,37 @@ using namespace golem::demo;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-class MyPRMPlanner : public PRMPlanner {
+class MyGraphPlanner : public GraphPlanner {
 
 	
 protected:	
 	/** Planner constructor */
 	
-	MyPRMPlanner(golem::ctrl::Arm &arm) : PRMPlanner(arm) {}
+	MyGraphPlanner(golem::ctrl::Arm &arm) : GraphPlanner(arm) {}
 	
 public:	
 
-	virtual bool find(Path &path, Path::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenWorkspaceState &wend) {
-		//while (!PRMPlanner::find (path, iter, begin, wend)) {
+	virtual bool find(Trajectory &trajectory, Trajectory::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenWorkspaceState &wend, Planner::Mode mode = Planner::MODE_AUTO) {
+		//while (!GraphPlanner::find (trajectory, iter, begin, wend, mode)) {
 		for (int i=0; i<MAX_PLANNER_TRIALS; i++) {
-			if (PRMPlanner::find (path, iter, begin, wend)) {
+			if (GraphPlanner::find (trajectory, iter, begin, wend, mode)) {
 				return true;
 			}
 		
 			//cout << "unable to find path... trying again..." << endl;
-			context.getLogger()->post(PRMPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
+			context.getLogger()->post(GraphPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
 		}
 		
 		return false;
 	}
 
-	virtual bool find(Path &path, Path::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenJointState &jend) {
-		//while (!PRMPlanner::find (path, iter, begin, jend)) {
+	virtual bool find(Trajectory &trajectory, Trajectory::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenJointState &jend, Planner::Mode mode = Planner::MODE_AUTO) {
+		//while (!GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
 		for (int i=0; i<MAX_PLANNER_TRIALS; i++) {
-			if (PRMPlanner::find (path, iter, begin, jend)) {
+			if (GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
 				return true;
 			}
-			context.getLogger()->post(PRMPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
+			context.getLogger()->post(GraphPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
 		}
 
 		return false;
