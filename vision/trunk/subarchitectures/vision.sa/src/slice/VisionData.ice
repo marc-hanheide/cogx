@@ -103,6 +103,7 @@ module VisionData {
   };
 
   sequence<string> StringSeq;
+  sequence<double> DoubleSeq;
 
   class DetectionCommand {
     StringSeq labels;
@@ -151,7 +152,27 @@ module VisionData {
     // time the ROI was last changed
     cast::cdl::CASTTime time;
   };
-  
+
+  class ObjectRecognitionMatch {
+    // ID of the SOI that was processed
+    string soiId;
+
+    // IDs of the internal representation of objects
+    StringSeq objectId;
+
+    // Probability of object match. Same order as objectId.
+    DoubleSeq probability;
+  };
+  sequence<ObjectRecognitionMatch> ObjectRecognitionMatchSeq;
+
+  class ObjectRecognitionTask {
+    // REQUEST:
+    IdSeq soiIds;
+
+    // RESPONSE
+    ObjectRecognitionMatchSeq matches;
+  };
+
   /**
    * Proto Object
    */
