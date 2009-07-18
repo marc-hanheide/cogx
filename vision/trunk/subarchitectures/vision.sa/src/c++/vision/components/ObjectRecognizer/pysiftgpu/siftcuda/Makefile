@@ -44,7 +44,7 @@ CC = /usr/local/cuda/bin/nvcc
 CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc $(PYINCLUDE)
 NVCCFLAGS += -Xcompiler -fPIC,-O2,-fno-strict-aliasing,-DUNIX
 LDFLAGS += -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib $(PYLIBDIR)
-LIBS += -lcudart -lcutil -lhighgui $(PYLINK)
+LIBS += -lcudart -lcutil $(PYLINK)
 
 all : lib
 lib : $(LIBTARGET)
@@ -69,7 +69,7 @@ OBJS= \
 	# $(OBJDIR)/cudaSiftD.o \
 
 $(LIBTARGET) : directories $(OBJS)
-	g++ -shared $(LDFLAGS) $(OBJS) -o $(LIBTARGET)
+	g++ -shared $(LDFLAGS) $(LIBS) $(OBJS) -o $(LIBTARGET)
 
 directories: $(OBJDIR)
 $(OBJDIR):

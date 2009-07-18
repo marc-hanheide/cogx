@@ -11,11 +11,15 @@ find_package(PythonLibs)
 
 set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 set(LIBNAME siftcuda.so)
+string(REGEX MATCH "[0-9][.][0-9]$" PYVER a${PYTHON_EXECUTABLE}) 
+# message(${PYVER})
 add_custom_command(
    OUTPUT ${OUTDIR}/${LIBNAME}
    COMMAND make -f ${CMAKE_CURRENT_SOURCE_DIR}/Makefile 
       SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}" DESTDIR="${OUTDIR}"
+      PYVERSION="${PYVER}"
    DEPENDS 
+      Makefile
       cudaImage.h cudaSiftD.h cudaSift.h cudaSiftH.h featureUploadH.h tpimage.h tpimageutil.h
       pysiftcuda.cpp 
       cudaImage.cu cudaSiftH.cu featureUploadH.cu cudaSiftD.cu 

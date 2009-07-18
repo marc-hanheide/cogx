@@ -106,30 +106,40 @@ void CRecognizer::configure(const map<string,string> & _config)
    // first let the base classes configure themselves
    configureVideoCommunication(_config);
 
-   PyGILState_STATE state = PyGILState_Ensure();
-   PyRun_SimpleString(
-         "import castinit, numpy\n"
-         "from ObjectRecognizer import main, objectmodel, objectmatcher\n"
-         // "import ObjectRecognizer.main as main\n"
-         "main.Manager.addModel('TwEarlGrey', '/home/mmarko/Documents/doc/Devel/CogX/code/apps/xdata/models/TwEarlGrey')\n"
-         );
-   PyGILState_Release(state);
- 
-   /*
+   string dir(".");
+   vector<string> models;
    map<string,string>::const_iterator it;
-   if((it = _config.find("--detect-labels")) != _config.end())
+   if((it = _config.find("--modeldir")) != _config.end())
+   {
+      istringstream istr(it->second);
+      istr >> dir;
+   }
+   if((it = _config.find("--models")) != _config.end())
    {
       istringstream istr(it->second);
       string label;
-      while(istr >> label)
-         m_labels.push_back(label);
+      while(istr >> label) models.push_back(label);
 
       ostringstream ostr;
-      for(size_t i = 0; i < m_labels.size(); i++)
-         ostr << " '" << m_labels[i] << "'";
+      for(size_t i = 0; i < models.size(); i++)
+         ostr << " '" << models[i] << "'";
       log("detecting objects: %s", ostr.str().c_str());
    }
-   */
+
+   ostringstream pycode;
+   pycode
+      << "import castinit, numpy" << endl
+      << "from ObjectRecognizer import main, objectmodel, objectmatcher" << endl;
+   if (models.size() > 0) {
+      vector<string>::const_iterator it;
+      for( it = models.begin(); it != models.end(); it++) {
+         pycode
+            << "main.Manager.addModel('" << *it << "', '" << dir << "')" << endl;
+      }
+   }
+   PyGILState_STATE state = PyGILState_Ensure();
+   PyRun_SimpleString(pycode.str().c_str());
+   PyGILState_Release(state);
 }
 
 void CRecognizer::start()
@@ -163,22 +173,19 @@ void CRecognizer::_test_addRecognitionTask()
 static int Processing = 0;
 void CRecognizer::runComponent()
 {
-   log("Recognizer runComponent");
-
+   // log("Recognizer runComponent");
    sleepComponent(2000);
-   log("Recognizer component thread is awake.");
 
    while(isRunning()) {
-      if (! Processing) _test_addRecognitionTask();
-
-      PyGILState_STATE state = PyGILState_Ensure();
-      PyRun_SimpleString(
-            "from time import time,ctime,sleep\n"
-            "print 'Today is', ctime(time())\n"
-            "sleep(0.001)\n" // This will allow other python threads to run
-            );
-      PyGILState_Release(state);
-      sleepComponent(2000); // This will keep the GIL blocked if not explicitly released
+      //if (! Processing) _test_addRecognitionTask();
+      //PyGILState_STATE state = PyGILState_Ensure();
+      //PyRun_SimpleString(
+      //      "from time import time,ctime,sleep\n"
+      //      "print 'Today is', ctime(time())\n"
+      //      "sleep(0.001)\n" // This will allow other python threads to run
+      //      );
+      //PyGILState_Release(state);
+      sleepComponent(100); // This will keep the GIL blocked if not explicitly released
    }
    log("It looks like we've stopped running!");
 }
@@ -188,13 +195,13 @@ void CRecognizer::onRecognitionTaskAdded(const cdl::WorkingMemoryChange & _wmc)
    log("Recognition task added.");
    // TODO: add to queue and process in main loop
    doRecognize(_wmc);
-   sleepComponent(500);
-   deleteFromWorkingMemory(_wmc.address);
+   // sleepComponent(500);
+   // deleteFromWorkingMemory(_wmc.address);
 }
 
 void CRecognizer::onRecognitionTaskRemoved(const cdl::WorkingMemoryChange & _wmc)
 {
-   log("Recognition task removed.");
+   // log("Recognition task removed.");
 }
 
 void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
@@ -202,33 +209,76 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
    log("Recognition task added.");
    ObjectRecognitionTaskPtr cmd = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
    std::vector<string>::iterator s;
+   std::vector<Video::Image>::iterator pim;
    Video::ImageSeq images;
    getImages(images);
 
-   // ATM: Ignore SOIs, use only first camera, whole image
-   // TODO: Notify on failure!
    if (images.size() < 1) return;
-   Video::Image img = images[0];
-   if (img.width < 8 || img.height < 8) return;
 
-   //for (s = cmd->soiIds.begin(); s != cmd->soiIds.end(); s++) {
-   //   println(s->c_str());
-   //   cdl::WorkingMemoryAddress addr;
-   //   addr.subarchitecture = getSubarchitectureID();
-   //   addr.id = *s;
-   //   SOIPtr soi = getMemoryEntry<SOI>(addr[> CHECK Create a valid address <]);
-   //   std::vector<Video::Image>::iterator pim;
-   //   for (pim = images.begin(); pim != images.end(); pim++) {
-   //      // TODO Project on all available cameras, select best
-   //      ROIPtr roi = projectSOI( pim->camPars, *soi); 
-   //   }
-   //}
+   int region[4]; // x,y,w,h
+   for (int i = 0; i < 4; i++) region[i] = -1;
+   Video::Image img;
+   bool foundRegion = false;
+   string soiProcessed("");
 
-   // TODO: Process each SOI and write the result back
+   if (cmd->soiIds.size() > 1)
+      log("Multiple SOI request. Only the first SOI will be processed.");
+   else if (cmd->soiIds.size() == 0) {
+      log("Request without SOI.");
+      for (pim = images.begin(); pim != images.end(); pim++) {
+         if (pim->width < 8 || pim->height < 8) continue;
+         log("The whole image from camera %d will be processed.", pim->camId);
+         img = *pim;
+         foundRegion = true;
+      }
+   }
+   else {
+      s = cmd->soiIds.begin();
+      cdl::WorkingMemoryAddress addr;
+      addr.subarchitecture = getSubarchitectureID();
+      addr.id = *s;
+      soiProcessed = *s;
+      SOIPtr soi = getMemoryEntry<SOI>(addr/* CHECK Create a valid address */);
+      for (pim = images.begin(); pim != images.end(); pim++) {
+         if (pim->width < 8 || pim->height < 8) continue;
+         // Project on all available cameras, select best
+         ROIPtr roi = projectSOI( pim->camPars, *soi); 
+
+         // clip to image
+         if (roi->rect.pos.x < 0) {
+            roi->rect.width -= roi->rect.pos.x;
+            roi->rect.pos.x = 0;
+         }
+         if (roi->rect.pos.y < 0) {
+            roi->rect.height -= roi->rect.pos.y;
+            roi->rect.pos.y = 0;
+         }
+         if (roi->rect.pos.x + roi->rect.width > pim->width) {
+            roi->rect.width -= (roi->rect.pos.x + roi->rect.width - pim->width);
+         }
+         if (roi->rect.pos.y + roi->rect.height > pim->height) {
+            roi->rect.height -= (roi->rect.pos.y + roi->rect.height - pim->height);
+         }
+         if (roi->rect.width <= 4 || roi->rect.height <= 4) continue;
+         if (roi->rect.width * roi->rect.height > region[2] * region[3]) {
+            region[0] = roi->rect.pos.x;
+            region[1] = roi->rect.pos.y;
+            region[2] = roi->rect.width;
+            region[3] = roi->rect.height;
+            img = *pim;
+            foundRegion = true;
+         }
+      }
+   }
+
+   if ( ! foundRegion) {
+      log("The SOI is not visible.");
+      // TODO: Write to working memory to notify end of processing.
+      return;
+   }
 
    PyGILState_STATE state = PyGILState_Ensure();
 
-   PyObject* pimarray = NULL;
    int nchn = 3; // This should be a field in Image...
    int ndims;
    npy_intp dims[] = {img.height, img.width, nchn};
@@ -243,26 +293,68 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
    if (pModule) {
       PyObject *pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
       if (pFunc && PyCallable_Check(pFunc)) {
-         PyObject *pArgs = PyTuple_New(1);
+         PyObject *pArgs = PyTuple_New(2);
+         PyObject* pimarray = NULL;
 
          // no need to copy: vision::image byte order is the same as numpy-array byte order (tested 20090608)
          pimarray = PyArray_SimpleNewFromData(ndims, dims, NPY_UBYTE, &(img.data[0]));
          PyTuple_SetItem(pArgs, 0, pimarray);
 
+         if (region[2] > 0 && region[3] > 0) {
+            PyObject *pRegion = Py_BuildValue("(iiii)", region[0], region[1],
+                  region[0] + region[2], region[1] + region[3]);
+            PyTuple_SetItem(pArgs, 1, pRegion);
+            log("Processing region x=%d, y=%d, w=%d, h=%d", region[0], region[1],  region[2],  region[3]);
+         }
+         else {
+            log("No region defined.", region[0], region[1],  region[2],  region[3]);
+            PyTuple_SetItem(pArgs, 1, Py_BuildValue("")); // None!
+         }
+
          Processing = 1;
          PyObject *pMatches = PyObject_CallObject(pFunc, pArgs);
          Py_DECREF(pArgs);
-         // TODO: parse the result and update the RecogntionTask
+
+         // parse the result and update the RecogntionTask
+         // Format: ( [name, ...], [prob, ...] [pose, ...] )
+         //    where pose = ndarray(n, 4), line = [ %, phi, lambda, theta ]
+         //    the last pose may be None (for unknown object)
+         VisionData::ObjectRecognitionMatchPtr imatch = new VisionData::ObjectRecognitionMatch;
+         imatch->soiId = soiProcessed;
          if (pMatches != NULL) {
-            if (PyList_Check(pMatches)) {
-               int len = PyList_Size(pMatches);
-               println("List length %d", len);
-               for (int i = 0; i < len; i++) {
-                  println("Tuple: %d", PyTuple_Check(PyList_GetItem(pMatches, 0)));
+            if (PyTuple_Check(pMatches)) {
+               int len = PyTuple_Size(pMatches);
+               println("Tuple length %d", len);
+               if (len != 3) {
+                  println("Tuple of wrong size. What went wrong?");
+               }
+               else {
+                  for (int i = 0; i < len; i++) {
+                     PyObject *pList = PyTuple_GetItem(pMatches, i);
+                     println("List: %d", PyList_Check(pList));
+                     int len = PyList_Size(pList);
+                     if (i == 0) {
+                        for (int j = 0; j < len; j++) {
+                           PyObject *label = PyList_GetItem(pList, j);
+                           imatch->objectId.push_back(string(PyString_AsString(label)));
+                        }
+                     }
+                     else if (i == 1) {
+                        for (int j = 0; j < len; j++) {
+                           PyObject *prob = PyList_GetItem(pList, j);
+                           imatch->probability.push_back(PyFloat_AsDouble(prob));
+                        }
+                     }
+                     else if (i == 2) {
+                        // TODO Pose PDFs: list of arrays
+                     }
+                  }
                }
             }
             Py_DECREF(pMatches);
          }
+         cmd->matches.push_back(imatch);
+         overwriteWorkingMemory(_wmc.address, cmd);
       }
       else 
          println("Failed to find the required python function.");
