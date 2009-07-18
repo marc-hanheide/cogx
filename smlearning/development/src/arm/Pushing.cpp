@@ -116,8 +116,8 @@ Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions
 
 // void setupActuator(Actuator::Desc::Ptr& pDesc) {
 // 	//Actuator pActuator = new Actuator
-// 	typedef FingerActuator::Desc<GenSimArm, MyPRMPlanner, ReacPlanner> FingerActuatorDesc;
-// //  	typedef FingerActuator::Desc<GenSimArm, PRMPlanner, ReacPlanner> FingerActuatorDesc;
+// 	typedef FingerActuator::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> FingerActuatorDesc;
+// //  	typedef FingerActuator::Desc<GenSimArm, GraphPlanner, ReacPlanner> FingerActuatorDesc;
 // 	FingerActuatorDesc *pFingerActuatorDesc = new FingerActuatorDesc();
 // 	pDesc.reset(pFingerActuatorDesc);
 // //	pDesc.appearance.solidColour = phys::RGBA::RED;
@@ -521,8 +521,8 @@ int main(int argc, char *argv[]) {
 		// Setup PhysReacPlanner controller description
 		obj_ptr<Object::Desc> pPhysReacPlannerDesc;
 		if (!armType.compare("kat_serial_arm")) {
-			typedef PhysReacPlanner::Desc<KatSerialArm, MyPRMPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 			typedef PhysReacPlanner::Desc<KatSerialArm, PRMPlanner, ReacPlanner> PhysReacPlannerDesc;
+			typedef PhysReacPlanner::Desc<KatSerialArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 			typedef PhysReacPlanner::Desc<KatSerialArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
 			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
 			pPhysReacPlannerDesc.reset(pDesc);
 			setupPlanner(*pDesc, xmlContext, *context);
@@ -530,16 +530,16 @@ int main(int argc, char *argv[]) {
 			XMLData(pDesc->armDesc.serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
 		}
 		else if (!armType.compare("kat_sim_arm")) {
-			typedef PhysReacPlanner::Desc<KatSimArm, MyPRMPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 			typedef PhysReacPlanner::Desc<KatSimArm, PRMPlanner, ReacPlanner> PhysReacPlannerDesc;
+			typedef PhysReacPlanner::Desc<KatSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 			typedef PhysReacPlanner::Desc<KatSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
 			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
 			pPhysReacPlannerDesc.reset(pDesc);
 			setupPlanner(*pDesc, xmlContext, *context);
 
 		}
 		else if (!armType.compare("gen_sim_arm")) {
-			typedef PhysReacPlanner::Desc<GenSimArm, MyPRMPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 			typedef PhysReacPlanner::Desc<GenSimArm, PRMPlanner, ReacPlanner> PhysReacPlannerDesc;
+			typedef PhysReacPlanner::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 			typedef PhysReacPlanner::Desc<GenSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
 			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
 			pPhysReacPlannerDesc.reset(pDesc);
 			setupPlanner(*pDesc, xmlContext, *context);
@@ -711,7 +711,7 @@ int main(int argc, char *argv[]) {
 		// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 		reacPlanner.send(home, ReacPlanner::ACTION_GLOBAL);
 		// wait for completion of the action (until the arm moves to the initial pose)
-		reacPlanner.wait();
+		reacPlanner.waitForEnd();
 
 
 
@@ -792,11 +792,11 @@ int main(int argc, char *argv[]) {
 			}
 
 			// wait for completion of the action (until the arm moves to the initial pose)
-			reacPlanner.wait();
+			reacPlanner.waitForEnd();
 		
 			// Trajectory profile can be defined by e.g. a simple 3rd degree polynomial
 			Polynomial4::Desc polynomDesc;
-			Trajectory::Ptr pTrajectory(/*Polynomial4::Desc().create()*/ polynomDesc.create());
+			Profile::Ptr pProfile(/*Polynomial4::Desc().create()*/ polynomDesc.create());
 
 			//initializing infoVector
 			Polynomial4 polynom;
@@ -900,14 +900,14 @@ int main(int argc, char *argv[]) {
 				for (U32 i = 0; i <= n; i++) {
 
 					// create a new target waypoint on a straight line at normalized time timeDelta * i
-					waypointFromLineTrajectory(target, *pTrajectory, begin, end, duration, timeDelta * i);
+					waypointFromLineTrajectory(target, *pProfile, begin, end, duration, timeDelta * i);
 					// set the target waypoint absolute time (in future)
 					target.t = timeBegin + timeDeltaAsync + timeDelta * i;
 		
 					// send to the controller, force local movement (without planning in the entire arm workspace)
 					// reacPlanner.wait() will wait approx 'timeDelta' seconds, until a next waypoint can be sent
 					// reacPlanner.wait() can be used only if signal synchronization is enabled (see 'setupPlanner()' above)
-					if (!reacPlanner.send(target, ReacPlanner::ACTION_LOCAL) || !reacPlanner.wait()) {
+					if (!reacPlanner.send(target, ReacPlanner::ACTION_MOVE) || !reacPlanner.waitForEnd()) {
 						// woops something went wrong
 					}
 
@@ -990,7 +990,7 @@ int main(int argc, char *argv[]) {
 			// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 			reacPlanner.send(preHome, ReacPlanner::ACTION_GLOBAL);
 			// wait for completion of the action (until the arm moves to the initial pose)
-			reacPlanner.wait();
+			reacPlanner.waitForEnd();
 
 
 
@@ -1011,7 +1011,7 @@ int main(int argc, char *argv[]) {
 
 
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Moving home..."));
-			reacPlanner.wait();
+			reacPlanner.waitForEnd();
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Done"));
 
 			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
