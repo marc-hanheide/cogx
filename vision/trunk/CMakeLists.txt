@@ -90,3 +90,4 @@ if(BUILD_SA_NICK)
 add_subdirectory (subarchitectures/nick.sa)
 endif(BUILD_SA_NICK)
 
+add_subdirectory(tools/python)
