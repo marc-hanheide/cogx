@@ -41,12 +41,9 @@ class CModelManager:
         m = objectmodel.CObjectModel(name)
         m.FM.setModelStorePath(mdldir)
         model[0] = m
-        print "Loading views"
         m.loadViews(delayedLoad=False)
         print len(m.viewPoints), "views"
-        print "Loading matches"
         m.loadPairMatches(mdldir, name)
-        print "Loadeth!"
 
     def getModel(self, name):
         if not self.models.has_key(name): return None
@@ -90,42 +87,84 @@ def _findMatchingObject(image):
     print "Image shape", image.shape
     if len(Manager.modelNames) < 1:
         print "No model loaded"
-        return []
+        return ( ["*unknown*"], [1.0], [None] )
     exmpl = Setup.extractor.extractFeatures(image)
     matches = []
+    names = []
+    poses = []
     sclimit = (4.0, 20.0)
     for mn in Manager.modelNames:
         model = Manager.getModel(mn)
         T.tic(); print "\nMATCH Model %s" % mn
         Matcher.match(model, exmpl) # Matcher.quickMatch(model, exmpl)
         T.toc("Time to match:")
+        print len(Matcher.scores), "scores"
         if len(Matcher.scores) < 1: continue
-        pose = matcher.getPoseProbability()
+        names.append(mn)
+        matches.append( (Matcher.bestViews[:3], Matcher.scores[:3], Matcher.consists[:3]) )
+        pose = Matcher.getPoseProbability()
         pose.reverse()
-        matches.append( (mn, Matcher.bestViews[:3], Matcher.scores[:3], Matcher.consists[:3], pose) )
+        ap = np.ndarray(shape=(len(pose), 4), dtype=float)
+        for i,p in enumerate(pose):
+            for c in xrange(4): ap[i, c] = p[c] # %, phi, lambda, rot
+        poses.append(ap)
         # printMatches(Matcher)
-    probs = []
-    sp = 0
-    for m in matches:
-        # H: expected best score; 0.3 matches; d0=0.001, max 10% better; decrease with distance
-        dfac = m[3][0].scale * m[3][0].scaleConfidence
-        if dfac > 1: dfac = 1
-        if dfac <= 1e-3: dfac = 1e-3
-        estsc = len(m[1][0].featurePacks[0]) * 0.3 * 100 * dfac
-        realsc = m[2][0]
-        probs.append( [m[0], realsc / estsc, m[4]] ) # name, %, pose
-        sp += realsc / estsc
 
-    if sp > 0.9: # H
-        for p in probs: p[1] = 0.9 * p[1] / sp
+    def getProbs1(matches):
+        probs = []
+        sp = 0
+        for m in matches:
+            # H: expected best score; 0.3 matches; d0=0.001, max 10% better; decrease with distance
+            dfac = m[2][0].scale * m[2][0].scaleConfidence
+            if dfac > 1: dfac = 1
+            if dfac <= 1e-3: dfac = 1e-3
+            estsc = len(m[0][0].featurePacks[0]) * 0.3 * 100 * dfac
+            realsc = m[1][0]
+            probs.append( realsc / estsc ) # name, %, pose
+            sp += realsc / estsc
 
-    return probs
+        if sp > 0.9: # H: a "PDF" + unknown
+            for p in probs: p = 0.9 * p / sp
+        return probs
+
+    def getProbs2(matches):
+        # H: PDF from rotation confidence
+        confs = []
+        confmax = 0
+        for m in matches:
+            if len(m[2]) == 0: confs.append(0)
+            else:
+                mconfs = [ c.rotationConfidence for c in m[2] ]
+                cs = sum (mconfs)
+                confs.append(cs / len(m[2]))
+                confmax = max(confmax, max(mconfs))
+        confs = [ (c - 0.3) / 0.7 for c in confs ]
+        for i in xrange(len(confs)): if confs[i] < 0: confs[i] = 0
+        sumconfs = sum(confs)
+        if sumconfs < 1e-4: return confs
+        confs = [ c / sumconfs * confmax for c in confs ]
+        return confs
+
+    probs = getProbs2()
+    sp = sum(probs)
+    if (sp < 1.0):
+        names.append("*unknown*")
+        probs.append(1.0 - sp)
+        poses.append(None)
+
+    # convert to something for CPP
+    n = min(len(names), len(poses), len(probs))
+    if len(names) != n or len(poses) != n or len(probs) != n:
+        print "_findMatchingObject: Inconsistent results"
+
+    return (names, probs, poses)
 
 # image: ndarray (h, w, 1 or 3)
 # region: (x0, y0, x1, y1)
 def findMatchingObject(image, region=None):
     try:
         if region != None:
+            x0, x1, y0, y1 = region
             image = np.copy(image[x0:x1, y0:y1])
         matches = _findMatchingObject(image)
         return matches

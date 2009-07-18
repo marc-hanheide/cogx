@@ -298,12 +298,12 @@ class CObjectMatcher:
                 if conf.rotationConfidence > 0.4:
                     arot.add(conf.rotation, self.scores[i])
             if nsc>0:
-                bonus = (1.0 + 1.0 * nsc / N) # for cluster size
+                bonus = (1.0 + 1.0 * nsc / N) # H: for cluster size
                 rot = arot.averageDeg
                 if rot == None: rot = self.consists[0].rotation * 180 / math.pi
                 clpoints.append( (bonus*score/nsc, aphi.averageDeg, alam.averageDeg, rot) )
 
-        # Normalize scores -> probabilities
+        # H: Normalize scores -> probabilities
         score = 0
         for clp in clpoints: score += clp[0]
         clpoints = [ (clp[0] / score, clp[1], clp[2], clp[3]) for clp in clpoints ]

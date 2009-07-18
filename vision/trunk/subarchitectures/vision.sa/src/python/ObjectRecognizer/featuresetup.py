@@ -2,9 +2,14 @@
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 # Author:  Marko Mahnič
 # Created: jul 2009 
+
+import os
 import mods.cameraview as camview
-import siftgpu
-import siftcuda
+import osmods.sift
+try:
+    import siftgpu
+    import siftcuda
+except: pass
 import numpy as np
 
 class CFeatureExtractor:
@@ -35,6 +40,20 @@ class CFeatureExtractorGpu(CFeatureExtractor):
     def extractFeatures(self, image):
         k,d = siftgpu.extractFeatures(image[:600])
         if k == None or d == None: return None
+        return camview.CFeaturepack(k, d)
+
+class CFeatureExtractorNumpy(CFeatureExtractor):
+    def extractFeatures(self, image):
+        if len(image.shape) > 2 and len(image.shape[2] == 3):
+            image = ( 2 * image[:,:,0]  + 6 * image[:,:,1] + 2 * image[:,:,2] ) / 10
+        rows, cols = image.shape[:2]
+        f = open("__tmp.pgm", "w")
+        f.write('P5\n%d\n%d\n255\n' % (cols, rows))
+        image.write(f)
+        f.close()
+        os.system("./output/bin/sift <__tmp.pgm >__sift.dat")
+        #row, col, scale, orientation of each feature
+        k, d = osmods.sift.read_features_from_file("__sift.dat")
         return camview.CFeaturepack(k, d)
 
 class CDescriptorMatcher(object):
@@ -174,7 +193,8 @@ class CSiftSetup:
     GPU = 1
     CUDA = 2
     def __init__(self, extractor, matcher):
-        self.extractor = CFeatureExtractorGpu()
+        if extractor == CSiftSetup.NUMPY: self.extractor = CFeatureExtractorNumpy()
+        else: self.extractor = CFeatureExtractorGpu()
         if matcher == CSiftSetup.NUMPY: self.matcher = CDescriptorMatcherNumpy(2, min)
         elif matcher == CSiftSetup.CUDA: self.matcher = CDescriptorMatcherCuda(2, min)
         else: self.matcher = CDescriptorMatcherGpu(2, min)

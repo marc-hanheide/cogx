@@ -15,9 +15,10 @@ class CViewer:
         self.winMatch = "Matching view"
         self.viewIndex = 0
 
-        self.capture = captr.CLoopback1394Capture(device=2)
+        # self.capture = captr.CLoopback1394Capture(device=2)
         # self.capture = captr.CameraCapture(device=2, size=(1024, 768))
         # self.capture = captr.CameraCapture(device=0, size=(1024, 768), framerate=7.5)
+        self.capture = captr.CameraCapture(device=0, size=(640, 480), framerate=7.5)
         # self.capture.setSize((640, 480))
         # self.capture.setFrameRate(15)
         # self.capture.setBrightness(0.6)
@@ -34,8 +35,8 @@ class CViewer:
 
     def loadModels(self):
         # main.Manager.addModel('TwEarlGrey', '/home/mmarko/Documents/doc/Devel/CogX/code/apps/xdata/models/TwEarlGrey')
-        mdir = '../apps/xdata/models'
-        # mdir = '/media/truecrypt1/Devel/CogX/DATA/xdata/models'
+        # mdir = '../apps/xdata/models'
+        mdir = '/media/truecrypt1/Devel/CogX/DATA/xdata/models'
         main.Manager.addModel('CvetMetaTea', mdir)
         main.Manager.addModel('ShelcoreCube', mdir)
         main.Manager.addModel('SwGreenTea', mdir)
@@ -90,9 +91,9 @@ class CViewer:
 def mymain():
     App = CViewer()
     App.loadModels()
-    App.processImages()
+    # App.processImages()
     # App.captureImages()
-    # App.interactive()
+    App.interactive()
 
 if __name__ == "__main__": mymain()
 
