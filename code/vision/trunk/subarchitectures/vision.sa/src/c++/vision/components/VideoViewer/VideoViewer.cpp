@@ -66,6 +66,7 @@ void VideoViewer::runComponent()
     // wait a bit so we don't hog the CPU
     sleepComponent(100);
   }
+  cvDestroyWindow(getComponentID().c_str());
 }
 
 }
