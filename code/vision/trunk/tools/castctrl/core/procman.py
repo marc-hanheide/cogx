@@ -8,10 +8,9 @@ import re
 import time
 import subprocess as subp
 import select, signal
-from collections import deque
 import options, messages
 import itertools
-
+import legacy
 
 LOGGER = None
 def log(msg):
@@ -37,10 +36,11 @@ class CProcessObserver(object):
         pass
 
 class CProcess(object):
-    DYING = 1
-    STOPPED = 0
-    TERM = -1
-    ERROR = -2
+    STOPPED = 0     # noraml state, not running
+    FLUSH = -1      # flushing when terminated correctly
+    OK = 0
+    ERRTERM = -1    # terminated unexpectedly
+    ERROR = -2      # Internal error
     def  __init__(self, name, command, params=None, workdir=None):
         self.name = name
         self.command = command
@@ -48,23 +48,30 @@ class CProcess(object):
         self.workdir = workdir
         self.process = None
         self.status = CProcess.STOPPED # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
+        self.error = CProcess.OK
         self.lastPollState = 0
         self.keepalive = False
         self.allowTerminate = False # CAST apps should not autoTerm; others may
         self.restarted = 0
-        self.messages = deque() # 2.6 deque(maxlen=500)
-        self.errors = deque() # 2.6 deque(maxlen=200)
+        self.messages = legacy.deque(maxlen=500)
+        self.errors = legacy.deque(maxlen=200)
         self.msgOrder = 0
         self.observers = []
-        self.willClearAt = None
+        self.willClearAt = None # Flushing
 
     def getStatusStr(self):
-        if self.status == CProcess.DYING: return "Dying"
-        if self.status == CProcess.TERM:  return "Terminated unexpectedly"
-        if self.status == CProcess.ERROR: return "Internal error"
+        if self.status == CProcess.FLUSH: return "Flushing..."
+        if self.error == CProcess.ERRTERM: return "Terminated unexpectedly"
+        if self.error == CProcess.ERROR: return "Internal error"
         if self.process == None: return "Not started"
         if self.restarted > 0: return "%d (r%d)" % (self.process.pid, self.restarted)
         return "%d" % self.process.pid
+
+    # 0 normal; 1 running; 2 error
+    def getStatusLevel(self):
+        if self.error != CProcess.OK: return 2
+        if self.status != CProcess.STOPPED: return 1
+        return 0
 
     def isRunning(self):
         if self.process == None: return False
@@ -79,6 +86,10 @@ class CProcess(object):
             for ob in self.observers: # TODO separate thread?
                 ob.notifyStatusChange(self, old, newStatus)
 
+    def _beginFlush(self):
+        self.willClearAt = time.time() + 3
+        self._setStatus(CProcess.FLUSH)
+
     def start(self, params=None):
         if self.isRunning():
             warn("Process '%s' is already running" % self.name)
@@ -88,25 +99,28 @@ class CProcess(object):
         if self.command == None:
             error("No command for process '%s'" % self.name)
             return
+        self.error = CProcess.OK
         command = self.command
         if params != None:
             for par in params.iterkeys():
                 command = command.replace("[%s]" % par, params[par])
         command = command.split()
-        log("Command '%s'" % " ".join(command))
-        if self.workdir != None: log("PWD='%s'" % self.workdir)
+        log("CMD=%s" % " ".join(command))
+        if self.workdir != None: log("PWD=%s" % self.workdir)
         self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
-        self._setStatus(max(2, self.process.pid))
+        self._setStatus(max(1, self.process.pid))
         log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
         time.sleep(0.01)
 
     def _clear(self, notify = True):
         self.restarted = 0
         self.process = None
-        if not notify: self.status = CProcess.STOPPED
-        else: self._setStatus(CProcess.STOPPED)
+        nextStatus = CProcess.STOPPED
+        if not notify: self.status = nextStatus
+        else: self._setStatus(nextStatus)
 
     def stop(self):
+        self.error = CProcess.OK
         if self.process == None:
             self._clear()
             return
@@ -127,7 +141,7 @@ class CProcess(object):
             # error("Reason: %s", e)
         if not self.isRunning():
             log("Process '%s' stopped" % (self.name))
-            self._clear()
+            self._beginFlush() # self._clear() # TODO: flush
         else: warn("Process '%s' is still running" % (self.name))
 
     def getPipes(self):
@@ -176,25 +190,27 @@ class CProcess(object):
     def check(self):
         if (self.status != self.STOPPED) != (self.process != None):
             error("Internal error: Process '%s' in invalid state" % (self.name))
-            if self.isRunning(): self.status = max(2, self.process.pid)
+            if self.isRunning(): self.status = max(1, self.process.pid)
             else:
                 self.process = None
-                self._setStatus(CProcess.ERROR)
+                self.error = CProcess.ERROR
+                self._setStatus(CProcess.STOPPED)
             return
         if self.isRunning(): return
-        if self.status > 0 or self.status == CProcess.DYING:
-            if self.allowTerminate:
-                if self.status != CProcess.DYING:
-                    self._setStatus(CProcess.DYING)
-                    self.willClearAt = time.time() + 3
-                if time.time() > self.willClearAt: self._clear()
-                return
+        if self.status == CProcess.FLUSH:
+            if time.time() > self.willClearAt: self._clear()
+        if self.status > 0:
+            self._beginFlush()
+            if self.allowTerminate: return
+
             error("Process %s terminated unexpectedly, signal=%d" % (self.name, self.lastPollState))
             if self.keepalive:
                 log("Restarting process %s" % self.name)
                 self.start()
                 self.restarted += 1
-            else: self._setStatus(CProcess.TERM)
+            else:
+                self.error = CProcess.ERRTERM
+                self._beginFlush()
 
 class CProcessManager(object):
     def __init__(self, name="localhost"):
