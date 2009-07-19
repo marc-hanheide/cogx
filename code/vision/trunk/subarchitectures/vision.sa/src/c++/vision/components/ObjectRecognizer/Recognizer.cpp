@@ -99,6 +99,7 @@ extern "C" {
 
 CRecognizer::CRecognizer()
 {
+   testmode = 0;
 }
 
 void CRecognizer::configure(const map<string,string> & _config)
@@ -109,11 +110,24 @@ void CRecognizer::configure(const map<string,string> & _config)
    string dir(".");
    vector<string> models;
    map<string,string>::const_iterator it;
+
+   if((it = _config.find("--testmode")) != _config.end())
+   {
+      string mode;
+      istringstream istr(it->second);
+      istr >> mode;
+      if (mode == "1") testmode = 1;
+      else if (mode == "2") testmode = 2;
+      else testmode = 0;
+      log("TEST MODE: %ld", testmode);
+   }
+
    if((it = _config.find("--modeldir")) != _config.end())
    {
       istringstream istr(it->second);
       istr >> dir;
    }
+
    if((it = _config.find("--models")) != _config.end())
    {
       istringstream istr(it->second);
@@ -155,11 +169,19 @@ void CRecognizer::start()
             this, &CRecognizer::onRecognitionTaskAdded)
          );
 
-   addChangeFilter(
-        createLocalTypeFilter<ObjectRecognitionTask>(cdl::DELETE),
-        new MemberFunctionChangeReceiver<CRecognizer>(
-           this, &CRecognizer::onRecognitionTaskRemoved)
-        );
+   if (testmode) {
+      addChangeFilter(
+           createLocalTypeFilter<ObjectRecognitionTask>(cdl::DELETE),
+           new MemberFunctionChangeReceiver<CRecognizer>(
+              this, &CRecognizer::onRecognitionTaskRemoved)
+           );
+
+      addChangeFilter(
+           createLocalTypeFilter<ObjectRecognitionTask>(cdl::OVERWRITE),
+           new MemberFunctionChangeReceiver<CRecognizer>(
+              this, &CRecognizer::onRecognitionTaskModified)
+           );
+   }
 }
 
 void CRecognizer::_test_addRecognitionTask()
@@ -168,6 +190,7 @@ void CRecognizer::_test_addRecognitionTask()
    ObjectRecognitionTaskPtr task = new ObjectRecognitionTask();
    println("Adding new task");
    addToWorkingMemory(id, getSubarchitectureID(), task);
+   sleepComponent(5000);
 }
 
 static int Processing = 0;
@@ -176,8 +199,10 @@ void CRecognizer::runComponent()
    sleepComponent(2000);
 
    while(isRunning()) {
-      //if (! Processing) _test_addRecognitionTask();
-      sleepComponent(100); // This will keep the GIL blocked if not explicitly released
+      if (testmode && ! Processing)
+         _test_addRecognitionTask();
+
+      sleepComponent(100);
    }
    log("It looks like we've stopped running!");
 }
@@ -187,18 +212,29 @@ void CRecognizer::onRecognitionTaskAdded(const cdl::WorkingMemoryChange & _wmc)
    log("Recognition task added.");
    // TODO: add to queue and process in main loop
    doRecognize(_wmc);
-   // sleepComponent(500);
-   // deleteFromWorkingMemory(_wmc.address);
 }
 
 void CRecognizer::onRecognitionTaskRemoved(const cdl::WorkingMemoryChange & _wmc)
 {
-   // log("Recognition task removed.");
+   log("Recognition task removed.");
+}
+
+void CRecognizer::onRecognitionTaskModified(const cdl::WorkingMemoryChange & _wmc)
+{
+   log("Recognition task modified.");
+   // TODO: dump the request!
+   if (testmode) {
+      sleepComponent(500);
+      deleteFromWorkingMemory(_wmc.address);
+   }
 }
 
 void CRecognizer::abortRecognition(const cast::cdl::WorkingMemoryChange & _wmc, ObjectRecognitionTaskPtr cmd)
 {
    // TODO set some flag in ObjectRecognitionTask?
+   if (testmode) {
+      log("Recognition task aborted.");
+   }
    overwriteWorkingMemory(_wmc.address, cmd);
 }
 
@@ -294,7 +330,12 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
    PyObject *pModule = PyImport_Import(pName);
    Py_DECREF(pName);
    if (pModule) {
-      PyObject *pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
+      PyObject *pFunc = NULL;
+      if (testmode == 1)
+         pFunc = PyObject_GetAttrString(pModule, "testCppInterface");
+      else
+         pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
+
       if (pFunc && PyCallable_Check(pFunc)) {
          PyObject *pArgs = PyTuple_New(2);
          PyObject* pimarray = NULL;
@@ -327,14 +368,14 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
          if (pMatches != NULL) {
             if (PyTuple_Check(pMatches)) {
                int len = PyTuple_Size(pMatches);
-               println("Tuple length %d", len);
+               if (testmode) println("Tuple length %d", len);
                if (len != 3) {
                   println("Tuple of wrong size. Something went wrong.");
                }
                else {
                   for (int i = 0; i < len; i++) {
                      PyObject *pList = PyTuple_GetItem(pMatches, i);
-                     println("List: %d", PyList_Check(pList));
+                     if (testmode) println("List: %d", PyList_Check(pList));
                      int len = PyList_Size(pList);
                      if (i == 0) {
                         for (int j = 0; j < len; j++) {
