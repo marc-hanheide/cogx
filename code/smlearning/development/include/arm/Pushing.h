@@ -17,15 +17,14 @@
 #define SMLEARNING_PUSHING_H_
 
 
-#include <demo/Common.h>
-#include <demo/Tools.h>
-#include <demo/Creator.h>
-#include <demo/XMLParser.h>
-#include <demo/XMLData.h>
-#include <demo/Actuator.h>
+#include <system/XMLParser.h>
 #include <controller/PhysReacPlanner.h>
 #include <controller/Katana.h>
 #include <controller/Simulator.h>
+#include <tools/Common.h>
+#include <tools/Tools.h>
+#include <tools/Creator.h>
+#include <tools/XMLData.h>
 #include <iostream>
 #include "tools/data_handling.h"
 
@@ -34,7 +33,7 @@ using namespace std;
 using namespace golem;
 using namespace golem::ctrl;
 using namespace golem::phys;
-using namespace golem::demo;
+using namespace golem::tools;
 
 #define MAX_PLANNER_TRIALS 50
 
