@@ -173,18 +173,10 @@ void CRecognizer::_test_addRecognitionTask()
 static int Processing = 0;
 void CRecognizer::runComponent()
 {
-   // log("Recognizer runComponent");
    sleepComponent(2000);
 
    while(isRunning()) {
       //if (! Processing) _test_addRecognitionTask();
-      //PyGILState_STATE state = PyGILState_Ensure();
-      //PyRun_SimpleString(
-      //      "from time import time,ctime,sleep\n"
-      //      "print 'Today is', ctime(time())\n"
-      //      "sleep(0.001)\n" // This will allow other python threads to run
-      //      );
-      //PyGILState_Release(state);
       sleepComponent(100); // This will keep the GIL blocked if not explicitly released
    }
    log("It looks like we've stopped running!");
@@ -204,6 +196,12 @@ void CRecognizer::onRecognitionTaskRemoved(const cdl::WorkingMemoryChange & _wmc
    // log("Recognition task removed.");
 }
 
+void CRecognizer::abortRecognition(const cast::cdl::WorkingMemoryChange & _wmc, ObjectRecognitionTaskPtr cmd)
+{
+   // TODO set some flag in ObjectRecognitionTask?
+   overwriteWorkingMemory(_wmc.address, cmd);
+}
+
 void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
 {
    log("Recognition task added.");
@@ -213,7 +211,11 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
    Video::ImageSeq images;
    getImages(images);
 
-   if (images.size() < 1) return;
+   if (images.size() < 1) {
+      println("No images are available.");
+      abortRecognition(_wmc, cmd);
+      return;
+   }
 
    int region[4]; // x,y,w,h
    for (int i = 0; i < 4; i++) region[i] = -1;
@@ -274,6 +276,7 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
    if ( ! foundRegion) {
       log("The SOI is not visible.");
       // TODO: Write to working memory to notify end of processing.
+      abortRecognition(_wmc, cmd);
       return;
    }
 
@@ -326,7 +329,7 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
                int len = PyTuple_Size(pMatches);
                println("Tuple length %d", len);
                if (len != 3) {
-                  println("Tuple of wrong size. What went wrong?");
+                  println("Tuple of wrong size. Something went wrong.");
                }
                else {
                   for (int i = 0; i < len; i++) {
@@ -356,8 +359,10 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
          cmd->matches.push_back(imatch);
          overwriteWorkingMemory(_wmc.address, cmd);
       }
-      else 
+      else {
          println("Failed to find the required python function.");
+         abortRecognition(_wmc, cmd);
+      }
 
       Py_XDECREF(pFunc);
       Py_DECREF(pModule);
