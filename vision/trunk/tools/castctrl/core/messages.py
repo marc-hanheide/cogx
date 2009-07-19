@@ -5,9 +5,9 @@
 
 import sys, time, re
 import itertools, heapq
+import legacy
 from collections import deque
 
-pyver = sys.version_info[0] * 100 + sys.version_info[1]
 reColorEscape = re.compile("\x1b\\[\\d+m")
 reColorEscapeSplit = re.compile("(\x1b\\[\\d+m)")
 
@@ -130,22 +130,14 @@ class CLogMerger(object):
         its = []
         for s in self.sources: its.extend(s.getIterators())
         if len(its) > 0:
-            if pyver >= 206:
-                for msg in heapq.merge(*its): self.messages.append(msg)
-            else:
-                def xmerge3(*ln):
-                    heap = []
-                    for i in itertools.chain(*ln): heap.append(i)
-                    heapq.heapify(heap)
-                    while len(heap): yield heapq.heappop(heap)
-
-                for msg in xmerge3(*its): self.messages.append(msg)
+            fnMerge = legacy.getMergeFn()
+            for msg in fnMerge(*its): self.messages.append(msg)
 
 class CInternalLogger(object):
     def __init__(self):
         # Modelled like CProcess
-        self.messages = deque() # 2.6 deque(maxlen=500)
-        self.errors = deque() # 2.6 deque(maxlen=200)
+        self.messages = legacy.deque(maxlen=500)
+        self.errors = legacy.deque(maxlen=200)
 
     def log(self, msg):
         self.messages.append(CMessage(msg))

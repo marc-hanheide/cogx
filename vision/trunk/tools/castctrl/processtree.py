@@ -49,8 +49,9 @@ class CProcessItem(CTreeItem, procman.CProcessObserver):
         return ""
 
     def color(self):
-        if self.process.status < 0: return "red"
-        if self.process.status > 0: return "blue"
+        st = self.process.getStatusLevel()
+        if st >= 2: return "red"
+        if st > 0: return "blue"
         return ""
 
     def notifyStatusChange(self, process, oldStatus, newStatus):
@@ -84,8 +85,10 @@ class CHostItem(CTreeItem):
         return ""
 
     def color(self):
-        for proc in self.children:
-            if proc.process.status < 0: return "red"
+        if len(self.children) < 1: return ""
+        st = max( child.process.getStatusLevel() for child in self.children )
+        if st >= 2: return "red"
+        if st > 0: return "blue"
         return ""
 
 class CRootItem(CTreeItem):

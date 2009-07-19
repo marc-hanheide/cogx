@@ -22,7 +22,7 @@ def xe(shexpr):
 
 class CUserOptions(object):
     def __init__(self):
-        self.textEditCmd = "gvim --remote %s"
+        self.textEditCmd = "gvim --servername CAST --remote %s"
 
 class CCastOptions(object):
     def __init__(self):
