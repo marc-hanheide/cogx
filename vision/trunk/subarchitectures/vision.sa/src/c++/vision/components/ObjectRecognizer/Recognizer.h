@@ -26,6 +26,7 @@ protected:
 
    // Workers
    void doRecognize(const cast::cdl::WorkingMemoryChange & _wmc);
+   void abortRecognition(const cast::cdl::WorkingMemoryChange & _wmc, VisionData::ObjectRecognitionTaskPtr cmd);
 
    // Some helpers for testing
    void _test_addRecognitionTask();
