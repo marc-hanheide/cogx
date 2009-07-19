@@ -139,7 +139,8 @@ def _findMatchingObject(image):
                 confs.append(cs / len(m[2]))
                 confmax = max(confmax, max(mconfs))
         confs = [ (c - 0.3) / 0.7 for c in confs ]
-        for i in xrange(len(confs)): if confs[i] < 0: confs[i] = 0
+        for i in xrange(len(confs)):
+            if confs[i] < 0: confs[i] = 0
         sumconfs = sum(confs)
         if sumconfs < 1e-4: return confs
         confs = [ c / sumconfs * confmax for c in confs ]
@@ -167,6 +168,22 @@ def findMatchingObject(image, region=None):
             x0, x1, y0, y1 = region
             image = np.copy(image[x0:x1, y0:y1])
         matches = _findMatchingObject(image)
+        return matches
+    except:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+        # traceback.print_tb(exceptionTraceback)
+    return None
+
+def testCppInterface(image, region=None):
+    try:
+        print "Image shape", image.shape
+        if region != None:
+            x0, y0, x1, y1 = region
+            print "ROI x0x1y0y1 w h", x0, x1, y0, y1, x1-x0, y1-y0
+            image = np.copy(image[x0:x1, y0:y1])
+            print "ROI shape", image.shape
+        matches = ( ["A", "B", "C"], [0.7, 0.2, 0.1], [None, None, None] )
         return matches
     except:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()

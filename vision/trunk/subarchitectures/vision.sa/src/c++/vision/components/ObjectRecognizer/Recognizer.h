@@ -11,6 +11,9 @@
 
 class CRecognizer: public cast::ManagedComponent, public cast::VideoClient
 {
+private:
+   int testmode;
+
 public:
    CRecognizer();
 
@@ -23,6 +26,7 @@ protected:
     */
    void onRecognitionTaskAdded(const cast::cdl::WorkingMemoryChange & _wmc);
    void onRecognitionTaskRemoved(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onRecognitionTaskModified(const cast::cdl::WorkingMemoryChange & _wmc);
 
    // Workers
    void doRecognize(const cast::cdl::WorkingMemoryChange & _wmc);
