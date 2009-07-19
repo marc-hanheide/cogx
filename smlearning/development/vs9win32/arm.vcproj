@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="GolemSystemDEBUG.lib GolemPhysicsDEBUG.lib GolemControllerDEBUG.lib GolemEmbodimentDEBUG.lib GolemDemoDEBUG.lib KNIBaseDEBUG.lib PhysXLoader.lib OpenGL32.lib freeglut.lib libexpat.lib Gdiplus.lib"
+				AdditionalDependencies="GolemSystemDEBUG.lib GolemPhysicsDEBUG.lib GolemControllerDEBUG.lib GolemToolsDEBUG.lib KNIBaseDEBUG.lib PhysXLoader.lib OpenGL32.lib freeglut.lib libexpat.lib Gdiplus.lib"
 				OutputFile="$(OutDir)/$(ProjectName)DEBUG.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -149,7 +149,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="GolemSystem.lib GolemPhysics.lib GolemController.lib GolemEmbodiment.lib GolemDemo.lib KNIBase.lib PhysXLoader.lib OpenGL32.lib freeglut.lib libexpat.lib Gdiplus.lib"
+				AdditionalDependencies="GolemSystem.lib GolemPhysics.lib GolemController.lib GolemTools.lib KNIBase.lib PhysXLoader.lib OpenGL32.lib freeglut.lib libexpat.lib Gdiplus.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
