@@ -1,6 +1,7 @@
 import sys, traceback, Ice
 import autogen.Planner as Planner
 import cast.core
+#import standalone.task
 
 class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
@@ -18,15 +19,18 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
   def runComponent(self):
     pass
 
-  def addTask(self, task, current=None):
-    print "Planner PythonServer: New PlanningTask received"
+  def registerTask(self, task, current=None):
+    print "Planner PythonServer: New PlanningTask received:"
+    print task.goal;
+
+    task.plan = "there you got your plan"
+
+    self.client.deliverPlan(task);
 
     if(self.client is None):
-      return -1
+      print "ERROR!!"
 
     # add task to some queue or start planning right away. when done call self.client.deliverPlan(string plan)
-    return 1
-
   def registerClient(self, Client, current=None):
     print "Planner PythonServer: running"
     self.client = Client

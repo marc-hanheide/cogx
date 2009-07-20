@@ -17,7 +17,7 @@ class WMControl : public cast::ManagedComponent
   virtual void runComponent();
 
   void connectToPythonServer();
-  void deliverPlan(int taskID);
+  void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
 
   void receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc);
 
@@ -25,7 +25,7 @@ class WMControl : public cast::ManagedComponent
   {
    public:
     InternalCppServer(WMControl* Parent);
-    virtual void deliverPlan(int taskID, const Ice::Current&);
+    virtual void deliverPlan(const autogen::Planner::PlanningTaskPtr& task, const Ice::Current&);
 
    protected:
     WMControl* parent;

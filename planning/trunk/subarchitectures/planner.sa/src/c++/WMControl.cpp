@@ -73,14 +73,18 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
   
   autogen::Planner::PlanningTaskPtr planData = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
 
-  int taskID = pyServer->addTask(planData);
+  println(planData->goal);
+
+  //int taskID = pyServer->addTask(planData);
+  pyServer->registerTask(planData);
 
   //TODO: Store the PlannerCommandPtr with it's taskID till deliverPlan(taskID) is called.
 }
 
-void WMControl::deliverPlan(int taskID)
+void WMControl::deliverPlan(const autogen::Planner::PlanningTaskPtr& task)
 {
   println("Plan delivered");
+  println(task->plan);
   //TODO: Get the PlannerCommanPtr that's stored with taskID , then overwrite the WorkingMemory with that plan
   //planData->plan = "Well that's some plan, ain't it?";
   //overwriteWorkingMemory(wmc.address,planData);
@@ -91,8 +95,8 @@ WMControl::InternalCppServer::InternalCppServer(WMControl* Parent)
   parent = Parent;
 }
 
-void WMControl::InternalCppServer::deliverPlan(int taskID, const Ice::Current&)
+void WMControl::InternalCppServer::deliverPlan(const autogen::Planner::PlanningTaskPtr& task, const Ice::Current&)
 {
-  parent->deliverPlan(taskID);
+  parent->deliverPlan(task);
 }
 

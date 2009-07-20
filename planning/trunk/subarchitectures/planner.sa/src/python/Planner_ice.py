@@ -2159,14 +2159,13 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningState'):
 if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
     _M_autogen.Planner.PlanningTask = Ice.createTempClass()
     class PlanningTask(Ice.Object):
-        def __init__(self, id=0, planningAgent='', objects=None, state=None, goal=''):
-            if __builtin__.type(self) == _M_autogen.Planner.PlanningTask:
-                raise RuntimeError('autogen.Planner.PlanningTask is an abstract class')
+        def __init__(self, id=0, planningAgent='', objects=None, state=None, goal='', plan=''):
             self.id = id
             self.planningAgent = planningAgent
             self.objects = objects
             self.state = state
             self.goal = goal
+            self.plan = plan
 
         def ice_ids(self, current=None):
             return ('::Ice::Object', '::autogen::Planner::PlanningTask')
@@ -2178,15 +2177,6 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
             return '::autogen::Planner::PlanningTask'
         ice_staticId = staticmethod(ice_staticId)
 
-        #
-        # Operation signatures.
-        #
-        # def loadMAPLTask(self, taskFile, domainFile, planningAgent, current=None):
-        # def markChanged(self, current=None):
-        # def activateChangeDetection(self, current=None):
-        # def planAvailable(self, current=None):
-        # def getPlan(self, current=None):
-
         def __str__(self):
             return IcePy.stringify(self, _M_autogen.Planner._t_PlanningTask)
 
@@ -2194,21 +2184,6 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
 
     _M_autogen.Planner.PlanningTaskPrx = Ice.createTempClass()
     class PlanningTaskPrx(Ice.ObjectPrx):
-
-        def loadMAPLTask(self, taskFile, domainFile, planningAgent, _ctx=None):
-            return _M_autogen.Planner.PlanningTask._op_loadMAPLTask.invoke(self, ((taskFile, domainFile, planningAgent), _ctx))
-
-        def markChanged(self, _ctx=None):
-            return _M_autogen.Planner.PlanningTask._op_markChanged.invoke(self, ((), _ctx))
-
-        def activateChangeDetection(self, _ctx=None):
-            return _M_autogen.Planner.PlanningTask._op_activateChangeDetection.invoke(self, ((), _ctx))
-
-        def planAvailable(self, _ctx=None):
-            return _M_autogen.Planner.PlanningTask._op_planAvailable.invoke(self, ((), _ctx))
-
-        def getPlan(self, _ctx=None):
-            return _M_autogen.Planner.PlanningTask._op_getPlan.invoke(self, ((), _ctx))
 
         def checkedCast(proxy, facetOrCtx=None, _ctx=None):
             return _M_autogen.Planner.PlanningTaskPrx.ice_checkedCast(proxy, '::autogen::Planner::PlanningTask', facetOrCtx, _ctx)
@@ -2222,20 +2197,15 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
 
     _M_autogen.Planner._t_PlanningTask = IcePy.declareClass('::autogen::Planner::PlanningTask')
 
-    _M_autogen.Planner._t_PlanningTask = IcePy.defineClass('::autogen::Planner::PlanningTask', PlanningTask, (), True, None, (), (
+    _M_autogen.Planner._t_PlanningTask = IcePy.defineClass('::autogen::Planner::PlanningTask', PlanningTask, (), False, None, (), (
         ('id', (), IcePy._t_int),
         ('planningAgent', (), IcePy._t_string),
         ('objects', (), _M_autogen.Planner._t_objDeclSeq),
         ('state', (), _M_autogen.Planner._t_PlanningState),
-        ('goal', (), IcePy._t_string)
+        ('goal', (), IcePy._t_string),
+        ('plan', (), IcePy._t_string)
     ))
     PlanningTask.ice_type = _M_autogen.Planner._t_PlanningTask
-
-    PlanningTask._op_loadMAPLTask = IcePy.Operation('loadMAPLTask', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string), ((), IcePy._t_string), ((), IcePy._t_string)), (), None, ())
-    PlanningTask._op_markChanged = IcePy.Operation('markChanged', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), None, ())
-    PlanningTask._op_activateChangeDetection = IcePy.Operation('activateChangeDetection', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), None, ())
-    PlanningTask._op_planAvailable = IcePy.Operation('planAvailable', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), IcePy._t_bool, ())
-    PlanningTask._op_getPlan = IcePy.Operation('getPlan', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), IcePy._t_string, ())
 
     _M_autogen.Planner.PlanningTask = PlanningTask
     del PlanningTask
@@ -2263,7 +2233,7 @@ if not _M_autogen.Planner.__dict__.has_key('CppServer'):
         #
         # Operation signatures.
         #
-        # def deliverPlan(self, taskID, current=None):
+        # def deliverPlan(self, task, current=None):
 
         def __str__(self):
             return IcePy.stringify(self, _M_autogen.Planner._t_CppServer)
@@ -2273,8 +2243,8 @@ if not _M_autogen.Planner.__dict__.has_key('CppServer'):
     _M_autogen.Planner.CppServerPrx = Ice.createTempClass()
     class CppServerPrx(Ice.ObjectPrx):
 
-        def deliverPlan(self, taskID, _ctx=None):
-            return _M_autogen.Planner.CppServer._op_deliverPlan.invoke(self, ((taskID, ), _ctx))
+        def deliverPlan(self, task, _ctx=None):
+            return _M_autogen.Planner.CppServer._op_deliverPlan.invoke(self, ((task, ), _ctx))
 
         def checkedCast(proxy, facetOrCtx=None, _ctx=None):
             return _M_autogen.Planner.CppServerPrx.ice_checkedCast(proxy, '::autogen::Planner::CppServer', facetOrCtx, _ctx)
@@ -2289,7 +2259,7 @@ if not _M_autogen.Planner.__dict__.has_key('CppServer'):
     _M_autogen.Planner._t_CppServer = IcePy.defineClass('::autogen::Planner::CppServer', CppServer, (), True, None, (), ())
     CppServer.ice_type = _M_autogen.Planner._t_CppServer
 
-    CppServer._op_deliverPlan = IcePy.Operation('deliverPlan', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_int),), (), None, ())
+    CppServer._op_deliverPlan = IcePy.Operation('deliverPlan', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), _M_autogen.Planner._t_PlanningTask),), (), None, ())
 
     _M_autogen.Planner.CppServer = CppServer
     del CppServer
@@ -2318,10 +2288,7 @@ if not _M_autogen.Planner.__dict__.has_key('PythonServer'):
         # Operation signatures.
         #
         # def registerClient(self, client, current=None):
-        # def addTask(self, task, current=None):
-        # def newTask(self, current=None):
         # def registerTask(self, task, current=None):
-        # def printString(self, astring, current=None):
 
         def __str__(self):
             return IcePy.stringify(self, _M_autogen.Planner._t_PythonServer)
@@ -2334,17 +2301,8 @@ if not _M_autogen.Planner.__dict__.has_key('PythonServer'):
         def registerClient(self, client, _ctx=None):
             return _M_autogen.Planner.PythonServer._op_registerClient.invoke(self, ((client, ), _ctx))
 
-        def addTask(self, task, _ctx=None):
-            return _M_autogen.Planner.PythonServer._op_addTask.invoke(self, ((task, ), _ctx))
-
-        def newTask(self, _ctx=None):
-            return _M_autogen.Planner.PythonServer._op_newTask.invoke(self, ((), _ctx))
-
         def registerTask(self, task, _ctx=None):
             return _M_autogen.Planner.PythonServer._op_registerTask.invoke(self, ((task, ), _ctx))
-
-        def printString(self, astring, _ctx=None):
-            return _M_autogen.Planner.PythonServer._op_printString.invoke(self, ((astring, ), _ctx))
 
         def checkedCast(proxy, facetOrCtx=None, _ctx=None):
             return _M_autogen.Planner.PythonServerPrx.ice_checkedCast(proxy, '::autogen::Planner::PythonServer', facetOrCtx, _ctx)
@@ -2360,10 +2318,7 @@ if not _M_autogen.Planner.__dict__.has_key('PythonServer'):
     PythonServer.ice_type = _M_autogen.Planner._t_PythonServer
 
     PythonServer._op_registerClient = IcePy.Operation('registerClient', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), _M_autogen.Planner._t_CppServerPrx),), (), None, ())
-    PythonServer._op_addTask = IcePy.Operation('addTask', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
-    PythonServer._op_newTask = IcePy.Operation('newTask', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), _M_autogen.Planner._t_PlanningTask, ())
     PythonServer._op_registerTask = IcePy.Operation('registerTask', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), _M_autogen.Planner._t_PlanningTask),), (), None, ())
-    PythonServer._op_printString = IcePy.Operation('printString', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), None, ())
 
     _M_autogen.Planner.PythonServer = PythonServer
     del PythonServer
