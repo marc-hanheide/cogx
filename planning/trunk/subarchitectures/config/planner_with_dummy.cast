@@ -1,0 +1,11 @@
+HOST localhost
+
+SUBARCHITECTURE dummy.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG dummy DummySA
+
+SUBARCHITECTURE planner.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG planner WMControl
