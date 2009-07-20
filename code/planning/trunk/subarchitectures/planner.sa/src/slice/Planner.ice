@@ -5,6 +5,15 @@
 
 module autogen {
   module Planner {
+
+    /*enum Completion {
+      PENDING,     // hasn't started yet
+      INPROGRESS,  // started but no plan found yet
+      ABORTED,     // aborted (if e.g a more important query occurs)???
+      FAILED,      // no plan found
+      SUCCEEDED  // plan found
+    };*/
+
     sequence<string> stringSeq;
 
     class ObjectDeclaration {
@@ -32,31 +41,26 @@ module autogen {
     class PlanningTask
     {
       int id;
-      string planningAgent;  // the name of the planning agent as in used in the state description
+      string planningAgent;  // the name of the planning agent as used in the state description
       objDeclSeq objects;
       PlanningState state;
       string goal;
-      void loadMAPLTask(string taskFile, string domainFile, string planningAgent);
-      void markChanged();
-      void activateChangeDetection();	
-      bool planAvailable();
-      string getPlan();
+      string plan;
+      //Completion status;
     };
 
     // this is for planning-internal use only and takes care of the communication between
     // (the c++ based) cast and the (python) components.
+
     interface CppServer
     {
-      void deliverPlan(int taskID);
+      void deliverPlan(PlanningTask task);
     };
 
     interface PythonServer extends cast::interfaces::CASTComponent
     {
       void registerClient(CppServer* client);
-      int addTask(PlanningTask task);
-      //PlanningTask newTask();
-      //void registerTask(PlanningTask task);
-      //void printString(string astring);
+      void registerTask(PlanningTask task);
     };
   };
 };
