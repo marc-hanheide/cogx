@@ -73,7 +73,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
   
   autogen::Planner::PlanningTaskPtr planData = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
 
-  int taskID = pyServer->addTask(planData->task);
+  int taskID = pyServer->addTask(planData);
 
   //TODO: Store the PlannerCommandPtr with it's taskID till deliverPlan(taskID) is called.
 }
