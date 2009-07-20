@@ -15,7 +15,7 @@ from autogen.Planner import PlannerServerPrx
 src_path = abspath(dirname(__file__))
 tests_path = abspath(join(src_path, "../../test_data"))
 
-class PlannerTester(CASTComponent):
+class PlannerTester(cast.core.CASTComponent):
     def __init__(self):
         print "Creating planner tester"
 

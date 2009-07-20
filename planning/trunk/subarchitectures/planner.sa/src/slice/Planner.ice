@@ -30,20 +30,18 @@ module Planner
     factSeq facts;
   };
 
-
-
   class PlanningTask
   {
     int id;
-	string planningAgent;  // the name of the planning agent as in used in the state description
-	objDeclSeq objects;
-	PlanningState state;
+    string planningAgent;  // the name of the planning agent as in used in the state description
+    objDeclSeq objects;
+    PlanningState state;
     string goal;
     void loadMAPLTask(string taskFile, string domainFile, string planningAgent);
     void markChanged();
     void activateChangeDetection();	
-	bool planAvailable();
-	string getPlan();
+    bool planAvailable();
+    string getPlan();
   };
 
   // this is for planning-internal use only and takes care of the communication between (the c++ based) cast and the (python) components.
@@ -58,7 +56,7 @@ module Planner
     int addTask(string task);
     PlanningTask newTask();
     void registerTask(PlanningTask task);
-	void printString(string astring);
+    void printString(string astring);
   };
 };
 };

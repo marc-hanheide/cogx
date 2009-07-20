@@ -15,7 +15,7 @@ extern "C"
 void WMControl::start()
 {
   println("Planner WMControl: initializing");
-  //addChangeFilter(cast::createLocalTypeFilter<autogen::Planner::PlannerCommand>(cast::cdl::ADD), new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::receivePlannerCommands));
+  addChangeFilter(cast::createLocalTypeFilter<autogen::Planner::PlanningTask>(cast::cdl::ADD), new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::receivePlannerCommands));
 
   connectToPythonServer();
 }
@@ -71,9 +71,9 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 {
   println("Planner WMControl: new PlannerCommand received");
   
-  //autogen::Planner::PlannerCommandPtr planData = getMemoryEntry<autogen::Planner::PlannerCommand>(wmc.address);
+  autogen::Planner::PlanningTaskPtr planData = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
 
-  //int taskID = pyServer->addTask(planData->task);
+  int taskID = pyServer->addTask(planData->task);
 
   //TODO: Store the PlannerCommandPtr with it's taskID till deliverPlan(taskID) is called.
 }
