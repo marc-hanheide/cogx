@@ -3,13 +3,17 @@
 # Author:  Marko Mahnič
 # Created: jul 2009 
 
+import traceback
 import os
 import mods.cameraview as camview
 import osmods.sift
 try:
     import siftgpu
     import siftcuda
-except: pass
+except:
+    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+    traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+
 import numpy as np
 
 class CFeatureExtractor:
