@@ -3,8 +3,10 @@
 # Author:  Marko Mahnič
 # Created: jul 2009 
 
+import os, sys
 import traceback
-import os
+import numpy as np
+
 import mods.cameraview as camview
 import osmods.sift
 try:
@@ -13,8 +15,6 @@ try:
 except:
     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
     traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
-
-import numpy as np
 
 class CFeatureExtractor:
     # Processes a RGB image and returns a CFeaturepack with the extracted features
