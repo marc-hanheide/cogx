@@ -410,7 +410,7 @@ void writeDownCollectedData(DataSet data) {
 
 
 
-//-------------------------------------------------------cout<<positionT.v1<<"pos"<<endl;-------------------------
+//--------------------------------------------------------------------------------
 
 
 
@@ -695,7 +695,7 @@ int main(int argc, char *argv[]) {
 		// (no matter what has been sent before)
 		SecTmReal timeDeltaAsync = reacPlanner.getTimeDeltaAsync();
 
-		
+	
 		// Define the Home pose in the Cartesian workspace
 		Vec3 positionH(Real(0.0), Real(0.1), Real(0.1));
 		Vec3 orientationH(Real(-0.5*MATH_PI), Real(0.0*MATH_PI), Real(0.0*MATH_PI));
@@ -723,7 +723,6 @@ int main(int argc, char *argv[]) {
 		//start of the experiment loop
 		for (int e=0; e<numExperiments; e++)
 		{
-				
 			//polyflap actor
 			Actor *polyFlapActor = setupPolyflap(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 			golem::BoundsSet::Ptr curPol = polyFlapActor->getBounds();
@@ -741,7 +740,7 @@ int main(int argc, char *argv[]) {
 			/////////////////////////////////////////////////
 
 			Mat34 curPolPos1;
-			Mat34 curPolPos2;	
+			Mat34 curPolPos2;
 			//find out bounds of polyflap and compute the position of the polyflap
 			if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
 				curPolPos1 = curPol->get().front()->getPose();
@@ -921,7 +920,23 @@ int main(int argc, char *argv[]) {
 					//reading out the position of the polyflap
 					Mat34 mojepose2 = set->get().front()->getPose();
 					Mat34 mojepose3 = set->get().back()->getPose();
-					
+
+					//getting the first component of the polyflap
+					const BoundingBox* pBox1 = dynamic_cast<const BoundingBox*>(set->get().front().get()); // obj_ptr::get()
+					//and the vector, which represents the first normal vector of the polyflap
+					Vec3 pfNormVec1;
+					if (pBox1 != NULL) {
+						pfNormVec1 = pBox1->getNormals()[1];
+					}
+
+					//getting the second component of the polyflap
+					const BoundingBox* pBox2 = dynamic_cast<const BoundingBox*>(set->get().back().get()); // obj_ptr::get()
+					//and the vector, which represents the second normal vector of the polyflap
+					Vec3 pfNormVec2;
+					if (pBox2 != NULL) {
+						pfNormVec1 = pBox1->getNormals()[1];
+					}
+
 					/////////////////////////////////////////////////
 					//creating current featureVector
 					FeatureVector features;
@@ -946,6 +961,22 @@ int main(int argc, char *argv[]) {
 					features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
 					features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
 					/////////////////////////////////////////////////
+				
+					/////////////////////////////////////////////////
+					//writing in the feature vector
+					//normal vectors of the polyflap
+					if (pfNormVec1 != NULL) {
+						features.push_back(normalize(pfNormVec1.v1, -1.0, 1.0));
+						features.push_back(normalize(pfNormVec1.v2, -1.0, 1.0));
+						features.push_back(normalize(pfNormVec1.v3, -1.0, 1.0));
+						}
+					if (pfNormVec2 != NULL) {
+						features.push_back(normalize(pfNormVec2.v1, -1.0, 1.0));
+						features.push_back(normalize(pfNormVec2.v2, -1.0, 1.0));
+						features.push_back(normalize(pfNormVec2.v3, -1.0, 1.0));
+						}
+					/////////////////////////////////////////////////
+
 
 					/////////////////////////////////////////////////
 					//writing the feature vector in the sequence
