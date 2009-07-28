@@ -4,12 +4,12 @@
  * @created: jul 2009 
  */
 
-#include <cutil.h>
 #include <iostream>  
 #include <cmath>
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include <dlfcn.h>
+#include <cutil.h>
 
 #include "cudaImage.h"
 #include "cudaSift.h"
