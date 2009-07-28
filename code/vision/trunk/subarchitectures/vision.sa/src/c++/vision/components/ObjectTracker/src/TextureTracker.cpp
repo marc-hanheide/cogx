@@ -195,43 +195,45 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	else
 		m_ip->render(m_tex_frame);
 	
-	// Recursive particle filtering
-	m_shadeTextureCompare->bind();
-	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
-	m_shadeTextureCompare->unbind();
-	m_tex_frame_ip[3]->bind(1);
-	m_model->setTexture(m_tex_model_ip[3]);
-	particle_motion(1.0, &p_estimate, GAUSS);
-	particle_processing(params.number_of_particles*0.75, 1);
+	if(!m_lock){
+		// Recursive particle filtering
+		m_shadeTextureCompare->bind();
+		m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
+		m_shadeTextureCompare->unbind();
+		m_tex_frame_ip[3]->bind(1);
+		m_model->setTexture(m_tex_model_ip[3]);
+		particle_motion(1.0, &p_estimate, GAUSS);
+		particle_processing(params.number_of_particles*0.75, 1);
+			
+		m_shadeTextureCompare->bind();
+		m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
+		m_shadeTextureCompare->unbind();
+		m_tex_frame_ip[2]->bind(1);
+		m_model->setTexture(m_tex_model_ip[2]);
+		particle_motion(0.5, NULL, GAUSS);
+		particle_processing(params.number_of_particles*0.125, 1);
 		
-	m_shadeTextureCompare->bind();
-	m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
-	m_shadeTextureCompare->unbind();
-	m_tex_frame_ip[2]->bind(1);
-	m_model->setTexture(m_tex_model_ip[2]);
-	particle_motion(0.5, NULL, GAUSS);
-	particle_processing(params.number_of_particles*0.125, 1);
-	
-	m_shadeTextureCompare->bind();
-	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,1.0,0.0,0.0));
-	m_shadeTextureCompare->unbind();
-	m_tex_frame_ip[1]->bind(1);
-	m_model->setTexture(m_tex_model_ip[1]);
-	particle_motion(0.1, NULL, GAUSS);
-	particle_processing(params.number_of_particles*0.125, 1);
-		
-	// Kalman filter
-	if(m_kalman_enabled)
-		kalman_filtering(m_particles->getMax());
-		
-	// Copy result to output
-	if(m_zero_particles){
-		p_result = Particle(0.0);
-		m_zero_particles = false;
-	//}else if(m_particles->getMax()->w < 0.2){
-		//p_result = p_estimate;
-	}else{
-		p_result = Particle(*m_particles->getMax());
+		m_shadeTextureCompare->bind();
+		m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,1.0,0.0,0.0));
+		m_shadeTextureCompare->unbind();
+		m_tex_frame_ip[1]->bind(1);
+		m_model->setTexture(m_tex_model_ip[1]);
+		particle_motion(0.1, NULL, GAUSS);
+		particle_processing(params.number_of_particles*0.125, 1);
+			
+		// Kalman filter
+		if(m_kalman_enabled)
+			kalman_filtering(m_particles->getMax());
+			
+		// Copy result to output
+		if(m_zero_particles){
+			p_result = Particle(0.0);
+			m_zero_particles = false;
+		//}else if(m_particles->getMax()->w < 0.2){
+			//p_result = p_estimate;
+		}else{
+			p_result = Particle(*m_particles->getMax());
+		}
 	}
 	
 	// adjust number of particles according to tracking speed

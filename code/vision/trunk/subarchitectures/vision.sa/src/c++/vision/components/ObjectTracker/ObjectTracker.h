@@ -33,7 +33,7 @@ private:
   Camera* m_camera;
   Video::Image m_image;
   Timer m_timer;
-  Particle m_trackpose;
+  //Particle m_trackpose;
   
   int camId;  
   bool track;
@@ -43,6 +43,7 @@ private:
   struct IDList{
   	int resources_ID;
   	cdl::WorkingMemoryAddress cast_AD;
+  	Particle trackpose;
   };
   
   std::vector<IDList> m_modelID_list;
