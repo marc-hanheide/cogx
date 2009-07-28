@@ -699,12 +699,12 @@ int main(int argc, char *argv[]) {
 			Actor *polyFlapActor = setupPolyflap(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 // 			golem::BoundsSet::Ptr curPol = polyFlapActor->getBounds();
 			golem::BoundsSet::Ptr curPol = polyFlapActor->getGlobalBoundsSet();
+			Mat34 referencePolyflapPos = polyFlapActor->getPose ();
 
 // 			context->getTimer()->sleep(1);
 			//reference polyflap position for prooving if arm didn't hit it whil approaching
 // 			Vec3 referencePolyflapPosVec1 = curPol->front()->getPose().p;
 // 			Vec3 referencePolyflapPosVec2 = curPol->back()->getPose().p;
-			Mat34 referencePolyflapPos = polyFlapActor->getPose ();
 // 			context->getTimer()->sleep(1);
 
 			/////////////////////////////////////////////////
@@ -747,7 +747,6 @@ int main(int argc, char *argv[]) {
 	
 			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
 			context->getLogger()->post(Message::LEVEL_INFO, "Position %i", startPosition);
-
 
 			// and set target waypoint
 			golem::ctrl::GenWorkspaceState target;
@@ -863,11 +862,11 @@ int main(int argc, char *argv[]) {
 
 
 			Mat34 polyFlapPose = polyFlapActor->getPose();
-			Real roll1, pitch1, yaw1, roll2, pitch2, yaw2;
-			polyFlapPose.R.toEuler (roll1, pitch1, yaw1);
-			context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll1, pitch1, yaw1);
-			referencePolyflapPos.R.toEuler (roll2, pitch2, yaw2);
-			context->getLogger()->post(Message::LEVEL_INFO, "referencePose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", referencePolyflapPos.p.v1, referencePolyflapPos.p.v2, referencePolyflapPos.p.v3, roll2, pitch2, yaw2);
+			Real roll, pitch, yaw;
+			referencePolyflapPos.R.toEuler (roll, pitch, yaw);
+			context->getLogger()->post(Message::LEVEL_INFO, "referencePose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", referencePolyflapPos.p.v1, referencePolyflapPos.p.v2, referencePolyflapPos.p.v3, roll, pitch, yaw);
+			polyFlapPose.R.toEuler (roll, pitch, yaw);
+			context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
 
 			
 			//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
