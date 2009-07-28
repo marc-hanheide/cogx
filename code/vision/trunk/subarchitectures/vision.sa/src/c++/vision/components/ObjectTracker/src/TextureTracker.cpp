@@ -48,6 +48,8 @@ void TextureTracker::model_processing(){
 	// Render camera image as background
 	m_opengl.RenderSettings(true, true); 	// (color-enabled, depth-enabled)
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
+	if(m_bfc) glEnable(GL_CULL_FACE);
+	else glDisable(GL_CULL_FACE);
 	//m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	//m_ip->render(m_tex_frame);
 	
@@ -226,25 +228,31 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 			kalman_filtering(m_particles->getMax());
 			
 		// Copy result to output
-		if(m_zero_particles){
-			p_result = Particle(0.0);
-			m_zero_particles = false;
-		//}else if(m_particles->getMax()->w < 0.2){
-			//p_result = p_estimate;
-		}else{
-			p_result = Particle(*m_particles->getMax());
-		}
+		p_result = Particle(*m_particles->getMax());
+		
+		// adjust number of particles according to tracking speed
+		time_tracking = m_timer.Update();
+		params.number_of_particles += 10;
+		if(time_tracking > params.track_time && params.number_of_particles > 100)
+			params.number_of_particles += 1000 * (params.track_time - time_tracking);
+		else if(time_tracking < params.track_time)
+			params.number_of_particles += 1000 * (params.track_time - time_tracking);
+		if(params.number_of_particles > m_particles->getNumParticles())
+			params.number_of_particles = m_particles->getNumParticles();
+
+	}else{
+		p_result = p_estimate;
 	}
 	
-	// adjust number of particles according to tracking speed
-	time_tracking = m_timer.Update();
-	params.number_of_particles += 10;
-	if(time_tracking > params.track_time && params.number_of_particles > 100)
-		params.number_of_particles += 1000 * (params.track_time - time_tracking);
-	else if(time_tracking < params.track_time)
-		params.number_of_particles += 1000 * (params.track_time - time_tracking);
-	if(params.number_of_particles > m_particles->getNumParticles())
-		params.number_of_particles = m_particles->getNumParticles();
+	// Copy result to output
+	if(m_zero_particles){
+		p_result = params.zP;
+		m_zero_particles = false;
+	//}else if(m_particles->getMax()->w < 0.2){
+		//p_result = p_estimate;
+	}
+	
+	
 	
 	/*
 		m_opengl.RenderSettings(true, true); 	// (color-enabled, depth-enabled)
@@ -299,6 +307,7 @@ void TextureTracker::drawResult(Particle* p){
 		m_shadeTexturing->bind();
 		m_model->drawPass(m_shadeTexturing);
 	}else{
+		m_model->setTexture(m_tex_model_ip[1]);
 		m_shadeTextureCompare->bind();
 		m_shadeTextureCompare->setUniform("analyze", true);
 		m_shadeTextureCompare->setUniform("compare", true);

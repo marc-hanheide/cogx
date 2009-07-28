@@ -68,6 +68,7 @@ Tracker::Tracker(){
 	m_draw_edges = false;
 	m_tracker_initialized = false;
 	m_testflag = false;
+	m_bfc = true;
 	
 	// Textures
 	int id;
@@ -140,6 +141,7 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	params.noise_trans_max = n_t_max;
 	params.edge_tolerance = et;
 	params.track_time = tt;
+	params.zP = Particle(0.0);
 	
 	if(!m_opengl.Init())
 		return false;
@@ -314,8 +316,7 @@ void Tracker::showStatistics(){
 }
 	
 void Tracker::zeroParticles(){
-	Particle p = Particle(0.0);
-	p.tX = 0.0;
+	Particle p = params.zP;
 	m_zk[0] = p.rX; m_zk[1] = p.rY; m_zk[2] = p.rZ; 
 	m_zk[3] = p.tX; m_zk[4] = p.tY; m_zk[5] = p.tZ;
 	m_kalman.init();

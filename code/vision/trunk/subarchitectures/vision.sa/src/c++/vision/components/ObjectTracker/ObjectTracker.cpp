@@ -31,6 +31,7 @@ ObjectTracker::ObjectTracker(){
   track = false;
   running = true;
   testmode = false;
+  bfc = true;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -65,6 +66,7 @@ void ObjectTracker::initTracker(){
 		running = false;
   }
   
+  
   // *** Setting up camera ***
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
@@ -76,11 +78,14 @@ void ObjectTracker::initTracker(){
   // link camera with tracker
 	m_tracker->setCamPerspective(m_camera);
 	m_tracker->lock(true);
-  log("initialisation successfull!");		
+	m_tracker->setBFC(bfc);
+	
+  log("initialisation successfull!");
 }
 
 
 void ObjectTracker::runTracker(){
+	
 	// *** Tracking Loop ***
 	Model* model;
 	VisualObjectPtr obj;
@@ -123,6 +128,8 @@ void ObjectTracker::runTracker(){
 		//m_tracker->drawTest();
 		m_tracker->swap();
 		running = inputsControl(m_tracker);
+		
+		//log("P: %f", ids->trackpose.tX);
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(ids->trackpose, obj->pose);
@@ -221,6 +228,10 @@ void ObjectTracker::configure(const map<string,string> & _config){
   
 	if((it = _config.find("--testmode")) != _config.end())
 		testmode = true;
+	
+	if((it = _config.find("--BFC_disabled")) != _config.end()){
+		bfc = false;
+	}
   
   /*
   if((it = _config.find("--log")) != _config.end())
@@ -249,6 +260,7 @@ void ObjectTracker::runComponent(){
   initTracker();
   sleepComponent(1000);
   
+  
   while(running)
   {
   	if(track){
@@ -257,8 +269,8 @@ void ObjectTracker::runComponent(){
   	  sleepComponent(10);
 		}else{
 			// * Idle *
-			running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
-	    sleepComponent(1000);
+			//running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
+	    //sleepComponent(1000);
 		}
   }
   
