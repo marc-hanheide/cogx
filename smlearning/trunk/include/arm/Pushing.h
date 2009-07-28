@@ -21,7 +21,8 @@
 #include <controller/PhysReacPlanner.h>
 #include <controller/Katana.h>
 #include <controller/Simulator.h>
-#include <tools/Common.h>
+//#include <tools/Common.h>
+#include <tools/Msg.h>
 #include <tools/Tools.h>
 #include <tools/Creator.h>
 #include <tools/XMLData.h>
@@ -34,6 +35,8 @@ using namespace golem;
 using namespace golem::ctrl;
 using namespace golem::phys;
 using namespace golem::tools;
+
+namespace smlearning {
 
 #define MAX_PLANNER_TRIALS 50
 
@@ -58,7 +61,7 @@ public:
 			}
 		
 			//cout << "unable to find path... trying again..." << endl;
-			context.getLogger()->post(GraphPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
+			context.getLogger()->post(Message::LEVEL_INFO, "unable to find path... trying again...");
 		}
 		
 		return false;
@@ -70,7 +73,7 @@ public:
 			if (GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
 				return true;
 			}
-			context.getLogger()->post(GraphPlannerMsg(StdMsg::LEVEL_INFO, "unable to find path... trying again..."));
+			context.getLogger()->post(Message::LEVEL_INFO, "unable to find path... trying again...");
 		}
 
 		return false;
@@ -118,5 +121,7 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 
 
 void writeDownCollectedData(DataSet data);
+
+}; /* smlearning namespace */
 
 #endif /*SMLEARNING_PUSHING_H_*/
