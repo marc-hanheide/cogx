@@ -146,7 +146,7 @@ def _findMatchingObject(image):
         confs = [ c / sumconfs * confmax for c in confs ]
         return confs
 
-    probs = getProbs2()
+    probs = getProbs2(matches)
     sp = sum(probs)
     if (sp < 1.0):
         names.append("*unknown*")
