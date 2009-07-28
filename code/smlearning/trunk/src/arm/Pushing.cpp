@@ -1011,7 +1011,7 @@ int main(int argc, char *argv[]) {
 			fromCartesianPose(preHome.pos, positionPreH, orientationH);
 			preHome.vel.setId(); // it doesn't move
 
-			preHome.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+			preHome.t = context->getTimer()->elapsed() + timeDeltaAsync + SecTmReal(2.0); // i.e. the movement will last at least 2 sec
 
 			// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 			reacPlanner.send(preHome, ReacPlanner::ACTION_GLOBAL);
