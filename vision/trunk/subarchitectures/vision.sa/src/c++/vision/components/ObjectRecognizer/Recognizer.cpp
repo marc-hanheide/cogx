@@ -118,6 +118,7 @@ void CRecognizer::configure(const map<string,string> & _config)
       istr >> mode;
       if (mode == "1") testmode = 1;
       else if (mode == "2") testmode = 2;
+      else if (mode == "3") testmode = 3;
       else testmode = 0;
       log("TEST MODE: %ld", testmode);
    }
@@ -143,7 +144,9 @@ void CRecognizer::configure(const map<string,string> & _config)
    ostringstream pycode;
    pycode
       << "import castinit, numpy" << endl
-      << "from ObjectRecognizer import main, objectmodel, objectmatcher" << endl;
+      << "from ObjectRecognizer import main, objectmodel, objectmatcher" << endl
+      << "from ObjectRecognizer.featuresetup import CSiftSetup" << endl;
+
    if (models.size() > 0) {
       vector<string>::const_iterator it;
       for( it = models.begin(); it != models.end(); it++) {
@@ -151,6 +154,17 @@ void CRecognizer::configure(const map<string,string> & _config)
             << "main.Manager.addModel('" << *it << "', '" << dir << "')" << endl;
       }
    }
+
+   string siftExtr = "GPU";
+   string siftMatch = "NUMPY";
+
+   if((it = _config.find("--matcher-cuda")) != _config.end()) siftMatch = "CUDA";
+   else if((it = _config.find("--matcher-numpy")) != _config.end()) siftMatch = "NUMPY";
+
+   pycode
+      << "main.reconfigSift(extractor=CSiftSetup." << siftExtr 
+      << ", matcher=CSiftSetup." << siftMatch << ")" << endl;
+
    PyGILState_STATE state = PyGILState_Ensure();
    PyRun_SimpleString(pycode.str().c_str());
    PyGILState_Release(state);

@@ -81,6 +81,11 @@ Matcher = objectmatcher.CObjectMatcher()
 Matcher.descriptorMatcher = Setup.matcher
 Manager = CModelManager()
 
+def reconfigSift(extractor, matcher):
+    global Setup
+    print "Reconfig SIFT"
+    Setup = CSiftSetup(extractor, matcher)
+
 # Returns a list of tuples (model_name, lambda(yaw), phi(pitch), roll, probability)
 def _findMatchingObject(image):
     global Setup, Matcher, Manager
