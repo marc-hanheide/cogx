@@ -39,7 +39,6 @@ ObjectTracker::~ObjectTracker(){
 
 void ObjectTracker::initTracker(){
   // *** Initialisation of Tracker ***
-  m_trackpose = Particle(0.0);
   int id = 0;
   
   // Set pathes for resource manager
@@ -89,7 +88,7 @@ void ObjectTracker::runTracker(){
 	float fTimeTracker;
 	double dTimeStamp;
 	int i;
-  
+	
 	// * Tracking *
 	m_timer.Update();
 	//dTimeStamp = m_timer.GetApplicationTime();
@@ -109,28 +108,29 @@ void ObjectTracker::runTracker(){
 	
 	// Track all models
 	for(i=0; i<m_modelID_list.size(); i++){
-		model = g_Resources->GetModel(m_modelID_list[i].resources_ID);
-		obj = getMemoryEntry<VisualObject>(m_modelID_list[i].cast_AD);
-
+		IDList* ids = &m_modelID_list[i];
+		model = g_Resources->GetModel(ids->resources_ID);
+		obj = getMemoryEntry<VisualObject>(ids->cast_AD);
+				
 		// conversion from CogX.vision coordinates to ObjectTracker coordinates
 		//convertPose2Particle(obj->pose, m_trackpose);		// ATTENTION: NOT WORKING BY NOW
-		//m_trackpose.w = obj->detectionConfidence;
+		//m_modelID_list[i].trackpose.w = obj->detectionConfidence;
 
 		// Track model
-		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, m_trackpose, m_trackpose);
-		m_tracker->drawResult(&m_trackpose);
+		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
+		m_tracker->drawResult(&ids->trackpose);
 		m_tracker->drawCoordinates();
 		//m_tracker->drawTest();
 		m_tracker->swap();
 		running = inputsControl(m_tracker);
 		
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
-		convertParticle2Pose(m_trackpose, obj->pose);
-
+		convertParticle2Pose(ids->trackpose, obj->pose);
+		
 		// Send new data to working memory
-		obj->detectionConfidence = m_trackpose.w;
+		obj->detectionConfidence = ids->trackpose.w;
 		obj->time = convertTime(dTimeStamp);
-		overwriteWorkingMemory(m_modelID_list[i].cast_AD.id, obj);
+		overwriteWorkingMemory(ids->cast_AD.id, obj);
 	}
 	  
 	fTimeTracker = m_timer.Update();
@@ -160,6 +160,8 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	IDList ids;
 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());
 	ids.cast_AD = _wmc.address;
+	convertPose2Particle(obj->pose, ids.trackpose);
+	log("TrackPose: %f", ids.trackpose.tX);
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
