@@ -9,7 +9,8 @@ import opencv.highgui as hg
 import opencv.adaptors as cvada
 
 import pymodulepaths
-from siftgpu import SiftGPU, SiftMatchGPU
+# from siftgpu import SiftGPU, SiftMatchGPU
+import siftgpu
 from ObjectRecognizer.mods.capture import CameraCapture, FileCapture, copyFrame, CLoopback1394Capture
 from ObjectRecognizer.mods.numutil import *
 import ObjectRecognizer.mods.canvas.cvcanvas as canvas
@@ -68,8 +69,8 @@ class FeatureCapture:
         self.viewpoint = 0
         self.TW = TextWriter()
         self.processing = False
-        self.SIFT = None
-        self.MATCH = None
+        #self.SIFT = None
+        #self.MATCH = None
         self.smoothImage = False
         self.camwin = "Camera"
         self.canvas = canvas.CCanvas(1024, 768)
@@ -144,8 +145,8 @@ class FeatureCapture:
             self.processing = not self.processing
             if self.processing:
                 # -pack - not working with nvidia Quadro FX 550 (driver v.180.11)
-                if self.SIFT == None: self.SIFT = SiftGPU(params="-s")
-                if self.MATCH == None: self.MATCH = SiftMatchGPU(create_context=False)
+                #if self.SIFT == None: self.SIFT = SiftGPU(params="-s")
+                #if self.MATCH == None: self.MATCH = SiftMatchGPU(create_context=False)
                 self.curRunSize = 0
         return k
 
@@ -155,8 +156,9 @@ class FeatureCapture:
             cv.cvSmooth(frame, copy, cv.CV_MEDIAN, 3, 3)
             frame = copy
         im = np.array(cvada.Ipl2NumPy(frame))
-        self.SIFT.RunSIFT(im)
-        return self.SIFT.GetFeatureVector()
+        #self.SIFT.RunSIFT(im)
+        #return self.SIFT.GetFeatureVector()
+        return siftgpu.extractFeatures(im)
 
     def run(self):
         hg.cvNamedWindow(self.camwin, hg.CV_WINDOW_AUTOSIZE)
