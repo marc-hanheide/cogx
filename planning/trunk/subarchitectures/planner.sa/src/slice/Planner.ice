@@ -6,13 +6,13 @@
 module autogen {
   module Planner {
 
-    /*enum Completion {
+    enum Completion {
       PENDING,     // hasn't started yet
       INPROGRESS,  // started but no plan found yet
       ABORTED,     // aborted (if e.g a more important query occurs)???
       FAILED,      // no plan found
       SUCCEEDED  // plan found
-    };*/
+    };
 
     sequence<string> stringSeq;
 
@@ -41,12 +41,14 @@ module autogen {
     class PlanningTask
     {
       int id;
-      string planningAgent;  // the name of the planning agent as used in the state description
-      objDeclSeq objects;
-      PlanningState state;
-      string goal;
+      string domain;
+      string task;
       string plan;
-      //Completion status;
+      Completion status;
+      //string planningAgent;  // the name of the planning agent as used in the state description
+      //objDeclSeq objects;
+      //PlanningState state;
+      //string goal;
     };
 
     // this is for planning-internal use only and takes care of the communication between
