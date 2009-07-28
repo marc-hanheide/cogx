@@ -21,18 +21,19 @@
 
 #include "arm/Pushing.h"
 
+namespace smlearning {
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
 //planer setup
 template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& context) {
 	// some planner parameter tuning
-	desc.plannerDesc.pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
+	desc.pPlannerDesc->pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
 	// Enable signal synchronization (default value)
 	//desc.reacPlannerDesc.signalSync = true;
-	desc.armDesc.joints[2]->min.pos = Real(0.0*MATH_PI); // Katana hack to avoid sub-optimal inverse kinematics solutions
+// 	desc.armDesc.joints[2]->min.pos = Real(0.0*MATH_PI); // Katana hack to avoid sub-optimal inverse kinematics solutions
 }
-
 
 
 //creates an object, in this case the polyflap
@@ -43,8 +44,8 @@ void setupObjects(Scene &scene, golem::Context &context) {
 		//set physical parameters of simulation
 		NxMaterial* defaultMaterial = scene.getNxScene()->getMaterialFromIndex(0);
 		defaultMaterial->setRestitution((NxReal)0.05);
-		defaultMaterial->setStaticFriction((NxReal)0.9);
-		defaultMaterial->setDynamicFriction((NxReal)0.5);
+		defaultMaterial->setStaticFriction((NxReal)0.4);
+		defaultMaterial->setDynamicFriction((NxReal)0.2);
 	}
 
 	// Creator
@@ -86,46 +87,6 @@ Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions
 	return polyFlapActor;
 }
 
-
-// //methods needed to create and set finger
-// template <typename Desc>
-// void setupFingerActuator(Desc &desc) {
-	
-
-// 	if (xmlContext == NULL)	{
-// 		context.getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "NULL Actuator context"));
-// 		return;
-// 	}
-	
-// 	XMLData(desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.p, xmlContext->getContextFirst("finger init_pos"));
-
-	
-// 	Mat33 initTrnR;
-// 	Vec3 tmp;
-// 	desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.q.toMat33(initTrnR);
-// 	initTrnR.toEuler(tmp.v1, tmp.v2, tmp.v3); // Y, X, Z
-// 	//XMLData(tmp, xmlContext->getContextFirst("finger init_rot_euler"));
-// 	initTrnR.fromEuler(tmp.v1, tmp.v2, tmp.v3); // Y, X, Z
-// 	desc.fingerDesc.fingerCtrlDesc.reacPlannerDesc.pTransmitterDesc->initSignal.gws.pos.q.fromMat33(initTrnR);
-
-
-
-
-// 	//XMLData(desc.fingerDesc.fingerActorDesc.appearance.solidColour, xmlContext->getContextFirst("finger colour"));
-// }
-
-// void setupActuator(Actuator::Desc::Ptr& pDesc) {
-// 	//Actuator pActuator = new Actuator
-// 	typedef FingerActuator::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> FingerActuatorDesc;
-// //  	typedef FingerActuator::Desc<GenSimArm, GraphPlanner, ReacPlanner> FingerActuatorDesc;
-// 	FingerActuatorDesc *pFingerActuatorDesc = new FingerActuatorDesc();
-// 	pDesc.reset(pFingerActuatorDesc);
-// //	pDesc.appearance.solidColour = phys::RGBA::RED;
-// 	setupFingerActuator(*pFingerActuatorDesc);
-// 	//pActuatorDesc.release();
-
-// }
-
 void trn(Vec3 v [], U32 n, const Mat34 &pose) {
 	while (n--)
 		pose.multiply(v[n], v[n]);
@@ -165,16 +126,23 @@ void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, Mat34 &referencePose, 
 	bounds.push_back(desc.clone());
 }
 
-// Modify shape of the joint. The arm bounds will be modified as well.
-void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, const std::vector<Bounds::Desc::Ptr> &bounds) {
-	Arm &arm = physReacPlanner.getArm();
-	
-	for (std::vector<Bounds::Desc::Ptr>::const_iterator i = bounds.begin(); i != bounds.end(); i++)
-		arm.addBoundsDesc(jointIndex, *i);
-
-	physReacPlanner.getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
+// Add new bounds to the Joint Actor.
+void addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, const std::vector<Bounds::Desc::Ptr> &boundsDescSeq) {
+	ASSERT(pActor)
+	boundsSeq.clear();
+	for (std::vector<Bounds::Desc::Ptr>::const_iterator i = boundsDescSeq.begin(); i != boundsDescSeq.end(); i++)
+		boundsSeq.push_back(pActor->createBounds(*i));
 }
 
+// // Modify shape of the joint. The arm bounds will be modified as well.
+// void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, const std::vector<Bounds::Desc::Ptr> &bounds) {
+// 	Arm &arm = physReacPlanner.getArm();
+	
+// 	for (std::vector<Bounds::Desc::Ptr>::const_iterator i = bounds.begin(); i != bounds.end(); i++)
+// 		arm.addBoundsDesc(jointIndex, *i);
+
+// 	physReacPlanner.getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
+// }
 
 
 //function for normalizing values according to given bounds (before storing)
@@ -195,18 +163,21 @@ Real normalize(const Real& value, const Real& min, const Real& max) {
 
 
 //function that checks if arm hitted the polyflap while approaching it
-bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2) {
-	golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
-	Vec3 realPos1 = set->get().front()->getPose().p;
-	Vec3 realPos2 = set->get().back()->getPose().p;
+// bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2) {
+// 	golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
+// 	Vec3 realPos1 = set->front()->getPose().p;
+// 	Vec3 realPos2 = set->back()->getPose().p;
 	
-	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
-		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
-		abs(refPos2.v1 - realPos2.v1) < 0.00001 &&
-		abs(refPos2.v2 - realPos2.v2) < 0.00001;
+// 	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
+// 		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
+// 		abs(refPos2.v1 - realPos2.v1) < 0.00001 &&
+// 		abs(refPos2.v2 - realPos2.v2) < 0.00001;
 
-} 
+// } 
 
+bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Mat34& refPos) {
+	return (polyFlapActor->getPose().equals(refPos, Real(0.001)));
+}
 
 
 void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
@@ -253,122 +224,122 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 			switch (startPosition) {
 			case 1: 
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front down left (1)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front down left (1)");
 				break;
 
 			case 2:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front down middle (2)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front down middle (2)");
 				break;
 
 			case 3:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front down right (3)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front down right (3)");
 				break;
 
 			case 4:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front center left (4)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front center left (4)");
 				break;
 
 			case 5:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front center middle (5)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front center middle (5)");
 				break;
 
 			case 6:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front center right (6)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front center right (6)");
 				break;
 
 			case 7:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front up left (7)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front up left (7)");
 				break;
 
 			case 8:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front up middle (8)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front up middle (8)");
 				break;
 
 			case 9:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Front up right (9)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Front up right (9)");
 				break;
 
 			case 10:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back down left (10)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back down left (10)");
 				break;
 
 			case 11:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back down middle (11)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back down middle (11)");
 				break;
 
 			case 12:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back down right (12)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back down right (12)");
 				break;
 
 			case 13:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back center left (13)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back center left (13)");
 				break;
 
 			case 14:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back center middle (14)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back center middle (14)");
 				break;
 
 			case 15:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back center right (15)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back center right (15)");
 				break;
 
 			case 16:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back up left (16)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back up left (16)");
 				break;
 
 			case 17:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back up middle (17)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back up middle (17)");
 				break;
 
 			case 18:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Back up right (18)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Back up right (18)");
 				break;
 
 			case 19:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side down left (19)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Side down left (19)");
 				break;
 
 			case 20:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, Real(0.0));
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side down right (20)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Side down right (20)");
 				break;
 
 			case 21:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side center left (21)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Side center left (21)");
 				break;
 
 			case 22:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side center right (22)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Side center right (22)");
 				break;
 
 			case 23:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side up left (23)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Side up left (23)");
 				break;
 
 			case 24:
 				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
-				//context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Side up right (24)"));
+				//context->getLogger()->post(Message::LEVEL_INFO, "Side up right (24)");
 				break;
 
 			};
@@ -398,21 +369,14 @@ void writeDownCollectedData(DataSet data) {
 	//print_dataset<double> (savedData);
 }
 
-
-
-
-
-
-
-
-
+}; /* smlearning namespace */
 
 
 
 
 //--------------------------------------------------------------------------------
 
-
+using namespace smlearning;
 
 
 
@@ -471,15 +435,15 @@ int main(int argc, char *argv[]) {
 	printf("\tF8 to display/hide the optimised waypoint path.\n");
 	printf("Press esc to exit.\n");
 	
-	// Stream all messages to std::cerr
-	Streamer streamer(context->getLogger(), std::cout);
-	// Throw exception if the message level at least LEVEL_CRIT but only from the current thread
-	context->getLogger()->setExFilter(MessageFilter::Ptr(new ThreadFilter<StdMsg>(StdMsg::LEVEL_CRIT)));
+// 	// Stream all messages to std::cerr
+// 	Streamer streamer(context->getLogger(), std::cout);
+// 	// Throw exception if the message level at least LEVEL_CRIT but only from the current thread
+// 	context->getLogger()->setExFilter(MessageFilter::Ptr(new ThreadFilter<StdMsg>(StdMsg::LEVEL_CRIT)));
 	// Do not display LEVEL_DEBUG messages (only with level at least LEVEL_INFO)
-	//context->getLogger()->setInpFilter(MessageFilter::Ptr(new LevelFilter<StdMsg>(StdMsg::LEVEL_ERR)));
+	//context->getLogger()->setMsgFilter(MessageFilter::Ptr(new LevelFilter<StdMsg>(StdMsg::LEVEL_ERR)));
 
 	// Random number generator seed
-	context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Random number generator seed %d", context->getRandSeed()._U32[0]));
+	context->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context->getRandSeed()._U32[0]);
 
 	//-----------------------------------------------------------------------------
 
@@ -487,7 +451,7 @@ int main(int argc, char *argv[]) {
 		// Create Universe
 		Universe::Desc universeDesc;
 		setupUniverse(universeDesc, xmlContext->getContextFirst("universe"), *context);
-		universeDesc.name = "Golem (Movement3)";
+		universeDesc.name = "Golem (Pushing)";
 		universeDesc.argc = argc;
 		universeDesc.argv = argv;
 		Universe::Ptr pUniverse = universeDesc.create(*context);
@@ -501,59 +465,63 @@ int main(int argc, char *argv[]) {
 		// Determine arm type
 		std::string armType;
 		if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "Unspecified arm type"));
+			context->getLogger()->post(Message::LEVEL_CRIT, "Unspecified arm type");
 			return 1;
 		}
-		
-
-
-
-
-
-
-
-
-
-
-
-
 
 		// Setup PhysReacPlanner controller description
-		obj_ptr<Object::Desc> pPhysReacPlannerDesc;
+		PhysReacPlanner::Desc physReacPlannerDesc;
 		if (!armType.compare("kat_serial_arm")) {
-			typedef PhysReacPlanner::Desc<KatSerialArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 			typedef PhysReacPlanner::Desc<KatSerialArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-			pPhysReacPlannerDesc.reset(pDesc);
-			setupPlanner(*pDesc, xmlContext, *context);
-			XMLData(pDesc->armDesc.cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
-			XMLData(pDesc->armDesc.serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
+			KatSerialArm::Desc *pDesc = new KatSerialArm::Desc();
+			physReacPlannerDesc.pArmDesc.reset(pDesc);
+			XMLData(pDesc->cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
+			XMLData(pDesc->serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
 		}
 		else if (!armType.compare("kat_sim_arm")) {
-			typedef PhysReacPlanner::Desc<KatSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 			typedef PhysReacPlanner::Desc<KatSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-			pPhysReacPlannerDesc.reset(pDesc);
-			setupPlanner(*pDesc, xmlContext, *context);
-
+			KatSimArm::Desc *pDesc = new KatSimArm::Desc();
+			physReacPlannerDesc.pArmDesc.reset(pDesc);
 		}
 		else if (!armType.compare("gen_sim_arm")) {
-			typedef PhysReacPlanner::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 			typedef PhysReacPlanner::Desc<GenSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-			pPhysReacPlannerDesc.reset(pDesc);
-			setupPlanner(*pDesc, xmlContext, *context);
+			GenSimArm::Desc *pDesc = new GenSimArm::Desc();
+			physReacPlannerDesc.pArmDesc.reset(pDesc);
 		}
+// 		// Setup PhysReacPlanner controller description
+// 		obj_ptr<Object::Desc> pPhysReacPlannerDesc;
+// 		if (!armType.compare("kat_serial_arm")) {
+// 			typedef PhysReacPlanner::Desc<KatSerialArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// // 			typedef PhysReacPlanner::Desc<KatSerialArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
+// 			pPhysReacPlannerDesc.reset(pDesc);
+// 			setupPlanner(*pDesc, xmlContext, *context);
+// 			XMLData(pDesc->armDesc.cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
+// 			XMLData(pDesc->armDesc.serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
+// 		}
+// 		else if (!armType.compare("kat_sim_arm")) {
+// 			typedef PhysReacPlanner::Desc<KatSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// // 			typedef PhysReacPlanner::Desc<KatSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
+// 			pPhysReacPlannerDesc.reset(pDesc);
+// 			setupPlanner(*pDesc, xmlContext, *context);
+
+// 		}
+// 		else if (!armType.compare("gen_sim_arm")) {
+// 			typedef PhysReacPlanner::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// // 			typedef PhysReacPlanner::Desc<GenSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 			PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
+// 			pPhysReacPlannerDesc.reset(pDesc);
+// 			setupPlanner(*pDesc, xmlContext, *context);
+// 		}
 		else {
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "Unknown arm type"));
+			context->getLogger()->post(Message::LEVEL_CRIT, "Unknown arm type");
 			return 1;
 		}
 
 		// Create PhysReacPlanner
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Initialising reactive planner..."));
-		PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(*pPhysReacPlannerDesc));
+		context->getLogger()->post(Message::LEVEL_INFO, "Initialising reactive planner...");
+// 		PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(*pPhysReacPlannerDesc));
+		PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(physReacPlannerDesc));
 		if (pPhysReacPlanner == NULL) {
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_CRIT, "Unable to create ReacPlanner"));
+			context->getLogger()->post(Message::LEVEL_CRIT, "Unable to create ReacPlanner");
 			return 1;
 		}
 
@@ -566,22 +534,26 @@ int main(int argc, char *argv[]) {
 
 		// Create bounds to be attached to the end-effector (the last joint) 
 		const U32 jointIndex = (U32)arm.getJoints().size() - 1;
-		std::vector<Bounds::Desc::Ptr> boundsSet;
+		std::vector<Bounds::Desc::Ptr> boundsDescSeq;
 		MemoryWriteStream buffer;
 		Mat34 referencePose;
-		createFinger(boundsSet, referencePose, arm.getReferencePose(), buffer);
+		createFinger(boundsDescSeq, referencePose, arm.getReferencePose(), buffer);
 		// set new arm reference pose
 		arm.setReferencePose(referencePose);
 		// Modify shape of the joint by adding a new Actor.
-		addFinger(*pPhysReacPlanner, jointIndex, boundsSet);
+// 		addFinger(*pPhysReacPlanner, jointIndex, boundsSet);
+		// Modify shape of the joint by adding new bounds to the Actor representing the end-effector.
+		std::vector<const Bounds*> boundsSeq;
+		addBounds(pPhysReacPlanner->getJointActors().back(), boundsSeq, boundsDescSeq);
+		pPhysReacPlanner->getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
 
 
 /*		
-// 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->get().front()->getPose();
+// 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->front()->getPose();
 		Real roll, pitch, yaw;
 // 		p.R.toEuler (roll,pitch,yaw);
-// 		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Getting finger bounds pose..."));
-// 		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
+// 		context->getLogger()->post(Message::LEVEL_INFO, "Getting finger bounds pose...");
+// 		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
 
 		Mat34 p;
 		//arm.setReferencePose (p);
@@ -589,14 +561,14 @@ int main(int argc, char *argv[]) {
 		p = arm.getReferencePose ();
 		p.R.toEuler (roll, pitch, yaw);
 		
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Getting arm reference pose..."));
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
+		context->getLogger()->post(Message::LEVEL_INFO, "Getting arm reference pose...");
+		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
 
 		p = arm.getGlobalPose ();
 		p.R.toEuler (roll, pitch, yaw);
 		
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Getting arm global pose..."));
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw));
+		context->getLogger()->post(Message::LEVEL_INFO, "Getting arm global pose...");
+		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
 */
 		
 		// Display arm information
@@ -676,7 +648,7 @@ int main(int argc, char *argv[]) {
 
 
 		// Big Bang!
-		context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Launching Universe..."));
+		context->getLogger()->post(Message::LEVEL_INFO, "Launching Universe...");
 		pUniverse->launch();
 
 		// Reactive arm controller is capable to make the arm to move on almost arbirtary trajectories
@@ -725,12 +697,14 @@ int main(int argc, char *argv[]) {
 		{
 			//polyflap actor
 			Actor *polyFlapActor = setupPolyflap(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
-			golem::BoundsSet::Ptr curPol = polyFlapActor->getBounds();
+// 			golem::BoundsSet::Ptr curPol = polyFlapActor->getBounds();
+			golem::BoundsSet::Ptr curPol = polyFlapActor->getGlobalBoundsSet();
 
 // 			context->getTimer()->sleep(1);
 			//reference polyflap position for prooving if arm didn't hit it whil approaching
-			Vec3 referencePolyflapPosVec1 = curPol->get().front()->getPose().p;
-			Vec3 referencePolyflapPosVec2 = curPol->get().back()->getPose().p;
+// 			Vec3 referencePolyflapPosVec1 = curPol->front()->getPose().p;
+// 			Vec3 referencePolyflapPosVec2 = curPol->back()->getPose().p;
+			Mat34 referencePolyflapPos = polyFlapActor->getPose ();
 // 			context->getTimer()->sleep(1);
 
 			/////////////////////////////////////////////////
@@ -742,13 +716,13 @@ int main(int argc, char *argv[]) {
 			Mat34 curPolPos1;
 			Mat34 curPolPos2;
 			//find out bounds of polyflap and compute the position of the polyflap
-			if (curPol->get().front()->getPose().p.v3 > curPol->get().back()->getPose().p.v3) {
-				curPolPos1 = curPol->get().front()->getPose();
-				curPolPos2 = curPol->get().back()->getPose();
+			if (curPol->front()->getPose().p.v3 > curPol->back()->getPose().p.v3) {
+				curPolPos1 = curPol->front()->getPose();
+				curPolPos2 = curPol->back()->getPose();
 			}
 			else {
-				curPolPos1 = curPol->get().back()->getPose();
-				curPolPos2 = curPol->get().front()->getPose();
+				curPolPos1 = curPol->back()->getPose();
+				curPolPos2 = curPol->front()->getPose();
 			}
 
 			Vec3 polyflapPosition(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
@@ -772,7 +746,7 @@ int main(int argc, char *argv[]) {
 			int startPosition = rand() % 17 + 1;
 	
 			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Position %i", startPosition));
+			context->getLogger()->post(Message::LEVEL_INFO, "Position %i", startPosition);
 
 
 			// and set target waypoint
@@ -787,7 +761,7 @@ int main(int argc, char *argv[]) {
 				if (reacPlanner.send(target , ReacPlanner::ACTION_GLOBAL)) {
 					break;
 				}
-				context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Unable to find path to polyflap, trying again."));
+				context->getLogger()->post(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
 			}
 
 			// wait for completion of the action (until the arm moves to the initial pose)
@@ -858,7 +832,7 @@ int main(int argc, char *argv[]) {
 			//int verticalAngle = rand() % 7;
 
 			setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "%d degree horizontaly", horizontalAngle));
+			context->getLogger()->post(Message::LEVEL_INFO, "%d degree horizontaly", horizontalAngle);
 
 			/////////////////////////////////////////////////
 			//writing in the initial vector
@@ -881,18 +855,25 @@ int main(int argc, char *argv[]) {
 			// Current time is the same for all threads and it is the time that has elapsed since the start of the program
 			SecTmReal timeBegin = context->getTimer()->elapsed();
 		
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Moving on the line..."));
+			context->getLogger()->post(Message::LEVEL_INFO, "Moving on the line...");
 			
 
 			// ON/OFF collision detection
 			planner.getHeuristic()->setCollisionDetection(false);
 
 
+			Mat34 polyFlapPose = polyFlapActor->getPose();
+			Real roll1, pitch1, yaw1, roll2, pitch2, yaw2;
+			polyFlapPose.R.toEuler (roll1, pitch1, yaw1);
+			context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll1, pitch1, yaw1);
+			referencePolyflapPos.R.toEuler (roll2, pitch2, yaw2);
+			context->getLogger()->post(Message::LEVEL_INFO, "referencePose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", referencePolyflapPos.p.v1, referencePolyflapPos.p.v2, referencePolyflapPos.p.v3, roll2, pitch2, yaw2);
 
 			
 			//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
 			//otherwise we skip it
-			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
+// 			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
+			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPos)) {
 
 			
 				// Generate and send a simple straight line trajectory
@@ -916,13 +897,24 @@ int main(int argc, char *argv[]) {
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
 					//to get polyflap pose information
-					golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
-					//reading out the position of the polyflap
-					Mat34 mojepose2 = set->get().front()->getPose();
-					Mat34 mojepose3 = set->get().back()->getPose();
+// 					golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
+// 					//reading out the position of the polyflap
+// 					Mat34 mojepose2 = set->front()->getPose();
+// 					Mat34 mojepose3 = set->back()->getPose();
+// 					Real roll2, pitch2, yaw2, roll3, pitch3, yaw3;
+// 					mojepose2.R.toEuler (roll2,pitch2,yaw2);
+// 					mojepose3.R.toEuler (roll3,pitch3,yaw3);
+// 					context->getLogger()->post(Message::LEVEL_INFO, "mojepose2: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", mojepose2.p.v1, mojepose2.p.v2, mojepose2.p.v3, roll2, pitch2, yaw2);
+// 					context->getLogger()->post(Message::LEVEL_INFO, "mojepose3: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", mojepose3.p.v1, mojepose3.p.v2, mojepose3.p.v3, roll3, pitch3, yaw3);
+
+					Mat34 polyFlapPose = polyFlapActor->getPose();
+// 					Real roll, pitch, yaw;
+// 					polyFlapPose.R.toEuler (roll, pitch, yaw);
+// 					context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
 
 					//getting the first component of the polyflap
-					const BoundingBox* pBox1 = dynamic_cast<const BoundingBox*>(set->get().front().get()); // obj_ptr::get()
+					golem::BoundsSet::Ptr set = polyFlapActor->getGlobalBoundsSet();
+					const BoundingBox* pBox1 = dynamic_cast<const BoundingBox*>(set->front().get()); // obj_ptr::get()
 					//and the vector, which represents the first normal vector of the polyflap
 					Vec3 pfNormVec1;
 					if (pBox1 != NULL) {
@@ -930,11 +922,11 @@ int main(int argc, char *argv[]) {
 					}
 
 					//getting the second component of the polyflap
-					const BoundingBox* pBox2 = dynamic_cast<const BoundingBox*>(set->get().back().get()); // obj_ptr::get()
+					const BoundingBox* pBox2 = dynamic_cast<const BoundingBox*>(set->back().get()); // obj_ptr::get()
 					//and the vector, which represents the second normal vector of the polyflap
 					Vec3 pfNormVec2;
 					if (pBox2 != NULL) {
-						pfNormVec1 = pBox1->getNormals()[1];
+						pfNormVec2 = pBox2->getNormals()[1];
 					}
 
 					/////////////////////////////////////////////////
@@ -954,12 +946,15 @@ int main(int argc, char *argv[]) {
 					/////////////////////////////////////////////////
 					//writing in the feature vector
 					//the position of the polyflap (position of both sides separately)
-					features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
-					features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
-					features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
-					features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
-					features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
-					features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
+// 					features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
+// 					features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
+// 					features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
+// 					features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
+// 					features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
+// 					features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
+					features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
+					features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
+					features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
 					/////////////////////////////////////////////////
 				
 					/////////////////////////////////////////////////
@@ -1014,9 +1009,9 @@ int main(int argc, char *argv[]) {
 			// and set target waypoint
 			golem::ctrl::GenWorkspaceState preHome;
 			fromCartesianPose(preHome.pos, positionPreH, orientationH);
-			home.vel.setId(); // it doesn't move
+			preHome.vel.setId(); // it doesn't move
 
-			home.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
+			preHome.t = context->getTimer()->elapsed() + timeDeltaAsync + minDuration; // i.e. the movement will last at least 5 sec
 
 			// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 			reacPlanner.send(preHome, ReacPlanner::ACTION_GLOBAL);
@@ -1034,25 +1029,25 @@ int main(int argc, char *argv[]) {
 					break;
 				}
 			
-				context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Unable to find path home, trying again."));
+				context->getLogger()->post(Message::LEVEL_INFO, "Unable to find path home, trying again.");
 			}
 
 
 
 
 
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Moving home..."));
+			context->getLogger()->post(Message::LEVEL_INFO, "Moving home...");
 			reacPlanner.waitForEnd();
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Done"));
+			context->getLogger()->post(Message::LEVEL_INFO, "Done");
 
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "trying to delete polyflap"));
+			context->getLogger()->post(Message::LEVEL_INFO, "trying to delete polyflap");
 
 // 			context->getTimer()->sleep(1);
 			pScene->releaseObject(*polyFlapActor);
 			// wait a bit before new actor is created to avoid simulation crash
 // 			context->getTimer()->sleep(3);
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "deleting succeded"));
-			context->getLogger()->post(StdMsg(StdMsg::LEVEL_INFO, "Iteration %d completed!", e));
+			context->getLogger()->post(Message::LEVEL_INFO, "deleting succeded");
+			context->getLogger()->post(Message::LEVEL_INFO, "Iteration %d completed!", e);
 
 				
 		}// end of the for-loop (experiment loop)
@@ -1065,11 +1060,11 @@ int main(int argc, char *argv[]) {
 
 
 	}
-	catch (const StdMsg &msg) {
-		context->getLogger()->post(msg, false);
+	catch (const MsgStreamFile &msg) {
+		std::cout << msg << std::endl;
 	}
 	catch (const std::exception &ex) {
-		context->getLogger()->post(StdMsg("C++ exception: %s", ex.what()));
+		std::cout << Message(Message::LEVEL_CRIT, "C++ exception: %s", ex.what()) << std::endl;
 	}
 
 	return 0;

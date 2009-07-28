@@ -10,7 +10,7 @@ PROJECT(SMLearning)
 
 # Project root directory
 GET_FILENAME_COMPONENT(PROJECT_ROOT ../.. ABSOLUTE)
-SET(SMLEARNING_ROOT ${PROJECT_ROOT}/development CACHE INTERNAL "Path prefix for SMLearning package")
+SET(SMLEARNING_ROOT ${PROJECT_ROOT}/trunk CACHE INTERNAL "Path prefix for SMLearning package")
 
 # Set the path where other thing should be relative to
 GET_FILENAME_COMPONENT(CMAKE_SOURCE_DIR . ABSOLUTE CACHE INTERNAL "")
@@ -36,7 +36,9 @@ SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
-LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem pthread rt GL glut expat SMLearning)
+LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem
+			   pthread rt GL glut expat SMLearning xerces-c netcdf nn_netcdf
+			   nn_engine nn_random boost_filesystem boost_regex)
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}
@@ -57,7 +59,6 @@ LINK_DIRECTORIES(
 
 SET(SMLEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/arm/Pushing.cpp
-	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
 )
 
 SET(ARM_HEADERS
@@ -71,25 +72,50 @@ SET(ARM_FILES
 
 SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
-	${SMLEARNING_ROOT}/src/tools/tools_test.cpp
+)
+
+SET(SEQUENCES_TEST_SOURCE
+       ${SMLEARNING_ROOT}/src/tools/sequences_test.cpp
+ )
+
+SET(PARSING_TEST_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/parsing_test.cpp
+)
+
+SET(N_FOLD_CVSETS_NETS_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/n_fold_cvsets_nets.cpp
+)
+
+SET(CONCATENATE_SEQUENCEDATASETS_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/concatenate_sequencedatasets.cpp
 )
 
 SET(TOOLS_HEADERS
 	${SMLEARNING_ROOT}/include/tools/data_handling.h
 )
+
+SET(TOOLS_FILES
+	${SMLEARNING_ROOT}/src/defaultnet.xml
+)
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
 # SMLearning library
-# ADD_LIBRARY(${PROJECT_NAME} SHARED ${SMLEARNING_SOURCES} ${TOOLS_SOURCES})
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${TOOLS_SOURCES})
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SMLEARNING_SOURCES} ${TOOLS_SOURCES})
+# ADD_LIBRARY(${PROJECT_NAME} SHARED ${TOOLS_SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 ADD_EXECUTABLE(arm ${SMLEARNING_SOURCES})
-ADD_EXECUTABLE(tools_test ${TOOLS_SOURCES})
+ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
+ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
+ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
+ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
 INSTALL(TARGETS arm RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS tools_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${ARM_FILES} DESTINATION bin/SMLearning)
-
+INSTALL(FILES ${TOOLS_FILES} DESTINATION bin/SMLearning)
 
 ## SMLearning tools library
 #ADD_EXECUTABLE(tools_test ${TOOLS_SOURCES})
