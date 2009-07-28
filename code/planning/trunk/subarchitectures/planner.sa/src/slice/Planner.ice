@@ -41,14 +41,12 @@ module autogen {
     class PlanningTask
     {
       int id;
-      string domain;
-      string task;
+      string goal;
       string plan;
       Completion status;
       //string planningAgent;  // the name of the planning agent as used in the state description
       //objDeclSeq objects;
       //PlanningState state;
-      //string goal;
     };
 
     // this is for planning-internal use only and takes care of the communication between
