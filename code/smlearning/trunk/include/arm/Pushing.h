@@ -97,17 +97,16 @@ Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions
 //creates a finger actor and sets bounds
 void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, const Mat34 &pose, MemoryStream &buffer);
 
-//sets behaviour of joint
-NxJoint *setupJoint(NxActor *effector, NxActor *tool, const NxVec3 &anchor, const NxVec3 &axis);
-
-// Modify shape of the joint by adding a new Actor.
-void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bounds::Desc::Ptr> &bounds, golem::Context::Ptr context);
+// // Modify shape of the joint by adding a new Actor.
+// void addFinger(PhysReacPlanner &physReacPlanner, U32 jointIndex, std::vector<Bounds::Desc::Ptr> &bounds, golem::Context::Ptr context);
+void addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, const std::vector<Bounds::Desc::Ptr> &boundsDescSeq);
 
 //function for normalizing values according to given bounds (before storing)
 Real normalize(const Real& value, const Real& min, const Real& max);	
 
 //function that checks if arm hitted the polyflap while approaching it
-bool checkPfPosition(Scene* Scene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2);
+// bool checkPfPosition(Scene* Scene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2);
+bool checkPfPosition(Scene* Scene, const Actor* polyFlapActor, const Mat34& refPos);
 
 void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
 
