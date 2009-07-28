@@ -11,6 +11,7 @@ class OpenGLControl
 private:
 	float m_clearcolor;
 	float m_cleardepth;
+	
 public:
 	OpenGLControl();
 	

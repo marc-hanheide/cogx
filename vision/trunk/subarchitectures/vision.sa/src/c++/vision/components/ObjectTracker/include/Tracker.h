@@ -32,6 +32,8 @@ protected:
     	float edge_tolerance;				// maximal angular deviation of edges to match in degrees
     	
     	float track_time;					// time for one tracking pass (the less time given, the less particle will be used)
+    	
+    	Particle zP;						// zero Particle to which the tracker is reseted when pressing the zero_particles key
 	} Parameter;
 	
 	Parameter params;
@@ -74,6 +76,7 @@ protected:
 	bool m_draw_edges;
 	bool m_tracker_initialized;
 	bool m_testflag;
+	bool m_bfc;
 
 	
 	// Functions (virtual)
@@ -116,6 +119,7 @@ public:
 	void setTrackTime(float time){ params.track_time = time; }
 	void setNoise(float rot, float trans){ params.noise_rot_max=rot; params.noise_trans_max=trans; }
 	void setTestflag(bool val){ m_testflag = val; }
+	void setBFC(bool val){ m_bfc=val; }
 	
 	void lock(bool val){ m_lock=val; m_particles->setAll(*m_particles->getMax()); }
 	
