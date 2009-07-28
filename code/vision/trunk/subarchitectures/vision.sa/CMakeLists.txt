@@ -35,7 +35,7 @@ add_subdirectory (src/c++/vision/components/PlanePopOut)
 add_subdirectory (src/c++/vision/components/SOIFilter)
 endif(BUILD_HAL_STEREO)
 
-#add_subdirectory (src/c++/vision/components/ObjectRecognizer)
-#add_subdirectory (src/python/ObjectRecognizer)
+add_subdirectory (src/c++/vision/components/ObjectRecognizer)
+add_subdirectory (src/python/ObjectRecognizer)
 
 
