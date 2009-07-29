@@ -3,11 +3,17 @@
 
 package binder.bayesiannetwork.configparser;
 
-import binder.autogen.core.*;
-import binder.autogen.featvalues.*;
-import binder.autogen.bayesiannetworks.*;
+
 import java.util.Vector;
 import java.util.Enumeration;
+
+import binder.autogen.bayesiannetworks.BayesianNetwork;
+import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
+import binder.autogen.bayesiannetworks.BayesianNetworkNode;
+import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
+import binder.autogen.core.Feature;
+import binder.autogen.core.FeatureValue;
+import binder.autogen.featvalues.StringValue;
 
 public class BNConfigParser implements BNConfigParserConstants {
 

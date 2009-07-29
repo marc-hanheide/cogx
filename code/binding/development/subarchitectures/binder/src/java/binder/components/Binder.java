@@ -29,9 +29,10 @@ public class Binder extends ManagedComponent  {
 
 	BayesianNetworkManager BNManager;
 	
-	HashMap<String,Union> curBestUnions;
-	HashMap<Union, Float> maxValues;
-	
+	HashMap<String,Union> curUnions = new HashMap<String,Union>();
+	HashMap<Union, Float> maxValues = new HashMap<Union,Float>();
+
+
 	@Override
 	public void start() {
 		
@@ -40,7 +41,7 @@ public class Binder extends ManagedComponent  {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
-				proxyUpdate();
+				proxyUpdate(_wmc);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -48,8 +49,6 @@ public class Binder extends ManagedComponent  {
 			} 
 		});
 		
-		curBestUnions = new HashMap<String,Union>();
-		maxValues = new HashMap<Union,Float>();
 		
 		BNManager = new BayesianNetworkManager();
 		
@@ -57,17 +56,31 @@ public class Binder extends ManagedComponent  {
 	}
 	
 	
-	public Union constructNewUnion(Vector<Proxy> includedProxies) {
+	public Union constructNewUnion(Vector<PerceivedEntity> includedEntities) {
 	//	log("***** Constructing a new union ****");
 		Union union = new Union();
 		union.entityID = newDataID();
-		union.includedProxies =new Proxy[includedProxies.size()];
+		Vector<Proxy> includedProxies = new Vector<Proxy>();
+		for (Enumeration<PerceivedEntity> en = includedEntities.elements() ; en.hasMoreElements() ;) {
+			PerceivedEntity entity = en.nextElement();
+			if (entity.getClass().equals(Proxy.class)) {
+				includedProxies.add((Proxy)entity);
+			}
+			else if (entity.getClass().equals(Union.class)) {
+				Union includedUnion = (Union)entity;
+				for (int i = 0 ; i < includedUnion.includedProxies.length ; i++) {
+					includedProxies.add(includedUnion.includedProxies[i]);
+				}
+			}
+		}
+		
+		union.includedProxies = new Proxy[includedProxies.size()];
 		union.includedProxies = includedProxies.toArray(union.includedProxies);
 		
 		Vector<Feature> features = new Vector<Feature>();
 		union.probExists = 1.0f;
-		for (Enumeration<Proxy> e = includedProxies.elements(); e.hasMoreElements();) {
-			Proxy prox = e.nextElement();
+		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
+			PerceivedEntity prox = e.nextElement();
 			for (int i = 0; i < prox.features.length ; i++) {
 				features.add(prox.features[i]);
 			}
@@ -85,23 +98,26 @@ public class Binder extends ManagedComponent  {
 	private ProbabilityDistribution computeUnionDistribution(Union union) {
 		
 		DiscreteProbabilityDistribution priorDistrib =  BNManager.getPriorDistribution(union.features);
-		log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
+	//	log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
 		
 		
 		Vector<CombinedProbabilityDistribution> proxiesDistrib = new Vector<CombinedProbabilityDistribution>();
-		log("number of included proxies: " + union.includedProxies.length);
 		
 		for (int i = 0 ; i < union.includedProxies.length ; i++) {
 			Proxy proxy = union.includedProxies[i];
+
 	//		log("Maximum for observation-driven distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(proxy.distribution));
+	
 			DiscreteProbabilityDistribution priorDistribForProxy =  BNManager.getPriorDistribution(proxy.features);
-			log("Maximum for prior distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(priorDistribForProxy));
+	//		log("Maximum for prior distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(priorDistribForProxy));
+	
 			CombinedProbabilityDistribution finalProxyDistrib = new CombinedProbabilityDistribution();
 			finalProxyDistrib.opType = OperationType.DIVIDED;
 			finalProxyDistrib.distributions = new DiscreteProbabilityDistribution[2];
 			finalProxyDistrib.distributions[0] = proxy.distribution;
 			finalProxyDistrib.distributions[1] = priorDistribForProxy;
 	//		log("Maximum for final distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(finalProxyDistrib));
+		
 			proxiesDistrib.add(finalProxyDistrib);
 		}
 		
@@ -113,28 +129,37 @@ public class Binder extends ManagedComponent  {
 			finalDistrib.distributions[i] = proxiesDistrib.elementAt(i-1);
 		}
 		
-		log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
+	//	log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
 		return finalDistrib;
 	}
 	
+	
+	
 	public HashMap<String,Union> getInitialUnions(Vector<Proxy> proxies) {
-				
+		HashMap<String,Union> initialUnions = new HashMap<String,Union>();
 		for (Enumeration<Proxy> e = proxies.elements(); e.hasMoreElements() ; ) {
 			Proxy curProxy = e.nextElement();
-			if (!curBestUnions.containsKey(curProxy.entityID)) {
-				Vector<Proxy> curProxyV = new Vector<Proxy>();
+			if (!initialUnions.containsKey(curProxy.entityID)) {
+				Vector<PerceivedEntity> curProxyV = new Vector<PerceivedEntity>();
 				curProxyV.add(curProxy);
 				Union union = constructNewUnion(curProxyV);
-				curBestUnions.put(curProxy.entityID, union);
-				maxValues.put(union, GradientDescent.getMaximum(union.distribution));
+				initialUnions.put(curProxy.entityID, union);
 		}
 		}
 		
-		return curBestUnions;
+		return initialUnions;
 	}
-	 
 	
-	public void deleteOldUnions() {
+	
+	public Union getInitialUnion(Proxy proxy) {
+				Vector<PerceivedEntity> curProxyV = new Vector<PerceivedEntity>();
+				curProxyV.add(proxy);
+				Union union = constructNewUnion(curProxyV);
+		return union;
+	} 
+	
+	
+	private void deleteOldUnions() {
 		try {
 			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
 			for (int i = 0; i < unions.length; i++) {
@@ -165,101 +190,82 @@ public class Binder extends ManagedComponent  {
 	
 	
 	
-	public void proxyUpdate() {
-		log("------------------");
+	public void proxyUpdate(WorkingMemoryChange wmc) {
+		log("--------START BINDING----------");
 		log("binder working memory updated with a new proxy!");
 		try {
-			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
-			log("Current number of proxies in WM: " + proxies.length);
+			long initTime = System.currentTimeMillis();
+			Proxy newProxy = getMemoryEntry(wmc.address, Proxy.class);
+			log("Proxy ID: " + newProxy.entityID);
+
+			Union curUnionToAdd = getInitialUnion(newProxy);
+			float maxValueForCurUnionToAdd = GradientDescent.getMaximum(curUnionToAdd.distribution);
+
+			HashMap<Union, Float> newMaxValues = new HashMap<Union, Float>();
 			
-			Vector<Proxy> proxiesV = new Vector<Proxy>();
-			HashMap<String,String> proxySubarchs = new HashMap<String,String>();
-			for (int i = 0; i < proxies.length; i++) {
-				proxiesV.add(proxies[i].getData());
-				proxySubarchs.put(proxies[i].getData().entityID, proxies[i].getData().subarchId);
-			}
+		//	sleepComponent(250);
 			
-			curBestUnions = getInitialUnions(proxiesV);
+			log("Construction of initial unions finished, moving to unions of more than 1 proxy...");
+			log("current number of recorded unions in maxvalues: " + maxValues.size());
 			
-			sleepComponent(250);
-			
-			String[] keyArray = new String[curBestUnions.size()];
-			keyArray = curBestUnions.keySet().toArray(keyArray);
-			
-			for (int i = 0; i < proxies.length; i++ ) {
-				String proxyID1 = proxies[i].getData().entityID;
-				for (int j = i+1 ; j < proxies.length ; j++) {
-					String proxyID2 = proxies[j].getData().entityID;
-					if (!proxyID1.equals(proxyID2) && !proxySubarchs.get(proxyID1).equals(proxySubarchs.get(proxyID2))) {
-						Union union1 = curBestUnions.get(proxyID1);
-						Union union2 = curBestUnions.get(proxyID2);
-						Vector<Proxy> unions = new Vector<Proxy>();
-						unions.add(proxies[i].getData());
-						unions.add(proxies[j].getData());
-						Union newUnion = constructNewUnion(unions);
-						float maxNewUnion = GradientDescent.getMaximum(newUnion.distribution);
-						maxValues.put(newUnion, maxNewUnion);
+				for (Iterator<Union> it = maxValues.keySet().iterator() ; it.hasNext();) {
+					
+					Union existingUnion = it.next();
+
+					if (!hasConflictingSubarch(curUnionToAdd, existingUnion)) {
+						Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
+						unionsToMerge.add(curUnionToAdd);
+						unionsToMerge.add(existingUnion);
+						Union newMergedUnion = constructNewUnion(unionsToMerge);
+						float maxOfNewMergedUnion = GradientDescent.getMaximum(newMergedUnion.distribution);
 						
-						if (maxNewUnion > maxValues.get(union1) && maxNewUnion > maxValues.get(union2)) {
-							
-						deleteUnionFromWM(curBestUnions.get(proxyID1));
-						deleteUnionFromWM(curBestUnions.get(proxyID2));
+						log("maxOfnewMergedUnion: " + maxOfNewMergedUnion );
+						if (maxOfNewMergedUnion > maxValueForCurUnionToAdd && 
+								maxOfNewMergedUnion > maxValues.get(existingUnion)) {
+	
+						deleteUnionFromWM(existingUnion);
 						
-						curBestUnions.put(proxyID1, newUnion);
-						curBestUnions.put(proxyID2, newUnion);
+						curUnionToAdd = newMergedUnion;
+						maxValueForCurUnionToAdd = maxOfNewMergedUnion;
+						}
+						else {
+							newMaxValues.put(existingUnion, maxValues.get(existingUnion));
 						}
 					}
-				}
-			}
-						
-			for (Iterator<String> e = curBestUnions.keySet().iterator() ; e.hasNext() ; ) {
-				String proxyID = e.next();
-				Union union = curBestUnions.get(proxyID);
-				
-				if (!unionAlreadyOnWM(union)) {
-					addEntityToWM(union);				
-				}
+					else {
+						newMaxValues.put(existingUnion, maxValues.get(existingUnion));
+					}
 				
 			}
+				
+				newMaxValues.put(curUnionToAdd, maxValueForCurUnionToAdd);
+
+				maxValues = newMaxValues;
+				addEntityToWM(curUnionToAdd);
+				log("Binding algorithm finished!");
+				long finalTime = System.currentTimeMillis();
+				log("Total binding time: " + (finalTime - initTime)/1000.0 + " seconds");
+				log("--------STOP BINDING----------");
  		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-
-	private boolean unionAlreadyOnWM(Union union) {
-		try {
-
-			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
-				
-			for (int i = 0 ; i < unions.length ; i++) {
-				if (unions[i].getData().equals(union)) {
+	
+	private boolean hasConflictingSubarch(Union union1, Union union2) {	
+		for (int i = 0 ; i < union1.includedProxies.length ; i++) {
+			Proxy proxyi = union1.includedProxies[i];
+			for (int j = 0 ; j < union2.includedProxies.length ; j++) {
+				Proxy proxyj = union2.includedProxies[j];
+				if (proxyi.subarchId.equals(proxyj.subarchId)) {
 					return true;
 				}
 			}
-			
-			for (int k = 0 ; k < union.includedProxies.length ; k++) {
-
-				for (int i = 0 ; i < unions.length ; i++) {
-					Union otherUnion = unions[i].getData();
-					if (otherUnion.equals(union)) {
-						return true;
-					}
-					for (int j = 0 ; j < otherUnion.includedProxies.length ; j++) {
-						if (otherUnion.includedProxies[j].entityID.equals(union.includedProxies[k].entityID)) {
-							return true;
-						}
-					}
-				}
-
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		}		
 		return false;
 	}
+	
 	
 	
 	private void addEntityToWM(Union entity) {
@@ -267,6 +273,7 @@ public class Binder extends ManagedComponent  {
 		try {
 			addToWorkingMemory(entity.entityID, entity);
 			log("new Union succesfully added to the binding working memory");
+			log("Union ID: " + entity.entityID);
 			log("Union has " + entity.includedProxies.length + " included proxies");
 
 		}
