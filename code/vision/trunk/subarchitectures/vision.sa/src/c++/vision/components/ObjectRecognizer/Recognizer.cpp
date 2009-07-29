@@ -236,6 +236,27 @@ void CRecognizer::onRecognitionTaskRemoved(const cdl::WorkingMemoryChange & _wmc
 void CRecognizer::onRecognitionTaskModified(const cdl::WorkingMemoryChange & _wmc)
 {
    log("Recognition task modified.");
+   ObjectRecognitionTaskPtr cmd = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
+   std::vector<string>::iterator itstr;
+   std::vector<double>::iterator itdbl;
+
+   ostringstream msg;
+   std::vector<VisionData::ObjectRecognitionMatchPtr>::iterator pmatch;
+   for (pmatch = cmd->matches.begin(); pmatch < cmd->matches.end(); pmatch++) {
+      println("SOI ID: %s", (*pmatch)->soiId.c_str());
+      msg.str("");
+      for (itstr = (*pmatch)->objectId.begin(); itstr != (*pmatch)->objectId.end(); itstr++) {
+         msg << *itstr << ", ";
+      }
+      println("Labels: %s", msg.str().c_str());
+
+      msg.str("");
+      for (itdbl = (*pmatch)->probability.begin(); itdbl != (*pmatch)->probability.end(); itdbl++) {
+         msg << *itdbl << ", ";
+      }
+      println("Probabilities: %s", msg.str().c_str());
+   }
+
    // TODO: dump the request!
    if (testmode) {
       sleepComponent(500);
@@ -347,6 +368,10 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
       PyObject *pFunc = NULL;
       if (testmode == 1)
          pFunc = PyObject_GetAttrString(pModule, "testCppInterface");
+      else if (testmode == 2)
+         pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
+      else if (testmode == 3)
+         pFunc = PyObject_GetAttrString(pModule, "testMatching");
       else
          pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
 

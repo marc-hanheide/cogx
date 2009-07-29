@@ -211,3 +211,6 @@ class CSiftSetup:
         elif matcher == CSiftSetup.CUDA: self.matcher = CDescriptorMatcherCuda(2, min)
         else: self.matcher = CDescriptorMatcherGpu(2, min)
 
+    def __str__(self):
+        return "CSiftSetup %s, %s" % (self.extractor, self.matcher)
+
