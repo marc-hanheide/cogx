@@ -84,3 +84,25 @@ PDDL_SENSOR_PREFIX = HIDDEN_PREFIX + "sensor__"
 PDDL_NEG_SENSOR_PREFIX = PDDL_SENSOR_PREFIX + "neg__"
 ACHIEVE_SG_PREFIX = HIDDEN_PREFIX + "achieve_subgoal_"
 
+
+################################################
+# Produce DOT files
+################################################
+
+DOT_TEMPLATE = """
+digraph $name {
+$setup
+// nodes
+$node_decl
+$ranks
+// edges
+$edge_decl
+}
+"""
+
+DOT_SETUP_TMPL = """
+// standard options
+node [color=black, fontsize=12, style=solid]
+edge [color=black, fontsize=10, style=solid] 
+"""
+
