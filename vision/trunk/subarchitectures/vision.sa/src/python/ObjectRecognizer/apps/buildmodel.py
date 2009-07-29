@@ -300,8 +300,9 @@ if __name__ == "__main__":
     # createModel_twEarlGrey()
     # createTest_twEarlGrey()
     adir = "xdata/models"
-    createModel(adir, "ShelcoreCube")
+    # createModel(adir, "ShelcoreCube")
     # createModel(adir, "CvetMetaTea")
-    #createModel(adir, "SwGreenTea")
+    # createModel(adir, "SwGreenTea")
     # createModel(adir, "TwEarlGrey")
+    createModel(adir, sys.argv[1])
 
