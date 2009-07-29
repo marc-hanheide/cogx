@@ -17,12 +17,12 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	
 	public void run() {
 		
-		sleepComponent(500);
+		sleepComponent(1000);
 
 		Proxy p1 = createProxyOne();
 		addEntityToWM(p1);
 		
-		sleepComponent(1000);
+		sleepComponent(1500);
 
 		Proxy p2 = createProxyTwo();
 		addEntityToWM(p2);

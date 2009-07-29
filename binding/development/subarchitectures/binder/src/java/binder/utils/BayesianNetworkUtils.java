@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import binder.autogen.bayesiannetworks.*;
+import binder.autogen.bayesiannetworks.BayesianNetwork;
+import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
+import binder.autogen.bayesiannetworks.BayesianNetworkNode;
+import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.featvalues.StringValue;
@@ -16,7 +19,7 @@ import binder.bayesiannetwork.configparser.BNConfigParser;
 public class BayesianNetworkUtils {
 
 	public static String configurationFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
-	
+
 	public static BayesianNetwork constructNetwork(String configFile) {
 		
 		BayesianNetwork network = new BayesianNetwork();

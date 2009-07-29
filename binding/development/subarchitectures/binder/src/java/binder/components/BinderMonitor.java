@@ -30,7 +30,7 @@ public class BinderMonitor extends ManagedComponent {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
 	//			Proxy newProxy = getMemoryEntry(_wmc.address, Proxy.class);
-				updateMonitor();
+		//		updateMonitor();
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -57,7 +57,7 @@ public class BinderMonitor extends ManagedComponent {
 		lastUnions = new Vector<Union>();
 		
 		 gui = new BinderMonitorGUI(this);
-		 gui.LOGGING = m_bLogOutput;
+		 gui.LOGGING = false;
 		log("Binding Monitor successfully started");
 	}
 	
@@ -72,10 +72,12 @@ public class BinderMonitor extends ManagedComponent {
 		
 		try {
 			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
+			log("Current number of proxies: " + proxies.length);
 			for (int i = (proxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(proxies[i].getData());
 			}
 			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
+			log("Current number of unions: " + unions.length);
 			for (int i = 0 ; i < unions.length ; i++) {
 				unionsV.add(unions[i].getData());
 			}
@@ -99,9 +101,7 @@ public class BinderMonitor extends ManagedComponent {
 		
 		lastProxies = proxiesV;
 		lastUnions = unionsV;
-		
-		log("number of proxies: " + proxiesV.size());
-		log("number of unions: " + unionsV.size());
+
 		gui.updateGUI(proxiesV, unionsV, proxiesToDelete, unionsToDelete);
 	}
 	

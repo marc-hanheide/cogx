@@ -22,6 +22,7 @@ public class BayesianNetworkManager {
 
 	BayesianNetwork network;
 	
+	boolean logging = false;
 	
 	public BayesianNetworkManager() {		
 	
@@ -196,6 +197,8 @@ public float getIndependentProb (String featlabel, FeatureValue featvalue) {
 	}
 
 public void log(String s) {
-	System.out.println("[BayesianNetworkManager] " + s);
+	if (logging) {
+		System.out.println("[BayesianNetworkManager] " + s);
+	}
 }
 }

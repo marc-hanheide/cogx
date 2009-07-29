@@ -37,10 +37,10 @@ public class BinderMonitorGUI extends JFrame
 
 
 	int curProxyPosition_X= 50;
-	int curProxyPosition_Y = 600;	
+	int curProxyPosition_Y = 400;	
 
 	int curUnionPosition_X = 120;
-	int curUnionPosition_Y= 300;
+	int curUnionPosition_Y= 100;
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
@@ -60,7 +60,7 @@ public class BinderMonitorGUI extends JFrame
 
 	public void init(){		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(1400, 1000);
+		setSize(1000, 700);
 
 		controlPanel = new ControlPanel(bm);
 		getContentPane().add(controlPanel, BorderLayout.LINE_END);
