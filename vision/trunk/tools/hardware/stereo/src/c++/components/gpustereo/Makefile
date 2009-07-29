@@ -5,9 +5,9 @@ STATICLIB = libgpustereo.a
 PROG = testgpustereo
 
 CC = nvcc
-CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc
+CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc -I/usr/local/cuda/sdk/C/common/inc
 NVCCFLAGS += -Xcompiler -fPIC
-LDFLAGS += -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib
+LDFLAGS += -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib -L/usr/local/cuda/sdk/C/lib
 LIBS += -lcudart -lcutil -lhighgui
 
 all : staticlib
