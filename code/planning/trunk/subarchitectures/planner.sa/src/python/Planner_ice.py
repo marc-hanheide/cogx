@@ -1968,6 +1968,46 @@ __name__ = 'autogen'
 _M_autogen.Planner = Ice.openModule('autogen.Planner')
 __name__ = 'autogen.Planner'
 
+if not _M_autogen.Planner.__dict__.has_key('Completion'):
+    _M_autogen.Planner.Completion = Ice.createTempClass()
+    class Completion(object):
+
+        def __init__(self, val):
+            assert(val >= 0 and val < 5)
+            self.value = val
+
+        def __str__(self):
+            if self.value == 0:
+                return 'PENDING'
+            elif self.value == 1:
+                return 'INPROGRESS'
+            elif self.value == 2:
+                return 'ABORTED'
+            elif self.value == 3:
+                return 'FAILED'
+            elif self.value == 4:
+                return 'SUCCEEDED'
+            return None
+
+        __repr__ = __str__
+
+        def __hash__(self):
+            return self.value
+
+        def __cmp__(self, other):
+            return cmp(self.value, other.value)
+
+    Completion.PENDING = Completion(0)
+    Completion.INPROGRESS = Completion(1)
+    Completion.ABORTED = Completion(2)
+    Completion.FAILED = Completion(3)
+    Completion.SUCCEEDED = Completion(4)
+
+    _M_autogen.Planner._t_Completion = IcePy.defineEnum('::autogen::Planner::Completion', Completion, (), (Completion.PENDING, Completion.INPROGRESS, Completion.ABORTED, Completion.FAILED, Completion.SUCCEEDED))
+
+    _M_autogen.Planner.Completion = Completion
+    del Completion
+
 if not _M_autogen.Planner.__dict__.has_key('_t_stringSeq'):
     _M_autogen.Planner._t_stringSeq = IcePy.defineSequence('::autogen::Planner::stringSeq', (), IcePy._t_string)
 
@@ -2159,13 +2199,12 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningState'):
 if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
     _M_autogen.Planner.PlanningTask = Ice.createTempClass()
     class PlanningTask(Ice.Object):
-        def __init__(self, id=0, planningAgent='', objects=None, state=None, goal='', plan=''):
+        def __init__(self, id=0, goal='', plan='', objects='', state=''):
             self.id = id
-            self.planningAgent = planningAgent
-            self.objects = objects
-            self.state = state
             self.goal = goal
             self.plan = plan
+            self.objects = objects
+            self.state = state
 
         def ice_ids(self, current=None):
             return ('::Ice::Object', '::autogen::Planner::PlanningTask')
@@ -2195,15 +2234,12 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
 
     _M_autogen.Planner._t_PlanningTaskPrx = IcePy.defineProxy('::autogen::Planner::PlanningTask', PlanningTaskPrx)
 
-    _M_autogen.Planner._t_PlanningTask = IcePy.declareClass('::autogen::Planner::PlanningTask')
-
     _M_autogen.Planner._t_PlanningTask = IcePy.defineClass('::autogen::Planner::PlanningTask', PlanningTask, (), False, None, (), (
         ('id', (), IcePy._t_int),
-        ('planningAgent', (), IcePy._t_string),
-        ('objects', (), _M_autogen.Planner._t_objDeclSeq),
-        ('state', (), _M_autogen.Planner._t_PlanningState),
         ('goal', (), IcePy._t_string),
-        ('plan', (), IcePy._t_string)
+        ('plan', (), IcePy._t_string),
+        ('objects', (), IcePy._t_string),
+        ('state', (), IcePy._t_string)
     ))
     PlanningTask.ice_type = _M_autogen.Planner._t_PlanningTask
 

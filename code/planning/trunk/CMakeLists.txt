@@ -1,6 +1,7 @@
+set(CMAKE_CXX_COMMAND g++)
 cmake_minimum_required (VERSION 2.6)
 
-project (CogXPlanningSA)
+project(CogXPlanningSA)
 
 get_filename_component(MYPROJECT_ROOT . ABSOLUTE)
 
@@ -19,5 +20,6 @@ include(CASTBuild)
 add_definitions(-Wall)
 
 # Include your subarchitecture projects in the following way
-add_subdirectory (subarchitectures/planner.sa)
-add_subdirectory (subarchitectures/dummy.sa)
+add_subdirectory(subarchitectures/planner.sa)
+add_subdirectory(subarchitectures/dummy.sa)
+add_subdirectory(subarchitectures/fakebinder.sa) 

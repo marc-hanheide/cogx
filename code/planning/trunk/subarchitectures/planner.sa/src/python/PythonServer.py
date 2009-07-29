@@ -21,16 +21,18 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
 
   def registerTask(self, task, current=None):
     print "Planner PythonServer: New PlanningTask received:"
-    print task.goal;
+    print "GOAL: " + task.goal;
+    print "OBJECTS: " + task.objects;
+    print "INIT: " + task.state;
 
-    task.plan = "there you got your plan"
-
-    self.client.deliverPlan(task);
+    task.plan = "SOMEDAY HERE WILL BE A PLAN!!!"
 
     if(self.client is None):
       print "ERROR!!"
 
+    self.client.deliverPlan(task);
     # add task to some queue or start planning right away. when done call self.client.deliverPlan(string plan)
+    
   def registerClient(self, Client, current=None):
     print "Planner PythonServer: running"
     self.client = Client
