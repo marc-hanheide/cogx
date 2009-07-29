@@ -5,6 +5,7 @@ PYVERSION 	?= 2.6
 PYINCLUDE   ?= -I/usr/include/python$(PYVERSION)
 PYLIBDIR    ?= -L/usr/lib/python$(PYVERSION)/config
 PYLINK      ?= -lpython$(PYVERSION)
+LIBCUTIL    ?= /usr/local/cuda/sdk/lib/libcutil.a
 
 ifeq ($(strip $(SOURCEDIR)),)
   SRCDIR=.
@@ -44,7 +45,7 @@ CC = /usr/local/cuda/bin/nvcc
 CFLAGS += -I/usr/local/cuda/include -I/usr/local/cuda/sdk/common/inc $(PYINCLUDE)
 NVCCFLAGS += -Xcompiler -fPIC,-O2,-fno-strict-aliasing,-DUNIX
 LDFLAGS += -fPIC -L/usr/local/cuda/lib -L/usr/local/cuda/sdk/lib $(PYLIBDIR)
-LIBS += -Wl,-Bstatic -lcutil -Wl,-Bdynamic -lcudart $(PYLINK)
+LIBS += -lcutil -lcudart $(PYLINK)
 
 all : lib
 lib : $(LIBTARGET)
@@ -69,7 +70,7 @@ OBJS= \
 	# $(OBJDIR)/cudaSiftD.o \
 
 $(LIBTARGET) : directories $(OBJS)
-	g++ -shared $(LDFLAGS) $(LIBS) -o $(LIBTARGET) $(OBJS)
+	g++ -shared $(LDFLAGS) $(LIBS) -o $(LIBTARGET) $(OBJS) $(LIBCUTIL)
 
 directories: $(OBJDIR)
 $(OBJDIR):

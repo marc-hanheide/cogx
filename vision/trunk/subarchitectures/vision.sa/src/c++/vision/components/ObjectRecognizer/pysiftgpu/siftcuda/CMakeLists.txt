@@ -9,6 +9,12 @@ cmake_minimum_required(VERSION 2.6)
 project(PythonSiftCuda)
 find_package(PythonLibs)
 
+find_file(LIBCUTIL libcutil.a
+   PATHS
+      /usr/local/cuda/sdk/lib 
+      /usr/local/cuda/sdk/C/lib 
+   )
+
 set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 set(LIBNAME siftcuda.so)
 string(REGEX MATCH "[0-9][.][0-9]$" PYVER a${PYTHON_EXECUTABLE}) 
@@ -18,6 +24,7 @@ add_custom_command(
    COMMAND make -f ${CMAKE_CURRENT_SOURCE_DIR}/Makefile 
       SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}" DESTDIR="${OUTDIR}"
       PYVERSION="${PYVER}"
+      LIBCUTIL="${LIBCUTIL}"
    DEPENDS 
       Makefile
       cudaImage.h cudaSiftD.h cudaSift.h cudaSiftH.h featureUploadH.h tpimage.h tpimageutil.h
