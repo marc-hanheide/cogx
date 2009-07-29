@@ -3,13 +3,12 @@
 
 #include <cast/architecture.hpp>
 
-class DummySA : public cast::ManagedComponent
-{
- protected:
-  virtual void runComponent();
+class DummySA : public cast::ManagedComponent {
+protected:
+    virtual void runComponent();
 
- public:
-  virtual void planGenerated(const cast::cdl::WorkingMemoryChange& wmc);
+public:
+    virtual void planGenerated(const cast::cdl::WorkingMemoryChange& wmc);
 };
 
 #endif

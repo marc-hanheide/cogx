@@ -1,5 +1,10 @@
 HOST localhost
 
+SUBARCHITECTURE fakebinder.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG FakeBinder FakeBinderSA
+
 SUBARCHITECTURE dummy.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager

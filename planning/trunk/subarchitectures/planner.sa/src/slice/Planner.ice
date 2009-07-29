@@ -11,7 +11,7 @@ module autogen {
       INPROGRESS,  // started but no plan found yet
       ABORTED,     // aborted (if e.g a more important query occurs)???
       FAILED,      // no plan found
-      SUCCEEDED  // plan found
+      SUCCEEDED    // plan found
     };
 
     sequence<string> stringSeq;
@@ -43,7 +43,9 @@ module autogen {
       int id;
       string goal;
       string plan;
-      Completion status;
+      string objects;
+      string state;
+      //Completion status;
       //string planningAgent;  // the name of the planning agent as used in the state description
       //objDeclSeq objects;
       //PlanningState state;
