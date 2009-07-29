@@ -66,7 +66,6 @@ void ObjectTracker::initTracker(){
 		running = false;
   }
   
-  
   // *** Setting up camera ***
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
@@ -269,8 +268,8 @@ void ObjectTracker::runComponent(){
   	  sleepComponent(10);
 		}else{
 			// * Idle *
-			//running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
-	    //sleepComponent(1000);
+			running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
+	    sleepComponent(1000);
 		}
   }
   
