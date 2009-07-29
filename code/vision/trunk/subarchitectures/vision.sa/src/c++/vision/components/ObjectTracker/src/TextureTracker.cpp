@@ -202,11 +202,12 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 		m_shadeTextureCompare->bind();
 		m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
 		m_shadeTextureCompare->unbind();
-		m_tex_frame_ip[3]->bind(1);
-		m_model->setTexture(m_tex_model_ip[3]);
+		m_tex_frame_ip[2]->bind(1);
+		m_model->setTexture(m_tex_model_ip[2]);
 		particle_motion(1.0, &p_estimate, GAUSS);
-		particle_processing(params.number_of_particles*0.75, 1);
+		particle_processing(params.number_of_particles, 1);
 			
+		/*
 		m_shadeTextureCompare->bind();
 		m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
 		m_shadeTextureCompare->unbind();
@@ -221,8 +222,8 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 		m_tex_frame_ip[1]->bind(1);
 		m_model->setTexture(m_tex_model_ip[1]);
 		particle_motion(0.1, NULL, GAUSS);
-		particle_processing(params.number_of_particles*0.125, 1);
-			
+		particle_processing(params.number_of_particles*0.1, 1);
+		*/	
 		// Kalman filter
 		if(m_kalman_enabled)
 			kalman_filtering(m_particles->getMax());
