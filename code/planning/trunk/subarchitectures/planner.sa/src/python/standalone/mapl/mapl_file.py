@@ -12,7 +12,7 @@ import tasks
 def parse_mapl_file(type, filename):
   try:
     it = file(filename)
-  except TypeError:
+  except (TypeError,IOError):
     it = filename
   try:
     return parser.parse_nested_list(it)

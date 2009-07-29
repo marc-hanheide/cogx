@@ -7,8 +7,10 @@ Main class for storing MAPL plans. Such plans
 
 """
 
-import graph
+from string import Template
 
+import graph
+import constants
 
 class OrderingConstraint(object):
     """
@@ -33,7 +35,8 @@ class PlanNode(object):
         self.action = action
         self.time = time
     def __str__(self):
-        return "%s[%s]" % (self.action, self.time)
+        #return "%s(%s)" % (self.action, self.time)
+        return "%s" % self.action
         
     
 
@@ -58,3 +61,22 @@ class MAPLPlan(graph.DAG):
         label = self.labels.get((v1,v2))
         assert isinstance(label, OrderingConstraint)
         return str(label)
+    def to_dot(self, name="plan", ranks=[]):
+        def declare_node(node_id):
+            label = self.labels.get(node_id)
+            if label is None: label = node_id
+            return '"%s" [%s]' % (node_id, label) 
+        def declare_edge(node_id1, node_id2):
+            label = ""
+#             if (node_id1, node_id2) in self.labels:
+#                 label = self.labels[node_id1, node_id2]
+            return '"%s" -> "%s" [%s]' % (node_id1, node_id2, label)
+        def declare_rank(same_rank_list):
+            same_rank_list = ['"%s"' % r for r in same_rank_list]
+            return '{rank=same; %s}' % " ".join(same_rank_list)
+        node_decl = "\n".join(declare_node(n) for n in sorted(self.V))
+        edge_decl = "\n".join(declare_edge(n1, n2) for (n1, n2) in self.all_edges())
+        ranks = "\n".join(declare_rank(r) for r in ranks)
+        setup = constants.DOT_SETUP_TMPL
+        dot_str = Template(constants.DOT_TEMPLATE).safe_substitute(locals())
+        return dot_str

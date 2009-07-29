@@ -1,5 +1,6 @@
 import constants
 import state
+import mapl
 import mapl.types as types
 import mapl.predicates as predicates
 from utils import Enum
@@ -26,6 +27,7 @@ class Task(object):
         self._sensors = None
         # task-specific data
         self._task_name = None
+        self._agent_name = None
         self._objects = None
         self._state = None
         self._goal = None
@@ -122,10 +124,8 @@ class Task(object):
     def pddl_problem_str(self):
         return PDDLTask.from_MAPL_task(self).pddl_problem_str()
 
-    def load_mapl_task(self, task_file, domain_file, agent_name):
-        import globals
-        import mapl
-        print "Loading MAPL domain."
+    def load_mapl_domain(self, domain_file):
+        print "Loading MAPL domain %s." % domain_file
         domain = mapl.mapl_file.load_mapl_domain(domain_file)
         self._domain_name = domain.domain_name
         self._requirements = domain.requirements
@@ -135,7 +135,9 @@ class Task(object):
         self._operators = domain.actions
         self._axioms = domain.axioms
         self._sensors = domain.sensors
-        print "Loading MAPL problem."
+        
+    def load_mapl_problem(self, task_file, agent_name=None):
+        print "Loading MAPL problem %s." % task_file
         problem = mapl.mapl_file.load_mapl_problem(task_file)
         self._task_name = problem.task_name
         if self._domain_name:
@@ -145,7 +147,11 @@ class Task(object):
         self._objects = problem.objects
         self._state = problem.init_state
         self._goal = problem.goal
-        
+        self._agent_name = agent_name
+
+    def load_mapl_task(self, task_file, domain_file, agent_name=None):
+        self.load_mapl_domain(domain_file)
+        self.load_mapl_problem(task_file, agent_name)
 
 
 class PDDLTask(Task):
