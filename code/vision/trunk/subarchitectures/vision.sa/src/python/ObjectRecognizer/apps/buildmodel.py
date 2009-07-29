@@ -11,7 +11,7 @@ import opencv.highgui as hg
 import opencv.adaptors as cvada
 
 import pymodulepaths
-from siftgpu import SiftGPU, SiftMatchGPU
+import siftgpu
 from ObjectRecognizer.mods.capture import CameraCapture, FileCapture, copyFrame, CLoopback1394Capture
 from ObjectRecognizer.mods.numutil import *
 import ObjectRecognizer.mods.cameraview as camview
@@ -25,14 +25,7 @@ import ObjectRecognizer.mods.comparator as comparator
 
 class CModelBuilder:
     def __init__(self):
-        self.__sift = None
         self.model = None
-        pass
-
-    @property
-    def SIFT(self):
-        if self.__sift == None: self.__sift = SiftGPU(params="-s")
-        return self.__sift
 
     def _acquireSift(self, frame, smooth=False):
         if smooth:
@@ -40,8 +33,8 @@ class CModelBuilder:
             cv.cvSmooth(frame, copy, cv.CV_MEDIAN, 3, 3)
             frame = copy
         im = np.array(cvada.Ipl2NumPy(frame))
-        self.SIFT.RunSIFT(im)
-        return self.SIFT.GetFeatureVector()
+        k, d = siftgpu.extractFeatures(im)
+        return (k, d)
 
     # A single vp can have multiple images (maybe to remove noise?)
     def createViewpoint(self, imageNameList, createPreview=True):
@@ -230,7 +223,7 @@ def createModel(modelDir, modelName):
 
     # Assign lambda, phi to views
     # Phis are given in the filename; lambdas must be calculated from index (assume equidistant)
-    reId = re.compile("[a-z]+_VP([0-9]+)_([0-9]+)", re.IGNORECASE)
+    reId = re.compile("[a-z]+_VP([0-9]+)_L([0-9]+)", re.IGNORECASE)
     lambdaPhi = (2, 1)
     lidx = []
     needsSaving = False

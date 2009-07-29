@@ -111,6 +111,18 @@ class CModelFileManager(object):
     def featureDir(self):
         return "%s/%s/features" % (self.rootpath, self.model.name)
 
+    def checkModelDirs(self, create=True):
+        def _checkDir(path):
+            if os.path.exists(path): return True
+            if create:
+                os.makedirs(path)
+            return os.path.exists(path)
+
+        all = _checkDir(self.imageDir)
+        all = all and _checkDir(self.previewDir)
+        all = all and _checkDir(self.featureDir)
+        return all
+
     #def _vpname(self, vp, index=-1):
     #    if index < 0: return "%s_VP%03d_L%03d" % (vp.vpPhi, vp.vpLambda)
     #    else: return "%s_VP%03d_I%03d" % (vp.vpPhi, index)

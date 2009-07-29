@@ -9,12 +9,12 @@ import opencv.highgui as hg
 import opencv.adaptors as cvada
 
 import pymodulepaths
-# from siftgpu import SiftGPU, SiftMatchGPU
 import siftgpu
 from ObjectRecognizer.mods.capture import CameraCapture, FileCapture, copyFrame, CLoopback1394Capture
 from ObjectRecognizer.mods.numutil import *
 import ObjectRecognizer.mods.canvas.cvcanvas as canvas
 import ObjectRecognizer.mods.cameraview as camview
+from ObjectRecognizer.objectmodel import CModelFileManager
 
 class TextWriter:
     textHelp = [
@@ -60,10 +60,12 @@ class TextWriter:
         while len(self.status) <= lineno: self.status.append("")
         self.status[lineno] = text
 
+class CFakeModel:
+    def __init__(self):
+        self.name = None
 
 class FeatureCapture:
     def __init__(self):
-        self.model = ""
         self.elevations = [0, 15, 30, 45, 60, 75, 90]
         self.iElevation = 0
         self.viewpoint = 0
@@ -77,9 +79,11 @@ class FeatureCapture:
         self.featurePack = None
         self.drawMode = 0
         self.drawModeName=["Preview", "Last Saved", "Preview and Last Saved"]
+        self.model = CFakeModel()
+        self.FM = CModelFileManager(self.model, "xdata")
 
-        # self.capture = CameraCapture(device=2, size=(640,480))
-        self.capture = CLoopback1394Capture(device=2)
+        self.capture = CameraCapture(device=1, size=(640,480))
+        # self.capture = CLoopback1394Capture(device=2)
         # self.capture.setSize((640, 480))
         # capture.setFrameRate(15)
         # self.capture.setBrightness(0.6)
@@ -92,7 +96,7 @@ class FeatureCapture:
     def updateStatus(self):
         self.TW.setStatus(
             0, "Model '%s'.%d SIFT: %s " % (
-                self.model, self.viewpoint, "On" if self.processing else "OFF",
+                self.model.name, self.viewpoint, "On" if self.processing else "OFF",
             )
         )
         self.TW.setStatus(1, "Elevation: %d, View: %s, Smooth: %s" % (
@@ -137,7 +141,8 @@ class FeatureCapture:
         #    self.smoothImage = not self.smoothImage
         elif k in ['S', 's']:
             if self.currentFrame != None:
-                basename = "xdata/%s_VP%03d_%I03d" % (self.model, self.elevations[self.iElevation], self.viewpoint)
+                basename = "%s/%s_VP%03d_I%03d" % (
+                    self.FM.imageDir, self.model.name, self.elevations[self.iElevation], self.viewpoint)
                 self.lastSavedFrame = self.currentFrame
                 self.featurePackSaved = self.featurePack
                 hg.cvSaveImage(basename + ".png", self.lastSavedFrame)
@@ -156,8 +161,6 @@ class FeatureCapture:
             cv.cvSmooth(frame, copy, cv.CV_MEDIAN, 3, 3)
             frame = copy
         im = np.array(cvada.Ipl2NumPy(frame))
-        #self.SIFT.RunSIFT(im)
-        #return self.SIFT.GetFeatureVector()
         return siftgpu.extractFeatures(im)
 
     def run(self):
@@ -166,6 +169,7 @@ class FeatureCapture:
         self.currentFrame = self.capture.grabFrameCopy()
         STOPAFTER = 4
         scale = 1; savedOffset=(0,0)
+        self.FM.checkModelDirs()
 
         while 1:
             k = hg.cvWaitKey(10)
@@ -205,7 +209,7 @@ class FeatureCapture:
 
 def main():
     App = FeatureCapture()
-    App.model = sys.argv[1]
+    App.model.name = sys.argv[1]
     App.run()
 
 if __name__ == "__main__": main()
