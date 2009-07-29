@@ -78,22 +78,18 @@ def printMatches(matcher):
 
 Setup = CSiftSetup(extractor=CSiftSetup.GPU, matcher=CSiftSetup.CUDA)
 Matcher = objectmatcher.CObjectMatcher()
-Matcher.descriptorMatcher = Setup.matcher
 Manager = CModelManager()
 
 def reconfigSift(extractor, matcher):
     global Setup
     print "Reconfig SIFT"
     Setup = CSiftSetup(extractor, matcher)
+    print Setup
 
 # Returns a list of tuples (model_name, lambda(yaw), phi(pitch), roll, probability)
-def _findMatchingObject(image):
+def _findMatchingObject(features):
     global Setup, Matcher, Manager
-    print "Image shape", image.shape
-    if len(Manager.modelNames) < 1:
-        print "No model loaded"
-        return ( ["*unknown*"], [1.0], [None] )
-    exmpl = Setup.extractor.extractFeatures(image)
+    Matcher.descriptorMatcher = Setup.matcher
     matches = []
     names = []
     poses = []
@@ -101,7 +97,7 @@ def _findMatchingObject(image):
     for mn in Manager.modelNames:
         model = Manager.getModel(mn)
         T.tic(); print "\nMATCH Model %s" % mn
-        Matcher.match(model, exmpl) # Matcher.quickMatch(model, exmpl)
+        Matcher.match(model, features) # Matcher.quickMatch(model, features)
         T.toc("Time to match:")
         print len(Matcher.scores), "scores"
         if len(Matcher.scores) < 1: continue
@@ -132,22 +128,25 @@ def _findMatchingObject(image):
             for p in probs: p = 0.9 * p / sp
         return probs
 
-    def getProbs2(matches):
+    def getProbs2(matches, nBestViews = 3):
         # H: PDF from rotation confidence
         confs = []
         confmax = 0
         for m in matches:
-            if len(m[2]) == 0: confs.append(0)
+            consists = m[2][:nBestViews] # use the desired number of consistencies
+            if len(consists) == 0: confs.append(0)
             else:
-                mconfs = [ c.rotationConfidence for c in m[2] ]
+                mconfs = [ c.rotationConfidence for c in consists ]
                 cs = sum (mconfs)
-                confs.append(cs / len(m[2]))
+                confs.append(cs / len(consists))
                 confmax = max(confmax, max(mconfs))
+
         confs = [ (c - 0.3) / 0.7 for c in confs ]
         for i in xrange(len(confs)):
             if confs[i] < 0: confs[i] = 0
         sumconfs = sum(confs)
         if sumconfs < 1e-4: return confs
+        if confmax >= 1.0: confmax = 0.999
         confs = [ c / sumconfs * confmax for c in confs ]
         return confs
 
@@ -168,11 +167,18 @@ def _findMatchingObject(image):
 # image: ndarray (h, w, 1 or 3)
 # region: (x0, y0, x1, y1)
 def findMatchingObject(image, region=None):
+    global Setup, Matcher, Manager
     try:
+        print "Image shape", image.shape
+        if len(Manager.modelNames) < 1:
+            print "No model loaded"
+            return ( ["*unknown*"], [1.0], [None] )
         if region != None:
             x0, x1, y0, y1 = region
             image = np.copy(image[x0:x1, y0:y1])
-        matches = _findMatchingObject(image)
+
+        features = Setup.extractor.extractFeatures(image)
+        matches = _findMatchingObject(features)
         return matches
     except:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
@@ -181,7 +187,9 @@ def findMatchingObject(image, region=None):
     return None
 
 def testCppInterface(image, region=None):
+    global Setup, Matcher, Manager
     try:
+        print "testCppInterface (No processing done.)"
         print "Image shape", image.shape
         if region != None:
             x0, y0, x1, y1 = region
@@ -189,6 +197,26 @@ def testCppInterface(image, region=None):
             image = np.copy(image[x0:x1, y0:y1])
             print "ROI shape", image.shape
         matches = ( ["A", "B", "C"], [0.7, 0.2, 0.1], [None, None, None] )
+        return matches
+    except:
+        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+        traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+        # traceback.print_tb(exceptionTraceback)
+    return None
+
+def testMatching(image, region=None):
+    global Setup, Matcher, Manager
+    # Take first featurepack of first object and perform matching
+    try:
+        print "testMatching (No feature extraction.)"
+        if len(Manager.modelNames) < 1:
+            print "No model loaded"
+            return ( ["*unknown*"], [1.0], [None] )
+        mn = Manager.modelNames[0]
+        model = Manager.getModel(mn)
+        vp = model.viewPoints[3]
+        ftrs = vp.featurePacks[0]
+        matches = _findMatchingObject(ftrs)
         return matches
     except:
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
