@@ -256,10 +256,14 @@ class CObjectMatcher:
 
 
     # Cluster best views and return a point from each cluster
-    # returns [ (P, phi, lambda) ] ; maybe todo: support, confidence
+    # returns [ (P, phi, lambda, rot) ] ; maybe todo: support, confidence
     def getPoseProbability(self):
         N = len(self.bestViews)
         if N < 1: return []
+        if N == 1:
+            bv = self.bestViews[0]
+            return [ (1.0, bv.vpPhi, bv.vpLambda, self.consists[0].rotation) ]
+
         def _viewDistance(v1, v2):
             def rad(x): return x * math.pi / 180
             r = 1.0
@@ -279,6 +283,7 @@ class CObjectMatcher:
         # clusterIndex = hierarchy.fcluster(hcLinks, t=0.8)
         nc = N/2
         if nc < 4: nc = 4
+        if nc < N: nc = N
         if nc > 8: nc = 8
         clusterIndex = hierarchy.fcluster(hcLinks, t=nc, criterion='maxclust')
         clusters = set(clusterIndex)
