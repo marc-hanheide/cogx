@@ -37,13 +37,13 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
     self.planner = StandalonePlanner()
     print "new PythonServer"
 
-  def configure(self):
+  def configure(self,config,current):
     pass
 
-  def start(self):
+  def start(self,config):
     pass
 
-  def stop(self):
+  def stop(self,config):
     pass
 
   def runComponent(self):

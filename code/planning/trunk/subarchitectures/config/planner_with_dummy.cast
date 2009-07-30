@@ -1,5 +1,7 @@
 HOST localhost
 
+COMPONENT PYTHON PlannerPythonServer PythonServer.PythonServerI
+
 SUBARCHITECTURE fakebinder.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
