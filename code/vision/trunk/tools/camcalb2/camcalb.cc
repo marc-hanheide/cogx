@@ -431,18 +431,18 @@ void DrawProjectedText(const Glib::RefPtr<const Gdk::GC>& gc,
 int main(int argc, char **argv)
 {
   bool done = false;
-  char *basename;
+  char *basename = 0;
   int cnt, cnt_min, cnt_max;
   CamParsPoses parms;
   vector<CvPoint2D32f> markers;
-  const char *parm_filename = "cam.cal";
+  const char *parm_filename = 0;
   // TODO: read from file or command line
   Model model = {7, 5, 40., 40.};
 
-  if(argc != 6)
+  if(argc != 7)
   {
     printf(
-      "usage: %s imagebase start stop nominal_focal_length_mm save_poses\n",
+      "usage: %s imagebase start stop nominal_focal_length_mm save_poses calibfile\n",
       argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -451,10 +451,12 @@ int main(int argc, char **argv)
   cnt_max = atoi(argv[3]);
   parms.f = atof(argv[4]);
   parms.save_poses = (bool)atoi(argv[5]);
+  parm_filename = argv[6];
   parms.num_points = model.NumPoints();
   cnt = cnt_min;
 
   cvNamedWindow("camcalb", 0);
+  printf("press <space> to move to next image ...\n");
   while(cnt <= cnt_max && !done)
   {
     int c;
@@ -512,7 +514,9 @@ int main(int argc, char **argv)
     // Just to see how well pose estimation (i.e. estimation of only the
     // extrinsic camera parameters) works from a single image:
     // parms.EstimateExtrinsicAndDrawModelPoints(undist, 0, CV_RGB(0,255,0));
+    printf("showing undistorted image with projected model points\n");
     cvShowImage("camcalb", undist);
+    printf("press <space> to continue ...\n");
     cvWaitKey();
     cvReleaseImage(&img);
     cvReleaseImage(&undist);
