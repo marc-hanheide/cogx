@@ -4,9 +4,11 @@ from os.path import abspath, dirname, join, isdir
 import autogen.Planner as Planner
 import cast.core
 
+this_path = abspath(dirname(__file__))
+
 def extend_pythonpath():
   """add standalone planner to PYTHONPATH"""
-  standalone_path = join(abspath(dirname(__file__)), "standalone")
+  standalone_path = join(this_path, "standalone")
   sys.path.insert(0, standalone_path)
 extend_pythonpath()  
 
@@ -66,9 +68,12 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
     make_dot = True
     if make_dot:
       dot_str = plan.to_dot()
-      dot_fn = "plan.dot"
+      dot_fn = abspath(join(this_path, "plan.dot"))
+      print "Generating and showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
+      print "Dot file is stored in", dot_fn
+      show_dot_script = abspath(join(this_path, "../..", "show_dot.sh"))
       open(dot_fn, "w").write(dot_str)
-      os.system("dot plan.dot -O -Tpdf; display plan.dot.pdf")
+      os.system("%s %s" % (show_dot_script, dot_fn)) 
 
     if(self.client is None):
       print "ERROR!!"
