@@ -907,8 +907,8 @@ int main(int argc, char *argv[]) {
 // 					context->getLogger()->post(Message::LEVEL_INFO, "mojepose3: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", mojepose3.p.v1, mojepose3.p.v2, mojepose3.p.v3, roll3, pitch3, yaw3);
 
 					Mat34 polyFlapPose = polyFlapActor->getPose();
-// 					Real roll, pitch, yaw;
-// 					polyFlapPose.R.toEuler (roll, pitch, yaw);
+					Real roll, pitch, yaw;
+					polyFlapPose.R.toEuler (roll, pitch, yaw);
 // 					context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
 
 					//getting the first component of the polyflap
@@ -954,6 +954,9 @@ int main(int argc, char *argv[]) {
 					features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
 					features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
 					features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
+					features.push_back(normalize(roll, -MATH_PI, MATH_PI));
+					features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
+					features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
 					/////////////////////////////////////////////////
 				
 					/////////////////////////////////////////////////
