@@ -21,5 +21,5 @@ add_definitions(-Wall)
 
 # Include your subarchitecture projects in the following way
 add_subdirectory(subarchitectures/planner.sa)
-add_subdirectory(subarchitectures/dummy.sa)
+add_subdirectory(subarchitectures/fakemotivation.sa)
 add_subdirectory(subarchitectures/fakebinder.sa) 
