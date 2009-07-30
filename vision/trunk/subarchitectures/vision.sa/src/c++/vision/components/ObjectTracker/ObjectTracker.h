@@ -39,7 +39,8 @@ private:
   bool track;
   bool running;
   bool testmode;
-  bool bfc;				// backface culling 
+  bool bfc;				// backface culling
+  bool trackTexture;
   
   struct IDList{
   	int resources_ID;
