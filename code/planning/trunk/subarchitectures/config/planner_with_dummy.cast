@@ -5,12 +5,12 @@ CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG FakeBinder FakeBinderSA
 
-SUBARCHITECTURE dummy.sa
+SUBARCHITECTURE fakemotivation.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG dummy DummySA
+CPP MG FakeMotivation FakeMotivationSA
 
 SUBARCHITECTURE planner.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG planner WMControl
+CPP MG Planner WMControl

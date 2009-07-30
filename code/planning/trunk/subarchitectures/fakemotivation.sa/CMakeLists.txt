@@ -1,4 +1,4 @@
-project (dummy.sa)
+project (fakemotivation.sa)
 
 # use cmake files packaged with CAST
 include(UseCAST)

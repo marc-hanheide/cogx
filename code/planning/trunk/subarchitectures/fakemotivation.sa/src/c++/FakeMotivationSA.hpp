@@ -1,9 +1,9 @@
-#ifndef DUMMY_SA_HPP_
-#define DUMMY_SA_HPP_
+#ifndef FAKE_MOTIVATION_SA_HPP_
+#define FAKE_MOTIVATION_SA_HPP_
 
 #include <cast/architecture.hpp>
 
-class DummySA : public cast::ManagedComponent {
+class FakeMotivationSA : public cast::ManagedComponent {
 protected:
     virtual void runComponent();
 
