@@ -170,7 +170,7 @@ class CObjectModel(object):
                 fname = self.FM.vpFeaturePath(vp)
                 vp.save(fname)
                 fname = self.FM.vpPreviewPath(vp)
-                vp.savePreview(fname)
+                # vp.savePreview(fname)
                 # fname = self.FM.imagePath(vp)
                 # vp.saveImage(fname)
 

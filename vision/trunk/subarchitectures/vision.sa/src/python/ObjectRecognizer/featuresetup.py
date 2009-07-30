@@ -13,15 +13,15 @@ import osmods.sift
 try:
     import siftgpu
 except:
-    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-    traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+    #exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+    #traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
     print "**** ObjectRecognizer: SIFTGPU will not be available"
 
 try:
     import siftcuda
 except:
-    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-    traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+    #exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+    #traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
     print "**** ObjectRecognizer: SIFTCUDA will not be available"
 
 class CFeatureExtractor:

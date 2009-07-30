@@ -82,7 +82,7 @@ class FeatureCapture:
         self.model = CFakeModel()
         self.FM = CModelFileManager(self.model, "xdata")
 
-        self.capture = CameraCapture(device=1, size=(640,480))
+        self.capture = CameraCapture(device=0, size=(640,480))
         # self.capture = CLoopback1394Capture(device=2)
         # self.capture.setSize((640, 480))
         # capture.setFrameRate(15)
