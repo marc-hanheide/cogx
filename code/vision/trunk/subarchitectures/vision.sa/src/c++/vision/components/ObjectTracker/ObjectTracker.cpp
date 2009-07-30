@@ -32,6 +32,7 @@ ObjectTracker::ObjectTracker(){
   running = true;
   testmode = false;
   bfc = true;
+  trackTexture = false;
 }
 
 ObjectTracker::~ObjectTracker(){
@@ -54,7 +55,10 @@ void ObjectTracker::initTracker(){
   g_Resources->InitScreen(m_image.width, m_image.height);
  
   // Initialize tracking (parameters for edge-based tracking)
-  m_tracker = new TextureTracker();
+  if(trackTexture)
+  	m_tracker = new TextureTracker();
+  else
+		m_tracker = new EdgeTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
 												30.0*PIOVER180,										// standard deviation of rotational noise in degree
@@ -228,10 +232,12 @@ void ObjectTracker::configure(const map<string,string> & _config){
 	if((it = _config.find("--testmode")) != _config.end())
 		testmode = true;
 	
-	if((it = _config.find("--BFC_disabled")) != _config.end()){
+	if((it = _config.find("--BFC_disabled")) != _config.end())
 		bfc = false;
-	}
-  
+
+	if((it = _config.find("--trackTexture")) != _config.end())
+		trackTexture = true;
+		
   /*
   if((it = _config.find("--log")) != _config.end())
   	g_Resources->ShowLog(true);
