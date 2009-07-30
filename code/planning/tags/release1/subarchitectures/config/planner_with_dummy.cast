@@ -1,0 +1,16 @@
+HOST localhost
+
+SUBARCHITECTURE fakebinder.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG FakeBinder FakeBinderSA
+
+SUBARCHITECTURE fakemotivation.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG FakeMotivation FakeMotivationSA
+
+SUBARCHITECTURE planner.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG Planner WMControl
