@@ -26,6 +26,16 @@ void WMControl::connectToPythonServer() {
     println("Planner WMControl: connecting to Python Server");
     try	{
 	Ice::Identity idty;
+	idty.name = "PlannerPythonServer";
+	idty.category = "PythonServer.PythonServerI";
+
+	ostringstream tmp;
+	tmp << getCommunicator()->identityToString(idty) << ":default -h 127.0.0.1 -p 10411";
+
+	Ice::ObjectPrx base = getCommunicator()->stringToProxy(tmp.str());
+	pyServer = autogen::Planner::PythonServerPrx::checkedCast(base);
+
+	/*Ice::Identity idty;
 	idty.name = "ComponentFactory";
 	idty.category = "ComponentFactory";
 
@@ -39,7 +49,8 @@ void WMControl::connectToPythonServer() {
 	pyServer = autogen::Planner::PythonServerPrx::checkedCast(comp);
     
 	if (!cmpFac)
-	    throw "Invalid proxy";
+	throw "Invalid proxy";*/
+	
     }
     catch (const Ice::Exception& ex) {
 	cerr << ex << endl;
