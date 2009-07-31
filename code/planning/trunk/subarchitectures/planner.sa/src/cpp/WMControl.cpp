@@ -1,8 +1,5 @@
 #include "WMControl.hpp"
 #include "FakeBinderData.hpp"
-#include "MainWindow.hpp"
-
-#include <QApplication>
 
 #include <iostream>
 #include <sstream>
@@ -45,7 +42,7 @@ void WMControl::connectToPythonServer() {
     }
 
     Ice::ObjectPrx basePrx(getObjectAdapter()->addFacet(new InternalCppServer(this), getIceIdentity(), "PlannerInternalCppServer")); 
-
+    
     autogen::Planner::CppServerPrx clientPrx = autogen::Planner::CppServerPrx::uncheckedCast(basePrx);
 
     if(!clientPrx)
@@ -56,16 +53,6 @@ void WMControl::connectToPythonServer() {
 
 void WMControl::runComponent() {
     println("Planner WMControl: running");
-    
-    int argc;
-    char** argv;
-
-    QApplication app(argc, argv);
-
-    gui = MainWindow::getInstance();
-    gui->init(this);
-
-    app.exec();
 }
 
 static int TASK_ID = 0;

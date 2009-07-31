@@ -6,14 +6,11 @@
 #include "Planner.hpp"
 #include <map>
 
-class MainWindow;
-
 class WMControl : public cast::ManagedComponent {
 public:
     virtual ~WMControl() {}
 
 protected:
-    MainWindow* gui;
     autogen::Planner::PythonServerPrx pyServer;
     std::map<int,cast::cdl::WorkingMemoryChange> activeTasks;
 
