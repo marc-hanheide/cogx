@@ -4,5 +4,5 @@ project (planner.sa)
 include(UseCAST)
 
 # add a subdirectory containing another CMakeLists.txt file
-add_subdirectory(src/c++)
+add_subdirectory(src/cpp)
 
