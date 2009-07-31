@@ -1,6 +1,8 @@
 #include "WMControl.hpp"
 #include "FakeBinderData.hpp"
-//#include <CASTData.hpp>
+#include "MainWindow.hpp"
+
+#include <QApplication>
 
 #include <iostream>
 #include <sstream>
@@ -34,23 +36,6 @@ void WMControl::connectToPythonServer() {
 
 	Ice::ObjectPrx base = getCommunicator()->stringToProxy(tmp.str());
 	pyServer = autogen::Planner::PythonServerPrx::checkedCast(base);
-
-	/*Ice::Identity idty;
-	idty.name = "ComponentFactory";
-	idty.category = "ComponentFactory";
-
-	ostringstream tmp;
-	tmp << getCommunicator()->identityToString(idty) << ":default -h 127.0.0.1 -p 10411";
-
-	Ice::ObjectPrx base = getCommunicator()->stringToProxy(tmp.str());
-	cast::interfaces::ComponentFactoryPrx cmpFac = cast::interfaces::ComponentFactoryPrx::checkedCast(base);
-
-	cast::interfaces::CASTComponentPrx comp = cmpFac->newComponent("PlannerPythonServer","PythonServer.PythonServerI");
-	pyServer = autogen::Planner::PythonServerPrx::checkedCast(comp);
-    
-	if (!cmpFac)
-	throw "Invalid proxy";*/
-	
     }
     catch (const Ice::Exception& ex) {
 	cerr << ex << endl;
@@ -71,6 +56,16 @@ void WMControl::connectToPythonServer() {
 
 void WMControl::runComponent() {
     println("Planner WMControl: running");
+    
+    int argc;
+    char** argv;
+
+    QApplication app(argc, argv);
+
+    gui = MainWindow::getInstance();
+    gui->init(this);
+
+    app.exec();
 }
 
 static int TASK_ID = 0;
