@@ -43,42 +43,42 @@ namespace smlearning {
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-class MyGraphPlanner : public GraphPlanner {
+// class MyGraphPlanner : public GraphPlanner {
 
 	
-protected:	
-	/** Planner constructor */
+// protected:	
+// 	/** Planner constructor */
 	
-	MyGraphPlanner(golem::ctrl::Arm &arm) : GraphPlanner(arm) {}
+// 	MyGraphPlanner(golem::ctrl::Arm &arm) : GraphPlanner(arm) {}
 	
-public:	
+// public:	
 
-	virtual bool find(Trajectory &trajectory, Trajectory::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenWorkspaceState &wend, Planner::Mode mode = Planner::MODE_AUTO) {
-		//while (!GraphPlanner::find (trajectory, iter, begin, wend, mode)) {
-		for (int i=0; i<MAX_PLANNER_TRIALS; i++) {
-			if (GraphPlanner::find (trajectory, iter, begin, wend, mode)) {
-				return true;
-			}
+// 	virtual bool find(Trajectory &trajectory, Trajectory::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenWorkspaceState &wend, Planner::Mode mode = Planner::MODE_AUTO) {
+// 		//while (!GraphPlanner::find (trajectory, iter, begin, wend, mode)) {
+// 		for (int i=0; i<MAX_PLANNER_TRIALS; i++) {
+// 			if (GraphPlanner::find (trajectory, iter, begin, wend, mode)) {
+// 				return true;
+// 			}
 		
-			//cout << "unable to find path... trying again..." << endl;
-			context.getLogger()->post(Message::LEVEL_INFO, "unable to find path... trying again...");
-		}
+// 			//cout << "unable to find path... trying again..." << endl;
+// 			context.getLogger()->post(Message::LEVEL_INFO, "unable to find path... trying again...");
+// 		}
 		
-		return false;
-	}
+// 		return false;
+// 	}
 
-	virtual bool find(Trajectory &trajectory, Trajectory::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenJointState &jend, Planner::Mode mode = Planner::MODE_AUTO) {
-		//while (!GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
-		for (int i=0; i<MAX_PLANNER_TRIALS; i++) {
-			if (GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
-				return true;
-			}
-			context.getLogger()->post(Message::LEVEL_INFO, "unable to find path... trying again...");
-		}
+// 	virtual bool find(Trajectory &trajectory, Trajectory::iterator iter, const golem::ctrl::GenJointState &begin, const golem::ctrl::GenJointState &jend, Planner::Mode mode = Planner::MODE_AUTO) {
+// 		//while (!GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
+// 		for (int i=0; i<MAX_PLANNER_TRIALS; i++) {
+// 			if (GraphPlanner::find (trajectory, iter, begin, jend, mode)) {
+// 				return true;
+// 			}
+// 			context.getLogger()->post(Message::LEVEL_INFO, "unable to find path... trying again...");
+// 		}
 
-		return false;
-	}
-};
+// 		return false;
+// 	}
+// };
 
 
 //---------------------------------------------------------------------------------------------------------

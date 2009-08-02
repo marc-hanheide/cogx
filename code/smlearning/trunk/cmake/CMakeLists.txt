@@ -33,12 +33,31 @@ SET(KNI_LIBRARY /usr/local/lib CACHE PATH "Path prefix for KNI library")
 SET(GOLEM_INCLUDE /usr/local/include/Golem CACHE PATH "Path prefix for Golem include")
 SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 
+# SET(BOOST_INCLUDE /usr/local/include/boost-1_39 CACHE PATH "Path prefix for Golem include")
+# SET(BOOST_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Boost library")
+# SET(BOOST_FILESYSTEM_LIBRARY
+#	/usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0 CACHE PATH
+#	"Path to Boost Filesystem library")
+# SET(BOOST_REGEX_LIBRARY
+#	/usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0 CACHE PATH
+# 	"Path to Boost Regex Library")
+
+SET(BOOST_INCLUDE /usr/include CACHE PATH "Path prefix for Golem include")
+SET(BOOST_LIBRARY /usr/lib CACHE PATH "Path prefix for Boost library")
+SET(BOOST_FILESYSTEM_LIBRARY
+	/usr/lib/libboost_filesystem.so CACHE PATH
+	"Path to Boost Filesystem library")
+SET(BOOST_REGEX_LIBRARY
+	/usr/lib/libboost_regex.so CACHE PATH
+	"Path to Boost Regex Library")
+
+
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem
 			   pthread rt GL glut expat SMLearning xerces-c netcdf nn_netcdf
-			   nn_engine nn_random boost_filesystem boost_regex)
+			   nn_engine nn_random ${BOOST_FILESYSTEM_LIBRARY} ${BOOST_REGEX_LIBRARY})
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}
@@ -49,12 +68,14 @@ INCLUDE_DIRECTORIES(
 	${PHYSX_INCLUDE}/SDKs/PhysXLoader/include
 	${PHYSX_INCLUDE}/SDKs/Cooking/include
 	${KNI_INCLUDE}
+	${BOOST_INCLUDE}
 )
 
 LINK_DIRECTORIES(
 	${PHYSX_LIBRARY}
 	${KNI_LIBRARY}
 	${GOLEM_LIBRARY}
+	${BOOST_LIBRARY}
 )
 
 SET(SMLEARNING_SOURCES

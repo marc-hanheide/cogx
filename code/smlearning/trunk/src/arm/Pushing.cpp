@@ -181,10 +181,10 @@ bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Mat34& ref
 
 
 void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
-	pose.p.v1 += (sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
-	pose.p.v2 += (sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
-	pose.p.v1 += (cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 
-	pose.p.v2 += (cos(angle/180.0*REAL_PI)*(distance*orthVec.v2)); 
+	pose.p.v1 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
+	pose.p.v2 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
+	pose.p.v1 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 
+	pose.p.v2 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v2)); 
 	pose.p.v3 += 0.0;	
 }
 
@@ -588,7 +588,7 @@ int main(int argc, char *argv[]) {
 
 
 		//number of loop runs
-		const int numExperiments = 1000;
+		const int numExperiments = 100;
 
 		//a number that slightly greater then the maximal reachable space of the arm
 		//    - used for workspace position normalization and later as a position upper bound
@@ -625,8 +625,10 @@ int main(int argc, char *argv[]) {
 
 		//getting the maximal and minimal Velocities of arm joints	
 		const U32 numOfJoints = (U32)arm.getJoints().size();
-		Real minVelocities [MAX_JOINTS];
-		Real maxVelocities [MAX_JOINTS];
+// 		Real minVelocities [MAX_JOINTS];
+// 		Real maxVelocities [MAX_JOINTS];
+		Real minVelocities [numOfJoints];
+		Real maxVelocities [numOfJoints];
 		for (U32 i = 0; i < numOfJoints; i++) {
 			const Joint &joint = *arm.getJoints()[i];
 			minVelocities[i] = joint.getMin().vel;
@@ -698,7 +700,7 @@ int main(int argc, char *argv[]) {
 			//polyflap actor
 			Actor *polyFlapActor = setupPolyflap(*pScene, startPolyflapPosition, startPolyflapRotation, polyflapDimensions, *context);
 // 			golem::BoundsSet::Ptr curPol = polyFlapActor->getBounds();
-			golem::BoundsSet::Ptr curPol = polyFlapActor->getGlobalBoundsSet();
+			golem::Bounds::SeqPtr curPol = polyFlapActor->getGlobalBoundsSeq();
 			Mat34 referencePolyflapPos = polyFlapActor->getPose ();
 
 // 			context->getTimer()->sleep(1);
@@ -743,7 +745,8 @@ int main(int argc, char *argv[]) {
 
 			//chose random point int the vicinity of the polyflap
 			srand(context->getRandSeed()._U32[0]  + e);
-			int startPosition = rand() % 17 + 1;
+// 			int startPosition = rand() % 17 + 1;
+			int startPosition = 5;
 	
 			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
 			context->getLogger()->post(Message::LEVEL_INFO, "Position %i", startPosition);
@@ -797,7 +800,8 @@ int main(int argc, char *argv[]) {
 			// It consists of 70 parts
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec], but with a speed coefficient
-			int speed = -1 + (rand() % 3);
+// 			int speed = -1 + (rand() % 3);
+			int speed = 0;
 			SecTmReal duration = timeDelta * n*(Math::pow(Real(2.0), Real(-speed)*2));
 				
 			/////////////////////////////////////////////////
@@ -826,24 +830,26 @@ int main(int argc, char *argv[]) {
 
 
 			//chose random horizontal and vertical angle
-			int horizontalAngle = rand() % 61 + 60;
+// 			int horizontalAngle = rand() % 61 + 60;
+			int horizontalAngle = 90;
 			
 			//int verticalAngle = rand() % 7;
 
 			setMovementAngle(horizontalAngle, end, currDistance, polyflapCenterNormalVec, polyflapCenterOrthogonalVec);
 			context->getLogger()->post(Message::LEVEL_INFO, "%d degree horizontaly", horizontalAngle);
 
-			/////////////////////////////////////////////////
-			//writing in the initial vector
-			//add info about end position
-			infoVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
-			infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
-			infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
-			//end orientation, normalized
-			infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
-			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
-			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
-			/////////////////////////////////////////////////
+// 			/////////////////////////////////////////////////
+// 			//writing in the initial vector
+// 			//add info about end position
+// 			infoVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
+// 			infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
+// 			infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
+// 			//end orientation, normalized
+// 			infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
+// 			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
+// 			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
+// 			/////////////////////////////////////////////////
+			infoVector.push_back(normalize(horizontalAngle, -MATH_PI, MATH_PI));
 
 			/////////////////////////////////////////////////
 			//writing of the initial vector into sequence
@@ -872,9 +878,10 @@ int main(int argc, char *argv[]) {
 			//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
 			//otherwise we skip it
 // 			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
+			bool posChecked = false;
 			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPos)) {
 
-			
+				posChecked = true;
 				// Generate and send a simple straight line trajectory
 				for (U32 i = 0; i <= n; i++) {
 
@@ -892,7 +899,8 @@ int main(int argc, char *argv[]) {
 
 
 					// arm state at a time t and finishes at some time later
-					golem::ctrl::GenJointState state;
+// 					golem::ctrl::JointState state;
+					golem::ctrl::GenConfigspaceState state;
 					arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
 					//to get polyflap pose information
@@ -909,10 +917,10 @@ int main(int argc, char *argv[]) {
 					Mat34 polyFlapPose = polyFlapActor->getPose();
 					Real roll, pitch, yaw;
 					polyFlapPose.R.toEuler (roll, pitch, yaw);
-// 					context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
+					context->getLogger()->post(Message::LEVEL_INFO, "iteration %d: polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", i, polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
 
 					//getting the first component of the polyflap
-					golem::BoundsSet::Ptr set = polyFlapActor->getGlobalBoundsSet();
+					golem::Bounds::SeqPtr set = polyFlapActor->getGlobalBoundsSeq();
 					const BoundingBox* pBox1 = dynamic_cast<const BoundingBox*>(set->front().get()); // obj_ptr::get()
 					//and the vector, which represents the first normal vector of the polyflap
 					Vec3 pfNormVec1;
@@ -928,73 +936,91 @@ int main(int argc, char *argv[]) {
 						pfNormVec2 = pBox2->getNormals()[1];
 					}
 
-					/////////////////////////////////////////////////
-					//creating current featureVector
-					FeatureVector features;
-					/////////////////////////////////////////////////
+					if ( i == 0 // | i == n
+					     ) {
+						/////////////////////////////////////////////////
+						//creating current featureVector
+						FeatureVector features;
+						/////////////////////////////////////////////////
+						
+						/////////////////////////////////////////////////
+						//writing in the feature vector
+						// joint position and joint velocity
+// 						for (U32 i = 0; i < numOfJoints; i++) {
+// 							features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
+// 							features.push_back(normalize(state.vel[i], minVelocities[i], maxVelocities[i]));
+// 						}
+						/////////////////////////////////////////////////
+						
+						/////////////////////////////////////////////////
+						//writing in the feature vector
+						//the position of the polyflap (position of both sides separately)
+// 						features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
+// 						features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
+// 						features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
+// 						features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
+// 						features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
+// 						features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
+						features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
+						features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
+						features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
+						features.push_back(normalize(roll, -MATH_PI, MATH_PI));
+						features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
+						features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
+						/////////////////////////////////////////////////
+						
+						/////////////////////////////////////////////////
+						//writing in the feature vector
+						//normal vectors of the polyflap
+// 						if (pfNormVec1 != NULL) {
+// 							features.push_back(normalize(pfNormVec1.v1, -1.0, 1.0));
+// 							features.push_back(normalize(pfNormVec1.v2, -1.0, 1.0));
+// 							features.push_back(normalize(pfNormVec1.v3, -1.0, 1.0));
+// 						}
+// 						if (pfNormVec2 != NULL) {
+// 							features.push_back(normalize(pfNormVec2.v1, -1.0, 1.0));
+// 							features.push_back(normalize(pfNormVec2.v2, -1.0, 1.0));
+// 							features.push_back(normalize(pfNormVec2.v3, -1.0, 1.0));
+// 						}
+						/////////////////////////////////////////////////
 
-					/////////////////////////////////////////////////
-					//writing in the feature vector
-					// joint position and joint velocity
-					for (U32 i = 0; i < numOfJoints; i++) {
-						features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
-						features.push_back(normalize(state.vel.j[i], minVelocities[i], maxVelocities[i]));
+
+						/////////////////////////////////////////////////
+						//writing the feature vector in the sequence
+						seq.push_back(features);
+						/////////////////////////////////////////////////
 					}
-					/////////////////////////////////////////////////
-
-					/////////////////////////////////////////////////
-					//writing in the feature vector
-					//the position of the polyflap (position of both sides separately)
-// 					features.push_back(normalize(mojepose2.p.v1, -maxRange, maxRange));
-// 					features.push_back(normalize(mojepose2.p.v2, -maxRange, maxRange));
-// 					features.push_back(normalize(mojepose2.p.v3, -maxRange, maxRange));
-// 					features.push_back(normalize(mojepose3.p.v1, -maxRange, maxRange));
-// 					features.push_back(normalize(mojepose3.p.v2, -maxRange, maxRange));
-// 					features.push_back(normalize(mojepose3.p.v3, -maxRange, maxRange));
-					features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
-					features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
-					features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
-					features.push_back(normalize(roll, -MATH_PI, MATH_PI));
-					features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
-					features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
-					/////////////////////////////////////////////////
-				
-					/////////////////////////////////////////////////
-					//writing in the feature vector
-					//normal vectors of the polyflap
-					if (pfNormVec1 != NULL) {
-						features.push_back(normalize(pfNormVec1.v1, -1.0, 1.0));
-						features.push_back(normalize(pfNormVec1.v2, -1.0, 1.0));
-						features.push_back(normalize(pfNormVec1.v3, -1.0, 1.0));
-						}
-					if (pfNormVec2 != NULL) {
-						features.push_back(normalize(pfNormVec2.v1, -1.0, 1.0));
-						features.push_back(normalize(pfNormVec2.v2, -1.0, 1.0));
-						features.push_back(normalize(pfNormVec2.v3, -1.0, 1.0));
-						}
-					/////////////////////////////////////////////////
-
-
-					/////////////////////////////////////////////////
-					//writing the feature vector in the sequence
-					seq.push_back(features);
-					/////////////////////////////////////////////////
-
 	
  
 					//end of the movement
 				}
+
+				// wait until the arm stops
+				context->getTimer()->sleep(timeDeltaAsync - timeDelta);
+				/////////////////////////////////////////////////
+				//creating current featureVector
+				FeatureVector features;
+				/////////////////////////////////////////////////
+
+				Mat34 polyFlapPose = polyFlapActor->getPose();
+				Real roll, pitch, yaw;
+				polyFlapPose.R.toEuler (roll, pitch, yaw);
+				features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
+				features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
+				features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
+				features.push_back(normalize(roll, -MATH_PI, MATH_PI));
+				features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
+				features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
+				context->getLogger()->post(Message::LEVEL_INFO, "end polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
+				/////////////////////////////////////////////////
+				//writing the feature vector in the sequence
+				seq.push_back(features);
+				/////////////////////////////////////////////////
+				
 				/////////////////////////////////////////////////
 				//writing the sequence into the dataset
 				data.push_back(seq);
 				/////////////////////////////////////////////////
-
-
-
-				// wait until the arm stops
-				context->getTimer()->sleep(timeDeltaAsync - timeDelta);
-
-
 
 				//end of the if(checkPosition...) block
 			}
@@ -1040,6 +1066,7 @@ int main(int argc, char *argv[]) {
 
 			context->getLogger()->post(Message::LEVEL_INFO, "Moving home...");
 			reacPlanner.waitForEnd();
+
 			context->getLogger()->post(Message::LEVEL_INFO, "Done");
 
 			context->getLogger()->post(Message::LEVEL_INFO, "trying to delete polyflap");
