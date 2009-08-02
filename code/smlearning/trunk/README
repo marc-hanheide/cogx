@@ -28,6 +28,12 @@ For instance, when using Boost v1.39:
 BOOST_FILESYSTEM_LIBRARY /usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0
 BOOST_REGEX_LIBRARY /usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0
 
+Download and install Golem and KNI libraries:
+$ svn co https://codex.cs.bham.ac.uk/svn/msk/development/KNI
+$ svn co https://codex.cs.bham.ac.uk/svn/msk/development/Golem
+
+using the traditional cmake installation procedure (please check README files).
+
 $ make
 $ sudo make install
 
