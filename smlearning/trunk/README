@@ -1,0 +1,37 @@
+Install following packages (Ubuntu 8.10):
+libnetcdf-dev
+libxerces-c2-dev
+
+Download and install the library nnl_ndim found in packages directory
+$ ./configure
+$ make
+$ sudo make install
+
+If you want to download boost (e.g. v1.39) and install it:
+
+$ sudo ./bjam --prefix=/usr/local --libdir=/usr/local/lib install
+
+Otherwise you can install the Ubuntu package:
+libboost1.35-dev
+
+Compile SMLearning:
+
+$ cd cmake
+$ mkdir BUILD
+$ cd BUILD
+$ ccmake ..
+
+You will possibly have to put the right path to boost_filesystem and boost_regex.
+
+For instance, when using Boost v1.39:
+
+BOOST_FILESYSTEM_LIBRARY /usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0
+BOOST_REGEX_LIBRARY /usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0
+
+$ make
+$ sudo make install
+
+Good luck! ;)
+
+--
+Sergio Roa (DFKI)
