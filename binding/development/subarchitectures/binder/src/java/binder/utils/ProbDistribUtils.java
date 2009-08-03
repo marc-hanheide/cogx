@@ -15,7 +15,7 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 
 
-public class ProbabilityDistributionUtils {
+public class ProbDistribUtils {
 
 
 
@@ -36,10 +36,37 @@ public class ProbabilityDistributionUtils {
 		Vector<DiscreteProbabilityAssignment> assignments = generateProbabilityDistribution (features, new Vector<DiscreteProbabilityAssignment>());
 		distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];
 		distrib.assignments = assignments.toArray(distrib.assignments);
+		
+		for (int i = 0 ; i < distrib.assignments.length ; i++) {
+			distrib.assignments[i].prob = distrib.assignments[i].prob * entity.probExists;
+		}
+		
 		}
 		return distrib;
 	}
 
+	
+	public static Feature[] addIndeterminateFeatureValues (Feature[] features) {
+		
+		for (int i = 0 ; i < features.length ; i++) {
+			
+			float totalProb = 0.0f;
+			Vector<FeatureValue> values = new Vector<FeatureValue>();
+			for (int j= 0 ; j < features[i].alternativeValues.length ; j++) {
+				values.add(features[i].alternativeValues[j]);
+				totalProb += features[i].alternativeValues[j].independentProb;
+			}
+			if (totalProb < 1.0f) {
+				features[i].alternativeValues = new FeatureValue[values.size() + 1];
+				for (int j = 0 ; j < values.size(); j++ ) {
+					features[i].alternativeValues[j] = values.elementAt(j);
+				}
+				features[i].alternativeValues[values.size()] = new StringValue((1.0f - totalProb), "indeterminate");
+			}
+		}
+		
+		return features;
+	}
 
 	public static float getProbabilityValue(ProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
@@ -60,15 +87,33 @@ public class ProbabilityDistributionUtils {
 		for (int i = 0; i < distrib.distributions.length; i++) {
 			ProbabilityDistribution subdistrib = distrib.distributions[i];
 				if (distrib.opType.equals(OperationType.MULTIPLIED)) {
-					float newvalue = getProbabilityValue(subdistrib, assignment);
-					result = result * newvalue;
-				}
-				else if (distrib.opType.equals(OperationType.DIVIDED)) {
-					result = result / getProbabilityValue(subdistrib, assignment);
+					result = result * getProbabilityValue(subdistrib, assignment);
 				}
 		}
 		
 		return result;
+	}
+	
+	
+	public static DiscreteProbabilityDistribution multiplyDistributionWithConstantValue (
+			DiscreteProbabilityDistribution distrib, float constantValue) {
+		
+		for (int i = 0; i < distrib.assignments.length; i++) {
+			distrib.assignments[i].prob = distrib.assignments[i].prob * constantValue;
+		}
+		
+		return distrib;
+	}
+	
+	
+	public static DiscreteProbabilityDistribution invertDistribution (
+			DiscreteProbabilityDistribution distrib) {
+		
+		for (int i = 0; i < distrib.assignments.length; i++) {
+			distrib.assignments[i].prob = 1 / distrib.assignments[i].prob ;
+		}
+		
+		return distrib;
 	}
 	
 	public static float getProbabilityValue (DiscreteProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
