@@ -3,10 +3,10 @@ package binder.components;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.Feature;
-import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Proxy;
@@ -16,8 +16,7 @@ import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.bayesiannetwork.BayesianNetworkManager;
 import binder.utils.GradientDescent;
-import binder.gui.BinderMonitorGUI;
-import binder.utils.ProbabilityDistributionUtils;
+import binder.utils.ProbDistribUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -32,7 +31,10 @@ public class Binder extends ManagedComponent  {
 	HashMap<String,Union> curUnions = new HashMap<String,Union>();
 	HashMap<Union, Float> maxValues = new HashMap<Union,Float>();
 
-
+	public float ALPHA_CONST = 1.0f;
+	
+	public float PRIOR_PEXISTS = 0.7f;
+	
 	@Override
 	public void start() {
 		
@@ -78,18 +80,35 @@ public class Binder extends ManagedComponent  {
 		union.includedProxies = includedProxies.toArray(union.includedProxies);
 		
 		Vector<Feature> features = new Vector<Feature>();
-		union.probExists = 1.0f;
+		union.probExists = PRIOR_PEXISTS;
+		float probNotExists = (1.0f- PRIOR_PEXISTS);
 		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
 			PerceivedEntity prox = e.nextElement();
 			for (int i = 0; i < prox.features.length ; i++) {
 				features.add(prox.features[i]);
 			}
-			union.probExists = union.probExists * prox.probExists;  // INCORRECT!!!
+			union.probExists = union.probExists * prox.probExists; 
+			probNotExists = probNotExists * (1-prox.probExists);
 		}
+		union.probExists = union.probExists / ((float) Math.pow(PRIOR_PEXISTS,(includedEntities.size())));
+		probNotExists = probNotExists / ((float) Math.pow((1.0f- PRIOR_PEXISTS),(includedEntities.size())));
+		log("prob NOT exists: " + probNotExists);
+		float normConstant = 1.0f / (union.probExists + probNotExists);
+		log("NORM CONSTANT: " + normConstant);
+		
+		union.probExists = normConstant * union.probExists;
+		
+		log("union prob exists:  " + union.probExists);
+
 		union.features = new Feature[features.size()];
 		union.features = features.toArray(union.features);
 		
+		if (includedEntities.size() > 1) {
 		union.distribution = computeUnionDistribution(union);
+		}
+		else {
+			union.distribution = includedEntities.elementAt(0).distribution;
+		}
 		
 		return union;
 	}
@@ -98,6 +117,7 @@ public class Binder extends ManagedComponent  {
 	private ProbabilityDistribution computeUnionDistribution(Union union) {
 		
 		DiscreteProbabilityDistribution priorDistrib =  BNManager.getPriorDistribution(union.features);
+		
 	//	log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
 		
 		
@@ -112,10 +132,11 @@ public class Binder extends ManagedComponent  {
 	//		log("Maximum for prior distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(priorDistribForProxy));
 	
 			CombinedProbabilityDistribution finalProxyDistrib = new CombinedProbabilityDistribution();
-			finalProxyDistrib.opType = OperationType.DIVIDED;
+			finalProxyDistrib.opType = OperationType.MULTIPLIED;
 			finalProxyDistrib.distributions = new DiscreteProbabilityDistribution[2];
 			finalProxyDistrib.distributions[0] = proxy.distribution;
-			finalProxyDistrib.distributions[1] = priorDistribForProxy;
+			finalProxyDistrib.distributions[1] = 
+				ProbDistribUtils.invertDistribution(priorDistribForProxy);
 	//		log("Maximum for final distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(finalProxyDistrib));
 		
 			proxiesDistrib.add(finalProxyDistrib);
@@ -125,6 +146,8 @@ public class Binder extends ManagedComponent  {
 		finalDistrib.opType = OperationType.MULTIPLIED;
 		finalDistrib.distributions = new ProbabilityDistribution[proxiesDistrib.size() + 1];
 		finalDistrib.distributions[0] = priorDistrib;
+		ProbDistribUtils.multiplyDistributionWithConstantValue(priorDistrib, ALPHA_CONST);
+		
 		for (int i = 1 ; i < proxiesDistrib.size() + 1 ; i++ ) {
 			finalDistrib.distributions[i] = proxiesDistrib.elementAt(i-1);
 		}
@@ -135,7 +158,7 @@ public class Binder extends ManagedComponent  {
 	
 	
 	
-	public HashMap<String,Union> getInitialUnions(Vector<Proxy> proxies) {
+/**	public HashMap<String,Union> getInitialUnions(Vector<Proxy> proxies) {
 		HashMap<String,Union> initialUnions = new HashMap<String,Union>();
 		for (Enumeration<Proxy> e = proxies.elements(); e.hasMoreElements() ; ) {
 			Proxy curProxy = e.nextElement();
@@ -148,7 +171,7 @@ public class Binder extends ManagedComponent  {
 		}
 		
 		return initialUnions;
-	}
+	} */
 	
 	
 	public Union getInitialUnion(Proxy proxy) {
@@ -159,7 +182,16 @@ public class Binder extends ManagedComponent  {
 	} 
 	
 	
-	private void deleteOldUnions() {
+	@Override
+	public void configure(Map<String, String> _config) {
+		if (_config.containsKey("--alpha")) {
+			ALPHA_CONST = Float.parseFloat(_config.get("--alpha"));
+		} 
+	}
+
+	
+	
+	/**	private void deleteOldUnions() {
 		try {
 			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
 			for (int i = 0; i < unions.length; i++) {
@@ -169,7 +201,7 @@ public class Binder extends ManagedComponent  {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	} */
 	
 	
 

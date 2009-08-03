@@ -1,6 +1,7 @@
 package binder.components;
 
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.Proxy;
@@ -56,9 +57,17 @@ public class BinderMonitor extends ManagedComponent {
 		lastProxies = new Vector<Proxy>();
 		lastUnions = new Vector<Union>();
 		
-		 gui = new BinderMonitorGUI(this);
-		 gui.LOGGING = false;
 		log("Binding Monitor successfully started");
+	}
+	
+	
+
+	@Override
+	public void configure(Map<String, String> _config) {
+		if (_config.containsKey("--gui")) {
+			 gui = new BinderMonitorGUI(this);
+			 gui.LOGGING = false;
+		} 
 	}
 	
 	 
@@ -101,8 +110,10 @@ public class BinderMonitor extends ManagedComponent {
 		
 		lastProxies = proxiesV;
 		lastUnions = unionsV;
-
-		gui.updateGUI(proxiesV, unionsV, proxiesToDelete, unionsToDelete);
+		
+		if (gui != null) {
+			gui.updateGUI(proxiesV, unionsV, proxiesToDelete, unionsToDelete);
+		}
 	}
 	
 	

@@ -3,9 +3,6 @@ package binder.bayesiannetwork;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cast.architecture.ManagedComponent;
-import cast.architecture.UnmanagedComponent;
-
 import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
@@ -16,7 +13,6 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.utils.BayesianNetworkUtils;
-import binder.utils.ProbabilityDistributionUtils;
 
 public class BayesianNetworkManager {
 

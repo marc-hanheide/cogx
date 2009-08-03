@@ -7,7 +7,7 @@ import java.util.Vector;
 import binder.abstr.AbstractProxyGenerator;
 import binder.autogen.core.*;
 import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbabilityDistributionUtils;
+import binder.utils.ProbDistribUtils;
 
 public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
@@ -26,7 +26,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		sleepComponent(3200);
 		
 		Proxy p2 = createProxyTwo();
-		addEntityToWM(p2);		
+		addEntityToWM(p2);	
 	}
 
 
@@ -34,7 +34,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		Proxy proxy = new Proxy();
 		proxy.entityID = newDataID();
 		proxy.subarchId = "fakehaptic";
-		proxy.probExists = 0.75f;
+		proxy.probExists = 0.35f;
 	
 		proxy.features = new Feature[1];
 		proxy.features[0] = new Feature();
@@ -42,7 +42,9 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		proxy.features[0].alternativeValues = new FeatureValue[1];
 		proxy.features[0].alternativeValues[0] = new StringValue(0.73f, "cylindrical");
 		
-		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
+		
+		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
 		return proxy;
 	}
 	
@@ -66,7 +68,9 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		proxy.features[1].alternativeValues[0] = new StringValue(0.8f, "true");
 		proxy.features[1].alternativeValues[1] = new StringValue(0.15f, "false");
 		
-		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
+
+		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
 		return proxy;
 	}
 	
