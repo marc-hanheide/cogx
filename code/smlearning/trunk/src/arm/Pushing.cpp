@@ -600,7 +600,7 @@ int main(int argc, char *argv[]) {
 	
 		//Polyflap Position and orientation
 		const Vec3 startPolyflapPosition(Real(0.2), Real(0.2), Real(0.0));
-		const Vec3 startPolyflapRotation(Real(-0.0*REAL_PI), Real(-0.0*REAL_PI), Real(-0.0*REAL_PI));//Y,X,Z
+		const Vec3 startPolyflapRotation(Real(-0.0*REAL_PI), Real(-0.0*REAL_PI), Real(0.0*REAL_PI));//Y,X,Z
 		//Polyflap dimensions		
 		const Vec3 polyflapDimensions(Real(0.1), Real(0.1), Real(0.1)); //w,h,l
 		
@@ -925,7 +925,7 @@ int main(int argc, char *argv[]) {
 					//and the vector, which represents the first normal vector of the polyflap
 					Vec3 pfNormVec1;
 					if (pBox1 != NULL) {
-						pfNormVec1 = pBox1->getNormals()[1];
+						pfNormVec1 = pBox1->getNormals()[2]; // nr2 is the one we need
 					}
 
 					//getting the second component of the polyflap
@@ -933,7 +933,7 @@ int main(int argc, char *argv[]) {
 					//and the vector, which represents the second normal vector of the polyflap
 					Vec3 pfNormVec2;
 					if (pBox2 != NULL) {
-						pfNormVec2 = pBox2->getNormals()[1];
+						pfNormVec2 = pBox2->getNormals()[2]; //here it is also nr2, but this one must be multiplied by -1 before storing!!
 					}
 
 					if ( i == 0 // | i == n
@@ -978,9 +978,9 @@ int main(int argc, char *argv[]) {
 // 							features.push_back(normalize(pfNormVec1.v3, -1.0, 1.0));
 // 						}
 // 						if (pfNormVec2 != NULL) {
-// 							features.push_back(normalize(pfNormVec2.v1, -1.0, 1.0));
-// 							features.push_back(normalize(pfNormVec2.v2, -1.0, 1.0));
-// 							features.push_back(normalize(pfNormVec2.v3, -1.0, 1.0));
+// 							features.push_back(normalize(-1.0*pfNormVec2.v1, -1.0, 1.0));
+// 							features.push_back(normalize(-1.0*pfNormVec2.v2, -1.0, 1.0));
+// 							features.push_back(normalize(-1.0*pfNormVec2.v3, -1.0, 1.0));
 // 						}
 						/////////////////////////////////////////////////
 
