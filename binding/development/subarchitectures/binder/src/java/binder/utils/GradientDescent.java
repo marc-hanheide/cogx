@@ -5,7 +5,7 @@ import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.utils.ProbabilityDistributionUtils;
+import binder.utils.ProbDistribUtils;
 
 public class GradientDescent {
 
@@ -57,7 +57,7 @@ public static float getMaximum (CombinedProbabilityDistribution distrib) {
 	for (int i = 0; i < firstDistrib.assignments.length; i++) {
 		DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
 		
-		float probValue = ProbabilityDistributionUtils.getProbabilityValue(distrib, assignment);
+		float probValue = ProbDistribUtils.getProbabilityValue(distrib, assignment);
 		
 		if (probValue > maxProb) {
 			maxProb = probValue;

@@ -27,14 +27,13 @@ import com.mxgraph.view.mxGraph;
 public class BinderMonitorGUI extends JFrame
 {
 
-	int DEFAULT_ENTITY_BOX_WIDTH= 200;
+	int DEFAULT_ENTITY_BOX_WIDTH= 220;
 	int DEFAULT_ENTITY_BOX_HEIGHT= 80;
 	int MIN_FEATURE_BOX_HEIGHT= 8;
 	int FEATURELINE_HEIGHT= 12;
 
 	mxGraph graph;
 	Object parent;
-
 
 	int curProxyPosition_X= 50;
 	int curProxyPosition_Y = 400;	
@@ -301,12 +300,6 @@ public class BinderMonitorGUI extends JFrame
 	public void updateGUI(Vector<Proxy> newProxies, Vector<Union> newUnions, Vector<Proxy> proxiesToDelete, Vector<Union> unionsToDelete) {
 
 		try {
-	//		Object[] cellsToRemove = new Object[insertedObjects.size()];
-	//		cellsToRemove = insertedObjects.toArray(cellsToRemove);
-	//		graph.removeCells(cellsToRemove);
-	//		insertedProxies = new HashMap<Proxy,Object>();
-	//		insertedObjects = new Vector<Object>();
-	//		resetPositions();
 			
 			graph.getModel().beginUpdate();
 			
@@ -343,7 +336,7 @@ public class BinderMonitorGUI extends JFrame
 		}
 		
 		catch (Exception e) {
-			e.printStackTrace();
+			
 		}
  
 		finally
@@ -380,7 +373,7 @@ public class BinderMonitorGUI extends JFrame
 			graph.setCellStyles(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE, objects_feats);
 			graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, "Monaco", objects_feats);
 			graph.setCellStyles(mxConstants.STYLE_SHADOW, "false", objects_feats);
-			graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "9", objects_feats);
+			graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "8", objects_feats);
 		}		
 
 		log("Visual representation of features sucessfully inserted");

@@ -20,6 +20,8 @@ public class BayesianNetworkUtils {
 
 	public static String configurationFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
 
+	public static boolean logging = false;
+	
 	public static BayesianNetwork constructNetwork(String configFile) {
 		
 		BayesianNetwork network = new BayesianNetwork();
@@ -101,7 +103,7 @@ public class BayesianNetworkUtils {
 				StringValue val2a = (StringValue) pair2.featvalue;
 				StringValue val2b = (StringValue) corr.value2;
 				if (val1a.val.equals(val1b.val) && val2a.val.equals(val2b.val)) {
-					log("correlation found between ("+ pair1.featlabel+"="+val1a.val+") and (" + pair2.featlabel + "=" + val2a.val + ")");
+					log("correlation found between ("+ pair1.featlabel+"="+val1a.val+") and (" + pair2.featlabel + "=" + val2a.val + "): " + corr.condProb);
 					return corr;
 				}
 			}
@@ -159,7 +161,9 @@ public class BayesianNetworkUtils {
 	
 
 	private static void log(String s) {
-		System.out.println("[BayesianNetworkUtils] " + s);
+		if (logging) {
+			System.out.println("[BayesianNetworkUtils] " + s);
+		}
 	}
 	
 	public static void main (String[] args) {

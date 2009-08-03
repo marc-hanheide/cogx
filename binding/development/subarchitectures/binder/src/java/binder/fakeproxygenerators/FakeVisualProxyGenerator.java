@@ -7,7 +7,7 @@ import java.util.Vector;
 import binder.abstr.AbstractProxyGenerator;
 import binder.autogen.core.*;
 import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbabilityDistributionUtils;
+import binder.utils.ProbDistribUtils;
 
 public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
@@ -33,7 +33,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		Proxy proxy = new Proxy();
 		proxy.entityID = newDataID();
 		proxy.subarchId = "fakevision"; 
-		proxy.probExists = 0.9f;
+		proxy.probExists = 0.7f;
 		
 		proxy.features = new Feature[2];
 		proxy.features[0] = new Feature();
@@ -46,7 +46,9 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		proxy.features[1].alternativeValues = new FeatureValue[1];
 		proxy.features[1].alternativeValues[0] = new StringValue(0.6f,"blue");
 		
-		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
+
+		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
 
 		return proxy;
 	}
@@ -67,15 +69,17 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		proxy.features[1] = new Feature();
 		proxy.features[1].featlabel = "colour";
 		proxy.features[1].alternativeValues = new FeatureValue[2];
-		proxy.features[1].alternativeValues[0] = new StringValue(0.6f,"red");
-		proxy.features[1].alternativeValues[1] = new StringValue(0.6f,"pink");
+		proxy.features[1].alternativeValues[0] = new StringValue(0.65f,"red");
+		proxy.features[1].alternativeValues[1] = new StringValue(0.2f,"blue");
 		
 		proxy.features[2] = new Feature();
 		proxy.features[2].featlabel = "location";
 		proxy.features[2].alternativeValues = new FeatureValue[1];
 		proxy.features[2].alternativeValues[0] = new StringValue(0.5f,"on_table");
 		
-		proxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(proxy);
+		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
+
+		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
 
 		return proxy;
 	}

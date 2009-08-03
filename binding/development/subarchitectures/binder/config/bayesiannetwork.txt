@@ -65,13 +65,30 @@ nodes {
 			P(position=on_the_floor)=0.4
 		}
 	}
+	
+	ling_label {
+		featurevalues {
+			mug,
+			ball
+		}
+	}
+	
+	ling_colour {
+		featurevalues {
+			red,
+			blue,
+			green,
+			white,
+			black
+		}
+	}
 		
 }
 
 edges {
 	shape -> obj_label {
 		P(obj_label=mug|shape=cylindrical)=0.8,
-		P(obj_label=ball|shape=spherical)=0.8,
+		P(obj_label=ball|shape=spherical)=0.95,
 		P(obj_label=mug|shape=spherical)=0.001,
 		P(obj_label=ball|shape=cylindrical)=0.001
 	}
@@ -80,6 +97,21 @@ edges {
 		P(obj_label=shelf|position=on_the_floor)=0.4,
 		P(obj_label=mug|position=on_the_floor)=0.05
 	}
+	
+	obj_label -> ling_label {
+	   P(obj_label=mug|ling_label=mug)=0.9,
+	   P(obj_label=mug|ling_label=ball)=0.0001,
+	   P(obj_label=ball|ling_label=ball)=0.8,
+	   P(obj_label=ball|ling_label=mug)=0.0001
+   }
+   
+   colour -> ling_colour {
+       P(colour=red|ling_colour=red)=0.5,
+       P(colour=red|ling_colour=blue)=0.00001,
+       P(colour=blue|ling_colour=blue)=0.99,
+       P(colour=blue|ling_colour=red)=0.00001
+   }
+   
 }
 	
 		

@@ -20,7 +20,7 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.components.BinderMonitor;
-import binder.utils.ProbabilityDistributionUtils;
+import binder.utils.ProbDistribUtils;
 
 public class InsertButtonListener implements ActionListener {
 	
@@ -52,6 +52,8 @@ public class InsertButtonListener implements ActionListener {
 					if (subcompo.getName() != null && subcompo.getName().equals("proxyID")) {
 						proxyID = ((JTextField)subcompo).getText();
 						log("Proxy ID: " + proxyID);
+						((JTextField)subcompo).setText("proxyID" + ControlPanel.proxyCount);
+						ControlPanel.proxyCount++;
 					}
 					if (subcompo.getName() != null && subcompo.getName().equals("subarch")) {
 						subarch = ((JTextField)subcompo).getText();
@@ -152,7 +154,7 @@ public class InsertButtonListener implements ActionListener {
 		}
 		log("number of features in proxy: " + fds.size());
 		
-		newProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(newProxy);
+		newProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(newProxy);
 		
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
 		distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];

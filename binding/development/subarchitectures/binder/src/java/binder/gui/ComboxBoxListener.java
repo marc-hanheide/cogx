@@ -65,6 +65,7 @@ public class ComboxBoxListener implements ActionListener {
     		featureLabelLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
     		featureLabelPanel.add(featureLabelLabel, BorderLayout.WEST);
     		JTextField featureLabel = new JTextField(8);
+    		featureLabel.setText("featLabel"+(i+1));
     		featureLabel.setName("featLabel");
     		featureLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
     		featureLabelLabel.setLabelFor(featureLabel);
@@ -143,6 +144,7 @@ public class ComboxBoxListener implements ActionListener {
        			featureValueLabel.setFont(new Font("Dialog", Font.PLAIN, 11));
        			featureValuePanel.add(featureValueLabel, BorderLayout.WEST);
        			JTextField featureValue = new JTextField(6);
+       			featureValue.setText("featvalue"+(i+1));
        			featureValue.setName("featvalue");
        			featureValue.setFont(new Font("Dialog", Font.PLAIN, 11));
        			featureValueLabel.setLabelFor(featureValue);
@@ -154,6 +156,7 @@ public class ComboxBoxListener implements ActionListener {
        			featureProbLabel.setFont(new Font("Dialog", Font.PLAIN, 11));
        			featureProbPanel.add(featureProbLabel, BorderLayout.WEST);
        			JTextField featureProb = new JTextField(6);
+       			featureProb.setText("1.0");
        			featureProb.setName("featprob");
        			featureProb.setFont(new Font("Dialog", Font.PLAIN, 11));
        			featureProbLabel.setLabelFor(featureProb);

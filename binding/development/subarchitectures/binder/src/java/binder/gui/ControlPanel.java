@@ -38,6 +38,7 @@ public class ControlPanel extends JPanel{
 	    setVisible(true);
 	}
 	
+	static int proxyCount =1;
 	
 	private JPanel createNewProxyControlPanel() {
 		
@@ -48,6 +49,8 @@ public class ControlPanel extends JPanel{
 		JLabel proxyIDLabel = new JLabel("Proxy ID: ");
 		proxyPanel1.add(proxyIDLabel, BorderLayout.WEST);	
 		JTextField proxyID = new JTextField(8);
+		proxyID.setText("proxyID"+proxyCount);
+		proxyCount++;
 		proxyID.setName("proxyID");
 		proxyIDLabel.setLabelFor(proxyID);
 		proxyPanel1.add(proxyID, BorderLayout.EAST);
@@ -57,6 +60,7 @@ public class ControlPanel extends JPanel{
 		JLabel subarchLabel = new JLabel("Originating subarchitecture:   ");
 		proxyPanel2.add(subarchLabel, BorderLayout.WEST);
 		JTextField subarch = new JTextField(8);
+		subarch.setText("default");
 		subarch.setName("subarch");
 		subarchLabel.setLabelFor(subarch);
 		proxyPanel2.add(subarch, BorderLayout.EAST);
@@ -66,6 +70,7 @@ public class ControlPanel extends JPanel{
 		JLabel existsLabel = new JLabel("Prob ( exists | obs ): ");
 		proxyPanel3.add(existsLabel, BorderLayout.WEST);
 		JTextField exists = new JTextField(8);
+		exists.setText("1.0");
 		exists.setName("exists");
 		existsLabel.setLabelFor(exists);
 		proxyPanel3.add(exists, BorderLayout.EAST);

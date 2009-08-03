@@ -5,5 +5,5 @@ SUBARCHITECTURE binder
 JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
 JAVA WM binder.components.BindingWorkingMemory --log
 
-JAVA MG monitor binder.components.BinderMonitor #--log
+JAVA MG monitor binder.components.BinderMonitor --gui --log
 JAVA MG binder binder.components.Binder --log
