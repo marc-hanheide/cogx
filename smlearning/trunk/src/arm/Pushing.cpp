@@ -65,7 +65,10 @@ Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions
 	Actor *polyFlapActor;
 	
 	// Create polyflap
-	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.0002), REAL_PI_2);
+	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(0.002), REAL_PI_2);
+// 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1));
+// 	pActorDesc = creator.createSimple2FlapDesc(Real(dimensions.v1), Real(dimensions.v1), Real(dimensions.v1), Real(0.002), Real(REAL_PI_2));
+
 	//-sets coordinates
 	pActorDesc->nxActorDesc.globalPose.t.set(NxReal(position.v1), NxReal(position.v2), NxReal(position.v3));	
 
@@ -217,23 +220,23 @@ void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orth
 	position.v3 += vertical; 
 }
 
-void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top) {
+void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
 
 
 			//set it's coordinates into target
 			switch (startPosition) {
 			case 1: 
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Front down left (1)");
 				break;
 
 			case 2:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Front down middle (2)");
 				break;
 
 			case 3:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Front down right (3)");
 				break;
 
@@ -268,17 +271,17 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 				break;
 
 			case 10:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Back down left (10)");
 				break;
 
 			case 11:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Back down middle (11)");
 				break;
 
 			case 12:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Back down right (12)");
 				break;
 
@@ -313,12 +316,12 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 				break;
 
 			case 19:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Side down left (19)");
 				break;
 
 			case 20:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, Real(0.0));
+				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, over);
 				//context->getLogger()->post(Message::LEVEL_INFO, "Side down right (20)");
 				break;
 
@@ -588,7 +591,7 @@ int main(int argc, char *argv[]) {
 
 
 		//number of loop runs
-		const int numExperiments = 100;
+		const int numExperiments = 1000;
 
 		//a number that slightly greater then the maximal reachable space of the arm
 		//    - used for workspace position normalization and later as a position upper bound
@@ -612,9 +615,10 @@ int main(int argc, char *argv[]) {
 		//distance from the side of the polyflap
 		const Real side = polyflapDimensions.v1*0.6;
 		//center of the poolyflop
-		const Real center = polyflapDimensions.v2*0.5;
+		const Real center = polyflapDimensions.v2*0.6;
 		//distance from the top of the polyflap
-		const Real top = polyflapDimensions.v2* 1.2;
+// 		const Real top = polyflapDimensions.v2* 1.2;
+		const Real top = polyflapDimensions.v2 - over;
 		//lenght of the movement		
 		const Real distance = 0.2;
 
@@ -740,15 +744,15 @@ int main(int argc, char *argv[]) {
 
 
 			//initial target of the arm: the center of the polyflap
-			Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3 + over));
+			Vec3 positionT(Real(polyflapPosition.v1), Real(polyflapPosition.v2), Real(polyflapPosition.v3));
 
 
 			//chose random point int the vicinity of the polyflap
 			srand(context->getRandSeed()._U32[0]  + e);
-// 			int startPosition = rand() % 17 + 1;
-			int startPosition = 5;
+			int startPosition = rand() % 17 + 1;
+// 			int startPosition = 5;
 	
-			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top);
+			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
 			context->getLogger()->post(Message::LEVEL_INFO, "Position %i", startPosition);
 
 			// and set target waypoint
@@ -915,9 +919,11 @@ int main(int argc, char *argv[]) {
 // 					context->getLogger()->post(Message::LEVEL_INFO, "mojepose3: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", mojepose3.p.v1, mojepose3.p.v2, mojepose3.p.v3, roll3, pitch3, yaw3);
 
 					Mat34 polyFlapPose = polyFlapActor->getPose();
-					Real roll, pitch, yaw;
-					polyFlapPose.R.toEuler (roll, pitch, yaw);
-					context->getLogger()->post(Message::LEVEL_INFO, "iteration %d: polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", i, polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
+// 					Real roll, pitch, yaw;
+// 					polyFlapPose.R.toEuler (roll, pitch, yaw);
+// 					context->getLogger()->post(Message::LEVEL_INFO, "iteration %d: polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", i, polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
+// 					context->getLogger()->post(Message::LEVEL_INFO, "iteration %d: polyflap pos.: %f, %f, %f", i, polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3);
+// 					context->getLogger()->post(Message::LEVEL_INFO, "iteration %d: polyflap Rot matrix: %f, %f, %f, %f, %f, %f, %f, %f, %f", i, polyFlapPose.R._m._11, polyFlapPose.R._m._12, polyFlapPose.R._m._13, polyFlapPose.R._m._21, polyFlapPose.R._m._22, polyFlapPose.R._m._23, polyFlapPose.R._m._31, polyFlapPose.R._m._32, polyFlapPose.R._m._33);
 
 					//getting the first component of the polyflap
 					golem::Bounds::SeqPtr set = polyFlapActor->getGlobalBoundsSeq();
@@ -936,7 +942,7 @@ int main(int argc, char *argv[]) {
 						pfNormVec2 = pBox2->getNormals()[2]; //here it is also nr2, but this one must be multiplied by -1 before storing!!
 					}
 
-					if ( i == 0 // | i == n
+					if ( i == i // | i == n
 					     ) {
 						/////////////////////////////////////////////////
 						//creating current featureVector
@@ -964,9 +970,18 @@ int main(int argc, char *argv[]) {
 						features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
 						features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
 						features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
-						features.push_back(normalize(roll, -MATH_PI, MATH_PI));
-						features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
-						features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
+// 						features.push_back(normalize(roll, -MATH_PI, MATH_PI));
+// 						features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
+// 						features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
+						features.push_back(normalize(polyFlapPose.R._m._11, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._12, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._13, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._21, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._22, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._23, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._31, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._32, -1.0, 1.0));
+						features.push_back(normalize(polyFlapPose.R._m._33, -1.0, 1.0));
 						/////////////////////////////////////////////////
 						
 						/////////////////////////////////////////////////
@@ -1002,20 +1017,27 @@ int main(int argc, char *argv[]) {
 				FeatureVector features;
 				/////////////////////////////////////////////////
 
-				Mat34 polyFlapPose = polyFlapActor->getPose();
-				Real roll, pitch, yaw;
-				polyFlapPose.R.toEuler (roll, pitch, yaw);
-				features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
-				features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
-				features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
-				features.push_back(normalize(roll, -MATH_PI, MATH_PI));
-				features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
-				features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
-				context->getLogger()->post(Message::LEVEL_INFO, "end polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
-				/////////////////////////////////////////////////
-				//writing the feature vector in the sequence
-				seq.push_back(features);
-				/////////////////////////////////////////////////
+// 				Mat34 polyFlapPose = polyFlapActor->getPose();
+// // 				Real roll, pitch, yaw;
+// // 				polyFlapPose.R.toEuler (roll, pitch, yaw);
+// 				context->getLogger()->post(Message::LEVEL_INFO, "polyflap end pos.: %f, %f, %f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3);
+// 				context->getLogger()->post(Message::LEVEL_INFO, "polyflap end Rot matrix: %f, %f, %f, %f, %f, %f, %f, %f, %f", polyFlapPose.R._m._11, polyFlapPose.R._m._12, polyFlapPose.R._m._13, polyFlapPose.R._m._21, polyFlapPose.R._m._22, polyFlapPose.R._m._23, polyFlapPose.R._m._31, polyFlapPose.R._m._32, polyFlapPose.R._m._33);
+// 				features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
+// 				features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
+// 				features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
+// 				features.push_back(normalize(polyFlapPose.R._m._11, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._12, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._13, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._21, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._22, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._23, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._31, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._32, -1.0, 1.0));
+// 				features.push_back(normalize(polyFlapPose.R._m._33, -1.0, 1.0));
+// 				/////////////////////////////////////////////////
+// 				//writing the feature vector in the sequence
+// 				seq.push_back(features);
+// 				/////////////////////////////////////////////////
 				
 				/////////////////////////////////////////////////
 				//writing the sequence into the dataset
