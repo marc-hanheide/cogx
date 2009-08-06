@@ -207,22 +207,23 @@ void Object::Draw(int detail)
 	RGBColor blue = RGBColor::blue;
 	RGBColor red = RGBColor::red;
 	RGBColor coral = RGBColor::coral;
+	RGBColor green = RGBColor::blue;
 
 	if(detail == 0) color = red;
 	if(detail >= 1 && tracked_id == UNDEF_ID) color = red;
 	if(detail >= 1 && tracked_id != UNDEF_ID) color = blue;
-	if(detail >= 1 && (type == Gestalt::TRACKEDCUBE || type == Gestalt::TRACKEDCONE || 
-										 type == Gestalt::TRACKEDCYLINDER || type == Gestalt::TRACKEDBALL)) color = coral;
+	if(/*detail >= 1 &&*/ (type == Gestalt::TRACKEDCUBE || type == Gestalt::TRACKEDCONE || 
+										 type == Gestalt::TRACKEDCYLINDER || type == Gestalt::TRACKEDBALL)) color = green;
 
 	/// CUBE
   if (type == Gestalt::CUBE)
   {
-    if (tracked_id == UNDEF_ID)
-		{
-			Cubes(gestalt_id)->Draw(0);
-		}
-    else
-    {
+//     if (tracked_id == UNDEF_ID)
+// 		{
+// 			Cubes(gestalt_id)->Draw(0);
+// 		}
+// 		else
+// 		{
 			DrawLine2D(cuD.corner_points[3][1].x,
 			   cuD.corner_points[3][1].y,
 			   cuD.corner_points[3][0].x,
@@ -263,11 +264,14 @@ void Object::Draw(int detail)
 					cuD.corner_points[2][1].x,
 					cuD.corner_points[2][1].y, color);
 
-			if(detail == 1)
+		// draw tracked line
+/*			if(detail == 1)
 			{
 				DrawLine2D(cuD.groundCenter.x, cuD.groundCenter.y, cuD.trackedCubeGroundCenter.x, cuD.trackedCubeGroundCenter.y, color);
-			}
-    }
+			}*/
+//     }
+
+		// write coordinates of 3D ground center point
 		if(detail == 2)
 		{
 			DrawEllipse2D(cuD.groundCenter.x, cuD.groundCenter.y, 1, 1 , 0., color);
@@ -275,7 +279,19 @@ void Object::Draw(int detail)
 			snprintf(text, 40, " %4.1f/%4.1f/0", cuD.groundCenter3D.x, cuD.groundCenter3D.y);
 			DrawText2D(text, cuD.groundCenter.x, cuD.groundCenter.y, color);
 		}
+		// write coordinates of 3D corner points
 		if(detail == 3)
+		{
+			char text[40];
+			snprintf(text, 40, " %3.0f/%3.0f/0", cuD.corner_points3D[0][1].x, cuD.corner_points3D[0][1].y);
+			DrawText2D(text, cuD.corner_points[1][0].x, cuD.corner_points[0][1].y, color);
+			snprintf(text, 40, " %3.0f/%3.0f/0", cuD.corner_points3D[1][1].x, cuD.corner_points3D[1][1].y);
+			DrawText2D(text, cuD.corner_points[1][1].x, cuD.corner_points[1][1].y, color);
+			snprintf(text, 40, " %3.0f/%3.0f/0", cuD.corner_points3D[2][1].x, cuD.corner_points3D[2][1].y);
+			DrawText2D(text, cuD.corner_points[2][1].x, cuD.corner_points[2][1].y, color);
+		}
+		// draw 2D cube radius and center
+		if(detail == 4)
 		{
 			DrawEllipse2D(cuD.center.x, cuD.center.y, cuD.radius, cuD.radius, 0., color);
 			DrawEllipse2D(cuD.center.x, cuD.center.y, 1, 1 , 0., color);
@@ -604,9 +620,13 @@ const char* Object::GetInfo()
 	if(type == Gestalt::CUBE)
   {
 		n += snprintf(info_text, info_size, 
-	  	"%s\nGestalt: %s\ngestalt_id: %u\nid_tracked: %u\n\nground center: %3.0f - %3.0f\ntracked ground center: %3.0f - %3.0f\n\ncenter: %4.3f / %4.3f\nradius: %4.3f",
+	  	"%s\nGestalt: %s\ngestalt_id: %u\nid_tracked: %u\n\nground center: %3.0f - %3.0f\ntracked ground center: %3.0f - %3.0f\ncenter: %4.3f / %4.3f\nradius: %4.3f\n\nCorner points 2D || 3D:\n%4.0f - %4.0f || %4.0f - %4.0f\n%4.0f - %4.0f || %4.0f - %4.0f\n%4.0f - %4.0f || %4.0f - %4.0f\n%4.0f - %4.0f || %4.0f - %4.0f\n",
       Gestalt::GetInfo(), gestalt, gestalt_id, tracked_id, cuD.groundCenter.x, cuD.groundCenter.y, cuD.trackedCubeGroundCenter.x, cuD.trackedCubeGroundCenter.y,
-			cuD.center.x, cuD.center.y, cuD.radius);
+			cuD.center.x, cuD.center.y, cuD.radius, 
+			cuD.corner_points[0][1].x, cuD.corner_points[0][1].y, cuD.corner_points3D[0][1].x, cuD.corner_points3D[0][1].y,
+			cuD.corner_points[1][1].x, cuD.corner_points[1][1].y, cuD.corner_points3D[1][1].x, cuD.corner_points3D[1][1].y,
+			cuD.corner_points[2][1].x, cuD.corner_points[2][1].y, cuD.corner_points3D[2][1].x, cuD.corner_points3D[2][1].y,
+			cuD.corner_points[3][1].x, cuD.corner_points[3][1].y, cuD.corner_points3D[3][1].x, cuD.corner_points3D[3][1].y);
 	}
 	if(type == Gestalt::CONE)
   {

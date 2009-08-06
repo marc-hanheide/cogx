@@ -347,6 +347,13 @@ public:
   static void DrawGestalts(Gestalt::Type type, int detail = 0);
 
 	/**
+	* @brief Draw all gestalts of given type, which are unmasked.
+	* @param type Type of Gestalt
+	* @param detail Degree of detail to draw Gestalt
+	*/
+  static void DrawUnmaskedGestalts(Gestalt::Type type, int detail = 0);
+
+	/**
 	* @brief Draw just a single gestalt.
 	* @param type Type of Gestalt
 	* @param num Number of Gestalt (in order of existence ??? TODO)
@@ -372,7 +379,7 @@ public:
 	* @brief Set the active draw area to the IplImage.
 	* @param iI OpenCv IplImage for drawing.
 	*/
-	static void DrawToIplImage(IplImage *iI);
+	static void DrawArea(IplImage *iI);
 
 	/**
 	* @brief Draw all gestalts of given type (per integer).
