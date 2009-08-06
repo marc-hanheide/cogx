@@ -42,8 +42,9 @@ public:
 	int ProcessSingleImage(IplImage *image);
 	bool GetCube(unsigned number, Z::CubeDef &cd, bool &masked);
 
-	void Draw(IplImage *iI);
-	void DrawGestalt(int type, int detail);
+	void SetActiveDrawArea(IplImage *iI);
+	void DrawGestalts(int type, int detail);
+	void DrawUnmaskedGestalts(int type, int detail);
 
 	void SetCamParameters(double *intrinsic, double *dist, double *extrinsic);
 };

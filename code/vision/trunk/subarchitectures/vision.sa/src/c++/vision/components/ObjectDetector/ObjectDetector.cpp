@@ -84,7 +84,7 @@ void ObjectDetector::configure(const map<string,string> & _config)
 
 void ObjectDetector::start()
 {
-// 	log("VisionSystem3::start: Start Component");
+	log("ObjectDetector::start: Start Component");
   startVideoCommunication(*this);
 
   addChangeFilter(createLocalTypeFilter<ObjectDetectionCommand>(cdl::ADD),
@@ -110,11 +110,13 @@ void ObjectDetector::runComponent()
 
 void ObjectDetector::processImage()
 {
+// 	log("ObjectDetector: process new image.");
 	Video::Image image;
 	getImage(camId, image);
 
 	GetCameraParameter(image);
 	IplImage *iplImage = convertImageToIpl(image);
+
 	vs3Interface->ProcessSingleImage(iplImage);
 
 	// ----------------------------------------------------------------------------
@@ -127,7 +129,7 @@ void ObjectDetector::processImage()
 
 	while(vs3Interface->GetCube(number, cd, masked))
 	{
-		log("Got new cube!!!");
+		log("new cube detected.");
 		number ++;
 
 		/// TODO TODO TODO TODO TODO Verarbeiten des Würfels: Anlegen des Visual objects
@@ -136,13 +138,11 @@ void ObjectDetector::processImage()
 		VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
 		if(Cube2VisualObject(obj, cd))
 		{
-			log("Cube2VisualObject converted");
-
 			// Add VisualObject to working memory
   		addToWorkingMemory(newDataID(), obj);
+			log("added visual object to working memory");
 		}
 	}
-
 
 	// --------------------------------------------------------------------
 	// Get input from the openCV image
@@ -150,7 +150,7 @@ void ObjectDetector::processImage()
 	int key = 0;
 	key = cvWaitKey(10);
 		if(key==1048603) return;									// return for escape
-//  				printf("##############	Key: %i\n", key); 
+// 				printf("##############	Key: %i\n", key); 
 
 	switch(key){
 		case 1048619: detail++;										// Key '+'
@@ -158,6 +158,9 @@ void ObjectDetector::processImage()
 			break;
 		case 1048621: if(detail>0) detail--;			// Key '-'
 			log("Detail switched to %i", detail);
+			break;
+		case 1048670: type = 29;									// OBJECT == ^
+			log("Switched to OBJECT");
 			break;
 		case 1048625: type = 20;									// CUBE == 1
 			log("Switched to CUBE");
@@ -197,14 +200,19 @@ void ObjectDetector::processImage()
 	// ----------------------------------------------------------------
 	// Draw Gestalts to IplImage for the openCv window
 	// ----------------------------------------------------------------
+	// !!! Draws all Gestalts (also masked ones!!!)
 	if(showImage) 
 	{	
-		vs3Interface->Draw(iplImage);
-		vs3Interface->DrawGestalt(type, detail);
+		vs3Interface->SetActiveDrawArea(iplImage);
+//		vs3Interface->DrawGestalts(type, detail);
+		vs3Interface->DrawUnmaskedGestalts(type, detail);
+	
+		/// Convert from RGB to BGR
+		cvConvertImage( iplImage, iplImage, CV_CVTIMG_SWAP_RB);
 
 
 		cvShowImage(getComponentID().c_str(), iplImage);
-		// cvWaitKey(10);
+		cvWaitKey(10);
 		cvReleaseImage(&iplImage);
 	}
 }
@@ -227,15 +235,17 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		Vertex v0, v1; 
 		v0.pos.x = cd.corner_points3D[i][0].x;
 		v0.pos.y = cd.corner_points3D[i][0].y;
-		v0.pos.z = (cd.length_a + cd.length_b)/2.;	// currently not estimated ==> mean between side length
+		v0.pos.z = cd.height;											// mean of three heights
 		v1.pos.x = cd.corner_points3D[i][1].x;
 		v1.pos.y = cd.corner_points3D[i][1].y;
 		v1.pos.z = 0;																// on ground plane!
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2, v0.pos.x, v0.pos.y, v0.pos.z); 
-printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.z); 
+
+// printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x, v0.pos.y, v0.pos.z);
+// printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x, v1.pos.y, v1.pos.z);
+
 	}
 
 	// create faces
@@ -289,16 +299,12 @@ printf("Vertex %u: %4.4f / %4.4f / %4.4f\n", i*2 +1, v1.pos.x, v1.pos.y, v1.pos.
 
 /**
  * @brief Extract camera parameters from video server.
- * @param image Image from the image server
+ * @param image Image from the image server with the camera paramters.
  * @return True for success
  */
 bool ObjectDetector::GetCameraParameter(const Video::Image & image)
 {
 	Video::CameraParameters camPars = image.camPars;
-
-printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.fx, camPars.fy, camPars.cx, camPars.cy);
-// printf("Camera parameters: radial distortion: %4.2f - %4.2f - %4.2f\n", camPars.k1, camPars.k2, camPars.k3);
-// printf("Camera parameters: tangential distortion: %4.2f - %4.2f\n", camPars.p1, camPars.p2);
 
 	double intrinsic[4];
 	intrinsic[0] = camPars.fx;
@@ -312,19 +318,52 @@ printf("Camera parameters: Intrinsic: %4.2f - %4.2f - %4.2f - %4.2f\n", camPars.
 	dist[2] = camPars.p1;
 	dist[3] = camPars.p2;
 
+	// get extrinsic parameters from camera image
 	double extrinsic[16];
 	getRow44(camPars.pose, extrinsic);
 
-	// TODO correct extrinsic pose from mm to cm ???
-	extrinsic[3] = extrinsic[3];
-	extrinsic[7] = extrinsic[7];
-	extrinsic[11] = extrinsic[11];
+	// Recalculation of rotation matrix and transition vector
+	// w ... world point ???
+	// R ... rotation matrix
+	// p ... image point ???
+	// t ... translation vector
+	// w = R.p + t
+	// w-t = R.p
+	// R^T.w - R^T.t = p		==> R(new) = -R^T.t
 
-printf("Camera parameters: extrinsic:\n	%6.5f - %6.5f- %6.5f- %6.5f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
-printf("	%6.5f - %6.5f- %6.5f- %6.5f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
-printf("	%6.5f - %6.5f- %6.5f- %6.5f\n\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
+	// Invert rotation matrix (= transpose)
+	double zw = extrinsic[1];
+	extrinsic[1] = extrinsic[4];
+	extrinsic[4] = zw;
+	zw = extrinsic[2];
+	extrinsic[2] = extrinsic[8];
+	extrinsic[8] = zw;
+	zw = extrinsic[6];
+	extrinsic[6] = extrinsic[9];
+	extrinsic[9] = zw;
 
-	vs3Interface->SetCamParameters(intrinsic, dist, extrinsic);
+	// Translation vector from m to mm
+	extrinsic[3] *= 1000;
+	extrinsic[7] *= 1000;
+	extrinsic[11] *= 1000;
+
+	// Recaclulate translation vector for inverted rotation matrix
+	double tneu[3]; 
+	tneu[0] = -(extrinsic[0]*extrinsic[3] + extrinsic[1]*extrinsic[7] + extrinsic[2]*extrinsic[11]);
+	tneu[1] = -(extrinsic[4]*extrinsic[3] + extrinsic[5]*extrinsic[7] + extrinsic[6]*extrinsic[11]);
+	tneu[2] = -(extrinsic[8]*extrinsic[3] + extrinsic[9]*extrinsic[7] + extrinsic[10]*extrinsic[11]);
+	extrinsic[3] = tneu[0];
+	extrinsic[7] = tneu[1];
+	extrinsic[11] = tneu[2];
+
+// printf("Translationsvektor neu: %6.5f   %6.5f   %6.5f\n\n", extrinsic[3], extrinsic[7], extrinsic[11]);
+
+// printf("Camera parameters: extrinsic new:\n	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
+// printf("	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
+// printf("	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
+// printf("	%6.5f   %6.5f   %6.5f   %6.5f\n\n", extrinsic[12], extrinsic[13], extrinsic[14], extrinsic[15]);
+
+ 	vs3Interface->SetCamParameters(intrinsic, dist, extrinsic);
 
 	return true;
 }

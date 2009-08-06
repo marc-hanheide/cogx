@@ -26,8 +26,8 @@ Vs3Interface::Vs3Interface()
   assert(vcore != 0);	
 
 	// set processing time and canny parameters
-	processingTime = 400;
-	cannyAlpha = 600;
+	processingTime = 800;
+	cannyAlpha = 800;
 	cannyOmega = 1;
 }
 
@@ -46,14 +46,10 @@ Vs3Interface::~Vs3Interface()
  */
 int Vs3Interface::ProcessSingleImage(IplImage *image)
 {
-// 	printf("Vs3Interface::ProcessSingleImage\n");
-
 	static bool firstCall = true;
 	if(firstCall) vcore->InitBuffer(image, true);
 	else vcore->SetBuffer(image);
 	firstCall = false;
-
-// 	vcore->NewImage(image);
 
   vcore->ProcessImage(processingTime, cannyAlpha, cannyOmega, false);
 	return 0;
@@ -74,22 +70,33 @@ bool Vs3Interface::GetCube(unsigned number, Z::CubeDef &cd, bool &masked)
 }
 
 /**
- * @brief Draw Gestalts into OpenCv IplImage
+ * @brief Set active draw area as the OpenCv IplImage
  * @param iI IplImage
  */
-void Vs3Interface::Draw(IplImage *iI)
+void Vs3Interface::SetActiveDrawArea(IplImage *iI)
 {
 	int detail = 0; 	// Degree of detail for drawing Gestalts.
-	vcore->DrawToIplImage(iI);
+	vcore->DrawArea(iI);
 }
 
 /**
  * @brief Draw Gestalts into OpenCv IplImage
- * @param iI IplImage
+ * @param type Type of Gestalt to draw
+ * @param detail Degree of detail for drawing
  */
-void Vs3Interface::DrawGestalt(int type, int detail)
+void Vs3Interface::DrawGestalts(int type, int detail)
 {
 	vcore->DrawGestalts((Z::Gestalt::Type) type, detail);
+}
+
+/**
+ * @brief Draw Gestalts into OpenCv IplImage
+ * @param type Type of Gestalt to draw
+ * @param detail Degree of detail for drawing
+ */
+void Vs3Interface::DrawUnmaskedGestalts(int type, int detail)
+{
+	vcore->DrawUnmaskedGestalts((Z::Gestalt::Type) type, detail);
 }
 
 /**
@@ -99,11 +106,6 @@ void Vs3Interface::DrawGestalt(int type, int detail)
  */
 void Vs3Interface::SetCamParameters(double *intrinsic, double *dist, double *extrinsic)
 {
-		for(unsigned i=0; i<4; i++)
-		{
-printf("VS3Interface: camDistortion %u: %4.3f\n", i, dist[i]);
-		}
-
 	vcore->SetCamParameters(intrinsic, dist, extrinsic);
 }
 
