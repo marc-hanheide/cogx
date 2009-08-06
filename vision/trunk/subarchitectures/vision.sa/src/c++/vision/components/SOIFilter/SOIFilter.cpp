@@ -9,6 +9,7 @@
 #define TIME_THR_DEFAULT 500
 #define UPD_THR_DEFAULT 4
 #define CAM_ID_DEFAULT 0
+#define DILATE_FACTOR 1.5
 
 /**
  * The function called to create a new instance of our component.
@@ -31,13 +32,14 @@ using namespace VisionData;
 void SOIFilter::configure(const map<string,string> & _config)
 {
   configureVideoCommunication(_config);
+  configureStereoCommunication(_config);
 
   map<string,string>::const_iterator it;
   
   updateThr = UPD_THR_DEFAULT;
   timeThr = TIME_THR_DEFAULT;
   camId = CAM_ID_DEFAULT;
-  
+  doDisplay = false;
   
   if((it = _config.find("--upd")) != _config.end())
   {
@@ -57,12 +59,21 @@ void SOIFilter::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> camId;
   }
+  
+  if((it = _config.find("--display")) != _config.end())
+  {
+    doDisplay = true;
+  }
 }
 
 void SOIFilter::start()
 {
   startVideoCommunication(*this);
-	
+  startStereoCommunication(*this);
+  
+  if (doDisplay)
+  	cvNamedWindow("Last ROI", 1);
+  
   // we want to receive detected SOIs
   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::ADD),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
@@ -87,12 +98,15 @@ void SOIFilter::runComponent()
       SOIData &soi = SOIMap[objToAdd.front()];
       
       if(soi.status == STABLE)
-      {
-     	Video::Image patch = getImgPatch(soi.addr);
-      	 
+      { 
         ProtoObjectPtr pobj = new ProtoObject;
         pobj->time = getCASTTime();
         pobj->ROIList.push_back(soi.addr.id);
+        pobj->image = getImgPatch(soi.addr);
+        
+        //pobj->points = getPointCloud();
+        // getPoints(pobj->points);
+        //log("Object has a cloud of %i points", pobj->points.size());
         
         string objId = newDataID();
         addToWorkingMemory(objId, pobj);
@@ -110,6 +124,9 @@ void SOIFilter::runComponent()
      }
       
   }
+  
+  if (doDisplay)
+  	cvDestroyWindow("Last ROI");
 }
 
 void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
@@ -126,7 +143,7 @@ void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
    
    SOIMap.insert(make_pair(data.addr.id, data));
 
-   log("A new SOI ID %s ", data.addr.id.c_str());
+   debug("A new SOI ID %s ", data.addr.id.c_str());
    
 
 }
@@ -172,7 +189,7 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
   soi.deleteTime = time;
   objToDelete.push(soi.addr.id);
   
-   log("deleted SOI ID %s count %u at %u:%u",
+   debug("deleted SOI ID %s count %u at %u:%u",
    		soi.addr.id.c_str(), soi.updCount,
    		time.s, time.us
    		);
@@ -182,26 +199,28 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
 Video::Image SOIFilter::getImgPatch(WorkingMemoryAddress soiAddr)
 {
 	Video::Image image;
-	getImage(camId, image);
-	
-	
+	getImage(camId,image);
+
 	VisionData::SOIPtr soiPtr =
     		getMemoryEntry<VisionData::SOI>(soiAddr);
+    		
+   	soiPtr->boundingSphere.rad*=DILATE_FACTOR;
 	
 	ROIPtr roi = projectSOI(image.camPars, *soiPtr);
 	
 	IplImage *iplImg = convertImageToIpl(image);
 	
 	CvRect rect;
-	rect.x = roi->rect.pos.x;
-	rect.y = roi->rect.pos.y;
+	
 	rect.width = roi->rect.width;
 	rect.height = roi->rect.height;
+	rect.x = roi->rect.pos.x - rect.width/2;
+	rect.y = roi->rect.pos.y - rect.height/2;
 	
-	log("ROI x=%i, y=%i, width=%i, height=%i",
+	debug("Calculated ROI x=%i, y=%i, width=%i, height=%i",
 		rect.x, rect.y, rect.width, rect.height);	
 	
-//	cvSetImageROI(iplImg, rect);
+	cvSetImageROI(iplImg, rect);
 	
 	IplImage *iplPatch =
 		cvCreateImage(cvGetSize(iplImg),
@@ -209,12 +228,18 @@ Video::Image SOIFilter::getImgPatch(WorkingMemoryAddress soiAddr)
                           iplImg->nChannels);
                           
     cvCopy(iplImg, iplPatch);
-    
+
+    if (doDisplay)
+    	cvShowImage("Last ROI", iplPatch);
+
     Video::Image patch;
     convertImageFromIpl(iplPatch, patch); 
 	
 	return patch;
 }
+
+//Stereo::Vector3Seq SOIFilter::getPointCloud()
+//{}
 
 }
 
