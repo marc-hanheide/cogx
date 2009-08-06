@@ -35,9 +35,9 @@ public:
 	
 	// 3D - variables
 	Vector2 groundCenter3D;						///< 3D point: center point on ground plane
-	Vector2 rightBottom3D;						///< 3D point: right/bottom point of cube
-	Vector2 sharedBottom3D;						///< 3D point: shared/bottom point of cube
-	Vector2 leftBottom3D;							///< 3D point: left/bottom point of cube
+//	Vector2 rightBottom3D;						///< 3D point: right/bottom point of cube
+//	Vector2 sharedBottom3D;						///< 3D point: shared/bottom point of cube
+//	Vector2 leftBottom3D;							///< 3D point: left/bottom point of cube
 
 	Vector2 corner_points3D[4][2];		///< 3D corner points of the cube
 	Vector2 orientation;							///< 3D orientation of cube (from groundCenter to sharedBottom)

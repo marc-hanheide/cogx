@@ -222,6 +222,7 @@ VisionCore::~VisionCore()
 // 	delete ice;
 
 // 	delete wmap;
+
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
     delete principles[i];
   ClearGestalts();
@@ -299,60 +300,6 @@ void VisionCore::Configure(const char *config_name)
  */
 void VisionCore::ClearGestalts()
 {
-// Hack ARI: funktioniert nicht so!
-// cout << "########## Clear Gestalts - vorher #############" << endl;
-// for(unsigned i=0; i<gestalts[25].Size(); i++)
-// 	cout << "Motion Field " << gestalts[25][i]->ID() << " => age=" << gestalts[25][i]->age << endl;
-// for(unsigned i=0; i<ranked_gestalts[25].Size(); i++)
-// 	cout << "Ranked as " << i << " => id= " << ranked_gestalts[25][i] << endl;
-
-//   for(int i = 0; i < Gestalt::MAX_TYPE; i++)
-//   {
-// 		bool clearI = true;
-// 		if (gestalts[i].Size() > 0)
-//     for(int j = gestalts[i].Size()-1; j >= 0 ; j--)
-// 		{	
-// 			if(!gestalts[i][j]->clear)					/// Nur Gestalts mit clear=false werden nicht gealtert.
-// 			{
-// // cout << "gestalt " << i << " clear is false! => j= " << j << endl;
-// 				gestalts[i][j]->AgeGestalt();
-// 				clearI = false;
-// 			}
-//       else 
-// 			{
-// // cout << "VisionCore::ClearGestalts: " << i << " Erase: " << j << endl;
-// /// TODO Das Problem ist, dass Gestalts über die ID aus der GUI aufgerufen werden. Wenn jetzt eine ID fehlt, dann kennt
-// /// sich das Programm nicht mehr aus.
-// 
-// 
-// /// Wenn man hier mit Erase löscht, dann verändert man die gestalt->Size => löschen Rückwärts?
-// /// TODO Nun wird eine Gestalt an der Stelle j gelöscht => welche id hat diese gehabt?
-// /// Nun alle anderen folgenden Gestalts eine andere ID geben? => Wenn die ID verändert wird, dann gibt es keine eindeutige Zuordnung mehr?
-// 
-// 				gestalts[i].Erase(j);
-// 
-// 
-// 				ranked_gestalts[i].Erase(ranked_gestalts[i].Find(j));					/// NICHT AN J-TER STELLE LÖSCHEN, SONDERN DEN EINTRAG, WO J DRINNEN STEHT
-// 
-// // 				delete gestalts[i][j];
-// 			}
-// 		}
-// 		if(clearI)
-// 		{ 
-// // cout << "ClearI = true for " << i << endl;
-// 			gestalts[i].Clear();
-// 			ranked_gestalts[i].Clear();
-// 		}
-// 
-//   }
-
-// for(unsigned i=0; i<gestalts[25].Size(); i++)
-// 	cout << "Motion Field " << gestalts[25][i]->ID() << " => age=" << gestalts[25][i]->age << endl;
-// for(unsigned i=0; i<ranked_gestalts[25].Size(); i++)
-// 	cout << "Ranked as " << i << " => id= " << ranked_gestalts[25][i] << endl;
-// cout << "########## Clear Gestalts - nachher #############" << endl;
-// cout << endl << endl;
-
   for(int i = 0; i < Gestalt::MAX_TYPE; i++)
   {
     for(int j = gestalts[i].Size()-1; j >= 0 ; j--)
@@ -369,14 +316,15 @@ void VisionCore::NewImage()
 {
   delete img;
   const IplImage *ipl = video->CurrentFramePtr();
+
   img = new Image(ipl->imageData, ipl->width, ipl->height,
       video->BytesPerPixel(), video->ColorFmt(), false, video->BytesPerLine());
 
 	/// Convert from RGB to BGR
-	IplImage *nipl = cvCreateImageHeader(cvSize(ipl->width, ipl->height), IPL_DEPTH_8U, 3);
-	nipl->imageData = img->Data();
-	cvConvertImage( ipl, nipl, CV_CVTIMG_SWAP_RB);
-	cvReleaseImageHeader(&nipl);
+// 	IplImage *nipl = cvCreateImageHeader(cvSize(ipl->width, ipl->height), IPL_DEPTH_8U, 3);
+// 	nipl->imageData = img->Data();
+// 	cvConvertImage( ipl, nipl, CV_CVTIMG_SWAP_RB);
+// 	cvReleaseImageHeader(&nipl);
 
   ClearGestalts();
   for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
@@ -387,7 +335,6 @@ void VisionCore::NewImage()
     }
 }
 
-
 void VisionCore::InitBuffer(IplImage *img, bool copy)
 {
   if (video->IsBuffer())
@@ -396,7 +343,6 @@ void VisionCore::InitBuffer(IplImage *img, bool copy)
     NewImage();
   }
 }
-
 
 void VisionCore::SetBuffer(IplImage *img)
 {
@@ -407,15 +353,8 @@ void VisionCore::SetBuffer(IplImage *img)
   }
 }
 
-
 void VisionCore::LoadImage(const char *filename)
 {
-//   if(video->IsLive())
-//     return;
-// #ifdef HAVE_IMLIB
-//   ((FileVideo*)video)->AddFrame(filename);
-// #endif
-//   NewImage();
   if(video->IsLive() || video->IsBuffer())
     return;
   video->AddFrame(filename);
@@ -424,12 +363,6 @@ void VisionCore::LoadImage(const char *filename)
 
 void VisionCore::FirstImage()
 {
-//   if(video->IsLive())
-//     return;
-// #ifdef HAVE_IMLIB
-//   ((FileVideo*)video)->MoveToStart();
-// #endif
-//   NewImage();
   if(video->IsLive() || video->IsBuffer())
     return;
   video->MoveToStart();
@@ -438,12 +371,6 @@ void VisionCore::FirstImage()
 
 void VisionCore::LastImage()
 {
-//   if(video->IsLive())
-//     return;
-// #ifdef HAVE_IMLIB
-//   ((FileVideo*)video)->MoveToEnd();
-// #endif
-//   NewImage();
   if(video->IsLive() || video->IsBuffer())
     return;
   video->MoveToEnd();
@@ -552,6 +479,8 @@ void VisionCore::ProcessImage(int runtime_ms, int ca, int co, bool sendIce)
   sev.sigev_notify_attributes = 0;
   timer_create(CLOCK_REALTIME, &sev, &timer);
   timer_settime(timer, 0, &tspec, NULL);*/
+
+
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &i_start);
   try
@@ -579,9 +508,6 @@ void VisionCore::ProcessImage(int runtime_ms, int ca, int co, bool sendIce)
 /// Diese non-incremental Funktionen sollten eigentlich alle automatisch nach der Berechnung aufgerufen werden. 
 /// Wenn keine existierten (virtual functions), dann werden diese einfach nicht ausgeführt.
 /// Wäre das mit der Reihenfolge der Ausführung möglich?
-
-// printf("#############################################\n");
-// printf("VisionCore: Start non-incremental processing.\n");
 
 		// calculate time for non-incremental processing
 		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &i_cur);
@@ -726,6 +652,16 @@ void VisionCore::DrawGestalts(Gestalt::Type type, int detail)
     gestalts[type][j]->Draw(detail);
 }
 
+// TODO Funktion überprüfen
+void VisionCore::DrawUnmaskedGestalts(Gestalt::Type type, int detail)
+{
+  for(unsigned j = 0; j < gestalts[type].Size(); j++)
+	{
+		if (!gestalts[type][j]->IsMasked())
+			gestalts[type][j]->Draw(detail);
+	}
+}
+
 void VisionCore::DrawGestalt(Gestalt::Type type, unsigned num, int detail)
 {
   if(num < gestalts[type].Size())
@@ -747,7 +683,7 @@ void VisionCore::DrawPrinciple(GestaltPrinciple::Type type, int detail)
 // ----------------------------------------------------------------------
 // Drawing components for OpenCv IplImage drawings.
 // ----------------------------------------------------------------------
-void VisionCore::DrawToIplImage(IplImage *iI)
+void VisionCore::DrawArea(IplImage *iI)
 {
 	SetActiveDrawArea(iI);
 }
@@ -951,7 +887,7 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 		{
 			camIntrinsic[i] = intrinsic[i];
 			camDistortion[i] = distortion[i];
-printf("camDistortion %u: %4.3f\n", i, distortion[i]);
+// printf("	VisionCore::SetCamParameters():	camDistortion %u: %4.3f\n", i, distortion[i]);
 		}
 		for(unsigned i=0; i<12; i++)
 		{
