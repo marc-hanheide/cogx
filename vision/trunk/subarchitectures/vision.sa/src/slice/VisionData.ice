@@ -4,6 +4,7 @@
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
 #include <Video.ice>
+#include <Stereo.ice>
 
 module VisionData {
 
@@ -178,6 +179,10 @@ module VisionData {
    */
   class ProtoObject {
     IdSeq ROIList;
+    
+    // 2D image patch
+    Video::Image image;
+    
     // time the object was last changed
     cast::cdl::CASTTime time;
   };
