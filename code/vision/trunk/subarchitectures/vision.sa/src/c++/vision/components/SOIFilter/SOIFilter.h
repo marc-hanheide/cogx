@@ -14,9 +14,11 @@
 #include <map>
 
 #include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
+#include <StereoClient.h>
 #include <../../VisionUtils.h>
 
 #include <VisionData.hpp>
@@ -26,7 +28,8 @@ namespace cast
 {
 
 class SOIFilter : public ManagedComponent,
-				  public VideoClient
+				  public VideoClient,
+				  public StereoClient
 {
 private:
 
@@ -41,6 +44,7 @@ private:
   */
   unsigned timeThr;
   int updateThr;
+  bool doDisplay;
   
   /**
    * stetus of SOI persistency
