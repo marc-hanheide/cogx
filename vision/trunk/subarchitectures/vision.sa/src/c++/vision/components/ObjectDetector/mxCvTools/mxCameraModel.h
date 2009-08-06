@@ -183,6 +183,15 @@ namespace mx
 			void World2GroundPlane ( const CvPoint3D64f &rPointSrc, CvPoint3D64f *pPointDes, double dOffset = 0 );
 
 			/**
+			* @brief Computes the location of a point in world coordinates if it lies on a x-z plane with y=dYOffset\n
+			* @param  rPointSrc point on the image plane in world coodinates
+			* @param  pPointDes point in world coordinates an the x-z
+			* @param  dYOffset Offset in [mm] of the y-axis
+			* @pre CCameraModel::Image2World
+			**/
+			void World2YPlane ( const CvPoint3D64f &rPointSrc, CvPoint3D64f *pPointDes, double dYOffset = 0 );
+
+			/**
 			* @brief Computes the location of a world point in the image\n
 			* Optional it gives the option to distore the image pixels so that it fits into the camera image. \n
 			* If bImgIsDistortit is true it will compute the point using gradienten relegation
