@@ -412,6 +412,17 @@ namespace mx
 		pPointDes->z = 0;
 	}
 
+
+	void CCameraModel::World2YPlane ( const CvPoint3D64f &rPointSrc, CvPoint3D64f *pPointDes, double dYOffset )
+	{
+		double t = ( - rPointSrc.y + dYOffset ) / ( rPointSrc.y - m_tCameraPosition.y );	// t = (-Py + dO)/dy
+
+		pPointDes->x = rPointSrc.x + ( rPointSrc.x - m_tCameraPosition.x ) * t;
+		pPointDes->y = dYOffset;
+		pPointDes->z = rPointSrc.z + ( rPointSrc.z - m_tCameraPosition.z ) * t;
+	}
+
+
 	void CCameraModel::World2Image ( const CvPoint3D64f &rPointSrc, CvPoint2D64f *pPointDes, bool bImgIsDistort )
 	{
 		CvMat *pSrc = cvCreateMat ( 4,1,CV_64F );
