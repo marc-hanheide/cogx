@@ -342,15 +342,17 @@ void DisplayNavInPB::runComponent() {
       // Display the last laser scan 
       if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {        
 
-        /*
-        peekabot::SensorProxy::SensorData reading;
-        double r[m_Scan.ranges.size()];
+
+        m_ProxyScan.clear_vertices();
+        double angStep = m_ScanAngFOV / (m_Scan.ranges.size() - 1);
+        double startAng = -m_ScanAngFOV / 2;
         for (unsigned int i = 0; i < m_Scan.ranges.size(); i++) {
-          r[i] = m_Scan.ranges[i];
+          float x,y;
+          x = cos(startAng + i * angStep) * m_Scan.ranges[i];
+          y = sin(startAng + i * angStep) * m_Scan.ranges[i];
+          m_ProxyScan.add_vertex(x,y,0);
         }
-        reading.write(r, m_Scan.ranges.size());
-        m_ProxyLaser.update(reading);
-        */
+        
 
       }
 
@@ -1099,16 +1101,24 @@ void DisplayNavInPB::connectPeekabot()
     } else {
       if (m_PbRobotFile == "CogXp3.xml") {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis.rangefinder").status();
+        m_ScanAngFOV = M_PI/180.0*240;
+        m_ScanMaxRange = 5.6;
       } else if (m_PbRobotFile == "B21.xml") {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "model.rangefinder").status();
+        m_ScanAngFOV = M_PI/180.0*180;
+        m_ScanMaxRange = 8.0;
       } else {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "peoplebot_base.rangefinder").status();
+        m_ScanAngFOV = M_PI/180.0*180;
+        m_ScanMaxRange = 8.0;
       }
       if( s2.failed() ) {
         println("Could not hook up to laser scanner, not using laser");
-        m_LaserConnected = false;
+        m_LaserConnected = false;        
       } else {
 
+        m_ProxyScan.add(m_ProxyLaser, "scan", peekabot::REPLACE_ON_CONFLICT);
+        m_ProxyScan.set_color(0,0,1);
         m_LaserConnected = true;
 
       }
