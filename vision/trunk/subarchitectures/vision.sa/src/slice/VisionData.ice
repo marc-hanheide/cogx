@@ -7,6 +7,8 @@
 
 module VisionData {
 
+  sequence<cogx::Math::Vector3> Vector3Seq;
+
   sequence<string> IdSeq;
 
   // A planar surface patch
@@ -142,6 +144,9 @@ module VisionData {
     cogx::Math::Box3 boundingBox;
     // time the SOI was last changed
     cast::cdl::CASTTime time;
+    // This is a temporary solution only: provide the 3D points that gave rise
+    // to this SOI, iff the SOI was created by plane pop-out.
+    Vector3Seq points;
   };
 
   /**
