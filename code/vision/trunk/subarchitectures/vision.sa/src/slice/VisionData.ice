@@ -4,7 +4,6 @@
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
 #include <Video.ice>
-#include <Stereo.ice>
 
 module VisionData {
 
