@@ -7,6 +7,8 @@
 #define VISION_UTILS_H
 
 #include <VideoUtils.h>
+#include <Sphere3.h>
+#include <Box3.h>
 #include <VisionData.hpp>
 
 /**
@@ -20,6 +22,13 @@ inline VisionData::ROIPtr projectSOI(const Video::CameraParameters &cam, const V
    roi->rect.height = projectSize(cam, soi.boundingSphere.pos, soi.boundingSphere.rad);
    roi->time = soi.time;
    return roi;
+}
+
+
+inline bool pointInsideSOI(const VisionData::SOI &soi, const cogx::Math::Vector3 &p)
+{
+  return pointInsideSphere(soi.boundingSphere, p) &&
+         pointInsideBox(soi.boundingBox, p);
 }
 
 #endif
