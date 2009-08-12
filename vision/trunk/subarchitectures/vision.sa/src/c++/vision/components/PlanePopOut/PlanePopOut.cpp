@@ -47,6 +47,7 @@ vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded poin
 vector< Vector3 > v3size;
 vector< Vector3 > v3center;
 vector<double> vdradius;
+vector< vector< Vector3 > > SOIPointsSeq;
 
 
 void InitWin()
@@ -306,6 +307,10 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	initial_vector.y = 0;
 	initial_vector.z = 0;
 	center.assign(objnumber,initial_vector);
+	std::vector< Vector3 > pointsInOneSOI;
+	SOIPointsSeq.clear();
+	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
+
 	std::vector<int> amount;
 	amount.assign(objnumber,0);
 	std::vector<double> radius_world;
@@ -319,6 +324,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 		{
 			center.at(label-1) = center.at(label-1) + v3Obj;
 			amount.at(label-1) = amount.at(label-1) + 1;
+			SOIPointsSeq.at(label-1).push_back(v3Obj);
 		}
 	}
 	v3center.clear();
@@ -349,6 +355,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	center.clear();
 	amount.clear();
 	radius_world.clear();
+	pointsInOneSOI.clear();
 }
 
 
@@ -496,6 +503,7 @@ void PlanePopOut::runComponent()
 			OP.s = v3size.at(i);
 			OP.r = vdradius.at(i);
 			OP.id = "";
+			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			CurrentObjList.push_back(OP);
 		}
 		if (PreviousObjList.empty())
@@ -503,7 +511,7 @@ void PlanePopOut::runComponent()
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
 			{
 				CurrentObjList.at(i).id = newDataID();
-				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r);
+				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI);
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
@@ -519,7 +527,7 @@ void PlanePopOut::runComponent()
 					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
 					{
 						flag = true;
-						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r);
+						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI);
 						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
 						break;
 					}
@@ -532,7 +540,7 @@ void PlanePopOut::runComponent()
 				for(unsigned int i=0; i<newObjList.size(); i++)// add all new objects
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
-					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r);
+					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI);
 					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
@@ -756,7 +764,7 @@ inline Vector3 PlanePopOut::normalize(Vector3 u, Vector3 v)
 	return cross(u, v)/norm(cross(u, v));
 	else return 999999.0*cross(u, v);
 }
-SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius)
+SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI)
 {
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
@@ -766,7 +774,8 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius)
 	obs->boundingBox.size.y = size.y;
 	obs->boundingBox.size.z = size.z;
 	obs->boundingSphere.rad = radius;
-	obs->time = getCASTTime();
+	obs->time = getCASTTime();//cout<<"points in 1 SOI = "<<psIn1SOI.at(1)<<endl;
+	obs->points = psIn1SOI;
 	
 	return obs;
 }
