@@ -26,6 +26,7 @@ typedef struct ObjP
 	Vector3 s;
 	double r;
 	std::string id;
+	std::vector< Vector3 > pointsInOneSOI;
 }ObjPara;
 
 private:
@@ -37,7 +38,7 @@ private:
 	Vector3 normalize(Vector3 u, Vector3 v);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
-	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius);
+	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI);
 	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 
 
