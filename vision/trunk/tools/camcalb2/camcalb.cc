@@ -93,11 +93,11 @@ void CamParsPoses::Write(FILE *file)
     fprintf(file,
         "# 3x1 translation vector t [m] and 3x3 rotation matrix R "
         "(in row major order)\n");
-    fprintf(file, "nposes %d\n", num_images);
+    fprintf(file, "nposes = %d\n", num_images);
     for(int i = 0; i < num_images; i++)
     {
       fprintf(file, "# %s\n", img_names[i].c_str());
-      fprintf(file, "pose%d ", i);
+      fprintf(file, "pose%d = ", i);
       WriteVector(file, &trans_vecs[3*i], 3);
       fprintf(file, "  ");
       WriteVector(file, &rot_matrs[9*i], 9);
