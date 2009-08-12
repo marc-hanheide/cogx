@@ -7,6 +7,7 @@
 #include <opencv/highgui.h>
 #include <cast/core/CASTUtils.hpp>
 #include <VideoUtils.h>
+#include <VisionUtils.h>
 #include "StereoServer.h"
 
 /**
@@ -35,6 +36,12 @@ static const int STEREO_HEIGHT = 120;
 void StereoServerI::getPoints(Stereo::Vector3Seq& points, const Ice::Current&)
 {
   stereoSrv->getPoints(points);
+}
+
+void StereoServerI::getPointsInSOI(const VisionData::SOIPtr &soi,
+    Stereo::Vector3Seq& points, const Ice::Current&)
+{
+  stereoSrv->getPointsInSOI(*soi, points);
 }
 
 StereoServer::StereoServer()
@@ -144,6 +151,27 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
            points[cnt].x, points[cnt].y, points[cnt].z);
         cnt++;
+      }
+    }
+  unlockComponent();
+}
+
+void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
+    std::vector<cogx::Math::Vector3> &points)
+{
+  lockComponent();
+  points.resize(0);
+  for(int y = 0; y < disparityImg->height; y += 1)
+    for(int x = 0; x < disparityImg->width; x += 1)
+    {
+      unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
+      if(d != 0)
+      {
+        Vector3 p;
+        stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
+           p.x, p.y, p.z);
+        if(pointInsideSOI(soi, p))
+          points.push_back(p);
       }
     }
   unlockComponent();

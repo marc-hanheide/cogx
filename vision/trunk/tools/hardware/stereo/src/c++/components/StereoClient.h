@@ -44,6 +44,11 @@ public:
    * Returns the 3D point cloud.
    */
   void getPoints(Stereo::Vector3Seq& points);
+
+  /**
+   * Returns part of the 3D point cloud inside given SOI.
+   */
+  void getPointsInSOI(const VisionData::SOI &soi, Stereo::Vector3Seq& points);
 };
 
 }
