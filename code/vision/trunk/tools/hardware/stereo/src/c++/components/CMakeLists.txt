@@ -1,4 +1,6 @@
 include_directories(.)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision)
+include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
 link_directories (/usr/local/lib)
 link_directories (/usr/local/cuda/lib)
 link_directories (/usr/local/cuda/sdk/lib)

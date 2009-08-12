@@ -3,6 +3,7 @@
 
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
+#include <VisionData.ice>
 
 module Stereo {
 
@@ -14,6 +15,7 @@ module Stereo {
    */
   interface StereoInterface {
     void getPoints(out Vector3Seq points);
+    void getPointsInSOI(VisionData::SOI soi, out Vector3Seq points);
   };
 };
 

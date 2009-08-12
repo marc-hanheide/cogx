@@ -73,5 +73,13 @@ void StereoClient::getPoints(Stereo::Vector3Seq& points)
   stereoServer->getPoints(points);
 }
 
+void StereoClient::getPointsInSOI(const VisionData::SOI &soi,
+    Stereo::Vector3Seq& points)
+{
+  VisionData::SOIPtr soiPtr = new VisionData::SOI;
+  *soiPtr = soi;
+  stereoServer->getPointsInSOI(soiPtr, points);
+}
+
 }
 

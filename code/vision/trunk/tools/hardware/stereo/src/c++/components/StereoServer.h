@@ -37,6 +37,12 @@ public:
    * Returns the 3D point cloud.
    */
   virtual void getPoints(Stereo::Vector3Seq& points, const Ice::Current&);
+
+  /**
+   * Returns part of the 3D point cloud inside given SOI.
+   */
+  virtual void getPointsInSOI(const VisionData::SOIPtr &soi,
+      Stereo::Vector3Seq& points, const Ice::Current&);
 };
 
 class StereoServer : public VideoClient,
@@ -91,6 +97,12 @@ public:
    * Returns the 3D point cloud.
    */
   void getPoints(std::vector<cogx::Math::Vector3> &points);
+
+  /**
+   * Returns part of the 3D point cloud inside given SOI.
+   */
+  void getPointsInSOI(const VisionData::SOI &soi,
+      std::vector<cogx::Math::Vector3> &points);
 };
 
 }
