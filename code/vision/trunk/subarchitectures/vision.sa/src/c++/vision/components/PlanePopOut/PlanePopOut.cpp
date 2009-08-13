@@ -48,6 +48,7 @@ vector< Vector3 > v3size;
 vector< Vector3 > v3center;
 vector<double> vdradius;
 vector< vector< Vector3 > > SOIPointsSeq;
+vector< vector< Vector3 > > BGPointsSeq;
 
 
 void InitWin()
@@ -310,6 +311,8 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	std::vector< Vector3 > pointsInOneSOI;
 	SOIPointsSeq.clear();
 	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
+	BGPointsSeq.clear();
+	BGPointsSeq.assign(objnumber, pointsInOneSOI);
 
 	std::vector<int> amount;
 	amount.assign(objnumber,0);
@@ -356,7 +359,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 			Vector3 v3Obj = points.at(j);
 			int label = labels.at(j);
 			if (label != i+1 && dist(v3Obj,center.at(i)) < radius_world.at(i)) //BG nearby also required
-			SOIPointsSeq.at(i).push_back(v3Obj);
+			BGPointsSeq.at(i).push_back(v3Obj);
 		}
 	}
 	
@@ -364,6 +367,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	amount.clear();
 	radius_world.clear();
 	pointsInOneSOI.clear();
+	BGPointsSeq.clear();
 }
 
 
@@ -512,6 +516,7 @@ void PlanePopOut::runComponent()
 			OP.r = vdradius.at(i);
 			OP.id = "";
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
+			OP.BGInOneSOI = BGPointsSeq.at(i);
 			CurrentObjList.push_back(OP);
 		}
 		if (PreviousObjList.empty())
@@ -519,7 +524,7 @@ void PlanePopOut::runComponent()
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
 			{
 				CurrentObjList.at(i).id = newDataID();
-				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI);
+				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI,  CurrentObjList.at(i).BGInOneSOI);
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);
 			}
 			PreviousObjList = CurrentObjList;
@@ -535,7 +540,7 @@ void PlanePopOut::runComponent()
 					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
 					{
 						flag = true;
-						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI);
+						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI);
 						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
 						break;
 					}
@@ -548,7 +553,7 @@ void PlanePopOut::runComponent()
 				for(unsigned int i=0; i<newObjList.size(); i++)// add all new objects
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
-					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI);
+					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI);
 					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
@@ -769,7 +774,7 @@ double PlanePopOut::Calc_SplitThreshold(std::vector<Vector3> &points, std::vecto
 	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/20;
 }
 
-SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI)
+SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI)
 {
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
@@ -781,7 +786,8 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::
 	obs->boundingSphere.rad = radius;
 	obs->time = getCASTTime();
 	obs->points = psIn1SOI;//cout<<"points in 1 SOI = "<<obs->points.at(1)<<obs->points.at(2)<<obs->points.at(10)<<endl;
-	
+	obs->BGpoints =	BGpIn1SOI;
+
 	return obs;
 }
 
