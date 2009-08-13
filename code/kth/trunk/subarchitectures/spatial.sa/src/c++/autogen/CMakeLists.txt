@@ -10,8 +10,8 @@ cast_slice2cpp(GEN_CPP GEN_HPP FrontierInterface.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/subarchitectures/nav.sa/src/slice)
 add_library(SpatialData SHARED ${GEN_CPP})
 add_library(FrontierInterface SHARED ${GEN_CPP})
-target_link_libraries(SpatialData CDL NavData)
-target_link_libraries(FrontierInterface CDL NavData SpatialData)
+target_link_libraries(SpatialData CDL)
+target_link_libraries(FrontierInterface CDL)
 install(TARGETS SpatialData LIBRARY DESTINATION lib)
 install(TARGETS FrontierInterface LIBRARY DESTINATION lib)
 

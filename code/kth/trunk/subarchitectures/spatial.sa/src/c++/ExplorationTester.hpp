@@ -19,6 +19,8 @@
 #include <vector>
 #include <queue>
 #include <SpatialData.hpp>
+#include <NavData.hpp>
+#include <string>
 
 using namespace std;
 
@@ -42,11 +44,20 @@ namespace spatial {
     virtual void configure(const std::map<std::string, std::string>& _config);
 
   protected:
-    vector<SpatialData::PlacePtr> m_places;
+    map<string, SpatialData::PlacePtr> m_places;
     queue<pair<SpatialData::PlacePtr, SpatialData::PlacePtr> > m_explorationPairs;
     queue<SpatialData::PlacePtr> m_newPlaces;
 
     void newPlace(const cast::cdl::WorkingMemoryChange &);
+    void placeDeleted(const cast::cdl::WorkingMemoryChange &);
+    void PlaceChanged(const cast::cdl::WorkingMemoryChange &);
+
+    bool firstPoseRead;
+
+    NavData::FNodePtr getCurrentNavNode();
+
+    SpatialData::PathTransitionProbRequestPtr
+      doTransitionQuery(int startPlaceID, int goalPlaceID);
   };
 };
 

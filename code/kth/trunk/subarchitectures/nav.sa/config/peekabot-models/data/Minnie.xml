@@ -20,27 +20,17 @@
 	   ************* SICK rangefinder  ************
 	   ******************************************** -->
       
-      <sensor type="rangefinder">
+      <group>
 	<name>rangefinder</name>
 	
 	<transform>
 	  <translate>0 0 0.30</translate>
 	</transform>
 
-	<params>
-	  <!-- Fill in correct values here -->
-	  <float name="angle_uncertainty">0.25</float>
-	  <float name="dist_uncertainty_prop">0.01</float>
-	  <float name="dist_uncertainty_const">0.01</float>
-	  <float name="upper_bound">8</float>
-
-	  <string name="mode">dots</string>
-	</params>
-
 	<children>
-	  <model><file>sick_lms200.pbmf</file></model>
+	  <model><file>sick_lms200/sick_lms200.pbmf</file></model>
 	</children>
-      </sensor>
+      </group>
 
       <!-- ********************************************
 	   ********** PTU + Stereo camera  ************
