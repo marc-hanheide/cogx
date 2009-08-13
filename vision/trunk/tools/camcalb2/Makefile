@@ -2,7 +2,7 @@
 # Makefile for camcalb and posecalb
 # 
 
-PROGRAMS = camcalb posecalb
+PROGRAMS = camcalb posecalb invertpose
 OBJECTS = camcalb.o ell_markers.o CamPars.o posecalb.o
 DEFS =
 CINC += -I. -Imatas
@@ -26,6 +26,9 @@ camcalb : camcalb.o ell_markers.o CamPars.o
 
 posecalb: posecalb.o CamPars.o
 	g++ -o $@ posecalb.o CamPars.o $(LDFLAGS)
+
+invertpose: invertpose.o
+	g++ -o $@ invertpose.o $(LDFLAGS)
 
 tidy:
 	rm -f *.o
