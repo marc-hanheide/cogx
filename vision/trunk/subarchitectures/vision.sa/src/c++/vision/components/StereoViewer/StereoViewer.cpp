@@ -3,6 +3,7 @@
  * @date June 2009
  */
 
+#include <limits.h>
 #include <GL/freeglut.h>
 #include <cogxmath.h>
 #include "StereoViewer.h"
@@ -26,20 +27,21 @@ using namespace Stereo;
 using namespace cogx;
 using namespace cogx::Math;
 
-int win;
-double cam_trans[3];
-double cam_rot[2];
-int mouse_x, mouse_y;
-int mouse_butt;
-int butt_state;
-Vector3 view_point, view_dir, view_up, view_normal;
-GLfloat col_background[4];
-GLfloat col_surface[4];
-GLfloat col_overlay[4];
-GLfloat col_highlight[4];
-vector<Vector3> points;
+static int win;
+static double cam_trans[3];
+static double cam_rot[2];
+static int mouse_x, mouse_y;
+static int mouse_butt;
+static int butt_state;
+static Vector3 view_point, view_dir, view_up, view_normal;
+static GLfloat col_background[4];
+static GLfloat col_surface[4];
+static GLfloat col_overlay[4];
+static GLfloat col_highlight[4];
+static vector<Vector3> points;
+static size_t selected_point = UINT_MAX;
 
-void InitWin()
+static void InitWin()
 {
   GLfloat light_ambient[] = {0.4, 0.4, 0.4, 1.0};
   GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
@@ -97,7 +99,7 @@ void InitWin()
   col_overlay[3] = 1.0;
 }
 
-void ResizeWin(int w, int h)
+static void ResizeWin(int w, int h)
 {
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);
@@ -107,7 +109,7 @@ void ResizeWin(int w, int h)
   glLoadIdentity();
 }
 
-void DrawText3D(const char *text, double x, double y, double z)
+static void DrawText3D(const char *text, double x, double y, double z)
 {
   glRasterPos3d(x, y, z);
   while(*text != '\0')
@@ -117,7 +119,7 @@ void DrawText3D(const char *text, double x, double y, double z)
 /**
  * Draw things like coord frames
  */
-void DrawOverlays()
+static void DrawOverlays()
 {
   glColor4fv(col_overlay);
 
@@ -163,7 +165,7 @@ void DrawOverlays()
   }
 }
 
-void DrawPoints()
+static void DrawPoints()
 {
   glBegin(GL_POINTS);
   glColor3ub(255, 255, 255);
@@ -172,9 +174,26 @@ void DrawPoints()
     glVertex3d(points[i].x, points[i].y, points[i].z);
   }
   glEnd();
+  if(selected_point < points.size())
+  {
+    size_t i = selected_point;
+    char text[100];
+
+    glColor3ub(255, 0, 0);
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_COLOR_MATERIAL);
+    snprintf(text, 100, "%.3f", length(points[i]));
+    DrawText3D(text, points[i].x, points[i].y, points[i].z);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+
+    glTranslatef(points[i].x, points[i].y, points[i].z);
+    glutWireSphere(0.01, 10, 10);
+  }
 }
 
-void DisplayWin()
+static void DisplayWin()
 {
   GLfloat light_position[] = {2.0, -2.0, 1.0, 1.0};
 
@@ -200,7 +219,7 @@ void DisplayWin()
   glutSwapBuffers();
 }
 
-void KeyPress(unsigned char key, int x, int y)
+static void KeyPress(unsigned char key, int x, int y)
 {
   switch(key)
   {
@@ -210,7 +229,7 @@ void KeyPress(unsigned char key, int x, int y)
   glutPostRedisplay();
 }
 
-void MousePress(int button, int state, int x, int y)
+static void MousePress(int button, int state, int x, int y)
 {
   mouse_x = x;
   mouse_y = y;
@@ -218,7 +237,7 @@ void MousePress(int button, int state, int x, int y)
   butt_state = state;
 }
 
-void MouseMove(int x, int y)
+static void MouseMove(int x, int y)
 {
   double trans_scale = 0.005, rot_scale = 1.;
   double delta_x = (double)(x - mouse_x);
@@ -242,6 +261,21 @@ void MouseMove(int x, int y)
   glutPostRedisplay();
 }
 
+static void selectPointNearLeftOpticalAxis()
+{
+  double min_dist = HUGE;
+  Vector3 o = vector3(0., 0., 0.);
+  Vector3 z = vector3(0., 0., 1.);
+  for(size_t i = 0; i < points.size(); i++)
+  {
+    double dist = distPointToLine(points[i], o, z);
+    if(dist < min_dist)
+    {
+      min_dist = dist;
+      selected_point = i;
+    }
+  }
+}
 
 void StereoViewer::configure(const map<string,string> & _config)
 {
@@ -272,6 +306,7 @@ void StereoViewer::runComponent()
   {
     points.resize(0);
     getPoints(points);
+    selectPointNearLeftOpticalAxis();
 
     glutPostRedisplay();
     glutMainLoopEvent();
