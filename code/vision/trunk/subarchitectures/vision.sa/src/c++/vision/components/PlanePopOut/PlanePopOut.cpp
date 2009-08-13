@@ -367,7 +367,6 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	amount.clear();
 	radius_world.clear();
 	pointsInOneSOI.clear();
-	BGPointsSeq.clear();
 }
 
 
