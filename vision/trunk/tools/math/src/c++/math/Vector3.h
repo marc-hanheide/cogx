@@ -463,7 +463,7 @@ inline double normSqr(const Vector3 &a)
   return sqr(a.x) + sqr(a.y) + sqr(a.z);
 }
 
-inline double Length(const Vector3 &a)
+inline double length(const Vector3 &a)
 {
   return norm(a);
 }
@@ -516,6 +516,18 @@ inline Vector3 cross(const Vector3& a, const Vector3& b)
   return vector3((a.y*b.z) - (a.z*b.y),
                  (a.z*b.x) - (a.x*b.z),
                  (a.x*b.y) - (a.y*b.x));
+}
+
+
+/**
+ * Returns distance of point q from line defined by point p and unit
+ * direction vector d.
+ */
+inline double distPointToLine(const Vector3 &q, const Vector3 &p,
+    const Vector3 &d)
+{
+  Vector3 pq = q - p;
+  return dist(d*dot(pq, d), pq);
 }
 
 }
