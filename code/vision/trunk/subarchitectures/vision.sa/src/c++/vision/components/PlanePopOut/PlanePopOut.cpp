@@ -629,7 +629,8 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 				nC = rand()%nPoints;
 			Vector3 v3CA = R_points.at(nC)  - R_points.at(nA);
 			Vector3 v3BA = R_points.at(nB)  - R_points.at(nA);
-			v3Normal = normalize(v3CA, v3BA);
+			v3Normal = cross(v3CA, v3BA);
+			double length = normalise(v3Normal);
 		} while (fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.1); //the plane should parallel with the initialisation motion of camera
 
 		Vector3 v3Mean = 0.33333333 * (R_points.at(nA) + R_points.at(nB) + R_points.at(nC));
@@ -758,12 +759,6 @@ double PlanePopOut::Calc_SplitThreshold(std::vector<Vector3> &points, std::vecto
 	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/20;
 }
 
-inline Vector3 PlanePopOut::normalize(Vector3 u, Vector3 v)
-{
-	if (norm(cross(u, v)) != 0.0)
-	return cross(u, v)/norm(cross(u, v));
-	else return 999999.0*cross(u, v);
-}
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI)
 {
 	VisionData::SOIPtr obs = new VisionData::SOI;
@@ -774,8 +769,8 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::
 	obs->boundingBox.size.y = size.y;
 	obs->boundingBox.size.z = size.z;
 	obs->boundingSphere.rad = radius;
-	obs->time = getCASTTime();//cout<<"points in 1 SOI = "<<psIn1SOI.at(1)<<endl;
-	obs->points = psIn1SOI;
+	obs->time = getCASTTime();
+	obs->points = psIn1SOI;//cout<<"points in 1 SOI = "<<obs->points.at(1)<<obs->points.at(2)<<obs->points.at(10)<<endl;
 	
 	return obs;
 }
