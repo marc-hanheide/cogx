@@ -630,7 +630,9 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 			Vector3 v3CA = R_points.at(nC)  - R_points.at(nA);
 			Vector3 v3BA = R_points.at(nB)  - R_points.at(nA);
 			v3Normal = cross(v3CA, v3BA);
-			double length = normalise(v3Normal);
+			if (norm(v3Normal) != 0)
+				double length = normalise(v3Normal);
+			else v3Normal = 99999.9*v3Normal;
 		} while (fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.1); //the plane should parallel with the initialisation motion of camera
 
 		Vector3 v3Mean = 0.33333333 * (R_points.at(nA) + R_points.at(nB) + R_points.at(nC));
