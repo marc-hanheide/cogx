@@ -147,6 +147,7 @@ module VisionData {
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
     Vector3Seq points;
+    Vector3Seq BGpoints;
   };
 
   /**
