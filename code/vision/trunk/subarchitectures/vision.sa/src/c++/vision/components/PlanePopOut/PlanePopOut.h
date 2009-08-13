@@ -35,7 +35,6 @@ private:
    */
   int camId;
 	double Calc_SplitThreshold(std::vector<Vector3> &points, std::vector <int> &label);
-	Vector3 normalize(Vector3 u, Vector3 v);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI);
