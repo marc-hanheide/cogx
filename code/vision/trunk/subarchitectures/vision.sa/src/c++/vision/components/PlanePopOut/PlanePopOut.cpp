@@ -351,7 +351,15 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	for (int i = 0; i<objnumber; i++)
 	{
 		DrawWireSphere(center.at(i),radius_world.at(i));
+		for (unsigned int j = 0; j<points.size(); j++)
+		{
+			Vector3 v3Obj = points.at(j);
+			int label = labels.at(j);
+			if (label != i+1 && dist(v3Obj,center.at(i)) < radius_world.at(i)) //BG nearby also required
+			SOIPointsSeq.at(i).push_back(v3Obj);
+		}
 	}
+	
 	center.clear();
 	amount.clear();
 	radius_world.clear();
