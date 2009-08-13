@@ -1,0 +1,8 @@
+/BUILD
+/output
+/tools/hardware/*/src/c++/autogen/*.cpp
+/tools/hardware/*/src/c++/autogen/*.hpp
+/tools/*/src/c++/autogen/*.cpp
+/tools/*/src/c++/autogen/*.hpp
+/subarchitectures/*/src/c++/autogen/*.cpp
+/subarchitectures/*/src/c++/autogen/*.hpp

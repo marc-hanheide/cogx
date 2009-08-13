@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+
+<!-- This is a MobileRobotics PeopleBot, with bumpers and the gripper, but
+     sonars are undefined.-->
+
+<!-- Copyright 2008 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+
+  <model>
+    <name>peoplebot_base</name>
+    <file>peoplebot/peoplebot.pbmf</file>
+    <children>
+
+      <!-- ********************************************
+	   *******   Toe-level bump sensors  **********
+	   ******************************************** -->
+
+      <group>
+	<name>bumpers</name>
+	<children>
+	  <color r="0.15" g="0.15" b="0.15">
+	    <sensor type="bumper">
+	      <name>front_bumper_1</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f1.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>front_bumper_2</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f2.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>front_bumper_3</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f3.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>front_bumper_4</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f4.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>front_bumper_5</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_f5.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>rear_bumper_1</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r1.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>rear_bumper_2</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r2.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>rear_bumper_3</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r3.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>rear_bumper_4</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r4.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+
+	    <sensor type="bumper">
+	      <name>rear_bumper_5</name>	  
+	      <params>
+		<color name="active_color" r="0.8" g="0.0" b="0.0"/>
+	      </params>
+	      <children>
+		<model>
+		  <file>peoplebot/peoplebot_bumper_r5.pbmf</file>
+		</model>
+	      </children>
+	    </sensor>
+	    
+	  </color>
+	</children>
+      </group>
+    </children>
+
+  </model>
+
+</scene>
