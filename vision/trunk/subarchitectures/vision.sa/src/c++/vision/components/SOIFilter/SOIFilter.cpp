@@ -9,7 +9,7 @@
 #define TIME_THR_DEFAULT 500
 #define UPD_THR_DEFAULT 4
 #define CAM_ID_DEFAULT 0
-#define DILATE_FACTOR 1.5
+#define DILATE_FACTOR 1.0  // HACK: Michael Zillich, was 1.5
 
 /**
  * The function called to create a new instance of our component.
@@ -73,6 +73,9 @@ void SOIFilter::start()
   
   if (doDisplay)
   	cvNamedWindow("Last ROI", 1);
+  // HACK: Michael Zillich
+  if (doDisplay)
+  	cvNamedWindow("Full image", 1);
   
   // we want to receive detected SOIs
   addChangeFilter(createLocalTypeFilter<VisionData::SOI>(cdl::ADD),
@@ -196,6 +199,20 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
    		 
 }
 
+// HACK: Michael Zillich
+static void drawProjectedSOIPoints(const SOI &soi, const ROI &roi,
+    IplImage *img, const Video::CameraParameters &cam)
+{
+  for(size_t i = 0; i < soi.points.size(); i++)
+  {
+    cogx::Math::Vector2 p = projectPoint(cam, soi.points[i]);
+    p.x -= (roi.rect.pos.x - roi.rect.width/2);
+    p.y -= (roi.rect.pos.y - roi.rect.height/2);
+    cvCircle(img, cvPoint(p.x, p.y), 3, CV_RGB(0,255,0));
+  }
+}
+// END HACK: Michael Zillich
+
 Video::Image SOIFilter::getImgPatch(WorkingMemoryAddress soiAddr)
 {
 	Video::Image image;
@@ -228,6 +245,20 @@ Video::Image SOIFilter::getImgPatch(WorkingMemoryAddress soiAddr)
                           iplImg->nChannels);
                           
     cvCopy(iplImg, iplPatch);
+
+    // HACK: Michael Zillich
+    drawProjectedSOIPoints(*soiPtr, *roi, iplPatch, image.camPars);
+    if (doDisplay)
+    {
+        cvResetImageROI(iplImg);
+        cvRectangle(iplImg, cvPoint(roi->rect.pos.x-1, roi->rect.pos.y-1),
+            cvPoint(roi->rect.pos.x+1, roi->rect.pos.y+1),
+            CV_RGB(0,255,0));
+        cvRectangle(iplImg, cvPoint(rect.x, rect.y),
+            cvPoint(rect.x + rect.width, rect.y + rect.height),
+            CV_RGB(0,255,0));
+    	cvShowImage("Full image", iplImg);
+    }
 
     if (doDisplay)
     	cvShowImage("Last ROI", iplPatch);
