@@ -55,7 +55,7 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     str >> m_maxFrontierDist;
   }
   else {
-    m_maxFrontierDist = 1.5;
+    m_maxFrontierDist = 2.5;
   }
 
   if(_config.find("--min-frontier-dist") != _config.end()) {
@@ -87,7 +87,7 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     str >> m_hypPathLength;
   }
   else {
-    m_hypPathLength = 3.0;
+    m_hypPathLength = 1.5;
   }
 }
 

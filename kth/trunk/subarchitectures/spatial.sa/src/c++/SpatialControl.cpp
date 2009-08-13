@@ -96,7 +96,7 @@ void SpatialControl::configure(const map<string,string>& _config)
     std::abort();
   } 
 
-  m_MaxExplorationRange = 1;
+  m_MaxExplorationRange = 1.5;
   it = _config.find("--explore-range");
   if (it != _config.end()) {
     m_MaxExplorationRange = (atof(it->second.c_str()));
@@ -945,7 +945,6 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
   m_RobotServer->execMotionCommand(cmd);
 }
 
-//array<FrontierPt> 
 FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
 {

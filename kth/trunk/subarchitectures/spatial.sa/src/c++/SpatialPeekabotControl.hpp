@@ -18,6 +18,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <SpatialData.hpp>
 #include <NavData.hpp>
+#include <FrontierInterface.hpp>
 #include <set>
 
 #include <peekabot.hh>
@@ -67,14 +68,15 @@ protected:
   virtual void runComponent();
 
   void newPlace(const cast::cdl::WorkingMemoryChange &_wmc);
+  void deletedPlace(const cast::cdl::WorkingMemoryChange &_wmc);
 
   void connectPeekabot();
   void updatePeekabotGadget();
 
   std::string m_PbHost;
   int m_PbPort;
-  std::set<int> m_Places;
-  int m_nMaxPlaces;
+  //std::set<int> m_Places;
+  int m_maxPlaces;
 
   bool m_doPathQuery;
   PendingQueryReceiver m_pendingQueryReceiver;
@@ -86,6 +88,15 @@ protected:
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_controlmodule;
   const double gadget_y;
+  const double gadget_ystep;
+  int gadgetLineLength;
+
+  //Visualization of placeholders - Year 1 only!
+  peekabot::GroupProxy m_placeholderModule;
+  void newNodeHypothesis(const cast::cdl::WorkingMemoryChange &_wmc);
+  void deletedNodeHypothesis(const cast::cdl::WorkingMemoryChange &_wmc);
+  void updatePlaceholderVisualization();
+  int m_maxPlaceholderID;
 private:
   NavData::FNodePtr getCurrentNavNode();
 };

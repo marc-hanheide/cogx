@@ -4,7 +4,7 @@
 
   <model><file>katana_6m180/part1.pbmf</file></model>
 
-  <joint>
+  <hinge>
     <name>dof1</name>
     <axis system="parent">0 0 1</axis>
 
@@ -15,16 +15,24 @@
     <children>
       <model><file>katana_6m180/part2.pbmf</file></model>
 
-      <joint>
+      <hinge>
         <name>dof2</name>
 	<axis system="parent">0 1 0</axis>
+
+        <initial>
+          <degrees> -125 </degrees>
+        </initial>
 
 	<children>
 	  <model><file>katana_6m180/part3.pbmf</file></model>
 
-          <joint>
+          <hinge>
             <name>dof3</name>
             <axis system="parent">0 1 0</axis>
+
+            <initial>
+              <degrees> 125 </degrees>
+            </initial>
 
 	    <transform>
 	      <translate>0.190 0 0</translate>
@@ -33,9 +41,13 @@
             <children>
               <model><file>katana_6m180/part4.pbmf</file></model>
 
-              <joint>
+              <hinge>
                 <name>dof4</name>
                 <axis system="parent">0 1 0</axis>
+
+                <initial>
+                  <degrees> -125 </degrees>
+                </initial>
 
 	        <transform>
                   <translate>0.139 0 0</translate>
@@ -44,7 +56,7 @@
                 <children>
                   <model><file>katana_6m180/part5.pbmf</file></model>
 
-                  <joint>
+                  <hinge>
                     <name>dof5</name>
                     <axis system="parent">1 0 0</axis>
 
@@ -55,7 +67,7 @@
                     <children>
                       <model><file>katana_6m180/part6.pbmf</file></model>
 
-		      <joint>
+		      <hinge>
 			<name>gripper_l</name>
 
 			<axis>0 0 -1</axis>
@@ -67,9 +79,9 @@
 			<children>
 			  <model><file>katana_6m180/gripper_b.pbmf</file></model>
 			</children>
-		      </joint>
+		      </hinge>
 
-		      <joint>
+		      <hinge>
 			<name>gripper_r</name>
 
 			<axis>0 0 -1</axis>
@@ -88,17 +100,17 @@
 			    <file>katana_6m180/gripper_b.pbmf</file>
 			  </model>
 			</children>
-		      </joint>
+		      </hinge>
                     </children>
-                  </joint>
+                  </hinge>
                 </children>
-              </joint>
+              </hinge>
 
             </children>
-          </joint>
+          </hinge>
 	</children>
-      </joint>
+      </hinge>
 
     </children>
-  </joint>
+  </hinge>
 </scene>

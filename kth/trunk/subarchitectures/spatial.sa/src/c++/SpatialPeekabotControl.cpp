@@ -33,7 +33,7 @@ extern "C" {
   }
 }
 
-SpatialPeekabotControl::SpatialPeekabotControl() : m_nMaxPlaces(0), m_pendingQueryReceiver(this), gadget_y(10)
+SpatialPeekabotControl::SpatialPeekabotControl() : m_maxPlaces(0), m_pendingQueryReceiver(this), gadget_y(10), gadget_ystep(2), gadgetLineLength(10), m_maxPlaceholderID(0)
 {
   m_CtrlAction = 0;
   m_doPathQuery = false;
@@ -107,7 +107,19 @@ void SpatialPeekabotControl::start()
 {
   addChangeFilter(cast::createLocalTypeFilter<SpatialData::Place>(cast::cdl::ADD),
 		  new cast::MemberFunctionChangeReceiver<SpatialPeekabotControl>(this,
-                                                               &SpatialPeekabotControl::newPlace));    
+		    &SpatialPeekabotControl::newPlace));    
+
+  addChangeFilter(cast::createLocalTypeFilter<SpatialData::Place>(cast::cdl::DELETE),
+		  new cast::MemberFunctionChangeReceiver<SpatialPeekabotControl>(this,
+		    &SpatialPeekabotControl::deletedPlace));    
+
+  //Only for Year1 visualization!
+  addChangeFilter(cast::createLocalTypeFilter<FrontierInterface::NodeHypothesis>(cast::cdl::ADD),
+      new cast::MemberFunctionChangeReceiver<SpatialPeekabotControl>(this,
+	&SpatialPeekabotControl::newNodeHypothesis));
+  addChangeFilter(cast::createLocalTypeFilter<FrontierInterface::NodeHypothesis>(cast::cdl::DELETE),
+      new cast::MemberFunctionChangeReceiver<SpatialPeekabotControl>(this,
+	&SpatialPeekabotControl::deletedNodeHypothesis));
 
   println("start entered");
   
@@ -131,6 +143,7 @@ void SpatialPeekabotControl::runComponent() {
   root.assign(m_PeekabotClient, "root");
 
   m_controlmodule.add(root, "ctrl", peekabot::REPLACE_ON_CONFLICT);
+  m_placeholderModule.add(root, "placeholder", peekabot::REPLACE_ON_CONFLICT);
 
   // Create an "icon" to drag around and show where you want the robot
   // to go
@@ -221,11 +234,14 @@ void SpatialPeekabotControl::runComponent() {
 	      // we interpret the command as a place index
 
 	      std::string id = "";
-	      if (fabs(yT-(gadget_y-1)) < 0.5) {
+	      if (yT - (gadget_y-1) < 0.5 &&
+		  yT - (gadget_y-1) > -(0.5 + gadget_ystep * (m_maxPlaces / gadgetLineLength))) { //fabs(yT-(gadget_y-1)) < 0.5) {
 
 		// Get the place id
 		cmd->destId.resize(1);
-		cmd->destId[0] = long(xT + 0.5);
+		int ypos = (int)(((gadget_y-1+0.5)-yT)/gadget_ystep);
+		cmd->destId[0] = long(xT + 0.5) + ypos * gadgetLineLength;
+		log("Reading command: %i, %i, %i", ypos, long(xT + 0.5), (int)cmd->destId[0]);
 		if (cmd->destId[0] < 0) cmd->destId[0] = 0;
 
 		cmd->cmd = SpatialData::GOTOPLACE;
@@ -316,18 +332,20 @@ SpatialPeekabotControl::PendingQueryReceiver::workingMemoryChanged(const cast::c
   if (m_dependentCommand != 0) {
     m_parent->log("Received path transition probability query result");
     //Check if the query returned OK status for us
-    cast::CASTData<SpatialData::PathTransitionProbRequest> query = 
-      m_parent->getMemoryEntryWithData<SpatialData::PathTransitionProbRequest>(_wmc.address);
-    if (query.getData()->successProb > 0.0) {
-      m_parent->log("Probability > 0, dispatch pending nav command");
-      string id = "gotoplace-" + m_parent->newDataID();
-      m_parent->log("Sending robot to place %ld, task id: %s", 
-	  m_dependentCommand->destId[0], id.c_str());
+    SpatialData::PathTransitionProbRequestPtr query = 
+      m_parent->getMemoryEntry<SpatialData::PathTransitionProbRequest>(_wmc.address);
+    if (query && query->status == SpatialData::QUERYCOMPLETED) {
+      if (query->successProb > 0.0) {
+	m_parent->log("Probability > 0, dispatch pending nav command");
+	string id = "gotoplace-" + m_parent->newDataID();
+	m_parent->log("Sending robot to place %ld, task id: %s", 
+	    m_dependentCommand->destId[0], id.c_str());
 
-      m_parent->addToWorkingMemory<SpatialData::NavCommand>(id, m_dependentCommand);
-    }
-    else {
-      m_parent->log("Probability 0; do not send nav command");
+	m_parent->addToWorkingMemory<SpatialData::NavCommand>(id, m_dependentCommand);
+      }
+      else {
+	m_parent->log("Probability 0; do not send nav command");
+      }
     }
     m_dependentCommand = 0;
 	  
@@ -354,26 +372,45 @@ void SpatialPeekabotControl::connectPeekabot()
 void
 SpatialPeekabotControl::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  cast::CASTData<SpatialData::Place> data = getMemoryEntryWithData<SpatialData::Place>(_wmc.address);
-  int id = (int)data.getData()->id;
-  m_Places.insert(id);
-
+//  cast::CASTData<SpatialData::Place> data = getMemoryEntryWithData<SpatialData::Place>(_wmc.address);
+//  int id = (int)data.getData()->id;
+//  m_Places.insert(id);
+//
   updatePeekabotGadget();
+}
+
+void
+SpatialPeekabotControl::deletedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
+{
+  updatePeekabotGadget();
+}
+
+bool placeOrder(SpatialData::PlacePtr a, SpatialData::PlacePtr b) {
+  return a->id < b->id;
 }
 
 void SpatialPeekabotControl::updatePeekabotGadget()
 {
-  int nPlaces = m_Places.size();
-  m_nMaxPlaces = (m_nMaxPlaces > nPlaces) ? m_nMaxPlaces : nPlaces;
+  vector<SpatialData::PlacePtr> places;
+  getMemoryEntries<SpatialData::Place>(places);
+  sort(places.begin(), places.end(), placeOrder);
 
-  peekabot::PolygonProxy pp;
-  pp.add(m_controlmodule, "placeidline", peekabot::REPLACE_ON_CONFLICT);
-  pp.add_vertex(0,gadget_y-1,0);
-  double maxX = 0 + 1.0*(nPlaces-1);
-  pp.add_vertex(maxX,gadget_y-1,0);
-  pp.add_vertex(maxX,gadget_y-1+0.05,0);
-  pp.add_vertex(0,gadget_y-1+0.05,0);
-  pp.set_color (0,0,0);
+  int nPlaces = places.size();
+  if (nPlaces == 0)
+    return;
+  int highestPlaceID = places[nPlaces-1]->id;
+  m_maxPlaces = m_maxPlaces > highestPlaceID ? m_maxPlaces : highestPlaceID;
+
+  log("nPlaces: %i maxPlaces: %i", nPlaces, m_maxPlaces);
+
+  //peekabot::PolygonProxy pp;
+  //pp.add(m_controlmodule, "placeidline", peekabot::REPLACE_ON_CONFLICT);
+  //pp.add_vertex(0,gadget_y-1,0);
+  //double maxX = 0 + 1.0*(nPlaces-1);
+  //pp.add_vertex(maxX,gadget_y-1,0);
+  //pp.add_vertex(maxX,gadget_y-1+0.05,0);
+  //pp.add_vertex(0,gadget_y-1+0.05,0);
+  //pp.set_color (0,0,0);
 
   peekabot::LabelProxy lp;
   lp.add(m_controlmodule, "placelabel", peekabot::REPLACE_ON_CONFLICT);
@@ -381,24 +418,50 @@ void SpatialPeekabotControl::updatePeekabotGadget()
   lp.set_pose(0,gadget_y-0.5,0,0,0,0);
   lp.set_scale(50);
   lp.set_alignment(peekabot::ALIGN_RIGHT);
+
   int i = 0;
-  for (set<int>::iterator it = m_Places.begin(); it != m_Places.end(); it++) {
-    peekabot::LabelProxy lp;
+  for (vector<SpatialData::PlacePtr>::iterator it = places.begin(); it != places.end(); it++) {
     char identifier[100];
+    for(;i < (*it)->id;i++) {
+      sprintf(identifier, "label%d", i);
+      lp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
+      lp.hide();
+      sprintf(identifier, "circle%d", i);
+      peekabot::CircleProxy cp;
+      cp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
+      cp.hide();
+    }
+
+    peekabot::LabelProxy lp;
     sprintf(identifier, "label%d", i);
     lp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
-    sprintf(identifier, "%d", *it);
+    sprintf(identifier, "%d", (int)(*it)->id);
     lp.set_text(identifier);
-    lp.set_pose(1.0*i,gadget_y-0.5,0,0,0,0);
-    lp.set_scale(50);
+    lp.set_pose(1.0*(i % gadgetLineLength),gadget_y-0.5 - (gadget_ystep * (i / gadgetLineLength)),0,0,0,0);
+    if ((*it)->status == SpatialData::PLACEHOLDER) {
+      lp.set_scale(30);
+    }
+    else {
+      lp.set_scale(50);
+    }
     lp.set_alignment(peekabot::ALIGN_CENTER);
+
+    sprintf(identifier, "circle%d", i);
+    peekabot::CircleProxy cp;
+    cp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
+    cp.set_scale(0.04);
+    cp.set_pose(1.0*(i % gadgetLineLength),gadget_y-1 - (gadget_ystep * (i / gadgetLineLength)),0,0,0,0);
     i++;
   }
-  for (;i < m_nMaxPlaces; i++) {
+  for (;i < m_maxPlaces; i++) {
     char identifier[100];
     sprintf(identifier, "label%d", i);
     lp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
     lp.hide();
+    sprintf(identifier, "circle%d", i);
+    peekabot::CircleProxy cp;
+    cp.add(m_controlmodule, identifier, peekabot::REPLACE_ON_CONFLICT);
+    cp.hide();
   }
 }
 
@@ -435,3 +498,79 @@ SpatialPeekabotControl::getCurrentNavNode()
   }
   return ret;
 }
+
+//Year1 visualization only!
+void 
+SpatialPeekabotControl::newNodeHypothesis(const cast::cdl::WorkingMemoryChange &_wmc)
+{
+//  try {
+//    FrontierInterface::NodeHypothesisPtr newHypothesis = getMemoryEntry<FrontierInterface::NodeHypothesis>(_wmc.address);
+//
+//    m_nodeHypotheses[newHypothesis->hypID]=newHypothesis;
+//    
+//    m_maxPlaceholderID = (m_maxPlaceholderID > newHypothesis->hypID ? 
+//	m_maxPlaceholderID : newHypothesis->hypID);
+//    updatePlaceholderVisualization();
+//  }
+//  catch (cast::DoesNotExistOnWMException) {
+//
+//  }
+  updatePlaceholderVisualization();
+}
+
+void
+SpatialPeekabotControl::deletedNodeHypothesis(const cast::cdl::WorkingMemoryChange &_wmc)
+{
+  updatePlaceholderVisualization();
+}
+
+void
+SpatialPeekabotControl::updatePlaceholderVisualization()
+{
+  vector<FrontierInterface::NodeHypothesisPtr> hypotheses; 
+  getMemoryEntries<FrontierInterface::NodeHypothesis>(hypotheses);
+
+  vector<FrontierInterface::NodeHypothesisPtr>::iterator it;
+  for (it = hypotheses.begin(); it != hypotheses.end(); it++) {
+    int hypID = (*it)->hypID;
+    m_maxPlaceholderID = m_maxPlaceholderID > hypID ? m_maxPlaceholderID : hypID;
+  }
+  for (int i = 0; i <= m_maxPlaceholderID; i++) {
+    //map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
+    //m_nodeHypotheses.find(i);
+    for (it = hypotheses.begin(); it != hypotheses.end(); it++) {
+      if ((*it)->hypID == i)
+	break;
+    }
+
+    if (it != hypotheses.end()) {
+      peekabot::CircleProxy cp;
+      char buffer[256];
+      sprintf(buffer, "plchldr%i", i);
+      cp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
+      cp.set_scale(0.1);
+      cp.set_position((*it)->x, (*it)->y,0);
+
+      peekabot::LabelProxy lp;
+      sprintf(buffer, "plchldr_l%i", i);
+      lp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
+      lp.set_scale(20);
+      sprintf(buffer, "%i(%i)", i, (*it)->originPlaceID);
+      lp.set_text(buffer);
+      lp.set_position((*it)->x, (*it)->y,0);
+    }
+    else {
+      peekabot::CircleProxy cp;
+      char buffer[256];
+      sprintf(buffer, "plchldr%i", i);
+      cp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
+      cp.hide();
+
+      peekabot::LabelProxy lp;
+      sprintf(buffer, "plchldr_l%i", i);
+      lp.add(m_placeholderModule, buffer, peekabot::REPLACE_ON_CONFLICT);
+      lp.hide();
+    }
+  }
+}
+

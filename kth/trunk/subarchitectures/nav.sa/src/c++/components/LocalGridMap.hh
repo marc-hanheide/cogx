@@ -13,8 +13,8 @@
 //
 /* ---------------------------------------------------------------------- */
 
-#ifndef XLocalGridMap_hh
-#define XLocalGridMap_hh
+#ifndef Cure_LocalGridMap_hh
+#define Cure_LocalGridMap_hh
 
 #include "Navigation/GridContainer.hh"
 #include "Utils/HelpFunctions.hh"
@@ -43,7 +43,8 @@ namespace Cure {
  *  hits the boundaries of the larger map, it is necessary to copy data.
  *
  *  The size of the LocalGridMap is defined as the number of cells from the
- *  center, i.e., where the robot is to the end of the map along one 
+ *  ce
+ * nter, i.e., where the robot is to the end of the map along one 
  *  of the axis. The size of each cell has to be specified in mm
  *  The position of the origin of the local map in robot coordinates are
  *  used for specifying where the local map is. By using the function 
@@ -87,7 +88,7 @@ namespace Cure {
  * @see GridMapContainer
  */
 template <class MAPDATA>
-class XLocalGridMap : public GridContainer<MAPDATA> 
+class LocalGridMap : public GridContainer<MAPDATA> 
 {
 public:
   enum MapType {
@@ -119,24 +120,24 @@ public:
    * @param xc x-coordinate in world coordinates of the center of the map
    * @param yc y-coordinate in world coordinates of the center of the map
    */
-  XLocalGridMap(int size, double cellSize, MAPDATA unknownvalue,
+  LocalGridMap(int size, double cellSize, MAPDATA unknownvalue,
                int maptype = MAP1, double xc = 0, double yc = 0);
 
 
   /**
    * Copy constructor
    */
-  XLocalGridMap(XLocalGridMap<MAPDATA> &lgm);
+  LocalGridMap(LocalGridMap<MAPDATA> &lgm);
        
   /**
    * Destructor
    */
-  virtual ~XLocalGridMap();
+  virtual ~LocalGridMap();
 
   /**
    * Operator used to set this map equal another map
    */
-  void operator=(XLocalGridMap<MAPDATA> &lgm);
+  void operator=(LocalGridMap<MAPDATA> &lgm);
 
   /** 
    * @param x coord (in cell indices from center (0,0) is center)
@@ -377,7 +378,7 @@ private:
 }; // class LocalGridMap
 
 template <class MAPDATA>
-XLocalGridMap<MAPDATA>::XLocalGridMap(int size, double cellSize, 
+LocalGridMap<MAPDATA>::LocalGridMap(int size, double cellSize, 
 				    MAPDATA unknownvalue,
 				    int maptype,
 				    double xc, double yc)
@@ -398,7 +399,7 @@ XLocalGridMap<MAPDATA>::XLocalGridMap(int size, double cellSize,
 }
 
 template <class MAPDATA>
-XLocalGridMap<MAPDATA>::XLocalGridMap(XLocalGridMap<MAPDATA> &lgm)
+LocalGridMap<MAPDATA>::LocalGridMap(LocalGridMap<MAPDATA> &lgm)
   :GridContainer<MAPDATA>(((lgm.m_Maptype == MAP9) ? 
                            (2*lgm.m_Size+1)*3 : (2*lgm.m_Size+1)),
                           ((lgm.m_Maptype==MAP9) ? 
@@ -418,7 +419,7 @@ XLocalGridMap<MAPDATA>::XLocalGridMap(XLocalGridMap<MAPDATA> &lgm)
 }
 
 template <class MAPDATA>
-inline void XLocalGridMap<MAPDATA>::constructorInit()
+inline void LocalGridMap<MAPDATA>::constructorInit()
 {
   m_Lookup = new GridContainer<long>(m_SideLength, m_SideLength);
 
@@ -458,14 +459,14 @@ inline void XLocalGridMap<MAPDATA>::constructorInit()
 }
 
 template <class MAPDATA>
-XLocalGridMap<MAPDATA>::~XLocalGridMap()
+LocalGridMap<MAPDATA>::~LocalGridMap()
 {
   delete m_Lookup;
   delete m_ClearVector;
 }
 
 template <class MAPDATA>
-inline void XLocalGridMap<MAPDATA>::operator=(XLocalGridMap<MAPDATA> &lgm)
+inline void LocalGridMap<MAPDATA>::operator=(LocalGridMap<MAPDATA> &lgm)
 {
   if (getSize() == lgm.getSize() &&
       getUnknownValue() == lgm.getUnknownValue()) {
@@ -498,17 +499,17 @@ inline void XLocalGridMap<MAPDATA>::operator=(XLocalGridMap<MAPDATA> &lgm)
 }
 
 template <class MAPDATA>
-inline MAPDATA&  XLocalGridMap<MAPDATA>::operator() (int x, int y)
+inline MAPDATA&  LocalGridMap<MAPDATA>::operator() (int x, int y)
 {
   if ((x < -m_Size) || (x > m_Size)) {
-    std::cerr << "XLocalGridMap::operator ()  x-index out of bounds x=" 
-              << x << std::endl;
+    //std::cerr << "LocalGridMap::operator ()  x-index out of bounds x=" 
+      //        << x << std::endl;
     return GridContainer<MAPDATA>::m_MapdataError;
   }
 
   if ((y < -m_Size) || (y > m_Size)) {
-    std::cerr << "XLocalGridMap::operator ()  y-index out of bounds y=" 
-              << y << std::endl;
+    //std::cerr << "LocalGridMap::operator ()  y-index out of bounds y=" 
+      //        << y << std::endl;
     return GridContainer<MAPDATA>::m_MapdataError;
   }
   
@@ -516,11 +517,11 @@ inline MAPDATA&  XLocalGridMap<MAPDATA>::operator() (int x, int y)
 }
 
 template <class MAPDATA>
-inline MAPDATA& XLocalGridMap<MAPDATA>::operator[] (long index)
+inline MAPDATA& LocalGridMap<MAPDATA>::operator[] (long index)
 {
   if ((index < 0) || (m_NumCells < index)) {
-    std::cerr << "XLocalGridMap::operator []  index out of bounds:" 
-              << index << std::endl;
+    //std::cerr << "LocalGridMap::operator []  index out of bounds:" 
+      //        << index << std::endl;
     return GridContainer<MAPDATA>::m_MapdataError;
   }
   return GridContainer<MAPDATA>::operator[]((*m_Lookup)[index] + 
@@ -528,7 +529,7 @@ inline MAPDATA& XLocalGridMap<MAPDATA>::operator[] (long index)
 }
 
 template <class MAPDATA>
-inline bool XLocalGridMap<MAPDATA>::isCircleObstacleFree(double xW,
+inline bool LocalGridMap<MAPDATA>::isCircleObstacleFree(double xW,
                                                         double yW,
                                                         double rad)
 {
@@ -536,7 +537,6 @@ inline bool XLocalGridMap<MAPDATA>::isCircleObstacleFree(double xW,
   if (worldCoords2Index(xW, yW, xiC, yiC) != 0) {
     CureCERR(30) << "Querying area outside the map (xW="
                  << xW << ", yW=" << yW << ")\n";
-    printf("Outside MAP \n");
     return true;
   }
 
@@ -557,7 +557,7 @@ inline bool XLocalGridMap<MAPDATA>::isCircleObstacleFree(double xW,
 }
 
 template <class MAPDATA>
-inline bool XLocalGridMap<MAPDATA>::isRectangleObstacleFree(double x1W, 
+inline bool LocalGridMap<MAPDATA>::isRectangleObstacleFree(double x1W, 
                                                            double y1W, 
                                                            double x2W, 
                                                            double y2W, 
@@ -619,7 +619,7 @@ inline bool XLocalGridMap<MAPDATA>::isRectangleObstacleFree(double x1W,
 
 
 template <class MAPDATA>
-inline void XLocalGridMap<MAPDATA>::print(std::ostream& os)
+inline void LocalGridMap<MAPDATA>::print(std::ostream& os)
 {
   for (int y = m_Size; y >= -m_Size; y--) {
     for (int x = -m_Size; x <= m_Size; x++)
@@ -629,7 +629,7 @@ inline void XLocalGridMap<MAPDATA>::print(std::ostream& os)
 }
 
 template <class MAPDATA>
-inline void XLocalGridMap<MAPDATA>::clearMap()
+inline void LocalGridMap<MAPDATA>::clearMap()
 {
   if (m_Maptype == MAP9) {
     for (int ii = 0; ii < m_SideLength; ii++)
@@ -641,7 +641,7 @@ inline void XLocalGridMap<MAPDATA>::clearMap()
  
 
 template <class MAPDATA>
-int XLocalGridMap<MAPDATA>::moveCenterTo(double xpos, double ypos)
+int LocalGridMap<MAPDATA>::moveCenterTo(double xpos, double ypos)
 {
   int dx = (int) ((xpos - m_XCentW) / m_CellSize);
   int dy = (int) ((ypos - m_YCentW) / m_CellSize);
@@ -767,7 +767,7 @@ int XLocalGridMap<MAPDATA>::moveCenterTo(double xpos, double ypos)
 }
 
 template <class MAPDATA>
-int XLocalGridMap<MAPDATA>::moveBackMap9ToCenter()
+int LocalGridMap<MAPDATA>::moveBackMap9ToCenter()
 {
   if (m_Maptype != MAP9) return true;
 
@@ -793,7 +793,7 @@ int XLocalGridMap<MAPDATA>::moveBackMap9ToCenter()
   return true;
 }
 template <class MAPDATA>
-void XLocalGridMap<MAPDATA>::setValueInsideCircle(double xC, double yC, 
+void LocalGridMap<MAPDATA>::setValueInsideCircle(double xC, double yC, 
                                                  double rad, MAPDATA value)
 {
   int xi, yi;
