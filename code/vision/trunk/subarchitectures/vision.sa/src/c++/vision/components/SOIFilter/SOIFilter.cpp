@@ -206,6 +206,8 @@ static void drawProjectedSOIPoints(const SOI &soi, const ROI &roi,
   size_t n = soi.points.size();
   CvPoint *proj_points = (CvPoint*)malloc(n*sizeof(CvPoint));
   int *hull = (int*)malloc(n*sizeof(int));
+
+  // draw foreground points
   for(size_t i = 0; i < n; i++)
   {
     cogx::Math::Vector2 p = projectPoint(cam, soi.points[i]);
@@ -215,6 +217,8 @@ static void drawProjectedSOIPoints(const SOI &soi, const ROI &roi,
     proj_points[i].y = p.y;
     cvCircle(img, cvPoint(p.x, p.y), 3, CV_RGB(0,255,0));
   }
+
+  // draw convex hull
   CvMat point_mat = cvMat( 1, n, CV_32SC2, proj_points );
   CvMat hull_mat = cvMat( 1, n, CV_32SC1, hull );
   cvConvexHull2(&point_mat, &hull_mat, CV_CLOCKWISE, 0);
@@ -225,6 +229,15 @@ static void drawProjectedSOIPoints(const SOI &soi, const ROI &roi,
     CvPoint pt = proj_points[hull[i]];
     cvLine(img, pt0, pt, CV_RGB(255, 0, 0));
     pt0 = pt;
+  }
+
+  // draw background points inside SOI
+  for(size_t i = 0; i < soi.BGpoints.size(); i++)
+  {
+    cogx::Math::Vector2 p = projectPoint(cam, soi.BGpoints[i]);
+    p.x -= (roi.rect.pos.x - roi.rect.width/2);
+    p.y -= (roi.rect.pos.y - roi.rect.height/2);
+    cvCircle(img, cvPoint(p.x, p.y), 3, CV_RGB(255,0,0));
   }
 }
 // END HACK: Michael Zillich
