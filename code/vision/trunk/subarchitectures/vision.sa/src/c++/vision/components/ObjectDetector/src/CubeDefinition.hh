@@ -34,6 +34,7 @@ public:
 	Vector2 trackedCubeGroundCenter;	///< Center point of ground plane from tracked cube
 	
 	// 3D - variables
+	// TODO TODO TODO TODO TODO TODO TODO	Change to Vector3 or other 3D vector class
 	Vector2 groundCenter3D;						///< 3D center point of ground plane
 	Vector2 cubeCenter3D;							///< 3D center of the cube
 
