@@ -227,15 +227,18 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 {
 	obj->model = new VisionData::GeometryModel;
 
+	// cube 3D center point
+	cd.cubeCenter3D
+
 	// create vertices
 	for(unsigned i=0; i<4; i++)
 	{
 		Vertex v0, v1; 
-		v0.pos.x = cd.corner_points3D[i][0].x;
-		v0.pos.y = cd.corner_points3D[i][0].y;
-		v0.pos.z = cd.height;											// mean of three heights
-		v1.pos.x = cd.corner_points3D[i][1].x;
-		v1.pos.y = cd.corner_points3D[i][1].y;
+		v0.pos.x = cd.corner_points3D[i][0].x - cd.cubeCenter3D.x;
+		v0.pos.y = cd.corner_points3D[i][0].y - cd.cubeCenter3D.y;
+		v0.pos.z = cd.height;												// mean of three heights
+		v1.pos.x = cd.corner_points3D[i][1].x - cd.cubeCenter3D.x;
+		v1.pos.y = cd.corner_points3D[i][1].y - cd.cubeCenter3D.y;
 		v1.pos.z = 0;																// on ground plane!
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
@@ -246,47 +249,53 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 
 	}
 
-	// create faces
+	// add pose to the model
+	Pose3 p;
+	p.pos.x = cd.cubeCenter3D.x;
+	p.pos.y = cd.cubeCenter3D.y;
+	p.pos.z = cd.cubeCenter3D.z;
+
+	// add faces to the vision model
 	Face f;
 	f.vertices.push_back(0);									// right
-	f.vertices.push_back(1);
-	f.vertices.push_back(3);
 	f.vertices.push_back(2);
+	f.vertices.push_back(3);
+	f.vertices.push_back(1);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
 	f.vertices.push_back(2);									// front
-	f.vertices.push_back(3);
-	f.vertices.push_back(5);
 	f.vertices.push_back(4);
+	f.vertices.push_back(5);
+	f.vertices.push_back(3);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
 	f.vertices.push_back(4);									// left
-	f.vertices.push_back(5);
-	f.vertices.push_back(7);
 	f.vertices.push_back(6);
+	f.vertices.push_back(7);
+	f.vertices.push_back(5);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
 	f.vertices.push_back(6);									// back
-	f.vertices.push_back(7);
-	f.vertices.push_back(1);
 	f.vertices.push_back(0);
+	f.vertices.push_back(1);
+	f.vertices.push_back(7);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
 	f.vertices.push_back(0);									// top
-	f.vertices.push_back(2);
-	f.vertices.push_back(4);
 	f.vertices.push_back(6);
+	f.vertices.push_back(4);
+	f.vertices.push_back(2);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
 	f.vertices.push_back(1);									// front
-	f.vertices.push_back(7);
-	f.vertices.push_back(5);
 	f.vertices.push_back(3);
+	f.vertices.push_back(5);
+	f.vertices.push_back(7);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
