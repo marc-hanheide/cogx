@@ -77,9 +77,9 @@ void Particle::setPose(mat3 rot, vec3 pos){
 	tY = pos.y;
 	tZ = pos.z;
 	
-	w = 0.0;
+	w = 1.0;
 	
-	printf("[Particle::setPose] Warning conversion from rotation matrix to quaternion not correct!\n");
+	//printf("[Particle::setPose] Warning conversion from rotation matrix to quaternion not correct!\n");
 }
 
 void Particle::getPose(mat3 &rot, vec3 &pos){
@@ -168,7 +168,7 @@ void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_
     	
    	// keep pMax at id 0
     m_particlelist[0] = *pMax;
-   
+    
     // for all other particles add noise
     for(int i=1; i<num_particles; i++){
     	pIt = &m_particlelist[i];

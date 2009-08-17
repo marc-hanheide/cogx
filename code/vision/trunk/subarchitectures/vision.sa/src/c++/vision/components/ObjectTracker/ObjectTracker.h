@@ -39,8 +39,8 @@ private:
   bool track;
   bool running;
   bool testmode;
-  bool bfc;				// backface culling
-  bool trackTexture;
+  bool bfc;						// backface culling (disable for not closed surfaces, like polyflaps)
+  bool trackTexture;	// use texture to track object (slower but more accurate [only for hi-end systems])
   
   struct IDList{
   	int resources_ID;

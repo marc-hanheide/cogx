@@ -8,8 +8,6 @@ void TextureTracker::image_processing(unsigned char* image){
 	// Load camera image to texture
 	m_tex_frame->load(image, params.width, params.height);
 	
-	m_timer.Update();
-	
 	// Preprocessing for camera image
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
@@ -40,6 +38,35 @@ void TextureTracker::particle_motion(float pow_scale, Particle* p_ref, unsigned 
     if(!m_lock){
    		m_particles->perturb(noise_particle, params.number_of_particles, p_ref, distribution);
    	}
+}
+
+// Particle filtering
+void TextureTracker::particle_filtering(Particle* p_estimate){
+	
+	m_shadeTextureCompare->bind();
+	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
+	m_shadeTextureCompare->unbind();
+	m_tex_frame_ip[3]->bind(1);
+	m_model->setTexture(m_tex_model_ip[3]);
+	particle_motion(1.0, p_estimate, GAUSS);
+	particle_processing(params.number_of_particles*0.75, 1);
+	
+	m_shadeTextureCompare->bind();
+	m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
+	m_shadeTextureCompare->unbind();
+	m_tex_frame_ip[2]->bind(1);
+	m_model->setTexture(m_tex_model_ip[2]);
+	particle_motion(0.5, NULL, GAUSS);
+	particle_processing(params.number_of_particles*0.125, 1);
+	
+	m_shadeTextureCompare->bind();
+	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,1.0,0.0,0.0));
+	m_shadeTextureCompare->unbind();
+	m_tex_frame_ip[1]->bind(1);
+	m_model->setTexture(m_tex_model_ip[1]);
+	particle_motion(0.1, NULL, GAUSS);
+	particle_processing(params.number_of_particles*0.125, 1);
+	
 }
 
 // Draw Model to screen, extract modelview matrix, perform image processing for model
@@ -144,8 +171,11 @@ TextureTracker::TextureTracker(){
 	m_showparticles = false;
 	m_showmodel = true;
 	m_kalman_enabled = true;
+	m_zero_particles = false;
+	m_draw_edges = false;
 	m_tracker_initialized = false;
 	m_testflag = false;
+	m_bfc = false;
 		
 	int id;
 	// Shader
@@ -178,6 +208,9 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 							Particle p_estimate,		// position estimate of model (R,t)
 							Particle& p_result)			// storage to write tracked position
 {
+	// Start time measurement
+	m_timer.Update();
+	
 	// Check if input is valid
 	isReady(image, model, camera, &p_estimate);	
 	
@@ -186,7 +219,6 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	
 	// Process model (texture reprojection, edge detection)
 	model_processing();
-
 	
 	// Clear framebuffer and render image from camera
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
@@ -198,32 +230,9 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 		m_ip->render(m_tex_frame);
 	
 	if(!m_lock){
-		// Recursive particle filtering
-		m_shadeTextureCompare->bind();
-		m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
-		m_shadeTextureCompare->unbind();
-		m_tex_frame_ip[2]->bind(1);
-		m_model->setTexture(m_tex_model_ip[2]);
-		particle_motion(1.0, &p_estimate, GAUSS);
-		particle_processing(params.number_of_particles, 1);
-			
-		/*
-		m_shadeTextureCompare->bind();
-		m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
-		m_shadeTextureCompare->unbind();
-		m_tex_frame_ip[2]->bind(1);
-		m_model->setTexture(m_tex_model_ip[2]);
-		particle_motion(0.5, NULL, GAUSS);
-		particle_processing(params.number_of_particles*0.125, 1);
+	
+		particle_filtering(&p_estimate);
 		
-		m_shadeTextureCompare->bind();
-		m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,1.0,0.0,0.0));
-		m_shadeTextureCompare->unbind();
-		m_tex_frame_ip[1]->bind(1);
-		m_model->setTexture(m_tex_model_ip[1]);
-		particle_motion(0.1, NULL, GAUSS);
-		particle_processing(params.number_of_particles*0.1, 1);
-		*/	
 		// Kalman filter
 		if(m_kalman_enabled)
 			kalman_filtering(m_particles->getMax());
@@ -242,6 +251,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 			params.number_of_particles = m_particles->getNumParticles();
 
 	}else{
+		time_tracking = m_timer.Update();
 		p_result = p_estimate;
 	}
 	

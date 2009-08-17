@@ -109,6 +109,8 @@ void Quaternion::fromMatrix(mat4 m){
 	x = (m[9] - m[6]) / w4 ;
 	y = (m[2] - m[8]) / w4 ;
 	z = (m[4] - m[1]) / w4 ;
+	
+	normalise();
 }
 
 // Convert from Matrix 3x3
@@ -118,6 +120,8 @@ void Quaternion::fromMatrix(mat3 m){
 	x = (m[7] - m[5]) / w4 ;
 	y = (m[2] - m[6]) / w4 ;
 	z = (m[3] - m[1]) / w4 ;
+	
+	normalise();
 }
 
 // Convert to Matrix 4x4

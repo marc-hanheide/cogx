@@ -3,7 +3,7 @@
 
 Lighting::Lighting(){
 
-	lightDir = vec4(0.5,0.7,0.0,0);
+	lightDir = vec4(0.0,0.2,1.0,0);
 
 	int id;
 	// Shader
