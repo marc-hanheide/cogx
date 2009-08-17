@@ -192,7 +192,7 @@ void ObjectDetector::processImage()
 		case 1048676: 														// Enable/Disable display == D
 			if(showImage) showImage = false;
 			else showImage = true;
-			log("Enable/Disable vs3 window");
+			log("Enable/Disable object detector window");
 			break;
 		default: break;
 	}
@@ -247,10 +247,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-
-// printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x, v0.pos.y, v0.pos.z);
-// printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x, v1.pos.y, v1.pos.z);
-
+printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x, v0.pos.y, v0.pos.z);
+printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x, v1.pos.y, v1.pos.z);
 	}
 
 
@@ -349,9 +347,9 @@ bool ObjectDetector::GetCameraParameter(const Video::Image & image)
 	extrinsic[9] = zw;
 
 	// Translation vector from m to mm
-	extrinsic[3] *= 1000;
-	extrinsic[7] *= 1000;
-	extrinsic[11] *= 1000;
+// 	extrinsic[3] *= 1000;
+// 	extrinsic[7] *= 1000;
+// 	extrinsic[11] *= 1000;
 
 	// Recaclulate translation vector for inverted rotation matrix
 	double tneu[3]; 
@@ -364,10 +362,10 @@ bool ObjectDetector::GetCameraParameter(const Video::Image & image)
 
 // printf("Translationsvektor neu: %6.5f   %6.5f   %6.5f\n\n", extrinsic[3], extrinsic[7], extrinsic[11]);
 
-// printf("Camera parameters: extrinsic new:\n	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
-// printf("	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
-// printf("	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
-// printf("	%6.5f   %6.5f   %6.5f   %6.5f\n\n", extrinsic[12], extrinsic[13], extrinsic[14], extrinsic[15]);
+printf("Camera parameters: extrinsic new:\n	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[0], extrinsic[1], extrinsic[2], extrinsic[3]);
+printf("	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[4], extrinsic[5], extrinsic[6], extrinsic[7]);
+printf("	%6.5f   %6.5f   %6.5f   %6.5f\n", extrinsic[8], extrinsic[9], extrinsic[10], extrinsic[11]);
+printf("	%6.5f   %6.5f   %6.5f   %6.5f\n\n", extrinsic[12], extrinsic[13], extrinsic[14], extrinsic[15]);
 
  	vs3Interface->SetCamParameters(intrinsic, dist, extrinsic);
 
