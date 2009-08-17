@@ -799,29 +799,6 @@ void ObjectTracker::GetCube3DProperties(CubeDef &cd)
 	cd.groundCenter3D.x = tPointWorld3D.x;
 	cd.groundCenter3D.y = tPointWorld3D.y;
 
-	/// TODO old corner point calculation => delete
-	// corner point [right][bottom] (3D)
-// 	tPointImg = cvPoint2D64f (cd.corner_points[0][1].x, cd.corner_points[0][1].y);
-// 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
-// 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-// 	cd.rightBottom3D.x = tPointWorld3D.x;
-// 	cd.rightBottom3D.y = tPointWorld3D.y;
-// 
-// 	// corner point [shared][bottom] (3D)
-// 	tPointImg = cvPoint2D64f (cd.corner_points[1][1].x, cd.corner_points[1][1].y);
-// 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
-// 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-// 	cd.sharedBottom3D.x = tPointWorld3D.x;
-// 	cd.sharedBottom3D.y = tPointWorld3D.y;
-// 
-// 	// corner point [left][bottom] (3D)
-// 	tPointImg = cvPoint2D64f (cd.corner_points[2][1].x, cd.corner_points[2][1].y);
-// 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
-// 	m_cCamModel.World2GroundPlane (tPointWorld3D, &tPointWorld3D, dAboveGround);
-// 	cd.leftBottom3D.x = tPointWorld3D.x;
-// 	cd.leftBottom3D.y = tPointWorld3D.y;
-
-	/// New corner point calculation
 	// corner point [0][1] (3D)
 	tPointImg = cvPoint2D64f (cd.corner_points[0][1].x, cd.corner_points[0][1].y);
 	m_cCamModel.Image2World (tPointImg, &tPointWorld3D);
@@ -890,6 +867,11 @@ void ObjectTracker::GetCube3DProperties(CubeDef &cd)
 	cd.height += tPointWorld3D.z; 
 
 	cd.height /= 4; // height of the cube is mean of z from the four estimated points on the top
+
+	// cube center point
+	cd.cubeCenter3D = (cd.corner_points3D[0][0] + cd.corner_points3D[1][0] + cd.corner_points3D[2][0] + cd.corner_points3D[3][0] + 
+										 cd.corner_points3D[0][1] + cd.corner_points3D[1][1] + cd.corner_points3D[2][1] + cd.corner_points3D[3][1])/8.;
+	cd.cubeCenter3D.z = cd.height/2.; // center at half height
 }
 
 /**
