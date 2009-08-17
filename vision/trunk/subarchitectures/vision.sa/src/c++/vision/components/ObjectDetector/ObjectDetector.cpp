@@ -227,16 +227,23 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 {
 	obj->model = new VisionData::GeometryModel;
 
-	// create vertices
+	// add pose (cube center point) to the model
+	cogx::Math::Pose3 p;
+	p.pos.x = cd.cubeCenter3D.x;
+	p.pos.y = cd.cubeCenter3D.y;
+	p.pos.z = cd.height/2.;				// cube center is at height/2.
+	obj->pose = p;
+
+	// create vertices (relative to the 3D cube center point)
 	for(unsigned i=0; i<4; i++)
 	{
 		Vertex v0, v1; 
 		v0.pos.x = cd.corner_points3D[i][0].x - cd.cubeCenter3D.x;
 		v0.pos.y = cd.corner_points3D[i][0].y - cd.cubeCenter3D.y;
-		v0.pos.z = cd.height;												// height of the cube
+		v0.pos.z = cd.height/2.;
 		v1.pos.x = cd.corner_points3D[i][1].x - cd.cubeCenter3D.x;
 		v1.pos.y = cd.corner_points3D[i][1].y - cd.cubeCenter3D.y;
-		v1.pos.z = 0.;															// on ground plane!
+		v1.pos.z = -cd.height/2.;
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
@@ -246,12 +253,6 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 
 	}
 
-	// add pose to the model
-	cogx::Math::Pose3 p;
-	p.pos.x = cd.cubeCenter3D.x;
-	p.pos.y = cd.cubeCenter3D.y;
-	p.pos.z = cd.height/2.;				// cube center is at height/2.
-	obj->pose = p;
 
 	// add faces to the vision model
 	Face f;
