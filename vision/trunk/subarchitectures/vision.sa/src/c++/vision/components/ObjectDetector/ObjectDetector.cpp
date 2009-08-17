@@ -204,12 +204,10 @@ void ObjectDetector::processImage()
 	if(showImage) 
 	{	
 		vs3Interface->SetActiveDrawArea(iplImage);
-//		vs3Interface->DrawGestalts(type, detail);
 		vs3Interface->DrawUnmaskedGestalts(type, detail);
 	
-		/// Convert from RGB to BGR
+		// Convert from RGB to BGR
 		cvConvertImage( iplImage, iplImage, CV_CVTIMG_SWAP_RB);
-
 
 		cvShowImage(getComponentID().c_str(), iplImage);
 		cvWaitKey(10);
