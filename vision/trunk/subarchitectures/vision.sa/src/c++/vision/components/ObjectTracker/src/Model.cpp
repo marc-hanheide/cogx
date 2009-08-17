@@ -26,11 +26,11 @@ void Model::print(){
 }
 
 // Tests redundancy of edge
-bool Model::isRedundant(Edge* e1, int k){
+bool Model::isRedundant(Edge* e1){
 	Edge* e2;
 	vec3 vs, ve;
 	
-	for(int i=0; i<k; i++){
+	for(int i=0; i<m_edgelist.size(); i++){
 		e2 = &m_edgelist[i];
 		
 		// Get Vector between start-start and end-end points of edges
@@ -42,7 +42,7 @@ bool Model::isRedundant(Edge* e1, int k){
 					m_vertexlist[e1->end].pos.z - m_vertexlist[e2->end].pos.z);
 		// if sum of length between vertices is insignificant then redundancy is detected
 		if(vs.length() + ve.length() < 0.01){
-			printf("Redundant edge detected: %d %d\n", e1->start, e1->end);
+			//printf("Redundant edge detected: %d %d\n", e1->start, e1->end);
 			return true;
 		}
 		
@@ -55,7 +55,7 @@ bool Model::isRedundant(Edge* e1, int k){
 					m_vertexlist[e1->end].pos.z - m_vertexlist[e2->start].pos.z);
 		// if sum of length between vertices is insignificant then redundancy is detected
 		if(vs.length() + ve.length() < 0.01){
-			printf("Redundant edge detected: %d %d\n", e1->start, e1->end);
+			//printf("Redundant edge detected: %d %d\n", e1->start, e1->end);
 			return true;
 		}
 						
@@ -119,7 +119,7 @@ Model& Model::operator=(const Model& m2){
 
 // Generate Edges from faces
 void Model::computeEdges(){
-    int i,j,k=0;
+    int i,j;
     
     // Extract edges from faces
     for(i=0; i<m_facelist.size(); i++){
@@ -127,7 +127,7 @@ void Model::computeEdges(){
         	Edge e;
             e.start = m_facelist[i].v[j];
             e.end = m_facelist[i].v[(j+1)%m_facelist[i].v.size()];
-            if(!isRedundant(&m_edgelist[k], k)){
+            if(!isRedundant(&e)){
             	//printf("Edge: %d %d\n", m_edgelist[k].start, m_edgelist[k].end);
             	m_edgelist.push_back(e);
             }
@@ -146,7 +146,7 @@ void Model::computeNormals(){
 	for(i=0; i<m_facelist.size(); i++){
 		f = &m_facelist[i];
 		
-		if(f->v.size() == 3){ // this is because of some bug in Blender flipping normals of triangles
+		//if(f->v.size() == 3){ // this is because of some bug in Blender flipping normals of triangles
 		
 			v0 = vec3(m_vertexlist[f->v[0]].pos.x, m_vertexlist[f->v[0]].pos.y, m_vertexlist[f->v[0]].pos.z);
 			v1 = vec3(m_vertexlist[f->v[1]].pos.x, m_vertexlist[f->v[1]].pos.y, m_vertexlist[f->v[1]].pos.z);
@@ -156,6 +156,7 @@ void Model::computeNormals(){
 			
 			n.cross(e1,e2);
 			n.normalize();
+			f->normal = vec3(n);
 			
 			for(j=0; j<m_facelist[i].v.size(); j++){
 				m_vertexlist[f->v[j]].normal.x = n.x;
@@ -163,9 +164,21 @@ void Model::computeNormals(){
 				m_vertexlist[f->v[j]].normal.z = n.z;
 				//printf("%f %f %f\n", n.x, n.y, n.z);
 			}
-		}	
+		//}	
 	}
 	
+}
+
+void Model::flipNormals(){
+	int i;
+	Face* f;
+	
+	for(i=0; i<m_facelist.size(); i++){
+		f = &m_facelist[i];
+		f->normal.x = -f->normal.x;
+		f->normal.y = -f->normal.y;
+		f->normal.z = -f->normal.z;
+	}
 }
 
 // draws model using rendering passes
@@ -305,6 +318,7 @@ void Model::drawFaces(){
 			for(j=0; j<f->v.size(); j++){
 				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
+				//glNormal3f(f->normal.x, f->normal.y, f->normal.z);
 				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
 			}
 			
@@ -320,9 +334,9 @@ void Model::drawFaces(){
 					glVertex3f( m_vertexlist[f->v[j]].pos.x,
 								m_vertexlist[f->v[j]].pos.y,
 								m_vertexlist[f->v[j]].pos.z );
-					glVertex3f( m_vertexlist[f->v[j]].pos.x + m_vertexlist[f->v[j]].normal.x * normal_length,
-								m_vertexlist[f->v[j]].pos.y + m_vertexlist[f->v[j]].normal.y * normal_length,
-								m_vertexlist[f->v[j]].pos.z + m_vertexlist[f->v[j]].normal.z * normal_length );		
+					glVertex3f( m_vertexlist[f->v[j]].pos.x + m_facelist[i].normal.x * normal_length,
+								m_vertexlist[f->v[j]].pos.y + m_facelist[i].normal.y * normal_length,
+								m_vertexlist[f->v[j]].pos.z + m_facelist[i].normal.z * normal_length );		
 				}
 			glEnd();
 			glColor3f(1.0, 1.0, 1.0);

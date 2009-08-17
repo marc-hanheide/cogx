@@ -43,6 +43,20 @@ void EdgeTracker::particle_motion(float pow_scale, Particle* p_ref, unsigned int
    	}
 }
 
+void EdgeTracker::particle_filtering(Particle* p_estimate){
+	glLineWidth(10);
+	glColor3f(0.0,0.0,0.0);
+	m_tex_frame_ip[2]->bind();	// bind camera image
+	particle_motion(1.0, p_estimate, GAUSS);
+	particle_processing(params.number_of_particles*0.75, 1);
+	
+	glLineWidth(4);
+	glColor3f(1.0,0.0,0.0);
+	//m_tex_frame_ip[2]->bind();	// bind camera image
+	particle_motion(0.3, NULL, GAUSS);
+	particle_processing(params.number_of_particles*0.25, 1);
+}
+
 // Draw each particle, count matching pixels, calculate likelihood for edge tracking
 void EdgeTracker::particle_processing(int num_particles, unsigned int num_avaraged_particles){
 
@@ -53,9 +67,10 @@ void EdgeTracker::particle_processing(int num_particles, unsigned int num_avarag
 	
 		m_particles->activate(i);
 		
-		m_opengl.ClearBuffers(false, true);
 		m_opengl.RenderSettings(false, true);
+		m_opengl.ClearBuffers(false, true);
 		m_model->drawFaces();
+		
 		
 		m_particles->startCountV(i);
 		if(m_showparticles)
@@ -77,6 +92,7 @@ void EdgeTracker::particle_processing(int num_particles, unsigned int num_avarag
 		
 		m_particles->deactivate(i);
 	}
+	
 	// Calculate likelihood of particles
 	m_particles->calcLikelihood(num_particles, num_avaraged_particles);
 	glPopAttrib();
@@ -89,8 +105,12 @@ EdgeTracker::EdgeTracker(){
 	m_lock = false;
 	m_showparticles = false;
 	m_showmodel = true;
-	m_kalman_enabled = true;
+	m_kalman_enabled = false;
+	m_zero_particles = false;
+	m_draw_edges = false;
 	m_tracker_initialized = false;
+	m_testflag = false;
+	m_bfc = false;
 	
 	int id;
 	// Shader
@@ -132,45 +152,39 @@ bool EdgeTracker::track(	unsigned char* image,
 	else
 		m_ip->render(m_tex_frame);
 	
-	// Recursive particle filtering
-	glLineWidth(10);
-	glColor3f(0.0,0.0,0.0);
-	m_tex_frame_ip[2]->bind();	// bind camera image
-	particle_motion(1.0, &p_estimate, GAUSS);
-	particle_processing(params.number_of_particles*0.75, 1);
-	
-	glLineWidth(4);
-	glColor3f(1.0,0.0,0.0);
-	//m_tex_frame_ip[2]->bind();	// bind camera image
-	particle_motion(0.3, NULL, GAUSS);
-	particle_processing(params.number_of_particles*0.25, 1);
-	
-	// Kalman filter
-	if(m_kalman_enabled)
-		kalman_filtering(m_particles->getMax());
+	if(!m_lock){
+		// Recursive particle filtering
+		particle_filtering(&p_estimate);
+		
+		// Kalman filter
+		if(m_kalman_enabled)
+			kalman_filtering(m_particles->getMax());
+			
+		p_result = Particle(*m_particles->getMax());
+		
+		// adjust number of particles according to tracking speed
+		time_tracking = m_timer.Update();
+		params.number_of_particles += 10;
+		if(time_tracking > params.track_time && params.number_of_particles > 100)
+			params.number_of_particles += 1000 * (params.track_time - time_tracking);
+		else if(time_tracking < params.track_time)
+			params.number_of_particles += 1000 * (params.track_time - time_tracking);
+		if(params.number_of_particles > m_particles->getNumParticles())
+			params.number_of_particles = m_particles->getNumParticles();
+	}else{
+		time_tracking = m_timer.Update();
+		p_result = p_estimate;
+	}
 	
 	// Copy result to output
 	if(m_zero_particles){
-		p_result = Particle(0.0);
+		p_result = params.zP;
 		m_zero_particles = false;
-	}else if(m_particles->getMax()->w < 0.1){
-		p_result = p_estimate;
-	}else{
-		p_result = Particle(*m_particles->getMax());
-	}
-	
-	// adjust number of particles according to tracking speed
-	time_tracking = m_timer.Update();
-	params.number_of_particles += 10;
-	if(time_tracking > params.track_time && params.number_of_particles > 100)
-		params.number_of_particles += 1000 * (params.track_time - time_tracking);
-	else if(time_tracking < params.track_time)
-		params.number_of_particles += 1000 * (params.track_time - time_tracking);
-	if(params.number_of_particles > m_particles->getNumParticles())
-		params.number_of_particles = m_particles->getNumParticles();
+	//}else if(m_particles->getMax()->w < 0.1){
+	//	p_result = p_estimate;
+	}	
 	
 	return true;
-
 }
 
 // Draw result of edge tracking (particle with maximum likelihood)
@@ -182,6 +196,7 @@ void EdgeTracker::drawResult(Particle* p){
 		
 	m_opengl.RenderSettings(false, true);
 	m_opengl.ClearBuffers(false, true);
+	glColor3f(0.0,0.0,1.0);
 	m_model->drawFaces();
 	m_opengl.RenderSettings(true, true);
 

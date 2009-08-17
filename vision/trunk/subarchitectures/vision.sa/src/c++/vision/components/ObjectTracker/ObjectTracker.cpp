@@ -121,11 +121,12 @@ void ObjectTracker::runTracker(){
 		obj = getMemoryEntry<VisualObject>(ids->cast_AD);
 				
 		// conversion from CogX.vision coordinates to ObjectTracker coordinates
-		//convertPose2Particle(obj->pose, m_trackpose);		// ATTENTION: NOT WORKING BY NOW
-		//m_modelID_list[i].trackpose.w = obj->detectionConfidence;
+		convertPose2Particle(obj->pose, m_modelID_list[i].trackpose);
+		m_modelID_list[i].trackpose.w = obj->detectionConfidence;
 
 		// Track model
 		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
+		
 		m_tracker->drawResult(&ids->trackpose);
 		m_tracker->drawCoordinates();
 		//m_tracker->drawTest();
@@ -170,8 +171,10 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	IDList ids;
 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());
 	ids.cast_AD = _wmc.address;
+	
+	// converte pose of object to tracking pose (=particle)
 	convertPose2Particle(obj->pose, ids.trackpose);
-	log("TrackPose: %f", ids.trackpose.tX);
+	log("TrackPose: %f %f %f", ids.trackpose.tX, ids.trackpose.tY, ids.trackpose.tZ);
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);

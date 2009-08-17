@@ -35,6 +35,7 @@ public:
 	typedef struct Face {
 		Face(){ max_pixels=0; }
 		vector<int> v;            	// vertex-index list
+		vec3 normal;
 		int max_pixels;				// number of visible pixel in best view
 	} Face;
 	
@@ -81,6 +82,7 @@ public:
     
     void computeEdges();
     void computeNormals();
+    void flipNormals();
     
     void drawPass(Shader* shadeTexturing);
     void drawFaces();
@@ -105,7 +107,7 @@ protected:
 	
     // Functions
     void print();
-    bool isRedundant(Edge* e1, int k);
+    bool isRedundant(Edge* e1);
     void genEdgeDisplayList();
     
 };

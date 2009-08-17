@@ -1,4 +1,4 @@
-# camera parameter file generated Tue Jun 16 10:37:40 2009
+# camera parameter file generated Mon Aug 17 16:21:24 2009
 
 # Intrinsic parameters for pinhole camera model.
 # The pinhole camera model is as follows:
@@ -36,38 +36,11 @@
 # w, h .. image width and height
 
 # focal lengths in [pix]
-##fx = 529.696777
-##fy = 529.113281
+fx = 529.696777
+fy = 529.113281
 # principal point [pix]
-##cx = 306.565125
-##cy = 226.131149
-
-# (nominal) focal length [mm]
-##f  = 5.000000
-# pixel size [mm/pix]
-##sx = 0.009439
-##sy = 0.009450
-# aspect ratio: pixel size x/y
-##r  = 0.998898
-# image width and height
-##w =  640
-##h =  480
-
-# distortion parameters
-##k1 = 0.014899
-##k2 = -0.092156
-##p1 = -0.002191
-##p2 = 0.002411
-
-
-
-##### VS3 Parameter
-# focal lengths in [pix]
-fx = 549.38764
-fy = 548.75793921
-# principal point [pix]
-cx = 322.46562032
-cy = 199.24665981
+cx = 306.565125
+cy = 226.131149
 
 # (nominal) focal length [mm]
 f  = 5.000000
@@ -81,12 +54,10 @@ w =  640
 h =  480
 
 # distortion parameters
-k1 = 0.0733037973
-k2 = -0.0663813
-p1 = -0.0199329319
-p2 = 0.00258888409
+k1 = 0.014899
+k2 = -0.092157
+p1 = -0.002191
+p2 = 0.002411
 
-t = 0.114023 -0.165942 0.420997
-r = -2.330292 -0.025089 0.009593
-pose = [0.114023 -0.165942 0.420997] [-2.330292 -0.025089 0.009593]
+pose = [0.098259 -0.131108 0.301873] [-2.416438 -0.017390 -0.014725]
 
