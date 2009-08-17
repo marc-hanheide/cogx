@@ -871,7 +871,6 @@ void ObjectTracker::GetCube3DProperties(CubeDef &cd)
 	// cube center point
 	cd.cubeCenter3D = (cd.corner_points3D[0][0] + cd.corner_points3D[1][0] + cd.corner_points3D[2][0] + cd.corner_points3D[3][0] + 
 										 cd.corner_points3D[0][1] + cd.corner_points3D[1][1] + cd.corner_points3D[2][1] + cd.corner_points3D[3][1])/8.;
-	cd.cubeCenter3D.z = cd.height/2.; // center at half height
 }
 
 /**
