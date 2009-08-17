@@ -255,10 +255,10 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
-	f.vertices.push_back(4);									// front
-	f.vertices.push_back(2);
+	f.vertices.push_back(2);									// front
 	f.vertices.push_back(3);
 	f.vertices.push_back(5);
+	f.vertices.push_back(4);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
@@ -269,10 +269,10 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
-	f.vertices.push_back(0);									// back
-	f.vertices.push_back(1);
+	f.vertices.push_back(6);									// back
 	f.vertices.push_back(7);
-	f.vertices.push_back(6);
+	f.vertices.push_back(1);
+	f.vertices.push_back(0);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
@@ -284,9 +284,9 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 	f.vertices.clear();
 
 	f.vertices.push_back(1);									// front
-	f.vertices.push_back(3);
-	f.vertices.push_back(5);
 	f.vertices.push_back(7);
+	f.vertices.push_back(5);
+	f.vertices.push_back(3);
 	obj->model->faces.push_back(f);
 	f.vertices.clear();
 
