@@ -28,13 +28,13 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 		v.pos.x = geom->vertices[i].pos.x;
 		v.pos.y = geom->vertices[i].pos.y;
 		v.pos.z = geom->vertices[i].pos.z;
-		//v.normal.x = geom->vertices[i].normal.x;
-		//v.normal.y = geom->vertices[i].normal.y;
-		//v.normal.z = geom->vertices[i].normal.z;
-		//v.texCoord.x = geom->vertices[i].texCoord.x;
-		//v.texCoord.y = geom->vertices[i].texCoord.y;
+		v.normal.x = geom->vertices[i].normal.x;
+		v.normal.y = geom->vertices[i].normal.y;
+		v.normal.z = geom->vertices[i].normal.z;
+		v.texCoord.x = geom->vertices[i].texCoord.x;
+		v.texCoord.y = geom->vertices[i].texCoord.y;
 		model->m_vertexlist.push_back(v);
-		printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
+		//printf("Vertex: %f %f %f, %f %f %f \n", v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z);
 	}
 	
 	// Parse through faces and store content in Model
@@ -42,41 +42,19 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	for(i=0; i<geom->faces.size(); i++){	
 		f.v = geom->faces[i].vertices;
 		model->m_facelist.push_back(f);
-		printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
+		//printf("Face: %i %i %i %i\n", f.v[0], f.v[1], f.v[2], f.v[3]);
 	}
 	
 	model->computeEdges();
-	//model->computeNormals();
-	//model->flipNormals();
 	
+	/*
 	for(i=0; i<model->m_edgelist.size(); i++){
 		printf(	"Edge: %i %i\n",
 						model->m_edgelist[i].start,
 						model->m_edgelist[i].end);
 	}
-	
-	/*
-	for(i=0; i<model->m_facelist.size(); i++){
-		printf("Face: %i %i %i %i, %f %f %f\n", 	
-						model->m_facelist[i].v[0], 
-						model->m_facelist[i].v[1], 
-						model->m_facelist[i].v[2], 
-						model->m_facelist[i].v[3],
-						model->m_facelist[i].normal.x,
-						model->m_facelist[i].normal.y,
-						model->m_facelist[i].normal.z);
-	}
-	
-	for(i=0; i<model->m_vertexlist.size(); i++){
-		printf("Vertex: %f %f %f, %f %f %f\n", 
-						model->m_vertexlist[i].pos.x,
-						model->m_vertexlist[i].pos.y,
-						model->m_vertexlist[i].pos.z,
-						model->m_vertexlist[i].normal.x,
-						model->m_vertexlist[i].normal.y,
-						model->m_vertexlist[i].normal.z);
-	}
 	*/
+	
 	return true;
 }
 
@@ -147,8 +125,6 @@ bool convertPose2Particle(Pose3& pose, Particle& particle){
 	pos.z = pose.pos.z;
 
 	particle.setPose(rot, pos);
-	
-	particle.print();
 	
 	return true;
 }
