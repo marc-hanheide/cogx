@@ -80,7 +80,7 @@ void ObjectTracker::initTracker(){
   
   // link camera with tracker
 	m_tracker->setCamPerspective(m_camera);
-	m_tracker->lock(true);
+	m_tracker->lock(false);
 	m_tracker->setBFC(bfc);
 	
   log("initialisation successfull!");
@@ -174,7 +174,6 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	// converte pose of object to tracking pose (=particle)
 	convertPose2Particle(obj->pose, ids.trackpose);
-	log("TrackPose: %f %f %f", ids.trackpose.tX, ids.trackpose.tY, ids.trackpose.tZ);
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
