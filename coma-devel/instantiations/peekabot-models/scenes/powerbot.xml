@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+
+<!-- This is a MobileRobotics PowerBot, with bumpers but no sonars defined -->
+
+<!-- Copyright 2008 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  <model>
+    <file>powerbot/powerbot.pbmf</file>
+  </model>
+
+  <!-- Bumpers -->
+  <color r="0" g="0" b="0">
+    <!-- Front bumpers -->
+    <group>
+      <name>front_bumpers</name>
+      <children>
+	<sensor type="bumper">
+	  <name>bumper1</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_1.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper2</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_2.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper3</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_3.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper4</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_4.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper5</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_5.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper6</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_6.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper7</name>
+	  <children>
+	    <model><file>powerbot/bumper_front_7.pbmf</file></model>
+	  </children>
+	</sensor>
+      </children>
+    </group>
+
+    <!-- Rear bumpers -->
+    <group>
+      <name>rear_bumpers</name>
+      <children>
+	<sensor type="bumper">
+	  <name>bumper1</name>
+	  <children>
+	    <model><file>powerbot/bumper_rear_1.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper2</name>
+	  <children>
+	    <model><file>powerbot/bumper_rear_2.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper3</name>
+	  <children>
+	    <model><file>powerbot/bumper_rear_3.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper4</name>
+	  <children>
+	    <model><file>powerbot/bumper_rear_4.pbmf</file></model>
+	  </children>
+	</sensor>
+
+	<sensor type="bumper">
+	  <name>bumper5</name>
+	  <children>
+	    <model><file>powerbot/bumper_rear_5.pbmf</file></model>
+	  </children>
+	</sensor>
+      </children>
+    </group>
+  </color>
+</scene>
