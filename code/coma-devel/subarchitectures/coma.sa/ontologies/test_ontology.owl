@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+    xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns="http://test.hz.owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+    xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xml:base="http://test.hz.owl">
+  <owl:Ontology rdf:about=""/>
+  <owl:Class rdf:ID="FunctionEvidence"/>
+  <owl:Class rdf:ID="Kitchen">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >kitchen</lexicalWord>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="PhysicalRoom"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom>
+          <owl:Class rdf:ID="KitchenObject"/>
+        </owl:someValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="contains"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="KitchenEvidence">
+    <rdfs:subClassOf rdf:resource="#FunctionEvidence"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Refrigerator">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >refrigerator</lexicalWord>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#KitchenObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Place"/>
+  <owl:Class rdf:ID="Portion_of_Space">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >place</lexicalWord>
+  </owl:Class>
+  <owl:Class rdf:about="#KitchenObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Office">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >office</lexicalWord>
+    <owl:equivalentClass>
+      <owl:Class>
+        <owl:intersectionOf rdf:parseType="Collection">
+          <owl:Class rdf:about="#PhysicalRoom"/>
+          <owl:Restriction>
+            <owl:someValuesFrom>
+              <owl:Class rdf:ID="OfficeObject"/>
+            </owl:someValuesFrom>
+            <owl:onProperty>
+              <owl:ObjectProperty rdf:about="#contains"/>
+            </owl:onProperty>
+          </owl:Restriction>
+        </owl:intersectionOf>
+      </owl:Class>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:ID="KitchenRegion">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="FunctionalRegion"/>
+    </rdfs:subClassOf>
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >kitchen</lexicalWord>
+  </owl:Class>
+  <owl:Class rdf:about="#FunctionalRegion">
+    <rdfs:subClassOf rdf:resource="#Portion_of_Space"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Doorway">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >doorway</lexicalWord>
+    <rdfs:subClassOf rdf:resource="#Portion_of_Space"/>
+  </owl:Class>
+  <owl:Class rdf:about="#OfficeObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Laptop">
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+    <owl:equivalentClass>
+      <owl:Class rdf:ID="Notebook"/>
+    </owl:equivalentClass>
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >laptop</lexicalWord>
+  </owl:Class>
+  <owl:Class rdf:about="#Object">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >object</lexicalWord>
+  </owl:Class>
+  <owl:Class rdf:about="#Notebook">
+    <owl:equivalentClass rdf:resource="#Laptop"/>
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >notebook</lexicalWord>
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+  </owl:Class>
+  <owl:Class rdf:about="#PhysicalRoom">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >room</lexicalWord>
+    <rdfs:subClassOf rdf:resource="#Portion_of_Space"/>
+  </owl:Class>
+  <owl:ObjectProperty rdf:about="#contains">
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:ID="in"/>
+    </owl:inverseOf>
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >contains</lexicalWord>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="possiblySameRoomAs">
+    <owl:inverseOf rdf:resource="#possiblySameRoomAs"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdfs:range rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#in">
+    <lexicalWord rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >is located in</lexicalWord>
+    <rdfs:domain rdf:resource="#Object"/>
+    <rdfs:range rdf:resource="#Place"/>
+    <owl:inverseOf rdf:resource="#contains"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="adjacent">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdfs:domain rdf:resource="#Place"/>
+    <owl:inverseOf rdf:resource="#adjacent"/>
+    <rdfs:range rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="sameRoomAs">
+    <owl:inverseOf rdf:resource="#sameRoomAs"/>
+    <rdfs:range rdf:resource="#Place"/>
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="constituentOfRoom">
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="constituentOf"/>
+    </rdfs:subPropertyOf>
+    <rdfs:range rdf:resource="#PhysicalRoom"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#constituentOf">
+    <rdfs:domain rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="constituentOfRegion">
+    <rdfs:subPropertyOf rdf:resource="#constituentOf"/>
+    <rdfs:range rdf:resource="#FunctionalRegion"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="providesEvidence">
+    <rdfs:range rdf:resource="#FunctionEvidence"/>
+    <rdfs:domain rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:AnnotationProperty rdf:ID="lexicalWord">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </owl:AnnotationProperty>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 3.4, Build 533)  http://protege.stanford.edu -->
