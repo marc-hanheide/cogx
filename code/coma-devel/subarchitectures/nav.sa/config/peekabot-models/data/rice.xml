@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<scene>
+  <model>
+    <name>rice</name>
+    <file>rice.pbmf</file>
+    <transform>
+      <translate>1 0 0</translate>
+    </transform>
+  </model>
+</scene>
