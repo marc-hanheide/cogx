@@ -16,8 +16,11 @@ import Ice.ObjectPrx;
 import NavData.AEdge;
 import NavData.FNode;
 import SpatialData.Place;
+import SpatialData.PlaceStatus;
 import cast.AlreadyExistsOnWMException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -40,10 +43,51 @@ import cast.cdl.WorkingMemoryOperation;
  */
 public class PlaceMonitor extends ManagedComponent {
 
+	private class ComaPlace {
+		private PlaceStatus m_placeStatus;
+		private String m_id;
+		private boolean m_gateway;
+		private String m_proxyWMid;
+		
+		public ComaPlace(String _placeId) {
+			m_id = _placeId;
+		}
+		
+		public boolean equals(ComaPlace _comaPlace) {
+			return this.m_id.equals(_comaPlace.m_id);
+		}
+		
+		public PlaceStatus getPlaceStatus() {
+			return m_placeStatus;
+		}
+		public void setPlaceStatus(PlaceStatus _placeStatus) {
+			m_placeStatus = _placeStatus;
+		}
+		
+		public String getPlaceId() {
+			return m_id;
+		}
+		
+		public boolean getGatewayStatus() {
+			return m_gateway;
+		}
+		public void setGatewayStatus(boolean _gatewayStatus) {
+			m_gateway = _gatewayStatus;
+		}
+		
+		public String getProxyWMid() {
+			return m_proxyWMid;
+		}
+		public void setProxyWMid(String _proxyWMid) {
+			m_proxyWMid = _proxyWMid;
+		}
+	}
+	
 	Identity m_reasoner_id;
 	ComaReasonerInterfacePrx m_comareasoner;
 	String m_bindingSA;
-	Map<String, String> m_placeID2proxyWMID;
+	//Map<String, String> m_placeID2proxyWMID;
+	Map<String,ComaPlace> m_placeID2ComaPlace;
 	
 
 	public void configure(Map<String, String> args) {
@@ -65,11 +109,48 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 		
 		if (m_bindingSA!=null) {
-			m_placeID2proxyWMID = new HashMap<String, String>();
+//			m_placeID2proxyWMID = new HashMap<String, String>();
+			m_placeID2ComaPlace = new HashMap<String, ComaPlace>();
 		}
 		
 	}
+	
+	private void maintainPlaceProxy(Place _placeNode) {
+		ComaPlace _comaPlace;
+		if (!(m_placeID2ComaPlace.containsKey(_placeNode.id))) {
+			_comaPlace = new ComaPlace(String.valueOf(_placeNode.id));
+		} else {
+			_comaPlace = m_placeID2ComaPlace.get(String.valueOf(_placeNode.id));
+		}
+		_comaPlace.setPlaceStatus(_placeNode.status);
+		m_placeID2ComaPlace.put(String.valueOf(_placeNode.id), _comaPlace);
+		
+		if (_comaPlace.m_proxyWMid==null) {
+			createNewPlaceProxy(_comaPlace);
+		} else {
+			updatePlaceProxy(_comaPlace);
+		}
+	}
 
+	private void maintainPlaceProxy(FNode _placeNode) {
+		ComaPlace _comaPlace;
+		if (!(m_placeID2ComaPlace.containsKey(_placeNode.nodeId))) {
+			_comaPlace = new ComaPlace(String.valueOf(_placeNode.nodeId));
+		} else {
+			_comaPlace = m_placeID2ComaPlace.get(String.valueOf(_placeNode.nodeId));
+		}
+		_comaPlace.setGatewayStatus(_placeNode.gateway==0 ? false : true);
+
+		m_placeID2ComaPlace.put(String.valueOf(_placeNode.nodeId), _comaPlace);
+		
+		if (_comaPlace.m_proxyWMid==null) {
+			createNewPlaceProxy(_comaPlace);
+		} else {
+			updatePlaceProxy(_comaPlace);
+		}
+}
+	
+	
 	public void start() {
 		
 		// register the monitoring change filters
@@ -85,7 +166,8 @@ public class PlaceMonitor extends ManagedComponent {
 				try {
 					Place _newPlaceNode = getMemoryEntry(_wmc.address, Place.class);
 					log("Place ID = " + _newPlaceNode.id);
-					log("Doing nothing else...");
+					maintainPlaceProxy(_newPlaceNode);
+//					log("Doing nothing else...");
 					// propagate this to the coma ontology and the binder when possible!
 					
 					// old code:
@@ -125,8 +207,9 @@ public class PlaceMonitor extends ManagedComponent {
 						log("instance: " + _currIns);
 					}
 					// 2nd binder
-					boolean _isGateway = (_newPlaceNode.gateway==0 ? false: true);
-					createNewPlaceProxy(_newPlaceNode.nodeId, _isGateway);
+//					boolean _isGateway = (_newPlaceNode.gateway==0 ? false: true);
+//					createNewPlaceProxy(_newPlaceNode.nodeId, _isGateway);
+					maintainPlaceProxy(_newPlaceNode);
 					
 				} catch (DoesNotExistOnWMException e) {
 					// TODO Auto-generated catch block
@@ -173,14 +256,13 @@ public class PlaceMonitor extends ManagedComponent {
 	 * @param _placeID
 	 * @param _isGateway
 	 */
-	public void createNewPlaceProxy(long _placeID, boolean _isGateway) {
+	public void createNewPlaceProxy(ComaPlace _comaPlace) {
 		// check for presence of binder
 		if (m_bindingSA==null) {
 			log("No binder specified. Not creating any proxy...");
 			return;
 		}
 		
-		log("Warning: Placeholders not supported yet!");
 		// create new proxy
 		Proxy _newPlaceProxy = new Proxy();
 		_newPlaceProxy.entityID = newDataID();
@@ -192,17 +274,20 @@ public class PlaceMonitor extends ManagedComponent {
 		_newPlaceProxy.features[0] = new Feature();
 		_newPlaceProxy.features[0].featlabel = "place_id";
 		_newPlaceProxy.features[0].alternativeValues = new FeatureValue[1];
-		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,String.valueOf(_placeID));
+		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,_comaPlace.m_id);
 		
 		_newPlaceProxy.features[1] = new Feature();
 		_newPlaceProxy.features[1].featlabel = "place_type";
 		_newPlaceProxy.features[1].alternativeValues = new FeatureValue[1];
-		_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, (_isGateway ? "Doorway" : "Place"));
+		_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, 
+				(_comaPlace.getGatewayStatus() ? "Doorway" : 
+					(_comaPlace.m_placeStatus==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder")));
 			
 		_newPlaceProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
 
 		try {
-			addToWorkingMemory(new WorkingMemoryAddress(m_bindingSA,_newPlaceProxy.entityID), _newPlaceProxy);
+//			addToWorkingMemory(new WorkingMemoryAddress(m_bindingSA,_newPlaceProxy.entityID), _newPlaceProxy);
+			addToWorkingMemory(new WorkingMemoryAddress(_newPlaceProxy.entityID, m_bindingSA), _newPlaceProxy);
 		} catch (AlreadyExistsOnWMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -216,9 +301,106 @@ public class PlaceMonitor extends ManagedComponent {
 			e.printStackTrace();
 			System.exit(0);
 		}
-		m_placeID2proxyWMID.put(String.valueOf(_placeID), _newPlaceProxy.entityID);
+		_comaPlace.setProxyWMid(_newPlaceProxy.entityID);
+		m_placeID2ComaPlace.put(_comaPlace.m_id, _comaPlace);
+//		m_placeID2proxyWMID.put(String.valueOf(_placeID), _newPlaceProxy.entityID);
 		log("Successfully added a place proxy to the binder.");
 		
 	}
+	
+	public void updatePlaceProxy(ComaPlace _comaPlace) {
+		// check for presence of binder
+		if (m_bindingSA==null) {
+			log("No binder specified. Not updating any proxy...");
+			return;
+		}
+
+		try {
+			WorkingMemoryAddress _proxyWMA = new WorkingMemoryAddress(_comaPlace.getProxyWMid(), m_bindingSA);
+			Proxy _placeProxy = getMemoryEntry(_proxyWMA, Proxy.class);
+			
+			for (int i = 0; i < _placeProxy.features.length; i++) {
+				if (_placeProxy.features[i].featlabel.equals("place_type")) {
+					_placeProxy.features[1].alternativeValues = new FeatureValue[1];
+					_placeProxy.features[1].alternativeValues[0] = new StringValue(1, 
+							(_comaPlace.getGatewayStatus() ? "Doorway" : 
+								(_comaPlace.m_placeStatus==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder")));
+				}
+			}
+			_placeProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_placeProxy);
+			
+			overwriteWorkingMemory(_proxyWMA, _placeProxy);
+			
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ConsistencyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (PermissionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		log("Successfully updated a place proxy on the binder.");
+	}
+	
+
+//	/**
+//	 * @todo THIS DOES NOT SUPPORT PLACEHOLDERS YET!
+//	 * 
+//	 * @param _placeID
+//	 * @param _isGateway
+//	 */
+//	public void createNewPlaceProxy(long _placeID, boolean _isGateway) {
+//		// check for presence of binder
+//		if (m_bindingSA==null) {
+//			log("No binder specified. Not creating any proxy...");
+//			return;
+//		}
+//		
+//		log("Warning: Placeholders not supported yet!");
+//		// create new proxy
+//		Proxy _newPlaceProxy = new Proxy();
+//		_newPlaceProxy.entityID = newDataID();
+//		_newPlaceProxy.subarchId = this.getSubarchitectureID();
+//		_newPlaceProxy.probExists = 1;
+//			
+//		_newPlaceProxy.features = new Feature[2];
+//		
+//		_newPlaceProxy.features[0] = new Feature();
+//		_newPlaceProxy.features[0].featlabel = "place_id";
+//		_newPlaceProxy.features[0].alternativeValues = new FeatureValue[1];
+//		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,String.valueOf(_placeID));
+//		
+//		_newPlaceProxy.features[1] = new Feature();
+//		_newPlaceProxy.features[1].featlabel = "place_type";
+//		_newPlaceProxy.features[1].alternativeValues = new FeatureValue[1];
+//		_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, (_isGateway ? "Doorway" : "Place"));
+//			
+//		_newPlaceProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
+//
+//		try {
+////			addToWorkingMemory(new WorkingMemoryAddress(m_bindingSA,_newPlaceProxy.entityID), _newPlaceProxy);
+//			addToWorkingMemory(new WorkingMemoryAddress(_newPlaceProxy.entityID, m_bindingSA), _newPlaceProxy);
+//		} catch (AlreadyExistsOnWMException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			System.exit(0);
+//		} catch (DoesNotExistOnWMException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			System.exit(0);
+//		} catch (UnknownSubarchitectureException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			System.exit(0);
+//		}
+//		m_placeID2proxyWMID.put(String.valueOf(_placeID), _newPlaceProxy.entityID);
+//		log("Successfully added a place proxy to the binder.");
+//		
+//	}
 	
 }
