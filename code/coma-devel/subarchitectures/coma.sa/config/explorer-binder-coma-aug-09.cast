@@ -3,11 +3,26 @@ HOST localhost
 COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
 
+SUBARCHITECTURE coma
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG testreasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/test-ontology.cfg --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name testreasoner -bsa binder --log true
+
+SUBARCHITECTURE binder 
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
+#JAVA MG fakevisualproxy binder.fakeproxygenerators.FakeVisualProxyGenerator --log
+#JAVA MG fakehapticproxy binder.fakeproxygenerators.FakeHapticProxyGenerator --log
+JAVA MG monitor binder.components.BinderMonitor #--log
+JAVA MG binder binder.components.Binder #--log
+
+
 SUBARCHITECTURE spatial.sa
 #SUBARCHITECTURE nav.sa
 CPP WM SubarchitectureWorkingMemory  #--log --debug
 CPP TM AlwaysPositiveTaskManager
-CPP MG spatial.translation SpatialTranslation --log #--debug
+CPP MG spatial.translation SpatialTranslation #--log #--debug
 
 # Args for SlamProcess
 # -c for config file with info about the robot setup
@@ -22,14 +37,14 @@ CPP MG spatial.translation SpatialTranslation --log #--debug
 #    if you get lost you can always remove robotpose.ccf and put the robot
 #    back at the known start position.
 #    NOTE: Name must be different from graph map!!!
-CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --log #-m tmpmap.metric --debug 
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #--log #-m tmpmap.metric --debug 
 
 # Args for NavGraphProcess
 # -c for config file
 # -m <graph-file> to give name to graph to load/save from/to. Will create new 
 #    map if does not exist and will load and extend if extist.
 #    NOTE: Name must be different from metric map!!!
-CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --log #--debug
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
 
 CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 #--log #--debug
 
@@ -51,17 +66,3 @@ CPP GD exploration.tester ExplorationTester --log #--debug
 #CPP WM SubarchitectureWorkingMemory  #--log --debug
 #CPP TM AlwaysPositiveTaskManager
 #CPP MG multi.tester MultiSATester -nsa spatial.sa #-f instantiations/jun-09.test --log --debug
-
-SUBARCHITECTURE coma
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG testreasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/test-ontology.cfg --log true
-JAVA MG placemon coma.components.PlaceMonitor --reasoner-name testreasoner -bsa binder --log true
-
-SUBARCHITECTURE binder 
-JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
-JAVA WM binder.components.BindingWorkingMemory --log
-#JAVA MG fakevisualproxy binder.fakeproxygenerators.FakeVisualProxyGenerator --log
-#JAVA MG fakehapticproxy binder.fakeproxygenerators.FakeHapticProxyGenerator --log
-JAVA MG monitor binder.components.BinderMonitor #--log
-JAVA MG binder binder.components.Binder --log

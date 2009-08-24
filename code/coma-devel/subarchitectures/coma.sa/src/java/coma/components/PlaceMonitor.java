@@ -43,51 +43,13 @@ import cast.cdl.WorkingMemoryOperation;
  */
 public class PlaceMonitor extends ManagedComponent {
 
-	private class ComaPlace {
-		private PlaceStatus m_placeStatus;
-		private String m_id;
-		private boolean m_gateway;
-		private String m_proxyWMid;
-		
-		public ComaPlace(String _placeId) {
-			m_id = _placeId;
-		}
-		
-		public boolean equals(ComaPlace _comaPlace) {
-			return this.m_id.equals(_comaPlace.m_id);
-		}
-		
-		public PlaceStatus getPlaceStatus() {
-			return m_placeStatus;
-		}
-		public void setPlaceStatus(PlaceStatus _placeStatus) {
-			m_placeStatus = _placeStatus;
-		}
-		
-		public String getPlaceId() {
-			return m_id;
-		}
-		
-		public boolean getGatewayStatus() {
-			return m_gateway;
-		}
-		public void setGatewayStatus(boolean _gatewayStatus) {
-			m_gateway = _gatewayStatus;
-		}
-		
-		public String getProxyWMid() {
-			return m_proxyWMid;
-		}
-		public void setProxyWMid(String _proxyWMid) {
-			m_proxyWMid = _proxyWMid;
-		}
-	}
+
 	
 	Identity m_reasoner_id;
 	ComaReasonerInterfacePrx m_comareasoner;
 	String m_bindingSA;
 	//Map<String, String> m_placeID2proxyWMID;
-	Map<String,ComaPlace> m_placeID2ComaPlace;
+	Map<Long,ComaPlace> m_placeID2ComaPlace;
 	
 
 	public void configure(Map<String, String> args) {
@@ -110,45 +72,10 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		if (m_bindingSA!=null) {
 //			m_placeID2proxyWMID = new HashMap<String, String>();
-			m_placeID2ComaPlace = new HashMap<String, ComaPlace>();
+			m_placeID2ComaPlace = new HashMap<Long, ComaPlace>();
 		}
 		
 	}
-	
-	private void maintainPlaceProxy(Place _placeNode) {
-		ComaPlace _comaPlace;
-		if (!(m_placeID2ComaPlace.containsKey(_placeNode.id))) {
-			_comaPlace = new ComaPlace(String.valueOf(_placeNode.id));
-		} else {
-			_comaPlace = m_placeID2ComaPlace.get(String.valueOf(_placeNode.id));
-		}
-		_comaPlace.setPlaceStatus(_placeNode.status);
-		m_placeID2ComaPlace.put(String.valueOf(_placeNode.id), _comaPlace);
-		
-		if (_comaPlace.m_proxyWMid==null) {
-			createNewPlaceProxy(_comaPlace);
-		} else {
-			updatePlaceProxy(_comaPlace);
-		}
-	}
-
-	private void maintainPlaceProxy(FNode _placeNode) {
-		ComaPlace _comaPlace;
-		if (!(m_placeID2ComaPlace.containsKey(_placeNode.nodeId))) {
-			_comaPlace = new ComaPlace(String.valueOf(_placeNode.nodeId));
-		} else {
-			_comaPlace = m_placeID2ComaPlace.get(String.valueOf(_placeNode.nodeId));
-		}
-		_comaPlace.setGatewayStatus(_placeNode.gateway==0 ? false : true);
-
-		m_placeID2ComaPlace.put(String.valueOf(_placeNode.nodeId), _comaPlace);
-		
-		if (_comaPlace.m_proxyWMid==null) {
-			createNewPlaceProxy(_comaPlace);
-		} else {
-			updatePlaceProxy(_comaPlace);
-		}
-}
 	
 	
 	public void start() {
@@ -156,7 +83,7 @@ public class PlaceMonitor extends ManagedComponent {
 		// register the monitoring change filters
 		
 		// this is the "proper" Place monitor
-		// for the time being, it does not create any behavior
+		// for the time being, it does not create any coma instances
 		// instead the FNode monitor does this task
 		// once the interface changes, the relevant code from there has to go in here!
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class, WorkingMemoryOperation.ADD), 
@@ -187,6 +114,37 @@ public class PlaceMonitor extends ManagedComponent {
 		});
 
 		
+		// this is the "proper" Place monitor
+		// for the time being, it does not create any coma instances
+		// instead the FNode monitor does this task
+		// once the interface changes, the relevant code from there has to go in here!
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class, WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				log("Got a callback for an OVERWRITTEN Place WME!");
+				try {
+					Place _placeNode = getMemoryEntry(_wmc.address, Place.class);
+					log("Place ID = " + _placeNode.id);
+					maintainPlaceProxy(_placeNode);
+//					log("Doing nothing else...");
+					// propagate this to the coma ontology and the binder when possible!
+					
+					// old code:
+//					m_comareasoner.addInstance("test:place"+_newPlaceNode.nodeId, "test:Place");
+//					log("Added new Place instance. This is a list of all instances in the ABox");
+//					for (String _currIns : m_comareasoner.getAllInstances("owl:Thing")) {
+//						log("instance: " + _currIns);
+//					}
+				} catch (DoesNotExistOnWMException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			};
+		});
+		
 		// this is the "hacky" FNode monitor, 
 		// which is used to get access to Place properties right away.
 		// once the Place WMEs contain all relevant information, copy this code to the correct monitor above
@@ -202,10 +160,10 @@ public class PlaceMonitor extends ManagedComponent {
 					// propagate this to the coma ontology and to the binder 
 					// 1st coma
 					m_comareasoner.addInstance("test:place"+_newPlaceNode.nodeId, "test:Place");
-					log("Added new Place instance. This is a list of all instances in the ABox");
-					for (String _currIns : m_comareasoner.getAllInstances("owl:Thing")) {
-						log("instance: " + _currIns);
-					}
+					log("Added new Place instance."); // This is a list of all instances in the ABox");
+//					for (String _currIns : m_comareasoner.getAllInstances("owl:Thing")) {
+//						log("instance: " + _currIns);
+//					}
 					// 2nd binder
 //					boolean _isGateway = (_newPlaceNode.gateway==0 ? false: true);
 //					createNewPlaceProxy(_newPlaceNode.nodeId, _isGateway);
@@ -221,6 +179,40 @@ public class PlaceMonitor extends ManagedComponent {
 			};
 		});
 		
+		// this is the "hacky" FNode monitor, 
+		// which is used to get access to Place properties right away.
+		// once the Place WMEs contain all relevant information, copy this code to the correct monitor above
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(FNode.class, WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				log("Got a callback for an OVERWRITTEN FNode!");
+				try {
+					FNode _fNode = getMemoryEntry(_wmc.address, FNode.class);
+					log("FNode ID (node ID) = " + _fNode.nodeId);
+					log("FNode status (gateway) = " + _fNode.gateway);
+					
+					// propagate this to the coma ontology and to the binder 
+					// 1st coma
+					m_comareasoner.addInstance("test:place"+_fNode.nodeId, "test:Place");
+					log("Added new Place instance."); // This is a list of all instances in the ABox");
+//					for (String _currIns : m_comareasoner.getAllInstances("owl:Thing")) {
+//						log("instance: " + _currIns);
+//					}
+					// 2nd binder
+//					boolean _isGateway = (_newPlaceNode.gateway==0 ? false: true);
+//					createNewPlaceProxy(_newPlaceNode.nodeId, _isGateway);
+					maintainPlaceProxy(_fNode);
+					
+				} catch (DoesNotExistOnWMException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			};
+		});
+
 		// temporaray ("hacky") monitor for Place connectivity
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(AEdge.class, WorkingMemoryOperation.ADD), 
 				new WorkingMemoryChangeReceiver() {
@@ -231,10 +223,10 @@ public class PlaceMonitor extends ManagedComponent {
 					log("Start Node ID = " + _newEdge.startNodeId);
 					log("End Node ID = " + _newEdge.endNodeId);
 					m_comareasoner.addRelation("test:place"+_newEdge.startNodeId, "test:adjacent", "test:place"+_newEdge.endNodeId);
-					log("Added new Edge relation. This is a list of all room instances in the ABox");
-					for (String _currIns : m_comareasoner.getAllInstances("test:PhysicalRoom")) {
-						log("instance: " + _currIns);
-					}
+					log("Added new Edge relation to coma ontology."); // This is a list of all room instances in the ABox");
+//					for (String _currIns : m_comareasoner.getAllInstances("test:PhysicalRoom")) {
+//						log("instance: " + _currIns);
+//					}
 				} catch (DoesNotExistOnWMException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -250,11 +242,53 @@ public class PlaceMonitor extends ManagedComponent {
 		m_comareasoner = comadata.ComaReasonerInterfacePrxHelper.checkedCast(base);
 	}
 	
+	
+	
+	private void maintainPlaceProxy(Place _placeNode) {
+		log("maintaining a Place proxy for a Place struct.");
+		ComaPlace _comaPlace;
+		if (!(m_placeID2ComaPlace.containsKey(_placeNode.id))) {
+			_comaPlace = new ComaPlace(_placeNode.id);
+		} else {
+			_comaPlace = m_placeID2ComaPlace.get(_placeNode.id);
+		}
+		_comaPlace.setPlaceStatus(_placeNode.status);
+		
+		m_placeID2ComaPlace.put(_placeNode.id, _comaPlace);
+
+		if (_comaPlace.m_proxyWMid==null) {
+			log("no proxy WMA known...");
+			createNewPlaceProxy(_comaPlace);
+		} else {
+			log("proxy WMA known!");
+			updatePlaceProxy(_comaPlace);
+		}
+	}
+
+	private void maintainPlaceProxy(FNode _placeNode) {
+		log("maintaining a Place proxy for an FNode struct.");
+		ComaPlace _comaPlace;
+		if (!(m_placeID2ComaPlace.containsKey(_placeNode.nodeId))) {
+			_comaPlace = new ComaPlace(_placeNode.nodeId);
+		} else {
+			_comaPlace = m_placeID2ComaPlace.get(_placeNode.nodeId);
+		}
+		_comaPlace.setGatewayStatus(_placeNode.gateway);
+
+		m_placeID2ComaPlace.put(_placeNode.nodeId, _comaPlace);
+
+		if (_comaPlace.m_proxyWMid==null) {
+			log("no proxy WMA known...");
+			createNewPlaceProxy(_comaPlace);
+		} else {
+			log("proxy WMA known!");
+			updatePlaceProxy(_comaPlace);
+		}
+	}
+	
 	/**
-	 * @todo THIS DOES NOT SUPPORT PLACEHOLDERS YET!
 	 * 
-	 * @param _placeID
-	 * @param _isGateway
+	 * @param _comaPlace
 	 */
 	public void createNewPlaceProxy(ComaPlace _comaPlace) {
 		// check for presence of binder
@@ -262,6 +296,7 @@ public class PlaceMonitor extends ManagedComponent {
 			log("No binder specified. Not creating any proxy...");
 			return;
 		}
+		log("creating a new place proxy.");
 		
 		// create new proxy
 		Proxy _newPlaceProxy = new Proxy();
@@ -269,20 +304,25 @@ public class PlaceMonitor extends ManagedComponent {
 		_newPlaceProxy.subarchId = this.getSubarchitectureID();
 		_newPlaceProxy.probExists = 1;
 			
-		_newPlaceProxy.features = new Feature[2];
+		_newPlaceProxy.features = new Feature[3];
 		
 		_newPlaceProxy.features[0] = new Feature();
 		_newPlaceProxy.features[0].featlabel = "place_id";
 		_newPlaceProxy.features[0].alternativeValues = new FeatureValue[1];
-		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,_comaPlace.m_id);
+		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,_comaPlace.m_id.toString());
 		
 		_newPlaceProxy.features[1] = new Feature();
 		_newPlaceProxy.features[1].featlabel = "place_type";
 		_newPlaceProxy.features[1].alternativeValues = new FeatureValue[1];
 		_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, 
-				(_comaPlace.getGatewayStatus() ? "Doorway" : 
-					(_comaPlace.m_placeStatus==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder")));
+				(_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder"));
 			
+		_newPlaceProxy.features[2] = new Feature();
+		_newPlaceProxy.features[2].featlabel = "node_type";
+		_newPlaceProxy.features[2].alternativeValues = new FeatureValue[1];
+		_newPlaceProxy.features[2].alternativeValues[0] = new StringValue(1, 
+				(_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node"))); 
+
 		_newPlaceProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
 
 		try {
@@ -314,6 +354,7 @@ public class PlaceMonitor extends ManagedComponent {
 			log("No binder specified. Not updating any proxy...");
 			return;
 		}
+		log("updating an existing place proxy.");
 
 		try {
 			WorkingMemoryAddress _proxyWMA = new WorkingMemoryAddress(_comaPlace.getProxyWMid(), m_bindingSA);
@@ -321,10 +362,19 @@ public class PlaceMonitor extends ManagedComponent {
 			
 			for (int i = 0; i < _placeProxy.features.length; i++) {
 				if (_placeProxy.features[i].featlabel.equals("place_type")) {
-					_placeProxy.features[1].alternativeValues = new FeatureValue[1];
-					_placeProxy.features[1].alternativeValues[0] = new StringValue(1, 
-							(_comaPlace.getGatewayStatus() ? "Doorway" : 
-								(_comaPlace.m_placeStatus==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder")));
+					_placeProxy.features[i].alternativeValues = new FeatureValue[1];
+					_placeProxy.features[i].alternativeValues[0] = new StringValue(1, 
+							(_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder"));
+					log("Feature: " + _placeProxy.features[i].featlabel + 
+							" -- place status:" + (_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder"));
+				} else if (_placeProxy.features[i].featlabel.equals("node_type")) {
+					_placeProxy.features[i].alternativeValues = new FeatureValue[1];
+					_placeProxy.features[i].alternativeValues[0] = new StringValue(1, 
+							(_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node")));
+					log("Feature: " + _placeProxy.features[i].featlabel + 
+							" -- gateway status:" + (_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node")));							
+				} else if (_placeProxy.features[i].featlabel.equals("place_id")) {
+					log("Place ID of the overwritten proxy: " + _placeProxy.features[i].featlabel);
 				}
 			}
 			_placeProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_placeProxy);
@@ -347,7 +397,48 @@ public class PlaceMonitor extends ManagedComponent {
 		log("Successfully updated a place proxy on the binder.");
 	}
 	
-
+	private class ComaPlace {
+		private PlaceStatus m_placeStatus;
+		private Long m_id;
+		private short m_gateway;
+		private String m_proxyWMid;
+		
+		public ComaPlace(Long _placeId) {
+			m_id = _placeId;
+			m_gateway = -1;
+		}
+		
+		public boolean equals(ComaPlace _comaPlace) {
+			return this.m_id.equals(_comaPlace.m_id);
+		}
+		
+		public PlaceStatus getPlaceStatus() {
+			return m_placeStatus;
+		}
+		public void setPlaceStatus(PlaceStatus _placeStatus) {
+			m_placeStatus = _placeStatus;
+		}
+		
+		public Long getPlaceId() {
+			return m_id;
+		}
+		
+		public short getGatewayStatus() {
+			return m_gateway;
+		}
+		public void setGatewayStatus(short _gatewayStatus) {
+			m_gateway = _gatewayStatus;
+		}
+		
+		public String getProxyWMid() {
+			return m_proxyWMid;
+		}
+		public void setProxyWMid(String _proxyWMid) {
+			m_proxyWMid = _proxyWMid;
+		}
+	}
+	
+	
 //	/**
 //	 * @todo THIS DOES NOT SUPPORT PLACEHOLDERS YET!
 //	 * 
