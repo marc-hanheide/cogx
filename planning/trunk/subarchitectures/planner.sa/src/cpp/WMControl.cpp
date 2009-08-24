@@ -82,7 +82,7 @@ void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
     vector<cast::CASTData<binder::autogen::core::Union> > unions;
     getMemoryEntriesWithData<binder::autogen::core::Union>(unions, "binder");
 
-    cout << unions[0].getData()->entityID << endl;
+    //cout << unions[0].getData()->entityID << endl;
     task->state = vector<binder::autogen::core::UnionPtr>();
     for(vector<cast::CASTData<binder::autogen::core::Union> >::iterator i=unions.begin(); i != unions.end(); ++i) {
         task->state.push_back(i->getData());

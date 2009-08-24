@@ -141,7 +141,8 @@ class Task(object):
         problem = mapl.mapl_file.load_mapl_problem(task_file)
         self._task_name = problem.task_name
         if self._domain_name:
-            assert self._domain_name == problem.domain_name
+            STRICT_CHECKING = False
+            assert not STRICT_CHECKING or self._domain_name == problem.domain_name
         else:
             self.domain_name = problem.domain_name
         self._objects = problem.objects

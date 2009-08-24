@@ -18,7 +18,7 @@ from standalone.planner import Planner as StandalonePlanner
 
 # Using string templates only until move to the proper ICE types
 MAPL_TASK_TMPL = """
-(define (problem cosytask) (:domain coffee)
+(define (problem cosytask) (:domain cogx)
 (:objects
 %s
 )
@@ -31,6 +31,24 @@ MAPL_TASK_TMPL = """
 """
 
 TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/cp_test.domain.mapl")
+
+def union2name(union):
+  return "union%s" % union.entityID
+
+def union2type_declaration(union):
+  """perform some basic type inference to determine the object type"""
+  return "object"
+
+def gen_type_declarations(unions):
+  for union in unions:
+    yield "%s - %s" % (union2name(union), union2type_declaration(union))
+
+def union2facts(union):
+  name = union2name(union)
+  for feature in union.features:
+    # choose feature val with highest probability:
+    max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb) 
+    yield "(%s %s : %s)" % (feature.featlabel, name, max_val.val)
 
 class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
@@ -54,19 +72,17 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
     # MB: id?
     print "Planner PythonServer: New PlanningTask received:"
     print "GOAL: " + task_desc.goal;
-    print "OBJECTS: " + task_desc.objects;
+    #print "OBJECTS: " + task_desc.objects;
     #print "INIT: " + task_desc.state;
 
-    #task = Task()
-    #task.load_mapl_domain(TEST_DOMAIN_FN)
-    for union in task_desc.state:
-      print union.entityID
-      for feature in union.features:
-        value_str = ", ".join("%s (%.2f)" % (v.val, v.independentProb) for v in feature.alternativeValues)
-        print "%s: %s" % (feature.featlabel, value_str)
-#     problem_str = MAPL_TASK_TMPL % (task_desc.objects, task_desc.state, task_desc.goal)
-#     task.load_mapl_problem(problem_str)
-#     self.planner.register_task(task)
+    task = Task()
+    task.load_mapl_domain(TEST_DOMAIN_FN)
+
+    obj_descriptions = "\n".join(fact for union in task_desc.state for fact in union2facts(union))
+    obj_declarations = "\n".join(gen_type_declarations(task_desc.state))
+    problem_str = MAPL_TASK_TMPL % (obj_declarations, obj_descriptions, task_desc.goal)
+    task.load_mapl_problem(problem_str)
+    self.planner.register_task(task)
 #     task.mark_changed()
 #     task.activate_change_dectection()
 #     plan = task.get_plan()
