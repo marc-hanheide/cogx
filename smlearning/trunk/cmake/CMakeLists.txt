@@ -118,6 +118,7 @@ SET(TOOLS_HEADERS
 SET(TOOLS_FILES
 	${SMLEARNING_ROOT}/src/defaultnet.xml
 )
+
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
 # SMLearning library
@@ -130,13 +131,23 @@ ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
+# ADD_CUSTOM_TARGET (training.sh ALL)
+# ADD_CUSTOM_COMMAND(
+# OUTPUTS ${EXECUTABLE_OUTPUT_PATH}/training.sh
+#		   DEPENDS ${SMLEARNING_ROOT}/src/tools/training.sh
+#		   COMMAND ${CMAKE_COMMAND}
+#		   TARGET training.sh
+#		   ARGS -E copy ${SMLEARNING_ROOT}/src/tools/training.sh ${EXECUTABLE_OUTPUT_PATH}/training.sh)
+INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
 INSTALL(TARGETS arm RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
+# INSTALL(TARGETS scripts RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${ARM_FILES} DESTINATION bin/SMLearning)
 INSTALL(FILES ${TOOLS_FILES} DESTINATION bin/SMLearning)
+
 
 ## SMLearning tools library
 #ADD_EXECUTABLE(tools_test ${TOOLS_SOURCES})
