@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<scene>
+  <model>
+    <name>book</name>
+    <file>book.pbmf</file>
+  </model>
+  <model>
+    <name>rice</name>
+    <file>rice.pbmf</file>
+    <transform>
+      <translate>1 0 0</translate>
+    </transform>
+  </model>
+  <model>
+    <name>musli</name>
+    <file>musli.pbmf</file>
+    <transform>
+      <translate>-1 0 0</translate>
+    </transform>
+  </model>
+  <model>
+    <name>knacke</name>
+    <file>knacke.pbmf</file>
+    <transform>
+      <translate>0 1 0</translate>
+    </transform>
+  </model>
+  <model>
+    <name>monitor</name>
+    <file>monitor.pbmf</file>
+    <transform>
+      <translate>0 -1 0</translate>
+    </transform>
+  </model>
+  <model>
+    <name>keyboard</name>
+    <file>keyboard.pbmf</file>
+    <transform>
+      <translate>0 -1.3 0</translate>
+    </transform>
+  </model>
+</scene>
