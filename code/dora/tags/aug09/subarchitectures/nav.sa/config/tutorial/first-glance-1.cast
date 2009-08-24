@@ -1,0 +1,4 @@
+HOST 127.0.0.1
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log
+
