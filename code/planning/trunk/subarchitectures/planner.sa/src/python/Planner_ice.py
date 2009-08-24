@@ -1975,6 +1975,840 @@ __name__ = 'cast'
 
 # End of module cast
 
+# Start of module binder
+_M_binder = Ice.openModule('binder')
+__name__ = 'binder'
+
+# Start of module binder.autogen
+_M_binder.autogen = Ice.openModule('binder.autogen')
+__name__ = 'binder.autogen'
+
+# Start of module binder.autogen.core
+_M_binder.autogen.core = Ice.openModule('binder.autogen.core')
+__name__ = 'binder.autogen.core'
+
+if not _M_binder.autogen.core.__dict__.has_key('FeatureValue'):
+    _M_binder.autogen.core.FeatureValue = Ice.createTempClass()
+    class FeatureValue(Ice.Object):
+        def __init__(self, independentProb=0.0):
+            self.independentProb = independentProb
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::FeatureValue')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::core::FeatureValue'
+
+        def ice_staticId():
+            return '::binder::autogen::core::FeatureValue'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.core._t_FeatureValue)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.core.FeatureValuePrx = Ice.createTempClass()
+    class FeatureValuePrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.core.FeatureValuePrx.ice_checkedCast(proxy, '::binder::autogen::core::FeatureValue', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.core.FeatureValuePrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.core._t_FeatureValuePrx = IcePy.defineProxy('::binder::autogen::core::FeatureValue', FeatureValuePrx)
+
+    _M_binder.autogen.core._t_FeatureValue = IcePy.defineClass('::binder::autogen::core::FeatureValue', FeatureValue, (), False, None, (), (('independentProb', (), IcePy._t_float),))
+    FeatureValue.ice_type = _M_binder.autogen.core._t_FeatureValue
+
+    _M_binder.autogen.core.FeatureValue = FeatureValue
+    del FeatureValue
+
+    _M_binder.autogen.core.FeatureValuePrx = FeatureValuePrx
+    del FeatureValuePrx
+
+if not _M_binder.autogen.core.__dict__.has_key('_t_FeatureValues'):
+    _M_binder.autogen.core._t_FeatureValues = IcePy.defineSequence('::binder::autogen::core::FeatureValues', (), _M_binder.autogen.core._t_FeatureValue)
+
+if not _M_binder.autogen.core.__dict__.has_key('Feature'):
+    _M_binder.autogen.core.Feature = Ice.createTempClass()
+    class Feature(Ice.Object):
+        def __init__(self, featlabel='', alternativeValues=None):
+            self.featlabel = featlabel
+            self.alternativeValues = alternativeValues
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::Feature')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::core::Feature'
+
+        def ice_staticId():
+            return '::binder::autogen::core::Feature'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.core._t_Feature)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.core.FeaturePrx = Ice.createTempClass()
+    class FeaturePrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.core.FeaturePrx.ice_checkedCast(proxy, '::binder::autogen::core::Feature', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.core.FeaturePrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.core._t_FeaturePrx = IcePy.defineProxy('::binder::autogen::core::Feature', FeaturePrx)
+
+    _M_binder.autogen.core._t_Feature = IcePy.declareClass('::binder::autogen::core::Feature')
+
+    _M_binder.autogen.core._t_Feature = IcePy.defineClass('::binder::autogen::core::Feature', Feature, (), False, None, (), (
+        ('featlabel', (), IcePy._t_string),
+        ('alternativeValues', (), _M_binder.autogen.core._t_FeatureValues)
+    ))
+    Feature.ice_type = _M_binder.autogen.core._t_Feature
+
+    _M_binder.autogen.core.Feature = Feature
+    del Feature
+
+    _M_binder.autogen.core.FeaturePrx = FeaturePrx
+    del FeaturePrx
+
+if not _M_binder.autogen.core.__dict__.has_key('ProbabilityDistribution'):
+    _M_binder.autogen.core.ProbabilityDistribution = Ice.createTempClass()
+    class ProbabilityDistribution(Ice.Object):
+        def __init__(self):
+            pass
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::ProbabilityDistribution')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::core::ProbabilityDistribution'
+
+        def ice_staticId():
+            return '::binder::autogen::core::ProbabilityDistribution'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.core._t_ProbabilityDistribution)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.core.ProbabilityDistributionPrx = Ice.createTempClass()
+    class ProbabilityDistributionPrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.core.ProbabilityDistributionPrx.ice_checkedCast(proxy, '::binder::autogen::core::ProbabilityDistribution', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.core.ProbabilityDistributionPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.core._t_ProbabilityDistributionPrx = IcePy.defineProxy('::binder::autogen::core::ProbabilityDistribution', ProbabilityDistributionPrx)
+
+    _M_binder.autogen.core._t_ProbabilityDistribution = IcePy.defineClass('::binder::autogen::core::ProbabilityDistribution', ProbabilityDistribution, (), False, None, (), ())
+    ProbabilityDistribution.ice_type = _M_binder.autogen.core._t_ProbabilityDistribution
+
+    _M_binder.autogen.core.ProbabilityDistribution = ProbabilityDistribution
+    del ProbabilityDistribution
+
+    _M_binder.autogen.core.ProbabilityDistributionPrx = ProbabilityDistributionPrx
+    del ProbabilityDistributionPrx
+
+if not _M_binder.autogen.core.__dict__.has_key('_t_FeaturesList'):
+    _M_binder.autogen.core._t_FeaturesList = IcePy.defineSequence('::binder::autogen::core::FeaturesList', (), _M_binder.autogen.core._t_Feature)
+
+if not _M_binder.autogen.core.__dict__.has_key('PerceivedEntity'):
+    _M_binder.autogen.core.PerceivedEntity = Ice.createTempClass()
+    class PerceivedEntity(Ice.Object):
+        def __init__(self, entityID='', probExists=0.0, features=None, distribution=None):
+            self.entityID = entityID
+            self.probExists = probExists
+            self.features = features
+            self.distribution = distribution
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::PerceivedEntity')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::core::PerceivedEntity'
+
+        def ice_staticId():
+            return '::binder::autogen::core::PerceivedEntity'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.core._t_PerceivedEntity)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.core.PerceivedEntityPrx = Ice.createTempClass()
+    class PerceivedEntityPrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.core.PerceivedEntityPrx.ice_checkedCast(proxy, '::binder::autogen::core::PerceivedEntity', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.core.PerceivedEntityPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.core._t_PerceivedEntityPrx = IcePy.defineProxy('::binder::autogen::core::PerceivedEntity', PerceivedEntityPrx)
+
+    _M_binder.autogen.core._t_PerceivedEntity = IcePy.declareClass('::binder::autogen::core::PerceivedEntity')
+
+    _M_binder.autogen.core._t_PerceivedEntity = IcePy.defineClass('::binder::autogen::core::PerceivedEntity', PerceivedEntity, (), False, None, (), (
+        ('entityID', (), IcePy._t_string),
+        ('probExists', (), IcePy._t_float),
+        ('features', (), _M_binder.autogen.core._t_FeaturesList),
+        ('distribution', (), _M_binder.autogen.core._t_ProbabilityDistribution)
+    ))
+    PerceivedEntity.ice_type = _M_binder.autogen.core._t_PerceivedEntity
+
+    _M_binder.autogen.core.PerceivedEntity = PerceivedEntity
+    del PerceivedEntity
+
+    _M_binder.autogen.core.PerceivedEntityPrx = PerceivedEntityPrx
+    del PerceivedEntityPrx
+
+if not _M_binder.autogen.core.__dict__.has_key('Proxy'):
+    _M_binder.autogen.core.Proxy = Ice.createTempClass()
+    class Proxy(_M_binder.autogen.core.PerceivedEntity):
+        def __init__(self, entityID='', probExists=0.0, features=None, distribution=None, subarchId=''):
+            _M_binder.autogen.core.PerceivedEntity.__init__(self, entityID, probExists, features, distribution)
+            self.subarchId = subarchId
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::PerceivedEntity', '::binder::autogen::core::Proxy')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::core::Proxy'
+
+        def ice_staticId():
+            return '::binder::autogen::core::Proxy'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.core._t_Proxy)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.core.ProxyPrx = Ice.createTempClass()
+    class ProxyPrx(_M_binder.autogen.core.PerceivedEntityPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.core.ProxyPrx.ice_checkedCast(proxy, '::binder::autogen::core::Proxy', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.core.ProxyPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.core._t_ProxyPrx = IcePy.defineProxy('::binder::autogen::core::Proxy', ProxyPrx)
+
+    _M_binder.autogen.core._t_Proxy = IcePy.declareClass('::binder::autogen::core::Proxy')
+
+    _M_binder.autogen.core._t_Proxy = IcePy.defineClass('::binder::autogen::core::Proxy', Proxy, (), False, _M_binder.autogen.core._t_PerceivedEntity, (), (('subarchId', (), IcePy._t_string),))
+    Proxy.ice_type = _M_binder.autogen.core._t_Proxy
+
+    _M_binder.autogen.core.Proxy = Proxy
+    del Proxy
+
+    _M_binder.autogen.core.ProxyPrx = ProxyPrx
+    del ProxyPrx
+
+if not _M_binder.autogen.core.__dict__.has_key('_t_ProxySeq'):
+    _M_binder.autogen.core._t_ProxySeq = IcePy.defineSequence('::binder::autogen::core::ProxySeq', (), _M_binder.autogen.core._t_Proxy)
+
+if not _M_binder.autogen.core.__dict__.has_key('Union'):
+    _M_binder.autogen.core.Union = Ice.createTempClass()
+    class Union(_M_binder.autogen.core.PerceivedEntity):
+        def __init__(self, entityID='', probExists=0.0, features=None, distribution=None, includedProxies=None):
+            _M_binder.autogen.core.PerceivedEntity.__init__(self, entityID, probExists, features, distribution)
+            self.includedProxies = includedProxies
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::PerceivedEntity', '::binder::autogen::core::Union')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::core::Union'
+
+        def ice_staticId():
+            return '::binder::autogen::core::Union'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.core._t_Union)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.core.UnionPrx = Ice.createTempClass()
+    class UnionPrx(_M_binder.autogen.core.PerceivedEntityPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.core.UnionPrx.ice_checkedCast(proxy, '::binder::autogen::core::Union', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.core.UnionPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.core._t_UnionPrx = IcePy.defineProxy('::binder::autogen::core::Union', UnionPrx)
+
+    _M_binder.autogen.core._t_Union = IcePy.declareClass('::binder::autogen::core::Union')
+
+    _M_binder.autogen.core._t_Union = IcePy.defineClass('::binder::autogen::core::Union', Union, (), False, _M_binder.autogen.core._t_PerceivedEntity, (), (('includedProxies', (), _M_binder.autogen.core._t_ProxySeq),))
+    Union.ice_type = _M_binder.autogen.core._t_Union
+
+    _M_binder.autogen.core.Union = Union
+    del Union
+
+    _M_binder.autogen.core.UnionPrx = UnionPrx
+    del UnionPrx
+
+# End of module binder.autogen.core
+
+__name__ = 'binder.autogen'
+
+# Start of module binder.autogen.featvalues
+_M_binder.autogen.featvalues = Ice.openModule('binder.autogen.featvalues')
+__name__ = 'binder.autogen.featvalues'
+
+if not _M_binder.autogen.featvalues.__dict__.has_key('StringValue'):
+    _M_binder.autogen.featvalues.StringValue = Ice.createTempClass()
+    class StringValue(_M_binder.autogen.core.FeatureValue):
+        def __init__(self, independentProb=0.0, val=''):
+            _M_binder.autogen.core.FeatureValue.__init__(self, independentProb)
+            self.val = val
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::FeatureValue', '::binder::autogen::featvalues::StringValue')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::featvalues::StringValue'
+
+        def ice_staticId():
+            return '::binder::autogen::featvalues::StringValue'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.featvalues._t_StringValue)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.featvalues.StringValuePrx = Ice.createTempClass()
+    class StringValuePrx(_M_binder.autogen.core.FeatureValuePrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.featvalues.StringValuePrx.ice_checkedCast(proxy, '::binder::autogen::featvalues::StringValue', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.featvalues.StringValuePrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.featvalues._t_StringValuePrx = IcePy.defineProxy('::binder::autogen::featvalues::StringValue', StringValuePrx)
+
+    _M_binder.autogen.featvalues._t_StringValue = IcePy.defineClass('::binder::autogen::featvalues::StringValue', StringValue, (), False, _M_binder.autogen.core._t_FeatureValue, (), (('val', (), IcePy._t_string),))
+    StringValue.ice_type = _M_binder.autogen.featvalues._t_StringValue
+
+    _M_binder.autogen.featvalues.StringValue = StringValue
+    del StringValue
+
+    _M_binder.autogen.featvalues.StringValuePrx = StringValuePrx
+    del StringValuePrx
+
+# End of module binder.autogen.featvalues
+
+__name__ = 'binder.autogen'
+
+# Start of module binder.autogen.distributions
+_M_binder.autogen.distributions = Ice.openModule('binder.autogen.distributions')
+__name__ = 'binder.autogen.distributions'
+
+if not _M_binder.autogen.distributions.__dict__.has_key('FeatureValuePair'):
+    _M_binder.autogen.distributions.FeatureValuePair = Ice.createTempClass()
+    class FeatureValuePair(Ice.Object):
+        def __init__(self, featlabel='', featvalue=None):
+            self.featlabel = featlabel
+            self.featvalue = featvalue
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::distributions::FeatureValuePair')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::distributions::FeatureValuePair'
+
+        def ice_staticId():
+            return '::binder::autogen::distributions::FeatureValuePair'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.distributions._t_FeatureValuePair)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.distributions.FeatureValuePairPrx = Ice.createTempClass()
+    class FeatureValuePairPrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.distributions.FeatureValuePairPrx.ice_checkedCast(proxy, '::binder::autogen::distributions::FeatureValuePair', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.distributions.FeatureValuePairPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.distributions._t_FeatureValuePairPrx = IcePy.defineProxy('::binder::autogen::distributions::FeatureValuePair', FeatureValuePairPrx)
+
+    _M_binder.autogen.distributions._t_FeatureValuePair = IcePy.declareClass('::binder::autogen::distributions::FeatureValuePair')
+
+    _M_binder.autogen.distributions._t_FeatureValuePair = IcePy.defineClass('::binder::autogen::distributions::FeatureValuePair', FeatureValuePair, (), False, None, (), (
+        ('featlabel', (), IcePy._t_string),
+        ('featvalue', (), _M_binder.autogen.core._t_FeatureValue)
+    ))
+    FeatureValuePair.ice_type = _M_binder.autogen.distributions._t_FeatureValuePair
+
+    _M_binder.autogen.distributions.FeatureValuePair = FeatureValuePair
+    del FeatureValuePair
+
+    _M_binder.autogen.distributions.FeatureValuePairPrx = FeatureValuePairPrx
+    del FeatureValuePairPrx
+
+if not _M_binder.autogen.distributions.__dict__.has_key('_t_ProbabilityDistributions'):
+    _M_binder.autogen.distributions._t_ProbabilityDistributions = IcePy.defineSequence('::binder::autogen::distributions::ProbabilityDistributions', (), _M_binder.autogen.core._t_ProbabilityDistribution)
+
+# Start of module binder.autogen.distributions.discrete
+_M_binder.autogen.distributions.discrete = Ice.openModule('binder.autogen.distributions.discrete')
+__name__ = 'binder.autogen.distributions.discrete'
+
+if not _M_binder.autogen.distributions.discrete.__dict__.has_key('_t_FeatureValuePairs'):
+    _M_binder.autogen.distributions.discrete._t_FeatureValuePairs = IcePy.defineSequence('::binder::autogen::distributions::discrete::FeatureValuePairs', (), _M_binder.autogen.distributions._t_FeatureValuePair)
+
+if not _M_binder.autogen.distributions.discrete.__dict__.has_key('DiscreteProbabilityAssignment'):
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityAssignment = Ice.createTempClass()
+    class DiscreteProbabilityAssignment(Ice.Object):
+        def __init__(self, featurepairs=None, prob=0.0):
+            self.featurepairs = featurepairs
+            self.prob = prob
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment'
+
+        def ice_staticId():
+            return '::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignment)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityAssignmentPrx = Ice.createTempClass()
+    class DiscreteProbabilityAssignmentPrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.distributions.discrete.DiscreteProbabilityAssignmentPrx.ice_checkedCast(proxy, '::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.distributions.discrete.DiscreteProbabilityAssignmentPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignmentPrx = IcePy.defineProxy('::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment', DiscreteProbabilityAssignmentPrx)
+
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignment = IcePy.declareClass('::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment')
+
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignment = IcePy.defineClass('::binder::autogen::distributions::discrete::DiscreteProbabilityAssignment', DiscreteProbabilityAssignment, (), False, None, (), (
+        ('featurepairs', (), _M_binder.autogen.distributions.discrete._t_FeatureValuePairs),
+        ('prob', (), IcePy._t_float)
+    ))
+    DiscreteProbabilityAssignment.ice_type = _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignment
+
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityAssignment = DiscreteProbabilityAssignment
+    del DiscreteProbabilityAssignment
+
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityAssignmentPrx = DiscreteProbabilityAssignmentPrx
+    del DiscreteProbabilityAssignmentPrx
+
+if not _M_binder.autogen.distributions.discrete.__dict__.has_key('_t_DiscreteProbabilityAssignments'):
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignments = IcePy.defineSequence('::binder::autogen::distributions::discrete::DiscreteProbabilityAssignments', (), _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignment)
+
+if not _M_binder.autogen.distributions.discrete.__dict__.has_key('DiscreteProbabilityDistribution'):
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityDistribution = Ice.createTempClass()
+    class DiscreteProbabilityDistribution(_M_binder.autogen.core.ProbabilityDistribution):
+        def __init__(self, assignments=None):
+            _M_binder.autogen.core.ProbabilityDistribution.__init__(self)
+            self.assignments = assignments
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::ProbabilityDistribution', '::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution'
+
+        def ice_staticId():
+            return '::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityDistribution)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityDistributionPrx = Ice.createTempClass()
+    class DiscreteProbabilityDistributionPrx(_M_binder.autogen.core.ProbabilityDistributionPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.distributions.discrete.DiscreteProbabilityDistributionPrx.ice_checkedCast(proxy, '::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.distributions.discrete.DiscreteProbabilityDistributionPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityDistributionPrx = IcePy.defineProxy('::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution', DiscreteProbabilityDistributionPrx)
+
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityDistribution = IcePy.declareClass('::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution')
+
+    _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityDistribution = IcePy.defineClass('::binder::autogen::distributions::discrete::DiscreteProbabilityDistribution', DiscreteProbabilityDistribution, (), False, _M_binder.autogen.core._t_ProbabilityDistribution, (), (('assignments', (), _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityAssignments),))
+    DiscreteProbabilityDistribution.ice_type = _M_binder.autogen.distributions.discrete._t_DiscreteProbabilityDistribution
+
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityDistribution = DiscreteProbabilityDistribution
+    del DiscreteProbabilityDistribution
+
+    _M_binder.autogen.distributions.discrete.DiscreteProbabilityDistributionPrx = DiscreteProbabilityDistributionPrx
+    del DiscreteProbabilityDistributionPrx
+
+# End of module binder.autogen.distributions.discrete
+
+__name__ = 'binder.autogen.distributions'
+
+# Start of module binder.autogen.distributions.combined
+_M_binder.autogen.distributions.combined = Ice.openModule('binder.autogen.distributions.combined')
+__name__ = 'binder.autogen.distributions.combined'
+
+if not _M_binder.autogen.distributions.combined.__dict__.has_key('OperationType'):
+    _M_binder.autogen.distributions.combined.OperationType = Ice.createTempClass()
+    class OperationType(object):
+
+        def __init__(self, val):
+            assert(val >= 0 and val < 2)
+            self.value = val
+
+        def __str__(self):
+            if self.value == 0:
+                return 'MULTIPLIED'
+            elif self.value == 1:
+                return 'DIVIDED'
+            return None
+
+        __repr__ = __str__
+
+        def __hash__(self):
+            return self.value
+
+        def __cmp__(self, other):
+            return cmp(self.value, other.value)
+
+    OperationType.MULTIPLIED = OperationType(0)
+    OperationType.DIVIDED = OperationType(1)
+
+    _M_binder.autogen.distributions.combined._t_OperationType = IcePy.defineEnum('::binder::autogen::distributions::combined::OperationType', OperationType, (), (OperationType.MULTIPLIED, OperationType.DIVIDED))
+
+    _M_binder.autogen.distributions.combined.OperationType = OperationType
+    del OperationType
+
+if not _M_binder.autogen.distributions.combined.__dict__.has_key('CombinedProbabilityDistribution'):
+    _M_binder.autogen.distributions.combined.CombinedProbabilityDistribution = Ice.createTempClass()
+    class CombinedProbabilityDistribution(_M_binder.autogen.core.ProbabilityDistribution):
+        def __init__(self, distributions=None, opType=_M_binder.autogen.distributions.combined.OperationType.MULTIPLIED):
+            _M_binder.autogen.core.ProbabilityDistribution.__init__(self)
+            self.distributions = distributions
+            self.opType = opType
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::core::ProbabilityDistribution', '::binder::autogen::distributions::combined::CombinedProbabilityDistribution')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::distributions::combined::CombinedProbabilityDistribution'
+
+        def ice_staticId():
+            return '::binder::autogen::distributions::combined::CombinedProbabilityDistribution'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.distributions.combined._t_CombinedProbabilityDistribution)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.distributions.combined.CombinedProbabilityDistributionPrx = Ice.createTempClass()
+    class CombinedProbabilityDistributionPrx(_M_binder.autogen.core.ProbabilityDistributionPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.distributions.combined.CombinedProbabilityDistributionPrx.ice_checkedCast(proxy, '::binder::autogen::distributions::combined::CombinedProbabilityDistribution', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.distributions.combined.CombinedProbabilityDistributionPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.distributions.combined._t_CombinedProbabilityDistributionPrx = IcePy.defineProxy('::binder::autogen::distributions::combined::CombinedProbabilityDistribution', CombinedProbabilityDistributionPrx)
+
+    _M_binder.autogen.distributions.combined._t_CombinedProbabilityDistribution = IcePy.declareClass('::binder::autogen::distributions::combined::CombinedProbabilityDistribution')
+
+    _M_binder.autogen.distributions.combined._t_CombinedProbabilityDistribution = IcePy.defineClass('::binder::autogen::distributions::combined::CombinedProbabilityDistribution', CombinedProbabilityDistribution, (), False, _M_binder.autogen.core._t_ProbabilityDistribution, (), (
+        ('distributions', (), _M_binder.autogen.distributions._t_ProbabilityDistributions),
+        ('opType', (), _M_binder.autogen.distributions.combined._t_OperationType)
+    ))
+    CombinedProbabilityDistribution.ice_type = _M_binder.autogen.distributions.combined._t_CombinedProbabilityDistribution
+
+    _M_binder.autogen.distributions.combined.CombinedProbabilityDistribution = CombinedProbabilityDistribution
+    del CombinedProbabilityDistribution
+
+    _M_binder.autogen.distributions.combined.CombinedProbabilityDistributionPrx = CombinedProbabilityDistributionPrx
+    del CombinedProbabilityDistributionPrx
+
+# End of module binder.autogen.distributions.combined
+
+__name__ = 'binder.autogen.distributions'
+
+# End of module binder.autogen.distributions
+
+__name__ = 'binder.autogen'
+
+# Start of module binder.autogen.bayesiannetworks
+_M_binder.autogen.bayesiannetworks = Ice.openModule('binder.autogen.bayesiannetworks')
+__name__ = 'binder.autogen.bayesiannetworks'
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('BayesianNetworkNode'):
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkNode = Ice.createTempClass()
+    class BayesianNetworkNode(Ice.Object):
+        def __init__(self, feat=None):
+            self.feat = feat
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::bayesiannetworks::BayesianNetworkNode')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::bayesiannetworks::BayesianNetworkNode'
+
+        def ice_staticId():
+            return '::binder::autogen::bayesiannetworks::BayesianNetworkNode'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkNodePrx = Ice.createTempClass()
+    class BayesianNetworkNodePrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.bayesiannetworks.BayesianNetworkNodePrx.ice_checkedCast(proxy, '::binder::autogen::bayesiannetworks::BayesianNetworkNode', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.bayesiannetworks.BayesianNetworkNodePrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNodePrx = IcePy.defineProxy('::binder::autogen::bayesiannetworks::BayesianNetworkNode', BayesianNetworkNodePrx)
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode = IcePy.declareClass('::binder::autogen::bayesiannetworks::BayesianNetworkNode')
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode = IcePy.defineClass('::binder::autogen::bayesiannetworks::BayesianNetworkNode', BayesianNetworkNode, (), False, None, (), (('feat', (), _M_binder.autogen.core._t_Feature),))
+    BayesianNetworkNode.ice_type = _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkNode = BayesianNetworkNode
+    del BayesianNetworkNode
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkNodePrx = BayesianNetworkNodePrx
+    del BayesianNetworkNodePrx
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('FeatureValueCorrelation'):
+    _M_binder.autogen.bayesiannetworks.FeatureValueCorrelation = Ice.createTempClass()
+    class FeatureValueCorrelation(Ice.Object):
+        def __init__(self, value1=None, value2=None, condProb=0.0):
+            self.value1 = value1
+            self.value2 = value2
+            self.condProb = condProb
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::bayesiannetworks::FeatureValueCorrelation')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::bayesiannetworks::FeatureValueCorrelation'
+
+        def ice_staticId():
+            return '::binder::autogen::bayesiannetworks::FeatureValueCorrelation'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelation)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.bayesiannetworks.FeatureValueCorrelationPrx = Ice.createTempClass()
+    class FeatureValueCorrelationPrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.bayesiannetworks.FeatureValueCorrelationPrx.ice_checkedCast(proxy, '::binder::autogen::bayesiannetworks::FeatureValueCorrelation', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.bayesiannetworks.FeatureValueCorrelationPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelationPrx = IcePy.defineProxy('::binder::autogen::bayesiannetworks::FeatureValueCorrelation', FeatureValueCorrelationPrx)
+
+    _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelation = IcePy.declareClass('::binder::autogen::bayesiannetworks::FeatureValueCorrelation')
+
+    _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelation = IcePy.defineClass('::binder::autogen::bayesiannetworks::FeatureValueCorrelation', FeatureValueCorrelation, (), False, None, (), (
+        ('value1', (), _M_binder.autogen.core._t_FeatureValue),
+        ('value2', (), _M_binder.autogen.core._t_FeatureValue),
+        ('condProb', (), IcePy._t_float)
+    ))
+    FeatureValueCorrelation.ice_type = _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelation
+
+    _M_binder.autogen.bayesiannetworks.FeatureValueCorrelation = FeatureValueCorrelation
+    del FeatureValueCorrelation
+
+    _M_binder.autogen.bayesiannetworks.FeatureValueCorrelationPrx = FeatureValueCorrelationPrx
+    del FeatureValueCorrelationPrx
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('_t_FeatureValueCorrelations'):
+    _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelations = IcePy.defineSequence('::binder::autogen::bayesiannetworks::FeatureValueCorrelations', (), _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelation)
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('BayesianNetworkEdge'):
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkEdge = Ice.createTempClass()
+    class BayesianNetworkEdge(Ice.Object):
+        def __init__(self, incomingNode=None, outgoingNode=None, correlations=None):
+            self.incomingNode = incomingNode
+            self.outgoingNode = outgoingNode
+            self.correlations = correlations
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::bayesiannetworks::BayesianNetworkEdge')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::bayesiannetworks::BayesianNetworkEdge'
+
+        def ice_staticId():
+            return '::binder::autogen::bayesiannetworks::BayesianNetworkEdge'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdge)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkEdgePrx = Ice.createTempClass()
+    class BayesianNetworkEdgePrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.bayesiannetworks.BayesianNetworkEdgePrx.ice_checkedCast(proxy, '::binder::autogen::bayesiannetworks::BayesianNetworkEdge', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.bayesiannetworks.BayesianNetworkEdgePrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdgePrx = IcePy.defineProxy('::binder::autogen::bayesiannetworks::BayesianNetworkEdge', BayesianNetworkEdgePrx)
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdge = IcePy.declareClass('::binder::autogen::bayesiannetworks::BayesianNetworkEdge')
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdge = IcePy.defineClass('::binder::autogen::bayesiannetworks::BayesianNetworkEdge', BayesianNetworkEdge, (), False, None, (), (
+        ('incomingNode', (), _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode),
+        ('outgoingNode', (), _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode),
+        ('correlations', (), _M_binder.autogen.bayesiannetworks._t_FeatureValueCorrelations)
+    ))
+    BayesianNetworkEdge.ice_type = _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdge
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkEdge = BayesianNetworkEdge
+    del BayesianNetworkEdge
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkEdgePrx = BayesianNetworkEdgePrx
+    del BayesianNetworkEdgePrx
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('_t_BayesianNetworkNodes'):
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNodes = IcePy.defineSequence('::binder::autogen::bayesiannetworks::BayesianNetworkNodes', (), _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNode)
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('_t_BayesianNetworkEdges'):
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdges = IcePy.defineSequence('::binder::autogen::bayesiannetworks::BayesianNetworkEdges', (), _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdge)
+
+if not _M_binder.autogen.bayesiannetworks.__dict__.has_key('BayesianNetwork'):
+    _M_binder.autogen.bayesiannetworks.BayesianNetwork = Ice.createTempClass()
+    class BayesianNetwork(Ice.Object):
+        def __init__(self, nodes=None, edges=None):
+            self.nodes = nodes
+            self.edges = edges
+
+        def ice_ids(self, current=None):
+            return ('::Ice::Object', '::binder::autogen::bayesiannetworks::BayesianNetwork')
+
+        def ice_id(self, current=None):
+            return '::binder::autogen::bayesiannetworks::BayesianNetwork'
+
+        def ice_staticId():
+            return '::binder::autogen::bayesiannetworks::BayesianNetwork'
+        ice_staticId = staticmethod(ice_staticId)
+
+        def __str__(self):
+            return IcePy.stringify(self, _M_binder.autogen.bayesiannetworks._t_BayesianNetwork)
+
+        __repr__ = __str__
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkPrx = Ice.createTempClass()
+    class BayesianNetworkPrx(Ice.ObjectPrx):
+
+        def checkedCast(proxy, facetOrCtx=None, _ctx=None):
+            return _M_binder.autogen.bayesiannetworks.BayesianNetworkPrx.ice_checkedCast(proxy, '::binder::autogen::bayesiannetworks::BayesianNetwork', facetOrCtx, _ctx)
+        checkedCast = staticmethod(checkedCast)
+
+        def uncheckedCast(proxy, facet=None):
+            return _M_binder.autogen.bayesiannetworks.BayesianNetworkPrx.ice_uncheckedCast(proxy, facet)
+        uncheckedCast = staticmethod(uncheckedCast)
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetworkPrx = IcePy.defineProxy('::binder::autogen::bayesiannetworks::BayesianNetwork', BayesianNetworkPrx)
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetwork = IcePy.declareClass('::binder::autogen::bayesiannetworks::BayesianNetwork')
+
+    _M_binder.autogen.bayesiannetworks._t_BayesianNetwork = IcePy.defineClass('::binder::autogen::bayesiannetworks::BayesianNetwork', BayesianNetwork, (), False, None, (), (
+        ('nodes', (), _M_binder.autogen.bayesiannetworks._t_BayesianNetworkNodes),
+        ('edges', (), _M_binder.autogen.bayesiannetworks._t_BayesianNetworkEdges)
+    ))
+    BayesianNetwork.ice_type = _M_binder.autogen.bayesiannetworks._t_BayesianNetwork
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetwork = BayesianNetwork
+    del BayesianNetwork
+
+    _M_binder.autogen.bayesiannetworks.BayesianNetworkPrx = BayesianNetworkPrx
+    del BayesianNetworkPrx
+
+# End of module binder.autogen.bayesiannetworks
+
+__name__ = 'binder.autogen'
+
+# End of module binder.autogen
+
+__name__ = 'binder'
+
+# End of module binder
+
 # Start of module autogen
 _M_autogen = Ice.openModule('autogen')
 __name__ = 'autogen'
@@ -2211,10 +3045,13 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningState'):
     _M_autogen.Planner.PlanningStatePrx = PlanningStatePrx
     del PlanningStatePrx
 
+if not _M_autogen.Planner.__dict__.has_key('_t_unionSeq'):
+    _M_autogen.Planner._t_unionSeq = IcePy.defineSequence('::autogen::Planner::unionSeq', (), _M_binder.autogen.core._t_Union)
+
 if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
     _M_autogen.Planner.PlanningTask = Ice.createTempClass()
     class PlanningTask(Ice.Object):
-        def __init__(self, id=0, goal='', plan='', objects='', state=''):
+        def __init__(self, id=0, goal='', plan='', objects='', state=None):
             self.id = id
             self.goal = goal
             self.plan = plan
@@ -2249,12 +3086,14 @@ if not _M_autogen.Planner.__dict__.has_key('PlanningTask'):
 
     _M_autogen.Planner._t_PlanningTaskPrx = IcePy.defineProxy('::autogen::Planner::PlanningTask', PlanningTaskPrx)
 
+    _M_autogen.Planner._t_PlanningTask = IcePy.declareClass('::autogen::Planner::PlanningTask')
+
     _M_autogen.Planner._t_PlanningTask = IcePy.defineClass('::autogen::Planner::PlanningTask', PlanningTask, (), False, None, (), (
         ('id', (), IcePy._t_int),
         ('goal', (), IcePy._t_string),
         ('plan', (), IcePy._t_string),
         ('objects', (), IcePy._t_string),
-        ('state', (), IcePy._t_string)
+        ('state', (), _M_autogen.Planner._t_unionSeq)
     ))
     PlanningTask.ice_type = _M_autogen.Planner._t_PlanningTask
 
