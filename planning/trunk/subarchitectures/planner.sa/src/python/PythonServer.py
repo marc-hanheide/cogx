@@ -18,7 +18,7 @@ from standalone.planner import Planner as StandalonePlanner
 
 # Using string templates only until move to the proper ICE types
 MAPL_TASK_TMPL = """
-(define (problem cosytask) (:domain cogx)
+(define (problem cogxtask) (:domain cogx)
 (:objects
 %s
 )
