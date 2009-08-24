@@ -1,5 +1,6 @@
 #include "WMControl.hpp"
 #include "FakeBinderData.hpp"
+#include "BinderEssentials.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -75,13 +76,20 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 }
 
 void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
+    sleep(5);
     println("Planner WMControl:: generating Initial State");
 
-    vector<cast::CASTData<autogen::FakeBinderData::FakeBinderActualStateProvider> > stateProvider;
-    getMemoryEntriesWithData<autogen::FakeBinderData::FakeBinderActualStateProvider>(stateProvider, "fakebinder.sa");
+    vector<cast::CASTData<binder::autogen::core::Union> > unions;
+    getMemoryEntriesWithData<binder::autogen::core::Union>(unions, "binder");
 
-    task->objects = stateProvider[0].getData()->objects;
-    task->state = stateProvider[0].getData()->state;
+    cout << unions[0].getData()->entityID << endl;
+    task->state = vector<binder::autogen::core::UnionPtr>();
+    for(vector<cast::CASTData<binder::autogen::core::Union> >::iterator i=unions.begin(); i != unions.end(); ++i) {
+        task->state.push_back(i->getData());
+    }
+    //task->state.push_back(unions[0].getData());
+    //task->objects = stateProvider[0].getData()->objects;
+    //task->state = stateProvider[0].getData()->state;
 
 }
 

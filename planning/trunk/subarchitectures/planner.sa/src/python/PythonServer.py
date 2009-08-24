@@ -2,6 +2,7 @@ import os, sys, traceback, Ice
 from os.path import abspath, dirname, join, isdir
 
 import autogen.Planner as Planner
+import binder.autogen.core
 import cast.core
 
 this_path = abspath(dirname(__file__))
@@ -54,32 +55,37 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
     print "Planner PythonServer: New PlanningTask received:"
     print "GOAL: " + task_desc.goal;
     print "OBJECTS: " + task_desc.objects;
-    print "INIT: " + task_desc.state;
+    #print "INIT: " + task_desc.state;
 
-    task = Task()
-    task.load_mapl_domain(TEST_DOMAIN_FN)
-    problem_str = MAPL_TASK_TMPL % (task_desc.objects, task_desc.state, task_desc.goal)
-    task.load_mapl_problem(problem_str)
-    self.planner.register_task(task)
-    task.mark_changed()
-    task.activate_change_dectection()
-    plan = task.get_plan()
+    #task = Task()
+    #task.load_mapl_domain(TEST_DOMAIN_FN)
+    for union in task_desc.state:
+      print union.entityID
+      for feature in union.features:
+        value_str = ", ".join("%s (%.2f)" % (v.val, v.independentProb) for v in feature.alternativeValues)
+        print "%s: %s" % (feature.featlabel, value_str)
+#     problem_str = MAPL_TASK_TMPL % (task_desc.objects, task_desc.state, task_desc.goal)
+#     task.load_mapl_problem(problem_str)
+#     self.planner.register_task(task)
+#     task.mark_changed()
+#     task.activate_change_dectection()
+#     plan = task.get_plan()
     
-    make_dot = True
-    if make_dot:
-      dot_str = plan.to_dot()
-      dot_fn = abspath(join(this_path, "plan.dot"))
-      print "Generating and showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
-      print "Dot file is stored in", dot_fn
-      show_dot_script = abspath(join(this_path, "../..", "show_dot.sh"))
-      open(dot_fn, "w").write(dot_str)
-      os.system("%s %s" % (show_dot_script, dot_fn)) 
+#     make_dot = True
+#     if make_dot:
+#       dot_str = plan.to_dot()
+#       dot_fn = abspath(join(this_path, "plan.dot"))
+#       print "Generating and showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
+#       print "Dot file is stored in", dot_fn
+#       show_dot_script = abspath(join(this_path, "../..", "show_dot.sh"))
+#       open(dot_fn, "w").write(dot_str)
+#       os.system("%s %s" % (show_dot_script, dot_fn)) 
 
-    if(self.client is None):
-      print "ERROR!!"
+#     if(self.client is None):
+#       print "ERROR!!"
 
-    task_desc.plan = str(plan)
-    self.client.deliverPlan(task_desc);
+#     task_desc.plan = str(plan)
+#     self.client.deliverPlan(task_desc);
     # add task to some queue or start planning right away. when done call self.client.deliverPlan(string plan)
     
   def registerClient(self, Client, current=None):

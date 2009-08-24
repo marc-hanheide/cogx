@@ -2,6 +2,7 @@
 #define PLANNER_ICE
 
 #include <cast/slice/CDL.ice>
+#include <BinderEssentials.ice>
 
 module autogen {
   module Planner {
@@ -38,13 +39,16 @@ module autogen {
       factSeq facts;
     };
 
+    sequence<binder::autogen::core::Union> unionSeq;
+
     class PlanningTask
     {
       int id;
       string goal;
       string plan;
       string objects;
-      string state;
+      //string state;
+      unionSeq state;
       //Completion status;
       //string planningAgent;  // the name of the planning agent as used in the state description
       //objDeclSeq objects;
