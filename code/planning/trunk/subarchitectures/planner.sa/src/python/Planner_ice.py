@@ -1,19 +1,16 @@
 # **********************************************************************
 #
-# Copyright (c) 2003-2009 ZeroC, Inc. All rights reserved.
+# Copyright (c) 2003-2008 ZeroC, Inc. All rights reserved.
 #
 # This copy of Ice is licensed to you under the terms described in the
 # ICE_LICENSE file included in this distribution.
 #
 # **********************************************************************
 
-# Ice version 3.3.1
+# Ice version 3.3.0
 # Generated from file `Planner.ice'
 
 import Ice, IcePy, __builtin__
-
-if not Ice.__dict__.has_key("_struct_marker"):
-    Ice._struct_marker = object()
 
 # Start of module cast
 _M_cast = Ice.openModule('cast')
@@ -573,13 +570,10 @@ if not _M_cast.cdl.__dict__.has_key('_t_StringSeq'):
 if not _M_cast.cdl.__dict__.has_key('WorkingMemoryChange'):
     _M_cast.cdl.WorkingMemoryChange = Ice.createTempClass()
     class WorkingMemoryChange(object):
-        def __init__(self, operation=_M_cast.cdl.WorkingMemoryOperation.ADD, src='', address=Ice._struct_marker, type='', superTypes=None):
+        def __init__(self, operation=_M_cast.cdl.WorkingMemoryOperation.ADD, src='', address=_M_cast.cdl.WorkingMemoryAddress(), type='', superTypes=None):
             self.operation = operation
             self.src = src
-            if address is Ice._struct_marker:
-                self.address = _M_cast.cdl.WorkingMemoryAddress()
-            else:
-                self.address = address
+            self.address = address
             self.type = type
             self.superTypes = superTypes
 
@@ -638,13 +632,10 @@ if not _M_cast.cdl.__dict__.has_key('WorkingMemoryChange'):
 if not _M_cast.cdl.__dict__.has_key('WorkingMemoryChangeFilter'):
     _M_cast.cdl.WorkingMemoryChangeFilter = Ice.createTempClass()
     class WorkingMemoryChangeFilter(object):
-        def __init__(self, operation=_M_cast.cdl.WorkingMemoryOperation.ADD, src='', address=Ice._struct_marker, type='', restriction=_M_cast.cdl.FilterRestriction.LOCALSA, origin=''):
+        def __init__(self, operation=_M_cast.cdl.WorkingMemoryOperation.ADD, src='', address=_M_cast.cdl.WorkingMemoryAddress(), type='', restriction=_M_cast.cdl.FilterRestriction.LOCALSA, origin=''):
             self.operation = operation
             self.src = src
-            if address is Ice._struct_marker:
-                self.address = _M_cast.cdl.WorkingMemoryAddress()
-            else:
-                self.address = address
+            self.address = address
             self.type = type
             self.restriction = restriction
             self.origin = origin
@@ -826,12 +817,9 @@ _M_cast.cdl.testing.CASTTESTFAIL = 30
 if not _M_cast.cdl.testing.__dict__.has_key('CASTTestStruct'):
     _M_cast.cdl.testing.CASTTestStruct = Ice.createTempClass()
     class CASTTestStruct(Ice.Object):
-        def __init__(self, count=0, change=Ice._struct_marker):
+        def __init__(self, count=0, change=_M_cast.cdl.WorkingMemoryChange()):
             self.count = count
-            if change is Ice._struct_marker:
-                self.change = _M_cast.cdl.WorkingMemoryChange()
-            else:
-                self.change = change
+            self.change = change
 
         def ice_ids(self, current=None):
             return ('::Ice::Object', '::cast::cdl::testing::CASTTestStruct')
@@ -1008,12 +996,9 @@ if not _M_cast.__dict__.has_key('UnknownSubarchitectureException'):
 if not _M_cast.__dict__.has_key('WMException'):
     _M_cast.WMException = Ice.createTempClass()
     class WMException(_M_cast.SubarchitectureComponentException):
-        def __init__(self, message='', wma=Ice._struct_marker):
+        def __init__(self, message='', wma=_M_cast.cdl.WorkingMemoryAddress()):
             _M_cast.SubarchitectureComponentException.__init__(self, message)
-            if wma is Ice._struct_marker:
-                self.wma = _M_cast.cdl.WorkingMemoryAddress()
-            else:
-                self.wma = wma
+            self.wma = wma
 
         def ice_name(self):
             return 'cast::WMException'
@@ -1032,7 +1017,7 @@ if not _M_cast.__dict__.has_key('WMException'):
 if not _M_cast.__dict__.has_key('DoesNotExistOnWMException'):
     _M_cast.DoesNotExistOnWMException = Ice.createTempClass()
     class DoesNotExistOnWMException(_M_cast.WMException):
-        def __init__(self, message='', wma=Ice._struct_marker):
+        def __init__(self, message='', wma=_M_cast.cdl.WorkingMemoryAddress()):
             _M_cast.WMException.__init__(self, message, wma)
 
         def ice_name(self):
@@ -1052,7 +1037,7 @@ if not _M_cast.__dict__.has_key('DoesNotExistOnWMException'):
 if not _M_cast.__dict__.has_key('AlreadyExistsOnWMException'):
     _M_cast.AlreadyExistsOnWMException = Ice.createTempClass()
     class AlreadyExistsOnWMException(_M_cast.WMException):
-        def __init__(self, message='', wma=Ice._struct_marker):
+        def __init__(self, message='', wma=_M_cast.cdl.WorkingMemoryAddress()):
             _M_cast.WMException.__init__(self, message, wma)
 
         def ice_name(self):
@@ -1072,7 +1057,7 @@ if not _M_cast.__dict__.has_key('AlreadyExistsOnWMException'):
 if not _M_cast.__dict__.has_key('ConsistencyException'):
     _M_cast.ConsistencyException = Ice.createTempClass()
     class ConsistencyException(_M_cast.WMException):
-        def __init__(self, message='', wma=Ice._struct_marker):
+        def __init__(self, message='', wma=_M_cast.cdl.WorkingMemoryAddress()):
             _M_cast.WMException.__init__(self, message, wma)
 
         def ice_name(self):
@@ -1092,7 +1077,7 @@ if not _M_cast.__dict__.has_key('ConsistencyException'):
 if not _M_cast.__dict__.has_key('PermissionException'):
     _M_cast.PermissionException = Ice.createTempClass()
     class PermissionException(_M_cast.WMException):
-        def __init__(self, message='', wma=Ice._struct_marker):
+        def __init__(self, message='', wma=_M_cast.cdl.WorkingMemoryAddress()):
             _M_cast.WMException.__init__(self, message, wma)
 
         def ice_name(self):
