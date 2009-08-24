@@ -591,7 +591,7 @@ int main(int argc, char *argv[]) {
 
 
 		//number of loop runs
-		const int numExperiments = 1000;
+		const int numExperiments = 5000;
 
 		//a number that slightly greater then the maximal reachable space of the arm
 		//    - used for workspace position normalization and later as a position upper bound
@@ -804,8 +804,9 @@ int main(int argc, char *argv[]) {
 			// It consists of 70 parts
 			U32 n = 70;
 			// Trajectory duration is a multiplicity of Time Delta [sec], but with a speed coefficient
-// 			int speed = -1 + (rand() % 3);
-			int speed = 0;
+			int speed = -1 + (rand() % 3);
+// 			cout << "speed: " << speed << endl;
+// 			int speed = 0;
 			SecTmReal duration = timeDelta * n*(Math::pow(Real(2.0), Real(-speed)*2));
 				
 			/////////////////////////////////////////////////
@@ -824,6 +825,7 @@ int main(int argc, char *argv[]) {
 						    );
 			//and it's orthogonal
 			Vec3 polyflapCenterOrthogonalVec = computeOrthogonalVec(polyflapCenterNormalVec);
+ 			context->getLogger()->post(Message::LEVEL_INFO, "centernormalvec: %f, %1f, %f", polyflapCenterNormalVec.v1, polyflapCenterNormalVec.v2, polyflapCenterNormalVec.v3);
 
 
 			//the lenght of the movement
@@ -834,8 +836,8 @@ int main(int argc, char *argv[]) {
 
 
 			//chose random horizontal and vertical angle
-// 			int horizontalAngle = rand() % 61 + 60;
-			int horizontalAngle = 90;
+			int horizontalAngle = rand() % 61 + 60;
+// 			int horizontalAngle = 90;
 			
 			//int verticalAngle = rand() % 7;
 
@@ -853,7 +855,7 @@ int main(int argc, char *argv[]) {
 // 			infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
 // 			infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
 // 			/////////////////////////////////////////////////
-			infoVector.push_back(normalize(horizontalAngle, -MATH_PI, MATH_PI));
+			infoVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -MATH_PI, MATH_PI));
 
 			/////////////////////////////////////////////////
 			//writing of the initial vector into sequence
@@ -871,21 +873,19 @@ int main(int argc, char *argv[]) {
 			planner.getHeuristic()->setCollisionDetection(false);
 
 
-			Mat34 polyFlapPose = polyFlapActor->getPose();
-			Real roll, pitch, yaw;
-			referencePolyflapPos.R.toEuler (roll, pitch, yaw);
-			context->getLogger()->post(Message::LEVEL_INFO, "referencePose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", referencePolyflapPos.p.v1, referencePolyflapPos.p.v2, referencePolyflapPos.p.v3, roll, pitch, yaw);
-			polyFlapPose.R.toEuler (roll, pitch, yaw);
-			context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
+// 			Mat34 polyFlapPose = polyFlapActor->getPose();
+// 			Real roll, pitch, yaw;
+// 			referencePolyflapPos.R.toEuler (roll, pitch, yaw);
+// 			context->getLogger()->post(Message::LEVEL_INFO, "referencePose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", referencePolyflapPos.p.v1, referencePolyflapPos.p.v2, referencePolyflapPos.p.v3, roll, pitch, yaw);
+// 			polyFlapPose.R.toEuler (roll, pitch, yaw);
+// 			context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
 
 			
 			//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
 			//otherwise we skip it
 // 			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
-			bool posChecked = false;
 			if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPos)) {
 
-				posChecked = true;
 				// Generate and send a simple straight line trajectory
 				for (U32 i = 0; i <= n; i++) {
 
@@ -1006,7 +1006,7 @@ int main(int argc, char *argv[]) {
 						/////////////////////////////////////////////////
 					}
 	
- 
+				
 					//end of the movement
 				}
 
