@@ -313,15 +313,33 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		_newPlaceProxy.features[1] = new Feature();
 		_newPlaceProxy.features[1].featlabel = "place_type";
-		_newPlaceProxy.features[1].alternativeValues = new FeatureValue[1];
-		_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, 
-				(_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder"));
+		_newPlaceProxy.features[1].alternativeValues = new FeatureValue[2];
+		if (_comaPlace.getPlaceStatus()==null) {
+			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(0.5f, "Place");
+			_newPlaceProxy.features[1].alternativeValues[1] = new StringValue(0.5f, "Placeholder");
+			}
+		else if (_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE) {
+			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, "Place");
+			_newPlaceProxy.features[1].alternativeValues[1] = new StringValue(0, "Placeholder");
+		} else {
+			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(0, "Place");
+			_newPlaceProxy.features[1].alternativeValues[1] = new StringValue(1, "Placeholder");
+		}
 			
 		_newPlaceProxy.features[2] = new Feature();
 		_newPlaceProxy.features[2].featlabel = "node_type";
-		_newPlaceProxy.features[2].alternativeValues = new FeatureValue[1];
-		_newPlaceProxy.features[2].alternativeValues[0] = new StringValue(1, 
-				(_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node"))); 
+		_newPlaceProxy.features[2].alternativeValues = new FeatureValue[2];
+		if (_comaPlace.getGatewayStatus()==-1) {
+			_newPlaceProxy.features[2].alternativeValues[0] = new StringValue(0.5f, "Free Node");
+			_newPlaceProxy.features[2].alternativeValues[1] = new StringValue(0.5f, "Gateway");
+		} else if (_comaPlace.getGatewayStatus()==0) {
+			_newPlaceProxy.features[2].alternativeValues[0] = new StringValue(1, "Free Node");
+			_newPlaceProxy.features[2].alternativeValues[1] = new StringValue(0, "Gateway");
+		} else {
+			_newPlaceProxy.features[2].alternativeValues[0] = new StringValue(0, "Free Node");
+			_newPlaceProxy.features[2].alternativeValues[1] = new StringValue(1, "Gateway");
+		}
+		
 
 		_newPlaceProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
 
@@ -355,6 +373,7 @@ public class PlaceMonitor extends ManagedComponent {
 			return;
 		}
 		log("updating an existing place proxy.");
+		log("Place ID: " + _comaPlace.m_id);
 
 		try {
 			WorkingMemoryAddress _proxyWMA = new WorkingMemoryAddress(_comaPlace.getProxyWMid(), m_bindingSA);
@@ -362,19 +381,34 @@ public class PlaceMonitor extends ManagedComponent {
 			
 			for (int i = 0; i < _placeProxy.features.length; i++) {
 				if (_placeProxy.features[i].featlabel.equals("place_type")) {
-					_placeProxy.features[i].alternativeValues = new FeatureValue[1];
-					_placeProxy.features[i].alternativeValues[0] = new StringValue(1, 
-							(_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder"));
-					log("Feature: " + _placeProxy.features[i].featlabel + 
-							" -- place status:" + (_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE ? "Place" : "Placeholder"));
+					log("now lookint at place_type.");
+					if (_comaPlace.getPlaceStatus()==null) {
+						log("place status is null.");
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(0.5f, "Place");
+						_placeProxy.features[i].alternativeValues[1] = new StringValue(0.5f, "Placeholder");
+					}
+					else if (_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE) {
+						log("place status is TRUEPLACE");
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, "Place");
+						_placeProxy.features[i].alternativeValues[1] = new StringValue(0, "Placeholder");
+					} else {
+						log("place status is PLACEHOLDER");
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(0, "Place");
+						_placeProxy.features[i].alternativeValues[1] = new StringValue(1, "Placeholder");
+					}
 				} else if (_placeProxy.features[i].featlabel.equals("node_type")) {
-					_placeProxy.features[i].alternativeValues = new FeatureValue[1];
-					_placeProxy.features[i].alternativeValues[0] = new StringValue(1, 
-							(_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node")));
+					if (_comaPlace.getGatewayStatus()==-1) {
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(0.5f, "Free Node");
+						_placeProxy.features[i].alternativeValues[1] = new StringValue(0.5f, "Gateway");
+					} else if (_comaPlace.getGatewayStatus()==0) {
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, "Free Node");
+						_placeProxy.features[i].alternativeValues[1] = new StringValue(0, "Gateway");
+					} else {
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(0, "Free Node");
+						_placeProxy.features[i].alternativeValues[1] = new StringValue(1, "Gateway");
+					}
 					log("Feature: " + _placeProxy.features[i].featlabel + 
 							" -- gateway status:" + (_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node")));							
-				} else if (_placeProxy.features[i].featlabel.equals("place_id")) {
-					log("Place ID of the overwritten proxy: " + _placeProxy.features[i].featlabel);
 				}
 			}
 			_placeProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_placeProxy);
