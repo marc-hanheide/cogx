@@ -1,3 +1,0 @@
-HOST localhost
-COMPONENT CPP ptz.server PlayerPTZServer --log --player-host irobot0
-
