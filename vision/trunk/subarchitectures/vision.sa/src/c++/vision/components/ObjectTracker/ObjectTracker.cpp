@@ -61,9 +61,9 @@ void ObjectTracker::initTracker(){
 		m_tracker = new EdgeTracker();
   if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
-												30.0*PIOVER180,										// standard deviation of rotational noise in degree
-												0.05,															// standard deviation of translational noise in meter
-												45.0,															// edge matching tolerance in degree
+												20.0*PIOVER180,										// standard deviation of rotational noise in degree
+												0.03,															// standard deviation of translational noise in meter
+												40.0,															// edge matching tolerance in degree
 												0.05))														// goal tracking time in seconds
 	{														
 		log("initialisation of tracker failed!");
