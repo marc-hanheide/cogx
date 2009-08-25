@@ -1,3 +1,0 @@
-doxygen DoxyfileCpp
-doxygen DoxyfileJava
-
