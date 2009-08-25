@@ -1,0 +1,5 @@
+To run objsearch
+
+1. player subarchitectures/nav.sa/config/stage_models/cas_floor7/cogxp3_objsearch.cfg
+2. cast-server
+3. cast-client subarchitectures/nav.sa/config/objsearch.cast
