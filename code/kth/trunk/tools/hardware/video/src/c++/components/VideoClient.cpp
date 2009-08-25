@@ -93,5 +93,10 @@ void VideoClient::getImages(Video::ImageSeq& images)
   videoServer->getImages(images);
 }
 
+void VideoClient::getScaledImages(int width, int height, Video::ImageSeq& images)
+{
+  videoServer->getScaledImages(width, height, images);
+}
+
 }
 

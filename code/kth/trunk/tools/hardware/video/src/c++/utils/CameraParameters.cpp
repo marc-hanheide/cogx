@@ -102,8 +102,8 @@ void loadCameraParameters(CameraParameters &cam, const string &configfile)
   initCameraParameters(cam);
 
   CDataFile cfg(configfile);
-  cam.width = cfg.GetFloat("width");
-  cam.height = cfg.GetFloat("height");
+  cam.width = cfg.GetFloat("w");
+  cam.height = cfg.GetFloat("h");
   cam.fx = cfg.GetFloat("fx");
   cam.fy = cfg.GetFloat("fy");
   cam.cx = cfg.GetFloat("cx");
@@ -114,7 +114,6 @@ void loadCameraParameters(CameraParameters &cam, const string &configfile)
   cam.p1 = cfg.GetFloat("p1");
   cam.p2 = cfg.GetFloat("p2");
   istringstream istr(cfg.GetString("pose"));
-  cout << ">>> '" << istr.str() << "'" << endl;
   if(!istr.str().empty())
     istr >> cam.pose;
 }

@@ -276,9 +276,11 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
 
   if((it = _config.find("--displaylevel")) != _config.end())
   {
+	  
     istringstream istr(it->second);
     int level;
     istr >> level;
+	log("displaylevel is %i", level);
     if(level > 0)
       doDisplay = true;
     if(level > 1)
@@ -299,6 +301,7 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
          1.0, 1.0, 0.0,
          3, 8);
     cvNamedWindow("ObjectDetectorFERNS", 1);
+	log("CV NAMED WINDOW");
   }
 
   setupFERNS();
@@ -322,6 +325,23 @@ void ObjectDetectorFERNS::start()
         &ObjectDetectorFERNS::receiveDetectionCommand));
 }
 
+void ObjectDetectorFERNS::runComponent(){
+  while(isRunning())
+  {
+	Video::Image image;
+  getImage(camId, image);
+  IplImage *grayImage = convertImageToIplGray(image);
+    drawResults(grayImage);
+    cvShowImage("ObjectDetectorFERNS", grayImage);
+    // needed to make the window appear
+    // (an odd behaviour of OpenCV windows!)
+    cvWaitKey(10);
+  cvReleaseImage(&grayImage);
+  sleepComponent(100);
+  }
+  
+  
+}
 void ObjectDetectorFERNS::receiveDetectionCommand(
     const cdl::WorkingMemoryChange & _wmc)
 {
@@ -331,23 +351,13 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   ostringstream ostr;
   for(size_t i = 0; i < cmd->labels.size(); i++)
     ostr << " '" << cmd->labels[i] << "'";
-  log("FERNS detecting: %s", ostr.str().c_str());
+  //log("FERNS detecting: %s", ostr.str().c_str());
 
   Video::Image image;
   getImage(camId, image);
   IplImage *grayImage = convertImageToIplGray(image);
   detectObjects(grayImage, cmd->labels);
   postObjectsToWM(cmd->labels, image);
-  if(doDisplay)
-  {
-    drawResults(grayImage);
-    cvShowImage("ObjectDetectorFERNS", grayImage);
-    // needed to make the window appear
-    // (an odd behaviour of OpenCV windows!)
-    cvWaitKey(10);
-  }
-  cvReleaseImage(&grayImage);
-
   // executed the command, results (if any) are on working memory,
   // now delete command as not needed anymore
   deleteFromWorkingMemory(_wmc.address);
@@ -546,7 +556,7 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
     const Video::Image &image)
 {
   VisualObjectPtr obj =  new VisualObject;
-
+  
   Rect2 bbox;
   if(mode == DETECT_AND_TRACK)
     bbox = calculateObjectBoundingBox(trackers[i]);
@@ -554,6 +564,7 @@ VisualObjectPtr ObjectDetectorFERNS::createVisualObject(size_t i,
     bbox = calculateObjectBoundingBox(detectors[i]);
 
   obj->label = model_labels[i];
+  //log("Creating Visual object for %", obj->label.c_str());
   obj->time = image.time;
   if(detectors[i]->pattern_is_detected || last_frame_ok[i])
     obj->detectionConfidence = 1.;

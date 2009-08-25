@@ -22,6 +22,7 @@
 
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
+#include <PTZ.hpp>
 
 namespace navsa {
 
@@ -39,6 +40,7 @@ namespace navsa {
  * @param --laser-server-name the ice server name for the laser (default LaserServer)
  * @param --fov-hor horizontal field of view for the camera [deg] (default 45 degs)
  * @param --fov-vert vertical field of view for the camera [deg] (default 35 deg)
+ * @param --read-ptu        Read and display ptu angles
  * @param --no-robot        Do not display robot
  * @param --no-walls        Do not display walls
  * @param --no-graph        Do not display the graph
@@ -89,6 +91,8 @@ private:
 
   void displayPeople();
   void receiveScan2d(const Laser::Scan2d &scan);
+  void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);
+  void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
   void newArea(const cast::cdl::WorkingMemoryChange &objID);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
@@ -103,7 +107,8 @@ private:
   void addDoorpost(double x, double y, double theta, 
                    double width, peekabot::SphereProxy &node);
   void connectPeekabot();
-  void createFOV(peekabot::GroupProxy &proxy, const char* path, double fovHorizAngle, double fovVertiAngle, double* color, double opacity, double zoffset = 0, double yaw = 0);
+  void createFOV(peekabot::GroupProxy &proxy,const char* path, double fovHorizAngle, double fovVertiAngle, double* color, double opacity, 
+				cogx::Math::Vector3 position, double zoffset = 0, double yaw = 0);
   void createRobotFOV();
   void getColorByIndex(int id, float &r, float &g, float &b);
 
@@ -153,6 +158,11 @@ private:
   peekabot::GroupProxy m_ProxyEdges;
   peekabot::GroupProxy m_ProxyObjects;
   peekabot::GroupProxy m_ProxyObjectLabels;
+  peekabot::GroupProxy m_ProxyViewPoints;
+  peekabot::ObjectProxy m_ProxyCam;
+  peekabot::HingeProxy m_ProxyPan;
+  peekabot::HingeProxy m_ProxyTilt;
+  
 
   // The people that are currently in view
   std::vector<PersonData> m_People;
@@ -162,6 +172,9 @@ private:
   std::list< std::pair<long,long> > m_NewEdges;
 
   bool m_LaserConnected;
+
+  bool m_ReadPTU;
+  ptz::PTZInterfacePrx m_PTUServer;
 };
 
 }; // namespace navsa

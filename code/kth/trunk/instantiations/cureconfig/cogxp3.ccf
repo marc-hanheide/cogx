@@ -5,7 +5,7 @@ PEEKABOT_HOST
 localhost
 
 PEEKABOT_ROBOT_XML_FILE
-CogXp3.xml
+CogX_base_arm.xml
 Robone.xml
 
 PEEKABOT_PERSON_PBMF_FILE

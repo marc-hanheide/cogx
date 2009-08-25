@@ -303,8 +303,8 @@ X11DispLocalGridMap<MAPDATA>::setRobotPose(const Pose3D &p) {
         m_Map.worldCoords2Index(m_Xr.Position.X[0] + 0.2 * cos(aStep * i),
                                 m_Xr.Position.X[1] + 0.2 * sin(aStep * i),
                                 xi, yi);
-        m_RobPts[i].x = xi + m_Map.getSize()*m_Magnification;
-        m_RobPts[i].y = m_Map.getSize()*m_Magnification - yi;
+        m_RobPts[i].x = (xi + m_Map.getSize())*m_Magnification;
+        m_RobPts[i].y = (m_Map.getSize() - yi)*m_Magnification;
     }
 }
 
@@ -413,13 +413,18 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
             gridPt.y = (2 * m_Map.getSize() - (y + m_Map.getSize()))*m_Magnification-my;
             if (m_Map(x,y) == 1) {
               XDrawPoints(disp, pixmap, gcBlack, &gridPt, 1, CoordModeOrigin);
-            } //else if (0 <= m_Map(x,y) &&  m_Map(x,y) < 255) {
-            //XDrawPoints(disp, pixmap, grayScale[int(m_Map(x,y))], &gridPt, 1, CoordModeOrigin);
+            } else if (0 < m_Map(x,y) &&  m_Map(x,y) < 255) {
+				XDrawPoints(disp, pixmap, grayScale[int(m_Map(x,y))], &gridPt, 1, CoordModeOrigin);
+				}
             else if (m_Map(x,y) == 0){
               XDrawPoints(disp, pixmap, gcWhite, &gridPt, 1, CoordModeOrigin);
-            } else {
+            } else if (m_Map(x,y) == 256){
               XDrawPoints(disp, pixmap, gcMagenta, &gridPt, 1, CoordModeOrigin);
             }
+			else{
+			printf("%f\n",m_Map(x,y));
+			XDrawPoints(disp, pixmap, gcYellow, &gridPt, 1, CoordModeOrigin);
+}
           }
         }
       }
@@ -528,7 +533,7 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
       XDrawPoints(disp,pixmap, gcBlack, m_RobPts, 50, CoordModeOrigin);
     }
     int x,y;
-    if ( highestVCindex != -1) {
+    /*if ( highestVCindex != -1) {
       for (unsigned int i = 0; i < ViewConePts.size(); i++) {
         //printf("Displaying triangle with size %i\n", (int)ViewConePts[i].size());
         for (unsigned int j=0; j< (unsigned int)(ViewConePts[i].size()/2); j++) {
@@ -561,7 +566,7 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
           XDrawRectangle(disp, pixmap, gcBlue, x, y,5,5);
         }
       }
-    }
+    }*/
     GC gcs []= { gcGreen, gcBlue, gcRed, gcYellow};
     
     for (unsigned int i = 0; i < planindex.size(); i++) {
@@ -569,7 +574,7 @@ X11DispLocalGridMap<MAPDATA>::updateDisplay(Pose3D *robPose,
       gridPt.y = 2 * msize - (ViewConePts[planindex[i]][1]*m_Magnification + msize);
       x = gridPt.x-3;
       y = gridPt.y-3;
-      XDrawRectangle(disp, pixmap, gcMagenta, x, y,10,10);
+      XDrawRectangle(disp, pixmap, gcBlack, x, y,10,10);
       for (int j=0; j< int(ViewConePts[planindex[i]].size()/2); j++) {
         gridPt.x = ViewConePts[planindex[i]][2*j]*m_Magnification + msize;
         gridPt.y = 2 * msize - (ViewConePts[planindex[i]][2*j + 1]*m_Magnification + msize);

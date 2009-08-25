@@ -255,60 +255,66 @@ PlaceManager::evaluateUnexploredPaths()
     double nodeDistanceSq = (x - nodeX)*(x - nodeX) + (y - nodeY)*(y - nodeY);
     log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, (*it)->mWidth);
 
-    // Consider only frontiers within a certain maximum distance of the current
-    // Nav node
-    if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
-      // Consider only frontiers at a great enough distance to the current Nav node
-      if (nodeDistanceSq > m_minFrontierDist*m_minFrontierDist) {
-	// Consider only frontiers of sufficient size
-	if ((*it)->mWidth > m_minFrontierLength) {
-	  // Compare distance to all other hypotheses created for this node
-	  double minDistanceSq = FLT_MAX;
-	  for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it2 =
-	      hypotheses.begin(); it2 != hypotheses.end(); it2++) {
-	    if ((*it2)->originPlaceID == curPlace->id) {
-	      double distanceSq = ((*it2)->x - x)*((*it2)->x - x) + ((*it2)->y - y)*((*it2)->y - y);
-	      if (distanceSq < minDistanceSq) minDistanceSq = distanceSq;
+    // Consider only frontiers with an open path to them
+    if ((*it)->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
+      // Consider only frontiers within a certain maximum distance of the current
+      // Nav node
+      if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
+	// Consider only frontiers at a great enough distance to the current Nav node
+	if (nodeDistanceSq > m_minFrontierDist*m_minFrontierDist) {
+	  // Consider only frontiers of sufficient size
+	  if ((*it)->mWidth > m_minFrontierLength) {
+	    // Compare distance to all other hypotheses created for this node
+	    double minDistanceSq = FLT_MAX;
+	    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it2 =
+		hypotheses.begin(); it2 != hypotheses.end(); it2++) {
+	      if ((*it2)->originPlaceID == curPlace->id) {
+		double distanceSq = ((*it2)->x - x)*((*it2)->x - x) + ((*it2)->y - y)*((*it2)->y - y);
+		if (distanceSq < minDistanceSq) minDistanceSq = distanceSq;
+	      }
 	    }
-	  }
-	  if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
-	    // Create new hypothetical node in the direction of the frontier
-	    double newX = nodeX + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
-	    double newY = nodeY + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
-	    FrontierInterface::NodeHypothesisPtr newHyp = 
-	      new FrontierInterface::NodeHypothesis;
-	    newHyp->x = newX;
-	    newHyp->y = newY;
-	    newHyp->hypID = m_hypIDCounter;
-	    newHyp->originPlaceID = curPlace->id;
+	    if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
+	      // Create new hypothetical node in the direction of the frontier
+	      double newX = nodeX + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
+	      double newY = nodeY + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
+	      FrontierInterface::NodeHypothesisPtr newHyp = 
+		new FrontierInterface::NodeHypothesis;
+	      newHyp->x = newX;
+	      newHyp->y = newY;
+	      newHyp->hypID = m_hypIDCounter;
+	      newHyp->originPlaceID = curPlace->id;
 
-	    log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
-		newHyp->y, newHyp->hypID);
+	      log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
+		  newHyp->y, newHyp->hypID);
 
-	    string newID = newDataID();
-	    m_HypIDToWMIDMap[newHyp->hypID]=newID;
-	    addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
-	    hypotheses.push_back(newHyp);
+	      string newID = newDataID();
+	      m_HypIDToWMIDMap[newHyp->hypID]=newID;
+	      addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
+	      hypotheses.push_back(newHyp);
 
-	    // Create the Place struct corresponding to the hypothesis
-	    PlaceHolder p;
-	    p.m_data = new SpatialData::Place;   
-	    //p.m_data->id = oobj->getData()->nodeId;
+	      // Create the Place struct corresponding to the hypothesis
+	      PlaceHolder p;
+	      p.m_data = new SpatialData::Place;   
+	      //p.m_data->id = oobj->getData()->nodeId;
 
-	    p.m_data->id = m_placeIDCounter;
-	    m_PlaceIDToHypMap[m_placeIDCounter] = newHyp;
-	    m_hypIDCounter++;
+	      p.m_data->id = m_placeIDCounter;
+	      m_PlaceIDToHypMap[m_placeIDCounter] = newHyp;
+	      m_hypIDCounter++;
 
-	    p.m_data->status = SpatialData::PLACEHOLDER;
-	    p.m_WMid = newDataID();
-	    log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
-	    addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+	      p.m_data->status = SpatialData::PLACEHOLDER;
+	      p.m_WMid = newDataID();
+	      log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+	      addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
 
-	    m_Places[m_placeIDCounter]=p;
-	    m_placeIDCounter++;
+	      m_Places[m_placeIDCounter]=p;
+	      m_placeIDCounter++;
+	    }
 	  }
 	}
       }
+    }
+    else {
+      log("Frontier not reachable, skipping");
     }
   }
 }

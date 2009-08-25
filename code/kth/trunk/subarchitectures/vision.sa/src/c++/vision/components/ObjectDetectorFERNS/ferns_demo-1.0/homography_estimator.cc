@@ -357,7 +357,11 @@ int homography_estimator::compute_inliers(homography06 * H, bool * inliers, floa
 
 bool homography_estimator::estimate_from_inliers(homography06 * H)
 {
-  if (number_of_inliers < 4) return false;
+  // Michael Zillich, 2009-08-14:
+  // fixed bug leading to failed assertion in cvSVD():
+  // If 4 inliers, _AA_ has only 8 rows, cvSVD needs at least 9.
+  //if (number_of_inliers < 4) return false;
+  if (number_of_inliers <= 4) return false;
 
   CvMat * _AA_ = cvCreateMat(2 * number_of_inliers, 9, CV_32FC1);
 
@@ -369,6 +373,7 @@ bool homography_estimator::estimate_from_inliers(homography06 * H)
 
       n += 2;
     }
+
   cvSVD(_AA_, W, 0, Vt, CV_SVD_MODIFY_A | CV_SVD_V_T);
 
   cvmSet(H, 0, 0, cvmGet(Vt, 8, 0));

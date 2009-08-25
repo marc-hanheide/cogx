@@ -36,7 +36,14 @@ void VideoServerI::getImage(Ice::Int camId, Video::Image& image, const Ice::Curr
 
 void VideoServerI::getImages(Video::ImageSeq& images, const Ice::Current&)
 {
-  vidSrv->retrieveFrames(images);
+  // prividing width = height = 0 means using native image size
+  vidSrv->retrieveFrames(0, 0, images);
+}
+
+void VideoServerI::getScaledImages(Ice::Int width, Ice::Int height,
+      Video::ImageSeq& images, const Ice::Current&)
+{
+  vidSrv->retrieveFrames(width, height, images);
 }
 
 VideoServer::VideoServer()
