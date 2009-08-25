@@ -71,7 +71,8 @@ public:
   virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
   virtual void grabFrames();
-  virtual void retrieveFrames(std::vector<Video::Image> &frames);
+  virtual void retrieveFrames(int width, int height,
+      std::vector<Video::Image> &frames);
   virtual void retrieveFrame(int camId, Video::Image &frame)
     throw(std::runtime_error);
   virtual int getNumCameras();

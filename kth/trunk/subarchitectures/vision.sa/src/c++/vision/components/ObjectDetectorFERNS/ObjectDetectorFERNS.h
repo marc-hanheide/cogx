@@ -27,6 +27,7 @@ namespace cast
 class ObjectDetectorFERNS : public VideoClient,
                             public ManagedComponent
 {
+	void runComponent();
 private:
   /**
    * different modes the FERNS stuff can operate in

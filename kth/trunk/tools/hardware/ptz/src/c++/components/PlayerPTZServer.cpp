@@ -68,6 +68,8 @@ namespace ptz {
   PlayerPTZServer::getPose() const {
     assert(m_ptzProxy);
 
+    m_playerClient->Read();
+
     PTZReading reading;    
     reading.time = getCASTTime();
     reading.pose.pan = m_ptzProxy->GetPan(); 

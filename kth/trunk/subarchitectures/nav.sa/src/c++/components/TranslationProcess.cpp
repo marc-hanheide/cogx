@@ -529,10 +529,16 @@ bool TranslationProcess::translateCommand(const NavData::NavCommandPtr &nav,
       status = NavData::CMDMALFORMATTED;
       return false;
     } else {
-      ctrl.cmd = NavData::lGOTOXY;
       ctrl.x = nav->pose[0];
       ctrl.y = nav->pose[1];
       ctrl.tolerance = nav->tolerance;
+
+	   if (nav->pose.size() == 2) {
+		ctrl.cmd = NavData::lGOTOXY;		   
+	   } else {
+		ctrl.cmd = NavData::lGOTOXYA;
+		ctrl.theta = nav->pose[2];
+	   }
     }
       
   }else if (nav->cmd == NavData::GOTONODE){

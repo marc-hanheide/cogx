@@ -29,8 +29,13 @@ private:
    * changes
    */
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
-protected:
+	bool runonce;
+	protected:
+	double robotx;
+	double roboty;
+	int count;
+ 	std::vector<double> prior1;
+	std::vector<double> prior2;
   /**
    * called by the framework to configure our component
    */

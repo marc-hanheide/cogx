@@ -80,8 +80,8 @@ private:
    */
   Timer timer;
 
-  void init(const std::vector<int> &devNums, const std::string &bayer)
-    throw(std::runtime_error);
+  void init(int dev_class, const std::vector<int> &dev_nums,
+      const std::string &bayer) throw(std::runtime_error);
   /**
    * Converts an IplImage to a system Image format.
    */
@@ -96,8 +96,8 @@ public:
   virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
   virtual void grabFrames();
-  virtual void retrieveFrames(std::vector<Video::Image> &frames)
-    throw(std::runtime_error);
+  virtual void retrieveFrames(int width, int height,
+      std::vector<Video::Image> &frames) throw(std::runtime_error);
   virtual void retrieveFrame(int camId, Video::Image &frame)
     throw(std::runtime_error);
   virtual int getNumCameras();

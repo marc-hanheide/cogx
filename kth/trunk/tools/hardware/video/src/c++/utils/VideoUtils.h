@@ -9,5 +9,6 @@
 
 #include "CameraParameters.h"
 #include "ConvertImage.h"
+#include "AccessImage.h"
 
 #endif

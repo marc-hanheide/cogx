@@ -60,6 +60,14 @@ public:
    * \param frames  (out) images
    */
   virtual void getImages(Video::ImageSeq& images, const Ice::Current&);
+
+  /**
+   * Get images from some sources.
+   * \param camIds  (in) which video sources (cameras)
+   * \param frames  (out) images
+   */
+  virtual void getScaledImages(Ice::Int width, Ice::Int height,
+      Video::ImageSeq& images, const Ice::Current&);
 };
 
 /**
@@ -122,10 +130,14 @@ public:
 
   /**
    * Retrieves previously grabbed frames from all sources.
+   * \param width (in) size of output image. If 0 then use native image size of
+   *                   video.
+   * \param height (in)
    * \param frames  (out) array of images, as many as num cameras,
    *                      including timestamps
    */
-  virtual void retrieveFrames(std::vector<Video::Image> &frames) = 0;
+  virtual void retrieveFrames(int width, int height,
+      std::vector<Video::Image> &frames) = 0;
 
   /**
    * Retrieve just frame from one source.

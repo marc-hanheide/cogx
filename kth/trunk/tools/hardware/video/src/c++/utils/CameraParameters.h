@@ -7,6 +7,8 @@
 #define CAMERA_PARAMETERS_H
 
 #include <string>
+#include <stdexcept>
+#include <cast/core/CASTUtils.hpp>
 #include <cogxmath.h>
 #include "Video.hpp"
 
@@ -84,6 +86,22 @@ inline Vector2 projectPoint(const CameraParameters &cam, const Vector3 &w)
 {
   Vector3 p = transformInverse(cam.pose, w);
   return vector2(cam.fx*p.x/p.z + cam.cx, cam.fy*p.y/p.z + cam.cy);
+}
+
+/**
+ * Project a 3D size at a given world position to the corresponing size in the
+ * image.
+ */
+inline double projectSize(const CameraParameters &cam, const Vector3 &w,
+    double s) throw(runtime_error)
+{
+  Vector3 p = transformInverse(cam.pose, w);
+  if(iszero(p.z))
+    throw runtime_error(exceptionMessage(__HERE__, "division by zero"));
+  // Actually the projection of course also depends on the orientation of the
+  // projected size. This can be safely ignored however as we assume cam.fx =
+  // can.fy.
+  return s*cam.fx/p.z;
 }
 
 /**

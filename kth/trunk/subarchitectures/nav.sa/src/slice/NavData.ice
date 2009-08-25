@@ -2,6 +2,7 @@
 #define NAVDATA_ICE
 
 #include <cast/slice/CDL.ice>
+#include <Math.ice>
 
 /**
  * The NavData structures are the structures from the nav.sa and include 
@@ -11,7 +12,22 @@
  * @see
  */
 module NavData {
+	sequence<cogx::Math::Vector3> PoseSeq;
+  
+  class ObjectSearchPlan{
+	PoseSeq planlist;
+};
 
+
+ sequence<cogx::Math::Vector3> PointCloud;
+ sequence<int> PointCloudLabels;
+  class PlanePopout
+  {
+	PointCloud pcloud;
+	PointCloudLabels plabels;
+  };
+  
+  
   sequence<double> DoubleOpt;
   sequence<string> StringOpt;
   sequence<long> LongOpt;

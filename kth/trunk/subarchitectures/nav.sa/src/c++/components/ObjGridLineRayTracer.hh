@@ -308,7 +308,8 @@ void ObjGridLineRayTracer<MAPDATA>::addScan(Cure::SICKScan &scan,
                                          double maxRange)
 {
   for (int i = 0; i < scan.getNPts(); i++) {
-  	if (getDistToStart() == maxRange or scan.getRange(i) >= maxRange){
+  	if (scan.getRange(i) > maxRange - 0.5){
+		data() = 120;
   		continue;
   	}
     setStart(sp.getX(),

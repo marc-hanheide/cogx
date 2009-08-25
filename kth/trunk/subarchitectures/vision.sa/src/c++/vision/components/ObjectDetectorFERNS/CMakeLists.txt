@@ -1,6 +1,6 @@
 include_directories(.)
 include_directories(ferns_demo-1.0)
-include_directories(/usr/include/opencv)
+include_directories(/usr/local/include/opencv)
 
 # Nick needed the below for opencv. Use a find macro later
 include_directories(/opt/local/include)

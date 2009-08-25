@@ -6,6 +6,7 @@
 //
 // = AUTHOR(S)
 //    Patric Jensfelt
+//	  Alper Aydemir
 //
 // = COPYRIGHT
 //    Copyright (c) 2008 Patric Jensfelt
@@ -27,7 +28,7 @@
 #include <Navigation/NavGraphNode.hh>
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
-
+#include <boost/numeric/ublas/matrix.hpp>
 
 using namespace std;
 using namespace cast;
@@ -67,7 +68,7 @@ DisplayNavInPB::~DisplayNavInPB()
 
 void DisplayNavInPB::configure(const map<string,string>& _config) 
 {
-  println("configure entered");
+  log("configure entered");
 
   m_ShowRobot = (_config.find("--no-robot") == _config.end());
   m_ShowWalls = (_config.find("--no-walls") == _config.end());
@@ -80,6 +81,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowRobotViewCone = (_config.find("--no-robotviewcone") == _config.end());
   m_ShowPeopleId = (_config.find("--people-id") != _config.end());
   m_NonUniqueObjects = (_config.find("--non-unique") != _config.end());
+  m_ReadPTU = (_config.find("--read-ptu") != _config.end());
 
   if (_config.find("--laser-server-host") != _config.end()) {
     std::istringstream str(_config.find("--laser-server-host")->second);
@@ -119,7 +121,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_PbPort = 5050;
   m_PbHost = "localhost";
   m_PbRobotName = "robot";
-  m_PbRobotFile = "Robone.xml";
+  m_PbRobotFile = "CogXp3.xml";
   m_PbPersonFile = "rolf.pbmf";
 
   if (cfg) {
@@ -143,16 +145,32 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     }
   }
 
-  println("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
-  println("Using %s as the person in peekabot", m_PbPersonFile.c_str());
+  log("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
+  log("Using %s as the person in peekabot", m_PbPersonFile.c_str());
 
   connectPeekabot();  
 
-  println("configure done");
+  if (m_ReadPTU) {
+    Ice::CommunicatorPtr ic = getCommunicator();
+  
+    Ice::Identity id;
+    id.name = "PTZServer";
+    id.category = "PTZServer";
+
+    std::ostringstream str;
+    str << ic->identityToString(id) 
+	<< ":default"
+	<< " -h localhost"
+	<< " -p " << cast::cdl::CPPSERVERPORT;
+
+    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+    m_PTUServer = ptz::PTZInterfacePrx::uncheckedCast(base);
+  }
+
+  log("configure done");
 }
 
 void DisplayNavInPB::start() {
-  println("start entered");
 
   // Hook up changes to the robot pose to a callback function
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
@@ -222,8 +240,149 @@ void DisplayNavInPB::start() {
   addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newLineMap));  
+										
+  addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newVPlist));  
+  addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newVPlist)); 
+addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newPointCloud));  
+  addChangeFilter(createLocalTypeFilter<NavData::PlanePopout>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newPointCloud));  
+  log("start done");  
+}
 
-  println("start done");  
+
+void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
+  log("VPnodelist called"); 
+
+  if (!m_PeekabotClient.is_connected()) return;
+
+  // Visualize Viewplan boost::shared_ptr<CASTData<NavData::NavCommand> >
+  boost::shared_ptr<CASTData<NavData::ObjectSearchPlan> > oobj =
+    getWorkingMemoryEntry<NavData::ObjectSearchPlan>(objID.address);
+  
+  NavData::ObjectSearchPlanPtr plan = oobj->getData();
+  
+  // Get nodeIDs stated in the plan, and search through navGraph to
+  // each nodeID and finally put ordered numbers on top of nodes that
+  // are in the plan.
+  char path[32];
+if(plan->planlist.size() > 0)
+    {
+		m_ProxyViewPoints.add(m_PeekabotClient, "root.viewpoints",peekabot::REPLACE_ON_CONFLICT);
+		 double color[3];
+  color[0] = 0.9;
+  color[1] = 0.1;
+  color[2] = 0.1;
+		for (unsigned int i = 0; i < plan->planlist.size(); i++){
+			sprintf(path,"viewpoint_%i",i);
+			createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.05, plan->planlist[i], true);
+		}
+		
+	}
+ /* if(plan.planlist.size() > 0)
+    {
+      char order[32];
+      int counter = 48;
+      int conecounter = 0;
+      char coneorder[32];
+      for(unsigned int y=0; y < vpnodes.length(); y++){
+            counter++;
+            sprintf(order,"%c",char(counter));
+            char buf[32];              			       
+            sprintf(buf, "node%ld", tempgraph.m_FNodes[i].m_nodeID);
+
+            peekabot::LabelProxy text;
+            
+            text.add(m_ProxyNodes,buf); // FIXME: a 1 is always added at the end of buf ?!?!
+            text.set_text(order);
+            text.set_position(tempgraph.m_FNodes[i].m_x, tempgraph.m_FNodes[i].m_y, tempgraph.m_FNodes[i].m_z+0.2);
+            text.set_rotation(0,0,1.57);
+            text.set_scale(30, 30, 30);
+            text.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
+            text.set_color(0,0,1);
+            
+            for(unsigned int g=0; g < vpnodes[y].directions.length(); g++){
+              conecounter++;
+              sprintf(coneorder,"%c",char(counter));
+              //peekabot::GroupProxy temp;
+              //temp.assign(m_ProxyNodes, buf);
+              char conebuf[32];
+              sprintf(conebuf,"%s.viewcone%d",buf,conecounter);
+              double color[3];
+              color[0] = 1;
+              color[1] = 0;
+              color[2] = 0.8;
+             
+              createFOV(m_ProxyNodes, conebuf, 45.0, 35.0,color, 0.05, 1.25, vpnodes[y].directions[g]);
+              
+              peekabot::LabelProxy conetext;
+              char labelbuf[32];
+              sprintf(labelbuf,"%s.image.conelabel%d",conebuf,g);
+              conetext.add(m_ProxyNodes,labelbuf);
+              conetext.set_text(coneorder);
+              conetext.set_position(0, 0, tan(35*M_PI/180.0/2)*1 );
+              conetext.set_rotation(0,0,1.57);
+              conetext.set_scale(30, 30, 30);
+              conetext.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
+              conetext.set_color(0,0,1);
+            }
+            
+          }
+    }*/
+  
+}
+
+
+void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
+	//log("I got new points.");
+	double color[3] = { 0.9, 0, 0};
+	
+	 numeric::ublas::matrix<double> m (3, 3);
+	 m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
+	 m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
+	 m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
+	peekabot::PointCloudProxy pcloud;
+	pcloud.add(m_ProxyCam,"planepopout", peekabot::REPLACE_ON_CONFLICT);
+	shared_ptr<CASTData<NavData::PlanePopout> > oobj =
+    getWorkingMemoryEntry<NavData::PlanePopout>(objID.address);
+	NavData::PlanePopoutPtr objData = oobj->getData();
+
+	numeric::ublas::vector<double> v (3);
+	numeric::ublas::vector<double> t (3);
+	//add plane points
+  for (unsigned int i =0; i < objData->pcloud.size(); i++){
+	  if (objData->plabels.at(i) == 0){
+	  v(0) = objData->pcloud.at(i).x;
+	  v(1) = objData->pcloud.at(i).y;
+	  v(2) = objData->pcloud.at(i).z;
+	  t = prod(v,m);
+	  pcloud.add_vertex(t(0),t(1),t(2));
+	  }
+  }
+  pcloud.set_color(color[0],color[1],color[2]);
+  //add objects
+  peekabot::PointCloudProxy pcloudobj;
+  pcloudobj.add(m_ProxyCam,"planepopoutobj", peekabot::REPLACE_ON_CONFLICT);
+  color[0] = 0;
+  color[1] = 0.9;
+  color[2] = 0;
+  for (unsigned int i =0; i < objData->pcloud.size(); i++){
+	  if (objData->plabels.at(i) > 0){
+	  v(0) = objData->pcloud.at(i).x;
+	  v(1) = objData->pcloud.at(i).y;
+	  v(2) = objData->pcloud.at(i).z;
+	  t = prod(v,m);
+	  pcloudobj.add_vertex(t(0),t(1),t(2));
+	  }
+  }
+  pcloudobj.set_color(color[0],color[1],color[2]);
+	
 }
 
 void DisplayNavInPB::createRobotFOV() 
@@ -245,16 +404,18 @@ void DisplayNavInPB::createRobotFOV()
 
   peekabot::GroupProxy cam;
   cam.assign(m_ProxyRobot, path);
-  
-  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2 );
+   cogx::Math::Vector3 dummypos; dummypos.x = 10^6; 
+  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2, dummypos);
 }
 
 void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
                                double fovHorizAngle, double fovVertiAngle, 
                                double* color, double opacity, 
-                               double zoffset, double yaw){
-  peekabot::GroupProxy proxyCone;
-  proxyCone.add(proxy, path);
+                               cogx::Math::Vector3 position, double zoffset, double yaw){
+
+		peekabot::GroupProxy proxyCone;	
+		proxyCone.add(proxy, path, peekabot::REPLACE_ON_CONFLICT);
+  
   const double coneLen = 1.0;
   // The "half angle" of the field of view
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
@@ -311,29 +472,51 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
     proxyConeParts[i].set_opacity(opacity);
     proxyConeParts[i].set_scale(2);  // This is how I make the cone
                                      // larger or smaller
-    proxyConeParts[i].set_position(0,0,zoffset);
-    proxyConeParts[i].set_rotation(yaw,0,0);
+	if (position.x != 10^6)
+	{
+		proxyConeParts[i].set_position(position.x,position.y,zoffset);
+		proxyConeParts[i].set_rotation(position.z,0,0);
+			
+	}
+	else
+	{
+		
+		proxyConeParts[i].set_position(0,0,zoffset);
+			proxyConeParts[i].set_rotation(yaw,0,0);
+	}
+    
   }
 }
 
 
 void DisplayNavInPB::runComponent() {
 
-  println("runComponent");
+  log("runComponent");
 
   setupPushScan2d(*this, 0.2, m_LaserServerHost);
 
-  println("Connected to the laser");
+  log("Connected to the laser");
 
   while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
     sleep(m_RetryDelay);
     connectPeekabot();
   }
 
-  println("Connected to peekabot, ready to go");
+  log("Connected to peekabot, ready to go");
   if (m_PeekabotClient.is_connected()) {
     while (isRunning()) {
-
+      
+      ptz::PTZReading ptuPose;
+      if (m_ReadPTU) {
+	ptuPose = m_PTUServer->getPose();
+	//log("Read ptu pose %f %f", ptuPose.pose.pan, ptuPose.pose.tilt);
+      } else {
+	// If we are not connecting and reading from PTU we assume
+	// angles are 0
+	ptuPose.pose.pan = 0;
+	ptuPose.pose.tilt = 0;
+      }
+      
       m_Mutex.lock();
 
       m_PeekabotClient.begin_bundle();
@@ -362,6 +545,9 @@ void DisplayNavInPB::runComponent() {
                               m_RobotPose->y,
                               0,
                               m_RobotPose->theta);
+
+	m_ProxyPan.set_dof(ptuPose.pose.pan);
+	m_ProxyTilt.set_dof(ptuPose.pose.tilt);
       }
 
       // Display the line map
@@ -569,7 +755,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   NavData::ObjDataPtr objData = oobj->getData();
   
   if (!m_PeekabotClient.is_connected()) {
-    println("Received an object of category %s, not displaying it since not connected to peekabot", objData->category.c_str());
+    log("Received an object of category %s, not displaying it since not connected to peekabot", objData->category.c_str());
     return;
   }
   log("Received an object of category %s", objData->category.c_str());
@@ -1080,11 +1266,11 @@ void DisplayNavInPB::connectPeekabot()
                      m_PbRobotName,
                      peekabot::REPLACE_ON_CONFLICT);
 
-    peekabot::Status s1, s2, s3;
+    peekabot::Status s1, s2, s3,s4;
     
     s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
     if( s1.failed() ) {
-      println("Could not load robot file \"%s\"", 
+      log("Could not load robot file \"%s\"", 
               m_PbRobotFile.c_str());
       peekabot::CubeProxy cube;
       cube.add(m_ProxyRobot, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
@@ -1099,10 +1285,23 @@ void DisplayNavInPB::connectPeekabot()
       nose.set_color(1,0,0);
 
     } else {
-      if (m_PbRobotFile == "CogXp3.xml") {
+      if (m_PbRobotFile == "CogXp3.xml" or m_PbRobotFile == "CogX_base_arm.xml") {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis.rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*240;
         m_ScanMaxRange = 5.6;
+		
+		std::string path = "root.robot.chassis.superstructure.ptu.pan.tilt.baseline.cam_left";
+		s4 = m_ProxyCam.assign(m_PeekabotClient, path).status();
+		if(s4.failed()){
+			log("cam proxy failed.");
+		}
+		
+		m_ProxyPan.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan");
+		m_ProxyTilt.assign(m_PeekabotClient, "root.robot.chassis.superstructure.ptu.pan.tilt");
+		m_ProxyPan.set_dof(0);
+		m_ProxyTilt.set_dof(30*M_PI/180.0);
+		
+		
       } else if (m_PbRobotFile == "B21.xml") {
         s2 = m_ProxyLaser.assign(m_ProxyRobot, "model.rangefinder").status();
         m_ScanAngFOV = M_PI/180.0*180;
@@ -1113,7 +1312,7 @@ void DisplayNavInPB::connectPeekabot()
         m_ScanMaxRange = 8.0;
       }
       if( s2.failed() ) {
-        println("Could not hook up to laser scanner, not using laser");
+        log("Could not hook up to laser scanner, not using laser");
         m_LaserConnected = false;        
       } else {
 
