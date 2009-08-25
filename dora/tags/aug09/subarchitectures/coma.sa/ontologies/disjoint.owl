@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns="http://www.dfki.de/cosy/officeenv.owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xml:base="http://www.dfki.de/cosy/officeenv.owl">
+  <owl:Ontology rdf:about=""/>
+  <owl:Class rdf:ID="Class_1-2">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Class_1"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Class_2-2">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Class_2"/>
+    </rdfs:subClassOf>
+    <owl:disjointWith>
+      <owl:Class rdf:ID="Class_2-1"/>
+    </owl:disjointWith>
+  </owl:Class>
+  <owl:Class rdf:about="#Class_2-1">
+    <owl:disjointWith rdf:resource="#Class_2-2"/>
+    <rdfs:subClassOf rdf:resource="#Class_2"/>
+  </owl:Class>
+  <Class_1 rdf:ID="ind_1"/>
+  <Class_2-2 rdf:ID="ind_2-2"/>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 3.2.1, Build 365)  http://protege.stanford.edu -->

@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<scene>
+  <!-- Neuronics Katana 6M 180 -->
+
+  <model><file>katana_6m180/part1.pbmf</file></model>
+
+  <hinge>
+    <name>dof1</name>
+    <axis system="parent">0 0 1</axis>
+
+    <transform>
+      <translate>0 0 0.2035</translate>
+    </transform>
+
+    <children>
+      <model><file>katana_6m180/part2.pbmf</file></model>
+
+      <hinge>
+        <name>dof2</name>
+	<axis system="parent">0 1 0</axis>
+
+        <initial>
+          <degrees> -125 </degrees>
+        </initial>
+
+	<children>
+	  <model><file>katana_6m180/part3.pbmf</file></model>
+
+          <hinge>
+            <name>dof3</name>
+            <axis system="parent">0 1 0</axis>
+
+            <initial>
+              <degrees> 125 </degrees>
+            </initial>
+
+	    <transform>
+	      <translate>0.190 0 0</translate>
+	    </transform>
+
+            <children>
+              <model><file>katana_6m180/part4.pbmf</file></model>
+
+              <hinge>
+                <name>dof4</name>
+                <axis system="parent">0 1 0</axis>
+
+                <initial>
+                  <degrees> -125 </degrees>
+                </initial>
+
+	        <transform>
+                  <translate>0.139 0 0</translate>
+                </transform>
+
+                <children>
+                  <model><file>katana_6m180/part5.pbmf</file></model>
+
+                  <hinge>
+                    <name>dof5</name>
+                    <axis system="parent">1 0 0</axis>
+
+	            <transform>
+                      <translate>0.1523 0 0</translate>
+                    </transform>
+
+                    <children>
+                      <model><file>katana_6m180/part6.pbmf</file></model>
+
+		      <hinge>
+			<name>gripper_l</name>
+
+			<axis>0 0 -1</axis>
+			
+			<transform>
+			  <translate>0.0665 0 0</translate>
+			</transform>
+
+			<children>
+			  <model><file>katana_6m180/gripper_b.pbmf</file></model>
+			</children>
+		      </hinge>
+
+		      <hinge>
+			<name>gripper_r</name>
+
+			<axis>0 0 -1</axis>
+			
+			<transform>
+			  <rotate>
+			    <axis>1 0 0</axis>
+			    <pivot system="local">0 0 0</pivot>
+			    <degrees>180</degrees>
+			  </rotate>
+			  <translate>0.0665 0 0</translate>
+			</transform>
+
+			<children>
+			  <model>
+			    <file>katana_6m180/gripper_b.pbmf</file>
+			  </model>
+			</children>
+		      </hinge>
+                    </children>
+                  </hinge>
+                </children>
+              </hinge>
+
+            </children>
+          </hinge>
+	</children>
+      </hinge>
+
+    </children>
+  </hinge>
+</scene>

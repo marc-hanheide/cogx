@@ -1,0 +1,42 @@
+/**
+ * $Id: Camera.ic,v 1.1 2006/02/06 16:26:21 mz Exp mxz $
+ */
+
+#include <math.h>
+
+namespace ACIN
+{
+
+/**
+ * Return distorted point.
+ */
+inline void Camera::DistortPoint(int u, int v, int &ud, int &vd) const
+{
+  double k1_r2 = k1*(double)(u*u + v*v);
+  // note: The more convenient round(x) instead of floor(x+0.5) makes problems
+  // with gcc 2.9. To be backwards compatible we use floor() here.
+  ud = (int)floor((double)u + (double)(u - u0)*k1_r2 + 0.5);
+  vd = (int)floor((double)v + (double)(v - v0)*k1_r2 + 0.5);
+}
+
+/**
+ * Return distorted point.
+ */
+inline void Camera::DistortPoint(double u, double v, double &ud, double &vd) const
+{
+  double k1_r2 = k1*(u*u + v*v);
+  ud = u + (u - u0)*k1_r2;
+  vd = v + (v - v0)*k1_r2;
+}
+
+/**
+ * Project a point given in world co-ordinates to image pixel co-ordinates.
+ */
+inline Vector2 Camera::ProjectPoint(const Vector3 &w)
+{
+  Vector3 c = pose.TransformToLocal(w);
+  return Vector2(fx*c.X()/c.Z() + u0, fy*c.Y()/c.Z() + v0);
+}
+
+}
+
