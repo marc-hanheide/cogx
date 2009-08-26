@@ -1,8 +1,9 @@
 import constants
-import state
-import mapl
-import mapl.types as types
-import mapl.predicates as predicates
+import state_new as state
+import mapl_new as mapl
+import mapl_new.mapltypes as types
+import mapl_new.predicates as predicates
+#import mapl_new.writer
 from utils import Enum
 
 PlanningStatusEnum = Enum("TASK_CHANGED", "RUNNING", "PLAN_AVAILABLE", "PLANNING_FAILURE", "INTERRUPTED")    
@@ -15,26 +16,13 @@ class Task(object):
         """Initialise public and private fields."""
         # public
         self.taskID = taskID
-        self.planner = None  # is set by planner.register_task()
-        # general domain ontology
-        self._domain_name = None
-        self._requirements = None
-        self._type_tree = None
-        self._state_variables = None
-        self._constants = None
-        self._operators = None
-        self._axioms = None
-        self._sensors = None
-        # task-specific data
-        self._task_name = None
-        self._agent_name = None
-        self._objects = None
-        self._state = None
-        self._goal = None
+        self._mapltask = None
+        self._mapldomain = None
         self._action_blacklist = None
         self._action_whitelist = None
         self._plan = None
         # private
+        self._state = None
         self._planning_status = PlanningStatusEnum.TASK_CHANGED
         self._change_detection_activated = False
 
@@ -96,10 +84,10 @@ class Task(object):
         self._change_task("_state", new_val, update_status) 
             
     def get_goal(self):
-        return self._goal
+        return self._mapltask.goal
 
-    def set_goal(self, update_status=True):
-        self._change_task("_goal", new_val, update_status) 
+#    def set_goal(self, update_status=True):
+#        self._change_task("_goal", new_val, update_status) 
 
     def get_plan(self):
         return self._plan
@@ -119,41 +107,155 @@ class Task(object):
             self.planner.continual_planning(self)       
 
     def pddl_domain_str(self):
-        return PDDLTask.from_MAPL_task(self).pddl_domain_str()
+        w = PDDLWriter(predicates.mapl_modal_predicates)
+        return "\n".join(w.write_domain(self._mapldomain))
+        #return PDDLTask.from_MAPL_task(self).pddl_domain_str()
 
     def pddl_problem_str(self):
-        return PDDLTask.from_MAPL_task(self).pddl_problem_str()
+        w = PDDLWriter(predicates.mapl_modal_predicates)
+        return "\n".join(w.write_problem(self._mapltask))
+        
+        #return PDDLTask.from_MAPL_task(self).pddl_problem_str()
 
     def load_mapl_domain(self, domain_file):
         print "Loading MAPL domain %s." % domain_file
-        domain = mapl.mapl_file.load_mapl_domain(domain_file)
-        self._domain_name = domain.domain_name
-        self._requirements = domain.requirements
-        self._type_tree = domain.type_tree
-        self._state_variables = domain.predicates
-        self._constants = domain.constants
-        self._operators = domain.actions
-        self._axioms = domain.axioms
-        self._sensors = domain.sensors
+        p = mapl.parser.Parser.parseFile(domain_file)
+        self._mapldomain = mapl.domain.MAPLDomain.parse(p.root)
         
     def load_mapl_problem(self, task_file, agent_name=None):
         print "Loading MAPL problem %s." % task_file
-        problem = mapl.mapl_file.load_mapl_problem(task_file)
-        self._task_name = problem.task_name
-        if self._domain_name:
-            STRICT_CHECKING = False
-            assert not STRICT_CHECKING or self._domain_name == problem.domain_name
-        else:
-            self.domain_name = problem.domain_name
-        self._objects = problem.objects
-        self._state = problem.init_state
-        self._goal = problem.goal
+        p = mapl.parser.Parser.parseFile(task_file)
+        self._mapltask = mapl.problem.Problem.parse(p.root, self._mapldomain)
+        self._state = state.State.fromProblem(self._mapltask)
+
+        self._agent_name = agent_name
+
+    def parse_mapl_problem(self, problem_str, agent_name=None):
+        p = mapl.parser.Parser(problem_str.split("\n"))
+        self._mapltask = mapl.problem.Problem.parse(p.root, self._mapldomain)
+        self._state = state.State.fromProblem(self._mapltask)
+
         self._agent_name = agent_name
 
     def load_mapl_task(self, task_file, domain_file, agent_name=None):
         self.load_mapl_domain(domain_file)
         self.load_mapl_problem(task_file, agent_name)
 
+class PDDLWriter(mapl.writer.MAPLWriter):
+    def __init__(self, modalPredicates):
+        self.modal = modalPredicates
+    
+    def write_term(self, term):
+        if isinstance(term, mapl.predicates.ConstantTerm):
+            return term.object.name
+        assert False, "No function terms in ff-pddl!"
+    
+    def write_literal(self, literal):
+        args=[]
+        name_elems = []
+        if literal.predicate not in mapl.predicates.assignmentOps+[mapl.predicates.equals]:
+            name_elems.append(literal.predicate.name)
+            
+        for arg in literal.args:
+            if isinstance(arg, mapl.predicates.FunctionTerm):
+                name_elems.append(arg.function.name)
+                assert not any(map(lambda a: isinstance(a, mapl.predicates.FunctionTerm), arg.args)), "no nested function allowed!"
+                args += arg.args
+            else:
+                args.append(arg)
+                
+        argstr = " ".join(map(lambda t: self.write_term(t), args))
+        return "(%s %s)" % ("-".join(name_elems), argstr)
+
+    def write_predicate(self, pred):
+        return "(%s %s)" % (pred.name, self.write_typelist(pred.args))
+    
+    def write_predicates(self, preds, functions):
+        strings = []
+        for pred in preds:
+            if not pred.builtin:
+                strings.append(self.write_predicate(pred))
+                
+        for func in functions:
+            if func.builtin:
+                continue
+            strings.append(";; Function %s" % func.name)
+            pred = predicates.Predicate(func.name, func.args+[predicates.Parameter("?val", func.type)])
+            strings.append(self.write_predicate(pred))
+            for mod in self.modal:
+                args =[]
+                for arg in mod.args:
+                    if isinstance(arg.type, types.FunctionType):
+                        args += func.args
+                    else:
+                        args.append(arg)
+
+                pred =  predicates.Predicate("%s-%s" % (mod.name, func.name), args)
+                strings.append(self.write_predicate(pred))
+
+        return self.section(":predicates", strings)
+
+    def write_functions(self, funcs):
+        return []
+    
+    def write_action(self, action):
+        strings = [action.name]
+        args = action.agents + action.args + action.vars
+        strings += self.section(":parameters", ["(%s)" % self.write_typelist(args)], parens=False)
+
+        prec = action.precondition
+        if action.replan:
+            if prec:
+                prec = mapl.condtitions.Conjunction([action.replan, prec])
+            else:
+                prec = action.replan
+                
+        if prec:
+            strings += self.section(":precondition", self.write_condition(prec), parens=False)
+
+        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+
+        return self.section(":action", strings)
+
+    def write_sensor(self, action):
+        strings = [action.name]
+        args = action.agents + action.args + action.vars
+        strings += self.section(":parameters", ["(%s)" % self.write_typelist(args)], parens=False)
+
+        if action.precondition:
+            strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
+            
+        if isinstance(action.sense, predicates.Literal):
+            term = action.sense.args[0]
+        else:
+            term = action.sense
+
+        strings += self.section(":effect", self.write_effect(action.knowledge_effect()), parens=False)
+        return self.section(":action", strings)
+        
+    def write_domain(self, domain):
+        strings = ["(define (domain %s)" % domain.name]
+        strings.append("")
+        strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, domain.requirements)))
+        strings.append("")
+        strings += self.write_types(domain.types.itervalues())
+
+        strings.append("")
+        strings += self.write_predicates(domain.predicates, domain.functions)
+        
+        if domain.constants:
+            strings.append("")
+            strings += self.write_objects("constants", domain.constants)
+        for s in domain.sensors:
+            strings.append("")
+            strings += self.write_sensor(s)
+        for a in domain.actions:
+            strings.append("")
+            strings += self.write_action(a)
+
+        strings.append("")
+        strings.append(")")
+        return strings
 
 class PDDLTask(Task):
     @classmethod
@@ -170,19 +272,6 @@ class PDDLTask(Task):
         t.add_implicit_MAPL_constants(new_objects)
         t._operators = [a.translate2pddl(t._state_variables) for a in t._operators]
         return t
-
-    def add_implicit_MAPL_types(self, mapl_type_list):
-        tt = types.TypeTree.from_typed_list(mapl_type_list)
-        for sup, subs in tt.items():
-            for sub in subs:
-                self._type_tree.add_type(sub, sup)
-    
-    def add_implicit_MAPL_constants(self, typed_obj_list):
-        known_constants = set(c.name for c in self._constants)
-        for to in typed_obj_list:
-            if to.name not in known_constants:
-                self._constants.append(to)
-                known_constants.add(to.name)
     
     def add_implicit_MAPL_predicate(self, pred_decl_str):
         alist = pred_decl_str.split()
@@ -265,4 +354,19 @@ class PDDLTask(Task):
         yield "(:goal"
         yield self._goal.pddl_str()
         yield "))"
+
+
+def predicate_from_function(function):
+    args = function.args[:] + [types.Parameter("?val", function.type)]
+    return predicates.Predicate(function.name, args)
+
+def modal_predicate_from_function(predicate, function):
+    args =[]
+    for arg in predicate.args:
+        if isinstance(arg.getType(), types.FunctionType):
+            args += function.args[:]
+        else:
+            args += arg
+
+    return predicates.Predicate(predicate.name  + "-" + function.name, args)
 

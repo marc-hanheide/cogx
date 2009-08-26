@@ -31,6 +31,7 @@ MAPL_TASK_TMPL = """
 """
 
 TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/cp_test.domain.mapl")
+TEST_TASK_FN = join(dirname(__file__), "../../test_data/cp_test.task.mapl")
 
 def union2name(union):
   return "union%s" % union.entityID
@@ -81,7 +82,9 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
     obj_descriptions = "\n".join(fact for union in task_desc.state for fact in union2facts(union))
     obj_declarations = "\n".join(gen_type_declarations(task_desc.state))
     problem_str = MAPL_TASK_TMPL % (obj_declarations, obj_descriptions, task_desc.goal)
-    task.load_mapl_problem(problem_str)
+    print problem_str
+    #task.parse_mapl_problem(problem_str)
+#     task.load_mapl_problem(TEST_TASK_FN)
     self.planner.register_task(task)
 #     task.mark_changed()
 #     task.activate_change_dectection()
