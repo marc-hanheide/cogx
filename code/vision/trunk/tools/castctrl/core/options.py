@@ -36,13 +36,17 @@ class CCastOptions(object):
             CAST_LIB_DIR=${CAST_INSTALL_ROOT}/lib/cast:${SA_DIR}/output/lib
             CAST_CLASSES_DIR=${CAST_INSTALL_ROOT}/share/java/cast.jar
             ICE_CONFIG=${CAST_INSTALL_ROOT}/share/cast/config/cast_ice_config
+            PYTHONPATH=${SA_DIR}/output/python:${PYTHONPATH}
+            CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:$CLASSPATH
+            PATH=${SA_DIR}/output/bin:${PATH}
 
             LD_LIBRARY_PATH=${CAST_LIB_DIR}:${LD_LIBRARY_PATH}
             DYLD_LIBRARY_PATH=${CAST_LIB_DIR}:${DYLD_LIBRARY_PATH}
 
+            CMD_JAVA=java -ea -classpath ${CAST_CLASSES_DIR}:$CLASSPATH
             CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
-            CMD_JAVA_SERVER=java -ea -classpath ${CAST_CLASSES_DIR}:$CLASSPATH cast.server.ComponentServer
-            CMD_CAST_CLIENT=java -ea -classpath ${CAST_CLASSES_DIR}:$CLASSPATH cast.clients.CASTClient -f [CAST_CONFIG]
+            CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
+            CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
             CMD_PLAYER=player [PLAYER_CONFIG]
             """.split("\n")
         self._environment = None
