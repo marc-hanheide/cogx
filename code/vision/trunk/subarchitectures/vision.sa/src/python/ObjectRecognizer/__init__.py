@@ -3,5 +3,5 @@
 # Author:  Marko Mahnič
 # Created: jun 2009
 
-print "Object Recogizer Imported"
+print "Object Recognizer Imported"
 

@@ -20,8 +20,8 @@ except:
 try:
     import siftcuda
 except:
-    #exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-    #traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
+    traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
     print "**** ObjectRecognizer: SIFTCUDA will not be available"
 
 class CFeatureExtractor:
@@ -42,7 +42,7 @@ class CFeatureExtractorGpuBoost(CFeatureExtractor):
 
     # Image is an RGB nparray
     def extractFeatures(self, image):
-        self.SIFT.RunSIFT(image[:600])
+        self.SIFT.RunSIFT(image[:960])
         k, d = self.SIFT.GetFeatureVector()
         if k == None or d == None: return None
         return camview.CFeaturepack(k, d)
@@ -50,7 +50,7 @@ class CFeatureExtractorGpuBoost(CFeatureExtractor):
 class CFeatureExtractorGpu(CFeatureExtractor):
     # Image is an RGB nparray
     def extractFeatures(self, image):
-        k,d = siftgpu.extractFeatures(image[:600])
+        k,d = siftgpu.extractFeatures(image[:960])
         if k == None or d == None: return None
         return camview.CFeaturepack(k, d)
 

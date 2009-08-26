@@ -4,39 +4,47 @@
 # Created: jan 2009 
 import opencv.cv as cv
 import opencv.highgui as hg
-import gc
 
 def copyFrame(frame, copyData=True):
     copy = cv.cvCreateImage(cv.cvSize(frame.width, frame.height), frame.depth, frame.nChannels)
     if copyData: cv.cvCopy(frame, copy)
     return copy
 
-class Capture:
+class CCapture:
     def __init__(self):
         self.capture = None
-        pass
 
-    def grabFrame(self):
-        if self.capture == None: return None
-        frame = hg.cvQueryFrame(self.capture)
-        return frame
+    def __del__(self):
+        self.stop()
 
-    def grabFrameCopy(self):
+    def grabFrame(self, copy=True):
         if self.capture == None: return None
         frame = hg.cvQueryFrame(self.capture)
         if frame == None: return None
-        return copyFrame(frame)
+        if copy: return copyFrame(frame)
+        return frame
 
-class CameraCapture(Capture):
+    def start(self): pass
+
+    def stop(self):
+        if self.capture == None: return 
+        try: hg.cvReleaseCapture(self.capture)
+        except: pass
+        self.capture = None
+
+    def isRunning(self):
+        return self.capture != None
+
+class CCameraCapture(CCapture):
     def __init__(self, device = 0, size = (640, 480), framerate = 15):
-        Capture.__init__(self)
+        CCapture.__init__(self)
+        self.device = device
         self.width = size[0]
         self.height = size[1]
         self.fps = framerate
-        self.device = device
 
     def start(self):
-        self._stop()
+        self.stop()
         cap = hg.cvCreateCameraCapture(self.device)
         self.capture = cap
         return
@@ -53,12 +61,6 @@ class CameraCapture(Capture):
             print "Failed to set input image size"
         self.capture = cap
 
-    def _stop(self):
-        return # The device can not be released, ==> no stop!
-        if self.capture == None: return 
-        del self.capture # No effect
-        self.capture = None
-        gc.collect() # Still no effect
 
     def setSize(self, size):
         self.width = size[0]
@@ -82,9 +84,25 @@ class CameraCapture(Capture):
         # print "BRI", hg.cvGetCaptureProperty(cap, hg.CV_CAP_PROP_BRIGHTNESS)
         hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_BRIGHTNESS, brightness)
 
-class CLoopback1394Capture(Capture):
+class CFileCapture(CCapture):
+    def __init__(self, filename):
+        CCapture.__init__(self)
+        self.width = 0
+        self.height = 0
+        self.file = filename
+
+    def start(self):
+        self.stop()
+        cap = hg.cvCreateFileCapture(self.file)
+        if not cap:
+            raise "Could not open file '%s'" % self.file
+        sefl.width = hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_WIDTH)
+        self.height = hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_HEIGHT)
+        self.capture = cap
+
+class CLoopback1394Capture(CCapture):
     def __init__(self, device = 0, size = (640, 480)):
-        Capture.__init__(self)
+        CCapture.__init__(self)
         self.device = device
 
     def start(self):
@@ -95,28 +113,4 @@ class CLoopback1394Capture(Capture):
         # if --vloopback /dev/video1 is used then the device in __init__ is most likely 2
         cap = hg.cvCreateCameraCapture(self.device)
         self.capture = cap
-
-
-class FileCapture(Capture):
-    def __init__(self, filename):
-        Capture.__init__(self)
-        self.width = 0
-        self.height = 0
-        self.file = filename
-
-    def start(self):
-        self._stop()
-        cap = hg.cvCreateFileCapture(self.file)
-        if not cap:
-            raise "Could not open file '%s'" % self.file
-        sefl.width = hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_WIDTH)
-        self.height = hg.cvSetCaptureProperty(cap, hg.CV_CAP_PROP_FRAME_HEIGHT)
-        self.capture = cap
-
-    def _stop(self):
-        return # The device can not be released, ==> no stop!
-        if self.capture == None: return 
-        del self.capture # No effect
-        self.capture = None
-        gc.collect() # Still no effect
 
