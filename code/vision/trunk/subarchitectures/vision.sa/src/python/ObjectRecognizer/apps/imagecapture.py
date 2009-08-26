@@ -10,7 +10,7 @@ import opencv.adaptors as cvada
 
 import pymodulepaths
 import siftgpu
-from ObjectRecognizer.mods.capture import CameraCapture, FileCapture, copyFrame, CLoopback1394Capture
+from ObjectRecognizer.mods.capture import CCameraCapture, copyFrame
 from ObjectRecognizer.mods.numutil import *
 import ObjectRecognizer.mods.canvas.cvcanvas as canvas
 import ObjectRecognizer.mods.cameraview as camview
