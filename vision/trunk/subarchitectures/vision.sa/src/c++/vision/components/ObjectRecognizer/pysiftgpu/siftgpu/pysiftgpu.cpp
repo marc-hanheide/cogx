@@ -30,8 +30,8 @@ public:
    }
    // Cleanup when library is terminated and global objects are destroyed.
    ~CSift() {
-      if (_match) { delete _match; _match = NULL; }
-      if (_extract) { delete _extract; _extract = NULL; }
+      // if (_match) { delete _match; _match = NULL; }
+      // BUG: CAUSES SEGFAULT. if (_extract) { delete _extract; _extract = NULL; }
    }
    int checkInit()
    {

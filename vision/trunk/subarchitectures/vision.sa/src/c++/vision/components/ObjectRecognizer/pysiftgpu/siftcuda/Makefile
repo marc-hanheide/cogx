@@ -5,7 +5,7 @@ PYVERSION 	?= 2.6
 PYINCLUDE   ?= -I/usr/include/python$(PYVERSION)
 PYLIBDIR    ?= -L/usr/lib/python$(PYVERSION)/config
 PYLINK      ?= -lpython$(PYVERSION)
-LIBCUTIL    ?= /usr/local/cuda/sdk/lib/libcutil.a
+LIBCUTIL    ?= # /usr/local/cuda/sdk/lib/libcutil.a
 
 ifeq ($(strip $(SOURCEDIR)),)
   SRCDIR=.
