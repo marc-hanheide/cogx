@@ -16,9 +16,9 @@ class CViewer:
         self.viewIndex = 0
 
         # self.capture = captr.CLoopback1394Capture(device=2)
-        # self.capture = captr.CameraCapture(device=2, size=(1024, 768))
-        # self.capture = captr.CameraCapture(device=0, size=(1024, 768), framerate=7.5)
-        self.capture = captr.CameraCapture(device=0, size=(640, 480), framerate=7.5)
+        # self.capture = captr.CCameraCapture(device=2, size=(1024, 768))
+        # self.capture = captr.CCameraCapture(device=0, size=(1024, 768), framerate=7.5)
+        self.capture = captr.CCameraCapture(device=301, size=(640, 480), framerate=7.5)
         # self.capture.setSize((640, 480))
         # self.capture.setFrameRate(15)
         # self.capture.setBrightness(0.6)
@@ -45,10 +45,10 @@ class CViewer:
     def interactive(self):
         hg.cvNamedWindow(self.winCamera, hg.CV_WINDOW_AUTOSIZE)
         self.capture.start()
-        self.currentFrame = self.capture.grabFrameCopy()
+        self.currentFrame = self.capture.grabFrame(copy=True)
 
         while 1:
-            self.currentFrame = self.capture.grabFrameCopy()
+            self.currentFrame = self.capture.grabFrame(copy=True)
             if self.currentFrame is None: continue
             canvas = captr.copyFrame(self.currentFrame)
             hg.cvShowImage(self.winCamera, canvas)
@@ -61,10 +61,10 @@ class CViewer:
     def captureImages(self):
         hg.cvNamedWindow(self.winCamera, hg.CV_WINDOW_AUTOSIZE)
         self.capture.start()
-        self.currentFrame = self.capture.grabFrameCopy()
+        self.currentFrame = self.capture.grabFrame(copy=True)
 
         while 1:
-            self.currentFrame = self.capture.grabFrameCopy()
+            self.currentFrame = self.capture.grabFrame(copy=True)
             canvas = captr.copyFrame(self.currentFrame)
             hg.cvShowImage(self.winCamera, canvas)
             k = hg.cvWaitKey(20)

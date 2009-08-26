@@ -241,7 +241,7 @@ class CViewPoint(object):
 
     def savePreview(self, filename):
         if self.preview != None:
-            hg.cvSaveImage(filename, self.preview)
+            pass # FIXME: opencv SVN2034 bug, hg.cvSaveImage(filename, self.preview)
 
     def createPreview(self, maxSize = 200):
         if maxSize > 400: maxSize = 400

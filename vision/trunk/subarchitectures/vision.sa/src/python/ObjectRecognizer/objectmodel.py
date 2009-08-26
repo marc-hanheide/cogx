@@ -129,6 +129,16 @@ class CModelFileManager(object):
     def viewpointBase(self, viewpoint):
         return "%s_VP%03d_L%03d" % (self.model.name, viewpoint.vpPhi, viewpoint.vpLambda)
 
+    def viewpointBase2(self, phi, lmbda):
+        return "%s_VP%03d_L%03d" % (self.model.name, phi, lmbda)
+
+    def parseNamePhiLambda(self, filename):
+        filename = os.path.basename(filename)
+        reId = re.compile(r"([a-z0-9]+)_VP([0-9]+)_L([0-9]+)\.", re.IGNORECASE)
+        mo = reId.search(filename)
+        if mo != None: return ( int(mo.group(1)), int(mo.group(2)) , int(mo.group(3)) )
+        return None
+
     def parsePhiLambda(self, filename):
         filename = os.path.basename(filename)
         reId = re.compile(r"[a-z0-9]+_VP([0-9]+)_L([0-9]+)\.", re.IGNORECASE)

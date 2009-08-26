@@ -214,7 +214,7 @@ def testMatching(image, region=None):
             return ( ["*unknown*"], [1.0], [None] )
         mn = Manager.modelNames[0]
         model = Manager.getModel(mn)
-        vp = model.viewPoints[3]
+        vp = model.viewPoints[0]
         ftrs = vp.featurePacks[0]
         matches = _findMatchingObject(ftrs)
         return matches
