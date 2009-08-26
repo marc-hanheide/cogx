@@ -25,7 +25,7 @@ CPP GD navgraph.process NavGraphProcess -c subarchitectures/nav.sa/config/cogxp3
 CPP GD navctrl.process NavControl -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --no-x-window --log #--debug
 CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --log --gridsize 125 --cellsize 0.1 --objects "rice_near rice_middle rice_far rice_XXfar kellogs_1 kellogs_2" --samplesize 1000 --cam-range 2.5 --cam-fov 45 --coverage-threshold 60  --vp-threshold 5 --away-from-obstacles 1 --disp-magn 3 --ctrl-ptu --cam-step 60 #--display-coverage 
 CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log --read-ptu --log #--debug 
-CPP GD cure.debugger CureDataLogger 
+#CPP GD cure.debugger CureDataLogger 
 
 
 
