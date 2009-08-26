@@ -1,0 +1,6 @@
+/*!
+\mainpage Navigation Subarchitecture
+
+High-level intro to be written...
+
+*/

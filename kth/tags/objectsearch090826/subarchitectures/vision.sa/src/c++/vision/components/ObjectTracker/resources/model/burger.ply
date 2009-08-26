@@ -1,0 +1,22 @@
+ply
+format ascii 1.0
+comment Created by Blender3D 246 - www.blender.org, source file: 
+obj_info burger.png
+element vertex 4
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+property float s
+property float t
+element face 1
+property list uchar uint vertex_indices
+end_header
+0.0975 0 0.12 0 1 0 1 0 
+0.0975 0 -0.12 0 1 0 1 1 
+-0.0975 0 -0.12 0 1 0 0 1
+-0.0975 0 0.12 0 1 0 0 0 
+4 0 1 2 3
+
