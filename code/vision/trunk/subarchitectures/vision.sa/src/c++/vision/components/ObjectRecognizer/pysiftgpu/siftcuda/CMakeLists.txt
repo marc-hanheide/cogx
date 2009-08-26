@@ -9,11 +9,13 @@ cmake_minimum_required(VERSION 2.6)
 project(PythonSiftCuda)
 find_package(PythonLibs)
 
-find_file(LIBCUTIL libcutil.a
-   PATHS
-      /usr/local/cuda/sdk/lib 
-      /usr/local/cuda/sdk/C/lib 
-   )
+option(CUDA_LIBCUTIL_HACK "Try this if PythonSiftCuda (siftcuda.so) doesn't build" OFF)
+
+if(CUDA_LIBCUTIL_HACK)
+   set(LIBCUTIL ${CUDA_CUT_LIBRARY})
+else(CUDA_LIBCUTIL_HACK)
+   set(LIBCUTIL "")
+endif(CUDA_LIBCUTIL_HACK)
 
 set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 set(LIBNAME siftcuda.so)
