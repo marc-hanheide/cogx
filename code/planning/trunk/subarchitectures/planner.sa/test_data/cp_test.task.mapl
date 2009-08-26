@@ -13,20 +13,20 @@
 (:init
 	(connects kitchen_door living_room kitchen)
 	(connects kitchen_door kitchen living_room)
-	(doorstate kitchen_door : open)	
+	(= (doorstate kitchen_door) open)	
 	(connects free_space bedroom kitchen)
 	(connects free_space kitchen bedroom)
-	(doorstate free_space : open)	
+	(= (doorstate free_space) open)	
 	
-	(pos cake : kitchen)
-	(pos coffee  : bedroom)
-	(pos r2d2 : living_room)
+	(= (pos cake) kitchen)
+	(= (pos coffee) bedroom)
+	(= (pos r2d2) living_room)
 
-	(KVAL (User) (pos cake))
+	(KVAL User (pos cake))
 )
 
 (:goal (and
-	(pos coffee : living_room)
+	(= (pos coffee) living_room)
 )
 
 ))

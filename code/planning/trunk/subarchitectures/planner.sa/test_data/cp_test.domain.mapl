@@ -20,14 +20,17 @@
 	(:constants
 		open closed - doorstate
 	)
-	
-	(:predicates
-		(pos ?o -  localized_obj : ?p - object_pos)   
-		(doorstate ?d - door : ?s - doorstate)
+
+    (:predicates
 		(connects ?d - door ?r1 ?r2 - room)
 		;; special
 		(has-goal ?a - agent)
 		(commited ?a - agent)
+    )	
+
+	(:functions
+		(pos ?o -  localized_obj) - object_pos
+		(doorstate ?d - door) - doorstate
 	 )
 	
 ;;; sensors ;;;
@@ -36,14 +39,14 @@
 	 :agent (?a - agent)
 	 :parameters (?d - door ?r - room)
 	 :precondition (and
-	     (pos ?a : ?r) (exists (?r2 - room) (connects ?d ?r ?r2)))
+	     (= (pos ?a) ?r) (exists (?r2 - room) (connects ?d ?r ?r2)))
 	 :sense (doorstate ?d))
 
 	(:sensor sense-objects-held
 	 :agent (?a - agent)
 	 :parameters (?o - movable)
 	 :precondition (and
-	     (pos ?o : ?a))
+	     (= (pos ?o) ?a))
 	 :sense (pos ?o))
 
 	(:sensor sense-object-in-room
@@ -51,11 +54,8 @@
 	 :parameters (?o - movable)
 	 :variables (?r - room)
 	 :precondition (and
-	     (pos ?a : ?r)
-         ;; (in_domain (pos ?o) ?r)
-		)
-     :negcondition (and
-	     (not (pos ?o : ?r))
+	     (= (pos ?a) ?r)
+         (in-domain (pos ?o) ?r)
 		)
  	 :sense (pos ?o))
  
@@ -64,10 +64,7 @@
 	 :parameters (?o - agent)
 	 :variables (?r - room)
 	 :precondition (and
-	     (pos ?a : ?r)
-		)
-     :negcondition (and
-	     (not (pos ?o : ?r))
+	     (= (pos ?a) ?r)
 		)
  	 :sense (pos ?o))
 
@@ -75,7 +72,8 @@
 
 	(:derived (can_talk_to ?a1 ?a2 - agent)
 		(exists (?r - room)  
-		   (and (pos ?a1 : ?r) (pos ?a2 : ?r))
+		   (and (= (pos ?a1) ?r) 
+                (= (pos ?a2) ?r))
 		)
 	)
 
@@ -86,28 +84,28 @@
 	 :parameters (?hearer - agent)
 	 :variables (?r - room)
 	 :precondition (and
-		(KVAL (?speaker) (pos ?speaker))
-                (not (= ?speaker ?hearer))
-		(pos ?speaker : ?r)
-		(pos ?hearer : ?r)
+		(KVAL ?speaker (pos ?speaker))
+        (not (= ?speaker ?hearer))
+		(= (pos ?speaker) ?r)
+		(= (pos ?hearer)  ?r)
 		)
 	 :effect (and
-		(KVAL (?speaker) (pos ?hearer))
+		(KVAL ?speaker (pos ?hearer))
 	))
 
-	(:action tell_val ??svar
-	 :agent (?speaker - agent)
-	 :parameters (?hearer - agent)
-	 :variables (?r - room)
-	 :precondition (and
-		(KVAL (?speaker) (??svar ??args))
-                (not (= ?speaker ?hearer))
-		(pos ?speaker : ?r)
-		(pos ?hearer : ?r)
-		)
-	 :effect (and
-		(KVAL (?hearer) (??svar ??args))
-	))
+;; 	(:action tell_val ??svar
+;; 	 :agent (?speaker - agent)
+;; 	 :parameters (?hearer - agent)
+;; 	 :variables (?r - room)
+;; 	 :precondition (and
+;; 		(KVAL ?speaker (??svar ??args))
+;;                 (not (= ?speaker ?hearer))
+;; 		(= (pos ?speaker) ?r)
+;; 		(= (pos ?hearer)  ?r)
+;; 		)
+;; 	 :effect (and
+;; 		(KVAL ?hearer (??svar ??args))
+;; 	))
 
 ;; 	(:action ask_for_goal
 ;;	 :agent (?a - agent)
@@ -148,11 +146,11 @@
 	 :variables (?from - room)
 	 :precondition (and 
 		(connects ?d ?from ?to)
-	    (doorstate ?d : open)
-		(pos ?a : ?from) 
+	    (= (doorstate ?d) open)
+		(= (pos ?a) ?from) 
 		)
 	 :effect (and
-		(pos ?a : ?to)
+		(assign (pos ?a) ?to)
 	))
 
 ;; 	(:action move2
@@ -172,12 +170,12 @@
 	 :parameters (?d - door)
 	 :variables (?r ?r2 - room)
 	 :precondition (and 
-	    (doorstate ?d : closed)
-		(pos ?a : ?r) 
+	    (= (doorstate ?d) closed)
+		(= (pos ?a) ?r) 
 		(connects ?d ?r ?r2)
 		)
 	 :effect (and
-	    (doorstate ?d : open)
+	    (assign (doorstate ?d) open)
 	))
 
 	(:action drop
@@ -185,11 +183,11 @@
 	 :parameters (?o - movable)
 	 :variables (?r - room)
 	 :precondition (and 
-		(pos ?a : ?r) 
-	    (pos ?o : ?a)
+		(= (pos ?a) ?r) 
+	    (= (pos ?o) ?a)
 		)
 	 :effect (and
-		(pos ?o : ?r)
+		(assign (pos ?o) ?r)
 	))
 
 	(:action grasp
@@ -197,11 +195,11 @@
 	 :parameters (?o - movable)
 	 :variables (?r - room)
 	 :precondition (and 
-		(pos ?a : ?r) 
-	    (pos ?o : ?r)
+		(= (pos ?a) ?r) 
+	    (= (pos ?o) ?r)
 		)
 	 :effect (and
-		(pos ?o : ?a)
+		(assign (pos ?o) ?a)
 	))
 	
 	(:action give
@@ -209,33 +207,33 @@
 	 :parameters (?o - movable ?a2 - agent)
 	 :variables (?r - room)
 	 :precondition (and 
-		(pos ?a : ?r) 
-		(pos ?a2 : ?r) 
-	    (pos ?o : ?a)
+		(= (pos ?a) ?r) 
+		(= (pos ?a2) ?r) 
+	    (= (pos ?o) ?a)
 		)
 	 :effect (and
-		(pos ?o : ?a2)
+		(assign (pos ?o) ?a2)
 	))
 
 	(:action get_A
 	 :agent (?a - robot)
 	 :parameters (?o - movable)
 	 :replan (and
-    	 (KVAL (?a) (pos ?o))
+    	 (KVAL ?a (pos ?o))
      )
 	 :effect (and
-		(pos ?o : ?a)
+		(assign (pos ?o) ?a)
 	))
 	
 	(:action get2_A
 	 :agent (?a - robot)
 	 :parameters (?o - movable)
 	 :replan (and
-    	 (KVAL (?a) (pos ?o))
-    	 (KVAL (?a) (pos ?a))
+    	 (KVAL ?a (pos ?o))
+    	 (KVAL ?a (pos ?a))
      )
 	 :effect (and
-		(pos ?o : ?a)
+		(assign(pos ?o) ?a)
 	))
 	
 
