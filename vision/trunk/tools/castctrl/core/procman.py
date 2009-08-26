@@ -37,10 +37,12 @@ class CProcessObserver(object):
 
 class CProcess(object):
     STOPPED = 0     # noraml state, not running
+    STARTING = 1    # starting
     FLUSH = -1      # flushing when terminated correctly
     OK = 0
     ERRTERM = -1    # terminated unexpectedly
     ERROR = -2      # Internal error
+    ERRSTART = -3   # could not start
     def  __init__(self, name, command, params=None, workdir=None):
         self.name = name
         self.command = command
@@ -59,10 +61,15 @@ class CProcess(object):
         self.observers = []
         self.willClearAt = None # Flushing
 
+    def __del__(self):
+        self.stop()
+
     def getStatusStr(self):
         if self.status == CProcess.FLUSH: return "Flushing..."
         if self.error == CProcess.ERRTERM: return "Terminated unexpectedly"
         if self.error == CProcess.ERROR: return "Internal error"
+        if self.error == CProcess.ERRSTART: return "Failed to start"
+        if self.status == CProcess.STARTING: return "Starting..."
         if self.process == None: return "Not started"
         if self.restarted > 0: return "%d (r%d)" % (self.process.pid, self.restarted)
         return "%d" % self.process.pid
@@ -82,9 +89,9 @@ class CProcess(object):
     def _setStatus(self, newStatus):
         old = self.status
         self.status = newStatus
-        if old != newStatus:
-            for ob in self.observers: # TODO separate thread?
-                ob.notifyStatusChange(self, old, newStatus)
+        # if old != newStatus:
+        for ob in self.observers: # TODO separate thread?
+            ob.notifyStatusChange(self, old, newStatus)
 
     def _beginFlush(self):
         self.willClearAt = time.time() + 3
@@ -107,10 +114,17 @@ class CProcess(object):
         command = command.split()
         log("CMD=%s" % " ".join(command))
         if self.workdir != None: log("PWD=%s" % self.workdir)
-        self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
-        self._setStatus(max(1, self.process.pid))
-        log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
-        time.sleep(0.01)
+        try:
+            self._setStatus(CProcess.STARTING)
+            self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
+            time.sleep(0.01)
+            self._setStatus(max(1, self.process.pid))
+            log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
+        except:
+            self.process = None
+            self.error = CProcess.ERRSTART
+            self._setStatus(CProcess.STOPPED)
+            error("Process '%s' failed to start" % (self.name))
 
     def _clear(self, notify = True):
         self.restarted = 0
@@ -203,9 +217,9 @@ class CProcess(object):
             self._beginFlush()
             if self.allowTerminate: return
 
-            error("Process %s terminated unexpectedly, signal=%d" % (self.name, self.lastPollState))
+            error("Process '%s' terminated unexpectedly, signal=%d" % (self.name, self.lastPollState))
             if self.keepalive:
-                log("Restarting process %s" % self.name)
+                log("Restarting process '%s'" % self.name)
                 self.start()
                 self.restarted += 1
             else:

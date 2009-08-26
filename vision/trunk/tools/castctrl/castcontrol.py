@@ -85,12 +85,16 @@ class CCastControlWnd(QtGui.QMainWindow):
     def _initContent(self):
         for i in self._options.mruCfgCast:
             self.ui.clientConfigCmbx.addItem(i)
+        for i in self._options.mruCfgPlayer:
+            self.ui.playerConfigCmbx.addItem(i)
 
     def _initLocalProcesses(self):
         self._manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
         self._manager.addProcess(procman.CProcess("server-cpp", options.xe("${CMD_CPP_SERVER}")))
+        self._manager.addProcess(procman.CProcess("server-python", options.xe("${CMD_PYTHON_SERVER}")))
         self._manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
         self._manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
+        self._manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
         self.procBuild = procman.CProcess("BUILD", 'make [cmd]', workdir=options.xe("${SA_BUILD_DIR}"))
         self.procBuild.allowTerminate = True
         self._manager.addProcess(self.procBuild)
@@ -109,6 +113,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = manager.getProcess("server-java")
         if p != None: srvs.append(p)
         p = manager.getProcess("server-cpp")
+        if p != None: srvs.append(p)
+        p = manager.getProcess("server-python")
         if p != None: srvs.append(p)
         return srvs
 
@@ -134,6 +140,21 @@ class CCastControlWnd(QtGui.QMainWindow):
         p = self._manager.getProcess("client")
         if p != None: p.stop()
 
+    def on_btPlayerStart_clicked(self, valid=True):
+        if not valid: return
+        p = self._manager.getProcess("player")
+        if p != None: p.start( params = { "PLAYER_CONFIG": self.ui.playerConfigCmbx.currentText() } )
+        if self.ui.ckPeekabot.isChecked():
+            p = self._manager.getProcess("peekabot")
+            if p != None: p.start()
+
+    def on_btPlayerStop_clicked(self, valid=True):
+        if not valid: return
+        p = self._manager.getProcess("player")
+        if p != None: p.stop()
+        p = self._manager.getProcess("peekabot")
+        if p != None: p.stop()
+
     def on_btBuild_clicked(self, valid=True):
         if not valid: return
         p = self._manager.getProcess("BUILD")
@@ -152,11 +173,13 @@ class CCastControlWnd(QtGui.QMainWindow):
             p.start(params={"cmd": "install"})
 
     def on_btLogViewControl_clicked(self, valid=True):
+        if not valid: return
         self.mainLog.log.removeAllSources()
         self.mainLog.clearOutput()
         self.mainLog.log.addSource(LOGGER)
 
     def on_btLogViewAll_clicked(self, valid=True):
+        if not valid: return
         self.mainLog.log.removeAllSources()
         self.mainLog.clearOutput()
         self.mainLog.log.addSource(LOGGER)
