@@ -50,6 +50,7 @@ class CCastOptions(object):
             CMD_PLAYER=player [PLAYER_CONFIG]
             """.split("\n")
         self._environment = None
+        self.cleanupScript = []
 
     @property
     def environment(self):
@@ -69,6 +70,9 @@ class CCastOptions(object):
             elif l == "[ENVIRONMENT]":
                 self._environment = []
                 section = self._environment
+            elif l == "[CLEANUP-SCRIPT]":
+                self.cleanupScript = []
+                section = self.cleanupScript
             elif l.startswith('['): section = None
             elif section != None:
                 section.append(ln.rstrip())
@@ -78,6 +82,9 @@ class CCastOptions(object):
         f.write("[ENVIRONMENT]\n")
         for ln in self.environment:
             f.write(ln); f.write("\n")
+        f.write("[CLEANUP-SCRIPT]\n")
+        for ln in self.cleanupScript:
+            f.write(ln); f.write("\n")
         f.write("[MRU-CAST]\n")
         for ln in self.mruCfgCast:
             f.write(ln); f.write("\n")
@@ -85,7 +92,6 @@ class CCastOptions(object):
         for ln in self.mruCfgPlayer:
             f.write(ln); f.write("\n")
         f.close()
-
 
     def configEnvironment(self):
         # unset all variables
