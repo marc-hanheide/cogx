@@ -14,7 +14,6 @@ import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.autogen.core.UnionDistribution;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
@@ -133,7 +132,7 @@ public class Binder extends ManagedComponent  {
 
 		union.probExists = normConstant * union.probExists;
 
-//	log("union prob exists:  " + union.probExists);
+		//	log("union prob exists:  " + union.probExists);
 
 		union.features = new Feature[features.size()];
 		union.features = features.toArray(union.features);
@@ -233,6 +232,7 @@ public class Binder extends ManagedComponent  {
 
 
 
+	/**
 	public void deleteUnionFromWM(Union oldUnion) {
 		try {
 			CASTData<UnionDistribution>[] uniondistribs = getWorkingMemoryEntries(UnionDistribution.class);
@@ -263,7 +263,7 @@ public class Binder extends ManagedComponent  {
 			e.printStackTrace();
 		}
 	}
-
+*/
 
 
 
@@ -371,16 +371,19 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 			
+			for (Enumeration<UnionConfiguration> configs = currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
+				
+			}
 			currentUnionConfigurations = newUnionConfigurations;
 			
 			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 			
-			AlternativeUnionConfigurations alters = new AlternativeUnionConfigurations();
+	/**		AlternativeUnionConfigurations alters = new AlternativeUnionConfigurations();
 			alters.alterconfigs = new UnionConfiguration[currentUnionConfigurations.size()];
 			for (int i = 0; i < alters.alterconfigs.length ; i++) {
 				alters.alterconfigs[i] = currentUnionConfigurations.elementAt(i); 
 			}
-			addEntityToWM(alters);
+			addEntityToWM(alters); */
 
 		}
 		catch (Exception e) {
@@ -442,7 +445,7 @@ public class Binder extends ManagedComponent  {
 	}
 
 
-
+/**
 	private void addEntityToWM(Union entity) {
 
 		try {
@@ -481,7 +484,7 @@ public class Binder extends ManagedComponent  {
 			e.printStackTrace();
 		}
 	}
-	
+	*/
 	
 	private void addEntityToWM(UnionConfiguration config) {
 
@@ -502,7 +505,7 @@ public class Binder extends ManagedComponent  {
 		}
 	}
 
-
+/**
 	private void addEntityToWM(AlternativeUnionConfigurations configs) {
 
 		try {
@@ -514,5 +517,5 @@ public class Binder extends ManagedComponent  {
 			e.printStackTrace();
 		}
 	}
-	
+*/	
 }
