@@ -16,18 +16,22 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		log("Fake haptic proxy generator successfully started");
 	}
 	
+	
 	public void run() {
-		
-		sleepComponent(1000);
-		
-		Proxy p1 = createProxyOne();
-		addEntityToWM(p1);
-		
-		sleepComponent(3200);
-		
-		Proxy p2 = createProxyTwo();
-		addEntityToWM(p2);	
+		randomInsertion();
 	}
+	
+	
+	public Proxy createProxy(int nb) {
+		if (nb == 1) {
+			return createProxyOne();
+		}
+		if (nb == 2) {
+			return createProxyTwo();
+		}
+		return null;
+	}
+	
 
 
 	private Proxy createProxyOne() {

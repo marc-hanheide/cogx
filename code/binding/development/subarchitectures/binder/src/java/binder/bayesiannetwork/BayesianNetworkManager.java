@@ -139,6 +139,7 @@ public class BayesianNetworkManager {
 			FeatureValuePair featpair1 = e.nextElement();
 			
 			double condProbs = 1.0f;
+			int nbConds = 0;
 			
 			for(Enumeration<FeatureValuePair> f = featpairs.elements(); f.hasMoreElements() ; ) {
 				FeatureValuePair featpair2 = f.nextElement();
@@ -146,13 +147,26 @@ public class BayesianNetworkManager {
 					FeatureValueCorrelation corr = BayesianNetworkUtils.getCorrelationsBetweenFVs(network, featpair1, featpair2);
 					if (corr != null) {
 						condProbs = condProbs * corr.condProb;
+						nbConds++;
 					}
 				}
 			}
 			
 			double finalProbForFeatpair1;
 			if (condProbs < 1.0f) {
-				finalProbForFeatpair1 = Math.sqrt(condProbs);
+				finalProbForFeatpair1 = 0.0f;
+				if (nbConds == 1 ) {
+				finalProbForFeatpair1 = condProbs;
+				}
+				if (nbConds == 2 ) {
+					finalProbForFeatpair1 = Math.sqrt(condProbs);
+				}
+				if (nbConds == 3 ) {
+					finalProbForFeatpair1 = Math.cbrt(condProbs);
+				}
+				else {
+					log("WARNING: not implemented yet");
+				}
 			}
 			else {
 				finalProbForFeatpair1 = getIndependentProb(featpair1.featlabel, featpair1.featvalue);

@@ -1,6 +1,7 @@
 package binder.fakeproxygenerators;
 
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -10,22 +11,29 @@ import binder.autogen.featvalues.StringValue;
 import binder.utils.ProbDistribUtils;
 
 public class FakeComsysProxyGenerator extends AbstractProxyGenerator {
-
+	
+	public FakeComsysProxyGenerator() {
+		super();
+	}
+	
 	public void start () {
 		log("Fake visual proxy generator successfully started");
 	}
+
 	
 	public void run() {
-		
-		sleepComponent(1000);
-
-		Proxy p1 = createProxyOne();
-		addEntityToWM(p1);
-		
-		sleepComponent(1500);
-
-		Proxy p2 = createProxyTwo();
-		addEntityToWM(p2);
+		randomInsertion();
+	}
+	
+	
+	public Proxy createProxy(int nb) {
+		if (nb == 1) {
+			return createProxyOne();
+		}
+		if (nb == 2) {
+			return createProxyTwo();
+		}
+		return null;
 	}
 	
 

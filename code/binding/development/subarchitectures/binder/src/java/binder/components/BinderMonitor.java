@@ -4,9 +4,14 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Vector;
 
+import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
+import binder.autogen.core.UnionConfiguration;
+import binder.autogen.core.UnionDistribution;
 import binder.gui.BinderMonitorGUI;
+import binder.utils.GradientDescent;
+import binder.utils.ProbDistribUtils;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -40,13 +45,13 @@ public class BinderMonitor extends ManagedComponent {
 		});
 		
 		
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Union.class,
-				WorkingMemoryOperation.WILDCARD), new WorkingMemoryChangeReceiver() {
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(AlternativeUnionConfigurations.class,
+				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
-	//			Union newUnion = getMemoryEntry(_wmc.address, Union.class);
-				updateMonitor();
+				AlternativeUnionConfigurations config = getMemoryEntry(_wmc.address, AlternativeUnionConfigurations.class);
+				updateMonitor(config);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -66,18 +71,18 @@ public class BinderMonitor extends ManagedComponent {
 	public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--gui")) {
 			 gui = new BinderMonitorGUI(this);
-			 gui.LOGGING = false;
+	//		 gui.LOGGING = false;
 		} 
 	}
 	
-	 
-	public void updateMonitor() {
+	
+	public void updateMonitor(AlternativeUnionConfigurations config) {
 		log("Change in the binding working memory, update necessary");
 		Vector<Proxy> proxiesV = new Vector<Proxy>();
-		Vector<Union> unionsV = new Vector<Union>();
+		Vector<Union> UnionsV = new Vector<Union>();
 		
 		Vector<Proxy> proxiesToDelete = new Vector<Proxy>();
-		Vector<Union> unionsToDelete= new Vector<Union>();
+		Vector<Union> UnionsToDelete= new Vector<Union>();
 		
 		try {
 			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
@@ -85,11 +90,14 @@ public class BinderMonitor extends ManagedComponent {
 			for (int i = (proxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(proxies[i].getData());
 			}
-			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
-			log("Current number of unions: " + unions.length);
-			for (int i = 0 ; i < unions.length ; i++) {
-				unionsV.add(unions[i].getData());
-			}
+			
+			UnionConfiguration bestConfig = GradientDescent.getBestUnionConfiguration(config);
+			
+
+			for (int i = 0 ; i < bestConfig.includedUnions.length ; i++) {
+				UnionsV.add(bestConfig.includedUnions[i]);
+				}
+			
 						
 			for (Enumeration<Proxy> e = lastProxies.elements(); e.hasMoreElements(); ) {
 				Proxy proxy = e.nextElement();
@@ -99,8 +107,8 @@ public class BinderMonitor extends ManagedComponent {
 			}
 			for (Enumeration<Union> e = lastUnions.elements(); e.hasMoreElements(); ) {
 				Union union = e.nextElement();
-				if (!unionsV.contains(union)) {
-					unionsToDelete.add(union);
+				if (!UnionsV.contains(union)) {
+					UnionsToDelete.add(union);
 				}
 			}
 		}
@@ -109,10 +117,11 @@ public class BinderMonitor extends ManagedComponent {
 		}
 		
 		lastProxies = proxiesV;
-		lastUnions = unionsV;
+		lastUnions = UnionsV;
+		log("Current number of Unions: " + UnionsV.size());
 		
 		if (gui != null) {
-			gui.updateGUI(proxiesV, unionsV, proxiesToDelete, unionsToDelete);
+			gui.updateGUI(proxiesV, UnionsV, proxiesToDelete, UnionsToDelete);
 		}
 	}
 	
