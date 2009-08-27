@@ -10,6 +10,11 @@ project(PythonSiftCuda)
 find_package(PythonLibs)
 
 option(CUDA_LIBCUTIL_HACK "Try this if PythonSiftCuda (siftcuda.so) doesn't build" OFF)
+find_file(CUDA_CUT_LIBRARY libcutil.a
+   PATHS
+      /usr/local/cuda/sdk/lib
+      /usr/local/cuda/sdk/C/lib
+)
 
 if(CUDA_LIBCUTIL_HACK)
    set(LIBCUTIL ${CUDA_CUT_LIBRARY})
