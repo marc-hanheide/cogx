@@ -719,8 +719,23 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuCast">
+    <property name="title">
+     <string>&amp;Cast</string>
+    </property>
+    <addaction name="actQuit"/>
+   </widget>
+   <addaction name="menuCast"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actQuit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

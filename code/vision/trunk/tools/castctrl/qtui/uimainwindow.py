@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon Aug 24 10:58:29 2009
+# Created: Thu Aug 27 14:18:16 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -331,10 +331,16 @@ class Ui_MainWindow(object):
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 23))
         self.menubar.setObjectName("menubar")
+        self.menuCast = QtGui.QMenu(self.menubar)
+        self.menuCast.setObjectName("menuCast")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actQuit = QtGui.QAction(MainWindow)
+        self.actQuit.setObjectName("actQuit")
+        self.menuCast.addAction(self.actQuit)
+        self.menubar.addAction(self.menuCast.menuAction())
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -372,4 +378,7 @@ class Ui_MainWindow(object):
         self.btBuild.setText(QtGui.QApplication.translate("MainWindow", "make", None, QtGui.QApplication.UnicodeUTF8))
         self.btBuildInstall.setText(QtGui.QApplication.translate("MainWindow", "make install", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("MainWindow", "Build", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuCast.setTitle(QtGui.QApplication.translate("MainWindow", "&Cast", None, QtGui.QApplication.UnicodeUTF8))
+        self.actQuit.setText(QtGui.QApplication.translate("MainWindow", "&Quit", None, QtGui.QApplication.UnicodeUTF8))
+        self.actQuit.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
 
