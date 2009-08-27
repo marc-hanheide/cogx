@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Aug 27 14:18:16 2009
+# Created: Thu Aug 27 14:51:00 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -76,6 +76,9 @@ class Ui_MainWindow(object):
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem)
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
+        self.ckCleanupScript = QtGui.QCheckBox(self.frame)
+        self.ckCleanupScript.setObjectName("ckCleanupScript")
+        self.verticalLayout_3.addWidget(self.ckCleanupScript)
         spacerItem1 = QtGui.QSpacerItem(20, 8, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.MinimumExpanding)
         self.verticalLayout_3.addItem(spacerItem1)
         self.horizontalLayout_5.addWidget(self.frame)
@@ -351,6 +354,7 @@ class Ui_MainWindow(object):
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Servers", None, QtGui.QApplication.UnicodeUTF8))
         self.btServerStart.setText(QtGui.QApplication.translate("MainWindow", "Start", None, QtGui.QApplication.UnicodeUTF8))
         self.btServerStop.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckCleanupScript.setText(QtGui.QApplication.translate("MainWindow", "Run cleanup script on start", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Client", None, QtGui.QApplication.UnicodeUTF8))
         self.btClientStart.setText(QtGui.QApplication.translate("MainWindow", "Start", None, QtGui.QApplication.UnicodeUTF8))
         self.btClientStop.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
