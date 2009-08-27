@@ -68,6 +68,19 @@ class Union extends PerceivedEntity {
 };
 
 
+sequence<Union> UnionSequence;
+
+class UnionConfiguration {
+	UnionSequence includedUnions;
+	float configProb;
+};
+	
+sequence<UnionConfiguration> UnionConfigurationSeq ;
+
+class AlternativeUnionConfigurations {
+	UnionConfigurationSeq alterconfigs;
+};
+
 };
 
 
@@ -82,6 +95,8 @@ class StringValue extends core::FeatureValue {
 };
 
 };
+
+
 
 
 /** PROBABILITY DISTRIBUTIONS */

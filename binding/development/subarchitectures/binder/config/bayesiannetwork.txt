@@ -93,6 +93,7 @@ edges {
 		P(obj_label=ball|shape=cylindrical)=0.001
 	}
 	
+
 	position -> obj_label {
 		P(obj_label=shelf|position=on_the_floor)=0.4,
 		P(obj_label=mug|position=on_the_floor)=0.05

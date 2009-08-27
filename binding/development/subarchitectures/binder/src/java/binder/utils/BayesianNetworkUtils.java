@@ -12,6 +12,7 @@ import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
+import binder.autogen.core.FeatureValue;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.featvalues.StringValue;
 import binder.bayesiannetwork.configparser.BNConfigParser;
@@ -32,6 +33,17 @@ public class BayesianNetworkUtils {
 		BNConfigParser parser = new BNConfigParser(bais);
 		try {
 	    network = parser.Configuration();
+	    
+	    for (int i = 0; i < network.nodes.length ; i ++) {
+	    	int nbvalues = network.nodes[i].feat.alternativeValues.length;
+	    	FeatureValue[] newfeatvalues = new FeatureValue[nbvalues + 1];
+	    	for (int j = 0; j < nbvalues; j++ )  {
+	    		newfeatvalues[j] = network.nodes[i].feat.alternativeValues[j];
+	    	}
+	    	newfeatvalues[nbvalues] = new StringValue(1.0f/nbvalues, "indeterminate");
+	    	network.nodes[i].feat.alternativeValues = newfeatvalues;
+	    }
+	    
 		}
 		catch (Exception e) {
 			e.printStackTrace();

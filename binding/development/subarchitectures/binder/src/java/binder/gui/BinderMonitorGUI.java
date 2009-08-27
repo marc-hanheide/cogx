@@ -17,7 +17,9 @@ import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.core.Union;
+import binder.autogen.distributions.FeatureValuePair;
 import binder.utils.GradientDescent;
+import binder.utils.ProbDistribUtils;
 import binder.components.BinderMonitor;
 
 import com.mxgraph.swing.mxGraphComponent;
@@ -39,7 +41,7 @@ public class BinderMonitorGUI extends JFrame
 	int curProxyPosition_Y = 400;	
 
 	int curUnionPosition_X = 120;
-	int curUnionPosition_Y= 100;
+	int curUnionPosition_Y= 50;
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
@@ -76,14 +78,6 @@ public class BinderMonitorGUI extends JFrame
 	}
 	
 	
-	public void resetPositions() {
-		curProxyPosition_X= 100;
-		curProxyPosition_Y = 600;	
-
-		curUnionPosition_X = 250;
-		curUnionPosition_Y= 300;
-	}
-
 
 
 	private int getMaximumLength(Set<String> featureLabels) {
@@ -161,7 +155,7 @@ public class BinderMonitorGUI extends JFrame
 
 	private int computeHeight(Feature feat) {
 		int height = MIN_FEATURE_BOX_HEIGHT;
-		height += FEATURELINE_HEIGHT * feat.alternativeValues.length;
+		height += FEATURELINE_HEIGHT * (feat.alternativeValues.length -1);
 		return height;
 	}
 
@@ -190,7 +184,9 @@ public class BinderMonitorGUI extends JFrame
 			FeatureValue[] featvalues = AVM_f.get(key);
 
 			for (int i = 0; i < featvalues.length ; i ++) {
+		
 				FeatureValue featvalue = featvalues[i];
+				if (!((StringValue)featvalue).val.equals("indeterminate")) {
 				double roundedProb = Math.round(featvalue.independentProb*100.0) / 100.0;
 				if (i==0) {
 					text += " " + key +  ": ";
@@ -200,6 +196,7 @@ public class BinderMonitorGUI extends JFrame
 				}
 				text += createSpace(maxLength - key.length()) + 
 				((StringValue)featvalue).val + " (prob = " + roundedProb + ") " ;
+				}
 			}
 		}
 		return text;
@@ -207,12 +204,20 @@ public class BinderMonitorGUI extends JFrame
 
 
 	public void addNewProxy(Proxy proxy) {
+		addNewProxy(proxy, curProxyPosition_X);
+		curProxyPosition_X += 250;
+	}
+	
+	
 
+	public void addNewProxy(Proxy proxy, int xpos) {
+
+		log("xpos: " + xpos);
 		int width = DEFAULT_ENTITY_BOX_WIDTH;
 		int height =  computeHeight(proxy);
 
 		String text = createProxyText(proxy);
-		Object vertex = graph.insertVertex(parent, null, text, curProxyPosition_X, curProxyPosition_Y, width, height);
+		Object vertex = graph.insertVertex(parent, null, text, xpos, curProxyPosition_Y, width, height);
 		Object[] object_proxy = new Object[1];
 		object_proxy[0] = vertex;
 		graph.setCellStyles(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT, object_proxy);
@@ -225,15 +230,56 @@ public class BinderMonitorGUI extends JFrame
 		insertedObjects.add(vertex);
 		
 		addNewFeatures(proxy.features, vertex, width, "");
-		curProxyPosition_X += 250;
 
 		log("Visual representation of the proxy sucessfully inserted in the GUI");
 
 	}
 
 
+	public void addNewUnionAndIncludedProxies(Union union) {
+	
+		log("curUnionPosition_X: " + curUnionPosition_X);
+		
+		int horizontalIncr = 0;
+
+		for (int i = 0; i < union.includedProxies.length ; i++) {
+			log("included proxy: " + i);
+			Proxy proxy = union.includedProxies[i];
+			if (insertedProxies.containsKey(proxy)) {
+				horizontalIncr += 250;
+			}
+		}		
+		
+		for (int i = 0; i < union.includedProxies.length ; i++) {
+			log("included proxy: " + i);
+			Proxy proxy = union.includedProxies[i];
+			if (!insertedProxies.containsKey(proxy)) {
+			addNewProxy(proxy, curUnionPosition_X + horizontalIncr);
+			horizontalIncr += 250;
+			}
+		}
+		
+		addNewUnion(union);
+		curUnionPosition_X += horizontalIncr;
+	}
+	
+	
 	public void addNewUnion(Union union) {
 
+	//	union.distribution = ProbDistribUtils.normaliseDistribution(union.distribution, 1.0f);
+
+		
+		for (int i = 0; i < union.features.length ; i++){
+			for (int j =0; j < union.features[i].alternativeValues.length ; j++) {
+				FeatureValuePair pair = new FeatureValuePair();
+				pair.featlabel = union.features[i].featlabel;
+				pair.featvalue = union.features[i].alternativeValues[j];
+		//		log("currently computing marginal prob for (" + pair.featlabel + ", " + ((StringValue)pair.featvalue).val + ")");
+				union.features[i].alternativeValues[j].independentProb = 
+					ProbDistribUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
+			}
+		} 
+		
 		int width = DEFAULT_ENTITY_BOX_WIDTH;
 		int height =  computeHeight(union);
 		String colour = "#8DD19A";
@@ -265,8 +311,6 @@ public class BinderMonitorGUI extends JFrame
 			}
 		}
 
-		curUnionPosition_X += 220;
-
 		log("Visual representation of the union successfully inserted in the GUI");
 	}
 
@@ -280,7 +324,8 @@ public class BinderMonitorGUI extends JFrame
 			graph.getModel().beginUpdate();
 			graph.removeCells(cells);
 			graph.getModel().endUpdate();
-			curUnionPosition_X -= 40;
+			if (curUnionPosition_X > (220 * union.includedProxies.length))
+				curUnionPosition_X -= (220 * union.includedProxies.length) ;
 		}
 	}
 	
@@ -297,7 +342,10 @@ public class BinderMonitorGUI extends JFrame
 		}
 	}
 
-	public void updateGUI(Vector<Proxy> newProxies, Vector<Union> newUnions, Vector<Proxy> proxiesToDelete, Vector<Union> unionsToDelete) {
+	public void updateGUI(Vector<Proxy> newProxies, 
+			Vector<Union> newUnions, 
+			Vector<Proxy> proxiesToDelete, 
+			Vector<Union> unionsToDelete) {
 
 		try {
 			
@@ -307,6 +355,7 @@ public class BinderMonitorGUI extends JFrame
 			for (Enumeration<Proxy> e = proxiesToDelete.elements(); e.hasMoreElements();) {
 				Proxy proxy = e.nextElement();
 					deleteProxy(proxy);
+					log("Proxy deleted");
 			}
 			
 			Thread.sleep(20);
@@ -314,43 +363,62 @@ public class BinderMonitorGUI extends JFrame
 			for (Enumeration<Union> e = unionsToDelete.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();
 					deleteUnion(union);
+					log("Union deleted");
 			}
 			
-			for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
+	/**		for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
 				Proxy proxy = e.nextElement();
 				if (!insertedProxies.containsKey(proxy)) {
+					log("Adding new proxy...");
 					addNewProxy(proxy);
 				}
 			}
-			
+			*/
 			Thread.sleep(20);
+			
 			
 			for (Enumeration<Union> e = newUnions.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();
 				if (!insertedUnions.containsKey(union)) {
-					addNewUnion(union);
+					log("Adding new union..." + union.entityID);
+					addNewUnionAndIncludedProxies(union);
 				}
 			}
-
-
 		}
 		
-		catch (Exception e) {
-			
-		}
+		catch (Exception e) {		}
  
 		finally
 		{
 			graph.getModel().endUpdate();
 		}
 
+		try {
 		mxGraphComponent graphComponent = new mxGraphComponent(graph);
 		getContentPane().add(graphComponent);
-
 		setVisible(true);
+		}
+		catch (Exception e) {		}
+		
 	}
 
 
+	private FeatureValue getMaxFeatureValue (Feature feat) {
+		
+		float maxProb = 0.0f;
+		FeatureValue maxFeatValue = new FeatureValue();
+		
+		for (int i = 0 ; i < feat.alternativeValues.length ; i++) {
+			
+			if (feat.alternativeValues[i].independentProb > maxProb) {
+				maxProb = feat.alternativeValues[i].independentProb;
+				maxFeatValue = feat.alternativeValues[i];
+			}
+		}
+		
+		return maxFeatValue;
+	}
+	
 	public void addNewFeatures(Feature[] features, Object vertex, int width, String colour) {
 
 		if (features != null) {
@@ -360,12 +428,16 @@ public class BinderMonitorGUI extends JFrame
 			int curYPosition = DEFAULT_ENTITY_BOX_HEIGHT;
 			for (int i = 0; i < features.length; i++) {
 				Feature feat = features[i];
-				String featureText = createFeatureText(feat);
-				log("feature text for " + i + ": " + featureText);
-				int featHeight= computeHeight(feat);
-				objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
-				curYPosition += featHeight + 10;
-				insertedObjects.add(objects_feats[i]);
+
+				if (!((StringValue)getMaxFeatureValue(feat)).val.equals("indeterminate")) {
+
+					String featureText = createFeatureText(feat);
+					log("feature text for " + i + ": " + featureText);
+					int featHeight= computeHeight(feat);
+					objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
+					curYPosition += featHeight + 10;
+					insertedObjects.add(objects_feats[i]);
+				}
 			}
 
 			graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, colour, objects_feats);

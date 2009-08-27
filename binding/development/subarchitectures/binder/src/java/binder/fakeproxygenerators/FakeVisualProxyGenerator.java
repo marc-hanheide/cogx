@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import binder.abstr.AbstractProxyGenerator;
 import binder.autogen.core.*;
+import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.utils.ProbDistribUtils;
 
@@ -15,17 +16,20 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		log("Fake visual proxy generator successfully started");
 	}
 	
+	
 	public void run() {
-		
-		sleepComponent(1000);
-
-		Proxy p1 = createProxyOne();
-		addEntityToWM(p1);
-		
-		sleepComponent(1500);
-
-		Proxy p2 = createProxyTwo();
-		addEntityToWM(p2);
+		randomInsertion();
+	}
+	
+	public Proxy createProxy(int nb) {
+		if (nb == 1) {
+			return createProxyOne();
+		}
+		if (nb == 2) {
+			sleepComponent(2000);
+			return createProxyTwo();
+		}
+		return null;
 	}
 	
 
@@ -33,7 +37,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		Proxy proxy = new Proxy();
 		proxy.entityID = newDataID();
 		proxy.subarchId = "fakevision"; 
-		proxy.probExists = 0.7f;
+		proxy.probExists = 0.75f;
 		
 		proxy.features = new Feature[2];
 		proxy.features[0] = new Feature();
@@ -44,12 +48,12 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		proxy.features[1] = new Feature();
 		proxy.features[1].featlabel = "colour";
 		proxy.features[1].alternativeValues = new FeatureValue[1];
-		proxy.features[1].alternativeValues[0] = new StringValue(0.6f,"blue");
+		proxy.features[1].alternativeValues[0] = new StringValue(0.95f,"blue");
 		
 		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
 
 		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
-
+		
 		return proxy;
 	}
 
