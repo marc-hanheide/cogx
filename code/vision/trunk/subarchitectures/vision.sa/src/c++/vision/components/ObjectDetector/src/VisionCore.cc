@@ -887,12 +887,12 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 		{
 			camIntrinsic[i] = intrinsic[i];
 			camDistortion[i] = distortion[i];
-printf("	VisionCore::SetCamParameters():	camIntrinsic %u: %4.3f\n", i, intrinsic[i]);
+// printf("	VisionCore::SetCamParameters():	camIntrinsic %u: %4.3f\n", i, intrinsic[i]);
 		}
 		for(unsigned i=0; i<12; i++)
 		{
 			camExtrinsic[i] = extrinsic[i];
-printf("	VisionCore::SetCamParameters():	camExtrinsic %u: %4.3f\n", i, extrinsic[i]);
+// printf("	VisionCore::SetCamParameters():	camExtrinsic %u: %4.3f\n", i, extrinsic[i]);
 		}
 	}
 
