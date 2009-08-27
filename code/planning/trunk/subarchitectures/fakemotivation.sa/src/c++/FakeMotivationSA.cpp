@@ -9,12 +9,24 @@ extern "C" {
   }
 }
 
+FakeMotivationSA::FakeMotivationSA() : 
+    m_goal ("(pos coffee : living_room)") 
+{ }
+
+void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
+    cast::cdl::StringMap::const_iterator it = _config.begin();
+    it = _config.find("--goal");
+    if (it != _config.end()) {
+        m_goal = it->second;
+    }
+}
+
 void FakeMotivationSA::runComponent() {
     println("FakeMotivationSA: running");
     string id = newDataID();
 
     autogen::Planner::PlanningTaskPtr plan = new autogen::Planner::PlanningTask();
-    plan->goal = "(pos coffee : living_room)";
+    plan->goal = m_goal;
 
     addChangeFilter(cast::createAddressFilter(id,"planner.sa",cast::cdl::OVERWRITE),
 		    new cast::MemberFunctionChangeReceiver<FakeMotivationSA>(this, &FakeMotivationSA::planGenerated));
