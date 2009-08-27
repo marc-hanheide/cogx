@@ -1,5 +1,5 @@
 include_directories(.)
-include_directories(../../../fakebinder.sa/src/c++)
+#include_directories(../../../fakebinder.sa/src/c++)
 include_directories(../../../binder/src/c++)
 include(Slice2Cpp)
 
