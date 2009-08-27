@@ -10,7 +10,6 @@ import binder.autogen.core.FeatureValue;
 import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.autogen.core.UnionDistribution;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
@@ -144,6 +143,7 @@ private static boolean isFeatValuePairInAssignment (FeatureValuePair pair, Discr
 	return false;
 }
 
+/**
 public static Union getBestUnion(UnionDistribution distribution) {
 	
 	float maxValue = 0.0f;
@@ -161,7 +161,7 @@ public static Union getBestUnion(UnionDistribution distribution) {
 	
 	return bestUnion;
 }
-
+*/
 
 
 
