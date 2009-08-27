@@ -7,7 +7,7 @@ import os, sys
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages
-from qtui import mainwindow
+from qtui import uimainwindow
 import processtree
 
 LOGGER = messages.CInternalLogger()
@@ -52,7 +52,7 @@ class CLogDisplayer:
 class CCastControlWnd(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.ui = mainwindow.Ui_MainWindow()
+        self.ui = uimainwindow.Ui_MainWindow()
         self.ui.setupUi(self)
 
         self._options = options.CCastOptions()
@@ -82,6 +82,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.tmStatus.start(100)
         LOGGER.log("CAST Control initialized")
 
+        # Event connections
+        self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
+
     def _initContent(self):
         for i in self._options.mruCfgCast:
             self.ui.clientConfigCmbx.addItem(i)
@@ -107,6 +110,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()
         # self.updateUi()
+
+    def closeEvent(self, event):
+        self._manager.stopAll()
 
     def getServers(self, manager):
         srvs = []

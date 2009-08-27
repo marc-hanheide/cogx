@@ -57,6 +57,7 @@ class CProcess(object):
         self.restarted = 0
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
+        self.flushmsgs = legacy.deque(maxlen=200)
         self.msgOrder = 0
         self.observers = []
         self.willClearAt = None # Flushing
@@ -174,7 +175,8 @@ class CProcess(object):
                 # select() is used because readline() is blocking
                 while len(select.select([pipe], [], [], 0.0)[0]) > 0:
                     msg = pipe.readline();
-                    if not self.isRunning() and msg == "":
+                    running = self.isRunning()
+                    if not running and msg.strip() == "":
                         nl += 1
                         if nl > 200: break
                         continue
@@ -185,7 +187,10 @@ class CProcess(object):
                     else: typ = messages.CMessage.MESSAGE
                     self.msgOrder += 1
                     msg = msg.decode("utf-8", "replace")
-                    self.messages.append(messages.CMessage(msg, typ, self.msgOrder))
+                    if running:
+                        self.messages.append(messages.CMessage(msg, typ, self.msgOrder))
+                    else:
+                        self.flushmsgs.append(messages.CMessage(msg, typ, self.msgOrder))
                     if nl > maxcount: break
             elif pipe == self.process.stderr:
                 while len(select.select([pipe], [], [], 0.0)[0]) > 0:
