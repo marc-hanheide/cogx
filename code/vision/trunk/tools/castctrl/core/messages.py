@@ -135,7 +135,7 @@ class CLogMerger(object):
 
 class CInternalLogger(object):
     def __init__(self):
-        # Modelled like CProcess
+        # Modelled like CProcess: messages, errors
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
 
@@ -148,3 +148,7 @@ class CInternalLogger(object):
     def error(self, msg):
         self.errors.append(CMessage(msg, msgtype=CMessage.ERROR))
 
+    def addMessage(self, cmsg):
+        if cmsg.msgtype == CMessage.ERROR or cmsg.msgtype == CMessage.WARNING:
+            self.errors.append(cmsg)
+        else: self.messages.append(cmsg)

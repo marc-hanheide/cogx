@@ -4,7 +4,6 @@
 # Created: June 2009
 
 import os, sys
-import select, signal
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages
@@ -125,25 +124,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         if p != None: srvs.append(p)
         return srvs
 
-    def runCommand(self, cmd):
-        p = procman.CProcess("script", cmd)
-        try:
-            p.start()
-            pipes = p.getPipes()
-            while p.isRunning():
-                time.sleep(0.01)
-                ready = select.select(pipes, [], [], 0.0)
-                if len(ready[0]) > 0: p.readPipes(ready[0], 100)
-            ready = select.select(pipes, [], [], 0.0)
-            if len(ready[0]) > 0: p.readPipes(ready[0], 100)
-            try: # TODO: these messages should be internal!
-                self.mainLog.log.addSource(p)
-                self.mainLog.pullLogs()
-            finally: self.mainLog.log.removeSource(p)
-        except Exception as e:
-            procman.error("Internal error")
-            print e
-
     def runCleanupScript(self):
         script = []
         for stm in self._options.cleanupScript:
@@ -151,7 +131,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             stm = stm.strip()
             if len(stm) < 1: continue
             script.append(stm)
-        for cmd in script: self.runCommand(cmd)
+        for i,cmd in enumerate(script):
+            procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
 
     # Somehow we get 2 events for a button click ... filter one out
     def on_btServerStart_clicked(self, valid=True):

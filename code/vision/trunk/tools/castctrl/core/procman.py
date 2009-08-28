@@ -292,3 +292,27 @@ class CProcessManager(object):
             return "%d" % proc.process.pid
         return "0"
  
+def runCommand(cmd, params=None, workdir=None, name="onetime"):
+    try:
+        p = CProcess(name, cmd)
+        p.start()
+        pipes = p.getPipes()
+        while p.isRunning():
+            time.sleep(0.01)
+            ready = select.select(pipes, [], [], 0.0)
+            if len(ready[0]) > 0: p.readPipes(ready[0], 100)
+        ready = select.select(pipes, [], [], 0.0)
+        if len(ready[0]) > 0: p.readPipes(ready[0], 100)
+        if LOGGER != None:
+            log = messages.CLogMerger()
+            try: # TODO: these messages should be internal!
+                log.addSource(p)
+                log.merge()
+                msgs = [m for m in log.messages]
+                for m in msgs: LOGGER.addMessage(m)
+            finally: log.removeSource(p)
+    except Exception as e:
+        error("Internal error")
+        error("%s" % e)
+
+
