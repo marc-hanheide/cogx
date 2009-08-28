@@ -224,6 +224,7 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
 	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	
+	
 	if(m_draw_edges)
 		m_ip->render(m_tex_frame_ip[1]);
 	else
@@ -305,6 +306,7 @@ void TextureTracker::textureFromImage()
 
 // Draw result of texture tracking (particle with maximum likelihood)
 void TextureTracker::drawResult(Particle* p){
+	bool texmodel = true;
 	
 	m_cam_perspective->Activate();
 	m_lighting.Activate();
@@ -313,21 +315,33 @@ void TextureTracker::drawResult(Particle* p){
 	m_opengl.RenderSettings(true, false);
 	glDisable(GL_DEPTH_TEST);
 	
+	
 	if(m_showmodel){
 		m_model->restoreTexture();
 		m_shadeTexturing->bind();
 		m_model->drawPass(m_shadeTexturing);
-	}else{
+	}else if(texmodel){
 		m_model->setTexture(m_tex_model_ip[1]);
 		m_shadeTextureCompare->bind();
 		m_shadeTextureCompare->setUniform("analyze", true);
 		m_shadeTextureCompare->setUniform("compare", true);
 		m_model->drawFaces();
+	}else{
+		glEnable(GL_DEPTH_TEST);
+		m_lighting.Deactivate();
+		m_opengl.RenderSettings(false, true);
+		m_opengl.ClearBuffers(false, true);
+		m_model->drawFaces();
+		m_opengl.RenderSettings(true, true);
+		glLineWidth(3);
+		glColor3f(1.0,0.0,0.0);
+		m_model->drawEdges();
+		glColor3f(1.0,1.0,1.0);
 	}
 	 
 	if(m_showmodel){
 	 	m_shadeTexturing->unbind();
-	}else{
+	}else if(texmodel){
 		m_shadeTextureCompare->unbind();
 	}
 	

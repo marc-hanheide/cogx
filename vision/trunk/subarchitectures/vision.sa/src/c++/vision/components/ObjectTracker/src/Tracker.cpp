@@ -252,11 +252,14 @@ void Tracker::drawImage(unsigned char* image){
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	m_cam_ortho->Activate();
-	
-	m_tex_frame->load(image, params.width, params.height);
-	m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
-	m_ip->render(m_tex_frame);
-	
+	glColor3f(1.0,1.0,1.0);
+	if(image == NULL){
+		m_ip->render(m_tex_frame);
+	}else{
+		m_tex_frame->load(image, params.width, params.height);
+		m_ip->flipUpsideDown(m_tex_frame, m_tex_frame);
+		m_ip->render(m_tex_frame);
+	}
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	m_opengl.RenderSettings(true, true);

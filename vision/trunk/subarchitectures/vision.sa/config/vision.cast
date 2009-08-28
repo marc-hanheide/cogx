@@ -9,6 +9,6 @@ COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --camcon
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG Detector ObjectDetector --videohost localhost --videoname video --camid 0 --log --debug 
+CPP MG Detector ObjectDetector --videohost localhost --videoname video --camid 0 --log
 CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
 CPP MG VisionDriver VisionDriver --log

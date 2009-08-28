@@ -33,6 +33,7 @@ private:
    bool timedout;
    
    void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
+   void receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc);
 
 protected:
   /**
