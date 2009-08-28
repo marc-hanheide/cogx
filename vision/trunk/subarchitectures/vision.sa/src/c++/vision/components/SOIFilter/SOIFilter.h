@@ -15,6 +15,7 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "GCoptimization.h"
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
@@ -61,6 +62,7 @@ private:
   struct SOIData {
   	cdl::WorkingMemoryAddress addr;
   	SOIStatus status;
+  	VisionData::Vector3Seq points;
   	int updCount;
   	std::string objId;
   	cdl::CASTTime addTime;
@@ -89,7 +91,21 @@ private:
    */
   void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
   
-  Video::Image getImgPatch(cdl::WorkingMemoryAddress soiAddr);
+  void segmentObject(const cdl::WorkingMemoryAddress soiAddr, Video::Image &imgPatch, VisionData::SegmentMaskPtr &segMask);
+  
+  void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
+					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const Video::CameraParameters &cam);
+					   
+  void drawProjectedSOIPoints(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<CvPoint> bgProjPoints,
+  					const std::vector<int> hull);
+  
+  std::list<int> getSortedHueList(std::vector<CvPoint> projPoints, const IplImage* hueImg);
+  
+  std::vector<int> graphCut(int width, int height, int num_labels, std::list<int> &hueList, const IplImage* hueImg, int k);
+  
+ // static int dataFn(int p, int l, void *vdata);
+  
+ // static int smoothFn(int p1, int p2, int l1, int l2);
 
 protected:
   /**
