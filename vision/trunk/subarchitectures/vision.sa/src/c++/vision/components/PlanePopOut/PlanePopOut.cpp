@@ -49,6 +49,7 @@ vector< Vector3 > v3center;
 vector<double> vdradius;
 vector< vector< Vector3 > > SOIPointsSeq;
 vector< vector< Vector3 > > BGPointsSeq;
+double A, B, C, D;
 
 
 void InitWin()
@@ -300,6 +301,16 @@ void DrawWireSphere(Vector3 center, double radius)
 	glTranslatef(-center.x, -center.y, -center.z);
 }
 
+Vector3 ProjectOnDominantPlane(Vector3 InputP)
+{
+	Vector3 OutputP;
+	OutputP.x = ((B*B+C*C)*InputP.x-A*(B*InputP.y+C*InputP.z+D))/(A*A+B*B+C*C);
+	OutputP.y = ((A*A+C*C)*InputP.y-B*(A*InputP.x+C*InputP.z+D))/(A*A+B*B+C*C);
+	OutputP.z = ((B*B+A*A)*InputP.z-C*(B*InputP.y+A*InputP.x+D))/(A*A+B*B+C*C);
+
+	return OutputP;
+}
+
 void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 {
 	std::vector< Vector3 > center;
@@ -354,12 +365,22 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	for (int i = 0; i<objnumber; i++)
 	{
 		DrawWireSphere(center.at(i),radius_world.at(i));
+		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i));//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
 			Vector3 v3Obj = points.at(j);
+			Vector3 Point_DP = ProjectOnDominantPlane(v3Obj);
 			int label = labels.at(j);
-			if (label != i+1 && dist(v3Obj,center.at(i)) < radius_world.at(i)) //BG nearby also required
-			BGPointsSeq.at(i).push_back(v3Obj);
+			if (label != i+1 && dist(Point_DP,Center_DP) < radius_world.at(i)) //BG nearby also required
+			{
+				BGPointsSeq.at(i).push_back(v3Obj);
+
+				glPointSize(2);
+				glBegin(GL_POINTS);
+				glColor3f(1.0,0.0,0.0);  //nearby points
+				glVertex3f(v3Obj.x, v3Obj.y, v3Obj.z);
+				glEnd();
+			}
 		}
 	}
 	
@@ -684,6 +705,10 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 		para_c = -para_c;
 		para_d = -para_d;
 	}
+	A = para_a;
+	B = para_b;
+	C = para_c;
+	D = para_d;
 	if (v3BestMean.x != 0 || v3BestMean.y != 0 || v3BestMean.z != 0)
 	{
 		for(unsigned int i=0; i<nPoints; i++)
@@ -695,6 +720,8 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 			double d_parameter = -(para_a*R_points.at(i).x+para_b*R_points.at(i).y+para_c*R_points.at(i).z);
 			if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) > fabs(para_d)/20)
 				labels.at(i) = -2;
+			if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) <= fabs(para_d)/20)
+				labels.at(i) = -1;
 		}
 	}
 	return true;
@@ -797,6 +824,7 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 	else	
 		return false; //not the same one
 }
+
 
 
 }
