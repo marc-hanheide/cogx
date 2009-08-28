@@ -355,7 +355,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -743,7 +743,50 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
+  <action name="actOpenClientConfig">
+   <property name="text">
+    <string>Select Client Configuration</string>
+   </property>
+  </action>
+  <action name="actOpenPlayerConfig">
+   <property name="text">
+    <string>Select Player Configuration</string>
+   </property>
+  </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btBrowseCastFile</sender>
+   <signal>clicked()</signal>
+   <receiver>actOpenClientConfig</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>700</x>
+     <y>237</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btBrowsePlayerFile</sender>
+   <signal>clicked()</signal>
+   <receiver>actOpenPlayerConfig</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>700</x>
+     <y>330</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

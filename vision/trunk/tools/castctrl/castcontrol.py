@@ -84,12 +84,35 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         # Event connections
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
+        self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
+        self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
+        self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
 
     def _initContent(self):
-        for i in self._options.mruCfgCast:
-            self.ui.clientConfigCmbx.addItem(i)
-        for i in self._options.mruCfgPlayer:
-            self.ui.playerConfigCmbx.addItem(i)
+        for fn in self._options.mruCfgCast:
+            if fn.strip() == "": continue
+            self.ui.clientConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        for fn in self._options.mruCfgPlayer:
+            if fn.strip() == "": continue
+            self.ui.playerConfigCmbx.addItem(self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+
+    def makeConfigFileDisplay(self, fn):
+        fn = "%s" % fn
+        return "%s \t- %s" % (os.path.basename(fn), os.path.dirname(fn))
+
+    @property
+    def _clientConfig(self):
+        cmb = self.ui.clientConfigCmbx
+        i = cmb.currentIndex()
+        fn = cmb.itemData(i)
+        return fn.toString()
+
+    @property
+    def _playerConfig(self):
+        cmb = self.ui.playerConfigCmbx
+        i = cmb.currentIndex()
+        fn = cmb.itemData(i)
+        return fn.toString()
 
     def _initLocalProcesses(self):
         self._manager.addProcess(procman.CProcess("server-java", options.xe("${CMD_JAVA_SERVER}")))
@@ -98,7 +121,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
         self._manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
-        self.procBuild = procman.CProcess("BUILD", 'make [cmd]', workdir=options.xe("${SA_BUILD_DIR}"))
+        self.procBuild = procman.CProcess("BUILD", 'make [cmd]', workdir=options.xe("${COGX_BUILD_DIR}"))
         self.procBuild.allowTerminate = True
         self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
@@ -150,7 +173,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btClientStart_clicked(self, valid=True):
         if not valid: return
         p = self._manager.getProcess("client")
-        if p != None: p.start( params = { "CAST_CONFIG": self.ui.clientConfigCmbx.currentText() } )
+        if p != None: p.start( params = { "CAST_CONFIG": self._clientConfig } )
         # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
 
     def on_btClientStop_clicked(self, valid=True):
@@ -161,7 +184,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btPlayerStart_clicked(self, valid=True):
         if not valid: return
         p = self._manager.getProcess("player")
-        if p != None: p.start( params = { "PLAYER_CONFIG": self.ui.playerConfigCmbx.currentText() } )
+        if p != None: p.start( params = { "PLAYER_CONFIG": self._playerConfig } )
         if self.ui.ckPeekabot.isChecked():
             p = self._manager.getProcess("peekabot")
             if p != None: p.start()
@@ -211,16 +234,45 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def on_btEditClientConfig_clicked(self, valid=True):
         if not valid: return
-        self.editFile(self.ui.clientConfigCmbx.currentText())
+        self.editFile(self._clientConfig)
 
     def on_btEditPlayerConfig_clicked(self, valid=True):
         if not valid: return
-        self.editFile(self.ui.playerConfigCmbx.currentText())
+        self.editFile(self._playerConfig)
 
+    def onBrowseClientConfig(self):
+        qfd = QtGui.QFileDialog
+        fn = qfd.getOpenFileName(
+            self, self.ui.actOpenClientConfig.text(),
+            "", "CAST Config (*.cast)")
+        if fn != None and len(fn) > 1:
+            self.ui.clientConfigCmbx.blockSignals(True)
+            self.ui.clientConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+            self.ui.clientConfigCmbx.setCurrentIndex(0)
+            self.ui.clientConfigCmbx.blockSignals(False)
+
+    def onBrowsePlayerConfig(self):
+        qfd = QtGui.QFileDialog
+        fn = qfd.getOpenFileName(
+            self, self.ui.actOpenPlayerConfig.text(),
+            "", "Player Config (*.cfg)")
+        if fn != None and len(fn) > 1:
+            self.ui.clientConfigCmbx.blockSignals(True)
+            self.ui.playerConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+            self.ui.playerConfigCmbx.setCurrentIndex(0)
+            self.ui.clientConfigCmbx.blockSignals(False)
+
+    def onClientConfigChanged(self, index):
+        if index < 1: return
+        fn = self._clientConfig
+        self.ui.clientConfigCmbx.blockSignals(True)
+        self.ui.clientConfigCmbx.removeItem(index)
+        self.ui.clientConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
+        self.ui.clientConfigCmbx.setCurrentIndex(0)
+        self.ui.clientConfigCmbx.blockSignals(False)
 
 def guiMain():
     app = QtGui.QApplication(sys.argv)
-    # myapp = ManagerWindow()
     myapp = CCastControlWnd()
     myapp.show()
     sys.exit(app.exec_())
