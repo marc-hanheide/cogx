@@ -80,6 +80,7 @@ void ObjectDetector::configure(const map<string,string> & _config)
 
 	detail = 0;
 	type = 0;
+	frame_counter = 0;
 }
 
 void ObjectDetector::start()
@@ -110,7 +111,11 @@ void ObjectDetector::runComponent()
 
 void ObjectDetector::processImage()
 {
-// 	log("ObjectDetector: process new image.");
+	frame_counter++;
+	int number = 0;
+	Z::CubeDef cd;
+	bool masked = true;
+
 	Video::Image image;
 	getImage(camId, image);
 
@@ -122,25 +127,26 @@ void ObjectDetector::processImage()
 	// ----------------------------------------------------------------------------
 	// Get objects after processing and create visual object for working memory
 	// ----------------------------------------------------------------------------
-
-	int number = 0;
-	Z::CubeDef cd;
-	bool masked = true;
-
 	while(vs3Interface->GetCube(number, cd, masked))
 	{
-		log("new cube detected.");
-		number ++;
+		number++;
 
-		/// TODO TODO TODO TODO TODO Verarbeiten des Würfels: Anlegen des Visual objects
-
-		// Generate VisualObject
-		VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-		if(Cube2VisualObject(obj, cd))
+		if(!masked)
 		{
-			// Add VisualObject to working memory
-  		addToWorkingMemory(newDataID(), obj);
-			log("added visual object to working memory");
+			num_cubes++;
+
+			// Generate VisualObject
+			VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+			if(Cube2VisualObject(obj, cd))
+			{
+				char obj_label[32];
+				sprintf(obj_label, "Cube %d", num_cubes);
+				obj->label = obj_label;
+
+				// Add VisualObject to working memory
+				addToWorkingMemory(newDataID(), obj);
+				log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+			}
 		}
 	}
 
@@ -150,7 +156,6 @@ void ObjectDetector::processImage()
 	int key = 0;
 	key = cvWaitKey(10);
 		if(key==1048603) return;									// return for escape
-// 				printf("##############	Key: %i\n", key); 
 
 	switch(key){
 		case 1048619: detail++;										// Key '+'
@@ -200,7 +205,6 @@ void ObjectDetector::processImage()
 	// ----------------------------------------------------------------
 	// Draw Gestalts to IplImage for the openCv window
 	// ----------------------------------------------------------------
-	// !!! Draws all Gestalts (also masked ones!!!)
 	if(showImage) 
 	{	
 		vs3Interface->SetActiveDrawArea(iplImage);
@@ -218,7 +222,7 @@ void ObjectDetector::processImage()
 
 
 /**
- * @brief Convert Cube from vs3 to Visual Object
+ * @brief Convert cube from object detector to working memory visual object
  * @param obj Visual Object
  * @param cd Cube
  * @return True for success

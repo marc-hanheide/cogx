@@ -34,10 +34,12 @@ private:
    */
   Vs3Interface *vs3Interface;
 
-  unsigned detail;		///< Degree of detail for drawing
-  unsigned type;			///< Gestalt type for drawing
+  unsigned detail;					///< Degree of detail for drawing
+  unsigned type;						///< Gestalt type for drawing
 
-  bool cmd_detect;		///< detection command
+  bool cmd_detect;					///< detection command
+	int num_cubes;						///< number of cubes
+  unsigned frame_counter;		///< counter of image frames
 
   /**
    * Receive a changed detection command, written to the working memory
