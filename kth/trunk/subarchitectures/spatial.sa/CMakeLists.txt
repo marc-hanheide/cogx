@@ -29,7 +29,7 @@ add_subdirectory (src/c++/autogen)
 add_subdirectory(src/c++/)
 
 # Options
-option(BUILD_SA_SPATIAL_XXX "Build Spatial.SA XXX" NO)
+option(BUILD_SA_SPATIAL_XXX "Build Spatial.SA XXX" YES)
 
 # Laser path
 if(BUILD_SA_SPATIAL_XXX)
