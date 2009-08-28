@@ -311,7 +311,7 @@ def runCommand(cmd, params=None, workdir=None, name="onetime"):
                 msgs = [m for m in log.messages]
                 for m in msgs: LOGGER.addMessage(m)
             finally: log.removeSource(p)
-    except Exception as e:
+    except Exception, e:
         error("Internal error")
         error("%s" % e)
 

@@ -98,7 +98,15 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def makeConfigFileDisplay(self, fn):
         fn = "%s" % fn
-        return "%s \t- %s" % (os.path.basename(fn), os.path.dirname(fn))
+        return "%s   @ %s" % (os.path.basename(fn), os.path.dirname(fn))
+
+    # If the file is under the COGX_ROOT directory, make it relative
+    def makeConfigFileRelPath(self, fn):
+        wd = options.xe("${COGX_ROOT}")
+        if wd.strip() == "": return fn
+        rp = os.path.relpath("%s" % fn, wd)
+        if rp.startswith(".."): return fn
+        return rp
 
     @property
     def _clientConfig(self):
@@ -136,6 +144,22 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         self._manager.stopAll()
+        def getitems(cmbx, count=30):
+            mx = cmbx.count()
+            if mx > count: mx = count
+            lst = []
+            for i in xrange(mx):
+                fn = cmbx.itemData(i).toString()
+                lst.append("%s" % fn)
+            return lst
+
+        try:
+            self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
+            self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
+            self._options.saveConfig("castcontrol.conf")
+        except Exception, e:
+            print "Failed to save configuration"
+            print e
 
     def getServers(self, manager):
         srvs = []
@@ -246,6 +270,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self, self.ui.actOpenClientConfig.text(),
             "", "CAST Config (*.cast)")
         if fn != None and len(fn) > 1:
+            fn = self.makeConfigFileRelPath(fn)
             self.ui.clientConfigCmbx.blockSignals(True)
             self.ui.clientConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
             self.ui.clientConfigCmbx.setCurrentIndex(0)
@@ -257,6 +282,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self, self.ui.actOpenPlayerConfig.text(),
             "", "Player Config (*.cfg)")
         if fn != None and len(fn) > 1:
+            fn = self.makeConfigFileRelPath(fn)
             self.ui.clientConfigCmbx.blockSignals(True)
             self.ui.playerConfigCmbx.insertItem(0, self.makeConfigFileDisplay(fn), QtCore.QVariant(fn))
             self.ui.playerConfigCmbx.setCurrentIndex(0)
