@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Aug 28 10:22:37 2009
+# Created: Fri Aug 28 13:31:02 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(883, 668)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
@@ -24,9 +24,15 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.processTree.sizePolicy().hasHeightForWidth())
         self.processTree.setSizePolicy(sizePolicy)
         self.processTree.setMinimumSize(QtCore.QSize(240, 0))
+        self.processTree.setMaximumSize(QtCore.QSize(400, 16777215))
         self.processTree.setObjectName("processTree")
         self.horizontalLayout.addWidget(self.processTree)
         self.frame_6 = QtGui.QFrame(self.centralwidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(2)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame_6.sizePolicy().hasHeightForWidth())
+        self.frame_6.setSizePolicy(sizePolicy)
         self.frame_6.setFrameShape(QtGui.QFrame.NoFrame)
         self.frame_6.setFrameShadow(QtGui.QFrame.Raised)
         self.frame_6.setObjectName("frame_6")
@@ -332,7 +338,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 23))
         self.menubar.setObjectName("menubar")
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName("menuCast")
@@ -350,7 +356,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuCast.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
         QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
