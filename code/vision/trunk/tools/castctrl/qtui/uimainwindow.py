@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Aug 27 14:51:00 2009
+# Created: Fri Aug 28 10:22:37 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -342,11 +342,17 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actQuit = QtGui.QAction(MainWindow)
         self.actQuit.setObjectName("actQuit")
+        self.actOpenClientConfig = QtGui.QAction(MainWindow)
+        self.actOpenClientConfig.setObjectName("actOpenClientConfig")
+        self.actOpenPlayerConfig = QtGui.QAction(MainWindow)
+        self.actOpenPlayerConfig.setObjectName("actOpenPlayerConfig")
         self.menuCast.addAction(self.actQuit)
         self.menubar.addAction(self.menuCast.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
+        QtCore.QObject.connect(self.btBrowseCastFile, QtCore.SIGNAL("clicked()"), self.actOpenClientConfig.trigger)
+        QtCore.QObject.connect(self.btBrowsePlayerFile, QtCore.SIGNAL("clicked()"), self.actOpenPlayerConfig.trigger)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -385,4 +391,6 @@ class Ui_MainWindow(object):
         self.menuCast.setTitle(QtGui.QApplication.translate("MainWindow", "&Cast", None, QtGui.QApplication.UnicodeUTF8))
         self.actQuit.setText(QtGui.QApplication.translate("MainWindow", "&Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.actQuit.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
+        self.actOpenClientConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Client Configuration", None, QtGui.QApplication.UnicodeUTF8))
+        self.actOpenPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Player Configuration", None, QtGui.QApplication.UnicodeUTF8))
 
