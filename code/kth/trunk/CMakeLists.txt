@@ -76,7 +76,7 @@ endif(BUILD_SA_VISION)
 
 
 # Spatial
-option(BUILD_SA_SPATIAL "Build spatial subarchitecure" NO)
+option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
 if(BUILD_SA_SPATIAL)
     add_subdirectory (subarchitectures/spatial.sa)
 endif(BUILD_SA_SPATIAL)
