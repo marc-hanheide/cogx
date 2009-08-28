@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+
+<!--
+   
+    This file is distributed with peekabot as an example scene file, and
+    is considered to be public domain.
+    
+    This example scene introduces a few new properties and demonstrates
+    how objects may be manipulated into something useful, such as a room.
+
+-->
+
+<scene>
+   <color r="0.8" g="0.7" b="0.3">
+   <plane>
+     <name>floor</name>
+     <children>
+        <layer number="2">
+        <color r="0.7" g="0.7" b="0.7">
+        <cube>
+           <name>wall1</name>
+           <transform>
+               <translate>2.5 0 1</translate>
+           </transform>
+           <scale>0.1 5 2</scale>
+        </cube>
+        <cube>
+           <name>wall2</name>
+           <transform>
+               <translate>-2.5 0 1</translate>
+           </transform>
+           <scale>0.1 5 2</scale>
+        </cube>
+        <cube>
+           <name>wall3</name>
+           <transform>
+               <translate>0 2.5 1</translate>
+           </transform>
+           <scale>5 0.1 2</scale>
+        </cube>
+        <cube>
+           <name>wall4</name>
+           <transform>
+               <translate>0 -2.5 1</translate>
+           </transform>
+           <scale>5 0.1 2</scale>
+        </cube>
+        </color>
+        </layer>        
+        <layer number="3">
+        <color r="0.8" g="0.5" b="0.5">
+        <cube>
+            <name>tabletop</name>
+            <transform>
+                <translate>1 1.5 0.5</translate>                
+            </transform>
+            <children>
+              <cube>
+                 <name>leg1</name>
+                 <transform>
+                     <translate>0.75 0.75 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>leg2</name>
+                 <transform>
+                     <translate>0.75 -0.75 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>leg3</name>
+                 <transform>
+                     <translate>-0.75 0.75 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>leg4</name>
+                 <transform>
+                     <translate>-0.75 -0.75 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+
+            </children>
+            <scale>1.5 1.5 0.05</scale>
+        </cube>
+        </color>
+        <color r="0.5" g="0.8" b="0.5">
+        <cube>
+            <name>chair</name>
+            <transform>
+                <translate>-0.25 1.5 0.5</translate>                
+            </transform>
+            <children>
+              <cube>
+                 <name>leg1</name>
+                 <transform>
+                     <translate>0.25 0.25 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>leg2</name>
+                 <transform>
+                     <translate>0.25 -0.25 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>leg3</name>
+                 <transform>
+                     <translate>-0.25 0.25 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>leg4</name>
+                 <transform>
+                     <translate>-0.25 -0.25 -0.25</translate>
+                 </transform>
+                 <scale>0.05 0.05 0.5</scale>
+              </cube>
+              <cube>
+                 <name>back</name>
+                 <transform>
+                   <translate>-0.25 0 0.3</translate>
+                 </transform>
+                 <scale>0.05 0.5 0.6</scale>
+              </cube>
+            </children>
+            <scale>0.5 0.5 0.05</scale>
+        </cube>
+        </color>
+        </layer>
+     </children>
+     <vertices>
+        <vertex>2.5 2.5 0</vertex>
+        <vertex>-2.5 2.5 0</vertex>
+        <vertex>-2.5 -2.5 0</vertex>
+        <vertex>2.5 -2.5 0</vertex>
+     </vertices>
+   </plane>
+   </color>
+</scene>
