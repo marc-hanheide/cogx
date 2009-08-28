@@ -21,6 +21,7 @@ test2 = \
 (pred1 c1 ?p2 ?p3)
 (= (func1 ?p1 ?p2 ?p3) true)
 (= (func1 ?p1 ?p2 c1) false)
+(= (func1 ?p1 ?p2 c1) c1)
 )
 """
 
@@ -73,7 +74,6 @@ class ConditionsTest(unittest.TestCase):
                 Parameter("?b", self.type2),
                 Parameter("?c", objectType)]
         val = Parameter("?v", booleanType)
-        eq =  predicates.Predicate("=", [Parameter("?o1", objectType), Parameter("?o2", objectType)])
         self.func1 =  predicates.Function("func1", args, booleanType)
         self.func2 =  predicates.Function("func2", args[:-1], self.type1)
 
@@ -86,7 +86,7 @@ class ConditionsTest(unittest.TestCase):
         self.scope.types["boolean"] = booleanType
         self.scope.types["object"] = objectType
         self.scope.types["agent"] = agentType
-        self.scope.predicates.add(eq)
+        self.scope.predicates.add(predicates.equals)
         self.scope.predicates.add(self.pred1)
         self.scope.predicates.add(self.pred2)
         self.scope.predicates.add(predicates.knowledge)
@@ -225,7 +225,7 @@ class ConditionsTest(unittest.TestCase):
 
         def copyVisitor(cond, results=[]):
             if cond.__class__ == LiteralCondition:
-                return LiteralCondition(cond.predicate, cond.args, cond.negated)
+                return LiteralCondition(cond.predicate, cond.args, None, cond.negated)
             if isinstance(cond, JunctionCondition):
                 return cond.__class__(results)
             if isinstance(cond, QuantifiedCondition):
@@ -270,9 +270,31 @@ class ConditionsTest(unittest.TestCase):
             self.assertEqual(e.token.string, "func1")
             self.assertEqual(e.token.line,  2)
             return
-
         
         self.fail("Mismatched types triggered no error")
+
+        
+    def testCreationFromScratch(self):
+        """Testing type checking when creating conditions form scratch"""
+        params = [Parameter("?p1", self.type1),
+                  Parameter("?p2", self.type2),
+                  Parameter("?p3", objectType),
+                  Parameter("?v", booleanType)]
+
+        localScope = scope.Scope(params, self.scope)
+
+        c1 = LiteralCondition(self.pred1, [ConstantTerm(params[0]), ConstantTerm(Parameter("?p2", self.type2)), ConstantTerm(TypedObject("test", objectType))])
+        c2 = LiteralCondition(self.pred1, [ConstantTerm(Parameter("?p1", self.type1)), ConstantTerm(Parameter("?p2", self.type2)), ConstantTerm(Parameter("?p3", objectType))])
+        c3 = LiteralCondition(self.pred1, ["?p1", "?p2", "?p3"], localScope)
+        self.assertRaises(KeyError, LiteralCondition, self.pred1, ["?p1", "?p2", "?p5"], localScope)
+        c1copy = c1.copy()
+        self.assertRaises(KeyError, c1.copy, localScope)
+        c2copy = c2.copy(localScope)
+        
+        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
+        self.assertFalse(c2.args[0].object.isInstantiated())
+        self.assert_(c2copy.args[0].object.isInstantiated())
+        self.assert_(c3.args[0].object.isInstantiated())
         
 
     def testArityMismatch(self):
@@ -299,6 +321,7 @@ class ConditionsTest(unittest.TestCase):
             return
 
         self.fail("Too many arguments triggered no error")
+
         
     def testArityMismatch2(self):
         """Testing arity mismatches 2"""
@@ -318,72 +341,7 @@ class ConditionsTest(unittest.TestCase):
             return
         
         self.fail("Not enough arguments triggered no error")
-
-    def testLiteralInstantiation(self):
-        """Testing instantiation of literals"""
-        
-        test = \
-        """
-        (= (func1 ?p1 ?p2 ?p3) ?v)
-        """
-        localScope = self.getLocalScope()
-        cond = Parser.parseAs(test.split("\n"), Condition, localScope)
-
-        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        fact = state.Fact.fromLiteral(cond)
-
-        #check that svar and value are correct
-        self.assertEqual(fact.value, TRUE)
-        self.assertEqual(fact.svar, state.StateVariable(self.func1, [self.c1, self.c2, self.c1]))
-        #check that comparison with a manually constructed fact work
-        self.assertEqual(fact, state.Fact(state.StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, state.Fact(state.StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
-        self.assertNotEqual(fact, state.Fact(state.StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, state.Fact(state.StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
-        #check that comparison with a tuple work
-        self.assertEqual(fact, (state.StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, (state.StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
-        self.assertNotEqual(fact, (state.StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, (state.StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
-
-        #check that trying to get a fact from an uninstantiated literal will fail
-        localScope.uninstantiate()
-        self.assertRaises(Exception, state.Fact.fromLiteral, cond)
-        
-        #instancing via objects and via names should be equivalent
-        localScope.instantiate({"?p1" : "c1", "?p2" : "c2", "?p3" : "c1", "?v" : "true"})
-        fact2 = state.Fact.fromLiteral(cond)
-
-        self.assertEqual(fact, fact2)
-
-        
-    def testConditionInstantiation(self):
-        """Testing instantiation of conditions"""
-
-        test = \
-        """(and
-        (pred1 c1 ?p2 ?p3)
-        (not (pred2 c1 ?p2))
-        (= (func1 ?p1 ?p2 ?p3) ?v)
-        (= (func1 ?p1 ?p2 c2) false)
-        )
-        """
-        
-        localScope = self.getLocalScope()
-        cond = Parser.parseAs(test.split("\n"), Condition, localScope)
-
-        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        facts = state.Fact.fromCondition(cond)
-        f1 = state.Fact(state.StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE)
-        f2 = state.Fact(state.StateVariable(self.pred2, [self.c1, self.c2]), FALSE)
-        f3 = state.Fact(state.StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE)
-        f4 = state.Fact(state.StateVariable(self.func1, [self.c1, self.c2, self.c2]), FALSE)
-        self.assertEqual(len(facts), 4)
-        self.assert_(f1 in facts)
-        self.assert_(f2 in facts)
-        self.assert_(f3 in facts)
-        self.assert_(f4 in facts)
-        
+       
 
     def testModalPredicates(self):
         """Testing modal predicates"""
@@ -419,7 +377,6 @@ class ConditionsTest(unittest.TestCase):
             return
 
         self.fail("Modal predicate without function didn't raise exception")
-            
         
         
         

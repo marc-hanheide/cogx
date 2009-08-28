@@ -2,6 +2,7 @@
 # -*- coding: latin-1 -*-
 
 import parser
+from parser import ParseError
 import mapltypes as types
 import predicates, conditions, effects
 from scope import Scope
@@ -72,6 +73,12 @@ class DurationConstraint(object):
         self.term = term
         self.timeSpecifier = timeSpecifier
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.term == other.term and self.timeSpecifier == other.timeSpecifier
+
+    def __ne__(self, other):
+        return not __eq__(self, other)
+
     @staticmethod
     def parse(it, scope):
         try:
@@ -96,7 +103,11 @@ class DurationConstraint(object):
         if first.string != "=":
             raise UnexpectedTokenError(first, "=")
         it.get("?duration")
-        term = predicates.Term.parse(it, scope, types.numberType)
+        
+        term = predicates.Term.parse(it, scope)
+        if not term.getType().equalOrSubtypeOf(types.numberType):
+            raise ParseError(first, "Duration must be a number, not %s." % str(term.getType()))
+        
         it.noMoreTokens()
         
         return [DurationConstraint(term, time)]
@@ -111,7 +122,7 @@ class DurativeAction(Action):
     def parse(it, scope):
         it.get(":durative-action")
     
-        name = it.get()
+        name = it.get().token.string
         it.get(":agent")
         agent = predicates.parseArgList(iter(it.get(list, "agent parameter")), scope.types)
         it.get(":parameters")

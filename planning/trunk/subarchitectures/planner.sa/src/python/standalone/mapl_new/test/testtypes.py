@@ -189,6 +189,14 @@ class ConditionsTest(unittest.TestCase):
         self.assert_(fpackage.equalOrSubtypeOf(types["package"]))
         self.assert_(fpackage.isSubtypeOf(types["package"]))
         self.assertFalse(fpackage.isSupertypeOf(types["package"]))
+
+    def testBulitinTypes(self):
+        """Testing builtin types"""
+
+        self.assertFalse(numberType.equalOrSubtypeOf(objectType))
+        self.assertFalse(numberType.isSubtypeOf(objectType))
+        self.assertFalse(numberType.equalOrSupertypeOf(objectType))
+        self.assertFalse(numberType.isSupertypeOf(objectType))
         
         
 if __name__ == '__main__':

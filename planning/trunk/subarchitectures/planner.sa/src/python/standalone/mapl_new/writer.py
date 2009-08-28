@@ -25,7 +25,10 @@ class MAPLWriter(object):
             strings.append(indent + s)
             
         if parens:
-            strings.append(")")
+            if len(strings) == 1:
+                strings[0] += ")"
+            else:
+                strings.append(")")
             
         return strings
 
@@ -36,28 +39,38 @@ class MAPLWriter(object):
     
     def write_term(self, term):
         if isinstance(term, predicates.ConstantTerm):
+            if term.getType().equalOrSubtypeOf(types.numberType):
+                return str(term.object.name)
             return term.object.name
+
         args = " ".join(map(lambda t: self.write_term(t), term.args))
         return "(%s %s)" % (term.function.name, args)
     
     def write_literal(self, literal):
         args = " ".join(map(lambda t: self.write_term(t), literal.args))
+        if literal.negated:
+            return "(not (%s %s))" % (literal.predicate.name, args)
         return "(%s %s)" % (literal.predicate.name, args)
+        
 
     def write_typelist(self, args):
         return " ".join(map(lambda arg: "%s - %s" % (arg.name, self.write_type(arg.type)), args))
 
     def write_types(self, _types):
         strings = []
-        toplevel = []
+        toplevel = [types.objectType, types.numberType]
         for type in _types:
             if type.supertypes:
                 for st in type.supertypes:
                     #only write the lowest supertype(s)
                     if not any(map(lambda t: st.isSupertypeOf(t), type.supertypes)):
                         strings.append("%s - %s" % (type.name, st.name))
-            else:
+            elif type not in toplevel:
                 toplevel.append(type)
+                
+        toplevel.remove(types.objectType)
+        toplevel.remove(types.numberType)
+        
         strings.append(" ".join(map(lambda t:t.name, toplevel)))
         return self.section(":types", strings)
 
@@ -109,6 +122,39 @@ class MAPLWriter(object):
 
         return self.section(":action", strings)
 
+    def write_durations(self, durations):
+        strings = []
+        for dc in durations:
+            dstr = "(= ?duration %s)" % self.write_term(dc.term)
+            if dc.timeSpecifier:
+                dstr = "(at %s %s)" % (dc.timeSpecifier, dstr)
+            strings.append(dstr)
+                
+        if len(durations) > 1:
+            return self.section("and", strings)
+        return strings
+
+    
+    def write_durative_action(self, action):
+        strings = [action.name]
+        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+        if action.args:
+            strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
+        if action.vars:
+            strings += self.section(":variables", ["(%s)" % self.write_typelist(action.vars)], parens=False)
+            
+        strings += self.section(":duration", self.write_durations(action.duration), parens=False)
+        
+        if action.replan:
+            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
+        if action.precondition:
+            strings += self.section(":condition", self.write_condition(action.precondition), parens=False)
+
+        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+
+        return self.section(":durative-action", strings)
+
+    
     def write_sensor(self, action):
         strings = [action.name]
         strings += self.section(":agent", [self.write_typelist(action.agents)], parens=False)
@@ -135,7 +181,9 @@ class MAPLWriter(object):
         return self.section("and", strings)
 
     def write_effect(self, effect):
-        if isinstance(effect, effects.SimpleEffect):
+        if isinstance(effect, effects.TimedEffect):
+            return ["(at %s %s)" % (effect.time, self.write_literal(effect))]
+        elif isinstance(effect, effects.SimpleEffect):
             return [self.write_literal(effect)]
         elif isinstance(effect, effects.ConditionalEffect):
             strings = self.write_effects(effect.effects)
@@ -147,7 +195,7 @@ class MAPLWriter(object):
                 strings = self.section(head, strings)
 
             return strings
-        assert False
+        assert False, effect
             
         
     def write_condition(self, condition):
@@ -163,6 +211,13 @@ class MAPLWriter(object):
                 head = "forall (%s)" % self.write_typelist(cond.values())
             elif cond.__class__ == conditions.ExistentialCondition:
                 head = "exists (%s)" % self.write_typelist(cond.values())
+            elif cond.__class__ == conditions.TimedCondition:
+                if cond.time == "start":
+                    head = "at start"
+                elif cond.time == "end":
+                    head = "at end"
+                elif cond.time == "all":
+                    head = "over all"
 
             strings = sum(parts, [])
             return self.section(head, strings)
@@ -190,7 +245,10 @@ class MAPLWriter(object):
             strings += self.write_sensor(s)
         for a in domain.actions:
             strings.append("")
-            strings += self.write_action(a)
+            if isinstance(a, actions.DurativeAction):
+                strings += self.write_durative_action(a)
+            else:
+                strings += self.write_action(a)
 
         strings.append("")
         strings.append(")")
@@ -216,6 +274,10 @@ class MAPLWriter(object):
         strings += self.write_init(problem.init)
         strings.append("")
         strings += self.section(":goal", self.write_condition(problem.goal))
+
+        if problem.optimization:
+            strings.append("(:metric %s %s)" % (problem.optimization, self.write_term(problem.opt_func)))
+            
         
         strings.append("")
         strings.append(")")

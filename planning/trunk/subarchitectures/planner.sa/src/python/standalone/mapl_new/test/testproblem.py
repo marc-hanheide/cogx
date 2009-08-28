@@ -6,7 +6,7 @@ import unittest
 import tempfile
 import os
 
-import parser, domain, problem, writer
+import predicates, parser, domain, problem, writer
 from parser import Parser, ParseError
 
 domlogistics = \
@@ -15,7 +15,7 @@ domlogistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :typing :equality :object-fluents) 
+(:requirements :typing :equality :object-fluents :durative-actions) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -30,6 +30,13 @@ domlogistics = \
          :parameters    (?t - truck ?to - location)
          :precondition  (= (city-of (location-of ?t)) (city-of ?to))
          :effect        (assign (location-of ?t) ?to))
+
+;(:durative-action dur_drive
+;         :agent         (?a - agent)
+;         :parameters    (?t - truck ?to - location)
+;         :duration      (= ?duration 4)
+;         :condition     (over all (= (city-of (location-of ?t)) (city-of ?to)))
+;         :effect        (at end (assign (location-of ?t) ?to)))
 
 (:action fly
          :agent         (?a - agent)
@@ -157,6 +164,284 @@ probblocks = \
 
 """
 
+domrovers = """
+(define (domain Rover)
+(:requirements :typing :durative-actions :fluents :mapl)
+
+(:types rover waypoint store store_state camera mode lander objective)
+
+(:constants empty full - store_state)
+
+(:predicates 
+             (can_traverse ?r - rover ?x - waypoint ?y - waypoint)
+	(equipped_for_soil_analysis ?r - rover)
+             (equipped_for_rock_analysis ?r - rover)
+             (equipped_for_imaging ?r - rover)
+              (have_rock_analysis ?r - rover ?w - waypoint)
+             (have_soil_analysis ?r - rover ?w - waypoint)
+ 	(calibrated ?c - camera ?r - rover) 
+	(supports ?c - camera ?m - mode)
+             (available ?r - rover)
+             (visible ?w - waypoint ?p - waypoint)
+             (have_image ?r - rover ?o - objective ?m - mode)
+             (communicated_soil_data ?w - waypoint)
+             (communicated_rock_data ?w - waypoint)
+             (communicated_image_data ?o - objective ?m - mode)
+	(at_soil_sample ?w - waypoint)
+	 (at_rock_sample ?w - waypoint)
+             (visible_from ?o - objective ?w - waypoint)
+	 (store_of ?s - store ?r - rover)
+	 (calibration_target ?i - camera ?o - objective)
+	 (on_board ?i - camera ?r - rover)
+	 (channel_free ?l - lander)
+	 (in_sun ?w - waypoint)
+)
+
+
+(:functions
+	(energy ?r - rover) - number
+	(recharge-rate ?x - rover) - number
+	(at ?x - (either rover lander)) - waypoint
+	(calibration_target ?i - camera) - objective
+	(sstate ?s - store) - store_state)
+	
+
+(:durative-action navigate
+:agent (?a - agent)
+:parameters (?x - rover ?y - waypoint ?z - waypoint) 
+:duration (= ?duration 5)
+:condition (and (over all (can_traverse ?x ?y ?z))
+	(at start (available ?x))
+	(at start (= (at ?x) ?y))
+	(at start (>= (energy ?x) 8))
+                (over all (visible ?y ?z)))
+:effect (and (at start (decrease (energy ?x) 8))
+	(change (at ?x) ?z)))
+
+
+(:durative-action recharge
+:agent (?a - agent)
+:parameters (?x - rover ?w - waypoint)
+:duration (= ?duration (/ (- 80 (energy ?x)) (recharge-rate ?x)))
+:condition (and 
+	(over all (= (at ?x) ?w))
+	(at start (in_sun ?w))
+	(at start (<= (energy ?x) 80)))
+:effect (and (at end (increase (energy ?x) (* ?duration (recharge-rate ?x)))))
+)
+
+
+(:durative-action sample_soil
+:agent (?a - agent)
+:parameters (?x - rover ?s - store ?p - waypoint)
+:duration (= ?duration 10)
+:condition (and (over all (= (at ?x) ?p))
+	(at start (at_soil_sample ?p))
+	(at start (equipped_for_soil_analysis ?x))
+	(at start (>= (energy ?x) 3))
+	(at start (store_of ?s ?x))
+	(at start (= (sstate ?s) empty)))
+:effect (and (change (sstate ?s) full)
+	(at start (decrease (energy ?x) 3))
+	(at end (have_soil_analysis ?x ?p))
+	(at end (not (at_soil_sample ?p))))
+)
+
+
+(:durative-action sample_rock
+:agent (?a - agent)
+:parameters (?x - rover ?s - store ?p - waypoint)
+:duration (= ?duration 8)
+:condition (and (over all (= (at ?x) ?p))
+	(at start (>= (energy ?x) 5))
+	(at start (at_rock_sample ?p))
+	(at start (equipped_for_rock_analysis ?x))
+	(at start (store_of ?s ?x))
+	(at start (= (sstate ?s) empty)))
+:effect (and (change (sstate ?s) full)
+	(at end (have_rock_analysis ?x ?p))
+	(at start (decrease (energy ?x) 5))
+	(at end (not (at_rock_sample ?p))))
+)
+
+
+(:durative-action drop
+:agent (?a - agent)
+:parameters (?x - rover ?y - store)
+:duration (= ?duration 1)
+:condition (and (at start (store_of ?y ?x))
+	(at start (= (sstate ?y) full)))
+:effect (change (sstate ?y) empty)
+)
+
+
+(:durative-action calibrate
+ :agent (?a - agent)
+ :parameters (?r - rover ?i - camera ?t - objective ?w - waypoint)
+ :duration (= ?duration 5)
+ :condition (and (at start (equipped_for_imaging ?r))
+	(at start (>= (energy ?r) 2))
+	(at start (= (calibration_target ?i) ?t))
+	(over all (= (at ?r) ?w))
+	(at start (visible_from ?t ?w))
+	(at start (on_board ?i ?r)))
+ :effect (and (at end (calibrated ?i ?r))
+	(at start (decrease (energy ?r) 2)))
+)
+
+
+(:durative-action take_image
+ :agent (?a - agent)
+ :parameters (?r - rover ?p - waypoint ?o - objective ?i - camera ?m - mode)
+ :duration (= ?duration 7)
+ :condition (and (over all (calibrated ?i ?r))
+		(at start (on_board ?i ?r))
+                	(over all (equipped_for_imaging ?r))
+         	             (over all (supports ?i ?m) )
+		 (over all (visible_from ?o ?p))
+                	(over all ( = (at ?r) ?p))
+		(at start (>= (energy ?r) 1)))
+ :effect (and (at end (have_image ?r ?o ?m))
+	(at start (decrease (energy ?r) 1))
+	(at end (not (calibrated ?i ?r))))
+)
+
+
+(:durative-action communicate_soil_data
+ :agent (?a - agent)
+ :parameters (?r - rover ?l - lander ?p - waypoint ?x - waypoint ?y - waypoint)
+ :duration (= ?duration 10)
+ :condition (and (over all (= (at ?r) ?x))
+	(over all (= (at ?l) ?y))
+	(at start (have_soil_analysis ?r ?p))
+	(at start (>= (energy ?r) 4))
+	(at start (visible ?x ?y))
+	(at start (available ?r))
+	(at start (channel_free ?l)))
+ :effect (and (at start (not (available ?r)))
+	(at start (not (channel_free ?l)))
+	(at end (channel_free ?l))
+	(at end (communicated_soil_data ?p))
+	(at end (available ?r))
+	(at start (decrease (energy ?r) 4)))
+)
+
+(:durative-action communicate_rock_data
+ :agent (?a - agent)
+ :parameters (?r - rover ?l - lander ?p - waypoint ?x - waypoint ?y - waypoint)
+ :duration (= ?duration 10)
+ :condition (and (over all (= (at ?r) ?x))
+	(over all (= (at ?l) ?y))
+	(at start (have_rock_analysis ?r ?p))
+	(at start (visible ?x ?y))
+	(at start (available ?r))
+	(at start (channel_free ?l))
+	(at start (>= (energy ?r) 4)))
+ :effect (and (at start (not (available ?r)))
+	(at start (not (channel_free ?l)))
+	(at end (channel_free ?l))
+	(at end (communicated_rock_data ?p))
+	(at end (available ?r))
+	(at start (decrease (energy ?r) 4)))
+)
+
+
+(:durative-action communicate_image_data
+ :agent (?a - agent)
+ :parameters (?r - rover ?l - lander ?o - objective ?m - mode
+	?x - waypoint ?y - waypoint)
+ :duration (= ?duration 15)
+ :condition (and (over all (= (at ?r) ?x))
+	(over all (= (at ?l) ?y))
+	(at start (have_image ?r ?o ?m))
+	(at start (visible ?x ?y))
+	(at start (available ?r))
+	(at start (channel_free ?l))
+	(at start (>= (energy ?r) 6)))
+ :effect (and (at start (not (available ?r)))
+	(at start (not (channel_free ?l)))
+	(at end (channel_free ?l))
+	(at end (communicated_image_data ?o ?m))
+	(at end (available ?r))
+	(at start (decrease (energy ?r) 6))))
+)
+
+;; EOF
+"""
+
+probrovers = """
+(define (problem roverprob1234) (:domain Rover)
+(:objects
+	general - Lander
+	colour high_res low_res - Mode
+	rover0 - Rover
+	rover0store - Store
+	waypoint0 waypoint1 waypoint2 waypoint3 - Waypoint
+	camera0 - Camera
+	objective0 objective1 - Objective
+	)
+(:init
+	(visible waypoint1 waypoint0)
+	(visible waypoint0 waypoint1)
+	(visible waypoint2 waypoint0)
+	(visible waypoint0 waypoint2)
+	(visible waypoint2 waypoint1)
+	(visible waypoint1 waypoint2)
+	(visible waypoint3 waypoint0)
+	(visible waypoint0 waypoint3)
+	(visible waypoint3 waypoint1)
+	(visible waypoint1 waypoint3)
+	(visible waypoint3 waypoint2)
+	(visible waypoint2 waypoint3)
+	(at_soil_sample waypoint0)
+	(in_sun waypoint0)
+	(at_rock_sample waypoint1)
+	(at_soil_sample waypoint2)
+	(at_rock_sample waypoint2)
+	(at_soil_sample waypoint3)
+	(at_rock_sample waypoint3)
+	(= (at general) waypoint0)
+	(channel_free general)
+	(= (energy rover0) 50)
+	(= (recharge-rate rover0) 11)
+	(= (at rover0) waypoint3)
+	(available rover0)
+	(store_of rover0store rover0)
+	(= (sstate rover0store) empty)
+	(equipped_for_soil_analysis rover0)
+	(equipped_for_rock_analysis rover0)
+	(equipped_for_imaging rover0)
+	(can_traverse rover0 waypoint3 waypoint0)
+	(can_traverse rover0 waypoint0 waypoint3)
+	(can_traverse rover0 waypoint3 waypoint1)
+	(can_traverse rover0 waypoint1 waypoint3)
+	(can_traverse rover0 waypoint1 waypoint2)
+	(can_traverse rover0 waypoint2 waypoint1)
+	(on_board camera0 rover0)
+	(= (calibration_target camera0) objective1)
+	(supports camera0 colour)
+	(supports camera0 high_res)
+	(visible_from objective0 waypoint0)
+	(visible_from objective0 waypoint1)
+	(visible_from objective0 waypoint2)
+	(visible_from objective0 waypoint3)
+	(visible_from objective1 waypoint0)
+	(visible_from objective1 waypoint1)
+	(visible_from objective1 waypoint2)
+	(visible_from objective1 waypoint3)
+)
+
+(:goal (and
+(communicated_soil_data waypoint2)
+(communicated_rock_data waypoint3)
+(communicated_image_data objective1 high_res))
+)
+
+(:metric minimize (total-time))
+
+)
+"""
+
 class ProblemTest(unittest.TestCase):
     
     def testLogistics(self):
@@ -168,7 +453,6 @@ class ProblemTest(unittest.TestCase):
         prob = problem.Problem.parse(p.root, dom)
 
         self.assertEqual(len(prob.init), 13)
-        
 
 
 
@@ -182,6 +466,15 @@ class ProblemTest(unittest.TestCase):
 
         self.assertEqual(len(prob.init), 9)
 
+    def testRovers(self):
+        """Testing Rovers problem"""
+        
+        p = Parser(domrovers.split("\n"))
+        dom = domain.MAPLDomain.parse(p.root)
+        p = Parser(probrovers.split("\n"))
+        prob = problem.Problem.parse(p.root, dom)
+
+        self.assertEqual(len(prob.init), 48)
 
         
     def testWriterDomain(self):
@@ -232,6 +525,59 @@ class ProblemTest(unittest.TestCase):
         self.assertEqual(len(prob.init), len(prob2.init))
         self.assertEqual(set(prob.init), set(prob2.init))
         self.assertEqual(prob.goal, prob2.goal)
+
+
+    def testWriterDomainNumeric(self):
+        """Testing MAPLWriter domain roundtrip with numeric fluents and durative actions"""
+        
+        p = Parser(domrovers.split("\n"))
+        dom = domain.MAPLDomain.parse(p.root)
+
+        w = writer.MAPLWriter()
+        strings = w.write_domain(dom)
+        
+        p = Parser(strings)
+        dom2 = domain.MAPLDomain.parse(p.root)
+
+        self.assertEqual(dom.name, dom2.name)
+        self.assertEqual(len(dom.constants), len(dom2.constants))
+        self.assertEqual(len(dom.actions), len(dom2.actions))
+        self.assertEqual(len(dom.sensors), len(dom2.sensors))
+        for a1 in dom.actions:
+            for a2 in dom2.actions:
+                if a1.name != a2.name:
+                    continue
+                self.assertEqual(a1.agents, a2.agents)
+                self.assertEqual(a1.args, a2.args)
+                self.assertEqual(a1.duration, a2.duration)
+                self.assertEqual(a1.vars, a2.vars)
+                self.assertEqual(a1.precondition, a2.precondition)
+                self.assertEqual(a1.replan, a2.replan)
+                self.assertEqual(a1.effects, a2.effects)
+
+            
+    def testWriterProblemNumeric(self):
+        """Testing MAPLWriter problem roundtrip with numeric fluents and durative actions"""
+        
+        p = Parser(domrovers.split("\n"))
+        dom = domain.MAPLDomain.parse(p.root)
+
+        p = Parser(probrovers.split("\n"))
+        prob = problem.Problem.parse(p.root, dom)
+
+        w = writer.MAPLWriter()
+        strings = w.write_problem(prob)
+        
+        p = Parser(strings)
+        prob2 = problem.Problem.parse(p.root, dom)
+
+        self.assertEqual(prob.name, prob2.name)
+        self.assertEqual(len(prob.objects), len(prob2.objects))
+        self.assertEqual(len(prob.init), len(prob2.init))
+        self.assertEqual(set(prob.init), set(prob2.init))
+        self.assertEqual(prob.goal, prob2.goal)
+        self.assertEqual(prob.optimization, prob2.optimization)
+        self.assertEqual(prob.opt_func, prob2.opt_func)
         
         
 if __name__ == '__main__':
