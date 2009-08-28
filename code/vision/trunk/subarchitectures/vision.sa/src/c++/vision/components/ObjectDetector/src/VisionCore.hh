@@ -418,6 +418,14 @@ public:
 
 	/// TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 	void GetObject(Gestalt::Type type, unsigned number, CubeDef cd);
+
+	/**
+	 * @brief Returns detected cube
+	 * @param number Number of the cube
+	 * @param cd Cube definition
+	 * @param masked Returns true, if cube is masked
+	 * @return Returns true, if cube with parameter number exists
+	 **/
 	bool GetCube(unsigned number, CubeDef &cd, bool &masked);
 };
 

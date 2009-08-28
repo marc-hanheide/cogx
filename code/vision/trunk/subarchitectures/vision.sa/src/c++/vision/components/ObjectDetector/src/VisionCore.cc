@@ -652,7 +652,6 @@ void VisionCore::DrawGestalts(Gestalt::Type type, int detail)
     gestalts[type][j]->Draw(detail);
 }
 
-// TODO Funktion überprüfen
 void VisionCore::DrawUnmaskedGestalts(Gestalt::Type type, int detail)
 {
   for(unsigned j = 0; j < gestalts[type].Size(); j++)
@@ -847,6 +846,7 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 			return true;
 		}
 		else masked = true;
+		return true;
 	}
 	return false;
 }
