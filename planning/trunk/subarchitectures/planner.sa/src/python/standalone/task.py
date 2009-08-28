@@ -206,7 +206,7 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         prec = action.precondition
         if action.replan:
             if prec:
-                prec = mapl.condtitions.Conjunction([action.replan, prec])
+                prec = mapl.conditions.Conjunction([action.replan, prec])
             else:
                 prec = action.replan
                 
@@ -354,19 +354,3 @@ class PDDLTask(Task):
         yield "(:goal"
         yield self._goal.pddl_str()
         yield "))"
-
-
-def predicate_from_function(function):
-    args = function.args[:] + [types.Parameter("?val", function.type)]
-    return predicates.Predicate(function.name, args)
-
-def modal_predicate_from_function(predicate, function):
-    args =[]
-    for arg in predicate.args:
-        if isinstance(arg.getType(), types.FunctionType):
-            args += function.args[:]
-        else:
-            args += arg
-
-    return predicates.Predicate(predicate.name  + "-" + function.name, args)
-
