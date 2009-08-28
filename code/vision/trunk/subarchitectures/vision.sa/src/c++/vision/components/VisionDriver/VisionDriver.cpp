@@ -47,6 +47,10 @@ void VisionDriver::start()
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<VisionDriver>(this,
         &VisionDriver::receiveVisualObject));
+        
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<VisionDriver>(this,
+        &VisionDriver::receiveVisualObjectPoseChange));
 }
 
 void VisionDriver::runComponent()
@@ -95,6 +99,18 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
   }else{
   	log("detection confidence to low, stop");
   }
+}
+
+void VisionDriver::receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc)
+{
+	VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+	/*
+	log("Change of pose of VisualObject '%s' detected: %f %f %f", 
+		obj->label.c_str(), 
+		obj->pose.pos.x,
+		obj->pose.pos.y,
+		obj->pose.pos.z);
+*/
 }
 
 

@@ -138,6 +138,9 @@ bool EdgeTracker::track(	unsigned char* image,
 							Particle p_estimate,
 							Particle& p_result)		// storage to write tracked position
 {
+	glReadBuffer(GL_AUX1);
+	glDrawBuffer(GL_AUX1);
+	
 	// Check if input is valid
 	isReady(image, model, camera, &p_estimate);	
 	
@@ -182,7 +185,10 @@ bool EdgeTracker::track(	unsigned char* image,
 		m_zero_particles = false;
 	//}else if(m_particles->getMax()->w < 0.1){
 	//	p_result = p_estimate;
-	}	
+	}
+	
+	glReadBuffer(GL_BACK);
+	glDrawBuffer(GL_BACK);
 	
 	return true;
 }

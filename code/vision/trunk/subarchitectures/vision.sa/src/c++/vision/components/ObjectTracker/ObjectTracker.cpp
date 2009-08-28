@@ -97,6 +97,7 @@ void ObjectTracker::runTracker(){
 	double dTimeStamp;
 	int i;
 	
+	
 	// * Tracking *
 	m_timer.Update();
 	//dTimeStamp = m_timer.GetApplicationTime();
@@ -114,6 +115,8 @@ void ObjectTracker::runTracker(){
 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 	
+	m_tracker->drawImage(NULL);
+	
 	// Track all models
 	for(i=0; i<m_modelID_list.size(); i++){
 		IDList* ids = &m_modelID_list[i];
@@ -126,11 +129,9 @@ void ObjectTracker::runTracker(){
 
 		// Track model
 		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
-		
 		m_tracker->drawResult(&ids->trackpose);
-		m_tracker->drawCoordinates();
+	
 		//m_tracker->drawTest();
-		m_tracker->swap();
 		running = inputsControl(m_tracker);
 		
 		//log("P: %f", ids->trackpose.tX);
@@ -141,9 +142,15 @@ void ObjectTracker::runTracker(){
 		// Send new data to working memory
 		obj->detectionConfidence = ids->trackpose.w;
 		obj->time = convertTime(dTimeStamp);
+		//log("WM_id: %s", m_modelID_list[i].cast_AD.id.c_str());
 		overwriteWorkingMemory(ids->cast_AD.id, obj);
+		
 	}
-	  
+	
+	m_tracker->drawCoordinates();
+	m_tracker->swap();
+	
+	
 	fTimeTracker = m_timer.Update();
 }
 
@@ -158,6 +165,8 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 		log("receive VisualObject: no valid model received, adding nothing");
 		return;
 	}
+	
+	log("receiving VisualObject: add to model list");
 	
 	
 	// Convert GeometryModel to Model for tracker
@@ -178,7 +187,7 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
 	
-	log("receive VisualObject: model added");
+	log("receive VisualObject: model added %s", obj->label.c_str());
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -272,12 +281,14 @@ void ObjectTracker::runComponent(){
   {
   	if(track){
   	  // Run Tracker
-  	  runTracker();
   	  sleepComponent(10);
+  	  runTracker();
+  	  
 		}else{
 			// * Idle *
+			sleepComponent(1000);
 			running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
-	    sleepComponent(1000);
+	    
 		}
   }
   
