@@ -17,12 +17,12 @@ class FunctionTable(dict):
                 self.add(f)
             return
                 
-        if function not in self:
+        if function.name not in self:
             dict.__setitem__(self, function.name, set())
         else:
-            if self.get(function.name, function.args) != None:
-                raise Exception("A function with this name and arguments already exists")
-            
+            if self.get(function.name, function.args):
+                raise Exception("A function with this name and arguments already exists: " + str(function))
+
         dict.__getitem__(self, function.name).add(function)
         
 
@@ -41,16 +41,30 @@ class FunctionTable(dict):
             del self[function.name]
                 
         
-    def get(self, name, args=[]):
-        """Get a function matching the provided name and argument types"""
+    def get(self, name, args):
+        """Get all functions matching the provided name and argument types"""
         
         if name not in self:
-            return None
+            return []
         
         fs = dict.__getitem__(self, name)
+        argtypes = []
+        for arg in args:
+            if isinstance(arg, predicates.Term):
+                argtypes.append(arg.getType())
+            elif isinstance(arg, types.TypedObject):
+                argtypes.append(arg.type)
+            elif isinstance(arg, types.Type):
+                argtypes.append(arg)
+            else:
+                raise Exception("Wrong type for argument list:" + str(type(arg)))
+                
         result = []
+#        print name, map(str, args)
         for f in fs:
-            if len(args) == len(f.args) and all(map(lambda a, fa: a.getType().equalOrSubtypeOf(fa.type), args, f.args)):
+            if len(argtypes) == len(f.args) and all(map(lambda t, fa: t.equalOrSubtypeOf(fa.type), argtypes, f.args)):
+#                print f
+#                print map(lambda t, fa: "%s <= %s: %s" %(str(t), str(fa.type),str(t.equalOrSubtypeOf(fa.type))), argtypes, f.args)
                 result.append(f)
 
         if len(result) == 1:
@@ -101,7 +115,13 @@ class Scope(dict):
             dict.__setitem__(self, obj.name, obj)
         
     def lookup(self, args):
-        return [ self[arg] for arg in args ]
+        result = []
+        for arg in args:
+            if isinstance(arg, predicates.FunctionTerm):
+                result.append(arg)
+            else:
+                result.append(predicates.ConstantTerm(self[arg]))
+        return result
 
     def lookupInstances(self, args):
         def get(obj):
@@ -160,8 +180,13 @@ class Scope(dict):
         return renamings
                 
     def __contains__(self, key):
+        if isinstance(key, predicates.ConstantTerm):
+            key = key.object
         if isinstance(key, types.TypedObject):
+            if key.type == types.numberType:
+                return True
             key = key.name
+            
         key = key.lower()
 
         if dict.__contains__(self, key):
@@ -170,8 +195,13 @@ class Scope(dict):
             return key in self.parent
         
     def __getitem__(self, key):
+        if isinstance(key, predicates.ConstantTerm):
+            key = key.object
         if isinstance(key, types.TypedObject):
+            if key.type == types.numberType:
+                return key
             key = key.name
+        
         key = key.lower()
 
         if dict.__contains__(self, key):

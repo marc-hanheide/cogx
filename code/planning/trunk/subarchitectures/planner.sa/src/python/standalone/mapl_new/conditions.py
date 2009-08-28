@@ -10,7 +10,7 @@ class Condition(object):
     def visit(self, fn):
         return fn(self, [])
 
-    def copy(self):
+    def copy(self, new_scope=None):
         return self.__class__()
 
     def __eq__(self, other):
@@ -63,8 +63,8 @@ class JunctionCondition(Condition):
     def visit(self, fn):
         return fn(self, [p.visit(fn) for p in self.parts])
 
-    def copy(self):
-        return self.__class__([ p.copy() for p in self.parts])
+    def copy(self, new_scope=None):
+        return self.__class__([ p.copy(new_scope) for p in self.parts])
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and all(map(lambda a,b: a==b, self.parts, other.parts))
@@ -92,8 +92,13 @@ class QuantifiedCondition(Condition, scope.Scope):
     def visit(self, fn):
         return fn(self, [self.condition.visit(fn)])
 
-    def copy(self):
-        return self.__class__([a.copy() for a in self.args], self.condition.copy(), self.parent)
+    def copy(self, new_scope=None):
+        if not new_scope:
+            new_scope = self.parent
+            
+        cp = self.__class__([predicates.Parameter(a.name, a.type) for a in self.args], None, new_scope)
+        cp.condition = self.condition.copy(cp)
+        return cp
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.condition == other.condition and all(map(lambda a,b: a==b, self.args, other.args))
@@ -110,21 +115,23 @@ class QuantifiedCondition(Condition, scope.Scope):
 
 class UniversalCondition(QuantifiedCondition):
     def negate(self):
-        return ExistentialCondition(self.condition.negate())
+        #FIXME: new scope not set correctly
+        return ExistentialCondition(self.args[:], self.condition.negate(), self.parent)
 
 class ExistentialCondition(QuantifiedCondition):
     def negate(self):
-        return UniversalCondition(self.condition.negate())
+        #FIXME: new scope not set correctly
+        return UniversalCondition(self.args[:], self.condition.negate(), self.parent)
 
 class LiteralCondition(Condition, predicates.Literal):
-    def __init__(self, predicate, args, negated=False):
-        predicates.Literal.__init__(self, predicate, args, negated)
+    def __init__(self, predicate, args, scope=None, negated=False):
+        predicates.Literal.__init__(self, predicate, args, scope, negated)
 
     def negate(self):
-        return LiteralCondition(self.predicate, self.args, not self.negated)
+        return LiteralCondition(self.predicate, self.args[:], None, not self.negated)
 
-    def copy(self):
-        return LiteralCondition(self.predicate, self.args, self.negated)
+    def copy(self, new_scope=None):
+        return LiteralCondition(self.predicate, self.args[:], new_scope, self.negated)
     
     @staticmethod
     def parse(it, scope):
@@ -138,6 +145,12 @@ class TimedCondition(Condition):
         self.time = time
         self.condition = condition
 
+    def visit(self, fn):
+        return fn(self, [self.condition.visit(fn)])
+
+    def copy(self, new_scope=None):
+        return TimedCondition(self.time, self.condition.copy(new_scope))
+    
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.time == other.time and self.condition == other.condition
 

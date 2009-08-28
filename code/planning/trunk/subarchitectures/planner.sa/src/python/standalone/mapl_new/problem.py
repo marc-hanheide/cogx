@@ -11,7 +11,7 @@ from parser import ParseError, UnexpectedTokenError
 from actions import Action
 
 class Problem(domain.MAPLDomain):
-    def __init__(self, name, objects, init, goal, _domain):
+    def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
         domain.MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, _domain.actions, _domain.sensors, _domain.axioms)
         for o in objects:
             self.add(o)
@@ -20,6 +20,8 @@ class Problem(domain.MAPLDomain):
         self.objects = objects
         self.init = init
         self.goal = goal
+        self.optimization = optimization
+        self.opt_func = opt_func
 
     @staticmethod
     def parse(root, domain):
@@ -59,9 +61,16 @@ class Problem(domain.MAPLDomain):
                     if elem.isTerminal():
                         raise UnexpectedTokenError(elem.token, "literal or fluent assignment")
                     
-                    domain.predicates.add(predicates.equalAssign)
                     domain.predicates.remove(predicates.equals)
-                    literal = predicates.Literal.parse(iter(elem), problem, assignOperators=[predicates.equals], maxNesting=0)
+                    domain.predicates.add(predicates.equalAssign)
+                    if "fluents" in domain.requirements or "numeric-fluents" in domain.requirements:
+                        domain.predicates.remove(predicates.eq)
+                        domain.predicates.add(predicates.num_equalAssign)
+                        
+                    literal = predicates.Literal.parse(iter(elem), problem, maxNesting=0)
+                    if "fluents" in domain.requirements or "numeric-fluents" in domain.requirements:
+                        domain.predicates.remove(predicates.num_equalAssign)
+                        domain.predicates.add(predicates.eq)
                     domain.predicates.remove(predicates.equalAssign)
                     domain.predicates.add(predicates.equals)
                     
@@ -70,6 +79,25 @@ class Problem(domain.MAPLDomain):
             elif type == ":goal":
                 cond = j.get(list, "goal condition")
                 problem.goal = conditions.Condition.parse(iter(cond),problem)
+
+            elif type == ":metric":
+                opt = j.get("terminal", "optimization").token
+                if opt.string not in ("minimize", "maximize"):
+                    raise UnexpectedTokenError(opt, "'minimize' or 'maximize'")
+                problem.optimization = opt.string
+                
+                problem.functions.add(predicates.total_time)
+                func = predicates.Term.parse(j,problem)
+                problem.functions.remove(predicates.total_time)
+
+                j.noMoreTokens()
+
+                if not isinstance(func.getType(), FunctionType):
+                    raise ParseError(elem.token, "Optimization function can't be a constant.")
+                if not func.getType().equalOrSubtypeOf(numberType):
+                    raise ParseError(elem.token, "Optimization function must be numeric.")
+                
+                problem.opt_func = func
 
             else:
                 raise ParseError(type, "Unknown section identifier: %s" % type.string)

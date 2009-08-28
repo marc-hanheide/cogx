@@ -66,9 +66,15 @@ class Predicate(Function):
     def __str__(self):
         return "(%s %s)" % (self.name, " ".join(str(a) for a in self.args))
 
-assign = Predicate("assign", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
-equalAssign = Predicate("=", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
+#basic predicates
+equals = Predicate("=", [Parameter("?o1", objectType), Parameter("?o2", objectType)], builtin=True)
 
+assign = Predicate("assign", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
+change = Predicate("change", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
+equalAssign = Predicate("=", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType)], builtin=True)
+num_equalAssign = Predicate("=", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
+
+#numeric predicates
 num_assign = Predicate("assign", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
 scale_up = Predicate("scale-up", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
 scale_down = Predicate("scale-down", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
@@ -76,8 +82,7 @@ increase = Predicate("increase", [Parameter("?f", FunctionType(numberType)), Par
 decrease = Predicate("decrease", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
 
 numericOps = [num_assign, scale_up, scale_down, increase, decrease]
-
-equals = Predicate("=", [Parameter("?o1", objectType), Parameter("?o2", objectType)], builtin=True)
+assignmentOps = [assign, num_assign, equalAssign, num_equalAssign]
 
 gt = Predicate(">", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
 lt = Predicate("<", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
@@ -87,6 +92,7 @@ le = Predicate("<=", [Parameter("?n1", numberType), Parameter("?n2", numberType)
 
 numericComparators = [gt, lt, eq, ge, le]
 
+#numeric functions
 minus = Function("-", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
 plus = Function("+", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
 mult = Function("*", [Parameter("?n1", numberType), Parameter("?n2", numberType)], numberType, builtin=True)
@@ -96,27 +102,39 @@ neg = Function("-", [Parameter("?n", numberType)], numberType, builtin=True)
 
 numericFunctions = [minus, plus, mult, div, neg]
 
-assignmentOps = [assign, num_assign, equalAssign]
+#default minimization function
+total_time = Function("total-time", [], numberType, builtin=True)
 
+#mapl predicates
 knowledge = Predicate("kval", [Parameter("?a", agentType), Parameter("?f", FunctionType(objectType))], builtin=True)
 indomain = Predicate("in-domain", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType), ], builtin=True)
 
 mapl_modal_predicates = [knowledge, indomain]
 
-is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", agentType)])
-achieved = Predicate("achieved", [Parameter("?sg", subgoalType)])
-commited_to_plan = Predicate("commited_to_plan", [Parameter("?a", agentType)])
-can_talk_to = Predicate("can_talk_to", [Parameter("?a1", agentType), Parameter("?a2", agentType)])
+is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", agentType)], builtin=True)
+achieved = Predicate("achieved", [Parameter("?sg", subgoalType)], builtin=True)
+commited_to_plan = Predicate("commited_to_plan", [Parameter("?a", agentType)], builtin=True)
+can_talk_to = Predicate("can_talk_to", [Parameter("?a1", agentType), Parameter("?a2", agentType)], builtin=True)
 
 mapl_predicates = mapl_modal_predicates + [is_planning_agent, achieved, commited_to_plan, can_talk_to]
 
 
 class Literal(object):
-    def __init__(self, predicate, args, negated=False):
+    def __init__(self, predicate, args, scope=None, negated=False):
         self.predicate = predicate
-        self.args = args
         self.negated = negated
 
+        if scope:
+            self.args = scope.lookup(args)
+        else:
+            self.args = args
+
+    def __str__(self):
+        s = "(%s %s)" % (self.predicate.name, " ".join(str(a) for a in self.args))
+        if self.negated:
+            s = "(not %s)" % s
+        return s
+            
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.predicate == other.predicate and self.negated == other.negated and all(map(lambda a,b: a==b, self.args, other.args))
 
@@ -127,34 +145,14 @@ class Literal(object):
         return hash((self.predicate, self.negated ) + tuple(self.args))
         
     @staticmethod
-    def parse(it, scope, negate=False, assignOperators=[], maxNesting=999):
+    def parse(it, scope, negate=False, maxNesting=999):
         first = it.get("terminal", "predicate").token
-        ops = dict([(p.name, p) for p in assignOperators])
 
         if first.string == "not":
             j = iter(it.get(list, "literal"))
             it.noMoreTokens()
-            return Literal.parse(j, scope, not negate, assignOperators, maxNesting)
+            return Literal.parse(j, scope, not negate, maxNesting)
 
-        #special rules for assignments:
-        #first argument may not be constant, types must be compatible and no negation is allowed
-#         if first.string in ops:
-#             if negate:
-#                 raise ParseError(first, "Can't negate fluent assignments.")
-
-#             predicate = ops[first.string]
-
-#             term = Term.parse(it, scope, maxNesting)
-            
-#             value = Term.parse(it, scope, maxNesting)
-#             if not value.getType().equalOrSubtypeOf(term.getType().type):
-#                 raise ParseError(first, "Can't assign object of type %s to %s." % (value.getType(), term.function.name))
-#             if maxNesting <= 0 and isinstance(value, FunctionTerm):
-#                 raise ParseError(first, "Error in Argument 2: Maximum nesting depth for functions exceeded or no functions allowed here.")
-                
-#             it.noMoreTokens()
-#             return Literal(predicate, [term, value])
-            
         if first.string not in scope.predicates:
             raise ParseError(first, "Unknown predicate: %s" % first.string)
             
@@ -172,13 +170,20 @@ class Literal(object):
             c_str = "\n  ".join(str(p) for p in candidates)
             raise ParseError(first, "no matching predicate found for (%s %s). Candidates are:\n  %s" % (first.string, type_str, c_str))
 
+        #check type constraints for assignments
+        if predicate in assignmentOps:
+            term = args[0]
+            value = args[1]
+            if not value.getType().equalOrSubtypeOf(term.getType().type):
+                raise ParseError(first, "Can't assign object of type %s to %s." % (value.getType(), term.function.name))
+
         #check nesting constraints
         if maxNesting <= 0:
             for i, (arg, parg) in enumerate(zip(args, predicate.args)):
                 if isinstance(arg, FunctionTerm) and not isinstance(parg.type, FunctionType):
-                    raise ParseError(first, "Error in Argument %d: Maximum nesting depth for functions exceeded or no functions allowed here." % i+1)
+                    raise ParseError(first, "Error in Argument %d: Maximum nesting depth for functions exceeded or no functions allowed here." % (i+1))
 
-        return Literal(predicate, args, negate)
+        return Literal(predicate, args, scope, negate)
     
 class Term(object):
     def __init__(self, function, args):
@@ -211,14 +216,19 @@ class Term(object):
                 obj = TypedObject(value, numberType)
                 
             return ConstantTerm(obj)
+                
         
         return FunctionTerm.parse(iter(term), scope, maxNesting-1)
 
     
 class FunctionTerm(Term):
-    def __init__(self, function, args):
+    def __init__(self, function, args, scope=None):
         self.function = function
-        self.args = args
+
+        if scope:
+            self.args = scope.lookup(args)
+        else:
+            self.args = args
     
     def getType(self):
         return FunctionType(self.function.type)
@@ -276,4 +286,4 @@ class ConstantTerm(Term):
         return self.object == other
 
     def __hash__(self):
-        return hash(self.object)
+        return hash((self.__class__, self.object))

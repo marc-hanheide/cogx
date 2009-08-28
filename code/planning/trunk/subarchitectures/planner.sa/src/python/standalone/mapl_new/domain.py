@@ -9,11 +9,11 @@ import predicates, actions
 from mapltypes import *
 from predicates import *
 from parser import ParseError, UnexpectedTokenError
-from actions import Action
+from actions import Action, DurativeAction
 from axioms import Axiom
 from sensors import Sensor
 
-supported = set(["mapl", "typing", "equality", "adl", "fluents", "numeric-fluents", "object-fluents"])
+supported = set(["mapl", "typing", "equality", "adl", "fluents", "numeric-fluents", "object-fluents", "durative-actions"])
 
 class MAPLDomain(scope.Scope):
     def __init__(self, name, types, constants, predicates, functions, actions, sensors, axioms):
@@ -59,7 +59,7 @@ class MAPLDomain(scope.Scope):
             for t in mapl_types:
                 typeDict[t.name] = t
             preds.add(mapl_predicates)
-            
+
         domain = None
             
         for elem in it:
@@ -112,7 +112,7 @@ class MAPLDomain(scope.Scope):
             elif type == ":action":
                 domain.actions.append(Action.parse(j.reset(), domain))
                 
-            elif type == ":durative-action":
+            elif type == ":durative-action" and "durative-actions" in requirements :
                 domain.actions.append(DurativeAction.parse(j.reset(), domain))
                 
             elif type == ":sensor":
