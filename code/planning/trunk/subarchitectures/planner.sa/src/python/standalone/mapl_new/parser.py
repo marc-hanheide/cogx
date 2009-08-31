@@ -93,15 +93,15 @@ class ElementIterator(object):
                 if expected == list and elem.isTerminal():
                     if message is None:
                         message = "'('"
-                        raise UnexpectedTokenError(elem.token, message)
+                    raise UnexpectedTokenError(elem.token, message)
                 elif expected == "terminal" and not elem.isTerminal():
                     if message is None:
                         message = "identifier"
-                        raise UnexpectedTokenError(elem.token, message)
+                    raise UnexpectedTokenError(elem.token, message)
                 elif expected != list and expected != "terminal" and elem.token.string != expected:
                     if message is None:
                         message = "'%s'" % expected
-                        raise UnexpectedTokenError(elem.token, message)
+                    raise UnexpectedTokenError(elem.token, message)
             return elem
                 
         except StopIteration:

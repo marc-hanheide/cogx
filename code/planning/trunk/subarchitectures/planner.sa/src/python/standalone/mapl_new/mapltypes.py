@@ -60,16 +60,19 @@ class Type(object):
             if next.token.string not in types:
                 raise ParseError(next.token, "Unknown type: '%s'" % next.token.string)
             return types[next.token.string]
+        
         j = iter(next)
-        j.get("either")
+        first = j.get("terminal").token
+        if first.string == "either":
+            ctypes = []
+            for elem in j:
+                ctypes.append(Type.parse(elem, types))
+            return CompositeType(ctypes)
 
-        ctypes = []
-        for elem in j:
-            if elem.token.string not in types:
-                raise ParseError(elem.token, "Unknown type: '%s'" % elem.token.string)
-            ctypes.append(types[elem.token.string])
-        return CompositeType(ctypes)
-
+        elif first.string == "function":
+            ftype = Type.parse(j, types)
+            j.noMoreTokens()
+            return FunctionType(ftype)
 
 class CompositeType(Type):
     def __init__(self, types):

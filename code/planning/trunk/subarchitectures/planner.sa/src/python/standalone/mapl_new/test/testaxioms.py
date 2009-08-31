@@ -5,7 +5,7 @@ import unittest
 import tempfile
 import os
 
-import parser, domain, actions, state
+import parser, domain, actions
 from mapltypes import *
 from axioms import *
 from parser import Parser, ParseError

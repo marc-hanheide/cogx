@@ -15,7 +15,7 @@ domlogistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :typing :equality :object-fluents :durative-actions) 
+(:requirements :mapl :typing :equality :object-fluents :durative-actions) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -25,18 +25,28 @@ domlogistics = \
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle))
 
+(:sensor sense_package
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?p - package)
+         :sense         (= (location-of ?p) (location-of ?t)))
+
+(:sensor sense_position
+         :agent         (?a - agent)
+         :parameters    (?t - truck)
+         :sense         (location-of ?t))
+
 (:action drive
          :agent         (?a - agent)
          :parameters    (?t - truck ?to - location)
          :precondition  (= (city-of (location-of ?t)) (city-of ?to))
          :effect        (assign (location-of ?t) ?to))
 
-;(:durative-action dur_drive
-;         :agent         (?a - agent)
-;         :parameters    (?t - truck ?to - location)
-;         :duration      (= ?duration 4)
-;         :condition     (over all (= (city-of (location-of ?t)) (city-of ?to)))
-;         :effect        (at end (assign (location-of ?t) ?to)))
+(:durative-action dur_drive
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?to - location)
+         :duration      (= ?duration 4)
+         :condition     (over all (= (city-of (location-of ?t)) (city-of ?to)))
+         :effect        (at end (assign (location-of ?t) ?to)))
 
 (:action fly
          :agent         (?a - agent)
@@ -504,6 +514,15 @@ class ProblemTest(unittest.TestCase):
                 self.assertEqual(a1.replan, a2.replan)
                 self.assertEqual(a1.effects, a2.effects)
 
+        for s1 in dom.sensors:
+            for s2 in dom2.sensors:
+                if s1.name != s2.name:
+                    continue
+                self.assertEqual(s1.agents, s2.agents)
+                self.assertEqual(s1.args, s2.args)
+                self.assertEqual(s1.vars, s2.vars)
+                self.assertEqual(s1.precondition, s2.precondition)
+                self.assertEqual(s1.sense, s2.sense)
                 
     def testWriterProblem(self):
         """Testing MAPLWriter problem roundtrip"""

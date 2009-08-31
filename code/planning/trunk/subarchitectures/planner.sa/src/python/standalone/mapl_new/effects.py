@@ -8,74 +8,89 @@ import scope, conditions, predicates
 
 class Effect(object):
     
+    def copy(self, new_scope=None):
+        return self.__class__()
+    
     @staticmethod
-    def parse(it, scope, timedEffects=False):
+    def parse(it, scope, timedEffects=False, onlySimple=False):
         first = it.get(None, "effect specification")
         effects = []
         if first.token.string == "and":
             for elem in it:
-                effects += Effect.parse(iter(elem), scope, timedEffects)
+                effects += Effect.parse(iter(elem), scope, timedEffects, onlySimple)
             return effects
-
-        return ConditionalEffect.parse(it.reset(), scope, timedEffects)
         
-
-class ConditionalEffect(scope.Scope, Effect):
-    def __init__(self, condition, variables, effects, parentScope):
-        scope.Scope.__init__(self, variables, parentScope)
-        self.variables = variables
-        self.condition = condition
+        elif not onlySimple and first.token.string == "forall":
+            return UniversalEffect.parse(it.reset(), scope, timedEffects)
+        
+        elif not onlySimple and first.token.string == "when":
+            return ConditionalEffect.parse(it.reset(), scope, timedEffects)
+        
+        else:
+            if timedEffects:
+                return TimedEffect.parse(it.reset(), scope)
+            else:
+                return SimpleEffect.parse(it.reset(), scope)
+    
+class UniversalEffect(scope.Scope, Effect):
+    def __init__(self, args, effects, parentScope):
+        scope.Scope.__init__(self, args, parentScope)
+        self.args = args
         self.effects = effects
 
+    def copy(self, new_scope=None):
+        if not new_scope:
+            new_scope = self.parent
+            
+        cp = UniversalEffect([predicates.Parameter(a.name, a.type) for a in self.args], [], new_scope)
+        cp.effects = [e.copy(cp) for e in self.effects]
+        return cp
+        
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.variables == other.variables and self.condition == other.condition and self.effects == other.effects
+        return self.__class__ == other.__class__ and self.args == other.args and self.effects == other.effects
 
     def __ne__(self, other):
         return not __eq__(self, other)
         
     @staticmethod
     def parse(it, scope, timedEffects=False):
-        first = it.get()
-        variables = []
-        newscope = scope
-        if first.token.string == "forall":
-            variables = predicates.parseArgList(it, scope.types)
-            it = iter(it.get(list, "effect specification"))
-            first = it.get()
-            
-        ceff = ConditionalEffect(None, variables, [], scope)
-
-        if first.token.string == "when":
-            condition = conditions.Condition.parse(iter(it.get(list, "condition")), ceff)
-            it = iter(it.get(list, "effect specification"))
-            ceff.condition = condition
-            
-        if variables or ceff.condition:
-            newscope = ceff
-            
-        if timedEffects:
-            effects = TimedEffect.parse(it.reset(), newscope)
-        else:
-            effects = SimpleEffect.parse(it.reset(), newscope)
-
-        if variables or ceff.condition:
-            ceff.effects = effects
-            return [ceff]
+        first = it.get("forall")
+        args = predicates.parseArgList(iter(it.get(list, "parameter list")), scope.types)
+        eff = UniversalEffect(args, [], scope)
         
-        return effects
+        eff.effects = Effect.parse(iter(it.get(list, "effect specification")), eff, timedEffects)
+
+        return [eff]
+
+class ConditionalEffect(Effect):
+    def __init__(self, condition, effects):
+        self.condition = condition
+        self.effects = effects
+        
+    def copy(self, new_scope=None):
+        return ConditionalEffect(self.condition.copy(new_scope), [e.copy(new_scope) for e in self.effects])
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.condition == other.condition and self.effects == other.effects
+
+    def __ne__(self, other):
+        return not __eq__(self, other)
+        
+    @staticmethod
+    def parse(it, scope, timedEffects=False):
+        first = it.get("when")
+        condition = conditions.Condition.parse(iter(it.get(list, "condition")), scope)
+        effects = Effect.parse(iter(it.get(list, "effect specification")), scope, timedEffects, onlySimple=True)
+            
+        return [ConditionalEffect(condition, effects)]
 
 class SimpleEffect(predicates.Literal, Effect):
     def __str__(self):
         return "Effect: %s" % predicates.Literal.__str__(self)
-    
+
     @staticmethod
     def parse(it, scope):
         first = it.get(None, "effect specification").token
-        effects = []
-        if first.string == "and":
-            for elem in it:
-                effects += SimpleEffects.parse(iter(elem), scope)
-            return effects
 
         ops = [predicates.assign]
         if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
@@ -99,6 +114,9 @@ class TimedEffect(SimpleEffect):
     def __init__(self, predicate, args, timeSpec, scope=None, negated=False):
         predicates.Literal.__init__(self, predicate, args, scope, negated)
         self.time = timeSpec
+        
+    def copy(self, new_scope=None):
+        return TimedEffect(self.predicate, self.args, self.time, new_scope, self.negated)
 
     def __str__(self):
         return "TimedEffect at %s: %s" %(self.time, predicates.Literal.__str__(self))
@@ -112,11 +130,6 @@ class TimedEffect(SimpleEffect):
     @staticmethod
     def parse(it, scope):
         first = it.get(None, "effect specification").token
-        effects = []
-        if first.string == "and":
-            for elem in it:
-                effects += TimedEffect.parse(iter(elem), scope)
-            return effects
 
         if first.string != "at":
             scope.predicates.add(predicates.change)
@@ -133,16 +146,6 @@ class TimedEffect(SimpleEffect):
         if "fluents" in scope.requirements or "numeric-fluents" in scope.requirements:
             ops += predicates.numericOps
 
-#        print map(str, ops)
-#        assert "assign" not in scope.predicates
-#        scope.predicates.add(predicates.assign)
-#        print map(str, scope.predicates["assign"])
-#        print "=============================="
-#        scope.predicates.add(predicates.num_assign)
-#        print "=============================="
-#        scope.predicates.remove(predicates.num_assign)
-#        scope.predicates.remove(predicates.assign)
-        
         scope.predicates.add(ops)
         scope.predicates.remove(predicates.equals)
         literal = predicates.Literal.parse(iter(it.get(list, "effect")), scope)

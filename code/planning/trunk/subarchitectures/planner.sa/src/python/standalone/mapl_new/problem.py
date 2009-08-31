@@ -12,7 +12,11 @@ from actions import Action
 
 class Problem(domain.MAPLDomain):
     def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
-        domain.MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, _domain.actions, _domain.sensors, _domain.axioms)
+        domain.MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [], [])
+        self.actions = [a.copy(self) for a in _domain.actions]
+        self.sensors = [s.copy(self) for s in _domain.sensors]
+        self.axioms = [a.copy(self) for a in _domain.axioms]
+        
         for o in objects:
             self.add(o)
             

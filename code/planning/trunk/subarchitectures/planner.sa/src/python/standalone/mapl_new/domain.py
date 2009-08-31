@@ -26,6 +26,13 @@ class MAPLDomain(scope.Scope):
         self.actions = actions
         self.sensors = sensors
         self.axioms = axioms
+
+        self.name2action = None
+
+    def getAction(self, name):
+        if not self.name2action:
+            self.name2action = dict((a.name, a) for a in self.actions)
+        return self.name2action[name]
         
     @staticmethod
     def parse(root):

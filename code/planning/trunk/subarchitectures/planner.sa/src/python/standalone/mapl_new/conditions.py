@@ -123,15 +123,12 @@ class ExistentialCondition(QuantifiedCondition):
         #FIXME: new scope not set correctly
         return UniversalCondition(self.args[:], self.condition.negate(), self.parent)
 
-class LiteralCondition(Condition, predicates.Literal):
+class LiteralCondition(predicates.Literal, Condition):
     def __init__(self, predicate, args, scope=None, negated=False):
         predicates.Literal.__init__(self, predicate, args, scope, negated)
 
     def negate(self):
         return LiteralCondition(self.predicate, self.args[:], None, not self.negated)
-
-    def copy(self, new_scope=None):
-        return LiteralCondition(self.predicate, self.args[:], new_scope, self.negated)
     
     @staticmethod
     def parse(it, scope):

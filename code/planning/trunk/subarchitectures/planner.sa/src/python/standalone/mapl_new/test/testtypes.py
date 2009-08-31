@@ -14,7 +14,8 @@ typetest = \
 (:types  truck airplane - vehicle
          package vehicle - thing
          airport - location
-         city location thing - object)
+         city location thing - object
+)
 
 """
 
@@ -25,7 +26,8 @@ objecttest = \
            obj11 obj12 obj13 obj21 obj22 obj23 - package
            apt1 apt2 - airport
            pos1 pos2 - location
-           cit1 cit2 - city)
+           cit1 cit2 - city
+)
 """
 
 class ConditionsTest(unittest.TestCase):

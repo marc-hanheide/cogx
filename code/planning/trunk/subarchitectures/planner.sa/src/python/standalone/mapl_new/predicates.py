@@ -129,6 +129,12 @@ class Literal(object):
         else:
             self.args = args
 
+    def copy(self, new_scope=None):
+        return self.__class__(self.predicate, self.args, new_scope, self.negated)
+
+    def copyInstance(self):
+        return Literal(self.predicate, [a.copyInstance() for a in args], negated=self.negated)
+            
     def __str__(self):
         s = "(%s %s)" % (self.predicate.name, " ".join(str(a) for a in self.args))
         if self.negated:
@@ -184,13 +190,39 @@ class Literal(object):
                     raise ParseError(first, "Error in Argument %d: Maximum nesting depth for functions exceeded or no functions allowed here." % (i+1))
 
         return Literal(predicate, args, scope, negate)
-    
+
+
 class Term(object):
-    def __init__(self, function, args):
-        raise NotImplementedError()
+    def __init__(self, *params):
+        if len(params) == 1:
+            obj = params[0]
+            if isinstance(obj, Parameter):
+                if isinstance(obj.type, FunctionType):
+                    self.__class__ = FunctionVariableTerm
+                    FunctionVariableTerm.__init__(self, obj)
+                else:
+                    self.__class__ = VariableTerm
+                    VariableTerm.__init__(self, obj)
+            elif isinstance(obj, TypedObject):
+                self.__class__ = ConstantTerm
+                ConstantTerm.__init__(self, obj)
+            else:
+                raise Exception("Unexpected Argument for Term: %s" % str(obj))
+        elif len(params) == 2:
+            func = params[0]
+            args = params[2]
+            assert isinstance(func, Function)
+            assert isinstance(obargs, list)
+            self.__class__ = FunctionTerm
+            FunctionTerm.__init__(self, func, args)
+        else:
+            raise Exception("Too many arguments for Term()")
     
     def getType(self):
         raise NotImplementedError()
+    
+    def isInstanceOf(self, type):
+        return self.getType().equalOrSubtypeOf(type)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__;
@@ -214,9 +246,12 @@ class Term(object):
                 except:
                     raise ParseError(term.token, "Unkown identifier: '%s'" % term.token.string)
                 obj = TypedObject(value, numberType)
-                
+
+            if isinstance(obj, Parameter):
+                if isinstance(obj.type, FunctionType):
+                    return FunctionVariableTerm(obj)
+                return VariableTerm(obj)
             return ConstantTerm(obj)
-                
         
         return FunctionTerm.parse(iter(term), scope, maxNesting-1)
 
@@ -232,6 +267,9 @@ class FunctionTerm(Term):
     
     def getType(self):
         return FunctionType(self.function.type)
+    
+    def copyInstance(self):
+        return FunctionTerm(self.function, [a.copyInstance() for a in self.args])
 
     def __str__(self):
         return "FunctionTerm: %s(%s)" % (self.function.name, " ".join(str(s) for s in self.args))
@@ -269,14 +307,76 @@ class FunctionTerm(Term):
 
         return FunctionTerm(func, args)
 
+class VariableTerm(Term):
+    def __init__(self, parameter):
+        assert isinstance(parameter, Parameter)
+        self.object = parameter
+        
+    def isInstantiated(self):
+        return self.object.isInstantiated()
+
+    def getInstance(self):
+        if self.isInstantiated():
+            return self.object.getInstance()
+        raise Exception, "Term %s is not instantiated" % str(self.object)
+
+    def copyInstance(self):
+        if self.isInstantiated():
+            return ConstantTerm(self.getInstance())
+        return VariableTerm(self.object)
+    
+    def getType(self):
+        return self.object.type
+    
+class FunctionVariableTerm(FunctionTerm, VariableTerm):
+    def __init__(self, obj):
+        self.object = obj
+
+    def getType(self):
+        return self.object.type
+
+    def copyInstance(self):
+        if self.isInstantiated():
+            return FunctionTerm(self.getInstance().function, [a.args for a in self.getInstance().args])
+        return FunctionVariableTerm(self.object)
+    
+    def __get_function(self):
+        if self.isInstantiated():
+            return self.object.getInstance().function
+        raise Exception, "Term %s is not instantiated" % str(self.object)
+
+    def __get_args(self):
+        if self.isInstantiated():
+            return self.object.getInstance().args
+        raise Exception, "Term %s is not instantiated" % str(self.object)
+        
+    function = property(__get_function)
+    args = property(__get_args)
+
+    def __str__(self):
+        return "FunctionVariableTerm: %s" % self.object.name
+    
+    def __eq__(self, other):
+        if isinstance(other, FunctionVariableTerm):
+            return self.object == other.object
+        return self.object == other
+
+    def __hash__(self):
+        return hash((self.__class__, self.object))
+
+    
     
 class ConstantTerm(Term):
     def __init__(self, obj):
+        assert obj.__class__ == TypedObject
         self.object = obj
     
     def getType(self):
         return self.object.type
 
+    def copyInstance(self):
+        return ConstantTerm(self.object)
+    
     def __str__(self):
         return "Term: %s" % self.object.name
     
