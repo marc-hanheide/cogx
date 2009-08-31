@@ -4,7 +4,7 @@ import re
 import utils
 import globals as global_vars
 
-from task import PlanningStatusEnum
+from task import PlanningStatusEnum, Task
 import plans
 
 class Planner(object):
@@ -149,7 +149,13 @@ class ContinualAxiomsFF(BasePlanner):
         stdout_output = utils.run_command(cmd, output=stdout_path)
 #         print "Planner output:"
 #         print stdout_output
-        pddl_output = open(plan_path).read()
+        try:
+            pddl_output = open(plan_path).read()
+        except IOError:
+            print "Warning: FF did not find a plan or crashed.  FF output was:\n\n>>>"
+            print stdout_output
+            print "<<<\n"
+            return None
         pddl_plan = self.parse_ff_output(pddl_output)
         return pddl_plan
 
@@ -188,3 +194,12 @@ class ContinualAxiomsFF(BasePlanner):
         plan.add_link(nodes[-1], plan.goal_node)
         return plan
             
+if __name__ == '__main__':    
+    assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""
+    domain_fn, problem_fn = sys.argv[1:]
+    task = Task()
+    planner = Planner()
+    task.load_mapl_domain(domain_fn)
+    task.load_mapl_problem(problem_fn)
+    planner._start_planner(task)
+    plan = task.get_plan()

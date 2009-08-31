@@ -1,0 +1,46 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl)
+	
+	(:types 
+		robot - agent
+
+		node - object
+		place_type - object
+	)
+	
+	(:constants
+		place placeholder - place_type
+	)
+
+    (:predicates
+		(connected ?n1 ?n2 - node)
+		;; special
+		(has-goal ?a - agent)
+		(commited ?a - agent)
+    )	
+
+	(:functions
+		(place_type ?n - node) - place_type
+		(pos ?r -  agent) - node
+ 	)
+	
+
+;;; actions ;;;
+
+	(:action move
+	 :agent (?a - robot)
+	 :parameters (?to - node)
+	 :variables (?from - node)
+	 :precondition (and 
+		(or (connected ?from ?to) (connected ?to ?from))
+		(= (pos ?a) ?from) 
+		)
+	 :effect (and
+		(assign (pos ?a) ?to)
+		(assign (place_type ?to) place)
+	))
+
+	
+
+)
