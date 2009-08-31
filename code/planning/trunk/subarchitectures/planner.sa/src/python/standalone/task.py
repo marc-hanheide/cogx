@@ -236,7 +236,8 @@ class PDDLWriter(mapl.writer.MAPLWriter):
     def write_domain(self, domain):
         strings = ["(define (domain %s)" % domain.name]
         strings.append("")
-        strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, domain.requirements)))
+        #strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, domain.requirements)))
+        strings.append("(:requirements :adl)")
         strings.append("")
         strings += self.write_types(domain.types.itervalues())
 

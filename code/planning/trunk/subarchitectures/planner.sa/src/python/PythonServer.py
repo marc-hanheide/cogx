@@ -44,12 +44,26 @@ def gen_type_declarations(unions):
   for union in unions:
     yield "%s - %s" % (union2name(union), union2type_declaration(union))
 
-def union2facts(union):
-  name = union2name(union)
-  for feature in union.features:
-    # choose feature val with highest probability:
-    max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb) 
-    yield "(%s %s : %s)" % (feature.featlabel, name, max_val.val)
+def gen_fact_tuples(unions):
+  for union in unions:
+    name = union2name(union)
+    for feature in union.features:
+      # choose feature val with highest probability:
+      max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb) 
+      yield (feature.featlabel, name, max_val.val)
+
+def filter_unknown_preds(fact_tuples, domain):
+  for ft in fact_tuples:
+    if pred not in domain.functions:
+      feature_label, union_name, val = ft
+      print "filtering feature assignment %s, because '%s' is not part of the planning domain" \
+          % (ft, feature_label)
+    else:
+      yield ft
+
+def tuples2strings(fact_tuples):
+  for ft in fact_tuples:
+    yield "(%s %s : %s)" % ft
 
 class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
@@ -78,14 +92,21 @@ class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
 
     task = Task()
     task.load_mapl_domain(TEST_DOMAIN_FN)
+    
+    
 
-    obj_descriptions = "\n".join(fact for union in task_desc.state for fact in union2facts(union))
+    #obj_descriptions = "\n".join(fact for union in task_desc.state for fact in union2facts(union))
+    obj_descriptions = tuples2strings(filter_unknown_preds(gen_fact_tuples(unions), task._mapldomain))
+    obj_descriptions = "\n".join(obj_descriptions)
     obj_declarations = "\n".join(gen_type_declarations(task_desc.state))
     problem_str = MAPL_TASK_TMPL % (obj_declarations, obj_descriptions, task_desc.goal)
     print problem_str
+
+
     #task.parse_mapl_problem(problem_str)
 #     task.load_mapl_problem(TEST_TASK_FN)
     self.planner.register_task(task)
+
 #     task.mark_changed()
 #     task.activate_change_dectection()
 #     plan = task.get_plan()
