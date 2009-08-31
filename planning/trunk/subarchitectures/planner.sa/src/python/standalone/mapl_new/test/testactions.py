@@ -5,7 +5,7 @@ import unittest
 import tempfile
 import os
 
-import parser, domain, actions, state
+import parser, domain, actions
 from mapltypes import *
 from actions import *
 from effects import *
@@ -17,7 +17,7 @@ logistics = \
 
 (define (domain logistics-object-fluents)
 
-(:requirements :typing :equality :object-fluents) 
+(:requirements :mapl :typing :equality :object-fluents) 
 
 (:types  truck airplane - vehicle
          package vehicle - thing
@@ -79,6 +79,38 @@ a_load = """
                  :effect        (assign (location-of ?p) ?v))
 """
 
+cond_load = """
+        (:action load
+                 :agent         (?a - agent)
+                 :parameters    (?p - package ?v - vehicle)
+                 :effect        (when (= (location-of ?p) (location-of ?v))
+                                      (assign (location-of ?p) ?v)))
+"""
+
+univ_unload = """
+        (:action dropall
+                 :agent         (?a - agent)
+                 :parameters    (?v - vehicle)
+                 :effect        (forall (?p - package)
+                                      (when (= (location-of ?p) (location-of ?v))
+                                            (assign (location-of ?p) ?v))
+                                ))
+"""
+
+modal_action = """
+ 	(:action tell_val
+ 	 :agent (?speaker - agent)
+ 	 :parameters (?hearer - agent ?var - (function object))
+ 	 :precondition (and
+ 		(KVAL ?speaker ?var)
+                 (not (= ?speaker ?hearer))
+ 		)
+ 	 :effect (and
+ 		(KVAL ?hearer ?var)
+ 	))
+
+"""
+
 class ActionTest(unittest.TestCase):
 
     def setUp(self):
@@ -95,29 +127,6 @@ class ActionTest(unittest.TestCase):
         self.domain.add([self.truck, self.plane, self.p, self.airport, self.loc1, self.loc2, self.agent])
         
 
-    def testInstantiation(self):
-        """Testing action instantiation"""
-        
-        action = Parser.parseAs(drive.split("\n"), Action, self.domain)
-        action.instantiate({"?a" :self.agent, "?t" : self.truck, "?to" : self.loc1})
-        #Can't create a fact from an assignment from one function to another.
-        self.assertRaises(Exception, state.Fact.fromCondition, action.precondition)
-        effect = state.Fact.fromEffect(action.effects[0])
-        expected = state.Fact(state.StateVariable(self.domain.functions["location-of"][0], [self.truck]), self.loc1)
-        unexpected = state.Fact(state.StateVariable(self.domain.functions["location-of"][0], [self.truck]), self.loc2)
-        #test (in)equality
-        self.assertEqual(effect, expected)
-        self.assertNotEqual(effect, unexpected)
-        action.uninstantiate()
-        
-        action.instantiate([self.agent, self.truck, self.loc1])
-        effect2 = state.Fact.fromEffect(action.effects[0])
-        self.assertEqual(effect2, expected)
-
-        action.uninstantiate()
-        #Test type checking
-        self.assertRaises(Exception, action.instantiate, [self.truck, self.agent, self.loc1])
-
     def testDurativeAction(self):
         """Testing durative action parsing"""
         
@@ -128,6 +137,15 @@ class ActionTest(unittest.TestCase):
         self.assert_(isinstance(action.effects[0], TimedEffect))
         self.assertEqual(action.effects[0].time, "end")
         
+    def testModalAction(self):
+        """Testing modal action parsing"""
+        
+        action = Parser.parseAs(modal_action.split("\n"), Action, self.domain)
+
+        self.assertEqual(action.args[1].type, FunctionType(objectType))
+        term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Parameter("?c", self.domain.types["city"])])
+        action.instantiate({"?var" : term})
+        
     def testEffects(self):
         """Testing basic effect parsing"""
         
@@ -135,6 +153,23 @@ class ActionTest(unittest.TestCase):
         self.assertEqual(len(action.effects), 1)
         self.assertEqual(len(action.effects), 1)
 
+    def testConditionalEffects(self):
+        """Testing conditional effect parsing"""
+        
+        action = Parser.parseAs(cond_load.split("\n"), Action, self.domain)
+
+        self.assert_(isinstance(action.effects[0], ConditionalEffect))
+        self.assert_(isinstance(action.effects[0].condition, conditions.LiteralCondition))
+        self.assert_(isinstance(action.effects[0].effects[0], SimpleEffect))
+
+    def testUniversalEffects(self):
+        """Testing conditional effect parsing"""
+        
+        action = Parser.parseAs(univ_unload.split("\n"), Action, self.domain)
+
+        self.assert_(isinstance(action.effects[0], UniversalEffect))
+        self.assertEqual(len(action.effects[0].args), 1)
+        self.assert_(isinstance(action.effects[0].effects[0], ConditionalEffect))
         
     def testAssertion(self):
         """Testing parsing of assertions"""

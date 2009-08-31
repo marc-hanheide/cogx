@@ -8,11 +8,28 @@ from parser import ParseError
 from scope import Scope
 
 class Axiom(Scope):
-    def __init__(self, name, args, condition, scope):
+    def __init__(self, pred, args, condition, scope):
         Scope.__init__(self, args, scope)
-        self.name = name
+        self.args = args
+        self.predicate = pred
         self.condition = condition
+        
+    def instantiate(self, mapping):
+        if not isinstance(mapping, dict):
+            mapping = dict([(param.name, c) for (param, c) in zip(self.args, mapping)])
+        Scope.instantiate(self, mapping)
 
+    def copy(self, newdomain=None):
+        if not newdomain:
+            newdomain = self.parent
+            
+        args = [types.Parameter(p.name, p.type) for p in self.args]
+        
+        a = Axiom(self.predicate, args, None, newdomain)
+        a.condition = self.condition.copy(a)
+        return a
+        
+        
     @staticmethod
     def parse(it, scope):
         it.get(":derived")
@@ -39,6 +56,6 @@ class Axiom(Scope):
             c_str = "\n  ".join(str(p) for p in pred_candidates)
             raise ParseError(name, "no matching predicate found for (%s %s). Candidates are:\n  %s" % (name.string, type_str, c_str))
 
-        axiom = Axiom(name.string, args, None, scope)
+        axiom = Axiom(pred, args, None, scope)
         axiom.condition = conditions.Condition.parse(iter(it.get(list, "condition")), axiom)
         return axiom

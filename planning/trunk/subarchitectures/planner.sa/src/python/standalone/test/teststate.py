@@ -6,176 +6,194 @@ import unittest
 import mapl_new as mapl
 from mapl_new.predicates import *
 from mapl_new.mapltypes import *
-from mapl_new import conditions, scope 
+from mapl_new import domain, problem, conditions
 from mapl_new.parser import Parser, ParseError
 from state_new import *
 
+domlogistics = \
+"""
+;; Logistics domain, PDDL 3.1 version.
+
+(define (domain logistics-object-fluents)
+
+(:requirements :mapl :typing :equality :object-fluents :durative-actions) 
+
+(:types  truck airplane - vehicle
+         package vehicle - thing
+         airport - location
+         city location thing agent - object)
+  
+(:functions  (city-of ?l - (either location vehicle)) - city
+             (location-of ?t - thing) - (either location vehicle))
+
+(:derived (kval ?a - agent ?svar - (function object))
+          (exists (?val - object) (= ?svar ?val)))
+
+(:action drive
+         :agent         (?a - agent)
+         :parameters    (?t - truck ?to - location)
+         :precondition  (= (city-of (location-of ?t)) (city-of ?to))
+         :effect        (assign (location-of ?t) ?to))
+
+(:action fly
+         :agent         (?a - agent)
+         :parameters    (?a - airplane ?to - airport)
+         :effect        (assign (location-of ?a) ?to))
+
+(:action load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) (location-of ?v))
+         :effect        (assign (location-of ?p) ?v))
+
+(:action a_load
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :replan        (kval ?a (location-of ?p))
+         :effect        (assign (location-of ?p) ?v))
+
+(:action unload
+         :agent         (?a - agent)
+         :parameters    (?p - package ?v - vehicle)
+         :precondition  (= (location-of ?p) ?v)
+         :effect        (assign (location-of ?p) (location-of ?v)))
+
+)
+"""
+
+problogistics = \
+"""
+(define (problem logistics-4-0)
+
+(:domain logistics-object-fluents)
+
+(:objects  agent - agent
+           apn1 - airplane
+           tru1 tru2 - truck
+           obj11 obj12 obj13 obj21 obj22 obj23 - package
+           apt1 apt2 - airport
+           pos1 pos2 - location
+           cit1 cit2 - city)
+
+(:init  (= (location-of apn1) apt2)
+        (= (location-of tru1) pos1)
+        (= (location-of tru2) pos2)
+        (= (location-of obj11) pos1)
+;;        (= (location-of obj12) pos1)
+;;        (= (location-of obj13) pos1)
+        (kval agent (location-of obj13))
+        (= (location-of obj21) pos2)
+        (= (location-of obj22) pos2)
+        (= (location-of obj23) pos2)
+        (= (city-of apt1) cit1)
+        (= (city-of apt2) cit2)
+        (= (city-of pos1) cit1)
+        (= (city-of pos2) cit2))
+
+(:goal  (and (= (location-of obj11) apt1)
+             (= (location-of obj13) apt1)
+             (= (location-of obj21) pos1)
+             (= (location-of obj23) pos1)))
+
+)
+"""
 
 class StateTest(unittest.TestCase):
     def setUp(self):
-        self.type1 = Type("type1")
-        self.type2 = Type("type2", [self.type1])
-        self.c1 = TypedObject("c1", self.type1)
-        self.c2 = TypedObject("c2", self.type2)
-        self.agent = TypedObject("agent", agentType)
-        args = [Parameter("?a", self.type1),
-                Parameter("?b", self.type2),
-                Parameter("?c", objectType)]
-        val = Parameter("?v", booleanType)
-        eq =  Predicate("=", [Parameter("?o1", objectType), Parameter("?o2", objectType)])
-        self.func1 =  Function("func1", args, booleanType)
-        self.func2 =  Function("func2", args[:-1], self.type1)
-
-        self.pred1 =  Predicate("pred1", args)
-        self.pred2 =  Predicate("pred2", args[:-1])
+        p = Parser(domlogistics.split("\n"))
+        self.dom = domain.MAPLDomain.parse(p.root)
+        p = Parser(problogistics.split("\n"))
+        self.prob = problem.Problem.parse(p.root, self.dom)
         
-        self.scope = scope.Scope([TRUE, FALSE, self.c1, self.c2, self.agent], None)
-        self.scope.types["type1"] = self.type1
-        self.scope.types["type2"] = self.type2
-        self.scope.types["boolean"] = booleanType
-        self.scope.types["object"] = objectType
-        self.scope.types["agent"] = agentType
-        self.scope.predicates.add(eq)
-        self.scope.predicates.add(self.pred1)
-        self.scope.predicates.add(self.pred2)
-        self.scope.predicates.add(knowledge)
-        self.scope.predicates.add(indomain)
-        self.scope.functions.add(self.func1)
-        self.scope.functions.add(self.func2)
-
-    def getLocalScope(self):
-        params = [Parameter("?p1", self.type1),
-                  Parameter("?p2", self.type2),
-                  Parameter("?p3", objectType),
-                  Parameter("?v", booleanType)]
-
-        return scope.Scope(params, self.scope)
+    def testActionInstantiation(self):
+        """Testing action instantiation"""
         
-
-    def testLiteralInstantiation(self):
-        """Testing instantiation of literals"""
+        action = self.prob.getAction("drive")
+        action.instantiate({"?a" :self.prob["agent"], "?t" : self.prob["tru1"], "?to" : self.prob["pos1"]})
+        #Can't create a fact from an assignment from one function to another.
+        self.assertRaises(Exception, Fact.fromCondition, action.precondition)
+        effect = Fact.fromEffect(action.effects[0])
+        expected = Fact(StateVariable(self.dom.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos1"])
+        unexpected = Fact(StateVariable(self.dom.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos2"])
         
-        test = \
-        """
-        (= (func1 ?p1 ?p2 ?p3) ?v)
-        """
-        localScope = self.getLocalScope()
-        cond = Parser.parseAs(test.split("\n"), conditions.Condition, localScope)
-
-        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        fact = Fact.fromLiteral(cond)
-
-        #check that svar and value are correct
-        self.assertEqual(fact.value, TRUE)
-        self.assertEqual(fact.svar, StateVariable(self.func1, [self.c1, self.c2, self.c1]))
-        #check that comparison with a manually constructed fact work
-        self.assertEqual(fact, Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
-        self.assertNotEqual(fact, Fact(StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, Fact(StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
-        #check that comparison with a tuple work
-        self.assertEqual(fact, (StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, (StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
-        self.assertNotEqual(fact, (StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, (StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
-
-        #check that trying to get a fact from an uninstantiated literal will fail
-        localScope.uninstantiate()
-        self.assertRaises(Exception, Fact.fromLiteral, cond)
+        #test (in)equality
+        self.assertEqual(effect, expected)
+        self.assertNotEqual(effect, unexpected)
+        action.uninstantiate()
         
-        #instancing via objects and via names should be equivalent
-        localScope.instantiate({"?p1" : "c1", "?p2" : "c2", "?p3" : "c1", "?v" : "true"})
-        fact2 = Fact.fromLiteral(cond)
+        action.instantiate([self.prob["agent"], self.prob["tru1"], self.prob["pos1"]])
+        effect2 = Fact.fromEffect(action.effects[0])
+        self.assertEqual(effect2, expected)
+        action.uninstantiate()
 
-        self.assertEqual(fact, fact2)
+        action.instantiate(["agent", "tru1", "pos1"])
+        effect3 = Fact.fromEffect(action.effects[0])
+        self.assertEqual(effect3, expected)
+        action.uninstantiate()
+                           
+        #Test type checking
+        self.assertRaises(Exception, action.instantiate, [self.prob["tru1"], self.prob["agent"], self.prob["pos1"]])
+        
+    def testConditionChecking(self):
+        """Testing checking of conditions"""
 
+        state = State.fromProblem(self.prob)
         
-    def testConditionInstantiation(self):
-        """Testing instantiation of conditions"""
+        drive = self.prob.getAction("drive")
+        drive.instantiate(["agent", "tru1", "apt1"])
+        self.assert_(state.isSatisfied(drive.precondition))
+        drive.uninstantiate()
 
-        test = \
-        """(and
-        (pred1 c1 ?p2 ?p3)
-        (not (pred2 c1 ?p2))
-        (= (func1 ?p1 ?p2 ?p3) ?v)
-        (= (func1 ?p1 ?p2 c2) false)
-        )
-        """
+        drive.instantiate(["agent", "tru1", "apt2"])
+        self.assertFalse(state.isSatisfied(drive.precondition))
+        drive.uninstantiate()
         
-        localScope = self.getLocalScope()
-        cond = Parser.parseAs(test.split("\n"), conditions.Condition, localScope)
+    def testEffects(self):
+        """Testing applying of effects"""
 
-        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        facts = Fact.fromCondition(cond)
-        f1 = Fact(StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE)
-        f2 = Fact(StateVariable(self.pred2, [self.c1, self.c2]), FALSE)
-        f3 = Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE)
-        f4 = Fact(StateVariable(self.func1, [self.c1, self.c2, self.c2]), FALSE)
-        self.assertEqual(len(facts), 4)
-        self.assert_(f1 in facts)
-        self.assert_(f2 in facts)
-        self.assert_(f3 in facts)
-        self.assert_(f4 in facts)
+        state = State.fromProblem(self.prob)
         
+        drive = self.prob.getAction("drive")
+        drive.instantiate(["agent", "tru1", "apt1"])
 
-    def testModalInstantiation(self):
-        """Testing modal predicates"""
+        fold = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos1"])
+        self.assert_(fold in state)
+                           
+        for e in drive.effects:
+            state.applyEffect(e)
+                
+        fnew = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]]), self.prob["apt1"])
+        self.assert_(fnew in state)
+        self.assertFalse(fold in state)
+        drive.uninstantiate()
 
-        test = \
-        """(and
-        (KVAL ?a (func1 ?p1 ?p2 ?p3))
-        (not (in-domain (func2 ?p1 ?p2) c1))
-        )
-        """
-        
-        localScope = self.getLocalScope()
-        localScope.add(Parameter("?a", agentType))
-        cond = Parser.parseAs(test.split("\n"), conditions.Condition, localScope)
-        
-        localScope.instantiate({"?a" : self.agent, "?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        f1 = Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1], modality=knowledge, modal_args=[self.agent]), TRUE)
-        f2 = Fact(StateVariable(self.func2, [self.c1, self.c2], modality=indomain, modal_args=[self.c1]), FALSE)
+    def testAxiomEvaluation(self):
+        """Testing axiom evaluation"""
+        state = State.fromProblem(self.prob)
+        extstate = state.getExtendedState()
 
-        facts = Fact.fromCondition(cond)
-        self.assert_(f1 in facts)
-        self.assert_(f2 in facts)
+        kf11 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]], knowledge, [self.prob["agent"]]), TRUE)
+        kf12 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj12"]], knowledge, [self.prob["agent"]]), TRUE)
+        kf13 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj13"]], knowledge, [self.prob["agent"]]), TRUE)
 
-    def testNestedFunctionInstantiation(self):
-        """Testing instantiation of literals with nested functions"""
+        self.assert_(kf11 in extstate)
+        self.assertFalse(kf12 in extstate)
+        self.assert_(kf13 in extstate)
+        self.assert_(kf13 in state)
         
-        test = \
-        """(and
-        (pred1 (func2 (func2 ?p1 ?p2) ?p2) ?p2 ?p3)
-        (= (func1 (func2 c2 ?p2) ?p2 (func2 (func2 ?p1 ?p2) ?p2)) false)
-        )
-        """
-        
-        localScope = self.getLocalScope()
-        cond = Parser.parseAs(test.split("\n"), conditions.Condition, localScope)
-        s1 = Fact(StateVariable(self.func2, [self.c1, self.c2]), self.c1)
-        s2 = Fact(StateVariable(self.func2, [self.c2, self.c2]), self.c2)
-        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        
-        state = State([s1, s2])
+        load = self.prob.getAction("a_load")
+        load.instantiate(["agent", "obj11", "tru1"])
+        self.assert_(extstate.isSatisfied(load.replan))
+        load.uninstantiate()
 
-        self.assertRaises(Exception, Fact.fromCondition, cond)
-        facts = state.factsFromCondition(cond)
-        
-        f1 = Fact(StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE)
-        f2 = Fact(StateVariable(self.func1, [self.c2, self.c2, self.c1]), FALSE)
-        self.assert_(f1 in facts)
-        self.assert_(f2 in facts)
+        load.instantiate(["agent", "obj12", "tru1"])
+        self.assertFalse(extstate.isSatisfied(load.replan))
+        load.uninstantiate()
 
-        self.assertFalse(state.isSatisfied(cond))
-        state.set(f1)
-        self.assertFalse(state.isSatisfied(cond))
-        state.set(f2)
-        self.assert_(state.isSatisfied(cond))
+        load.instantiate(["agent", "obj13", "tru1"])
+        self.assert_(extstate.isSatisfied(load.replan))
+        load.uninstantiate()
 
-        state2 = State([s1])
-        self.assertRaises(Exception, state2.factsFromCondition, cond)
-        
-        
         
 if __name__ == '__main__':
     unittest.main()    

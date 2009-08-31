@@ -119,20 +119,17 @@ class Task(object):
 
     def load_mapl_domain(self, domain_file):
         print "Loading MAPL domain %s." % domain_file
-        p = mapl.parser.Parser.parseFile(domain_file)
-        self._mapldomain = mapl.domain.MAPLDomain.parse(p.root)
+        self._mapldomain = mapl.load_domain(domain_file)
         
     def load_mapl_problem(self, task_file, agent_name=None):
         print "Loading MAPL problem %s." % task_file
-        p = mapl.parser.Parser.parseFile(task_file)
-        self._mapltask = mapl.problem.Problem.parse(p.root, self._mapldomain)
+        self._mapltask = mapl.load_problem(task_file, self._mapldomain)
         self._state = state.State.fromProblem(self._mapltask)
 
         self._agent_name = agent_name
 
     def parse_mapl_problem(self, problem_str, agent_name=None):
-        p = mapl.parser.Parser(problem_str.split("\n"))
-        self._mapltask = mapl.problem.Problem.parse(p.root, self._mapldomain)
+        self._mapltask = mapl.parse_problem(problem_str, self._mapldomain)
         self._state = state.State.fromProblem(self._mapltask)
 
         self._agent_name = agent_name
@@ -146,9 +143,9 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         self.modal = modalPredicates
     
     def write_term(self, term):
-        if isinstance(term, mapl.predicates.ConstantTerm):
+        if isinstance(term, (mapl.predicates.ConstantTerm, mapl.predicates.VariableTerm)):
             return term.object.name
-        assert False, "No function terms in ff-pddl!"
+        assert False, "No function terms in ff-pddl: %s" % str(term)
     
     def write_literal(self, literal):
         args=[]
@@ -163,6 +160,10 @@ class PDDLWriter(mapl.writer.MAPLWriter):
                 args += arg.args
             else:
                 args.append(arg)
+
+        #We probably have a equal between constants
+        if not name_elems:
+            name_elems.append("=")
                 
         argstr = " ".join(map(lambda t: self.write_term(t), args))
         return "(%s %s)" % ("-".join(name_elems), argstr)
@@ -197,11 +198,10 @@ class PDDLWriter(mapl.writer.MAPLWriter):
 
     def write_functions(self, funcs):
         return []
-    
-    def write_action(self, action):
-        strings = [action.name]
-        args = action.agents + action.args + action.vars
-        strings += self.section(":parameters", ["(%s)" % self.write_typelist(args)], parens=False)
+
+    def write_modal_action(self, action, newname, newargs):
+        strings = [newname]
+        strings += self.section(":parameters", ["(%s)" % self.write_typelist(newargs)], parens=False)
 
         prec = action.precondition
         if action.replan:
@@ -216,6 +216,35 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         strings += self.section(":effect", self.write_effects(action.effects), parens=False)
 
         return self.section(":action", strings)
+    
+    def write_action(self, action, functions):
+        args = action.agents + action.args + action.vars
+        func_arg = None
+        funcs = []
+        aargs = []
+        
+        for a in args:
+            if isinstance(a.type, types.FunctionType):
+                func_arg = a
+                for func in functions:
+                    if func.builtin or not func.type.equalOrSubtypeOf(a.type.type):
+                        continue
+                    funcs.append(func)
+            else:
+                aargs.append(a)
+                    
+        if func_arg is None:
+            return self.write_modal_action(action, action.name, args)
+        strings=[]
+
+        for f in funcs:
+            action.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
+            strings += self.write_modal_action(action, "%s-%s" % (action.name, f.name), aargs+f.args)
+            action.uninstantiate()
+            strings.append("")
+
+        return strings
+        
 
     def write_sensor(self, action):
         strings = [action.name]
@@ -252,7 +281,7 @@ class PDDLWriter(mapl.writer.MAPLWriter):
             strings += self.write_sensor(s)
         for a in domain.actions:
             strings.append("")
-            strings += self.write_action(a)
+            strings += self.write_action(a, domain.functions)
 
         strings.append("")
         strings.append(")")

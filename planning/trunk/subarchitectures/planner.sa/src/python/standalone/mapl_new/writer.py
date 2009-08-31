@@ -38,7 +38,7 @@ class MAPLWriter(object):
         return type.name
     
     def write_term(self, term):
-        if isinstance(term, predicates.ConstantTerm):
+        if isinstance(term, (predicates.ConstantTerm, predicates.VariableTerm)):
             if term.getType().equalOrSubtypeOf(types.numberType):
                 return str(term.object.name)
             return term.object.name
@@ -157,11 +157,11 @@ class MAPLWriter(object):
     
     def write_sensor(self, action):
         strings = [action.name]
-        strings += self.section(":agent", [self.write_typelist(action.agents)], parens=False)
+        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if action.args:
-            strings += self.section(":parameters", [self.write_typelist(action.args)], parens=False)
+            strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
         if action.vars:
-            strings += self.section(":variables", [self.write_typelist(action.vars)], parens=False)
+            strings += self.section(":variables", ["(%s)" % self.write_typelist(action.vars)], parens=False)
         if action.precondition:
             strings += self.section(":precondition", [self.write_condition(action.precondition)], parens=False)
 
@@ -169,7 +169,7 @@ class MAPLWriter(object):
             eff = [self.write_literal(action.sense)]
         elif isinstance(action.sense, predicates.FunctionTerm):
             eff = [self.write_term(action.sense)]
-        strings += self.section(":effect", eff, parens=False)
+        strings += self.section(":sense", eff, parens=False)
         
         return self.section(":sensor", strings)
         
@@ -185,16 +185,15 @@ class MAPLWriter(object):
             return ["(at %s %s)" % (effect.time, self.write_literal(effect))]
         elif isinstance(effect, effects.SimpleEffect):
             return [self.write_literal(effect)]
+        elif isinstance(effect, effects.UniversalEffect):
+            strings = self.write_effects(effect.effects)
+            head  = "forall (%s)" % self.write_typelist(effect.args)
+            return self.section(head, strings)
         elif isinstance(effect, effects.ConditionalEffect):
             strings = self.write_effects(effect.effects)
-            if effect.condition:
-                cond = self.write_condition(effect.condition)
-                strings = self.section("when", cond + strings)
-            if effect.variables:
-                head  = "forall (%s)" % self.write_typelist(effect.variables)
-                strings = self.section(head, strings)
+            cond = self.write_condition(effect.condition)
+            return self.section("when", cond + strings)
 
-            return strings
         assert False, effect
             
         

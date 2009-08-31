@@ -5,7 +5,7 @@ import unittest
 import tempfile
 import os
 
-import parser, mapltypes, conditions, predicates, scope, state
+import parser, mapltypes, conditions, predicates, scope
 from mapltypes import *
 from predicates import *
 from conditions import *
@@ -114,7 +114,7 @@ class ConditionsTest(unittest.TestCase):
         self.assert_(isinstance(cond, LiteralCondition))
         self.assertEqual(cond.predicate.name, "=")
         self.assert_(isinstance(cond.args[0], Term))
-        self.assert_(isinstance(cond.args[1], ConstantTerm))
+        self.assert_(isinstance(cond.args[1], VariableTerm))
         self.assertEqual(cond.args[0].function.name, "func1")
         
     def testConstantParsing(self):
@@ -283,8 +283,8 @@ class ConditionsTest(unittest.TestCase):
 
         localScope = scope.Scope(params, self.scope)
 
-        c1 = LiteralCondition(self.pred1, [ConstantTerm(params[0]), ConstantTerm(Parameter("?p2", self.type2)), ConstantTerm(TypedObject("test", objectType))])
-        c2 = LiteralCondition(self.pred1, [ConstantTerm(Parameter("?p1", self.type1)), ConstantTerm(Parameter("?p2", self.type2)), ConstantTerm(Parameter("?p3", objectType))])
+        c1 = LiteralCondition(self.pred1, [Term(params[0]), Term(Parameter("?p2", self.type2)), Term(TypedObject("test", objectType))])
+        c2 = LiteralCondition(self.pred1, [Term(Parameter("?p1", self.type1)), Term(Parameter("?p2", self.type2)), Term(Parameter("?p3", objectType))])
         c3 = LiteralCondition(self.pred1, ["?p1", "?p2", "?p3"], localScope)
         self.assertRaises(KeyError, LiteralCondition, self.pred1, ["?p1", "?p2", "?p5"], localScope)
         c1copy = c1.copy()

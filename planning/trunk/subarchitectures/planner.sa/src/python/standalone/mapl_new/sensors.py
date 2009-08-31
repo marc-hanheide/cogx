@@ -16,7 +16,26 @@ class Sensor(actions.Action):
         else:
             term = self.sense
 
-        return effects.SimpleEffect(predicates.knowledge, [predicates.ConstantTerm(self.agents[0]), term])
+        return effects.SimpleEffect(predicates.knowledge, [predicates.VariableTerm(self.agents[0]), term])
+        
+    def copy(self, newdomain=None):
+        if not newdomain:
+            newdomain = self.domain
+            
+        agents = [predicates.Parameter(p.name, p.type) for p in self.agents]
+        args = [predicates.Parameter(p.name, p.type) for p in self.args]
+        vars = [predicates.Parameter(p.name, p.type) for p in self.vars]
+        
+        a = self.__class__(self.name, agents, args, vars, None, None, newdomain)
+
+        if self.precondition:
+            a.precondition = self.precondition.copy(a)
+        if isinstance(self.sense, predicates.Literal):
+            a.sense = self.sense.copy(a)
+        else:
+            a.sense = predicates.FunctionTerm(self.sense.function, a.lookup(self.sense.args))
+
+        return a
         
         
     @staticmethod

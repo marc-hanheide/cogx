@@ -27,7 +27,24 @@ class Action(Scope):
     def to_pddl(self):
         str = ["(:action %s" % self.name]
         indent = len("(:action ")
+
+    def copy(self, newdomain=None):
+        if not newdomain:
+            newdomain = self.parent
             
+        agents = [types.Parameter(p.name, p.type) for p in self.agents]
+        args = [types.Parameter(p.name, p.type) for p in self.args]
+        vars = [types.Parameter(p.name, p.type) for p in self.vars]
+        
+        a = Action(self.name, agents, args, vars, None, None, [], newdomain)
+
+        if self.precondition:
+            a.precondition = self.precondition.copy(a)
+        if self.replan:
+            a.replan = self.replan.copy(a)
+        a.effects = [e.copy(a) for e in self.effects]
+
+        return a
     
     @staticmethod
     def parse(it, scope):
@@ -49,7 +66,7 @@ class Action(Scope):
         else:
             variables = []
 
-        action =  Action(name, agent, params, variables, None, None, None, scope)
+        action = Action(name, agent, params, variables, None, None, None, scope)
         
 
         if next.token.string == ":precondition":
@@ -117,6 +134,12 @@ class DurativeAction(Action):
     def __init__(self, name, agents, args, vars, duration, precondition, replan, effects, domain):
         Action.__init__(self, name, agents, args, vars, precondition, replan, effects, domain)
         self.duration = duration
+
+    def copy(self, newdomain=None):
+        a = Action.copy(self, newdomain)
+        a.__class__ = DurativeAction
+        a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
+        return a
         
     @staticmethod
     def parse(it, scope):

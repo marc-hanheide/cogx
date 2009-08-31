@@ -117,21 +117,13 @@ class Scope(dict):
     def lookup(self, args):
         result = []
         for arg in args:
-            if isinstance(arg, predicates.FunctionTerm):
-                result.append(arg)
+            if arg.__class__ == predicates.FunctionTerm:
+                result.append(predicates.FunctionTerm(arg.function, self.lookup(arg.args)))
             else:
-                result.append(predicates.ConstantTerm(self[arg]))
+                result.append(predicates.Term(self[arg]))
+
         return result
 
-    def lookupInstances(self, args):
-        def get(obj):
-            if isinstance(obj, types.Parameter):
-                return obj.getInstance()
-            else:
-                return obj
-            
-        return map(get, args)
-            
     def add(self, object):
         if isinstance(object, (tuple, list)):
             for o in object:
@@ -152,10 +144,11 @@ class Scope(dict):
     def instantiate(self, mapping):
         self.uninstantiate()
         for key, val in mapping.iteritems():
-            val = self[val]
+            if not isinstance(val, predicates.FunctionTerm):
+                val = self[val]
             key = self[key]
             
-            assert isinstance(val, types.TypedObject), "Cannot instantiate %s to %s: value is no TypedObject but %s" % (key,val, type(val))
+            #assert isinstance(val, types.TypedObject), "Cannot instantiate %s to %s: value is no TypedObject but %s" % (key,val, type(val))
             assert isinstance(key, types.Parameter), "Cannot instantiate %s: it is no Parameter but %s" % (key, type(key))
                 
             self[key].instantiate(val)
@@ -180,7 +173,7 @@ class Scope(dict):
         return renamings
                 
     def __contains__(self, key):
-        if isinstance(key, predicates.ConstantTerm):
+        if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
             key = key.object
         if isinstance(key, types.TypedObject):
             if key.type == types.numberType:
@@ -195,7 +188,7 @@ class Scope(dict):
             return key in self.parent
         
     def __getitem__(self, key):
-        if isinstance(key, predicates.ConstantTerm):
+        if isinstance(key, (predicates.ConstantTerm, predicates.VariableTerm)):
             key = key.object
         if isinstance(key, types.TypedObject):
             if key.type == types.numberType:
@@ -218,5 +211,7 @@ class Scope(dict):
         return object.__hash__(self)
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
+    def __nonzero__(self):
+        return True
 
 
