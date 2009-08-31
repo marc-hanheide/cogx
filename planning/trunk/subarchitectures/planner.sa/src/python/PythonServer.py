@@ -65,7 +65,7 @@ def tuples2strings(fact_tuples):
   for ft in fact_tuples:
     yield "(%s %s : %s)" % ft
 
-class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
+class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
     self.client = None
     self.planner = StandalonePlanner()
