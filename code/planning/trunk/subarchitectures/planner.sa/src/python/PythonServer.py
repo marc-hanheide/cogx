@@ -30,8 +30,7 @@ MAPL_TASK_TMPL = """
 )))
 """
 
-TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/cp_test.domain.mapl")
-TEST_TASK_FN = join(dirname(__file__), "../../test_data/cp_test.task.mapl")
+TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/minidora.domain.mapl")
 
 def union2name(union):
   return "union%s" % union.entityID
