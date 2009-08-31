@@ -26,7 +26,8 @@ void WMControl::connectToPythonServer() {
     try	{
 	Ice::Identity idty;
 	idty.name = "PlannerPythonServer";
-	idty.category = "PythonServer.PythonServerI";
+	//idty.category = "PythonServer.PythonServerI";
+	idty.category = "PythonServer";
 
 	ostringstream tmp;
 	tmp << getCommunicator()->identityToString(idty) << ":default -h 127.0.0.1 -p 10411";
