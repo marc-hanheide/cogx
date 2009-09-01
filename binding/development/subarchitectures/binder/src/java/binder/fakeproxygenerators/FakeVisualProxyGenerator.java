@@ -1,14 +1,6 @@
 package binder.fakeproxygenerators;
 
-import java.util.Enumeration;
-import java.util.Random;
-import java.util.Vector;
-
-import binder.abstr.AbstractProxyGenerator;
 import binder.autogen.core.*;
-import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbDistribUtils;
 
 public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
@@ -33,58 +25,40 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	}
 	
 
-	private Proxy createProxyOne() {
-		Proxy proxy = new Proxy();
-		proxy.entityID = newDataID();
-		proxy.subarchId = "fakevision"; 
-		proxy.probExists = 0.75f;
+	protected Proxy createProxyOne() {
+		Proxy proxy = createNewProxy ("fakevision", 0.75f);
 		
-		proxy.features = new Feature[2];
-		proxy.features[0] = new Feature();
-		proxy.features[0].featlabel = "obj_label";
-		proxy.features[0].alternativeValues = new FeatureValue[1];
-		proxy.features[0].alternativeValues[0] = new StringValue(0.8f,"mug");
+		FeatureValue mug = createStringValue ("mug", 0.8f);
+		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", mug);
+		addFeatureToProxy (proxy, feat1);
 		
-		proxy.features[1] = new Feature();
-		proxy.features[1].featlabel = "colour";
-		proxy.features[1].alternativeValues = new FeatureValue[1];
-		proxy.features[1].alternativeValues[0] = new StringValue(0.95f,"blue");
-		
-		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
-
-		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
+		FeatureValue blue = createStringValue ("blue", 0.95f);
+		Feature feat2 = createFeatureWithUniqueFeatureValue ("colour", blue);
+		addFeatureToProxy (proxy, feat2);
 		
 		return proxy;
 	}
 
 
-	private Proxy createProxyTwo() {
-		Proxy proxy = new Proxy();
-		proxy.entityID = newDataID();
-		proxy.subarchId = "fakevision"; 
-		proxy.probExists = 0.9f;
+	protected Proxy createProxyTwo() {
+		Proxy proxy = createNewProxy ("fakevision", 0.9f);
+		
+		FeatureValue ball = createStringValue ("ball", 0.81f);
+		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", ball);
+		addFeatureToProxy (proxy, feat1);		
 	
-		proxy.features = new Feature[3];
-		proxy.features[0] = new Feature();
-		proxy.features[0].featlabel = "obj_label";
-		proxy.features[0].alternativeValues = new FeatureValue[1];
-		proxy.features[0].alternativeValues[0] = new StringValue(0.8f,"ball");
+	
+		FeatureValue red = createStringValue("red", 0.65f);
+		FeatureValue blue = createStringValue("blue", 0.2f);
+		FeatureValue[] vals = {red, blue};
+		Feature feat2 = createFeatureWithAlternativeFeatureValues ("colour", vals);
+		addFeatureToProxy (proxy, feat2);
 		
-		proxy.features[1] = new Feature();
-		proxy.features[1].featlabel = "colour";
-		proxy.features[1].alternativeValues = new FeatureValue[2];
-		proxy.features[1].alternativeValues[0] = new StringValue(0.65f,"red");
-		proxy.features[1].alternativeValues[1] = new StringValue(0.2f,"blue");
-		
-		proxy.features[2] = new Feature();
-		proxy.features[2].featlabel = "location";
-		proxy.features[2].alternativeValues = new FeatureValue[1];
-		proxy.features[2].alternativeValues[0] = new StringValue(0.5f,"on_table");
-		
-		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
 
-		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
-
+		FeatureValue ontable = createStringValue("on_table", 0.5f);
+		Feature feat3 = createFeatureWithUniqueFeatureValue ("location", ontable);
+		addFeatureToProxy (proxy, feat3);
+		
 		return proxy;
 	}
 	

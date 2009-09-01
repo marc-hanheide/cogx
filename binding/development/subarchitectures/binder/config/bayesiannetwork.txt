@@ -99,11 +99,11 @@ edges {
 		P(obj_label=mug|position=on_the_floor)=0.05
 	}
 	
-	obj_label -> ling_label {
+	ling_label -> obj_label {
 	   P(obj_label=mug|ling_label=mug)=0.9,
-	   P(obj_label=mug|ling_label=ball)=0.0001,
+	   P(obj_label=mug|ling_label=ball)=0.000001,
 	   P(obj_label=ball|ling_label=ball)=0.8,
-	   P(obj_label=ball|ling_label=mug)=0.0001
+	   P(obj_label=ball|ling_label=mug)=0.000001
    }
    
    colour -> ling_colour {

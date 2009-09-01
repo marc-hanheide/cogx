@@ -242,7 +242,7 @@ public class ProbDistribUtils {
 		}
 		}
 
-		log("WARNING, no probability value found for assignment");
+		log("WARNING, no probability value found for assignment: " + getDiscreteProbabilityAssignmentPrettyPrint(assignment));
 		return result;
 	}
 

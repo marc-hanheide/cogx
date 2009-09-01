@@ -45,11 +45,12 @@ public class BinderMonitorGUI extends JFrame
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
-
 	public boolean LOGGING = false;
 
-	HashMap<Proxy,Object> insertedProxies;
-	HashMap<Union,Object> insertedUnions;
+	HashMap<String,Object> insertedProxies;
+	HashMap<String,Object> insertedUnions;
+	
+	HashMap<String, String> unionForProxy;
 
 	Vector<Object> insertedObjects ;
 
@@ -69,9 +70,11 @@ public class BinderMonitorGUI extends JFrame
 		graph = new mxGraph();
 		parent = graph.getDefaultParent();
 		
-		insertedProxies = new HashMap<Proxy, Object>();
-		insertedUnions = new HashMap<Union, Object>();
-
+		insertedProxies = new HashMap<String, Object>();
+		insertedUnions = new HashMap<String, Object>();
+		
+		unionForProxy = new HashMap<String, String>();
+		
 		insertedObjects = new Vector<Object>();
 		
 		setVisible(true);
@@ -226,7 +229,7 @@ public class BinderMonitorGUI extends JFrame
 		graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", object_proxy);
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_proxy);
 
-		insertedProxies.put(proxy, vertex);
+		insertedProxies.put(proxy.entityID, vertex);
 		insertedObjects.add(vertex);
 		
 		addNewFeatures(proxy.features, vertex, width, "");
@@ -245,7 +248,7 @@ public class BinderMonitorGUI extends JFrame
 		for (int i = 0; i < union.includedProxies.length ; i++) {
 			log("included proxy: " + i);
 			Proxy proxy = union.includedProxies[i];
-			if (insertedProxies.containsKey(proxy)) {
+			if (insertedProxies.containsKey(proxy.entityID)) {
 				horizontalIncr += 250;
 			}
 		}		
@@ -253,9 +256,12 @@ public class BinderMonitorGUI extends JFrame
 		for (int i = 0; i < union.includedProxies.length ; i++) {
 			log("included proxy: " + i);
 			Proxy proxy = union.includedProxies[i];
-			if (!insertedProxies.containsKey(proxy)) {
+			if (!insertedProxies.containsKey(proxy.entityID)) {
 			addNewProxy(proxy, curUnionPosition_X + horizontalIncr);
 			horizontalIncr += 250;
+			
+			unionForProxy.put(proxy.entityID, union.entityID);
+			
 			}
 		}
 		
@@ -296,7 +302,7 @@ public class BinderMonitorGUI extends JFrame
 		graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", object_union);
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_union);
 
-		insertedUnions.put(union, union_vertex);
+		insertedUnions.put(union.entityID, union_vertex);
 		
 		insertedObjects.add(union_vertex);
 		
@@ -304,8 +310,8 @@ public class BinderMonitorGUI extends JFrame
 
 		for (int i = 0; i < union.includedProxies.length ; i++) {
 			Proxy p = union.includedProxies[i];
-			if (insertedProxies.containsKey(p)) {
-				Object proxy_vertex = insertedProxies.get(p);
+			if (insertedProxies.containsKey(p.entityID)) {
+				Object proxy_vertex = insertedProxies.get(p.entityID);
 				Object edge = graph.insertEdge(parent, null, "includes", union_vertex, proxy_vertex);
 				insertedObjects.add(edge);
 			}
@@ -317,8 +323,8 @@ public class BinderMonitorGUI extends JFrame
 	
 	
 	public void deleteUnion(Union union) {
-		if (insertedUnions.containsKey(union)) {
-			Object vertex = insertedUnions.get(union);
+		if (insertedUnions.containsKey(union.entityID)) {
+			Object vertex = insertedUnions.get(union.entityID);
 			Object[] cells = new Object[1];
 			cells[0] = vertex;
 			graph.getModel().beginUpdate();
@@ -327,28 +333,61 @@ public class BinderMonitorGUI extends JFrame
 			if (curUnionPosition_X > (220 * union.includedProxies.length))
 				curUnionPosition_X -= (220 * union.includedProxies.length) ;
 		}
+		insertedUnions.remove(union.entityID);
 	}
 	
 	
 	
 	public void deleteProxy(Proxy proxy) {
-		if (insertedUnions.containsKey(proxy)) {
-			Object vertex = insertedProxies.get(proxy);
+		if (insertedProxies.containsKey(proxy.entityID)) {
+			Object vertex = insertedProxies.get(proxy.entityID);
 			Object[] cells = new Object[1];
 			cells[0] = vertex;
 			graph.getModel().beginUpdate();
 			graph.removeCells(cells);
 			graph.getModel().endUpdate();
+			insertedProxies.remove(proxy.entityID);
 		}
 	}
 
-	public void updateGUI(Vector<Proxy> newProxies, 
+	
+	public void updateGUI (Proxy updatedProxy) {
+		try {
+
+			graph.getModel().beginUpdate();
+
+			deleteProxy(updatedProxy);
+
+			if (unionForProxy.containsKey(updatedProxy.entityID)) {
+				Object unionVertex = insertedUnions.get(unionForProxy.get(updatedProxy.entityID));
+
+				addNewProxy(updatedProxy);
+
+				Object proxy_vertex = insertedProxies.get(updatedProxy.entityID);
+				Object edge = graph.insertEdge(parent, null, "includes", unionVertex, proxy_vertex);
+				insertedObjects.add(edge);
+			}
+		}
+		finally {
+			graph.getModel().endUpdate();
+		}
+
+		try {
+			mxGraphComponent graphComponent = new mxGraphComponent(graph);
+			getContentPane().add(graphComponent);
+			setVisible(true);
+		}
+		catch (Exception e) {		}
+	}
+
+	
+	
+	 public void updateGUI(Vector<Proxy> newProxies, 
 			Vector<Union> newUnions, 
 			Vector<Proxy> proxiesToDelete, 
 			Vector<Union> unionsToDelete) {
 
 		try {
-			
 			graph.getModel().beginUpdate();
 			
 			
@@ -379,7 +418,7 @@ public class BinderMonitorGUI extends JFrame
 			
 			for (Enumeration<Union> e = newUnions.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();
-				if (!insertedUnions.containsKey(union)) {
+				if (!insertedUnions.containsKey(union.entityID)) {
 					log("Adding new union..." + union.entityID);
 					addNewUnionAndIncludedProxies(union);
 				}
