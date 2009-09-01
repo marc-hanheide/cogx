@@ -113,7 +113,7 @@ Using CAST::SCAT:
 -----------------
 
 
- ** In your SLICE (acronym :: The Specification Language for Ice)
+ ** In your SLICE (acronym :: the Specification Language for ICE)
     file...
 
 module subarchitecture_name {
