@@ -122,7 +122,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		feat.featlabel = featlabel;
 		return feat;
 	}
-	
+
 	/**
 	 * Create a new feature with a unique feature value
 	 * @param featlabel the feature label
