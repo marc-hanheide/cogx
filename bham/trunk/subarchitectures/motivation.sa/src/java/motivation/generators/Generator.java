@@ -4,8 +4,6 @@
  */
 package motivation.generators;
 
-import motivation.autogen.Motive;
-import cast.AlreadyExistsOnWMException;
 import cast.architecture.ManagedComponent;
 
 /**

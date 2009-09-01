@@ -3,7 +3,8 @@
  */
 package motivation.generators;
 
-import motivation.autogen.Motive;
+import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -38,7 +39,7 @@ public class TestGenerator extends Generator {
         }
         );
 
-        Motive ann = new Motive("Hello World!");
+        Motive ann = new Motive(MotiveStatus.UNSURFACED, "Hello World!");
         try {
         	addToWorkingMemory(newDataID(), ann);
         } catch (AlreadyExistsOnWMException e) {

@@ -1,6 +1,10 @@
 <!-- Top level make file for CogX system -->
 <project name="cogx" default="all" basedir=".">
 
+	<property name="castslice.dir" value="/usr/local/share" />
+
+
+
 	<!-- =================================================================== -->
 	<!-- Init build system                                                   -->
 	<!-- =================================================================== -->
@@ -22,7 +26,7 @@
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
 		<!-- <ant target="${target}" dir="subarchitectures/nav.sa" /> -->
-		<ant target="${target}" dir="subarchitectures/nav.sa" />
+		<ant target="${target}" dir="subarchitectures/motivation.sa" />
 	</target>
 
 
@@ -40,7 +44,7 @@
 	<!-- Generates source from slice in all subdirs                          -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="init">
-		<echo>Cleaning all builds"</echo>
+		<echo>doing slice2java for all builds"</echo>
 		<antcall target="template">
 			<param name="target" value="slice" />
 		</antcall>
@@ -50,7 +54,7 @@
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="init">
-		<echo>Cleaning all builds"</echo>
+		<echo>compiling all builds"</echo>
 		<antcall target="template">
 			<param name="target" value="compile" />
 		</antcall>
