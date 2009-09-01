@@ -1,8 +1,11 @@
 /**
+ *
  * 
  */
 package motivation.generators;
 
+import motivation.autogen.Motive;
+import cast.AlreadyExistsOnWMException;
 import cast.architecture.ManagedComponent;
 
 /**
@@ -18,13 +21,6 @@ abstract class Generator extends ManagedComponent {
 		// TODO Auto-generated constructor stub
 	}
 
-	/** actually start the component
-	 * 
-	 */
-	@Override
-	protected void runComponent() {
-	    println("Look out world, here I come...");
-	}
 
 
 }
