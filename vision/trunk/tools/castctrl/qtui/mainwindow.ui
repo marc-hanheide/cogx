@@ -422,6 +422,13 @@
                </property>
               </spacer>
              </item>
+             <item>
+              <widget class="QCheckBox" name="ckShowFlushMsgs">
+               <property name="text">
+                <string>Show Flushed</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>

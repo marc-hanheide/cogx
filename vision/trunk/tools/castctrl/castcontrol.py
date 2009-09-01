@@ -25,6 +25,9 @@ class CLogDisplayer:
         self.qtext = qtext
         doc = qtext.document()
         doc.setMaximumBlockCount(500)
+        self.showFlush = False
+        self.showWarning = True
+        self.showError = True
 
     def pullLogs(self):
         mods = False
@@ -39,15 +42,25 @@ class CLogDisplayer:
                     self.qtext.append(pntr.paint(m.getText()))
                 else:
                     co = None
-                    if m.msgtype == messages.CMessage.WARNING: co = "blue"
-                    elif m.msgtype == messages.CMessage.ERROR: co = "red"
+                    if m.msgtype == messages.CMessage.WARNING:
+                        if not self.showWarning: continue
+                        co = "blue"
+                    elif m.msgtype == messages.CMessage.ERROR:
+                        if not self.showError: continue
+                        co = "red"
+                    elif m.msgtype == messages.CMessage.FLUSHMSG:
+                        if not self.showFlush: continue
+                        co = "grey"
                     if co == None: self.qtext.append(m.getText())
-                    else: self.qtext.append("<font color=%s>%s</font> " % (co, m.getText().rstrip()))
+                    else: self.qtext.append("<font color=%s>%s</font> " % (co, m.getText()))
             mods = True
         return mods
 
     def clearOutput(self):
         self.qtext.document().clear()
+
+    def rereadLogs(self):
+        for src in self.log.sources: src.restart()
 
 class CCastControlWnd(QtGui.QMainWindow):
     def __init__(self):
@@ -138,6 +151,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def statusUpdate(self):
         rv = self._manager.checkProcesses()
         self._manager.communicate()
+        self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()
         # self.updateUi()
@@ -250,6 +264,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.log.addSource(LOGGER)
         for proc in self._manager.proclist:
             if proc != self.procBuild: self.mainLog.log.addSource(proc)
+
+    def on_ckShowFlushMsgs_stateChanged(self, value):
+        self.mainLog.clearOutput()
+        self.mainLog.rereadLogs()
 
     def editFile(self, fn):
         shell = "/bin/sh"

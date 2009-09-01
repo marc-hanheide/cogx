@@ -58,6 +58,7 @@ class CProcess(object):
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
         self.flushmsgs = legacy.deque(maxlen=200)
+        self.lastLinesEmpty = 0 # suppress consecutive empty lines
         self.msgOrder = 0
         self.observers = []
         self.willClearAt = None # Flushing
@@ -95,7 +96,7 @@ class CProcess(object):
             ob.notifyStatusChange(self, old, newStatus)
 
     def _beginFlush(self):
-        self.willClearAt = time.time() + 3
+        self.willClearAt = time.time() + 1
         self._setStatus(CProcess.FLUSH)
 
     def start(self, params=None):
@@ -166,44 +167,61 @@ class CProcess(object):
             if self.process.stderr != None: pipes.append(self.process.stderr)
         return pipes
 
-    def readPipes(self, pipes, maxcount=9999):
-        # if not self.isRunning(): return 0
-        if self.process == None: return 0
+    def _readPipe(self, pipe, maxcount, targetList, fnType, flushing=False):
+        start = time.time()
         nl = 0
+        if flushing: maxempty = 0
+        else: maxempty = 1
+        while len(select.select([pipe], [], [], 0.0)[0]) > 0:
+            msg = pipe.readline()
+            if len(msg) < 1 or msg.isspace(): self.lastLinesEmpty += 1
+            else: self.lastLinesEmpty = 0
+            if self.lastLinesEmpty <= maxempty:
+                typ = fnType(msg)
+                self.msgOrder += 1
+                msg = msg.decode("utf-8", "replace")
+                targetList.append(messages.CMessage(msg, typ, self.msgOrder))
+                nl += 1
+            if nl > maxcount: break
+            now = time.time()
+            if now < start or now - start > 0.1: break
+            if not flushing and not self.isRunning(): break
+        return nl
+
+    def _flushPipes(self, maxcount):
+        pipes = self.getPipes()
+        selected = select.select(pipes, [], [], 0.0)[0]
+        nl = 0
+        start = time.time()
+        def flushType(msg): return messages.CMessage.FLUSHMSG
+        while len(selected) > 0:
+            for pipe in selected:
+                nl += self._readPipe(pipe, 200, self.errors, flushType, flushing=True)
+            if nl > maxcount: break
+            now = time.time()
+            if now < start or now - start > 0.2: break
+            selected = select.select(pipes, [], [], 0.0)[0]
+        return nl
+
+    def readPipes(self, pipes, maxcount=9999):
+        if not self.isRunning():
+            self._flushPipes(maxcount)
+            return 0
+        nl = 0
+        def stderrType(msg): return messages.CMessage.ERROR
+        def stdoutType(msg):
+            mo = messages.reColorEscape.match(msg)
+            if mo != None: return messages.CMessage.CASTLOG
+            else: return messages.CMessage.MESSAGE
         for pipe in pipes:
+            nempty = 0
             if pipe == self.process.stdout:
-                # select() is used because readline() is blocking
-                while len(select.select([pipe], [], [], 0.0)[0]) > 0:
-                    msg = pipe.readline();
-                    running = self.isRunning()
-                    if not running and msg.strip() == "":
-                        nl += 1
-                        if nl > 200: break
-                        continue
-                    nl += 1
-                    mo = messages.reColorEscape.match(msg)
-                    if mo != None:
-                        typ = messages.CMessage.CASTLOG
-                    else: typ = messages.CMessage.MESSAGE
-                    self.msgOrder += 1
-                    msg = msg.decode("utf-8", "replace")
-                    if running:
-                        self.messages.append(messages.CMessage(msg, typ, self.msgOrder))
-                    else:
-                        self.flushmsgs.append(messages.CMessage(msg, typ, self.msgOrder))
-                    if nl > maxcount: break
+                nl += self._readPipe(pipe, maxcount-nl, self.messages, stdoutType)
             elif pipe == self.process.stderr:
-                while len(select.select([pipe], [], [], 0.0)[0]) > 0:
-                    msg = pipe.readline()
-                    if not self.isRunning() and msg == "":
-                        nl += 1
-                        if nl > 200: break
-                        continue
-                    self.msgOrder += 1
-                    msg = msg.decode("utf-8", "replace")
-                    self.errors.append(messages.CMessage(msg, messages.CMessage.ERROR, self.msgOrder))
-                    nl += 1
-                    if nl > maxcount: break
+                nl +=  self._readPipe(pipe, maxcount-nl, self.errors, stderrType)
+            if not self.isRunning(): break
+        if not self.isRunning():
+            nl += self._flushPipes(maxcount)
         return nl
 
     def check(self):
