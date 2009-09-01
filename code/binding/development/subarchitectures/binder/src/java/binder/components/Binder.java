@@ -117,7 +117,8 @@ public class Binder extends ManagedComponent  {
 				}
 			} 
 		});
-		
+
+		// Initialisation stuff
 		BNManager = new BayesianNetworkManager();
 		initializeUnionConfigurations();
 
@@ -125,6 +126,10 @@ public class Binder extends ManagedComponent  {
 	}
 
 
+	/**
+	 * (re)initialize the binder with a single union configuration
+	 */
+	
 	public void initializeUnionConfigurations () {
 		currentUnionConfigurations = new Vector<UnionConfiguration>();
 		UnionConfiguration initialConfig = new UnionConfiguration();

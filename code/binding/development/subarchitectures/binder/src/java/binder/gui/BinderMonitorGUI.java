@@ -31,7 +31,7 @@ public class BinderMonitorGUI extends JFrame
 
 	int DEFAULT_ENTITY_BOX_WIDTH= 220;
 	int DEFAULT_ENTITY_BOX_HEIGHT= 80;
-	int MIN_FEATURE_BOX_HEIGHT= 8;
+	int MIN_FEATURE_BOX_HEIGHT= 6;
 	int FEATURELINE_HEIGHT= 12;
 
 	mxGraph graph;
@@ -158,7 +158,11 @@ public class BinderMonitorGUI extends JFrame
 
 	private int computeHeight(Feature feat) {
 		int height = MIN_FEATURE_BOX_HEIGHT;
-		height += FEATURELINE_HEIGHT * (feat.alternativeValues.length -1);
+		for (int i = 0 ; i < feat.alternativeValues.length ; i++) {
+			if (!((StringValue)feat.alternativeValues[i]).val.equals("indeterminate")) {
+			height += FEATURELINE_HEIGHT;
+		}
+		}
 		return height;
 	}
 
