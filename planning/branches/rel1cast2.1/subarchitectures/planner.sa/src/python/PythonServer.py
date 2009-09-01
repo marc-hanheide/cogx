@@ -39,8 +39,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     print "created new PythonServer"
 
   def configureComponent(self, config):
-    print "registering python planner server"
+    print "registering Python planner server"
     self.registerIceServer(Planner.PythonServer,self)
+    print "and trying to get it back again immediately"
+    server = self.getIceServer("PlannerPythonServer", Planner.PythonServer, Planner.PythonServerPrx)
+    print "It worked. We got a server:", server
 
   def startComponent(self):
     pass
