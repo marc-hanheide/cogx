@@ -78,7 +78,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.log.addSource(LOGGER)
 
         self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
-        # self.buildLog.log.addSource(LOGGER)
+        self.buildLog.showFlush = True
 
         self.mruCfgCast = []
         self.mruCfgPlayer = []
@@ -92,7 +92,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         # Auxiliary components
         self.tmStatus = QtCore.QTimer()
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
-        self.tmStatus.start(100)
+        self.tmStatus.start(200)
         LOGGER.log("CAST Control initialized")
 
         # Event connections
@@ -150,7 +150,6 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def statusUpdate(self):
         rv = self._manager.checkProcesses()
-        self._manager.communicate()
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()

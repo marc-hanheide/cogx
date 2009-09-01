@@ -7,7 +7,7 @@ import os, sys, errno
 import re
 import time
 import subprocess as subp
-import select, signal
+import select, signal, threading
 import options, messages
 import itertools
 import legacy
@@ -57,7 +57,6 @@ class CProcess(object):
         self.restarted = 0
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
-        self.flushmsgs = legacy.deque(maxlen=200)
         self.lastLinesEmpty = 0 # suppress consecutive empty lines
         self.msgOrder = 0
         self.observers = []
@@ -127,6 +126,7 @@ class CProcess(object):
             self.error = CProcess.ERRSTART
             self._setStatus(CProcess.STOPPED)
             error("Process '%s' failed to start" % (self.name))
+        time.sleep(0.01)
 
     def _clear(self, notify = True):
         self.restarted = 0
@@ -141,14 +141,15 @@ class CProcess(object):
             self._clear()
             return
         try:
-            for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
+            # for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
+            for sig in [signal.SIGTERM, signal.SIGKILL]:
                 try:
                     os.kill(self.process.pid, sig) # self.process.send_signal(sig) # Not in 2.5
                     time.sleep(0.05)
                 except: pass
                 tries = 100
                 while self.isRunning() and tries > 0:
-                    tries -= 1; time.sleep(0.02)
+                    tries -= 1; time.sleep(0.03)
                 if self.isRunning():
                     warn("Process '%s' did not respond to SIG -%d." % (self.name, sig))
         except Exception:
@@ -168,7 +169,7 @@ class CProcess(object):
         return pipes
 
     def _readPipe(self, pipe, maxcount, targetList, fnType, flushing=False):
-        start = time.time()
+        start = time.time(); tmend = start + 0.1
         nl = 0
         if flushing: maxempty = 0
         else: maxempty = 1
@@ -184,22 +185,22 @@ class CProcess(object):
                 nl += 1
             if nl > maxcount: break
             now = time.time()
-            if now < start or now - start > 0.1: break
+            if now < start or now > tmend: break
             if not flushing and not self.isRunning(): break
         return nl
 
     def _flushPipes(self, maxcount):
         pipes = self.getPipes()
-        selected = select.select(pipes, [], [], 0.0)[0]
+        start = time.time(); tmend = start + 0.2
         nl = 0
-        start = time.time()
+        selected = select.select(pipes, [], [], 0.0)[0]
         def flushType(msg): return messages.CMessage.FLUSHMSG
         while len(selected) > 0:
             for pipe in selected:
                 nl += self._readPipe(pipe, 200, self.errors, flushType, flushing=True)
             if nl > maxcount: break
             now = time.time()
-            if now < start or now - start > 0.2: break
+            if now < start or now > tmend: break
             selected = select.select(pipes, [], [], 0.0)[0]
         return nl
 
@@ -249,12 +250,37 @@ class CProcess(object):
                 self.error = CProcess.ERRTERM
                 self._beginFlush()
 
+class CPipeReader(threading.Thread):
+    def __init__(self, procManager):
+        threading.Thread.__init__(self, name="Pipe Reader")
+        self.procManager = procManager
+        self.isRunning = False
+
+    def run(self):
+        self.isRunning = True
+        while self.isRunning:
+            procs = [p for p in self.procManager.proclist]
+            pipes = []
+            for proc in procs: pipes.extend(proc.getPipes())
+            if len(pipes) < 1:
+                time.sleep(0.02)
+                continue
+            (rlist, wlist, xlist) = select.select(pipes, [], [], 0.02)
+            if len(rlist) > 0:
+                now = time.time(); tm = now; tmend = now + 0.1
+                for proc in procs: nl = proc.readPipes(rlist, 200)
+
+    def stop(self):
+        self.isRunning = False
+
 class CProcessManager(object):
     def __init__(self, name="localhost"):
         self.name = name   # maybe machine name
         self.proclist = [] # managed processes
+        self.pipeReaderThread = None
 
     def __del__(self):
+        if self.pipeReaderThread != None: self.pipeReaderThread.stop()
         self.stopAll()
 
     def addProcess(self, process):
@@ -263,6 +289,9 @@ class CProcessManager(object):
                 warn("Process '%s' is already registered" % (process.name))
                 return
         self.proclist.append(process)
+        if self.pipeReaderThread == None:
+            self.pipeReaderThread = CPipeReader(self)
+            self.pipeReaderThread.start()
 
     def getProcess(self, name):
         for p in self.proclist:
@@ -283,26 +312,28 @@ class CProcessManager(object):
     def checkProcesses(self):
         for proc in self.proclist: proc.check()
 
-    def communicate(self, timeout=0.01):
-        procs = self.proclist
-        pipes = []
-        for proc in procs: pipes.extend(proc.getPipes())
-        ready = select.select(pipes, [], [], 0.0)
-        now = time.time(); tm = now; tmend = now + timeout
-        while (len(ready[0]) > 0 and now >= tm and now < tmend):
-            time.sleep(0)
-            count = 100 # batch size
-            while len(ready[0]) > 0 and count > 0 and now >= tm and now < tmend:
-                for proc in procs:
-                    nl = proc.readPipes(ready[0], count)
-                    count -= nl
-                for proc in procs: pipes.extend(proc.getPipes())
-                ready = select.select(pipes, [], [], 0.0)
-                now = time.time()
-            now = time.time()
+    # Moved to a separate thread!
+    #def communicate(self, timeout=0.01):
+    #    return 0
+    #    procs = self.proclist
+    #    pipes = []
+    #    for proc in procs: pipes.extend(proc.getPipes())
+    #    ready = select.select(pipes, [], [], 0.0)
+    #    now = time.time(); tm = now; tmend = now + timeout
+    #    while (len(ready[0]) > 0 and now >= tm and now < tmend):
+    #        time.sleep(0)
+    #        count = 100 # batch size
+    #        while len(ready[0]) > 0 and count > 0 and now >= tm and now < tmend:
+    #            for proc in procs:
+    #                nl = proc.readPipes(ready[0], count)
+    #                count -= nl
+    #            for proc in procs: pipes.extend(proc.getPipes())
+    #            ready = select.select(pipes, [], [], 0.0)
+    #            now = time.time()
+    #        now = time.time()
 
-        return len(ready[0]) > 0 # True if there might be more lines to read
-
+    #    return len(ready[0]) > 0 # True if there might be more lines to read
+    
     def getStatus(self, procname):
         p = self.getProcess(procname)
         if p != None:
@@ -316,8 +347,7 @@ def runCommand(cmd, params=None, workdir=None, name="onetime"):
         p.start()
         pipes = p.getPipes()
         while p.isRunning():
-            time.sleep(0.01)
-            ready = select.select(pipes, [], [], 0.0)
+            ready = select.select(pipes, [], [], 0.1)
             if len(ready[0]) > 0: p.readPipes(ready[0], 100)
         ready = select.select(pipes, [], [], 0.0)
         if len(ready[0]) > 0: p.readPipes(ready[0], 100)
