@@ -5,8 +5,8 @@
         <!-- Add JAR files to classpath                                          -->
         <!-- =================================================================== -->
         <path id="build.classpath">
-            <pathelement path="/usr/share/java/Ice.jar"/>
-            <pathelement path="/vol/cogx/share/java/cast.jar"/>
+            <pathelement path="${ice.jar}"/>
+            <pathelement path="${cast.jar}"/>
         </path>
 
 	<!-- Controls where the output goes -->
