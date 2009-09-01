@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Aug 28 13:31:02 2009
+# Created: Tue Sep  1 13:23:23 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -195,6 +195,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.btLogViewControl)
         spacerItem7 = QtGui.QSpacerItem(88, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem7)
+        self.ckShowFlushMsgs = QtGui.QCheckBox(self.tab)
+        self.ckShowFlushMsgs.setObjectName("ckShowFlushMsgs")
+        self.horizontalLayout_2.addWidget(self.ckShowFlushMsgs)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.mainLogfileTxt = QtGui.QTextEdit(self.tab)
         self.mainLogfileTxt.setUndoRedoEnabled(False)
@@ -377,6 +380,7 @@ class Ui_MainWindow(object):
         self.logfileCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Active log", None, QtGui.QApplication.UnicodeUTF8))
         self.btLogViewAll.setText(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
         self.btLogViewControl.setText(QtGui.QApplication.translate("MainWindow", "Control", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckShowFlushMsgs.setText(QtGui.QApplication.translate("MainWindow", "Show Flushed", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Logs", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Client", None, QtGui.QApplication.UnicodeUTF8))
         self.label_14.setText(QtGui.QApplication.translate("MainWindow", "Run on host", None, QtGui.QApplication.UnicodeUTF8))

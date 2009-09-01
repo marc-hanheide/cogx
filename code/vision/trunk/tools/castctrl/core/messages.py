@@ -15,6 +15,7 @@ class CMessage(object):
     MESSAGE=0
     WARNING=1
     ERROR=2
+    FLUSHMSG=3
     CASTLOG=10
     def __init__(self, message, msgtype=0, order=0):
         self.order = order
@@ -98,6 +99,10 @@ class CMessageSource(object):
         if self.yieldErrors:
             its.append(itertools.ifilter(lambda x: checkTime(x), self.process.errors))
         return its
+
+    def restart(self):
+        self.tmLastSeen = 0
+        self.tmLastPop = 0
 
 class CLogMerger(object):
     def __init__(self):
