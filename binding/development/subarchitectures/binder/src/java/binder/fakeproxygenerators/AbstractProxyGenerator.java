@@ -1,29 +1,18 @@
-package binder.abstr;
+package binder.fakeproxygenerators;
 
 import java.util.Map;
 import java.util.Random;
 
+import binder.abstr.BindingWorkingMemoryWriter;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import cast.architecture.ManagedComponent;
 
-public abstract class AbstractProxyGenerator extends ManagedComponent {
+public abstract class AbstractProxyGenerator extends BindingWorkingMemoryWriter {
 
 	protected int nbOfProxiesToCreate = 0;
 	protected boolean reverted = false;
 	
-	
-	protected void addEntityToWM(PerceivedEntity entity) {
-
-		try {
-		addToWorkingMemory(entity.entityID, entity);
-		log("new Proxy succesfully added to the binding working memory");
-		
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 
 	@Override
@@ -49,7 +38,7 @@ public abstract class AbstractProxyGenerator extends ManagedComponent {
 				else {
 					p = createProxy(nbOfProxiesToCreate-i+1);
 				}
-				addEntityToWM(p);
+				addProxyToWM(p);
 
 			}	
 		}
