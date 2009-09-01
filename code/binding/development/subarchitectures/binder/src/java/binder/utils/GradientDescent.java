@@ -2,6 +2,7 @@ package binder.utils;
 
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
@@ -164,10 +165,65 @@ public static Union getBestUnion(UnionDistribution distribution) {
 */
 
 
+public static HashMap<Union,Float> maxForUnions = new HashMap<Union,Float>();
+
+public static Vector<UnionConfiguration> getNBestUnionConfigurations
+			(Vector<UnionConfiguration> configs, int nb_nbests) {
+	
+	float threshold = 0.0f;
+	Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
+	HashMap<UnionConfiguration, Float> averages =new HashMap<UnionConfiguration, Float>();
+	
+	for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+		UnionConfiguration config = e.nextElement();
+		
+		float multiplication = 1.0f;
+		
+		for (int i = 0; i < config.includedUnions.length ; i++) {		
+			Union union = config.includedUnions[i];
+			float max = 0.0f;
+			if (maxForUnions.containsKey(union)) {
+				max = maxForUnions.get(union);
+			}
+			else {
+				max = getMaximum(union.distribution);
+				maxForUnions.put(union, max);
+			}
+			multiplication = multiplication * max;
+		}
+		float average = multiplication / (config.includedUnions.length + 0.0f);
+		
+		averages.put(config, average);
+
+		if (nbestConfigs.size() < nb_nbests) {
+			
+			nbestConfigs.add(config);
+			
+			if (average < threshold) {
+				threshold = average;
+			}
+		}
+		
+		else {
+			if (average > threshold) {
+				UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs, averages);
+				nbestConfigs.remove(worstinNBests);
+				nbestConfigs.add(config);
+				UnionConfiguration secondworst = getWorstUnionConfiguration(nbestConfigs, averages);
+				threshold = averages.get(secondworst);
+			}
+		}
+				
+			
+	}
+	
+	return nbestConfigs;
+}
+
 
 public static UnionConfiguration getBestUnionConfiguration(Vector<UnionConfiguration> configs) {
 	
-	float maxAverage = 0.0f;
+	float maxAverage = -1.0f;
 	UnionConfiguration bestConfig = null;
 	
 	for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
@@ -190,6 +246,28 @@ public static UnionConfiguration getBestUnionConfiguration(Vector<UnionConfigura
 	return bestConfig;
 }
 
+
+
+public static UnionConfiguration getWorstUnionConfiguration(Vector<UnionConfiguration> configs, 
+		HashMap<UnionConfiguration, Float> averages) {
+
+	float minAverage = 99999.0f;
+	UnionConfiguration worstConfig = null;
+
+	for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+		UnionConfiguration config = e.nextElement();
+
+		if (averages.get(config) != null) {
+			float average = averages.get(config).floatValue();
+			if (average < minAverage) {
+				minAverage = average;
+				worstConfig = config;
+			}
+		}
+	}
+
+	return worstConfig;
+}
 
 
 public static UnionConfiguration getBestUnionConfiguration(AlternativeUnionConfigurations configs) {

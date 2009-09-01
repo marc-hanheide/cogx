@@ -27,34 +27,72 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
+/**
+ * The core binding algorithm - it takes proxies as inputs, and generate
+ * a distribution of possible union configurations (sequences of unions)
+ * for the proxies, given a predefined Bayesian Network specifying
+ * the correlations between features
+ * 
+ * @author Pierre Lison
+ * @version 31/08/2008
+ * 
+ */
+
 public class Binder extends ManagedComponent  {
 
+	// The Bayesian network manager
 	BayesianNetworkManager BNManager;
 
-	//  HashMap<String,Union> curUnions = new HashMap<String,Union>();
-	HashMap<Union, Float> maxValues = new HashMap<Union,Float>();
-
+	// Constant controlling the greediness of the binder
 	public float ALPHA_CONST = 0.2f;
 
+	// Prior probability of the existence of a proxy
 	public float PRIOR_PEXISTS = 0.4f;
 
-	public float FACTOR = 0.99f;
-
+	// whether to perform incremental or full rebinding
 	public boolean incrementalBinding = true;
 
+	// Filtering parameters: maximum number of union configurations
+	// to keep in the binder at a given time
+	public int NB_CONFIGURATIONS_TO_KEEP = 10;
 
+	// The union configurations computed for the current state 
+	// of the binder WM (modulo filtering)
 	Vector<UnionConfiguration> currentUnionConfigurations ;
 
+	
+	
+	/** 
+	 * Add filters on proxy insertions, modifications (overwrite) and deletions,
+	 * and initialise the binder
+	 * 
+	 */
 	
 	@Override
 	public void start() {
 
+		// Proxy insertion
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Proxy.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				try {
+					proxyInsertion(_wmc);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			} 
+		});
+
+		// Proxy modification
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Proxy.class,
+				WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
@@ -65,8 +103,21 @@ public class Binder extends ManagedComponent  {
 				}
 			} 
 		});
+		
+		// Proxy deletion
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Proxy.class,
+				WorkingMemoryOperation.DELETE), new WorkingMemoryChangeReceiver() {
 
-
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				try {
+					proxyDeletion(_wmc);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			} 
+		});
+		
 		BNManager = new BayesianNetworkManager();
 		initializeUnionConfigurations();
 
@@ -117,7 +168,7 @@ public class Binder extends ManagedComponent  {
 				for (int j =0; j < prox.features[i].alternativeValues.length ; j++) {
 					feat.alternativeValues[j] = new FeatureValue();
 					if (prox.features[i].alternativeValues[j].getClass().equals(StringValue.class)) {
-						feat.alternativeValues[j] = new StringValue(0.0f,
+						feat.alternativeValues[j] = new StringValue(prox.features[i].alternativeValues[j].independentProb,
 								((StringValue)prox.features[i].alternativeValues[j]).val);
 					}
 				}
@@ -284,9 +335,141 @@ public class Binder extends ManagedComponent  {
 			e.printStackTrace();
 		}
 	}
-	
 
-	public void proxyUpdate(WorkingMemoryChange wmc) {
+	
+	
+	private Vector<PerceivedEntity> getOtherProxies (Proxy[] proxies, Proxy proxyToExclude) {
+		
+		Vector<PerceivedEntity> otherProxies = new Vector<PerceivedEntity>();
+		
+		for (int i = 0; i < proxies.length ; i++) {
+			Proxy prox = proxies[i];
+			if (!prox.equals(proxyToExclude)) {
+				otherProxies.add(prox);
+			}
+		}
+		return otherProxies;
+	}
+	
+	
+	public void proxyUpdate (WorkingMemoryChange wmc) {
+	
+		log("--------START BINDING----------");
+		log("binder working memory updated with an overwrite of an existing proxy!");
+		
+		try {
+			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
+		
+			for (Enumeration<UnionConfiguration> configs = 
+				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
+									
+					UnionConfiguration existingUnionConfig = configs.nextElement();				
+									
+					for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
+						
+						Union existingUnion = existingUnionConfig.includedUnions[i];
+						
+						for (int j = 0; j < existingUnion.includedProxies.length ; j++) {
+							
+							Proxy existingProxy = existingUnion.includedProxies[j];
+							
+							if (existingProxy.entityID.equals(updatedProxy.entityID)) {
+								Vector<PerceivedEntity> proxies = 
+									getOtherProxies(existingUnion.includedProxies, existingProxy);
+								proxies.add(updatedProxy);
+								Union updatedUnion = constructNewUnion(proxies);								
+								updatedUnion.entityID = existingUnion.entityID ;
+								existingUnionConfig.includedUnions[i] = updatedUnion;
+							}
+						}
+					}
+					
+			}
+
+			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
+			updateWM(alters); 
+			
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			log("--------STOP BINDING----------");
+		}
+
+
+
+	
+	private UnionConfiguration removeUnionFromConfig
+	(UnionConfiguration existingconfig, Union unionToDelete) {
+		
+		Vector<Union> unionsInConfig = new Vector<Union>();
+		for (int i = 0; i < existingconfig.includedUnions.length ; i++) {
+			Union curUnion = existingconfig.includedUnions[i];
+			if (!curUnion.equals(unionToDelete)) {
+				unionsInConfig.add(curUnion);
+			}
+		}
+		existingconfig.includedUnions = new Union[unionsInConfig.size()];
+		existingconfig.includedUnions = unionsInConfig.toArray(existingconfig.includedUnions);
+		
+		return existingconfig;
+	}
+	
+	
+	public void proxyDeletion (WorkingMemoryChange wmc) {
+	
+		log("--------START BINDING----------");
+		log("binder working memory updated with a deletion of an existing proxy!");
+		
+		try {
+			String deletedProxyID= wmc.address.id;
+		
+			for (Enumeration<UnionConfiguration> configs = 
+				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
+									
+					UnionConfiguration existingUnionConfig = configs.nextElement();				
+									
+					for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
+						
+						Union existingUnion = existingUnionConfig.includedUnions[i];
+						
+						for (int j = 0; j < existingUnion.includedProxies.length ; j++) {
+							
+							Proxy existingProxy = existingUnion.includedProxies[j];
+							
+							if (existingProxy.entityID.equals(deletedProxyID)) {
+								Vector<PerceivedEntity> proxies = 
+									getOtherProxies(existingUnion.includedProxies, existingProxy);
+								if (proxies.size() > 0) { 
+									Union updatedUnion = constructNewUnion(proxies);								
+									updatedUnion.entityID = existingUnion.entityID ;
+									existingUnionConfig.includedUnions[i] = updatedUnion;
+								}
+								else {
+									existingUnionConfig = 
+										removeUnionFromConfig(existingUnionConfig, existingUnion);
+								}
+							}
+						}
+					}
+					
+			}
+
+			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
+			updateWM(alters); 
+			
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			log("--------STOP BINDING----------");
+		}
+
+	
+	
+	public void proxyInsertion(WorkingMemoryChange wmc) {
 		log("--------START BINDING----------");
 		log("binder working memory updated with a new proxy!");
 
@@ -302,7 +485,7 @@ public class Binder extends ManagedComponent  {
 			}
 		}
 		else  {
-			fullRebinding();
+	//		fullRebinding();
 		}
 
 		long finalTime = System.currentTimeMillis();
@@ -328,14 +511,8 @@ public class Binder extends ManagedComponent  {
 
 			Union newUnion = getInitialUnion(newProxy);
 			
-			//	sleepComponent(250);
-
 			log("Construction of initial unions finished, moving to unions of more than 1 proxy...");
-			log("current number of recorded unions in maxvalues: " + maxValues.size());
-
-			
-			log("Incremental binding algorithm finished!");
-			
+						
 			Vector<UnionConfiguration> newUnionConfigurations = new Vector<UnionConfiguration>();
 			HashMap<String,Union> alreadyMergedUnions = new HashMap<String, Union>();
 			
@@ -343,9 +520,9 @@ public class Binder extends ManagedComponent  {
 				
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
 				
-				UnionConfiguration newConfigWithSingleUnion = createNewUnionConfiguration (existingUnionConfig, newUnion);
+				UnionConfiguration newConfigWithSingleUnion = 
+					createNewUnionConfiguration (existingUnionConfig, newUnion);
 				newUnionConfigurations.add(newConfigWithSingleUnion);	
-				
 				
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
 					
@@ -364,26 +541,25 @@ public class Binder extends ManagedComponent  {
 						else {
 							newMergedUnion = alreadyMergedUnions.get(existingUnion.entityID);
 						}
-						UnionConfiguration newConfigWithMergedUnion = createNewUnionConfiguration (existingUnionConfig, newMergedUnion, existingUnion);
+						UnionConfiguration newConfigWithMergedUnion = 
+							createNewUnionConfiguration (existingUnionConfig, newMergedUnion, existingUnion);
 						newUnionConfigurations.add(newConfigWithMergedUnion);
 						
 					}
 				}
 			}
+						
+			Vector<UnionConfiguration> NBests = 
+				GradientDescent.getNBestUnionConfigurations
+				(newUnionConfigurations, NB_CONFIGURATIONS_TO_KEEP);
 			
-			for (Enumeration<UnionConfiguration> configs = currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
-				
-			}
-			currentUnionConfigurations = newUnionConfigurations;
-			
+			currentUnionConfigurations = NBests;
+
 			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 			
-	/**		AlternativeUnionConfigurations alters = new AlternativeUnionConfigurations();
-			alters.alterconfigs = new UnionConfiguration[currentUnionConfigurations.size()];
-			for (int i = 0; i < alters.alterconfigs.length ; i++) {
-				alters.alterconfigs[i] = currentUnionConfigurations.elementAt(i); 
-			}
-			addEntityToWM(alters); */
+	
+			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
+			updateWM(alters); 
 
 		}
 		catch (Exception e) {
@@ -392,16 +568,28 @@ public class Binder extends ManagedComponent  {
 	}
 
 	
+	private AlternativeUnionConfigurations buildNewAlternativeUnionConfigurations () {
+		
+		AlternativeUnionConfigurations alters = new AlternativeUnionConfigurations();
+		alters.alterconfigs = new UnionConfiguration[currentUnionConfigurations.size()];
+		for (int i = 0; i < alters.alterconfigs.length ; i++) {
+			alters.alterconfigs[i] = currentUnionConfigurations.elementAt(i); 
+		}
+		return alters;
+	}
 	
 	
 
-	private UnionConfiguration createNewUnionConfiguration(UnionConfiguration existingUnionConfig, Union unionToAdd) {			
+	private UnionConfiguration createNewUnionConfiguration
+	(UnionConfiguration existingUnionConfig, Union unionToAdd) {			
 		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, new Vector<Union>());
 	}
 	
 	
 	
-	private UnionConfiguration createNewUnionConfiguration(UnionConfiguration existingUnionConfig, Union unionToAdd, Union unionToRemove) {
+	private UnionConfiguration createNewUnionConfiguration
+		(UnionConfiguration existingUnionConfig, Union unionToAdd, Union unionToRemove) {
+		
 		Vector<Union> unionsToRemove = new Vector<Union>();
 		unionsToRemove.add(unionToRemove);
 		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, unionsToRemove);
@@ -505,17 +693,27 @@ public class Binder extends ManagedComponent  {
 		}
 	}
 
-/**
-	private void addEntityToWM(AlternativeUnionConfigurations configs) {
+
+	private void updateWM(AlternativeUnionConfigurations configs) {
 
 		try {
 			
-			addToWorkingMemory(newDataID(), configs);
+			CASTData<AlternativeUnionConfigurations>[] alterconfigs = 
+				getWorkingMemoryEntries(AlternativeUnionConfigurations.class);
+			
+			if (alterconfigs.length == 0) {
+				addToWorkingMemory(newDataID(), configs);
+			}
+			else {
+				overwriteWorkingMemory(alterconfigs[0].getID(), configs);
+			}
+			
+			
 
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-*/	
+	
 }

@@ -10,8 +10,6 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import binder.abstr.AbstractProxyGenerator;
-
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;

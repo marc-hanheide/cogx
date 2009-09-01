@@ -1,13 +1,6 @@
 package binder.fakeproxygenerators;
 
-import java.util.Enumeration;
-import java.util.Random;
-import java.util.Vector;
-
-import binder.abstr.AbstractProxyGenerator;
 import binder.autogen.core.*;
-import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbDistribUtils;
 
 public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
@@ -35,46 +28,31 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
 
 	private Proxy createProxyOne() {
-		Proxy proxy = new Proxy();
-		proxy.entityID = newDataID();
-		proxy.subarchId = "fakehaptic";
-		proxy.probExists = 0.35f;
-	
-		proxy.features = new Feature[1];
-		proxy.features[0] = new Feature();
-		proxy.features[0].featlabel = "shape";
-		proxy.features[0].alternativeValues = new FeatureValue[1];
-		proxy.features[0].alternativeValues[0] = new StringValue(0.73f, "cylindrical");
 		
-		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
+		Proxy proxy = createNewProxy("fakehaptic", 0.35f);
 		
-		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
+		FeatureValue cylindrical = createStringValue ("cylindrical", 0.73f);
+		Feature feat = createFeatureWithUniqueFeatureValue ("shape", cylindrical);
+		addFeatureToProxy (proxy, feat);
+		
 		return proxy;
 	}
 	
 	
 
 	private Proxy createProxyTwo() {
-		Proxy proxy = new Proxy();
-		proxy.entityID = newDataID();
-		proxy.subarchId = "fakehaptic";
-		proxy.probExists = 0.75f;
+		Proxy proxy = createNewProxy ("fakehaptic", 0.75f);
+		
+		FeatureValue spherical = createStringValue ("spherical", 0.67f);
+		Feature feat1 = createFeatureWithUniqueFeatureValue("shape", spherical);
+		addFeatureToProxy (proxy, feat1);
 	
-		proxy.features = new Feature[2];
-		proxy.features[0] = new Feature();
-		proxy.features[0].featlabel = "shape";
-		proxy.features[0].alternativeValues = new FeatureValue[1];
-		proxy.features[0].alternativeValues[0] = new StringValue(0.67f, "spherical");
+		FeatureValue trueval = createStringValue ("true", 0.8f);
+		FeatureValue falseval = createStringValue ("false", 0.15f);
+		FeatureValue[] vals = {trueval, falseval};
+		Feature feat2 = createFeatureWithAlternativeFeatureValues("graspable", vals);
+		addFeatureToProxy (proxy, feat2);
 		
-		proxy.features[1] = new Feature();
-		proxy.features[1].featlabel = "graspable";
-		proxy.features[1].alternativeValues = new FeatureValue[2];	
-		proxy.features[1].alternativeValues[0] = new StringValue(0.8f, "true");
-		proxy.features[1].alternativeValues[1] = new StringValue(0.15f, "false");
-		
-		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
-
-		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
 		return proxy;
 	}
 	

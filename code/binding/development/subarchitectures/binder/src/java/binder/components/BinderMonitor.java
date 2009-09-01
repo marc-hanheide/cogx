@@ -19,23 +19,38 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
 
+/**
+ * Module monitoring the state of the binder working memory, and reporting
+ * the evolution of its content (either textually or graphically)
+ * 
+ * @author Pierre Lison
+ * @version 31/08/2009
+ */
+
 public class BinderMonitor extends ManagedComponent {
 
+	// If a GUI is used, pointer to the GUI component
 	BinderMonitorGUI gui;
 	
+	// Vector listing all the proxies currently in the WM
 	Vector<Proxy> lastProxies;
-	Vector<Union> lastUnions;
 	
+	// Vector listing all the unions currently in the WM
+	Vector<Union> lastUnions;
+		
 	@Override
 	public void start() {
-		
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Proxy.class,
+
+		// if the set of possible union configurations has been updated, update the
+		// monitor accordingly
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class,
 				WorkingMemoryOperation.WILDCARD), new WorkingMemoryChangeReceiver() {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
-	//			Proxy newProxy = getMemoryEntry(_wmc.address, Proxy.class);
-		//		updateMonitor();
+					UnionConfiguration config = 
+					getMemoryEntry(_wmc.address, UnionConfiguration.class);
+					updateMonitorWithNewConfiguration(config);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -43,14 +58,19 @@ public class BinderMonitor extends ManagedComponent {
 			} 
 		});
 		
-		
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(AlternativeUnionConfigurations.class,
-				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+		// If a proxy is updated, also update the monitor accordingly
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Proxy.class,
+				WorkingMemoryOperation.OVERWRITE), new WorkingMemoryChangeReceiver() {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
-				AlternativeUnionConfigurations config = getMemoryEntry(_wmc.address, AlternativeUnionConfigurations.class);
-				updateMonitor(config);
+					if (gui != null) {
+						gui.updateGUI(getMemoryEntry(_wmc.address, Proxy.class));
+					} 
+					else {
+						log ("Proxy " + getMemoryEntry
+								(_wmc.address, Proxy.class).entityID + " has been updated");
+					}
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -58,6 +78,7 @@ public class BinderMonitor extends ManagedComponent {
 			} 
 		});
 		
+
 		lastProxies = new Vector<Proxy>();
 		lastUnions = new Vector<Union>();
 		
@@ -65,7 +86,11 @@ public class BinderMonitor extends ManagedComponent {
 	}
 	
 	
-
+	/**
+	 * Configure the binding monitor with various parameters
+	 * (use --gui to activate the graphical interface)
+	 * 
+	 */
 	@Override
 	public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--gui")) {
@@ -74,8 +99,14 @@ public class BinderMonitor extends ManagedComponent {
 		} 
 	}
 	
-	
-	public void updateMonitor(AlternativeUnionConfigurations config) {
+	/**
+	 * Update the monitor with the new union configurations
+	 * 
+	 * @param alterconfigs (the new union configuration)
+	 */
+	public void updateMonitorWithNewConfiguration
+			(UnionConfiguration bestConfig) {
+		
 		log("Change in the binding working memory, update necessary");
 		Vector<Proxy> proxiesV = new Vector<Proxy>();
 		Vector<Union> UnionsV = new Vector<Union>();
@@ -90,9 +121,6 @@ public class BinderMonitor extends ManagedComponent {
 				proxiesV.add(proxies[i].getData());
 			}
 			
-			UnionConfiguration bestConfig = GradientDescent.getBestUnionConfiguration(config);
-			
-
 			for (int i = 0 ; i < bestConfig.includedUnions.length ; i++) {
 				UnionsV.add(bestConfig.includedUnions[i]);
 				}
