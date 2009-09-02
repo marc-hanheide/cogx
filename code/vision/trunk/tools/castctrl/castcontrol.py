@@ -7,6 +7,7 @@ import os, sys
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages
+from core import legacy
 from qtui import uimainwindow
 import processtree
 
@@ -117,7 +118,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def makeConfigFileRelPath(self, fn):
         wd = options.xe("${COGX_ROOT}")
         if wd.strip() == "": return fn
-        rp = os.path.relpath("%s" % fn, wd)
+        rp = legacy.os_path_relpath("%s" % fn, wd)
         if rp.startswith(".."): return fn
         return rp
 
