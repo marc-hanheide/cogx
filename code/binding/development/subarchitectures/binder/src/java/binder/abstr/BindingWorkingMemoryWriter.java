@@ -54,9 +54,6 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		Proxy newProxy = createNewProxy(subarchId, probExists);
 		
 		newProxy.features = features;
-	
-		newProxy.features = ProbDistribUtils.addIndeterminateFeatureValues(newProxy.features);
-		newProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(newProxy);
 
 		return newProxy;
 	}
@@ -87,9 +84,6 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		}
 		
 		proxy.features = newFeatures;
-		
-		proxy.features = ProbDistribUtils.addIndeterminateFeatureValues(proxy.features);
-		proxy.distribution = ProbDistribUtils.generateProbabilityDistribution(proxy);
 
 		return proxy;
 	}

@@ -173,7 +173,8 @@ public class Binder extends ManagedComponent  {
 				for (int j =0; j < prox.features[i].alternativeValues.length ; j++) {
 					feat.alternativeValues[j] = new FeatureValue();
 					if (prox.features[i].alternativeValues[j].getClass().equals(StringValue.class)) {
-						feat.alternativeValues[j] = new StringValue(prox.features[i].alternativeValues[j].independentProb,
+						feat.alternativeValues[j] = 
+							new StringValue(prox.features[i].alternativeValues[j].independentProb,
 								((StringValue)prox.features[i].alternativeValues[j]).val);
 					}
 				}
@@ -212,15 +213,20 @@ public class Binder extends ManagedComponent  {
 
 //		log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
 
-		Vector<CombinedProbabilityDistribution> proxiesDistrib = new Vector<CombinedProbabilityDistribution>();
+		Vector<CombinedProbabilityDistribution> proxiesDistrib = 
+			new Vector<CombinedProbabilityDistribution>();
 
 		for (int i = 0 ; i < union.includedProxies.length ; i++) {
 			Proxy proxy = union.includedProxies[i];
 
-			//		log("Maximum for observation-driven distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(proxy.distribution));
+			//		log("Maximum for observation-driven distribution of the proxy " + i +  ": "
+			// + GradientDescent.getMaximum(proxy.distribution));
 
-			DiscreteProbabilityDistribution priorDistribForProxy =  BNManager.getPriorDistribution(proxy.features);
-			//		log("Maximum for prior distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(priorDistribForProxy));
+			DiscreteProbabilityDistribution priorDistribForProxy =  
+				BNManager.getPriorDistribution(proxy.features);
+			
+			//		log("Maximum for prior distribution of the proxy " + i +  
+			// ": " + GradientDescent.getMaximum(priorDistribForProxy));
 
 			CombinedProbabilityDistribution finalProxyDistrib = new CombinedProbabilityDistribution();
 			finalProxyDistrib.opType = OperationType.MULTIPLIED;
@@ -229,8 +235,11 @@ public class Binder extends ManagedComponent  {
 			finalProxyDistrib.distributions[1] = 
 				ProbDistribUtils.invertDistribution(priorDistribForProxy);
 			finalProxyDistrib.distributions[1] = 
-				ProbDistribUtils.multiplyDistributionWithConstantValue((DiscreteProbabilityDistribution)finalProxyDistrib.distributions[1], ALPHA_CONST);
-			//		log("Maximum for final distribution of the proxy " + i +  ": " + GradientDescent.getMaximum(finalProxyDistrib));
+				ProbDistribUtils.multiplyDistributionWithConstantValue
+				((DiscreteProbabilityDistribution)finalProxyDistrib.distributions[1], ALPHA_CONST);
+	
+			//		log("Maximum for final distribution of the proxy " + 
+			// i +  ": " + GradientDescent.getMaximum(finalProxyDistrib));
 
 			proxiesDistrib.add(finalProxyDistrib);
 		}
@@ -239,7 +248,8 @@ public class Binder extends ManagedComponent  {
 		finalDistrib.opType = OperationType.MULTIPLIED;
 		finalDistrib.distributions = new ProbabilityDistribution[proxiesDistrib.size() + 1];
 
-		finalDistrib.distributions[0] = ProbDistribUtils.multiplyDistributionWithConstantValue(priorDistrib, ALPHA_CONST);
+		finalDistrib.distributions[0] = 
+			ProbDistribUtils.multiplyDistributionWithConstantValue(priorDistrib, ALPHA_CONST);
 
 		for (int i = 1 ; i < proxiesDistrib.size() + 1 ; i++ ) {
 			finalDistrib.distributions[i] = proxiesDistrib.elementAt(i-1);
@@ -271,56 +281,6 @@ public class Binder extends ManagedComponent  {
 			incrementalBinding = Boolean.parseBoolean(_config.get("--incremental"));
 		} 
 	}
-
-
-
-	/**	private void deleteOldUnions() {
-		try {
-			CASTData<Union>[] unions = getWorkingMemoryEntries(Union.class);
-			for (int i = 0; i < unions.length; i++) {
-				deleteFromWorkingMemory(unions[i].getID());
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	} */
-
-
-
-	/**
-	public void deleteUnionFromWM(Union oldUnion) {
-		try {
-			CASTData<UnionDistribution>[] uniondistribs = getWorkingMemoryEntries(UnionDistribution.class);
-			for (int i = 0; i < uniondistribs.length; i++) {
-				for (int j = 0 ; j < uniondistribs[i].getData().alternativeUnions.length ; j++) {
-				if (uniondistribs[i].getData().alternativeUnions[j].equals(oldUnion)) {
-					deleteFromWorkingMemory(uniondistribs[i].getID());
-				}
-				}
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	public void deleteUnionDistributionFromWM(UnionDistribution uniondistrib) {
-		try {
-			CASTData<UnionDistribution>[] uniondistribs = getWorkingMemoryEntries(UnionDistribution.class);
-			for (int i = 0; i < uniondistribs.length; i++) {
-				if (uniondistribs[i].getData().equals(uniondistrib)) {
-					deleteFromWorkingMemory(uniondistribs[i].getID());
-				}
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-*/
-
 
 
 	
@@ -483,6 +443,10 @@ public class Binder extends ManagedComponent  {
 		if (incrementalBinding) {
 			try {
 			Proxy newProxy = getMemoryEntry(wmc.address, Proxy.class);
+			
+			newProxy.features = ProbDistribUtils.addIndeterminateFeatureValues(newProxy.features);
+			newProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(newProxy);
+			
 			incrementalBinding(newProxy);
 			}
 			catch (Exception e) {
@@ -498,13 +462,6 @@ public class Binder extends ManagedComponent  {
 		log("--------STOP BINDING----------");
 
 	}
-
-//	Vector<UnionDistribution> curUnionDistributions = new Vector<UnionDistribution>();
-//	HashMap<Union, Vector<UnionDistribution>> includingDistributions = new HashMap<Union, Vector<UnionDistribution>>();
-
-	
-	
-	
 	
 	
 	
@@ -521,7 +478,8 @@ public class Binder extends ManagedComponent  {
 			Vector<UnionConfiguration> newUnionConfigurations = new Vector<UnionConfiguration>();
 			HashMap<String,Union> alreadyMergedUnions = new HashMap<String, Union>();
 			
-			for (Enumeration<UnionConfiguration> configs = currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
+			for (Enumeration<UnionConfiguration> configs = 
+				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
 				
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
 				
@@ -636,68 +594,6 @@ public class Binder extends ManagedComponent  {
 		}		
 		return false;
 	}
-
-
-/**
-	private void addEntityToWM(Union entity) {
-
-		try {
-			UnionDistribution uniondistrib = new UnionDistribution();
-			uniondistrib.alternativeUnions = new Union[1];
-			uniondistrib.alternativeUnions[0] = entity;
-			
-			addToWorkingMemory(entity.entityID, uniondistrib);
-			log("new Union distribution succesfully added to the binding working memory");
-			log("Union ID: " + entity.entityID);
-			log("Union has " + entity.includedProxies.length + " included proxies");
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-
-	
-	private void addEntityToWM(UnionDistribution distrib) {
-
-		try {
-			
-			addToWorkingMemory(newDataID(), distrib);
-			log("new Union distribution succesfully added to the binding working memory");
-			log("number of unions in distrib: " +  distrib.alternativeUnions.length);
-			for (int i = 0 ; i < distrib.alternativeUnions.length ; i++) {
-				Union union = distrib.alternativeUnions[i];
-			log("Union ID: " + union.entityID);
-			log("Union has " + union.includedProxies.length + " included proxies");
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	*/
-	
-	private void addEntityToWM(UnionConfiguration config) {
-
-		try {
-			
-			addToWorkingMemory(newDataID(), config);
-			log("new Union distribution succesfully added to the binding working memory");
-			log("number of unions in config: " +  config.includedUnions.length);
-			for (int i = 0 ; i < config.includedUnions.length ; i++) {
-				Union union = config.includedUnions[i];
-			log("Union ID: " + union.entityID);
-			log("Union has " + union.includedProxies.length + " included proxies");
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 
 	private void updateWM(AlternativeUnionConfigurations configs) {
 
