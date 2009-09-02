@@ -20,5 +20,5 @@ JAVA MG monitor binder.components.BinderMonitor --gui --log
 SUBARCHITECTURE other
 CPP TM AlwaysPositiveTaskManager 
 CPP WM SubarchitectureWorkingMemory 
-CPP MG reader BindingWorkingMemoryReader 
+CPP MG writer FakeProxyWriter
 
