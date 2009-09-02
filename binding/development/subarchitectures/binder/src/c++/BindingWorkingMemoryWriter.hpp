@@ -17,7 +17,7 @@ namespace binder {
    * @version 02/09/2009
    */
   class BindingWorkingMemoryWriter : 
-    public cast::ManagedComponent {
+    public virtual cast::ManagedComponent {
 
   protected:
 
