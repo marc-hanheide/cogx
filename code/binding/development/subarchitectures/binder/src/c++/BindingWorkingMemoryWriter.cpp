@@ -1,26 +1,12 @@
 #include "BindingWorkingMemoryWriter.hpp"
 
 
-extern "C" {
-  cast::interfaces::CASTComponentPtr 
-  newComponent() {
-    return new binder::BindingWorkingMemoryWriter();
-  }
-}
-
-
-
 namespace binder {
 
   using namespace autogen::core;
   using namespace autogen::featvalues;
   using namespace cast;
- 
-  
-  BindingWorkingMemoryWriter::BindingWorkingMemoryWriter() {}
-  
-  BindingWorkingMemoryWriter::~BindingWorkingMemoryWriter() {}
-  
+   
   ProxyPtr BindingWorkingMemoryWriter::createNewProxy (const std::string & subarchId, 
 						       float probExists) {
     

@@ -1,7 +1,10 @@
 include_directories(.)
 
-add_cast_component(BindingWorkingMemoryReader BindingWorkingMemoryReader.hpp BindingWorkingMemoryReader.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials)
+add_library(BinderAbstract BindingWorkingMemoryReader.hpp
+BindingWorkingMemoryReader.cpp BindingWorkingMemoryWriter.hpp
+BindingWorkingMemoryWriter.cpp)
+target_link_libraries(BinderAbstract CDL CASTCore CASTArchitecture)
+target_link_libraries(BinderAbstract BinderEssentials)
 
-add_cast_component(BindingWorkingMemoryWriter BindingWorkingMemoryWriter.hpp BindingWorkingMemoryWriter.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials)
+add_cast_component(FakeProxyWriter FakeProxyWriter.hpp FakeProxyWriter.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} BinderAbstract)

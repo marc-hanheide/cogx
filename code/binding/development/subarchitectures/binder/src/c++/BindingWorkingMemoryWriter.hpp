@@ -19,18 +19,6 @@ namespace binder {
   class BindingWorkingMemoryWriter : 
     public cast::ManagedComponent {
 
-  public:    
-    /**
-     * Constructor
-     */
-    BindingWorkingMemoryWriter();
-    
-    /**
-     * Destructor
-     */
-    virtual ~BindingWorkingMemoryWriter();
-    
-
   protected:
 
     /** Create a new proxy given the ID of the originating subarchitecture,

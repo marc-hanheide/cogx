@@ -19,18 +19,6 @@ namespace binder {
   class BindingWorkingMemoryReader : 
     public cast::ManagedComponent {
 
-  public:    
-    /**
-     * Constructor
-     */
-    BindingWorkingMemoryReader();
-    
-    /**
-     * Destructor
-     */
-    virtual ~BindingWorkingMemoryReader();
-
-    
     const std::vector<autogen::core::UnionPtr> & 
     getUnions() const {
       return m_currentUnions;
@@ -38,9 +26,6 @@ namespace binder {
 
   protected:
     virtual void start();
-    
-    
-    
     
     std::vector<autogen::core::UnionPtr> m_currentUnions;
 

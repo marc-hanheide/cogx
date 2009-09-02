@@ -1,24 +1,11 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "BindingWorkingMemoryReader.hpp"
 
-extern "C" {
-  cast::interfaces::CASTComponentPtr 
-  newComponent() {
-    return new binder::BindingWorkingMemoryReader();
-  }
-}
-
-
-
 namespace binder {
 
   using namespace autogen::core;
   using namespace cast;
   using namespace cast::cdl;
-
-  BindingWorkingMemoryReader::BindingWorkingMemoryReader() {}
-  
-  BindingWorkingMemoryReader::~BindingWorkingMemoryReader() {}
 
   void
   BindingWorkingMemoryReader::start() {
