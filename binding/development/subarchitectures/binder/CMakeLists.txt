@@ -3,4 +3,5 @@ project (BINDER)
 
 # auto generated code
 add_subdirectory (src/c++/autogen)
+add_subdirectory (src/c++)
 
