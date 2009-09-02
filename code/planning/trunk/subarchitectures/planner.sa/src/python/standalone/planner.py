@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, shutil
 import re
 
 import utils
@@ -108,18 +108,21 @@ class BasePlanner(object):
     def _post_process(self, task):
         raise NotImplementedError
 
-def create_unique_dir(base_path, unique_dirname_fn):
+def create_unique_dir(base_path, unique_dirname_fn, may_exist=True):
     """creates a new subdirectory in base_path. unique_dirname_fn is a
     function that produces a new, unique name every time it is called.
     create_unique_dir() loops until a directory name is produced that
     does not exist yet, creates the directory and returns its name."""
     while True:
         unique_id = unique_dirname_fn()
-        print unique_id
         tmp_dir = os.path.join(base_path, unique_id)
-        if not os.path.exists(tmp_dir):
-            os.make_dirs(tmp_dir)
-            return tmp_dir
+        if os.path.exists(tmp_dir):
+            if may_exist:
+                shutil.rmtree(tmp_dir)  # remove old version
+            else:
+                continue  # create a new, unique name
+        os.makedirs(tmp_dir)
+        return tmp_dir
     
 class ContinualAxiomsFF(BasePlanner):
     """
@@ -127,13 +130,12 @@ class ContinualAxiomsFF(BasePlanner):
     PDDL_REXP = re.compile("\((.*)\)")
     def _prepare_input(self, task):
         planning_tmp_dir =  global_vars.config.tmp_dir
-#         unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
-#         tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, static_testing=True)
         DEBUGGING = True
         if DEBUGGING:
-            tmp_dir = os.path.join(planning_tmp_dir, "static_dir_for_debugging")
-            if not os.path.exists(tmp_dir):
-                os.makedirs(tmp_dir)
+            unique_dirname_fn = lambda: "static_dir_for_debugging"
+        else:
+            unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
+        tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, may_exist=DEBUGGING)
         paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "plan.pddl", "stdout.out")]
         pddl_strs = task.pddl_domain_str(), task.pddl_problem_str()
         for path, content in zip(paths, pddl_strs):
