@@ -10,7 +10,7 @@ extern "C" {
 }
 
 FakeMotivationSA::FakeMotivationSA() : 
-    m_goal ("(pos coffee : living_room)") 
+    m_goal ("(forall (?n - node) (= (place_type ?n) place))") 
 { }
 
 void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
