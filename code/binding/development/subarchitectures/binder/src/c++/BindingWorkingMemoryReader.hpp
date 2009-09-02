@@ -18,7 +18,8 @@ namespace binder {
    */
   class BindingWorkingMemoryReader : 
     public cast::ManagedComponent {
-    
+
+  public:    
     /**
      * Constructor
      */

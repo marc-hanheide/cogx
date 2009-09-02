@@ -1,6 +1,15 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "BindingWorkingMemoryReader.hpp"
 
+extern "C" {
+  cast::interfaces::CASTComponentPtr 
+  newComponent() {
+    return new binder::BindingWorkingMemoryReader();
+  }
+}
+
+
+
 namespace binder {
 
   using namespace autogen::core;
@@ -41,6 +50,8 @@ namespace binder {
 	 i < _config->includedUnions.end() ; ++i) {
       m_currentUnions.push_back(*i);
     }
+
+    println("Wow, I currently have %d unions", m_currentUnions.size());
   }
 
 }
