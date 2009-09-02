@@ -4,11 +4,13 @@
 # in an anguishing pang of languishing attention:
 # "Give me autotools, and take away this pain doc..."
 
+
 include_directories(.)
-include_directories(../../../../include/)
     
 include_directories(./include/)
-link_directories(./ayPlan/)
+
+link_directories(${ROOT_OF_PLANNING}/ayPlan/)
+include_directories(${ROOT_OF_PLANNING}/include/)
 
 add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native)
 
