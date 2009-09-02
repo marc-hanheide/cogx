@@ -1,3 +1,5 @@
+include_directories(.)
+
 add_cast_component(BindingWorkingMemoryReader BindingWorkingMemoryReader.hpp BindingWorkingMemoryReader.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} BinderEssentials)
 
