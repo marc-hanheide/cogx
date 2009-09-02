@@ -7,7 +7,7 @@ def load_domain(filename):
     return domain.MAPLDomain.parse(p.root)
     
 def parse_domain(domain_desc):
-    p = mapl.parser.Parser(domain_desc.split("\n"))
+    p = parser.Parser(domain_desc.split("\n"))
     return domain.MAPLDomain.parse(p.root)
     
 
@@ -16,6 +16,6 @@ def load_problem(filename, domain):
     return problem.Problem.parse(p.root, domain)
     
 def parse_problem(problem_desc, domain):
-    p = mapl.parser.Parser(problem_desc.split("\n"))
+    p = parser.Parser(problem_desc.split("\n"))
     return problem.Problem.parse(p.root, domain)
     
