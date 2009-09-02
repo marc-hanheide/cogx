@@ -18,7 +18,8 @@ namespace binder {
    */
   class BindingWorkingMemoryWriter : 
     public cast::ManagedComponent {
-    
+
+  public:    
     /**
      * Constructor
      */
@@ -41,16 +42,7 @@ namespace binder {
      * @return a new proxy
      */
     autogen::core::ProxyPtr createNewProxy (const std::string & subarchId, 
-					    float probExists) {
-      
-      autogen::core::ProxyPtr newProxy = new autogen::core::Proxy();
-      
-      newProxy->entityID = newDataID();
-      newProxy->subarchId = subarchId;
-      newProxy->probExists = probExists;
-      
-      return newProxy;
-    }
+					    float probExists);
     
     
     /**
@@ -64,15 +56,8 @@ namespace binder {
      */
     autogen::core::ProxyPtr createNewProxy (const std::string & subarchId, 
 					    float probExists, 
-					    const autogen::core::FeaturesList & features) {
-      
-      autogen::core::ProxyPtr newProxy = createNewProxy(subarchId, probExists);      
-      newProxy->features = features;
+					    const autogen::core::FeaturesList & features);
 
-      return newProxy;
-    }
-    
-    
     /**
      * Add a new feature to the proxy (and regenerate the probability
      * distribution, given this new information)
@@ -81,9 +66,7 @@ namespace binder {
      * @param feat the feature to add
      */
     void addFeatureToProxy(autogen::core::ProxyPtr proxy, 
-			   autogen::core::FeaturePtr feat) {      
-      proxy->features.push_back(feat);
-    }
+			   autogen::core::FeaturePtr feat);
     
     
     
@@ -95,38 +78,23 @@ namespace binder {
      * @return the StringValue
      */
     autogen::featvalues::StringValuePtr createStringValue(const std::string & val, 
-							  float prob) {
-      autogen::featvalues::StringValuePtr stringVal = new autogen::featvalues::StringValue();
-      stringVal->val = val;
-      stringVal->independentProb = prob;
-      return stringVal;
-    }
+							  float prob);
     
     /** 
      * Create a new feature, without feature values
      * @param featlabel the feature label
      * @return the new feature
      */    
-    autogen::core::FeaturePtr createFeature(const std::string & featlabel) {
-      autogen::core::FeaturePtr feat = new autogen::core::Feature();
-      feat->featlabel = featlabel;
-      return feat;
-    }
+    autogen::core::FeaturePtr createFeature(const std::string & featlabel);
 
     /**
      * Create a new feature with a unique feature value
      * @param featlabel the feature label
      * @param featvalue the feature value
      * @return the new feature
-     */
-    
+     */    
     autogen::core::FeaturePtr createFeatureWithUniqueFeatureValue 
-    (const std::string & featlabel, autogen::core::FeatureValuePtr featvalue) {
-      
-      autogen::core::FeaturePtr feat = createFeature(featlabel);
-      feat->alternativeValues.push_back(featvalue);      
-      return feat;
-    }
+    (const std::string & featlabel, autogen::core::FeatureValuePtr featvalue);
     
     
     /** 
@@ -135,10 +103,8 @@ namespace binder {
      * @param featval the feature value
      */    
     void addFeatureValueToFeature(autogen::core::FeaturePtr feat, 
-				  autogen::core::FeatureValuePtr featval) {      
-      feat->alternativeValues.push_back(featval);            
-    }
-    
+				  autogen::core::FeatureValuePtr featval);
+
     /** 
      * Create a new feature containing several alternative feature values
      * @param featlabel the feature label
@@ -146,66 +112,28 @@ namespace binder {
      * @return the feature
      */    
     autogen::core::FeaturePtr createFeatureWithAlternativeFeatureValues 
-    (const std::string & featlabel, const autogen::core::FeatureValues & featvalues) {
-      
-      autogen::core::FeaturePtr feat = createFeature(featlabel);
-      feat->alternativeValues = featvalues;      
-      return feat;
-    }
-    
+    (const std::string & featlabel, const autogen::core::FeatureValues & featvalues);    
     
     /** 
      * Insert the proxy in the binder working memory 
      * @param proxy the proxy
      */    
-    void addProxyToWM(autogen::core::ProxyPtr proxy) {
-
-      try {
-	addToWorkingMemory(proxy->entityID, proxy);
-	log("new Proxy succesfully added to the binder working memory");	
-      }
-      catch (cast::CASTException &e) {
-	println("EXCEPTION in BindingWorkingMemoryWriter::addProxyToWM: %s", e.message.c_str());
-      }
-    }
-    
-    
+    void addProxyToWM(autogen::core::ProxyPtr proxy);
+        
     /**
      * Overwrite an existing proxy with a new one
      * (the new proxy needs to have the same entityID has the existing one)
      * 
      * @param proxy the new proxy
-     */
-    
-    void overwriteProxyInWM(autogen::core::ProxyPtr proxy) {
-
-      try {
-	overwriteWorkingMemory(proxy->entityID, proxy);
-	log("existing Proxy succesfully modified in the binder working memory");
-	
-      }
-      catch (cast::CASTException &e) {
-	println("EXCEPTION in BindingWorkingMemoryWriter::overwriteProxyInWM: %s", e.message.c_str());
-      }
-    }
+     */    
+    void overwriteProxyInWM(autogen::core::ProxyPtr proxy);
     
 
     /**
      * Delete an existing proxy
      * @param proxy the proxy to delete
-     */
-    
-    void deleteEntityInWM(autogen::core::ProxyPtr proxy) {
-
-      try {
-	deleteFromWorkingMemory(proxy->entityID);
-	log("existing Proxy succesfully modified in the binder working memory");
-	
-      }
-      catch (cast::CASTException &e) {
-	println("EXCEPTION in BindingWorkingMemoryWriter::deleteEntityInWM: %s", e.message.c_str());
-      }
-    }
+     */    
+    void deleteEntityInWM(autogen::core::ProxyPtr proxy);
 
   };
   
