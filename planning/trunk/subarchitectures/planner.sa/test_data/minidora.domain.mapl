@@ -11,6 +11,7 @@
 	
 	(:constants
 		place placeholder - place_type
+        R2D2 - robot
 	)
 
     (:predicates
@@ -32,9 +33,12 @@
 	 :agent (?a - robot)
 	 :parameters (?to - node)
 	 :variables (?from - node)
-	 :precondition (and 
-		(or (connected ?from ?to) (connected ?to ?from))
-		(= (pos ?a) ?from) 
+	 :precondition (and
+;; ATTENTION:
+;; commented out the following lines until respective info 
+;; is provided on binder 
+;;		(or (connected ?from ?to) (connected ?to ?from))
+;;		(= (pos ?a) ?from) 
 		)
 	 :effect (and
 		(assign (pos ?a) ?to)
