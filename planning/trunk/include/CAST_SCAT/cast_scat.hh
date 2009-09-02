@@ -205,10 +205,23 @@ namespace CAST_SCAT
                      <<_wmc.address.id
                      <<" "<<_wmc.address.subarchitecture
                      <<std::endl);
+
+            if(managed_Component->intended_audience_test(std::string("")));
             
             auto argument
                 = dynamic_cast<cast::ManagedComponent*>(managed_Component)
                 ->getMemoryEntry<ICE_FUNCTION_CLASS>(_wmc.address);
+
+//             auto nonsense = argument->optionalMemberDesignatorIsAnArgument
+            
+//             /* If \local{managed_Component} is not the intended
+//              * audience of the working memory object, then the
+//              * implementation is not invoked.*/
+//             if(!managed_Component->intended_audience_test(argument->optionalMemberDesignatorIsAnArgument)){
+//                 QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(mutex.get()),
+//                                               "Unable to unlock mutex.");
+//                 return;
+//             }
             
 
             (managed_Component->*function)(argument);
@@ -288,8 +301,10 @@ namespace CAST_SCAT
     public:
         class can_be_deleted { public:  virtual ~can_be_deleted() {}; };
         
-        procedure_implementation()
-            :mutex(give_me_a_new__pthread_mutex_t()){
+        explicit procedure_implementation(const std::string&& designator = "")
+            :mutex(give_me_a_new__pthread_mutex_t()),
+             designator(std::move(designator))
+        {
             
             CAST__VERBOSER(4, "Created new procedure implementation with mutex :: "<<mutex.get());
             
@@ -301,6 +316,17 @@ namespace CAST_SCAT
                                               "Unable to destroy mutex.");
         }
 
+        bool intended_audience_test(const std::string& audience)
+        {
+            return ("" == designator || designator == audience);
+        }
+        
+        
+        bool intended_audience_test(const std::vector<std::string>& audiences)
+        {
+            return ("" == designator ||
+                    (std::find(audiences.begin(), audiences.end(), designator) != audiences.end()));
+        }        
 
         /* This _must only_ be called by a
          * \class{cast::ManagedComponent} \method{start()}. It is
@@ -368,6 +394,7 @@ namespace CAST_SCAT
     private:
         std::vector<std::shared_ptr<can_be_deleted> > to_be_deleted;
         std::shared_ptr<pthread_mutex_t> mutex;
+        std::string designator;
     };
     
     
@@ -445,6 +472,7 @@ namespace CAST_SCAT
         typedef void (THIS__TYPE::*THIS__FUNCTION__WMC__TO__VOID)
             (const cast::cdl::WorkingMemoryChange&);        
 
+        
 #define procedure_call____IMPLEMENT_FROM__NOT_AN_ADDRESS(FUNCTION_NAME, FORWARD_ANNOTATION, BACK_ANNOTATION) \
         template<typename ...T> \
         FORWARD_ANNOTATION FUNCTION_NAME(const T&... t) BACK_ANNOTATION \
