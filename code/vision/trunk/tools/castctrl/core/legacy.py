@@ -24,8 +24,8 @@ def getMergeFn():
     return xmerge3
 
 # available since 2.6
-def os_path_relpath(path, start=os.curdir):
-    if pyver >= 206: return os.path.relpath(path, start)
+def os_path_relpath(target, base=os.curdir):
+    if pyver >= 206: return os.path.relpath(target, base)
     
     # http://code.activestate.com/recipes/302594/
     if not os.path.exists(target):
