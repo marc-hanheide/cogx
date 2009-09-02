@@ -24,16 +24,17 @@ void WMControl::start() {
 void WMControl::connectToPythonServer() {
     println("Planner WMControl: connecting to Python Server");
     try	{
-	Ice::Identity idty;
-	idty.name = "PlannerPythonServer";
-	//idty.category = "PythonServer.PythonServerI";
-	idty.category = "PythonServer";
+		pyServer = getIceServer<autogen::Planner::PythonServer>("PlannerPythonServer");
+	// Ice::Identity idty;
+	// idty.name = "PlannerPythonServer";
+	// //idty.category = "PythonServer.PythonServerI";
+	// idty.category = "PythonServer";
 
-	ostringstream tmp;
-	tmp << getCommunicator()->identityToString(idty) << ":default -h 127.0.0.1 -p 10411";
+	// ostringstream tmp;
+	// tmp << getCommunicator()->identityToString(idty) << ":default -h 127.0.0.1 -p 10411";
 
-	Ice::ObjectPrx base = getCommunicator()->stringToProxy(tmp.str());
-	pyServer = autogen::Planner::PythonServerPrx::checkedCast(base);
+	// Ice::ObjectPrx base = getCommunicator()->stringToProxy(tmp.str());
+	// pyServer = autogen::Planner::PythonServerPrx::checkedCast(base);
     }
     catch (const Ice::Exception& ex) {
 	cerr << ex << endl;
