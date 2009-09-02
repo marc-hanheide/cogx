@@ -79,9 +79,14 @@ void optimalMode(uint initialLimit)
     VERBOSER(14, "The planner has finished executing.\n");
 }
 
-
+int main_commented(int argc, char **argv);
 
 int main(int argc, char **argv)
+{
+    return main_commented(argc, argv);
+}
+
+int main_commented(int argc, char **argv)
 {
     Arguments arguments(argc, argv);
     

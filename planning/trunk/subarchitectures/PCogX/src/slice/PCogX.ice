@@ -6,7 +6,7 @@
  * it assuming the underscore character '_' could be used in names,
  * then later discovered it couldn't. What a stupid restriction. I was
  * also thrown by the fact that capitalisation of names in SLICE
- * definitons is ignored.
+ * definitions is ignored.
  */
 
 
@@ -127,14 +127,31 @@ module PCogX
          * more than one factory operating. */
         OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
         
-        /* Description of the features that can occure in the planning
+        /* Description of the features that can occur in the planning
          * domain at hand.*/
         OptionalMemberPlannerDescriptor optionalMemberPlannerDescriptorIsAnArgument;
     };
 
+    /* From what file should the planner parse the domain description.*/
+    class postFileNameForDomainDescription
+    {
+        /* String identifier of the planning domain.*/
+        ["c++:type:std::string"] string fileNameForDomainDescriptionIsAnArgument;
+
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
+
+    /* From what file should the planner parse the problem description.*/
+    class postFileNameForProblemDescription
+    {
+        /* String identifier of the planning domain.*/
+        ["c++:type:std::string"] string fileNameForProblemDescriptionIsAnArgument;
+
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
     
-    /* Typically a planner will assocaited an integer ID with every
-     * proposition (\type{string}). This proceudre allows a client of
+    /* Typically a planner will associated an integer ID with every
+     * proposition (\type{string}). This procedure allows a client of
      * the planner to obtain that association via
      * \return{propositionIDs}.*/
     ["c++:type:std::map<int, std::string>"] dictionary<int, string> PropositionIDs;

@@ -8,7 +8,11 @@ CXX = ccache g++ -DOLD_FLEX # ccache g++ -DOLD_FLEX -DNDEBUG -O3 -fno-strict-ali
 
 GENERATED=pddl+
 
-MODULES= Functions Curses Action Arguments Domain global main PredicatesAndPropositions Problem Planner GroundAction State GroundActionWithCost ActionCostState CostPlanner StateEvaluation UnexpandedStack
+MODULES= Functions Curses Action Arguments Domain global PredicatesAndPropositions Problem Planner GroundAction State GroundActionWithCost ActionCostState CostPlanner StateEvaluation UnexpandedStack
+
+EXTRA_MODULES_EXECUTABLE= main
+
+EXTRA_OBJECTS_EXECUTABLE=$(EXTRA_MODULES_EXECUTABLE:=.o)
 
 OBJECTS=$(MODULES:=.o) $(GENERATED:=.o) 
 
@@ -25,10 +29,14 @@ CFLAGS=-O3 -DNWITH_CURSES -DPARSER_DEBUG -I.
 
 #CFLAGS=-ggdb -DNATHAN -DPARSER_DEBUG -I. -I/home/charlesg/downloads/boost_1_34_0/
 
+libayPlan: $(OBJECTS)
+	ar rv libayPlan.so $(OBJECTS)
+	ranlib libayPlan.so
+
 all: $(GENERATED:=.cc) $(HEADERS) $(TARGET)
 
-$(TARGET): $(OBJECTS) 
-	$(CXX) -o $@ $(OBJECTS) $(CFLAGS) $(LDFLAGS)
+$(TARGET): $(OBJECTS) $(EXTRA_OBJECTS_EXECUTABLE)
+	$(CXX) -o $@ $(EXTRA_OBJECTS_EXECUTABLE) $(OBJECTS) $(CFLAGS) $(LDFLAGS)
 
 %.o: %.cc
 	$(CXX) $(CFLAGS) $< -c -o $@
