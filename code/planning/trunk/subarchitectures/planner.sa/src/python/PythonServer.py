@@ -16,67 +16,27 @@ extend_pythonpath()
 from standalone.task import Task
 from standalone.planner import Planner as StandalonePlanner
 
-# Using string templates only until move to the proper ICE types
-MAPL_TASK_TMPL = """
-(define (problem cogxtask) (:domain cogx)
-(:objects
-%s
-)
-(:init
-%s
-)
-(:goal (and
-%s
-)))
-"""
 
 TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/minidora.domain.mapl")
 
-def union2name(union):
-  return "union%s" % union.entityID
-
-def union2type_declaration(union):
-  """perform some basic type inference to determine the object type"""
-  return "object"
-
-def gen_type_declarations(unions):
-  for union in unions:
-    yield "%s - %s" % (union2name(union), union2type_declaration(union))
-
-def gen_fact_tuples(unions):
-  for union in unions:
-    name = union2name(union)
-    for feature in union.features:
-      # choose feature val with highest probability:
-      max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb) 
-      yield (feature.featlabel, name, max_val.val)
-
-def filter_unknown_preds(fact_tuples, domain):
-  for ft in fact_tuples:
-    if pred not in domain.functions:
-      feature_label, union_name, val = ft
-      print "filtering feature assignment %s, because '%s' is not part of the planning domain" \
-          % (ft, feature_label)
-    else:
-      yield ft
-
-def tuples2strings(fact_tuples):
-  for ft in fact_tuples:
-    yield "(%s %s : %s)" % ft
-
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
+    cast.core.CASTComponent.__init__(self)
     self.client = None
     self.planner = StandalonePlanner()
-    print "new PythonServer"
+    print "created new PythonServer"
 
-  def configure(self,config,current):
+  def configureComponent(self, config):
+    print "registering Python planner server"
+    self.registerIceServer(Planner.PythonServer,self)
+    print "and trying to get it back again immediately"
+    server = self.getIceServer("PlannerPythonServer", Planner.PythonServer, Planner.PythonServerPrx)
+    print "It worked. We got a server:", server
+
+  def startComponent(self):
     pass
 
-  def start(self,config):
-    pass
-
-  def stop(self,config):
+  def stopComponent(self,config):
     pass
 
   def runComponent(self):
@@ -89,36 +49,25 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #print "OBJECTS: " + task_desc.objects;
     #print "INIT: " + task_desc.state;
 
-    task = Task()
-    task.load_mapl_domain(TEST_DOMAIN_FN)
-    
-    
-
-    #obj_descriptions = "\n".join(fact for union in task_desc.state for fact in union2facts(union))
-    obj_descriptions = tuples2strings(filter_unknown_preds(gen_fact_tuples(unions), task._mapldomain))
-    obj_descriptions = "\n".join(obj_descriptions)
-    obj_declarations = "\n".join(gen_type_declarations(task_desc.state))
-    problem_str = MAPL_TASK_TMPL % (obj_declarations, obj_descriptions, task_desc.goal)
-    print problem_str
+    import task_preprocessor
+    task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
 
 
-    #task.parse_mapl_problem(problem_str)
-#     task.load_mapl_problem(TEST_TASK_FN)
     self.planner.register_task(task)
 
-#     task.mark_changed()
-#     task.activate_change_dectection()
-#     plan = task.get_plan()
+    task.mark_changed()
+    task.activate_change_dectection()
+    plan = task.get_plan()
     
-#     make_dot = True
-#     if make_dot:
-#       dot_str = plan.to_dot()
-#       dot_fn = abspath(join(this_path, "plan.dot"))
-#       print "Generating and showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
-#       print "Dot file is stored in", dot_fn
-#       show_dot_script = abspath(join(this_path, "../..", "show_dot.sh"))
-#       open(dot_fn, "w").write(dot_str)
-#       os.system("%s %s" % (show_dot_script, dot_fn)) 
+    make_dot = True
+    if make_dot:
+      dot_str = plan.to_dot()
+      dot_fn = abspath(join(this_path, "plan.dot"))
+      print "Generating and showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
+      print "Dot file is stored in", dot_fn
+      show_dot_script = abspath(join(this_path, "../..", "show_dot.sh"))
+      open(dot_fn, "w").write(dot_str)
+      os.system("%s %s" % (show_dot_script, dot_fn)) 
 
 #     if(self.client is None):
 #       print "ERROR!!"
