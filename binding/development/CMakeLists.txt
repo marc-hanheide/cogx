@@ -34,6 +34,7 @@ ADD_DEFINITIONS(-Wall)
 add_subdirectory(tools/cast)
 #ADD_COSY_DIR(tools/matlab-helper)
 #ADD_COSY_DIR(tools/CoSyCommonIDLs)
+add_subdirectory(subarchitectures/binder)
 
 # Specify the list of subdirectories to process.
 #ADD_COSY_DIR(subarchitectures/comsys.mk4) # only for the idls
