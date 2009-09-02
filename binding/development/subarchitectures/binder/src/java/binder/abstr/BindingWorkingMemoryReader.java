@@ -1,17 +1,15 @@
 package binder.abstr;
 
+
 import java.util.Vector;
 
-import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.utils.GradientDescent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
 
 /**
  * Abstract class for retrieving elements currently present in the working memory
@@ -23,6 +21,7 @@ import cast.core.CASTData;
 public class BindingWorkingMemoryReader extends ManagedComponent {
 
 	
+	Vector<Union> currentUnions ;
 	
 	@Override
 	public void start() {
@@ -36,7 +35,7 @@ public class BindingWorkingMemoryReader extends ManagedComponent {
 				try {
 					UnionConfiguration config = 
 						getMemoryEntry(_wmc.address, UnionConfiguration.class);
-					log("YOOOHOO!!!");
+					extractUnionsFromConfig(config);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -44,7 +43,20 @@ public class BindingWorkingMemoryReader extends ManagedComponent {
 			} 
 		});
 		
+		currentUnions = new Vector<Union>();
+		
 	}
 
+	
+	private void extractUnionsFromConfig (UnionConfiguration config) {
+		currentUnions = new Vector<Union>();
+		for (int i = 0; i < config.includedUnions.length ; i++) {
+			currentUnions.add(config.includedUnions[i]);
+		}
+	}
+	
+	public Vector<Union> getUnions () {
+		return currentUnions;
+	}
 	
 }
