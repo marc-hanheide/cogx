@@ -17,7 +17,7 @@ namespace binder {
   /**
    */
   class BindingWorkingMemoryReader : 
-    public cast::ManagedComponent {
+    public virtual cast::ManagedComponent {
 
     const std::vector<autogen::core::UnionPtr> & 
     getUnions() const {
