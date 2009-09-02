@@ -27,9 +27,12 @@
 	     ========================================= -->
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
+		<ant target="${target}" dir="tools/math" /> 
 		<ant target="${target}" dir="subarchitectures/binder" /> 
 		<ant target="${target}" dir="subarchitectures/motivation.sa" />
-	</target>
+		<ant target="${target}" dir="subarchitectures/nav.sa" />
+		<!--<ant target="${target}" dir="subarchitectures/coma.sa" />-->
+</target>
 
 
 	<!-- =================================================================== -->
