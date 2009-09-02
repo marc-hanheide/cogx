@@ -17,7 +17,7 @@ from standalone.planner import Planner as StandalonePlanner
 
 # Using string templates only until move to the proper ICE types
 MAPL_TASK_TMPL = """
-(define (problem cosytask) (:domain coffee)
+(define (problem cogxtask) (:domain cogx)
 (:objects
 %s
 )
@@ -31,19 +31,21 @@ MAPL_TASK_TMPL = """
 
 TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/cp_test.domain.mapl")
 
-class PythonServerI(Planner.PythonServer, cast.core.CASTComponent):
+class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
+    cast.core.CASTComponent.__init__(self)
     self.client = None
     self.planner = StandalonePlanner()
-    print "new PythonServer"
+    print "created new PythonServer"
 
-  def configure(self,config,current):
+  def configureComponent(self, config):
+    print "registering python planner server"
+    self.registerIceServer(Planner.PythonServer,self)
+
+  def startComponent(self):
     pass
 
-  def start(self,config):
-    pass
-
-  def stop(self,config):
+  def stopComponent(self,config):
     pass
 
   def runComponent(self):
