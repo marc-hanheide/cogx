@@ -1,4 +1,4 @@
-include_directories(../../../planner.sa/src/cpp)
+include_directories(../../../planner.sa/src/c++)
 include_directories(../../../binder/src/c++)
 
 add_cast_component(FakeMotivationSA FakeMotivationSA.cpp)
