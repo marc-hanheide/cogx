@@ -1,0 +1,179 @@
+------ ayPlan (State-Based Planner) first release --
+----------------------------------------------------
+----------------------------------------------------
+
+These are the release notes for ayPlan. Read them carefully, as they
+tell you what this is all about, explain how to install ayPlan, and
+what to do if something goes wrong.
+
+    ayPlan is Copyright (c) 2008 National ICT Australia Limited
+    (NICTA). The licence is in the accompanying file "licence.txt". If
+    you want a more permissive license, please contact the authors.
+
+WHAT IS ayPlan?
+---------------
+
+A cost-optimal (or satisficing) planner that does a forward search in
+the state space. This software exists primarily as part of an entry in
+IPC-6. Input domains and problems should be in propositional PDDL with
+an action-cost exception.
+
+A list of C++ source files that are considered part of ayPlan follow:
+
+Action.cc           
+CostPlanner.cc  
+Functions.cc     
+GroundActionWithCost.cc
+PredicatesAndPropositions.cc  
+StateEvaluation.cc
+ActionCostState.cc  
+Curses.cc       
+global.cc 
+Problem.cc                    
+UnexpandedStack.cc
+Arguments.cc        
+Domain.cc       
+GroundAction.cc  
+main.cc                  
+Planner.cc   
+State.cc
+ActionCostState.hh   
+Curses.hh        
+GroundActionWithCost.hh                 
+Problem.hh                    
+StaticRelevance.hh
+Action.hh            
+Domain.hh        
+Planner.hh                              
+StateEvaluation.hh            
+UnexpandedStack.hh
+Action_templates.hh  
+Functions.hh     
+Planner_templates.hh                    
+StateEvaluation_templates.hh  
+UnexpandedStack_templates.hh
+Arguments.hh         
+global.hh        
+PredicatesAndPropositions.hh            
+State.hh
+CostPlanner.hh       
+GroundAction.hh  
+PredicatesAndPropositions_templates.hh  
+State_templates.hh
+
+
+HOW CAN I CONTACT THE AUTHORS?
+------------------------------
+
+You can email _Charles Gretton_ at :: charles.gretton@nicta.com.au
+
+TABLE OF CONTENTS:
+------------------
+
+Sections marked with a "*" are optional reading.
+
+<> OBTAINING AND INSTALLING ayPlan
+<> GETTING TO KNOW ayPlan
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        OBTAINING AND INSTALLING ayPlan
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+WHERE CAN I GET ayPlan:
+-----------------------
+
+- The system should be available from: 
+
+    http://csl.anu.edu.au/~charlesg/
+
+
+ON WHAT SYSTEMS HAS ayPlan BEEN TESTED?
+---------------------------------------
+
+ - Ubuntu 7.10 - the Gutsy Gibbon
+ - Ubuntu 8.04 - the Hardy Heron
+
+
+
+WHAT COMPILER MIGHT WORK
+--------------------------
+
+ - g++ version 4.1.3 
+ - g++ version 4.2.3 
+
+  The GCC c++ compiler is usually called g++. The binary is installed
+  at
+
+      /usr/local/bin
+
+  on most systems. To see what version of the c++ compiler you have,
+  type:
+
+     /usr/local/bin/g++ -v
+
+WHAT SOFTWARE IS REQUIRED?
+--------------------------
+
+ - C++ TR1 is required.
+
+ - C++ boost is also required.
+
+ - libcurses is required for some functionality that is disabled by
+   default.
+
+
+INSTALLING ayPlan:
+------------------
+
+ - make clean
+ - make
+
+Good luck!
+
+
+IF SOMETHING GOES WRONG:
+------------------------
+
+ - Try, try again, then quit.
+
+ - If you think there is a bug that the authors should fix, let us
+   know. Include as many details as you possibly can in any bug
+   report so that we can try to fix the problem.
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        GETTING TO KNOW ayPlan
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+ - The system compiles, congratulations!
+
+ - Where problemFile and domainFile are PDDL problem and domain
+   descriptions respectively, run ayPlan as follows in the case of
+   satisficing planning:
+
+./ayPlan --problem problemFile --domain domainFile
+
+
+ - Where N is an admissible upper bound on the cost-optimal plan, if
+   you want to do cost-optimal planning, use the following:
+
+./ayPlan --max-cost N --problem problemFile --domain domainFile
+
+
