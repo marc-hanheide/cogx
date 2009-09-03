@@ -36,9 +36,9 @@ class CMessage(object):
 
 class CAnsiPainter(object):
     colorName = ["black", "darkred", "darkgreen", "orangered",
-                 "blue", "magenta", "darkcyan", "gray", "gray"]
+                 "blue", "magenta", "darkcyan", "gray", "gray", "black"]
     backgrName = ["lightgray", "lightred", "lightgreen", "yellow",
-                  "lightblue", "lightpink", "lightcyan", "lightgray", "lightgray"]
+                  "lightblue", "lightpink", "lightcyan", "white", "white", "white"]
 
     def __init__(self):
         pass
@@ -67,14 +67,12 @@ class CAnsiPainter(object):
                     elif code == 22: styles.pop("font-weight", "")
                     elif code == 23: styles.pop("font-style", "")
                     elif code == 24: styles.pop("text-decoration", "")
-                elif code >= 30 and code < 39: styles["color"] = CAnsiPainter.colorName[code-30]
-                elif code >= 40 and code < 49: styles["background"] = CAnsiPainter.backgrName[code-40]
+                elif code >= 30 and code <= 39: styles["color"] = CAnsiPainter.colorName[code-30]
+                elif code >= 40 and code <= 49: styles["background"] = CAnsiPainter.backgrName[code-40]
 
             newstyle = ";".join(["%s:%s" % (k, v) for k,v in styles.iteritems() if len(v) > 0])
             if newstyle == "": newstyle=None
-            if newstyle == laststyle:
-                if i == 0: parts[i] = "<span>"
-                else: parts[i] = ""
+            if newstyle == laststyle: parts[i] = ""
             else:
                 if newstyle == None: stag = ""
                 else: stag = "<span style='%s'>" % newstyle
