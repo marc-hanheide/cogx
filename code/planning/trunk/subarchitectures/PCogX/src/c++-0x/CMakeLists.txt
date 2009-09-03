@@ -36,6 +36,7 @@ link_libraries(${AYPLAN_LIBS})
     
 add_definitions(-DPLANNER_FACTORY_DESIGNATION"Factory that produces planners")
 add_definitions(-DCLASSICAL_PLANNER_DESIGNATION"Classical planner")
+add_definitions(-DDEBUG_LEVEL=199)
     
 add_cast_component(planner_factory planner_factory.cc)
 

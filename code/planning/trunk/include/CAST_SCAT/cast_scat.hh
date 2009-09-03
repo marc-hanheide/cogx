@@ -209,22 +209,22 @@ namespace CAST_SCAT
                      <<std::endl);
 
             //if(managed_Component->intended_audience_test(std::string("")));
+
             
             auto argument
                 = dynamic_cast<cast::ManagedComponent*>(managed_Component)
                 ->getMemoryEntry<ICE_FUNCTION_CLASS>(_wmc.address);
 
-//             auto nonsense = argument->optionalMemberDesignatorIsAnArgument
-            
-//             /* If \local{managed_Component} is not the intended
-//              * audience of the working memory object, then the
-//              * implementation is not invoked.*/
-//             if(!managed_Component->intended_audience_test(argument->optionalMemberDesignatorIsAnArgument)){
-//                 QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(mutex.get()),
-//                                               "Unable to unlock mutex.");
-//                 return;
-//             }
-            
+
+            /* Make sure we are supposed to implement this procedure call.*/
+            auto argument_designation = argument->optionalMemberDesignatorIsAnArgument;
+            if(!managed_Component->intended_audience_test(argument_designation)){
+                VERBOSER(200, "Rejecting a procedure call...");
+                
+                QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(mutex.get()),
+                                              "Unable to unlock mutex.");
+                return;
+            };
 
             (managed_Component->*function)(argument);
 
@@ -381,7 +381,7 @@ namespace CAST_SCAT
             if(designators.end() != std::find(designators.begin(), designators.end(), "")) return true; 
             if(audiences.end() != std::find(audiences.begin(), audiences.end(), "")) return true; 
             
-            decltype(audiences) result;
+            decltype(designators) result;
             std::set_intersection( audiences.begin(), audiences.end(),
                                    designators.begin(), designators.end(),
                                    inserter(result,result.begin()) );

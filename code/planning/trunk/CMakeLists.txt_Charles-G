@@ -28,5 +28,7 @@ add_definitions(-Wall)
 # add_subdirectory (subarchitectures/hello-world)
 
 add_subdirectory (subarchitectures/PCogX)
+    
+add_subdirectory (subarchitectures/test_harness__PCogX)
 
 # add_subdirectory (subarchitectures/dt-planning.sa)
