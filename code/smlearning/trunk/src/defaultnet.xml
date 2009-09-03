@@ -1,6 +1,6 @@
 <NeuralNet>
 	<ConsoleData>
-		<trainDataFile>prueba.nc</trainDataFile>
+		<trainDataFile>train.nc</trainDataFile>
 		<hTrainDataFiles></hTrainDataFiles>
 		<trainDataFraction>1</trainDataFraction>
 		<testDataFile>valid.nc</testDataFile>
