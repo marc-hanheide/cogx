@@ -1,3 +1,19 @@
+# Author: Charles Gretton (charles.gretton@gmail.com)
+#
+# To compile the system:
+#
+# space ; make -C BUILD install 2> errors ; cat errors | grep "error"
+#
+# If an error happens during compilation, then look in errors for the details.
+#
+# To run the system:
+#
+# In terminal-1, -- cd output/lib/ -- cast-server
+#
+# In terminal-2, -- cast-client ./subarchitectures/test_harness__PCogX/config/test_harness__PCogX.cast
+#
+
+
 cmake_minimum_required (VERSION 2.6)
 
 project (PCogX)

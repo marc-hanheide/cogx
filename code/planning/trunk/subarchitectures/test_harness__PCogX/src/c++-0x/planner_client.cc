@@ -8,6 +8,11 @@ extern "C" {
   }
 }
 
+Planner_Client::Planner_Client(Designator&& name)
+    :Implement(name)
+{
+}
+
 void Planner_Client::start()
 {   
     

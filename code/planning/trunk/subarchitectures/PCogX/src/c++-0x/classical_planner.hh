@@ -21,8 +21,12 @@ class Classical_Planner :
 public:
     typedef CAST_SCAT::procedure_implementation<Classical_Planner> Implement;
     typedef CAST_SCAT::procedure_call<> Call;
+
+    Classical_Planner();
+    Classical_Planner(const Designator& name);
     
-    explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);
+    
+//     explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);
     
     void implement__distinctPlanner(PCogX::distinctPlannerPtr&);
     void implement__readPropositionIdentifiers(PCogX::readPropositionIdentifiersPtr&);

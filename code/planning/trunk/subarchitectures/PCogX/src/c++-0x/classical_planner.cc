@@ -8,11 +8,20 @@ extern "C" {
   }
 }
 
-Classical_Planner::Classical_Planner(Designator&& name)
-    :Implement(name)
-{   
+// Classical_Planner::Classical_Planner(Designator&& name)
+//     :Implement(name)
+// {   
+// }
+
+Classical_Planner::Classical_Planner()
+    :Implement(CLASSICAL_PLANNER_DESIGNATION)
+{
 }
 
+Classical_Planner::Classical_Planner(const Designator& name)
+    :Implement(name)
+{
+}
 
 void Classical_Planner::implement__distinctPlanner(PCogX::distinctPlannerPtr& input){
     VERBOSER(200, "");
