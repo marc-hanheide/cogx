@@ -40,7 +40,7 @@ install-includes:
 	@$(MAKECOOKIE)
 	
 install-libs:
-	(cp -f $(WORKSRC)/lib/cure $(libdir))
+	(cp -Rf $(WORKSRC)/lib/cure $(libdir))
 	@$(MAKECOOKIE)
 	
 install-bins:
