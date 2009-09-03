@@ -2,6 +2,7 @@
 #include "planner_factory.hh"
 
 #include<limits>
+#include<sstream>
 
 extern "C" {
   cast::CASTComponentPtr
@@ -25,23 +26,27 @@ void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
 
     Designator new_designation;
 
-    decltype(random_number_generator()) candidate_designation;
+    decltype(random_number_generator()) __candidate_designation;
     
     while(designators_already_in_use.end() !=
               designators_already_in_use
-          .find(candidate_designation = random_number_generator())){
+          .find(__candidate_designation = random_number_generator())){
     }
         
       
     
     
-    ostringstream oss;
-    oss<<candidate_designation;
-
+    std::ostringstream _candidate_designation;
+    _candidate_designation<<__candidate_designation;
+    const Designator& candidate_designation = _candidate_designation.str();
+    
+    input->identityOfCreatedPlannerIsAReturn = candidate_designation;
+    
+    
     auto designation_of_chosen_implementation
         = {std::move(std::string(CLASSICAL_PLANNER_DESIGNATION))};
-    call<distinctPlanner>(candidate_designation.str(),
-                          designation_of_chosen_implementation);
+    call<PCogX::distinctPlanner>(candidate_designation,
+                                 designation_of_chosen_implementation);
 }
 
 
