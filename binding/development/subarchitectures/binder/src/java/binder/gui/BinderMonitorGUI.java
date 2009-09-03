@@ -45,7 +45,7 @@ public class BinderMonitorGUI extends JFrame
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
-	public boolean LOGGING = true;
+	public boolean LOGGING = false;
 
 	HashMap<String,Object> insertedProxies;
 	HashMap<String,Object> insertedUnions;
