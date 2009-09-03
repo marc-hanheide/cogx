@@ -366,17 +366,30 @@ class ConditionsTest(unittest.TestCase):
         (KVAL ?a false)
         )
         """
+
+        test2 = \
+        """(and
+        (not (in-domain (func2 ?p1 ?p2) false))
+        )
+        """
         
         localScope = self.getLocalScope()
         localScope.add(Parameter("?a", agentType))
         try:
             cond = Parser.parseAs(test.split("\n"), Condition, localScope)
+            self.fail("Modal predicate without function didn't raise exception")
         except ParseError, e:
             self.assertEqual(e.token.string, "kval")
             self.assertEqual(e.token.line, 3)
-            return
 
-        self.fail("Modal predicate without function didn't raise exception")
+        try:
+            cond = Parser.parseAs(test2.split("\n"), Condition, localScope)
+            self.fail("Modal predicate without function didn't raise exception")
+        except ParseError, e:
+            self.assertEqual(e.token.string, "in-domain")
+            self.assertEqual(e.token.line, 2)
+            return
+        
         
         
         

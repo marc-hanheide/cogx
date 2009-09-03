@@ -17,7 +17,7 @@ class Sensor(actions.Action):
         else:
             term = self.sense
 
-        return effects.SimpleEffect(predicates.knowledge, [predicates.VariableTerm(self.agents[0]), term])
+        return effects.SimpleEffect(predicates.direct_knowledge, [predicates.VariableTerm(self.agents[0]), term])
         
     def copy(self, newdomain=None):
         if not newdomain:

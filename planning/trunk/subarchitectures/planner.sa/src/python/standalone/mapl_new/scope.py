@@ -48,6 +48,7 @@ class FunctionTable(dict):
             return []
         
         fs = dict.__getitem__(self, name)
+        
         argtypes = []
         for arg in args:
             if isinstance(arg, predicates.Term):
@@ -62,10 +63,26 @@ class FunctionTable(dict):
         result = []
 #        print name, map(str, args)
         for f in fs:
-            if len(argtypes) == len(f.args) and all(map(lambda t, fa: t.equalOrSubtypeOf(fa.type), argtypes, f.args)):
+            if len(argtypes) == len(f.args):
+                funcargs = {}
+                matches = True
+                for t, arg in zip(argtypes, f.args):
+                    argtype = arg.type
+                    #make sure that "typeof(?f)" parameters are checked correctly
+                    if isinstance(arg.type, types.ProxyType) and arg.type.parameter in funcargs:
+                        argtype = funcargs[arg.type.parameter]
+                        
+                    if not t.equalOrSubtypeOf(argtype):
+                        matches = False
+                        break
+                    
+                    if isinstance(arg.type, types.FunctionType):
+                        funcargs[arg] = t.type
+                if matches:
+#            if len(argtypes) == len(f.args) and all(map(lambda t, fa: , argtypes, f.args)):
 #                print f
 #                print map(lambda t, fa: "%s <= %s: %s" %(str(t), str(fa.type),str(t.equalOrSubtypeOf(fa.type))), argtypes, f.args)
-                result.append(f)
+                    result.append(f)
 
         if len(result) == 1:
             return iter(result).next()

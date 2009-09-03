@@ -3,6 +3,7 @@ import state_new as state
 import mapl_new as mapl
 import mapl_new.mapltypes as types
 import mapl_new.predicates as predicates
+import mapl_new.effects as effects
 #import mapl_new.writer
 from utils import Enum
 
@@ -172,7 +173,10 @@ class PDDLWriter(mapl.writer.MAPLWriter):
             name_elems.append("=")
                 
         argstr = " ".join(map(lambda t: self.write_term(t), args))
-        return "(%s %s)" % ("-".join(name_elems), argstr)
+        result = "(%s %s)" % ("-".join(name_elems), argstr)
+        if literal.negated:
+            result = "(not %s)" % result
+        return result
 
     def write_predicate(self, pred):
         return "(%s %s)" % (pred.name, self.write_typelist(pred.args))
@@ -208,15 +212,53 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         return []
 
     def write_modal_action(self, action, newname, newargs):
+        def factVisitor(cond, results):
+            if isinstance(cond, mapl.conditions.LiteralCondition):
+                if cond.predicate == predicates.equals:
+                    return [(cond.args[0], cond.args[1])]
+                return []
+            else:
+                return sum(results, [])           
+                
         strings = [newname]
         strings += self.section(":parameters", ["(%s)" % self.write_typelist(newargs)], parens=False)
 
+        read_facts = []
+        
         if action.replan:
+            read_facts += action.replan.visit(factVisitor)
             strings += self.section(":replan", self.write_condition(action.replan), parens=False)
         if action.precondition:
+            read_facts += action.precondition.visit(factVisitor)
             strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
 
-        strings += self.section(":effect", self.write_effects(action.effects), parens=False)
+        previous_values = {}
+        for term, value in read_facts:
+            if term in previous_values:
+                previous_values[term] = None
+            else:
+                previous_values[term] = value
+        
+        def effectsVisitor(eff, results):
+            if isinstance(eff, effects.SimpleEffect):
+                if eff.predicate == predicates.assign:
+                    term = eff.args[0]
+                    if term in previous_values and previous_values[term] is not None:
+                        oldval = previous_values[term]
+                        return [effects.SimpleEffect(predicates.assign, [term, oldval], negated=True), eff]
+                    else:
+                        param = types.Parameter("?oldval", term.function.type)
+                        negeffect = effects.SimpleEffect(predicates.assign, [term, predicates.Term(param)], negated=True)
+                        return [effects.UniversalEffect([param], [negeffect], None), eff]
+                return [eff]
+            else:
+                eff.effects = sum(results, [])
+
+        new_effects = []
+        for e in action.effects:
+            new_effects += e.copy().visit(effectsVisitor)
+
+        strings += self.section(":effect", self.write_effects(new_effects), parens=False)
 
         return self.section(":action", strings)
     
