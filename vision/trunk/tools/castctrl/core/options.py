@@ -52,9 +52,12 @@ class CCastOptions(object):
             ICE_CONFIG=${CAST_ICE_CONFIG}
             ICE_JARS=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
 
+            CURE_LIB_PATH=/home/cogx/svn/cosycure/lib/cure
+            CUDA_LIB_PATH=/usr/local/cuda/lib
+
             PATH=${COGX_ROOT}/output/bin:${PATH}
-            LD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:/usr/local/cuda/lib:${LD_LIBRARY_PATH}
-            DYLD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:/usr/local/cuda/lib:${DYLD_LIBRARY_PATH}
+            LD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_PATH}:${CUDA_LIB_PATH}:${LD_LIBRARY_PATH}
+            DYLD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_PATH}:${CUDA_LIB_PATH}:${DYLD_LIBRARY_PATH}
 
             CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}
             CMD_JAVA=java -ea -classpath ${CLASSPATH}
