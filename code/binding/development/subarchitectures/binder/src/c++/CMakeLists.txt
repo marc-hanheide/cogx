@@ -8,3 +8,4 @@ target_link_libraries(BinderAbstract BinderEssentials)
 
 add_cast_component(ExampleProxyPusher ExampleProxyPusher.hpp ExampleProxyPusher.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} BinderAbstract)
+
