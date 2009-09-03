@@ -2,6 +2,7 @@
 #define PLANNER_FACTORY_HH
 
 #include<random>
+#include<set>
 
 #include "CAST_SCAT/cast_scat.hh"
 
@@ -37,10 +38,11 @@ protected:
     void start();
 
 private:
+    typedef int number_type;
     decltype(std::bind(std::uniform_int<number_type>(0, 0),
                        std::mt19937())) random_number_generator;
 
-    std::set<decltype(random_number_generator(0)> designators_already_in_use;
+    std::set<decltype(random_number_generator())> designators_already_in_use;
 };
 
 
