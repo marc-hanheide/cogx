@@ -30,9 +30,13 @@
 Old fashioned debugging -- ERROR STREAM
 
 ---------------------------------*/
+#ifndef DEBUG_LEVEL
 #define DEBUG_LEVEL 17
+#endif
 
+#ifndef DEBUG_SLEEP_DELAY
 #define DEBUG_SLEEP_DELAY 0
+#endif
 
 #define STANDARD_DEBUGGING_PREFIX                                       \
     " -- "<<__PRETTY_FUNCTION__<<" -- :: \n**\t"<<std::endl             \

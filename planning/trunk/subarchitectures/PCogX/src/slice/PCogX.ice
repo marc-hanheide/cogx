@@ -111,6 +111,29 @@ module PCogX
     ["c++:type:std::vector<std::string>"] sequence<string> OptionalMemberPlannerDescriptor;
 
 
+    /* Make a planning component answer to a new name.
+     *
+     * I.e., the way cast works, there can only be "one" component
+     * loaded at any given time. But, of course sometimes you want to
+     * instantiate a component multiple times at runtime. When you
+     * make a procedure call, the implementer is designated. Here, we
+     * suppose some implementers may be able to have a single
+     * procedure two-times designated.. or even more times
+     * designated. For the planning architecture,
+     * \procedure{obtainPlanner} simply asks an existing planning
+     * component to listen to calls at a different new
+     * designation. That new designation is returned to the
+     * \procedure{obtainPlanner} caller. From then on, it should be
+     * able to interact with the planner as if it were a new
+     * object. Posting domains and problems, reading off plans,
+     * etc.*/
+    class distinctPlanner
+    {   
+        ["c++:type:std::string"] string additionalDesignationIsAnArgument;
+        
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
+    
     /* Obtain a planner with ID \return{identityOfCreatedPlanner}. The
      * latter is a valid \SCLICE::type{OptionalMemberDesignator}. If
      * there is more than one planner factory operating under CAST,

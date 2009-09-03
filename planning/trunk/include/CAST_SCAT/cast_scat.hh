@@ -14,7 +14,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
- * me if you make a change to this and commit that change to SVN.
+ * if you make a change to this and commit that change to SVN.
  *
  * ABOUT :: 
  *
@@ -22,13 +22,13 @@
  * useful syntactic sugar for "subarchitecture" interactions via
  * classical -- i.e., circa August 2009 -- CAST.
  * 
- * In more detail.. What is CAST_SCAT?! Charles thinks.. CAST (see
- * \module{cast::*}) is awesome. CAST is cool. I love CAST. Wow!  But
- * I really can't get my head around it. So, I have got my head around
- * a tiny piece of it, that I think is all that is required for the
- * automated planning parts of CogX. And it seems to run without
- * falling over itself. I have wrapped that piece in a really
- * simple-to-use interface.
+ * In more detail.. What is CAST_SCAT?! The author believes.. CAST
+ * (see \module{cast::*}) is lovely.. Wow!  But they can't get their
+ * head around all of it. So, they have got their head around a
+ * (perhaps) tiny piece of it that they believe is all that is
+ * required for the automated planning parts of CogX. What does the
+ * author guarantee?.. that CAST_SCAT appears to work without falling
+ * over itself.
  */
 
 #ifndef CAST_SCAT_HH
@@ -54,6 +54,8 @@ namespace CAST_SCAT
     typedef decltype(cast::cdl::WorkingMemoryChange().address) Address;
     typedef decltype(cast::cdl::WorkingMemoryChange().address.id) Id;
     typedef decltype(cast::cdl::WorkingMemoryChange().address.id) Subarchitecture;
+    typedef std::string Designator;
+    typedef std::vector<Designator> Designators;
 
     /* The typing here is really really weak. Because the Id and the
      * Subarchitecture have the same underlying type, they can be
@@ -206,7 +208,7 @@ namespace CAST_SCAT
                      <<" "<<_wmc.address.subarchitecture
                      <<std::endl);
 
-            if(managed_Component->intended_audience_test(std::string("")));
+            //if(managed_Component->intended_audience_test(std::string("")));
             
             auto argument
                 = dynamic_cast<cast::ManagedComponent*>(managed_Component)
@@ -299,16 +301,47 @@ namespace CAST_SCAT
     class procedure_implementation : public virtual cast::ManagedComponent
     {
     public:
+        /* A type for objects that can be deleted.*/
         class can_be_deleted { public:  virtual ~can_be_deleted() {}; };
+    private:
+        /* Each procedure call is invoked by a wrapper (see
+         * \class{_receive_call}) that can be deleted.*/
+        std::vector<std::shared_ptr<can_be_deleted> > to_be_deleted;
+
+        /* We can only implement one call at a time.*/
+        std::shared_ptr<pthread_mutex_t> mutex;
+
+        /* If a procedure call specified designators -- i.e., SLICE
+         * class \SLICE_member{optionalMemberDesignatorIsAnArgument}
+         * is non-empty -- then an \class{procedure_implementation}
+         * only implements the procedure call where the elements of
+         * \SLICE_member{optionalMemberDesignatorIsAnArgument}
+         * intersects with those of \member{designators}.*/
+        Designators designators;
+    public:
         
-        explicit procedure_implementation(const std::string&& designator = "")
-            :mutex(give_me_a_new__pthread_mutex_t()),
-             designator(std::move(designator))
+        explicit procedure_implementation(const Designator& designator = "")
+            :mutex(give_me_a_new__pthread_mutex_t())
         {
+            if("" == designator)
+                designators  = decltype(designators)();
+            else
+                designators  = {designator};
+            
+            CAST__VERBOSER(4, "Created new procedure implementation with mutex :: "<<mutex.get());
+        }
+        
+        explicit procedure_implementation(Designator&& designator = "")
+            :mutex(give_me_a_new__pthread_mutex_t())
+        {
+            if("" == designator)
+                designators  = decltype(designators)();
+            else
+                designators  = {designator};
             
             CAST__VERBOSER(4, "Created new procedure implementation with mutex :: "<<mutex.get());
             
-        };
+        }
 
         ~procedure_implementation()
         {
@@ -316,18 +349,64 @@ namespace CAST_SCAT
                                               "Unable to destroy mutex.");
         }
 
-        bool intended_audience_test(const std::string& audience)
+        /* Are we the intended \argument{audience} of a procedure
+         * call? -- I.e. were we designated to receive a calls sent to
+         * \argument{audience}?*/
+        bool intended_audience_test(const Designator& audience) const
         {
-            return ("" == designator || designator == audience);
+            /* If we have not been specified to accept particular
+             * designators, then we accept all invocations.*/
+            if(designators.empty())return true;
+
+            /* If the \argument{audience} is non-specific, then we
+             * also accept the invocation.*/
+            if("" == audience)return true;
+
+            /* If at some point we have been told to accept any invocations...*/
+            if(designators.end() != std::find(designators.begin(), designators.end(), "")) return true; 
+            
+            auto designators_iterator = std::find(designators.begin(), designators.end(), audience);
+
+            /* Otherwise, we only accept the invocation if we have
+             * been specified to do so.*/
+            return designators_iterator != designators.end();
+        }
+        
+        /* If this has specified \member{designators}, then where the
+         * audiences intersect with \member{designators}. */
+        bool intended_audience_test(const decltype(designators)& audiences) const
+        {
+            if(designators.empty())return true;
+            if(audiences.empty())return true;
+            if(designators.end() != std::find(designators.begin(), designators.end(), "")) return true; 
+            if(audiences.end() != std::find(audiences.begin(), audiences.end(), "")) return true; 
+            
+            decltype(audiences) result;
+            std::set_intersection( audiences.begin(), audiences.end(),
+                                   designators.begin(), designators.end(),
+                                   inserter(result,result.begin()) );
+            
+            return !result.empty();
+        }        
+
+        /* Make this implement calls with a \argument{designator}
+         * designation.*/
+        void add_designator(const Designator& designator)
+        {
+            if("" == designator) return;
+            
+            designators.push_back(designator);
+        }
+        
+        /* (see \member{add_designator()})*/
+        void add_designator(Designator&& designator)
+        {
+            if("" == designator) return;
+            
+            designators.push_back(std::move(designator));
         }
         
         
-        bool intended_audience_test(const std::vector<std::string>& audiences)
-        {
-            return ("" == designator ||
-                    (std::find(audiences.begin(), audiences.end(), designator) != audiences.end()));
-        }        
-
         /* This _must only_ be called by a
          * \class{cast::ManagedComponent} \method{start()}. It is
          * _not_ thread safe... .*/
@@ -391,10 +470,6 @@ namespace CAST_SCAT
                     break;
             }
         }
-    private:
-        std::vector<std::shared_ptr<can_be_deleted> > to_be_deleted;
-        std::shared_ptr<pthread_mutex_t> mutex;
-        std::string designator;
     };
     
     
@@ -599,7 +674,7 @@ namespace CAST_SCAT
 
                 result = true;
             } else {
-                CAST__UNRECOVERABLE_ERROR("Aked to release :: "
+                CAST__UNRECOVERABLE_ERROR("Asked to release :: "
                                           <<address.id<<" "<<address.subarchitecture<<std::endl
                                           <<"that is either: (1) supposed to be dead..."<<std::endl
                                           <<"or otherwise (2) has yet to be created."<<std::endl);
@@ -1013,7 +1088,7 @@ namespace CAST_SCAT
          * that is managed by this has associated with it a
          * \standard{posix} mutex -- see \library{pthreads.h}. This
          * set of mutexes occurs in the following data
-         * structure. Access is first through the subarchitecutre to
+         * structure. Access is first through the subarchitecture to
          * which the procedure call was made, followed by the id of
          * the SLICE-based object that encapsulates that call.*/ 
         map__subarchitecture__to____map__subarchitecture_id__to__posix_mutex mutexes;

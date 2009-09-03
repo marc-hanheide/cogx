@@ -34,9 +34,14 @@ install(TARGETS PCogX LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 set(AYPLAN_LIBS ayPlan)
 link_libraries(${AYPLAN_LIBS})
     
-add_definitions(-DPLANNER_FACTORY_NAME"Factory that produces planners")
+add_definitions(-DPLANNER_FACTORY_DESIGNATION"Factory that produces planners")
+add_definitions(-DCLASSICAL_PLANNER_DESIGNATION"Classical planner")
     
 add_cast_component(planner_factory planner_factory.cc)
+
+link_cast_component(${CAST_COMPONENT_NAME} PCogX)
+
+add_cast_component(classical_planner classical_planner.cc)
 
 link_cast_component(${CAST_COMPONENT_NAME} PCogX)
 

@@ -7,31 +7,38 @@
  * Engine -- ZeroC, Inc.) package \program{slice2cpp}.*/
 #include "PCogX.hpp"
 
-#ifndef PLANNER_FACTORY_NAME
-#define PLANNER_FACTORY_NAME ""
+#ifndef PLANNER_FACTORY_DESIGNATION
+#define PLANNER_FACTORY_DESIGNATION ""
 #endif
 
-using std::string;
-using std::vector;
+using CAST_SCAT::Designator;
+using CAST_SCAT::Designators;
+
+
+#include<random>
 
 class Planner_Factory :
     public CAST_SCAT::procedure_implementation<Planner_Factory>,
-    public CAST_SCAT::procedure_call<CAST_SCAT::_recover_address>
+    public CAST_SCAT::procedure_call<>
 {
 public:
-    explicit Planner_Factory(const string&& name = PLANNER_FACTORY_NAME);
+    typename CAST_SCAT::procedure_implementation<Planner_Factory> Implement;
+    typename CAST_SCAT::procedure_call<> Call;
+    
+    explicit Planner_Factory(Designator&& name = PLANNER_FACTORY_DESIGNATION);
     
     void implement__obtainPlanner(PCogX::obtainPlannerPtr& input);
     
     void runComponent();
 protected:
     void start();
+
+private:
+    decltype(std::bind(std::uniform_int<number_type>(0, 0), std::mt19937())) random_number_generator;
+
+    std::set<decltype(random_number_generator(0)> designators_already_in_use;
 };
 
-Planner_Factory::Planner_Factory(const string&& name)
-    :CAST_SCAT::procedure_implementation<Planner_Factory>(std::move(name))
-{
-}
 
 
 #endif
