@@ -55,9 +55,9 @@ public class UnionDiscretizer extends ManagedComponent {
 				// for each of them the instance with the maximum probability
 				for (int i = 0 ; i < bestConfiguration.includedUnions.length ; i++) {
 					Union uniondist = bestConfiguration.includedUnions[i];
-					Union maxUnion = GradientDescent.getUnionWithMaximumProbability(uniondist);
-					unions.add(maxUnion);
-				}
+			//		Union maxUnion = GradientDescent.getUnionWithMaximumProbability(uniondist);
+					unions.add(uniondist);
+				} 
 				
 				UnionConfiguration discretizedConfig = new UnionConfiguration();
 				discretizedConfig.includedUnions = new Union[unions.size()];

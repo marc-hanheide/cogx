@@ -1,12 +1,14 @@
 package binder.bayesiannetwork;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Vector;
 
 import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
+import binder.autogen.core.Proxy;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
@@ -20,6 +22,8 @@ public class BayesianNetworkManager {
 	
 	boolean logging = false;
 	
+	HashMap<Proxy,DiscreteProbabilityDistribution> alreadyComputedDistribs;
+	
 	public BayesianNetworkManager() {		
 	
 		log("Start building the bayesian network...");
@@ -28,9 +32,22 @@ public class BayesianNetworkManager {
 		log("number of nodes: " + network.nodes.length);		
 		log("number of edges: " + network.edges.length);
 		
+		alreadyComputedDistribs = new HashMap<Proxy, DiscreteProbabilityDistribution>();
+		
 	}
 	
 
+	public DiscreteProbabilityDistribution getPriorDistribution(Proxy proxy) {
+	
+		if (alreadyComputedDistribs.containsKey(proxy)) {
+			return alreadyComputedDistribs.get(proxy);
+		}
+		else {
+			DiscreteProbabilityDistribution distrib = getPriorDistribution(proxy.features);
+			alreadyComputedDistribs.put(proxy, distrib);
+			return distrib;
+		}
+	}
 	
 	public DiscreteProbabilityDistribution getPriorDistribution(Feature[] features) {
 		log("Start computing the prior distribution...");

@@ -45,7 +45,7 @@ public class BinderMonitorGUI extends JFrame
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
-	public boolean LOGGING = false;
+	public boolean LOGGING = true;
 
 	HashMap<String,Object> insertedProxies;
 	HashMap<String,Object> insertedUnions;
@@ -277,7 +277,6 @@ public class BinderMonitorGUI extends JFrame
 	public void addNewUnion(Union union) {
 
 	//	union.distribution = ProbDistribUtils.normaliseDistribution(union.distribution, 1.0f);
-
 		
 		for (int i = 0; i < union.features.length ; i++){
 			for (int j =0; j < union.features[i].alternativeValues.length ; j++) {
@@ -289,11 +288,12 @@ public class BinderMonitorGUI extends JFrame
 					ProbDistribUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
 			}
 		} 
+	
 		
 		int width = DEFAULT_ENTITY_BOX_WIDTH;
 		int height =  computeHeight(union);
 		String colour = "#8DD19A";
-
+				
 		String text = createUnionText(union);
 		Object union_vertex = graph.insertVertex(parent, null, text, curUnionPosition_X, curUnionPosition_Y, width, height);
 		Object[] object_union = new Object[1];
@@ -307,7 +307,7 @@ public class BinderMonitorGUI extends JFrame
 		graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "10", object_union);
 
 		insertedUnions.put(union.entityID, union_vertex);
-		
+	
 		insertedObjects.add(union_vertex);
 		
 		addNewFeatures(union.features, union_vertex, width, colour);
@@ -391,18 +391,18 @@ public class BinderMonitorGUI extends JFrame
 			Vector<Proxy> proxiesToDelete, 
 			Vector<Union> unionsToDelete) {
 
+		 log("HEHEHE: nb proxies: "  + newProxies.size());
+		 log("HOHODHO nb unions: " + newUnions.size());
+		 
 		try {
 			graph.getModel().beginUpdate();
-			
 			
 			for (Enumeration<Proxy> e = proxiesToDelete.elements(); e.hasMoreElements();) {
 				Proxy proxy = e.nextElement();
 					deleteProxy(proxy);
 					log("Proxy deleted");
 			}
-			
-			Thread.sleep(20);
-			
+						
 			for (Enumeration<Union> e = unionsToDelete.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();
 					deleteUnion(union);
@@ -416,9 +416,7 @@ public class BinderMonitorGUI extends JFrame
 					addNewProxy(proxy);
 				}
 			}
-			*/
-			Thread.sleep(20);
-			
+			*/			
 			
 			for (Enumeration<Union> e = newUnions.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();

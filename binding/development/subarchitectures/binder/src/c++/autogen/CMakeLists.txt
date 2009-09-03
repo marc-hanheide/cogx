@@ -1,5 +1,6 @@
 include_directories(.)
-include(Slice2Cpp)
+
+include_directories(/Users/plison/svn.cogx/binder-dev/tools/cast/cmake)
 
 # expects to find .ice file under PROJECT/src/slice e.g. laser/src/slice
 # 

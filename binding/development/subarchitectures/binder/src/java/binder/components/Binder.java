@@ -2,7 +2,6 @@ package binder.components;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -14,7 +13,6 @@ import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
@@ -22,12 +20,9 @@ import binder.autogen.featvalues.StringValue;
 import binder.bayesiannetwork.BayesianNetworkManager;
 import binder.utils.GradientDescent;
 import binder.utils.ProbDistribUtils;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -59,7 +54,7 @@ public class Binder extends ManagedComponent  {
 
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
-	public int NB_CONFIGURATIONS_TO_KEEP = 10;
+	public int NB_CONFIGURATIONS_TO_KEEP = 1;
 
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
@@ -137,12 +132,16 @@ public class Binder extends ManagedComponent  {
 		currentUnionConfigurations.add(initialConfig);
 	}
 
+
 	
-	
-	public Union constructNewUnion(Vector<PerceivedEntity> includedEntities) {
-		//	log("***** Constructing a new union ****");
-		Union union = new Union();
-		union.entityID = newDataID();
+	/**
+	 * Get all the proxies included in a set of perceptual entities (in case the entity
+	 * is a proxy, it is simply added, and in case it is an union, the set of all included
+	 * proxies is added to the resulting set)
+	 * @param includedEntities the set of perceptual entities
+	 * @return the resulting set of proxies
+	 */
+	private Vector<Proxy> getProxies (Vector<PerceivedEntity> includedEntities) {
 		Vector<Proxy> includedProxies = new Vector<Proxy>();
 		for (Enumeration<PerceivedEntity> en = includedEntities.elements() ; en.hasMoreElements() ;) {
 			PerceivedEntity entity = en.nextElement();
@@ -156,14 +155,33 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 		}
+		return includedProxies;
+	}
+	
 
-		union.includedProxies = new Proxy[includedProxies.size()];
-		union.includedProxies = includedProxies.toArray(union.includedProxies);
+	private float computeProbExists (Vector<PerceivedEntity> includedEntities) {
+		float probExists = PRIOR_PEXISTS;
+		float probNotExists = (1 - PRIOR_PEXISTS);
 
+		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
+			PerceivedEntity prox = e.nextElement();
+			probExists = probExists * prox.probExists; 
+			probNotExists = probNotExists * (1- prox.probExists); 
+		}	
+		
+		probExists = probExists / ((float) Math.pow(PRIOR_PEXISTS,(includedEntities.size())));
+		probNotExists = probNotExists / ((float) Math.pow((1-PRIOR_PEXISTS),(includedEntities.size())));
+		
+		float normConstant = 1.0f / (probExists + probNotExists);
+		probExists = normConstant * probExists;
+		return probExists;
+	}
+	
+	
+	
+	private Vector<Feature> getFeatures (Vector<PerceivedEntity> includedEntities) {
 		Vector<Feature> features = new Vector<Feature>();
 
-		union.probExists = PRIOR_PEXISTS;
-		float probNotExists = (1.0f- PRIOR_PEXISTS);
 		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
 			PerceivedEntity prox = e.nextElement();
 			for (int i = 0; i < prox.features.length ; i++) {
@@ -180,20 +198,40 @@ public class Binder extends ManagedComponent  {
 				}
 				features.add(feat);
 			}
-			union.probExists = union.probExists * prox.probExists; 
-			probNotExists = probNotExists * (1-prox.probExists);
 		}
-		union.probExists = union.probExists / ((float) Math.pow(PRIOR_PEXISTS,(includedEntities.size())));
-		probNotExists = probNotExists / ((float) Math.pow((1.0f- PRIOR_PEXISTS),(includedEntities.size())));
-		float normConstant = 1.0f / (union.probExists + probNotExists);
+		return features;
+	}
+	
+	
+	/**
+	 * Construct a new union based on the merge of several perceptual entities
+	 * (which may be proxies or unions themselves)
+	 * 
+	 * @param includedEntities as vector of entities (with size > 0 )
+	 * @return the new union
+	 */
+	
+	public Union constructNewUnion(Vector<PerceivedEntity> includedEntities) {
+		//	log("***** Constructing a new union ****");
+		
+		// Create a new union with a new data ID
+		Union union = new Union();
+		union.entityID = newDataID();
+	
+		// Specify the proxies included in the union
+		Vector<Proxy> includedProxies = getProxies(includedEntities);
+		union.includedProxies = new Proxy[includedProxies.size()];
+		union.includedProxies = includedProxies.toArray(union.includedProxies);
 
-		union.probExists = normConstant * union.probExists;
+		// Compute the existence probability of the union
+		union.probExists = computeProbExists(includedEntities);
 
-		//	log("union prob exists:  " + union.probExists);
-
+		// Extract the possible features for the union
+		Vector<Feature> features = getFeatures(includedEntities);
 		union.features = new Feature[features.size()];
 		union.features = features.toArray(union.features);
 
+		// Finally, compute the union distribution
 		if (includedEntities.size() > 1) {
 			union.distribution = computeUnionDistribution(union);
 		}
@@ -201,14 +239,18 @@ public class Binder extends ManagedComponent  {
 			union.distribution = includedEntities.elementAt(0).distribution;
 		}
 
-
 		return union;
 	}
 
 
-
+	/** 
+	 * Compute the probability distribution of the union
+	 * @param union
+	 * @return
+	 */
 	private ProbabilityDistribution computeUnionDistribution(Union union) {
 
+		// Compute the prior distribution for the union
 		DiscreteProbabilityDistribution priorDistrib =  BNManager.getPriorDistribution(union.features);
 
 //		log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
@@ -222,8 +264,7 @@ public class Binder extends ManagedComponent  {
 			//		log("Maximum for observation-driven distribution of the proxy " + i +  ": "
 			// + GradientDescent.getMaximum(proxy.distribution));
 
-			DiscreteProbabilityDistribution priorDistribForProxy =  
-				BNManager.getPriorDistribution(proxy.features);
+			DiscreteProbabilityDistribution priorDistribForProxy = BNManager.getPriorDistribution(proxy);
 			
 			//		log("Maximum for prior distribution of the proxy " + i +  
 			// ": " + GradientDescent.getMaximum(priorDistribForProxy));
