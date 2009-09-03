@@ -14,24 +14,24 @@ Classical_Planner::Classical_Planner(Designator&& name)
 }
 
 
-void ::implement__distinctPlanner(PCogX::distinctPlannerPtr& input){
+void Classical_Planner::implement__distinctPlanner(PCogX::distinctPlannerPtr& input){
     VERBOSER(200, "");
 
     Implement::add_designator(input->additionalDesignationIsAnArgument);
 }
 
-void HelloWriter::implement__readPropositionIdentifiers(PCogX::readPropositionIdentifiersPtr& input){
+void Classical_Planner::implement__readPropositionIdentifiers(PCogX::readPropositionIdentifiersPtr& input){
     VERBOSER(200, "");
 }
-void HelloWriter::implement__postSTRIPSAction(PCogX::postSTRIPSActionPtr& input){
+void Classical_Planner::implement__postSTRIPSAction(PCogX::postSTRIPSActionPtr& input){
     VERBOSER(200, "");
 }
-void HelloWriter::implement__postActionDefinition(PCogX::postActionDefinitionPtr& input){
+void Classical_Planner::implement__postActionDefinition(PCogX::postActionDefinitionPtr& input){
     VERBOSER(200, "");
 }
-void HelloWriter::implement__postTypes(PCogX::postTypesPtr& input){
+void Classical_Planner::implement__postTypes(PCogX::postTypesPtr& input){
     VERBOSER(200, "");
 }
-void HelloWriter::implement__postXXsubtypeofYY(PCogX::postXXsubtypeofYYPtr& input){
+void Classical_Planner::implement__postXXsubtypeofYY(PCogX::postXXsubtypeofYYPtr& input){
     VERBOSER(200, "");
 }

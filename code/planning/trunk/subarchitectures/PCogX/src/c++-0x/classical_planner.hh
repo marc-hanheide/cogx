@@ -19,8 +19,8 @@ class Classical_Planner :
     public CAST_SCAT::procedure_call<>
 {
 public:
-    typename CAST_SCAT::procedure_implementation<Classical_Planner> Implement;
-    typename CAST_SCAT::procedure_call<> Call;
+    typedef CAST_SCAT::procedure_implementation<Classical_Planner> Implement;
+    typedef CAST_SCAT::procedure_call<> Call;
     
     explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);
     
