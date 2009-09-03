@@ -178,15 +178,24 @@ module VisionData {
     // RESPONSE
     ObjectRecognitionMatchSeq matches;
   };
+  
+  class SegmentMask {
+  	int width;
+    int height;
+    IntSeq data;
+  };
 
   /**
    * Proto Object
    */
   class ProtoObject {
-    IdSeq ROIList;
+    IdSeq SOIList;
     
     // 2D image patch
     Video::Image image;
+    
+    // Segmentation mask;
+    SegmentMask mask;
     
     // time the object was last changed
     cast::cdl::CASTTime time;
