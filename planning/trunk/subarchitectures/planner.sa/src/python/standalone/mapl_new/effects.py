@@ -7,6 +7,8 @@ import mapltypes as types
 import scope, conditions, predicates
 
 class Effect(object):
+    def visit(self, fn):
+        return fn(self, [])
     
     def copy(self, new_scope=None):
         return self.__class__()
@@ -38,6 +40,9 @@ class UniversalEffect(scope.Scope, Effect):
         self.args = args
         self.effects = effects
 
+    def visit(self, fn):
+        return fn(self, [e.visit(fn) for e in self.effects])
+
     def copy(self, new_scope=None):
         if not new_scope:
             new_scope = self.parent
@@ -67,6 +72,9 @@ class ConditionalEffect(Effect):
         self.condition = condition
         self.effects = effects
         
+    def visit(self, fn):
+        return fn(self, [e.visit(fn) for e in self.effects])
+    
     def copy(self, new_scope=None):
         return ConditionalEffect(self.condition.copy(new_scope), [e.copy(new_scope) for e in self.effects])
 

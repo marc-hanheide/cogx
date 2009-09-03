@@ -22,12 +22,22 @@ domlogistics = \
          package vehicle - thing
          airport - location
          city location thing agent - object)
-  
+
+(:predicates (occupied ?l - location)
+             (interesting ?l - location)
+             (free ?l - location))
+
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle))
 
-(:derived (kval ?a - agent ?svar - (function object))
-          (exists (?val - object) (= ?svar ?val)))
+;(:derived (kval ?a - agent ?svar - (function object))
+;          (exists (?val - object) (= ?svar ?val)))
+;
+;(:derived (in-domain ?svar - (function object) ?val - object)
+;          (or (= ?svar ?val)
+;              (and (i_in-domain ?svar ?val)
+;                   (not (exists (?val - object) (= ?svar ?val))))
+;          ))
 
 (:action drive
          :agent         (?a - agent)
@@ -49,6 +59,7 @@ domlogistics = \
 (:action a_load
          :agent         (?a - agent)
          :parameters    (?p - package ?v - vehicle)
+         :precondition  (in-domain (location-of ?p) (location-of ?v))
          :replan        (kval ?a (location-of ?p))
          :effect        (assign (location-of ?p) ?v))
 
@@ -82,6 +93,8 @@ problogistics = \
 ;;        (= (location-of obj12) pos1)
 ;;        (= (location-of obj13) pos1)
         (kval agent (location-of obj13))
+        (i_in-domain (location-of obj13) pos1)
+        (i_in-domain (location-of obj13) pos2)
         (= (location-of obj21) pos2)
         (= (location-of obj22) pos2)
         (= (location-of obj23) pos2)
@@ -97,6 +110,27 @@ problogistics = \
 
 )
 """
+
+strat1a = """
+        (:derived (occupied ?loc - location)
+                  (exists (?v - vehicle) (= (location-of ?v) ?loc))
+        )
+        """
+
+strat1b = """
+        (:derived (interesting ?loc - location)
+                  (or (occupied ?loc)
+                      (exists (?p - package) (= (location-of ?p) ?loc)))
+        )
+        """
+
+strat2 = """
+        (:derived (free ?loc - location)
+                  (not (occupied ?loc))
+        )
+        """
+        
+
 
 class StateTest(unittest.TestCase):
     def setUp(self):
@@ -167,6 +201,28 @@ class StateTest(unittest.TestCase):
         self.assertFalse(fold in state)
         drive.uninstantiate()
 
+    def testConditionReasons(self):
+        """Testing finding reason of satisfied conditions"""
+        
+        state = State.fromProblem(self.prob)
+
+        relevantVars = []
+        drive = self.prob.getAction("drive")
+        drive.instantiate(["agent", "tru1", "apt1"])
+        self.assert_(state.isSatisfied(drive.precondition, relevantVars))
+        drive.uninstantiate()
+
+        relevantVars = set(relevantVars)
+        
+        s1 = StateVariable(self.prob.functions["city-of"][0], [self.prob["pos1"]])
+        s2 = StateVariable(self.prob.functions["city-of"][0], [self.prob["apt1"]])
+        s3 = StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]])
+        
+        self.assertEqual(len(relevantVars), 3)
+        self.assert_(s1 in relevantVars)
+        self.assert_(s2 in relevantVars)
+        self.assert_(s3 in relevantVars)
+
     def testAxiomEvaluation(self):
         """Testing axiom evaluation"""
         state = State.fromProblem(self.prob)
@@ -176,24 +232,93 @@ class StateTest(unittest.TestCase):
         kf12 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj12"]], knowledge, [self.prob["agent"]]), TRUE)
         kf13 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj13"]], knowledge, [self.prob["agent"]]), TRUE)
 
+        id11 = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]], indomain, [self.prob["pos1"]]), TRUE)
+        
         self.assert_(kf11 in extstate)
         self.assertFalse(kf12 in extstate)
         self.assert_(kf13 in extstate)
         self.assert_(kf13 in state)
+
+        self.assert_(id11 in extstate)
         
         load = self.prob.getAction("a_load")
         load.instantiate(["agent", "obj11", "tru1"])
         self.assert_(extstate.isSatisfied(load.replan))
+        self.assert_(extstate.isSatisfied(load.precondition))
         load.uninstantiate()
 
         load.instantiate(["agent", "obj12", "tru1"])
         self.assertFalse(extstate.isSatisfied(load.replan))
+        self.assertFalse(extstate.isSatisfied(load.precondition))
         load.uninstantiate()
 
         load.instantiate(["agent", "obj13", "tru1"])
         self.assert_(extstate.isSatisfied(load.replan))
+        self.assert_(extstate.isSatisfied(load.precondition))
         load.uninstantiate()
 
+    def testPartialAxiomEvaluation(self):
+        """Testing partial axiom evaluation"""
+        state = State.fromProblem(self.prob)
+
+        load = self.prob.getAction("a_load")
+        load.instantiate(["agent", "obj11", "tru1"])
+        extstate = state.getExtendedState(state.getRelevantVars(load.replan) | state.getRelevantVars(load.precondition))
+        self.assert_(extstate.isSatisfied(load.replan))
+        self.assert_(extstate.isSatisfied(load.precondition))
+        load.uninstantiate()
+
+        load.instantiate(["agent", "obj12", "tru1"])
+        extstate = state.getExtendedState(state.getRelevantVars(load.replan) | state.getRelevantVars(load.precondition))
+        self.assertFalse(extstate.isSatisfied(load.replan))
+        self.assertFalse(extstate.isSatisfied(load.precondition))
+        load.uninstantiate()
+
+        load.instantiate(["agent", "obj13", "tru1"])
+        extstate = state.getExtendedState(state.getRelevantVars(load.replan) | state.getRelevantVars(load.precondition))
+        self.assert_(extstate.isSatisfied(load.replan))
+        self.assert_(extstate.isSatisfied(load.precondition))
+        load.uninstantiate()
+        
+    def testAxiomReasoning(self):
+        """Testing finding reasons of derived predicates """
+        
+        state = State.fromProblem(self.prob)
+        extstate, reasons = state.getExtendedState(getReasons=True)
+
+        relevantVars = []
+        relevantReplanVars = []
+        load = self.prob.getAction("a_load")
+        load.instantiate(["agent", "obj11", "tru1"])
+        self.assert_(extstate.isSatisfied(load.precondition, relevantVars))
+        self.assert_(extstate.isSatisfied(load.replan, relevantReplanVars))
+
+        all_reasons = set(relevantVars)
+        for v in relevantVars:
+            all_reasons |= reasons[v]
+
+        all_replan_reasons = set(relevantReplanVars)
+        for v in relevantReplanVars:
+            all_replan_reasons |= reasons[v]
+            
+        s1 = StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]])
+        s2 = StateVariable(self.prob.functions["location-of"][0], [self.prob["obj11"]])
+
+        self.assert_(s1 in all_reasons)
+        self.assert_(s2 in all_reasons)
+        self.assertFalse(s1 in all_replan_reasons)
+        self.assert_(s2 in all_replan_reasons)
+                
+    def testStratifiedAxioms(self):
+        """Testing evaluation of stratified axioms"""
+        
+        a1a = Parser.parseAs(strat1a.split("\n"), mapl.axioms.Axiom, self.prob)
+        a1b = Parser.parseAs(strat1b.split("\n"), mapl.axioms.Axiom, self.prob)
+        a2 = Parser.parseAs(strat2.split("\n"), mapl.axioms.Axiom, self.prob)
+        
+        self.prob.axioms = [a1a, a1b, a2]
+        self.prob.stratifyAxioms()
+        state = State.fromProblem(self.prob).getExtendedState()
         
 if __name__ == '__main__':
     unittest.main()    

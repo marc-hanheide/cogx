@@ -1,14 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
+from collections import defaultdict
+
 import parser
 import mapltypes
 import scope
-import predicates, actions
+import predicates, conditions, actions, axioms
 
 from mapltypes import *
 from predicates import *
-from parser import ParseError, UnexpectedTokenError
+from parser import Parser, ParseError, UnexpectedTokenError
 from actions import Action, DurativeAction
 from axioms import Axiom
 from sensors import Sensor
@@ -27,13 +29,74 @@ class MAPLDomain(scope.Scope):
         self.sensors = sensors
         self.axioms = axioms
 
+        self.stratifyAxioms()
         self.name2action = None
 
     def getAction(self, name):
         if not self.name2action:
             self.name2action = dict((a.name, a) for a in self.actions)
         return self.name2action[name]
-        
+
+    def stratifyAxioms(self):
+        def posVisitor(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                if not cond.negated:
+                    return [cond.predicate]
+                else:
+                    return []
+            else:
+                return sum(results, [])
+
+        def negVisitor(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                if cond.negated:
+                    return [cond.predicate]
+                else:
+                    return []
+            else:
+                return sum(results, [])
+            
+        pred_to_axioms = defaultdict(set)
+        for a in self.axioms:
+            pred_to_axioms[a.predicate].add(a)
+        derived = pred_to_axioms.keys()
+
+        #order the derived predicates
+        R = defaultdict(lambda: 0)
+        for a in self.axioms:
+            j = a.predicate
+            pos = a.condition.visit(posVisitor)
+            neg = a.condition.visit(negVisitor)
+            for i in derived:
+                if i in neg:
+                    R[i,j] = 2
+                elif i in pos:
+                    R[i,j] = max(1, R[i,j])
+        for j in derived:
+            for i in derived:
+                for k in derived:
+                    if min(R[i,j], R[j,k]) > 0:
+                        R[i,k] = max(R[i,j], R[j,k], R[i,k])
+
+        assert all(map(lambda d: R[d,d] != 2, derived)), "Couldn't stratify axioms"
+        #extract strata
+        level = 1
+        remaining = set(derived)
+        self.stratification = {}
+        self.nonrecursive = set()
+        while remaining:
+            stratum = set()
+            for j in remaining:
+                if all(map(lambda i: R[i,j] != 2, remaining)):
+                    stratum.add(j)
+                if all(map(lambda i: R[i,j] != 1, remaining)):
+                    self.nonrecursive.add(j)
+                    
+            self.stratification[level] = stratum
+            remaining -= stratum
+            level += 1
+                                    
+    
     @staticmethod
     def parse(root):
         it = iter(root)
@@ -133,6 +196,10 @@ class MAPLDomain(scope.Scope):
             
         if domain is None:
             domain = MAPLDomain(domname, typeDict, constants, preds, functions, [], [], [])
-            
+
+        if "mapl" in requirements:
+            for astr in axioms.mapl_axioms:
+                axiom = Parser.parseAs(astr.split("\n"), Axiom, domain)
+                domain.axioms.append(axiom)
 
         return domain

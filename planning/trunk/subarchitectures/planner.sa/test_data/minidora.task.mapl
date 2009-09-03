@@ -16,6 +16,7 @@
 
 (:goal (and
 	   (forall (?n - node) (= (place_type ?n) place))
+;;	   (forall (?n - node) (kval R2D2 (place_type ?n)))
 )
 
 ))

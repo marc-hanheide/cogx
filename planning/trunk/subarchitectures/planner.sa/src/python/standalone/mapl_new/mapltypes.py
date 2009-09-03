@@ -50,7 +50,7 @@ class Type(object):
         return not self.__eq__(other)
 
     @staticmethod
-    def parse(it, types):
+    def parse(it, types, scope=None):
         if isinstance(it, parser.Element):
             next = it
         else:
@@ -73,6 +73,13 @@ class Type(object):
             ftype = Type.parse(j, types)
             j.noMoreTokens()
             return FunctionType(ftype)
+        elif first.string == "typeof" and scope:
+            param = j.get("terminal", "parameter").token
+            j.noMoreTokens()
+            if param.string not in scope:
+                raise ParseError(param, "Unknown identifier: '%s'" % param.string)
+            return ProxyType(scope[param.string])
+            
 
 class CompositeType(Type):
     def __init__(self, types):
@@ -83,6 +90,7 @@ class CompositeType(Type):
         if isinstance(other, CompositeType):
             return other.isSupertypeOf(self)
 
+#        print self, other, all(map(lambda t: t.equalOrSubtypeOf(other), self.types))
         return all(map(lambda t: t.equalOrSubtypeOf(other), self.types))
 
     def equalOrSubtypeOf(self, other):
@@ -144,12 +152,63 @@ class FunctionType(Type):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.type == other.type
 
+class ProxyType(Type):
+    def __init__(self, param):
+        assert isinstance(param.type, FunctionType)
+        self.name = "typeof(%s)" % str(param.name)
+        self.parameter = param
+
+    def effectiveType(self):
+        if self.parameter.isInstantiated():
+            return self.parameter.getInstance().function.type
+        return self.parameter.type.type
+        
+    def isSubtypeOf(self, other):
+        return self.effectiveType().isSubtypeOf(other)
+
+    def equalOrSubtypeOf(self, other):
+        return self.effectiveType().equalOrSubtypeOf(other)
+    
+    def isSupertypeOf(self, other):
+        return self.effectiveType().isSupertypeOf(other)
+
+    def equalOrSupertypeOf(self, other):
+        return self.effectiveType().equalOrSupertypeOf(other)
+        
+    def __str__(self):
+        return "(type of %s)" % self.parameter.name
+
+    def __hash__(self):
+        return hash((self.__class__, self.parameter))
+    
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.parameter == other.parameter
+
+class AnyType(Type):
+    def __init__(self, name="any"):
+        self.name = name
+
+    def isSubtypeOf(self, other):
+        return True
+
+    def equalOrSubtypeOf(self, other):
+        return True
+    
+    def isSupertypeOf(self, other):
+        return True
+
+    def equalOrSupertypeOf(self, other):
+        return True
+        
+    def __eq__(self, other):
+        return isinstance(other, Type)
+    
 #basic types for all pddl representations
 objectType = Type("object", [])
 numberType = Type("number", [])
 booleanType = Type("boolean", [objectType])
 
-default_types = [ objectType, booleanType]
+default_types = [objectType, booleanType]
 
 #basic mapl types
 agentType = Type("agent")
@@ -188,6 +247,9 @@ class TypedObject(object):
     
 TRUE = TypedObject("true", booleanType)
 FALSE = TypedObject("false", booleanType)
+
+UNKNOWN = TypedObject("unknown", AnyType())
+UNDEFINED = TypedObject("undefined", AnyType())
 
 class Parameter(TypedObject):
     def __init__(self, name, type):

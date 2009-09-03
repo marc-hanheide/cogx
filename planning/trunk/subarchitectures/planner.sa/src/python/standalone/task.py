@@ -138,10 +138,16 @@ class Task(object):
         self.load_mapl_domain(domain_file)
         self.load_mapl_problem(task_file, agent_name)
 
+                
 class PDDLWriter(mapl.writer.MAPLWriter):
     def __init__(self, modalPredicates):
-        self.modal = modalPredicates
+        self.modal = modalPredicates     
     
+    def write_type(self, type):
+        if isinstance(type, types.ProxyType):
+            return mapl.writer.MAPLWriter.write_type(self, type.effectiveType())
+        return mapl.writer.MAPLWriter.write_type(self, type)
+
     def write_term(self, term):
         if isinstance(term, (mapl.predicates.ConstantTerm, mapl.predicates.VariableTerm)):
             return term.object.name
@@ -188,6 +194,8 @@ class PDDLWriter(mapl.writer.MAPLWriter):
                 for arg in mod.args:
                     if isinstance(arg.type, types.FunctionType):
                         args += func.args
+                    elif isinstance(arg.type, types.ProxyType):
+                        args.append(types.Parameter(arg.name, func.type))
                     else:
                         args.append(arg)
 
@@ -203,15 +211,10 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         strings = [newname]
         strings += self.section(":parameters", ["(%s)" % self.write_typelist(newargs)], parens=False)
 
-        prec = action.precondition
         if action.replan:
-            if prec:
-                prec = mapl.conditions.Conjunction([action.replan, prec])
-            else:
-                prec = action.replan
-                
-        if prec:
-            strings += self.section(":precondition", self.write_condition(prec), parens=False)
+            strings += self.section(":replan", self.write_condition(action.replan), parens=False)
+        if action.precondition:
+            strings += self.section(":precondition", self.write_condition(action.precondition), parens=False)
 
         strings += self.section(":effect", self.write_effects(action.effects), parens=False)
 
@@ -219,33 +222,42 @@ class PDDLWriter(mapl.writer.MAPLWriter):
     
     def write_action(self, action, functions):
         args = action.agents + action.args + action.vars
-        func_arg = None
-        funcs = []
-        aargs = []
+        func_arg, compiled_args = compile_modal_args(args, functions)
         
-        for a in args:
-            if isinstance(a.type, types.FunctionType):
-                func_arg = a
-                for func in functions:
-                    if func.builtin or not func.type.equalOrSubtypeOf(a.type.type):
-                        continue
-                    funcs.append(func)
-            else:
-                aargs.append(a)
-                    
         if func_arg is None:
             return self.write_modal_action(action, action.name, args)
+        
         strings=[]
 
-        for f in funcs:
+        for f, cargs in compiled_args:
             action.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
-            strings += self.write_modal_action(action, "%s-%s" % (action.name, f.name), aargs+f.args)
+            strings += self.write_modal_action(action, "%s-%s" % (action.name, f.name), cargs)
             action.uninstantiate()
             strings.append("")
 
         return strings
         
 
+    def write_axiom_real(self, name, params, condition):
+        strings = ["(%s %s)" % (name, self.write_typelist(params))]
+        strings += self.write_condition(condition)
+        return self.section(":derived", strings)
+
+    def write_axiom(self, axiom, functions):
+        func_arg, compiled_args = compile_modal_args(axiom.args, functions)
+        
+        if func_arg is None:
+            return self.write_axiom_real(axiom.predicate.name, axiom.args, axiom.condition)
+        strings=[]
+
+        for f, cargs in compiled_args:
+            axiom.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
+            strings += self.write_axiom_real("%s-%s" % (axiom.predicate.name, f.name), cargs, axiom.condition)
+            axiom.uninstantiate()
+            strings.append("")
+
+        return strings
+    
     def write_sensor(self, action):
         strings = [action.name]
         args = action.agents + action.args + action.vars
@@ -269,13 +281,17 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         strings.append("(:requirements :adl)")
         strings.append("")
         strings += self.write_types(domain.types.itervalues())
-
-        strings.append("")
-        strings += self.write_predicates(domain.predicates, domain.functions)
         
         if domain.constants:
             strings.append("")
             strings += self.write_objects("constants", domain.constants)
+
+        strings.append("")
+        strings += self.write_predicates(domain.predicates, domain.functions)
+        
+        for a in domain.axioms:
+            strings.append("")
+            strings += self.write_axiom(a, domain.functions)
         for s in domain.sensors:
             strings.append("")
             strings += self.write_sensor(s)
@@ -286,6 +302,183 @@ class PDDLWriter(mapl.writer.MAPLWriter):
         strings.append("")
         strings.append(")")
         return strings
+
+
+class TFDWriter(mapl.writer.MAPLWriter):
+    def __init__(self, modalPredicates):
+        self.modal = modalPredicates
+
+    def write_type(self, type):
+        if isinstance(type, types.ProxyType):
+            return mapl.writer.MAPLWriter.write_type(self, type.effectiveType())
+        return mapl.writer.MAPLWriter.write_type(self, type)
+    
+    def write_term(self, term):
+        if isinstance(term, (predicates.FunctionVariableTerm)) and term.isInstantiated():
+            return self.write_term(term.getInstance())
+        else:
+            return mapl.writer.MAPLWriter.write_term(self, term)
+        
+    def write_literal(self, literal):
+        args = []
+        name_elems = [literal.predicate.name]
+        if literal.predicate in self.modal:
+            for arg in literal.args:
+                if isinstance(arg, mapl.predicates.FunctionTerm):
+                    name_elems.append(arg.function.name)
+                    args += arg.args
+                else:
+                    args.append(arg)
+        else:
+            args = literal.args
+
+        argstr = " ".join(map(lambda t: self.write_term(t), args))
+        return "(%s %s)" % ("-".join(name_elems), argstr)
+
+    def write_predicate(self, pred):
+        return "(%s %s)" % (pred.name, self.write_typelist(pred.args))
+    
+    def write_predicates(self, preds, functions):
+        strings = []
+        for pred in preds:
+            if not pred.builtin:
+                strings.append(self.write_predicate(pred))
+                
+        for func in functions:
+            if func.builtin:
+                continue
+            strings.append(";; Function %s" % func.name)
+            for mod in self.modal:
+                args =[]
+                for arg in mod.args:
+                    if isinstance(arg.type, types.FunctionType):
+                        args += func.args
+                    elif isinstance(arg.type, types.ProxyType):
+                        args.append(types.Parameter(arg.name, func.type))
+                    else:
+                        args.append(arg)
+
+                pred =  predicates.Predicate("%s-%s" % (mod.name, func.name), args)
+                strings.append(self.write_predicate(pred))
+
+        return self.section(":predicates", strings)
+
+    def write_durative_action_real(self, name, params, duration, condition, effects):
+        strings = [name]
+        strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
+        strings += self.section(":duration", self.write_durations(duration), parens=False)
+        
+        if condition:
+            strings += self.section(":condition", self.write_condition(condition), parens=False)
+
+        strings += self.section(":effect", self.write_effects(effects), parens=False)
+        return self.section(":durative-action", strings)
+    
+    def write_durative_action(self, action, functions):
+        args = action.agents + action.args + action.vars
+        func_arg, compiled_args = compile_modal_args(args, functions)
+
+        condition = action.precondition
+        if action.replan:
+            replan = conditions.TimedCondition("start", action.replan)
+            if condition:
+                condition = mapl.conditions.Conjunction([replan, prec])
+            else:
+                condition = replan
+                    
+        if func_arg is None:
+            return self.write_durative_action_real(action.name, args, action.duration, condition, action.effects)
+        strings=[]
+
+        for f, cargs in compiled_args:
+            action.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
+            strings += self.write_durative_action_real("%s-%s" % (action.name, f.name), cargs, action.duration, condition, action.effects)
+            action.uninstantiate()
+            strings.append("")
+
+        return strings
+
+    def write_axiom_real(self, name, params, condition):
+        strings = ["(%s %s)" % (name, self.write_typelist(params))]
+        strings += self.write_condition(condition)
+        return self.section(":derived", strings)
+
+    def write_axiom(self, axiom, functions):
+        func_arg, compiled_args = compile_modal_args(axiom.args, functions)
+
+        if func_arg is None:
+            return self.write_axiom_real(axiom.predicate.name, axiom.args, axiom.condition)
+        strings=[]
+
+        for f, cargs in compiled_args:
+            axiom.instantiate({func_arg : predicates.FunctionTerm(f, [predicates.Term(a) for a in f.args])})
+            strings += self.write_axiom_real("%s-%s" % (axiom.predicate.name, f.name), cargs, axiom.condition)
+            axiom.uninstantiate()
+            strings.append("")
+
+        return strings
+    
+    def write_sensor(self, action):
+        args = action.agents + action.args + action.vars
+        duration = actions.DurationConstraint(predicates.ConstantTerm(1.0), None)
+        condition = conditions.TimedCondition("all", action.precondition)
+        effects = [action.knowledge_effect()]
+        return self.write_durative_action_real(action.name, args, duration, condition, effects)
+        
+    def write_domain(self, domain):
+        strings = ["(define (domain %s)" % domain.name]
+        strings.append("")
+        strings.append("(:requirements %s)" % " ".join(map(lambda r: ":"+r, filter(lambda r: r != "mapl", domain.requirements))))
+        strings.append("")
+        strings += self.write_types(domain.types.itervalues())
+        
+        if domain.constants:
+            strings.append("")
+            strings += self.write_objects("constants", domain.constants)
+
+        strings.append("")
+        strings += self.write_predicates(domain.predicates, domain.functions)
+        strings += self.write_functions(domain.functions)
+        
+        for a in domain.axioms:
+            strings.append("")
+            strings += self.write_axiom(a, domain.functions)
+        for s in domain.sensors:
+            strings.append("")
+            strings += self.write_sensor(s)
+        for a in domain.actions:
+            strings.append("")
+            strings += self.write_durative_action(a, domain.functions)
+
+        strings.append("")
+        strings.append(")")
+        return strings
+
+def compile_modal_args(args, functions):
+    func_arg = None
+    funcs = []
+    pref = []
+    suff = []
+
+    for a in args:
+        if isinstance(a.type, types.FunctionType):
+            func_arg = a
+            for func in functions:
+                if func.builtin or not func.type.equalOrSubtypeOf(a.type.type):
+                    continue
+                funcs.append(func)
+        else:
+            if func_arg:
+                suff.append(a)
+            else:
+                pref.append(a)
+            
+    compiled = []
+    for f in funcs:
+        compiled.append((f, pref + f.args + suff))
+        
+    return func_arg, compiled
+
 
 class PDDLTask(Task):
     @classmethod

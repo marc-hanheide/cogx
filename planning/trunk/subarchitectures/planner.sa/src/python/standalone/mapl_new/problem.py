@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
+import itertools
+
 import parser
 import mapltypes
 import scope
@@ -10,12 +12,23 @@ from mapltypes import *
 from parser import ParseError, UnexpectedTokenError
 from actions import Action
 
+def product(*iterables):
+    for el in iterables[0]:
+        if len(iterables) > 1:
+            for prod in product(*iterables[1:]):
+                yield (el,)+prod
+        else:
+            yield (el,)
+
 class Problem(domain.MAPLDomain):
     def __init__(self, name, objects, init, goal, _domain, optimization=None, opt_func=None):
         domain.MAPLDomain.__init__(self, name, _domain.types, _domain.constants, _domain.predicates, _domain.functions, [], [], [])
         self.actions = [a.copy(self) for a in _domain.actions]
         self.sensors = [s.copy(self) for s in _domain.sensors]
         self.axioms = [a.copy(self) for a in _domain.axioms]
+        self.stratifyAxioms()
+        self.name2action = None
+        
         
         for o in objects:
             self.add(o)
@@ -26,6 +39,23 @@ class Problem(domain.MAPLDomain):
         self.goal = goal
         self.optimization = optimization
         self.opt_func = opt_func
+
+    def getAll(self, type):
+        if isinstance(type, FunctionType):
+            for func in self.functions:
+                if func.builtin:
+                    continue
+                #print func.name, types.FunctionType(func.type).equalOrSubtypeOf(type)
+                if FunctionType(func.type).equalOrSubtypeOf(type):
+                    combinations = product(*map(lambda a: list(self.getAll(a.type)), func.args))
+                    for c in combinations:
+                        #print FunctionTerm(func, c, self.problem)
+                        yield predicates.FunctionTerm(func, c, self)
+        else:
+            for obj in itertools.chain(self.objects, self.constants):
+                if obj.isInstanceOf(type):
+                    yield obj
+        
 
     @staticmethod
     def parse(root, domain):
