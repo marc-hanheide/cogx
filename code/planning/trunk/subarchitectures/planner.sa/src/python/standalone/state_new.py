@@ -22,7 +22,7 @@ def instantiate_args(args, state=None):
     result = []
     for arg in args:
         if isinstance(arg, VariableTerm):
-            assert arg.object.isInstantiated()
+            assert arg.object.isInstantiated(), "%s is not instantiated" % arg.object.name
             arg = arg.copyInstance()
 
         if isinstance(arg, ConstantTerm):
@@ -36,7 +36,27 @@ def instantiate_args(args, state=None):
         else:
             raise Exception("couldn't create state variable, %s is a function term and no state was supplied." % str(arg))
     return result
-    
+
+def get_svars_in_term(args, state=None):
+    result = []
+    relVars = []
+    for arg in args:
+        if isinstance(arg, VariableTerm):
+            assert arg.object.isInstantiated()
+            arg = arg.copyInstance()
+
+        if isinstance(arg, ConstantTerm):
+            result.append(arg.object)
+        elif state is not None:
+            svar, total = StateVariable.svarsInTerm(arg, state)
+            if not svar in state:
+                raise Exception("couldn't create state variable, %s is not in state." % str(arg))
+            value = state[svar]
+            result.append(value)
+            relVars += total
+        else:
+            raise Exception("couldn't create state variable, %s is a function term and no state was supplied." % str(arg))
+    return result, relVars
 
 class StateVariable(object):
     def __init__(self, function, args, modality=None, modal_args=[]):
@@ -55,8 +75,44 @@ class StateVariable(object):
         else:
             return self.function.type
 
+    def getPredicate(self):
+        if self.modality:
+            return self.modality
+        if isinstance(self.function, Predicate):
+            return self.function
+        return None
+
+    def getArgs(self):
+        if not self.modality:
+            return self.args
+        fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
+        args = []
+        it = iter(self.modal_args)
+        for parg in self.modality.args:
+            if isinstance(parg.type, FunctionType):
+                args.append(fterm)
+            else:
+                args.append(it.next())
+        return args
+
+    def asLiteral(self):
+        if not self.modality:
+            return Literal(self.function, [ConstantTerm(a) for a in self.args])
+        fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
+        args = []
+        it = iter(self.modal_args)
+        for parg in self.modality.args:
+            if isinstance(parg.type, FunctionType):
+                args.append(fterm)
+            else:
+                args.append(ConstantTerm(it.next()))
+        return Literal(self.modality, args)
+        
     def __str__(self):
-        return "%s(%s)" % (self.function.name, " ".join(map(lambda a: a.name, self.args)))
+        s = "%s(%s)" % (self.function.name, " ".join(map(lambda a: a.name, self.args)))
+        if self.modality:
+            s = "%s(%s, %s)" % (self.modality.name, s, " ".join(map(lambda a: a.name, self.modal_args)))
+        return s
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.function == other.function and all(map(lambda a,b: a==b, self.args, other.args)) and self.modality == other.modality and all(map(lambda a,b: a==b, self.modal_args, other.modal_args))
@@ -72,6 +128,14 @@ class StateVariable(object):
         assert isinstance(term, FunctionTerm)
         args = instantiate_args(term.args, state)
         return StateVariable(term.function, args)
+
+    @staticmethod
+    def svarsInTerm(term, state=None):
+        assert isinstance(term, FunctionTerm)
+        args, vars = get_svars_in_term(term.args, state)
+        svar = StateVariable(term.function, args)
+        vars.append(svar)
+        return svar, vars
     
     @staticmethod
     def fromLiteral(literal, state=None):
@@ -152,8 +216,9 @@ class Fact(tuple):
     def fromTuple(tup):
         return Fact(tup[0], tup[1])
     
-class State(dict):
+class State(defaultdict):
     def __init__(self, facts=[], prob=None):
+        defaultdict.__init__(self, lambda: mapl.types.UNKNOWN)
         assert prob is None or isinstance(prob, problem.Problem)
         self.problem = prob
         for f in facts:
@@ -183,43 +248,102 @@ class State(dict):
     def factsFromCondition(self, cond):
         return Fact.fromCondition(cond, self)
 
-    def isSatisfied(self, cond):
-        def getAll(type):
-            for obj in itertools.chain(self.problem.objects, self.problem.constants):
-                if obj.isInstanceOf(type):
-                    yield obj
-
+    def isSatisfied(self, cond, relevantVars=None):
         def instantianteAndCheck(cond, params):
             cond.instantiate(dict(zip(cond.args, params)))
             result = checkConditionVisitor(cond.condition)
             cond.uninstantiate()
             return result
-                    
+
+        def allFacts(iterable):
+            newfacts = []
+            for result, facts in iterable:
+                if not result:
+                    return False, []
+                newfacts += facts
+            return True, newfacts
+
+        def anyFacts(iterable):
+            newfacts = []
+            for result, facts in iterable:
+                if result:
+                    return True, facts
+            return False, []
+        
         def checkConditionVisitor(cond):
             if isinstance(cond, conditions.LiteralCondition):
-                return Fact.fromLiteral(cond, self) in self
+                fact = Fact.fromLiteral(cond, self)
+                result = fact in self
+                if cond.negated:
+                    result = not result
+                    
+                relVars = []
+                if relevantVars is not None and result:
+                    relVars.append(fact.svar)
+                    for arg in cond.args:
+                        if isinstance(arg, FunctionTerm):
+                            _, vars = StateVariable.svarsInTerm(arg, self)
+                            relVars += vars
+                            
+                return result, relVars
+
             elif isinstance(cond, conditions.Truth):
-                return True
+                return True, []
             elif isinstance(cond, conditions.Falsity):
-                return False
+                return False, []
             elif isinstance(cond, conditions.Conjunction):
                 if not cond.parts:
-                    return True
-                return all(map(checkConditionVisitor, cond.parts))
+                    return True, []
+
+                return allFacts(itertools.imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.Disjunction):
-                return any(map(checkConditionVisitor, cond.parts))
+                return anyFacts(itertools.imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.QuantifiedCondition):
-                combinations = product(*map(lambda a: getAll(a.type), cond.args))
+                combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
                 if isinstance(cond, conditions.UniversalCondition):
-                    return all(itertools.imap(lambda c: instantianteAndCheck(cond, c), combinations))
+                    return allFacts(itertools.imap(lambda c: instantianteAndCheck(cond, c), combinations))
                 elif isinstance(cond, conditions.ExistentialCondition):
-                    return any(itertools.imap(lambda c: instantianteAndCheck(cond, c), combinations))
+                    return anyFacts(itertools.imap(lambda c: instantianteAndCheck(cond, c), combinations))
 
-        return checkConditionVisitor(cond)
+        result, svars = checkConditionVisitor(cond)
+        if relevantVars is not None:
+            relevantVars += svars
+        return result
 
+    def getRelevantVars(self, cond):
+        def dependenciesVisitor(cond):
+            if isinstance(cond, conditions.LiteralCondition):
+                fact = Fact.fromLiteral(cond, self)
+                result = fact in self
+                if cond.negated:
+                    result = not result
+                    
+                relVars = [fact.svar]
+                for arg in cond.args:
+                    if isinstance(arg, FunctionTerm):
+                        _, vars = StateVariable.svarsInTerm(arg, self)
+                        relVars += vars
+                            
+                return relVars
+
+            elif isinstance(cond, conditions.JunctionCondition):
+                return sum(itertools.imap(dependenciesVisitor, cond.parts), [])
+            elif isinstance(cond, conditions.QuantifiedCondition):
+                combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
+                result = []
+                for c in combinations:
+                    cond.instantiate(dict(zip(cond.args, c)))
+                    result += dependenciesVisitor(cond.condition)
+                    cond.uninstantiate()
+                return result
+            else:
+                return []
+            
+        return set(dependenciesVisitor(cond))
+    
     def applyEffect(self, effect):
         if isinstance(effect, effects.UniversalEffect):
-            combinations = product(*map(lambda a: getAll(a.type), effect.args))
+            combinations = product(*map(lambda a: self.problem.getAll(a.type), effect.args))
             for params in combinations:
                 effect.instantiate(zip(effect.args, params))
                 for eff in effect.effects:
@@ -234,60 +358,100 @@ class State(dict):
         else:
             self.set(Fact.fromEffect(effect))
 
-    def getExtendedState(self, svars=[]):
+    def getExtendedState(self, svars=[], getReasons=False):
         """Evaluate all axioms neccessary to instantiate the variables in 'svars'."""
 
-        def getAll(type):
-            if isinstance(type, types.FunctionType):
-                for func in self.problem.functions:
-                    if func.builtin:
-                        continue
-                    if types.FunctionType(func.type).equalOrSubtypeOf(type):
-                        combinations = product(*map(lambda a: getAll(a.type), func.args))
-                        for c in combinations:
-                            yield FunctionTerm(func, c, self.problem)
-            else:
-                for obj in itertools.chain(self.problem.objects, self.problem.constants):
-                    if obj.isInstanceOf(type):
-                        yield obj
+        def getDependencies(svar, derived):
+            open = set([svar])
+            closed = set()
+            while open:
+                sv = open.pop()
+                closed.add(sv)
+                for ax in self.problem.axioms:
+                    if ax.predicate == sv.getPredicate():
+                        ax.instantiate(sv.getArgs())
+                        for dep in self.getRelevantVars(ax.condition):
+                            if dep.getPredicate() in derived and dep not in closed:
+                                open.add(dep)
+            return closed
+                
                         
         pred_to_axioms = defaultdict(set)
         for a in self.problem.axioms:
             pred_to_axioms[a.predicate].add(a)
+        derived = pred_to_axioms.keys()
+
+        relevant = set()
+        for s in svars:
+            if s.getPredicate() in derived:
+                relevant |= getDependencies(s, derived)
+
+        if getReasons:
+            reasons = defaultdict(set)
 
         t0 = time.time()
-        #all_axiom_preds = set([a.predicate for a in self.problem.axioms])
-        all_axiom_atoms = set()
-        true_atoms = set()
-        for a in self.problem.axioms:
-            combinations = product(*map(lambda arg: getAll(arg.type), a.args))
-            for c in combinations:
-                atom = Literal(a.predicate, c, self.problem)
-                all_axiom_atoms.add(atom)
-                
-                svar = StateVariable.fromLiteral(atom)
-                if svar in self and self[svar] == types.TRUE:
-                    true_atoms.add(atom)
-                    
-        #print "collecting:", time.time()-t0
-        
-        changed = True
-        while changed:
+        for level, preds in sorted(self.problem.stratification.iteritems()):
             t1 = time.time()
-            changed = False
-            open = all_axiom_atoms - true_atoms
-            for atom in open:
-                t2 = time.time()
-                for ax in pred_to_axioms[atom.predicate]:
-                    if all(map(lambda a,p: a.isInstanceOf(p.type), atom.args, ax.args)):
-                        ax.instantiate(atom.args)
-                        if self.isSatisfied(ax.condition):
-                            true_atoms.add(atom)
-                            changed = True
-                            break
-                #print "atom:", time.time()-t2
+            axioms = set()
+            for p in preds:
+                axioms |= pred_to_axioms[p]
+
+            recursive_atoms = set()
+            nonrecursive_atoms = set()
+            true_atoms = set()
+            for a in axioms:
+                if relevant:
+                    gen = itertools.imap(lambda svar: svar.asLiteral(), relevant)
+                else:
+                    combinations = product(*map(lambda arg: list(self.problem.getAll(arg.type)), a.args))
+                    gen = itertools.imap(lambda c: Literal(a.predicate, c, self.problem), combinations)
                     
-            #print "iteration:", time.time()-t1
+                for atom in gen:
+                    #typecheck for modal predicates:
+                    #if any(map(lambda a: isinstance(a.type, types.FunctionType), atom.args))
+                    #print "here:", map(str, c)
+                    #atom = Literal(a.predicate, c, self.problem)
+                    if a.predicate in self.problem.nonrecursive:
+                        nonrecursive_atoms.add(atom)
+                    else:
+                        recursive_atoms.add(atom)
+
+                    svar = StateVariable.fromLiteral(atom)
+                    if svar in self and self[svar] == types.TRUE:
+                        true_atoms.add(atom)
+
+#            print "collecting level %d (%d atoms):" % (level, len(recursive_atoms)+len(nonrecursive_atoms)), time.time()-t1
+            
+            changed = True
+            while changed:
+                t2 = time.time()
+                changed = False
+                open = (nonrecursive_atoms | recursive_atoms) - true_atoms
+                for atom in open:
+                    #t3 = time.time()
+                    for ax in pred_to_axioms[atom.predicate]:
+                        if ax.tryInstantiate(atom.args):
+                            if getReasons:
+                                vars = []
+                            else:
+                                vars = None
+                            if self.isSatisfied(ax.condition, vars):
+                                true_atoms.add(atom)
+                                changed = True
+                                if getReasons:
+                                    for svar in vars:
+                                        reasons[StateVariable.fromLiteral(atom)].add(self[svar])
+                                break
+                            ax.uninstantiate()
+                    #print "atom:", time.time()-t3
+
+                nonrecursive_atoms = set()
+#                print "iteration:", time.time()-t2
+#            print "layer:", time.time()-t1
         
-        #print "total:", time.time()-t0
+#        print "total:", time.time()-t0
+                
+        if getReasons:
+            return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.fromLiteral(a), types.TRUE) for a in true_atoms]), self.problem), reasons
+        
         return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.fromLiteral(a), types.TRUE) for a in true_atoms]), self.problem)

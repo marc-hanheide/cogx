@@ -141,18 +141,34 @@ class Scope(dict):
                 
             dict.__setitem__(self, entry.name, entry)
 
+    def tryInstantiate(self, mapping):
+        try:
+            self.instantiate(mapping)
+        except:
+            self.uninstantiate()
+            return False
+        return True
+            
     def instantiate(self, mapping):
         self.uninstantiate()
+        nonfunctions = []
+        #instantiate function variables first, as they can affect the types of other parameters
         for key, val in mapping.iteritems():
-            if not isinstance(val, predicates.FunctionTerm):
-                val = self[val]
             key = self[key]
             
-            #assert isinstance(val, types.TypedObject), "Cannot instantiate %s to %s: value is no TypedObject but %s" % (key,val, type(val))
-            assert isinstance(key, types.Parameter), "Cannot instantiate %s: it is no Parameter but %s" % (key, type(key))
-                
-            self[key].instantiate(val)
+            if not isinstance(key, types.Parameter):
+                raise TypeError("Cannot instantiate %s: it is no Parameter but %s" % (key, type(key)))
+            
+            if isinstance(val, predicates.FunctionTerm):
+                key.instantiate(val)
+            else:
+                nonfunctions.append((key, val))
+            
+        for key,val in nonfunctions:
+            val = self[val]
+            key.instantiate(val)
 
+            
     def uninstantiate(self):
         for val in self.itervalues():
             if isinstance(val, types.Parameter):

@@ -1,6 +1,6 @@
 (define (domain cogx)
 
-	(:requirements :mapl :adl)
+	(:requirements :mapl :adl :durative-actions :object-fluents)
 	
 	(:types 
 		robot - agent
@@ -29,6 +29,20 @@
 
 ;;; actions ;;;
 
+; 	(:durative-action move
+; 	 :agent (?a - robot)
+; 	 :parameters (?to - node)
+; 	 :variables (?from - node)
+;      :duration (= ?duration 2.0)
+; 	 :condition (and 
+; 		(over all (or (connected ?from ?to) (connected ?to ?from)))
+; 		(at start (= (pos ?a) ?from))
+; 		)
+; 	 :effect (and
+; 		(change (pos ?a) ?to)
+; 		(change (place_type ?to) place)
+; 	))
+
 	(:action move
 	 :agent (?a - robot)
 	 :parameters (?to - node)
@@ -44,7 +58,6 @@
 		(assign (pos ?a) ?to)
 		(assign (place_type ?to) place)
 	))
-
 	
 
 )

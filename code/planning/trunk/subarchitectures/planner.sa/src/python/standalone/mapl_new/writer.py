@@ -35,6 +35,10 @@ class MAPLWriter(object):
     def write_type(self, type):
         if isinstance(type, types.CompositeType):
             return "(either %s)" % " ".join(map(lambda t: self.write_type(t), type.types))
+        if isinstance(type, types.FunctionType):
+            return "(function %s)" % self.write_type(type.type)
+        if isinstance(type, types.ProxyType):
+            return "(typeof %s)" % type.parameter.name
         return type.name
     
     def write_term(self, term):
@@ -60,6 +64,8 @@ class MAPLWriter(object):
         strings = []
         toplevel = [types.objectType, types.numberType]
         for type in _types:
+            if type.__class__ != types.Type:
+                continue
             if type.supertypes:
                 for st in type.supertypes:
                     #only write the lowest supertype(s)

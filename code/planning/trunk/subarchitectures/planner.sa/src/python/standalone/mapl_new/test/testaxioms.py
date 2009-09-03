@@ -24,7 +24,8 @@ logistics = \
          city location thing agent - object)
 
 (:predicates (occupied ?l - location)
-             (axiom2 ?v - vehicle ?l - location))
+             (interesting ?l - location)
+             (free ?l - location))
 
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle))
@@ -33,6 +34,27 @@ logistics = \
 testaxiom = """
         (:derived (occupied ?loc - location)
                   (exists (?v - vehicle) (= (location-of ?v) ?loc))
+        )
+        """
+
+strat1a = testaxiom
+
+strat1b = """
+        (:derived (interesting ?loc - location)
+                  (or (occupied ?loc)
+                      (exists (?p - package) (= (location-of ?p) ?loc)))
+        )
+        """
+
+strat2 = """
+        (:derived (free ?loc - location)
+                  (not (occupied ?loc))
+        )
+        """
+
+strat_invalid = """
+        (:derived (occupied ?loc - location)
+                  (not (free ?loc))
         )
         """
 
@@ -46,6 +68,28 @@ class AxiomTest(unittest.TestCase):
     def testAxiomParsing(self):
         """Testing axiom parsing"""
         axiom = Parser.parseAs(testaxiom.split("\n"), Axiom, self.domain)
+
+    def testStratification(self):
+        """Testing axiom stratification"""
+        a1a = Parser.parseAs(strat1a.split("\n"), Axiom, self.domain)
+        a1b = Parser.parseAs(strat1b.split("\n"), Axiom, self.domain)
+        a2 = Parser.parseAs(strat2.split("\n"), Axiom, self.domain)
+        aerror = Parser.parseAs(strat_invalid.split("\n"), Axiom, self.domain)
+        
+        self.domain.axioms += [a1a, a1b, a2]
+        self.domain.stratifyAxioms()
+
+        self.assert_(a1a.predicate in self.domain.stratification[1])
+        self.assert_(a1a.predicate in self.domain.nonrecursive)
+        self.assert_(a1b.predicate in self.domain.stratification[1])
+        self.assertFalse(a1b.predicate in self.domain.nonrecursive)
+        self.assert_(a2.predicate in self.domain.stratification[2])
+        self.assert_(a2.predicate in self.domain.nonrecursive)
+
+        self.domain.axioms.append(aerror)
+        self.assertRaises(Exception, self.domain.stratifyAxioms)
+        
+        
         
 if __name__ == '__main__':
     unittest.main()    

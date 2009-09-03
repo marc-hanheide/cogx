@@ -97,6 +97,10 @@ class QuantifiedCondition(Condition, scope.Scope):
             new_scope = self.parent
             
         cp = self.__class__([predicates.Parameter(a.name, a.type) for a in self.args], None, new_scope)
+        for arg in cp.args:
+            if isinstance(arg.type, types.ProxyType):
+                arg.type = types.ProxyType(cp[arg.type.parameter])
+                
         cp.condition = self.condition.copy(cp)
         return cp
 
@@ -108,20 +112,22 @@ class QuantifiedCondition(Condition, scope.Scope):
     
     @staticmethod
     def parse(it, scope, _class, parseFn=Condition.parse):
-        variables = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types)
+        variables = predicates.parseArgList(iter(it.get(list, "parameters")), scope.types, scope)
         cond = _class(variables, None, scope)
         cond.condition = parseFn(iter(it.get(list, "condition")), cond)
         return cond
 
 class UniversalCondition(QuantifiedCondition):
     def negate(self):
-        #FIXME: new scope not set correctly
-        return ExistentialCondition(self.args[:], self.condition.negate(), self.parent)
+        neg = ExistentialCondition([types.Parameter(p.name, p.type) for p in self.args], None, self.parent)
+        neg.condition = self.condition.negate().copy(neg)
+        return neg
 
 class ExistentialCondition(QuantifiedCondition):
     def negate(self):
-        #FIXME: new scope not set correctly
-        return UniversalCondition(self.args[:], self.condition.negate(), self.parent)
+        neg = UniversalCondition([types.Parameter(p.name, p.type) for p in self.args], None, self.parent)
+        neg.condition = self.condition.negate().copy(neg)
+        return neg
 
 class LiteralCondition(predicates.Literal, Condition):
     def __init__(self, predicate, args, scope=None, negated=False):

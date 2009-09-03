@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
+import itertools
 
 import parser
 import mapltypes as types
@@ -28,6 +29,10 @@ class Sensor(actions.Action):
         
         a = self.__class__(self.name, agents, args, vars, None, None, newdomain)
 
+        for arg in itertools.chain(a.args, a.vars):
+            if isinstance(arg.type, types.ProxyType):
+                arg.type = types.ProxyType(a[arg.type.parameter])
+                
         if self.precondition:
             a.precondition = self.precondition.copy(a)
         if isinstance(self.sense, predicates.Literal):

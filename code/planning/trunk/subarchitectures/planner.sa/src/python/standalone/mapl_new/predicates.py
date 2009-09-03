@@ -6,8 +6,8 @@ from mapltypes import *
 
 from parser import ParseError, UnexpectedTokenError
 
-def parseArgList(it, typeDict):
-    args = []
+def parseArgList(it, typeDict, parentScope=None):
+    tempScope = scope.Scope([], parentScope)
     
     def leftFunc(elem):
         if elem.token.string[0] != "?":
@@ -15,12 +15,14 @@ def parseArgList(it, typeDict):
         return elem
     
     def rightFunc(elem):
-        return Type.parse(elem, typeDict)
+        return Type.parse(elem, typeDict, tempScope)
 
     args = []
     for params, type in parser.parseTypedList(it, leftFunc, rightFunc, "parameter name", "type specification", True):
         for p in params:
-            args.append(Parameter(p.token.string, type))
+            param = Parameter(p.token.string, type)
+            args.append(param)
+            tempScope.add(param)
 
     return args
 
@@ -107,9 +109,13 @@ total_time = Function("total-time", [], numberType, builtin=True)
 
 #mapl predicates
 knowledge = Predicate("kval", [Parameter("?a", agentType), Parameter("?f", FunctionType(objectType))], builtin=True)
-indomain = Predicate("in-domain", [Parameter("?f", FunctionType(objectType)), Parameter("?v", objectType), ], builtin=True)
+direct_knowledge = Predicate("kd", [Parameter("?a", agentType), Parameter("?f", FunctionType(objectType))], builtin=True)
+p = Parameter("?f", FunctionType(objectType))
+indomain = Predicate("in-domain", [p, Parameter("?v", ProxyType(p)), ], builtin=True)
+p = Parameter("?f", FunctionType(objectType))
+i_indomain = Predicate("i_in-domain", [p, Parameter("?v", ProxyType(p)), ], builtin=True)
 
-mapl_modal_predicates = [knowledge, indomain]
+mapl_modal_predicates = [knowledge, indomain, direct_knowledge, i_indomain]
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", agentType)], builtin=True)
 achieved = Predicate("achieved", [Parameter("?sg", subgoalType)], builtin=True)
@@ -206,6 +212,9 @@ class Term(object):
             elif isinstance(obj, TypedObject):
                 self.__class__ = ConstantTerm
                 ConstantTerm.__init__(self, obj)
+            elif isinstance(obj, (int, float)):
+                self.__class__ = ConstantTerm
+                ConstantTerm.__init(self, TypesObject(obj, numberType))
             else:
                 raise Exception("Unexpected Argument for Term: %s" % str(obj))
         elif len(params) == 2:

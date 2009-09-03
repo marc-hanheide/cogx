@@ -21,7 +21,9 @@ domlogistics = \
          package vehicle - thing
          airport - location
          city location thing agent - object)
-  
+
+(:predicates (X ?f - (function object) ?v - (typeof ?f)))
+
 (:functions  (city-of ?l - (either location vehicle)) - city
              (location-of ?t - thing) - (either location vehicle))
 

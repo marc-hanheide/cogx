@@ -26,6 +26,11 @@ class Axiom(Scope):
         args = [types.Parameter(p.name, p.type) for p in self.args]
         
         a = Axiom(self.predicate, args, None, newdomain)
+        
+        for arg in a.args:
+            if isinstance(arg.type, types.ProxyType):
+                arg.type = types.ProxyType(a[arg.type.parameter])
+        
         a.condition = self.condition.copy(a)
         return a
         
@@ -59,3 +64,23 @@ class Axiom(Scope):
         axiom = Axiom(pred, args, None, scope)
         axiom.condition = conditions.Condition.parse(iter(it.get(list, "condition")), axiom)
         return axiom
+
+
+kval_axiom = """
+(:derived (kval ?a - agent ?svar - (function object))
+          (or (kd ?a ?svar)
+              (exists (?val - (typeof ?svar)) (= ?svar ?val))
+          )
+)
+"""
+
+in_domain_axiom = """
+(:derived (in-domain ?svar - (function object) ?val - (typeof ?svar))
+          (or (= ?svar ?val)
+              (and (i_in-domain ?svar ?val)
+                   (not (exists (?val2 - (typeof ?svar)) (= ?svar ?val2))))
+          )
+)
+"""
+
+mapl_axioms = [kval_axiom, in_domain_axiom]

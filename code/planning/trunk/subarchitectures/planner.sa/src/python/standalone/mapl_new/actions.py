@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
+import itertools
 
 import parser
 from parser import ParseError
@@ -38,6 +39,10 @@ class Action(Scope):
         
         a = Action(self.name, agents, args, vars, None, None, [], newdomain)
 
+        for arg in itertools.chain(a.args, a.vars):
+            if isinstance(arg.type, types.ProxyType):
+                arg.type = types.ProxyType(a[arg.type.parameter])
+        
         if self.precondition:
             a.precondition = self.precondition.copy(a)
         if self.replan:
@@ -140,7 +145,7 @@ class DurativeAction(Action):
         a.__class__ = DurativeAction
         a.duration = [DurationConstraint(a.lookup([d.term])[0], d.timeSpecifier) for d in self.duration]
         return a
-        
+       
     @staticmethod
     def parse(it, scope):
         it.get(":durative-action")
