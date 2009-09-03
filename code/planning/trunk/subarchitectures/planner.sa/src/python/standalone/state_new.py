@@ -2,6 +2,7 @@
 # -*- coding: latin-1 -*-
 
 import itertools
+from itertools import imap, ifilter
 import time
 from collections import defaultdict
 
@@ -225,7 +226,7 @@ class State(defaultdict):
             self.set(f)
 
     def iterfacts(self):
-        return itertools.imap(lambda tup: Fact.fromTuple(tup), self.iteritems())
+        return imap(lambda tup: Fact.fromTuple(tup), self.iteritems())
 
     def set(self, fact):
         self[fact.svar] = fact.value
@@ -295,15 +296,15 @@ class State(defaultdict):
                 if not cond.parts:
                     return True, []
 
-                return allFacts(itertools.imap(checkConditionVisitor, cond.parts))
+                return allFacts(imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.Disjunction):
-                return anyFacts(itertools.imap(checkConditionVisitor, cond.parts))
+                return anyFacts(imap(checkConditionVisitor, cond.parts))
             elif isinstance(cond, conditions.QuantifiedCondition):
                 combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
                 if isinstance(cond, conditions.UniversalCondition):
-                    return allFacts(itertools.imap(lambda c: instantianteAndCheck(cond, c), combinations))
+                    return allFacts(imap(lambda c: instantianteAndCheck(cond, c), combinations))
                 elif isinstance(cond, conditions.ExistentialCondition):
-                    return anyFacts(itertools.imap(lambda c: instantianteAndCheck(cond, c), combinations))
+                    return anyFacts(imap(lambda c: instantianteAndCheck(cond, c), combinations))
 
         result, svars = checkConditionVisitor(cond)
         if relevantVars is not None:
@@ -327,7 +328,7 @@ class State(defaultdict):
                 return relVars
 
             elif isinstance(cond, conditions.JunctionCondition):
-                return sum(itertools.imap(dependenciesVisitor, cond.parts), [])
+                return sum(imap(dependenciesVisitor, cond.parts), [])
             elif isinstance(cond, conditions.QuantifiedCondition):
                 combinations = product(*map(lambda a: self.problem.getAll(a.type), cond.args))
                 result = []
@@ -400,17 +401,20 @@ class State(defaultdict):
             nonrecursive_atoms = set()
             true_atoms = set()
             for a in axioms:
+                #check if the combination is actually valid, as sometimes a parameter type can depend
+                #on a previous parameter (e.g. (typeof ?f) types)
+                def filter_invalid(c):
+                    return self.problem.predicates.get(a.predicate.name, c)
+                
                 if relevant:
-                    gen = itertools.imap(lambda svar: svar.asLiteral(), relevant)
+                    gen = imap(lambda svar: svar.asLiteral(), relevant)
                 else:
                     combinations = product(*map(lambda arg: list(self.problem.getAll(arg.type)), a.args))
-                    gen = itertools.imap(lambda c: Literal(a.predicate, c, self.problem), combinations)
+
+                    gen = imap(lambda c: Literal(a.predicate, c, self.problem), ifilter(filter_invalid, combinations))
                     
                 for atom in gen:
-                    #typecheck for modal predicates:
-                    #if any(map(lambda a: isinstance(a.type, types.FunctionType), atom.args))
-                    #print "here:", map(str, c)
-                    #atom = Literal(a.predicate, c, self.problem)
+                    
                     if a.predicate in self.problem.nonrecursive:
                         nonrecursive_atoms.add(atom)
                     else:
@@ -420,7 +424,7 @@ class State(defaultdict):
                     if svar in self and self[svar] == types.TRUE:
                         true_atoms.add(atom)
 
-#            print "collecting level %d (%d atoms):" % (level, len(recursive_atoms)+len(nonrecursive_atoms)), time.time()-t1
+            print "collecting level %d (%d atoms):" % (level, len(recursive_atoms)+len(nonrecursive_atoms)), time.time()-t1
             
             changed = True
             while changed:
@@ -446,10 +450,10 @@ class State(defaultdict):
                     #print "atom:", time.time()-t3
 
                 nonrecursive_atoms = set()
-#                print "iteration:", time.time()-t2
-#            print "layer:", time.time()-t1
+                print "iteration:", time.time()-t2
+            print "layer:", time.time()-t1
         
-#        print "total:", time.time()-t0
+        print "total:", time.time()-t0
                 
         if getReasons:
             return State(itertools.chain(self.iterfacts(), [Fact(StateVariable.fromLiteral(a), types.TRUE) for a in true_atoms]), self.problem), reasons
