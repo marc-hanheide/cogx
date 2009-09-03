@@ -1,6 +1,5 @@
 # Author: Charles Gretton (charles.gretton@gmail.com)
-
-project (PCogX)
+project (test_harness__PCogX)
 
 # use cmake files packaged with CAST
 include(UseCAST)

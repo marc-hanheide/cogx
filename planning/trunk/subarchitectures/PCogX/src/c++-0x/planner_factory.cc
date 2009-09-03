@@ -23,7 +23,8 @@ Planner_Factory::Planner_Factory(Designator&& name)
 }
 
 void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
-
+    VERBOSER(200, "");
+    
     Designator new_designation;
 
     decltype(random_number_generator()) __candidate_designation;
@@ -32,9 +33,6 @@ void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
               designators_already_in_use
           .find(__candidate_designation = random_number_generator())){
     }
-        
-      
-    
     
     std::ostringstream _candidate_designation;
     _candidate_designation<<__candidate_designation;
