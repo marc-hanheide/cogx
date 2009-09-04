@@ -5,6 +5,8 @@ include(Slice2Cpp)
 
 cast_slice2cpp(GEN_CPP GEN_HPP Planner.ice ${CAST_SLICE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../../../binder/src/slice )
 
+include_directories(${COGX_ROOT}/subarchitectures/binder/src/c++/autogen)
+
 add_library(Planner SHARED ${GEN_CPP})
 target_link_libraries(Planner BinderEssentials)
 target_link_libraries(Planner CDL)
