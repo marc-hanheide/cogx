@@ -1,6 +1,15 @@
 <!-- Inner build file for a module in the CogX system -->
 <project name="myproject" default="compile" basedir=".">
 
+    <!-- =================================================================== -->
+    <!-- Add JAR files to classpath                                          -->
+    <!-- =================================================================== -->
+    <path id="build.classpath">
+        <pathelement path="${ice.jar}"/>
+        <pathelement path="${cast.jar}"/>
+    </path>
+
+	
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
 
@@ -52,7 +61,9 @@
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="expandlibs,slice" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" />
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+			<classpath refid="build.classpath"/>
+		</javac>
 	</target>
 
 	<!-- =================================================================== -->
