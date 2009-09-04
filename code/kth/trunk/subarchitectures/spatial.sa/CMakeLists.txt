@@ -32,12 +32,12 @@ add_subdirectory (src/c++/autogen)
 add_subdirectory(src/c++/)
 
 # Options
-option(BUILD_SA_SPATIAL_XXX "Build Spatial.SA XXX" YES)
+#option(BUILD_SA_SPATIAL_XXX "Build Spatial.SA XXX" YES)
 
 # Laser path
-if(BUILD_SA_SPATIAL_XXX)
+#if(BUILD_SA_SPATIAL_XXX)
 #    add_subdirectory(src/c++/components/XXX)
-endif(BUILD_SA_SPATIAL_XXX)
+#endif(BUILD_SA_SPATIAL_XXX)
 
 
 
