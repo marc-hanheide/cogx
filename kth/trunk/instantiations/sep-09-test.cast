@@ -44,7 +44,7 @@ CPP GD path.query PathQueryProcessor --log --no-indirect-paths #--debug
 # Conceptual->Binding interface components
 CPP GD proxy.marshaller ProxyMarshaller -bsa binder --log
 CPP GD connectivity.writer ConnectivityWriter --log
-CPP GD self.representer SelfRepresenter --log
+#CPP GD self.representer SelfRepresenter --log
 
 # CPP GD exploration.tester ExplorationTester --log #--debug
 

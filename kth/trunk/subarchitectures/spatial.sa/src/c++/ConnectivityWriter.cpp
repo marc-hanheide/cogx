@@ -30,6 +30,10 @@ ConnectivityWriter::start()
       (cdl::ADD),
 		  new MemberFunctionChangeReceiver<ConnectivityWriter>(this,
 					&ConnectivityWriter::newConnectivity));
+  addChangeFilter(createLocalTypeFilter<SpatialProperties::GatewayPlaceProperty>
+      (cdl::WILDCARD),
+		  new MemberFunctionChangeReceiver<ConnectivityWriter>(this,
+					&ConnectivityWriter::changedGateway));
 }
 
 void
@@ -60,16 +64,47 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     stringstream ss;
     ss << place1;
     string uid = ss.str();
+    stringstream ss2;
+    ss2 << place2;
+    string uid2 = ss2.str();
 
     Marshalling::MarshallerPrx agg(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
     FeaturePtr feature = new Feature();
     feature->featlabel = "place_connectivity";
     feature->alternativeValues.push_back(new 
-	binder::autogen::featvalues::IntegerValue(1,place2));
+	binder::autogen::featvalues::StringValue(1,uid2));
     agg->addFeature(type, uid, feature);
   }
   else {
     log("The property struct disappeared!");
   }
 }
+
+void
+ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
+{
+  SpatialProperties::GatewayPlacePropertyPtr prop =
+    getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmc.address);
+  if (prop != 0) {
+    int place = prop->placeId;
+
+    string type = "place";
+    stringstream ss;
+    ss << place;
+    string uid = ss.str();
+
+    Marshalling::MarshallerPrx agg(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
+    if (wmc.type == "ADD") {
+    FeaturePtr feature = new Feature();
+    feature->featlabel = "gateway";
+    feature->alternativeValues.push_back(new 
+	binder::autogen::featvalues::StringValue(1,"gateway"));
+    agg->addFeature(type, uid, feature);
+    }
+    else if (wmc.type == "DELETE") {
+      agg->deleteFeature(type, uid, "gateway");
+    }
+  }
+}
+
 

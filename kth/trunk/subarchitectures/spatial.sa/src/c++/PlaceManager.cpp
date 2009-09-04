@@ -238,14 +238,14 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
       new SpatialProperties::DiscreteProbabilityDistribution;
     discDistr->data = pairs;
 
-    SpatialProperties::PathPropertyPtr connectivityProp1 =
+    SpatialProperties::ConnectivityPathPropertyPtr connectivityProp1 =
       new SpatialProperties::ConnectivityPathProperty;
     connectivityProp1->place1Id = getPlaceFromNodeID(oobj->startNodeId)->id;
     connectivityProp1->place2Id = getPlaceFromNodeID(oobj->endNodeId)->id;
     connectivityProp1->distribution = discDistr;
     connectivityProp1->mapValue = costValue1;
     connectivityProp1->mapValueReliable = 1;
-    SpatialProperties::PathPropertyPtr connectivityProp2 =
+    SpatialProperties::ConnectivityPathPropertyPtr connectivityProp2 =
       new SpatialProperties::ConnectivityPathProperty;
     connectivityProp2->place1Id = getPlaceFromNodeID(oobj->endNodeId)->id;
     connectivityProp2->place2Id = getPlaceFromNodeID(oobj->startNodeId)->id;
@@ -254,9 +254,9 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
     connectivityProp2->mapValueReliable = 1;
 
     string newID = newDataID();
-    addToWorkingMemory<SpatialProperties::PathProperty>(newID, connectivityProp1);
+    addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
     newID = newDataID();
-    addToWorkingMemory<SpatialProperties::PathProperty>(newID, connectivityProp2);
+    addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp2);
   }
 
 }
@@ -397,16 +397,16 @@ PlaceManager::evaluateUnexploredPaths()
 		  new SpatialProperties::DiscreteProbabilityDistribution;
 		discDistr->data = pairs;
 
-		SpatialProperties::PathPropertyPtr connectivityProp1 =
+		SpatialProperties::ConnectivityPathPropertyPtr connectivityProp1 =
 		  new SpatialProperties::ConnectivityPathProperty;
 		connectivityProp1->place1Id = curPlace->id;
-		connectivityProp1->place2Id = m_placeIdCounter;
+		connectivityProp1->place2Id = m_placeIDCounter;
 		connectivityProp1->distribution = discDistr;
 		connectivityProp1->mapValue = costValue1;
 		connectivityProp1->mapValueReliable = 1;
 
 		string newID = newDataID();
-		addToWorkingMemory<SpatialProperties::PathProperty>(newID, connectivityProp1);
+		addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
 	      }
 
 	      p.m_data->status = SpatialData::PLACEHOLDER;
@@ -742,6 +742,39 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 
 	m_Places[m_placeIDCounter] = p;
 	m_placeIDCounter++;
+
+	//Write the Gateway property if present
+	if (newNavNode->gateway == 1) {
+	  SpatialProperties::BinaryValuePtr trueValue = 
+	    new SpatialProperties::BinaryValue;
+	  SpatialProperties::BinaryValuePtr falseValue = 
+	    new SpatialProperties::BinaryValue;
+	  trueValue->value = true;
+	  falseValue->value = false;
+
+	  SpatialProperties::ValueProbabilityPair pair1 =
+	  { trueValue, 0.9 };
+	  SpatialProperties::ValueProbabilityPair pair2 =
+	  { falseValue, 0.1 };
+
+	  SpatialProperties::ValueProbabilityPairs pairs;
+	  pairs.push_back(pair1);
+	  pairs.push_back(pair2);
+
+	  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	    new SpatialProperties::DiscreteProbabilityDistribution;
+	  discDistr->data = pairs;
+
+	  SpatialProperties::GatewayPlacePropertyPtr gwProp =
+	    new SpatialProperties::GatewayPlaceProperty;
+	  gwProp->placeId = p.m_data->id;
+	  gwProp->mapValue = trueValue;
+	  gwProp->mapValueReliable = 1;
+
+	  string newID = newDataID();
+	  addToWorkingMemory<SpatialProperties::GatewayPlaceProperty>(newID, gwProp);
+
+	}
       }
     }
     else {

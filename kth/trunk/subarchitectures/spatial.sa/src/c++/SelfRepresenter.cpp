@@ -4,6 +4,7 @@
 #include <sstream>
 #include <float.h>
 #include <FrontierInterface.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace cast;
@@ -81,8 +82,8 @@ SelfRepresenter::runComponent()
       
       FeaturePtr feature = new Feature();
       feature->featlabel = "position";
-      feature->alternativeValues.push_back(new 
-	  binder::autogen::featvalues::IntegerValue(1,0));
+      feature->alternativeValues.push_back(new
+	  binder::autogen::featvalues::StringValue(1, "robot"));
       agg->addFeature("robot", "1", feature);
     }
     catch (Ice::Exception e) {
@@ -105,8 +106,11 @@ SelfRepresenter::runComponent()
 	  
 	  FeaturePtr feature = new Feature();
 	  feature->featlabel = "position";
-	  feature->alternativeValues.push_back(new 
-	      binder::autogen::featvalues::IntegerValue(1,curPlaceID));
+	  stringstream ss;
+	  ss << curPlaceID;
+
+	  feature->alternativeValues.push_back(new
+	      binder::autogen::featvalues::StringValue(1, ss.str()));
 	  agg->addFeature("robot", "1", feature);
 	}
 	prevPlaceID = curPlaceID;
