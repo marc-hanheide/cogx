@@ -34,7 +34,8 @@ autoreconf:
 	@$(MAKECOOKIE)
 
 post-install: install-includes install-libs install-bins
-
+	@$(MAKECOOKIE)
+	
 install-includes:
 	(cp -Rf $(WORKSRC)/include/cure $(includedir))
 	@$(MAKECOOKIE)
