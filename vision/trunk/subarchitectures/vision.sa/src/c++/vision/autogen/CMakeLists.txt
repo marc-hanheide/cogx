@@ -11,7 +11,7 @@ cast_slice2cpp(GEN_CPP GEN_HPP VisionData.ice ${CAST_SLICE_DIR}
 #    ${COGX_ROOT}/tools/hardware/stereo/src/slice)
 add_library(VisionData SHARED ${GEN_CPP})
 target_link_libraries(VisionData CDL)
-target_link_libraries(VisionData Math)
+target_link_libraries(VisionData Video Math)
 install(TARGETS VisionData LIBRARY DESTINATION lib)
 
 
