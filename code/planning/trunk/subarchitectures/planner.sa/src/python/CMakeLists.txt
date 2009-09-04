@@ -7,4 +7,4 @@ add_custom_target(python ALL DEPENDS ${GEN_FILE} ${GEN_FILE2})
 
 add_subdirectory(standalone/base_planners/ContinualAxFF)
 
-install(CODE "exec_program(${CMAKE_COMMAND} ARGS -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/python)")
+install(CODE "exec_program(\"${CMAKE_COMMAND}\" ARGS -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/python)")
