@@ -156,22 +156,22 @@ ProxyMarshaller::addFeature(const string & proxyType, const string & proxyUID,
     if (typeMap.find(proxyUID) != typeMap.end()) {
       InternalProxy &intProxy = typeMap[proxyUID];
       vector<FeaturePtr>::iterator it = intProxy.proxy->features.begin();
-      for (; it != intProxy.proxy->features.end();
-	  it++) {
-	if ((*it)->featlabel == feature->featlabel) {
-	  break;
-	}
-      }
-      if (it != intProxy.proxy->features.end()) {
-	log("addFeature: Feature %s already exists in proxy type %s, UID %s!", 
-	    feature->featlabel.c_str(), proxyType.c_str(), proxyUID.c_str());
-      }
-      else {
+//      for (; it != intProxy.proxy->features.end();
+//	  it++) {
+//	if ((*it)->featlabel == feature->featlabel) {
+//	  break;
+//	}
+//      }
+//      if (it != intProxy.proxy->features.end()) {
+//	log("addFeature: Feature %s already exists in proxy type %s, UID %s!", 
+//	    feature->featlabel.c_str(), proxyType.c_str(), proxyUID.c_str());
+//      }
+//      else {
 	// Add the feature
 	intProxy.proxy->features.push_back(feature);
 
 	updateInternalProxy(typeMap[proxyUID]);
-      }
+//      }
     }
     else {
       log("addFeature: Proxy type %s, UID %s not found!", proxyType.c_str(),
@@ -248,11 +248,13 @@ ProxyMarshaller::updateInternalProxy(InternalProxy &intProxy)
   if (intProxy.onBinder) {
     // Proxy exists on Binder; overwrite its Features
     log("Proxy existed on Binder; overwrite its features");
+    log("Proxy has %i features.", intProxy.proxy->features.size());
     overwriteProxyInWM(intProxy.proxy);
   }
   else {
     // Proxy is new; add it to Binder
     log("Proxy new on Binder; create it");
+    log("Proxy has %i features.", intProxy.proxy->features.size());
     addProxyToWM(intProxy.proxy);
     intProxy.onBinder = true;
   }
