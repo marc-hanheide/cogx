@@ -1,0 +1,66 @@
+# Basics for building CogX (Dora): #
+
+## installing dependencies ##
+
+The gar-installer is a meta-build system that downloads, configures, and installs different software packages. It was originally created to compile GNOME distribution. Here, it allows to install all (most) of the dependencies of CogX with less hassle. It knows dependencies between packages so it should be simple to do just the following to install CAST, player+stage, peekabot, and some other small things. It also automatically checks for required ubuntu packages and installs them if necessary (requires sudo permissions). The default (and pre-configured) prefix for all installation is /usr/local, hence you require writing permission to this path and its subdirectories (you might want to run 'make install' as root...).
+
+{{{
+cd gar-installer/cogx/full-blown; make install
+}}}
+
+CUDA is not automatically built but can be also installed using gar:
+
+{{{
+cd gar-installer/contrib/cudadriver; make install
+}}}
+
+## compiling java ##
+The CogX java parts can be compile using ant (assuming your PWD is the toplevel directory of the trunk/branch):
+{{{
+CLASSPATH=/usr/local/share/java/cast.jar:/usr/share/java/Ice.jar ant -Dcastslice.dir=/usr/local/share -Dcast.jar=/usr/local/share/java/cast.jar
+}}}
+
+## compiling C++ ##
+The c++-parts use CMake which has to be configured:
+{{{
+mkdir build
+cd build
+cmake  -D CMAKE_MODULE_PATH:PATH=/usr/local/share/cast/cmake -DCAST_INSTALL_ROOT:PATH=/usr/local -D PEEKABOT_INSTALLROOT:PATH=/usr/local -DCURE_INSTALLROOT:PATH=/usr/local ..
+}}}
+
+Using {{{ccmake ..}}} you can than at any time change what should all be built. Here is what should work (without the more difficult GPU vision stuff):
+{{{
+ BUILD_HAL_LASER                  ON
+ BUILD_HAL_LASER_TESTS            OFF
+ BUILD_HAL_PTZ                    ON
+ BUILD_HAL_PTZ_PLAYER             ON
+ BUILD_HAL_ROBOT                  ON
+ BUILD_HAL_ROBOT_TESTS            OFF
+ BUILD_HAL_STEREO                 OFF
+ BUILD_HAL_TESTS                  ON
+ BUILD_HAL_TTS                    ON
+ BUILD_HAL_UTILS                  ON
+ BUILD_HAL_VIDEO                  ON
+ BUILD_MULTI_TESTER               OFF
+ BUILD_SA_NAV                     ON
+ BUILD_SA_NAV_OBJECTSEARCH        ON
+ BUILD_SA_NAV_PEEKABOT            ON
+ BUILD_SA_NAV_PROBOBJECTSEARCH    OFF
+ BUILD_SA_SPATIAL                 ON
+ BUILD_SA_SPATIAL_XXX             ON
+ BUILD_SA_VISION                  ON
+ BUILD_SA_VISION_FERNS            ON
+ BUILD_SA_VISION_OBJDETECTOR      OFF
+ BUILD_SA_VISION_OBJRECOGNIZER    OFF
+ BUILD_SA_VISION_OBJTRACKER       OFF
+ CAST_INSTALL_ROOT                /usr/local
+ CMAKE_MODULE_PATH                /usr/local/share/cast/cmake
+ CUDA_LIBCUTIL_HACK               OFF
+ CURE_INSTALLROOT                 /usr/local
+ ICE_FOUND                        ON
+ ICE_HOME                         /usr
+ ICE_HOME_INCLUDE_ICE             /usr/include/Ice
+ PEEKABOT_INSTALLROOT             /usr/local
+}}}
+
+Just run {{{make install}}} in the build directory afterwards.
