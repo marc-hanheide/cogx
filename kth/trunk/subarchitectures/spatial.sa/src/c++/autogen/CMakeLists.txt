@@ -19,5 +19,12 @@ target_link_libraries(FrontierInterface CDL)
 install(TARGETS SpatialData LIBRARY DESTINATION lib)
 install(TARGETS SpatialProperties LIBRARY DESTINATION lib)
 install(TARGETS FrontierInterface LIBRARY DESTINATION lib)
+if(BUILD_SA_BINDING)
+  cast_slice2cpp(GEN_CPP GEN_HPP Marshalling.ice ${CAST_SLICE_DIR}
+    ${COGX_ROOT}/subarchitectures/binder/src/slice)
+  add_library(Marshalling SHARED ${GEN_CPP})
+  target_link_libraries(Marshalling CDL)
+  install(TARGETS Marshalling LIBRARY DESTINATION lib)
+endif(BUILD_SA_BINDING)
 
 

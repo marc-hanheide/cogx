@@ -74,6 +74,10 @@ if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
 
+option(BUILD_SA_BINDING "Build binding subarchitecure" NO)
+if(BUILD_SA_BINDING)
+add_subdirectory (subarchitectures/binder)
+endif(BUILD_SA_BINDING)
 
 # Spatial
 option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
