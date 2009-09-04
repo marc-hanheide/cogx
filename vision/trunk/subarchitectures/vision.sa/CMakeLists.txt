@@ -19,26 +19,41 @@ include_directories(src/c++/vision/autogen)
 add_subdirectory(src/c++/vision/autogen)
 
 #add_subdirectory (src/c++/vision/components/VisualWMVisualisation)
-#add_subdirectory (src/c++/vision/components/ObjectDetectorFERNS)
+option(BUILD_SA_VISION_FERNS "build FERNS detector" YES)
+if (BUILD_SA_VISION_FERNS)
+add_subdirectory (src/c++/vision/components/ObjectDetectorFERNS)
+endif (BUILD_SA_VISION_FERNS)
 #add_subdirectory (src/c++/vision/components/DummyDriver)
 add_subdirectory (src/c++/vision/components/VideoViewer)
 if(BUILD_HAL_STEREO)
 add_subdirectory (src/c++/vision/components/StereoViewer)
 endif(BUILD_HAL_STEREO)
+
+option(BUILD_SA_VISION_OBJTRACKER "build object tracker" NO)
+if (BUILD_SA_VISION_OBJTRACKER)
 add_subdirectory (src/c++/vision/components/ObjectTracker)
 add_subdirectory (src/c++/vision/components/ObjectTrackerDriver)
 add_subdirectory (src/c++/vision/components/ObjectTrackerTest)
-add_subdirectory (src/c++/vision/components/VisionDriver)
+endif (BUILD_SA_VISION_OBJTRACKER)
 
+add_subdirectory (src/c++/vision/components/VisionDriver)
 add_subdirectory (src/c++/vision/components/Reconstruction)
+
+option(BUILD_SA_VISION_OBJDETECTOR "build object detector" NO)
+if (BUILD_SA_VISION_OBJDETECTOR)
 add_subdirectory (src/c++/vision/components/ObjectDetector)
 add_subdirectory (src/c++/vision/components/ObjectDetectorDriver)
+endif (BUILD_SA_VISION_OBJDETECTOR)
+
 if(BUILD_HAL_STEREO)
 add_subdirectory (src/c++/vision/components/PlanePopOut)
 add_subdirectory (src/c++/vision/components/SOIFilter)
 endif(BUILD_HAL_STEREO)
 
+option(BUILD_SA_VISION_OBJRECOGNIZER "build object recognizer" NO)
+if (BUILD_SA_VISION_OBJRECOGNIZER)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 add_subdirectory (src/python/ObjectRecognizer)
+endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
 
