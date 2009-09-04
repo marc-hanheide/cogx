@@ -34,7 +34,7 @@ PullClientLaser::PullClientLaser()
 {
   m_IceServerName = "LaserServer";
   m_IceServerHost = "localhost";
-  m_IceServerPort = cast::cdl::CPPSERVERPORTb;
+  m_IceServerPort = cast::cdl::CPPSERVERPORT;
 }
 
 PullClientLaser::~PullClientLaser()
