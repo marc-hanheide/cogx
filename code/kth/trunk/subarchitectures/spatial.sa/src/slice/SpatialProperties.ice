@@ -140,6 +140,35 @@ module SpatialProperties
   {
   };
 
+  /** 
+   * Generic, abstract class representing the distribution of values 
+   * of a single property of a single path.
+   */
+  class PathProperty
+  {
+    /** IDs of the places defining the path that has this property. */
+    long place1Id;
+    long place2Id;
+    
+    /** Probability distribution of values of this property. */
+    ProbabilityDistribution distribution;
+
+    /** Maximum a posteriori estimate of the property value. */
+    PropertyValue mapValue;
+
+    /** True if the MAP estimate is considered as reliable. */
+    bool mapValueReliable;
+  };
+
+  /**
+   * Represents the navigable connectivity of two Places
+   * (one-way).
+   * Transition success probability is encoded in the
+   * probability of transition cost not being infinity.
+   */
+  class ConnectivityPathProperty extends PathProperty
+  {
+  };
 
   // -----------------------------------------------------------------
   // Room properties

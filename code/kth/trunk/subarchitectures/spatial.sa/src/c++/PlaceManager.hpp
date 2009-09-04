@@ -79,6 +79,10 @@ class PlaceManager : public cast::ManagedComponent
     void modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID);
     void deletedNavNode(const cast::cdl::WorkingMemoryChange &objID);
 
+    // Call back functions for edges 
+    void newEdge(const cast::cdl::WorkingMemoryChange &objID);
+    void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
+
     void evaluateUnexploredPaths();
     NavData::FNodePtr getCurrentNavNode();
     void beginPlaceTransition(int goalPlaceID);

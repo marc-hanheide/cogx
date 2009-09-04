@@ -16,8 +16,10 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <Navigation/NavGraphNode.hh>
 #include <FrontierInterface.hpp>
+#include <SpatialProperties.hpp>
 #include <Ice/Ice.h>
 #include <float.h>
+#include <limits>
 
 using namespace cast;
 using namespace std;
@@ -110,6 +112,12 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
       		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 		    			&PlaceManager::robotMoved));
+  addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::ADD),
+      		  new MemberFunctionChangeReceiver<PlaceManager>(this,
+		    			&PlaceManager::newEdge));
+  addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<PlaceManager>(this,
+					&PlaceManager::modifiedEdge));
 }
 
 void 
@@ -175,6 +183,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
+  //TODO: This will never work!
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(objID.address);
   
@@ -199,6 +208,71 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
     
     log("WARNING: Did not find the node to delete!!!");
   }
+}
+
+void 
+PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
+{
+  NavData::AEdgePtr oobj =
+    getMemoryEntry<NavData::AEdge>(objID.address);
+  
+  if (oobj != 0) {
+
+    SpatialProperties::FloatValuePtr costValue1 = 
+      new SpatialProperties::FloatValue;
+    SpatialProperties::FloatValuePtr costValue2 = 
+      new SpatialProperties::FloatValue;
+    costValue1->value = oobj->cost;
+    costValue2->value = numeric_limits<double>::infinity();
+
+    SpatialProperties::ValueProbabilityPair pair1 =
+    { costValue1, 0.9 };
+    SpatialProperties::ValueProbabilityPair pair2 =
+    { costValue2, 0.1 };
+
+    SpatialProperties::ValueProbabilityPairs pairs;
+    pairs.push_back(pair1);
+    pairs.push_back(pair2);
+
+    SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+      new SpatialProperties::DiscreteProbabilityDistribution;
+    discDistr->data = pairs;
+
+    SpatialProperties::PathPropertyPtr connectivityProp1 =
+      new SpatialProperties::ConnectivityPathProperty;
+    connectivityProp1->place1Id = getPlaceFromNodeID(oobj->startNodeId)->id;
+    connectivityProp1->place2Id = getPlaceFromNodeID(oobj->endNodeId)->id;
+    connectivityProp1->distribution = discDistr;
+    connectivityProp1->mapValue = costValue1;
+    connectivityProp1->mapValueReliable = 1;
+    SpatialProperties::PathPropertyPtr connectivityProp2 =
+      new SpatialProperties::ConnectivityPathProperty;
+    connectivityProp2->place1Id = getPlaceFromNodeID(oobj->endNodeId)->id;
+    connectivityProp2->place2Id = getPlaceFromNodeID(oobj->startNodeId)->id;
+    connectivityProp2->distribution = discDistr;
+    connectivityProp2->mapValue = costValue1;
+    connectivityProp2->mapValueReliable = 1;
+
+    string newID = newDataID();
+    addToWorkingMemory<SpatialProperties::PathProperty>(newID, connectivityProp1);
+    newID = newDataID();
+    addToWorkingMemory<SpatialProperties::PathProperty>(newID, connectivityProp2);
+  }
+
+}
+
+void 
+PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
+{
+  // This will probably never be called...
+  /*
+  shared_ptr<CASTData<NavData::AEdge> > oobj =
+    getWorkingMemoryEntry<NavData::AEdge>(objID.address);
+  
+  if (oobj != 0) {
+
+    // Look for the place in the internal vector
+*/
 }
 
 bool 
@@ -300,6 +374,40 @@ PlaceManager::evaluateUnexploredPaths()
 	      p.m_data->id = m_placeIDCounter;
 	      m_PlaceIDToHypMap[m_placeIDCounter] = newHyp;
 	      m_hypIDCounter++;
+
+	      // Add connectivity property (one-way)
+	      {
+		SpatialProperties::FloatValuePtr costValue1 = 
+		  new SpatialProperties::FloatValue;
+		SpatialProperties::FloatValuePtr costValue2 = 
+		  new SpatialProperties::FloatValue;
+		costValue1->value = m_hypPathLength;
+		costValue2->value = numeric_limits<double>::infinity();
+
+		SpatialProperties::ValueProbabilityPair pair1 =
+		{ costValue1, 0.9 };
+		SpatialProperties::ValueProbabilityPair pair2 =
+		{ costValue2, 0.1 };
+
+		SpatialProperties::ValueProbabilityPairs pairs;
+		pairs.push_back(pair1);
+		pairs.push_back(pair2);
+
+		SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+		  new SpatialProperties::DiscreteProbabilityDistribution;
+		discDistr->data = pairs;
+
+		SpatialProperties::PathPropertyPtr connectivityProp1 =
+		  new SpatialProperties::ConnectivityPathProperty;
+		connectivityProp1->place1Id = curPlace->id;
+		connectivityProp1->place2Id = m_placeIdCounter;
+		connectivityProp1->distribution = discDistr;
+		connectivityProp1->mapValue = costValue1;
+		connectivityProp1->mapValueReliable = 1;
+
+		string newID = newDataID();
+		addToWorkingMemory<SpatialProperties::PathProperty>(newID, connectivityProp1);
+	      }
 
 	      p.m_data->status = SpatialData::PLACEHOLDER;
 	      p.m_WMid = newDataID();
