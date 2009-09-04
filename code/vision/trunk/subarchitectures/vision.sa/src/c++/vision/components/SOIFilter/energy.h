@@ -217,7 +217,7 @@ inline void Energy::add_term2(Var x, Var y,
 	   C 0
 	*/
 
-//	assert(B + C >= 0); /* check regularity */
+	assert(B + C >= 0); /* check regularity */
 	if (B < 0)
 	{
 		/* Write it as

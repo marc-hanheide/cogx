@@ -101,11 +101,11 @@ private:
   
   std::list<int> getSortedHueList(std::vector<CvPoint> projPoints, const IplImage* hueImg);
   
-  std::vector<int> graphCut(int width, int height, int num_labels, std::list<int> &hueList, const IplImage* hueImg, int k);
+  std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, int k);
   
- // static int dataFn(int p, int l, void *vdata);
+  std::vector<int> getHueCostList(std::list<int> hueList, int k);
   
- // static int smoothFn(int p1, int p2, int l1, int l2);
+  IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints);
 
 protected:
   /**
