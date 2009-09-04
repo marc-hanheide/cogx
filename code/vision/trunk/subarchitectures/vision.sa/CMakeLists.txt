@@ -37,7 +37,10 @@ add_subdirectory (src/c++/vision/components/ObjectTrackerTest)
 endif (BUILD_SA_VISION_OBJTRACKER)
 
 add_subdirectory (src/c++/vision/components/VisionDriver)
+option(BUILD_SA_VISION_RECONSTRUCTION "build visual reconstruction" NO)
+if (BUILD_SA_VISION_RECONSTRUCTION)
 add_subdirectory (src/c++/vision/components/Reconstruction)
+endif (BUILD_SA_VISION_RECONSTRUCTION)
 
 option(BUILD_SA_VISION_OBJDETECTOR "build object detector" NO)
 if (BUILD_SA_VISION_OBJDETECTOR)
