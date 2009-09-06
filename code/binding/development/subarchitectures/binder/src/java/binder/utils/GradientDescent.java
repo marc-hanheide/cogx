@@ -8,6 +8,7 @@ import java.util.Vector;
 import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
@@ -19,23 +20,26 @@ import binder.utils.ProbDistribUtils;
 
 public class GradientDescent {
 
-	public static float getMaximum (ProbabilityDistribution distrib) {
+	public static float getMaximum (PerceivedEntity entity) {
 		
 		float result = 0.0f;
-		if (distrib == null) {
-			log("ERROR: distribution == null, aborting");
+		if (entity.distribution == null) {
+			log("WARNING: distribution == null, regenerating");
+			entity.features = ProbDistribUtils.addIndeterminateFeatureValues(entity.features);
+			entity.distribution = ProbDistribUtils.generateProbabilityDistribution(entity);
+
 		}
-		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
-			return getMaximum((DiscreteProbabilityDistribution) distrib);
+		if (entity.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
+			return getMaximum((DiscreteProbabilityDistribution) entity.distribution);
 		}
 		
-		else if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
-			return getMaximum((CombinedProbabilityDistribution) distrib);
+		else if (entity.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
+			return getMaximum((CombinedProbabilityDistribution) entity.distribution);
 		}
 		
 		else {
 			log("Sorry, only discrete or combined feature distributions are handled right now");
-			log("Used class: " + distrib.getClass());
+			log("Used class: " + entity.distribution.getClass());
 		}
 		
 		return result;
@@ -186,7 +190,7 @@ public static Vector<UnionConfiguration> getNBestUnionConfigurations
 				max = maxForUnions.get(union);
 			}
 			else {
-				max = getMaximum(union.distribution);
+				max = getMaximum(union);
 				maxForUnions.put(union, max);
 			}
 			multiplication = multiplication * max;
@@ -233,7 +237,7 @@ public static UnionConfiguration getBestUnionConfiguration(Vector<UnionConfigura
 		
 		for (int i = 0; i < config.includedUnions.length ; i++) {		
 			Union union = config.includedUnions[i];
-			multiplication = multiplication * getMaximum(union.distribution);
+			multiplication = multiplication * getMaximum(union);
 		}
 		float average = multiplication / (config.includedUnions.length + 0.0f);
 	
