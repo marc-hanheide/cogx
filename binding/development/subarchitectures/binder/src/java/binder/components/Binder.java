@@ -365,6 +365,11 @@ public class Binder extends ManagedComponent  {
 		
 		try {
 			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
+			
+			if (updatedProxy.distribution == null) {
+				updatedProxy.features = ProbDistribUtils.addIndeterminateFeatureValues(updatedProxy.features);
+				updatedProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(updatedProxy);
+			}
 		
 			for (Enumeration<UnionConfiguration> configs = 
 				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
