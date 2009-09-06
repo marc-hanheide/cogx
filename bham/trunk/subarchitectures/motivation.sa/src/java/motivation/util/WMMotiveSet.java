@@ -9,6 +9,7 @@ import java.util.Map;
 
 import motivation.slice.Motive;
 
+import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -32,11 +33,15 @@ public class WMMotiveSet {
 
 	private Map<WorkingMemoryAddress, Motive> map;
 
-	void addedTrigger(WorkingMemoryAddress address, Motive motive) {
 
+	/** Factory method 
+	 * @param c he management component this WMSet is in
+	 */
+	public static WMMotiveSet create(ManagedComponent c) {
+		return new WMMotiveSet(c);
 	}
-
-	public WMMotiveSet(ManagedComponent c) {
+	
+	protected WMMotiveSet(ManagedComponent c) {
 		this.component = c;
 		// create a synchronised hashmap
 		map = Collections
