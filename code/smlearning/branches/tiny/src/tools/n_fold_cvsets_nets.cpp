@@ -16,16 +16,27 @@ int main(int argc, char * argv[]) {
 		cerr << "error reading data" << endl;
 		return 1;
 	}
-// 	print_dataset<double> (savedData);
+
+	boost::regex seqfile_re (".*/(.*)$");
+	boost::cmatch match;
+	string seqBaseFileName;
+	if (boost::regex_match(seqFile.c_str(), match, seqfile_re)) {
+		seqBaseFileName = string(match[1].first, match[1].second);
+	}
+	cout << "seqBaseFileName: " << seqBaseFileName << endl;
+	cout << "seqFile: " << seqFile << endl;
+
+
+	//print_dataset<double> (savedData);
 	//writing to nc file
 	if (encoding == "basis") {
-		if (write_nc_file_basis (seqFile, savedData))
+		if (write_nc_file_basis (target_dir + "/" + seqBaseFileName, savedData))
 			cout << "nc file written" << endl;
 		else
 			cout << "nc file NOT written" << endl;
 	}
 	else if (encoding == "padding") {
-		if (write_cdl_file_padding (seqFile, savedData))
+		if (write_cdl_file_padding (target_dir + "/" + seqBaseFileName, savedData))
 			cout << "nc file written" << endl;
 		else
 			cout << "nc file NOT written" << endl;
@@ -37,7 +48,7 @@ int main(int argc, char * argv[]) {
 	else if (encoding == "padding")
 		write_n_fold_cross_valid_sets (seqFile, n, write_cdl_file_padding, target_dir );
 
-	generate_network_files_nfoldcv_set ("/usr/local/bin/SMLearning/defaultnet.config", seqFile, 10, target_dir );
+	generate_network_files_nfoldcv_set ("/usr/local/bin/SMLearning/defaultnet.config", seqBaseFileName, 10, target_dir );
 
 	return 0;
 }
