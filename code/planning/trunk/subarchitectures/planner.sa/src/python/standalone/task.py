@@ -118,6 +118,17 @@ class Task(object):
         
         #return PDDLTask.from_MAPL_task(self).pddl_problem_str()
 
+    def tfd_domain_str(self):
+        w = TFDWriter(predicates.mapl_modal_predicates)
+        return "\n".join(w.write_domain(self._mapldomain))
+        #return PDDLTask.from_MAPL_task(self).pddl_domain_str()
+
+    def tfd_problem_str(self):
+        w = TFDWriter(predicates.mapl_modal_predicates)
+        return "\n".join(w.write_problem(self._mapltask))
+        
+        #return PDDLTask.from_MAPL_task(self).pddl_problem_str()
+    
     def load_mapl_domain(self, domain_file):
         print "Loading MAPL domain %s." % domain_file
         self._mapldomain = mapl.load_domain(domain_file)
@@ -218,7 +229,7 @@ class PDDLWriter(mapl.writer.MAPLWriter):
                     return [(cond.args[0], cond.args[1])]
                 return []
             else:
-                return sum(results, [])           
+                return sum(results, [])
                 
         strings = [newname]
         strings += self.section(":parameters", ["(%s)" % self.write_typelist(newargs)], parens=False)
@@ -385,6 +396,10 @@ class TFDWriter(mapl.writer.MAPLWriter):
         for pred in preds:
             if not pred.builtin:
                 strings.append(self.write_predicate(pred))
+
+        strings.append(";; MAPL-defined predicates")
+        for pred in mapl.predicates.mapl_nonmodal_predicates:
+                strings.append(self.write_predicate(pred))
                 
         for func in functions:
             if func.builtin:
@@ -392,16 +407,18 @@ class TFDWriter(mapl.writer.MAPLWriter):
             strings.append(";; Function %s" % func.name)
             for mod in self.modal:
                 args =[]
+                function_match = False
                 for arg in mod.args:
-                    if isinstance(arg.type, types.FunctionType):
+                    if isinstance(arg.type, types.FunctionType) and func.type.equalOrSubtypeOf(arg.type.type):
+                        function_match = True
                         args += func.args
                     elif isinstance(arg.type, types.ProxyType):
                         args.append(types.Parameter(arg.name, func.type))
                     else:
                         args.append(arg)
-
-                pred =  predicates.Predicate("%s-%s" % (mod.name, func.name), args)
-                strings.append(self.write_predicate(pred))
+                if function_match:
+                    pred =  predicates.Predicate("%s-%s" % (mod.name, func.name), args)
+                    strings.append(self.write_predicate(pred))
 
         return self.section(":predicates", strings)
 
@@ -462,10 +479,15 @@ class TFDWriter(mapl.writer.MAPLWriter):
     
     def write_sensor(self, action):
         args = action.agents + action.args + action.vars
-        duration = actions.DurationConstraint(predicates.ConstantTerm(1.0), None)
-        condition = conditions.TimedCondition("all", action.precondition)
-        effects = [action.knowledge_effect()]
-        return self.write_durative_action_real(action.name, args, duration, condition, effects)
+        duration = mapl.actions.DurationConstraint(predicates.Term(1.0), None)
+        if action.precondition:
+            condition = mapl.conditions.TimedCondition("all", action.precondition)
+        else:
+            condition = None
+        keff = action.knowledge_effect()
+        teff = [effects.TimedEffect(keff.predicate, keff.args, "end")]
+         
+        return self.write_durative_action_real(action.name, args, [duration], condition, teff)
         
     def write_domain(self, domain):
         strings = ["(define (domain %s)" % domain.name]

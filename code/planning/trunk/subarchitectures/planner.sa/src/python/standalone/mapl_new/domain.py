@@ -38,64 +38,7 @@ class MAPLDomain(scope.Scope):
         return self.name2action[name]
 
     def stratifyAxioms(self):
-        def posVisitor(cond, results):
-            if isinstance(cond, conditions.LiteralCondition):
-                if not cond.negated:
-                    return [cond.predicate]
-                else:
-                    return []
-            else:
-                return sum(results, [])
-
-        def negVisitor(cond, results):
-            if isinstance(cond, conditions.LiteralCondition):
-                if cond.negated:
-                    return [cond.predicate]
-                else:
-                    return []
-            else:
-                return sum(results, [])
-            
-        pred_to_axioms = defaultdict(set)
-        for a in self.axioms:
-            pred_to_axioms[a.predicate].add(a)
-        derived = pred_to_axioms.keys()
-
-        #order the derived predicates
-        R = defaultdict(lambda: 0)
-        for a in self.axioms:
-            j = a.predicate
-            pos = a.condition.visit(posVisitor)
-            neg = a.condition.visit(negVisitor)
-            for i in derived:
-                if i in neg:
-                    R[i,j] = 2
-                elif i in pos:
-                    R[i,j] = max(1, R[i,j])
-        for j in derived:
-            for i in derived:
-                for k in derived:
-                    if min(R[i,j], R[j,k]) > 0:
-                        R[i,k] = max(R[i,j], R[j,k], R[i,k])
-
-        assert all(map(lambda d: R[d,d] != 2, derived)), "Couldn't stratify axioms"
-        #extract strata
-        level = 1
-        remaining = set(derived)
-        self.stratification = {}
-        self.nonrecursive = set()
-        while remaining:
-            stratum = set()
-            for j in remaining:
-                if all(map(lambda i: R[i,j] != 2, remaining)):
-                    stratum.add(j)
-                if all(map(lambda i: R[i,j] != 1, remaining)):
-                    self.nonrecursive.add(j)
-                    
-            self.stratification[level] = stratum
-            remaining -= stratum
-            level += 1
-                                    
+        self.stratification, self.nonrecursive = axioms.stratify(self.axioms)
     
     @staticmethod
     def parse(root):
