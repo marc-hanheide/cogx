@@ -36,24 +36,23 @@ SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 SET(RNNLIB_INCLUDE /usr/local/include/rnnlib CACHE PATH "Path prefix for RNNLIB include")
 SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 
-SET(BOOST_INCLUDE /usr/local/include/boost-1_39 CACHE PATH "Path prefix for Golem include")
-SET(BOOST_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Boost library")
+SET(BOOST_INCLUDE /usr/include/boost CACHE PATH "Path prefix for Golem include")
+SET(BOOST_LIBRARY /usr/lib CACHE PATH "Path prefix for Boost library")
 SET(BOOST_FILESYSTEM_LIBRARY
-	/usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0 CACHE PATH
+	/usr/lib/libboost_filesystem-mt.so CACHE PATH
 	"Path to Boost Filesystem library")
 SET(BOOST_REGEX_LIBRARY
-	/usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0 CACHE PATH
+	/usr/lib/libboost_regex-mt.so CACHE PATH
 	"Path to Boost Regex Library")
 
-# SET(BOOST_INCLUDE /usr/include CACHE PATH "Path prefix for Golem include")
-# SET(BOOST_LIBRARY /usr/lib CACHE PATH "Path prefix for Boost library")
+# SET(BOOST_INCLUDE /usr/local/include/boost-1_39 CACHE PATH "Path prefix for Golem include")
+# SET(BOOST_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Boost library")
 # SET(BOOST_FILESYSTEM_LIBRARY
-# 	/usr/lib/libboost_filesystem.so CACHE PATH
-# 	"Path to Boost Filesystem library")
+#	/usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0 CACHE PATH
+#	"Path to Boost Filesystem library")
 # SET(BOOST_REGEX_LIBRARY
-# 	/usr/lib/libboost_regex.so CACHE PATH
+#	/usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0 CACHE PATH
 # 	"Path to Boost Regex Library")
-
 
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 

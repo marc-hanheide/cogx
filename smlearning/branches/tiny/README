@@ -7,6 +7,9 @@ libnetcdf-dev
 Download boost (http://www.boost.org) and install it (e.g. v1.39):
 $ sudo ./bjam --prefix=/usr/local --libdir=/usr/local/lib install
 
+In Ubuntu 9.04 you can install the boost package v1.37:
+libboost1.37-dev
+
 Check out the library rnnlib from a git repository. First go
 to a desired directory and type:
 
@@ -16,6 +19,10 @@ Then, install the library:
 
 $ cd RNNLIB
 $ CXXFLAGS=-I/usr/local/include/boost-1_39/ ./configure
+
+Or in Ubuntu 9.04, simply:
+$ ./configure
+
 $ make
 $ sudo make install
 
