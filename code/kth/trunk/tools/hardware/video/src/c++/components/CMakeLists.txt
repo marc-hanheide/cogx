@@ -1,8 +1,9 @@
 PROJECT(VideoServer)
 
 include_directories(.)
-include_directories(/opt/local/include)
-link_directories (/opt/local/lib)
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
 
 # Set the sources.
 SET(SOURCES VideoServer.cpp)
@@ -38,10 +39,10 @@ INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 add_cast_component(OpenCvImgSeqServer OpenCvImgSeqServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LIBRARIES}) 
 
 add_cast_component(OpenCvLiveServer OpenCvLiveServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LIBRARIES})
 
 
