@@ -25,7 +25,18 @@ add_definitions(-Wall)
 
 add_subdirectory (tools/d-lib)
 
-option(BUILD_SA_NAV "Build navigation subarchitecure" NO)
+option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
+if(BUILD_SA_BINDING)
+add_subdirectory (subarchitectures/binder)
+endif(BUILD_SA_BINDING)
+
+option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
+if(BUILD_SA_MOTIVATION)
+add_subdirectory (subarchitectures/motivation.sa)
+endif(BUILD_SA_MOTIVATION)
+
+
+option(BUILD_SA_NAV "Build navigation subarchitecure" YES)
 if(BUILD_SA_NAV)
 add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
@@ -73,7 +84,7 @@ if(BUILD_HAL_VIDEO)
 add_subdirectory (tools/hardware/video)
 endif(BUILD_HAL_VIDEO)
 
-option(BUILD_HAL_STEREO "Build hardware stereo" YES)
+option(BUILD_HAL_STEREO "Build hardware stereo" NO)
 if(BUILD_HAL_STEREO)
 add_subdirectory (tools/hardware/stereo)
 endif(BUILD_HAL_STEREO)
@@ -95,4 +106,11 @@ if(BUILD_MULTI_TESTER)
     add_subdirectory (tools/testing)
 endif(BUILD_MULTI_TESTER)
 
-add_subdirectory(tools/python)
+# Planner
+option(BUILD_SA_PLANNER "Build planner subarchitecure" YES)
+if(BUILD_SA_PLANNER)
+    add_subdirectory (subarchitectures/planner.sa)
+endif(BUILD_SA_PLANNER)
+
+
+#add_subdirectory(tools/python)

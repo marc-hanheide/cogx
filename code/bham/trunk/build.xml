@@ -1,9 +1,11 @@
 <!-- Top level make file for CogX system -->
-<project name="cogx" default="all" basedir=".">
+<project name="cogx" default="all">
 
 	<property name="castslice.dir" value="/usr/local/share" />
 	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
+	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
+	<property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" />
 
 
 
@@ -29,10 +31,11 @@
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
 		<ant target="${target}" dir="tools/math" /> 
 		<ant target="${target}" dir="subarchitectures/binder" /> 
-		<ant target="${target}" dir="subarchitectures/motivation.sa" />
 		<ant target="${target}" dir="subarchitectures/nav.sa" />
+		<ant target="${target}" dir="subarchitectures/planner.sa" /> 
+		<ant target="${target}" dir="subarchitectures/motivation.sa" />
 		<!--<ant target="${target}" dir="subarchitectures/coma.sa" />-->
-</target>
+	</target>
 
 
 	<!-- =================================================================== -->
