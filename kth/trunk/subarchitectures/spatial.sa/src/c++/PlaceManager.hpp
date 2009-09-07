@@ -127,6 +127,7 @@ class PlaceManager : public cast::ManagedComponent
     				   // came from last
     int m_goalPlaceForCurrentPath; // During transitions, stores where the robot
     				   // thought it was going
+    std::map<int, std::set<int> > m_connectivities;
 }; // class PlaceManager
 
 }; // namespace spatial
