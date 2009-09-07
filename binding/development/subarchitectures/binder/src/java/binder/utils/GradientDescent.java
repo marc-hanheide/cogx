@@ -218,7 +218,7 @@ public static Vector<UnionConfiguration> getNBestUnionConfigurations
 			}
 		}
 				
-			
+		
 	}
 	
 	return nbestConfigs;
