@@ -17,16 +17,21 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTUtils;
-import cast.interfaces.TimeServerPrx;
+import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
  * 
  */
+/**
+ * @author marc
+ *
+ */
+/**
+ * @author marc
+ * 
+ */
 abstract class Generator extends ManagedComponent {
-
-	TimeServerPrx timeServer;
 
 	/**
 	 * a local MemoryReceiver that established the link between the "Supporter"
@@ -67,27 +72,41 @@ abstract class Generator extends ManagedComponent {
 
 		public void overwritten(WorkingMemoryChange _wmc) {
 			log("source has changed, need to update motive");
-			updateMotive(motiveAddress, _wmc.address);
+			try {
+				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
+				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
+				checkMotive(motive);
+				unlockEntry(motiveAddress);
+			} catch (DoesNotExistOnWMException e) {
+				println("trying to lock non-existing object. the motive seems to be gone... just ignore, considered a CAST bug.");
+				//e.printStackTrace();
+			} catch (UnknownSubarchitectureException e) {
+				println("subarchitecture " + motiveAddress.subarchitecture
+						+ " not known...");
+				e.printStackTrace();
+			} catch (ConsistencyException e) {
+				println("inconsistent memory change occured in Generator::overwritten when releasing the lock. ");
+				e.printStackTrace();
+			}
 		}
 
 		public void deleted(WorkingMemoryChange _wmc) {
 			try {
-				log("source has been removed, need to remove motive");
-				deleteFromWorkingMemory(motiveAddress);
+				println("source has been removed, need to remove motive");
+				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
+				remove(motive);
+				removeChangeFilter(this);
 			} catch (DoesNotExistOnWMException e1) {
-				log("tried to remove motive from WM that didn't exist... nevermind.");
+				println("tried to remove motive from WM that didn't exist... nevermind.");
 				e1.printStackTrace();
 			} catch (PermissionException e1) {
-				log("not allowed to remove motive from WM...  nevermind.");
+				println("not allowed to remove motive from WM...  nevermind.");
 				e1.printStackTrace();
 			} catch (UnknownSubarchitectureException e1) {
-				log("UnknownSubarchitectureException when remove motive from WM...  nevermind.");
+				println("UnknownSubarchitectureException when remove motive from WM...  nevermind.");
 				e1.printStackTrace();
-			}
-			try {
-				removeChangeFilter(this);
 			} catch (SubarchitectureComponentException e) {
-				log("exception removing WorkingMemoryChangeReceiver: "
+				println("exception removing WorkingMemoryChangeReceiver: "
 						+ e.message);
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -96,16 +115,7 @@ abstract class Generator extends ManagedComponent {
 
 	}
 
-	/**
-	 * 
-	 */
-	public Generator() {
-		// TODO Auto-generated constructor stub
-		timeServer = CASTUtils.getTimeServer();
-	}
-
-	protected abstract boolean updateMotive(WorkingMemoryAddress motiveAddress,
-			WorkingMemoryAddress srcAddress);
+	protected abstract boolean checkMotive(Motive motive);
 
 	/**
 	 * creates a link between the underlying referenced working memory entry
@@ -122,23 +132,39 @@ abstract class Generator extends ManagedComponent {
 		new SourceChangeReceiver(motive, src);
 	}
 
-	public void overwrite(WorkingMemoryAddress motiveAddress, Motive motive)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
-			ConsistencyException, PermissionException {
-		motive.updated = timeServer.getCASTTime();
-		log("overwrite it now");
-		overwriteWorkingMemory(motiveAddress, motive);
-
+	/**
+	 * write to the WM, either create a new entry (if the motive was not yet in
+	 * their) or update the existing one
+	 * 
+	 * @param motive
+	 * @return the WM address of the entry
+	 * @throws AlreadyExistsOnWMException
+	 * @throws DoesNotExistOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 * @throws UnknownSubarchitectureException
+	 */
+	public WorkingMemoryAddress write(Motive motive)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+		motive.updated = getCASTTime();
+		if (motive.thisEntry == null) {
+			motive.thisEntry = new WorkingMemoryAddress();
+			motive.thisEntry.subarchitecture = getSubarchitectureID();
+			motive.thisEntry.id = newDataID();
+			addToWorkingMemory(motive.thisEntry.id, motive);
+			addReceivers(motive.thisEntry, motive.referenceEntry);
+		} else {
+			overwriteWorkingMemory(motive.thisEntry, motive);
+		}
+		return motive.thisEntry;
 	}
 
-	public WorkingMemoryAddress add(Motive motive)
-			throws AlreadyExistsOnWMException {
-		WorkingMemoryAddress newMotiveAddress = new WorkingMemoryAddress();
-		newMotiveAddress.id = newDataID();
-		newMotiveAddress.subarchitecture = getSubarchitectureID();
-		addToWorkingMemory(newMotiveAddress.id, motive);
-		addReceivers(newMotiveAddress, motive.referenceEntry);
-		updateMotive(newMotiveAddress, motive.referenceEntry);
-		return newMotiveAddress;
+	public void remove(Motive motive) throws DoesNotExistOnWMException,
+			PermissionException, UnknownSubarchitectureException {
+		if (motive.thisEntry != null) {
+			deleteFromWorkingMemory(motive.thisEntry);
+		}
 	}
 }

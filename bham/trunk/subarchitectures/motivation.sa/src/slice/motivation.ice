@@ -22,6 +22,7 @@ module motivation {
 			cast::cdl::CASTTime created;
 			cast::cdl::CASTTime updated;
 			cast::cdl::WorkingMemoryAddress referenceEntry;
+			cast::cdl::WorkingMemoryAddress thisEntry;
     		MotiveStatus status;
     		string goal;
     	};

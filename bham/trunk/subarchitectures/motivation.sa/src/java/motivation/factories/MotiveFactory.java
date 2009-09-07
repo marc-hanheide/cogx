@@ -16,6 +16,6 @@ import motivation.slice.MotiveStatus;
 public class MotiveFactory {
 	public static Motive createMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new Motive(created, created, src, MotiveStatus.UNSURFACED, "");
+		return new Motive(created, created, src, null, MotiveStatus.UNSURFACED, "");
 	}
 }

@@ -6,7 +6,6 @@ package motivation.generators;
 import motivation.factories.MotiveFactory;
 import motivation.slice.Motive;
 import motivation.slice.TestSource;
-import NavData.FNode;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -14,9 +13,9 @@ import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 
 /**
@@ -24,25 +23,11 @@ import cast.core.CASTUtils;
  * 
  */
 public class TestGenerator extends Generator {
+	
+	
 	@Override
 	protected void runComponent() {
 		println("Look out world, here I come...");
-
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(TestSource.class,
-				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-				debug(CASTUtils.toString(_wmc));
-				// create a new motive from this node...
-				Motive newMotive = MotiveFactory.createMotive(_wmc.address);
-				// submit it to the working memory
-				try {
-					add(newMotive);
-				} catch (AlreadyExistsOnWMException e) {
-					log("shouldn't happen... the motive already existed...");
-					e.printStackTrace();
-				}
-			}
-		});
 
 		String id=newDataID();
 		try {
@@ -52,7 +37,9 @@ public class TestGenerator extends Generator {
 
 			for (int i=0; i<10; i++) {
 				log("updating test source in WM");
+				lockEntry(id, WorkingMemoryPermissions.LOCKEDO);
 				overwriteWorkingMemory(id, new TestSource());
+				unlockEntry(id);
 				Thread.sleep(2000);
 			}
 
@@ -85,18 +72,14 @@ public class TestGenerator extends Generator {
 	 * , cast.cdl.WorkingMemoryAddress)
 	 */
 	@Override
-	protected boolean updateMotive(WorkingMemoryAddress motiveAddress,
-			WorkingMemoryAddress srcAddress) {
+	protected boolean checkMotive(Motive motive) {
 		try {
-			debug("get motive from WM");
-			Motive motive = getMemoryEntry(motiveAddress.id, Motive.class);
 			debug("get source");
-			TestSource source = getMemoryEntry(
-					srcAddress.id, TestSource.class);
+			TestSource source = getMemoryEntry(motive.referenceEntry, TestSource.class);
 			// generate some fake stuff here...
 			motive.goal = source.name;
-			debug("before overwrite");
-			overwrite(motiveAddress, motive);
+			write(motive);
+			return true;
 		} catch (DoesNotExistOnWMException e) {
 			e.printStackTrace();
 		} catch (UnknownSubarchitectureException e) {
@@ -105,8 +88,41 @@ public class TestGenerator extends Generator {
 			e.printStackTrace();
 		} catch (PermissionException e) {
 			e.printStackTrace();
+		} catch (AlreadyExistsOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return false;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see cast.core.CASTComponent#start()
+	 */
+	@Override
+	protected void start() {
+		// TODO Auto-generated method stub
+		super.start();
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(TestSource.class,
+				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				debug(CASTUtils.toString(_wmc));
+				// create a new motive from this node...
+				Motive newMotive = MotiveFactory.createMotive(_wmc.address);
+				checkMotive(newMotive);
+			}
+		});
+
+	}
+
+
+	/* (non-Javadoc)
+	 * @see cast.core.CASTComponent#stop()
+	 */
+	@Override
+	protected void stop() {
+		// TODO Auto-generated method stub
+		super.stop();
 	}
 
 }
