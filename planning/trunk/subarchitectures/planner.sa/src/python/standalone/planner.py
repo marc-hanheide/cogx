@@ -123,7 +123,7 @@ def create_unique_dir(base_path, unique_dirname_fn, may_exist=True):
                 continue  # create a new, unique name
         os.makedirs(tmp_dir)
         return tmp_dir
-    
+
 class ContinualAxiomsFF(BasePlanner):
     """
     """
@@ -187,6 +187,102 @@ class ContinualAxiomsFF(BasePlanner):
         # very preliminary implementation of the above!
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
         times_actions = enumerate(action_list)  # keep it sequentially for now
+        nodes = [plans.PlanNode(a, t+1) for t,a in times_actions]
+        for i in xrange(0, len(nodes)-1):
+            plan.add_node(nodes[i])
+            link = plans.OrderingConstraint(nodes[i], nodes[i+1])
+            plan.add_link(link)
+        plan.add_link(plan.init_node, nodes[0])
+        plan.add_link(nodes[-1], plan.goal_node)
+        return plan
+    
+class TFD(BasePlanner):
+    """
+    """
+    TFD_REXP = re.compile("([0-9\.]*): \((.*)\) \[([0-9\.]*)\]")
+    def _prepare_input(self, task):
+        planning_tmp_dir =  global_vars.config.tmp_dir
+        DEBUGGING = True
+        if DEBUGGING:
+            unique_dirname_fn = lambda: "static_dir_for_debugging"
+        else:
+            unique_dirname_fn = lambda: Planner.create_unique_planner_call_id("tmp")
+        tmp_dir = create_unique_dir(planning_tmp_dir, unique_dirname_fn, may_exist=DEBUGGING)
+        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "stdout.out")]
+        pddl_strs = task.tfd_domain_str(), task.tfd_problem_str()
+        for path, content in zip(paths, pddl_strs):
+            f = open(path, "w")
+            f.write(content)
+            f.close()
+        paths.append(tmp_dir)
+        return paths
+
+    def _run(self, input_data, task):
+        domain_path, problem_path, stdout_path, tmp_dir = input_data
+        translate = os.path.join(self.executable, "translate/translate.py")
+        preprocess = os.path.join(self.executable, "preprocess/preprocess")
+        search = os.path.join(self.executable, "search/search")
+        
+        cmd = "%(translate)s %(domain_path)s %(problem_path)s" % locals()
+        p_tr = utils.run_process(cmd, dir=tmp_dir)
+        if p_tr.returncode != 0:
+            print "Warning: Error in TFD translate. output was:\n\n>>>"
+            print p_tr.stderr.read()
+            print "<<<\n"
+            return None
+        p_pre = utils.run_process(preprocess, input=p_tr.stdout, dir=tmp_dir)
+        if p_pre.returncode != 0:
+            print "Warning: Error in TFD preprocess. output was:\n\n>>>"
+            print p_pre.stderr.read()
+            print "<<<\n"
+            return None
+        
+        cmd = "%(search)s yY t 5 -" % locals()
+        p_search = utils.run_process(cmd, input=p_pre.stdout, dir=tmp_dir)
+        
+        if p_search.returncode != 0:
+            print "Warning: TFD search did not find a plan or crashed.  TFD output was:\n\n>>>"
+            print p_search.stderr.read()
+            print "<<<\n"
+            return None
+
+        output = open(stdout_path, "w")
+        output.write(p_tr.stderr.read())
+        output.write(p_pre.stderr.read())
+        output.write(p_search.stderr.read())
+        output.close()
+
+        pddl_plan = self.parse_tfd_output(p_search.stdout.read())
+        return pddl_plan
+
+    def parse_tfd_output(self, pddl_output):
+        lines = [line for line in pddl_output.splitlines() if line]
+        actions = []
+        for line in lines:
+            result = self.TFD_REXP.search(line)
+            actions.append((float(result.group(1)), result.group(2).lower(), float(result.group(3))))
+                
+        return actions
+
+    def _post_process(self, action_list, task):
+        """
+        Receives a PDDL action list and produces a MAPL plan
+        Steps:
+        - create an empty MAPL plan P
+        - add dummy action for the current state of the task to P
+        - create goal action
+        - map PDDL actions to properly instantiated MAPL actions
+        - determine causal and threat-prevention links between actions
+        - add actions and links to P
+        - add goal action to P
+        TODO:
+        - derived predicates: where are they used in preconds and where have they been triggered
+        - knowledge preconditions: make them explicit?
+        - negotiation actions --> requests: when and how?
+        """
+        # very preliminary implementation of the above!
+        plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
+        times_actions = [(a[0], a[1]) for a in action_list]  # keep it sequentially for now
         nodes = [plans.PlanNode(a, t+1) for t,a in times_actions]
         for i in xrange(0, len(nodes)-1):
             plan.add_node(nodes[i])

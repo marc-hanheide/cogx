@@ -7,6 +7,8 @@ import os
 from itertools import *
 import inspect
 
+from subprocess import PIPE
+
 class Struct:
     """Create an instance with argument=value slots.
     This is for making a lightweight object whose class doesn't matter."""
@@ -297,6 +299,36 @@ def run_command(cmd, input=None, output=None):
     if output:
         return open(output).read()
     return None
+
+def run_process(cmd, input=None, output=PIPE, error=PIPE, dir=None, wait=True):
+    """
+    Runs a command, possibly with redirected input/output.
+    Reads and returns the output if an output file name was given.
+    Currently no piped version (due to possible buffering blocks with piped output)
+    """
+    import subprocess
+    redirections = {}
+    if input:
+        if isinstance(input, file):
+            redirections["stdin"] = input
+        else:
+            redirections["stdin"] = open(input)
+    if output != PIPE:
+        redirections["stdout"] = open(output, "w")
+    else:
+        redirections["stdout"] = PIPE
+    if error != PIPE:
+        redirections["stderr"] = open(error, "w")
+    else:
+        redirections["stderr"] = PIPE
+
+    if dir:
+        redirections["cwd"] = dir
+        
+    process = subprocess.Popen(cmd.split(), **redirections)
+    if wait:
+        process.wait()
+    return process
 
 def run_unit_tests(args):
     pass

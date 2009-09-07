@@ -122,7 +122,8 @@ achieved = Predicate("achieved", [Parameter("?sg", subgoalType)], builtin=True)
 commited_to_plan = Predicate("commited_to_plan", [Parameter("?a", agentType)], builtin=True)
 can_talk_to = Predicate("can_talk_to", [Parameter("?a1", agentType), Parameter("?a2", agentType)], builtin=True)
 
-mapl_predicates = mapl_modal_predicates + [is_planning_agent, achieved, commited_to_plan, can_talk_to]
+mapl_nonmodal_predicates = [is_planning_agent, achieved, commited_to_plan, can_talk_to]
+mapl_predicates = mapl_modal_predicates + mapl_nonmodal_predicates
 
 
 class Literal(object):
@@ -214,7 +215,7 @@ class Term(object):
                 ConstantTerm.__init__(self, obj)
             elif isinstance(obj, (int, float)):
                 self.__class__ = ConstantTerm
-                ConstantTerm.__init(self, TypesObject(obj, numberType))
+                ConstantTerm.__init__(self, TypedObject(obj, numberType))
             else:
                 raise Exception("Unexpected Argument for Term: %s" % str(obj))
         elif len(params) == 2:
@@ -253,7 +254,7 @@ class Term(object):
                 try:
                     value = float(term.token.string)
                 except:
-                    raise ParseError(term.token, "Unkown identifier: '%s'" % term.token.string)
+                    raise ParseError(term.token, "Unknown identifier: '%s'" % term.token.string)
                 obj = TypedObject(value, numberType)
 
             if isinstance(obj, Parameter):
@@ -293,7 +294,7 @@ class FunctionTerm(Term):
     def parse(it, scope, maxNesting=999):
         name = it.get(None, "function identifier")
         if name.token.string not in scope.functions:
-            raise ParseError(name.token, "Unkown function: '%s'" % name.token.string)
+            raise ParseError(name.token, "Unknown function: '%s'" % name.token.string)
         
         args = []
         i = 0
