@@ -243,11 +243,11 @@ public class ProbDistribUtils {
 		}
 
 		log("WARNING, no probability value found for assignment: " + getDiscreteProbabilityAssignmentPrettyPrint(assignment));
+		log("distrib: " + getDiscreteProbabilityDistributionPrettyPrint(distrib));
 		return result;
 	}
 
 
-	
 	public static boolean containsAll(DiscreteProbabilityAssignment bigassign, DiscreteProbabilityAssignment smallassign) {
 		
 		Vector<FeatureValuePair> pairs1 = new Vector<FeatureValuePair>();

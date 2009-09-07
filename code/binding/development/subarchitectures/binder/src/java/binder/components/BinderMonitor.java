@@ -4,13 +4,10 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Vector;
 
-import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.gui.BinderMonitorGUI;
-import binder.utils.GradientDescent;
-import binder.utils.ProbDistribUtils;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
