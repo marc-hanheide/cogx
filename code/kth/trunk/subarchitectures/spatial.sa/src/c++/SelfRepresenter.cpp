@@ -81,7 +81,7 @@ SelfRepresenter::runComponent()
       agg->addProxy("robot", "1", 1.0);
       
       FeaturePtr feature = new Feature();
-      feature->featlabel = "position";
+      feature->featlabel = "category";
       feature->alternativeValues.push_back(new
 	  binder::autogen::featvalues::StringValue(1, "robot"));
       agg->addFeature("robot", "1", feature);

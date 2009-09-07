@@ -253,10 +253,22 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
     connectivityProp2->mapValue = costValue1;
     connectivityProp2->mapValueReliable = 1;
 
-    string newID = newDataID();
-    addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
-    newID = newDataID();
-    addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp2);
+    // Add the properties, if they're not already there
+    set<int> &place1Connectivities = m_connectivities[connectivityProp1->place1Id];
+    if (place1Connectivities.find(connectivityProp1->place2Id) ==
+	place1Connectivities.end()) {
+      string newID = newDataID();
+      addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
+      place1Connectivities.insert(connectivityProp1->place2Id);
+    }
+
+    set<int> &place2Connectivities = m_connectivities[connectivityProp2->place1Id];
+    if (place2Connectivities.find(connectivityProp2->place2Id) ==
+	place2Connectivities.end()) {
+      string newID = newDataID();
+      addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp2);
+      place2Connectivities.insert(connectivityProp2->place2Id);
+    }
   }
 
 }
@@ -371,11 +383,16 @@ PlaceManager::evaluateUnexploredPaths()
 	      p.m_data = new SpatialData::Place;   
 	      //p.m_data->id = oobj->getData()->nodeId;
 
-	      p.m_data->id = m_placeIDCounter;
-	      m_PlaceIDToHypMap[m_placeIDCounter] = newHyp;
+	      int newPlaceID = m_placeIDCounter;
+	      m_placeIDCounter++;
+	      p.m_data->id = newPlaceID;
+	      m_PlaceIDToHypMap[newPlaceID] = newHyp;
 	      m_hypIDCounter++;
 
 	      // Add connectivity property (one-way)
+	      set<int> &curPlaceConnectivities = m_connectivities[curPlace->id];
+	      if (curPlaceConnectivities.find(newPlaceID) == 
+		  curPlaceConnectivities.end())
 	      {
 		SpatialProperties::FloatValuePtr costValue1 = 
 		  new SpatialProperties::FloatValue;
@@ -400,13 +417,14 @@ PlaceManager::evaluateUnexploredPaths()
 		SpatialProperties::ConnectivityPathPropertyPtr connectivityProp1 =
 		  new SpatialProperties::ConnectivityPathProperty;
 		connectivityProp1->place1Id = curPlace->id;
-		connectivityProp1->place2Id = m_placeIDCounter;
+		connectivityProp1->place2Id = newPlaceID;
 		connectivityProp1->distribution = discDistr;
 		connectivityProp1->mapValue = costValue1;
 		connectivityProp1->mapValueReliable = 1;
 
 		string newID = newDataID();
 		addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
+		curPlaceConnectivities.insert(newPlaceID); 
 	      }
 
 	      p.m_data->status = SpatialData::PLACEHOLDER;
@@ -414,8 +432,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
 	      addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
 
-	      m_Places[m_placeIDCounter]=p;
-	      m_placeIDCounter++;
+	      m_Places[newPlaceID]=p;
 	    }
 	  }
 	}
