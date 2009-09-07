@@ -119,7 +119,7 @@ public class BinderMonitorGUI extends JFrame
 		AVM.put("Proxy ID", proxy.entityID);
 		AVM.put("P(exists|z)", ""+roundProb(proxy.probExists));
 		AVM.put("Subarchitecture", proxy.subarchId);
-		AVM.put("Max prob", ""+ roundProb(GradientDescent.getMaximum(proxy.distribution)));
+		AVM.put("Max prob", ""+ roundProb(GradientDescent.getMaximum(proxy)));
 		
 		int maxLength = getMaximumLength(AVM.keySet());
 
@@ -141,7 +141,7 @@ public class BinderMonitorGUI extends JFrame
 		AVM.put("Union ID", union.entityID);
 		AVM.put("P(exists|Z)", ""+roundProb(union.probExists));
 		AVM.put("Nb. included proxies", "" + union.includedProxies.length);
-		AVM.put("Max prob", ""+ GradientDescent.getMaximum(union.distribution));
+		AVM.put("Max prob", ""+ GradientDescent.getMaximum(union));
 
 		int maxLength = getMaximumLength(AVM.keySet());
 
