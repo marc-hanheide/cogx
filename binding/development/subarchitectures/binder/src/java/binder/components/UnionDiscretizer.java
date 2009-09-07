@@ -6,7 +6,10 @@ import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.distributions.FeatureValuePair;
+import binder.autogen.featvalues.StringValue;
 import binder.utils.GradientDescent;
+import binder.utils.ProbDistribUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -39,6 +42,7 @@ public class UnionDiscretizer extends ManagedComponent {
 			} 
 		});
 	}
+
 	
 	public UnionConfiguration extractBestUnionConfiguration (AlternativeUnionConfigurations alterconfigs) {
 		
@@ -56,8 +60,22 @@ public class UnionDiscretizer extends ManagedComponent {
 				for (int i = 0 ; i < bestConfiguration.includedUnions.length ; i++) {
 					Union uniondist = bestConfiguration.includedUnions[i];
 			//		Union maxUnion = GradientDescent.getUnionWithMaximumProbability(uniondist);
+					
+					for (int j = 0; j < uniondist.features.length ; j++){
+						for (int k =0; k < uniondist.features[j].alternativeValues.length ; k++) {
+							FeatureValuePair pair = new FeatureValuePair();
+							pair.featlabel = uniondist.features[j].featlabel;
+							pair.featvalue = uniondist.features[j].alternativeValues[k];
+					//		log("currently computing marginal prob for (" + pair.featlabel + ", " + ((StringValue)pair.featvalue).val + ")");
+							uniondist.features[j].alternativeValues[k].independentProb = 
+								ProbDistribUtils.getMarginalProbabilityValue(uniondist.distribution,pair); // / union.probExists;
+						}
+					} 
+					
 					unions.add(uniondist);
 				} 
+				
+			
 				
 				UnionConfiguration discretizedConfig = new UnionConfiguration();
 				discretizedConfig.includedUnions = new Union[unions.size()];

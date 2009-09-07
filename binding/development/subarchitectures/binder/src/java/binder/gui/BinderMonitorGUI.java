@@ -38,10 +38,10 @@ public class BinderMonitorGUI extends JFrame
 	Object parent;
 
 	int curProxyPosition_X= 50;
-	int curProxyPosition_Y = 400;	
+	int curProxyPosition_Y = 500;	
 
 	int curUnionPosition_X = 120;
-	int curUnionPosition_Y= 50;
+	int curUnionPosition_Y= 150;
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
@@ -51,8 +51,10 @@ public class BinderMonitorGUI extends JFrame
 	HashMap<String,Object> insertedUnions;
 	
 	HashMap<String, String> unionForProxy;
-
+	
 	Vector<Object> insertedObjects ;
+	
+	Vector<Union> relationUnions;
 
 	public BinderMonitorGUI(BinderMonitor bm) {
 		this.bm = bm;
@@ -77,11 +79,12 @@ public class BinderMonitorGUI extends JFrame
 		
 		insertedObjects = new Vector<Object>();
 		
+		relationUnions = new Vector<Union>();
+		
 		setVisible(true);
 	}
 	
 	
-
 
 	private int getMaximumLength(Set<String> featureLabels) {
 		int max = 0;
@@ -113,7 +116,6 @@ public class BinderMonitorGUI extends JFrame
 	
 	private String createProxyText(Proxy proxy) {
 
-		
 
 		HashMap<String,String> AVM = new HashMap<String,String>();
 		AVM.put("Proxy ID", proxy.entityID);
@@ -171,7 +173,9 @@ public class BinderMonitorGUI extends JFrame
 		if (entity.features != null) {
 			for (int i = 0; i < entity.features.length; i++) {
 				Feature fd = entity.features[i];
+				if (!fd.featlabel.equals("source") && !fd.featlabel.equals("target")) {
 				height += computeHeight(fd) + 10;
+				}
 			}
 		}
 		return height;
@@ -211,22 +215,23 @@ public class BinderMonitorGUI extends JFrame
 
 
 	public void addNewProxy(Proxy proxy) {
-		addNewProxy(proxy, curProxyPosition_X);
+		addNewProxy(proxy, curProxyPosition_X, curProxyPosition_Y, "");
 		curProxyPosition_X += 250;
 	}
 	
 	
 
-	public void addNewProxy(Proxy proxy, int xpos) {
+	public void addNewProxy(Proxy proxy, int xpos, int ypos, String colour) {
 
-		log("xpos: " + xpos);
 		int width = DEFAULT_ENTITY_BOX_WIDTH;
 		int height =  computeHeight(proxy);
 
 		String text = createProxyText(proxy);
-		Object vertex = graph.insertVertex(parent, null, text, xpos, curProxyPosition_Y, width, height);
+		Object vertex = graph.insertVertex(parent, null, text, xpos, ypos, width, height);
 		Object[] object_proxy = new Object[1];
 		object_proxy[0] = vertex;
+		
+		graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, colour, object_proxy);
 		graph.setCellStyles(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT, object_proxy);
 		graph.setCellStyles(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP, object_proxy);
 		graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, "Monaco", object_proxy);
@@ -236,7 +241,7 @@ public class BinderMonitorGUI extends JFrame
 		insertedProxies.put(proxy.entityID, vertex);
 		insertedObjects.add(vertex);
 		
-		addNewFeatures(proxy.features, vertex, width, "");
+		addNewFeatures(proxy.features, vertex, width, colour);
 
 		log("Visual representation of the proxy sucessfully inserted in the GUI");
 
@@ -261,41 +266,129 @@ public class BinderMonitorGUI extends JFrame
 			log("included proxy: " + i);
 			Proxy proxy = union.includedProxies[i];
 			if (!insertedProxies.containsKey(proxy.entityID)) {
-			addNewProxy(proxy, curUnionPosition_X + horizontalIncr);
-			horizontalIncr += 250;
+				
+				if (isRelationProxy(proxy)) {
+					addNewRelationProxy(proxy, (curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
+				}
+				else {
+					addNewProxy(proxy, curUnionPosition_X + horizontalIncr, curProxyPosition_Y, "");
+					horizontalIncr += 250;
+				}
+				
 			
 			unionForProxy.put(proxy.entityID, union.entityID);
 			
 			}
 		}
 		
+		if (isRelationUnion(union)) {
+			addNewRelationUnion(union);
+		}
+		else {
 		addNewUnion(union);
+		}
+		
 		curUnionPosition_X += horizontalIncr;
 	}
 	
 	
+	
+	public void addNewRelationUnion (Union union) {
+		
+		String colour = "#FFFF66";
+		log("before adding union");
+		addNewUnion(union, curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100), curUnionPosition_Y -125, colour);
+		Object vertex = insertedUnions.get(union.entityID);
+		insertSourceAndTargetEdges(union, vertex);
+		if (!relationUnions.contains(union)) {
+			relationUnions.add(union);
+		}
+		log("Visual representation of the relation union successfully inserted in the GUI");
+	}
+	
+	
+	public void insertSourceAndTargetEdges(Proxy proxy, Object mothervertex) {
+		for (int i = 0; i < proxy.features.length; i++) {
+			
+			Feature feat = proxy.features[i];
+		if (feat.featlabel.equals("source")) {
+			for (int j = 0; j < feat.alternativeValues.length ; j++) {
+				StringValue v = (StringValue) feat.alternativeValues[j];
+				if (insertedProxies.containsKey(v.val)) {
+					Object daughter_vertex = insertedProxies.get(v.val);
+					Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
+					insertedObjects.add(edge);
+				}
+			}
+		}
+		
+		if (feat.featlabel.equals("target")) {
+			for (int j = 0; j < feat.alternativeValues.length ; j++) {
+				StringValue v = (StringValue) feat.alternativeValues[j];
+				if (insertedProxies.containsKey(v.val)) {
+					Object daughter_vertex = insertedProxies.get(v.val);
+					Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
+					insertedObjects.add(edge);
+				}
+			}
+		}
+		}
+	}
+	
+	
+	public void insertSourceAndTargetEdges(Union union, Object mothervertex) {
+		for (int i = 0; i < union.features.length; i++) {
+			
+			Feature feat = union.features[i];
+		if (feat.featlabel.equals("source")) {
+			for (int j = 0; j < feat.alternativeValues.length ; j++) {
+				StringValue v = (StringValue) feat.alternativeValues[j];
+				String unionId = unionForProxy.get(v.val);
+				if (insertedUnions.containsKey(unionId)) {
+					Object daughter_vertex = insertedUnions.get(unionId);
+					Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
+					insertedObjects.add(edge);
+				}
+				else {
+					log("WARNING: " + unionId + " not found in the inserted unions");
+				}
+			}
+		}
+		
+		if (feat.featlabel.equals("target")) {
+			for (int j = 0; j < feat.alternativeValues.length ; j++) {
+				StringValue v = (StringValue) feat.alternativeValues[j];
+				String unionId = unionForProxy.get(v.val);
+				if (insertedUnions.containsKey(unionId)) {
+					Object daughter_vertex = insertedUnions.get(unionId);
+					Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
+					insertedObjects.add(edge);
+				}
+				else {
+					log("WARNING: " + unionId + " not found in the inserted unions");
+				}
+			}
+		}
+		}
+	}
+	
+	
+	
 	public void addNewUnion(Union union) {
+		String colour = "#8DD19A";
+		addNewUnion(union, curUnionPosition_X, curUnionPosition_Y, colour);
+	}
+	
+	
+	public void addNewUnion(Union union, int xpos, int ypos, String colour) {
 
 	//	union.distribution = ProbDistribUtils.normaliseDistribution(union.distribution, 1.0f);
 		
-		for (int i = 0; i < union.features.length ; i++){
-			for (int j =0; j < union.features[i].alternativeValues.length ; j++) {
-				FeatureValuePair pair = new FeatureValuePair();
-				pair.featlabel = union.features[i].featlabel;
-				pair.featvalue = union.features[i].alternativeValues[j];
-		//		log("currently computing marginal prob for (" + pair.featlabel + ", " + ((StringValue)pair.featvalue).val + ")");
-				union.features[i].alternativeValues[j].independentProb = 
-					ProbDistribUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
-			}
-		} 
-	
-		
 		int width = DEFAULT_ENTITY_BOX_WIDTH;
 		int height =  computeHeight(union);
-		String colour = "#8DD19A";
 				
 		String text = createUnionText(union);
-		Object union_vertex = graph.insertVertex(parent, null, text, curUnionPosition_X, curUnionPosition_Y, width, height);
+		Object union_vertex = graph.insertVertex(parent, null, text, xpos , ypos, width, height);
 		Object[] object_union = new Object[1];
 		object_union[0] = union_vertex;
 		graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, colour, object_union);
@@ -317,6 +410,9 @@ public class BinderMonitorGUI extends JFrame
 			if (insertedProxies.containsKey(p.entityID)) {
 				Object proxy_vertex = insertedProxies.get(p.entityID);
 				Object edge = graph.insertEdge(parent, null, "includes", union_vertex, proxy_vertex);
+				Object[] object_edges = new Object[1];
+				object_edges[0] = edge;
+				graph.setCellStyles(mxConstants.STYLE_DASHED, "true", object_edges);
 				insertedObjects.add(edge);
 			}
 		}
@@ -390,9 +486,6 @@ public class BinderMonitorGUI extends JFrame
 			Vector<Union> newUnions, 
 			Vector<Proxy> proxiesToDelete, 
 			Vector<Union> unionsToDelete) {
-
-		 log("HEHEHE: nb proxies: "  + newProxies.size());
-		 log("HOHODHO nb unions: " + newUnions.size());
 		 
 		try {
 			graph.getModel().beginUpdate();
@@ -409,22 +502,29 @@ public class BinderMonitorGUI extends JFrame
 					log("Union deleted");
 			}
 			
-	/**		for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
-				Proxy proxy = e.nextElement();
-				if (!insertedProxies.containsKey(proxy)) {
-					log("Adding new proxy...");
-					addNewProxy(proxy);
-				}
-			}
-			*/			
-			
+			boolean mustRegenerateRelationUnions = false;
 			for (Enumeration<Union> e = newUnions.elements(); e.hasMoreElements();) {
 				Union union = e.nextElement();
 				if (!insertedUnions.containsKey(union.entityID)) {
 					log("Adding new union..." + union.entityID);
+					for (int i = 0 ; i < union.includedProxies.length ; i++) {
+						if (unionForProxy.containsKey(union.includedProxies[i].entityID)) {
+							mustRegenerateRelationUnions = true;
+						}
+						unionForProxy.put(union.includedProxies[i].entityID, union.entityID);
+					}
 					addNewUnionAndIncludedProxies(union);
 				}
 			}
+		
+			if (mustRegenerateRelationUnions) {
+			for (Enumeration<Union> e = relationUnions.elements(); e.hasMoreElements();) {
+				Union ru = e.nextElement();
+				deleteUnion(ru);
+				addNewRelationUnion(ru);
+			}
+			}
+		
 		}
 		
 		catch (Exception e) {		}
@@ -460,6 +560,49 @@ public class BinderMonitorGUI extends JFrame
 		return maxFeatValue;
 	}
 	
+	
+	private boolean isRelationProxy (Proxy proxy) {
+		
+		for (int i = 0; i < proxy.features.length; i++) {
+			if (proxy.features[i].featlabel.equals("source")) {
+				return true;
+				
+			}
+			if (proxy.features[i].featlabel.equals("target")) {
+				return true;
+				
+			}
+		}
+		return false;
+	}
+	
+	
+	private boolean isRelationUnion (Union union) {
+		
+		for (int i = 0; i < union.features.length; i++) {
+			if (union.features[i].featlabel.equals("source")) {
+				return true;
+				
+			}
+			if (union.features[i].featlabel.equals("target")) {
+				return true;
+				
+			}
+		}
+		return false;
+	}
+	
+	
+	public void addNewRelationProxy (Proxy relationProxy, int xpos) {
+		
+		String colour = "#FFFF99";
+		addNewProxy(relationProxy, xpos, curProxyPosition_Y + 200, colour);
+		Object vertex = insertedProxies.get(relationProxy.entityID);
+		insertSourceAndTargetEdges(relationProxy, vertex);
+		log("OK FOR RELATION PROXY");
+	}
+	
+	
 	public void addNewFeatures(Feature[] features, Object vertex, int width, String colour) {
 
 		if (features != null) {
@@ -469,7 +612,16 @@ public class BinderMonitorGUI extends JFrame
 			int curYPosition = DEFAULT_ENTITY_BOX_HEIGHT;
 			for (int i = 0; i < features.length; i++) {
 				Feature feat = features[i];
-
+				
+			
+				if (!feat.featlabel.equals("source") && ! feat.featlabel.equals("target")) {
+				
+					if (feat.alternativeValues.length == 2) {
+						log(((StringValue)feat.alternativeValues[0]).val);
+						log("" +((StringValue)feat.alternativeValues[0]).independentProb);
+						log(((StringValue)feat.alternativeValues[1]).val);
+						log("" + ((StringValue)feat.alternativeValues[1]).independentProb);
+					}
 				if (!((StringValue)getMaxFeatureValue(feat)).val.equals("indeterminate")) {
 
 					String featureText = createFeatureText(feat);
@@ -478,6 +630,7 @@ public class BinderMonitorGUI extends JFrame
 					objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
 					curYPosition += featHeight + 10;
 					insertedObjects.add(objects_feats[i]);
+				}
 				}
 			}
 
