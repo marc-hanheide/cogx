@@ -58,7 +58,6 @@ abstract class Generator extends ManagedComponent {
 		 * cast.architecture.WorkingMemoryChangeReceiver#workingMemoryChanged
 		 * (cast.cdl.WorkingMemoryChange)
 		 */
-		@Override
 		public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 			if (_wmc.operation == WorkingMemoryOperation.OVERWRITE)
 				overwritten(_wmc);
