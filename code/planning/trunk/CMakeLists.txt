@@ -41,10 +41,16 @@ include(CASTBuild)
 add_definitions(-Wall)
 
 # Include your subarchitecture projects in the following way
-# add_subdirectory (subarchitectures/hello-world)
+add_subdirectory(subarchitectures/planner.sa)
+add_subdirectory(subarchitectures/binder)
+add_subdirectory(subarchitectures/fakemotivation.sa)
+#add_subdirectory(subarchitectures/fakebinder.sa) 
 
-add_subdirectory (subarchitectures/PCogX)
+#add_custom_target(ant ALL
+#                 COMMAND ant
+#                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+#add_subdirectory (subarchitectures/PCogX)
     
-add_subdirectory (subarchitectures/test_harness__PCogX)
+#add_subdirectory (subarchitectures/test_harness__PCogX)
 
-# add_subdirectory (subarchitectures/dt-planning.sa)
