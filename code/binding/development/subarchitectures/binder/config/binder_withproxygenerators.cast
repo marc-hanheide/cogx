@@ -1,0 +1,17 @@
+HOST localhost
+
+SUBARCHITECTURE binder 
+
+JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+JAVA WM binder.components.BindingWorkingMemory --log
+
+JAVA MG fakevisual binder.fakeproxygenerators.SecondFakeVisualProxyGenerator --nbproxies 1 --log
+JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxies 1  --log
+#JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 1 --log
+
+JAVA MG binder binder.components.Binder --alpha 0.99f --log
+JAVA MG discretizer binder.components.UnionDiscretizer --log
+
+JAVA MG monitor binder.components.BinderMonitor --gui --log
+
+#JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 
