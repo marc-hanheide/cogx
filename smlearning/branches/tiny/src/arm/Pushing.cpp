@@ -589,7 +589,7 @@ int main(int argc, char *argv[]) {
 
 
 		//number of loop runs
-		const int numExperiments = 5000;
+		const int numExperiments = 100;
 
 		//a number that slightly greater then the maximal reachable space of the arm
 		//    - used for workspace position normalization and later as a position upper bound
@@ -747,8 +747,8 @@ int main(int argc, char *argv[]) {
 
 			//chose random point int the vicinity of the polyflap
 			srand(context->getRandSeed()._U32[0]  + e);
-			int startPosition = rand() % 17 + 1;
-// 			int startPosition = 5;
+// 			int startPosition = rand() % 17 + 1;
+			int startPosition = 1;
 	
 			setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
 			context->getLogger()->post(Message::LEVEL_INFO, "Position %i", startPosition);

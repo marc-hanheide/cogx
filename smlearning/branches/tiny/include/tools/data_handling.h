@@ -102,11 +102,23 @@ bool write_nc_file_basis (string fileName, const DataSet& data);
 bool concatenate_datasets (string dir, string writeFileName);
 
 template<class Function>
-bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
+bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
 
 	DataSet data;
-	if (!read_dataset (baseFileName, data))
+	if (!read_dataset (seqFileName, data)){
+		cout << "file " + seqFileName + " could not be read" << endl;
 		return false;
+	}
+
+	boost::regex seqfile_re (".*/(.*)$");
+	boost::cmatch match;
+	string seqBaseFileName;
+	if (boost::regex_match(seqFileName.c_str(), match, seqfile_re)) {
+		seqBaseFileName = string(match[1].first, match[1].second);
+	}
+	cout << "seqFileBaseName: " << seqBaseFileName << endl;
+	cout << "seqFile: " << seqFileName << endl;
+
 	
 	vector<DataSet> partitions_testing;
 	vector<DataSet> partitions_training;
@@ -160,7 +172,7 @@ bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_n
 		if (print_data)
 			print_dataset<double>(partitions_testing[i]);
 		stringstream testingFileName;
-		testingFileName << target_dir << "/" << baseFileName << "_" << n << "_foldcv_set-" << i << "_testing";
+		testingFileName << target_dir << "/" << seqBaseFileName << "_" << n << "_foldcv_set-" << i << "_testing";
 		write_netcdf_file (testingFileName.str(), partitions_testing[i]);
 		for (int j=0; j<n; j++)
 			if (i != j) {
@@ -172,7 +184,7 @@ bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_n
 		if (print_data)
 			print_dataset<double>(partitions_training[i]);
 		stringstream trainingFileName;
-		trainingFileName << target_dir << "/" << baseFileName << "_" << n << "_foldcv_set-" << i << "_training";
+		trainingFileName << target_dir << "/" << seqBaseFileName << "_" << n << "_foldcv_set-" << i << "_training";
 		write_netcdf_file (trainingFileName.str(), partitions_training[i]);
 		
 	}
@@ -180,7 +192,7 @@ bool write_n_fold_cross_valid_sets (string baseFileName, int n, Function write_n
 	
 }
 
-bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const string baseDataFileName, int n, string target_dir );
+bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const string baseDataFileName, int n, string targetDir );
 
 class OfflineRNN {
 
