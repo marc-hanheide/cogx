@@ -10,7 +10,7 @@ class Condition(object):
     def visit(self, fn):
         return fn(self, [])
 
-    def copy(self, new_scope=None):
+    def copy(self, new_scope=None, new_parts = None):
         return self.__class__()
 
     def __eq__(self, other):
@@ -63,8 +63,10 @@ class JunctionCondition(Condition):
     def visit(self, fn):
         return fn(self, [p.visit(fn) for p in self.parts])
 
-    def copy(self, new_scope=None):
-        return self.__class__([ p.copy(new_scope) for p in self.parts])
+    def copy(self, new_scope=None, new_parts = None):
+        if not new_parts:
+            new_parts = self.parts
+        return self.__class__([ p.copy(new_scope) for p in new_parts])
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and all(map(lambda a,b: a==b, self.parts, other.parts))
@@ -91,8 +93,8 @@ class QuantifiedCondition(Condition, scope.Scope):
 
     def visit(self, fn):
         return fn(self, [self.condition.visit(fn)])
-
-    def copy(self, new_scope=None):
+    
+    def copy(self, new_scope=None, new_parts = None):
         if not new_scope:
             new_scope = self.parent
             
@@ -100,8 +102,11 @@ class QuantifiedCondition(Condition, scope.Scope):
         for arg in cp.args:
             if isinstance(arg.type, types.ProxyType):
                 arg.type = types.ProxyType(cp[arg.type.parameter])
-                
-        cp.condition = self.condition.copy(cp)
+
+        if new_parts:
+            cp.condition = new_parts[0].copy(cp)
+        else:
+            cp.condition = self.condition.copy(cp)
         return cp
 
     def __eq__(self, other):
