@@ -5,6 +5,12 @@
 
 module motivation {
     module slice {
+    	class TestSource {
+    		string name;
+    		cast::cdl::CASTTime time;
+    	};
+    
+    
     	enum MotiveStatus {
     		UNSURFACED,
     		POSSIBLE,
@@ -13,6 +19,9 @@ module motivation {
     	};
     		
     	class Motive {
+			cast::cdl::CASTTime created;
+			cast::cdl::CASTTime updated;
+			cast::cdl::WorkingMemoryAddress referenceEntry;
     		MotiveStatus status;
     		string goal;
     	};
