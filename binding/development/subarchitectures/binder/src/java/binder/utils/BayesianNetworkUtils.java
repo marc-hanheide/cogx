@@ -24,7 +24,7 @@ public class BayesianNetworkUtils {
 	public static boolean logging = false;
 	
 	public static BayesianNetwork constructNetwork(String configFile) {
-		
+	
 		BayesianNetwork network = new BayesianNetwork();
 		
 		String text = getText(configurationFile);
