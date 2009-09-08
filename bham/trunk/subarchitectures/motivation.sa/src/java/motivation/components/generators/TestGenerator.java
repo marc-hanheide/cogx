@@ -1,7 +1,7 @@
 /**
  * 
  */
-package motivation.generators;
+package motivation.components.generators;
 
 import motivation.factories.MotiveFactory;
 import motivation.slice.Motive;
