@@ -11,6 +11,7 @@ import execution.slice.ActionStatus;
 import execution.slice.LogMessage;
 import execution.slice.PrintMessage;
 import execution.slice.TriBool;
+import execution.slice.actions.GoToPlace;
 
 /**
  * Test class to trigger executions (so to speak)
@@ -23,6 +24,26 @@ public class TestExecutionManager extends AbstractExecutionManager {
 	@Override
 	protected void runComponent() {
 
+		//time to create a place
+		sleepComponent(20000);
+		
+		try {
+			println("triggering");
+			triggerExecution(new GoToPlace(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, 2));
+		} catch (AlreadyExistsOnWMException e) {
+			e.printStackTrace();
+		} catch (DoesNotExistOnWMException e) {
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			e.printStackTrace();
+		}
+	
+	}
+
+	/**
+	 * 
+	 */
+	private void simpleTest() {
 		while (isRunning()) {
 			// Randomly selects a type of action to be performed then triggers
 			// it. 

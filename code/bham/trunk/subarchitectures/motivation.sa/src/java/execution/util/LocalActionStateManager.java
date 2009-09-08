@@ -25,7 +25,8 @@ import execution.util.ActionExecutor.ExecutionCompletionCallback;
 
 /**
  * 
- * Manages interactions with WM for action execution.
+ * Manages interactions with WM for action execution. Should only be constructed
+ * with a component that is already running (i.e. in or past the start method
  * 
  * @author nah
  * 
@@ -58,18 +59,19 @@ public class LocalActionStateManager extends Thread {
 		}
 
 		public void executionComplete(TriBool _success) {
-			try {
-				m_component.lockComponent();
-				actionCompleted(_success, m_executorWrapper.m_address,
-						m_executorWrapper.m_second);
-				m_component.unlockComponent();
+			if (m_component.isRunning()) {
+				try {
+					m_component.lockComponent();
+					actionCompleted(_success, m_executorWrapper.m_address,
+							m_executorWrapper.m_second);
+					m_component.unlockComponent();
 
-			} catch (CASTException e) {
-				m_component.println(e.message);
-				e.printStackTrace();
+				} catch (CASTException e) {
+					m_component.println(e.message);
+					e.printStackTrace();
+				}
 			}
 		}
-
 	}
 
 	/**
@@ -88,6 +90,12 @@ public class LocalActionStateManager extends Thread {
 	private HashMap<String, ActionExecutorFactory> m_executorFactories;
 
 	public LocalActionStateManager(ManagedComponent _component) {
+
+		if (!_component.isRunning()) {
+			throw new RuntimeException(
+					"LocalActionStateManager should only be constructed with a component that is already running (i.e. in or past the start method");
+		}
+
 		m_component = _component;
 		start();
 	}
@@ -103,7 +111,7 @@ public class LocalActionStateManager extends Thread {
 		m_executorFactories.put(CASTUtils.typeName(_actionCls),
 				_executionFactory);
 
-		m_component.addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		m_component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				_actionCls, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
@@ -184,7 +192,7 @@ public class LocalActionStateManager extends Thread {
 
 			m_component.waitForChanges();
 
-			while (m_component.isRunning() && !m_executorQueue.isEmpty()) {
+			while (m_component.isRunning() && m_executorQueue != null && !m_executorQueue.isEmpty()) {
 
 				try {
 					ExecutorWrapper executorWrapper = m_executorQueue.poll();
