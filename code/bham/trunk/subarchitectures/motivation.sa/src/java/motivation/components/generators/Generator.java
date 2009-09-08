@@ -2,7 +2,7 @@
  *
  * 
  */
-package motivation.generators;
+package motivation.components.generators;
 
 import motivation.slice.Motive;
 import cast.AlreadyExistsOnWMException;

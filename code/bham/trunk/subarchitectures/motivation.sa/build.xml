@@ -37,10 +37,12 @@
 	<!-- =================================================================== -->
 	<target name="slice-motivation" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}">
-	    <fileset dir="${slice.dir}" includes="motivation.ice"/>
+	    <fileset dir="${slice.dir}" includes="motivation.ice Execution.ice"/>
 	    <includepath> 
   	    <pathelement path="${slice.dir}"/> 
   	    <pathelement path="${castslice.dir}"/> 
+  	    <pathelement path="${basedir}/../planner.sa/src/slice"/> 
+  	    <pathelement path="${basedir}/../binder/src/slice"/>
 	    </includepath>
 	  </slice2java>
 	</target>

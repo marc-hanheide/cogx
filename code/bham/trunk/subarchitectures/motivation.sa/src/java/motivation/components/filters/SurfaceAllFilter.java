@@ -1,7 +1,7 @@
 /**
  * 
  */
-package motivation.filters;
+package motivation.components.filters;
 
 import motivation.util.WMMotiveSet;
 
