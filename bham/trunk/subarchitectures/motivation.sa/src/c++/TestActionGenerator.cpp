@@ -12,13 +12,17 @@ extern "C" {
 namespace execution {
 
   using namespace slice;
+  using namespace slice::actions;
 
   void TestActionGenerator::runComponent() {
-    PrintMessagePtr pm = new PrintMessage();
-    pm->message = "Oh no, oh my.";
-    pm->status = PENDING;
-    pm->success = TRIINDETERMINATE;
-    addToWorkingMemory(newDataID(), pm);
+
+//     sleepComponent(10000);
+//     println("triggering");
+//     GoToPlacePtr gtp = new GoToPlace();
+//     gtp->placeID = 2;
+//     gtp->status = PENDING;
+//     gtp->success = TRIINDETERMINATE;
+//     addToWorkingMemory(newDataID(), gtp);
   }
 
 }

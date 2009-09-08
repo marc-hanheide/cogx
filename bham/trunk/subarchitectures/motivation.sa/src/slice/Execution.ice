@@ -33,23 +33,46 @@ module execution {
       TriBool success;
     };
     
-    /**
-     * Dummy action to just print a message. Used for testing.
-     */
-    class PrintMessage extends Action {
-      string message;
-    };
- 
-   /**
-     * Dummy action to just print a message. Used for testing.
-     */
-    class LogMessage extends Action {
-      string message;
-    };
     
     exception ActionExecutionException extends cast::CASTException {
 
     };
+    
+    /**
+     * Module to contain some actions, although these might also go in
+     * the slice files for the repsective SAs (or, better still,
+     * entirely separately).
+     */
+    module actions {
+
+      /**
+       * Move the robot to a particular place.
+       */
+      class GoToPlace extends Action {
+	/**
+	 * The ID of the place.
+	 */
+	long placeID;
+      };
+      
+
+      /**
+       * Dummy action to just print a message. Used for testing.
+       */
+      class PrintMessage extends Action {
+	string message;
+      };
+      
+      /**
+       * Dummy action to just print a message. Used for testing.
+       */
+      class LogMessage extends Action {
+	string message;
+      };
+
+
+    };
+
 
 
   };
