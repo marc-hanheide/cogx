@@ -1,11 +1,12 @@
 GARNAME = cast
-GARVERSION = 2.1.0
+GARVERSION = svn
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 MAINTAINER = n.hawes
 
-MASTER_SITES = http://downloads.sourceforge.net/project/baltcast/cast%202/cast%202.1.0/
+#MASTER_SITES = http://downloads.sourceforge.net/project/baltcast/cast%202/cast%202.1.0/
 
+MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tags/latest/
 #MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tags/cast-2.1.0rc3/
 
 
@@ -37,9 +38,9 @@ INSTALL_ARGS = $(CONFIGURE_ARGS) install
 
 
 checksum-$(DISTFILES):  
-	true
+	@true
 checksum-$(PATCHFILES): 
-	true
+	@true
 	
 
 
