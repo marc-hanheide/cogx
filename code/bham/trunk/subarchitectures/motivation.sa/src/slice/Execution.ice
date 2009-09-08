@@ -17,8 +17,19 @@ module execution {
       TRIINDETERMINATE
     };
 
+
+    /**
+     * Enum for action state transitons.
+     */
+    enum ActionStatus {
+      PENDING,
+      ACCEPTED,
+      INPROGRESS,
+      COMPLETE
+    };
+
     class Action {
-      autogen::Planner::Completion status;
+      ActionStatus status;
       TriBool success;
     };
     

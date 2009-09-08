@@ -16,7 +16,7 @@ namespace execution {
   void TestActionGenerator::runComponent() {
     PrintMessagePtr pm = new PrintMessage();
     pm->message = "Oh no, oh my.";
-    pm->status = autogen::Planner::PENDING;
+    pm->status = PENDING;
     pm->success = TRIINDETERMINATE;
     addToWorkingMemory(newDataID(), pm);
   }

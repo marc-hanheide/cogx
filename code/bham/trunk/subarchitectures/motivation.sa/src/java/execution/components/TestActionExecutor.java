@@ -13,9 +13,10 @@ public class TestActionExecutor extends ManagedComponent {
 
 	private LocalActionStateManager m_actionStateManager;
 
-	private static class LogExecutor implements ActionExecutor {
+	private class LogExecutor extends Thread implements ActionExecutor {
 
 		private LogMessage m_lm;
+		private ExecutionCompletionCallback m_callback;
 
 		public boolean accept(Action _action) {
 			m_lm = (LogMessage) _action;
@@ -28,16 +29,29 @@ public class TestActionExecutor extends ManagedComponent {
 		}
 
 		public void execute(ExecutionCompletionCallback _callback) {
-			
+			//store callback
+			m_callback = _callback;
+			start();
+		}
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep((long) (Math.random() * 5000));
+				println(m_lm.message);
+				m_callback.executionComplete(TriBool.TRITRUE);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		public boolean isBlockingAction() {
 			return false;
 		}
-		
+
 	}
 
-	private  class PrintExecutor implements ActionExecutor {
+	private class PrintExecutor implements ActionExecutor {
 
 		private PrintMessage m_pm;
 
@@ -48,7 +62,7 @@ public class TestActionExecutor extends ManagedComponent {
 
 		public TriBool execute() {
 			println(m_pm.message);
-			return null;
+			return TriBool.TRITRUE;
 		}
 
 		public void execute(ExecutionCompletionCallback _callback) {
@@ -58,21 +72,27 @@ public class TestActionExecutor extends ManagedComponent {
 		public boolean isBlockingAction() {
 			return true;
 		}
-		
+
 	}
 
-	
 	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
 
-		m_actionStateManager.registerActionType(PrintMessage.class, new ActionExecutorFactory() {public ActionExecutor getActionExecutor() {
-			return new PrintExecutor();
-		} });
-		m_actionStateManager.registerActionType(LogMessage.class, new ActionExecutorFactory(){public ActionExecutor getActionExecutor() {
-			return new LogExecutor();
-		}});
+		m_actionStateManager.registerActionType(PrintMessage.class,
+				new ActionExecutorFactory() {
+					public ActionExecutor getActionExecutor() {
+						return new PrintExecutor();
+					}
+				});
+		m_actionStateManager.registerActionType(LogMessage.class,
+				new ActionExecutorFactory() {
+					public ActionExecutor getActionExecutor() {
+						return new LogExecutor();
+					}
+				});
 
 	}
+
 
 }

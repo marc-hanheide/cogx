@@ -4,7 +4,11 @@
 package execution.components;
 
 import cast.AlreadyExistsOnWMException;
-import autogen.Planner.Completion;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
+import execution.slice.Action;
+import execution.slice.ActionStatus;
+import execution.slice.LogMessage;
 import execution.slice.PrintMessage;
 import execution.slice.TriBool;
 
@@ -18,12 +22,35 @@ public class TestExecutionManager extends AbstractExecutionManager {
 
 	@Override
 	protected void runComponent() {
-		PrintMessage printAction = new PrintMessage(Completion.PENDING,
-				TriBool.TRIINDETERMINATE, "Hello world (again)!");
-		try {
-			triggerExecution(printAction);
-		} catch (AlreadyExistsOnWMException e) {
-			e.printStackTrace();
+
+		while (isRunning()) {
+			// Randomly selects a type of action to be performed then triggers
+			// it. 
+
+			Action action = null;
+
+			if (Math.random() > 0.5) {
+				action = new LogMessage(ActionStatus.PENDING,
+						TriBool.TRIINDETERMINATE, "Goodbye world!");
+			} else {
+				action = new PrintMessage(ActionStatus.PENDING,
+						TriBool.TRIINDETERMINATE, "Hello world (again)!");
+			}
+
+			try {
+				try {
+					triggerExecution(action);
+				} catch (DoesNotExistOnWMException e) {
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					e.printStackTrace();
+				}
+			} catch (AlreadyExistsOnWMException e) {
+				e.printStackTrace();
+			}
+
+			sleepComponent((long) (Math.random() * 2000));
+
 		}
 	}
 
