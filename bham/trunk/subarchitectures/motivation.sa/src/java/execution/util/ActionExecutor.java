@@ -3,6 +3,15 @@ package execution.util;
 import execution.slice.Action;
 import execution.slice.TriBool;
 
+/**
+ * The interface used by {@link LocalActionStateManager} to trigger execution by
+ * a component. Note that this will be called by separate thread than either the
+ * component's run or event received threads, so access to state should be
+ * synchronised if there is potential for corruption.
+ * 
+ * @author nah
+ * 
+ */
 public interface ActionExecutor {
 
 	public interface ExecutionCompletionCallback {
@@ -35,8 +44,8 @@ public interface ActionExecutor {
 
 	/**
 	 * Execute the action in a non-blocking form. The callback should be used to
-	 * report completion. mplement either this or execute() depending on your
-	 * action.
+	 * report completion. Do not perform any serious processing in this method.
+	 * Implement either this or execute() depending on your action.
 	 * 
 	 * @return
 	 */
