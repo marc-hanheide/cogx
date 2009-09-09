@@ -1,6 +1,5 @@
 #include "BindingWorkingMemoryWriter.hpp"
 
-
 namespace binder {
 
   using namespace autogen::core;
@@ -19,7 +18,58 @@ namespace binder {
     return newProxy;
   }
     
+  ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const std::string & subarchId, 
+						       float probExists,
+						        const autogen::core::FeatureValues source, 
+						        const autogen::core::FeatureValues target) {
     
+    ProxyPtr newProxy = new Proxy();
+    
+    newProxy->entityID = newDataID();
+    newProxy->subarchId = subarchId;
+    newProxy->probExists = probExists;
+    
+    FeaturePtr feat1 = new Feature();
+    feat1->featlabel = "source";
+    feat1->alternativeValues = source;
+    newProxy->features.push_back(feat1);
+    
+    FeaturePtr feat2 = new Feature();
+    feat2->featlabel = "target";
+    feat2->alternativeValues = target;
+    newProxy->features.push_back(feat2);
+   
+    return newProxy;
+  }
+   
+   
+     ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const std::string & subarchId, 
+						       float probExists,
+						       const FeaturesList & features,
+						        const autogen::core::FeatureValues source, 
+						        const autogen::core::FeatureValues target) {
+    
+    ProxyPtr newProxy = new Proxy();
+    
+    newProxy->entityID = newDataID();
+    newProxy->subarchId = subarchId;
+    newProxy->probExists = probExists;
+    
+    newProxy->features = features;
+    
+    FeaturePtr feat1 = new Feature();
+    feat1->featlabel = "source";
+    feat1->alternativeValues = source;
+    newProxy->features.push_back(feat1);
+    
+    FeaturePtr feat2 = new Feature();
+    feat2->featlabel = "target";
+    feat2->alternativeValues = target;
+    newProxy->features.push_back(feat2);
+   
+    return newProxy;
+  } 
+	      
   ProxyPtr BindingWorkingMemoryWriter::createNewProxy (const std::string & subarchId, 
 								      float probExists, 
 								      const FeaturesList & features) {
@@ -29,6 +79,9 @@ namespace binder {
 
     return newProxy;
   }
+  
+ 
+  
     
   void BindingWorkingMemoryWriter::addFeatureToProxy(ProxyPtr proxy, 
 						     FeaturePtr feat) {      

@@ -16,6 +16,7 @@ import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.autogen.featvalues.StringValue;
 import binder.utils.ProbDistribUtils;
 
 public class GradientDescent {
@@ -141,7 +142,8 @@ public static DiscreteProbabilityAssignment getBestAssignment (CombinedProbabili
 private static boolean isFeatValuePairInAssignment (FeatureValuePair pair, DiscreteProbabilityAssignment assign) {
 	for (int i = 0; i < assign.featurepairs.length ; i++) {
 		FeatureValuePair pair2 = assign.featurepairs[i];
-		if (pair.featlabel.equals(pair2.featlabel) && pair.featvalue.equals(pair2.featvalue)) {
+		if (pair.featlabel.equals(pair2.featlabel) && 
+				((StringValue)pair.featvalue).val.equals(((StringValue)pair2.featvalue).val)) {
 			return true;
 		}
 	}
@@ -311,12 +313,18 @@ public static Union getUnionWithMaximumProbability (Union union) {
 	for (int i = 0; i < union.features.length ; i++) {
 		newUnion.features[i] = new Feature();
 		newUnion.features[i].featlabel = union.features[i].featlabel;
+		boolean isFound = false;
 		for (int j = 0 ; j < union.features[i].alternativeValues.length ; j++) {
 			FeatureValuePair pair =  new FeatureValuePair (union.features[i].featlabel, union.features[i].alternativeValues[j]);
 			if (isFeatValuePairInAssignment (pair, bestAssign)) {
 				newUnion.features[i].alternativeValues = new FeatureValue[1];
 				newUnion.features[i].alternativeValues[0] = union.features[i].alternativeValues[j];
+				isFound = true;
 			}
+		}
+		if (!isFound) {
+			log("WARNING: best assignment NOT found in the feature structure: " +
+					ProbDistribUtils.getDiscreteProbabilityAssignmentPrettyPrint(bestAssign));
 		}
 	}
 	

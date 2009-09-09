@@ -59,20 +59,21 @@ public class UnionDiscretizer extends ManagedComponent {
 				// for each of them the instance with the maximum probability
 				for (int i = 0 ; i < bestConfiguration.includedUnions.length ; i++) {
 					Union uniondist = bestConfiguration.includedUnions[i];
-			//		Union maxUnion = GradientDescent.getUnionWithMaximumProbability(uniondist);
-					
-					for (int j = 0; j < uniondist.features.length ; j++){
-						for (int k =0; k < uniondist.features[j].alternativeValues.length ; k++) {
+					Union maxUnion = GradientDescent.getUnionWithMaximumProbability(uniondist);
+									
+					for (int j = 0; j < maxUnion.features.length ; j++){
+						for (int k =0; k < maxUnion.features[j].alternativeValues.length ; k++) {
 							FeatureValuePair pair = new FeatureValuePair();
-							pair.featlabel = uniondist.features[j].featlabel;
-							pair.featvalue = uniondist.features[j].alternativeValues[k];
+							pair.featlabel = maxUnion.features[j].featlabel;
+							
+							pair.featvalue = maxUnion.features[j].alternativeValues[k];
 					//		log("currently computing marginal prob for (" + pair.featlabel + ", " + ((StringValue)pair.featvalue).val + ")");
-							uniondist.features[j].alternativeValues[k].independentProb = 
-								ProbDistribUtils.getMarginalProbabilityValue(uniondist.distribution,pair); // / union.probExists;
+							maxUnion.features[j].alternativeValues[k].independentProb = 
+								ProbDistribUtils.getMarginalProbabilityValue(maxUnion.distribution,pair); // / union.probExists;
 						}
 					} 
 					
-					unions.add(uniondist);
+					unions.add(maxUnion);
 				} 
 				
 			

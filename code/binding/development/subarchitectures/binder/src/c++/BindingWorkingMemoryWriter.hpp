@@ -34,6 +34,42 @@ namespace binder {
     
     
     /**
+	 * Create a new relation proxy given the ID of the originating subarchitecture,
+	 * the probability of the proxy, and the source and target proxies
+	 * 
+	 * @param subarchId string for the ID of the subarchitecture
+	 * @param probExists the probability of the proxy
+	 * @param sourceProxy the source proxy
+	 * @param targetProxy the target proxy
+	 * @return the new relation proxy
+	 */
+   autogen::core::ProxyPtr createNewRelationProxy (const std::string & subarchId, 
+					    float probExists,
+					     const autogen::core::FeatureValues source, 
+					     const autogen::core::FeatureValues target);
+ 	
+ 	
+ 		
+	/**
+	 * Create a new relation proxy given the ID of the originating subarchitecture,
+	 * the probability of the proxy, the list of features for the relation,
+	 * and the source and target proxies
+	 * 
+	 * @param subarchId string for the ID of the subarchitecture
+	 * @param probExists the probability of the proxy
+	 * @param features the features
+	 * @param sourceProxy the source proxy
+	 * @param targetProxy the target proxy
+	 * @return the new relation proxy
+	 */						
+  autogen::core::ProxyPtr createNewRelationProxy (const std::string & subarchId, 
+					    float probExists,
+					    const autogen::core::FeaturesList & features,
+					     const autogen::core::FeatureValues source, 
+					     const autogen::core::FeatureValues target);
+
+									  
+    /**
      * Create a new proxy given the ID of the originating subarchitecture,
      * the probability of the proxy, and a list of features
      *  

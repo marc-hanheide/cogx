@@ -17,7 +17,7 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.bayesiannetwork.BayesianNetworkManager;
 
-public class UnionConstructor extends UnmanagedComponent {
+public class UnionConstructor  {
 
 	
 
@@ -52,12 +52,12 @@ public class UnionConstructor extends UnmanagedComponent {
 	 * @return the new union
 	 */
 	
-	public Union constructNewUnion(Vector<PerceivedEntity> includedEntities) {
+	public Union constructNewUnion(Vector<PerceivedEntity> includedEntities, String entityID) {
 		//	log("***** Constructing a new union ****");
 		
 		// Create a new union with a new data ID
 		Union union = new Union();
-		union.entityID = newDataID();
+		union.entityID = entityID;
 	
 		// Specify the proxies included in the union
 		Vector<Proxy> includedProxies = getProxies(includedEntities);
@@ -220,7 +220,7 @@ public class UnionConstructor extends UnmanagedComponent {
 	public Union getInitialUnion(Proxy proxy) {
 		Vector<PerceivedEntity> curProxyV = new Vector<PerceivedEntity>();
 		curProxyV.add(proxy);
-		Union union = constructNewUnion(curProxyV);
+		Union union = constructNewUnion(curProxyV, proxy.entityID + "-U");
 		return union;
 	} 
 

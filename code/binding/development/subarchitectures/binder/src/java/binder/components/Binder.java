@@ -211,7 +211,7 @@ public class Binder extends ManagedComponent  {
 								Vector<PerceivedEntity> proxies = 
 									getOtherProxies(existingUnion.includedProxies, existingProxy);
 								proxies.add(updatedProxy);
-								Union updatedUnion = constructor.constructNewUnion(proxies);								
+								Union updatedUnion = constructor.constructNewUnion(proxies, newDataID());								
 								updatedUnion.entityID = existingUnion.entityID ;
 								existingUnionConfig.includedUnions[i] = updatedUnion;
 							}
@@ -276,7 +276,7 @@ public class Binder extends ManagedComponent  {
 								Vector<PerceivedEntity> proxies = 
 									getOtherProxies(existingUnion.includedProxies, existingProxy);
 								if (proxies.size() > 0) { 
-									Union updatedUnion = constructor.constructNewUnion(proxies);								
+									Union updatedUnion = constructor.constructNewUnion(proxies, newDataID());								
 									updatedUnion.entityID = existingUnion.entityID ;
 									existingUnionConfig.includedUnions[i] = updatedUnion;
 								}
@@ -367,7 +367,7 @@ public class Binder extends ManagedComponent  {
 						Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 						unionsToMerge.add(existingUnion);
 						unionsToMerge.add(newUnion);
-						newMergedUnion = constructor.constructNewUnion(unionsToMerge);
+						newMergedUnion = constructor.constructNewUnion(unionsToMerge, newDataID());
 						alreadyMergedUnions.put(existingUnion.entityID, newMergedUnion);
 						}
 						else {
