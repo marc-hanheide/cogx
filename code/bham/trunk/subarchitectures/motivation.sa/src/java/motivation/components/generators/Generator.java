@@ -73,7 +73,7 @@ abstract class Generator extends ManagedComponent {
 		public void overwritten(WorkingMemoryChange _wmc) {
 			log("source has changed, need to update motive");
 			try {
-				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
+				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDO);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				checkMotive(motive);
 				unlockEntry(motiveAddress);
@@ -85,7 +85,7 @@ abstract class Generator extends ManagedComponent {
 						+ " not known...");
 				e.printStackTrace();
 			} catch (ConsistencyException e) {
-				println("inconsistent memory change occured in Generator::overwritten when releasing the lock. ");
+				println("ConsistencyException in Generator::overwritter");
 				e.printStackTrace();
 			}
 		}
@@ -128,7 +128,7 @@ abstract class Generator extends ManagedComponent {
 	 */
 	protected void addReceivers(WorkingMemoryAddress motive,
 			WorkingMemoryAddress src) {
-		debug("add receivers for this motive to link it to its source");
+		log("add receivers for this motive to link it to its source");
 		new SourceChangeReceiver(motive, src);
 	}
 
@@ -150,11 +150,14 @@ abstract class Generator extends ManagedComponent {
 			UnknownSubarchitectureException {
 		motive.updated = getCASTTime();
 		if (motive.thisEntry == null) {
+			log("submit new to WM");
 			motive.thisEntry = new WorkingMemoryAddress();
 			motive.thisEntry.subarchitecture = getSubarchitectureID();
 			motive.thisEntry.id = newDataID();
-			addToWorkingMemory(motive.thisEntry.id, motive);
+			addToWorkingMemory(motive.thisEntry, motive);
+			log("added " + motive.thisEntry.subarchitecture + "::"+motive.thisEntry.id);
 			addReceivers(motive.thisEntry, motive.referenceEntry);
+			log("receivers added");
 		} else {
 			overwriteWorkingMemory(motive.thisEntry, motive);
 		}
