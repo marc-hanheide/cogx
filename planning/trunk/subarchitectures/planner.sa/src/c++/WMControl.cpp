@@ -80,13 +80,21 @@ void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
     sleep(5);
     println("Planner WMControl:: generating Initial State");
 
-    vector<cast::CASTData<binder::autogen::core::Union> > unions;
-    getMemoryEntriesWithData<binder::autogen::core::Union>(unions, "binder");
+    vector<cast::CASTData<binder::autogen::core::UnionConfiguration> > configs;
+    getMemoryEntriesWithData<binder::autogen::core::UnionConfiguration>(configs, "binder");
 
-    //cout << unions[0].getData()->entityID << endl;
+    if (configs.size() == 0) {
+        println("Planner WMControl:: No union configurations on binder. Doing nothing.");
+        return;
+    }
+    println("Planner WMControl:: %d union configurations on binder. Using first one.", configs.size());
+
+    binder::autogen::core::UnionConfigurationPtr config = configs[0].getData();
+
     task->state = vector<binder::autogen::core::UnionPtr>();
-    for(vector<cast::CASTData<binder::autogen::core::Union> >::iterator i=unions.begin(); i != unions.end(); ++i) {
-        task->state.push_back(i->getData());
+    for (binder::autogen::core::UnionSequence::iterator i = config->includedUnions.begin(); 
+         i < config->includedUnions.end() ; ++i) {
+        task->state.push_back(*i);
     }
     //task->state.push_back(unions[0].getData());
     //task->objects = stateProvider[0].getData()->objects;
