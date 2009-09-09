@@ -26,7 +26,9 @@ namespace smlearning {
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-//planer setup
+///
+///planer setup
+///
 template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& context) {
 	// some planner parameter tuning
 	desc.pPlannerDesc->pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
@@ -35,8 +37,9 @@ template <typename Desc> void setupPlanner(Desc &desc, XMLContext* xmlContext, g
 // 	desc.armDesc.joints[2]->min.pos = Real(0.0*MATH_PI); // Katana hack to avoid sub-optimal inverse kinematics solutions
 }
 
-
-//creates an object, in this case the polyflap
+///
+///creates an object, in this case the polyflap
+///
 void setupObjects(Scene &scene, golem::Context &context) {
 	{
 		CriticalSectionWrapper csw(scene.getUniverse().getCSPhysX());
@@ -57,7 +60,9 @@ void setupObjects(Scene &scene, golem::Context &context) {
 	scene.createObject(*pActorDesc);
 }
 
-//creates an object, in this case the polyflap
+///
+///creates an object, in this case the polyflap
+///
 Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context) {
 	// Creator
 	Creator creator(scene);
@@ -95,7 +100,9 @@ void trn(Vec3 v [], U32 n, const Mat34 &pose) {
 		pose.multiply(v[n], v[n]);
 }
 
-// create finger
+///
+///create finger
+///
 void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, Mat34 &referencePose, const Mat34 &pose, MemoryStream &buffer) {
 	// mace characteristic dimensions
 	const Real length = Real(0.1);
@@ -129,7 +136,9 @@ void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, Mat34 &referencePose, 
 	bounds.push_back(desc.clone());
 }
 
-// Add new bounds to the Joint Actor.
+///
+///Add new bounds to the Joint Actor.
+///
 void addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, const std::vector<Bounds::Desc::Ptr> &boundsDescSeq) {
 	ASSERT(pActor)
 	boundsSeq.clear();
@@ -147,8 +156,9 @@ void addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, const std::
 // 	physReacPlanner.getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
 // }
 
-
-//function for normalizing values according to given bounds (before storing)
+///
+///function for normalizing values according to given bounds (before storing)
+///
 Real normalize(const Real& value, const Real& min, const Real& max) {
 	Real val;
 	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min)) {
@@ -164,25 +174,16 @@ Real normalize(const Real& value, const Real& min, const Real& max) {
 }
 	
 
-
-//function that checks if arm hitted the polyflap while approaching it
-// bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Vec3& refPos1, const Vec3& refPos2) {
-// 	golem::BoundsSet::Ptr set = polyFlapActor->getBounds();
-// 	Vec3 realPos1 = set->front()->getPose().p;
-// 	Vec3 realPos2 = set->back()->getPose().p;
-	
-// 	return	abs(refPos1.v1 - realPos1.v1) < 0.00001 &&
-// 		abs(refPos1.v2 - realPos1.v2) < 0.00001 &&
-// 		abs(refPos2.v1 - realPos2.v1) < 0.00001 &&
-// 		abs(refPos2.v2 - realPos2.v2) < 0.00001;
-
-// } 
-
+///Hack to solve a collision problem (don't know if it is still there):
+///Function that checks if arm hitted the polyflap while approaching it
+///
 bool checkPfPosition(Scene* pScene, const Actor* polyFlapActor, const Mat34& refPos) {
 	return (polyFlapActor->getPose().equals(refPos, Real(0.001)));
 }
 
-
+///
+///calculate final pose according to the given direction angle
+///
 void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
 	pose.p.v1 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
 	pose.p.v2 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
@@ -191,15 +192,17 @@ void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const R
 	pose.p.v3 += 0.0;	
 }
 
-
-
+///
+///computer an orthogonal vector to some vector (which could be a normal vector)
+///
 Vec3 computeOrthogonalVec(const Vec3& normalVec) {
 	Vec3 orthogonalVec(Real(normalVec.v2), Real(-1.0*normalVec.v1), Real(0.0));
 	return orthogonalVec; 
 }
 
-
-
+//
+//compute the normal vector for vector1 with respect to vector2
+//
 Vec3 computeNormalVector(const Vec3& vector1, const Vec3& vector2) {
 	Vec3 res(Real((vector2.v1 - vector1.v1)
 			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))),
@@ -211,7 +214,9 @@ Vec3 computeNormalVector(const Vec3& vector1, const Vec3& vector2) {
 
 }
 
-
+///
+///calculate position to direct the arm given parameters set in the learning scenario
+///
 void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical) {
 	position.v1 += (spacing*normalVec.v1); 
 	position.v2 += (spacing*normalVec.v2); 
@@ -220,6 +225,9 @@ void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orth
 	position.v3 += vertical; 
 }
 
+///
+///calls setPointCoordinates for a discrete number of different actions
+///
 void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
 
 
@@ -349,28 +357,6 @@ void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec
 
 }
 
-
-
-void writeDownCollectedData(DataSet data) {
-	time_t rawtime;
-	struct tm * timeinfo;
-  	char buffer [12];
-
- 	time ( &rawtime );
-  	timeinfo = localtime ( &rawtime );
-
-  	strftime (buffer,12,"%y%m%d%H%M",timeinfo);
-  	puts(buffer);
-
-	string name;
-	name.append(buffer);
-
-	
-	write_dataset(name  , data);
-	//DataSet savedData;
-	//read_dataset(name, savedData);
-	//print_dataset<double> (savedData);
-}
 
 }; /* smlearning namespace */
 

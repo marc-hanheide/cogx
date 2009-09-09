@@ -36,14 +36,7 @@ SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 SET(RNNLIB_INCLUDE /usr/local/include/rnnlib CACHE PATH "Path prefix for RNNLIB include")
 SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 
-SET(BOOST_INCLUDE /usr/include/boost CACHE PATH "Path prefix for Golem include")
-SET(BOOST_LIBRARY /usr/lib CACHE PATH "Path prefix for Boost library")
-SET(BOOST_FILESYSTEM_LIBRARY
-	/usr/lib/libboost_filesystem-mt.so CACHE PATH
-	"Path to Boost Filesystem library")
-SET(BOOST_REGEX_LIBRARY
-	/usr/lib/libboost_regex-mt.so CACHE PATH
-	"Path to Boost Regex Library")
+FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex )
 
 # SET(BOOST_INCLUDE /usr/local/include/boost-1_39 CACHE PATH "Path prefix for Golem include")
 # SET(BOOST_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Boost library")
@@ -59,7 +52,7 @@ SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SM
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem
 			   pthread rt GL glut expat SMLearning netcdf
-			   rnnlib ${BOOST_FILESYSTEM_LIBRARY} ${BOOST_REGEX_LIBRARY})
+ 			   rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY})
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}
@@ -70,7 +63,7 @@ INCLUDE_DIRECTORIES(
 	${PHYSX_INCLUDE}/SDKs/PhysXLoader/include
 	${PHYSX_INCLUDE}/SDKs/Cooking/include
 	${KNI_INCLUDE}
-	${BOOST_INCLUDE}
+	${Boost_INCLUDE_DIRS}
 	${RNNLIB_INCLUDE}
 )
 
@@ -78,7 +71,7 @@ LINK_DIRECTORIES(
 	${PHYSX_LIBRARY}
 	${KNI_LIBRARY}
 	${GOLEM_LIBRARY}
-	${BOOST_LIBRARY}
+	${Boost_LIBRARY_DIRS}
 	${RNNLIB_LIBRARY}
 )
 
@@ -90,10 +83,6 @@ SET(ARM_HEADERS
 	${SMLEARNING_ROOT}/include/arm/Pushing.h
 )
 INSTALL(FILES ${ARM_HEADERS} DESTINATION include/SMLearning/arm/)
-
-# SET(ARM_FILES
-# 	${SMLEARNING_ROOT}/src/arm.xml
-# )
 
 SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
@@ -144,9 +133,6 @@ INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
-# INSTALL(TARGETS scripts RUNTIME DESTINATION bin/SMLearning)
-# INSTALL(FILES ${ARM_FILES} DESTINATION bin/SMLearning)
-# INSTALL(FILES ${TOOLS_FILES} DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
 
 ## SMLearning tools library
