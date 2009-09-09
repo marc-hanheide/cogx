@@ -268,7 +268,7 @@ public class BinderMonitorGUI extends JFrame
 			if (!insertedProxies.containsKey(proxy.entityID)) {
 				
 				if (isRelationProxy(proxy)) {
-					addNewRelationProxy(proxy, (curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
+					addNewRelationProxy(proxy, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
 				}
 				else {
 					addNewProxy(proxy, curUnionPosition_X + horizontalIncr, curProxyPosition_Y, "");
@@ -297,7 +297,7 @@ public class BinderMonitorGUI extends JFrame
 		
 		String colour = "#FFFF66";
 		log("before adding union");
-		addNewUnion(union, curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100), curUnionPosition_Y -125, colour);
+		addNewUnion(union, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)), Math.abs(curUnionPosition_Y -125), colour);
 		Object vertex = insertedUnions.get(union.entityID);
 		insertSourceAndTargetEdges(union, vertex);
 		if (!relationUnions.contains(union)) {
@@ -596,7 +596,8 @@ public class BinderMonitorGUI extends JFrame
 	public void addNewRelationProxy (Proxy relationProxy, int xpos) {
 		
 		String colour = "#FFFF99";
-		addNewProxy(relationProxy, xpos, curProxyPosition_Y + 200, colour);
+		addNewProxy(relationProxy, xpos, Math.abs(curProxyPosition_Y + 200), colour);
+
 		Object vertex = insertedProxies.get(relationProxy.entityID);
 		insertSourceAndTargetEdges(relationProxy, vertex);
 		log("OK FOR RELATION PROXY");

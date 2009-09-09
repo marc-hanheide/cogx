@@ -26,15 +26,13 @@ void ExampleProxyPusher::runComponent() {
   println("faking stuff up");
 
   //copied from fake visual thingy
+    
+  FeatureValuePtr relation = createStringValue ("relation", 0.8f);
+  FeaturePtr feat1 = createFeatureWithUniqueFeatureValue ("type", relation);
+  
   ProxyPtr proxy = createNewProxy (getSubarchitectureID(), 0.75f);
   
-  FeatureValuePtr mug = createStringValue ("mug", 0.8f);
-  FeaturePtr feat1 = createFeatureWithUniqueFeatureValue ("obj_label", mug);
   addFeatureToProxy (proxy, feat1);
-  
-  FeatureValuePtr blue = createStringValue ("blue", 0.95f);
-  FeaturePtr feat2 = createFeatureWithUniqueFeatureValue ("colour", blue);
-  addFeatureToProxy (proxy, feat2);
   
   addProxyToWM(proxy);
 

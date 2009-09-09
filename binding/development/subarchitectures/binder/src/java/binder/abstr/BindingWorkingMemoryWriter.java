@@ -60,8 +60,8 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	
 	
 	/**
-	 * Create a new relation proxy given the ID of the originatin subarchitecture,
-	 * the probability of the proxy, and the source and target proies
+	 * Create a new relation proxy given the ID of the originating subarchitecture,
+	 * the probability of the proxy, and the source and target proxies
 	 * 
 	 * @param subarchId string for the ID of the subarchitecture
 	 * @param probExists the probability of the proxy
@@ -69,7 +69,8 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-	public Proxy createNewRelationProxy(String subarchId, float probExists, StringValue[] sources, StringValue[] targets) {
+	public Proxy createNewRelationProxy(String subarchId, float probExists, 
+			StringValue[] sources, StringValue[] targets) {
 	
 		Proxy newProxy = createNewProxy (subarchId, probExists);
 		
@@ -87,9 +88,9 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 	
 	/**
-	 * Create a new relation proxy given the ID of the originatin subarchitecture,
+	 * Create a new relation proxy given the ID of the originating subarchitecture,
 	 * the probability of the proxy, the list of features for the relation,
-	 * and the source and target proies
+	 * and the source and target proxies
 	 * 
 	 * @param subarchId string for the ID of the subarchitecture
 	 * @param probExists the probability of the proxy
