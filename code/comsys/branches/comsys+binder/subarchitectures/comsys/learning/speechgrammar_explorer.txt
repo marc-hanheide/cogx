@@ -1,0 +1,180 @@
+
+.SENTENCE  [
+	(CONTENT)
+	(DISC_PARTICLE CONTENT)
+	(CONTENT DISC_PARTICLE)
+]
+
+CONTENT [
+	(COMMAND)
+	(EVALUATION)
+	(LOCATION)
+	(OBJ)
+	(ASSERTION)
+	(QUESTION)
+	(GREETINGS_LC)
+	(DISC_PARTICLE)
+]
+
+
+DISC_PARTICLE [
+	(CONNECTIVE_LC)
+	(CUEWORD_LC)
+	(PERSON_LC)
+	(TEMPORAL_LC)
+]
+
+
+
+COMMAND  [
+	(COMMAND_DIRECT)
+	(COMMAND_INDIRECT)
+]
+
+COMMAND_DIRECT [
+	(go LOCATION)
+	(go DIRECTION_LC)
+	(drive LOCATION)
+	(turn DIRECTION_LC)
+	(move LOCATION)
+	(move DIRECTION_LC)
+	(return LOCATION)
+	(follow me)
+	(stop)
+	(stop it)
+	(find PERSON_LC)
+	(find OBJ)
+	(look for OBJ)
+	(find me OBJ)
+	(explore PLACE)
+	(have a look around)
+]
+
+
+MODAL [
+	(can)
+	(could)
+	(should)
+]
+
+
+COMMAND_INDIRECT [
+	(i want you to COMMAND_DIRECT)
+	(MODAL you COMMAND_DIRECT)
+	(i want OBJ)
+]
+
+PRONOUNS [
+	(i)
+	(you)
+	(we)
+]
+
+ASSERTION [
+	(here is OBJ_SG)
+	(here's OBJ_SG)
+	(here is PLACE)
+	(here's PLACE)
+
+	(DEM_SG is OBJ_SG)
+	(DEM_SG is PLACE)
+
+	(OBJ_SG is LOCATION)
+	(PLACE is LOCATION)
+	(LOCATION is PLACE)
+
+]
+
+OBJ [
+	(OBJ_SG)
+	(OBJ_PL)
+]
+
+OBJ_SG [
+	(DEM_SG_LC)
+	(DET_SG OBJ_SG_LC)
+	(DET_SG OBJ_SG_LC)
+	(DET_SG OBJ_SG_LC LOCATION)
+	(something)
+	(it)
+	(one)
+	(PERSON_LC)
+]	
+
+OBJ_PL [
+	(DEM_PL_LC)
+	(DET_PL OBJ_PL_LC)
+	(them)
+]	
+
+DET_SG [
+	(DET_SG_LC)
+	(DEM_SG_LC)
+]
+
+DET_PL [
+	(DET_PL_LC)
+	(DEM_PL_LC)
+]
+
+
+QUESTION  [
+	(where are you)
+	(where are we)
+	(where is OBJ_SG)
+	(where is PLACE)
+	(where's OBJ_SG)
+	(what can you see)
+	(what can you see LOCATION)
+	(what do you see)
+	(what do you see LOCATION)
+	(do you see OBJ)
+	(do you see OBJ LOCATION)
+
+	(what is LOCATION)
+
+	(is OBJ_SG LOCATION)
+	(is there OBJ_SG LOCATION)
+]
+
+
+LOCATION [
+	(LOC_PREP_LC OBJ)
+	(LOC_PREP_LC PLACE)
+	(LOC_PREP_LC PERSON_LC)
+	(LOCATION_LC)
+	(from PLACE)
+	(on the left of PLACE)
+	(on the right of PLACE)
+	(to the left of PLACE)
+	(to the right of PLACE)
+	(to PLACE)
+]
+
+PLACE [
+	(DET_SG PLACE_LC)
+	(POSSESSIVE_PLACE)
+]
+
+POSSESSIVE_PLACE [
+	(gj's PLACE_LC)
+	(nick's PLACE_LC)
+	(henrik's PLACE_LC)
+	(pierre's PLACE_LC)
+	(hendrik's PLACE_LC)
+	(patric's PLACE_LC)
+	(jeremy's PLACE_LC)
+]
+
+
+EVALUATION [
+	(CUEWORD_LC)
+	(DEM_SG_LC is CUEWORD_LC)
+	(that's CUEWORD_LC)
+	(DEM_PL_LC are CUEWORD_LC)
+	(CUEWORD_LC DEM_SG_LC is CUEWORD_LC)
+	(thanks)
+	(thank you)
+]
+
+
