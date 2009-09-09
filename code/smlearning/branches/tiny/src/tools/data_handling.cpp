@@ -129,7 +129,9 @@ bool read_dataset (string fileName, DataSet& data) {
 	
 }
 
-//write a cdl file format with zero padding
+///
+///write a cdl file format with zero padding
+///
 bool write_cdl_file_padding (string fileName, const DataSet& data) {
 	fileName += ".cdl";
 	ofstream writeFile(fileName.c_str(), ios::out);
@@ -222,7 +224,9 @@ bool write_cdl_file_padding (string fileName, const DataSet& data) {
 	return true;
 }
 
-//write a cdl file format for feature vectors using basis vectors
+///
+///write a cdl file format for feature vectors using basis vectors
+///
 bool write_cdl_file_basis (string fileName, const DataSet& data) {
 	fileName += ".cdl";
 	ofstream writeFile(fileName.c_str(), ios::out);
@@ -328,7 +332,9 @@ bool check_nc_err(const int stat, const int line, const char *file) {
 	return false;
 }
 
-
+///
+///almost automatically generated netcdf function to store netcdf data files
+///
 bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize, FeatureVector& inputVector, FeatureVector& targetVector, vector<int>& seqLengthsVector, size_t& numTimesteps_len) {
 
 	//return status
@@ -437,8 +443,9 @@ bool write_nc_data (string fileName, const DataSet& data, int featureVectorSize,
 
 }
 
-
-//write a netcdf nc file format for feature vectors using basis vectors
+///
+///write a netcdf nc file format for feature vectors using basis vectors
+///
 bool write_nc_file_basis (string fileName, const DataSet& data) {
 	fileName += ".nc";
 
@@ -565,7 +572,9 @@ void OfflineRNN::set_traindatafile (string fileName) {
 	conf.set<string>("trainFile", fileName);
 }
 
-
+///
+///generate config files for RNNs for offline experiments
+///
 bool generate_network_files_nfoldcv_set (const string defaultnetConfigFile, const string baseDataFileName, int n, string target_dir ) {
 
 	OfflineRNN myRNN;
@@ -588,6 +597,30 @@ bool generate_network_files_nfoldcv_set (const string defaultnetConfigFile, cons
 	}
 
 	return true;
+}
+
+///
+///write collected data in an offline experiment
+///
+void writeDownCollectedData(DataSet data) {
+	time_t rawtime;
+	struct tm * timeinfo;
+  	char buffer [12];
+
+ 	time ( &rawtime );
+  	timeinfo = localtime ( &rawtime );
+
+  	strftime (buffer,12,"%y%m%d%H%M",timeinfo);
+  	puts(buffer);
+
+	string name;
+	name.append(buffer);
+
+	
+	write_dataset(name  , data);
+	//DataSet savedData;
+	//read_dataset(name, savedData);
+	//print_dataset<double> (savedData);
 }
 
 };
