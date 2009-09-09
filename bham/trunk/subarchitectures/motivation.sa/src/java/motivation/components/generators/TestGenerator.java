@@ -38,7 +38,8 @@ public class TestGenerator extends Generator {
 			for (int i=0; i<10; i++) {
 				log("updating test source in WM");
 				lockEntry(id, WorkingMemoryPermissions.LOCKEDO);
-				overwriteWorkingMemory(id, new TestSource());
+				TestSource ts = getMemoryEntry(id,TestSource.class);
+				overwriteWorkingMemory(id, ts);
 				unlockEntry(id);
 				Thread.sleep(2000);
 			}
@@ -74,7 +75,6 @@ public class TestGenerator extends Generator {
 	@Override
 	protected boolean checkMotive(Motive motive) {
 		try {
-			debug("get source");
 			TestSource source = getMemoryEntry(motive.referenceEntry, TestSource.class);
 			// generate some fake stuff here...
 			motive.goal = source.name;

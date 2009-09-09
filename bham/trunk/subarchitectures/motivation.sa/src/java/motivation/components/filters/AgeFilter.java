@@ -3,21 +3,14 @@
  */
 package motivation.components.filters;
 
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.CASTTime;
-import cast.cdl.CASTTimeHelper;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import motivation.slice.Motive;
 import motivation.util.CASTTimeUtil;
-import motivation.util.WMMotiveSet;
 
 /**
  * @author marc
  * 
  */
-public class SurfaceAllFilter extends Filter {
+public class AgeFilter extends Filter {
 
 	/*
 	 * (non-Javadoc)
@@ -28,7 +21,7 @@ public class SurfaceAllFilter extends Filter {
 	 */
 	@Override
 	protected boolean shouldBeSurfaced(Motive motive) {
-		return true;
+		return checkAge(motive);
 	}
 
 	/*
@@ -40,7 +33,14 @@ public class SurfaceAllFilter extends Filter {
 	 */
 	@Override
 	protected boolean shouldBeUnsurfaced(Motive motive) {
-		return false;
+		if (checkAge(motive))
+			return false;
+		log("motive was too old... unsurfacing it!");
+		return true;
+	}
+
+	boolean checkAge(Motive motive) {
+		return (CASTTimeUtil.diff(getCASTTime(), motive.created) < 6000);
 	}
 
 }
