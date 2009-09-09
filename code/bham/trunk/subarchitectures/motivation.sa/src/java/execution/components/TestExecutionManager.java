@@ -8,8 +8,8 @@ import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import execution.slice.Action;
 import execution.slice.ActionStatus;
-import execution.slice.LogMessage;
-import execution.slice.PrintMessage;
+import execution.slice.actions.LogMessage;
+import execution.slice.actions.PrintMessage;
 import execution.slice.TriBool;
 import execution.slice.actions.GoToPlace;
 

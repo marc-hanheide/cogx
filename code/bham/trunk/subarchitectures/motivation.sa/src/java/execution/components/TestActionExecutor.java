@@ -2,8 +2,8 @@ package execution.components;
 
 import cast.architecture.ManagedComponent;
 import execution.slice.Action;
-import execution.slice.LogMessage;
-import execution.slice.PrintMessage;
+import execution.slice.actions.LogMessage;
+import execution.slice.actions.PrintMessage;
 import execution.slice.TriBool;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;

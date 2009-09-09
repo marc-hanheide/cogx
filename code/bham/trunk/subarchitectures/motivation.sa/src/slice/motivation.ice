@@ -13,6 +13,7 @@ module motivation {
     
     	enum MotiveStatus {
     		UNSURFACED,
+    		SURFACED,
     		POSSIBLE,
     		IMPOSSIBLE,
     		ACTIVE

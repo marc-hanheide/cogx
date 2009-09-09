@@ -3,6 +3,11 @@
  */
 package motivation.components.filters;
 
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import motivation.slice.Motive;
 import motivation.util.WMMotiveSet;
 
 /**
@@ -10,16 +15,7 @@ import motivation.util.WMMotiveSet;
  *
  */
 public class SurfaceAllFilter extends Filter {
-	WMMotiveSet motives;
+	
 
-	/**
-	 * 
-	 */
-	public SurfaceAllFilter() {
-		super();
-		motives = WMMotiveSet.create(this);
-	}
-	
-	
 	
 }
