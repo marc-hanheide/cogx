@@ -1,0 +1,138 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the more 'complex' features used in defining
+# word classes. Specifically, event modifier restriction classes for verbs
+# and syntactic behaviour classes for modifiers (and now some nouns too...)
+
+# In each case, a set of 'primatives/atoms' are defined, which are then collected
+# into classes (via multiple inheritance), i.e.
+#
+#     CLASS:    atom1 atom2 ... atomN
+#               class1 [atom1]  class2[atom1 atom2 atom5] ...
+
+##########################
+## Modifier Restriction ##
+##########################
+
+  # OpenCCG doesn't seem to like using the same feature-value names for differnt things, 
+  # so, I have created 3 versions.
+  #           1) m-#######, the ontological semantic sort (see types-ontology)
+  #           2) x-#######, placed on mod themselves, specifying one 'kind' of modifier they are
+  #           3) s-#######, placed on the s (or verb) to specify what 'kind' of modifiers it
+  #                         accepts.
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT:  
+  #            If the modifier section of the ontological hierarchy is changed, you will have to add
+  #            reflect these changes here
+  #
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+feature {
+
+  MOD-TYPE<25>:          x-dynamic{ x-direction x-whereto x-wherefrom x-through }
+                         x-manner
+                         x-time {x-time-point x-time-sequence x-time-interval}
+                         x-location
+                         x-probability
+                         x-frequency    
+                         x-comment      
+                         x-serial		   
+                         x-accompaniment
+                         x-instrumental
+  		         x-comparison 
+                         x-benefactor    
+                         x-relational{x-cause x-result x-condition}
+                         x-purpose       
+                         x-intensity;
+
+ 
+  # Note: These could in theory also be placed on Mod-Mods 
+  #       to limit the kinds of Mods they can modify.
+
+  MCLASS<10>:            s-dynamic{ s-direction s-whereto s-wherefrom s-through }
+                         s-manner
+                         s-time  {s-time-point s-time-sequence s-time-interval}
+                         s-location
+                         s-probability
+                         s-frequency    
+                         s-comment      
+                         s-serial		   
+                         s-accompaniment
+      		         s-instrumental
+  		         s-comparison 
+                         s-benefactor    
+                         s-relational{s-cause s-result s-condition}
+                         s-purpose       
+                         s-intensity
+  		         s-none
+
+  # These are the classes which verbs lexically select 
+  # Each is a collection of the 'primatives' defined immediately above.
+  # NEW CLASSES CAN EASILY BE ADDED HERE.
+
+  m-class-none  [s-none]
+  m-class-5     [                                       s-comment]
+  m-class-4     [s-relational s-frequency s-probability s-comment s-time]
+  m-class-3     [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison]
+  m-class-2x    [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison           s-location]
+  m-class-2     [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location]
+  m-class-1     [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location s-manner s-serial]
+  m-class-1x    [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose            s-manner s-serial s-dynamic]
+  m-class-all   [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location s-manner s-serial s-dynamic]
+  ;
+
+
+#############################
+## Combinatorial Behaviour ##
+#############################
+
+  # These are the features which determine the syntactic behaviour of modifiers
+  # (where they can be). Each modifer POS (adv, pp) has a rule for each of 
+  # these saying, e.g, 'if you are allowed to pre-modify sentences, 
+  # then I'll turn you into a pre-modifier '
+  
+  # Each modifier lexically (in the dictionary) chooses its syntactic 'class'
+
+  CC-TYPE<25, 15>: post-s post-s-loose pre-s pre-vp post-vp 
+                   pre-cop-comp   # I am ALSO big,  it is CERTAINLY not a ball
+                   post-n pre-n
+    		   cc-none
+  		 	 
+                   ## Nominal behaviour                 
+   
+  		   compound-1st compound-head  # the two parts of noun-noun compounds
+  		   no-q  # for those that don't want 'quality' entities (color, size, shap, etc),
+                         # e.g. 'what size ball' but not 'what size color'
+			 
+   ## Adverb Classes ## (NEW CAN EASILY BE MODIFIED/EXTENDED)			 
+			 
+   adv-all  [pre-s pre-vp post-vp   post-s pre-cop-comp] 
+   adv-1    [pre-s pre-vp post-vp   post-s] #s or vp?
+   adv-2    [      pre-vp post-vp   post-s]
+   adv-3    [pre-s        post-vp   post-s]
+   adv-4    [             post-vp   post-s]
+   adv-5    [pre-s pre-vp                 ]
+   adv-6    [      pre-vp post-vp         ]
+   adv-7    [pre-s pre-vp post-vp   post-s]  
+
+   ## Prepositions Classes ## (NEW CAN EASILY BE MODIFIED/EXTENDED)
+			 
+   prep-all [post-n post-s post-vp pre-s]
+   prep-1   [post-n post-s post-vp      ]
+   prep-2   [       post-s post-vp      ]
+   prep-3   [post-n                     ]
+   prep-4   [       post-s post-vp pre-s]
+			 
+   ## Nominal Classes ##   
+
+   n-all [compound-1st compound-head no-q]
+   n-1   [compound-1st  no-q]
+   n-2   [compound-head no-q]
+   n-3   [compound-1st]
+   n-4   [no-q]
+  
+   ;
+
+} # end feature

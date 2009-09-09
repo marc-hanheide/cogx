@@ -1,0 +1,22 @@
+cmake_minimum_required (VERSION 2.6)
+
+project (MYPROJECT)
+
+get_filename_component(MYPROJECT_ROOT . ABSOLUTE)
+
+# set the output directory.
+set(OUTPUT ${MYPROJECT_ROOT}/output CACHE PATH "Path prefix for installation")
+set(CMAKE_INSTALL_PREFIX "${OUTPUT}" CACHE INTERNAL "Prefix prepended to install directories" FORCE)
+
+# use cmake files packaged with CAST as well, add your install prefix here too
+set(CMAKE_MODULE_PATH /usr/local/share/cast/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH /opt/local/share/cast/cmake ${CMAKE_MODULE_PATH})
+
+find_package(CAST REQUIRED)
+include(UseCAST)
+include(CASTBuild)
+
+add_definitions(-Wall)
+
+# Include your subarchitecture projects in the following way
+# add_subdirectory (subarchitectures/hello-world)

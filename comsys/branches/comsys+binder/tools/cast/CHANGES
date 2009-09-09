@@ -1,0 +1,42 @@
+design 
+
+removed read/write distinction, get code separate though
+removed normal/privved distinction in lew of a better solution
+
+c++
+
+map input to configure method is now const
+all cdl consts have had _s removed
+getProcessIdentifier -> getComponentID
+all process -> component
+removed all UI parts for now
+removed CASTProcessingComponent::subarchitectureID -> getSubarchitectureID
+removed makeAdress (Henrik's typo) -> should have built in constructors in Ice classes
+renamed CASTProcessingComponent -> SubarchitectureComponent
+exceptions now defined in via slice, no header files
+WorkingMemoryWriterProcess -> WorkingMemoryWriterComponent
+taken never-used functionality out of CASTData. let me know if you're missing anything
+getWorkingMemoryEntry deprecated - use alternatives for simpler accessSu
+newCOmponent now should return cast::interfaces::CASTComponentPtr 
+no async writes to wm
+BALTTime -> CASTTime
+
+
+java
+
+configure now takes a map<string,string>
+
+build system, list of subdirs, and each subdir contains a file listing
+slice files, source, libraries
+
+
+todo
+use ice mutexes in SubarchitectureWorkingMemory - overwrite has deadlock on exception
+
+check logic of lockEntryHelper. what if lock fails but permissions match
+check logic of stored version numbers -- do we rely on ids being different? what's the trade-off
+async writes etc are missing 
+flushes before locking?
+efficiency of overwrites due to locking. migrate to wm?
+
+all idl-defined constants are now in CamelCase
