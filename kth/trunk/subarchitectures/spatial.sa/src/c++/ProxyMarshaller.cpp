@@ -280,11 +280,18 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 
     // Add Placeholder feature
     if (place->status == SpatialData::PLACEHOLDER) {
-    log("Adding unexplored feature");
-    feature = createFeature("unexplored");
-    feature->alternativeValues.push_back(createStringValue("1", 1)); 
-	//binder::autogen::featvalues::IntegerValue(1,1));
-    addFeature("place", ss.str(), feature);
+      log("Adding unexplored feature");
+      feature = createFeature("unexplored");
+      feature->alternativeValues.push_back(createStringValue("true", 1)); 
+      //binder::autogen::featvalues::IntegerValue(1,1));
+      addFeature("place", ss.str(), feature);
+    }
+    else {
+      log("Adding non-unexplored feature");
+      feature = createFeature("unexplored");
+      feature->alternativeValues.push_back(createStringValue("false", 1)); 
+      //binder::autogen::featvalues::IntegerValue(1,1));
+      addFeature("place", ss.str(), feature);
     }
   }
 }
@@ -300,13 +307,18 @@ ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 
     // Add Placeholder feature
     if (place->status == SpatialData::PLACEHOLDER) {
+      deleteFeature("place", ss.str(), "unexplored");
       FeaturePtr feature = createFeature("unexplored");
-      feature->alternativeValues.push_back(createStringValue("1",1));
+      feature->alternativeValues.push_back(createStringValue("true",1));
           //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
     else {
       deleteFeature("place", ss.str(), "unexplored");
+      FeaturePtr feature = createFeature("unexplored");
+      feature->alternativeValues.push_back(createStringValue("false",1));
+          //binder::autogen::featvalues::IntegerValue(1,1));
+      addFeature("place", ss.str(), feature);
     }
   }
 }
