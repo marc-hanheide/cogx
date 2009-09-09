@@ -12,6 +12,10 @@ namespace execution {
     public cast::ManagedComponent {
   protected:
     void runComponent();  
+    virtual void start();
+  private:
+    void actionOverwrite(const cast::cdl::WorkingMemoryChange &_wmc);
+
   };
   
 }

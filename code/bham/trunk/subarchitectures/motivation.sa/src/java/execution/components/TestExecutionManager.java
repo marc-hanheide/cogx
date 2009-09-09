@@ -24,6 +24,14 @@ public class TestExecutionManager extends AbstractExecutionManager {
 	@Override
 	protected void runComponent() {
 
+//		testSpatial();
+	simpleTest();
+	}
+
+	/**
+	 * 
+	 */
+	private void testSpatial() {
 		//time to create a place
 		sleepComponent(20000);
 		
@@ -37,7 +45,6 @@ public class TestExecutionManager extends AbstractExecutionManager {
 		} catch (UnknownSubarchitectureException e) {
 			e.printStackTrace();
 		}
-	
 	}
 
 	/**
