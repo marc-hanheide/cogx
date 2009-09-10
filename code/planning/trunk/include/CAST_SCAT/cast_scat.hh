@@ -173,8 +173,9 @@ namespace CAST_SCAT
      * When a \namespace{CAST_SCAT} \class{procedure_call} is made,
      * it's implementation will be invoked by
      * \member{operator()(...)}. A single "implementation" (i.e.,
-     * \class{procedure_implementation}) can only invoke one procedure
-     * at a time. This is enforced by the \argument{mutex}.
+     * \class{procedure_implementation}) should only invoke one
+     * procedure at a time. This functionality uses the
+     * \argument{mutex} to enforce this.
      *
      */
     template<typename THING, typename FUNCTION, typename ICE_FUNCTION_CLASS, class PARENT = NA>
@@ -226,6 +227,15 @@ namespace CAST_SCAT
                 return;
             };
 
+            /* If we are supposed to accept this procedure call, but
+             * no target designation was specified, then we revert to
+             * the default designations (see
+             * \member{managed_Component->get_designators()}). */
+            if(argument->optionalMemberDesignatorIsAnArgument.empty()){
+                argument->optionalMemberDesignatorIsAnArgument
+                    = managed_Component->get_designators();
+            }
+            
             (managed_Component->*function)(argument);
 
             
@@ -319,6 +329,13 @@ namespace CAST_SCAT
          * intersects with those of \member{designators}.*/
         Designators designators;
     public:
+
+        /*(see \member{designators})*/
+        const Designators& get_designators() const
+        {
+           return designators; 
+        }
+        
         
         explicit procedure_implementation(const Designator& designator = "")
             :mutex(give_me_a_new__pthread_mutex_t())
@@ -407,7 +424,7 @@ namespace CAST_SCAT
         }
         
         
-        /* Declair that we implement the function of
+        /* Declare that we implement the function of
          * \type{ICE_FUNCTION_CLASS} using member
          * \function{function}. This _must only_ be called by a
          * \class{cast::ManagedComponent} \method{start()}. It is
@@ -897,8 +914,8 @@ namespace CAST_SCAT
                 case Locality::Global:
                     
                 {
-                    WARNING("Procedure calls do not distinguish between local and global scope."
-                            <<"Youare using global.");
+                    CAST__VERBOSER(12, "Procedure calls do not distinguish between local and global scope."<<std::endl
+                                   <<"You are using global.");
                     
                     //UNRECOVERABLE_ERROR("Not expecting global...");
                     //auto type_filter = cast::createGlobalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
@@ -935,8 +952,8 @@ namespace CAST_SCAT
                 case Locality::Local:
                     
                 {
-                    WARNING("Procedure calls do not distinguish between local and global scope."
-                            <<"Youare using local.");
+                    CAST__VERBOSER(12, "Procedure calls do not distinguish between local and global scope."<<std::endl
+                                  <<"You are using local.");
 // //                     auto filter =  cast::createLocalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
 //                     auto filter
 //                         = cast::createAddressFilter(id,

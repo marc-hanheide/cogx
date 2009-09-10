@@ -3,10 +3,10 @@ HOST localhost
 SUBARCHITECTURE test_harness__PCogX
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG somename1 planner_client
+CPP MG planner_testing_client planner_client
 
 SUBARCHITECTURE PCogX
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG somename3 planner_factory
-CPP MG somename4 classical_planner
+CPP MG planner_factory planner_factory
+CPP MG classical_planner classical_planner

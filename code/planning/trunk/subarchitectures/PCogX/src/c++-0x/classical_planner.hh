@@ -14,19 +14,37 @@
 using CAST_SCAT::Designator;
 using CAST_SCAT::Designators;
 
+// \module{ayPlan} headers. These provide satisficing and
+// cost-optimal planning functionality.
+#include "Problem.hh"
+#include "Planner.hh"
+#include "Planner_templates.hh"
+#include "CostPlanner.hh"
+
 class Classical_Planner :
     public CAST_SCAT::procedure_implementation<Classical_Planner>,
     public CAST_SCAT::procedure_call<>
 {
 public:
     typedef CAST_SCAT::procedure_implementation<Classical_Planner> Implement;
-    typedef CAST_SCAT::procedure_call<> Call;
+    typedef CAST_SCAT::procedure_call<> Call;    
+    
+    explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);
+    
+    void implement__postFileNameForProblemDescription(PCogX::postFileNameForProblemDescriptionPtr&);
+    void implement__postFileNameForDomainDescription(PCogX::postFileNameForDomainDescriptionPtr&);
 
-    Classical_Planner();
-//     Classical_Planner(const Designator& name);
+    void implement__actionParseProblemDescription(PCogX::actionParseProblemDescriptionPtr&);
+    void implement__actionParseDomainDescription(PCogX::actionParseDomainDescriptionPtr&);
     
+    void implement__actionPreprocessProblemAndDomain(PCogX::actionPreprocessProblemAndDomainPtr&);
+
+    void implement__actionPlan(PCogX::actionPlanPtr&);
     
-//     explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);
+    /* template for implementation of a procedure. REMEMBER to
+     * register the implementation with CAST in
+     * \method{runComponent}.*/
+    //void implement__(PCogX::Ptr&);
     
     void implement__distinctPlanner(PCogX::distinctPlannerPtr&);
     void implement__readPropositionIdentifiers(PCogX::readPropositionIdentifiersPtr&);
@@ -38,6 +56,22 @@ public:
     void runComponent();
 protected:
     void start();
+
+    
+    map<Designator, std::string> domain_file_names;
+    map<Designator, std::string> problem_file_names;
+    
+    /* Problems associated with each designated classical planner.*/
+    map<Designator, Planning::Problem> planning_problems;
+
+    /* The plan last computed by a given designator. */
+    map<Designator, std::string> plans;
+
+//     /*Mapping from designations to classical satisficing planners.*/
+//     map<Designator, Planning::Planner<> > satisficing__planners;
+    
+//     /*Mapping from designations to classical cost-optimal planners.*/
+//     map<Designator, Planning::CostPlanner> cost_optimal__planners;
 };
 
 #endif
