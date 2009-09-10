@@ -982,12 +982,16 @@ void normalize_all_wffs( void )
 	cleanup_wff( &ggoal );
 	if ( ggoal->connective == TRU && !gcmd_line.prediction_level) {
 		printf("\nff: goal can be simplified to TRUE. The empty plan solves it\n\n");
-		printf("\n\nSUCCESS: found legal plan as follows\n");
-		printf("0\n");
+		redirect_stdout_to(gcmd_line.plan_output_fn);
+		printf("SUCCESS: found legal plan as follows\n");
+		reset_stdout();
 		exit( 0 );
 	}
 	if ( ggoal->connective == FAL && !gcmd_line.prediction_level) {
 		printf("\nff: goal can be simplified to FALSE. No plan will solve it\n\n");
+		redirect_stdout_to(gcmd_line.plan_output_fn);
+		printf("FAILURE: found no legal plan\n");
+		reset_stdout();
 		exit( 0 );
 	}
 	/* put goal into DNF right away: fully instantiated already
