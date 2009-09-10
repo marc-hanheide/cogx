@@ -23,7 +23,7 @@ Planner_Factory::Planner_Factory(Designator&& name)
 }
 
 void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
-    VERBOSER(200, "");
+    CAST__VERBOSER(200, "");
     
     Designator new_designation;
 

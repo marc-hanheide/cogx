@@ -449,7 +449,7 @@ namespace CAST_SCAT
                 case Locality::Global:
                     
                 {
-                    WARNING("Not expecting global components...");
+                    CAST__VERBOSER(12, "Not expecting global components...");
                     
                     CAST__VERBOSER(4, "Procedure with mutex :: "<<mutex.get()
                              <<" is looking for _GLOBAL_ adds of type :: "
