@@ -23,7 +23,7 @@ public:
     typedef CAST_SCAT::procedure_call<> Call;
 
     Classical_Planner();
-    Classical_Planner(const Designator& name);
+//     Classical_Planner(const Designator& name);
     
     
 //     explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);

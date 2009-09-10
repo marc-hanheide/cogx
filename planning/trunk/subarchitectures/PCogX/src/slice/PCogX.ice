@@ -10,8 +10,8 @@
  */
 
 
-#ifndef HWD_ICE
-#define HWD_ICE
+#ifndef PCOGX_ICE
+#define PCOGX_ICE
 
 module PCogX
 {

@@ -407,7 +407,9 @@ namespace CAST_SCAT
         }
         
         
-        /* This _must only_ be called by a
+        /* Declair that we implement the function of
+         * \type{ICE_FUNCTION_CLASS} using member
+         * \function{function}. This _must only_ be called by a
          * \class{cast::ManagedComponent} \method{start()}. It is
          * _not_ thread safe... .*/
         template<typename ICE_FUNCTION_CLASS, typename FUNCTION_TYPE>
@@ -429,7 +431,9 @@ namespace CAST_SCAT
             switch(locality){
                 case Locality::Global:
                     
-                {   UNRECOVERABLE_ERROR("Not expecting global...");
+                {
+                    WARNING("Not expecting global components...");
+                    
                     CAST__VERBOSER(4, "Procedure with mutex :: "<<mutex.get()
                              <<" is looking for _GLOBAL_ adds of type :: "
                              <<DEMANGLE_TYPE(ICE_FUNCTION_CLASS));
@@ -893,7 +897,10 @@ namespace CAST_SCAT
                 case Locality::Global:
                     
                 {
-                   UNRECOVERABLE_ERROR("Not expecting global...");
+                    WARNING("Procedure calls do not distinguish between local and global scope."
+                            <<"Youare using global.");
+                    
+                    //UNRECOVERABLE_ERROR("Not expecting global...");
                     //auto type_filter = cast::createGlobalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
 
                 
@@ -928,6 +935,8 @@ namespace CAST_SCAT
                 case Locality::Local:
                     
                 {
+                    WARNING("Procedure calls do not distinguish between local and global scope."
+                            <<"Youare using local.");
 // //                     auto filter =  cast::createLocalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
 //                     auto filter
 //                         = cast::createAddressFilter(id,
