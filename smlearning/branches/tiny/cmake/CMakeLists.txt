@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.6)
 if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
@@ -11,6 +11,11 @@ PROJECT(SMLearning)
 # Project root directory
 GET_FILENAME_COMPONENT(PROJECT_ROOT ../.. ABSOLUTE)
 SET(SMLEARNING_ROOT ${PROJECT_ROOT}/tiny CACHE INTERNAL "Path prefix for SMLearning package")
+
+# Look for Boost libraries
+SET(CMAKE_MODULE_PATH ${SMLEARNING_ROOT}/cmake)
+INCLUDE(${SMLEARNING_ROOT}/cmake/FindBoost.cmake)
+
 
 # Set the path where other thing should be relative to
 GET_FILENAME_COMPONENT(CMAKE_SOURCE_DIR . ABSOLUTE CACHE INTERNAL "")
@@ -36,14 +41,19 @@ SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 SET(RNNLIB_INCLUDE /usr/local/include/rnnlib CACHE PATH "Path prefix for RNNLIB include")
 SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 
+SET(Boost_MAJOR_VERSION 1)
+SET(Boost_MINOR_VERSION 36)
+# SET(Boost_SUBMINOR_VERSION 0)
 FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex )
 
-# SET(BOOST_INCLUDE /usr/local/include/boost-1_39 CACHE PATH "Path prefix for Golem include")
-# SET(BOOST_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Boost library")
-# SET(BOOST_FILESYSTEM_LIBRARY
+# If boost was not found:
+# Use the following values if you use Ubuntu 8.10 and boost 1.39.0
+# SET(Boost_INCLUDE_DIRS /usr/local/include/boost-1_39 CACHE PATH "Path prefix for Golem include")
+# SET(Boost_LIBRARY_DIRS /usr/local/lib CACHE PATH "Path prefix for Boost library")
+# SET(Boost_FILESYSTEM_LIBRARY
 #	/usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0 CACHE PATH
 #	"Path to Boost Filesystem library")
-# SET(BOOST_REGEX_LIBRARY
+# SET(Boost_REGEX_LIBRARY
 #	/usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0 CACHE PATH
 # 	"Path to Boost Regex Library")
 
