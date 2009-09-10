@@ -3,67 +3,58 @@
 	(:requirements :mapl :adl :durative-actions :object-fluents)
 	
 	(:types 
+		place - object
 		robot - agent
-
-		node - object
 		place_type - object
+		place_id - object  ;; make this a number at some point 
 	)
 	
 	(:constants
-		place placeholder - place_type
         R2D2 - robot
 	)
 
     (:predicates
-		(connected ?n1 ?n2 - node)
+		(place_connectivity ?n1 - place ?id2 - place_id)
 		;; special
 		(has-goal ?a - agent)
 		(commited ?a - agent)
     )	
 
 	(:functions
-		(place_type ?n - node) - place_type
-		(pos ?r -  agent) - node
+		(place_type ?n - place) - place_type
+		(place_id ?n - place) - place_id
+		(position ?r -  agent) - place_id
+		(explored ?n - place) - boolean
  	)
 	
 
 ;;; actions ;;;
 
-; 	(:durative-action move
-; 	 :agent (?a - robot)
-; 	 :parameters (?to - node)
-; 	 :variables (?from - node)
-;      :duration (= ?duration 2.0)
-; 	 :condition (and 
-; 		(over all (or (connected ?from ?to) (connected ?to ?from)))
-; 		(at start (= (pos ?a) ?from))
-; 		)
-; 	 :effect (and
-; 		(change (pos ?a) ?to)
-; 		(change (place_type ?to) place)
-; 	))
-
 	(:sensor sense_place
 	 :agent (?a - robot)
-	 :parameters (?loc - node)
-	 :precondition (= (pos ?a) ?loc)
-     :sense (place_type ?loc)
+	 :parameters (?loc - place)
+	 :variables (?loc_id - place_id)
+	 :precondition (and
+	 	(= (position ?a) ?loc_id)
+		(= (place_id ?loc) ?loc_id)
+		)
+     :sense (explored ?loc)
     )
 
 	(:action move
-	 :agent (?a - robot)
-	 :parameters (?to - node)
-	 :variables (?from - node)
+	 :agent (?a - agent)
+	 :parameters (?to_id - place_id)
+	 :variables (?to - place ?from_id - place_id ?from - place)
 	 :precondition (and
-;; ATTENTION:
-;; commented out the following lines until respective info 
-;; is provided on binder 
-;;		(or (connected ?from ?to) (connected ?to ?from))
-;;		(= (pos ?a) ?from) 
+	    (= (place_id ?from) ?from_id)
+	    (= (place_id ?to) ?to_id)
+		(= (position ?a) ?from_id) 
+		(place_connectivity ?from ?to_id)
 		)
 	 :effect (and
-		(assign (pos ?a) ?to)
-;		(assign (place_type ?to) place)
+		(assign (position ?a) ?to_id)
+		(assign (explored ?to) true)
+		(place_connectivity ?to ?from_id)   ;; now we assume we can also move back
 	))
 	
 
