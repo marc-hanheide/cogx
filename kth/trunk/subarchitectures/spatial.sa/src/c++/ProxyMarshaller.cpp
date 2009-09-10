@@ -280,16 +280,16 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 
     // Add Placeholder feature
     if (place->status == SpatialData::PLACEHOLDER) {
-      log("Adding unexplored feature");
-      feature = createFeature("unexplored");
-      feature->alternativeValues.push_back(createStringValue("true", 1)); 
+      log("Adding explored feature");
+      feature = createFeature("explored");
+      feature->alternativeValues.push_back(createStringValue("false", 1)); 
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
     else {
-      log("Adding non-unexplored feature");
-      feature = createFeature("unexplored");
-      feature->alternativeValues.push_back(createStringValue("false", 1)); 
+      log("Adding non-explored feature");
+      feature = createFeature("explored");
+      feature->alternativeValues.push_back(createStringValue("true", 1)); 
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
@@ -307,16 +307,16 @@ ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 
     // Add Placeholder feature
     if (place->status == SpatialData::PLACEHOLDER) {
-      deleteFeature("place", ss.str(), "unexplored");
-      FeaturePtr feature = createFeature("unexplored");
-      feature->alternativeValues.push_back(createStringValue("true",1));
+      deleteFeature("place", ss.str(), "explored");
+      FeaturePtr feature = createFeature("explored");
+      feature->alternativeValues.push_back(createStringValue("false",1));
           //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
     else {
-      deleteFeature("place", ss.str(), "unexplored");
-      FeaturePtr feature = createFeature("unexplored");
-      feature->alternativeValues.push_back(createStringValue("false",1));
+      deleteFeature("place", ss.str(), "explored");
+      FeaturePtr feature = createFeature("explored");
+      feature->alternativeValues.push_back(createStringValue("true",1));
           //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
