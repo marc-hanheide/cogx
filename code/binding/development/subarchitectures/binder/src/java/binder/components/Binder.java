@@ -79,7 +79,7 @@ public class Binder extends ManagedComponent  {
 	/**
 	 *  Construct a new binder
 	 */
-	private Binder() {
+	public Binder() {
 		constructor = new UnionConstructor();
 	}
 
