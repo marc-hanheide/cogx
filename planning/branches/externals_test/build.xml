@@ -25,12 +25,12 @@
   <target name="template">
     <echo>Executing &quot;${target}&quot; target for the binder (subarchitectures/binder)</echo>
     <ant target="${target}" dir="subarchitectures/binder" />
-    <echo>Executing &quot;${target}&quot; target for subarchitectures/spatial.sa module...</echo>
-    <ant target="${target}" dir="subarchitectures/spatial.sa" />
-    <echo>Executing &quot;${target}&quot; target for subarchitectures/nav.sa module...</echo>
-    <ant target="${target}" dir="subarchitectures/nav.sa" />
-    <echo>Executing &quot;${target}&quot; target for subarchitectures/coma.sa module...</echo>
-    <ant target="${target}" dir="subarchitectures/coma.sa" />
+    <!-- <echo>Executing &quot;${target}&quot; target for subarchitectures/spatial.sa module...</echo> -->
+    <!-- <ant target="${target}" dir="subarchitectures/spatial.sa" /> -->
+    <!-- <echo>Executing &quot;${target}&quot; target for subarchitectures/nav.sa module...</echo> -->
+    <!-- <ant target="${target}" dir="subarchitectures/nav.sa" /> -->
+    <!-- <echo>Executing &quot;${target}&quot; target for subarchitectures/coma.sa module...</echo> -->
+    <!-- <ant target="${target}" dir="subarchitectures/coma.sa" /> -->
   </target>
 
 

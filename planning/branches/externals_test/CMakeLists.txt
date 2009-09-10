@@ -20,10 +20,6 @@ set(CMAKE_MODULE_PATH "${COGX_ROOT}/cmake;${CAST_CMAKE_DIR}" ${CMAKE_MODULE_PATH
 
 add_definitions(-Wall)
 
-# Include your subarchitecture projects in the following way
-add_subdirectory(subarchitectures/binder)
-add_subdirectory(subarchitectures/planner.sa)
-add_subdirectory(subarchitectures/fakemotivation.sa)
 
 add_subdirectory (tools/d-lib)
 
@@ -78,12 +74,28 @@ if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
 
+option(BUILD_SA_BINDING "Build binding subarchitecure" YES)
+if(BUILD_SA_BINDING)
+add_subdirectory (subarchitectures/binder)
+endif(BUILD_SA_BINDING)
 
 # Spatial
 option(BUILD_SA_SPATIAL "Build spatial subarchitecure" YES)
 if(BUILD_SA_SPATIAL)
     add_subdirectory (subarchitectures/spatial.sa)
 endif(BUILD_SA_SPATIAL)
+
+# Planner
+option(BUILD_SA_PLANNER "Build planner subarchitecure" YES)
+if(BUILD_SA_PLANNER)
+    add_subdirectory (subarchitectures/planner.sa)
+endif(BUILD_SA_PLANNER)
+
+# Fake motivation
+option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" YES)
+if(BUILD_SA_FAKE_MOTIVATION)
+    add_subdirectory (subarchitectures/fakemotivation.sa)
+endif(BUILD_SA_FAKE_MOTIVATION)
 
 option(BUILD_MULTI_TESTER "Build multi-sa tester" NO)
 if(BUILD_MULTI_TESTER)
