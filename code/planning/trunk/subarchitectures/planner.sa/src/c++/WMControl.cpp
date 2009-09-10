@@ -42,15 +42,9 @@ void WMControl::connectToPythonServer() {
     catch (const char* msg) {
 	cerr << msg << endl;
     }
-
-    Ice::ObjectPrx basePrx(getObjectAdapter()->addFacet(new InternalCppServer(this), getIceIdentity(), "PlannerInternalCppServer")); 
     
-    autogen::Planner::CppServerPrx clientPrx = autogen::Planner::CppServerPrx::uncheckedCast(basePrx);
-
-    if(!clientPrx)
-	println("Planner WMControl: error while initializing python server");
-    else
-	pyServer->registerClient(clientPrx);
+    autogen::Planner::CppServerPtr servant = new InternalCppServer(this);
+    registerIceServer<autogen::Planner::CppServer,autogen::Planner::CppServer>(servant);
 }
 
 void WMControl::runComponent() {

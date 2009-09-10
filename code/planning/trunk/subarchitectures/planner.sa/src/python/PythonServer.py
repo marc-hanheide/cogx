@@ -32,6 +32,13 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     print "and trying to get it back again immediately"
     server = self.getIceServer("PlannerPythonServer", Planner.PythonServer, Planner.PythonServerPrx)
     print "It worked. We got a server:", server
+    self.client_name = config.get("--wm", "Planner")
+
+  def getClient(self):
+    if not self.client:
+      self.client = self.getIceServer(self.client_name, Planner.CppServer, Planner.CppServerPrx)
+      print "Connected to CppServer %s" % self.client_name
+    return self.client
 
   def startComponent(self):
     pass
@@ -51,7 +58,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     import task_preprocessor
     task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
-
 
     self.planner.register_task(task)
 
@@ -73,9 +79,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 #       print "ERROR!!"
 
 #     task_desc.plan = str(plan)
-#     self.client.deliverPlan(task_desc);
+#     self.getClient().deliverPlan(task_desc);
     # add task to some queue or start planning right away. when done call self.client.deliverPlan(string plan)
     
   def registerClient(self, Client, current=None):
-    print "Planner PythonServer: running"
-    self.client = Client
+    pass
