@@ -1,5 +1,6 @@
 import os, sys, shutil
 import re
+import itertools as itools
 
 import utils
 import globals as global_vars
@@ -186,6 +187,7 @@ class ContinualAxiomsFF(BasePlanner):
         """
         # very preliminary implementation of the above!
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
+        action_list = [self.remove_inferable_vars(action, task._mapldomain) for action in action_list]
         times_actions = enumerate(action_list)  # keep it sequentially for now
         nodes = [plans.PlanNode(a, t+1) for t,a in times_actions]
         for i in xrange(0, len(nodes)-1):
@@ -195,6 +197,17 @@ class ContinualAxiomsFF(BasePlanner):
         plan.add_link(plan.init_node, nodes[0])
         plan.add_link(nodes[-1], plan.goal_node)
         return plan
+
+    def remove_inferable_vars(self, action, domain):
+        elmts = action.split()
+        action, args = elmts[0], elmts[1:]
+        actions = dict((a.name,a) for a in itools.chain(domain.actions, domain.sensors))
+        assert action in actions
+        action_def = actions[action]
+        num = len(action_def.agents) + len(action_def.args)
+        argnames = args[:num]
+        return " ".join([action]+argnames)
+        
     
 class TFD(BasePlanner):
     """

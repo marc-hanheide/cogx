@@ -2,21 +2,22 @@
 (define (problem cogxtask) (:domain cogx)
 
 (:objects
-	node1 node2 node3 - node
+	place1 place2 place3 - place
+	pid1 pid2 pid3 - place_id
 )
 
 (:init
-	(connected node1 node2)
-	(connected node2 node3)
-;	(= (place_type node1) place)
-;	(= (place_type node2) placeholder)
-;	(= (place_type node3) placeholder)
-	(= (pos R2D2) node1)
+	(= (place_id place1) pid1)
+	(= (place_id place2) pid2)
+	(= (place_id place3) pid3)
+	(place_connectivity place1 pid1)
+	(place_connectivity place2 pid2)
+	(= (position R2D2) pid1)
 )
 
 (:goal (and
-;;	   (forall (?n - node) (= (place_type ?n) place))
-	   (forall (?n - node) (kval R2D2 (place_type ?n)))
+	   (forall (?p - place) (= (explored ?p) true))
+;;	   (forall (?p - place) (kval R2D2 (place_type ?p)))
 )
 
 ))
