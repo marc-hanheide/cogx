@@ -146,13 +146,13 @@ module PCogX
         /* String identifier of the planning domain.*/
         ["c++:type:std::string"] string identityOfCreatedPlannerIsAReturn;
 
-        /* Identifier of the planner factory, just in case there is
-         * more than one factory operating. */
-        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
-        
         /* Description of the features that can occur in the planning
          * domain at hand.*/
         OptionalMemberPlannerDescriptor optionalMemberPlannerDescriptorIsAnArgument;
+        
+        /* Identifier of the planner factory, just in case there is
+         * more than one factory operating. */
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
     };
 
     /* From what file should the planner parse the domain description.*/
@@ -170,6 +170,42 @@ module PCogX
         /* String identifier of the planning domain.*/
         ["c++:type:std::string"] string fileNameForProblemDescriptionIsAnArgument;
 
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
+
+    /* Requires that a call to
+     * \procedure{postFileNameForDomainDescription} has been made.*/
+    class actionParseDomainDescription
+    {
+        bool parsingWasSuccessfulIsAReturn;
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
+
+    /* Requires that a call to
+     * \procedure{postFileNameForProblemDescription} has been made.*/
+    class actionParseProblemDescription
+    {
+        bool parsingWasSuccessfulIsAReturn;
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
+
+    /* A domain should be parse before a problem is parsed. Having
+     * parsed both a domain and problem, most planners perform some
+     * processing on those representations before a plan-search is
+     * invoked. Here we encapsulate a procedure call to that
+     * preprocessing.*/
+    class actionPreprocessProblemAndDomain
+    {
+        bool preprocessingWasSuccessfulIsAReturn;
+        OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
+    };
+
+    /* Invoke plan search. The resulting plan is returned in a string
+     * format in \return{planIsAReturn}.*/
+    class actionPlan
+    {
+        ["c++:type:std::string"] string planIsAReturn;
+        
         OptionalMemberDesignator optionalMemberDesignatorIsAnArgument;
     };
     
