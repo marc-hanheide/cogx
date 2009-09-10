@@ -36,29 +36,55 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.utils.BayesianNetworkUtils;
 
+/**
+ * Class for managing a bayesian network expressing feature correlations 
+ * between features
+ * 
+ * @author Pierre Lison
+ * @version 09/09/2009
+ * @started 01/08/2009
+ */
+
 public class BayesianNetworkManager {
 
-	BayesianNetwork network;
-	
+	// The bayesian network
+	private BayesianNetwork network;
+
+	// Turn logging on/off
 	boolean logging = false;
-	
-	HashMap<Proxy,DiscreteProbabilityDistribution> alreadyComputedDistribs;
-	
+
+	// Already computed distributions for a given proxy
+	private HashMap<Proxy,DiscreteProbabilityDistribution> alreadyComputedDistribs;
+
+
+	/**
+	 * Initialise the bayesian network manager
+	 * 
+	 */
+
 	public BayesianNetworkManager() {		
-	
+
 		log("Start building the bayesian network...");
 		network = BayesianNetworkUtils.constructNetwork();
 		log("Construction of bayesian network successfull!");
 		log("number of nodes: " + network.nodes.length);		
 		log("number of edges: " + network.edges.length);
-		
-		alreadyComputedDistribs = new HashMap<Proxy, DiscreteProbabilityDistribution>();
-		
-	}
-	
 
+		alreadyComputedDistribs = new HashMap<Proxy, DiscreteProbabilityDistribution>();
+
+	}
+
+	/**
+	 * Compute the prior distribution for a proxy, based on a bayesian network
+	 * 
+	 * NOTE: only limited to discrete probability distributions for now
+	 * 
+	 * @param proxy the proxy
+	 * @return the probability distribution
+	 */
 	public DiscreteProbabilityDistribution getPriorDistribution(Proxy proxy) {
-	
+
+		// Check if the prior distribution has already been computed for the proxy
 		if (alreadyComputedDistribs.containsKey(proxy)) {
 			return alreadyComputedDistribs.get(proxy);
 		}
@@ -68,65 +94,114 @@ public class BayesianNetworkManager {
 			return distrib;
 		}
 	}
-	
-	public DiscreteProbabilityDistribution getPriorDistribution(Feature[] features) {
+
+	/**
+	 * Compute the prior distribution for a given set of features, based on the 
+	 * bayesian network
+	 * 
+	 * @param features the set of features
+	 * @return the probability distribution
+	 */
+	private DiscreteProbabilityDistribution getPriorDistribution(Feature[] features) {
+
 		log("Start computing the prior distribution...");
 		DiscreteProbabilityDistribution priorDistrib = new DiscreteProbabilityDistribution();
-		priorDistrib.assignments = new DiscreteProbabilityAssignment[features.length];
-		
-		Vector<DiscreteProbabilityAssignment[]> priorDistribsForFeature = new Vector<DiscreteProbabilityAssignment[]>();
-		
-		if (features.length > 0) {
-		for (int i = 0 ; i < features.length; i ++) {
-			log("Current feature: \"" + features[i].featlabel + "\"");
 
-			DiscreteProbabilityAssignment[] priorDistribForFeature = getPriorDistribution(features[i]);
-			priorDistribsForFeature.add(priorDistribForFeature);
-		}
-		
-		Vector<DiscreteProbabilityAssignment> jointDistribV = computeJointDistribution(priorDistribsForFeature);
-		priorDistrib.assignments = new DiscreteProbabilityAssignment[jointDistribV.size()];
-		priorDistrib.assignments = jointDistribV.toArray(priorDistrib.assignments);
-		}
-		return priorDistrib;
+		// Set of probability assignments per features
+		Vector<DiscreteProbabilityAssignment[]> priorDistribsForFeature = 
+			new Vector<DiscreteProbabilityAssignment[]>();
+
+			if (features.length > 0) {
+				// Loop on the features array
+				for (int i = 0 ; i < features.length; i ++) {
+					log("Current feature: \"" + features[i].featlabel + "\"");
+
+					// Get the set of probability assignment for the feature
+					DiscreteProbabilityAssignment[] priorDistribForFeature = 
+						getPriorDistribution(features[i]);
+					priorDistribsForFeature.add(priorDistribForFeature);
+				}
+
+				// Compute the joint probability distribution
+				Vector<DiscreteProbabilityAssignment> jointDistribV = 
+					computeJointDistribution(priorDistribsForFeature);
+
+				// And specify the assignments defining the distribution
+				priorDistrib.assignments = new DiscreteProbabilityAssignment[jointDistribV.size()];
+				priorDistrib.assignments = jointDistribV.toArray(priorDistrib.assignments);
+			}
+
+			return priorDistrib;
 	}
 
 
-	private Vector<DiscreteProbabilityAssignment> computeJointDistribution(Vector<DiscreteProbabilityAssignment[]> priorDistribs) {
-		
+	/**
+	 * Compute the joint probability distribution (defined as a set of probability 
+	 * assignments) given the prior distributions
+	 * 
+	 * @param priorDistribs the prior distributions
+	 * @return the set of probability assignments
+	 */
+	private Vector<DiscreteProbabilityAssignment> computeJointDistribution 
+	(Vector<DiscreteProbabilityAssignment[]> priorDistribs) {
+
 		log("Computing the joint distribution, vector size: " + priorDistribs.size());
-		
+
+		// Case 1: there is only one prior distribution
 		if (priorDistribs.size() == 1) {
-			Vector<DiscreteProbabilityAssignment> finalAssignment = new Vector<DiscreteProbabilityAssignment>();
+			
+			Vector<DiscreteProbabilityAssignment> finalAssignment = 
+				new Vector<DiscreteProbabilityAssignment>();
+			
 			DiscreteProbabilityAssignment[] curAssignments = priorDistribs.elementAt(0);
+			
 			for (int i = 0; i < curAssignments.length ; i++) {
 				finalAssignment.add(priorDistribs.elementAt(0)[i]);
 			}
 			return finalAssignment;
 		}
-		
-		else {
+
+		// Case 2: there more than one prior distribution (recursive definition)
+		else if (priorDistribs.size() > 1){
+
+			// Remove one of the prior distribution
 			DiscreteProbabilityAssignment[] independentProbs = priorDistribs.remove(0);
-			Vector<DiscreteProbabilityAssignment> previousAssignments = computeJointDistribution(priorDistribs);
-			Vector<DiscreteProbabilityAssignment> newAssignments = new Vector<DiscreteProbabilityAssignment>();
-			
+
+			// Recursively compute the joint distribution with all distributions except
+			// the one we just removed
+			Vector<DiscreteProbabilityAssignment> previousAssignments = 
+				computeJointDistribution(priorDistribs);
+
+			// Initialize the new set of probability assignments
+			Vector<DiscreteProbabilityAssignment> newAssignments = 
+				new Vector<DiscreteProbabilityAssignment>();
+
+			// Loop on the set of assignments specified in independentProbs
 			for (int i = 0 ; i < independentProbs.length; i++) {
-				
-				for (Enumeration<DiscreteProbabilityAssignment> e = previousAssignments.elements(); e.hasMoreElements() ; ) {
-					DiscreteProbabilityAssignment assignment = e.nextElement();
-										
-					DiscreteProbabilityAssignment newAssignment = new DiscreteProbabilityAssignment();
+
+				DiscreteProbabilityAssignment assignment1 = independentProbs[i];
+
+				// Loop on the set of assignments specified in previousAssignments
+				for (Enumeration<DiscreteProbabilityAssignment> e = 
+					previousAssignments.elements(); e.hasMoreElements() ; ) {
+
+					DiscreteProbabilityAssignment assignment2 = e.nextElement();
+
+					// Construct a sequence of feature pairs merging the feature pairs of 
+					// assignment1 and assignment2
 					Vector<FeatureValuePair> featpairs = new Vector<FeatureValuePair>();
-					for (int j = 0 ; j < independentProbs[i].featurepairs.length ; j++) {
-						featpairs.add(independentProbs[i].featurepairs[j]);
+					for (int j = 0 ; j < assignment1.featurepairs.length ; j++) {
+						featpairs.add(assignment1.featurepairs[j]);
 					}
-					for (int j = 0 ; j < assignment.featurepairs.length ; j++) {
-						featpairs.add(assignment.featurepairs[j]);
+					for (int j = 0 ; j < assignment2.featurepairs.length ; j++) {
+						featpairs.add(assignment2.featurepairs[j]);
 					}
-					
+
+					// Get the joint probability value for featpairs
 					float prob = (float) getJointProbabilityValue(featpairs); 
 
-					
+					// create a probability assignment for featpairs and add it to the new assignments
+					DiscreteProbabilityAssignment newAssignment = new DiscreteProbabilityAssignment();
 					newAssignment.featurepairs = new FeatureValuePair[featpairs.size()];
 					newAssignment.featurepairs = featpairs.toArray(newAssignment.featurepairs);
 					newAssignment.prob = prob;
@@ -134,66 +209,104 @@ public class BayesianNetworkManager {
 					log("prob: " + prob);
 				}
 			}
-			
+
 			return newAssignments;
 		}
-		
-	}
-	
-	public DiscreteProbabilityAssignment[] getPriorDistribution (Feature feature) {
-		
-		if (feature.alternativeValues != null) {
-			DiscreteProbabilityAssignment[] assignments = new DiscreteProbabilityAssignment[feature.alternativeValues.length];
 
-		log("Computing prior distribution with feature: \"" + feature.featlabel + "\"");
+		return new Vector<DiscreteProbabilityAssignment>();
+	}
+
+
+	/**
+	 * Get the array of probability assignments for a particular feature
+	 * (one for each possible feature value, together with its probability)
+	 * 
+	 * @param feature the feature
+	 * @return array of probability assignments
+	 */
+	public DiscreteProbabilityAssignment[] getPriorDistribution (Feature feature) {
+
+		// Ensuring the set of features values is not null
+		if (feature.alternativeValues != null) {
 			
-		for (int i = 0; i < feature.alternativeValues.length; i++) {
-			FeatureValue featvalue = feature.alternativeValues[i];
-			log("Feature value currently looked at: " + ((StringValue) featvalue).val);
-			DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
-			assignment.featurepairs = new FeatureValuePair[1];
-			assignment.featurepairs[0] = new FeatureValuePair();
-			assignment.featurepairs[0].featlabel = feature.featlabel;
-			assignment.featurepairs[0].featvalue = featvalue;
-			assignment.prob = getIndependentProb(feature.featlabel, featvalue);
-			log("Independent probability: " + assignment.prob);
-			assignments[i] = assignment;
-		}
-		return assignments;
+			// Create the array of assignments
+			DiscreteProbabilityAssignment[] assignments = 
+				new DiscreteProbabilityAssignment[feature.alternativeValues.length];
+
+			log("Computing prior distribution with feature: \"" + feature.featlabel + "\"");
+
+			// Looping on the set of alternative feature values
+			for (int i = 0; i < feature.alternativeValues.length; i++) {
+				
+				FeatureValue featvalue = feature.alternativeValues[i];
+				log("Feature value currently looked at: " + ((StringValue) featvalue).val);
+				
+				// Create the new assignment
+				DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
+				assignment.featurepairs = new FeatureValuePair[1];
+				assignment.featurepairs[0] = new FeatureValuePair();
+				assignment.featurepairs[0].featlabel = feature.featlabel;
+				assignment.featurepairs[0].featvalue = featvalue;
+				assignment.prob = getIndependentProb(feature.featlabel, featvalue);
+				log("Independent probability: " + assignment.prob);
+				
+				// Add the assignment to the array
+				assignments[i] = assignment;
+			}
+			return assignments;
 		}
 		else {
 			log("ERROR: alternative values in feature are not specified");
 			return null;
 		}
 	}
-	
 
-	
+
+	/**
+	 * Compute the joint probability value for the given set of feature-value pairs
+	 * @param featpairs the feature value pairs
+	 * 
+	 * @return the probability value
+	 */
 	public double getJointProbabilityValue(Vector<FeatureValuePair> featpairs) {
-		double result = 1.0f;
 		
+		double result = 1.0f;
+
+		// Loop on the feature value pairs
 		for(Enumeration<FeatureValuePair> e = featpairs.elements(); e.hasMoreElements(); ) {
 			FeatureValuePair featpair1 = e.nextElement();
-			
+
+			// conditional probability of featpair1 given all the other features
 			double condProbs = 1.0f;
-			int nbConds = 0;
 			
+			// counts of correlations between featpair1 and the other feature pairs
+			int nbConds = 0;
+
+			// Loop a second time on the feature value pairs
 			for(Enumeration<FeatureValuePair> f = featpairs.elements(); f.hasMoreElements() ; ) {
+				
 				FeatureValuePair featpair2 = f.nextElement();
 				if (featpair1 != featpair2) {
-					FeatureValueCorrelation corr = BayesianNetworkUtils.getCorrelationsBetweenFVs(network, featpair1, featpair2);
+					
+					// Get the correlation between the two feature pairs, given
+					// the specifications of the bayesian network
+					FeatureValueCorrelation corr = 
+						BayesianNetworkUtils.getCorrelationsBetweenFVs(network, featpair1, featpair2);
 					if (corr != null) {
+						
+						// If a correlation is found, update the condition probability
 						condProbs = condProbs * corr.condProb;
 						nbConds++;
 					}
 				}
 			}
-			
+
+			// Compute the final probability for featpair1
 			double finalProbForFeatpair1;
 			if (condProbs < 1.0f) {
 				finalProbForFeatpair1 = 0.0f;
 				if (nbConds == 1 ) {
-				finalProbForFeatpair1 = condProbs;
+					finalProbForFeatpair1 = condProbs;
 				}
 				if (nbConds == 2 ) {
 					finalProbForFeatpair1 = Math.sqrt(condProbs);
@@ -205,47 +318,65 @@ public class BayesianNetworkManager {
 					log("WARNING: not implemented yet");
 				}
 			}
+			// If featpair1 is conditionally independent from all the other features
 			else {
 				finalProbForFeatpair1 = getIndependentProb(featpair1.featlabel, featpair1.featvalue);
 			}
 
+			// Integrate the probability of featpair1 into the total result
 			result = result * finalProbForFeatpair1;
 		}
-			
+
 		log("joint probability value: " + result);
 		return result;
 	}
-	
-	
-public float getIndependentProb (String featlabel, FeatureValue featvalue) {
-		
+
+
+	/**
+	 * Get the conditionally independent probability of a feature value pair
+	 * based on the bayesian network
+	 * @param featlabel the feature label
+	 * @param featvalue the feature value
+	 * @return the probability value (= 0.5f if feature pair not found in the network)
+	 */
+	public float getIndependentProb (String featlabel, FeatureValue featvalue) {
+
+		// Search for the node in the bayesian network
 		BayesianNetworkNode node = BayesianNetworkUtils.getNodeWithFeature(network, featlabel);
-		
-	//	log("equivalent BN node found? " + (node != null));
 
 		if (node != null) {
-		for (int i = 0; i < node.feat.alternativeValues.length ; i++) {
-			StringValue featurevalue = (StringValue) node.feat.alternativeValues[i];
-			if (featurevalue.val.equals(((StringValue)featvalue).val)) {
-				if (featurevalue.independentProb > 0) {
-					return featurevalue.independentProb;
-				}
-				else {
-					return (1.0f / node.feat.alternativeValues.length);   // INCORRECT
+			
+			// Loop on the possible values in the bayesian network
+			for (int i = 0; i < node.feat.alternativeValues.length ; i++) {
+				StringValue featurevalue = (StringValue) node.feat.alternativeValues[i];
+			
+				// If one feature value in the bayesian network matches the provided 
+				// feature value and has a specified probability, just return its value
+				if (featurevalue.val.equals(((StringValue)featvalue).val)) {
+					if (featurevalue.independentProb > 0) {
+						return featurevalue.independentProb;
+					}
+					else {
+						return (1.0f / node.feat.alternativeValues.length);   // INCORRECT
+					}
 				}
 			}
 		}
-		}
-		else  {
-			return 0.5f;
-		}
+		
 		log("WARNING: Independent probability for " + featlabel + " = " + featvalue + " is not specified");
-		return 0.0f;
+		return 0.5f;
 	}
 
-public void log(String s) {
-	if (logging) {
-		System.out.println("[BayesianNetworkManager] " + s);
+	
+	
+	/**
+	 * Logging facility
+	 * @param s 
+	 */
+	
+	private void log(String s) {
+		if (logging) {
+			System.out.println("[BayesianNetworkManager] " + s);
+		}
 	}
-}
 }

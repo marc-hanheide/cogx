@@ -22,10 +22,8 @@ package binder.abstr;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbDistribUtils;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
 
@@ -34,9 +32,17 @@ import cast.architecture.ManagedComponent;
  * working memory
  * 
  * @author Pierre Lison
- * @version 31/08/2009
+ * @version 09/09/2009
+ * @started 15/08/2009
  */
+
 public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
+
+	
+
+	// ================================================================= 
+	// METHODS FOR CREATING NEW PROXIES
+	// ================================================================= 
 
 
 	/** Create a new proxy given the ID of the originating subarchitecture,
@@ -142,6 +148,12 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	
 	
 	
+	// ================================================================= 
+	// METHODS FOR CREATING AND INSERTING NEW FEATURES
+	// ================================================================= 
+
+	
+	
 	/**
 	 * Add a new feature to the proxy (and regenerate the probability distribution, 
 	 * given this new information)
@@ -188,6 +200,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return stringVal;
 	}
 	
+	
 	/** 
 	 * Create a new feature, without feature values
 	 * @param featlabel the feature label
@@ -200,6 +213,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return feat;
 	}
 
+	
 	/**
 	 * Create a new feature with a unique feature value
 	 * @param featlabel the feature label
@@ -238,6 +252,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return feat;
 	}
 	
+	
 	/** 
 	 * Create a new feature containing several alternative feature values
 	 * @param featlabel the feature label
@@ -254,6 +269,11 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return feat;
 	}
 	
+	
+	// ================================================================= 
+	// METHODS FOR INSERTING/MODIFYING/DELETING PROXIES IN THE WM
+	// ================================================================= 
+
 	
 	/** 
 	 * Insert the proxy in the binder working memory 

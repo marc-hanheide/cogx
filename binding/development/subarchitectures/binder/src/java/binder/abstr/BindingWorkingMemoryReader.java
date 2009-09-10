@@ -35,19 +35,30 @@ import cast.cdl.WorkingMemoryOperation;
  * Abstract class for retrieving elements currently present in the working memory
  * of the binder
  * 
+ * IMPORTANT NOTE: this component will only work if the UnionDiscretizer is also 
+ * 				   activated in the CAST configuration
+ * 
  * @author Pierre Lison
- * @version 31/08/2009
+ * @version 09/09/2009
+ * @started 15/08/2009
  */
+
 public class BindingWorkingMemoryReader extends ManagedComponent {
 
+	// The current set of unions
+	private Vector<Union> currentUnions ;
 	
-	Vector<Union> currentUnions ;
+	
+	/**
+	 * Apply a filter on the binder WM to detect possible changes in the 
+	 * best selected UnionConfiguration
+	 */
 	
 	@Override
 	public void start() {
 
-		// if the set of possible union configurations has been updated, update the
-		// monitor accordingly
+		// if best selected UnionConfiguration has been updated in the WM, update the
+		// reader accordingly
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class,
 				WorkingMemoryOperation.WILDCARD), new WorkingMemoryChangeReceiver() {
 
@@ -63,10 +74,30 @@ public class BindingWorkingMemoryReader extends ManagedComponent {
 			} 
 		});
 		
+		// initialize the set of current unions
 		currentUnions = new Vector<Union>();
 		
 	}
 
+	
+	/**
+	 * Return the (highest-likelihood) unions currently present in the binder
+	 * working memory
+	 * 
+	 * @return a set of binding unions
+	 */
+	
+	public Vector<Union> getUnions () {
+		return currentUnions;
+	}
+	
+	
+	/**
+	 * Extract the unions from the union configuration, and update the set of
+	 * current unions accordingly
+	 * 
+	 * @param config the union configuration
+	 */
 	
 	private void extractUnionsFromConfig (UnionConfiguration config) {
 		currentUnions = new Vector<Union>();
@@ -74,9 +105,6 @@ public class BindingWorkingMemoryReader extends ManagedComponent {
 			currentUnions.add(config.includedUnions[i]);
 		}
 	}
-	
-	public Vector<Union> getUnions () {
-		return currentUnions;
-	}
+
 	
 }
