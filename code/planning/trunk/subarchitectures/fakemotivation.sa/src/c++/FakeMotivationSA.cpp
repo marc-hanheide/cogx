@@ -23,6 +23,7 @@ void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice:
 
 void FakeMotivationSA::runComponent() {
     println("FakeMotivationSA: running");
+    sleep(10);
     string id = newDataID();
 
     autogen::Planner::PlanningTaskPtr plan = new autogen::Planner::PlanningTask();
@@ -34,8 +35,12 @@ void FakeMotivationSA::runComponent() {
 }
 
 void FakeMotivationSA::planGenerated(const cast::cdl::WorkingMemoryChange& wmc) {
-    println("FakeMotivationSA: plan received:");
-
     autogen::Planner::PlanningTaskPtr planData = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
-    println(planData->plan);
+    if (planData->planningStatus == autogen::Planner::SUCCEEDED) {
+        println("FakeMotivationSA: plan received:");
+
+        for (autogen::Planner::ActionSeq::iterator it=planData->plan.begin(); it != planData->plan.end(); ++it) {
+            println((*it)->fullName);
+        }
+    }
 }
