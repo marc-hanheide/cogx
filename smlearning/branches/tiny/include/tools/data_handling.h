@@ -5,9 +5,8 @@
  *
  * @version 1.0
  *
- * Copyright 2007,2008 Alex Graves
  *           2009      Sergio Roa
-
+ 
    This is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
@@ -24,8 +23,8 @@
  
  */
 
-#ifndef TOOLS_DATAHANDLING_H_
-#define TOOLS_DATAHANDLING_H_
+#ifndef SMLEARNING_DATAHANDLING_H_
+#define SMLEARNING_DATAHANDLING_H_
 
 #include <cstdlib>
 #include <ctime>
@@ -286,4 +285,4 @@ class OfflineRNN {
 
 }; /* smlearning namespace */
 
-#endif /* TOOLS_DATAHANDLING_H_*/
+#endif /* SMLEARNING_DATAHANDLING_H_*/
