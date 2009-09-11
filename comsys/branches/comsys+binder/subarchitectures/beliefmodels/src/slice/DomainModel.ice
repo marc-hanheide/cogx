@@ -26,11 +26,16 @@ module cogx {
 	// definition. 
 	
 	// The class SuperFormula implements the Formula interface, acting as supertype class. 
-	// As an EpistemicObject, each SuperFormula has an identifier. A SuperFormula provides a ContinualStatus field. 
+	// As an EpistemicObject, each SuperFormula has an identifier. A SuperFormula provides a ContinualStatus field,  
+	// and a Ground, which is a list of one or more union ids. 	
+		
+	enum ContinualStatus { assertionVerified, assertionFalsified, propositionTrue, propositionFalse, propositionAmbiguous };	
+		
+	sequence<string> Ground;					
 		
 	class SuperFormula extends beliefmodels::adl::EpistemicObject implements beliefmodels::adl::Formula  {
-		
-	
+		ContinualStatus status;
+		Ground grnd;
 	};
 	
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
