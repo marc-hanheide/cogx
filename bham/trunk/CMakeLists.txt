@@ -112,5 +112,10 @@ if(BUILD_SA_PLANNER)
     add_subdirectory (subarchitectures/planner.sa)
 endif(BUILD_SA_PLANNER)
 
+# Fake motivation
+option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" YES)
+if(BUILD_SA_FAKE_MOTIVATION)
+    add_subdirectory (subarchitectures/fakemotivation.sa)
+endif(BUILD_SA_FAKE_MOTIVATION)
 
 #add_subdirectory(tools/python)
