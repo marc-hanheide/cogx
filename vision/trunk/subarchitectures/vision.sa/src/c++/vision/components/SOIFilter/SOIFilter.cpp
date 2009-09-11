@@ -16,7 +16,7 @@
 #define SMOOTH_COST 6
 #define HUE_K_VAL 3 // Number of nearest neighbours taken when calculating the cost for hue
 
-#define LABEL_0_COST 18
+#define LABEL_0_COST 15
 
 #define MAX_HUE_VAL 180
 #define MIN_HUE_VAL 0
@@ -277,7 +277,8 @@ void SOIFilter::start()
   	cvNamedWindow("Last ROI", 1);
   	cvNamedWindow("Full image", 1);
   	cvNamedWindow("Last segmentation", 1);
-  	cvNamedWindow("Last cost patch", 1);
+  	cvNamedWindow("Last object cost image", 1);
+  	cvNamedWindow("Last surface cost image", 1);
   }
   
   // we want to receive detected SOIs
@@ -336,7 +337,8 @@ void SOIFilter::runComponent()
   	cvDestroyWindow("Last ROI");
   	cvDestroyWindow("Last segmentation");
   	cvDestroyWindow("Full image");
-  	cvDestroyWindow("Last cost patch");
+  	cvDestroyWindow("Last object cost image");
+  	cvDestroyWindow("Last surface cost image");
   }
 }
 
@@ -653,7 +655,7 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
     
     projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
 
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 20, 60);
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 16, 60);
     
     IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, 4, 9000);  	
 	
@@ -687,7 +689,8 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
     	
     	cvShowImage("Last ROI", iplPatch);
     	cvShowImage("Last segmentation",segPatch);
-    	cvShowImage("Last cost patch", costPatch);
+    	cvShowImage("Last object cost image", costPatch);
+    	cvShowImage("Last surface cost image", bgCostPatch);
     }
     
     cvReleaseImage(&iplPatch);
