@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'modelBuilder.ui'
 #
-# Created: Fri Sep 11 13:59:16 2009
+# Created: Fri Sep 11 14:16:33 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from qwCameraPlacement import CQwCameraPlacement
 class Ui_ModelBuilder(object):
     def setupUi(self, ModelBuilder):
         ModelBuilder.setObjectName("ModelBuilder")
-        ModelBuilder.resize(711, 606)
+        ModelBuilder.resize(711, 624)
         self.centralwidget = QtGui.QWidget(ModelBuilder)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
@@ -29,7 +29,7 @@ class Ui_ModelBuilder(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtGui.QWidget(self.scrollArea)
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 445, 403))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 445, 421))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.cameraView = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.cameraView.setGeometry(QtCore.QRect(10, 10, 31, 41))
@@ -95,6 +95,9 @@ class Ui_ModelBuilder(object):
         self.frame_3.setObjectName("frame_3")
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.frame_3)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.label_5 = QtGui.QLabel(self.frame_3)
+        self.label_5.setObjectName("label_5")
+        self.verticalLayout_5.addWidget(self.label_5)
         self.wwCameraPlacement = CQwCameraPlacement(self.frame_3)
         self.wwCameraPlacement.setMinimumSize(QtCore.QSize(0, 120))
         self.wwCameraPlacement.setObjectName("wwCameraPlacement")
@@ -253,6 +256,7 @@ class Ui_ModelBuilder(object):
         self.btZoomIn.setText(QtGui.QApplication.translate("ModelBuilder", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.btZoomOut.setText(QtGui.QApplication.translate("ModelBuilder", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.ckCalcSift.setText(QtGui.QApplication.translate("ModelBuilder", "Calculate SIFT", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("ModelBuilder", "Camera position", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("ModelBuilder", "Capture", None, QtGui.QApplication.UnicodeUTF8))
         self.btCaptureSetup.setText(QtGui.QApplication.translate("ModelBuilder", "Setup...", None, QtGui.QApplication.UnicodeUTF8))
         self.btSaveView.setText(QtGui.QApplication.translate("ModelBuilder", "Save View", None, QtGui.QApplication.UnicodeUTF8))

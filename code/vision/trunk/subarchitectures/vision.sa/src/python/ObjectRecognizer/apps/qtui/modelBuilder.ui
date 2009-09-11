@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>711</width>
-    <height>606</height>
+    <height>624</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
            <x>0</x>
            <y>0</y>
            <width>445</width>
-           <height>403</height>
+           <height>421</height>
           </rect>
          </property>
          <widget class="QLabel" name="cameraView">
@@ -189,6 +189,13 @@
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Camera position</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QWidget" name="wwCameraPlacement" native="true">
               <property name="minimumSize">
