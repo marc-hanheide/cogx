@@ -57,7 +57,8 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
 	private Proxy createProxyOne() {
 		
-		Proxy proxy = createNewProxy("fakehaptic", 0.35f);
+		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli", "GraspableObject");
+		Proxy proxy = createNewProxy(origin, 0.35f);
 		
 		FeatureValue cylindrical = createStringValue ("cylindrical", 0.73f);
 		Feature feat = createFeatureWithUniqueFeatureValue ("shape", cylindrical);
@@ -72,7 +73,9 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	
 
 	private Proxy createProxyTwo() {
-		Proxy proxy = createNewProxy ("fakehaptic", 0.75f);
+		
+		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli2", "GraspableObject");
+		Proxy proxy = createNewProxy (origin, 0.75f);
 		
 		FeatureValue spherical = createStringValue ("spherical", 0.67f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue("shape", spherical);
@@ -91,7 +94,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		return proxy;
 	}
 	
-	
+
 	private Proxy createRelationProxy() {
 		
 		AddressValue[] sources = new AddressValue[1];
@@ -100,7 +103,8 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		AddressValue[] targets = new AddressValue[1];
 		targets[0] = createAddressValue(proxyTwoId, 0.91f);
 		
-		RelationProxy proxy = createNewRelationProxy("fakehaptic", 0.81f, sources, targets);
+		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli3", "HapticRelation");
+		RelationProxy proxy = createNewRelationProxy(origin, 0.81f, sources, targets);
 		
 		log("Relation proxy successfully created");
 

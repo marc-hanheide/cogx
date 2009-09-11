@@ -100,6 +100,7 @@ public class UnionConstructor  {
 		Union union = new Union() ;
 
 		union.entityID = entityID;
+		union.timeStamp = System.currentTimeMillis();
 
 		// Specify the proxies included in the union
 		Vector<Proxy> includedProxies = BinderUtils.getProxies(includedEntities);

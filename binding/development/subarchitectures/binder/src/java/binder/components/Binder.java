@@ -64,7 +64,7 @@ public class Binder extends ManagedComponent  {
 	private boolean incrementalBinding = true;
 
 	// whether to add unknown values to each feature
-	private boolean addUnknowns = false;
+	private boolean addUnknowns = true;
 	
 	// TO IMPLEMENT / TEST
 	private boolean normaliseDistributions = false;
@@ -616,7 +616,7 @@ public class Binder extends ManagedComponent  {
 			Proxy proxyi = union1.includedProxies[i];
 			for (int j = 0 ; j < union2.includedProxies.length ; j++) {
 				Proxy proxyj = union2.includedProxies[j];
-				if (proxyi.subarchId.equals(proxyj.subarchId)) {
+				if (proxyi.origin.subarchId.equals(proxyj.origin.subarchId)) {
 					return true;
 				}
 			}

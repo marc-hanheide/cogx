@@ -87,6 +87,9 @@ public class FeatureValueUtils {
 		if (fv instanceof BooleanValue && fv2 instanceof BooleanValue) {
 			return ((BooleanValue)fv).val == (((BooleanValue)fv2).val);
 		}
+		if (fv instanceof UnknownValue && fv2 instanceof UnknownValue) {
+			return true;
+		}
 		
 		else {
 	//		log("WARNING: Type of feature value is unknown / not comparable");
@@ -132,6 +135,9 @@ public class FeatureValueUtils {
 		}
 		else if (fv instanceof BooleanValue) {
 			return (""+((BooleanValue)fv).val);
+		}
+		else if (fv instanceof UnknownValue) {
+			return "unknown";
 		}
 		else {
 			log("WARNING: feature value not convertible to a string");

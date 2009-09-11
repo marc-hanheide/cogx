@@ -30,6 +30,7 @@ import javax.swing.JTextField;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.OriginInfo;
 import binder.autogen.core.Proxy;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
@@ -96,13 +97,15 @@ public class InsertButtonListener implements ActionListener {
 							for (int l = 0 ; l < subsubcomponents.length ; l++) {
 								
 								Component subsubcompo = subsubcomponents[l];
-								if (subsubcompo.getName() != null && subsubcompo.getName().equals("featLabel")) {
+								if (subsubcompo.getName() != null && 
+										subsubcompo.getName().equals("featLabel")) {
 									feat.featlabel = ((JTextField)subsubcompo).getText();
 									log("Feature label: " + feat.featlabel);
 								}
 							}
 							
-							if (subcompo.getName() != null && subcompo.getName().contains("featvalueprob")) {
+							if (subcompo.getName() != null && 
+									subcompo.getName().contains("featvalueprob")) {
 								
 								FeatureValue value = new StringValue();
 								
@@ -114,16 +117,21 @@ public class InsertButtonListener implements ActionListener {
 										for (int n = 0 ; n < subsubsubcomponents.length ; n++) {
 											
 											Component subsubsubcompo = subsubsubcomponents[n];
-											if (subsubsubcompo.getName() != null && subsubsubcompo.getName().equals("featvalue")) {
-												StringValue stringval = new StringValue(0, ((JTextField)subsubsubcompo).getText());
+											if (subsubsubcompo.getName() != null && 
+													subsubsubcompo.getName().equals("featvalue")) {
+												StringValue stringval = 
+													new StringValue(0, ((JTextField)subsubsubcompo).getText());
 												value = stringval;
 												log("Feature value: " +  stringval.val);
 											}
 											
-											if (subsubsubcompo.getName() != null && subsubsubcompo.getName().equals("featprob")) {
-												float prob = Float.parseFloat(((JTextField)subsubsubcompo).getText());								
+											if (subsubsubcompo.getName() != null && 
+													subsubsubcompo.getName().equals("featprob")) {
+												float prob = 
+													Float.parseFloat(((JTextField)subsubsubcompo).getText());								
 												value.independentProb = prob;									
-												DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
+												DiscreteProbabilityAssignment assignment = 
+													new DiscreteProbabilityAssignment();
 												assignment.featurepairs = new FeatureValuePair[1];
 												assignment.featurepairs[0] = new FeatureValuePair();
 												assignment.featurepairs[0].featlabel = feat.featlabel;
@@ -159,7 +167,8 @@ public class InsertButtonListener implements ActionListener {
 
 		Proxy newProxy = new Proxy();
 		newProxy.entityID = proxyID;
-		newProxy.subarchId = subarch;
+		newProxy.origin = new OriginInfo();
+		newProxy.origin.subarchId = subarch;
 		newProxy.probExists = Float.parseFloat(exists);
 		
 		newProxy.features = new Feature[fds.size()];

@@ -22,6 +22,7 @@ package binder.abstr;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.OriginInfo;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
@@ -47,6 +48,23 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	// METHODS FOR CREATING NEW PROXIES
 	// ================================================================= 
 
+	
+	/**
+	 * Construct an OriginInfo object (information about the proxy origin:
+	 * subarchitecture identifier, local data ID in subarchitecture, and data type)
+	 * 
+	 * @param subarchId subarchitecture identifier
+	 * @param localDataId identifier of the data in local subarchitecture
+	 * @param localDataType type of the data in local subarchitecture
+	 * @return a new OriginInfo object
+	 */
+	public OriginInfo createOriginInfo (String subarchId, String localDataId, String localDataType) {
+		OriginInfo origin = new OriginInfo();
+		origin.subarchId = subarchId;
+		origin.localDataId = localDataId;
+		origin.localDataType = localDataType;
+		return origin;
+	}
 
 	/** Create a new proxy given the ID of the originating subarchitecture,
 	 * and the probability of the proxy itself
@@ -56,14 +74,16 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param probExists probability value for the proxy
 	 * @return a new proxy
 	 */
-	public Proxy createNewProxy (String subarchId, float probExists) {
+	public Proxy createNewProxy (OriginInfo origin, float probExists) {
 		
 		Proxy newProxy = new Proxy();
 		
 		newProxy.entityID = newDataID();
-		newProxy.subarchId = subarchId;
+		newProxy.origin = origin;
 		newProxy.probExists = probExists;
 		newProxy.features = new Feature[0];
+		
+		newProxy.timeStamp = System.currentTimeMillis();
 	
 		return newProxy;
 	}
@@ -78,9 +98,9 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param features the features
 	 * @return the created proxy
 	 */
-	public Proxy createNewProxy (String subarchId, float probExists, Feature[] features) {
+	public Proxy createNewProxy (OriginInfo origin, float probExists, Feature[] features) {
 		
-		Proxy newProxy = createNewProxy(subarchId, probExists);
+		Proxy newProxy = createNewProxy(origin, probExists);
 		
 		newProxy.features = features;
 
@@ -98,14 +118,15 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-	public RelationProxy createNewRelationProxy(String subarchId, float probExists, 
+	public RelationProxy createNewRelationProxy(OriginInfo origin, float probExists, 
 			AddressValue[] sources, AddressValue[] targets) {
 	
 		RelationProxy newProxy = new RelationProxy();
 		
 		newProxy.entityID = newDataID();
-		newProxy.subarchId = subarchId;
+		newProxy.origin = origin;
 		newProxy.probExists = probExists;
+		newProxy.timeStamp = System.currentTimeMillis();
 		newProxy.features = new Feature[0];
 		
 		newProxy.source = new Feature();
@@ -131,10 +152,10 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-	public RelationProxy createNewRelationProxy(String subarchId, float probExists, Feature[] features, 
+	public RelationProxy createNewRelationProxy(OriginInfo origin, float probExists, Feature[] features, 
 			AddressValue[] sources, AddressValue[] targets) {
 	
-		RelationProxy newProxy = createNewRelationProxy (subarchId, probExists, sources, targets);
+		RelationProxy newProxy = createNewRelationProxy (origin, probExists, sources, targets);
 		
 		newProxy.features = features;
 		

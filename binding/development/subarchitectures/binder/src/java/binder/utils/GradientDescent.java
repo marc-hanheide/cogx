@@ -327,7 +327,8 @@ public static Union getBestUnion(UnionDistribution distribution) {
 		Union newUnion = new Union();
 		newUnion.entityID = union.entityID;
 		newUnion.features = new Feature[union.features.length];
-
+		newUnion.timeStamp = union.timeStamp;
+		
 		DiscreteProbabilityAssignment bestAssign = null;
 
 		if (union.distribution == null) {
