@@ -23,7 +23,11 @@ package binder.abstr;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
+import binder.autogen.featvalues.AddressValue;
+import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.specialentities.RelationProxy;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
 
@@ -39,7 +43,6 @@ import cast.architecture.ManagedComponent;
 public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 
 	
-
 	// ================================================================= 
 	// METHODS FOR CREATING NEW PROXIES
 	// ================================================================= 
@@ -95,20 +98,23 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-	public Proxy createNewRelationProxy(String subarchId, float probExists, 
-			StringValue[] sources, StringValue[] targets) {
+	public RelationProxy createNewRelationProxy(String subarchId, float probExists, 
+			AddressValue[] sources, AddressValue[] targets) {
 	
-		Proxy newProxy = createNewProxy (subarchId, probExists);
+		RelationProxy newProxy = new RelationProxy();
 		
-		newProxy.features = new Feature[2];
+		newProxy.entityID = newDataID();
+		newProxy.subarchId = subarchId;
+		newProxy.probExists = probExists;
+		newProxy.features = new Feature[0];
 		
-		newProxy.features[0] = new Feature();
-		newProxy.features[0].featlabel = "source";
-		newProxy.features[0].alternativeValues = sources;
+		newProxy.source = new Feature();
+		newProxy.source.featlabel = "source";
+		newProxy.source.alternativeValues = sources;
 		
-		newProxy.features[1] = new Feature();
-		newProxy.features[1].featlabel = "target";
-		newProxy.features[1].alternativeValues = targets;
+		newProxy.target = new Feature();
+		newProxy.target.featlabel = "target";
+		newProxy.target.alternativeValues = targets;
 		
 		return newProxy;
 	}
@@ -125,23 +131,12 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-	public Proxy createNewRelationProxy(String subarchId, float probExists, Feature[] features, 
-			StringValue[] sources, StringValue[] targets) {
+	public RelationProxy createNewRelationProxy(String subarchId, float probExists, Feature[] features, 
+			AddressValue[] sources, AddressValue[] targets) {
 	
-		Proxy newProxy = createNewProxy (subarchId, probExists, features);
+		RelationProxy newProxy = createNewRelationProxy (subarchId, probExists, sources, targets);
 		
-		Feature[] newfeatures = new Feature[features.length +2];
-		for (int i = 0 ; i < features.length ; i++) {
-			newfeatures[i] = features[i];
-		}
-		
-		newfeatures[features.length] = new Feature();
-		newfeatures[features.length].featlabel = "source";
-		newfeatures[features.length].alternativeValues = sources;
-		
-		newfeatures[features.length + 1] = new Feature();
-		newfeatures[features.length + 1].featlabel = "target";
-		newfeatures[features.length + 1].alternativeValues = targets;
+		newProxy.features = features;
 		
 		return newProxy;
 	}
@@ -200,6 +195,53 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return stringVal;
 	}
 	
+	
+	/**
+	 * Create a new AddressValue given a string and a probability
+	 * 
+	 * @param address the address (as a string)
+	 * @param prob the probability value
+	 * @return the AddressValue
+	 */
+	
+	public AddressValue createAddressValue (String address, float prob) {
+		AddressValue addressVal = new AddressValue();
+		addressVal.val = address;
+		addressVal.independentProb = prob;
+		return addressVal;
+	}
+	
+	/**
+	 * Create a new AddressValue given a string and a probability
+	 * 
+	 * @param integer the integer
+	 * @param prob the probability value
+	 * @return the IntegerValue
+	 */
+	
+	public IntegerValue createIntegerValue (int integer, float prob) {
+		IntegerValue integerVal = new IntegerValue();
+		integerVal.val = integer;
+		integerVal.independentProb = prob;
+		return integerVal;
+	}
+	
+	
+
+	/**
+	 * Create a new BooleanValue given a boolean and a probability
+	 * 
+	 * @param val the boolean
+	 * @param prob the probability value
+	 * @return the BooleanValue
+	 */
+	
+	public BooleanValue createBooleanValue (boolean val, float prob) {
+		BooleanValue boolVal = new BooleanValue();
+		boolVal.val = val;
+		boolVal.independentProb = prob;
+		return boolVal;
+	}
 	
 	/** 
 	 * Create a new feature, without feature values

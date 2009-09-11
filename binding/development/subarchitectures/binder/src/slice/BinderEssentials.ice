@@ -68,6 +68,7 @@ class Union extends PerceivedEntity {
 };
 
 
+
 sequence<Union> UnionSequence;
 
 class UnionConfiguration {
@@ -84,6 +85,29 @@ class AlternativeUnionConfigurations {
 };
 
 
+module specialentities {
+
+class RelationProxy extends core::Proxy {
+	core::Feature source;
+	core::Feature target;
+};
+
+class GroupProxy extends core::Proxy {
+	core::FeaturesList connections;
+};
+
+class RelationUnion extends core::Union {
+	core::Feature source;
+	core::Feature target;
+};
+
+class GroupUnion extends core::Union {
+	core::FeaturesList connections;
+};
+
+};
+
+
 /** POSSIBLE FEATURE VALUES */
 module featvalues {
 
@@ -93,6 +117,29 @@ module featvalues {
 class StringValue extends core::FeatureValue {
 	string val;
 };
+
+/** 
+ * A feature value instantiated as a (CAST) address
+ */
+class AddressValue extends core::FeatureValue {
+	string val;
+};
+
+/** 
+ * A feature value instantiated as an integer
+ */
+class IntegerValue extends core::FeatureValue {
+	int val;
+};
+
+/** 
+ * A feature value instantiated as a boolean
+ */
+class BooleanValue extends core::FeatureValue {
+	bool val;
+};
+
+class UnknownValue extends core::FeatureValue { } ;
 
 };
 

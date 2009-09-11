@@ -21,7 +21,9 @@
 package binder.fakeproxygenerators;
 
 import binder.autogen.core.*;
-import binder.autogen.featvalues.StringValue;
+import binder.autogen.featvalues.AddressValue;
+import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.specialentities.RelationProxy;
 
 public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
@@ -63,6 +65,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		
 		proxyOneId = proxy.entityID;
 		
+		log("Proxy one successfully created");
 		return proxy;
 	}
 	
@@ -75,28 +78,32 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		Feature feat1 = createFeatureWithUniqueFeatureValue("shape", spherical);
 		addFeatureToProxy (proxy, feat1);
 	
-		FeatureValue trueval = createStringValue ("true", 0.8f);
-		FeatureValue falseval = createStringValue ("false", 0.15f);
+		BooleanValue trueval = createBooleanValue (true, 0.8f);
+		BooleanValue falseval = createBooleanValue (false, 0.15f);
 		FeatureValue[] vals = {trueval, falseval};
 		Feature feat2 = createFeatureWithAlternativeFeatureValues("graspable", vals);
 		addFeatureToProxy (proxy, feat2);
 		
 		proxyTwoId = proxy.entityID;
 		
+		log("Proxy two successfully created");
+
 		return proxy;
 	}
 	
 	
 	private Proxy createRelationProxy() {
 		
-		StringValue[] sources = new StringValue[1];
-		sources[0] = createStringValue(proxyOneId, 0.9f);
+		AddressValue[] sources = new AddressValue[1];
+		sources[0] = createAddressValue(proxyOneId, 0.9f);
 		
-		StringValue[] targets = new StringValue[1];
-		targets[0] = createStringValue(proxyTwoId, 0.91f);
+		AddressValue[] targets = new AddressValue[1];
+		targets[0] = createAddressValue(proxyTwoId, 0.91f);
 		
-		Proxy proxy = createNewRelationProxy("fakehaptic", 0.81f, sources, targets);
+		RelationProxy proxy = createNewRelationProxy("fakehaptic", 0.81f, sources, targets);
 		
+		log("Relation proxy successfully created");
+
 		return proxy;
 	}
 	

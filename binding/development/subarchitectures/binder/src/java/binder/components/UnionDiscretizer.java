@@ -22,13 +22,11 @@ package binder.components;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
-import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
-import binder.autogen.featvalues.StringValue;
 import binder.utils.GradientDescent;
-import binder.utils.ProbDistribUtils;
+import binder.utils.ProbabilityUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -86,9 +84,9 @@ public class UnionDiscretizer extends ManagedComponent {
 							pair.featlabel = maxUnion.features[j].featlabel;
 							
 							pair.featvalue = maxUnion.features[j].alternativeValues[k];
-					//		log("currently computing marginal prob for (" + pair.featlabel + ", " + ((StringValue)pair.featvalue).val + ")");
+					//		log("currently computing marginal prob for (" + pair.featlabel + ", " + BinderUtils.toString(pair.featvalue) + ")");
 							maxUnion.features[j].alternativeValues[k].independentProb = 
-								ProbDistribUtils.getMarginalProbabilityValue(maxUnion.distribution,pair); // / union.probExists;
+								ProbabilityUtils.getMarginalProbabilityValue(maxUnion.distribution,pair); // / union.probExists;
 						}
 					} 
 					

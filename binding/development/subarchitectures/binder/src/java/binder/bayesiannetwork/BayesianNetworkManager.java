@@ -28,13 +28,15 @@ import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
+import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.featvalues.StringValue;
 import binder.utils.BayesianNetworkUtils;
+import binder.utils.BinderUtils;
+import binder.utils.FeatureValueUtils;
 
 /**
  * Class for managing a bayesian network expressing feature correlations 
@@ -53,8 +55,8 @@ public class BayesianNetworkManager {
 	// Turn logging on/off
 	boolean logging = false;
 
-	// Already computed distributions for a given proxy
-	private HashMap<Proxy,DiscreteProbabilityDistribution> alreadyComputedDistribs;
+	// Already computed distributions for a given entity
+	private HashMap<PerceivedEntity,DiscreteProbabilityDistribution> alreadyComputedDistribs;
 
 
 	/**
@@ -70,7 +72,7 @@ public class BayesianNetworkManager {
 		log("number of nodes: " + network.nodes.length);		
 		log("number of edges: " + network.edges.length);
 
-		alreadyComputedDistribs = new HashMap<Proxy, DiscreteProbabilityDistribution>();
+		alreadyComputedDistribs = new HashMap<PerceivedEntity, DiscreteProbabilityDistribution>();
 
 	}
 
@@ -82,15 +84,15 @@ public class BayesianNetworkManager {
 	 * @param proxy the proxy
 	 * @return the probability distribution
 	 */
-	public DiscreteProbabilityDistribution getPriorDistribution(Proxy proxy) {
+	public DiscreteProbabilityDistribution getPriorDistribution(PerceivedEntity entity) {
 
 		// Check if the prior distribution has already been computed for the proxy
-		if (alreadyComputedDistribs.containsKey(proxy)) {
-			return alreadyComputedDistribs.get(proxy);
+		if (alreadyComputedDistribs.containsKey(entity)) {
+			return alreadyComputedDistribs.get(entity);
 		}
 		else {
-			DiscreteProbabilityDistribution distrib = getPriorDistribution(proxy.features);
-			alreadyComputedDistribs.put(proxy, distrib);
+			DiscreteProbabilityDistribution distrib = getPriorDistribution(entity.features);
+			alreadyComputedDistribs.put(entity, distrib);
 			return distrib;
 		}
 	}
@@ -239,7 +241,7 @@ public class BayesianNetworkManager {
 			for (int i = 0; i < feature.alternativeValues.length; i++) {
 				
 				FeatureValue featvalue = feature.alternativeValues[i];
-				log("Feature value currently looked at: " + ((StringValue) featvalue).val);
+				log("Feature value currently looked at: " + FeatureValueUtils.toString(featvalue));
 				
 				// Create the new assignment
 				DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
@@ -348,13 +350,14 @@ public class BayesianNetworkManager {
 			
 			// Loop on the possible values in the bayesian network
 			for (int i = 0; i < node.feat.alternativeValues.length ; i++) {
-				StringValue featurevalue = (StringValue) node.feat.alternativeValues[i];
+				FeatureValue featvalue2 = node.feat.alternativeValues[i];
 			
 				// If one feature value in the bayesian network matches the provided 
 				// feature value and has a specified probability, just return its value
-				if (featurevalue.val.equals(((StringValue)featvalue).val)) {
-					if (featurevalue.independentProb > 0) {
-						return featurevalue.independentProb;
+
+				if (FeatureValueUtils.haveEqualValue(featvalue, featvalue2)) {
+					if (featvalue2.independentProb > 0) {
+						return featvalue2.independentProb;
 					}
 					else {
 						return (1.0f / node.feat.alternativeValues.length);   // INCORRECT

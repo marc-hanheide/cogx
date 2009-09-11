@@ -22,8 +22,6 @@ package binder.utils;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cast.architecture.UnmanagedComponent;
-
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -33,12 +31,12 @@ import binder.autogen.core.Union;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.featvalues.StringValue;
+import binder.autogen.specialentities.RelationProxy;
+import binder.autogen.specialentities.RelationUnion;
 import binder.bayesiannetwork.BayesianNetworkManager;
 
 public class UnionConstructor  {
 
-	
 
 	// The Bayesian network manager
 	BayesianNetworkManager BNManager;
@@ -49,37 +47,62 @@ public class UnionConstructor  {
 	// Prior probability of the existence of a proxy
 	public float PRIOR_PEXISTS = 0.4f;
 
+	public static boolean LOGGING = true;
 	
+
 	public UnionConstructor() {
 		BNManager = new BayesianNetworkManager();
 	}
-	
+
 	public void setAlphaParam(float alpha) {
 		ALPHA_CONST = alpha;
 	}
-	
+
 	public void setPriorParam(float prior) {
 		PRIOR_PEXISTS = prior;
 	}
-	
-	
+
+
 	/**
-	 * Construct a new union based on the merge of several perceptual entities
-	 * (which may be proxies or unions themselves)
+	 * Construct a new union based on the merge of several perceptual 
+	 * entities (which may be proxies or unions themselves)
+	 * 
+	 * @param includedEntities as vector of entities (with size > 0 )
+	 * @return the new union
+	 */	
+	public Union constructNewUnion
+	(Vector<PerceivedEntity> includedEntities, String entityID) {
+
+		if (BinderUtils.induceRelationUnion(includedEntities)) {
+			return constructNewRelationUnion(includedEntities, entityID);
+		}
+		else {
+			return constructNewBasicUnion(includedEntities, entityID);
+		}
+
+	}
+
+
+	/**
+	 * Construct a new basic union (i.e. not a relation union) based on 
+	 * the merge of several perceptual entities (which may be proxies 
+	 * or unions themselves)
 	 * 
 	 * @param includedEntities as vector of entities (with size > 0 )
 	 * @return the new union
 	 */
-	
-	public Union constructNewUnion(Vector<PerceivedEntity> includedEntities, String entityID) {
+
+	private Union constructNewBasicUnion 
+	(Vector<PerceivedEntity> includedEntities, String entityID) {
 		//	log("***** Constructing a new union ****");
-		
+
 		// Create a new union with a new data ID
-		Union union = new Union();
+		Union union = new Union() ;
+
 		union.entityID = entityID;
-	
+
 		// Specify the proxies included in the union
-		Vector<Proxy> includedProxies = getProxies(includedEntities);
+		Vector<Proxy> includedProxies = BinderUtils.getProxies(includedEntities);
 		union.includedProxies = new Proxy[includedProxies.size()];
 		union.includedProxies = includedProxies.toArray(union.includedProxies);
 
@@ -90,7 +113,7 @@ public class UnionConstructor  {
 		Vector<Feature> features = getFeatures(includedEntities);
 		union.features = new Feature[features.size()];
 		union.features = features.toArray(union.features);
-		
+
 		// Finally, compute the union distribution
 		if (includedEntities.size() > 1) {
 			union.distribution = computeUnionDistribution(union);
@@ -101,8 +124,35 @@ public class UnionConstructor  {
 
 		return union;
 	}
-	
 
+
+	/**
+	 * Construct a new relation union based on the merge of several perceptual 
+	 * entities (which may be proxies or unions themselves)
+	 * 
+	 * @param includedEntities as vector of entities (with size > 0 )
+	 * @return the new union
+	 */
+
+	public RelationUnion constructNewRelationUnion 
+	(Vector<PerceivedEntity> includedEntities, String entityID) {
+		
+		// Get the basic union
+		Union bunion = constructNewBasicUnion(includedEntities, entityID);
+
+		// Copy the info of the basic union into a new relation union
+		RelationUnion runion = BinderUtils.convertIntoRelationUnion(bunion);
+		
+		// INCORRECT - should change this at some point to handle merged relation unions
+		runion.source = ((RelationProxy)includedEntities.elementAt(0)).source ;
+		runion.target = ((RelationProxy)includedEntities.elementAt(0)).target ;
+
+		return runion;
+
+	}
+
+	
+	
 	private Vector<Feature> getFeatures (Vector<PerceivedEntity> includedEntities) {
 		Vector<Feature> features = new Vector<Feature>();
 
@@ -113,46 +163,16 @@ public class UnionConstructor  {
 				feat.featlabel = prox.features[i].featlabel;
 				feat.alternativeValues = new FeatureValue[prox.features[i].alternativeValues.length];
 				for (int j =0; j < prox.features[i].alternativeValues.length ; j++) {
-					feat.alternativeValues[j] = new FeatureValue();
-					if (prox.features[i].alternativeValues[j].getClass().equals(StringValue.class)) {
-						feat.alternativeValues[j] = 
-							new StringValue(prox.features[i].alternativeValues[j].independentProb,
-								((StringValue)prox.features[i].alternativeValues[j]).val);
-					}
+					feat.alternativeValues[j] = 
+						FeatureValueUtils.cloneFeatureValue(prox.features[i].alternativeValues[j]);
 				}
 				features.add(feat);
 			}
 		}
 		return features;
 	}
-	
 
-	
-	
-	/**
-	 * Get all the proxies included in a set of perceptual entities (in case the entity
-	 * is a proxy, it is simply added, and in case it is an union, the set of all included
-	 * proxies is added to the resulting set)
-	 * @param includedEntities the set of perceptual entities
-	 * @return the resulting set of proxies
-	 */
-	private Vector<Proxy> getProxies (Vector<PerceivedEntity> includedEntities) {
-		Vector<Proxy> includedProxies = new Vector<Proxy>();
-		for (Enumeration<PerceivedEntity> en = includedEntities.elements() ; en.hasMoreElements() ;) {
-			PerceivedEntity entity = en.nextElement();
-			if (entity.getClass().equals(Proxy.class)) {
-				includedProxies.add((Proxy)entity);
-			}
-			else if (entity.getClass().equals(Union.class)) {
-				Union includedUnion = (Union)entity;
-				for (int i = 0 ; i < includedUnion.includedProxies.length ; i++) {
-					includedProxies.add(includedUnion.includedProxies[i]);
-				}
-			}
-		}
-		return includedProxies;
-	}
-	
+
 
 	private float computeProbExists (Vector<PerceivedEntity> includedEntities) {
 		float probExists = PRIOR_PEXISTS;
@@ -163,15 +183,15 @@ public class UnionConstructor  {
 			probExists = probExists * prox.probExists; 
 			probNotExists = probNotExists * (1- prox.probExists); 
 		}	
-		
+
 		probExists = probExists / ((float) Math.pow(PRIOR_PEXISTS,(includedEntities.size())));
 		probNotExists = probNotExists / ((float) Math.pow((1-PRIOR_PEXISTS),(includedEntities.size())));
-		
+
 		float normConstant = 1.0f / (probExists + probNotExists);
 		probExists = normConstant * probExists;
 		return probExists;
 	}
-	
+
 
 
 	/** 
@@ -182,9 +202,9 @@ public class UnionConstructor  {
 	public ProbabilityDistribution computeUnionDistribution(Union union) {
 
 		// Compute the prior distribution for the union
-		DiscreteProbabilityDistribution priorDistrib =  BNManager.getPriorDistribution(union.features);
+		DiscreteProbabilityDistribution priorDistrib =  BNManager.getPriorDistribution(union);
 
-//		log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
+		//		log("Maximum for prior distribution of the union: " + GradientDescent.getMaximum(priorDistrib));
 
 		Vector<CombinedProbabilityDistribution> proxiesDistrib = 
 			new Vector<CombinedProbabilityDistribution>();
@@ -196,7 +216,7 @@ public class UnionConstructor  {
 			// + GradientDescent.getMaximum(proxy.distribution));
 
 			DiscreteProbabilityDistribution priorDistribForProxy = BNManager.getPriorDistribution(proxy);
-			
+
 			//		log("Maximum for prior distribution of the proxy " + i +  
 			// ": " + GradientDescent.getMaximum(priorDistribForProxy));
 
@@ -205,11 +225,11 @@ public class UnionConstructor  {
 			finalProxyDistrib.distributions = new DiscreteProbabilityDistribution[2];
 			finalProxyDistrib.distributions[0] = proxy.distribution;
 			finalProxyDistrib.distributions[1] = 
-				ProbDistribUtils.invertDistribution(priorDistribForProxy);
+				ProbabilityUtils.invertDistribution(priorDistribForProxy);
 			finalProxyDistrib.distributions[1] = 
-				ProbDistribUtils.multiplyDistributionWithConstantValue
+				ProbabilityUtils.multiplyDistributionWithConstantValue
 				((DiscreteProbabilityDistribution)finalProxyDistrib.distributions[1], ALPHA_CONST);
-	
+
 			//		log("Maximum for final distribution of the proxy " + 
 			// i +  ": " + GradientDescent.getMaximum(finalProxyDistrib));
 
@@ -221,7 +241,7 @@ public class UnionConstructor  {
 		finalDistrib.distributions = new ProbabilityDistribution[proxiesDistrib.size() + 1];
 
 		finalDistrib.distributions[0] = 
-			ProbDistribUtils.multiplyDistributionWithConstantValue(priorDistrib, ALPHA_CONST);
+			ProbabilityUtils.multiplyDistributionWithConstantValue(priorDistrib, ALPHA_CONST);
 
 		for (int i = 1 ; i < proxiesDistrib.size() + 1 ; i++ ) {
 			finalDistrib.distributions[i] = proxiesDistrib.elementAt(i-1);
@@ -229,7 +249,7 @@ public class UnionConstructor  {
 
 		//		log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
 
-		// finalDistrib = ProbDistribUtils.normaliseDistribution(finalDistrib, 1.0f);
+		// finalDistrib = ProbabilityUtils.normaliseDistribution(finalDistrib, 1.0f);
 		return finalDistrib;
 	}
 
@@ -243,4 +263,7 @@ public class UnionConstructor  {
 		return union;
 	} 
 
+	private void log (String s) {
+		System.out.println("[UnionConstructor] " + s);
+	}
 }

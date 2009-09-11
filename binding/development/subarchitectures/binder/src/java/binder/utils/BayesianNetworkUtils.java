@@ -34,6 +34,7 @@ import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.featvalues.UnknownValue;
 import binder.bayesiannetwork.configparser.BNConfigParser;
 
 public class BayesianNetworkUtils {
@@ -59,7 +60,7 @@ public class BayesianNetworkUtils {
 	    	for (int j = 0; j < nbvalues; j++ )  {
 	    		newfeatvalues[j] = network.nodes[i].feat.alternativeValues[j];
 	    	}
-	    	newfeatvalues[nbvalues] = new StringValue(1.0f/nbvalues, "indeterminate");
+	    	newfeatvalues[nbvalues] = new UnknownValue(1.0f/nbvalues);
 	    	network.nodes[i].feat.alternativeValues = newfeatvalues;
 	    }
 	    

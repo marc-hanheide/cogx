@@ -33,7 +33,6 @@ public abstract class AbstractProxyGenerator extends BindingWorkingMemoryWriter 
 	protected boolean reverted = false;
 	
 	
-
 	@Override
 	public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--nbproxies")) {

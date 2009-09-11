@@ -19,7 +19,6 @@
 
 package binder.gui;
 
-import java.awt.BorderLayout;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Random;
@@ -31,8 +30,10 @@ import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
-import binder.autogen.featvalues.StringValue;
+import binder.autogen.core.FeatureValue;
 import binder.utils.BayesianNetworkUtils;
+import binder.utils.BinderUtils;
+import binder.utils.FeatureValueUtils;
 
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
@@ -40,6 +41,9 @@ import com.mxgraph.view.mxGraph;
 
 public class BayesianNetworkGUI extends JFrame {
 
+	// No clue what that is
+	private static final long serialVersionUID = 1L;
+	
 	int DEFAULT_NODE_BOX_WIDTH= 180;
 	int DEFAULT_NODE_BOX_HEIGHT= 30;
 	
@@ -71,8 +75,8 @@ public class BayesianNetworkGUI extends JFrame {
 		String text = "";
 		text += node.feat.featlabel + " = \n";
 		for (int i = 0; i < node.feat.alternativeValues.length; i ++) {
-			StringValue sv = (StringValue) node.feat.alternativeValues[i];
-			text += sv.val;
+			FeatureValue sv = (FeatureValue) node.feat.alternativeValues[i];
+			text += FeatureValueUtils.toString(sv);
 			if (sv.independentProb > 0.0f) {
 				text += " (prob=" + sv.independentProb + ")";
 			}
@@ -89,7 +93,8 @@ public class BayesianNetworkGUI extends JFrame {
 		String text = "";
 		for (int i = 0; i < edge.correlations.length ; i++) {
 			FeatureValueCorrelation corr = edge.correlations[i];
-			text += "P ( " + ((StringValue)corr.value1).val + " | " + ((StringValue)corr.value2).val + " ) = " + corr.condProb + "\n";
+			text += "P ( " + FeatureValueUtils.toString(corr.value1) 
+			+ " | " + FeatureValueUtils.toString(corr.value2) + " ) = " + corr.condProb + "\n";
 		}
 		return text;
 	}
