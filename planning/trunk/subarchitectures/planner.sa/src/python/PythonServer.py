@@ -17,7 +17,7 @@ from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 
-TEST_DOMAIN_FN = join(dirname(__file__), "../../test_data/minidora.domain.mapl")
+TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.mapl")
 
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
@@ -69,15 +69,18 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       return
     
     plan = task.get_plan()
+    #plan = task_preprocessor.map2binder_rep(plan, task)
+    print "The following plan was found:\n", plan
+
+    dot_str = plan.to_dot()
+    dot_fn = abspath(join(this_path, "plan.dot"))
+    open(dot_fn, "w").write(dot_str)
+    print "Dot file for plan is stored in", dot_fn
     
-    make_dot = True
-    if make_dot:
-      dot_str = plan.to_dot()
-      dot_fn = abspath(join(this_path, "plan.dot"))
-      print "Generating and showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
-      print "Dot file is stored in", dot_fn
-      show_dot_script = abspath(join(this_path, "../..", "show_dot.sh"))
-      open(dot_fn, "w").write(dot_str)
+    show_dot = True
+    if show_dot:
+      print "Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
+      show_dot_script = abspath(join(this_path, "show_dot.sh"))
       os.system("%s %s" % (show_dot_script, dot_fn)) 
 
     uniondict = dict((u.entityID, u) for u in task_desc.state)
@@ -88,7 +91,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       uargs = [task._mapldomain.namedict.get(a.name, a.name) for a in pnode.args]
       fullname = str(pnode)
       outplan.append(Planner.Action(task_desc.id, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
-
+      #outplan.append(Planner.Action(task_desc.id, pnode.action.name, pnode.args, fullname, Planner.Completion.PENDING))
+    #print outplan
     self.getClient().deliverPlan(task_desc.id, outplan);
                      
     #plan = [Planner.Action(0,"test1",[task_desc.state[0]],Planner.Completion.PENDING), Planner.Action(0,"test2",[],Planner.Completion.PENDING)]
