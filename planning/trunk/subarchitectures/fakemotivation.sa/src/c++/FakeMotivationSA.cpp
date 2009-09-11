@@ -10,7 +10,7 @@ extern "C" {
 }
 
 FakeMotivationSA::FakeMotivationSA() : 
-    m_goal ("(forall (?n - node) (= (place_type ?n) place))") 
+    m_goal ("(forall (?p - place) (= (explored ?p) true))") 
 { }
 
 void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
