@@ -7,16 +7,24 @@
 #include "SOIFilter.h"
 
 #define TIME_THR_DEFAULT 500
-#define UPD_THR_DEFAULT 4
+#define UPD_THR_DEFAULT 5
 #define CAM_ID_DEFAULT 0
-#define DILATE_FACTOR 1.0  // HACK: Michael Zillich, was 1.5
+#define DILATE_FACTOR 1.1  // HACK: Michael Zillich, was 1.5
 
 // Segmentation costants
+
+#define SMOOTH_COST 6
+#define HUE_K_VAL 3 // Number of nearest neighbours taken when calculating the cost for hue
+
+#define LABEL_0_COST 18
 
 #define MAX_HUE_VAL 180
 #define MIN_HUE_VAL 0
 
-#define MAX_PATCH_SIZE 40000
+#define EXPAND_ITERS 3
+#define SWAP_ITERS 2
+
+#define MAX_PATCH_SIZE 90000
 
 /**
  * The function called to create a new instance of our component.
@@ -46,11 +54,12 @@ struct gCutData {
 
 static long smoothFn(int p1, int p2, int l1, int l2)
 {
-	if ( l1 != l2 ) return(3);
-	else return(0);
+	if ( l1 != l2 ) return(SMOOTH_COST);
+	else if (l1==0) return(0);
+	else return 0;
 }
 
-vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage* costImg, int k)
+vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg, int k)
 {
 	int num_pixels = width*height;
 	vector<int> result(num_pixels);   // stores result of optimization
@@ -73,8 +82,9 @@ vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage*
 	
 		for(int i=0; i<num_pixels; i++) {
 			int idx = num_labels *i;
-			data[idx] = 15;
+			data[idx] = LABEL_0_COST;
 			data[idx + 1] = costImg->imageData[i];
+			data[idx + 2] = bgCostImg->imageData[i];
 		}
 	
 		gc->setDataCost(data);
@@ -82,9 +92,11 @@ vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage*
 		// smoothness comes from function pointer
 		gc->setSmoothCost(&smoothFn);
 
-		printf("\nBefore optimization energy is %d\n",gc->compute_energy());
-		gc->expansion(4);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
-		printf("\nAfter optimization energy is %d\n",gc->compute_energy());
+		log("\nBefore optimization energy is %d\n",gc->compute_energy());
+		gc->expansion(EXPAND_ITERS); // run expansion		
+		log("\nAfter %i expand iterations the energy is %d\n", EXPAND_ITERS, gc->compute_energy());
+		gc->swap(SWAP_ITERS);		 // run swap
+		log("\nAfter %i swap iterations the energy is %d\n", SWAP_ITERS, gc->compute_energy());
 
 		for ( int  i = 0; i < num_pixels; i++ )
 			result[i] = gc->whatLabel(i);
@@ -209,10 +221,10 @@ vector<int> SOIFilter::getHueCostList(list<int> hueList, int k)
 
 //	    vector<int>::iterator itr;
 //	    int h = 0;
-	    printf("HueCostList: \n");	
-	    for( int i=MIN_HUE_VAL; i < MAX_HUE_VAL; i++)
-	   			printf("h:%i c:%i\n", i, hueCostList[i]);
-	    printf("\n");
+//	    printf("HueCostList: \n");	
+//	    for( int i=MIN_HUE_VAL; i < MAX_HUE_VAL; i++)
+//	   			printf("h:%i c:%i\n", i, hueCostList[i]);
+//	    printf("\n");
 	
 	return hueCostList;
 }
@@ -396,13 +408,13 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
 }
 
 void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint> &projPoints,
-					vector<CvPoint> &bgProjPoints, vector<int> &hull, const Video::CameraParameters &cam)
+				vector<CvPoint> &bgProjPoints, vector<int> &hull, const float ratio, const Video::CameraParameters &cam)
 {
   size_t n = soi.points.size();
   size_t nbg = soi.BGpoints.size();
   
-  int dx = roi.rect.pos.x - roi.rect.width/2;
-  int dy = roi.rect.pos.y - roi.rect.height/2;
+//  int dx = roi.rect.pos.x - roi.rect.width/2;
+//  int dy = roi.rect.pos.y - roi.rect.height/2;
   
   // calculate foreground points
   for(size_t i = 0; i < n; i++)
@@ -410,8 +422,8 @@ void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint>
     cogx::Math::Vector2 p = projectPoint(cam, soi.points[i]);
     
     /// HACK: artificially shrink cloud point
-	int x = (p.x - roi.rect.pos.x)*0.5 + roi.rect.width/2;
-	int y = (p.y - roi.rect.pos.y)*0.8 + roi.rect.height/2;
+	int x = (p.x - roi.rect.pos.x)*ratio*0.4 + roi.rect.width/2;
+	int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
 	
     projPoints.push_back(cvPoint(x, y));
   }
@@ -423,10 +435,13 @@ void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint>
 
   // calculate background points inside SOI
   for(size_t i = 0; i < nbg; i++)
-  {
+  {  
     cogx::Math::Vector2 p = projectPoint(cam, soi.BGpoints[i]);
     
-    bgProjPoints.push_back(cvPoint(p.x - dx, p.y - dy));
+    int x = (p.x - roi.rect.pos.x)*ratio*0.4 + roi.rect.width/2;
+	int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
+	   
+    bgProjPoints.push_back(cvPoint(x, y));
   }  
 }
 
@@ -457,35 +472,48 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   }
 }
 
-IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints)
+/*
+IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, float huemod, float distmod)
 {
     IplImage *huePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);  
 	IplImage *samplePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
     IplImage *distPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_32F, 1);
     IplImage *distScaledPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
     IplImage *costImg = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-    
+ 
     cvSetImageCOI(iplPatchHLS, 1);
     cvCopy(iplPatchHLS, huePatch);
-    
+   
     cvSet(samplePatch,cvScalar(1));
     vector<CvPoint>::iterator itr;
-    
+   
 	for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
+	{ 
+	  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
+	  if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
 		cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
+	  else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
+	    
+	}
 		
 	cvDistTransform(samplePatch, distPatch, CV_DIST_C);
-	
+
 	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
-    
+  
     list<int> hueList = getSortedHueList(projPoints, huePatch);
     vector<int> hueCostList = getHueCostList(hueList, 3);
-   
+    
+    float sigma = 7;
+    float sigma2 = 2*sqr(sigma);
+    float factor = 1/sqrt(2*acos(-1.0))/sigma;
+    float norm = (MAX_HUE_VAL - MIN_HUE_VAL)/6;
+ 
 	for(int i=0; i < costImg->height; i++)
 	  for(int j=0; j < costImg->width; j++) {
 
 	      int huecost = hueCostList[cvGet2D(huePatch, i, j).val[0]];
-	      int cost = huecost*1.3 + cvGet2D(distScaledPatch, i, j).val[0];
+	      huecost = -(exp(-sqr((float) huecost)/sigma2) - 1)*norm;
+	      int cost = huecost*huemod + cvGet2D(distScaledPatch, i, j).val[0]*distmod;
       
 	      if (cost > 255)
 	      {
@@ -495,7 +523,70 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	      	
 	      cvSet2D(costImg, i, j, cvScalar(cost));
 	  }
- 	
+	
+	cvReleaseImage(&huePatch);      
+	cvReleaseImage(&samplePatch);
+	cvReleaseImage(&distPatch);      
+	cvReleaseImage(&distScaledPatch);
+	
+	return costImg;
+} */
+
+
+
+IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, float hueSigma, float distSigma)
+{
+    IplImage *huePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);  
+	IplImage *samplePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
+    IplImage *distPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_32F, 1);
+    IplImage *distScaledPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
+    IplImage *costImg = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
+ 
+    cvSetImageCOI(iplPatchHLS, 1);
+    cvCopy(iplPatchHLS, huePatch);
+   
+    cvSet(samplePatch,cvScalar(1));
+    vector<CvPoint>::iterator itr;
+   
+	for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
+	{ 
+	  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
+	  if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
+		cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
+	  else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
+	    
+	}
+		
+	cvDistTransform(samplePatch, distPatch, CV_DIST_C);
+
+	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
+  
+    list<int> hueList = getSortedHueList(projPoints, huePatch);
+    vector<int> hueCostList = getHueCostList(hueList, 3);
+    
+    float hueSigma2 = 2*sqr(hueSigma);
+    float distSigma2 = 2*sqr(distSigma);
+    //float factor = 1/sqrt(2*acos(-1.0))/sigma;
+    float norm = 100;
+ 
+	for(int i=0; i < costImg->height; i++)
+	  for(int j=0; j < costImg->width; j++) {
+
+	      int hueDiff = hueCostList[cvGet2D(huePatch, i, j).val[0]];
+	      float hueP = exp(-sqr((float) hueDiff)/hueSigma2);
+	      int distDiff = cvGet2D(distScaledPatch, i, j).val[0];
+	      float distP = exp(-sqr((float) distDiff)/distSigma2);
+	      int cost = (int) (-(hueP*distP - 1)*norm);
+ /* log("phue %f, pdist: %f, cost: %i", hueP, distP, cost);    
+	      if (cost > 255)
+	      {
+	      	log("Overflow at %i, %i hue: %i cost: %i", j, i, cvGet2D(huePatch, i, j).val[0], hueDiff);
+	      	cost = 255;
+	      }*/
+	      	
+	      cvSet2D(costImg, i, j, cvScalar(cost));
+	  }
+	
 	cvReleaseImage(&huePatch);      
 	cvReleaseImage(&samplePatch);
 	cvReleaseImage(&distPatch);      
@@ -541,7 +632,7 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
 		ratio = sqrt(MAX_PATCH_SIZE / ratio);
 	else
 		ratio = 1;
-
+	
 	IplImage *iplPatch = cvCreateImage(cvSize(cvGetSize(iplImg).width*ratio, 
 											  cvGetSize(iplImg).height*ratio),
                           iplImgBGR->depth,
@@ -560,16 +651,18 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
     vector<CvPoint> projPoints, bgProjPoints;
     vector<int>  hullPoints;    
     
-    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, image.camPars);
-log("ok1");
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints);  	
+    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
+
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 20, 60);
+    
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, 4, 9000);  	
 	
 	segMask = new SegmentMask;
     
     segMask->width = iplPatchHLS->width;
     segMask->height = iplPatchHLS->height;
- log("ok2"); 
-    vector<int> labels = graphCut(segMask->width, segMask->height, 2, costPatch, 3);
+ 
+    vector<int> labels = graphCut(segMask->width, segMask->height, 3, costPatch, bgCostPatch, HUE_K_VAL);
     segMask->data = labels;
     convertImageFromIpl(iplPatch, imgPatch);
     
@@ -577,7 +670,7 @@ log("ok1");
 
 	for(int i=0; i < labels.size(); i++)
 	{
-		segPatch->imageData[i] = labels[i]*200;
+		segPatch->imageData[i] = labels[i]*120;
 	}   
  
     if (doDisplay)

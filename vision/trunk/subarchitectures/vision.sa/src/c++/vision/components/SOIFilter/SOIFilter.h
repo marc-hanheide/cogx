@@ -94,18 +94,18 @@ private:
   void segmentObject(const cdl::WorkingMemoryAddress soiAddr, Video::Image &imgPatch, VisionData::SegmentMaskPtr &segMask);
   
   void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
-					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const Video::CameraParameters &cam);
+					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const float ratio, const Video::CameraParameters &cam);
 					   
   void drawProjectedSOIPoints(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<CvPoint> bgProjPoints,
   					const std::vector<int> hull);
   
   std::list<int> getSortedHueList(std::vector<CvPoint> projPoints, const IplImage* hueImg);
   
-  std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, int k);
+  std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg, int k);
   
   std::vector<int> getHueCostList(std::list<int> hueList, int k);
   
-  IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints);
+  IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints, float huemod, float distmod);
 
 protected:
   /**
