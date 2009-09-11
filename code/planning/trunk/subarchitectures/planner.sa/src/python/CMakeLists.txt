@@ -15,6 +15,8 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/standalone/config.auto.in" "${CMAKE_
           PERMISSIONS OWNER_WRITE OWNER_READ
                       GROUP_WRITE GROUP_READ)
 
+install(CODE "exec_program(\"${CMAKE_COMMAND}\" ARGS -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/planner)")
+
 
 
 #install(CODE "exec_program(\"${CMAKE_COMMAND}\" ARGS -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/python)")

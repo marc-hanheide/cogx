@@ -8,6 +8,7 @@ Main class for storing MAPL plans. Such plans
 """
 
 from string import Template
+import copy
 
 import graph
 import constants
@@ -37,24 +38,47 @@ class PlanNode(object):
         self.time = time
     def __str__(self):
         #return "%s(%s)" % (self.action, self.time)
-        args = [a.name for a in self.args]
-        return "%s %s" % (self.action.name, " ".join(args))
+        def tostr(arg):
+            return a.name if hasattr(a,"name") else str(a)
+        args = [tostr(a) for a in self.args]
+        return " ".join([self.action.name]+args)
+    def copy(self):
+        return self.__class__(self.action, list(self.args), self.time)
 
+class DummyAction(object):
+    def __init__(self, name):
+        self.name = name
+    def __str__(self):
+        return str(self.name)
 
 class DummyNode(PlanNode):
-    def __init__(self, name, time):
-        self.action = name
-        self.time = time
+    def __init__(self, name, args, time):
+        action = DummyAction(name)
+        PlanNode.__init__(self, action, args, time)
     def __str__(self):
-        #return "%s(%s)" % (self.action, self.time)
-        return "%s " % self.action
-    
+        return str(self.action)  
 
 class MAPLPlan(graph.DAG):
     def __init__(self, init_state=None, goal_condition=None):
         graph.DAG.__init__(self)
         self.init_node = self.create_init_node(init_state)
         self.goal_node = self.create_goal_node(goal_condition)
+        self.add_node(self.init_node)
+        self.add_node(self.goal_node)
+    def copy(self):
+        p = MAPLPlan()
+        n2n = {}
+        for n in self.V:
+            new_n = n2n.get(n, n.copy())
+            for n2 in self.E[n]:
+                new_n2 = n2n.get(n2, n2.copy())
+                p.add_edge(new_n, new_n2, self.labels[n,n2])
+                for old, new in ((n,new_n), (n2, new_n2)):
+                    if old == self.init_node:
+                        p.init_node = new
+                    if old == self.goal_node:
+                        p.goal_node = old
+        return p
     def add_link(self, node_or_link, node2=None):
         if node2:
             # create link from the two PlanNodes given.
@@ -64,18 +88,22 @@ class MAPLPlan(graph.DAG):
             link = node_or_link
         self.add_edge(link.fnode, link.tnode, link)
     def create_init_node(self, astate):
-        return DummyNode("init", 0)
+        ## TODO: astate is still unused
+        return DummyNode("init", [], 0)
     def create_goal_node(self, astate):
-        return DummyNode("goal", 9999)
+        ## TODO: astate is still unused
+        return DummyNode("goal", [], 9999)
     def _edge_str(self, v1, v2):
         label = self.labels.get((v1,v2))
         assert isinstance(label, OrderingConstraint)
         return str(label)
+    def all_actions(self):
+        return self.V
     def to_dot(self, name="plan", ranks=[]):
         def declare_node(node_id):
             label = self.labels.get(node_id)
             if label is None: label = node_id
-            return '"%s" [%s]' % (node_id, label) 
+            return '"%s" ["%s"]' % (node_id, label) 
         def declare_edge(node_id1, node_id2):
             label = ""
 #             if (node_id1, node_id2) in self.labels:
