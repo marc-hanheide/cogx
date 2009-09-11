@@ -31,13 +31,23 @@ class OrderingConstraint(object):
         
 
 class PlanNode(object):
-    def __init__(self, action, time):
+    def __init__(self, action, args, time):
         self.action = action
+        self.args = args
         self.time = time
     def __str__(self):
         #return "%s(%s)" % (self.action, self.time)
-        return "%s" % self.action
-        
+        args = [a.name for a in self.args]
+        return "%s %s" % (self.action.name, " ".join(args))
+
+
+class DummyNode(PlanNode):
+    def __init__(self, name, time):
+        self.action = name
+        self.time = time
+    def __str__(self):
+        #return "%s(%s)" % (self.action, self.time)
+        return "%s " % self.action
     
 
 class MAPLPlan(graph.DAG):
@@ -54,9 +64,9 @@ class MAPLPlan(graph.DAG):
             link = node_or_link
         self.add_edge(link.fnode, link.tnode, link)
     def create_init_node(self, astate):
-        return PlanNode("init", 0)
+        return DummyNode("init", 0)
     def create_goal_node(self, astate):
-        return PlanNode("goal", 9999)
+        return DummyNode("goal", 9999)
     def _edge_str(self, v1, v2):
         label = self.labels.get((v1,v2))
         assert isinstance(label, OrderingConstraint)

@@ -13,7 +13,7 @@ def extend_pythonpath():
   sys.path.insert(0, standalone_path)
 extend_pythonpath()  
 
-from standalone.task import Task
+from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 
@@ -60,9 +60,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
 
     self.planner.register_task(task)
+    self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     task.mark_changed()
     task.activate_change_dectection()
+    if task.get_planning_status() == PlanningStatusEnum.PLANNING_FAILURE:
+      self.getClient().updateStatus(task_desc.id, Planner.Completion.FAILED);
+      return
+    
     plan = task.get_plan()
     
     make_dot = True
@@ -75,12 +80,20 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       open(dot_fn, "w").write(dot_str)
       os.system("%s %s" % (show_dot_script, dot_fn)) 
 
-#     if(self.client is None):
-#       print "ERROR!!"
+    uniondict = dict((u.entityID, u) for u in task_desc.state)
+    
+    ordered_plan = plan.topological_sort(include_depths=False)
+    outplan = []
+    for pnode in ordered_plan[1:-1]:
+      uargs = [task._mapldomain.namedict.get(a.name, a.name) for a in pnode.args]
+      fullname = str(pnode)
+      outplan.append(Planner.Action(task_desc.id, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
 
-#     task_desc.plan = str(plan)
-#     self.getClient().deliverPlan(task_desc);
+    self.getClient().deliverPlan(task_desc.id, outplan);
+                     
+    #plan = [Planner.Action(0,"test1",[task_desc.state[0]],Planner.Completion.PENDING), Planner.Action(0,"test2",[],Planner.Completion.PENDING)]
+    
     # add task to some queue or start planning right away. when done call self.client.deliverPlan(string plan)
     
-  def registerClient(self, Client, current=None):
+  def updateTask(self, task_desc, current=None):
     pass

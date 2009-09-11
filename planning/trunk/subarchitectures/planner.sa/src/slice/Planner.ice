@@ -17,42 +17,31 @@ module autogen {
 
     sequence<string> stringSeq;
 
-    class ObjectDeclaration {
-      string name;
-      string type;
-    };
-
-    sequence<ObjectDeclaration> objDeclSeq;
-
-    enum ModalityEnum {FACTMOD, BELIEFMOD, KVALMOD};
-
-    class Fact {
-      ModalityEnum modality;        
-      stringSeq believers;  
-      string name;              /* name of the state variable used */
-      stringSeq arguments;  	/* argument list */
-      string value;             /* any value from the domain of 'name' + "unknown" */
-    };
-    sequence<Fact> factSeq;
-
-    class PlanningState {
-      factSeq facts;
-    };
-
     sequence<binder::autogen::core::Union> unionSeq;
+
+    class StateChangeFilter {
+      unionSeq removeFilter;
+      stringSeq featureFilter;
+    };
+
+    class Action {
+      int taskID;
+      string name;
+      stringSeq arguments;
+      string fullName;
+      Completion status;
+    };
+
+    sequence<Action> ActionSeq;
 
     class PlanningTask
     {
       int id;
       string goal;
-      string plan;
-      string objects;
-      //string state;
+      ActionSeq plan;
       unionSeq state;
-      //Completion status;
-      //string planningAgent;  // the name of the planning agent as used in the state description
-      //objDeclSeq objects;
-      //PlanningState state;
+      Completion status;
+      Completion planningStatus;
     };
 
     // this is for planning-internal use only and takes care of the communication between
@@ -60,13 +49,16 @@ module autogen {
 
     interface CppServer
     {
-      void deliverPlan(PlanningTask task);
+      void deliverPlan(int id, ActionSeq plan);
+      //void deliverPlan(PlanningTask task);
+      void updateStatus(int id, Completion status);
+      void setChangeFilter(int id, StateChangeFilter filter);
     };
 
     interface PythonServer extends cast::interfaces::CASTComponent
     {
-      void registerClient(CppServer* client);
       void registerTask(PlanningTask task);
+      void updateTask(PlanningTask task);
     };
   };
 };

@@ -97,6 +97,8 @@ class BasePlanner(object):
         """
         input_data = self._prepare_input(task)
         output_data = self._run(input_data, task)
+        if output_data is None:
+            return None
         plan = self._post_process(output_data, task)
         return plan
     
@@ -166,6 +168,8 @@ class ContinualAxiomsFF(BasePlanner):
         lines = [line for line in pddl_output.splitlines() if line]
         result = lines.pop(0)
         assert result in ("SUCCESS", "FAILURE"), "wrong format for FF output"
+        if result == "FAILURE":
+            return None
         actions = [self.PDDL_REXP.search(line).group(1).lower() for line in lines]
         return actions
 
@@ -187,26 +191,29 @@ class ContinualAxiomsFF(BasePlanner):
         """
         # very preliminary implementation of the above!
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
-        action_list = [self.remove_inferable_vars(action, task._mapldomain) for action in action_list]
+        action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
         times_actions = enumerate(action_list)  # keep it sequentially for now
-        nodes = [plans.PlanNode(a, t+1) for t,a in times_actions]
+        nodes = [plans.PlanNode(a[0], a[1], t+1) for t,a in times_actions]
         for i in xrange(0, len(nodes)-1):
             plan.add_node(nodes[i])
             link = plans.OrderingConstraint(nodes[i], nodes[i+1])
             plan.add_link(link)
-        plan.add_link(plan.init_node, nodes[0])
-        plan.add_link(nodes[-1], plan.goal_node)
+        if nodes:
+            plan.add_link(plan.init_node, nodes[0])
+            plan.add_link(nodes[-1], plan.goal_node)
+        else:
+            plan.add_link(plan.init_node, plan.goal_node)
         return plan
 
-    def remove_inferable_vars(self, action, domain):
+    def remove_inferable_vars(self, action, task):
         elmts = action.split()
         action, args = elmts[0], elmts[1:]
-        actions = dict((a.name,a) for a in itools.chain(domain.actions, domain.sensors))
+        actions = dict((a.name,a) for a in itools.chain(task.actions, task.sensors))
         assert action in actions
         action_def = actions[action]
         num = len(action_def.agents) + len(action_def.args)
-        argnames = args[:num]
-        return " ".join([action]+argnames)
+        args = [task[a] for a in args[:num]]
+        return (action_def, args)
         
     
 class TFD(BasePlanner):
@@ -301,8 +308,12 @@ class TFD(BasePlanner):
             plan.add_node(nodes[i])
             link = plans.OrderingConstraint(nodes[i], nodes[i+1])
             plan.add_link(link)
-        plan.add_link(plan.init_node, nodes[0])
-        plan.add_link(nodes[-1], plan.goal_node)
+        if nodes:
+            plan.add_link(plan.init_node, nodes[0])
+            plan.add_link(nodes[-1], plan.goal_node)
+        else:
+            plan.add_link(plan.init_node, plan.goal_node)
+            
         return plan
             
 if __name__ == '__main__':    
