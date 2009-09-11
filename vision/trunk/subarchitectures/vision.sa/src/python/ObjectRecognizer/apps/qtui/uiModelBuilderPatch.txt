@@ -8,12 +8,8 @@
  
  class Ui_ModelBuilder(object):
      def setupUi(self, ModelBuilder):
-@@ -94,7 +95,7 @@
-         self.frame_3.setObjectName("frame_3")
-         self.verticalLayout_5 = QtGui.QVBoxLayout(self.frame_3)
+@@ -99,3 +100,3 @@
          self.verticalLayout_5.setObjectName("verticalLayout_5")
 -        self.wwCameraPlacement = QtGui.QWidget(self.frame_3)
 +        self.wwCameraPlacement = CQwCameraPlacement(self.frame_3)
          self.wwCameraPlacement.setMinimumSize(QtCore.QSize(0, 120))
-         self.wwCameraPlacement.setObjectName("wwCameraPlacement")
-         self.verticalLayout_5.addWidget(self.wwCameraPlacement)
