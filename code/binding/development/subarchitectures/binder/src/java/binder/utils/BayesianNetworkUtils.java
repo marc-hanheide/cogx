@@ -130,12 +130,15 @@ public class BayesianNetworkUtils {
 			BayesianNetworkEdge edge = e.nextElement();
 			for (int i = 0; i < edge.correlations.length; i++) {
 				FeatureValueCorrelation corr = edge.correlations[i];
-				StringValue val1a = (StringValue) pair1.featvalue;
-				StringValue val1b = (StringValue) corr.value1;
-				StringValue val2a = (StringValue) pair2.featvalue;
-				StringValue val2b = (StringValue) corr.value2;
-				if (val1a.val.equals(val1b.val) && val2a.val.equals(val2b.val)) {
-					log("correlation found between ("+ pair1.featlabel+"="+val1a.val+") and (" + pair2.featlabel + "=" + val2a.val + "): " + corr.condProb);
+				FeatureValue val1a = pair1.featvalue;
+				FeatureValue val1b = corr.value1;
+				FeatureValue val2a = pair2.featvalue;
+				FeatureValue val2b = corr.value2;
+				if (FeatureValueUtils.haveEqualValue(val1a, val1b) &&
+						FeatureValueUtils.haveEqualValue(val2a, val2b)) {
+					log("correlation found between ("+ pair1.featlabel+"="+ 
+							FeatureValueUtils.toString(val1a)+") and (" + pair2.featlabel +
+							"=" + FeatureValueUtils.toString(val2a) + "): " + corr.condProb);
 					return corr;
 				}
 			}

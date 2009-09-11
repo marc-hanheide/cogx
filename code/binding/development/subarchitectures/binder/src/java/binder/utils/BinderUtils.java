@@ -24,6 +24,7 @@ public class BinderUtils {
 		runion.distribution = bunion.distribution;
 		runion.includedProxies = bunion.includedProxies;
 		runion.probExists = bunion.probExists;
+		runion.timeStamp = bunion.timeStamp;
 		
 		return runion;
 	}
@@ -106,7 +107,7 @@ public class BinderUtils {
 	}
 	return proxy;
 }
-	
+
 
 	public static String getPrettyPrintProbabilityDistribution
 	(DiscreteProbabilityDistribution distrib) {

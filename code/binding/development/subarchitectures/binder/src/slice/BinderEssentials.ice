@@ -45,8 +45,17 @@ sequence<Feature> FeaturesList;
 class PerceivedEntity {
 	string entityID;
 	float probExists;
+	long timeStamp;
 	FeaturesList features;
 	ProbabilityDistribution distribution;
+};
+
+
+
+class OriginInfo {
+	string subarchId;
+	string localDataId;
+	string localDataType;
 };
 
 
@@ -54,7 +63,7 @@ class PerceivedEntity {
  * A proxy
  */ 
 class Proxy extends PerceivedEntity {
-	string subarchId;
+	OriginInfo origin;
 };
 
 sequence<Proxy> ProxySeq;

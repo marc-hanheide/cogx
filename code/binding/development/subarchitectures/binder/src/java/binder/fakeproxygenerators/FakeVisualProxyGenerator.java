@@ -46,7 +46,9 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	
 
 	protected Proxy createProxyOne() {
-		Proxy proxy = createNewProxy ("fakevision", 0.75f);
+		
+		OriginInfo origin = createOriginInfo ("fakevision", "blublu", "VisualObject");
+		Proxy proxy = createNewProxy (origin, 0.75f);
 		
 		FeatureValue mug = createStringValue ("mug", 0.8f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", mug);
@@ -61,7 +63,9 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
 
 	protected Proxy createProxyTwo() {
-		Proxy proxy = createNewProxy ("fakevision", 0.9f);
+		
+		OriginInfo origin = createOriginInfo ("fakevision", "blublu2", "VisualObject");
+		Proxy proxy = createNewProxy (origin, 0.9f);
 		
 		FeatureValue ball = createStringValue ("ball", 0.81f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", ball);
