@@ -6,19 +6,33 @@ namespace binder {
   using namespace autogen::featvalues;
   using namespace cast;
    
-  ProxyPtr BindingWorkingMemoryWriter::createNewProxy (const std::string & subarchId, 
+   
+   
+   
+    OriginInfoPtr BindingWorkingMemoryWriter::createOriginInfo (const std::string & subarchId, 
+         const std::string &  localDataId, const std::string &  localDataType) {
+         
+		OriginInfoPtr origin = new OriginInfo();
+		origin->subarchId = subarchId;
+		origin->localDataId = localDataId;
+		origin->localDataType = localDataType;
+		return origin;
+	}
+	
+	
+  ProxyPtr BindingWorkingMemoryWriter::createNewProxy (const autogen::core::OriginInfoPtr & origin, 
 						       float probExists) {
     
     ProxyPtr newProxy = new Proxy();
     
     newProxy->entityID = newDataID();
-    newProxy->subarchId = subarchId;
+    newProxy->origin = origin;
     newProxy->probExists = probExists;
       
     return newProxy;
   }
     
-  ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const std::string & subarchId, 
+  ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const autogen::core::OriginInfoPtr & origin, 
 						       float probExists,
 						        const autogen::core::FeatureValues source, 
 						        const autogen::core::FeatureValues target) {
@@ -26,7 +40,7 @@ namespace binder {
     ProxyPtr newProxy = new Proxy();
     
     newProxy->entityID = newDataID();
-    newProxy->subarchId = subarchId;
+    newProxy->origin = origin;
     newProxy->probExists = probExists;
     
     FeaturePtr feat1 = new Feature();
@@ -41,9 +55,9 @@ namespace binder {
    
     return newProxy;
   }
+  
    
-   
-     ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const std::string & subarchId, 
+     ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const autogen::core::OriginInfoPtr & origin, 
 						       float probExists,
 						       const FeaturesList & features,
 						        const autogen::core::FeatureValues source, 
@@ -51,8 +65,8 @@ namespace binder {
     
     ProxyPtr newProxy = new Proxy();
     
+   	newProxy->origin = origin;
     newProxy->entityID = newDataID();
-    newProxy->subarchId = subarchId;
     newProxy->probExists = probExists;
     
     newProxy->features = features;
@@ -70,11 +84,13 @@ namespace binder {
     return newProxy;
   } 
 	      
-  ProxyPtr BindingWorkingMemoryWriter::createNewProxy (const std::string & subarchId, 
+  ProxyPtr BindingWorkingMemoryWriter::createNewProxy (const autogen::core::OriginInfoPtr & origin, 
 								      float probExists, 
 								      const FeaturesList & features) {
       
-    ProxyPtr newProxy = createNewProxy(subarchId, probExists);      
+    ProxyPtr newProxy = createNewProxy(origin, probExists);      
+    newProxy->origin = origin;
+    
     newProxy->features = features;
 
     return newProxy;

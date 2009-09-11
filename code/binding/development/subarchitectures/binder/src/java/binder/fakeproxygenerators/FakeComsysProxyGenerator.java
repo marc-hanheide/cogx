@@ -24,6 +24,8 @@ import binder.autogen.core.*;
 
 public class FakeComsysProxyGenerator extends AbstractProxyGenerator {
 	
+	Proxy proxyOne;
+	
 	public FakeComsysProxyGenerator() {
 		super();
 	}
@@ -43,6 +45,7 @@ public class FakeComsysProxyGenerator extends AbstractProxyGenerator {
 			return createProxyOne();
 		}
 		if (nb == 2) {
+			deleteEntityInWM(proxyOne);
 			return createProxyTwo();
 		}
 		return null;
@@ -57,6 +60,7 @@ public class FakeComsysProxyGenerator extends AbstractProxyGenerator {
 		FeatureValue mug = createStringValue("mug", 0.91f);
 		Feature feat = createFeatureWithUniqueFeatureValue ("ling_label", mug);
 		addFeatureToProxy (proxy, feat);
+		proxyOne = proxy;
 		
 		return proxy;
 	}
@@ -65,7 +69,7 @@ public class FakeComsysProxyGenerator extends AbstractProxyGenerator {
 	private Proxy createProxyTwo() {
 		
 		OriginInfo origin = createOriginInfo ("fakecomsys", "blabla2", "Referent");
-		Proxy proxy = createNewProxy (origin, 0.85f);
+		Proxy proxy = createNewPhantomProxy (origin, 0.85f);
 	
 		FeatureValue ball = createStringValue ("ball", 0.8f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue ("ling_label", ball);
