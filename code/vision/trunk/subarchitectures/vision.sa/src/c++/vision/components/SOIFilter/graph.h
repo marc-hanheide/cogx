@@ -44,6 +44,7 @@
 #ifndef __GRAPH_H__
 #define __GRAPH_H__
 
+#include <stdint.h>
 #include "block.h"
 
 /*
@@ -117,11 +118,11 @@ private:
 	struct arc_forward_st;
 	struct arc_reverse_st;
 
-#define IS_ODD(a) ((int)(a) & 1)
-#define MAKE_ODD(a)  ((arc_forward *) ((int)(a) | 1))
-#define MAKE_EVEN(a) ((arc_forward *) ((int)(a) & (~1)))
-#define MAKE_ODD_REV(a)  ((arc_reverse *) ((int)(a) | 1))
-#define MAKE_EVEN_REV(a) ((arc_reverse *) ((int)(a) & (~1)))
+#define IS_ODD(a) ((uintptr_t)(a) & 1)
+#define MAKE_ODD(a)  ((arc_forward *) ((uintptr_t)(a) | 1))
+#define MAKE_EVEN(a) ((arc_forward *) ((uintptr_t)(a) & (~1)))
+#define MAKE_ODD_REV(a)  ((arc_reverse *) ((uintptr_t)(a) | 1))
+#define MAKE_EVEN_REV(a) ((arc_reverse *) ((uintptr_t)(a) & (~1)))
 
 	/* node structure */
 	typedef struct node_st
@@ -165,7 +166,7 @@ private:
 #define NEIGHBOR_NODE_REV(i, shift) ((node *) ((char *)(i) - (shift)))
 	typedef struct arc_forward_st
 	{
-		int				shift;		/* node_to = NEIGHBOR_NODE(node_from, shift) */
+		uintptr_t		shift;		/* node_to = NEIGHBOR_NODE(node_from, shift) */
 		captype			r_cap;		/* residual capacity */
 		captype			r_rev_cap;	/* residual capacity of the reverse arc*/
 	} arc_forward;
