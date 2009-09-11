@@ -114,6 +114,11 @@ class GroupUnion extends core::Union {
 	core::FeaturesList connections;
 };
 
+class PhantomProxy extends core::Proxy { };
+
+class PhantomUnion extends core::Union { };
+
+
 };
 
 

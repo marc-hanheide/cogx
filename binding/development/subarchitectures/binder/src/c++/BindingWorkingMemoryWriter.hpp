@@ -21,6 +21,12 @@ namespace binder {
 
   protected:
 
+
+    autogen::core::OriginInfoPtr createOriginInfo (const std::string & subarchId, 
+         const std::string &  localDataId, const std::string &  localDataType);
+   
+   
+   
     /** Create a new proxy given the ID of the originating subarchitecture,
      * and the probability of the proxy itself
      * (the list of features is defined to be empty)
@@ -29,7 +35,7 @@ namespace binder {
      * @param probExists probability value for the proxy
      * @return a new proxy
      */
-    autogen::core::ProxyPtr createNewProxy (const std::string & subarchId, 
+    autogen::core::ProxyPtr createNewProxy (const autogen::core::OriginInfoPtr & origin, 
 					    float probExists);
     
     
@@ -43,7 +49,7 @@ namespace binder {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-   autogen::core::ProxyPtr createNewRelationProxy (const std::string & subarchId, 
+   autogen::core::ProxyPtr createNewRelationProxy (const autogen::core::OriginInfoPtr & origin, 
 					    float probExists,
 					     const autogen::core::FeatureValues source, 
 					     const autogen::core::FeatureValues target);
@@ -62,7 +68,7 @@ namespace binder {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */						
-  autogen::core::ProxyPtr createNewRelationProxy (const std::string & subarchId, 
+  autogen::core::ProxyPtr createNewRelationProxy (const autogen::core::OriginInfoPtr & origin, 
 					    float probExists,
 					    const autogen::core::FeaturesList & features,
 					     const autogen::core::FeatureValues source, 
@@ -78,7 +84,7 @@ namespace binder {
      * @param features
      * @return
      */
-    autogen::core::ProxyPtr createNewProxy (const std::string & subarchId, 
+    autogen::core::ProxyPtr createNewProxy (const autogen::core::OriginInfoPtr & origin, 
 					    float probExists, 
 					    const autogen::core::FeaturesList & features);
 

@@ -28,6 +28,7 @@ import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
@@ -82,9 +83,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		newProxy.origin = origin;
 		newProxy.probExists = probExists;
 		newProxy.features = new Feature[0];
-		
-		newProxy.timeStamp = System.currentTimeMillis();
-	
+			
 		return newProxy;
 	}
 	
@@ -126,7 +125,6 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		newProxy.entityID = newDataID();
 		newProxy.origin = origin;
 		newProxy.probExists = probExists;
-		newProxy.timeStamp = System.currentTimeMillis();
 		newProxy.features = new Feature[0];
 		
 		newProxy.source = new Feature();
@@ -163,6 +161,42 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 	
 	
+	
+	/**
+	 * Create a new phantom proxy, given the origin info and the existence probability
+	 * 
+	 * @param origin origin information
+	 * @param probExists the probability of the proxy
+	 * @return the new phantom
+	 */
+	public PhantomProxy createNewPhantomProxy(OriginInfo origin, float probExists) {
+	
+		PhantomProxy newProxy = new PhantomProxy();
+		
+		newProxy.entityID = newDataID();
+		newProxy.origin = origin;
+		newProxy.probExists = probExists;
+		newProxy.features = new Feature[0];
+		
+		return newProxy;
+	}
+	
+
+	
+	/**
+	 * Create a new phantom proxy, given the origin info and the existence probability
+	 * 
+	 * @param origin origin information
+	 * @param probExists the probability of the proxy
+	 * @return the new phantom
+	 */
+	public PhantomProxy createNewPhantomProxy(OriginInfo origin, float probExists, Feature[] features) {
+	
+		PhantomProxy newProxy = createNewPhantomProxy(origin, probExists);
+		newProxy.features = features;
+		
+		return newProxy;
+	}
 	
 	// ================================================================= 
 	// METHODS FOR CREATING AND INSERTING NEW FEATURES

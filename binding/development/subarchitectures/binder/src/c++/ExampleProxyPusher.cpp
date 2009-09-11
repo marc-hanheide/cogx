@@ -27,10 +27,12 @@ void ExampleProxyPusher::runComponent() {
 
   //copied from fake visual thingy
     
+  OriginInfoPtr origin = createOriginInfo (getSubarchitectureID(), "blablabla", "anyDatatype");
+  
   FeatureValuePtr relation = createStringValue ("relation", 0.8f);
   FeaturePtr feat1 = createFeatureWithUniqueFeatureValue ("type", relation);
   
-  ProxyPtr proxy = createNewProxy (getSubarchitectureID(), 0.75f);
+  ProxyPtr proxy = createNewProxy (origin, 0.75f);
   
   addFeatureToProxy (proxy, feat1);
   

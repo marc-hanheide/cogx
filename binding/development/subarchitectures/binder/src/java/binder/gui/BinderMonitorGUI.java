@@ -34,6 +34,7 @@ import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.autogen.core.Union;
@@ -303,6 +304,10 @@ public class BinderMonitorGUI extends JFrame
 				
 				if (proxy instanceof RelationProxy) {
 					addNewRelationProxy((RelationProxy) proxy, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
+				}
+				if (proxy instanceof PhantomProxy) {
+					addNewPhantomProxy((PhantomProxy) proxy, curUnionPosition_X + horizontalIncr);
+					horizontalIncr += 250;
 				}
 				else {
 					addNewProxy(proxy, curUnionPosition_X + horizontalIncr, curProxyPosition_Y, "");
@@ -581,6 +586,15 @@ public class BinderMonitorGUI extends JFrame
 		Object vertex = insertedProxies.get(relationProxy.entityID);
 		insertSourceAndTargetEdges(relationProxy, vertex);
 		log("OK FOR RELATION PROXY");
+	}
+
+	
+	public void addNewPhantomProxy (PhantomProxy phantomProxy, int xpos) {
+		
+		String colour = "#FFE4C4";
+		addNewProxy(phantomProxy, xpos, curProxyPosition_Y, colour);
+
+		log("OK FOR PHANTOM PROXY");
 	}
 	
 	
