@@ -850,14 +850,14 @@ void create_final_goal_state( void )
 	if ( ggoal->connective == TRU && !gcmd_line.prediction_level) {
 		printf("\nff: goal can be simplified to TRUE. The empty plan solves it\n\n");
 		redirect_stdout_to(gcmd_line.plan_output_fn);
-		printf("SUCCESS: found legal plan as follows\n");
+		printf("SUCCESS\n");
 		reset_stdout();
 		exit( 0 );
 	}
 	if ( ggoal->connective == FAL && !gcmd_line.prediction_level) {
 		printf("\nff: goal can be simplified to FALSE. No plan will solve it\n\n");
 		redirect_stdout_to(gcmd_line.plan_output_fn);
-		printf("FAILURE: found no legal plan\n");
+		printf("FAILURE\n");
 		reset_stdout();
 		exit( 0 );
 	}
