@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -37,7 +36,7 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.components.BinderMonitor;
-import binder.utils.ProbDistribUtils;
+import binder.utils.ProbabilityUtils;
 
 public class InsertButtonListener implements ActionListener {
 	
@@ -171,7 +170,7 @@ public class InsertButtonListener implements ActionListener {
 		}
 		log("number of features in proxy: " + fds.size());
 		
-		newProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(newProxy);
+		newProxy.distribution = ProbabilityUtils.generateProbabilityDistribution(newProxy);
 		
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
 		distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];

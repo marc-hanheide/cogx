@@ -32,10 +32,10 @@ import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.featvalues.UnknownValue;
+import binder.utils.FeatureValueUtils;
 
-
-public class ProbDistribUtils {
-
+public class ProbabilityUtils {
 
 
 	public static ProbabilityDistribution generateProbabilityDistribution (PerceivedEntity entity) {
@@ -56,31 +56,9 @@ public class ProbDistribUtils {
 			}
 
 		}
-		return ProbDistribUtils.normaliseDistribution(distrib, 1.0f);
+		return normaliseDistribution(distrib, 1.0f);
 	}
 
-
-	public static Feature[] addIndeterminateFeatureValues (Feature[] features) {
-
-		for (int i = 0 ; i < features.length ; i++) {
-
-			float totalProb = 0.0f;
-			Vector<FeatureValue> values = new Vector<FeatureValue>();
-			for (int j= 0 ; j < features[i].alternativeValues.length ; j++) {
-				values.add(features[i].alternativeValues[j]);
-				totalProb += features[i].alternativeValues[j].independentProb;
-			}
-			if (totalProb < 1.0f) {
-				features[i].alternativeValues = new FeatureValue[values.size() + 1];
-				for (int j = 0 ; j < values.size(); j++ ) {
-					features[i].alternativeValues[j] = values.elementAt(j);
-				}
-				features[i].alternativeValues[values.size()] = new StringValue((1.0f - totalProb), "indeterminate");
-			}
-		}
-
-		return features;
-	}
 
 
 	public static Vector<DiscreteProbabilityAssignment> getAssignmentsIncludingSmallerAssignment(
@@ -104,7 +82,8 @@ public class ProbDistribUtils {
 
 	
 
-	public static float getMarginalProbabilityValue(ProbabilityDistribution distrib, FeatureValuePair pair) {
+	public static float getMarginalProbabilityValue
+		(ProbabilityDistribution distrib, FeatureValuePair pair) {
 		float result = 0.0f;
 		
 		DiscreteProbabilityAssignment smallassignment = new DiscreteProbabilityAssignment();
@@ -114,9 +93,11 @@ public class ProbDistribUtils {
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
 			DiscreteProbabilityDistribution distrib2 = (DiscreteProbabilityDistribution) distrib;
 			
-			Vector<DiscreteProbabilityAssignment> assignments = getAssignmentsIncludingSmallerAssignment(distrib2, smallassignment);
+			Vector<DiscreteProbabilityAssignment> assignments = 
+				getAssignmentsIncludingSmallerAssignment(distrib2, smallassignment);
 			
-			for (Enumeration<DiscreteProbabilityAssignment> enu = assignments.elements() ; enu.hasMoreElements() ; ) {
+			for (Enumeration<DiscreteProbabilityAssignment> enu = 
+				assignments.elements() ; enu.hasMoreElements() ; ) {
 				result += enu.nextElement().prob;
 			}
 		}
@@ -126,13 +107,16 @@ public class ProbDistribUtils {
 			
 			
 			if (distrib2.distributions.length > 0) {
-			DiscreteProbabilityDistribution firstdistrib = (DiscreteProbabilityDistribution) distrib2.distributions[0];
+			DiscreteProbabilityDistribution firstdistrib = 
+				(DiscreteProbabilityDistribution) distrib2.distributions[0];
 			
-			Vector<DiscreteProbabilityAssignment> assignments = getAssignmentsIncludingSmallerAssignment(firstdistrib, smallassignment);
+			Vector<DiscreteProbabilityAssignment> assignments = 
+				getAssignmentsIncludingSmallerAssignment(firstdistrib, smallassignment);
 			
 			if (assignments.size() > 0) {
 				
-				for (Enumeration<DiscreteProbabilityAssignment> enu = assignments.elements() ; enu.hasMoreElements() ; ) {
+				for (Enumeration<DiscreteProbabilityAssignment> enu = 
+					assignments.elements() ; enu.hasMoreElements() ; ) {
 					DiscreteProbabilityAssignment assign = enu.nextElement();
 				//	log("ass: " + getDiscreteProbabilityAssignmentPrettyPrint(assign));
 					float partialresult = getProbabilityValue(distrib2, assign);
@@ -148,7 +132,8 @@ public class ProbDistribUtils {
 	
 
 
-	public static float getProbabilityValue(ProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
+	public static float getProbabilityValue
+		(ProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
 			return getProbabilityValue((DiscreteProbabilityDistribution)distrib, assignment);
 		}
@@ -161,7 +146,8 @@ public class ProbDistribUtils {
 		}
 	}
 
-	public static float getProbabilityValue (CombinedProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
+	public static float getProbabilityValue 
+		(CombinedProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
 		float result = 1.0f;
 
 		for (int i = 0; i < distrib.distributions.length; i++) {
@@ -176,27 +162,31 @@ public class ProbDistribUtils {
 	}
 
 	
-	public static CombinedProbabilityDistribution normaliseDistribution(CombinedProbabilityDistribution distrib, float probExists) {
+	public static CombinedProbabilityDistribution normaliseDistribution
+	(CombinedProbabilityDistribution distrib, float probExists) {
 
-		DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
+		DiscreteProbabilityDistribution firstDistrib = 
+			(DiscreteProbabilityDistribution) distrib.distributions[0];
 		float total = 0.0f;
 		for (int i = 0; i < firstDistrib.assignments.length; i++) {
 			
 			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
 					
-			float probValue = ProbDistribUtils.getProbabilityValue(distrib, assignment);
+			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
 			total += probValue;
 		}
 		
 		for (int i = 0; i < firstDistrib.assignments.length; i++) {
-			((DiscreteProbabilityDistribution)distrib.distributions[0]).assignments[i].prob = firstDistrib.assignments[i].prob / (total * probExists);
+			((DiscreteProbabilityDistribution)distrib.distributions[0]).assignments[i].prob = 
+				firstDistrib.assignments[i].prob / (total * probExists);
 		}
 		
 		return distrib;
 	}
 	
 	
-	public static ProbabilityDistribution normaliseDistribution(ProbabilityDistribution distrib, float probExists) {
+	public static ProbabilityDistribution normaliseDistribution 
+		(ProbabilityDistribution distrib, float probExists) {
 		
 		if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
 			return normaliseDistribution((CombinedProbabilityDistribution)distrib, probExists);
@@ -210,7 +200,8 @@ public class ProbDistribUtils {
 	
 	
 
-	public static DiscreteProbabilityDistribution normaliseDistribution(DiscreteProbabilityDistribution distrib, float probExists) {
+	public static DiscreteProbabilityDistribution normaliseDistribution
+		(DiscreteProbabilityDistribution distrib, float probExists) {
 
 		float total = 0.0f;
 		if (distrib.assignments != null) {
@@ -249,7 +240,8 @@ public class ProbDistribUtils {
 		return distrib;
 	}
 
-	public static float getProbabilityValue (DiscreteProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
+	public static float getProbabilityValue 
+	(DiscreteProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
 		float result = 0.0f;
 
 		if (distrib.assignments != null) {
@@ -261,13 +253,15 @@ public class ProbDistribUtils {
 		}
 		}
 
-		log("WARNING, no probability value found for assignment: " + getDiscreteProbabilityAssignmentPrettyPrint(assignment));
-		log("distrib: " + getDiscreteProbabilityDistributionPrettyPrint(distrib));
+		log("WARNING, no probability value found for assignment: " + 
+				BinderUtils.getPrettyPrintProbabilityAssignment(assignment));
+		log("distrib: " + BinderUtils.getPrettyPrintProbabilityDistribution(distrib));
 		return result;
 	}
 
 
-	public static boolean containsAll(DiscreteProbabilityAssignment bigassign, DiscreteProbabilityAssignment smallassign) {
+	public static boolean containsAll
+	(DiscreteProbabilityAssignment bigassign, DiscreteProbabilityAssignment smallassign) {
 		
 		Vector<FeatureValuePair> pairs1 = new Vector<FeatureValuePair>();
 		for (int j = 0; j < bigassign.featurepairs.length; j++) {
@@ -290,9 +284,11 @@ public class ProbDistribUtils {
 		for (Enumeration<FeatureValuePair> e = pairs2.elements() ; e.hasMoreElements(); ) {
 			FeatureValuePair pair2 = e.nextElement();
 			boolean foundMatch = false;
-			for (Enumeration<FeatureValuePair> f = pairs1.elements() ; f.hasMoreElements()  && !foundMatch; ) {
+			for (Enumeration<FeatureValuePair> f = pairs1.elements() ; 
+			f.hasMoreElements()  && !foundMatch; ) {
 				FeatureValuePair pair1 = f.nextElement();
-				if (pair1.featlabel.equals(pair2.featlabel) && ((StringValue)pair1.featvalue).val.equals(((StringValue)pair2.featvalue).val)) {
+				if (pair1.featlabel.equals(pair2.featlabel) 
+						&& (FeatureValueUtils.haveEqualValue(pair1.featvalue, pair2.featvalue))) {
 					foundMatch = true;
 				}
 			}
@@ -307,7 +303,8 @@ public class ProbDistribUtils {
 	public static Vector<DiscreteProbabilityAssignment> generateProbabilityDistribution 
 	(Vector<Feature> features, Vector<DiscreteProbabilityAssignment> prevAssignments) {
 
-		Vector<DiscreteProbabilityAssignment> newAssignments = new Vector<DiscreteProbabilityAssignment>();
+		Vector<DiscreteProbabilityAssignment> newAssignments = 
+			new Vector<DiscreteProbabilityAssignment>();
 
 		Feature feat = features.remove(0);
 
@@ -327,7 +324,8 @@ public class ProbDistribUtils {
 			for (int i = 0; i < feat.alternativeValues.length ; i++) {
 				FeatureValue fv = feat.alternativeValues[i];
 
-				for (Enumeration<DiscreteProbabilityAssignment> e = prevAssignments.elements() ; e.hasMoreElements(); ) {
+				for (Enumeration<DiscreteProbabilityAssignment> e = 
+					prevAssignments.elements() ; e.hasMoreElements(); ) {
 					DiscreteProbabilityAssignment ass = e.nextElement();
 
 					DiscreteProbabilityAssignment newAss = new DiscreteProbabilityAssignment();
@@ -354,31 +352,6 @@ public class ProbDistribUtils {
 		}
 	}
 
-	public static String getDiscreteProbabilityDistributionPrettyPrint(DiscreteProbabilityDistribution distrib) {
-		String text = "";
-
-		if (distrib.assignments != null) {
-		for (int i = 0; i < distrib.assignments.length; i++) {
-			DiscreteProbabilityAssignment assignment = distrib.assignments[i];
-			text += getDiscreteProbabilityAssignmentPrettyPrint(assignment) + "\n";
-		}
-		}
-
-		return text;
-	}
-
-	public static String getDiscreteProbabilityAssignmentPrettyPrint(DiscreteProbabilityAssignment assignment) {
-
-		String text = "P ( " ;
-		for (int j = 0; j < assignment.featurepairs.length ; j++) {
-			text += assignment.featurepairs[j].featlabel + " = " + ((StringValue)assignment.featurepairs[j].featvalue).val ;
-			if (j < (assignment.featurepairs.length - 1)) {
-				text += ", ";
-			}
-		}
-		text += " ) = " + assignment.prob ;
-		return text;
-	}
 
 	public static void log(String s) {
 		System.out.println("[ProbabilityDistributionUtils] " + s);

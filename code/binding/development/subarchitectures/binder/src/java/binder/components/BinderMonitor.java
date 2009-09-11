@@ -25,6 +25,7 @@ import java.util.Vector;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.specialentities.RelationProxy;
 import binder.gui.BinderMonitorGUI;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
@@ -130,23 +131,35 @@ public class BinderMonitor extends ManagedComponent {
 		Vector<Union> UnionsToDelete= new Vector<Union>();
 		
 		try {
+			
+			// Extract the proxies in the working memory
 			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
-			log("Current number of proxies: " + proxies.length);
+			log("Current number of (normal) proxies: " + proxies.length);
 			for (int i = (proxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(proxies[i].getData());
 			}
 			
+			CASTData<RelationProxy>[] rproxies = getWorkingMemoryEntries(RelationProxy.class);
+			log("Current number of relation proxies: " + rproxies.length);
+			for (int i = (rproxies.length - 1) ; i >= 0 ; i--) {
+				proxiesV.add(rproxies[i].getData());
+			}			
+			
+			// Extract the unions in the union configuration
 			for (int i = 0 ; i < bestConfig.includedUnions.length ; i++) {
 				UnionsV.add(bestConfig.includedUnions[i]);
-				}
+			}
 			
-						
+			
+			// Check if proxies need to be deleted from the monitor
 			for (Enumeration<Proxy> e = lastProxies.elements(); e.hasMoreElements(); ) {
 				Proxy proxy = e.nextElement();
 				if (!proxiesV.contains(proxy)) {
 					proxiesToDelete.add(proxy);
 				}
 			}
+			
+			// Check if unions need to be deleted from the monitor
 			for (Enumeration<Union> e = lastUnions.elements(); e.hasMoreElements(); ) {
 				Union union = e.nextElement();
 				if (!UnionsV.contains(union)) {
@@ -158,10 +171,12 @@ public class BinderMonitor extends ManagedComponent {
 			e.printStackTrace();
 		}
 		
+		// Update the proxy and union sets
 		lastProxies = proxiesV;
 		lastUnions = UnionsV;
 		log("Current number of Unions: " + UnionsV.size());
 		
+		// And finally, trigger the GUI update
 		if (gui != null) {
 			gui.updateGUI(proxiesV, UnionsV, proxiesToDelete, UnionsToDelete);
 		}

@@ -31,8 +31,10 @@ import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.specialentities.RelationUnion;
+import binder.utils.BinderUtils;
 import binder.utils.GradientDescent;
-import binder.utils.ProbDistribUtils;
+import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -61,6 +63,12 @@ public class Binder extends ManagedComponent  {
 	// whether to perform incremental or full rebinding
 	private boolean incrementalBinding = true;
 
+	// whether to add unknown values to each feature
+	private boolean addUnknowns = false;
+	
+	// TO IMPLEMENT / TEST
+	private boolean normaliseDistributions = false;
+	
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
 	private int NB_CONFIGURATIONS_TO_KEEP = 1;
@@ -69,7 +77,8 @@ public class Binder extends ManagedComponent  {
 	// of the binder WM (modulo filtering)
 	Vector<UnionConfiguration> currentUnionConfigurations ;
 
-
+	
+	
 
 	// ================================================================= 
 	// INITIALISATION METHODS                   
@@ -186,17 +195,14 @@ public class Binder extends ManagedComponent  {
 
 	private void proxyUpdate (WorkingMemoryChange wmc) {
 
-		log("--------START BINDING UPDATE (AFTER OVERWRITE) ----------");
+		log("--------START BINDING UPDATE ----------");
+		log(" TRIGGERED BY: overwrite of existing proxy ");
 
 		try {
 			// The proxy which was modified
 			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
 
-			// if the probability distribution of the updated proxy is unavailable, regenerate it
-			if (updatedProxy.distribution == null) {
-				updatedProxy.features = ProbDistribUtils.addIndeterminateFeatureValues(updatedProxy.features);
-				updatedProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(updatedProxy);
-			}
+			updatedProxy = BinderUtils.completeProxy(updatedProxy, addUnknowns);
 
 			// Loop on the current union configurations to update each of them in turn
 			for (Enumeration<UnionConfiguration> configs = 
@@ -255,8 +261,9 @@ public class Binder extends ManagedComponent  {
 
 	private void proxyDeletion (WorkingMemoryChange wmc) {
 
-		log("--------START BINDING UPDATE (AFTER DELETION) ----------");
-
+		log("--------START BINDING UPDATE ----------");
+		log(" TRIGGERED BY: proxy deletion ");
+		
 		try {
 			// The ID of the deleted proxy
 			String deletedProxyID= wmc.address.id;
@@ -321,17 +328,18 @@ public class Binder extends ManagedComponent  {
 	 */
 
 	private void proxyInsertion(WorkingMemoryChange wmc) {
-		log("--------START BINDING UPDATE (AFTER INSERTION OF NEW PROXY) ----------");
-
+		log("--------START BINDING UPDATE ----------");
+	
 		long initTime = System.currentTimeMillis();
 
 		try {
 			// Extract the new proxy
 			Proxy newProxy = getMemoryEntry(wmc.address, Proxy.class);
 
-			// Add indeterminate features and generate the probability distribution
-			newProxy.features = ProbDistribUtils.addIndeterminateFeatureValues(newProxy.features);
-			newProxy.distribution = ProbDistribUtils.generateProbabilityDistribution(newProxy);
+			log(" TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
+					" (" + newProxy.getClass().getSimpleName() + ") ");
+		
+			newProxy = BinderUtils.completeProxy(newProxy, addUnknowns);
 
 			// Perform the binding (either incrementally or by full rebinding)
 			if (incrementalBinding) {
@@ -388,15 +396,16 @@ public class Binder extends ManagedComponent  {
 	 */
 	private void incrementalBinding(Proxy newProxy) {
 		try {
-			log("Perform incremental binding...");
+			log("--> Perform incremental binding");
 
-			log("Proxy ID: " + newProxy.entityID);
-
+			log("Constructing initial union...");
 			// Construct the initial union (containing only the new proxy)
 			Union newUnion = constructor.getInitialUnion(newProxy);
 
-			log("Construction of initial unions finished, moving to unions of more than 1 proxy...");
+			log("Construction of initial union finished, moving to unions of more than 1 proxy...");
 
+			log("Number of current configurations: "  + currentUnionConfigurations.size());
+			
 			// The new union configurations
 			Vector<UnionConfiguration> newUnionConfigurations = new Vector<UnionConfiguration>();
 			
@@ -423,7 +432,7 @@ public class Binder extends ManagedComponent  {
 					Union newMergedUnion;
 					
 					// check if the current union and the new one can be merged
-					if (!hasConflictingSubarch(existingUnion, newUnion)) {
+					if (!hasConflicts(existingUnion, newUnion)) {
 
 						// Check if the union has already been constructed
 						if (!alreadyMergedUnions.containsKey(existingUnion.entityID)) {
@@ -577,7 +586,8 @@ public class Binder extends ManagedComponent  {
 			Union unionToAdd, Vector<Union> unionsToRemove) {
 
 		UnionConfiguration newConfig = new UnionConfiguration();
-		newConfig.includedUnions = new Union[existingUnionConfig.includedUnions.length + 1 - unionsToRemove.size()];
+		int nbUnions = existingUnionConfig.includedUnions.length + 1 - unionsToRemove.size();
+		newConfig.includedUnions = new Union[nbUnions];
 
 		int count = 0;
 		for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
@@ -589,7 +599,7 @@ public class Binder extends ManagedComponent  {
 			}
 		}
 
-		newConfig.includedUnions[existingUnionConfig.includedUnions.length - unionsToRemove.size()] = unionToAdd;
+		newConfig.includedUnions[nbUnions - 1] = unionToAdd;
 
 		return newConfig;
 
@@ -601,7 +611,7 @@ public class Binder extends ManagedComponent  {
 	 * @param union2
 	 * @return
 	 */
-	private boolean hasConflictingSubarch(Union union1, Union union2) {	
+	private boolean hasConflicts(Union union1, Union union2) {	
 		for (int i = 0 ; i < union1.includedProxies.length ; i++) {
 			Proxy proxyi = union1.includedProxies[i];
 			for (int j = 0 ; j < union2.includedProxies.length ; j++) {
@@ -610,7 +620,16 @@ public class Binder extends ManagedComponent  {
 					return true;
 				}
 			}
-		}		
+		}	
+		if (union1 instanceof RelationUnion && 
+				! (union2 instanceof RelationUnion)) {
+			return true;
+		}
+		if (! (union1 instanceof RelationUnion) && 
+				union2 instanceof RelationUnion) {
+			return true;
+		}
+		
 		return false;
 	}
 

@@ -28,155 +28,163 @@ import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
-import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbDistribUtils;
+import binder.autogen.specialentities.RelationUnion;
+import binder.utils.ProbabilityUtils;
 
 public class GradientDescent {
 
+	public static boolean LOGGING = false;
+	
+	public static HashMap<Union,Float> maxForUnions = new HashMap<Union,Float>();
+
+	
 	public static float getMaximum (PerceivedEntity entity) {
-		
+
 		float result = 0.0f;
 		if (entity.distribution == null) {
 			log("WARNING: distribution == null, regenerating");
-			entity.features = ProbDistribUtils.addIndeterminateFeatureValues(entity.features);
-			entity.distribution = ProbDistribUtils.generateProbabilityDistribution(entity);
+			entity.features = BinderUtils.addUnknownFeatureValues(entity.features);
+			entity.distribution = ProbabilityUtils.generateProbabilityDistribution(entity);
 
 		}
 		if (entity.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
 			return getMaximum((DiscreteProbabilityDistribution) entity.distribution);
 		}
-		
+
 		else if (entity.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
 			return getMaximum((CombinedProbabilityDistribution) entity.distribution);
 		}
-		
+
 		else {
 			log("Sorry, only discrete or combined feature distributions are handled right now");
 			log("Used class: " + entity.distribution.getClass());
 		}
-		
+
 		return result;
 	}
-	
-	
+
+
 	public static float getMaximum (DiscreteProbabilityDistribution distrib) {
-		
+
 		float maxProb = 0.0f;
 		if (distrib.assignments != null) {
 			for (int i = 0 ; i <distrib.assignments.length ; i++) {
-			DiscreteProbabilityAssignment assignment = distrib.assignments[i];
-			if (assignment.prob > maxProb) {
-				maxProb = assignment.prob;
+				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
+				if (assignment.prob > maxProb) {
+					maxProb = assignment.prob;
+				}
 			}
-		}
 		}
 		return maxProb;
 	}
-	
-	
-	
-	public static DiscreteProbabilityAssignment getBestAssignment  (DiscreteProbabilityDistribution distrib) {
-		
+
+
+
+	public static DiscreteProbabilityAssignment getBestAssignment  
+	(DiscreteProbabilityDistribution distrib) {
+
 		float maxProb = 0.0f;
 		DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
 		if (distrib.assignments != null) {
 			for (int i = 0 ; i <distrib.assignments.length ; i++) {
-			DiscreteProbabilityAssignment assignment = distrib.assignments[i];
-			if (assignment.prob > maxProb) {
-				maxProb = assignment.prob;
-				bestAssign = assignment;
+				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
+				if (assignment.prob > maxProb) {
+					maxProb = assignment.prob;
+					bestAssign = assignment;
+				}
 			}
-		}
 		}
 		return bestAssign;
 	}
-	
-	
-public static float getMaximum (CombinedProbabilityDistribution distrib) {
-	
-	
-//	log("Searching maximum value for a combined probability distribution...");
-	float maxProb = 0.0f;
-	
-	DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
-	
-	DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
-	float total = 0.0f;
-	for (int i = 0; i < firstDistrib.assignments.length; i++) {
-		
-		DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
-		float probValue = ProbDistribUtils.getProbabilityValue(distrib, assignment);
-	//	log("ass: " + ProbDistribUtils.getDiscreteProbabilityAssignmentPrettyPrint(assignment) + " --> " + probValue);
 
-		total += probValue;
-		if (probValue > maxProb) {
-			maxProb = probValue;			
+
+	public static float getMaximum (CombinedProbabilityDistribution distrib) {
+
+
+		//	log("Searching maximum value for a combined probability distribution...");
+		float maxProb = 0.0f;
+
+		DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
+
+		DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
+		float total = 0.0f;
+		for (int i = 0; i < firstDistrib.assignments.length; i++) {
+
+			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
+			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
+			//	log("ass: " + ProbabilityUtils.getDiscreteProbabilityAssignmentPrettyPrint(assignment) + " --> " + probValue);
+
+			total += probValue;
+			if (probValue > maxProb) {
+				maxProb = probValue;			
+			}
+
 		}
-		
-	}
-		
-	return maxProb;
-		
+
+		return maxProb;
+
 	}
 
 
-public static DiscreteProbabilityAssignment getBestAssignment (CombinedProbabilityDistribution distrib) {
-	
-	
-	log("Searching maximum value for a combined probability distribution...");
-	float maxProb = 0.0f;
-	
-	DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
-	
-	DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
-	float total = 0.0f;
-	for (int i = 0; i < firstDistrib.assignments.length; i++) {
-		
-		DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
-		float probValue = ProbDistribUtils.getProbabilityValue(distrib, assignment);
-	//	log("ass: " + ProbDistribUtils.getDiscreteProbabilityAssignmentPrettyPrint(assignment) + " --> " + probValue);
+	public static DiscreteProbabilityAssignment 
+		getBestAssignment (CombinedProbabilityDistribution distrib) {
 
-		total += probValue;
-		if (probValue > maxProb) {
-			maxProb = probValue;
-			bestAssign = assignment;	
+
+		log("Searching maximum value for a combined probability distribution...");
+		float maxProb = 0.0f;
+
+		DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
+
+		DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
+		float total = 0.0f;
+		for (int i = 0; i < firstDistrib.assignments.length; i++) {
+
+			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
+			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
+			//	log("ass: " + ProbabilityUtils.getDiscreteProbabilityAssignmentPrettyPrint(assignment) + " --> " + probValue);
+
+			total += probValue;
+			if (probValue > maxProb) {
+				maxProb = probValue;
+				bestAssign = assignment;	
+			}
 		}
-	}
-	
-	log("Best assignment: " + ProbDistribUtils.getDiscreteProbabilityAssignmentPrettyPrint(bestAssign));
-	
-	return bestAssign;
-		
+
+		log("Best assignment: " + BinderUtils.getPrettyPrintProbabilityAssignment(bestAssign));
+
+		return bestAssign;
+
 	}
 
-	
 
-private static boolean isFeatValuePairInAssignment (FeatureValuePair pair, DiscreteProbabilityAssignment assign) {
-	for (int i = 0; i < assign.featurepairs.length ; i++) {
-		FeatureValuePair pair2 = assign.featurepairs[i];
-		if (pair.featlabel.equals(pair2.featlabel) && 
-				((StringValue)pair.featvalue).val.equals(((StringValue)pair2.featvalue).val)) {
-			return true;
+
+	private static boolean isFeatValuePairInAssignment 
+	(FeatureValuePair pair, DiscreteProbabilityAssignment assign) {
+		for (int i = 0; i < assign.featurepairs.length ; i++) {
+			FeatureValuePair pair2 = assign.featurepairs[i];
+
+			if (pair.featlabel.equals(pair2.featlabel) && 
+					(FeatureValueUtils.haveEqualValue(pair.featvalue, pair2.featvalue))) {
+				return true;
+			}
 		}
+		return false;
 	}
-	return false;
-}
 
-/**
+	/**
 public static Union getBestUnion(UnionDistribution distribution) {
-	
+
 	float maxValue = 0.0f;
 	Union bestUnion = null;
-	
+
 	for (int i = 0; i < distribution.alternativeUnions.length; i++) {
-		
+
 		Union curUnion = distribution.alternativeUnions[i];
 		float val = getMaximum(curUnion.distribution);
 		if (val > maxValue) {
@@ -184,178 +192,221 @@ public static Union getBestUnion(UnionDistribution distribution) {
 			bestUnion = curUnion;
 		}	
 	}
-	
+
 	return bestUnion;
 }
-*/
+	 */
 
 
-public static HashMap<Union,Float> maxForUnions = new HashMap<Union,Float>();
 
-public static Vector<UnionConfiguration> getNBestUnionConfigurations
-			(Vector<UnionConfiguration> configs, int nb_nbests) {
-	
-	float threshold = 0.0f;
-	Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
-	HashMap<UnionConfiguration, Float> averages =new HashMap<UnionConfiguration, Float>();
-	
-	for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-		UnionConfiguration config = e.nextElement();
-		
-		float multiplication = 1.0f;
-		
-		for (int i = 0; i < config.includedUnions.length ; i++) {		
-			Union union = config.includedUnions[i];
-			float max = 0.0f;
-			if (maxForUnions.containsKey(union)) {
-				max = maxForUnions.get(union);
+	public static Vector<UnionConfiguration> getNBestUnionConfigurations
+	(Vector<UnionConfiguration> configs, int nb_nbests) {
+
+		float threshold = 0.0f;
+		Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
+		HashMap<UnionConfiguration, Float> averages =new HashMap<UnionConfiguration, Float>();
+
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
+
+			float multiplication = 1.0f;
+
+			for (int i = 0; i < config.includedUnions.length ; i++) {		
+				Union union = config.includedUnions[i];
+				float max = 0.0f;
+				if (maxForUnions.containsKey(union)) {
+					max = maxForUnions.get(union);
+				}
+				else {
+					max = getMaximum(union);
+					maxForUnions.put(union, max);
+				}
+				multiplication = multiplication * max;
 			}
-			else {
-				max = getMaximum(union);
-				maxForUnions.put(union, max);
-			}
-			multiplication = multiplication * max;
-		}
-		float average = multiplication / (config.includedUnions.length + 0.0f);
-		
-		averages.put(config, average);
+			float average = multiplication / (config.includedUnions.length + 0.0f);
 
-		if (nbestConfigs.size() < nb_nbests) {
-			
-			nbestConfigs.add(config);
-			
-			if (average < threshold) {
-				threshold = average;
-			}
-		}
-		
-		else {
-			if (average > threshold) {
-				UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs, averages);
-				nbestConfigs.remove(worstinNBests);
+			averages.put(config, average);
+
+			if (nbestConfigs.size() < nb_nbests) {
+
 				nbestConfigs.add(config);
-				UnionConfiguration secondworst = getWorstUnionConfiguration(nbestConfigs, averages);
-				threshold = averages.get(secondworst);
+
+				if (average < threshold) {
+					threshold = average;
+				}
+			}
+
+			else {
+				if (average > threshold) {
+					UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs, averages);
+					nbestConfigs.remove(worstinNBests);
+					nbestConfigs.add(config);
+					UnionConfiguration secondworst = getWorstUnionConfiguration(nbestConfigs, averages);
+					threshold = averages.get(secondworst);
+				}
+			}
+
+
+		}
+
+		return nbestConfigs;
+	}
+
+
+	public static UnionConfiguration getBestUnionConfiguration(Vector<UnionConfiguration> configs) {
+
+		float maxAverage = -1.0f;
+		UnionConfiguration bestConfig = null;
+
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
+
+			float multiplication = 1.0f;
+
+			for (int i = 0; i < config.includedUnions.length ; i++) {		
+				Union union = config.includedUnions[i];
+				multiplication = multiplication * getMaximum(union);
+			}
+			float average = multiplication / (config.includedUnions.length + 0.0f);
+
+			if (average > maxAverage) {
+				maxAverage = average;
+				bestConfig = config;
 			}
 		}
-				
-		
+
+		return bestConfig;
 	}
-	
-	return nbestConfigs;
-}
-
-
-public static UnionConfiguration getBestUnionConfiguration(Vector<UnionConfiguration> configs) {
-	
-	float maxAverage = -1.0f;
-	UnionConfiguration bestConfig = null;
-	
-	for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-		UnionConfiguration config = e.nextElement();
-		
-		float multiplication = 1.0f;
-		
-		for (int i = 0; i < config.includedUnions.length ; i++) {		
-			Union union = config.includedUnions[i];
-			multiplication = multiplication * getMaximum(union);
-		}
-		float average = multiplication / (config.includedUnions.length + 0.0f);
-	
-		if (average > maxAverage) {
-			maxAverage = average;
-			bestConfig = config;
-		}
-	}
-	
-	return bestConfig;
-}
 
 
 
-public static UnionConfiguration getWorstUnionConfiguration(Vector<UnionConfiguration> configs, 
-		HashMap<UnionConfiguration, Float> averages) {
+	public static UnionConfiguration getWorstUnionConfiguration(Vector<UnionConfiguration> configs, 
+			HashMap<UnionConfiguration, Float> averages) {
 
-	float minAverage = 99999.0f;
-	UnionConfiguration worstConfig = null;
+		float minAverage = 99999.0f;
+		UnionConfiguration worstConfig = null;
 
-	for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-		UnionConfiguration config = e.nextElement();
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
 
-		if (averages.get(config) != null) {
-			float average = averages.get(config).floatValue();
-			if (average < minAverage) {
-				minAverage = average;
-				worstConfig = config;
+			if (averages.get(config) != null) {
+				float average = averages.get(config).floatValue();
+				if (average < minAverage) {
+					minAverage = average;
+					worstConfig = config;
+				}
 			}
 		}
+
+		return worstConfig;
 	}
 
-	return worstConfig;
-}
+
+	public static UnionConfiguration getBestUnionConfiguration(AlternativeUnionConfigurations configs) {
+		Vector<UnionConfiguration> unionconfigsV = new Vector<UnionConfiguration>();
+		for (int i = 0 ; i < configs.alterconfigs.length ; i++) {
+			unionconfigsV.add(configs.alterconfigs[i]);
+		}
+		return getBestUnionConfiguration (unionconfigsV);
+	}
 
 
-public static UnionConfiguration getBestUnionConfiguration(AlternativeUnionConfigurations configs) {
-	Vector<UnionConfiguration> unionconfigsV = new Vector<UnionConfiguration>();
-	for (int i = 0 ; i < configs.alterconfigs.length ; i++) {
-		unionconfigsV.add(configs.alterconfigs[i]);
+	public static Union getUnionWithMaximumProbability (Union union) {
+
+		if (union instanceof RelationUnion) {
+			return getRelationUnionWithMaximumProbability((RelationUnion)union);
+		}
+		else {
+			return getBasicUnionWithMaximumProbability(union);
+		}
 	}
-	return getBestUnionConfiguration (unionconfigsV);
-}
 
 
-public static Union getUnionWithMaximumProbability (Union union) {
-	
-	Union newUnion = new Union();
-	newUnion.entityID = union.entityID;
-	newUnion.features = new Feature[union.features.length];
-	
-	DiscreteProbabilityAssignment bestAssign = null;
-	
-	if (union.distribution == null) {
-		log("ERROR: distribution == null, aborting");
+	public static Union getBasicUnionWithMaximumProbability (Union union) {
+
+		Union newUnion = new Union();
+		newUnion.entityID = union.entityID;
+		newUnion.features = new Feature[union.features.length];
+
+		DiscreteProbabilityAssignment bestAssign = null;
+
+		if (union.distribution == null) {
+			log("ERROR: distribution == null, aborting");
+		}
+		if (union.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
+			bestAssign = getBestAssignment((DiscreteProbabilityDistribution)union.distribution);
+
+		}
+
+		else if (union.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
+			bestAssign = getBestAssignment((CombinedProbabilityDistribution)union.distribution);
+		}
+
+		else {
+			log("Sorry, only discrete or combined feature distributions are handled right now");
+			log("Used class: " + union.distribution.getClass());
+		}
+
+		for (int i = 0; i < union.features.length ; i++) {
+			newUnion.features[i] = new Feature();
+			newUnion.features[i].featlabel = union.features[i].featlabel;
+			newUnion.features[i].alternativeValues = new FeatureValue[1];
+			newUnion.features[i].alternativeValues[0] = 
+				getBestFeatureValue(union.features[i], bestAssign);
+		}
+
+		newUnion.includedProxies = union.includedProxies;
+		newUnion.probExists = union.probExists;
+		newUnion.distribution = union.distribution;
+
+		log("OK, extracted a new union with maximum probability");
+		return newUnion;
 	}
-	if (union.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
-		bestAssign = getBestAssignment((DiscreteProbabilityDistribution)union.distribution);
-		
-	}
-	
-	else if (union.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
-		bestAssign = getBestAssignment((CombinedProbabilityDistribution)union.distribution);
-	}
-	
-	else {
-		log("Sorry, only discrete or combined feature distributions are handled right now");
-		log("Used class: " + union.distribution.getClass());
-	}
-	
-	for (int i = 0; i < union.features.length ; i++) {
-		newUnion.features[i] = new Feature();
-		newUnion.features[i].featlabel = union.features[i].featlabel;
+
+
+	private static FeatureValue getBestFeatureValue 
+		(Feature feat, DiscreteProbabilityAssignment bestAssign) {
+
 		boolean isFound = false;
-		for (int j = 0 ; j < union.features[i].alternativeValues.length ; j++) {
-			FeatureValuePair pair =  new FeatureValuePair (union.features[i].featlabel, union.features[i].alternativeValues[j]);
+
+		for (int j = 0 ; j < feat.alternativeValues.length ; j++) {
+			FeatureValuePair pair =  new FeatureValuePair (feat.featlabel,feat.alternativeValues[j]);
 			if (isFeatValuePairInAssignment (pair, bestAssign)) {
-				newUnion.features[i].alternativeValues = new FeatureValue[1];
-				newUnion.features[i].alternativeValues[0] = union.features[i].alternativeValues[j];
 				isFound = true;
+				return feat.alternativeValues[j];
 			}
 		}
 		if (!isFound) {
 			log("WARNING: best assignment NOT found in the feature structure: " +
-					ProbDistribUtils.getDiscreteProbabilityAssignmentPrettyPrint(bestAssign));
+					BinderUtils.getPrettyPrintProbabilityAssignment(bestAssign));
 		}
+		return new FeatureValue();
 	}
-	
-	newUnion.includedProxies = union.includedProxies;
-	newUnion.probExists = union.probExists;
-	newUnion.distribution = union.distribution;
-	
-	log("OK, extracted a new union with maximum probability");
-	return newUnion;
-}
-	
+
+
+	public static RelationUnion getRelationUnionWithMaximumProbability (RelationUnion initRUnion) {
+
+		Union bunion = getBasicUnionWithMaximumProbability(initRUnion);
+		RelationUnion newRUnion = BinderUtils.convertIntoRelationUnion(bunion);
+
+		newRUnion.source = new Feature();
+		newRUnion.source.featlabel = initRUnion.source.featlabel;	
+		newRUnion.source.alternativeValues = new FeatureValue[1];
+		// INCORRECT - SHOULD CHANGE THIS
+		newRUnion.source.alternativeValues[0] = initRUnion.source.alternativeValues[0];
+
+		newRUnion.target = new Feature();
+		newRUnion.target.featlabel = initRUnion.target.featlabel;	
+		newRUnion.target.alternativeValues = new FeatureValue[1];
+		// INCORRECT - SHOULD CHANGE THIS
+		newRUnion.target.alternativeValues[0] = initRUnion.target.alternativeValues[0];
+		
+		return newRUnion;
+	}
+
+
 	public static void log(String s) {
+		if (LOGGING)
 		System.out.println("[GradientDescent] " + s);
 	}
 }
