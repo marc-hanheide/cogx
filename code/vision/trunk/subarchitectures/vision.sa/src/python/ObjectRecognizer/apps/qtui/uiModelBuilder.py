@@ -2,17 +2,18 @@
 
 # Form implementation generated from reading ui file 'modelBuilder.ui'
 #
-# Created: Wed Aug 26 11:32:40 2009
+# Created: Fri Sep 11 13:59:16 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
+from qwCameraPlacement import CQwCameraPlacement
 
 class Ui_ModelBuilder(object):
     def setupUi(self, ModelBuilder):
         ModelBuilder.setObjectName("ModelBuilder")
-        ModelBuilder.resize(744, 577)
+        ModelBuilder.resize(711, 606)
         self.centralwidget = QtGui.QWidget(ModelBuilder)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
@@ -28,7 +29,7 @@ class Ui_ModelBuilder(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtGui.QWidget(self.scrollArea)
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 478, 354))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 445, 403))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.cameraView = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.cameraView.setGeometry(QtCore.QRect(10, 10, 31, 41))
@@ -88,6 +89,17 @@ class Ui_ModelBuilder(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_6)
         spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem2)
+        self.frame_3 = QtGui.QFrame(self.widget)
+        self.frame_3.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.frame_3.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame_3.setObjectName("frame_3")
+        self.verticalLayout_5 = QtGui.QVBoxLayout(self.frame_3)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.wwCameraPlacement = CQwCameraPlacement(self.frame_3)
+        self.wwCameraPlacement.setMinimumSize(QtCore.QSize(0, 120))
+        self.wwCameraPlacement.setObjectName("wwCameraPlacement")
+        self.verticalLayout_5.addWidget(self.wwCameraPlacement)
+        self.verticalLayout_4.addWidget(self.frame_3)
         self.frame_2 = QtGui.QFrame(self.widget)
         self.frame_2.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QtGui.QFrame.Raised)
@@ -167,7 +179,7 @@ class Ui_ModelBuilder(object):
         self.verticalLayout.addWidget(self.lsvImages)
         ModelBuilder.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(ModelBuilder)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 744, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 711, 23))
         self.menubar.setObjectName("menubar")
         self.menuModel = QtGui.QMenu(self.menubar)
         self.menuModel.setObjectName("menuModel")
@@ -202,8 +214,10 @@ class Ui_ModelBuilder(object):
         self.actNextLambda.setObjectName("actNextLambda")
         self.actSaveView = QtGui.QAction(ModelBuilder)
         self.actSaveView.setObjectName("actSaveView")
-        self.actBuildModel = QtGui.QAction(ModelBuilder)
-        self.actBuildModel.setObjectName("actBuildModel")
+        self.actUpdateModel = QtGui.QAction(ModelBuilder)
+        self.actUpdateModel.setObjectName("actUpdateModel")
+        self.actRebuildModel = QtGui.QAction(ModelBuilder)
+        self.actRebuildModel.setObjectName("actRebuildModel")
         self.menuModel.addAction(self.actionOpen)
         self.menuModel.addAction(self.actionNew)
         self.menuModel.addAction(self.actionClose)
@@ -212,8 +226,8 @@ class Ui_ModelBuilder(object):
         self.menuCamera.addAction(self.actionSelectCamera)
         self.menuCamera.addAction(self.actionStartCamera)
         self.menuCamera.addAction(self.actionStopCamera)
-        self.menuBuild.addAction(self.actBuildModel)
-        self.menuBuild.addSeparator()
+        self.menuBuild.addAction(self.actUpdateModel)
+        self.menuBuild.addAction(self.actRebuildModel)
         self.menubar.addAction(self.menuModel.menuAction())
         self.menubar.addAction(self.menuCamera.menuAction())
         self.menubar.addAction(self.menuBuild.menuAction())
@@ -249,7 +263,7 @@ class Ui_ModelBuilder(object):
         self.label.setText(QtGui.QApplication.translate("ModelBuilder", "Phi:", None, QtGui.QApplication.UnicodeUTF8))
         self.menuModel.setTitle(QtGui.QApplication.translate("ModelBuilder", "&Model", None, QtGui.QApplication.UnicodeUTF8))
         self.menuCamera.setTitle(QtGui.QApplication.translate("ModelBuilder", "&Camera", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuBuild.setTitle(QtGui.QApplication.translate("ModelBuilder", "Build", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuBuild.setTitle(QtGui.QApplication.translate("ModelBuilder", "&Build", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setText(QtGui.QApplication.translate("ModelBuilder", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNew.setText(QtGui.QApplication.translate("ModelBuilder", "New", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClose.setText(QtGui.QApplication.translate("ModelBuilder", "Close", None, QtGui.QApplication.UnicodeUTF8))
@@ -263,8 +277,9 @@ class Ui_ModelBuilder(object):
         self.actCaptureSetup.setText(QtGui.QApplication.translate("ModelBuilder", "Capture Setup...", None, QtGui.QApplication.UnicodeUTF8))
         self.actNextLambda.setText(QtGui.QApplication.translate("ModelBuilder", "Next Lambda", None, QtGui.QApplication.UnicodeUTF8))
         self.actSaveView.setText(QtGui.QApplication.translate("ModelBuilder", "Save view", None, QtGui.QApplication.UnicodeUTF8))
-        self.actBuildModel.setText(QtGui.QApplication.translate("ModelBuilder", "Build model", None, QtGui.QApplication.UnicodeUTF8))
-        self.actBuildModel.setToolTip(QtGui.QApplication.translate("ModelBuilder", "Buid the model from current set of images", None, QtGui.QApplication.UnicodeUTF8))
+        self.actUpdateModel.setText(QtGui.QApplication.translate("ModelBuilder", "&Update model", None, QtGui.QApplication.UnicodeUTF8))
+        self.actUpdateModel.setToolTip(QtGui.QApplication.translate("ModelBuilder", "Buid the model from current set of images", None, QtGui.QApplication.UnicodeUTF8))
+        self.actRebuildModel.setText(QtGui.QApplication.translate("ModelBuilder", "&Rebuild model", None, QtGui.QApplication.UnicodeUTF8))
 
 
 if __name__ == "__main__":

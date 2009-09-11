@@ -10,7 +10,6 @@ from PyQt4 import QtCore, QtGui
 import opencv.cv as cv
 import opencv.highgui as hg
 import opencv.adaptors as cvada
-import ctypes
 
 import pymodulepaths
 # import siftgpu
@@ -48,12 +47,13 @@ class CModelBuilder:
     # Create viewpoint from image and extract features
     def _createViewpoint(self, fnImage):
         vp = camview.CViewPoint()
-        # image = hg.cvLoadImage(fnImage) # TODO: qtimage -> cvmat
+        # hg.cvLoadImage(fname) ceased working in new version of opencv (SVN 2034)...
         qim = QtGui.QImage()
         qim.load(fnImage)
-        vp.setImage(image)
-        npimg = cvada.Ipl2NumPy(image)
-        fpack = extractor.extractFeatures(npimg)
+        npimg = qtimage.ndArrayFromQtImage(qim)
+        vp.setImage(cvada.NumPy2Ipl(npimg))
+
+        fpack = self.extractor.extractFeatures(npimg)
         vp.featurePacks.append(fpack)
         phil = self.model.FM.parsePhiLambda(os.path.basename(fnImage))
         if phil != None:
@@ -61,7 +61,7 @@ class CModelBuilder:
             vp.vpLambda = phil[1]
         return vp
 
-    def _imagesToFeatures(self):
+    def _imagesToFeatures(self, rebuild=False):
         fm = self.model.FM
         try: imagefiles = sorted(os.listdir(fm.imageDir))
         except: imagefiles = []
@@ -80,10 +80,12 @@ class CModelBuilder:
 
         # check timestamps for maybe-updated images
         toUpdate = []
-        for im in updimg:
-            stim = os.stat(imageFile(im))
-            stft = os.stat(featureFile(im))
-            if stim.st_mtime > stft.st_mtime: toUpdate.append(im)
+        if rebuild: toUpdate.extend(updimg)
+        else:
+            for im in updimg:
+                stim = os.stat(imageFile(im))
+                stft = os.stat(featureFile(im))
+                if stim.st_mtime > stft.st_mtime: toUpdate.append(im)
         toUpdate.extend(newimg)
 
         for im in delimg:
@@ -99,10 +101,12 @@ class CModelBuilder:
             print "Creating feature file '%s'" % im
             vp = self._createViewpoint(imageFile(im))
             vp.save(featureFile(im))
-            # print " *** Failed"
 
-    def build(self):
-        self._imagesToFeatures()
+    def update(self):
+        self._imagesToFeatures(rebuild=False)
+
+    def rebuild(self):
+        self._imagesToFeatures(rebuild=True)
 
 
 class CImageListModel(QtCore.QAbstractListModel):
@@ -174,7 +178,7 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         self.paramCapture = CCaptureParams()
 
         # Camera input processing
-        self.siftSetup = None
+        self._siftSetup = None
         self.frame = None
         self.siftPoints = None # CFeaturepack
 
@@ -188,7 +192,19 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         self.connect(self.ui.actCaptureSetup, QtCore.SIGNAL("triggered()"), self.onSetupCapture)
         self.connect(self.ui.actNextLambda, QtCore.SIGNAL("triggered()"), self.onNextLambda)
         self.connect(self.ui.actSaveView, QtCore.SIGNAL("triggered()"), self.onSaveView)
-        self.connect(self.ui.actBuildModel, QtCore.SIGNAL("triggered()"), self.onBuildModel)
+        self.connect(self.ui.actUpdateModel, QtCore.SIGNAL("triggered()"), self.onUpdateModel)
+        self.connect(self.ui.actRebuildModel, QtCore.SIGNAL("triggered()"), self.onRebuildModel)
+        # This could probably be solved in QT-Designer if 
+        self.connect(self.ui.txtLambda, QtCore.SIGNAL("textChanged(QString)"), self.ui.wwCameraPlacement, QtCore.SLOT("setLongitude(QString)"))
+        # currentIndexChanged(QString)
+        self.connect(self.ui.cbElevation, QtCore.SIGNAL("currentIndexChanged(QString)"), self.ui.wwCameraPlacement, QtCore.SLOT("setLatitude(QString)"))
+
+    @property
+    def siftSetup(self):
+        if self._siftSetup == None:
+            cs = featuresetup.CSiftSetup
+            self._siftSetup = cs(extractor=cs.GPU, matcher=cs.NUMPY)
+        return self._siftSetup
 
     def zoom(self, factor):
         if self.canvas == None: return
@@ -231,11 +247,6 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         self.ui.cameraView.setPixmap(self.canvas)
         self.adjustCameraViewSize()
         # print time.time()
-
-    def on_ckCalcSift_toggled(self, checked):
-        if checked and self.siftSetup == None:
-            cs = featuresetup.CSiftSetup
-            self.siftSetup = cs(extractor=cs.GPU, matcher=cs.NUMPY)
 
     def on_btZoomIn_clicked(self, valid=True):
         if not valid: return
@@ -394,9 +405,15 @@ class CModelBuilderWnd(QtGui.QMainWindow):
         else: info._preview = pv
         self._imageList.setList(images)
         
-    def onBuildModel(self):
-        mb = CModelBuilder(self.model, self.siftSetup)
-        mb.build()
+    def onUpdateModel(self):
+        if self.siftSetup != None:
+            mb = CModelBuilder(self.model, self.siftSetup.extractor)
+            mb.update()
+
+    def onRebuildModel(self):
+        if self.siftSetup != None:
+            mb = CModelBuilder(self.model, self.siftSetup.extractor)
+            mb.rebuild()
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
