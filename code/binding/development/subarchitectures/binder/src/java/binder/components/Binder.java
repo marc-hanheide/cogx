@@ -400,7 +400,7 @@ public class Binder extends ManagedComponent  {
 
 			log("Constructing initial union...");
 			// Construct the initial union (containing only the new proxy)
-			Union newUnion = constructor.getInitialUnion(newProxy);
+			Union newUnion = constructor.getInitialUnion(newProxy, newDataID());
 
 			log("Construction of initial union finished, moving to unions of more than 1 proxy...");
 

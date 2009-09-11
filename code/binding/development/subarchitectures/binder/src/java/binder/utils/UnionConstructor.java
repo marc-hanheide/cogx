@@ -257,10 +257,10 @@ public class UnionConstructor  {
 
 
 
-	public Union getInitialUnion(Proxy proxy) {
+	public Union getInitialUnion(Proxy proxy, String newDataID) {
 		Vector<PerceivedEntity> curProxyV = new Vector<PerceivedEntity>();
 		curProxyV.add(proxy);
-		Union union = constructNewUnion(curProxyV, proxy.entityID + "-U");
+		Union union = constructNewUnion(curProxyV, newDataID);
 		return union;
 	} 
 
