@@ -10,7 +10,7 @@ from PyQt4 import QtCore, QtGui
 from qtui import uiCaptureSetup
 
 class CCaptureParams:
-    def __init__(self, lambdaStep=45, phiList=[0, 15, 30, 45]):
+    def __init__(self, lambdaStep=45, phiList=[0, 15, 30, 45, 90]):
         self.lambdaStep = lambdaStep
         self.lambdaReverse = False
         self.phiList = phiList
