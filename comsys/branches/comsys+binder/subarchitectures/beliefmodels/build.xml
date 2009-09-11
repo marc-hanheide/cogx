@@ -24,11 +24,6 @@
 	<!-- Expand libraries                                                    -->
 	<!-- =================================================================== -->
 
-        <target name="expandlibs" depends="prepare">
-	</target>
-
-
-
 	<!-- =================================================================== -->
 	<!-- Source generation                                                   -->
 	<!-- =================================================================== -->
@@ -59,7 +54,7 @@
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
+	<target name="compile" depends="slice" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" />
 	</target>
 
