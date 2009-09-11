@@ -232,6 +232,9 @@ void OpenCvLiveServer::configure(const map<string,string> & _config)
 
 void OpenCvLiveServer::grabFramesInternal()
 {
+  // needed to prevent retrieving while grabbing
+  lockComponent();
+
   for(size_t i = 0; i < captures.size(); i++)
   {
     // grab image into internal storage of the capture device
@@ -243,9 +246,6 @@ void OpenCvLiveServer::grabFramesInternal()
   {
     retrievedImages[i] = cvRetrieveFrame(captures[i]);
   }
-
-  // needed to prevent retrieving while grabbing
-  lockComponent();
 
   cdl::CASTTime time = getCASTTime();
   for(size_t i = 0; i < grabTimes.size(); i++)
