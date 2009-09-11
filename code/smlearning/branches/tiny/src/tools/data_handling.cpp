@@ -5,7 +5,6 @@
  *
  * @version 1.0
  *
- * Copyright 2007,2008 Alex Graves
  *           2009      Sergio Roa
 
    This is free software: you can redistribute it and/or modify
@@ -622,5 +621,6 @@ void writeDownCollectedData(DataSet data) {
 	//read_dataset(name, savedData);
 	//print_dataset<double> (savedData);
 }
+
 
 };
