@@ -59,15 +59,15 @@ bool Scenario::setup (int argc, char *argv[]) {
 
 	// Determine configuration file name
 	std::string cfg;
-	if (argc == 1) {
+	//if (argc == 1) {
 		// default configuration file name
 		cfg.assign(argv[0]);
 		size_t pos = cfg.rfind(".exe"); // Windows only
 		if (pos != std::string::npos) cfg.erase(pos);
 		cfg.append(".xml");
-	}
-	else
-		cfg.assign(argv[1]);
+	//}
+	//else
+		//cfg.assign(argv[1]);
 
 	// Create XML parser and load configuration file
 	XMLParser::Desc parserDesc;
