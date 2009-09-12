@@ -24,6 +24,8 @@ int main(int argc, char * argv[]) {
 	if (boost::regex_match(seqFile.c_str(), match, seqfile_re)) {
 		seqBaseFileName = string(match[1].first, match[1].second);
 	}
+	else
+		seqBaseFileName = seqFile;
 	cout << "seqBaseFileName: " << seqBaseFileName << endl;
 	cout << "seqFile: " << seqFile << endl;
 
