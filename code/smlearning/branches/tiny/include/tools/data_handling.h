@@ -147,6 +147,8 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 	if (boost::regex_match(seqFileName.c_str(), match, seqfile_re)) {
 		seqBaseFileName = string(match[1].first, match[1].second);
 	}
+	else
+		seqBaseFileName = seqFileName;
 	cout << "seqFileBaseName: " << seqBaseFileName << endl;
 	cout << "seqFile: " << seqFileName << endl;
 
