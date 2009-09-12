@@ -69,34 +69,6 @@ namespace smlearning {
 ///
 class Scenario
 {
-	///
-	///Universe thread encapsulating program, GUI info, Scene
-	///
-	Universe::Ptr pUniverse;
-	///
-	///Program context. For logging and setting program parameters
-	///
-	golem::Context::Ptr context;
-	///
-	///PhysX Scene
-	///
-	Scene *pScene;
-	///
-	///Reactive planner
-	///
-	PhysReacPlanner *pPhysReacPlanner;
-	///
-	///Program has its own local time which is the same for all threads
-	///and it is the time that has elapsed since the start of the program
-	///Each arm controller has two characteristic time constants:
-	///(Synchronous) Time Delta - a minimum elapsed time between two consecutive waypoints sent to the controller
-	///
-	SecTmReal timeDelta;
-	///
-	///Asynchronous Time Delta - a minimum elapsed time between the current time and the first waypoint sent to the controller
-	///(no matter what has been sent before)
-	///
-	SecTmReal timeDeltaAsync;
 public:
 	///
 	///constructor
@@ -110,17 +82,12 @@ public:
 	void setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& context);
 
 	///
-	///Setup learning scenario for offline and online experiments
-	///
-	bool setup (int argc, char *argv[]);
-
-	///
 	///The experiment performed in this method behaves as follows:
 	///The arm randomly selects any of the possible actions.
 	///Data are gathered and stored in a binary file for future use
 	///with learning machines running offline learning experiments.
 	///
-	void runSimulatedOfflineExperiment (int numSequences = 100);
+	bool runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences = 100, int startingPosition = 0);
 
 	///
 	///creates objects (groundplane, polyflap)

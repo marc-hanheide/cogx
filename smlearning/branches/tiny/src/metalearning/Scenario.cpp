@@ -53,232 +53,6 @@ void Scenario::setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& 
 
 
 ///
-///Setup learning scenario for offline and online experiments
-///
-bool Scenario::setup (int argc, char *argv[]) {
-
-	// Determine configuration file name
-	std::string cfg;
-	//if (argc == 1) {
-		// default configuration file name
-		cfg.assign(argv[0]);
-		size_t pos = cfg.rfind(".exe"); // Windows only
-		if (pos != std::string::npos) cfg.erase(pos);
-		cfg.append(".xml");
-	//}
-	//else
-		//cfg.assign(argv[1]);
-
-	// Create XML parser and load configuration file
-	XMLParser::Desc parserDesc;
-	XMLParser::Ptr parser = parserDesc.create();
-	if (!parser->load(FileReadStream(cfg.c_str()))) {
-		printf("unable to load configuration file: %s\n", cfg.c_str());
-		printf("%s <configuration_file>\n", argv[0]);
-		return false;
-	}
-
-	// Find program XML root context
-	XMLContext* xmlContext = parser->getContextRoot()->getContextFirst("golem");
-	if (xmlContext == NULL) {
-		printf("unknown configuration file: %s\n", cfg.c_str());
-		return false;
-	}
-
-	// Create program context
-	golem::Context::Desc contextDesc;
-	setupContext(contextDesc, xmlContext);
-	context = contextDesc.create();
-	if (context == NULL) {
-		printf("unable to create program context");
-		return false;
-	}
-
-	printf("Use the arrow keys to move the camera.\n");
-	printf("Use the mouse to rotate the camera.\n");
-	printf("Press p to pause simulations.\n");
-	printf("Press pgup/pgdn/space to switch between simulations.\n");
-	printf("Press v to show Actors reference frames.\n");
-	printf("Use z, x, c to change randering mode.\n");
-	printf("Use F1-F12 to display program specific debug information:\n");
-	printf("\tF1 to display/hide the current destination pose.\n");
-	printf("\tF2 to display/hide the current trajectory.\n");
-	printf("\tF3 to display/hide the goal/desired pose.\n");
-	printf("\tF4 to display/hide the global waypoint graph nodes.\n");
-	printf("\tF5 to display/hide the global waypoint path.\n");
-	printf("\tF6 to display/hide the local waypoint graph nodes.\n");
-	printf("\tF7 to display/hide the local waypoint path.\n");
-	printf("\tF8 to display/hide the optimised waypoint path.\n");
-	printf("Press esc to exit.\n");
-	
-// 	// Stream all messages to std::cerr
-// 	Streamer streamer(context->getLogger(), std::cout);
-// 	// Throw exception if the message level at least LEVEL_CRIT but only from the current thread
-// 	context->getLogger()->setExFilter(MessageFilter::Ptr(new ThreadFilter<StdMsg>(StdMsg::LEVEL_CRIT)));
-	// Do not display LEVEL_DEBUG messages (only with level at least LEVEL_INFO)
-	//context->getLogger()->setMsgFilter(MessageFilter::Ptr(new LevelFilter<StdMsg>(StdMsg::LEVEL_ERR)));
-
-	// Random number generator seed
-	context->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context->getRandSeed()._U32[0]);
-
-	//-----------------------------------------------------------------------------
-
-	// Create Universe
-	Universe::Desc universeDesc;
-	setupUniverse(universeDesc, xmlContext->getContextFirst("universe"), *context);
-	universeDesc.name = "Golem (Pushing)";
-	universeDesc.argc = argc;
-	universeDesc.argv = argv;
-	pUniverse = universeDesc.create(*context);
-	
-	// Create scene
-	Scene::Desc sceneDesc;
-	setupScene(sceneDesc, xmlContext->getContextFirst("scene"), *context);
-	sceneDesc.name = "Robotic arm controller demo";
-	pScene = pUniverse->createScene(sceneDesc);
-	
-	// Determine arm type
-	std::string armType;
-	if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
-		context->getLogger()->post(Message::LEVEL_CRIT, "Unspecified arm type");
-		return false;
-	}
-	
-	// Setup PhysReacPlanner controller description
-	PhysReacPlanner::Desc physReacPlannerDesc;
-	if (!armType.compare("kat_serial_arm")) {
-		KatSerialArm::Desc *pDesc = new KatSerialArm::Desc();
-		physReacPlannerDesc.pArmDesc.reset(pDesc);
-		XMLData(pDesc->cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
-		XMLData(pDesc->serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
-	}
-	else if (!armType.compare("kat_sim_arm")) {
-		KatSimArm::Desc *pDesc = new KatSimArm::Desc();
-		physReacPlannerDesc.pArmDesc.reset(pDesc);
-	}
-	else if (!armType.compare("gen_sim_arm")) {
-		GenSimArm::Desc *pDesc = new GenSimArm::Desc();
-		physReacPlannerDesc.pArmDesc.reset(pDesc);
-	}
-
-
-	
-// 	// Setup PhysReacPlanner controller description
-// 	obj_ptr<Object::Desc> pPhysReacPlannerDesc;
-// 	if (!armType.compare("kat_serial_arm")) {
-// 		typedef PhysReacPlanner::Desc<KatSerialArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		// 			typedef PhysReacPlanner::Desc<KatSerialArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-// 		pPhysReacPlannerDesc.reset(pDesc);
-// 		setupPlanner(*pDesc, xmlContext, *context);
-// 		XMLData(pDesc->armDesc.cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
-// 		XMLData(pDesc->armDesc.serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
-// 	}
-// 	else if (!armType.compare("kat_sim_arm")) {
-// 		typedef PhysReacPlanner::Desc<KatSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		// 			typedef PhysReacPlanner::Desc<KatSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-// 		pPhysReacPlannerDesc.reset(pDesc);
-// 		setupPlanner(*pDesc, xmlContext, *context);
-
-// 	}
-// 	else if (!armType.compare("gen_sim_arm")) {
-// 		typedef PhysReacPlanner::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		// 			typedef PhysReacPlanner::Desc<GenSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-// 		pPhysReacPlannerDesc.reset(pDesc);
-// 		setupPlanner(*pDesc, xmlContext, *context);
-// 	}
-
-	
-	else {
-		context->getLogger()->post(Message::LEVEL_CRIT, "Unknown arm type");
-		return false;
-	}
-
-	// Create PhysReacPlanner
-	context->getLogger()->post(Message::LEVEL_INFO, "Initialising reactive planner...");
-	pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(physReacPlannerDesc));
-	if (pPhysReacPlanner == NULL) {
-		context->getLogger()->post(Message::LEVEL_CRIT, "Unable to create ReacPlanner");
-		return false;
-	}
-
-	// some useful pointers
-	ReacPlanner &reacPlanner = pPhysReacPlanner->getReacPlanner();
-	Planner &planner = pPhysReacPlanner->getPlanner();
-	Arm &arm = pPhysReacPlanner->getArm();
-
-	if (!armType.compare("kat_sim_arm")) {
-		setupSimulatedObjects(*pScene, *context);
-		// Create bounds to be attached to the end-effector (the last joint) 
-		const U32 jointIndex = (U32)arm.getJoints().size() - 1;
-		std::vector<Bounds::Desc::Ptr> boundsDescSeq;
-		MemoryWriteStream buffer;
-		Mat34 referencePose;
-		createFinger(boundsDescSeq, referencePose, arm.getReferencePose(), buffer);
-		// set new arm reference pose
-		arm.setReferencePose(referencePose);
-		// Modify shape of the joint by adding new bounds to the Actor representing the end-effector.
-		std::vector<const Bounds*> boundsSeq;
-		addBounds(pPhysReacPlanner->getJointActors().back(), boundsSeq, boundsDescSeq);
-		pPhysReacPlanner->getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
-	}
-
-/*		
-// 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->front()->getPose();
-		Real roll, pitch, yaw;
-// 		p.R.toEuler (roll,pitch,yaw);
-// 		context->getLogger()->post(Message::LEVEL_INFO, "Getting finger bounds pose...");
-// 		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
-
-		Mat34 p;
-		//arm.setReferencePose (p);
-		//arm.setReferencePose (arm.getGlobalPose());
-		p = arm.getReferencePose ();
-		p.R.toEuler (roll, pitch, yaw);
-		
-		context->getLogger()->post(Message::LEVEL_INFO, "Getting arm reference pose...");
-		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
-
-		p = arm.getGlobalPose ();
-		p.R.toEuler (roll, pitch, yaw);
-		
-		context->getLogger()->post(Message::LEVEL_INFO, "Getting arm global pose...");
-		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
-*/
-		
-	// Display arm information
-	armInfo(arm);
-	//sleep (1);
-
-	// Big Bang!
-	context->getLogger()->post(Message::LEVEL_INFO, "Launching Universe...");
-	pUniverse->launch();
-
-	// Reactive arm controller is capable to make the arm to move on almost arbirtary trajectories
-	// (within velocity and acceleration limits) using planner with collision detection
-	// Trajectories are created by sequential sending trajectory waypoints to the arm
-	// Waypoints can be specified in jointspace or in Cartesian workspace
-	// Each waypoints has its own time stamp, and the arm controller takes care of time synchronization between
-	// the arm and the program
-	
-	// Program has its own local time which is the same for all threads
-	// and it is the time that has elapsed since the start of the program
-	// Each arm controller has two characteristic time constants:
-	// (Synchronous) Time Delta - a minimum elapsed time between two consecutive waypoints sent to the controller
-	timeDelta = reacPlanner.getTimeDelta();
-	// Asynchronous Time Delta - a minimum elapsed time between the current time and the first waypoint sent to the controller
-	// (no matter what has been sent before)
-	timeDeltaAsync = reacPlanner.getTimeDeltaAsync();
-
-	return true;
-}
-
-
-
-
-///
 ///creates object in the scene
 ///
 void Scenario::setupSimulatedObjects(Scene &scene, golem::Context &context) {
@@ -401,13 +175,226 @@ void Scenario::addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, c
 ///Data are gathered and stored in a binary file for future use
 ///with learning machines running offline learning experiments.
 ///
-void Scenario::runSimulatedOfflineExperiment (int numSequences) {
+bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences, int startingPosition) {
+
+	// Determine configuration file name
+	std::string cfg;
+	//if (argc == 1) {
+		// default configuration file name
+		cfg.assign(argv[0]);
+		size_t pos = cfg.rfind(".exe"); // Windows only
+		if (pos != std::string::npos) cfg.erase(pos);
+		cfg.append(".xml");
+	//}
+	//else
+		//cfg.assign(argv[1]);
+
+	// Create XML parser and load configuration file
+	XMLParser::Desc parserDesc;
+	XMLParser::Ptr parser = parserDesc.create();
+	if (!parser->load(FileReadStream(cfg.c_str()))) {
+		printf("unable to load configuration file: %s\n", cfg.c_str());
+		printf("%s <configuration_file>\n", argv[0]);
+		return false;
+	}
+
+	// Find program XML root context
+	XMLContext* xmlContext = parser->getContextRoot()->getContextFirst("golem");
+	if (xmlContext == NULL) {
+		printf("unknown configuration file: %s\n", cfg.c_str());
+		return false;
+	}
+
+	// Create program context
+	golem::Context::Desc contextDesc;
+	setupContext(contextDesc, xmlContext);
+	golem::Context::Ptr context = contextDesc.create();
+	if (context == NULL) {
+		printf("unable to create program context");
+		return false;
+	}
+
+	printf("Use the arrow keys to move the camera.\n");
+	printf("Use the mouse to rotate the camera.\n");
+	printf("Press p to pause simulations.\n");
+	printf("Press pgup/pgdn/space to switch between simulations.\n");
+	printf("Press v to show Actors reference frames.\n");
+	printf("Use z, x, c to change randering mode.\n");
+	printf("Use F1-F12 to display program specific debug information:\n");
+	printf("\tF1 to display/hide the current destination pose.\n");
+	printf("\tF2 to display/hide the current trajectory.\n");
+	printf("\tF3 to display/hide the goal/desired pose.\n");
+	printf("\tF4 to display/hide the global waypoint graph nodes.\n");
+	printf("\tF5 to display/hide the global waypoint path.\n");
+	printf("\tF6 to display/hide the local waypoint graph nodes.\n");
+	printf("\tF7 to display/hide the local waypoint path.\n");
+	printf("\tF8 to display/hide the optimised waypoint path.\n");
+	printf("Press esc to exit.\n");
+	
+// 	// Stream all messages to std::cerr
+// 	Streamer streamer(context->getLogger(), std::cout);
+// 	// Throw exception if the message level at least LEVEL_CRIT but only from the current thread
+// 	context->getLogger()->setExFilter(MessageFilter::Ptr(new ThreadFilter<StdMsg>(StdMsg::LEVEL_CRIT)));
+	// Do not display LEVEL_DEBUG messages (only with level at least LEVEL_INFO)
+	//context->getLogger()->setMsgFilter(MessageFilter::Ptr(new LevelFilter<StdMsg>(StdMsg::LEVEL_ERR)));
+
+	// Random number generator seed
+	context->getLogger()->post(Message::LEVEL_INFO, "Random number generator seed %d", context->getRandSeed()._U32[0]);
+
+	//-----------------------------------------------------------------------------
+
+	// Create Universe
+	Universe::Desc universeDesc;
+	setupUniverse(universeDesc, xmlContext->getContextFirst("universe"), *context);
+	universeDesc.name = "Golem (Pushing)";
+	universeDesc.argc = argc;
+	universeDesc.argv = argv;
+	Universe::Ptr pUniverse = universeDesc.create(*context);
+	
+	// Create scene
+	Scene::Desc sceneDesc;
+	setupScene(sceneDesc, xmlContext->getContextFirst("scene"), *context);
+	sceneDesc.name = "Robotic arm controller demo";
+	Scene *pScene = pUniverse->createScene(sceneDesc);
+	
+	// Determine arm type
+	std::string armType;
+	if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
+		context->getLogger()->post(Message::LEVEL_CRIT, "Unspecified arm type");
+		return false;
+	}
+	
+	// Setup PhysReacPlanner controller description
+	PhysReacPlanner::Desc physReacPlannerDesc;
+	if (!armType.compare("kat_serial_arm")) {
+		KatSerialArm::Desc *pDesc = new KatSerialArm::Desc();
+		physReacPlannerDesc.pArmDesc.reset(pDesc);
+		XMLData(pDesc->cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
+		XMLData(pDesc->serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
+	}
+	else if (!armType.compare("kat_sim_arm")) {
+		KatSimArm::Desc *pDesc = new KatSimArm::Desc();
+		physReacPlannerDesc.pArmDesc.reset(pDesc);
+	}
+	else if (!armType.compare("gen_sim_arm")) {
+		GenSimArm::Desc *pDesc = new GenSimArm::Desc();
+		physReacPlannerDesc.pArmDesc.reset(pDesc);
+	}
+
+
+	
+// 	// Setup PhysReacPlanner controller description
+// 	obj_ptr<Object::Desc> pPhysReacPlannerDesc;
+// 	if (!armType.compare("kat_serial_arm")) {
+// 		typedef PhysReacPlanner::Desc<KatSerialArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 		// 			typedef PhysReacPlanner::Desc<KatSerialArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
+// 		pPhysReacPlannerDesc.reset(pDesc);
+// 		setupPlanner(*pDesc, xmlContext, *context);
+// 		XMLData(pDesc->armDesc.cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
+// 		XMLData(pDesc->armDesc.serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
+// 	}
+// 	else if (!armType.compare("kat_sim_arm")) {
+// 		typedef PhysReacPlanner::Desc<KatSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 		// 			typedef PhysReacPlanner::Desc<KatSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
+// 		pPhysReacPlannerDesc.reset(pDesc);
+// 		setupPlanner(*pDesc, xmlContext, *context);
+
+// 	}
+// 	else if (!armType.compare("gen_sim_arm")) {
+// 		typedef PhysReacPlanner::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 		// 			typedef PhysReacPlanner::Desc<GenSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
+// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
+// 		pPhysReacPlannerDesc.reset(pDesc);
+// 		setupPlanner(*pDesc, xmlContext, *context);
+// 	}
+
+	
+	else {
+		context->getLogger()->post(Message::LEVEL_CRIT, "Unknown arm type");
+		return false;
+	}
+
+	// Create PhysReacPlanner
+	context->getLogger()->post(Message::LEVEL_INFO, "Initialising reactive planner...");
+	PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(physReacPlannerDesc));
+	if (pPhysReacPlanner == NULL) {
+		context->getLogger()->post(Message::LEVEL_CRIT, "Unable to create ReacPlanner");
+		return false;
+	}
 
 	// some useful pointers
 	ReacPlanner &reacPlanner = pPhysReacPlanner->getReacPlanner();
 	Planner &planner = pPhysReacPlanner->getPlanner();
 	Arm &arm = pPhysReacPlanner->getArm();
 
+	if (!armType.compare("kat_sim_arm")) {
+		setupSimulatedObjects(*pScene, *context);
+		// Create bounds to be attached to the end-effector (the last joint) 
+		const U32 jointIndex = (U32)arm.getJoints().size() - 1;
+		std::vector<Bounds::Desc::Ptr> boundsDescSeq;
+		MemoryWriteStream buffer;
+		Mat34 referencePose;
+		createFinger(boundsDescSeq, referencePose, arm.getReferencePose(), buffer);
+		// set new arm reference pose
+		arm.setReferencePose(referencePose);
+		// Modify shape of the joint by adding new bounds to the Actor representing the end-effector.
+		std::vector<const Bounds*> boundsSeq;
+		addBounds(pPhysReacPlanner->getJointActors().back(), boundsSeq, boundsDescSeq);
+		pPhysReacPlanner->getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
+	}
+
+/*		
+// 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->front()->getPose();
+		Real roll, pitch, yaw;
+// 		p.R.toEuler (roll,pitch,yaw);
+// 		context->getLogger()->post(Message::LEVEL_INFO, "Getting finger bounds pose...");
+// 		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
+
+		Mat34 p;
+		//arm.setReferencePose (p);
+		//arm.setReferencePose (arm.getGlobalPose());
+		p = arm.getReferencePose ();
+		p.R.toEuler (roll, pitch, yaw);
+		
+		context->getLogger()->post(Message::LEVEL_INFO, "Getting arm reference pose...");
+		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
+
+		p = arm.getGlobalPose ();
+		p.R.toEuler (roll, pitch, yaw);
+		
+		context->getLogger()->post(Message::LEVEL_INFO, "Getting arm global pose...");
+		context->getLogger()->post(Message::LEVEL_INFO, "%f, %f, %f, %f, %f, %f", p.p.v1, p.p.v2, p.p.v3, roll, pitch, yaw);
+*/
+		
+	// Display arm information
+	armInfo(arm);
+	//sleep (1);
+
+	// Big Bang!
+	context->getLogger()->post(Message::LEVEL_INFO, "Launching Universe...");
+	pUniverse->launch();
+
+
+	// Reactive arm controller is capable to make the arm to move on almost arbirtary trajectories
+	// (within velocity and acceleration limits) using planner with collision detection
+	// Trajectories are created by sequential sending trajectory waypoints to the arm
+	// Waypoints can be specified in jointspace or in Cartesian workspace
+	// Each waypoints has its own time stamp, and the arm controller takes care of time synchronization between
+	// the arm and the program
+
+	// Program has its own local time which is the same for all threads
+	// and it is the time that has elapsed since the start of the program
+	// Each arm controller has two characteristic time constants:
+	// (Synchronous) Time Delta - a minimum elapsed time between two consecutive waypoints sent to the controller
+	SecTmReal timeDelta = reacPlanner.getTimeDelta();
+	// Asynchronous Time Delta - a minimum elapsed time between the current time and the first waypoint sent to the controller
+	// (no matter what has been sent before)
+	SecTmReal timeDeltaAsync = reacPlanner.getTimeDeltaAsync();
+
+
+	
 	//a number that slightly greater then the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
@@ -529,7 +516,11 @@ void Scenario::runSimulatedOfflineExperiment (int numSequences) {
 
 		//chose random point int the vicinity of the polyflap
 		srand(context->getRandSeed()._U32[0]  + e);
-		int startPosition = rand() % 17 + 1;
+		int startPosition;
+		if (startingPosition == 0)
+			startPosition = rand() % 17 + 1;
+		else
+			startPosition = startingPosition;
 		//			int startPosition = 1;
 	
 		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
@@ -846,7 +837,7 @@ void Scenario::runSimulatedOfflineExperiment (int numSequences) {
 	//writing the dataset into binary file
 	writeDownCollectedData(data);
 	/////////////////////////////////////////////////
-
+	return true;
 }
 
 ///
