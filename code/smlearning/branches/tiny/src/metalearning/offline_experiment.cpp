@@ -28,13 +28,15 @@ using namespace smlearning;
 
 int main(int argc, char *argv[]) {
 
-	int numSequences = 1000;
-
 	try {
 		Scenario learningScenario;
 		if (!learningScenario.setup (argc, argv))
 			return 1;
-		learningScenario.runSimulatedOfflineExperiment (numSequences);
+		if (argc > 1)
+			learningScenario.runSimulatedOfflineExperiment (atoi(argv[1]));
+		else
+			learningScenario.runSimulatedOfflineExperiment ();
+			
 
 	}
 	catch (const MsgStreamFile &msg) {
