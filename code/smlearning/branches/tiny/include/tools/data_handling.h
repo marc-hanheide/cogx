@@ -34,8 +34,6 @@
 #include <fstream>
 #include <sstream>
 
-#include <MultilayerNet.hpp>
-
 #include <netcdf.h>
 
 #include <boost/filesystem/operations.hpp>
@@ -225,63 +223,12 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 	
 }
 
-///
-///generate config files for RNNs for offline experiments
-///
-bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const string baseDataFileName, int n, string targetDir );
 
 ///
 ///write collected data in an offline experiment
 ///
 void writeDownCollectedData(DataSet data);
 
-///
-///encapsulation of structs to generate RNNs config files in offline experiments
-///
-class OfflineRNN {
-
-	rnnlib::Mdrnn *net;
-	rnnlib::ConfigFile conf;
-	string task;
-	
- public:
-
-	OfflineRNN () : conf ("/usr/local/bin/SMLearning/defaultnet.config") {
-		//data loaded in from config file (default values below)
-		rnnlib::GlobalVariables::instance().setVerbose (false);
-		task = conf.get<string>("task");
-	}
-
-	///
-	///print network topology and learning algorithm information
-	///
-	void print_net_data (ostream& out = cout);
-
-	///
-	///save RNN config file to be used for offline experiments
-	///
-	ostream& save_config_file (ostream& out = cout);
-
-	///
-	///open RNN for verification
-	///
-	void load_net (ostream& out = cout);
-
-	///
-	///read config file data from a given file
-	///
-	void set_config_file (rnnlib::ConfigFile &configFile);
-
-	///
-	///set test data file to be used with the RNN
-	///
-	void set_testdatafile (string fileName);
-
-	///
-	///set train data file to be used with the RNN
-	///
-	void set_traindatafile (string fileName);
-};
 
 }; /* smlearning namespace */
 

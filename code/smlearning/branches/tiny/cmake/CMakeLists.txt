@@ -87,6 +87,7 @@ LINK_DIRECTORIES(
 
 SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
+	${SMLEARNING_ROOT}/src/metalearning/OfflineRNN.cpp
 )
 
 SET(OFFLINE_EXPERIMENT_SOURCE
@@ -95,6 +96,7 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
+	${SMLEARNING_ROOT}/include/metalearning/OfflineRNN.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
 
