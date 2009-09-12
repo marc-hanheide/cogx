@@ -540,63 +540,7 @@ bool concatenate_datasets (string dir, string writeFileName) {
 	return true;
 }
 	
-ostream& OfflineRNN::save_config_file (ostream& out)
-{
-	out << conf;
-	return out;
-}
 
-void OfflineRNN::load_net (ostream& out) {
-	string dataFile = conf.get<string>("trainFile");
-	rnnlib::DataHeader header(dataFile, task, 1);
-	net = new rnnlib::MultilayerNet(out, conf, header);
-}
-
-void OfflineRNN::print_net_data (ostream& out)
-{
-	out << endl << "network:" << endl;
-	PRINT(task, out);
-	out << *net;
-}
-
-void OfflineRNN::set_config_file (rnnlib::ConfigFile &configFile) {
-	conf = configFile;
-}
-
-void OfflineRNN::set_testdatafile (string fileName) {
-	conf.set<string>("testFile", fileName);
-}
-
-void OfflineRNN::set_traindatafile (string fileName) {
-	conf.set<string>("trainFile", fileName);
-}
-
-///
-///generate config files for RNNs for offline experiments
-///
-bool generate_network_files_nfoldcv_set (const string defaultnetConfigFile, const string baseDataFileName, int n, string target_dir ) {
-
-	OfflineRNN myRNN;
-	rnnlib::ConfigFile conf(defaultnetConfigFile);
-	myRNN.set_config_file (conf);
-
-	for (int i=0; i<n; i++) {
-		stringstream testingFileName;
-		stringstream trainingFileName;
-		stringstream netFileName;
-		netFileName << target_dir << "/" << baseDataFileName << "_" << n << "_foldcv_set-" << i << ".config";
-		ofstream netFile (netFileName.str().c_str());
-		testingFileName << baseDataFileName << "_" << n << "_foldcv_set-" << i << "_testing.nc";
-		trainingFileName << baseDataFileName << "_" << n << "_foldcv_set-" << i << "_training.nc";
-		
-		myRNN.set_testdatafile (testingFileName.str());
-		myRNN.set_traindatafile (trainingFileName.str());
-		myRNN.save_config_file (netFile);
-		netFile.close();
-	}
-
-	return true;
-}
 
 ///
 ///write collected data in an offline experiment

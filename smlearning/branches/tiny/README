@@ -46,8 +46,10 @@ You will possibly have to put the right path to boost_filesystem and boost_regex
 
 For instance, when using Boost v1.39:
 
-BOOST_FILESYSTEM_LIBRARY /usr/local/lib/libboost_filesystem-gcc43-mt-1_39.so.1.39.0
-BOOST_REGEX_LIBRARY /usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0
+Boost_FILESYSTEM_LIBRARY         /lib/libboost_filesystem-gcc43-mt-1_39.so                        
+Boost_INCLUDE_DIR                /usr/local/include/boost-1_39                                    
+Boost_LIBRARY_DIRS               /usr/local/lib                                                   
+Boost_REGEX_LIBRARY              /lib/libboost_regex-gcc43-mt-1_39.so                             
 
 Finally, compile the SMLearning sources:
 
