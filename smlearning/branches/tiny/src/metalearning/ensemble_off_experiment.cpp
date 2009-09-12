@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 		string arg = "/usr/local/bin/SMLearning/offline_experiment";
 		strcpy (argv[0], arg.c_str());
 		if (argc == 2) {
-			for (int i=1; i<=2; i++)
+			for (int i=1; i<=18; i++)
 				if (!learningScenario.runSimulatedOfflineExperiment (argc, argv, atoi(argv[1]), i))
 					return 1;
 		}
