@@ -93,7 +93,7 @@ SelfRepresenter::runComponent()
     FrontierInterface::PlaceInterfacePrx agg2(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
     int prevPlaceID = -1;
-    while (true) {
+    while (isRunning()) {
       // Regularly check robot pose
       NavData::FNodePtr curFNode = getCurrentNavNode();
       try {
