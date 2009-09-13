@@ -29,13 +29,11 @@ import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
 import binder.autogen.core.PerceivedEntity;
-import binder.autogen.core.Proxy;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.utils.BayesianNetworkUtils;
-import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
 
 /**
@@ -64,10 +62,10 @@ public class BayesianNetworkManager {
 	 * 
 	 */
 
-	public BayesianNetworkManager() {		
+	public BayesianNetworkManager(String configurationFile) {		
 
 		log("Start building the bayesian network...");
-		network = BayesianNetworkUtils.constructNetwork();
+		network = BayesianNetworkUtils.constructNetwork(configurationFile);
 		log("Construction of bayesian network successfull!");
 		log("number of nodes: " + network.nodes.length);		
 		log("number of edges: " + network.edges.length);
@@ -75,6 +73,7 @@ public class BayesianNetworkManager {
 		alreadyComputedDistribs = new HashMap<PerceivedEntity, DiscreteProbabilityDistribution>();
 
 	}
+	
 
 	/**
 	 * Compute the prior distribution for a proxy, based on a bayesian network

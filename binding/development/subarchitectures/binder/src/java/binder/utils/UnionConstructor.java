@@ -49,11 +49,12 @@ public class UnionConstructor  {
 
 	public static boolean LOGGING = true;
 	
-
-	public UnionConstructor() {
-		BNManager = new BayesianNetworkManager();
+	
+	public UnionConstructor(String bayesiannetworkfile) {
+		BNManager = new BayesianNetworkManager(bayesiannetworkfile);
 	}
 
+	
 	public void setAlphaParam(float alpha) {
 		ALPHA_CONST = alpha;
 	}
