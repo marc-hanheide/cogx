@@ -69,9 +69,12 @@ public class Binder extends ManagedComponent  {
 	// TO IMPLEMENT / TEST
 	private boolean normaliseDistributions = false;
 	
+	// Text specification of the bay
+	public String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
+	
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
-	private int NB_CONFIGURATIONS_TO_KEEP = 1;
+	private int NB_CONFIGURATIONS_TO_KEEP = 80;
 
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
@@ -88,9 +91,7 @@ public class Binder extends ManagedComponent  {
 	/**
 	 *  Construct a new binder
 	 */
-	public Binder() {
-		constructor = new UnionConstructor();
-	}
+	public Binder() {	}
 
 
 	/** 
@@ -169,6 +170,13 @@ public class Binder extends ManagedComponent  {
 
 	@Override
 	public void configure(Map<String, String> _config) {
+		
+		if (_config.containsKey("--bayesiannetworkfile")) {
+			bayesianNetworkConfigFile = _config.get("--bayesiannetworkfile");
+		} 
+		
+		constructor = new UnionConstructor(bayesianNetworkConfigFile);
+
 		if (_config.containsKey("--alpha")) {
 			constructor.setAlphaParam(Float.parseFloat(_config.get("--alpha")));
 		} 
@@ -445,7 +453,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 							unionsToMerge.add(existingUnion);
 							unionsToMerge.add(newUnion);
-							newMergedUnion = constructor.constructNewUnion(unionsToMerge, newDataID());
+							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID);
 							alreadyMergedUnions.put(existingUnion.entityID, newMergedUnion);
 						}
 						// or simply fetch the already computed union

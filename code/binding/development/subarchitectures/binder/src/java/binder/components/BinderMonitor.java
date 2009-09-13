@@ -25,7 +25,9 @@ import java.util.Vector;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
+import binder.autogen.specialentities.RelationUnion;
 import binder.gui.BinderMonitorGUI;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
@@ -134,22 +136,50 @@ public class BinderMonitor extends ManagedComponent {
 			
 			// Extract the proxies in the working memory
 			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
-			log("Current number of (normal) proxies: " + proxies.length);
 			for (int i = (proxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(proxies[i].getData());
 			}
 			
 			CASTData<RelationProxy>[] rproxies = getWorkingMemoryEntries(RelationProxy.class);
-			log("Current number of relation proxies: " + rproxies.length);
 			for (int i = (rproxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(rproxies[i].getData());
-			}			
+			}
+
+			CASTData<PhantomProxy>[] pproxies = getWorkingMemoryEntries(PhantomProxy.class);
+			for (int i = (pproxies.length - 1) ; i >= 0 ; i--) {
+				proxiesV.add(pproxies[i].getData());
+			}
+			
+			String proxytext = proxies.length + " normal";
+			if (rproxies.length > 0) {
+				proxytext += " + " + rproxies.length + " relation";
+			}
+			if (pproxies.length > 0) {
+				proxytext += " + " + pproxies.length + " phantom";
+			}
+			if (rproxies.length > 0 || pproxies.length > 0) {
+				proxytext += " = " + (proxies.length + rproxies.length + pproxies.length);
+			}
+			
+			log("Current number of proxies: " + proxytext);
+
 			
 			// Extract the unions in the union configuration
+			int nbRelationUnions = 0;
 			for (int i = 0 ; i < bestConfig.includedUnions.length ; i++) {
+				Union u = bestConfig.includedUnions[i];
+				if (u instanceof RelationUnion) {
+					nbRelationUnions++;
+				}
 				UnionsV.add(bestConfig.includedUnions[i]);
 			}
 			
+			String unionText = (bestConfig.includedUnions.length - nbRelationUnions) + " normal";
+			if (nbRelationUnions > 0) {
+				unionText += " + " + nbRelationUnions + " relation" ;
+				unionText += " = " + bestConfig.includedUnions.length;
+			}
+			log("Current number of unions: " + unionText);
 			
 			// Check if proxies need to be deleted from the monitor
 			for (Enumeration<Proxy> e = lastProxies.elements(); e.hasMoreElements(); ) {
@@ -174,7 +204,6 @@ public class BinderMonitor extends ManagedComponent {
 		// Update the proxy and union sets
 		lastProxies = proxiesV;
 		lastUnions = UnionsV;
-		log("Current number of Unions: " + UnionsV.size());
 		
 		// And finally, trigger the GUI update
 		if (gui != null) {

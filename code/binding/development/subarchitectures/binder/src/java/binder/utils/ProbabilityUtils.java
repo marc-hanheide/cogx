@@ -31,12 +31,13 @@ import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.featvalues.StringValue;
-import binder.autogen.featvalues.UnknownValue;
 import binder.utils.FeatureValueUtils;
 
 public class ProbabilityUtils {
 
+	
+	public static boolean normaliseDistributions = false;
+	
 
 	public static ProbabilityDistribution generateProbabilityDistribution (PerceivedEntity entity) {
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
@@ -56,7 +57,10 @@ public class ProbabilityUtils {
 			}
 
 		}
-		return normaliseDistribution(distrib, 1.0f);
+		if (normaliseDistributions) {
+			distrib = normaliseDistribution(distrib, 1.0f);
+		}
+		return distrib;
 	}
 
 

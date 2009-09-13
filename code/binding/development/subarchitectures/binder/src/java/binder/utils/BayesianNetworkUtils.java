@@ -39,15 +39,13 @@ import binder.bayesiannetwork.configparser.BNConfigParser;
 
 public class BayesianNetworkUtils {
 
-	public static String configurationFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
-
 	public static boolean logging = false;
 	
 	public static BayesianNetwork constructNetwork(String configFile) {
 	
 		BayesianNetwork network = new BayesianNetwork();
 		
-		String text = getText(configurationFile);
+		String text = getText(configFile);
 		byte[] stringBytes = text.getBytes();
 		ByteArrayInputStream bais = new ByteArrayInputStream(stringBytes);
 		BNConfigParser parser = new BNConfigParser(bais);
@@ -73,10 +71,6 @@ public class BayesianNetworkUtils {
 		return network;
 	}
 	
-	public static BayesianNetwork constructNetwork() {
-		return constructNetwork(configurationFile);
-	}
-
 	
 	public static Vector<BayesianNetworkEdge> getIncomingEdges(BayesianNetwork network, BayesianNetworkNode node)  {
 		
@@ -201,8 +195,5 @@ public class BayesianNetworkUtils {
 		}
 	}
 	
-	public static void main (String[] args) {
-		BayesianNetworkUtils.constructNetwork();
-	} 
 	
 }

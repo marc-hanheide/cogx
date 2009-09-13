@@ -22,6 +22,7 @@ package binder.utils;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
@@ -198,6 +199,15 @@ public static Union getBestUnion(UnionDistribution distribution) {
 	 */
 
 
+	public static boolean alreadyComputed(Union union) {
+		for (Iterator<Union> i = maxForUnions.keySet().iterator() ; i.hasNext() ; ) {
+			Union u = i.next();
+			if (u.entityID.equals(union.entityID) && u.timeStamp == union.timeStamp) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public static Vector<UnionConfiguration> getNBestUnionConfigurations
 	(Vector<UnionConfiguration> configs, int nb_nbests) {
@@ -214,7 +224,7 @@ public static Union getBestUnion(UnionDistribution distribution) {
 			for (int i = 0; i < config.includedUnions.length ; i++) {		
 				Union union = config.includedUnions[i];
 				float max = 0.0f;
-				if (maxForUnions.containsKey(union)) {
+				if (alreadyComputed(union)) {
 					max = maxForUnions.get(union);
 				}
 				else {
@@ -265,9 +275,12 @@ public static Union getBestUnion(UnionDistribution distribution) {
 
 			for (int i = 0; i < config.includedUnions.length ; i++) {		
 				Union union = config.includedUnions[i];
-				multiplication = multiplication * getMaximum(union);
+				float unionMax = getMaximum(union);
+				multiplication = multiplication * unionMax;
+				log("unionmax: " + unionMax + " for "  + union.entityID);
 			}
 			float average = multiplication / (config.includedUnions.length + 0.0f);
+			System.out.println("average: "  + average);
 
 			if (average > maxAverage) {
 				maxAverage = average;

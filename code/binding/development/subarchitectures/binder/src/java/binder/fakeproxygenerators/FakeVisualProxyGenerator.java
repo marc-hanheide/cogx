@@ -38,7 +38,6 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 			return createProxyOne();
 		}
 		if (nb == 2) {
-			sleepComponent(2000);
 			return createProxyTwo();
 		}
 		return null;
