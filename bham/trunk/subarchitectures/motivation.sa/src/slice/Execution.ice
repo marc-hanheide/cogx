@@ -9,6 +9,12 @@ module execution {
   module slice {
 
     /**
+     * A struct written to instruct the execution system to start
+     * executing a plan.
+     */
+     ///    class 
+
+    /**
      * Enum for boolean values + indeterminate
      */
     enum TriBool {

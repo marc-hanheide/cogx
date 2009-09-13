@@ -24,8 +24,8 @@ public class TestExecutionManager extends AbstractExecutionManager {
 	@Override
 	protected void runComponent() {
 
-//		testSpatial();
-	simpleTest();
+		testSpatial();
+//	simpleTest();
 	}
 
 	/**
