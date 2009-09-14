@@ -22,7 +22,7 @@ import cast.core.CASTUtils;
  * @author marc
  *
  */
-public class PlaceGenerator extends Generator {
+public class PlaceGenerator extends AbstractMotiveGenerator {
 
 	/* (non-Javadoc)
 	 * @see motivation.generators.Generator#updateMotive(cast.cdl.WorkingMemoryAddress, cast.cdl.WorkingMemoryAddress)
@@ -32,7 +32,7 @@ public class PlaceGenerator extends Generator {
 		try {
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
 			// if it is a yet unexplored one...			
-			log("there is a motive to be checked, create " + Long.toString(motive.created.s-getCASTTime().s) + " seconds ago");
+			log("there is a place to be checked, created " + Long.toString(motive.created.s-getCASTTime().s) + " seconds ago");
 
 			if (source.status == PlaceStatus.PLACEHOLDER) {
 				log("  it's a placeholder, so it should be considered as a motive");
@@ -47,12 +47,7 @@ public class PlaceGenerator extends Generator {
 			e.printStackTrace();
 		} catch (UnknownSubarchitectureException e) {
 			e.printStackTrace();
-		} catch (ConsistencyException e) {
-			e.printStackTrace();
 		} catch (PermissionException e) {
-			e.printStackTrace();
-		} catch (AlreadyExistsOnWMException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
@@ -69,7 +64,7 @@ public class PlaceGenerator extends Generator {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				debug(CASTUtils.toString(_wmc));
 				// create a new motive from this node...
-				Motive newMotive = MotiveFactory.createMotive(_wmc.address);
+				Motive newMotive = MotiveFactory.createExploreMotive(_wmc.address);
 				checkMotive(newMotive);
 			}
 		});
