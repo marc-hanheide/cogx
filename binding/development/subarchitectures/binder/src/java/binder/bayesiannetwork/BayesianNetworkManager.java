@@ -86,7 +86,7 @@ public class BayesianNetworkManager {
 	public DiscreteProbabilityDistribution getPriorDistribution(PerceivedEntity entity) {
 
 		// Check if the prior distribution has already been computed for the proxy
-		if (false) {
+		if (alreadyComputedDistribs.containsKey(entity)) {
 			return alreadyComputedDistribs.get(entity);
 		}
 		else {
