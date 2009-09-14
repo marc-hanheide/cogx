@@ -8,10 +8,11 @@ import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import execution.slice.Action;
 import execution.slice.ActionStatus;
-import execution.slice.actions.LogMessage;
-import execution.slice.actions.PrintMessage;
 import execution.slice.TriBool;
 import execution.slice.actions.GoToPlace;
+import execution.slice.actions.LogMessage;
+import execution.slice.actions.PrintMessage;
+import execution.util.ActionMonitor;
 
 /**
  * Test class to trigger executions (so to speak)
@@ -21,6 +22,15 @@ import execution.slice.actions.GoToPlace;
  */
 public class TestExecutionManager extends AbstractExecutionManager {
 
+	
+	private class DummyCallback implements ActionMonitor {
+
+		public void actionComplete(Action _action) {
+			println("Action complete: " + _action.getClass());
+		}
+		
+	}
+	
 	@Override
 	protected void runComponent() {
 
@@ -37,7 +47,7 @@ public class TestExecutionManager extends AbstractExecutionManager {
 		
 		try {
 			println("triggering");
-			triggerExecution(new GoToPlace(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, 2));
+			triggerExecution(new GoToPlace(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, 2), new DummyCallback());
 		} catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
 		} catch (DoesNotExistOnWMException e) {
@@ -67,7 +77,7 @@ public class TestExecutionManager extends AbstractExecutionManager {
 
 			try {
 				try {
-					triggerExecution(action);
+					triggerExecution(action, new DummyCallback());
 				} catch (DoesNotExistOnWMException e) {
 					e.printStackTrace();
 				} catch (UnknownSubarchitectureException e) {
