@@ -29,7 +29,7 @@ public:
     typedef CAST_SCAT::procedure_implementation<Planner_Factory> Implement;
     typedef CAST_SCAT::procedure_call<> Call;
     
-    explicit Planner_Factory(Designator&& name = PLANNER_FACTORY_DESIGNATION);
+    explicit Planner_Factory(Designator&& name = Designator(PLANNER_FACTORY_DESIGNATION));
     
     void implement__obtainPlanner(PCogX::obtainPlannerPtr& input);
     

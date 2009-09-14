@@ -3,7 +3,8 @@ HOST localhost
 SUBARCHITECTURE test_harness__PCogX
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG planner_testing_client planner_client
+CPP MG planner_testing_client planner_client --planning-subarchitecture-name PCogX
+
 
 SUBARCHITECTURE PCogX
 CPP WM SubarchitectureWorkingMemory

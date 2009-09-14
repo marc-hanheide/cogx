@@ -93,5 +93,23 @@ Usual suspects (C++) BOOST
 class NA
 {};
 
+#ifndef VECTOR_PRINTING
+
+#define VECTOR_PRINTING
+
+/* Function to printing a \class{vector} to a stream.*/
+template<typename T>
+std::ostream& operator<<(std::ostream& o, const std::vector<T>& input)
+{
+    for(auto p = input.begin(); p != input.end(); p++){ 
+        o<<*p
+         <<((input.end() == p + 1)?"":", ");
+    }
+    
+
+    return o;
+}
+
+#endif
 
 #endif

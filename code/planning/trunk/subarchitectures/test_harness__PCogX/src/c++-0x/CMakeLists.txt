@@ -18,10 +18,14 @@ add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=na
 add_definitions(-pedantic -Wall -Wextra)
 
 set(CMAKE_VERBOSE_MAKEFILE true)
+    
+# add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
+# add_definitions(-DCLASSICAL_PLANNER_DESIGNATION="Classical planner")
+# add_definitions(-DDEBUG_LEVEL=400)
 
-add_definitions(-DPLANNER_FACTORY_DESIGNATION"Factory that produces planners.")
-add_definitions(-DPLANNER_CLIENT_DESIGNATION"A client of the planner; used for testing.")
-add_definitions(-DDEBUG_LEVEL=199)
+add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
+add_definitions(-DPLANNER_CLIENT_DESIGNATION="A client of the planner we use for testing") 
+add_definitions(-DDEBUG_LEVEL=400)
 
 add_cast_component(planner_client planner_client.cc)
 

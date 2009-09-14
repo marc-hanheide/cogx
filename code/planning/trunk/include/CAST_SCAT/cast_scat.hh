@@ -197,14 +197,19 @@ namespace CAST_SCAT
         
         void operator()(const cast::cdl::WorkingMemoryChange& _wmc)
         {
-            VERBOSER(15, "Locking _receive_call mutex:: "
-                     <<mutex.get()<<std::endl);
+            VERBOSER(201, "Pending call :: "
+                     <<mutex.get()<<std::endl
+                     <<_wmc.address.id
+                     <<" "<<_wmc.address.subarchitecture
+                     <<std::endl);
             
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(mutex.get()),
                                               "Unable to lock mutex.");
 
+            VERBOSER(200, "Locked _receive_call mutex:: "
+                     <<mutex.get()<<std::endl);
             
-            VERBOSER(15, " Procedure call for --  :: "
+            VERBOSER(201, " Implementing procedure call for --  :: "
                      <<_wmc.address.id
                      <<" "<<_wmc.address.subarchitecture
                      <<std::endl);
@@ -232,14 +237,22 @@ namespace CAST_SCAT
              * the default designations (see
              * \member{managed_Component->get_designators()}). */
             if(argument->optionalMemberDesignatorIsAnArgument.empty()){
+                WARNING("No designation specified, so defaulting to :: "
+                        <<managed_Component->get_designators()<<"   "<<std::endl);
+                
                 argument->optionalMemberDesignatorIsAnArgument
                     = managed_Component->get_designators();
             }
             
+            VERBOSER(201, " PENDING -- Overwriting working memory :: "
+                     <<_wmc.address.id
+                     <<" "<<_wmc.address.subarchitecture
+                     <<std::endl);
+            
             (managed_Component->*function)(argument);
 
             
-            VERBOSER(15, " Overwriting working memory :: "
+            VERBOSER(201, " Overwriting working memory :: "
                      <<_wmc.address.id
                      <<" "<<_wmc.address.subarchitecture
                      <<std::endl);
@@ -249,12 +262,13 @@ namespace CAST_SCAT
                                          _wmc.address.subarchitecture,
                                          argument);
 
-            VERBOSER(15, "Unlocking _receive_call mutex :: "
-                     <<mutex.get()<<std::endl);
             
             
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(mutex.get()),
                                       "Unable to unlock mutex.");
+            
+            VERBOSER(201, "Unlocked _receive_call mutex :: "
+                     <<mutex.get()<<std::endl);
         }
     private:
         THING* managed_Component;
@@ -340,23 +354,49 @@ namespace CAST_SCAT
         explicit procedure_implementation(const Designator& designator = "")
             :mutex(give_me_a_new__pthread_mutex_t())
         {
-            if("" == designator)
-                designators  = decltype(designators)();
-            else
-                designators  = {designator};
             
-            CAST__VERBOSER(4, "Created new procedure implementation with mutex :: "<<mutex.get());
+            VERBOSER(401, "Got lvalue designator :: "<<designator);
+            
+            if("" == designator){
+                designators  = decltype(designators)();
+            } else {
+
+                Designators _designators;
+                _designators.push_back(designator);
+                
+                designators  = std::move(_designators);//{designator};
+            }
+            
+            
+            VERBOSER(401, "LVALUE -- Created new procedure implementation with mutex :: "<<mutex.get()
+                     <<" and designators :: "<<get_designators());
         }
         
-        explicit procedure_implementation(Designator&& designator = "")
+        explicit procedure_implementation(Designator&& designator = Designator(""))
             :mutex(give_me_a_new__pthread_mutex_t())
         {
-            if("" == designator)
-                designators  = decltype(designators)();
-            else
-                designators  = {designator};
             
-            CAST__VERBOSER(4, "Created new procedure implementation with mutex :: "<<mutex.get());
+            VERBOSER(401, "Got rvalue designator :: "<<designator);
+            
+//             if("" == designator)
+//                 designators  = decltype(designators)();
+//             else
+//                 designators  = {std::move(designator)};
+
+            
+            if("" == designator){
+                designators  = decltype(designators)();
+            } else {
+
+                Designators _designators;
+                _designators.push_back(std::move(designator));
+                
+                designators  = std::move(_designators);//{designator};
+            }
+            
+            
+            VERBOSER(401, "RVALUE -- Created new procedure implementation with mutex :: "<<mutex.get()
+                     <<" and designators :: "<<get_designators());
             
         }
 
@@ -586,7 +626,7 @@ namespace CAST_SCAT
         (const Subarchitecture& subarchitecture,
          ARGS&&... t)
         {   
-            ICE_FUNCTION_CLASS* functional = new ICE_FUNCTION_CLASS(std::forward<ARGS...>(t...));
+            ICE_FUNCTION_CLASS* functional = new ICE_FUNCTION_CLASS(std::forward<ARGS>(t)...);
             
             /* CHECK :: Below, I am using IceInternal (resp. IceUtil)
              * smart pointers because I have to. But I am not sure of
@@ -661,8 +701,11 @@ namespace CAST_SCAT
 
         void release_wrapper_for_cast(const cast::cdl::WorkingMemoryChange& in)
         {
-            CAST__VERBOSER(15, "CAST-based call to RELEASE :: "
+            CAST__VERBOSER(201, "CAST-based call to RELEASE :: "
                            <<in.address.id<<" "<<in.address.subarchitecture<<std::endl);
+            
+            VERBOSER(201, "CAST-based call to RELEASE :: "
+                     <<in.address.id<<" "<<in.address.subarchitecture<<std::endl);
             
             if(!release(in)){
                 UNRECOVERABLE_ERROR("Failure during posix mutex release.");
@@ -876,9 +919,11 @@ namespace CAST_SCAT
         (const Subarchitecture& subarchitecture,
          ICE_HANDLE_TYPE& ice_handle)
         {
-            CAST__VERBOSER(15, "TRY GET ::  "<<std::endl);
+            CAST__VERBOSER(201, "Making a call to subarchitecture :: "<<subarchitecture<<std::endl);
+            
+            CAST__VERBOSER(200, "TRY GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
             LOCK_ACCESS_TO_MEMBER_DATA;
-            CAST__VERBOSER(15, "SUCCESS GET ::  "<<std::endl);
+            CAST__VERBOSER(200, "SUCCESS GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
             
             CAST__VERBOSER(13, "Number of subarchitectures is :: "
                            <<mutexes.size()<<std::endl);
@@ -895,12 +940,17 @@ namespace CAST_SCAT
             register_creation(id, subarchitecture);
 
             assert(is_my_creation(id, subarchitecture));
-            CAST__VERBOSER(15, "MAKING A CALL TO LOCK(&& -- 1).....");
+            CAST__VERBOSER(15, "MAKING A CALL TO LOCK :: "<<id<<":"<<subarchitecture<<std::endl;);
             
+            CAST__VERBOSER(200, "TRY RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
             UNLOCK_ACCESS_TO_MEMBER_DATA; 
+            CAST__VERBOSER(200, "DONE RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
+                
             CAST__QUERY_UNRECOVERABLE_ERROR(!lock(id, subarchitecture),
                                             "During first posix mutex lock :: "<<id<<" "<<subarchitecture);
+            CAST__VERBOSER(200, "TRY GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
             LOCK_ACCESS_TO_MEMBER_DATA;
+            CAST__VERBOSER(200, "SUCCESS GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
             
             /* Listen for a change to the written data... */
             THIS__FUNCTION__WMC__TO__VOID p_to_release
@@ -942,7 +992,9 @@ namespace CAST_SCAT
                                         memberFunctionChangeReceiver);  \
                     }                                                   \
                     
-                    
+
+                        VERBOSER(201, "Listening to changes on :: "<<id<<" "<<subarchitecture<<std::endl);
+                        
                     procedure_call____IMPLEMENTATION___call____addChangeFilter;
                     
                 }
@@ -971,7 +1023,7 @@ namespace CAST_SCAT
             }
 
             
-            CAST__VERBOSER(13, "Added a change filter...");
+            CAST__VERBOSER(200, "Added a change filter -- i.e., post the procedure call...");
             addToWorkingMemory( id, 
                                 subarchitecture,
                                 ice_handle);
@@ -987,38 +1039,54 @@ namespace CAST_SCAT
 
 
 
+                assert(mutexes.find(subarchitecture) != mutexes.end());
+                assert(mutexes.find(subarchitecture)->second.find(id)
+                       != mutexes.find(subarchitecture)->second.end());
+                CAST__VERBOSER(200, "Waiting for client response :: "<<mutexes[id][subarchitecture].get());
+                
+
+                overwriteWorkingMemory(id,
+                                       subarchitecture,
+                                       ice_handle);
+
+                
                 
                 /* ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK */
                 /* ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK */
                 /* ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK */
                 /* ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK */
                 /* ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK ** UN--LOCK */
-                CAST__VERBOSER(13, "TRY RELEASE ::  "<<std::endl);
+                CAST__VERBOSER(200, "TRY RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 UNLOCK_ACCESS_TO_MEMBER_DATA;/* HERE #*/
-                CAST__VERBOSER(13, "DONE RELEASE ::  "<<std::endl);
+                CAST__VERBOSER(200, "DONE RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 
                  /* Wait for a release.*/
-                CAST__VERBOSER(13, "Waiting for client response...");
                 
                 CAST__QUERY_UNRECOVERABLE_ERROR(
                     !lock(id, subarchitecture),
                     "During second posix mutex lock :: "<<id<<" "<<subarchitecture);
                 
+                CAST__VERBOSER(200, "TRY GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 LOCK_ACCESS_TO_MEMBER_DATA;
+                CAST__VERBOSER(200, "SUCCESS GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 
-                CAST__VERBOSER(13, "Got release from calling thread, and have now relocked...");
+                CAST__VERBOSER(200, "Got release from calling thread, and have now relocked...");
                 
                 assert(is_my_creation(id, subarchitecture));
             
                 CAST__VERBOSER(15, "MAKING A CALL TO RELEASE(&& -- caller).....");
                 
+                CAST__VERBOSER(200, "TRY RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 UNLOCK_ACCESS_TO_MEMBER_DATA;
+                CAST__VERBOSER(200, "DONE RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 
                 CAST__QUERY_UNRECOVERABLE_ERROR(
                     !release(id, subarchitecture),
                     "During posix mutex release :: "<<id<<" "<<subarchitecture);
                 
+                CAST__VERBOSER(200, "TRY GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 LOCK_ACCESS_TO_MEMBER_DATA;
+                CAST__VERBOSER(200, "SUCCESS GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
                 
                 CAST__VERBOSER(1, "Received client response...");
             }
@@ -1030,13 +1098,20 @@ namespace CAST_SCAT
             auto result = getMemoryEntry<ICE_TYPE>(id, subarchitecture);
             
             /* Release all resources associated with \local{id, subarchitecture}.*/
+            CAST__VERBOSER(200, "TRY RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
             UNLOCK_ACCESS_TO_MEMBER_DATA;
+            CAST__VERBOSER(200, "DONE RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
             kill_creation(id, subarchitecture);
+            CAST__VERBOSER(200, "TRY GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
             LOCK_ACCESS_TO_MEMBER_DATA;
+            CAST__VERBOSER(200, "SUCCESS GET ::  "<<procedure_call____MUTEX.get()<<std::endl);
 
             CAST__VERBOSER(1, "Completed procedure call...");
             
+            CAST__VERBOSER(200, "TRY RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
             UNLOCK_ACCESS_TO_MEMBER_DATA;
+            CAST__VERBOSER(200, "DONE RELEASE ::  "<<procedure_call____MUTEX.get()<<std::endl);
+            
             return result;
             
         }

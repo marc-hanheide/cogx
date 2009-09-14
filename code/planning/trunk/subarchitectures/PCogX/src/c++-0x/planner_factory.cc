@@ -4,13 +4,15 @@
 #include<limits>
 #include<sstream>
 
+// #undef DEBUG_LEVEL
+// #define DEBUG_LEVEL 2
+
 extern "C" {
   cast::CASTComponentPtr
   newComponent() {
     return new Planner_Factory();
   }
 }
-
 
 Planner_Factory::Planner_Factory(Designator&& name)
     :Implement(std::move(name)),
@@ -22,8 +24,18 @@ Planner_Factory::Planner_Factory(Designator&& name)
 {
 }
 
+
 void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
-    CAST__VERBOSER(200, "");
+
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN   :: "<<get_designators()<<" :: ** ** ");
+    
+    std::vector<std::string> tmp = input->optionalMemberPlannerDescriptorIsAnArgument;
+
+    std::cout<<tmp;
+    
+    CAST__VERBOSER(401, "A component is attempting to obtain a planner."
+                   <<" that satisfies the properties :: \n"
+                   <<input->optionalMemberPlannerDescriptorIsAnArgument);
     
     Designator new_designation;
 
@@ -40,18 +52,29 @@ void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
     
     input->identityOfCreatedPlannerIsAReturn = candidate_designation;
     
-    
     auto designation_of_chosen_implementation
         = {std::move(std::string(CLASSICAL_PLANNER_DESIGNATION))};
+    CAST__VERBOSER(2, "Asking for a planning process at subarchitecture :: "<<getSubarchitectureID());
     call<PCogX::distinctPlanner>(candidate_designation,
                                  designation_of_chosen_implementation);
+    CAST__VERBOSER(2, "Received a planning process.");
+    
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED  :: "<<get_designators()<<" ::  ** ** ");
 }
 
 
+
 void Planner_Factory::start() {
-    implement<PCogX::obtainPlanner>(&Planner_Factory::implement__obtainPlanner);   
+    
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN :: "<<get_designators()<<" :: ** ** ");
+    
+    implement<PCogX::obtainPlanner>(&Planner_Factory::implement__obtainPlanner);
+    
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED  :: "<<get_designators()<<" :: ** ** ");
 }
 
 void Planner_Factory::runComponent()
 {
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN  :: "<<get_designators()<<" :: ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED  :: "<<get_designators()<<" :: ** ** ");
 }

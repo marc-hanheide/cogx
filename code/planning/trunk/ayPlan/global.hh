@@ -348,11 +348,15 @@ public:
 	  maxCount(maxCount){};
     
     void operator() (const T& x) {
+        
 	out << x ;
 
 	if(count < maxCount - 1){    
-	    out<< ' ';
-	}
+	    out<< ", ";
+	} else {
+            out<<"BLAH BLAH";
+        }
+        
 	
 	count++;
     }
@@ -445,6 +449,9 @@ ostream& operator<<(ostream& o, const pair<T1, T2>& p)
 }
 
 
+#ifndef VECTOR_PRINTING
+#define VECTOR_PRINTING
+
 template<typename T>
 ostream& operator<<(ostream& o
 		    , const vector<T>& input)
@@ -452,6 +459,8 @@ ostream& operator<<(ostream& o
     for_each(input.begin(), input.end(), print_elements<T>(o, input.size()));
     return o;
 }
+
+#endif
 
 template<typename T>
 ostream& operator<<(ostream&o, const vector<T*>& input)
