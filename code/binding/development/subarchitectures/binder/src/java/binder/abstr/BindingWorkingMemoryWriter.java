@@ -17,7 +17,6 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
-
 package binder.abstr;
 
 import java.util.HashMap;
@@ -25,25 +24,23 @@ import java.util.HashMap;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.OriginInfo;
+import binder.autogen.core.OriginMap;
 import binder.autogen.core.Proxy;
-import binder.autogen.core.Union;
-import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
+import cast.AlreadyExistsOnWMException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.architecture.ChangeFilterFactory;
+import cast.PermissionException;
 import cast.architecture.ManagedComponent;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 
 /**
- * Abstract class for structuring and inserting proxies into the binder
- * working memory
+ * Abstract class for structuring and inserting proxies into the binder working
+ * memory
  * 
  * @author Pierre Lison
  * @version 09/09/2009
@@ -52,22 +49,30 @@ import cast.cdl.WorkingMemoryOperation;
 
 public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 
-
-	// ================================================================= 
+	// =================================================================
 	// METHODS FOR CREATING NEW PROXIES
-	// ================================================================= 
+	// =================================================================
 
+	/**
+	 * ID in current SA where origin map is stored.
+	 */
+	private String m_originMapID;
 
 	/**
 	 * Construct an OriginInfo object (information about the proxy origin:
-	 * subarchitecture identifier, local data ID in subarchitecture, and data type)
+	 * subarchitecture identifier, local data ID in subarchitecture, and data
+	 * type)
 	 * 
-	 * @param subarchId subarchitecture identifier
-	 * @param localDataId identifier of the data in local subarchitecture
-	 * @param localDataType type of the data in local subarchitecture
+	 * @param subarchId
+	 *            subarchitecture identifier
+	 * @param localDataId
+	 *            identifier of the data in local subarchitecture
+	 * @param localDataType
+	 *            type of the data in local subarchitecture
 	 * @return a new OriginInfo object
 	 */
-	public OriginInfo createOriginInfo (String subarchId, String localDataId, String localDataType) {
+	public OriginInfo createOriginInfo(String subarchId, String localDataId,
+			String localDataType) {
 		OriginInfo origin = new OriginInfo();
 		origin.subarchId = subarchId;
 		origin.localDataId = localDataId;
@@ -75,15 +80,18 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return origin;
 	}
 
-	/** Create a new proxy given the ID of the originating subarchitecture,
-	 * and the probability of the proxy itself
-	 * (the list of features is defined to be empty)
+	/**
+	 * Create a new proxy given the ID of the originating subarchitecture, and
+	 * the probability of the proxy itself (the list of features is defined to
+	 * be empty)
 	 * 
-	 * @param subarchId string for the ID of the subarchitecture
-	 * @param probExists probability value for the proxy
+	 * @param subarchId
+	 *            string for the ID of the subarchitecture
+	 * @param probExists
+	 *            probability value for the proxy
 	 * @return a new proxy
 	 */
-	public Proxy createNewProxy (OriginInfo origin, float probExists) {
+	public Proxy createNewProxy(OriginInfo origin, float probExists) {
 
 		Proxy newProxy = new Proxy();
 
@@ -95,17 +103,20 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return newProxy;
 	}
 
-
 	/**
-	 * Create a new proxy given the ID of the originating subarchitecture,
-	 * the probability of the proxy, and a list of features
-	 *  
-	 * @param subarchId string for the ID of the subarchitecture
-	 * @param probExists the probability of the proxy
-	 * @param features the features
+	 * Create a new proxy given the ID of the originating subarchitecture, the
+	 * probability of the proxy, and a list of features
+	 * 
+	 * @param subarchId
+	 *            string for the ID of the subarchitecture
+	 * @param probExists
+	 *            the probability of the proxy
+	 * @param features
+	 *            the features
 	 * @return the created proxy
 	 */
-	public Proxy createNewProxy (OriginInfo origin, float probExists, Feature[] features) {
+	public Proxy createNewProxy(OriginInfo origin, float probExists,
+			Feature[] features) {
 
 		Proxy newProxy = createNewProxy(origin, probExists);
 
@@ -114,19 +125,23 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return newProxy;
 	}
 
-
 	/**
-	 * Create a new relation proxy given the ID of the originating subarchitecture,
-	 * the probability of the proxy, and the source and target proxies
+	 * Create a new relation proxy given the ID of the originating
+	 * subarchitecture, the probability of the proxy, and the source and target
+	 * proxies
 	 * 
-	 * @param subarchId string for the ID of the subarchitecture
-	 * @param probExists the probability of the proxy
-	 * @param sourceProxy the source proxy
-	 * @param targetProxy the target proxy
+	 * @param subarchId
+	 *            string for the ID of the subarchitecture
+	 * @param probExists
+	 *            the probability of the proxy
+	 * @param sourceProxy
+	 *            the source proxy
+	 * @param targetProxy
+	 *            the target proxy
 	 * @return the new relation proxy
 	 */
-	public RelationProxy createNewRelationProxy(OriginInfo origin, float probExists, 
-			AddressValue[] sources, AddressValue[] targets) {
+	public RelationProxy createNewRelationProxy(OriginInfo origin,
+			float probExists, AddressValue[] sources, AddressValue[] targets) {
 
 		RelationProxy newProxy = new RelationProxy();
 
@@ -147,37 +162,46 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 
 	/**
-	 * Create a new relation proxy given the ID of the originating subarchitecture,
-	 * the probability of the proxy, the list of features for the relation,
-	 * and the source and target proxies
+	 * Create a new relation proxy given the ID of the originating
+	 * subarchitecture, the probability of the proxy, the list of features for
+	 * the relation, and the source and target proxies
 	 * 
-	 * @param subarchId string for the ID of the subarchitecture
-	 * @param probExists the probability of the proxy
-	 * @param features the features
-	 * @param sourceProxy the source proxy
-	 * @param targetProxy the target proxy
+	 * @param subarchId
+	 *            string for the ID of the subarchitecture
+	 * @param probExists
+	 *            the probability of the proxy
+	 * @param features
+	 *            the features
+	 * @param sourceProxy
+	 *            the source proxy
+	 * @param targetProxy
+	 *            the target proxy
 	 * @return the new relation proxy
 	 */
-	public RelationProxy createNewRelationProxy(OriginInfo origin, float probExists, Feature[] features, 
-			AddressValue[] sources, AddressValue[] targets) {
+	public RelationProxy createNewRelationProxy(OriginInfo origin,
+			float probExists, Feature[] features, AddressValue[] sources,
+			AddressValue[] targets) {
 
-		RelationProxy newProxy = createNewRelationProxy (origin, probExists, sources, targets);
+		RelationProxy newProxy = createNewRelationProxy(origin, probExists,
+				sources, targets);
 
 		newProxy.features = features;
 
 		return newProxy;
 	}
 
-
-
 	/**
-	 * Create a new phantom proxy, given the origin info and the existence probability
+	 * Create a new phantom proxy, given the origin info and the existence
+	 * probability
 	 * 
-	 * @param origin origin information
-	 * @param probExists the probability of the proxy
+	 * @param origin
+	 *            origin information
+	 * @param probExists
+	 *            the probability of the proxy
 	 * @return the new phantom
 	 */
-	public PhantomProxy createNewPhantomProxy(OriginInfo origin, float probExists) {
+	public PhantomProxy createNewPhantomProxy(OriginInfo origin,
+			float probExists) {
 
 		PhantomProxy newProxy = new PhantomProxy();
 
@@ -189,16 +213,18 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return newProxy;
 	}
 
-
-
 	/**
-	 * Create a new phantom proxy, given the origin info and the existence probability
+	 * Create a new phantom proxy, given the origin info and the existence
+	 * probability
 	 * 
-	 * @param origin origin information
-	 * @param probExists the probability of the proxy
+	 * @param origin
+	 *            origin information
+	 * @param probExists
+	 *            the probability of the proxy
 	 * @return the new phantom
 	 */
-	public PhantomProxy createNewPhantomProxy(OriginInfo origin, float probExists, Feature[] features) {
+	public PhantomProxy createNewPhantomProxy(OriginInfo origin,
+			float probExists, Feature[] features) {
 
 		PhantomProxy newProxy = createNewPhantomProxy(origin, probExists);
 		newProxy.features = features;
@@ -206,33 +232,32 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return newProxy;
 	}
 
-	// ================================================================= 
+	// =================================================================
 	// METHODS FOR CREATING AND INSERTING NEW FEATURES
-	// ================================================================= 
-
-
+	// =================================================================
 
 	/**
-	 * Add a new feature to the proxy (and regenerate the probability distribution, 
-	 * given this new information)
+	 * Add a new feature to the proxy (and regenerate the probability
+	 * distribution, given this new information)
 	 * 
-	 * @param proxy the proxy
-	 * @param feat the feature to add
+	 * @param proxy
+	 *            the proxy
+	 * @param feat
+	 *            the feature to add
 	 * @return the proxy
 	 */
 
-	public Proxy addFeatureToProxy (Proxy proxy, Feature feat) {
+	public Proxy addFeatureToProxy(Proxy proxy, Feature feat) {
 
 		Feature[] newFeatures;
 		if (proxy.features != null) {
-			newFeatures = new Feature[proxy.features.length + 1] ;
-			for (int i = 0 ; i < proxy.features.length ; i++) {
+			newFeatures = new Feature[proxy.features.length + 1];
+			for (int i = 0; i < proxy.features.length; i++) {
 				newFeatures[i] = proxy.features[i];
 			}
 			newFeatures[proxy.features.length] = feat;
-		}
-		else {
-			newFeatures = new Feature [1];
+		} else {
+			newFeatures = new Feature[1];
 			newFeatures[0] = feat;
 		}
 
@@ -241,32 +266,34 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return proxy;
 	}
 
-
 	/**
 	 * Create a new StringValue given a string and a probability
 	 * 
-	 * @param val the string
-	 * @param prob the probability value
+	 * @param val
+	 *            the string
+	 * @param prob
+	 *            the probability value
 	 * @return the StringValue
 	 */
 
-	public StringValue createStringValue (String val, float prob) {
+	public StringValue createStringValue(String val, float prob) {
 		StringValue stringVal = new StringValue();
 		stringVal.val = val;
 		stringVal.independentProb = prob;
 		return stringVal;
 	}
 
-
 	/**
 	 * Create a new AddressValue given a string and a probability
 	 * 
-	 * @param address the address (as a string)
-	 * @param prob the probability value
+	 * @param address
+	 *            the address (as a string)
+	 * @param prob
+	 *            the probability value
 	 * @return the AddressValue
 	 */
 
-	public AddressValue createAddressValue (String address, float prob) {
+	public AddressValue createAddressValue(String address, float prob) {
 		AddressValue addressVal = new AddressValue();
 		addressVal.val = address;
 		addressVal.independentProb = prob;
@@ -276,57 +303,63 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	/**
 	 * Create a new AddressValue given a string and a probability
 	 * 
-	 * @param integer the integer
-	 * @param prob the probability value
+	 * @param integer
+	 *            the integer
+	 * @param prob
+	 *            the probability value
 	 * @return the IntegerValue
 	 */
 
-	public IntegerValue createIntegerValue (int integer, float prob) {
+	public IntegerValue createIntegerValue(int integer, float prob) {
 		IntegerValue integerVal = new IntegerValue();
 		integerVal.val = integer;
 		integerVal.independentProb = prob;
 		return integerVal;
 	}
 
-
-
 	/**
 	 * Create a new BooleanValue given a boolean and a probability
 	 * 
-	 * @param val the boolean
-	 * @param prob the probability value
+	 * @param val
+	 *            the boolean
+	 * @param prob
+	 *            the probability value
 	 * @return the BooleanValue
 	 */
 
-	public BooleanValue createBooleanValue (boolean val, float prob) {
+	public BooleanValue createBooleanValue(boolean val, float prob) {
 		BooleanValue boolVal = new BooleanValue();
 		boolVal.val = val;
 		boolVal.independentProb = prob;
 		return boolVal;
 	}
 
-	/** 
+	/**
 	 * Create a new feature, without feature values
-	 * @param featlabel the feature label
+	 * 
+	 * @param featlabel
+	 *            the feature label
 	 * @return the new feature
 	 */
 
-	public Feature createFeature (String featlabel) {
+	public Feature createFeature(String featlabel) {
 		Feature feat = new Feature();
 		feat.featlabel = featlabel;
 		return feat;
 	}
 
-
 	/**
 	 * Create a new feature with a unique feature value
-	 * @param featlabel the feature label
-	 * @param featvalue the feature value
+	 * 
+	 * @param featlabel
+	 *            the feature label
+	 * @param featvalue
+	 *            the feature value
 	 * @return the new feature
 	 */
 
-	public Feature createFeatureWithUniqueFeatureValue 
-	(String featlabel, FeatureValue featvalue) {
+	public Feature createFeatureWithUniqueFeatureValue(String featlabel,
+			FeatureValue featvalue) {
 
 		Feature feat = createFeature(featlabel);
 		feat.alternativeValues = new FeatureValue[1];
@@ -335,19 +368,21 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return feat;
 	}
 
-
-	/** 
+	/**
 	 * Add a new feature value to an existing feature
-	 * @param feat the feature
-	 * @param featval the feature value
+	 * 
+	 * @param feat
+	 *            the feature
+	 * @param featval
+	 *            the feature value
 	 * @return the feature
 	 */
 
-	public Feature addFeatureValueToFeature (Feature feat, FeatureValue featval) {
+	public Feature addFeatureValueToFeature(Feature feat, FeatureValue featval) {
 
-		FeatureValue[] featvals = new FeatureValue[feat.alternativeValues.length +1];
+		FeatureValue[] featvals = new FeatureValue[feat.alternativeValues.length + 1];
 
-		for (int i = 0 ; i < feat.alternativeValues.length ; i++) {
+		for (int i = 0; i < feat.alternativeValues.length; i++) {
 			featvals[i] = feat.alternativeValues[i];
 		}
 		featvals[feat.alternativeValues.length] = featval;
@@ -356,16 +391,18 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return feat;
 	}
 
-
-	/** 
+	/**
 	 * Create a new feature containing several alternative feature values
-	 * @param featlabel the feature label
-	 * @param featvalues the array of feature values
+	 * 
+	 * @param featlabel
+	 *            the feature label
+	 * @param featvalues
+	 *            the array of feature values
 	 * @return the feature
 	 */
 
-	public Feature createFeatureWithAlternativeFeatureValues 
-	(String featlabel, FeatureValue[] featvalues) {
+	public Feature createFeatureWithAlternativeFeatureValues(String featlabel,
+			FeatureValue[] featvalues) {
 
 		Feature feat = createFeature(featlabel);
 		feat.alternativeValues = featvalues;
@@ -373,35 +410,94 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return feat;
 	}
 
-
-	// ================================================================= 
+	// =================================================================
 	// METHODS FOR INSERTING/MODIFYING/DELETING PROXIES IN THE WM
-	// ================================================================= 
+	// =================================================================
 
-
-	/** 
-	 * Insert the proxy in the binder working memory 
-	 * @param proxy the proxy
+	/**
+	 * Insert the proxy in the binder working memory
+	 * 
+	 * @param proxy
+	 *            the proxy
 	 */
 
 	protected void addProxyToWM(Proxy proxy) {
 
 		try {
 			addToWorkingMemory(proxy.entityID, proxy);
+			storeOriginInfo(proxy);
 			log("new Proxy succesfully added to the binder working memory");
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Stores a mapping from the source to the proxy which is created from it.
+	 * 
+	 * @param _proxy
+	 * @throws DoesNotExistOnWMException
+	 * @throws PermissionException
+	 * @throws ConsistencyException
+	 * @throws AlreadyExistsOnWMException
+	 */
+	private void storeOriginInfo(Proxy _proxy)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, AlreadyExistsOnWMException {
+		OriginMap om = null;
+		boolean firstEntry = false;
+		if (m_originMapID == null) {
+			m_originMapID = newDataID();
+			om = new OriginMap(getComponentID(), new HashMap<String, String>());
+			firstEntry = true;
+		} else {
+			om = getMemoryEntry(m_originMapID, OriginMap.class);
+		}
+
+		if (om.sourceID2ProxyID.containsKey(_proxy.origin.localDataId)) {
+			println("WARNING: OriginMap already contained entry for: "
+					+ _proxy.origin.localDataId);
+		}
+
+		om.sourceID2ProxyID.put(_proxy.origin.localDataId, _proxy.entityID);
+
+		if (firstEntry) {
+			addToWorkingMemory(m_originMapID, om);
+		} else {
+			overwriteWorkingMemory(m_originMapID, om);
+		}
+
+	}
 
 	/**
-	 * Overwrite an existing proxy with a new one
-	 * (the new proxy needs to have the same entityID has the existing one)
+	 * Removes source id mapping from WM map.
 	 * 
-	 * @param proxy the new proxy
+	 * @param _proxy
+	 * @throws DoesNotExistOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 */
+	private void removeOriginInfo(Proxy _proxy)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException {
+		OriginMap om = getMemoryEntry(m_originMapID, OriginMap.class);
+
+		if (!om.sourceID2ProxyID.containsKey(_proxy.origin.localDataId)) {
+			println("WARNING: OriginMap did not contain entry for: "
+					+ _proxy.origin.localDataId);
+		} else {
+			om.sourceID2ProxyID.remove(_proxy.origin.localDataId);
+			overwriteWorkingMemory(m_originMapID, om);
+		}
+	}
+
+	/**
+	 * Overwrite an existing proxy with a new one (the new proxy needs to have
+	 * the same entityID has the existing one)
+	 * 
+	 * @param proxy
+	 *            the new proxy
 	 */
 
 	protected void overwriteProxyInWM(Proxy proxy) {
@@ -410,32 +506,30 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 			overwriteWorkingMemory(proxy.entityID, proxy);
 			log("existing Proxy succesfully modified in the binder working memory");
 
-		}
-		catch (DoesNotExistOnWMException e) {
+		} catch (DoesNotExistOnWMException e) {
 			log("Sorry, the proxy does not exist in the binder working memory");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-
 	/**
 	 * Delete an existing proxy
-	 * @param proxy the proxy to delete
+	 * 
+	 * @param proxy
+	 *            the proxy to delete
 	 */
 
 	protected void deleteEntityInWM(Proxy proxy) {
 
 		try {
+			removeOriginInfo(proxy);
 			deleteFromWorkingMemory(proxy.entityID);
 			log("existing Proxy succesfully deleted from the binder working memory");
 
-		}
-		catch (DoesNotExistOnWMException e) {
+		} catch (DoesNotExistOnWMException e) {
 			log("Sorry, the proxy does not exist in the binder working memory");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

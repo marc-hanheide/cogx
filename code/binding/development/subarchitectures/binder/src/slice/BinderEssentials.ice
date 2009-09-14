@@ -66,6 +66,30 @@ class Proxy extends PerceivedEntity {
 	OriginInfo origin;
 };
 
+
+dictionary<string, string> StringMap;
+
+
+/*** 
+ * A wrapper for a map between source data ids and the proxies they
+ * are turned into. This is maintained by the abstract writer
+ * classes. Currently only a 1-to-1 mapping is supported, but this may
+ * have to change in the future.
+ */
+
+  class OriginMap {
+    /**
+     * The component which created the map.
+     */
+    string componentID;
+
+    /**
+     * The map itself
+     */
+    StringMap sourceID2ProxyID;
+  };
+
+
 sequence<Proxy> ProxySeq;
 
 

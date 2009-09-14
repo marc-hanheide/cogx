@@ -15,3 +15,6 @@ JAVA MG discretizer binder.components.UnionDiscretizer --log
 JAVA MG monitor binder.components.BinderMonitor --gui --log
 
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 
+
+#purely for debug purposes
+JAVA MG origins binder.components.OriginListener

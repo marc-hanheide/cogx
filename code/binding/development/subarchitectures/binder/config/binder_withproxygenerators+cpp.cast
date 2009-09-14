@@ -18,3 +18,5 @@ JAVA MG monitor binder.components.BinderMonitor --gui --log
 
 CPP MG writer ExampleProxyPusher
 
+#purely for debug purposes
+JAVA MG origins binder.components.OriginListener
