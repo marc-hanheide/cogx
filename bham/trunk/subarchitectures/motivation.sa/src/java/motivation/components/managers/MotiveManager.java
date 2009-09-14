@@ -36,7 +36,7 @@ public abstract class MotiveManager extends ManagedComponent {
 
 			@Override
 			public void motiveChanged(WorkingMemoryChange wmc, Motive motive) {
-				log("motive has been changed in set: Status is "
+				log("motive has been changed in map: Status is "
 						+ motive.status.name());
 				if ((wmc.operation == WorkingMemoryOperation.ADD)
 						|| (wmc.operation == WorkingMemoryOperation.OVERWRITE)) {

@@ -54,7 +54,8 @@ public class PlanAllManager extends MotiveManager {
 			// create a new goal
 			// ask the planner if this new goal can be added
 			// hand this goal to execution
-			generatePlan();
+			if (managedMotives.size()==1)
+				generatePlan();
 		} else {
 			log("some motive we cannot yet handle");
 		}
