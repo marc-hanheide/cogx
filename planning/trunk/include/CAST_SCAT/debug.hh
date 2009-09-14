@@ -34,6 +34,10 @@ Old fashioned debugging -- ERROR STREAM
 #define DEBUG_LEVEL 17
 #endif
 
+#ifndef DEBUG_LINE_WIDTH
+#define DEBUG_LINE_WIDTH 66
+#endif
+
 #ifndef DEBUG_SLEEP_DELAY
 #define DEBUG_SLEEP_DELAY 0
 #endif
@@ -48,18 +52,21 @@ Old fashioned debugging -- ERROR STREAM
         <<std::setfill(X)                     \
         <<X<<std::endl                        \
 
-#define DEBUG_OUT(X)                                    \
-    {                                                   \
-        sleep(DEBUG_SLEEP_DELAY);                       \
-        std::ostringstream oss;                         \
-        oss<<STANDARD_DEBUGGING_PREFIX<<X;              \
-        std::cerr<<DEBUG_SEPERATING_LINE('-', 66)       \
-                 <<std::setfill('-')                    \
-                 <<std::endl                            \
-                 <<oss.str().c_str()                    \
-                 <<std::endl                            \
-                 <<DEBUG_SEPERATING_LINE('-', 66);      \
-            }                                           \
+#define DEBUG_OUT(X)                                                    \
+    {                                                                   \
+        sleep(DEBUG_SLEEP_DELAY);                                       \
+        std::ostringstream oss;                                         \
+        std::ostringstream oss2;                                        \
+        oss<<STANDARD_DEBUGGING_PREFIX<<X;                              \
+        oss2<<std::setw(DEBUG_LINE_WIDTH)                               \
+            <<std::left<<oss.str();                                     \
+        std::cerr<<DEBUG_SEPERATING_LINE('-', DEBUG_LINE_WIDTH)         \
+                 <<std::setfill('-')                                    \
+                 <<std::endl                                            \
+                 <<oss2.str().c_str()                                   \
+                 <<std::endl                                            \
+                 <<DEBUG_SEPERATING_LINE('-', DEBUG_LINE_WIDTH);        \
+    }                                                                   \
 
 
 #define VERBOSE(X)                                       \

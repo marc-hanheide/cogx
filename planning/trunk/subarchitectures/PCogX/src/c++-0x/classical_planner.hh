@@ -29,7 +29,7 @@ public:
     typedef CAST_SCAT::procedure_implementation<Classical_Planner> Implement;
     typedef CAST_SCAT::procedure_call<> Call;    
     
-    explicit Classical_Planner(Designator&& name = CLASSICAL_PLANNER_DESIGNATION);
+    explicit Classical_Planner(Designator&& name = Designator(CLASSICAL_PLANNER_DESIGNATION));
     
     void implement__postFileNameForProblemDescription(PCogX::postFileNameForProblemDescriptionPtr&);
     void implement__postFileNameForDomainDescription(PCogX::postFileNameForDomainDescriptionPtr&);
@@ -66,12 +66,6 @@ protected:
 
     /* The plan last computed by a given designator. */
     map<Designator, std::string> plans;
-
-//     /*Mapping from designations to classical satisficing planners.*/
-//     map<Designator, Planning::Planner<> > satisficing__planners;
-    
-//     /*Mapping from designations to classical cost-optimal planners.*/
-//     map<Designator, Planning::CostPlanner> cost_optimal__planners;
 };
 
 #endif

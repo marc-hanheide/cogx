@@ -15,6 +15,10 @@ include_directories(${ROOT_OF_PLANNING}/ayPlan/)
 
 add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native)
 
+add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
+add_definitions(-DCLASSICAL_PLANNER_DESIGNATION="Classical planner")
+add_definitions(-DDEBUG_LEVEL=400)
+
 add_definitions(-pedantic -Wall -Wextra)
 
 set(CMAKE_VERBOSE_MAKEFILE true)
@@ -38,10 +42,6 @@ link_libraries(${AYPLAN_LIBS})
 set(ZLIB_LIBS z)
 link_libraries(${ZLIB_LIBS})
 
-add_definitions(-DPLANNER_FACTORY_DESIGNATION"Factory that produces planners")
-add_definitions(-DCLASSICAL_PLANNER_DESIGNATION"Classical planner")
-add_definitions(-DDEBUG_LEVEL=199)
-    
 add_cast_component(planner_factory planner_factory.cc)
 
 link_cast_component(${CAST_COMPONENT_NAME} PCogX)

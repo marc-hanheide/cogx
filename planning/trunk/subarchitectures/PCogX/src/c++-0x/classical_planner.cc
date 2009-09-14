@@ -1,5 +1,8 @@
 #include "classical_planner.hh"
 
+// #undef DEBUG_LEVEL
+// #define DEBUG_LEVEL 2
+
 
 extern "C" {
   cast::CASTComponentPtr
@@ -9,8 +12,10 @@ extern "C" {
 }
 
 Classical_Planner::Classical_Planner(Designator&& name)
-    :Implement(name)
-{   
+    :Implement(std::move(name))
+{
+
+    VERBOSER(401, "CONSTRUCTION FROM :: "<<name<<" "<<get_designators()<<" "<<CLASSICAL_PLANNER_DESIGNATION<<std::endl);
 }
 
 // Classical_Planner::Classical_Planner(const Designator& name)
@@ -19,19 +24,18 @@ Classical_Planner::Classical_Planner(Designator&& name)
 // }
 
 void Classical_Planner::implement__distinctPlanner(PCogX::distinctPlannerPtr& input){
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     Implement::add_designator(input->additionalDesignationIsAnArgument);
-
     
-    
-    //planning_problems[input->additionalDesignationIsAnArgument] = Planning::Problem;//.insert();
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 }
+
 
 
 void Classical_Planner::implement__postFileNameForDomainDescription(PCogX::postFileNameForDomainDescriptionPtr& input)
 {
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED  -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     auto designators = input->optionalMemberDesignatorIsAnArgument;
 
@@ -44,7 +48,7 @@ void Classical_Planner::implement__postFileNameForDomainDescription(PCogX::postF
 
 void Classical_Planner::implement__postFileNameForProblemDescription(PCogX::postFileNameForProblemDescriptionPtr& input)
 {
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED  -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     auto designators = input->optionalMemberDesignatorIsAnArgument;
 
@@ -64,7 +68,7 @@ extern void deleteLexer();
 void Classical_Planner::implement__actionParseProblemDescription(PCogX::actionParseProblemDescriptionPtr& input)
 {
     
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED  -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     auto designators = input->optionalMemberDesignatorIsAnArgument;
 
@@ -115,7 +119,7 @@ void Classical_Planner::implement__actionParseProblemDescription(PCogX::actionPa
 
 void Classical_Planner::implement__actionParseDomainDescription(PCogX::actionParseDomainDescriptionPtr& input)
 {
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED  -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     auto designators = input->optionalMemberDesignatorIsAnArgument;
 
@@ -167,7 +171,7 @@ void Classical_Planner::implement__actionParseDomainDescription(PCogX::actionPar
 void Classical_Planner::implement__actionPreprocessProblemAndDomain(PCogX::actionPreprocessProblemAndDomainPtr& input)
 {
     
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED  -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     auto designators = input->optionalMemberDesignatorIsAnArgument;
 
@@ -202,7 +206,7 @@ void Classical_Planner::implement__actionPreprocessProblemAndDomain(PCogX::actio
 void Classical_Planner::implement__actionPlan(PCogX::actionPlanPtr& input)
 {
     
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED  -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
     auto designators = input->optionalMemberDesignatorIsAnArgument;
     
@@ -223,7 +227,7 @@ void Classical_Planner::implement__actionPlan(PCogX::actionPlanPtr& input)
         Planning::Planner<> planner(problem);
         
         
-        CAST__VERBOSER(200, "Starting the planner."<<std::endl);
+        CAST__VERBOSER(401, "Starting the planner."<<std::endl);
         
         planner();
 
@@ -254,7 +258,7 @@ void Classical_Planner::implement__postXXsubtypeofYY(PCogX::postXXsubtypeofYYPtr
 
 void Classical_Planner::start()
 {
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
     
     /* template for implementation of a procedure.*/
     //implement<PCogX::>(&Classical_Planner::implement__);
@@ -278,9 +282,12 @@ void Classical_Planner::start()
     implement<PCogX::postTypes>(&Classical_Planner::implement__postTypes);
     
     implement<PCogX::postXXsubtypeofYY>(&Classical_Planner::implement__postXXsubtypeofYY);
+    
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED ** ** ");
 }
 
 void Classical_Planner::runComponent()
 {   
-    CAST__VERBOSER(200, " ** ** IMPLEMENTED ** ** ");    
+    CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");   
+    CAST__VERBOSER(1, " ** ** IMPLEMENTED -- COMPLETED ** ** ");    
 }

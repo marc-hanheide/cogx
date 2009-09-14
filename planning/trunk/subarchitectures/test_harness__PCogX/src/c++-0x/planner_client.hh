@@ -27,11 +27,15 @@ public:
     typedef CAST_SCAT::procedure_implementation<Planner_Client> Implement;
     typedef CAST_SCAT::procedure_call<> Call;
     
-    explicit Planner_Client(Designator&& name = PLANNER_CLIENT_DESIGNATION);
+    explicit Planner_Client(Designator&& name = Designator(PLANNER_CLIENT_DESIGNATION));
     
     void runComponent();
 protected:
+    void configure(const std::map<std::string,std::string>&);
     void start();
+private:
+    
+    std::string planning_subarchitecture_name;
 };
 
 
