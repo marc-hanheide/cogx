@@ -29,6 +29,7 @@ public abstract class MotiveManager extends ManagedComponent {
 
 	@Override
 	protected void start() {
+		sleepComponent(2000);
 		log("MotiveManager starting up...");
 		super.start();
 
