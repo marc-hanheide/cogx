@@ -23,7 +23,7 @@ void FakeMotivationSA::configure(const cast::cdl::StringMap& _config, const Ice:
 
 void FakeMotivationSA::runComponent() {
     println("FakeMotivationSA: running");
-    sleep(10);
+    sleepComponent(10000);
     string id = newDataID();
 
     autogen::Planner::PlanningTaskPtr plan = new autogen::Planner::PlanningTask();
