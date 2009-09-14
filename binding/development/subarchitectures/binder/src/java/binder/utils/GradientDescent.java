@@ -59,6 +59,9 @@ public class GradientDescent {
 		}
 
 		else if (entity.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
+			log("looking at combined prob. distribution for : "  + entity.entityID + " timestamp: " + entity.timeStamp + " nb proxies: " + ((Union)entity).includedProxies.length);
+			log("Max: " + getMaximum((CombinedProbabilityDistribution) entity.distribution));
+			
 			return getMaximum((CombinedProbabilityDistribution) entity.distribution);
 		}
 
@@ -202,7 +205,7 @@ public static Union getBestUnion(UnionDistribution distribution) {
 	public static boolean alreadyComputed(Union union) {
 		for (Iterator<Union> i = maxForUnions.keySet().iterator() ; i.hasNext() ; ) {
 			Union u = i.next();
-			if (u.entityID.equals(union.entityID) && u.timeStamp == union.timeStamp) {
+			if (u.equals(union) && u.timeStamp == union.timeStamp) {
 				return true;
 			}
 		}
@@ -216,11 +219,11 @@ public static Union getBestUnion(UnionDistribution distribution) {
 		Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
 		HashMap<UnionConfiguration, Float> averages =new HashMap<UnionConfiguration, Float>();
 
+		int count = 1;
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
-
+			count++;
 			float multiplication = 1.0f;
-
 			for (int i = 0; i < config.includedUnions.length ; i++) {		
 				Union union = config.includedUnions[i];
 				float max = 0.0f;
@@ -234,7 +237,6 @@ public static Union getBestUnion(UnionDistribution distribution) {
 				multiplication = multiplication * max;
 			}
 			float average = multiplication / (config.includedUnions.length + 0.0f);
-
 			averages.put(config, average);
 
 			if (nbestConfigs.size() < nb_nbests) {
@@ -277,10 +279,8 @@ public static Union getBestUnion(UnionDistribution distribution) {
 				Union union = config.includedUnions[i];
 				float unionMax = getMaximum(union);
 				multiplication = multiplication * unionMax;
-				log("unionmax: " + unionMax + " for "  + union.entityID);
 			}
 			float average = multiplication / (config.includedUnions.length + 0.0f);
-			System.out.println("average: "  + average);
 
 			if (average > maxAverage) {
 				maxAverage = average;

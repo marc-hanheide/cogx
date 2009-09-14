@@ -251,7 +251,7 @@ public class UnionConstructor  {
 
 		//		log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
 
-		// finalDistrib = ProbabilityUtils.normaliseDistribution(finalDistrib, 1.0f);
+	//	finalDistrib = ProbabilityUtils.normaliseDistribution(finalDistrib, 1.0f);
 		return finalDistrib;
 	}
 

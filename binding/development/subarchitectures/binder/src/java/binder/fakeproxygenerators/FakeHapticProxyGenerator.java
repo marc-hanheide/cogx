@@ -55,7 +55,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	}
 	
 
-	private Proxy createProxyOne() {
+	private Proxy createProxyTwo() {
 		
 		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli", "GraspableObject");
 		Proxy proxy = createNewProxy(origin, 0.35f);
@@ -72,7 +72,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	
 	
 
-	private Proxy createProxyTwo() {
+	private Proxy createProxyOne() {
 		
 		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli2", "GraspableObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);

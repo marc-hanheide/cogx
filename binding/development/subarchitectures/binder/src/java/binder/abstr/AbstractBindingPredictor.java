@@ -10,7 +10,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
-public class BindingPredictor extends BindingWorkingMemoryWriter {
+public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {
 
 	static PhantomProxy lastPhantomProxy = new PhantomProxy();
 	static WorkingMemoryChangeReceiver receiverForPhantomProxies;	
