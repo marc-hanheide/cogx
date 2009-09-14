@@ -43,7 +43,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def startComponent(self):
     pass
 
-  def stopComponent(self,config):
+  def stopComponent(self):
     pass
 
   def runComponent(self):
