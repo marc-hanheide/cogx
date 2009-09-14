@@ -25,7 +25,23 @@ module motivation {
 			cast::cdl::WorkingMemoryAddress referenceEntry;
 			cast::cdl::WorkingMemoryAddress thisEntry;
     		MotiveStatus status;
-    		string goal;
+    	};
+    	
+    	class TestMotive extends Motive {
+    		string value;
+    		
+    	};
+
+    	class ExploreMotive extends Motive {
+    		/**
+	 		* The ID of the place.
+	 		*/
+			long placeID;
+    		
+    	};
+    	
+    	class PlanProxy {
+    	    cast::cdl::WorkingMemoryAddress planAddress;
     	};
     };
 };
