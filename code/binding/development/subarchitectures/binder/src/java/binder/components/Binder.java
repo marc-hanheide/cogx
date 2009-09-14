@@ -23,6 +23,7 @@ package binder.components;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -74,7 +75,7 @@ public class Binder extends ManagedComponent  {
 	
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
-	private int NB_CONFIGURATIONS_TO_KEEP = 80;
+	public int nbestsFilter = 10;
 
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
@@ -182,7 +183,11 @@ public class Binder extends ManagedComponent  {
 		} 
 		if (_config.containsKey("--incremental")) {
 			incrementalBinding = Boolean.parseBoolean(_config.get("--incremental"));
-		} 
+		}
+		
+		if (_config.containsKey("--nbestsfilter")) {
+			nbestsFilter = Integer.parseInt(_config.get("--nbestsfilter"));
+		}
 	}
 
 
@@ -204,7 +209,7 @@ public class Binder extends ManagedComponent  {
 	private void proxyUpdate (WorkingMemoryChange wmc) {
 
 		log("--------START BINDING UPDATE ----------");
-		log(" TRIGGERED BY: overwrite of existing proxy ");
+		log("TRIGGERED BY: overwrite of existing proxy ");
 
 		try {
 			// The proxy which was modified
@@ -271,7 +276,7 @@ public class Binder extends ManagedComponent  {
 	private void proxyDeletion (WorkingMemoryChange wmc) {
 
 		log("--------START BINDING UPDATE ----------");
-		log(" TRIGGERED BY: proxy deletion ");
+		log("TRIGGERED BY: proxy deletion ");
 		
 		try {
 			// The ID of the deleted proxy
@@ -324,7 +329,7 @@ public class Binder extends ManagedComponent  {
 
 		log("--------STOP BINDING UPDATE (AFTER DELETION) ----------");
 	}
-
+	
 
 	/**
 	 * Update the binding working memory after the insertion of a new proxy
@@ -347,7 +352,7 @@ public class Binder extends ManagedComponent  {
 
 			newProxy.timeStamp = System.currentTimeMillis();;
 
-			log(" TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
+			log("TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
 					" (" + newProxy.getClass().getSimpleName() + ") ");
 		
 			newProxy = BinderUtils.completeProxy(newProxy, addUnknowns);
@@ -371,7 +376,7 @@ public class Binder extends ManagedComponent  {
 
 	}
 
-
+	
 	// ================================================================= 
 	// INCREMENTAL AND FULL BINDING METHODS   
 	// ================================================================= 
@@ -403,6 +408,7 @@ public class Binder extends ManagedComponent  {
 	/**
 	 * Update the binding working memory by recomputing the union configurations
 	 * after the insertion of a new proxy
+	 * 
 	 * @param newProxy the newly inserted proxy
 	 * 
 	 */
@@ -422,7 +428,7 @@ public class Binder extends ManagedComponent  {
 			Vector<UnionConfiguration> newUnionConfigurations = new Vector<UnionConfiguration>();
 			
 			// List of unions already computed and merged
-			HashMap<String,Union> alreadyMergedUnions = new HashMap<String, Union>();
+			HashMap<Union,Union> alreadyMergedUnions = new HashMap<Union, Union>();
 
 			// loop on the current union configurations
 			for (Enumeration<UnionConfiguration> configs = 
@@ -444,35 +450,34 @@ public class Binder extends ManagedComponent  {
 					Union newMergedUnion;
 					
 					// check if the current union and the new one can be merged
-					if (!hasConflicts(existingUnion, newUnion)) {
+					if ( !hasConflicts(existingUnion, newUnion)) {
 
-						// Check if the union has already been constructed
-						if (!alreadyMergedUnions.containsKey(existingUnion.entityID)) {
+						if (!alreadyComputed(existingUnion, alreadyMergedUnions)) {
 							
 							// If not, construct the merged union
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 							unionsToMerge.add(existingUnion);
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID);
-							alreadyMergedUnions.put(existingUnion.entityID, newMergedUnion);
+							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						}
 						// or simply fetch the already computed union
 						else {
-							newMergedUnion = alreadyMergedUnions.get(existingUnion.entityID);
+							newMergedUnion = alreadyMergedUnions.get(existingUnion);
 						}
 						// create and add a new union configuration with the new merged union
-						UnionConfiguration newConfigWithMergedUnion = 
+							UnionConfiguration newConfigWithMergedUnion = 
 							createNewUnionConfiguration (existingUnionConfig, newMergedUnion, existingUnion);
-						newUnionConfigurations.add(newConfigWithMergedUnion);
+						 newUnionConfigurations.add(newConfigWithMergedUnion);
 
-					}
+					}				
+					
 				}
 			}
 
 			// Get the nbest configurations (with N as a parameter)
 			Vector<UnionConfiguration> NBests = 
-				GradientDescent.getNBestUnionConfigurations
-				(newUnionConfigurations, NB_CONFIGURATIONS_TO_KEEP);
+				GradientDescent.getNBestUnionConfigurations (newUnionConfigurations, nbestsFilter);
 
 			// update the list of possible unions
 			currentUnionConfigurations = NBests;
@@ -515,6 +520,16 @@ public class Binder extends ManagedComponent  {
 	}
 
 
+
+	public static boolean alreadyComputed(Union union, HashMap<Union, Union> alreadyMergedUnions) {
+		for (Iterator<Union> i = alreadyMergedUnions.keySet().iterator() ; i.hasNext() ; ) {
+			Union u = i.next();
+			if (u.entityID.equals(union.entityID) && u.timeStamp == union.timeStamp) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Remove the union from the configuration

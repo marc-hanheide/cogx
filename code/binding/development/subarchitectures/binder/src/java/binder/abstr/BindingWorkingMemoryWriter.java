@@ -242,7 +242,6 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 
 
-
 	/**
 	 * Create a new StringValue given a string and a probability
 	 * 

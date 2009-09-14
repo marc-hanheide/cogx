@@ -31,6 +31,7 @@ public abstract class AbstractProxyGenerator extends BindingWorkingMemoryWriter 
 	protected boolean reverted = false;
 	protected boolean pauses = false;
 	
+	
 	@Override
 	public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--nbproxies")) {
@@ -51,7 +52,7 @@ public abstract class AbstractProxyGenerator extends BindingWorkingMemoryWriter 
 		if (nbOfProxiesToCreate > 0) {
 			for (int i = 1 ; i < (nbOfProxiesToCreate +1) ; i++) {
 				if (pauses) {
-					sleepComponent(500 + rand.nextInt(1000));
+					sleepComponent(500 + rand.nextInt(2000));
 				}
 				Proxy p;
 				if (!reverted) {

@@ -202,13 +202,6 @@ public class BayesianNetworkGUI extends JFrame {
 		setVisible(true);
 	}
 
-
-	public static void main (String[] args) {
-		BayesianNetworkGUI gui = new BayesianNetworkGUI();
-		BayesianNetwork network = BayesianNetworkUtils.constructNetwork();
-		gui.drawBayesianNetwork(network);
-	}
-	
 	
 
 	private void log(String s) {

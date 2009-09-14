@@ -44,7 +44,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	}
 	
 
-	protected Proxy createProxyOne() {
+	protected Proxy createProxyTwo() {
 		
 		OriginInfo origin = createOriginInfo ("fakevision", "blublu", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);
@@ -61,7 +61,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	}
 
 
-	protected Proxy createProxyTwo() {
+	protected Proxy createProxyOne() {
 		
 		OriginInfo origin = createOriginInfo ("fakevision", "blublu2", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.9f);
