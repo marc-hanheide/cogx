@@ -77,7 +77,6 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			try {
 				addToWorkingMemory(wma, cmd);
-
 			} catch (CASTException e) {
 				println(e.message);
 				e.printStackTrace();
@@ -105,10 +104,12 @@ public class SpatialActionInterface extends ManagedComponent {
 			NavCommand cmd = getMemoryEntry(_wmc.address, NavCommand.class);
 			if (cmd.comp == Completion.COMMANDABORTED
 					|| cmd.comp == Completion.COMMANDFAILED) {
+				log("command failed by the looks of this: " + cmd.comp);
 				m_callback.executionComplete(TriBool.TRIFALSE);
 				deleteFromWorkingMemory(_wmc.address);
 				removeChangeFilter(this);
 			} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
+				log("command completed by the looks of this: " + cmd.comp);
 				m_callback.executionComplete(TriBool.TRITRUE);
 				deleteFromWorkingMemory(_wmc.address);
 				removeChangeFilter(this);

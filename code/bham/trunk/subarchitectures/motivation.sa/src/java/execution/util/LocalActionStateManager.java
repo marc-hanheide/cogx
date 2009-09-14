@@ -61,10 +61,10 @@ public class LocalActionStateManager extends Thread {
 		public void executionComplete(TriBool _success) {
 			if (m_component.isRunning()) {
 				try {
-					m_component.lockComponent();
+					// TODO this assumes that the component is already locked,
+					// but this might not be the case in future!
 					actionCompleted(_success, m_executorWrapper.m_address,
 							m_executorWrapper.m_second);
-					m_component.unlockComponent();
 
 				} catch (CASTException e) {
 					m_component.println(e.message);
@@ -182,6 +182,10 @@ public class LocalActionStateManager extends Thread {
 			PermissionException, UnknownSubarchitectureException {
 		_action.status = _status;
 		_action.success = _success;
+
+		m_component.log("overwriting action on WM: " + CASTUtils.toString(_wma)
+				+ " " + _status + " " + _status);
+
 		m_component.overwriteWorkingMemory(_wma, _action);
 	}
 
@@ -192,7 +196,8 @@ public class LocalActionStateManager extends Thread {
 
 			m_component.waitForChanges();
 
-			while (m_component.isRunning() && m_executorQueue != null && !m_executorQueue.isEmpty()) {
+			while (m_component.isRunning() && m_executorQueue != null
+					&& !m_executorQueue.isEmpty()) {
 
 				try {
 					ExecutorWrapper executorWrapper = m_executorQueue.poll();
