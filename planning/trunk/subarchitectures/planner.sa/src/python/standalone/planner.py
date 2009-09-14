@@ -151,9 +151,22 @@ class ContinualAxiomsFF(BasePlanner):
         domain_path, problem_path, plan_path, stdout_path = input_data
         executable = os.path.join(global_vars.src_path, self.executable)
         cmd = "%(executable)s -o %(domain_path)s -f %(problem_path)s -O %(plan_path)s" % locals()
+        proc = utils.run_process(cmd, output=stdout_path, error=stdout_path)
+        
         stdout_output = utils.run_command(cmd, output=stdout_path)
 #         print "Planner output:"
 #         print stdout_output
+        
+        if proc.returncode != 0:
+            print "Warning: FF returned with nonzero exitcode:\n\n>>>"
+            print stdout_output
+            print "<<<\n"
+            if proc.returncode > 0:
+                print "Exit code was %d" % proc.returncode
+            else:
+                print "Killed by signal %d" % -proc.returncode
+            return None
+
         try:
             pddl_output = open(plan_path).read()
         except IOError:
