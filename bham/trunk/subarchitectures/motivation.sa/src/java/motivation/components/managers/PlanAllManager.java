@@ -107,13 +107,15 @@ public class PlanAllManager extends MotiveManager {
 			PlanProxy pp = new PlanProxy();
 			pp.planAddress = _wma;
 			try {
-				addToWorkingMemory(id, new PlanProxy());
+				addToWorkingMemory(id, pp);
 			} catch (AlreadyExistsOnWMException e) {
 				e.printStackTrace();
 			}
-		} else {
+		} else if (_planningTask.planningStatus == Completion.FAILED){
 			println("planning failed: " + _planningTask.planningStatus + " "
 					+ _planningTask.goal);
+		} else {
+			log("planning status " + _planningTask.planningStatus.name());
 		}
 	}
 
