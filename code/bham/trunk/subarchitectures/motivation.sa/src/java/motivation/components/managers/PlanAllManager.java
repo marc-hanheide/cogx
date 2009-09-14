@@ -54,8 +54,10 @@ public class PlanAllManager extends MotiveManager {
 			// create a new goal
 			// ask the planner if this new goal can be added
 			// hand this goal to execution
-			if (managedMotives.size()==1)
+			if (managedMotives.size()==1) {
+				sleepComponent(2000);
 				generatePlan();
+			}
 		} else {
 			log("some motive we cannot yet handle");
 		}
@@ -103,6 +105,7 @@ public class PlanAllManager extends MotiveManager {
 			PlanningTask _planningTask) {
 
 		if (_planningTask.planningStatus == Completion.SUCCEEDED) {
+			log("planning succeeeeeeeded " + _planningTask.planningStatus.name());
 			String id = newDataID();
 			PlanProxy pp = new PlanProxy();
 			pp.planAddress = _wma;
