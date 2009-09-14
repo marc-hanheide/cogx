@@ -22,7 +22,7 @@ import cast.core.CASTUtils;
  * @author marc
  * 
  */
-public class TestGenerator extends Generator {
+public class TestGenerator extends AbstractMotiveGenerator {
 	
 	
 	@Override
@@ -77,19 +77,11 @@ public class TestGenerator extends Generator {
 		try {
 			TestSource source = getMemoryEntry(motive.referenceEntry, TestSource.class);
 			// generate some fake stuff here...
-			motive.goal = source.name;
 			write(motive);
 			return true;
 		} catch (DoesNotExistOnWMException e) {
 			e.printStackTrace();
 		} catch (UnknownSubarchitectureException e) {
-			e.printStackTrace();
-		} catch (ConsistencyException e) {
-			e.printStackTrace();
-		} catch (PermissionException e) {
-			e.printStackTrace();
-		} catch (AlreadyExistsOnWMException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
@@ -108,7 +100,7 @@ public class TestGenerator extends Generator {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				debug(CASTUtils.toString(_wmc));
 				// create a new motive from this node...
-				Motive newMotive = MotiveFactory.createMotive(_wmc.address);
+				Motive newMotive = MotiveFactory.createTestMotive(_wmc.address);
 				checkMotive(newMotive);
 			}
 		});

@@ -5,12 +5,21 @@ package motivation.components.filters;
 
 import motivation.slice.Motive;
 import motivation.util.CASTTimeUtil;
+import motivation.components.filters.AbstractFilter;
 
 /**
  * @author marc
  * 
  */
-public class AgeFilter extends Filter {
+public class AgeFilter extends AbstractFilter {
+
+	/**
+	 * @param specificType
+	 */
+	public  AgeFilter() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	/*
 	 * (non-Javadoc)

@@ -31,7 +31,7 @@ import cast.cdl.WorkingMemoryPermissions;
  * @author marc
  * 
  */
-abstract class Generator extends ManagedComponent {
+abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 	/**
 	 * a local MemoryReceiver that established the link between the "Supporter"
@@ -138,17 +138,10 @@ abstract class Generator extends ManagedComponent {
 	 * 
 	 * @param motive
 	 * @return the WM address of the entry
-	 * @throws AlreadyExistsOnWMException
-	 * @throws DoesNotExistOnWMException
-	 * @throws ConsistencyException
-	 * @throws PermissionException
-	 * @throws UnknownSubarchitectureException
 	 */
-	public WorkingMemoryAddress write(Motive motive)
-			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
+	public WorkingMemoryAddress write(Motive motive) {
 		motive.updated = getCASTTime();
+		try {
 		if (motive.thisEntry == null) {
 			log("submit new to WM");
 			motive.thisEntry = new WorkingMemoryAddress();
@@ -160,6 +153,22 @@ abstract class Generator extends ManagedComponent {
 			log("receivers added");
 		} else {
 			overwriteWorkingMemory(motive.thisEntry, motive);
+		}
+		}
+		catch(PermissionException e) {
+			
+		} catch (AlreadyExistsOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DoesNotExistOnWMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ConsistencyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return motive.thisEntry;
 	}

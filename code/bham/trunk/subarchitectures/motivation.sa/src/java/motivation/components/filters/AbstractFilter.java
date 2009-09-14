@@ -20,7 +20,12 @@ import cast.cdl.WorkingMemoryPermissions;
  * @author marc
  *
  */
-public abstract class Filter extends ManagedComponent {
+public abstract class AbstractFilter extends ManagedComponent {
+	
+	protected AbstractFilter() {
+		super();
+	}
+
 	/* (non-Javadoc)
 	 * @see cast.core.CASTComponent#start()
 	 */
