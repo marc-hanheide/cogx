@@ -142,6 +142,11 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	
   // Lets see if we can carry out the command
   NavData::InternalNavCommandPtr ctrl = new NavData::InternalNavCommand;
+  //must init all enums, otherwise crashes await
+  ctrl->status =  NavData::NONE;
+  ctrl->comp = NavData::PENDING;
+
+
   SpatialData::Completion result;
   SpatialData::StatusError status;
   if(translateCommand(cmd.second, *ctrl, status)){
@@ -381,6 +386,10 @@ void SpatialTranslation::cancelCurrentTask(bool stop_robot, string navCtrlCmdId)
   if(stop_robot){
     NavData::InternalNavCommandPtr stop = new NavData::InternalNavCommand;
     stop->cmd = NavData::lSTOPROBOT;
+    //must init all enums, otherwise crashes await
+    stop->status =  NavData::NONE;
+    stop->comp = NavData::PENDING;
+
 		
     Rendezvous rv(*this);
     string aux_id = newDataID();
