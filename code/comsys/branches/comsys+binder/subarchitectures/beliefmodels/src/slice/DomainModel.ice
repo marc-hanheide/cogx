@@ -117,7 +117,6 @@ module cogx {
 		ColorProperty clr; 
 		ShapeProperty shp; 
 	}; 
-
 	
 }; // end cogx 
 }; // end domainmodel
@@ -125,3 +124,9 @@ module cogx {
 
 #endif
 
+// ===================================================================
+// EDIT LOG
+// 
+// GJ	090915	extended with grounded beliefs, continual formulas, complex formulas
+// GJ	090710	started module
+// 
