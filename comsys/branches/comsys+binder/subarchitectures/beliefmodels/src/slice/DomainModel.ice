@@ -20,10 +20,11 @@ module cogx {
 	
 			
 	// ===================================================================
-	// DOMAIN MODEL 
+	// GROUNDED DOMAIN MODEL 
 	// A domain model is a collection of formula types, to define the 
 	// interfaces Formula and GoalFormula used in the belief models ADL 
-	// definition. 
+	// definition. We adopt a grounded domain model here: the "truth" value of 
+	// a belief is based in how it is connected with other structures. 
 	
 	// The class SuperFormula implements the Formula interface, acting as supertype class. 
 	// As an EpistemicObject, each SuperFormula has an identifier. 
@@ -56,10 +57,6 @@ module cogx {
 		SuperFormula rhs;
 	}; 
 
-
-
-
-	// ===================================================================
 	// GROUNDED BELIEFS
 	// We extend the ADL notion of Belief with structure to indicate how
 	// the belief is grounded in other structures. Grounding indicates several 
@@ -74,17 +71,25 @@ module cogx {
 
 	class Ground { 
 		Ids indexSet;
-		GroundStatus status;
+		GroundStatus gstatus;
 		beliefmodels::adl::Formula reason;
 	}; 
 
 	class GroundedBelief extends beliefmodels::adl::Belief { 
 		Ground grounding;
 	}; 
-					
+	
+	// A continual formula is a formula that is possibly uncertain, and which can be 
+	// either asserted, or be a proposition. 
+	
+	enum ContinualStatus { proposition, assertion };
+	
+	class ContinualFormula extends UncertainSuperFormula {
+		ContinualStatus cstatus;
+	}; 
 					
 	// ===================================================================
-	// EXAMPLE: VISUAL OBJECTS 
+	// DOMAINMODEL: VISUAL OBJECTS 
 	
 	enum Shape { cylindrical, square };
 	
@@ -92,28 +97,26 @@ module cogx {
 	
 	enum Color { red, blue, yellow, green };
 	
-	// A property is a formula with a value, and a degree of (un)certainty associated with that value
+	// A property is always a ContinualFormula
 	
-	class ColorProperty extends UncertainSuperFormula { 
+	class ColorProperty extends ContinualFormula { 
 		Color colorValue;
 	};  
 	
 	sequence<ColorProperty> Colors;
 	
-	class ShapeProperty extends UncertainSuperFormula { 
+	class ShapeProperty extends ContinualFormula { 
 		Shape shapedValue;
 	}; 
 	
 	// A material object is a formula with one or more colors, a shape, and an object type; 
 	// the entirety has again an uncertain value associated with it. 
 	
-	class MaterialObject extends UncertainSuperFormula { 
+	class MaterialObject extends ContinualFormula { 
 		ObjectType type;
 		ColorProperty clr; 
 		ShapeProperty shp; 
 	}; 
-
-
 
 	
 }; // end cogx 
