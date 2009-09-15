@@ -42,7 +42,7 @@ GLfloat col_surface[4];
 GLfloat col_overlay[4];
 GLfloat col_highlight[4];
 vector<Vector3> points;
-vector<Vector3> points10;
+vector<Vector3> pointsN;
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector< Vector3 > v3size;
 vector< Vector3 > v3center;
@@ -50,6 +50,7 @@ vector<double> vdradius;
 vector< vector< Vector3 > > SOIPointsSeq;
 vector< vector< Vector3 > > BGPointsSeq;
 double A, B, C, D;
+int N;  // 1/N points will be used
 
 
 void InitWin()
@@ -179,7 +180,7 @@ void DrawPoints()
 { 
   glPointSize(2);
   glBegin(GL_POINTS);
-  for(size_t i = 0; i < points10.size(); i++)
+  for(size_t i = 0; i < pointsN.size(); i++)
   {
 	if (points_label.at(i) == 0)  glColor3f(1.0,1.0,0.0); // plane
 	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
@@ -189,7 +190,7 @@ void DrawPoints()
 	else if (points_label.at(i) == 4)  glColor3f(0.0,1.0,0.0);  //
 	else if (points_label.at(i) == 5)  glColor3f(0.0,0.0,1.0);  //
 	else glColor3f(1.0,1.0,1.0);  //rest object
-    glVertex3f(points10[i].x, points10[i].y, points10[i].z);
+    glVertex3f(pointsN[i].x, pointsN[i].y, pointsN[i].z);
   }
   glEnd();
 /*
@@ -371,7 +372,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 			Vector3 v3Obj = points.at(j);
 			Vector3 Point_DP = ProjectOnDominantPlane(v3Obj);
 			int label = labels.at(j);
-			if (label != i+1 && dist(Point_DP,Center_DP) < radius_world.at(i)) //BG nearby also required
+			if (label == 0 && dist(Point_DP,Center_DP) < 1.8*radius_world.at(i) && dist(Point_DP,Center_DP) > 1.3*radius_world.at(i)) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(v3Obj);
 
@@ -414,8 +415,8 @@ void DisplayWin()
   DrawPoints();
   if (objnumber != 0)
   {
-	DrawCuboids(points10,points_label);
-	BoundingSphere(points10,points_label);
+	DrawCuboids(pointsN,points_label);
+	BoundingSphere(pointsN,points_label);
   }
   else
   {
@@ -510,17 +511,18 @@ void PlanePopOut::runComponent()
 	else
 	{
 		tempPoints.clear();
-		points10.clear();
+		pointsN.clear();
 		objnumber = 0;
-		for (std::vector<Vector3>::iterator it=points.begin(); it<points.end(); it+=10)
-			points10.push_back(*it);
+		N = 5;
+		for (std::vector<Vector3>::iterator it=points.begin(); it<points.end(); it+=N)
+			pointsN.push_back(*it);
 		points_label.clear();
-		points_label.assign(points10.size(), -1);
+		points_label.assign(pointsN.size(), -1);
 	
 
-		if (RANSAC(points10,points_label))
+		if (RANSAC(pointsN,points_label))
 		{
-			SplitPoints(points10,points_label);
+			SplitPoints(pointsN,points_label);
 			glutPostRedisplay();
 			glutMainLoopEvent();
 		}
@@ -677,8 +679,8 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 			if(dDistSq == 0.0)
 			continue;
 			double dNormDist = fabs(dot(v3Diff, v3Normal));	
-			if(dNormDist > 0.005)
-			dNormDist = 0.005;
+			if(dNormDist > 0.05)
+			dNormDist = 0.05;
 			dSumError += dNormDist;
 		}
 		if(dSumError < dBestDistSquared)
@@ -715,13 +717,16 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 		{
 			Vector3 v3Diff = R_points.at(i) - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-			if(dNormDist < 0.005)
-				labels.at(i) = 0;
-			double d_parameter = -(para_a*R_points.at(i).x+para_b*R_points.at(i).y+para_c*R_points.at(i).z);
-			if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) > fabs(para_d)/20)
-				labels.at(i) = -2;
-			if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) <= fabs(para_d)/20)
-				labels.at(i) = -1;
+			if(dNormDist < 0.05)
+				labels.at(i) = 0; // dominant plane
+			else
+			{
+				double d_parameter = -(para_a*R_points.at(i).x+para_b*R_points.at(i).y+para_c*R_points.at(i).z);
+				if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) > fabs(para_d)/50)
+					labels.at(i) = -2; // objects
+				if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) <= fabs(para_d)/50)
+					labels.at(i) = -1; // cannot distingush
+			}
 		}
 	}
 	return true;
