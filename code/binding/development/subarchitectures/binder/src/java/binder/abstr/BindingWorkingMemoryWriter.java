@@ -250,6 +250,20 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	public Proxy addFeatureToProxy(Proxy proxy, Feature feat) {
 
 		Feature[] newFeatures;
+		
+		if (feat.featlabel == null) {
+			System.out.println("WARNING: feature has no specified feature label, cannot insert feature");
+			return proxy;
+		}
+		else if (feat.alternativeValues == null) {
+			System.out.println("WARNING: feature has no specified feature values, cannot insert feature");
+			return proxy;
+		}
+		else if (feat.alternativeValues.length == 0) {
+			System.out.println("WARNING: feature has no specified feature values, cannot insert feature");
+			return proxy;			
+		}
+		
 		if (proxy.features != null) {
 			newFeatures = new Feature[proxy.features.length + 1];
 			for (int i = 0; i < proxy.features.length; i++) {
@@ -260,7 +274,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 			newFeatures = new Feature[1];
 			newFeatures[0] = feat;
 		}
-
+		
 		proxy.features = newFeatures;
 
 		return proxy;
@@ -380,14 +394,19 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 
 	public Feature addFeatureValueToFeature(Feature feat, FeatureValue featval) {
 
-		FeatureValue[] featvals = new FeatureValue[feat.alternativeValues.length + 1];
+		if (feat.alternativeValues != null) {
+		FeatureValue[] featvals = new FeatureValue[feat.alternativeValues.length +1];
 
 		for (int i = 0; i < feat.alternativeValues.length; i++) {
 			featvals[i] = feat.alternativeValues[i];
 		}
 		featvals[feat.alternativeValues.length] = featval;
 		feat.alternativeValues = featvals;
-
+		}
+		else {
+			feat.alternativeValues = new FeatureValue[1];
+			feat.alternativeValues[0] = featval;
+		}
 		return feat;
 	}
 

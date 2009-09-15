@@ -75,7 +75,7 @@ public class Binder extends ManagedComponent  {
 	
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
-	public int nbestsFilter = 10;
+	public int nbestsFilter = 1;
 
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
@@ -148,7 +148,7 @@ public class Binder extends ManagedComponent  {
 		// Initialisation stuff
 		initializeUnionConfigurations();
 
-		log("Binding Monitor successfully started");
+		log("Binder successfully started");
 	}
 
 

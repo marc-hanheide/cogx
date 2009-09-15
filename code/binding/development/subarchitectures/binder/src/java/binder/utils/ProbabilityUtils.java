@@ -38,7 +38,7 @@ public class ProbabilityUtils {
 	
 	public static boolean normaliseDistributions = false;
 	
-
+	
 	public static ProbabilityDistribution generateProbabilityDistribution (PerceivedEntity entity) {
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
 
@@ -48,7 +48,8 @@ public class ProbabilityUtils {
 				features.add(entity.features[i]);
 			}
 
-			Vector<DiscreteProbabilityAssignment> assignments = generateProbabilityDistribution (features, new Vector<DiscreteProbabilityAssignment>());
+			Vector<DiscreteProbabilityAssignment> assignments = 
+				generateProbabilityDistribution (features);
 			distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];
 			distrib.assignments = assignments.toArray(distrib.assignments);
 
@@ -57,6 +58,13 @@ public class ProbabilityUtils {
 			}
 
 		}
+		else {
+			distrib.assignments = new DiscreteProbabilityAssignment[1];
+			distrib.assignments[0] = new DiscreteProbabilityAssignment();
+			distrib.assignments[0].featurepairs = new FeatureValuePair[0];
+			distrib.assignments[0].prob = 1.0f;
+		}
+		
 		if (normaliseDistributions) {
 			distrib = normaliseDistribution(distrib, 1.0f);
 		}
@@ -138,6 +146,11 @@ public class ProbabilityUtils {
 
 	public static float getProbabilityValue
 		(ProbabilityDistribution distrib, DiscreteProbabilityAssignment assignment) {
+		
+		if (distrib == null) {
+			log("ERROR, distribution is null");
+		}
+		
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
 			return getProbabilityValue((DiscreteProbabilityDistribution)distrib, assignment);
 		}
@@ -156,7 +169,10 @@ public class ProbabilityUtils {
 
 		for (int i = 0; i < distrib.distributions.length; i++) {
 			ProbabilityDistribution subdistrib = distrib.distributions[i];
-			if (distrib.opType.equals(OperationType.MULTIPLIED)) {
+			if (subdistrib == null) {
+				log("ERROR, distribution is null");
+			}
+			else if (distrib.opType.equals(OperationType.MULTIPLIED)) {
 				float subdistribresult = getProbabilityValue(subdistrib, assignment); 
 				result = result * subdistribresult;
 			}
@@ -256,6 +272,9 @@ public class ProbabilityUtils {
 			}
 		}
 		}
+		else {
+			log("ERROR, distribution contains no assignment");
+		}
 
 		log("WARNING, no probability value found for assignment: " + 
 				BinderUtils.getPrettyPrintProbabilityAssignment(assignment));
@@ -282,9 +301,10 @@ public class ProbabilityUtils {
 	
 	
 
-	public static boolean containsAll(Vector<FeatureValuePair> pairs1, Vector<FeatureValuePair> pairs2) {
+	public static boolean containsAll(Vector<FeatureValuePair> pairs1, 
+			Vector<FeatureValuePair> pairs2) {
 		boolean result = true;
-
+		
 		for (Enumeration<FeatureValuePair> e = pairs2.elements() ; e.hasMoreElements(); ) {
 			FeatureValuePair pair2 = e.nextElement();
 			boolean foundMatch = false;
@@ -300,10 +320,28 @@ public class ProbabilityUtils {
 				return false;
 			}
 		}
-
 		return result;
 	}
 
+	
+	public static Vector<DiscreteProbabilityAssignment> generateProbabilityDistribution
+		(Vector<Feature> features) {
+		if (features.size() > 0 ) {
+			return generateProbabilityDistribution(features, 
+					new Vector<DiscreteProbabilityAssignment>());
+		}
+		else {
+			Vector<DiscreteProbabilityAssignment> assignments = 
+				new Vector<DiscreteProbabilityAssignment>();
+			DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
+			assignment.featurepairs = new FeatureValuePair[0];
+			assignment.prob = 1.0f;
+			assignments.add(assignment);
+			return assignments;
+		}
+	}
+	
+	
 	public static Vector<DiscreteProbabilityAssignment> generateProbabilityDistribution 
 	(Vector<Feature> features, Vector<DiscreteProbabilityAssignment> prevAssignments) {
 
@@ -358,7 +396,7 @@ public class ProbabilityUtils {
 
 
 	public static void log(String s) {
-		System.out.println("[ProbabilityDistributionUtils] " + s);
+		System.out.println("[ProbabilityUtils] " + s);
 	}
 
 }
