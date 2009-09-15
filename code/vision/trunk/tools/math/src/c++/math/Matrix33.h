@@ -618,9 +618,16 @@ inline void fromAngleAxis(Matrix33 &m, double angle, const Vector3& axis)
  */
 inline void fromRotVector(Matrix33 &m, const Vector3& r)
 {
-  Vector3 axis(r);
-  double angle = normalise(axis);
-  fromAngleAxis(m, angle, axis);
+  if(isZero(r))
+  {
+    setIdentity(m);
+  }
+  else
+  {
+    Vector3 axis(r);
+    double angle = normalise(axis);
+    fromAngleAxis(m, angle, axis);
+  }
 }
 
 /**
