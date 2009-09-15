@@ -31,6 +31,14 @@ void initCameraParameters(CameraParameters &cam);
 void loadCameraParameters(CameraParameters &cam, const string &configfile);
 
 /**
+ * Load parameters of (monocular) camera, but from a stereo calibration file
+ * (produced by SVS). Side (LEFT or RIGHT) indicates whether this is the left or
+ * right camera of the stereo pair.
+ */
+void loadCameraParametersFromSVSCalib(CameraParameters &cam,
+    const string &configfile, int side);
+
+/**
  * Save camera parameters to a config file.
  * The file contains internal and external (pose) parameters.
  */

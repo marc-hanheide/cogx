@@ -118,6 +118,78 @@ void loadCameraParameters(CameraParameters &cam, const string &configfile)
     istr >> cam.pose;
 }
 
+void loadCameraParametersFromSVSCalib(CameraParameters &cam,
+    const string &configfile, int side)
+{
+  // first make sure all values are set to meaningful defaults
+  // note that some values might not be set from the config file
+  initCameraParameters(cam);
+
+  CDataFile file(configfile);
+
+  const char *side_str = side == LEFT ? "left camera" : "right camera";
+  cam.width = file.GetInt("pwidth", side_str);
+  cam.height = file.GetInt("pheight", side_str);
+  cam.fx = file.GetFloat("f", side_str);
+  cam.fy = file.GetFloat("fy", side_str);
+  cam.cx = file.GetFloat("Cx", side_str);
+  cam.cy = file.GetFloat("Cy", side_str);
+  cam.k1 = file.GetFloat("kappa1", side_str);
+  cam.k2 = file.GetFloat("kappa2", side_str);
+  cam.k3 = file.GetFloat("kappa3", side_str);
+  cam.p1 = file.GetFloat("tau1", side_str);
+  cam.p2 = file.GetFloat("tau2", side_str);
+
+  Pose3 global_pose, right_pose;
+  Vector3 r;
+
+  // read poses
+  // We have:
+  // - pose of the whole stereo rig, we call that the global rig pose
+  // - pose of the left camera relative to the rig, we assume this to be
+  //   identity (as is quite common), so global rig pose and global left camera
+  //   pose are the same
+  // - global pose of left camera, same as global rig pose (see above)
+  //   This is called "global" in the calibration file.
+  // - pose of the right camera relative to the rig.
+  //   This is called "external" in the calibration file (NOTE: Actually it is
+  //   the inverse of "external"!)
+  // - global pose of the right camera, i.e. global rig pose + relative right
+  //   pose
+
+  global_pose.pos.x = file.GetFloat("GTx", "global");
+  global_pose.pos.y = file.GetFloat("GTy", "global");
+  global_pose.pos.z = file.GetFloat("GTz", "global");
+  // SVS use mm, we use m
+  global_pose.pos /= 1000.;
+  r.x = file.GetFloat("GRx", "global");
+  r.y = file.GetFloat("GRy", "global");
+  r.z = file.GetFloat("GRz", "global");
+  fromRotVector(global_pose.rot, r);
+
+  if(side == LEFT)
+  {
+    cam.pose = global_pose;
+  }
+  else  // side == RIGHT
+  {
+    right_pose.pos.x = file.GetFloat("Tx", "external");
+    right_pose.pos.y = file.GetFloat("Ty", "external");
+    right_pose.pos.z = file.GetFloat("Tz", "external");
+    // SVS use mm, we use m
+    right_pose.pos /= 1000.;
+    r.x = file.GetFloat("Rx", "external");
+    r.y = file.GetFloat("Ry", "external");
+    r.z = file.GetFloat("Rz", "external");
+    fromRotVector(right_pose.rot, r);
+    // "external" is the pose of the left w.r.t. right camera, so need to
+    // invert:
+    inverse(right_pose, right_pose);
+    // now get from relative right pose to global right pose
+    transform(global_pose, right_pose, cam.pose);
+  }
+}
+
 void saveCameraParameters(const CameraParameters &cam, const string &configfile)
 {
   ofstream ostr(configfile.c_str());

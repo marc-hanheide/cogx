@@ -4,12 +4,14 @@
  */
 
 #include <sstream>
+#include <cogxmath.h>
 #include "VideoServer.h"
 
 namespace cast
 {
 
 using namespace std;
+using namespace cogx::Math;
 
 Ice::Int VideoServerI::getNumCameras(const Ice::Current&)
 {
@@ -87,7 +89,35 @@ void VideoServer::configure(const map<string,string> & _config)
     while(str >> file)
     {
       Video::CameraParameters pars;
-      Video::loadCameraParameters(pars, file);
+      // calibration files can be either monocular calibration files (e.g.
+      // "flea0.cal", "flea1.cal") or SVS stereo calib files (e.g.
+      // "stereo.ini:L", "stereo.ini:R"). Note that in the latter case the
+      // actual file name is extended with a ":" (to indicate we have a stereo
+      // case) and a L or R indicating we refer to the LEFT or RIGHT camera of
+      // the stereo rig.
+      if(file.find(":") == string::npos)
+      {
+        // monocular case
+        Video::loadCameraParameters(pars, file);
+      }
+      else
+      {
+        // stereo case
+        size_t pos = file.find(":");
+        if(pos >= file.size() - 1)
+          throw runtime_error(exceptionMessage(__HERE__,
+                "please indicate camera L or R after ':' in config '%s'", file.c_str()));
+        char side = file[pos + 1];
+        string pure_filename(file, 0, pos);
+        if(side == 'L')
+          Video::loadCameraParametersFromSVSCalib(pars, pure_filename, LEFT);
+        else if(side == 'R')
+          Video::loadCameraParametersFromSVSCalib(pars, pure_filename, RIGHT);
+        else
+          throw runtime_error(exceptionMessage(__HERE__,
+                "camera '%c' invalid in config '%s', must be either :L or :R",
+                side, file.c_str()));
+      }
       camPars.push_back(pars);
     }
   }
