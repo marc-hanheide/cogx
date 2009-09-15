@@ -9,12 +9,14 @@
 #define STEREO_VIEWER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
+#include <VideoClient.h>
 #include <StereoClient.h>
 
 namespace cast
 {
 
 class StereoViewer : public StereoClient,
+                     public VideoClient,
                      public ManagedComponent
 {
 private:

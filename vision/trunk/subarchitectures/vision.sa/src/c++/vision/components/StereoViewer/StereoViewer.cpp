@@ -5,7 +5,9 @@
 
 #include <limits.h>
 #include <GL/freeglut.h>
+#include <opencv/highgui.h>
 #include <cogxmath.h>
+#include <VideoUtils.h>
 #include "StereoViewer.h"
 
 /**
@@ -40,6 +42,7 @@ static GLfloat col_overlay[4];
 static GLfloat col_highlight[4];
 static vector<Vector3> points;
 static size_t selected_point = UINT_MAX;
+static Vector3 img_cam_pos;
 
 static void InitWin()
 {
@@ -163,14 +166,33 @@ static void DrawOverlays()
       DrawText3D(buf, 2.*tic_size, 0., (double)i);
     }
   }
+
+  // draw z=0 plane
+  glBegin(GL_LINE_LOOP);
+  glColor4f(0., 1., 0., 1.);
+  glVertex3d(-1., -1., 0.);
+  glVertex3d(1., -1., 0.);
+  glVertex3d(1., 1., 0.);
+  glVertex3d(-1., 1., 0.);
+  glEnd();
+
+  // draw left camera position
+  glColor4f(1., 1., 1., 1.);
+  glPushMatrix();
+  glTranslatef(img_cam_pos.x, img_cam_pos.y, img_cam_pos.z);
+  glutWireSphere(0.01, 10, 10);
+  glPopMatrix();
 }
 
 static void DrawPoints()
 {
   glBegin(GL_POINTS);
-  glColor3ub(255, 255, 255);
   for(size_t i = 0; i < points.size(); i++)
   {
+    if(points[i].z > 0.05)  // above the table plane, which is a z = 0
+      glColor3ub(0, 255, 0);
+    else
+      glColor3ub(255, 255, 255);
     glVertex3d(points[i].x, points[i].y, points[i].z);
   }
   glEnd();
@@ -188,8 +210,10 @@ static void DrawPoints()
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
 
+    glPushMatrix();
     glTranslatef(points[i].x, points[i].y, points[i].z);
     glutWireSphere(0.01, 10, 10);
+    glPopMatrix();
   }
 }
 
@@ -261,6 +285,10 @@ static void MouseMove(int x, int y)
   glutPostRedisplay();
 }
 
+/**
+ * This assume that the left optical axis is equal to the global z axis, i.e.
+ * that the left camera is the coordinate origin.
+ */
 static void selectPointNearLeftOpticalAxis()
 {
   double min_dist = HUGE;
@@ -279,12 +307,22 @@ static void selectPointNearLeftOpticalAxis()
 
 void StereoViewer::configure(const map<string,string> & _config)
 {
+  map<string,string>::const_iterator it;
+
   // first let the base classes configure themselves
+  configureVideoCommunication(_config);
   configureStereoCommunication(_config);
+
+  if((it = _config.find("--camid")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> camId;
+  }
 }
 
 void StereoViewer::start()
 {
+  startVideoCommunication(*this);
   startStereoCommunication(*this);
 
   int argc = 1;
@@ -298,15 +336,68 @@ void StereoViewer::start()
   glutMotionFunc(MouseMove);
   glutReshapeFunc(ResizeWin);
   glutDisplayFunc(DisplayWin);
+
+  cvNamedWindow(getComponentID().c_str(), 1);
 }
 
 void StereoViewer::runComponent()
 {
   while(isRunning())
   {
+    Video::Image image;
+    getImage(camId, image);
+    IplImage *iplImage = convertImageToIpl(image);
+    img_cam_pos = image.camPars.pose.pos;
+
     points.resize(0);
     getPoints(points);
     selectPointNearLeftOpticalAxis();
+
+    for(size_t i = 0; i < points.size(); i++)
+    {
+      //if(points[i].z > 0.05)  // above the table plane, which is a z = 0
+      {
+        Vector2 p = projectPoint(image.camPars, points[i]);
+        distortPoint(image.camPars, p, p);
+        cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(255,0,0));
+      }
+    }
+
+    /* image being the right camera image, this draws a nice epipolar line
+    for(int i = 1; i <= 5; i++)
+    {
+      Vector2 p = projectPoint(image.camPars, vector3(0., 0., 0.5 + (double)i*0.2));
+      cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(0,255,0));
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(255,0,0));
+    }*/
+
+    // draw points of the calibration pattern
+    {
+      Vector2 p;
+      p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.000));
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
+      p = projectPoint(image.camPars, vector3(0.225, 0.000, 0.000));
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
+      p = projectPoint(image.camPars, vector3(0.225, 0.113, 0.000));
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
+      p = projectPoint(image.camPars, vector3(0.188, 0.151, 0.000));
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
+      p = projectPoint(image.camPars, vector3(0.000, 0.151, 0.000));
+      distortPoint(image.camPars, p, p);
+      cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
+    }
+
+    cvShowImage(getComponentID().c_str(), iplImage);
+
+    // needed to make the window appear
+    // (an odd behaviour of OpenCV windows!)
+    cvWaitKey(10);
+    cvReleaseImage(&iplImage);
 
     glutPostRedisplay();
     glutMainLoopEvent();
