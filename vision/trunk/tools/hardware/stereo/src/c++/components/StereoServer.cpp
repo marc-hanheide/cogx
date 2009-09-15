@@ -131,6 +131,7 @@ void StereoServer::start()
 void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
 {
   lockComponent();
+
   // first count how many points we will have
   int cnt = 0;
   for(int y = 0; y < disparityImg->height; y += 1)
@@ -140,6 +141,11 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
       if(d != 0)
         cnt++;
     }
+
+  Pose3 global_left_pose;
+  // get from relative left pose to global left pose
+  transform(stereoCam.pose, stereoCam.cam[LEFT].pose, global_left_pose);
+
   points.resize(cnt);
   cnt = 0;
   for(int y = 0; y < disparityImg->height; y += 1)
@@ -150,9 +156,12 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
       {
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
            points[cnt].x, points[cnt].y, points[cnt].z);
+        // now get from left cam coord sys to global coord sys
+        points[cnt] = transform(global_left_pose, points[cnt]);
         cnt++;
       }
     }
+
   unlockComponent();
 }
 
@@ -160,6 +169,11 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
     std::vector<cogx::Math::Vector3> &points)
 {
   lockComponent();
+
+  Pose3 global_left_pose;
+  // get from relative left pose to global left pose
+  transform(stereoCam.pose, stereoCam.cam[LEFT].pose, global_left_pose);
+
   points.resize(0);
   for(int y = 0; y < disparityImg->height; y += 1)
     for(int x = 0; x < disparityImg->width; x += 1)
@@ -170,10 +184,13 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
         Vector3 p;
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
            p.x, p.y, p.z);
+        // now get from left cam coord sys to global coord sys
+        p = transform(global_left_pose, p);
         if(pointInsideSOI(soi, p))
           points.push_back(p);
       }
     }
+
   unlockComponent();
 }
 
