@@ -26,16 +26,9 @@ module cogx {
 	// definition. 
 	
 	// The class SuperFormula implements the Formula interface, acting as supertype class. 
-	// As an EpistemicObject, each SuperFormula has an identifier. A SuperFormula provides a ContinualStatus field,  
-	// and a Ground, which is a list of one or more union ids. 	
-		
-	enum ContinualStatus { assertionVerified, assertionFalsified, propositionTrue, propositionFalse, propositionAmbiguous };	
-		
-	sequence<string> Ground;					
-		
+	// As an EpistemicObject, each SuperFormula has an identifier. 
+	
 	class SuperFormula extends beliefmodels::adl::EpistemicObject implements beliefmodels::adl::Formula  {
-		ContinualStatus status;
-		Ground grnd;
 	};
 	
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
@@ -50,6 +43,45 @@ module cogx {
 		bool truth;
 	};  
 		
+	// A complex formula is a super formula of the form (LHS OP RHS). 
+	// Because ComplexFormula implements the SuperFormula class, and LHS and RHS are specified to be 
+	// of this class, we can create arbitrarily complex formulas. Furthermore, LHS and RHS can be 
+	// logical formulas, or uncertain formulas (this is not determined a priori).  
+				
+	enum LogicalOp { and, or };				
+					
+	class ComplexFormula extends SuperFormula { 
+		LogicalOp op;
+		SuperFormula lhs;
+		SuperFormula rhs;
+	}; 
+
+
+
+
+	// ===================================================================
+	// GROUNDED BELIEFS
+	// We extend the ADL notion of Belief with structure to indicate how
+	// the belief is grounded in other structures. Grounding indicates several 
+	// aspects: What other structures the belief is related to (by reference; Id), 
+	// what the status of the belief is (by value; different "truth" values for
+	// assertions, propositions), and a formula explaining the reason for the grounding 
+	// status (empty, to indicate truth; or a complex formula, explaining a negative value). 
+
+	sequence<string>Ids; 
+
+	enum GroundStatus { assertionVerified, assertionFalsified, propositionTrue, propositionFalse, propositionAmbiguous}; 
+
+	class Ground { 
+		Ids indexSet;
+		GroundStatus status;
+		beliefmodels::adl::Formula reason;
+	}; 
+
+	class GroundedBelief extends beliefmodels::adl::Belief { 
+		Ground grounding;
+	}; 
+					
 					
 	// ===================================================================
 	// EXAMPLE: VISUAL OBJECTS 
