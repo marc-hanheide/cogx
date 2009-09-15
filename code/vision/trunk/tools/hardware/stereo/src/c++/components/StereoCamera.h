@@ -9,9 +9,13 @@
 
 #include <string>
 #include <opencv/cv.h>
+#include <cogxmath.h>
 
 namespace cast
 {
+
+using namespace std;
+using namespace cogx::Math;
 
 /**
  * | u |     | X |
@@ -48,6 +52,7 @@ public:
     double k1, k2, k3, t1, t2;
     double proj[3][4];
     double rect[3][3];
+    Pose3 pose;
     MonoParam()
     {
       width = height = 0;
@@ -63,6 +68,7 @@ public:
   }; 
   /// parameters specific to LEFT and RIGHT camera
   MonoParam cam[2];
+  Pose3 pose;
   /// remaping images for simultaneous undistortion and rectification
   IplImage *mapx[2], *mapy[2];
   double maxDistortion;
