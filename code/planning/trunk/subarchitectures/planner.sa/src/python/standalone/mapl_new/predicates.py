@@ -220,9 +220,9 @@ class Term(object):
                 raise Exception("Unexpected Argument for Term: %s" % str(obj))
         elif len(params) == 2:
             func = params[0]
-            args = params[2]
+            args = params[1]
             assert isinstance(func, Function)
-            assert isinstance(obargs, list)
+            assert isinstance(args, list)
             self.__class__ = FunctionTerm
             FunctionTerm.__init__(self, func, args)
         else:

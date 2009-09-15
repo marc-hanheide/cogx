@@ -2,6 +2,8 @@ from collections import defaultdict
 from string import maketrans
 
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
+import standalone.mapl_new as mapl
+import standalone.state_new as state
 
 # Using string templates only until move to the proper ICE types
 MAPL_TASK_TMPL = """
@@ -68,6 +70,20 @@ def tuples2strings(fact_tuples, nd):
       assert feature_label in current_domain.predicates
       yield "(%s %s %s)" % (feature_label, nd[union_name], nd[val])
 
+def tuples2facts(fact_tuples, objdict):
+  for feature_label, union_name, val in fact_tuples:
+    arg_obj = objdict[union_name]
+    val_obj = objdict[val]
+    if feature_label in current_domain.functions:
+      func = current_domain.functions.get(feature_label, [arg_obj])
+      yield state.Fact(state.StateVariable(func, [arg_obj]), val_obj)
+      #yield "(= (%s %s) %s)" % (feature_label, nd[union_name], nd[val])
+    else:
+      assert feature_label in current_domain.predicates
+      pred = current_domain.predicates.get(feature_label, [arg_obj, val_obj])
+      yield state.Fact(state.StateVariable(pred, [arg_obj, val_obj]), mapl.types.TRUE)
+      #yield "(%s %s %s)" % (feature_label, nd[union_name], nd[val])
+
 def infer_types(obj_descriptions):
   constraints = defaultdict(set)
   for pred, name, val in obj_descriptions:
@@ -119,6 +135,25 @@ def generate_mapl_task(task_desc, domain_fn):
   print problem_str
   task.parse_mapl_problem(problem_str)
   return task
+
+def build_objectdict(namedict, type_dict):
+  const_names = set(obj.name for obj in current_domain.constants)
+  return dict((obj, mapl.types.TypedObject(namedict[obj], type_dict[obj])) for obj in type_dict if obj not in const_names)
+  
+
+def generate_mapl_state(task_desc, domain):
+  global current_domain
+  current_domain = domain
+  
+  const_names = set(obj.name for obj in current_domain.constants)
+  obj_descriptions = list(filter_unknown_preds(gen_fact_tuples(task_desc.state)))
+  type_dict = infer_types(obj_descriptions)
+  current_domain.namedict = build_namedict(type_dict, obj_descriptions, const_names)
+  nd = current_domain.namedict
+
+  objects = build_objectdict(nd, type_dict)
+  facts = tuples2facts(obj_descriptions, objects)
+  return objects.values(), facts
 
 def map2binder_rep(plan, task):
   assert task._mapldomain.namedict, "task has no namedict"

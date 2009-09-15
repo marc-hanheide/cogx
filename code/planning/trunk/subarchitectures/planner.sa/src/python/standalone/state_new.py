@@ -97,6 +97,8 @@ class StateVariable(object):
         return args
 
     def asLiteral(self):
+        assert isinstance(self.function, Predicate) or self.modality is not None
+        
         if not self.modality:
             return Literal(self.function, [ConstantTerm(a) for a in self.args])
         fterm = FunctionTerm(self.function, [ConstantTerm(a) for a in self.args])
@@ -177,7 +179,24 @@ class Fact(tuple):
     
     svar = property(lambda self: self[0])
     value = property(lambda self: self[1])
+    
+    def asLiteral(self, useEqual=False):
+        if isinstance(self.svar.function, Predicate) or self.svar.modality is not None:
+            lit = self.svar.asLiteral()
+            if self.value == types.TRUE:
+                return lit
+            elif self.value == types.FALSE:
+                return lit.negate()
+            
+            assert False
 
+        if useEqual:
+            op = equalAssign
+        else:
+            op = assign
+            
+        return Literal(op, [Term(self.svar.function, [Term(a) for a in self.svar.args]), Term(self.value)])
+    
     def __str__(self):
         return "%s = %s" % (str(self.svar), str(self.value))
 
