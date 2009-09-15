@@ -4,6 +4,7 @@ from os.path import abspath, dirname, join, isdir
 import autogen.Planner as Planner
 import binder.autogen.core
 import cast.core
+import standalone.mapl_new as mapl
 
 this_path = abspath(dirname(__file__))
 
@@ -24,6 +25,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     cast.core.CASTComponent.__init__(self)
     self.client = None
     self.planner = StandalonePlanner()
+    self.tasks = {}
     print "created new PythonServer"
 
   def configureComponent(self, config):
@@ -58,12 +60,17 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     import task_preprocessor
     task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
+    self.tasks[task_desc.id] = task
 
     self.planner.register_task(task)
     self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
 
     task.mark_changed()
     task.activate_change_dectection()
+
+    self.getPlan(task, task_desc)
+    
+  def getPlan(self, task, task_desc):
     if task.get_planning_status() == PlanningStatusEnum.PLANNING_FAILURE:
       self.getClient().updateStatus(task_desc.id, Planner.Completion.FAILED);
       return
@@ -82,8 +89,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       print "Showing plan in .dot format next.  If this doesn't work for you, edit show_dot.sh"
       show_dot_script = abspath(join(this_path, "show_dot.sh"))
       os.system("%s %s" % (show_dot_script, dot_fn)) 
-
-    uniondict = dict((u.entityID, u) for u in task_desc.state)
     
     ordered_plan = plan.topological_sort(include_depths=False)
     outplan = []
@@ -98,6 +103,26 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     #plan = [Planner.Action(0,"test1",[task_desc.state[0]],Planner.Completion.PENDING), Planner.Action(0,"test2",[],Planner.Completion.PENDING)]
     
     # add task to some queue or start planning right away. when done call self.client.deliverPlan(string plan)
-    
+
+  
   def updateTask(self, task_desc, current=None):
-    pass
+    print "received task update"
+    task = self.tasks[task_desc.id]
+
+    import task_preprocessor
+    objects, facts = task_preprocessor.generate_mapl_state(task_desc, task._mapldomain)
+
+    newtask = mapl.problem.Problem(task._mapltask.name, objects, [f.asLiteral(useEqual=True) for f in facts], task._mapltask.goal, task._mapldomain)
+    task._mapltask = newtask
+
+    print map(str, objects)
+    print map(str, facts)
+    print mapl.writer.MAPLWriter().write_problem(newtask)
+    
+  
+    self.getClient().updateStatus(task_desc.id, Planner.Completion.INPROGRESS);
+
+    task.mark_changed()
+    task.activate_change_dectection()
+
+    self.getPlan(task, task_desc)
