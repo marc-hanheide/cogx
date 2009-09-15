@@ -42,7 +42,8 @@ public class UnionConstructor  {
 	BayesianNetworkManager BNManager;
 
 	// Constant controlling the greediness of the binder
-	public float ALPHA_CONST = 0.2f;
+	// (lower == greedier binder)
+	public float ALPHA_CONST = 300.0f;
 
 	// Prior probability of the existence of a proxy
 	public float PRIOR_PEXISTS = 0.4f;
@@ -226,8 +227,9 @@ public class UnionConstructor  {
 			finalProxyDistrib.opType = OperationType.MULTIPLIED;
 			finalProxyDistrib.distributions = new DiscreteProbabilityDistribution[2];
 			finalProxyDistrib.distributions[0] = proxy.distribution;
-			finalProxyDistrib.distributions[1] = 
+				finalProxyDistrib.distributions[1] = 
 				ProbabilityUtils.invertDistribution(priorDistribForProxy);
+
 			finalProxyDistrib.distributions[1] = 
 				ProbabilityUtils.multiplyDistributionWithConstantValue
 				((DiscreteProbabilityDistribution)finalProxyDistrib.distributions[1], ALPHA_CONST);

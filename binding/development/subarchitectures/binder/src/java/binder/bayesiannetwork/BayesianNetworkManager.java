@@ -56,7 +56,6 @@ public class BayesianNetworkManager {
 	// Already computed distributions for a given entity
 	private HashMap<PerceivedEntity,DiscreteProbabilityDistribution> alreadyComputedDistribs;
 
-
 	/**
 	 * Initialise the bayesian network manager
 	 * 
@@ -130,6 +129,13 @@ public class BayesianNetworkManager {
 				// And specify the assignments defining the distribution
 				priorDistrib.assignments = new DiscreteProbabilityAssignment[jointDistribV.size()];
 				priorDistrib.assignments = jointDistribV.toArray(priorDistrib.assignments);
+			}
+			else {
+				log("WARNING, feature length is == 0 !");
+				priorDistrib.assignments = new DiscreteProbabilityAssignment[1];
+				priorDistrib.assignments[0] = new DiscreteProbabilityAssignment();
+				priorDistrib.assignments[0].featurepairs = new FeatureValuePair[0];
+				priorDistrib.assignments[0].prob = 1.0f;
 			}
 
 			return priorDistrib;

@@ -19,6 +19,7 @@
 
 package binder.components;
 
+import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
@@ -27,6 +28,7 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.utils.GradientDescent;
 import binder.utils.ProbabilityUtils;
+import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -36,6 +38,8 @@ import cast.core.CASTData;
 
 public class UnionDiscretizer extends ManagedComponent {
 
+	public boolean onlyMaxFeatureValues = true;
+	
 	@Override
 	public void start() {
 
@@ -60,6 +64,19 @@ public class UnionDiscretizer extends ManagedComponent {
 		});
 	}
 
+	/**
+	 * Set configuration parameters
+	 */
+
+	@Override
+	public void configure(Map<String, String> _config) {
+		
+		if (_config.containsKey("--onlymaxfeatvalues")) {
+			onlyMaxFeatureValues = Boolean.parseBoolean(_config.get("--onlymaxfeatvalues"));
+		} 
+	}
+
+	
 
 	public UnionConfiguration extractBestUnionConfiguration 
 	(AlternativeUnionConfigurations alterconfigs) {
@@ -81,23 +98,26 @@ public class UnionDiscretizer extends ManagedComponent {
 		// In the chosen union configuration, loop on the included unions, and compute
 		// for each of them the instance with the maximum probability
 		for (int i = 0 ; i < bestConfiguration.includedUnions.length ; i++) {
-			Union uniondist = bestConfiguration.includedUnions[i];
-			Union maxUnion = GradientDescent.getUnionWithMaximumProbability(uniondist);
+			Union union = bestConfiguration.includedUnions[i];
+			
+			if (onlyMaxFeatureValues) {
+				union = GradientDescent.getUnionWithMaximumProbability(union);
+			}
 
-			for (int j = 0; j < maxUnion.features.length ; j++){
-				for (int k =0; k < maxUnion.features[j].alternativeValues.length ; k++) {
+			for (int j = 0; j < union.features.length ; j++){
+				for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
 					FeatureValuePair pair = new FeatureValuePair();
-					pair.featlabel = maxUnion.features[j].featlabel;
+					pair.featlabel = union.features[j].featlabel;
 
-					pair.featvalue = maxUnion.features[j].alternativeValues[k];
+					pair.featvalue = union.features[j].alternativeValues[k];
 					//		log("currently computing marginal prob for (" + 
 					// 		pair.featlabel + ", " + BinderUtils.toString(pair.featvalue) + ")");
-					maxUnion.features[j].alternativeValues[k].independentProb = 
-						ProbabilityUtils.getMarginalProbabilityValue(maxUnion.distribution,pair); // / union.probExists;
+					union.features[j].alternativeValues[k].independentProb = 
+						ProbabilityUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
 				}
 			} 
 
-			unions.add(maxUnion);
+			unions.add(union);
 		} 
 
 		UnionConfiguration discretizedConfig = new UnionConfiguration();

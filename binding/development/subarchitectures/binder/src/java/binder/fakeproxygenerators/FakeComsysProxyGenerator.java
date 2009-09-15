@@ -23,9 +23,7 @@ package binder.fakeproxygenerators;
 import binder.autogen.core.*;
 import binder.autogen.specialentities.PhantomProxy;
 
-
 public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
-	
 
 	
 	public FakeComsysProxyGenerator() {
