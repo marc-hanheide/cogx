@@ -71,6 +71,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     task->id = TASK_ID;
     task->plan = vector<ActionPtr>();
     task->status = PENDING;
+    task->firstActionID = "";
     task->planningStatus = PENDING;
     activeTasks[task->id] = wmc;
 
@@ -103,6 +104,10 @@ void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
 
 void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     ActionPtr action = getMemoryEntry<Action>(wmc.address);
+
+    if (action->status == PENDING) { // We just added this action ourselves
+        return;
+    }
     println("Action %s changed to status %d", action->name.c_str(), action->status);
 
     assert(activeTasks.find(action->taskID) != activeTasks.end());
@@ -117,9 +122,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         if (task->plan.size() > 0) {
             ActionPtr first_action = task->plan[0];
             first_action->status = PENDING;
-            first_action->taskID = task->id;
-            string id = newDataID();
-            addToWorkingMemory(id, first_action);
+            writeAction(first_action, task);
         }
         else {
             task->status = SUCCEEDED;
@@ -138,9 +141,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
     if (plan.size() > 0) {
         ActionPtr first_action = plan[0];
         first_action->status = PENDING;
-        first_action->taskID = task->id;
-        string id = newDataID();
-        addToWorkingMemory(id, first_action);
+        writeAction(first_action, task);
         task->status = INPROGRESS;
     }
     else {
@@ -164,6 +165,20 @@ void WMControl::updateStatus(int id, Completion status) {
 
 void WMControl::setChangeFilter(int id, const StateChangeFilterPtr& filter) {
 
+}
+
+void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
+    string id = task->firstActionID;
+    action->taskID = task->id;
+
+    if (id == "") {
+        id = newDataID();
+        task->firstActionID = id;
+        addToWorkingMemory(id, action);
+    }
+    else {
+        overwriteWorkingMemory(id, action);
+    }
 }
 
 

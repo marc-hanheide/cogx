@@ -39,6 +39,7 @@ module autogen {
       int id;
       string goal;
       ActionSeq plan;
+      string firstActionID;
       unionSeq state;
       Completion status;
       Completion planningStatus;

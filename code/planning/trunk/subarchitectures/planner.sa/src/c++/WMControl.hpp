@@ -43,6 +43,8 @@ protected:
     };
 
 private:
+    void writeAction(ActionPtr& action, PlanningTaskPtr& task);
+
     std::string m_python_server;
 
 };
