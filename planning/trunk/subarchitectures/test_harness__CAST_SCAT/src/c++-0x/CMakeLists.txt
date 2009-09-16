@@ -1,9 +1,9 @@
 # Author: Charles Gretton (charles.gretton@gmail.com)
 #
-# (this is based on \file{subarchitectures/PCogX/src/c++-0x/CMakeLists.txt})
     
 include_directories(.)
-    
+include(Slice2Cpp)
+
 include_directories(./include/)
 
 include_directories(${ROOT_OF_PLANNING}/include/)
@@ -11,22 +11,29 @@ include_directories(${ROOT_OF_PLANNING}/include/)
 # ICE header for SLICE-based planning objects should be here...
 # I got this idea from some CMake... files I found in the
 # Michael-B sections of the planning SVN entries. 
-include_directories(${ROOT_OF_PLANNING}/subarchitectures/PCogX/src/c++-0x/)
     
 add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native)
 
 add_definitions(-pedantic -Wall -Wextra)
 
 set(CMAKE_VERBOSE_MAKEFILE true)
+
+
+cast_slice2cpp(GEN_CPP GEN_HPP testHarnessCASTSCAT.ice)
+add_library(testHarnessCASTSCAT SHARED ${GEN_CPP})
+install(TARGETS testHarnessCASTSCAT LIBRARY DESTINATION lib ARCHIVE DESTINATION lib) 
+
     
 # add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
 # add_definitions(-DCLASSICAL_PLANNER_DESIGNATION="Classical planner")
 # add_definitions(-DDEBUG_LEVEL=400)
 
-add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
-add_definitions(-DPLANNER_CLIENT_DESIGNATION="A client of the planner we use for testing") 
-# add_definitions(-DDEBUG_LEVEL=400)
+add_definitions(-DDEBUG_LEVEL=700)
 
-add_cast_component(planner_client planner_client.cc)
+add_cast_component(test_harness__CAST_SCAT_client test_harness__CAST_SCAT_client.cc)
 
-link_cast_component(${CAST_COMPONENT_NAME} PCogX)
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+
+add_cast_component(test_harness__CAST_SCAT_server test_harness__CAST_SCAT_server.cc)
+
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)

@@ -18,15 +18,10 @@ Classical_Planner::Classical_Planner(Designator&& name)
     VERBOSER(401, "CONSTRUCTION FROM :: "<<name<<" "<<get_designators()<<" "<<CLASSICAL_PLANNER_DESIGNATION<<std::endl);
 }
 
-// Classical_Planner::Classical_Planner(const Designator& name)
-//     :Implement(name)
-// {
-// }
-
 void Classical_Planner::implement__distinctPlanner(PCogX::distinctPlannerPtr& input){
     CAST__VERBOSER(401, " ** ** IMPLEMENTED -- BEGIN -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 
-    Implement::add_designator(input->additionalDesignationIsAnArgument);
+//     Implement::add_designator(input->additionalDesignationIsAnArgument);
     
     CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED -- "<<getSubarchitectureID()<<"   :: "<<get_designators()<<" :: ** ** ");
 }
@@ -263,25 +258,26 @@ void Classical_Planner::start()
     /* template for implementation of a procedure.*/
     //implement<PCogX::>(&Classical_Planner::implement__);
     
-    implement<PCogX::actionPlan>(&Classical_Planner::implement__actionPlan);
-
-    implement<PCogX::actionPreprocessProblemAndDomain>(&Classical_Planner::implement__actionPreprocessProblemAndDomain);
-    implement<PCogX::actionParseDomainDescription>(&Classical_Planner::implement__actionParseDomainDescription);
-    implement<PCogX::actionParseProblemDescription>(&Classical_Planner::implement__actionParseProblemDescription);
-    implement<PCogX::postFileNameForDomainDescription>(&Classical_Planner::implement__postFileNameForDomainDescription);
-    implement<PCogX::postFileNameForProblemDescription>(&Classical_Planner::implement__postFileNameForProblemDescription);
-    
     implement<PCogX::distinctPlanner>(&Classical_Planner::implement__distinctPlanner);
     
-    implement<PCogX::readPropositionIdentifiers>(&Classical_Planner::implement__readPropositionIdentifiers);
+//     implement<PCogX::actionPlan>(&Classical_Planner::implement__actionPlan);
+
+//     implement<PCogX::actionPreprocessProblemAndDomain>(&Classical_Planner::implement__actionPreprocessProblemAndDomain);
+//     implement<PCogX::actionParseDomainDescription>(&Classical_Planner::implement__actionParseDomainDescription);
+//     implement<PCogX::actionParseProblemDescription>(&Classical_Planner::implement__actionParseProblemDescription);
+//     implement<PCogX::postFileNameForDomainDescription>(&Classical_Planner::implement__postFileNameForDomainDescription);
+//     implement<PCogX::postFileNameForProblemDescription>(&Classical_Planner::implement__postFileNameForProblemDescription);
     
-    implement<PCogX::postSTRIPSAction>(&Classical_Planner::implement__postSTRIPSAction);
     
-    implement<PCogX::postActionDefinition>(&Classical_Planner::implement__postActionDefinition);
+//     implement<PCogX::readPropositionIdentifiers>(&Classical_Planner::implement__readPropositionIdentifiers);
     
-    implement<PCogX::postTypes>(&Classical_Planner::implement__postTypes);
+//     implement<PCogX::postSTRIPSAction>(&Classical_Planner::implement__postSTRIPSAction);
     
-    implement<PCogX::postXXsubtypeofYY>(&Classical_Planner::implement__postXXsubtypeofYY);
+//     implement<PCogX::postActionDefinition>(&Classical_Planner::implement__postActionDefinition);
+    
+//     implement<PCogX::postTypes>(&Classical_Planner::implement__postTypes);
+    
+//     implement<PCogX::postXXsubtypeofYY>(&Classical_Planner::implement__postXXsubtypeofYY);
     
     CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED ** ** ");
 }

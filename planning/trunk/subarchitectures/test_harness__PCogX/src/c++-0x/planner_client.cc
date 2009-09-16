@@ -69,9 +69,9 @@ void Planner_Client::runComponent()
      * to forward a \type{bool}, but that is not the point...*/
     bool default_bool = true;
     
-    CAST__VERBOSER(1, "Obtain a planner from a factory."<<std::endl);
+    CAST__VERBOSER(501, "Obtain a planner from a factory :: "<<planning_subarchitecture_name<<std::endl);
     
-    CAST__VERBOSER(1, "Assuming the planner factory is at a subarchitecture named :: "
+    CAST__VERBOSER(501, "Assuming the planner factory is at a subarchitecture named :: "
                    <<planning_subarchitecture_name<<std::endl);
     
     /* First up, get a planning system.*/

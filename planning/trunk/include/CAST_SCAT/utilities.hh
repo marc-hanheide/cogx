@@ -49,11 +49,14 @@ Usual suspects C++::1998
 
 ---------------------------------*/
 #include <string>
+#include <vector>
 
 /* Streaming...*/
 #include <iostream>
 #include <iomanip> /*setw, etc.*/
 #include <sstream> /*string-stream*/
+
+
 
 /* (also, see \module{tr1/type_traits} ).*/
 #include <cxxabi.h>
