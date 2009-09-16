@@ -74,6 +74,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     task->planningStatus = PENDING;
     activeTasks[task->id] = wmc;
 
+    overwriteWorkingMemory(wmc.address, task);
     pyServer->registerTask(task);
 
     //TODO: Store the PlanningTaskPtr with it's taskID till deliverPlan(taskID) is called.
