@@ -67,7 +67,7 @@ private final ActionMonitor m_monitor;
 		}
 	}
 
-	protected void triggerExecution(Action _action, ActionMonitor _monitor)
+	public void triggerExecution(Action _action, ActionMonitor _monitor)
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
 		// new address for the action

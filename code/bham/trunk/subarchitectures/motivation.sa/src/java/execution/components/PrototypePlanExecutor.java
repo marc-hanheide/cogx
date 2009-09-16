@@ -4,24 +4,24 @@
 package execution.components;
 
 import java.util.Map;
-import java.util.Queue;
-import java.util.Stack;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
+import motivation.slice.PlanProxy;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.ActionExecutionException;
-import execution.slice.TriBool;
 import execution.slice.actions.GoToPlace;
-import execution.util.ActionMonitor;
+import execution.util.ActionConverter;
+import execution.util.SerialPlanExecutor;
 
 /**
  * A component which will create a plan then execute it. This is a place holder
@@ -32,81 +32,12 @@ import execution.util.ActionMonitor;
  * @author nah
  * 
  */
-public class PrototypePlanExecutor extends AbstractExecutionManager {
+public class PrototypePlanExecutor extends AbstractExecutionManager implements
+		ActionConverter {
 
 	private String m_goal;
 	private long m_sleepMillis;
-	private Queue<PlanExecutionWrapper> m_plansToExecute;
-
-	private class PlannedActionWrapper implements ActionMonitor {
-		private final Action m_plannedAction;
-		private final execution.slice.Action m_systemAction;
-
-		public PlannedActionWrapper(Action _plannedAction,
-				execution.slice.Action _systemAction) {
-			m_plannedAction = _plannedAction;
-			m_systemAction = _systemAction;
-		}
-
-		public boolean isInProgress() {
-			return m_plannedAction.status == Completion.INPROGRESS;
-		}
-
-		public boolean isComplete() {
-			return m_plannedAction.status == Completion.SUCCEEDED
-					|| m_plannedAction.status == Completion.FAILED;
-		}
-
-		/**
-		 * Callback which is triggered when the executed action is complete
-		 */
-		public void actionComplete(execution.slice.Action _action) {
-			println("The triggered action is complete... in the future state updates should happen now");
-			if (_action.success == TriBool.TRITRUE) {
-				m_plannedAction.status = Completion.SUCCEEDED;
-			} else {
-				m_plannedAction.status = Completion.FAILED;
-			}
-		}
-
-		/**
-		 * Called when execution is to start
-		 * 
-		 * @return
-		 */
-		public execution.slice.Action execute() {
-			m_plannedAction.status = Completion.INPROGRESS;
-			return m_systemAction;
-		}
-
-	}
-
-	private class PlanExecutionWrapper {
-		private final PlanningTask m_task;
-		private final WorkingMemoryAddress m_taskAddress;
-		private final Stack<Action> m_actionStack;
-
-		public PlanExecutionWrapper(WorkingMemoryAddress _address,
-				PlanningTask _task) {
-			m_task = _task;
-			m_taskAddress = _address;
-			m_actionStack = new Stack<Action>();
-			// push actions onto stack
-			for (int i = m_task.plan.length - 1; i >= 0; --i) {
-				println("stacking action: " + m_task.plan[i].fullName);
-				m_actionStack.push(m_task.plan[i]);
-			}
-			assert (m_actionStack.size() == m_task.plan.length);
-		}
-
-		public boolean hasMoreActions() {
-			return !m_actionStack.isEmpty();
-		}
-
-		public Action nextAction() {
-			return m_actionStack.pop();
-		}
-	}
+	private boolean m_generateOwnPlans;
 
 	public PrototypePlanExecutor() {
 		m_goal = "(forall (?p - place) (= (explored ?p) true))";
@@ -120,6 +51,52 @@ public class PrototypePlanExecutor extends AbstractExecutionManager {
 			m_goal = goal;
 		}
 		log("using goal: " + m_goal);
+
+		String selfGenString = _config.get("--self-motivate");
+		if (selfGenString != null) {
+			m_generateOwnPlans = Boolean.parseBoolean(selfGenString);
+		}
+		log("generating own plans: " + m_generateOwnPlans);
+	}
+
+	@Override
+	protected void start() {
+
+		// listen for new PlanProxy structs which trigger execution
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				PlanProxy.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						newPlanProxy(_wmc.address);
+					}
+
+				});
+
+		// if generating own plans, listen for execution completions by myself!
+		if (m_generateOwnPlans) {
+			addChangeFilter(ChangeFilterFactory.createSourceFilter(
+					PlanProxy.class, getComponentID(),
+					WorkingMemoryOperation.DELETE),
+					new WorkingMemoryChangeReceiver() {
+						@Override
+						public void workingMemoryChanged(
+								WorkingMemoryChange _wmc) throws CASTException {
+							//trigger new plan
+							generatePlan();
+						}
+					});
+
+		}
+
+	}
+
+	private void newPlanProxy(WorkingMemoryAddress _planProxyAddr)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+
+		// create and launch an executor
+		new SerialPlanExecutor(this, _planProxyAddr, this).startExecution();
 	}
 
 	/**
@@ -130,7 +107,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager {
 	 * @return
 	 * @throws CASTException
 	 */
-	private execution.slice.Action convertToSystemAction(Action _plannedAction)
+	public execution.slice.Action toSystemAction(Action _plannedAction)
 			throws CASTException {
 		if (_plannedAction.name.equals("move")) {
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
@@ -148,7 +125,11 @@ public class PrototypePlanExecutor extends AbstractExecutionManager {
 	 * 
 	 */
 	private void generatePlan() {
+		
 		sleepComponent(m_sleepMillis);
+		
+		log("generating new plan with goal: " + m_goal);
+		
 		String id = newDataID();
 
 		PlanningTask plan = newPlanningTask();
@@ -160,8 +141,14 @@ public class PrototypePlanExecutor extends AbstractExecutionManager {
 
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						planGenerated(_wmc.address, getMemoryEntry(
-								_wmc.address, PlanningTask.class));
+
+						// fetch and create a proxy
+						PlanningTask task = getMemoryEntry(_wmc.address,
+								PlanningTask.class);
+						if (task.planningStatus == Completion.SUCCEEDED) {
+							addToWorkingMemory(newDataID(), new PlanProxy(
+									_wmc.address));
+						}
 
 					}
 				});
@@ -170,20 +157,6 @@ public class PrototypePlanExecutor extends AbstractExecutionManager {
 			addToWorkingMemory(id, plan);
 		} catch (AlreadyExistsOnWMException e) {
 			e.printStackTrace();
-		}
-	}
-
-	private void planGenerated(WorkingMemoryAddress _wma,
-			PlanningTask _planningTask) {
-
-		if (_planningTask.planningStatus == Completion.SUCCEEDED) {
-			if (m_plansToExecute == null) {
-				m_plansToExecute = new ConcurrentLinkedQueue<PlanExecutionWrapper>();
-			}
-			m_plansToExecute.add(new PlanExecutionWrapper(_wma, _planningTask));
-		}
-		else {
-			println("planning failed: " + _planningTask.planningStatus + " " + _planningTask.goal);
 		}
 	}
 
@@ -199,113 +172,9 @@ public class PrototypePlanExecutor extends AbstractExecutionManager {
 
 	@Override
 	protected void runComponent() {
-		generatePlan();
-
-		PlanExecutionWrapper currentPlan = null;
-		PlannedActionWrapper currentAction = null;
-
-		while (isRunning()) {
-			waitForChanges();
-
-			
-			try {
-
-				if (m_plansToExecute != null && isRunning()) {
-
-					// TODO hacky illogical structure for now -- really won't
-					// work in real situations (e.g. concurrent actions, dodgy
-					// plans).
-
-					
-					// if no current plan get the next one
-					if (currentPlan == null && !m_plansToExecute.isEmpty()) {
-					
-						currentPlan = m_plansToExecute.poll();
-
-						if (currentPlan.hasMoreActions()) {
-							currentAction = nextActionFromPlan(currentPlan);
-						} else {
-							// in this case we had an empty plan!
-							// just print out for the time being
-							println("empty plan received, not executing anything.");
-							
-							println("so let's get a new one");
-							generatePlan();
-						}
-
-					}
-					// if no current action
-					// get the next one
-					else if (currentAction == null  && !m_plansToExecute.isEmpty()) {
-						currentAction = nextActionFromPlan(currentPlan);
-					}
-					// if an action has just completed
-					else if (currentAction != null  && currentAction.isComplete()) {
-						if (currentPlan.hasMoreActions()) {
-							currentAction = nextActionFromPlan(currentPlan);
-						} else {
-							println("plan complete!");
-
-							if (!m_plansToExecute.isEmpty()) {
-								println("on to the next plan");
-
-								currentPlan = m_plansToExecute.poll();
-
-								if (currentPlan.hasMoreActions()) {
-									currentAction = nextActionFromPlan(currentPlan);
-								} else {
-									// in this case we had an empty plan!
-									// just print out for the time being
-									println("empty plan received, not executing anything.");
-									
-									println("so let's get a new one");
-									generatePlan();
-								}
-							} else {
-								println("no more plans to execute");
-								// reset state
-								currentAction = null;
-								currentPlan = null;
-								
-								println("so let's get a new one");
-								generatePlan();
-								
-								
-							}
-						}
-					}
-					
-
-					// this will probably break at some point
-					if (currentAction != null) {
-						if (!currentAction.isInProgress()) {
-							triggerExecution(currentAction.execute(),
-									currentAction);
-						}
-					} else {
-						println("action is null, not doing anything");
-					}
-				}
-			} catch (CASTException e) {
-				println(e.message);
-				e.printStackTrace();
-			}
-
+		if (m_generateOwnPlans) {
+			generatePlan();
 		}
-
 	}
 
-	/**
-	 * @param _plan
-	 * @return
-	 * @throws CASTException
-	 */
-	private PlannedActionWrapper nextActionFromPlan(PlanExecutionWrapper _plan)
-			throws CASTException {
-		PlannedActionWrapper currentAction;
-		Action plannedAction = _plan.nextAction();
-		currentAction = new PlannedActionWrapper(plannedAction,
-				convertToSystemAction(plannedAction));
-		return currentAction;
-	}
 }
