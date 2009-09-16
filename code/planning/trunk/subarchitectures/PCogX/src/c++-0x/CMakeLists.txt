@@ -17,7 +17,7 @@ add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=na
 
 add_definitions(-DPLANNER_FACTORY_DESIGNATION="Factory that produces planners")
 add_definitions(-DCLASSICAL_PLANNER_DESIGNATION="Classical planner")
-add_definitions(-DDEBUG_LEVEL=400)
+# add_definitions(-DDEBUG_LEVEL=500)
 
 add_definitions(-pedantic -Wall -Wextra)
 

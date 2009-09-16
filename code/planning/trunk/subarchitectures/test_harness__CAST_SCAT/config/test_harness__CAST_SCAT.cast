@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE test_harness__CAST_SCAT
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG client test_harness__CAST_SCAT_client
+CPP MG server test_harness__CAST_SCAT_server
+

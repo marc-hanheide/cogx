@@ -33,7 +33,7 @@ void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
 
     std::cout<<tmp;
     
-    CAST__VERBOSER(401, "A component is attempting to obtain a planner."
+    CAST__VERBOSER(501, "A component is attempting to obtain a planner."
                    <<" that satisfies the properties :: \n"
                    <<input->optionalMemberPlannerDescriptorIsAnArgument);
     
@@ -54,10 +54,10 @@ void Planner_Factory::implement__obtainPlanner(PCogX::obtainPlannerPtr& input){
     
     auto designation_of_chosen_implementation
         = {std::move(std::string(CLASSICAL_PLANNER_DESIGNATION))};
-    CAST__VERBOSER(2, "Asking for a planning process at subarchitecture :: "<<getSubarchitectureID());
+    CAST__VERBOSER(501, "Asking for a planning process at subarchitecture :: "<<getSubarchitectureID());
     call<PCogX::distinctPlanner>(candidate_designation,
                                  designation_of_chosen_implementation);
-    CAST__VERBOSER(2, "Received a planning process.");
+    CAST__VERBOSER(501, "Received a planning process.");
     
     CAST__VERBOSER(401, " ** ** IMPLEMENTED -- COMPLETED  :: "<<get_designators()<<" ::  ** ** ");
 }

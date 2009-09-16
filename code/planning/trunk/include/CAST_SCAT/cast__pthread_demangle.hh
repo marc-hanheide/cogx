@@ -71,6 +71,10 @@ namespace CAST_SCAT
     inline pthread_mutex_t* give_me_a_new__pthread_mutex_t()
     {
         A_CAST_SPECIAL__THREAD_INITIALISATION(X);
+        
+        QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_init(X, NULL),
+                                  "Failed to initialise the mutex...");
+        
         return X;
     }
 }
