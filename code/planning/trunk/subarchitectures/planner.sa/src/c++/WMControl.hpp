@@ -29,6 +29,7 @@ protected:
 
     void receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc);
     void actionChanged(const cast::cdl::WorkingMemoryChange& wmc);
+    void stateChanged(const cast::cdl::WorkingMemoryChange& wmc);
 
     class InternalCppServer : public CppServer {
     public:
@@ -43,9 +44,15 @@ protected:
     };
 
 private:
+    void sendStateChange(int id, std::vector<binder::autogen::core::UnionPtr>& changedUnions, long newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
 
+    std::vector<binder::autogen::core::UnionPtr> m_currentState;
+    std::map<int, StateChangeFilterPtr> m_stateFilters;
+    long m_lastUpdate;
+
     std::string m_python_server;
+    bool m_continual_state_updates;
 
 };
 

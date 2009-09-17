@@ -9,6 +9,7 @@ JAVA WM binder.components.BindingWorkingMemory --log
 
 JAVA MG fakevisual binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxies 2 --log
 JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxies 3  --log
+JAVA MG fakespatial binder.fakeproxygenerators.FakeSpatialProxyGenerator --nbproxies 1  --log
 #JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 1 --log
 
 JAVA MG binder binder.components.Binder --alpha 0.99f --log
@@ -26,5 +27,5 @@ CPP MG FakeMotivation FakeMotivationSA
 SUBARCHITECTURE planner.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG Planner WMControl
+CPP MG Planner WMControl --log
 

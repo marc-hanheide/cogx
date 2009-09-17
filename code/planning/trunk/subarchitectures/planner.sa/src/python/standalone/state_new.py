@@ -244,6 +244,12 @@ class State(defaultdict):
         for f in facts:
             self.set(f)
 
+    def copy(self):
+        s = State([], self.problem)
+        for svar,val in self.iteritems():
+            s[svar] = val
+        return s
+
     def iterfacts(self):
         return imap(lambda tup: Fact.fromTuple(tup), self.iteritems())
 
@@ -324,6 +330,8 @@ class State(defaultdict):
                     return allFacts(imap(lambda c: instantianteAndCheck(cond, c), combinations))
                 elif isinstance(cond, conditions.ExistentialCondition):
                     return anyFacts(imap(lambda c: instantianteAndCheck(cond, c), combinations))
+            elif cond is None:
+                return True, []
 
         result, svars = checkConditionVisitor(cond)
         if relevantVars is not None:
@@ -378,7 +386,7 @@ class State(defaultdict):
         else:
             self.set(Fact.fromEffect(effect))
 
-    def getExtendedState(self, svars=[], getReasons=False):
+    def getExtendedState(self, svars=None, getReasons=False):
         """Evaluate all axioms neccessary to instantiate the variables in 'svars'."""
 
         def getDependencies(svar, derived):
@@ -402,9 +410,13 @@ class State(defaultdict):
         derived = pred_to_axioms.keys()
 
         relevant = set()
-        for s in svars:
-            if s.getPredicate() in derived:
-                relevant |= getDependencies(s, derived)
+        if svars is not None:
+            for s in svars:
+                if s.getPredicate() in derived:
+                    relevant |= getDependencies(s, derived)
+            if not relevant:
+                return self.copy()
+
 
         if getReasons:
             reasons = defaultdict(set)
@@ -469,7 +481,7 @@ class State(defaultdict):
                     #print "atom:", time.time()-t3
 
                 nonrecursive_atoms = set()
-                print "iteration:", time.time()-t2
+                #print "iteration:", time.time()-t2
             print "layer:", time.time()-t1
         
         print "total:", time.time()-t0
