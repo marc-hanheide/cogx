@@ -23,6 +23,7 @@ class Task(object):
         self._action_whitelist = None
         self._plan = None
         # private
+        self._new_plan_callback = None
         self._state = None
         self._planning_status = PlanningStatusEnum.TASK_CHANGED
         self._change_detection_activated = False
@@ -37,8 +38,8 @@ class Task(object):
             print "Status of task %s was changed to %s." % (self.taskID, status)
         if trigger_planning:
             self.update_planning()
-        if status == PlanningStatusEnum.PLAN_AVAILABLE:
-            print "Heureka! A plan was found:\n%s" % self._plan
+        #if status == PlanningStatusEnum.PLAN_AVAILABLE:
+        #    print "Heureka! A plan was found:\n%s" % self._plan
 
     def get_planning_status(self):
         return self._planning_status
@@ -71,7 +72,7 @@ class Task(object):
     def get_state(self):
         return self._state
 
-    def _change_task(field, new_val, update_status=True):
+    def _change_task(self, field, new_val, update_status=True):
         """
         Changes a field in the task and marks the task as changed
         (which might trigger replanning) if necessary
@@ -100,12 +101,17 @@ class Task(object):
                 self.set_planning_status(PlanningStatusEnum.PLANNING_FAILURE)
             else:
                 self.set_planning_status(PlanningStatusEnum.PLAN_AVAILABLE)
+            if self._new_plan_callback:
+                self._new_plan_callback(self)
 
     def update_planning(self):
         """If the task is registered with a planner, the plan will be updated,
         but only if the task has been modified and  if change detection is activated."""
         if self.change_detection_activated() and self.is_dirty() and self.planner:
-            self.planner.continual_planning(self)       
+            self.planner.continual_planning(self)
+
+    def set_plan_callback(self, fn):
+        self._new_plan_callback = fn
 
     def pddl_domain_str(self):
         w = PDDLWriter(predicates.mapl_modal_predicates)

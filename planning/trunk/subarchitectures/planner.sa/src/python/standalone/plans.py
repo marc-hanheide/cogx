@@ -12,6 +12,9 @@ import copy
 
 import graph
 import constants
+from utils import Enum
+
+ActionStatusEnum = Enum("EXECUTABLE", "IN_PROGRESS", "EXECUTED", "FAILED")    
 
 class OrderingConstraint(object):
     """
@@ -29,21 +32,39 @@ class OrderingConstraint(object):
         self.tnode = tnode
     def __str__(self):
         return "%s -> %s" % (self.fnode, self.tnode)
-        
+
 
 class PlanNode(object):
-    def __init__(self, action, args, time):
+    def __init__(self, action, args, time, status):
         self.action = action
-        self.args = args
+        self.full_args = args
         self.time = time
+        self.status = status
+        
+        if not isinstance(action, DummyAction):
+            num = len(action.agents) + len(action.args)
+            self.args = args[:num]
+        else:
+            self.args = args
+
+    def is_executable(self):
+        return self.status == ActionStatusEnum.EXECUTABLE
+
+    def is_inprogress(self):
+        return self.status == ActionStatusEnum.IN_PROGRESS
+
     def __str__(self):
         #return "%s(%s)" % (self.action, self.time)
         def tostr(arg):
             return a.name if hasattr(a,"name") else str(a)
         args = [tostr(a) for a in self.args]
         return " ".join([self.action.name]+args)
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.action.name == other.action.name and all(map(lambda a,b: a == b, self.full_args, other.full_args))
+    
     def copy(self):
-        return self.__class__(self.action, list(self.args), self.time)
+        return self.__class__(self.action, list(self.full_args), self.time, self.status)
 
 class DummyAction(object):
     def __init__(self, name):
@@ -52,11 +73,13 @@ class DummyAction(object):
         return str(self.name)
 
 class DummyNode(PlanNode):
-    def __init__(self, name, args, time):
+    def __init__(self, name, args, time, status):
         action = DummyAction(name)
-        PlanNode.__init__(self, action, args, time)
+        PlanNode.__init__(self, action, args, time, status)
     def __str__(self):
-        return str(self.action)  
+        return str(self.action)
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.action == other.action
 
 class MAPLPlan(graph.DAG):
     def __init__(self, init_state=None, goal_condition=None):
@@ -65,6 +88,8 @@ class MAPLPlan(graph.DAG):
         self.goal_node = self.create_goal_node(goal_condition)
         self.add_node(self.init_node)
         self.add_node(self.goal_node)
+        self.execution_position = 0
+        
     def copy(self):
         p = MAPLPlan()
         n2n = {}
@@ -89,10 +114,10 @@ class MAPLPlan(graph.DAG):
         self.add_edge(link.fnode, link.tnode, link)
     def create_init_node(self, astate):
         ## TODO: astate is still unused
-        return DummyNode("init", [], 0)
+        return DummyNode("init", [], 0, ActionStatusEnum.EXECUTED)
     def create_goal_node(self, astate):
         ## TODO: astate is still unused
-        return DummyNode("goal", [], 9999)
+        return DummyNode("goal", [], 9999, ActionStatusEnum.EXECUTABLE)
     def _edge_str(self, v1, v2):
         label = self.labels.get((v1,v2))
         assert isinstance(label, OrderingConstraint)

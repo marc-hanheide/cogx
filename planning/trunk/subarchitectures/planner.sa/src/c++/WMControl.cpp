@@ -6,6 +6,7 @@
 #include <cassert>
 
 using namespace std;
+using namespace binder::autogen::core;
 
 extern "C" {
     cast::CASTComponentPtr newComponent() {
@@ -14,6 +15,7 @@ extern "C" {
 }
 
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
+    m_lastUpdate = 0;
     cast::ManagedComponent::configure(_config, _current);
 
     cast::cdl::StringMap::const_iterator it = _config.begin();
@@ -24,21 +26,25 @@ void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Curren
     else {
         m_python_server = "PlannerPythonServer";
     }
+    m_continual_state_updates = (_config.find("--continual_updates") != _config.end());
 }
 
 void WMControl::start() {
-    println("Planner WMControl: initializing");
+    log("Planner WMControl: initializing");
     addChangeFilter(cast::createLocalTypeFilter<autogen::Planner::PlanningTask>(cast::cdl::ADD), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::receivePlannerCommands));
 
     addChangeFilter(cast::createLocalTypeFilter<Action>(cast::cdl::OVERWRITE), 
 		    new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::actionChanged));
 
+    addChangeFilter(cast::createGlobalTypeFilter<UnionConfiguration>(),
+            new cast::MemberFunctionChangeReceiver<WMControl>(this, &WMControl::stateChanged));
+
     connectToPythonServer();
 }
 
 void WMControl::connectToPythonServer() {
-    println("Planner WMControl: connecting to Python Server");
+    log("Planner WMControl: connecting to Python Server");
     try	{
 		pyServer = getIceServer<autogen::Planner::PythonServer>(m_python_server);
     }
@@ -54,17 +60,17 @@ void WMControl::connectToPythonServer() {
 }
 
 void WMControl::runComponent() {
-    println("Planner WMControl: running");
+    log("Planner WMControl: running");
 }
 
 static int TASK_ID = 0;
 
 void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc) {
-    println("Planner WMControl: new PlanningTask received:");
+    log("Planner WMControl: new PlanningTask received:");
     TASK_ID++;
 
     autogen::Planner::PlanningTaskPtr task = getMemoryEntry<autogen::Planner::PlanningTask>(wmc.address);
-    println(task->goal);
+    log(task->goal);
 
     generateInitialState(task);
 
@@ -82,21 +88,21 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 }
 
 void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
-    println("Planner WMControl:: generating Initial State");
+    log("Planner WMControl:: generating Initial State");
 
-    vector<cast::CASTData<binder::autogen::core::UnionConfiguration> > configs;
-    getMemoryEntriesWithData<binder::autogen::core::UnionConfiguration>(configs, "binder");
+    vector<cast::CASTData<UnionConfiguration> > configs;
+    getMemoryEntriesWithData<UnionConfiguration>(configs, "binder");
 
     if (configs.size() == 0) {
-        println("Planner WMControl:: No union configurations on binder. Doing nothing.");
+        log("Planner WMControl:: No union configurations on binder. Doing nothing.");
         return;
     }
-    println("Planner WMControl:: %d union configurations on binder. Using first one.", configs.size());
+    log("Planner WMControl:: %d union configurations on binder. Using first one.", configs.size());
 
     binder::autogen::core::UnionConfigurationPtr config = configs[0].getData();
 
-    task->state = vector<binder::autogen::core::UnionPtr>();
-    for (binder::autogen::core::UnionSequence::iterator i = config->includedUnions.begin(); 
+    task->state = vector<UnionPtr>();
+    for (UnionSequence::iterator i = config->includedUnions.begin(); 
          i < config->includedUnions.end() ; ++i) {
         task->state.push_back(*i);
     }
@@ -108,17 +114,28 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     if (action->status == PENDING) { // We just added this action ourselves
         return;
     }
-    println("Action %s changed to status %d", action->name.c_str(), action->status);
+    log("Action %s changed to status %d", action->name.c_str(), action->status);
 
     assert(activeTasks.find(action->taskID) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[action->taskID].address);
+//     println(action->fullName);
+//     println("status: %d", action->status);
+
+//     println("---");
+
+//     ActionSeq::iterator it = task->plan.begin();
+//     while (it != task->plan.end()) {
+//         println((*it)->fullName);
+//         println("status: %d", (*it)->status);
+//         ++it;
+//     }
     
     if (action->status == ABORTED || action->status == FAILED) {
         task->status = action->status;
         overwriteWorkingMemory(activeTasks[task->id].address, task);
     }
     else if (action->status == SUCCEEDED) {
-        task->plan.erase(task->plan.begin());
+        /*task->plan.erase(task->plan.begin());
         if (task->plan.size() > 0) {
             ActionPtr first_action = task->plan[0];
             first_action->status = PENDING;
@@ -126,13 +143,69 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         }
         else {
             task->status = SUCCEEDED;
-        }
+        }*/
+        task->state = m_currentState;
         overwriteWorkingMemory(activeTasks[task->id].address, task);
     }
+    pyServer->updateTask(task);
 }
 
+void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
+    UnionConfigurationPtr config = getMemoryEntry<UnionConfiguration>(wmc.address);
+    log("Recevied state change...");
+
+    long timestamp = 0;
+    m_currentState.clear();
+    vector<UnionPtr> changed;
+    for (UnionSequence::iterator i = config->includedUnions.begin(); 
+         i < config->includedUnions.end() ; ++i) {
+        m_currentState.push_back(*i);
+        if ((*i)->timeStamp > m_lastUpdate) {
+            changed.push_back(*i);
+        }
+        if ((*i)->timeStamp > timestamp) {
+            timestamp = (*i)->timeStamp;
+        }
+    }
+
+    if (m_continual_state_updates) {
+        for (std::map<int,cast::cdl::WorkingMemoryChange>::iterator it=activeTasks.begin(); it != activeTasks.end(); ++it) {
+            int id = it->first;
+            StateChangeFilterPtr* filter = 0;
+            std::map<int, StateChangeFilterPtr>::iterator f_iter = m_stateFilters.find(id);
+            if (f_iter != m_stateFilters.end()) {
+                filter = &(f_iter->second);
+            }
+            sendStateChange(id, changed, timestamp, filter);
+        }
+    }
+
+    m_lastUpdate = timestamp;
+
+}
+
+
+void WMControl::sendStateChange(int id, std::vector<UnionPtr>& changedUnions, long newTimeStamp, StateChangeFilterPtr* filter) {
+    assert(activeTasks.find(id) != activeTasks.end());
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
+    /*if (task->planningStatus == INPROGRESS) {
+        println("Task %d is still planning. Don't send updates.", id);
+        return;
+    }*/
+
+    if (filter) {
+
+    }
+
+    log("Sending state update for task %d", id);
+    task->state = m_currentState;
+    overwriteWorkingMemory(activeTasks[id].address, task);
+    pyServer->updateTask(task);
+}
+
+
 void WMControl::deliverPlan(int id, const ActionSeq& plan) {
-    println("Plan delivered");
+    log("Plan delivered");
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     task->plan = plan;
@@ -143,28 +216,32 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
         first_action->status = PENDING;
         writeAction(first_action, task);
         task->status = INPROGRESS;
+        overwriteWorkingMemory(activeTasks[id].address, task);
     }
     else {
         task->status = SUCCEEDED;
+        overwriteWorkingMemory(activeTasks[id].address, task);
+        activeTasks.erase(id);
     }
 
-    overwriteWorkingMemory(activeTasks[id].address, task);
 }
+
 
 void WMControl::updateStatus(int id, Completion status) {
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     task->planningStatus = status;
-    println("Settings planning status of task %d to %d", id, status);
+    log("Settings planning status of task %d to %d", id, status);
     if (status == ABORTED || status == FAILED) {
-        println("Planning failed, setting status of task %d to %d", id, status);
+        log("Planning failed, setting status of task %d to %d", id, status);
         task->status = status;
     }
     overwriteWorkingMemory(activeTasks[id].address, task);
 }
 
-void WMControl::setChangeFilter(int id, const StateChangeFilterPtr& filter) {
 
+void WMControl::setChangeFilter(int id, const StateChangeFilterPtr& filter) {
+    m_stateFilters[id] = filter;
 }
 
 void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {

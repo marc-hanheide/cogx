@@ -35,8 +35,10 @@ class Problem(domain.MAPLDomain):
             
         self.domain = _domain
         self.objects = objects
-        self.init = init
-        self.goal = goal
+        self.init = [l.copy(self) for l in init]
+        self.goal = None
+        if goal:
+            self.goal = goal.copy(self)
         self.optimization = optimization
         self.opt_func = opt_func
 

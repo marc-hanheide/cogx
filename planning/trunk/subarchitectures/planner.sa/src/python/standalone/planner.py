@@ -1,4 +1,5 @@
 import os, sys, shutil
+import time
 import re
 import itertools as itools
 
@@ -60,13 +61,97 @@ class Planner(object):
         replanning_necessary = self._evaluate_current_plan(task)
         if replanning_necessary:
             self._start_planner(task)
-
+        else:
+            #if no action is executing, trigger update
+            if not any(map(lambda pnode: pnode.is_inprogress(), task.get_plan().V)):
+                print "no actions are executing, reissuing plan"
+                task.set_plan(task.get_plan(), update_status=True)
+            else:
+                task.set_planning_status(PlanningStatusEnum.PLAN_AVAILABLE)
+            
     def _evaluate_current_plan(self, task):
         """
         Plan monitoring: checks whether a plan is still valid given
         a modified task description. 
         Returns True if replanning is necessary, else False.
         """
+        if task.get_plan() is None:
+            return True
+        
+        t0 = time.time()
+        state = task.get_state().copy()
+        plan = task.get_plan().topological_sort(include_depths=False)
+        #check for expandable assertions
+        for pnode in plan:
+            if isinstance(pnode, plans.DummyNode):
+                continue
+            
+            action = pnode.action
+            if action.replan:
+                action.instantiate(pnode.full_args)
+                extstate = state.getExtendedState(state.getRelevantVars(action.replan))
+                if extstate.isSatisfied(action.replan):
+                    print "Assertion (%s %s) is expandable, triggering replanning." % (action.name, " ".join(a.name for a in pnode.full_args))
+                    return True
+                action.uninstantiate()
+        #print "time for checking assertions:", time.time()-t0
+
+        print "checking plan validity."
+        #print "current state is:", map(str, state.iterfacts())
+        #check for plan validity: test all preconditions and apply effects
+        skipped_actions = 0
+        first_invalid_action = None
+        for i,pnode in enumerate(plan):
+            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
+                continue
+            
+            t1 = time.time()
+            action = pnode.action
+            action.instantiate(pnode.full_args)
+            #evaluate neccessary axioms
+            extstate = state.getExtendedState(state.getRelevantVars(action.replan) | state.getRelevantVars(action.precondition))
+            #don't check preconditions of actions in progress
+            if not pnode.is_inprogress() and (not extstate.isSatisfied(action.precondition) or not extstate.isSatisfied(action.replan)):
+                if not first_invalid_action:
+                    first_invalid_action = pnode
+                print "Action (%s %s) is not executable, trying to skip it." % (action.name, " ".join(a.name for a in pnode.full_args))
+                # if an action is not executable, maybe it has already been executed
+                # so we're trying if the rest of the plan is executable in the initial state
+                skipped_actions = i
+                state = task.get_state().copy()
+            else:
+                print "Action (%s %s) ok." % (action.name, " ".join(a.name for a in pnode.full_args))
+                for eff in action.effects:
+                    state.applyEffect(eff)
+            action.uninstantiate()
+            #print "time for checking action (%s %s): %f" % (action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
+
+        t2 = time.time()
+        #Now check if the goal is satisfied
+        goal = task._mapltask.goal
+        #print "state after execution is:", map(str, state.iterfacts())
+        print "checking if goal is still satisfied."
+        extstate = state.getExtendedState(state.getRelevantVars(goal))
+        if extstate.isSatisfied(goal):
+            if skipped_actions > 0:
+                print "Skipped the first %d actions." % skipped_actions
+                #newplan = task.get_plan().copy()
+                for pnode in plan[0:skipped_actions-1]:
+                   pnode.status = plans.ActionStatusEnum.EXECUTED
+                #task.set_plan(newplan)
+            print "Plan is still valid."
+            print "time for goal validation:", time.time()-t2
+            print "total time for validation:", time.time()-t0
+            return False
+
+        print "time for goal validation:", time.time()-t2
+        print "total time for validation:", time.time()-t0
+        
+        if first_invalid_action:
+            print "Preconditions of (%s %s) are not satisfied, triggering replanning." % (first_invalid_action.action.name, " ".join(a.name for a in first_invalid_action.full_args))
+        else:
+            print "Goal isn't fulfilled by the current plan, triggering replanning."
+
         return True  # no monitoring currently
 
     def _start_planner(self, task):
@@ -204,9 +289,9 @@ class ContinualAxiomsFF(BasePlanner):
         """
         # very preliminary implementation of the above!
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
-        action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
+        #action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
         times_actions = enumerate(action_list)  # keep it sequentially for now
-        nodes = [plans.PlanNode(a[0], a[1], t+1) for t,a in times_actions]
+        nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
         for i in xrange(0, len(nodes)-1):
             plan.add_node(nodes[i])
             link = plans.OrderingConstraint(nodes[i], nodes[i+1])
@@ -218,15 +303,14 @@ class ContinualAxiomsFF(BasePlanner):
             plan.add_link(plan.init_node, plan.goal_node)
         return plan
 
-    def remove_inferable_vars(self, action, task):
+    def createPlanNode(self, action, time, task):
         elmts = action.split()
         action, args = elmts[0], elmts[1:]
         actions = dict((a.name,a) for a in itools.chain(task.actions, task.sensors))
         assert action in actions
         action_def = actions[action]
-        num = len(action_def.agents) + len(action_def.args)
-        args = [task[a] for a in args[:num]]
-        return (action_def, args)
+        args = [task[a] for a in args]
+        return plans.PlanNode(action_def, args, time, plans.ActionStatusEnum.EXECUTABLE)
         
     
 class TFD(BasePlanner):
