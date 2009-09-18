@@ -21,7 +21,9 @@
 	mode vrule(in, out) is nondet,
 
 	pred assumable_func(C, cost_function_name, mgprop(M), float),
-	mode assumable_func(in, in, out, out) is nondet
+	mode assumable_func(in, in, out, out) is nondet,
+
+	func min_assumption_cost(C, M) = float
 ].
 
 :- pred assumable(C::in, vscope(mprop(M))::in, cost_function::in, vscope(mprop(M))::out, float::out) is nondet
@@ -38,7 +40,7 @@
 :- implementation.
 
 :- import_module require, solutions.
-:- import_module set, list, pair, string.
+:- import_module set, pair, string.
 :- import_module formula_io.
 :- import_module varset.
 
