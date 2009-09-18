@@ -14,7 +14,7 @@
 :- type ctx
 	--->	ctx(
 		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
-		bm :: belief_model
+		bm :: belief_model(string, string, string)
 	).
 :- instance context(ctx, ctx_modality).
 

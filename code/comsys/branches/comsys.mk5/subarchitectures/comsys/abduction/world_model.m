@@ -18,7 +18,7 @@
 
 :- type world_model == world_model(string, string, string).
 
-:- func init = world_model.
+:- func init = world_model(I, S, R).
 
 	% add_lf(M0, LF, M)
 	% True iff
@@ -72,6 +72,8 @@
 %------------------------------------------------------------------------------%
 
 init = wm(map.init, set.init, map.init, 0).
+
+%init = wm(map.init, set.init, map.init, 0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

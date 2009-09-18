@@ -4,7 +4,7 @@
 
 :- import_module set, string, int, maybe, map, int.
 :- import_module formula, lf.
-:- import_module stf, world_model.
+:- import_module stf, world_model, ontology.
 :- import_module stringable.
 
 :- type agent
@@ -27,23 +27,23 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- type mbm == map(stf, map(belief, world_model)).
-
-:- type belief_model
+:- type belief_model(I, S, R)
 	--->	bm(
-		k :: map(int, {stf, belief, lf}),
+		k :: map(int, {stf, belief, lf(I, S, R)}),
 		fg :: set(int),
 		next_index :: int
 	).
 
-:- func init = belief_model.
+:- func init = belief_model(I, S, R).
 
-:- pred add_lf_to_k(stf::in, belief::in, lf::in, int::out, belief_model::in, belief_model::out) is det.
-:- pred foreground(int::in, belief_model::in, belief_model::out) is det.
+:- pred add_lf_to_k(stf::in, belief::in, lf(I, S, R)::in, int::out,
+		belief_model(I, S, R)::in, belief_model(I, S, R)::out) is det <= isa_ontology(S).
 
-:- func get_mbm(set({stf, belief, lf})) = mbm.
+:- pred foreground(int::in, belief_model(I, S, R)::in, belief_model(I, S, R)::out) is det
+		<= isa_ontology(S).
 
-:- pred k_fact(belief_model::in, stf::out, belief::out, lf::out) is nondet.
+:- pred k_fact(belief_model(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet
+		<= isa_ontology(S).
 
 %------------------------------------------------------------------------------%
 
@@ -111,9 +111,11 @@ foreground(Index, !BM) :-
 	else error("foregrounding a non-existent belief/task")
 	).
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+%------------------------------------------------------------------------------%
 
-:- func add_lf_to_mbm(stf, belief, lf, mbm) = mbm.
+:- type mbm(I, S, R) == map(stf, map(belief, world_model(I, S, R))).
+
+:- func add_lf_to_mbm(stf, belief, lf(I, S, R), mbm(I, S, R)) = mbm(I, S, R) <= isa_ontology(S).
 
 add_lf_to_mbm(STF, Bel, LF, MBM0) = MBM :-
 	(if map.search(MBM0, STF, BelMap0)
@@ -129,10 +131,12 @@ add_lf_to_mbm(STF, Bel, LF, MBM0) = MBM :-
 		map.set(BelMap, Bel, M, NewBelMap),
 		map.set(MBM0, STF, NewBelMap, MBM)
 	else
-		error("inconsistent addition of LF \"" ++ lf_to_string(LF) ++ "\" in add_lf_to_mbm")
+		error("inconsistent addition of LF \"" ++ string(LF) ++ "\" in add_lf_to_mbm")
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func get_mbm(set({stf, belief, lf(I, S, R)})) = mbm(I, S, R) <= isa_ontology(S).
 
 get_mbm(Set) = MBM :-
 	MBM = set.fold((func({STF, Bel, LF}, MBM0) = add_lf_to_mbm(STF, Bel, LF, MBM0)), Set, map.init).
@@ -143,7 +147,7 @@ k_fact(BM, STF, Bel, LF) :-
 	MBM = get_mbm(set.from_list(map.values(BM^k))),
 	k_fact0(MBM, STF, Bel, LF).
 
-:- pred k_fact0(mbm::in, stf::out, belief::out, lf::out) is nondet.
+:- pred k_fact0(mbm(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet <= isa_ontology(S).
 
 k_fact0(MBM, STF, Bel, LF) :-
 	map.member(MBM, STF, BelMap),
