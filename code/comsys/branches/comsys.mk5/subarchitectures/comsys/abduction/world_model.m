@@ -4,6 +4,15 @@
 :- import_module string, int, map, set.
 :- import_module lf, ontology.
 
+:- typeclass reachability(RT, T) where [
+	pred exclusive(RT, T),
+	mode exclusive(in, in) is semidet
+].
+
+:- import_module unit.
+
+:- instance reachability(unit, string).
+
 :- type world_id(Index)
 	--->	initial
 	;	u(int)  % unnamed
@@ -30,8 +39,9 @@
 	%
 	% i.e. add LF to M0 so that it is consistent, fail if not possible.
 	%
-:- pred add_lf(OS, world_model(I, S, R), lf(I, S, R), world_model(I, S, R)) <= isa_ontology(OS, S).
-:- mode add_lf(in, in, in, out) is semidet.
+:- pred add_lf(OS, RT, world_model(I, S, R), lf(I, S, R), world_model(I, S, R))
+		<= (isa_ontology(OS, S), reachability(RT, R)).
+:- mode add_lf(in, in, in, in, out) is semidet.
 
 :- pred union(OS, world_model(I, S, R), world_model(I, S, R), world_model(I, S, R)) <= isa_ontology(OS, S).
 :- mode union(in, in, in, out) is semidet.
@@ -68,6 +78,10 @@
 :- import_module list, pair.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- instance reachability(unit, string) where [
+	(exclusive(_, _X) :- fail)
+].
 	
 :- type world_model(Index, Sort, Rel)
 	--->	wm(
@@ -130,15 +144,16 @@ rename_merge_world(Ont, Old, New, WM0, WM) :-
 
 %------------------------------------------------------------------------------%
 
-add_lf(Ont, !.WM, LF, !:WM) :-
-	add_lf0(Ont, initial, _, LF, !WM).
+add_lf(Ont, RT, !.WM, LF, !:WM) :-
+	add_lf0(Ont, RT, initial, _, LF, !WM).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred add_lf0(OS::in, world_id(I)::in, world_id(I)::out, lf(I, S, R)::in,
-		world_model(I, S, R)::in, world_model(I, S, R)::out) is semidet <= isa_ontology(OS, S).
+:- pred add_lf0(OS::in, RT::in, world_id(I)::in, world_id(I)::out, lf(I, S, R)::in,
+		world_model(I, S, R)::in, world_model(I, S, R)::out) is semidet
+		<= (isa_ontology(OS, S), reachability(RT, R)).
 
-add_lf0(Ont, Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
+add_lf0(Ont, RT, Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 	% add the referenced world
 	(if map.search(WM0^worlds, WName, OldSort)
 	then
@@ -149,9 +164,9 @@ add_lf0(Ont, Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 		NewSort = Sort
 	),
 	WM1 = WM0^worlds := map.set(WM0^worlds, WName, NewSort),
-	add_lf0(Ont, i(WName), _, LF, WM1, WM).
+	add_lf0(Ont, RT, i(WName), _, LF, WM1, WM).
 
-add_lf0(Ont, Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
+add_lf0(Ont, RT, Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 	(
 	 	Cur = initial,
 		fail  % should we perhaps allow this?
@@ -170,21 +185,21 @@ add_lf0(Ont, Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 		rename_merge_world(Ont, u(Num), i(WName), WM1, WM)
 	).
 
-add_lf0(Ont, Cur, Cur, r(Rel, LF), WM0, WM) :-
+add_lf0(Ont, RT, Cur, Cur, r(Rel, LF), WM0, WM) :-
 	new_unnamed_world(Num, WM0, WM1),
 	WM2 = WM1^reach := set.insert(WM0^reach, {Rel, Cur, u(Num)}),
-	add_lf0(Ont, u(Num), _, LF, WM2, WM).
+	add_lf0(Ont, RT, u(Num), _, LF, WM2, WM).
 
-add_lf0(Ont, Cur, Cur, p(Prop), WM0, WM) :-
+add_lf0(Ont, RT, Cur, Cur, p(Prop), WM0, WM) :-
 	(if OldProps = map.search(WM0^props, Cur)
 	then NewProps = set.insert(OldProps, Prop)
 	else NewProps = set.make_singleton_set(Prop)
 	),
 	WM = WM0^props := map.set(WM0^props, Cur, NewProps).
 	
-add_lf0(Ont, Cur0, Cur, and(LF1, LF2), WM0, WM) :-
-	add_lf0(Ont, Cur0, Cur1, LF1, WM0, WM1),
-	add_lf0(Ont, Cur1, Cur, LF2, WM1, WM).
+add_lf0(Ont, RT, Cur0, Cur, and(LF1, LF2), WM0, WM) :-
+	add_lf0(Ont, RT, Cur0, Cur1, LF1, WM0, WM1),
+	add_lf0(Ont, RT, Cur1, Cur, LF2, WM1, WM).
 
 %------------------------------------------------------------------------------%
 

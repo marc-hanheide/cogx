@@ -306,7 +306,7 @@ print_ctx(Ctx, !IO) :-
 	print("generated lfs:\n", !IO),
 
 	KFacts = solutions_set((pred({STF, Bel, LF}::out) is nondet :-
-		k_fact(Ctx^ont, Ctx^bm, STF, Bel, LF)
+		k_fact(Ctx^ont, Ctx^rrel, Ctx^bm, STF, Bel, LF)
 			)),
 
 	set.fold((pred({STF, Bel, LF}::in, !.IO::di, !:IO::uo) is det :-
