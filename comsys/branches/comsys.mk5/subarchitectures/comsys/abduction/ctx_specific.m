@@ -10,7 +10,7 @@
 
 :- import_module belief_model, world_model.
 :- import_module abduction, modality.
-:- import_module ctx_ontology.
+:- import_module ctx_ontology, enumerable.
 
 :- type ctx
 	--->	ctx(
@@ -93,8 +93,8 @@ ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 	satisfies(Ctx^ont, M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
 
 ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(Super, [])])), VS)) :-
-	Sub = "x",
-	Super = "y".
+	generate(Ctx^ont, Sub),
+	generate(Ctx^ont, Super).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
