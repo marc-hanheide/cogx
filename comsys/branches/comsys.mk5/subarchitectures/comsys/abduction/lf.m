@@ -23,9 +23,15 @@
 
 :- instance isa_ontology(string).
 
+:- func is_lf(lf) = lf.
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
+
+is_lf(LF) = LF.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- instance isa_ontology(string) where [
 	pred(isa/2) is string_isa

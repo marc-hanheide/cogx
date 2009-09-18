@@ -8,11 +8,15 @@
 	func to_string(T) = string
 ].
 
+:- instance stringable(string).
+
 :- typeclass parsable(T) where [
 	func from_string(string::in) = (T::out) is semidet
 ].
 
 :- func det_from_string(string) = T <= parsable(T).
+
+:- instance parsable(string).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -43,3 +47,13 @@ det_from_term(Rep) = Val :-
 	then Val = Val0
 	else error("failed to parse `" ++ string(Rep) ++ "' in func det_parse/1.")
 	).
+
+%------------------------------------------------------------------------------%
+
+:- instance stringable(string) where [
+	(to_string(S) = S)
+].
+
+:- instance parsable(string) where [
+	(from_string(S) = S)
+].
