@@ -88,6 +88,7 @@ i0:subject(u, box).
 i0:cop_restr(u, box).
 i0:quality(u, colour(X)).
 not_ground(u).
+%i0:colour(red).
 
 	% Rules
 
