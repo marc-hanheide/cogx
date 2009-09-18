@@ -122,7 +122,7 @@ op_table(Op, Info) :-
 	( Op = "<-",    Info = op_info(infix(x, x), 1200)
 	; Op = ",",     Info = op_info(infix(x, y), 1000)
 	; Op = ":",     Info = op_info(infix(y, x), 120)
-	; Op = "/",     Info = op_info(infix(y, x), 400)
+	; Op = "/",     Info = op_info(infix(y, x), 400)  % 400
 	; Op = "->",    Info = op_info(infix(x, y), 500)  % 1050
 	; Op = "~",     Info = op_info(prefix(y), 900)
 	; Op = "?",     Info = op_info(prefix(y), 130)  % 1100, 100
