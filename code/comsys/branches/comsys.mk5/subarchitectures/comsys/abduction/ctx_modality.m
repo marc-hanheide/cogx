@@ -6,7 +6,7 @@
 
 :- import_module modality, rcc.
 :- import_module set.
-:- import_module belief_model.
+:- import_module stf, belief_model.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
