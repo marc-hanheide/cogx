@@ -45,12 +45,16 @@ REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-	@(b::thing, colour(red)).
-	@(c::thing, colour(red)).
-	@(d::colour, blue).
+	@(v1::thing, colour(red)).
+	@(v2::thing, colour(red)).
 
-	@(b::thing, colour(d::colour)).
-?	@(c::thing, colour(d::colour)).
+	@(c::colour, blue).
+
+	@(v1::thing, colour(c::colour)).
+	@(v2::thing, colour(c::colour)).
+
+?	@(v2::thing, colour(blue)).
+?	@(c::colour, red).  # false in non-reduced, true in reduced model
 
 #	@(b::thing, colour(tint(rare))).
 #	@(b::thing, colour(tint(rareness(first)))).
