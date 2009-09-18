@@ -1,4 +1,4 @@
-k(now, mutual(h, r)) : k_mutual(u)  : y(com).
-k(now, private(r))   : k_private(u) : n.
-k(now, attrib(r, h)) : k_attrib(u)  : n.
+k(now, private(r)) : @(v1::thing, p(object)) : y(com).
+k(now, attrib(r, h)) : @(v1::thing, p(object)) : y(com).
+
 
