@@ -82,10 +82,8 @@ ctx_rule(Ctx, Rule) :-
 
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 	Mod = [k(STF, Belief)],
-	list.member({STF, Belief, LF}, map.values(Ctx^bm^k)),
+	k_fact(Ctx^bm, STF, Belief, LF),
 	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
-
-%ctx_fact(_Ctx, vs(m(_, p("do", _)), _), vs(m([e(now)], p("do", [t("e", [])])), varset.init)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

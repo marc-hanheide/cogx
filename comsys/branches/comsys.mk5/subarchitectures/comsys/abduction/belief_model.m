@@ -43,6 +43,8 @@
 
 :- func get_mbm(set({stf, belief, lf})) = mbm.
 
+:- pred k_fact(belief_model::in, stf::out, belief::out, lf::out) is nondet.
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -134,3 +136,23 @@ add_lf_to_mbm(STF, Bel, LF, MBM0) = MBM :-
 
 get_mbm(Set) = MBM :-
 	MBM = set.fold((func({STF, Bel, LF}, MBM0) = add_lf_to_mbm(STF, Bel, LF, MBM0)), Set, map.init).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+k_fact(BM, STF, Bel, LF) :-
+	MBM = get_mbm(set.from_list(map.values(BM^k))),
+	k_fact0(MBM, STF, Bel, LF).
+
+:- pred k_fact0(mbm::in, stf::out, belief::out, lf::out) is nondet.
+
+k_fact0(MBM, STF, Bel, LF) :-
+	map.member(MBM, STF, BelMap),
+	map.member(BelMap, Bel0, M),
+	set.member(LF, lfs(M)),
+	(
+		Bel0 = mutual(AgS),
+		set.member(Ag, AgS),
+		Bel = private(Ag)
+	;
+		Bel = Bel0
+	).

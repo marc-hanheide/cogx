@@ -169,7 +169,7 @@ main(!IO) :-
 
 				print(string.from_int(set.count(Ds)) ++ " derivation" ++ plural_s(count(Ds)) ++ ".\n", !IO),
 
-				print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
+				print("- - - - - - - - - - - - - - - - - - -\n", !IO),
 
 				set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
 					is_ctx_proof(Proof),
@@ -301,21 +301,17 @@ print_ctx(Ctx, !IO) :-
 		nl(!IO)
 			), Ctx^bm^k, !IO),
 
-	MBM = get_mbm(set.from_list(map.values(Ctx^bm^k))),
-
 	nl(!IO),
 
 	print("generated lfs:\n", !IO),
 
-	map.foldl((pred(STF::in, BelMap::in, !.IO::di, !:IO::uo) is det :-
-		print("  " ++ to_string(STF), !IO), nl(!IO),
-		map.foldl((pred(Bel::in, M::in, !.IO::di, !:IO::uo) is det :-
-			print("    " ++ to_string(Bel), !IO), nl(!IO),
-			set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
-				print("      " ++ lf_to_string(LF) ++ "\n", !IO)
-					), lfs(det_reduced(M)), !IO)
-				), BelMap, !IO)
-			), MBM, !IO),
+	KFacts = solutions_set((pred({STF, Bel, LF}::out) is nondet :-
+		k_fact(Ctx^bm, STF, Bel, LF)
+			)),
+
+	set.fold((pred({STF, Bel, LF}::in, !.IO::di, !:IO::uo) is det :-
+		print("  " ++ to_string(k(STF, Bel)) ++ ": " ++ lf_to_string(LF) ++ "\n", !IO)
+			), KFacts, !IO),
 
 /*
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
