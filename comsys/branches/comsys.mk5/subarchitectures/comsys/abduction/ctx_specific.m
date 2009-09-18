@@ -99,23 +99,27 @@ ctx_rule(Ctx, Rule) :-
 
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
+	% explicit fact
+ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, Prop), varset.init)) :-
+	set.member(m(Mod, GProp), Ctx^ctx_expl_facts),
+	Prop = ground_formula_to_formula(GProp).
+
+	% generate a LF from the belief model
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 	compose_list(Mod) = [k(STF, Belief)],
 	k_fact(Ctx^ont, Ctx^rrel, Ctx^bm, STF, Belief, LF),
 	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
 
+	% validate a LF against the belief model
 ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 	compose_list(Mod) = [k(STF, Belief)],
 	k_model(Ctx^ont, Ctx^rrel, Ctx^bm, STF, Belief, M),
 	satisfies(Ctx^ont, M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
 
+	% test subsumption in the used ontology
 ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(Super, [])])), VS)) :-
 	generate(Ctx^ont, Sub),
 	generate(Ctx^ont, Super).
-
-ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, Prop), varset.init)) :-
-	set.member(m(Mod, GProp), Ctx^ctx_expl_facts),
-	Prop = ground_formula_to_formula(GProp).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
