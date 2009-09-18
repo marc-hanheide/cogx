@@ -7,9 +7,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
+
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.PlanProxy;
+import motivation.util.GoalTranslator;
+import IceInternal.Instance;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
@@ -80,7 +84,20 @@ public class PlanAllManager extends MotiveManager {
 		String id = newDataID();
 
 		PlanningTask plan = newPlanningTask();
-		plan.goal = "(forall (?p - place) (= (explored ?p) true))";
+
+		String goalString = "";//"(and ";
+		for (Motive m : managedMotives) {
+			if (m instanceof ExploreMotive) {
+				goalString=goalString + GoalTranslator.motive2PlannerGoal((ExploreMotive) m, getOriginMap());
+				break; // TODO: just take the first goal for now and skip the rest
+			}
+			else
+				goalString=goalString + GoalTranslator.motive2PlannerGoal((ExploreMotive) m, getOriginMap());
+		}
+		goalString=goalString+")";
+		log("generated goal string: "+goalString);
+		plan.goal=goalString;
+		//plan.goal = "(forall (?p - place) (= (explored ?p) true))";
 
 		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 				WorkingMemoryOperation.OVERWRITE),

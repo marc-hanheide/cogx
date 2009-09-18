@@ -4,9 +4,11 @@
 package motivation.components.generators;
 
 import motivation.factories.MotiveFactory;
+import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
+import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
@@ -29,6 +31,7 @@ public class PlaceGenerator extends AbstractMotiveGenerator {
 	protected boolean checkMotive(Motive motive) {
 		try {
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
+			
 			// if it is a yet unexplored one...			
 			log("there is a place to be checked, created " + Long.toString(motive.created.s-getCASTTime().s) + " seconds ago");
 
@@ -62,7 +65,15 @@ public class PlaceGenerator extends AbstractMotiveGenerator {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				debug(CASTUtils.toString(_wmc));
 				// create a new motive from this node...
-				Motive newMotive = MotiveFactory.createExploreMotive(_wmc.address);
+				ExploreMotive newMotive = MotiveFactory.createExploreMotive(_wmc.address);
+				Place p;
+				try {
+					p = getMemoryEntry(_wmc.address, Place.class);
+					newMotive.placeID=p.id;
+				} catch (CASTException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
 				checkMotive(newMotive);
 			}
 		});
