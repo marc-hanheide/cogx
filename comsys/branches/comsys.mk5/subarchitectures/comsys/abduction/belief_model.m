@@ -40,19 +40,20 @@
 		belief_model(I, S, R)::in, belief_model(I, S, R)::out) is det <= isa_ontology(OS, S).
 
 :- pred foreground(OS::in, int::in, belief_model(I, S, R)::in, belief_model(I, S, R)::out) is det
-		<= isa_ontology(OS, S).
+		<= isa_ontology(OS, S). 
 
-:- pred k_fact(OS::in, belief_model(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet
-		<= isa_ontology(OS, S).
+:- pred k_fact(OS::in, RT::in, belief_model(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet
+		<= (isa_ontology(OS, S), reachability(RT, R)).
 
-:- pred k_model(OS::in, belief_model(I, S, R)::in, stf::in, belief::in, world_model(I, S, R)::out) is semidet
-		<= isa_ontology(OS, S).
+:- pred k_model(OS::in, RT::in, belief_model(I, S, R)::in, stf::in, belief::in, world_model(I, S, R)::out) is semidet
+		<= (isa_ontology(OS, S), reachability(RT, R)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func fg_anchors(belief_model(I, S, R)) = set(I).
 
-:- pred att_model(OS::in, belief_model(I, S, R)::in, world_model(I, S, R)::out) is det <= isa_ontology(OS, S).
+:- pred att_model(OS::in, RT::in, belief_model(I, S, R)::in, world_model(I, S, R)::out) is det
+		<= (isa_ontology(OS, S), reachability(RT, R)).
 
 :- func min_dist(OS::in, world_model(I, S, R)::in, I::in, I::in) = (int::out) is semidet <= isa_ontology(OS, S).
 
@@ -129,9 +130,10 @@ foreground(_Ont, Index, !BM) :-
 
 :- type mbm(I, S, R) == map(stf, map(belief, world_model(I, S, R))).
 
-:- func add_lf_to_mbm(OS, stf, belief, lf(I, S, R), mbm(I, S, R)) = mbm(I, S, R) <= isa_ontology(OS, S).
+:- func add_lf_to_mbm(OS, RT, stf, belief, lf(I, S, R), mbm(I, S, R)) = mbm(I, S, R)
+		<= (isa_ontology(OS, S), reachability(RT, R)).
 
-add_lf_to_mbm(Ont, STF, Bel, LF, MBM0) = MBM :-
+add_lf_to_mbm(Ont, RT, STF, Bel, LF, MBM0) = MBM :-
 	(if map.search(MBM0, STF, BelMap0)
 	then BelMap = BelMap0
 	else BelMap = map.init
@@ -140,7 +142,7 @@ add_lf_to_mbm(Ont, STF, Bel, LF, MBM0) = MBM :-
 	then M0 = MFound
 	else M0 = world_model.init
 	),
-	(if add_lf(Ont, M0, LF, M)
+	(if add_lf(Ont, RT, M0, LF, M)
 	then
 		map.set(BelMap, Bel, M, NewBelMap),
 		map.set(MBM0, STF, NewBelMap, MBM)
@@ -150,24 +152,25 @@ add_lf_to_mbm(Ont, STF, Bel, LF, MBM0) = MBM :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func get_mbm(OS, set({stf, belief, lf(I, S, R)})) = mbm(I, S, R) <= isa_ontology(OS, S).
+:- func get_mbm(OS, RT, set({stf, belief, lf(I, S, R)})) = mbm(I, S, R)
+		<= (isa_ontology(OS, S), reachability(RT, R)).
 
-get_mbm(Ont, Set) = MBM :-
-	MBM = set.fold((func({STF, Bel, LF}, MBM0) = add_lf_to_mbm(Ont, STF, Bel, LF, MBM0)), Set, map.init).
+get_mbm(Ont, RT, Set) = MBM :-
+	MBM = set.fold((func({STF, Bel, LF}, MBM0) = add_lf_to_mbm(Ont, RT, STF, Bel, LF, MBM0)), Set, map.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-k_fact(Ont, BM, STF, Bel, LF) :-
-	MBM = get_mbm(Ont, set.from_list(map.values(BM^k))),
+k_fact(Ont, RT, BM, STF, Bel, LF) :-
+	MBM = get_mbm(Ont, RT, set.from_list(map.values(BM^k))),
 	map.member(MBM, STF, BelMap),
 	map.member(BelMap, Bel, _M),
-	k_model(Ont, BM, STF, Bel, M),
+	k_model(Ont, RT, BM, STF, Bel, M),
 	set.member(LF, lfs(M)).
 
 %------------------------------------------------------------------------------%
 
-k_model(Ont, BM, STF, Bel, M) :-
-	MBM = get_mbm(Ont, set.from_list(map.values(BM^k))),
+k_model(Ont, RT, BM, STF, Bel, M) :-
+	MBM = get_mbm(Ont, RT, set.from_list(map.values(BM^k))),
 	map.search(MBM, STF, BelMap),
 	(
 		Bel = private(Ag),
@@ -227,11 +230,11 @@ min_dist_from_set(Ont, M, SW, W2) = MinWD :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-att_model(OS, BM, M) :-
+att_model(Ont, RT, BM, M) :-
 	set.fold((pred(LFIdx::in, Ma0::in, Ma::out) is det :-
 		(if map.search(BM^k, LFIdx, {_STF, _Bel, LF})
 		then
-			(if add_lf(OS, Ma0, LF, Ma1)
+			(if add_lf(Ont, RT, Ma0, LF, Ma1)
 			then Ma = Ma1
 			else error("inconsistency in att_model")
 			)

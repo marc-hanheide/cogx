@@ -12,10 +12,13 @@
 :- import_module abduction, modality.
 :- import_module ctx_ontology, enumerable.
 
+:- import_module unit.
+
 :- type ctx
 	--->	ctx(
 		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
 		bm :: belief_model(string, string, string),
+		rrel :: unit,
 		ont :: ctx_ontology
 	).
 :- instance context(ctx, ctx_modality).
@@ -48,7 +51,7 @@
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
 
-new_ctx = ctx(set.init, belief_model.init, ctx_ontology.init).
+new_ctx = ctx(set.init, belief_model.init, unit, ctx_ontology.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -84,12 +87,12 @@ ctx_rule(Ctx, Rule) :-
 
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 	compose_list(Mod) = [k(STF, Belief)],
-	k_fact(Ctx^ont, Ctx^bm, STF, Belief, LF),
+	k_fact(Ctx^ont, Ctx^rrel, Ctx^bm, STF, Belief, LF),
 	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
 
 ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 	compose_list(Mod) = [k(STF, Belief)],
-	k_model(Ctx^ont, Ctx^bm, STF, Belief, M),
+	k_model(Ctx^ont, Ctx^rrel, Ctx^bm, STF, Belief, M),
 	satisfies(Ctx^ont, M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
 
 ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(Super, [])])), VS)) :-
@@ -105,7 +108,7 @@ ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(
 
 ctx_assumable_func(Ctx, _, m(Mod, GProp), Cost) :-
 	Mod = [a(com)],
-	att_model(Ctx^ont, Ctx^bm, AM),
+	att_model(Ctx^ont, Ctx^rrel, Ctx^bm, AM),
 	map.member(AM^worlds, WName, Sort),
 	(
 		map.search(AM^props, i(WName), Props),

@@ -77,7 +77,7 @@ main(!IO) :-
 					print(" ... ", !IO),
 					(if
 						%add_lf(!.WM, LF, !:WM),
-						add_lf(unit, world_model.init, LF, XM),
+						add_lf(unit, unit, world_model.init, LF, XM),
 						union(unit, !.WM, XM, !:WM)
 					then
 						(if satisfies(unit, !.WM, LF) then Sat = "t" else Sat = "f"),
@@ -171,7 +171,7 @@ test_lf(LF, !WM, !IO) :-
 :- pred test_add_lf(lf::in, world_model::in, world_model::out, io::di, io::uo) is det.
 
 test_add_lf(LF, !WM, !IO) :-
-	(if add_lf(unit, !.WM, LF, !:WM)
+	(if add_lf(unit, unit, !.WM, LF, !:WM)
 	then
 		print_wm(!.WM, !IO),
 		nl(!IO)
