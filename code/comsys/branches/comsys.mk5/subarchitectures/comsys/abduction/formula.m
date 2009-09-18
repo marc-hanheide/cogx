@@ -99,8 +99,13 @@
 	;	test(mtest(M))
 	.
 
+:- type rule_head(M)
+	--->	std(mprop(M))
+	;	test(mtest(M))
+	.
+
 :- type mprop(M) == modalized(list(M), atomic_formula).
-:- type mrule(M) == modalized(list(M), pair(list(rule_antecedent(M)), mprop(M))).
+:- type mrule(M) == modalized(list(M), pair(list(rule_antecedent(M)), rule_head(M))).
 %:- type mrule(M) == modalized(list(M), pair(list(with_cost_function(mprop(M))), mprop(M))).
 
 :- type mtest(M)
@@ -124,6 +129,7 @@
 :- func rename_vars_in_annot_mprop(map(var, var), with_cost_function(mprop(M))) = with_cost_function(mprop(M))
 		<= modality(M).
 :- func rename_vars_in_rule_antecedent(map(var, var), rule_antecedent(M)) = rule_antecedent(M) <= modality(M).
+:- func rename_vars_in_rule_head(map(var, var), rule_head(M)) = rule_head(M) <= modality(M).
 :- func rename_vars_in_mtest(map(var, var), mtest(M)) = mtest(M) <= modality(M).
 :- func rename_vars_in_mrule(map(var, var), mrule(M)) = mrule(M) <= modality(M).
 
@@ -218,12 +224,15 @@ rename_vars_in_mtest(Renaming, prop(MProp)) = prop(rename_vars_in_mprop(Renaming
 rename_vars_in_mtest(Renaming, impl(MPs, HMP)) = impl(list.map(rename_vars_in_mprop(Renaming), MPs),
 		rename_vars_in_mprop(Renaming, HMP)).
 
-rename_vars_in_rule_antecedent(Renaming, test(MProp)) = test(rename_vars_in_mtest(Renaming, MProp)).
+rename_vars_in_rule_antecedent(Renaming, test(MTest)) = test(rename_vars_in_mtest(Renaming, MTest)).
 rename_vars_in_rule_antecedent(Renaming, std(AnnotMProp))
 		= std(rename_vars_in_annot_mprop(Renaming, AnnotMProp)).
 
+rename_vars_in_rule_head(Renaming, test(MTest)) = test(rename_vars_in_mtest(Renaming, MTest)).
+rename_vars_in_rule_head(Renaming, std(MProp)) = std(rename_vars_in_mprop(Renaming, MProp)).
+
 rename_vars_in_mrule(Renaming, m(M, Ante-Succ)) =
-		m(M, list.map(rename_vars_in_rule_antecedent(Renaming), Ante)-rename_vars_in_mprop(Renaming, Succ)).
+		m(M, list.map(rename_vars_in_rule_antecedent(Renaming), Ante)-rename_vars_in_rule_head(Renaming, Succ)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

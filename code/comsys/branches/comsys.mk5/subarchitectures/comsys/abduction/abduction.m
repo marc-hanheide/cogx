@@ -231,27 +231,45 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 	% resolution with a rule
-step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
+step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS0,
 		QsL ++ QsInsert ++ QsR, VS,
 		Ctx) :-
 
 	vrule(Ctx, Rule),
-	Rule = vs(m(MR, _-m(MH, _)), VSR),
+	Rule = vs(m(MR, _-RHead0), VSR),
+	( RHead0 = std(m(MH, _))
+	; RHead0 = test(prop(m(MH, _)))
+	; RHead0 = test(impl(_, m(MH, _)))
+	),
+
 	match(compose_list(MR ++ MH), compose_list(MQ)),
 
 	varset.merge_renaming(VS0, VSR, VS, Renaming),
-	m(MR, Ante-m(MH, PH)) = rename_vars_in_mrule(Renaming, Rule^body),
+	m(MR, Ante-RHead) = rename_vars_in_mrule(Renaming, Rule^body),
+
+	( RHead = std(m(MH, PH))
+	; RHead = test(prop(m(MH, PH)))
+	; RHead = test(impl(MPs, m(MH, PH)))
+	),
 
 	unify_formulas(PH, PQ, Uni),
+
+	(
+		RHead = std(_),
+		QHead = proved(m(MQ, apply_subst_to_formula(Uni, PQ)))
+	;
+		RHead = test(MTest),
+		QHead = asserted(apply_subst_to_mtest(Uni, MTest))
+	),
 
 		% XXX have assertion in another rule?
 	QsInsert = list.map((func(A) = UniA :-
 		( A = std(cf(P, F)), UniA = unsolved(apply_subst_to_mprop(Uni, P), F)
-		; A = test(P), UniA = asserted(apply_subst_to_mtest(Uni, P))
+		; A = test(T), UniA = asserted(apply_subst_to_mtest(Uni, T))
 		)
 			), Ante)
-			++ [proved(m(MQ, apply_subst_to_formula(Uni, PQ)))],
+			++ [QHead],
 
 %	QsInsert = list.map((func(cf(P, F)) = apply_subst_to_mprop(Uni, P)-unsolved(F)), Ante)
 %			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
