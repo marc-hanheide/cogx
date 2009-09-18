@@ -39,7 +39,7 @@ ground_term_to_lf(t("^", [LFA, LFB])) = and(ground_term_to_lf(LFA), ground_term_
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-ground_atomic_formula_to_lf(p("@", Args)) = ground_term_to_lf(t("@", Args)).
+ground_atomic_formula_to_lf(p(PredSym, Args)) = ground_term_to_lf(t(PredSym, Args)).
 
 det_ground_atomic_formula_to_lf(GF) = LF :-
 	(if ground_atomic_formula_to_lf(GF) = LF0
