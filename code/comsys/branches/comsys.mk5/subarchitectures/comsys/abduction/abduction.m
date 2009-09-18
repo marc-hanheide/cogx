@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module list, pair, bag.
+:- import_module list, bag.
 :- import_module varset.
 
 :- import_module modality.
@@ -59,7 +59,7 @@
 :- implementation.
 
 :- import_module require.
-:- import_module map, set, assoc_list.
+:- import_module map, set, assoc_list, pair.
 :- import_module string, float.
 :- import_module modality.
 
