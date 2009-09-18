@@ -243,8 +243,16 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 
 	unify_formulas(PH, PQ, Uni),
 
-	QsInsert = list.map((func(cf(P, F)) = apply_subst_to_mprop(Uni, P)-unsolved(F)), Ante)
+		% XXX have assertion in another rule?
+	QsInsert = list.map((func(A) = UniA :-
+		( A = std(cf(P, F)), UniA = apply_subst_to_mprop(Uni, P)-unsolved(F)
+		; A = test(P), UniA = apply_subst_to_mprop(Uni, P)-asserted
+		)
+			), Ante)
 			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
+
+%	QsInsert = list.map((func(cf(P, F)) = apply_subst_to_mprop(Uni, P)-unsolved(F)), Ante)
+%			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
 
 	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
 	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
