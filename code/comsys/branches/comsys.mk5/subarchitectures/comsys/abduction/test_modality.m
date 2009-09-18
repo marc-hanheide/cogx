@@ -15,16 +15,16 @@
 :- import_module stringable.
 
 main(!IO) :-
-	test_ctx_modality_match([i(next)], [any], !IO),
-	test_ctx_modality_match([any], [i(next)], !IO),
-	test_ctx_modality_match([i(next)], [i(next)], !IO),
+	test_ctx_modality_match([a(com)], [any], !IO),
+	test_ctx_modality_match([any], [a(com)], !IO),
+	test_ctx_modality_match([a(com)], [a(com)], !IO),
 	test_ctx_modality_match([any], [], !IO),
 	test_ctx_modality_match([], [any], !IO),
 	test_ctx_modality_match([any], [any], !IO),
 	test_ctx_modality_match([any], [any, any], !IO),
 
-	test_ctx_modality_match([i(next)], [any, i(next), any], !IO),
-	test_ctx_modality_match([i(next)], [any, i(this)], !IO),
+	test_ctx_modality_match([a(com)], [any, a(com), any], !IO),
+	test_ctx_modality_match([a(com)], [any, e(now)], !IO),
 
 	test_ctx_modality_match([], [], !IO).
 

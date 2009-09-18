@@ -5,19 +5,34 @@
 :- interface.
 
 :- import_module modality.
+:- import_module set.
 
-:- type ref
-	--->	this
-	;	next
-	;	future
-	;	past
+:- type foreground
+	--->	com
 	.
 
+:- type agent
+	--->	human
+	;	robot
+	.
+
+:- type belief
+	--->	private(agent)
+	;	attrib(agent, agent)
+	;	mutual(set(agent))
+	.
+
+:- type stf
+	--->	now.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- type ctx_modality
-	--->	a(ref)
-	;	i(ref)
-	;	e(ref)
-	;	any
+	--->	any  % the axiom
+	;	a(foreground)
+	;	e(stf)
+	;	i
+	;	k(stf, belief)
 	.
 
 :- instance modality(ctx_modality).

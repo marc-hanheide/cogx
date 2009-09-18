@@ -6,20 +6,15 @@
 :- import_module ctx_impl, ctx_modality.
 
 :- instance stringable(ctx_modality).
-:- instance parsable(ctx_modality).
 :- instance term_parsable(ctx_modality).
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module list.
+:- import_module list, string.
 
 :- instance stringable(ctx_modality) where [
 	func(to_string/1) is ctx_modality_to_string
-].
-
-:- instance parsable(ctx_modality) where [
-	func(from_string/1) is ctx_modality_from_string
 ].
 
 :- instance term_parsable(ctx_modality) where [
@@ -28,42 +23,41 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred ctx_modality_as_string(ctx_modality, string).
-:- mode ctx_modality_as_string(in, out) is det.
-:- mode ctx_modality_as_string(out, in) is semidet.
+:- pred agent_as_string(agent, string).
+:- mode agent_as_string(in, out) is det.
+:- mode agent_as_string(out, in) is semidet.
 
-ctx_modality_as_string(e(past), "eP").
-ctx_modality_as_string(e(this), "e0").
-ctx_modality_as_string(e(next), "eN").
-ctx_modality_as_string(e(future), "eF").
-
-ctx_modality_as_string(a(past), "aP").
-ctx_modality_as_string(a(this), "a0").
-ctx_modality_as_string(a(next), "aN").
-ctx_modality_as_string(a(future), "aF").
-
-ctx_modality_as_string(i(past), "iP").
-ctx_modality_as_string(i(this), "i0").
-ctx_modality_as_string(i(next), "iN").
-ctx_modality_as_string(i(future), "iF").
-
-ctx_modality_as_string(any, "[]").
+agent_as_string(human, "h").
+agent_as_string(robot, "r").
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func ctx_modality_to_string(ctx_modality) = string.
-
-ctx_modality_to_string(Rep) = S :-
-	ctx_modality_as_string(Rep, S).
-
-:- func ctx_modality_from_string(string::in) = (ctx_modality::out) is semidet.
-
-ctx_modality_from_string(S) = Rep :-
-	ctx_modality_as_string(Rep, S).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
 :- func ctx_modality_from_term(term.term::in) = (ctx_modality::out) is semidet.
 
-ctx_modality_from_term(functor(atom(S), [], _)) = M :-
-	M = ctx_modality_from_string(S).
+	% axiom
+ctx_modality_to_string(any) = "[]".
+ctx_modality_from_term(functor(atom("[]"), [], _)) = any.
+
+	% info
+ctx_modality_to_string(i) = "i".
+ctx_modality_from_term(functor(atom("i"), [], _)) = i.
+
+	% attention state
+ctx_modality_to_string(a(com)) = "a(com)".
+ctx_modality_from_term(functor(atom("a"), [
+		functor(atom("com"), [], _)
+	], _)) = a(com).
+
+	% events
+ctx_modality_to_string(e(now)) = "e(now)".
+ctx_modality_from_term(functor(atom("e"), [
+		functor(atom("now"), [], _)
+	], _)) = e(now).
+
+	% "knows"
+ctx_modality_to_string(k(now, Belief)) = "k(now, " ++ string(Belief) ++ ")".
+ctx_modality_from_term(functor(atom("k"), [
+		functor(atom("now"), [], _),
+		_
+	], _)) = k(now, private(robot)).

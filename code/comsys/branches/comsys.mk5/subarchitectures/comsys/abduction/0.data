@@ -83,14 +83,14 @@
 	% Assumables.
 
 func = [
-	i0 : ascription(u) = 0.6
+	i : ascription(u) = 0.6
 %	i0 : ascription(v) = 0.7,
 %	i0 : ascription(z) = 1.4
 ].
 
 in_focus = [
-	a0 : it(v1) = 0.5,
-	a0 : it(v2) = 0.8
+	a(com) : it(v1) = 0.5,
+	a(com) : it(v2) = 0.8
 ].
 
 % ascription(Subject, Quality)
@@ -99,34 +99,34 @@ in_focus = [
 
 	% Facts.
 
-a0:something(u).
+a(com):something(u).
 
-e0:did(U, X) <-
-	a0:something(U) / prove,
-	? e0:clarif(U).
+e(now):did(U, X) <-
+	a(com):something(U) / prove,
+	? e(now):clarif(U).
 
-e0:do(E) <-
-	a0:it(Subj) / in_focus,
-	e0:utter(E, Utt) / prove,
-	i0:subject(Utt, Subj) / prove,
-	i0:ascription(Utt, Quality) / prove.
+e(now):do(E) <-
+	a(com):it(Subj) / in_focus,
+	e(now):utter(E, Utt) / prove,
+	i:subject(Utt, Subj) / prove,
+	i:ascription(Utt, Quality) / prove.
 
-e0:utter(e, u).
-e0:utter(f, v).
+e(now):utter(e, u).
+e(now):utter(f, v).
 
-i0:subject(u, v1).
-i0:ascription(u, colour(red)).
+i:subject(u, v1).
+i:ascription(u, colour(red)).
 
-i0:subject(v, v2).
-i0:ascription(v, colour(blue)).
+i:subject(v, v2).
+i:ascription(v, colour(blue)).
 
 %e0:did(U, X) <- e0:did(U, X) / prove.
 
-e0:said(u).
-i0:ascription(u).
-i0:subject(u, box).
-i0:cop_restr(u, box).
-%i0:quality(u, colour(X)).
+e(now):said(u).
+i:ascription(u).
+i:subject(u, box).
+i:cop_restr(u, box).
+%i:quality(u, colour(X)).
 not_ground(u).
 
 []:colour(red).
@@ -143,23 +143,23 @@ kuku(x).
 
 	% Rules.
 
-[]:(i0:quality(U, colour(Col)) <-
-	i0:colour(Col) / 0.5,
-	i0:ascription(U) / 2.0
+[]:(i:quality(U, colour(Col)) <-
+	i:colour(Col) / 0.5,
+	i:ascription(U) / 2.0
 ).
 
-[]:(i0:quality(U, colour(Col)) <-
-	i0:colour(Col) / 0.5,
-	i0:ascription(U) / func
+[]:(i:quality(U, colour(Col)) <-
+	i:colour(Col) / 0.5,
+	i:ascription(U) / func
 ).
 
 say(what_question(Ref, Q)) <-
-	e0:said(U) / 1.5,
+	e(now):said(U) / 1.5,
 	[]:clarify(U, Q) / 0.5,
-	i0:subject(U, Ref) / 1.1.
+	i:subject(U, Ref) / 1.1.
 
 downdate(U) <-
-	e0:said(U) / 1.5,
+	e(now):said(U) / 1.5,
 	not_ground(U) / 1.1.
 
 clarify(U, C) <-
