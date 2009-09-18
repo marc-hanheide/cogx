@@ -111,20 +111,24 @@ class ElementIterator(object):
 class ParseError(Exception):
     def __init__(self, token, message):
         self.token = token
-        self.message = message
+        self._message = message
 
+    def _get_message(self): return self._message
+    def _set_message(self, message): self._message = message
+    message = property(_get_message, _set_message)
+    
     def __str__(self):
-        return "Error in line %d of %s: %s" % (self.token.line, self.token.file, self.message)
+        return "Error in line %d of %s: %s" % (self.token.line, self.token.file, self._message)
 
 class UnexpectedTokenError(ParseError):
     def __init__(self, token, expected):
         self.token = token
-        self.message = "Expected %s, found '%s'" % (expected, token.string)
+        self._message = "Expected %s, found '%s'" % (expected, token.string)
 
 class EndOfListError(ParseError):
     def __init__(self, token):
         self.token = token
-        self.message = "Unexpected end of list."
+        self._message = "Unexpected end of list."
         
     
 class Parser(object):
