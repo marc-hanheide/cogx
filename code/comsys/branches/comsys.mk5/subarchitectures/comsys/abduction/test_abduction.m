@@ -296,7 +296,7 @@ subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
 
 :- func goal_to_string(vscope(list(marked(mprop(ctx_modality))))) = string.
 
-goal_to_string(vs(G, VS)) = string.join_list(", ",
+goal_to_string(vs(G, VS)) = string.join_list(",\n  ",
 		list.map((func(MProp-Marking) = S :-
 			S = mprop_to_string(VS, MProp) ++ "[" ++ string(Marking) ++ "]"
 				), G)).
@@ -355,7 +355,8 @@ print_proof_trace(Ctx, Proof, !IO) :-
 	print("  " ++ proof_state_to_string(Varset0, InitQs) ++ "\n", !IO),
 
 	GoalsStr = list.map((func(Step-Goal) = GStr :-
-		GStr = " >> " ++ step_to_string(Step) ++ "\n  " ++ proof_state_to_string(Varset0, Goal)
+		GStr = "    ------------------------------\n"
+				++ ">>  " ++ step_to_string(Step) ++ "\n  " ++ proof_state_to_string(Varset0, Goal)
 				), from_corresponding_lists(reverse(Proof^p_steps), RemQss)),
 	print(string.join_list("\n", GoalsStr) ++ "\n", !IO).
 
@@ -370,6 +371,6 @@ print_proof_trace(Ctx, Proof, !IO) :-
 :- func proof_state_to_string(varset, list(marked(mprop(M)))) = string <= (modality(M), stringable(M)).
 
 proof_state_to_string(Varset, L) = S :-
-	S = string.join_list(", ", list.map((func(MProp-Marking) = QS :-
+	S = string.join_list(",\n  ", list.map((func(MProp-Marking) = QS :-
 		QS = mprop_to_string(Varset, MProp) ++ "[" ++ string(Marking) ++ "]"
 			), L)).
