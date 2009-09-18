@@ -39,16 +39,17 @@
 
 :- import_module require, solutions.
 :- import_module set, list, pair, string.
+:- import_module formula_io.
 :- import_module varset.
 
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 
-assumable(C, vs(m(Mod, PropIn), _), f(FuncName), vs(m(Mod, Prop), varset.init), Cost) :-
+assumable(C, vs(m(Mod, PropIn), VS), f(FuncName), vs(m(Mod, Prop), VS), Cost) :-
 	assumable_func(C, FuncName, m(Mod, GroundProp), Cost),
 	ground_formula(Prop, GroundProp),
-	unify_formulas(PropIn, Prop, _).
+	unify_formulas(PropIn, Prop, _).  % XXX this?
 
 assumable(_C, Prop, const(Cost), Prop, Cost).
 
@@ -60,7 +61,7 @@ cost(C, F, Prop) = Cost :-
 			), Costs),
 	(if singleton_set(Costs, Cost0)
 	then Cost = Cost0
-	else error("error in cost/3")
+	else error("error in cost/3: prop=" ++ string(Prop) ++ ", length=" ++ string.from_int(set.count(Costs)))
 	).
 
 %apply_cost_function(C, CostFunction, VSMProp) = Cost :-
