@@ -53,7 +53,6 @@
 :- import_module require.
 :- import_module map, set, assoc_list.
 :- import_module string, float.
-:- import_module ctx_modality.
 :- import_module modality.
 
 new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).

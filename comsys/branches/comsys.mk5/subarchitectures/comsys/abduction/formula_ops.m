@@ -3,7 +3,6 @@
 :- module formula_ops.
 :- interface.
 
-:- import_module list.
 :- import_module ops.
 
 :- type wabd_op_table.
@@ -15,15 +14,7 @@
 
 :- implementation.
 
-:- interface.
-
-    % The Mercury operator table used to be the only one allowed.
-    % The old names are no longer appropriate.
-:- type table == wabd_op_table.
-
-:- implementation.
-
-:- import_module int.
+:- import_module int, list.
 
 :- type wabd_op_table
     --->    wabd_op_table.

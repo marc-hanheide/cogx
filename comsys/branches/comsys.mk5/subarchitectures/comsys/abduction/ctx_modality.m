@@ -5,7 +5,6 @@
 :- interface.
 
 :- import_module modality.
-:- import_module stringable.
 
 :- type ref
 	--->	this
@@ -22,8 +21,6 @@
 	.
 
 :- instance modality(ctx_modality).
-:- instance stringable(ctx_modality).
-:- instance parsable(ctx_modality).
 
 :- pred is_ctx_modality(ctx_modality::in) is det.
 
@@ -51,51 +48,6 @@ ctx_modality_axiom = any.
 
 ctx_modality_compose(_, _) = _ :-
 	fail.
-
-%------------------------------------------------------------------------------%
-
-:- instance stringable(ctx_modality) where [
-	func(to_string/1) is ctx_modality_to_string
-].
-
-:- instance parsable(ctx_modality) where [
-	func(from_string/1) is ctx_modality_from_string
-].
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred ctx_modality_as_string(ctx_modality, string).
-:- mode ctx_modality_as_string(in, out) is det.
-:- mode ctx_modality_as_string(out, in) is semidet.
-
-ctx_modality_as_string(e(past), "eP").
-ctx_modality_as_string(e(this), "e0").
-ctx_modality_as_string(e(next), "eN").
-ctx_modality_as_string(e(future), "eF").
-
-ctx_modality_as_string(a(past), "aP").
-ctx_modality_as_string(a(this), "a0").
-ctx_modality_as_string(a(next), "aN").
-ctx_modality_as_string(a(future), "aF").
-
-ctx_modality_as_string(i(past), "iP").
-ctx_modality_as_string(i(this), "i0").
-ctx_modality_as_string(i(next), "iN").
-ctx_modality_as_string(i(future), "iF").
-
-ctx_modality_as_string(any, "[]").
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- func ctx_modality_to_string(ctx_modality) = string.
-
-ctx_modality_to_string(Rep) = S :-
-	ctx_modality_as_string(Rep, S).
-
-:- func ctx_modality_from_string(string::in) = (ctx_modality::out) is semidet.
-
-ctx_modality_from_string(S) = Rep :-
-	ctx_modality_as_string(Rep, S).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
