@@ -87,12 +87,14 @@ main(!IO) :-
 								!:BM = !.BM^mk := add_lf_to_mbm(Stf, Bel, LF, !.BM^mk)
 */
 								Mod = k(Stf, Bel),
-								Ks = !.BM^k,
-								!:BM = !.BM^k := set.insert(Ks, {Stf, Bel, LF, Fg})
+								add_lf_to_k(Stf, Bel, LF, Idx, !BM),
+								(if Fg = yes(_) then foreground(Idx, !BM) else true)
 							;
-								Mod = t(Stf, Bel),
+								Mod = t(Stf, Bel)
+/*
 								Ks = !.BM^t,
 								!:BM = !.BM^t := set.insert(Ks, {Stf, Bel, LF, Fg})
+*/
 							)
 						then
 							Continue = yes
@@ -291,12 +293,11 @@ preprocess_file(LIn, LOut) :-
 print_ctx(Ctx, !IO) :-
 	print("beliefs:\n", !IO),
 
-	set.fold((pred({Stf, Bel, LF, Fg}::in, !.IO::di, !:IO::uo) is det :-
+	map.foldl((pred(Index::in, {Stf, Bel, LF}::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
-		print(to_string(k(Stf, Bel)) ++ ": "
-				++ lf_to_string(LF)
-				%++ atomic_formula_to_string(varset.init, ground_formula_to_formula(Form))
-				++ " .. " ++ string(Fg), !IO),
+		(if member(Index, Ctx^bm^fg) then Fg = "*" else Fg = " "),
+		print("(" ++ from_int(Index) ++ ")  " ++ Fg ++ " " ++ to_string(k(Stf, Bel)) ++ ": "
+				++ lf_to_string(LF), !IO),
 		nl(!IO)
 			), Ctx^bm^k, !IO),
 
