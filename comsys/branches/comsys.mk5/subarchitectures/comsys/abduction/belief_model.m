@@ -32,10 +32,7 @@
 :- type belief_model
 	--->	bm(
 		k :: set({stf, belief, lf, maybe(foreground)}),
-		t :: set({stf, belief, lf, maybe(foreground)}),
-
-		mk :: mbm,
-		mt :: mbm
+		t :: set({stf, belief, lf, maybe(foreground)})
 	).
 
 :- func add_lf_to_mbm(stf, belief, lf, mbm) = mbm.
@@ -48,7 +45,7 @@
 :- import_module require.
 :- import_module map, world_model, lf_io.
 
-init = bm(set.init, set.init, map.init, map.init).
+init = bm(set.init, set.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
