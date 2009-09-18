@@ -1,1 +1,1 @@
-/Users/sandius/Work/comsys.mk5/subarchitectures/comsys/src/slice/Abducer.ice
+../src/slice/Abducer.ice
