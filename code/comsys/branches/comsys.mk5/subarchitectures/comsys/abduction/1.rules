@@ -8,11 +8,11 @@ k(now, private(h)) : @(Idx, X) <-
 k(now, private(r)) : @(Idx, X) <-
 	k(now, mutual(r, h)) : @(Idx, X) / prove.
 
-%k(now, attrib(r, h)) : @(Idx, X) <-
-%	k(now, mutual(r, h)) : @(Idx, X) / prove.
+k(now, attrib(r, h)) : @(Idx, X) <-
+	k(now, mutual(r, h)) : @(Idx, X) / prove.
 
-%k(now, attrib(h, r)) : @(Idx, X) <-
-%	k(now, mutual(r, h)) : @(Idx, X) / prove.
+k(now, attrib(h, r)) : @(Idx, X) <-
+	k(now, mutual(r, h)) : @(Idx, X) / prove.
 
 %[] : ( @(Id::Sort, Prop1 ^ Prop2) <-
 %	@(Id::Sort, Prop1) / prove,

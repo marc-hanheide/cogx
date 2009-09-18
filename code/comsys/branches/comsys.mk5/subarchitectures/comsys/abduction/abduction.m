@@ -34,20 +34,28 @@
 		p_steps :: list(step(M))  % in reverse order
 	).
 
+:- type costs
+	--->	costs(
+		fact_cost :: float,
+		rule_cost :: float,
+		min_assumption_cost :: float
+	).
+
 :- type goal(M) == vscope(list(query(M))).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func new_proof(list(query(M)), varset) = proof(M) <= modality(M).
 
-:- pred prove(proof(M)::in, proof(M)::out, C::in) is nondet <= (modality(M), context(C, M)).
+:- pred prove(float::in, float::in, proof(M)::in, proof(M)::out, costs::in, C::in) is nondet <= (modality(M), context(C, M)).
 
 :- func last_goal(proof(M)) = vscope(list(query(M))) <= modality(M).
 
 :- func goal_assumptions(goal(M)) = bag(with_cost_function(mgprop(M))) <= modality(M).
 :- func goal_assertions(goal(M)) = bag(vscope(mtest(M))) <= modality(M).
 
-:- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
+:- func step_cost(C, step(M), costs) = float <= (context(C, M), modality(M)).
+:- func cost(C, proof(M), costs) = float <= (context(C, M), modality(M)).
 %:- func goal_cost(C, goal(M), float) = float <= (context(C, M), modality(M)).
 
 %------------------------------------------------------------------------------%
@@ -86,27 +94,20 @@ last_goal(Proof) = G :-
 	else error("empty proof in last_goal/1")
 	).
 
-cost(Ctx, Proof, CostForUsingFacts) = Cost :-
+step_cost(Ctx, assume(VSMProp, _Subst, CostFunction), _Costs) = context.cost(Ctx, CostFunction, VSMProp).
+step_cost(_Ctx, use_fact(_, _), Costs) = Costs^fact_cost.
+step_cost(_Ctx, resolve_rule(_, _), Costs) = Costs^rule_cost.
+step_cost(_Ctx, factor(_, _), _Costs) = 0.0.
+
+cost(Ctx, Proof, Costs) = Cost :-
 	list.foldl((pred(Step::in, C0::in, C::out) is det :-
-		(
-			Step = assume(VSMProp, _Subst, CostFunction),
-			C = C0 + context.cost(Ctx, CostFunction, VSMProp)
-		;
-			Step = use_fact(_, _),
-			C = C0 + CostForUsingFacts
-		;
-			Step = resolve_rule(_, _),
-			C = C0
-		;
-			Step = factor(_, _),
-			C = C0
-		)
+		C = C0 + step_cost(Ctx, Step, Costs)
 			), Proof^p_steps, 0.0, Cost).
 
 /*
-goal_cost(Ctx, vs(Qs, VS), CostForUsingFacts) = Cost :-
+goal_cost(Ctx, vs(Qs, VS), Costs) = Cost :-
 	list.foldl((pred(MProp-Marking::in, C0::in, C::out) is det :-
-		( Marking = unsolved(_), error("unsolved query in goal_cost/3")
+		( Marking = unsolved(_), C = C0
 		; Marking = resolved, C = C0 + CostForUsingFacts
 		; Marking = assumed(CostFunction), C = C0 + context.cost(Ctx, CostFunction, vs(MProp, VS))
 		; Marking = asserted, C = C0
@@ -125,7 +126,7 @@ goal_solved(L) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-prove(P0, P, Ctx) :-
+prove(CurCost, CostBound, P0, P, Costs, Ctx) :-
 	P0 = proof(vs([L0|Ls], VS0), Ss0),
 	(if
 		goal_solved(L0)
@@ -144,7 +145,11 @@ prove(P0, P, Ctx) :-
 	else
 		transform(Step, L0, VS0, L, VS, Ctx),
 		P1 = proof(vs([L, L0|Ls], VS), [Step|Ss0]),
-		prove(P1, P, Ctx)
+
+		StepCost = step_cost(Ctx, Step, Costs),
+		CurCost + StepCost =< CostBound,
+
+		prove(CurCost + StepCost, CostBound, P1, P, Costs, Ctx)
 	).
 
 %------------------------------------------------------------------------------%

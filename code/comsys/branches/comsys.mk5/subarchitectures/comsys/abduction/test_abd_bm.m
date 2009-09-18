@@ -122,9 +122,10 @@ main(!IO) :-
 %			DC0 = new_d_ctx,
 
 			Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-G)-P::out) is nondet :-
-				prove(P0, P, !.Ctx),
+				Costs = costs(1.0, 1.0, 0.1),
+				prove(0.0, 10.0, P0, P, Costs, !.Ctx),
 				G = last_goal(P),
-				Cost = cost(!.Ctx, P, 1.0)
+				Cost = cost(!.Ctx, P, Costs)
 					))),
 
 			% TODO: derivations
