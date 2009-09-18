@@ -12,8 +12,8 @@
 	% mprop
 
 	% parsing
-:- func string_to_vsmprop(string) = vscope(mprop(M)) is semidet <= (modality(M), parsable(M)).
-:- func det_string_to_vsmprop(string) = vscope(mprop(M)) <= (modality(M), parsable(M)).
+:- func string_to_vsmprop(string) = vscope(mprop(M)) is semidet <= (modality(M), term_parsable(M)).
+:- func det_string_to_vsmprop(string) = vscope(mprop(M)) <= (modality(M), term_parsable(M)).
 
 	% generation
 :- func mprop_to_string(varset, mprop(M)) = string <= (modality(M), stringable(M)).
@@ -30,15 +30,15 @@
 
 	% mrule
 
-:- func string_to_vsmrule(string) = vscope(mrule(M)) is semidet <= (modality(M), parsable(M)).
-:- func det_string_to_vsmrule(string) = vscope(mrule(M)) <= (modality(M), parsable(M)).
+:- func string_to_vsmrule(string) = vscope(mrule(M)) is semidet <= (modality(M), term_parsable(M)).
+:- func det_string_to_vsmrule(string) = vscope(mrule(M)) <= (modality(M), term_parsable(M)).
 
 :- func vsmrule_to_string(vscope(mrule(M))) = string <= (modality(M), stringable(M)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_mprop(term.term::in, mprop(M)::out) is semidet <= (modality(M), parsable(M)).
-:- pred term_to_mrule(term.term::in, mrule(M)::out) is semidet <= (modality(M), parsable(M)).
+:- pred term_to_mprop(term.term::in, mprop(M)::out) is semidet <= (modality(M), term_parsable(M)).
+:- pred term_to_mrule(term.term::in, mrule(M)::out) is semidet <= (modality(M), term_parsable(M)).
 
 %------------------------------------------------------------------------------%
 
@@ -120,7 +120,7 @@ vsmrule_to_string(vs(m(K, As-H), Varset)) = Str :-
 term_to_mprop(T, m(Mod, P)) :-
 	(if T = functor(atom(":"), [TM, TP], _)
 	then 
-		term_to_list_of_ctx_refs(TM, Mod),
+		term_to_list_of_mods(TM, Mod),
 		term_to_atomic_formula(TP, P)
 	else
 		Mod = [],
@@ -130,7 +130,7 @@ term_to_mprop(T, m(Mod, P)) :-
 term_to_mrule(T, m(Mod, R)) :-
 	(if T = functor(atom(":"), [TM, TR], _)
 	then 
-		term_to_list_of_ctx_refs(TM, Mod),
+		term_to_list_of_mods(TM, Mod),
 		term_to_nonmod_rule(TR, R)
 	else
 		Mod = [],
@@ -139,7 +139,7 @@ term_to_mrule(T, m(Mod, R)) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-atomic_formula_to_string(Varset, p(PredSym, [])) = PredSym.
+atomic_formula_to_string(_Varset, p(PredSym, [])) = PredSym.
 atomic_formula_to_string(Varset, p(PredSym, [H|T])) = PredSym ++ "(" ++ ArgStr ++ ")" :-
 	ArgStr = string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])).
 
@@ -157,12 +157,18 @@ formula_term_to_string(Varset, Arg) = S :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_list_of_ctx_refs(term.term::in, list(M)::out) is semidet <= (modality(M), parsable(M)).
+:- pred term_to_list_of_mods(term.term::in, list(M)::out) is semidet <= (modality(M), term_parsable(M)).
 
-term_to_list_of_ctx_refs(functor(atom(S), [], _), [from_string(S)]).
-term_to_list_of_ctx_refs(functor(atom(":"), [Ms, M], _), LMs ++ LM) :-
-	term_to_list_of_ctx_refs(Ms, LMs),
-	term_to_list_of_ctx_refs(M, LM).
+term_to_list_of_mods(T, L) :-
+	(if T = functor(atom(":"), [TML, TMR], _)
+	then
+		term_to_list_of_mods(TML, Ms),
+		M = from_term(TMR),
+		L = Ms ++ [M]
+	else
+		M = from_term(T),
+		L = [M]
+	).
 
 :- func modality_to_string(list(M)) = string <= (modality(M), stringable(M)).
 
@@ -172,7 +178,7 @@ modality_to_string([H|T]) = string.join_list(":", list.map(to_string, [H|T])) ++
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred term_to_nonmod_rule(term.term::in, pair(list(rule_antecedent(M)), rule_head(M))::out) is semidet
-		<= (modality(M), parsable(M)).
+		<= (modality(M), term_parsable(M)).
 
 term_to_nonmod_rule(functor(atom("<-"), [THead, TAnte], _), Ante-Head) :-
 	(if term_to_mtest(THead, MTest)
@@ -185,7 +191,7 @@ term_to_nonmod_rule(functor(atom("<-"), [THead, TAnte], _), Ante-Head) :-
 	term_to_list_of_rule_antecedents(TAnte, Ante).
 
 :- pred term_to_list_of_rule_antecedents(term.term::in, list(rule_antecedent(M))::out) is semidet
-		<= (modality(M), parsable(M)).
+		<= (modality(M), term_parsable(M)).
 
 term_to_list_of_rule_antecedents(T, List) :-
 	(if
@@ -201,7 +207,7 @@ term_to_list_of_rule_antecedents(T, List) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_list_of_mprops(term.term::in, list(mprop(M))::out) is semidet <= (modality(M), parsable(M)).
+:- pred term_to_list_of_mprops(term.term::in, list(mprop(M))::out) is semidet <= (modality(M), term_parsable(M)).
 
 term_to_list_of_mprops(T, List) :-
 	(if
@@ -217,7 +223,7 @@ term_to_list_of_mprops(T, List) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_mtest(term.term::in, mtest(M)::out) is semidet <= (modality(M), parsable(M)).
+:- pred term_to_mtest(term.term::in, mtest(M)::out) is semidet <= (modality(M), term_parsable(M)).
 
 term_to_mtest(functor(atom("?"), [T], _), MTest) :-
 	(if T = functor(atom("->"), [TMPs, THMP], _)
@@ -233,7 +239,7 @@ term_to_mtest(functor(atom("?"), [T], _), MTest) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred term_to_rule_antecedent(term.term::in, rule_antecedent(M)::out) is semidet
-		<= (modality(M), parsable(M)).
+		<= (modality(M), term_parsable(M)).
 
 term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _), std(cf(MP, f(FName)))) :-
 	term_to_mprop(T, MP).

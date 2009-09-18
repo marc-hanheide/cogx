@@ -1,16 +1,18 @@
 :- module ctx_io.
 
 :- interface.
-:- import_module stringable.
+:- import_module stringable, term.
 
 :- import_module ctx_impl, ctx_modality.
 
 :- instance stringable(ctx_modality).
 :- instance parsable(ctx_modality).
+:- instance term_parsable(ctx_modality).
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
+:- import_module list.
 
 :- instance stringable(ctx_modality) where [
 	func(to_string/1) is ctx_modality_to_string
@@ -18,6 +20,10 @@
 
 :- instance parsable(ctx_modality) where [
 	func(from_string/1) is ctx_modality_from_string
+].
+
+:- instance term_parsable(ctx_modality) where [
+	func(from_term/1) is ctx_modality_from_term
 ].
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -56,3 +62,8 @@ ctx_modality_from_string(S) = Rep :-
 	ctx_modality_as_string(Rep, S).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func ctx_modality_from_term(term.term::in) = (ctx_modality::out) is semidet.
+
+ctx_modality_from_term(functor(atom(S), [], _)) = M :-
+	M = ctx_modality_from_string(S).

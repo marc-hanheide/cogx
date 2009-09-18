@@ -144,7 +144,7 @@ plural_s(N) = S :-
 %------------------------------------------------------------------------------%
 
 :- pred term_to_assumable_function_def(term.term::in, assumable_function_def(M)::out) is semidet
-		<= (modality(M), parsable(M)).
+		<= (modality(M), term_parsable(M)).
 
 term_to_assumable_function_def(functor(atom("="), [FuncNameTerm, DefTerms], _), FuncDef) :-
 	FuncNameTerm = functor(atom(FuncName), [], _),
