@@ -5,14 +5,14 @@
 :- import_module model.
 :- import_module string.
 
-:- func wm_to_string(model(I, S, R)) = string.
+:- func model_to_string(model(I, S, R)) = string.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
 :- import_module map, set, list, pair.
 
-wm_to_string(WM) = Str :-
+model_to_string(WM) = Str :-
 	map.to_assoc_list(WM^worlds, LWorlds),
 	set.to_sorted_list(WM^reach, LReach),
 	map.to_assoc_list(WM^props, LProps),
