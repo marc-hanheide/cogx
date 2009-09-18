@@ -118,7 +118,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       return
     
     print "received task update"
-    if task_desc.status in (Planner.Completion.SUCCEEDED, Planner.Completion.ABORTED):
+    if task_desc.executionStatus in (Planner.Completion.SUCCEEDED, Planner.Completion.ABORTED):
       print "task %d is done." % task_desc.id
       del self.tasks[task_desc.id]
       return

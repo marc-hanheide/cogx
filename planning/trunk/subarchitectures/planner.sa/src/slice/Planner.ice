@@ -41,7 +41,7 @@ module autogen {
       ActionSeq plan;
       string firstActionID;
       unionSeq state;
-      Completion status;
+      Completion executionStatus;
       Completion planningStatus;
     };
 
