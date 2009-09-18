@@ -359,6 +359,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	public Feature createFeature(String featlabel) {
 		Feature feat = new Feature();
 		feat.featlabel = featlabel;
+		feat.alternativeValues = new FeatureValue[0];
 		return feat;
 	}
 

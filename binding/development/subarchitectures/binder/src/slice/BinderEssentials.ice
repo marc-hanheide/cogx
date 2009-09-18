@@ -70,6 +70,34 @@ class Proxy extends PerceivedEntity {
 dictionary<string, string> StringMap;
 
 
+
+sequence<Proxy> ProxySeq;
+
+
+/** 
+ * A binding union
+ */ 
+class Union extends PerceivedEntity {
+	ProxySeq includedProxies;
+	float confidenceScore;
+};
+
+
+
+sequence<Union> UnionSequence;
+
+class UnionConfiguration {
+	UnionSequence includedUnions;
+	float configProb;
+};
+	
+sequence<UnionConfiguration> UnionConfigurationSeq ;
+
+class AlternativeUnionConfigurations {
+	UnionConfigurationSeq alterconfigs;
+};
+
+
 /*** 
  * A wrapper for a map between source data ids and the proxies they
  * are turned into. This is maintained by the abstract writer
@@ -88,32 +116,6 @@ dictionary<string, string> StringMap;
      */
     StringMap sourceID2ProxyID;
   };
-
-
-sequence<Proxy> ProxySeq;
-
-
-/** 
- * A binding union
- */ 
-class Union extends PerceivedEntity {
-	ProxySeq includedProxies;
-};
-
-
-
-sequence<Union> UnionSequence;
-
-class UnionConfiguration {
-	UnionSequence includedUnions;
-	float configProb;
-};
-	
-sequence<UnionConfiguration> UnionConfigurationSeq ;
-
-class AlternativeUnionConfigurations {
-	UnionConfigurationSeq alterconfigs;
-};
 
 };
 

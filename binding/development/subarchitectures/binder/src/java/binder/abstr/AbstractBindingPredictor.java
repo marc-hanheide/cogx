@@ -1,10 +1,14 @@
 package binder.abstr;
 
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Vector;
 
+import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.specialentities.PhantomProxy;
+import binder.utils.GradientDescent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
@@ -14,25 +18,27 @@ public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {
 
 	static PhantomProxy lastPhantomProxy = new PhantomProxy();
 	static WorkingMemoryChangeReceiver receiverForPhantomProxies;	
-	static HashMap<String, Union> predictedUnions = new HashMap<String, Union>();
+	static Vector<Union> predictedUnions = new Vector<Union>();
 
 
-
-	protected Union getPredictedUnion (PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
+	protected Vector<Union> getPredictedUnions (PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 		try {
+
+			predictedUnions = new Vector<Union>();
 
 			addPhantomProxyToWM (phantomProxy);
 
-			while (!predictedUnions.containsKey(phantomProxy.entityID)) {
+			while (predictedUnions.size() == 0) {
 				sleepComponent(20);
 			}
+			
 			log("Predicted union for phantom proxy is sucessfully retrieved");
 
 			if (deleteProxyAfterBinding) {
 				deleteEntityInWM(phantomProxy);
 			}
-			
-			return predictedUnions.get(phantomProxy.entityID);
+
+			return predictedUnions;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -41,6 +47,29 @@ public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {
 	}
 
 
+	
+	protected Union getBestPredictedUnion 
+	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
+		return getMaximum(getPredictedUnions(phantomProxy, deleteProxyAfterBinding));
+	}
+	
+	
+
+	public Union getMaximum (Vector<Union> unions) {
+
+		Union maxUnion = new Union();
+		float maxValue = -1.0f;
+
+		for (Enumeration<Union> e = unions.elements(); e.hasMoreElements() ; ) {
+			Union curU = e.nextElement();
+	//		log("confidence score for "  + curU.entityID + " is: "  + curU.confidenceScore);
+			if (curU.confidenceScore > maxValue) {
+				maxValue = curU.confidenceScore;
+				maxUnion = curU;
+			}
+		}
+		return maxUnion;
+	}
 
 	private void addPhantomProxyToWM (PhantomProxy phantomProxy) {
 
@@ -49,16 +78,24 @@ public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {
 		receiverForPhantomProxies =  new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
-					UnionConfiguration config = 
-						getMemoryEntry(_wmc.address, UnionConfiguration.class);
-					for (int i = 0 ; i < config.includedUnions.length ; i++) {
-						Union u = config.includedUnions[i];
-						for (int j = 0 ; j < u.includedProxies.length ; j++) {
-							if (u.includedProxies[j].equals(lastPhantomProxy)) {
-								predictedUnions.put(lastPhantomProxy.entityID, u);
-								removeChangeFilter(receiverForPhantomProxies);
+					AlternativeUnionConfigurations configs = 
+						getMemoryEntry(_wmc.address, AlternativeUnionConfigurations.class);
+					
+					Vector<Union> newPredictedUnions = new Vector<Union>();
+					for (int k = 0 ; k < configs.alterconfigs.length ; k++) {
+						UnionConfiguration curConfig = configs.alterconfigs[k];
+						for (int i = 0 ; i < curConfig.includedUnions.length ; i++) {
+							Union u = curConfig.includedUnions[i];
+							for (int j = 0 ; j < u.includedProxies.length ; j++) {
+								if (u.includedProxies[j].equals(lastPhantomProxy)) {
+									newPredictedUnions.add(u);
+								}
 							}
 						}
+					}
+					predictedUnions = newPredictedUnions;
+					if (predictedUnions.size() > 0) {
+					removeChangeFilter(receiverForPhantomProxies);
 					}
 				}
 				catch (Exception e) {
@@ -66,7 +103,7 @@ public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {
 				}
 			} 
 		};
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class,
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(AlternativeUnionConfigurations.class,
 				WorkingMemoryOperation.WILDCARD), receiverForPhantomProxies);
 		addProxyToWM (phantomProxy);
 	}

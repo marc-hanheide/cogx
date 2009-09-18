@@ -34,6 +34,7 @@ import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.utils.BayesianNetworkUtils;
+import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
 
 /**
@@ -129,7 +130,7 @@ public class BayesianNetworkManager {
 				// And specify the assignments defining the distribution
 				priorDistrib.assignments = new DiscreteProbabilityAssignment[jointDistribV.size()];
 				priorDistrib.assignments = jointDistribV.toArray(priorDistrib.assignments);
-			}
+			} 
 			else {
 				log("WARNING, feature length is == 0 !");
 				priorDistrib.assignments = new DiscreteProbabilityAssignment[1];
@@ -371,7 +372,7 @@ public class BayesianNetworkManager {
 			}
 		}
 		
-		log("WARNING: Independent probability for " + featlabel + " = " + featvalue + " is not specified");
+		log("WARNING: Independent probability for " + featlabel + " = " + FeatureValueUtils.toString(featvalue) + " is not specified");
 		return 0.5f;
 	}
 
