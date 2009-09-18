@@ -6,6 +6,8 @@
 #include <BeliefModels.h>
 #include <aserv.h>
 
+#include <vector>
+
 using namespace std;
 using namespace autogen;
 using namespace Abducer;
@@ -18,7 +20,7 @@ public:
 	virtual void synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&);
 	virtual void clearRules(const Ice::Current&);
 	virtual void loadRulesFromFile(const std::string& filename, const Ice::Current&);
-	virtual ProofResult proveGoal(const goalSeq& g, const Ice::Current&);
+	virtual ProofResult proveGoal(const GoalPtr& g, const Ice::Current&);
 	virtual AbductiveProofPtr getBestProof(const Ice::Current&);
 private:
 	MercAbdCtx ctx;
@@ -35,18 +37,6 @@ AbducerServerI::AbducerServerI()
 	haveProof = false;
 }
 
-/*
-void
-AbducerServerI::clearFacts(const Ice::Current&)
-{
-	cerr << "clearing facts" << endl;
-
-	MercAbdCtx newCtx;
-	clear_facts(ctx, &newCtx);  // det
-	ctx = newCtx;
-}
-*/
-
 void
 AbducerServerI::synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&)
 {
@@ -57,10 +47,7 @@ void
 AbducerServerI::clearRules(const Ice::Current&)
 {
 	cerr << "clearing rules" << endl;
-
-	MercAbdCtx newCtx;
-	clear_rules(ctx, &newCtx);  // det
-	ctx = newCtx;
+	clear_rules(ctx, &ctx);
 }
 
 void
@@ -78,12 +65,25 @@ AbducerServerI::loadRulesFromFile(const string& filename,const Ice::Current&)
 }
 
 ProofResult
-AbducerServerI::proveGoal(const goalSeq& g, const Ice::Current&)
+AbducerServerI::proveGoal(const GoalPtr& g, const Ice::Current&)
 {
-//	cerr << "proving " << g->body->termString << endl;
 	cerr << "proving" << endl;
-	haveProof = false;
-	return (ERROR);
+
+	char * s = new char[g->body->termString.length() + 1];
+	copy(g->body->termString.begin(), g->body->termString.end(), s);
+	s[g->body->termString.length()] = '\0';
+
+	MR_Word bestProof;
+	if (prove_best(s, g->assumeCost, ctx, &bestProof)) {
+		haveProof = true;
+		return (SUCCESS);
+	}
+	else {
+		haveProof = false;
+		return (FAILED);
+	}
+
+	delete s;
 }
 
 

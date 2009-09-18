@@ -45,7 +45,7 @@ module autogen {
 			void clearRules();
 			void loadRulesFromFile(string filename);
 
-			ProofResult proveGoal(goalSeq g);
+			ProofResult proveGoal(Goal g);
 			AbductiveProof getBestProof();
 		};
 
