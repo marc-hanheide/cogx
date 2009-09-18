@@ -128,12 +128,10 @@ prove(P0, P, Ctx) :-
 	then
 		% check that all assumptions, assertions are ground
 		% (because we may have constant weight functions)
-		% XXX: check assertions? doing just heads now
+		% XXX: check assertions?
 		% XXX: check resolved stuff too?
 		LAss = list.filter_map((func(Q) = MPr is semidet :-
-			( Q = asserted(prop(MPr))
-			; Q = assumed(MPr, _)
-			)
+			Q = assumed(MPr, _)
 				), L0),
 		all_true((pred(MProp::in) is semidet :-
 			ground_formula(MProp^p, _)
