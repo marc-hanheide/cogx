@@ -51,7 +51,7 @@
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module require.
+:- import_module require, solutions.
 :- import_module map, world_model, lf_io.
 
 init = bm(map.init, set.init, 1).
@@ -168,4 +168,25 @@ k_fact0(MBM, STF, Bel, LF) :-
 
 k_model(BM, STF, Bel, M) :-
 	MBM = get_mbm(set.from_list(map.values(BM^k))),
-	error("unimplemented: k_model/4").
+	map.search(MBM, STF, BelMap),
+	(
+		Bel = private(Ag),
+		map.search(BelMap, Bel, M0),
+
+			% all models of mutual beliefs this agent is member of
+		solutions_set((pred(MutM::out) is nondet :-
+			map.member(BelMap, mutual(Ags), MutM),
+			member(Ag, Ags)
+				), MutMs),
+
+			% union with the private belief
+		set.fold((pred(M2::in, M1::in, M3::out) is semidet :-
+			world_model.union(M1, M2, M3)
+				), MutMs, M0, M)
+	;
+		Bel = mutual(_),
+		map.search(BelMap, Bel, M)
+	;
+		Bel = attrib(_, _),
+		map.search(BelMap, Bel, M)
+	).
