@@ -97,7 +97,8 @@ ctx_rule(Ctx, Rule) :-
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
-ctx_assumable_func(_, "func", m([i(this)], p("ascription", [t("u", [])])), 0.2).
+ctx_assumable_func(_, "func", m([i(this)], p("ascription", [t("u", [])])), 1.2).
+ctx_assumable_func(_, "func", m([i(this)], p("ascription", [t("v", [])])), 0.8).
 %ctx_assumable_func(_Ctx, _, _, _) :- fail.
 
 %------------------------------------------------------------------------------%

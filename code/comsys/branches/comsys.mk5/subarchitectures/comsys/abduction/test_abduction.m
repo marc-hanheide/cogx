@@ -87,7 +87,7 @@ main(!IO) :-
 				then
 					print("----------------------------------------------------------------------\n", !IO),
 					format("Proof cost = %f\n\n", [f(Cost)], !IO),
-					print_proof(Proof, !IO),
+					print_proof(!.Ctx, Proof, !IO),
 
 					nl(!IO)
 
@@ -218,9 +218,9 @@ subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 %:- pred print_proof(proof(M)::in, io::di, io::uo) is det <= (modality(M), stringable(M)).
-:- pred print_proof(proof(ctx_modality)::in, io::di, io::uo) is det.
+:- pred print_proof(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
 
-print_proof(Proof, !IO) :-
+print_proof(Ctx, Proof, !IO) :-
 	vs(LastGoal, Varset) = last_goal(Proof),
 
 	print("Proven goal:\n", !IO),
@@ -231,9 +231,12 @@ print_proof(Proof, !IO) :-
 	nl(!IO),
 
 	print("Assumptions:\n", !IO),
-	print("  " ++ string.join_list("\n  ", list.map((func(vs(MProp, VS)-Count) = S :-
-			S = string.from_int(Count) ++ "x " ++ mprop_to_string(VS, MProp)
-				), bag.to_assoc_list(assumptions(Proof)))) ++ "\n", !IO),
+	print("  " ++ string.join_list("\n  ", list.map((func(cf(m(Mod, GProp), Func)) = S :-
+			MProp = m(Mod, ground_formula_to_formula(GProp)),
+			Cost = cost(Ctx, Func, vs(MProp, varset.init)),
+			S = mprop_to_string(varset.init, MProp)
+					++ " / " ++ cost_function_to_string(Func) ++ " = " ++ float_to_string(Cost)
+				), set.to_sorted_list(assumptions(Proof)))) ++ "\n", !IO),
 
 	nl(!IO),
 
