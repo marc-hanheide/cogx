@@ -8,11 +8,13 @@ public class PlannedActionWrapper implements ActionMonitor {
 
 	private final Action m_plannedAction;
 	private final execution.slice.Action m_systemAction;
+	private boolean m_signalledComplete;
 
 	public PlannedActionWrapper(Action _plannedAction,
 			execution.slice.Action _systemAction) {
 		m_plannedAction = _plannedAction;
 		m_systemAction = _systemAction;
+		m_signalledComplete =false;
 	}
 
 	public boolean isInProgress() {
@@ -57,4 +59,13 @@ public class PlannedActionWrapper implements ActionMonitor {
 		m_plannedAction.status = Completion.INPROGRESS;
 		return m_systemAction;
 	}
+
+	public void sentCompletionSignal() {
+		m_signalledComplete = true;
+	}
+
+	public boolean haveSentCompletionSignal() {
+		return m_signalledComplete;
+	}
+
 }

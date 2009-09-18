@@ -11,8 +11,7 @@ import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
+import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
@@ -38,6 +37,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	private String m_goal;
 	private long m_sleepMillis;
 	private boolean m_generateOwnPlans;
+	private WorkingMemoryAddress m_lastPlanProxyAddr;
 
 	public PrototypePlanExecutor() {
 		m_goal = "(forall (?p - place) (= (explored ?p) true))";
@@ -83,7 +83,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 						@Override
 						public void workingMemoryChanged(
 								WorkingMemoryChange _wmc) throws CASTException {
-							//trigger new plan
+							// trigger new plan
 							generatePlan();
 						}
 					});
@@ -93,8 +93,13 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	}
 
 	private void newPlanProxy(WorkingMemoryAddress _planProxyAddr)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+			throws SubarchitectureComponentException {
+		println("newPlanProxy so creating new plan executor");
 
+		PlanProxy pp = getMemoryEntry(_planProxyAddr, PlanProxy.class);
+		PlanningTask pt = getMemoryEntry(pp.planAddress, PlanningTask.class);
+
+		assert (pt.planningStatus == Completion.SUCCEEDED);
 		// create and launch an executor
 		new SerialPlanExecutor(this, _planProxyAddr, this).startExecution();
 	}
@@ -125,11 +130,11 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	 * 
 	 */
 	private void generatePlan() {
-		
+
 		sleepComponent(m_sleepMillis);
-		
+
 		log("generating new plan with goal: " + m_goal);
-		
+
 		String id = newDataID();
 
 		PlanningTask plan = newPlanningTask();
@@ -146,8 +151,10 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 						PlanningTask task = getMemoryEntry(_wmc.address,
 								PlanningTask.class);
 						if (task.planningStatus == Completion.SUCCEEDED) {
+							println("planning succeeded, adding proxy");
 							addToWorkingMemory(newDataID(), new PlanProxy(
 									_wmc.address));
+							removeChangeFilter(this);
 						}
 
 					}

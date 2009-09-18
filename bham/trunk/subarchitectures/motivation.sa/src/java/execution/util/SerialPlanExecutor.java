@@ -1,13 +1,14 @@
 package execution.util;
 
-import java.util.Stack;
-
 import motivation.slice.PlanProxy;
 import autogen.Planner.Action;
+import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -15,10 +16,15 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import execution.components.AbstractExecutionManager;
+import execution.slice.TriBool;
 
 /**
- * A class which manages the execution of a serial plan.
+ * A class which manages the execution of a serial plan, using the actions
+ * written separately to WM. There is probably some redundancy here, but the
+ * interactions with the planner are not quite the more obvious things to track
+ * at the moment.
  * 
  * @author nah
  * 
@@ -40,7 +46,18 @@ public class SerialPlanExecutor extends Thread {
 	 */
 	private final WorkingMemoryAddress m_planProxyAddress;
 
-	private final Stack<Action> m_actionStack;
+	/**
+	 * The address where actions are written on WM.
+	 */
+	private final WorkingMemoryAddress m_actionAddress;
+
+	/***
+	 * The action being executed
+	 * 
+	 * @author nah
+	 * 
+	 */
+	private Action m_currentAction;
 
 	private enum ExecutionState {
 		PENDING, EXECUTING, HALTED, COMPLETED
@@ -54,9 +71,14 @@ public class SerialPlanExecutor extends Thread {
 
 	private WorkingMemoryChangeReceiver m_stopCallback;
 
+	private WorkingMemoryChangeReceiver m_planChangedCallback;
+
+	private WorkingMemoryChangeReceiver m_actionChangedCallback;
+
 	public SerialPlanExecutor(AbstractExecutionManager _component,
 			WorkingMemoryAddress _planProxyAddress, ActionConverter _converter)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+			throws SubarchitectureComponentException {
+
 		m_component = _component;
 		m_converter = _converter;
 
@@ -66,15 +88,24 @@ public class SerialPlanExecutor extends Thread {
 				PlanProxy.class);
 
 		m_planningTaskAddress = planProxy.planAddress;
+		
+		m_component.println("executing plan at: " + CASTUtils.toString(m_planningTaskAddress));
 		m_task = m_component.getMemoryEntry(m_planningTaskAddress,
 				PlanningTask.class);
+		
+//		assert m_task.status == Completion.SUCCEEDED : "can't execute a non-succeeded plan: " + m_task.status;
+		
+		m_actionAddress = new WorkingMemoryAddress(m_task.firstActionID,
+				m_planningTaskAddress.subarchitecture);
 
-		m_actionStack = new Stack<Action>();
-		// push actions onto stack
-		for (int i = m_task.plan.length - 1; i >= 0; --i) {
-			m_actionStack.push(m_task.plan[i]);
+		if (m_task.firstActionID == null || m_task.firstActionID.isEmpty()) {
+			m_component.println("plan was empty, completing");
+			planComplete();
+			return;
 		}
-		assert (m_actionStack.size() == m_task.plan.length);
+
+		m_currentAction = m_component.getMemoryEntry(m_actionAddress,
+				Action.class);
 
 		m_exeState = ExecutionState.PENDING;
 
@@ -84,11 +115,11 @@ public class SerialPlanExecutor extends Thread {
 
 	private void initCallbacks() {
 		// if either struct is deleted we stop execution
-
 		m_stopCallback = new WorkingMemoryChangeReceiver() {
 			@Override
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
+				m_component.println("something was deleted, stopping exe: " + CASTUtils.toString(_wmc));
 				stopExecution();
 			}
 		};
@@ -99,6 +130,47 @@ public class SerialPlanExecutor extends Thread {
 		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
 				m_planProxyAddress, WorkingMemoryOperation.DELETE),
 				m_stopCallback);
+
+		// if plan is overwritten it could be for us to stop too
+		m_planChangedCallback = new WorkingMemoryChangeReceiver() {
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+					throws CASTException {
+				planChanged(m_component.getMemoryEntry(_wmc.address,
+						PlanningTask.class));
+			}
+		};
+		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
+				m_planningTaskAddress, WorkingMemoryOperation.OVERWRITE),
+				m_planChangedCallback);
+
+		// also, if the action is overwritten then it could be a signal to
+		// change action
+		m_actionChangedCallback = new WorkingMemoryChangeReceiver() {
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+					throws CASTException {
+				m_component.log("action changed");
+			}
+		};
+
+		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
+				m_actionAddress, WorkingMemoryOperation.OVERWRITE),
+				m_actionChangedCallback);
+
+	}
+
+	private void planChanged(PlanningTask _memoryEntry)
+			throws SubarchitectureComponentException {
+		// if plan succeeded then we're done
+		m_component.log("plan changed");
+		if (_memoryEntry.planningStatus == Completion.SUCCEEDED) {
+			
+			planComplete();
+			stopExecution();
+			
+			m_component.log("and read that plan complete");
+		}
 	}
 
 	public void startExecution() {
@@ -115,14 +187,6 @@ public class SerialPlanExecutor extends Thread {
 		return m_exeState.ordinal() < ExecutionState.HALTED.ordinal();
 	}
 
-	private boolean hasMoreActions() {
-		return !m_actionStack.isEmpty();
-	}
-
-	private Action nextAction() {
-		return m_actionStack.pop();
-	}
-
 	@Override
 	public void run() {
 
@@ -130,15 +194,10 @@ public class SerialPlanExecutor extends Thread {
 
 		try {
 
-			if (!hasMoreActions()) {
-				m_component.println("plan was empty, completing execution");
-				planComplete();
-				return;
-			}
-
 			// trigger the first action
-			PlannedActionWrapper actionWrapper = triggerNextAction();
-
+			PlannedActionWrapper actionWrapper = triggerNextAction(null);
+			assert actionWrapper != null : "first action should not be null";
+			
 			while (m_component.isRunning() && hasNotBeenStopped()) {
 
 				// wait for the component to receive changes
@@ -149,29 +208,18 @@ public class SerialPlanExecutor extends Thread {
 
 					// if one of the changes completed our action
 					if (!actionWrapper.isInProgress()) {
-
-						// update state on completion as appropriate, return
-						// says whether result of last execution allows
-						// execution to continue
-						boolean carryOn = actionComplete(actionWrapper);
-
-						// if we can carry on
-						if (carryOn) {
-
-							// if more actions
-							if (hasMoreActions()) {
-								actionWrapper = triggerNextAction();
-							}
-							// else, plan is complete
-							else {
-								// plan complete
-								planComplete();
-							}
+						// and we haven't told the planner its complete
+						if (!actionWrapper.haveSentCompletionSignal()) {
+							// update state on completion as appropriate, return
+							// says whether result of last execution allows
+							// execution to continue
+							signalActionComplete(actionWrapper);
 						} else {
-							// finish
+							// try to trigger the next action. if nothing is
+							// triggered then actionWrapper doesn't change.
+							actionWrapper = triggerNextAction(actionWrapper);
 						}
 					}
-
 				}
 
 			}
@@ -188,24 +236,26 @@ public class SerialPlanExecutor extends Thread {
 	 * @throws SubarchitectureComponentException
 	 */
 	private void cleanup() throws SubarchitectureComponentException {
-		m_component.removeChangeFilter(m_stopCallback);
+		// callback could be null if plan was empty
+		if (m_stopCallback != null) {
+			m_component.removeChangeFilter(m_stopCallback);
+			m_component.removeChangeFilter(m_planChangedCallback);
+			m_component.removeChangeFilter(m_actionChangedCallback);
+		}
 	}
 
 	/**
 	 * Called after all actions complete successfully.
-	 * @throws SubarchitectureComponentException 
+	 * 
+	 * @throws SubarchitectureComponentException
 	 */
 	private void planComplete() throws SubarchitectureComponentException {
-		
+
 		cleanup();
-		
+
 		m_exeState = ExecutionState.COMPLETED;
 		m_component.log("plan complete");
-
-		// must do locking in this arbitrary thread
-		m_component.lockComponent();
 		m_component.deleteFromWorkingMemory(m_planProxyAddress);
-		m_component.unlockComponent();
 		m_component.log("plan deleted proxy");
 	}
 
@@ -214,27 +264,50 @@ public class SerialPlanExecutor extends Thread {
 	 * should continue.
 	 * 
 	 * @param _actionWrapper
-	 * @return
 	 */
-	private boolean actionComplete(PlannedActionWrapper _actionWrapper) {
-		return true;
+	private void signalActionComplete(PlannedActionWrapper _actionWrapper)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
+		if (_actionWrapper.wasSuccessful() == TriBool.TRITRUE) {
+			m_currentAction.status = Completion.SUCCEEDED;
+		} else {
+			m_currentAction.status = Completion.FAILED;
+		}
+		m_component.overwriteWorkingMemory(m_actionAddress, m_currentAction);
+		_actionWrapper.sentCompletionSignal();
+		m_component.println("signalled planner that action was completed.");
 	}
 
 	/**
-	 * @return
+	 * Tries to trigger the next action. Will only do so if {@link Action}
+	 * .status is PENDING.
+	 * 
+	 * @return the action wrapper for the new action, or the previous action if
+	 *         nothing was triggered.
 	 * @throws CASTException
 	 * @throws AlreadyExistsOnWMException
 	 * @throws DoesNotExistOnWMException
 	 * @throws UnknownSubarchitectureException
 	 */
-	private PlannedActionWrapper triggerNextAction() throws CASTException,
+	private PlannedActionWrapper triggerNextAction(
+			PlannedActionWrapper _previousAction) throws CASTException,
 			AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
-		Action action = nextAction();
-		PlannedActionWrapper actionWrapper = new PlannedActionWrapper(action,
-				m_converter.toSystemAction(action));
-		m_component.triggerExecution(actionWrapper.execute(), actionWrapper);
+		Action action = readAction();
+		PlannedActionWrapper actionWrapper = _previousAction;
+		if (action.status == Completion.PENDING) {
+			actionWrapper = new PlannedActionWrapper(action, m_converter
+					.toSystemAction(action));
+			m_component
+					.triggerExecution(actionWrapper.execute(), actionWrapper);
+		}
 		return actionWrapper;
+
+	}
+
+	private Action readAction() throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+		return m_component.getMemoryEntry(m_actionAddress, Action.class);
 	}
 
 }
