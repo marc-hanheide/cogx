@@ -33,8 +33,9 @@ namespace spatial {
   {
     class MarshallingServer: public Marshalling::Marshaller {
       virtual void addProxy(const string & type, const string & UID,
-	  double probExists,
-	  const Ice::Current &_context);
+			    double probExists,
+			    const binder::autogen::core::OriginInfoPtr & origin, 
+			    const Ice::Current &_context);
       void deleteProxy(const string &typ, const string &UID,
 	  const Ice::Current &_context);
       virtual void addFeature(const string & proxyType, const string & proxyUID, 
@@ -73,7 +74,8 @@ namespace spatial {
     virtual void configure(const std::map<std::string, std::string>& _config);
 
     void addProxy(const string & type, const string & UID,
-	double probExists);
+		  double probExists, 
+		  const binder::autogen::core::OriginInfoPtr & origin);
     void deleteProxy(const string &typ, const string &UID);
     void addFeature(const string & proxyType, const string & proxyUID, 
 	const binder::autogen::core::FeaturePtr feature);

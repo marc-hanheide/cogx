@@ -78,7 +78,12 @@ SelfRepresenter::runComponent()
   try {
     Marshalling::MarshallerPrx agg(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
     try {
-      agg->addProxy("robot", "1", 1.0);
+      binder::autogen::core::OriginInfoPtr origin = new binder::autogen::core::OriginInfo();
+      origin->subarchId = "no";
+      origin->localDataId = "local";
+      origin->localDataType = "data"; //uh oh, do we always need to include this?
+
+      agg->addProxy("robot", "1", 1.0, origin);
       
       FeaturePtr feature = new Feature();
       feature->featlabel = "category";
