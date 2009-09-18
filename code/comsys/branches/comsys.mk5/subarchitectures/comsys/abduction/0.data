@@ -99,9 +99,22 @@ in_focus = [
 
 	% Facts.
 
-k(now, mutual(h, r)):k_mutual(u).
-k(now, private(r)):k_private(u).
-k(now, attrib(r, h)):k_attrib(u).
+%k(now, mutual(h, r)):k_mutual(u).
+%k(now, private(r)):k_private(u).
+%k(now, attrib(r, h)):k_attrib(u).
+
+k(now, attrib(r, h)) : fact(F) <-
+	e(now) : utter(r, F) / 1.0,
+	i : fact(F) / prove,
+	k(now, private(r)) : fact(F) / 1.0.
+
+k(now, mutual(r, h)) : fact(F) <-
+	e(now) : utter(h, F) / 1.0,
+	i : fact(F) / prove,
+	k(now, attrib(r, h)) : fact(F) / 3.0.
+
+i:fact(f).
+i:fact(e).
 
 a(com):something(u).
 
