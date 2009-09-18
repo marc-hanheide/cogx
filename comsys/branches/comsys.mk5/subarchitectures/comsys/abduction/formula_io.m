@@ -1,229 +1,179 @@
-% NOTE: the original taken from the Mercury standard library, which is LGPL'd
-
 :- module formula_io.
-:- interface.
-
-:- import_module list.
-:- import_module ops.
-
-:- type wabd_op_table.
-:- instance op_table(wabd_op_table).
-
-:- func init_wabd_op_table = (wabd_op_table::uo) is det.
-
-%-----------------------------------------------------------------------------%
-
-:- implementation.
 
 :- interface.
 
-    % The Mercury operator table used to be the only one allowed.
-    % The old names are no longer appropriate.
-:- type table == wabd_op_table.
+:- import_module formula, modality.
+:- import_module stringable.
+
+:- import_module term, varset.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+	% mprop
+
+	% parsing
+:- func string_to_vsmprop(string) = vscope(mprop(M)) is semidet <= (modality(M), parsable(M)).
+:- func det_string_to_vsmprop(string) = vscope(mprop(M)) <= (modality(M), parsable(M)).
+
+	% generation
+:- func mprop_to_string(varset, mprop(M)) = string <= (modality(M), stringable(M)).
+:- func vsmprop_to_string(vscope(mprop(M))) = string <= (modality(M), stringable(M)).
+
+:- func atomic_formula_to_string(varset, atomic_formula) = string.
+:- func formula_term_to_string(varset, formula.term) = string.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+	% mrule
+
+:- func string_to_vsmrule(string) = vscope(mrule(M)) is semidet <= (modality(M), parsable(M)).
+:- func det_string_to_vsmrule(string) = vscope(mrule(M)) <= (modality(M), parsable(M)).
+
+:- func vsmrule_to_string(vscope(mrule(M))) = string <= (modality(M), stringable(M)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred term_to_mprop(term.term::in, mprop(M)::out) is semidet <= (modality(M), parsable(M)).
+:- pred term_to_mrule(term.term::in, mrule(M)::out) is semidet <= (modality(M), parsable(M)).
+
+%------------------------------------------------------------------------------%
 
 :- implementation.
 
-:- import_module int.
+:- import_module require.
+:- import_module list, pair, string.
+:- import_module costs.
+:- import_module formula_ops.
+:- import_module parser, term_io.
 
-:- type wabd_op_table
-    --->    wabd_op_table.
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-init_wabd_op_table = wabd_op_table.
+string_to_vsmprop(Str) = vs(P, Varset) :-
+	read_term_from_string_with_op_table(init_wabd_op_table, "", Str, _, term(Varset, T)),
+	generic_term(T),
+	term_to_mprop(T, P).
 
-:- instance ops.op_table(wabd_op_table) where [
-    pred(ops.lookup_infix_op/5) is lookup_wabd_infix_op,
-    pred(ops.lookup_prefix_op/4) is lookup_wabd_prefix_op,
-    pred(ops.lookup_binary_prefix_op/5) is lookup_wabd_binary_prefix_op,
-    pred(ops.lookup_postfix_op/4) is lookup_wabd_postfix_op,
-    pred(ops.lookup_op/2) is lookup_wabd_op,
-    pred(ops.lookup_op_infos/4) is lookup_wabd_op_infos,
-    pred(ops.lookup_operator_term/4) is lookup_wabd_operator_term,
-    func(ops.max_priority/1) is wabd_max_priority,
-    func(ops.arg_priority/1) is wabd_arg_priority
-].
-
-:- pred lookup_wabd_infix_op(wabd_op_table::in, string::in,
-    ops.priority::out, ops.assoc::out, ops.assoc::out) is semidet.
-
-lookup_wabd_infix_op(_OpTable, Name, Priority,
-        LeftAssoc, RightAssoc) :-
-    op_table(Name, Info),
-    (
-        Info = op_info(Class, PriorityPrime),
-        Class = infix(LeftAssocPrime, RightAssocPrime)
-    ->
-        LeftAssoc = LeftAssocPrime,
-        RightAssoc = RightAssocPrime,
-        Priority = PriorityPrime
-    ;
-		fail
+det_string_to_vsmprop(S) = P :-
+	(if P0 = string_to_vsmprop(S)
+	then P = P0
+	else error("Can't convert string \"" ++ S ++ "\" to a proposition.")
 	).
 
-:- pred lookup_wabd_prefix_op(wabd_op_table::in,
-    string::in, ops.priority::out, ops.assoc::out) is semidet.
+mprop_to_string(Varset, MP) = vsmprop_to_string(vs(MP, Varset)).
 
-lookup_wabd_prefix_op(_OpTable, Name, Priority, LeftAssoc) :-
-    op_table(Name, Info),
-    ( Info = op_info(prefix(LeftAssocPrime), PriorityPrime) ->
-        LeftAssoc = LeftAssocPrime,
-        Priority = PriorityPrime
-    ; fail
-    ).
+vsmprop_to_string(vs(m(K, P), Varset)) = Str :-
+	Str = modality_to_string(K) ++ atomic_formula_to_string(Varset, P).
 
-:- pred lookup_wabd_binary_prefix_op(wabd_op_table::in, string::in,
-    ops.priority::out, ops.assoc::out, ops.assoc::out) is semidet.
+:- func annot_vsmprop_to_string(vscope(with_cost_function(mprop(M)))) = string
+		<= (modality(M), stringable(M)).
 
-lookup_wabd_binary_prefix_op(_OpTable, Name, Priority,
-        LeftAssoc, RightAssoc) :-
-    op_table(Name, Info),
-    (
-        Info = op_info(Class, PriorityPrime),
-        Class = binary_prefix(LeftAssocPrime, RightAssocPrime)
-    ->
-        LeftAssoc = LeftAssocPrime,
-        RightAssoc = RightAssocPrime,
-        Priority = PriorityPrime
-    ;
-		fail
-    ).
+annot_vsmprop_to_string(vs(cf(MP, F), Varset)) = vsmprop_to_string(vs(MP, Varset))
+		++ "/" ++ cost_function_to_string(F).
 
-:- pred lookup_wabd_postfix_op(wabd_op_table::in,
-    string::in, ops.priority::out, ops.assoc::out) is semidet.
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-lookup_wabd_postfix_op(_OpTable, Name, Priority, LeftAssoc) :-
-    op_table(Name, Info),
-    ( Info = op_info(postfix(LeftAssocPrime), PriorityPrime) ->
-        LeftAssoc = LeftAssocPrime,
-        Priority = PriorityPrime
-    ;
-		fail
-    ).
+string_to_vsmrule(Str) = vs(R, Varset) :-
+	read_term_from_string("", Str, _, term(Varset, T)),
+	generic_term(T),
+	term_to_mrule(T, R).
 
-:- pred lookup_wabd_op(wabd_op_table::in, string::in) is semidet.
-
-lookup_wabd_op(_OpTable, Name) :-
-    op_table(Name, _).
-
-:- pred lookup_wabd_op_infos(wabd_op_table::in, string::in,
-    op_info::out, list(op_info)::out) is semidet.
-
-lookup_wabd_op_infos(_OpTable, Name, Info, []) :-
-    op_table(Name, Info).
-
-:- pred lookup_wabd_operator_term(wabd_op_table::in,
-    ops.priority::out, ops.assoc::out, ops.assoc::out) is det.
-
-    % Left associative, lower priority than everything except record syntax.
-lookup_wabd_operator_term(_OpTable, 120, y, x).
-
-:- func wabd_max_priority(wabd_op_table) = ops.priority.
-
-wabd_max_priority(_Table) = 1200.
-
-:- func wabd_arg_priority(wabd_op_table) = ops.priority.
-
-    % This needs to be less than the priority of the ','/2 operator.
-wabd_arg_priority(_Table) = 999.
-
-:- pred op_table(string::in, op_info::out) is semidet.
-
-op_table(Op, Info) :-
-	( Op = "<-",    Info = op_info(infix(x, x), 1200)
-	; Op = ",",     Info = op_info(infix(x, y), 1000)
-	; Op = ":",     Info = op_info(infix(y, x), 120)
-	; Op = "/",     Info = op_info(infix(y, x), 400)
-	; Op = "->",    Info = op_info(infix(x, y), 500)  % 1050
-	; Op = "~",     Info = op_info(prefix(y), 900)
-	; Op = "?",     Info = op_info(prefix(x), 100)  % 1100
-
-%	; Op = "+",     Info = op_info(infix(y, x), 500)
-%	; Op = "-",     Info = op_info(infix(y, x), 500)
-%	; Op = ":-",    Info = op_info(infix(x, x), 1200)
-%	; Op = "^",     Info = op_info(infix(x, y), 99)
-%	; Op = "*",     Info = op_info(infix(y, x), 400)
-%	; Op = "**",    Info = op_info(infix(x, y), 200)
-%	; Op = "-->",   Info = op_info(infix(x, x), 1200)
-%	; Op = "//",    Info = op_info(infix(y, x), 400)
-%	; Op = "/\\",   Info = op_info(infix(y, x), 500)
-%	; Op = ";",     Info = op_info(infix(x, y), 1100)
-%	; Op = "<",     Info = op_info(infix(x, x), 700)
-%	; Op = "<<",    Info = op_info(infix(y, x), 400)
-%	; Op = "=",     Info = op_info(infix(x, x), 700)
-%	; Op = "=..",   Info = op_info(infix(x, x), 700)
-%	; Op = "=:=",   Info = op_info(infix(x, x), 700)    % (*)
-%	; Op = "=<",    Info = op_info(infix(x, x), 700)
-%	; Op = "==",    Info = op_info(infix(x, x), 700)    % (*)
-%	; Op = "=\\=",  Info = op_info(infix(x, x), 700)    % (*)
-%	; Op = ">",     Info = op_info(infix(x, x), 700)
-%	; Op = ">=",    Info = op_info(infix(x, x), 700)
-%	; Op = ">>",    Info = op_info(infix(y, x), 400)
-%	; Op = "?-",    Info = op_info(prefix(x), 1200)     % (*)
-%	; Op = "@<",    Info = op_info(infix(x, x), 700)
-%	; Op = "@=<",   Info = op_info(infix(x, x), 700)
-%	; Op = "@>",    Info = op_info(infix(x, x), 700)
-%	; Op = "@>=",   Info = op_info(infix(x, x), 700)
-%	; Op = "\\",    Info = op_info(prefix(x), 200)
-%	; Op = "\\+",   Info = op_info(prefix(y), 900)
-%	; Op = "\\/",   Info = op_info(infix(y, x), 500)
-%	; Op = "\\=",   Info = op_info(infix(x, x), 700)
-%	; Op = "\\==",  Info = op_info(infix(x, x), 700)    % (*)
-%	; Op = "div",   Info = op_info(infix(y, x), 400)
-%	; Op = "is",    Info = op_info(infix(x, x), 701)    % ISO: prec 700
-%	; Op = "mod",   Info = op_info(infix(x, x), 400)
-%	; Op = "rem",   Info = op_info(infix(x, x), 400)
-%	; Op = "~",     Info = op_info(prefix(y), 900)     % (*)
-%	; Op = "~=",    Info = op_info(infix(x, x), 700)    % (*)
-%	; Op = "and",   Info = op_info(infix(x, y), 720)
-%	; Op = "or",    Info = op_info(infix(x, y), 740)
-%	; Op = "rule",  Info = op_info(prefix(x), 1199)
-%	; Op = "when",  Info = op_info(infix(x, x), 900)    % (*)
-%	; Op = "where", Info = op_info(infix(x, x), 1175)   % (*)
-%	; Op = "<=",    Info = op_info(infix(x, y), 920)
-%	; Op = "<=>",   Info = op_info(infix(x, y), 920)
-%	; Op = "=>",    Info = op_info(infix(x, y), 920)
-%	; Op = "all",   Info = op_info(binary_prefix(x, y), 950)
-%	; Op = "some",  Info = op_info(binary_prefix(x, y), 950)
-%	; Op = "if",    Info = op_info(prefix(x), 1160)
-%	; Op = "then",  Info = op_info(infix(x, x), 1150)
-%	; Op = "else",  Info = op_info(infix(x, y), 1170)
-%	; Op = "catch", Info = op_info(infix(x, y), 1180)
-%	; Op = "catch_any", Info = op_info(infix(x, y), 1190)
-%	; Op = "not",   Info = op_info(prefix(y), 900)
-%	; Op = "pred",  Info = op_info(prefix(x), 800)
-%	; Op = "!",                 Info = op_info(prefix(x), 40)
-%	; Op = "!.",                Info = op_info(prefix(x), 40)
-%	; Op = "!:",                Info = op_info(prefix(x), 40)
-%	; Op = "&",                 Info = op_info(infix(x, y), 1025)
-%	; Op = "++",                Info = op_info(infix(x, y), 500)
-%	; Op = "--",                Info = op_info(infix(y, x), 500)
-%	; Op = "--->",              Info = op_info(infix(x, y), 1179)
-%	; Op = ".",                 Info = op_info(infix(y, x), 10)
-%	; Op = "..",                Info = op_info(infix(x, x), 550)
-%	; Op = "::",                Info = op_info(infix(x, x), 1175)
-%	; Op = ":=",                Info = op_info(infix(x, x), 650)
-%	; Op = "==>",               Info = op_info(infix(x, x), 1175)
-%	; Op = "=^",                Info = op_info(infix(x, x), 650)
-%	; Op = "@",                 Info = op_info(infix(x, x), 90)
-%	; Op = "or_else",           Info = op_info(infix(x, y), 1100)
-%	; Op = "end_module",        Info = op_info(prefix(x), 1199)
-%	; Op = "event",             Info = op_info(prefix(x), 100)
-%	; Op = "finalise",          Info = op_info(prefix(x), 1199)
-%	; Op = "finalize",          Info = op_info(prefix(x), 1199)
-%	; Op = "func",              Info = op_info(prefix(x), 800)
-%	; Op = "import_module",     Info = op_info(prefix(x), 1199)
-%	; Op = "impure",            Info = op_info(prefix(y), 800)
-%	; Op = "include_module",    Info = op_info(prefix(x), 1199)
-%	; Op = "initialise",        Info = op_info(prefix(x), 1199)
-%	; Op = "initialize",        Info = op_info(prefix(x), 1199)
-%	; Op = "inst",              Info = op_info(prefix(x), 1199)
-%	; Op = "instance",          Info = op_info(prefix(x), 1199)
-%	; Op = "mode",              Info = op_info(prefix(x), 1199)
-%	; Op = "module",            Info = op_info(prefix(x), 1199)
-%	; Op = "pragma",            Info = op_info(prefix(x), 1199)
-%	; Op = "promise",           Info = op_info(prefix(x), 1199)
-%	; Op = "semipure",          Info = op_info(prefix(y), 800)
-%	; Op = "solver",            Info = op_info(prefix(y), 1181)
-%	; Op = "type",              Info = op_info(prefix(x), 1180)
-%	; Op = "typeclass",         Info = op_info(prefix(x), 1199)
-%	; Op = "use_module",        Info = op_info(prefix(x), 1199)
+det_string_to_vsmrule(S) = R :-
+	(if R0 = string_to_vsmrule(S)
+	then R = R0
+	else error("Can't convert string \"" ++ S ++ "\" to a rule.")
 	).
+
+vsmrule_to_string(vs(m(K, As-H), Varset)) = Str :-
+	ModStr = modality_to_string(K),
+	RuleStr = vsmprop_to_string(vs(H, Varset)) ++ " <- "
+			++ string.join_list(", ", list.map((func(A) = annot_vsmprop_to_string(vs(A, Varset))), As)),
+	(if ModStr = ""
+	then Rest = RuleStr
+	else Rest = "(" ++ RuleStr ++ ")"
+	),
+	Str = ModStr ++ Rest.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+term_to_mprop(T, m(Mod, P)) :-
+	(if T = functor(atom(":"), [TM, TP], _)
+	then 
+		term_to_list_of_ctx_refs(TM, Mod),
+		term_to_atomic_formula(TP, P)
+	else
+		Mod = [],
+		term_to_atomic_formula(T, P)
+	).
+
+term_to_mrule(T, m(Mod, R)) :-
+	(if T = functor(atom(":"), [TM, TR], _)
+	then 
+		term_to_list_of_ctx_refs(TM, Mod),
+		term_to_nonmod_rule(TR, R)
+	else
+		Mod = [],
+		term_to_nonmod_rule(T, R)
+	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+atomic_formula_to_string(Varset, p(PredSym, Args)) = PredSym ++ "(" ++ ArgStr ++ ")" :-
+	ArgStr = string.join_list(", ", list.map(formula_term_to_string(Varset), Args)).
+
+formula_term_to_string(Varset, Arg) = S :-
+	(
+		Arg = t(Functor, []),
+		S = Functor
+	;
+		Arg = t(Functor, [H|T]),
+		S = Functor ++ "(" ++ string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])) ++ ")"
+	;
+		Arg = v(Var),
+		S = varset.lookup_name(Varset, Var)
+	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred term_to_list_of_ctx_refs(term.term::in, list(M)::out) is semidet <= (modality(M), parsable(M)).
+
+term_to_list_of_ctx_refs(functor(atom(S), [], _), [from_string(S)]).
+term_to_list_of_ctx_refs(functor(atom(":"), [Ms, M], _), LMs ++ LM) :-
+	term_to_list_of_ctx_refs(Ms, LMs),
+	term_to_list_of_ctx_refs(M, LM).
+
+:- func modality_to_string(list(M)) = string <= (modality(M), stringable(M)).
+
+modality_to_string([]) = "".
+modality_to_string([H|T]) = string.join_list(":", list.map(to_string, [H|T])) ++ ":".
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred term_to_nonmod_rule(term.term::in, pair(list(with_cost_function(mprop(M))), mprop(M))::out) is semidet
+		<= (modality(M), parsable(M)).
+
+term_to_nonmod_rule(functor(atom("<-"), [THead, TAnte], _), Ante-Head) :-
+	term_to_mprop(THead, Head),
+	term_to_list_of_annot_mprops(TAnte, Ante).
+
+:- pred term_to_list_of_annot_mprops(term.term::in, list(with_cost_function(mprop(M)))::out) is semidet
+		<= (modality(M), parsable(M)).
+
+term_to_list_of_annot_mprops(T, List) :-
+	(if
+		T = functor(atom(","), [TMP, TMPs], _)
+	then
+		func_annotation(TMP, F, MP1),
+		term_to_mprop(MP1, MP),
+		term_to_list_of_annot_mprops(TMPs, MPs),
+		List = [cf(MP, F)|MPs]
+	else
+		func_annotation(T, F, T1),
+		term_to_mprop(T1, MP),
+		List = [cf(MP, F)]
+	).
+
+:- pred func_annotation(term.term::in, cost_function::out, term.term::out) is semidet.
+
+func_annotation(functor(atom("/"), [T, functor(atom(FName), [], _)], _), f(FName), T).
+func_annotation(functor(atom("/"), [T, functor(float(FValue), [], _)], _), const(FValue), T).
+

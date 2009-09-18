@@ -19,7 +19,7 @@
 :- import_module ctx_modality, ctx_impl.
 :- import_module modality, stringable.
 
-:- import_module parser, term_io, term, varset, formula_io.
+:- import_module parser, term_io, term, varset, formula_io, formula_ops.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

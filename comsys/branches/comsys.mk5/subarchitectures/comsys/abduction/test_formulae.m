@@ -14,7 +14,7 @@
 
 :- import_module string, pair, list, map.
 :- import_module varset, term, term_io, parser.
-:- import_module formula.
+:- import_module formula, formula_io.
 
 :- import_module ctx_modality.
 
