@@ -41,7 +41,9 @@ public class TestGenerator extends AbstractMotiveGenerator {
 				TestSource ts = getMemoryEntry(id,TestSource.class);
 				overwriteWorkingMemory(id, ts);
 				unlockEntry(id);
-				Thread.sleep(2000);
+				Thread.sleep(1000);
+				addToWorkingMemory(newDataID(), new TestSource());
+				Thread.sleep(1000);
 			}
 
 			log("delete test source in WM");
@@ -75,7 +77,7 @@ public class TestGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) {
 		try {
-			TestSource source = getMemoryEntry(motive.referenceEntry, TestSource.class);
+			getMemoryEntry(motive.referenceEntry, TestSource.class);
 			// generate some fake stuff here...
 			write(motive);
 			return true;

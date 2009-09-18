@@ -7,8 +7,6 @@ import motivation.factories.MotiveFactory;
 import motivation.slice.Motive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
-import cast.AlreadyExistsOnWMException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
