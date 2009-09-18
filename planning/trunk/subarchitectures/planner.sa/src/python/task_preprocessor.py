@@ -1,9 +1,11 @@
 from collections import defaultdict
+import itertools
 from string import maketrans
 
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
 import standalone.mapl_new as mapl
 import standalone.state_new as state
+import binder.autogen
 import binder.autogen.featvalues as featvalues
 
 # Using string templates only until move to the proper ICE types
@@ -83,7 +85,12 @@ def gen_fact_tuples(unions):
     #name = map_name(union.entityID, prefix="union")
     name = union.entityID
     object = mapl.types.TypedObject(name, mapl.types.objectType)
-    for feature in union.features:
+
+    add_features = []
+    if isinstance(union, binder.autogen.specialentities.RelationUnion):
+      add_features = [union.source, union.target]
+      
+    for feature in itertools.chain(union.features, add_features):
       # choose feature val with highest probability:
       max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
       #valname = map_name(max_val.val)
@@ -173,6 +180,7 @@ def infer_types(obj_descriptions):
         return -1
       elif type2.isSubtypeOf(type1):
         return 1
+      print "%s could be of types %s or %s" % (obj.name, type1, type2)
       assert False, "Multiple inheritance not supported yet"
     most_spec_type = sorted(types, cmp=type_cmp)[0]
     #type_dict[obj] = most_spec_type
