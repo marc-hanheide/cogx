@@ -99,6 +99,11 @@ not_ground(u).
 	i0:ascription(U) / 2.0
 ).
 
+[]:(i0:quality(U, colour(Col)) <-
+	i0:colour(Col) / 0.5,
+	i0:ascription(U) / func
+).
+
 say(what_question(Ref, Q)) <-
 	e0:said(U) / 1.5,
 	[]:clarify(U, Q) / 0.5,
