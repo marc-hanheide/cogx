@@ -69,7 +69,8 @@
 :- instance context(ctx, ctx_modality) where [
 	pred(fact/2) is ctx_fact,
 	pred(vrule/2) is ctx_rule,
-	pred(assumable_func/4) is ctx_assumable_func
+	pred(assumable_func/4) is ctx_assumable_func,
+	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
 
 new_ctx = ctx(set.init, set.init, map.init).
@@ -113,6 +114,10 @@ ctx_rule(Ctx, Rule) :-
 ctx_assumable_func(Ctx, FuncName, GProp, Cost) :-
 	map.search(Ctx^ctx_assumables, FuncName, MapCosts),
 	map.member(MapCosts, GProp, Cost).
+
+:- func ctx_min_assumption_cost(ctx, ctx_modality) = float.
+
+ctx_min_assumption_cost(_, _) = 0.1.
 
 %------------------------------------------------------------------------------%
 
