@@ -12,14 +12,14 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- type marking
-	--->	proved
-	;	assumed(cost_function)
-	;	unsolved(cost_function)
-	;	asserted
+:- type query(M)
+	--->	proved(mprop(M))
+	;	assumed(mprop(M), cost_function)
+	;	unsolved(mprop(M), cost_function)
+	;	asserted(mprop(M))
 	.
 
-:- type marked(T) == pair(T, marking).
+%:- type marked(T) == pair(T, marking).
 
 :- type step(M)
 	--->	assume(vscope(mprop(M)), subst, cost_function)
@@ -30,19 +30,19 @@
 
 :- type proof(M)
 	--->	proof(
-		p_goals :: vscope(list(list(marked(mprop(M))))),  % in reverse order
+		p_goals :: vscope(list(list(query((M))))),  % in reverse order
 		p_steps :: list(step(M))  % in reverse order
 	).
 
-:- type goal(M) == vscope(list(marked(mprop(M)))).
+:- type goal(M) == vscope(list(query(M))).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func new_proof(list(marked(mprop(M))), varset) = proof(M) <= modality(M).
+:- func new_proof(list(query(M)), varset) = proof(M) <= modality(M).
 
 :- pred prove(proof(M)::in, proof(M)::out, C::in) is nondet <= (modality(M), context(C, M)).
 
-:- func last_goal(proof(M)) = vscope(list(marked(mprop(M)))) <= modality(M).
+:- func last_goal(proof(M)) = vscope(list(query(M))) <= modality(M).
 
 :- func goal_assumptions(goal(M)) = bag(with_cost_function(mgprop(M))) <= modality(M).
 :- func goal_assertions(goal(M)) = bag(vscope(mprop(M))) <= modality(M).
@@ -64,7 +64,7 @@ new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 goal_assumptions(vs(Qs, _VS)) = As :-
-	As = bag.from_list(list.filter_map((func(MProp-assumed(Func)) = AnnotMGProp is semidet :-
+	As = bag.from_list(list.filter_map((func(assumed(MProp, Func)) = AnnotMGProp is semidet :-
 		MProp = m(Mod, Prop),
 		AnnotMGProp = cf(m(Mod, det_formula_to_ground_formula(Prop)), Func)
 			), Qs)).
@@ -72,7 +72,7 @@ goal_assumptions(vs(Qs, _VS)) = As :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 goal_assertions(vs(Qs, VS)) = As :-
-	As = bag.from_list(list.filter_map((func(MProp-asserted) = vs(MProp, VS) is semidet), Qs)).
+	As = bag.from_list(list.filter_map((func(asserted(MProp)) = vs(MProp, VS) is semidet), Qs)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -112,11 +112,11 @@ goal_cost(Ctx, vs(Qs, VS), CostForUsingFacts) = Cost :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred goal_solved(list(marked(mprop(M)))::in) is semidet <= modality(M).
+:- pred goal_solved(list(query(M))::in) is semidet <= modality(M).
 
 goal_solved(L) :-
-	list.all_true((pred(_-Marking::in) is semidet :-
-		Marking \= unsolved(_)
+	list.all_true((pred(Q::in) is semidet :-
+		Q \= unsolved(_, _)
 			), L).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -129,12 +129,12 @@ prove(P0, P, Ctx) :-
 		% check that all assumptions, assertions are ground
 		% (because we may have constant weight functions)
 		% XXX: check resolved stuff too?
-		LAss = list.filter((pred(_MProp-Marking::in) is semidet :-
-			( Marking = asserted
-			; Marking = assumed(_)
+		LAss = list.filter_map((func(Q) = MPr is semidet :-
+			( Q = asserted(MPr)
+			; Q = assumed(MPr, _)
 			)
 				), L0),
-		all_true((pred(MProp-_Marking::in) is semidet :-
+		all_true((pred(MProp::in) is semidet :-
 			ground_formula(MProp^p, _)
 				), LAss),
 		P = P0
@@ -146,20 +146,20 @@ prove(P0, P, Ctx) :-
 
 %------------------------------------------------------------------------------%
 
-:- pred segment_proof_state(list(marked(mprop(M)))::in,
-		{list(marked(mprop(M))), with_cost_function(mprop(M)), list(marked(mprop(M)))}::out) is semidet
+:- pred segment_proof_state(list(query(M))::in,
+		{list(query(M)), with_cost_function(mprop(M)), list(query(M))}::out) is semidet
 		<= modality(M).
 
 segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
-	list.takewhile((pred(_-Label::in) is semidet :-
-		Label \= unsolved(_)
-			), Qs, QsL, [QUnsolved-unsolved(F) | QsR]).
+	list.takewhile((pred(Q0::in) is semidet :-
+		Q0 \= unsolved(_, _)
+			), Qs, QsL, [unsolved(QUnsolved, F) | QsR]).
 
 %------------------------------------------------------------------------------%
 
 :- pred transform(step(M)::out,
-		list(marked(mprop(M)))::in, varset::in,
-		list(marked(mprop(M)))::out, varset::out,
+		list(query(M))::in, varset::in,
+		list(query(M))::out, varset::out,
 		C::in) is nondet <= (modality(M), context(C, M)).
 
 transform(Step, L0, VS0, L, VS, Ctx) :-
@@ -173,14 +173,14 @@ transform(Step, L0, VS0, L, VS, Ctx) :-
 
 			% input
 		{
-			list(marked(mprop(M))),  % unsolved (preceding propositions)
+			list(query(M)),  % unsolved (preceding propositions)
 			with_cost_function(mprop(M)),  % proposition under examination + its assump.cost
-			list(marked(mprop(M)))  % following propositions
+			list(query(M))  % following propositions
 		}::in,
 		varset::in,  % variables used in the proof
 
 			% output
-		list(marked(mprop(M)))::out,  % resulting goal after performing the step
+		list(query(M))::out,  % resulting goal after performing the step
 		varset::out,  % variables used in the goal
 
 		C::in  % knowledge base
@@ -190,11 +190,11 @@ transform(Step, L0, VS0, L, VS, Ctx) :-
 	% assumption
 step(assume(vs(m(MQ, PQ), VS), Uni, F),
 		{QsL0, cf(m(MQ, PQ0), F), QsR0}, VS0,
-		QsL ++ [m(MQ, PQ)-assumed(F)] ++ QsR, VS,
+		QsL ++ [assumed(m(MQ, PQ), F)] ++ QsR, VS,
 		Ctx) :-
 
 	assumable(Ctx, vs(m(MQ, PQ0), VS0), F, vs(m(MA, PA0), VSA), _Cost),
-%	match(compose_list(MQ), compose_list(MA)),
+	match(compose_list(MQ), compose_list(MA)),
 
 	varset.merge_renaming(VS0, VSA, VS, Renaming),
 	PA = rename_vars_in_formula(Renaming, PA0),
@@ -202,8 +202,8 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 	unify_formulas(PQ0, PA, Uni),
 
 	PQ = apply_subst_to_formula(Uni, PQ0),
-	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
-	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
+	QsL = list.map(apply_subst_to_query(Uni), QsL0),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0).
 
 %	formula.is_ground(Q^p).
 
@@ -212,7 +212,7 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 	% resolution with a fact
 step(use_fact(vs(m(MF, PF), VS), Uni),
 		{QsL0, cf(m(MQ, PQ0), _F), QsR0}, VS0,
-		QsL ++ [m(MQ, PQ)-proved] ++ QsR, VS,
+		QsL ++ [proved(m(MQ, PQ))] ++ QsR, VS,
 		Ctx) :-
 
 	fact(Ctx, vs(m(MF, PF0), VSF)),
@@ -224,8 +224,8 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 	unify_formulas(PF, PQ0, Uni),
 
 	PQ = apply_subst_to_formula(Uni, PQ0),
-	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
-	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
+	QsL = list.map(apply_subst_to_query(Uni), QsL0),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -246,17 +246,17 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 
 		% XXX have assertion in another rule?
 	QsInsert = list.map((func(A) = UniA :-
-		( A = std(cf(P, F)), UniA = apply_subst_to_mprop(Uni, P)-unsolved(F)
-		; A = test_fact(P), UniA = apply_subst_to_mprop(Uni, P)-asserted
+		( A = std(cf(P, F)), UniA = unsolved(apply_subst_to_mprop(Uni, P), F)
+		; A = test_fact(P), UniA = asserted(apply_subst_to_mprop(Uni, P))
 		)
 			), Ante)
-			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-proved],
+			++ [proved(m(MQ, apply_subst_to_formula(Uni, PQ)))],
 
 %	QsInsert = list.map((func(cf(P, F)) = apply_subst_to_mprop(Uni, P)-unsolved(F)), Ante)
 %			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
 
-	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
-	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
+	QsL = list.map(apply_subst_to_query(Uni), QsL0),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -265,13 +265,21 @@ step(factor(Uni, VS),
 		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS,
 		QsL ++ QsR, VS,
 		_Ctx) :-
-	member(m(MP, PP)-_, QsL0),
+
+	member(Prev, QsL0),
+	( Prev = proved(MProp)
+	; Prev = unsolved(MProp, _)
+	; Prev = assumed(MProp, _)
+	; Prev = asserted(MProp)
+	),
+
+	MProp = m(MP, PP),
 	match(compose_list(MP), compose_list(MQ)),
 
 	unify_formulas(PP, PQ, Uni),
 
-	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
-	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
+	QsL = list.map(apply_subst_to_query(Uni), QsL0),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0).
 
 %------------------------------------------------------------------------------%
 
@@ -279,3 +287,12 @@ step(factor(Uni, VS),
 
 map_fst(Func, LIn) = LOut :-
 	LOut = list.map((func(K-V) = apply(Func, K)-V), LIn).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func apply_subst_to_query(subst, query(M)) = query(M) <= modality(M).
+
+apply_subst_to_query(Subst, unsolved(MProp, F)) = unsolved(apply_subst_to_mprop(Subst, MProp), F).
+apply_subst_to_query(Subst, proved(MProp)) = proved(apply_subst_to_mprop(Subst, MProp)).
+apply_subst_to_query(Subst, assumed(MProp, F)) = assumed(apply_subst_to_mprop(Subst, MProp), F).
+apply_subst_to_query(Subst, asserted(MProp)) = asserted(apply_subst_to_mprop(Subst, MProp)).

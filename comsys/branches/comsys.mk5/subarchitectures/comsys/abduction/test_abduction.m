@@ -66,7 +66,7 @@ main(!IO) :-
 
 			vs(InitMProp, InitVarset) = det_string_to_vsmprop(Goal),
 
-			P0 = proof(vs([[InitMProp-unsolved(const(InitAssumeCost))]], InitVarset), []),
+			P0 = proof(vs([[unsolved(InitMProp, const(InitAssumeCost))]], InitVarset), []),
 
 			format("goal:\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
 
@@ -294,12 +294,20 @@ subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func goal_to_string(vscope(list(marked(mprop(ctx_modality))))) = string.
+:- func query_to_string(varset, query(ctx_modality)) = string.
 
-goal_to_string(vs(G, VS)) = string.join_list(",\n  ",
-		list.map((func(MProp-Marking) = S :-
-			S = mprop_to_string(VS, MProp) ++ "[" ++ string(Marking) ++ "]"
-				), G)).
+query_to_string(VS, unsolved(MProp, F)) = mprop_to_string(VS, MProp)
+		++ "[unsolved ~ " ++ cost_function_to_string(F) ++ "]".
+query_to_string(VS, proved(MProp)) = mprop_to_string(VS, MProp) ++ "[proved]".
+query_to_string(VS, assumed(MProp, F)) = mprop_to_string(VS, MProp)
+		++ "[assumed ~ " ++ cost_function_to_string(F) ++ "]".
+query_to_string(VS, asserted(MProp)) = mprop_to_string(VS, MProp) ++ "[asserted]".
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func goal_to_string(vscope(list(query(ctx_modality)))) = string.
+
+goal_to_string(vs(G, VS)) = string.join_list(",\n  ", list.map(query_to_string(VS), G)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -322,7 +330,7 @@ assumptions_to_string(Ctx, As) = Str :-
 
 :- func assertions_to_string(ctx, bag(vscope(mprop(ctx_modality)))) = string.
 
-assertions_to_string(Ctx, As) = Str :-
+assertions_to_string(_Ctx, As) = Str :-
 	(if not As = bag.init
 	then Str = string.join_list("\n  ", list.map(vsmprop_to_string, bag.to_list(As)))
 	else Str = "(none)"
@@ -333,7 +341,7 @@ assertions_to_string(Ctx, As) = Str :-
 %:- pred print_proof(proof(M)::in, io::di, io::uo) is det <= (modality(M), stringable(M)).
 :- pred print_proof_trace(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
 
-print_proof_trace(Ctx, Proof, !IO) :-
+print_proof_trace(_Ctx, Proof, !IO) :-
 %	vs(LastGoal, Varset) = last_goal(Proof),
 
 %	print("Proven goal:\n", !IO),
@@ -368,9 +376,7 @@ print_proof_trace(Ctx, Proof, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func proof_state_to_string(varset, list(marked(mprop(M)))) = string <= (modality(M), stringable(M)).
+:- func proof_state_to_string(varset, list(query(ctx_modality))) = string.
 
 proof_state_to_string(Varset, L) = S :-
-	S = string.join_list(",\n  ", list.map((func(MProp-Marking) = QS :-
-		QS = mprop_to_string(Varset, MProp) ++ "[" ++ string(Marking) ++ "]"
-			), L)).
+	S = string.join_list(",\n  ", list.map(query_to_string(Varset), L)).
