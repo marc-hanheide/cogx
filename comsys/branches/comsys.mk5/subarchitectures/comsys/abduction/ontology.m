@@ -2,43 +2,43 @@
 
 :- interface.
 
-:- typeclass isa_ontology(T) where [
+:- typeclass isa_ontology(OT, T) where [
 
-		% direct_isa(B, A)
-		% True iff B `is-a` A.
+		% direct_isa(Ont, B, A)
+		% True iff B `is-a` A in Ont.
 		%
 		% That is, w:B -> w:A.
-	pred direct_isa(T, T),
-	mode direct_isa(in, in) is semidet,
-	mode direct_isa(in, out) is nondet
+	pred direct_isa(OT, T, T),
+	mode direct_isa(in, in, in) is semidet,
+	mode direct_isa(in, in, out) is nondet
 ].
 
 	% reflexive and transitive closure of direct_isa
-:- pred isa(T, T) <= isa_ontology(T).
-:- mode isa(in, in) is semidet.
+:- pred isa(OT, T, T) <= isa_ontology(OT, T).
+:- mode isa(in, in, in) is semidet.
 
-	% more_specific(X, Y) = Z
+	% more_specific(Ont, X, Y) = Z
 	%
 	% X is-a Y -> Z = X
 	% Y is-a X -> Z = Y
 	%
 	% fail otherwise
 	%
-:- func more_specific(T, T) = T <= isa_ontology(T).
-:- mode more_specific(in, in) = out is semidet.
+:- func more_specific(OT, T, T) = T <= isa_ontology(OT, T).
+:- mode more_specific(in, in, in) = out is semidet.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
 
-isa(X, X).
-isa(X, Y) :-
-	direct_isa(X, Z),
+isa(_, X, X).
+isa(O, X, Y) :-
+	direct_isa(O, X, Z),
 	Z \= X,
-	isa(Z, Y).
+	isa(O, Z, Y).
 
-more_specific(X, Y) = Z :-
-	(isa(X, Y) -> Z = X ;
-	(isa(Y, X) -> Z = Y ;
+more_specific(O, X, Y) = Z :-
+	(isa(O, X, Y) -> Z = X ;
+	(isa(O, Y, X) -> Z = Y ;
 	fail
 	)).

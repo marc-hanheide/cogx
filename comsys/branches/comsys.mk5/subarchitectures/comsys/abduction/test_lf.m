@@ -11,7 +11,7 @@
 :- implementation.
 
 :- import_module solutions, require.
-:- import_module string, map, set, list, pair.
+:- import_module string, map, set, list, pair, unit.
 :- import_module lf, lf_io, formula, term_io, parser, formula_ops.
 :- import_module world_model.
 
@@ -49,7 +49,7 @@ main(!IO) :-
 						print(" *  " ++ lf_to_string(LF) ++ "\n", !IO)
 							), lfs(!.WM), !IO),
 					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
-					(if reduced(!.WM) = RWM
+					(if reduced(unit, !.WM) = RWM
 					then
 						set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
 							print("(*) " ++ lf_to_string(LF) ++ "\n", !IO)
@@ -64,9 +64,9 @@ main(!IO) :-
 					print("??  ", !IO),
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
-					(if satisfies(!.WM, LF) then Sat = "t" else Sat = "f"),
-					(if RM = reduced(!.WM)
-					then (if satisfies(RM, LF) then SatR = "t" else SatR = "f")
+					(if satisfies(unit, !.WM, LF) then Sat = "t" else Sat = "f"),
+					(if RM = reduced(unit, !.WM)
+					then (if satisfies(unit, RM, LF) then SatR = "t" else SatR = "f")
 					else SatR = "-"
 					),
 					print(Sat ++ SatR ++ "\n", !IO)
@@ -77,12 +77,12 @@ main(!IO) :-
 					print(" ... ", !IO),
 					(if
 						%add_lf(!.WM, LF, !:WM),
-						add_lf(world_model.init, LF, XM),
-						union(!.WM, XM, !:WM)
+						add_lf(unit, world_model.init, LF, XM),
+						union(unit, !.WM, XM, !:WM)
 					then
-						(if satisfies(!.WM, LF) then Sat = "t" else Sat = "f"),
-						(if RM = reduced(!.WM)
-						then (if satisfies(RM, LF) then SatR = "t" else SatR = "f")
+						(if satisfies(unit, !.WM, LF) then Sat = "t" else Sat = "f"),
+						(if RM = reduced(unit, !.WM)
+						then (if satisfies(unit, RM, LF) then SatR = "t" else SatR = "f")
 						else SatR = "-"
 						),
 						print("ok " ++ Sat ++ SatR ++ "\n", !IO)
@@ -171,7 +171,7 @@ test_lf(LF, !WM, !IO) :-
 :- pred test_add_lf(lf::in, world_model::in, world_model::out, io::di, io::uo) is det.
 
 test_add_lf(LF, !WM, !IO) :-
-	(if add_lf(!.WM, LF, !:WM)
+	(if add_lf(unit, !.WM, LF, !:WM)
 	then
 		print_wm(!.WM, !IO),
 		nl(!IO)
@@ -209,7 +209,7 @@ print_wm(WM, !IO) :-
 
 reduced_models(WM) = RWMs :-
 	RWMs = solutions_set((pred(RWM::out) is nondet :-
-		RWM = reduced(WM)
+		RWM = reduced(unit, WM)
 			)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -217,7 +217,7 @@ reduced_models(WM) = RWMs :-
 :- pred print_reduced_model(world_model::in, io::di, io::uo) is det.
 
 print_reduced_model(WM, !IO) :-
-	(if RWM = reduced(WM)
+	(if RWM = reduced(unit, WM)
 	then print_wm(RWM, !IO)
 	else print("model functionally irreducible.\n", !IO)
 	).
