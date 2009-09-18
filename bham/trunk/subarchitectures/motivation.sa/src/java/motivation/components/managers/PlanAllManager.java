@@ -54,7 +54,7 @@ public class PlanAllManager extends MotiveManager {
 			// create a new goal
 			// ask the planner if this new goal can be added
 			// hand this goal to execution
-			if (managedMotives.size()==1) {
+			if (managedMotives.size() == 1) {
 				sleepComponent(2000);
 				generatePlan();
 			}
@@ -69,7 +69,7 @@ public class PlanAllManager extends MotiveManager {
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, null, null, Completion.PENDING,
+		return new PlanningTask(0, null, null, null, null, Completion.PENDING,
 				Completion.PENDING);
 	}
 
@@ -105,7 +105,8 @@ public class PlanAllManager extends MotiveManager {
 			PlanningTask _planningTask) {
 
 		if (_planningTask.planningStatus == Completion.SUCCEEDED) {
-			log("planning succeeeeeeeded " + _planningTask.planningStatus.name());
+			log("planning succeeeeeeeded "
+					+ _planningTask.planningStatus.name());
 			String id = newDataID();
 			PlanProxy pp = new PlanProxy();
 			pp.planAddress = _wma;
@@ -114,7 +115,7 @@ public class PlanAllManager extends MotiveManager {
 			} catch (AlreadyExistsOnWMException e) {
 				e.printStackTrace();
 			}
-		} else if (_planningTask.planningStatus == Completion.FAILED){
+		} else if (_planningTask.planningStatus == Completion.FAILED) {
 			println("planning failed: " + _planningTask.planningStatus + " "
 					+ _planningTask.goal);
 		} else {
