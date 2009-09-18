@@ -3,9 +3,12 @@
  */
 package motivation.components.managers;
 
+import java.util.Map;
+
 import motivation.slice.Motive;
 import motivation.util.WMMotiveSet;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
@@ -29,14 +32,16 @@ public abstract class MotiveManager extends ManagedComponent {
 
 	@Override
 	protected void start() {
-	
 		log("MotiveManager starting up...");
 		super.start();
 
 		motives.setHandler(new WMMotiveSet.ChangeHandler() {
 
 			@Override
-			public void motiveChanged(WorkingMemoryChange wmc, Motive motive) {
+			public void motiveChanged(
+					Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
+					WorkingMemoryChange wmc, Ice.ObjectImpl o) {
+				Motive motive = (Motive) o;
 				log("motive has been changed in map: Status is "
 						+ motive.status.name());
 				if ((wmc.operation == WorkingMemoryOperation.ADD)
@@ -49,8 +54,7 @@ public abstract class MotiveManager extends ManagedComponent {
 						manageMotive(motive);
 						break;
 					}
-				}
-				else if(wmc.operation == WorkingMemoryOperation.DELETE) {
+				} else if (wmc.operation == WorkingMemoryOperation.DELETE) {
 					retractMotive(motive);
 				}
 			}

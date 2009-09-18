@@ -3,9 +3,12 @@
  */
 package motivation.util;
 
+import java.util.Map;
+
 import motivation.slice.Motive;
 import motivation.slice.TestMotive;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 
 /**
@@ -24,7 +27,8 @@ public class WMMotiveDisplay  extends ManagedComponent {
 		motives = WMMotiveSet.create(this);
 		motives.setHandler(new WMMotiveSet.ChangeHandler() {
 			@Override
-			public void motiveChanged(WorkingMemoryChange wmc, Motive motive) {
+			public void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map, WorkingMemoryChange wmc, Ice.ObjectImpl o) {
+				Motive motive = (Motive) o;
 				println("a motive has been changed in set; WMaddress="+motive.thisEntry.id);
 				println("  type:      " + motive.getClass().getSimpleName());
 				if (motive.getClass().getSimpleName().equals("TestMotive")) {
