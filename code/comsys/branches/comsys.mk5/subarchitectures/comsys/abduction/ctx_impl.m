@@ -153,7 +153,12 @@ dialogue_turn(Pr, !DC) :-
 	(if Pr^p_goals = vs([LastGoal|_], Varset)
 	then
 		% call the effects
-		list.foldl((pred(MProp-_Marking::in, !.DC::in, !:DC::out) is det :-
+		list.foldl((pred(Q::in, !.DC::in, !:DC::out) is det :-
+			( Q = proved(MProp)
+			; Q = assumed(MProp, _)
+			; Q = asserted(MProp)
+			; Q = unsolved(MProp, _)  % XXX this should be an error
+			),
 			effect(vs(MProp, Varset), !DC)  % XXX XXX XXX
 			), LastGoal, !DC)
 
