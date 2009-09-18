@@ -13,6 +13,10 @@
 
 :- func lf_to_string(lf) = string.
 
+:- func id_to_ground_term(id(string, string)) = ground_term.
+:- func lf_to_ground_term(lf) = ground_term.
+:- func lf_to_ground_atomic_formula(lf) = ground_atomic_formula.
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -60,3 +64,16 @@ lf_to_string(i(Id)) = id_to_string(Id).
 lf_to_string(r(Rel, LF)) = "<" ++ Rel ++ ">" ++ "(" ++ lf_to_string(LF) ++ ")".
 lf_to_string(p(Prop)) = Prop.
 lf_to_string(and(LF1, LF2)) = lf_to_string(LF1) ++ " ^ " ++ lf_to_string(LF2).
+
+%------------------------------------------------------------------------------%
+
+id_to_ground_term(of_sort(Idx, Sort)) = t("::", [t(Idx, []), t(Sort, [])]).
+
+lf_to_ground_term(at(Id, LF)) = t("@", [id_to_ground_term(Id), lf_to_ground_term(LF)]).
+lf_to_ground_term(i(Id)) = id_to_ground_term(Id).
+lf_to_ground_term(r(Rel, LF)) = t(Rel, [lf_to_ground_term(LF)]).
+lf_to_ground_term(p(Prop)) = t(Prop, []).
+lf_to_ground_term(and(LF1, LF2)) = t("^", [lf_to_ground_term(LF1), lf_to_ground_term(LF2)]).
+
+lf_to_ground_atomic_formula(LF) = p(PredSym, Args) :-
+	t(PredSym, Args) = lf_to_ground_term(LF).
