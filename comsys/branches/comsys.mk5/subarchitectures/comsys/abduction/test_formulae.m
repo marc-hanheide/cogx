@@ -33,6 +33,9 @@ main(!IO) :-
 	test_term_parse("axiom : p(x).", !IO),
 	test_term_parse("[] : (p(X), q(X) -> r(X)) / fax.", !IO),
 	test_term_parse("funcname = [a, b, c].", !IO),
+	test_term_parse("\"Jakysi string\", g-q.", !IO),
+	test_term_parse("\"Jakysi string\"::\"g-q\".", !IO),
+	test_term_parse("e(now) : @(\"be1_1\"::\"ascription\", p(\"be\") ^ r(\"Mood\", p(\"int\")) ^ r(\"Tense\", p(\"pres\")) ^  r(\"Cop-Restr\", \"ball1_1\"::\"thing\" ^ p(\"ball\") ^ r(\"Delimitation\", p(\"unique\")) ^ r(\"Num\", p(\"sg\")) ^ r(\"Quantification\", p(\"specific\")))) ^  r(\"Cop-Scope\", \"red1_1\"::\"q-color\" ^ p(\"red\"))) ^  r(\"Subject\", \"ball1_1\"::\"thing\")).", !IO),
 
 	nl(!IO),
 
@@ -57,10 +60,12 @@ main(!IO) :-
 	
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- import_module formula_ops.
+
 :- pred test_term_parse(string::in, io::di, io::uo) is det.
 
 test_term_parse(S, !IO) :-
-	read_term_from_string("", S, _, Result),
+	read_term_from_string_with_op_table(init_wabd_op_table, "", S, _, Result),
 	(if Result = term(_Varset, Term)
 	then generic_term(Term)
 	else true

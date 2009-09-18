@@ -1,0 +1,29 @@
+e : utter(Ag, Nom) <-
+	sort(Nom, ascription) / prove,
+	prop(Nom, be) / prove,
+	f_mood(Nom, int) / prove,
+	f_tense(Nom, pres) / prove,
+	r_subject(Nom, SubjNom) / prove,
+	r_cop_restr(Nom, SubjNom) / prove,
+	r_cop_scope(Nom, ScopeNom) / prove,
+		sort(ScopeNom, ScopeSort) / prove,
+		prop(ScopeNom, ScopeProp) / prove,
+
+	verify_quality(SubjNom, ScopeSort, ScopeProp) / prove.
+
+
+verify_quality(Ag, SubjNom, ScopeSort, ScopeProp) <-
+	k(h, now) : quality_uncertain(SubjNom, ScopeSort) / 0.5,
+	k(h, now) : quality_hypothesis(SubjNom, ScopeSort, ScopeProp) / 0.5.
+
+% interpretation
+
+k(h, now) : quality_known(SubjNom, QualitySort, QualityProp) <-
+	k(h, now) : quality_hypothesis(SubjNom, QualitySort, QualityProp) / prove,
+	produce_yesno(SubjNom, QualitySort, Bool) / 1.0.
+
+k(h, now) : quality_known(SubjNom, QualitySort, QualityProp) <-
+	k(h, now) : quality_unknown(SubjNom, QualitySort) / prove,
+	describe(SubjNom) / 1.0.
+
+
