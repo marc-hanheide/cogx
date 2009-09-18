@@ -9,6 +9,7 @@
 :- import_module costs.
 
 :- import_module belief_model.
+:- import_module world_model.
 :- import_module abduction, modality.
 
 :- type ctx
