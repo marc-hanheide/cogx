@@ -88,13 +88,15 @@ public class SerialPlanExecutor extends Thread {
 				PlanProxy.class);
 
 		m_planningTaskAddress = planProxy.planAddress;
-		
-		m_component.println("executing plan at: " + CASTUtils.toString(m_planningTaskAddress));
+
+		m_component.println("executing plan at: "
+				+ CASTUtils.toString(m_planningTaskAddress));
 		m_task = m_component.getMemoryEntry(m_planningTaskAddress,
 				PlanningTask.class);
-		
-//		assert m_task.status == Completion.SUCCEEDED : "can't execute a non-succeeded plan: " + m_task.status;
-		
+
+		assert m_task.planningStatus == Completion.SUCCEEDED : "can't execute a non-succeeded plan: "
+				+ m_task.status;
+
 		m_actionAddress = new WorkingMemoryAddress(m_task.firstActionID,
 				m_planningTaskAddress.subarchitecture);
 
@@ -119,7 +121,8 @@ public class SerialPlanExecutor extends Thread {
 			@Override
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
-				m_component.println("something was deleted, stopping exe: " + CASTUtils.toString(_wmc));
+				m_component.println("something was deleted, stopping exe: "
+						+ CASTUtils.toString(_wmc));
 				stopExecution();
 			}
 		};
@@ -160,15 +163,15 @@ public class SerialPlanExecutor extends Thread {
 
 	}
 
-	private void planChanged(PlanningTask _memoryEntry)
+	private void planChanged(PlanningTask _planningTask)
 			throws SubarchitectureComponentException {
 		// if plan succeeded then we're done
 		m_component.log("plan changed");
-		if (_memoryEntry.planningStatus == Completion.SUCCEEDED) {
-			
+		if (_planningTask.status == Completion.SUCCEEDED) {
+
 			planComplete();
 			stopExecution();
-			
+
 			m_component.log("and read that plan complete");
 		}
 	}
@@ -190,14 +193,16 @@ public class SerialPlanExecutor extends Thread {
 	@Override
 	public void run() {
 
-		assert m_exeState == ExecutionState.EXECUTING : "startExecution has not been called";
+		if (m_exeState != ExecutionState.EXECUTING) {
+			m_component.println("not executing run loop");
+		}
 
 		try {
 
 			// trigger the first action
 			PlannedActionWrapper actionWrapper = triggerNextAction(null);
 			assert actionWrapper != null : "first action should not be null";
-			
+
 			while (m_component.isRunning() && hasNotBeenStopped()) {
 
 				// wait for the component to receive changes
