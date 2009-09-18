@@ -11,16 +11,27 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- typeclass context(T) where [
+	pred fact(T, vsmprop),
+	mode fact(in, out) is nondet,
+
+		% XXX find a better name
+	pred vrule(T, vsmrule),
+	mode vrule(in, out) is nondet,
+
+	pred assumable(T, vsmprop),
+	mode assumable(in, out) is nondet
+].
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- type ctx.
+:- instance context(ctx).
 
 :- func new_ctx = ctx.
 
 :- pred add_fact(vsmprop::in, ctx::in, ctx::out) is det.
 :- pred add_rule(vsmrule::in, ctx::in, ctx::out) is det.
-
-:- pred fact(ctx::in, vsmprop::out) is nondet.
-:- pred rule(ctx::in, vsmrule::out) is nondet.
-:- pred assumable(ctx::in, vsmprop::out) is nondet.
 
 	% for debugging purposes only!
 :- func facts(ctx) = set(vsmprop).
@@ -61,6 +72,12 @@
 		ctx_rules :: set(vsmrule)  % this doesn't really belong here, does it?
 	).
 
+:- instance context(ctx) where [
+	pred(fact/2) is ctx_fact,
+	pred(vrule/2) is ctx_rule,
+	pred(assumable/2) is ctx_assumable
+].
+
 new_ctx = ctx(init, init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -81,20 +98,24 @@ rules(Ctx) = Ctx^ctx_rules.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-fact(Ctx, Fact) :-
+:- pred ctx_fact(ctx::in, vsmprop::out) is nondet.
+
+ctx_fact(Ctx, Fact) :-
 	set.member(Fact, Ctx^ctx_facts).
 
-rule(Ctx, Rule) :-
+:- pred ctx_rule(ctx::in, vsmrule::out) is nondet.
+
+ctx_rule(Ctx, Rule) :-
 	set.member(Rule, Ctx^ctx_rules).
 
-assumable(_Ctx, _) :-
+:- pred ctx_assumable(ctx::in, vsmprop::out) is nondet.
+
+ctx_assumable(_Ctx, _) :-
 	fail.
 
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 new_d_ctx = d_ctx(new_ctx, set.init).
 
