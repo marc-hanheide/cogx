@@ -20,6 +20,8 @@ module autogen {
 			float assumeCost;
 		};
 
+		sequence<Goal> goalSeq;
+
 		class AbductiveProof {
 			float cost;
 			modFormulaSeq assumed;
@@ -39,7 +41,7 @@ module autogen {
 			void addFact(ModalisedFormula fact);
 			void addRule(ModalisedFormula rule);
 
-			ProofResult proveGoal(Goal g);
+			ProofResult proveGoal(goalSeq g);
 			AbductiveProof getBestProof();
 		};
 

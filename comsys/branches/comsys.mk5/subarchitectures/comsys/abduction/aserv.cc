@@ -18,7 +18,7 @@ public:
 	virtual void clearRules(const Ice::Current&);
 	virtual void addFact(const ModalisedFormulaPtr& fact, const Ice::Current&);
 	virtual void addRule(const ModalisedFormulaPtr& rule, const Ice::Current&);
-	virtual ProofResult proveGoal(const GoalPtr& g, const Ice::Current&);
+	virtual ProofResult proveGoal(const goalSeq& g, const Ice::Current&);
 	virtual AbductiveProofPtr getBestProof(const Ice::Current&);
 private:
 	MercAbdCtx ctx;
@@ -102,9 +102,10 @@ AbducerServerI::addRule(const ModalisedFormulaPtr& rule,const Ice::Current&)
 }
 
 ProofResult
-AbducerServerI::proveGoal(const GoalPtr& g, const Ice::Current&)
+AbducerServerI::proveGoal(const goalSeq& g, const Ice::Current&)
 {
-	cerr << "proving " << g->body->termString << endl;
+//	cerr << "proving " << g->body->termString << endl;
+	cerr << "proving" << endl;
 	haveProof = false;
 	return (ERROR);
 }
