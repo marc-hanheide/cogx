@@ -22,14 +22,16 @@
 :- pred compose(relation, relation, relation).
 :- mode compose(in, in, out) is multi.
 :- mode compose(in, in, in) is semidet.
-:- mode compose(out, in, in) is nondet.
-:- mode compose(in, out, in) is nondet.
+:- mode compose(out, in, in) is multi.
+:- mode compose(in, out, in) is multi.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
 
-:- pred any_relation(relation::out) is multi.
+:- pred any_relation(relation).
+:- mode any_relation(out) is multi.
+:- mode any_relation(in) is det.
 
 any_relation(dc).
 any_relation(ec).
