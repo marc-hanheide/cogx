@@ -13,10 +13,10 @@
 :- import_module lf.
 
 main(!IO) :-
-	LF = at(of_sort("v1", "object"), and(p("box"), p("something"))),
+	LF = at(of_sort("v1", "object"), and(p("box"), r("colour", and(i(of_sort("c", "colour")), p("something"))))),
 	std_lf(LF),
 
-	print(LF, !IO),
+	print(lf_to_string(LF), !IO),
 	nl(!IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

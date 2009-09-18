@@ -116,6 +116,15 @@ k(now, mutual(r, h)) : fact(F) <-
 i:fact(f).
 i:fact(e).
 
+i : Answer << thing.
+i : @(v1::thing, box ^ r(colour, blue) ^ r(shape, boxy)).
+
+i : @(Id::thing, box ^ r(colour, CId::colour ^ Colour) ^ r(shape, Shape)) <-
+	a(com) : that(Id) / in_focus,
+	? k(now,attrib(r,h)) : @(Id::thing, object),
+	? k(now,attrib(r,h)) : @(Id::thing, r(colour, CId::colour ^ brown)).
+	
+
 a(com):something(u).
 
 e(now):did(U, X) <-
