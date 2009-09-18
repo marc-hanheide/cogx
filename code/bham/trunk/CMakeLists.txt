@@ -118,4 +118,15 @@ if(BUILD_SA_FAKE_MOTIVATION)
     add_subdirectory (subarchitectures/fakemotivation.sa)
 endif(BUILD_SA_FAKE_MOTIVATION)
 
-#add_subdirectory(tools/python)
+add_subdirectory(tools/scripts)
+
+option(DO_ANT "automatically compile the ant stuff" YES)
+if(BUILD_SA_SPATIAL)
+ADD_CUSTOM_TARGET( ant_build ALL )
+	ADD_CUSTOM_COMMAND(
+		TARGET  ant_build
+		COMMAND ant WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+     	)
+endif(BUILD_SA_SPATIAL)
+
+
