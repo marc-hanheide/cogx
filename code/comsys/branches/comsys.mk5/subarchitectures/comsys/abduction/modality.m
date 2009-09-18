@@ -29,13 +29,11 @@
 	%    for every a
 
 match([], []).
-match([axiom], []).
-match([], [axiom]).
-
 match([H|TL], [H|TR]) :- match(TL, TR).
-match([axiom|TL], [_|TR]) :- match([axiom|TL], TR).
-match([axiom|TL], [HR|TR]) :- match(TL, [HR|TR]).
-match([HL|TL], [axiom|TR]) :- match([axiom|TR], [HL|TL]).
+
+match(L, [axiom|TR]) :- match([axiom|TR], L).  % symmetry of the matching relation
+match([axiom|TL], R) :- match(TL, R).  % (T)
+match([axiom|TL], [_|TR]) :- match([axiom|TL], TR).  % (4) + specialistaion
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
