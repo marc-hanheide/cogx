@@ -1,6 +1,6 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
-	@(u::door, cosi(i::sort ^ cosi(x))).
+	@(u::door, r(cosi, i::sort ^ r(cosi, p(x)))).
 
 LFS
 
@@ -9,9 +9,9 @@ REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-	colour(red).
-	colour(v::thing).
-	colour(tint(weird) ^ red).
+	r(colour, p(red)).
+	r(colour, v::thing).
+	r(colour, r(tint, p(weird)) ^ p(red)).
 	@(v1::object, v1::object).
 	@(v1::object, v2::object).
 
@@ -22,21 +22,9 @@ REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-	@(v1::object, box).
+	@(v1::object, p(box)).
 
-	@(v1::object, box ^ colour(c::colour ^ something)).
-
-LFS
-
-PRINT
-REDUCE
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
-CLEAR
-
-	colour(tint(weird) ^ red).
-	colour(c::colour).
-	colour(d::colour).  # this makes it func. irreducible
-	@(c::colour, tint(t::tint)).
+	@(v1::object, p(box) ^ r(colour, c::colour ^ p(something))).
 
 LFS
 
@@ -45,9 +33,10 @@ REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-	@(v1::thing, object).
-	@(v1::thing, colour(c::colour ^ black)).
-?	@(v1::thing, colour(black)).
+	r(colour, r(tint, p(weird)) ^ p(red)).
+	r(colour, c::colour).
+	r(colour, d::colour).  # this makes it func. irreducible
+	@(c::colour, r(tint, t::tint)).
 
 LFS
 
@@ -56,16 +45,27 @@ REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-	@(v1::thing, colour(red)).
-	@(v2::thing, colour(red)).
+	@(v1::thing, p(object)).
+	@(v1::thing, r(colour, c::colour ^ p(black))).
+?	@(v1::thing, r(colour, p(black))).
 
-	@(c::colour, blue).
+LFS
 
-	@(v1::thing, colour(c::colour)).
-	@(v2::thing, colour(c::colour)).
+PRINT
+REDUCE
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+CLEAR
 
-?	@(v2::thing, colour(blue)).
-?	@(c::colour, red).  # false in non-reduced, true in reduced model
+	@(v1::thing, r(colour, p(red))).
+	@(v2::thing, r(colour, p(red))).
+
+	@(c::colour, p(blue)).
+
+	@(v1::thing, r(colour, c::colour)).
+	@(v2::thing, r(colour, c::colour)).
+
+?	@(v2::thing, r(colour, p(blue))).
+?	@(c::colour, p(red)).  # false in non-reduced, true in reduced model
 
 #	@(b::thing, colour(tint(rare))).
 #	@(b::thing, colour(tint(rareness(first)))).
