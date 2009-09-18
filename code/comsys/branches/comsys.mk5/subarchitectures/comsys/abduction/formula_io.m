@@ -42,10 +42,14 @@
 
 %------------------------------------------------------------------------------%
 
+:- func subst_to_string(varset, subst) = string.
+
+%------------------------------------------------------------------------------%
+
 :- implementation.
 
 :- import_module require.
-:- import_module list, pair, string.
+:- import_module list, pair, string, map.
 :- import_module costs.
 :- import_module formula_ops.
 :- import_module parser, term_io.
@@ -256,3 +260,10 @@ term_to_rule_antecedent(T, test(MTest)) :-
 func_annotation(functor(atom("/"), [T, functor(atom(FName), [], _)], _), f(FName), T).
 func_annotation(functor(atom("/"), [T, functor(float(FValue), [], _)], _), const(FValue), T).
 
+%------------------------------------------------------------------------------%
+
+subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
+	L = map.to_assoc_list(Subst),
+	L0 = list.map((func(Var-Value) = S :-
+		S = varset.lookup_name(Varset, Var) ++ "=" ++ formula_term_to_string(Varset, Value)), L),
+	Str = string.join_list(", ", L0).

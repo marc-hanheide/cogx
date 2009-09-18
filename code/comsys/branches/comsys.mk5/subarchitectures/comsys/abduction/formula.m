@@ -119,6 +119,7 @@
 
 :- type subst == map(var, formula.term).
 
+:- func apply_subst_to_term(subst, formula.term) = formula.term.
 :- func apply_subst_to_formula(subst, atomic_formula) = atomic_formula.
 :- func apply_subst_to_mprop(subst, mprop(M)) = mprop(M) <= modality(M).
 :- func apply_subst_to_mtest(subst, mtest(M)) = mtest(M) <= modality(M).
@@ -189,22 +190,29 @@ apply_subst_to_mtest(Subst, impl(MPs, HMP)) = impl(list.map(apply_subst_to_mprop
 
 apply_subst_to_mprop(Subst, m(M, Prop)) = m(M, apply_subst_to_formula(Subst, Prop)).
 
-apply_subst_to_formula(Subst, p(F, Args)) = p(F, SubstArgs) :-
-	SubstArgs0 = list.map((func(Arg) = SubstArg :-
-		(
-			Arg = t(Functor, TermArgs),
-			SubstArg = t(Functor, TermArgs)
-		;
-			Arg = v(Var),
-			(if Value = Subst^elem(Var)
-			then SubstArg = Value
-			else SubstArg = Arg
-			)
-		)), Args),
-
+apply_subst_to_formula(Subst, p(PropSym, Args)) = p(PropSym, SubstArgs) :-
+	SubstArgs0 = list.map(apply_subst_to_term(Subst), Args),
 	(if SubstArgs0 = Args
 	then SubstArgs = SubstArgs0
-	else p(_, SubstArgs) = apply_subst_to_formula(Subst, p(F, SubstArgs0))
+	else p(_, SubstArgs) = apply_subst_to_formula(Subst, p(PropSym, SubstArgs0))
+	).
+
+apply_subst_to_term(Subst, t(Functor, Args)) = t(Functor, SubstArgs) :-
+	SubstArgs0 = list.map(apply_subst_to_term(Subst), Args),
+	(if SubstArgs0 = Args
+	then SubstArgs = SubstArgs0
+	else
+		(if
+			t(_, SubstArgs1) = apply_subst_to_term(Subst, t(Functor, SubstArgs0))
+		then SubstArgs = SubstArgs1
+		else error("in apply_subst_to_term/2")
+		)
+	).
+
+apply_subst_to_term(Subst, v(Var)) = SubstVar :-
+	(if Value = Subst^elem(Var)
+	then SubstVar = Value
+	else SubstVar = v(Var)
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

@@ -286,16 +286,6 @@ step_to_string(factor(Subst, Varset)) = "factor, " ++ subst_to_string(Varset, Su
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func subst_to_string(varset, subst) = string.
-
-subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
-	L = map.to_assoc_list(Subst),
-	L0 = list.map((func(Var-Value) = S :-
-		S = varset.lookup_name(Varset, Var) ++ "=" ++ formula_term_to_string(Varset, Value)), L),
-	Str = string.join_list(", ", L0).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
 :- func query_to_string(varset, query(ctx_modality)) = string.
 
 query_to_string(VS, unsolved(MProp, F)) = mprop_to_string(VS, MProp)
