@@ -2,6 +2,11 @@ k(now, mutual(r,h)) : @(Id::thing, Obj) <-
 	a(com) : it(Id) / in_focus,
 	k(now, attrib(r,h)) : @(Id::thing, Obj) / prove.
 
+[] : ( @(Id::Sort, Prop1 ^ Prop2) <-
+	@(Id::Sort, Prop1) / prove,
+	@(Id::Sort, Prop2) / prove
+).
+
 /*
 k(now, attrib(r, h)) : fact(F) <-
 	e(now) : utter(r, F) / 1.0,

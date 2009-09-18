@@ -5,8 +5,8 @@ CLEAR
 PRINT
 SIMPLIFY
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
-
 CLEAR
+
 colour(red).
 colour(v::thing).
 colour(tint(weird) ^ red).
@@ -16,7 +16,6 @@ colour(tint(weird) ^ red).
 PRINT
 SIMPLIFY
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
-
 CLEAR
 
 @(v1::object, box).
@@ -26,7 +25,6 @@ CLEAR
 PRINT
 SIMPLIFY
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
-
 CLEAR
 
 colour(tint(weird) ^ red).
@@ -37,3 +35,27 @@ colour(d::colour).  # this makes it inconsistent
 PRINT
 SIMPLIFY
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+CLEAR
+
+@(v1::thing, object).
+@(v1::thing, colour(c::colour ^ black)).
+
+PRINT
+SIMPLIFY
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+CLEAR
+
+@(b::thing, colour(red)).
+@(c::thing, colour(red)).
+@(d::colour, blue).
+
+@(b::thing, colour(d::colour)).
+@(c::thing, colour(d::colour)).
+
+#@(b::thing, colour(tint(rare))).
+#@(b::thing, colour(tint(rareness(first)))).
+#@(c::colour, black).
+#@(b::thing, colour(c::colour)).
+
+PRINT
+SIMPLIFY
