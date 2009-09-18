@@ -190,6 +190,8 @@ module VisionData {
    * Proto Object
    */
   class ProtoObject {
+
+    // List of source SOIs
     IdSeq SOIList;
     
     // 2D image patch
@@ -197,6 +199,22 @@ module VisionData {
     
     // Segmentation mask;
     SegmentMask mask;
+    
+    // time the object was last changed
+    cast::cdl::CASTTime time;
+  };
+
+  /**
+   * Visual Object with recognized attributes
+   */
+  class AttrObject {
+
+    // Source proto object
+    string protoObjectID;
+    
+    // Color distribution
+    StringSeq colorLabel;
+    DoubleSeq colorDistr;
     
     // time the object was last changed
     cast::cdl::CASTTime time;
