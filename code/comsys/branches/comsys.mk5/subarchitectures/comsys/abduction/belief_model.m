@@ -48,11 +48,22 @@
 :- pred k_model(belief_model(I, S, R)::in, stf::in, belief::in, world_model(I, S, R)::out) is semidet
 		<= isa_ontology(S).
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func fg_anchors(belief_model(I, S, R)) = set(I).
+
+:- pred att_model(belief_model(I, S, R)::in, world_model(I, S, R)::out) is det <= isa_ontology(S).
+
+:- func min_dist(world_model(I, S, R)::in, I::in, I::in) = (int::out) is semidet <= isa_ontology(S).
+
+:- func min_dist_from_set(world_model(I, S, R)::in, set(I)::in, I::in) = (int::out) is semidet
+		<= isa_ontology(S).
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
 :- import_module require, solutions.
-:- import_module map, world_model, lf_io.
+:- import_module map, list, world_model, lf_io.
 
 init = bm(map.init, set.init, 1).
 
@@ -179,3 +190,51 @@ k_model(BM, STF, Bel, M) :-
 		Bel = attrib(_, _),
 		map.search(BelMap, Bel, M)
 	).
+
+%------------------------------------------------------------------------------%
+
+fg_anchors(BM) = As :-
+	set.fold((pred(LFIdx::in, A0::in, A::out) is det :-
+		map.lookup(BM^k, LFIdx, {STF, Bel, LF}),
+		(if LF = at(of_sort(WName, _Sort), _)
+		then set.insert(A0, WName, A)
+		else A = A0
+		)
+			), BM^fg, set.init, As).
+
+:- pred dist(world_model(I, S, R)::in, world_id(I)::in, world_id(I)::in, int::in, int::out) is nondet
+		<= isa_ontology(S).
+
+dist(M, W1, W1, D, D).
+dist(M, W1, W2, D0, D) :-
+	W1 \= W2,  % what about reflexive rels?
+	set.member({_Rel, W1, W3}, M^reach),
+	W3 \= W1,
+	dist(M, W3, W2, D0+1, D).
+
+min_dist(M, W1, W2) = MinD :-
+	Dists = solutions_set((pred(Dist::out) is nondet :-
+		dist(M, i(W1), i(W2), 0, Dist)
+			)),
+	[MinD|_] = to_sorted_list(Dists).
+
+min_dist_from_set(M, SW, W2) = MinWD :-
+	WDists = solutions_set((pred(WDist::out) is nondet :-
+		member(W1, SW),
+		WDist = min_dist(M, W1, W2)
+			)),
+	[MinWD|_] = to_sorted_list(WDists).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+att_model(BM, M) :-
+	set.fold((pred(LFIdx::in, Ma0::in, Ma::out) is det :-
+		(if map.search(BM^k, LFIdx, {_STF, _Bel, LF})
+		then
+			(if add_lf(Ma0, LF, Ma1)
+			then Ma = Ma1
+			else error("inconsistency in att_model")
+			)
+		else Ma = Ma0
+		)
+			), BM^fg, world_model.init, M).
