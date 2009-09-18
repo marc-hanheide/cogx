@@ -105,7 +105,7 @@ lookup_wabd_op_infos(_OpTable, Name, Info, []) :-
     ops.priority::out, ops.assoc::out, ops.assoc::out) is det.
 
     % Left associative, lower priority than everything except record syntax.
-lookup_wabd_operator_term(_OpTable, 120, y, x).
+lookup_wabd_operator_term(_OpTable, 50, y, x).  % was 120
 
 :- func wabd_max_priority(wabd_op_table) = ops.priority.
 
@@ -127,6 +127,10 @@ op_table(Op, Info) :-
 	; Op = "~",     Info = op_info(prefix(y), 900)
 	; Op = "?",     Info = op_info(prefix(y), 130)  % 1100, 100
 	; Op = "=",     Info = op_info(infix(x, x), 700)
+
+	; Op = "<<",    Info = op_info(infix(y, x), 100)
+	; Op = "::",    Info = op_info(infix(x, x), 90)
+	; Op = "^",     Info = op_info(infix(x, y), 450)
 
 %	; Op = "+",     Info = op_info(infix(y, x), 500)
 %	; Op = "-",     Info = op_info(infix(y, x), 500)
