@@ -16,6 +16,8 @@
 :- import_module varset, term, term_io, parser.
 :- import_module formula.
 
+:- import_module ctx_modality.
+
 main(!IO) :-
 	test_mprop_parse("p(x).", !IO),
 	test_mprop_parse("p(A).", !IO),
@@ -69,7 +71,7 @@ test_term_parse(S, !IO) :-
 
 test_mprop_parse(S, !IO) :-
 	format("(mprop) \"%s\" ... ", [s(S)], !IO),
-	(if string_as_vsmprop(S, P)
+	(if string_as_vsmprop(S, P), P = vs(m(M, _), _), is_list_ctx_modality(M)
 	then print(P, !IO), nl(!IO), string_as_vsmprop(SNew, P),
 			format("        \"%s\"\n", [s(SNew)], !IO)
 	else print("fail", !IO), nl(!IO)
@@ -77,11 +79,21 @@ test_mprop_parse(S, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- pred is_list_ctx_modality(list(ctx_modality)::in) is det.
+
+is_list_ctx_modality(_).
+
+:- pred is_ctx_mprop(mprop(ctx_modality)::in) is det.
+
+is_ctx_mprop(_).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- pred test_mrule_parse(string::in, io::di, io::uo) is det.
 
 test_mrule_parse(S, !IO) :-
 	format("(mrule) \"%s\" ... ", [s(S)], !IO),
-	(if string_as_vsmrule(S, R)
+	(if string_as_vsmrule(S, R), R = vs(m(M, _), _), is_list_ctx_modality(M)
 	then print(R, !IO), nl(!IO), string_as_vsmrule(SNew, R),
 			format("        \"%s\"\n", [s(SNew)], !IO)
 	else print("fail", !IO), nl(!IO)
@@ -94,6 +106,9 @@ test_mrule_parse(S, !IO) :-
 test_unify(A, B, !IO) :-
 	vs(MPA, VSA) = det_string_to_vsmprop(A),
 	vs(MPB0, VSB) = det_string_to_vsmprop(B),
+
+	is_ctx_mprop(MPA),
+	is_ctx_mprop(MPB0),
 
 	varset.merge_renaming(VSA, VSB, VS, Renaming),
 	MPB = rename_vars_in_mprop(Renaming, MPB0),

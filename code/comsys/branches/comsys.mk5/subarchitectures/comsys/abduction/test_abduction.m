@@ -16,6 +16,9 @@
 :- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool.
 :- import_module abduction, formula, context, costs.
 
+:- import_module ctx_modality.
+:- import_module modality, stringable.
+
 :- import_module parser, term_io, term, varset, formula_io.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -64,11 +67,11 @@ main(!IO) :-
 
 			nl(!IO),
 
-			DC0 = new_d_ctx,
+%			DC0 = new_d_ctx,
 
 			Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
 				prove(P0, P, !.Ctx),
-				Cost = cost(DC0, P, 1.0)
+				Cost = cost(!.Ctx, P, 1.0)
 					))),
 
 			list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
@@ -79,7 +82,8 @@ main(!IO) :-
 
 			list.foldl((pred(Cost-Proof::in, !.IO::di, !:IO::uo) is det :-
 				(if
-					Proof = proof(vs([_|_], _), _)
+					Proof = proof(vs([_|_], _), _),
+					is_ctx_proof(Proof)
 				then
 					print("----------------------------------------------------------------------\n", !IO),
 					format("Proof cost = %f\n\n", [f(Cost)], !IO),
@@ -96,6 +100,12 @@ main(!IO) :-
 		io.progname("?", ProgName, !IO),
 		format(stderr_stream, "Usage: %s GOAL GOAL_ASSUMPTION_COST < FILE\n", [s(ProgName)], !IO)
 	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred is_ctx_proof(proof(ctx_modality)::in) is det.
+
+is_ctx_proof(_).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -184,7 +194,7 @@ print_ctx(Ctx, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func step_to_string(step) = string.
+:- func step_to_string(step(M)) = string <= (modality(M), stringable(M)).
 
 step_to_string(assume(P, F)) = "assume("
 		++ vsmprop_to_string(P) ++ "), cost=" ++ cost_function_to_string(F).
@@ -207,7 +217,8 @@ subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred print_proof(proof::in, io::di, io::uo) is det.
+%:- pred print_proof(proof(M)::in, io::di, io::uo) is det <= (modality(M), stringable(M)).
+:- pred print_proof(proof(ctx_modality)::in, io::di, io::uo) is det.
 
 print_proof(Proof, !IO) :-
 	vs(LastGoal, Varset) = last_goal(Proof),
@@ -249,7 +260,7 @@ print_proof(Proof, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func proof_state_to_string(varset, list(marked(mprop))) = string.
+:- func proof_state_to_string(varset, list(marked(mprop(M)))) = string <= (modality(M), stringable(M)).
 
 proof_state_to_string(Varset, L) = S :-
 	S = string.join_list(", ", list.map((func(MProp-Marking) = QS :-
