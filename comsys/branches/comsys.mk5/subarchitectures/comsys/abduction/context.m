@@ -20,9 +20,12 @@
 	pred vrule(C, vscope(mrule(M))),
 	mode vrule(in, out) is nondet,
 
-	pred assumable(C, cost_function, vscope(mprop(M)), float),
-	mode assumable(in, in, out, out) is nondet
+	pred assumable_func(C, vscope(mprop(M)), cost_function_name, vscope(mprop(M)), float),
+	mode assumable_func(in, in, in, out, out) is nondet
 ].
+
+:- pred assumable(C::in, vscope(mprop(M))::in, cost_function::in, vscope(mprop(M))::out, float::out) is nondet
+		<= (context(C, M), modality(M)).
 
 :- func cost(C, cost_function, vscope(mprop(M))) = float <= (context(C, M), modality(M)).
 
@@ -41,9 +44,16 @@
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 
+assumable(C, Prop, f(FuncName), PropAssumed, Cost) :-
+	assumable_func(C, Prop, FuncName, PropAssumed, Cost).
+
+assumable(_C, Prop, const(Cost), Prop, Cost).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 cost(C, F, Prop) = Cost :-
 	solutions_set((pred(SolCost::out) is nondet :-
-		assumable(C, F, Prop, SolCost)
+		assumable(C, Prop, F, Prop, SolCost)  % XXX look at the Prop, Prop here
 			), Costs),
 	(if singleton_set(Costs, Cost0)
 	then Cost = Cost0

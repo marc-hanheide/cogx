@@ -106,6 +106,17 @@ prove(P0, P, Ctx) :-
 	(if
 		goal_solved(L0)
 	then
+		% check that all assumptions, assertions are ground
+		% (because we may have constant weight functions)
+		% XXX: check resolved stuff too?
+		LAss = list.filter((pred(_MProp-Marking::in) is semidet :-
+			( Marking = asserted
+			; Marking = assumed
+			)
+				), L0),
+		all_true((pred(MProp-_Marking::in) is semidet :-
+			formula.is_ground(MProp^p)
+				), LAss),
 		P = P0
 	else
 		transform(Step, L0, VS0, L, VS, Ctx),
@@ -162,8 +173,8 @@ step(assume(vs(m(MQ, PQ), VS), F),
 		QsL ++ [m(MQ, PQ)-assumed] ++ QsR, VS,
 		Ctx) :-
 
-	assumable(Ctx, F, vs(m(MA, PA0), VSA), _Cost),
-	match(compose_list(MQ), compose_list(MA)),
+	assumable(Ctx, vs(m(MQ, PQ0), VS0), F, vs(m(MA, PA0), VSA), _Cost),
+%	match(compose_list(MQ), compose_list(MA)),
 
 	varset.merge_renaming(VS0, VSA, VS, Renaming),
 	PA = rename_vars_in_formula(Renaming, PA0),

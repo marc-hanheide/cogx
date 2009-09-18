@@ -62,7 +62,7 @@
 :- instance context(ctx, ctx_modality) where [
 	pred(fact/2) is ctx_fact,
 	pred(vrule/2) is ctx_rule,
-	pred(assumable/4) is ctx_assumable
+	pred(assumable_func/5) is ctx_assumable_func
 ].
 
 new_ctx = ctx(set.init, set.init).
@@ -95,9 +95,9 @@ ctx_fact(Ctx, Fact) :-
 ctx_rule(Ctx, Rule) :-
 	set.member(Rule, Ctx^ctx_rules).
 
-:- pred ctx_assumable(ctx::in, cost_function::in, vscope(mprop(ctx_modality))::out, float::out) is nondet.
+:- pred ctx_assumable_func(ctx::in, vscope(mprop(ctx_modality))::in, cost_function_name::in, vscope(mprop(ctx_modality))::out, float::out) is nondet.
 
-ctx_assumable(_Ctx, _, _, _) :-
+ctx_assumable_func(_Ctx, _, _, _, _) :-
 	fail.
 
 %------------------------------------------------------------------------------%
