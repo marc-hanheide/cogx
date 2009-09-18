@@ -42,12 +42,18 @@ main(!IO) :-
 							print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n", !IO),
 							print_simplified_models(!.WM, !IO)
 						else
-							LF = s2lf(Line),
-							print(lf_to_string(LF), !IO),
-							print(" ... ", !IO),
-							(if add_lf(LF, !WM)
-							then print("ok (" ++ from_int(count(simplified_models(!.WM))) ++")\n", !IO)
-							else print("FAIL, ignoring\n", !IO)
+							(if Line = "LFS"
+							then
+								print("> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >\n", !IO),
+								print("  not implemented.\n", !IO)
+							else
+								LF = s2lf(Line),
+								print(lf_to_string(LF), !IO),
+								print(" ... ", !IO),
+								(if add_lf(LF, !WM)
+								then print("ok (" ++ from_int(count(simplified_models(!.WM))) ++")\n", !IO)
+								else print("FAIL, ignoring\n", !IO)
+								)
 							)
 						)
 					)

@@ -54,8 +54,8 @@ new_unnamed_world(Id, WM0, WM) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred rename_merge_world(world_id(string)::in, world_id(string)::in, world_model::in,
-		world_model::out) is det.
+:- pred rename_merge_world(world_id(I)::in, world_id(I)::in, world_model(I, S, R)::in,
+		world_model(I, S, R)::out) is det.
 
 rename_merge_world(Old, New, WM0, WM) :-
 	Reach = set.map((func({Rel, OldIdA, OldIdB}) = {Rel, NewIdA, NewIdB} :-
@@ -152,6 +152,8 @@ simplify(WM) = SWM :-
 	).
 
 simplify_pred(WM, SWM) :-
+	SWM = mainsimp(WM).
+/*
 	(if
 		set.member({Rel, W1, W2}, WM^reach),
 		set.member({Rel, W1, W3}, WM^reach),
@@ -167,4 +169,44 @@ simplify_pred(WM, SWM) :-
 		)
 	else
 		SWM = WM
+	).
+*/
+
+:- type reachr(R, I) == {R, world_id(I), world_id(I)}.
+
+:- type simpr(I)
+	--->	merge(world_id(I), world_id(I))  % merge 2nd into 1st
+	;	done
+	.
+
+:- func mainsimp(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet.
+
+mainsimp(WM) = SWM :-
+	LReach = set.to_sorted_list(WM^reach),
+	nusimp(LReach, Res),
+	(
+	 	Res = merge(W2, W3),
+		rename_merge_world(W3, W2, WM, WM0),
+		SWM = mainsimp(WM0)
+	;
+		Res = done,
+		SWM = WM
+	).
+
+:- pred nusimp(list(reachr(R, I))::in, simpr(I)::out) is semidet.
+
+:- import_module io, string.
+
+nusimp([], done).
+nusimp([{R, W1, W2} | Rest], Result) :-
+	(if
+		list.find_first_map((pred({Rx, W1x, W3x}::in, W3x::out) is semidet :-
+			Rx = R, W1x = W1), Rest, W3)
+	then
+		(W2 = u(_), W3 = u(_) -> Result = merge(W2, W3) ;
+		(W2 = i(_), W3 = u(_) -> Result = merge(W2, W3) ;
+		(W2 = u(_), W3 = i(_) -> Result = merge(W3, W2) ;
+		fail)))
+	else
+		nusimp(Rest, Result)
 	).
