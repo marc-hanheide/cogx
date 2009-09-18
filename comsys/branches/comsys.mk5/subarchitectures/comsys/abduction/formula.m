@@ -85,8 +85,17 @@
 :- type with_cost_function(T)
 	--->	cf(T, cost_function).
 
+:- type tested(T)
+	--->	test(T).
+
+:- type rule_antecedent(M)
+	--->	std(with_cost_function(mprop(M)))
+	;	test(mprop(M))
+	.
+
 :- type mprop(M) == modalized(list(M), atomic_formula).
-:- type mrule(M) == modalized(list(M), pair(list(with_cost_function(mprop(M))), mprop(M))).
+:- type mrule(M) == modalized(list(M), pair(list(rule_antecedent(M)), mprop(M))).
+%:- type mrule(M) == modalized(list(M), pair(list(with_cost_function(mprop(M))), mprop(M))).
 
 :- type mgprop(M) == modalized(list(M), ground_atomic_formula).
 
@@ -102,6 +111,7 @@
 :- func rename_vars_in_mprop(map(var, var), mprop(M)) = mprop(M) <= modality(M).
 :- func rename_vars_in_annot_mprop(map(var, var), with_cost_function(mprop(M))) = with_cost_function(mprop(M))
 		<= modality(M).
+:- func rename_vars_in_rule_antecedent(map(var, var), rule_antecedent(M)) = rule_antecedent(M) <= modality(M).
 :- func rename_vars_in_mrule(map(var, var), mrule(M)) = mrule(M) <= modality(M).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -187,8 +197,12 @@ rename_vars_in_mprop(Renaming, m(M, Prop)) = m(M, rename_vars_in_formula(Renamin
 
 rename_vars_in_annot_mprop(Renaming, cf(MProp, F)) = cf(rename_vars_in_mprop(Renaming, MProp), F).
 
+rename_vars_in_rule_antecedent(Renaming, test(MProp)) = test(rename_vars_in_mprop(Renaming, MProp)).
+rename_vars_in_rule_antecedent(Renaming, std(AnnotMProp))
+		= std(rename_vars_in_annot_mprop(Renaming, AnnotMProp)).
+
 rename_vars_in_mrule(Renaming, m(M, Ante-Succ)) =
-		m(M, list.map(rename_vars_in_annot_mprop(Renaming), Ante)-rename_vars_in_mprop(Renaming, Succ)).
+		m(M, list.map(rename_vars_in_rule_antecedent(Renaming), Ante)-rename_vars_in_mprop(Renaming, Succ)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

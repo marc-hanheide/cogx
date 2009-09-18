@@ -89,7 +89,8 @@ func = [
 ].
 
 in_focus = [
-	a0 : it(v1) = 0.5
+	a0 : it(v1) = 0.5,
+	a0 : it(v2) = 0.8
 ].
 
 % ascription(Subject, Quality)
@@ -100,7 +101,26 @@ in_focus = [
 
 a0:something(u).
 
-e0:did(U, X) <- a0:something(U) / prove.
+e0:did(U, X) <-
+	a0:something(U) / prove,
+	? e0:clarif(U).
+
+e0:do(E) <-
+	a0:it(Subj) / in_focus,
+	e0:utter(E, Utt) / prove,
+	i0:subject(Utt, Subj) / prove,
+	i0:ascription(Utt, Quality) / prove.
+
+e0:utter(e, u).
+e0:utter(f, v).
+
+i0:subject(u, v1).
+i0:ascription(u, colour(red)).
+
+i0:subject(v, v2).
+i0:ascription(v, colour(blue)).
+
+%e0:did(U, X) <- e0:did(U, X) / prove.
 
 e0:said(u).
 i0:ascription(u).
