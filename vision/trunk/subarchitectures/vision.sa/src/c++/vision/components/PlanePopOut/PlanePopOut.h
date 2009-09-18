@@ -28,6 +28,7 @@ typedef struct ObjP
 	std::string id;
 	std::vector< Vector3 > pointsInOneSOI;
 	std::vector< Vector3 > BGInOneSOI;
+	std::vector< Vector3 > EQInOneSOI;
 }ObjPara;
 
 private:
@@ -38,7 +39,7 @@ private:
 	double Calc_SplitThreshold(std::vector<Vector3> &points, std::vector <int> &label);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;
-	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI);
+	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI, std::vector< Vector3 > EQpIn1SOI);
 	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
 
 

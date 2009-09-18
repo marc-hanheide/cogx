@@ -49,6 +49,7 @@ vector< Vector3 > v3center;
 vector<double> vdradius;
 vector< vector< Vector3 > > SOIPointsSeq;
 vector< vector< Vector3 > > BGPointsSeq;
+vector< vector< Vector3 > > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
 
@@ -184,12 +185,12 @@ void DrawPoints()
   {
 	if (points_label.at(i) == 0)  glColor3f(1.0,1.0,0.0); // plane
 	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
-	else if (points_label.at(i) == 1)  glColor3f(1.0,0.0,1.0);  // 1st object
-	else if (points_label.at(i) == 2)  glColor3f(1.0,0.0,0.0);  //
-	else if (points_label.at(i) == 3)  glColor3f(0.0,1.0,1.0);  //
-	else if (points_label.at(i) == 4)  glColor3f(0.0,1.0,0.0);  //
+	else if (points_label.at(i) == 1)  glColor3f(0.0,0.0,1.0);  // 1st object
+	else if (points_label.at(i) == 2)  glColor3f(0.0,0.0,1.0);  //
+	else if (points_label.at(i) == 3)  glColor3f(0.0,0.0,1.0);  //
+	else if (points_label.at(i) == 4)  glColor3f(0.0,0.0,1.0);  //
 	else if (points_label.at(i) == 5)  glColor3f(0.0,0.0,1.0);  //
-	else glColor3f(1.0,1.0,1.0);  //rest object
+	else glColor3f(0.0,0.0,1.0);  //rest object
     glVertex3f(pointsN[i].x, pointsN[i].y, pointsN[i].z);
   }
   glEnd();
@@ -325,6 +326,8 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
 	BGPointsSeq.clear();
 	BGPointsSeq.assign(objnumber, pointsInOneSOI);
+	EQPointsSeq.clear();
+	EQPointsSeq.assign(objnumber, pointsInOneSOI);
 
 	std::vector<int> amount;
 	amount.assign(objnumber,0);
@@ -372,7 +375,16 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 			Vector3 v3Obj = points.at(j);
 			Vector3 Point_DP = ProjectOnDominantPlane(v3Obj);
 			int label = labels.at(j);
-			if (label == 0 && dist(Point_DP,Center_DP) < 1.8*radius_world.at(i) && dist(Point_DP,Center_DP) > 1.3*radius_world.at(i)) //BG nearby also required
+			if (label == -1 && dist(Point_DP,Center_DP) < radius_world.at(i)) // equivocal points
+			{
+				EQPointsSeq.at(i).push_back(v3Obj);
+				glPointSize(2);
+				glBegin(GL_POINTS);
+				glColor3f(0.0,1.0,0.0);  //equivocal points
+				glVertex3f(v3Obj.x, v3Obj.y, v3Obj.z);
+				glEnd();
+			}
+			if (label == 0 && dist(Point_DP,Center_DP) < 1.2*radius_world.at(i) ) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(v3Obj);
 
@@ -517,7 +529,7 @@ void PlanePopOut::runComponent()
 		for (std::vector<Vector3>::iterator it=points.begin(); it<points.end(); it+=N)
 			pointsN.push_back(*it);
 		points_label.clear();
-		points_label.assign(pointsN.size(), -1);
+		points_label.assign(pointsN.size(), -3);
 	
 
 		if (RANSAC(pointsN,points_label))
@@ -539,6 +551,7 @@ void PlanePopOut::runComponent()
 			OP.id = "";
 			OP.pointsInOneSOI = SOIPointsSeq.at(i);
 			OP.BGInOneSOI = BGPointsSeq.at(i);
+			OP.EQInOneSOI = EQPointsSeq.at(i);
 			CurrentObjList.push_back(OP);
 		}
 		if (PreviousObjList.empty())
@@ -546,8 +559,9 @@ void PlanePopOut::runComponent()
 			for(unsigned int i=0; i<CurrentObjList.size(); i++)
 			{
 				CurrentObjList.at(i).id = newDataID();
-				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI,  CurrentObjList.at(i).BGInOneSOI);
-				addToWorkingMemory(CurrentObjList.at(i).id, obj);
+				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+//cout<<"x in SOI after add in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<CurrentObjList.at(i).id<<endl;
+				addToWorkingMemory(CurrentObjList.at(i).id, obj);	
 			}
 			PreviousObjList = CurrentObjList;
 		}
@@ -562,8 +576,9 @@ void PlanePopOut::runComponent()
 					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
 					{
 						flag = true;
-						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI);
-						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);
+						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
+//cout<<"x in SOI after overwrite in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
+						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);	
 						break;
 					}
 				}
@@ -575,8 +590,9 @@ void PlanePopOut::runComponent()
 				for(unsigned int i=0; i<newObjList.size(); i++)// add all new objects
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
-					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI);
-					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);
+					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI, CurrentObjList.at(newObjList.at(i)).EQInOneSOI);
+//cout<<"x in SOI after add 2 in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
+					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);	
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
 			}
@@ -679,8 +695,8 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 			if(dDistSq == 0.0)
 			continue;
 			double dNormDist = fabs(dot(v3Diff, v3Normal));	
-			if(dNormDist > 0.05)
-			dNormDist = 0.05;
+			if(dNormDist > 0.02)
+			dNormDist = 0.02;
 			dSumError += dNormDist;
 		}
 		if(dSumError < dBestDistSquared)
@@ -717,14 +733,14 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 		{
 			Vector3 v3Diff = R_points.at(i) - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-			if(dNormDist < 0.05)
+			if(dNormDist < 0.02)
 				labels.at(i) = 0; // dominant plane
 			else
 			{
-				double d_parameter = -(para_a*R_points.at(i).x+para_b*R_points.at(i).y+para_c*R_points.at(i).z);
-				if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) > fabs(para_d)/50)
+				double d_parameter = -(A*R_points.at(i).x+B*R_points.at(i).y+C*R_points.at(i).z);
+				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > fabs(D)/50)
 					labels.at(i) = -2; // objects
-				if (d_parameter > 0 && d_parameter < para_d && fabs(d_parameter-para_d) <= fabs(para_d)/50)
+				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= fabs(D)/50)
 					labels.at(i) = -1; // cannot distingush
 			}
 		}
@@ -747,6 +763,10 @@ void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &l
 	unsigned int points_of_one_object = 0;
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
+	int obj_number_threshold;
+	if (N = 1) obj_number_threshold = 400;
+	if (N = 5) obj_number_threshold = 300;
+	if (N = 10) obj_number_threshold = 20;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
@@ -768,7 +788,7 @@ void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &l
 				}
 			}
 		}//cout<<"points_of_one_object =  "<<points_of_one_object<<endl;cout<<"candidants.size() =  "<<candidants.size()<<endl;
-		if (points_of_one_object>20)
+		if (points_of_one_object>obj_number_threshold)
 		{
 			labels = S_label;
 			objnumber++;
@@ -805,7 +825,7 @@ double PlanePopOut::Calc_SplitThreshold(std::vector<Vector3> &points, std::vecto
 	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/20;
 }
 
-SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI)
+SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI, std::vector< Vector3 > EQpIn1SOI)
 {
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
@@ -813,11 +833,12 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::
 	obs->boundingBox.pos.z = obs->boundingSphere.pos.z = center.z;
 	obs->boundingBox.size.x = size.x;
 	obs->boundingBox.size.y = size.y;
-	obs->boundingBox.size.z = size.z;
-	obs->boundingSphere.rad = radius;
+	obs->boundingBox.size.z = size.z;	//cout<<"radius in SOI = "<<radius<<endl;
+	obs->boundingSphere.rad = radius;       //cout<<"radius in SOI (obs) = "<<obs->boundingSphere.rad<<endl;
 	obs->time = getCASTTime();
 	obs->points = psIn1SOI;//cout<<"points in 1 SOI = "<<obs->points.at(1)<<obs->points.at(2)<<obs->points.at(10)<<endl;
 	obs->BGpoints =	BGpIn1SOI;
+	obs->EQpoints =	EQpIn1SOI;//cout<<"EQ points in 1 SOI = "<<obs->EQpoints.size()<<endl;
 
 	return obs;
 }
