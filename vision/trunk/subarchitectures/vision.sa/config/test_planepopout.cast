@@ -1,0 +1,19 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+# reading stored images
+COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 0 --end 40 --framerate_ms 30
+
+# live images
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/tuw_stereo.ini:L subarchitectures/vision.sa/config/tuw_stereo.ini:R"
+
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/test-stereo/stereo.ini --display
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "1 0" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini --display
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo
+
