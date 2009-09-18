@@ -1,4 +1,4 @@
-:- module world_model.
+:- module model.
 
 :- interface.
 :- import_module string, int, map, set.

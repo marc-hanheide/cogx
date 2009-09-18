@@ -13,7 +13,7 @@
 :- import_module solutions, require.
 :- import_module string, map, set, list, pair, unit.
 :- import_module lf, lf_io, formula, term_io, parser, formula_ops.
-:- import_module world_model.
+:- import_module model.
 
 main(!IO) :-
 	io.command_line_arguments(CmdArgs, !IO),
@@ -24,13 +24,13 @@ main(!IO) :-
 		preprocess_file(Strs0, Strs),
 
 		some [!WM] (
-			!:WM = world_model.init,
+			!:WM = model.init,
 
 			list.foldl2((pred(Line::in, !.WM::in, !:WM::out, !.IO::di, !:IO::uo) is det :-
 				(if Line = "CLEAR"
 				then
 					print("-------------------------------------------------------------\n", !IO),
-					!:WM = world_model.init
+					!:WM = model.init
 				else
 				(if Line = "PRINT"
 				then
@@ -77,7 +77,7 @@ main(!IO) :-
 					print(" ... ", !IO),
 					(if
 						%add_lf(!.WM, LF, !:WM),
-						add_lf(unit, unit, world_model.init, LF, XM),
+						add_lf(unit, unit, model.init, LF, XM),
 						union(unit, !.WM, XM, !:WM)
 					then
 						(if satisfies(unit, !.WM, LF) then Sat = "t" else Sat = "f"),

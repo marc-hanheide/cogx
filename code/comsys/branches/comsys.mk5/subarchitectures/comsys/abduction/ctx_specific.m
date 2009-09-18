@@ -40,7 +40,7 @@
 :- import_module require.
 :- import_module list, pair, map, float.
 :- import_module costs, varset, lf, lf_io, ontology.
-:- import_module world_model.
+:- import_module model.
 :- import_module modality, enumerable.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -103,7 +103,7 @@ ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- import_module ling.
-:- import_module io, string, world_model_io.
+:- import_module io, string, model_io.
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 

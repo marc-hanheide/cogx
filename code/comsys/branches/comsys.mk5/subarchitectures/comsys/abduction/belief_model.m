@@ -4,7 +4,7 @@
 
 :- import_module set, int, map, int.
 :- import_module lf.
-:- import_module stf, world_model, ontology.
+:- import_module stf, model, ontology.
 :- import_module stringable.
 
 :- type agent
@@ -141,7 +141,7 @@ add_lf_to_mbm(Ont, RT, STF, Bel, LF, MBM0) = MBM :-
 	),
 	(if map.search(BelMap, Bel, MFound)
 	then M0 = MFound
-	else M0 = world_model.init
+	else M0 = model.init
 	),
 	(if add_lf(Ont, RT, M0, LF, M)
 	then
@@ -185,7 +185,7 @@ k_model(Ont, RT, BM, STF, Bel, M) :-
 
 			% union with the private belief
 		set.fold((pred(M2::in, M1::in, M3::out) is semidet :-
-			world_model.union(Ont, M1, M2, M3)
+			model.union(Ont, M1, M2, M3)
 				), MutMs, M0, M)
 	;
 		Bel = mutual(_),
@@ -241,4 +241,4 @@ att_model(Ont, RT, BM, M) :-
 			)
 		else Ma = Ma0
 		)
-			), BM^fg, world_model.init, M).
+			), BM^fg, model.init, M).

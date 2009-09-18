@@ -14,7 +14,7 @@
 
 :- import_module require, solutions.
 :- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool, maybe.
-:- import_module abduction, formula, context, costs, belief_model, world_model.
+:- import_module abduction, formula, context, costs, belief_model, model.
 
 :- import_module ctx_modality, ctx_specific, ctx_io.
 :- import_module lf, lf_io, stf.

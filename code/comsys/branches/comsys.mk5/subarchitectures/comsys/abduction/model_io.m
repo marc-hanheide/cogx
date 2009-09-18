@@ -1,8 +1,8 @@
-:- module world_model_io.
+:- module model_io.
 
 :- interface.
 
-:- import_module world_model.
+:- import_module model.
 :- import_module string.
 
 :- func wm_to_string(model(I, S, R)) = string.
