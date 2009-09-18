@@ -34,7 +34,7 @@ JAVA MG discretizer binder.components.UnionDiscretizer #--log
 SUBARCHITECTURE planner.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG Planner WMControl
+CPP MG Planner WMControl 
 JAVA MG executor execution.components.PrototypePlanExecutor --log --self-motivate
 
 

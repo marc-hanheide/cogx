@@ -95,7 +95,7 @@ public class SerialPlanExecutor extends Thread {
 				PlanningTask.class);
 
 		assert m_task.planningStatus == Completion.SUCCEEDED : "can't execute a non-succeeded plan: "
-				+ m_task.status;
+				+ m_task.executionStatus;
 
 		m_actionAddress = new WorkingMemoryAddress(m_task.firstActionID,
 				m_planningTaskAddress.subarchitecture);
@@ -174,7 +174,7 @@ public class SerialPlanExecutor extends Thread {
 		m_component.log("plan changed");
 		
 		//execution deemed complete by the planner
-		if (_planningTask.status == Completion.SUCCEEDED) {
+		if (_planningTask.executionStatus == Completion.SUCCEEDED) {
 			stopExecution();
 			planComplete(ExecutionState.COMPLETED);
 			m_component.log("and read that plan complete");
