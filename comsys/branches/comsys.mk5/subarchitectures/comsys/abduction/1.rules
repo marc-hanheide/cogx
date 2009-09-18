@@ -1,3 +1,8 @@
+k(now, mutual(r,h)) : @(Id::thing, Obj) <-
+	a(com) : it(Id) / in_focus,
+	k(now, attrib(r,h)) : @(Id::thing, Obj) / prove.
+
+/*
 k(now, attrib(r, h)) : fact(F) <-
 	e(now) : utter(r, F) / 1.0,
 	i : fact(F) / prove,
@@ -72,4 +77,5 @@ clarify(U, C) <-
 %	a0fc : ...
 %	k_now_r_and_h : ...
 
+*/
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#

@@ -81,12 +81,20 @@ ctx_rule(Ctx, Rule) :-
 
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
-ctx_fact(_Ctx, vs(m(_, p("do", _)), _), vs(m([e(now)], p("do", [t("e", [])])), varset.init)).
+ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
+	Mod = [k(STF, Belief)],
+	set.member({STF, Belief, GFormula, _}, Ctx^bm^k),
+	VSMProp = vs(m(Mod, ground_formula_to_formula(GFormula)), varset.init).
+
+%ctx_fact(_Ctx, vs(m(_, p("do", _)), _), vs(m([e(now)], p("do", [t("e", [])])), varset.init)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
-ctx_assumable_func(_Ctx, _FuncName, _GProp, _Cost) :-
-	fail.
+ctx_assumable_func(Ctx, _, m(Mod, GProp), 0.5) :-
+	Mod = [a(com)],
+	GProp = p("it", [t("v1", [])]).
 
+%ctx_assumable_func(_Ctx, _FuncName, _GProp, _Cost) :-
+%	fail.
