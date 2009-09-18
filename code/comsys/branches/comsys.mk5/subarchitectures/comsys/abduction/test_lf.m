@@ -37,10 +37,10 @@ main(!IO) :-
 						print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
 						print_wm(!.WM, !IO)
 					else
-						(if Line = "SIMPLIFY"
+						(if Line = "REDUCE"
 						then
 							print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n", !IO),
-							print_simplified_models(!.WM, !IO)
+							print_reduced_model(!.WM, !IO)
 						else
 							(if Line = "LFS"
 							then
@@ -51,7 +51,7 @@ main(!IO) :-
 								print(lf_to_string(LF), !IO),
 								print(" ... ", !IO),
 								(if add_lf(LF, !WM)
-								then print("ok (" ++ from_int(count(simplified_models(!.WM))) ++")\n", !IO)
+								then print("ok (" ++ from_int(count(reduced_models(!.WM))) ++")\n", !IO)
 								else print("FAIL, ignoring\n", !IO)
 								)
 							)
@@ -173,25 +173,19 @@ print_wm(WM, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func simplified_models(world_model) = set(world_model).
+:- func reduced_models(world_model) = set(world_model).
 
-simplified_models(WM) = SWMs :-
-	SWMs = solutions_set((pred(SWM::out) is nondet :-
-		simplify_pred(WM, SWM)
+reduced_models(WM) = RWMs :-
+	RWMs = solutions_set((pred(RWM::out) is nondet :-
+		RWM = reduced(WM)
 			)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred print_simplified_models(world_model::in, io::di, io::uo) is det.
+:- pred print_reduced_model(world_model::in, io::di, io::uo) is det.
 
-print_simplified_models(WM, !IO) :-
-	SWMs = set.to_sorted_list(simplified_models(WM)),
-	(if SWMs = []
-	then
-		print("no simplified models.\n", !IO)
-	else
-		list.foldl((pred(SWM::in, !.IO::di, !:IO::uo) is det :-
-			print_wm(SWM, !IO),
-			print("  = = = = = = = = = = = = = =\n", !IO)
-				), SWMs, !IO)
+print_reduced_model(WM, !IO) :-
+	(if RWM = reduced(WM)
+	then print_wm(RWM, !IO)
+	else print("model functionally irreducible.\n", !IO)
 	).
