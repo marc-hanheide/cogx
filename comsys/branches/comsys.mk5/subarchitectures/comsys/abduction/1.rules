@@ -2,6 +2,10 @@ k(now, mutual(r,h)) : @(Id::thing, Obj) <-
 	a(com) : it(Id) / in_focus,
 	k(now, attrib(r,h)) : @(Id::thing, Obj) / prove.
 
+e(now) : mention(r, Id) <-
+	a(com) : it(Id) / in_focus,
+	k(now, private(r)) : @(Id::thing, Obj) / prove.
+
 /*
 k(now, private(h)) : @(Idx, X) <-
 	k(now, mutual(r, h)) : @(Idx, X) / prove.
