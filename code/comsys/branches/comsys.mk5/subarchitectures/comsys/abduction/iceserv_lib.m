@@ -1,19 +1,22 @@
 :- module iceserv_lib.
 
 :- interface.
-:- import_module ctx_loadable, abduction.
+:- import_module ctx_loadable, ctx_modality, abduction.
 
 :- func srv_init_ctx = ctx.
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
 :- pred srv_add_fact(string::in, ctx::in, ctx::out) is semidet.
 :- pred srv_add_rule(string::in, ctx::in, ctx::out) is semidet.
+:- pred srv_get_best_proof(ctx::in, proof(ctx_modality)::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module set.
+:- import_module set, list.
 :- import_module formula_io, ctx_io.
+:- import_module solutions.
+:- import_module varset.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -48,3 +51,17 @@ srv_add_fact(String, !Ctx) :-
 
 srv_add_rule(String, !Ctx) :-
 	add_rule(string_to_vsmrule(String), !Ctx).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+/*
+:- pragma foreign_export("C", srv_get_best_proof(in, out), "get_best_proof").
+
+srv_get_best_proof(Ctx, Proof) :-
+	Proof = new_proof([], varset.init).
+*/
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pragma foreign_export("C", srv_get_best_proof(in, out), "get_best_proof").
+
+srv_get_best_proof(Ctx, Proof) :-
+	Proof = new_proof([], varset.init).
