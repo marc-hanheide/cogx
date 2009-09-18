@@ -27,6 +27,8 @@
 %------------------------------------------------------------------------------%
 
 :- implementation.
+:- import_module list.
+
 
 init = wm(map.init, set.init, map.init, 0).
 
@@ -37,6 +39,31 @@ init = wm(map.init, set.init, map.init, 0).
 new_unnamed_world(Id, WM0, WM) :-
 	Id = WM0^next_unnamed,
 	WM = WM0^next_unnamed := Id + 1.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred rename_merge_world(world_id(string)::in, world_id(string)::in, world_model::in,
+		world_model::out) is det.
+
+rename_merge_world(Old, New, WM0, WM) :-
+	WM1 = WM0^reach := set.map((func({Rel, OldIdA, OldIdB}) = {Rel, NewIdA, NewIdB} :-
+		(OldIdA = Old -> NewIdA = New ; NewIdA = OldIdA),
+		(OldIdB = Old -> NewIdB = New ; NewIdB = OldIdB)
+			), WM0^reach),
+
+	AssocL = list.map((func(OldId-Props) = NewId-Props :-
+		(OldId = Old -> NewId = New ; NewId = OldId)
+			), map.to_assoc_list(WM1^props)),
+
+	list.foldl((pred(Name-AddProps::in, Ps0::in, Ps::out) is det :-
+		(if map.search(Ps0, Name, OldProps)
+		then NewProps = set.union(OldProps, AddProps)
+		else NewProps = AddProps
+		),
+		Ps = map.set(Ps0, Name, NewProps)
+			), AssocL, WM1^props, PropsRenamed),
+
+	WM = WM1^props := PropsRenamed.
 
 %------------------------------------------------------------------------------%
 
@@ -71,9 +98,8 @@ add_lf0(Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 		WM = WM0
 	;
 		Cur = u(Num),
-		% check that the sort is consistent
-		% rename this in the entire forest
-		WM = WM0  % XXX
+		map.search(WM0^names, WName, Sort),
+		rename_merge_world(u(Num), i(WName), WM0, WM)
 	).
 
 add_lf0(Cur, Cur, r(Rel, LF), WM0, WM) :-
