@@ -202,7 +202,7 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 		QsL ++ QsInsert ++ QsR, VS,
 		Ctx) :-
 
-	rule(Ctx, Rule),
+	vrule(Ctx, Rule),
 	Rule = vs(m(MR, _-m(MH, _)), VSR),
 	match(compose_list(MR ++ MH), compose_list(MQ)),
 
