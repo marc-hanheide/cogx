@@ -5,33 +5,22 @@ package motivation.util.viewer;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.GridBagLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.TabExpander;
 
-import binder.autogen.core.PerceivedEntity;
-import binder.autogen.core.Proxy;
-
-import Ice.ObjectImpl;
-import NavData.FNode;
-import SpatialData.Place;
-
-import motivation.slice.ExploreMotive;
-import motivation.slice.Motive;
-import motivation.slice.PlanProxy;
-import motivation.slice.TestMotive;
-import motivation.util.CASTTimeUtil;
 import motivation.util.WMEntrySet.ChangeHandler;
 import motivation.util.viewer.plugins.Plugin;
 import cast.cdl.WorkingMemoryAddress;
@@ -57,12 +46,16 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	Map<WorkingMemoryAddress, Vector<Object>> tableContent;
 
 	protected Vector<String> columnHeadings;
+	private JPanel jPanel = null;
+	private JCheckBox jCheckBox = null;
+	volatile protected boolean freezeView;
 
 	/**
 	 * This is the default constructor
 	 */
 	public ViewerGUI() {
 		super();
+		freezeView = false;
 		counter = 0;
 		// addrRowMap = new HashMap<String, Integer>();
 		objectDispatcherMap = new HashMap<Class<?>, Plugin>();
@@ -80,23 +73,24 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 
 	}
 
-	private void mapToTableModel() {
+	private synchronized void mapToTableModel() {
 		final Vector<Vector<Object>> v = new Vector<Vector<Object>>(
 				tableContent.values());
-		EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
+		if (!freezeView) {
+			EventQueue.invokeLater(new Runnable() {
+				@Override
+				public void run() {
 
-				// delete all rows
-				while (tableModel.getRowCount() > 0)
-					tableModel.removeRow(0);
-				// insert all new rows
-				for (final Vector<Object> r : v) {
-					tableModel.addRow(r);
+					// delete all rows
+					while (tableModel.getRowCount() > 0)
+						tableModel.removeRow(0);
+					// insert all new rows
+					for (final Vector<Object> r : v) {
+						tableModel.addRow(r);
+					}
 				}
-			}
-		});
-
+			});
+		}
 	}
 
 	/**
@@ -105,7 +99,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(629, 243);
+		this.setSize(800, 400);
 		this.setContentPane(getJContentPane());
 		this.setTitle("WorkingMemory Monitor");
 	}
@@ -122,6 +116,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(borderLayout);
 			jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
+			jContentPane.add(getJPanel(), BorderLayout.SOUTH);
 		}
 		return jContentPane;
 	}
@@ -236,6 +231,42 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			break;
 		}
 		mapToTableModel();
+	}
+
+	/**
+	 * This method initializes jPanel
+	 * 
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJPanel() {
+		if (jPanel == null) {
+			jPanel = new JPanel();
+			jPanel.setLayout(new GridBagLayout());
+			jPanel.add(getJCheckBox());
+		}
+		return jPanel;
+	}
+
+	/**
+	 * This method initializes jCheckBox
+	 * 
+	 * @return javax.swing.JCheckBox
+	 */
+	private JCheckBox getJCheckBox() {
+		if (jCheckBox == null) {
+			jCheckBox = new JCheckBox();
+			jCheckBox.setText("freeze view");
+			jCheckBox.addItemListener(new ItemListener() {
+
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					freezeView = (e.getStateChange()==ItemEvent.SELECTED);
+					if (!freezeView) 
+						mapToTableModel();
+				}
+			});
+		}
+		return jCheckBox;
 	}
 
 } // @jve:decl-index=0:visual-constraint="10,10"
