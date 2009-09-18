@@ -12,15 +12,15 @@
 
 :- type world_model(Index, Sort, Rel).
 
-:- func worlds(world_model(Index, Sort, Rel)) = map(Index, Sort).
-:- func reach(world_model(Index, Sort, Rel)) = set({Rel, world_id(Index), world_id(Index)}).
-:- func props(world_model(Index, Sort, Rel)) = map(world_id(Index), set(proposition)).
+:- func worlds(world_model(I, S, R)) = map(I, S).
+:- func reach(world_model(I, S, R)) = set({R, world_id(I), world_id(I)}).
+:- func props(world_model(I, S, R)) = map(world_id(I), set(proposition)).
 
 :- type world_model == world_model(string, string, string).
 
 :- func init = world_model.
 
-	% union(M0, LF, M)
+	% add_lf(M0, LF, M)
 	% True iff
 	%   M0 \/ model-of(LF) = M
 	%
