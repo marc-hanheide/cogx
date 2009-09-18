@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module list, pair, set.
+:- import_module list, pair, set, bag.
 :- import_module varset.
 
 :- import_module modality.
@@ -47,6 +47,7 @@
 
 %:- func assumptions(proof(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
 :- func goal_assumptions(goal(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
+:- func goal_assertions(goal(M)) = bag(vscope(mprop(M))) <= modality(M).
 
 :- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
 %:- func goal_cost(C, goal(M), float) = float <= (context(C, M), modality(M)).
@@ -72,6 +73,11 @@ goal_assumptions(vs(Qs, _VS)) = As :-
 		MProp = m(Mod, Prop),
 		AnnotMGProp = cf(m(Mod, det_formula_to_ground_formula(Prop)), Func)
 			), Qs)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+goal_assertions(vs(Qs, VS)) = As :-
+	As = bag.from_list(list.filter_map((func(MProp-asserted) = vs(MProp, VS) is semidet), Qs)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

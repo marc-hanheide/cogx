@@ -110,6 +110,10 @@ main(!IO) :-
 				print("  " ++ assumptions_to_string(!.Ctx, goal_assumptions(G)) ++ "\n", !IO),
 				nl(!IO),
 
+				print("Assertions:\n", !IO),
+				print("  " ++ assertions_to_string(!.Ctx, goal_assertions(G)) ++ "\n", !IO),
+				nl(!IO),
+
 				print(string.from_int(set.count(Ds)) ++ " derivation" ++ plural_s(count(Ds)) ++ ".\n\n", !IO),
 
 				set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
@@ -300,12 +304,28 @@ goal_to_string(vs(G, VS)) = string.join_list(", ",
 
 :- func assumptions_to_string(ctx, set(with_cost_function(mgprop(ctx_modality)))) = string.
 
-assumptions_to_string(Ctx, As) = string.join_list("\n  ", list.map((func(cf(m(Mod, GProp), Func)) = S :-
-		MProp = m(Mod, ground_formula_to_formula(GProp)),
-		Cost = cost(Ctx, Func, vs(MProp, varset.init)),
-		S = mprop_to_string(varset.init, MProp)
-				++ " / " ++ cost_function_to_string(Func) ++ " = " ++ float_to_string(Cost)
-			), set.to_sorted_list(As))).
+assumptions_to_string(Ctx, As) = Str :-
+	(if not As = set.init
+	then
+		Str = string.join_list("\n  ", list.map((func(cf(m(Mod, GProp), Func)) = S :-
+			MProp = m(Mod, ground_formula_to_formula(GProp)),
+			Cost = cost(Ctx, Func, vs(MProp, varset.init)),
+			S = mprop_to_string(varset.init, MProp)
+					++ " / " ++ cost_function_to_string(Func) ++ " = " ++ float_to_string(Cost)
+				), set.to_sorted_list(As)))
+	else
+		Str = "(none)"
+	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func assertions_to_string(ctx, bag(vscope(mprop(ctx_modality)))) = string.
+
+assertions_to_string(Ctx, As) = Str :-
+	(if not As = bag.init
+	then Str = string.join_list("\n  ", list.map(vsmprop_to_string, bag.to_list(As)))
+	else Str = "(none)"
+	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
