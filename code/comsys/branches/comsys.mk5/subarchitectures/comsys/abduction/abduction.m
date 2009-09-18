@@ -161,11 +161,24 @@ factor(L, L).
 
 
 	% assumption
-step(assume(vs(Q, VS), F),
-		{QsL, cf(Q, F), QsR}, VS,
-		QsL ++ [Q-assumed] ++ QsR, VS,
-		_KB) :-
-	formula.is_ground(Q^p).
+step(assume(vs(m(MQ, PQ), VS), F),
+		{QsL0, cf(m(MQ, PQ0), F), QsR0}, VS0,
+		QsL ++ [m(MQ, PQ)-assumed] ++ QsR, VS,
+		KB) :-
+
+	assumable(KB, vs(m(MA, PA0), VSA)),
+	match(compose_list(MQ), compose_list(MA)),
+
+	varset.merge_renaming(VS0, VSA, VS, Renaming),
+	PA = rename_vars_in_formula(Renaming, PA0),
+
+	unify_formulas(PQ0, PA, Uni),
+
+	PQ = apply_subst_to_formula(Uni, PQ0),
+	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
+	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
+
+%	formula.is_ground(Q^p).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
