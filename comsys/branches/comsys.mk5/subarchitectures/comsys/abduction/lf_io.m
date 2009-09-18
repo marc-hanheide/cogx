@@ -36,9 +36,9 @@ ground_term_to_lf(t("@", [NameSortTerm, LFTerm])) =
 ground_term_to_lf(T) = i(ground_term_to_id(T)) :-
 	T = t("::", [_,_]).
 
-ground_term_to_lf(t(RelName, [LFTerm])) = r(from_string(RelName), ground_term_to_lf(LFTerm)).
+ground_term_to_lf(t("r", [t(RelName, []), LFTerm])) = r(from_string(RelName), ground_term_to_lf(LFTerm)).
 
-ground_term_to_lf(t(Prop, [])) = p(Prop).
+ground_term_to_lf(t("p", [t(Prop, [])])) = p(Prop).
 
 ground_term_to_lf(t("^", [LFA, LFB])) = and(ground_term_to_lf(LFA), ground_term_to_lf(LFB)).
 
@@ -72,8 +72,8 @@ id_to_ground_term(of_sort(Idx, Sort)) = t("::", [t(to_string(Idx), []), t(to_str
 
 lf_to_ground_term(at(Id, LF)) = t("@", [id_to_ground_term(Id), lf_to_ground_term(LF)]).
 lf_to_ground_term(i(Id)) = id_to_ground_term(Id).
-lf_to_ground_term(r(Rel, LF)) = t(to_string(Rel), [lf_to_ground_term(LF)]).
-lf_to_ground_term(p(Prop)) = t(Prop, []).
+lf_to_ground_term(r(Rel, LF)) = t("r", [t(to_string(Rel), []), lf_to_ground_term(LF)]).
+lf_to_ground_term(p(Prop)) = t("p", [t(Prop, [])]).
 lf_to_ground_term(and(LF1, LF2)) = t("^", [lf_to_ground_term(LF1), lf_to_ground_term(LF2)]).
 
 lf_to_ground_atomic_formula(LF) = p(PredSym, Args) :-
