@@ -38,7 +38,6 @@ import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.autogen.core.Union;
-import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
 import binder.utils.GradientDescent;
 import binder.components.BinderMonitor;
@@ -181,6 +180,7 @@ public class BinderMonitorGUI extends JFrame
 		AVM.put("P(exists|Z)", ""+roundProb(union.probExists));
 		AVM.put("Nb. included proxies", "" + union.includedProxies.length);
 		AVM.put("Max prob", ""+ GradientDescent.getMaximum(union));
+		AVM.put("Conf. score", ""+ union.confidenceScore);
 		AVM.put("Timestamp", "+" + formatTimpestamp(union.timeStamp) + " s.");
 
 		int maxLength = getMaximumLength(AVM.keySet());
@@ -308,7 +308,7 @@ public class BinderMonitorGUI extends JFrame
 				if (proxy instanceof RelationProxy) {
 					addNewRelationProxy((RelationProxy) proxy, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
 				}
-				if (proxy instanceof PhantomProxy) {
+				else if (proxy instanceof PhantomProxy) {
 					addNewPhantomProxy((PhantomProxy) proxy, curUnionPosition_X + horizontalIncr);
 					horizontalIncr += 250;
 				}

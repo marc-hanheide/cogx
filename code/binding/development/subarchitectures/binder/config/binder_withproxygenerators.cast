@@ -5,16 +5,13 @@ SUBARCHITECTURE binder
 JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
 JAVA WM binder.components.BindingWorkingMemory --log
 
-JAVA MG fakevisual binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxies 1  --pauses false --log
-JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxies 1  --pauses false  --log
-JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 1  --pauses false --deleteproxies false --log
+JAVA MG fakevisual binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxies 2  --pauses true --log
+JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxies 3  --pauses true  --log
+#JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 2 --pauses true --deleteproxies false --log
 
-JAVA MG binder binder.components.Binder --alpha 0.99f --nbestsfilter 10 --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
-JAVA MG discretizer binder.components.UnionDiscretizer --log
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues true --log
 
 JAVA MG monitor binder.components.BinderMonitor --gui --log
 
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 
-
-#purely for debug purposes
-JAVA MG origins binder.components.OriginListener

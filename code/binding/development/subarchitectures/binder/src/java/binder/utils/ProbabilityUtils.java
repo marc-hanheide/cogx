@@ -36,7 +36,7 @@ import binder.utils.FeatureValueUtils;
 public class ProbabilityUtils {
 
 	
-	public static boolean normaliseDistributions = false;
+	public static boolean normaliseDistributions = true;
 	
 	
 	public static ProbabilityDistribution generateProbabilityDistribution (PerceivedEntity entity) {
@@ -58,6 +58,7 @@ public class ProbabilityUtils {
 			}
 
 		}
+		
 		else {
 			distrib.assignments = new DiscreteProbabilityAssignment[1];
 			distrib.assignments[0] = new DiscreteProbabilityAssignment();
@@ -241,23 +242,34 @@ public class ProbabilityUtils {
 	public static DiscreteProbabilityDistribution multiplyDistributionWithConstantValue (
 			DiscreteProbabilityDistribution distrib, float constantValue) {
 
+		DiscreteProbabilityDistribution newDistrib = new DiscreteProbabilityDistribution();
+		newDistrib.assignments = new DiscreteProbabilityAssignment[distrib.assignments.length];
+
 		for (int i = 0; i < distrib.assignments.length; i++) {
-			distrib.assignments[i].prob = distrib.assignments[i].prob * constantValue;
+			newDistrib.assignments[i] = new DiscreteProbabilityAssignment();
+			newDistrib.assignments[i].featurepairs = distrib.assignments[i].featurepairs;
+			newDistrib.assignments[i].prob = distrib.assignments[i].prob * constantValue;
 		}
 
-		return distrib;
+		return newDistrib;
 	}
 
 
 	public static DiscreteProbabilityDistribution invertDistribution (
 			DiscreteProbabilityDistribution distrib) {
 
+		DiscreteProbabilityDistribution newDistrib = new DiscreteProbabilityDistribution();
+		newDistrib.assignments = new DiscreteProbabilityAssignment[distrib.assignments.length];
+		
 		for (int i = 0; i < distrib.assignments.length; i++) {
-			if (distrib.assignments[i].prob > 0)
-				distrib.assignments[i].prob = 1 / distrib.assignments[i].prob ;
+			if (distrib.assignments[i].prob > 0) {
+				newDistrib.assignments[i] = new DiscreteProbabilityAssignment();
+				newDistrib.assignments[i].featurepairs = distrib.assignments[i].featurepairs;
+				newDistrib.assignments[i].prob = 1 / distrib.assignments[i].prob ;
+			}
 		}
 
-		return distrib;
+		return newDistrib;
 	}
 
 	public static float getProbabilityValue 
@@ -330,6 +342,7 @@ public class ProbabilityUtils {
 			return generateProbabilityDistribution(features, 
 					new Vector<DiscreteProbabilityAssignment>());
 		}
+		
 		else {
 			Vector<DiscreteProbabilityAssignment> assignments = 
 				new Vector<DiscreteProbabilityAssignment>();
@@ -338,7 +351,7 @@ public class ProbabilityUtils {
 			assignment.prob = 1.0f;
 			assignments.add(assignment);
 			return assignments;
-		}
+		} 
 	}
 	
 	

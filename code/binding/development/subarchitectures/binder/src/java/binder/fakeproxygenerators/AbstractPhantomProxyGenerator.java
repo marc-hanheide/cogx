@@ -35,7 +35,7 @@ abstract public class AbstractPhantomProxyGenerator extends AbstractBindingPredi
 	}
 	
 	
-	
+
 	protected void randomPrediction() {
 
 		Random rand = new Random();
@@ -51,7 +51,7 @@ abstract public class AbstractPhantomProxyGenerator extends AbstractBindingPredi
 				else {
 					p = createPhantomProxy(nbOfProxiesToCreate-i+1);
 				}
-				Union u = getPredictedUnion(p, deleteProxiesAfterBinding);
+				Union u = getBestPredictedUnion(p, deleteProxiesAfterBinding);
 				log("PREDICTED UNION: " + u.entityID);
 
 			}	

@@ -54,7 +54,7 @@ public class BinderUtils {
 				values.add(features[i].alternativeValues[j]);
 				totalProb += features[i].alternativeValues[j].independentProb;
 			}
-			if (totalProb < 1.0f) {
+			if (totalProb < 0.6f && features.length < 3) {
 				features[i].alternativeValues = new FeatureValue[values.size() + 1];
 				for (int j = 0 ; j < values.size(); j++ ) {
 					features[i].alternativeValues[j] = values.elementAt(j);
@@ -105,6 +105,7 @@ public class BinderUtils {
 		proxy.distribution = 
 			ProbabilityUtils.generateProbabilityDistribution(proxy);
 	}
+
 	return proxy;
 }
 
@@ -119,7 +120,6 @@ public class BinderUtils {
 		text += getPrettyPrintProbabilityAssignment(assignment) + "\n";
 	}
 	}
-
 	return text;
 }
 

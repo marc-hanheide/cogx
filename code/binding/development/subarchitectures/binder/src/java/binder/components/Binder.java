@@ -35,7 +35,6 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.utils.GradientDescent;
-import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -65,7 +64,7 @@ public class Binder extends ManagedComponent  {
 	private boolean incrementalBinding = true;
 
 	// whether to add unknown values to each feature
-	private boolean addUnknowns = true;
+	private boolean addUnknowns = false;
 	
 	// TO IMPLEMENT / TEST
 	private boolean normaliseDistributions = false;
@@ -75,7 +74,7 @@ public class Binder extends ManagedComponent  {
 	
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
-	public int nbestsFilter = 1;
+	public int nbestsFilter = 5;
 
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
@@ -184,6 +183,14 @@ public class Binder extends ManagedComponent  {
 		if (_config.containsKey("--incremental")) {
 			incrementalBinding = Boolean.parseBoolean(_config.get("--incremental"));
 		}
+
+		if (_config.containsKey("--addunknowns")) {
+			addUnknowns = Boolean.parseBoolean(_config.get("--addunknowns"));
+		}
+		
+		if (_config.containsKey("--normalise")) {
+			normaliseDistributions = Boolean.parseBoolean(_config.get("--normalise"));
+		}
 		
 		if (_config.containsKey("--nbestsfilter")) {
 			nbestsFilter = Integer.parseInt(_config.get("--nbestsfilter"));
@@ -240,8 +247,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
 							proxies.add(updatedProxy);
-							Union updatedUnion = constructor.constructNewUnion(proxies, newDataID());								
-							updatedUnion.entityID = existingUnion.entityID ;
+							Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID);								
 							existingUnionConfig.includedUnions[i] = updatedUnion;
 						}
 					}
@@ -304,8 +310,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
 							if (proxies.size() > 0) { 
-								Union updatedUnion = constructor.constructNewUnion(proxies, newDataID());								
-								updatedUnion.entityID = existingUnion.entityID ;
+								Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID);								
 								existingUnionConfig.includedUnions[i] = updatedUnion;
 							}
 							else {
@@ -443,7 +448,6 @@ public class Binder extends ManagedComponent  {
 
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
-
 					Union existingUnion = existingUnionConfig.includedUnions[i];
 
 					// A new, several-proxies union
@@ -475,26 +479,31 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 
+			newUnionConfigurations = 
+				GradientDescent.computeConfigurationMaxProbabilities(newUnionConfigurations);
 			// Get the nbest configurations (with N as a parameter)
-			Vector<UnionConfiguration> NBests = 
-				GradientDescent.getNBestUnionConfigurations (newUnionConfigurations, nbestsFilter);
-
+			if (nbestsFilter > 0) {
+				newUnionConfigurations = 
+					GradientDescent.getNBestUnionConfigurations (newUnionConfigurations, nbestsFilter);
+			}
+			
 			// update the list of possible unions
-			currentUnionConfigurations = NBests;
+			currentUnionConfigurations = newUnionConfigurations;
 
+			
 			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
 			updateWM(alters); 
-
+			
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-
+	
 	// ================================================================= 
 	// UTILITY METHODS   
 	// ================================================================= 
@@ -524,7 +533,7 @@ public class Binder extends ManagedComponent  {
 	public static boolean alreadyComputed(Union union, HashMap<Union, Union> alreadyMergedUnions) {
 		for (Iterator<Union> i = alreadyMergedUnions.keySet().iterator() ; i.hasNext() ; ) {
 			Union u = i.next();
-			if (u.entityID.equals(union.entityID) && u.timeStamp == union.timeStamp) {
+			if (u.equals(union)  && u.entityID.equals(union.entityID) && u.timeStamp == union.timeStamp) {
 				return true;
 			}
 		}
@@ -652,8 +661,13 @@ public class Binder extends ManagedComponent  {
 				! (union2 instanceof RelationUnion)) {
 			return true;
 		}
-		if (! (union1 instanceof RelationUnion) && 
+		else if (! (union1 instanceof RelationUnion) && 
 				union2 instanceof RelationUnion) {
+			return true;
+		}
+		
+		else if (!(union1 instanceof RelationUnion) && 
+			(union1.features.length == 0 || union2.features.length == 0)) {
 			return true;
 		}
 		
