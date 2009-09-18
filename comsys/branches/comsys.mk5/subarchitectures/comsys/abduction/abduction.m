@@ -13,7 +13,7 @@
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- type marking
-	--->	resolved
+	--->	proved
 	;	assumed(cost_function)
 	;	unsolved(cost_function)
 	;	asserted
@@ -212,7 +212,7 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 	% resolution with a fact
 step(use_fact(vs(m(MF, PF), VS), Uni),
 		{QsL0, cf(m(MQ, PQ0), _F), QsR0}, VS0,
-		QsL ++ [m(MQ, PQ)-resolved] ++ QsR, VS,
+		QsL ++ [m(MQ, PQ)-proved] ++ QsR, VS,
 		Ctx) :-
 
 	fact(Ctx, vs(m(MF, PF0), VSF)),
@@ -250,7 +250,7 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 		; A = test(P), UniA = apply_subst_to_mprop(Uni, P)-asserted
 		)
 			), Ante)
-			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
+			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-proved],
 
 %	QsInsert = list.map((func(cf(P, F)) = apply_subst_to_mprop(Uni, P)-unsolved(F)), Ante)
 %			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
