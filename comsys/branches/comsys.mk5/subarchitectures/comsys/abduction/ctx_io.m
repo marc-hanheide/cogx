@@ -13,6 +13,7 @@
 
 :- implementation.
 :- import_module list, string, set, term, require.
+:- import_module stf.
 
 :- instance stringable(ctx_modality) where [
 	func(to_string/1) is ctx_modality_to_string
@@ -46,14 +47,6 @@ foreground_as_string(com, "com").
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func stf_to_string(stf) = string.
-:- func term_to_stf(term.term::in) = (stf::out) is semidet.
-
-stf_to_string(now) = "now".
-term_to_stf(functor(atom("now"), [], _)) = now.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
 :- func ctx_modality_to_string(ctx_modality) = string.
 :- func ctx_modality_from_term(term.term::in) = (ctx_modality::out) is semidet.
 
@@ -72,34 +65,34 @@ ctx_modality_from_term(functor(atom("a"), [
 	], _)) = a(Fgr) :- foreground_as_string(Fgr, FgrStr).
 
 	% events
-ctx_modality_to_string(e(STF)) = "e(" ++ stf_to_string(STF) ++ ")".
+ctx_modality_to_string(e(STF)) = "e(" ++ to_string(STF) ++ ")".
 ctx_modality_from_term(functor(atom("e"), [
 		STFTerm
-	], _)) = e(term_to_stf(STFTerm)).
+	], _)) = e(from_term(STFTerm)).
 
 	% "knows"
-ctx_modality_to_string(k(STF, private(A))) = "k(" ++ stf_to_string(STF) ++ "," ++ to_string(A) ++ ")".
-ctx_modality_to_string(k(STF, attrib(A, B))) = "k(" ++ stf_to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
+ctx_modality_to_string(k(STF, private(A))) = "k(" ++ to_string(STF) ++ "," ++ to_string(A) ++ ")".
+ctx_modality_to_string(k(STF, attrib(A, B))) = "k(" ++ to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
 		++ to_string(B) ++ ")".
-ctx_modality_to_string(k(STF, mutual(AgS))) = "k(" ++ stf_to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
+ctx_modality_to_string(k(STF, mutual(AgS))) = "k(" ++ to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
 	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
 ctx_modality_from_term(functor(atom("k"), [
 		STFTerm,
 		BeliefTerm
-	], _)) = k(term_to_stf(STFTerm), term_to_belief(BeliefTerm)).
+	], _)) = k(from_term(STFTerm), term_to_belief(BeliefTerm)).
 
 	% tasks
-ctx_modality_to_string(t(STF, private(A))) = "t(" ++ stf_to_string(STF) ++ "," ++ to_string(A) ++ ")".
-ctx_modality_to_string(t(STF, attrib(A, B))) = "t(" ++ stf_to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
+ctx_modality_to_string(t(STF, private(A))) = "t(" ++ to_string(STF) ++ "," ++ to_string(A) ++ ")".
+ctx_modality_to_string(t(STF, attrib(A, B))) = "t(" ++ to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
 		++ to_string(B) ++ ")".
-ctx_modality_to_string(t(STF, mutual(AgS))) = "t(" ++ stf_to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
+ctx_modality_to_string(t(STF, mutual(AgS))) = "t(" ++ to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
 	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
 ctx_modality_from_term(functor(atom("t"), [
 		STFTerm,
 		BeliefTerm
-	], _)) = t(term_to_stf(STFTerm), term_to_belief(BeliefTerm)).
+	], _)) = t(from_term(STFTerm), term_to_belief(BeliefTerm)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

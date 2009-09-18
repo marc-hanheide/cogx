@@ -11,7 +11,7 @@
 :- implementation.
 
 :- import_module list, string.
-:- import_module ctx_modality, modality, ctx_io, belief_model.
+:- import_module ctx_modality, modality, ctx_io, belief_model, stf.
 :- import_module stringable.
 
 main(!IO) :-
