@@ -355,7 +355,7 @@ print_proof_trace(Ctx, Proof, !IO) :-
 	print("  " ++ proof_state_to_string(Varset0, InitQs) ++ "\n", !IO),
 
 	GoalsStr = list.map((func(Step-Goal) = GStr :-
-		GStr = "    ------------------------------\n"
+		GStr = "    --->\n"
 				++ ">>  " ++ step_to_string(Step) ++ "\n  " ++ proof_state_to_string(Varset0, Goal)
 				), from_corresponding_lists(reverse(Proof^p_steps), RemQss)),
 	print(string.join_list("\n", GoalsStr) ++ "\n", !IO).
