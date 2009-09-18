@@ -82,6 +82,10 @@ main(!IO) :-
 							Mod = from_term(TKTerm),
 							LF = det_ground_atomic_formula_to_lf(Formula),
 							(
+/*
+								Mod = k(Stf, Bel),
+								!:BM = !.BM^mk := add_lf_to_mbm(Stf, Bel, LF, !.BM^mk)
+*/
 								Mod = k(Stf, Bel),
 								Ks = !.BM^k,
 								!:BM = !.BM^k := set.insert(Ks, {Stf, Bel, LF, Fg})
