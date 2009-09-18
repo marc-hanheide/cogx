@@ -31,13 +31,16 @@
 	%
 	% i.e. every reachability relation is a (partial) function W -> W
 	% rather than W -> pow(W)
+
 :- func simplify(world_model::in) = (world_model::out) is semidet.
+
+:- pred simplify_pred(world_model::in, world_model::out) is nondet.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
+:- import_module solutions, require.
 :- import_module list.
-
 
 init = wm(map.init, set.init, map.init, 0).
 
@@ -55,24 +58,26 @@ new_unnamed_world(Id, WM0, WM) :-
 		world_model::out) is det.
 
 rename_merge_world(Old, New, WM0, WM) :-
-	WM1 = WM0^reach := set.map((func({Rel, OldIdA, OldIdB}) = {Rel, NewIdA, NewIdB} :-
+	Reach = set.map((func({Rel, OldIdA, OldIdB}) = {Rel, NewIdA, NewIdB} :-
 		(OldIdA = Old -> NewIdA = New ; NewIdA = OldIdA),
 		(OldIdB = Old -> NewIdB = New ; NewIdB = OldIdB)
 			), WM0^reach),
 
-	AssocL = list.map((func(OldId-Props) = NewId-Props :-
-		(OldId = Old -> NewId = New ; NewId = OldId)
-			), map.to_assoc_list(WM1^props)),
+	(if map.search(WM0^props, Old, OldsProps0)
+	then OldsProps = OldsProps0
+	else OldsProps = set.init
+	),
+	(if map.search(WM0^props, New, NewsProps0)
+	then NewsProps = set.union(NewsProps0, OldsProps)
+	else NewsProps = OldsProps
+	),
+	DelProps = map.delete(WM0^props, Old),
+	(if NewsProps = set.init
+	then Props = DelProps
+	else Props = map.set(DelProps, New, NewsProps)
+	),
 
-	list.foldl((pred(Name-AddProps::in, Ps0::in, Ps::out) is det :-
-		(if map.search(Ps0, Name, OldProps)
-		then NewProps = set.union(OldProps, AddProps)
-		else NewProps = AddProps
-		),
-		Ps = map.set(Ps0, Name, NewProps)
-			), AssocL, WM1^props, PropsRenamed),
-
-	WM = WM1^props := PropsRenamed.
+	WM = wm(WM0^names, Reach, Props, WM0^next_unnamed).
 
 %------------------------------------------------------------------------------%
 
@@ -133,4 +138,33 @@ add_lf0(Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 %------------------------------------------------------------------------------%
 
 simplify(WM) = SWM :-
-	SWM = WM.
+	Sols = solutions((pred(Sol::out) is nondet :-
+		simplify_pred(WM, Sol)
+			)),
+	(
+	 	Sols = [],
+		error("no solutions found in func simplify/1")
+	;
+		Sols = [SWM]
+	;
+		Sols = [_|_],
+		error("multiple solutions found in func simplify/1")
+	).
+
+simplify_pred(WM, SWM) :-
+	(if
+		set.member({Rel, W1, W2}, WM^reach),
+		set.member({Rel, W1, W3}, WM^reach),
+		W2 \= W3
+	then
+		(if
+			W3 = u(_)
+		then
+			rename_merge_world(W3, W2, WM, WM0),
+			simplify_pred(WM0, SWM)
+		else
+			fail
+		)
+	else
+		SWM = WM
+	).

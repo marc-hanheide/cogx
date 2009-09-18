@@ -10,7 +10,8 @@
 
 :- implementation.
 
-:- import_module string, map, set.
+:- import_module solutions.
+:- import_module string, map, set, list, pair.
 :- import_module lf, lf_io, formula.
 :- import_module world_model.
 
@@ -26,9 +27,11 @@ main(!IO) :-
 	test_lf( at(of_sort("v1", "object"), and(p("box"), r("colour", and(i(of_sort("c", "colour")), p("something"))))), world_model.init, _, !IO),
 
 	test_lf( r("colour", and(r("tint", p("weird")), p("red"))), world_model.init, WM1, !IO),
-	test_lf( r("colour", i(of_sort("c", "colour"))), WM1, WM2, !IO),
-	test_lf( r("colour", i(of_sort("d", "colour"))), WM2, WM3, !IO),
-	test_lf( at(of_sort("c", "colour"), r("tint", i(of_sort("t", "tint")))), WM3, WM4, !IO).
+	test_lf( r("colour", i(of_sort("c", "colour"))), WM1, WM3, !IO),
+%	test_lf( r("colour", i(of_sort("d", "colour"))), WM2, WM3, !IO),  % this should make it inconsistent
+	test_lf( at(of_sort("c", "colour"), r("tint", i(of_sort("t", "tint")))), WM3, WM4, !IO),
+
+	print_simplified_models(WM4, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -67,11 +70,8 @@ test_add_lf(LF, !WM, !IO) :-
 
 print_wm(WM, !IO) :-
 	print("names:\n", !IO),
-	map.foldl((pred(Name::in, Sort::in, !.IO::di, !:IO::uo) is det :-
-		print("  " ++ Name ++ ":" ++ Sort, !IO),
-		nl(!IO)
-			), WM^names, !IO),
-
+	NamesStrs = list.map((func(Name-Sort) = S :- S = Name ++ ":" ++ Sort), map.to_assoc_list(WM^names)),
+	print("  " ++ string.join_list("\n  ", NamesStrs) ++ "\n", !IO),
 	nl(!IO),
 
 	print("reachability:\n", !IO),
@@ -87,3 +87,21 @@ print_wm(WM, !IO) :-
 		print("  " ++ string(Id) ++ " ... {" ++ string.join_list(", ", set.to_sorted_list(Props)) ++ "}", !IO),
 		nl(!IO)
 			), WM^props, !IO).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred print_simplified_models(world_model::in, io::di, io::uo) is det.
+
+print_simplified_models(WM, !IO) :-
+	SWMs = solutions((pred(SWM::out) is nondet :-
+		simplify_pred(WM, SWM)
+			)),
+
+	print("Simplified models: [\n", !IO),
+
+	list.foldl((pred(SWM::in, !.IO::di, !:IO::uo) is det :-
+		print_wm(SWM, !IO),
+		print("- - - - - - - - - - - - - -\n", !IO)
+			), SWMs, !IO),
+
+	print("].\n", !IO).
