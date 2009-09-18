@@ -20,11 +20,11 @@ public class MotiveFactory {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new Motive(created, created, src, null, MotiveStatus.UNSURFACED);
 	}
-	public static Motive createExploreMotive(WorkingMemoryAddress src) {
+	public static ExploreMotive createExploreMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new ExploreMotive(created, created, src, null, MotiveStatus.UNSURFACED, -1);
 	}
-	public static Motive createTestMotive(WorkingMemoryAddress src) {
+	public static TestMotive createTestMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new TestMotive(created, created, src, null, MotiveStatus.UNSURFACED, "hurgs");
 	}

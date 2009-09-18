@@ -3,10 +3,15 @@
  */
 package motivation.components.managers;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import motivation.slice.Motive;
+import motivation.util.WMEntrySet;
 import motivation.util.WMMotiveSet;
+import binder.autogen.core.OriginMap;
+import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -20,7 +25,8 @@ public abstract class MotiveManager extends ManagedComponent {
 
 	Class<? extends Motive> specificType;
 	WMMotiveSet motives;
-
+	WMEntrySet placeOrigins;
+	
 	/**
 	 * @param specificType
 	 */
@@ -28,6 +34,28 @@ public abstract class MotiveManager extends ManagedComponent {
 		super();
 		this.specificType = specificType;
 		motives = WMMotiveSet.create(this, specificType);
+		placeOrigins = WMEntrySet.create(this,OriginMap.class);
+	}
+	
+	/** asks the spatial.sa for the lookup map to get from Places to binder proxies
+
+	 * @return the map or null if one couldn't be retrieved from the spatial WM
+	 */
+	OriginMap getOriginMap() {
+		List<OriginMap> l = new LinkedList<OriginMap>();
+		try {
+			getMemoryEntries(OriginMap.class, l,"spatial.sa");
+		} catch (CASTException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (l.size()==0) {
+			return null;
+		}
+		for (String s : l.get(0).sourceID2ProxyID.values()) {
+			log("  originMap: "+s);
+		}
+		return l.get(0);
 	}
 
 	@Override

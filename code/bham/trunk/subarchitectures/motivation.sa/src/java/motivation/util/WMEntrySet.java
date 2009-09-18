@@ -37,9 +37,9 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	 */
 	private static final long serialVersionUID = 6388467413187493228L;
 
-	private ManagedComponent component;
+	protected ManagedComponent component;
 
-	private ChangeHandler updateHandler;
+	protected ChangeHandler updateHandler;
 
 	Collection<Class<? extends Ice.ObjectImpl>> specificTypes;
 
@@ -69,15 +69,17 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 						specClass);
 				if (map.put(_wmc.address, m) != null)
 					newWmc.operation = WorkingMemoryOperation.OVERWRITE;
-				updateHandler.motiveChanged(map, newWmc, map
-						.get(newWmc.address));
+				if (updateHandler != null)
+					updateHandler.motiveChanged(map, newWmc, map
+							.get(newWmc.address));
 
 				break;
 			case OVERWRITE:
 				try {
 					map.put(newWmc.address, component.getMemoryEntry(
 							newWmc.address, specClass));
-					updateHandler.motiveChanged(map, newWmc, map
+					if (updateHandler != null)
+						updateHandler.motiveChanged(map, newWmc, map
 							.get(newWmc.address));
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
@@ -85,7 +87,8 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 					Ice.ObjectImpl o = map.remove(newWmc.address);
 					map.remove(newWmc.address);
 					if (o != null)
-						updateHandler.motiveChanged(map, newWmc, o);
+						if (updateHandler != null)
+							updateHandler.motiveChanged(map, newWmc, o);
 				}
 
 				break;
@@ -93,7 +96,8 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 
 				Ice.ObjectImpl o = map.remove(newWmc.address);
 				if (o != null)
-					updateHandler.motiveChanged(map, newWmc, o);
+					if (updateHandler != null)
+						updateHandler.motiveChanged(map, newWmc, o);
 
 				break;
 			}
@@ -122,7 +126,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	 */
 	public static WMEntrySet create(ManagedComponent c,
 			final Class<? extends Ice.ObjectImpl> specificType) {
-		WMEntrySet s=new WMEntrySet(c);
+		WMEntrySet s = new WMEntrySet(c);
 		s.addType(specificType);
 		return s;
 	}
