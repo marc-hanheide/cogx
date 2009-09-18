@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module list, pair, bag.
+:- import_module list, pair, bag, set.
 :- import_module varset.
 
 :- import_module modality.
@@ -14,7 +14,7 @@
 
 :- type marking
 	--->	resolved
-	;	assumed
+	;	assumed(cost_function)
 	;	unsolved(cost_function)
 	;	asserted
 	.
@@ -43,7 +43,8 @@
 
 :- func last_goal(proof(M)) = vscope(list(marked(mprop(M)))) <= modality(M).
 
-:- func assumptions(proof(M)) = bag(vscope(mprop(M))) <= modality(M).
+:- func assumptions(proof(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
+
 :- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
 
 %------------------------------------------------------------------------------%
@@ -60,9 +61,10 @@ new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 assumptions(Proof) = As :-
-	vs(Qs, Varset) = last_goal(Proof),
-	As = bag.from_list(list.filter_map((func(MProp-assumed) = VSMProp is semidet :-
-		VSMProp = vs(MProp, Varset)
+	vs(Qs, _Varset) = last_goal(Proof),
+	As = set.from_list(list.filter_map((func(MProp-assumed(Func)) = AnnotMGProp is semidet :-
+		MProp = m(Mod, Prop),
+		AnnotMGProp = cf(m(Mod, det_formula_to_ground_formula(Prop)), Func)
 			), Qs)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -111,7 +113,7 @@ prove(P0, P, Ctx) :-
 		% XXX: check resolved stuff too?
 		LAss = list.filter((pred(_MProp-Marking::in) is semidet :-
 			( Marking = asserted
-			; Marking = assumed
+			; Marking = assumed(_)
 			)
 				), L0),
 		all_true((pred(MProp-_Marking::in) is semidet :-
@@ -170,7 +172,7 @@ transform(Step, L0, VS0, L, VS, Ctx) :-
 	% assumption
 step(assume(vs(m(MQ, PQ), VS), F),
 		{QsL0, cf(m(MQ, PQ0), F), QsR0}, VS0,
-		QsL ++ [m(MQ, PQ)-assumed] ++ QsR, VS,
+		QsL ++ [m(MQ, PQ)-assumed(F)] ++ QsR, VS,
 		Ctx) :-
 
 	assumable(Ctx, vs(m(MQ, PQ0), VS0), F, vs(m(MA, PA0), VSA), _Cost),

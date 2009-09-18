@@ -30,8 +30,9 @@
 :- func det_term_to_atomic_formula(term.term) = atomic_formula.
 
 	% formula <--> ground formula
-:- func formula_to_ground_formula(atomic_formula) = ground_atomic_formula is semidet.
 :- func ground_formula_to_formula(ground_atomic_formula) = atomic_formula.
+:- func formula_to_ground_formula(atomic_formula) = ground_atomic_formula is semidet.
+:- func det_formula_to_ground_formula(atomic_formula) = ground_atomic_formula.
 
 	% predicate version of the above
 :- pred ground_formula(atomic_formula, ground_atomic_formula).
@@ -57,8 +58,8 @@
 :- func det_term_to_formula_term(term.term) = formula.term.
 
 	% term <--> ground term
-:- func term_to_ground_term(formula.term) = ground_term is semidet.
 :- func ground_term_to_term(ground_term) = formula.term.
+:- func term_to_ground_term(formula.term) = ground_term is semidet.
 
 	% predicate version of the above
 :- pred ground_term(formula.term, ground_term).
@@ -197,12 +198,18 @@ unify_formulas(A, B, U) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+ground_formula_to_formula(p(PredSym, GroundArgs)) = p(PredSym, list.map(ground_term_to_term, GroundArgs)).
+
 formula_to_ground_formula(p(PredSym, Args)) = p(PredSym, GroundArgs) :-
 	list.map((pred(T::in, GT::out) is semidet :-
 		GT = term_to_ground_term(T)
 			), Args, GroundArgs).
 
-ground_formula_to_formula(p(PredSym, GroundArgs)) = p(PredSym, list.map(ground_term_to_term, GroundArgs)).
+det_formula_to_ground_formula(F) = GF :-
+	(if GF0 = formula_to_ground_formula(F)
+	then GF = GF0
+	else error("det_formula_to_ground_formula/1: formula=" ++ string(F))
+	).
 
 :- pragma promise_equivalent_clauses(ground_formula/2).
 
@@ -211,12 +218,12 @@ ground_formula(Formula::in, formula_to_ground_formula(Formula)::out).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+ground_term_to_term(t(Functor, GroundTerms)) = t(Functor, list.map(ground_term_to_term, GroundTerms)).
+
 term_to_ground_term(t(Functor, Terms)) = t(Functor, GroundTerms) :-
 	list.map((pred(T::in, GT::out) is semidet :-
 		GT = term_to_ground_term(T)
 			), Terms, GroundTerms).
-
-ground_term_to_term(t(Functor, GroundTerms)) = t(Functor, list.map(ground_term_to_term, GroundTerms)).
 
 :- pragma promise_equivalent_clauses(ground_term/2).
 
