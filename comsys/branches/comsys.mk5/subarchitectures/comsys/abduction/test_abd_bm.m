@@ -39,15 +39,12 @@ main(!IO) :-
 				term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
 				(
 					ReadResult = term(VS, Term),
-					print(Term, !IO), nl(!IO),
 					generic_term(Term),
 					(if term_to_mrule(Term, MRule)
 					then add_rule(vs(MRule, VS), !Ctx), Continue = yes
 					else
 						context(_, Line) = get_term_context(Term),
-						print(Term, !IO),
-						nl(!IO),
-						error("Syntax error rule file " ++ RulesFile
+						error("Syntax error in rule file " ++ RulesFile
 								++ " at line " ++ string.from_int(Line) ++ ".")
 					)
 				;
@@ -72,8 +69,8 @@ main(!IO) :-
 						ReadResult = term(_VS, Term),
 						generic_term(Term),
 						(if
-							Term = functor(atom(":"), [TKTerm, RestTerm], _),
-							RestTerm = functor(atom(":"), [FormulaTerm, FgTerm], _),
+							Term = functor(atom(":"), [TKForTerm, FgTerm], _),
+							TKForTerm = functor(atom(":"), [TKTerm, FormulaTerm], _),
 
 							Formula = formula_to_ground_formula(term_to_atomic_formula(FormulaTerm)),
 
@@ -95,7 +92,7 @@ main(!IO) :-
 							Continue = yes
 						else
 							context(_, Line) = get_term_context(Term),
-							error("Syntax error rule file " ++ RulesFile
+							error("Syntax error in model file " ++ RulesFile
 									++ " at line " ++ string.from_int(Line) ++ ".")
 						)
 					;
