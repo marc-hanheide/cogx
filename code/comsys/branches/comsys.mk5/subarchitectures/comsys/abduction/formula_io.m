@@ -189,6 +189,22 @@ term_to_list_of_rule_antecedents(T, List) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- pred term_to_list_of_mprops(term.term::in, list(mprop(M))::out) is semidet <= (modality(M), parsable(M)).
+
+term_to_list_of_mprops(T, List) :-
+	(if
+		T = functor(atom(","), [TMP, TMPs], _)
+	then
+		term_to_mprop(TMP, This),
+		term_to_list_of_mprops(TMPs, MPs),
+		List = [This|MPs]
+	else
+		term_to_mprop(T, This),
+		List = [This]
+	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- pred term_to_rule_antecedent(term.term::in, rule_antecedent(M)::out) is semidet
 		<= (modality(M), parsable(M)).
 
@@ -196,8 +212,16 @@ term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _),
 	term_to_mprop(T, MP).
 term_to_rule_antecedent(functor(atom("/"), [T, functor(float(Cost), [], _)], _), std(cf(MP, const(Cost)))) :-
 	term_to_mprop(T, MP).
-term_to_rule_antecedent(functor(atom("?"), [MPropTerm], _), test(prop(MProp))) :-
-	term_to_mprop(MPropTerm, MProp).
+term_to_rule_antecedent(functor(atom("?"), [T], _), test(MTest)) :-
+	(if T = functor(atom("->"), [TMPs, THMP], _)
+	then
+		term_to_list_of_mprops(TMPs, MPs),
+		term_to_mprop(THMP, HMP),
+		MTest = impl(MPs, HMP)
+	else
+		term_to_mprop(T, MProp),
+		MTest = prop(MProp)
+	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
