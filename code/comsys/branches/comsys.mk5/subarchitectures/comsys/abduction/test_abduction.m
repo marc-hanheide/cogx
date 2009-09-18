@@ -301,7 +301,7 @@ query_to_string(VS, unsolved(MProp, F)) = mprop_to_string(VS, MProp)
 query_to_string(VS, proved(MProp)) = mprop_to_string(VS, MProp) ++ "[proved]".
 query_to_string(VS, assumed(MProp, F)) = mprop_to_string(VS, MProp)
 		++ "[assumed / " ++ cost_function_to_string(F) ++ "]".
-query_to_string(VS, asserted(MProp)) = mprop_to_string(VS, MProp) ++ "[asserted]".
+query_to_string(VS, asserted(MTest)) = mtest_to_string(VS, MTest) ++ "[asserted]".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -328,11 +328,12 @@ assumptions_to_string(Ctx, As) = Str :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func assertions_to_string(ctx, bag(vscope(mprop(ctx_modality)))) = string.
+:- func assertions_to_string(ctx, bag(vscope(mtest(ctx_modality)))) = string.
 
 assertions_to_string(_Ctx, As) = Str :-
 	(if not As = bag.init
-	then Str = string.join_list("\n  ", list.map(vsmprop_to_string, bag.to_list(As)))
+	then Str = string.join_list("\n  ", list.map((func(vs(MTest, VS)) = mtest_to_string(VS, MTest)),
+			bag.to_list(As)))
 	else Str = "(none)"
 	).
 

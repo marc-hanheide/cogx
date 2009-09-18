@@ -169,7 +169,7 @@ a(x) <-
 	b(x) / 0.0.
 
 something(X) <-
-	(a(X) -> ?b(x)) / 0.1,  % XXX this is a valid test query!
+%	(a(X) -> ?b(x)) / 0.1,  % XXX this is a valid test query!
 	?(a(X) -> b(x)),
 	?tested(X).
 
