@@ -1,21 +1,21 @@
 :- module iceserv_lib.
 
 :- interface.
-:- import_module ctx_loadable, ctx_modality, abduction.
+:- import_module io.
+:- import_module ctx_specific, ctx_modality, abduction.
 
 :- func srv_init_ctx = ctx.
-:- pred srv_clear_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
-:- pred srv_add_fact(string::in, ctx::in, ctx::out) is semidet.
-:- pred srv_add_rule(string::in, ctx::in, ctx::out) is semidet.
+:- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_get_best_proof(ctx::in, proof(ctx_modality)::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module set, list.
-:- import_module formula_io, ctx_io.
-:- import_module solutions.
+:- import_module set, list, bool, string.
+:- import_module term, term_io, formula.
+:- import_module formula_io, formula_ops, ctx_io.
+:- import_module solutions, require.
 :- import_module varset.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -26,39 +26,57 @@ srv_init_ctx = new_ctx.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_clear_facts(in, out), "clear_facts").
-
-srv_clear_facts(!Ctx) :-
-	set_facts(set.init, !Ctx).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pragma foreign_export("C", srv_clear_facts(in, out), "clear_rules").
+:- pragma foreign_export("C", srv_clear_rules(in, out), "clear_rules").
 
 srv_clear_rules(!Ctx) :-
 	set_rules(set.init, !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_add_fact(in, in, out), "add_fact").
+:- pragma foreign_export("C", srv_load_rules_from_file(in, in, out, di, uo), "load_rules_from_file").
 
-srv_add_fact(String, !Ctx) :-
-	add_fact(string_to_vsmprop(String), !Ctx).
+srv_load_rules_from_file(Filename, !Ctx, !IO) :-
+	see(Filename, SeeRes, !IO),
+	(SeeRes = ok -> true ; error("can't open the rule file")),
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+	do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
+		term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
+		(
+			ReadResult = term(VS, Term),
+			generic_term(Term),
+			(if term_to_mrule(Term, MRule)
+			then add_rule(vs(MRule, VS), !Ctx), Continue = yes
+			else
+				context(_, Line) = get_term_context(Term),
+				error("Syntax error in rule file " ++ Filename
+						++ " at line " ++ string.from_int(Line) ++ ".")
+			)
+		;
+			ReadResult = error(Message, Linenumber),
+			error(Message ++ " at line " ++ string.from_int(Linenumber) ++ ".")
+		;
+			ReadResult = eof,
+			Continue = no
+		)
+			), !Ctx, !IO),
 
-:- pragma foreign_export("C", srv_add_rule(in, in, out), "add_rule").
+	seen(!IO).
 
-srv_add_rule(String, !Ctx) :-
-	add_rule(string_to_vsmrule(String), !Ctx).
+:- pred do_while(pred(bool, A, A, T, T), A, A, T, T).
+:- mode do_while((pred(out, in, out, di, uo) is det), in, out, di, uo) is det.
+:- mode do_while((pred(out, in, out, in, out) is det), in, out, in, out) is det.
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-/*
-:- pragma foreign_export("C", srv_get_best_proof(in, out), "get_best_proof").
+do_while(Pred, A0, A, B0, B) :-
+	call(Pred, Result, A0, A1, B0, B1),
+	(
+		Result = yes,
+		do_while(Pred, A1, A, B1, B)
+	;
+		Result = no,
+		A = A1, B = B1
+	).
 
-srv_get_best_proof(Ctx, Proof) :-
-	Proof = new_proof([], varset.init).
-*/
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pragma foreign_export("C", srv_get_best_proof(in, out), "get_best_proof").
