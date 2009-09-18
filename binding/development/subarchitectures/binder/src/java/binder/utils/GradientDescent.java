@@ -247,14 +247,15 @@ public static Union getBestUnion(UnionDistribution distribution) {
 					threshold = average;
 				}
 			}
-
 			else {
 				if (average > threshold) {
 					UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs, averages);
 					nbestConfigs.remove(worstinNBests);
 					nbestConfigs.add(config);
 					UnionConfiguration secondworst = getWorstUnionConfiguration(nbestConfigs, averages);
-					threshold = averages.get(secondworst);
+					if(secondworst != null) {
+						threshold = averages.get(secondworst);
+					}
 				}
 			}
 

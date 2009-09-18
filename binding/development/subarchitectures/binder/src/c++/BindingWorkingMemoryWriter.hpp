@@ -46,6 +46,12 @@ namespace binder {
   protected:
 
 
+    autogen::core::OriginInfoPtr createOriginInfo (const cast::cdl::WorkingMemoryAddress wma, 
+						   const std::string &  localDataType) {
+      return createOriginInfo(wma.subarchitecture, wma.id, localDataType);
+    }
+
+
     autogen::core::OriginInfoPtr createOriginInfo (const std::string & subarchId, 
          const std::string &  localDataId, const std::string &  localDataType);
    
