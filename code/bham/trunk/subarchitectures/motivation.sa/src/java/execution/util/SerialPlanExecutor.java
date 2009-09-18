@@ -207,6 +207,7 @@ public class SerialPlanExecutor extends Thread {
 
 		if (m_exeState != ExecutionState.EXECUTING) {
 			m_component.println("not executing run loop");
+			return;
 		}
 
 		try {
