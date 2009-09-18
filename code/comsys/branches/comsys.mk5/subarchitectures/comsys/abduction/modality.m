@@ -31,21 +31,11 @@
 match([], []).
 match([axiom], []).
 match([], [axiom]).
-match([HL|TL], [HR|TR]) :-
-	(if HL = axiom
-	then
-		( match(TL, [HR|TR])  % empty sequence, end
-		; match([HL|TL], TR)  % eat one, continue
-		)
-	else
-		(if HR = axiom
-		then
-			match([HR|TR], [HL|TL])
-		else
-			HL = HR,
-			match(TL, TR)
-		)
-	).
+
+match([H|TL], [H|TR]) :- match(TL, TR).
+match([axiom|TL], [_|TR]) :- match([axiom|TL], TR).
+match([axiom|TL], [HR|TR]) :- match(TL, [HR|TR]).
+match([HL|TL], [axiom|TR]) :- match([axiom|TR], [HL|TL]).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
