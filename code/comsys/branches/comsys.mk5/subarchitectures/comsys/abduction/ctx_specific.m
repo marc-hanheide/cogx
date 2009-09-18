@@ -8,8 +8,7 @@
 :- import_module ctx_modality.
 :- import_module costs.
 
-:- import_module belief_model.
-:- import_module world_model.
+:- import_module belief_model, world_model.
 :- import_module abduction, modality.
 
 :- type ctx
@@ -36,7 +35,7 @@
 
 :- import_module require.
 :- import_module list, pair, map, float.
-:- import_module costs, varset.
+:- import_module costs, varset, lf, lf_io.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -83,8 +82,8 @@ ctx_rule(Ctx, Rule) :-
 
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 	Mod = [k(STF, Belief)],
-	set.member({STF, Belief, GFormula, _}, Ctx^bm^k),
-	VSMProp = vs(m(Mod, ground_formula_to_formula(GFormula)), varset.init).
+	set.member({STF, Belief, LF, _}, Ctx^bm^k),
+	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
 
 %ctx_fact(_Ctx, vs(m(_, p("do", _)), _), vs(m([e(now)], p("do", [t("e", [])])), varset.init)).
 

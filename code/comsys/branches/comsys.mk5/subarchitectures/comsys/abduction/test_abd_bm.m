@@ -80,14 +80,15 @@ main(!IO) :-
 							),
 
 							Mod = from_term(TKTerm),
+							LF = det_ground_atomic_formula_to_lf(Formula),
 							(
 								Mod = k(Stf, Bel),
 								Ks = !.BM^k,
-								!:BM = !.BM^k := set.insert(Ks, {Stf, Bel, Formula, Fg})
+								!:BM = !.BM^k := set.insert(Ks, {Stf, Bel, LF, Fg})
 							;
 								Mod = t(Stf, Bel),
 								Ks = !.BM^t,
-								!:BM = !.BM^t := set.insert(Ks, {Stf, Bel, Formula, Fg})
+								!:BM = !.BM^t := set.insert(Ks, {Stf, Bel, LF, Fg})
 							)
 						then
 							Continue = yes
@@ -286,10 +287,10 @@ preprocess_file(LIn, LOut) :-
 print_ctx(Ctx, !IO) :-
 	print("beliefs:\n", !IO),
 
-	set.fold((pred({Stf, Bel, Form, Fg}::in, !.IO::di, !:IO::uo) is det :-
+	set.fold((pred({Stf, Bel, LF, Fg}::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
 		print(to_string(k(Stf, Bel)) ++ ": "
-				++ lf_to_string(is_lf(det_ground_atomic_formula_to_lf(Form)))
+				++ lf_to_string(LF)
 				%++ atomic_formula_to_string(varset.init, ground_formula_to_formula(Form))
 				++ " .. " ++ string(Fg), !IO),
 		nl(!IO)
