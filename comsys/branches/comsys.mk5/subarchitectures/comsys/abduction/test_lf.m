@@ -46,26 +46,12 @@ main(!IO) :-
 					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
 					print_wm(!.WM, !IO)
 				else
-				(if Line = "REDUCE"
-				then
-					print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n", !IO),
-					print_reduced_model(!.WM, !IO)
-				else
 				(if Line = "LFS"
 				then
 					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
 					set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
 						print(" *  " ++ lf_to_string(LF) ++ "\n", !IO)
-							), lfs(!.WM), !IO),
-					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
-					(if reduced(Ont, !.WM) = RWM
-					then
-						set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
-							print("(*) " ++ lf_to_string(LF) ++ "\n", !IO)
-								), lfs(RWM), !IO)
-					else
-						print("  (model irreducible)\n", !IO)
-					)
+							), lfs(!.WM), !IO)
 				else
 				(if string.first_char(Line, '?', RestLine)
 				then
@@ -74,11 +60,7 @@ main(!IO) :-
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
 					(if satisfies(Ont, !.WM, LF) then Sat = "t" else Sat = "f"),
-					(if RM = reduced(Ont, !.WM)
-					then (if satisfies(Ont, RM, LF) then SatR = "t" else SatR = "f")
-					else SatR = "-"
-					),
-					print(Sat ++ SatR ++ "\n", !IO)
+					print(Sat ++ "\n", !IO)
 				else
 					LF = s2lf(Line),
 					print("+   ", !IO),
@@ -90,15 +72,11 @@ main(!IO) :-
 						union(Ont, RT, !.WM, XM, !:WM)
 					then
 						(if satisfies(Ont, !.WM, LF) then Sat = "t" else Sat = "f"),
-						(if RM = reduced(Ont, !.WM)
-						then (if satisfies(Ont, RM, LF) then SatR = "t" else SatR = "f")
-						else SatR = "-"
-						),
-						print("ok " ++ Sat ++ SatR ++ "\n", !IO)
+						print("ok " ++ Sat ++ "\n", !IO)
 					else
 						print("FAIL, ignoring\n", !IO)
 					)
-				)))))
+				))))
 					), Strs, !WM, !IO)
 		)
 	else
@@ -197,22 +175,3 @@ print_wm(WM, !IO) :-
 		print("  " ++ string(Id) ++ " ... {" ++ string.join_list(", ", set.to_sorted_list(Props)) ++ "}", !IO),
 		nl(!IO)
 			), WM^props, !IO).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- func reduced_models(model) = set(model).
-
-reduced_models(WM) = RWMs :-
-	RWMs = solutions_set((pred(RWM::out) is nondet :-
-		RWM = reduced(unit, WM)
-			)).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred print_reduced_model(model::in, io::di, io::uo) is det.
-
-print_reduced_model(WM, !IO) :-
-	(if RWM = reduced(unit, WM)
-	then print_wm(RWM, !IO)
-	else print("model functionally irreducible.\n", !IO)
-	).
