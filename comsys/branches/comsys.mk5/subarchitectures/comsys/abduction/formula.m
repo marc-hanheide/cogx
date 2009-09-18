@@ -50,6 +50,12 @@
 	---> 	t(string, list(ground_term))
 	.
 
+	% value under the open world assumption
+:- type value(T)
+	--->	true(T)
+	;	false(T)
+	.
+
 	% prolog term <--> formula.term
 :- func formula_term_to_term(formula.term) = term.term.
 

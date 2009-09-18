@@ -1,3 +1,9 @@
 regexp=^ >>.*$
-colours=green
-count=stop
+colours=italic white
+.......
+regexp=\[resolved\]|(\[unsolved\((f|const)\([^)]+\)\)\])|(\[asserted\])|(\[assumed\((f|const)\([^)]+\)\)\])
+colours=yellow,red,red,magenta,green,green
+count=more
+.......
+regexp=[A-Z][a-zA-Z]*
+colours=cyan

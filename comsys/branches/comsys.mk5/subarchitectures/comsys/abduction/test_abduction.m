@@ -68,7 +68,7 @@ main(!IO) :-
 
 			P0 = proof(vs([[InitMProp-unsolved(const(InitAssumeCost))]], InitVarset), []),
 
-			format("Goal:\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
+			format("goal:\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
 
 			print_ctx(!.Ctx, !IO),
 
@@ -98,19 +98,19 @@ main(!IO) :-
 				float_compare(CA, CB, Comp)
 					), map.to_assoc_list(DerivsMap), DerivsSorted),
 
-			format("Found %d proofs.\n", [i(length(DerivsSorted))], !IO),
+			format("found %d proofs.\n", [i(length(DerivsSorted))], !IO),
 
 			list.foldl((pred((Cost-G)-Ds::in, !.IO::di, !:IO::uo) is det :-
 				print("----------------------------------------------------------------------\n", !IO),
-				format("Proof cost = %f\n\n", [f(Cost)], !IO),
-				print("Proven goal:\n  " ++ goal_to_string(G) ++ "\n", !IO),
+				format("proof cost = %f\n\n", [f(Cost)], !IO),
+				print("proven goal:\n  " ++ goal_to_string(G) ++ "\n", !IO),
 				nl(!IO),
 
-				print("Assumptions:\n", !IO),
+				print("assumptions:\n", !IO),
 				print("  " ++ assumptions_to_string(!.Ctx, goal_assumptions(G)) ++ "\n", !IO),
 				nl(!IO),
 
-				print("Assertions:\n", !IO),
+				print("assertions:\n", !IO),
 				print("  " ++ assertions_to_string(!.Ctx, goal_assertions(G)) ++ "\n", !IO),
 				nl(!IO),
 
@@ -236,7 +236,7 @@ preprocess_file(LIn, LOut) :-
 :- pred print_ctx(ctx::in, io::di, io::uo) is det.
 
 print_ctx(Ctx, !IO) :-
-	print("Facts:\n", !IO),
+	print("facts:\n", !IO),
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
 		print(vsmprop_to_string(Fact), !IO),
@@ -245,7 +245,7 @@ print_ctx(Ctx, !IO) :-
 
 	nl(!IO),
 
-	print("Assumables:\n", !IO),
+	print("assumables:\n", !IO),
 	map.foldl((pred(FuncName::in, Costs::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
 		print(FuncName ++ " = ", !IO),
@@ -260,7 +260,7 @@ print_ctx(Ctx, !IO) :-
 
 	nl(!IO),
 
-	print("Rules:\n", !IO),
+	print("rules:\n", !IO),
 	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
 			% XXX global context
 		print("  ", !IO),
@@ -345,7 +345,7 @@ print_proof_trace(Ctx, Proof, !IO) :-
 
 %	nl(!IO),
 
-	print("Proof trace:\n", !IO),
+	print("proof trace:\n", !IO),
 	Proof^p_goals = vs(RevGoals, Varset0),
 	Qs = reverse(RevGoals),
 	InitQs = det_head(Qs),
