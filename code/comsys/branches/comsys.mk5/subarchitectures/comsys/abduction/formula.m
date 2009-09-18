@@ -175,6 +175,8 @@ term_to_formula_term(T, FT) :-
 term_to_formula_term(variable(Var, _)) = v(Var).
 term_to_formula_term(functor(atom(Functor), TermArgs, _)) = t(Functor, Args) :-
 	list.map(term_to_formula_term, TermArgs, Args).
+term_to_formula_term(functor(string(Str), TermArgs, _)) = t(Str, Args) :-
+	list.map(term_to_formula_term, TermArgs, Args).
 
 det_term_to_formula_term(T) = FT :-
 	(if FT0 = term_to_formula_term(T)
