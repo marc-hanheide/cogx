@@ -51,6 +51,9 @@
 	%
 :- func reduced(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet.
 
+
+:- func lfs(world_model(I, S, R)) = set(lf(I, S, R)).
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -213,3 +216,20 @@ first_mergable_worlds([{R, W1, W2} | Rest], Result) :-
 	else
 		first_mergable_worlds(Rest, Result)
 	).
+
+%------------------------------------------------------------------------------%
+
+lfs(M) = LFs :-
+	LFs = solutions_set((pred(LF::out) is nondet :-
+		(
+			map.member(M^props, W, SetProps),
+			W = i(Idx), M^names^elem(Idx) = Sort,
+			set.member(Prop, SetProps),
+			LF = at(of_sort(Idx, Sort), p(Prop))
+		;
+			set.member({Rel, W1, W2}, M^reach),
+			W1 = i(Idx1), M^names^elem(Idx1) = Sort1,
+			W2 = i(Idx2), M^names^elem(Idx2) = Sort2,
+			LF = at(of_sort(Idx1, Sort1), r(Rel, i(of_sort(Idx2, Sort2))))
+		)
+			)).

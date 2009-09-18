@@ -2,6 +2,8 @@
 CLEAR
 	@(u::door, cosi(i::sort ^ cosi(x))).
 
+LFS
+
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
@@ -13,6 +15,8 @@ CLEAR
 	@(v1::object, v1::object).
 	@(v1::object, v2::object).
 
+LFS
+
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
@@ -21,6 +25,8 @@ CLEAR
 	@(v1::object, box).
 
 	@(v1::object, box ^ colour(c::colour ^ something)).
+
+LFS
 
 PRINT
 REDUCE
@@ -32,6 +38,8 @@ CLEAR
 	colour(d::colour).  # this makes it func. irreducible
 	@(c::colour, tint(t::tint)).
 
+LFS
+
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
@@ -40,6 +48,8 @@ CLEAR
 	@(v1::thing, object).
 	@(v1::thing, colour(c::colour ^ black)).
 ?	@(v1::thing, colour(black)).
+
+LFS
 
 PRINT
 REDUCE
@@ -61,6 +71,8 @@ CLEAR
 #	@(b::thing, colour(tint(rareness(first)))).
 #	@(c::colour, black).
 #	@(b::thing, colour(c::colour)).
+
+LFS
 
 PRINT
 REDUCE
