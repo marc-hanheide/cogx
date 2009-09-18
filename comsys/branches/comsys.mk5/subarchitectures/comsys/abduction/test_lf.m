@@ -32,32 +32,50 @@ main(!IO) :-
 					print("-------------------------------------------------------------\n", !IO),
 					!:WM = world_model.init
 				else
-					(if Line = "PRINT"
+				(if Line = "PRINT"
+				then
+					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
+					print_wm(!.WM, !IO)
+				else
+				(if Line = "REDUCE"
+				then
+					print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n", !IO),
+					print_reduced_model(!.WM, !IO)
+				else
+				(if Line = "LFS"
+				then
+					print("> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >\n", !IO),
+					print("  not implemented.\n", !IO)
+				else
+				(if string.first_char(Line, '?', RestLine)
+				then
+					LF = s2lf(strip(RestLine)),
+					print("?? ", !IO),
+					print(lf_to_string(LF), !IO),
+					print(" ... ", !IO),
+					(if satisfies(!.WM, LF) then Sat = "t" else Sat = "f"),
+					(if RM = reduced(!.WM)
+					then (if satisfies(RM, LF) then SatR = "t" else SatR = "f")
+					else SatR = "-"
+					),
+					print(Sat ++ SatR ++ "\n", !IO)
+				else
+					LF = s2lf(Line),
+					print("+  ", !IO),
+					print(lf_to_string(LF), !IO),
+					print(" ... ", !IO),
+					(if add_lf(!.WM, LF, !:WM)
 					then
-						print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
-						print_wm(!.WM, !IO)
+						(if satisfies(!.WM, LF) then Sat = "t" else Sat = "f"),
+						(if RM = reduced(!.WM)
+						then (if satisfies(RM, LF) then SatR = "t" else SatR = "f")
+						else SatR = "-"
+						),
+						print("ok " ++ Sat ++ SatR ++ "\n", !IO)
 					else
-						(if Line = "REDUCE"
-						then
-							print("= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n", !IO),
-							print_reduced_model(!.WM, !IO)
-						else
-							(if Line = "LFS"
-							then
-								print("> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >\n", !IO),
-								print("  not implemented.\n", !IO)
-							else
-								LF = s2lf(Line),
-								print(lf_to_string(LF), !IO),
-								print(" ... ", !IO),
-								(if add_lf(!.WM, LF, !:WM)
-								then print("ok (" ++ from_int(count(reduced_models(!.WM))) ++")\n", !IO)
-								else print("FAIL, ignoring\n", !IO)
-								)
-							)
-						)
+						print("FAIL, ignoring\n", !IO)
 					)
-				)
+				)))))
 					), Strs, !WM, !IO)
 		)
 	else

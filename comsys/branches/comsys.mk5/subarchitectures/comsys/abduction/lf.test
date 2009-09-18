@@ -1,61 +1,61 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
-@(u::door, cosi(i::sort ^ cosi(x))).
+	@(u::door, cosi(i::sort ^ cosi(x))).
 
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-colour(red).
-colour(v::thing).
-colour(tint(weird) ^ red).
-@(v1::object, v1::object).
-@(v1::object, v2::object).
+	colour(red).
+	colour(v::thing).
+	colour(tint(weird) ^ red).
+	@(v1::object, v1::object).
+	@(v1::object, v2::object).
 
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-@(v1::object, box).
+	@(v1::object, box).
 
-@(v1::object, box ^ colour(c::colour ^ something)).
-
-PRINT
-REDUCE
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
-CLEAR
-
-colour(tint(weird) ^ red).
-colour(c::colour).
-colour(d::colour).  # this makes it inconsistent
-@(c::colour, tint(t::tint)).
+	@(v1::object, box ^ colour(c::colour ^ something)).
 
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-@(v1::thing, object).
-@(v1::thing, colour(c::colour ^ black)).
+	colour(tint(weird) ^ red).
+	colour(c::colour).
+	colour(d::colour).  # this makes it func. irreducible
+	@(c::colour, tint(t::tint)).
 
 PRINT
 REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
-@(b::thing, colour(red)).
-@(c::thing, colour(red)).
-@(d::colour, blue).
+	@(v1::thing, object).
+	@(v1::thing, colour(c::colour ^ black)).
 
-@(b::thing, colour(d::colour)).
-@(c::thing, colour(d::colour)).
+PRINT
+REDUCE
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+CLEAR
 
-#@(b::thing, colour(tint(rare))).
-#@(b::thing, colour(tint(rareness(first)))).
-#@(c::colour, black).
-#@(b::thing, colour(c::colour)).
+	@(b::thing, colour(red)).
+	@(c::thing, colour(red)).
+	@(d::colour, blue).
+
+	@(b::thing, colour(d::colour)).
+?	@(c::thing, colour(d::colour)).
+
+#	@(b::thing, colour(tint(rare))).
+#	@(b::thing, colour(tint(rareness(first)))).
+#	@(c::colour, black).
+#	@(b::thing, colour(c::colour)).
 
 PRINT
 REDUCE
