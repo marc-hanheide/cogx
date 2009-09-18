@@ -14,7 +14,7 @@
 
 model_to_string(WM) = Str :-
 	map.to_assoc_list(WM^worlds, LWorlds),
-	set.to_sorted_list(WM^reach, LReach),
+	set.to_sorted_list(WM^access, LAccess),
 	map.to_assoc_list(WM^props, LProps),
 	Str = "({"
 		++ string.join_list(",",
@@ -25,7 +25,7 @@ model_to_string(WM) = Str :-
 		++ string.join_list(",",
 				list.map((func({Rel,W1,W2}) = YStr :-
 						YStr = string(W1) ++ "<" ++ string(Rel) ++ ">" ++ string(W2)
-					), LReach))
+					), LAccess))
 		++ "}, {"
 		++ string.join_list(",",
 				list.map((func(W-Props) = ZStr :-
@@ -33,4 +33,3 @@ model_to_string(WM) = Str :-
 						ZStr = string(W) ++ "={" ++ string.join_list(",", LLProps) ++ "}"
 					), LProps))
 		++ "})".
-
