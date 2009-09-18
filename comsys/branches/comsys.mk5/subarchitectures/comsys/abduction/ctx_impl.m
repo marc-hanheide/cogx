@@ -8,6 +8,8 @@
 :- import_module ctx_modality.
 :- import_module costs.
 
+:- import_module abduction, modality.
+
 :- type ctx.
 :- instance context(ctx, ctx_modality).
 
@@ -28,30 +30,6 @@
 :- func facts(ctx) = set(vscope(mprop(ctx_modality))).
 :- func rules(ctx) = set(vscope(mrule(ctx_modality))).
 :- func assumables(ctx) = map(cost_function_name, map(mgprop(ctx_modality), float)).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- import_module abduction.
-
-:- type d_ctx
-	--->	d_ctx(
-		d_ctx :: ctx,
-		d_focus :: set(string)
-	).
-
-:- func new_d_ctx = d_ctx.
-
-:- type ctx_change == pred(d_ctx, d_ctx).
-:- inst ctx_change == (pred(in, out) is det).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred effect(vscope(mprop(M))) `with_type` ctx_change.
-:- mode effect(in) `with_inst` ctx_change.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred dialogue_turn(proof(M)::in, d_ctx::in, d_ctx::out) is det.
 
 %------------------------------------------------------------------------------%
 
@@ -136,10 +114,7 @@ ctx_min_assumption_cost(_, _) = 0.1.
 
 %------------------------------------------------------------------------------%
 
-new_d_ctx = d_ctx(new_ctx, set.init).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
+/*
 :- pred add_to_focus(string) `with_type` ctx_change.
 :- mode add_to_focus(in) `with_inst` ctx_change.
 
@@ -147,37 +122,4 @@ add_to_focus(A, DC0, DC) :-
 	F0 = DC0^d_focus,
 	set.insert(F0, A, F),
 	DC = DC0^d_focus := F.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-effect(VSMProp, !DC) :-
-	(if VSMProp = vs(m(_, p("in_focus", [t(Arg, [])])), _VS)
-		%member(att(next), Ctx)
-	then add_to_focus(Arg, !DC)
-	else true
-	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-	% TODO: check that it's a completed proof
-dialogue_turn(Pr, !DC) :-
-
-	% blank focus
-	!:DC = !.DC^d_focus := set.init,
-
-	(if Pr^p_goals = vs([LastGoal|_], Varset)
-	then
-		% call the effects
-		list.foldl((pred(Q::in, !.DC::in, !:DC::out) is det :-
-			( Q = proved(MProp)
-			; Q = assumed(MProp, _)
-			; Q = asserted(prop(MProp))
-			; Q = asserted(impl(_, MProp))
-			; Q = unsolved(MProp, _)  % XXX this should be an error
-			),
-			effect(vs(MProp, Varset), !DC)  % XXX XXX XXX
-			), LastGoal, !DC)
-
-	else error("No goals in the proof.")
-	).
-
+*/

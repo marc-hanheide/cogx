@@ -31,16 +31,20 @@
 
 :- func cost(C, cost_function, vscope(mprop(M))) = float <= (context(C, M), modality(M)).
 
-%:- func apply_cost_function(C, cost_function, vscope(mprop(M))) = float <= (modality(M), context(C, M)).
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-%------------------------------------------------------------------------------%
+:- type context_change(C) == pred(C, C).
+:- inst context_change == (pred(in, out) is det).
+
+:- pred effect(mgprop(M)) `with_type` context_change(C) <= (context(C, M), modality(M)).
+:- mode effect(in) `with_inst` context_change.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
 
 :- import_module require, solutions.
-:- import_module set, pair, string.
+:- import_module set, list, pair, string.
 :- import_module formula_io.
 :- import_module varset.
 
@@ -66,16 +70,12 @@ cost(C, F, Prop) = Cost :-
 	else error("error in cost/3: prop=" ++ string(Prop) ++ ", length=" ++ string.from_int(set.count(Costs)))
 	).
 
-%apply_cost_function(C, CostFunction, VSMProp) = Cost :-
-%	(if Cost0 = apply_cost_function0(C, CostFunction, VSMProp)
-%	then Cost = Cost0
-%	else error("can't find cost function " ++ string(CostFunction))
-%	).
+%------------------------------------------------------------------------------%
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-%:- func apply_cost_function0(C, cost_function, vscope(mprop(M))) = float is semidet
-%		<= (modality(M), context(C, M)).
-
-%apply_cost_function0(_, const(Cost), _) = Cost.
-%apply_cost_function0(_, f("f1"), _) = 1.0.
+effect(MGProp, !Ctx) :-
+	(if MGProp = m(_, p("in_focus", [t(_Arg, [])]))
+		%member(att(next), Ctx)
+	then true
+		%add_to_focus(Arg, !DC)
+	else true
+	).

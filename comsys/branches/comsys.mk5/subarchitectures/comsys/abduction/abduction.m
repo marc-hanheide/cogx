@@ -52,6 +52,10 @@
 
 %------------------------------------------------------------------------------%
 
+:- pred interpret(goal(M)::in, C::in, C::out) is det <= (context(C, M), modality(M)).
+
+%------------------------------------------------------------------------------%
+
 :- implementation.
 
 :- import_module require.
@@ -314,3 +318,26 @@ apply_subst_to_query(Subst, unsolved(MProp, F)) = unsolved(apply_subst_to_mprop(
 apply_subst_to_query(Subst, proved(MProp)) = proved(apply_subst_to_mprop(Subst, MProp)).
 apply_subst_to_query(Subst, assumed(MProp, F)) = assumed(apply_subst_to_mprop(Subst, MProp), F).
 apply_subst_to_query(Subst, asserted(MTest)) = asserted(apply_subst_to_mtest(Subst, MTest)).
+
+%------------------------------------------------------------------------------%
+
+interpret(vs(Qs, _Varset), !Ctx) :-
+	% call the effects
+	list.foldl((pred(Q::in, !.Ctx::in, !:Ctx::out) is det :-
+		(if
+			( Q = proved(MProp)
+			; Q = assumed(MProp, _)
+			; Q = asserted(prop(MProp))
+			; Q = asserted(impl(_, MProp))
+			),
+			MProp = m(Mod, Prop),
+			ground_formula(Prop, GProp)
+		then
+			effect(m(Mod, GProp), !Ctx)
+		else
+			% this happens only when there is an unsolved or non-ground
+			% query in the goal.
+			%error("unsolved query in interpret/3")
+			true
+		)
+			), Qs, !Ctx).

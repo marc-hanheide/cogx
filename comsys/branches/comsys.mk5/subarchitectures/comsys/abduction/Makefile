@@ -2,7 +2,8 @@
 
 # Binary files to be built.
 #
-BIN=test_abduction test_formulae test_lf test_modality test_rcc iceserv
+MBIN=test_abduction test_formulae test_lf test_modality test_rcc
+COMBBIN=iceserv
 
 # Mercury source files.
 #
@@ -40,10 +41,7 @@ endif
 .SUFFIXES:
 
 .PHONY: compile
-compile: $(BIN)
-
-aserv: aserv.o Abducer.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o aserv Abducer.o aserv.o
+compile: $(MBIN) $(COMBBIN)
 
 .PRECIOUS: %.o
 %.o: %.cc Abducer.h aserv.h
@@ -52,7 +50,13 @@ aserv: aserv.o Abducer.o
 Abducer.h Abducer.cc: Abducer.ice
 	slice2cpp --source-ext cc Abducer.ice
 
-$(BIN): $(MFILES) aserv.o
+$(MBIN): $(MFILES) aserv.o
+	mmc --make \
+		--grade $(GRADE) \
+		$(MCFLAGS) \
+		$@
+
+iceserv: $(MFILES) iceserv_lib.mh aserv.o Abducer.o
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-shared-lib-command=$(CXX) \
@@ -62,6 +66,9 @@ $(BIN): $(MFILES) aserv.o
 		$(MCFLAGS) \
 		$(LDFLAGS) \
 		$@
+
+%.mh: %.m
+	mmc --make $*.o
 
 .PHONY: clean
 clean:
