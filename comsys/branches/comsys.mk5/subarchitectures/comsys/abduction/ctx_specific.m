@@ -81,9 +81,15 @@ ctx_rule(Ctx, Rule) :-
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
-	Mod = [k(STF, Belief)],
+	compose_list(Mod) = [k(STF, Belief)],
 	k_fact(Ctx^bm, STF, Belief, LF),
 	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
+
+ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
+	compose_list(Mod) = [k(STF, Belief)],
+	fail,  % k_model is a stub
+	k_model(Ctx^bm, STF, Belief, M),
+	satisfies(M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
