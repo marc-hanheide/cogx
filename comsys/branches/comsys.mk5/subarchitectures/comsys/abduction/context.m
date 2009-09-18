@@ -4,33 +4,8 @@
 
 :- interface.
 
-:- import_module list, set, string.
+:- import_module set, string.
 :- import_module kb, formula, abduction.
-
-:- type ref
-	--->	this
-	;	next
-	;	future
-	;	past
-	.
-
-:- type ctx == ctx_ref.
-
-:- type ctx_ref
-	--->	att(ref)
-	;	info(ref)
-	;	evt(ref)
-	.
-
-:- pred string_as_ctx_ref(string, ctx_ref).
-:- mode string_as_ctx_ref(in, out) is semidet.
-:- mode string_as_ctx_ref(out, in) is det.
-
-:- pred axiom(string).
-:- mode axiom(in) is semidet.
-:- mode axiom(out) is det.
-
-:- pred compatible(list(ctx)::in, list(ctx)::in) is semidet.
 
 :- func apply_cost_function(d_ctx, string, vsmprop) = float.
 
@@ -61,36 +36,11 @@
 :- implementation.
 
 :- import_module require.
-:- import_module set, pair.
-
-string_as_ctx_ref("eP", evt(past)).
-string_as_ctx_ref("e0", evt(this)).
-string_as_ctx_ref("eN", evt(next)).
-string_as_ctx_ref("eF", evt(future)).
-
-string_as_ctx_ref("aP", att(past)).
-string_as_ctx_ref("a0", att(this)).
-string_as_ctx_ref("aN", att(next)).
-string_as_ctx_ref("aF", att(future)).
-
-string_as_ctx_ref("iP", info(past)).
-string_as_ctx_ref("i0", info(this)).
-string_as_ctx_ref("iN", info(next)).
-string_as_ctx_ref("iF", info(future)).
+:- import_module set, list, pair.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-axiom("[]").
-
-%------------------------------------------------------------------------------%
 
 new_d_ctx = d_ctx(kb.init, set.init).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-	% TODO check this again to be sure.
-	% TODO: "all"
-compatible(C, C).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

@@ -13,7 +13,7 @@
 :- implementation.
 
 :- import_module string, pair, list, map.
-:- import_module varset, term_io, parser.
+:- import_module varset, term, term_io, parser.
 :- import_module formula.
 
 main(!IO) :-
@@ -57,6 +57,10 @@ main(!IO) :-
 
 test_term_parse(S, !IO) :-
 	read_term_from_string("", S, _, Result),
+	(if Result = term(_Varset, Term)
+	then generic_term(Term)
+	else true
+	),
 	format("* `%s':\n  result=%s\n\n", [s(S), s(string(Result))], !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
