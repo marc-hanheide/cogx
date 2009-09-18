@@ -87,7 +87,6 @@ ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 
 ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 	compose_list(Mod) = [k(STF, Belief)],
-	fail,  % k_model is a stub
 	k_model(Ctx^bm, STF, Belief, M),
 	satisfies(M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
 
