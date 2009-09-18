@@ -207,7 +207,8 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
         ActionPtr first_action = plan[0];
         first_action->status = PENDING;
         writeAction(first_action, task);
-        task->executionStatus = INPROGRESS;
+	//nah: don't change this, as ut should be handled by executor
+        //task->executionStatus = PENDING;
         overwriteWorkingMemory(activeTasks[id].address, task);
     }
     else {
