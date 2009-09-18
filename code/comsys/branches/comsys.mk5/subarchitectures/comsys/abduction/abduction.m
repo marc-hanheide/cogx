@@ -45,7 +45,7 @@
 
 :- func last_goal(proof(M)) = vscope(list(marked(mprop(M)))) <= modality(M).
 
-:- func assumptions(proof(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
+%:- func assumptions(proof(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
 :- func goal_assumptions(goal(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
 
 :- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
@@ -64,8 +64,8 @@ new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-assumptions(Proof) = As :-
-	As = goal_assumptions(last_goal(Proof)).
+%assumptions(Proof) = As :-
+%	As = goal_assumptions(last_goal(Proof)).
 
 goal_assumptions(vs(Qs, _VS)) = As :-
 	As = set.from_list(list.filter_map((func(MProp-assumed(Func)) = AnnotMGProp is semidet :-
