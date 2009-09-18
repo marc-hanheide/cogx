@@ -6,7 +6,6 @@
 
 :- import_module formula, modality.
 :- import_module costs.
-:- import_module list.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -49,7 +48,6 @@
 
 :- import_module require, solutions.
 :- import_module set, list, pair, string.
-:- import_module formula_io.
 :- import_module varset.
 
 %------------------------------------------------------------------------------%

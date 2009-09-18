@@ -4,8 +4,7 @@
 
 :- interface.
 
-:- import_module modality, rcc.
-:- import_module set.
+:- import_module modality.
 :- import_module stf, belief_model.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

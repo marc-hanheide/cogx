@@ -2,8 +2,8 @@
 
 :- interface.
 
-:- import_module set, string, int, maybe, map, int.
-:- import_module formula, lf.
+:- import_module set, int, map, int.
+:- import_module lf.
 :- import_module stf, world_model, ontology.
 :- import_module stringable.
 
@@ -65,6 +65,7 @@
 :- implementation.
 :- import_module require, solutions.
 :- import_module map, list, world_model, lf_io.
+:- import_module string.
 
 init = bm(map.init, set.init, 1).
 
