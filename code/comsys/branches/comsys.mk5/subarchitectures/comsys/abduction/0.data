@@ -99,6 +99,10 @@ in_focus = [
 
 	% Facts.
 
+k(now, mutual(h, r)):k_mutual(u).
+k(now, private(r)):k_private(u).
+k(now, attrib(r, h)):k_attrib(u).
+
 a(com):something(u).
 
 e(now):did(U, X) <-
