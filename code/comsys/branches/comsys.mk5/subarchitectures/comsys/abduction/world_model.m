@@ -5,7 +5,7 @@
 :- import_module lf, ontology.
 
 :- type world_id(Index)
-	--->	this
+	--->	initial
 	;	u(int)  % unnamed
 	;	i(Index)
 	.
@@ -15,6 +15,10 @@
 :- func worlds(world_model(I, S, R)) = map(I, S) <= isa_ontology(S).
 :- func reach(world_model(I, S, R)) = set({R, world_id(I), world_id(I)}) <= isa_ontology(S).
 :- func props(world_model(I, S, R)) = map(world_id(I), set(proposition)) <= isa_ontology(S).
+
+:- func unnamed_world_indices(world_model(I, S, R)) = set(int) <= isa_ontology(S).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- type world_model == world_model(string, string, string).
 
@@ -28,6 +32,9 @@
 	%
 :- pred add_lf(world_model(I, S, R), lf(I, S, R), world_model(I, S, R)) <= isa_ontology(S).
 :- mode add_lf(in, in, out) is semidet.
+
+:- pred union(world_model(I, S, R), world_model(I, S, R), world_model(I, S, R)) <= isa_ontology(S).
+:- mode union(in, in, out) is semidet.
 
 	% satisfies(M, LF)
 	% True iff
@@ -57,7 +64,7 @@
 
 :- implementation.
 :- import_module solutions, require.
-:- import_module list.
+:- import_module list, pair.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 	
@@ -74,6 +81,16 @@
 init = wm(map.init, set.init, map.init, 0).
 
 %init = wm(map.init, set.init, map.init, 0).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+unnamed_world_indices(M) = Ints :-
+	Ints = solutions_set((pred(Int::out) is nondet :-
+		( member({_, u(Int), _}, M^reach)
+		; member({_, _, u(Int)}, M^reach)
+		; member(u(Int), keys(M^props))
+		)
+			)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -113,7 +130,7 @@ rename_merge_world(Old, New, WM0, WM) :-
 %------------------------------------------------------------------------------%
 
 add_lf(!.WM, LF, !:WM) :-
-	add_lf0(this, _, LF, !WM).
+	add_lf0(initial, _, LF, !WM).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -135,7 +152,7 @@ add_lf0(Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 
 add_lf0(Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 	(
-	 	Cur = this,
+	 	Cur = initial,
 		fail  % should we perhaps allow this?
 	;
 		Cur = i(WName),
@@ -170,8 +187,72 @@ add_lf0(Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 
 %------------------------------------------------------------------------------%
 
+:- pred map_merge_op(pred(V, V, V), map(K, V), map(K, V), map(K, V)).
+:- mode map_merge_op(pred(in, in, out) is det, in, in, out) is det.
+:- mode map_merge_op(pred(in, in, out) is semidet, in, in, out) is semidet.
+
+map_merge_op(Pred, M1, M2, M) :-
+	map.to_sorted_assoc_list(M1, L1),
+	map.to_sorted_assoc_list(M2, L2),
+	assoc_lists_merge_op(Pred, L1, L2, L),
+	M = map.from_assoc_list(L).
+
+:- pred assoc_lists_merge_op(pred(V, V, V), list(pair(K, V)), list(pair(K, V)), list(pair(K, V))).
+:- mode assoc_lists_merge_op(pred(in, in, out) is det, in, in, out) is det.
+:- mode assoc_lists_merge_op(pred(in, in, out) is semidet, in, in, out) is semidet.
+
+assoc_lists_merge_op(_, [], [], []).
+assoc_lists_merge_op(_, [H|T], [], [H|T]).
+assoc_lists_merge_op(_, [], [H|T], [H|T]).
+assoc_lists_merge_op(MergeProp, [K1-V1|T1], [K2-V2|T2], [K-V|T]) :-
+	compare(Comp, K1, K2),
+	(
+		Comp = (=),
+		K = K1,
+		call(MergeProp, V1, V2, V),
+		assoc_lists_merge_op(MergeProp, T1, T2, T)
+	;
+		Comp = (<),
+		K = K1, V = V1,
+		assoc_lists_merge_op(MergeProp, T1, [K2-V2|T2], T)
+	;
+		Comp = (>),
+		K = K2, V = V2,
+		assoc_lists_merge_op(MergeProp, [K1-V1|T1], T2, T)
+	).
+
+%------------------------------------------------------------------------------%
+
+	% merge M2 into M1
+union(M1, M2, M) :-
+	ListUM2 = to_sorted_list(unnamed_world_indices(M2)),
+
+		% rename unnamed worlds so that we don't have any name clashes
+	list.foldr((pred(Int::in, Mx0::in, Mx::out) is det :-
+		rename_merge_world(u(Int), u(Int + M1^next_unnamed), Mx0, Mx)
+			), ListUM2, M2, M2R),
+
+		% increase the generator counter correspondingly
+	NextUnnamed = M1^next_unnamed + M2^next_unnamed,
+
+		% merge worlds and sorts
+	map_merge_op((pred(S1::in, S2::in, S::out) is semidet :-
+		S = more_specific(S1, S2)
+			), M1^worlds, M2R^worlds, Worlds),
+
+	set.union(M1^reach, M2R^reach, Reach),
+
+		% merge propositions
+	map_merge_op((pred(Ps1::in, Ps2::in, Ps::out) is det :-
+		set.union(Ps1, Ps2, Ps)
+			), M1^props, M2R^props, Props),
+
+	M = wm(Worlds, Reach, Props, NextUnnamed).
+
+%------------------------------------------------------------------------------%
+
 satisfies(M, LF) :-
-	satisfies0(this, M, LF).
+	satisfies0(initial, M, LF).
 
 :- pred satisfies0(world_id(I)::in, world_model(I, S, R)::in, lf(I, S, R)::in) is semidet <= isa_ontology(S).
 
