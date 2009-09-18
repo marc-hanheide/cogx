@@ -76,6 +76,7 @@
 :- implementation.
 :- import_module solutions, require.
 :- import_module list, pair.
+:- import_module utils.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -200,42 +201,6 @@ add_lf0(Ont, RT, Cur, Cur, p(Prop), WM0, WM) :-
 add_lf0(Ont, RT, Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 	add_lf0(Ont, RT, Cur0, Cur1, LF1, WM0, WM1),
 	add_lf0(Ont, RT, Cur1, Cur, LF2, WM1, WM).
-
-%------------------------------------------------------------------------------%
-
-:- pred map_merge_op(pred(V, V, V), map(K, V), map(K, V), map(K, V)).
-:- mode map_merge_op(pred(in, in, out) is det, in, in, out) is det.
-:- mode map_merge_op(pred(in, in, out) is semidet, in, in, out) is semidet.
-
-map_merge_op(Pred, M1, M2, M) :-
-	map.to_sorted_assoc_list(M1, L1),
-	map.to_sorted_assoc_list(M2, L2),
-	assoc_lists_merge_op(Pred, L1, L2, L),
-	M = map.from_assoc_list(L).
-
-:- pred assoc_lists_merge_op(pred(V, V, V), list(pair(K, V)), list(pair(K, V)), list(pair(K, V))).
-:- mode assoc_lists_merge_op(pred(in, in, out) is det, in, in, out) is det.
-:- mode assoc_lists_merge_op(pred(in, in, out) is semidet, in, in, out) is semidet.
-
-assoc_lists_merge_op(_, [], [], []).
-assoc_lists_merge_op(_, [H|T], [], [H|T]).
-assoc_lists_merge_op(_, [], [H|T], [H|T]).
-assoc_lists_merge_op(MergeProp, [K1-V1|T1], [K2-V2|T2], [K-V|T]) :-
-	compare(Comp, K1, K2),
-	(
-		Comp = (=),
-		K = K1,
-		call(MergeProp, V1, V2, V),
-		assoc_lists_merge_op(MergeProp, T1, T2, T)
-	;
-		Comp = (<),
-		K = K1, V = V1,
-		assoc_lists_merge_op(MergeProp, T1, [K2-V2|T2], T)
-	;
-		Comp = (>),
-		K = K2, V = V2,
-		assoc_lists_merge_op(MergeProp, [K1-V1|T1], T2, T)
-	).
 
 %------------------------------------------------------------------------------%
 

@@ -14,6 +14,7 @@
 
 :- implementation.
 :- import_module set, list, bool, string, pair.
+:- import_module utils.
 :- import_module term, term_io, formula.
 :- import_module formula_io, formula_ops, ctx_io.
 :- import_module solutions, require.
@@ -63,20 +64,6 @@ srv_load_rules_from_file(Filename, !Ctx, !IO) :-
 
 	seen(!IO).
 
-:- pred do_while(pred(bool, A, A, T, T), A, A, T, T).
-:- mode do_while((pred(out, in, out, di, uo) is det), in, out, di, uo) is det.
-:- mode do_while((pred(out, in, out, in, out) is det), in, out, in, out) is det.
-
-do_while(Pred, A0, A, B0, B) :-
-	call(Pred, Result, A0, A1, B0, B1),
-	(
-		Result = yes,
-		do_while(Pred, A1, A, B1, B)
-	;
-		Result = no,
-		A = A1, B = B1
-	).
-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pragma foreign_export("C", srv_prove_best(in, in, in, out, out), "prove_best").
@@ -95,16 +82,3 @@ srv_prove_best(GoalStr, AssCost, Ctx, ProofCost, Proof) :-
 	list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
 		float_compare(CA, CB, Comp)
 			), Proofs0, [ProofCost-Proof|_]).
-
-:- pred float_compare(float::in, float::in, comparison_result::out) is det.
-
-float_compare(A, B, R) :-
-	(if A < B
-	then R = (<)
-	else
-		(if A > B
-		then R = (>)
-		else R = (=)
-		)
-	).
-

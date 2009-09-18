@@ -12,6 +12,7 @@
 
 :- import_module solutions, require.
 :- import_module string, map, set, list, pair, unit.
+:- import_module utils.
 :- import_module lf, lf_io, formula, term_io, parser, formula_ops.
 :- import_module model.
 
@@ -21,7 +22,7 @@ main(!IO) :-
 		CmdArgs = [FileName]
 	then
 		read_file_as_lines(FileName, Strs0, !IO),
-		preprocess_file(Strs0, Strs),
+		strip_ignore_comments(Strs0, Strs),
 
 		some [!WM] (
 			!:WM = model.init,
@@ -96,40 +97,6 @@ main(!IO) :-
 		io.progname("?", ProgName, !IO),
 		format(stderr_stream, "Usage: %s TEST_FILE\n", [s(ProgName)], !IO)
 	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred read_file_as_lines(string::in, list(string)::out, io::di, io::uo) is det.
-
-read_file_as_lines(FileName, Lines, !IO) :-
-	see(FileName, SeeResult, !IO),
-	(
-		SeeResult = ok,
-		read_file_as_string(ReadResult, !IO),
-		(
-			ReadResult = ok(S),
-			Lines = string.words_separator((pred(C::in) is semidet :- C = '\n'), S)
-		;
-			ReadResult = error(_, _),
-			Lines = []
-		),
-		seen(!IO)
-	;
-		SeeResult = error(_),
-		Lines = []
-	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred preprocess_file(list(string)::in, list(string)::out) is det.
-
-preprocess_file(LIn, LOut) :-
-	list.filter_map((pred(L0::in, L::out) is semidet :-
-		L1 = string.strip(L0),
-		L = L1,
-		not string.first_char(L, '#', _)
-			), LIn, LOut).
-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
