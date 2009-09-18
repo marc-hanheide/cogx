@@ -35,7 +35,7 @@
 
 :- import_module require.
 :- import_module list, pair, map, float.
-:- import_module costs.
+:- import_module costs, varset.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -80,11 +80,12 @@ ctx_rule(Ctx, Rule) :-
 
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
-ctx_fact(Ctx, _, Fact) :-
-	fail.
+ctx_fact(_Ctx, vs(m(_, p("do", _)), _), vs(m([e(now)], p("do", [t("e", [])])), varset.init)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
-ctx_assumable_func(Ctx, FuncName, GProp, Cost) :-
+ctx_assumable_func(_Ctx, _FuncName, _GProp, _Cost) :-
 	fail.
 
