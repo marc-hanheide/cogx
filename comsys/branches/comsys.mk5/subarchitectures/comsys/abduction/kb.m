@@ -22,6 +22,7 @@
 
 :- pred fact(kb::in, vsmprop::out) is nondet.
 :- pred rule(kb::in, vsmrule::out) is nondet.
+:- pred assumable(kb::in, vsmprop::out) is nondet.
 
 %------------------------------------------------------------------------------%
 
@@ -60,3 +61,6 @@ fact(KB, Fact) :-
 
 rule(KB, Rule) :-
 	set.member(Rule, KB^kb_rules).
+
+assumable(KB, _) :-
+	fail.
