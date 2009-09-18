@@ -26,7 +26,7 @@ JAVA MG exe-spatial spatial.motivation.SpatialActionInterface  --log
 SUBARCHITECTURE binder 
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM binder.components.BindingWorkingMemory #--log
-JAVA MG monitor binder.components.BinderMonitor --gui #--log
+JAVA MG monitor binder.components.BinderMonitor #--gui #--log
 JAVA MG binder binder.components.Binder #--log
 JAVA MG discretizer binder.components.UnionDiscretizer #--log
 
@@ -40,4 +40,6 @@ JAVA MG motivation.generators.PlaceGenerator motivation.components.generators.Pl
 JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
 JAVA MG motivation.util.WMMotiveDisplay motivation.util.WMMotiveDisplay  --log
 JAVA MG motivation.managers.PlanAllManager motivation.components.managers.PlanAllManager  --log
+JAVA MG motivation.util.viewer.ViewerCastComponent motivation.util.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive"
+
 
