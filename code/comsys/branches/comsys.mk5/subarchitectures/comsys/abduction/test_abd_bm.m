@@ -13,7 +13,7 @@
 :- implementation.
 
 :- import_module require, solutions.
-:- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool, maybe, unit.
+:- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool, maybe.
 :- import_module abduction, formula, context, costs, belief_model, world_model.
 
 :- import_module ctx_modality, ctx_specific, ctx_io.
@@ -87,8 +87,8 @@ main(!IO) :-
 								!:BM = !.BM^mk := add_lf_to_mbm(Stf, Bel, LF, !.BM^mk)
 */
 								Mod = k(Stf, Bel),
-								add_lf_to_k(unit, Stf, Bel, LF, Idx, !BM),
-								(if Fg = yes(_) then foreground(unit, Idx, !BM) else true)
+								add_lf_to_k(!.Ctx^ont, Stf, Bel, LF, Idx, !BM),
+								(if Fg = yes(_) then foreground(!.Ctx^ont, Idx, !BM) else true)
 							;
 								Mod = t(Stf, Bel)
 /*
