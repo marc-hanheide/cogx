@@ -1,0 +1,39 @@
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+CLEAR
+@(u::door, cosi(i::sort ^ cosi(x))).
+
+PRINT
+SIMPLIFY
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+CLEAR
+colour(red).
+colour(v::thing).
+colour(tint(weird) ^ red).
+@(v1::object, v1::object).
+@(v1::object, v2::object).
+
+PRINT
+SIMPLIFY
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+CLEAR
+
+@(v1::object, box).
+
+@(v1::object, box ^ colour(c::colour ^ something)).
+
+PRINT
+SIMPLIFY
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+CLEAR
+
+colour(tint(weird) ^ red).
+colour(c::colour).
+colour(d::colour).  # this makes it inconsistent
+@(c::colour, tint(t::tint)).
+
+PRINT
+SIMPLIFY
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
