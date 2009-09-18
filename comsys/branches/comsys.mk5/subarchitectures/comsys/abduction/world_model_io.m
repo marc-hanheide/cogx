@@ -3,13 +3,14 @@
 :- interface.
 
 :- import_module world_model.
-:- import_module string, ontology, pair, map, set, list.
+:- import_module string.
 
-:- func wm_to_string(world_model(I, S, R)) = string.
+:- func wm_to_string(model(I, S, R)) = string.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
+:- import_module map, set, list, pair.
 
 wm_to_string(WM) = Str :-
 	map.to_assoc_list(WM^worlds, LWorlds),
