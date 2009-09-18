@@ -125,12 +125,12 @@ add_lf0(Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 	(if map.search(WM0^worlds, WName, OldSort)
 	then
 		% we've already been there
-		OldSort = Sort,  % conflict? => fail, also FIXME subsumption
-		WM1 = WM0
+		NewSort = more_specific(OldSort, Sort)
 	else
 		% it's a new one
-		WM1 = WM0^worlds := map.det_insert(WM0^worlds, WName, Sort)
+		NewSort = Sort
 	),
+	WM1 = WM0^worlds := map.set(WM0^worlds, WName, NewSort),
 	add_lf0(i(WName), _, LF, WM1, WM).
 
 add_lf0(Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
@@ -139,14 +139,16 @@ add_lf0(Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 		fail  % should we perhaps allow this?
 	;
 		Cur = i(WName),
-		map.search(WM0^worlds, WName, Sort),
-		WM = WM0
+		map.search(WM0^worlds, WName, OldSort),
+		NewSort = more_specific(OldSort, Sort),
+		WM = WM0^worlds := map.set(WM0^worlds, WName, NewSort)
 	;
 		Cur = u(Num),
 		(if map.search(WM0^worlds, WName, OldSort)
-		then OldSort = Sort, WM1 = WM0
-		else WM1 = WM0^worlds := map.det_insert(WM0^worlds, WName, Sort)
+		then NewSort = more_specific(OldSort, Sort)
+		else NewSort = Sort
 		),
+		WM1 = WM0^worlds := map.set(WM0^worlds, WName, NewSort),
 		rename_merge_world(u(Num), i(WName), WM1, WM)
 	).
 
@@ -179,7 +181,7 @@ satisfies0(_WCur, M, at(of_sort(Idx, Sort), LF)) :-
 
 satisfies0(i(Idx), M, i(of_sort(Idx, LFSort))) :-
 	map.search(M^worlds, Idx, Sort),
-	isa(LFSort, Sort).
+	isa(Sort, LFSort).
 
 satisfies0(WCur, M, r(Rel, LF)) :-
 	set.member({Rel, WCur, WReach}, M^reach),

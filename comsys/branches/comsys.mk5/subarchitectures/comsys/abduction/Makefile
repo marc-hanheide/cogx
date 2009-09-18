@@ -7,7 +7,7 @@ COMBBIN=iceserv
 
 # Mercury source files.
 #
-MFILES=test_abduction.m abduction.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx_modality.m formula_io.m lf.m test_lf.m test_modality.m ctx_specific.m ctx_io.m formula_ops.m ctx_modality.m rcc.m test_rcc.m iceserv.m iceserv_lib.m ctx_loadable.m belief_model.m test_abd_bm.m world_model.m lf_io.m stf.m
+MFILES=test_abduction.m abduction.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx_modality.m formula_io.m lf.m test_lf.m test_modality.m ctx_specific.m ctx_io.m formula_ops.m ctx_modality.m rcc.m test_rcc.m iceserv.m iceserv_lib.m ctx_loadable.m belief_model.m test_abd_bm.m world_model.m lf_io.m stf.m ontology.m
 
 # Mercury compiler flags
 #
