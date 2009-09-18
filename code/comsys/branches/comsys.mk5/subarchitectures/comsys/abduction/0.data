@@ -83,14 +83,24 @@
 	% Assumables.
 
 func = [
-	i0 : ascription(u) = 0.6,
-	i0 : ascription(v) = 0.7,
-	i0 : ascription(z) = 1.4
+	i0 : ascription(u) = 0.6
+%	i0 : ascription(v) = 0.7,
+%	i0 : ascription(z) = 1.4
 ].
+
+in_focus = [
+	a0 : it(v1) = 0.5
+].
+
+% ascription(Subject, Quality)
 
 %------------------------------------------------------------------------------%
 
 	% Facts.
+
+a0:something(u).
+
+e0:did(U, X) <- a0:something(U) / prove.
 
 e0:said(u).
 i0:ascription(u).

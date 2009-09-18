@@ -78,7 +78,7 @@ goal_assumptions(vs(Qs, _VS)) = As :-
 last_goal(Proof) = G :-
 	(if Proof^p_goals = vs([Last|_Prev], Varset)
 	then G = vs(Last, Varset)
-	else error("empty proof")
+	else error("empty proof in last_goal/1")
 	).
 
 cost(Ctx, Proof, CostForUsingFacts) = Cost :-
