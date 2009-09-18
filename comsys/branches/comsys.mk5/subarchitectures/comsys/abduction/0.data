@@ -132,6 +132,13 @@ not_ground(u).
 []:colour(red).
 []:colour(blue).
 
+quality(u, colour).
+subject(u, colour).
+
+?(jojo(Y) -> answer(X)) <- kuku(X) / 0.2.
+
+kuku(x).
+
 %------------------------------------------------------------------------------%
 
 	% Rules.
