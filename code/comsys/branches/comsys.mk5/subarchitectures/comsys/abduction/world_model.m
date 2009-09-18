@@ -98,8 +98,11 @@ add_lf0(Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 		WM = WM0
 	;
 		Cur = u(Num),
-		map.search(WM0^names, WName, Sort),
-		rename_merge_world(u(Num), i(WName), WM0, WM)
+		(if map.search(WM0^names, WName, OldSort)
+		then OldSort = Sort, WM1 = WM0
+		else WM1 = WM0^names := map.det_insert(WM0^names, WName, Sort)
+		),
+		rename_merge_world(u(Num), i(WName), WM1, WM)
 	).
 
 add_lf0(Cur, Cur, r(Rel, LF), WM0, WM) :-
