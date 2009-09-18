@@ -8,6 +8,8 @@
 :- func srv_init_ctx = ctx.
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
+:- pred srv_clear_facts(ctx::in, ctx::out) is det.
+:- pred srv_load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_prove_best(string::in, float::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 
 %------------------------------------------------------------------------------%
@@ -63,6 +65,20 @@ srv_load_rules_from_file(Filename, !Ctx, !IO) :-
 			), !Ctx, !IO),
 
 	seen(!IO).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pragma foreign_export("C", srv_clear_facts(in, out), "clear_facts").
+
+srv_clear_facts(!Ctx) :-
+	set_explicit_facts(set.init, !Ctx).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pragma foreign_export("C", srv_load_facts_from_file(in, in, out, di, uo), "load_facts_from_file").
+
+srv_load_facts_from_file(Filename, !Ctx, !IO) :-
+	true.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

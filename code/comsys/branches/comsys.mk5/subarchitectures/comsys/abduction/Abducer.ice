@@ -42,8 +42,11 @@ module autogen {
 		interface AbducerServer {
 			void synchronise(beliefmodels::adl::BeliefModel m);
 
-			void clearRules();
-			void loadRulesFromFile(string filename);
+			void clearExplicitRules();
+			void loadExplicitRulesFromFile(string filename);
+
+			void clearExplicitFacts();
+			void loadExplicitFactsFromFile(string filename);
 
 			ProofResult proveGoal(Goal g);
 			AbductiveProof getBestProof();

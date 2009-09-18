@@ -18,8 +18,13 @@ class AbducerServerI : public AbducerServer {
 public:
 	AbducerServerI();
 	virtual void synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&);
-	virtual void clearRules(const Ice::Current&);
-	virtual void loadRulesFromFile(const std::string& filename, const Ice::Current&);
+
+	virtual void clearExplicitRules(const Ice::Current&);
+	virtual void loadExplicitRulesFromFile(const std::string& filename, const Ice::Current&);
+
+	virtual void clearExplicitFacts(const Ice::Current&);
+	virtual void loadExplicitFactsFromFile(const std::string& filename, const Ice::Current&);
+
 	virtual ProofResult proveGoal(const GoalPtr& g, const Ice::Current&);
 	virtual AbductiveProofPtr getBestProof(const Ice::Current&);
 private:
@@ -44,14 +49,14 @@ AbducerServerI::synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ic
 }
 
 void
-AbducerServerI::clearRules(const Ice::Current&)
+AbducerServerI::clearExplicitRules(const Ice::Current&)
 {
 	cerr << "clearing rules" << endl;
 	clear_rules(ctx, &ctx);
 }
 
 void
-AbducerServerI::loadRulesFromFile(const string& filename,const Ice::Current&)
+AbducerServerI::loadExplicitRulesFromFile(const string& filename, const Ice::Current&)
 {
 	cerr << "adding rules from: " << filename << endl;
 
@@ -60,6 +65,27 @@ AbducerServerI::loadRulesFromFile(const string& filename,const Ice::Current&)
 	s[filename.length()] = '\0';
 
 	load_rules_from_file(s, ctx, &ctx);
+
+	delete s;
+}
+
+void
+AbducerServerI::clearExplicitFacts(const Ice::Current&)
+{
+	cerr << "clearing facts" << endl;
+	clear_facts(ctx, &ctx);
+}
+
+void
+AbducerServerI::loadExplicitFactsFromFile(const string& filename, const Ice::Current&)
+{
+	cerr << "adding facts from: " << filename << endl;
+
+	char * s = new char[filename.length() + 1];
+	copy(filename.begin(), filename.end(), s);
+	s[filename.length()] = '\0';
+
+	load_facts_from_file(s, ctx, &ctx);
 
 	delete s;
 }
