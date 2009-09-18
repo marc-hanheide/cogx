@@ -185,7 +185,7 @@ k_model(Ont, RT, BM, STF, Bel, M) :-
 
 			% union with the private belief
 		set.fold((pred(M2::in, M1::in, M3::out) is semidet :-
-			model.union(Ont, M1, M2, M3)
+			model.union(Ont, RT, M1, M2, M3)
 				), MutMs, M0, M)
 	;
 		Bel = mutual(_),
@@ -212,7 +212,7 @@ fg_anchors(BM) = As :-
 dist(_Ont, _M, W1, W1, D, D).
 dist(Ont, M, W1, W2, D0, D) :-
 	W1 \= W2,  % what about reflexive rels?
-	set.member({_Rel, W1, W3}, M^reach),
+	set.member({_Rel, W1, W3}, M^access),
 	W3 \= W1,
 	dist(Ont, M, W3, W2, D0+1, D).
 

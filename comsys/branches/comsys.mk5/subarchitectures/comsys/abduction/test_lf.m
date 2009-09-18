@@ -14,13 +14,21 @@
 :- import_module string, map, set, list, pair, unit.
 :- import_module utils.
 :- import_module lf, lf_io, formula, term_io, parser, formula_ops.
-:- import_module model.
+:- import_module model, ontology.
 
 main(!IO) :-
 	io.command_line_arguments(CmdArgs, !IO),
 	(if
 		CmdArgs = [FileName]
 	then
+
+		Ont = ssp(from_list([
+				"object"-"entity",
+				"house"-"object",
+				"car"-"object"
+				])),
+		RT = ss(from_list(["colour", "tint"])),
+
 		read_file_as_lines(FileName, Strs0, !IO),
 		strip_ignore_comments(Strs0, Strs),
 
@@ -50,7 +58,7 @@ main(!IO) :-
 						print(" *  " ++ lf_to_string(LF) ++ "\n", !IO)
 							), lfs(!.WM), !IO),
 					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
-					(if reduced(unit, !.WM) = RWM
+					(if reduced(Ont, !.WM) = RWM
 					then
 						set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
 							print("(*) " ++ lf_to_string(LF) ++ "\n", !IO)
@@ -65,9 +73,9 @@ main(!IO) :-
 					print("??  ", !IO),
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
-					(if satisfies(unit, !.WM, LF) then Sat = "t" else Sat = "f"),
-					(if RM = reduced(unit, !.WM)
-					then (if satisfies(unit, RM, LF) then SatR = "t" else SatR = "f")
+					(if satisfies(Ont, !.WM, LF) then Sat = "t" else Sat = "f"),
+					(if RM = reduced(Ont, !.WM)
+					then (if satisfies(Ont, RM, LF) then SatR = "t" else SatR = "f")
 					else SatR = "-"
 					),
 					print(Sat ++ SatR ++ "\n", !IO)
@@ -77,13 +85,13 @@ main(!IO) :-
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
 					(if
-						%add_lf(!.WM, LF, !:WM),
-						add_lf(unit, unit, model.init, LF, XM),
-						union(unit, !.WM, XM, !:WM)
+						%add_lf(Ont, RT, !.WM, LF, !:WM)
+						add_lf(Ont, RT, model.init, LF, XM),
+						union(Ont, RT, !.WM, XM, !:WM)
 					then
-						(if satisfies(unit, !.WM, LF) then Sat = "t" else Sat = "f"),
-						(if RM = reduced(unit, !.WM)
-						then (if satisfies(unit, RM, LF) then SatR = "t" else SatR = "f")
+						(if satisfies(Ont, !.WM, LF) then Sat = "t" else Sat = "f"),
+						(if RM = reduced(Ont, !.WM)
+						then (if satisfies(Ont, RM, LF) then SatR = "t" else SatR = "f")
 						else SatR = "-"
 						),
 						print("ok " ++ Sat ++ SatR ++ "\n", !IO)
@@ -97,6 +105,22 @@ main(!IO) :-
 		io.progname("?", ProgName, !IO),
 		format(stderr_stream, "Usage: %s TEST_FILE\n", [s(ProgName)], !IO)
 	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- type set_strings
+	--->	ss(set(string)).
+
+:- instance accessibility(set_strings, string) where [
+	(exclusive(ss(Ss), S) :- member(S, Ss))
+].
+
+:- type set_string_pairs
+	--->	ssp(set(pair(string, string))).
+
+:- instance isa_ontology(set_string_pairs, string) where [
+	(direct_isa(ssp(Ss), X, Y) :- member(X-Y, Ss))
+].
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -116,14 +140,15 @@ s2lf(S) = LF :-
 std_lf(_).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
+/*
 :- pred test_slf(string::in, model::in, model::out, io::di, io::uo) is det.
 
 test_slf(S, !WM, !IO) :-
 	test_lf(s2lf(S), !WM, !IO).
-
+*/
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+/*
 :- pred test_lf(lf::in, model::in, model::out, io::di, io::uo) is det.
 
 test_lf(LF, !WM, !IO) :-
@@ -132,9 +157,11 @@ test_lf(LF, !WM, !IO) :-
 	nl(!IO),
 	test_add_lf(LF, !WM, !IO),
 	print("--------------------------------------------------------------\n", !IO).
+*/
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+/*
 :- pred test_add_lf(lf::in, model::in, model::out, io::di, io::uo) is det.
 
 test_add_lf(LF, !WM, !IO) :-
@@ -146,6 +173,7 @@ test_add_lf(LF, !WM, !IO) :-
 		print("epic fail", !IO),
 		nl(!IO)
 	).
+*/
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -156,11 +184,11 @@ print_wm(WM, !IO) :-
 	NamesStrs = list.map((func(Name-Sort) = S :- S = Name ++ ":" ++ Sort), map.to_assoc_list(WM^worlds)),
 	print(string.join_list("\n  ", [""|NamesStrs]) ++ "\n\n", !IO),
 
-	print("reachability:\n", !IO),
+	print("accessibility:\n", !IO),
 	set.fold((pred({Rel, Id1, Id2}::in, !.IO::di, !:IO::uo) is det :-
 		print("  " ++ string(Id1) ++ " <" ++ Rel ++ "> " ++ string(Id2), !IO),
 		nl(!IO)
-			), WM^reach, !IO),
+			), WM^access, !IO),
 
 	nl(!IO),
 
