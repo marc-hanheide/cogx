@@ -5,37 +5,42 @@
 :- interface.
 
 :- import_module set, string.
-:- import_module formula, abduction.
+:- import_module formula, abduction, modality.
+:- import_module costs.
+:- import_module ctx_modality.
 
-:- func apply_cost_function(d_ctx, string, vsmprop) = float.
+%:- func apply_cost_function(d_ctx, string, vscope(mprop(M))) = float.
+%:- func apply_cost_function(ctx(M), cost_function, vscope(mprop(M))) = float <= modality(M).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- typeclass context(T) where [
-	pred fact(T, vsmprop),
+:- typeclass context(T, M) <= modality(M) where [
+	pred fact(T, vscope(mprop(M))),
 	mode fact(in, out) is nondet,
 
 		% XXX find a better name
-	pred vrule(T, vsmrule),
+	pred vrule(T, vscope(mrule(M))),
 	mode vrule(in, out) is nondet,
 
-	pred assumable(T, vsmprop),
+	pred assumable(T, vscope(mprop(M))),
 	mode assumable(in, out) is nondet
 ].
+
+:- func apply_cost_function(C, cost_function, vscope(mprop(M))) = float <= (modality(M), context(C, M)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- type ctx.
-:- instance context(ctx).
+:- instance context(ctx, ctx_modality).
 
 :- func new_ctx = ctx.
 
-:- pred add_fact(vsmprop::in, ctx::in, ctx::out) is det.
-:- pred add_rule(vsmrule::in, ctx::in, ctx::out) is det.
+:- pred add_fact(vscope(mprop(ctx_modality))::in, ctx::in, ctx::out) is det.
+:- pred add_rule(vscope(mrule(ctx_modality))::in, ctx::in, ctx::out) is det.
 
 	% for debugging purposes only!
-:- func facts(ctx) = set(vsmprop).
-:- func rules(ctx) = set(vsmrule).
+:- func facts(ctx) = set(vscope(mprop(ctx_modality))).
+:- func rules(ctx) = set(vscope(mrule(ctx_modality))).
 
 %------------------------------------------------------------------------------%
 
@@ -52,12 +57,12 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred effect(vsmprop) `with_type` ctx_change.
+:- pred effect(vscope(mprop(M))) `with_type` ctx_change.
 :- mode effect(in) `with_inst` ctx_change.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred dialogue_turn(proof::in, d_ctx::in, d_ctx::out) is det.
+:- pred dialogue_turn(proof(M)::in, d_ctx::in, d_ctx::out) is det.
 
 %------------------------------------------------------------------------------%
 
@@ -68,17 +73,17 @@
 
 :- type ctx
 	--->	ctx(
-		ctx_facts :: set(vsmprop),
-		ctx_rules :: set(vsmrule)  % this doesn't really belong here, does it?
+		ctx_facts :: set(vscope(mprop(ctx_modality))),
+		ctx_rules :: set(vscope(mrule(ctx_modality)))  % this doesn't really belong here, does it?
 	).
 
-:- instance context(ctx) where [
+:- instance context(ctx, ctx_modality) where [
 	pred(fact/2) is ctx_fact,
 	pred(vrule/2) is ctx_rule,
 	pred(assumable/2) is ctx_assumable
 ].
 
-new_ctx = ctx(init, init).
+new_ctx = ctx(set.init, set.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -98,17 +103,17 @@ rules(Ctx) = Ctx^ctx_rules.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred ctx_fact(ctx::in, vsmprop::out) is nondet.
+:- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::out) is nondet.
 
 ctx_fact(Ctx, Fact) :-
 	set.member(Fact, Ctx^ctx_facts).
 
-:- pred ctx_rule(ctx::in, vsmrule::out) is nondet.
+:- pred ctx_rule(ctx::in, vscope(mrule(ctx_modality))::out) is nondet.
 
 ctx_rule(Ctx, Rule) :-
 	set.member(Rule, Ctx^ctx_rules).
 
-:- pred ctx_assumable(ctx::in, vsmprop::out) is nondet.
+:- pred ctx_assumable(ctx::in, vscope(mprop(ctx_modality))::out) is nondet.
 
 ctx_assumable(_Ctx, _) :-
 	fail.
@@ -158,17 +163,16 @@ dialogue_turn(Pr, !DC) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-apply_cost_function(DCtx, FName, VSMProp) = Cost :-
-	(if
-		Cost0 = apply_cost_function0(DCtx, FName, VSMProp)
-	then
-		Cost = Cost0
-	else
-		error("can't find cost function " ++ FName)
+apply_cost_function(C, CostFunction, VSMProp) = Cost :-
+	(if Cost0 = apply_cost_function0(C, CostFunction, VSMProp)
+	then Cost = Cost0
+	else error("can't find cost function " ++ string(CostFunction))
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func apply_cost_function0(d_ctx, string, vsmprop) = float is semidet.
+:- func apply_cost_function0(C, cost_function, vscope(mprop(M))) = float is semidet
+		<= (modality(M), context(C, M)).
 
-apply_cost_function0(_, "f1", _) = 1.0.
+apply_cost_function0(_, const(Cost), _) = Cost.
+apply_cost_function0(_, f("f1"), _) = 1.0.

@@ -7,6 +7,7 @@
 :- import_module list, pair, bag.
 :- import_module varset.
 
+:- import_module modality.
 :- import_module formula, costs, context.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -20,30 +21,30 @@
 
 :- type marked(T) == pair(T, marking).
 
-:- type step
-	--->	assume(vsmprop, cost_function)  % XXX no vars should be here!
-	;	resolve_rule(vsmrule, subst)
-	;	use_fact(vsmprop, subst)
+:- type step(M)
+	--->	assume(vscope(mprop(M)), cost_function)  % XXX no vars should be here!
+	;	resolve_rule(vscope(mrule(M)), subst)
+	;	use_fact(vscope(mprop(M)), subst)
 	;	factor(subst, varset)
 	.
 
-:- type proof
+:- type proof(M)
 	--->	proof(
 			% think about variable scopes here
-		p_goals :: vscope(list(list(marked(mprop)))),  % in reverse order
-		p_steps :: list(step)  % in reverse order
+		p_goals :: vscope(list(list(marked(mprop(M))))),  % in reverse order
+		p_steps :: list(step(M))  % in reverse order
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func new_proof(list(marked(mprop)), varset) = proof.
+:- func new_proof(list(marked(mprop(M))), varset) = proof(M) <= modality(M).
 
-:- pred prove(proof::in, proof::out, ctx::in) is nondet.
+:- pred prove(proof(M)::in, proof(M)::out, C::in) is nondet <= (modality(M), context(C, M)).
 
-:- func last_goal(proof) = vscope(list(marked(mprop))).
+:- func last_goal(proof(M)) = vscope(list(marked(mprop(M)))) <= modality(M).
 
-:- func assumptions(proof) = bag(vsmprop).
-:- func cost(d_ctx, proof, float) = float.
+:- func assumptions(proof(M)) = bag(vscope(mprop(M))) <= modality(M).
+:- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
 
 %------------------------------------------------------------------------------%
 
@@ -73,17 +74,11 @@ last_goal(Proof) = G :-
 	else error("empty proof")
 	).
 
-cost(DCtx, Proof, CostForUsingFacts) = Cost :-
+cost(Ctx, Proof, CostForUsingFacts) = Cost :-
 	list.foldl((pred(Step::in, C0::in, C::out) is det :-
 		(
 			Step = assume(VSMProp, CostFunction),
-			(
-				CostFunction = const(Const),
-				C = C0 + Const
-			;
-				CostFunction = f(FName),
-				C = C0 + context.apply_cost_function(DCtx, FName, VSMProp)
-			)
+			C = C0 + context.apply_cost_function(Ctx, CostFunction, VSMProp)
 		;
 			Step = use_fact(_, _),
 			C = C0 + CostForUsingFacts
@@ -114,8 +109,9 @@ prove(P0, P, Ctx) :-
 
 %------------------------------------------------------------------------------%
 
-:- pred segment_proof_state(list(marked(mprop))::in,
-		{list(marked(mprop)), with_cost_function(mprop), list(marked(mprop))}::out) is semidet.
+:- pred segment_proof_state(list(marked(mprop(M)))::in,
+		{list(marked(mprop(M))), with_cost_function(mprop(M)), list(marked(mprop(M)))}::out) is semidet
+		<= modality(M).
 
 segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 	list.takewhile((pred(_-Label::in) is semidet :-
@@ -124,10 +120,10 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 
 %------------------------------------------------------------------------------%
 
-:- pred transform(step::out,
-		list(marked(mprop))::in, varset::in,
-		list(marked(mprop))::out, varset::out,
-		ctx::in) is nondet.
+:- pred transform(step(M)::out,
+		list(marked(mprop(M)))::in, varset::in,
+		list(marked(mprop(M)))::out, varset::out,
+		C::in) is nondet <= (modality(M), context(C, M)).
 
 transform(Step, L0, VS0, L, VS, Ctx) :-
 	segment_proof_state(L0, SegL0),
@@ -136,22 +132,22 @@ transform(Step, L0, VS0, L, VS, Ctx) :-
 %------------------------------------------------------------------------------%
 
 :- pred step(
-		step::out, 
+		step(M)::out, 
 
 			% input
 		{
-			list(marked(mprop)),  % unsolved (preceding propositions)
-			with_cost_function(mprop),  % proposition under examination + its assump.cost
-			list(marked(mprop))  % following propositions
+			list(marked(mprop(M))),  % unsolved (preceding propositions)
+			with_cost_function(mprop(M)),  % proposition under examination + its assump.cost
+			list(marked(mprop(M)))  % following propositions
 		}::in,
 		varset::in,  % variables used in the proof
 
 			% output
-		list(marked(mprop))::out,  % resulting goal after performing the step
+		list(marked(mprop(M)))::out,  % resulting goal after performing the step
 		varset::out,  % variables used in the goal
 
-		ctx::in  % knowledge base
-	) is nondet.
+		C::in  % knowledge base
+	) is nondet <= (modality(M), context(C, M)).
 
 
 	% assumption
