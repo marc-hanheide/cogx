@@ -54,22 +54,6 @@
 :- pred satisfies(OS, model(I, S, R), lf(I, S, R)) <= isa_ontology(OS, S).
 :- mode satisfies(in, in, in) is semidet.
 
-	% Reduced model is a model for which it holds that for every accessibility
-	% relation R and worlds w1, w2, w3, it is true that
-	%
-	%   (w1, w2) \in R & (w1, w3) \in R -> w2 = w3
-	%
-	% i.e. every accessibility relation is a (partial) function W -> W
-	% rather than W -> pow(W)
-
-	% reduced(M) = RM
-	% True iff RM is a functionally reduced version of M.
-	%
-:- func reduced(OS::in, model(I, S, R)::in) = (model(I, S, R)::out) is semidet
-		<= isa_ontology(OS, S).
-:- func det_reduced(OS, model(I, S, R)) = model(I, S, R) <= isa_ontology(OS, S).
-
-
 :- func lfs(model(I, S, R)) = set(lf(I, S, R)).
 
 %------------------------------------------------------------------------------%
@@ -328,25 +312,6 @@ satisfies0(Ont, WCur, M, and(LF1, LF2)) :-
 	--->	merge(world_id(I), int)  % merge 2nd into 1st
 	;	none
 	.
-
-reduced(Ont, WM) = RWM :-
-	first_mergable_worlds(set.to_sorted_list(WM^access), Res),
-	(
-	 	Res = merge(W2, W3Num),
-		rename_merge_world(Ont, W3Num, W2, WM, WM0),
-		RWM = reduced(Ont, WM0)
-	;
-		Res = none,
-		RWM = WM
-	).
-
-det_reduced(Ont, M) = RM :-
-	(if RM0 = reduced(Ont, M)
-	then RM = RM0
-	else error("model irreducible in func det_reduced/1")
-	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 	% Fails when a accessibility relation that cannot be reduced to a partial
 	% function is found.
