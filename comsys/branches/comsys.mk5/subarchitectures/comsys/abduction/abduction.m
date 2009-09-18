@@ -247,7 +247,7 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 		% XXX have assertion in another rule?
 	QsInsert = list.map((func(A) = UniA :-
 		( A = std(cf(P, F)), UniA = unsolved(apply_subst_to_mprop(Uni, P), F)
-		; A = test_fact(P), UniA = asserted(apply_subst_to_mprop(Uni, P))
+		; A = test(P), UniA = asserted(apply_subst_to_mprop(Uni, P))
 		)
 			), Ante)
 			++ [proved(m(MQ, apply_subst_to_formula(Uni, PQ)))],
