@@ -68,7 +68,7 @@ main(!IO) :-
 
 			Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
 				prove(P0, P, !.KB),
-				Cost = cost(DC0, P, 0.0)
+				Cost = cost(DC0, P, 1.0)
 					))),
 
 			list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
