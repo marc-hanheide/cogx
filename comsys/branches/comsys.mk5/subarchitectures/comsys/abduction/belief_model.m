@@ -3,7 +3,7 @@
 :- interface.
 
 :- import_module set, string, maybe.
-:- import_module formula.
+:- import_module formula, lf.
 :- import_module stf.
 :- import_module stringable.
 
@@ -29,8 +29,8 @@
 
 :- type belief_model
 	--->	bm(
-		k :: set({stf, belief, ground_atomic_formula, maybe(foreground)}),
-		t :: set({stf, belief, ground_atomic_formula, maybe(foreground)})
+		k :: set({stf, belief, lf, maybe(foreground)}),
+		t :: set({stf, belief, lf, maybe(foreground)})
 	).
 
 :- func init = belief_model.
@@ -38,6 +38,7 @@
 %------------------------------------------------------------------------------%
 
 :- implementation.
+:- import_module map, world_model.
 
 init = bm(set.init, set.init).
 
@@ -67,3 +68,5 @@ agent_to_string(A) = S :- agent_as_string(A, S).
 string_to_agent(S) = A :- agent_as_string(A, S).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- type nubm == map(stf, map(belief, world_model)).
