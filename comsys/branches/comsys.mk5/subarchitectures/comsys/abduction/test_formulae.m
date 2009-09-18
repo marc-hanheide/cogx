@@ -124,7 +124,7 @@ test_unify(A, B, !IO) :-
 	(if
 		unify_formulas(PA, PB, Unifier)
 	then
-		print(subst_to_string(VS, Unifier), !IO),
+		print(test_formulae.subst_to_string(VS, Unifier), !IO),
 		print(" --> ", !IO),
 		format("\"%s\", \"%s\"\n",
 			[s(vsmprop_to_string(vs(apply_subst_to_mprop(Unifier, MPA), VS))),
