@@ -68,7 +68,7 @@ main(!IO) :-
 
 			P0 = proof(vs([[InitMProp-unsolved(const(InitAssumeCost))]], InitVarset), []),
 
-			format("Goal\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
+			format("Goal:\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
 
 			print_ctx(!.Ctx, !IO),
 
@@ -76,36 +76,63 @@ main(!IO) :-
 
 %			DC0 = new_d_ctx,
 
-			Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
+			Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-G)-P::out) is nondet :-
 				prove(P0, P, !.Ctx),
+				G = last_goal(P),
 				Cost = cost(!.Ctx, P, 1.0)
 					))),
 
-			list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
+			% TODO: derivations
+			% deriv: map(proved_goal, set(list(steps)))
+
+			list.foldl((pred((Cost-G)-P::in, M0::in, M::out) is det :-
+				(if map.search(M0, Cost-G, D0)
+				then D1 = D0
+				else D1 = set.init
+				),
+				set.insert(D1, P, D2),
+				map.set(M0, Cost-G, D2, M)
+					), Proofs0, map.init, DerivsMap),
+
+			list.sort((pred((CA-_)-_::in, (CB-_)-_::in, Comp::out) is det :-
 				float_compare(CA, CB, Comp)
-					), Proofs0, Proofs),
+					), map.to_assoc_list(DerivsMap), DerivsSorted),
 
-			format("Found %d proofs.\n", [i(length(Proofs))], !IO),
+			format("Found %d proofs.\n", [i(length(DerivsSorted))], !IO),
 
-			list.foldl((pred(Cost-Proof::in, !.IO::di, !:IO::uo) is det :-
-				(if
-					Proof = proof(vs([_|_], _), _),
-					is_ctx_proof(Proof)
-				then
-					print("----------------------------------------------------------------------\n", !IO),
-					format("Proof cost = %f\n\n", [f(Cost)], !IO),
-					print_proof(!.Ctx, Proof, !IO),
+			list.foldl((pred((Cost-G)-Ds::in, !.IO::di, !:IO::uo) is det :-
+				print("----------------------------------------------------------------------\n", !IO),
+				format("Proof cost = %f\n\n", [f(Cost)], !IO),
+				print("Proven goal:\n  " ++ goal_to_string(G) ++ "\n", !IO),
+				nl(!IO),
 
+				print("Assumptions:\n", !IO),
+				print("  " ++ assumptions_to_string(!.Ctx, goal_assumptions(G)) ++ "\n", !IO),
+				nl(!IO),
+
+				print(string.from_int(set.count(Ds)) ++ " derivation" ++ plural_s(count(Ds)) ++ ".\n\n", !IO),
+
+				set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
+					is_ctx_proof(Proof),
+					print_proof_trace(!.Ctx, Proof, !IO),
 					nl(!IO)
+						), Ds, !IO)
 
-				else
-					true
-				)
-					), Proofs, !IO)
+					), DerivsSorted, !IO)
 		)
 	else
 		io.progname("?", ProgName, !IO),
 		format(stderr_stream, "Usage: %s GOAL GOAL_ASSUMPTION_COST < FILE\n", [s(ProgName)], !IO)
+	).
+
+%------------------------------------------------------------------------------%
+
+:- func plural_s(int) = string.
+
+plural_s(N) = S :-
+	(if N > 1
+	then S = "s"
+	else S = ""
 	).
 
 %------------------------------------------------------------------------------%
@@ -262,28 +289,41 @@ subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- func goal_to_string(vscope(list(marked(mprop(ctx_modality))))) = string.
+
+goal_to_string(vs(G, VS)) = string.join_list(", ",
+		list.map((func(MProp-Marking) = S :-
+			S = mprop_to_string(VS, MProp) ++ "[" ++ string(Marking) ++ "]"
+				), G)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func assumptions_to_string(ctx, set(with_cost_function(mgprop(ctx_modality)))) = string.
+
+assumptions_to_string(Ctx, As) = string.join_list("\n  ", list.map((func(cf(m(Mod, GProp), Func)) = S :-
+		MProp = m(Mod, ground_formula_to_formula(GProp)),
+		Cost = cost(Ctx, Func, vs(MProp, varset.init)),
+		S = mprop_to_string(varset.init, MProp)
+				++ " / " ++ cost_function_to_string(Func) ++ " = " ++ float_to_string(Cost)
+			), set.to_sorted_list(As))).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 %:- pred print_proof(proof(M)::in, io::di, io::uo) is det <= (modality(M), stringable(M)).
-:- pred print_proof(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
+:- pred print_proof_trace(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
 
-print_proof(Ctx, Proof, !IO) :-
-	vs(LastGoal, Varset) = last_goal(Proof),
+print_proof_trace(Ctx, Proof, !IO) :-
+%	vs(LastGoal, Varset) = last_goal(Proof),
 
-	print("Proven goal:\n", !IO),
-	print("  " ++ string.join_list(", ", list.map((func(MProp-Marking) = S :-
-			S = mprop_to_string(Varset, MProp) ++ "[" ++ string(Marking) ++ "]"
-				), LastGoal)) ++ "\n", !IO),
+%	print("Proven goal:\n", !IO),
+%	print("  " ++ goal_to_string(last_goal(Proof)) ++ "\n", !IO),
 
-	nl(!IO),
+%	nl(!IO),
 
-	print("Assumptions:\n", !IO),
-	print("  " ++ string.join_list("\n  ", list.map((func(cf(m(Mod, GProp), Func)) = S :-
-			MProp = m(Mod, ground_formula_to_formula(GProp)),
-			Cost = cost(Ctx, Func, vs(MProp, varset.init)),
-			S = mprop_to_string(varset.init, MProp)
-					++ " / " ++ cost_function_to_string(Func) ++ " = " ++ float_to_string(Cost)
-				), set.to_sorted_list(assumptions(Proof)))) ++ "\n", !IO),
+%	print("assumptions:\n", !io),
+%	print("  " ++ assumptions_to_string(ctx, goal_assumptions(last_goal(proof))) ++ "\n", !io),
 
-	nl(!IO),
+%	nl(!IO),
 
 	print("Proof trace:\n", !IO),
 	Proof^p_goals = vs(RevGoals, Varset0),

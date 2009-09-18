@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module list, pair, bag, set.
+:- import_module list, pair, set.
 :- import_module varset.
 
 :- import_module modality.
@@ -35,6 +35,8 @@
 		p_steps :: list(step(M))  % in reverse order
 	).
 
+:- type goal(M) == vscope(list(marked(mprop(M)))).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func new_proof(list(marked(mprop(M))), varset) = proof(M) <= modality(M).
@@ -44,8 +46,10 @@
 :- func last_goal(proof(M)) = vscope(list(marked(mprop(M)))) <= modality(M).
 
 :- func assumptions(proof(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
+:- func goal_assumptions(goal(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
 
 :- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
+%:- func goal_cost(C, goal(M), float) = float <= (context(C, M), modality(M)).
 
 %------------------------------------------------------------------------------%
 
@@ -61,7 +65,9 @@ new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 assumptions(Proof) = As :-
-	vs(Qs, _Varset) = last_goal(Proof),
+	As = goal_assumptions(last_goal(Proof)).
+
+goal_assumptions(vs(Qs, _VS)) = As :-
 	As = set.from_list(list.filter_map((func(MProp-assumed(Func)) = AnnotMGProp is semidet :-
 		MProp = m(Mod, Prop),
 		AnnotMGProp = cf(m(Mod, det_formula_to_ground_formula(Prop)), Func)
@@ -91,6 +97,17 @@ cost(Ctx, Proof, CostForUsingFacts) = Cost :-
 			C = C0
 		)
 			), Proof^p_steps, 0.0, Cost).
+
+/*
+goal_cost(Ctx, vs(Qs, VS), CostForUsingFacts) = Cost :-
+	list.foldl((pred(MProp-Marking::in, C0::in, C::out) is det :-
+		( Marking = unsolved(_), error("unsolved query in goal_cost/3")
+		; Marking = resolved, C = C0 + CostForUsingFacts
+		; Marking = assumed(CostFunction), C = C0 + context.cost(Ctx, CostFunction, vs(MProp, VS))
+		; Marking = asserted, C = C0
+		)
+			), Qs, 0.0, Cost).
+*/
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

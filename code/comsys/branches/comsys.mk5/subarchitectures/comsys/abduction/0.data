@@ -133,7 +133,7 @@ clarify(U, C) <-
 	subject(Y, Quality) / 1.0.
 
 a(x) <-
-	b(x) -> c(x).
+	(b(x) -> c(x)) / 0.1.
 
 a(x) <-
 	b(x) / 0.0.
