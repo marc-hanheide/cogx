@@ -15,21 +15,32 @@
 :- import_module world_model.
 
 main(!IO) :-
-%	LF = at(of_sort("v1", "object"), and(p("box"), r("colour", and(i(of_sort("c", "colour")), p("something"))))),
-	LF = at(of_sort("v1", "object"), p("box")),
-	std_lf(LF),
-	print(lf_to_string(LF), !IO),
-	nl(!IO),
+	test_lf( r("colour", p("red")), !IO),
+	test_lf( r("colour", i(of_sort("v", "thing"))), !IO),
+	test_lf( r("colour", and(r("tint", p("weird")), p("red"))), !IO),
+	test_lf( at(of_sort("v1", "object"), i(of_sort("v1", "object"))), !IO),
+	test_lf( at(of_sort("v1", "object"), i(of_sort("v2", "object"))), !IO),
 
-	nl(!IO),
+	test_lf( at(of_sort("v1", "object"), p("box")), !IO),
 
-	test_add_lf(LF, world_model.init, _WM, !IO).
+	test_lf( at(of_sort("v1", "object"), and(p("box"), r("colour", and(i(of_sort("c", "colour")), p("something"))))), !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred std_lf(lf::in) is det.
 
 std_lf(_).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred test_lf(lf::in, io::di, io::uo) is det.
+
+test_lf(LF, !IO) :-
+	print(lf_to_string(LF), !IO),
+	nl(!IO),
+	nl(!IO),
+	test_add_lf(LF, world_model.init, _WM, !IO),
+	print("--------------------------------------------------------------\n", !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -60,7 +71,7 @@ print_wm(WM, !IO) :-
 
 	print("reachability:\n", !IO),
 	set.fold((pred({Rel, Id1, Id2}::in, !.IO::di, !:IO::uo) is det :-
-		print("  " ++ string(Id1) ++ "<" ++ Rel ++ ">" ++ string(Id2), !IO),
+		print("  " ++ string(Id1) ++ " <" ++ Rel ++ "> " ++ string(Id2), !IO),
 		nl(!IO)
 			), WM^reach, !IO),
 
