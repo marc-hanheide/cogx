@@ -45,6 +45,9 @@
 :- pred k_fact(belief_model(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet
 		<= isa_ontology(S).
 
+:- pred k_model(belief_model(I, S, R)::in, stf::in, belief::in, world_model(I, S, R)::out) is semidet
+		<= isa_ontology(S).
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -160,3 +163,9 @@ k_fact0(MBM, STF, Bel, LF) :-
 	;
 		Bel = Bel0
 	).
+
+%------------------------------------------------------------------------------%
+
+k_model(BM, STF, Bel, M) :-
+	MBM = get_mbm(set.from_list(map.values(BM^k))),
+	error("unimplemented: k_model/4").
