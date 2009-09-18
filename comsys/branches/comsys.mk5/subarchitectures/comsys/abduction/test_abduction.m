@@ -297,10 +297,10 @@ subst_to_string(Varset, Subst) = "{" ++ Str ++ "}" :-
 :- func query_to_string(varset, query(ctx_modality)) = string.
 
 query_to_string(VS, unsolved(MProp, F)) = mprop_to_string(VS, MProp)
-		++ "[unsolved ~ " ++ cost_function_to_string(F) ++ "]".
+		++ "[unsolved / " ++ cost_function_to_string(F) ++ "]".
 query_to_string(VS, proved(MProp)) = mprop_to_string(VS, MProp) ++ "[proved]".
 query_to_string(VS, assumed(MProp, F)) = mprop_to_string(VS, MProp)
-		++ "[assumed ~ " ++ cost_function_to_string(F) ++ "]".
+		++ "[assumed / " ++ cost_function_to_string(F) ++ "]".
 query_to_string(VS, asserted(MProp)) = mprop_to_string(VS, MProp) ++ "[asserted]".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
