@@ -119,7 +119,8 @@ ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 	% test subsumption in the used ontology
 ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(Super, [])])), VS)) :-
 	generate(Ctx^ont, Sub),
-	generate(Ctx^ont, Super).
+	generate(Ctx^ont, Super),
+	isa(Ctx^ont, Sub, Super).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
