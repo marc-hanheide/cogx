@@ -44,13 +44,24 @@ main(!IO) :-
 				else
 				(if Line = "LFS"
 				then
-					print("> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >\n", !IO),
-					print("  not implemented.\n", !IO)
+					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
+					set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
+						print(" *  " ++ lf_to_string(LF) ++ "\n", !IO)
+							), lfs(!.WM), !IO),
+					print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
+					(if reduced(!.WM) = RWM
+					then
+						set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
+							print("(*) " ++ lf_to_string(LF) ++ "\n", !IO)
+								), lfs(RWM), !IO)
+					else
+						print("  (model irreducible)\n", !IO)
+					)
 				else
 				(if string.first_char(Line, '?', RestLine)
 				then
 					LF = s2lf(strip(RestLine)),
-					print("?? ", !IO),
+					print("??  ", !IO),
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
 					(if satisfies(!.WM, LF) then Sat = "t" else Sat = "f"),
@@ -61,7 +72,7 @@ main(!IO) :-
 					print(Sat ++ SatR ++ "\n", !IO)
 				else
 					LF = s2lf(Line),
-					print("+  ", !IO),
+					print("+   ", !IO),
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
 					(if add_lf(!.WM, LF, !:WM)
