@@ -30,7 +30,6 @@
 
 :- type proof(M)
 	--->	proof(
-			% think about variable scopes here
 		p_goals :: vscope(list(list(marked(mprop(M))))),  % in reverse order
 		p_steps :: list(step(M))  % in reverse order
 	).
@@ -45,7 +44,6 @@
 
 :- func last_goal(proof(M)) = vscope(list(marked(mprop(M)))) <= modality(M).
 
-%:- func assumptions(proof(M)) = set(with_cost_function(mgprop(M))) <= modality(M).
 :- func goal_assumptions(goal(M)) = bag(with_cost_function(mgprop(M))) <= modality(M).
 :- func goal_assertions(goal(M)) = bag(vscope(mprop(M))) <= modality(M).
 
@@ -64,9 +62,6 @@
 new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-%assumptions(Proof) = As :-
-%	As = goal_assumptions(last_goal(Proof)).
 
 goal_assumptions(vs(Qs, _VS)) = As :-
 	As = bag.from_list(list.filter_map((func(MProp-assumed(Func)) = AnnotMGProp is semidet :-
@@ -277,11 +272,6 @@ step(factor(Uni, VS),
 
 	QsL = map_fst(apply_subst_to_mprop(Uni), QsL0),
 	QsR = map_fst(apply_subst_to_mprop(Uni), QsR0).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-	% assertion
-%step(QY0, _, 
 
 %------------------------------------------------------------------------------%
 
