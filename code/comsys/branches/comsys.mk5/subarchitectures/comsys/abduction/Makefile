@@ -6,7 +6,7 @@ BIN=test_abduction test_formulae test_lf test_modality
 
 # Mercury source files.
 #
-MFILES=test_abduction.m abduction.m kb.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx.m formula_io.m lf.m test_lf.m test_modality.m
+MFILES=test_abduction.m abduction.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx.m formula_io.m lf.m test_lf.m test_modality.m
 
 # Mercury compiler flags
 #

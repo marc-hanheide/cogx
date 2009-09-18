@@ -7,7 +7,7 @@
 :- import_module list, pair, bag.
 :- import_module varset.
 
-:- import_module kb, formula, costs, context.
+:- import_module formula, costs, context.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -38,7 +38,7 @@
 
 :- func new_proof(list(marked(mprop)), varset) = proof.
 
-:- pred prove(proof::in, proof::out, kb::in) is nondet.
+:- pred prove(proof::in, proof::out, ctx::in) is nondet.
 
 :- func last_goal(proof) = vscope(list(marked(mprop))).
 
@@ -98,15 +98,15 @@ cost(DCtx, Proof, CostForUsingFacts) = Cost :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-prove(P0, P, KB) :-
+prove(P0, P, Ctx) :-
 	P0 = proof(vs([L0|Ls], VS0), Ss0),
 
 	(if
 		%QUnsolved = [A-unsolved(F)|Qs]
-		transform(Step, L0, VS0, L, VS, KB)
+		transform(Step, L0, VS0, L, VS, Ctx)
 	then
 		P1 = proof(vs([L, L0|Ls], VS), [Step|Ss0]),
-		prove(P1, P, KB)
+		prove(P1, P, Ctx)
 	else
 		% proof finished
 		P = P0
@@ -127,17 +127,11 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 :- pred transform(step::out,
 		list(marked(mprop))::in, varset::in,
 		list(marked(mprop))::out, varset::out,
-		kb::in) is nondet.
+		ctx::in) is nondet.
 
-transform(Step, L0, VS0, L, VS, KB) :-
+transform(Step, L0, VS0, L, VS, Ctx) :-
 	segment_proof_state(L0, SegL0),
-	step(Step, SegL0, VS0, L, VS, KB).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred factor(list(marked(mprop))::in, list(marked(mprop))::out) is det.
-
-factor(L, L).
+	step(Step, SegL0, VS0, L, VS, Ctx).
 
 %------------------------------------------------------------------------------%
 
@@ -156,7 +150,7 @@ factor(L, L).
 		list(marked(mprop))::out,  % resulting goal after performing the step
 		varset::out,  % variables used in the goal
 
-		kb::in  % knowledge base
+		ctx::in  % knowledge base
 	) is nondet.
 
 
@@ -164,9 +158,9 @@ factor(L, L).
 step(assume(vs(m(MQ, PQ), VS), F),
 		{QsL0, cf(m(MQ, PQ0), F), QsR0}, VS0,
 		QsL ++ [m(MQ, PQ)-assumed] ++ QsR, VS,
-		KB) :-
+		Ctx) :-
 
-	assumable(KB, vs(m(MA, PA0), VSA)),
+	assumable(Ctx, vs(m(MA, PA0), VSA)),
 	match(compose_list(MQ), compose_list(MA)),
 
 	varset.merge_renaming(VS0, VSA, VS, Renaming),
@@ -186,9 +180,9 @@ step(assume(vs(m(MQ, PQ), VS), F),
 step(use_fact(vs(m(MF, PF), VS), Uni),
 		{QsL0, cf(m(MQ, PQ0), _F), QsR0}, VS0,
 		QsL ++ [m(MQ, PQ)-resolved] ++ QsR, VS,
-		KB) :-
+		Ctx) :-
 
-	fact(KB, vs(m(MF, PF0), VSF)),
+	fact(Ctx, vs(m(MF, PF0), VSF)),
 	match(compose_list(MF), compose_list(MQ)),
 
 	varset.merge_renaming(VS0, VSF, VS, Renaming),
@@ -206,9 +200,9 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS0,
 		QsL ++ QsInsert ++ QsR, VS,
-		KB) :-
+		Ctx) :-
 
-	rule(KB, Rule),
+	rule(Ctx, Rule),
 	Rule = vs(m(MR, _-m(MH, _)), VSR),
 	match(compose_list(MR ++ MH), compose_list(MQ)),
 
@@ -229,7 +223,7 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 step(factor(Uni, VS),
 		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS,
 		QsL ++ QsR, VS,
-		_KB) :-
+		_Ctx) :-
 	member(m(MP, PP)-_, QsL0),
 	match(compose_list(MP), compose_list(MQ)),
 

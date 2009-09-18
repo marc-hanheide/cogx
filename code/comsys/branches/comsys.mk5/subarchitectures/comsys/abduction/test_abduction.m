@@ -14,7 +14,7 @@
 
 :- import_module require, solutions.
 :- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool.
-:- import_module abduction, kb, formula, context, costs.
+:- import_module abduction, formula, context, costs.
 
 :- import_module parser, term_io, term, varset, formula_io.
 
@@ -26,22 +26,22 @@ main(!IO) :-
 		CmdArgs = [Goal, GoalAssumeCost],
 		string.to_float(GoalAssumeCost, InitAssumeCost)
 	then
-		some [!KB] (
-			!:KB = kb.init,
+		some [!Ctx] (
+			!:Ctx = new_ctx,
 
 %			read_file_as_lines(FileName, Strs0, !IO),
 %			preprocess_file(Strs0, Strs),
 
-			do_while((pred(Continue::out, !.KB::in, !:KB::out, !.IO::di, !:IO::uo) is det :-
+			do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
 				term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
 				(
 					ReadResult = term(VS, Term),
 					generic_term(Term),
 					(if term_to_mrule(Term, MRule)
-					then kb.add_vsmrule(vs(MRule, VS), !KB), Continue = yes
+					then add_rule(vs(MRule, VS), !Ctx), Continue = yes
 					else
 						(if term_to_mprop(Term, MProp)
-						then kb.add_vsmprop(vs(MProp, VS), !KB), Continue = yes
+						then add_fact(vs(MProp, VS), !Ctx), Continue = yes
 						else error("Syntax error.")
 						)
 					)
@@ -52,7 +52,7 @@ main(!IO) :-
 					ReadResult = eof,
 					Continue = no
 				)
-					), !KB, !IO),
+					), !Ctx, !IO),
 
 			vs(InitMProp, InitVarset) = det_string_to_vsmprop(Goal),
 
@@ -60,14 +60,14 @@ main(!IO) :-
 
 			format("Goal\n  %s\n\n", [s(vsmprop_to_string(vs(InitMProp, InitVarset)))], !IO),
 
-			print_kb(!.KB, !IO),
+			print_ctx(!.Ctx, !IO),
 
 			nl(!IO),
 
 			DC0 = new_d_ctx,
 
 			Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
-				prove(P0, P, !.KB),
+				prove(P0, P, !.Ctx),
 				Cost = cost(DC0, P, 1.0)
 					))),
 
@@ -94,7 +94,7 @@ main(!IO) :-
 		)
 	else
 		io.progname("?", ProgName, !IO),
-		format(stderr_stream, "Usage: %s FILE GOAL GOAL_ASSUMPTION_COST\n", [s(ProgName)], !IO)
+		format(stderr_stream, "Usage: %s GOAL GOAL_ASSUMPTION_COST < FILE\n", [s(ProgName)], !IO)
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -162,15 +162,15 @@ preprocess_file(LIn, LOut) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred print_kb(kb::in, io::di, io::uo) is det.
+:- pred print_ctx(ctx::in, io::di, io::uo) is det.
 
-print_kb(KB, !IO) :-
+print_ctx(Ctx, !IO) :-
 	print("Facts:\n", !IO),
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
 		print(vsmprop_to_string(Fact), !IO),
 		nl(!IO)
-			), facts(KB), !IO),
+			), facts(Ctx), !IO),
 
 	nl(!IO),
 
@@ -180,7 +180,7 @@ print_kb(KB, !IO) :-
 		print("  ", !IO),
 		print(vsmrule_to_string(Rule), !IO),
 		nl(!IO)
-			), rules(KB), !IO).
+			), rules(Ctx), !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

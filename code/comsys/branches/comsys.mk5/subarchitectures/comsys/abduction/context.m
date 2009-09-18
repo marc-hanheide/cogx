@@ -5,15 +5,32 @@
 :- interface.
 
 :- import_module set, string.
-:- import_module kb, formula, abduction.
+:- import_module formula, abduction.
 
 :- func apply_cost_function(d_ctx, string, vsmprop) = float.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- type ctx.
+
+:- func new_ctx = ctx.
+
+:- pred add_fact(vsmprop::in, ctx::in, ctx::out) is det.
+:- pred add_rule(vsmrule::in, ctx::in, ctx::out) is det.
+
+:- pred fact(ctx::in, vsmprop::out) is nondet.
+:- pred rule(ctx::in, vsmrule::out) is nondet.
+:- pred assumable(ctx::in, vsmprop::out) is nondet.
+
+	% for debugging purposes only!
+:- func facts(ctx) = set(vsmprop).
+:- func rules(ctx) = set(vsmrule).
+
+%------------------------------------------------------------------------------%
+
 :- type d_ctx
 	--->	d_ctx(
-		d_kb :: kb,
+		d_ctx :: ctx,
 		d_focus :: set(string)
 	).
 
@@ -38,9 +55,48 @@
 :- import_module require.
 :- import_module set, list, pair.
 
+:- type ctx
+	--->	ctx(
+		ctx_facts :: set(vsmprop),
+		ctx_rules :: set(vsmrule)  % this doesn't really belong here, does it?
+	).
+
+new_ctx = ctx(init, init).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-new_d_ctx = d_ctx(kb.init, set.init).
+add_fact(Prop, Ctx0, Ctx) :-
+	Facts = Ctx0^ctx_facts,
+	Ctx = Ctx0^ctx_facts := set.insert(Facts, Prop).
+
+add_rule(Rule, Ctx0, Ctx) :-
+	Rules = Ctx0^ctx_rules,
+	Ctx = Ctx0^ctx_rules := set.insert(Rules, Rule).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+facts(Ctx) = Ctx^ctx_facts.
+
+rules(Ctx) = Ctx^ctx_rules.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+fact(Ctx, Fact) :-
+	set.member(Fact, Ctx^ctx_facts).
+
+rule(Ctx, Rule) :-
+	set.member(Rule, Ctx^ctx_rules).
+
+assumable(_Ctx, _) :-
+	fail.
+
+%------------------------------------------------------------------------------%
+%------------------------------------------------------------------------------%
+%------------------------------------------------------------------------------%
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+new_d_ctx = d_ctx(new_ctx, set.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
