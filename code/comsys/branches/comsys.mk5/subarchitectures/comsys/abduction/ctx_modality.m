@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module modality.
+:- import_module modality, rcc.
 :- import_module set.
 
 :- type foreground
