@@ -82,7 +82,7 @@ ctx_rule(Ctx, Rule) :-
 
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 	Mod = [k(STF, Belief)],
-	set.member({STF, Belief, LF, _}, Ctx^bm^k),
+	list.member({STF, Belief, LF}, map.values(Ctx^bm^k)),
 	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
 
 %ctx_fact(_Ctx, vs(m(_, p("do", _)), _), vs(m([e(now)], p("do", [t("e", [])])), varset.init)).
@@ -91,7 +91,7 @@ ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
-ctx_assumable_func(Ctx, _, m(Mod, GProp), 0.5) :-
+ctx_assumable_func(_Ctx, _, m(Mod, GProp), 0.5) :-
 	Mod = [a(com)],
 	GProp = p("it", [t("v1", [])]).
 
