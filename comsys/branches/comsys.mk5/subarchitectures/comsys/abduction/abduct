@@ -1,0 +1,3 @@
+#!/bin/sh
+
+cat | ./test_abduction "$@" 2>&1 | grcat ./grc
