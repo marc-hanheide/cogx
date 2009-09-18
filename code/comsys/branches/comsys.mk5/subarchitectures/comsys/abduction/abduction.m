@@ -22,7 +22,7 @@
 :- type marked(T) == pair(T, marking).
 
 :- type step(M)
-	--->	assume(vscope(mprop(M)), cost_function)  % XXX no vars should be here!
+	--->	assume(vscope(mprop(M)), subst, cost_function)
 	;	resolve_rule(vscope(mrule(M)), subst)
 	;	use_fact(vscope(mprop(M)), subst)
 	;	factor(subst, varset)
@@ -90,7 +90,7 @@ last_goal(Proof) = G :-
 cost(Ctx, Proof, CostForUsingFacts) = Cost :-
 	list.foldl((pred(Step::in, C0::in, C::out) is det :-
 		(
-			Step = assume(VSMProp, CostFunction),
+			Step = assume(VSMProp, _Subst, CostFunction),
 			C = C0 + context.cost(Ctx, CostFunction, VSMProp)
 		;
 			Step = use_fact(_, _),
@@ -193,7 +193,7 @@ transform(Step, L0, VS0, L, VS, Ctx) :-
 
 
 	% assumption
-step(assume(vs(m(MQ, PQ), VS), F),
+step(assume(vs(m(MQ, PQ), VS), Uni, F),
 		{QsL0, cf(m(MQ, PQ0), F), QsR0}, VS0,
 		QsL ++ [m(MQ, PQ)-assumed(F)] ++ QsR, VS,
 		Ctx) :-

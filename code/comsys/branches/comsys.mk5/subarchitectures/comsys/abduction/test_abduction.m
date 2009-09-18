@@ -272,12 +272,13 @@ print_ctx(Ctx, !IO) :-
 
 :- func step_to_string(step(M)) = string <= (modality(M), stringable(M)).
 
-step_to_string(assume(P, F)) = "assume("
-		++ vsmprop_to_string(P) ++ "), cost=" ++ cost_function_to_string(F).
+step_to_string(assume(vs(MProp, Varset), Subst, F)) = "assume("
+		++ vsmprop_to_string(vs(MProp, Varset)) ++ "), "
+		++ subst_to_string(Varset, Subst) ++ ", cost=" ++ cost_function_to_string(F).
 step_to_string(resolve_rule(vs(MRule, Varset), Subst)) = "resolve_rule("
 		++ vsmrule_to_string(vs(MRule, Varset)) ++ "), " ++ subst_to_string(Varset, Subst).
 step_to_string(use_fact(vs(MProp, Varset), Subst)) = "use_fact("
-		++ vsmprop_to_string(vs(MProp, Varset)) ++ ", " ++ subst_to_string(Varset, Subst)
+		++ vsmprop_to_string(vs(MProp, Varset)) ++ "), " ++ subst_to_string(Varset, Subst)
 		++ ", cost=1.0".  % XXX DON'T have this hard-wired here!!!
 step_to_string(factor(Subst, Varset)) = "factor, " ++ subst_to_string(Varset, Subst).
 
