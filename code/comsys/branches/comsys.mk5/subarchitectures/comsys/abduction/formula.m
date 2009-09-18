@@ -5,8 +5,8 @@
 :- interface.
 
 :- import_module term, varset, pair, list, map, string.
-:- import_module costs, ctx_modality.
-:- import_module stringable, modality.
+:- import_module costs.
+:- import_module modality.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
