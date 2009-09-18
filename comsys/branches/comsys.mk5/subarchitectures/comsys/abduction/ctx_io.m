@@ -94,10 +94,10 @@ ctx_modality_from_term(functor(atom("e"), [
 	], _)) = e(term_to_stf(STFTerm)).
 
 	% "knows"
-ctx_modality_to_string(k(now, private(A))) = "k(now," ++ agent_to_string(A) ++ ")".
-ctx_modality_to_string(k(now, attrib(A, B))) = "k(now,[" ++ agent_to_string(A) ++ "]"
+ctx_modality_to_string(k(STF, private(A))) = "k(" ++ stf_to_string(STF) ++ "," ++ agent_to_string(A) ++ ")".
+ctx_modality_to_string(k(STF, attrib(A, B))) = "k(" ++ stf_to_string(STF) ++ ",[" ++ agent_to_string(A) ++ "]"
 		++ agent_to_string(B) ++ ")".
-ctx_modality_to_string(k(now, mutual(AgS))) = "k(now,{" ++ AgSStr ++ "})" :-
+ctx_modality_to_string(k(STF, mutual(AgS))) = "k(" ++ stf_to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
 	AgSStr = string.join_list(",", list.map(agent_to_string, set.to_sorted_list(AgS))).
 
 ctx_modality_from_term(functor(atom("k"), [
@@ -106,10 +106,10 @@ ctx_modality_from_term(functor(atom("k"), [
 	], _)) = k(term_to_stf(STFTerm), term_to_belief(BeliefTerm)).
 
 	% tasks
-ctx_modality_to_string(t(now, private(A))) = "t(now," ++ agent_to_string(A) ++ ")".
-ctx_modality_to_string(t(now, attrib(A, B))) = "t(now,[" ++ agent_to_string(A) ++ "]"
+ctx_modality_to_string(t(STF, private(A))) = "t(" ++ stf_to_string(STF) ++ "," ++ agent_to_string(A) ++ ")".
+ctx_modality_to_string(t(STF, attrib(A, B))) = "t(" ++ stf_to_string(STF) ++ ",[" ++ agent_to_string(A) ++ "]"
 		++ agent_to_string(B) ++ ")".
-ctx_modality_to_string(t(now, mutual(AgS))) = "t(now,{" ++ AgSStr ++ "})" :-
+ctx_modality_to_string(t(STF, mutual(AgS))) = "t(" ++ stf_to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
 	AgSStr = string.join_list(",", list.map(agent_to_string, set.to_sorted_list(AgS))).
 
 ctx_modality_from_term(functor(atom("t"), [
