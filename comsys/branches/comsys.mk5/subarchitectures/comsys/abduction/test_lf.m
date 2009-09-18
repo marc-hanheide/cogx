@@ -118,42 +118,6 @@ s2lf(S) = LF :-
 std_lf(_).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-/*
-:- pred test_slf(string::in, model::in, model::out, io::di, io::uo) is det.
-
-test_slf(S, !WM, !IO) :-
-	test_lf(s2lf(S), !WM, !IO).
-*/
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-/*
-:- pred test_lf(lf::in, model::in, model::out, io::di, io::uo) is det.
-
-test_lf(LF, !WM, !IO) :-
-	print(lf_to_string(LF), !IO),
-	nl(!IO),
-	nl(!IO),
-	test_add_lf(LF, !WM, !IO),
-	print("--------------------------------------------------------------\n", !IO).
-*/
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-/*
-:- pred test_add_lf(lf::in, model::in, model::out, io::di, io::uo) is det.
-
-test_add_lf(LF, !WM, !IO) :-
-	(if add_lf(unit, unit, !.WM, LF, !:WM)
-	then
-		print_wm(!.WM, !IO),
-		nl(!IO)
-	else
-		print("epic fail", !IO),
-		nl(!IO)
-	).
-*/
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred print_wm(model::in, io::di, io::uo) is det.
 
