@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+#
+# Use this followingly:
+#   ./rcc-gen.pl < rcc-gen.data
 
 use warnings;
 use strict;
