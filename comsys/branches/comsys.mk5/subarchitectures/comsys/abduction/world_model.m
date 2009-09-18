@@ -24,7 +24,7 @@
 
 :- pred add_lf(lf::in, world_model::in, world_model::out) is semidet.
 
-	% Simplified model is a model for which it holds that for every reachability
+	% Reduced model is a model for which it holds that for every reachability
 	% relation R and worlds w1, w2, w3, it is true that
 	%
 	%   (w1, w2) \in R & (w1, w3) \in R -> w2 = w3
@@ -32,9 +32,7 @@
 	% i.e. every reachability relation is a (partial) function W -> W
 	% rather than W -> pow(W)
 
-:- func simplify(world_model::in) = (world_model::out) is semidet.
-
-:- pred simplify_pred(world_model::in, world_model::out) is nondet.
+:- func reduced(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -136,69 +134,31 @@ add_lf0(Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 	add_lf0(Cur1, Cur, LF2, WM1, WM).
 
 %------------------------------------------------------------------------------%
-
-simplify(WM) = SWM :-
-	Sols = solutions((pred(Sol::out) is nondet :-
-		simplify_pred(WM, Sol)
-			)),
-	(
-	 	Sols = [],
-		error("no solutions found in func simplify/1")
-	;
-		Sols = [SWM]
-	;
-		Sols = [_|_],
-		error("multiple solutions found in func simplify/1")
-	).
-
-simplify_pred(WM, SWM) :-
-	SWM = mainsimp(WM).
-/*
-	(if
-		set.member({Rel, W1, W2}, WM^reach),
-		set.member({Rel, W1, W3}, WM^reach),
-		W2 \= W3
-	then
-		(if
-			W3 = u(_)
-		then
-			rename_merge_world(W3, W2, WM, WM0),
-			simplify_pred(WM0, SWM)
-		else
-			fail
-		)
-	else
-		SWM = WM
-	).
-*/
-
-:- type reachr(R, I) == {R, world_id(I), world_id(I)}.
-
-:- type simpr(I)
+	
+:- type mergable_result(I)
 	--->	merge(world_id(I), world_id(I))  % merge 2nd into 1st
-	;	done
+	;	none
 	.
 
-:- func mainsimp(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet.
-
-mainsimp(WM) = SWM :-
-	LReach = set.to_sorted_list(WM^reach),
-	nusimp(LReach, Res),
+reduced(WM) = RWM :-
+	first_mergable_worlds(set.to_sorted_list(WM^reach), Res),
 	(
 	 	Res = merge(W2, W3),
 		rename_merge_world(W3, W2, WM, WM0),
-		SWM = mainsimp(WM0)
+		RWM = reduced(WM0)
 	;
-		Res = done,
-		SWM = WM
+		Res = none,
+		RWM = WM
 	).
 
-:- pred nusimp(list(reachr(R, I))::in, simpr(I)::out) is semidet.
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- import_module io, string.
+	% Fails when a reachability relation that cannot be reduced to a partial
+	% function is found.
+:- pred first_mergable_worlds(list({R, world_id(I), world_id(I)})::in, mergable_result(I)::out) is semidet.
 
-nusimp([], done).
-nusimp([{R, W1, W2} | Rest], Result) :-
+first_mergable_worlds([], none).
+first_mergable_worlds([{R, W1, W2} | Rest], Result) :-
 	(if
 		list.find_first_map((pred({Rx, W1x, W3x}::in, W3x::out) is semidet :-
 			Rx = R, W1x = W1), Rest, W3)
@@ -206,7 +166,8 @@ nusimp([{R, W1, W2} | Rest], Result) :-
 		(W2 = u(_), W3 = u(_) -> Result = merge(W2, W3) ;
 		(W2 = i(_), W3 = u(_) -> Result = merge(W2, W3) ;
 		(W2 = u(_), W3 = i(_) -> Result = merge(W3, W2) ;
-		fail)))
+		fail  % W2 and W3 are both indexed by nominals => non-reducible
+		)))
 	else
-		nusimp(Rest, Result)
+		first_mergable_worlds(Rest, Result)
 	).

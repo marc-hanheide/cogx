@@ -3,7 +3,7 @@ CLEAR
 @(u::door, cosi(i::sort ^ cosi(x))).
 
 PRINT
-SIMPLIFY
+REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
@@ -14,7 +14,7 @@ colour(tint(weird) ^ red).
 @(v1::object, v2::object).
 
 PRINT
-SIMPLIFY
+REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
@@ -23,7 +23,7 @@ CLEAR
 @(v1::object, box ^ colour(c::colour ^ something)).
 
 PRINT
-SIMPLIFY
+REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
@@ -33,7 +33,7 @@ colour(d::colour).  # this makes it inconsistent
 @(c::colour, tint(t::tint)).
 
 PRINT
-SIMPLIFY
+REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
@@ -41,7 +41,7 @@ CLEAR
 @(v1::thing, colour(c::colour ^ black)).
 
 PRINT
-SIMPLIFY
+REDUCE
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 CLEAR
 
@@ -58,4 +58,4 @@ CLEAR
 #@(b::thing, colour(c::colour)).
 
 PRINT
-SIMPLIFY
+REDUCE
