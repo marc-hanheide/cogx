@@ -59,7 +59,27 @@
 	  </slice2java>
 	</target>
 
-	<target name="slice" depends="slice-lf, slice-comsys" description="generates source from slice">
+	<target name="slice-abducer" depends="prepare" description="generates source from slice">
+		<slice2java tie="true" outputdir="${src.dir}">
+	    <fileset dir="${slice.dir}" includes="Abducer.ice"/>
+	    <includepath>
+              <pathelement path="${slice.dir}"/>
+	      <pathelement path="${slice.dir}:../../tools/cast/src/slice"/>
+	    </includepath>
+	  </slice2java>
+	</target>
+
+	<target name="slice-bm" depends="prepare" description="generates source from slice">
+		<slice2java tie="true" outputdir="${src.dir}">
+	    <fileset dir="${slice.dir}" includes="BeliefModels.ice"/>
+	    <includepath>
+              <pathelement path="${slice.dir}"/>
+	      <pathelement path="${slice.dir}:../../tools/cast/src/slice"/>
+	    </includepath>
+	  </slice2java>
+	</target>
+
+	<target name="slice" depends="slice-lf, slice-comsys, slice-abducer, slice-bm" description="generates source from slice">
 
 	</target>
 	
