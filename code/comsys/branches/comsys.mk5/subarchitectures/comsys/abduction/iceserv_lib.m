@@ -1,7 +1,7 @@
 :- module iceserv_lib.
 
 :- interface.
-:- import_module ctx_impl, abduction.
+:- import_module ctx_loadable, abduction.
 
 :- func srv_init_ctx = ctx.
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
