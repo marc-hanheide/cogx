@@ -29,6 +29,17 @@
 :- func term_to_atomic_formula(term.term) = atomic_formula is semidet.
 :- func det_term_to_atomic_formula(term.term) = atomic_formula.
 
+	% formula <--> ground formula
+:- func formula_to_ground_formula(atomic_formula) = ground_atomic_formula is semidet.
+:- func ground_formula_to_formula(ground_atomic_formula) = atomic_formula.
+
+	% predicate version of the above
+:- pred ground_formula(atomic_formula, ground_atomic_formula).
+:- mode ground_formula(in, out) is semidet.
+:- mode ground_formula(out, in) is det.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- type term
 	--->	v(var)
 	;	t(string, list(formula.term))
@@ -44,6 +55,15 @@
 :- pred term_to_formula_term(term.term::in, formula.term::out) is semidet.
 :- func term_to_formula_term(term.term) = formula.term is semidet.
 :- func det_term_to_formula_term(term.term) = formula.term.
+
+	% term <--> ground term
+:- func term_to_ground_term(formula.term) = ground_term is semidet.
+:- func ground_term_to_term(ground_term) = formula.term.
+
+	% predicate version of the above
+:- pred ground_term(formula.term, ground_term).
+:- mode ground_term(in, out) is semidet.
+:- mode ground_term(out, in) is det.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -67,6 +87,8 @@
 :- type mprop(M) == modalized(list(M), atomic_formula).
 :- type mrule(M) == modalized(list(M), pair(list(with_cost_function(mprop(M))), mprop(M))).
 
+:- type mgprop(M) == modalized(list(M), ground_atomic_formula).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- type subst == map(var, formula.term).
@@ -84,10 +106,6 @@
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred unify_formulas(atomic_formula::in, atomic_formula::in, subst::out) is semidet.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred ground_formula(atomic_formula::in, ground_atomic_formula::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -179,10 +197,28 @@ unify_formulas(A, B, U) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred ground_term(formula.term::in, ground_term::out) is semidet.
+formula_to_ground_formula(p(PredSym, Args)) = p(PredSym, GroundArgs) :-
+	list.map((pred(T::in, GT::out) is semidet :-
+		GT = term_to_ground_term(T)
+			), Args, GroundArgs).
 
-ground_term(t(Functor, Terms), t(Functor, GroundTerms)) :-
-	list.map(ground_term, Terms, GroundTerms).
+ground_formula_to_formula(p(PredSym, GroundArgs)) = p(PredSym, list.map(ground_term_to_term, GroundArgs)).
 
-ground_formula(p(PredSym, Args), p(PredSym, GroundArgs)) :-
-	list.map(ground_term, Args, GroundArgs).
+:- pragma promise_equivalent_clauses(ground_formula/2).
+
+ground_formula(ground_formula_to_formula(GroundFormula)::out, GroundFormula::in).
+ground_formula(Formula::in, formula_to_ground_formula(Formula)::out).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+term_to_ground_term(t(Functor, Terms)) = t(Functor, GroundTerms) :-
+	list.map((pred(T::in, GT::out) is semidet :-
+		GT = term_to_ground_term(T)
+			), Terms, GroundTerms).
+
+ground_term_to_term(t(Functor, GroundTerms)) = t(Functor, list.map(ground_term_to_term, GroundTerms)).
+
+:- pragma promise_equivalent_clauses(ground_term/2).
+
+ground_term(ground_term_to_term(GroundTerm)::out, GroundTerm::in).
+ground_term(Term::in, term_to_ground_term(Term)::out).
