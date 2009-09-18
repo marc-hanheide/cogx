@@ -1,4 +1,4 @@
-:- module ctx_impl.
+:- module ctx_specific.
 
 :- interface.
 
@@ -38,6 +38,7 @@
 :- import_module require.
 :- import_module list, pair, map, float.
 :- import_module costs.
+:- import_module belief_model.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -45,7 +46,8 @@
 	--->	ctx(
 		ctx_facts :: set(vscope(mprop(ctx_modality))),
 		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
-		ctx_assumables :: map(cost_function_name, map(mgprop(ctx_modality), float))
+		ctx_assumables :: map(cost_function_name, map(mgprop(ctx_modality), float)),
+		bm :: belief_model
 	).
 
 :- instance context(ctx, ctx_modality) where [
@@ -55,7 +57,7 @@
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
 
-new_ctx = ctx(set.init, set.init, map.init).
+new_ctx = ctx(set.init, set.init, map.init, belief_model.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -84,11 +86,11 @@ set_assumables(Assumables, Ctx0, Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-facts(Ctx) = Ctx^ctx_facts.
+facts(Ctx) = set.init.
 
 rules(Ctx) = Ctx^ctx_rules.
 
-assumables(Ctx) = Ctx^ctx_assumables.
+assumables(Ctx) = map.init.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -111,15 +113,3 @@ ctx_assumable_func(Ctx, FuncName, GProp, Cost) :-
 :- func ctx_min_assumption_cost(ctx, ctx_modality) = float.
 
 ctx_min_assumption_cost(_, _) = 0.1.
-
-%------------------------------------------------------------------------------%
-
-/*
-:- pred add_to_focus(string) `with_type` ctx_change.
-:- mode add_to_focus(in) `with_inst` ctx_change.
-
-add_to_focus(A, DC0, DC) :-
-	F0 = DC0^d_focus,
-	set.insert(F0, A, F),
-	DC = DC0^d_focus := F.
-*/
