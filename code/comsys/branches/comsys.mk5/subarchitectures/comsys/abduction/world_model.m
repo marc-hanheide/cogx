@@ -174,8 +174,9 @@ satisfies0(_WCur, M, at(of_sort(Idx, Sort), LF)) :-
 	satisfies0(i(Idx), M, i(of_sort(Idx, Sort))),
 	satisfies0(i(Idx), M, LF).
 
-satisfies0(i(Idx), M, i(of_sort(Idx, Sort))) :-
-	map.search(M^worlds, Idx, Sort).  % TODO: sort subsumption?
+satisfies0(i(Idx), M, i(of_sort(Idx, LFSort))) :-
+	map.search(M^worlds, Idx, Sort),
+	subsumes(Sort, LFSort).
 
 satisfies0(WCur, M, r(Rel, LF)) :-
 	set.member({Rel, WCur, WReach}, M^reach),
