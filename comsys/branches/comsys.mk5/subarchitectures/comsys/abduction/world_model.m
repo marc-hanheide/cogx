@@ -240,6 +240,7 @@ union(M1, M2, M) :-
 		S = more_specific(S1, S2)
 			), M1^worlds, M2R^worlds, Worlds),
 
+		% merge reachability relations
 	set.union(M1^reach, M2R^reach, Reach),
 
 		% merge propositions

@@ -148,21 +148,10 @@ get_mbm(Set) = MBM :-
 
 k_fact(BM, STF, Bel, LF) :-
 	MBM = get_mbm(set.from_list(map.values(BM^k))),
-	k_fact0(MBM, STF, Bel, LF).
-
-:- pred k_fact0(mbm(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet <= isa_ontology(S).
-
-k_fact0(MBM, STF, Bel, LF) :-
 	map.member(MBM, STF, BelMap),
-	map.member(BelMap, Bel0, M),
-	set.member(LF, lfs(M)),
-	(
-		Bel0 = mutual(AgS),
-		set.member(Ag, AgS),
-		Bel = private(Ag)
-	;
-		Bel = Bel0
-	).
+	map.member(BelMap, Bel, _M),
+	k_model(BM, STF, Bel, M),
+	set.member(LF, lfs(M)).
 
 %------------------------------------------------------------------------------%
 

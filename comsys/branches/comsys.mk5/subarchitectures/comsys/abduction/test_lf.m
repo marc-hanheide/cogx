@@ -75,7 +75,10 @@ main(!IO) :-
 					print("+   ", !IO),
 					print(lf_to_string(LF), !IO),
 					print(" ... ", !IO),
-					(if add_lf(!.WM, LF, !:WM)
+					(if
+						%add_lf(!.WM, LF, !:WM),
+						add_lf(world_model.init, LF, XM),
+						union(!.WM, XM, !:WM)
 					then
 						(if satisfies(!.WM, LF) then Sat = "t" else Sat = "f"),
 						(if RM = reduced(!.WM)
