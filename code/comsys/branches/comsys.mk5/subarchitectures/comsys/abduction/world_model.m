@@ -1,7 +1,7 @@
 :- module world_model.
 
 :- interface.
-:- import_module string, int, map, set, pair.
+:- import_module string, int, map, set.
 :- import_module lf.
 
 :- type world_id(Index)
@@ -22,7 +22,21 @@
 
 :- func init = world_model.
 
-:- pred add_lf(lf::in, world_model::in, world_model::out) is semidet.
+	% union(M0, LF, M)
+	% True iff
+	%   M0 \/ model-of(LF) = M
+	%
+	% i.e. add LF to M0 so that it is consistent, fail if not possible.
+	%
+:- pred add_lf(world_model(I, S, R), lf(I, S, R), world_model(I, S, R)).
+:- mode add_lf(in, in, out) is semidet.
+
+	% satisfies(M, LF)
+	% True iff
+	%   M |= LF
+	%
+:- pred satisfies(world_model(I, S, R), lf(I, S, R)).
+:- mode satisfies(in, in) is semidet.
 
 	% Reduced model is a model for which it holds that for every reachability
 	% relation R and worlds w1, w2, w3, it is true that
@@ -32,6 +46,9 @@
 	% i.e. every reachability relation is a (partial) function W -> W
 	% rather than W -> pow(W)
 
+	% reduced(M) = RM
+	% True iff RM is a functionally reduced version of M.
+	%
 :- func reduced(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet.
 
 %------------------------------------------------------------------------------%
@@ -44,7 +61,7 @@ init = wm(map.init, set.init, map.init, 0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred new_unnamed_world(int::out, world_model::in, world_model::out) is det.
+:- pred new_unnamed_world(int::out, world_model(I, S, R)::in, world_model(I, S, R)::out) is det.
 
 new_unnamed_world(Id, WM0, WM) :-
 	Id = WM0^next_unnamed,
@@ -79,20 +96,20 @@ rename_merge_world(Old, New, WM0, WM) :-
 
 %------------------------------------------------------------------------------%
 
-add_lf(LF, !WM) :-
+add_lf(!.WM, LF, !:WM) :-
 	add_lf0(this, _, LF, !WM).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred add_lf0(world_id(string)::in, world_id(string)::out, lf::in,
-		world_model::in, world_model::out) is semidet.
+:- pred add_lf0(world_id(I)::in, world_id(I)::out, lf(I, S, R)::in,
+		world_model(I, S, R)::in, world_model(I, S, R)::out) is semidet.
 
 add_lf0(Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 	% add the referenced world
 	(if map.search(WM0^names, WName, OldSort)
 	then
 		% we've already been there
-		OldSort = Sort,  % conflict? => fail
+		OldSort = Sort,  % conflict? => fail, also FIXME subsumption
 		WM1 = WM0
 	else
 		% it's a new one
@@ -132,6 +149,31 @@ add_lf0(Cur, Cur, p(Prop), WM0, WM) :-
 add_lf0(Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 	add_lf0(Cur0, Cur1, LF1, WM0, WM1),
 	add_lf0(Cur1, Cur, LF2, WM1, WM).
+
+%------------------------------------------------------------------------------%
+
+satisfies(M, LF) :-
+	satisfies0(this, M, LF).
+
+:- pred satisfies0(world_id(I)::in, world_model(I, S, R)::in, lf(I, S, R)::in) is semidet.
+
+satisfies0(_WCur, M, at(of_sort(Idx, Sort), LF)) :-
+	satisfies0(i(Idx), M, i(of_sort(Idx, Sort))),
+	satisfies0(i(Idx), M, LF).
+
+satisfies0(i(Idx), M, i(of_sort(Idx, Sort))) :-
+	map.search(M^names, Idx, Sort).  % TODO: sort subsumption?
+
+satisfies0(WCur, M, r(Rel, LF)) :-
+	set.member({Rel, WCur, WReach}, M^reach),
+	satisfies0(WReach, M, LF).
+
+satisfies0(WCur, M, p(Prop)) :-
+	set.member(Prop, map.search(M^props, WCur)).
+
+satisfies0(WCur, M, and(LF1, LF2)) :-
+	satisfies0(WCur, M, LF1),
+	satisfies0(WCur, M, LF2).
 
 %------------------------------------------------------------------------------%
 	

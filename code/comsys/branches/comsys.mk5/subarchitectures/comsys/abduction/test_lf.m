@@ -50,7 +50,7 @@ main(!IO) :-
 								LF = s2lf(Line),
 								print(lf_to_string(LF), !IO),
 								print(" ... ", !IO),
-								(if add_lf(LF, !WM)
+								(if add_lf(!.WM, LF, !:WM)
 								then print("ok (" ++ from_int(count(reduced_models(!.WM))) ++")\n", !IO)
 								else print("FAIL, ignoring\n", !IO)
 								)
@@ -139,7 +139,7 @@ test_lf(LF, !WM, !IO) :-
 :- pred test_add_lf(lf::in, world_model::in, world_model::out, io::di, io::uo) is det.
 
 test_add_lf(LF, !WM, !IO) :-
-	(if add_lf(LF, !WM)
+	(if add_lf(!.WM, LF, !:WM)
 	then
 		print_wm(!.WM, !IO),
 		nl(!IO)
