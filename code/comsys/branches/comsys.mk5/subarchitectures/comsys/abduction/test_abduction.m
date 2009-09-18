@@ -101,7 +101,7 @@ main(!IO) :-
 			format("found %d proofs.\n", [i(length(DerivsSorted))], !IO),
 
 			list.foldl((pred((Cost-G)-Ds::in, !.IO::di, !:IO::uo) is det :-
-				print("----------------------------------------------------------------------\n", !IO),
+				print("---------------------------------------------------------------------\n", !IO),
 				format("proof cost = %f\n\n", [f(Cost)], !IO),
 				print("proven goal:\n  " ++ goal_to_string(G) ++ "\n", !IO),
 				nl(!IO),
@@ -114,7 +114,9 @@ main(!IO) :-
 				print("  " ++ assertions_to_string(!.Ctx, goal_assertions(G)) ++ "\n", !IO),
 				nl(!IO),
 
-				print(string.from_int(set.count(Ds)) ++ " derivation" ++ plural_s(count(Ds)) ++ ".\n\n", !IO),
+				print(string.from_int(set.count(Ds)) ++ " derivation" ++ plural_s(count(Ds)) ++ ".\n", !IO),
+
+				print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
 
 				set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
 					is_ctx_proof(Proof),

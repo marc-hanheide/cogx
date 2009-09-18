@@ -248,9 +248,9 @@ step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 	varset.merge_renaming(VS0, VSR, VS, Renaming),
 	m(MR, Ante-RHead) = rename_vars_in_mrule(Renaming, Rule^body),
 
-	( RHead = std(m(MH, PH))
-	; RHead = test(prop(m(MH, PH)))
-	; RHead = test(impl(MPs, m(MH, PH)))
+	( RHead = std(m(_, PH))
+	; RHead = test(prop(m(_, PH)))
+	; RHead = test(impl(_, m(_, PH)))
 	),
 
 	unify_formulas(PH, PQ, Uni),
