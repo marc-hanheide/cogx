@@ -19,16 +19,32 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+	% axiom has S4 semantics:
+	%  (K) ... [](B -> A) -> ([]B -> []A)
+	%  (T) ... []A -> A
+	%  (4) ... []A -> [][]A
+	%
+	% plus specialisation:
+	%  []A -> [a]A
+	%    for every a
+
 match([], []).
-match([H|TL], R) :-
-	(if H = axiom
+match([axiom], []).
+match([], [axiom]).
+match([HL|TL], [HR|TR]) :-
+	(if HL = axiom
 	then
-		( match(TL, R)  % empty sequence, end
-		; R = [_|TR], match([H|TL], TR)  % eat one, continue
+		( match(TL, [HR|TR])  % empty sequence, end
+		; match([HL|TL], TR)  % eat one, continue
 		)
 	else
-		R = [H|TR], 
-		match(TL, TR)
+		(if HR = axiom
+		then
+			match([HR|TR], [HL|TL])
+		else
+			HL = HR,
+			match(TL, TR)
+		)
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
