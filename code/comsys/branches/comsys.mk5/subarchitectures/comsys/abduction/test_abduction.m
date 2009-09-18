@@ -50,7 +50,8 @@ main(!IO) :-
 							then add_fact(vs(MProp, VS), !Ctx), Continue = yes
 							else
 								context(FileName, Line) = get_term_context(Term),
-								error("Syntax error in " ++ FileName ++ " at line " ++ string.from_int(Line) ++ ".")
+								error("Syntax error in " ++ FileName
+										++ " at line " ++ string.from_int(Line) ++ ".")
 							)
 						)
 					)
