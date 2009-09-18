@@ -19,6 +19,7 @@ main(!IO) :-
 	test_ctx_match([any], [i(next)], !IO),
 	test_ctx_match([i(next)], [i(next)], !IO),
 	test_ctx_match([any], [], !IO),
+	test_ctx_match([], [any], !IO),
 	test_ctx_match([any], [any], !IO),
 	test_ctx_match([any], [any, any], !IO),
 
