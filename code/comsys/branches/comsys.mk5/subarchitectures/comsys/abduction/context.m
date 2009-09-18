@@ -20,7 +20,7 @@
 	pred vrule(C, vscope(mrule(M))),
 	mode vrule(in, out) is nondet,
 
-	pred assumable_func(C, vscope(mprop(M)), cost_function_name, vscope(mprop(M)), float),
+	pred assumable_func(C, vscope(mprop(M)), cost_function_name, mgprop(M), float),
 	mode assumable_func(in, in, in, out, out) is nondet
 ].
 
@@ -39,13 +39,15 @@
 
 :- import_module require, solutions.
 :- import_module set, list, pair, string.
+:- import_module varset.
 
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 
-assumable(C, Prop, f(FuncName), PropAssumed, Cost) :-
-	assumable_func(C, Prop, FuncName, PropAssumed, Cost).
+assumable(C, PropIn, f(FuncName), vs(m(Mod, Prop), varset.init), Cost) :-
+	assumable_func(C, PropIn, FuncName, m(Mod, GroundProp), Cost),
+	ground_formula(Prop, GroundProp).
 
 assumable(_C, Prop, const(Cost), Prop, Cost).
 
