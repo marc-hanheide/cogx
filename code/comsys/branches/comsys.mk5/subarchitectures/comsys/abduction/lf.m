@@ -4,7 +4,7 @@
 
 :- interface.
 
-:- import_module string, ontology.
+:- import_module string, ontology, unit.
 
 :- type proposition == string.
 
@@ -21,7 +21,7 @@
 
 :- type lf == lf(string, string, string).
 
-:- instance isa_ontology(string).
+:- instance isa_ontology(unit, string).
 
 :- func is_lf(lf) = lf.
 
@@ -33,6 +33,6 @@ is_lf(LF) = LF.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- instance isa_ontology(string) where [
-	(direct_isa(X, Y) :- fail)
+:- instance isa_ontology(unit, string) where [
+	(direct_isa(_, X, Y) :- fail)
 ].

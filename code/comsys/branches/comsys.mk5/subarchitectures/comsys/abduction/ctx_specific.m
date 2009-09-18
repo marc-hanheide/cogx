@@ -10,11 +10,13 @@
 
 :- import_module belief_model, world_model.
 :- import_module abduction, modality.
+:- import_module ctx_ontology.
 
 :- type ctx
 	--->	ctx(
 		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
-		bm :: belief_model(string, string, string)
+		bm :: belief_model(string, string, string),
+		ont :: ctx_ontology
 	).
 :- instance context(ctx, ctx_modality).
 
@@ -35,7 +37,7 @@
 
 :- import_module require.
 :- import_module list, pair, map, float.
-:- import_module costs, varset, lf, lf_io.
+:- import_module costs, varset, lf, lf_io, ontology.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -46,7 +48,7 @@
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
 
-new_ctx = ctx(set.init, belief_model.init).
+new_ctx = ctx(set.init, belief_model.init, ctx_ontology.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -82,13 +84,17 @@ ctx_rule(Ctx, Rule) :-
 
 ctx_fact(Ctx, vs(m(Mod, _), _), VSMProp) :-
 	compose_list(Mod) = [k(STF, Belief)],
-	k_fact(Ctx^bm, STF, Belief, LF),
+	k_fact(Ctx^ont, Ctx^bm, STF, Belief, LF),
 	VSMProp = vs(m(Mod, ground_formula_to_formula(lf_to_ground_atomic_formula(LF))), varset.init).
 
 ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 	compose_list(Mod) = [k(STF, Belief)],
-	k_model(Ctx^bm, STF, Belief, M),
-	satisfies(M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
+	k_model(Ctx^ont, Ctx^bm, STF, Belief, M),
+	satisfies(Ctx^ont, M, ground_atomic_formula_to_lf(formula_to_ground_formula(Prop))).
+
+ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(Super, [])])), VS)) :-
+	Sub = "x",
+	Super = "y".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -99,7 +105,7 @@ ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 
 ctx_assumable_func(Ctx, _, m(Mod, GProp), Cost) :-
 	Mod = [a(com)],
-	att_model(Ctx^bm, AM),
+	att_model(Ctx^ont, Ctx^bm, AM),
 	map.member(AM^worlds, WName, Sort),
 	(
 		map.search(AM^props, i(WName), Props),
@@ -108,7 +114,7 @@ ctx_assumable_func(Ctx, _, m(Mod, GProp), Cost) :-
 	;
 		noun_gender(Sort, neut)
 	),
-	Dist = min_dist_from_set(AM, fg_anchors(Ctx^bm), WName),
+	Dist = min_dist_from_set(Ctx^ont, AM, fg_anchors(Ctx^bm), WName),
 	Cost = 0.5 + float(Dist),
 	GProp = p("it", [t(WName, [])]).
 

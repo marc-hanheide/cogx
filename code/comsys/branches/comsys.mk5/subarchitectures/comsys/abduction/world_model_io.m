@@ -5,7 +5,7 @@
 :- import_module world_model.
 :- import_module string, ontology, pair, map, set, list.
 
-:- func wm_to_string(world_model(I, S, R)) = string <= isa_ontology(S).
+:- func wm_to_string(world_model(I, S, R)) = string.
 
 %------------------------------------------------------------------------------%
 
