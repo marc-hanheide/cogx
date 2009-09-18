@@ -139,8 +139,9 @@ term_to_mrule(T, m(Mod, R)) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-atomic_formula_to_string(Varset, p(PredSym, Args)) = PredSym ++ "(" ++ ArgStr ++ ")" :-
-	ArgStr = string.join_list(", ", list.map(formula_term_to_string(Varset), Args)).
+atomic_formula_to_string(Varset, p(PredSym, [])) = PredSym.
+atomic_formula_to_string(Varset, p(PredSym, [H|T])) = PredSym ++ "(" ++ ArgStr ++ ")" :-
+	ArgStr = string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])).
 
 formula_term_to_string(Varset, Arg) = S :-
 	(
