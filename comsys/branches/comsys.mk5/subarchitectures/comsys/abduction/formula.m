@@ -96,7 +96,7 @@
 
 :- type rule_antecedent(M)
 	--->	std(with_cost_function(mprop(M)))
-	;	test(mprop(M))
+	;	test(mtest(M))
 	.
 
 :- type mprop(M) == modalized(list(M), atomic_formula).
@@ -116,6 +116,7 @@
 
 :- func apply_subst_to_formula(subst, atomic_formula) = atomic_formula.
 :- func apply_subst_to_mprop(subst, mprop(M)) = mprop(M) <= modality(M).
+:- func apply_subst_to_mtest(subst, mtest(M)) = mtest(M) <= modality(M).
 
 :- func rename_vars_in_term(map(var, var), formula.term) = formula.term.
 :- func rename_vars_in_formula(map(var, var), atomic_formula) = atomic_formula.
@@ -123,6 +124,7 @@
 :- func rename_vars_in_annot_mprop(map(var, var), with_cost_function(mprop(M))) = with_cost_function(mprop(M))
 		<= modality(M).
 :- func rename_vars_in_rule_antecedent(map(var, var), rule_antecedent(M)) = rule_antecedent(M) <= modality(M).
+:- func rename_vars_in_mtest(map(var, var), mtest(M)) = mtest(M) <= modality(M).
 :- func rename_vars_in_mrule(map(var, var), mrule(M)) = mrule(M) <= modality(M).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -175,6 +177,10 @@ det_term_to_formula_term(T) = FT :-
 
 %------------------------------------------------------------------------------%
 
+apply_subst_to_mtest(Subst, prop(MProp)) = prop(apply_subst_to_mprop(Subst, MProp)).
+apply_subst_to_mtest(Subst, impl(MPs, HMP)) = impl(list.map(apply_subst_to_mprop(Subst), MPs),
+		apply_subst_to_mprop(Subst, HMP)).
+
 apply_subst_to_mprop(Subst, m(M, Prop)) = m(M, apply_subst_to_formula(Subst, Prop)).
 
 apply_subst_to_formula(Subst, p(F, Args)) = p(F, SubstArgs) :-
@@ -208,7 +214,11 @@ rename_vars_in_mprop(Renaming, m(M, Prop)) = m(M, rename_vars_in_formula(Renamin
 
 rename_vars_in_annot_mprop(Renaming, cf(MProp, F)) = cf(rename_vars_in_mprop(Renaming, MProp), F).
 
-rename_vars_in_rule_antecedent(Renaming, test(MProp)) = test(rename_vars_in_mprop(Renaming, MProp)).
+rename_vars_in_mtest(Renaming, prop(MProp)) = prop(rename_vars_in_mprop(Renaming, MProp)).
+rename_vars_in_mtest(Renaming, impl(MPs, HMP)) = impl(list.map(rename_vars_in_mprop(Renaming), MPs),
+		rename_vars_in_mprop(Renaming, HMP)).
+
+rename_vars_in_rule_antecedent(Renaming, test(MProp)) = test(rename_vars_in_mtest(Renaming, MProp)).
 rename_vars_in_rule_antecedent(Renaming, std(AnnotMProp))
 		= std(rename_vars_in_annot_mprop(Renaming, AnnotMProp)).
 

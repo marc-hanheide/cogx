@@ -16,7 +16,7 @@
 	--->	proved(mprop(M))
 	;	assumed(mprop(M), cost_function)
 	;	unsolved(mprop(M), cost_function)
-	;	asserted(mprop(M))
+	;	asserted(mtest(M))
 	.
 
 %:- type marked(T) == pair(T, marking).
@@ -45,7 +45,7 @@
 :- func last_goal(proof(M)) = vscope(list(query(M))) <= modality(M).
 
 :- func goal_assumptions(goal(M)) = bag(with_cost_function(mgprop(M))) <= modality(M).
-:- func goal_assertions(goal(M)) = bag(vscope(mprop(M))) <= modality(M).
+:- func goal_assertions(goal(M)) = bag(vscope(mtest(M))) <= modality(M).
 
 :- func cost(C, proof(M), float) = float <= (context(C, M), modality(M)).
 %:- func goal_cost(C, goal(M), float) = float <= (context(C, M), modality(M)).
@@ -128,9 +128,10 @@ prove(P0, P, Ctx) :-
 	then
 		% check that all assumptions, assertions are ground
 		% (because we may have constant weight functions)
+		% XXX: check assertions? doing just heads now
 		% XXX: check resolved stuff too?
 		LAss = list.filter_map((func(Q) = MPr is semidet :-
-			( Q = asserted(MPr)
+			( Q = asserted(prop(MPr))
 			; Q = assumed(MPr, _)
 			)
 				), L0),
@@ -247,7 +248,7 @@ step(resolve_rule(vs(m(MR, Ante-m(MH, PH)), VS), Uni),
 		% XXX have assertion in another rule?
 	QsInsert = list.map((func(A) = UniA :-
 		( A = std(cf(P, F)), UniA = unsolved(apply_subst_to_mprop(Uni, P), F)
-		; A = test(P), UniA = asserted(apply_subst_to_mprop(Uni, P))
+		; A = test(P), UniA = asserted(apply_subst_to_mtest(Uni, P))
 		)
 			), Ante)
 			++ [proved(m(MQ, apply_subst_to_formula(Uni, PQ)))],
@@ -270,7 +271,8 @@ step(factor(Uni, VS),
 	( Prev = proved(MProp)
 	; Prev = unsolved(MProp, _)
 	; Prev = assumed(MProp, _)
-	; Prev = asserted(MProp)
+	; Prev = asserted(prop(MProp))
+	; Prev = asserted(impl(_, MProp))
 	),
 
 	MProp = m(MP, PP),
@@ -295,4 +297,4 @@ map_fst(Func, LIn) = LOut :-
 apply_subst_to_query(Subst, unsolved(MProp, F)) = unsolved(apply_subst_to_mprop(Subst, MProp), F).
 apply_subst_to_query(Subst, proved(MProp)) = proved(apply_subst_to_mprop(Subst, MProp)).
 apply_subst_to_query(Subst, assumed(MProp, F)) = assumed(apply_subst_to_mprop(Subst, MProp), F).
-apply_subst_to_query(Subst, asserted(MProp)) = asserted(apply_subst_to_mprop(Subst, MProp)).
+apply_subst_to_query(Subst, asserted(MTest)) = asserted(apply_subst_to_mtest(Subst, MTest)).

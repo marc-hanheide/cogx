@@ -24,6 +24,10 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- func mtest_to_string(varset, mtest(M)) = string <= (modality(M), stringable(M)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 	% mrule
 
 :- func string_to_vsmrule(string) = vscope(mrule(M)) is semidet <= (modality(M), parsable(M)).
@@ -74,10 +78,14 @@ annot_vsmprop_to_string(vs(cf(MP, F), Varset)) = vsmprop_to_string(vs(MP, Varset
 
 test_vsmprop_to_string(vs(MP, Varset)) = "?" ++ vsmprop_to_string(vs(MP, Varset)).
 
+mtest_to_string(Varset, prop(MProp)) = mprop_to_string(Varset, MProp).
+mtest_to_string(Varset, impl(MPs, HMP)) = string.join_list(", ", list.map(mprop_to_string(Varset), MPs))
+		++ " -> " ++ mprop_to_string(Varset, HMP).
+
 :- func rule_antecedent_to_string(varset, rule_antecedent(M)) = string <= (modality(M), stringable(M)).
 
 rule_antecedent_to_string(Varset, std(AnnotMProp)) = annot_vsmprop_to_string(vs(AnnotMProp, Varset)).
-rule_antecedent_to_string(Varset, test(MProp)) = "<" ++ vsmprop_to_string(vs(MProp, Varset)) ++ ">?".
+rule_antecedent_to_string(Varset, test(MTest)) = "<" ++ mtest_to_string(Varset, MTest) ++ ">?".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -188,7 +196,7 @@ term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _),
 	term_to_mprop(T, MP).
 term_to_rule_antecedent(functor(atom("/"), [T, functor(float(Cost), [], _)], _), std(cf(MP, const(Cost)))) :-
 	term_to_mprop(T, MP).
-term_to_rule_antecedent(functor(atom("?"), [MPropTerm], _), test(MProp)) :-
+term_to_rule_antecedent(functor(atom("?"), [MPropTerm], _), test(prop(MProp))) :-
 	term_to_mprop(MPropTerm, MProp).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

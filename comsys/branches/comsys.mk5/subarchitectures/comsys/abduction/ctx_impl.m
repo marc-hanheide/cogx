@@ -156,7 +156,8 @@ dialogue_turn(Pr, !DC) :-
 		list.foldl((pred(Q::in, !.DC::in, !:DC::out) is det :-
 			( Q = proved(MProp)
 			; Q = assumed(MProp, _)
-			; Q = asserted(MProp)
+			; Q = asserted(prop(MProp))
+			; Q = asserted(impl(_, MProp))
 			; Q = unsolved(MProp, _)  % XXX this should be an error
 			),
 			effect(vs(MProp, Varset), !DC)  % XXX XXX XXX
