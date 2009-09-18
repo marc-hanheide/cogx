@@ -1,0 +1,3 @@
+regexp=^ >>.*$
+colours=green
+count=stop
