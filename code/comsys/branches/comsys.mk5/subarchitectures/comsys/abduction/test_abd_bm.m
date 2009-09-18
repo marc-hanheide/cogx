@@ -17,6 +17,7 @@
 :- import_module abduction, formula, context, costs, belief_model.
 
 :- import_module ctx_modality, ctx_specific, ctx_io.
+:- import_module lf, lf_io.
 :- import_module modality, stringable.
 
 :- import_module parser, term_io, term, varset, formula_io, formula_ops, costs.
@@ -286,7 +287,10 @@ print_ctx(Ctx, !IO) :-
 
 	set.fold((pred({Stf, Bel, Form, Fg}::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
-		print(to_string(k(Stf, Bel)) ++ " : " ++ atomic_formula_to_string(varset.init, ground_formula_to_formula(Form)) ++ " ... " ++ string(Fg), !IO),
+		print(to_string(k(Stf, Bel)) ++ ": "
+				++ lf_to_string(det_ground_atomic_formula_to_lf(Form))
+				%++ atomic_formula_to_string(varset.init, ground_formula_to_formula(Form))
+				++ " .. " ++ string(Fg), !IO),
 		nl(!IO)
 			), Ctx^bm^k, !IO),
 

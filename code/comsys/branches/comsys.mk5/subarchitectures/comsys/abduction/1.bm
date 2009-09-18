@@ -1,4 +1,5 @@
 k(now, private(r)) : @(v1::thing, object) : y(com).
 k(now, attrib(r, h)) : @(v1::thing, object) : y(com).
+k(now, private(r)) : @(v1::thing, colour(c::colour ^ black)) : y(com).
 
 
