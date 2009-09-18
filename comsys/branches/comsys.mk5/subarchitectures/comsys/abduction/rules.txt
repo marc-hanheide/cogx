@@ -1,0 +1,25 @@
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : 'prop'(Nom, be) / true,
+	i : 'feat_Mood'(Nom, int) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, SubjNom) / true,
+	i : 'rel_Cop-Restr'(Nom, SubjNom) / true,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+		i : sort(ScopeNom, ScopeSort) / true,
+		i : prop(ScopeNom, ScopeProp) / true,
+	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
+
+i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) <-
+	k(now, private(h)) : quality_uncertain(SubjNom, ScopeSort) / 0.5,
+	k(now, private(h)) : quality_hypothesis(SubjNom, ScopeSort, ScopeProp) / 0.5.
+
+% interpretation
+
+k(now, private(h)) : quality_known(SubjNom, QualitySort, QualityProp) <-
+	k(now, private(h)) : quality_hypothesis(SubjNom, QualitySort, QualityProp) / true,
+	produce_yesno(SubjNom, QualitySort, Bool) / 1.0.
+
+k(now, private(h)) : quality_known(SubjNom, QualitySort, QualityProp) <-
+	k(now, private(h)) : quality_unknown(SubjNom, QualitySort) / true,
+	describe(SubjNom) / 1.0.
