@@ -87,6 +87,11 @@ mtest_to_string(Varset, impl(MPs, HMP)) = string.join_list(", ", list.map(mprop_
 rule_antecedent_to_string(Varset, std(AnnotMProp)) = annot_vsmprop_to_string(vs(AnnotMProp, Varset)).
 rule_antecedent_to_string(Varset, test(MTest)) = "<" ++ mtest_to_string(Varset, MTest) ++ ">?".
 
+:- func rule_head_to_string(varset, rule_head(M)) = string <= (modality(M), stringable(M)).
+
+rule_head_to_string(Varset, std(MProp)) = mprop_to_string(Varset, MProp).
+rule_head_to_string(Varset, test(MTest)) = "<" ++ mtest_to_string(Varset, MTest) ++ ">?".
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 string_to_vsmrule(Str) = vs(R, Varset) :-
@@ -102,7 +107,7 @@ det_string_to_vsmrule(S) = R :-
 
 vsmrule_to_string(vs(m(K, As-H), Varset)) = Str :-
 	ModStr = modality_to_string(K),
-	RuleStr = vsmprop_to_string(vs(H, Varset)) ++ " <- "
+	RuleStr = rule_head_to_string(Varset, H) ++ " <- "
 			++ string.join_list(", ", list.map(rule_antecedent_to_string(Varset), As)),
 	(if ModStr = ""
 	then Rest = RuleStr
@@ -165,11 +170,17 @@ modality_to_string([H|T]) = string.join_list(":", list.map(to_string, [H|T])) ++
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_nonmod_rule(term.term::in, pair(list(rule_antecedent(M)), mprop(M))::out) is semidet
+:- pred term_to_nonmod_rule(term.term::in, pair(list(rule_antecedent(M)), rule_head(M))::out) is semidet
 		<= (modality(M), parsable(M)).
 
 term_to_nonmod_rule(functor(atom("<-"), [THead, TAnte], _), Ante-Head) :-
-	term_to_mprop(THead, Head),
+	(if term_to_mtest(THead, MTest)
+	then
+		Head = test(MTest)
+	else
+		term_to_mprop(THead, MProp),
+		Head = std(MProp)
+	),
 	term_to_list_of_rule_antecedents(TAnte, Ante).
 
 :- pred term_to_list_of_rule_antecedents(term.term::in, list(rule_antecedent(M))::out) is semidet
@@ -205,14 +216,9 @@ term_to_list_of_mprops(T, List) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_rule_antecedent(term.term::in, rule_antecedent(M)::out) is semidet
-		<= (modality(M), parsable(M)).
+:- pred term_to_mtest(term.term::in, mtest(M)::out) is semidet <= (modality(M), parsable(M)).
 
-term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _), std(cf(MP, f(FName)))) :-
-	term_to_mprop(T, MP).
-term_to_rule_antecedent(functor(atom("/"), [T, functor(float(Cost), [], _)], _), std(cf(MP, const(Cost)))) :-
-	term_to_mprop(T, MP).
-term_to_rule_antecedent(functor(atom("?"), [T], _), test(MTest)) :-
+term_to_mtest(functor(atom("?"), [T], _), MTest) :-
 	(if T = functor(atom("->"), [TMPs, THMP], _)
 	then
 		term_to_list_of_mprops(TMPs, MPs),
@@ -222,6 +228,19 @@ term_to_rule_antecedent(functor(atom("?"), [T], _), test(MTest)) :-
 		term_to_mprop(T, MProp),
 		MTest = prop(MProp)
 	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred term_to_rule_antecedent(term.term::in, rule_antecedent(M)::out) is semidet
+		<= (modality(M), parsable(M)).
+
+term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _), std(cf(MP, f(FName)))) :-
+	term_to_mprop(T, MP).
+term_to_rule_antecedent(functor(atom("/"), [T, functor(float(Cost), [], _)], _), std(cf(MP, const(Cost)))) :-
+	term_to_mprop(T, MP).
+term_to_rule_antecedent(T, test(MTest)) :-
+	T = functor(atom("?"), [_], _),
+	term_to_mtest(T, MTest).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
