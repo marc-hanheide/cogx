@@ -1,6 +1,6 @@
 %k(now, private(r)) : @(v1::thing, object) : y(com).
 %(now, attrib(r, h)) : @(v1::thing, object) : y(com).
-k(now, private(r)) : @(v1::thing, colour(c::colour ^ black)) : y(com).
-k(now, mutual(r, h)) : @(v1::thing, object) : y(com).
-k(now, private(r)) : @(v2::thing, colour(d::colour ^ red)) : n.
+k(now, private(r)) : @(v1::thing, r(colour, c::colour ^ p(black))) : y(com).
+k(now, mutual(r, h)) : @(v1::thing, p(object)) : y(com).
+k(now, private(r)) : @(v2::thing, r(colour, d::colour ^ p(red))) : n.
 
