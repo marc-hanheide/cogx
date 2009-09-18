@@ -6,19 +6,20 @@
 
 :- import_module formula, modality.
 :- import_module costs.
-
-%:- func apply_cost_function(d_ctx, string, vscope(mprop(M))) = float.
-%:- func apply_cost_function(ctx(M), cost_function, vscope(mprop(M))) = float <= modality(M).
+:- import_module list.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- typeclass context(C, M) <= modality(M) where [
-	pred fact(C, vscope(mprop(M))),
-	mode fact(in, out) is nondet,
 
-		% XXX find a better name
-	pred vrule(C, vscope(mrule(M))),
-	mode vrule(in, out) is nondet,
+	pred fact_found(C, vscope(mprop(M)), vscope(mprop(M))),
+	mode fact_found(in, in, out) is nondet,
+
+%	pred fact(C, vscope(mprop(M))),
+%	mode fact(in, out) is nondet,
+
+	pred rule_found(C, vscope(mrule(M))),
+	mode rule_found(in, out) is nondet,
 
 	pred assumable_func(C, cost_function_name, mgprop(M), float),
 	mode assumable_func(in, in, out, out) is nondet,
@@ -38,6 +39,9 @@
 
 :- pred effect(mgprop(M)) `with_type` context_change(C) <= (context(C, M), modality(M)).
 :- mode effect(in) `with_inst` context_change.
+
+:- type geffect(C, M) == pred(mgprop(M), C, C).
+:- inst geffect == (pred(in, in, out) is det).
 
 %------------------------------------------------------------------------------%
 

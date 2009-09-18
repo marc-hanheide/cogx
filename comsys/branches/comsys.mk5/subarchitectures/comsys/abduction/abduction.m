@@ -218,7 +218,7 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 		QsL ++ [proved(m(MQ, PQ))] ++ QsR, VS,
 		Ctx) :-
 
-	fact(Ctx, vs(m(MF, PF0), VSF)),
+	fact_found(Ctx, vs(m(MQ, PQ0), VS0), vs(m(MF, PF0), VSF)),
 	match(compose_list(MF), compose_list(MQ)),
 
 	varset.merge_renaming(VS0, VSF, VS, Renaming),
@@ -238,7 +238,7 @@ step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 		QsL ++ QsInsert ++ QsR, VS,
 		Ctx) :-
 
-	vrule(Ctx, Rule),
+	rule_found(Ctx, Rule),
 	Rule = vs(m(MR, _-RHead0), VSR),
 	( RHead0 = std(m(MH, _))
 	; RHead0 = test(prop(m(MH, _)))
