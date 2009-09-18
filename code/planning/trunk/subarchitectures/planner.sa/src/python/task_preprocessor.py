@@ -8,41 +8,12 @@ import standalone.state_new as state
 import binder.autogen
 import binder.autogen.featvalues as featvalues
 
-# Using string templates only until move to the proper ICE types
-MAPL_TASK_TMPL = """
-(define (problem cogxtask) (:domain cogx)
-(:objects
-%s
-)
-(:init
-%s
-)
-(:goal (and
-%s
-)))
-"""
-
 forbidden_letters = "-:"
 replace_chr = "_"
 trans_tbl = maketrans(forbidden_letters, replace_chr * len(forbidden_letters))
 
 # attention: current_domain is used as a global in this module
 current_domain = None
-
-def build_namedict(type_dict, tuples, known_constants):
-  namedict = {}
-  for obj in known_constants:
-    namedict[obj] = obj
-  for feature_label, union_name, val in tuples:
-    for bname in [union_name, val]:
-      if bname in namedict:
-        continue
-      thetype = type_dict[bname]
-      pname = "%s_%s" % (thetype, bname.translate(trans_tbl))
-      pname = pname.lower()
-      namedict[bname] = pname
-      namedict[pname] = bname  # for recovering the original name
-  return namedict
 
 def rename_objects(objects):
   namedict = {}
@@ -93,8 +64,6 @@ def gen_fact_tuples(unions):
     for feature in itertools.chain(union.features, add_features):
       # choose feature val with highest probability:
       max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
-      #valname = map_name(max_val.val)
-      #valname = max_val.val
       yield (feature.featlabel, object, feature_val_to_object(max_val))
 
 def filter_unknown_preds(fact_tuples):
@@ -106,14 +75,6 @@ def filter_unknown_preds(fact_tuples):
           % (map(str,ft), feature_label)
     else:
       yield ft
-
-def tuples2strings(fact_tuples, nd):
-  for feature_label, union_name, val in fact_tuples:
-    if feature_label in current_domain.functions:
-      yield "(= (%s %s) %s)" % (feature_label, nd[union_name], nd[val])
-    else:
-      assert feature_label in current_domain.predicates
-      yield "(%s %s %s)" % (feature_label, nd[union_name], nd[val])
 
 def tuples2facts(fact_tuples):
   for feature_label, union, val in fact_tuples:
@@ -158,7 +119,6 @@ def infer_types(obj_descriptions):
         #print "Inferring: %s is instance of %s because of use in %s" % (name, nametype, declaration)
         #print "Inferring: %s is instance of %s because of use in %s" % (val, valtype, declaration)
         
-  #type_dict = {}
   objects = set()
   for obj in constraints:
     if obj in (mapl.types.UNKNOWN, mapl.types.UNDEFINED) or obj in current_domain:
@@ -183,19 +143,19 @@ def infer_types(obj_descriptions):
       print "%s could be of types %s or %s" % (obj.name, type1, type2)
       assert False, "Multiple inheritance not supported yet"
     most_spec_type = sorted(types, cmp=type_cmp)[0]
-    #type_dict[obj] = most_spec_type
     obj.type = most_spec_type
     objects.add(obj)
-  #return type_dict
+
   return objects
 
 def generate_mapl_task(task_desc, domain_fn):
   global current_domain
   task = Task()
+  task.taskID = task_desc.id
+  
   task.load_mapl_domain(domain_fn)
   current_domain = task._mapldomain
   
-  #const_names = set(obj.name for obj in current_domain.constants)
   obj_descriptions = list(unify_objects(filter_unknown_preds(gen_fact_tuples(task_desc.state))))
   
   objects = infer_types(obj_descriptions)
@@ -210,13 +170,6 @@ def generate_mapl_task(task_desc, domain_fn):
   task._mapltask = problem
   task.set_state(state.State(facts, problem))
   
-  #current_domain.namedict = build_namedict(type_dict, obj_descriptions, const_names)
-  #nd = current_domain.namedict
-  #obj_declarations = "\n".join("%s - %s" % (nd[obj], type_dict[obj]) for obj in type_dict if obj not in const_names)
-  #facts = "\n".join(tuples2strings(obj_descriptions, nd))
-  #problem_str = MAPL_TASK_TMPL % (obj_declarations, facts, task_desc.goal)
-  #print problem_str
-  #task.parse_mapl_problem(problem_str)
   return task  
 
 def generate_mapl_state(task_desc, task):
@@ -229,15 +182,8 @@ def generate_mapl_state(task_desc, task):
   task.namedict = rename_objects(objects)
 
   facts = list(tuples2facts(obj_descriptions))
-#   const_names = set(obj.name for obj in current_domain.constants)
-#   obj_descriptions = list(filter_unknown_preds(gen_fact_tuples(task_desc.state)))
-#   type_dict = infer_types(obj_descriptions)
-#   current_domain.namedict = build_namedict(type_dict, obj_descriptions, const_names)
-#   nd = current_domain.namedict
-
-#   objects = build_objectdict(nd, type_dict)
-#   facts = tuples2facts(obj_descriptions, objects)
   return objects, facts
+
 
 def map2binder_rep(plan, task):
   assert task.namedict, "task has no namedict"

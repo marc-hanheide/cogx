@@ -65,7 +65,6 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     import task_preprocessor
     task = task_preprocessor.generate_mapl_task(task_desc, TEST_DOMAIN_FN)
     self.tasks[task_desc.id] = task
-    task.taskID = task_desc.id
     task.set_plan_callback(lambda task: self.getPlan(task))
 
     self.planner.register_task(task)

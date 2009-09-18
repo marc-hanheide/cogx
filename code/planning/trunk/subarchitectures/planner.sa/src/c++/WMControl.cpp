@@ -118,17 +118,16 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 
     assert(activeTasks.find(action->taskID) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[action->taskID].address);
-//     println(action->fullName);
-//     println("status: %d", action->status);
 
-//     println("---");
+    assert(task->plan.size() > 0);
+    task->plan[0]->status = action->status;
 
-//     ActionSeq::iterator it = task->plan.begin();
-//     while (it != task->plan.end()) {
-//         println((*it)->fullName);
-//         println("status: %d", (*it)->status);
-//         ++it;
-//     }
+    for(ActionSeq::iterator it = task->plan.begin(); it != task->plan.end(); ++it) {
+        if ((*it)->name == action->name) {
+            (*it)->status = action->status;
+            break;
+        }
+    }
     
     if (action->status == ABORTED || action->status == FAILED) {
         task->status = action->status;
@@ -219,6 +218,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
         overwriteWorkingMemory(activeTasks[id].address, task);
     }
     else {
+        log("Task %d succeeded.", task->id);
         task->status = SUCCEEDED;
         overwriteWorkingMemory(activeTasks[id].address, task);
         activeTasks.erase(id);
