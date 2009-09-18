@@ -77,7 +77,7 @@ test_vsmprop_to_string(vs(MP, Varset)) = "?" ++ vsmprop_to_string(vs(MP, Varset)
 :- func rule_antecedent_to_string(varset, rule_antecedent(M)) = string <= (modality(M), stringable(M)).
 
 rule_antecedent_to_string(Varset, std(AnnotMProp)) = annot_vsmprop_to_string(vs(AnnotMProp, Varset)).
-rule_antecedent_to_string(Varset, test(MProp)) = "<" ++ vsmprop_to_string(vs(MProp, Varset)) ++ ">?".
+rule_antecedent_to_string(Varset, test_fact(MProp)) = "<" ++ vsmprop_to_string(vs(MProp, Varset)) ++ ">?".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -188,7 +188,7 @@ term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _),
 	term_to_mprop(T, MP).
 term_to_rule_antecedent(functor(atom("/"), [T, functor(float(Cost), [], _)], _), std(cf(MP, const(Cost)))) :-
 	term_to_mprop(T, MP).
-term_to_rule_antecedent(functor(atom("?"), [MPropTerm], _), test(MProp)) :-
+term_to_rule_antecedent(functor(atom("?"), [MPropTerm], _), test_fact(MProp)) :-
 	term_to_mprop(MPropTerm, MProp).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
