@@ -49,7 +49,7 @@ ground_atomic_formula_to_lf(p(PredSym, Args)) = ground_term_to_lf(t(PredSym, Arg
 det_ground_atomic_formula_to_lf(GF) = LF :-
 	(if ground_atomic_formula_to_lf(GF) = LF0
 	then LF = LF0
-	else error("error in det_ground_atomic_formula_to_lf/1")
+	else error("error in det_ground_atomic_formula_to_lf/1: " ++ string(GF))
 	).
 
 %------------------------------------------------------------------------------%
