@@ -92,18 +92,25 @@ cost(Ctx, Proof, CostForUsingFacts) = Cost :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- pred goal_solved(list(marked(mprop(M)))::in) is semidet <= modality(M).
+
+goal_solved(L) :-
+	list.all_true((pred(_-Marking::in) is semidet :-
+		Marking \= unsolved(_)
+			), L).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 prove(P0, P, Ctx) :-
 	P0 = proof(vs([L0|Ls], VS0), Ss0),
-
 	(if
-		%QUnsolved = [A-unsolved(F)|Qs]
-		transform(Step, L0, VS0, L, VS, Ctx)
+		goal_solved(L0)
 	then
+		P = P0
+	else
+		transform(Step, L0, VS0, L, VS, Ctx),
 		P1 = proof(vs([L, L0|Ls], VS), [Step|Ss0]),
 		prove(P1, P, Ctx)
-	else
-		% proof finished
-		P = P0
 	).
 
 %------------------------------------------------------------------------------%
