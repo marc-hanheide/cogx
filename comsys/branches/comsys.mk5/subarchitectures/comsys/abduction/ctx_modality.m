@@ -33,6 +33,7 @@
 	;	e(stf)
 	;	i
 	;	k(stf, belief)
+	;	t(stf, belief)
 	.
 
 :- instance modality(ctx_modality).
@@ -59,11 +60,19 @@
 
 ctx_modality_axiom = any.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+is_ctx_modality(_).
+
+%------------------------------------------------------------------------------%
+
+:- func stf_compose(stf::in, stf::in) = (stf::out) is semidet.
+
+stf_compose(now, now) = now.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- func ctx_modality_compose(ctx_modality::in, ctx_modality::in) = (ctx_modality::out) is semidet.
 
 ctx_modality_compose(_, _) = _ :-
 	fail.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-is_ctx_modality(_).

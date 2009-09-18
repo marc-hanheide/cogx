@@ -105,6 +105,18 @@ ctx_modality_from_term(functor(atom("k"), [
 		BeliefTerm
 	], _)) = k(term_to_stf(STFTerm), term_to_belief(BeliefTerm)).
 
+	% tasks
+ctx_modality_to_string(t(now, private(A))) = "t(now," ++ agent_to_string(A) ++ ")".
+ctx_modality_to_string(t(now, attrib(A, B))) = "t(now,[" ++ agent_to_string(A) ++ "]"
+		++ agent_to_string(B) ++ ")".
+ctx_modality_to_string(t(now, mutual(AgS))) = "t(now,{" ++ AgSStr ++ "})" :-
+	AgSStr = string.join_list(",", list.map(agent_to_string, set.to_sorted_list(AgS))).
+
+ctx_modality_from_term(functor(atom("t"), [
+		STFTerm,
+		BeliefTerm
+	], _)) = t(term_to_stf(STFTerm), term_to_belief(BeliefTerm)).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func term_to_belief(term.term::in) = (belief::out) is semidet.
