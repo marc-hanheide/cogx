@@ -15,7 +15,8 @@
 
 :- type ctx
 	--->	ctx(
-		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
+		ctx_expl_rules :: set(vscope(mrule(ctx_modality))),  % explicit rules
+		ctx_expl_facts :: set(mgprop(ctx_modality)),  % explicit rules
 		bm :: belief_model(string, string, string),
 		rrel :: unit,
 		ont :: ctx_ontology
@@ -26,12 +27,15 @@
 
 :- type assumable_function_def(M) == pair(cost_function_name, map(mgprop(M), float)).
 
-:- pred add_rule(vscope(mrule(ctx_modality))::in, ctx::in, ctx::out) is det.
+:- pred add_explicit_rule(vscope(mrule(ctx_modality))::in, ctx::in, ctx::out) is det.
+:- pred set_explicit_rules(set(vscope(mrule(ctx_modality)))::in, ctx::in, ctx::out) is det.
 
-:- pred set_rules(set(vscope(mrule(ctx_modality)))::in, ctx::in, ctx::out) is det.
+:- pred add_explicit_fact(mgprop(ctx_modality)::in, ctx::in, ctx::out) is det.
+:- pred set_explicit_facts(set(mgprop(ctx_modality))::in, ctx::in, ctx::out) is det.
 
 	% for debugging purposes only!
-:- func rules(ctx) = set(vscope(mrule(ctx_modality))).
+:- func explicit_rules(ctx) = set(vscope(mrule(ctx_modality))).
+:- func explicit_facts(ctx) = set(mgprop(ctx_modality)).
 
 %------------------------------------------------------------------------------%
 
@@ -53,22 +57,30 @@
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
 
-new_ctx = ctx(set.init, belief_model.init, unit, ctx_ontology.init).
+new_ctx = ctx(set.init, set.init, belief_model.init, unit, ctx_ontology.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-add_rule(Rule, Ctx0, Ctx) :-
-	Rules = Ctx0^ctx_rules,
-	Ctx = Ctx0^ctx_rules := set.insert(Rules, Rule).
+add_explicit_rule(Rule, Ctx0, Ctx) :-
+	Rules = Ctx0^ctx_expl_rules,
+	Ctx = Ctx0^ctx_expl_rules := set.insert(Rules, Rule).
+
+set_explicit_rules(Rules, Ctx0, Ctx) :-
+	Ctx = Ctx0^ctx_expl_rules := Rules.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-set_rules(Rules, Ctx0, Ctx) :-
-	Ctx = Ctx0^ctx_rules := Rules.
+add_explicit_fact(Fact, Ctx0, Ctx) :-
+	Facts = Ctx0^ctx_expl_facts,
+	Ctx = Ctx0^ctx_expl_facts := set.insert(Facts, Fact).
+
+set_explicit_facts(Facts, Ctx0, Ctx) :-
+	Ctx = Ctx0^ctx_expl_facts := Facts.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-rules(Ctx) = Ctx^ctx_rules.
+explicit_rules(Ctx) = Ctx^ctx_expl_rules.
+explicit_facts(Ctx) = Ctx^ctx_expl_facts.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -81,7 +93,7 @@ ctx_min_assumption_cost(_, _) = 0.1.
 :- pred ctx_rule(ctx::in, vscope(mrule(ctx_modality))::out) is nondet.
 
 ctx_rule(Ctx, Rule) :-
-	set.member(Rule, Ctx^ctx_rules).
+	set.member(Rule, Ctx^ctx_expl_rules).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -119,6 +131,3 @@ ctx_assumable_func(Ctx, _, m(Mod, GProp), Cost) :-
 	Dist = min_dist_from_set(Ctx^ont, AM, fg_anchors(Ctx^bm), WName),
 	Cost = 0.5 + float(Dist),
 	GProp = p("it", [t(WName, [])]).
-
-%ctx_assumable_func(_Ctx, _FuncName, _GProp, _Cost) :-
-%	fail.

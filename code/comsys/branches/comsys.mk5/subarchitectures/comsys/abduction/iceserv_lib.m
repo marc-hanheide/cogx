@@ -31,7 +31,7 @@ srv_init_ctx = new_ctx.
 :- pragma foreign_export("C", srv_clear_rules(in, out), "clear_rules").
 
 srv_clear_rules(!Ctx) :-
-	set_rules(set.init, !Ctx).
+	set_explicit_rules(set.init, !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -47,7 +47,7 @@ srv_load_rules_from_file(Filename, !Ctx, !IO) :-
 			ReadResult = term(VS, Term),
 			generic_term(Term),
 			(if term_to_mrule(Term, MRule)
-			then add_rule(vs(MRule, VS), !Ctx), Continue = yes
+			then add_explicit_rule(vs(MRule, VS), !Ctx), Continue = yes
 			else
 				context(_, Line) = get_term_context(Term),
 				error("Syntax error in rule file " ++ Filename

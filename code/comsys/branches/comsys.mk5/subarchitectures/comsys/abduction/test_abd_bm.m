@@ -43,7 +43,7 @@ main(!IO) :-
 					ReadResult = term(VS, Term),
 					generic_term(Term),
 					(if term_to_mrule(Term, MRule)
-					then add_rule(vs(MRule, VS), !Ctx), Continue = yes
+					then add_explicit_rule(vs(MRule, VS), !Ctx), Continue = yes
 					else
 						context(_, Line) = get_term_context(Term),
 						error("Syntax error in rule file " ++ RulesFile
@@ -278,13 +278,24 @@ print_ctx(Ctx, !IO) :-
 	nl(!IO),
 */
 
-	print("rules:\n", !IO),
+	print("explicit facts:\n", !IO),
+	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
+			% XXX global context
+		print("  ", !IO),
+		Fact = m(Mod, GProp),
+		print(mprop_to_string(varset.init, m(Mod, ground_formula_to_formula(GProp))), !IO),
+		nl(!IO)
+			), explicit_facts(Ctx), !IO),
+
+	nl(!IO),
+
+	print("explicit rules:\n", !IO),
 	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
 			% XXX global context
 		print("  ", !IO),
 		print(vsmrule_to_string(Rule), !IO),
 		nl(!IO)
-			), rules(Ctx), !IO).
+			), explicit_rules(Ctx), !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
