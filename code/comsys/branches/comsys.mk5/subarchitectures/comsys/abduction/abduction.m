@@ -115,7 +115,7 @@ prove(P0, P, Ctx) :-
 			)
 				), L0),
 		all_true((pred(MProp-_Marking::in) is semidet :-
-			formula.is_ground(MProp^p)
+			ground_formula(MProp^p, _)
 				), LAss),
 		P = P0
 	else

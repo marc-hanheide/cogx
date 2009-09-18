@@ -12,8 +12,14 @@
 
 :- type atomic_formula
 	--->	p(
-		string,  % predicate_symbol
+		string,  % predicate symbol
 		list(formula.term)
+	).
+
+:- type ground_atomic_formula
+	--->	p(
+		string,  % predicate symbol
+		list(ground_term)
 	).
 
 	% prolog term <--> formula.atomic_formula
@@ -26,6 +32,10 @@
 :- type term
 	--->	v(var)
 	;	t(string, list(formula.term))
+	.
+
+:- type ground_term
+	---> 	t(string, list(ground_term))
 	.
 
 	% prolog term <--> formula.term
@@ -77,7 +87,7 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred is_ground(atomic_formula::in) is semidet.
+:- pred ground_formula(atomic_formula::in, ground_atomic_formula::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -169,10 +179,10 @@ unify_formulas(A, B, U) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_ground(formula.term::in) is semidet.
+:- pred ground_term(formula.term::in, ground_term::out) is semidet.
 
-term_ground(t(_, Terms)) :-
-	list.all_true(term_ground, Terms).
+ground_term(t(Functor, Terms), t(Functor, GroundTerms)) :-
+	list.map(ground_term, Terms, GroundTerms).
 
-is_ground(p(_, Args)) :-
-	list.all_true(term_ground, Args).
+ground_formula(p(PredSym, Args), p(PredSym, GroundArgs)) :-
+	list.map(ground_term, Args, GroundArgs).
