@@ -8,11 +8,15 @@
 :- func ground_term_to_id(ground_term::in) = (id(string, string)::out) is semidet.
 :- func ground_term_to_lf(ground_term::in) = (lf::out) is semidet.
 
+:- func ground_atomic_formula_to_lf(ground_atomic_formula::in) = (lf::out) is semidet.
+:- func det_ground_atomic_formula_to_lf(ground_atomic_formula) = lf.
+
 :- func lf_to_string(lf) = string.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
+:- import_module require.
 :- import_module list.
 
 %------------------------------------------------------------------------------%
@@ -34,6 +38,16 @@ ground_term_to_lf(t(Prop, [])) = p(Prop).
 ground_term_to_lf(t("^", [LFA, LFB])) = and(ground_term_to_lf(LFA), ground_term_to_lf(LFB)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+ground_atomic_formula_to_lf(p("@", Args)) = ground_term_to_lf(t("@", Args)).
+
+det_ground_atomic_formula_to_lf(GF) = LF :-
+	(if ground_atomic_formula_to_lf(GF) = LF0
+	then LF = LF0
+	else error("error in det_ground_atomic_formula_to_lf/1")
+	).
+
+%------------------------------------------------------------------------------%
 
 :- func id_to_string(id(string, string)) = string.
 
