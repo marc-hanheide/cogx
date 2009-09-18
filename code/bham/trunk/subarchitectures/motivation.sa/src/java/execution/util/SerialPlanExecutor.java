@@ -102,7 +102,7 @@ public class SerialPlanExecutor extends Thread {
 
 		if (m_task.firstActionID == null || m_task.firstActionID.isEmpty()) {
 			m_component.println("plan was empty, completing");
-			planComplete();
+			planComplete(ExecutionState.COMPLETED);
 			return;
 		}
 
@@ -153,7 +153,12 @@ public class SerialPlanExecutor extends Thread {
 			@Override
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
-				m_component.log("action changed");
+				if(_wmc.src.equals(m_component.getComponentID())) {
+				m_component.log("action changed by me");
+				}
+				else {
+					m_component.log("action changed by " + _wmc.src);
+				}
 			}
 		};
 
@@ -167,13 +172,20 @@ public class SerialPlanExecutor extends Thread {
 			throws SubarchitectureComponentException {
 		// if plan succeeded then we're done
 		m_component.log("plan changed");
+		
+		//execution deemed complete by the planner
 		if (_planningTask.status == Completion.SUCCEEDED) {
-
-			planComplete();
 			stopExecution();
-
+			planComplete(ExecutionState.COMPLETED);
 			m_component.log("and read that plan complete");
 		}
+		//execution deemed complete by the planner
+		else if (_planningTask.planningStatus == Completion.FAILED) {
+			stopExecution();
+			planComplete(ExecutionState.HALTED);
+			m_component.log("and read that replanning has failed");
+		}
+
 	}
 
 	public void startExecution() {
@@ -254,11 +266,11 @@ public class SerialPlanExecutor extends Thread {
 	 * 
 	 * @throws SubarchitectureComponentException
 	 */
-	private void planComplete() throws SubarchitectureComponentException {
+	private void planComplete(ExecutionState _state) throws SubarchitectureComponentException {
 
 		cleanup();
 
-		m_exeState = ExecutionState.COMPLETED;
+		m_exeState = _state;
 		m_component.log("plan complete");
 		m_component.deleteFromWorkingMemory(m_planProxyAddress);
 		m_component.log("plan deleted proxy");
