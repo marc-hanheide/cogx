@@ -10,13 +10,11 @@
 	;	i(Index)
 	.
 
-:- type world_model(Index, Sort, Rel)
-	--->	wm(
-		names :: map(Index, Sort),  % sort
-		reach :: set({Rel, world_id(Index), world_id(Index)}),  % reachability
-		props :: map(world_id(Index), set(proposition)),  % valid propositions
-		next_unnamed :: int  % lowest unused index for unnamed worlds
-	).
+:- type world_model(Index, Sort, Rel).
+
+:- func names(world_model(Index, Sort, Rel)) = map(Index, Sort).
+:- func reach(world_model(Index, Sort, Rel)) = set({Rel, world_id(Index), world_id(Index)}).
+:- func props(world_model(Index, Sort, Rel)) = map(world_id(Index), set(proposition)).
 
 :- type world_model == world_model(string, string, string).
 
@@ -59,6 +57,18 @@
 :- implementation.
 :- import_module solutions, require.
 :- import_module list.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+	
+:- type world_model(Index, Sort, Rel)
+	--->	wm(
+		names :: map(Index, Sort),  % sort
+		reach :: set({Rel, world_id(Index), world_id(Index)}),  % reachability
+		props :: map(world_id(Index), set(proposition)),  % valid propositions
+		next_unnamed :: int  % lowest unused index for unnamed worlds
+	).
+
+%------------------------------------------------------------------------------%
 
 init = wm(map.init, set.init, map.init, 0).
 
