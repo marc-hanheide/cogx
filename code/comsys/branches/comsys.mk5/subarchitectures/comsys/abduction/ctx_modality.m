@@ -1,6 +1,6 @@
 % $Id: context.m 1266 2009-07-13 01:58:02Z janicek $
 
-:- module ctx.
+:- module ctx_modality.
 
 :- interface.
 
