@@ -48,7 +48,10 @@ compile: $(MBIN) $(COMBBIN)
 	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
 
 Abducer.h Abducer.cc: Abducer.ice
-	slice2cpp --source-ext cc Abducer.ice
+	slice2cpp -I . --source-ext cc Abducer.ice
+
+BeliefModels.h BeliefModels.cc: BeliefModels.ice
+	slice2cpp -I . --source-ext cc BeliefModels.ice
 
 $(MBIN): $(MFILES) aserv.o
 	mmc --make \
@@ -56,12 +59,13 @@ $(MBIN): $(MFILES) aserv.o
 		$(MCFLAGS) \
 		$@
 
-iceserv: $(MFILES) iceserv_lib.mh aserv.o Abducer.o
+iceserv: $(MFILES) iceserv_lib.mh aserv.o Abducer.o BeliefModels.o
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-shared-lib-command=$(CXX) \
 		--link-object aserv.o \
 		--link-object Abducer.o \
+		--link-object BeliefModels.o \
 		--grade $(GRADE) \
 		$(MCFLAGS) \
 		$(LDFLAGS) \
@@ -75,4 +79,6 @@ clean:
 	rm -rf $(BIN) Mercury \
 		$(addsuffix .err, $(basename $(MFILES))) \
 		$(addsuffix .mh, $(basename $(MFILES))) \
-		aserv aserv.o Abducer.o Abducer.cc Abducer.h
+		aserv aserv.o \
+		Abducer.o Abducer.cc Abducer.h \
+		BeliefModels.o BeliefModels.cc BeliefModels.h

@@ -1,3 +1,8 @@
+#ifndef ABDUCER_ICE
+#define ABDUCER_ICE
+
+#include <BeliefModels.ice>
+
 module autogen {
 
 	module Abducer {
@@ -35,11 +40,10 @@ module autogen {
 		};
 
 		interface AbducerServer {
-			void clearFacts();
-			void clearRules();
+			void synchronise(beliefmodels::adl::BeliefModel m);
 
-			void addFact(ModalisedFormula fact);
-			void addRule(ModalisedFormula rule);
+			void clearRules();
+			void loadRulesFromFile(string filename);
 
 			ProofResult proveGoal(goalSeq g);
 			AbductiveProof getBestProof();
@@ -47,3 +51,5 @@ module autogen {
 
 	};
 };
+
+#endif

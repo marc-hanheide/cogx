@@ -3,6 +3,7 @@
 
 #include <Ice/Ice.h>
 #include <Abducer.h>
+#include <BeliefModels.h>
 #include <aserv.h>
 
 using namespace std;
@@ -14,10 +15,9 @@ typedef MR_Word MercAbdCtx;
 class AbducerServerI : public AbducerServer {
 public:
 	AbducerServerI();
-	virtual void clearFacts(const Ice::Current&);
+	virtual void synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&);
 	virtual void clearRules(const Ice::Current&);
-	virtual void addFact(const ModalisedFormulaPtr& fact, const Ice::Current&);
-	virtual void addRule(const ModalisedFormulaPtr& rule, const Ice::Current&);
+	virtual void loadRulesFromFile(const std::string& filename, const Ice::Current&);
 	virtual ProofResult proveGoal(const goalSeq& g, const Ice::Current&);
 	virtual AbductiveProofPtr getBestProof(const Ice::Current&);
 private:
@@ -35,6 +35,7 @@ AbducerServerI::AbducerServerI()
 	haveProof = false;
 }
 
+/*
 void
 AbducerServerI::clearFacts(const Ice::Current&)
 {
@@ -43,6 +44,13 @@ AbducerServerI::clearFacts(const Ice::Current&)
 	MercAbdCtx newCtx;
 	clear_facts(ctx, &newCtx);  // det
 	ctx = newCtx;
+}
+*/
+
+void
+AbducerServerI::synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&)
+{
+	cerr << "syncing" << endl;
 }
 
 void
@@ -56,47 +64,15 @@ AbducerServerI::clearRules(const Ice::Current&)
 }
 
 void
-AbducerServerI::addFact(const ModalisedFormulaPtr& fact,const Ice::Current&)
+AbducerServerI::loadRulesFromFile(const string& filename,const Ice::Current&)
 {
-	cerr << "adding fact: " << fact->termString << endl;
+	cerr << "adding rules from: " << filename << endl;
 
-	MercAbdCtx newCtx;
-	char * s = new char[fact->termString.length() + 1];
-	copy(fact->termString.begin(), fact->termString.end(), s);
-	s[fact->termString.length()] = '\0';
+	char * s = new char[filename.length() + 1];
+	copy(filename.begin(), filename.end(), s);
+	s[filename.length()] = '\0';
 
-	if (add_fact(s, ctx, &newCtx)) {
-		// succeeded
-		cerr << "succeeded" << endl;
-		ctx = newCtx;
-	}
-	else {
-		// failed
-		cerr << "failed!" << endl;
-	}
-
-	delete s;
-}
-
-void
-AbducerServerI::addRule(const ModalisedFormulaPtr& rule,const Ice::Current&)
-{
-	cerr << "adding rule: " << rule->termString << endl;
-
-	MercAbdCtx newCtx;
-	char * s = new char[rule->termString.length() + 1];
-	copy(rule->termString.begin(), rule->termString.end(), s);
-	s[rule->termString.length()] = '\0';
-
-	if (add_rule(s, ctx, &newCtx)) {
-		// succeeded
-		cerr << "succeeded" << endl;
-		ctx = newCtx;
-	}
-	else {
-		// failed
-		cerr << "failed!" << endl;
-	}
+	load_rules_from_file(s, ctx, &ctx);
 
 	delete s;
 }
