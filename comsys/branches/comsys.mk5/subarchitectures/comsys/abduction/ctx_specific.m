@@ -92,11 +92,25 @@ ctx_fact(Ctx, vs(m(Mod, Prop), VS), vs(m(Mod, Prop), VS)) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- import_module ling.
+:- import_module io, string, world_model_io.
+
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
-ctx_assumable_func(_Ctx, _, m(Mod, GProp), 0.5) :-
+ctx_assumable_func(Ctx, _, m(Mod, GProp), Cost) :-
 	Mod = [a(com)],
-	GProp = p("it", [t("v1", [])]).
+	att_model(Ctx^bm, AM),
+	map.member(AM^worlds, WName, Sort),
+	(
+		map.search(AM^props, i(WName), Props),
+		set.member(Prop, Props),
+		noun_gender(Prop, neut)
+	;
+		noun_gender(Sort, neut)
+	),
+	Dist = min_dist_from_set(AM, fg_anchors(Ctx^bm), WName),
+	Cost = 0.5 + float(Dist),
+	GProp = p("it", [t(WName, [])]).
 
 %ctx_assumable_func(_Ctx, _FuncName, _GProp, _Cost) :-
 %	fail.
