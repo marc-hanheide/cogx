@@ -15,15 +15,20 @@
 :- import_module world_model.
 
 main(!IO) :-
-	test_lf( r("colour", p("red")), !IO),
-	test_lf( r("colour", i(of_sort("v", "thing"))), !IO),
-	test_lf( r("colour", and(r("tint", p("weird")), p("red"))), !IO),
-	test_lf( at(of_sort("v1", "object"), i(of_sort("v1", "object"))), !IO),
-	test_lf( at(of_sort("v1", "object"), i(of_sort("v2", "object"))), !IO),
+	test_lf( r("colour", p("red")), world_model.init, _, !IO),
+	test_lf( r("colour", i(of_sort("v", "thing"))), world_model.init, _, !IO),
+	test_lf( r("colour", and(r("tint", p("weird")), p("red"))), world_model.init, _, !IO),
+	test_lf( at(of_sort("v1", "object"), i(of_sort("v1", "object"))), world_model.init, _, !IO),
+	test_lf( at(of_sort("v1", "object"), i(of_sort("v2", "object"))), world_model.init, _, !IO),
 
-	test_lf( at(of_sort("v1", "object"), p("box")), !IO),
+	test_lf( at(of_sort("v1", "object"), p("box")), world_model.init, _, !IO),
 
-	test_lf( at(of_sort("v1", "object"), and(p("box"), r("colour", and(i(of_sort("c", "colour")), p("something"))))), !IO).
+	test_lf( at(of_sort("v1", "object"), and(p("box"), r("colour", and(i(of_sort("c", "colour")), p("something"))))), world_model.init, _, !IO),
+
+	test_lf( r("colour", and(r("tint", p("weird")), p("red"))), world_model.init, WM1, !IO),
+	test_lf( r("colour", i(of_sort("c", "colour"))), WM1, WM2, !IO),
+	test_lf( r("colour", i(of_sort("d", "colour"))), WM2, WM3, !IO),
+	test_lf( at(of_sort("c", "colour"), r("tint", i(of_sort("t", "tint")))), WM3, WM4, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -33,13 +38,13 @@ std_lf(_).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred test_lf(lf::in, io::di, io::uo) is det.
+:- pred test_lf(lf::in, world_model::in, world_model::out, io::di, io::uo) is det.
 
-test_lf(LF, !IO) :-
+test_lf(LF, !WM, !IO) :-
 	print(lf_to_string(LF), !IO),
 	nl(!IO),
 	nl(!IO),
-	test_add_lf(LF, world_model.init, _WM, !IO),
+	test_add_lf(LF, !WM, !IO),
 	print("--------------------------------------------------------------\n", !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

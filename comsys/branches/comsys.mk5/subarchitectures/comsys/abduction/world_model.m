@@ -24,6 +24,15 @@
 
 :- pred add_lf(lf::in, world_model::in, world_model::out) is semidet.
 
+	% Simplified model is a model for which it holds that for every reachability
+	% relation R and worlds w1, w2, w3, it is true that
+	%
+	%   (w1, w2) \in R & (w1, w3) \in R -> w2 = w3
+	%
+	% i.e. every reachability relation is a (partial) function W -> W
+	% rather than W -> pow(W)
+:- func simplify(world_model::in) = (world_model::out) is semidet.
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -120,3 +129,8 @@ add_lf0(Cur, Cur, p(Prop), WM0, WM) :-
 add_lf0(Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 	add_lf0(Cur0, Cur1, LF1, WM0, WM1),
 	add_lf0(Cur1, Cur, LF2, WM1, WM).
+
+%------------------------------------------------------------------------------%
+
+simplify(WM) = SWM :-
+	SWM = WM.
