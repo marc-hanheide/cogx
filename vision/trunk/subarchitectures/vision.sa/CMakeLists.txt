@@ -13,6 +13,7 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/components)
 include_directories(${COGX_ROOT}/tools/hardware/stereo/src/c++/autogen)
 
+
 # auto generated code
 include_directories(src/c++/vision/autogen)
 
@@ -59,4 +60,33 @@ add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 add_subdirectory (src/python/ObjectRecognizer)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
+option(BUILD_VISUAL_LEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
+option(BUILD_VISUAL_LEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF from SVN" NO)
+mark_as_advanced(BUILD_VISUAL_LEARNER_CTF)
+if (BUILD_VISUAL_LEARNER)
+   if (BUILD_VISUAL_LEARNER_CTF)
+      add_subdirectory(src/matlab)
+   else (BUILD_VISUAL_LEARNER_CTF)
+      add_subdirectory(prebuilt/VisualLearner)   
+   endif (BUILD_VISUAL_LEARNER_CTF)
 
+
+   find_file( # TODO: Why is FIND_LIBRARY (FeatureLearningProxy) not working????
+      VISUAL_LEARNER_MATLAB_PROXY
+       NAMES libVisualLearnerProxy.so
+      PATHS ${OUTPUT}  ${OUTPUT}/lib
+      NO_DEFAULT_PATH
+      DOC "Matlab Library required for VisualLearner"
+   )
+   if (VISUAL_LEARNER_MATLAB_PROXY)
+      add_subdirectory(src/c++/vision/components/VisualLearner)
+   else(VISUAL_LEARNER_MATLAB_PROXY)
+      message(
+         "VisualLearnerProxy library not installed, yet.\n"
+         "   Run 'make install' to generate and install it.\n"
+         "   Then run 'ccmake' again.\n"
+         "   (For now, VisualLearner won't be built)\n"
+         "   (see also: BUILD_VISUAL_LEARNER_CTF)"
+      )
+      endif (VISUAL_LEARNER_MATLAB_PROXY)
+endif (BUILD_VISUAL_LEARNER)
