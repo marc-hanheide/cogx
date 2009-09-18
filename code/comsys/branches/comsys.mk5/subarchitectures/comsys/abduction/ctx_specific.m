@@ -8,9 +8,8 @@
 :- import_module ctx_modality.
 :- import_module costs.
 
-:- import_module belief_model, world_model.
-:- import_module abduction, modality.
-:- import_module ctx_ontology, enumerable.
+:- import_module belief_model.
+:- import_module ctx_ontology.
 
 :- import_module unit.
 
@@ -41,6 +40,8 @@
 :- import_module require.
 :- import_module list, pair, map, float.
 :- import_module costs, varset, lf, lf_io, ontology.
+:- import_module world_model.
+:- import_module modality, enumerable.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

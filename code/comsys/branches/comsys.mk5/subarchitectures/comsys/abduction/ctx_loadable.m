@@ -8,8 +8,6 @@
 :- import_module ctx_modality.
 :- import_module costs.
 
-:- import_module abduction, modality.
-
 :- type ctx.
 :- instance context(ctx, ctx_modality).
 
