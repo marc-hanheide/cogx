@@ -81,10 +81,10 @@ public class cc_ContinualCollabActing extends ManagedComponent {
             if (abducer == null)
             	throw new Error("Invalid proxy"); 
 
-            abducer.clearExplicitFacts();
-            abducer.loadExplicitFactsFromFile(factsFilename);
-            abducer.clearExplicitRules();
-            abducer.loadExplicitRulesFromFile(rulesFilename);
+            abducer.clearFacts();
+            abducer.loadFactsFromFile(factsFilename);
+            abducer.clearRules();
+            abducer.loadRulesFromFile(rulesFilename);
         }
         catch (Ice.LocalException e) { 
             e.printStackTrace(); 
@@ -262,7 +262,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
 //           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
             	
-            	ProofResult result = abducer.proveGoal(goals);
+            	ProofResult result = abducer.prove(goals);
 //            	ProofResult result = abducer.proveGoal("e(now) : uttered(h, " + LFUtils.lfToMercString(slf.lf) + ").");
             	if (result == Abducer.ProofResult.SUCCESS) {
             		AbductiveProof p = abducer.getBestProof();
