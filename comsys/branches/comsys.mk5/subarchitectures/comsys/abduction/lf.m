@@ -4,15 +4,7 @@
 
 :- interface.
 
-:- import_module string.
-
-:- typeclass ontological_sort(T) where [
-
-		% subsumes(A, B)
-		% True iff A < B.
-	pred subsumes(T, T),
-	mode subsumes(in, in) is semidet
-].
+:- import_module string, ontology.
 
 :- type proposition == string.
 
@@ -29,16 +21,16 @@
 
 :- type lf == lf(string, string, string).
 
-:- instance ontological_sort(string).
+:- instance isa_ontology(string).
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
 
-:- instance ontological_sort(string) where [
-	pred(subsumes/2) is string_subsumes
+:- instance isa_ontology(string) where [
+	pred(isa/2) is string_isa
 ].
 
-:- pred string_subsumes(string::in, string::in) is semidet.
+:- pred string_isa(string::in, string::in) is semidet.
 
-string_subsumes(S, S).
+string_isa(S, S).
