@@ -23,6 +23,7 @@
 
 :- instance modality(ctx_modality).
 :- instance stringable(ctx_modality).
+:- instance parsable(ctx_modality).
 
 :- pred is_ctx_modality(ctx_modality::in) is det.
 
@@ -54,7 +55,10 @@ ctx_modality_compose(_, _) = _ :-
 %------------------------------------------------------------------------------%
 
 :- instance stringable(ctx_modality) where [
-	func(to_string/1) is ctx_modality_to_string,
+	func(to_string/1) is ctx_modality_to_string
+].
+
+:- instance parsable(ctx_modality) where [
 	func(from_string/1) is ctx_modality_from_string
 ].
 

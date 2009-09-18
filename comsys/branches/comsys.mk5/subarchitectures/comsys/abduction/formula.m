@@ -51,12 +51,15 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred string_as_vsmprop(string, vscope(mprop(M))) <= (modality(M), stringable(M)).
-:- mode string_as_vsmprop(in, out) is semidet.
-:- mode string_as_vsmprop(out, in) is det.
+%:- pred string_as_vsmprop(string, vscope(mprop(M))) <= (modality(M), stringable(M), parsable(M)).
+%:- mode string_as_vsmprop(in, out) is semidet.
+%:- mode string_as_vsmprop(out, in) is det.
 
-:- func det_string_to_vsmprop(string) = vscope(mprop(M)) <= (modality(M), stringable(M)).
+	% parsing
+:- func string_to_vsmprop(string) = vscope(mprop(M)) is semidet <= (modality(M), parsable(M)).
+:- func det_string_to_vsmprop(string) = vscope(mprop(M)) <= (modality(M), parsable(M)).
 
+	% generation
 :- func mprop_to_string(varset, mprop(M)) = string <= (modality(M), stringable(M)).
 :- func vsmprop_to_string(vscope(mprop(M))) = string <= (modality(M), stringable(M)).
 
@@ -64,18 +67,19 @@
 :- func formula_term_to_string(varset, formula.term) = string.
 
 
-:- pred string_as_vsmrule(string, vscope(mrule(M))) <= (modality(M), stringable(M)).
-:- mode string_as_vsmrule(in, out) is semidet.
-:- mode string_as_vsmrule(out, in) is det.
+%:- pred string_as_vsmrule(string, vscope(mrule(M))) <= (modality(M), stringable(M), parsable(M)).
+%:- mode string_as_vsmrule(in, out) is semidet.
+%:- mode string_as_vsmrule(out, in) is det.
 
-:- func det_string_to_vsmrule(string) = vscope(mrule(M)) <= (modality(M), stringable(M)).
+:- func string_to_vsmrule(string) = vscope(mrule(M)) is semidet <= (modality(M), parsable(M)).
+:- func det_string_to_vsmrule(string) = vscope(mrule(M)) <= (modality(M), parsable(M)).
 
 :- func vsmrule_to_string(vscope(mrule(M))) = string <= (modality(M), stringable(M)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_mprop(term.term::in, mprop(M)::out) is semidet <= (modality(M), stringable(M)).
-:- pred term_to_mrule(term.term::in, mrule(M)::out) is semidet <= (modality(M), stringable(M)).
+:- pred term_to_mprop(term.term::in, mprop(M)::out) is semidet <= (modality(M), parsable(M)).
+:- pred term_to_mrule(term.term::in, mrule(M)::out) is semidet <= (modality(M), parsable(M)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -111,60 +115,50 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma promise_equivalent_clauses(string_as_vsmprop/2).
-
-string_as_vsmprop(Str::in, vs(P, Varset)::out) :-
+string_to_vsmprop(Str) = vs(P, Varset) :-
 	read_term_from_string("", Str, _, term(Varset, T)),
 	generic_term(T),
 	term_to_mprop(T, P).
 
-string_as_vsmprop(Str::out, vs(m(K, P), Varset)::in) :-
-	Str = modality_to_string(K) ++ atomic_formula_to_string(Varset, P).
-
 det_string_to_vsmprop(S) = P :-
-	(if string_as_vsmprop(S, P0)
+	(if P0 = string_to_vsmprop(S)
 	then P = P0
 	else error("Can't convert string \"" ++ S ++ "\" to a proposition.")
 	).
 
-mprop_to_string(Varset, MP) = Str :-
-	string_as_vsmprop(Str, vs(MP, Varset)).
+mprop_to_string(Varset, MP) = vsmprop_to_string(vs(MP, Varset)).
 
-vsmprop_to_string(vs(MP, Varset)) = Str :-
-	string_as_vsmprop(Str, vs(MP, Varset)).
+vsmprop_to_string(vs(m(K, P), Varset)) = Str :-
+	Str = modality_to_string(K) ++ atomic_formula_to_string(Varset, P).
 
-:- func annot_vsmprop_to_string(vscope(with_cost_function(mprop(M)))) = string <= (modality(M), stringable(M)).
+:- func annot_vsmprop_to_string(vscope(with_cost_function(mprop(M)))) = string
+		<= (modality(M), stringable(M)).
 
-annot_vsmprop_to_string(vs(cf(MP, F), Varset)) = Str ++ "/" ++ cost_function_to_string(F) :-
-	string_as_vsmprop(Str, vs(MP, Varset)).
+annot_vsmprop_to_string(vs(cf(MP, F), Varset)) = vsmprop_to_string(vs(MP, Varset))
+		++ "/" ++ cost_function_to_string(F).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma promise_equivalent_clauses(string_as_vsmrule/2).
-
-string_as_vsmrule(Str::in, vs(R, Varset)::out) :-
+string_to_vsmrule(Str) = vs(R, Varset) :-
 	read_term_from_string("", Str, _, term(Varset, T)),
 	generic_term(T),
 	term_to_mrule(T, R).
 
-string_as_vsmrule(Str::out, vs(m(K, As-H), Varset)::in) :-
+det_string_to_vsmrule(S) = R :-
+	(if R0 = string_to_vsmrule(S)
+	then R = R0
+	else error("Can't convert string \"" ++ S ++ "\" to a rule.")
+	).
+
+vsmrule_to_string(vs(m(K, As-H), Varset)) = Str :-
 	ModStr = modality_to_string(K),
-	RuleStr = string.join_list(", ", list.map((func(A) = annot_vsmprop_to_string(vs(A, Varset))), As))
-			++ " -> " ++ vsmprop_to_string(vs(H, Varset)),
+	RuleStr = vsmprop_to_string(vs(H, Varset)) ++ " <- "
+			++ string.join_list(", ", list.map((func(A) = annot_vsmprop_to_string(vs(A, Varset))), As)),
 	(if ModStr = ""
 	then Rest = RuleStr
 	else Rest = "(" ++ RuleStr ++ ")"
 	),
 	Str = ModStr ++ Rest.
-
-det_string_to_vsmrule(S) = R :-
-	(if string_as_vsmrule(S, R0)
-	then R = R0
-	else error("Can't convert string \"" ++ S ++ "\" to a rule.")
-	).
-
-vsmrule_to_string(vs(MR, Varset)) = Str :-
-	string_as_vsmrule(Str, vs(MR, Varset)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -219,7 +213,7 @@ formula_term_to_string(Varset, Arg) = S :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_list_of_ctx_refs(term.term::in, list(M)::out) is semidet <= (modality(M), stringable(M)).
+:- pred term_to_list_of_ctx_refs(term.term::in, list(M)::out) is semidet <= (modality(M), parsable(M)).
 
 term_to_list_of_ctx_refs(functor(atom(S), [], _), [from_string(S)]).
 term_to_list_of_ctx_refs(functor(atom(":"), [Ms, M], _), LMs ++ LM) :-
@@ -234,14 +228,14 @@ modality_to_string([H|T]) = string.join_list(":", list.map(to_string, [H|T])) ++
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred term_to_nonmod_rule(term.term::in, pair(list(with_cost_function(mprop(M))), mprop(M))::out) is semidet
-		<= (modality(M), stringable(M)).
+		<= (modality(M), parsable(M)).
 
 term_to_nonmod_rule(functor(atom("<-"), [THead, TAnte], _), Ante-Head) :-
 	term_to_mprop(THead, Head),
 	term_to_list_of_annot_mprops(TAnte, Ante).
 
 :- pred term_to_list_of_annot_mprops(term.term::in, list(with_cost_function(mprop(M)))::out) is semidet
-		<= (modality(M), stringable(M)).
+		<= (modality(M), parsable(M)).
 
 term_to_list_of_annot_mprops(T, List) :-
 	(if
