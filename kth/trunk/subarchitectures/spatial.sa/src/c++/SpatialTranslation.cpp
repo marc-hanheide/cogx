@@ -97,12 +97,16 @@ void SpatialTranslation::runComponent() {
 		
     std::vector< boost::shared_ptr<CASTData<NavData::RobotPose2d> > >poseVector;
     while (poseVector.empty()) {
+      lockComponent();
       getWorkingMemoryEntries<NavData::RobotPose2d>(0, poseVector);	
+      unlockComponent();
       sleepComponent(200); // wait a little...
     }
     std::vector< boost::shared_ptr<CASTData<NavData::NavGraph> > > graphVector;
     while (graphVector.empty()) {
+      lockComponent();
       getWorkingMemoryEntries<NavData::NavGraph>(0, graphVector);	
+      unlockComponent();
       sleepComponent(200); // wait a little...
     }
 

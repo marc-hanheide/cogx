@@ -73,14 +73,17 @@ ProxyMarshaller::configure(const std::map<std::string, std::string>& _config)
 
 void
 ProxyMarshaller::MarshallingServer::addProxy(const string & type, const string & UID,
-    double probExists, const Ice::Current &_context)
+					     double probExists, 
+					     const binder::autogen::core::OriginInfoPtr & origin, 
+					     const Ice::Current &_context)
 {
-  m_pOwner->addProxy(type, UID, probExists);
+  m_pOwner->addProxy(type, UID, probExists, origin);
 }
 
 void
 ProxyMarshaller::addProxy(const string & type, const string & UID,
-    double probExists)
+			  double probExists,
+			  const binder::autogen::core::OriginInfoPtr & origin)
 {
   map<string, InternalProxy> &typeMap =
     m_proxyTypeMap[type];
@@ -92,7 +95,7 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
     // create new proxy
     log("creating a new proxy.");
 
-    typeMap[UID].proxy = createNewProxy(getSubarchitectureID(), probExists);
+    typeMap[UID].proxy = createNewProxy(origin, probExists);
     //typeMap[UID].proxy->entityID = newDataID();
     //typeMap[UID].proxy->subarchId = getSubarchitectureID();
     //typeMap[UID].proxy->probExists = probExists;
@@ -268,7 +271,7 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     stringstream ss;
     ss << place->id;
     log("Adding proxy (place, %s)", ss.str().c_str());
-    addProxy("place", ss.str(), 1.0);
+    addProxy("place", ss.str(), 1.0, createOriginInfo(_wmc.address, _wmc.type));
     m_PlaceAddressToIDMap[_wmc.address.id] = place->id;
     
     // Add place id feature
