@@ -183,7 +183,7 @@ test_add_lf(LF, !WM, !IO) :-
 
 print_wm(WM, !IO) :-
 	print("names:", !IO),
-	NamesStrs = list.map((func(Name-Sort) = S :- S = Name ++ ":" ++ Sort), map.to_assoc_list(WM^names)),
+	NamesStrs = list.map((func(Name-Sort) = S :- S = Name ++ ":" ++ Sort), map.to_assoc_list(WM^worlds)),
 	print(string.join_list("\n  ", [""|NamesStrs]) ++ "\n\n", !IO),
 
 	print("reachability:\n", !IO),

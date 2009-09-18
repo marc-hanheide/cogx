@@ -12,7 +12,7 @@
 
 :- type world_model(Index, Sort, Rel).
 
-:- func names(world_model(Index, Sort, Rel)) = map(Index, Sort).
+:- func worlds(world_model(Index, Sort, Rel)) = map(Index, Sort).
 :- func reach(world_model(Index, Sort, Rel)) = set({Rel, world_id(Index), world_id(Index)}).
 :- func props(world_model(Index, Sort, Rel)) = map(world_id(Index), set(proposition)).
 
@@ -62,7 +62,7 @@
 	
 :- type world_model(Index, Sort, Rel)
 	--->	wm(
-		names :: map(Index, Sort),  % sort
+		worlds :: map(Index, Sort),  % sort
 		reach :: set({Rel, world_id(Index), world_id(Index)}),  % reachability
 		props :: map(world_id(Index), set(proposition)),  % valid propositions
 		next_unnamed :: int  % lowest unused index for unnamed worlds
@@ -105,7 +105,7 @@ rename_merge_world(Old, New, WM0, WM) :-
 	else Props = map.set(DelProps, New, NewsProps)
 	),
 
-	WM = wm(WM0^names, Reach, Props, WM0^next_unnamed).
+	WM = wm(WM0^worlds, Reach, Props, WM0^next_unnamed).
 
 %------------------------------------------------------------------------------%
 
@@ -119,14 +119,14 @@ add_lf(!.WM, LF, !:WM) :-
 
 add_lf0(Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 	% add the referenced world
-	(if map.search(WM0^names, WName, OldSort)
+	(if map.search(WM0^worlds, WName, OldSort)
 	then
 		% we've already been there
 		OldSort = Sort,  % conflict? => fail, also FIXME subsumption
 		WM1 = WM0
 	else
 		% it's a new one
-		WM1 = WM0^names := map.det_insert(WM0^names, WName, Sort)
+		WM1 = WM0^worlds := map.det_insert(WM0^worlds, WName, Sort)
 	),
 	add_lf0(i(WName), _, LF, WM1, WM).
 
@@ -136,13 +136,13 @@ add_lf0(Cur, i(WName), i(of_sort(WName, Sort)), WM0, WM) :-
 		fail  % should we perhaps allow this?
 	;
 		Cur = i(WName),
-		map.search(WM0^names, WName, Sort),
+		map.search(WM0^worlds, WName, Sort),
 		WM = WM0
 	;
 		Cur = u(Num),
-		(if map.search(WM0^names, WName, OldSort)
+		(if map.search(WM0^worlds, WName, OldSort)
 		then OldSort = Sort, WM1 = WM0
-		else WM1 = WM0^names := map.det_insert(WM0^names, WName, Sort)
+		else WM1 = WM0^worlds := map.det_insert(WM0^worlds, WName, Sort)
 		),
 		rename_merge_world(u(Num), i(WName), WM1, WM)
 	).
@@ -175,7 +175,7 @@ satisfies0(_WCur, M, at(of_sort(Idx, Sort), LF)) :-
 	satisfies0(i(Idx), M, LF).
 
 satisfies0(i(Idx), M, i(of_sort(Idx, Sort))) :-
-	map.search(M^names, Idx, Sort).  % TODO: sort subsumption?
+	map.search(M^worlds, Idx, Sort).  % TODO: sort subsumption?
 
 satisfies0(WCur, M, r(Rel, LF)) :-
 	set.member({Rel, WCur, WReach}, M^reach),
@@ -233,13 +233,13 @@ lfs(M) = LFs :-
 	LFs = solutions_set((pred(LF::out) is nondet :-
 		(
 			map.member(M^props, W, SetProps),
-			W = i(Idx), M^names^elem(Idx) = Sort,
+			W = i(Idx), M^worlds^elem(Idx) = Sort,
 			set.member(Prop, SetProps),
 			LF = at(of_sort(Idx, Sort), p(Prop))
 		;
 			set.member({Rel, W1, W2}, M^reach),
-			W1 = i(Idx1), M^names^elem(Idx1) = Sort1,
-			W2 = i(Idx2), M^names^elem(Idx2) = Sort2,
+			W1 = i(Idx1), M^worlds^elem(Idx1) = Sort1,
+			W2 = i(Idx2), M^worlds^elem(Idx2) = Sort2,
 			LF = at(of_sort(Idx1, Sort1), r(Rel, i(of_sort(Idx2, Sort2))))
 		)
 			)).
