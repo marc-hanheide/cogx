@@ -282,15 +282,25 @@ preprocess_file(LIn, LOut) :-
 :- pred print_ctx(ctx::in, io::di, io::uo) is det.
 
 print_ctx(Ctx, !IO) :-
-	print("facts:\n", !IO),
+	print("beliefs:\n", !IO),
+
+	set.fold((pred({Stf, Bel, Form, Fg}::in, !.IO::di, !:IO::uo) is det :-
+		print("  ", !IO),
+		print(to_string(k(Stf, Bel)) ++ " : " ++ atomic_formula_to_string(varset.init, ground_formula_to_formula(Form)) ++ " ... " ++ string(Fg), !IO),
+		nl(!IO)
+			), Ctx^bm^k, !IO),
+
+/*
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
 		print(vsmprop_to_string(Fact), !IO),
 		nl(!IO)
 			), facts(Ctx), !IO),
+*/
 
 	nl(!IO),
 
+/*
 	print("assumables:\n", !IO),
 	map.foldl((pred(FuncName::in, Costs::in, !.IO::di, !:IO::uo) is det :-
 		print("  ", !IO),
@@ -305,6 +315,7 @@ print_ctx(Ctx, !IO) :-
 			), assumables(Ctx), !IO),
 
 	nl(!IO),
+*/
 
 	print("rules:\n", !IO),
 	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
