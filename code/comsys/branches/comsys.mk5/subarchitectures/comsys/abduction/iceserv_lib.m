@@ -2,21 +2,22 @@
 
 :- interface.
 :- import_module io.
+:- import_module float.
 :- import_module ctx_specific, ctx_modality, abduction.
 
 :- func srv_init_ctx = ctx.
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
-:- pred srv_get_best_proof(ctx::in, proof(ctx_modality)::out) is semidet.
+:- pred srv_prove_best(string::in, float::in, ctx::in, proof(ctx_modality)::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module set, list, bool, string.
+:- import_module set, list, bool, string, pair.
 :- import_module term, term_io, formula.
 :- import_module formula_io, formula_ops, ctx_io.
 :- import_module solutions, require.
-:- import_module varset.
+:- import_module varset, costs.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -76,10 +77,34 @@ do_while(Pred, A0, A, B0, B) :-
 		A = A1, B = B1
 	).
 
-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_get_best_proof(in, out), "get_best_proof").
+:- pragma foreign_export("C", srv_prove_best(in, in, in, out), "prove_best").
 
-srv_get_best_proof(Ctx, Proof) :-
-	Proof = new_proof([], varset.init).
+srv_prove_best(GoalStr, AssCost, Ctx, Proof) :-
+	vs(InitMProp, InitVarset) = det_string_to_vsmprop(GoalStr),
+
+	P0 = proof(vs([[unsolved(InitMProp, const(AssCost))]], InitVarset), []),
+
+	Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
+		Costs = costs(1.0, 1.0, 0.1),
+		prove(0.0, 10.0, P0, P, Costs, Ctx),
+		Cost = cost(Ctx, P, Costs)
+			))),
+
+	list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
+		float_compare(CA, CB, Comp)
+			), Proofs0, [_-Proof|_]).
+
+:- pred float_compare(float::in, float::in, comparison_result::out) is det.
+
+float_compare(A, B, R) :-
+	(if A < B
+	then R = (<)
+	else
+		(if A > B
+		then R = (>)
+		else R = (=)
+		)
+	).
+
