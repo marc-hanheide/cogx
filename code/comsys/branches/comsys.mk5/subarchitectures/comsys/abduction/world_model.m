@@ -2,7 +2,7 @@
 
 :- interface.
 :- import_module string, int, map, set.
-:- import_module lf.
+:- import_module lf, ontology.
 
 :- type world_id(Index)
 	--->	this
@@ -12,9 +12,9 @@
 
 :- type world_model(Index, Sort, Rel).
 
-:- func worlds(world_model(I, S, R)) = map(I, S) <= ontological_sort(S).
-:- func reach(world_model(I, S, R)) = set({R, world_id(I), world_id(I)}) <= ontological_sort(S).
-:- func props(world_model(I, S, R)) = map(world_id(I), set(proposition)) <= ontological_sort(S).
+:- func worlds(world_model(I, S, R)) = map(I, S) <= isa_ontology(S).
+:- func reach(world_model(I, S, R)) = set({R, world_id(I), world_id(I)}) <= isa_ontology(S).
+:- func props(world_model(I, S, R)) = map(world_id(I), set(proposition)) <= isa_ontology(S).
 
 :- type world_model == world_model(string, string, string).
 
@@ -26,14 +26,14 @@
 	%
 	% i.e. add LF to M0 so that it is consistent, fail if not possible.
 	%
-:- pred add_lf(world_model(I, S, R), lf(I, S, R), world_model(I, S, R)) <= ontological_sort(S).
+:- pred add_lf(world_model(I, S, R), lf(I, S, R), world_model(I, S, R)) <= isa_ontology(S).
 :- mode add_lf(in, in, out) is semidet.
 
 	% satisfies(M, LF)
 	% True iff
 	%   M |= LF
 	%
-:- pred satisfies(world_model(I, S, R), lf(I, S, R)) <= ontological_sort(S).
+:- pred satisfies(world_model(I, S, R), lf(I, S, R)) <= isa_ontology(S).
 :- mode satisfies(in, in) is semidet.
 
 	% Reduced model is a model for which it holds that for every reachability
@@ -47,10 +47,10 @@
 	% reduced(M) = RM
 	% True iff RM is a functionally reduced version of M.
 	%
-:- func reduced(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet <= ontological_sort(S).
+:- func reduced(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet <= isa_ontology(S).
 
 
-:- func lfs(world_model(I, S, R)) = set(lf(I, S, R)) <= ontological_sort(S).
+:- func lfs(world_model(I, S, R)) = set(lf(I, S, R)) <= isa_ontology(S).
 
 %------------------------------------------------------------------------------%
 
@@ -83,7 +83,7 @@ new_unnamed_world(Id, WM0, WM) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred rename_merge_world(world_id(I)::in, world_id(I)::in, world_model(I, S, R)::in,
-		world_model(I, S, R)::out) is det <= ontological_sort(S).
+		world_model(I, S, R)::out) is det <= isa_ontology(S).
 
 rename_merge_world(Old, New, WM0, WM) :-
 	Reach = set.map((func({Rel, OldIdA, OldIdB}) = {Rel, NewIdA, NewIdB} :-
@@ -115,7 +115,7 @@ add_lf(!.WM, LF, !:WM) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred add_lf0(world_id(I)::in, world_id(I)::out, lf(I, S, R)::in,
-		world_model(I, S, R)::in, world_model(I, S, R)::out) is semidet <= ontological_sort(S).
+		world_model(I, S, R)::in, world_model(I, S, R)::out) is semidet <= isa_ontology(S).
 
 add_lf0(Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 	% add the referenced world
@@ -168,7 +168,7 @@ add_lf0(Cur0, Cur, and(LF1, LF2), WM0, WM) :-
 satisfies(M, LF) :-
 	satisfies0(this, M, LF).
 
-:- pred satisfies0(world_id(I)::in, world_model(I, S, R)::in, lf(I, S, R)::in) is semidet <= ontological_sort(S).
+:- pred satisfies0(world_id(I)::in, world_model(I, S, R)::in, lf(I, S, R)::in) is semidet <= isa_ontology(S).
 
 satisfies0(_WCur, M, at(of_sort(Idx, Sort), LF)) :-
 	satisfies0(i(Idx), M, i(of_sort(Idx, Sort))),
@@ -176,7 +176,7 @@ satisfies0(_WCur, M, at(of_sort(Idx, Sort), LF)) :-
 
 satisfies0(i(Idx), M, i(of_sort(Idx, LFSort))) :-
 	map.search(M^worlds, Idx, Sort),
-	subsumes(Sort, LFSort).
+	isa(LFSort, Sort).
 
 satisfies0(WCur, M, r(Rel, LF)) :-
 	set.member({Rel, WCur, WReach}, M^reach),
