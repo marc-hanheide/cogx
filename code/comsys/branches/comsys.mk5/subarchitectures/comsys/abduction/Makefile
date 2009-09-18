@@ -3,11 +3,11 @@
 # Binary files to be built.
 #
 MBIN=test_abduction test_formulae test_lf test_modality test_rcc test_abd_bm
-COMBBIN=iceserv
+COMBBIN=abducer-server
 
 # Mercury source files.
 #
-MFILES=test_abduction.m abduction.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx_modality.m formula_io.m lf.m test_lf.m test_modality.m ctx_specific.m ctx_io.m formula_ops.m ctx_modality.m rcc.m test_rcc.m iceserv.m iceserv_lib.m ctx_loadable.m belief_model.m test_abd_bm.m model.m lf_io.m stf.m ontology.m model_io.m ling.m enumerable.m ctx_ontology.m utils.m abd_io.m
+MFILES=test_abduction.m abduction.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx_modality.m formula_io.m lf.m test_lf.m test_modality.m ctx_specific.m ctx_io.m formula_ops.m ctx_modality.m rcc.m test_rcc.m abducer-server.m iceserv_lib.m ctx_loadable.m belief_model.m test_abd_bm.m model.m lf_io.m stf.m ontology.m model_io.m ling.m enumerable.m ctx_ontology.m utils.m abd_io.m
 
 # Mercury compiler flags
 #
@@ -64,7 +64,7 @@ $(MBIN): $(MFILES) aserv.o
 		$(MCFLAGS) \
 		$@
 
-iceserv: $(MFILES) aserv.o Abducer.o BeliefModels.o
+abducer-server: $(MFILES) aserv.o Abducer.o BeliefModels.o
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-shared-lib-command=$(CXX) \
@@ -86,6 +86,6 @@ clean:
 		$(addsuffix .err, $(basename $(MFILES))) \
 		$(addsuffix .mh, $(basename $(MFILES))) \
 		$(MBIN) $(COMBBIN) \
-		aserv aserv.o \
+		abducer-server aserv.o \
 		Abducer.o Abducer.cc Abducer.h \
 		BeliefModels.o BeliefModels.cc BeliefModels.h

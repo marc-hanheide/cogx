@@ -1,18 +1,15 @@
-:- module iceserv.
+:- module 'abducer-server'.
 
 :- interface.
-:- import_module io, int.
-
-:- import_module iceserv_lib.
+:- import_module io.
 
 :- pred main(io::di, io::uo) is det.
-
-:- pred aserv_main(int::out, io::di, io::uo) is det.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module string, list.
+:- import_module list, string, int.
+:- import_module iceserv_lib.
 
 :- pragma foreign_decl("C", "#include \"aserv.h\"").
 
@@ -21,6 +18,8 @@ main(!IO) :-
 	format("Returned with status %d.\n", [i(RetVal)], !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred aserv_main(int::out, io::di, io::uo) is det.
 
 :- pragma foreign_proc("C", aserv_main(RetVal::out, IO0::di, IO::uo),
 		[may_call_mercury, promise_pure],
