@@ -1,4 +1,4 @@
-:- module ctx_impl.
+:- module ctx_loadable.
 
 :- interface.
 

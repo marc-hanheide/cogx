@@ -6,24 +6,7 @@
 
 :- import_module modality, rcc.
 :- import_module set.
-
-:- type foreground
-	--->	com
-	.
-
-:- type agent
-	--->	human
-	;	robot
-	.
-
-:- type belief
-	--->	private(agent)
-	;	attrib(agent, agent)
-	;	mutual(set(agent))
-	.
-
-:- type stf
-	--->	now.
+:- import_module belief_model.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

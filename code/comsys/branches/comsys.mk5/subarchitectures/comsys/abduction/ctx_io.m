@@ -3,6 +3,7 @@
 :- interface.
 :- import_module stringable.
 
+:- import_module belief_model.
 :- import_module ctx_modality.
 
 :- instance stringable(ctx_modality).
@@ -36,23 +37,6 @@ r_to_l(Pred, B) = A :-
 	call(Pred, A, B).
 
 %------------------------------------------------------------------------------%
-
-:- pred agent_as_string(agent, string).
-:- mode agent_as_string(in, out) is det.
-:- mode agent_as_string(out, in) is semidet.
-
-agent_as_string(human, "h").
-agent_as_string(robot, "r").
-
-:- func agent_to_string(agent) = string.
-
-agent_to_string(A) = S :- agent_as_string(A, S).
-
-:- func string_to_agent(string::in) = (agent::out) is semidet.
-
-string_to_agent(S) = A :- agent_as_string(A, S).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred foreground_as_string(foreground, string).
 :- mode foreground_as_string(in, out) is det.
@@ -94,11 +78,11 @@ ctx_modality_from_term(functor(atom("e"), [
 	], _)) = e(term_to_stf(STFTerm)).
 
 	% "knows"
-ctx_modality_to_string(k(STF, private(A))) = "k(" ++ stf_to_string(STF) ++ "," ++ agent_to_string(A) ++ ")".
-ctx_modality_to_string(k(STF, attrib(A, B))) = "k(" ++ stf_to_string(STF) ++ ",[" ++ agent_to_string(A) ++ "]"
-		++ agent_to_string(B) ++ ")".
+ctx_modality_to_string(k(STF, private(A))) = "k(" ++ stf_to_string(STF) ++ "," ++ to_string(A) ++ ")".
+ctx_modality_to_string(k(STF, attrib(A, B))) = "k(" ++ stf_to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
+		++ to_string(B) ++ ")".
 ctx_modality_to_string(k(STF, mutual(AgS))) = "k(" ++ stf_to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
-	AgSStr = string.join_list(",", list.map(agent_to_string, set.to_sorted_list(AgS))).
+	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
 ctx_modality_from_term(functor(atom("k"), [
 		STFTerm,
@@ -106,11 +90,11 @@ ctx_modality_from_term(functor(atom("k"), [
 	], _)) = k(term_to_stf(STFTerm), term_to_belief(BeliefTerm)).
 
 	% tasks
-ctx_modality_to_string(t(STF, private(A))) = "t(" ++ stf_to_string(STF) ++ "," ++ agent_to_string(A) ++ ")".
-ctx_modality_to_string(t(STF, attrib(A, B))) = "t(" ++ stf_to_string(STF) ++ ",[" ++ agent_to_string(A) ++ "]"
-		++ agent_to_string(B) ++ ")".
+ctx_modality_to_string(t(STF, private(A))) = "t(" ++ stf_to_string(STF) ++ "," ++ to_string(A) ++ ")".
+ctx_modality_to_string(t(STF, attrib(A, B))) = "t(" ++ stf_to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
+		++ to_string(B) ++ ")".
 ctx_modality_to_string(t(STF, mutual(AgS))) = "t(" ++ stf_to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
-	AgSStr = string.join_list(",", list.map(agent_to_string, set.to_sorted_list(AgS))).
+	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
 ctx_modality_from_term(functor(atom("t"), [
 		STFTerm,
@@ -121,10 +105,10 @@ ctx_modality_from_term(functor(atom("t"), [
 
 :- func term_to_belief(term.term::in) = (belief::out) is semidet.
 
-term_to_belief(functor(atom("private"), [functor(atom(AStr), [], _)], _)) = private(string_to_agent(AStr)).
-term_to_belief(functor(atom("attrib"), [functor(atom(AStr), [], _), functor(atom(BStr), [], _)], _)) = attrib(string_to_agent(AStr), string_to_agent(BStr)).
+term_to_belief(functor(atom("private"), [functor(atom(AStr), [], _)], _)) = private(from_string(AStr)).
+term_to_belief(functor(atom("attrib"), [functor(atom(AStr), [], _), functor(atom(BStr), [], _)], _)) = attrib(from_string(AStr), from_string(BStr)).
 term_to_belief(functor(atom("mutual"), ATerms, Context)) = mutual(set.from_list(As)) :-
-	list.map((pred(functor(atom(AStr), [], _)::in, string_to_agent(AStr)::out) is semidet), ATerms, As),
+	list.map((pred(functor(atom(AStr), [], _)::in, from_string(AStr)::out) is semidet), ATerms, As),
 	(if As = []
 	then
 		Context = context(Filename, LineNo),
