@@ -73,7 +73,7 @@ annot_vsmprop_to_string(vs(cf(MP, F), Varset)) = vsmprop_to_string(vs(MP, Varset
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 string_to_vsmrule(Str) = vs(R, Varset) :-
-	read_term_from_string("", Str, _, term(Varset, T)),
+	read_term_from_string_with_op_table(init_wabd_op_table, "", Str, _, term(Varset, T)),
 	generic_term(T),
 	term_to_mrule(T, R).
 
