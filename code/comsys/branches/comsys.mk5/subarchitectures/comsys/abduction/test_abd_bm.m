@@ -14,6 +14,7 @@
 
 :- import_module require, solutions.
 :- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool, maybe.
+:- import_module utils.
 :- import_module abduction, formula, context, costs, belief_model, model.
 
 :- import_module ctx_modality, ctx_specific, ctx_io.
@@ -222,69 +223,6 @@ term_list(functor(atom("[|]"), [HeadTerm, TailTerms], _), [HeadTerm | Tail]) :-
 :- pred is_ctx_proof(proof(ctx_modality)::in) is det.
 
 is_ctx_proof(_).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred do_while(pred(bool, A, A, T, T), A, A, T, T).
-:- mode do_while((pred(out, in, out, di, uo) is det), in, out, di, uo) is det.
-:- mode do_while((pred(out, in, out, in, out) is det), in, out, in, out) is det.
-
-do_while(Pred, A0, A, B0, B) :-
-	call(Pred, Result, A0, A1, B0, B1),
-	(
-		Result = yes,
-		do_while(Pred, A1, A, B1, B)
-	;
-		Result = no,
-		A = A1, B = B1
-	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred float_compare(float::in, float::in, comparison_result::out) is det.
-
-float_compare(A, B, R) :-
-	(if A < B
-	then R = (<)
-	else
-		(if A > B
-		then R = (>)
-		else R = (=)
-		)
-	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred read_file_as_lines(string::in, list(string)::out, io::di, io::uo) is det.
-
-read_file_as_lines(FileName, Lines, !IO) :-
-	see(FileName, SeeResult, !IO),
-	(
-		SeeResult = ok,
-		read_file_as_string(ReadResult, !IO),
-		(
-			ReadResult = ok(S),
-			Lines = string.words_separator((pred(C::in) is semidet :- C = '\n'), S)
-		;
-			ReadResult = error(_, _),
-			Lines = []
-		),
-		seen(!IO)
-	;
-		SeeResult = error(_),
-		Lines = []
-	).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred preprocess_file(list(string)::in, list(string)::out) is det.
-
-preprocess_file(LIn, LOut) :-
-	list.filter_map((pred(L0::in, L::out) is semidet :-
-		L1 = string.strip(L0),
-		L = L1,
-		not string.first_char(L, '#', _)
-			), LIn, LOut).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
