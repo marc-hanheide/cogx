@@ -1,8 +1,6 @@
 #ifndef ABDUCER_ICE
 #define ABDUCER_ICE
 
-#include <BeliefModels.ice>
-
 module Abducer {
 
 	exception AbducerException {
@@ -79,16 +77,14 @@ module Abducer {
 	};
 
 	interface AbducerServer {
-		void synchronise(beliefmodels::adl::BeliefModel m);
+		void clearRules();
+		void loadRulesFromFile(string filename);
 
-		void clearExplicitRules();
-		void loadExplicitRulesFromFile(string filename);
+		void clearFacts();
+		void loadFactsFromFile(string filename);
+		void addFact(ModalisedFormula f);
 
-		void clearExplicitFacts();
-		void loadExplicitFactsFromFile(string filename);
-		void addExplicitFact(ModalisedFormula f);
-
-		ProofResult proveGoal(AssumableGoalSeq g);
+		ProofResult prove(AssumableGoalSeq g);
 		AbductiveProof getBestProof();
 	};
 

@@ -3,7 +3,6 @@
 
 #include <Ice/Ice.h>
 #include <Abducer.h>
-#include <BeliefModels.h>
 #include <aserv.h>
 
 #include <vector>
@@ -31,16 +30,14 @@ modalityToMercModality(const ModalityPtr & m);
 class AbducerServerI : public AbducerServer {
 public:
 	AbducerServerI();
-	virtual void synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&);
+	virtual void clearRules(const Ice::Current&);
+	virtual void loadRulesFromFile(const std::string& filename, const Ice::Current&);
 
-	virtual void clearExplicitRules(const Ice::Current&);
-	virtual void loadExplicitRulesFromFile(const std::string& filename, const Ice::Current&);
+	virtual void clearFacts(const Ice::Current&);
+	virtual void loadFactsFromFile(const std::string& filename, const Ice::Current&);
+	virtual void addFact(const ModalisedFormulaPtr & f, const Ice::Current&);
 
-	virtual void clearExplicitFacts(const Ice::Current&);
-	virtual void loadExplicitFactsFromFile(const std::string& filename, const Ice::Current&);
-	virtual void addExplicitFact(const ModalisedFormulaPtr & f, const Ice::Current&);
-
-	virtual ProofResult proveGoal(const vector<AssumableGoalPtr> & g, const Ice::Current&);
+	virtual ProofResult prove(const vector<AssumableGoalPtr> & g, const Ice::Current&);
 	virtual AbductiveProofPtr getBestProof(const Ice::Current&);
 private:
 	MercAbdCtx ctx;
@@ -58,20 +55,14 @@ AbducerServerI::AbducerServerI()
 }
 
 void
-AbducerServerI::synchronise(const beliefmodels::adl::BeliefModelPtr& m, const Ice::Current&)
-{
-	cerr << "[log] sync" << endl;
-}
-
-void
-AbducerServerI::clearExplicitRules(const Ice::Current&)
+AbducerServerI::clearRules(const Ice::Current&)
 {
 	cerr << "[log] clearing explicit rules" << endl;
 	clear_rules(ctx, &ctx);
 }
 
 void
-AbducerServerI::loadExplicitRulesFromFile(const string& filename, const Ice::Current&)
+AbducerServerI::loadRulesFromFile(const string& filename, const Ice::Current&)
 {
 	cerr << "[log] adding explicit rules from: " << filename << endl;
 
@@ -85,14 +76,14 @@ AbducerServerI::loadExplicitRulesFromFile(const string& filename, const Ice::Cur
 }
 
 void
-AbducerServerI::clearExplicitFacts(const Ice::Current&)
+AbducerServerI::clearFacts(const Ice::Current&)
 {
 	cerr << "[log] clearing explicit facts" << endl;
 	clear_facts(ctx, &ctx);
 }
 
 void
-AbducerServerI::loadExplicitFactsFromFile(const string& filename, const Ice::Current&)
+AbducerServerI::loadFactsFromFile(const string& filename, const Ice::Current&)
 {
 	cerr << "[log] adding explicit facts from: " << filename << endl;
 
@@ -106,7 +97,7 @@ AbducerServerI::loadExplicitFactsFromFile(const string& filename, const Ice::Cur
 }
 
 void
-AbducerServerI::addExplicitFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
+AbducerServerI::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
 	cerr << "[log] adding fact " << fact->p->predSym << endl;
 
@@ -118,7 +109,7 @@ AbducerServerI::addExplicitFact(const ModalisedFormulaPtr & fact, const Ice::Cur
 }
 
 ProofResult
-AbducerServerI::proveGoal(const vector<AssumableGoalPtr> & goals, const Ice::Current&)
+AbducerServerI::prove(const vector<AssumableGoalPtr> & goals, const Ice::Current&)
 {
 	cerr << "[log] proving" << endl;
 
