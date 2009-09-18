@@ -1,0 +1,48 @@
+:- module lf_io.
+
+:- interface.
+
+:- import_module lf.
+:- import_module string, formula.
+
+:- func ground_term_to_id(ground_term::in) = (id(string, string)::out) is semidet.
+:- func ground_term_to_lf(ground_term::in) = (lf::out) is semidet.
+
+:- func lf_to_string(lf) = string.
+
+%------------------------------------------------------------------------------%
+
+:- implementation.
+:- import_module list.
+
+%------------------------------------------------------------------------------%
+
+ground_term_to_id(t("::", [t(Name, []), t(Sort, [])])) = of_sort(Name, Sort).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+ground_term_to_lf(t("@", [NameSortTerm, LFTerm])) =
+		at(ground_term_to_id(NameSortTerm), ground_term_to_lf(LFTerm)).
+
+ground_term_to_lf(T) = i(ground_term_to_id(T)) :-
+	T = t("::", [_,_]).
+
+ground_term_to_lf(t(RelName, [LFTerm])) = r(RelName, ground_term_to_lf(LFTerm)).
+
+ground_term_to_lf(t(Prop, [])) = p(Prop).
+
+ground_term_to_lf(t("^", [LFA, LFB])) = and(ground_term_to_lf(LFA), ground_term_to_lf(LFB)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func id_to_string(id(string, string)) = string.
+
+id_to_string(of_sort(I, S)) = I ++ ":" ++ S.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+lf_to_string(at(Id, LF)) = "@" ++ id_to_string(Id) ++ "(" ++ lf_to_string(LF) ++ ")".
+lf_to_string(i(Id)) = id_to_string(Id).
+lf_to_string(r(Rel, LF)) = "<" ++ Rel ++ ">" ++ "(" ++ lf_to_string(LF) ++ ")".
+lf_to_string(p(Prop)) = Prop.
+lf_to_string(and(LF1, LF2)) = lf_to_string(LF1) ++ " ^ " ++ lf_to_string(LF2).
