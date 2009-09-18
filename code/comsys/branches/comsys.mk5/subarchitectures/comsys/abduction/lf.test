@@ -76,3 +76,17 @@ LFS
 
 PRINT
 REDUCE
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+CLEAR
+
+	@(v1::object, p(sth)).
+	@(v1::object, v1::entity).
+	@(v1::car, p(sth)).
+	@(v1::object, v1::house).
+
+?	@(v1::house, p(sth)).
+?	@(v1::entity, p(sth)).
+?	@(v1::object, p(sth)).
+?	@(v1::car, p(sth)).
+
+PRINT

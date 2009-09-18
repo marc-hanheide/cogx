@@ -34,9 +34,5 @@ is_lf(LF) = LF.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- instance isa_ontology(string) where [
-	pred(isa/2) is string_isa
+	(direct_isa(X, Y) :- fail)
 ].
-
-:- pred string_isa(string::in, string::in) is semidet.
-
-string_isa(S, S).
