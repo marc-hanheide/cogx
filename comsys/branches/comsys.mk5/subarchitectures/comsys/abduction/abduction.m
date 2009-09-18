@@ -77,7 +77,7 @@ cost(Ctx, Proof, CostForUsingFacts) = Cost :-
 	list.foldl((pred(Step::in, C0::in, C::out) is det :-
 		(
 			Step = assume(VSMProp, CostFunction),
-			C = C0 + context.apply_cost_function(Ctx, CostFunction, VSMProp)
+			C = C0 + context.cost(Ctx, CostFunction, VSMProp)
 		;
 			Step = use_fact(_, _),
 			C = C0 + CostForUsingFacts
@@ -155,7 +155,7 @@ step(assume(vs(m(MQ, PQ), VS), F),
 		QsL ++ [m(MQ, PQ)-assumed] ++ QsR, VS,
 		Ctx) :-
 
-	assumable(Ctx, vs(m(MA, PA0), VSA)),
+	assumable(Ctx, F, vs(m(MA, PA0), VSA), _Cost),
 	match(compose_list(MQ), compose_list(MA)),
 
 	varset.merge_renaming(VS0, VSA, VS, Renaming),
