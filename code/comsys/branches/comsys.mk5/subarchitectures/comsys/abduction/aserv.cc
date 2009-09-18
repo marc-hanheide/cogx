@@ -74,7 +74,9 @@ AbducerServerI::proveGoal(const GoalPtr& g, const Ice::Current&)
 	s[g->body->termString.length()] = '\0';
 
 	MR_Word bestProof;
-	if (prove_best(s, g->assumeCost, ctx, &bestProof)) {
+	double proofCost;
+
+	if (prove_best(s, g->assumeCost, ctx, &proofCost, &bestProof)) {
 		haveProof = true;
 		return (SUCCESS);
 	}

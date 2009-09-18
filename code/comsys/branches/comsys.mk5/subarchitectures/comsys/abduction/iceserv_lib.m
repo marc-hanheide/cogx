@@ -8,7 +8,7 @@
 :- func srv_init_ctx = ctx.
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
-:- pred srv_prove_best(string::in, float::in, ctx::in, proof(ctx_modality)::out) is semidet.
+:- pred srv_prove_best(string::in, float::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -79,9 +79,9 @@ do_while(Pred, A0, A, B0, B) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_prove_best(in, in, in, out), "prove_best").
+:- pragma foreign_export("C", srv_prove_best(in, in, in, out, out), "prove_best").
 
-srv_prove_best(GoalStr, AssCost, Ctx, Proof) :-
+srv_prove_best(GoalStr, AssCost, Ctx, ProofCost, Proof) :-
 	vs(InitMProp, InitVarset) = det_string_to_vsmprop(GoalStr),
 
 	P0 = proof(vs([[unsolved(InitMProp, const(AssCost))]], InitVarset), []),
@@ -94,7 +94,7 @@ srv_prove_best(GoalStr, AssCost, Ctx, Proof) :-
 
 	list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
 		float_compare(CA, CB, Comp)
-			), Proofs0, [_-Proof|_]).
+			), Proofs0, [ProofCost-Proof|_]).
 
 :- pred float_compare(float::in, float::in, comparison_result::out) is det.
 
