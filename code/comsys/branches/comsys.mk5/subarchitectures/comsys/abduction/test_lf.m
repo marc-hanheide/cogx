@@ -150,14 +150,14 @@ std_lf(_).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred test_slf(string::in, world_model::in, world_model::out, io::di, io::uo) is det.
+:- pred test_slf(string::in, model::in, model::out, io::di, io::uo) is det.
 
 test_slf(S, !WM, !IO) :-
 	test_lf(s2lf(S), !WM, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred test_lf(lf::in, world_model::in, world_model::out, io::di, io::uo) is det.
+:- pred test_lf(lf::in, model::in, model::out, io::di, io::uo) is det.
 
 test_lf(LF, !WM, !IO) :-
 	print(lf_to_string(LF), !IO),
@@ -168,7 +168,7 @@ test_lf(LF, !WM, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred test_add_lf(lf::in, world_model::in, world_model::out, io::di, io::uo) is det.
+:- pred test_add_lf(lf::in, model::in, model::out, io::di, io::uo) is det.
 
 test_add_lf(LF, !WM, !IO) :-
 	(if add_lf(unit, unit, !.WM, LF, !:WM)
@@ -182,7 +182,7 @@ test_add_lf(LF, !WM, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred print_wm(world_model::in, io::di, io::uo) is det.
+:- pred print_wm(model::in, io::di, io::uo) is det.
 
 print_wm(WM, !IO) :-
 	print("names:", !IO),
@@ -205,7 +205,7 @@ print_wm(WM, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- func reduced_models(world_model) = set(world_model).
+:- func reduced_models(model) = set(model).
 
 reduced_models(WM) = RWMs :-
 	RWMs = solutions_set((pred(RWM::out) is nondet :-
@@ -214,7 +214,7 @@ reduced_models(WM) = RWMs :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred print_reduced_model(world_model::in, io::di, io::uo) is det.
+:- pred print_reduced_model(model::in, io::di, io::uo) is det.
 
 print_reduced_model(WM, !IO) :-
 	(if RWM = reduced(unit, WM)

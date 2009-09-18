@@ -43,28 +43,28 @@
 		<= isa_ontology(OS, S). 
 
 :- pred k_fact(OS::in, RT::in, belief_model(I, S, R)::in, stf::out, belief::out, lf(I, S, R)::out) is nondet
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 
-:- pred k_model(OS::in, RT::in, belief_model(I, S, R)::in, stf::in, belief::in, world_model(I, S, R)::out) is semidet
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+:- pred k_model(OS::in, RT::in, belief_model(I, S, R)::in, stf::in, belief::in, model(I, S, R)::out) is semidet
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func fg_anchors(belief_model(I, S, R)) = set(I).
 
-:- pred att_model(OS::in, RT::in, belief_model(I, S, R)::in, world_model(I, S, R)::out) is det
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+:- pred att_model(OS::in, RT::in, belief_model(I, S, R)::in, model(I, S, R)::out) is det
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 
-:- func min_dist(OS::in, world_model(I, S, R)::in, I::in, I::in) = (int::out) is semidet <= isa_ontology(OS, S).
+:- func min_dist(OS::in, model(I, S, R)::in, I::in, I::in) = (int::out) is semidet <= isa_ontology(OS, S).
 
-:- func min_dist_from_set(OS::in, world_model(I, S, R)::in, set(I)::in, I::in) = (int::out) is semidet
+:- func min_dist_from_set(OS::in, model(I, S, R)::in, set(I)::in, I::in) = (int::out) is semidet
 		<= isa_ontology(OS, S).
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
 :- import_module require, solutions.
-:- import_module map, list, world_model, lf_io.
+:- import_module map, list, lf_io.
 :- import_module string.
 
 init = bm(map.init, set.init, 1).
@@ -129,10 +129,10 @@ foreground(_Ont, Index, !BM) :-
 
 %------------------------------------------------------------------------------%
 
-:- type mbm(I, S, R) == map(stf, map(belief, world_model(I, S, R))).
+:- type mbm(I, S, R) == map(stf, map(belief, model(I, S, R))).
 
 :- func add_lf_to_mbm(OS, RT, stf, belief, lf(I, S, R), mbm(I, S, R)) = mbm(I, S, R)
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 
 add_lf_to_mbm(Ont, RT, STF, Bel, LF, MBM0) = MBM :-
 	(if map.search(MBM0, STF, BelMap0)
@@ -154,7 +154,7 @@ add_lf_to_mbm(Ont, RT, STF, Bel, LF, MBM0) = MBM :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- func get_mbm(OS, RT, set({stf, belief, lf(I, S, R)})) = mbm(I, S, R)
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 
 get_mbm(Ont, RT, Set) = MBM :-
 	MBM = set.fold((func({STF, Bel, LF}, MBM0) = add_lf_to_mbm(Ont, RT, STF, Bel, LF, MBM0)), Set, map.init).
@@ -206,7 +206,7 @@ fg_anchors(BM) = As :-
 		)
 			), BM^fg, set.init, As).
 
-:- pred dist(OS::in, world_model(I, S, R)::in, world_id(I)::in, world_id(I)::in, int::in, int::out) is nondet
+:- pred dist(OS::in, model(I, S, R)::in, world_id(I)::in, world_id(I)::in, int::in, int::out) is nondet
 		<= isa_ontology(OS, S).
 
 dist(_Ont, _M, W1, W1, D, D).

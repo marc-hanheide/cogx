@@ -4,14 +4,14 @@
 :- import_module string, int, map, set.
 :- import_module lf, ontology.
 
-:- typeclass reachability(RT, T) where [
+:- typeclass accessibility(RT, T) where [
 	pred exclusive(RT, T),
 	mode exclusive(in, in) is semidet
 ].
 
 :- import_module unit.
 
-:- instance reachability(unit, string).
+:- instance accessibility(unit, string).
 
 :- type world_id(Index)
 	--->	initial
@@ -19,19 +19,19 @@
 	;	i(Index)
 	.
 
-:- type world_model(Index, Sort, Rel).
+:- type model(Index, Sort, Rel).
 
-:- func worlds(world_model(I, S, R)) = map(I, S).
-:- func reach(world_model(I, S, R)) = set({R, world_id(I), world_id(I)}).
-:- func props(world_model(I, S, R)) = map(world_id(I), set(proposition)).
+:- func worlds(model(I, S, R)) = map(I, S).
+:- func reach(model(I, S, R)) = set({R, world_id(I), world_id(I)}).
+:- func props(model(I, S, R)) = map(world_id(I), set(proposition)).
 
-:- func unnamed_world_indices(world_model(I, S, R)) = set(int).
+:- func unnamed_world_indices(model(I, S, R)) = set(int).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- type world_model == world_model(string, string, string).
+:- type model == model(string, string, string).
 
-:- func init = world_model(I, S, R).
+:- func init = model(I, S, R).
 
 	% add_lf(M0, LF, M)
 	% True iff
@@ -39,37 +39,37 @@
 	%
 	% i.e. add LF to M0 so that it is consistent, fail if not possible.
 	%
-:- pred add_lf(OS, RT, world_model(I, S, R), lf(I, S, R), world_model(I, S, R))
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+:- pred add_lf(OS, RT, model(I, S, R), lf(I, S, R), model(I, S, R))
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 :- mode add_lf(in, in, in, in, out) is semidet.
 
-:- pred union(OS, world_model(I, S, R), world_model(I, S, R), world_model(I, S, R)) <= isa_ontology(OS, S).
+:- pred union(OS, model(I, S, R), model(I, S, R), model(I, S, R)) <= isa_ontology(OS, S).
 :- mode union(in, in, in, out) is semidet.
 
 	% satisfies(M, LF)
 	% True iff
 	%   M |= LF
 	%
-:- pred satisfies(OS, world_model(I, S, R), lf(I, S, R)) <= isa_ontology(OS, S).
+:- pred satisfies(OS, model(I, S, R), lf(I, S, R)) <= isa_ontology(OS, S).
 :- mode satisfies(in, in, in) is semidet.
 
-	% Reduced model is a model for which it holds that for every reachability
+	% Reduced model is a model for which it holds that for every accessibility
 	% relation R and worlds w1, w2, w3, it is true that
 	%
 	%   (w1, w2) \in R & (w1, w3) \in R -> w2 = w3
 	%
-	% i.e. every reachability relation is a (partial) function W -> W
+	% i.e. every accessibility relation is a (partial) function W -> W
 	% rather than W -> pow(W)
 
 	% reduced(M) = RM
 	% True iff RM is a functionally reduced version of M.
 	%
-:- func reduced(OS::in, world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet
+:- func reduced(OS::in, model(I, S, R)::in) = (model(I, S, R)::out) is semidet
 		<= isa_ontology(OS, S).
-:- func det_reduced(OS, world_model(I, S, R)) = world_model(I, S, R) <= isa_ontology(OS, S).
+:- func det_reduced(OS, model(I, S, R)) = model(I, S, R) <= isa_ontology(OS, S).
 
 
-:- func lfs(world_model(I, S, R)) = set(lf(I, S, R)).
+:- func lfs(model(I, S, R)) = set(lf(I, S, R)).
 
 %------------------------------------------------------------------------------%
 
@@ -79,14 +79,14 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- instance reachability(unit, string) where [
+:- instance accessibility(unit, string) where [
 	(exclusive(_, _X) :- fail)
 ].
 	
-:- type world_model(Index, Sort, Rel)
+:- type model(Index, Sort, Rel)
 	--->	wm(
 		worlds :: map(Index, Sort),  % sort
-		reach :: set({Rel, world_id(Index), world_id(Index)}),  % reachability
+		reach :: set({Rel, world_id(Index), world_id(Index)}),  % accessibility
 		props :: map(world_id(Index), set(proposition)),  % valid propositions
 		next_unnamed :: int  % lowest unused index for unnamed worlds
 	).
@@ -109,7 +109,7 @@ unnamed_world_indices(M) = Ints :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred new_unnamed_world(int::out, world_model(I, S, R)::in, world_model(I, S, R)::out) is det.
+:- pred new_unnamed_world(int::out, model(I, S, R)::in, model(I, S, R)::out) is det.
 
 new_unnamed_world(Id, WM0, WM) :-
 	Id = WM0^next_unnamed,
@@ -117,8 +117,8 @@ new_unnamed_world(Id, WM0, WM) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred rename_merge_world(OS::in, world_id(I)::in, world_id(I)::in, world_model(I, S, R)::in,
-		world_model(I, S, R)::out) is det <= isa_ontology(OS, S).
+:- pred rename_merge_world(OS::in, world_id(I)::in, world_id(I)::in, model(I, S, R)::in,
+		model(I, S, R)::out) is det <= isa_ontology(OS, S).
 
 rename_merge_world(Ont, Old, New, WM0, WM) :-
 	Reach = set.map((func({Rel, OldIdA, OldIdB}) = {Rel, NewIdA, NewIdB} :-
@@ -150,8 +150,8 @@ add_lf(Ont, RT, !.WM, LF, !:WM) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred add_lf0(OS::in, RT::in, world_id(I)::in, world_id(I)::out, lf(I, S, R)::in,
-		world_model(I, S, R)::in, world_model(I, S, R)::out) is semidet
-		<= (isa_ontology(OS, S), reachability(RT, R)).
+		model(I, S, R)::in, model(I, S, R)::out) is semidet
+		<= (isa_ontology(OS, S), accessibility(RT, R)).
 
 add_lf0(Ont, RT, Cur, Cur, at(of_sort(WName, Sort), LF), WM0, WM) :-
 	% add the referenced world
@@ -256,7 +256,7 @@ union(Ont, M1, M2, M) :-
 		S = more_specific(Ont, S1, S2)
 			), M1^worlds, M2R^worlds, Worlds),
 
-		% merge reachability relations
+		% merge accessibility relations
 	set.union(M1^reach, M2R^reach, Reach),
 
 		% merge propositions
@@ -271,7 +271,7 @@ union(Ont, M1, M2, M) :-
 satisfies(Ont, M, LF) :-
 	satisfies0(Ont, initial, M, LF).
 
-:- pred satisfies0(OS::in, world_id(I)::in, world_model(I, S, R)::in, lf(I, S, R)::in) is semidet
+:- pred satisfies0(OS::in, world_id(I)::in, model(I, S, R)::in, lf(I, S, R)::in) is semidet
 		<= isa_ontology(OS, S).
 
 satisfies0(Ont, _WCur, M, at(of_sort(Idx, Sort), LF)) :-
@@ -319,7 +319,7 @@ det_reduced(Ont, M) = RM :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-	% Fails when a reachability relation that cannot be reduced to a partial
+	% Fails when a accessibility relation that cannot be reduced to a partial
 	% function is found.
 :- pred first_mergable_worlds(list({R, world_id(I), world_id(I)})::in, mergable_result(I)::out) is semidet.
 

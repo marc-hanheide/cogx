@@ -25,7 +25,6 @@ LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.
 
-# use a default grade if unset
 ifeq ($(shell uname -s), Darwin)
 # on Darwin, Mercury doesn't support asm_fast (although it should for
 # Intel-based systems?)
