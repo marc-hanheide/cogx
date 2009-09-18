@@ -39,6 +39,7 @@ CLEAR
 
 	@(v1::thing, object).
 	@(v1::thing, colour(c::colour ^ black)).
+?	@(v1::thing, colour(black)).
 
 PRINT
 REDUCE
