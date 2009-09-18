@@ -113,6 +113,10 @@ ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(
 	generate(Ctx^ont, Sub),
 	generate(Ctx^ont, Super).
 
+ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, Prop), varset.init)) :-
+	set.member(m(Mod, GProp), Ctx^ctx_expl_facts),
+	Prop = ground_formula_to_formula(GProp).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
