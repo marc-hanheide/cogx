@@ -80,19 +80,31 @@
 %
 %------------------------------------------------------------------------------#
 
-	% Facts
+	% Assumables.
+
+func = [
+	i0 : ascription(u) = 0.6,
+	i0 : ascription(v) = 0.7,
+	i0 : ascription(z) = 1.4
+].
+
+%------------------------------------------------------------------------------%
+
+	% Facts.
 
 e0:said(u).
 i0:ascription(u).
 i0:subject(u, box).
 i0:cop_restr(u, box).
-i0:quality(u, colour(X)).
+%i0:quality(u, colour(X)).
 not_ground(u).
 
 []:colour(red).
 []:colour(blue).
 
-	% Rules
+%------------------------------------------------------------------------------%
+
+	% Rules.
 
 []:(i0:quality(U, colour(Col)) <-
 	i0:colour(Col) / 0.5,

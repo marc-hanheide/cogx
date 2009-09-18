@@ -31,6 +31,7 @@ main(!IO) :-
 
 	test_term_parse("axiom : p(x).", !IO),
 	test_term_parse("[] : (p(X), q(X) -> r(X)) / fax.", !IO),
+	test_term_parse("funcname = [a, b, c].", !IO),
 
 	nl(!IO),
 

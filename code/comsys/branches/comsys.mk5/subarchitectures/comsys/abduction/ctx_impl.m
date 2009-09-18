@@ -2,22 +2,28 @@
 
 :- interface.
 
-:- import_module set.
+:- import_module set, map, pair.
 :- import_module formula.
 :- import_module context.
 :- import_module ctx_modality.
+:- import_module costs.
 
 :- type ctx.
 :- instance context(ctx, ctx_modality).
 
 :- func new_ctx = ctx.
 
+:- type assumable_function_def(M) == pair(cost_function_name, map(mgprop(M), float)).
+
 :- pred add_fact(vscope(mprop(ctx_modality))::in, ctx::in, ctx::out) is det.
 :- pred add_rule(vscope(mrule(ctx_modality))::in, ctx::in, ctx::out) is det.
+:- pred add_assumable(assumable_function_def(ctx_modality)::in, ctx::in, ctx::out) is det.
+
 
 	% for debugging purposes only!
 :- func facts(ctx) = set(vscope(mprop(ctx_modality))).
 :- func rules(ctx) = set(vscope(mrule(ctx_modality))).
+:- func assumables(ctx) = map(cost_function_name, map(mgprop(ctx_modality), float)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -48,7 +54,7 @@
 :- implementation.
 
 :- import_module require.
-:- import_module list, pair.
+:- import_module list, pair, map, float.
 :- import_module costs.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -56,7 +62,8 @@
 :- type ctx
 	--->	ctx(
 		ctx_facts :: set(vscope(mprop(ctx_modality))),
-		ctx_rules :: set(vscope(mrule(ctx_modality)))  % this doesn't really belong here, does it?
+		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
+		ctx_assumables :: map(cost_function_name, map(mgprop(ctx_modality), float))
 	).
 
 :- instance context(ctx, ctx_modality) where [
@@ -65,7 +72,7 @@
 	pred(assumable_func/4) is ctx_assumable_func
 ].
 
-new_ctx = ctx(set.init, set.init).
+new_ctx = ctx(set.init, set.init, map.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -77,11 +84,17 @@ add_rule(Rule, Ctx0, Ctx) :-
 	Rules = Ctx0^ctx_rules,
 	Ctx = Ctx0^ctx_rules := set.insert(Rules, Rule).
 
+add_assumable(FuncName-Costs, Ctx0, Ctx) :-
+	AssumFuncs = Ctx0^ctx_assumables,
+	Ctx = Ctx0^ctx_assumables := map.set(AssumFuncs, FuncName, Costs).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 facts(Ctx) = Ctx^ctx_facts.
 
 rules(Ctx) = Ctx^ctx_rules.
+
+assumables(Ctx) = Ctx^ctx_assumables.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -97,9 +110,9 @@ ctx_rule(Ctx, Rule) :-
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
-ctx_assumable_func(_, "func", m([i(this)], p("ascription", [t("u", [])])), 1.2).
-ctx_assumable_func(_, "func", m([i(this)], p("ascription", [t("v", [])])), 0.8).
-%ctx_assumable_func(_Ctx, _, _, _) :- fail.
+ctx_assumable_func(Ctx, FuncName, GProp, Cost) :-
+	map.search(Ctx^ctx_assumables, FuncName, MapCosts),
+	map.member(MapCosts, GProp, Cost).
 
 %------------------------------------------------------------------------------%
 

@@ -19,7 +19,7 @@
 :- import_module ctx_modality, ctx_impl, ctx_io.
 :- import_module modality, stringable.
 
-:- import_module parser, term_io, term, varset, formula_io, formula_ops.
+:- import_module parser, term_io, term, varset, formula_io, formula_ops, costs.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -40,12 +40,18 @@ main(!IO) :-
 				(
 					ReadResult = term(VS, Term),
 					generic_term(Term),
-					(if term_to_mrule(Term, MRule)
-					then add_rule(vs(MRule, VS), !Ctx), Continue = yes
+					(if term_to_assumable_function_def(Term, AssumFuncDef)
+					then add_assumable(AssumFuncDef, !Ctx), Continue = yes
 					else
-						(if term_to_mprop(Term, MProp)
-						then add_fact(vs(MProp, VS), !Ctx), Continue = yes
-						else error("Syntax error.")
+						(if term_to_mrule(Term, MRule)
+						then add_rule(vs(MRule, VS), !Ctx), Continue = yes
+						else
+							(if term_to_mprop(Term, MProp)
+							then add_fact(vs(MProp, VS), !Ctx), Continue = yes
+							else
+								context(FileName, Line) = get_term_context(Term),
+								error("Syntax error in " ++ FileName ++ " at line " ++ string.from_int(Line) ++ ".")
+							)
 						)
 					)
 				;
@@ -101,7 +107,30 @@ main(!IO) :-
 		format(stderr_stream, "Usage: %s GOAL GOAL_ASSUMPTION_COST < FILE\n", [s(ProgName)], !IO)
 	).
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+%------------------------------------------------------------------------------%
+
+:- pred term_to_assumable_function_def(term.term::in, assumable_function_def(M)::out) is semidet
+		<= (modality(M), parsable(M)).
+
+term_to_assumable_function_def(functor(atom("="), [FuncNameTerm, DefTerms], _), FuncDef) :-
+	FuncNameTerm = functor(atom(FuncName), [], _),
+	term_list(DefTerms, ListCostTerms),
+	list.map((pred(AssignTerm::in, MGProp-Cost::out) is semidet :-
+		AssignTerm = functor(atom("="), [MPropTerm, CostTerm], _),
+		term_to_mprop(MPropTerm, m(Mod, Prop)),
+		ground_formula(Prop, GProp),
+		MGProp = m(Mod, GProp),
+		CostTerm = functor(float(Cost), [], _)
+			), ListCostTerms, Costs),
+	FuncDef = FuncName-map.from_assoc_list(Costs).
+
+:- pred term_list(term.term::in, list(term.term)::out) is semidet.
+
+term_list(functor(atom("[]"), [], _), []).
+term_list(functor(atom("[|]"), [HeadTerm, TailTerms], _), [HeadTerm | Tail]) :-
+	term_list(TailTerms, Tail).
+
+%------------------------------------------------------------------------------%
 
 :- pred is_ctx_proof(proof(ctx_modality)::in) is det.
 
@@ -181,6 +210,21 @@ print_ctx(Ctx, !IO) :-
 		print(vsmprop_to_string(Fact), !IO),
 		nl(!IO)
 			), facts(Ctx), !IO),
+
+	nl(!IO),
+
+	print("Assumables:\n", !IO),
+	map.foldl((pred(FuncName::in, Costs::in, !.IO::di, !:IO::uo) is det :-
+		print("  ", !IO),
+		print(FuncName ++ " = ", !IO),
+
+		CostStrs = list.map((func(m(Mod, GProp)-Cost) = S :-
+			S = vsmprop_to_string(vs(m(Mod, ground_formula_to_formula(GProp)), varset.init))
+					++ " = " ++ float_to_string(Cost)
+				), map.to_assoc_list(Costs)),
+
+		print("[\n    " ++ string.join_list(",\n    ", CostStrs) ++ "\n  ].\n", !IO)
+			), assumables(Ctx), !IO),
 
 	nl(!IO),
 
