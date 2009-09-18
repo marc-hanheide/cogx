@@ -4,13 +4,15 @@
 
 :- import_module string.
 
-	% a in injective mapping T -> string
 :- typeclass stringable(T) where [
-	func to_string(T) = string,
+	func to_string(T) = string
+].
+
+:- typeclass parsable(T) where [
 	func from_string(string::in) = (T::out) is semidet
 ].
 
-:- func det_from_string(string) = T <= stringable(T).
+:- func det_from_string(string) = T <= parsable(T).
 
 %------------------------------------------------------------------------------%
 

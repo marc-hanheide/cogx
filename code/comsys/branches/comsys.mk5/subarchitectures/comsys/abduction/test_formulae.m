@@ -71,9 +71,9 @@ test_term_parse(S, !IO) :-
 
 test_mprop_parse(S, !IO) :-
 	format("(mprop) \"%s\" ... ", [s(S)], !IO),
-	(if string_as_vsmprop(S, P), P = vs(m(M, _), _), is_list_ctx_modality(M)
-	then print(P, !IO), nl(!IO), string_as_vsmprop(SNew, P),
-			format("        \"%s\"\n", [s(SNew)], !IO)
+	(if string_to_vsmprop(S) = P, P = vs(m(M, _), _), is_list_ctx_modality(M)
+	then print(P, !IO), nl(!IO),
+			format("        \"%s\"\n", [s(vsmprop_to_string(P))], !IO)
 	else print("fail", !IO), nl(!IO)
 	).
 
@@ -93,9 +93,9 @@ is_ctx_mprop(_).
 
 test_mrule_parse(S, !IO) :-
 	format("(mrule) \"%s\" ... ", [s(S)], !IO),
-	(if string_as_vsmrule(S, R), R = vs(m(M, _), _), is_list_ctx_modality(M)
-	then print(R, !IO), nl(!IO), string_as_vsmrule(SNew, R),
-			format("        \"%s\"\n", [s(SNew)], !IO)
+	(if string_to_vsmrule(S) = R, R = vs(m(M, _), _), is_list_ctx_modality(M)
+	then print(R, !IO), nl(!IO),
+			format("        \"%s\"\n", [s(vsmrule_to_string(R))], !IO)
 	else print("fail", !IO), nl(!IO)
 	).
 
