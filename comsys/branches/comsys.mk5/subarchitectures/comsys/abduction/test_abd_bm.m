@@ -14,10 +14,10 @@
 
 :- import_module require, solutions.
 :- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool, maybe.
-:- import_module abduction, formula, context, costs, belief_model.
+:- import_module abduction, formula, context, costs, belief_model, world_model.
 
 :- import_module ctx_modality, ctx_specific, ctx_io.
-:- import_module lf, lf_io.
+:- import_module lf, lf_io, stf.
 :- import_module modality, stringable.
 
 :- import_module parser, term_io, term, varset, formula_io, formula_ops, costs.
@@ -300,6 +300,22 @@ print_ctx(Ctx, !IO) :-
 				++ lf_to_string(LF), !IO),
 		nl(!IO)
 			), Ctx^bm^k, !IO),
+
+	MBM = get_mbm(set.from_list(map.values(Ctx^bm^k))),
+
+	nl(!IO),
+
+	print("generated lfs:\n", !IO),
+
+	map.foldl((pred(STF::in, BelMap::in, !.IO::di, !:IO::uo) is det :-
+		print("  " ++ to_string(STF), !IO), nl(!IO),
+		map.foldl((pred(Bel::in, M::in, !.IO::di, !:IO::uo) is det :-
+			print("    " ++ to_string(Bel), !IO), nl(!IO),
+			set.fold((pred(LF::in, !.IO::di, !:IO::uo) is det :-
+				print("      " ++ lf_to_string(LF) ++ "\n", !IO)
+					), lfs(det_reduced(M)), !IO)
+				), BelMap, !IO)
+			), MBM, !IO),
 
 /*
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-

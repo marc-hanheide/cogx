@@ -48,6 +48,7 @@
 	% True iff RM is a functionally reduced version of M.
 	%
 :- func reduced(world_model(I, S, R)::in) = (world_model(I, S, R)::out) is semidet <= isa_ontology(S).
+:- func det_reduced(world_model(I, S, R)) = world_model(I, S, R) <= isa_ontology(S).
 
 
 :- func lfs(world_model(I, S, R)) = set(lf(I, S, R)) <= isa_ontology(S).
@@ -205,6 +206,12 @@ reduced(WM) = RWM :-
 	;
 		Res = none,
 		RWM = WM
+	).
+
+det_reduced(M) = RM :-
+	(if RM0 = reduced(M)
+	then RM = RM0
+	else error("model irreducible in func det_reduced/1")
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

@@ -41,7 +41,7 @@
 :- pred add_lf_to_k(stf::in, belief::in, lf::in, int::out, belief_model::in, belief_model::out) is det.
 :- pred foreground(int::in, belief_model::in, belief_model::out) is det.
 
-:- func get_mbm(set({stf, belief, lf, maybe(foreground)})) = mbm.
+:- func get_mbm(set({stf, belief, lf})) = mbm.
 
 %------------------------------------------------------------------------------%
 
@@ -133,4 +133,4 @@ add_lf_to_mbm(STF, Bel, LF, MBM0) = MBM :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 get_mbm(Set) = MBM :-
-	MBM = set.fold((func({STF, Bel, LF, _}, MBM0) = add_lf_to_mbm(STF, Bel, LF, MBM0)), Set, map.init).
+	MBM = set.fold((func({STF, Bel, LF}, MBM0) = add_lf_to_mbm(STF, Bel, LF, MBM0)), Set, map.init).

@@ -9,6 +9,9 @@
 :- instance stringable(ctx_modality).
 :- instance term_parsable(ctx_modality).
 
+:- instance stringable(belief).
+:- instance term_parsable(belief).
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -21,6 +24,14 @@
 
 :- instance term_parsable(ctx_modality) where [
 	func(from_term/1) is ctx_modality_from_term
+].
+
+:- instance stringable(belief) where [
+	func(to_string/1) is belief_to_string
+].
+
+:- instance term_parsable(belief) where [
+	func(from_term/1) is term_to_belief
 ].
 
 %------------------------------------------------------------------------------%
@@ -93,6 +104,15 @@ ctx_modality_from_term(functor(atom("t"), [
 		STFTerm,
 		BeliefTerm
 	], _)) = t(from_term(STFTerm), term_to_belief(BeliefTerm)).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func belief_to_string(belief) = string.
+
+belief_to_string(private(A)) = to_string(A).
+belief_to_string(attrib(A, B)) = "[" ++ to_string(A) ++ "]" ++ to_string(B).
+belief_to_string(mutual(AgS)) = "{" ++ AgSStr ++ "}" :-
+	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
