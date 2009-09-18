@@ -85,19 +85,23 @@ public class PlanAllManager extends MotiveManager {
 
 		PlanningTask plan = newPlanningTask();
 
-		String goalString = "";//"(and ";
+		String goalString = "";// "(and ";
 		for (Motive m : managedMotives) {
 			if (m instanceof ExploreMotive) {
-				goalString=goalString + GoalTranslator.motive2PlannerGoal((ExploreMotive) m, getOriginMap());
-				break; // TODO: just take the first goal for now and skip the rest
-			}
-			else
-				goalString=goalString + GoalTranslator.motive2PlannerGoal((ExploreMotive) m, getOriginMap());
+				goalString = goalString
+						+ GoalTranslator.motive2PlannerGoal((ExploreMotive) m,
+								getOriginMap());
+				break; // TODO: just take the first goal for now and skip the
+				// rest
+			} else
+				goalString = goalString
+						+ GoalTranslator.motive2PlannerGoal((ExploreMotive) m,
+								getOriginMap());
 		}
-		goalString=goalString+")";
-		log("generated goal string: "+goalString);
-		plan.goal=goalString;
-		//plan.goal = "(forall (?p - place) (= (explored ?p) true))";
+		goalString = goalString + ")";
+		log("generated goal string: " + goalString);
+		plan.goal = goalString;
+		// plan.goal = "(forall (?p - place) (= (explored ?p) true))";
 
 		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
 				WorkingMemoryOperation.OVERWRITE),
@@ -105,8 +109,15 @@ public class PlanAllManager extends MotiveManager {
 
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
-						planGenerated(_wmc.address, getMemoryEntry(
-								_wmc.address, PlanningTask.class));
+						if (planGenerated(_wmc.address, getMemoryEntry(
+								_wmc.address, PlanningTask.class))) {
+							// if plan is sent to execution, stop monitoring the
+							// plan... probably only short-term solution. the
+							// current problem is that replanning causes new
+							// PlanProxy structs to be generated as the
+							// PlanningTask is overwritten
+							removeChangeFilter(this);
+						}
 
 					}
 				});
@@ -118,17 +129,30 @@ public class PlanAllManager extends MotiveManager {
 		}
 	}
 
-	private void planGenerated(WorkingMemoryAddress _wma,
+	private boolean planGenerated(WorkingMemoryAddress _wma,
 			PlanningTask _planningTask) {
 
 		if (_planningTask.planningStatus == Completion.SUCCEEDED) {
 			log("planning succeeeeeeeded "
 					+ _planningTask.planningStatus.name());
 			String id = newDataID();
+
+			addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+					WorkingMemoryOperation.DELETE),
+					new WorkingMemoryChangeReceiver() {
+						@Override
+						public void workingMemoryChanged(
+								WorkingMemoryChange _wmc) throws CASTException {
+							println("plan proxy deleted. this means that execution has finished");
+							removeChangeFilter(this);
+						}
+					});
+
 			PlanProxy pp = new PlanProxy();
 			pp.planAddress = _wma;
 			try {
 				addToWorkingMemory(id, pp);
+				return true;
 			} catch (AlreadyExistsOnWMException e) {
 				e.printStackTrace();
 			}
@@ -138,6 +162,7 @@ public class PlanAllManager extends MotiveManager {
 		} else {
 			log("planning status " + _planningTask.planningStatus.name());
 		}
+		return false;
 	}
 
 	/*

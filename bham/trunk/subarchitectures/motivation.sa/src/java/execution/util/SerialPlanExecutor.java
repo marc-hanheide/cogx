@@ -313,6 +313,7 @@ public class SerialPlanExecutor extends Thread {
 			UnknownSubarchitectureException {
 		Action action = readAction();
 		PlannedActionWrapper actionWrapper = _previousAction;
+		m_component.println("act status: " + action.status);
 		if (action.status == Completion.PENDING) {
 			actionWrapper = new PlannedActionWrapper(action, m_converter
 					.toSystemAction(action));
