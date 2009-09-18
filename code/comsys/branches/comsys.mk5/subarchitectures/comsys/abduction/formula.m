@@ -57,12 +57,6 @@
 :- type mprop(M) == modalized(list(M), atomic_formula).
 :- type mrule(M) == modalized(list(M), pair(list(with_cost_function(mprop(M))), mprop(M))).
 
-%:- type mprop == mprop(list(ctx_modality)).
-%:- type vsmprop == vscope(mprop).
-
-%:- type mrule == mrule(list(ctx_modality)).
-%:- type vsmrule == vscope(mrule).
-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- type subst == map(var, formula.term).

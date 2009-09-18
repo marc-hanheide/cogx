@@ -16,7 +16,7 @@
 :- import_module varset, term, term_io, parser.
 :- import_module formula, formula_io.
 
-:- import_module ctx_modality.
+:- import_module ctx_modality, ctx_io.
 
 main(!IO) :-
 	test_mprop_parse("p(x).", !IO),
