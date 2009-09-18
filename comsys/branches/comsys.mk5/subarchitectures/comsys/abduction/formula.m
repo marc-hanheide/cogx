@@ -42,10 +42,10 @@
 :- type mprop(M) == modalized(M, atomic_formula).
 :- type mrule(M) == modalized(M, pair(list(with_cost_function(mprop(M))), mprop(M))).
 
-:- type mprop == mprop(list(ctx)).
+:- type mprop == mprop(list(ctx_modality)).
 :- type vsmprop == vscope(mprop).
 
-:- type mrule == mrule(list(ctx)).
+:- type mrule == mrule(list(ctx_modality)).
 :- type vsmrule == vscope(mrule).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -217,14 +217,14 @@ formula_term_to_string(Varset, Arg) = S :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred term_to_list_of_ctx_refs(term.term::in, list(ctx)::out) is semidet.
+:- pred term_to_list_of_ctx_refs(term.term::in, list(ctx_modality)::out) is semidet.
 
 term_to_list_of_ctx_refs(functor(atom(S), [], _), [from_string(S)]).
 term_to_list_of_ctx_refs(functor(atom(":"), [Ms, M], _), LMs ++ LM) :-
 	term_to_list_of_ctx_refs(Ms, LMs),
 	term_to_list_of_ctx_refs(M, LM).
 
-:- func modality_to_string(list(ctx)) = string.
+:- func modality_to_string(list(ctx_modality)) = string.
 
 modality_to_string([]) = "".
 modality_to_string([H|T]) = string.join_list(":", list.map(to_string, [H|T])) ++ ":".

@@ -1,4 +1,4 @@
-:- module test_ctx.
+:- module test_modality.
 
 :- interface.
 
@@ -15,24 +15,24 @@
 :- import_module stringable.
 
 main(!IO) :-
-	test_ctx_match([i(next)], [any], !IO),
-	test_ctx_match([any], [i(next)], !IO),
-	test_ctx_match([i(next)], [i(next)], !IO),
-	test_ctx_match([any], [], !IO),
-	test_ctx_match([], [any], !IO),
-	test_ctx_match([any], [any], !IO),
-	test_ctx_match([any], [any, any], !IO),
+	test_ctx_modality_match([i(next)], [any], !IO),
+	test_ctx_modality_match([any], [i(next)], !IO),
+	test_ctx_modality_match([i(next)], [i(next)], !IO),
+	test_ctx_modality_match([any], [], !IO),
+	test_ctx_modality_match([], [any], !IO),
+	test_ctx_modality_match([any], [any], !IO),
+	test_ctx_modality_match([any], [any, any], !IO),
 
-	test_ctx_match([i(next)], [any, i(next), any], !IO),
-	test_ctx_match([i(next)], [any, i(this)], !IO),
+	test_ctx_modality_match([i(next)], [any, i(next), any], !IO),
+	test_ctx_modality_match([i(next)], [any, i(this)], !IO),
 
-	test_ctx_match([], [], !IO).
+	test_ctx_modality_match([], [], !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred test_ctx_match(list(ctx)::in, list(ctx)::in, io::di, io::uo) is det.
+:- pred test_ctx_modality_match(list(ctx_modality)::in, list(ctx_modality)::in, io::di, io::uo) is det.
 
-test_ctx_match(L, R, !IO) :-
+test_ctx_modality_match(L, R, !IO) :-
 	test_match(L, R, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
