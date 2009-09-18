@@ -21,6 +21,9 @@
 	% where `o' stands for the composition relation.
 :- pred compose(relation, relation, relation).
 :- mode compose(in, in, out) is multi.
+:- mode compose(in, in, in) is semidet.
+:- mode compose(out, in, in) is nondet.
+:- mode compose(in, out, in) is nondet.
 
 %------------------------------------------------------------------------------%
 
