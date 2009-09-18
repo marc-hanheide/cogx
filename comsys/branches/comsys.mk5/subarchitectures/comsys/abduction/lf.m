@@ -7,6 +7,9 @@
 :- import_module string.
 
 :- typeclass ontological_sort(T) where [
+
+		% subsumes(A, B)
+		% True iff A < B.
 	pred subsumes(T, T),
 	mode subsumes(in, in) is semidet
 ].
