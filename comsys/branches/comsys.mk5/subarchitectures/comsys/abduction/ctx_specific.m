@@ -8,23 +8,30 @@
 :- import_module ctx_modality.
 :- import_module costs.
 
+:- import_module belief_model.
 :- import_module abduction, modality.
 
-:- type ctx.
+:- type ctx
+	--->	ctx(
+		ctx_facts :: set(vscope(mprop(ctx_modality))),
+		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
+		ctx_assumables :: map(cost_function_name, map(mgprop(ctx_modality), float)),
+		bm :: belief_model
+	).
 :- instance context(ctx, ctx_modality).
 
 :- func new_ctx = ctx.
 
 :- type assumable_function_def(M) == pair(cost_function_name, map(mgprop(M), float)).
 
-:- pred add_fact(vscope(mprop(ctx_modality))::in, ctx::in, ctx::out) is det.
+%:- pred add_fact(vscope(mprop(ctx_modality))::in, ctx::in, ctx::out) is det.
 :- pred add_rule(vscope(mrule(ctx_modality))::in, ctx::in, ctx::out) is det.
-:- pred add_assumable(assumable_function_def(ctx_modality)::in, ctx::in, ctx::out) is det.
+%:- pred add_assumable(assumable_function_def(ctx_modality)::in, ctx::in, ctx::out) is det.
 
-:- pred set_facts(set(vscope(mprop(ctx_modality)))::in, ctx::in, ctx::out) is det.
+%:- pred set_facts(set(vscope(mprop(ctx_modality)))::in, ctx::in, ctx::out) is det.
 :- pred set_rules(set(vscope(mrule(ctx_modality)))::in, ctx::in, ctx::out) is det.
-:- pred set_assumables(map(cost_function_name, map(mgprop(ctx_modality), float))::in, ctx::in, ctx::out)
-		is det.
+%:- pred set_assumables(map(cost_function_name, map(mgprop(ctx_modality), float))::in, ctx::in, ctx::out)
+%		is det.
 
 	% for debugging purposes only!
 :- func facts(ctx) = set(vscope(mprop(ctx_modality))).
@@ -38,17 +45,8 @@
 :- import_module require.
 :- import_module list, pair, map, float.
 :- import_module costs.
-:- import_module belief_model.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- type ctx
-	--->	ctx(
-		ctx_facts :: set(vscope(mprop(ctx_modality))),
-		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
-		ctx_assumables :: map(cost_function_name, map(mgprop(ctx_modality), float)),
-		bm :: belief_model
-	).
 
 :- instance context(ctx, ctx_modality) where [
 	pred(fact_found/3) is ctx_fact,
@@ -61,28 +59,36 @@ new_ctx = ctx(set.init, set.init, map.init, belief_model.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+/*
 add_fact(Prop, Ctx0, Ctx) :-
 	Facts = Ctx0^ctx_facts,
 	Ctx = Ctx0^ctx_facts := set.insert(Facts, Prop).
+*/
 
 add_rule(Rule, Ctx0, Ctx) :-
 	Rules = Ctx0^ctx_rules,
 	Ctx = Ctx0^ctx_rules := set.insert(Rules, Rule).
 
+/*
 add_assumable(FuncName-Costs, Ctx0, Ctx) :-
 	AssumFuncs = Ctx0^ctx_assumables,
 	Ctx = Ctx0^ctx_assumables := map.set(AssumFuncs, FuncName, Costs).
+*/
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+/*
 set_facts(Facts, Ctx0, Ctx) :-
 	Ctx = Ctx0^ctx_facts := Facts.
+*/
 
 set_rules(Rules, Ctx0, Ctx) :-
 	Ctx = Ctx0^ctx_rules := Rules.
 
+/*
 set_assumables(Assumables, Ctx0, Ctx) :-
 	Ctx = Ctx0^ctx_assumables := Assumables.
+*/
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

@@ -13,8 +13,8 @@
 :- implementation.
 
 :- import_module require, solutions.
-:- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool.
-:- import_module abduction, formula, context, costs.
+:- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool, maybe.
+:- import_module abduction, formula, context, costs, belief_model.
 
 :- import_module ctx_modality, ctx_specific, ctx_io.
 :- import_module modality, stringable.
@@ -26,34 +26,29 @@
 main(!IO) :-
 	io.command_line_arguments(CmdArgs, !IO),
 	(if
-		CmdArgs = [Goal, GoalAssumeCost],
+		CmdArgs = [RulesFile, BMFile, Goal, GoalAssumeCost],
 		string.to_float(GoalAssumeCost, InitAssumeCost)
 	then
 		some [!Ctx] (
 			!:Ctx = new_ctx,
 
-%			read_file_as_lines(FileName, Strs0, !IO),
-%			preprocess_file(Strs0, Strs),
+			see(RulesFile, See1Res, !IO),
+			(See1Res = ok -> true ; error("can't open the rule file")),
 
 			do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
 				term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
 				(
 					ReadResult = term(VS, Term),
+					print(Term, !IO), nl(!IO),
 					generic_term(Term),
-					(if term_to_assumable_function_def(Term, AssumFuncDef)
-					then add_assumable(AssumFuncDef, !Ctx), Continue = yes
+					(if term_to_mrule(Term, MRule)
+					then add_rule(vs(MRule, VS), !Ctx), Continue = yes
 					else
-						(if term_to_mrule(Term, MRule)
-						then add_rule(vs(MRule, VS), !Ctx), Continue = yes
-						else
-							(if term_to_mprop(Term, MProp)
-							then add_fact(vs(MProp, VS), !Ctx), Continue = yes
-							else
-								context(FileName, Line) = get_term_context(Term),
-								error("Syntax error in " ++ FileName
-										++ " at line " ++ string.from_int(Line) ++ ".")
-							)
-						)
+						context(_, Line) = get_term_context(Term),
+						print(Term, !IO),
+						nl(!IO),
+						error("Syntax error rule file " ++ RulesFile
+								++ " at line " ++ string.from_int(Line) ++ ".")
 					)
 				;
 					ReadResult = error(Message, Linenumber),
@@ -63,6 +58,58 @@ main(!IO) :-
 					Continue = no
 				)
 					), !Ctx, !IO),
+
+			seen(!IO),
+
+			some [!BM] (
+				!:BM = belief_model.init,
+				see(BMFile, See2Res, !IO),
+				(See2Res = ok -> true ; error("can't open the model file")),
+
+				do_while((pred(Continue::out, !.BM::in, !:BM::out, !.IO::di, !:IO::uo) is det :-
+					term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
+					(
+						ReadResult = term(_VS, Term),
+						generic_term(Term),
+						(if
+							Term = functor(atom(":"), [TKTerm, RestTerm], _),
+							RestTerm = functor(atom(":"), [FormulaTerm, FgTerm], _),
+
+							Formula = formula_to_ground_formula(term_to_atomic_formula(FormulaTerm)),
+
+							( FgTerm = functor(atom("y"), [functor(atom("com"), [], _)], _), Fg = yes(com)
+							; FgTerm = functor(atom("n"), [], _), Fg = no
+							),
+
+							Mod = from_term(TKTerm),
+							(
+								Mod = k(Stf, Bel),
+								Ks = !.BM^k,
+								!:BM = !.BM^k := set.insert(Ks, {Stf, Bel, Formula, Fg})
+							;
+								Mod = t(Stf, Bel),
+								Ks = !.BM^t,
+								!:BM = !.BM^t := set.insert(Ks, {Stf, Bel, Formula, Fg})
+							)
+						then
+							Continue = yes
+						else
+							context(_, Line) = get_term_context(Term),
+							error("Syntax error rule file " ++ RulesFile
+									++ " at line " ++ string.from_int(Line) ++ ".")
+						)
+					;
+						ReadResult = error(Message, Linenumber),
+						error(Message ++ " at line " ++ string.from_int(Linenumber) ++ ".")
+					;
+						ReadResult = eof,
+						Continue = no
+					)
+						), !BM, !IO),
+
+				seen(!IO),
+				!:Ctx = !.Ctx^bm := !.BM
+			),
 
 			vs(InitMProp, InitVarset) = det_string_to_vsmprop(Goal),
 
@@ -128,7 +175,7 @@ main(!IO) :-
 		)
 	else
 		io.progname("?", ProgName, !IO),
-		format(stderr_stream, "Usage: %s GOAL GOAL_ASSUMPTION_COST < FILE\n", [s(ProgName)], !IO)
+		format(stderr_stream, "Usage: %s RULES-FILE MODEL-FILE GOAL GOAL-ASSUMPTION-COST\n", [s(ProgName)], !IO)
 	).
 
 %------------------------------------------------------------------------------%
