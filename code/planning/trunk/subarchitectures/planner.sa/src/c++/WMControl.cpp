@@ -76,7 +76,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 
     task->id = TASK_ID;
     task->plan = vector<ActionPtr>();
-    task->status = PENDING;
+    task->executionStatus = PENDING;
     task->firstActionID = "";
     task->planningStatus = PENDING;
     activeTasks[task->id] = wmc;
@@ -121,16 +121,9 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 
     assert(task->plan.size() > 0);
     task->plan[0]->status = action->status;
-
-    for(ActionSeq::iterator it = task->plan.begin(); it != task->plan.end(); ++it) {
-        if ((*it)->name == action->name) {
-            (*it)->status = action->status;
-            break;
-        }
-    }
     
     if (action->status == ABORTED || action->status == FAILED) {
-        task->status = action->status;
+        task->executionStatus = action->status;
         overwriteWorkingMemory(activeTasks[task->id].address, task);
     }
     else if (action->status == SUCCEEDED) {
@@ -214,12 +207,12 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
         ActionPtr first_action = plan[0];
         first_action->status = PENDING;
         writeAction(first_action, task);
-        task->status = INPROGRESS;
+        task->executionStatus = INPROGRESS;
         overwriteWorkingMemory(activeTasks[id].address, task);
     }
     else {
         log("Task %d succeeded.", task->id);
-        task->status = SUCCEEDED;
+        task->executionStatus = SUCCEEDED;
         overwriteWorkingMemory(activeTasks[id].address, task);
         activeTasks.erase(id);
     }
@@ -234,7 +227,7 @@ void WMControl::updateStatus(int id, Completion status) {
     log("Settings planning status of task %d to %d", id, status);
     if (status == ABORTED || status == FAILED) {
         log("Planning failed, setting status of task %d to %d", id, status);
-        task->status = status;
+        task->executionStatus = status;
     }
     overwriteWorkingMemory(activeTasks[id].address, task);
 }
