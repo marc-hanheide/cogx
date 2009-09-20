@@ -46,18 +46,19 @@ endif
 compile: $(BIN)
 
 .PRECIOUS: %.o
-%.o: %.cc Abducer.h aserv.h iceserv_lib.mh
+%.o: %.cc Abducer.h TypeConversions.h aserv.h iceserv_lib.mh
 	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
 
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
 	slice2cpp -I . --source-ext cc $(SLICE_PATH)/Abducer.ice
 
-abducer-server: $(MFILES) aserv.o Abducer.o
+abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o
 	mmc --make \
 		--link-executable-command=$(CXX) \
-		--link-shared-lib-command=$(CXX) \
-		--link-object aserv.o \
 		--link-object Abducer.o \
+		--link-object TypeConversions.o \
+		--link-object MercuryAbducerServer.o \
+		--link-object aserv.o \
 		--grade $(GRADE) \
 		$(MCFLAGS) \
 		$(LDFLAGS) \
@@ -75,5 +76,6 @@ clean:
 	rm -rf $(BIN) Mercury \
 		$(addsuffix .err, $(basename $(MFILES))) \
 		$(addsuffix .mh, $(basename $(MFILES))) \
-		abducer-server aserv.o \
+		abducer-server \
+		aserv.o TypeConversions.o MercuryAbducerServer.o \
 		Abducer.o Abducer.cc Abducer.h
