@@ -1,7 +1,8 @@
 #include "MercuryAbducerServer.h"
 
 extern "C" {
-#include "iceserv_lib.mh"
+#include "MercuryAbducerServer_mint.mh"
+#include "TypeConversions_mint.mh"
 }
 
 #include "TypeConversions.h"

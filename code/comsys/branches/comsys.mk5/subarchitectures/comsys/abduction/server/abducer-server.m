@@ -9,7 +9,7 @@
 
 :- implementation.
 :- import_module list, string, int.
-:- import_module iceserv_lib.
+:- import_module 'MercuryAbducerServer_mint', 'TypeConversions_mint'.
 
 :- pragma foreign_decl("C", "#include \"aserv.h\"").
 

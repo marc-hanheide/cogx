@@ -4,7 +4,7 @@
 #include <vector>
 
 extern "C" {
-#include "iceserv_lib.mh"
+#include "TypeConversions_mint.mh"
 }
 
 using namespace std;

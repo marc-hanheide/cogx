@@ -1,6 +1,6 @@
 extern "C" {
 #include "mercury_imp.h"
-#include "iceserv_lib.mh"
+#include "MercuryAbducerServer_mint.mh"
 }
 
 #include <Ice/Ice.h>
