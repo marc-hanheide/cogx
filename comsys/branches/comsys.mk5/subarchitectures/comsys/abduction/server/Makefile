@@ -16,7 +16,7 @@ MCFLAGS?=--search-lib-files-dir ../lib \
 
 #------------------------------------------------------------------------------#
 
-SLICE_PATH?=..
+SLICE_PATH?=.
 
 ICE_HOME=$(HOME)/Developer/Ice-3.3.1
 
@@ -50,7 +50,7 @@ compile: $(BIN)
 	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
 
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
-	slice2cpp -I . --source-ext cc ../Abducer.ice
+	slice2cpp -I . --source-ext cc $(SLICE_PATH)/Abducer.ice
 
 abducer-server: $(MFILES) aserv.o Abducer.o
 	mmc --make \
