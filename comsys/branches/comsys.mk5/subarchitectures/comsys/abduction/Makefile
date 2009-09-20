@@ -1,86 +1,24 @@
-# $Id$
+.PHONY: main
+main: server
 
-# Binary files to be built.
-#
-MBIN=test_abduction test_formulae test_lf test_modality test_rcc test_abd_bm
-COMBBIN=abducer-server
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
-# Mercury source files.
-#
-MFILES=test_abduction.m abduction.m context.m formula.m costs.m test_formulae.m modality.m stringable.m ctx_modality.m formula_io.m lf.m test_lf.m test_modality.m ctx_specific.m ctx_io.m formula_ops.m ctx_modality.m rcc.m test_rcc.m abducer-server.m iceserv_lib.m ctx_loadable.m belief_model.m test_abd_bm.m model.m lf_io.m stf.m ontology.m model_io.m ling.m enumerable.m ctx_ontology.m utils.m abd_io.m
+.PHONY: lib
+lib:
+	make -C lib
 
-# Mercury compiler flags
-#
-MCFLAGS?=
+.PHONY: server
+server: lib
+	make -C server
+	[ -e abducer-server ] || ln -s server/abducer-server
 
-#------------------------------------------------------------------------------#
-
-ICE_HOME=$(HOME)/Developer/Ice-3.3.1
-
-MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
-
-CXXFLAGS=-Wall
-LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
-
-#------------------------------------------------------------------------------#
-# You shouldn't need to edit anything below.
-
-ifeq ($(shell uname -s), Darwin)
-# on Darwin, Mercury doesn't support asm_fast (although it should for
-# Intel-based systems?)
-GRADE?=hlc.gc
-else
-# try asm_fast.gc otherwise
-GRADE?=asm_fast.gc
-endif
-
-# on BSD, without deactivating suffix rules, any "non-suffixed"
-# target would be matched by some sort of default rule (using
-# $(CC)), not by our rule.
-.SUFFIXES:
-
-.PHONY: compile
-compile: $(MBIN) $(COMBBIN)
-
-.PRECIOUS: %.o
-%.o: %.cc Abducer.h aserv.h iceserv_lib.mh
-	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
-
-Mercury/os/%.o: %.m
-	mmc --make \
-		--grade $(GRADE) \
-		$(MCFLAGS) \
-		$*.o
-
-Abducer.h Abducer.cc: Abducer.ice
-	slice2cpp -I . --source-ext cc Abducer.ice
-
-$(MBIN): $(MFILES) aserv.o
-	mmc --make \
-		--grade $(GRADE) \
-		$(MCFLAGS) \
-		$@
-
-abducer-server: $(MFILES) aserv.o Abducer.o
-	mmc --make \
-		--link-executable-command=$(CXX) \
-		--link-shared-lib-command=$(CXX) \
-		--link-object aserv.o \
-		--link-object Abducer.o \
-		--grade $(GRADE) \
-		$(MCFLAGS) \
-		$(LDFLAGS) \
-		$@
-
-.PRECIOUS: %.mh
-%.mh: %.m
-	mmc --make $*.o
+.PHONY: tests
+tests: lib
+	make -C tests
 
 .PHONY: clean
 clean:
-	rm -rf $(BIN) Mercury \
-		$(addsuffix .err, $(basename $(MFILES))) \
-		$(addsuffix .mh, $(basename $(MFILES))) \
-		$(MBIN) $(COMBBIN) \
-		abducer-server aserv.o \
-		Abducer.o Abducer.cc Abducer.h
+	make -C lib clean
+	make -C server clean
+	make -C tests clean
+	rm -f abducer-server
