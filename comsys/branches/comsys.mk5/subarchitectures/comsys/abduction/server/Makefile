@@ -6,7 +6,7 @@ BIN=abducer-server
 
 # Mercury source files.
 #
-MFILES=abducer-server.m iceserv_lib.m
+MFILES=abducer-server.m MercuryAbducerServer_mint.m TypeConversions_mint.m
 
 # Mercury compiler flags
 #
@@ -46,7 +46,7 @@ endif
 compile: $(BIN)
 
 .PRECIOUS: %.o
-%.o: %.cc Abducer.h TypeConversions.h aserv.h iceserv_lib.mh
+%.o: %.cc aserv.h Abducer.h TypeConversions.h TypeConversions_mint.mh MercuryAbducerServer.h MercuryAbducerServer_mint.mh
 	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
 
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
@@ -77,5 +77,5 @@ clean:
 		$(addsuffix .err, $(basename $(MFILES))) \
 		$(addsuffix .mh, $(basename $(MFILES))) \
 		abducer-server \
-		aserv.o TypeConversions.o MercuryAbducerServer.o \
+		TypeConversions.o MercuryAbducerServer.o \
 		Abducer.o Abducer.cc Abducer.h
