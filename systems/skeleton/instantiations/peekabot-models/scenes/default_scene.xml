@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<!-- This file is distributed as a part of peekabot and is considered to be 
+     part of the public domain. -->
+
+<!-- This is the default scene file loaded at start-up. You can override it by 
+     putting a file of the same name in a directory searched for scenes before 
+     $pkgdatadir/scenes, e.g. ~/.peekabot/scenes/. -->
+
+<scene>
+  <color r="0.8" g="0.8" b="0.8">
+    <grid>
+      <segments>100</segments>
+    </grid>
+  </color>
+</scene>
