@@ -1,0 +1,52 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :durative-actions :object-fluents :numeric-fluents)
+	
+	(:types 
+		robot - agent
+
+		node - object
+		place_type - object
+	)
+	
+	(:constants
+		place placeholder - place_type
+        R2D2 - robot
+	)
+
+    (:predicates
+		(connected ?n1 ?n2 - node)
+		;; special
+		(has-goal ?a - agent)
+		(commited ?a - agent)
+    )
+
+	(:functions
+        (distance ?n1 ?n2 - node) - number
+		(place_type ?n - node) - place_type
+		(pos ?r -  agent) - node
+ 	)
+	
+
+;;; actions ;;;
+
+	(:durative-action move
+	 :agent (?a - robot)
+	 :parameters (?to - node)
+     :duration (at start (= ?duration (* (distance (pos ?a) ?to) 2.0)))
+	 :condition (and 
+		(at start (or (connected (pos ?a) ?to) (connected ?to (pos ?a))))
+		)
+	 :effect (and
+		(change (pos ?a) ?to)
+	))
+
+	(:sensor sense_place
+	 :agent (?a - robot)
+	 :parameters (?loc - node)
+	 :precondition (= (pos ?a) ?loc)
+     :sense (place_type ?loc)
+    )
+
+
+)
