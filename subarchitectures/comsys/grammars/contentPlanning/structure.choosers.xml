@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-structure.content-presence" region="STRUCTURE" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="Content"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="content"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-content"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-structure.list" region="STRUCTURE" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-fv" type="string" answerset="@true @false"> 
+	     <q-ex-fv  feat="List" val="disjunction"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="disjunction"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="conjunction"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-structure.pronominalization" region="STRUCTURE" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="random" type="string" answerset="@pronoun-it @pronoun-this"> 
+	     </inquiry>
+  	     <choicenode answer="pronoun-it">
+	       <result val="pronoun-it"/>
+	     </choicenode>
+	     <choicenode answer="pronoun-this">
+	       <result val="pronoun-this"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+
+</choosers>
