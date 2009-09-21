@@ -1,0 +1,14 @@
+HOST 127.0.0.1
+
+COMPONENT CPP laser.server LaserServerPlayer --log 
+COMPONENT CPP robot.server RobotbaseServerPlayer --log
+
+SUBARCHITECTURE nav.sa
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log #--debug 
+
+CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --log 
+
+CPP GD navgraph.process NavGraphProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --log
