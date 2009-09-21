@@ -61,16 +61,16 @@ module Abducer {
 	sequence<AssumableGoal> AssumableGoalSeq;
 
 	sequence<string> stringSeq;
+	sequence<int> intSeq;
 
 	class AbductiveProof {
 		float cost;
-		stringSeq assumed;
-		stringSeq asserted;
-		//ModalisedFormulaSeq assumed;
-		//AssertionSeq asserted;
+		ModalisedFormulaSeq body;
+		intSeq assumed;
+		intSeq asserted;
 	};
 
-	enum ProofResult {
+	enum ProveResult {
 		SUCCESS,
 		FAILED,
 		ERROR
@@ -84,7 +84,10 @@ module Abducer {
 		void loadFactsFromFile(string filename);
 		void addFact(ModalisedFormula f);
 
-		ProofResult prove(AssumableGoalSeq g);
+		void clearAssumables();
+		void addAssumable(string function, ModalisedFormula f, float cost);
+
+		ProveResult prove(AssumableGoalSeq g);
 		AbductiveProof getBestProof();
 	};
 
