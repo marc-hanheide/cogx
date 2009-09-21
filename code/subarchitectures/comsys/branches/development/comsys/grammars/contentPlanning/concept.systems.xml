@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /**
+@system concept takes the value of the concept feature and turns it into a proposition that must hold on a nominal.
+This is to get the lexicalization of a head noun or property.
+
+We changed it. not used anymore.
+
+*/ --> 
+
+<system id="concept" region="CONCEPT" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:entity"/>  
+      <condition features="@type:physical"/> 
+      <condition features="@type:substance"/>
+      <condition features="@type:quality"/>  
+   </conditions>
+   <actions>
+      <action choice="default"> 
+       	 <copy-feature srcfeat="Concept" mode="proposition" /> 
+      </action>
+
+   </actions>
+</system>
+
+
+</systems>
