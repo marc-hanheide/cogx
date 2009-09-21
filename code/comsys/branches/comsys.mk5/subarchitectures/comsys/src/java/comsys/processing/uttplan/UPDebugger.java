@@ -84,6 +84,10 @@ public class UPDebugger
 
     private final String version = "0.25";
 
+	String reduxfile; 	
+	private Vector modelRedux; 
+	
+	
     //=================================================================
     // CONSTRUCTOR METHODS
     //=================================================================
@@ -93,9 +97,7 @@ public class UPDebugger
      */
 
     public UPDebugger () {
-
     } // end constructor
-
 
 
     //=================================================================
@@ -195,6 +197,50 @@ public class UPDebugger
     } // end editRelations
     
 
+/** applyModelReduction removes parts of the LF unknown to the realization grammar
+  * copied over from cc_ContentPlanning.java
+ */
+	
+	private LogicalForm applyModelReduction (LogicalForm lf) { 
+		// log("Root nominal: \n"+LFUtils.lfNominalToString(lf.root));
+		// Create a new result
+		LogicalForm result = LFUtils.newLogicalForm();
+		result.noms = null;
+		// Cycle over the nominals in the given lf
+		for (Iterator<LFNominal> nomsIter = LFUtils.lfGetNominals(lf); nomsIter.hasNext(); ) { 
+			// Get the next nominal
+			LFNominal nom = nomsIter.next();
+			// log("Reducing nominal: \n"+LFUtils.lfNominalToString(nom));
+			
+			LFNominal newNom = LFUtils.lfNominalClone(nom);
+			// Reset the features in the cloned nominal
+			newNom.feats = new comsys.datastructs.lf.Feature[0];
+			// Cycle over the features in the nominal
+			for (Iterator<comsys.datastructs.lf.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
+				comsys.datastructs.lf.Feature feat = featsIter.next();
+				if (modelRedux.contains(feat.feat)) { 
+					// do sweet bugger all, this is one to delete
+					// log("Removing feature from nominal: ["+feat.feat+"]");
+				} else { 
+					// log("Adding feature from nominal: ["+feat.feat+"]");
+					newNom.feats = LFUtils.lfNominalAddFeature(newNom,feat);
+				} // end if.. check whether to delete
+			} // end for over features
+			// Finally, add the updated nominal
+			// log("Reduced nominal: \n"+LFUtils.lfNominalToString(newNom));
+			result.noms = LFUtils.lfAddNominal(result,newNom);
+			// log("Updated reduced LF: "+LFUtils.lfToString(result));
+		} // end for over nominals
+		// log("End for over nominals for applying model reduction");
+		result.noms = LFUtils.lfRemoveNominal(result.noms,"");
+		LFNominal resultRoot = LFUtils.lfGetNominal(result,lf.root.nomVar);
+		result.root = resultRoot;
+		log("Final reduced LF: "+LFUtils.lfToString(result));
+		return result;
+	} // end applyModelReduction
+	
+	
+	
     public String realizeLF (Realizer realizer, LogicalForm logform) { 
 		
 	String output = "";
@@ -389,15 +435,21 @@ public class UPDebugger
 	                        +"Command line options:\n"
 	                        +"-help, -usage: this message\n"
 	                        +"-grammar <file>: load the planning grammar <file>\n";
-
+							+"-ccg <file>: load the realizer grammar <file>\n";
+							+"-redux <file>: load <fiile> listing the LF features not recognized by the realizer \n";
+		// There also used to be command line arg -ngrams for the realizer
+		
 	// Default the grammar file to grammar.xml in the current working directory
 	String curDir = System.getProperty("user.dir");
-	String grammarfile = curDir+"/grammar.xml";
+	String grammarfile = curDir+"/subarchitectures/comsys/grammars/contentPlanning/grammar.xml";
 
-	// Set the ccg grammar file and the realizer to null
-	String ccgfile = null; 
+	// Default the realizer grammar to moloko6
+	String ccgfile = curDir+"/subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml"; 
 	Realizer realizer = null;
 
+	// Set default model redux
+	reduxfile = curDir+"/subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx";
+		
 	// Check whether debugger is started with cry for help
         if (args.length > 0 && (args[0].equals("-help")||args[0].equals("-usage"))) {
             System.out.println("Usage: " + usage);
@@ -409,6 +461,7 @@ public class UPDebugger
 	    for (int i=0; i < args.length; i++) { 
 		if (args[i].equals("-grammar")) { grammarfile=args[++i]; }
 		if (args[i].equals("-ccg")) { ccgfile=args[++i]; }
+		if (args[i].equals("-redux")) { reduxfile=args[++i]; }
 	    } // end for
 	} // end if
 
@@ -425,14 +478,21 @@ public class UPDebugger
 	if (ccgfile != null) { 
 	    try { 
 		URL grammarURL = new File(ccgfile).toURL();
-		System.out.println("Loading a CCG grammar from URL: " + grammarURL);
+		System.out.println("Loading a CCG grammar from ["+grammarURL+"]");
 		Grammar grammar = new Grammar(grammarURL);
 		realizer = new Realizer(grammar);	
 	    } catch (IOException e) {
 		error(e.getMessage());
 	    }
 	} // end if check whether there is already a CCG grammar
-
+				
+		// Handle model reduction
+		modelRedux = new Vector();
+		if (reduxfile != null) { 
+			log("Loading a model redux file from: ["+reduxfile+"]");
+			loadModelRedux(reduxfile);
+		} // end if.. 	
+				
 	// Now start up the interface
 	try { 
 	    reader = new ConsoleReader (); 
@@ -499,11 +559,17 @@ public class UPDebugger
 			String lfstr = input.substring(atop,input.length());
 			LogicalForm lf = LFUtils.convertFromString(lfstr);
 			LogicalForm planlf = planner.plan(lf);
-			lastLF = planlf;
+			// Apply model reduction
+			lastLF = applyModelReduction(planlf);
+			// old: lastLF = planlf;
 			System.out.println();
 			System.out.println("Resulting logical form:");
 			msg("");
-			System.out.println(planlf.toString());
+			System.out.println(LFUtils.lfToString(planlf));
+			msg("");
+			System.out.println("Resulting logical form after reduction:");
+			msg("");
+			System.out.println(LFUtils.lfToString(lastLF));
 			msg("");
 		    } else {
 			error("':plan' requires a communicative goal, specified as HLDS logical form.");
@@ -556,6 +622,21 @@ public class UPDebugger
 
     } // end 
 
+	private void loadModelRedux (String filename) { 
+		Scanner s = null;
+		try {
+			s = new Scanner(new BufferedReader(new FileReader(filename)));
+			while (s.hasNext()) { 
+				String redux = s.next();
+				log("Redux: ["+redux+"]");
+			modelRedux.add(redux); } 
+		} catch (IOException e) { 
+			log("Error while loading model reduction file:\n"+e.getMessage());
+		} finally {
+			if (s != null) { s.close(); } 
+		} // end try..finally
+	} // and loadModelReduction		
+	
     //=================================================================
     // MISCELLANEOUS METHODS
     //=================================================================
