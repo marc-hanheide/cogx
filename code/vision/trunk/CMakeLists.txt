@@ -65,7 +65,7 @@ endif(BUILD_HAL_TESTS)
 
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
-
+add_subdirectory (tools/matlab)
 add_subdirectory (tools/math)
 
 option(BUILD_HAL_VIDEO "Build hardware video" YES)
@@ -82,8 +82,6 @@ option(BUILD_SA_VISION "Build vision subarchitecure" YES)
 if(BUILD_SA_VISION)
 add_subdirectory (subarchitectures/vision.sa)
 endif(BUILD_SA_VISION)
-
-
 
 option(BUILD_SA_NICK "Build nickigation subarchitecure" NO)
 if(BUILD_SA_NICK)

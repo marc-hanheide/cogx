@@ -1,5 +1,5 @@
 #include <cv.h>
-#include <mlhelper/idl/Matlab.hh>
+#include <MatlabData.hpp>
 #include <mclmcr.h>
 #include <mclcppclass.h>
 
