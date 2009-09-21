@@ -4,8 +4,8 @@
 
 PROGRAMS = genroi
 DEFS =
-CFLAGS += -Wall -O2 $(CINC) $(DEFS)
-LDLIBS += -lcv -lhighgui
+CFLAGS += -Wall -O2 $(CINC) $(DEFS) `pkg-config opencv --cflags`
+LDLIBS += `pkg-config opencv --libs`
 LDFLAGS += $(LDLIBS)
 
 all : $(PROGRAMS)
