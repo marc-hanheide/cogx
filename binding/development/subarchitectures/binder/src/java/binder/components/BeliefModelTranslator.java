@@ -2,10 +2,8 @@ package binder.components;
 
 import binder.autogen.beliefmodel.ColorProperty;
 import binder.autogen.beliefmodel.ComplexFormula;
-import binder.autogen.beliefmodel.ComplexProperty;
+import binder.autogen.beliefmodel.EntityDescription;
 import binder.autogen.beliefmodel.LogicalOp;
-import binder.autogen.beliefmodel.Property;
-import binder.autogen.beliefmodel.Entity;
 import binder.autogen.beliefmodel.SuperFormula;
 import binder.autogen.beliefmodel.UncertainSuperFormula;
 import binder.autogen.core.Feature;
@@ -45,45 +43,73 @@ public class BeliefModelTranslator extends ManagedComponent {
 	}
 	
 	
+	public SuperFormula getFeatureValuesAsFormula (Feature feat, int featnumber) {
+		
+		SuperFormula formula;
+
+		if (feat.alternativeValues.length == 1) {
+			formula = BeliefModelUtils.createNewProperty(feat.featlabel, feat.alternativeValues[0]);			
+		}
+		else if (feat.alternativeValues.length >1) {
+			ComplexFormula featurevalues = new ComplexFormula();
+			SuperFormula[] featvalsArray = new UncertainSuperFormula[feat.alternativeValues.length];
+			
+			for (int k = 0 ; k < feat.alternativeValues.length ;k++) {
+				featvalsArray[k] = BeliefModelUtils.createNewProperty(feat.featlabel, feat.alternativeValues[k]);
+				featvalsArray[k].id = "featvalue-" + (k+1);
+			}
+			featurevalues.formulae = featvalsArray;
+			featurevalues.op = LogicalOp.xor;
+			formula = featurevalues;
+		}
+		else {
+			formula = new UncertainSuperFormula();
+		}
+		
+		formula.id = "feature-" + featnumber;
+		return formula;
+	}
+	
+	
 	public SuperFormula translateIntoBeliefModel(UnionConfiguration config) {
 		ComplexFormula formula = new ComplexFormula();
-		formula.id = newDataID();
+		
+		int UnionConfigNb = 1;
+		formula.id = "unionconfig-" + UnionConfigNb;
 		formula.op = LogicalOp.and;
-		formula.formulae = new Entity[config.includedUnions.length];
+		formula.formulae = new SuperFormula[config.includedUnions.length];
 	
 		for (int i = 0 ; i < config.includedUnions.length ; i++) {
-			
+		
 			Union union = config.includedUnions[i];
 			
-			formula.formulae[i] = new Entity();			
-			formula.formulae[i].id = newDataID();
-			((Entity)formula.formulae[i]).properties = 
-				new Property[union.features.length];
-			
-			for (int j = 0 ; j < union.features.length ; j++) {
+			if (union.features.length == 1) {
+				Feature feat = union.features[0];
+				formula.formulae[i] = getFeatureValuesAsFormula(feat, 1);
 				
-				Feature feat = union.features[j];
-				if (feat.alternativeValues.length == 1) {
-				((Entity)formula.formulae[i]).properties[j] = 
-					BeliefModelUtils.createNewProperty(feat.featlabel, feat.alternativeValues[0]);
-					log("alter: " + ((StringValue)feat.alternativeValues[0]).val);
-				}	
-				else {
-					ComplexProperty complexProp = new ComplexProperty();
-					complexProp.alternativeProperties = 
-						new Property[feat.alternativeValues.length];
-					for (int k = 0 ; k < feat.alternativeValues.length ;k++) {
-						complexProp.alternativeProperties[k] = 
-							BeliefModelUtils.createNewProperty(feat.featlabel, feat.alternativeValues[k]);
-					}
-					((Entity)formula.formulae[i]).properties[j] = complexProp;
-				}
-				((Entity)formula.formulae[i]).properties[j].id = newDataID();
 			}
+			else if (union.features.length > 1) {
+				ComplexFormula entity = new ComplexFormula();
+				entity.id = newDataID();
+				entity.op = LogicalOp.and;
+
+				SuperFormula[] properties = new SuperFormula[union.features.length];
+				for (int j = 0 ; j < union.features.length ; j++) {
+				
+					Feature feat = union.features[j];
+					properties[j] = getFeatureValuesAsFormula(feat, (j+1));
+			 		
+				}
+				entity.formulae = properties;
+				formula.formulae[i] = entity;
+
+			}
+			formula.formulae[i].id = "union-"  + (i+1);		
 			
 		}
-	
-		log(BeliefModelUtils.getFormulaPrettyPrint(formula));
+		log("Formula successfully built!");
+		
+		log("\n"+BeliefModelUtils.getFormulaPrettyPrint(formula));
 		return formula;
 	}
 

@@ -1,14 +1,13 @@
 package binder.abstr;
 
 import java.util.Enumeration;
-import java.util.HashMap;
+
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.specialentities.PhantomProxy;
-import binder.utils.GradientDescent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
