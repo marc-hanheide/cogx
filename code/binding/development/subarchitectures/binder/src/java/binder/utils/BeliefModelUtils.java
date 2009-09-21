@@ -4,13 +4,12 @@ package binder.utils;
 import binder.autogen.beliefmodel.Color;
 import binder.autogen.beliefmodel.ColorProperty;
 import binder.autogen.beliefmodel.ComplexFormula;
-import binder.autogen.beliefmodel.ComplexProperty;
-import binder.autogen.beliefmodel.Entity;
 import binder.autogen.beliefmodel.LogicalOp;
-import binder.autogen.beliefmodel.Property;
+import binder.autogen.beliefmodel.ObjectTypeProperty;
 import binder.autogen.beliefmodel.Shape;
 import binder.autogen.beliefmodel.ShapeProperty;
 import binder.autogen.beliefmodel.SuperFormula;
+import binder.autogen.beliefmodel.UncertainSuperFormula;
 import binder.autogen.core.FeatureValue;
 
 public class BeliefModelUtils {
@@ -23,7 +22,7 @@ public class BeliefModelUtils {
 
 
 
-	public static Property createNewProperty(String featlabel, FeatureValue fv) {
+	public static UncertainSuperFormula createNewProperty(String featlabel, FeatureValue fv) {
 
 		if (featlabel.equals("colour")) {
 			ColorProperty property = new ColorProperty();
@@ -38,6 +37,7 @@ public class BeliefModelUtils {
 				property.colorValue = Color.green;
 			}
 
+			property.unc = fv.independentProb;
 			return property;
 		}
 		
@@ -45,85 +45,117 @@ public class BeliefModelUtils {
 			ShapeProperty property = new ShapeProperty();
 
 			if (FeatureValueUtils.hasValue(fv, "cylindrical")) {
-				property.shapedValue = Shape.cylindrical;
+				property.shapeValue = Shape.cylindrical;
 			}
 			if (FeatureValueUtils.hasValue(fv, "spherical")) {
-				property.shapedValue = Shape.spherical;
+				property.shapeValue = Shape.spherical;
 			}
 			if (FeatureValueUtils.hasValue(fv, "cubic")) {
-				property.shapedValue = Shape.cubic;
+				property.shapeValue = Shape.cubic;
 			}
 
+			property.unc = fv.independentProb;
 			return property;
 		}
 
-		return new Property();
+		return new UncertainSuperFormula();
 	}
 
 	
-	public static Object getValue(Property property) {
+	
+	public static Object getValue(SuperFormula property) {
 		if (property instanceof ColorProperty) {
 			return ((ColorProperty)property).colorValue;
 		}
 		else if (property instanceof ShapeProperty) {
-			return ((ShapeProperty)property).shapedValue;
+			return ((ShapeProperty)property).shapeValue;
 		}
 		return null;
 	}
 	
+	
 	public static String getFormulaPrettyPrint(SuperFormula formula) {
-		String result = "\n";
-		result += "@(" + formula.id + ":" + formula.getClass().getSimpleName() + " ^ ";
-		if (formula instanceof ComplexFormula) {
-			log("Number of formulae in complex formula: "  + ((ComplexFormula)formula).formulae.length);
-
-			for (int i = 0 ; i < ((ComplexFormula)formula).formulae.length ; i++) {
-				SuperFormula subformula = ((ComplexFormula)formula).formulae[i];
-
-				result += "(" + subformula.id + " ^ "; 
-
-				if (subformula instanceof Entity) {
-					log("\tnumber of features for subformula "  + i + ": " + ((Entity)subformula).properties.length);
-					for (int j = 0 ; j < ((Entity)subformula).properties.length ; j++) {
-						
-						Property property = ((Entity)subformula).properties[j];
-						
-						if (property instanceof ComplexProperty) {
-							result += "(";
-							for (int k = 0 ; k < ((ComplexProperty)property).alternativeProperties.length ; k++) {
-								Property altproperty = ((ComplexProperty)property).alternativeProperties[k];
-								result += "<" + altproperty.getClass().getSimpleName() + "> ";
-								result += getValue(altproperty);
-								if (k < (((ComplexProperty)property).alternativeProperties.length - 1)) {
-									result += " v \n\t\t ";
-								}
-							}
-							result += ")";
-						}
-						else {
-						result += "<" + property.getClass().getSimpleName() + "> ";
-						result += getValue(property);
-						log("current property: <" + property.getClass().getSimpleName() + "> " + getValue(property));
-						
-						}
-						
-						if (j < (((Entity)subformula).properties.length - 1)) {
-							result += " ^ \n\t\t";
-						}
-					}
-				}
-				result += ")";
-				
-				if (i < (((ComplexFormula)formula).formulae.length - 1)) {
-					if (((ComplexFormula)formula).op.equals(LogicalOp.and)) {
-						result += " ^ \n\t";
-					}
-				}
-			}
-		}
-		result += ")\n";
+		String result = "@(" ;
+		
+		result += getFormulaPrettyPrint(formula, 1);
+		
+		result += ")";
+		
 		return result;
 	}
+	
+	private static String getIndent(int nbIndents) {
+		String str = "";
+		for (int i = 0 ; i < nbIndents; i++) {
+			str += "     ";
+		}
+		return str;
+	}
+	
+	private static String getOperatorPrettyPrint (ComplexFormula form) {
+		String operator = " ";
+		if ((form).op.equals(LogicalOp.and)) {
+			operator = "^";
+		}
+		else if ((form).op.equals(LogicalOp.xor)) {
+			operator = "v";
+		}
+		return operator;
+	}
+	
+	private static String getUncertaintyValuePrettyPrint(UncertainSuperFormula formula) {
+		String str = "";
+		if (formula.unc > 0.0) {
+			str += "[" + Math.round(formula.unc*100.0) / 100.0 + "]";
+		}
+		return str;
+	}
+	
+	
+	public static String getFormulaPrettyPrint(SuperFormula formula, int depth) {
+		
+		String result = formula.id + " ^";
+		
+		if (formula instanceof ComplexFormula) {
+			
+			result += "\n" +  getIndent(depth) + "(";
+			
+			String operator = getOperatorPrettyPrint((ComplexFormula)formula);
+			
+			for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
+				SuperFormula subformula = ((ComplexFormula)formula).formulae[i];
+				
+				result += getFormulaPrettyPrint(subformula, depth + 1);
+				
+				if (i < (((ComplexFormula)formula).formulae.length - 1)) {
+					result += " " + operator + "\n" + getIndent(depth) + " ";
+				}
+			}
+			result += ")";
+		}
+		
+		else if (formula instanceof ColorProperty) {
+			result += " <Colour> " + ((ColorProperty)formula).colorValue;
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		else if (formula instanceof ShapeProperty) {
+			result += " <Shape> " + ((ShapeProperty)formula).shapeValue;
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		else if (formula instanceof ObjectTypeProperty) {
+			result += " <ObjectType> " + ((ObjectTypeProperty)formula).typeValue;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		 		
+		return result;
+	}
+	
 
 	private static void log(String str) {
 		if (LOGGING)

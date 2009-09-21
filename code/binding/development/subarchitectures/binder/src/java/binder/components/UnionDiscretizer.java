@@ -23,9 +23,11 @@ import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
+import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
+import binder.autogen.featvalues.UnknownValue;
 import binder.utils.GradientDescent;
 import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
@@ -102,19 +104,34 @@ public class UnionDiscretizer extends ManagedComponent {
 			
 			if (onlyMaxFeatureValues) {
 				union = GradientDescent.getUnionWithMaximumProbability(union);
-				for (int j = 0; j < union.features.length ; j++){
-					for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
-						FeatureValuePair pair = new FeatureValuePair();
-						pair.featlabel = union.features[j].featlabel;
-
-						pair.featvalue = union.features[j].alternativeValues[k];
-						//		log("currently computing marginal prob for (" + 
-						// 		pair.featlabel + ", " + BinderUtils.toString(pair.featvalue) + ")");
-						union.features[j].alternativeValues[k].independentProb = 
-							ProbabilityUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
-					}
-				} 
 			}
+			else {
+				// remove unknown values
+				for (int j = 0; j < union.features.length ; j++){
+					Vector<FeatureValue> featvals = new Vector<FeatureValue>();
+					for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
+						if (! (union.features[j].alternativeValues[k] instanceof UnknownValue)) {
+							featvals.add(union.features[j].alternativeValues[k]);
+						}
+					}
+					union.features[j].alternativeValues = new FeatureValue[featvals.size()];
+					union.features[j].alternativeValues = featvals.toArray(	union.features[j].alternativeValues);
+				}
+			}
+	
+			for (int j = 0; j < union.features.length ; j++){
+				for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
+					FeatureValuePair pair = new FeatureValuePair();
+					pair.featlabel = union.features[j].featlabel;
+
+					pair.featvalue = union.features[j].alternativeValues[k];
+					//		log("currently computing marginal prob for (" + 
+					// 		pair.featlabel + ", " + BinderUtils.toString(pair.featvalue) + ")");
+					union.features[j].alternativeValues[k].independentProb = 
+						ProbabilityUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
+				}
+			} 
+
 
 			unions.add(union);
 		} 

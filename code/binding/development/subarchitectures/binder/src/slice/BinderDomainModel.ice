@@ -36,7 +36,7 @@ module beliefmodel {
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
 				
 	class UncertainSuperFormula extends SuperFormula { 
-		long unc;
+		float unc;
 	}; 
 		
 	// The class LogicalSuperFormula extends the supertype with a boolean value
@@ -101,31 +101,21 @@ module beliefmodel {
 	enum Color { red, blue, yellow, green };
 	
 	
-	class Property extends ContinualFormula { };
-
-	sequence<Property> PropertySeq;
-	
-	class ComplexProperty extends Property { 
-		PropertySeq alternativeProperties;
+	class ObjectTypeProperty extends ContinualFormula { 
+		ObjectType typeValue;
 	}; 
 	
 	// A property is always a ContinualFormula
-	class ColorProperty extends Property { 
+	class ColorProperty extends ContinualFormula { 
 		Color colorValue;
 	};  
 	
 	sequence<ColorProperty> Colors;
 	
-	class ShapeProperty extends Property { 
-		Shape shapedValue;
-	}; 
-	
-
+	class ShapeProperty extends ContinualFormula { 
+		Shape shapeValue;
+	};  
 		
-	class Entity extends ContinualFormula { 
-		PropertySeq properties;
-	}; 
-	
 	
 }; // end cogx 
 }; // end domainmodel
