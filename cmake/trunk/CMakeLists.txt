@@ -42,28 +42,28 @@ add_subdirectory (subarchitectures/nav.sa)
 endif(BUILD_SA_NAV)
 
 
-option(BUILD_HAL_ROBOT "Build hardware robotbase" NO)
+option(BUILD_HAL_ROBOT "Build hardware robotbase" YES)
 if(BUILD_HAL_ROBOT)
 add_subdirectory (tools/hardware/robotbase)
 endif(BUILD_HAL_ROBOT)
 
-option(BUILD_HAL_LASER "Build hardware laser" NO)
+option(BUILD_HAL_LASER "Build hardware laser" YES)
 if(BUILD_HAL_LASER)
 add_subdirectory (tools/hardware/laser)
 endif(BUILD_HAL_LASER)
 
 
-option(BUILD_HAL_TTS "Build hardware tts" NO)
+option(BUILD_HAL_TTS "Build hardware tts" YES)
 if(BUILD_HAL_TTS)
 add_subdirectory (tools/hardware/tts)
 endif(BUILD_HAL_TTS)
 
-option(BUILD_HAL_PTZ "Build hardware ptz" NO)
+option(BUILD_HAL_PTZ "Build hardware ptz" YES)
 if(BUILD_HAL_PTZ)
 add_subdirectory (tools/hardware/ptz)
 endif(BUILD_HAL_PTZ)
 
-option(BUILD_HAL_UTILS "Build hardware utils" NO)
+option(BUILD_HAL_UTILS "Build hardware utils" YES)
 if(BUILD_HAL_UTILS)
 add_subdirectory (tools/hardware/utils)
 endif(BUILD_HAL_UTILS)
