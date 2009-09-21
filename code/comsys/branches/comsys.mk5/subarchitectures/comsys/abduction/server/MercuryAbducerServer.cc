@@ -68,14 +68,19 @@ void
 MercuryAbducerServer::clearAssumables(const Ice::Current&)
 {
 	cerr << "[log] clearing assumables" << endl;
-	cerr << "TODO" << endl;
+	clear_assumables(ctx, &ctx);
 }
 
 void
 MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
 	cerr << "[log] adding assumable " << f->p->predSym << endl;
-	cerr << "TODO" << endl;
+
+	MR_Word w_vs;
+	new_varset(&w_vs);
+
+	MR_Word w_mprop = modalisedFormulaToMercMProp(f, &w_vs);
+	add_assumable(stringToMercString(function), w_vs, cost, ctx, &ctx);	
 }
 
 ProveResult
