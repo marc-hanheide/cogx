@@ -106,3 +106,89 @@ modalityToMercModality(const ModalityPtr & m)
 	}
 	return mm;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+ModalityPtr
+MR_WordToModality(MR_Word w)
+{
+	ModalityPtr m = new Modality();
+	m->type = Event;
+	return m;
+}
+
+TermPtr
+MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
+{
+	char * name;
+	MR_Bool is_var;
+	MR_Word w_list;
+	dissect_term(w_vs, w_t, (MR_Word*)&is_var, &name, &w_list);
+
+	TermPtr t = new Term();
+	t->variable = (is_var == MR_YES);
+	t->name = name;
+	t->args = vector<TermPtr>();
+
+	if (t->variable) {
+		MR_Word w_iter;
+		for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
+			t->args.push_back(MR_WordToTerm(w_vs, MR_list_head(w_iter)));
+		}
+	}
+
+	return t;
+}
+
+PredicatePtr
+MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
+{
+	char * predSym;
+	MR_Word w_list;
+	dissect_predicate(w_vs, w_p, &predSym, &w_list);
+
+	PredicatePtr p = new Predicate();
+	p->predSym = predSym;
+	p->args = vector<TermPtr>();
+
+	MR_Word w_iter;
+	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
+		p->args.push_back(MR_WordToTerm(w_vs, MR_list_head(w_iter)));
+	}
+
+	return p;
+}
+
+ModalisedFormulaPtr
+MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
+{
+	ModalisedFormulaPtr f = new ModalisedFormula();
+	MR_Word w_m;
+	MR_Word w_p;
+	dissect_mprop(w_mf, &w_m, &w_p);
+	f->m = MR_WordToModality(w_m);
+	f->p = MR_WordToPredicate(w_vs, w_p);
+
+	return f;
+}
+
+AbductiveProofPtr
+MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
+{
+	AbductiveProofPtr p = new AbductiveProof();
+	
+	MR_Word w_vs;
+	MR_Word w_list;
+	double cost;
+
+	dissect_proof(w_ctx, w_proof, &w_vs, &w_list, &cost);
+
+	MR_Word w_iter;
+	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
+		p->body.push_back(MR_WordToModalisedFormula(w_vs, MR_list_head(w_iter)));
+	}
+
+	p->cost = cost;
+
+	return p;
+}
