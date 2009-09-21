@@ -2,7 +2,6 @@ package binder.components;
 
 import binder.autogen.beliefmodel.ColorProperty;
 import binder.autogen.beliefmodel.ComplexFormula;
-import binder.autogen.beliefmodel.EntityDescription;
 import binder.autogen.beliefmodel.LogicalOp;
 import binder.autogen.beliefmodel.SuperFormula;
 import binder.autogen.beliefmodel.UncertainSuperFormula;
