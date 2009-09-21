@@ -1,6 +1,6 @@
 include_directories(.)
 
-add_library(BinderAbstract BindingWorkingMemoryReader.hpp
+add_library(BinderAbstract SHARED BindingWorkingMemoryReader.hpp
 BindingWorkingMemoryReader.cpp BindingWorkingMemoryWriter.hpp
 BindingWorkingMemoryWriter.cpp)
 target_link_libraries(BinderAbstract CDL CASTCore CASTArchitecture)
