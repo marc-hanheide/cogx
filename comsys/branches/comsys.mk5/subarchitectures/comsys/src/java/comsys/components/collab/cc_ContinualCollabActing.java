@@ -8,7 +8,6 @@ import java.util.*;
 import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
 import comsys.arch.ProcessingData;
-import comsys.datastructs.comsysEssentials.ObservedEvent;
 import comsys.datastructs.comsysEssentials.PackedLFs;
 import comsys.datastructs.SelectedLogicalForm;
 
@@ -100,14 +99,6 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 		init();
 		// now do the rest
 		// register change filters for ProductionLF, which triggers realization
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(ObservedEvent.class,  WorkingMemoryOperation.ADD),
-				new WorkingMemoryChangeReceiver() {
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-//						System.err.println("obsev");
-						handleWorkingMemoryChange(_wmc);
-					}
-				});
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class,  WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -262,18 +253,20 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
 //           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
             	
-            	ProofResult result = abducer.prove(goals);
+            	ProveResult result = abducer.prove(goals);
 //            	ProofResult result = abducer.proveGoal("e(now) : uttered(h, " + LFUtils.lfToMercString(slf.lf) + ").");
-            	if (result == Abducer.ProofResult.SUCCESS) {
+            	if (result == Abducer.ProveResult.SUCCESS) {
             		AbductiveProof p = abducer.getBestProof();
-            		
-            		String logString = "proof: assumed = [";
-            		for (int i = 0; i < p.assumed.length; i++) {
-            			logString += p.assumed[i];
-            			if (i < p.assumed.length-1) { logString += ", "; }
+
+
+            		String logString = "proof: body = [\n";
+            		for (int i = 0; i < p.body.length; i++) {
+            			logString += MercuryUtils.predicateToString(p.body[i].p);
+            			if (i < p.body.length-1) { logString += ",\n"; }
             		}
-            		logString += "]";
+            		logString += "\n]";
             		log(logString);
+
             	}
             }
     	}
