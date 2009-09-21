@@ -404,14 +404,14 @@ void DisplayNavInPB::createRobotFOV()
 
   peekabot::GroupProxy cam;
   cam.assign(m_ProxyRobot, path);
-   cogx::Math::Vector3 dummypos; dummypos.x = 10^6; 
-  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2, dummypos);
+  cogx::Math::Vector3 dummypos;
+  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2, dummypos, true);
 }
 
 void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
                                double fovHorizAngle, double fovVertiAngle, 
                                double* color, double opacity, 
-                               cogx::Math::Vector3 position, double zoffset, double yaw){
+                               cogx::Math::Vector3 position, double zoffset, double yaw, bool robotfov){
 
 		peekabot::GroupProxy proxyCone;	
 		proxyCone.add(proxy, path, peekabot::REPLACE_ON_CONFLICT);
@@ -472,7 +472,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
     proxyConeParts[i].set_opacity(opacity);
     proxyConeParts[i].set_scale(2);  // This is how I make the cone
                                      // larger or smaller
-	if (position.x != 10^6)
+	if (!robotfov )
 	{
 		proxyConeParts[i].set_position(position.x,position.y,zoffset);
 		proxyConeParts[i].set_rotation(position.z,0,0);
