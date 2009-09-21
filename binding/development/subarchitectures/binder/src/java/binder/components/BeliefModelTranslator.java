@@ -1,6 +1,5 @@
 package binder.components;
 
-import binder.autogen.beliefmodel.ColorProperty;
 import binder.autogen.beliefmodel.ComplexFormula;
 import binder.autogen.beliefmodel.LogicalOp;
 import binder.autogen.beliefmodel.SuperFormula;
@@ -8,7 +7,6 @@ import binder.autogen.beliefmodel.UncertainSuperFormula;
 import binder.autogen.core.Feature;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.autogen.featvalues.StringValue;
 import binder.utils.BeliefModelUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -16,6 +14,13 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
+/**
+ * Translate the union configurations on the binder working memory into belief models
+ * 
+ * @author Pierre Lison
+ * @started 15/09/2009
+ * @version 21/09/2009
+ */
 public class BeliefModelTranslator extends ManagedComponent {
 	
 	@Override

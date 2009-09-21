@@ -48,6 +48,8 @@ public class UnionConstructor  {
 	// Prior probability of the existence of a proxy
 	public float PRIOR_PEXISTS = 0.4f;
 
+	public boolean normaliseDistributions = false;
+	
 	public static boolean LOGGING = true;
 	
 	
@@ -58,6 +60,10 @@ public class UnionConstructor  {
 	
 	public void setAlphaParam(float alpha) {
 		ALPHA_CONST = alpha;
+	}
+	
+	public void setNormalisationFlag(boolean normaliseDistributions) {
+		this.normaliseDistributions = normaliseDistributions;
 	}
 
 	public void setPriorParam(float prior) {
@@ -253,7 +259,10 @@ public class UnionConstructor  {
 
 		//		log("Maximum for final distribution of the union: " + GradientDescent.getMaximum(finalDistrib));
 
-	//	finalDistrib = ProbabilityUtils.normaliseDistribution(finalDistrib, 1.0f);
+		if (normaliseDistributions) {
+			log("Normalisation of the probability distribution");
+			finalDistrib = ProbabilityUtils.normaliseDistribution(finalDistrib, 1.0f);
+		}
 		return finalDistrib;
 	}
 
