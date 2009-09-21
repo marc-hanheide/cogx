@@ -1,0 +1,11 @@
+This is an initial small-scale integration release.
+It is based on 
+binder testing release 1
+coma devel rev 1803
+exploration testing release 1
+
+NB: Routinely, your $CLASSPATH should contain 
+export CLASSPATH=$CLASSPATH:output/classes
+
+For coma, you need this additional include:
+export CLASSPATH=$CLASSPATH:subarchitectures/coma.sa/lib/*

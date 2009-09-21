@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+
+<!-- Copyright 2009 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  
+  <include file="CogX_base.xml">
+    
+    <inject at="chassis">
+      
+      <group> 
+        <name> arm </name>
+        
+        <transform>
+          <translate> 0.019 0 0.264</translate>
+        </transform>
+        
+        <children>
+          
+          <color r="0" g="0" b="0">
+            <cube>
+              <name>armmount</name>
+              
+              <transform>
+                <translate> 0 0 0.0035 </translate>
+              </transform>            
+              
+              <scale> 0.122 0.15 0.007</scale>
+              
+              <children>
+                
+                
+                <include file="katana.xml">
+                  
+                  <inject at="dof1.dof2.dof3.dof4.dof5">
+                    
+                    <model>
+                      <file>flea2.pbmf</file>
+                      <name>cam_arm</name>
+                      <transform>
+                        <translate system="parent">0 0 0.04</translate>
+                      </transform>
+                    </model>          
+                    
+                  </inject>
+                  
+                </include>
+                
+              </children>
+              
+            </cube>
+          </color>        
+          
+        </children>
+      </group>
+
+    </inject>
+
+  </include>
+
+</scene>
