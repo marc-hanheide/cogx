@@ -1,0 +1,765 @@
+\sect{Families}
+
+The Moloko grammar is written in the \textsc{DotCCG} language. Due to the power of its definitional macro function, a large amount of redundancy has been removed from the underlying families. We have aimed to reduce the number of families and move a lot of the variability to the level of the 'dictionary'. Consequently, in what follows, we have included a list of the various 'dictionary forms' used in addition to the traditional families and rules. Section \ref{sec-Higher-Order} discusses the use of 'higher order' dictionary macros to group multiple uses of a single word together. \\
+\\ \\
+Each dictionary form has an additional form \_XXXXX which allows for alternate word-forms (i.e. separate word-forms which map to the same predicate),  e.g. \\
+
+      \ingram{ noun(mom, person,)} 
+
+      \ingram{ \_noun(mom, mamma, person,)} 
+
+      \ingram{ \_noun(mom, mommy, person,)} \\ \\
+Examples of each family and dictionary form are given. \\
+For a discussion of the organization of the grammar files themselves, see section \ref{sec-Using-Moloko}
+
+
+\subsect{Coordination}
+Coordination families are defined locally, i.e. noun and np coordination is with the other nominal families, adjective coordination with adjectives, \footnote{adjectival, adverbial and prepositional coordination are possible in Moloko, see section \ref{sec-Dual-Relation-Words}.} etc. The general form for such a family is: \\
+
+\family{Coord-X-}    {and, but, then}
+
+\entry {\cxx{X}{R}{COM=yes} \fwdsl{} \cx{X}{N} \backsl{*} \cxx{X}{F}{COM=no}}  {\atsign{R}{}( \prop{*} \wand\ \diam{First}(F) \wand\ \diam{Next}(N) )} \\ 
+
+The feature COM is used to guarantee only a single reading for multiple coordination ( \emph{ball and cup and mug} ), in particular the left-branching or 'staircase' reading. The \diam{First}-\diam{Next} semantics is also used for prepositional chains (section \ref{XXX}) and discourse markers (section \ref{sec-Discourse-Markers}).
+
+Naturally, individual families have control over which syntactic features are enforced on the conjuncts and which are inherited by their 'result'. For example, verb coordination specifies that the conjuncts share vform and agreement features and that these are inherited by the result. Thus, e.g. \emph{I am blue and want a drink} parses, but  \emph{* I am blue and wants a drink} doesn't, similarly \emph{I am sitting and looking at the table} but \emph{* I am sitting and looked at the table}. As another example, sentential coordination specifies that each of the conjuncts are either indicatives or interrogatives. This forces imperatives to combine using verbal coordination, resulting in the nice single mood representation discussed in \ref{sec-Mood}. \\ \\
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item
+ \dict{coord}{form, pos, class}{but, adj, quality}
+ \dict{coord+}{form, pos, class, features}{and, n, entity, s-pl pl}
+- creates an entry for the specified part-of-speech. The + version allows features to be added to the result.
+\end{itemize}
+
+\subsect{Nouns} 
+\lab{Syntactic Features}
+\begin{itemize}
+\item \feat{num}{s-sg  s-pl \{s-pl-sp  s-pl-unsp\}  s-mass} \\
+       \fv{s-pl-sp} and \fv{s-pl-unsp} are used to mark, e.g. \emph{the balls} and {the two balls} respectively. See determiners below.
+\item \feat{pers}{non-3rd \{1st 2nd \} 3rd}
+\item \feat{case}{nom acc acc-loc} \\
+          \fv{acc-loc} is used for prepositional compliments (see preps below)
+\item \feat{nform}{ nf-real \{full  pro  nf-ctxt \} nf-dummy \{dummy-there \}} \\
+	First, specifies if the noun is 'real', i.e. referential, or 'dummy', i.e. purely grammatical e.g. \emph{ \ul{there} is a ball on the table}. Real are further subdivided into full (lexical) (\emph{the ball, GJ}), pronominal or contextualized (\emph{the green ) }. 
+\item \feat{cc-type}{  compound-1st  compound-head .... n-all  n-1 ...}\\    
+allows the lexical specification of a nouns behavior in the noun-noun compound construction (see rules below). \fv{compound-1st} and \fv{compound-2nd} are atomic values and the rest define syntactic classes like those outline in section X above.
+	
+\end{itemize}
+\lab{Families}
+\begin{enumerate}
+\item \family{Noun}    {ball, men, library, water}
+          \entry { \cx{n}{T}}  { \atsign{t1}{entity}( \prop{*} )  }
+\item \family{Noun+of-np}  {edge, corners, side} 
+          \entry { \cx{n}{T} \fwdsl{} \cxx{obl}{T}{of}}
+                     { \atsign{t1}{entity}( \prop{*} \wand \  \diam{Owner}(o1:entity))  }
+\item \family{Context-n+modifier}  {green, second, big}
+           \entry {\cx{n}{T}}  
+                      { \atsign{t1}{entity}( \prop{context} \wand\  \diam{Modifier}(m1:modifier \prop{*}))  }
+\item \family{Owned-np}  {mine, yours, hers}
+           \entryl { \cxx{np}{T}{ s-sg, 3rd, full } }
+                      { \atsign{t1}{entity}( \prop{context} \wand\  \diam{Spec}(sg, specific, unique) \wand\ \diam{Owner}(o1:entity \prop{*}))  }
+\item \family{Owner-pro}  {my, your, her}
+           \entryl { \cxx{np}{T}{ 3rd } \fwdsl{} \cxx{np}{T}{s-sg} }
+                   { \atsign{t1}{entity}(   \ \  \diam{Spec}(sg, specific, unique) \wand\ \diam{Owner}(o1:entity \prop{*}) )  }
+\item \family{event-np}  {it, this , that}
+           \entry {\cx{s}{E} }  
+                      { \atsign{e1}{}( \prop{*} )}
+\end{enumerate}
+for 1 - 3, there is a corresponding 'bare-np' family, i.e. replace \catg{n\id{T}} with \catg{np\id{T}} \\
+for 4 - 5, there is also a plural entry, i.e. replace syntactic and sg features with pl
+\\ \\
+\lab{Rules} \\
+1 and 2 act like determiners, specifying certain special types of nouns and changing them to nps.
+As these words begin lexically  as nouns, they are able to do what all nouns can do (be modified, act as parts of compounds, etc). 3 handles the noun-noun compound construction (see section X) \\ 
+\begin{enumerate}
+\item  any plural, unspecific noun into a generic plural \catg{np} e.g. \emph{balls are round} \\
+               \tc { \cxx{n}{T}{ s-pl-unsp } }
+               { \cxx{np}{T}{ 3rd} }
+               {\atsign{t1}{entity}( \diam{Spec}(variable, unspecific) )}
+\item  nouns marked as mass into a full \catg{np} e.g. \emph{I want coffee}  \\
+           \tc{ \cxx{n}{T}{ s-mass}}
+               { \cxx{np}{T}{  3rd, sg}}
+               {\atsign{t1}{entity}( \diam{Spec}(variable, uncountable) )}
+\item  A noun's ability to function as 1st part or head can  restricted lexically via the cc-type feature.
+           Setting the 'resulting' n to \fv{cc-none} blocks the recursion of this rule \\
+            \tcl{ \cxx{n}{C}{full, cc-type=compound-1st} }
+               { \cxx{n}{T}{cc-type=cc-none} \fwdsl{*} \cx{n}{T cc-type=compound-head} }
+               {\atsign{t1}{entity}( \  \diam{Compound}(c:entity) \ )}
+\end{enumerate}
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item
+\dict{noun}{sg-form, class, args}{ball, thing,}
+\dict{noun-irr}{sg-form, pl-form, class, args}{man, men, person,}
+\dict{noun+of-np}{sg-form, class, args}{edge, e-location}
+\dict{noun-irr+of-np}{sg-form, pl-form, class, args}{}
+- these create a \catg{ \cxx{n}{T}{ s-sg, full} } and\catg{ \cxx{n}{T}{ s-pl, full} }, each with \atsign{T}{class}(\prop{form}). All specification, including \emph{semantic} number is added by the determiner. \item \dict{name}{form, class, args}{GJ, person} 
+- creates a  \catg{\cxx{np}{T}{ s-sg, 3rd, full}} with \atsign{T}{class}(\prop{form})   
+\item \dict{noun-mass}{form, class}{water, thing}
+- creates a  \catg{ \cxx{n}{T}{s-mass, 3rd, full} } with \atsign{T}{class}(\prop{form}). \\ The latter is transformed into the \catg{np} form via rule (see rules)  
+\item \dict{pronoun}{pred, pers, num, nom-form, acc-form, owner, owned, class,}{I, sg, 1st, I, me, my, mine, person}
+-  creates 6 forms: \catg{ \cxx{np}{T}{num, pers, pro, nom}} and \catg{ \cxx{np}{T}{ num, pers, pro, acc}} and a sg and pl for owner and owned (see families)
+\item 
+\dict{context-n}{form, class, args}{one, entity, s-sg}
+\dict{context-np}{form, class, args}{this, entity, sg s-sg proximal unique specific}
+\dict{context-n+modifier}{form, class, args}{green,q-color, s-sg }
+- these create \catg{\cxx{n}{T}{nf-ctxt}} and \catg{\cxx{np}{T}{3rd, nf-ctxt}}, each with \atsign{T}{class}(\prop{context})
+\item \dict{context-s}{form, args}{that, distal}
+- creates \catg{\cxx{s}{E}{fin-deictic, m-class-none}} with \atsign{E}{}(\prop{context})
+\end{itemize}
+
+
+
+\subsect{Determiners}
+
+\lab{Families}
+\begin{enumerate}
+\item \family{Det}    {a, the, these}
+          \entry {\cxx{np}{T}{ 3rd} \fwdsl{} \cx{n}{T} }  { no-semantics  }
+\item \family{SDet}   {every, a\_few, more }
+          \entry {\cxx{np}{T}{ 3rd} \fwdsl{} \cx{n}{T}}  { \atsign{T}{entity}( \ \diam{Modifier}(\prop{*} ) \ ) }
+\item \family{Un-to-Spec-Det}    {three, four } 
+           \entry {\cxx{n}{T}{ s-pl-sp} \fwdsl{} \cxx{n}{T}{s-pl-unsp} } { \atsign{T}{entity}( \ \diam{Modifier}(\prop{*} ) ) }
+\item \family{Group-np}    {some, any} 
+          \entry {\cx{np}{T} \fwdsl{} \cxx{obl}{S}{ of} }  { \atsign{T}{entity}( \prop{group} \wand\ \diam{Set}(s:entity) )  }
+\item \family{SGroup-np}    {some, any} 
+          \entryl {\cx{np}{T} \fwdsl{} \cxx{obl}{S}{ of} }  { \atsign{T}{entity}( \prop{group} \wand\ \diam{Modifier}(\prop{*} ) \wand\ \diam{Set}(s:entity) )  }
+\item \family{SGroup-n}    {first, second} 
+          \entryl {\cx{n}{T} \fwdsl{} \cxx{obl}{S}{ of} }  { \atsign{T}{entity}( \prop{group} \wand\ \diam{Modifier}(\prop{*} ) \wand\ \diam {Set}(s:entity ) )  }
+\item \family{Det-poss-s}    { 's }
+          \entry {\cxx{np}{T}{ 3rd} \fwdsl{} \cx{n}{T} \backsl{*} \cx{np}{O} }  { \atsign{T}{entity}( \ \diam{Owner}(o:entity ) \ )  }
+\item \family{Numer-id}    { 101, three }
+          \entry {\cx{nid}{N} }  { \atsign{N}{number-id}(\prop{*} )  }
+          
+\end{enumerate}
+Note: 3 does not result in an \catg{np}, another determiner is required, e.g. \emph{\ul{the} three balls} \\
+See section \ref{sec-Groups} for a discussion of groups. \\ 
+7 is used with the rule below to create a 'post-determiner' for \emph{floor 3}, \emph{office 101}, etc. \\
+Possessive pronouns (e.g. \emph{my, your, his}) are handled in the noun family \family{Owner-pro}{} \\
+\lab{Rules} \\
+\begin{enumerate}
+\item  turns a number-id ( \catg{nid}, see above ) into a post-determiner, creating a specific, singular and unique entity which is 'identified' by this number: e.g. \emph{go to \ul{floor 3}} \\
+               \tcll{ \cx{nid}{N} }
+               { \cxx{np}{T}{3rd} \backsl{*} \cxx{n}{T}{s-sg} }
+               {\atsign{t1}{entity}( \diam{Spec}(unique, specific, sg) \wand\ \diam{Modifier}(N:number-id) )}
+               \footnote{this rule is not incremental. It should be replaced by a rule which turns a \catg{n} into an \catg{np} \fwdsl{*} \catg{nid}}
+\end{enumerate}
+\lab{Dictionary Forms} 
+\begin{itemize}
+\item
+ \dict{det}{form, num, args}{a, sg, existential specific}
+ \dict{un-to-spec-det}{form, class}{two, number-cardinal}
+ \dict{sdet}{form, num, class, args}{three, pl, number-cardinal, existential specific}
+- specifies the syn-num of the \catg{n} compliment, adds specification to T through features and/or \diam{Modifier}
+\item
+\dict{group-np}{form, args}{any, variable specific}
+\dict{sgroup-np}{form, class, args}{three, number-cardinal, existential specific} 
+\dict{sgroup-n}{form, class, args}{third, number-ordinal, sg s-sg} 
+- creates a group with head \catg{n} or \catg{np}, subset specified by feats and/or \diam{Modifier}
+\item
+\dict{number-id}{form}{three} 
+- creates an entry, e.g. \atsign{t1}{number-id}(\prop{three})
+\end{itemize}
+
+
+\subsect{Verbs}
+
+\lab{Syntactic Features}
+\begin{itemize}
+\item \feat{num and pers}{see Nouns} 
+\item \feat{mood}{s-major\{ s-ind s-imp s-int s-ind-ell \} s-minor} \\
+	\fv{s-ind-ell} is given to indicatives with contextualized (ellighted/dropped) subjects \\
+	\fv{s-minor} is given to clauses which are selected for. In this grammar, this includes
+	all lexical verbs (see Mood).
+\item \feat{pol}{s-pos s-prov-pos s-neg} \\
+          \fv{p-prov-pos} is for verbs which are provisionally positive, i.e. they are able to negated (e.g. \emph{walks} is \fv{s-pos} but \emph{can} is \fv{s-prov-pos} )
+\item \feat{vform}{fin\{ fin-clause\{ fin-full fin-ctxt\} fin-deictic\} vf-base vf-to-imp inf ing pp  vf-be } \\
+	\fv{pp} is past-particple: \emph{I haven't \ul{seen} him} \\
+	\fv{vf-be} is for 'adjectival verbs' \emph{I am \ul{able} to go} \\
+	\fv{vf-to-imp} is the same form as \fv{vf-base}, but exists to allow lexical control of imperative.\\
+	\fv{fin-deictic} is for pronominal verbs \emph{I said \ul{it} } \\
+	\fv{fin-ctxt} is for subj+finite clauses \emph{I did, I should, he couldn't } \\
+	\fv{fin-full} is for all other finite clauses \emph{I am hungry, I walked } \\ 
+	The separation of \fv{fin} into two levels is necessary because general sentential complements allow deictics, but the indicative mood rules requires a clausal compliment (i.e. \emph{ * I this} ) 
+\item \feat{fin}{ be do can should will could would must have} \\
+	this feature is currently not being used, but it will allow for handling tag questions 
+         \emph{I can do it \ul{can't I} }
+\item \feat{mclass}{ s-manner s-instrumental,  ... m-class-1, m-class-2, ...} \\
+	the \fv{s-....} values are grouped into classes \fv{m-class-x}. These classes are lexically selected and specify the types of modifiers which can modify this clause (see \ref{sec-Event-Modifier-Restriction} for description, see \filename{types-feature.ccg} for full list of values) 
+\end{itemize}
+
+\subsubsection{Basic Verbs}
+
+\lab{Basic Families}	\\ 
+All standard verb family entries receive: \\ 
+\entryl {s\fb{\fid{E}, num:num, pers:pers, mood = s-minor} \backsl{!} np \fb{\fid{S}, num:num, pers:pers, case = nom} \ \ \ . . .} {\atsign{E}{event}( \prop{*} \wand\  \diam {Actor}(S:entity) . . . )} \\  \\
+In the following descriptions, only the additional structure (i.e. that of the verbs compliments) will be given 
+Also, in the remainder of this document \fv {num:num, pers:pers} will be abbreviated as \fv{agr}
+
+\begin{enumerate}
+\item \family{iv} {I walked}
+         \entry { - }  {  -  }
+\item \family{tv}    {I saw the ball}
+         \entry { \fwdsl{} \cxx{np}{P}{acc}}  {  \wand\ \diam{Patient}(P:entity)   }
+\item \family{v+at-np}    {I looked at the ball}
+          \entry { \fwdsl{} \cxx{obl}{P}{at} }  { \wand\ \diam{Patient}(P:entity)   }  
+	\\ \\ also families for at-np, to-np, with-np, for-np 
+\item \family{v+np+prt}    {I pick up the ball / picked it up}
+          \entry { \fwdsl{} \cxx{np}{P}{acc} \fwdsl{} \cx{prt}{R} } 
+            { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Particle}(R) }
+           \entry {\fwdsl{} \cx{prt}{R} \fwdsl{} \cxx{np}{P}{acc} } 
+            { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Particle}(R) }
+\item \family{v+adj}    {I feel happy}
+         \entry {\fwdsl{} \cx{adj}{R}}  { \wand\ \diam{Result}(R:quality) }
+\item \family{v+pp-loc}    {it goes on the table}
+         \entry {\fwdsl{} \cx{pp}{R}}  { \wand\ \diam{Result}(R:m-location) }
+	\\ \\ also family for pp-whereto
+\item \family{v+np+pp-whereto}    {I put it on the table}
+          \entry { \fwdsl{} \cx{pp}{R} \fwdsl{} \cxx{np}{P}{acc} } 
+            { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Result}(R:m-whereto) }
+         \\ \\ also family for pp-loc  (\emph{I want it on the table})
+\item \family{v+np+adj}    {I made it bigger}
+          \entry { \fwdsl{} \cx{adj}{R} \fwdsl{} \cxx{np}{P}{acc} } 
+            { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Result}(R:property) }         
+\item \family{dtv}      {I gave him the ball}
+          \entry {\cxx{np}{P}{acc} \fwdsl{} \cxx{np}{R}{acc} }  { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Recipient}(R:entity) }
+\item \family{dtv-to} {I gave it to him}
+          \entry { \cxx{obl}{R}{to} \fwdsl{} \cxx{np}{P}{acc} }  { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Recipient}(R:entity) }
+\item \family{v+sent-ind}    {I thought I was hungry}
+         \entry { \fwdsl{} \cxx{s}{V}{ fin s-ind }}  {  \wand\ \diam{Event}(V:event)   }
+\item \family{v+deictic-event}    {I did it}
+         \entry { \fwdsl{} \cxx{s}{V}{ fin-deictic}}  {  \wand\ \diam{Event}(V:event)   }
+\item \family{v+verb-inf}    {I need to eat}
+         \entry { \fwdsl{} ( \cxx{s}{V}{ inf } \backsl{!} \cx{np}{S} ) }  {  \wand\ \diam{Event}(V:event)   }
+      \\ \\ also family for verb-ing  (\emph{I kept going})         
+\item \family{v+np+verb-inf}    {I wanted him to eat}
+         \entry { \fwdsl{} ( \cxx{s}{V}{ inf } \backsl{!} \cx{np}{P} )  \fwdsl{} \cx{np}{P}}  { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Event}(V:event)   }
+      \\ \\ also family for verb-ing  (\emph{I kept it going}) and verb-base  (\emph{I helped him eat})        
+\item \family{v+instrumental-np+verb-inf}    {you use it to make coffee}
+         \entry { \fwdsl{} ( \cxx{s}{V}{ inf } \backsl{!} \cx{np}{P} )  \fwdsl{} \cx{np}{P}}  
+         { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Event}(V:event \diam{Modifier}(m-instrumental \wand\ \prop{with} \wand\ \diam{Anchor}(P) ) )   }
+\item \family{v+np+from-np-result}    {I made it from plastic, it is made from plastic}\footnote{this is actually as passivization of this family}
+          \entry { \fwdsl{} \cxx{obl}{R}{from} \fwdsl{} \cxx{np}{P}{acc} } 
+           { \wand\ \diam{Patient}(P:entity) \wand\ \diam{Result}(R:entity) }
+           \\ \\ also family for of+np and out\_of-np  (\emph{I helped him eat})                  
+\end{enumerate}
+\lab{Special Families}	
+\begin{enumerate}
+\item \family{imp-do} {don't be so loud}
+         \entryl {\cxx{s}{E}{ s-imp} \fwdsl{} ( \cxx{s}{E}{ vf-base } \backsl{!} \cx{np}{S} ) } 
+                     {  \atsign{E}{event}( \diam{Mood}(imp) \wand\ \diam{Subject}(S:entity \prop{addressee}) \ )}
+\item \family{imp-lets} {let's go get some coffee}
+         \entryl {\cxx{s}{E}{ s-imp} \fwdsl{} ( \cxx{s}{E}{ vf-base } \backsl{!} \cx{np}{S} ) } 
+                     {  \atsign{E}{event}( \diam{Mood}(imp) \wand\ \diam{Subject}(S:entity \prop{addressee+speaker}) \ )}
+\item Thanks and Thank-you (see verbs.ccg)
+\end{enumerate}
+\lab{Dictionary Forms} \\ \\
+For each of these dictionary forms, these is a corresponding version xxxx-no-imp which 'blocks' the imperative form of this verb, i.e. it does not create a \fv{vf-to-imp} entry.
+\begin{itemize}
+\item \dict{verb}{stem, ing, pasttense, pastpart, modifier-class, class, families}{give, giving, gave, given, m-class-2, action-non-motion, tv dtv dtv-to }
+- for each family specified, creates an entry for each form \\ (i.e. a past tense form, past-particple form, etc)
+
+\item \dict{verb-reg}{stem, modifier-class, class, families}{want, m-class-3, xxxxx, tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj}
+- works identically, but for verbs that are perfectly regular \\ (i.e. stem, stem+ing, stem+ed, stem+ed)
+
+\item \dict{adjectival-verb}{stem, modifier-class, class}{able, m-class-3, ability}
+- creates one form which is selected by the auxilliary \emph{be} verb
+\end{itemize}
+
+
+\subsubsection{Copular \emph{be} }
+
+Recall that the copula \emph{be} has 3 basic argument structures (see section \ref{sec-The-Be-Verb} ): 
+\begin{enumerate}
+\item \emph {it is \ul{a ball}} \ : \ an \catg{np} argument  which agrees in number and person with the subject \catg{np}, blocking readings like \emph{they are a ball}.
+\item \emph {it is \ul{on the table ball}} \ : \ a \catg{pp} argument, which must have a semantic type which can modify entities.\footnote{currently, m-location \emph{I am in the room}, m-accompaniment \emph{I am with you}, and m-benefactor \emph{this is for you}. There is a separate entry for each. } 
+\item  \emph {it is \ul{blue}} \ : \ an \catg{adj} argument.
+\end{enumerate}
+
+
+Each of these has an entry for the minor form, y/n interrogative form,  minor form  and compliment-questioning form . 
+\begin{enumerate}
+\item Minor Entries (used in indicatives and questioning the \diam{Cop-Restr} ) each with: 
+         \\ \atsign{E}{event}( \prop{*} \diam{Cop-Restr}(S:entity) \diam{Cop-Scope}(X)  ) \\
+         \entry  { \cxx{s}{E}{ agr,   s-minor} \backsl{!} \cxx{np}{S}{ agr, nom}  \fwdsl{} \cx{adj}{X}}   { }
+         \entry { \cxx{s}{E}{ agr,   s-minor} \backsl{!} \cxx{np}{S}{ agr, nom}  \fwdsl{} \cxx{pp}{} }    { }
+         \entry { \cxx{s}{E}{ agr,   s-minor} \backsl{!} \cxx{np}{S}{ num:num, pers:pers, nom, questionable=no}  \fwdsl{} \cxx{np}{ num:num} }  { }      \footnote{the subject in this entry is blocked from being questioned, i.e. what is this receives only one reading, questioning the \diam{Cop-Scope} }
+\item Yes/No Interrogative Entries each with:
+          \\ \atsign{E}{event}(\prop{*} \diam{Mood}(int) \wand\ \diam{Subject}(S:entity)  \\ \wand\ \diam{Cop-Restr}(S:entity) \diam{Cop-Scope}(X)  )\\
+         \entry{ \cxx{s}{E}{ agr,   s-minor} \fwdsl{} \cx{adj}{X} \fwdsl{} \cxx{np}{S}{ agr, nom}  } {}              
+         \entry{ \cxx{s}{E}{ agr,   s-minor} \fwdsl{} \cxx{pp}{}  \fwdsl{} \cxx{np}{S}{ agr, nom}  } {}           
+         \entry{ \cxx{s}{E}{ agr,   s-minor}  \fwdsl{} \cxx{np}{ num:num} \fwdsl{} \cxx{np}{S}{ num:num, pers:pers, nom}  } {}
+\item Entries for questioning the \diam{Cop-Scope}, selected for by the wh-word (see below):
+          \\ \atsign{E}{event}(\prop{*}  \wand\ \diam{Subject}(S:entity)  \\ \wand\ \diam{Cop-Restr}(S:entity) \diam{Cop-Scope}(X)  )\\
+         \entry{ \cxx{cop}{E}{ agr } \fwdsl{} \cx{adj}{X} \fwdsl{} \cxx{np}{S}{ agr, nom}  } {}              
+         \entry{ \cxx{cop}{E}{ agr } \fwdsl{} \cxx{pp}{}  \fwdsl{} \cxx{np}{S}{ agr, nom}  } {}           
+         \entry{ \cxx{cop}{E}{ agr } \fwdsl{} \cxx{np}{ num:num} \fwdsl{} \cxx{np}{S}{ num:num, pers:pers, nom}  } {}
+
+\item Negation: There is a negation entry for each of these entries. See verbs.ccg for details
+\end{enumerate}
+
+\subsubsection{Presentational \emph{be} }
+The presentational \emph{be} construction has three entries corresponding to its different uses:
+\begin{enumerate}
+\item Minor Entry \emph{there are some balls / what were there} 
+\entryl {\cxx{s}{E}{s-minor} \backsl{!} \cxx{np}{D}{dummy-there} \fwdsl{} \cxx{np}{S}{agr} }
+            {\atsign{E}{event}( \prop{*} \wand\ \diam{Presented}(S:entity) )} 
+\item Y-N Interrogative \emph{were there any balls}    
+\entryl {\cxx{s}{E}{s-int} \fwdsl{} \cxx{np}{S}{agr} \backsl{!} \cxx{np}{D}{dummy-there}  }
+            {\atsign{E}{event}( \prop{*} \wand \diam{Mood}(int) \wand \diam{Subject}(D:dummy)  \wand  \diam{Presented}(S:entity))} 
+\item Inverted Locational \emph{on the table was a ball} 
+\entryl {\cxx{s}{E}{s-int} \fwdsl{} \cxx{np}{S}{agr} \backsl{} \cxx{M}{pp}{cc-type:post-n}  }
+            {\atsign{E}{event}( \prop{*} \wand \diam{Mood}(ind) \wand \diam{Modifier}(M:m-location)  \wand  \diam{Presented}(S:entity))} 
+\end{enumerate}
+It is the presented object which determines agreement, i.e. \emph{* there is some balls}. The subject \emph{there} is a 'dummy' contributing nothing to the propositional semantics of event. It consequently receives no semantic role beyond the standard \diam{Subject}. Note that having both 1 and 3 means that the sentence \emph{there was a ball} correctly receives two readings:
+\begin{verbatim}
+  @b1:presentational(be ^ 
+                     <Mood>ind ^ 
+                     <Tense>past ^ 
+                     <Modifier>(c1:m-location ^ context ^ 
+                                <Proximity>m-distal) ^ 
+                     <Presented>(b2:thing ^ ball ^ 
+                                 <Delimitation>existential ^ 
+                                 <Num>sg ^ 
+                                 <Quantification>specific))
+
+  @b1:presentational(be ^ 
+                     <Mood>ind ^ 
+                     <Tense>past ^ 
+                     <Presented>(b2:thing ^ ball ^ 
+                                 <Delimitation>existential ^ 
+                                 <Num>sg ^ 
+                                 <Quantification>specific) ^ 
+                     <Subject>(t1:dummy ^ there))
+\end{verbatim}
+
+
+\subsubsection{Auxiliary and Modal Verbs}  \label{sec-Auxiliary-and-Modal-Verbs}
+These are the five entries for the families handling modal verbs : \\ \\
+\family{Modal-vf-base}    {can, should, would}
+\begin{enumerate}
+\item \ul{Indicative}   \ \ \ \emph{I can walk} 
+     \\  acts like an adverbial modifier which also "changes" the vform of the verb.
+      \entry { ( \cxx{s}{E}{vform:fin , mclass:mclass, pol:pol} \backsl{!} \cxx{np}{S}{agr} ) 
+                 \fwdsl{\wedge} ( \cxx{s}{E}{vf-base , mclass:mclass, pol:pol} \backsl{!} \cxx{np}{S}{agr} )} 
+                 { \atsign{E}{event}( \ \diam{Modifier}(\prop{*}) \ )  }
+                 
+\item \ul{Indicative Contextual-Event}  \ \ \ \emph{I can} 
+           \\ the main event is set to \prop{context}. m-class restricted to avoid crazy post mod
+\entryl { \cxx{s}{E}{fin-ctxt ,  m-class-3} \backsl{!} \cxx{np}{S}{agr} } { \atsign{E}{event}( \prop{context} \wand\ \diam{Modifier}(\prop{*}) )  }
+
+\item \ul{Yes/No Interrogative}   \ \ \ \emph{can you walk}     
+      \entryl {  \cxx{s}{E}{ s-int } \ \fwdsl{} ( \cxx{s}{E}{ vf-base }  \backsl{!} \cxx{np}{S}{agr} ) \ \fwdsl{} \cxx{np}{S}{agr} }
+                  { \atsign{E}{event}( \  \diam{Modifier}(\prop{*}) \wand\ \diam{Mood}(int) \wand\ \diam{Subject}(S:entity) \ )  }
+
+\item \ul{Yes/No Interrogative Contextual-Event}   \ \ \ \emph{can you}     
+       \\ the main event is set to \prop{context}. m-class restricted to avoid crazy post mod
+      \entryl {  \cxx{s}{E}{ s-int, fin-ctxt, m-class-3}  \ \fwdsl{} \cxx{np}{S}{agr} }
+                  { \atsign{E}{event}( \prop{context}  \wand\ \diam{Modifier}(\prop{*}) \wand\ \diam{Mood}(int) \wand\ \diam{Subject}(S:entity))}
+\item \ul{Atomic}   \ \ \ \emph{can}     
+       \\ this is selected for by wh-words and other UDCs (see below).
+      \entry {  \cxx{aux}{E}{vf-base} } { \atsign{E}{event}(  \ \diam{Modifier}(\prop{*}) \ )  }
+\end{enumerate}
+There are only two differences between the treatment of modal verbs and auxiliary verbs (e.g. \emph{be, have, do} etc.). First, whereas modals add their own propositional head using \diam{Modifier} (see section X), auxiliaries do not, adding only tense, aspect and voice features lexically (see secton X). Second modals always select a verb in base form whereas auxiliaries can choose different forms ( e.g. \emph{am walking, did walk} ). Thus, there are 4 other families essentially identical to this except they have no \diam{Modifier}(*) and instead of having \fv{vf-base} the selected verbal group has \fv{pp, ing, vf-be} and \fv{vf-base}. 
+
+One exception is passive auxiliary \emph{be}. This requires more complex structure. There are two indicative and two yes/no interrogative entries. The first is for an unexpressed \diam{Actor}. This is marked with \atsign{S}{entity}( \prop{context} ). The second is for an \diam{Actor} specified by an oblique \emph{by} phrase. Note that the feature \diam{Voice}(passive) is added lexically and that the object becomes the \diam{Subject} \\ \\
+\family{Aux-passive}  {the ball was picked up , the ball was picked up by GJ}
+\begin{enumerate}
+\item \entry { ( \cxx{s}{E}{vform:fin , mclass:mclass, pol:pol} \backsl{!} \cx{np}{X} ) 
+                 \fwdsl{\wedge} ( \cxx{s}{E}{pp , mclass:mclass, pol:pol} \backsl{} \cxx{np}{S}{agr} \fwdsl{} \cx{np}{X} )} 
+                  {\atsign{S}{entity}( \prop{context} ) }
+\item \entry { ( \cxx{s}{E}{vform:fin , mclass:mclass, pol:pol} \backsl{!} \cx{np}{X} ) \fwdsl{\wedge} \cxx{obl}{S}{by} 
+                 \fwdsl{\wedge} ( \cxx{s}{E}{pp , mclass:mclass, pol:pol} \backsl{} \cxx{np}{S}{agr} \fwdsl{} \cx{np}{X} )} 
+                 { no semantics }
+\item \entryl {  \cxx{s}{E}{ s-int } \ \fwdsl{} ( \cxx{s}{E}{ pp }  \backsl{} \cxx{np}{S}{agr} \fwdsl{} \cx{np}{X}) \ \fwdsl{} \cxx{np}{X}{nom} }
+                  { \atsign{E}{event}( \  \diam{Mood}(int) \wand\ \diam{Subject}(X:entity)  \ ) \\
+                  \atsign{S}{entity}( \prop{context} ) }
+\item \entryl {  \cxx{s}{E}{ s-int } \ \fwdsl{\wedge} \cxx{obl}{S}{by}  \ \fwdsl{} ( \cxx{s}{E}{ pp }  \backsl{} \cxx{np}{S}{agr} \fwdsl{} \cx{np}{X}) \ \fwdsl{} \cxx{np}{X}{nom} }
+                  { \atsign{E}{event}( \   \diam{Mood}(int) \wand\ \diam{Subject}(X:entity)  \ ) }
+\end{enumerate}
+The \emph{get} passive takes only the indicative entries, not the y-n interrogatives, \\ i.e. \emph{\ul{did} you get hit} not \emph{* \ul{got} you hit} \\ \\
+\lab{Dictionary Forms} 
+\begin{itemize}
+\item \dict{modal}{form, class, args}{can, ability, }
+- creates two forms, a positive form with \fv{s-prov-pos} and a negative form (form + nt) with \fv{s-neg} and \diam{Polarity}(neg)
+\end{itemize}
+All of the auxiliary verbs are individually specified in \filename{dictionary-closed.ccg}
+
+
+\subsection{Mood Rules} \label{sec-Mood-Rules}\\ \\
+These are the Mood Rules described in section \ref{sec-Mood}. 
+\begin{enumerate}
+\item 
+               \tcll {\cxx{np}{S}{ nom, agr } \ \$_{1} }
+               { \cxx{s}{E}{s-ind} \ \fwdsl{} ( \cxx{s}{E}{ VFORM:fin-clause,  s-minor, agr} \backsl{!} \cx{np}{S} )  \ \$_{1} }
+              { \atsign{E}{event}( \ \wand\  \diam{Mood}(ind) \wand\ \diam{Subject}(S:entity) \ )}
+\item 
+                \tcll {np \fb{\fid{F} acc } \ \$_{1} }
+               { \cxx{s}{E}{s-ind} \ \fwdsl{} ( \cxx{s}{E}{ VFORM:fin-clause,  s-minor , agr} \backsl{!} \cx{np}{S} \fwdsl{} \cx{np}{F}) \ \fwdsl{} \cxx{np}{S}{ nom, agr } \ \$_{1} }
+              { \atsign{E}{event}( \ \wand\  \diam{Mood}(ind) \wand\ \diam{Subject}(S:entity) \wand\ \diam{Fronted}(F:entity) \ )}
+\item 
+               \tcll {\cxx{s}{E}{ agr, vf-to-imp} \backsl{!} \cxx{np}{S}{agr, nom} \ \ \ . . .} 
+              { \cxx{s}{E}{ s-imp} \ \ \ . . .}
+              { \atsign{E}{event}( \ \wand\  \diam{Mood}(imp) \wand\ \diam{Subject}(S:entity \wand\ \prop{addressee}) \ )} \footnote{ \fv{vf-to-imp} is the same form as \fv{vf-base}. It was added to allow verbs to lexically determine whether or not they can generate imperative forms}
+\item 
+               \tcll {\cxx{s}{E}{ agr , fin} \backsl{!} \cxx{np}{S}{agr, nom} \ \ \ . . .} 
+              { \cxx{s}{E}{ s-ind-ell} \ \ \ . . .}
+              { \atsign{E}{event}( \ \wand\  \diam{Mood}(imp) \wand\ \diam{Subject}(S:entity \wand\ \prop{context}) \ )}
+\end{enumerate}
+1 and 2 require their verbal compliment to be finite and clausal (i.e. \emph{ * I this} ) and also of mood \fv{s-minor} \\
+3 and 4 are actually a family of rules, one per argument structure i.e. one for each verb family. \\ 
+The need for multiple rules is the result of the combination of 1) the manner in which verbal arguments are ordered in (most?) CCG grammars and 2) the specific workings of the \$ operator. Despite 'coming' first, subjects are built as the last complement of verbs, i.e. a transitive verb receives: \catg{ \cx{s}{E} \backsl{} \cx{np}{S} \fwdsl{} \cx{np}{X} }, not the more 'natural' (i.e. incrementally iconic): \catg{ \cx{s}{E} \fwdsl{} \cx{np}{X} \backsl{} \cx{np}{S}  }. If the latter were employed, a single rule of this nature would handle all argument structures: 
+
+\tc {\cxx{s}{E}{ ...}  \ \ \$_{1} \ \backsl{!} \cxx{np}{S}{...} } 
+              { \cxx{s}{E}{ ... }  \$_{1} } {\atsign{E}{event}{...}} \\
+However, because the  \$ operator attaches to the \emph{immediately previous} category, in this analog rule 
+
+\tc {\cxx{s}{E}{ ...}  \  \backsl{!} \cxx{np}{S}{...} \ \ \$_{1} } 
+              { \cxx{s}{E}{ ... }  \$_{1} } {\atsign{E}{event}{...}} \\ 
+the \$ would attach to the preceding subject \catg{np}, i.e. it would not 'stand for'  the (potential) compliments of the verb, but of the subject. This is clearly not what we want, hence the multiple rules.
+
+
+\subsection{Open-Class Modifiers} \label{sec-Open-Class-Modifiers}
+
+In this section I will outline some of the common features of adjectives, prepositions and adverbs.
+This will allow simplification of these individual sections. \\ \\
+\lab{Syntactic Features}
+\begin{itemize}
+\item \feat{mod-type}{x-manner x-instrumental ....} \\
+	 this syntactic feature parrots the semantic sort of the modifier. It is used in modifier restriction	 (currently only event modifiers) 
+\item \feat{cc-type}{ post-s pre-s pre-vp post-vp  post-n pre-n  +  classes (see below) }
+            these 'atomic' values are collected into classes using multiple inheritence, e.g.\fv{ prep-1 [post-s post-vp post-n] }. Modifiers are lexically assigned a class which specifies the rules it can undergo, i.e. it's    combinatorial possibilities.
+\item \feat{degree}{s-no-degrees s-degree \{s-degree-base s-comparative s-superlative\}} \\
+           \fv{s-no-degree} is given to modifiers which cannot be given degrees, e.g. stative adjectives
+           \fv{s-degree-base} is given to the base form of modifiers, which can then be changed,  e.g. \emph{big} \arrow \emph{more big}
+\end{itemize}
+\lab{Rules} \\ \\
+Recall from section \ref{sec-Dual-Relation-Word} that all open-class modifiers receive an initial lexical entry containing an atomic syntactic  head with its associated semantic index, e.g. generic prepositions begin as \catg{ \cxx{pp}{M}{mod-type,  cc-type } \fwdsl{} \cx{np}{T} }. In general then we have \catg{ \cxx{cat}{M}{mod-type,  cc-type } \ ( + comps) }. \\ \\
+Each of the values of cc-type corresponds to a complex syntactic category: \footnote{note that the placement of the comps is dependent on the positioning of the modifier : pre vs post modifee. This is essential for the proper incremental parsing of modification. }
+\begin{enumerate}
+\item \fv{pre-n} \ \ \ \ : \ \ \catg{ \cx{n}{T} \fwdsl{} \cx{n}{T} \  ( + comps) }
+\item \fv{pre-s}  \ \ \ \ : \ \  \catg{ \cx{s}{E} \fwdsl{} \cx{s}{E} \ ( + comps)}
+\item \fv{pre-vp}  \ \ \ : \ \  \catg{ ( \cx{s}{E} \backsl{!} \cx{np}{S} ) \ \fwdsl{} ( \cx{s}{E} \backsl{!} \cx{np}{S} ) \ ( + comps)}
+\item \fv{post-n} \ \ \ : \ \ \catg{ \cx{n}{T}  \  ( + comps) \ \backsl{*} \cx{n}{T}  }
+\item \fv{post-s}  \ \ \ : \ \  \catg{ \cx{s}{E}  \  ( + comps) \ \backsl{*} \cx{s}{E} }
+\item \fv{post-vp}  \ \ : \ \  \catg{ ( \cx{s}{E} \backsl{!} \cx{np}{S} ) \  ( + comps) \  \backsl{*} ( \cx{s}{E} \backsl{!} \cx{np}{S} ) }
+\item \fv{pre-cop-comp}  \ \ : \ \  \emph{that is \ul{also} a ball, I am \ul{certainly} bigger, he is \ul{never} here }\footnote{see modifiers.ccg for the specific details of these three categories}
+\end{enumerate}
+Each of the values of mod-type corresponds to one of the 'atomic' values of mclass (see verbs above), 
+e.g. \fv {x-location} (modifier feature) \ : \fv{s-location} (\catg{s} feature). 
+
+For each category and each combination of cc-type and mclass, there is a rule which changes the atomic lexical cat into a complex modifying cat which imposes its restriction on its modifiee , e.g. \\ \\
+   \tcl{\cxx{cat}{M}{x-location,  post-s } \ \$_{1}} 
+            { \cx{s}{E}  \  \$_{1} \ \backsl{*} \cxx{s}{E}{ \ mclass:s-location} }
+            {\atsign{E}{event}( \ \diam{Modifier}{M:m-location} \ )} 
+\\ \\ The use of \ensuremath{ \$_{1} } ensures that any compliments, lexically specified or 'picked up' in some other way, are carried through after the change. \\ \\  Because all of the atomic-to-complex modifier rules follow the same basic pattern, I will not list them individually. \\ \\
+\lab{Modifier Modifiers} \\ \\
+Each open class modifier has two families for handling pre and post modifiers: \\
+\entry {\cx{pos}{M} \fwdsl{} \cx{pos}{M} }  { \atsign{M}{modifier}( \ \diam{Modifier}(X:m-class \prop{*})  \ )  } \\
+\entry {\cx{pos}{M} \backsl{*} \cx{pos}{M} }  { \atsign{M}{modifier}( \ \diam{Modifier}(X:m-class \prop{*})  \ )  } \\ \\
+There is a single dictionary form which uses these families to create entries: \\ \\
+\dict{modifier}{form, pos, side, class}{really, adj, pre, intensity}
+Note that each form requires its own dictionary entry 
+
+
+\subsect{Adjectives}
+\lab{Families}
+\begin{enumerate}
+\item \family{Adj}  {big, red, better}
+          \entry {\cx{adj}{M}}  { \atsign{M}{property}( \prop{*} )  }
+\item \family{Mod-pre-adj-comparative}    {much}
+          \entry {\cx{adj}{M} \fwdsl{} \cxx{adj}{M}{ comparative}}  { \atsign{M}{modifier}( \ \diam{Modifier}(\prop{*})  \ )  }
+\item \family{More-adj}    {more}
+          \entryl {\cxx{adj}{M}{ comparative} \fwdsl{} \cxx{adj}{M}{ degree-base}}  { \atsign{M}{modifier}( \ \diam{Degree}(comparative) \ )  }
+\item \family{Most-adj}    {most}
+          \entryl {\cxx{adj}{M}{ superlative} \fwdsl{} \cxx{adj}{M}{ degree-base}}  { \atsign{M}{modifier}( \ \diam{Degree}(superlative) \ )  }
+\item \family{Adj-er-than}    {than}
+          \entryl {\cx{adj}{M} \fwdsl{} np\id{A} \backsl{*} \cxx{adj}{M}{ comparative}}  { \atsign{M}{modifier}( \ \diam{Modifier}(\prop{*} \wand\ \diam{Anchor}(a:entity) ) \ )  }
+\end{enumerate}
+\lab{Rules} see above \\ \\
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item \dict{adj-none}{base, class, args}{wrong, q-attitude,}
+- creates  \catg{ \cxx{adj}{M}{s-degree-base}} with \atsign{M}{class}(\prop{form})   
+\item \dict{adj-deg}{base, comp, sup, class, args}{big, bigger, biggest, q-size, }
+- creates an entry for each degree value, e.g.  \catg{\cxx{adj}{M}{s-comparative} } with \\ \atsign{M}{class}(\prop{form} \wand\ \diam{Degree}(comparative) )
+\end{itemize}
+
+\subsect{Adverbs}
+\lab{Families}
+\begin{enumerate}
+\item \family{Adv}    {quickly, now, forward}
+          \entry { \cx{adv}{M}}  { \atsign{M}{modifier}( \prop{*} )  }
+\item \family{Adv+dep-clause}    {when, while, if}
+          \entry { \cx{adv}{M} \fwdsl{} \cxx{s}{V}{fin, s-ind} }  { \atsign{M}{Modifier}( \prop{*} \wand\ \diam{Event}(V:event) )  }
+\end{enumerate}
+\lab{Rules}  see above \\ \\
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item \dict{adverb}{base, class, cc-class, args}{quickly, manner, adv-all, }
+- creates  \catg{ \cxx{adv}{M}{s-degree-base}} with \atsign{M}{class}(\prop{form})   
+\item \dict{adverb-deg}{base, comparative, superlative, class, cc-class, args}{soon, sooner, soonest, time, adv-all, }
+- creates an entry for each degree value, e.g.  \catg{\cxx{adv}{M}{s-comparative} } with \\ \atsign{M}{class}
+\item \dict{adverb+dep-clause}{base, class, cc-class, args}{when, time, adv-1, }
+- see family above.
+\end{itemize}
+  
+\subsect{Prepositions}
+\lab{Families} \\ \\
+The \diam{Anchor} complement sub-categorizes for entities of sort physical (man, table, kitchen) , time-unit (minute, second, hour) or section(right, left, edge, corner, side). This guarantees that \emph{in the office} and \emph{in five minutes} receive disjoint readings and that \emph{I am to your right} parses but |\emph{I  am to the kitchen} doesn't.\footnote{this sentence of course does have uses, e.g. when giving feedback indicating the current progress of a route travelled, but this is behind the scope of the current grammar} The standard families subcat for physical. \\
+The compliment of prepositions is marked as case \fv{acc-loc}. This is also marked on the pro-locational \catg{np}s \emph{here} and \emph{there}. Thus, \emph{in here, up there} are permitted but \emph{I took here and here walked} are not
+\begin{enumerate}
+\item \family{Prep}    {in , through, with, for}
+          \entry { \cx{pp}{M} \fwdsl{} \cxx{np}{A}{acc-loc} }  { \atsign{M}{modifier}( \prop{*} \wand\ \diam{Anchor}(A:physical) )  )  }
+\item \family{Prep+of-np-}   {right, in\textunderscore{}front, on\textunderscore{}top }
+          \entry { \cx{pp}{M} \fwdsl{} \cxx{obl}{A}{of, acc-loc} }  { \atsign{M}{modifier}( \prop{*} \wand\ \diam{Anchor}(A:physical) )  )  } \\
+\\ there are similar families for \emph{to} and \emph{from}, i.e. \emph{next \ul{to} } and \emph{away \ul{from}}          
+\item \family{Prep+no-arg-}   { here, there, somewhere }
+          \entry { \cx{pp}{M} }  { \atsign{M}{modifier}( \prop{*}  )  }
+\item \family{Prep--time-unit}    {for five minutes, in two weeks}
+          \entry { \cx{pp}{M} \fwdsl{} \cxx{np}{A}{acc-loc} }  { \atsign{M}{modifier}( \prop{*} \wand\ \diam{Anchor}(A:e-time-unit) )  )  }
+\end{enumerate}
+\lab{Rules} \\ \\
+These rules turn any locational/dynamic preposition into a first conjunct. This is required to handle location chains (see section X). The rule are projective (they add a new 'complement' to the parse), and because they apply to any such preposition, will always 'fire'. Forcing the conjuncts and the result to have the same cc-type weeds out a lot of unnecessary parses.
+\begin{enumerate}
+\item 
+               \tcll{ \cxx{pp}{F}{x-dynamic , cc-type:cc-type }}
+               {\cxx{pp}{R}{x-dynamic , cc-type:cc-type} \fwdsl{} \cxx{pp}{N}{x-dynamic , cc-type:cc-type }}
+               {\atsign{R}{m-dynamic}( \prop{list} \diam{First}(F:m-dynamic) \wand\ \diam{Next}(N:m-dynamic) ) } 
+\item 
+               \tcll{ \cxx{pp}{F}{x-location , cc-type:cc-type }}
+               {\cxx{pp}{R}{x-location , cc-type:cc-type} \fwdsl{} \cxx{pp}{N}{x-location , cc-type:cc-type }}
+               {\atsign{R}{m-location}( \prop{list} \diam{First}(F:m-location) \wand\ \diam{Next}(N:m-location) ) } 
+\end{enumerate}
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item \dict{prp}{form, class, cc-class, args}{into, whereto, prep-2,}
+- any prep with a physical \diam{Anchor}
+\item \dict{prp--}{subcat, form, class, cc-class, args}{time-unit, for, time-interval, prep-2,}
+- time unit \diam{Anchor}
+\item \dict{prp+}{comp, form, class, args}{of-np, right, location, prep-1, }
+- This also handles no-arg entries 
+\end{itemize}
+
+\subsect{Wh-Words}
+All wh-word entries control the ordering of the clausal elements (1) , set the syntactic and semantic mood of the clause,  and add  the semantic role \diam{Wh-Restr} which specifies the nature and the scope of the questioned item (3). In some cases, they also have their own compliments which are used to further build up the \diam{Wh-Restr} (2). Thus, all Wh-words have the same top level structure and in what follows we specify only these three components: \\  
+\entryl {  \cxx{E}{s}{s-int} \ \  + 1  \Ê\ \ ( +  2 )  }
+            { \atsign{E}{event}( \ \diam{Mood}(int) \wand\ \diam{Subject}(S) \wand\ \diam{Wh-Restr}( + 3 ) \  ) } \\ \\
+There are a wealth of wh-word families each with a potentially large number of entries. We will begin by separating these families into two broad groups: those which question a role (i.e. they 'fill' an extracted argument) and those which question an event itself (they do no fill an argument slot).
+
+\subsubsection{Questioning a Role}
+In this section,we will refer to the questioned role as \emph{item}. Within this sub-set of wh families, we can further divide the entries along two lines. First, the nature of item (subject vs. other) determines a lot about the structure of the entry. 
+\begin{itemize}
+\item Each subject entry has:  (1) =  \catg{ \fwdsl{} ( \cxx{s}{E}{fin} \backsl{!} \cxx{np}{S}{3rd, s-sg} ) } and (3) involves \atsign{S}{entity}, .i.e. there is a  co-indexing with the subject. 
+\item Each other entry involves a verbal group 'missing' a complement, i.e. \catg{ ( \cxx{s}{E}{vform:vform} \backsl{!} \cx{np}{S}  \fwdsl{} \emph{item} ) }. This will be abbreviated to \catg{ v-minus(\emph{item}) }
+\end{itemize}
+Second, the nature of the clause (copular/presentational-be vs. auxiliary/modal verb + other-verb) is important.  Whereas the copular verb in \emph{where is the ball} controls the syntax and semantics of the clause, the aux in \emph{what is he looking at } and the modal in \emph{where can I put it}  do not: they merely add some semantic information to the clause.\footnote{as well as determining various syntactic features, e.g. verbal agreement, vform of the main verb, etc.} Note that this distinction is not important for subject questions: there is no need for a separate aux/modal entry corresponding to \emph{who went to bathroom} 
+\begin{itemize}
+\item Each copula entry has: (1) =  \catg{ \fwdsl{} ( \cxx{cop}{E}{agr}   \ \emph{item} ) } \\
+          Note that in this case, the subject is handled by the copular verb itself. This 1) allows questioning \diam{Anchor} in, e.g. \emph{who is he with} \footnote{although this is non-incremental} and 2) blocks it in  \emph{who is on xx the table}. 
+\item There are two aux/modal entries: 
+     \begin{enumerate}
+     \item has (1) =  \catg{ \fwdsl{} v-minus (\emph{item}) \fwdsl{} \cxx{np}{S}{3rd, s-sg} \fwdsl{} \cxx{aux}{E}        {pol:pol , fin:fin, . . . } } 
+      \item has (1) =  \catg{ \fwdsl{} \ (\cx{s}{G} \ \$_{1} \ \emph{item}) \ \fwdsl{} v-minus ( \fwdsl{} \ \cx{s}{G} \$_{1} ) \fwdsl{} \cxx{np}{S}{3rd, s-sg} \fwdsl{} \cxx{aux}{E}{pol:pol , fin:fin, . . . } } 
+\end{enumerate}      
+The first handles cases where the questioned item occurs in the main clause, e.g. \emph{what did he pick up \ul{xxx}} and the second where it occurs in a subordinate clause, e.g. \emph{what did he want you to pick up \ul{xxx} }. In the latter case, note that this subordinate clause compliment (\catg{ \fwdsl{} \cx{s}{G} \ \$_{1} \ \emph{item} } ) must be 'repeated' as a compliment of this wh-construction following the verbal group compliment ( \catg{v-minus (...)} )
+\end{itemize}
+\lab{Families}
+\begin{enumerate}
+\item \family{Wh-np-}    {who, what}
+\item \family{Wh-np-spec-}    {\ul{which} ball, ul{what} ball}
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{np}{F}}
+          \\ (2)  = \catg{ \fwdsl{} \cxx{n}{F}{s-sg}} 
+          \\ (3)  = \atsign{V}{??}( \prop{*} \wand\ \diam{Scope}(F:entity) \ ) 
+\item \family{Wh-np-spec-ctxt-}    {\ul{which} }
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{np}{F}}
+          \\ (2)  = no compliments (the semantic head is 'contextualized' as in \emph{which do you want}
+          \\ (3)  =  \atsign{V}{??}( \prop{*} \wand\ \diam{Scope}(F:entity \prop{context}) \ ) \\ \\
+There are also two families for questioning the quantity of referents which are countable (i.e. \emph{how\textunderscore{}many} ) or uncountable (i.e. \emph{how\textunderscore{}much} ). \footnote{this could and undoubtedly should be handled using a single form of \emph{how} and two separate lexical entries for \emph{much} and \emph{many} } The only difference is  the number feature value of (2). Each of these families contain entries for both nominally specified for contextualized semantic head. The reason why these have been separated into two families in the case np-spec above is that whereas we want the nominally specified specifier reading for \emph{what} (i.e. \emph{\ul{what} ball did you pick up} ) we did not want the contextualized reading, i.e. \emph{\ul{what} did you pick up} should not receive two readings with differing \diam{Wh-Restr}.
+\item \family{Wh-np-qclass-}    { \ul{which} color ball }
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{np}{F}}
+          \\ (2)  = \catg{ \fwdsl{} \cx{n}{F} \  \fwdsl{} \cx{qclass}{Q} }
+          \footnote{The category \catg{qclass}, which stands for Quality Class, refers to classes of properties such: \emph{color, size, shape, temperature, etc.} } 
+          \\ (3)  = \atsign{V}{??}( \prop{*} \wand\ \diam{Scope}(Q  \diam{Scope}(F:entity) ) \ )  \\Ê\\
+This family also includes a set of entries for contextualized entities allowing the more common \emph{\ul{which} color do you want}. 
+\begin{verbatim}
+  @w1:cognition(want ^ 
+                <Mood>int ^ 
+                <Tense>pres ^ 
+                <Actor>(y1:person ^ you ^  <Num>sg) ^ 
+                <Patient>(c1:entity ^ context) ^ 
+                <Subject>y1:person ^ 
+                <Wh-Restr>(w2:specifier ^ which ^ 
+                           <Scope>(c2:quality ^ color ^ 
+                                   <Scope>c1:entity)))
+\end{verbatim}
+This corresponds to the situation where, say, the recipient is being asked to choose between a blue, a green and a red ball, an answer like \emph{blue} would be referring to \ul{the blue ball}. Consequently, it also makes sense to treat the question as referring to an entity with a contextualized semantic head, in this case \prop{ball}.  In other words, this reading is a better representation of this question's semantics than:
+\begin{verbatim}
+  @w1:cognition(want ^ 
+                <Mood>int ^ 
+                <Tense>pres ^ 
+                <Actor>(y1:person ^ you ^  <Num>sg) ^ 
+                <Patient>(c1:entity ^ color) ^ 
+                <Subject>y1:person ^ 
+                <Wh-Restr>(w2:specifier ^ which ^ 
+                           <Scope>c1:entity))
+\end{verbatim} \\
+\item \family{Wh-pp-}    {where}
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{pp}{F}} 
+          \\ (2)  = no compliments
+          \\ (3)  =  \atsign{F}{modifier}( \prop{*} ) 
+          \entry {}  { \atsign{}{}( \prop{} )  }
+\item \family{Wh-sent-}    {what}
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{s}{F}}  \ \ ..OR.. \ \ \emph{item} = \catg{ ( \fwdsl{} \cxx{s}{F}{inf} \backsl{!} \cx{np}{S} )} 
+          \\ (2)  = no compliments
+          \\ (3)  =  \atsign{F}{event}( \prop{*} ) \\ \\
+The first handles questioning full sentence complements \emph{what did you say} and the second infinitival compliments \emph{what did you want} where \emph{want} is the same as in \emph{I want to play with the ball}, i.e. the question is more or less \emph{what did you want to do}.          
+\item \family{Wh-adj-}    {how}
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{adj}{F}} 
+          \\ (2)  = no compliments
+          \\ (3)  =  \atsign{F}{quality}( \prop{*} ) 
+\item \family{Wh-adj-degree}    {\ul{how} big, \ul{how} strong }
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{adj}{F}} 
+          \\ (2)  = \catg{ \fwdsl{} \cx{adj}{F}} 
+          \\ (3)  =  \atsign{V}{??}( \prop{*} \wand\ \diam{Scope}(F:quality) ) 
+\item \family{Wh-adj-qclass}    {\ul{which} color, \ul{what} shape }
+          \\ \emph{item} = \catg{ \fwdsl{} \cx{adj}{F}} 
+          \\ (2)  = \catg{ \fwdsl{} \cx{qclass}{F}} 
+          \\ (3)  =  \atsign{V}{??}( \prop{*} \wand\ \diam{Scope}(F:quality) ) \\ \\
+Consider the resultative use of the verb \emph{make} exemplified in \emph{I made it big}. These three families provide three ways of questioning this \diam{Result} role, i.e. \emph{\ul{how} / \ul{how big} / \ul{what size} did you make it}. Of course they also provide alternate ways of questioning the adjectival \diam{Cop-Restr} role in the copular verb, i.e. \emph{\ul{how} / \ul{how big} / \ul{what size} is it}.
+\end{enumerate}
+
+\subsubsection{Questioning an Event Modifier} \label{sec-Questioning-an-Event-Modifier}
+The last family of wh-words contains entries which do not question one of the events 'required' roles, but instead some optional aspect, i.e. a modifier. For example, in the questions 
+\begin{itemize}
+\item \emph{ \ul{where} are you \prop{sitting}} 
+\item \emph{ \ul{where} are you \prop{going}} 
+\item \emph{ \ul{when} did you \prop{come} in} 
+\item \emph{ \ul{how} did you want me to \prop{walk}} 
+\end{itemize}
+the wh word is questioning the bolded verb/event in terms of its static location, dynamic (where-to) location, time, and its manner respectively. \\ \\
+\family{Wh-sent-modifier}{where, how} \\ 
+         (1) = \catg{ \fwdsl{}  ( \cxx{s}{F}{vform:vform mclass:mclass} \backsl{!} \cx{np}{S}) \ \fwdsl{} \cxx{np}{S}{3rd, s-sg} \fwdsl{} \cxx{aux}{F}{pol:pol , fin:fin, . . . } } \\ 
+         ..OR.. \\
+         \catg{ \fwdsl{} \ ( \cx{s}{F} \ \$_{1} ) \ \fwdsl{} v-minus ( \fwdsl{} \ \cxx{s}{F}{mclass:mclass} \$_{1} ) \fwdsl{} \cxx{np}{S}{3rd, s-sg} \fwdsl{} \cxx{aux}{E}{pol:pol , fin:fin, . . .}} \\
+         (2) = no compliments \\
+         (3) = \atsign{V}{modifier}( \prop{*} \wand\ \diam{Scope}(F:event) ) \\ \\
+The first entry is used for questioning (i.e. scoping over) the main clause (first two examples above), and the 2nd some subordinate clause (third example). The constraint on this clause's \fv{mclass} is lexically specified by the wh-word (see section \ref{sec-Event-Modifier-Restriction}). \\ \\
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item \dict{wh-word}{form, class, families}{which, specificer, Wh-np-spec- Wh-np-qclass- ...} 
+Note that like the dictionary forms for verbs, multiple families can be evoked from a single entry.
+\item \dict{wh-word+feats}{form, class, families, feats}{where, Wh-sent-modifier, s-dynamic}
+This parrots wh-word but allows the addition of lexical macros. Note that this is how \emph{where} sets restricts its scoped-over event to mclass = \fv{s-dynamic}
+\item \dict{quality-class}{form}{size} 
+This creates a single entry of the form \cxx{qclass}{Q} with \atsign{Q}{quality}. It is currently only used in questions
+\end{itemize}
+
+\subsection{Discourse Markers} \label{sec-Discourse-Markers}
+Currently, discourse markers\footnote{also referred to as cue words/phrases, discourse particles/conenctives} (DMs) are given quite naive treatment. They are ordered linearly using the standard \diam{First} and \diam{Next} structure used in coordination. Thus, respectively, \emph{right ok} and \emph{right ok put it over there} receive:
+\begin{verbatim}
+  @l1:d-units(list ^ 
+              <First>(r1:marker ^ right) ^ 
+              <Next>(o1:marker ^ ok))
+
+  @l1:d-units(list ^ 
+              <First>(r1:marker ^ right) ^ 
+              <Next>(l2:d-units ^ list ^ 
+                     <First>(o1:marker ^ ok) ^ 
+                     <Next>(p1:action-non-motion ^ put ^ 
+                            <Mood>imp ^ 
+                            <Actor>(a1:entity ^ addressee) ^ 
+                            <Patient>(i1:thing ^ it ^ <Num>sg) ^ 
+                            <Result>(c1:m-whereto ^ context ^ 
+                                     <Proximity>m-distal ^ 
+                                     <Modifier>(o2:direction ^ over)) ^ 
+                            <Subject>a1:entity)))
+\end{verbatim}
+A required extension is the handling of post positioned DMs, e.g. \emph{it's in the kitchen \ul{right} / \ul{isn't it} ... }. \\ \\
+\lab{Families}
+\begin{enumerate}
+\item \family{DM}    {yes, no, okay, right}
+          \entry {\cxx{du}{R}{COM=no}}  { \atsign{D}{marker}( \prop{*} )  }\footnote{see \ref{sec-Coordination} below for a description of COM}
+          \entryl {\cxx{du}{R}{COM=yes} \fwdsl{} \cxx{du}{N}{COM=no}}
+                     { \atsign{R}{d-units}( \prop{list} \wand\ \diam{First}(F:marker \prop{*} ) \wand\ \diam{First}(N:marker) }
+          \entryl {\cxx{du}{R}{COM=yes} \fwdsl{} \cxx{s}{N}{mood:s-major}}
+                     { \atsign{R}{d-units}( \prop{list} \wand\ \diam{First}(F:marker \prop{*} ) \wand\ \diam{First}(N:event ) } \\ \\
+There is also a family DM+np which takes an \catg{np} compliment with role \diam{Addressee}. It is used in greetings and closings, e.g. \emph{hello Robot, bye GJ}. 
+\end{enumerate}
+Note that the pre-sentential entry restricts to major mood. Also, note that the parse for a sentence preceded by a DM will receive category \catg{du} and not \catg{s} \\ \\
+Vocative NPs are handled by giving all names a DM reading. Thus, \emph{Robot can you come get it for me} receives: 
+\begin{verbatim}
+  @l1:d-units(list ^ 
+              <First>(r1:animate ^ Robot) ^ 
+              <Next>(g1:action-non-motion ^ get ^ 
+                     <Mood>int ^ 
+                     <Tense>pres ^ 
+                     <Actor>(y1:person ^ you ^ <Num>sg) ^ 
+                     <Modifier>(c1:modal ^ can) ^ 
+                     <Modifier>(c2:m-manner ^ come) ^ 
+                     <Modifier>(f1:m-benefactor ^ for ^ 
+                                <Anchor>(i1:person ^ I ^  <Num>sg)) ^ 
+                     <Patient>(i2:thing ^ it ^ <Num>sg) ^ 
+                     <Subject>y1:person))
+ \end{verbatim}
+\lab{Dictionary Forms} \\
+\begin{itemize}
+\item
+ \dict{dis-marker}{form, class}{yes, alignment}
+ \dict{dis-marker+np}{form, class}{hi, greeting}
+- these create three items corresponding to the three entries above.
+\end{itemize}
+
+\subsect{Other Minor Families}
+\lab{Families}
+\begin{enumerate}
+\item \family{NP-marker}    {I gave it \ul{to} him}
+          \entry {\cxx{obl}{T}{MARK=*} \fwdsl{} \cxx{np}{T}{acc} }  { }
+\item \family{Infinitive-to}    {I want \ul{to} help you}
+          \entry { ( \cxx{s}{E}{inf} \backsl{!} \cx{np}{s} ) \fwdsl{} ( \cxx{s}{E}{vf-base} \backsl{!} \cx{np}{s} )}  {}
+          \entry { \cxx{s}{E}{inf} \backsl{!} \cx{np}{s} }  { \atsign{E}{event}( \prop{context} )  }
+\item \family{For-verb-ing}    {thank you \ul{for} helping me}
+          \entry {( \cxx{s}{E}{for-ing} \backsl{!} \cx{np}{s} ) \fwdsl{} ( \cxx{s}{E}{ing} \backsl{!} \cx{np}{s} )}  { }
+\end{enumerate}
+1 marks oblique entity compliments. 2 and 3 mark verbs. \\
+The second entry in 2 contextualizes event compliments, as in \emph{I wanted to}:
+\begin{verbatim}
+@w1:cognition(want ^ 
+                <Mood>ind ^ 
+                <Tense>past ^ 
+                <Actor>(i1:person ^ I ^ <Num>sg) ^ 
+                <Event>(c1:event ^ context) ^ 
+                <Subject>i1:person)
+\end{verbatim}
+
+\subsection{Higher Order Dictionary Forms} \label{sec-Higher-Order}
+Moloko has made use of \textsc{DotCCG} \ingram{def} macros by creating 'higher order' dictionary forms to group the various, sometimes disparate, entries of single words. For example, here is definition for direction words \emph{right, left, front, back}:
+\begin{verbatim}
+def direction-word(loc) {
+  prp+(of-np, loc, location, prep-all)    
+  prp+(of-np, loc, whereto, prep-2) 
+  prp+(no-arg, loc, direction, prep-2)  
+  noun+of-np(loc, e-region, cc-none)
+  noun(loc, e-region, cc-none)
+  adj-none(loc, q-location, )
+}
+\end{verbatim}
+Thus, the macro call: \ingram{direction-word(right)} 'calls' each of these 'atomic' macros creating the entire gamut of entries needed for handling the various behaviours of this word:  \\
+
+\emph{I am \ul{right} of the table} 
+
+\emph{go \ul{right} of the table}
+
+\emph{go \ul{right}}
+
+\emph{I am to the \ul{right} of the table} 
+
+\emph{I am to the \ul{right}} 
+
+\emph{I want the \ul{right} one} (i.e. not the left one) \\ \\
+Similar macros exist for numbers and determiners/context-nps/group-heads. In fact, the macro \ingram{pronoun} described in \ref{sec-Nouns} above also operates in this way.
+
+A useful future task would be to re-organize other areas of the dictionary in this way. Thinking in this way would also help in removing the redundancy in the ontology (etc. e-location, q-location, m-location). 
+
+
+

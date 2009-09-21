@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /**
+
+@system specificattion.entity
+
+Just sets the quantification and number of an entity to singular. 
+
+*/ --> 
+
+<system id="quantification.entity" region="QUANTIFICATION" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:entity"/>
+<!-- add condition: qunatity=1 -->
+   </conditions>
+   <actions>
+      <action choice="default">
+	 <add-feature feature="Quantification" value="specific"/>
+	 <add-feature feature="Num" value="sg"/>
+      </action>
+   </actions>
+</system>
+
+<!-- /**
+
+@system quantification.location
+
+Just sets the quantification and number of a location to specific singular. 
+
+*/ --> 
+
+<system id="quantification.loation" region="QUANTIFICATION" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:e-location"/>
+   </conditions>
+   <actions>
+      <action choice="default">
+	 <add-feature feature="Quantification" value="specific"/>
+	 <add-feature feature="Num" value="sg"/>
+      </action>
+   </actions>
+</system>
+
+
+
+
+</systems>
