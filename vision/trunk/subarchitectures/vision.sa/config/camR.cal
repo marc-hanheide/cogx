@@ -1,0 +1,71 @@
+# camera parameter file generated Tue Aug 18 13:23:41 2009
+
+# Intrinsic parameters for pinhole camera model.
+# The pinhole camera model is as follows:
+# m = A*(R*M + t)
+#
+# M .. 3x1 world point [mm]
+# A .. 3x3 camera intrinsic matrix
+#          |f_x  0  c_x|
+#      A = | 0  f_y c_y|
+#          | 0   0   1 |
+#      c_x, c_y .. principal point [pix]
+#      f_x, f_y .. focal length in [pix]
+#                  f_x = f/s_x, f_y = f/s_y
+#                  with f the focal length in [mm] and s_x, s_y the pixel
+#                  sizes in [mm/pix]
+# R,t .. 3x3 rotation matrix and 3x1 translation vector [mm]
+#      pose of camera w.r.t. world (= extrinsic parameters)
+# m .. 3x1 image point in homogenous co-ordinates
+#      image point in cartesian pixel co-ordinates is given as
+#      (x, y) = (m_x/m_z, m_y/m_z)
+# Note that only the ratios focal length to pixel size can be determined.
+# Given a (known) nominal focal length f (e.g. from camera data sheet) we
+# can calculate:
+# s_x = f/f_x .. horizontal pixel size [mm/pix]
+# s_y = f/f_y .. vertical pixel size [mm/pix]
+# r = s_x/s_y .. pixel aspect ratio
+#
+# Distortion is modelled as follows:
+# x_d = x + x*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*x^2)
+# y_d = y + y*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*y^2)
+#
+# where (x, y) are ideal, distortion-free image physical co-ordinates,
+# (x_d, y_d) are distorted image physical co-ordinates and r^2 = x^2 + y^2
+#
+# w, h .. image width and height
+
+# focal lengths in [pix]
+#fx = 843.921204
+#fy = 844.217712
+fx = 815.671584 
+fy = 811.613432
+
+# principal point [pix]
+cx = 330.789689 
+cy = 253.531854
+
+# (nominal) focal length [mm]
+f  = 6.000000
+# pixel size [mm/pix]
+sx = 0.0074
+sy = 0.0074
+# aspect ratio: pixel size x/y
+r  = 1.000000
+# image width and height
+w =  640
+h =  480
+
+# distortion parameters
+#k1 = -0.124161 
+#k2 = 0.235267
+#p1 = -0.000075
+#p2 = -0.000242
+
+k1 = -0.218056
+k2 = 1.389080
+k3 = -4.877598
+p1 = 0.004578
+p2 = 0.004510
+
+# pose = [  -0.0059704733 -0.000114121230 0.0002685947 ] [ 0.022599 -0.010878 -0.005185 ]
