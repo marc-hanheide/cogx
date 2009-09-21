@@ -1,0 +1,17 @@
+function threshold = getNonLinPdfThreshold( nlfun, alpha )
+
+P = sum(nlfun) ;
+len = length(nlfun) ;
+c = 0 ;
+I = -1 ;
+for i = 1 : len
+    if c >= alpha*P 
+        I = i ;
+        break ;
+    end    
+    c = c + nlfun(i) ;
+end
+
+threshold = nlfun(I) ;
+
+

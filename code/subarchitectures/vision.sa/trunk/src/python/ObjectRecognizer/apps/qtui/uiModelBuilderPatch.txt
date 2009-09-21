@@ -1,0 +1,15 @@
+--- uiModelBuilder.py	2009-09-11 13:48:09.000000000 +0200
++++ uiModelBuilder_0.py	2009-09-11 11:50:38.000000000 +0200
+@@ -8,6 +8,7 @@
+ # WARNING! All changes made in this file will be lost!
+ 
+ from PyQt4 import QtCore, QtGui
++from qwCameraPlacement import CQwCameraPlacement
+ 
+ class Ui_ModelBuilder(object):
+     def setupUi(self, ModelBuilder):
+@@ -99,3 +100,3 @@
+         self.verticalLayout_5.setObjectName("verticalLayout_5")
+-        self.wwCameraPlacement = QtGui.QWidget(self.frame_3)
++        self.wwCameraPlacement = CQwCameraPlacement(self.frame_3)
+         self.wwCameraPlacement.setMinimumSize(QtCore.QSize(0, 120))
