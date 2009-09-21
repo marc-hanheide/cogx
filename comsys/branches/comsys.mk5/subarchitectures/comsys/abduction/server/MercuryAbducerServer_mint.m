@@ -3,7 +3,7 @@
 :- interface.
 :- import_module io.
 :- import_module float, list.
-:- import_module ctx_specific, ctx_modality, abduction, formula.
+:- import_module ctx_loadable, ctx_modality, abduction, formula.
 :- import_module varset.
 
 :- func srv_init_ctx = ctx.
@@ -11,7 +11,7 @@
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
 :- pred srv_load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
-:- pred srv_add_mprop_fact(mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
+:- pred srv_add_mprop_fact(varset::in, mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
 %:- pred srv_prove_best(string::in, float::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 :- pred srv_prove_best(proof(ctx_modality)::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 :- pred srv_dissect_proof(proof(ctx_modality)::in, ctx::in, float::out, list(string)::out, list(string)::out) is det.
@@ -48,14 +48,15 @@ srv_init_ctx = new_ctx.
 :- pragma foreign_export("C", srv_print_ctx(in, di, uo), "print_ctx").
 
 srv_print_ctx(C, !IO) :-
-   	print_ctx(C, !IO).
+	true.
+   	%print_ctx(C, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pragma foreign_export("C", srv_clear_rules(in, out), "clear_rules").
 
 srv_clear_rules(!Ctx) :-
-	set_explicit_rules(set.init, !Ctx).
+	set_rules(set.init, !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -71,7 +72,7 @@ srv_load_rules_from_file(Filename, !Ctx, !IO) :-
 			ReadResult = term(VS, Term),
 			generic_term(Term),
 			(if term_to_mrule(Term, MRule)
-			then add_explicit_rule(vs(MRule, VS), !Ctx), Continue = yes
+			then add_rule(vs(MRule, VS), !Ctx), Continue = yes
 			else
 				context(_, Line) = get_term_context(Term),
 				error("Syntax error in rule file " ++ Filename
@@ -93,7 +94,7 @@ srv_load_rules_from_file(Filename, !Ctx, !IO) :-
 :- pragma foreign_export("C", srv_clear_facts(in, out), "clear_facts").
 
 srv_clear_facts(!Ctx) :-
-	set_explicit_facts(set.init, !Ctx).
+	set_facts(set.init, !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -106,10 +107,10 @@ srv_load_facts_from_file(Filename, !Ctx, !IO) :-
 	do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
 		term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
 		(
-			ReadResult = term(_VS, Term),
+			ReadResult = term(VS, Term),
 			generic_term(Term),
-			(if term_to_mprop(Term, m(Mod, Prop)), GProp = formula_to_ground_formula(Prop)
-			then add_explicit_fact(m(Mod, GProp), !Ctx), Continue = yes
+			(if term_to_mprop(Term, m(Mod, Prop))
+			then add_fact(vs(m(Mod, Prop), VS), !Ctx), Continue = yes
 			else
 				context(_, Line) = get_term_context(Term),
 				error("Syntax error in facts file " ++ Filename
@@ -128,12 +129,10 @@ srv_load_facts_from_file(Filename, !Ctx, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_add_mprop_fact(in, in, out), "add_mprop_fact").
+:- pragma foreign_export("C", srv_add_mprop_fact(in, in, in, out), "add_mprop_fact").
 
-srv_add_mprop_fact(MProp, !Ctx) :-
-	MProp = m(Mod, Prop),
-	GProp = det_formula_to_ground_formula(Prop),
-	add_explicit_fact(m(Mod, GProp), !Ctx).
+srv_add_mprop_fact(VS, MProp, !Ctx) :-
+	add_fact(vs(MProp, VS), !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -183,21 +182,21 @@ srv_proof_summary(Proof, Ctx, !IO) :-
 	Costs = costs(1.0, 1.0, 0.1),
 	LastGoal = last_goal(Proof),
 
-	print_ctx(Ctx, !IO),
+	%print_ctx(Ctx, !IO),
 
 	format("proof cost = %f\n\n", [f(cost(Ctx, Proof, Costs))], !IO),
 	print("proven goal:\n  " ++ goal_to_string(LastGoal) ++ "\n", !IO),
 	nl(!IO),
 
 	print("assumptions:\n", !IO),
-	print("  " ++ assumptions_to_string(Ctx, goal_assumptions(LastGoal)) ++ "\n", !IO),
+	%print("  " ++ assumptions_to_string(Ctx, goal_assumptions(LastGoal)) ++ "\n", !IO),
 	nl(!IO),
 
 	print("assertions:\n", !IO),
-	print("  " ++ assertions_to_string(Ctx, goal_assertions(LastGoal)) ++ "\n", !IO),
-	nl(!IO),
+	%print("  " ++ assertions_to_string(Ctx, goal_assertions(LastGoal)) ++ "\n", !IO),
+	nl(!IO).
 
-	print_proof_trace(Ctx, Proof, !IO).
+	%print_proof_trace(Ctx, Proof, !IO).
 
 %------------------------------------------------------------------------------%
 
