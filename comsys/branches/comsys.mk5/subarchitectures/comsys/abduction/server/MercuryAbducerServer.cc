@@ -30,14 +30,9 @@ MercuryAbducerServer::clearRules(const Ice::Current&)
 void
 MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Current&)
 {
-	cerr << "[log] adding explicit rules from: " << filename << endl;
-
-	char * s = new char[filename.length() + 1];
-	copy(filename.begin(), filename.end(), s);
-	s[filename.length()] = '\0';
-
+	char * s = stringToMercString(filename);
+	cerr << "[log] adding explicit rules from: " << s << endl;
 	load_rules_from_file(s, ctx, &ctx);
-
 	delete s;
 }
 
@@ -51,14 +46,9 @@ MercuryAbducerServer::clearFacts(const Ice::Current&)
 void
 MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Current&)
 {
+	char * s = stringToMercString(filename);
 	cerr << "[log] adding explicit facts from: " << filename << endl;
-
-	char * s = new char[filename.length() + 1];
-	copy(filename.begin(), filename.end(), s);
-	s[filename.length()] = '\0';
-
 	load_facts_from_file(s, ctx, &ctx);
-
 	delete s;
 }
 
@@ -74,7 +64,21 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 	add_mprop_fact(mprop, ctx, &ctx);
 }
 
-ProofResult
+void
+MercuryAbducerServer::clearAssumables(const Ice::Current&)
+{
+	cerr << "[log] clearing assumables" << endl;
+	cerr << "TODO" << endl;
+}
+
+void
+MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
+{
+	cerr << "[log] adding assumable " << f->p->predSym << endl;
+	cerr << "TODO" << endl;
+}
+
+ProveResult
 MercuryAbducerServer::prove(const vector<AssumableGoalPtr> & goals, const Ice::Current&)
 {
 	cerr << "[log] proving" << endl;
@@ -109,7 +113,6 @@ MercuryAbducerServer::prove(const vector<AssumableGoalPtr> & goals, const Ice::C
 	}
 }
 
-
 AbductiveProofPtr
 MercuryAbducerServer::getBestProof(const Ice::Current&)
 {
@@ -117,6 +120,8 @@ MercuryAbducerServer::getBestProof(const Ice::Current&)
 
 	// TODO: test that we have a proof in curBestProof
 
+	return MR_WordToAbductiveProof(ctx, curBestProof);
+/*
 	double cost;
 	MR_Word assumed;
 	MR_Word asserted;
@@ -140,5 +145,6 @@ MercuryAbducerServer::getBestProof(const Ice::Current&)
 	proof->asserted = asrVect;
 
 	return proof;
+*/
 }
 

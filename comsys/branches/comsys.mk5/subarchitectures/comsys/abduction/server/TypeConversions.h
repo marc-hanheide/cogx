@@ -24,4 +24,21 @@ withConstCostFunction(MR_Word mprop, double cost);
 MR_Word
 modalityToMercModality(const Abducer::ModalityPtr & m);
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Abducer::ModalityPtr
+MR_WordToModality(MR_Word w);
+
+Abducer::TermPtr
+MR_WordToTerm(MR_Word w_vs, MR_Word w_t);
+
+Abducer::PredicatePtr
+MR_WordToPredicate(MR_Word w_vs, MR_Word w_p);
+
+Abducer::ModalisedFormulaPtr
+MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf);
+
+Abducer::AbductiveProofPtr
+MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof);
+
 #endif

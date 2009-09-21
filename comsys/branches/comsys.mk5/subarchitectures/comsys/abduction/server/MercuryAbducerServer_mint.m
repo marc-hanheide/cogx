@@ -157,7 +157,7 @@ srv_prove_best(P0, Ctx, ProofCost, Proof) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_dissect_proof(in, in, out, out, out), "dissect_proof").
+%:- pragma foreign_export("C", srv_dissect_proof(in, in, out, out, out), "dissect_proof").
 
 srv_dissect_proof(Proof, _Ctx, Cost, Assumed, Asserted) :-
 %	Costs = costs(1.0, 1.0, 0.1),
