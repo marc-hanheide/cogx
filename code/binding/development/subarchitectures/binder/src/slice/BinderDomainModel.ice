@@ -59,7 +59,7 @@ module beliefmodel {
 		SuperFormulaSeq formulae;
 	}; 
 	
-
+ 
 	// GROUNDED BELIEFS
 	// We extend the ADL notion of Belief with structure to indicate how
 	// the belief is grounded in other structures. Grounding indicates several 
@@ -67,7 +67,7 @@ module beliefmodel {
 	// what the status of the belief is (by value; different "truth" values for
 	// assertions, propositions), and a formula explaining the reason for the grounding 
 	// status (empty, to indicate truth; or a complex formula, explaining a negative value). 
-
+ 
 	sequence<string>Ids; 
 
 	enum GroundStatus { assertionVerified, assertionFalsified, propositionTrue, propositionFalse, propositionAmbiguous}; 
