@@ -1,65 +1,70 @@
-:- module abd_io.
+% $Id: test_abduction.m 2485 2009-09-20 00:32:15Z janicek $
+
+:- module ctx_loadable_io.
 
 :- interface.
-:- import_module ctx_specific, io, abduction, modality, stringable, list, varset, formula, bag, ctx_modality.
+
+:- import_module io, list, varset, bag.
+:- import_module abduction, ctx_modality, costs, formula, stringable, modality.
+:- import_module ctx_loadable.
 
 :- pred print_ctx(ctx::in, io::di, io::uo) is det.
 :- pred print_proof_trace(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
-:- func step_to_string(step(M)) = string <= (modality(M), stringable(M)).
-:- func query_to_string(varset, query(ctx_modality)) = string.
-:- func goal_to_string(vscope(list(query(ctx_modality)))) = string.
 :- func assumptions_to_string(ctx, bag(with_cost_function(mgprop(ctx_modality)))) = string.
 :- func assertions_to_string(ctx, bag(vscope(mtest(ctx_modality)))) = string.
+:- func goal_to_string(vscope(list(query(ctx_modality)))) = string.
+:- func step_to_string(step(M)) = string <= (modality(M), stringable(M)).
+:- func query_to_string(varset, query(ctx_modality)) = string.
 :- func proof_state_to_string(varset, list(query(ctx_modality))) = string.
 
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module map, formula_io, ctx_io, string, belief_model, set, lf, lf_io, solutions, pair, assoc_list, costs, context.
+
+:- import_module require, solutions.
+:- import_module map, set, list, pair, assoc_list, string, float, int, bag, bool.
+:- import_module utils.
+:- import_module abduction, formula, context, costs.
+
+:- import_module ctx_modality, ctx_loadable, ctx_io.
+:- import_module modality, stringable.
+
+:- import_module parser, term_io, term, varset, formula_io, formula_ops, costs.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 print_ctx(Ctx, !IO) :-
-	print("beliefs:\n", !IO),
-
-	map.foldl((pred(Index::in, {Stf, Bel, LF}::in, !.IO::di, !:IO::uo) is det :-
-		print("  ", !IO),
-		(if member(Index, Ctx^bm^fg) then Fg = "*" else Fg = " "),
-		print("(" ++ from_int(Index) ++ ")  " ++ Fg ++ " " ++ to_string(k(Stf, Bel)) ++ ": "
-				++ lf_to_string(LF), !IO),
-		nl(!IO)
-			), Ctx^bm^k, !IO),
-
-	nl(!IO),
-
-	print("generated lfs:\n", !IO),
-
-	KFacts = solutions_set((pred({STF, Bel, LF}::out) is nondet :-
-		k_fact(Ctx^ont, Ctx^rrel, Ctx^bm, STF, Bel, LF)
-			)),
-
-	set.fold((pred({STF, Bel, LF}::in, !.IO::di, !:IO::uo) is det :-
-		print("  " ++ to_string(k(STF, Bel)) ++ ": " ++ lf_to_string(LF) ++ "\n", !IO)
-			), KFacts, !IO),
-
-	nl(!IO),
-
-	print("explicit facts:\n", !IO),
+	print("facts:\n", !IO),
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
-			% XXX global context
 		print("  ", !IO),
-		Fact = m(Mod, GProp),
-		print(mprop_to_string(varset.init, m(Mod, ground_formula_to_formula(GProp))), !IO),
+		print(vsmprop_to_string(Fact), !IO),
 		nl(!IO)
-			), explicit_facts(Ctx), !IO),
+			), facts(Ctx), !IO),
 
 	nl(!IO),
 
-	print("explicit rules:\n", !IO),
+	print("assumables:\n", !IO),
+	map.foldl((pred(FuncName::in, Costs::in, !.IO::di, !:IO::uo) is det :-
+		print("  ", !IO),
+		print(FuncName ++ " = ", !IO),
+
+		CostStrs = list.map((func(m(Mod, GProp)-Cost) = S :-
+			S = vsmprop_to_string(vs(m(Mod, ground_formula_to_formula(GProp)), varset.init))
+					++ " = " ++ float_to_string(Cost)
+				), map.to_assoc_list(Costs)),
+
+		print("[\n    " ++ string.join_list(",\n    ", CostStrs) ++ "\n  ].\n", !IO)
+			), assumables(Ctx), !IO),
+
+	nl(!IO),
+
+	print("rules:\n", !IO),
 	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
 			% XXX global context
 		print("  ", !IO),
 		print(vsmrule_to_string(Rule), !IO),
 		nl(!IO)
-			), explicit_rules(Ctx), !IO).
+			), rules(Ctx), !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -131,4 +136,3 @@ assertions_to_string(_Ctx, As) = Str :-
 
 proof_state_to_string(Varset, L) = S :-
 	S = string.join_list(",\n  ", list.map(query_to_string(Varset), L)).
-

@@ -2,16 +2,17 @@
 
 :- interface.
 
-:- import_module abd_io.
 :- import_module abduction.
 :- import_module belief_model.
 :- import_module context.
 :- import_module costs.
 :- import_module ctx_io.
 :- import_module ctx_loadable.
+:- import_module ctx_loadable_io.
 :- import_module ctx_modality.
 :- import_module ctx_ontology.
 :- import_module ctx_specific.
+:- import_module ctx_specific_io.
 :- import_module enumerable.
 :- import_module formula.
 :- import_module formula_io.
