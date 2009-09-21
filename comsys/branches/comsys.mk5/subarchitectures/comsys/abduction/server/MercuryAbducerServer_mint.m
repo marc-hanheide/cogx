@@ -7,11 +7,17 @@
 :- import_module varset.
 
 :- func srv_init_ctx = ctx.
+
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
+
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
 :- pred srv_load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_add_mprop_fact(varset::in, mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
+
+:- pred srv_clear_assumables(ctx::in, ctx::out) is det.
+:- pred srv_add_assumable(string::in, mprop(ctx_modality)::in, float::in, ctx::in, ctx::out) is det.
+
 %:- pred srv_prove_best(string::in, float::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 :- pred srv_prove_best(proof(ctx_modality)::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 :- pred srv_dissect_proof(proof(ctx_modality)::in, ctx::in, float::out, list(string)::out, list(string)::out) is det.
@@ -47,7 +53,7 @@ srv_init_ctx = new_ctx.
 
 :- pragma foreign_export("C", srv_print_ctx(in, di, uo), "print_ctx").
 
-srv_print_ctx(C, !IO) :-
+srv_print_ctx(_C, !IO) :-
 	true.
    	%print_ctx(C, !IO).
 
@@ -133,6 +139,27 @@ srv_load_facts_from_file(Filename, !Ctx, !IO) :-
 
 srv_add_mprop_fact(VS, MProp, !Ctx) :-
 	add_fact(vs(MProp, VS), !Ctx).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pragma foreign_export("C", srv_clear_assumables(in, out), "clear_assumables").
+
+srv_clear_assumables(!Ctx) :-
+	set_assumables(map.init, !Ctx).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pragma foreign_export("C", srv_add_assumable(in, in, in, in, out), "add_assumable").
+
+srv_add_assumable(Function, m(Mod, Prop), Cost, !Ctx) :-
+	Ass = !.Ctx^assumables,
+	(if map.search(Ass, Function, Mapping0)
+	then Mapping = Mapping0
+	else Mapping = map.init
+	),
+	map.set(Mapping, m(Mod, det_formula_to_ground_formula(Prop)), Cost, MappingNew),
+	map.set(Ass, Function, MappingNew, Ass1),
+	set_assumables(Ass1, !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
