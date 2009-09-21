@@ -50,6 +50,9 @@ public class ComsysGoals {
     // Packing
     public static final String PACKEDLF_PROCESSING_TASK = "packedLFprocessingStep";
     
+    // Referential readings determination
+    public static final String REFERENTIALREADINGS_TASK = "referentialReadings";			
+	
     // Discourse Referents Binding
     public static final String DISCREFBINDING_TASK = "discRefBinding";	
  

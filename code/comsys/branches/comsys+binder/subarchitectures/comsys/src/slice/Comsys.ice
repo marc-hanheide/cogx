@@ -380,6 +380,38 @@ module comsysEssentials {
 	}; // end SpokenOutputItem 
 	
 	
+	
+	//---------------------------------------------------------------------------
+	// Reference determination and resolution 
+	//---------------------------------------------------------------------------
+	
+	//---------------------------------------------------------------------------
+	// A RefReading maintains two lists of id's. The identifiers refer to
+	// (sub)trees in a logical form with id lfId. These subtrees are identified as providing
+	// a restrictive form of reference, or an attributive form of reference. 
+	//
+	// @author	Geert-Jan Kruijff
+	// @started	090921
+	// @version	090921
+	//---------------------------------------------------------------------------
+	
+	class RefReading extends BaseData { 
+		string lfId;
+		stringIds restrictiveTrees;
+		stringIds attributiveTrees;
+	}; 
+	
+	sequence<RefReading> Readings;
+
+	class RefReadings extends BaseData {
+		Readings refRdngs; 
+	}; 
+	
+	
+	
+	
+	
+	
 };
 }; 
 };
@@ -388,6 +420,7 @@ module comsysEssentials {
 
 
 // EDIT LOG
+// 090921	GJ	Added ReferentialReadings, ReferentialReading classes
 // 090519	GJ	Added SpokenOutputItem: CHANGED: input stream is not an "any" object, but identified by id
 // 090519	GJ	Added RecogResult
 // 090518	GJ	Added PhonString class
