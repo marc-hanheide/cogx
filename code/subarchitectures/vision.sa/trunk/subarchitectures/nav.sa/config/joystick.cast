@@ -1,0 +1,12 @@
+HOST 127.0.0.1
+
+#COMPONENT CPP laser.server LaserServerPlayer --log --player-host 192.168.42.198 #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host 192.168.42.198 #--rand-data
+
+SUBARCHITECTURE nav.sa
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager
+# Args for NavControl
+# -c for config file which gives info about the robot shape etc
+#CPP GD navctrl.process NavControl -c subarchitectures/nav.sa/config/cogxp3.ccf --no-x-window --log #--debug
+

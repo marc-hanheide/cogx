@@ -1,0 +1,1144 @@
+//
+// = FILENAME
+//    DisplayNavInPB.cpp
+//
+// = FUNCTION
+//
+// = AUTHOR(S)
+//    Patric Jensfelt
+//
+// = COPYRIGHT
+//    Copyright (c) 2008 Patric Jensfelt
+//
+/*----------------------------------------------------------------------*/
+
+#include <list>
+#include <string>
+#include "DisplayNavInPB.hpp"
+#include <NavData.hpp>
+#include <Laser.hpp>
+#include <CureHWUtils.hpp>
+#include <cast/architecture/ChangeFilterFactory.hpp>
+
+#include <Navigation/NavGraph.hh>
+#include <Transformation/Pose3D.hh>
+#include <AddressBank/ConfigFileReader.hh>
+#include <Utils/CureDebug.hh>
+#include <Navigation/NavGraphNode.hh>
+#include <Navigation/NavGraphEdge.hh>
+#include <Navigation/NavGraphGateway.hh>
+
+
+using namespace std;
+using namespace cast;
+using namespace boost;
+using namespace navsa;
+
+/**
+ * The function called to create a new instance of our component.
+ *
+ * Taken from zwork
+ */
+extern "C" {
+  cast::interfaces::CASTComponentPtr newComponent() {
+    return new DisplayNavInPB();
+  }
+}
+
+DisplayNavInPB::DisplayNavInPB() {
+  cure_debug_level = -10;
+
+  m_LaserConnected = false;
+
+  m_NoPeopleModel = false;
+  
+  m_LaserServerHost = "localhost";
+
+  m_RobotPose = 0;
+  m_LineMap = 0;
+
+  m_FovH = 45.0;
+  m_FovV = 35.0;
+}
+
+DisplayNavInPB::~DisplayNavInPB() 
+{
+}
+
+void DisplayNavInPB::configure(const map<string,string>& _config) 
+{
+  println("configure entered");
+
+  m_ShowRobot = (_config.find("--no-robot") == _config.end());
+  m_ShowWalls = (_config.find("--no-walls") == _config.end());
+  m_ShowGraph = (_config.find("--no-graph") == _config.end());
+  m_ShowPeople = (_config.find("--no-people") == _config.end());
+  m_ShowScans = (_config.find("--no-scans") == _config.end());
+  m_ShowObjects = (_config.find("--no-objects") == _config.end());
+  m_ShowNodeClass = (_config.find("--no-nodeclass") == _config.end());
+  m_ShowAreaClass = (_config.find("--no-areaclass") == _config.end());
+  m_ShowRobotViewCone = (_config.find("--no-robotviewcone") == _config.end());
+  m_ShowPeopleId = (_config.find("--people-id") != _config.end());
+  m_NonUniqueObjects = (_config.find("--non-unique") != _config.end());
+
+  if (_config.find("--laser-server-host") != _config.end()) {
+    std::istringstream str(_config.find("--laser-server-host")->second);
+    str >> m_LaserServerHost;
+  }
+
+  if (_config.find("--fov-hor") != _config.end()) {
+    std::istringstream str(_config.find("--fov-hor")->second);
+    str >> m_FovH;
+  }
+  if (_config.find("--fov-vert") != _config.end()) {
+    std::istringstream str(_config.find("--fov-vert")->second);
+    str >> m_FovV;
+  }
+
+  m_RetryDelay = 10;
+  if(_config.find("--retry-interval") != _config.end()){
+    std::istringstream str(_config.find("--retry-interval")->second);
+    str >> m_RetryDelay;
+  }
+
+  Cure::ConfigFileReader *cfg = 0;
+
+  map<string,string>::const_iterator confIter = _config.find("-c");
+  if (confIter != _config.end()) {
+    cfg = new Cure::ConfigFileReader;
+    log("About to try to open the config file");
+    if (cfg->init(confIter->second) != 0) {
+      delete cfg;
+      cfg = 0;
+      log("Could not init Cure::ConfigFileReader with -c argument");
+    } else {
+      log("Managed to open the Cure config file");
+    }
+  }
+
+  m_PbPort = 5050;
+  m_PbHost = "localhost";
+  m_PbRobotName = "robot";
+  m_PbRobotFile = "Robone.xml";
+  m_PbPersonFile = "rolf.pbmf";
+
+  if (cfg) {
+
+    //cfg->getRobotName(m_PbRobotName);
+  
+    // To be backward compatible with config files that specify the
+    // RoboLook host and really mean peekabot we read that first and
+    // overwrite it below if both are specified
+    cfg->getRoboLookHost(m_PbHost);
+
+    std::string usedCfgFile, tmp;
+    if (cfg && cfg->getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
+      m_PbHost = tmp;
+    }
+    if (cfg->getString("PEEKABOT_ROBOT_XML_FILE", true, tmp, usedCfgFile) == 0){
+      m_PbRobotFile = tmp;
+    }
+    if (cfg->getString("PEEKABOT_PERSON_PBMF_FILE", true, tmp, usedCfgFile) == 0){
+      m_PbPersonFile = tmp;
+    }
+  }
+
+  println("Using %s as the robotfile in peekabot", m_PbRobotFile.c_str());
+  println("Using %s as the person in peekabot", m_PbPersonFile.c_str());
+
+  connectPeekabot();  
+
+  println("configure done");
+}
+
+void DisplayNavInPB::start() {
+  println("start entered");
+
+  // Hook up changes to the robot pose to a callback function
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newRobotPose));  
+
+  addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newRobotPose));  
+
+  addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavGraphNode));  
+  addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavGraphNode));  
+
+  addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavGraphObject));  
+  addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavGraphObject));  
+
+  addChangeFilter(createLocalTypeFilter<NavData::Area>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                      &DisplayNavInPB::newArea));  
+  addChangeFilter(createLocalTypeFilter<NavData::Area>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                      &DisplayNavInPB::newArea));  
+  
+  addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavGraphEdge));  
+  addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newNavGraphEdge));  
+
+  // Hook up changes to the tracked People to a callback function
+  addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                           &DisplayNavInPB::newPerson));
+  
+  addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                           &DisplayNavInPB::newPerson));    
+  
+  addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::DELETE),
+		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                           &DisplayNavInPB::deletePerson));    
+
+
+  // Hook up changes to the id of the tacked person to a callback function
+  addChangeFilter(createLocalTypeFilter<NavData::PersonFollowed>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                               &DisplayNavInPB::newPersonFollowed));
+  addChangeFilter(createLocalTypeFilter<NavData::PersonFollowed>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                               &DisplayNavInPB::newPersonFollowed));
+
+
+  // Hook up changes to the LineMap to a callback function
+
+  addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newLineMap));  
+  addChangeFilter(createLocalTypeFilter<NavData::LineMap>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newLineMap));  
+
+  println("start done");  
+}
+
+void DisplayNavInPB::createRobotFOV() 
+{
+  if (!m_ShowRobotViewCone) return;
+
+  std::string path = "peoplebot_base.ptu.pan.tilt.stereo_cam.cam_right";
+
+  double color[3];
+  color[0] = 0.9;
+  color[1] = 0.9;
+  color[2] = 0.9;
+
+  if (m_PbRobotFile == "Robone.xml") {
+    path = "peoplebot_base.ptu.pan.tilt.stereo_cam";
+  } else {
+    path = "model.camera";
+  }
+
+  peekabot::GroupProxy cam;
+  cam.assign(m_ProxyRobot, path);
+  
+  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2 );
+}
+
+void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
+                               double fovHorizAngle, double fovVertiAngle, 
+                               double* color, double opacity, 
+                               double zoffset, double yaw){
+  peekabot::GroupProxy proxyCone;
+  proxyCone.add(proxy, path);
+  const double coneLen = 1.0;
+  // The "half angle" of the field of view
+  const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
+  const double fovVerti = fovVertiAngle*M_PI/180.0/2;
+  peekabot::PolygonProxy proxyConeParts[5];
+  proxyConeParts[0].add(proxyCone, "top");
+  proxyConeParts[0].add_vertex(0,0,0);
+  proxyConeParts[0].add_vertex(coneLen,
+                               coneLen*tan(fovHoriz),
+                               coneLen*tan(fovVerti));
+  proxyConeParts[0].add_vertex(coneLen,
+                               coneLen*tan(-fovHoriz),
+                               coneLen*tan(fovVerti));                         
+  proxyConeParts[1].add(proxyCone, "bottom");
+  proxyConeParts[1].add_vertex(0,0,0);
+  proxyConeParts[1].add_vertex(coneLen,
+                          coneLen*tan(fovHoriz),
+                          coneLen*tan(-fovVerti));
+  proxyConeParts[1].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(-fovVerti));                         
+  proxyConeParts[2].add(proxyCone, "left");
+  proxyConeParts[2].add_vertex(0,0,0);
+  proxyConeParts[2].add_vertex(coneLen,
+                               coneLen*tan(fovHoriz),
+                               coneLen*tan(-fovVerti));
+  proxyConeParts[2].add_vertex(coneLen,
+                               coneLen*tan(fovHoriz),
+                               coneLen*tan(fovVerti));                         
+  proxyConeParts[3].add(proxyCone, "right");
+  proxyConeParts[3].add_vertex(0,0,0);
+  proxyConeParts[3].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(-fovVerti));
+  proxyConeParts[3].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(fovVerti));                         
+  proxyConeParts[4].add(proxyCone, "image");
+  proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(fovHoriz),
+                          coneLen*tan(fovVerti));
+  proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(fovHoriz),
+                          coneLen*tan(-fovVerti));
+  proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(-fovVerti));
+  proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                               coneLen*tan(fovVerti));                         
+ 
+  for (int i = 0; i < 5; i++) {
+    proxyConeParts[i].set_color(color[0],color[1],color[2]);
+    proxyConeParts[i].set_opacity(opacity);
+    proxyConeParts[i].set_scale(2);  // This is how I make the cone
+                                     // larger or smaller
+    proxyConeParts[i].set_position(0,0,zoffset);
+    proxyConeParts[i].set_rotation(yaw,0,0);
+  }
+}
+
+
+void DisplayNavInPB::runComponent() {
+
+  println("runComponent");
+
+  setupPushScan2d(*this, 0.2, m_LaserServerHost);
+
+  println("Connected to the laser");
+
+  while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+    sleep(m_RetryDelay);
+    connectPeekabot();
+  }
+
+  println("Connected to peekabot, ready to go");
+  if (m_PeekabotClient.is_connected()) {
+    while (isRunning()) {
+
+      m_Mutex.lock();
+
+      m_PeekabotClient.begin_bundle();
+
+
+      // Display the last laser scan 
+      if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {
+
+        peekabot::SensorProxy::SensorData reading;
+        double r[m_Scan.ranges.size()];
+        for (unsigned int i = 0; i < m_Scan.ranges.size(); i++) {
+          r[i] = m_Scan.ranges[i];
+        }
+        reading.write(r, m_Scan.ranges.size());
+        m_ProxyLaser.update(reading);
+        
+      }
+
+      // Display robot pose
+      if(m_ShowRobot && m_RobotPose) {
+        m_ProxyRobot.set_pose(m_RobotPose->x,
+                              m_RobotPose->y,
+                              0,
+                              m_RobotPose->theta);
+      }
+
+      // Display the line map
+      if(m_ShowWalls && m_LineMap) {
+
+        peekabot::GroupProxy walls;
+        walls.add(m_PeekabotClient,
+                  "root.walls",
+                  peekabot::REPLACE_ON_CONFLICT);
+        
+        for (unsigned int i = 0; i < m_LineMap->lines.size(); i++) {
+
+          peekabot::PolygonProxy pp;
+          char buf[32];
+          sprintf(buf, "poly%d", i);
+          pp.add(walls, buf);
+
+          pp.add_vertex(m_LineMap->lines[i].start.x,
+                        m_LineMap->lines[i].start.y,
+                        0);
+          pp.add_vertex(m_LineMap->lines[i].start.x,
+                        m_LineMap->lines[i].start.y,
+                        1.0);
+          pp.add_vertex(m_LineMap->lines[i].end.x,
+                        m_LineMap->lines[i].end.y,
+                        1.0);
+          pp.add_vertex(m_LineMap->lines[i].end.x,
+                        m_LineMap->lines[i].end.y,
+                        0.0);
+
+          pp.set_color(255./255, 198./255, 0.);
+          pp.set_opacity(0.2);
+
+        }
+
+      }
+
+      // Display the people being tracked
+      if(m_ShowPeople) displayPeople();
+
+      peekabot::Status s = m_PeekabotClient.end_bundle().status();
+
+      m_Mutex.unlock();
+      
+      // Make sure the server processed what we've sent
+      m_PeekabotClient.sync();
+
+      if( s.failed() ) {
+        log("Bundle failed with error message: %s", 
+            s.get_error_message().c_str());
+      }
+      
+
+
+      usleep(250000);
+    }
+  }
+}
+
+
+void DisplayNavInPB::displayPeople()
+{
+  peekabot::GroupProxy people;
+  people.add(m_PeekabotClient,
+             "root.people",
+             peekabot::REPLACE_ON_CONFLICT);
+
+  for (unsigned int i = 0; i < m_People.size(); i++) {
+    
+    char buf[32];
+    sprintf(buf, "person%ld", (long)m_People[i].m_data->id);
+    
+    if (m_NoPeopleModel) {
+      
+      // Using a cylinde rmodel instead of beautiful Rolf
+      
+      peekabot::CylinderProxy cp;
+      cp.add(people, buf, peekabot::REPLACE_ON_CONFLICT);
+      cp.set_pose(m_People[i].m_data->x,
+                  m_People[i].m_data->y,
+                  0.9,
+                  m_People[i].m_data->direction);      
+      cp.set_scale(0.1, 0.2, 1.8);
+
+      if (m_CurrPersonId == m_People[i].m_data->id) {
+        cp.set_opacity(1);
+      } else {
+        cp.set_opacity(0.2);
+      }
+
+    } else {
+
+      peekabot::ModelProxy mp;
+      mp.add(people, buf, m_PbPersonFile, 
+             peekabot::REPLACE_ON_CONFLICT);
+      mp.set_pose(m_People[i].m_data->x,
+                  m_People[i].m_data->y,
+                  0,
+                  m_People[i].m_data->direction);
+
+      if (m_CurrPersonId == m_People[i].m_data->id) {
+        mp.set_opacity(1);
+      } else {
+        mp.set_opacity(0.2);
+      }
+
+      if (m_ShowPeopleId) {
+        sprintf(buf, "id%ld", (long)m_People[i].m_data->id);
+        peekabot::LabelProxy text;
+        text.add(mp, buf, peekabot::REPLACE_ON_CONFLICT);
+        sprintf(buf, "%ld", (long)m_People[i].m_data->id);
+        text.set_text(buf);
+        text.set_pose(0,0,1.8,M_PI/2,0,M_PI/2);
+        text.set_scale(30, 30, 30);
+        text.set_alignment(peekabot::ALIGN_CENTER);
+        text.set_color(1,0,0);
+      }      
+    }
+  }
+  
+}
+
+void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
+{
+  cast::cdl::CASTTime ct;
+  ct = getCASTTime();
+  debug("Got scan n=%d, r[0]=%.3f a[0]=%.4f r[n-1]=%.3f da=%.4f t=%ld.%06ld @ t=%ld.%06ld",
+        scan.ranges.size(), scan.ranges[0], scan.startAngle,
+        scan.ranges[scan.ranges.size()-1], scan.angleStep,
+        (long)scan.time.s, (long)scan.time.us,
+        (long)ct.s, (long)ct.us);
+  
+  m_Mutex.lock();
+  m_Scan = scan;
+  m_Mutex.unlock();
+}
+     
+void DisplayNavInPB::newArea(const cdl::WorkingMemoryChange &objID)
+{
+  log("new Area");
+
+  if (!m_PeekabotClient.is_connected()) return;
+
+  // Get the area struct
+  shared_ptr<CASTData<NavData::Area> > oobj =
+      getWorkingMemoryEntry<NavData::Area>(objID.address);
+  NavData::AreaPtr area = oobj->getData();
+
+  if (!m_ShowAreaClass) 
+    return;
+
+  // Protect
+  m_Mutex.lock();
+  m_PeekabotClient.begin_bundle();
+
+  // Find nodes associated with this area
+  list<NavData::LineMapSegement> walls;
+  std::map<long, Node>::const_iterator ni;
+  for (ni=m_Nodes.begin(); ni!=m_Nodes.end(); ni++)
+  {
+    if ((*ni).second.m_areaId == area->id)
+    {
+      if (!(*ni).second.m_Gateway) 
+      {
+        peekabot::CylinderProxy acp;
+        char name2[32];
+        sprintf(name2, "node%ld.area_class", (*ni).second.m_Id);
+        acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+        acp.set_scale(0.5, 0.5, 0.0);
+        acp.set_position(0,0,0);
+        acp.set_opacity(0.2);
+        float r,g,b;
+        //FIXME
+	//place::ColorMap::getColorForPlaceClass(area->m_areaTypeNo, r, g, b);
+        getColorByIndex(3+(area->id%6), r, g, b);
+        acp.set_color(r,g,b);
+      }
+    }
+  }
+
+  m_PeekabotClient.end_bundle();
+  m_Mutex.unlock();
+}
+
+void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) 
+{
+  shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
+    getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
+  
+  m_Mutex.lock();
+  m_RobotPose = oobj->getData();
+  m_Mutex.unlock();
+  debug("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
+        m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
+        (long)m_RobotPose->time.s, (long)m_RobotPose->time.us); 
+}
+
+void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
+{  
+  if (!m_ShowObjects) return;
+  
+  shared_ptr<CASTData<NavData::ObjData> > oobj =
+    getWorkingMemoryEntry<NavData::ObjData>(objID.address);
+
+  NavData::ObjDataPtr objData = oobj->getData();
+  
+  if (!m_PeekabotClient.is_connected()) {
+    println("Received an object of category %s, not displaying it since not connected to peekabot", objData->category.c_str());
+    return;
+  }
+  log("Received an object of category %s", objData->category.c_str());
+  
+  m_Mutex.lock();    
+
+  m_PeekabotClient.begin_bundle();
+
+  peekabot::CylinderProxy sp;
+  peekabot::LabelProxy text;
+  peekabot::ModelProxy objProxy;
+  peekabot::CubeProxy centerProxy;
+
+  char filename[128];
+  if (objData->category == "borland_book") {
+    sprintf(filename, "book_cpp.pbmf");
+  } else {
+    sprintf(filename, "%s.pbmf", objData->category.c_str());
+  }
+
+  if (m_NonUniqueObjects) {
+    objProxy.add(m_ProxyObjects, objData->category, filename);
+  } else {
+    objProxy.add(m_ProxyObjects, objData->category, filename, 
+                 peekabot::REPLACE_ON_CONFLICT);
+  }
+
+  if (objData->angles.empty()) {
+
+    if (m_RobotPose) {
+      
+      objProxy.set_pose(objData->x, objData->y, objData->z,
+                        atan2(objData->y - m_RobotPose->y,
+                              objData->x - m_RobotPose->x), 0, 0);
+    } else {
+      // Assume robot is at 0,0,0
+      objProxy.set_pose(objData->x, objData->y, objData->z,
+                        atan2(objData->y - 0,
+                              objData->x - 0), 0, 0);
+    }
+
+  } else {
+    double ang[3] = {0,0,0};
+    for (unsigned int i = 0; i < objData->angles.size(); i++) {
+      ang[i] = objData->angles[i];
+    }
+    objProxy.set_pose(objData->x, objData->y, objData->z,
+                      ang[0], ang[1], ang[2]);
+  }
+
+  // Add a center marker just in case the model file did not exist
+  centerProxy.add(objProxy, "center");
+  centerProxy.set_scale(0.05, 0.05, 0.05);
+  centerProxy.set_color(0,1,0);
+
+  text.add(objProxy,"label");
+  text.set_text(objData->category);
+  text.set_position(0, 0, 0.5);
+  text.set_rotation(-M_PI_2,0,M_PI_2);
+  text.set_scale(20, 20, 20);
+  text.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
+  text.set_color(0,0,1);
+  
+  m_PeekabotClient.end_bundle();
+
+  m_Mutex.unlock();
+}
+  
+void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID)
+{
+  debug("newLineMap called");
+
+  shared_ptr<CASTData<NavData::LineMap> > oobj =
+    getWorkingMemoryEntry<NavData::LineMap>(objID.address);
+
+  m_Mutex.lock();
+  m_LineMap = oobj->getData();
+  m_Mutex.unlock();
+}
+
+void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID)
+{
+  // Person entries can be removed at any time
+  try {
+    shared_ptr<CASTData<NavData::Person> > oobj =
+      getWorkingMemoryEntry<NavData::Person>(objID.address);
+    
+    NavData::PersonPtr p = oobj->getData();
+    
+    bool addNewPerson = true;
+    
+    m_Mutex.lock();
+
+    // Check if the person already exists, otherwise add it
+    for (unsigned int i = 0; i < m_People.size(); i++) {
+      if (m_People[i].m_data->id == p->id) {
+        // Update it
+        
+        char buf[256];
+        sprintf(buf, "Got new person at x=%.2f y=%.2f theta=%.2f id=%ld",
+                p->x, p->y, p->direction, (long)p->id);
+        debug(buf);
+        
+        m_People[i].m_data = p;
+        addNewPerson = false;
+        break;
+      }
+    }
+    
+    if (addNewPerson) {
+      DisplayNavInPB::PersonData pd;
+      pd.m_WMid = objID.address.id;
+      pd.m_data = p;
+      m_People.push_back(pd);
+    } 
+
+  } catch(DoesNotExistOnWMException){}
+  
+  m_Mutex.unlock();
+}
+
+void DisplayNavInPB::deletePerson(const cdl::WorkingMemoryChange &objID)
+{
+  int i = 0;
+  for (std::vector<DisplayNavInPB::PersonData>::iterator pi = m_People.begin();
+       pi != m_People.end(); pi++, i++) {
+
+    if (objID.address.id == pi->m_WMid) {
+      m_People.erase(pi);
+      break;
+    }
+  }
+}
+
+void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
+{
+  shared_ptr<CASTData<NavData::PersonFollowed> > oobj =
+    getWorkingMemoryEntry<NavData::PersonFollowed>(objID.address);
+  
+  m_Mutex.lock();
+  m_CurrPersonId = oobj->getData()->id;
+  char buf[256];
+  sprintf(buf, "Got id of person being tracked %d", m_CurrPersonId);
+  debug(buf);
+  m_Mutex.unlock();
+}
+
+void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
+{
+  debug("new NavGraphNode");
+
+  if (!m_PeekabotClient.is_connected()) return;
+
+  shared_ptr<CASTData<NavData::FNode> > oobj =
+    getWorkingMemoryEntry<NavData::FNode>(objID.address);
+  
+  NavData::FNodePtr fnode = oobj->getData();
+
+  m_Mutex.lock();
+
+  m_PeekabotClient.begin_bundle();
+  
+  std::map<long,Node>::iterator n = m_Nodes.find(fnode->nodeId);
+  if (n == m_Nodes.end()) {  // Node does not exist from before
+    log("Node %d new", (int)fnode->nodeId);
+
+    DisplayNavInPB::Node node;
+    node.m_Id = fnode->nodeId;
+    node.m_Gateway = (fnode->gateway != 0);
+    node.m_X = fnode->x;
+    node.m_Y = fnode->y;
+    node.m_areaId = fnode->areaId;
+    if (!fnode->type.empty()) node.m_AreaClassNo = fnode->type[0].id;
+    else node.m_AreaClassNo = -1;
+    m_Nodes.insert(std::make_pair(node.m_Id, node));
+    
+    peekabot::SphereProxy sp;
+    char name[32];
+    sprintf(name, "node%ld", (long)fnode->nodeId);
+    sp.add(m_ProxyNodes, name);
+    sp.set_position(fnode->x, fnode->y, 0);
+    
+    float r,g,b;
+    if (fnode->gateway) {
+      sp.set_scale(0.2, 0.2, 0.05);
+      getColorByIndex(2, r, g, b);
+      
+      double width = 1;
+      if (!fnode->width.empty()) width = fnode->width[0];
+      addDoorpost(fnode->x, fnode->y, fnode->theta, width, sp);
+      
+      debug("Added gateway with id %d", fnode->nodeId);
+      
+    } else {
+      getColorByIndex(3+(fnode->areaId%6), r, g, b);
+      sp.set_scale(0.1, 0.1, 0.05);
+      
+      debug("Added normal node with id %d", fnode->nodeId);
+    }
+    sp.set_color(r,g,b);
+
+    if (m_ShowNodeClass) 
+    {
+      if (!fnode->gateway) 
+      {
+        peekabot::CylinderProxy cp;
+        cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
+        cp.set_scale(0.04, 0.04, 0.16);
+        cp.set_position(0,0,0.08);
+        //FIXME
+	//place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
+        getColorByIndex(3+(fnode->areaId%6), r, g, b);
+        cp.set_color(r,g,b);
+
+        peekabot::SphereProxy mp;
+        mp.add(sp, "mushroom");
+        mp.set_scale(0.08, 0.08, 0.05);
+        mp.set_position(0, 0, 0.16);
+        mp.set_color(r,g,b);
+      }
+    }
+
+    if (m_ShowAreaClass) 
+    {
+      if (!fnode->gateway) 
+      {
+        peekabot::CylinderProxy acp;
+        char name2[32];
+        sprintf(name2, "node%ld.area_class", (long)fnode->nodeId);
+        acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+        acp.set_scale(0.5, 0.5, 0.0);
+        acp.set_position(0,0,0);
+        acp.set_opacity(0.3);
+        //FIXME
+	//place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
+        getColorByIndex(3+(fnode->areaId%6), r, g, b);
+        acp.set_color(r,g,b);
+      }
+    }
+
+  } else { // Node already exist
+    log("Node %d already there, should be changed", fnode->nodeId);
+
+    n->second.m_Id = fnode->nodeId;
+    n->second.m_Gateway = (fnode->gateway != 0);
+    n->second.m_X = fnode->x;
+    n->second.m_Y = fnode->y;
+    n->second.m_areaId = fnode->areaId;
+    if (!fnode->type.empty()) 
+      n->second.m_AreaClassNo = fnode->type[0].id;
+    else 
+      n->second.m_AreaClassNo = -1;
+
+    peekabot::SphereProxy sp;
+    char name[32];
+    sprintf(name, "node%ld", (long)fnode->nodeId);
+    sp.add(m_ProxyNodes, name, peekabot::REPLACE_ON_CONFLICT);
+    sp.set_position(fnode->x, fnode->y, 0);
+
+    float r,g,b;
+    if (fnode->gateway) {
+      sp.set_scale(0.2, 0.2, 0.05);
+      getColorByIndex(2, r, g, b);
+
+      double width = 1;
+      if (!fnode->width.empty()) width = fnode->width[0];
+      addDoorpost(fnode->x, fnode->y, fnode->theta, width, sp);
+
+      debug("Added gateway with id %d", fnode->nodeId);
+
+    } else {
+      getColorByIndex(3+(fnode->areaId%6), r, g, b);
+      sp.set_scale(0.1, 0.1, 0.05);
+
+      debug("Added normal node with id %d", fnode->nodeId);
+    }
+    sp.set_color(r,g,b);    
+
+    if (m_ShowNodeClass) 
+    {
+      if (!fnode->gateway) 
+      {
+        peekabot::CylinderProxy cp;
+        cp.add(sp, "class", peekabot::REPLACE_ON_CONFLICT);
+        cp.set_scale(0.04, 0.04, 0.16);
+        cp.set_position(0,0,0.08);
+        //FIXME
+	//place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
+        getColorByIndex(3+(fnode->areaId%6), r, g, b);
+        cp.set_color(r,g,b);
+
+        peekabot::SphereProxy mp;
+        mp.add(sp, "mushroom");
+        mp.set_scale(0.08, 0.08, 0.05);
+        mp.set_position(0, 0, 0.16);
+        mp.set_color(r,g,b);
+      }
+    }
+
+    if (m_ShowAreaClass) 
+    {
+      if (!fnode->gateway) 
+      {
+        peekabot::CylinderProxy acp;
+        char name2[32];
+        sprintf(name2, "node%ld.area_class", (long)fnode->nodeId);
+        acp.add(m_ProxyNodes, name2, peekabot::REPLACE_ON_CONFLICT);
+        acp.set_scale(0.5, 0.5, 0.0);
+        acp.set_position(0,0,0);
+        acp.set_opacity(0.3);
+        //FIXME
+	//place::ColorMap::getColorForPlaceClass(fnode->areaTypeNo, r, g, b);
+        getColorByIndex(3+(fnode->areaId%6), r, g, b);
+        acp.set_color(r,g,b);
+      }
+    }
+
+  }
+
+  for (std::list< std::pair<long,long> >::iterator ei = m_NewEdges.begin();
+       ei != m_NewEdges.end();) {
+
+    // Check if the nodes are there now
+    std::map<long,Node>::iterator n1 = m_Nodes.find(ei->first);
+    std::map<long,Node>::iterator n2 = m_Nodes.find(ei->second);
+
+    if (n1 != m_Nodes.end() && n2 != m_Nodes.end()) { // Found nodes
+
+      displayEdge(n1->second, n2->second);
+
+      ei = m_NewEdges.erase(ei);
+
+    } else {
+      ei++;
+    }
+  }
+
+  m_PeekabotClient.end_bundle();
+
+  m_Mutex.unlock();
+}
+
+void DisplayNavInPB::addDoorpost(double x, double y, double theta, 
+                                 double width, 
+                                 peekabot::SphereProxy &node)
+{                                 
+  peekabot::CubeProxy cpL;
+  cpL.add(node, "doorpostleft");
+  cpL.set_scale(0.1, 0.1, 2.0);
+  cpL.set_pose(0.5*width*cos(theta), 0.5*width*sin(theta), 1.0, 
+               theta, 0, 0);
+  cpL.set_color(1.0, 0.817, 0.269);
+
+  peekabot::CubeProxy cpR;
+  cpR.add(node, "doorpostright");
+  cpR.set_scale(0.1, 0.1, 2.0);
+  cpR.set_pose(0.5*width*cos(theta+M_PI), 0.5*width*sin(theta+M_PI), 1.0,
+               theta, 0, 0);
+  cpR.set_color(1.0, 0.817, 0.269);
+  
+  peekabot::CubeProxy cpT;
+  cpT.add(node, "doorposttop");
+  cpT.set_scale(width+0.1, 0.1, 0.1);
+  cpT.set_pose(0, 0, 2.0, theta, 0, 0);
+  cpT.set_color(1.0, 0.817, 0.269);
+}
+
+void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
+{
+  debug("new NavGraphEdge");
+
+  if (!m_PeekabotClient.is_connected()) return;
+
+  shared_ptr<CASTData<NavData::AEdge> > oobj =
+    getWorkingMemoryEntry<NavData::AEdge>(objID.address);
+  
+  NavData::AEdgePtr aedge = oobj->getData();
+
+  m_Mutex.lock();
+
+  m_PeekabotClient.begin_bundle();
+
+  // Check if the nodes are there now
+  std::map<long,Node>::iterator n1 = m_Nodes.find(aedge->startNodeId);
+  std::map<long,Node>::iterator n2 = m_Nodes.find(aedge->endNodeId);
+
+  if (n1 != m_Nodes.end() && n2 != m_Nodes.end()) { // Found nodes
+
+    displayEdge(n1->second, n2->second);
+
+  } else {
+    m_NewEdges.push_back(std::make_pair(aedge->startNodeId, 
+                                        aedge->endNodeId));
+  }
+
+  debug("Got a new edge connecting nodes %d and %d",
+        aedge->startNodeId, aedge->endNodeId);
+
+  m_PeekabotClient.end_bundle();
+
+  m_Mutex.unlock();
+}
+
+void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
+{
+  switch (id) {
+    case 1:    
+    r = 1.0/0xFF*0x00;
+    g = 1.0/0xFF*0xFF;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 2:
+    r = 1.0/0xFF*0xFF; 
+    g = 1.0/0xFF*0x00;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 3:
+    r = 1.0/0xFF*0x00;
+    g = 1.0/0xFF*0x00;
+    b = 1.0/0xFF*0xFF;
+    break;
+  case 4:
+    r = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0xFF;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 5:
+    r = 1.0/0xFF*0x00; 
+    g = 1.0/0xFF*0xFF;
+    b = 1.0/0xFF*0xFF;
+    break;
+  case 6:
+    r = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0x00;
+    b = 1.0/0xFF*0xFF;
+    break;
+  case 7:
+    r = 1.0/0xFF*0x00; 
+    g = 1.0/0xFF*0x00;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 8:
+    r = 1.0/0xFF*0xFF;
+    g = 1.0/0xFF*0x24;
+    b = 1.0/0xFF*0x00;
+    break;
+  case 9:
+    r = 1.0/0xFF*0x6F;
+    g = 1.0/0xFF*0x42;
+    b = 1.0/0xFF*0x42;
+    break;
+  case 10:
+    r = 1.0/0xFF*0x8C;
+    g = 1.0/0xFF*0x17;
+    b = 1.0/0xFF*0x17;
+    break;
+  case 11:
+    r = 1.0/0xFF*0x5C; 
+    g = 1.0/0xFF*0x33;
+    b = 1.0/0xFF*0x17;
+    break;
+  case 12:
+    r = 1.0/0xFF*0x2F; 
+    g = 1.0/0xFF*0x4F;
+    b = 1.0/0xFF*0x2F;
+    break;
+  default:
+    debug("Only handles color with indices 1-12, not %d, using red", id);
+    r = 1.0;
+    g = 0;
+    b = 0;
+  }
+}
+
+void DisplayNavInPB::displayEdge(const DisplayNavInPB::Node &node1,
+                                 const DisplayNavInPB::Node &node2)
+{
+  peekabot::LineCloudProxy lp;
+  char name[32];
+  if (node1.m_Id > node2.m_Id) {
+    sprintf(name, "edge%06ld", node1.m_Id*1000+node2.m_Id);
+  } else {
+    sprintf(name, "edge%06ld", node2.m_Id*1000+node1.m_Id);
+  }
+
+  log("Adding edge between (%f,%f) %ld and (%f,%f) %ld", 
+      node1.m_X, node1.m_Y, node1.m_Id, 
+      node2.m_X, node2.m_Y, node2.m_Id);
+
+  lp.add(m_ProxyEdges, name, peekabot::REPLACE_ON_CONFLICT);
+  lp.add_line(node1.m_X, node1.m_Y, 0,
+              node2.m_X, node2.m_Y, 0);
+  lp.set_color(0., 0., 0.);
+  lp.set_opacity(1);
+}
+
+void DisplayNavInPB::connectPeekabot()
+{
+  try {
+    log("Trying to connect to Peekabot (again?) on host %s and port %d",
+        m_PbHost.c_str(), m_PbPort);
+
+    m_PeekabotClient.connect(m_PbHost, m_PbPort, true);
+
+    m_ProxyRoot.assign(m_PeekabotClient, "root");    
+
+    m_ProxyRobot.add(m_ProxyRoot, 
+                     m_PbRobotName,
+                     peekabot::REPLACE_ON_CONFLICT);
+
+    peekabot::Status s1, s2, s3;
+    
+    s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
+    if( s1.failed() ) {
+      println("Could not load robot file \"%s\"", 
+              m_PbRobotFile.c_str());
+      peekabot::CubeProxy cube;
+      cube.add(m_ProxyRobot, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
+      cube.set_scale(0.4, 0.3, 0.2);
+      cube.set_position(0,0,0.1);
+      cube.set_color(0,1,0);
+
+      peekabot::CubeProxy nose;
+      nose.add(cube, "nose", peekabot::REPLACE_ON_CONFLICT);
+      nose.set_scale(0.2, 0.05, 0.05);
+      nose.set_position(0.1, 0, 0.125);
+      nose.set_color(1,0,0);
+
+    } else {
+      if (m_PbRobotFile == "CogXp3.xml") {
+        s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis.rangefinder").status();
+      } else if (m_PbRobotFile == "B21.xml") {
+        s2 = m_ProxyLaser.assign(m_ProxyRobot, "model.rangefinder").status();
+      } else {
+        s2 = m_ProxyLaser.assign(m_ProxyRobot, "peoplebot_base.rangefinder").status();
+      }
+      if( s2.failed() ) {
+        println("Could not hook up to laser scanner, not using laser");
+        m_LaserConnected = false;
+      } else {
+
+        m_LaserConnected = true;
+
+      }
+    }
+ 
+    m_ProxyGraph.add(m_ProxyRoot,
+                     "graph",
+                     peekabot::REPLACE_ON_CONFLICT);
+
+    m_ProxyNodes.add(m_ProxyGraph,
+                     "nodes",
+                     peekabot::REPLACE_ON_CONFLICT);
+
+    m_ProxyEdges.add(m_ProxyGraph,
+                     "edges",
+                     peekabot::REPLACE_ON_CONFLICT);
+
+    m_ProxyObjects.add(m_ProxyGraph,
+                       "objects",
+                       peekabot::REPLACE_ON_CONFLICT);
+                       
+    m_ProxyObjectLabels.add(m_ProxyGraph,
+                       "labels",
+                       peekabot::REPLACE_ON_CONFLICT);
+
+    createRobotFOV();
+    log("Connection to Peekabot established");
+
+  } catch(std::exception &e) {
+    log("Caught exception when connecting to peekabot (%s)",
+        e.what());
+    return;
+  }
+}
+
