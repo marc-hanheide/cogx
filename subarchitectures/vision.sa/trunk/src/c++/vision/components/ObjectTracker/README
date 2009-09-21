@@ -1,0 +1,45 @@
+/* Particle based object tracker using edge geometry models
+*
+*  @author: Thomas Mörwald, 2009, moerwald@acin.tuwien.ac.at
+*  
+*/
+
+Installation prerequieries:
+---------------------------
+
+MODERN GRAPHICS CARD
+	best: NVIDIA
+
+SDL:
+	libsdl1.2-dev
+
+OpenCV:
+	libcv-dev
+	libcvaux-dev
+	libhighgui-dev
+
+OpenGL implementation like:
+	freeglut
+	mesa
+	...
+		
+	
+// if anything missing please inform me
+
+Usage:
+------
+Look up the implematation and the README of the ObjectTrackerDriver
+
+Key settings:
+-------------
+Works only if focus is on the Visualisation-Window of the tracker
+
+Esc:	quit tracker
+e:		draw edge map of camera image (toggle)
+k:		toggle kalman filtering
+l:		lock tracker at current position
+m:		show matching pixels (red=match, blue=edge tolerance failed, black=no edge)
+p:		show particles
+s:		show statistics
+z:		set tracker to position (0,0,0, 0,0,0); best is to lock 'l', then zero 'z' and unlock 'l' to reset tracker
+
