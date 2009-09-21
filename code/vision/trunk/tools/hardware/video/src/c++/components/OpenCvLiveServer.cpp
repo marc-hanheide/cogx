@@ -320,6 +320,7 @@ void OpenCvLiveServer::retrieveFrame(int camId, Video::Image &frame)
       frame.time = grabTimes[i];
       frame.camId = camIds[i];
       frame.camPars = camPars[i];
+
       haveCam = true;
     }
   }

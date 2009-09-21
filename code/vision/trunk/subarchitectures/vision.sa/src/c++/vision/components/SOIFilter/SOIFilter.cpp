@@ -13,7 +13,7 @@
 
 // Segmentation costants
 
-#define SMOOTH_COST 6
+#define SMOOTH_COST 25
 #define HUE_K_VAL 3 // Number of nearest neighbours taken when calculating the cost for hue
 
 #define LABEL_0_COST 15
@@ -424,8 +424,8 @@ void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint>
     cogx::Math::Vector2 p = projectPoint(cam, soi.points[i]);
     
     /// HACK: artificially shrink cloud point
-	int x = (p.x - roi.rect.pos.x)*ratio*0.4 + roi.rect.width/2;
-	int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
+	int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
+	int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
 	
     projPoints.push_back(cvPoint(x, y));
   }
@@ -655,9 +655,9 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
     
     projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
 
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 16, 60);
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 18, 60);
     
-    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, 4, 9000);  	
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, 3, 9000);  	
 	
 	segMask = new SegmentMask;
     
