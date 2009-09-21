@@ -1,0 +1,13 @@
+--inputGrammarFile=subarchitectures/comsys.mk4/learning/speechgrammar_playmate.txt
+--inputClassFile=subarchitectures/comsys.mk4/learning/speechclasses_playmate.txt
+--inputClassBasedCorpusFile=subarchitectures/comsys.mk4/learning/fullcorpus-classbased.txt
+--inputRawCorpusFile=subarchitectures/comsys.mk4/learning/fullcorpus.txt
+--genCorpusFile=subarchitectures/comsys.mk4/learning/genSpeechCorpus_playmate.txt
+--parseErrorsFile=subarchitectures/comsys.mk4/learning/unparsableUtterances.txt
+--vocabularyFreqThreshold=0
+--lineFactorisation=true
+--genCorpusSize=80000
+--classSmoothing=true
+--outputVocabularyFile=subarchitectures/comsys.mk4/learning/vocabulary_playmate.txt
+--outputClassFile=subarchitectures/comsys.mk4/learning/speechclasses-weighted_playmate.txt
+
