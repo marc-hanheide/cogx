@@ -41,7 +41,7 @@
 :- import_module belief_model, lf, stf.
 :- import_module lf_io.
 :- import_module varset.
-:- import_module abd_io.
+:- import_module ctx_loadable_io.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -53,9 +53,8 @@ srv_init_ctx = new_ctx.
 
 :- pragma foreign_export("C", srv_print_ctx(in, di, uo), "print_ctx").
 
-srv_print_ctx(_C, !IO) :-
-	true.
-   	%print_ctx(C, !IO).
+srv_print_ctx(C, !IO) :-
+   	print_ctx(C, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -209,21 +208,21 @@ srv_proof_summary(Proof, Ctx, !IO) :-
 	Costs = costs(1.0, 1.0, 0.1),
 	LastGoal = last_goal(Proof),
 
-	%print_ctx(Ctx, !IO),
+	print_ctx(Ctx, !IO),
 
 	format("proof cost = %f\n\n", [f(cost(Ctx, Proof, Costs))], !IO),
 	print("proven goal:\n  " ++ goal_to_string(LastGoal) ++ "\n", !IO),
 	nl(!IO),
 
 	print("assumptions:\n", !IO),
-	%print("  " ++ assumptions_to_string(Ctx, goal_assumptions(LastGoal)) ++ "\n", !IO),
+	print("  " ++ assumptions_to_string(Ctx, goal_assumptions(LastGoal)) ++ "\n", !IO),
 	nl(!IO),
 
 	print("assertions:\n", !IO),
-	%print("  " ++ assertions_to_string(Ctx, goal_assertions(LastGoal)) ++ "\n", !IO),
-	nl(!IO).
+	print("  " ++ assertions_to_string(Ctx, goal_assertions(LastGoal)) ++ "\n", !IO),
+	nl(!IO),
 
-	%print_proof_trace(Ctx, Proof, !IO).
+	print_proof_trace(Ctx, Proof, !IO).
 
 %------------------------------------------------------------------------------%
 

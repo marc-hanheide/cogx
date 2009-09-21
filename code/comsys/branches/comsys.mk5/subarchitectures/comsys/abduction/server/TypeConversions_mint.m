@@ -51,7 +51,6 @@
 :- import_module belief_model, lf, stf.
 :- import_module lf_io.
 :- import_module varset.
-:- import_module abd_io.
 
 %------------------------------------------------------------------------------%
 
