@@ -1,0 +1,42 @@
+HOST 127.0.0.1
+
+COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
+
+# reading stored images
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/test-stereo/img-160-%03d-L.jpg subarchitectures/vision.sa/config/test-stereo/img-160-%03d-R.jpg" --start 0 --end 1 --framerate_ms 30
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/stereotest2/img%03d-L.jpg subarchitectures/vision.sa/config/stereotest2/img%03d-R.jpg" --start 0 --end 26 --framerate_ms 1000
+
+# live images
+COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0" --devnums "0" --devclass FIREWIRE
+
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/svskth.ini --display
+#COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini --display
+
+
+
+SUBARCHITECTURE nav.sa
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG trans.process TranslationProcess --log
+CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --max-scan-rate 5 --no-file-output #--log #-m tmpmap.metric #--debug 
+CPP GD navgraph.process NavGraphProcess -c subarchitectures/nav.sa/config/cogxp3.ccf  #-m tmpmap.graph #--log --debug
+CPP GD navctrl.process NavControl -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --no-x-window --log #--debug
+
+CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --log --gridsize 125 --cellsize 0.1 --objects "rice_near rice_middle rice_far rice_XXfar kellogs_1 kellogs_2" --samplesize 1000 --cam-range 2.5 --cam-fov 45 --coverage-threshold 30  --vp-threshold 5 --away-from-obstacles 1 --disp-magn 3 --ctrl-ptu --cam-step 60 #--no-x-window 
+
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log --read-ptu --log #--debug 
+CPP GD cure.debugger CureDataLogger 
+
+
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG VideoClient ObjectDetectorFERNS --videohost localhost --videoname video --camid 0 --models "fernst/rice_near.jpg fernst/rice_middle.jpg fernst/rice_far.jpg fernst/rice_XXfar.jpg fernst/kellogs_1.jpg fernst/kellogs_2.jpg" --mode DETECT_ONLY --displaylevel 2 --log
+
+#CPP MG Dummy DummyDriver --labels "rice_near" --log
+
+
+#kth_rice_FERNS_training/rice_middle.jpg kth_rice_FERNS_training/rice_far.jpg kth_rice_FERNS_training/rice_XXfar.jpg"
