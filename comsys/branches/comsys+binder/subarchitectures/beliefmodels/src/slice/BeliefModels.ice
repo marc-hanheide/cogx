@@ -125,6 +125,8 @@ module beliefmodels {
 		
 		sequence<Belief> Beliefs; 
 		
+		
+		
 		// ===================================================================
 		// TASKS 
 		// A task is a structure consisting of a spatio-temporal frame, a
