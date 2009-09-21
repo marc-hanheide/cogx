@@ -61,7 +61,7 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 	new_varset(&vs);
 
 	MR_Word mprop = modalisedFormulaToMercMProp(fact, &vs);
-	add_mprop_fact(mprop, ctx, &ctx);
+	add_mprop_fact(vs, mprop, ctx, &ctx);
 }
 
 void
