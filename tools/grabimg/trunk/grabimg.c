@@ -56,7 +56,6 @@ int main(int argc, char** argv)
   int bayer = 0;  // do Bayer->RGB conversion
   int c;
   extern char *optarg;
-  extern int optind, optopt;
   int done = 0;
 
   while((c = getopt(argc, argv, "bd:vfh")) != -1)

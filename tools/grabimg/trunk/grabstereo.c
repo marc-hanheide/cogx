@@ -64,7 +64,6 @@ int main(int argc, char** argv)
   int cam[2] = {0, 1};    // camera (device) numbers
   int c;
   extern char *optarg;
-  extern int optind, optopt;
   int done = 0;
   int i;
 
