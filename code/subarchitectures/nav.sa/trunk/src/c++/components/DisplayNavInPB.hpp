@@ -108,7 +108,7 @@ private:
                    double width, peekabot::SphereProxy &node);
   void connectPeekabot();
   void createFOV(peekabot::GroupProxy &proxy,const char* path, double fovHorizAngle, double fovVertiAngle, double* color, double opacity, 
-				cogx::Math::Vector3 position, double zoffset = 0, double yaw = 0);
+				cogx::Math::Vector3 position, double zoffset = 0, double yaw = 0, bool robotfov = true);
   void createRobotFOV();
   void getColorByIndex(int id, float &r, float &g, float &b);
 
