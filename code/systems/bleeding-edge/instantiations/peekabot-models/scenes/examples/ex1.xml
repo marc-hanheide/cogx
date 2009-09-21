@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<!--
+    
+    This file is distributed with peekabot as an example scene file, and
+    is considered to be public domain.
+    
+    This particular example scene demonstrates some of the geometric
+    primitives available in peekabot and their properties. 
+    
+-->
+
+<scene>
+
+<!-- The color element specifies color of all contained objects. -->
+<color r="1.0" g="0.0" b="0.0">
+
+  <!-- Create a sphere with default name -->
+  <sphere>
+    <!-- The transform tag specifies any transforms, such as translatation
+	 or rotation that you might want to apply to the object -->
+    <transform>
+      <!-- This translation element will move the sphere to (0, -1, 0) in
+	   world coordinates -->
+      <translate system="world">0 -1 0</translate>
+    </transform>
+  </sphere>
+</color>
+
+<color r="0.0" g="1.0" b="1.0">
+  <!-- Create a cube with default name -->
+  <cube>
+    <transform>
+      <translate system="world">-2 -1 0</translate>
+    </transform>
+  </cube>
+</color>
+
+<color r="0.0" g="1.0" b="0.0">
+  <!-- Create a cylinder with default name -->
+  <cylinder>
+    <transform>
+      <translate system="world">2 1 0</translate>
+    </transform>
+  </cylinder>
+</color>
+
+<color r="0.4" g="0.2" b="0.0">
+  <!-- Create a plane with default name. A plane is a flat surface with
+       four corners -->
+  <plane>
+    <transform>
+      <translate system="world">-2 1 0</translate>
+    </transform>
+    <!-- The vertices element lets you specify the corners of the plane.
+         Each vertex is positioned relative to the local origin. -->
+    <vertices>
+      <vertex>0.5 0.5 0</vertex>
+      <vertex>-0.5 0.5 0</vertex>
+      <vertex>-0.5 -0.5 0</vertex>
+      <vertex>0.5 -0.5 0</vertex>
+    </vertices>
+  </plane>
+</color>
+
+<color r="0.7" g="0.0" b="0.7">
+  <!-- Create a circle with default name -->
+  <circle>
+    <transform>
+      <translate system="world">0 1 0</translate>
+    </transform>
+  </circle>
+</color>
+
+<color r="0.0" g="0.0" b="0.7">
+  <!-- Create a polygon with default name -->
+  <polygon>
+    <transform>
+      <translate system="world">2 -1 0</translate>
+    </transform>
+    <vertices>
+      <vertex>0 0.476 0</vertex>
+      <vertex>-0.5 0.112 0</vertex>
+      <vertex>-0.309 -0.476 0</vertex>
+      <vertex>0.309 -0.476 0</vertex>
+      <vertex>0.5 0.112 0</vertex>
+    </vertices>
+  </polygon>
+</color>
+
+
+</scene>
