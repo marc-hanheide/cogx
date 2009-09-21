@@ -147,7 +147,7 @@ git commit
     \begin{lstlisting}
 git push
     \end{lstlisting}
-
+\end{itemize}
 
 
 \subsection{Pushing Changes to SVN}
@@ -155,12 +155,27 @@ git push
 
 
 \subsection{Pulling Changes from SVN}
-\hl{Missing}
-
-
-
-
+Setup a joint GIT/SVN local repository:
+\begin{itemize}
+\item setup another local repository for instance by making a copy of your current 
+git repository: cp -r my\_git\_repo svn-git\_repo
+\item enter the directory with the repository: cd svn-git\_repo
+\item checkout branch master: git checkout master
+\item remove all files apart from the .git directory
+\item run svn co https://codex.cs.bham.ac.uk/svn/nah/cogx/code/kth/trunk
+\item move all the files from trunk to your git working copy: mv trunk/* .
 \end{itemize}
+
+Now you have a joint git/svn working copy. To pull new changes from svn and 
+merge them to git, do as follows:
+\begin{itemize}
+\item if you messed up sth with the files, you can do git reset --hard
+\item now, pull the most recent version of the master branch: git pull
+\item update the changes from the SVN: svn up
+\item commit the changes to git: git add/git commit
+\item push the changes to the shared repository: git push
+\end{itemize}
+
 
 
 
