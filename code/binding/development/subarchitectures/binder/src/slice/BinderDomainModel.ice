@@ -96,7 +96,7 @@ module beliefmodel {
 	
 	enum Shape { cylindrical, spherical, cubic };
 	
-	enum ObjectType { box, ball, cube }; 
+	enum ObjectType { box, ball, cube, mug }; 
 	
 	enum Color { red, blue, yellow, green };
 	
@@ -104,6 +104,15 @@ module beliefmodel {
 	class ObjectTypeProperty extends ContinualFormula { 
 		ObjectType typeValue;
 	}; 
+	
+	class LocationProperty extends ContinualFormula {
+		string location;
+	};
+	
+	 
+	class GraspableProperty extends ContinualFormula {
+		bool graspableValue;
+	};
 	
 	// A property is always a ContinualFormula
 	class ColorProperty extends ContinualFormula { 
@@ -115,6 +124,15 @@ module beliefmodel {
 	class ShapeProperty extends ContinualFormula { 
 		Shape shapeValue;
 	};  
+	
+	
+	class LinguisticLabelProperty extends ContinualFormula { 
+		string label;
+	};  
+	
+	class LinguisticAttributeProperty extends ContinualFormula {
+		string attribute;
+	};
 		
 	
 }; // end cogx 

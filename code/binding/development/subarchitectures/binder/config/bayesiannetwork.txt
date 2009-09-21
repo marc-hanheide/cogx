@@ -73,7 +73,7 @@ nodes {
 		}
 	}
 	
-	ling_colour {
+	ling_attribute {
 		featurevalues {
 			red,
 			blue,
@@ -106,11 +106,11 @@ edges {
 	   P(ling_label=ball|obj_label=mug)=0.000001
    }
    
-   colour -> ling_colour {
-       P(colour=red|ling_colour=red)=0.5,
-       P(colour=red|ling_colour=blue)=0.00001,
-       P(colour=blue|ling_colour=blue)=0.99,
-       P(colour=blue|ling_colour=red)=0.00001
+   colour -> ling_attribute {
+       P(colour=red|ling_attribute=red)=0.5,
+       P(colour=red|ling_attribute=blue)=0.00001,
+       P(colour=blue|ling_attribute=blue)=0.99,
+       P(colour=blue|ling_attribute=red)=0.00001
    }
    
 }

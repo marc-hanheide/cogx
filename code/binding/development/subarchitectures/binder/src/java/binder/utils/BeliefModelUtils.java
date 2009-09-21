@@ -4,7 +4,12 @@ package binder.utils;
 import binder.autogen.beliefmodel.Color;
 import binder.autogen.beliefmodel.ColorProperty;
 import binder.autogen.beliefmodel.ComplexFormula;
+import binder.autogen.beliefmodel.GraspableProperty;
+import binder.autogen.beliefmodel.LinguisticAttributeProperty;
+import binder.autogen.beliefmodel.LinguisticLabelProperty;
+import binder.autogen.beliefmodel.LocationProperty;
 import binder.autogen.beliefmodel.LogicalOp;
+import binder.autogen.beliefmodel.ObjectType;
 import binder.autogen.beliefmodel.ObjectTypeProperty;
 import binder.autogen.beliefmodel.Shape;
 import binder.autogen.beliefmodel.ShapeProperty;
@@ -21,7 +26,6 @@ public class BeliefModelUtils {
 	}
 
 
-
 	public static UncertainSuperFormula createNewProperty(String featlabel, FeatureValue fv) {
 
 		if (featlabel.equals("colour")) {
@@ -30,39 +34,108 @@ public class BeliefModelUtils {
 			if (FeatureValueUtils.hasValue(fv, "red")) {
 				property.colorValue = Color.red;
 			}
-			if (FeatureValueUtils.hasValue(fv, "blue")) {
+			else if (FeatureValueUtils.hasValue(fv, "blue")) {
 				property.colorValue = Color.blue;
 			}
-			if (FeatureValueUtils.hasValue(fv, "green")) {
+			else if (FeatureValueUtils.hasValue(fv, "green")) {
 				property.colorValue = Color.green;
+			}
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
 			}
 
 			property.unc = fv.independentProb;
 			return property;
 		}
 		
-		if (featlabel.equals("shape")) {
+		else if (featlabel.equals("shape")) {
 			ShapeProperty property = new ShapeProperty();
 
 			if (FeatureValueUtils.hasValue(fv, "cylindrical")) {
 				property.shapeValue = Shape.cylindrical;
 			}
-			if (FeatureValueUtils.hasValue(fv, "spherical")) {
+			else if (FeatureValueUtils.hasValue(fv, "spherical")) {
 				property.shapeValue = Shape.spherical;
 			}
-			if (FeatureValueUtils.hasValue(fv, "cubic")) {
+			else if (FeatureValueUtils.hasValue(fv, "cubic")) {
 				property.shapeValue = Shape.cubic;
+			}
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
 			}
 
 			property.unc = fv.independentProb;
 			return property;
 		}
+		
+		else if (featlabel.equals("obj_label")) {
+			ObjectTypeProperty property = new ObjectTypeProperty();
 
+			if (FeatureValueUtils.hasValue(fv, "mug")) {
+				property.typeValue = ObjectType.mug;
+			}
+			else if (FeatureValueUtils.hasValue(fv,"ball")) {
+				property.typeValue = ObjectType.ball;
+			}
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
+			}
+
+			property.unc = fv.independentProb;
+			return property;
+		}
+		
+		else if (featlabel.equals("graspable")) {
+			GraspableProperty property = new GraspableProperty();
+
+			if (FeatureValueUtils.hasValue(fv, true)) {
+				property.graspableValue = true;
+			}
+			else if (FeatureValueUtils.hasValue(fv,false)) {
+				property.graspableValue = false;
+			}
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
+			}
+
+			property.unc = fv.independentProb;
+			return property;
+		}
+		
+		else if (featlabel.equals("location")) {
+			LocationProperty property = new LocationProperty();
+
+			property.location = FeatureValueUtils.getString(fv);
+			
+			property.unc = fv.independentProb;
+			return property;
+		}
+		
+		else if (featlabel.equals("ling_label")) {
+			LinguisticLabelProperty property = new LinguisticLabelProperty();
+
+			property.label = FeatureValueUtils.getString(fv);
+			
+			property.unc = fv.independentProb;
+			return property;
+		}
+		
+		else if (featlabel.equals("ling_attribute")) {
+			LinguisticAttributeProperty property = new LinguisticAttributeProperty();
+
+			property.attribute = FeatureValueUtils.getString(fv);
+			
+			property.unc = fv.independentProb;
+			return property;
+		}
+		
+
+		log("WARNING: feature \"" + featlabel + "\" not supported in the typing currently specified for the belief model");
 		return new UncertainSuperFormula();
 	}
 
 	
-	
+	/**
 	public static Object getValue(SuperFormula property) {
 		if (property instanceof ColorProperty) {
 			return ((ColorProperty)property).colorValue;
@@ -72,7 +145,7 @@ public class BeliefModelUtils {
 		}
 		return null;
 	}
-	
+	*/
 	
 	public static String getFormulaPrettyPrint(SuperFormula formula) {
 		String result = "@(" ;
@@ -152,6 +225,31 @@ public class BeliefModelUtils {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
+		else if (formula instanceof GraspableProperty) {
+			result += " <Graspable> " + ((GraspableProperty)formula).graspableValue;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		else if (formula instanceof LocationProperty) {
+			result += " <Location> " + ((LocationProperty)formula).location;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		else if (formula instanceof LinguisticLabelProperty) {
+			result += " <LingLabel> " + ((LinguisticLabelProperty)formula).label;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		else if (formula instanceof LinguisticAttributeProperty) {
+			result += " <LingAttribute> " + ((LinguisticAttributeProperty)formula).attribute;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		
 		 		
 		return result;
 	}

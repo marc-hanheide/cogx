@@ -56,7 +56,7 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 		OriginInfo origin = createOriginInfo ("fakecomsys", "blabla", "Referent");
 		PhantomProxy proxy = createNewPhantomProxy (origin, 0.95f);
 		
-		FeatureValue ball = createStringValue("ball", 0.91f);
+		FeatureValue ball = createStringValue("mug", 0.91f);
 		Feature feat = createFeatureWithUniqueFeatureValue ("ling_label", ball);
 		addFeatureToProxy (proxy, feat);
 		
@@ -74,7 +74,7 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 		addFeatureToProxy (proxy, feat1);
 
 		FeatureValue red = createStringValue ("red", 0.83f);
-		Feature feat2 = createFeatureWithUniqueFeatureValue ("ling_colour", red);
+		Feature feat2 = createFeatureWithUniqueFeatureValue ("ling_attribute", red);
 		addFeatureToProxy (proxy, feat2);
 
 		return proxy;

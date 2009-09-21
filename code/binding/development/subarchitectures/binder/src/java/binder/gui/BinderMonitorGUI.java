@@ -95,8 +95,8 @@ public class BinderMonitorGUI extends JFrame
 		controlPanel = new ControlPanel(bm);
 		getContentPane().add(controlPanel, BorderLayout.LINE_END);
 		
-	//	WestArrowPanel arrowPanel = new WestArrowPanel(bm);
-	//	getContentPane().add(arrowPanel, BorderLayout.LINE_START);
+		WestArrowPanel arrowPanel = new WestArrowPanel(bm);
+		getContentPane().add(arrowPanel, BorderLayout.LINE_START);
 
 		graph = new mxGraph();
 		parent = graph.getDefaultParent();

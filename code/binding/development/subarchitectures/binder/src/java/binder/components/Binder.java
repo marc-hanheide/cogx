@@ -65,10 +65,7 @@ public class Binder extends ManagedComponent  {
 
 	// whether to add unknown values to each feature
 	private boolean addUnknowns = false;
-	
-	// TO IMPLEMENT / TEST
-	private boolean normaliseDistributions = false;
-	
+		
 	// Text specification of the bay
 	public String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
 	
@@ -189,7 +186,8 @@ public class Binder extends ManagedComponent  {
 		}
 		
 		if (_config.containsKey("--normalise")) {
-			normaliseDistributions = Boolean.parseBoolean(_config.get("--normalise"));
+			boolean normaliseDistributions = Boolean.parseBoolean(_config.get("--normalise"));
+			constructor.setNormalisationFlag(normaliseDistributions);
 		}
 		
 		if (_config.containsKey("--nbestsfilter")) {
