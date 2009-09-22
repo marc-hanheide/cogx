@@ -87,7 +87,7 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
     getMemoryEntry<SpatialProperties::GatewayPlaceProperty>(wmc.address);
   if (prop != 0) {
     int place = prop->placeId;
-
+sadsa
     string type = "place";
     stringstream ss;
     ss << place;
