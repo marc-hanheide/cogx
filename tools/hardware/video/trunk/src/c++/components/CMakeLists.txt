@@ -36,12 +36,15 @@ INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 # Components!
 
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_CFLAGS})
+
 add_cast_component(OpenCvImgSeqServer OpenCvImgSeqServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LIBS})
 
 add_cast_component(OpenCvLiveServer OpenCvLiveServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LIBS})
 
 
