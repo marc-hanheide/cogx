@@ -76,7 +76,7 @@ public class ThingProxy
 				} // end if..else
 			} // end while
 			// Add the resulting proxy
-			prxs.addProxy(prx, lf.root.nomVar);
+			prxs.addProxy(prx);
 			// return the result
 			return prxs; 
 		} // end method
@@ -109,11 +109,30 @@ public class ThingProxy
 		 */ 
 		
 		private ProxyResults mapLocation (Proxy head, LogicalForm lf, String headVar, String depVar) {  
-			
-			
-			
-			// construct the results
+			// initialize the results
 			ProxyResults results = new ProxyResults();
+			// fetch the nominal heading the modifier construction
+			LFNominal modHead = LFUtils.lfGetNominal(lf, depVar);
+			assert modHead != null; 
+			// get the anchor under the location / whereto 
+			LFRelation anchorRel = LFUtils.lfNominalGetRelation(modHead, "Anchor");
+			assert anchorRel != null; 
+			LFNominal anchor = LFUtils.lfGetNominal(lf, anchorRel.dep);
+			assert anchor != null;
+			// get the actual owner of the anchor: this is the landmark
+			LFRelation ownerRel = LFUtils.lfNominalGetRelation(anchor, "Owner");
+			assert ownerRel != null;
+			LFNominal owner = LFUtils.lfGetNominal(lf, ownerRel.dep);
+			assert owner != null; 
+			// now construct the proxy for the owner
+			ProxyResults ownerResults = new ProxyResults();
+			if (owner.sort.equals("thing")) { 
+				ownerLF = LFUtils.lfConstructSubtree(owner,lf);
+				ownerResults = constructProxy(ownerLF);
+				results.addProxies(ownerResults.getProxies());
+			
+			
+
 			// return the results
 			return results;
 		} // end mapLocation
@@ -134,9 +153,10 @@ public class ThingProxy
 			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
 			AddressValue[] targets = createAddressValueArray(createAddressValue(prx.entityID, 1.0f));
 			RelationProxy rprx = createNewRelationProxy(createWorkingMemoryPointer("comsys", headVar, "lf"), 1.0f, sources, targets);		
+			rprx = addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy"));
 			// Construct the results;
 			ProxyResults results = new ProxyResults();
-			results.addProxy(prx, depVar);
+			results.addProxy(prx);
 			results.addRelationProxy(rprx);
 			return results;
 		} // end mapOwner
