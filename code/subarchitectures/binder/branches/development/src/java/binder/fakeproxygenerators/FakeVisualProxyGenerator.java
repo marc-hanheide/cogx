@@ -20,6 +20,7 @@
 
 package binder.fakeproxygenerators;
 
+import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.*;
 
 public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
@@ -46,7 +47,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
 	protected Proxy createProxyTwo() {
 		
-		OriginInfo origin = createOriginInfo ("fakevision", "blublu", "VisualObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);
 		
 		FeatureValue mug = createStringValue ("mug", 0.8f);
@@ -63,7 +64,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
 	protected Proxy createProxyOne() {
 		
-		OriginInfo origin = createOriginInfo ("fakevision", "blublu2", "VisualObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.9f);
 		
 		FeatureValue ball = createStringValue ("ball", 0.81f);

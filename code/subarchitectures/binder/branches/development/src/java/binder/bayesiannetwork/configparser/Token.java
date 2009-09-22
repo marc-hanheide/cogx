@@ -32,7 +32,7 @@ public class Token implements java.io.Serializable {
   public int endLine;
   /** The column number of the last character of this Token. */
   public int endColumn;
-
+  
   /**
    * The string image of the token.
    */

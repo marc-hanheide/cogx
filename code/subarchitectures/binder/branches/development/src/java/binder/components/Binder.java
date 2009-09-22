@@ -677,7 +677,7 @@ public class Binder extends ManagedComponent  {
 			Proxy proxyi = union1.includedProxies[i];
 			for (int j = 0 ; j < union2.includedProxies.length ; j++) {
 				Proxy proxyj = union2.includedProxies[j];
-				if (proxyi.origin.subarchId.equals(proxyj.origin.subarchId)) {
+				if (proxyi.origin.address.subarchitecture.equals(proxyj.origin.address.subarchitecture)) {
 					return true;
 				}
 			}

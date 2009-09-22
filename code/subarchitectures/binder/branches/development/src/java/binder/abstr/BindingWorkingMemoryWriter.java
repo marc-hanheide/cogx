@@ -23,8 +23,6 @@ import java.util.HashMap;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.OriginInfo;
-import binder.autogen.core.OriginMap;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
@@ -37,6 +35,8 @@ import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryPointer;
  
 /**
  * Abstract class for structuring and inserting proxies into the binder working
@@ -52,14 +52,14 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	// =================================================================
 	// METHODS FOR CREATING NEW PROXIES
 	// =================================================================
- 
+   
 	/**
 	 * ID in current SA where origin map is stored.
 	 */
 	private String m_originMapID;
 
 	/**
-	 * Construct an OriginInfo object (information about the proxy origin:
+	 * Construct an WorkingMemoryPointer object (information about the proxy origin:
 	 * subarchitecture identifier, local data ID in subarchitecture, and data
 	 * type)
 	 * 
@@ -71,12 +71,11 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            type of the data in local subarchitecture
 	 * @return a new OriginInfo object
 	 */
-	public OriginInfo createOriginInfo(String subarchId, String localDataId,
+	public WorkingMemoryPointer createWorkingMemoryPointer (String subarchId, String localDataId,
 			String localDataType) {
-		OriginInfo origin = new OriginInfo();
-		origin.subarchId = subarchId;
-		origin.localDataId = localDataId;
-		origin.localDataType = localDataType;
+		WorkingMemoryPointer origin = new WorkingMemoryPointer();
+		origin.address = new WorkingMemoryAddress(localDataId, subarchId);
+		origin.type = localDataType;
 		return origin;
 	}
 
@@ -91,7 +90,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            probability value for the proxy
 	 * @return a new proxy
 	 */
-	public Proxy createNewProxy(OriginInfo origin, float probExists) {
+	public Proxy createNewProxy(WorkingMemoryPointer origin, float probExists) {
 
 		Proxy newProxy = new Proxy();
 
@@ -115,7 +114,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the features
 	 * @return the created proxy
 	 */
-	public Proxy createNewProxy(OriginInfo origin, float probExists,
+	public Proxy createNewProxy(WorkingMemoryPointer origin, float probExists,
 			Feature[] features) {
 
 		Proxy newProxy = createNewProxy(origin, probExists);
@@ -140,7 +139,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the target proxy
 	 * @return the new relation proxy
 	 */
-	public RelationProxy createNewRelationProxy(OriginInfo origin,
+	public RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
 			float probExists, AddressValue[] sources, AddressValue[] targets) {
 
 		RelationProxy newProxy = new RelationProxy();
@@ -178,7 +177,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the target proxy
 	 * @return the new relation proxy
 	 */
-	public RelationProxy createNewRelationProxy(OriginInfo origin,
+	public RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
 			float probExists, Feature[] features, AddressValue[] sources,
 			AddressValue[] targets) {
 
@@ -200,7 +199,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the probability of the proxy
 	 * @return the new phantom
 	 */
-	public PhantomProxy createNewPhantomProxy(OriginInfo origin,
+	public PhantomProxy createNewPhantomProxy(WorkingMemoryPointer origin,
 			float probExists) {
 
 		PhantomProxy newProxy = new PhantomProxy();
@@ -223,7 +222,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the probability of the proxy
 	 * @return the new phantom
 	 */
-	public PhantomProxy createNewPhantomProxy(OriginInfo origin,
+	public PhantomProxy createNewPhantomProxy(WorkingMemoryPointer origin,
 			float probExists, Feature[] features) {
 
 		PhantomProxy newProxy = createNewPhantomProxy(origin, probExists);
@@ -294,6 +293,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		StringValue stringVal = new StringValue();
 		stringVal.val = val;
 		stringVal.independentProb = prob;
+		stringVal.timeStamp = System.currentTimeMillis();
 		return stringVal;
 	}
 
@@ -311,6 +311,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		AddressValue addressVal = new AddressValue();
 		addressVal.val = address;
 		addressVal.independentProb = prob;
+		addressVal.timeStamp = System.currentTimeMillis();
 		return addressVal;
 	}
 
@@ -328,6 +329,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		IntegerValue integerVal = new IntegerValue();
 		integerVal.val = integer;
 		integerVal.independentProb = prob;
+		integerVal.timeStamp = System.currentTimeMillis();
 		return integerVal;
 	}
 
@@ -345,6 +347,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		BooleanValue boolVal = new BooleanValue();
 		boolVal.val = val;
 		boolVal.independentProb = prob;
+		boolVal.timeStamp = System.currentTimeMillis();
 		return boolVal;
 	}
 
@@ -445,7 +448,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 
 		try {
 			addToWorkingMemory(proxy.entityID, proxy);
-			storeOriginInfo(proxy);
+	//		storeOriginInfo(proxy);
 			log("new Proxy succesfully added to the binder working memory");
 
 		} catch (Exception e) {
@@ -462,6 +465,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @throws ConsistencyException
 	 * @throws AlreadyExistsOnWMException
 	 */
+	/**
 	private void storeOriginInfo(Proxy _proxy)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, AlreadyExistsOnWMException {
@@ -489,7 +493,8 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		}
 
 	}
-
+	 */
+	
 	/**
 	 * Removes source id mapping from WM map.
 	 * 
@@ -498,6 +503,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @throws ConsistencyException
 	 * @throws PermissionException
 	 */
+	/**
 	private void removeOriginInfo(Proxy _proxy)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException {
@@ -511,7 +517,8 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 			overwriteWorkingMemory(m_originMapID, om);
 		}
 	}
-
+	*/
+	
 	/**
 	 * Overwrite an existing proxy with a new one (the new proxy needs to have
 	 * the same entityID has the existing one)
@@ -543,7 +550,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	protected void deleteEntityInWM(Proxy proxy) {
 
 		try {
-			removeOriginInfo(proxy);
+			// removeOriginInfo(proxy);
 			deleteFromWorkingMemory(proxy.entityID);
 			log("existing Proxy succesfully deleted from the binder working memory");
 

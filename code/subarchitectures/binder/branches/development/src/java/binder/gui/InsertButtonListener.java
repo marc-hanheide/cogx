@@ -28,9 +28,9 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import binder.abstr.BindingWorkingMemoryWriter;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.OriginInfo;
 import binder.autogen.core.Proxy;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
@@ -39,7 +39,7 @@ import binder.autogen.featvalues.StringValue;
 import binder.components.BinderMonitor;
 import binder.utils.ProbabilityUtils;
 
-public class InsertButtonListener implements ActionListener {
+public class InsertButtonListener extends BindingWorkingMemoryWriter implements ActionListener {
 	
 	JPanel proxyPanel;
 	BinderMonitor bm;
@@ -120,7 +120,7 @@ public class InsertButtonListener implements ActionListener {
 											if (subsubsubcompo.getName() != null && 
 													subsubsubcompo.getName().equals("featvalue")) {
 												StringValue stringval = 
-													new StringValue(0, ((JTextField)subsubsubcompo).getText());
+													new StringValue(0, System.currentTimeMillis(), ((JTextField)subsubsubcompo).getText());
 												value = stringval;
 												log("Feature value: " +  stringval.val);
 											}
@@ -167,8 +167,7 @@ public class InsertButtonListener implements ActionListener {
 
 		Proxy newProxy = new Proxy();
 		newProxy.entityID = proxyID;
-		newProxy.origin = new OriginInfo();
-		newProxy.origin.subarchId = subarch;
+		newProxy.origin = createWorkingMemoryPointer(subarch, "", "");
 		newProxy.probExists = Float.parseFloat(exists);
 		
 		newProxy.features = new Feature[fds.size()];

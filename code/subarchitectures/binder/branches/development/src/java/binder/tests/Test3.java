@@ -6,12 +6,13 @@ import java.util.Vector;
 
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPointer;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.OriginInfo;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.BooleanValue;
@@ -123,7 +124,7 @@ public class Test3 extends AbstractTester{
 	public Proxy createNewRandomProxy() {
 		Random rand = new Random();
 		int subarchNb = rand.nextInt(NUMBER_SUBARCHS) + 1;
-		OriginInfo origin = createOriginInfo ("subarch"+subarchNb, "localID"+proxyCount, "localType");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer("subarch"+subarchNb, "localID"+proxyCount, "localType");
 		proxyCount++;
 		float probExists = rand.nextFloat();
 		Proxy proxy = createNewProxy(origin, probExists);

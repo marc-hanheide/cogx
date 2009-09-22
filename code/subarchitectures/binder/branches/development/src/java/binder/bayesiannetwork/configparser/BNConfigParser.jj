@@ -96,8 +96,8 @@ Vector<FeatureValue> features = new Vector<FeatureValue>();
 Token featvalue;
 }
 {
-	featvalue=<ID> { features.add(new StringValue(0, featvalue.image)); } 
-	("," featvalue=<ID> {features.add(new StringValue(0, featvalue.image));  } )*
+	featvalue=<ID> { features.add(new StringValue(0, 0, featvalue.image)); } 
+	("," featvalue=<ID> {features.add(new StringValue(0, 0, featvalue.image));  } )*
 { 
 return features; }
 }
@@ -111,8 +111,8 @@ Token tok3;
  }
 {
  "P(" tok1=<ID> "=" tok2=<ID> ")" "=" tok3=<PROB>
- { FeatureValue featvalue = new StringValue(0, tok2.image);
-  featvalue.independentProb = Float.parseFloat(tok3.image);
+ { FeatureValue featvalue = new StringValue(0, 0, tok2.image);
+  featvalue.independentProb = Float.parseFloat (tok3.image);
  // System.out.println( featvalue.independentProb);
  return featvalue; }
  }
@@ -168,8 +168,8 @@ Token tok3;
 }
 {
  "P(" <ID> "=" tok1=<ID> "|" <ID> "=" tok2=<ID> ")" "=" tok3=<PROB>
- {corr.value1 = new StringValue(0, tok1.image);
- corr.value2 = new StringValue(0, tok2.image);
+ {corr.value1 = new StringValue(0, 0, tok1.image);
+ corr.value2 = new StringValue(0, 0, tok2.image);
   corr.condProb = Float.parseFloat(tok3.image);
  return corr;
 }

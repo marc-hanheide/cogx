@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.OriginInfo;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
@@ -13,6 +12,7 @@ import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPointer;
 
 public class Test1 extends AbstractTester {
 	
@@ -41,7 +41,7 @@ public class Test1 extends AbstractTester {
 	
 	
 	protected Proxy createProxy() {
-		OriginInfo origin = createOriginInfo("subarch1", "localDataID", "dataType");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer("subarch1", "localDataID", "dataType");
 		Proxy newProxy = createNewProxy(origin, 0.8f);
 		
 		FeatureValue featvalue1a = createStringValue("featvalue1", 0.7f);

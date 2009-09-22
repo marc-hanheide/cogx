@@ -1,8 +1,8 @@
 package binder.fakeproxygenerators;
 
+import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.OriginInfo;
 import binder.autogen.core.Proxy;
 
 
@@ -31,7 +31,7 @@ public class FakeProxyGeneratorForBeliefModel extends AbstractProxyGenerator {
 
 	private Proxy createProxyOne() {
 		
-		OriginInfo origin = createOriginInfo ("fakevision", "blibli", "VisualObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blibli", "VisualObject");
 		Proxy proxy = createNewProxy(origin, 0.35f);
 		
 		FeatureValue red = createStringValue ("red", 0.73f);
@@ -50,7 +50,7 @@ public class FakeProxyGeneratorForBeliefModel extends AbstractProxyGenerator {
 
 	private Proxy createProxyTwo() {
 		
-		OriginInfo origin = createOriginInfo ("fakevision", "blibli2", "VisualObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blibli2", "VisualObject");
 		Proxy proxy = createNewProxy(origin, 0.35f);
 		
 		FeatureValue blue = createStringValue ("blue", 0.73f);
