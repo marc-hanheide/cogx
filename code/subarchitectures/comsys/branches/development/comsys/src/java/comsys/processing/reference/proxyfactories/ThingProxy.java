@@ -161,7 +161,7 @@ public class ThingProxy
 			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
 			AddressValue[] targets = createAddressValueArray(createAddressValue(prx.entityID, 1.0f));
 			RelationProxy rprx = createNewRelationProxy(createWorkingMemoryPointer("comsys", headVar, "lf"), 1.0f, sources, targets);		
-			rprx = addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy"));
+			addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy"));
 			// Construct the results;
 			ProxyResults results = new ProxyResults();
 			results.addProxy(prx);
