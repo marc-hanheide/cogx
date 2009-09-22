@@ -32,6 +32,14 @@ def rename_objects(objects):
     
   return namedict
 
+def transform_goal_string(goal, namedict):
+  for name, obj in namedict.iteritems():
+    if not isinstance(name, str):
+      continue
+    goal=goal.replace("'%s'" % name, obj.name)
+
+  return goal
+
 def feature_val_to_object(fval):
   if fval.__class__ == featvalues.StringValue:
     #lookup constants
@@ -172,9 +180,11 @@ def generate_mapl_task(task_desc, domain_fn):
 
   problem = mapl.problem.Problem("cogxtask", objects, init, None, task._mapldomain)
   try:
-    problem.goal = mapl.parser.Parser.parseAs(task_desc.goal.split("\n"), mapl.conditions.Condition, problem)
-  except ParseError:
-    problem.goal = mapl.conditions.Falsity
+    goalstrings = transform_goal_string(task_desc.goal, task.namedict).split("\n")
+    problem.goal = mapl.parser.Parser.parseAs(goalstrings, mapl.conditions.Condition, problem)
+    print "goal:",problem.goal
+  except mapl.parser.ParseError:
+    problem.goal = mapl.conditions.Falsity()
 
   task._mapltask = problem
   task.set_state(state.State(facts, problem))

@@ -59,7 +59,7 @@ class Planner(object):
         """
         if not task.is_dirty():
             return
-        if task._mapltask.goal == mapl.conditions.Falsity:
+        if task._mapltask.goal == mapl.conditions.Falsity():
             task.set_plan(None, update_status=True)
             return
 
