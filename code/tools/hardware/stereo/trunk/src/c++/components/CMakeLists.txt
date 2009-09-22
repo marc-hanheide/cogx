@@ -1,4 +1,7 @@
+find_package(OpenCV REQUIRED)
+
 include_directories(.)
+include_directories(${OPENCV_CFLAGS})
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
 link_directories (/usr/local/lib)
@@ -10,7 +13,7 @@ link_directories (${COGX_ROOT}/tools/hardware/stereo/src/c++/components/gpustere
 add_cast_component(StereoServer StereoServer.cpp StereoCamera.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoClient VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} gpustereo)
-link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore cvaux cudart cutil)
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LIBS} cudart cutil)
 
 
 ADD_LIBRARY(StereoClient SHARED StereoClient.cpp)
