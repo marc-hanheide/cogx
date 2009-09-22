@@ -46,4 +46,9 @@ public class ProxyResults {
 		return (Iterator<Proxy>) proxyMap.values();
 	} // end method
 	
+	public Iterator<RelationProxy> getRelationProxies() { 
+		return (Iterator<RelationProxy>) proxyRelations.iterator();
+	} // end method
+	
+	
 }
