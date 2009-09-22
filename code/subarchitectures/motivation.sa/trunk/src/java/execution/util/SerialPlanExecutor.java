@@ -153,10 +153,9 @@ public class SerialPlanExecutor extends Thread {
 			@Override
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
-				if(_wmc.src.equals(m_component.getComponentID())) {
-				m_component.log("action changed by me");
-				}
-				else {
+				if (_wmc.src.equals(m_component.getComponentID())) {
+					m_component.log("action changed by me");
+				} else {
 					m_component.log("action changed by " + _wmc.src);
 				}
 			}
@@ -172,14 +171,14 @@ public class SerialPlanExecutor extends Thread {
 			throws SubarchitectureComponentException {
 		// if plan succeeded then we're done
 		m_component.log("plan changed");
-		
-		//execution deemed complete by the planner
+
+		// execution deemed complete by the planner
 		if (_planningTask.executionStatus == Completion.SUCCEEDED) {
 			stopExecution();
 			planComplete(ExecutionState.COMPLETED);
 			m_component.log("and read that plan complete");
 		}
-		//execution deemed complete by the planner
+		// execution deemed complete by the planner
 		else if (_planningTask.planningStatus == Completion.FAILED) {
 			stopExecution();
 			planComplete(ExecutionState.HALTED);
@@ -189,8 +188,12 @@ public class SerialPlanExecutor extends Thread {
 	}
 
 	public void startExecution() {
-		m_exeState = ExecutionState.EXECUTING;
-		start();
+		//if we haven't completed already (i.e. received an empty plan)
+		if (m_exeState == ExecutionState.PENDING) {
+//			m_component.log("running from state: " + m_exeState);
+			m_exeState = ExecutionState.EXECUTING;
+			start();
+		}
 	}
 
 	public void stopExecution() throws SubarchitectureComponentException {
@@ -206,7 +209,7 @@ public class SerialPlanExecutor extends Thread {
 	public void run() {
 
 		if (m_exeState != ExecutionState.EXECUTING) {
-			m_component.println("not executing run loop");
+			m_component.log("not executing run loop");
 			return;
 		}
 
@@ -267,7 +270,8 @@ public class SerialPlanExecutor extends Thread {
 	 * 
 	 * @throws SubarchitectureComponentException
 	 */
-	private void planComplete(ExecutionState _state) throws SubarchitectureComponentException {
+	private void planComplete(ExecutionState _state)
+			throws SubarchitectureComponentException {
 
 		cleanup();
 
