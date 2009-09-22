@@ -8,8 +8,11 @@ import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.JCheckBox;
@@ -142,7 +145,24 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	private JTable getJTable() {
 		if (jTable == null) {
 			tableModel = new DefaultTableModel(columnHeadings, 1);
-			jTable = new JTable(tableModel);
+			jTable = new JTable(tableModel) {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = -2359545345696140088L;
+
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+
+			jTable.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					showDetails(jTable.getSelectedRow());
+				}
+			});
+
 			final TableRowSorter<TableModel> sorter;
 			sorter = new TableRowSorter<TableModel>(tableModel);
 			sorter.setSortsOnUpdates(true);
@@ -150,6 +170,16 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			getContentPane().add(new JScrollPane(jTable));
 		}
 		return jTable;
+	}
+
+	protected void showDetails(int selectedRow) {
+		String address=(String) jTable.getValueAt(selectedRow, 2);
+		// TODO: it's a very ugly way of getting the address
+		StringTokenizer st=new StringTokenizer(address, "::");
+		WorkingMemoryAddress wma=new WorkingMemoryAddress();
+		wma.subarchitecture=st.nextToken();
+		wma.id=st.nextToken();
+		
 	}
 
 	/**
@@ -260,8 +290,8 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 
 				@Override
 				public void itemStateChanged(ItemEvent e) {
-					freezeView = (e.getStateChange()==ItemEvent.SELECTED);
-					if (!freezeView) 
+					freezeView = (e.getStateChange() == ItemEvent.SELECTED);
+					if (!freezeView)
 						mapToTableModel();
 				}
 			});

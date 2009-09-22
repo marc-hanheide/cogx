@@ -3,25 +3,20 @@
  */
 package motivation.components.managers;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.PlanProxy;
 import motivation.util.GoalTranslator;
-import IceInternal.Instance;
+import motivation.util.WMEntryQueue;
+import motivation.util.WMEntryQueue.QueueElement;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
-import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
 /**
@@ -30,14 +25,207 @@ import cast.cdl.WorkingMemoryOperation;
  */
 public class PlanAllManager extends MotiveManager {
 
-	Set<Motive> managedMotives;
+	LinkedBlockingDeque<Motive> managedMotives;
+
+	enum QueueManagementPolicy {
+		FRONT, BACK
+	};
+
+	private QueueManagementPolicy queueManagementPolicy;
+	private int maxPlannedMotives;
 
 	/**
 	 * @param specificType
 	 */
 	public PlanAllManager() {
 		super(ExploreMotive.class);
-		managedMotives = Collections.synchronizedSet(new HashSet<Motive>());
+
+		managedMotives = new LinkedBlockingDeque<Motive>();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#configure(java.util.Map)
+	 */
+	@Override
+	protected void configure(Map<String, String> arg0) {
+		// TODO Auto-generated method stub
+		super.configure(arg0);
+		// defaults
+		queueManagementPolicy = QueueManagementPolicy.BACK;
+		maxPlannedMotives = 3;
+
+		String arg;
+		// parsing stuff
+		arg = arg0.get("--queuePolicy");
+		if (arg != null) {
+			queueManagementPolicy = QueueManagementPolicy.valueOf(arg);
+		}
+		println("queueManagementPolicy is " + queueManagementPolicy.name());
+		arg = arg0.get("--maxPlannedMotives");
+		if (arg != null) {
+			maxPlannedMotives = Integer.parseInt(arg);
+		}
+		println("maxPlannedMotives is " + maxPlannedMotives);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#runComponent()
+	 */
+	@Override
+	protected void runComponent() {
+		super.runComponent();
+		try {
+			while (isRunning()) {
+				log("runComponent loop");
+				if (managedMotives.size() > 0) { // if we have motives to manage
+					// this waits until we have a plan or return null, if it
+					// fails
+					log("we have some motives that should be planned for");
+					QueueElement pt = generatePlan();
+					if (pt != null) { // if we got a plan...
+						log("a plan has been generated. it's time to execute it");
+						PlanProxy pp = new PlanProxy();
+						pp.planAddress = pt.getEvent().address;
+						executePlan(pp);
+						log("execution finished... wait 1 sec to let state changes propagate");
+					}
+					sleepComponent(1000); // TODO: wait for motives to
+					// update
+				} else { // if we have no motives yet, we wait until something
+					// happens
+					waitForChanges();
+				}
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * Create task with non-crashy default values.
+	 * 
+	 * @return
+	 */
+	private PlanningTask newPlanningTask() {
+		return new PlanningTask(0, null, null, null, null, Completion.PENDING, 0, Completion.PENDING, 0);
+	}
+
+	/**
+	 * @throws InterruptedException
+	 * 
+	 */
+	private synchronized QueueElement generatePlan()
+			throws InterruptedException {
+		WMEntryQueue planQueue = new WMEntryQueue(this);
+		QueueElement pt = null;
+		try {
+			String id = newDataID();
+			PlanningTask plan = newPlanningTask();
+
+			String goalString = "(and ";
+			int remainingCapacity = maxPlannedMotives;
+			for (Motive m : managedMotives) {
+				if (remainingCapacity <= 0) // we reached the limit of motives
+											// to consider
+					break;
+				if (m instanceof ExploreMotive) {
+					log("---> add goal to explore node "
+							+ ((ExploreMotive) m).placeID);
+					goalString = goalString
+							+ GoalTranslator.motive2PlannerGoal(
+									(ExploreMotive) m, getOriginMap());
+					remainingCapacity--;
+				}
+			}
+			goalString = goalString + ")";
+			log("generated goal string: " + goalString);
+			plan.goal = goalString;
+			// plan.goal = "(forall (?p - place) (= (explored ?p) true))";
+
+			addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+					WorkingMemoryOperation.OVERWRITE), planQueue);
+			addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+					WorkingMemoryOperation.DELETE), planQueue);
+			log("submitting plan to WM");
+			addToWorkingMemory(id, plan);
+			log("has been submitted");
+
+			// wait for the plan to be generated
+			boolean continueWaiting = true;
+			while (continueWaiting) {
+				log("waiting for planner to answer");
+				pt = planQueue.take();
+				PlanningTask taskEntry = (PlanningTask) pt.getEntry();
+				if (pt.getEntry() == null) {
+					pt = null;
+					println("the Planning task has been removed before we actually received a valid plan...");
+					break;
+				}
+				switch (taskEntry.planningStatus) {
+				case SUCCEEDED:
+					log("we have a plan right now: "
+							+ ((PlanningTask) pt.getEntry()).goal);
+					// stop waiting for further changes
+					continueWaiting = false;
+					break;
+				case ABORTED:
+				case FAILED:
+					log("could not generate a plan... we have to abort for this time and remove the listener");
+					removeChangeFilter(planQueue);
+					planQueue = null;
+					deleteFromWorkingMemory(pt.getEvent().address);
+					pt = null;
+					// stop waiting for further changes
+					continueWaiting = false;
+					break;
+				default:
+					log("still planning... continue waiting with status "
+							+ taskEntry.planningStatus.name());
+				}
+			}
+
+		} catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (planQueue != null) {
+					log("remove listener");
+					removeChangeFilter(planQueue);
+				}
+			} catch (SubarchitectureComponentException e) {
+				println("SubarchitectureComponentException");
+				e.printStackTrace();
+			}
+		}
+		return pt;
+	}
+
+	private void executePlan(PlanProxy pp) {
+		String id = newDataID();
+		WMEntryQueue planProxyQueue = new WMEntryQueue(this);
+		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+				WorkingMemoryOperation.DELETE), planProxyQueue);
+		// submit the planProxy
+		try {
+			addToWorkingMemory(id, pp);
+
+			// wait for the PlanProxy to be deleted
+			// TODO: we should move to status information in here and not only
+			// listen for deletion
+			planProxyQueue.take();
+			removeChangeFilter(planProxyQueue);
+		} catch (CASTException e) {
+			println("CASTException");
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/*
@@ -52,117 +240,25 @@ public class PlanAllManager extends MotiveManager {
 		log("have a new motive to manage... type is "
 				+ Motive.class.getSimpleName());
 		if (motive instanceof ExploreMotive) {
-			log("have some explore motive around");
-			managedMotives.add(motive);
-			log("size of managedMotives is " + managedMotives.size());
-			// create a new goal
-			// ask the planner if this new goal can be added
-			// hand this goal to execution
-			if (managedMotives.size() == 1) {
-				sleepComponent(2000);
-				generatePlan();
+			// remove the motive before actually re-adding it. It's safe to do,
+			// even if it is not in yet
+			managedMotives.remove(motive);
+			switch (queueManagementPolicy) {
+			case FRONT:
+				managedMotives.addFirst(motive); // TODO: we might want to
+													// either add at then
+													// beginning or end
+				break;
+			case BACK:
+				managedMotives.addLast(motive); // TODO: we might want to either
+												// add at then beginning or end
+				break;
 			}
+			log("updated managed motives; size of queue is "
+					+ managedMotives.size());
 		} else {
 			log("some motive we cannot yet handle");
 		}
-	}
-
-	/**
-	 * Create task with non-crashy default values.
-	 * 
-	 * @return
-	 */
-	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, null, null, null, Completion.PENDING, 0,
-				Completion.PENDING, 0);
-	}
-
-	/**
-	 * 
-	 */
-	private void generatePlan() {
-		String id = newDataID();
-
-		PlanningTask plan = newPlanningTask();
-
-		String goalString = "";// "(and ";
-		for (Motive m : managedMotives) {
-			if (m instanceof ExploreMotive) {
-				goalString = goalString
-						+ GoalTranslator.motive2PlannerGoal((ExploreMotive) m,
-								getOriginMap());
-				break; // TODO: just take the first goal for now and skip the
-				// rest
-			} else
-				goalString = goalString
-						+ GoalTranslator.motive2PlannerGoal((ExploreMotive) m,
-								getOriginMap());
-		}
-		goalString = goalString + ")";
-		log("generated goal string: " + goalString);
-		plan.goal = goalString;
-		// plan.goal = "(forall (?p - place) (= (explored ?p) true))";
-
-		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
-				WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-
-					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-							throws CASTException {
-						if (planGenerated(_wmc.address, getMemoryEntry(
-								_wmc.address, PlanningTask.class))) {
-							// if plan is sent to execution, stop monitoring the
-							// plan... probably only short-term solution. the
-							// current problem is that replanning causes new
-							// PlanProxy structs to be generated as the
-							// PlanningTask is overwritten
-							removeChangeFilter(this);
-						}
-
-					}
-				});
-
-		try {
-			addToWorkingMemory(id, plan);
-		} catch (AlreadyExistsOnWMException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private boolean planGenerated(WorkingMemoryAddress _wma,
-			PlanningTask _planningTask) {
-
-		if (_planningTask.planningStatus == Completion.SUCCEEDED) {
-			log("planning succeeeeeeeded "
-					+ _planningTask.planningStatus.name());
-			String id = newDataID();
-
-			addChangeFilter(ChangeFilterFactory.createIDFilter(id,
-					WorkingMemoryOperation.DELETE),
-					new WorkingMemoryChangeReceiver() {
-						@Override
-						public void workingMemoryChanged(
-								WorkingMemoryChange _wmc) throws CASTException {
-							println("plan proxy deleted. this means that execution has finished");
-							removeChangeFilter(this);
-						}
-					});
-
-			PlanProxy pp = new PlanProxy();
-			pp.planAddress = _wma;
-			try {
-				addToWorkingMemory(id, pp);
-				return true;
-			} catch (AlreadyExistsOnWMException e) {
-				e.printStackTrace();
-			}
-		} else if (_planningTask.planningStatus == Completion.FAILED) {
-			println("planning failed: " + _planningTask.planningStatus + " "
-					+ _planningTask.goal);
-		} else {
-			log("planning status " + _planningTask.planningStatus.name());
-		}
-		return false;
 	}
 
 	/*
@@ -176,9 +272,8 @@ public class PlanAllManager extends MotiveManager {
 	protected void retractMotive(Motive motive) {
 		log("someone decided this motive has to be retracted... type is "
 				+ motive.getClass().getSimpleName());
-		if (managedMotives.isEmpty()) { // nothing to be done anymore
-
-		}
+		log("motive is retracted: " + ((ExploreMotive) motive).placeID);
+		managedMotives.remove(motive);
 
 	}
 

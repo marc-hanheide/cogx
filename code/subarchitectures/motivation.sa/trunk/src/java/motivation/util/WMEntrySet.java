@@ -65,13 +65,17 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 			WorkingMemoryChange newWmc = (WorkingMemoryChange) _wmc.clone();
 			switch (_wmc.operation) {
 			case ADD:
-				Ice.ObjectImpl m = component.getMemoryEntry(newWmc.address,
-						specClass);
-				if (map.put(_wmc.address, m) != null)
-					newWmc.operation = WorkingMemoryOperation.OVERWRITE;
-				if (updateHandler != null)
-					updateHandler.motiveChanged(map, newWmc, map
-							.get(newWmc.address));
+				try {
+					Ice.ObjectImpl m = component.getMemoryEntry(newWmc.address,
+							specClass);
+					if (map.put(_wmc.address, m) != null)
+						newWmc.operation = WorkingMemoryOperation.OVERWRITE;
+					if (updateHandler != null)
+						updateHandler.motiveChanged(map, newWmc, map
+								.get(newWmc.address));
+				} catch (DoesNotExistOnWMException e) {
+					// it's fine... if it's been deleted already, we have nothing to do here
+				}
 
 				break;
 			case OVERWRITE:
@@ -80,7 +84,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 							newWmc.address, specClass));
 					if (updateHandler != null)
 						updateHandler.motiveChanged(map, newWmc, map
-							.get(newWmc.address));
+								.get(newWmc.address));
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
 					newWmc.operation = WorkingMemoryOperation.DELETE;
