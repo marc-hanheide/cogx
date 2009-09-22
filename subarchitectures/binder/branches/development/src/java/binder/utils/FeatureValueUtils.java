@@ -150,23 +150,23 @@ public class FeatureValueUtils {
 	public static FeatureValue cloneFeatureValue(FeatureValue fv) {
 		
 		if (fv instanceof StringValue) {
-			return new StringValue(fv.independentProb, ((StringValue) fv).val);
+			return new StringValue(fv.independentProb, fv.timeStamp, ((StringValue) fv).val);
 		}
 		else if (fv instanceof AddressValue) {
-			return new AddressValue(fv.independentProb, ((AddressValue) fv).val);
+			return new AddressValue(fv.independentProb, fv.timeStamp, ((AddressValue) fv).val);
 		}
 		else if (fv instanceof IntegerValue) {
-			return new IntegerValue(fv.independentProb, ((IntegerValue) fv).val);
+			return new IntegerValue(fv.independentProb, fv.timeStamp, ((IntegerValue) fv).val);
 		}
 		else if (fv instanceof BooleanValue) {
-			return new BooleanValue(fv.independentProb, ((BooleanValue) fv).val);
+			return new BooleanValue(fv.independentProb, fv.timeStamp, ((BooleanValue) fv).val);
 		}
 		else if (fv instanceof UnknownValue) {
-			return new UnknownValue (fv.independentProb);
+			return new UnknownValue (fv.independentProb, fv.timeStamp);
 		}
 		else {
 			log("WARNING: feature value not convertible to a string");
-			return new FeatureValue(fv.independentProb);
+			return new FeatureValue(fv.independentProb, fv.timeStamp);
 		}
 	}
 	

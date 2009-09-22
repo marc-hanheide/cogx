@@ -20,6 +20,7 @@
 
 package binder.fakeproxygenerators;
 
+import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.*;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
@@ -57,7 +58,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
 	private Proxy createProxyTwo() {
 		
-		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli", "GraspableObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli", "GraspableObject");
 		Proxy proxy = createNewProxy(origin, 0.65f);
 		
 		FeatureValue cylindrical = createStringValue ("cylindrical", 0.73f);
@@ -74,7 +75,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
 	private Proxy createProxyOne() {
 		
-		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli2", "GraspableObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli2", "GraspableObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);
 		
 		FeatureValue spherical = createStringValue ("spherical", 0.67f);
@@ -103,7 +104,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		AddressValue[] targets = new AddressValue[1];
 		targets[0] = createAddressValue(proxyTwoId, 0.91f);
 		
-		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli3", "HapticRelation");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli3", "HapticRelation");
 		RelationProxy proxy = createNewRelationProxy(origin, 0.81f, sources, targets);
 		
 		log("Relation proxy successfully created");

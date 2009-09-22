@@ -336,20 +336,25 @@ public static Union getBestUnion(UnionDistribution distribution) {
 
 		float threshold = 0.0f;
 		Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
-
+		System.out.println("OK 1");
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
-			
+			System.out.println("OK 2");
 			if (nbestConfigs.size() < nb_nbests) {
 
 				nbestConfigs.add(config);
 
+				System.out.println("OK 3");
+				System.out.println("config.configProb"+ config.configProb);
 				if (config.configProb < threshold) {
 					threshold = config.configProb;
 				}
 			}
 
 			else {
+				
+				System.out.println("OK 3.2");
+				System.out.println("config.configProb"+ config.configProb);
 				if (config.configProb > threshold) {
 					UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs);
 					nbestConfigs.remove(worstinNBests);

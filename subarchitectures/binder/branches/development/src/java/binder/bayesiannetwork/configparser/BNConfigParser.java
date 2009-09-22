@@ -3,17 +3,11 @@
 
 package binder.bayesiannetwork.configparser;
 
-
+import binder.autogen.core.*;
+import binder.autogen.featvalues.*;
+import binder.autogen.bayesiannetworks.*;
 import java.util.Vector;
 import java.util.Enumeration;
-
-import binder.autogen.bayesiannetworks.BayesianNetwork;
-import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
-import binder.autogen.bayesiannetworks.BayesianNetworkNode;
-import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
-import binder.autogen.core.Feature;
-import binder.autogen.core.FeatureValue;
-import binder.autogen.featvalues.StringValue;
 
 public class BNConfigParser implements BNConfigParserConstants {
 
@@ -48,7 +42,7 @@ public static void log(String s) {
 Vector<FeatureValue> features = new Vector<FeatureValue>();
 Token featvalue;
     featvalue = jj_consume_token(ID);
-                         features.add(new StringValue(0, featvalue.image));
+                         features.add(new StringValue(0, 0, featvalue.image));
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -61,7 +55,7 @@ Token featvalue;
       }
       jj_consume_token(14);
       featvalue = jj_consume_token(ID);
-                             features.add(new StringValue(0, featvalue.image));
+                             features.add(new StringValue(0, 0, featvalue.image));
     }
 {if (true) return features;}
     throw new Error("Missing return statement in function");
@@ -78,8 +72,8 @@ Token tok3;
     jj_consume_token(17);
     jj_consume_token(16);
     tok3 = jj_consume_token(PROB);
-   FeatureValue featvalue = new StringValue(0, tok2.image);
-  featvalue.independentProb = Float.parseFloat(tok3.image);
+   FeatureValue featvalue = new StringValue(0, 0, tok2.image);
+  featvalue.independentProb = Float.parseFloat (tok3.image);
  // System.out.println( featvalue.independentProb);
  {if (true) return featvalue;}
     throw new Error("Missing return statement in function");
@@ -169,8 +163,8 @@ Token tok3;
     jj_consume_token(17);
     jj_consume_token(16);
     tok3 = jj_consume_token(PROB);
-  corr.value1 = new StringValue(0, tok1.image);
- corr.value2 = new StringValue(0, tok2.image);
+  corr.value1 = new StringValue(0, 0, tok1.image);
+ corr.value2 = new StringValue(0, 0, tok2.image);
   corr.condProb = Float.parseFloat(tok3.image);
  {if (true) return corr;}
     throw new Error("Missing return statement in function");
@@ -198,7 +192,7 @@ FeatureValueCorrelation prob;
          {if (true) return correlations;}
     throw new Error("Missing return statement in function");
   }
-
+ 
   static final public BayesianNetworkEdge Edge(BayesianNetworkNode[] nodes) throws ParseException {
  Token tok1;
 Token tok2;
@@ -285,33 +279,27 @@ for (int i = 0; i < edges.length ; i++) {
   }
 
   static private boolean jj_initialized_once = false;
-  /** Generated Token Manager. */
   static public BNConfigParserTokenManager token_source;
   static SimpleCharStream jj_input_stream;
-  /** Current token. */
-  static public Token token;
-  /** Next token. */
-  static public Token jj_nt;
+  static public Token token, jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
   static final private int[] jj_la1 = new int[6];
   static private int[] jj_la1_0;
   static {
-      jj_la1_init_0();
+      jj_la1_0();
    }
-   private static void jj_la1_init_0() {
+   private static void jj_la1_0() {
       jj_la1_0 = new int[] {0x4000,0x4000,0x100,0x4000,0x200,0x200,};
    }
 
-  /** Constructor with InputStream. */
   public BNConfigParser(java.io.InputStream stream) {
      this(stream, null);
   }
-  /** Constructor with InputStream and supplied encoding */
   public BNConfigParser(java.io.InputStream stream, String encoding) {
     if (jj_initialized_once) {
-      System.out.println("ERROR: Second call to constructor of static parser.  ");
-      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
+      System.out.println("ERROR: Second call to constructor of static parser.  You must");
+      System.out.println("       either use ReInit() or set the JavaCC option STATIC to false");
       System.out.println("       during parser generation.");
       throw new Error();
     }
@@ -324,11 +312,9 @@ for (int i = 0; i < edges.length ; i++) {
     for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
-  /** Reinitialise. */
   static public void ReInit(java.io.InputStream stream) {
      ReInit(stream, null);
   }
-  /** Reinitialise. */
   static public void ReInit(java.io.InputStream stream, String encoding) {
     try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
@@ -338,11 +324,10 @@ for (int i = 0; i < edges.length ; i++) {
     for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
-  /** Constructor. */
   public BNConfigParser(java.io.Reader stream) {
     if (jj_initialized_once) {
-      System.out.println("ERROR: Second call to constructor of static parser. ");
-      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
+      System.out.println("ERROR: Second call to constructor of static parser.  You must");
+      System.out.println("       either use ReInit() or set the JavaCC option STATIC to false");
       System.out.println("       during parser generation.");
       throw new Error();
     }
@@ -355,7 +340,6 @@ for (int i = 0; i < edges.length ; i++) {
     for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
-  /** Reinitialise. */
   static public void ReInit(java.io.Reader stream) {
     jj_input_stream.ReInit(stream, 1, 1);
     token_source.ReInit(jj_input_stream);
@@ -365,11 +349,10 @@ for (int i = 0; i < edges.length ; i++) {
     for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
-  /** Constructor with generated Token Manager. */
   public BNConfigParser(BNConfigParserTokenManager tm) {
     if (jj_initialized_once) {
-      System.out.println("ERROR: Second call to constructor of static parser. ");
-      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
+      System.out.println("ERROR: Second call to constructor of static parser.  You must");
+      System.out.println("       either use ReInit() or set the JavaCC option STATIC to false");
       System.out.println("       during parser generation.");
       throw new Error();
     }
@@ -381,7 +364,6 @@ for (int i = 0; i < edges.length ; i++) {
     for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
-  /** Reinitialise. */
   public void ReInit(BNConfigParserTokenManager tm) {
     token_source = tm;
     token = new Token();
@@ -390,7 +372,7 @@ for (int i = 0; i < edges.length ; i++) {
     for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
-  static private Token jj_consume_token(int kind) throws ParseException {
+  static final private Token jj_consume_token(int kind) throws ParseException {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -404,8 +386,6 @@ for (int i = 0; i < edges.length ; i++) {
     throw generateParseException();
   }
 
-
-/** Get the next Token. */
   static final public Token getNextToken() {
     if (token.next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -414,7 +394,6 @@ for (int i = 0; i < edges.length ; i++) {
     return token;
   }
 
-/** Get the specific Token. */
   static final public Token getToken(int index) {
     Token t = token;
     for (int i = 0; i < index; i++) {
@@ -424,21 +403,23 @@ for (int i = 0; i < edges.length ; i++) {
     return t;
   }
 
-  static private int jj_ntk() {
+  static final private int jj_ntk() {
     if ((jj_nt=token.next) == null)
       return (jj_ntk = (token.next=token_source.getNextToken()).kind);
     else
       return (jj_ntk = jj_nt.kind);
   }
 
-  static private java.util.List jj_expentries = new java.util.ArrayList();
+  static private java.util.Vector jj_expentries = new java.util.Vector();
   static private int[] jj_expentry;
   static private int jj_kind = -1;
 
-  /** Generate ParseException. */
   static public ParseException generateParseException() {
-    jj_expentries.clear();
+    jj_expentries.removeAllElements();
     boolean[] la1tokens = new boolean[20];
+    for (int i = 0; i < 20; i++) {
+      la1tokens[i] = false;
+    }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -456,21 +437,19 @@ for (int i = 0; i < edges.length ; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.add(jj_expentry);
+        jj_expentries.addElement(jj_expentry);
       }
     }
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[])jj_expentries.get(i);
+      exptokseq[i] = (int[])jj_expentries.elementAt(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }
 
-  /** Enable tracing. */
   static final public void enable_tracing() {
   }
 
-  /** Disable tracing. */
   static final public void disable_tracing() {
   }
 

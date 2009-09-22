@@ -1,5 +1,8 @@
 
 
+#include "CDL.ice"
+
+
 module binder {
 
 module autogen {
@@ -12,6 +15,7 @@ module core {
  */
 class FeatureValue { 
 	float independentProb ;
+	long timeStamp;
 };
 
 /**
@@ -52,18 +56,12 @@ class PerceivedEntity {
 
 
 
-class OriginInfo {
-	string subarchId;
-	string localDataId;
-	string localDataType;
-};
-
  
 /** 
  * A proxy
  */ 
 class Proxy extends PerceivedEntity {
-	OriginInfo origin;
+	cast::cdl::WorkingMemoryPointer origin;
 };
 
 
@@ -96,26 +94,6 @@ class AlternativeUnionConfigurations {
 	UnionConfigurationSeq alterconfigs;
 };
 
-
-/*** 
- * A wrapper for a map between source data ids and the proxies they
- * are turned into. This is maintained by the abstract writer
- * classes. Currently only a 1-to-1 mapping is supported, but this may
- * have to change in the future.
- */
-
-  class OriginMap {
-    /**
-     * The component which created the map.
-     */
-    string componentID;
-
-    /**
-     * The map itself
-     */
-    StringMap sourceID2ProxyID;
-  };
-
 };
 
 
@@ -125,11 +103,11 @@ class RelationProxy extends core::Proxy {
 	core::Feature source;
 	core::Feature target;
 };
-
+ 
 class GroupProxy extends core::Proxy {
 	core::FeaturesList connections;
 };
-
+ 
 class RelationUnion extends core::Union {
 	core::Feature source;
 	core::Feature target;

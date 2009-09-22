@@ -59,7 +59,8 @@ public class BinderUtils {
 				for (int j = 0 ; j < values.size(); j++ ) {
 					features[i].alternativeValues[j] = values.elementAt(j);
 				}
-				features[i].alternativeValues[values.size()] = new UnknownValue((1.0f - totalProb));
+				features[i].alternativeValues[values.size()] = 
+					new UnknownValue((1.0f - totalProb), features[i].alternativeValues[0].timeStamp);
 		//	}
 		}
 

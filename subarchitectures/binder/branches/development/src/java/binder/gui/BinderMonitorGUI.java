@@ -155,7 +155,7 @@ public class BinderMonitorGUI extends JFrame
 		HashMap<String,String> AVM = new HashMap<String,String>();
 		AVM.put("Proxy ID", proxy.entityID);
 		AVM.put("P(exists|z)", ""+roundProb(proxy.probExists));
-		AVM.put("Subarchitecture", proxy.origin.subarchId);
+		AVM.put("Subarchitecture", proxy.origin.address.subarchitecture);
 	//	AVM.put("Max prob", ""+ roundProb(GradientDescent.getMaximum(proxy)));
 		AVM.put("Timestamp", "+" + formatTimpestamp(proxy.timeStamp) + " s.");
 
