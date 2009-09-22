@@ -3,9 +3,9 @@
  */
 package motivation.util;
 
-import binder.autogen.core.OriginMap;
 import motivation.slice.ExploreMotive;
-import motivation.slice.Motive;
+import motivation.slice.HomingMotive;
+import binder.autogen.core.OriginMap;
 
 /**
  * @author marc
@@ -13,7 +13,8 @@ import motivation.slice.Motive;
  */
 public class GoalTranslator {
 
-	public static String motive2PlannerGoal(Motive m, OriginMap om) {
+	public static String motive2PlannerGoal(HomingMotive m, OriginMap om) {
+		// TODO: this has to be implemented with lookup to the unions
 		return new String ("");
 	}
 	

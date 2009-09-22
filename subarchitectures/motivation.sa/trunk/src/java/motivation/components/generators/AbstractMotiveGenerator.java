@@ -6,6 +6,7 @@ package motivation.components.generators;
 
 import motivation.slice.Motive;
 import cast.AlreadyExistsOnWMException;
+import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -157,16 +158,7 @@ abstract class AbstractMotiveGenerator extends ManagedComponent {
 		}
 		catch(PermissionException e) {
 			
-		} catch (AlreadyExistsOnWMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (DoesNotExistOnWMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnknownSubarchitectureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ConsistencyException e) {
+		} catch (CASTException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -176,6 +168,7 @@ abstract class AbstractMotiveGenerator extends ManagedComponent {
 	public void remove(Motive motive) throws DoesNotExistOnWMException,
 			PermissionException, UnknownSubarchitectureException {
 		if (motive.thisEntry != null) {
+			log("we remove the motive from WM");
 			deleteFromWorkingMemory(motive.thisEntry);
 		}
 	}

@@ -4,20 +4,16 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import motivation.slice.ExploreMotive;
+import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.TestMotive;
-import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import cast.CASTException;
 
 public class ManualSelectFilter extends AbstractFilter {
@@ -33,9 +29,10 @@ public class ManualSelectFilter extends AbstractFilter {
 		frame.pack();
 	}
 
-	private JFrame jFrame = null;  //  @jve:decl-index=0:visual-constraint="0,-1"
+	private JFrame jFrame = null;  //  @jve:decl-index=0:visual-constraint="1,21"
 	private JPanel jContentPane = null;
 	private JCheckBox jCheckBoxExploreMotive = null;  //  @jve:decl-index=0:visual-constraint="367,125"
+	private JCheckBox jCheckBoxHomingMotive = null;  //  @jve:decl-index=0:visual-constraint="365,163"
 	private JCheckBox jCheckBoxTestMotive = null;  //  @jve:decl-index=0:visual-constraint="421,181"
 	private JButton jButtonUpdate = null;  //  @jve:decl-index=0:visual-constraint="325,118"
 
@@ -45,6 +42,8 @@ public class ManualSelectFilter extends AbstractFilter {
 			return jCheckBoxExploreMotive.isSelected();
 		else if (motive instanceof TestMotive)
 			return jCheckBoxTestMotive.isSelected();
+		else if (motive instanceof HomingMotive)
+			return jCheckBoxHomingMotive.isSelected();
 		else
 			return true;
 	}
@@ -55,6 +54,8 @@ public class ManualSelectFilter extends AbstractFilter {
 			return !jCheckBoxExploreMotive.isSelected();
 		else if (motive instanceof TestMotive)
 			return !jCheckBoxTestMotive.isSelected();
+		else if (motive instanceof HomingMotive)
+			return !jCheckBoxHomingMotive.isSelected();
 		else
 			return false;
 	}
@@ -85,6 +86,7 @@ public class ManualSelectFilter extends AbstractFilter {
 			jContentPane.setLayout(new GridLayout(0,1));
 			jContentPane.add(getJCheckBoxExploreMotive());
 			jContentPane.add(getJCheckBoxTestMotive());
+			jContentPane.add(getJCheckBoxHomingMotive());
 			jContentPane.add(getJButtonUpdate());
 		}
 		return jContentPane;
@@ -104,6 +106,19 @@ public class ManualSelectFilter extends AbstractFilter {
 		return jCheckBoxExploreMotive;
 	}
 
+	/**
+	 * This method initializes jCheckBox	
+	 * 	
+	 * @return javax.swing.JCheckBox	
+	 */
+	private JCheckBox getJCheckBoxHomingMotive() {
+		if (jCheckBoxHomingMotive == null) {
+			jCheckBoxHomingMotive = new JCheckBox();
+			jCheckBoxHomingMotive.setSize(new Dimension(257, 29));
+			jCheckBoxHomingMotive.setText("let HomingMotives pass");
+		}
+		return jCheckBoxHomingMotive;
+	}
 	/**
 	 * This method initializes jCheckBox1	
 	 * 	
@@ -145,4 +160,4 @@ public class ManualSelectFilter extends AbstractFilter {
 		return jButtonUpdate;
 	}
 
-}
+}  //  @jve:decl-index=0:visual-constraint="583,36"

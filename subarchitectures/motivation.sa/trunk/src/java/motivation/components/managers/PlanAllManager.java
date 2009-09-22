@@ -3,10 +3,17 @@
  */
 package motivation.components.managers;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.Set;
 
+import motivation.components.managers.comparators.AgeComparator;
 import motivation.slice.ExploreMotive;
+import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.PlanProxy;
 import motivation.util.GoalTranslator;
@@ -25,22 +32,20 @@ import cast.cdl.WorkingMemoryOperation;
  */
 public class PlanAllManager extends MotiveManager {
 
-	LinkedBlockingDeque<Motive> managedMotives;
+	Set<Motive> managedMotives;
 
-	enum QueueManagementPolicy {
-		FRONT, BACK
-	};
-
-	private QueueManagementPolicy queueManagementPolicy;
 	private int maxPlannedMotives;
+	private Comparator<? super Motive> motiveComparator;
 
 	/**
 	 * @param specificType
 	 */
 	public PlanAllManager() {
-		super(ExploreMotive.class);
-
-		managedMotives = new LinkedBlockingDeque<Motive>();
+		super(Motive.class);
+		managedMotives = Collections.synchronizedSet(new HashSet<Motive>());
+		// defaults
+		motiveComparator = new AgeComparator();
+		maxPlannedMotives = 3;
 	}
 
 	/*
@@ -48,21 +53,37 @@ public class PlanAllManager extends MotiveManager {
 	 * 
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure(Map<String, String> arg0) {
 		// TODO Auto-generated method stub
 		super.configure(arg0);
-		// defaults
-		queueManagementPolicy = QueueManagementPolicy.BACK;
-		maxPlannedMotives = 3;
 
 		String arg;
 		// parsing stuff
-		arg = arg0.get("--queuePolicy");
+		arg = arg0.get("--orderPolicy");
 		if (arg != null) {
-			queueManagementPolicy = QueueManagementPolicy.valueOf(arg);
+			String className = this.getClass().getPackage().getName()
+					+ ".comparators." + arg.trim()+"Comparator";
+			try {
+				this.getClass().getPackage().getName();
+				println("add type '" + className + "'");
+				ClassLoader.getSystemClassLoader().loadClass(className);
+				Class<Comparator<? super Motive>> cl = (Class<Comparator<? super Motive>>) Class
+						.forName(className);
+				motiveComparator = cl.newInstance();
+			} catch (ClassNotFoundException e) {
+				println("trying to register for a class that doesn't exist.");
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				println("failed to get an instance.");
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				println("failed to get an instance.");
+				e.printStackTrace();
+			}
 		}
-		println("queueManagementPolicy is " + queueManagementPolicy.name());
+
 		arg = arg0.get("--maxPlannedMotives");
 		if (arg != null) {
 			maxPlannedMotives = Integer.parseInt(arg);
@@ -112,7 +133,8 @@ public class PlanAllManager extends MotiveManager {
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, null, null, null, Completion.PENDING, 0, Completion.PENDING, 0);
+		return new PlanningTask(0, null, null, null, null, Completion.PENDING,
+				0, Completion.PENDING, 0);
 	}
 
 	/**
@@ -123,16 +145,28 @@ public class PlanAllManager extends MotiveManager {
 			throws InterruptedException {
 		WMEntryQueue planQueue = new WMEntryQueue(this);
 		QueueElement pt = null;
+
+		// if we don't have anything to do... just quit.
+		if (managedMotives.size() < 0)
+			return null;
+
 		try {
 			String id = newDataID();
 			PlanningTask plan = newPlanningTask();
 
+			List<Motive> sortedMotives = new LinkedList<Motive>(managedMotives);
+			// rank the motives according to the comparator
+			Collections.sort(sortedMotives, motiveComparator);
+			
+			// create a conjunction of motives
 			String goalString = "(and ";
 			int remainingCapacity = maxPlannedMotives;
-			for (Motive m : managedMotives) {
+			for (Motive m : sortedMotives) {
 				if (remainingCapacity <= 0) // we reached the limit of motives
-											// to consider
+					// to consider
 					break;
+				m.tries++;
+				overwriteWorkingMemory(m.thisEntry, m);
 				if (m instanceof ExploreMotive) {
 					log("---> add goal to explore node "
 							+ ((ExploreMotive) m).placeID);
@@ -140,8 +174,16 @@ public class PlanAllManager extends MotiveManager {
 							+ GoalTranslator.motive2PlannerGoal(
 									(ExploreMotive) m, getOriginMap());
 					remainingCapacity--;
+				} else if (m instanceof HomingMotive) {
+					log("---> add goal to go home "
+							+ ((HomingMotive) m).homePlaceID);
+					goalString = goalString
+							+ GoalTranslator.motive2PlannerGoal(
+									(HomingMotive) m, getOriginMap());
+					remainingCapacity--;
 				}
 			}
+
 			goalString = goalString + ")";
 			log("generated goal string: " + goalString);
 			plan.goal = goalString;
@@ -239,26 +281,11 @@ public class PlanAllManager extends MotiveManager {
 	protected void manageMotive(Motive motive) {
 		log("have a new motive to manage... type is "
 				+ Motive.class.getSimpleName());
-		if (motive instanceof ExploreMotive) {
-			// remove the motive before actually re-adding it. It's safe to do,
-			// even if it is not in yet
-			managedMotives.remove(motive);
-			switch (queueManagementPolicy) {
-			case FRONT:
-				managedMotives.addFirst(motive); // TODO: we might want to
-													// either add at then
-													// beginning or end
-				break;
-			case BACK:
-				managedMotives.addLast(motive); // TODO: we might want to either
-												// add at then beginning or end
-				break;
-			}
-			log("updated managed motives; size of queue is "
-					+ managedMotives.size());
-		} else {
-			log("some motive we cannot yet handle");
-		}
+		// TODO: this is not the most efficient way to do it... should implement a kind of LinkedListSet someday
+		
+		// remove the motive before actually re-adding it. It's safe to do,
+		// even if it is not in yet
+		managedMotives.add(motive);
 	}
 
 	/*
@@ -270,9 +297,6 @@ public class PlanAllManager extends MotiveManager {
 	 */
 	@Override
 	protected void retractMotive(Motive motive) {
-		log("someone decided this motive has to be retracted... type is "
-				+ motive.getClass().getSimpleName());
-		log("motive is retracted: " + ((ExploreMotive) motive).placeID);
 		managedMotives.remove(motive);
 
 	}
