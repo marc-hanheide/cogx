@@ -19,21 +19,13 @@
 
 package binder.utils;
 
-import java.util.Enumeration;
-import java.util.Vector;
-
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
-import binder.autogen.core.PerceivedEntity;
-import binder.autogen.core.Proxy;
-import binder.autogen.core.Union;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
-import binder.autogen.specialentities.RelationProxy;
-import binder.autogen.specialentities.RelationUnion;
 
 /**
  * Generic utility methods for the binder
