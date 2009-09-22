@@ -120,7 +120,7 @@ public class InsertButtonListener extends BindingWorkingMemoryWriter implements 
 											if (subsubsubcompo.getName() != null && 
 													subsubsubcompo.getName().equals("featvalue")) {
 												StringValue stringval = 
-													new StringValue(0, System.currentTimeMillis(), ((JTextField)subsubsubcompo).getText());
+													new StringValue(0, getCASTTime(), ((JTextField)subsubsubcompo).getText());
 												value = stringval;
 												log("Feature value: " +  stringval.val);
 											}

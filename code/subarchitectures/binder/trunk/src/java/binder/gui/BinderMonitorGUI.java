@@ -42,6 +42,8 @@ import binder.utils.FeatureValueUtils;
 import binder.utils.GradientDescent;
 import binder.components.BinderMonitor;
 
+import cast.cdl.CASTTime;
+
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
@@ -144,8 +146,8 @@ public class BinderMonitorGUI extends JFrame
 	}
 	
 	
-	private String formatTimpestamp (long timestamp) {
-		return "" + ((timestamp-initTimestamp) / 1000.0);
+	private String formatTimpestamp (CASTTime timestamp) {
+		return "" + timestamp.s + "." + timestamp.us;
 	}
 	
 	
