@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Sep  1 13:23:23 2009
-#      by: PyQt4 UI code generator 4.4.4
+# Created: Tue Sep 22 14:20:48 2009
+#      by: PyQt4 UI code generator 4.4.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -172,13 +172,13 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
         self.tabWidget.setSizePolicy(sizePolicy)
         self.tabWidget.setObjectName("tabWidget")
-        self.tab = QtGui.QWidget()
-        self.tab.setObjectName("tab")
-        self.verticalLayout = QtGui.QVBoxLayout(self.tab)
+        self.tabLogs = QtGui.QWidget()
+        self.tabLogs.setObjectName("tabLogs")
+        self.verticalLayout = QtGui.QVBoxLayout(self.tabLogs)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.logfileCmbx = QtGui.QComboBox(self.tab)
+        self.logfileCmbx = QtGui.QComboBox(self.tabLogs)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(4)
         sizePolicy.setVerticalStretch(0)
@@ -187,24 +187,24 @@ class Ui_MainWindow(object):
         self.logfileCmbx.setMinimumSize(QtCore.QSize(200, 0))
         self.logfileCmbx.setObjectName("logfileCmbx")
         self.horizontalLayout_2.addWidget(self.logfileCmbx)
-        self.btLogViewAll = QtGui.QPushButton(self.tab)
+        self.btLogViewAll = QtGui.QPushButton(self.tabLogs)
         self.btLogViewAll.setObjectName("btLogViewAll")
         self.horizontalLayout_2.addWidget(self.btLogViewAll)
-        self.btLogViewControl = QtGui.QPushButton(self.tab)
+        self.btLogViewControl = QtGui.QPushButton(self.tabLogs)
         self.btLogViewControl.setObjectName("btLogViewControl")
         self.horizontalLayout_2.addWidget(self.btLogViewControl)
         spacerItem7 = QtGui.QSpacerItem(88, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem7)
-        self.ckShowFlushMsgs = QtGui.QCheckBox(self.tab)
+        self.ckShowFlushMsgs = QtGui.QCheckBox(self.tabLogs)
         self.ckShowFlushMsgs.setObjectName("ckShowFlushMsgs")
         self.horizontalLayout_2.addWidget(self.ckShowFlushMsgs)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.mainLogfileTxt = QtGui.QTextEdit(self.tab)
+        self.mainLogfileTxt = QtGui.QTextEdit(self.tabLogs)
         self.mainLogfileTxt.setUndoRedoEnabled(False)
         self.mainLogfileTxt.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.mainLogfileTxt.setObjectName("mainLogfileTxt")
         self.verticalLayout.addWidget(self.mainLogfileTxt)
-        self.tabWidget.addTab(self.tab, "")
+        self.tabWidget.addTab(self.tabLogs, "")
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.tab_2)
@@ -341,7 +341,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 27))
         self.menubar.setObjectName("menubar")
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName("menuCast")
@@ -355,6 +355,10 @@ class Ui_MainWindow(object):
         self.actOpenClientConfig.setObjectName("actOpenClientConfig")
         self.actOpenPlayerConfig = QtGui.QAction(MainWindow)
         self.actOpenPlayerConfig.setObjectName("actOpenPlayerConfig")
+        self.actShowEnv = QtGui.QAction(MainWindow)
+        self.actShowEnv.setObjectName("actShowEnv")
+        self.menuCast.addAction(self.actShowEnv)
+        self.menuCast.addSeparator()
         self.menuCast.addAction(self.actQuit)
         self.menubar.addAction(self.menuCast.menuAction())
 
@@ -381,7 +385,7 @@ class Ui_MainWindow(object):
         self.btLogViewAll.setText(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
         self.btLogViewControl.setText(QtGui.QApplication.translate("MainWindow", "Control", None, QtGui.QApplication.UnicodeUTF8))
         self.ckShowFlushMsgs.setText(QtGui.QApplication.translate("MainWindow", "Show Flushed", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Logs", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLogs), QtGui.QApplication.translate("MainWindow", "Logs", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Client", None, QtGui.QApplication.UnicodeUTF8))
         self.label_14.setText(QtGui.QApplication.translate("MainWindow", "Run on host", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Configuration", None, QtGui.QApplication.UnicodeUTF8))
@@ -403,4 +407,5 @@ class Ui_MainWindow(object):
         self.actQuit.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
         self.actOpenClientConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Client Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.actOpenPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Player Configuration", None, QtGui.QApplication.UnicodeUTF8))
+        self.actShowEnv.setText(QtGui.QApplication.translate("MainWindow", "Show ENV", None, QtGui.QApplication.UnicodeUTF8))
 
