@@ -18,7 +18,10 @@ import binder.autogen.core.Proxy;
 // COMSYS imports
 // -------------------------------------------------------
 
+import comsys.datastructs.lf.LFNominal; 
+import comsys.datastructs.lf.LFRelation; 
 import comsys.datastructs.lf.LogicalForm; 
+import comsys.lf.utils.LFUtils;
 import comsys.processing.reference.ProxyFactory;
 import comsys.processing.reference.ProxyResults;
 
@@ -53,7 +56,7 @@ public class ThingProxy
 			} // end if
 		} // end while
 		// Add the resulting proxy
-		prxs.addProxy(prx, lf.nomVar);
+		prxs.addProxy(prx, lf.root.nomVar);
 		// return the result
 		return prxs; 
 	} // end method
