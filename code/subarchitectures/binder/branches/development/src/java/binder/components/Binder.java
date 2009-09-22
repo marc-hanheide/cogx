@@ -524,7 +524,7 @@ public class Binder extends ManagedComponent  {
 		for (Enumeration<UnionConfiguration> e = configs.elements() ; e.hasMoreElements(); ) {
 
 			UnionConfiguration config = e.nextElement();				
-
+ 
 			for (int i = 0 ; i < config.includedUnions.length; i++) {
 				
 				config.includedUnions[i].distribution = 

@@ -60,9 +60,9 @@ public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {
 
 		for (Enumeration<Union> e = unions.elements(); e.hasMoreElements() ; ) {
 			Union curU = e.nextElement();
-	//		log("confidence score for "  + curU.entityID + " is: "  + curU.confidenceScore);
-			if (curU.confidenceScore > maxValue) {
-				maxValue = curU.confidenceScore;
+	//		log("confidence score for "  + curU.entityID + " is: "  + curU.probExists);
+			if (curU.probExists > maxValue) {
+				maxValue = curU.probExists;
 				maxUnion = curU;
 			}
 		}

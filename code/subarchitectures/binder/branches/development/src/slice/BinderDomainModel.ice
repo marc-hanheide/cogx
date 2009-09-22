@@ -37,7 +37,7 @@ module beliefmodel {
 				
 	class UncertainSuperFormula extends SuperFormula { 
 		float unc;
-	}; 
+	};  
 		
 	// The class LogicalSuperFormula extends the supertype with a boolean value
 	
