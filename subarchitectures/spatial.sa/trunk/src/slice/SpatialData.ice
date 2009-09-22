@@ -292,7 +292,7 @@ module SpatialData {
    * @author Alper Aydemir
    * @see
    */	
-  struct AVSCommand {
+  class AVSCommand {
     PlaceIDSeq placestosearch;
     AVSAction cmd;
   };
