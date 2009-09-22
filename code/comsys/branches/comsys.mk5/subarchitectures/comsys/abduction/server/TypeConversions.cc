@@ -138,18 +138,16 @@ Agent
 stringToAgent(const char * s)
 {
 	if (strcmp(s, "h") == 0) {
-//`		cerr << "human" << endl;
+		//cerr << "human" << endl;
 		return Human;
 	}
+	else if (strcmp(s, "r") == 0) {
+		//cerr << "robot" << endl;
+		return Robot;
+	}
 	else {
-		if (strcmp(s, "r") == 0) {
-//			cerr << "robot" << endl;
-			return Robot;
-		}
-		else {
-			cerr << "unknown agent in stringToAgent: \"" << s << "\"" << endl;
-			return Robot;
-		}
+		cerr << "unknown agent in stringToAgent: \"" << s << "\"" << endl;
+		return Robot;
 	}
 }
 
@@ -162,70 +160,60 @@ MR_WordToModality(MR_Word w)
 //	print_modality(w);
 
 	if (is_modality_event(w)) {
-//		cerr << "cc: event" << endl;
+		//cerr << "cc: event" << endl;
 		ModalityPtr m = new Modality();
 		m->type = Event;
 		return m;
 	}
-	else {
-		if (is_modality_info(w)) {
-//			cerr << "cc: info" << endl;
-			ModalityPtr m = new Modality();
-			m->type = Info;
-			return m;
+	else if (is_modality_info(w)) {
+		//cerr << "cc: info" << endl;
+		ModalityPtr m = new Modality();
+		m->type = Info;
+		return m;
+	}
+	else if (is_modality_att(w)) {
+		//cerr << "cc: att" << endl;
+		ModalityPtr m = new Modality();
+		m->type = AttState;
+		return m;
+	}
+	else if (is_modality_k(w, &w_bel)) {
+		//cerr << "cc: k" << endl;
+		KModalityPtr km = new KModality();
+		km->type = K;
+
+		char * s1;
+		char * s2;
+
+		MR_Word w_strlist;
+
+		if (is_belief_private(w_bel, &s1)) {
+			//cerr << "private " << s1 << endl;
+			km->share = Private;
+			km->act = stringToAgent(s1);
+		}
+		else if (is_belief_attrib(w_bel, &s1, &s2)) {
+			//cerr << "attrib " << s1 << " -> " << s2 << endl;
+			km->share = Attribute;
+			km->act = stringToAgent(s1);
+			km->pat = stringToAgent(s2);
+		}
+		else if (is_belief_mutual(w_bel, &w_strlist)) {
+			//cerr << "mutual" << endl;
+			// XXX this!!
+			km->share = Mutual;
+			km->act = Human;
+			km->act = Robot;
 		}
 		else {
-			if (is_modality_att(w)) {
-//				cerr << "cc: att" << endl;
-				ModalityPtr m = new Modality();
-				m->type = AttState;
-				return m;
-			}
-			else {
-				if (is_modality_k(w, &w_bel)) {
-//					cerr << "cc: k" << endl;
-					KModalityPtr km = new KModality();
-					km->type = K;
-
-					char * s1;
-					char * s2;
-
-					MR_Word w_strlist;
-
-					if (is_belief_private(w_bel, &s1)) {
-//						cerr << "private " << s1 << endl;
-						km->share = Private;
-						km->act = stringToAgent(s1);
-					}
-					else {
-						if (is_belief_attrib(w_bel, &s1, &s2)) {
-//							cerr << "attrib " << s1 << " -> " << s2 << endl;
-							km->share = Attribute;
-							km->act = stringToAgent(s1);
-							km->pat = stringToAgent(s2);
-						}
-						else {
-							if (is_belief_mutual(w_bel, &w_strlist)) {
-//								cerr << "mutual" << endl;
-								// XXX this!!
-								km->share = Mutual;
-								km->act = Human;
-								km->act = Robot;
-							}
-							else {
-								cerr << "unknown belief!" << endl;
-								return 0;
-							}
-						}
-					}
-					return km;
-				}
-				else {
-					cerr << "unknown modality!" << endl;
-					return 0;
-				}
-			}
+			cerr << "unknown belief!" << endl;
+			return 0;
 		}
+		return km;
+	}
+	else {
+		cerr << "unknown modality!" << endl;
+		return 0;
 	}
 }
 
