@@ -181,7 +181,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     try:
       newtask.goal = task._mapltask.goal.copy(newtask)
     except KeyError:
-      newtask.goal = mapl.conditions.Falsity
+      newtask.goal = mapl.conditions.Falsity()
     
     task._mapltask = newtask
 
