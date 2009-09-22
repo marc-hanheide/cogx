@@ -12,8 +12,9 @@ package comsys.processing.reference;
 // BINDER imports
 // -------------------------------------------------------
 
+import binder.autogen.core.OriginInfo; 
 import binder.autogen.core.Proxy; 
-import binder.autogen.core.RelationProxy; 
+import binder.autogen.specialentities.RelationProxy; 
 
 // -------------------------------------------------------
 // JAVA imports
@@ -33,8 +34,8 @@ public class ProxyResults {
 	
 	
 	public void addProxy (Proxy prx, String nomVar) { 
-		proxyMap.put(prx.entityId, prx);
-		nominalsMap.put(nomVar,prx.entityId);
+		proxyMap.put(prx.entityID, prx);
+		nominalsMap.put(nomVar,prx.entityID);
 	} // end method
 	
 	public void addRelationProxy (RelationProxy rprx) { 
