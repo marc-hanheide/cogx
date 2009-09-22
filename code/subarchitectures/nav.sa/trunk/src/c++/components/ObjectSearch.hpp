@@ -30,6 +30,7 @@ class ObjectSearch : public cast::ManagedComponent,
     void receiveScan2d(const Laser::Scan2d &castScan);
     void receiveOdometry(const Robotbase::Odometry &castOdom);
     void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+    long GetClosestFNode(double xW, double yW);
 	std::vector<int> tpoints;
      struct SearchPlan{
     	std::vector<Cure::Pose3D> plan;
@@ -59,6 +60,7 @@ class ObjectSearch : public cast::ManagedComponent,
     bool firstscanreceived;
     bool runObjectSearch;
     int whereinplan;
+    NavData::FNodeSequence fnodeseq;
     std::string id;
     Cure::LocalGridMap<unsigned int>* coveragemap;
 	Cure::LocalGridMap<float>* pdf;
@@ -118,6 +120,7 @@ enum ObjSearchCommand {
     void ObjectDetected(const cast::cdl::WorkingMemoryChange &objID);
     void PostRecognitionCommand();
 	SearchPlan GeneratePlan(double covpercent,std::vector<double> PDFsum);    
+	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
     void GenViewPoints();
     std::vector<double> ScorebyPDF();
     void UpdateDisplays();
