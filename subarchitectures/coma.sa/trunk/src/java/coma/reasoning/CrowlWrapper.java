@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import Ice.Logger;
-
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
