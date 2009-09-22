@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<!-- Videre Desgin STH-DCSG-VAR variable baseline stereo camera -->
+
+<!-- Copyright 2008 Centre for Autonomous Systems (CAS), KTH.
+
+     Licensed under the Creative Commons Atrribution-Share Alike 3.0 license,
+     http://creativecommons.org/licenses/by-sa/3.0/
+     
+     If you distribute this work, include a credit text along with the work. -->
+
+<scene>
+  <model>
+    <file>sth_dcsg_var/frame.pbmf</file>
+    <name>frame</name>
+  </model>
+
+  <model>
+    <file>sth_dcsg_var/cam_left.pbmf</file>
+    <name>cam_left</name>
+    <transform>
+      <translate>0 -0.08 0</translate>
+    </transform>
+  </model>
+
+  <model>
+    <file>sth_dcsg_var/cam_right.pbmf</file>
+    <name>cam_right</name>
+    <transform>
+      <translate>0 0.08 0</translate>
+    </transform>
+  </model>
+</scene>
