@@ -12,7 +12,10 @@ package comsys.processing.reference.proxyfactories;
 // BINDER imports
 // -------------------------------------------------------
 
+import binder.autogen.core.Feature; 
+import binder.autogen.core.OriginInfo; 
 import binder.autogen.core.Proxy; 
+import binder.autogen.core.StringValue; 
 
 // -------------------------------------------------------
 // COMSYS imports
@@ -24,6 +27,13 @@ import comsys.datastructs.lf.LogicalForm;
 import comsys.lf.utils.LFUtils;
 import comsys.processing.reference.ProxyFactory;
 import comsys.processing.reference.ProxyResults;
+
+// -------------------------------------------------------
+// JAVA imports
+// -------------------------------------------------------
+
+import java.util.Iterator; 
+
 
 /**
 	Thing-proxy construction does 
@@ -43,7 +53,7 @@ public class ThingProxy
 		ProxyResults prxs = new ProxyResults();
 		// get the root
 		LFNominal root = lf.root; 
-		Proxy prx = createNewProxy("comsys", 1.0f);
+		Proxy prx = createNewProxy(new OriginInfo ("comsys", lf.root.nomVar, "lf"), 1.0f);
 		Iterator relsIter = LFUtils.lfNominalGetRelations(root); 
 		while (relsIter.hasNext()) { 
 			LFRelation rel = relsIter.next();
