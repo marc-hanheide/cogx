@@ -13,6 +13,7 @@ extern "C" {
 using namespace binder::autogen::core;
 using namespace binder::autogen::featvalues;
 using namespace cast;
+using namespace cast::cdl;
 
 
 void ExampleProxyPusher::start() {
@@ -27,7 +28,7 @@ void ExampleProxyPusher::runComponent() {
 
   //copied from fake visual thingy
     
-  OriginInfoPtr origin = createOriginInfo (getSubarchitectureID(), "blablabla", "anyDatatype");
+  WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), "blablabla", "anyDatatype");
   
   FeatureValuePtr relation = createStringValue ("relation", 0.8f);
   FeaturePtr feat1 = createFeatureWithUniqueFeatureValue ("type", relation);
