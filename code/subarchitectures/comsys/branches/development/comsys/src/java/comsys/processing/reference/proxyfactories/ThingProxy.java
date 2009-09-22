@@ -132,7 +132,7 @@ public class ThingProxy
 				results.addProxies(ownerResults.getProxies());
 			
 			
-
+			}
 			// return the results
 			return results;
 		} // end mapLocation
