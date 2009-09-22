@@ -12,7 +12,8 @@ MFILES=abducer-server.m MercuryAbducerServer_mint.m TypeConversions_mint.m
 #
 MCFLAGS?=--search-lib-files-dir ../lib \
 		--init-file ../lib/abducer.init \
-		--link-object ../lib/libabducer.a
+		--link-object ../lib/libabducer.a \
+		--cflag -g
 
 #------------------------------------------------------------------------------#
 
@@ -22,7 +23,7 @@ ICE_HOME=$(HOME)/Developer/Ice-3.3.1
 
 MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
 
-CXXFLAGS=-Wall
+CXXFLAGS=-Wall -g
 LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
 
 #------------------------------------------------------------------------------#
