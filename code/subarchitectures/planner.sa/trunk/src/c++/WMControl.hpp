@@ -46,13 +46,13 @@ protected:
     };
 
 private:
-    void sendStateChange(int id, std::vector<binder::autogen::core::UnionPtr>& changedUnions, long newTimeStamp, StateChangeFilterPtr* filter);
+  void sendStateChange(int id, std::vector<binder::autogen::core::UnionPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
     std::vector<binder::autogen::core::UnionPtr> m_currentState;
     std::map<int, StateChangeFilterPtr> m_stateFilters;
-    long m_lastUpdate;
+    cast::cdl::CASTTime m_lastUpdate;
 
     std::map<int, timeval> m_runqueue;
     boost::mutex m_queue_mutex;

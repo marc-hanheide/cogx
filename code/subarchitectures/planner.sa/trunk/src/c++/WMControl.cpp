@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace binder::autogen::core;
+using namespace cast::cdl;
 
 extern "C" {
     cast::CASTComponentPtr newComponent() {
@@ -19,7 +20,7 @@ static const int MAX_EXEC_RETRIES = 1;
 static const int REPLAN_DELAY = 3000;
 
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
-    m_lastUpdate = 0;
+  m_lastUpdate = getCASTTime();
     cast::ManagedComponent::configure(_config, _current);
 
     cast::cdl::StringMap::const_iterator it = _config.begin();
@@ -195,7 +196,8 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     UnionConfigurationPtr config = getMemoryEntry<UnionConfiguration>(wmc.address);
     log("Recevied state change...");
 
-    long timestamp = 0;
+    CASTTime timestamp;
+    bool first = true;
     m_currentState.clear();
     vector<UnionPtr> changed;
     for (UnionSequence::iterator i = config->includedUnions.begin(); 
@@ -204,7 +206,13 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         if ((*i)->timeStamp > m_lastUpdate) {
             changed.push_back(*i);
         }
-        if ((*i)->timeStamp > timestamp) {
+
+	
+	if(first) {
+	  timestamp =  (*i)->timeStamp;
+	  first = false;
+	}
+        else if ((*i)->timeStamp > timestamp) {
             timestamp = (*i)->timeStamp;
         }
     }
@@ -226,7 +234,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 }
 
 
-void WMControl::sendStateChange(int id, std::vector<UnionPtr>& changedUnions, long newTimeStamp, StateChangeFilterPtr* filter) {
+void WMControl::sendStateChange(int id, std::vector<UnionPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     /*if (task->planningStatus == INPROGRESS) {
