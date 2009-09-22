@@ -19,7 +19,6 @@
 
 package binder.abstr;
 
-import java.util.HashMap;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
@@ -30,10 +29,7 @@ import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
-import cast.AlreadyExistsOnWMException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
@@ -52,7 +48,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	// =================================================================
 	// METHODS FOR CREATING NEW PROXIES
 	// =================================================================
-   
+     
 	/**
 	 * ID in current SA where origin map is stored.
 	 */
