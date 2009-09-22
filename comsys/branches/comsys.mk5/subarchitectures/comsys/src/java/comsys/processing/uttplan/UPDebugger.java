@@ -434,8 +434,8 @@ public class UPDebugger
 	String usage = "Utterance Planner Debugger v."+version+"\n"
 	                        +"Command line options:\n"
 	                        +"-help, -usage: this message\n"
-	                        +"-grammar <file>: load the planning grammar <file>\n";
-							+"-ccg <file>: load the realizer grammar <file>\n";
+	                        +"-grammar <file>: load the planning grammar <file>\n"
+							+"-ccg <file>: load the realizer grammar <file>\n"
 							+"-redux <file>: load <fiile> listing the LF features not recognized by the realizer \n";
 		// There also used to be command line arg -ngrams for the realizer
 		
