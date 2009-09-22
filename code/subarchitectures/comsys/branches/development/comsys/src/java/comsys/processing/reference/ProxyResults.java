@@ -36,8 +36,8 @@ public class ProxyResults {
 	
 	public void addProxy (Proxy prx) { 
 		proxyMap.put(prx.entityID, prx);
-		NomtoId.put(prx.origin.id,prx.entityID);
-		IDtoNom.put(prx.entityID, prx.origin.id);
+		NomtoID.put(prx.origin.address.id,prx.entityID);
+		IDtoNom.put(prx.entityID, prx.origin.address.id);
 	} // end method
 	
 	public void addProxies (ProxyResults results) { 
@@ -45,12 +45,16 @@ public class ProxyResults {
 			Proxy prx = proxyIter.next();
 			this.addProxy(prx);
 		} // end for
+	} // end method
+		
+	public void addRelationProxies (ProxyResults results) { 		
 		for (Iterator<RelationProxy> rproxyIter = results.getRelationProxies(); rproxyIter.hasNext(); ) { 
 			RelationProxy rprx = rproxyIter.next();
 			this.addRelationProxy(rprx);
 		} // end for
 	} // end method
 	
+
 	public void addRelationProxy (RelationProxy rprx) { 
 		proxyRelations.add(rprx);
 	} // end method

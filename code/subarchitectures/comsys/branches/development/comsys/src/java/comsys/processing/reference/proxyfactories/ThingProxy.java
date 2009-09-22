@@ -140,7 +140,7 @@ public class ThingProxy
 			// construct the results
 			results.addProxies(ownerResults);
 			results.addRelationProxies(ownerResults);
-			results.addRelation(rprx);
+			results.addRelationProxy(rprx);
 			// return the results
 			return results;
 		} // end mapLocation
