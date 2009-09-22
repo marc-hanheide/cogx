@@ -191,6 +191,7 @@ MR_WordToModality(MR_Word w)
 			//cerr << "private " << s1 << endl;
 			km->share = Private;
 			km->act = stringToAgent(s1);
+			km->pat = Human; // so that it isn't uninitialised
 		}
 		else if (is_belief_attrib(w_bel, &s1, &s2)) {
 			//cerr << "attrib " << s1 << " -> " << s2 << endl;
@@ -209,6 +210,9 @@ MR_WordToModality(MR_Word w)
 			cerr << "unknown belief!" << endl;
 			return 0;
 		}
+		//cerr << "share = " << km->share << endl;
+		//cerr << "act = " << km->act << endl;
+		//cerr << "pat = " << km->pat << endl;
 		return km;
 	}
 	else {
