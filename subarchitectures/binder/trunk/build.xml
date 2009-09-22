@@ -49,7 +49,7 @@
 	 		 <fileset dir="${slice.dir}" includes="BeliefModels.ice"/>
 	 		<fileset dir="${slice.dir}" includes="BinderDomainModel.ice"/>
 	     <includepath> 
-               <pathelement path="${slice.dir}:/usr/local/share/cast/slice"/> 
+               <pathelement path="${slice.dir}:/usr/local/share/cast/slice:../../tools/beliefmodels/src/slice"/> 
 	     </includepath> 
 	   </slice2java> 
 	 </target> 
