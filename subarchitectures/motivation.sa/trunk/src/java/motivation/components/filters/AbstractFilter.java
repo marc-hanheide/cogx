@@ -3,8 +3,13 @@
  */
 package motivation.components.filters;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
+import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -22,6 +27,8 @@ import cast.cdl.WorkingMemoryPermissions;
  */
 public abstract class AbstractFilter extends ManagedComponent {
 	
+	WorkingMemoryChangeReceiver receiver;
+	
 	protected AbstractFilter() {
 		super();
 	}
@@ -34,7 +41,7 @@ public abstract class AbstractFilter extends ManagedComponent {
 		// TODO Auto-generated method stub
 		super.start();
 		
-		WorkingMemoryChangeReceiver receiver = new WorkingMemoryChangeReceiver() {
+		receiver = new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				// avoid self calls
 				if (_wmc.src.equals(getComponentID()))
@@ -99,6 +106,21 @@ public abstract class AbstractFilter extends ManagedComponent {
 
 	}
 
+	protected void checkAll() throws CASTException {
+		List<ExploreMotive> motives;
+		motives=new LinkedList<ExploreMotive>();
+		getMemoryEntries(ExploreMotive.class, motives);
+		// trigger them all by overwriting them
+		for (Motive m:motives) {
+			log("  motive to be triggered: "+m.thisEntry.id);
+			WorkingMemoryChange wmc=new WorkingMemoryChange();
+			wmc.address=m.thisEntry;
+			wmc.operation=WorkingMemoryOperation.OVERWRITE;
+			wmc.src="explicit self-trigger";
+			receiver.workingMemoryChanged(wmc);
+		}
+	}
+	
 	/**
 	 * @param motive
 	 * @return
