@@ -32,6 +32,19 @@ def qtImageThumbFromIpl(image, height=120):
     #return pix
     return thumb
 
-def cvImageFromQt(qtImage):
+def ndArrayFromQtImage(qtImage):
     bits = qtImage.bits()
-    pass
+    bits.setsize(qtImage.numBytes())
+    bits = buffer(bits)
+    # FIXME: assuming RGBA -> 4; test: w*h*c = numBytes
+    h, w = qtImage.height(), qtImage.width()
+    nchn = 4
+    if nchn == 4:
+        arr = np.ndarray(shape=(h, w, nchn), dtype=np.uint8, buffer=bits)
+        arr = arr[:,:,:3]
+        return arr
+    elif nchn == 1:
+        arr = np.ndarray(shape=(h, w), dtype=np.uint8, buffer=bits)
+        return arr
+    return None
+
