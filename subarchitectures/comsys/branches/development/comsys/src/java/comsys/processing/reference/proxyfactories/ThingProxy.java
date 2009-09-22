@@ -13,10 +13,10 @@ package comsys.processing.reference.proxyfactories;
 // -------------------------------------------------------
 
 import binder.autogen.core.Feature; 
-import binder.autogen.core.OriginInfo; 
 import binder.autogen.core.Proxy; 
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.StringValue; 
+import binder.autogen.specialentities.RelationProxy; 
 
 // -------------------------------------------------------
 // COMSYS imports
@@ -37,102 +37,114 @@ import java.util.Iterator;
 
 
 /**
-	Thing-proxy construction does 
-*/ 
+ Thing-proxy construction does 
+ */ 
 
 
 public class ThingProxy 
-		extends AbstractProxyFactory 
-{
-
-	private String sort = "thing";
-	
-	public String getSort () { return sort; }
-	
-	public ProxyResults constructProxy (LogicalForm lf) { 
-		assert lf.root.sort.equals("thing");
-		ProxyResults prxs = new ProxyResults();
-		// get the root
-		LFNominal root = lf.root; 
-		// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
-		Proxy prx = createNewProxy(new OriginInfo ("comsys", lf.root.nomVar, "lf"), 1.0f);
-		prx.addFeatureToProxy(prx, createFeatureWithUniqueFeatureValue ("proposition", createStringValue (root.prop.prop, 1.0f)));
-		prx.addFeatureToProxy(prx, createFeatureWithUniqueFeatureValue ("sort", createStringValue (root.sort, 1.0f)));		
-		// iterate over the relations, and add the content
-		Iterator<LFRelation> relsIter = LFUtils.lfNominalGetRelations(root); 
-		while (relsIter.hasNext()) { 
-			LFRelation rel = relsIter.next();
-			if (rel.mode.equals("Modifier")) { 
-				LFNominal mod = LFUtils.lfGetNominal(lf,rel.dep);
-				// check whether we have a quality
-				if (mod.sort.startsWith("q-")) {
-					prx = mapQualityModifier(prx,mod);
-				} else if (mod.sort.equals("m-location")) {		
-
-					
-			} else if (rel.mode.equals("Owner")) {
+	extends AbstractProxyFactory 
+	{
+		
+		private String sort = "thing";
+		
+		public String getSort () { return sort; }
+		
+		public ProxyResults constructProxy (LogicalForm lf) { 
+			assert lf.root.sort.equals("thing");
+			ProxyResults prxs = new ProxyResults();
+			// get the root
+			LFNominal root = lf.root; 
+			// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
+			Proxy prx = createNewProxy(createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf"), 1.0f);
+			prx = addFeatureToProxy(prx, createSimpleFeature ("proposition", root.prop.prop));
+			prx = addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort));		
+			// iterate over the relations, and add the content
+			Iterator<LFRelation> relsIter = LFUtils.lfNominalGetRelations(root); 
+			while (relsIter.hasNext()) { 
+				LFRelation rel = relsIter.next();
+				if (rel.mode.equals("Modifier")) { 
+					LFNominal mod = LFUtils.lfGetNominal(lf,rel.dep);
+					// check whether we have a quality
+					if (mod.sort.startsWith("q-")) {
+						prx = mapQualityModifier(prx,mod);
+					} else if (mod.sort.equals("m-location")) {		
+						
+					}
+				} else if (rel.mode.equals("Owner")) {
 					ProxyResults prxresults = mapOwner(prx, lf, rel.head, rel.dep);		  
 					
-				
-				
-			} else {
-							  
-			} // end if..else
-		} // end while
-		// Add the resulting proxy
-		prxs.addProxy(prx, lf.root.nomVar);
-		// return the result
-		return prxs; 
-	} // end method
-	
-	
-	private Proxy mapQualityModifier (Proxy prx, LFNominal mod) { 
-		String feature = null;
-		String value   = null; 
-		if (mod.sort.equals("q-color")) { feature = "color"; value = mod.prop.prop; } 
-		if (mod.sort.equals("q-shape")) { feature = "shape"; value = mod.prop.prop; } 
-		if (mod.sort.equals("q-size"))  { feature = "size"; value = mod.prop.prop; } 
-		assert value != null && feature != null; 
-		StringValue strValue = createStringValue (value, 1.0f);
-		Feature prxFeature = createFeatureWithUniqueFeatureValue (feature, strValue);
-		prx = addFeatureToProxy (prx, prxFeature);
-		return prx; 
-	} // end mapQualityModifier
-	
-	
-	
-	private ProxyResults mapLocation (LogicalForm lf, String nomVar) {  
-	
-	
-	
-	} // end mapLocation
-	
-	
-	private ProxyResults mapOwner (Proxy head, LogicalForm lf, String headVar, String depVar) { 
-		// Construct the proxy for the owner
-		LFNominal owner = LFUtils.lfGetNominal(lf,nomVar);
-		Proxy prx = createNewProxy(new OriginInfo ("comsys", depVar, "lf"), 1.0f);
-		prx.addFeatureToProxy(prx, createFeatureWithUniqueFeatureValue ("proposition", createStringValue (owner.prop.prop, 1.0f)));
-		prx.addFeatureToProxy(prx, createFeatureWithUniqueFeatureValue ("sort", createStringValue (owner.sort, 1.0f)));		
-		// Construct the relation between the head and the owner
-		AddressValue[] sources = createAddressValueArray(createNewAddressValue(head.entityID, 1.0f));
-		AddressValue[] targets = createAddressValueArray(createNewAddressValue(prx.entityID, 1.0f));
-		RelationProxy rprx = createNewRelationProxy(new OriginInfo("comsys", headVar, "lf"), 1.0f, sources, targets);		
-		// Construct the results;
-		ProxyResults results = new ProxyResults();
-		results.addProxy(prx);
-		results.addRelationProxy(rprx);
-		return results;
-	} // end mapOwner
-	
-	private AddressValue[] createAddressValueArray (AddressValue addr) { 	
-		AddressValue[] addressarray = new AddressValue[1];
-		addressarray[0] = addr;
-		return addressarray;
-	} // end method
+				} // end if..else
+			} // end while
+			// Add the resulting proxy
+			prxs.addProxy(prx, lf.root.nomVar);
+			// return the result
+			return prxs; 
+		} // end method
+		
+		/**
+		 mapQualityModifier takes a modifier of sort q-color, q-shape, or q-size. The method creates 
+		 a feature based on the sort (color, shape, size) and then adds the proposition as value. This
+		 feature is then added to the proxy (provided as argument). The updated proxy is returned. 
+		 
+		 @param prx The proxy to be updated
+		 @param mod The nominal containing the (quality) information to be added as feature
+		 @returns Proxy The updated proxy
+		 */ 
+		
+		private Proxy mapQualityModifier (Proxy prx, LFNominal mod) { 
+			String feature = null;
+			String value   = null; 
+			if (mod.sort.equals("q-color")) { feature = "color"; value = mod.prop.prop; } 
+			if (mod.sort.equals("q-shape")) { feature = "shape"; value = mod.prop.prop; } 
+			if (mod.sort.equals("q-size"))  { feature = "size"; value = mod.prop.prop; } 
+			assert value != null && feature != null; 
+			prx = addFeatureToProxy (prx, createSimpleFeature(feature,value));
+			return prx; 
+		} // end mapQualityModifier
 		
 		
-} // end class
+		/**
+		 mapLocation
+		 
+		 */ 
+		
+		private ProxyResults mapLocation (Proxy head, LogicalForm lf, String headVar, String depVar) {  
+			
+			
+			
+			// construct the results
+			ProxyResults results = new ProxyResults();
+			// return the results
+			return results;
+		} // end mapLocation
+		
+		/**
+		 mapOwner 
+		 
+		 */ 
+		
+		
+		private ProxyResults mapOwner (Proxy head, LogicalForm lf, String headVar, String depVar) { 
+			// Construct the proxy for the owner
+			LFNominal owner = LFUtils.lfGetNominal(lf,depVar);
+			Proxy prx = createNewProxy(createWorkingMemoryPointer("comsys", depVar, "lf"), 1.0f);
+			prx = addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop));
+			prx = addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort));		
+			// Construct the relation between the head and the owner
+			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
+			AddressValue[] targets = createAddressValueArray(createAddressValue(prx.entityID, 1.0f));
+			RelationProxy rprx = createNewRelationProxy(createWorkingMemoryPointer("comsys", headVar, "lf"), 1.0f, sources, targets);		
+			// Construct the results;
+			ProxyResults results = new ProxyResults();
+			results.addProxy(prx, depVar);
+			results.addRelationProxy(rprx);
+			return results;
+		} // end mapOwner
+		
+		
+		
+		
+	} // end class
 
 
 

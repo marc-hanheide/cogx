@@ -33,5 +33,15 @@ public abstract class AbstractProxyFactory
 
 	abstract public ProxyResults constructProxy (LogicalForm lf); 
 
-
+	protected AddressValue[] createAddressValueArray (AddressValue addr) { 	
+		AddressValue[] addressarray = new AddressValue[1];
+		addressarray[0] = addr;
+		return addressarray;
+	} // end method
+	
+	protected Feature createSimpleFeature (String feature, String value) {
+	    return createFeatureWithUniqueFeatureValue (feature, createStringValue (value, 1.0f)); 
+	} 
+	
+	
 }
