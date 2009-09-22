@@ -52,6 +52,7 @@ vector< vector< Vector3 > > BGPointsSeq;
 vector< vector< Vector3 > > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
+bool mbDrawWireSphere;
 
 
 void InitWin()
@@ -110,6 +111,8 @@ void InitWin()
   col_overlay[1] = 1.0;
   col_overlay[2] = 0.0;
   col_overlay[3] = 1.0;
+
+  mbDrawWireSphere = true;
 }
 
 void ResizeWin(int w, int h)
@@ -368,7 +371,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 
 	for (int i = 0; i<objnumber; i++)
 	{
-		DrawWireSphere(center.at(i),radius_world.at(i));
+		if (mbDrawWireSphere)	DrawWireSphere(center.at(i),radius_world.at(i));
 		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i));//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
@@ -444,10 +447,14 @@ void DisplayWin()
 void KeyPress(unsigned char key, int x, int y)
 {
   switch(key)
-  {
+  {/*
     case 'q':
       // a slightly harsh way to end a program ...
       exit(EXIT_SUCCESS);
+      break;*/
+    case 's':
+	{if (mbDrawWireSphere) mbDrawWireSphere = false;
+	 else mbDrawWireSphere = true;}
       break;
     default:
       break;
@@ -514,7 +521,7 @@ void PlanePopOut::start()
 void PlanePopOut::runComponent()
 {	
   while(isRunning())
-  {
+  {//cout<<"mbDrawWireSphere = "<<mbDrawWireSphere<<endl;
 	std::vector<Vector3> tempPoints = points;
 	points.resize(0);
 	getPoints(points);
@@ -822,7 +829,7 @@ double PlanePopOut::Calc_SplitThreshold(std::vector<Vector3> &points, std::vecto
 			if (v3Obj.z<min_z) min_z = v3Obj.z;
 		}
 	}
-	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/50;
+	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/40;
 }
 
 SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI, std::vector< Vector3 > EQpIn1SOI)
