@@ -125,14 +125,22 @@ public class ThingProxy
 			LFNominal owner = LFUtils.lfGetNominal(lf, ownerRel.dep);
 			assert owner != null; 
 			// now construct the proxy for the owner
-			ProxyResults ownerResults = new ProxyResults();
-			if (owner.sort.equals("thing")) { 
-				ownerLF = LFUtils.lfConstructSubtree(owner,lf);
-				ownerResults = constructProxy(ownerLF);
-				results.addProxies(ownerResults.getProxies());
-			
-			
-			}
+			ProxyResults ownerResults = null;
+			if (owner.sort.equals("thing") | owner.sort.equals("e-place")) { 
+				LogicalForm ownerLF = LFUtils.lfConstructSubtree(owner,lf);
+				ownerResults = this.constructProxy(ownerLF);
+			} // end if..	
+			assert ownerResults != null;	
+			Proxy ownerProxy = ownerResults.getProxyByNom(owner.nomVar); 
+			assert ownerProxy != null; 
+			// construct the relation between the head and the owner directly
+			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
+			AddressValue[] targets = createAddressValueArray(createAddressValue(ownerProxy.entityID, 1.0f));
+			RelationProxy rprx = createNewRelationProxy(createWorkingMemoryPointer("comsys", headVar, "lf"), 1.0f, sources, targets);
+			// construct the results
+			results.addProxies(ownerResults);
+			results.addRelationProxies(ownerResults);
+			results.addRelation(rprx);
 			// return the results
 			return results;
 		} // end mapLocation

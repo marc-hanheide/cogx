@@ -27,13 +27,17 @@ import java.util.Vector;
 
 public class ProxyResults {
 
-	
 	private HashMap proxyMap = new HashMap();
+	private HashMap IDtoNom  = new HashMap();
+	private HashMap NomtoID  = new HashMap();
+	
 	private Vector proxyRelations = new Vector();
 	
 	
 	public void addProxy (Proxy prx) { 
 		proxyMap.put(prx.entityID, prx);
+		NomtoId.put(prx.origin.id,prx.entityID);
+		IDtoNom.put(prx.entityID, prx.origin.id);
 	} // end method
 	
 	public void addProxies (ProxyResults results) { 
@@ -59,7 +63,7 @@ public class ProxyResults {
 		return (Iterator<RelationProxy>) proxyRelations.iterator();
 	} // end method
 	
-	
+	public Proxy getProxyByNom (String nom) { (Proxy) NomtoID.get(nom); }
 	
 	
 	
