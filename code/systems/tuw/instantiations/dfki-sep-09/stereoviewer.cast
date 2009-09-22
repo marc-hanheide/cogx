@@ -1,0 +1,18 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+# reading stored images
+COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "instantiations/dfki-sep-09/test/table1-%03d-L.jpg instantiations/dfki-sep-09/test/table1-%03d-R.jpg" --start 0 --end 0 --framerate_ms 1000
+
+# live images
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "instantiations/dfki-sep-09/stereo.ini:L instantiations/dfki-sep-09/stereo.ini:R"
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig instantiations/dfki-sep-09/stereo.ini --display
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname stereo --videoname video --camids 0
+
