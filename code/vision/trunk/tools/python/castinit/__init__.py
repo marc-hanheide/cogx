@@ -1,30 +1,30 @@
 #!/usr/bin/env python
-# vim:set fileencoding=utf-8 sw=4 ts=8 et:
+# vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 # @author:  Marko Mahnič
 # @created: jun 2009 
 
-import sys, os, os.path
+import sys, os
 __INITIALIZER = None
+thisDir = os.path.dirname(__file__)
+castPythonDir = os.path.abspath(os.path.join(thisDir, ".."))
 
-class __Initializer:
+class _Initializer:
     def __init__(self):
         pass
 
     def addSysPath(self, fn):
         try: i = sys.path.index(fn)
         except ValueError:
+            # path not in sys.path, so we add it
             sys.path.insert(0, fn)
-            print fn
+            print "python: sys.path +=", os.path.basename(fn)
 
     def addPythonZipLibs(self):
-        # TODO: Should python_path be used?
-        try: v = os.environ["SA_DIR"]
-        except: v = "."
-        fp = os.path.abspath("%s/output/python" % v)
+        fp = castPythonDir
         for name in os.listdir(fp):
             if not name.endswith(".pylib"): continue
             self.addSysPath(os.path.join(fp, name))
 
 if __INITIALIZER == None:
-    __INITIALIZER = __Initializer()
+    __INITIALIZER = _Initializer()
     __INITIALIZER.addPythonZipLibs()
