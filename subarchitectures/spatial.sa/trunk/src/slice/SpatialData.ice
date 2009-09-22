@@ -104,7 +104,6 @@ module SpatialData {
     long placeID;
     double prob;
   };
-
   sequence<PlaceProbability> PlaceProbSeq;
 
   /**
@@ -277,7 +276,26 @@ module SpatialData {
     // Field that tells if the command is in progress, still pending, etc
     Completion comp;
   };
+  
+  /**
+   * Commands for visual search
+   * 
+   * @author Alper Aydemir
+   * @see
+   */
+  enum AVSAction {PLAN,	//Plan and then execute the generated plan
+    			 STOPAVS};	// Stop the execution of a plan (not pause)
+	
+  /**
+   * Command structure for visual search
+   * 
+   * @author Alper Aydemir
+   * @see
+   */	
+  struct AVSCommand {
+    PlaceIDSeq placestosearch;
+    AVSAction cmd;
+  };
 
 };
-
 #endif // SPATIALDATA_ICE
