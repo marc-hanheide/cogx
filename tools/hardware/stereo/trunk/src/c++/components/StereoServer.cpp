@@ -33,6 +33,9 @@ using namespace cogx::Math;
 static const int STEREO_WIDTH = 160;
 static const int STEREO_HEIGHT = 120;
 
+static const int LEFT_CLEAR_BORDER_WIDTH = 35;
+static const int RIGHT_CLEAR_BORDER_WIDTH = 5;
+
 void StereoServerI::getPoints(Stereo::Vector3Seq& points, const Ice::Current&)
 {
   stereoSrv->getPoints(points);
@@ -220,6 +223,14 @@ void StereoServer::runComponent()
     // in case we are interested how blazingly fast the matching is :)
     // census.printTiming();
     census.getDisparityMap(rawDisp);
+    // HACK: clear the borders of the disparity image to get rid of odd values
+    cvRectangle(rawDisp, cvPoint(0, 0),
+        cvPoint(LEFT_CLEAR_BORDER_WIDTH -1, STEREO_HEIGHT - 1), cvScalarAll(0),
+        CV_FILLED);
+    cvRectangle(rawDisp, cvPoint(STEREO_WIDTH - RIGHT_CLEAR_BORDER_WIDTH, 0),
+        cvPoint(STEREO_WIDTH - 1, STEREO_HEIGHT - 1), cvScalarAll(0),
+        CV_FILLED);
+
     lockComponent();
     cvSmooth(rawDisp, disparityImg, CV_MEDIAN, 5);
     unlockComponent();
