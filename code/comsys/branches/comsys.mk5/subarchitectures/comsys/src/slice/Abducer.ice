@@ -30,17 +30,37 @@ module Abducer {
 	enum ModalityType {
 		Event,
 		Info,
-		AttState
+		AttState,
+		K
+	};
+
+	enum Agent {
+		Human,
+		Robot
+	};
+
+	enum Sharing {
+		Private,
+		Attribute,
+		Mutual
 	};
 
 	class Modality {
 		ModalityType type;
 	};
 
+	class KModality extends Modality {
+		Agent act;
+		Agent pat;
+		Sharing share;
+	};
+
+	sequence<Modality> ModalitySeq;
+
 	//-----------------------------------------------------------------
 
 	class ModalisedFormula {
-		Modality m;
+		ModalitySeq m;
 		Predicate p;
 	};
 

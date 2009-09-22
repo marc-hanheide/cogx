@@ -8,9 +8,9 @@ import Abducer.*;
 
 public class AbdUtils {
 
-	public static ModalisedFormula modFormula(ModalityType mt, Predicate p) {
+	public static ModalisedFormula modFormula(Modality[] ms, Predicate p) {
 		ModalisedFormula mf = new ModalisedFormula();
-		mf.m = new Modality(mt);
+		mf.m = ms;
 		mf.p = p;
 		return mf;
 	}
@@ -46,6 +46,18 @@ public class AbdUtils {
 		return t;
 	}
 
+	public static Modality modInfo() {
+		Modality m = new Modality();
+		m.type = ModalityType.Info;
+		return m;
+	}
+	
+	public static Modality modEvent() {
+		Modality m = new Modality();
+		m.type = ModalityType.Event;
+		return m;
+	}
+	
 	public static void addLFAsExplicitFacts(AbducerServerPrx abducer, LogicalForm lf) {
 		LFNominal rootnom = lf.root;
 		Vector rootDependents = LFUtils.lfCollectNomvars(rootnom,lf);
@@ -67,7 +79,10 @@ public class AbdUtils {
 	private static void addNomToExplicitFacts (AbducerServerPrx abducer, LFNominal nom, LogicalForm lf) {
 		Term nomTerm = term(nom.nomVar);
 //		System.err.println("add nom: " + nom.nomVar);
-		abducer.addFact(modFormula(ModalityType.Info, predicate("sort", new Term[] {nomTerm, term(nom.sort)})));
+		abducer.addFact(modFormula(
+				new Modality[] {modInfo()},
+				predicate("sort", new Term[] {nomTerm, term(nom.sort)})
+				));
 
 		// Iterator pIter = nom.getPropositions();
 		boolean props = (!nom.prop.prop.equals("")); 	
@@ -82,29 +97,38 @@ public class AbdUtils {
 		//while (pIter.hasNext()) { 
 		String prop = nom.prop.prop;
 		if (props) {
-			abducer.addFact(modFormula(ModalityType.Info, predicate("prop", new Term[] {nomTerm, term(prop)})));
+			abducer.addFact(modFormula(
+					new Modality[] {modInfo()},
+					predicate("prop", new Term[] {nomTerm, term(prop)})
+					));
 		}
 
 //		System.err.println("before feats");
 
 		while (fIter.hasNext()) { 
 			Feature feat = (Feature) fIter.next(); 
-			abducer.addFact(modFormula(ModalityType.Info,
-					predicate("feat_" + feat.feat, new Term[] {nomTerm, term(feat.value)})));
+			abducer.addFact(modFormula(
+					new Modality[] {modInfo()},
+					predicate("feat_" + feat.feat, new Term[] {nomTerm, term(feat.value)})
+					));
 		}
 
 //		System.err.println("before rels");
 
 		while (rIter.hasNext()) { 
 			LFRelation rel = (LFRelation) rIter.next();
-			abducer.addFact(modFormula(ModalityType.Info,
-					predicate("rel_" + rel.mode, new Term[] {nomTerm, term(rel.dep)})));
+			abducer.addFact(modFormula(
+					new Modality[] {modInfo()},
+					predicate("rel_" + rel.mode, new Term[] {nomTerm, term(rel.dep)})
+					));
 
 			LFNominal depnom = LFUtils.lfGetNominal(lf, rel.dep); 
 			if(rel.coIndexedDep == true){
 				// we only want to generate <RelMode>var1:type1, not the complete nominal
-				abducer.addFact(modFormula(ModalityType.Info,
-						predicate("sort", new Term[] {term(rel.dep), term(depnom.sort)})));
+				abducer.addFact(modFormula(
+						new Modality[] {modInfo()},
+						predicate("sort", new Term[] {term(rel.dep), term(depnom.sort)})
+						));
 			} else {
 				addNomToExplicitFacts(abducer, depnom, lf);
 			}
