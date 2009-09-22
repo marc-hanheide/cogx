@@ -19,7 +19,7 @@ module Marshalling {
     //   such as Place ID)
     // entityID
     void addProxy(string type, string UID, double probExists, 
-		  binder::autogen::core::OriginInfo origin);
+		  cast::cdl::WorkingMemoryPointer origin);
     void deleteProxy(string type, string UID);
     void addFeature(string proxyType, string proxyUID, 
 	binder::autogen::core::Feature feature);

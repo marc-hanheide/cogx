@@ -72,7 +72,7 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     FeaturePtr feature = new Feature();
     feature->featlabel = "place_connectivity";
     feature->alternativeValues.push_back(new 
-	binder::autogen::featvalues::StringValue(1,uid2));
+					 binder::autogen::featvalues::StringValue(1,0,uid2));
     agg->addFeature(type, uid, feature);
   }
   else {
@@ -98,7 +98,7 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
     FeaturePtr feature = new Feature();
     feature->featlabel = "gateway";
     feature->alternativeValues.push_back(new 
-	binder::autogen::featvalues::StringValue(1,"gateway"));
+					 binder::autogen::featvalues::StringValue(1,0,"gateway"));
     agg->addFeature(type, uid, feature);
     }
     else if (wmc.type == "DELETE") {

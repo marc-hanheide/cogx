@@ -78,17 +78,17 @@ SelfRepresenter::runComponent()
   try {
     Marshalling::MarshallerPrx agg(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
     try {
-      binder::autogen::core::OriginInfoPtr origin = new binder::autogen::core::OriginInfo();
-      origin->subarchId = "no";
-      origin->localDataId = "local";
-      origin->localDataType = "data"; //uh oh, do we always need to include this?
+      cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
+      origin->address.subarchitecture = "no";
+      origin->address.id = "local";
+      origin->type = "data"; //uh oh, do we always need to include this?
 
       agg->addProxy("robot", "1", 1.0, origin);
       
       FeaturePtr feature = new Feature();
       feature->featlabel = "category";
       feature->alternativeValues.push_back(new
-	  binder::autogen::featvalues::StringValue(1, "robot"));
+					   binder::autogen::featvalues::StringValue(1, 0, "robot"));
       agg->addFeature("robot", "1", feature);
     }
     catch (Ice::Exception e) {
@@ -115,7 +115,7 @@ SelfRepresenter::runComponent()
 	  ss << curPlaceID;
 
 	  feature->alternativeValues.push_back(new
-	      binder::autogen::featvalues::StringValue(1, ss.str()));
+					       binder::autogen::featvalues::StringValue(1, 0, ss.str()));
 	  agg->addFeature("robot", "1", feature);
 	}
 	prevPlaceID = curPlaceID;
