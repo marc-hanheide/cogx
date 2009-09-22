@@ -37,7 +37,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	private String m_goal;
 	private long m_sleepMillis;
 	private boolean m_generateOwnPlans;
-	private WorkingMemoryAddress m_lastPlanProxyAddr;
+//	private WorkingMemoryAddress m_lastPlanProxyAddr;
 
 	public PrototypePlanExecutor() {
 		m_goal = "(forall (?p - place) (= (explored ?p) true))";
