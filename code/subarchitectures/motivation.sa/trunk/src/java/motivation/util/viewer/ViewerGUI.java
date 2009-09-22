@@ -175,11 +175,11 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	protected void showDetails(int selectedRow) {
 		String address=(String) jTable.getValueAt(selectedRow, 2);
 		// TODO: it's a very ugly way of getting the address
-		StringTokenizer st=new StringTokenizer(address, "::");
+		StringTokenizer st=new StringTokenizer(address, "@");
 		WorkingMemoryAddress wma=new WorkingMemoryAddress();
-		wma.subarchitecture=st.nextToken();
 		wma.id=st.nextToken();
-		
+		wma.subarchitecture=st.nextToken();
+		tableContent.get(wma);
 	}
 
 	/**
@@ -224,12 +224,12 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 
 		}
 		objectDispatcherMap.put(origType, pluginToCall);
-		return null;
+		return pluginToCall;
 
 	}
 
 	private String addrToString(WorkingMemoryAddress wma) {
-		return wma.subarchitecture + "::" + wma.id;
+		return wma.id + "@"+wma.subarchitecture;
 	}
 
 	@Override
@@ -257,6 +257,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			tableContent.put(wmc.address, row);
 			break;
 		case DELETE:
+			System.out.println("deleted from table models "+motive.getClass().getSimpleName());
 			tableContent.remove(wmc.address);
 			break;
 		}

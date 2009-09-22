@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import motivation.slice.ExploreMotive;
+import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import cast.CASTException;
@@ -23,24 +24,26 @@ import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
- *
+ * 
  */
 public abstract class AbstractFilter extends ManagedComponent {
-	
+
 	WorkingMemoryChangeReceiver receiver;
-	
+
 	protected AbstractFilter() {
 		super();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see cast.core.CASTComponent#start()
 	 */
 	@Override
 	protected void start() {
 		// TODO Auto-generated method stub
 		super.start();
-		
+
 		receiver = new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				// avoid self calls
@@ -50,12 +53,12 @@ public abstract class AbstractFilter extends ManagedComponent {
 				try {
 					lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDO);
 					Motive motive = getMemoryEntry(_wmc.address, Motive.class);
-					switch(motive.status) {
+					switch (motive.status) {
 					case UNSURFACED:
 						log("check unsurfaced motive " + motive.toString());
 						if (shouldBeSurfaced(motive)) {
 							log("-> surfaced motive " + motive.toString());
-							motive.status=MotiveStatus.SURFACED;
+							motive.status = MotiveStatus.SURFACED;
 							overwriteWorkingMemory(_wmc.address, motive);
 						}
 						break;
@@ -63,7 +66,7 @@ public abstract class AbstractFilter extends ManagedComponent {
 						log("check surfaced motive " + motive.toString());
 						if (shouldBeUnsurfaced(motive)) {
 							log("-> unsurfaced motive " + motive.toString());
-							motive.status=MotiveStatus.UNSURFACED;
+							motive.status = MotiveStatus.UNSURFACED;
 							overwriteWorkingMemory(_wmc.address, motive);
 						}
 						break;
@@ -79,8 +82,7 @@ public abstract class AbstractFilter extends ManagedComponent {
 				} catch (PermissionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} 
-				finally {
+				} finally {
 					try {
 						unlockEntry(_wmc.address);
 					} catch (ConsistencyException e) {
@@ -94,33 +96,48 @@ public abstract class AbstractFilter extends ManagedComponent {
 						e.printStackTrace();
 					}
 				}
-				
-				
+
 			}
 		};
-		
+
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(Motive.class,
-				WorkingMemoryOperation.ADD),receiver); 
+				WorkingMemoryOperation.ADD), receiver);
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(Motive.class,
-				WorkingMemoryOperation.OVERWRITE),receiver); 
+				WorkingMemoryOperation.OVERWRITE), receiver);
 
 	}
 
 	protected void checkAll() throws CASTException {
-		List<ExploreMotive> motives;
-		motives=new LinkedList<ExploreMotive>();
-		getMemoryEntries(ExploreMotive.class, motives);
+		// TODO: currently CAST::getMemoryEntries only considers the "real" type
+		// of entries, whihc means, getMemoryEntries(Motive.class) will not
+		// work... is a feature request for CAST
+		List<ExploreMotive> exploreMotives;
+		exploreMotives = new LinkedList<ExploreMotive>();
+		getMemoryEntries(ExploreMotive.class, exploreMotives);
 		// trigger them all by overwriting them
-		for (Motive m:motives) {
-			log("  motive to be triggered: "+m.thisEntry.id);
-			WorkingMemoryChange wmc=new WorkingMemoryChange();
-			wmc.address=m.thisEntry;
-			wmc.operation=WorkingMemoryOperation.OVERWRITE;
-			wmc.src="explicit self-trigger";
+		for (Motive m : exploreMotives) {
+			WorkingMemoryChange wmc = new WorkingMemoryChange();
+			wmc.address = m.thisEntry;
+			wmc.operation = WorkingMemoryOperation.OVERWRITE;
+			wmc.src = "explicit self-trigger";
 			receiver.workingMemoryChanged(wmc);
 		}
-	}
+
+		List<HomingMotive> homingMotives;
+		homingMotives = new LinkedList<HomingMotive>();
+		getMemoryEntries(HomingMotive.class, homingMotives);
+		// trigger them all by overwriting them
+		for (Motive m : homingMotives) {
+			WorkingMemoryChange wmc = new WorkingMemoryChange();
+			wmc.address = m.thisEntry;
+			wmc.operation = WorkingMemoryOperation.OVERWRITE;
+			wmc.src = "explicit self-trigger";
+			receiver.workingMemoryChanged(wmc);
+		}
 	
+	
+	}
+
 	/**
 	 * @param motive
 	 * @return
