@@ -15,7 +15,7 @@ package comsys.processing.reference.proxyfactories;
 import binder.autogen.core.Feature; 
 import binder.autogen.core.OriginInfo; 
 import binder.autogen.core.Proxy; 
-import binder.autogen.core.StringValue; 
+import binder.autogen.featvalues.StringValue; 
 
 // -------------------------------------------------------
 // COMSYS imports
@@ -54,7 +54,7 @@ public class ThingProxy
 		// get the root
 		LFNominal root = lf.root; 
 		Proxy prx = createNewProxy(new OriginInfo ("comsys", lf.root.nomVar, "lf"), 1.0f);
-		Iterator relsIter = LFUtils.lfNominalGetRelations(root); 
+		Iterator<LFRelation> relsIter = LFUtils.lfNominalGetRelations(root); 
 		while (relsIter.hasNext()) { 
 			LFRelation rel = relsIter.next();
 			if (rel.mode.equals("Modifier")) { 
