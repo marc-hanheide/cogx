@@ -2,6 +2,8 @@ package motivation.util.viewer.plugins;
 
 import java.util.Vector;
 
+import cast.core.CASTUtils;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.Proxy;
 
@@ -20,7 +22,7 @@ public class ProxyInfo implements Plugin {
 			fStr = fStr + f.featlabel + " ";
 		}
 		extraInfo.add(fStr);
-		extraInfo.add(m.origin.localDataType+": "+m.origin.subarchId + "::"+ m.origin.localDataId);
+		extraInfo.add(m.origin.type+": "+ CASTUtils.toString(m.origin.address));
 		
 		return extraInfo;
 	}
