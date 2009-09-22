@@ -173,8 +173,8 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, null, null, null, Completion.PENDING,
-				Completion.PENDING);
+		return new PlanningTask(0, null, null, null, null, Completion.PENDING, 0,
+				Completion.PENDING,0);
 	}
 
 	@Override

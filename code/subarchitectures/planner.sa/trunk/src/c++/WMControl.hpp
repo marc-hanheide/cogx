@@ -5,6 +5,8 @@
 #include <Ice/Ice.h>
 #include "Planner.hpp"
 #include <map>
+#include <sys/time.h>
+#include <boost/thread.hpp>
 
 using namespace autogen::Planner;
 
@@ -46,10 +48,14 @@ protected:
 private:
     void sendStateChange(int id, std::vector<binder::autogen::core::UnionPtr>& changedUnions, long newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
+    void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
     std::vector<binder::autogen::core::UnionPtr> m_currentState;
     std::map<int, StateChangeFilterPtr> m_stateFilters;
     long m_lastUpdate;
+
+    std::map<int, timeval> m_runqueue;
+    boost::mutex m_queue_mutex;
 
     std::string m_python_server;
     bool m_continual_state_updates;

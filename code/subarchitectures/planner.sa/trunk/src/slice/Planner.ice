@@ -42,7 +42,9 @@ module autogen {
       string firstActionID;
       unionSeq state;
       Completion executionStatus;
+      int executionRetries;
       Completion planningStatus;
+      int planningRetries;
     };
 
     // this is for planning-internal use only and takes care of the communication between
