@@ -13,7 +13,9 @@ package comsys.processing.reference.proxyfactories;
 // -------------------------------------------------------
 
 import binder.abstr.BindingWorkingMemoryWriter;
+import binder.autogen.core.Feature;
 import binder.autogen.core.Proxy; 
+import binder.autogen.featvalues.AddressValue;
 
 // -------------------------------------------------------
 // COMSYS imports

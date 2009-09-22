@@ -56,8 +56,8 @@ public class ThingProxy
 			LFNominal root = lf.root; 
 			// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
 			Proxy prx = createNewProxy(createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf"), 1.0f);
-			prx = addFeatureToProxy(prx, createSimpleFeature ("proposition", root.prop.prop));
-			prx = addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort));		
+			addFeatureToProxy(prx, createSimpleFeature ("proposition", root.prop.prop));
+			addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort));		
 			// iterate over the relations, and add the content
 			Iterator<LFRelation> relsIter = LFUtils.lfNominalGetRelations(root); 
 			while (relsIter.hasNext()) { 
@@ -98,7 +98,7 @@ public class ThingProxy
 			if (mod.sort.equals("q-shape")) { feature = "shape"; value = mod.prop.prop; } 
 			if (mod.sort.equals("q-size"))  { feature = "size"; value = mod.prop.prop; } 
 			assert value != null && feature != null; 
-			prx = addFeatureToProxy (prx, createSimpleFeature(feature,value));
+			addFeatureToProxy (prx, createSimpleFeature(feature,value));
 			return prx; 
 		} // end mapQualityModifier
 		
@@ -155,8 +155,8 @@ public class ThingProxy
 			// Construct the proxy for the owner
 			LFNominal owner = LFUtils.lfGetNominal(lf,depVar);
 			Proxy prx = createNewProxy(createWorkingMemoryPointer("comsys", depVar, "lf"), 1.0f);
-			prx = addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop));
-			prx = addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort));		
+			addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop));
+			addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort));		
 			// Construct the relation between the head and the owner
 			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
 			AddressValue[] targets = createAddressValueArray(createAddressValue(prx.entityID, 1.0f));
