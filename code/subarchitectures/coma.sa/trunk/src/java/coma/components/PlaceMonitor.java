@@ -307,22 +307,22 @@ public class PlaceMonitor extends ManagedComponent {
 		_newPlaceProxy.features[0] = new Feature();
 		_newPlaceProxy.features[0].featlabel = "place_id";
 		_newPlaceProxy.features[0].alternativeValues = new FeatureValue[1];
-		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,_comaPlace.m_id.toString());
+		_newPlaceProxy.features[0].alternativeValues[0] = new StringValue(1,getCASTTime(),_comaPlace.m_id.toString());
 		
 		_newPlaceProxy.features[1] = new Feature();
 		_newPlaceProxy.features[1].featlabel = "place_type";
 		_newPlaceProxy.features[1].alternativeValues = new FeatureValue[1];
 		if (_comaPlace.getPlaceStatus()==null) {
-			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, "unknown");
+			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1,getCASTTime(), "unknown");
 //			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(0.5f, "Place");
 //			_newPlaceProxy.features[1].alternativeValues[1] = new StringValue(0.5f, "Placeholder");
 			}
 		else if (_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE) {
-			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, "Place");
+			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1,getCASTTime(), "Place");
 //			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, "Place");
 //			_newPlaceProxy.features[1].alternativeValues[1] = new StringValue(0, "Placeholder");
 		} else {
-			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, "Placeholder");
+			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(1, getCASTTime(),"Placeholder");
 //			_newPlaceProxy.features[1].alternativeValues[0] = new StringValue(0, "Place");
 //			_newPlaceProxy.features[1].alternativeValues[1] = new StringValue(1, "Placeholder");
 		}
@@ -385,18 +385,18 @@ public class PlaceMonitor extends ManagedComponent {
 					log("now looking at place_type.");
 					if (_comaPlace.getPlaceStatus()==null) {
 						log("place status is null.");
-						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, "unknown");
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, getCASTTime(),"unknown");
 //						_placeProxy.features[i].alternativeValues[0] = new StringValue(0.5f, "Place");
 //						_placeProxy.features[i].alternativeValues[1] = new StringValue(0.5f, "Placeholder");
 					}
 					else if (_comaPlace.getPlaceStatus()==PlaceStatus.TRUEPLACE) {
 						log("place status is TRUEPLACE");
-						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, "Place");
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, getCASTTime(),"Place");
 //						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, "Place");
 //						_placeProxy.features[i].alternativeValues[1] = new StringValue(0, "Placeholder");
 					} else {
 						log("place status is PLACEHOLDER");
-						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, "Placeholder");
+						_placeProxy.features[i].alternativeValues[0] = new StringValue(1, getCASTTime(),"Placeholder");
 //						_placeProxy.features[i].alternativeValues[0] = new StringValue(0, "Place");
 //						_placeProxy.features[i].alternativeValues[1] = new StringValue(1, "Placeholder");
 					}
