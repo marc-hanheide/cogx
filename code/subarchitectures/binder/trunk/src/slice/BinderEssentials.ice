@@ -1,7 +1,5 @@
 
-
-#include "CDL.ice"
-
+#include <cast/slice/CDL.ice>
 
 module binder {
 
@@ -61,7 +59,7 @@ class PerceivedEntity {
  * A proxy
  */ 
 class Proxy extends PerceivedEntity {
-	cast::cdl::WorkingMemoryPointer origin;
+	 cast::cdl::WorkingMemoryPointer origin;
 };
 
 

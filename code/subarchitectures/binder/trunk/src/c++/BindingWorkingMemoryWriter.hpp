@@ -19,40 +19,40 @@ namespace binder {
   class BindingWorkingMemoryWriter : 
     public virtual cast::ManagedComponent {
 
-  private:
-    /**
-     * ID in current SA where origin map is stored.
-     */
-    std::string m_originMapID;
+//   private:
+//     /**
+//      * ID in current SA where origin map is stored.
+//      */
+//     std::string m_originMapID;
 
-    /**
-     * Stores a mapping from the source to the proxy which is created from it.
-     * 
-     * @param _proxy
-     * @throws AlreadyExistsOnWMException
-     */
-    void storeOriginInfo(autogen::core::ProxyPtr _proxy);
+//     /**
+//      * Stores a mapping from the source to the proxy which is created from it.
+//      * 
+//      * @param _proxy
+//      * @throws AlreadyExistsOnWMException
+//      */
+//     void storeOriginInfo(autogen::core::ProxyPtr _proxy);
 
-    /**
-     * Removes source id mapping from WM map.
-     * 
-     * @param _proxy
-     * @throws DoesNotExistOnWMException
-     * @throws ConsistencyException
-     * @throws PermissionException
-     */
-    void removeOriginInfo(autogen::core::ProxyPtr _proxy);
+//     /**
+//      * Removes source id mapping from WM map.
+//      * 
+//      * @param _proxy
+//      * @throws DoesNotExistOnWMException
+//      * @throws ConsistencyException
+//      * @throws PermissionException
+//      */
+//     void removeOriginInfo(autogen::core::ProxyPtr _proxy);
       
   protected:
 
 
-    autogen::core::OriginInfoPtr createOriginInfo (const cast::cdl::WorkingMemoryAddress wma, 
+    cast::cdl::WorkingMemoryPointerPtr createWorkingMemoryPointer (const cast::cdl::WorkingMemoryAddress wma, 
 						   const std::string &  localDataType) {
-      return createOriginInfo(wma.subarchitecture, wma.id, localDataType);
+      return createWorkingMemoryPointer(wma.subarchitecture, wma.id, localDataType);
     }
 
 
-    autogen::core::OriginInfoPtr createOriginInfo (const std::string & subarchId, 
+    cast::cdl::WorkingMemoryPointerPtr createWorkingMemoryPointer (const std::string & subarchId, 
          const std::string &  localDataId, const std::string &  localDataType);
    
    
@@ -65,7 +65,7 @@ namespace binder {
      * @param probExists probability value for the proxy
      * @return a new proxy
      */
-    autogen::core::ProxyPtr createNewProxy (const autogen::core::OriginInfoPtr & origin, 
+    autogen::core::ProxyPtr createNewProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
 					    float probExists);
     
     
@@ -79,10 +79,10 @@ namespace binder {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-    autogen::core::ProxyPtr createNewRelationProxy (const autogen::core::OriginInfoPtr & origin, 
-					    float probExists,
-					     const autogen::core::FeatureValues source, 
-					     const autogen::core::FeatureValues target);
+    autogen::core::ProxyPtr createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
+						    float probExists,
+						    const autogen::core::FeatureValues source, 
+						    const autogen::core::FeatureValues target);
  	
  	
  		
@@ -98,11 +98,11 @@ namespace binder {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */						
-  autogen::core::ProxyPtr createNewRelationProxy (const autogen::core::OriginInfoPtr & origin, 
-					    float probExists,
-					    const autogen::core::FeaturesList & features,
-					     const autogen::core::FeatureValues source, 
-					     const autogen::core::FeatureValues target);
+    autogen::core::ProxyPtr createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
+						    float probExists,
+						    const autogen::core::FeaturesList & features,
+						    const autogen::core::FeatureValues source, 
+						    const autogen::core::FeatureValues target);
 
 									  
     /**
@@ -114,7 +114,7 @@ namespace binder {
      * @param features
      * @return
      */
-    autogen::core::ProxyPtr createNewProxy (const autogen::core::OriginInfoPtr & origin, 
+    autogen::core::ProxyPtr createNewProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
 					    float probExists, 
 					    const autogen::core::FeaturesList & features);
 
