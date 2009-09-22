@@ -88,7 +88,7 @@ SelfRepresenter::runComponent()
       FeaturePtr feature = new Feature();
       feature->featlabel = "category";
       feature->alternativeValues.push_back(new
-					   binder::autogen::featvalues::StringValue(1, 0, "robot"));
+					   binder::autogen::featvalues::StringValue(1, getCASTTime(), "robot"));
       agg->addFeature("robot", "1", feature);
     }
     catch (Ice::Exception e) {
@@ -115,7 +115,7 @@ SelfRepresenter::runComponent()
 	  ss << curPlaceID;
 
 	  feature->alternativeValues.push_back(new
-					       binder::autogen::featvalues::StringValue(1, 0, ss.str()));
+					       binder::autogen::featvalues::StringValue(1, getCASTTime(), ss.str()));
 	  agg->addFeature("robot", "1", feature);
 	}
 	prevPlaceID = curPlaceID;
