@@ -7,6 +7,7 @@ import utils
 import globals as global_vars
 
 from task import PlanningStatusEnum, Task
+import mapl_new as mapl
 import plans
 
 class Planner(object):
@@ -58,6 +59,10 @@ class Planner(object):
         """
         if not task.is_dirty():
             return
+        if task._mapltask.goal == mapl.conditions.Falsity:
+            task.set_plan(None, update_status=True)
+            return
+
         replanning_necessary = self._evaluate_current_plan(task)
         if replanning_necessary:
             self._start_planner(task)

@@ -175,7 +175,14 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     print_state_difference(task.get_state(), state.State(facts))
 
-    newtask = mapl.problem.Problem(task._mapltask.name, objects, [f.asLiteral(useEqual=True) for f in facts], task._mapltask.goal, task._mapldomain)
+    newtask = mapl.problem.Problem(task._mapltask.name, objects, [f.asLiteral(useEqual=True) for f in facts], None, task._mapldomain)
+
+    #check if the goal is still valid
+    try:
+      newtask.goal = task._mapltask.goal.copy(newtask)
+    except KeyError:
+      newtask.goal = mapl.conditions.Falsity
+    
     task._mapltask = newtask
 
     #print "\n".join(mapl.writer.MAPLWriter().write_problem(newtask))

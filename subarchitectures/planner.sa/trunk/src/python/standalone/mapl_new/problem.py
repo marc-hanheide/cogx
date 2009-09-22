@@ -34,13 +34,19 @@ class Problem(domain.MAPLDomain):
             self.add(o)
             
         self.domain = _domain
-        self.objects = objects
+        self.objects = set(o for o in objects)
         self.init = [l.copy(self) for l in init]
         self.goal = None
         if goal:
             self.goal = goal.copy(self)
         self.optimization = optimization
         self.opt_func = opt_func
+
+    def addObject(self, object):
+        if object.name in self:
+            self.objects.remove(self[object.name])
+        self.objects.add(object)
+        self.add(object)
 
     def getAll(self, type):
         if isinstance(type, FunctionType):
