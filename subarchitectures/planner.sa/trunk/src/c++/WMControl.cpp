@@ -14,6 +14,10 @@ extern "C" {
     }
 }
 
+static const int MAX_PLANNING_RETRIES = 1;
+static const int MAX_EXEC_RETRIES = 1;
+static const int REPLAN_DELAY = 3000;
+
 void WMControl::configure(const cast::cdl::StringMap& _config, const Ice::Current& _current) {
     m_lastUpdate = 0;
     cast::ManagedComponent::configure(_config, _current);
@@ -61,6 +65,33 @@ void WMControl::connectToPythonServer() {
 
 void WMControl::runComponent() {
     log("Planner WMControl: running");
+    while (true) {
+        m_queue_mutex.lock();
+        if (!m_runqueue.empty()) {
+            log("planning is scheduled");
+            timeval tval;
+            gettimeofday(&tval, NULL);
+            std::map<int, timeval>::iterator it=m_runqueue.begin();
+            std::vector<int> executed;
+            for(; it != m_runqueue.end(); ++it) {
+                if ((it->second.tv_sec < tval.tv_sec) 
+                    || ((it->second.tv_sec == tval.tv_sec) 
+                        && (it->second.tv_usec < tval.tv_usec))) {
+                    log("accessing wm");
+                    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[it->first].address);
+                    task->state = m_currentState;
+                    pyServer->updateTask(task);
+                    log("returning..:");
+                    executed.push_back(task->id);
+                }
+            }
+            for (std::vector<int>::iterator it=executed.begin(); it != executed.end(); ++it) {
+                m_runqueue.erase(*it);
+            }
+        }
+        m_queue_mutex.unlock();
+        sleepComponent(1000);
+    }
 }
 
 static int TASK_ID = 0;
@@ -79,6 +110,8 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     task->executionStatus = PENDING;
     task->firstActionID = "";
     task->planningStatus = PENDING;
+    task->planningRetries = 0;
+    task->executionRetries = 0;
     activeTasks[task->id] = wmc;
 
     overwriteWorkingMemory(wmc.address, task);
@@ -122,9 +155,23 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     assert(task->plan.size() > 0);
     task->plan[0]->status = action->status;
     
-    if (action->status == ABORTED || action->status == FAILED) {
-        task->executionStatus = action->status;
+    if (action->status == ABORTED) {
+        task->executionStatus = ABORTED;
         overwriteWorkingMemory(activeTasks[task->id].address, task);
+    }
+    else if (action->status == FAILED) {
+        if (task->executionRetries >= MAX_EXEC_RETRIES) {
+            log("Action %s failed, retries exhausted.", action->name.c_str());
+            task->executionStatus = FAILED;
+        }
+        else {
+        log("Action %s failed, replanning.", action->name.c_str());
+             task->executionStatus = PENDING;
+             task->state = m_currentState;
+             task->executionRetries++;
+        }
+        overwriteWorkingMemory(activeTasks[task->id].address, task);
+        pyServer->updateTask(task);
     }
     else if (action->status == SUCCEEDED) {
         /*task->plan.erase(task->plan.begin());
@@ -136,10 +183,12 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         else {
             task->status = SUCCEEDED;
         }*/
+        task->executionRetries = 0;
         task->state = m_currentState;
         overwriteWorkingMemory(activeTasks[task->id].address, task);
+        pyServer->updateTask(task);
     }
-    pyServer->updateTask(task);
+    //dispatchPlanning(task, 0);
 }
 
 void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
@@ -192,7 +241,30 @@ void WMControl::sendStateChange(int id, std::vector<UnionPtr>& changedUnions, lo
     log("Sending state update for task %d", id);
     task->state = m_currentState;
     overwriteWorkingMemory(activeTasks[id].address, task);
-    pyServer->updateTask(task);
+    //pyServer->updateTask(task);
+    dispatchPlanning(task, 0);
+}
+
+void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
+    timeval tval;
+    gettimeofday(&tval, NULL);
+    tval.tv_sec += msecs / 1000;
+    tval.tv_usec += 1000 * (msecs % 1000);
+    m_queue_mutex.lock();
+    if (m_runqueue.find(task->id) != m_runqueue.end()) {
+        if ((m_runqueue[task->id].tv_sec > tval.tv_sec) 
+            || ((m_runqueue[task->id].tv_sec == tval.tv_sec) 
+                && (m_runqueue[task->id].tv_usec > tval.tv_usec))) {
+            //Task already in queue for a later time
+            return;
+        }
+    }
+    timeval tval2;
+    gettimeofday(&tval2, NULL);
+    log("current tval: %ld / %ld", tval2.tv_sec, tval2.tv_usec);
+    log("scheduled tval: %ld / %ld", tval.tv_sec, tval.tv_usec);
+    m_runqueue[task->id] = tval;
+    m_queue_mutex.unlock();
 }
 
 
@@ -201,6 +273,7 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     task->plan = plan;
+    task->planningRetries = 0;
     task->planningStatus = SUCCEEDED;
 
     if (plan.size() > 0) {
@@ -226,9 +299,24 @@ void WMControl::updateStatus(int id, Completion status) {
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id].address);
     task->planningStatus = status;
     log("Settings planning status of task %d to %d", id, status);
-    if (status == ABORTED || status == FAILED) {
-        log("Planning failed, setting status of task %d to %d", id, status);
+    if (status == ABORTED) {
+        log("Planning aborted, setting status of task %d to %d", id, status);
         task->executionStatus = status;
+    }
+    else if (status == FAILED) {
+        if (task->planningRetries >= MAX_PLANNING_RETRIES) {
+            log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);
+            task->executionStatus = FAILED;
+        }
+        else {
+            log("Planning failed, waiting and replanning.");
+            task->planningStatus = PENDING;
+            task->planningRetries++;
+            overwriteWorkingMemory(activeTasks[id].address, task);
+            //pyServer->updateTask(task);
+            dispatchPlanning(task, REPLAN_DELAY);
+            return;
+        }
     }
     overwriteWorkingMemory(activeTasks[id].address, task);
 }

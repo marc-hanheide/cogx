@@ -73,10 +73,19 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     task.mark_changed()
     task.activate_change_dectection()
     
-  def getPlan(self, task):
+  def getPlan(self, task):    
     if task.get_planning_status() == PlanningStatusEnum.PLANNING_FAILURE:
       self.getClient().updateStatus(task.taskID, Planner.Completion.FAILED);
       return
+
+    #TEST TEST TEST TEST 
+#     import random
+#     s = random.random()
+#     print s
+#     if s > 0.5:
+#       task.set_plan(None, update_status=True)
+#       return
+    #TEST TEST TEST TEST
     
     plan = task.get_plan()
     #plan = task_preprocessor.map2binder_rep(plan, task)
@@ -127,7 +136,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     plan = task.get_plan()
 
     task.suspend_change_dectection()
-    if plan is not None:
+    if plan is None:
+      #always replan if we don't have a plan
+      task.mark_changed()
+    else:
       print "checking execution state"
       executable_plan = plan.topological_sort(include_depths=False)[plan.execution_position:-1]
         
@@ -155,7 +167,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
             
       if requires_action_dispatch:
         task.mark_changed()
-      
+    
     import task_preprocessor
     objects, facts = task_preprocessor.generate_mapl_state(task_desc, task)
     #print map(str, objects)

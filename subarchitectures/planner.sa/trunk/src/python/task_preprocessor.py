@@ -1,5 +1,6 @@
 from collections import defaultdict
 import itertools
+import re
 from string import maketrans
 
 from standalone.task import Task  # requires standalone planner to be in PYTHONPATH already
@@ -11,6 +12,7 @@ import binder.autogen.featvalues as featvalues
 forbidden_letters = "-:"
 replace_chr = "_"
 trans_tbl = maketrans(forbidden_letters, replace_chr * len(forbidden_letters))
+UCASE_REXP = re.compile("([A-Z])")
 
 # attention: current_domain is used as a global in this module
 current_domain = None
@@ -20,7 +22,11 @@ def rename_objects(objects):
   for obj in objects:
     oldname = obj.name
     obj.name = "%s_%s" % (obj.type, obj.name.translate(trans_tbl))
-    obj.name = obj.name.lower()
+    #the cast ids are case sensitive, so we have to replace uppercase chars
+    #with something different
+    obj.name = re.sub(UCASE_REXP, r'_\1', obj.name).lower()
+    #obj.name = obj.name.lower()
+  
     namedict[oldname] = obj
     namedict[obj] = oldname
     
