@@ -1,7 +1,6 @@
 package binder.abstr;
 
 import java.util.Enumeration;
-
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
