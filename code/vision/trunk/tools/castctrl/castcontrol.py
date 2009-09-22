@@ -3,7 +3,7 @@
 # Author: Marko Mahnič
 # Created: June 2009
 
-import os, sys
+import os, sys, time
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages
@@ -100,6 +100,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
         self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
+        self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
 
     def _initContent(self):
@@ -157,7 +158,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         # self.updateUi()
 
     def closeEvent(self, event):
+        self._manager.stopReaderThread()
         self._manager.stopAll()
+        time.sleep(0.2)
         def getitems(cmbx, count=30):
             mx = cmbx.count()
             if mx > count: mx = count
@@ -281,6 +284,10 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btEditPlayerConfig_clicked(self, valid=True):
         if not valid: return
         self.editFile(self._playerConfig)
+
+    def onShowEnvironment(self):
+        cmd = "bash -c env"
+        procman.runCommand(cmd, name="ENV")
 
     def onBrowseClientConfig(self):
         qfd = QtGui.QFileDialog

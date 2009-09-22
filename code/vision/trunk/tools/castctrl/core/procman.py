@@ -280,8 +280,8 @@ class CProcessManager(object):
         self.pipeReaderThread = None
 
     def __del__(self):
-        if self.pipeReaderThread != None: self.pipeReaderThread.stop()
         self.stopAll()
+        self.stopReaderThread()
 
     def addProcess(self, process):
         for p in self.proclist:
@@ -311,6 +311,10 @@ class CProcessManager(object):
 
     def checkProcesses(self):
         for proc in self.proclist: proc.check()
+
+    def stopReaderThread(self):
+        if self.pipeReaderThread != None: self.pipeReaderThread.stop()
+        self.pipeReaderThread = None
 
     # Moved to a separate thread!
     #def communicate(self, timeout=0.01):
