@@ -36,6 +36,6 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Planner WMControl 
 JAVA MG executor execution.components.PrototypePlanExecutor --log --self-motivate
-JAVA MG vis.plan motivation.util.viewer.ViewerCastComponent --subscribe autogen.Planner.PlanningTask,autogen.Planner.Action
+# JAVA MG vis.plan motivation.util.viewer.ViewerCastComponent --subscribe autogen.Planner.PlanningTask,autogen.Planner.Action
 
 
