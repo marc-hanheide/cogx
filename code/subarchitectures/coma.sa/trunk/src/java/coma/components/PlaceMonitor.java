@@ -7,14 +7,12 @@ import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.StringValue;
-import binder.utils.ProbabilityDistributionUtils;
+import binder.utils.ProbabilityUtils;
 
 import comadata.ComaReasonerInterfacePrx;
 
 import Ice.Identity;
 import Ice.ObjectPrx;
-import NavData.AEdge;
-import NavData.FNode;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import cast.AlreadyExistsOnWMException;
@@ -301,7 +299,7 @@ public class PlaceMonitor extends ManagedComponent {
 		// create new proxy
 		Proxy _newPlaceProxy = new Proxy();
 		_newPlaceProxy.entityID = newDataID();
-		_newPlaceProxy.subarchId = this.getSubarchitectureID();
+//		_newPlaceProxy.subarchId = this.getSubarchitectureID();
 		_newPlaceProxy.probExists = 1;
 			
 		_newPlaceProxy.features = new Feature[2];
@@ -344,7 +342,7 @@ public class PlaceMonitor extends ManagedComponent {
 //		}
 		
 
-		_newPlaceProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
+		_newPlaceProxy.distribution = ProbabilityUtils.generateProbabilityDistribution(_newPlaceProxy);
 
 		try {
 //			addToWorkingMemory(new WorkingMemoryAddress(m_bindingSA,_newPlaceProxy.entityID), _newPlaceProxy);
@@ -418,7 +416,7 @@ public class PlaceMonitor extends ManagedComponent {
 //							" -- gateway status:" + (_comaPlace.getGatewayStatus()==1 ? "Doorway" : (_comaPlace.getGatewayStatus()==-1 ? "unknown" :  "Free Node")));							
 //				}
 			}
-			_placeProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_placeProxy);
+			_placeProxy.distribution = ProbabilityUtils.generateProbabilityDistribution(_placeProxy);
 			
 			overwriteWorkingMemory(_proxyWMA, _placeProxy);
 			
