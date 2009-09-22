@@ -1,0 +1,4 @@
+HOST localhost 
+
+COMPONENT PYTHON planner.server PlannerServer.PlannerServer
+COMPONENT PYTHON planner.tester PlannerTester.PlannerTester
