@@ -1,0 +1,50 @@
+GARNAME = cast
+GARVERSION = svn
+CATEGORIES = bootstrap
+DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
+MAINTAINER = n.hawes
+
+#MASTER_SITES = http://downloads.sourceforge.net/project/baltcast/cast%202/cast%202.1.0/
+
+MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tags/latest/
+#MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tags/cast-2.1.0rc3/
+
+
+LIBDEPS = cogx/cast-c++
+
+DEB_PACKAGES=\
+        sun-java6-jdk@ubuntu \
+        ant@ubuntu \
+        libzeroc-ice-java@ubuntu
+	
+MFLAGS=$(MFLAGS_NUMCPU)
+
+
+CONFIGURE_SCRIPTS = 
+BUILD_SCRIPTS = $(WORKSRC)/ant
+INSTALL_SCRIPTS = $(WORKSRC)/ant
+
+BUILD_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:
+INSTALL_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:
+
+
+
+include ../../gar.extend.mk
+
+
+CONFIGURE_ARGS = -Dinstall.prefix=$(prefix) -Dclasspath=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
+BUILD_ARGS = $(CONFIGURE_ARGS) compile
+INSTALL_ARGS = $(CONFIGURE_ARGS) install
+
+
+checksum-$(DISTFILES):  
+	@true
+checksum-$(PATCHFILES): 
+	@true
+	
+
+
+	
+	
+
+

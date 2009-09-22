@@ -1,0 +1,30 @@
+GARNAME = player
+GARVERSION = 2.1.1
+CATEGORIES = bootstrap
+MAINTAINER = fsiepman
+DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
+
+MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
+
+#PATCHFILES= gar-base.diff
+
+# no parallel build due to problems of player make scheme
+#MFLAGS=$(MFLAGS_NUMCPU)
+
+DESCRIPTION = player for cogx platform
+define BLURB
+  playerdef
+endef
+
+CONFIGURE_SCRIPTS = $(WORKSRC)/configure
+BUILD_SCRIPTS = $(WORKSRC)/Makefile
+INSTALL_SCRIPTS = $(WORKSRC)/Makefile
+
+CONFIGURE_ARGS = $(DIRPATHS) --disable-sicklms400 --disable-mricp
+
+include ../../gar.mk
+
+pre-configure:
+	cd $(WORKSRC) && autoreconf -i
+	@$(MAKECOOKIE)
+
