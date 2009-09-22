@@ -29,13 +29,22 @@ public class ProxyResults {
 
 	
 	private HashMap proxyMap = new HashMap();
-	private HashMap nominalsMap = new HashMap();
 	private Vector proxyRelations = new Vector();
 	
 	
-	public void addProxy (Proxy prx, String nomVar) { 
+	public void addProxy (Proxy prx) { 
 		proxyMap.put(prx.entityID, prx);
-		nominalsMap.put(nomVar,prx.entityID);
+	} // end method
+	
+	public void addProxies (ProxyResults results) { 
+		for (Iterator<Proxy> proxyIter = results.getProxies(); proxyIter.hasNext(); ) { 
+			Proxy prx = proxyIter.next();
+			this.addProxy(prx);
+		} // end for
+		for (Iterator<RelationProxy> rproxyIter = results.getRelationProxies(); rproxyIter.hasNext(); ) { 
+			RelationProxy rprx = rproxyIter.next();
+			this.addRelationProxy(rprx);
+		} // end for
 	} // end method
 	
 	public void addRelationProxy (RelationProxy rprx) { 
@@ -49,6 +58,9 @@ public class ProxyResults {
 	public Iterator<RelationProxy> getRelationProxies() { 
 		return (Iterator<RelationProxy>) proxyRelations.iterator();
 	} // end method
+	
+	
+	
 	
 	
 }
