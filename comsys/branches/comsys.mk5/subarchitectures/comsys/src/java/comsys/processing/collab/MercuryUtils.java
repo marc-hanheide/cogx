@@ -9,6 +9,15 @@ import Abducer.*;
 
 public class MercuryUtils {
 
+	public static String termStringEscape(String s) {
+		if (s.contains("-") || Character.isUpperCase(s.charAt(0))) {
+			return "'" + s + "'";
+		}
+		else {
+			return s;
+		}
+	}
+	
 	public static Predicate lfToPredicate(LogicalForm lf) {
 		return null;
 	}
@@ -20,7 +29,7 @@ public class MercuryUtils {
 			s = "V" + t.name;
 		}
 		else {
-			s = "\"" + t.name + "\"";
+			s = termStringEscape(t.name);
 			if (t.args.length > 0) {
 				s += "(";
 				for (int i = 0; i < t.args.length; i++) {
@@ -34,13 +43,84 @@ public class MercuryUtils {
 	}
 	
 	public static String predicateToString(Predicate p) {
-		String s = "\"" + p.predSym + "\"(";
+		String s = termStringEscape(p.predSym) + "(";
 		for (int i = 0; i < p.args.length; i++) {
 			s += termToString(p.args[i]);
 			s += (i == p.args.length-1 ? "" : ", ");
 		}
 		s += ")";
 		
+		return s;
+	}
+
+	public static String modalisedFormulaToString(ModalisedFormula mf) {
+		return modalitySeqToString(mf.m) + ":" + predicateToString(mf.p);
+	}
+	
+	public static String modalitySeqToString(Modality[] m) {
+		String s = "[";
+		for (int i = 0; i < m.length; i++) {
+			s += modalityToString(m[i]);
+			s += (i == m.length-1 ? "" : ", ");
+		}
+		s += "]";
+		return s;
+	}
+
+	public static String agentToString(Agent a) {
+		switch (a) {
+		case Human:
+			return "h";
+		case Robot:
+			return "r";
+		default:
+			return "?";
+		}
+	}
+	
+	public static String modalityToString(Modality m) {
+		String s = "";
+		switch (m.type) {
+		
+		case Event:
+			s = "e";
+			break;
+			
+		case Info:
+			s = "i";
+			break;
+		
+		case AttState:
+			s = "a";
+			break;
+		
+		case K:
+			s += kModalityToString((KModality) m);
+			break;
+			
+		default:
+			s = "other";
+			break;
+		}
+		return s;
+	}
+
+	public static String kModalityToString(KModality km) {
+		String s = "k(";
+		switch (km.share) {
+		case Private:
+			s += agentToString(km.act);
+			break;
+		case Attribute:
+			s += agentToString(km.act) + "[" + agentToString(km.pat) + "]";
+			break;
+		case Mutual:
+			s += "{" + agentToString(km.act) + "," + agentToString(km.pat) + "}";
+			break;
+		default:
+			s += "!";
+		}
+		s += ")";
 		return s;
 	}
 

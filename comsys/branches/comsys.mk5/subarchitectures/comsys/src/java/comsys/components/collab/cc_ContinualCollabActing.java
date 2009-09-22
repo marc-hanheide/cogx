@@ -235,7 +235,6 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
             	SelectedLogicalForm slf = (SelectedLogicalForm) slfWM.getData();
             	AbdUtils.addLFAsExplicitFacts(abducer, slf.lf);
-//            	log("LF's Mercury term = " + LFUtils.lfToMercString(slf.lf));
             	
             	Abducer.AssumableGoal[] goals = new Abducer.AssumableGoal[1];
             	goals[0] = new Abducer.AssumableGoal();
@@ -243,13 +242,13 @@ public class cc_ContinualCollabActing extends ManagedComponent {
             	
             	goals[0].body = new ModalisedFormula();
 
-            	goals[0].body.m = new Modality(Abducer.ModalityType.Event);
+            	goals[0].body.m = new Modality[] {AbdUtils.modEvent()};
             	goals[0].body.p = AbdUtils.predicate("uttered", new Term[] {
             				AbdUtils.term("h"),
             				AbdUtils.term(slf.lf.root.nomVar)
             			});
 
-            	log("proving: " + MercuryUtils.predicateToString(goals[0].body.p));
+            	log("proving: " + MercuryUtils.modalisedFormulaToString(goals[0].body));
 
 //           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
             	
@@ -261,7 +260,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
             		String logString = "proof: body = [\n";
             		for (int i = 0; i < p.body.length; i++) {
-            			logString += MercuryUtils.predicateToString(p.body[i].p);
+            			logString += MercuryUtils.modalisedFormulaToString(p.body[i]);
             			if (i < p.body.length-1) { logString += ",\n"; }
             		}
             		logString += "\n]";

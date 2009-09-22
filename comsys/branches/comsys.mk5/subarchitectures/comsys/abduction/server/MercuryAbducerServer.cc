@@ -80,7 +80,7 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 	new_varset(&w_vs);
 
 	MR_Word w_mprop = modalisedFormulaToMercMProp(f, &w_vs);
-	add_assumable(stringToMercString(function), w_vs, cost, ctx, &ctx);	
+	add_assumable(stringToMercString(function), w_mprop, cost, ctx, &ctx);	
 }
 
 ProveResult

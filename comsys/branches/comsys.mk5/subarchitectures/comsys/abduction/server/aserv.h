@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int aserv_main();
+extern int aserv_main();
 
 #ifdef __cplusplus
 }

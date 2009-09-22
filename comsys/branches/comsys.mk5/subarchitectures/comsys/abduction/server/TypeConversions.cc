@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 extern "C" {
 #include "TypeConversions_mint.mh"
@@ -20,26 +21,26 @@ stringToMercString(const string & s)
 	return cs;
 }
 
-MR_Word
-termToMercTerm(const TermPtr & t, MR_Word * vs)
+MR_term
+termToMercTerm(const TermPtr & t, MR_varset * vs)
 {
 	if (t->variable) {
 		char * s = stringToMercString(t->name);
-		MR_Word mv;
+		MR_term mv;
 		new_var(s, &mv, *vs, vs);
 //		delete s;
 
 		return mv;
 	}
 	else {
-		MR_Word mt;
+		MR_term mt;
 //		MR_Word margs = MR_list_empty();
-		MR_Word margs;
+		MR_list__term margs;
 		empty_term_list(&margs);
 
 		for (int i = t->args.size() - 1; i >= 0; i--) {
 			//margs = MR_list_cons(termToMercTerm(t->args[i], vs), margs);
-			MR_Word arg = termToMercTerm(t->args[i], vs);
+			MR_term arg = termToMercTerm(t->args[i], vs);
 			cons_term_list(arg, margs, &margs);
 		}
 
@@ -51,15 +52,15 @@ termToMercTerm(const TermPtr & t, MR_Word * vs)
 	}
 }
 
-MR_Word
-predicateToMercAtomicFormula(const PredicatePtr & p, MR_Word * vs)
+MR_atomic_formula
+predicateToMercAtomicFormula(const PredicatePtr & p, MR_varset * vs)
 {
-	MR_Word mp;
-	MR_Word margs;
+	MR_atomic_formula mp;
+	MR_list__term margs;
 	empty_term_list(&margs);
 
 	for (int i = p->args.size() - 1; i >= 0; i--) {
-		MR_Word arg = termToMercTerm(p->args[i], vs);
+		MR_term arg = termToMercTerm(p->args[i], vs);
 		cons_term_list(arg, margs, &margs);
 //		margs = MR_list_cons(arg, margs);
 	}
@@ -71,50 +72,176 @@ predicateToMercAtomicFormula(const PredicatePtr & p, MR_Word * vs)
 	return mp;
 }
 
-MR_Word
-modalisedFormulaToMercMProp(const ModalisedFormulaPtr & p, MR_Word * vs)
+MR_mprop__ctx_modality
+modalisedFormulaToMercMProp(const ModalisedFormulaPtr & p, MR_varset * vs)
 {
-	MR_Word maf = predicateToMercAtomicFormula(p->p, vs);
-	MR_Word mm = modalityToMercModality(p->m);
+	MR_atomic_formula maf = predicateToMercAtomicFormula(p->p, vs);
+	MR_list__ctx_modality mm = modalitySeqToMercListOfModalities(p->m);
 
-	MR_Word mprop;
+	MR_mprop__ctx_modality mprop;
 	new_mprop(mm, maf, &mprop, *vs, vs);
 
 	return mprop;
 }
 
-MR_Word
-withConstCostFunction(MR_Word mprop, double cost)
+MR_with_cost_function__mprop__ctx_modality
+withConstCostFunction(MR_mprop__ctx_modality mprop, double cost)
 {
-	MR_Word result;
+	MR_with_cost_function__mprop__ctx_modality result;
 	new_with_const_cost_function(mprop, cost, &result);
 	return result;
 }
 
-MR_Word
+MR_ctx_modality
 modalityToMercModality(const ModalityPtr & m)
 {
-	MR_Word mm = 0;
+	MR_ctx_modality mm;
 
 	switch (m->type) {
-		case Event: modality_event(&mm); break;
-		case Info: modality_info(&mm); break;
-		case AttState: modality_att(&mm); break;
+		case Event:
+			modality_event(&mm);
+			break;
+		case Info:
+			modality_info(&mm);
+			break;
+		case AttState:
+			modality_att(&mm);
+			break;
+		case K:
+			modality_k(&mm);
+			break;
 
 		default:
 			cerr << "unsupported modality" << endl;
 	}
+
 	return mm;
+}
+
+MR_list__ctx_modality
+modalitySeqToMercListOfModalities(const ModalitySeq & ms)
+{
+	MR_list__ctx_modality w_list;
+	empty_ctx_modality_list(&w_list);
+
+	for (int i = ms.size() - 1; i >= 0; i--) {
+		MR_ctx_modality w_m = modalityToMercModality(ms[i]);
+		cons_ctx_modality_list(w_m, w_list, &w_list);
+	}
+
+	return w_list;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+Agent
+stringToAgent(const char * s)
+{
+	if (strcmp(s, "h") == 0) {
+//`		cerr << "human" << endl;
+		return Human;
+	}
+	else {
+		if (strcmp(s, "r") == 0) {
+//			cerr << "robot" << endl;
+			return Robot;
+		}
+		else {
+			cerr << "unknown agent in stringToAgent: \"" << s << "\"" << endl;
+			return Robot;
+		}
+	}
+}
+
 ModalityPtr
 MR_WordToModality(MR_Word w)
 {
-	ModalityPtr m = new Modality();
-	m->type = Event;
-	return m;
+//	cerr << "MR_WordToModality" << endl;
+	MR_Word w_bel;
+
+//	print_modality(w);
+
+	if (is_modality_event(w)) {
+//		cerr << "cc: event" << endl;
+		ModalityPtr m = new Modality();
+		m->type = Event;
+		return m;
+	}
+	else {
+		if (is_modality_info(w)) {
+//			cerr << "cc: info" << endl;
+			ModalityPtr m = new Modality();
+			m->type = Info;
+			return m;
+		}
+		else {
+			if (is_modality_att(w)) {
+//				cerr << "cc: att" << endl;
+				ModalityPtr m = new Modality();
+				m->type = AttState;
+				return m;
+			}
+			else {
+				if (is_modality_k(w, &w_bel)) {
+//					cerr << "cc: k" << endl;
+					KModalityPtr km = new KModality();
+					km->type = K;
+
+					char * s1;
+					char * s2;
+
+					MR_Word w_strlist;
+
+					if (is_belief_private(w_bel, &s1)) {
+//						cerr << "private " << s1 << endl;
+						km->share = Private;
+						km->act = stringToAgent(s1);
+					}
+					else {
+						if (is_belief_attrib(w_bel, &s1, &s2)) {
+//							cerr << "attrib " << s1 << " -> " << s2 << endl;
+							km->share = Attribute;
+							km->act = stringToAgent(s1);
+							km->pat = stringToAgent(s2);
+						}
+						else {
+							if (is_belief_mutual(w_bel, &w_strlist)) {
+//								cerr << "mutual" << endl;
+								// XXX this!!
+								km->share = Mutual;
+								km->act = Human;
+								km->act = Robot;
+							}
+							else {
+								cerr << "unknown belief!" << endl;
+								return 0;
+							}
+						}
+					}
+					return km;
+				}
+				else {
+					cerr << "unknown modality!" << endl;
+					return 0;
+				}
+			}
+		}
+	}
+}
+
+ModalitySeq
+MR_WordToModalitySeq(MR_Word w_list)
+{
+//	cerr << "MR_WordToModalitySeq" << endl;
+	ModalitySeq seq = vector<ModalityPtr>();
+
+//	print_list_modalities(w_list);
+
+	MR_Word w_iter;
+	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
+		seq.push_back(MR_WordToModality(MR_list_head(w_iter)));
+	}
+	return seq;
 }
 
 TermPtr
@@ -162,11 +289,12 @@ MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
 ModalisedFormulaPtr
 MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 {
+//	cerr << "MR_WordToModalisedFormula" << endl;
 	ModalisedFormulaPtr f = new ModalisedFormula();
 	MR_Word w_m;
 	MR_Word w_p;
 	dissect_mprop(w_mf, &w_m, &w_p);
-	f->m = MR_WordToModality(w_m);
+	f->m = MR_WordToModalitySeq(w_m);
 	f->p = MR_WordToPredicate(w_vs, w_p);
 
 	return f;
@@ -175,6 +303,7 @@ MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 AbductiveProofPtr
 MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
 {
+//	cerr << "MR_WordToAbductiveProof" << endl;
 	AbductiveProofPtr p = new AbductiveProof();
 	
 	MR_Word w_vs;
