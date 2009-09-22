@@ -25,7 +25,7 @@ module beliefmodels {
 			string id;
 		}; // end EpistemicObject
 		
-		
+		 
 		class RelationArgument { 
 			int argPos;
 			EpistemicObject arg; 

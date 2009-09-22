@@ -58,7 +58,7 @@ class OriginInfo {
 	string localDataType;
 };
 
-
+ 
 /** 
  * A proxy
  */ 
@@ -79,7 +79,6 @@ sequence<Proxy> ProxySeq;
  */ 
 class Union extends PerceivedEntity {
 	ProxySeq includedProxies;
-	float confidenceScore;
 };
 
 
