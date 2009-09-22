@@ -7,6 +7,8 @@
 #include <Navigation/GridContainer.hh>
 #include "ObjPdf.hpp"
 #include "XVector3D.h"
+#include <FrontierInterface.hpp>
+#include <float.h>
 
 using namespace cast;
 using namespace std;
@@ -54,12 +56,30 @@ void ObjectSearch::start() {
       cdl::ALLSA),
       new MemberFunctionChangeReceiver<ObjectSearch>(this,
 	&ObjectSearch::ObjectDetected));
+	
+	addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+                                        &ObjectSearch::newNavGraphNode));  
+  addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+                                        &ObjectSearch::newNavGraphNode));  
+                                        
 		
 
 }
 
 
+void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
+{
+  debug("new NavGraphNode");
 
+  shared_ptr<CASTData<NavData::FNode> > oobj =
+    getWorkingMemoryEntry<NavData::FNode>(objID.address);
+  
+  NavData::FNodePtr fnode = oobj->getData();
+  fnodeseq.push_back(fnode);
+  
+}
 void ObjectSearch::configure(const map<string,string>& _config) {
     log("Configuring ObjectSearch");
     map<string,string>::const_iterator it = _config.find("-c");
@@ -210,6 +230,7 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     whereinplan = -1;
 
     if (m_CtrlPTU)  {
+    	log("connecting to PTU");
       Ice::CommunicatorPtr ic = getCommunicator();
       
       Ice::Identity id;
@@ -235,9 +256,10 @@ void ObjectSearch::runComponent() {
     setupPushScan2d(*this, -1);
     setupPushOdometry(*this, -1);
 	MovePanTilt(0 , 5*M_PI/180);
+
     //clock_t start_time,elapsed;
     //double elapsed_time;
-    m_command = TURN;
+    m_command = PLAN; //TURN;
 	log("hey I run");
     while(runObjectSearch) {
 		
@@ -246,15 +268,12 @@ void ObjectSearch::runComponent() {
         InterpretCommand ();
         UpdateDisplays();
         sleep(1);
-        //start_time = clock();
-        //elapsed = clock()-start_time;
-        //elapsed_time = elapsed / ((double) CLOCKS_PER_SEC)*1000;
-        //log("Time elapsed: %f",elapsed_time);
-
     }
 }
 void ObjectSearch::MovePanTilt(double pan,double tolerance){
-	log("Moving pantilt to: %f with %f tolerance", pan, tolerance);
+		if (!m_CtrlPTU)
+		  return;
+		log(" Moving pantilt to: %f with %f tolerance", pan, tolerance);
 		ptz::PTZPose p;
 		ptz::PTZReading ptuPose;
 		p.pan = pan ;
@@ -306,7 +325,7 @@ void ObjectSearch::Plan () {
     log("Plan generated %i view points with %f coverage",m_plan.plan.size(),m_plan.totalcoverage);
 	
     if (true) {
-      m_command = EXECUTE; //PLAN;
+      m_command = PLAN; //EXECUTE;
     } else {
         m_command = PLAN;
     }
@@ -412,6 +431,20 @@ void ObjectSearch::GenViewPoints() {
     double xW,yW;
     int i=0;
     std::vector<double> angles;
+    log("creating placeinterface proxy");
+    FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    
+    std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
+    while (obj.empty()) {
+      getWorkingMemoryEntries<NavData::FNode>(20, obj);	
+      usleep(1000);
+    }
+    NavData::FNodeSequence fnodeseq;
+    for (unsigned int i = 0; i < obj.size() ; i++)
+    {
+    	fnodeseq.push_back(obj[i]->getData());
+    }
+    
     for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/90)
         angles.push_back(rad);
 
@@ -422,14 +455,23 @@ void ObjectSearch::GenViewPoints() {
         randx = (randx % (m_gridsize)) - m_gridsize/2;
         randy = (randy % (m_gridsize)) - m_gridsize/2;
         m_lgm->index2WorldCoords(randx,randy,xW,yW);
+        
         if ((*m_lgm)(randx,randy) == 0) {
             if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
             	m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
-                m_samples[2*i] = randx;
-                m_samples[2*i+1] = randy;
-                int the = (int)(rand() % angles.size());
-                m_samplestheta[i] = angles[the];
-                i++;
+            	long nodeid = GetClosestFNode(xW,yW);
+        		SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
+        		long id = -1;
+        		if (place != NULL)
+        			id = place->id;
+        		
+            	if (id == 0) { //if sample is in a place we were asked to search
+                	m_samples[2*i] = randx;
+                	m_samples[2*i+1] = randy;
+                	int the = (int)(rand() % angles.size());
+                	m_samplestheta[i] = angles[the];
+                	i++;
+            	}
             }
         }
     }
@@ -452,6 +494,21 @@ void ObjectSearch::GenViewPoints() {
     }
     //log("View Cones calculated.");
     displayOn = true;
+}
+long ObjectSearch::GetClosestFNode(double xW, double yW){
+	long nodeid;
+    double hdist = DBL_MAX;
+    double sqrsum = (xW*xW) + (yW*yW);
+    for (unsigned int i = 0; i < fnodeseq.size() ; i++){
+        double dist = sqrt( pow((xW - fnodeseq[i]->x),2) + pow((yW - fnodeseq[i]->y),2) );
+        //log("node pose: %.2f,%.2f dist: %f", fnodeseq[i]->x,fnodeseq[i]->y, dist); 
+        if ( dist < hdist){
+        	hdist = dist;
+        	nodeid = fnodeseq[i]->nodeId;
+        }
+    }
+    //log("closest node id : for point %f,%f is %i",xW,yW,nodeid);
+    return nodeid;
 }
 std::vector<int> ObjectSearch::GetInsideViewCone(XVector3D &a, bool addall) {
 	tpoints.clear();
@@ -577,11 +634,11 @@ ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vecto
             searchplan.plan.push_back(candidatePoses[j]);
             searchplan.indexarray.push_back(j);
             searchplan.totalcoverage += extracoverage;
-            println("Total Coverage %f", searchplan.totalcoverage);
-            println("Added to plan");
+            //println("Total Coverage %f", searchplan.totalcoverage);
+            //println("Added to plan");
             if (searchplan.totalcoverage >= m_covthresh) {
-                println("Found plan covers %f of the area", searchplan.totalcoverage);
-				println("%i out of  %i points", covered, m_coveragetotal);
+              //  println("Found plan covers %f of the area", searchplan.totalcoverage);
+			//	println("%i out of  %i points", covered, m_coveragetotal);
 				return searchplan;
             }
         } else {
@@ -596,8 +653,8 @@ ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vecto
 
     }
     if (searchplan.totalcoverage < m_covthresh) {
-        println("Plan does not cover %f only %f", covpercent, searchplan.totalcoverage);
-		println("%i out of  %i points", covered, m_coveragetotal);
+        //println("Plan does not cover %f only %f", covpercent, searchplan.totalcoverage);
+		//println("%i out of  %i points", covered, m_coveragetotal);
     }
     	return searchplan;
 }
@@ -776,17 +833,18 @@ void ObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
     if (m_TOPP.isTransformDefined()) {
         Cure::Pose3D scanPose;
         if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
+        	m_Mutex.lock();
+            m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
+            m_Mutex.unlock();
+            
             Cure::Pose3D lpW;
             m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
                                         0.5,
                                         0);
             lpW.add(scanPose, m_LaserPoseR);
             m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);
-            m_Mutex.lock();
-            m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-            m_Mutex.unlock();
+            
         }
-        firstscanreceived = true;
     }
 
 }
