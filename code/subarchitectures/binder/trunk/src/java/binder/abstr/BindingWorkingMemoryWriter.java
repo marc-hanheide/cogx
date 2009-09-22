@@ -20,8 +20,11 @@
 package binder.abstr;
 
 
+import java.util.HashMap;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.OriginMap;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
@@ -29,7 +32,10 @@ import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
+import cast.AlreadyExistsOnWMException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
@@ -444,7 +450,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 
 		try {
 			addToWorkingMemory(proxy.entityID, proxy);
-	//		storeOriginInfo(proxy);
+			storeOriginInfo(proxy);
 			log("new Proxy succesfully added to the binder working memory");
 
 		} catch (Exception e) {
@@ -461,7 +467,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @throws ConsistencyException
 	 * @throws AlreadyExistsOnWMException
 	 */
-	/**
+	
 	private void storeOriginInfo(Proxy _proxy)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, AlreadyExistsOnWMException {
@@ -475,12 +481,12 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 			om = getMemoryEntry(m_originMapID, OriginMap.class);
 		}
 
-		if (om.sourceID2ProxyID.containsKey(_proxy.origin.localDataId)) {
+		if (om.sourceID2ProxyID.containsKey(_proxy.origin.address.id)) {
 			println("WARNING: OriginMap already contained entry for: "
-					+ _proxy.origin.localDataId);
+					+ _proxy.origin.address.id);
 		}
 
-		om.sourceID2ProxyID.put(_proxy.origin.localDataId, _proxy.entityID);
+		om.sourceID2ProxyID.put(_proxy.origin.address.id, _proxy.entityID);
 
 		if (firstEntry) {
 			addToWorkingMemory(m_originMapID, om);
@@ -489,7 +495,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		}
 
 	}
-	 */
+	 
 	
 	/**
 	 * Removes source id mapping from WM map.
@@ -499,21 +505,21 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @throws ConsistencyException
 	 * @throws PermissionException
 	 */
-	/**
+	
 	private void removeOriginInfo(Proxy _proxy)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException {
 		OriginMap om = getMemoryEntry(m_originMapID, OriginMap.class);
 
-		if (!om.sourceID2ProxyID.containsKey(_proxy.origin.localDataId)) {
+		if (!om.sourceID2ProxyID.containsKey(_proxy.origin.address.id)) {
 			println("WARNING: OriginMap did not contain entry for: "
-					+ _proxy.origin.localDataId);
+					+ _proxy.origin.address.id);
 		} else {
-			om.sourceID2ProxyID.remove(_proxy.origin.localDataId);
+			om.sourceID2ProxyID.remove(_proxy.origin.address.id);
 			overwriteWorkingMemory(m_originMapID, om);
 		}
 	}
-	*/
+	
 	
 	/**
 	 * Overwrite an existing proxy with a new one (the new proxy needs to have
@@ -546,7 +552,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	protected void deleteEntityInWM(Proxy proxy) {
 
 		try {
-			// removeOriginInfo(proxy);
+			removeOriginInfo(proxy);
 			deleteFromWorkingMemory(proxy.entityID);
 			log("existing Proxy succesfully deleted from the binder working memory");
 

@@ -30,12 +30,15 @@ import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.Union;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.utils.BayesianNetworkUtils;
 import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
+import binder.utils.GradientDescent;
+import binder.utils.ProbabilityUtils;
 
 /**
  * Class for managing a bayesian network expressing feature correlations 
@@ -91,9 +94,32 @@ public class BayesianNetworkManager {
 		}
 		else {
 			DiscreteProbabilityDistribution distrib = getPriorDistribution(entity.features);
+			
+			distrib = filterDistribution(distrib, entity);
+			
 			alreadyComputedDistribs.put(entity, distrib);
 			return distrib;
 		}
+	}
+	
+	
+	private DiscreteProbabilityDistribution filterDistribution
+	(DiscreteProbabilityDistribution distrib, PerceivedEntity entity) {
+	
+		if (entity instanceof Union && ((Union)entity).includedProxies.length > 1) {
+			float maxUnion = GradientDescent.getMaximum(distrib);
+		//	System.out.println("max union: "  + maxUnion);
+			float maxProxies = 1.0f;
+			for (int i = 0; i < ((Union)entity).includedProxies.length ; i++) {
+				maxProxies = maxProxies * GradientDescent.getMaximum(getPriorDistribution(((Union)entity).includedProxies[i]));
+			}
+		//	System.out.println("max proxies: "  + maxProxies);
+			if (maxUnion < (maxProxies + maxProxies/4)) {
+		//		System.out.println("OK!!");
+				distrib = ProbabilityUtils.multiplyDistributionWithConstantValue(distrib, 0.0000005f);
+			}	
+		}
+		return distrib;
 	}
 
 	/**
