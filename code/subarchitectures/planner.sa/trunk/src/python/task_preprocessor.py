@@ -171,7 +171,10 @@ def generate_mapl_task(task_desc, domain_fn):
   init = [f.asLiteral(useEqual=True) for f in facts]
 
   problem = mapl.problem.Problem("cogxtask", objects, init, None, task._mapldomain)
-  problem.goal = mapl.parser.Parser.parseAs(task_desc.goal.split("\n"), mapl.conditions.Condition, problem)
+  try:
+    problem.goal = mapl.parser.Parser.parseAs(task_desc.goal.split("\n"), mapl.conditions.Condition, problem)
+  except ParseError:
+    problem.goal = mapl.conditions.Falsity
 
   task._mapltask = problem
   task.set_state(state.State(facts, problem))
