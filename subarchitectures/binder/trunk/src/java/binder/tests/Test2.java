@@ -103,7 +103,7 @@ public class Test2 extends AbstractTester{
 		int counts = 0;
 		while ((curConfig.includedUnions.length < NUMBER_OF_PROXIES) && counts < (NUMBER_OF_PROXIES*2)) {
 		try {
-			sleepComponent(150);
+			sleepComponent(50);
 			counts++;
 		}
 		catch (Exception e){ }
@@ -156,15 +156,15 @@ public class Test2 extends AbstractTester{
 		
 		if (featureValueType.equals(StringValue.class)) {
 			return createStringValue("str"+ featurevaluecount , 
-					random.nextFloat()/((float)MAX_NUMBER_OF_FEATUREVALUES));
+					random.nextFloat());
 		}
 		else if (featureValueType.equals(IntegerValue.class)) {
 			return createIntegerValue(featurevaluecount, 
-					random.nextFloat()/((float)MAX_NUMBER_OF_FEATUREVALUES));
+					random.nextFloat());
 		}
 		else if (featureValueType.equals(BooleanValue.class)) {
 			return createBooleanValue(random.nextBoolean(), 
-					random.nextFloat()/((float)MAX_NUMBER_OF_FEATUREVALUES));
+					random.nextFloat());
 		}
 			
 		return null;

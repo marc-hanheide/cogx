@@ -31,6 +31,7 @@ import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
+import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
@@ -44,7 +45,7 @@ public class GradientDescent {
 
 
 	public static boolean ERRLOGGING = true;
-	public static boolean LOGGING = false;
+	public static boolean LOGGING = true;
 	
 	public static HashMap<Union,Float> maxForUnions = new HashMap<Union,Float>();
 
@@ -64,25 +65,30 @@ public class GradientDescent {
 			entity.distribution = ProbabilityUtils.generateProbabilityDistribution(entity);
 
 		}
-		if (entity.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
-			return getMaximum((DiscreteProbabilityDistribution) entity.distribution);
+		
+		return getMaximum (entity.distribution);
+		
+	}
+
+	public static float getMaximum (ProbabilityDistribution distrib) {
+		float result = 0.0f;
+		
+		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
+			return getMaximum((DiscreteProbabilityDistribution) distrib);
 		}
  
-		else if (entity.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
-			log("looking at combined prob. distribution for : "  + entity.entityID + " timestamp: " + entity.timeStamp + " nb proxies: " + ((Union)entity).includedProxies.length);
-			log("Max: " + getMaximum((CombinedProbabilityDistribution) entity.distribution));
+		else if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
 			
-			return getMaximum((CombinedProbabilityDistribution) entity.distribution);
+			return getMaximum((CombinedProbabilityDistribution) distrib);
 		}
 
 		else {
 			errlog("Sorry, only discrete or combined feature distributions are handled right now");
-			log("Used class: " + entity.distribution.getClass());
+			log("Used class: " + distrib.getClass());
 		}
 
 		return result;
 	}
-
 
 	public static float getMaximum (DiscreteProbabilityDistribution distrib) {
 
@@ -259,6 +265,7 @@ public static Union getBestUnion(UnionDistribution distribution) {
 			float average = multiplication ;
 			
 			config.configProb = average;
+			log("configProb: " + config.configProb);
 		}
 		
 		return configs;
@@ -292,7 +299,15 @@ public static Union getBestUnion(UnionDistribution distribution) {
 			 	UnionConfiguration config = e.nextElement();
 			 	sum += config.configProb;
 			}
+	
 		 float alpha = 1.0f / sum;
+	/**	 if (sum < 0.000000000000001) {
+			System.out.println("nb configs: " + configs.size());
+			 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+				 	UnionConfiguration config = e.nextElement();
+				 	System.out.println(config.configProb);
+				}
+		 } */
 		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			 	UnionConfiguration config = e.nextElement();
 			 	config.configProb = alpha * config.configProb;
@@ -336,16 +351,12 @@ public static Union getBestUnion(UnionDistribution distribution) {
 
 		float threshold = 0.0f;
 		Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
-	//	System.out.println("OK 1");
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
-	//		System.out.println("OK 2");
 			if (nbestConfigs.size() < nb_nbests) {
 
 				nbestConfigs.add(config);
 
-	//			System.out.println("OK 3");
-	//			System.out.println("config.configProb"+ config.configProb);
 				if (config.configProb < threshold) {
 					threshold = config.configProb;
 				}
@@ -353,8 +364,6 @@ public static Union getBestUnion(UnionDistribution distribution) {
 
 			else {
 				
-	//			System.out.println("OK 3.2");
-	//			System.out.println("config.configProb"+ config.configProb);
 				if (config.configProb > threshold) {
 					UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs);
 					nbestConfigs.remove(worstinNBests);

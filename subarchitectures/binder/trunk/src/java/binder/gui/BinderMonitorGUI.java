@@ -612,7 +612,7 @@ public class BinderMonitorGUI extends JFrame
 				Feature feat = features[i];
 				
 			
-				if (!FeatureValueUtils.hasUnknownValue(FeatureValueUtils.getMaxFeatureValue(feat))) {
+		//		if (!FeatureValueUtils.hasUnknownValue(FeatureValueUtils.getMaxFeatureValue(feat))) {
 
 					String featureText = createFeatureText(feat);
 					log("feature text for " + i + ": " + featureText);
@@ -620,7 +620,7 @@ public class BinderMonitorGUI extends JFrame
 					objects_feats[i] = graph.insertVertex(vertex, null, featureText, 6, curYPosition, width - 20, featHeight);
 					curYPosition += featHeight + 10;
 					insertedObjects.add(objects_feats[i]);
-				}
+		//		}
 			}
 
 			graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, colour, objects_feats);
