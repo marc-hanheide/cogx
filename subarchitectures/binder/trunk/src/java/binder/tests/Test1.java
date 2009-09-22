@@ -66,7 +66,7 @@ public class Test1 extends AbstractTester {
 			
 				 if (union.probExists > 0.0f) {
 					
-					 if (union.timeStamp < System.currentTimeMillis()) {
+					 if (union.timeStamp.s <=getCASTTime().s) {
 						 
 						 if (union.features != null && 
 								 union.features.length == lastProxy.features.length) {

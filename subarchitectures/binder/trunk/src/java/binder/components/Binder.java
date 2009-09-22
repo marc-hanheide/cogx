@@ -225,7 +225,7 @@ public class Binder extends ManagedComponent  {
 			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
 
 			updatedProxy = BinderUtils.completeProxy(updatedProxy, addUnknowns);
-			updatedProxy.timeStamp = System.currentTimeMillis();;
+			updatedProxy.timeStamp = getCASTTime();
 
 			// Loop on the current union configurations to update each of them in turn
 			for (Enumeration<UnionConfiguration> configs = 
@@ -249,7 +249,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
 							proxies.add(updatedProxy);
-							Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID);								
+							Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 							existingUnionConfig.includedUnions[i] = updatedUnion;
 						}
 					}
@@ -312,7 +312,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
 							if (proxies.size() > 0) { 
-								Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID);								
+								Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 								existingUnionConfig.includedUnions[i] = updatedUnion;
 							}
 							else {
@@ -336,7 +336,7 @@ public class Binder extends ManagedComponent  {
 
 		log("--------STOP BINDING UPDATE (AFTER DELETION) ----------");
 	}
-
+	
 
 	/**
 	 * Update the binding working memory after the insertion of a new proxy
@@ -357,7 +357,7 @@ public class Binder extends ManagedComponent  {
 			// Extract the new proxy
 			Proxy newProxy = getMemoryEntry(wmc.address, Proxy.class);
 
-			newProxy.timeStamp = System.currentTimeMillis();;
+			newProxy.timeStamp = getCASTTime();
 
 			log("TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
 					" (" + newProxy.getClass().getSimpleName() + ") ");
@@ -425,7 +425,7 @@ public class Binder extends ManagedComponent  {
 
 			log("Constructing initial union...");
 			// Construct the initial union (containing only the new proxy)
-			Union newUnion = constructor.getInitialUnion(newProxy, newDataID());
+			Union newUnion = constructor.getInitialUnion(newProxy, newDataID(), getCASTTime());
 
 			log("Construction of initial union finished, moving to unions of more than 1 proxy...");
 
@@ -464,7 +464,7 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 							unionsToMerge.add(existingUnion);
 							unionsToMerge.add(newUnion);
-							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID);
+							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						}
 						// or simply fetch the already computed union

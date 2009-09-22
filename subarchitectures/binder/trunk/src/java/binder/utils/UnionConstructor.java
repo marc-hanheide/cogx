@@ -22,6 +22,8 @@ package binder.utils;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import cast.cdl.CASTTime;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -74,13 +76,13 @@ public class UnionConstructor  {
 	 * @return the new union
 	 */	
 	public Union constructNewUnion
-	(Vector<PerceivedEntity> includedEntities, String entityID) {
+	(Vector<PerceivedEntity> includedEntities, String entityID, CASTTime timestamp) {
 
 		if (BinderUtils.induceRelationUnion(includedEntities)) {
-			return constructNewRelationUnion(includedEntities, entityID);
+			return constructNewRelationUnion(includedEntities, entityID, timestamp);
 		}
 		else {
-			return constructNewBasicUnion(includedEntities, entityID);
+			return constructNewBasicUnion(includedEntities, entityID, timestamp);
 		}
 
 	}
@@ -96,14 +98,14 @@ public class UnionConstructor  {
 	 */
 
 	private Union constructNewBasicUnion 
-	(Vector<PerceivedEntity> includedEntities, String entityID) {
+	(Vector<PerceivedEntity> includedEntities, String entityID, CASTTime timestamp) {
 		//	log("***** Constructing a new union ****");
 
 		// Create a new union with a new data ID
 		Union union = new Union() ;
 
 		union.entityID = entityID;
-		union.timeStamp = System.currentTimeMillis();
+		union.timeStamp = timestamp;
 
 		// Specify the proxies included in the union
 		Vector<Proxy> includedProxies = BinderUtils.getProxies(includedEntities);
@@ -139,10 +141,10 @@ public class UnionConstructor  {
 	 */
 
 	public RelationUnion constructNewRelationUnion 
-	(Vector<PerceivedEntity> includedEntities, String entityID) {
+	(Vector<PerceivedEntity> includedEntities, String entityID, CASTTime timestamp) {
 		
 		// Get the basic union
-		Union bunion = constructNewBasicUnion(includedEntities, entityID);
+		Union bunion = constructNewBasicUnion(includedEntities, entityID, timestamp);
 
 		// Copy the info of the basic union into a new relation union
 		RelationUnion runion = BinderUtils.convertIntoRelationUnion(bunion);
@@ -260,10 +262,10 @@ public class UnionConstructor  {
 
 
 
-	public Union getInitialUnion(Proxy proxy, String newDataID) {
+	public Union getInitialUnion(Proxy proxy, String newDataID, CASTTime timestamp) {
 		Vector<PerceivedEntity> curProxyV = new Vector<PerceivedEntity>();
 		curProxyV.add(proxy);
-		Union union = constructNewUnion(curProxyV, newDataID);
+		Union union = constructNewUnion(curProxyV, newDataID, timestamp);
 		return union;
 	} 
 

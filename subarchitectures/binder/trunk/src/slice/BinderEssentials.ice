@@ -13,7 +13,7 @@ module core {
  */
 class FeatureValue { 
 	float independentProb ;
-	long timeStamp;
+	cast::cdl::CASTTime timeStamp;
 };
 
 /**
@@ -47,7 +47,7 @@ sequence<Feature> FeaturesList;
 class PerceivedEntity {
 	string entityID;
 	float probExists;
-	long timeStamp;
+	cast::cdl::CASTTime timeStamp;
 	FeaturesList features;
 	ProbabilityDistribution distribution;
 };

@@ -107,6 +107,8 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli3", "HapticRelation");
 		RelationProxy proxy = createNewRelationProxy(origin, 0.81f, sources, targets);
 		
+		addFeatureToProxy (proxy, createFeatureWithUniqueFeatureValue("shape", createStringValue("test", 0.67f)));
+		
 		log("Relation proxy successfully created");
 
 		return proxy;

@@ -248,21 +248,18 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @return the proxy
 	 */
 
-	public Proxy addFeatureToProxy(Proxy proxy, Feature feat) {
+	public void addFeatureToProxy(Proxy proxy, Feature feat) {
 
 		Feature[] newFeatures;
 		
 		if (feat.featlabel == null) {
 			System.out.println("WARNING: feature has no specified feature label, cannot insert feature");
-			return proxy;
 		}
 		else if (feat.alternativeValues == null) {
 			System.out.println("WARNING: feature has no specified feature values, cannot insert feature");
-			return proxy;
 		}
 		else if (feat.alternativeValues.length == 0) {
 			System.out.println("WARNING: feature has no specified feature values, cannot insert feature");
-			return proxy;			
 		}
 		
 		if (proxy.features != null) {
@@ -278,7 +275,6 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		
 		proxy.features = newFeatures;
 
-		return proxy;
 	}
 
 	/**
@@ -295,7 +291,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		StringValue stringVal = new StringValue();
 		stringVal.val = val;
 		stringVal.independentProb = prob;
-		stringVal.timeStamp = System.currentTimeMillis();
+		stringVal.timeStamp = getCASTTime();
 		return stringVal;
 	}
 
@@ -313,7 +309,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		AddressValue addressVal = new AddressValue();
 		addressVal.val = address;
 		addressVal.independentProb = prob;
-		addressVal.timeStamp = System.currentTimeMillis();
+		addressVal.timeStamp = getCASTTime();
 		return addressVal;
 	}
 
@@ -331,7 +327,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		IntegerValue integerVal = new IntegerValue();
 		integerVal.val = integer;
 		integerVal.independentProb = prob;
-		integerVal.timeStamp = System.currentTimeMillis();
+		integerVal.timeStamp = getCASTTime();
 		return integerVal;
 	}
 
@@ -349,7 +345,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		BooleanValue boolVal = new BooleanValue();
 		boolVal.val = val;
 		boolVal.independentProb = prob;
-		boolVal.timeStamp = System.currentTimeMillis();
+		boolVal.timeStamp = getCASTTime();
 		return boolVal;
 	}
 
@@ -530,7 +526,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 */
 
 	protected void overwriteProxyInWM(Proxy proxy) {
-
+ 
 		try {
 			overwriteWorkingMemory(proxy.entityID, proxy);
 			log("existing Proxy succesfully modified in the binder working memory");

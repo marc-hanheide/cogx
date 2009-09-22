@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import cast.cdl.CASTTime;
+
 import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
@@ -57,7 +59,7 @@ public class BayesianNetworkUtils {
 	    	for (int j = 0; j < nbvalues; j++ )  {
 	    		newfeatvalues[j] = network.nodes[i].feat.alternativeValues[j];
 	    	}
-	    	newfeatvalues[nbvalues] = new UnknownValue(1.0f/nbvalues, 0);
+	    	newfeatvalues[nbvalues] = new UnknownValue(1.0f/nbvalues, new CASTTime());
 	    	network.nodes[i].feat.alternativeValues = newfeatvalues;
 	    }
 	    
