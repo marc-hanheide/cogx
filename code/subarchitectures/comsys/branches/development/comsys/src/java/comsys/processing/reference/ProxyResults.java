@@ -20,6 +20,8 @@ import binder.autogen.core.RelationProxy;
 // -------------------------------------------------------
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
 
 
 public class ProxyResults {
