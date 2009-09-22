@@ -53,10 +53,6 @@ public class ProbabilityUtils {
 			distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];
 			distrib.assignments = assignments.toArray(distrib.assignments);
 
-			for (int i = 0 ; i < distrib.assignments.length ; i++) {
-				distrib.assignments[i].prob = distrib.assignments[i].prob * entity.probExists;
-			}
-
 		}
 		
 		else {
@@ -69,6 +65,11 @@ public class ProbabilityUtils {
 		if (normaliseDistributions) {
 			distrib = normaliseDistribution(distrib, 1.0f);
 		}
+		
+		for (int i = 0 ; i < distrib.assignments.length ; i++) {
+			distrib.assignments[i].prob = distrib.assignments[i].prob * entity.probExists;
+		}
+		
 		return distrib;
 	}
 

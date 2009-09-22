@@ -58,7 +58,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	private Proxy createProxyTwo() {
 		
 		OriginInfo origin = createOriginInfo ("fakehaptic", "blibli", "GraspableObject");
-		Proxy proxy = createNewProxy(origin, 0.35f);
+		Proxy proxy = createNewProxy(origin, 0.65f);
 		
 		FeatureValue cylindrical = createStringValue ("cylindrical", 0.73f);
 		Feature feat = createFeatureWithUniqueFeatureValue ("shape", cylindrical);

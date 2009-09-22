@@ -37,7 +37,7 @@ import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.architecture.ManagedComponent;
-
+ 
 /**
  * Abstract class for structuring and inserting proxies into the binder working
  * memory
@@ -46,13 +46,13 @@ import cast.architecture.ManagedComponent;
  * @version 09/09/2009
  * @started 15/08/2009
  */
-
+ 
 public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
-
+ 
 	// =================================================================
 	// METHODS FOR CREATING NEW PROXIES
 	// =================================================================
-
+ 
 	/**
 	 * ID in current SA where origin map is stored.
 	 */

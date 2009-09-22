@@ -35,6 +35,7 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.utils.GradientDescent;
+import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -65,20 +66,22 @@ public class Binder extends ManagedComponent  {
 
 	// whether to add unknown values to each feature
 	private boolean addUnknowns = false;
-		
+
 	// Text specification of the bay
 	public String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
-	
+
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
 	public int nbestsFilter = 5;
 
+	public boolean normaliseDistributions = false;
+	
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
 	Vector<UnionConfiguration> currentUnionConfigurations ;
 
-	
-	
+
+
 
 	// ================================================================= 
 	// INITIALISATION METHODS                   
@@ -167,11 +170,11 @@ public class Binder extends ManagedComponent  {
 
 	@Override
 	public void configure(Map<String, String> _config) {
-		
+
 		if (_config.containsKey("--bayesiannetworkfile")) {
 			bayesianNetworkConfigFile = _config.get("--bayesiannetworkfile");
 		} 
-		
+
 		constructor = new UnionConstructor(bayesianNetworkConfigFile);
 
 		if (_config.containsKey("--alpha")) {
@@ -184,18 +187,19 @@ public class Binder extends ManagedComponent  {
 		if (_config.containsKey("--addunknowns")) {
 			addUnknowns = Boolean.parseBoolean(_config.get("--addunknowns"));
 		}
-		
+
 		if (_config.containsKey("--normalise")) {
-			boolean normaliseDistributions = Boolean.parseBoolean(_config.get("--normalise"));
-			constructor.setNormalisationFlag(normaliseDistributions);
+			normaliseDistributions = Boolean.parseBoolean(_config.get("--normalise"));
 		}
-		
+
 		if (_config.containsKey("--nbestsfilter")) {
 			nbestsFilter = Integer.parseInt(_config.get("--nbestsfilter"));
 		}
 	}
 
 
+
+	
 	// ================================================================= 
 	// METHODS FOR UPDATING THE BINDING WORKING MEMORY   
 	// ================================================================= 
@@ -267,7 +271,7 @@ public class Binder extends ManagedComponent  {
 	}
 
 
-	
+
 	/**
 	 * Update the binding working memory after the deletion of an existing proxy
 	 * 
@@ -281,7 +285,7 @@ public class Binder extends ManagedComponent  {
 
 		log("--------START BINDING UPDATE ----------");
 		log("TRIGGERED BY: proxy deletion ");
-		
+
 		try {
 			// The ID of the deleted proxy
 			String deletedProxyID= wmc.address.id;
@@ -332,7 +336,7 @@ public class Binder extends ManagedComponent  {
 
 		log("--------STOP BINDING UPDATE (AFTER DELETION) ----------");
 	}
-	
+
 
 	/**
 	 * Update the binding working memory after the insertion of a new proxy
@@ -346,7 +350,7 @@ public class Binder extends ManagedComponent  {
 
 	private void proxyInsertion(WorkingMemoryChange wmc) {
 		log("--------START BINDING UPDATE ----------");
-	
+
 		long initTime = System.currentTimeMillis();
 
 		try {
@@ -357,7 +361,7 @@ public class Binder extends ManagedComponent  {
 
 			log("TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
 					" (" + newProxy.getClass().getSimpleName() + ") ");
-		
+
 			newProxy = BinderUtils.completeProxy(newProxy, addUnknowns);
 
 			// Perform the binding (either incrementally or by full rebinding)
@@ -379,7 +383,7 @@ public class Binder extends ManagedComponent  {
 
 	}
 
-	
+
 	// ================================================================= 
 	// INCREMENTAL AND FULL BINDING METHODS   
 	// ================================================================= 
@@ -407,7 +411,7 @@ public class Binder extends ManagedComponent  {
 		}
 	}
 
-	
+
 	/**
 	 * Update the binding working memory by recomputing the union configurations
 	 * after the insertion of a new proxy
@@ -426,10 +430,10 @@ public class Binder extends ManagedComponent  {
 			log("Construction of initial union finished, moving to unions of more than 1 proxy...");
 
 			log("Number of current configurations: "  + currentUnionConfigurations.size());
-			
+
 			// The new union configurations
 			Vector<UnionConfiguration> newUnionConfigurations = new Vector<UnionConfiguration>();
-			
+
 			// List of unions already computed and merged
 			HashMap<Union,Union> alreadyMergedUnions = new HashMap<Union, Union>();
 
@@ -450,12 +454,12 @@ public class Binder extends ManagedComponent  {
 
 					// A new, several-proxies union
 					Union newMergedUnion;
-					
+
 					// check if the current union and the new one can be merged
 					if ( !hasConflicts(existingUnion, newUnion)) {
 
 						if (!alreadyComputed(existingUnion, alreadyMergedUnions)) {
-							
+
 							// If not, construct the merged union
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
 							unionsToMerge.add(existingUnion);
@@ -468,33 +472,40 @@ public class Binder extends ManagedComponent  {
 							newMergedUnion = alreadyMergedUnions.get(existingUnion);
 						}
 						// create and add a new union configuration with the new merged union
-							UnionConfiguration newConfigWithMergedUnion = 
+						UnionConfiguration newConfigWithMergedUnion = 
 							createNewUnionConfiguration (existingUnionConfig, newMergedUnion, existingUnion);
-						 newUnionConfigurations.add(newConfigWithMergedUnion);
+						newUnionConfigurations.add(newConfigWithMergedUnion);
 
 					}				
-					
+
 				}
 			}
 
-			newUnionConfigurations = 
-				GradientDescent.computeConfigurationMaxProbabilities(newUnionConfigurations);
+			newUnionConfigurations = GradientDescent.addConfidenceScoresToConfigs(newUnionConfigurations);
+								
+			GradientDescent.normaliseAndSetProbExistUnions(newUnionConfigurations);
+			
 			// Get the nbest configurations (with N as a parameter)
 			if (nbestsFilter > 0) {
 				newUnionConfigurations = 
 					GradientDescent.getNBestUnionConfigurations (newUnionConfigurations, nbestsFilter);
 			}
 			
+			if (normaliseDistributions) {
+				log("Normalisation of the probability distributions");
+				normaliseDistributions(newUnionConfigurations);
+			}
+
 			// update the list of possible unions
 			currentUnionConfigurations = newUnionConfigurations;
 
-			
+
 			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
 			updateWM(alters); 
-			
+
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -502,10 +513,26 @@ public class Binder extends ManagedComponent  {
 	}
 
 	
+	
+
 	// ================================================================= 
 	// UTILITY METHODS   
 	// ================================================================= 
 
+	private void normaliseDistributions (Vector<UnionConfiguration> configs) {
+		
+		for (Enumeration<UnionConfiguration> e = configs.elements() ; e.hasMoreElements(); ) {
+
+			UnionConfiguration config = e.nextElement();				
+
+			for (int i = 0 ; i < config.includedUnions.length; i++) {
+				
+				config.includedUnions[i].distribution = 
+					ProbabilityUtils.normaliseDistribution(config.includedUnions[i].distribution, 1.0f);
+			}
+		}
+	}
+	
 
 	/**
 	 * Get a vector containing all elements in the "proxies" array apart from proxyToExclude
@@ -589,7 +616,7 @@ public class Binder extends ManagedComponent  {
 		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, new Vector<Union>());
 	}
 
-	
+
 	/**
 	 * Create a new union configuration based on an existing configuration, a union
 	 * to add, and an union to remove
@@ -663,12 +690,12 @@ public class Binder extends ManagedComponent  {
 				union2 instanceof RelationUnion) {
 			return true;
 		}
-		
+
 		else if (!(union1 instanceof RelationUnion) && 
-			(union1.features.length == 0 || union2.features.length == 0)) {
+				(union1.features.length == 0 || union2.features.length == 0)) {
 			return true;
 		}
-		
+
 		return false;
 	}
 

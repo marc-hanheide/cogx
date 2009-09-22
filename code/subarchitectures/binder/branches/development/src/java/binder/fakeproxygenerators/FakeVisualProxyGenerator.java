@@ -71,14 +71,14 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		addFeatureToProxy (proxy, feat1);		
 	
 	
-		FeatureValue red = createStringValue("red", 0.65f);
+		FeatureValue red = createStringValue("red", 0.75f);
 		FeatureValue blue = createStringValue("blue", 0.2f);
 		FeatureValue[] vals = {red, blue};
 		Feature feat2 = createFeatureWithAlternativeFeatureValues ("colour", vals);
 		addFeatureToProxy (proxy, feat2);
 		
 
-		FeatureValue ontable = createStringValue("on_table", 0.5f);
+		FeatureValue ontable = createStringValue("on_table", 0.7f);
 		Feature feat3 = createFeatureWithUniqueFeatureValue ("location", ontable);
 		addFeatureToProxy (proxy, feat3);
 		

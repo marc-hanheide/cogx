@@ -236,11 +236,9 @@ public static Union getBestUnion(UnionDistribution distribution) {
 	
 	
 
-	public static Vector<UnionConfiguration> computeConfigurationMaxProbabilities
+	public static Vector<UnionConfiguration> addConfidenceScoresToConfigs
 	(Vector<UnionConfiguration> configs) {
 
-		ArrayList<Union> unions = new ArrayList<Union>();
-		
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
 
@@ -257,27 +255,38 @@ public static Union getBestUnion(UnionDistribution distribution) {
 				}
 				multiplication = multiplication * max;
 				
-				if (!isInList(unions, union)) {
-					unions.add(union);
-				}
 			} 
 			float average = multiplication ;
 			
 			config.configProb = average;
 		}
-	
-		normaliseConfigurationProbabilities(configs);
-		
-		computeConfidenceScores(unions, configs);
 		
 		return configs;
 	}
 	
 	
+	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
+		
+		ArrayList<Union> unions = new ArrayList<Union>();
+		
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			
+			UnionConfiguration config = e.nextElement();
+			for (int i = 0; i < config.includedUnions.length ; i++) {
+				
+				Union union = config.includedUnions[i];
+				if (!isInList(unions, union)) {
+					unions.add(union);
+				}
+			}
+		}
 
-	 public static void normaliseConfigurationProbabilities 
-	 		(Vector<UnionConfiguration> configs) {
-
+		
+		return unions;
+	}
+	
+	 public static void normaliseAndSetProbExistUnions (Vector<UnionConfiguration> configs) {
+		 
 		 float sum = 0.0f;
 		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			 	UnionConfiguration config = e.nextElement();
@@ -289,24 +298,29 @@ public static Union getBestUnion(UnionDistribution distribution) {
 			 	config.configProb = alpha * config.configProb;
 			}
 		 
-	  }
+		 ArrayList<Union> unions = getUnions (configs);
+		 
+		 setProbExistUnions(unions, configs);
+		 
+	 }
+	
 	
 	 
-	public static void computeConfidenceScores 
+	public static void setProbExistUnions 
 		(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
 	
 		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
 			Union u = e.next();
-			u.confidenceScore = 0.0f;
+			u.probExists = 0.0f;
 			for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
 				UnionConfiguration config = f.nextElement();
 				if (isUnionInConfig(config, u)) {
-					u.confidenceScore += config.configProb;
+					u.probExists += config.configProb;
 				}
 			}
 		}
 	}
-
+	
 	
 	private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
 		for (int i = 0 ; i < config.includedUnions.length ; i++) {

@@ -55,7 +55,7 @@ public class BinderMonitorGUI extends JFrame
 	private static final long initTimestamp = System.currentTimeMillis();
 	
 	int DEFAULT_ENTITY_BOX_WIDTH= 220;
-	int DEFAULT_ENTITY_BOX_HEIGHT= 100;
+	int DEFAULT_ENTITY_BOX_HEIGHT= 80;
 	int MIN_FEATURE_BOX_HEIGHT= 6;
 	int FEATURELINE_HEIGHT= 12;
 
@@ -156,7 +156,7 @@ public class BinderMonitorGUI extends JFrame
 		AVM.put("Proxy ID", proxy.entityID);
 		AVM.put("P(exists|z)", ""+roundProb(proxy.probExists));
 		AVM.put("Subarchitecture", proxy.origin.subarchId);
-		AVM.put("Max prob", ""+ roundProb(GradientDescent.getMaximum(proxy)));
+	//	AVM.put("Max prob", ""+ roundProb(GradientDescent.getMaximum(proxy)));
 		AVM.put("Timestamp", "+" + formatTimpestamp(proxy.timeStamp) + " s.");
 
 		int maxLength = getMaximumLength(AVM.keySet());
@@ -179,8 +179,8 @@ public class BinderMonitorGUI extends JFrame
 		AVM.put("Union ID", union.entityID);
 		AVM.put("P(exists|Z)", ""+roundProb(union.probExists));
 		AVM.put("Nb. included proxies", "" + union.includedProxies.length);
-		AVM.put("Max prob", ""+ GradientDescent.getMaximum(union));
-		AVM.put("Conf. score", ""+ union.confidenceScore);
+	//	AVM.put("Max prob", ""+ GradientDescent.getMaximum(union));
+	//	AVM.put("Conf. score", ""+ union.confidenceScore);
 		AVM.put("Timestamp", "+" + formatTimpestamp(union.timeStamp) + " s.");
 
 		int maxLength = getMaximumLength(AVM.keySet());
