@@ -42,7 +42,9 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	private String m_goal;
 	private long m_sleepMillis;
 	private boolean m_generateOwnPlans;
+	private boolean m_kanyeWest;
 
+	
 	// private WorkingMemoryAddress m_lastPlanProxyAddr;
 
 	public PrototypePlanExecutor() {
@@ -63,6 +65,14 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			m_generateOwnPlans = Boolean.parseBoolean(selfGenString);
 		}
 		log("generating own plans: " + m_generateOwnPlans);
+
+		String interruptSelfString = _config.get("--interrupt");
+		if (interruptSelfString != null) {
+			m_kanyeWest = Boolean.parseBoolean(interruptSelfString);
+		}
+		log("interrupting own execution: " + m_kanyeWest);
+
+	
 	}
 
 	@Override
@@ -112,15 +122,15 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 				_planProxyAddr, this);
 		executor.startExecution();
 
-		if (m_generateOwnPlans) {
-			new DummyInterrupter(_planProxyAddr).start();
+		if (m_generateOwnPlans && m_kanyeWest) {
+			new SelfInterrupter(_planProxyAddr).start();
 		}
 	}
 
-	private class DummyInterrupter extends SleepyThread {
+	private class SelfInterrupter extends SleepyThread {
 		WorkingMemoryAddress m_planProxyAddress;
 
-		public DummyInterrupter(WorkingMemoryAddress _ppa) {
+		public SelfInterrupter(WorkingMemoryAddress _ppa) {
 			super(2000);
 			m_planProxyAddress = _ppa;
 		}
