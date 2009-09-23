@@ -12,7 +12,6 @@ package comsys.processing.reference;
 // BINDER imports
 // -------------------------------------------------------
 
-import binder.autogen.core.OriginInfo; 
 import binder.autogen.core.Proxy; 
 import binder.autogen.specialentities.RelationProxy; 
 
