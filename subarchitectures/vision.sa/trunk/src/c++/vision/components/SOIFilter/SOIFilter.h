@@ -17,6 +17,7 @@
 #include <opencv/highgui.h>
 #include "GCoptimization.h"
 #include <boost/interprocess/sync/named_semaphore.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>

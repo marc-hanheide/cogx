@@ -46,6 +46,7 @@ using namespace VisionData;
 using namespace Video;
 
 using namespace boost::interprocess;
+using namespace boost::posix_time;
 
 struct gCutData {
 	int numLab;
@@ -304,47 +305,53 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-    queuesNotEmpty->wait();
+   ptime t(second_clock::universal_time() + seconds(2));
 
-    log("Got something in my queues");
-
-    if(!objToAdd.empty())
+    if (queuesNotEmpty->timed_wait(t))
     {
-      SOIData &soi = SOIMap[objToAdd.front()];
-      
-      if(soi.status == STABLE)
-      { 
-        ProtoObjectPtr pobj = new ProtoObject;
-        pobj->time = getCASTTime();
-        pobj->SOIList.push_back(soi.addr.id);
-        segmentObject(soi.addr, pobj->image, pobj->mask);
-        
-        //pobj->points = getPointCloud();
-        // getPoints(pobj->points);
-        //log("Object has a cloud of %i points", pobj->points.size());
-        
-        string objId = newDataID();
-        addToWorkingMemory(objId, pobj);
-        
-        soi.objectTime = getCASTTime();
-        soi.status = OBJECT;
-        soi.objId = objId;
-        
-        log("A proto-object added ID %s count %u at %u ",
-   			soi.addr.id.c_str(), soi.updCount,
-   			soi.stableTime.s, soi.stableTime.us);
-   	   }
-   	   
-   	   objToAdd.pop();
+	    log("Got something in my queues");
+
+	    if(!objToAdd.empty())
+	    {
+	      SOIData &soi = SOIMap[objToAdd.front()];
+	      
+	      if(soi.status == STABLE)
+	      { 
+		ProtoObjectPtr pobj = new ProtoObject;
+		pobj->time = getCASTTime();
+		pobj->SOIList.push_back(soi.addr.id);
+		segmentObject(soi.addr, pobj->image, pobj->mask);
+		
+		//pobj->points = getPointCloud();
+		// getPoints(pobj->points);
+		//log("Object has a cloud of %i points", pobj->points.size());
+		
+		string objId = newDataID();
+		addToWorkingMemory(objId, pobj);
+		
+		soi.objectTime = getCASTTime();
+		soi.status = OBJECT;
+		soi.objId = objId;
+		
+		log("A proto-object added ID %s count %u at %u ",
+	   			soi.addr.id.c_str(), soi.updCount,
+	   			soi.stableTime.s, soi.stableTime.us);
+	   	   }
+	   	   
+	   	   objToAdd.pop();
+	     }
      }
-      
+//     else
+//	log("Timeout");   
   }
 
+  log("Removing semaphor..");
   queuesNotEmpty->remove("queueSemaphore");
   delete queuesNotEmpty;
   
   if (doDisplay)
   {
+     log("Destroying OpenCV windows..");
   	cvDestroyWindow("Last ROI");
   	cvDestroyWindow("Last segmentation");
   	cvDestroyWindow("Full image");
@@ -430,8 +437,8 @@ void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint>
     cogx::Math::Vector2 p = projectPoint(cam, soi.points[i]);
     
     /// HACK: artificially shrink cloud point
-	int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
-	int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
+    int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
+    int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
 	
     projPoints.push_back(cvPoint(x, y));
   }
@@ -447,7 +454,7 @@ void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint>
     cogx::Math::Vector2 p = projectPoint(cam, soi.BGpoints[i]);
     
     int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
-	int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
+    int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
 	   
     bgProjPoints.push_back(cvPoint(x, y));
   }  
@@ -479,68 +486,6 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
     cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
   }
 }
-
-/*
-IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, float huemod, float distmod)
-{
-    IplImage *huePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);  
-	IplImage *samplePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-    IplImage *distPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_32F, 1);
-    IplImage *distScaledPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-    IplImage *costImg = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
- 
-    cvSetImageCOI(iplPatchHLS, 1);
-    cvCopy(iplPatchHLS, huePatch);
-   
-    cvSet(samplePatch,cvScalar(1));
-    vector<CvPoint>::iterator itr;
-   
-	for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
-	{ 
-	  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
-	  if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
-		cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
-	  else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
-	    
-	}
-		
-	cvDistTransform(samplePatch, distPatch, CV_DIST_C);
-
-	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
-  
-    list<int> hueList = getSortedHueList(projPoints, huePatch);
-    vector<int> hueCostList = getHueCostList(hueList, 3);
-    
-    float sigma = 7;
-    float sigma2 = 2*sqr(sigma);
-    float factor = 1/sqrt(2*acos(-1.0))/sigma;
-    float norm = (MAX_HUE_VAL - MIN_HUE_VAL)/6;
- 
-	for(int i=0; i < costImg->height; i++)
-	  for(int j=0; j < costImg->width; j++) {
-
-	      int huecost = hueCostList[cvGet2D(huePatch, i, j).val[0]];
-	      huecost = -(exp(-sqr((float) huecost)/sigma2) - 1)*norm;
-	      int cost = huecost*huemod + cvGet2D(distScaledPatch, i, j).val[0]*distmod;
-      
-	      if (cost > 255)
-	      {
-	      	log("Overflow at %i, %i hue: %i cost: %i", j, i, cvGet2D(huePatch, i, j).val[0], huecost);
-	      	cost = 255;
-	      }
-	      	
-	      cvSet2D(costImg, i, j, cvScalar(cost));
-	  }
-	
-	cvReleaseImage(&huePatch);      
-	cvReleaseImage(&samplePatch);
-	cvReleaseImage(&distPatch);      
-	cvReleaseImage(&distScaledPatch);
-	
-	return costImg;
-} */
-
-
 
 IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, float hueSigma, float distSigma)
 {
@@ -585,12 +530,6 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	      int distDiff = cvGet2D(distScaledPatch, i, j).val[0];
 	      float distP = exp(-sqr((float) distDiff)/distSigma2);
 	      int cost = (int) (-(hueP*distP - 1)*norm);
- /* log("phue %f, pdist: %f, cost: %i", hueP, distP, cost);    
-	      if (cost > 255)
-	      {
-	      	log("Overflow at %i, %i hue: %i cost: %i", j, i, cvGet2D(huePatch, i, j).val[0], hueDiff);
-	      	cost = 255;
-	      }*/
 	      	
 	      cvSet2D(costImg, i, j, cvScalar(cost));
 	  }
