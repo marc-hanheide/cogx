@@ -13,12 +13,17 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.specialentities.RelationUnion;
 
+
+/**
+ * 
+ * @author plison
+ *
+ */
 public class ConfigurationFilter {
 
 
 	public static boolean LOGGING = false;
 
-	
 	public static Vector<UnionConfiguration> getNBestUnionConfigurations
 	(Vector<UnionConfiguration> configs, int nb_nbests) {
 

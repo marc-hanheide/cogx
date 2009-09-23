@@ -25,7 +25,7 @@ import java.util.Vector;
 import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.utils.GradientDescent;
+import binder.utils.ConfigurationFilter;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -117,7 +117,7 @@ public class UnionDiscretizer extends ManagedComponent {
 		
 		// Compute the best union configuration out of the possible ones
 		UnionConfiguration bestConfiguration = 
-			GradientDescent.getBestUnionConfiguration(alterconfigs);
+			ConfigurationFilter.getBestUnionConfiguration(alterconfigs);
 
 		log("Best union configuration successfully computed");
 		log("Number of unions in selected configuration: " + 
@@ -132,7 +132,7 @@ public class UnionDiscretizer extends ManagedComponent {
 			
 			// If only maximum-probability values are allowed, compute a new union with only these
 			if (onlyMaxFeatureValues) {
-				union = GradientDescent.getUnionWithMaximumProbability(union);
+				union = ConfigurationFilter.getUnionWithMaximumProbability(union);
 			}
 			
 			unions.add(union);

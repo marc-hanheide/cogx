@@ -39,7 +39,6 @@ import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.autogen.core.Union;
 import binder.utils.FeatureValueUtils;
-import binder.utils.GradientDescent;
 import binder.components.BinderMonitor;
 
 import cast.cdl.CASTTime;
@@ -201,7 +200,7 @@ public class BinderMonitorGUI extends JFrame
 	private int computeHeight(Feature feat) {
 		int height = MIN_FEATURE_BOX_HEIGHT;
 		for (int i = 0 ; i < feat.alternativeValues.length ; i++) {
-			if (!FeatureValueUtils.hasUnknownValue(feat.alternativeValues[i])) {
+			if (!FeatureValueUtils.isUnknownValue(feat.alternativeValues[i])) {
 			height += FEATURELINE_HEIGHT;
 		}
 		}
@@ -237,7 +236,7 @@ public class BinderMonitorGUI extends JFrame
 			for (int i = 0; i < featvalues.length ; i ++) {
 		
 				FeatureValue featvalue = featvalues[i];
-				if (!FeatureValueUtils.hasUnknownValue(featvalue)) {
+				if (!FeatureValueUtils.isUnknownValue(featvalue)) {
 				double roundedProb = Math.round(featvalue.independentProb*100.0) / 100.0;
 				if (i==0) {
 					text += " " + key +  ": ";

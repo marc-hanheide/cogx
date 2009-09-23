@@ -34,7 +34,7 @@ import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.utils.FeatureValueUtils;
-import binder.utils.GradientDescent;
+import binder.utils.MaximumSearch;
 import binder.utils.ProbabilityUtils;
 
 /**
@@ -426,13 +426,13 @@ public class BayesianNetworkManager {
 		if (entity instanceof Union && ((Union)entity).includedProxies.length > 1) {
 			
 			// Compute the maximum probability for the prior distribution of the union
-			float maxUnion = GradientDescent.getMaximum(distrib);
+			float maxUnion = MaximumSearch.getMaximum(distrib);
 			
 			// And compute the product of the maximum probabilities for the prior distributions
 			// of the included proxies
 			float maxProxies = 1.0f;
 			for (int i = 0; i < ((Union)entity).includedProxies.length ; i++) {
-				maxProxies = maxProxies * GradientDescent.getMaximum(getPriorDistribution(((Union)entity).includedProxies[i]));
+				maxProxies = maxProxies * MaximumSearch.getMaximum(getPriorDistribution(((Union)entity).includedProxies[i]));
 			}
 
 			// In case the maximum for the union prior distribution turns out to be moreless equal to the 
