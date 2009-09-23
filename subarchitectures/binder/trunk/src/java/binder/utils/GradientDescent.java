@@ -20,8 +20,6 @@
 package binder.utils;
 
 
-import java.awt.List;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,7 +43,7 @@ public class GradientDescent {
 
 
 	public static boolean ERRLOGGING = true;
-	public static boolean LOGGING = true;
+	public static boolean LOGGING = false;
 	
 	public static HashMap<Union,Float> maxForUnions = new HashMap<Union,Float>();
 
@@ -230,25 +228,15 @@ public static Union getBestUnion(UnionDistribution distribution) {
 	}
 	
 	
-	private static boolean isInList (ArrayList<Union> unions, Union union) {
-		for (Iterator<Union> i = unions.iterator(); i.hasNext() ;) {
-			Union u = i.next();
-			if (u.entityID.equals(union.entityID)  && u.includedProxies.length == union.includedProxies.length && u.timeStamp == union.timeStamp) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	
 
-	public static Vector<UnionConfiguration> addConfidenceScoresToConfigs
+	public static void computeConfidenceScoresForUnionConfigurations
 	(Vector<UnionConfiguration> configs) {
 
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
 
-			float multiplication = 1.0f;
+			double multiplication = 1.0f;
 			for (int i = 0; i < config.includedUnions.length ; i++) {	
 				Union union = config.includedUnions[i];
 				float max = 0.0f;
@@ -262,94 +250,18 @@ public static Union getBestUnion(UnionDistribution distribution) {
 				multiplication = multiplication * max;
 				
 			} 
-			float average = multiplication ;
 			
-			config.configProb = average;
+			config.configProb = multiplication;
 			log("configProb: " + config.configProb);
 		}
 		
-		return configs;
 	}
 	
-	
-	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
-		
-		ArrayList<Union> unions = new ArrayList<Union>();
-		
-		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			
-			UnionConfiguration config = e.nextElement();
-			for (int i = 0; i < config.includedUnions.length ; i++) {
-				
-				Union union = config.includedUnions[i];
-				if (!isInList(unions, union)) {
-					unions.add(union);
-				}
-			}
-		}
-
-		
-		return unions;
-	}
-	
-	 public static void normaliseAndSetProbExistUnions (Vector<UnionConfiguration> configs) {
-		 
-		 float sum = 0.0f;
-		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			 	UnionConfiguration config = e.nextElement();
-			 	sum += config.configProb;
-			}
-	
-		 float alpha = 1.0f / sum;
-	/**	 if (sum < 0.000000000000001) {
-			System.out.println("nb configs: " + configs.size());
-			 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-				 	UnionConfiguration config = e.nextElement();
-				 	System.out.println(config.configProb);
-				}
-		 } */
-		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			 	UnionConfiguration config = e.nextElement();
-			 	config.configProb = alpha * config.configProb;
-			}
-		 
-		 ArrayList<Union> unions = getUnions (configs);
-		 
-		 setProbExistUnions(unions, configs);
-		 
-	 }
-	
-	
-	 
-	public static void setProbExistUnions 
-		(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
-	
-		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
-			Union u = e.next();
-			u.probExists = 0.0f;
-			for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
-				UnionConfiguration config = f.nextElement();
-				if (isUnionInConfig(config, u)) {
-					u.probExists += config.configProb;
-				}
-			}
-		}
-	}
-	
-	
-	private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
-		for (int i = 0 ; i < config.includedUnions.length ; i++) {
-			if (config.includedUnions[i].equals(union)) {
-				return true;
-			}
-		}
-		return false;
-	} 
 	
 	public static Vector<UnionConfiguration> getNBestUnionConfigurations
 	(Vector<UnionConfiguration> configs, int nb_nbests) {
 
-		float threshold = 0.0f;
+		double threshold = 0.0f;
 		Vector<UnionConfiguration> nbestConfigs = new Vector<UnionConfiguration>();
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
@@ -363,7 +275,6 @@ public static Union getBestUnion(UnionDistribution distribution) {
 			}
 
 			else {
-				
 				if (config.configProb > threshold) {
 					UnionConfiguration worstinNBests = getWorstUnionConfiguration(nbestConfigs);
 					nbestConfigs.remove(worstinNBests);
@@ -380,7 +291,7 @@ public static Union getBestUnion(UnionDistribution distribution) {
 	
 	public static UnionConfiguration getBestUnionConfiguration(Vector<UnionConfiguration> configs) {
 
-		float maxAverage = -1.0f;
+		double maxAverage = -1.0f;
 		UnionConfiguration bestConfig = null;
 
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
@@ -399,7 +310,7 @@ public static Union getBestUnion(UnionDistribution distribution) {
 
 	public static UnionConfiguration getWorstUnionConfiguration(Vector<UnionConfiguration> configs) {
 
-		float minAverage = 99999.0f;
+		double minAverage = 99999.0f;
 		UnionConfiguration worstConfig = null;
 
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {

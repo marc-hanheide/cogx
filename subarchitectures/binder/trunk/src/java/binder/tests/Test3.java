@@ -1,12 +1,29 @@
+// =================================================================                                                        
+// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+//                                                                                                                          
+// This library is free software; you can redistribute it and/or                                                            
+// modify it under the terms of the GNU Lesser General Public License                                                       
+// as published by the Free Software Foundation; either version 2.1 of                                                      
+// the License, or (at your option) any later version.                                                                      
+//                                                                                                                          
+// This library is distributed in the hope that it will be useful, but                                                      
+// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+// Lesser General Public License for more details.                                                                          
+//                                                                                                                          
+// You should have received a copy of the GNU Lesser General Public                                                         
+// License along with this program; if not, write to the Free Software                                                      
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+// 02111-1307, USA.                                                                                                         
+// =================================================================                                                        
+
 package binder.tests;
 
 import java.util.Map;
 import java.util.Random;
-import java.util.Vector;
 
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
@@ -18,7 +35,6 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
-import binder.utils.UnionConstructor;
 
 public class Test3 extends AbstractTester{
 

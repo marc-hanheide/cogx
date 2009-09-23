@@ -18,7 +18,7 @@
 module binder {
 module autogen {
 module beliefmodel {
-	
+	 
 	// ===================================================================
 	// GROUNDED DOMAIN MODEL 
 	// A domain model is a collection of formula types, to define the 

@@ -1,6 +1,27 @@
+// =================================================================                                                        
+// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+//                                                                                                                          
+// This library is free software; you can redistribute it and/or                                                            
+// modify it under the terms of the GNU Lesser General Public License                                                       
+// as published by the Free Software Foundation; either version 2.1 of                                                      
+// the License, or (at your option) any later version.                                                                      
+//                                                                                                                          
+// This library is distributed in the hope that it will be useful, but                                                      
+// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+// Lesser General Public License for more details.                                                                          
+//                                                                                                                          
+// You should have received a copy of the GNU Lesser General Public                                                         
+// License along with this program; if not, write to the Free Software                                                      
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+// 02111-1307, USA.                                                                                                         
+// =================================================================                                                        
+
 package binder.utils;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Vector;
 
 import binder.autogen.core.Feature;
@@ -8,6 +29,7 @@ import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
+import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.UnknownValue;
@@ -68,6 +90,94 @@ public class BinderUtils {
 	}
 
 
+
+	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
+		
+		ArrayList<Union> unions = new ArrayList<Union>();
+		
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			
+			UnionConfiguration config = e.nextElement();
+			for (int i = 0; i < config.includedUnions.length ; i++) {
+				
+				Union union = config.includedUnions[i];
+				if (!isInList(unions, union)) {
+					unions.add(union);
+				}
+			}
+		}
+
+		
+		return unions;
+	}
+	
+	
+	
+	private static boolean isInList (ArrayList<Union> unions, Union union) {
+		for (Iterator<Union> i = unions.iterator(); i.hasNext() ;) {
+			Union u = i.next();
+			if (u.entityID.equals(union.entityID)  && u.includedProxies.length == union.includedProxies.length && u.timeStamp == union.timeStamp) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	 public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
+		 
+		 double sum = 0.0f;
+		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			 	UnionConfiguration config = e.nextElement();
+			 	sum += config.configProb;
+			}
+	
+		 double alpha = 1.0f / sum;
+		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			 	UnionConfiguration config = e.nextElement();
+			 	config.configProb = alpha * config.configProb;
+			}		 
+	 }
+	 
+	 
+	 
+	 public static void addProbExistsToUnions (Vector<UnionConfiguration> configs) {
+		 
+		 ArrayList<Union> unions = getUnions (configs);
+		 
+		 setProbExistUnions(unions, configs);
+	 }
+	
+	
+
+	 
+		public static void setProbExistUnions 
+			(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
+		
+			for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
+				Union u = e.next();
+				u.probExists = 0.0f;
+				for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
+					UnionConfiguration config = f.nextElement();
+					if (isUnionInConfig(config, u)) {
+						u.probExists += config.configProb;
+					}
+				}
+			}
+		}
+		
+
+		
+		private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
+			for (int i = 0 ; i < config.includedUnions.length ; i++) {
+				if (config.includedUnions[i].equals(union)) {
+					return true;
+				}
+			}
+			return false;
+		} 
+		
+	 
 	/**
 	 * Get all the proxies included in a set of perceptual entities (in case the entity
 	 * is a proxy, it is simply added, and in case it is an union, the set of all included
