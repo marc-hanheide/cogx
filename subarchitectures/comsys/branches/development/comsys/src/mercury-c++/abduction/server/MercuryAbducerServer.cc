@@ -3,6 +3,7 @@
 extern "C" {
 #include "MercuryAbducerServer_mint.mh"
 #include "TypeConversions_mint.mh"
+#include <unistd.h>
 }
 
 #include "TypeConversions.h"
@@ -88,18 +89,23 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 {
 	cerr << "[log] proving" << endl;
 
-	MR_Word * vs;
-	new_varset(vs);
+	MR_Word vs;
+	new_varset(&vs);
 
 	MR_Word mgs;
 	empty_marked_query_list(&mgs);
 
-	for (int i = goals.size() - 1; i >= 0; i--) {
-		MR_Word w_mq = markedQueryToMercQuery(goals[i], vs);
+	cerr << "  no of goals = " << goals.size() << endl;
+	vector<MarkedQueryPtr>::const_reverse_iterator rit;
+//	for (int i = goals.size() - 1; i >= 0; i--) {
+	for (rit = goals.rbegin(); rit != goals.rend(); ++rit) {
+		cerr << "  doing a goal" << endl;
+		MR_Word w_mq = markedQueryToMercQuery(*rit, &vs);
+		//MR_Word w_mq = markedQueryToMercQuery(goals[i], vs);
 		cons_marked_query_list(w_mq, mgs, &mgs);
 	}
 	MR_Word minitproof;
-	new_proof(mgs, *vs, &minitproof);
+	new_proof(mgs, vs, &minitproof);
 
 	double proofCost;
 
@@ -107,12 +113,14 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 		cerr << "  result: proof found" << endl;
 		proof_summary(curBestProof, ctx);
 		haveProof = true;
+		//sleep(1);
 		cerr << " we're still alive!" << endl;
+		//sleep(1);
 		return (SUCCESS);
 	}
 	else {
 		cerr << "  result: no proof found" << endl;
-		print_ctx(ctx);
+		//print_ctx(ctx);
 		haveProof = false;
 		return (FAILED);
 	}
@@ -122,6 +130,7 @@ AbductiveProofPtr
 MercuryAbducerServer::getBestProof(const Ice::Current&)
 {
 	cerr << "[log] requested the best proof" << endl;
+	//sleep(2);
 
 	// TODO: test that we have a proof in curBestProof
 

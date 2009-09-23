@@ -6,6 +6,7 @@
 
 extern "C" {
 #include "TypeConversions_mint.mh"
+#include <unistd.h>
 }
 
 using namespace std;
@@ -24,6 +25,7 @@ stringToMercString(const string & s)
 MR_term
 termToMercTerm(const TermPtr & t, MR_varset * vs)
 {
+	cerr << "termToMercTerm" << endl;
 	if (t->variable) {
 		char * s = stringToMercString(t->name);
 		MR_term mv;
@@ -38,9 +40,12 @@ termToMercTerm(const TermPtr & t, MR_varset * vs)
 		MR_list__term margs;
 		empty_term_list(&margs);
 
+//		vector<TermPtr>::const_reverse_iterator rit;
+//		for (rit = t->args.rbegin(); rit != t->args.rend(); ++rit) {
 		for (int i = t->args.size() - 1; i >= 0; i--) {
 			//margs = MR_list_cons(termToMercTerm(t->args[i], vs), margs);
 			MR_term arg = termToMercTerm(t->args[i], vs);
+			//MR_term arg = termToMercTerm(*rit, vs);
 			cons_term_list(arg, margs, &margs);
 		}
 
@@ -55,6 +60,7 @@ termToMercTerm(const TermPtr & t, MR_varset * vs)
 MR_atomic_formula
 predicateToMercAtomicFormula(const PredicatePtr & p, MR_varset * vs)
 {
+	cerr << "predicateToMercAtomicFormula" << endl;
 	MR_atomic_formula mp;
 	MR_list__term margs;
 	empty_term_list(&margs);
@@ -75,6 +81,7 @@ predicateToMercAtomicFormula(const PredicatePtr & p, MR_varset * vs)
 MR_mprop__ctx_modality
 modalisedFormulaToMercMProp(const ModalisedFormulaPtr & p, MR_varset * vs)
 {
+	cerr << "modalisedFormulaToMercProp" << endl;
 	MR_atomic_formula maf = predicateToMercAtomicFormula(p->p, vs);
 	MR_list__ctx_modality mm = modalitySeqToMercListOfModalities(p->m);
 
@@ -87,6 +94,7 @@ modalisedFormulaToMercMProp(const ModalisedFormulaPtr & p, MR_varset * vs)
 MR_with_cost_function__mprop__ctx_modality
 withConstCostFunction(MR_mprop__ctx_modality mprop, double cost)
 {
+	cerr << "withConstCostFunction" << endl;
 	MR_with_cost_function__mprop__ctx_modality result;
 	new_with_const_cost_function(mprop, cost, &result);
 	return result;
@@ -95,6 +103,7 @@ withConstCostFunction(MR_mprop__ctx_modality mprop, double cost)
 MR_ctx_modality
 modalityToMercModality(const ModalityPtr & m)
 {
+	cerr << "modalityToMercModality" << endl;
 	MR_ctx_modality mm;
 
 	switch (m->type) {
@@ -122,11 +131,16 @@ modalityToMercModality(const ModalityPtr & m)
 MR_list__ctx_modality
 modalitySeqToMercListOfModalities(const ModalitySeq & ms)
 {
+	cerr << "modalitySeqToMercListOfModalities" << endl;
 	MR_list__ctx_modality w_list;
 	empty_ctx_modality_list(&w_list);
 
-	for (int i = ms.size() - 1; i >= 0; i--) {
-		MR_ctx_modality w_m = modalityToMercModality(ms[i]);
+	vector<ModalityPtr>::const_reverse_iterator rit;
+	cerr << "  size = " << ms.size() << endl;
+	for (rit = ms.rbegin(); rit != ms.rend(); ++rit) {
+//	for (int i = ms.size() - 1; i >= 0; i--) {
+		cerr << "  trying" << endl;
+		MR_ctx_modality w_m = modalityToMercModality(*rit);
 		cons_ctx_modality_list(w_m, w_list, &w_list);
 	}
 
@@ -136,6 +150,7 @@ modalitySeqToMercListOfModalities(const ModalitySeq & ms)
 MR_Word
 markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 {
+	cerr << "markedQueryToMercQuery" << endl;
 	MR_Word w_mprop = modalisedFormulaToMercMProp(mq->body, w_vs);
 
 	MR_Word w_query = 0;
@@ -146,7 +161,7 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 			proved_query(w_mprop, &w_query);
 		}
 		break;
-	
+
 	case Unsolved: {
 			UnsolvedQueryPtr uq = UnsolvedQueryPtr::dynamicCast(mq);
 			MR_Word w_costfunc;
@@ -191,7 +206,6 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 	default:
 		cerr << "unknown marking in markedQueryToMercQuery!" << endl;
 	}
-
 	return w_query;
 }
 
@@ -200,6 +214,7 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 Agent
 stringToAgent(const char * s)
 {
+	cerr << "stringToAgent" << endl;
 	if (strcmp(s, "h") == 0) {
 		//cerr << "human" << endl;
 		return Human;
@@ -217,7 +232,7 @@ stringToAgent(const char * s)
 ModalityPtr
 MR_WordToModality(MR_Word w)
 {
-//	cerr << "MR_WordToModality" << endl;
+	cerr << "MR_WordToModality" << endl;
 	MR_Word w_bel;
 
 //	print_modality(w);
@@ -287,7 +302,7 @@ MR_WordToModality(MR_Word w)
 ModalitySeq
 MR_WordToModalitySeq(MR_Word w_list)
 {
-//	cerr << "MR_WordToModalitySeq" << endl;
+	cerr << "MR_WordToModalitySeq" << endl;
 	ModalitySeq seq = vector<ModalityPtr>();
 
 //	print_list_modalities(w_list);
@@ -302,6 +317,7 @@ MR_WordToModalitySeq(MR_Word w_list)
 TermPtr
 MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
 {
+	cerr << "MR_WordToTerm" << endl;
 	char * name;
 	MR_Bool is_var;
 	MR_Word w_list;
@@ -325,6 +341,7 @@ MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
 PredicatePtr
 MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
 {
+	cerr << "MR_WordToPredicate" << endl;
 	char * predSym;
 	MR_Word w_list;
 	dissect_predicate(w_vs, w_p, &predSym, &w_list);
@@ -344,7 +361,7 @@ MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
 ModalisedFormulaPtr
 MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 {
-//	cerr << "MR_WordToModalisedFormula" << endl;
+	cerr << "MR_WordToModalisedFormula" << endl;
 	ModalisedFormulaPtr f = new ModalisedFormula();
 	MR_Word w_m;
 	MR_Word w_p;
@@ -358,16 +375,19 @@ MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 MarkedQueryPtr
 MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 {
+	cerr << "MR_WordToMarkedQuery" << endl;
 	MR_Word w_arg1;
 	MR_Word w_arg2;
 
 	if (is_proved_query(w_mq, &w_arg1)) {
+		cerr << "  cc: is_proved_query" << endl;
 		ProvedQueryPtr pq = new ProvedQuery();
 		pq->mark = Proved;
 		pq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
 		return pq;
 	}
 	else if (is_unsolved_query(w_mq, &w_arg1, &w_arg2)) {
+		cerr << "  cc: is_unsolved_query" << endl;
 		UnsolvedQueryPtr uq = new UnsolvedQuery();
 		uq->mark = Unsolved;
 		uq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
@@ -377,6 +397,7 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 		return uq;
 	}
 	else if (is_assumed_query(w_mq, &w_arg1, &w_arg2)) {
+		cerr << "  cc: is_assumed_query" << endl;
 		AssumedQueryPtr asmq = new AssumedQuery();
 		asmq->mark = Assumed;
 		asmq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
@@ -386,6 +407,7 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 		return asmq;
 	}
 	else if (is_asserted_query(w_mq, &w_arg1, &w_arg2)) {
+		cerr << "  cc: is_asserted_query" << endl;
 		AssertedQueryPtr asrq = new AssertedQuery();
 		asrq->mark = Asserted;
 		asrq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
@@ -405,8 +427,9 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 AbductiveProofPtr
 MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
 {
-//	cerr << "MR_WordToAbductiveProof" << endl;
+	cerr << "MR_WordToAbductiveProof" << endl;
 	AbductiveProofPtr p = new AbductiveProof();
+	p->body = vector<MarkedQueryPtr>();
 	
 	MR_Word w_vs;
 	MR_Word w_list;
