@@ -182,8 +182,8 @@ public class CrowlWrapper {
 			QuerySolution _qs = (QuerySolution) results.next();
 			Resource _currAnswerRersource = _qs.getResource("?ins");
 			try {
-				log(_currAnswerRersource.asNode().toString((PrefixMapping) m_mycrowl.getModel().getNsPrefixMap()));
-				_returnSet.add(m_mycrowl.getOWLOntoModel().getBaseModel().shortForm(_currAnswerRersource.toString()));
+//				log(m_mycrowl.getOWLOntoModel().getBaseModel().shortForm(_currAnswerRersource.toString()));
+				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
 //				_returnSet.add(_currAnswerRersource.toString()); 
 //				log("qname: " + m_mycrowl.getOWLOntoModel().qnameFor(_currAnswerRersource.toString()));
 //				log("short form: " + m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
@@ -267,10 +267,10 @@ public class CrowlWrapper {
 	public Set<String> getRelatedInstances(String _ins) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String query = "SELECT DISTINCT ?ins WHERE { " +
-		" { <" + _ins + "> ?x ?ins . " +
+		" { " + _ins + " ?x ?ins . " +
 		" ?ins rdf:type owl:Thing. " + 
 		" }" +
-		" UNION { ?ins ?y <" + _ins +  "> . " +
+		" UNION { ?ins ?y " + _ins + " . " +
 		" ?ins rdf:type owl:Thing.  " +
 		"} ." +
 		" FILTER (?ins != " + _ins + " ) }";

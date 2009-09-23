@@ -87,14 +87,15 @@
   (?y test:constituentOf ?r),
 #  roomcleaner(?x)
 ]
-  
-[doorwaysBelongToAllRooms:
-  (?x rdf:type test:Doorway),
-  (?x test:adjacent ?y),
-  (?y test:constituentOf ?r),
-  (?r rdf:type test:PhysicalRoom)
-  ->
-  (?x test:constituentOf ?r)]
+
+# temp 2009 09 23  
+#[doorwaysBelongToAllRooms:
+#  (?x rdf:type test:Doorway),
+#  (?x test:adjacent ?y),
+#  (?y test:constituentOf ?r),
+#  (?r rdf:type test:PhysicalRoom)
+#  ->
+#  (?x test:constituentOf ?r)]
 
 # this one works -- it creates new blank nodes
 #[bottomUpRoomCreation:
