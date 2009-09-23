@@ -11,7 +11,7 @@ package comsys.processing.reference.proxyfactories;
 // -------------------------------------------------------
 // BINDER imports
 // -------------------------------------------------------
-PhantomProxy
+
 import binder.autogen.core.Feature; 
 import binder.autogen.core.PhantomProxy; 
 import binder.autogen.featvalues.AddressValue;
