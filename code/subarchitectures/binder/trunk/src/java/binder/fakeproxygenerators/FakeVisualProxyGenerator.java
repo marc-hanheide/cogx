@@ -23,17 +23,33 @@ package binder.fakeproxygenerators;
 import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.*;
 
+/**
+ * Fake proxy generator for vision
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 25/08/2009
+ */
 public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 
+	
+	/**
+	 * Start
+	 */
 	public void start () {
 		log("Fake visual proxy generator successfully started");
 	}
 	
-	
+	/**
+	 * Run
+	 */
 	public void run() {
 		randomInsertion();
 	}
 	
+	/**
+	 * Create one index proxy
+	 */
 	public Proxy createProxy(int nb) {
 		if (nb == 1) {
 			return createProxyOne();
@@ -44,7 +60,11 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		return null;
 	}
 	
-
+	/**
+	 * Create proxy one (blue mug)
+	 * 
+	 * @return the proxy
+	 */
 	protected Proxy createProxyTwo() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu", "VisualObject");
@@ -62,6 +82,11 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	}
 
 
+	/**
+	 * Create proxy two (red ball on a table)
+	 * 
+	 * @return the proxy
+	 */
 	protected Proxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");

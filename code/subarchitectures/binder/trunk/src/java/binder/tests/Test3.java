@@ -36,6 +36,13 @@ import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 
+/**
+ * Test 3: (to be filled)
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 23/09/2009
+ */
 public class Test3 extends AbstractTester{
 
 	static int testNumber = 2;
@@ -110,30 +117,8 @@ public class Test3 extends AbstractTester{
 	@Override
 	public boolean performTest() {
 		
-		for (int i = 0 ; i < NUMBER_OF_PROXIES; i++) {
-			log("Now creating random proxy " + (i + 1));
-			Proxy proxy = createNewRandomProxy();
-			addProxyToWM(proxy);
-			sleepComponent(20);
-		}
-		
-		int counts = 0;
-		while ((curConfig.includedUnions.length < NUMBER_OF_PROXIES) && counts < (NUMBER_OF_PROXIES*2)) {
-		try {
-			sleepComponent(150);
-			counts++;
-		}
-		catch (Exception e){ }
-		}
-		log("Final number of unions: " + curConfig.includedUnions.length);
-		
-		boolean result = (curConfig.includedUnions.length == NUMBER_OF_PROXIES);
-		
-		if (!result) {
-			System.out.println("Final number of unions: " + curConfig.includedUnions.length);
-		}
-		
-		return result;
+			
+		return true;
 	}
 	
 	

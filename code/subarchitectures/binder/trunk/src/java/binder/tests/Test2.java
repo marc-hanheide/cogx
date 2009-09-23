@@ -37,33 +37,57 @@ import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 
 
+/**
+ * Test 2: generate single-proxy unions for a large set of random proxies 
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 18/09/2009
+ */
+
 public class Test2 extends AbstractTester{
 
+	// test number
 	static int testNumber = 2;
+	
+	// task description
 	static String task = "Generate correct single-proxy unions for a large set of random proxies";
 	
-	
+	// number of proxies
 	int NUMBER_OF_PROXIES = 30;
+	
+	// max number of features per proxy
 	int MAX_NUMBER_OF_FEATURES = 6;
+	
+	// max number of feature values per feature
 	int MAX_NUMBER_OF_FEATUREVALUES = 4;
+	
+	// number of subarchitectures
 	int NUMBER_SUBARCHS = 4;
 	
+	// current union configuration
 	UnionConfiguration curConfig;
 	
+	// set of possible feature value types
 	Class[] featValueTypes = {StringValue.class, IntegerValue.class, BooleanValue.class};
 
-	
+	// various counters
 	int proxyCount = 1;
 	int featurecount = 1;
 	int featurevaluecount = 1;
 	
 	
+	/**
+	 * Initialise
+	 */
 	public Test2 () {
 		super(testNumber, task);
 	}
 	
 	
-	
+	/**
+	 * Configure (add a change filter on union configurations)
+	 */
 	@Override
 	public void start() {
 
@@ -107,7 +131,13 @@ public class Test2 extends AbstractTester{
 		}		
 	}
 	
-	
+	/**
+	 * Perform the test, by checking whether the number of generated unions == the number
+	 * of inserted proxies (in other words, we check that no 2- 3-proxy unions were generated
+	 * during binding)
+	 * 
+	 * @return true if test successful, false otherwise
+	 */
 	@Override
 	public boolean performTest() {
 		
@@ -137,7 +167,11 @@ public class Test2 extends AbstractTester{
 		return result;
 	}
 	
-	
+	/**
+	 * Created a random proxy
+	 * 
+	 * @return the new proxy
+	 */
 	public Proxy createNewRandomProxy() {
 		Random rand = new Random();
 		int subarchNb = rand.nextInt(NUMBER_SUBARCHS) + 1;
@@ -164,7 +198,11 @@ public class Test2 extends AbstractTester{
 		return proxy;
 	}
 
-	
+	/**
+	 * Create a random feature value
+	 * 
+	 * @return the new feature value
+	 */
 	public FeatureValue createRandomFeatureValue() {
 
 		featurevaluecount++;

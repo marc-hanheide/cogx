@@ -33,31 +33,64 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
 
+
+/**
+ * Test 1: create a single proxy, and verify whether (1) an union has been produced for 
+ * this proxy, and (2) whether this union is well-formed and contains all the information
+ * from the proxy
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 15/09/2009
+ */
+
 public class Test1 extends AbstractTester {
 	
+	// test number
 	protected static int testNumber = 1;
+	
+	// task description
 	protected static String task = "Correct production of a binding union for a single proxy";
 	
+	// pointer to the proxy inserted into the working memory
+	static Proxy lastProxy;
 	
-	static Proxy lastProxy = new Proxy();
-	static HashMap<String, Union> predictedUnions = new HashMap<String, Union>();
+	static HashMap<String, Union> unions = new HashMap<String, Union>();
 
 	
+	/**
+	 * Initialise the test
+	 */
 	public Test1()
 	{
 		super(testNumber, task);
 	}
 	
-
+	
+	
+	/**
+	 * Perform the test: create a proxy, insert it into the working memory, wait for the union(s) 
+	 * containing this proxy, and verify that the created union is well-formed and contain all
+	 * necessary information
+	 * 
+	 * @return true if the test was successful, false otherwise
+	 */
+	
 	public boolean performTest() {
 		
 		Proxy proxy = createProxy();
 		Union union = getBindingUnionForProxy(proxy);
 		
-		boolean check = isBindingUnionCorrect(union);
+		boolean check = isBindingUnionCorrect(proxy, union);
 		return check;
 	}
 	
+	
+	/**
+	 * Create the proxy (simple object with 2 features, one with one feature value, the second one with two)
+	 * 
+	 * @return the created proxy
+	 */
 	
 	protected Proxy createProxy() {
 		WorkingMemoryPointer origin = createWorkingMemoryPointer("subarch1", "localDataID", "dataType");
@@ -78,30 +111,51 @@ public class Test1 extends AbstractTester {
 		return newProxy;
 	}
 
-	protected boolean isBindingUnionCorrect(Union union) {
+	/**
+	 * Check if the union is correct and well-formed relative to the proxy
+	 * 
+	 * @param union the union
+	 * @param proxy the proxy
+	 * @return true if the union is correct, false otherwise
+	 */
+	protected boolean isBindingUnionCorrect(Proxy proxy, Union union) {
+		
+		// check if union is not null
 		if (union != null) {
-			if ((union.includedProxies.length == 1) && 
-					union.includedProxies[0] ==lastProxy) {
 			
+			// check if union contains only one proxy, which is the one inserted
+			if ((union.includedProxies.length == 1) && 
+					union.includedProxies[0] ==proxy) {
+			
+				// check whether the existence probability of the union > 1
 				 if (union.probExists > 0.0f) {
 					
-					 if (union.timeStamp.s <=getCASTTime().s) {
+					 // check whether the time stamp of the union is between the timestamp of the proxy and the current time
+					 if (union.timeStamp.s >= proxy.timeStamp.s && union.timeStamp.s <=getCASTTime().s) {
 						 
+						 // check whether the number of features of the union == the number of features of the proxy
 						 if (union.features != null && 
-								 union.features.length == lastProxy.features.length) {
+								 union.features.length == proxy.features.length) {
 							
+							 // loop on each feature
 							 for (int i = 0 ; i < union.features.length ; i++) {
-							 if (union.features[i].featlabel.equals(lastProxy.features[i].featlabel)) {
+							 if (union.features[i].featlabel.equals(proxy.features[i].featlabel)) {
 								 
+								 // check whether the number of alternative values on the union == number 
+								 // of alternative values on the proxy
 								 if (union.features[i].alternativeValues != null && 
 										 union.features[i].alternativeValues.length == 
-											 lastProxy.features[i].alternativeValues.length) {
+											 proxy.features[i].alternativeValues.length) {
+									 
+									 // loop on the feature values
 									 for (int j = 0; j < union.features[i].alternativeValues.length ; j++) {
 										 
+										 // check whether the type of the feature values are the same in the proxy and the union
 										 if (union.features[i].alternativeValues[j].getClass().equals(
-												 lastProxy.features[i].alternativeValues[j].getClass())) {
+												 proxy.features[i].alternativeValues[j].getClass())) {
 											 
-											 if (!FeatureValueUtils.haveEqualValue(union.features[i].alternativeValues[j], lastProxy.features[i].alternativeValues[j])) {
+											 if (!FeatureValueUtils.haveEqualValue(
+													 union.features[i].alternativeValues[j], proxy.features[i].alternativeValues[j])) {
 													 log("FAILED, feature values in the proxy and the union are different");
 											 }
 										 }
@@ -116,7 +170,7 @@ public class Test1 extends AbstractTester {
 									 log("FAILED, problem with the feature values of feature " + i);
 									 if (union.features[i].alternativeValues != null) {
 										 log("number of feature values in proxy: " + 
-												 lastProxy.features[i].alternativeValues.length +
+												 proxy.features[i].alternativeValues.length +
 												 " != number of feature values in union: " + 
 												 union.features[i].alternativeValues.length );	 
 									 }
@@ -168,19 +222,26 @@ public class Test1 extends AbstractTester {
 		return true;
 	}
 	
+	
+	/**
+	 * Get the binding union for the proxy
+	 * 
+	 * @param proxy the proxy
+	 * @return the union
+	 */
+	
 	protected Union getBindingUnionForProxy (Proxy proxy) {
 		try {
 			
-			lastProxy = proxy;
 			activateChangeFilter(proxy);
 			addProxyToWM (proxy);
 
-			while (!predictedUnions.containsKey(proxy.entityID)) {
+			while (!unions.containsKey(proxy.entityID)) {
 				sleepComponent(20);
 			}
 			log("Predicted union for proxy is sucessfully retrieved");
 			
-			return predictedUnions.get(proxy.entityID);
+			return unions.get(proxy.entityID);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -189,7 +250,12 @@ public class Test1 extends AbstractTester {
 	}
 
 
-
+	/**
+	 * Activate a change filter for the proxy, monitoring binding unions containing it.
+	 * When such union is found, it is added to the unions vector
+	 * 
+	 * @param proxy
+	 */
 	private void activateChangeFilter (Proxy proxy) {
 
 
@@ -203,7 +269,7 @@ public class Test1 extends AbstractTester {
 						Union u = config.includedUnions[i];
 						for (int j = 0 ; j < u.includedProxies.length ; j++) {
 							if (u.includedProxies[j].equals(lastProxy)) {
-								predictedUnions.put(lastProxy.entityID, u);
+								unions.put(lastProxy.entityID, u);
 							}
 						}
 					}

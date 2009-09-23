@@ -125,7 +125,12 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		return proxy;
 	}
 
-
+	
+	/**
+	 * Create a relation proxy (linked to proxyone and proxytwo)
+	 *  
+	 * @return the relation proxy
+	 */
 	private Proxy createRelationProxy() {
 
 		AddressValue[] sources = new AddressValue[1];

@@ -19,6 +19,7 @@
 
 package binder.utils;
 
+import cast.cdl.CASTTime;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.AddressValue;
@@ -39,12 +40,16 @@ public class FeatureValueUtils {
 	
 	public static boolean LOGGING = true;
 	
+
+	public static UnknownValue createUnknownValue(float prob) {
+		return new UnknownValue(prob, new CASTTime());
+	}
 	
 	public static boolean hasUnknownValue (FeatureValue fv) {
 		return (fv instanceof UnknownValue);
 	}
 	
-	
+
 	public static boolean hasValue (FeatureValue fv, Object o) {
 		if (fv instanceof StringValue && o instanceof String) {
 			return ((StringValue)fv).val.equals(((String)o));

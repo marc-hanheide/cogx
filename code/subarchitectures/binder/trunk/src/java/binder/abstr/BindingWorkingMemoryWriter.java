@@ -318,7 +318,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @return the new feature
 	 */
 
-	public Feature createFeature(String featlabel) {
+	public static Feature createFeature(String featlabel) {
 		Feature feat = new Feature();
 		feat.featlabel = featlabel;
 		feat.alternativeValues = new FeatureValue[0];
@@ -335,7 +335,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @return the new feature
 	 */
 
-	public Feature createFeatureWithUniqueFeatureValue(String featlabel,
+	public static Feature createFeatureWithUniqueFeatureValue(String featlabel,
 			FeatureValue featvalue) {
 
 		Feature feat = createFeature(featlabel);
@@ -355,7 +355,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @return the feature
 	 */
 
-	public Feature addFeatureValueToFeature(Feature feat, FeatureValue featval) {
+	public static Feature addFeatureValueToFeature(Feature feat, FeatureValue featval) {
 
 		if (feat.alternativeValues != null) {
 		FeatureValue[] featvals = new FeatureValue[feat.alternativeValues.length +1];
@@ -383,7 +383,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 * @return the feature
 	 */
 
-	public Feature createFeatureWithAlternativeFeatureValues(String featlabel,
+	public static Feature createFeatureWithAlternativeFeatureValues(String featlabel,
 			FeatureValue[] featvalues) {
 
 		Feature feat = createFeature(featlabel);

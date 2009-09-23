@@ -31,8 +31,6 @@ import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.FeatureValue;
-import binder.utils.BayesianNetworkUtils;
-import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
 
 import com.mxgraph.swing.mxGraphComponent;
