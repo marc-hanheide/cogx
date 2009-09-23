@@ -96,7 +96,6 @@ void PeekabotControl::configure(const map<string,string>& config) {
 
 void PeekabotControl::start() {
     println("start entered");
-
 }
 
 void PeekabotControl::runComponent() {
@@ -109,7 +108,7 @@ void PeekabotControl::runComponent() {
     }
 
     println("Connected to peekabot, ready to go");
-
+    bool sentplancommand = false;
     double radius = 0.75;
     double xNoA = 10, yNoA = 10;
     double searchx = 13, searchy = 13;
@@ -150,7 +149,7 @@ void PeekabotControl::runComponent() {
     searchhere.set_color(0,1,0);
 
     peekabot::CylinderProxy startspot;
-    startspot.add(controlmodule, "start-spot",
+    startspot.add(controlmodule, "start-spot ",
                   peekabot::REPLACE_ON_CONFLICT);
     startspot.set_scale(0.2,0.2,0.3);
     startspot.set_position(searchx,searchy,0);
@@ -227,7 +226,7 @@ void PeekabotControl::runComponent() {
                         if (hypot(fnodeseq[h]->y - r.get_result().m_c[1],
                                   fnodeseq[h]->x - r.get_result().m_c[0]) < radius) {
                             // seems we are asked to search this node
-                            log("fnodeid %i",fnodeseq[h]->nodeId);
+                            //log("fnodeid %i",fnodeseq[h]->nodeId);
                             SpatialData::PlacePtr place = agg->getPlaceFromNodeID(fnodeseq[h]->nodeId);
                             //check if we already added this 
                             bool isadded = false;
@@ -248,12 +247,14 @@ void PeekabotControl::runComponent() {
                 r = searchhere.get_position(peekabot::WORLD_COORDINATES);
 
                 if ( r.succeeded() && hypot(searchy - r.get_result().m_c[1],
-                                            searchx - r.get_result().m_c[0]) < radius && !placeseq.empty()) {
+                                            searchx - r.get_result().m_c[0]) < radius && !placeseq.empty()
+                                            && !sentplancommand) {
 
                    SpatialData::AVSCommandPtr avscmd = new SpatialData::AVSCommand;
                    avscmd->cmd = SpatialData::PLAN;
                    avscmd->placestosearch = placeseq;
                    addToWorkingMemory(newDataID(), avscmd);
+                   sentplancommand = true;
                 }
             }
 

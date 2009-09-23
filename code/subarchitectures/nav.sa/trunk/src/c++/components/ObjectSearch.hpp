@@ -20,7 +20,7 @@
 class ObjectSearch : public cast::ManagedComponent,
       public Scan2dReceiver,
       public OdometryReceiver
-  {
+  { 
   public:
     
     ObjectSearch();
