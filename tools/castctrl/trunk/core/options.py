@@ -24,6 +24,20 @@ class CUserOptions(object):
     def __init__(self):
         self.textEditCmd = "gvim --servername CAST --remote %s"
 
+    def loadConfig(self, filename):
+        if not os.path.exists(filename): return
+        f = open(filename, "r")
+        section = None
+        for ln in f.readlines():
+            l = ln.split('#')[0]
+            l = l.strip()
+            if l == "[USEROPTIONS]": section = "USER"
+            elif l.startswith('['): section = None
+            else:
+                if section == "USER":
+                    if ln.startswith("EDITOR="): self.textEditCmd = ln[7:]
+        f.close()
+
 class CCastOptions(object):
     def __init__(self):
         self.mruCfgPlayer = []
@@ -33,6 +47,7 @@ class CCastOptions(object):
             COGX_BUILD_DIR=${COGX_ROOT}/BUILD
             COGX_LIB_DIR=${COGX_ROOT}/output/lib
             COGX_PY_DIR=${COGX_ROOT}/output/python
+            COGX_CLASS_DIR=${COGX_ROOT}/output/classes
 
             CAST_DIR=/usr/local
             CAST_INSTALL_ROOT=${CAST_DIR}
@@ -59,7 +74,7 @@ class CCastOptions(object):
             LD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_PATH}:${CUDA_LIB_PATH}:${LD_LIBRARY_PATH}
             DYLD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_PATH}:${CUDA_LIB_PATH}:${DYLD_LIBRARY_PATH}
 
-            CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}
+            CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}:${COGX_CLASS_DIR}
             CMD_JAVA=java -ea -classpath ${CLASSPATH}
 
             PYTHONPATH=${PYTHONPATH}:${CAST_PY_DIR}:${COGX_PY_DIR}
@@ -121,6 +136,7 @@ class CCastOptions(object):
         f.write("[CLEANUP-SCRIPT]\n")
         for ln in self.cleanupScript:
             f.write(ln); f.write("\n")
+        f.write("[USEROPTIONS]\n#EDITOR=gvim --servername CAST --remote %s\n")
 
     def saveHistory(self, afile):
         f = afile
