@@ -13,7 +13,7 @@ package comsys.processing.reference.proxyfactories;
 // -------------------------------------------------------
 
 import binder.autogen.core.Feature; 
-import binder.autogen.core.PhantomProxy; 
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.StringValue; 
 import binder.autogen.specialentities.RelationProxy; 

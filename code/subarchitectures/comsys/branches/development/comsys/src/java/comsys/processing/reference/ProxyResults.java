@@ -12,7 +12,7 @@ package comsys.processing.reference;
 // BINDER imports
 // -------------------------------------------------------
 
-import binder.autogen.core.PhantomProxy; 
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy; 
 
 // -------------------------------------------------------
