@@ -71,6 +71,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self._options = options.CCastOptions()
         self._options.loadConfig("castcontrol.conf")
+        self._options.loadHistory("castcontrol.hist")
         self._options.configEnvironment()
         self._userOptions = options.CUserOptions()
         self._manager = procman.CProcessManager()
@@ -173,7 +174,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
-            self._options.saveConfig("castcontrol.conf")
+            self._options.saveConfig(open("castcontrol.conf", 'w'))
+            self._options.saveHistory(open("castcontrol.hist", 'w'))
         except Exception, e:
             print "Failed to save configuration"
             print e

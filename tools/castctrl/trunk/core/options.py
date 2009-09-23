@@ -66,7 +66,7 @@ class CCastOptions(object):
 
             CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
             CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
-            CMD_PYTHON_SERVER=python ${CAST_PY_DIR}/ComponentServer.py
+            CMD_PYTHON_SERVER=python -m ComponentServer
             CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
             CMD_PLAYER=player [PLAYER_CONFIG]
             CMD_PEEKABOT=peekabot
@@ -88,9 +88,7 @@ class CCastOptions(object):
         for ln in f.readlines():
             l = ln.split('#')[0]
             l = l.strip()
-            if l == "[MRU-CAST]": section = self.mruCfgCast
-            elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
-            elif l == "[ENVIRONMENT]":
+            if l == "[ENVIRONMENT]":
                 self._environment = []
                 section = self._environment
             elif l == "[CLEANUP-SCRIPT]":
@@ -99,22 +97,39 @@ class CCastOptions(object):
             elif l.startswith('['): section = None
             elif section != None:
                 section.append(ln.rstrip())
+        f.close()
 
-    def saveConfig(self, filename):
-        f = open(filename, "w")
+    def loadHistory(self, filename):
+        if not os.path.exists(filename): return
+        f = open(filename, "r")
+        section = None
+        for ln in f.readlines():
+            l = ln.split('#')[0]
+            l = l.strip()
+            if l == "[MRU-CAST]": section = self.mruCfgCast
+            elif l == "[MRU-PLAYER]": section = self.mruCfgPlayer
+            elif l.startswith('['): section = None
+            elif section != None:
+                section.append(ln.rstrip())
+        f.close()
+
+    def saveConfig(self, afile):
+        f = afile
         f.write("[ENVIRONMENT]\n")
         for ln in self.environment:
             f.write(ln); f.write("\n")
         f.write("[CLEANUP-SCRIPT]\n")
         for ln in self.cleanupScript:
             f.write(ln); f.write("\n")
+
+    def saveHistory(self, afile):
+        f = afile
         f.write("[MRU-CAST]\n")
         for ln in self.mruCfgCast:
             f.write(ln); f.write("\n")
         f.write("[MRU-PLAYER]\n")
         for ln in self.mruCfgPlayer:
             f.write(ln); f.write("\n")
-        f.close()
 
     def configEnvironment(self):
         # unset all variables
