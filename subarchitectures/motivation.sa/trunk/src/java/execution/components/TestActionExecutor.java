@@ -2,9 +2,9 @@ package execution.components;
 
 import cast.architecture.ManagedComponent;
 import execution.slice.Action;
+import execution.slice.TriBool;
 import execution.slice.actions.LogMessage;
 import execution.slice.actions.PrintMessage;
-import execution.slice.TriBool;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
 import execution.util.LocalActionStateManager;
@@ -49,6 +49,10 @@ public class TestActionExecutor extends ManagedComponent {
 			return false;
 		}
 
+		@Override
+		public void stopExecution() {
+		}
+
 	}
 
 	private class PrintExecutor implements ActionExecutor {
@@ -71,6 +75,10 @@ public class TestActionExecutor extends ManagedComponent {
 
 		public boolean isBlockingAction() {
 			return true;
+		}
+
+		@Override
+		public void stopExecution() {
 		}
 
 	}

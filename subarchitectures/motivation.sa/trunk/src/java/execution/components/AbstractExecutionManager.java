@@ -6,6 +6,7 @@ package execution.components;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -68,9 +69,9 @@ public abstract class AbstractExecutionManager extends ManagedComponent {
 		}
 	}
 
-	public void triggerExecution(Action _action, ActionMonitor _monitor)
-			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
-			UnknownSubarchitectureException {
+	public WorkingMemoryAddress triggerExecution(Action _action,
+			ActionMonitor _monitor) throws AlreadyExistsOnWMException,
+			DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// new address for the action
 		WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(),
 				getSubarchitectureID());
@@ -78,6 +79,13 @@ public abstract class AbstractExecutionManager extends ManagedComponent {
 		new ActionCallback(wma, _monitor);
 		// add the action to wm
 		addToWorkingMemory(wma, _action);
+		return wma;
+	}
+
+	public void stopExecution(WorkingMemoryAddress _actionAddress)
+			throws DoesNotExistOnWMException, PermissionException,
+			UnknownSubarchitectureException {
+		deleteFromWorkingMemory(_actionAddress);
 	}
 
 	/**

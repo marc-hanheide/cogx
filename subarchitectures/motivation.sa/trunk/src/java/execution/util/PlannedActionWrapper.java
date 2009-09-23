@@ -1,5 +1,6 @@
 package execution.util;
 
+import cast.cdl.WorkingMemoryAddress;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
 import execution.slice.TriBool;
@@ -9,7 +10,9 @@ public class PlannedActionWrapper implements ActionMonitor {
 	private final Action m_plannedAction;
 	private final execution.slice.Action m_systemAction;
 	private boolean m_signalledComplete;
-
+	//the address of the system action on wm
+	private  WorkingMemoryAddress m_actionAddress;
+	
 	public PlannedActionWrapper(Action _plannedAction,
 			execution.slice.Action _systemAction) {
 		m_plannedAction = _plannedAction;
@@ -17,6 +20,15 @@ public class PlannedActionWrapper implements ActionMonitor {
 		m_signalledComplete =false;
 	}
 
+	public void setActionAddress(WorkingMemoryAddress _actionAddress) {
+		m_actionAddress = _actionAddress;
+	}
+	
+	public WorkingMemoryAddress getActionAddress() {
+		assert(m_actionAddress != null);
+		return m_actionAddress;
+	}
+	
 	public boolean isInProgress() {
 		return m_plannedAction.status == Completion.INPROGRESS;
 	}

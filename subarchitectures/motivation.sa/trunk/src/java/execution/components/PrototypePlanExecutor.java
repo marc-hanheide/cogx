@@ -11,16 +11,21 @@ import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionConverter;
 import execution.util.SerialPlanExecutor;
+import execution.util.SleepyThread;
 
 /**
  * A component which will create a plan then execute it. This is a place holder
@@ -37,7 +42,8 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	private String m_goal;
 	private long m_sleepMillis;
 	private boolean m_generateOwnPlans;
-//	private WorkingMemoryAddress m_lastPlanProxyAddr;
+
+	// private WorkingMemoryAddress m_lastPlanProxyAddr;
 
 	public PrototypePlanExecutor() {
 		m_goal = "(forall (?p - place) (= (explored ?p) true))";
@@ -84,7 +90,8 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 						public void workingMemoryChanged(
 								WorkingMemoryChange _wmc) throws CASTException {
 							// trigger new plan
-							generatePlan();
+							println("received delete change for generate plan");
+							new PlanGenerator().start();
 						}
 					});
 
@@ -101,7 +108,40 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 
 		assert (pt.planningStatus == Completion.SUCCEEDED);
 		// create and launch an executor
-		new SerialPlanExecutor(this, _planProxyAddr, this).startExecution();
+		SerialPlanExecutor executor = new SerialPlanExecutor(this,
+				_planProxyAddr, this);
+		executor.startExecution();
+
+		if (m_generateOwnPlans) {
+			new DummyInterrupter(_planProxyAddr).start();
+		}
+	}
+
+	private class DummyInterrupter extends SleepyThread {
+		WorkingMemoryAddress m_planProxyAddress;
+
+		public DummyInterrupter(WorkingMemoryAddress _ppa) {
+			super(2000);
+			m_planProxyAddress = _ppa;
+		}
+
+		@Override
+		public void doSomething() {
+			try {
+				println("interrupting at: "
+						+ CASTUtils.toString(m_planProxyAddress));
+				lockComponent();
+				deleteFromWorkingMemory(m_planProxyAddress);
+				unlockComponent();
+				println("deleted plan proxy");
+			} catch (DoesNotExistOnWMException e) {
+				e.printStackTrace();
+			} catch (PermissionException e) {
+				e.printStackTrace();
+			} catch (UnknownSubarchitectureException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -126,12 +166,22 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 				+ _plannedAction.fullName);
 	}
 
+	private class PlanGenerator extends SleepyThread {
+
+		public PlanGenerator() {
+			super(m_sleepMillis);
+		}
+
+		@Override
+		protected void doSomething() {
+			generatePlan();
+		}
+	}
+
 	/**
 	 * 
 	 */
 	private void generatePlan() {
-
-		sleepComponent(m_sleepMillis);
 
 		log("generating new plan with goal: " + m_goal);
 
@@ -173,14 +223,14 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	 * @return
 	 */
 	private PlanningTask newPlanningTask() {
-		return new PlanningTask(0, null, null, null, null, Completion.PENDING, 0,
-				Completion.PENDING,0);
+		return new PlanningTask(0, null, null, null, null, Completion.PENDING,
+				0, Completion.PENDING, 0);
 	}
 
 	@Override
 	protected void runComponent() {
 		if (m_generateOwnPlans) {
-			generatePlan();
+			new PlanGenerator().start();
 		}
 	}
 

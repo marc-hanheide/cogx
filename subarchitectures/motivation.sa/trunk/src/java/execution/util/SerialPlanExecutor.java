@@ -188,9 +188,9 @@ public class SerialPlanExecutor extends Thread {
 	}
 
 	public void startExecution() {
-		//if we haven't completed already (i.e. received an empty plan)
+		// if we haven't completed already (i.e. received an empty plan)
 		if (m_exeState == ExecutionState.PENDING) {
-//			m_component.log("running from state: " + m_exeState);
+			// m_component.log("running from state: " + m_exeState);
 			m_exeState = ExecutionState.EXECUTING;
 			start();
 		}
@@ -225,24 +225,34 @@ public class SerialPlanExecutor extends Thread {
 				m_component.waitForChanges();
 
 				// check that we should still do something
-				if (m_component.isRunning() && hasNotBeenStopped()) {
-
-					// if one of the changes completed our action
-					if (!actionWrapper.isInProgress()) {
-						// and we haven't told the planner its complete
-						if (!actionWrapper.haveSentCompletionSignal()) {
-							// update state on completion as appropriate, return
-							// says whether result of last execution allows
-							// execution to continue
-							signalActionComplete(actionWrapper);
-						} else {
-							// try to trigger the next action. if nothing is
-							// triggered then actionWrapper doesn't change.
-							actionWrapper = triggerNextAction(actionWrapper);
+				if (m_component.isRunning()) {
+					
+					//if we've been explicitly stopped
+					if(m_exeState == ExecutionState.HALTED) {
+						//if something is happening
+						if(actionWrapper.isInProgress()) {
+							m_component.log("stopping action in progress");
+							m_component.stopExecution(actionWrapper.getActionAddress());
+						}
+					}
+					else if (hasNotBeenStopped()) {
+						// if one of the changes completed our action
+						if (!actionWrapper.isInProgress()) {
+							// and we haven't told the planner its complete
+							if (!actionWrapper.haveSentCompletionSignal()) {
+								// update state on completion as appropriate,
+								// return
+								// says whether result of last execution allows
+								// execution to continue
+								signalActionComplete(actionWrapper);
+							} else {
+								// try to trigger the next action. if nothing is
+								// triggered then actionWrapper doesn't change.
+								actionWrapper = triggerNextAction(actionWrapper);
+							}
 						}
 					}
 				}
-
 			}
 
 		} catch (CASTException e) {
@@ -321,8 +331,9 @@ public class SerialPlanExecutor extends Thread {
 		if (action.status == Completion.PENDING) {
 			actionWrapper = new PlannedActionWrapper(action, m_converter
 					.toSystemAction(action));
-			m_component
+			WorkingMemoryAddress actionAddr = m_component
 					.triggerExecution(actionWrapper.execute(), actionWrapper);
+			actionWrapper.setActionAddress(actionAddr);
 		}
 		return actionWrapper;
 

@@ -51,4 +51,10 @@ public interface ActionExecutor {
 	 */
 	void execute(ExecutionCompletionCallback _callback);
 
+	/**
+	 * Called to stop the action before a non-block action has completed.
+	 * Blocking actions cannot currently be executed.
+	 */
+	void stopExecution();
+
 }
