@@ -2,20 +2,21 @@
 
 # Binary files to be built.
 #
-BIN=test_abduction test_formulae
+MBIN=check-rules-file
 
 # Mercury source files.
 #
-MFILES=test_abduction.m abduction.m kb.m context.m formula.m costs.m test_formulae.m
+MFILES=check-rules-file.m
 
 # Mercury compiler flags
 #
-MCFLAGS?=
+MCFLAGS?=--search-lib-files-dir ../lib \
+		--init-file ../lib/abducer.init \
+		--link-object ../lib/libabducer.a
 
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.
 
-# use a default grade if unset
 ifeq ($(shell uname -s), Darwin)
 # on Darwin, Mercury doesn't support asm_fast (although it should for
 # Intel-based systems?)
@@ -31,9 +32,9 @@ endif
 .SUFFIXES:
 
 .PHONY: compile
-compile: $(BIN)
+compile: $(MBIN)
 
-$(BIN): $(MFILES)
+$(MBIN): $(MFILES)
 	mmc --make \
 		--grade $(GRADE) \
 		$(MCFLAGS) \
@@ -43,4 +44,5 @@ $(BIN): $(MFILES)
 clean:
 	rm -rf $(BIN) Mercury \
 		$(addsuffix .err, $(basename $(MFILES))) \
-		$(addsuffix .mh, $(basename $(MFILES)))
+		$(addsuffix .mh, $(basename $(MFILES))) \
+		$(MBIN)

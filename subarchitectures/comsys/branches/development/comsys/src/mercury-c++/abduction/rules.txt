@@ -1,0 +1,51 @@
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : 'prop'(Nom, be) / true,
+	i : 'feat_Mood'(Nom, int) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, SubjNom) / true,
+	i : 'rel_Cop-Restr'(Nom, SubjNom) / true,
+	?( i : 'rel_Cop-Scope'(Nom, ScopeNom) ),
+		i : sort(ScopeNom, ScopeSort) / true,
+		i : prop(ScopeNom, ScopeProp) / true,
+	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
+
+i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) <-
+	k(now, private(h)) : quality_uncertain(SubjNom, ScopeSort) / 0.5,
+	k(now, private(h)) : quality_hypothesis(SubjNom, ScopeSort, ScopeProp) / 0.5.
+
+% interpretation
+
+k(now, private(h)) : quality_known(SubjNom, QualitySort, QualityProp) <-
+	k(now, private(h)) : quality_hypothesis(SubjNom, QualitySort, QualityProp) / true,
+	produce_yesno(SubjNom, QualitySort, Bool) / 1.0.
+
+k(now, private(h)) : quality_known(SubjNom, QualitySort, QualityProp) <-
+	k(now, private(h)) : quality_unknown(SubjNom, QualitySort) / true,
+	describe(SubjNom) / 1.0.
+
+% ------------------------------
+
+salient(Nom) <-
+	feat_Salient(Nom, true) / 0.5.
+
+questioned(Nom) <-
+	feat_Questioned(Nom, true) / 0.5.
+
+the_box(Nom) <-
+	sort(Nom, entity) / 0.2,
+	prop(Nom, box) / 0.2,
+	salient(Nom) / expand.
+
+protolf(Nom) <-
+	sort(Nom, dvp) / 0.2,
+	prop(Nom, 'c-goal') / 0.2.
+
+assertion(Nom) <-
+	feat_SpeechAct(Nom, assertion) / 0.2.
+
+ascription(Nom, NomThis, NomX) <-
+	rel_Content(Nom, NomContent) / 0.2,
+	sort(NomContent, ascription) / 0.2,
+	rel_Target(NomContent, NomThis) / 0.2,
+	rel_Property(NomContent, NomX) / 0.2.

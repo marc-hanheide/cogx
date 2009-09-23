@@ -4,8 +4,10 @@
 
 :- interface.
 
+:- type cost_function_name == string.
+
 :- type cost_function
-	--->	f(string)  % named cost function
+	--->	f(cost_function_name)  % named cost function
 	;	const(float)  % constant cost function
 	.
 
