@@ -32,7 +32,7 @@ module beliefmodel {
 	class SuperFormula extends beliefmodels::adl::EpistemicObject {
 
 	};
-	
+	 
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
 				
 	class UncertainSuperFormula extends SuperFormula { 

@@ -54,7 +54,7 @@ class Feature {
 	string featlabel;
 	FeatureValues alternativeValues;
 };
-
+ 
  /** 
   * General abstract class for probability distributions
   */ 

@@ -25,8 +25,8 @@ import java.util.Vector;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.ProbabilityDistribution;
-import binder.autogen.core.Proxy;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
@@ -51,24 +51,24 @@ public class DistributionGeneration {
 
 	
 	/**
-	 * Generate a probability distribution for the given proxy
+	 * Generate a probability distribution for the given entity
 	 * 
-	 * @param proxy the entity
+	 * @param entity the entity
 	 * @return the probability distribution
 	 */
 	
-	public static ProbabilityDistribution generateProbabilityDistribution (Proxy proxy) {
+	public static ProbabilityDistribution generateProbabilityDistribution (PerceivedEntity entity) {
 		
 		// Initialise the distribution
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
 
 		// usual case: we have at least one feature in the entity
-		if (proxy.features.length > 0) {
+		if (entity.features.length > 0) {
 			
 			// construct the features list
 			Vector<Feature> features = new Vector<Feature>();
-			for (int i = 0; i < proxy.features.length ; i++) {
-				features.add(proxy.features[i]);
+			for (int i = 0; i < entity.features.length ; i++) {
+				features.add(entity.features[i]);
 			}
 
 			// and generate the set of assignment functions from it
@@ -97,9 +97,9 @@ public class DistributionGeneration {
 		}
 		
 		// and finally, multiply all assignment probabilities with the existence probability
-		// of the proxy
+		// of the entity
 		for (int i = 0 ; i < distrib.assignments.length ; i++) {
-			distrib.assignments[i].prob = distrib.assignments[i].prob * proxy.probExists;
+			distrib.assignments[i].prob = distrib.assignments[i].prob * entity.probExists;
 		}
 		
 		return distrib;
@@ -107,18 +107,25 @@ public class DistributionGeneration {
 
 	
 	/**
+	 * Generate a list of probability assignments from the features list
 	 * 
-	 * @param features
-	 * @return
+	 * @param features the feature list
+	 * @return the list of probability assignments
 	 */
 	
 	public static Vector<DiscreteProbabilityAssignment> generateProbabilityDistribution
 		(Vector<Feature> features) {
+		
+		// usual case: the feature list contains at least one element
 		if (features.size() > 0 ) {
+			
+			// call the recursive function "generateProbabilityDistribution" with an empty
+			// list of assignments
 			return generateProbabilityDistribution(features, 
 					new Vector<DiscreteProbabilityAssignment>());
 		}
 		
+		// if the list is empty
 		else {
 			Vector<DiscreteProbabilityAssignment> assignments = 
 				new Vector<DiscreteProbabilityAssignment>();
@@ -131,12 +138,29 @@ public class DistributionGeneration {
 	}
 	
 	
+	/**
+	 * Given a list of features and a list of previously computed assignments, generate
+	 * a new list of assignments integrating both the previously computed assignments and
+	 * the probabilities contained in the list of features
+	 * 
+	 * Example: if we have an input assignment {(colour, blue), (shape,spherical)}=0.6 and a 
+	 * feature "location" with two possible values P(on_table) = 0.7 and P(on_shelf) = 0.2,
+	 * the method will return the two following assignments:
+	 * - {(colour, blue), (shape,spherical), (location, on_table) }=0.42
+	 * - {(colour, blue), (shape,spherical), (location, on_shelf) }=0.14
+	 * 
+	 * @param features the list of features
+	 * @param prevAssignments  the previously computed assignments
+	 * @return the new assignments
+	 */
+	
 	public static Vector<DiscreteProbabilityAssignment> generateProbabilityDistribution 
 	(Vector<Feature> features, Vector<DiscreteProbabilityAssignment> prevAssignments) {
 
 		Vector<DiscreteProbabilityAssignment> newAssignments = 
 			new Vector<DiscreteProbabilityAssignment>();
 
+		// remove one feature from the features list
 		Feature feat = features.remove(0);
 
 		if (prevAssignments.size() == 0) {
