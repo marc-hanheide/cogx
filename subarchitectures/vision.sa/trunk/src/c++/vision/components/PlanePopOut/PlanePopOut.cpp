@@ -53,6 +53,8 @@ vector< vector< Vector3 > > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWireSphere;
+Vector3 v3dmax;
+Vector3 v3dmin;
 
 
 void InitWin()
@@ -180,13 +182,33 @@ void DrawOverlays()
   }
 }
 
+void DrawPlaneGrid()
+{
+	glLineWidth(1);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+///////////////////////////////////////////////////////////
+	glBegin(GL_LINE_LOOP);
+	glColor3f(1.0,1.0,1.0);
+	glVertex3f(v3dmax.x, v3dmax.y, v3dmax.z);
+	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
+	glVertex3f(v3dmin.x, v3dmin.y, v3dmin.z);
+	glVertex3f(v3dmax.x, v3dmin.y, v3dmin.z);
+	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
+	glVertex3f(v3dmin.x, v3dmin.y, v3dmin.z);
+	glEnd();
+
+	glDisable(GL_BLEND);
+}
+
 void DrawPoints()
 { 
   glPointSize(2);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < pointsN.size(); i++)
   {
-	if (points_label.at(i) == 0)  glColor3f(1.0,1.0,0.0); // plane
+	if (points_label.at(i) == 0)  DrawPlaneGrid(); //glColor3f(1.0,1.0,0.0); // plane
 	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
 	else if (points_label.at(i) == 1)  glColor3f(0.0,0.0,1.0);  // 1st object
 	else if (points_label.at(i) == 2)  glColor3f(0.0,0.0,1.0);  //
@@ -734,6 +756,10 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 	B = para_b;
 	C = para_c;
 	D = para_d;
+
+	double dmin = 9999.0;
+	double dmax = 0.0;
+
 	if (v3BestMean.x != 0 || v3BestMean.y != 0 || v3BestMean.z != 0)
 	{
 		for(unsigned int i=0; i<nPoints; i++)
@@ -741,7 +767,12 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 			Vector3 v3Diff = R_points.at(i) - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
 			if(dNormDist < 0.02)
+			{
 				labels.at(i) = 0; // dominant plane
+				double ddist = dot(R_points.at(i),R_points.at(i));
+				if (ddist > dmax) {dmax = ddist; v3dmax = R_points.at(i);}
+				else if (ddist < dmin) {dmin = ddist; v3dmin = R_points.at(i);}
+			}
 			else
 			{
 				double d_parameter = -(A*R_points.at(i).x+B*R_points.at(i).y+C*R_points.at(i).z);
