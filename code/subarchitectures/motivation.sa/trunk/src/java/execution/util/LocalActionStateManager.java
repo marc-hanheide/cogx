@@ -47,7 +47,6 @@ public class LocalActionStateManager extends Thread {
 			super(_a, _b);
 			m_address = _address;
 		}
-
 	}
 
 	private class ExecutionCallback implements ExecutionCompletionCallback {
@@ -123,6 +122,22 @@ public class LocalActionStateManager extends Thread {
 		m_component.log("registered exection for: " + _actionCls);
 	}
 
+	private class StopExecutionReceiver implements WorkingMemoryChangeReceiver {
+		private final ActionExecutor m_executor;
+
+		public StopExecutionReceiver(ActionExecutor _executor) {
+			m_executor = _executor;
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+				throws CASTException {
+			m_executor.stopExecution();
+			m_component.removeChangeFilter(this);
+		}
+
+	}
+
 	protected void newActionReceived(WorkingMemoryChange _wmc)
 			throws ActionExecutionException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException, ConsistencyException,
@@ -148,6 +163,11 @@ public class LocalActionStateManager extends Thread {
 			m_executorQueue.add(new ExecutorWrapper(executor, action,
 					_wmc.address));
 		}
+
+		// store a receiver to handle action stopping when action is deleted
+		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
+				_wmc.address, WorkingMemoryOperation.DELETE),
+				new StopExecutionReceiver(executor));
 	}
 
 	/**

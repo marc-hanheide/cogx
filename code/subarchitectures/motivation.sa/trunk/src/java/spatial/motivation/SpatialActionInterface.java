@@ -4,7 +4,6 @@
 package spatial.motivation;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -20,6 +19,7 @@ import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
+import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -49,7 +49,8 @@ public class SpatialActionInterface extends ManagedComponent {
 	private HashSet<Long> m_placeIDs;
 
 	/**
-	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 5 minutes.
+	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 5
+	 * minutes.
 	 */
 	private long m_avsTimeoutMillis = 300000;
 
@@ -59,6 +60,11 @@ public class SpatialActionInterface extends ManagedComponent {
 		private ExecutionCompletionCallback m_callback;
 		private WorkingMemoryAddress m_avsAddr;
 		private AVSCommand m_avsCmd;
+		private boolean m_isStopped;
+
+		public AVSExecutor() {
+			m_isStopped = false;
+		}
 
 		@Override
 		public boolean accept(Action _action) {
@@ -104,11 +110,13 @@ public class SpatialActionInterface extends ManagedComponent {
 			if (useAVSTimeout()) {
 				try {
 					Thread.sleep(m_avsTimeoutMillis);
-					log("halting AVS after timeout");
-					// stop avs
-					m_avsCmd.cmd = AVSAction.STOPAVS;
-					overwriteWorkingMemory(m_avsAddr, m_avsCmd);
-					m_callback.executionComplete(TriBool.TRITRUE);
+					if (!m_isStopped) {
+						log("halting AVS after timeout");
+						// stop avs
+						m_avsCmd.cmd = AVSAction.STOPAVS;
+						overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+						m_callback.executionComplete(TriBool.TRITRUE);
+					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (DoesNotExistOnWMException e) {
@@ -123,6 +131,24 @@ public class SpatialActionInterface extends ManagedComponent {
 			}
 		}
 
+		@Override
+		public void stopExecution() {
+			try {
+				m_isStopped = true;
+				m_avsCmd.cmd = AVSAction.STOPAVS;
+				overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+			} catch (DoesNotExistOnWMException e) {
+				e.printStackTrace();
+			} catch (ConsistencyException e) {
+				e.printStackTrace();
+			} catch (PermissionException e) {
+				e.printStackTrace();
+			} catch (UnknownSubarchitectureException e) {
+				e.printStackTrace();
+			}
+
+		}
+
 	}
 
 	private class GoToPlaceExecutor implements ActionExecutor,
@@ -130,6 +156,8 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		private long m_placeID;
 		private ExecutionCompletionCallback m_callback;
+		private WorkingMemoryAddress m_navCmdAddr;
+		private boolean m_isComplete = false;
 
 		public boolean accept(Action _action) {
 			m_placeID = ((GoToPlace) _action).placeID;
@@ -156,14 +184,14 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			// going to add locally for the time being, but using wma to allow
 			// this to be changed later
-			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(),
+			m_navCmdAddr = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
-			addChangeFilter(ChangeFilterFactory.createAddressFilter(wma,
-					WorkingMemoryOperation.OVERWRITE), this);
+			addChangeFilter(ChangeFilterFactory.createAddressFilter(
+					m_navCmdAddr, WorkingMemoryOperation.OVERWRITE), this);
 			m_callback = _callback;
 
 			try {
-				addToWorkingMemory(wma, cmd);
+				addToWorkingMemory(m_navCmdAddr, cmd);
 			} catch (CASTException e) {
 				println(e.message);
 				e.printStackTrace();
@@ -192,16 +220,39 @@ public class SpatialActionInterface extends ManagedComponent {
 			if (cmd.comp == Completion.COMMANDABORTED
 					|| cmd.comp == Completion.COMMANDFAILED) {
 				log("command failed by the looks of this: " + cmd.comp);
+				m_isComplete = true;
 				m_callback.executionComplete(TriBool.TRIFALSE);
 				deleteFromWorkingMemory(_wmc.address);
 				removeChangeFilter(this);
 			} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
 				log("command completed by the looks of this: " + cmd.comp);
+				m_isComplete = true;
 				m_callback.executionComplete(TriBool.TRITRUE);
 				deleteFromWorkingMemory(_wmc.address);
 				removeChangeFilter(this);
 			} else {
 				log("command in progress: " + cmd.comp);
+			}
+		}
+
+		@Override
+		public void stopExecution() {
+			// remove overwrite receiver
+			if (!m_isComplete) {
+				try {
+					removeChangeFilter(this);
+					// reread
+					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
+							NavCommand.class);
+					navCmd.comp = Completion.COMMANDABORTED;
+					overwriteWorkingMemory(m_navCmdAddr, navCmd);
+
+				} catch (DoesNotExistOnWMException e) {
+					//
+					// e.printStackTrace();
+				} catch (SubarchitectureComponentException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
