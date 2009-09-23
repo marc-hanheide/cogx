@@ -24,7 +24,7 @@ import binder.utils.GenericUtils;
  * @started 10/08/2009
  */
 
-public class BayesianNetworkWrapper extends BayesianNetwork {
+public class BayesianNetworkWrapper {
 
 	// no clue what that is
 	private static final long serialVersionUID = 1L;
@@ -49,7 +49,7 @@ public class BayesianNetworkWrapper extends BayesianNetwork {
 	 */
 	
 	public BayesianNetworkWrapper (String configFile) {
-	
+	 
 		// create the bayesian network
 		network = new BayesianNetwork() ;
 		
@@ -211,6 +211,22 @@ public class BayesianNetworkWrapper extends BayesianNetwork {
 		return null;
 	}
 
+	/**
+	 * Return the nodes of the network
+	 * @return
+	 */
+	public BayesianNetworkNode[] getNodes() {
+		return network.nodes;
+	}
+	
+	
+	/**
+	 * Return the edges of the network
+	 * @return
+	 */
+	public BayesianNetworkEdge[] getEdges() {
+		return network.edges;
+	}
 	
 	// ================================================================= 
 	// UTILITY METHODS   

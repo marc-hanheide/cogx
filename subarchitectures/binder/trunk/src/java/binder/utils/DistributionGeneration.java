@@ -93,7 +93,7 @@ public class DistributionGeneration {
 		// If necessary, normalise the probability distribution to sum all assignment probabilities
 		// to 1.0f
 		if (normaliseDistributions) {
-			distrib = normaliseDistribution(distrib, 1.0f);
+			normaliseDistribution(distrib, 1.0f);
 		}
 		
 		// and finally, multiply all assignment probabilities with the existence probability
@@ -125,7 +125,8 @@ public class DistributionGeneration {
 					new Vector<DiscreteProbabilityAssignment>());
 		}
 		
-		// if the list is empty
+		// if the list is empty, create a dummy distribution with only one empty assignment
+		// with probability 1.0f
 		else {
 			Vector<DiscreteProbabilityAssignment> assignments = 
 				new Vector<DiscreteProbabilityAssignment>();
@@ -143,11 +144,15 @@ public class DistributionGeneration {
 	 * a new list of assignments integrating both the previously computed assignments and
 	 * the probabilities contained in the list of features
 	 * 
+	 * 
 	 * Example: if we have an input assignment {(colour, blue), (shape,spherical)}=0.6 and a 
 	 * feature "location" with two possible values P(on_table) = 0.7 and P(on_shelf) = 0.2,
 	 * the method will return the two following assignments:
 	 * - {(colour, blue), (shape,spherical), (location, on_table) }=0.42
 	 * - {(colour, blue), (shape,spherical), (location, on_shelf) }=0.14
+	 * 
+	 * The method is specified in a recursive way, removing one feature from the list once at a
+	 * time, till the list is empty and all assignments are produced
 	 * 
 	 * @param features the list of features
 	 * @param prevAssignments  the previously computed assignments
@@ -163,42 +168,59 @@ public class DistributionGeneration {
 		// remove one feature from the features list
 		Feature feat = features.remove(0);
 
+		// special case if the list of previously computed assignments is empty
 		if (prevAssignments.size() == 0) {
 
+			// loop on the feature values of feat
 			for (int i = 0; i < feat.alternativeValues.length ; i++) {
 				FeatureValue fv = feat.alternativeValues[i];
+				
+				// create a new assignment with a single feature-value pair
 				DiscreteProbabilityAssignment newAss = new DiscreteProbabilityAssignment();
 				newAss.featurepairs = new FeatureValuePair[1];
 				newAss.featurepairs[0] = new FeatureValuePair(feat.featlabel, fv);
 				newAss.prob = fv.independentProb;
+				
+				// and add it to the list
 				newAssignments.add(newAss);
 			}
 		}
 
+		// general case, with a non empty list of previously computed assignments
 		else {
+			
+			// loop on the feature values
 			for (int i = 0; i < feat.alternativeValues.length ; i++) {
 				FeatureValue fv = feat.alternativeValues[i];
 
+				// loop on the previously computed assignments
 				for (Enumeration<DiscreteProbabilityAssignment> e = 
 					prevAssignments.elements() ; e.hasMoreElements(); ) {
 					DiscreteProbabilityAssignment ass = e.nextElement();
 
+					// create a new assignment
 					DiscreteProbabilityAssignment newAss = new DiscreteProbabilityAssignment();
+				
+					// construct a list of feature value pairs for this assignment
 					Vector<FeatureValuePair> featpairs = new Vector<FeatureValuePair>();
-
 					for (int j = 0 ; j <ass.featurepairs.length ; j++) {
 						featpairs.add(ass.featurepairs[j]);
 					}
+					
+					// and adds a new pair to it, extracted from the feature
 					FeatureValuePair newPair = new FeatureValuePair(feat.featlabel, fv);
 					featpairs.add(newPair);
 					newAss.featurepairs = new FeatureValuePair[featpairs.size()];
 					newAss.featurepairs = featpairs.toArray(newAss.featurepairs);
 					newAss.prob = ass.prob * fv.independentProb;
+					
+					// add the new assignment to the list
 					newAssignments.add(newAss);
 				}
 			}
 		}
 
+		// recursively call the method till the features list is empty
 		if (features.size() > 0) {
 			return generateProbabilityDistribution(features, newAssignments);
 		}
@@ -207,63 +229,104 @@ public class DistributionGeneration {
 		}
 	}
 
+	
 
+	/**
+	 * Normalise the distribution, to ensuire the sum of all probabilities in the 
+	 * distribution amounts to totalSum (generally equals to 1.0f)
+	 * 
+	 * @param distrib the distribution
+	 * @param totalSum the sum of all probabilities to enforce
+	 * @return
+	 */
 	
-	public static CombinedProbabilityDistribution normaliseDistribution
-	(CombinedProbabilityDistribution distrib, float probExists) {
-
-		DiscreteProbabilityDistribution firstDistrib = 
-			(DiscreteProbabilityDistribution) distrib.distributions[0];
-		float total = 0.0f;
-		for (int i = 0; i < firstDistrib.assignments.length; i++) {
-			
-			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
-					
-			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
-			total += probValue;
-		}
-		
-		for (int i = 0; i < firstDistrib.assignments.length; i++) {
-			((DiscreteProbabilityDistribution)distrib.distributions[0]).assignments[i].prob = 
-				firstDistrib.assignments[i].prob / (total * probExists);
-		}
-		
-		return distrib;
-	}
-	
-	
-	public static ProbabilityDistribution normaliseDistribution 
-		(ProbabilityDistribution distrib, float probExists) {
+	public static void normaliseDistribution 
+		(ProbabilityDistribution distrib, float totalSum) {
 		
 		if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
-			return normaliseDistribution((CombinedProbabilityDistribution)distrib, probExists);
+			normaliseDistribution((CombinedProbabilityDistribution)distrib, totalSum);
 		}
 		else if  (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
-			return normaliseDistribution((DiscreteProbabilityDistribution)distrib, probExists);
+			normaliseDistribution((DiscreteProbabilityDistribution)distrib, totalSum);
 		}
 		
-		return distrib;
 	}
-	
-	
 
-	public static DiscreteProbabilityDistribution normaliseDistribution
-		(DiscreteProbabilityDistribution distrib, float probExists) {
+	
+	/**
+	 * Normalise the discrete distribution, to ensuire the sum of all probabilities in the 
+	 * distribution amounts to totalSum (generally equals to 1.0f)
+	 * 
+	 * @param distrib the discrete distribution
+	 * @param totalSum the sum of all probabilities to enforce
+	 * @return
+	 */
+	
+	public static void normaliseDistribution (DiscreteProbabilityDistribution distrib, float totalSum) {
 
 		float total = 0.0f;
 		if (distrib.assignments != null) {
+			
+			// loop on the assignments
 			for (int i = 0; i < distrib.assignments.length; i++) {
 				total += distrib.assignments[i].prob;
 			}
 
+			// set the normalisation factor
+			float alpha = 1.0f / (total * totalSum) ;
+			
+			// and change the assignment probabilities
 			for (int i = 0; i < distrib.assignments.length; i++) {
-				distrib.assignments[i].prob = distrib.assignments[i].prob / (total * probExists);
+				distrib.assignments[i].prob = distrib.assignments[i].prob * alpha ;
 			}
 		}
-		return distrib;
 	}
+	
+	
+	/**
+	 * Normalise the combined distribution, to ensuire the sum of all probabilities in the 
+	 * distribution amounts to totalSum (generally equals to 1.0f)
+	 * 
+	 * @param distrib the combined distribution
+	 * @param totalSum the sum of all probabilities to enforce
+	 * @return
+	 */
+	
+	public static void normaliseDistribution
+	(CombinedProbabilityDistribution distrib, float totalSum) {
 
-
+		/** Here, we assume for the moment that the (1) the first distribution inside the combined 
+		 * distribution is discrete, and (2) that it contains the complete list of possible assignments 
+		 * for the combined distribution  */
+		
+		DiscreteProbabilityDistribution firstDistrib = 
+			(DiscreteProbabilityDistribution) distrib.distributions[0];
+		float total = 0.0f;
+		
+		// loop on the assignments
+		for (int i = 0; i < firstDistrib.assignments.length; i++) {
+			
+			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
+					
+			// get the probability value for the assignment
+			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
+			
+			// and add its value to the total
+			total += probValue;
+		}
+		
+		// Set the normalisation factor
+		float alpha = 1.0f / (total * totalSum);
+		
+		// and change the distribution (actually, the first "sub"-distribution) by multiplying
+		// all assignments by the normalisation factor
+		for (int i = 0; i < firstDistrib.assignments.length; i++) {
+			((DiscreteProbabilityDistribution)distrib.distributions[0]).assignments[i].prob = 
+				firstDistrib.assignments[i].prob * alpha ;
+		}
+		
+	}
+	
 
 
 }
