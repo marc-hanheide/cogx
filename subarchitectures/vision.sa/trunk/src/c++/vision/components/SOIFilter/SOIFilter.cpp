@@ -273,7 +273,7 @@ void SOIFilter::start()
   startVideoCommunication(*this);
 
   char *name = "queueSemaphore";
-  named_semaphore(create_only, name, 0);
+  named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
   
   if (doDisplay)
@@ -304,7 +304,7 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-    //queuesNotEmpty->wait();
+    queuesNotEmpty->wait();
 
     log("Got something in my queues");
 
@@ -339,6 +339,9 @@ void SOIFilter::runComponent()
      }
       
   }
+
+  queuesNotEmpty->remove("queueSemaphore");
+  delete queuesNotEmpty;
   
   if (doDisplay)
   {
