@@ -12,8 +12,8 @@ package comsys.components.reference;
 // BINDER IMPORTS
 //-----------------------------------------------------------------
 
-import binding.abstr.AbstractBindingPredictor;
-import binding.autogen.core.Union;
+import binder.abstr.AbstractBindingPredictor;
+import binder.autogen.core.Union;
 import binder.autogen.specialentities.PhantomProxy;
 
 //-----------------------------------------------------------------
@@ -31,16 +31,20 @@ import cast.SubarchitectureComponentException;
 //-----------------------------------------------------------------
 import comsys.arch.*;
 import comsys.datastructs.comsysEssentials.*;
+import comsys.datastructs.lf.*;
+import comsys.processing.reference.ProxyResults;
 import comsys.processing.reference.ReferentialReadings;
 import comsys.processing.reference.RestrictorProxyConstruction;
 import comsys.utils.datastructs.*;
 
 import comsys.lf.utils.ArrayIterator; 
+import comsys.lf.utils.LFUtils; 
 
 //-----------------------------------------------------------------
 // JAVA IMPORTS
 //-----------------------------------------------------------------
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 
@@ -172,13 +176,13 @@ public class cc_ReferentialBindings
 			// get the restrictive readings
 			for (ArrayIterator readingsIter = new ArrayIterator(readings.refRdngs); readingsIter.hasNext(); ) {
 				RefReading reading = (RefReading)readingsIter.next();
+				Vector<RefBinding> refBindings = new Vector();
 				if (reading.restrictiveTrees != null && reading.restrictiveTrees.length > 0) { 
-					Vector<RefBinding> refBindings = new Vector();
 					for (ArrayIterator idsIter = new ArrayIterator(reading.restrictiveTrees); idsIter.hasNext(); ) { 
 						String restrTreeRoot = (String)idsIter.next();
 						LogicalForm restrLF = LFUtils.lfConstructSubtree(LFUtils.lfGetNominal(lf,restrTreeRoot),lf);
 						ProxyResults prxResults = factory.constructProxy(restrLF);
-						for (Iterator<PhantomProxies> phantIter = prxResults.getProxies(); phantIter.hasNext(); ) {
+						for (Iterator<PhantomProxy> phantIter = prxResults.getProxies(); phantIter.hasNext(); ) {
 							PhantomProxy phant = phantIter.next();
 							// get the unions, delete phantom afterwards
 							Vector<Union> unions = getPredictedUnions(phant,true); 
@@ -190,11 +194,11 @@ public class cc_ReferentialBindings
 								anchors.add(anchor);
 							} // end for over possible unions
 							// create the reference binding, add it to the vector of bindings for this reading
-							Anchor[] antecendents = new Anchor[anchors.size()];
+							Anchor[] antecedents = new Anchor[anchors.size()];
 							antecedents = (Anchor[])anchors.toArray(antecedents);
 							RefBinding binding = new RefBinding();
 							binding.id = "refbinding";
-							binding.nomVar = restTreeRoot;
+							binding.nomVar = restrTreeRoot;
 							binding.antecedents = antecedents; 
 							refBindings.add(binding);
 						} // end for over phantom proxies
@@ -205,7 +209,7 @@ public class cc_ReferentialBindings
 				readingBindings.id = "readingbindings";
 				RefBinding[] bindings = new RefBinding[refBindings.size()];
 				bindings = (RefBinding[])refBindings.toArray(bindings);
-				readingBindings.bindings = binding;
+				readingBindings.bindings = bindings;
 				boundReadings.add(readingBindings);
 			} // end for over readings
 			// create the BoundReadings object
@@ -292,7 +296,6 @@ public class cc_ReferentialBindings
 	
 	private Anchor createAnchorFromUnion (Union union) { 
 		Anchor anchor = new Anchor();
-		anchor.id = "anchor";
 		anchor.entityID = union.entityID;
 		anchor.probExists = union.probExists; 
 		return anchor; 
