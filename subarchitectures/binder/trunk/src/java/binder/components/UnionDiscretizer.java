@@ -26,6 +26,7 @@ import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.utils.ConfigurationFilter;
+import binder.utils.MaximumSearch;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -132,7 +133,7 @@ public class UnionDiscretizer extends ManagedComponent {
 			
 			// If only maximum-probability values are allowed, compute a new union with only these
 			if (onlyMaxFeatureValues) {
-				union = ConfigurationFilter.getUnionWithMaximumProbability(union);
+				union = MaximumSearch.getUnionWithMaximumProbability(union);
 			}
 			
 			unions.add(union);
