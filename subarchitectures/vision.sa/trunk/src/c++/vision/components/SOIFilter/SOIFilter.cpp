@@ -304,7 +304,7 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-    queuesNotEmpty->wait();
+    //queuesNotEmpty->wait();
 
     log("Got something in my queues");
 
