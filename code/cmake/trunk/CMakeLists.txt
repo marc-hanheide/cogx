@@ -113,7 +113,7 @@ if(BUILD_SA_PLANNER)
 endif(BUILD_SA_PLANNER)
 
 # Fake motivation
-option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" YES)
+option(BUILD_SA_FAKE_MOTIVATION "Build fake motivation subarchitecure" NO)
 if(BUILD_SA_FAKE_MOTIVATION)
     add_subdirectory (subarchitectures/fakemotivation.sa)
 endif(BUILD_SA_FAKE_MOTIVATION)
