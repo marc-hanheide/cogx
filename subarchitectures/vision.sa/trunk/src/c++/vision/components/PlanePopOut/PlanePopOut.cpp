@@ -199,6 +199,16 @@ void DrawPlaneGrid()
 	glVertex3f(v3dmin.x, v3dmin.y, v3dmin.z);
 	glEnd();
 
+	glBegin(GL_LINE_LOOP);
+	glColor3f(1.0,1.0,1.0);
+	glVertex3f(v3dmax.x, v3dmax.y, v3dmax.z);
+	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
+	glVertex3f(v3dmin.x+A, v3dmin.y+B, v3dmin.z+C);
+	glVertex3f(v3dmax.x+A, v3dmax.y+B, v3dmax.z+C);
+	glVertex3f(v3dmin.x, v3dmax.y, v3dmax.z);
+	glVertex3f(v3dmin.x+A, v3dmin.y+B, v3dmin.z+C);
+	glEnd();
+
 	glDisable(GL_BLEND);
 }
 
