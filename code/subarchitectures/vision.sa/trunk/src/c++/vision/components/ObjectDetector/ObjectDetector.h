@@ -47,11 +47,6 @@ private:
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
 
   /**
-   * Receive the changed visual objects, written to the working memory from the tracker
-   */
-	void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
-
-  /**
    * Convert a object-detector cube to a cast visual object 
    */
 	bool Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::CubeDef &cd);
