@@ -51,7 +51,6 @@ import javax.swing.ImageIcon;
 
 import opennlp.ccg.synsem.*;
 import opennlp.ccg.realize.*;
-import java.util.Enumeration;
 
 import org.jdom.*;
 import org.jdom.output.XMLOutputter;
