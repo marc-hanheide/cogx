@@ -44,7 +44,7 @@
 		    <fileset dir="${slice.dir}" includes="LF.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
-	     <pathelement path="/usr/local/share/cast/slice/"/>
+	     <pathelement path="/opt/local/share/cast/slice/"/>
 	    </includepath>
 	  </slice2java>
 	</target>
@@ -54,7 +54,7 @@
 	    <fileset dir="${slice.dir}" includes="Comsys.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
-	      <pathelement path="/usr/local/share/cast/slice/"/>
+	      <pathelement path="/opt/local/share/cast/slice/"/>
 	    </includepath>
 	  </slice2java>
 	</target>

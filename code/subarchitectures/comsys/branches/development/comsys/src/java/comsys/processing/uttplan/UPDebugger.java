@@ -83,7 +83,13 @@ public class UPDebugger
     public static final String HISTORY = "Command Line History";
 
     private final String version = "0.25";
+	
+	private Vector modelRedux;
+	private NgramScorer ngramScorer = null;
 
+	private Grammar grammar; 
+	
+	
     //=================================================================
     // CONSTRUCTOR METHODS
     //=================================================================
@@ -93,9 +99,7 @@ public class UPDebugger
      */
 
     public UPDebugger () {
-
     } // end constructor
-
 
 
     //=================================================================
@@ -195,32 +199,120 @@ public class UPDebugger
     } // end editRelations
     
 
-    public String realizeLF (Realizer realizer, LogicalForm logform) { 
-		
-	String output = "";
-	LF lf = transformLF(realizer,logform);
+/** applyModelReduction removes parts of the LF unknown to the realization grammar
+  * copied over from cc_ContentPlanning.java
+ */
 	
-	realizer.realize(lf);
-	opennlp.ccg.realize.Chart chart = realizer.getChart();
-	// chart.printBestEdge();
+	private LogicalForm applyModelReduction (LogicalForm lf) { 
+		// log("Root nominal: \n"+LFUtils.lfNominalToString(lf.root));
+		// Create a new result
+		LogicalForm result = LFUtils.newLogicalForm();
+		result.noms = null;
+		// Cycle over the nominals in the given lf
+		for (Iterator<LFNominal> nomsIter = LFUtils.lfGetNominals(lf); nomsIter.hasNext(); ) { 
+			// Get the next nominal
+			LFNominal nom = nomsIter.next();
+			// log("Reducing nominal: \n"+LFUtils.lfNominalToString(nom));
+			
+			LFNominal newNom = LFUtils.lfNominalClone(nom);
+			// Reset the features in the cloned nominal
+			newNom.feats = new comsys.datastructs.lf.Feature[0];
+			// Cycle over the features in the nominal
+			for (Iterator<comsys.datastructs.lf.Feature> featsIter = LFUtils.lfNominalGetFeatures(nom); featsIter.hasNext(); ) { 
+				comsys.datastructs.lf.Feature feat = featsIter.next();
+				if (modelRedux.contains(feat.feat)) { 
+					// do sweet bugger all, this is one to delete
+					// log("Removing feature from nominal: ["+feat.feat+"]");
+				} else { 
+					// log("Adding feature from nominal: ["+feat.feat+"]");
+					newNom.feats = LFUtils.lfNominalAddFeature(newNom,feat);
+				} // end if.. check whether to delete
+			} // end for over features
+			// Finally, add the updated nominal
+			// log("Reduced nominal: \n"+LFUtils.lfNominalToString(newNom));
+			result.noms = LFUtils.lfAddNominal(result,newNom);
+			// log("Updated reduced LF: "+LFUtils.lfToString(result));
+		} // end for over nominals
+		// log("End for over nominals for applying model reduction");
+		result.noms = LFUtils.lfRemoveNominal(result.noms,"");
+		LFNominal resultRoot = LFUtils.lfGetNominal(result,lf.root.nomVar);
+		result.root = resultRoot;
+		log("Final reduced LF: "+LFUtils.lfToString(result));
+		return result;
+	} // end applyModelReduction
+	
+	
+	
+    public String realizeLF (Realizer realizer, LogicalForm logicalForm) {
+	
+	String output = "";
+	String contentBody = "Content"; // the content of the LF to realize will always be under relation CONTENT
 
-	List bestEdges = chart.bestEdges();
+	// Retrieve the content subtree (adapted from cc_Realizer)
+	LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
+	String contentRoot = "";
+	if (content != null) {
+		contentRoot = content.dep;
+	} else {
+		contentRoot = logicalForm.root.nomVar;
+	} 
+	LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
+	LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
+	
+	log("Planning a realization for the following logical form: "+LFUtils.lfToString(planLF));
+			
+	// Translate the planLF logical form into XML for OpenCCG
+	// in the new comsys realization component, this happens with: LF lf = LFUtils.convertToLF(planLF);
+	LF lf = LFUtils.convertToLF(planLF);
+	log("XML LF created"+ lf.toString());		
+	// Dump the LF in the XML format to a file
+		String curDir = System.getProperty("user.dir");
+		String dumpLFfile =  curDir+"/subarchitectures/comsys/grammars/contentPlanning/dumpedLF.xml";
 
+		try { 
+			grammar.saveToXml(lf, "", dumpLFfile);
+			log("Wrote LF to \"" + dumpLFfile + "\"");
+		} catch (Exception ie) { 
+			ie.printStackTrace();
+		} 
+	log("XML LF saving passed");		
+	
+		
+	// Realize the XML-based logical form
+	if (ngramScorer == null) { 
+		realizer.realize(lf); log("Called realizer without ngrams");
+	} else {
+		realizer.realize(lf,ngramScorer); log("Called realizer with ngrams");
+	}
+
+		opennlp.ccg.realize.Chart chart = realizer.getChart();
+		log("Chart has "+chart.numEdgesInChart()+" representative edges.");
+		log("Best edge: ");
+		chart.printBestEdge();
+		log("Best joined edge: ");
+		chart.printBestJoinedEdge();
+		log("All edges: ");
+		chart.printEdges();
+	List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();
+	log("Number of best edges handed over from chart: "+bestEdges.size());
+	int bestcounter=0;
 	for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
-	    opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
-	    Sign sign = edge.getSign();
-	    output = output+sign.toString()+"\n";
+	    log("entered iterator");
+		opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
+	    // Sign sign = edge.getSign();
+	    // output = output+sign.toString()+"\n";
+		output = output+edge.toString()+"\n";
+		// msg(output);
+		log("Iteration number: "+bestcounter++); 
 	} // end for over best edges
 	System.out.println();
 	msg("Realization(s):");
 	System.out.println();	
-	msg(output); 
+		log(output);
 	return output;
     } // end realizeLF
 
-
-
-
+	
     public LogicalForm solvePlanGRE (LFNominal nom) { 
 	LogicalForm lf = new LogicalForm ();
 	
@@ -269,107 +361,13 @@ public class UPDebugger
 	 * openccg-Realize.java extracts an LF-object from that xml
 	 * @return LF (the transformed)
 	 * @param LogicalForm
+	 *
+	 * had problems --> removed
+	 * 
+	 * In new comsys, this code has gone into LFUtils.convertToLF so we use that now
 	 */ 
    
-    public LF transformLF (Realizer realizer, LogicalForm input) {
-    	
-	Document doc;
-	LF lf = null;
-	 try { 
-		// LogicalForm to xml-File
-      		// -------------------------------------------
-		// GJ: Make it a proper XML document, with a
-		// document type and an indication of the root
-		// element.
-		// -------------------------------------------
-
-		DocType doctype = new DocType("xml");
-		Element root1 = new Element("xml");
-		doc = new Document(root1,doctype);
-		
-		// basic Element "lf"
-
-		Element lf1 = new Element("lf");
-
-		//----------------------------------------------
-		//GJ: First, deal with the root of the LF
-		//----------------------------------------------
-
-		LFNominal inputNom = (LFNominal)input.root;
-
-		// basic Element "satop" with nom = "id:type"
-		Element sat = new Element("satop");
-		String s = inputNom.nomVar;
-		s = s + ":" + inputNom.sort;
-		sat.setAttribute("nom",s);
-
-		// basic proposition, added to "satop"
-		Element prop = new Element("prop");
-		prop.setAttribute("name",inputNom.prop.prop);
-		sat.addContent(prop);
-
-		//----------------------------------------------
-		//GJ: Now the root has a nominal, type, and 
-		//proposition. 
-		//----------------------------------------------
-		
-		// this test shows whether a satop-element has been created, 
-		// it is only successful if it contains a NomVar and a Proposition
-
-		//----------------------------------------------
-		// if there are features create and add elements in 'editFeatures()'
-		// GJ: still dealing with the root at this point.
-		//---------------------------------------------- 
-
-		if (inputNom.feats.length > 0) { 
-			Iterator<comsys.datastructs.lf.Feature> iter = 
-	    	(Arrays.asList(inputNom.feats)).iterator();    
-			while (iter.hasNext()) {
-				sat = editFeatures(input,inputNom,(String)iter.next().feat,sat);
-			}
-		}
-
-		//----------------------------------------------
-		//GJ: okay, so now we start some recursion down
-		//the relations of the nominal ...  
-		//----------------------------------------------
-
-
-		// if there are Relations create and add elements in 'editRelations()' 
-		if (inputNom.rels.length > 0) {
-			Iterator<LFRelation> it = Arrays.asList(inputNom.rels).iterator();
-			while (it.hasNext()) {
-				sat = editRelations(input,(LFRelation)it.next(),sat);
-			} // end while over relations
-		} // end if.. check for relations
-
-
-		//----------------------------------------------
-		//GJ: now we supposedly have a complete structure 
-		// ----------------------------------------------
-		
-		lf1.addContent(sat);
-	    doc.getRootElement().addContent(lf1);			
-		Element targetElt = new Element("target");
-		targetElt.setText("*** dummy target***");
-		root1.addContent(targetElt);
-		
-
-		//------------- openccg - Realize -----------------
-		// call ccg.Realizer with XML-document which extracts the contained LF and returns it
-		lf = realizer.getLfFromDoc(doc);
-		
-	 } catch (Exception e) {
-	    log("error in LF: "+e.getMessage()); 
-	 } 
-	// return resulting LF
-	return lf;
-
-    } // end transformLF
-
-
-
-
+ 
     //=================================================================
     // I/O METHODS
     //=================================================================
@@ -388,16 +386,25 @@ public class UPDebugger
 	String usage = "Utterance Planner Debugger v."+version+"\n"
 	                        +"Command line options:\n"
 	                        +"-help, -usage: this message\n"
-	                        +"-grammar <file>: load the planning grammar <file>\n";
-
-	// Default the grammar file to grammar.xml in the current working directory
+	                        +"-grammar <file>: load the planning grammar <file>\n"
+							+"-redux <file>: load <fiile> listing the LF features not recognized by the realizer \n"
+							+"-ccg <file>: load the realizer grammar <file>\n"
+							+"-ngrams <file>: load the ngrams corpus <file>\n";
+		
+	// Default the contnt planning grammar file to grammar.xml in the current working directory
 	String curDir = System.getProperty("user.dir");
-	String grammarfile = curDir+"/grammar.xml";
+	String grammarfile = curDir+"/subarchitectures/comsys/grammars/contentPlanning/grammar.xml";
 
-	// Set the ccg grammar file and the realizer to null
-	String ccgfile = null; 
+	// Set default model redux
+	String reduxfile = curDir+"/subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx";
+
+	// Default the realizer grammar to moloko6
+	String ccgfile = curDir+"/subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml"; 
 	Realizer realizer = null;
 
+	// Default ngrams corpus
+		String ngramsfile = null;
+		
 	// Check whether debugger is started with cry for help
         if (args.length > 0 && (args[0].equals("-help")||args[0].equals("-usage"))) {
             System.out.println("Usage: " + usage);
@@ -409,6 +416,8 @@ public class UPDebugger
 	    for (int i=0; i < args.length; i++) { 
 		if (args[i].equals("-grammar")) { grammarfile=args[++i]; }
 		if (args[i].equals("-ccg")) { ccgfile=args[++i]; }
+		if (args[i].equals("-redux")) { reduxfile=args[++i]; }
+		if (args[i].equals("-ngrams")) { ngramsfile=args[++i]; }
 	    } // end for
 	} // end if
 
@@ -421,18 +430,33 @@ public class UPDebugger
 
 	UtterancePlanner planner = new UtterancePlanner(grammarfile,this);
 
+	// Handle model reduction
+	modelRedux = new Vector();
+	if (reduxfile != null) { 
+		log("Loading a model redux file from: ["+reduxfile+"]");
+		loadModelRedux(reduxfile);
+	} // end if.. 	
+		
+
 	// Initialize the realizer with the CCG grammar, if there is one specified
 	if (ccgfile != null) { 
 	    try { 
 		URL grammarURL = new File(ccgfile).toURL();
-		System.out.println("Loading a CCG grammar from URL: " + grammarURL);
-		Grammar grammar = new Grammar(grammarURL);
+		System.out.println("Loading a CCG grammar from ["+grammarURL+"]");
+		grammar = new Grammar(grammarURL);
 		realizer = new Realizer(grammar);	
+		ngramScorer = null;
 	    } catch (IOException e) {
 		error(e.getMessage());
 	    }
 	} // end if check whether there is already a CCG grammar
-
+	
+		if (ngramsfile != null) {
+			// log("Loading ngram corpus from: ["+ngramsfile+"]");
+			String[] targets = loadCorpus(ngramsfile);
+			ngramScorer = new NgramPrecisionModel(targets);
+		}
+		
 	// Now start up the interface
 	try { 
 	    reader = new ConsoleReader (); 
@@ -441,7 +465,7 @@ public class UPDebugger
 	    // store commands for 'tab' argument completion                                                                      
 	    List completors = new LinkedList();
 	    completors.add(new SimpleCompletor(new String[]
-		{ ":ccg", ":help", ":load", ":plan", ":quit", ":traceoff", ":tracelvl", "traceon"}));
+		{ ":ccg", ":help", ":load", ":plan", ":quit", ":traceoff", ":tracelvl", ":traceon", ":test"}));
 	    reader.addCompletor(new ArgumentCompletor(completors));
 
 	    // initialize history
@@ -480,7 +504,7 @@ public class UPDebugger
 			// load grammar                                                                                                      
 			URL grammarURL = new File(grammarfile).toURL();
 			System.out.println("Loading grammar from URL: " + grammarURL);
-			Grammar grammar = new Grammar(grammarURL);
+			grammar = new Grammar(grammarURL);
 			realizer = new Realizer(grammar);
 		    } else {
 			error("':ccg' requires a filename including full path specification.");			
@@ -496,18 +520,42 @@ public class UPDebugger
 		} else if (input.startsWith(":plan")||input.startsWith(":p ")) { 
 		    int atop = input.indexOf("@");
 		    if (atop > -1) { 
-			String lfstr = input.substring(atop,input.length());
+				String lfstr = input.substring(atop,input.length());
+				LogicalForm lf = LFUtils.convertFromString(lfstr);
+				LogicalForm planlf = planner.plan(lf);
+				// Apply model reduction
+				lastLF = applyModelReduction(planlf);
+				// old: lastLF = planlf;
+				System.out.println();
+				System.out.println("Resulting logical form:");
+				msg("");
+				System.out.println(LFUtils.lfToString(planlf));
+				msg("");
+				System.out.println("Resulting logical form after reduction:");
+				msg("");
+				System.out.println(LFUtils.lfToString(lastLF));
+				msg("");
+		    } else {
+				error("':plan' requires a communicative goal, specified as HLDS logical form.");
+		    } // end if..else check for lf 
+		} else if (input.startsWith(":test")) { 
+			String lfstr = "@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept)";
+			log("Testing with LF: "+lfstr); 
 			LogicalForm lf = LFUtils.convertFromString(lfstr);
 			LogicalForm planlf = planner.plan(lf);
-			lastLF = planlf;
+			// Apply model reduction
+			lastLF = applyModelReduction(planlf);
+			// old: lastLF = planlf;
 			System.out.println();
 			System.out.println("Resulting logical form:");
 			msg("");
-			System.out.println(planlf.toString());
+			System.out.println(LFUtils.lfToString(planlf));
 			msg("");
-		    } else {
-			error("':plan' requires a communicative goal, specified as HLDS logical form.");
-		    } // end if..else check for lf 
+			System.out.println("Resulting logical form after reduction:");
+			msg("");
+			System.out.println(LFUtils.lfToString(lastLF));
+			msg("");
+		 // end if..else check for test
 		} else if (input.equals(":realize")||input.equals(":r")) { 
 		    if (realizer != null) { 
 			if (lastLF != null) { 
@@ -556,6 +604,58 @@ public class UPDebugger
 
     } // end 
 
+	
+	/**
+	  *loadModelredux loads a list of features CCG does not understand from a file;
+	  * copied from cc_ContentPlanningloading  
+	  */ 
+
+	private void loadModelRedux (String filename) { 
+		Scanner s = null;
+		try {
+			s = new Scanner(new BufferedReader(new FileReader(filename)));
+			while (s.hasNext()) { 
+				String redux = s.next();
+				log("Redux: ["+redux+"]");
+			modelRedux.add(redux); } 
+		} catch (IOException e) { 
+			log("Error while loading model reduction file:\n"+e.getMessage());
+		} finally {
+			if (s != null) { s.close(); } 
+		} // end try..finally
+	} // and loadModelReduction		
+
+	
+	/**
+	  * loadCorpus loads an ngram corpus for CCG from a file; 
+	  * copied from cc_realizer 
+	  */
+	
+	private String[] loadCorpus (String filename) { 
+		log("Loading ngram corpus from file ["+filename+"]");
+		Scanner s = null;
+		Vector<String> targets = new Vector<String>();
+		try {
+			s = new Scanner(new BufferedReader(new FileReader(filename)));
+			while (s.hasNext()) { 
+				String redux = s.next();
+			targets.add(redux); } 
+		} catch (IOException e) { 
+			System.out.println("Error while loading model reduction file:\n"+e.getMessage());
+		} finally {
+			if (s != null) { s.close(); } 
+		} // end try..finally
+		String[] result = new String[targets.size()];
+		int i = 0;
+		for (String target : targets) { 
+			result[i] = target;
+			i++;
+		} // end for
+		log("The corpus contains ["+i+"] items");
+		return result;
+	} // end loadCorpus		
+	
+		
     //=================================================================
     // MISCELLANEOUS METHODS
     //=================================================================

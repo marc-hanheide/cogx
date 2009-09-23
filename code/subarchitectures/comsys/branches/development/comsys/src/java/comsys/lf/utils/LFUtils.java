@@ -1669,6 +1669,11 @@ public class LFUtils {
 
 	public static LF convertToLF(LogicalForm input) { 
 		Realizer realizer = new Realizer(null);
+		return convertToLF(realizer, input);
+	}
+
+	public static LF convertToLF(Realizer realizer, LogicalForm input) { 
+
 		XMLOutputter out = new XMLOutputter();
 		Document doc;
 		LF lf = null;
