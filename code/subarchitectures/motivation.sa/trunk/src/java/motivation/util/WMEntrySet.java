@@ -47,7 +47,8 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 
 	public interface ChangeHandler {
 		void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
-				WorkingMemoryChange wmc, Ice.ObjectImpl motive);
+				WorkingMemoryChange wmc, Ice.ObjectImpl newMotive,
+				Ice.ObjectImpl oldMotive);
 	}
 
 	protected class WMChangeReceiver implements WorkingMemoryChangeReceiver {
@@ -63,49 +64,52 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 		public synchronized void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
 			WorkingMemoryChange newWmc = (WorkingMemoryChange) _wmc.clone();
+			Ice.ObjectImpl oldEntry = map.get(_wmc.address);
 			switch (_wmc.operation) {
 			case ADD:
 				try {
 					Ice.ObjectImpl m = component.getMemoryEntry(newWmc.address,
 							specClass);
-					if (map.put(_wmc.address, m) != null)
+					map.put(_wmc.address, (Ice.ObjectImpl) m.clone());
+					if (oldEntry != null)
 						newWmc.operation = WorkingMemoryOperation.OVERWRITE;
 					if (updateHandler != null)
 						updateHandler.motiveChanged(map, newWmc, map
-								.get(newWmc.address));
+								.get(newWmc.address), oldEntry);
 				} catch (DoesNotExistOnWMException e) {
-					// it's fine... if it's been deleted already, we have nothing to do here
+					// it's fine... if it's been deleted already, we have
+					// nothing to do here
 				}
 
 				break;
 			case OVERWRITE:
 				try {
-					map.put(newWmc.address, component.getMemoryEntry(
-							newWmc.address, specClass));
+					component.println("overwrite entry");
+					map.put(newWmc.address, (Ice.ObjectImpl) component.getMemoryEntry(
+							newWmc.address, specClass).clone());
 					if (updateHandler != null)
 						updateHandler.motiveChanged(map, newWmc, map
-								.get(newWmc.address));
+								.get(newWmc.address), oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
+					component.println("we expected to overwrite, but actually it has gone...");
 					newWmc.operation = WorkingMemoryOperation.DELETE;
 					Ice.ObjectImpl o = map.remove(newWmc.address);
 					map.remove(newWmc.address);
 					if (o != null)
 						if (updateHandler != null)
-							updateHandler.motiveChanged(map, newWmc, o);
+							updateHandler.motiveChanged(map, newWmc, o, oldEntry);
 				}
 
 				break;
 			case DELETE:
-
 				Ice.ObjectImpl o = map.remove(newWmc.address);
 				if (o != null)
 					if (updateHandler != null)
-						updateHandler.motiveChanged(map, newWmc, o);
+						updateHandler.motiveChanged(map, newWmc, o, o);
 
 				break;
 			}
-
 		}
 
 	}
