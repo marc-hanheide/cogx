@@ -35,7 +35,8 @@ private:
   Timer m_timer;
   //Particle m_trackpose;
   
-  int camId;  
+  int camId;
+	int m_maxModels;
   bool track;
   bool running;
   bool testmode;
