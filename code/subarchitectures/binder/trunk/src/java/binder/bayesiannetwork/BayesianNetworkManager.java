@@ -37,6 +37,7 @@ import binder.utils.FeatureValueUtils;
 import binder.utils.MaximumSearch;
 import binder.utils.ProbabilityUtils;
 
+
 /**
  * Class for managing a bayesian network expressing feature correlations 
  * between features
@@ -54,9 +55,15 @@ public class BayesianNetworkManager {
 	// Turn logging on/off
 	boolean logging = false;
 
-	// Already computed distributions for a given entity
+	// Cache of already computed distributions for a given entity
 	private HashMap<PerceivedEntity,DiscreteProbabilityDistribution> alreadyComputedDistribs;
 
+	
+
+	// =================================================================
+	// INITIALISATION
+	// =================================================================
+	
 	
 	
 	/**
@@ -433,7 +440,7 @@ public class BayesianNetworkManager {
 			float maxProxies = 1.0f;
 			for (int i = 0; i < ((Union)entity).includedProxies.length ; i++) {
 				maxProxies = maxProxies * MaximumSearch.getMaximum(getPriorDistribution(((Union)entity).includedProxies[i]));
-			}
+			} 
 
 			// In case the maximum for the union prior distribution turns out to be moreless equal to the 
 			// product of the maximums for the proxy prior distributions, reduce the probabilities 

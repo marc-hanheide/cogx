@@ -20,90 +20,132 @@
 package binder.utils;
 
 
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 
-import binder.autogen.core.AlternativeUnionConfigurations;
-import binder.autogen.core.Feature;
-import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.ProbabilityDistribution;
-import binder.autogen.core.Union;
-import binder.autogen.core.UnionConfiguration;
-import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.autogen.specialentities.RelationUnion;
 import binder.utils.ProbabilityUtils;
+
+
+/**
+ * Utility library to search for maximum values in probability distributions
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 10/08/2009
+ */
 
 public class MaximumSearch {
 
-
+	// flag to activate error logging
 	public static boolean ERRLOGGING = true;
+
+	// flag to activate logging
 	public static boolean LOGGING = false;
-	
+
+	// Cache of already computed maximum values for perceived entities
 	public static HashMap<PerceivedEntity,Float> maxForEntities = new HashMap<PerceivedEntity,Float>();
 
 	
+	
+	
+	// =================================================================
+	// METHODS TO SEARCH FOR MAXIMUM VALUES IN ENTITIES
+	// =================================================================
+	
+	
+
+	/**
+	 * Get the maximum probability value for the given entity
+	 * 
+	 * @param entity the perceived entity
+	 * @return the maximum probability value
+	 */
+
 	public static float getMaximum (PerceivedEntity entity) {
 
-		
+		// check if entity == null
 		if (entity == null) {
 			errlog("WARNING: entity == null, returning 0.0f");
 			return 0.0f;
 		}
-		
+
+		// check if distribution is already generated
 		else if (entity.distribution == null) {
 			errlog("WARNING: distribution == null, regenerating");
 			BinderUtils.addUnknownFeatureValues(entity.features);
 			entity.distribution = ProbabilityUtils.generateProbabilityDistribution(entity);
-
 		}
-		
-		
+
+		// if the distribution for the entity has already been computed and included in 
+		// the cache, just return its value
 		if (alreadyComputed(entity)) {
 			return maxForEntities.get(entity);
 		}
-		
+
+		// else, start computing, and fill the cache with the value
 		else {
 			float max = getMaximum(entity.distribution);
 			maxForEntities.put(entity, max);
+			return max;
 		}
-		
-		return getMaximum (entity.distribution);
-		
 	}
 
+
+	// =================================================================
+	// METHODS TO SEARCH FOR MAXIMUM VALUES IN DISTRIBUTIONS
+	// =================================================================
+	
+	
+	/**
+	 * Get the maximum probability value for a given distribution
+	 * 
+	 * @param distrib the probability distribution
+	 * @return the probability value
+	 */
+
 	public static float getMaximum (ProbabilityDistribution distrib) {
-		float result = 0.0f;
-		
+
+		// Case 1: distribution is discrete
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
 			return getMaximum((DiscreteProbabilityDistribution) distrib);
 		}
- 
+
+		// Case 2: distribution is a combined one
 		else if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
-			
 			return getMaximum((CombinedProbabilityDistribution) distrib);
 		}
 
+		// and, "Houston we have a problem" 
 		else {
 			errlog("Sorry, only discrete or combined feature distributions are handled right now");
 			log("Used class: " + distrib.getClass());
+			return 0.0f;
 		}
-
-		return result;
 	}
 
-	public static float getMaximum (DiscreteProbabilityDistribution distrib) {
+
+	/**
+	 * Get the maximum probability value for a given discrete distribution
+	 * 
+	 * @param distrib the discrete probability distribution
+	 * @return the probability value
+	 */
+
+	private static float getMaximum (DiscreteProbabilityDistribution distrib) {
 
 		float maxProb = 0.0f;
 		if (distrib.assignments != null) {
+
+			// Loop on all assignments
 			for (int i = 0 ; i <distrib.assignments.length ; i++) {
 				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
-				log(BinderUtils.getPrettyPrintProbabilityAssignment(assignment));
+
+				// if assignment probability higher than the current best, update
 				if (assignment.prob > maxProb) {
 					maxProb = assignment.prob;
 				}
@@ -114,59 +156,109 @@ public class MaximumSearch {
 
 
 
+	/**
+	 * Get the maximum probability value for a given combined distribution
+	 * 
+	 * @param distrib the combined probability distribution
+	 * @return the probability value
+	 */
 
 	public static float getMaximum (CombinedProbabilityDistribution distrib) {
 
-		//	log("Searching maximum value for a combined probability distribution...");
 		float maxProb = 0.0f;
 
-		DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
+		/** Here, we assume for the moment that the (1) the first distribution inside the combined 
+		 * distribution is discrete, and (2) that it contains the complete list of possible assignments 
+		 * for the combined distribution 
+		 * TODO: find a nicer specification for the assignment in the combined distribution */
 
-		DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
-		float total = 0.0f;
-		
-		for (int i = 0; i < firstDistrib.assignments.length; i++) {
+		if (distrib.distributions[0] instanceof DiscreteProbabilityDistribution) {
+			DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
 
-			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
-			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
-			//	log("ass: " + ProbabilityUtils.getDiscreteProbabilityAssignmentPrettyPrint(assignment) + " --> " + probValue);
+			// loop on the possible assignments
+			for (int i = 0; i < firstDistrib.assignments.length; i++) {
 
-			total += probValue;
-			if (probValue > maxProb) {
-				maxProb = probValue;			
+				DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
+
+				// Extract the probability value for the assignment
+				float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);		
+
+				// And if necessary, update the maximum probability
+				if (probValue > maxProb) {
+					maxProb = probValue;			
+				}
 			}
-
+		}
+		else {
+			errlog("WARNING: first distribution insided the combined distribution is not discrete!");
 		}
 
 		return maxProb;
-
 	}
 
 
-	public static DiscreteProbabilityAssignment 
-		getBestAssignment (CombinedProbabilityDistribution distrib) {
 
+
+	// =================================================================
+	// METHODS TO SEARCH FOR BEST ASSIGNMENTS IN DISTRIBUTIONS
+	// =================================================================
+
+
+	public static DiscreteProbabilityAssignment getBestAssignment (ProbabilityDistribution distrib) {
+
+		// discrete probability distribution
+		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
+			return getBestAssignment((DiscreteProbabilityDistribution)distrib);
+		}
+
+		// combined probability distribution
+		else if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
+			return getBestAssignment((CombinedProbabilityDistribution)distrib);
+		}
+		
+		// else ...
+		else {
+			errlog("WARNING: type of probability distribution currently not supported");
+			return new DiscreteProbabilityAssignment();
+		}
+	}
+
+
+	/**
+	 * Get the best (maximum-probability) assignment for a given combined distribution
+	 * 
+	 * @param distrib the combined probability distribution
+	 * @return the best assignment
+	 */
+
+	public static DiscreteProbabilityAssignment getBestAssignment 
+	(CombinedProbabilityDistribution distrib) {
 
 		log("Searching maximum value for a combined probability distribution...");
 		float maxProb = 0.0f;
 
 		DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
 
-		DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
-		float total = 0.0f;
-		for (int i = 0; i < firstDistrib.assignments.length; i++) {
+		// Cf. note in previous method!
+		if (distrib.distributions[0] instanceof DiscreteProbabilityDistribution) {
 
-			DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
-			float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
-			//	log("ass: " + ProbabilityUtils.getDiscreteProbabilityAssignmentPrettyPrint(assignment) + " --> " + probValue);
+			DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
 
-			total += probValue;
-			if (probValue > maxProb) {
-				maxProb = probValue;
-				bestAssign = assignment;	
+			// Loop on the assignments
+			for (int i = 0; i < firstDistrib.assignments.length; i++) {
+
+				DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
+				
+				// Extract the probability value for the assignment
+				float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);
+
+				// And if necessary, update the best assignment
+				if (probValue > maxProb) {
+					maxProb = probValue;
+					bestAssign = assignment;	
+				}
 			}
 		}
-
 		log("Best assignment: " + BinderUtils.getPrettyPrintProbabilityAssignment(bestAssign));
 
 		return bestAssign;
@@ -174,15 +266,24 @@ public class MaximumSearch {
 	}
 
 
-
+	/**
+	 * Get the best (maximum-probability) assignment for a given discrete distribution
+	 * 
+	 * @param distrib the discrete probability distribution
+	 * @return the best assignment
+	 */
 	public static DiscreteProbabilityAssignment getBestAssignment  
-	(DiscreteProbabilityDistribution distrib) {
+		(DiscreteProbabilityDistribution distrib) {
 
 		float maxProb = 0.0f;
 		DiscreteProbabilityAssignment bestAssign = new DiscreteProbabilityAssignment() ;
 		if (distrib.assignments != null) {
+			
+			// loop on the assignments
 			for (int i = 0 ; i <distrib.assignments.length ; i++) {
 				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
+				
+				// If necessary, update the best assignment
 				if (assignment.prob > maxProb) {
 					maxProb = assignment.prob;
 					bestAssign = assignment;
@@ -191,23 +292,23 @@ public class MaximumSearch {
 		}
 		return bestAssign;
 	}
+
 	
 
-	private static boolean isFeatValuePairInAssignment 
-	(FeatureValuePair pair, DiscreteProbabilityAssignment assign) {
-		for (int i = 0; i < assign.featurepairs.length ; i++) {
-			FeatureValuePair pair2 = assign.featurepairs[i];
-
-			if (pair.featlabel.equals(pair2.featlabel) && 
-					(FeatureValueUtils.haveEqualValue(pair.featvalue, pair2.featvalue))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-
+	
+	// =================================================================
+	// UTILITY METHODS
+	// =================================================================
+	
+	
+	/**
+	 * Check if the entity has already been computed in the cache
+	 * 
+	 * TODO: is this still necessary?
+	 * 
+	 * @param entity the entity
+	 * @return true if the max for the entity has already been cached, false otherwise
+	 */
 	synchronized public static boolean alreadyComputed (PerceivedEntity entity) {
 		for (Iterator<PerceivedEntity> i = maxForEntities.keySet().iterator() ; i.hasNext() ; ) {
 			PerceivedEntity u = i.next();
@@ -217,116 +318,16 @@ public class MaximumSearch {
 		}
 		return false;  
 	}
-	
-	
-	
-	
-
-	public static FeatureValue getBestFeatureValue 
-		(Feature feat, DiscreteProbabilityAssignment bestAssign) {
-
-		boolean isFound = false;
-
-		for (int j = 0 ; j < feat.alternativeValues.length ; j++) {
-			FeatureValuePair pair =  new FeatureValuePair (feat.featlabel,feat.alternativeValues[j]);
-			if (isFeatValuePairInAssignment (pair, bestAssign)) {
-				isFound = true;
-				return feat.alternativeValues[j];
-			}
-		}
-		if (!isFound) {
-			log("WARNING: best assignment NOT found in the feature structure: " +
-					BinderUtils.getPrettyPrintProbabilityAssignment(bestAssign));
-		}
-		return new FeatureValue();
-	}
-
-
-	public static Union getUnionWithMaximumProbability (Union union) {
-
-		if (union instanceof RelationUnion) {
-			return getRelationUnionWithMaximumProbability((RelationUnion)union);
-		}
-		else {
-			return getBasicUnionWithMaximumProbability(union);
-		}
-	}
-	
-
-	public static Union getBasicUnionWithMaximumProbability (Union union) {
-
-		Union newUnion = new Union();
-		newUnion.entityID = union.entityID;
-		newUnion.features = new Feature[union.features.length];
-		newUnion.timeStamp = union.timeStamp;
-		
-		DiscreteProbabilityAssignment bestAssign = null;
-
-		if (union.distribution == null) {
-			log("ERROR: distribution == null, aborting");
-		}
-		if (union.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
-			bestAssign = MaximumSearch.getBestAssignment((DiscreteProbabilityDistribution)union.distribution);
-
-		}
-		
-		else if (union.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
-			bestAssign = MaximumSearch.getBestAssignment((CombinedProbabilityDistribution)union.distribution);
-		}
-
-		else {
-			log("Sorry, only discrete or combined feature distributions are handled right now");
-			log("Used class: " + union.distribution.getClass());
-		}
-
-		for (int i = 0; i < union.features.length ; i++) {
-			newUnion.features[i] = new Feature();
-			newUnion.features[i].featlabel = union.features[i].featlabel;
-			newUnion.features[i].alternativeValues = new FeatureValue[1];
-			newUnion.features[i].alternativeValues[0] = 
-				MaximumSearch.getBestFeatureValue(union.features[i], bestAssign);
-		}
-
-		newUnion.includedProxies = union.includedProxies;
-		newUnion.probExists = union.probExists;
-		newUnion.distribution = union.distribution;
-
-		log("OK, extracted a new union with maximum probability");
-		return newUnion;
-	}
-
-	
-
-	public static RelationUnion getRelationUnionWithMaximumProbability (RelationUnion initRUnion) {
-
-		Union bunion = getBasicUnionWithMaximumProbability(initRUnion);
-		RelationUnion newRUnion = BinderUtils.convertIntoRelationUnion(bunion);
-
-		newRUnion.source = new Feature();
-		newRUnion.source.featlabel = initRUnion.source.featlabel;	
-		newRUnion.source.alternativeValues = new FeatureValue[1];
-		// INCORRECT - SHOULD CHANGE THIS
-		newRUnion.source.alternativeValues[0] = initRUnion.source.alternativeValues[0];
-
-		newRUnion.target = new Feature();
-		newRUnion.target.featlabel = initRUnion.target.featlabel;	
-		newRUnion.target.alternativeValues = new FeatureValue[1];
-		// INCORRECT - SHOULD CHANGE THIS
-		newRUnion.target.alternativeValues[0] = initRUnion.target.alternativeValues[0];
-		
-		return newRUnion;
-	}
-
 
 
 
 	public static void log(String s) {
 		if (LOGGING)
-		System.out.println("[GradientDescent] " + s);
+			System.out.println("[MaximumSearch] " + s);
 	}
-	
+
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-		System.err.println("[GradientDescent] " + s);
+			System.err.println("[MaximumSearch] " + s);
 	}
 }
