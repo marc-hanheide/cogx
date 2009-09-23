@@ -5,6 +5,8 @@ package motivation.util;
 
 import java.util.Map;
 
+import Ice.ObjectImpl;
+
 import motivation.slice.Motive;
 import motivation.slice.TestMotive;
 import cast.architecture.ManagedComponent;
@@ -27,7 +29,7 @@ public class WMMotiveDisplay  extends ManagedComponent {
 		motives = WMMotiveSet.create(this);
 		motives.setHandler(new WMMotiveSet.ChangeHandler() {
 			@Override
-			public void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map, WorkingMemoryChange wmc, Ice.ObjectImpl o) {
+			public void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map, WorkingMemoryChange wmc, Ice.ObjectImpl o, Ice.ObjectImpl old) {
 				Motive motive = (Motive) o;
 				println("a motive has been changed in set; WMaddress="+motive.thisEntry.id);
 				println("  type:      " + motive.getClass().getSimpleName());
@@ -39,6 +41,7 @@ public class WMMotiveDisplay  extends ManagedComponent {
 				println("  status:    " + motive.status.name());
 				println("  age:       " + Long.toString(CASTTimeUtil.diff(getCASTTime(), motive.created)));
 			}
+
 
 		});
 

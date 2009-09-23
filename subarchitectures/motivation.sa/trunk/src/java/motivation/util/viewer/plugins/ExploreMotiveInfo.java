@@ -16,7 +16,7 @@ public class ExploreMotiveInfo implements Plugin {
 		Vector<Object> extraInfo=new Vector<Object>();
 		extraInfo.add("tries="+m.tries);
 		extraInfo.add("placeID="+m.placeID);
-		extraInfo.add(m.referenceEntry.subarchitecture + "::"+m.referenceEntry.id);
+		extraInfo.add("rank="+m.rank);
 		extraInfo.add(m.status.name());
 		return extraInfo;
 	}
