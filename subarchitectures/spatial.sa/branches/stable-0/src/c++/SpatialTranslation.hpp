@@ -27,6 +27,7 @@
 #include <string>
 #include <list>
 #include <Utils/MutexWrapper.hh>
+#include <FrontierInterface.hpp>
 
 namespace spatial {
 
@@ -194,6 +195,7 @@ private:
    */
   NavData::NavGraphPtr getNavGraph();
 
+  FrontierInterface::PlaceInterfacePrx m_placeInterface;
 };
 
 }; // namespace navsa

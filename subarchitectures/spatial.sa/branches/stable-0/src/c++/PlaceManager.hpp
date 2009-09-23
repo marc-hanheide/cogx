@@ -128,6 +128,7 @@ class PlaceManager : public cast::ManagedComponent
     int m_goalPlaceForCurrentPath; // During transitions, stores where the robot
     				   // thought it was going
     std::map<int, std::set<int> > m_connectivities;
+    FrontierInterface::FrontierReaderPrx frontierReader;
 }; // class PlaceManager
 
 }; // namespace spatial

@@ -51,6 +51,8 @@ namespace spatial {
     private:
     void newConnectivity(const cdl::WorkingMemoryChange &wmc);
     void changedGateway(const cdl::WorkingMemoryChange &wmc);
+
+    Marshalling::MarshallerPrx m_marshaller;
 };
 };
 

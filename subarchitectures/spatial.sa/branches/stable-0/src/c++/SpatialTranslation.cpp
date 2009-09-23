@@ -91,6 +91,8 @@ void SpatialTranslation::stop(){
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::runComponent() {
+  m_placeInterface = FrontierInterface::PlaceInterfacePrx
+    (getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
   while(isRunning()){
     log("I am running, but I wait until getting work to do");
@@ -268,9 +270,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	  // PlaceManager
 	  if ((finished || some_error)
 	      && cmd.second->cmd == SpatialData::GOTOPLACE) {
-	    FrontierInterface::PlaceInterfacePrx 
-	      agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-	    agg->endPlaceTransition(!finished);
+	    m_placeInterface->endPlaceTransition(!finished);
 	  }
 
 	  debug(finished? "yes": "no");
@@ -576,8 +576,7 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
       return false;
     } else {
       //TODO: make component name a config parameter
-      FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-      NavData::FNodePtr destNode = agg->getNodeFromPlaceID(nav->destId[0]);
+      NavData::FNodePtr destNode = m_placeInterface->getNodeFromPlaceID(nav->destId[0]);
 
       if (destNode != 0) {
 	ctrl.cmd = NavData::lGOTONODE;
@@ -585,7 +584,7 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
 	ctrl.tolerance = nav->tolerance;
       }
       else {
-	FrontierInterface::NodeHypothesisPtr destHyp = agg->getHypFromPlaceID(nav->destId[0]);
+	FrontierInterface::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);
 	if (destHyp != 0) {
 
 	  ctrl.cmd = NavData::lGOTOXY;
@@ -599,7 +598,7 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
 	  return false;
 	}
       }
-      agg->beginPlaceTransition((int)nav->destId[0]);
+      m_placeInterface->beginPlaceTransition((int)nav->destId[0]);
       log("Sending transition start signal (place ID=%i)",(int)nav->destId[0]);
     }
   //}else if (nav->cmd == NavData::GOTONODE){
