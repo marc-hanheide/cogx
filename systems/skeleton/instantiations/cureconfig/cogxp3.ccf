@@ -5,6 +5,7 @@ PEEKABOT_HOST
 localhost
 
 PEEKABOT_ROBOT_XML_FILE
+CogX_base_arm.xml
 CogXp3.xml
 Robone.xml
 
@@ -59,7 +60,7 @@ SENSORPOSES
 # along the diagonal of the Covariance other wise the first value is repeated.
 # type id x y z theta phi psi, (opt. covtype) (opt. Covariance value(s))
 1 0 0.14 0 0.24 0 0 0 63 .000001 .000001 .000001 .0001 .0001 .0001 
-2 0 0.15 0 0.335 0 0 0
+2 0 0.15 0 1.41 0 0 0
 
 ODOMMODEL
 # version odtype covDistM covAngRad covAngM CovNormalperM CovXYperRad
