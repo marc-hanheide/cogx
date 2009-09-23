@@ -12,9 +12,8 @@ package comsys.processing.reference.proxyfactories;
 // BINDER imports
 // -------------------------------------------------------
 
-import binder.abstr.BindingWorkingMemoryWriter;
+import binder.abstr.AbstractBindingPredictor;
 import binder.autogen.core.Feature;
-import binder.autogen.core.Proxy; 
 import binder.autogen.featvalues.AddressValue;
 
 // -------------------------------------------------------
@@ -26,7 +25,7 @@ import comsys.processing.reference.ProxyFactory;
 import comsys.processing.reference.ProxyResults;
 
 public abstract class AbstractProxyFactory 
-		extends BindingWorkingMemoryWriter
+		extends AbstractBindingPredictor
 		implements ProxyFactory
 	
 {
