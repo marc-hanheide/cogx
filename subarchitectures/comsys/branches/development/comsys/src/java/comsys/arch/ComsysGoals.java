@@ -52,6 +52,9 @@ public class ComsysGoals {
     
     // Referential readings determination
     public static final String REFERENTIALREADINGS_TASK = "referentialReadings";			
+
+	// Referential readings determination
+    public static final String REFERENTIALBINDINGS_TASK = "referentialBindings";	
 	
     // Discourse Referents Binding
     public static final String DISCREFBINDING_TASK = "discRefBinding";	

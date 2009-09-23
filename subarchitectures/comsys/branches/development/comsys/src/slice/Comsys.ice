@@ -404,11 +404,71 @@ module comsysEssentials {
 	sequence<RefReading> Readings;
 
 	class RefReadings extends BaseData {
+		lf::LogicalForm lform; 
 		Readings refRdngs; 
 	}; 
 	
+	//---------------------------------------------------------------------------
+	// A Anchor is a reference to a structure to which a reference can be 
+	// anchored (identified by entityID), and probability of that anchoring
+	// (probExists). 
+	//
+	// @author	Geert-Jan Kruijff
+	// @started	090923
+	// @version	090923
+	//---------------------------------------------------------------------------	
 	
+	class Anchor { 
+		string entityID;
+		float  probExists;	
+	}; 
 	
+	sequence<Anchor> Anchors;
+	
+	//---------------------------------------------------------------------------
+	// A RefBinding provides, for a given nominal (nomVar) in a given logical 
+	// form (lfId), a list of antecedents to which it may be anchored. 
+	//
+	// @author	Geert-Jan Kruijff
+	// @started	090923
+	// @version	090923
+	//---------------------------------------------------------------------------		
+	
+	class RefBinding extends BaseData { 
+		string nomVar;
+		Anchors antecedents;
+	}; 
+	
+	sequence<RefBinding> RefBindings;
+	
+	//---------------------------------------------------------------------------
+	// A ReadingBindings object provides for a given reading of a logical form, 
+	// all the possible anchorings for the (restrictive) references in that reading. 
+	//
+	// @author	Geert-Jan Kruijff
+	// @started	090923
+	// @version	090923
+	//---------------------------------------------------------------------------	
+	
+	class ReadingBindings extends BaseData { 
+		RefBindings bindings; 
+	}; 
+	
+	sequence<ReadingBindings> AnchoredReadings; 
+	
+	//---------------------------------------------------------------------------
+	// A BoundReadings object provides a given logical form, the anchorings for 
+	// the different restrictive references, per possible readings of the lf. 
+	//
+	// @author	Geert-Jan Kruijff
+	// @started	090923
+	// @version	090923
+	//---------------------------------------------------------------------------		
+	
+	class BoundReadings extends BaseData { 
+		lf::LogicalForm lform; 	
+		AnchoredReadings bindings; 
+	}; 
 	
 	
 	
