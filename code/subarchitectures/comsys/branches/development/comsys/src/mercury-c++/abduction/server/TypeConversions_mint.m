@@ -75,7 +75,7 @@
 :- pred dissect_term(varset::in, formula.term::in, bool::out, string::out, list(formula.term)::out) is det.
 :- pred dissect_predicate(varset::in, atomic_formula::in, string::out, list(formula.term)::out) is det.
 :- pred dissect_mprop(mprop(ctx_modality)::in, list(ctx_modality)::out, atomic_formula::out) is det.
-:- pred dissect_proof(ctx::in, proof(ctx_modality)::in, varset::out, list(mprop(ctx_modality))::out,
+:- pred dissect_proof(ctx::in, proof(ctx_modality)::in, varset::out, list(query(ctx_modality))::out,
 		float::out) is det.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -97,25 +97,30 @@
 :- import_module lf_io.
 :- import_module varset.
 
+:- pred print_err(string::in, io::di, io::uo) is det.
+
+print_err(Str, !IO) :-
+	print(stderr_stream, Str, !IO).
+
 %------------------------------------------------------------------------------%
 
 :- pragma foreign_export("C", new_mprop(in, in, out, in, out), "new_mprop").
 
 new_mprop(Mod, F, MProp, !VS) :-
 	MProp = m(Mod, F).
-%	trace [io(!IO)] (print("MProp = " ++ string(MProp), !IO), nl(!IO) ).
+%	trace [io(!IO)] (print_err("MProp = " ++ string(MProp), !IO), nl(!IO) ).
 
 :- pragma foreign_export("C", new_atomic_formula(in, in, out, in, out), "new_atomic_formula").
 
 new_atomic_formula(PredSym, Args, F, !VS) :-
 	F = p(PredSym, Args).
-%	trace [io(!IO)] (print("Atomic formula = " ++ string(F), !IO), nl(!IO) ).
+%	trace [io(!IO)] (print_err("Atomic formula = " ++ string(F), !IO), nl(!IO) ).
 
 :- pragma foreign_export("C", new_term(in, in, out, in, out), "new_term").
 
 new_term(Functor, Args, T, !VS) :-
 	T = t(Functor, Args).
-%	trace [io(!IO)] (print("Term = " ++ string(T), !IO), nl(!IO) ).
+%	trace [io(!IO)] (print_err("Term = " ++ string(T), !IO), nl(!IO) ).
 
 :- pragma foreign_export("C", new_var(in, out, in, out), "new_var").
 
@@ -126,7 +131,7 @@ new_var(Name, T, !VS) :-
 	else varset.new_named_var(!.VS, Name, Var, !:VS)
 	),
 	T = v(Var).
-%	trace [io(!IO)] (print("Var = " ++ string(T), !IO), nl(!IO) ).
+%	trace [io(!IO)] (print_err("Var = " ++ string(T), !IO), nl(!IO) ).
 
 :- pragma foreign_export("C", new_varset(out), "new_varset").
 
@@ -154,7 +159,7 @@ cons_mprop_list(H, T, [H|T]).
 :- pragma foreign_export("C", cons_marked_query_list(in, in, out), "cons_marked_query_list").
 
 empty_marked_query_list([]).
-cons_marked_query_list(H, T, [H|T]) :- trace[io(!IO)] (print(string([H|T]) ++ "\n", !IO)).
+cons_marked_query_list(H, T, [H|T]) :- trace[io(!IO)] (print_err(string([H|T]) ++ "\n", !IO)).
 
 :- pragma foreign_export("C", empty_ctx_modality_list(out), "empty_ctx_modality_list").
 :- pragma foreign_export("C", cons_ctx_modality_list(in, in, out), "cons_ctx_modality_list").
@@ -178,20 +183,20 @@ modality_k(k(now, private(human))).
 :- pragma foreign_export("C", impure_print_list_modalities(in), "print_list_modalities").
 
 impure_print_modality(Mod) :-
-	trace[io(!IO)] (print(string(Mod) ++ "\n", !IO)).
+	trace[io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
 
 impure_print_list_modalities(Mod) :-
-	trace[io(!IO)] (print(string(Mod) ++ "\n", !IO)).
+	trace[io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
 
 :- pragma foreign_export("C", is_modality_event(in), "is_modality_event").
 :- pragma foreign_export("C", is_modality_info(in), "is_modality_info").
 :- pragma foreign_export("C", is_modality_att(in), "is_modality_att").
 :- pragma foreign_export("C", is_modality_k(in, out), "is_modality_k").
 
-is_modality_event(e(now)).% :- trace[io(!IO)] (print("merc: event\n", !IO)).
-is_modality_info(i).% :- trace[io(!IO)] (print("merc: info\n", !IO)).
-is_modality_att(a(com)).% :- trace[io(!IO)] (print("merc: att\n", !IO)).
-is_modality_k(k(now, Belief), Belief).% :- trace[io(!IO)] (print("merc: k, bel=" ++ string(Belief) ++ "\n", !IO)).
+is_modality_event(e(now)).% :- trace[io(!IO)] (print_err("merc: event\n", !IO)).
+is_modality_info(i).% :- trace[io(!IO)] (print_err("merc: info\n", !IO)).
+is_modality_att(a(com)).% :- trace[io(!IO)] (print_err("merc: att\n", !IO)).
+is_modality_k(k(now, Belief), Belief).% :- trace[io(!IO)] (print_err("merc: k, bel=" ++ string(Belief) ++ "\n", !IO)).
 
 :- pragma foreign_export("C", belief_private(out), "belief_private").
 
@@ -227,22 +232,22 @@ is_named_cost_function(f(Name), Name).
 :- pragma foreign_export("C", assumed_query(in, in, out), "assumed_query").
 :- pragma foreign_export("C", asserted_query(in, in, out), "asserted_query").
 
-proved_query(MProp, proved(MProp)).
-unsolved_query(MProp, CostFunc, unsolved(MProp, CostFunc)).
-assumed_query(MProp, CostFunc, assumed(MProp, CostFunc)).
-asserted_query(MProp, [], asserted(prop(MProp))).
-asserted_query(MProp, [H|T], asserted(impl([H|T], MProp))).
+proved_query(MProp, proved(MProp)) :- trace[io(!IO)] (print_err("proved_query :" ++ string(proved(MProp)), !IO)).
+unsolved_query(MProp, CostFunc, unsolved(MProp, CostFunc)) :- trace[io(!IO)] (print_err("unsolved_query :" ++ string(unsolved(MProp, CostFunc)), !IO)).
+assumed_query(MProp, CostFunc, assumed(MProp, CostFunc)) :- trace[io(!IO)] (print_err("proved_query :" ++ string(assumed(MProp, CostFunc)), !IO)).
+asserted_query(MProp, [], asserted(prop(MProp))) :- trace[io(!IO)] (print_err("proved_query :" ++ string(asserted(prop(MProp))), !IO)).
+asserted_query(MProp, [H|T], asserted(impl([H|T], MProp))) :- trace[io(!IO)] (print_err("proved_query :" ++ string(asserted(impl([H|T], MProp))), !IO)).
 
 :- pragma foreign_export("C", is_proved_query(in, out), "is_proved_query").
 :- pragma foreign_export("C", is_unsolved_query(in, out, out), "is_unsolved_query").
 :- pragma foreign_export("C", is_assumed_query(in, out, out), "is_assumed_query").
 :- pragma foreign_export("C", is_asserted_query(in, out, out), "is_asserted_query").
 
-is_proved_query(proved(MProp), MProp).
-is_unsolved_query(unsolved(MProp, CostFunction), MProp, CostFunction).
-is_assumed_query(assumed(MProp, CostFunction), MProp, CostFunction).
-is_asserted_query(asserted(prop(MProp)), MProp, []).
-is_asserted_query(asserted(impl(AnteProps, MProp)), MProp, AnteProps).
+is_proved_query(proved(MProp), MProp) :- trace[io(!IO)] (print_err("is_proved_query : " ++ string(proved(MProp)), !IO)).
+is_unsolved_query(unsolved(MProp, CostFunction), MProp, CostFunction) :- trace[io(!IO)] (print_err("is_unsolved_query : " ++ string(unsolved(MProp, CostFunction)), !IO)).
+is_assumed_query(assumed(MProp, CostFunction), MProp, CostFunction) :- trace[io(!IO)] (print_err("is_assumed_query : " ++ string(assumed(MProp, CostFunction)), !IO)).
+is_asserted_query(asserted(prop(MProp)), MProp, []) :- trace[io(!IO)] (print_err("is_asserted_query : " ++ string(asserted(prop(MProp))), !IO)).
+is_asserted_query(asserted(impl(AnteProps, MProp)), MProp, AnteProps) :- trace[io(!IO)] (print_err("is_asserted_query : " ++ string(asserted(impl(AnteProps, MProp))), !IO)).
 
 %------------------------------------------------------------------------------%
 
@@ -264,27 +269,17 @@ dissect_predicate(_VS, p(PredSym, Args), PredSym, Args).
 :- pragma foreign_export("C", dissect_mprop(in, out, out), "dissect_mprop").
 
 dissect_mprop(m(Mod, Pred), Mod, Pred).
-%	trace [io(!IO)] (print("dissecting mprop: " ++ string(m(Mod, Pred)), !IO)),
+%	trace [io(!IO)] (print_err("dissecting mprop: " ++ string(m(Mod, Pred)), !IO)),
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pragma foreign_export("C", dissect_proof(in, in, out, out, out), "dissect_proof").
 
-dissect_proof(Ctx, Proof, VS, LastGoals, Cost) :-
+dissect_proof(Ctx, Proof, VS, Qs, Cost) :-
 	vs(Qs, VS) = last_goal(Proof),
-	LastGoals = list.map((func(Q) = MProp :-
-		( Q = proved(MProp)
-		; Q = assumed(MProp, _)
-		; Q = unsolved(MProp, _)
-		; Q = asserted(MTest),
-			( MTest = prop(MProp)
-			; MTest = impl(_, MProp)
-			)
-		)), Qs),
-
 	Costs = costs(1.0, 1.0, 0.1),
 	Cost = cost(Ctx, Proof, Costs).
-%	trace [io(!IO)] ( print(LastGoals, !IO), nl(!IO) ).
+%	trace [io(!IO)] ( print_err(LastGoals, !IO), nl(!IO) ).
 
 %------------------------------------------------------------------------------%
 
