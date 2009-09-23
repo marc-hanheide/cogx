@@ -13,7 +13,7 @@ SET(SOURCES CureHWUtils.cpp)
 SET(HEADERS CureHWUtils.hpp)
 ADD_LIBRARY(CureHWUtils SHARED ${SOURCES})
 TARGET_LINK_LIBRARIES(CureHWUtils Laser Robotbase)
-TARGET_LINK_LIBRARIES(CureHWUtils Ice IceUtil)
+TARGET_LINK_LIBRARIES(CureHWUtils ${ICE_LIBS})
 TARGET_LINK_LIBRARIES(CureHWUtils CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank)
 INSTALL(TARGETS CureHWUtils LIBRARY DESTINATION lib)
 
