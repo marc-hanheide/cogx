@@ -173,7 +173,7 @@ public class cc_ReferentialBindings
 			RefReadings readings = (RefReadings)data.getData();
 			LogicalForm lf = readings.lform; 
 			assert readings != null; 
-			Vector<BoundReadings> boundReadings = new Vector();
+			Vector<ReadingBindings> boundReadings = new Vector();
 			// get the restrictive readings
 			for (ArrayIterator readingsIter = new ArrayIterator(readings.refRdngs); readingsIter.hasNext(); ) {
 				RefReading reading = (RefReading)readingsIter.next();
