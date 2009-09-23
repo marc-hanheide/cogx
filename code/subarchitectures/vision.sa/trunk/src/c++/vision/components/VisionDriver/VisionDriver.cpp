@@ -97,13 +97,13 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 void VisionDriver::receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc)
 {
 	VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-	
+	/*
 	log("Change of pose of VisualObject '%s' detected: %f %f %f", 
 		obj->label.c_str(), 
 		obj->pose.pos.x,
 		obj->pose.pos.y,
 		obj->pose.pos.z);
-
+*/
 }
 
 
