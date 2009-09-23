@@ -35,7 +35,7 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
-import binder.utils.GradientDescent;
+import binder.utils.ConfigurationFilter;
 import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
@@ -463,7 +463,7 @@ public class Binder extends ManagedComponent  {
 			}
 
 			// Compute the confidence scores for the union configurations
-			GradientDescent.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
+			ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
 			
 			// Normalise these confidence scores
 			BinderUtils.normaliseConfigProbabilities(newUnionConfigs);
@@ -474,7 +474,7 @@ public class Binder extends ManagedComponent  {
 			// Get the nbest configurations (with N as a parameter)
 			if (nbestsFilter > 0) {
 				newUnionConfigs = 
-					GradientDescent.getNBestUnionConfigurations (newUnionConfigs, nbestsFilter);
+					ConfigurationFilter.getNBestUnionConfigurations (newUnionConfigs, nbestsFilter);
 			}
 			
 			// Normalise the union distributions
