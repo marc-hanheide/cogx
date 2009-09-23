@@ -45,6 +45,7 @@ import comsys.lf.utils.LFUtils;
 //-----------------------------------------------------------------
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Vector;
 
 
@@ -251,7 +252,7 @@ public class cc_ReferentialBindings
 						try {
 							if (taskType
 								.equals(ComsysGoals.REFERENTIALBINDINGS_TASK)) {
-								executeReadingsTask(data, taskType);
+								executeBindingsTask(data, taskType);
 							}
 						}
 						catch (ComsysException e) {
