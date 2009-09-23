@@ -118,7 +118,7 @@ void ObjectTracker::runTracker(){
 	m_tracker->drawImage(NULL);
 	
 	// Track all models
-	for(i=0; i<m_modelID_list.size(); i++){
+	for(i=0; i<m_modelID_list.size() && i<m_maxModels; i++){
 		IDList* ids = &m_modelID_list[i];
 		model = g_Resources->GetModel(ids->resources_ID);
 		obj = getMemoryEntry<VisualObject>(ids->cast_AD);
@@ -130,12 +130,11 @@ void ObjectTracker::runTracker(){
 		// Track model
 		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
 		m_tracker->drawResult(&ids->trackpose);
-	
 		//m_tracker->drawTest();
+	
+		// Query keyboard input		
 		running = inputsControl(m_tracker);
-		
-		//log("P: %f", ids->trackpose.tX);
-		
+				
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(ids->trackpose, obj->pose);
 		
@@ -166,13 +165,11 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 		return;
 	}
 	
-	log("receiving VisualObject: add to model list");
-	
-	
 	// Convert GeometryModel to Model for tracker
 	Model* model = new Model();
 	if(!convertGeometryModel(obj->model, model)){
 		delete(model);
+		log("receive VisualObject: can not convert VisualObject to tracker model");
 		return;
 	}
 	
@@ -187,7 +184,12 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
 	
-	log("receive VisualObject: model added %s", obj->label.c_str());
+	
+	log("received VisualObject: '%s'", obj->label.c_str());
+
+	if(m_modelID_list.size()>m_maxModels){
+		log("warning: maximum trackable models set to %d", m_maxModels);
+	}
 }
 
 void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc){
@@ -248,6 +250,14 @@ void ObjectTracker::configure(const map<string,string> & _config){
 
 	if((it = _config.find("--trackTexture")) != _config.end())
 		trackTexture = true;
+
+	if((it = _config.find("--maxModels")) != _config.end())
+	{
+    istringstream istr(it->second);
+    istr >> m_maxModels;
+  }else{
+		m_maxModels = 3;
+	}
 		
   /*
   if((it = _config.find("--log")) != _config.end())
