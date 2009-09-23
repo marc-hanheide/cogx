@@ -4,6 +4,7 @@
 #include <vector>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
+#include <SpatialData.hpp>
 #include <PTZ.hpp>
 //#include <Navigation/LocalGridMap.hh>
 #include "LocalGridMap.hh"
@@ -30,6 +31,7 @@ class ObjectSearch : public cast::ManagedComponent,
     void receiveScan2d(const Laser::Scan2d &castScan);
     void receiveOdometry(const Robotbase::Odometry &castOdom);
     void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+    void newAVSCommand(const cast::cdl::WorkingMemoryChange &objID);
     long GetClosestFNode(double xW, double yW);
 	std::vector<int> tpoints;
      struct SearchPlan{
@@ -61,6 +63,7 @@ class ObjectSearch : public cast::ManagedComponent,
     bool runObjectSearch;
     int whereinplan;
     NavData::FNodeSequence fnodeseq;
+    SpatialData::PlaceIDSeq placestosearch;
     std::string id;
     Cure::LocalGridMap<unsigned int>* coveragemap;
 	Cure::LocalGridMap<float>* pdf;
