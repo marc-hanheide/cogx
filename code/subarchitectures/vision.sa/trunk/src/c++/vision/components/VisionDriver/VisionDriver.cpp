@@ -39,7 +39,8 @@ void VisionDriver::configure(const map<string,string> & _config)
 //      ostr << " '" << labels[i] << "'";
 //    log("detecting objects: %s", ostr.str().c_str());
 //  }
-	timedout = false;
+	tracking = false;
+	running = true;
 }
 
 void VisionDriver::start()
@@ -58,22 +59,22 @@ void VisionDriver::runComponent()
   sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   
-  // Send start detection command
-  VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
-  detect_cmd->cmd = VisionData::DSTART;
-  addToWorkingMemory(newDataID(), detect_cmd);
-  log("detection start-command sent!");
-  timedout = true;
+	VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
+		
+	while(running){
+		// start detection
+		detect_cmd->cmd = VisionData::DSTART;
+		addToWorkingMemory(newDataID(), detect_cmd);
+		log("detection start-command sent!");
+		
+  	sleepProcess(2000);	// detection time
+
+		// stop detection
+		detect_cmd->cmd = VisionData::DSTOP;
+		addToWorkingMemory(newDataID(), detect_cmd);
+		log("detection stop-command sent!");
   
-  sleepProcess(60000);	// timeout time
-  
-  if(timedout){
-  	log("detection timeout");
-  	// Stop detecting
-    VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
-	detect_cmd->cmd = VisionData::DSTOP;
-	addToWorkingMemory(newDataID(), detect_cmd);
-	log("detection stop-command sent!");
+  	sleepProcess(10000); // idle
   }
 }
 
@@ -81,36 +82,28 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
-  if(obj->detectionConfidence >= 0.5){
-    log("object detected: '%s'", obj->label.c_str());
-    timedout = false;
-    
-    // Stop detecting
-    VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
-	detect_cmd->cmd = VisionData::DSTOP;
-	addToWorkingMemory(newDataID(), detect_cmd);
-	log("detection stop-command sent!");
-    
-    // Object detected send tracking command
-    VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
-  	track_cmd->cmd = VisionData::START;
-  	addToWorkingMemory(newDataID(), track_cmd);
-  	log("tracking start-command sent!");
-  }else{
-  	log("detection confidence to low, stop");
-  }
+  log("object detected: '%s'", obj->label.c_str());
+  
+   // Object detected send tracking command (if not already tracking)
+	if(!tracking){
+	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+		track_cmd->cmd = VisionData::START;
+		addToWorkingMemory(newDataID(), track_cmd);
+		log("tracking start-command sent!");
+		tracking = true;
+	}
 }
 
 void VisionDriver::receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc)
 {
 	VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-	/*
+	
 	log("Change of pose of VisualObject '%s' detected: %f %f %f", 
 		obj->label.c_str(), 
 		obj->pose.pos.x,
 		obj->pose.pos.y,
 		obj->pose.pos.z);
-*/
+
 }
 
 

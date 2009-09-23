@@ -30,7 +30,8 @@ private:
    * callback function called whenever a new object appears ore an object
    * changes
    */
-   bool timedout;
+   bool tracking;
+	 bool running;
    
    void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
    void receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc);
