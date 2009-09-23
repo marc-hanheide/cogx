@@ -35,7 +35,7 @@ public class ProxyResults {
 	
 	public void addPhantomProxy (PhantomProxy prx) { 
 		proxyMap.put(prx.entityID, prx);
-		NomtoIDno.put(prx.origin.address.id,prx.entityID);
+		NomtoID.put(prx.origin.address.id,prx.entityID);
 		IDtoNom.put(prx.entityID, prx.origin.address.id);
 	} // end method
 	

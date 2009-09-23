@@ -76,7 +76,7 @@ public class ThingProxy
 				} // end if..else
 			} // end while
 			// Add the resulting proxy
-			prxs.addProxy(prx);
+			prxs.addPhantomProxy(prx);
 			// return the result
 			return prxs; 
 		} // end method
