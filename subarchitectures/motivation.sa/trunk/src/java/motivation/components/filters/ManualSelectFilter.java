@@ -24,9 +24,9 @@ public class ManualSelectFilter extends AbstractFilter {
 	@Override
 	protected void start() {
 		super.start();
-		JFrame frame = getJFrame();
-		frame.setVisible(true);
-		frame.pack();
+		getJFrame();
+		jFrame.setVisible(true);
+		jFrame.pack();
 	}
 
 	private JFrame jFrame = null;  //  @jve:decl-index=0:visual-constraint="1,21"
@@ -35,7 +35,6 @@ public class ManualSelectFilter extends AbstractFilter {
 	private JCheckBox jCheckBoxHomingMotive = null;  //  @jve:decl-index=0:visual-constraint="365,163"
 	private JCheckBox jCheckBoxTestMotive = null;  //  @jve:decl-index=0:visual-constraint="421,181"
 	private JButton jButtonUpdate = null;  //  @jve:decl-index=0:visual-constraint="325,118"
-
 	@Override
 	protected boolean shouldBeSurfaced(Motive motive) {
 		if (motive instanceof ExploreMotive)
@@ -68,7 +67,7 @@ public class ManualSelectFilter extends AbstractFilter {
 	private JFrame getJFrame() {
 		if (jFrame == null) {
 			jFrame = new JFrame();
-			jFrame.setSize(new Dimension(318, 256));
+			jFrame.setSize(new Dimension(318, 184));
 			jFrame.setTitle("Motivation::ManualSelectFilter");
 			jFrame.setContentPane(getJContentPane());
 		}
