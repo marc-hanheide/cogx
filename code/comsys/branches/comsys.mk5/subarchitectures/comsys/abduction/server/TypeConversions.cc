@@ -108,6 +108,7 @@ modalityToMercModality(const ModalityPtr & m)
 			modality_att(&mm);
 			break;
 		case K:
+			cerr << "TODO: K modality!" << endl;
 			modality_k(&mm);
 			break;
 
@@ -130,6 +131,68 @@ modalitySeqToMercListOfModalities(const ModalitySeq & ms)
 	}
 
 	return w_list;
+}
+
+MR_Word
+markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
+{
+	MR_Word w_mprop = modalisedFormulaToMercMProp(mq->body, w_vs);
+
+	MR_Word w_query = 0;
+
+	switch (mq->mark) {
+	
+	case Proved: {
+			proved_query(w_mprop, &w_query);
+		}
+		break;
+	
+	case Unsolved: {
+			UnsolvedQueryPtr uq = UnsolvedQueryPtr::dynamicCast(mq);
+			MR_Word w_costfunc;
+			if (uq->isConst) {
+				const_cost_function(uq->constCost, &w_costfunc);
+			}
+			else {
+				named_cost_function(stringToMercString(uq->costFunction), &w_costfunc);
+			}
+			unsolved_query(w_mprop, w_costfunc, &w_query);
+		}
+		break;
+	
+	case Assumed: {
+			AssumedQueryPtr aq = AssumedQueryPtr::dynamicCast(mq);
+			MR_Word w_costfunc;
+			if (aq->isConst) {
+				const_cost_function(aq->constCost, &w_costfunc);
+			}
+			else {
+				named_cost_function(stringToMercString(aq->costFunction), &w_costfunc);
+			}
+			assumed_query(w_mprop, w_costfunc, &w_query);
+		}
+		break;
+	
+	case Asserted:
+		{
+			AssertedQueryPtr sq = AssertedQueryPtr::dynamicCast(mq);
+			MR_Word w_list;
+			empty_mprop_list(&w_list);
+
+			for (int i = sq->antecedents.size() - 1; i >= 0; i--) {
+				MR_ctx_modality w_m = modalisedFormulaToMercMProp(sq->antecedents[i], w_vs);
+				cons_mprop_list(w_m, w_list, &w_list);
+			}
+
+			assumed_query(w_mprop, w_list, &w_query);
+		}
+		break;
+	
+	default:
+		cerr << "unknown marking in markedQueryToMercQuery!" << endl;
+	}
+
+	return w_query;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,6 +355,53 @@ MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 	return f;
 }
 
+MarkedQueryPtr
+MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
+{
+	MR_Word w_arg1;
+	MR_Word w_arg2;
+
+	if (is_proved_query(w_mq, &w_arg1)) {
+		ProvedQueryPtr pq = new ProvedQuery();
+		pq->mark = Proved;
+		pq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
+		return pq;
+	}
+	else if (is_unsolved_query(w_mq, &w_arg1, &w_arg2)) {
+		UnsolvedQueryPtr uq = new UnsolvedQuery();
+		uq->mark = Unsolved;
+		uq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
+		uq->isConst = true;
+		uq->constCost = 1.0;
+		uq->costFunction = "";
+		return uq;
+	}
+	else if (is_assumed_query(w_mq, &w_arg1, &w_arg2)) {
+		AssumedQueryPtr asmq = new AssumedQuery();
+		asmq->mark = Assumed;
+		asmq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
+		asmq->isConst = true;
+		asmq->constCost = 1.0;
+		asmq->costFunction = "";
+		return asmq;
+	}
+	else if (is_asserted_query(w_mq, &w_arg1, &w_arg2)) {
+		AssertedQueryPtr asrq = new AssertedQuery();
+		asrq->mark = Asserted;
+		asrq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
+		asrq->antecedents = vector<ModalisedFormulaPtr>();
+		MR_Word w_iter;
+		for (w_iter = w_arg2; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
+			asrq->antecedents.push_back(MR_WordToModalisedFormula(w_vs, MR_list_head(w_iter)));
+		}
+		return asrq;
+	}
+	else {
+		cerr << "unknown marked query!" << endl;
+		return 0;
+	}
+}
+
 AbductiveProofPtr
 MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
 {
@@ -306,7 +416,7 @@ MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
 
 	MR_Word w_iter;
 	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
-		p->body.push_back(MR_WordToModalisedFormula(w_vs, MR_list_head(w_iter)));
+		p->body.push_back(MR_WordToMarkedQuery(w_vs, MR_list_head(w_iter)));
 	}
 
 	p->cost = cost;

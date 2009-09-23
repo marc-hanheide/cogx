@@ -73,21 +73,49 @@ module Abducer {
 
 	sequence<Assertion> AssertionSeq;
 
+	enum Marking {
+		Proved,
+		Unsolved,
+		Assumed,
+		Asserted
+	};
+
+	class MarkedQuery {
+		Marking mark;
+		ModalisedFormula body;
+	};
+
+	class ProvedQuery extends MarkedQuery {};
+	class UnsolvedQuery extends MarkedQuery {
+		bool isConst;
+		float constCost;
+		string costFunction;
+	};
+	class AssumedQuery extends MarkedQuery {
+		// would we perhaps prefer to have the actual used costs
+		// in the returned proof?
+		bool isConst;
+		float constCost;
+		string costFunction;
+	};
+	class AssertedQuery extends MarkedQuery {
+		ModalisedFormulaSeq antecedents;
+	};
+
+	sequence<MarkedQuery> MarkedQuerySeq;
+
+/*
 	class AssumableGoal {
 		ModalisedFormula body;
 		float assumeCost;
 	};
 
 	sequence<AssumableGoal> AssumableGoalSeq;
-
-	sequence<string> stringSeq;
-	sequence<int> intSeq;
+*/
 
 	class AbductiveProof {
 		float cost;
-		ModalisedFormulaSeq body;
-		intSeq assumed;
-		intSeq asserted;
+		MarkedQuerySeq body;
 	};
 
 	enum ProveResult {
@@ -107,7 +135,7 @@ module Abducer {
 		void clearAssumables();
 		void addAssumable(string function, ModalisedFormula f, float cost);
 
-		ProveResult prove(AssumableGoalSeq g);
+		ProveResult prove(MarkedQuerySeq g);
 		AbductiveProof getBestProof();
 	};
 

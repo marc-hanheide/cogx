@@ -84,7 +84,7 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 }
 
 ProveResult
-MercuryAbducerServer::prove(const vector<AssumableGoalPtr> & goals, const Ice::Current&)
+MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
 {
 	cerr << "[log] proving" << endl;
 
@@ -92,12 +92,11 @@ MercuryAbducerServer::prove(const vector<AssumableGoalPtr> & goals, const Ice::C
 	new_varset(vs);
 
 	MR_Word mgs;
-	empty_annots_list(&mgs);
+	empty_marked_query_list(&mgs);
 
-	for (int i = 0; i < goals.size(); i++) {
-		MR_Word mprop = modalisedFormulaToMercMProp((goals[i])->body, vs);
-		MR_Word mannot = withConstCostFunction(mprop, (goals[i])->assumeCost);
-		cons_annots_list(mannot, mgs, &mgs);
+	for (int i = goals.size() - 1; i >= 0; i--) {
+		MR_Word w_mq = markedQueryToMercQuery(goals[i], vs);
+		cons_marked_query_list(w_mq, mgs, &mgs);
 	}
 	MR_Word minitproof;
 	new_proof(mgs, *vs, &minitproof);
@@ -108,6 +107,7 @@ MercuryAbducerServer::prove(const vector<AssumableGoalPtr> & goals, const Ice::C
 		cerr << "  result: proof found" << endl;
 		proof_summary(curBestProof, ctx);
 		haveProof = true;
+		cerr << " we're still alive!" << endl;
 		return (SUCCESS);
 	}
 	else {

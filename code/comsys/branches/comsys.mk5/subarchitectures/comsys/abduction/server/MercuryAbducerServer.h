@@ -23,7 +23,7 @@ public:
 	virtual void clearAssumables(const Ice::Current&);
 	virtual void addAssumable(const std::string& function, const Abducer::ModalisedFormulaPtr & f, float cost, const Ice::Current&);
 
-	virtual Abducer::ProveResult prove(const std::vector<Abducer::AssumableGoalPtr> & g, const Ice::Current&);
+	virtual Abducer::ProveResult prove(const std::vector<Abducer::MarkedQueryPtr> & g, const Ice::Current&);
 	virtual Abducer::AbductiveProofPtr getBestProof(const Ice::Current&);
 
 private:
