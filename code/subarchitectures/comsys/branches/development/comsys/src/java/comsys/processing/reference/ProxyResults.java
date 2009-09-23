@@ -66,7 +66,7 @@ public class ProxyResults {
 		return (Iterator<RelationProxy>) proxyRelations.iterator();
 	} // end method
 	
-	public Proxy getPhantomProxyByNom (String nom) { return (PhantomProxy) NomtoID.get(nom); }
+	public PhantomProxy getPhantomProxyByNom (String nom) { return (PhantomProxy) NomtoID.get(nom); }
 	
 	
 	

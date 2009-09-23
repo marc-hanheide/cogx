@@ -131,7 +131,7 @@ public class ThingProxy
 				ownerResults = this.constructProxy(ownerLF);
 			} // end if..	
 			assert ownerResults != null;	
-			PhantomProxy ownerProxy = ownerResults.getProxyByNom(owner.nomVar); 
+			PhantomProxy ownerProxy = ownerResults.getPhantomProxyByNom(owner.nomVar); 
 			assert ownerProxy != null; 
 			// construct the relation between the head and the owner directly
 			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
@@ -164,7 +164,7 @@ public class ThingProxy
 			addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy"));
 			// Construct the results;
 			ProxyResults results = new ProxyResults();
-			results.addProxy(prx);
+			results.addPhantomProxy(prx);
 			results.addRelationProxy(rprx);
 			return results;
 		} // end mapOwner
