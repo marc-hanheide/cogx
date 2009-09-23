@@ -186,6 +186,6 @@ private:
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
 
-}; // namespace navsa
+}; // namespace spatial
 
 #endif // SpatialControl_hpp

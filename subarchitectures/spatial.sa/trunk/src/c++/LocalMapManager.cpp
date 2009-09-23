@@ -99,6 +99,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
 
 void LocalMapManager::start() 
 {
+  FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
+  registerIceServer<FrontierInterface::HypothesisEvaluator, FrontierInterface::HypothesisEvaluator>(servant);
+
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<LocalMapManager>(this,
 								  &LocalMapManager::newRobotPose));
@@ -186,3 +189,138 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
     }
   }
 }
+
+FrontierInterface::HypothesisEvaluation
+LocalMapManager::getHypothesisEvaluation(int hypID)
+{
+  // Find all hypotheses that have curPlaceID as source place
+  // For each cell free, find which hypothesis or source node is closest
+  // If the requested hypothesis is the one, also check if there are any extant
+  // nodes closer than a threshold. If not, increment the free space value.
+  // If the cell is also on the boundary to unexplored space, increment
+  // the border value.
+  // Then check if the hypothesis is situated in what looks like door-like 
+  // environs.
+
+  FrontierInterface::HypothesisEvaluation ret;
+  ret.freeSpaceValue = 0;
+  ret.unexploredBorderValue = 0;
+  ret.gatewayValue = 0;
+
+  vector<FrontierInterface::NodeHypothesisPtr> hyps;
+  getMemoryEntries<FrontierInterface::NodeHypothesis>(hyps);
+
+  int originPlaceID = -1;
+  double relevantX;
+  double relevantY;
+  for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it = hyps.begin();
+      it != hyps.end(); it++) {
+    try {
+      if ((*it)->hypID == hypID) {
+	originPlaceID = (*it)-> originPlaceID;
+	relevantX = (*it)->x;
+	relevantY = (*it)->y;
+	break;
+      }
+    }
+    catch (IceUtil::NullHandleException) {
+      log("Hypothesis unexpectedly missing from WM!");
+    }
+  }
+
+  vector<FrontierInterface::NodeHypothesisPtr> relevantHypotheses;
+
+  if (originPlaceID != -1) {
+    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it = hyps.begin();
+	it != hyps.end(); it++) {
+      try {
+	if ((*it)->originPlaceID == originPlaceID) {
+	  relevantHypotheses.push_back(*it);
+	}
+      }
+      catch (IceUtil::NullHandleException) {
+	log("Hypothesis unexpectedly missing from WM!");
+      }
+    }
+    log("Relevant hypotheses: %i", hyps.size());
+
+    vector<NavData::FNodePtr> nodes;
+    getMemoryEntries<NavData::FNode>(nodes);
+
+    int totalFreeCells = 0;
+    //Loop over local grid map
+    double x;
+    double y;
+    for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize()+1; yi++) {
+      y = m_lgm->getCentYW() + yi * m_lgm->getCellSize();
+      for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize()+1; xi++) {
+	x = m_lgm->getCentXW() + xi * m_lgm->getCellSize();
+	if ((*m_lgm)(xi,yi) == '0') {
+	  totalFreeCells++;
+	  //Cell is free
+	  double relevantDistSq = (x - relevantX)*(x - relevantX) +
+	    (y - relevantY)*(y - relevantY);
+	  // Check if some other hypothesis from this Place is closer to this
+	  // grid cell
+
+	  bool process = true;
+	  for(vector<FrontierInterface::NodeHypothesisPtr>::iterator it = 
+	      relevantHypotheses.begin(); process && it != relevantHypotheses.end(); it++) {
+	    if ((*it)->hypID != hypID) {
+	      double distSq = (x - (*it)->x)*(x - (*it)->x) +
+		(y - (*it)->y)*(y - (*it)->y);
+	      if (distSq < relevantDistSq)
+		process = false;
+	    }
+	  }
+
+	  if (process) {
+	    // Check if this cell is within the node creation radius of some
+	    // other node
+	    for (vector<NavData::FNodePtr>::iterator it2 = nodes.begin();
+		it2 != nodes.end(); it2++) {
+	      try {
+		double distSq = (x - (*it2)->x)*(x - (*it2)->x) +
+		  (y - (*it2)->y)*(y - (*it2)->y);
+		if (distSq < 2.0*2.0)
+		  process = false;
+	      }
+	      catch (IceUtil::NullHandleException e) {
+		log("Error! FNode unexpectedly disappeared!");
+	      }
+	    }
+	    if (process) {
+	      //This cell is known to be free, closest to the hypothesis
+	      //in question, and not too close to another node. Potential
+	      //new node material.
+	      ret.freeSpaceValue += 1.0;
+
+	      //Check if it borders on unknown space
+	      for (int yi2 = yi - 1; yi2 <= yi + 1; yi2++) {
+		for (int xi2 = xi - 1; xi2 <= xi + 1; xi2++) {
+		  if ((*m_lgm)(xi2, yi2) == '2') {
+		    ret.unexploredBorderValue += 1.0;
+		    yi2 = yi + 2;
+		    xi2 = xi + 2;
+		  }
+		}
+	      }
+
+	    }
+
+	  }
+	}
+      }
+    }
+    log("Total free cells: %i", totalFreeCells);
+  }
+  return ret;
+}
+
+FrontierInterface::HypothesisEvaluation
+LocalMapManager::EvaluationServer::getHypothesisEvaluation(int hypID, 
+    const Ice::Current &_context)
+{
+  return m_pOwner->getHypothesisEvaluation(hypID);
+}
+

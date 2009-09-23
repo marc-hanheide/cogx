@@ -46,6 +46,20 @@ module FrontierInterface {
     FrontierPtSeq getFrontiers();
   };
 
+  struct HypothesisEvaluation 
+  {
+    float freeSpaceValue;
+    float unexploredBorderValue;
+    float gatewayValue;
+  };
+
+  interface HypothesisEvaluator {
+    HypothesisEvaluation getHypothesisEvaluation(int hypID);
+  };
+  interface HypothesisEvaluatorAsComponent extends cast::interfaces::CASTComponent {
+    HypothesisEvaluation getHypothesisEvaluation(int hypID);
+  };
+
   interface PlaceInterface {
     NodeHypothesis getHypFromPlaceID(int placeID);
     NavData::FNode getNodeFromPlaceID(int placeID);

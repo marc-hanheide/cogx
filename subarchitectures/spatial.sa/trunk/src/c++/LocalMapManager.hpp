@@ -27,13 +27,22 @@
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/LocalMap.hh>
 #include <SensorData/SensorPose.hh>
-//#include <FrontierInterface.hpp>
+#include <FrontierInterface.hpp>
 
 namespace spatial {
 class LocalMapManager : public cast::ManagedComponent,
   		  public OdometryReceiver,
 		  public Scan2dReceiver
 {
+  private:
+    class EvaluationServer: public FrontierInterface::HypothesisEvaluator {
+      virtual FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID, const Ice::Current &_context);
+      LocalMapManager *m_pOwner;
+      EvaluationServer(LocalMapManager *owner) : m_pOwner(owner)
+      {}
+      friend class LocalMapManager;
+    };
+    friend class EvaluationServer;
 public:
   LocalMapManager();
   virtual ~LocalMapManager();
@@ -64,10 +73,12 @@ protected:
 
   std::string m_RobotServerHost;
   Robotbase::RobotbaseServerPrx m_RobotServer;
+
 private:
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+  FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
 };
 }; // namespace spatial
 
