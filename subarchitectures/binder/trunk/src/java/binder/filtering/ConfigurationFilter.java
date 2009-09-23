@@ -17,7 +17,7 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
-package binder.utils;
+package binder.filtering;
 
 import java.util.Enumeration;
 import java.util.Vector;

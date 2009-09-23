@@ -37,6 +37,7 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.components.BinderMonitor;
+import binder.utils.DistributionGeneration;
 import binder.utils.ProbabilityUtils;
 
 public class InsertButtonListener extends BindingWorkingMemoryWriter implements ActionListener {
@@ -178,7 +179,7 @@ public class InsertButtonListener extends BindingWorkingMemoryWriter implements 
 		}
 		log("number of features in proxy: " + fds.size());
 		
-		newProxy.distribution = ProbabilityUtils.generateProbabilityDistribution(newProxy);
+		newProxy.distribution = DistributionGeneration.generateProbabilityDistribution(newProxy);
 		
 		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
 		distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];

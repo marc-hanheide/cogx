@@ -34,7 +34,7 @@ import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.utils.FeatureValueUtils;
-import binder.utils.MaximumSearch;
+import binder.filtering.MaximumSearch;
 import binder.utils.ProbabilityUtils;
 
 

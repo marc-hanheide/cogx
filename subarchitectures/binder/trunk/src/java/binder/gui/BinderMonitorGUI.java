@@ -47,6 +47,9 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 
+
+// TODO: document this GUI class !!
+
 public class BinderMonitorGUI extends JFrame
 {
 

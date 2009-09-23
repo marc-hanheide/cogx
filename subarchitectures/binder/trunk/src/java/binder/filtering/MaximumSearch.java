@@ -17,7 +17,7 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
-package binder.utils;
+package binder.filtering;
 
 
 import java.util.HashMap;
@@ -28,6 +28,8 @@ import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.utils.BinderUtils;
+import binder.utils.DistributionGeneration;
 import binder.utils.ProbabilityUtils;
 
 
@@ -78,7 +80,7 @@ public class MaximumSearch {
 		else if (entity.distribution == null) {
 			errlog("WARNING: distribution == null, regenerating");
 			BinderUtils.addUnknownFeatureValues(entity.features);
-			entity.distribution = ProbabilityUtils.generateProbabilityDistribution(entity);
+			entity.distribution = DistributionGeneration.generateProbabilityDistribution(entity);
 		}
 
 		// if the distribution for the entity has already been computed and included in 
@@ -223,7 +225,7 @@ public class MaximumSearch {
 		}
 	}
 
-
+	
 	/**
 	 * Get the best (maximum-probability) assignment for a given combined distribution
 	 * 
