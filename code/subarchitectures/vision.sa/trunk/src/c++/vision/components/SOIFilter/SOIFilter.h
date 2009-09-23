@@ -16,6 +16,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "GCoptimization.h"
+#include <boost/interprocess/sync/named_semaphore.hpp>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
@@ -74,6 +75,8 @@ private:
   
   std::queue<std::string> objToAdd;
   std::queue<std::string> objToDelete;
+
+  boost::interprocess::named_semaphore* queuesNotEmpty;
 
   /**
    * callback function called whenever a new SOI appears

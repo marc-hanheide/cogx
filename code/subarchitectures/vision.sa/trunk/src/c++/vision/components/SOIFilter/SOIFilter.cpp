@@ -45,6 +45,8 @@ using namespace cdl;
 using namespace VisionData;
 using namespace Video;
 
+using namespace boost::interprocess;
+
 struct gCutData {
 	int numLab;
 	int k;
@@ -269,6 +271,10 @@ void SOIFilter::configure(const map<string,string> & _config)
 void SOIFilter::start()
 {
   startVideoCommunication(*this);
+
+  char *name = "queueSemaphore";
+  named_semaphore(create_only, name, 0);
+  queuesNotEmpty = new named_semaphore(open_only, name);
   
   if (doDisplay)
   {
@@ -298,6 +304,10 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
+    queuesNotEmpty->wait();
+
+    log("Got something in my queues");
+
     if(!objToAdd.empty())
     {
       SOIData &soi = SOIMap[objToAdd.front()];
@@ -375,19 +385,14 @@ void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
   	  soi.status= STABLE;
   	  soi.stableTime = time;
   	  objToAdd.push(soi.addr.id);
+
+	  queuesNotEmpty->post();
   	  
   	  log("An object candidate ID %s count %u at %u ",
    		soi.addr.id.c_str(), soi.updCount,
    		soi.stableTime.s, soi.stableTime.us
    		);
   	}
-  
-/*  log("#%u: changed SOI ID %s at %u:%u",
-   		soi.updCount,
-   		soi.id.c_str(),
-   		time.s, time.us);
-*/
-
 }
 
 void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
