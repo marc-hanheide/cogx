@@ -118,6 +118,7 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 					&PlaceManager::modifiedEdge));
+
 }
 
 void 
@@ -128,6 +129,9 @@ PlaceManager::stop()
 void 
 PlaceManager::runComponent()
 {
+  frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
+
+  debug("Interface created");
 }
 
 void 
@@ -312,11 +316,7 @@ PlaceManager::evaluateUnexploredPaths()
 
   // Year 1 implementation: base exploration edges on Cure exploration
   // frontiers
-  FrontierInterface::FrontierReaderPrx agg(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
-
-  debug("Interface created");
-
-  FrontierInterface::FrontierPtSeq points = agg->getFrontiers();
+  FrontierInterface::FrontierPtSeq points = frontierReader->getFrontiers();
 
   log("Retrieved %i frontiers", points.size());
 
@@ -342,7 +342,9 @@ PlaceManager::evaluateUnexploredPaths()
     log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, (*it)->mWidth);
 
     // Consider only frontiers with an open path to them
+    debug("1");
     if ((*it)->mState == FrontierInterface::FRONTIERSTATUSOPEN) {
+    debug("2");
       // Consider only frontiers within a certain maximum distance of the current
       // Nav node
       if (nodeDistanceSq < m_maxFrontierDist*m_maxFrontierDist) {
@@ -352,15 +354,19 @@ PlaceManager::evaluateUnexploredPaths()
 	  if ((*it)->mWidth > m_minFrontierLength) {
 	    // Compare distance to all other hypotheses created for this node
 	    double minDistanceSq = FLT_MAX;
+    debug("3");
 	    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it2 =
 		hypotheses.begin(); it2 != hypotheses.end(); it2++) {
+    debug("4");
 	      if ((*it2)->originPlaceID == curPlace->id) {
+    debug("5");
 		double distanceSq = ((*it2)->x - x)*((*it2)->x - x) + ((*it2)->y - y)*((*it2)->y - y);
 		if (distanceSq < minDistanceSq) minDistanceSq = distanceSq;
 	      }
 	    }
 	    if (minDistanceSq > m_minNodeSeparation * m_minNodeSeparation) {
 	      // Create new hypothetical node in the direction of the frontier
+    debug("6");
 	      double newX = nodeX + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
 	      double newY = nodeY + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
 	      FrontierInterface::NodeHypothesisPtr newHyp = 
@@ -378,6 +384,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
 	      hypotheses.push_back(newHyp);
 
+    debug("7");
 	      // Create the Place struct corresponding to the hypothesis
 	      PlaceHolder p;
 	      p.m_data = new SpatialData::Place;   
