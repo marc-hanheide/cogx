@@ -176,7 +176,6 @@ public class Binder extends ManagedComponent  {
 		if (_config.containsKey("--bayesiannetworkfile")) {
 			bayesianNetworkConfigFile = _config.get("--bayesiannetworkfile");
 		} 
-
 		constructor = new UnionConstructor(bayesianNetworkConfigFile);
 
 		if (_config.containsKey("--alpha")) {
@@ -546,8 +545,7 @@ public class Binder extends ManagedComponent  {
 			for (int i = 0 ; i < config.includedUnions.length; i++) {
 				
 				// Normalise
-				config.includedUnions[i].distribution = 
-					DistributionGeneration.normaliseDistribution(config.includedUnions[i].distribution, 1.0f);
+				DistributionGeneration.normaliseDistribution(config.includedUnions[i].distribution, 1.0f);
 			}
 		}
 	}

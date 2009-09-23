@@ -65,7 +65,6 @@ public class BayesianNetworkManager {
 	// =================================================================
 	
 	
-	
 	/**
 	 * Initialise the bayesian network manager
 	 */
@@ -73,10 +72,18 @@ public class BayesianNetworkManager {
 	public BayesianNetworkManager(String configurationFile) {		
 
 		log("Start building the bayesian network...");
+		log("Configuration file used: " + configurationFile);
+		
 		network = new BayesianNetworkWrapper (configurationFile);
+		
 		log("Construction of bayesian network successfull!");
-		log("number of nodes: " + network.nodes.length);		
-		log("number of edges: " + network.edges.length);
+	
+		if (network.getNodes() == null) {
+			log("WARNING: number of nodes is null!");
+		}
+		
+		log("number of nodes: " + network.getNodes().length);		
+		log("number of edges: " + network.getEdges().length);
 
 		// Initialize the list of already computed prior distributions
 		alreadyComputedDistribs = new HashMap<PerceivedEntity, DiscreteProbabilityDistribution>();

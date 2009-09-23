@@ -258,7 +258,8 @@ public class Test1 extends AbstractTester {
 	 */
 	private void activateChangeFilter (Proxy proxy) {
 
-
+		lastProxy = proxy;
+		
 		WorkingMemoryChangeReceiver receiverForPhantomProxies = 
 			new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
