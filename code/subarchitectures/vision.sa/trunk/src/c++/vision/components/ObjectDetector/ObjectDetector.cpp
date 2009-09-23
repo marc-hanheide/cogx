@@ -25,6 +25,9 @@ extern "C"
   }
 }
 
+using namespace cogx;
+using namespace Math;
+
 namespace cast
 {
 
@@ -61,6 +64,39 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 	}	
 }
 
+void ObjectDetector::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
+	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
+	
+	// Test if model is valid
+	if(!obj->model || obj->model->vertices.size()<=0){
+		log("receive VisualObject: no valid model received, adding nothing");
+		return;
+	}
+	
+	log("receiving changed VisualObject: ???");
+	
+
+	// Convert GeometryModel to Model for tracker
+// 	Model* model = new Model();
+// 	if(!convertGeometryModel(obj->model, model)){
+// 		delete(model);
+// 		return;
+// 	}
+	
+	// Get IDs of working memory object and resources object
+// 	IDList ids;
+// 	ids.resources_ID = g_Resources->AddModel(model, obj->label.c_str());
+// 	ids.cast_AD = _wmc.address;
+	
+	// converte pose of object to tracking pose (=particle)
+// 	convertPose2Particle(obj->pose, ids.trackpose);
+	
+	// add IDs and visual object to lists
+// 	m_modelID_list.push_back(ids);
+	
+// 	log("receive VisualObject: model added %s", obj->label.c_str());
+}
+
 
 void ObjectDetector::configure(const map<string,string> & _config)
 {
@@ -91,6 +127,10 @@ void ObjectDetector::start()
   addChangeFilter(createLocalTypeFilter<ObjectDetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetector>(this,
         &ObjectDetector::receiveDetectionCommand));
+
+  addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<ObjectDetector>(this,
+        &ObjectDetector::receiveVisualObject));
 
   if(showImage) cvNamedWindow(getComponentID().c_str(), 1);
 }
@@ -133,19 +173,61 @@ void ObjectDetector::processImage()
 
 		if(!masked)
 		{
-			num_cubes++;
 
-			// Generate VisualObject
-			VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-			if(Cube2VisualObject(obj, cd))
+/// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+			// check, if cube already exists at the working memory
+			bool cubeExists = false;
+
+			// read visual objects from working memory
+			std::vector <VisionData::VisualObjectPtr> results;
+			getMemoryEntries<VisionData::VisualObject>(results);
+
+// 			std::vector<VisionData::VisualObjectPtr>::iterator iter;
+			
+			for(unsigned i=0; i<results.size(); i++)
 			{
-				char obj_label[32];
-				sprintf(obj_label, "Cube %d", num_cubes);
-				obj->label = obj_label;
+// 				log("LABEL OF OBJECT: %s", results[i]->label.c_str());
 
-				// Add VisualObject to working memory
-				addToWorkingMemory(newDataID(), obj);
-				log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+				// read vertices and calculate center
+				vector<Vertex> vertices = results[i]->model->vertices;
+				double radius = length(vertices[0].pos);
+
+
+// 				log("	Center of the cube: %4.4f / %4.4f / %4.4f", results[i]->pose.pos.x, results[i]->pose.pos.y, results[i]->pose.pos.z);
+// 				log("	Radius of the cube: %4.4f", radius);
+
+
+				// is this cube already there?
+				Vector3 newCubeCenter;
+				newCubeCenter.x = cd.cubeCenter3D.x;
+				newCubeCenter.y = cd.cubeCenter3D.y;
+				newCubeCenter.z = cd.height/2.;
+
+				double len = length(results[i]->pose.pos - newCubeCenter);
+// 				log(" length/radius: %4.4f / %4.4f", len, radius);
+				if(len < radius)
+				{
+					cubeExists = true;
+// 					log("	!!! CUBE EXISTS AREADY !!!");
+				}
+			}
+
+
+			// Generate VisualObject, if cube does not already exists in the working memory
+			if(!cubeExists)
+			{
+				num_cubes++;
+				VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+				if(Cube2VisualObject(obj, cd))
+				{
+					char obj_label[32];
+					sprintf(obj_label, "Cube %d", num_cubes);
+					obj->label = obj_label;
+
+					// Add VisualObject to working memory
+					addToWorkingMemory(newDataID(), obj);
+					log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+				}
 			}
 		}
 	}
