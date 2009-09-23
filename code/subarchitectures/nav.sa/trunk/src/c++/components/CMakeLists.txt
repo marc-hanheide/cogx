@@ -1,6 +1,7 @@
 include_directories(../autogen)
 
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
@@ -34,7 +35,7 @@ link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 
 add_cast_component(PeekabotControl PeekabotControl.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} NavData)
+link_cast_component(${CAST_COMPONENT_NAME} NavData SpatialData)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} peekabot)
