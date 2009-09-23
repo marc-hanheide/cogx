@@ -812,9 +812,9 @@ void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &l
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	int obj_number_threshold;
-	if (N = 1) obj_number_threshold = 400;
-	if (N = 5) obj_number_threshold = 300;
-	if (N = 10) obj_number_threshold = 20;
+	if (N == 1) obj_number_threshold = 400;
+	if (N == 5) obj_number_threshold = 300;
+	if (N == 10) obj_number_threshold = 20;
 	while(!candidants.empty())
 	{
 		S_label.at(*candidants.begin()) = objnumber;
