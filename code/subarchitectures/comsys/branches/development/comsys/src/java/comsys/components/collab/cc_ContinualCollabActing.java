@@ -48,11 +48,10 @@ public class cc_ContinualCollabActing extends ManagedComponent {
     // Identifiers for ProcessData objects
     private int pdIdCounter;
 	
-    private Ice.Communicator ic;
-    private AbducerServerPrx abducer;
 
-    private String rulesFilename = "/Users/sandius/Work/comsys.mk5/subarchitectures/comsys/abduction/rules.txt";
-    private String factsFilename = "/Users/sandius/Work/comsys.mk5/subarchitectures/comsys/abduction/facts.txt";
+	// Main engine handling the processing for the component
+	ContinualCollaborativeActivity ccaEngine = null; 
+	
     
     // =================================================================
     // CONSTRUCTOR METHODS
@@ -70,28 +69,13 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
         m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
 
-    	// connect to the server
-        log("connecting to the server");
-        try { 
-            ic = Ice.Util.initialize(); 
-            Ice.ObjectPrx base = ic.stringToProxy("AbducerServer:default -p 10000"); 
-            abducer = AbducerServerPrxHelper.checkedCast(base); 
-
-            if (abducer == null)
-            	throw new Error("Invalid proxy"); 
-
-            abducer.clearFacts();
-            abducer.loadFactsFromFile(factsFilename);
-            abducer.clearRules();
-            abducer.loadRulesFromFile(rulesFilename);
-        }
-        catch (Ice.LocalException e) { 
-            e.printStackTrace(); 
-        }
-        catch (Exception e) { 
-            System.err.println(e.getMessage()); 
-        }
-    }
+		// Initialize the CCA engine
+		ccaEngine = new ContinualCollaborativeActivity();
+		// if needed, set facts/rules-filenames
+		// initialize the abduction engine
+		ccaEngine.initAbducer();
+		
+    } // end init
     
 	public void start() {
 		super.start();
@@ -232,34 +216,12 @@ public class cc_ContinualCollabActing extends ManagedComponent {
     	try {	
             CASTData slfWM = pd.getByType(CASTUtils.typeName(SelectedLogicalForm.class));
             if (slfWM != null) {
-
+				// get the logical form
             	SelectedLogicalForm slf = (SelectedLogicalForm) slfWM.getData();
-            	AbdUtils.addLFAsExplicitFacts(abducer, slf.lf);
-            	
-            	Abducer.UnsolvedQuery goal = new Abducer.UnsolvedQuery();
-            	goal.mark = Abducer.Marking.Unsolved;
-            	goal.body = new ModalisedFormula();
-            	goal.body.m = new Modality[] {AbdUtils.modEvent()};
-            	goal.body.p = AbdUtils.predicate("uttered", new Term[] {
-            				AbdUtils.term("h"),
-            				AbdUtils.term(slf.lf.root.nomVar)
-            			});
-            	goal.isConst = true;
-            	goal.costFunction = "";
-            	goal.constCost = 50.0f;
-
-            	Abducer.MarkedQuery[] goals = new Abducer.MarkedQuery[] {goal};
-
-            	log("proving: " + MercuryUtils.modalisedFormulaToString(goals[0].body));
-
-//           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
-            	
-            	ProveResult result = abducer.prove(goals);
-//            	ProofResult result = abducer.proveGoal("e(now) : uttered(h, " + LFUtils.lfToMercString(slf.lf) + ").");
-            	if (result == Abducer.ProveResult.SUCCESS) {
-            		log("seems we've got a proof");
-            		AbductiveProof p = abducer.getBestProof();
-
+				// construct the abductive proof
+				AbductiveProof proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, sfl.lf); 
+				// print the proof ... 
+				if (proof != null) { 	
             		String logString = "proof: body = [\n";
             		for (int i = 0; i < p.body.length; i++) {
             			logString += MercuryUtils.modalisedFormulaToString(p.body[i].body);
