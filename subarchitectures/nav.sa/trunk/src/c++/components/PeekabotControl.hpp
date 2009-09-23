@@ -17,7 +17,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
-
+#include <SpatialData.hpp>
 #include <peekabot.hh>
 #include <peekabot/Types.hh>
 
@@ -56,7 +56,7 @@ protected:
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
   int m_CtrlAction;
-
+  SpatialData::PlaceIDSeq placeseq;
   peekabot::PeekabotClient m_PeekabotClient;  
 };
 
