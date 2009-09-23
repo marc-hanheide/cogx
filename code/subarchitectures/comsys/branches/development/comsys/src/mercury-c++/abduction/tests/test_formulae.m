@@ -13,8 +13,10 @@
 :- implementation.
 
 :- import_module string, pair, list, map.
-:- import_module varset, term_io, parser.
-:- import_module formula.
+:- import_module varset, term, term_io, parser.
+:- import_module formula, formula_io.
+
+:- import_module ctx_modality, ctx_io.
 
 main(!IO) :-
 	test_mprop_parse("p(x).", !IO),
@@ -27,8 +29,13 @@ main(!IO) :-
 
 	nl(!IO),
 
+	test_term_parse("a(x) ; b(x) ; c(y).", !IO),
 	test_term_parse("axiom : p(x).", !IO),
 	test_term_parse("[] : (p(X), q(X) -> r(X)) / fax.", !IO),
+	test_term_parse("funcname = [a, b, c].", !IO),
+	test_term_parse("\"Jakysi string\", g-q.", !IO),
+	test_term_parse("\"Jakysi string\"::\"g-q\".", !IO),
+	test_term_parse("e(now) : @(\"be1_1\"::\"ascription\", p(\"be\") ^ r(\"Mood\", p(\"int\")) ^ r(\"Tense\", p(\"pres\")) ^  r(\"Cop-Restr\", \"ball1_1\"::\"thing\" ^ p(\"ball\") ^ r(\"Delimitation\", p(\"unique\")) ^ r(\"Num\", p(\"sg\")) ^ r(\"Quantification\", p(\"specific\")))) ^  r(\"Cop-Scope\", \"red1_1\"::\"q-color\" ^ p(\"red\"))) ^  r(\"Subject\", \"ball1_1\"::\"thing\")).", !IO),
 
 	nl(!IO),
 
@@ -53,10 +60,16 @@ main(!IO) :-
 	
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- import_module formula_ops.
+
 :- pred test_term_parse(string::in, io::di, io::uo) is det.
 
 test_term_parse(S, !IO) :-
-	read_term_from_string("", S, _, Result),
+	read_term_from_string_with_op_table(init_wabd_op_table, "", S, _, Result),
+	(if Result = term(_Varset, Term)
+	then generic_term(Term)
+	else true
+	),
 	format("* `%s':\n  result=%s\n\n", [s(S), s(string(Result))], !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -65,11 +78,21 @@ test_term_parse(S, !IO) :-
 
 test_mprop_parse(S, !IO) :-
 	format("(mprop) \"%s\" ... ", [s(S)], !IO),
-	(if string_as_vsmprop(S, P)
-	then print(P, !IO), nl(!IO), string_as_vsmprop(SNew, P),
-			format("        \"%s\"\n", [s(SNew)], !IO)
+	(if string_to_vsmprop(S) = P, P = vs(m(M, _), _), is_list_ctx_modality(M)
+	then print(P, !IO), nl(!IO),
+			format("        \"%s\"\n", [s(vsmprop_to_string(P))], !IO)
 	else print("fail", !IO), nl(!IO)
 	).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred is_list_ctx_modality(list(ctx_modality)::in) is det.
+
+is_list_ctx_modality(_).
+
+:- pred is_ctx_mprop(mprop(ctx_modality)::in) is det.
+
+is_ctx_mprop(_).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -77,9 +100,9 @@ test_mprop_parse(S, !IO) :-
 
 test_mrule_parse(S, !IO) :-
 	format("(mrule) \"%s\" ... ", [s(S)], !IO),
-	(if string_as_vsmrule(S, R)
-	then print(R, !IO), nl(!IO), string_as_vsmrule(SNew, R),
-			format("        \"%s\"\n", [s(SNew)], !IO)
+	(if string_to_vsmrule(S) = R, R = vs(m(M, _), _), is_list_ctx_modality(M)
+	then print(R, !IO), nl(!IO),
+			format("        \"%s\"\n", [s(vsmrule_to_string(R))], !IO)
 	else print("fail", !IO), nl(!IO)
 	).
 
@@ -90,6 +113,9 @@ test_mrule_parse(S, !IO) :-
 test_unify(A, B, !IO) :-
 	vs(MPA, VSA) = det_string_to_vsmprop(A),
 	vs(MPB0, VSB) = det_string_to_vsmprop(B),
+
+	is_ctx_mprop(MPA),
+	is_ctx_mprop(MPB0),
 
 	varset.merge_renaming(VSA, VSB, VS, Renaming),
 	MPB = rename_vars_in_mprop(Renaming, MPB0),
@@ -103,7 +129,7 @@ test_unify(A, B, !IO) :-
 	(if
 		unify_formulas(PA, PB, Unifier)
 	then
-		print(subst_to_string(VS, Unifier), !IO),
+		print(test_formulae.subst_to_string(VS, Unifier), !IO),
 		print(" --> ", !IO),
 		format("\"%s\", \"%s\"\n",
 			[s(vsmprop_to_string(vs(apply_subst_to_mprop(Unifier, MPA), VS))),
