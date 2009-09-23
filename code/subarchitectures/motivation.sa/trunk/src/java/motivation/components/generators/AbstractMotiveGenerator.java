@@ -5,7 +5,6 @@
 package motivation.components.generators;
 
 import motivation.slice.Motive;
-import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
