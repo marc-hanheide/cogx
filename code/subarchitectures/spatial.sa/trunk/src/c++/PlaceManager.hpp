@@ -129,6 +129,7 @@ class PlaceManager : public cast::ManagedComponent
     				   // thought it was going
     std::map<int, std::set<int> > m_connectivities;
     FrontierInterface::FrontierReaderPrx frontierReader;
+    FrontierInterface::HypothesisEvaluatorPrx hypothesisEvaluator;
 }; // class PlaceManager
 
 }; // namespace spatial

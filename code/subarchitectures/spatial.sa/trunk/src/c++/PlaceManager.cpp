@@ -130,8 +130,9 @@ void
 PlaceManager::runComponent()
 {
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
+  hypothesisEvaluator = FrontierInterface::HypothesisEvaluatorPrx(getIceServer<FrontierInterface::HypothesisEvaluator>("map.manager"));
 
-  debug("Interface created");
+  debug("Interfaces created");
 }
 
 void 
@@ -456,6 +457,15 @@ PlaceManager::evaluateUnexploredPaths()
       else {
 	log("Frontier not reachable, skipping");
       }
+
+      // For debug purposes only; delete me!
+      for (int i = 0; i < m_hypIDCounter; i++) {
+	FrontierInterface::HypothesisEvaluation eval = 
+	  hypothesisEvaluator->getHypothesisEvaluation(i);
+	log("Hypothesis %i evaluates to %f %f.", i, eval.freeSpaceValue,
+	    eval.unexploredBorderValue);
+      }
+      // End delete me
     }
   }
 }
@@ -571,7 +581,13 @@ void PlaceManager::beginPlaceTransition(int goalPlaceID)
     }
   }
   NavData::FNodePtr curNode = getCurrentNavNode();
-  m_startNodeForCurrentPath = curNode->nodeId;
+  if (curNode != 0) {
+    m_startNodeForCurrentPath = curNode->nodeId;
+  }
+  else {
+    log("Error! Could not find current Nav node!");
+  }
+
   m_goalPlaceForCurrentPath = goalPlaceID;
   m_isPathFollowing = true;
 }
