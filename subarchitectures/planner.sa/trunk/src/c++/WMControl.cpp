@@ -66,7 +66,7 @@ void WMControl::connectToPythonServer() {
 
 void WMControl::runComponent() {
     log("Planner WMControl: running");
-    while (true) {
+    while (isRunning()) {
         m_queue_mutex.lock();
         if (!m_runqueue.empty()) {
             log("planning is scheduled");
