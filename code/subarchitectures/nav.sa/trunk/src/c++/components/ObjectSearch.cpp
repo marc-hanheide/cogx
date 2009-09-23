@@ -62,13 +62,29 @@ void ObjectSearch::start() {
                                         &ObjectSearch::newNavGraphNode));  
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                                        &ObjectSearch::newNavGraphNode));  
+                                        &ObjectSearch::newNavGraphNode)); 
                                         
-		
-
+     
+	addChangeFilter(createLocalTypeFilter<SpatialData::AVSCommand>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+                                        &ObjectSearch::newAVSCommand));  
+                                        
+  addChangeFilter(createLocalTypeFilter<SpatialData::AVSCommand>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
+                                        &ObjectSearch::newAVSCommand)); 
 }
 
-
+void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
+	  
+	  shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
+    	getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
+    if (oobj->getData()->cmd == SpatialData::PLAN){
+    	    placestosearch = oobj->getData()->placestosearch;
+	  		m_command = PLAN;
+    }
+	else if (oobj->getData()->cmd == SpatialData::STOPAVS)
+			m_command = STOP;
+}
 void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
   debug("new NavGraphNode");
@@ -259,7 +275,7 @@ void ObjectSearch::runComponent() {
 
     //clock_t start_time,elapsed;
     //double elapsed_time;
-    m_command = PLAN; //TURN;
+    m_command = IDLE; //TURN;
 	log("hey I run");
     while(runObjectSearch) {
 		
@@ -423,6 +439,8 @@ void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
 void ObjectSearch::ExecutePlan () {
 		ExecuteNextInPlan ();
 }
+
+
 void ObjectSearch::GenViewPoints() {
 	srand ( time(NULL) );
     //log("Generating %i random samples", m_samplesize);
@@ -464,8 +482,14 @@ void ObjectSearch::GenViewPoints() {
         		long id = -1;
         		if (place != NULL)
         			id = place->id;
-        		
-            	if (id == 0) { //if sample is in a place we were asked to search
+        	    bool isincluded = false;
+        		for (unsigned int q= 0; q < placestosearch.size(); q++){
+        			if (placestosearch[q] == id){
+        				isincluded = true;
+        				break;
+        			}
+        		}
+            	if (isincluded) { //if sample is in a place we were asked to search
                 	m_samples[2*i] = randx;
                 	m_samples[2*i+1] = randy;
                 	int the = (int)(rand() % angles.size());
@@ -498,7 +522,6 @@ void ObjectSearch::GenViewPoints() {
 long ObjectSearch::GetClosestFNode(double xW, double yW){
 	long nodeid;
     double hdist = DBL_MAX;
-    double sqrsum = (xW*xW) + (yW*yW);
     for (unsigned int i = 0; i < fnodeseq.size() ; i++){
         double dist = sqrt( pow((xW - fnodeseq[i]->x),2) + pow((yW - fnodeseq[i]->y),2) );
         //log("node pose: %.2f,%.2f dist: %f", fnodeseq[i]->x,fnodeseq[i]->y, dist); 
