@@ -77,6 +77,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         else: self._options.loadHistory(self.fnconf) # old place for history
         self._options.configEnvironment()
         self._userOptions = options.CUserOptions()
+        self._userOptions.loadConfig(self.fnconf) # TODO: user options should be in ~/.cast/...
         self._manager = procman.CProcessManager()
 
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
@@ -177,8 +178,9 @@ class CCastControlWnd(QtGui.QMainWindow):
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgPlayer = getitems(self.ui.playerConfigCmbx)
-            self._options.saveConfig(open(self.fnconf, 'w'))
             self._options.saveHistory(open(self.fnhist, 'w'))
+            if not os.path.exists(self.fnconf):
+                self._options.saveConfig(open(self.fnconf, 'w'))
         except Exception, e:
             print "Failed to save configuration"
             print e
