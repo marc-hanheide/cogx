@@ -29,8 +29,7 @@ namespace cast
 {
 
 class SOIFilter : public ManagedComponent,
-				  public VideoClient,
-				  public StereoClient
+		  public VideoClient
 {
 private:
 

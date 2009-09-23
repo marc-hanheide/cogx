@@ -5,5 +5,5 @@ SET(SOURCES SOIFilter.cpp GCoptimization.cpp graph.cpp LinkedBlockList.cpp maxfl
 
 
 add_cast_component(SOIFilter ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils VideoClient StereoClient)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils VideoClient)
 
