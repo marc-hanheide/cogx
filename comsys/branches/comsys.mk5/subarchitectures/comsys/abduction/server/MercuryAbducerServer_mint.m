@@ -24,10 +24,6 @@
 :- pred srv_print_ctx(ctx::in, io::di, io::uo) is det.
 :- pred srv_proof_summary(proof(ctx_modality)::in, ctx::in, io::di, io::uo) is det.
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pred new_proof(list(with_cost_function(mprop(ctx_modality)))::in, varset::in, proof(ctx_modality)::out) is det.
-
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -222,10 +218,6 @@ srv_proof_summary(Proof, Ctx, !IO) :-
 	print("  " ++ assertions_to_string(Ctx, goal_assertions(LastGoal)) ++ "\n", !IO),
 	nl(!IO),
 
-	print_proof_trace(Ctx, Proof, !IO).
-
-%------------------------------------------------------------------------------%
-
-:- pragma foreign_export("C", new_proof(in, in, out), "new_proof").
-
-new_proof(Annots, VS, proof(vs([list.map((func(cf(MProp, Func)) = unsolved(MProp, Func)), Annots)], VS), [])).
+	print_proof_trace(Ctx, Proof, !IO),
+	nl(!IO),
+	print("that's it for the summary.\n", !IO).

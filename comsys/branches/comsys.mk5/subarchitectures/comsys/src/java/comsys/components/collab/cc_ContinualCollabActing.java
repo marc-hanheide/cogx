@@ -236,17 +236,19 @@ public class cc_ContinualCollabActing extends ManagedComponent {
             	SelectedLogicalForm slf = (SelectedLogicalForm) slfWM.getData();
             	AbdUtils.addLFAsExplicitFacts(abducer, slf.lf);
             	
-            	Abducer.AssumableGoal[] goals = new Abducer.AssumableGoal[1];
-            	goals[0] = new Abducer.AssumableGoal();
-            	goals[0].assumeCost = 50.0f;
-            	
-            	goals[0].body = new ModalisedFormula();
-
-            	goals[0].body.m = new Modality[] {AbdUtils.modEvent()};
-            	goals[0].body.p = AbdUtils.predicate("uttered", new Term[] {
+            	Abducer.UnsolvedQuery goal = new Abducer.UnsolvedQuery();
+            	goal.mark = Abducer.Marking.Unsolved;
+            	goal.body = new ModalisedFormula();
+            	goal.body.m = new Modality[] {AbdUtils.modEvent()};
+            	goal.body.p = AbdUtils.predicate("uttered", new Term[] {
             				AbdUtils.term("h"),
             				AbdUtils.term(slf.lf.root.nomVar)
             			});
+            	goal.isConst = true;
+            	goal.costFunction = "";
+            	goal.constCost = 50.0f;
+
+            	Abducer.MarkedQuery[] goals = new Abducer.MarkedQuery[] {goal};
 
             	log("proving: " + MercuryUtils.modalisedFormulaToString(goals[0].body));
 
@@ -255,12 +257,12 @@ public class cc_ContinualCollabActing extends ManagedComponent {
             	ProveResult result = abducer.prove(goals);
 //            	ProofResult result = abducer.proveGoal("e(now) : uttered(h, " + LFUtils.lfToMercString(slf.lf) + ").");
             	if (result == Abducer.ProveResult.SUCCESS) {
+            		log("seems we've got a proof");
             		AbductiveProof p = abducer.getBestProof();
-
 
             		String logString = "proof: body = [\n";
             		for (int i = 0; i < p.body.length; i++) {
-            			logString += MercuryUtils.modalisedFormulaToString(p.body[i]);
+            			logString += MercuryUtils.modalisedFormulaToString(p.body[i].body);
             			if (i < p.body.length-1) { logString += ",\n"; }
             		}
             		logString += "\n]";

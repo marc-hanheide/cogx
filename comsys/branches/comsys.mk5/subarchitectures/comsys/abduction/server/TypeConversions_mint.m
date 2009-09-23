@@ -2,7 +2,7 @@
 
 :- interface.
 :- import_module float, list, bool.
-:- import_module ctx_specific, ctx_modality, abduction, formula, belief_model.
+:- import_module ctx_specific, ctx_modality, abduction, formula, belief_model, costs.
 :- import_module varset.
 
 :- pred new_with_const_cost_function(mprop(ctx_modality)::in, float::in, with_cost_function(mprop(ctx_modality))::out) is det.
@@ -20,8 +20,11 @@
 :- pred empty_term_list(list(formula.term)::out) is det.
 :- pred cons_term_list(formula.term::in, list(formula.term)::in, list(formula.term)::out) is det.
 
-:- pred empty_annots_list(list(with_cost_function(mprop(ctx_modality)))::out) is det.
-:- pred cons_annots_list(with_cost_function(mprop(ctx_modality))::in, list(with_cost_function(mprop(ctx_modality)))::in, list(with_cost_function(mprop(ctx_modality)))::out) is det.
+:- pred empty_mprop_list(list(mprop(ctx_modality))::out) is det.
+:- pred cons_mprop_list(mprop(ctx_modality)::in, list(mprop(ctx_modality))::in, list(mprop(ctx_modality))::out) is det.
+
+:- pred empty_marked_query_list(list(query(ctx_modality))::out) is det.
+:- pred cons_marked_query_list(query(ctx_modality)::in, list(query(ctx_modality))::in, list(query(ctx_modality))::out) is det.
 
 :- pred empty_ctx_modality_list(list(ctx_modality)::out) is det.
 :- pred cons_ctx_modality_list(ctx_modality::in, list(ctx_modality)::in, list(ctx_modality)::out) is det.
@@ -49,11 +52,35 @@
 
 %------------------------------------------------------------------------------%
 
+:- pred const_cost_function(float::in, cost_function::out) is det.
+:- pred named_cost_function(string::in, cost_function::out) is det.
+
+:- pred is_const_cost_function(cost_function::in, float::out) is semidet.
+:- pred is_named_cost_function(cost_function::in, string::out) is semidet.
+
+%------------------------------------------------------------------------------%
+
+:- pred proved_query(mprop(ctx_modality)::in, query(ctx_modality)::out) is det.
+:- pred unsolved_query(mprop(ctx_modality)::in, cost_function::in, query(ctx_modality)::out) is det.
+:- pred assumed_query(mprop(ctx_modality)::in, cost_function::in, query(ctx_modality)::out) is det.
+:- pred asserted_query(mprop(ctx_modality)::in, list(mprop(ctx_modality))::in, query(ctx_modality)::out) is det.
+
+:- pred is_proved_query(query(ctx_modality)::in, mprop(ctx_modality)::out) is semidet.
+:- pred is_unsolved_query(query(ctx_modality)::in, mprop(ctx_modality)::out, cost_function::out) is semidet.
+:- pred is_assumed_query(query(ctx_modality)::in, mprop(ctx_modality)::out, cost_function::out) is semidet.
+:- pred is_asserted_query(query(ctx_modality)::in, mprop(ctx_modality)::out, list(mprop(ctx_modality))::out) is semidet.
+
+%------------------------------------------------------------------------------%
+
 :- pred dissect_term(varset::in, formula.term::in, bool::out, string::out, list(formula.term)::out) is det.
 :- pred dissect_predicate(varset::in, atomic_formula::in, string::out, list(formula.term)::out) is det.
 :- pred dissect_mprop(mprop(ctx_modality)::in, list(ctx_modality)::out, atomic_formula::out) is det.
 :- pred dissect_proof(ctx::in, proof(ctx_modality)::in, varset::out, list(mprop(ctx_modality))::out,
 		float::out) is det.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred new_proof(list(query(ctx_modality))::in, varset::in, proof(ctx_modality)::out) is det.
 
 %------------------------------------------------------------------------------%
 
@@ -117,11 +144,17 @@ new_with_const_cost_function(MProp, Cost, cf(MProp, const(Cost))).
 empty_term_list([]).
 cons_term_list(H, T, [H|T]).
 
-:- pragma foreign_export("C", empty_annots_list(out), "empty_annots_list").
-:- pragma foreign_export("C", cons_annots_list(in, in, out), "cons_annots_list").
+:- pragma foreign_export("C", empty_mprop_list(out), "empty_mprop_list").
+:- pragma foreign_export("C", cons_mprop_list(in, in, out), "cons_mprop_list").
 
-empty_annots_list([]).
-cons_annots_list(H, T, [H|T]).
+empty_mprop_list([]).
+cons_mprop_list(H, T, [H|T]).
+
+:- pragma foreign_export("C", empty_marked_query_list(out), "empty_marked_query_list").
+:- pragma foreign_export("C", cons_marked_query_list(in, in, out), "cons_marked_query_list").
+
+empty_marked_query_list([]).
+cons_marked_query_list(H, T, [H|T]) :- trace[io(!IO)] (print(string([H|T]) ++ "\n", !IO)).
 
 :- pragma foreign_export("C", empty_ctx_modality_list(out), "empty_ctx_modality_list").
 :- pragma foreign_export("C", cons_ctx_modality_list(in, in, out), "cons_ctx_modality_list").
@@ -175,6 +208,44 @@ is_belief_mutual(mutual(SetAgs), ListAgs) :-
 
 %------------------------------------------------------------------------------%
 
+:- pragma foreign_export("C", const_cost_function(in, out), "const_cost_function").
+:- pragma foreign_export("C", named_cost_function(in, out), "named_cost_function").
+
+const_cost_function(Num, const(Num)).
+named_cost_function(Name, f(Name)).
+
+:- pragma foreign_export("C", is_const_cost_function(in, out), "is_const_cost_function").
+:- pragma foreign_export("C", is_named_cost_function(in, out), "is_named_cost_function").
+
+is_const_cost_function(const(Num), Num).
+is_named_cost_function(f(Name), Name).
+
+%------------------------------------------------------------------------------%
+
+:- pragma foreign_export("C", proved_query(in, out), "proved_query").
+:- pragma foreign_export("C", unsolved_query(in, in, out), "unsolved_query").
+:- pragma foreign_export("C", assumed_query(in, in, out), "assumed_query").
+:- pragma foreign_export("C", asserted_query(in, in, out), "asserted_query").
+
+proved_query(MProp, proved(MProp)).
+unsolved_query(MProp, CostFunc, unsolved(MProp, CostFunc)).
+assumed_query(MProp, CostFunc, assumed(MProp, CostFunc)).
+asserted_query(MProp, [], asserted(prop(MProp))).
+asserted_query(MProp, [H|T], asserted(impl([H|T], MProp))).
+
+:- pragma foreign_export("C", is_proved_query(in, out), "is_proved_query").
+:- pragma foreign_export("C", is_unsolved_query(in, out, out), "is_unsolved_query").
+:- pragma foreign_export("C", is_assumed_query(in, out, out), "is_assumed_query").
+:- pragma foreign_export("C", is_asserted_query(in, out, out), "is_asserted_query").
+
+is_proved_query(proved(MProp), MProp).
+is_unsolved_query(unsolved(MProp, CostFunction), MProp, CostFunction).
+is_assumed_query(assumed(MProp, CostFunction), MProp, CostFunction).
+is_asserted_query(asserted(prop(MProp)), MProp, []).
+is_asserted_query(asserted(impl(AnteProps, MProp)), MProp, AnteProps).
+
+%------------------------------------------------------------------------------%
+
 :- pragma foreign_export("C", dissect_term(in, in, out, out, out), "dissect_term").
 
 dissect_term(VS, v(Var), yes, VarName, []) :-
@@ -214,3 +285,9 @@ dissect_proof(Ctx, Proof, VS, LastGoals, Cost) :-
 	Costs = costs(1.0, 1.0, 0.1),
 	Cost = cost(Ctx, Proof, Costs).
 %	trace [io(!IO)] ( print(LastGoals, !IO), nl(!IO) ).
+
+%------------------------------------------------------------------------------%
+
+:- pragma foreign_export("C", new_proof(in, in, out), "new_proof").
+
+new_proof(MQs, VS, proof(vs([MQs], VS), [])).

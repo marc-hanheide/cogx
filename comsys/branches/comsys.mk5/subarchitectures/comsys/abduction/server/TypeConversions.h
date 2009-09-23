@@ -42,6 +42,9 @@ modalityToMercModality(const Abducer::ModalityPtr & m);
 MR_list__ctx_modality
 modalitySeqToMercListOfModalities(const Abducer::ModalitySeq & ms);
 
+MR_Word
+markedQueryToMercQuery(const Abducer::MarkedQueryPtr & mq, MR_Word * w_vs);
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 Abducer::ModalityPtr
