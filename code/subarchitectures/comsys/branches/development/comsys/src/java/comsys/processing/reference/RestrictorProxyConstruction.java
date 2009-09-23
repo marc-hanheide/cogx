@@ -43,7 +43,7 @@ import comsys.datastructs.lf.LogicalForm;
  @author	Geert-Jan Kruijff
  @email		gj@dfki.de
  @started	090921
- @version	090921 
+ @version	090922 
  */ 
 
 
@@ -66,6 +66,9 @@ public class RestrictorProxyConstruction {
 		assert proxyFactories.containsKey(lf.root.sort);
 		return ((ProxyFactory)proxyFactories.get(lf.root.sort)).constructProxy(lf);
 	} // end constructProxy
+
 	
-		
+	
 } // end class
+
+

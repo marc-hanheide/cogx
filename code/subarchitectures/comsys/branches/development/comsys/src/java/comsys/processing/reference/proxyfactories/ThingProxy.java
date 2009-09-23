@@ -11,9 +11,9 @@ package comsys.processing.reference.proxyfactories;
 // -------------------------------------------------------
 // BINDER imports
 // -------------------------------------------------------
-
+PhantomProxy
 import binder.autogen.core.Feature; 
-import binder.autogen.core.Proxy; 
+import binder.autogen.core.PhantomProxy; 
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.StringValue; 
 import binder.autogen.specialentities.RelationProxy; 
@@ -55,7 +55,7 @@ public class ThingProxy
 			// get the root
 			LFNominal root = lf.root; 
 			// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
-			Proxy prx = createNewProxy(createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf"), 1.0f);
+			PhantomProxy prx = createNewPhantomProxy(createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf"), 1.0f);
 			addFeatureToProxy(prx, createSimpleFeature ("proposition", root.prop.prop));
 			addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort));		
 			// iterate over the relations, and add the content
@@ -91,7 +91,7 @@ public class ThingProxy
 		 @returns Proxy The updated proxy
 		 */ 
 		
-		private Proxy mapQualityModifier (Proxy prx, LFNominal mod) { 
+		private PhantomProxy mapQualityModifier (PhantomProxy prx, LFNominal mod) { 
 			String feature = null;
 			String value   = null; 
 			if (mod.sort.equals("q-color")) { feature = "color"; value = mod.prop.prop; } 
@@ -108,7 +108,7 @@ public class ThingProxy
 		 
 		 */ 
 		
-		private ProxyResults mapLocation (Proxy head, LogicalForm lf, String headVar, String depVar) {  
+		private ProxyResults mapLocation (PhantomProxy head, LogicalForm lf, String headVar, String depVar) {  
 			// initialize the results
 			ProxyResults results = new ProxyResults();
 			// fetch the nominal heading the modifier construction
@@ -131,7 +131,7 @@ public class ThingProxy
 				ownerResults = this.constructProxy(ownerLF);
 			} // end if..	
 			assert ownerResults != null;	
-			Proxy ownerProxy = ownerResults.getProxyByNom(owner.nomVar); 
+			PhantomProxy ownerProxy = ownerResults.getProxyByNom(owner.nomVar); 
 			assert ownerProxy != null; 
 			// construct the relation between the head and the owner directly
 			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
@@ -151,10 +151,10 @@ public class ThingProxy
 		 */ 
 		
 		
-		private ProxyResults mapOwner (Proxy head, LogicalForm lf, String headVar, String depVar) { 
+		private ProxyResults mapOwner (PhantomProxy head, LogicalForm lf, String headVar, String depVar) { 
 			// Construct the proxy for the owner
 			LFNominal owner = LFUtils.lfGetNominal(lf,depVar);
-			Proxy prx = createNewProxy(createWorkingMemoryPointer("comsys", depVar, "lf"), 1.0f);
+			PhantomProxy prx = createNewPhantomProxy(createWorkingMemoryPointer("comsys", depVar, "lf"), 1.0f);
 			addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop));
 			addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort));		
 			// Construct the relation between the head and the owner

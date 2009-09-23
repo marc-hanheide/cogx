@@ -12,7 +12,7 @@ package comsys.processing.reference;
 // BINDER imports
 // -------------------------------------------------------
 
-import binder.autogen.core.Proxy; 
+import binder.autogen.core.PhantomProxy; 
 import binder.autogen.specialentities.RelationProxy; 
 
 // -------------------------------------------------------
@@ -33,16 +33,16 @@ public class ProxyResults {
 	private Vector proxyRelations = new Vector();
 	
 	
-	public void addProxy (Proxy prx) { 
+	public void addPhantomProxy (PhantomProxy prx) { 
 		proxyMap.put(prx.entityID, prx);
-		NomtoID.put(prx.origin.address.id,prx.entityID);
+		NomtoIDno.put(prx.origin.address.id,prx.entityID);
 		IDtoNom.put(prx.entityID, prx.origin.address.id);
 	} // end method
 	
 	public void addProxies (ProxyResults results) { 
-		for (Iterator<Proxy> proxyIter = results.getProxies(); proxyIter.hasNext(); ) { 
-			Proxy prx = proxyIter.next();
-			this.addProxy(prx);
+		for (Iterator<PhantomProxy> proxyIter = results.getProxies(); proxyIter.hasNext(); ) { 
+			PhantomProxy prx = proxyIter.next();
+			this.addPhantomProxy(prx);
 		} // end for
 	} // end method
 		
@@ -58,15 +58,15 @@ public class ProxyResults {
 		proxyRelations.add(rprx);
 	} // end method
 	
-	public Iterator<Proxy> getProxies () { 
-		return (Iterator<Proxy>) proxyMap.values();
+	public Iterator<PhantomProxy> getProxies () { 
+		return (Iterator<PhantomProxy>) proxyMap.values();
 	} // end method
 	
 	public Iterator<RelationProxy> getRelationProxies() { 
 		return (Iterator<RelationProxy>) proxyRelations.iterator();
 	} // end method
 	
-	public Proxy getProxyByNom (String nom) { return (Proxy) NomtoID.get(nom); }
+	public Proxy getPhantomProxyByNom (String nom) { return (PhantomProxy) NomtoID.get(nom); }
 	
 	
 	
