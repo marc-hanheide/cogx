@@ -73,7 +73,7 @@ void ObjectDetector::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 		return;
 	}
 	
-	log("receiving changed VisualObject: ???");
+	//log("receiving changed VisualObject: ???");
 	
 
 	// Convert GeometryModel to Model for tracker
