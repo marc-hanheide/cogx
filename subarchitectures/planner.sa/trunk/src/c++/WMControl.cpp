@@ -66,6 +66,7 @@ void WMControl::connectToPythonServer() {
 
 void WMControl::runComponent() {
     log("Planner WMControl: running");
+    std::vector<int> execute;
     while (isRunning()) {
         m_queue_mutex.lock();
         if (!m_runqueue.empty()) {
@@ -73,24 +74,29 @@ void WMControl::runComponent() {
             timeval tval;
             gettimeofday(&tval, NULL);
             std::map<int, timeval>::iterator it=m_runqueue.begin();
-            std::vector<int> executed;
             for(; it != m_runqueue.end(); ++it) {
                 if ((it->second.tv_sec < tval.tv_sec) 
                     || ((it->second.tv_sec == tval.tv_sec) 
                         && (it->second.tv_usec < tval.tv_usec))) {
-                    log("accessing wm");
-                    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[it->first].address);
-                    task->state = m_currentState;
-                    pyServer->updateTask(task);
-                    log("returning..:");
-                    executed.push_back(task->id);
+                    execute.push_back(it->first);
                 }
             }
-            for (std::vector<int>::iterator it=executed.begin(); it != executed.end(); ++it) {
+            for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 m_runqueue.erase(*it);
             }
         }
         m_queue_mutex.unlock();
+
+        if (!execute.empty()) {
+            for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
+                log("accessing wm");
+                PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it].address);
+                task->state = m_currentState;
+                pyServer->updateTask(task);
+                log("returning..:");
+            }
+            execute.clear();
+        }
         sleepComponent(1000);
     }
 }
@@ -172,7 +178,8 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
              task->executionRetries++;
         }
         overwriteWorkingMemory(activeTasks[task->id].address, task);
-        pyServer->updateTask(task);
+        //pyServer->updateTask(task);
+        dispatchPlanning(task, 0);
     }
     else if (action->status == SUCCEEDED) {
         /*task->plan.erase(task->plan.begin());
@@ -187,9 +194,9 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         task->executionRetries = 0;
         task->state = m_currentState;
         overwriteWorkingMemory(activeTasks[task->id].address, task);
-        pyServer->updateTask(task);
+        //pyServer->updateTask(task);
+        dispatchPlanning(task, 0);
     }
-    //dispatchPlanning(task, 0);
 }
 
 void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
