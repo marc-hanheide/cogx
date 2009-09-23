@@ -329,7 +329,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	Planner &planner = pPhysReacPlanner->getPlanner();
 	Arm &arm = pPhysReacPlanner->getArm();
 
-	if (!armType.compare("kat_sim_arm")) {
+	//if (!armType.compare("kat_sim_arm")) {
 		setupSimulatedObjects(*pScene, *context);
 		// Create bounds to be attached to the end-effector (the last joint) 
 		const U32 jointIndex = (U32)arm.getJoints().size() - 1;
@@ -343,7 +343,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		std::vector<const Bounds*> boundsSeq;
 		addBounds(pPhysReacPlanner->getJointActors().back(), boundsSeq, boundsDescSeq);
 		pPhysReacPlanner->getPlanner().getHeuristic()->syncArmBoundsDesc(); // sync new arm bounds
-	}
+		//}
 
 /*		
 // 		Mat34 p = pRobot->getFinger()->getFingerActor().getBounds()->front()->getPose();
