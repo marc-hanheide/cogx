@@ -53,35 +53,6 @@ public class BinderUtils {
 
 
 
-	// ================================================================= 
-	// UNION CONFIG NORMALISATION METHODS   
-	// ================================================================= 
-
-
-	/**
-	 * Normalise the probabilities of the union configurations (in order to have a sum = 1)
-	 * 
-	 * @param configs the union configurations
-	 */
-	public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
-
-		// computes the sum of the probabibilities
-		double sum = 0.0f;
-		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			UnionConfiguration config = e.nextElement();
-			sum += config.configProb;
-		}
-
-		// set the normalisation factor
-		double alpha = 1.0f / sum;
-
-		// apply the normalisation factor to all probabilities
-		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			UnionConfiguration config = e.nextElement();
-			config.configProb = alpha * config.configProb;
-		}		 
-	}
-
 	
 	// ================================================================= 
 	// EXISTENCE PROBABILITY METHODS   
@@ -203,6 +174,8 @@ public class BinderUtils {
 	
 	/**
 	 * Convert a normal union into a relation union (without source and target)
+	 * 
+	 * TODO: have relation unions points to unions and not proxies!
 	 * 
 	 * @param bunion the normal union
 	 * @return the relation union

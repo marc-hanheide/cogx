@@ -462,13 +462,10 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 
-			// Compute the confidence scores for the union configurations
+			// Compute and normalise confidence scores for the union configurations
 			ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
-			
-			// Normalise these confidence scores
-			BinderUtils.normaliseConfigProbabilities(newUnionConfigs);
-			
-			// And based on these score, compute the existence probabilities for each union
+						
+			// based on these scores, compute the existence probabilities for each union
 			BinderUtils.addProbExistsToUnions(newUnionConfigs);
 			
 			// Get the nbest configurations (with N as a parameter)
