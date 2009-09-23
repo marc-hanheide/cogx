@@ -24,6 +24,7 @@ public class ConfigurationFilter {
 
 	public static boolean LOGGING = false;
 
+	
 	public static Vector<UnionConfiguration> getNBestUnionConfigurations
 	(Vector<UnionConfiguration> configs, int nb_nbests) {
 
@@ -100,83 +101,6 @@ public class ConfigurationFilter {
 		}
 		return getBestUnionConfiguration (unionconfigsV);
 	}
-
-
-	public static Union getUnionWithMaximumProbability (Union union) {
-
-		if (union instanceof RelationUnion) {
-			return getRelationUnionWithMaximumProbability((RelationUnion)union);
-		}
-		else {
-			return getBasicUnionWithMaximumProbability(union);
-		}
-	}
-	
-
-	public static Union getBasicUnionWithMaximumProbability (Union union) {
-
-		Union newUnion = new Union();
-		newUnion.entityID = union.entityID;
-		newUnion.features = new Feature[union.features.length];
-		newUnion.timeStamp = union.timeStamp;
-		
-		DiscreteProbabilityAssignment bestAssign = null;
-
-		if (union.distribution == null) {
-			log("ERROR: distribution == null, aborting");
-		}
-		if (union.distribution.getClass().equals(DiscreteProbabilityDistribution.class)) {
-			bestAssign = MaximumSearch.getBestAssignment((DiscreteProbabilityDistribution)union.distribution);
-
-		}
-
-		else if (union.distribution.getClass().equals(CombinedProbabilityDistribution.class)) {
-			bestAssign = MaximumSearch.getBestAssignment((CombinedProbabilityDistribution)union.distribution);
-		}
-
-		else {
-			log("Sorry, only discrete or combined feature distributions are handled right now");
-			log("Used class: " + union.distribution.getClass());
-		}
-
-		for (int i = 0; i < union.features.length ; i++) {
-			newUnion.features[i] = new Feature();
-			newUnion.features[i].featlabel = union.features[i].featlabel;
-			newUnion.features[i].alternativeValues = new FeatureValue[1];
-			newUnion.features[i].alternativeValues[0] = 
-				MaximumSearch.getBestFeatureValue(union.features[i], bestAssign);
-		}
-
-		newUnion.includedProxies = union.includedProxies;
-		newUnion.probExists = union.probExists;
-		newUnion.distribution = union.distribution;
-
-		log("OK, extracted a new union with maximum probability");
-		return newUnion;
-	}
-
-	
-
-	public static RelationUnion getRelationUnionWithMaximumProbability (RelationUnion initRUnion) {
-
-		Union bunion = getBasicUnionWithMaximumProbability(initRUnion);
-		RelationUnion newRUnion = BinderUtils.convertIntoRelationUnion(bunion);
-
-		newRUnion.source = new Feature();
-		newRUnion.source.featlabel = initRUnion.source.featlabel;	
-		newRUnion.source.alternativeValues = new FeatureValue[1];
-		// INCORRECT - SHOULD CHANGE THIS
-		newRUnion.source.alternativeValues[0] = initRUnion.source.alternativeValues[0];
-
-		newRUnion.target = new Feature();
-		newRUnion.target.featlabel = initRUnion.target.featlabel;	
-		newRUnion.target.alternativeValues = new FeatureValue[1];
-		// INCORRECT - SHOULD CHANGE THIS
-		newRUnion.target.alternativeValues[0] = initRUnion.target.alternativeValues[0];
-		
-		return newRUnion;
-	}
-
 
 
 
