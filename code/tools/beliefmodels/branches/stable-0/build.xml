@@ -3,6 +3,13 @@
 
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
+        <!-- =================================================================== -->
+        <!-- Add JAR files to classpath                                          -->
+        <!-- =================================================================== -->
+        <path id="build.classpath">
+          <pathelement path="${ice.jar}"/>
+         <pathelement path="${cast.jar}"/>
+        </path>
 
 	<!-- Controls what is compiled -->
 	<property name="src.dir" value="./src/java" />
@@ -55,7 +62,9 @@
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="slice" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" />
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<classpath refid="build.classpath"/> 
+		</javac>
 	</target>
 
 	<!-- =================================================================== -->
