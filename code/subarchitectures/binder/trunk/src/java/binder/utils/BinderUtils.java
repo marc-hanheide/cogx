@@ -36,8 +36,29 @@ import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 
+
+/**
+ * Utility library for the core binder mechanism
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 01/09/2009
+ */
+ 
 public class BinderUtils {
 
+	
+	// minimum threshold above which unknown values can be created in features
+	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.3f;
+	
+	
+	/**
+	 * Convert a normal union into a relation union (without source and target)
+	 * 
+	 * @param bunion the normal union
+	 * @return the relation union
+	 */
+	
 	public static RelationUnion convertIntoRelationUnion (Union bunion) {
 		
 		RelationUnion runion = new RelationUnion();
@@ -50,6 +71,16 @@ public class BinderUtils {
 		
 		return runion;
 	}
+	
+	
+	
+	/**
+	 * Returns true if all the entities are relation proxies or contain relation proxies
+	 * (and hence induce a relation union), false otherwise
+	 * 
+	 * @param entities the entities
+	 * @return true if a relation union is induced, false otherwise
+	 */
 	
 	public static boolean induceRelationUnion(Vector<PerceivedEntity> entities) {
 
@@ -65,32 +96,46 @@ public class BinderUtils {
 	}
 	
 
+	/**
+	 * If necessary, add unknown feature values to the feature.  The parameter 
+	 * MINIMUM_PROB_OF_UNKNOWN_FEATVALUES determines the threshold above which an 
+	 * unknown feature value will be added to the feature values
+	 * 
+	 * @param features the list of features
+	 */
+	
+	public static void addUnknownFeatureValues (Feature[] features) {
 
-	public static Feature[] addUnknownFeatureValues (Feature[] features) {
-
+		// loop on the features
 		for (int i = 0 ; i < features.length ; i++) {
 
+			// sum up the probabilities of each feature value for the feature
 			float totalProb = 0.0f;
 			Vector<FeatureValue> values = new Vector<FeatureValue>();
 			for (int j= 0 ; j < features[i].alternativeValues.length ; j++) {
 				values.add(features[i].alternativeValues[j]);
 				totalProb += features[i].alternativeValues[j].independentProb;
 			}
-		//	if (totalProb < 0.6f && features.length < 3) {
+			
+			// If the unknown feature value is likely enough, add it to the feature values set
+			if (totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 3) {
 				features[i].alternativeValues = new FeatureValue[values.size() + 1];
 				for (int j = 0 ; j < values.size(); j++ ) {
 					features[i].alternativeValues[j] = values.elementAt(j);
 				}
 				features[i].alternativeValues[values.size()] = 
 					new UnknownValue((1.0f - totalProb), features[i].alternativeValues[0].timeStamp);
-		//	}
+			}
 		}
-
-		return features;
 	}
 
 
-
+	/**
+	 * Get the list of all (distinct) unions contained in the union configurations
+	 * 
+	 * @param configs the union configurations
+	 * @return the list of unions
+	 */
 	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
 		
 		ArrayList<Union> unions = new ArrayList<Union>();
@@ -101,22 +146,32 @@ public class BinderUtils {
 			for (int i = 0; i < config.includedUnions.length ; i++) {
 				
 				Union union = config.includedUnions[i];
+				
+				// TODO: check if this is still necessary
 				if (!isInList(unions, union)) {
 					unions.add(union);
 				}
 			}
 		}
-
 		
 		return unions;
 	}
 	
 	
-	
+	/**
+	 * Check if the union is already contained (maybe incorporated in a different
+	 * java object) in the union list
+	 * 
+	 * @param unions the list of unions
+	 * @param union the union
+	 * @return true if the union is in the list, false otherwise
+	 */
 	private static boolean isInList (ArrayList<Union> unions, Union union) {
 		for (Iterator<Union> i = unions.iterator(); i.hasNext() ;) {
 			Union u = i.next();
-			if (u.entityID.equals(union.entityID)  && u.includedProxies.length == union.includedProxies.length && u.timeStamp == union.timeStamp) {
+			if (u.entityID.equals(union.entityID)  && 
+					u.includedProxies.length == union.includedProxies.length 
+					&& u.timeStamp == union.timeStamp) {
 				return true;
 			}
 		}
@@ -124,15 +179,24 @@ public class BinderUtils {
 	}
 	
 	
+	/**
+	 * Normalise the probabilities of the union configurations (in order to have a sum = 1)
+	 * 
+	 * @param configs the union configurations
+	 */
 	 public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
 		 
+		 // computes the sum of the probabibilities
 		 double sum = 0.0f;
 		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			 	UnionConfiguration config = e.nextElement();
 			 	sum += config.configProb;
 			}
 	
+		 // set the normalisation factor
 		 double alpha = 1.0f / sum;
+		 
+		 // apply the normalisation factor to all probabilities
 		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			 	UnionConfiguration config = e.nextElement();
 			 	config.configProb = alpha * config.configProb;
@@ -140,11 +204,17 @@ public class BinderUtils {
 	 }
 	 
 	 
-	 
+	 /**
+	  * Set the existence probabilities to each union contained in the union configurations
+	  * 
+	  * @param configs the configurations
+	  */
 	 public static void addProbExistsToUnions (Vector<UnionConfiguration> configs) {
 		 
+		 // extract the unions
 		 ArrayList<Union> unions = getUnions (configs);
 		 
+		 // set the existence probabilities
 		 setProbExistUnions(unions, configs);
 	 }
 	
@@ -207,8 +277,7 @@ public class BinderUtils {
 	public static Proxy completeProxy (Proxy proxy, boolean addUnknowns) {
 	// If necessary, add unknown values
 	if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
-		proxy.features = 
-			BinderUtils.addUnknownFeatureValues(proxy.features);
+		addUnknownFeatureValues(proxy.features);
 	}
 	
 	// if the probability distribution of the updated proxy is unavailable, regenerate it
