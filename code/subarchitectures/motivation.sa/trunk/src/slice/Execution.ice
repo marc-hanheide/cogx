@@ -60,6 +60,17 @@ module execution {
 	 */
 	long placeID;
       };
+
+      sequence<long> LongSeq;	
+      /**
+       * Move the robot to a particular place.
+       */
+      class ActiveVisualSearch extends Action {
+	/**
+	 * The IDs of the places to search
+	 */
+	LongSeq placeIDs;
+      };
       
 
       /**

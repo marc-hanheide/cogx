@@ -29,9 +29,10 @@ public abstract class AbstractExecutionManager extends ManagedComponent {
 
 	private class ActionCallback implements WorkingMemoryChangeReceiver {
 		private final WorkingMemoryAddress m_actionAddress;
-private final ActionMonitor m_monitor;
-		
-		public ActionCallback(WorkingMemoryAddress _actionAddress, ActionMonitor _monitor) {
+		private final ActionMonitor m_monitor;
+
+		public ActionCallback(WorkingMemoryAddress _actionAddress,
+				ActionMonitor _monitor) {
 			m_actionAddress = _actionAddress;
 			m_monitor = _monitor;
 			addChangeFilter(ChangeFilterFactory.createAddressFilter(
@@ -53,7 +54,7 @@ private final ActionMonitor m_monitor;
 						action.success));
 
 				m_monitor.actionComplete(action);
-				
+
 				// remove action from wm
 				deleteFromWorkingMemory(m_actionAddress);
 				// and remove self from listeners
@@ -88,17 +89,19 @@ private final ActionMonitor m_monitor;
 	 * @return
 	 * @throws CASTException
 	 */
-	protected final <ActionType extends Action> ActionType newActionInstance(Class<ActionType> _actionClass) throws CASTException {
+	protected final <ActionType extends Action> ActionType newActionInstance(
+			Class<ActionType> _actionClass) throws CASTException {
 		try {
 			ActionType action = _actionClass.newInstance();
 			action.status = ActionStatus.PENDING;
 			action.success = TriBool.TRIINDETERMINATE;
 			return action;
 		} catch (Exception e) {
-			CASTException ce = new CASTException("Unable to create action for class: " + _actionClass);
+			CASTException ce = new CASTException(
+					"Unable to create action for class: " + _actionClass);
 			ce.initCause(e);
 			throw ce;
 		}
 	}
-	
+
 }

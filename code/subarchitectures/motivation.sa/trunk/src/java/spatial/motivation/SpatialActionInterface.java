@@ -3,8 +3,13 @@
  */
 package spatial.motivation;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 
+import SpatialData.AVSAction;
+import SpatialData.AVSCommand;
 import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
@@ -12,6 +17,10 @@ import SpatialData.Place;
 import SpatialData.Priority;
 import SpatialData.StatusError;
 import cast.CASTException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -20,6 +29,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.Action;
 import execution.slice.TriBool;
+import execution.slice.actions.ActiveVisualSearch;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
@@ -37,6 +47,83 @@ public class SpatialActionInterface extends ManagedComponent {
 	private LocalActionStateManager m_actionStateManager;
 
 	private HashSet<Long> m_placeIDs;
+
+	/**
+	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 5 minutes.
+	 */
+	private long m_avsTimeoutMillis = 300000;
+
+	private class AVSExecutor extends Thread implements ActionExecutor {
+
+		private long[] m_avsPlaceIDs;
+		private ExecutionCompletionCallback m_callback;
+		private WorkingMemoryAddress m_avsAddr;
+		private AVSCommand m_avsCmd;
+
+		@Override
+		public boolean accept(Action _action) {
+			m_avsPlaceIDs = ((ActiveVisualSearch) _action).placeIDs;
+			return true;
+		}
+
+		@Override
+		public TriBool execute() {
+			return null;
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
+
+			log("running AVS on places: " + Arrays.toString(m_avsPlaceIDs));
+
+			// avs never returns, so just just keep listening
+			m_avsCmd = new AVSCommand(m_avsPlaceIDs, AVSAction.PLAN);
+			m_avsAddr = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
+			try {
+				addToWorkingMemory(m_avsAddr, m_avsCmd);
+				m_callback = _callback;
+				if (useAVSTimeout()) {
+					start();
+				}
+			} catch (CASTException e) {
+				println(e.message);
+				e.printStackTrace();
+				_callback.executionComplete(TriBool.TRIFALSE);
+			}
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return false;
+		}
+
+		@Override
+		public void run() {
+			// sleep for the timeout
+			if (useAVSTimeout()) {
+				try {
+					Thread.sleep(m_avsTimeoutMillis);
+					log("halting AVS after timeout");
+					// stop avs
+					m_avsCmd.cmd = AVSAction.STOPAVS;
+					overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+					m_callback.executionComplete(TriBool.TRITRUE);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (DoesNotExistOnWMException e) {
+					e.printStackTrace();
+				} catch (ConsistencyException e) {
+					// TODO Auto-generated catch block
+				} catch (PermissionException e) {
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
 
 	private class GoToPlaceExecutor implements ActionExecutor,
 			WorkingMemoryChangeReceiver {
@@ -130,6 +217,13 @@ public class SpatialActionInterface extends ManagedComponent {
 					}
 				});
 
+		m_actionStateManager.registerActionType(ActiveVisualSearch.class,
+				new ActionExecutorFactory() {
+					public ActionExecutor getActionExecutor() {
+						return new AVSExecutor();
+					}
+				});
+
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
@@ -137,17 +231,48 @@ public class SpatialActionInterface extends ManagedComponent {
 					throws CASTException {
 				Place place = getMemoryEntry(_wmc.address, Place.class);
 
+				// store id
+				addPlace(place);
+			}
+
+			/**
+			 * @param _place
+			 */
+			private void addPlace(Place _place) {
 				// lazy creation
 				if (m_placeIDs == null) {
 					m_placeIDs = new HashSet<Long>();
 				}
 
-				// store id
-				m_placeIDs.add(place.id);
-				log("stored id: " + place.id);
+				m_placeIDs.add(_place.id);
+				// log("stored id: " + _place.id);
 			}
 		});
 
+	}
+
+	@Override
+	protected void configure(Map<String, String> _config) {
+		String avsTimeoutString = _config.get("--avs-timeout");
+		if (avsTimeoutString != null) {
+			m_avsTimeoutMillis = Long.parseLong(avsTimeoutString);
+		}
+
+		if (useAVSTimeout()) {
+			log("using AVS timeout of: " + m_avsTimeoutMillis + "ms");
+		} else {
+			log("no AVS timeout");
+		}
+	}
+
+	/**
+	 * @return
+	 */
+	private boolean useAVSTimeout() {
+		return m_avsTimeoutMillis > 0;
+	}
+
+	public SpatialActionInterface() {
 	}
 
 }
