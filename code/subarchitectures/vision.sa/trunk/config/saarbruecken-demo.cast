@@ -1,15 +1,15 @@
 HOST localhost
 
 #COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
-COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
-COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
+#COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
+#COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
 
 # reading stored images
 #COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --camconfigs "subarchitectures/vision.sa/config/cam.cal" --files #"subarchitectures/vision.sa/src/c++/vision/components/VisionDriver/img/00000%03d.jpg" --start 150 --end 400 --framerate_ms 50
 
 # live images
-COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --camconfigs "subarchitectures/vision.sa/config/cam.cal" --devnums 0
-#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0 --devclass FIREWIRE
+COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --camconfigs "subarchitectures/vision.sa/config/cam.cal" --devnums 1
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0 --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/cam.cal"
 
 
 
@@ -25,15 +25,13 @@ CPP TM AlwaysPositiveTaskManager
 #CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log --read-ptu --log #--debug 
 #CPP GD cure.debugger CureDataLogger 
 
-
-
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Detector ObjectDetector --videohost localhost --videoname video --camid 0 --log
-CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
+CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --maxModels 5 --log
 
-CPP MG DetectorDriver ObjectDetectorDriver --log
+#CPP MG DetectorDriver ObjectDetectorDriver --log
 
-#CPP MG VisionDriver VisionDriver --log
+CPP MG VisionDriver VisionDriver --log
 
