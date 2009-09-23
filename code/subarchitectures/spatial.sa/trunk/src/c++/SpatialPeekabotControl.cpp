@@ -134,6 +134,9 @@ void SpatialPeekabotControl::runComponent() {
     connectPeekabot();
   }
 
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer
+      <FrontierInterface::PlaceInterface>("place.manager"));
+
   println("Connected to peekabot, ready to go");
 
   double radius = 0.75;
@@ -257,8 +260,6 @@ void SpatialPeekabotControl::runComponent() {
 		    probRequest->startPlaceID = 0;
 		  }
 		  else {
-		    FrontierInterface::PlaceInterfacePrx agg(getIceServer
-			<FrontierInterface::PlaceInterface>("place.manager"));
 		    SpatialData::PlacePtr curPlace =
 		      agg->getPlaceFromNodeID(curNode->nodeId);
 		    if (curPlace == 0) {

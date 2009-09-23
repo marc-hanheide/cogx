@@ -21,6 +21,7 @@
 #include <string>
 #include <list>
 #include <Navigation/NavGraph.hh>
+#include <FrontierInterface.hpp>
 
 namespace spatial {
 
@@ -61,6 +62,7 @@ protected:
   IceUtil::Mutex m_GraphMutex;
   Cure::NavGraph m_NavGraph;
 
+  FrontierInterface::PlaceInterfacePrx m_placeInterface;
 }; // class PathQueryProcessor
 
 }; // namespace spatial

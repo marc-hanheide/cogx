@@ -63,6 +63,7 @@ PathQueryProcessor::start()
       (cdl::ADD),
       new MemberFunctionChangeReceiver<PathQueryProcessor>(this,
 	&PathQueryProcessor::newPathTransitionCostRequest));
+
 }
 
 void 
@@ -84,6 +85,7 @@ PathQueryProcessor::configure(const std::map<std::string, std::string>& _config)
 void 
 PathQueryProcessor::runComponent()
 {
+  m_placeInterface = FrontierInterface::PlaceInterfacePrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
 }
 
@@ -175,12 +177,11 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 
   debug("1");
 
-  FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
   debug("2");
   //Firstly, check if start place is a placeholder
   FrontierInterface::NodeHypothesisPtr startHyp =
-    agg->getHypFromPlaceID(ptr->startPlaceID);
+    m_placeInterface->getHypFromPlaceID(ptr->startPlaceID);
   if (startHyp != 0) {
     debug("Requested path probability from Placeholder with Place ID %i",
 	ptr->startPlaceID);
@@ -197,7 +198,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
       for (std::list<Cure::NavGraphNode*>::iterator i = 
 	  m_NavGraph.m_Nodes.begin(); i != m_NavGraph.m_Nodes.end(); i++) {
 	unsigned int nodeID = (*i)->getId();
-	SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeID);
+	SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(nodeID);
 	if (place != 0) {
 	  pp.placeID = place->id;
 	  pp.prob = 0;
@@ -214,7 +215,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	}
 	else{
 	  unsigned int hypID = (*i)->hypID;
-	  SpatialData::PlacePtr place = agg->getPlaceFromHypID(hypID);
+	  SpatialData::PlacePtr place = m_placeInterface->getPlaceFromHypID(hypID);
 	  if (place != 0) {
 	    pp.placeID = place->id;
 	    pp.prob = 0;
@@ -223,7 +224,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	}
       }
       NavData::FNodePtr startNode =
-	agg->getNodeFromPlaceID(ptr->startPlaceID);
+	m_placeInterface->getNodeFromPlaceID(ptr->startPlaceID);
       if (startNode == 0) {
 	log("Could not find starting Place!");
 	ptr->status = SpatialData::QUERYPLACE1INVALID;
@@ -235,7 +236,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
     debug("Start Place was a node");
     //Start Place is a node
     NavData::FNodePtr startNode =
-      agg->getNodeFromPlaceID(ptr->startPlaceID);
+      m_placeInterface->getNodeFromPlaceID(ptr->startPlaceID);
   debug("3");
     if (startNode == 0) {
       log("Could not find start Node!");
@@ -246,7 +247,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
       //Secondly, check if goal place is a placeholder
   debug("4");
       FrontierInterface::NodeHypothesisPtr goalHyp =
-	agg->getHypFromPlaceID(ptr->goalPlaceID);
+	m_placeInterface->getHypFromPlaceID(ptr->goalPlaceID);
       if (goalHyp != 0) {
 	//Goal place is a placeholder
 	int goalHypID = goalHyp->hypID;
@@ -281,7 +282,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	      // Already added
 	    } else {
 	      unsigned int nodeID = (*i)->getId();
-	      SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeID);
+	      SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(nodeID);
 	      if (place != 0) {
 		pp.placeID = place->id;
 		pp.prob = 0;
@@ -299,7 +300,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	    }
 	    else{
 	      unsigned int hypID = (*i)->hypID;
-	      SpatialData::PlacePtr place = agg->getPlaceFromHypID(hypID);
+	      SpatialData::PlacePtr place = m_placeInterface->getPlaceFromHypID(hypID);
 	      if (place != 0) {
 		pp.placeID = place->id;
 		pp.prob = 0;
@@ -314,7 +315,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
       else {
 	//Goal place is not a placeholder
 	NavData::FNodePtr goalNode =
-	  agg->getNodeFromPlaceID(ptr->goalPlaceID);
+	  m_placeInterface->getNodeFromPlaceID(ptr->goalPlaceID);
 	if (goalNode == 0) {
 	  log("Could not find goal Place!");
 	  ptr->status = SpatialData::QUERYPLACE2INVALID;
@@ -379,7 +380,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 		// Already added
 	      } else {
 		unsigned int nodeID = (*i)->getId();
-		SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeID);
+		SpatialData::PlacePtr place = m_placeInterface->getPlaceFromNodeID(nodeID);
 		if (place != 0) {
 		  pp.placeID = place->id;
 		  pp.prob = 0;
@@ -394,7 +395,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	    for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
 		hypPts.begin(); i != hypPts.end(); i++) {
 	      unsigned int hypID = (*i)->hypID;
-	      SpatialData::PlacePtr place = agg->getPlaceFromHypID(hypID);
+	      SpatialData::PlacePtr place = m_placeInterface->getPlaceFromHypID(hypID);
 	      if (place != 0) {
 		pp.placeID = place->id;
 		pp.prob = 0;
@@ -434,11 +435,9 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
 
   m_GraphMutex.lock();
 
-  FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-
   //Firstly, check if start place is a placeholder
   FrontierInterface::NodeHypothesisPtr startHyp =
-    agg->getHypFromPlaceID(ptr->startPlaceID);
+    m_placeInterface->getHypFromPlaceID(ptr->startPlaceID);
   if (startHyp != 0) {
     debug("Requested path cost from Placeholder with Place ID %i",
 	ptr->startPlaceID);
@@ -446,7 +445,7 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
   }
   else {
     NavData::FNodePtr startNode =
-      agg->getNodeFromPlaceID(ptr->startPlaceID);
+      m_placeInterface->getNodeFromPlaceID(ptr->startPlaceID);
     if (startNode == 0) {
       log("Could not find starting Place!");
       ptr->status = SpatialData::QUERYPLACE1INVALID;
@@ -455,7 +454,7 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
       //Start place is an extant node
       //Secondly, check if goal place is a placeholder
       FrontierInterface::NodeHypothesisPtr goalHyp =
-	agg->getHypFromPlaceID(ptr->goalPlaceID);
+	m_placeInterface->getHypFromPlaceID(ptr->goalPlaceID);
       if (goalHyp != 0) {
 	//Goal place is a placeholder
 
@@ -475,7 +474,7 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
       }
       else { //goalHyp == 0
 	NavData::FNodePtr goalNode =
-	  agg->getNodeFromPlaceID(ptr->goalPlaceID);
+	  m_placeInterface->getNodeFromPlaceID(ptr->goalPlaceID);
 	if (goalNode == 0) {
 	  log("Could not find goal Place!");
 	  ptr->status = SpatialData::QUERYPLACE2INVALID;

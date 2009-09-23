@@ -38,6 +38,11 @@ link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData SpatialProperties
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
+add_cast_component(LocalMapManager LocalMapManager.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} SpatialData NavData SpatialProperties Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
+
 add_cast_component(SpatialPeekabotControl SpatialPeekabotControl.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils)
 link_cast_component(${CAST_COMPONENT_NAME} SpatialData FrontierInterface)
