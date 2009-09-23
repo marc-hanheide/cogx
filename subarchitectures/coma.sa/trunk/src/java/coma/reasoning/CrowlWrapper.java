@@ -11,6 +11,8 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.reasoner.rulesys.BuiltinRegistry;
+import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.sparql.util.PrefixMapping2;
 
 import de.dfki.lt.crowl.ConfigError;
 import de.dfki.lt.crowl.Crowl;
@@ -179,15 +181,17 @@ public class CrowlWrapper {
 		while (results.hasNext()) {
 			QuerySolution _qs = (QuerySolution) results.next();
 			Resource _currAnswerRersource = _qs.getResource("?ins");
-//			try {
-				_returnSet.add(_currAnswerRersource.toString()); 
+			try {
+				log(_currAnswerRersource.asNode().toString((PrefixMapping) m_mycrowl.getModel().getNsPrefixMap()));
+				_returnSet.add(m_mycrowl.getOWLOntoModel().getBaseModel().shortForm(_currAnswerRersource.toString()));
+//				_returnSet.add(_currAnswerRersource.toString()); 
 //				log("qname: " + m_mycrowl.getOWLOntoModel().qnameFor(_currAnswerRersource.toString()));
 //				log("short form: " + m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
 //				log("local name: " + _currAnswerRersource.getLocalName());				
-//			} catch (ConfigError e) {
+			} catch (ConfigError e) {
 //				 TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+				e.printStackTrace();
+			}
 		}
 		return _returnSet;
 	}
@@ -263,11 +267,24 @@ public class CrowlWrapper {
 	public Set<String> getRelatedInstances(String _ins) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String query = "SELECT DISTINCT ?ins WHERE { " +
-		" { " + _ins + " ?x ?ins . " +
-		" ?ins rdf:type oe:Entity. ?x rdfs:subPropertyOf oe:oeRelation. }" +
-		" UNION { ?ins ?y " + _ins +  " . " +
-		" ?ins rdf:type oe:Entity. ?y rdfs:subPropertyOf oe:oeRelation. } ." +
+		" { <" + _ins + "> ?x ?ins . " +
+		" ?ins rdf:type owl:Thing. " + 
+		" }" +
+		" UNION { ?ins ?y <" + _ins +  "> . " +
+		" ?ins rdf:type owl:Thing.  " +
+		"} ." +
 		" FILTER (?ins != " + _ins + " ) }";
+		
+//		2009 09 22: 
+//		String query = "SELECT DISTINCT ?ins WHERE { " +
+//		" { " + _ins + " ?x ?ins . " +
+//		" ?ins rdf:type oe:Entity. ?x rdfs:subPropertyOf oe:oeRelation. }" +
+//		" UNION { ?ins ?y " + _ins +  " . " +
+//		" ?ins rdf:type oe:Entity. ?y rdfs:subPropertyOf oe:oeRelation. } ." +
+//		" FILTER (?ins != " + _ins + " ) }";
+
+		
+		
 //		String query = "SELECT DISTINCT ?ins ?x ?y WHERE { " +
 //		" { " + _ins.getFullName() + " ?x ?ins . " +
 //		" ?ins rdf:type oe:Entity. ?x rdfs:subPropertyOf oe:oeRelation. }" +
@@ -296,6 +313,7 @@ public class CrowlWrapper {
 //			Resource _currRelY = _qs.getResource("?y");
 			try {
 //				System.out.println(_ins.getFullName() + " related to " + (_currAnswerRersource!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()) : "null") + " via X="+(_currRelX!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currRelX.toString()) : "null")+" and Y="+(_currRelY!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currRelY.toString()) : "null"));
+				log(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
 				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
 			} catch (ConfigError e) {
 				// TODO Auto-generated catch block

@@ -32,14 +32,22 @@ public class TestWriter extends ManagedComponent {
 	}
 	
 	protected void runComponent() {
+		println("simple ICE connection test: reverse 12345");
 		println(m_comareasoner.testReverseString("12345"));
+		
+		println("get all instances of owl:Thing");
 		for (String _currIns : m_comareasoner.getAllInstances("owl:Thing")) {
 			println(_currIns);
 		}
-		m_comareasoner.addInstance("<http://www.dfki.de/cosy/officeenv.owl#room2>", "<http://www.dfki.de/cosy/officeenv.owl#Room>");
-		for (String _currIns : m_comareasoner.getAllInstances("owl:Thing")) {
-			println(_currIns);
+
+		println("get all instances of test:PhysicalRoom and their related instances");
+		for (String _currIns : m_comareasoner.getAllInstances("test:PhysicalRoom")) {
+			println("related instances of " + _currIns);
+			for (String _currRelIns : m_comareasoner.getRelatedInstances(_currIns)) {
+				println(_currRelIns);
+			}
 		}
+		
 	}
 	 
 
