@@ -20,65 +20,58 @@
 package binder.utils;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Vector;
-
-import cast.cdl.CASTTime;
-
-import binder.autogen.bayesiannetworks.BayesianNetwork;
-import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
-import binder.autogen.bayesiannetworks.BayesianNetworkNode;
-import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
-import binder.autogen.core.Feature;
-import binder.autogen.core.FeatureValue;
-import binder.autogen.distributions.FeatureValuePair;
-import binder.autogen.featvalues.UnknownValue;
-import binder.bayesiannetwork.configparser.BNConfigParser;
 
 
 
+/**
+ * Generic utility library
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 23/09/2009
+ */
 
 public class GenericUtils {
 
 	// flag to activate logging
 	public static boolean logging = false;
-	
-	
+
+
+	/**
+	 * Extract text from a file (given its path)
+	 * 
+	 * @param aFile path of the file
+	 * @return textual content of the file
+	 */
+
 	public static String getText(String aFile) {
 
 		StringBuilder contents = new StringBuilder();
-    
-    try {
 
-      BufferedReader input =  new BufferedReader(new FileReader(aFile));
-      try {
-        String line = null; 
-    
-        while (( line = input.readLine()) != null){
-          contents.append(line);
-          contents.append(System.getProperty("line.separator"));
-        }
-      }
-      finally {
-        input.close();
-      }
-    }
-    catch (IOException ex){
-      ex.printStackTrace();
-    }
-    
-    return contents.toString();
-	}
-	
+		try {
 
-	private static void log(String s) {
-		if (logging) {
-			System.out.println("[BayesianNetworkUtils] " + s);
+			BufferedReader input =  new BufferedReader(new FileReader(aFile));
+			try {
+				String line = null; 
+
+				while (( line = input.readLine()) != null){
+					contents.append(line);
+					contents.append(System.getProperty("line.separator"));
+				}
+			}
+			finally {
+				input.close();
+			}
 		}
+		catch (IOException ex){
+			ex.printStackTrace();
+		}
+
+		return contents.toString();
 	}
-	
-	
+
+
+
 }

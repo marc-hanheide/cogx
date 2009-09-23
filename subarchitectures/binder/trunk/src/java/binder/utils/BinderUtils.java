@@ -52,6 +52,155 @@ public class BinderUtils {
 	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.3f;
 
 
+
+	// ================================================================= 
+	// UNION CONFIG NORMALISATION METHODS   
+	// ================================================================= 
+
+
+	/**
+	 * Normalise the probabilities of the union configurations (in order to have a sum = 1)
+	 * 
+	 * @param configs the union configurations
+	 */
+	public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
+
+		// computes the sum of the probabibilities
+		double sum = 0.0f;
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
+			sum += config.configProb;
+		}
+
+		// set the normalisation factor
+		double alpha = 1.0f / sum;
+
+		// apply the normalisation factor to all probabilities
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
+			config.configProb = alpha * config.configProb;
+		}		 
+	}
+
+	
+	// ================================================================= 
+	// EXISTENCE PROBABILITY METHODS   
+	// ================================================================= 
+
+	
+
+	/**
+	 * Set the existence probabilities to each union contained in the union configurations
+	 * 
+	 * @param configs the configurations
+	 */
+	public static void addProbExistsToUnions (Vector<UnionConfiguration> configs) {
+
+		// extract the unions
+		ArrayList<Union> unions = getUnions (configs);
+
+		// set the existence probabilities in the unions
+		setProbExistUnions(unions, configs);
+	}
+
+
+
+	/**
+	 * Set the existence probabilities in the unions, given the (normalised) configuration 
+	 * probabilities in the union configurations
+	 * 
+	 * @param unions the unions
+	 * @param configs the union configurations (with normalised probabilities)
+	 */
+	
+	public static void setProbExistUnions 
+	(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
+
+		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
+			Union u = e.next();
+			u.probExists = 0.0f;
+			for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
+				UnionConfiguration config = f.nextElement();
+				if (isUnionInConfig(config, u)) {
+					u.probExists += config.configProb;
+				}
+			}
+		}
+	}
+
+
+	
+	// ================================================================= 
+	// PROXY COMPLETION METHODS   
+	// ================================================================= 
+	
+	
+	/**
+	 * Complete the proxy with additional information: 
+	 * 	1) if addUnknowns == true, add the unknown feature values to the features 
+	 *  2) generate the probability distribution for the proxy (assuming the independent
+	 *     probabilities for each feature value have been set)
+	 *     
+	 * @param proxy the proxy
+	 * @param addUnknowns whether to add unknown feature values
+	 * @return
+	 */
+	
+	public static void completeProxy (Proxy proxy, boolean addUnknowns) {
+		// If necessary, add unknown values
+		if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
+			addUnknownFeatureValues(proxy.features);
+		}
+
+		// if the probability distribution of the updated proxy is unavailable, regenerate it
+		if (proxy.distribution == null) {
+			proxy.distribution = 
+				ProbabilityUtils.generateProbabilityDistribution(proxy);
+		}
+	}
+	
+	
+
+	/**
+	 * If necessary, add unknown feature values to the feature.  The parameter 
+	 * MINIMUM_PROB_OF_UNKNOWN_FEATVALUES determines the threshold above which an 
+	 * unknown feature value will be added to the feature values
+	 * 
+	 * @param features the list of features
+	 */
+
+	public static void addUnknownFeatureValues (Feature[] features) {
+
+		// loop on the features
+		for (int i = 0 ; i < features.length ; i++) {
+
+			// sum up the probabilities of each feature value for the feature
+			float totalProb = 0.0f;
+			Vector<FeatureValue> values = new Vector<FeatureValue>();
+			for (int j= 0 ; j < features[i].alternativeValues.length ; j++) {
+				values.add(features[i].alternativeValues[j]);
+				totalProb += features[i].alternativeValues[j].independentProb;
+			}
+
+			// If the unknown feature value is likely enough, add it to the feature values set
+			if (totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 3) {
+				features[i].alternativeValues = new FeatureValue[values.size() + 1];
+				for (int j = 0 ; j < values.size(); j++ ) {
+					features[i].alternativeValues[j] = values.elementAt(j);
+				}
+				features[i].alternativeValues[values.size()] = 
+					new UnknownValue((1.0f - totalProb), features[i].alternativeValues[0].timeStamp);
+			}
+		}
+	}
+
+	
+
+	// ================================================================= 
+	// RELATION UNION METHODS   
+	// ================================================================= 
+
+	
 	/**
 	 * Convert a normal union into a relation union (without source and target)
 	 * 
@@ -96,172 +245,62 @@ public class BinderUtils {
 	}
 
 
+
+	// ================================================================= 
+	// PRETTY PRINT UTILITY METHODS   
+	// ================================================================= 
+	
+	
 	/**
-	 * If necessary, add unknown feature values to the feature.  The parameter 
-	 * MINIMUM_PROB_OF_UNKNOWN_FEATVALUES determines the threshold above which an 
-	 * unknown feature value will be added to the feature values
+	 * Return a string-formatted version of the discrete probability distribution
 	 * 
-	 * @param features the list of features
-	 */
-
-	public static void addUnknownFeatureValues (Feature[] features) {
-
-		// loop on the features
-		for (int i = 0 ; i < features.length ; i++) {
-
-			// sum up the probabilities of each feature value for the feature
-			float totalProb = 0.0f;
-			Vector<FeatureValue> values = new Vector<FeatureValue>();
-			for (int j= 0 ; j < features[i].alternativeValues.length ; j++) {
-				values.add(features[i].alternativeValues[j]);
-				totalProb += features[i].alternativeValues[j].independentProb;
-			}
-
-			// If the unknown feature value is likely enough, add it to the feature values set
-			if (totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 3) {
-				features[i].alternativeValues = new FeatureValue[values.size() + 1];
-				for (int j = 0 ; j < values.size(); j++ ) {
-					features[i].alternativeValues[j] = values.elementAt(j);
-				}
-				features[i].alternativeValues[values.size()] = 
-					new UnknownValue((1.0f - totalProb), features[i].alternativeValues[0].timeStamp);
-			}
-		}
-	}
-
-
-	/**
-	 * Get the list of all (distinct) unions contained in the union configurations
-	 * 
-	 * @param configs the union configurations
-	 * @return the list of unions
-	 */
-	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
-
-		ArrayList<Union> unions = new ArrayList<Union>();
-
-		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-
-			UnionConfiguration config = e.nextElement();
-			for (int i = 0; i < config.includedUnions.length ; i++) {
-
-				Union union = config.includedUnions[i];
-
-				// TODO: check if this is still necessary
-				if (!isInList(unions, union)) {
-					unions.add(union);
-				}
-			}
-		}
-
-		return unions;
-	}
-
-
-	/**
-	 * Check if the union is already contained (maybe incorporated in a different
-	 * java object) in the union list
-	 * 
-	 * @param unions the list of unions
-	 * @param union the union
-	 * @return true if the union is in the list, false otherwise
-	 */
-	private static boolean isInList (ArrayList<Union> unions, Union union) {
-		for (Iterator<Union> i = unions.iterator(); i.hasNext() ;) {
-			Union u = i.next();
-			if (u.entityID.equals(union.entityID)  && 
-					u.includedProxies.length == union.includedProxies.length 
-					&& u.timeStamp == union.timeStamp) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-	/**
-	 * Normalise the probabilities of the union configurations (in order to have a sum = 1)
-	 * 
-	 * @param configs the union configurations
-	 */
-	public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
-
-		// computes the sum of the probabibilities
-		double sum = 0.0f;
-		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			UnionConfiguration config = e.nextElement();
-			sum += config.configProb;
-		}
-
-		// set the normalisation factor
-		double alpha = 1.0f / sum;
-
-		// apply the normalisation factor to all probabilities
-		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			UnionConfiguration config = e.nextElement();
-			config.configProb = alpha * config.configProb;
-		}		 
-	}
-
-
-	/**
-	 * Set the existence probabilities to each union contained in the union configurations
-	 * 
-	 * @param configs the configurations
-	 */
-	public static void addProbExistsToUnions (Vector<UnionConfiguration> configs) {
-
-		// extract the unions
-		ArrayList<Union> unions = getUnions (configs);
-
-		// set the existence probabilities in the unions
-		setProbExistUnions(unions, configs);
-	}
-
-
-
-	/**
-	 * Set the existence probabilities in the unions, given the (normalised) configuration 
-	 * probabilities in the union configurations
-	 * 
-	 * @param unions the unions
-	 * @param configs the union configurations (with normalised probabilities)
+	 * @param distrib the distribution
+	 * @return the string representing the distrib
 	 */
 	
-	public static void setProbExistUnions 
-	(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
+	public static String getPrettyPrintProbabilityDistribution
+	(DiscreteProbabilityDistribution distrib) {
+		String text = "";
 
-		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
-			Union u = e.next();
-			u.probExists = 0.0f;
-			for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
-				UnionConfiguration config = f.nextElement();
-				if (isUnionInConfig(config, u)) {
-					u.probExists += config.configProb;
-				}
+		if (distrib.assignments != null) {
+			for (int i = 0; i < distrib.assignments.length; i++) {
+				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
+				text += getPrettyPrintProbabilityAssignment(assignment) + "\n";
 			}
 		}
+		return text;
 	}
 
-
+	
 	/**
-	 * Returns true is the union is in the union configuration, false otherwise
+	 * Return a string-formatted version of the discrete probability assignment
 	 * 
-	 * @param config the union configuration
-	 * @param union the union
-	 * @return true if in config, false otherwise
+	 * @param assignment the assignment
+	 * @return the string representing the assignment
 	 */
 	
-	private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
-		for (int i = 0 ; i < config.includedUnions.length ; i++) {
-			if (config.includedUnions[i].equals(union)) {
-				return true;
+	public static String getPrettyPrintProbabilityAssignment
+	(DiscreteProbabilityAssignment assignment) {
+
+		String text = "P ( " ;
+		for (int j = 0; j < assignment.featurepairs.length ; j++) {
+			text += assignment.featurepairs[j].featlabel + " = " + 
+			FeatureValueUtils.toString(assignment.featurepairs[j].featvalue) ;
+			if (j < (assignment.featurepairs.length - 1)) {
+				text += ", ";
 			}
 		}
-		return false;
-	} 
-
-
+		text += " ) = " + assignment.prob ;
+		return text;
+	}
+	
+	
+	
+	// ================================================================= 
+	// UNIONS AND PROXY EXTRACTION METHODS   
+	// ================================================================= 
+	
+	
 	/**
 	 * Get all the proxies included in a set of perceptual entities (in case the entity
 	 * is a proxy, it is simply added, and in case it is an union, the set of all included
@@ -292,57 +331,79 @@ public class BinderUtils {
 		}
 		return includedProxies;
 	}
+	
+	
 
- 
 	/**
-	 * Complete the proxy with additional information: 
-	 * 	1) if addUnknowns == true, add the unknown feature values to the features 
-	 *  2) generate the probability distribution for the proxy (assuming the independent
-	 *     probabilities for each feature value have been set)
-	 *     
-	 * @param proxy the proxy
-	 * @param addUnknowns whether to add unknown feature values
-	 * @return
+	 * Get the list of all (distinct) unions contained in the union configurations
+	 * 
+	 * @param configs the union configurations
+	 * @return the list of unions
 	 */
-	public static void completeProxy (Proxy proxy, boolean addUnknowns) {
-		// If necessary, add unknown values
-		if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
-			addUnknownFeatureValues(proxy.features);
-		}
+	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
 
-		// if the probability distribution of the updated proxy is unavailable, regenerate it
-		if (proxy.distribution == null) {
-			proxy.distribution = 
-				ProbabilityUtils.generateProbabilityDistribution(proxy);
-		}
-	}
+		ArrayList<Union> unions = new ArrayList<Union>();
 
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 
-	public static String getPrettyPrintProbabilityDistribution
-	(DiscreteProbabilityDistribution distrib) {
-		String text = "";
+			UnionConfiguration config = e.nextElement();
+			for (int i = 0; i < config.includedUnions.length ; i++) {
 
-		if (distrib.assignments != null) {
-			for (int i = 0; i < distrib.assignments.length; i++) {
-				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
-				text += getPrettyPrintProbabilityAssignment(assignment) + "\n";
+				Union union = config.includedUnions[i];
+
+				// TODO: check if this is still necessary
+				if (!isInList(unions, union)) {
+					unions.add(union);
+				}
 			}
 		}
-		return text;
+
+		return unions;
 	}
 
-	public static String getPrettyPrintProbabilityAssignment
-	(DiscreteProbabilityAssignment assignment) {
-
-		String text = "P ( " ;
-		for (int j = 0; j < assignment.featurepairs.length ; j++) {
-			text += assignment.featurepairs[j].featlabel + " = " + 
-			FeatureValueUtils.toString(assignment.featurepairs[j].featvalue) ;
-			if (j < (assignment.featurepairs.length - 1)) {
-				text += ", ";
+	
+	// ================================================================= 
+	// GENERIC UTILITY METHODS   
+	// ================================================================= 
+	
+	
+	/**
+	 * Returns true is the union is in the union configuration, false otherwise
+	 * 
+	 * @param config the union configuration
+	 * @param union the union
+	 * @return true if in config, false otherwise
+	 */
+	
+	private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
+		for (int i = 0 ; i < config.includedUnions.length ; i++) {
+			if (config.includedUnions[i].equals(union)) {
+				return true;
 			}
 		}
-		text += " ) = " + assignment.prob ;
-		return text;
+		return false;
+	} 
+	
+	
+
+	/**
+	 * Check if the union is already contained (maybe incorporated in a different
+	 * java object) in the union list
+	 * 
+	 * @param unions the list of unions
+	 * @param union the union
+	 * @return true if the union is in the list, false otherwise
+	 */
+	private static boolean isInList (ArrayList<Union> unions, Union union) {
+		for (Iterator<Union> i = unions.iterator(); i.hasNext() ;) {
+			Union u = i.next();
+			if (u.entityID.equals(union.entityID)  && 
+					u.includedProxies.length == union.includedProxies.length 
+					&& u.timeStamp == union.timeStamp) {
+				return true;
+			}
+		}
+		return false;
 	}
+
 }

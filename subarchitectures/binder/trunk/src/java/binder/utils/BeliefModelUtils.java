@@ -142,7 +142,7 @@ public class BeliefModelUtils {
 			
 			LocationProperty property = new LocationProperty();
 			property.unc = fv.independentProb;
-			property.location = FeatureValueUtils.getString(fv);
+			property.location = FeatureValueUtils.toString(fv);
 			
 			return property;
 		}
@@ -152,7 +152,7 @@ public class BeliefModelUtils {
 			
 			LinguisticLabelProperty property = new LinguisticLabelProperty();
 			property.unc = fv.independentProb;
-			property.label = FeatureValueUtils.getString(fv);
+			property.label = FeatureValueUtils.toString(fv);
 			
 			return property;
 		}
@@ -162,7 +162,7 @@ public class BeliefModelUtils {
 			
 			LinguisticAttributeProperty property = new LinguisticAttributeProperty();
 			property.unc = fv.independentProb;
-			property.attribute = FeatureValueUtils.getString(fv);
+			property.attribute = FeatureValueUtils.toString(fv);
 			
 			return property;
 		}
