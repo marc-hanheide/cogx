@@ -58,24 +58,6 @@
       </actions>
    </system>
 
-   <system id="structure.pronominalization" region="STRUCTURE" metafunction="ideational">
-	<chooser id="c-structure.pronominalization"/>
-      <conditions>
-          <condition features="@type:entity @feat:Salient:true"/>
-      </conditions>
-      <actions>
-	  <action choice="pronoun-it">
-		<add-proposition propositions="@it" />
-		<add-feature feature="Num" value="sg"/>
-	  </action>
-
-	  <action choice="pronoun-this">
-		<add-proposition propositions="@context" />
-		<add-feature feature="Proximity" value="proximal"/>
-		<add-feature feature="Delimitation" value="unique"/>
-	  </action>
-      </actions>
-   </system>
 
    <system id="structure.list" region="STRUCTURE" metafunction="ideational">
 	<chooser id="c-structure.list"/>

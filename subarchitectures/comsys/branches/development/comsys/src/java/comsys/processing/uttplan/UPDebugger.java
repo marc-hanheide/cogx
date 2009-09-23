@@ -237,7 +237,7 @@ public class UPDebugger
 		result.noms = LFUtils.lfRemoveNominal(result.noms,"");
 		LFNominal resultRoot = LFUtils.lfGetNominal(result,lf.root.nomVar);
 		result.root = resultRoot;
-		log("Final reduced LF: "+LFUtils.lfToString(result));
+		// log("Final reduced LF: "+LFUtils.lfToString(result));
 		return result;
 	} // end applyModelReduction
 	
@@ -259,23 +259,20 @@ public class UPDebugger
 	LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
 	LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
 	
-	log("Planning a realization for the following logical form: "+LFUtils.lfToString(planLF));
+	log("Planning a realization for the following logical form: \n"+LFUtils.lfToString(planLF)+"\n");
 			
 	// Translate the planLF logical form into XML for OpenCCG
 	// in the new comsys realization component, this happens with: LF lf = LFUtils.convertToLF(planLF);
 	LF lf = LFUtils.convertToLF(planLF);
-	log("XML LF created"+ lf.toString());		
 	// Dump the LF in the XML format to a file
 		String curDir = System.getProperty("user.dir");
 		String dumpLFfile =  curDir+"/subarchitectures/comsys/grammars/contentPlanning/dumpedLF.xml";
-
 		try { 
 			grammar.saveToXml(lf, "", dumpLFfile);
-			log("Wrote LF to \"" + dumpLFfile + "\"");
 		} catch (Exception ie) { 
 			ie.printStackTrace();
 		} 
-	log("XML LF saving passed");		
+		log("Wrote LF to \"" + dumpLFfile + "\"");
 	
 		
 	// Realize the XML-based logical form
@@ -289,26 +286,23 @@ public class UPDebugger
 		log("Chart has "+chart.numEdgesInChart()+" representative edges.");
 		log("Best edge: ");
 		chart.printBestEdge();
-		log("Best joined edge: ");
-		chart.printBestJoinedEdge();
-		log("All edges: ");
-		chart.printEdges();
+		// log("Best joined edge: ");
+		// chart.printBestJoinedEdge();
+		// log("All edges: ");
+		// chart.printEdges();
 	List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();
-	log("Number of best edges handed over from chart: "+bestEdges.size());
-	int bestcounter=0;
+	log("Number of best edges handed over from chart: "+bestEdges.size()+"\n");
+	//int bestcounter=0;
 	for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
-	    log("entered iterator");
+	  //  log("entered iterator");
 		opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
 	    // Sign sign = edge.getSign();
 	    // output = output+sign.toString()+"\n";
 		output = output+edge.toString()+"\n";
 		// msg(output);
-		log("Iteration number: "+bestcounter++); 
+	    // log("Iteration number: "+bestcounter++); 
 	} // end for over best edges
-	System.out.println();
-	msg("Realization(s):");
-	System.out.println();	
-		log(output);
+	log("Realization(s):\n"+output);
 	return output;
     } // end realizeLF
 
@@ -526,36 +520,32 @@ public class UPDebugger
 				// Apply model reduction
 				lastLF = applyModelReduction(planlf);
 				// old: lastLF = planlf;
-				System.out.println();
-				System.out.println("Resulting logical form:");
-				msg("");
-				System.out.println(LFUtils.lfToString(planlf));
-				msg("");
-				System.out.println("Resulting logical form after reduction:");
-				msg("");
-				System.out.println(LFUtils.lfToString(lastLF));
-				msg("");
+				//System.out.println();
+				log("Resulting logical form: \n"+LFUtils.lfToString(planlf)+"\n");
+				log("Resulting logical form after reduction:\n"+LFUtils.lfToString(lastLF)+"\n");
 		    } else {
 				error("':plan' requires a communicative goal, specified as HLDS logical form.");
 		    } // end if..else check for lf 
 		} else if (input.startsWith(":test")) { 
-			String lfstr = "@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept)";
+			String lfstr = "@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <Content>(b1:physical ^ ball)";
 			log("Testing with LF: "+lfstr); 
 			LogicalForm lf = LFUtils.convertFromString(lfstr);
 			LogicalForm planlf = planner.plan(lf);
 			// Apply model reduction
 			lastLF = applyModelReduction(planlf);
 			// old: lastLF = planlf;
-			System.out.println();
-			System.out.println("Resulting logical form:");
-			msg("");
-			System.out.println(LFUtils.lfToString(planlf));
-			msg("");
-			System.out.println("Resulting logical form after reduction:");
-			msg("");
-			System.out.println(LFUtils.lfToString(lastLF));
-			msg("");
-		 // end if..else check for test
+			log("Resulting logical form:\n"+LFUtils.lfToString(planlf)+"\n");
+			log("Resulting logical form after reduction:\n"+LFUtils.lfToString(lastLF)+"\n");
+		if (realizer != null) { 
+				if (lastLF != null) { 
+					realizeLF(realizer,lastLF); 
+				} else { 
+					error("Cannot realize a logical form: no logical form has been planned yet.");
+				} // end if..else check for logical form
+		    } else {
+				error("The realizer has not yet been initialized with a grammar -- use :ccg to load a CCG grammar.");
+		    } // end if..else check for realizer
+			// end if..else check for test
 		} else if (input.equals(":realize")||input.equals(":r")) { 
 		    if (realizer != null) { 
 			if (lastLF != null) { 
@@ -595,6 +585,7 @@ public class UPDebugger
 			}
 		    } // end if.. check whether there is input at all
 		} 
+			log("Done. \n \n \n");
 	    } // end while
 
 	} catch (IOException e) { 

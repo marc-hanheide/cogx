@@ -427,3 +427,34 @@ ALREADY THE CASE
       </actions>
    </system>
 
+
+
+----------------
+PRONOUNS
+----------------
+
+"it"
+Parse 4: np : 
+  @it1_0:thing(it ^ 
+               <Num>sg)
+
+"this"
+Parse 7: np : 
+  @context1_0:entity(context ^ 
+                     <Delimitation>unique ^ 
+                     <Num>sg ^ 
+                     <Proximity>proximal ^ 
+                     <Quantification>specific)
+
+"that":
+Parse 6: np : 
+  @context1_0:entity(context ^ 
+                     <Delimitation>unique ^ 
+                     <Num>sg ^ 
+                     <Proximity>distal ^ 
+                     <Quantification>specific)
+
+Salient:true + Familiar:true --> it
+Salient:true + Familiar:false --> this/that (+proximal?)
+Salient:false --> no pronominalization
+				   
