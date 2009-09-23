@@ -13,7 +13,7 @@
 // PACKAGE
 // -------------------------------------------------------
 
-package comsys.processing.reference.readingFactories;
+package comsys.processing.reference.readingfactories;
 
 // -------------------------------------------------------
 // COMSYS imports
