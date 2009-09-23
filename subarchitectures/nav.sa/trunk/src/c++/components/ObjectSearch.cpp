@@ -78,7 +78,9 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
 	  
 	  shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
     	getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
-    if (oobj->getData()->cmd == SpatialData::PLAN){
+    	
+    	if (oobj->getData()->cmd == SpatialData::PLAN){
+    	
     	    placestosearch = oobj->getData()->placestosearch;
 	  		m_command = PLAN;
     }
@@ -287,8 +289,8 @@ void ObjectSearch::runComponent() {
     }
 }
 void ObjectSearch::MovePanTilt(double pan,double tolerance){
-		if (!m_CtrlPTU)
-		  return;
+		if (m_CtrlPTU)
+		{
 		log(" Moving pantilt to: %f with %f tolerance", pan, tolerance);
 		ptz::PTZPose p;
 		ptz::PTZReading ptuPose;
@@ -321,6 +323,7 @@ void ObjectSearch::MovePanTilt(double pan,double tolerance){
 		}
 		log("Moved.");
 		sleep(1);
+		}
 }
 NavData::ObjectSearchPlanPtr ObjectSearch::ConvertPlantoIce()
 { 
@@ -341,7 +344,7 @@ void ObjectSearch::Plan () {
     log("Plan generated %i view points with %f coverage",m_plan.plan.size(),m_plan.totalcoverage);
 	
     if (true) {
-      m_command = PLAN; //EXECUTE;
+      m_command = EXECUTE;
     } else {
         m_command = PLAN;
     }
@@ -911,7 +914,11 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 	
 }
 void ObjectSearch::Recognize(){
-	ptz::PTZReading ptz = m_PTUServer->getPose();
+	ptz::PTZReading ptz;
+	ptz.pose.pan = 0;
+	if (m_CtrlPTU)
+		ptz::PTZReading ptz = m_PTUServer->getPose();
+		
 	Cure::Pose3D currpos = m_TOPP.getPose();
 	double plantheta = m_plan.plan[whereinplan].getTheta();
 	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
