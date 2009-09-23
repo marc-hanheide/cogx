@@ -443,8 +443,8 @@ void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint>
   {  
     cogx::Math::Vector2 p = projectPoint(cam, soi.BGpoints[i]);
     
-    int x = (p.x - roi.rect.pos.x)*ratio*0.4 + roi.rect.width/2;
-	int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
+    int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
+	int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
 	   
     bgProjPoints.push_back(cvPoint(x, y));
   }  
@@ -656,7 +656,7 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
     vector<CvPoint> projPoints, bgProjPoints;
     vector<int>  hullPoints;    
     
-    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
+    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, 1, image.camPars);
 
     IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 18, 60);
     
