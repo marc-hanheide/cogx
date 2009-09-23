@@ -66,13 +66,9 @@ module Abducer {
 
 	sequence<ModalisedFormula> ModalisedFormulaSeq;
 
-	class Assertion {
-		ModalisedFormula head;
-		ModalisedFormulaSeq ante;
-	};
+	//-----------------------------------------------------------------
 
-	sequence<Assertion> AssertionSeq;
-
+	// marking as used in the abductive proof
 	enum Marking {
 		Proved,
 		Unsolved,
@@ -80,39 +76,45 @@ module Abducer {
 		Asserted
 	};
 
+	// base class for abductive proofs
 	class MarkedQuery {
 		Marking mark;
 		ModalisedFormula body;
 	};
 
+	// this predicate has been solved
 	class ProvedQuery extends MarkedQuery {};
+
+	// this predicate is yet to be solved
 	class UnsolvedQuery extends MarkedQuery {
+		// isConst == true -> constCost valid, else costFunction valid
 		bool isConst;
 		float constCost;
 		string costFunction;
 	};
+
+	// assumed predicate
 	class AssumedQuery extends MarkedQuery {
-		// would we perhaps prefer to have the actual used costs
+		// TODO: would we perhaps prefer to have the actual used costs
 		// in the returned proof?
+
+		// isConst == true -> constCost valid, else costFunction valid
 		bool isConst;
 		float constCost;
 		string costFunction;
 	};
+
+	// asserted predicate
 	class AssertedQuery extends MarkedQuery {
 		ModalisedFormulaSeq antecedents;
 	};
 
+	//-----------------------------------------------------------------
+
 	sequence<MarkedQuery> MarkedQuerySeq;
 
-/*
-	class AssumableGoal {
-		ModalisedFormula body;
-		float assumeCost;
-	};
-
-	sequence<AssumableGoal> AssumableGoalSeq;
-*/
-
+	// an abductive proof is a list of marked queries and its overall
+	// cost
 	class AbductiveProof {
 		float cost;
 		MarkedQuerySeq body;
