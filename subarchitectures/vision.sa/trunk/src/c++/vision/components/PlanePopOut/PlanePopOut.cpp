@@ -218,7 +218,7 @@ void DrawPoints()
   glBegin(GL_POINTS);
   for(size_t i = 0; i < pointsN.size(); i++)
   {
-	if (points_label.at(i) == 0)  DrawPlaneGrid(); //glColor3f(1.0,1.0,0.0); // plane
+	if (points_label.at(i) == 0)   glColor3f(1.0,1.0,0.0); // plane/*DrawPlaneGrid();*/
 	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
 	else if (points_label.at(i) == 1)  glColor3f(0.0,0.0,1.0);  // 1st object
 	else if (points_label.at(i) == 2)  glColor3f(0.0,0.0,1.0);  //
@@ -410,7 +410,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 			Vector3 v3Obj = points.at(j);
 			Vector3 Point_DP = ProjectOnDominantPlane(v3Obj);
 			int label = labels.at(j);
-			if (label == -1 && dist(Point_DP,Center_DP) < radius_world.at(i)) // equivocal points
+			if (label == -1 && dist(Point_DP,Center_DP) < 1.1*radius_world.at(i)) // equivocal points
 			{
 				EQPointsSeq.at(i).push_back(v3Obj);
 				glPointSize(2);
@@ -419,7 +419,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 				glVertex3f(v3Obj.x, v3Obj.y, v3Obj.z);
 				glEnd();
 			}
-			if (label == 0 && dist(Point_DP,Center_DP) < 1.2*radius_world.at(i) ) //BG nearby also required
+			if (label == 0 && dist(Point_DP,Center_DP)>1.1*dist(Point_DP,Center_DP) && dist(Point_DP,Center_DP) < 1.5*radius_world.at(i) ) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(v3Obj);
 
