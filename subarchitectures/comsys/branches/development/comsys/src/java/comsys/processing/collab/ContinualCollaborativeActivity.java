@@ -160,6 +160,7 @@ public class ContinualCollaborativeActivity {
 		} // end if.. else
 	} // end method
 
+	
 	/** 
 	 addAnchoringContext can be called to add (cost) information about anchoring restrictive LF content, to the abducer. this
 	 cost information is based on different readings the LF might have. 
@@ -190,7 +191,15 @@ public class ContinualCollaborativeActivity {
 	} // end method
 		
 	
-		
+	
+	
+	
+	
+	
+	
+	
+	
+	
 		
 
 } // end class
