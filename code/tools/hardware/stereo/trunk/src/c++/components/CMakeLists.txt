@@ -13,7 +13,7 @@ link_directories (${COGX_ROOT}/tools/hardware/stereo/src/c++/components/gpustere
 add_cast_component(StereoServer StereoServer.cpp StereoCamera.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoUtils VideoClient)
 link_cast_component(${CAST_COMPONENT_NAME} gpustereo)
-link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS})
+link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} cudart cutil)
 
 
 ADD_LIBRARY(StereoClient SHARED StereoClient.cpp)
