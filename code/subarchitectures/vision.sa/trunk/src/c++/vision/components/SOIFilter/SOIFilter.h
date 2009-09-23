@@ -94,7 +94,7 @@ private:
    */
   void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
   
-  void segmentObject(const cdl::WorkingMemoryAddress soiAddr, Video::Image &imgPatch, VisionData::SegmentMaskPtr &segMask);
+  void segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMaskPtr &segMask);
   
   void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
 					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const float ratio, const Video::CameraParameters &cam);

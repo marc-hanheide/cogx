@@ -305,7 +305,7 @@ void SOIFilter::runComponent()
 {
   while(isRunning())
   {
-   ptime t(second_clock::universal_time() + seconds(2));
+    ptime t(second_clock::universal_time() + seconds(2));
 
     if (queuesNotEmpty->timed_wait(t))
     {
@@ -316,30 +316,34 @@ void SOIFilter::runComponent()
 	      SOIData &soi = SOIMap[objToAdd.front()];
 	      
 	      if(soi.status == STABLE)
-	      { 
-		ProtoObjectPtr pobj = new ProtoObject;
-		pobj->time = getCASTTime();
-		pobj->SOIList.push_back(soi.addr.id);
-		segmentObject(soi.addr, pobj->image, pobj->mask);
+	      {
+		    try
+		    {
+		        SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
+		        
+		        ProtoObjectPtr pobj = new ProtoObject;
+		        pobj->time = getCASTTime();pobj->SOIList.push_back(soi.addr.id);
+		        segmentObject(soiPtr, pobj->image, pobj->mask);
 		
-		//pobj->points = getPointCloud();
-		// getPoints(pobj->points);
-		//log("Object has a cloud of %i points", pobj->points.size());
+		        string objId = newDataID();
+		        addToWorkingMemory(objId, pobj);
 		
-		string objId = newDataID();
-		addToWorkingMemory(objId, pobj);
+		        soi.objectTime = getCASTTime();
+		        soi.status = OBJECT;
+		        soi.objId = objId;
 		
-		soi.objectTime = getCASTTime();
-		soi.status = OBJECT;
-		soi.objId = objId;
-		
-		log("A proto-object added ID %s count %u at %u ",
-	   			soi.addr.id.c_str(), soi.updCount,
-	   			soi.stableTime.s, soi.stableTime.us);
-	   	   }
+		        log("A proto-object added ID %s count %u at %u ",
+	           			soi.addr.id.c_str(), soi.updCount,
+	           			soi.stableTime.s, soi.stableTime.us);
+		    }
+		    catch (DoesNotExistOnWMException e)
+		    {
+	            log("SOI <%s> was removed before it could be processed", soi.addr.id);
+		    }
+		  }
 	   	   
-	   	   objToAdd.pop();
-	     }
+	      objToAdd.pop();
+	   }
      }
 //     else
 //	log("Timeout");   
@@ -351,7 +355,7 @@ void SOIFilter::runComponent()
   
   if (doDisplay)
   {
-     log("Destroying OpenCV windows..");
+    log("Destroying OpenCV windows..");
   	cvDestroyWindow("Last ROI");
   	cvDestroyWindow("Last segmentation");
   	cvDestroyWindow("Full image");
@@ -362,7 +366,7 @@ void SOIFilter::runComponent()
 
 void SOIFilter::newSOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisionData::SOIPtr obj =
+  SOIPtr obj =
     getMemoryEntry<VisionData::SOI>(_wmc.address);
     
    SOIData data;
@@ -543,13 +547,10 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 }
 
 
-void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &imgPatch, SegmentMaskPtr &segMask)
+void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMaskPtr &segMask)
 {
 	Video::Image image;
 	getImage(camId,image);
-
-	VisionData::SOIPtr soiPtr =
-    		getMemoryEntry<VisionData::SOI>(soiAddr);
     		
    	soiPtr->boundingSphere.rad*=DILATE_FACTOR;
 	
