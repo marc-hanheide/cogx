@@ -60,11 +60,12 @@ public class BayesianNetworkManager {
 	// Already computed distributions for a given entity
 	private HashMap<PerceivedEntity,DiscreteProbabilityDistribution> alreadyComputedDistribs;
 
+	
+	
 	/**
 	 * Initialise the bayesian network manager
-	 * 
 	 */
-
+	
 	public BayesianNetworkManager(String configurationFile) {		
 
 		log("Start building the bayesian network...");
@@ -73,11 +74,17 @@ public class BayesianNetworkManager {
 		log("number of nodes: " + network.nodes.length);		
 		log("number of edges: " + network.edges.length);
 
+		// Initialize the list of already computed prior distributions
 		alreadyComputedDistribs = new HashMap<PerceivedEntity, DiscreteProbabilityDistribution>();
 
 	}
 	
 
+	// =================================================================
+	// METHODS FOR COMPUTING PRIOR DISTRIBUTIONS
+	// =================================================================
+	
+	
 	/**
 	 * Compute the prior distribution for a proxy, based on a bayesian network
 	 * 
@@ -93,34 +100,20 @@ public class BayesianNetworkManager {
 			return alreadyComputedDistribs.get(entity);
 		}
 		else {
+			// If not, compute the prior distribution
 			DiscreteProbabilityDistribution distrib = getPriorDistribution(entity.features);
 			
+			// Filter the distribution
 			distrib = filterDistribution(distrib, entity);
 			
+			// And add the result to the list of already compute distributions
 			alreadyComputedDistribs.put(entity, distrib);
+			
 			return distrib;
 		}
 	}
 	
 	
-	private DiscreteProbabilityDistribution filterDistribution
-	(DiscreteProbabilityDistribution distrib, PerceivedEntity entity) {
-	
-		if (entity instanceof Union && ((Union)entity).includedProxies.length > 1) {
-			float maxUnion = GradientDescent.getMaximum(distrib);
-		//	System.out.println("max union: "  + maxUnion);
-			float maxProxies = 1.0f;
-			for (int i = 0; i < ((Union)entity).includedProxies.length ; i++) {
-				maxProxies = maxProxies * GradientDescent.getMaximum(getPriorDistribution(((Union)entity).includedProxies[i]));
-			}
-		//	System.out.println("max proxies: "  + maxProxies);
-			if (maxUnion < (maxProxies + maxProxies/4)) {
-		//		System.out.println("OK!!");
-				distrib = ProbabilityUtils.multiplyDistributionWithConstantValue(distrib, 0.0000005f);
-			}	
-		}
-		return distrib;
-	}
 
 	/**
 	 * Compute the prior distribution for a given set of features, based on the 
@@ -169,6 +162,56 @@ public class BayesianNetworkManager {
 	}
 
 
+	/**
+	 * Get the array of probability assignments for a particular feature
+	 * (one for each possible feature value, together with its probability)
+	 * 
+	 * @param feature the feature
+	 * @return array of probability assignments
+	 */
+	public DiscreteProbabilityAssignment[] getPriorDistribution (Feature feature) {
+
+		// Ensuring the set of features values is not null
+		if (feature.alternativeValues != null) {
+			
+			// Create the array of assignments
+			DiscreteProbabilityAssignment[] assignments = 
+				new DiscreteProbabilityAssignment[feature.alternativeValues.length];
+
+			log("Computing prior distribution with feature: \"" + feature.featlabel + "\"");
+
+			// Looping on the set of alternative feature values
+			for (int i = 0; i < feature.alternativeValues.length; i++) {
+				
+				FeatureValue featvalue = feature.alternativeValues[i];
+				log("Feature value currently looked at: " + FeatureValueUtils.toString(featvalue));
+				
+				// Create the new assignment
+				DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
+				assignment.featurepairs = new FeatureValuePair[1];
+				assignment.featurepairs[0] = new FeatureValuePair();
+				assignment.featurepairs[0].featlabel = feature.featlabel;
+				assignment.featurepairs[0].featvalue = featvalue;
+				assignment.prob = getIndependentProb(feature.featlabel, featvalue);
+				log("Independent probability: " + assignment.prob);
+				
+				// Add the assignment to the array
+				assignments[i] = assignment;
+			}
+			return assignments;
+		}
+		else {
+			log("ERROR: alternative values in feature are not specified");
+			return null;
+		}
+	}
+	
+	
+	// =================================================================
+	// METHODS FOR COMPUTING JOINT DISTRIBUTIONS
+	// =================================================================
+	
+	
 	/**
 	 * Compute the joint probability distribution (defined as a set of probability 
 	 * assignments) given the prior distributions
@@ -251,49 +294,6 @@ public class BayesianNetworkManager {
 	}
 
 
-	/**
-	 * Get the array of probability assignments for a particular feature
-	 * (one for each possible feature value, together with its probability)
-	 * 
-	 * @param feature the feature
-	 * @return array of probability assignments
-	 */
-	public DiscreteProbabilityAssignment[] getPriorDistribution (Feature feature) {
-
-		// Ensuring the set of features values is not null
-		if (feature.alternativeValues != null) {
-			
-			// Create the array of assignments
-			DiscreteProbabilityAssignment[] assignments = 
-				new DiscreteProbabilityAssignment[feature.alternativeValues.length];
-
-			log("Computing prior distribution with feature: \"" + feature.featlabel + "\"");
-
-			// Looping on the set of alternative feature values
-			for (int i = 0; i < feature.alternativeValues.length; i++) {
-				
-				FeatureValue featvalue = feature.alternativeValues[i];
-				log("Feature value currently looked at: " + FeatureValueUtils.toString(featvalue));
-				
-				// Create the new assignment
-				DiscreteProbabilityAssignment assignment = new DiscreteProbabilityAssignment();
-				assignment.featurepairs = new FeatureValuePair[1];
-				assignment.featurepairs[0] = new FeatureValuePair();
-				assignment.featurepairs[0].featlabel = feature.featlabel;
-				assignment.featurepairs[0].featvalue = featvalue;
-				assignment.prob = getIndependentProb(feature.featlabel, featvalue);
-				log("Independent probability: " + assignment.prob);
-				
-				// Add the assignment to the array
-				assignments[i] = assignment;
-			}
-			return assignments;
-		}
-		else {
-			log("ERROR: alternative values in feature are not specified");
-			return null;
-		}
-	}
 
 
 	/**
@@ -402,6 +402,52 @@ public class BayesianNetworkManager {
 		return 0.5f;
 	}
 
+	
+	
+	// =================================================================
+	// UTILITIES
+	// =================================================================
+	
+	
+	
+	/**
+	 * Helper method to drastically reduce the distribution of unions containing > 1 proxies,
+	 * and which turn out to have a prior distribution equal to the product of the prior 
+	 * distribution of its included proxies
+	 * 
+	 * This is used to ensure that unions are only created if they have a prior distribution
+	 * significantly higher than the prior distributions of their proxies -- that is, if they exhibit
+	 * a strong internal coherence.
+	 * 
+	 * @param distrib the prior distribution to filter
+	 * @param entity the entity
+	 * @return
+	 */
+	private DiscreteProbabilityDistribution filterDistribution 
+		(DiscreteProbabilityDistribution distrib, PerceivedEntity entity) {
+	
+		// Check if entity is an union, and includes more than one proxies
+		if (entity instanceof Union && ((Union)entity).includedProxies.length > 1) {
+			
+			// Compute the maximum probability for the prior distribution of the union
+			float maxUnion = GradientDescent.getMaximum(distrib);
+			
+			// And compute the product of the maximum probabilities for the prior distributions
+			// of the included proxies
+			float maxProxies = 1.0f;
+			for (int i = 0; i < ((Union)entity).includedProxies.length ; i++) {
+				maxProxies = maxProxies * GradientDescent.getMaximum(getPriorDistribution(((Union)entity).includedProxies[i]));
+			}
+
+			// In case the maximum for the union prior distribution turns out to be moreless equal to the 
+			// product of the maximums for the proxy prior distributions, reduce the probabilities 
+			// of the prior union distribution
+			if (maxUnion < (maxProxies + maxProxies/5)) {
+				distrib = ProbabilityUtils.multiplyDistributionWithConstantValue(distrib, 0.0000005f);
+			}	
+		}
+		return distrib;
+	}
 	
 	
 	/**

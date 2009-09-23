@@ -30,7 +30,6 @@ import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
-import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
@@ -51,6 +50,7 @@ import cast.cdl.WorkingMemoryPointer;
  
 public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
  
+	
 	// =================================================================
 	// METHODS FOR CREATING NEW PROXIES
 	// =================================================================
@@ -60,6 +60,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 */
 	private String m_originMapID;
 
+	
 	/**
 	 * Construct an WorkingMemoryPointer object (information about the proxy origin:
 	 * subarchitecture identifier, local data ID in subarchitecture, and data
@@ -75,6 +76,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 */
 	public WorkingMemoryPointer createWorkingMemoryPointer (String subarchId, String localDataId,
 			String localDataType) {
+		
 		WorkingMemoryPointer origin = new WorkingMemoryPointer();
 		origin.address = new WorkingMemoryAddress(localDataId, subarchId);
 		origin.type = localDataType;
@@ -82,12 +84,12 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 
 	/**
-	 * Create a new proxy given the ID of the originating subarchitecture, and
-	 * the probability of the proxy itself (the list of features is defined to
-	 * be empty)
+	 * Create a new proxy given the pointer to the originating object and
+	 * the probability of the proxy existence itself (the list of features 
+	 * is defined to be empty)
 	 * 
-	 * @param subarchId
-	 *            string for the ID of the subarchitecture
+	 * @param origin
+	 *            pointer to the object in the local working memory
 	 * @param probExists
 	 *            probability value for the proxy
 	 * @return a new proxy
@@ -105,11 +107,11 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 
 	/**
-	 * Create a new proxy given the ID of the originating subarchitecture, the
+	 * Create a new proxy given the pointer to the originating object, the
 	 * probability of the proxy, and a list of features
 	 * 
-	 * @param subarchId
-	 *            string for the ID of the subarchitecture
+	 * @param origin
+	 *            pointer to the object in the local working memory
 	 * @param probExists
 	 *            the probability of the proxy
 	 * @param features
@@ -127,12 +129,11 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 
 	/**
-	 * Create a new relation proxy given the ID of the originating
-	 * subarchitecture, the probability of the proxy, and the source and target
-	 * proxies
+	 * Create a new relation proxy given the pointer to the originating object,
+	 * the probability of the proxy, and the source and target proxies
 	 * 
-	 * @param subarchId
-	 *            string for the ID of the subarchitecture
+	 * @param origin
+	 *            pointer to the object in the local working memory
 	 * @param probExists
 	 *            the probability of the proxy
 	 * @param sourceProxy
@@ -163,12 +164,12 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 
 	/**
-	 * Create a new relation proxy given the ID of the originating
-	 * subarchitecture, the probability of the proxy, the list of features for
+	 * Create a new relation proxy given the pointer to the originating object,
+	 * the probability of the proxy, the list of features for
 	 * the relation, and the source and target proxies
 	 * 
-	 * @param subarchId
-	 *            string for the ID of the subarchitecture
+	 * @param origin
+	 *            pointer to the object in the local working memory
 	 * @param probExists
 	 *            the probability of the proxy
 	 * @param features
@@ -191,47 +192,7 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		return newProxy;
 	}
 
-	/**
-	 * Create a new phantom proxy, given the origin info and the existence
-	 * probability
-	 * 
-	 * @param origin
-	 *            origin information
-	 * @param probExists
-	 *            the probability of the proxy
-	 * @return the new phantom
-	 */
-	public PhantomProxy createNewPhantomProxy(WorkingMemoryPointer origin,
-			float probExists) {
 
-		PhantomProxy newProxy = new PhantomProxy();
-
-		newProxy.entityID = newDataID();
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
-
-		return newProxy;
-	}
-
-	/**
-	 * Create a new phantom proxy, given the origin info and the existence
-	 * probability
-	 * 
-	 * @param origin
-	 *            origin information
-	 * @param probExists
-	 *            the probability of the proxy
-	 * @return the new phantom
-	 */
-	public PhantomProxy createNewPhantomProxy(WorkingMemoryPointer origin,
-			float probExists, Feature[] features) {
-
-		PhantomProxy newProxy = createNewPhantomProxy(origin, probExists);
-		newProxy.features = features;
-
-		return newProxy;
-	}
 
 	// =================================================================
 	// METHODS FOR CREATING AND INSERTING NEW FEATURES
@@ -454,6 +415,49 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 		}
 	}
 
+
+	/**
+	 * Overwrite an existing proxy with a new one (the new proxy needs to have
+	 * the same entityID has the existing one)
+	 * 
+	 * @param proxy
+	 *            the new proxy
+	 */
+
+	protected void overwriteProxyInWM(Proxy proxy) {
+ 
+		try {
+			overwriteWorkingMemory(proxy.entityID, proxy);
+			log("existing Proxy succesfully modified in the binder working memory");
+
+		} catch (DoesNotExistOnWMException e) {
+			log("Sorry, the proxy does not exist in the binder working memory");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Delete an existing proxy
+	 * 
+	 * @param proxy
+	 *            the proxy to delete
+	 */
+
+	protected void deleteEntityInWM(Proxy proxy) {
+
+		try {
+			removeOriginInfo(proxy);
+			deleteFromWorkingMemory(proxy.entityID);
+			log("existing Proxy succesfully deleted from the binder working memory");
+
+		} catch (DoesNotExistOnWMException e) {
+			log("Sorry, the proxy does not exist in the binder working memory");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Stores a mapping from the source to the proxy which is created from it.
 	 * 
@@ -517,46 +521,5 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	}
 	
 	
-	/**
-	 * Overwrite an existing proxy with a new one (the new proxy needs to have
-	 * the same entityID has the existing one)
-	 * 
-	 * @param proxy
-	 *            the new proxy
-	 */
-
-	protected void overwriteProxyInWM(Proxy proxy) {
- 
-		try {
-			overwriteWorkingMemory(proxy.entityID, proxy);
-			log("existing Proxy succesfully modified in the binder working memory");
-
-		} catch (DoesNotExistOnWMException e) {
-			log("Sorry, the proxy does not exist in the binder working memory");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Delete an existing proxy
-	 * 
-	 * @param proxy
-	 *            the proxy to delete
-	 */
-
-	protected void deleteEntityInWM(Proxy proxy) {
-
-		try {
-			removeOriginInfo(proxy);
-			deleteFromWorkingMemory(proxy.entityID);
-			log("existing Proxy succesfully deleted from the binder working memory");
-
-		} catch (DoesNotExistOnWMException e) {
-			log("Sorry, the proxy does not exist in the binder working memory");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 }

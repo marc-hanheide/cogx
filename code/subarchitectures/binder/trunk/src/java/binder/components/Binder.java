@@ -32,6 +32,7 @@ import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.utils.GradientDescent;
@@ -51,7 +52,7 @@ import cast.core.CASTData;
  * the correlations between features
  * 
  * @author Pierre Lison
- * @version 09/09/2009
+ * @version 22/09/2009
  * @started 01/07/2009
  */
 
@@ -68,17 +69,17 @@ public class Binder extends ManagedComponent  {
 	private boolean addUnknowns = false;
 
 	// Text specification of the bay
-	public String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
+	private String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
 
 	// Filtering parameters: maximum number of union configurations
 	// to keep in the binder at a given time
-	public int nbestsFilter = 5;
+	private int nbestsFilter = 5;
 
-	public boolean normaliseDistributions = false;
+	private boolean normaliseDistributions = false;
 	
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
-	Vector<UnionConfiguration> currentUnionConfigurations ;
+	private Vector<UnionConfiguration> currentUnionConfigurations ;
 
 
 
@@ -258,7 +259,8 @@ public class Binder extends ManagedComponent  {
 			}
 
 			// Update the alternative union configurations in the WM
-			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
+			AlternativeUnionConfigurations alters = 
+				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
 			updateWM(alters); 
 
 		}
@@ -312,7 +314,8 @@ public class Binder extends ManagedComponent  {
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
 							if (proxies.size() > 0) { 
-								Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
+								Union updatedUnion = 
+									constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 								existingUnionConfig.includedUnions[i] = updatedUnion;
 							}
 							else {
@@ -326,7 +329,8 @@ public class Binder extends ManagedComponent  {
 			}
 
 			// Update the alternative union configurations
-			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
+			AlternativeUnionConfigurations alters = 
+				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
 			updateWM(alters); 
 
 		}
@@ -390,29 +394,6 @@ public class Binder extends ManagedComponent  {
 
 
 	/**
-	 * Restart the binding process from the start, by removing all existing unions
-	 * and reconstructing the unions one by one
-	 */
-
-	private void fullRebinding() {
-		try {
-			log("Perform full rebinding...");
-
-			initializeUnionConfigurations();
-
-			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
-			for (int i = 0 ; i < proxies.length; i++) {
-				incrementalBinding(proxies[i].getData());
-			}
-
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-
-	/**
 	 * Update the binding working memory by recomputing the union configurations
 	 * after the insertion of a new proxy
 	 * 
@@ -432,7 +413,7 @@ public class Binder extends ManagedComponent  {
 			log("Number of current configurations: "  + currentUnionConfigurations.size());
 
 			// The new union configurations
-			Vector<UnionConfiguration> newUnionConfigurations = new Vector<UnionConfiguration>();
+			Vector<UnionConfiguration> newUnionConfigs = new Vector<UnionConfiguration>();
 
 			// List of unions already computed and merged
 			HashMap<Union,Union> alreadyMergedUnions = new HashMap<Union, Union>();
@@ -446,7 +427,7 @@ public class Binder extends ManagedComponent  {
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
 					createNewUnionConfiguration (existingUnionConfig, newUnion);
-				newUnionConfigurations.add(newConfigWithSingleUnion);	
+				newUnionConfigs.add(newConfigWithSingleUnion);	
 
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
@@ -474,37 +455,46 @@ public class Binder extends ManagedComponent  {
 						// create and add a new union configuration with the new merged union
 						UnionConfiguration newConfigWithMergedUnion = 
 							createNewUnionConfiguration (existingUnionConfig, newMergedUnion, existingUnion);
-						newUnionConfigurations.add(newConfigWithMergedUnion);
+						newUnionConfigs.add(newConfigWithMergedUnion);
 
 					}				
 
 				}
 			}
 
-			newUnionConfigurations = GradientDescent.addConfidenceScoresToConfigs(newUnionConfigurations);
-								
-			GradientDescent.normaliseAndSetProbExistUnions(newUnionConfigurations);
+			// Compute the confidence scores for the union configurations
+			GradientDescent.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
+			
+			// Normalise these confidence scores
+			BinderUtils.normaliseConfigProbabilities(newUnionConfigs);
+			
+			// And based on these score, compute the existence probabilities for each union
+			BinderUtils.addProbExistsToUnions(newUnionConfigs);
 			
 			// Get the nbest configurations (with N as a parameter)
 			if (nbestsFilter > 0) {
-				newUnionConfigurations = 
-					GradientDescent.getNBestUnionConfigurations (newUnionConfigurations, nbestsFilter);
+				newUnionConfigs = 
+					GradientDescent.getNBestUnionConfigurations (newUnionConfigs, nbestsFilter);
 			}
 			
+			// Normalise the union distributions
 			if (normaliseDistributions) {
 				log("Normalisation of the probability distributions");
-				normaliseDistributions(newUnionConfigurations);
+				normaliseDistributions(newUnionConfigs);
 			}
-
-			// update the list of possible unions
-			currentUnionConfigurations = newUnionConfigurations;
-
+			
+			// Compute the marginal probability values for the individual feature values
+			computeMarginalProbabilityValues(newUnionConfigs);
 
 			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 
 			// Add everything to the working memory
-			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations();
+			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations(newUnionConfigs);
 			updateWM(alters); 
+			
+			// update the list of possible unions
+			currentUnionConfigurations = newUnionConfigs;
+
 
 		}
 		catch (Exception e) {
@@ -513,29 +503,98 @@ public class Binder extends ManagedComponent  {
 	}
 
 	
-	
+
+	/**
+	 * Restart the binding process from the start, by removing all existing unions
+	 * and reconstructing the unions one by one
+	 * 
+	 * TODO: verify if the full rebinding method still works
+	 */
+
+	private void fullRebinding() {
+		try {
+			log("Perform full rebinding...");
+
+			initializeUnionConfigurations();
+
+			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Proxy.class);
+			for (int i = 0 ; i < proxies.length; i++) {
+				incrementalBinding(proxies[i].getData());
+			}
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	// ================================================================= 
 	// UTILITY METHODS   
 	// ================================================================= 
 
+	
+	/**
+	 * Normalise the union distribution in every configurations
+	 * 
+	 */
 	private void normaliseDistributions (Vector<UnionConfiguration> configs) {
 		
+		// Loop on the union configurations
 		for (Enumeration<UnionConfiguration> e = configs.elements() ; e.hasMoreElements(); ) {
 
 			UnionConfiguration config = e.nextElement();				
  
+			// Loop on the included unions
 			for (int i = 0 ; i < config.includedUnions.length; i++) {
 				
+				// Normalise
 				config.includedUnions[i].distribution = 
 					ProbabilityUtils.normaliseDistribution(config.includedUnions[i].distribution, 1.0f);
 			}
 		}
 	}
 	
+	/**
+	 * Compute the marginal probability values for each feature value contained in the unions
+	 * of the union configurations, and inserts this information in the "independentProb" 
+	 * property of the feature value
+	 * 
+	 * @param configs the union configurations
+	 */
+	private void computeMarginalProbabilityValues(Vector<UnionConfiguration> configs) {
 
+		// Loop on the union configurations
+		for (Enumeration<UnionConfiguration> e = configs.elements() ; e.hasMoreElements(); ) {
+			
+			UnionConfiguration config = e.nextElement();	
+			
+			// Loop on the unions
+			for (int i = 0 ; i < config.includedUnions.length ; i++) {
+
+				Union union = config.includedUnions[i];
+				
+				// Loop on the features
+				for (int j = 0; j < config.includedUnions[i].features.length ; j++){
+					
+					// Loop on the feature values
+					for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
+						FeatureValuePair pair = new FeatureValuePair();
+						pair.featlabel = union.features[j].featlabel;
+
+						pair.featvalue = union.features[j].alternativeValues[k];
+
+						union.features[j].alternativeValues[k].independentProb = 
+							ProbabilityUtils.getMarginalProbabilityValue(union.distribution, pair); 
+					}
+				} 
+			}
+		}
+	}
+	
+	
 	/**
 	 * Get a vector containing all elements in the "proxies" array apart from proxyToExclude
+	 * 
 	 * @param proxies the initial array of proxies
 	 * @param proxyToExclude the proxy to exclude
 	 * @return vector of PerceivedEntities
@@ -554,7 +613,14 @@ public class Binder extends ManagedComponent  {
 	}
 
 
-
+	/**
+	 * Check whether the union has been already computed
+	 * 
+	 * TODO: check whether this is still needed?
+	 * @param union
+	 * @param alreadyMergedUnions
+	 * @return
+	 */
 	public static boolean alreadyComputed(Union union, HashMap<Union, Union> alreadyMergedUnions) {
 		for (Iterator<Union> i = alreadyMergedUnions.keySet().iterator() ; i.hasNext() ; ) {
 			Union u = i.next();
@@ -565,8 +631,10 @@ public class Binder extends ManagedComponent  {
 		return false;
 	}
 
+	
 	/**
 	 * Remove the union from the configuration
+	 * 
 	 * @param existingconfig
 	 * @param unionToDelete
 	 * @return
@@ -574,6 +642,7 @@ public class Binder extends ManagedComponent  {
 	private UnionConfiguration removeUnionFromConfig
 	(UnionConfiguration existingconfig, Union unionToDelete) {
 
+		// Aggregate the set of unions which need to be kept
 		Vector<Union> unionsInConfig = new Vector<Union>();
 		for (int i = 0; i < existingconfig.includedUnions.length ; i++) {
 			Union curUnion = existingconfig.includedUnions[i];
@@ -581,6 +650,8 @@ public class Binder extends ManagedComponent  {
 				unionsInConfig.add(curUnion);
 			}
 		}
+		
+		// Update the included unions in the configuration
 		existingconfig.includedUnions = new Union[unionsInConfig.size()];
 		existingconfig.includedUnions = unionsInConfig.toArray(existingconfig.includedUnions);
 
@@ -590,15 +661,17 @@ public class Binder extends ManagedComponent  {
 
 	/**
 	 * Build an AlternativeUnionConfigurations containing all configurations listed in
-	 * currentUnionConfigurations
-	 * @return
+	 * configuration vector
+	 * 
+	 * @return the new AlternativeUnionConfigurations object
 	 */
-	private AlternativeUnionConfigurations buildNewAlternativeUnionConfigurations () {
+	private AlternativeUnionConfigurations buildNewAlternativeUnionConfigurations
+		(Vector<UnionConfiguration> configs ) {
 
 		AlternativeUnionConfigurations alters = new AlternativeUnionConfigurations();
-		alters.alterconfigs = new UnionConfiguration[currentUnionConfigurations.size()];
+		alters.alterconfigs = new UnionConfiguration[configs.size()];
 		for (int i = 0; i < alters.alterconfigs.length ; i++) {
-			alters.alterconfigs[i] = currentUnionConfigurations.elementAt(i); 
+			alters.alterconfigs[i] = configs.elementAt(i); 
 		}
 		return alters;
 	}
@@ -607,6 +680,7 @@ public class Binder extends ManagedComponent  {
 	/**
 	 * Create a new union configuration based on an existing one and a new union 
 	 * to add
+	 * 
 	 * @param existingUnionConfig
 	 * @param unionToAdd
 	 * @return
@@ -620,10 +694,11 @@ public class Binder extends ManagedComponent  {
 	/**
 	 * Create a new union configuration based on an existing configuration, a union
 	 * to add, and an union to remove
+	 * 
 	 * @param existingUnionConfig
 	 * @param unionToAdd
 	 * @param unionToRemove
-	 * @return
+	 * @return the new UnionConfiguration
 	 */
 	private UnionConfiguration createNewUnionConfiguration
 	(UnionConfiguration existingUnionConfig, Union unionToAdd, Union unionToRemove) {
@@ -638,12 +713,14 @@ public class Binder extends ManagedComponent  {
 	/**
 	 * Create a new union configuration based on an existing configuration, a new
 	 * union to add, and a list of unions to remove
+	 * 
 	 * @param existingUnionConfig
 	 * @param unionToAdd
 	 * @param unionsToRemove
-	 * @return
+	 * @return the new UnionConfiguration
 	 */
-	private UnionConfiguration createNewUnionConfiguration(UnionConfiguration existingUnionConfig, 
+	private UnionConfiguration createNewUnionConfiguration
+		(UnionConfiguration existingUnionConfig, 
 			Union unionToAdd, Vector<Union> unionsToRemove) {
 
 		UnionConfiguration newConfig = new UnionConfiguration();
@@ -668,6 +745,7 @@ public class Binder extends ManagedComponent  {
 
 	/**
 	 * Check if the two unions are from different originating subarchitectures
+	 * 
 	 * @param union1
 	 * @param union2
 	 * @return

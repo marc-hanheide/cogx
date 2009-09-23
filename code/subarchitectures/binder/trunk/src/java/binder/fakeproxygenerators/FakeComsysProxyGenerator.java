@@ -24,23 +24,37 @@ import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.*;
 import binder.autogen.specialentities.PhantomProxy;
 
+
+/**
+ * Fake proxy generator for ComSys: creation of fake phantom proxies, insertion into the
+ * binder working memory, and prediction of best binding unions for these phantom
+ * proxies
+ * 
+ * @author Pierre Lison
+ * @author Pierre Lison
+ * @version 22/09/2009
+ * @started 05/09/2009
+ * 
+ */
 public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 
-	
-	public FakeComsysProxyGenerator() {
-		super();
-	}
-	
+	/**
+	 * Start
+	 */
 	public void start () {
 		log("Fake comsys proxy generator successfully started");
 	}
 
-	
+	/**
+	 * Run
+	 */
 	public void run() {
 		randomPrediction();
 	}
 	
-	
+	/**
+	 * Create one indexed phantom proxy
+	 */
 	public PhantomProxy createPhantomProxy(int nb) {
 		if (nb == 1) {
 			return createProxyOne();
@@ -51,20 +65,28 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 		return null;
 	}
 	
-	
+	/**
+	 * Create proxy one ("mug")
+	 * 
+	 * @return the proxy
+	 */
 	private PhantomProxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakecomsys", "blabla", "Referent");
 		PhantomProxy proxy = createNewPhantomProxy (origin, 0.95f);
 		
-		FeatureValue ball = createStringValue("mug", 0.91f);
-		Feature feat = createFeatureWithUniqueFeatureValue ("ling_label", ball);
+		FeatureValue mug = createStringValue("mug", 0.91f);
+		Feature feat = createFeatureWithUniqueFeatureValue ("ling_label", mug);
 		addFeatureToProxy (proxy, feat);
 		
 		return proxy;
 	}
 	
-	
+	/**
+	 * Create proxy two ("red ball")
+	 * 
+	 * @return the proxy
+	 */
 	private PhantomProxy createProxyTwo() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakecomsys", "blabla2", "Referent");

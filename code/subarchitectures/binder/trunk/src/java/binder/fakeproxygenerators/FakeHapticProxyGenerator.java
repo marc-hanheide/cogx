@@ -26,21 +26,42 @@ import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.specialentities.RelationProxy;
 
+
+/**
+ * Fake proxy generator for haptic sensors -- creation and insertion of two normal proxies
+ * and one relation proxy
+ * 
+ * @author Pierre Lison
+ * @version 22/09/2009
+ * @started 20/08/2008
+ */
+
 public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
+	// entityID for the first proxy
 	String proxyOneId;
+
+	// entity ID for the second proxy
 	String proxyTwoId;
-	
+
+	/**
+	 * Start
+	 */
 	public void start () {
 		log("Fake haptic proxy generator successfully started");
 	}
-	
-	
+
+	/**
+	 * Run
+	 */
 	public void run() {
 		randomInsertion();
 	}
-	
-	
+
+
+	/**
+	 * Create one indexed proxy
+	 */
 	public Proxy createProxy(int nb) {
 		if (nb == 1) {
 			return createProxyOne();
@@ -48,70 +69,79 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 		if (nb == 2) {
 			return createProxyTwo();
 		}
-		
+
 		if (nb == 3) {
 			return createRelationProxy();
 		}
 		return null;
 	}
-	
 
-	private Proxy createProxyTwo() {
-		
-		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli", "GraspableObject");
-		Proxy proxy = createNewProxy(origin, 0.65f);
-		
-		FeatureValue cylindrical = createStringValue ("cylindrical", 0.73f);
-		Feature feat = createFeatureWithUniqueFeatureValue ("shape", cylindrical);
-		addFeatureToProxy (proxy, feat);
-		
-		proxyOneId = proxy.entityID;
-		
-		log("Proxy one successfully created");
-		return proxy;
-	}
-	
-	
 
+	/**
+	 * Create proxy one (spherical and graspable object)
+	 * 
+	 * @return the proxy
+	 */
 	private Proxy createProxyOne() {
-		
+
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli2", "GraspableObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);
-		
+
 		FeatureValue spherical = createStringValue ("spherical", 0.67f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue("shape", spherical);
 		addFeatureToProxy (proxy, feat1);
-	
+
 		BooleanValue trueval = createBooleanValue (true, 0.8f);
 		BooleanValue falseval = createBooleanValue (false, 0.15f);
 		FeatureValue[] vals = {trueval, falseval};
 		Feature feat2 = createFeatureWithAlternativeFeatureValues("graspable", vals);
 		addFeatureToProxy (proxy, feat2);
-		
+
 		proxyTwoId = proxy.entityID;
-		
+
 		log("Proxy two successfully created");
 
 		return proxy;
 	}
-	
+
+
+	/**
+	 * Create proxy two (object with cylindrical shape)
+	 * 
+	 * @return the proxy
+	 */
+	private Proxy createProxyTwo() {
+
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli", "GraspableObject");
+		Proxy proxy = createNewProxy(origin, 0.65f);
+
+		FeatureValue cylindrical = createStringValue ("cylindrical", 0.73f);
+		Feature feat = createFeatureWithUniqueFeatureValue ("shape", cylindrical);
+		addFeatureToProxy (proxy, feat);
+
+		proxyOneId = proxy.entityID;
+
+		log("Proxy one successfully created");
+		return proxy;
+	}
+
 
 	private Proxy createRelationProxy() {
-		
+
 		AddressValue[] sources = new AddressValue[1];
 		sources[0] = createAddressValue(proxyOneId, 0.9f);
-		
+
 		AddressValue[] targets = new AddressValue[1];
 		targets[0] = createAddressValue(proxyTwoId, 0.91f);
-		
+
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli3", "HapticRelation");
 		RelationProxy proxy = createNewRelationProxy(origin, 0.81f, sources, targets);
-		
+
 		addFeatureToProxy (proxy, createFeatureWithUniqueFeatureValue("shape", createStringValue("test", 0.67f)));
-		
+
 		log("Relation proxy successfully created");
 
 		return proxy;
 	}
-	
+
 }

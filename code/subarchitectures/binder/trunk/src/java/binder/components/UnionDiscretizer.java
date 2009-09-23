@@ -23,14 +23,9 @@ import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
-import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
-import binder.autogen.distributions.FeatureValuePair;
-import binder.autogen.featvalues.UnknownValue;
 import binder.utils.GradientDescent;
-import binder.utils.ProbabilityUtils;
-import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -38,10 +33,32 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 
+
+/**
+ * Discretization mechanism for the binder: takes as input the whole set of alternative union 
+ * configurations (i.e. the probability distribution over possible unions), and outputs
+ * a single best union configuration.  This union configuration which is selected is the 
+ * one having the highest probability value.  
+ * 
+ * In other words, the discretizer collapses the union distributions onto a set of high-probability, 
+ * single point representations, which can be then easily reused to generate particular symbolic
+ * states and exploited for deliberative reasoning or learning.
+ *
+ * @author Pierre Lison
+ * @version 22/09/2009
+ * @started 01/09/2009
+ *
+ */
+
 public class UnionDiscretizer extends ManagedComponent {
 
-	public boolean onlyMaxFeatureValues = true;
+	// whether to consider only maximum feature values in feature or not
+	private boolean onlyMaxFeatureValues = true;
 	
+	
+	/**
+	 * Initialisation - add a change filter for AlternativeUnionConfigurations on the binder WM
+	 */
 	@Override
 	public void start() {
 
@@ -66,6 +83,8 @@ public class UnionDiscretizer extends ManagedComponent {
 		});
 	}
 
+	
+	
 	/**
 	 * Set configuration parameters
 	 */
@@ -79,7 +98,14 @@ public class UnionDiscretizer extends ManagedComponent {
 	}
 
 	
-
+	/**
+	 * Extract the single best union configuration from the set of possible ones specified in
+	 * the AlternativeUnionConfigurations object.
+	 * 
+	 * @param alterconfigs the alternative union configurations
+	 * @return the single best (highest-probability) union configuration
+	 */
+	
 	public UnionConfiguration extractBestUnionConfiguration 
 	(AlternativeUnionConfigurations alterconfigs) {
 
@@ -88,6 +114,7 @@ public class UnionDiscretizer extends ManagedComponent {
 
 
 		log("Number of alternative union configurations: "  + alterconfigs.alterconfigs.length);
+		
 		// Compute the best union configuration out of the possible ones
 		UnionConfiguration bestConfiguration = 
 			GradientDescent.getBestUnionConfiguration(alterconfigs);
@@ -97,45 +124,21 @@ public class UnionDiscretizer extends ManagedComponent {
 				bestConfiguration.includedUnions.length);
 
 		Vector<Union> unions = new Vector<Union>();
+		
 		// In the chosen union configuration, loop on the included unions, and compute
 		// for each of them the instance with the maximum probability
 		for (int i = 0 ; i < bestConfiguration.includedUnions.length ; i++) {
 			Union union = bestConfiguration.includedUnions[i];
 			
+			// If only maximum-probability values are allowed, compute a new union with only these
 			if (onlyMaxFeatureValues) {
 				union = GradientDescent.getUnionWithMaximumProbability(union);
 			}
-			else {
-				// remove unknown values
-				for (int j = 0; j < union.features.length ; j++){
-					Vector<FeatureValue> featvals = new Vector<FeatureValue>();
-					for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
-						if (! (union.features[j].alternativeValues[k] instanceof UnknownValue)) {
-							featvals.add(union.features[j].alternativeValues[k]);
-						}
-					}
-					union.features[j].alternativeValues = new FeatureValue[featvals.size()];
-					union.features[j].alternativeValues = featvals.toArray(	union.features[j].alternativeValues);
-				}
-			}
-	
-			for (int j = 0; j < union.features.length ; j++){
-				for (int k =0; k < union.features[j].alternativeValues.length ; k++) {
-					FeatureValuePair pair = new FeatureValuePair();
-					pair.featlabel = union.features[j].featlabel;
-
-					pair.featvalue = union.features[j].alternativeValues[k];
-					//		log("currently computing marginal prob for (" + 
-					// 		pair.featlabel + ", " + BinderUtils.toString(pair.featvalue) + ")");
-					union.features[j].alternativeValues[k].independentProb = 
-						ProbabilityUtils.getMarginalProbabilityValue(union.distribution,pair); // / union.probExists;
-				}
-			} 
-
-
+			
 			unions.add(union);
 		} 
-
+		
+		// Create a new configuration with the updated unions
 		UnionConfiguration discretizedConfig = new UnionConfiguration();
 		discretizedConfig.includedUnions = new Union[unions.size()];
 		discretizedConfig.includedUnions = unions.toArray(discretizedConfig.includedUnions);
@@ -148,6 +151,11 @@ public class UnionDiscretizer extends ManagedComponent {
 		return discretizedConfig;
 	}
 
+	/**
+	 * Add union configuration to the binder working memory
+	 * 
+	 * @param config the union configuration
+	 */
 	protected void addBestUnionConfigurationToWM(UnionConfiguration config) {
 
 		try {

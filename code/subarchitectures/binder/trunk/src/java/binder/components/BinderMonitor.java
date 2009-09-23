@@ -42,20 +42,27 @@ import cast.core.CASTData;
  * the evolution of its content (either textually or graphically)
  * 
  * @author Pierre Lison
- * @version 31/08/2009
+ * @version 21/09/2009
+ * @started 15/08/2009
  */
 
 public class BinderMonitor extends ManagedComponent {
 
 	// If a GUI is used, pointer to the GUI component
-	BinderMonitorGUI gui;
+	private BinderMonitorGUI gui;
 	
 	// Vector listing all the proxies currently in the WM
-	Vector<Proxy> lastProxies;
+	private Vector<Proxy> lastProxies;
 	
 	// Vector listing all the unions currently in the WM
-	Vector<Union> lastUnions;
-		
+	private Vector<Union> lastUnions;
+	
+	
+	/**
+	 * Initialisation of the monitor
+	 * 
+	 * TODO: extend this to AlternativeUnionConfigurations
+	 */
 	@Override
 	public void start() {
 
@@ -140,16 +147,19 @@ public class BinderMonitor extends ManagedComponent {
 				proxiesV.add(proxies[i].getData());
 			}
 			
+			// Extract the relation proxies in the working memory
 			CASTData<RelationProxy>[] rproxies = getWorkingMemoryEntries(RelationProxy.class);
 			for (int i = (rproxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(rproxies[i].getData());
 			}
 
+			// Extract the phantom proxies in the working memory
 			CASTData<PhantomProxy>[] pproxies = getWorkingMemoryEntries(PhantomProxy.class);
 			for (int i = (pproxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(pproxies[i].getData());
 			}
 			
+			// Create summary for the proxies in the binder WM
 			String proxytext = proxies.length + " normal";
 			if (rproxies.length > 0) {
 				proxytext += " + " + rproxies.length + " relation";
@@ -174,6 +184,7 @@ public class BinderMonitor extends ManagedComponent {
 				UnionsV.add(bestConfig.includedUnions[i]);
 			}
 			
+			// Create summary for the unions in the binder WM
 			String unionText = (bestConfig.includedUnions.length - nbRelationUnions) + " normal";
 			if (nbRelationUnions > 0) {
 				unionText += " + " + nbRelationUnions + " relation" ;
