@@ -633,9 +633,9 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
 	cvSetImageROI(iplImg, rect);
 	
 	float ratio = cvGetSize(iplImg).width * cvGetSize(iplImg).height; log("width: %i height %i", cvGetSize(iplImg).width, cvGetSize(iplImg).height);
-	if ( ratio > MAX_PATCH_SIZE)
-		ratio = sqrt(MAX_PATCH_SIZE / ratio);
-	else
+//	if ( ratio > MAX_PATCH_SIZE)
+//		ratio = sqrt(MAX_PATCH_SIZE / ratio);
+//	else
 		ratio = 1;
 	
 	IplImage *iplPatch = cvCreateImage(cvSize(cvGetSize(iplImg).width*ratio, 
@@ -656,7 +656,7 @@ void SOIFilter::segmentObject(const WorkingMemoryAddress soiAddr, Video::Image &
     vector<CvPoint> projPoints, bgProjPoints;
     vector<int>  hullPoints;    
     
-    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, 1, image.camPars);
+    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
 
     IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 18, 60);
     
