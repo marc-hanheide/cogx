@@ -44,23 +44,23 @@ import binder.autogen.specialentities.RelationUnion;
  * @version 23/09/2009
  * @started 01/09/2009
  */
- 
+
 public class BinderUtils {
 
-	
+
 	// minimum threshold above which unknown values can be created in features
 	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.3f;
-	
-	
+
+
 	/**
 	 * Convert a normal union into a relation union (without source and target)
 	 * 
 	 * @param bunion the normal union
 	 * @return the relation union
 	 */
-	
+
 	public static RelationUnion convertIntoRelationUnion (Union bunion) {
-		
+
 		RelationUnion runion = new RelationUnion();
 		runion.entityID = bunion.entityID;
 		runion.features = bunion.features;
@@ -68,12 +68,12 @@ public class BinderUtils {
 		runion.includedProxies = bunion.includedProxies;
 		runion.probExists = bunion.probExists;
 		runion.timeStamp = bunion.timeStamp;
-		
+
 		return runion;
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Returns true if all the entities are relation proxies or contain relation proxies
 	 * (and hence induce a relation union), false otherwise
@@ -81,7 +81,7 @@ public class BinderUtils {
 	 * @param entities the entities
 	 * @return true if a relation union is induced, false otherwise
 	 */
-	
+
 	public static boolean induceRelationUnion(Vector<PerceivedEntity> entities) {
 
 		Vector<Proxy> includedProxies = getProxies(entities);
@@ -94,7 +94,7 @@ public class BinderUtils {
 
 		return true;
 	}
-	
+
 
 	/**
 	 * If necessary, add unknown feature values to the feature.  The parameter 
@@ -103,7 +103,7 @@ public class BinderUtils {
 	 * 
 	 * @param features the list of features
 	 */
-	
+
 	public static void addUnknownFeatureValues (Feature[] features) {
 
 		// loop on the features
@@ -116,7 +116,7 @@ public class BinderUtils {
 				values.add(features[i].alternativeValues[j]);
 				totalProb += features[i].alternativeValues[j].independentProb;
 			}
-			
+
 			// If the unknown feature value is likely enough, add it to the feature values set
 			if (totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 3) {
 				features[i].alternativeValues = new FeatureValue[values.size() + 1];
@@ -137,27 +137,27 @@ public class BinderUtils {
 	 * @return the list of unions
 	 */
 	public static ArrayList<Union> getUnions(Vector<UnionConfiguration> configs) {
-		
+
 		ArrayList<Union> unions = new ArrayList<Union>();
-		
+
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			
+
 			UnionConfiguration config = e.nextElement();
 			for (int i = 0; i < config.includedUnions.length ; i++) {
-				
+
 				Union union = config.includedUnions[i];
-				
+
 				// TODO: check if this is still necessary
 				if (!isInList(unions, union)) {
 					unions.add(union);
 				}
 			}
 		}
-		
+
 		return unions;
 	}
-	
-	
+
+
 	/**
 	 * Check if the union is already contained (maybe incorporated in a different
 	 * java object) in the union list
@@ -177,91 +177,112 @@ public class BinderUtils {
 		}
 		return false;
 	}
-	
-	
+
+
 	/**
 	 * Normalise the probabilities of the union configurations (in order to have a sum = 1)
 	 * 
 	 * @param configs the union configurations
 	 */
-	 public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
-		 
-		 // computes the sum of the probabibilities
-		 double sum = 0.0f;
-		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			 	UnionConfiguration config = e.nextElement();
-			 	sum += config.configProb;
-			}
-	
-		 // set the normalisation factor
-		 double alpha = 1.0f / sum;
-		 
-		 // apply the normalisation factor to all probabilities
-		 for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
-			 	UnionConfiguration config = e.nextElement();
-			 	config.configProb = alpha * config.configProb;
-			}		 
-	 }
-	 
-	 
-	 /**
-	  * Set the existence probabilities to each union contained in the union configurations
-	  * 
-	  * @param configs the configurations
-	  */
-	 public static void addProbExistsToUnions (Vector<UnionConfiguration> configs) {
-		 
-		 // extract the unions
-		 ArrayList<Union> unions = getUnions (configs);
-		 
-		 // set the existence probabilities
-		 setProbExistUnions(unions, configs);
-	 }
-	
-	
+	public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
 
-	 
-		public static void setProbExistUnions 
-			(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
-		
-			for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
-				Union u = e.next();
-				u.probExists = 0.0f;
-				for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
-					UnionConfiguration config = f.nextElement();
-					if (isUnionInConfig(config, u)) {
-						u.probExists += config.configProb;
-					}
+		// computes the sum of the probabibilities
+		double sum = 0.0f;
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
+			sum += config.configProb;
+		}
+
+		// set the normalisation factor
+		double alpha = 1.0f / sum;
+
+		// apply the normalisation factor to all probabilities
+		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
+			UnionConfiguration config = e.nextElement();
+			config.configProb = alpha * config.configProb;
+		}		 
+	}
+
+
+	/**
+	 * Set the existence probabilities to each union contained in the union configurations
+	 * 
+	 * @param configs the configurations
+	 */
+	public static void addProbExistsToUnions (Vector<UnionConfiguration> configs) {
+
+		// extract the unions
+		ArrayList<Union> unions = getUnions (configs);
+
+		// set the existence probabilities in the unions
+		setProbExistUnions(unions, configs);
+	}
+
+
+
+	/**
+	 * Set the existence probabilities in the unions, given the (normalised) configuration 
+	 * probabilities in the union configurations
+	 * 
+	 * @param unions the unions
+	 * @param configs the union configurations (with normalised probabilities)
+	 */
+	
+	public static void setProbExistUnions 
+	(ArrayList<Union> unions, Vector<UnionConfiguration> configs) {
+
+		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
+			Union u = e.next();
+			u.probExists = 0.0f;
+			for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
+				UnionConfiguration config = f.nextElement();
+				if (isUnionInConfig(config, u)) {
+					u.probExists += config.configProb;
 				}
 			}
 		}
-		
+	}
 
-		
-		private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
-			for (int i = 0 ; i < config.includedUnions.length ; i++) {
-				if (config.includedUnions[i].equals(union)) {
-					return true;
-				}
+
+	/**
+	 * Returns true is the union is in the union configuration, false otherwise
+	 * 
+	 * @param config the union configuration
+	 * @param union the union
+	 * @return true if in config, false otherwise
+	 */
+	
+	private static boolean isUnionInConfig(UnionConfiguration config, Union union) {
+		for (int i = 0 ; i < config.includedUnions.length ; i++) {
+			if (config.includedUnions[i].equals(union)) {
+				return true;
 			}
-			return false;
-		} 
-		
-	 
+		}
+		return false;
+	} 
+
+
 	/**
 	 * Get all the proxies included in a set of perceptual entities (in case the entity
 	 * is a proxy, it is simply added, and in case it is an union, the set of all included
 	 * proxies is added to the resulting set)
+	 * 
 	 * @param includedEntities the set of perceptual entities
 	 * @return the resulting set of proxies
 	 */
 	public static Vector<Proxy> getProxies (Vector<PerceivedEntity> includedEntities) {
 		Vector<Proxy> includedProxies = new Vector<Proxy>();
+		
+		// loop on the entities
 		for (Enumeration<PerceivedEntity> en = includedEntities.elements() ; en.hasMoreElements() ;) {
 			PerceivedEntity entity = en.nextElement();
+			
+			// if the entity is a proxy, simply add it
 			if (entity instanceof Proxy) {
 				includedProxies.add((Proxy)entity);
 			}
+			
+			// if it is an union, add all included proxies
 			else if (entity instanceof Union) {
 				Union includedUnion = (Union)entity;
 				for (int i = 0 ; i < includedUnion.includedProxies.length ; i++) {
@@ -271,50 +292,57 @@ public class BinderUtils {
 		}
 		return includedProxies;
 	}
-	
-	
 
-	public static Proxy completeProxy (Proxy proxy, boolean addUnknowns) {
-	// If necessary, add unknown values
-	if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
-		addUnknownFeatureValues(proxy.features);
-	}
-	
-	// if the probability distribution of the updated proxy is unavailable, regenerate it
-	if (proxy.distribution == null) {
-		proxy.distribution = 
-			ProbabilityUtils.generateProbabilityDistribution(proxy);
-	}
+ 
+	/**
+	 * Complete the proxy with additional information: 
+	 * 	1) if addUnknowns == true, add the unknown feature values to the features 
+	 *  2) generate the probability distribution for the proxy (assuming the independent
+	 *     probabilities for each feature value have been set)
+	 *     
+	 * @param proxy the proxy
+	 * @param addUnknowns whether to add unknown feature values
+	 * @return
+	 */
+	public static void completeProxy (Proxy proxy, boolean addUnknowns) {
+		// If necessary, add unknown values
+		if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
+			addUnknownFeatureValues(proxy.features);
+		}
 
-	return proxy;
-}
+		// if the probability distribution of the updated proxy is unavailable, regenerate it
+		if (proxy.distribution == null) {
+			proxy.distribution = 
+				ProbabilityUtils.generateProbabilityDistribution(proxy);
+		}
+	}
 
 
 	public static String getPrettyPrintProbabilityDistribution
 	(DiscreteProbabilityDistribution distrib) {
-	String text = "";
+		String text = "";
 
-	if (distrib.assignments != null) {
-	for (int i = 0; i < distrib.assignments.length; i++) {
-		DiscreteProbabilityAssignment assignment = distrib.assignments[i];
-		text += getPrettyPrintProbabilityAssignment(assignment) + "\n";
+		if (distrib.assignments != null) {
+			for (int i = 0; i < distrib.assignments.length; i++) {
+				DiscreteProbabilityAssignment assignment = distrib.assignments[i];
+				text += getPrettyPrintProbabilityAssignment(assignment) + "\n";
+			}
+		}
+		return text;
 	}
-	}
-	return text;
-}
 
-public static String getPrettyPrintProbabilityAssignment
+	public static String getPrettyPrintProbabilityAssignment
 	(DiscreteProbabilityAssignment assignment) {
 
-	String text = "P ( " ;
-	for (int j = 0; j < assignment.featurepairs.length ; j++) {
-		text += assignment.featurepairs[j].featlabel + " = " + 
+		String text = "P ( " ;
+		for (int j = 0; j < assignment.featurepairs.length ; j++) {
+			text += assignment.featurepairs[j].featlabel + " = " + 
 			FeatureValueUtils.toString(assignment.featurepairs[j].featvalue) ;
-		if (j < (assignment.featurepairs.length - 1)) {
-			text += ", ";
+			if (j < (assignment.featurepairs.length - 1)) {
+				text += ", ";
+			}
 		}
+		text += " ) = " + assignment.prob ;
+		return text;
 	}
-	text += " ) = " + assignment.prob ;
-	return text;
-}
 }
