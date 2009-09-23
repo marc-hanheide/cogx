@@ -5,6 +5,7 @@
 
 import os, os.path
 import re
+import optdefault
 
 regSimple = re.compile (r"\$([a-z_0-9]+)", re.IGNORECASE)
 regSimpleBrace = re.compile (r"\${([a-z_0-9]+)}", re.IGNORECASE)
@@ -42,53 +43,9 @@ class CCastOptions(object):
     def __init__(self):
         self.mruCfgPlayer = []
         self.mruCfgCast = []
-        env = """
-            COGX_ROOT=[PWD]
-            COGX_BUILD_DIR=${COGX_ROOT}/BUILD
-            COGX_LIB_DIR=${COGX_ROOT}/output/lib
-            COGX_PY_DIR=${COGX_ROOT}/output/python
-            COGX_CLASS_DIR=${COGX_ROOT}/output/classes
-
-            CAST_DIR=/usr/local
-            CAST_INSTALL_ROOT=${CAST_DIR}
-
-            CAST_BIN_PREFIX=bin
-            CAST_BIN_DIR=${CAST_INSTALL_ROOT}/${CAST_BIN_PREFIX}
-
-            CAST_LIB_PREFIX=lib/cast
-            CAST_LIB_DIR=${CAST_INSTALL_ROOT}/${CAST_LIB_PREFIX}
-            CAST_PY_DIR=${CAST_LIB_DIR}/python
-
-            CAST_JAR=${CAST_INSTALL_ROOT}/share/java/cast.jar
-
-            CAST_CONFIG_PATH=share/cast/config/cast_ice_config
-            CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
-
-            ICE_CONFIG=${CAST_ICE_CONFIG}
-            ICE_JARS=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
-
-            CURE_LIB_PATH=/home/cogx/svn/cosycure/lib/cure
-            CUDA_LIB_PATH=/usr/local/cuda/lib
-
-            PATH=${COGX_ROOT}/output/bin:${PATH}
-            LD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_PATH}:${CUDA_LIB_PATH}:${LD_LIBRARY_PATH}
-            DYLD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:${CURE_LIB_PATH}:${CUDA_LIB_PATH}:${DYLD_LIBRARY_PATH}
-
-            CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}:${COGX_CLASS_DIR}
-            CMD_JAVA=java -ea -classpath ${CLASSPATH}
-
-            PYTHONPATH=${PYTHONPATH}:${CAST_PY_DIR}:${COGX_PY_DIR}
-
-            CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
-            CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
-            CMD_PYTHON_SERVER=python -m ComponentServer
-            CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
-            CMD_PLAYER=player [PLAYER_CONFIG]
-            CMD_PEEKABOT=peekabot
-            """.split("\n")
-        self.environmentDefault = [s.lstrip() for s in env]
+        self.environmentDefault = [s.lstrip() for s in optdefault.environment.split("\n")]
         self._environment = None
-        self.cleanupScript = []
+        self.cleanupScript = [s.lstrip() for s in optdefault.cleanup.split("\n")]
 
     @property
     def environment(self):
@@ -128,6 +85,7 @@ class CCastOptions(object):
                 section.append(ln.rstrip())
         f.close()
 
+    # this should be called only when the config file doesnt exist
     def saveConfig(self, afile):
         f = afile
         f.write("[ENVIRONMENT]\n")
@@ -136,7 +94,9 @@ class CCastOptions(object):
         f.write("[CLEANUP-SCRIPT]\n")
         for ln in self.cleanupScript:
             f.write(ln); f.write("\n")
-        f.write("[USEROPTIONS]\n#EDITOR=gvim --servername CAST --remote %s\n")
+        # FIXME: temporary location for user options; move to a file in home dir
+        f.write("[USEROPTIONS]\n")
+        f.write(optdefault.useroptions)
 
     def saveHistory(self, afile):
         f = afile

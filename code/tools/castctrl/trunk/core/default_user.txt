@@ -1,0 +1,4 @@
+#EDITOR=emacs %s
+#EDITOR=kate %s
+#EDITOR=gedit %s
+#EDITOR=gvim --servername CAST --remote %s

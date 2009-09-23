@@ -94,6 +94,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
         self._initContent()
         self._initLocalProcesses()
+        for proc in self._manager.proclist:
+            if proc != self.procBuild: self.mainLog.log.addSource(proc)
 
         # Auxiliary components
         self.tmStatus = QtCore.QTimer()
