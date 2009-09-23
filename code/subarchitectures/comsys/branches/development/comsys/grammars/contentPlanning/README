@@ -70,7 +70,7 @@ ascription
 Features for entity/thing/physical
 ----------------------------------
 
--- Quantity (for physical objects): secifies the count 
+-- Quantity (for physical objects): specifies the count 
    feature
    values: 0, 1..N, multiple, unknown, -- (= feature not present)
 
@@ -85,7 +85,10 @@ Features for entity/thing/physical
    feature
    values: true, false
 
--- Salient
+-- Salient: whether the entity is prominent above any competitors in the context 
+            (is assumed to combine both visual and textual aspects; 
+             if not, then we need two features)
+             e.g., an object just (last) introduced or pointed to or just mentioned
     true
     false
 
