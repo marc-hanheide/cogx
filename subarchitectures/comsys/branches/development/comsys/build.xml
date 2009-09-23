@@ -67,11 +67,12 @@
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
+		 <copy file="${src.dir}/opennlp/ccg/grammar/to-apml.xsl" todir="${output.dir}/opennlp/ccg/grammar/"/>
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" />
 	</target>
 
 	<!-- =================================================================== -->
-	<!-- Cleanup                                                             -->
+	<!-- Cleanup                                                              -->
 	<!-- =================================================================== -->
 	<target name="clean">
 
