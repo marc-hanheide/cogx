@@ -225,7 +225,7 @@ public class Binder extends ManagedComponent  {
 			// The proxy which was modified
 			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
 
-			updatedProxy = BinderUtils.completeProxy(updatedProxy, addUnknowns);
+			BinderUtils.completeProxy(updatedProxy, addUnknowns);
 			updatedProxy.timeStamp = getCASTTime();
 
 			// Loop on the current union configurations to update each of them in turn
@@ -366,7 +366,7 @@ public class Binder extends ManagedComponent  {
 			log("TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
 					" (" + newProxy.getClass().getSimpleName() + ") ");
 
-			newProxy = BinderUtils.completeProxy(newProxy, addUnknowns);
+			BinderUtils.completeProxy(newProxy, addUnknowns);
 
 			// Perform the binding (either incrementally or by full rebinding)
 			if (incrementalBinding) {

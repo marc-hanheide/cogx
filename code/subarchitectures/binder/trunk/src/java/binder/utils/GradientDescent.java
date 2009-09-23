@@ -59,7 +59,7 @@ public class GradientDescent {
 		
 		if (entity.distribution == null) {
 			errlog("WARNING: distribution == null, regenerating");
-			entity.features = BinderUtils.addUnknownFeatureValues(entity.features);
+			BinderUtils.addUnknownFeatureValues(entity.features);
 			entity.distribution = ProbabilityUtils.generateProbabilityDistribution(entity);
 
 		}
