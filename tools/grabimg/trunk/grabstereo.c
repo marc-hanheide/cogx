@@ -45,13 +45,13 @@ void SaveCurrentImages()
     if(!frame[i])
       return;
     snprintf(filename, 1024, "img%03d-%c.jpg", imgcnt, i == 0 ? 'L' : 'R');
-    cvSaveImage(filename, frame[i], 0);
-    /*IplImage *grey = cvCreateImage(cvSize(frame[0]->width, frame[0]->height),
+    //cvSaveImage(filename, frame[i], 0);
+    IplImage *grey = cvCreateImage(cvSize(frame[0]->width, frame[0]->height),
         IPL_DEPTH_8U, 1);
     cvCvtColor(frame[i], grey, CV_BGR2GRAY);
     snprintf(filename, 1024, "img%03d-%c.bmp", imgcnt, i == 0 ? 'L' : 'R');
     cvSaveImage(filename, grey, 0);
-    cvReleaseImage(&grey);*/
+    cvReleaseImage(&grey);
     printf("written image '%s'\n", filename);
   }
   imgcnt++;
