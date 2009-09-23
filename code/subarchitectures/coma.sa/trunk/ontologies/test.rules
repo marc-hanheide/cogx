@@ -113,7 +113,7 @@
   (?x rdf:type test:Place),
   noValue(?x rdf:type test:Doorway),
   noValue(?x test:constituentOf ?a),
-  gensym(?newRoom,"room")
+  gensym(?newRoom,"http://test.hz.owl#room")
   ->  
   print(bottomUpRoomCreation rule fired; created new instance ?newRoom),
 #  roomcleaner(?x),
