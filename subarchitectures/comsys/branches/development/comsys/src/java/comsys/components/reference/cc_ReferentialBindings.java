@@ -9,6 +9,14 @@
 package comsys.components.reference;
 
 //-----------------------------------------------------------------
+// BINDER IMPORTS
+//-----------------------------------------------------------------
+
+import binding.abstr.AbstractBindingPredictor;
+import binding.autogen.core.Union;
+import binder.autogen.specialentities.PhantomProxy;
+
+//-----------------------------------------------------------------
 // CAST IMPORTS
 //-----------------------------------------------------------------
 import cast.architecture.*;
@@ -18,16 +26,23 @@ import cast.core.CASTUtils;
 import cast.AlreadyExistsOnWMException;
 import cast.SubarchitectureComponentException;
 
-
 //-----------------------------------------------------------------
 // COMSYS IMPORTS
 //-----------------------------------------------------------------
 import comsys.arch.*;
 import comsys.datastructs.comsysEssentials.*;
 import comsys.processing.reference.ReferentialReadings;
+import comsys.processing.reference.RestrictorProxyConstruction;
 import comsys.utils.datastructs.*;
 
 import comsys.lf.utils.ArrayIterator; 
+
+//-----------------------------------------------------------------
+// JAVA IMPORTS
+//-----------------------------------------------------------------
+import java.util.Hashtable;
+import java.util.Vector;
+
 
 
 
