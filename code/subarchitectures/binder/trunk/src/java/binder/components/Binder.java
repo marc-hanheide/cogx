@@ -35,7 +35,8 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
-import binder.utils.ConfigurationFilter;
+import binder.filtering.ConfigurationFilter;
+import binder.utils.DistributionGeneration;
 import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
@@ -546,7 +547,7 @@ public class Binder extends ManagedComponent  {
 				
 				// Normalise
 				config.includedUnions[i].distribution = 
-					ProbabilityUtils.normaliseDistribution(config.includedUnions[i].distribution, 1.0f);
+					DistributionGeneration.normaliseDistribution(config.includedUnions[i].distribution, 1.0f);
 			}
 		}
 	}

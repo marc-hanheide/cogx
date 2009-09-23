@@ -126,7 +126,7 @@ public class BinderUtils {
 		// if the probability distribution of the updated proxy is unavailable, regenerate it
 		if (proxy.distribution == null) {
 			proxy.distribution = 
-				ProbabilityUtils.generateProbabilityDistribution(proxy);
+				DistributionGeneration.generateProbabilityDistribution(proxy);
 		}
 	}
 	
