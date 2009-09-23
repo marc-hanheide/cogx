@@ -24,7 +24,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
 
-import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
@@ -34,8 +33,6 @@ import binder.autogen.core.Union;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
-import binder.utils.BayesianNetworkUtils;
-import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
 import binder.utils.GradientDescent;
 import binder.utils.ProbabilityUtils;
@@ -51,8 +48,8 @@ import binder.utils.ProbabilityUtils;
 
 public class BayesianNetworkManager {
 
-	// The bayesian network
-	private BayesianNetwork network;
+	// The bayesian network wrapper
+	private BayesianNetworkWrapper network;
 
 	// Turn logging on/off
 	boolean logging = false;
@@ -69,7 +66,7 @@ public class BayesianNetworkManager {
 	public BayesianNetworkManager(String configurationFile) {		
 
 		log("Start building the bayesian network...");
-		network = BayesianNetworkUtils.constructNetwork(configurationFile);
+		network = new BayesianNetworkWrapper (configurationFile);
 		log("Construction of bayesian network successfull!");
 		log("number of nodes: " + network.nodes.length);		
 		log("number of edges: " + network.edges.length);
@@ -324,8 +321,7 @@ public class BayesianNetworkManager {
 					
 					// Get the correlation between the two feature pairs, given
 					// the specifications of the bayesian network
-					FeatureValueCorrelation corr = 
-						BayesianNetworkUtils.getCorrelationsBetweenFVs(network, featpair1, featpair2);
+					FeatureValueCorrelation corr = network.getCorrelationsBetweenFVs(featpair1, featpair2);
 					if (corr != null) {
 						
 						// If a correlation is found, update the condition probability
@@ -376,7 +372,7 @@ public class BayesianNetworkManager {
 	public float getIndependentProb (String featlabel, FeatureValue featvalue) {
 
 		// Search for the node in the bayesian network
-		BayesianNetworkNode node = BayesianNetworkUtils.getNodeWithFeature(network, featlabel);
+		BayesianNetworkNode node = network.getNodeWithFeature(featlabel);
 
 		if (node != null) {
 			

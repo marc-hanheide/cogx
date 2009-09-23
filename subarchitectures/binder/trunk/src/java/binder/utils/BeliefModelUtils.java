@@ -36,135 +36,157 @@ import binder.autogen.beliefmodel.SuperFormula;
 import binder.autogen.beliefmodel.UncertainSuperFormula;
 import binder.autogen.core.FeatureValue;
 
+
+/**
+ * Utility library for creating and monitoring belief models
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 18/09/2009
+ */
+
 public class BeliefModelUtils {
 
+	// flag to activate logging
 	public static boolean LOGGING = true;
 
-	public BeliefModelUtils() {
-
-	}
-
-
+	
+	
+	// ================================================================= 
+	// FORMULA CREATION METHODS   
+	// ================================================================= 
+	
+	
+	/**
+	 * Create a new belief model formula containing the assignment of a feature to a 
+	 * particular feature value
+	 * 
+	 * TODO: find another solution than hardcoding to enforce the strong typing of formulae
+	 * 
+	 * @param featlabel the feature label
+	 * @param fv the feature value
+	 * @return the belief model formula
+	 */
+	
 	public static UncertainSuperFormula createNewProperty(String featlabel, FeatureValue fv) {
 
+		// types for the colour feature
 		if (featlabel.equals("colour")) {
+			
 			ColorProperty property = new ColorProperty();
-
-			if (FeatureValueUtils.hasValue(fv, "red")) {
-				property.colorValue = Color.red;
-			}
-			else if (FeatureValueUtils.hasValue(fv, "blue")) {
-				property.colorValue = Color.blue;
-			}
-			else if (FeatureValueUtils.hasValue(fv, "green")) {
-				property.colorValue = Color.green;
-			}
-			else {
-				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
-			}
-
 			property.unc = fv.independentProb;
+
+			if (FeatureValueUtils.hasValue(fv, "red")) { property.colorValue = Color.red; }
+			else if (FeatureValueUtils.hasValue(fv, "blue")) {property.colorValue = Color.blue;	}
+			else if (FeatureValueUtils.hasValue(fv, "green")) {	property.colorValue = Color.green;}
+		
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
+						"\" currently not supported in the typed belief model");
+			}
+
 			return property;
 		}
-		
+	
+		// types for the shape feature
 		else if (featlabel.equals("shape")) {
+			
 			ShapeProperty property = new ShapeProperty();
-
-			if (FeatureValueUtils.hasValue(fv, "cylindrical")) {
-				property.shapeValue = Shape.cylindrical;
-			}
-			else if (FeatureValueUtils.hasValue(fv, "spherical")) {
-				property.shapeValue = Shape.spherical;
-			}
-			else if (FeatureValueUtils.hasValue(fv, "cubic")) {
-				property.shapeValue = Shape.cubic;
-			}
-			else {
-				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
-			}
-
 			property.unc = fv.independentProb;
+
+			if (FeatureValueUtils.hasValue(fv, "cylindrical")) { property.shapeValue = Shape.cylindrical; }
+			else if (FeatureValueUtils.hasValue(fv, "spherical")) {	property.shapeValue = Shape.spherical; }
+			else if (FeatureValueUtils.hasValue(fv, "cubic")) { property.shapeValue = Shape.cubic; }
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
+						"\" currently not supported in the typed belief model");
+			}
+
 			return property;
 		}
 		
+		// types for the obj_label feature
 		else if (featlabel.equals("obj_label")) {
+			
 			ObjectTypeProperty property = new ObjectTypeProperty();
-
-			if (FeatureValueUtils.hasValue(fv, "mug")) {
-				property.typeValue = ObjectType.mug;
-			}
-			else if (FeatureValueUtils.hasValue(fv,"ball")) {
-				property.typeValue = ObjectType.ball;
-			}
-			else {
-				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
-			}
-
 			property.unc = fv.independentProb;
+
+			if (FeatureValueUtils.hasValue(fv, "mug")) { property.typeValue = ObjectType.mug; }
+			else if (FeatureValueUtils.hasValue(fv,"ball")) { property.typeValue = ObjectType.ball;	}
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
+						"\" currently not supported in the typed belief model");
+			}
+
 			return property;
 		}
 		
+		// types for the graspable feature
 		else if (featlabel.equals("graspable")) {
+			
 			GraspableProperty property = new GraspableProperty();
-
-			if (FeatureValueUtils.hasValue(fv, true)) {
-				property.graspableValue = true;
-			}
-			else if (FeatureValueUtils.hasValue(fv,false)) {
-				property.graspableValue = false;
-			}
-			else {
-				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + "\" currently not supported in the typed belief model");
-			}
-
 			property.unc = fv.independentProb;
+
+			if (FeatureValueUtils.hasValue(fv, true)) { property.graspableValue = true;	}
+			else if (FeatureValueUtils.hasValue(fv,false)) { property.graspableValue = false; }
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
+						"\" currently not supported in the typed belief model");
+			}
+
 			return property;
 		}
 		
+		// types for the location feature
 		else if (featlabel.equals("location")) {
+			
 			LocationProperty property = new LocationProperty();
-
+			property.unc = fv.independentProb;
 			property.location = FeatureValueUtils.getString(fv);
 			
-			property.unc = fv.independentProb;
 			return property;
 		}
 		
+		// types for the ling_label feature
 		else if (featlabel.equals("ling_label")) {
+			
 			LinguisticLabelProperty property = new LinguisticLabelProperty();
-
+			property.unc = fv.independentProb;
 			property.label = FeatureValueUtils.getString(fv);
 			
-			property.unc = fv.independentProb;
 			return property;
 		}
 		
+		// types for the ling_attribute feature
 		else if (featlabel.equals("ling_attribute")) {
+			
 			LinguisticAttributeProperty property = new LinguisticAttributeProperty();
-
+			property.unc = fv.independentProb;
 			property.attribute = FeatureValueUtils.getString(fv);
 			
-			property.unc = fv.independentProb;
 			return property;
 		}
 		
-
-		log("WARNING: feature \"" + featlabel + "\" not supported in the typing currently specified for the belief model");
+		// and if the feature doesn't belong to one of the above categories...
+		else {
+		log("WARNING: feature \"" + featlabel + 
+				"\" not supported in the typing currently specified for the belief model");
+		}
 		return new UncertainSuperFormula();
 	}
 
 	
+	
+	// ================================================================= 
+	// PRETTY PRINT METHODS   
+	// ================================================================= 
+	
+	
+	
 	/**
-	public static Object getValue(SuperFormula property) {
-		if (property instanceof ColorProperty) {
-			return ((ColorProperty)property).colorValue;
-		}
-		else if (property instanceof ShapeProperty) {
-			return ((ShapeProperty)property).shapeValue;
-		}
-		return null;
-	}
-	*/
+	 * Returns a string containing a string-formatted version of the belief model
+	 * formula
+	 */
 	
 	public static String getFormulaPrettyPrint(SuperFormula formula) {
 		String result = "@(" ;
@@ -176,13 +198,13 @@ public class BeliefModelUtils {
 		return result;
 	}
 	
-	private static String getIndent(int nbIndents) {
-		String str = "";
-		for (int i = 0 ; i < nbIndents; i++) {
-			str += "     ";
-		}
-		return str;
-	}
+
+	/**
+	 * Returns a string-formatted version of the logical operator included in form
+	 * 
+	 * @param form the complex formula
+	 * @return the string
+	 */
 	
 	private static String getOperatorPrettyPrint (ComplexFormula form) {
 		String operator = " ";
@@ -195,6 +217,14 @@ public class BeliefModelUtils {
 		return operator;
 	}
 	
+	/**
+	 * Returns a string-formatted version of the uncertainty values contained in the
+	 * formula, surrounded by brackets
+	 * 
+	 * @param formula the formula
+	 * @return the string
+	 */
+	
 	private static String getUncertaintyValuePrettyPrint(UncertainSuperFormula formula) {
 		String str = "";
 		if (formula.unc > 0.0) {
@@ -203,17 +233,29 @@ public class BeliefModelUtils {
 		return str;
 	}
 	
+	/**
+	 * Returns a string-formatted version of the formula, indented by depth
+	 * 
+	 * TODO: remove this hardcoded conversion between features and strongly typed belief formulae
+	 * 
+	 * @param formula the formula
+	 * @param depth the indent to apply
+	 * @return the string
+	 */
 	
 	public static String getFormulaPrettyPrint(SuperFormula formula, int depth) {
 		
 		String result = formula.id + " ^";
 		
+		// If the formula is a complex formula, loop on its constituents and
+		// call getFormulaPrettyPrint recursively
 		if (formula instanceof ComplexFormula) {
 			
 			result += "\n" +  getIndent(depth) + "(";
 			
 			String operator = getOperatorPrettyPrint((ComplexFormula)formula);
 			
+			// loop on the formula constituents
 			for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
 				SuperFormula subformula = ((ComplexFormula)formula).formulae[i];
 				
@@ -226,12 +268,15 @@ public class BeliefModelUtils {
 			result += ")";
 		}
 		
+		// if the formula is a simple colour property
 		else if (formula instanceof ColorProperty) {
 			result += " <Colour> " + ((ColorProperty)formula).colorValue;
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
+		
+		// if the formula is a simple shape property
 		else if (formula instanceof ShapeProperty) {
 			result += " <Shape> " + ((ShapeProperty)formula).shapeValue;
 			if (formula instanceof UncertainSuperFormula) {
@@ -244,36 +289,65 @@ public class BeliefModelUtils {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
+
+		// if the formula is a simple graspable property
 		else if (formula instanceof GraspableProperty) {
 			result += " <Graspable> " + ((GraspableProperty)formula).graspableValue;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
+		
+		// if the formula is a simple location property
 		else if (formula instanceof LocationProperty) {
 			result += " <Location> " + ((LocationProperty)formula).location;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
+
+		// if the formula is a simple linguistic label property
 		else if (formula instanceof LinguisticLabelProperty) {
 			result += " <LingLabel> " + ((LinguisticLabelProperty)formula).label;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
+
+		// if the formula is a simple linguistic attribute property
 		else if (formula instanceof LinguisticAttributeProperty) {
 			result += " <LingAttribute> " + ((LinguisticAttributeProperty)formula).attribute;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
 			}
-		}
-		
+		}	
 		 		
 		return result;
 	}
 	
+	
+	// ================================================================= 
+	// UTILITY METHODS   
+	// ================================================================= 
+	
+	/**
+	 * Returns a string containing nbIndents spaces
+	 * 
+	 * @param nbIndents nb of spaces
+	 * @return
+	 */
+	private static String getIndent(int nbIndents) {
+		String str = "";
+		for (int i = 0 ; i < nbIndents; i++) {
+			str += "     ";
+		}
+		return str;
+	}
 
+	/**
+	 * Logging utility
+	 * @param str the string to output
+	 */
 	private static void log(String str) {
 		if (LOGGING)
 			System.out.println("[BeliefModelUtils] "  + str);

@@ -25,19 +25,33 @@ import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
 
-
+/**
+ * Fake proxy generator used to test the belief model
+ * 
+ * @author Pierre Lison
+ * @version 23/09/2009
+ * @started 18/09/2009
+ */
 public class FakeProxyGeneratorForBeliefModel extends AbstractProxyGenerator {
 
+	/**
+	 * Start
+	 */
 	public void start () {
 		log("Fake haptic proxy generator successfully started");
 	}
 	
 	
+	/**
+	 * Run
+	 */
 	public void run() {
 		randomInsertion();
 	}
 	
-	
+	/**
+	 * Create one indexed proxy
+	 */
 	public Proxy createProxy(int nb) {
 		if (nb == 1) {
 			return createProxyOne();
@@ -48,7 +62,11 @@ public class FakeProxyGeneratorForBeliefModel extends AbstractProxyGenerator {
 		return null;
 	}
 	
-
+	/**
+	 * Create proxy one (cylindrical, red object)
+	 * 
+	 * @return the proxy
+	 */
 	private Proxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blibli", "VisualObject");
@@ -67,7 +85,11 @@ public class FakeProxyGeneratorForBeliefModel extends AbstractProxyGenerator {
 	}
 	
 
-
+	/**
+	 * Create proxy two (spherical, blue/red object)
+	 * 
+	 * @return the proxy
+	 */
 	private Proxy createProxyTwo() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blibli2", "VisualObject");
