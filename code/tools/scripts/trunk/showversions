@@ -12,6 +12,8 @@ nvcc --version
 echo "\nPYTHON\n"
 python --version
 python -c "import opencv; print 'OpenCv %d.%d' %(opencv.CV_MAJOR_VERSION, opencv.CV_MINOR_VERSION)"
+echo "\nPYTHON Qt4\n"
+python -c "import PyQt4.QtCore as qt; print 'PyQt4 version', qt.PYQT_VERSION_STR"
 echo "\nCOGX CODE\n"
 pwd
 svn info
