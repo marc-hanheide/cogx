@@ -33,6 +33,8 @@ module motivation {
     		float costs;
     		/** [0-1] encoding for information gain */
     		float informationGain;
+    		/** rank of activated motives */
+    		int rank;
     	};
     	
     	class TestMotive extends Motive {
