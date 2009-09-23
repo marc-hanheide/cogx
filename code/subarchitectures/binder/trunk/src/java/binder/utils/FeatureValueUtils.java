@@ -29,7 +29,7 @@ import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
 
 /**
- * Generic utility methods for the binder
+ * Generic utility methods to manipulate feature values
  * 
  * @author Pierre Lison
  * @version 10/09/2009
@@ -38,38 +38,72 @@ import binder.autogen.featvalues.UnknownValue;
 
 public class FeatureValueUtils {
 	
+	// flag to activate logging
 	public static boolean LOGGING = true;
 	
 
+	// ================================================================= 
+	// UNKNOWN VALUES METHODS   
+	// ================================================================= 
+	
+	
+	/**
+	 * Create a new unknown feature value
+	 * 
+	 * @param prob existence probability of the value
+	 * @return the feat value
+	 */
+	
 	public static UnknownValue createUnknownValue(float prob) {
 		return new UnknownValue(prob, new CASTTime());
 	}
 	
-	public static boolean hasUnknownValue (FeatureValue fv) {
+	/**
+	 * Return true if fv is an unknown value
+	 * 
+	 * @param fv the feature value
+	 * @return true if unknown value, false otherwise
+	 */
+	
+	public static boolean isUnknownValue (FeatureValue fv) {
 		return (fv instanceof UnknownValue);
 	}
 	
+	
 
-	public static boolean hasValue (FeatureValue fv, Object o) {
-		if (fv instanceof StringValue && o instanceof String) {
-			return ((StringValue)fv).val.equals(((String)o));
-		}
-		if (fv instanceof AddressValue && o instanceof String) {
-			return ((AddressValue)fv).val.equals(((String)o));
-		}
-		if (fv instanceof BooleanValue && o instanceof Boolean) {
-			return ((BooleanValue)fv).val == (((Boolean)o).booleanValue());
-		}
-		if (fv instanceof IntegerValue && o instanceof Integer) {
-			return ((IntegerValue)fv).val == (((Integer)o).intValue());
-		}
-		else {
-	//		log("WARNING: Type of feature value is unknown / not comparable");
-	//		log("feature value: " + fv.getClass().getSimpleName());
-	//		log("object: " + o.getClass().getSimpleName());
+	/**
+	 * Check whether the feature array contain any unknown values
+	 * 
+	 * @param feats the feature array
+	 * @return true if there is at least one unknown feature value, false otherwise
+	 */
+	
+	public static boolean hasUnknownValues (Feature[] feats) {
+		if (feats.length > 0) {
+			if (feats[0].alternativeValues != null) {
+				for (int i = 0 ; i < feats[0].alternativeValues.length ; i++) {
+					if (isUnknownValue(feats[0].alternativeValues[i])) {
+						return true;
+					}
+				}
+			}
 		}
 		return false;
 	}
+	
+	
+	// ================================================================= 
+	// FEATURE VALUE COMPARISON METHODS   
+	// ================================================================= 
+	
+	
+	/**
+	 * Check whether the two feature values have the same content
+	 * 
+	 * @param fv first feature value
+	 * @param fv2 second feature value
+	 * @return true is the two feat values match, false otherwise
+	 */
 	
 	public static boolean haveEqualValue (FeatureValue fv, FeatureValue fv2) {
 		if (fv instanceof StringValue && fv2 instanceof StringValue) {
@@ -88,61 +122,49 @@ public class FeatureValueUtils {
 			return true;
 		}
 		
-		else {
-	//		log("WARNING: Type of feature value is unknown / not comparable");
-	//		log("feature value 1: " + fv.getClass().getSimpleName());
-	//		log("feature value 2: " + fv2.getClass().getSimpleName());
+		return false;
+	}
+	
+
+
+	/**
+	 * check whether the value of fv equals o
+	 * 
+	 * @param fv the feature value
+	 * @param o the object
+	 * @return true is the feature value content and the object match, false otherwise
+	 */
+
+	public static boolean hasValue (FeatureValue fv, Object o) {
+		
+		if (fv instanceof StringValue && o instanceof String) {
+			return ((StringValue)fv).val.equals(((String)o));
 		}
+		if (fv instanceof AddressValue && o instanceof String) {
+			return ((AddressValue)fv).val.equals(((String)o));
+		}
+		if (fv instanceof BooleanValue && o instanceof Boolean) {
+			return ((BooleanValue)fv).val == (((Boolean)o).booleanValue());
+		}
+		if (fv instanceof IntegerValue && o instanceof Integer) {
+			return ((IntegerValue)fv).val == (((Integer)o).intValue());
+		}
+		
 		return false;
 	}
 	
 	
-	public static String getString(FeatureValue fv) {
-		if (fv.getClass().equals(StringValue.class)) {
-			return ((StringValue)fv).val;
-		}
-		else {
-			log("WARNING: type of feature value not a String");
-		}
-		return "";
-	}
+	// ================================================================= 
+	// FEATURE VALUE CLONING METHODS   
+	// ================================================================= 
+
 	
-	public static boolean hasUnknownValues (Feature[] feats) {
-		if (feats.length > 0) {
-			if (feats[0].alternativeValues != null) {
-				for (int i = 0 ; i < feats[0].alternativeValues.length ; i++) {
-					if (hasUnknownValue(feats[0].alternativeValues[i])) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
-	public static String toString (FeatureValue fv){
-		if (fv instanceof StringValue) {
-			return ((StringValue)fv).val;
-		}
-		else if (fv instanceof AddressValue) {
-			return ((AddressValue)fv).val;
-		}
-		else if (fv instanceof IntegerValue) {
-			return (""+((IntegerValue)fv).val);
-		}
-		else if (fv instanceof BooleanValue) {
-			return (""+((BooleanValue)fv).val);
-		}
-		else if (fv instanceof UnknownValue) {
-			return "unknown";
-		}
-		else {
-			log("WARNING: feature value not convertible to a string");
-		}
-		return "";
-	}
-	
-	
+	/**
+	 * Return a new feature value with exactly the same content and probability as fv
+	 * 
+	 * @param fv the existing feature value
+	 * @return the new feature value
+	 */
 	
 	public static FeatureValue cloneFeatureValue(FeatureValue fv) {
 		
@@ -168,6 +190,18 @@ public class FeatureValueUtils {
 	}
 	
 
+	// ================================================================= 
+	// MAXIMUM SEARCH METHODS   
+	// ================================================================= 
+
+	
+	/**
+	 * Get the feature value with the highest probility in the feature
+	 * 
+	 * @param feat the feature
+	 * @return the max-probability feature value
+	 */
+	
 	public static FeatureValue getMaxFeatureValue (Feature feat) {
 		
 		float maxProb = 0.0f;
@@ -185,6 +219,49 @@ public class FeatureValueUtils {
 	}
 	
 
+	// ================================================================= 
+	// STRING FORMATTING METHODS   
+	// ================================================================= 
+
+	
+	/**
+	 * Return a string representation of the feature value
+	 * 
+	 * @param fv the feature value
+	 * @return the string-format representation
+	 */
+	public static String toString (FeatureValue fv){
+		if (fv instanceof StringValue) {
+			return ((StringValue)fv).val;
+		}
+		else if (fv instanceof AddressValue) {
+			return ((AddressValue)fv).val;
+		}
+		else if (fv instanceof IntegerValue) {
+			return (""+((IntegerValue)fv).val);
+		}
+		else if (fv instanceof BooleanValue) {
+			return (""+((BooleanValue)fv).val);
+		}
+		else if (fv instanceof UnknownValue) {
+			return "unknown";
+		}
+		else {
+			log("WARNING: feature value not convertible to a string");
+		}
+		return "";
+	}
+	
+	
+	// ================================================================= 
+	// UTILITY METHODS   
+	// ================================================================= 
+
+	
+	/**
+	 * Logging
+	 * @param s
+	 */
 	private static void log(String s) {
 		if (LOGGING) {
 		System.out.println("[FeatureValueUtils] " + s);
