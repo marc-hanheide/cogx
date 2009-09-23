@@ -22,6 +22,7 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 import Abducer.*;
+import comsys.processing.collab.ContinualCollaborativeActivity;
 import comsys.processing.collab.MercuryUtils;
 import comsys.processing.collab.AbdUtils;
 
@@ -195,16 +196,6 @@ public class cc_ContinualCollabActing extends ManagedComponent {
         catch (Exception e) {
             e.printStackTrace();
         }
-        
-        // close the connection to the server
-        if (ic != null) { 
-        	try { 
-        		ic.destroy(); 
-        	}
-        	catch (Exception e) { 
-        		System.err.println(e.getMessage()); 
-        	} 
-        }
     }
 
     // =================================================================
@@ -219,13 +210,13 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 				// get the logical form
             	SelectedLogicalForm slf = (SelectedLogicalForm) slfWM.getData();
 				// construct the abductive proof
-				AbductiveProof proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, sfl.lf); 
+				AbductiveProof proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, slf.lf); 
 				// print the proof ... 
 				if (proof != null) { 	
             		String logString = "proof: body = [\n";
-            		for (int i = 0; i < p.body.length; i++) {
-            			logString += MercuryUtils.modalisedFormulaToString(p.body[i].body);
-            			if (i < p.body.length-1) { logString += ",\n"; }
+            		for (int i = 0; i < proof.body.length; i++) {
+            			logString += MercuryUtils.modalisedFormulaToString(proof.body[i].body);
+            			if (i < proof.body.length-1) { logString += ",\n"; }
             		}
             		logString += "\n]";
             		log(logString);
@@ -256,11 +247,11 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
     public void configure(Properties _config) {
 		if (_config.containsKey("--facts")) {
-			factsFilename = _config.getProperty("--facts");
+			ccaEngine.setFactsFileName(_config.getProperty("--facts"));
 		}
 		
 		if (_config.containsKey("--rules")) {
-			rulesFilename = _config.getProperty("--rules");
+			ccaEngine.setRulesFileName(_config.getProperty("--rules"));
 		}
 	}
     

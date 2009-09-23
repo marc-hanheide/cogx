@@ -23,18 +23,29 @@ package comsys.processing.collab;
 
 import Abducer.*;
 
-
 import comsys.datastructs.comsysEssentials.BoundReadings;
+import comsys.datastructs.comsysEssentials.RefBinding;
+import comsys.datastructs.comsysEssentials.Anchor;
+import comsys.datastructs.comsysEssentials.ReadingBindings;
 import comsys.datastructs.lf.LogicalForm; 
-
+import comsys.lf.utils.ArrayIterator;
+import comsys.datastructs.SelectedLogicalForm;
 
 import comsys.processing.collab.AbdUtils;
 
+// ---------------------------------------------------------
+// CAST imports
+// ---------------------------------------------------------
+
+import cast.cdl.*;
+import cast.core.CASTData;
+import cast.core.CASTUtils;
 
 // ---------------------------------------------------------
 // JAVA imports
 // ---------------------------------------------------------
 
+import java.lang.*;
 
 
 // ----------------------------------------------------------
@@ -51,8 +62,8 @@ public class ContinualCollaborativeActivity {
 
 	/** Activity modes */
 	
-	static const String UNDERSTAND = "uttered";
-	static const String GENERATE   = "produce";
+	public static final String UNDERSTAND = "uttered";
+	public static final String GENERATE   = "produce";
 	
 	/** The abduction engine */ 
 	
@@ -68,6 +79,7 @@ public class ContinualCollaborativeActivity {
     private String factsFilename = "./subarchitectures/comsys/abduction/facts.txt";	
 	
 	
+	boolean logging = true;
 	
 	
 	/** 
@@ -95,6 +107,17 @@ public class ContinualCollaborativeActivity {
             System.err.println(e.getMessage()); 
         }	
 	} // end init
+
+	protected void finalize() {
+        if (ic != null) { 
+        	try { 
+        		ic.destroy(); 
+        	}
+        	catch (Exception e) { 
+        		System.err.println(e.getMessage()); 
+        	} 
+        }
+	} // end finalize
 
 	/**
 	 the method initializes the abduction engine. before this method is called, set-methods can 
@@ -137,7 +160,7 @@ public class ContinualCollaborativeActivity {
 		goal.body.m = new Modality[] {AbdUtils.modEvent()};
 		goal.body.p = AbdUtils.predicate(activityMode, new Term[] {
 										 AbdUtils.term("h"),
-										 AbdUtils.term(slf.lf.root.nomVar)
+										 AbdUtils.term(lf.root.nomVar)
 										 });
 		goal.isConst = true;
 		goal.costFunction = "";
@@ -190,6 +213,10 @@ public class ContinualCollaborativeActivity {
 		
 	} // end method
 		
+	private void log(String str) {
+		if (logging)
+			System.out.println("\033[32m[CCA]\t" + str  + "\033[0m");
+	}
 	
 	
 	
