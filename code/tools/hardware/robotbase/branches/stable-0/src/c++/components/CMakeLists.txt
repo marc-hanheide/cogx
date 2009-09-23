@@ -29,7 +29,7 @@ ADD_LIBRARY(RobotbaseClientUtils SHARED ${SOURCES})
 target_link_libraries(RobotbaseClientUtils ${PLAYER_LIBRARIES})
 target_link_libraries(RobotbaseClientUtils Robotbase)
 target_link_libraries(RobotbaseClientUtils ${CAST_LIBRARIES})
-target_link_libraries(RobotbaseClientUtils Ice IceUtil)
+target_link_libraries(RobotbaseClientUtils ${ICE_LIBS})
 INSTALL(TARGETS RobotbaseClientUtils LIBRARY DESTINATION lib)
 
 SET(SOURCES OdometryReceiver.cpp)
@@ -38,7 +38,7 @@ ADD_LIBRARY(OdometryReceiver SHARED ${SOURCES})
 # Add libraries to link against.
 target_link_libraries(OdometryReceiver Robotbase)
 target_link_libraries(OdometryReceiver ${CAST_LIBRARIES})
-target_link_libraries(OdometryReceiver Ice IceUtil)
+target_link_libraries(OdometryReceiver ${ICE_LIBS})
 
 INSTALL(TARGETS OdometryReceiver LIBRARY DESTINATION lib)
 
