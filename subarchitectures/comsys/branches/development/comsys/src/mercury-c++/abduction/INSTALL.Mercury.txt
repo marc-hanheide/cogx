@@ -35,3 +35,6 @@ HOW TO INSTALL MERCURY
    (For this you might need root access rights.)
 
 6) Make sure that INSTALLPATH/bin is in your $PATH environment variable.
+
+7) Export environment variable MERCURY_HOME to INSTALLPATH in your shell.
+   You will need this to compile the abduction server.
