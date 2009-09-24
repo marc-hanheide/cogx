@@ -75,7 +75,7 @@ public abstract class AbstractBeliefFactory
 	 */
 	
 	protected Belief addAgent (Belief belief, String id) { 
-		Agent[] agents = belief.agents; 
+		Agent[] agents = belief.ags; 
 		if (agents == null) { 
 			agents = createAgents(id);
 		} else { 
