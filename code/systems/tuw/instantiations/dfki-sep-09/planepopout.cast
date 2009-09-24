@@ -18,12 +18,13 @@ COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --
 SUBARCHITECTURE nav.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
+CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --max-scan-rate 5 --no-file-output #--log #-m tmpmap.metric #--debug
 CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log #--read-ptu --log #--debug 
-
+#CPP GD odom.process OdomLocalizer
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo
-CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display
+CPP MG Filter SOIFilter --log true --videoname video --camid 0 #--display
 
