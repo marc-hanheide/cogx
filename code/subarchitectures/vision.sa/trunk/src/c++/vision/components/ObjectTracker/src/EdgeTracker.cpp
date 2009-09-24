@@ -138,8 +138,8 @@ bool EdgeTracker::track(	unsigned char* image,
 							Particle p_estimate,
 							Particle& p_result)		// storage to write tracked position
 {
-	glReadBuffer(GL_AUX1);
-	glDrawBuffer(GL_AUX1);
+	//glReadBuffer(GL_AUX1);
+	//glDrawBuffer(GL_AUX1);
 	
 	// Check if input is valid
 	isReady(image, model, camera, &p_estimate);	
@@ -187,15 +187,15 @@ bool EdgeTracker::track(	unsigned char* image,
 	//	p_result = p_estimate;
 	}
 	
-	glReadBuffer(GL_BACK);
-	glDrawBuffer(GL_BACK);
+	//glReadBuffer(GL_BACK);
+	//glDrawBuffer(GL_BACK);
 	
 	return true;
 }
 
 // Draw result of edge tracking (particle with maximum likelihood)
 void EdgeTracker::drawResult(Particle* p){
-	glLineWidth(3);
+	glLineWidth(1);
 	m_cam_perspective->SetViewport(params.width, params.height);
 	m_cam_perspective->Activate();
 	p->activate();

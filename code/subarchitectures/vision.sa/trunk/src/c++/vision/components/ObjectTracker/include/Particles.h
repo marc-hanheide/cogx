@@ -42,6 +42,8 @@ public:
 	//void getModelView(float* matrix4x4);
 	void setPose(mat3 rot, vec3 pos);
 	void getPose(mat3 &rot, vec3 &pos);
+	void rotate(float x, float y, float z);
+	void translate(float x, float y, float z);
 
 };
 

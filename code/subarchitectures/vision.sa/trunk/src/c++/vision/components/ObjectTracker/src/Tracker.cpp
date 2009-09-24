@@ -131,7 +131,8 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 					float n_r_max,									// standard deviation of rotational noise in degree
 					float n_t_max,									// standard deviation of translational noise in meter
 					float et,										// edge matching tolerance in degree
-					float tt)										// goal tracking time in seconds
+					float tt,										// goal tracking time in seconds
+					Particle zp)
 {	
 	// Parameter:
 	params.width = float(width);
@@ -141,7 +142,7 @@ bool Tracker::init(	int width, int height,							// image size in pixels
 	params.noise_trans_max = n_t_max;
 	params.edge_tolerance = et;
 	params.track_time = tt;
-	params.zP = Particle(0.0);
+	params.zP = zp;
 	
 	if(!m_opengl.Init())
 		return false;
