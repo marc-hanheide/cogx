@@ -14,6 +14,7 @@ CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --log #--debug --no-x-window 
 #CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf #--log #--debug 
 CPP GD path.query PathQueryProcessor --log --no-indirect-paths #--debug
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --log #--debug
 # Conceptual->Binding interface components
 CPP GD proxy.marshaller ProxyMarshaller -bsa binder --log
 CPP GD connectivity.writer ConnectivityWriter --log
