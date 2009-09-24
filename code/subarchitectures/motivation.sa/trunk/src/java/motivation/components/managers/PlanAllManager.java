@@ -28,7 +28,6 @@ import motivation.slice.PlanProxy;
 import motivation.util.GoalTranslator;
 import motivation.util.WMEntryQueue;
 import motivation.util.WMEntryQueue.QueueElement;
-import EDU.oswego.cs.dl.util.concurrent.Executor;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import cast.CASTException;
