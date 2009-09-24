@@ -23,7 +23,7 @@ ifeq ($(origin ICE_HOME), undefined)
 $(info )
 $(info Please set the environment variable ICE_HOME to the root of your Ice)
 $(info installation.)
-$(info e.g. export ICE_HOME=$$(HOME)/Developer/Ice-3.3.1)
+$(info e.g. export ICE_HOME=/opt/local)
 $(info )
 $(error ICE_HOME undefined)
 endif
