@@ -223,7 +223,9 @@ class CCastControlWnd(QtGui.QMainWindow):
     def on_btClientStart_clicked(self, valid=True):
         if not valid: return
         p = self._manager.getProcess("client")
-        if p != None: p.start( params = { "CAST_CONFIG": self._clientConfig } )
+        if p != None:
+            self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
+            p.start( params = { "CAST_CONFIG": self._clientConfig } )
         # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
 
     def on_btClientStop_clicked(self, valid=True):
