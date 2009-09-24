@@ -37,6 +37,7 @@ SET(HEADERS
 	FileVideo.hh
 	FireVideo.hh
 	Flap.hh
+	FlapDefinition.hh
 	FormArcs.hh
 	FormBalls.hh
 	FormBestResults.hh

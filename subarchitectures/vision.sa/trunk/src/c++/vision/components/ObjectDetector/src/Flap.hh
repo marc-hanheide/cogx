@@ -11,6 +11,7 @@
 
 #include "Gestalt.hh"
 #include "VisionCore.hh"
+#include "FlapProperties.hh"
 
 namespace Z
 {
@@ -21,6 +22,8 @@ namespace Z
 class Flap : public Gestalt
 {
 public:
+	FlapProp fp;											///< FlapProperties (2D/3D data)
+
   unsigned rects[2];								///< Rectangles of flap
   double meanGap;										///< Mean value of smallest two gaps between two rectangle-corners
   Array<unsigned> sharedLines;			///< SharedLines from the two rectangles
@@ -49,6 +52,8 @@ public:
   void CalcOrientation();
   void CalculateSignificance();
 	bool IsInside(unsigned flap);
+	void CalculateFlapProperties();
+
   virtual void Draw(int detail = 0);
   virtual const char* GetInfo();
   virtual bool IsAtPosition(int x, int y);

@@ -31,7 +31,9 @@ using namespace Math;
 namespace cast
 {
 
-bool showImage = true;			///< show openCv image from image server.
+bool showImage = true;									///< show openCv image from image server.
+bool getCubes = true;										///< get cubes from the object detector
+bool getFlaps = true; 									///< get flaps from the object detector
 
 using namespace std;
 using namespace VisionData;
@@ -106,7 +108,7 @@ void ObjectDetector::runComponent()
 		if (cmd_detect) processImage();
 
     // wait a bit so we don't hog the CPU
-    sleepComponent(10);
+//     sleepComponent(10);
   }
 }
 
@@ -115,7 +117,6 @@ void ObjectDetector::processImage()
 {
 	frame_counter++;
 	int number = 0;
-	Z::CubeDef cd;
 	bool masked = true;
 
 	Video::Image image;
@@ -129,50 +130,108 @@ void ObjectDetector::processImage()
 	// ----------------------------------------------------------------------------
 	// Get objects after processing and create visual object for working memory
 	// ----------------------------------------------------------------------------
-	while(vs3Interface->GetCube(number, cd, masked))
+
+	// get all cubes and create visual object as working memory entry 
+	if(getCubes)
 	{
-		number++;
-		if(!masked)
+		Z::CubeDef cd;				// cube definition
+
+		while(vs3Interface->GetCube(number, cd, masked))
 		{
-			// check, if cube already exists at the working memory
-			bool cubeExists = false;
-
-			// read visual objects from working memory
-			std::vector <VisionData::VisualObjectPtr> results;
-			getMemoryEntries<VisionData::VisualObject>(results);
-
-			for(unsigned i=0; i<results.size(); i++)
+			number++;
+			if(!masked)
 			{
-				// read vertices and calculate center
-				vector<Vertex> vertices = results[i]->model->vertices;
-				double radius = length(vertices[0].pos);
-
-				// is this cube already in the working memory?
-				Vector3 newCubeCenter;
-				newCubeCenter.x = cd.cubeCenter3D.x;
-				newCubeCenter.y = cd.cubeCenter3D.y;
-				newCubeCenter.z = cd.height/2.;
-
-				if(length(results[i]->pose.pos - newCubeCenter) < radius)
-					cubeExists = true;
-			}
-
-			// Generate VisualObject, if cube does not already exists in the working memory
-			if(!cubeExists)
-			{
-				num_cubes++;
-				VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
-				if(Cube2VisualObject(obj, cd))
+				bool cubeExists = false;
+	
+				// read visual objects from working memory and assign already detected cubes
+				std::vector <VisionData::VisualObjectPtr> results;
+				getMemoryEntries<VisionData::VisualObject>(results);
+	
+				for(unsigned i=0; i<results.size(); i++)
 				{
-					char obj_label[32];
-					sprintf(obj_label, "Cube %d", num_cubes);
-					obj->label = obj_label;
-
-					// Add VisualObject to working memory
-					addToWorkingMemory(newDataID(), obj);
-					log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+					// read vertices and calculate cube center points and radius
+					vector<Vertex> vertices = results[i]->model->vertices;
+	
+					Vector3 newCubeCenter;
+					newCubeCenter.x = cd.cubeCenter3D.x;
+					newCubeCenter.y = cd.cubeCenter3D.y;
+					newCubeCenter.z = cd.height/2.;
+	
+					double radius = length(vertices[0].pos);
+	
+					if(length(results[i]->pose.pos - newCubeCenter) < radius)
+						cubeExists = true;
+				}
+	
+				// Create visual object, if it does not already exists in the working memory
+				if(!cubeExists)
+				{
+					num_cubes++;
+					VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+					if(Cube2VisualObject(obj, cd))
+					{
+						char obj_label[32];
+						sprintf(obj_label, "Cube %d", num_cubes);
+						obj->label = obj_label;
+	
+						// Add VisualObject to working memory
+						addToWorkingMemory(newDataID(), obj);
+						log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+					}
 				}
 			}
+		}
+	}
+
+	// get all flaps and create visual object as working memory entry 
+	if(getFlaps)
+	{
+		Z::FlapDef fd;				// cube definition
+
+		while(vs3Interface->GetFlap(number, fd, masked))
+		{
+// 			number++;
+// 			if(!masked)
+// 			{
+// 				bool cubeExists = false;
+// 	
+// 				// read visual objects from working memory and assign already detected cubes
+// 				std::vector <VisionData::VisualObjectPtr> results;
+// 				getMemoryEntries<VisionData::VisualObject>(results);
+// 	
+// 				for(unsigned i=0; i<results.size(); i++)
+// 				{
+// 					// read vertices and calculate cube center points and radius
+// 					vector<Vertex> vertices = results[i]->model->vertices;
+// 	
+// 					Vector3 newCubeCenter;
+// 					newCubeCenter.x = cd.cubeCenter3D.x;
+// 					newCubeCenter.y = cd.cubeCenter3D.y;
+// 					newCubeCenter.z = cd.height/2.;
+// 	
+// 					double radius = length(vertices[0].pos);
+// 	
+// 					if(length(results[i]->pose.pos - newCubeCenter) < radius)
+// 						cubeExists = true;
+// 				}
+// 	
+// 				// Create visual object, if it does not already exists in the working memory
+// 				if(!cubeExists)
+// 				{
+// 					num_cubes++;
+// 					VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+// 					if(Cube2VisualObject(obj, cd))
+// 					{
+// 						char obj_label[32];
+// 						sprintf(obj_label, "Cube %d", num_cubes);
+// 						obj->label = obj_label;
+// 	
+// 						// Add VisualObject to working memory
+// 						addToWorkingMemory(newDataID(), obj);
+// 						log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+// 					}
+// 				}
+// 			}
 		}
 	}
 

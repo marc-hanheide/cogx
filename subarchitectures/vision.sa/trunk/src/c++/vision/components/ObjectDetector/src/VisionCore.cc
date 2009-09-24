@@ -22,8 +22,9 @@
 #include "OpenCvBufferVideo.hh"
 
 // #include "BufferVideo.hh"
-
 #include "Draw.hh"
+
+// Form and Track headers
 #include "FormSegments.hh"
 #include "FormLines.hh"
 #include "FormArcs.hh"
@@ -51,6 +52,7 @@
 #include "TrackFlaps.hh"
 #include "TrackCubes.hh"
 
+// Gestalts
 #include "Segment.hh"
 #include "Line.hh"
 #include "Collinearity.hh"
@@ -60,6 +62,7 @@
 #include "Closure.hh"
 #include "ExtRectangle.hh"
 #include "ObjectTracker.hh"
+#include "Flap.hh"
 #include "Object.hh"
 
 namespace Z
@@ -847,6 +850,28 @@ bool VisionCore::GetCube(unsigned number, CubeDef &cd, bool &masked)
 		}
 		else masked = true;
 		return true;
+	}
+	return false;
+}
+
+/// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+bool VisionCore::GetFlap(unsigned number, FlapDef &fd, bool &masked)
+{
+	if(NumFlaps() > number)
+	{
+		
+/// flap ist kein object und hat keine 3D Parameter !!!! 
+
+
+
+// 		if(Objects(number)->type == Gestalt::CUBE && !Objects(number)->IsMasked())
+// 		{
+// 			cd = Objects(number)->cuD;
+// 			masked = false;
+// 			return true;
+// 		}
+// 		else masked = true;
+// 		return true;
 	}
 	return false;
 }

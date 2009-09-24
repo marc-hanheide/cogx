@@ -41,6 +41,7 @@ public:
 	~Vs3Interface();
 	int ProcessSingleImage(IplImage *image);
 	bool GetCube(unsigned number, Z::CubeDef &cd, bool &masked);
+	bool GetFlap(unsigned number, Z::FlapDef &fd, bool &masked);
 
 	void SetActiveDrawArea(IplImage *iI);
 	void DrawGestalts(int type, int detail);
