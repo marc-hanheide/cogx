@@ -37,7 +37,7 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Planner WMControl --log
 JAVA MG executor execution.components.PrototypePlanExecutor --log
-JAVA MG motivation.generators.PlaceGenerator motivation.components.generators.PlaceGenerator   --log
+JAVA MG motivation.generators.PlaceGenerator motivation.components.generators.ExplorePlaceGenerator   --log
 JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
 #JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
 JAVA MG motivation.filters.ManualSelectFilter motivation.components.filters.ManualSelectFilter  --log
