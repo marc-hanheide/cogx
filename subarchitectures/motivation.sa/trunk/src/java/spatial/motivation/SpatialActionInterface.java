@@ -30,6 +30,7 @@ import cast.cdl.WorkingMemoryOperation;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.ActiveVisualSearch;
+import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
@@ -53,6 +54,34 @@ public class SpatialActionInterface extends ManagedComponent {
 	 * minutes.
 	 */
 	private long m_avsTimeoutMillis = 300000;
+
+	private class AlwaysSucceedsExecutor implements ActionExecutor {
+
+		@Override
+		public boolean accept(Action _action) {
+			return true;
+		}
+
+		@Override
+		public TriBool execute() {
+			return TriBool.TRITRUE;
+		}
+
+		@Override
+		public void execute(ExecutionCompletionCallback _callback) {
+
+		}
+
+		@Override
+		public boolean isBlockingAction() {
+			return true;
+		}
+
+		@Override
+		public void stopExecution() {
+		}
+
+	}
 
 	private class AVSExecutor extends Thread implements ActionExecutor {
 
@@ -263,6 +292,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		m_actionStateManager.registerActionType(GoToPlace.class,
 				new ActionExecutorFactory() {
+					@Override
 					public ActionExecutor getActionExecutor() {
 						return new GoToPlaceExecutor();
 					}
@@ -270,8 +300,17 @@ public class SpatialActionInterface extends ManagedComponent {
 
 		m_actionStateManager.registerActionType(ActiveVisualSearch.class,
 				new ActionExecutorFactory() {
+					@Override
 					public ActionExecutor getActionExecutor() {
 						return new AVSExecutor();
+					}
+				});
+
+		m_actionStateManager.registerActionType(ExplorePlace.class,
+				new ActionExecutorFactory() {
+					@Override
+					public ActionExecutor getActionExecutor() {
+						return new AlwaysSucceedsExecutor();
 					}
 				});
 

@@ -71,6 +71,9 @@ module execution {
 	 */
 	LongSeq placeIDs;
       };
+
+      /** Explore place. Not actually executed. **/
+      class ExplorePlace extends Action {};
       
 
       /**

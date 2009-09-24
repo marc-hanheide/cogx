@@ -89,7 +89,7 @@ public class SerialPlanExecutor extends Thread {
 
 		m_planningTaskAddress = planProxy.planAddress;
 
-		m_component.println("executing plan at: "
+		m_component.log("executing plan at: "
 				+ CASTUtils.toString(m_planningTaskAddress));
 		m_task = m_component.getMemoryEntry(m_planningTaskAddress,
 				PlanningTask.class);
@@ -101,7 +101,7 @@ public class SerialPlanExecutor extends Thread {
 				m_planningTaskAddress.subarchitecture);
 
 		if (m_task.firstActionID == null || m_task.firstActionID.isEmpty()) {
-			m_component.println("plan was empty, completing");
+			m_component.log("plan was empty, completing");
 			planComplete(ExecutionState.COMPLETED);
 			return;
 		}
@@ -121,7 +121,7 @@ public class SerialPlanExecutor extends Thread {
 			@Override
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 					throws CASTException {
-				m_component.println("something was deleted, stopping exe: "
+				m_component.log("something was deleted, stopping exe: "
 						+ CASTUtils.toString(_wmc));
 				stopExecution();
 			}
@@ -307,7 +307,7 @@ public class SerialPlanExecutor extends Thread {
 		}
 		m_component.overwriteWorkingMemory(m_actionAddress, m_currentAction);
 		_actionWrapper.sentCompletionSignal();
-		m_component.println("signalled planner that action was completed.");
+		m_component.log("signalled planner that action was completed.");
 	}
 
 	/**
@@ -327,7 +327,7 @@ public class SerialPlanExecutor extends Thread {
 			UnknownSubarchitectureException {
 		Action action = readAction();
 		PlannedActionWrapper actionWrapper = _previousAction;
-		m_component.println("act status: " + action.status);
+		m_component.log("act status: " + action.status);
 		if (action.status == Completion.PENDING) {
 			actionWrapper = new PlannedActionWrapper(action, m_converter
 					.toSystemAction(action));
