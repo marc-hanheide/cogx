@@ -34,6 +34,7 @@ import javax.swing.JTextField;
 
 import binder.components.BinderMonitor;
 
+// TODO: design a window to control various binder parameters
 
 public class ControlPanel extends JPanel{
 
@@ -58,6 +59,9 @@ public class ControlPanel extends JPanel{
 	}
 	
 	static int proxyCount =1;
+	
+	
+	// TODO: refactor and test this proxy control panel, and add constraints to disallow probabilities > 1
 	
 	private JPanel createNewProxyControlPanel() {
 		

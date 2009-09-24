@@ -396,6 +396,8 @@ public class Binder extends ManagedComponent  {
 	 * Update the binding working memory by recomputing the union configurations
 	 * after the insertion of a new proxy
 	 * 
+	 * TODO: add threshold to filter out proxies below a certain existence probability value
+	 * 
 	 * @param newProxy the newly inserted proxy
 	 * 
 	 */

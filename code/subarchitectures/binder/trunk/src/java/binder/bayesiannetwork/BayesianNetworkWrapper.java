@@ -44,6 +44,8 @@ public class BayesianNetworkWrapper {
 	/**
 	 * Construct a new bayesian network based on a configuration text file
 	 * 
+	 * TODO: get correct prior and conditional probabilities on Bayesian network
+	 * 
 	 * @param configFile the path to the configuration file
 	 */
 	

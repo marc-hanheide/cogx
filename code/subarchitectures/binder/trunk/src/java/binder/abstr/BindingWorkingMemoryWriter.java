@@ -43,6 +43,8 @@ import cast.cdl.WorkingMemoryPointer;
  * Abstract class for structuring and inserting proxies into the binder working
  * memory
  * 
+ * TODO: define extensions to handle group proxies
+ * 
  * @author Pierre Lison
  * @version 09/09/2009 (started 15/08/2009)
  */

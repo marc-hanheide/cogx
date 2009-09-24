@@ -35,6 +35,7 @@ import javax.swing.plaf.basic.BasicArrowButton;
 
 import binder.components.BinderMonitor;
 
+// TODO: implement arrow buttons to navigate in the ranked union configurations
 
 public class WestArrowPanel extends JPanel{
 

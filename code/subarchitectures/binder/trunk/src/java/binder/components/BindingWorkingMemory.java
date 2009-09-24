@@ -26,7 +26,9 @@ import cast.architecture.SubarchitectureWorkingMemory;
  * The binder working memory (currently just an empty wrapper around
  * SubarchitectureWorkingMemory)
  * 
- * TODO: extend this wrapper, maybe add a forgetting component to it?
+ * TODO: extend this wrapper to record binding history (to be used to navigate in the binding states)
+ * TODO:  + maybe some forgetting mechanism
+ * TODO: + mechanisms to import/export BindingWorkingMemory states
  * 
  * @author Pierre Lison
  * @version 31/08/2009

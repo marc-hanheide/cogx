@@ -49,6 +49,9 @@ sequence<FeatureValue> FeatureValues;
 
 /**
  * A feature = feature label and a list of possible feature values
+ *
+ * TODO: extend this specification to handle continuous feature values
+ *
  */
 class Feature {
 	string featlabel;

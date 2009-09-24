@@ -37,6 +37,10 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 
+
+// TODO: fix and improve the GUI representation of the Bayesian network
+// TODO: ability to specify and update the bayesian network on the fly
+
 public class BayesianNetworkGUI extends JFrame {
 
 	// No clue what that is

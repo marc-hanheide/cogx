@@ -50,6 +50,10 @@ import com.mxgraph.view.mxGraph;
 
 // TODO: document this GUI class !!
 
+// TODO: integrate Graph Layout into the GUI
+
+// TODO: possibility to modify the cross-modal content in the binder on the fly, using the GUI
+
 public class BinderMonitorGUI extends JFrame
 {
 
