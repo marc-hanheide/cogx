@@ -345,6 +345,20 @@ PlaceManager::evaluateUnexploredPaths()
     vector<FrontierInterface::NodeHypothesisPtr> hypotheses;
     getMemoryEntries<FrontierInterface::NodeHypothesis>(hypotheses);
 
+    // Find which hypotheses exist that originate in the current Place
+    vector<FrontierInterface::NodeHypothesisPtr> relevantHyps;
+    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it =
+	hypotheses.begin(); it != hypotheses.end(); it++) {
+      try {
+	if ((*it)->originPlaceID == currentPlaceID) {
+	  relevantHyps.push_back(*it);
+	}
+      }
+      catch (IceUtil::NullHandleException e) {
+	log("Error: hypothesis suddenly disappeared!");
+      }
+    }
+
     for (FrontierInterface::FrontierPtSeq::iterator it =
 	points.begin(); it != points.end(); it++) {
       double x = (*it)->x;
@@ -364,7 +378,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      // Compare distance to all other hypotheses created for this node
 	      double minDistanceSq = FLT_MAX;
 	      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it2 =
-		  hypotheses.begin(); it2 != hypotheses.end(); it2++) {
+		  relevantHyps.begin(); it2 != relevantHyps.end(); it2++) {
 		try {
 		  if ((*it2)->originPlaceID == currentPlaceID) {
 		    double distanceSq = ((*it2)->x - x)*((*it2)->x - x) + ((*it2)->y - y)*((*it2)->y - y);
@@ -393,6 +407,7 @@ PlaceManager::evaluateUnexploredPaths()
 		m_HypIDToWMIDMap[newHyp->hypID]=newID;
 		addToWorkingMemory<FrontierInterface::NodeHypothesis>(newID, newHyp);
 		hypotheses.push_back(newHyp);
+		relevantHyps.push_back(newHyp);
 
 		// Create the Place struct corresponding to the hypothesis
 		PlaceHolder p;
@@ -458,14 +473,109 @@ PlaceManager::evaluateUnexploredPaths()
 	log("Frontier not reachable, skipping");
       }
 
-      // For debug purposes only; delete me!
-      for (int i = 0; i < m_hypIDCounter; i++) {
-	FrontierInterface::HypothesisEvaluation eval = 
-	  hypothesisEvaluator->getHypothesisEvaluation(i);
-	log("Hypothesis %i evaluates to %f %f.", i, eval.freeSpaceValue,
-	    eval.unexploredBorderValue);
+      for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it =
+	  relevantHyps.begin(); it != relevantHyps.end(); it++) {
+	try {
+	  int hypID = (*it)->hypID;
+	  FrontierInterface::HypothesisEvaluation eval = 
+	    hypothesisEvaluator->getHypothesisEvaluation(hypID);
+	  log("Hypothesis %i evaluates to %f %f.", hypID, eval.freeSpaceValue,
+	      eval.unexploredBorderValue);
+
+	  //Create/update the placeholder properties
+	  
+	  {
+	    //Free space property
+	    SpatialProperties::FloatValuePtr freespacevalue = 
+	      new SpatialProperties::FloatValue;
+	    freespacevalue->value = eval.freeSpaceValue;
+	    SpatialProperties::ValueProbabilityPair pair =
+	    { freespacevalue, 1.0 };
+	    SpatialProperties::ValueProbabilityPairs pairs;
+	    pairs.push_back(pair);
+	    SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	      new SpatialProperties::DiscreteProbabilityDistribution;
+	    discDistr->data = pairs;
+
+	    map<int, string>::iterator
+	      it2 = m_freeSpaceProperties.find(hypID);
+	    if (it2 != m_freeSpaceProperties.end()) {
+	      SpatialProperties::AssociatedSpacePlaceholderPropertyPtr
+		freeProp = getMemoryEntry
+		<SpatialProperties::AssociatedSpacePlaceholderProperty>
+		(it2->second);
+
+	      // Property exists; change it
+	      freeProp->distribution = discDistr;
+	      freeProp->placeId = getPlaceFromHypID(hypID);
+	      freeProp->mapValue = freespacevalue;
+	      freeProp->mapValueReliable = 1;
+	      overwriteWorkingMemory
+		<SpatialProperties::AssociatedSpacePlaceholderProperty>(it2->second,freeProp);
+	    }
+	    else {
+	      SpatialProperties::AssociatedSpacePlaceholderPropertyPtr freeProp =
+		new SpatialProperties::AssociatedSpacePlaceholderProperty;
+	      freeProp->distribution = discDistr;
+	      freeProp->placeId = getPlaceFromHypID(hypID);
+	      freeProp->mapValue = freespacevalue;
+	      freeProp->mapValueReliable = 1;
+
+	      string newID = newDataID();
+	      addToWorkingMemory<SpatialProperties::AssociatedSpacePlaceholderProperty>
+		(newID, freeProp);
+	      m_freeSpaceProperties[hypID] = newID;
+	    }
+	  }
+
+	  {
+	    //Frontier length property
+	    SpatialProperties::FloatValuePtr bordervalue = 
+	      new SpatialProperties::FloatValue;
+	    bordervalue->value = eval.unexploredBorderValue;
+	    SpatialProperties::ValueProbabilityPair pair =
+	    { bordervalue, 1.0 };
+	    SpatialProperties::ValueProbabilityPairs pairs;
+	    pairs.push_back(pair);
+	    SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	      new SpatialProperties::DiscreteProbabilityDistribution;
+	    discDistr->data = pairs;
+
+	    map<int, string>::iterator
+	      it2 = m_borderProperties.find(hypID);
+	    if (it2 != m_borderProperties.end()) {
+	      SpatialProperties::AssociatedBorderPlaceholderPropertyPtr
+		borderProp = getMemoryEntry
+		<SpatialProperties::AssociatedBorderPlaceholderProperty>
+		(it2->second);
+
+	      // Property exists; change it
+	      borderProp->distribution = discDistr;
+	      borderProp->placeId = getPlaceFromHypID(hypID);
+	      borderProp->mapValue = bordervalue;
+	      borderProp->mapValueReliable = 1;
+	      overwriteWorkingMemory
+		<SpatialProperties::AssociatedBorderPlaceholderProperty>(it2->second,borderProp);
+	    }
+	    else {
+	      SpatialProperties::AssociatedBorderPlaceholderPropertyPtr borderProp =
+		new SpatialProperties::AssociatedBorderPlaceholderProperty;
+	      borderProp->distribution = discDistr;
+	      borderProp->placeId = getPlaceFromHypID(hypID);
+	      borderProp->mapValue = bordervalue;
+	      borderProp->mapValueReliable = 1;
+
+	      string newID = newDataID();
+	      addToWorkingMemory<SpatialProperties::AssociatedBorderPlaceholderProperty>
+		(newID, borderProp);
+	      m_borderProperties[hypID] = newID;
+	    }
+	  }
+	}
+	catch (IceUtil::NullHandleException) {
+	  log("Error! Couldn't evaluate hypothesis; it disappeared!");
+	}
       }
-      // End delete me
     }
   }
 }
@@ -639,6 +749,7 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	map<int, PlaceHolder>::iterator it2 = m_Places.find(m_goalPlaceForCurrentPath);
 	if (it2 != m_Places.end()) {
 	  log("  Upgrading Place %i from Placeholder status", m_goalPlaceForCurrentPath);
+	  deletePlaceholderProperties(m_goalPlaceForCurrentPath);
 	  it2->second.m_data->status = SpatialData::TRUEPLACE;
 	  string goalPlaceWMID = it2->second.m_WMid;
 	  overwriteWorkingMemory(goalPlaceWMID, it2->second.m_data);
@@ -664,6 +775,8 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 
 	log("  CASE 2: Exploration action failed - place already known. Deleting Place %i",
 	    m_goalPlaceForCurrentPath);
+
+	deletePlaceProperties(m_goalPlaceForCurrentPath);
 
 	deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
 	m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
@@ -699,6 +812,7 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	log("  CASE 3: Exploration action failed; couldn't reach goal. Deleting place %i",
 	    m_goalPlaceForCurrentPath);
 
+	deletePlaceProperties(m_goalPlaceForCurrentPath);
 	deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
 	m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
 	m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
@@ -836,7 +950,7 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 
 	    string newID = newDataID();
 	    addToWorkingMemory<SpatialProperties::GatewayPlaceProperty>(newID, gwProp);
-
+	    m_gatewayProperties[gwProp->placeId] = newID;
 	  }
 	}
       }
@@ -903,6 +1017,59 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
     NavData::FNodePtr curNode = getCurrentNavNode();
     if (curNode != 0) {
       m_startNodeForCurrentPath = curNode->nodeId;
+    }
+  }
+}
+
+void 
+PlaceManager::deletePlaceProperties(int placeID)
+{
+  deletePlaceholderProperties(placeID);
+  {
+    //Delete gateway property
+    map<int, string>::iterator it = m_gatewayProperties.find(placeID);
+    if (it != m_gatewayProperties.end()) {
+      try {
+	deleteFromWorkingMemory(it->second);
+      }
+      catch (Exception e) {
+	log("Gateway property could not be deleted; already missing!");
+      }
+      m_gatewayProperties.erase(it);
+    }
+  }
+
+  {
+    //TODO: Delete connectivity properties
+  }
+}
+
+void 
+PlaceManager::deletePlaceholderProperties(int placeID)
+{
+  {  //Delete free space property
+    map<int, string>::iterator it = m_freeSpaceProperties.find(placeID);
+    if (it != m_freeSpaceProperties.end()) {
+      try {
+	deleteFromWorkingMemory (it->second);
+      }
+      catch (Exception e) {
+	log("Free space property could not be deleted; already missing!");
+      }
+      m_freeSpaceProperties.erase(it);
+    }
+  }
+  {
+    //Delete border property
+    map<int, string>::iterator it = m_borderProperties.find(placeID);
+    if (it != m_borderProperties.end()) {
+      try {
+	deleteFromWorkingMemory (it->second);
+      }
+      catch (Exception e) {
+	log("Border property could not be deleted; already missing!");
+      }
+      m_borderProperties.erase(it);
     }
   }
 }

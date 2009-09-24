@@ -131,6 +131,20 @@ module SpatialProperties
   {
   };
 
+  /** Represents the amount of free space (not associated with
+   an existing node) that is closest to this Placeholder*/
+  class AssociatedSpacePlaceholderProperty extends PlaceProperty
+  {
+    float value;
+  };
+
+  /** Represents the amount of unknown space boundary 
+    that is closest to this Placeholder*/
+  class AssociatedBorderPlaceholderProperty extends PlaceProperty
+  {
+    float value;
+  };
+
   /** 
    * Class representing the semantic room category as observed from
    * within a place located in some room in terms of a distribution
