@@ -53,6 +53,8 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 	// Main engine handling the processing for the component
 	ContinualCollaborativeActivity ccaEngine = null; 
 	
+	private String rulesFileName = null;
+	private String factsFileName = null;
     
     // =================================================================
     // CONSTRUCTOR METHODS
@@ -74,6 +76,8 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 		ccaEngine = new ContinualCollaborativeActivity();
 		// if needed, set facts/rules-filenames
 		// initialize the abduction engine
+		if (factsFileName != null) ccaEngine.setFactsFileName(factsFileName);
+		if (rulesFileName != null) ccaEngine.setRulesFileName(rulesFileName);
 		ccaEngine.initAbducer();
 		
     } // end init
@@ -156,7 +160,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
     public void runComponent() {
         try {	                
-            log("Entering loop checking for data in continual collab acting component");
+            log("Entering loop checking for data in continual collab component");
             while (this.isRunning()) {
                 lockComponent();
                 ListIterator<ProcessingData> i = m_dataObjects.listIterator();
@@ -245,13 +249,16 @@ public class cc_ContinualCollabActing extends ManagedComponent {
     // CAST CONFIGURATION METHODS
     // =================================================================
 
-    public void configure(Properties _config) {
+    @Override
+    public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--facts")) {
-			ccaEngine.setFactsFileName(_config.getProperty("--facts"));
+			log("have configured facts");
+			factsFileName = _config.get("--facts");
 		}
 		
 		if (_config.containsKey("--rules")) {
-			ccaEngine.setRulesFileName(_config.getProperty("--rules"));
+			log("have configured rules");
+			rulesFileName = _config.get("--rules");
 		}
 	}
     

@@ -75,8 +75,8 @@ public class ContinualCollaborativeActivity {
 	
 	/** path names to abduction rules and facts; class provides get-/set-methods */ 
 	
-    private String rulesFilename = "./subarchitectures/comsys/abduction/rules.txt";
-    private String factsFilename = "./subarchitectures/comsys/abduction/facts.txt";	
+    private String rulesFilename = "/dev/null";
+    private String factsFilename = "/dev/null";	
 	
 	
 	boolean logging = true;
