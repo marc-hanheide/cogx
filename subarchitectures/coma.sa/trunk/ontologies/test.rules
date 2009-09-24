@@ -7,7 +7,7 @@
 # date: 2008-04-17
 #------------------------------------------------------------------
 
-@prefix test: <http://test.hz.owl#>
+@prefix test: <http://hz.test.owl>
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
@@ -34,6 +34,7 @@
   noValue(?a rdf:type test:Doorway),
   noValue(?b rdf:type test:Doorway)
   ->
+  print(sameRoomRuleDirect fired),
   (?a test:sameRoomAs ?b)]
   
 [sameRoomRuleTransitive:

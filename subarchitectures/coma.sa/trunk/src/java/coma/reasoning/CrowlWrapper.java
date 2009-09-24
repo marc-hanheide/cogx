@@ -181,17 +181,17 @@ public class CrowlWrapper {
 		while (results.hasNext()) {
 			QuerySolution _qs = (QuerySolution) results.next();
 			Resource _currAnswerRersource = _qs.getResource("?ins");
-			try {
+//			try {
 //				log(m_mycrowl.getOWLOntoModel().getBaseModel().shortForm(_currAnswerRersource.toString()));
-				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
-//				_returnSet.add(_currAnswerRersource.toString()); 
+//				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+				_returnSet.add(_currAnswerRersource.toString()); 
 //				log("qname: " + m_mycrowl.getOWLOntoModel().qnameFor(_currAnswerRersource.toString()));
 //				log("short form: " + m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
 //				log("local name: " + _currAnswerRersource.getLocalName());				
-			} catch (ConfigError e) {
-//				 TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			} catch (ConfigError e) {
+////				 TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 		return _returnSet;
 	}
@@ -268,10 +268,10 @@ public class CrowlWrapper {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String query = "SELECT DISTINCT ?ins WHERE { " +
 		" { " + _ins + " ?x ?ins . " +
-		" ?ins rdf:type owl:Thing. " + 
+//	y	" ?ins rdf:type owl:Thing. " + 
 		" }" +
 		" UNION { ?ins ?y " + _ins + " . " +
-		" ?ins rdf:type owl:Thing.  " +
+//		" ?ins rdf:type owl:Thing.  " +
 		"} ." +
 		" FILTER (?ins != " + _ins + " ) }";
 		
@@ -311,14 +311,19 @@ public class CrowlWrapper {
 			Resource _currAnswerRersource = _qs.getResource("?ins");
 //			Resource _currRelX = _qs.getResource("?x");
 //			Resource _currRelY = _qs.getResource("?y");
-			try {
+//			try {
 //				System.out.println(_ins.getFullName() + " related to " + (_currAnswerRersource!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()) : "null") + " via X="+(_currRelX!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currRelX.toString()) : "null")+" and Y="+(_currRelY!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currRelY.toString()) : "null"));
-				log(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
-				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
-			} catch (ConfigError e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+
+				// 2009-09-24
+//				log(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+//				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+				log(_currAnswerRersource.toString());
+				_returnSet.add(_currAnswerRersource.toString());
+
+//			} catch (ConfigError e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 		return _returnSet;
 	}
