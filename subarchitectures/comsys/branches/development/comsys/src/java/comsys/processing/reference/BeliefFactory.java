@@ -29,5 +29,10 @@ public interface BeliefFactory {
 	public String getSort(); 
 	
 	public Belief  constructBelief (LogicalForm lf, Agent[] agents, SpatioTemporalFrame frame); 
+
+	public Belief  constructBelief (LogicalForm lf, Agent[] agents); 
+
+	public Belief  constructBelief (LogicalForm lf);
+
 	
 } // end interface
