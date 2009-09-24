@@ -64,6 +64,8 @@ Flap::Flap(unsigned r0, unsigned r1, double mG, Array<unsigned> sL,
 
 	CalcOrientation();
   CalculateSignificance();
+
+	CalculateFlapProperties();
 }
 
 /**
@@ -237,4 +239,10 @@ void Flap::CalculateSignificance()												// TODO ARI: Calculate
 	if (sig < 0) sig = 0.;
 }
 
+void Flap::CalculateFlapProperties()
+{
+	/// TODO Set properties of flap
+
+// 	fp.corner_points[0][0] = 0.0;
+}
 }

@@ -31,7 +31,9 @@
 #include "Video.hh"
 #include "Gestalt.hh"
 #include "GestaltPrinciple.hh"
+
 #include "CubeDefinition.hh"
+#include "FlapDefinition.hh"
 
 #include <mxCameraModel.h>
 
@@ -427,6 +429,15 @@ public:
 	 * @return Returns true, if cube with parameter number exists
 	 **/
 	bool GetCube(unsigned number, CubeDef &cd, bool &masked);
+
+	/**
+	 * @brief Returns detected flap
+	 * @param number Number of the flap
+	 * @param cd Flap definition
+	 * @param masked Returns true, if flap is masked
+	 * @return Returns true, if flap with parameter number exists
+	 **/
+	bool GetFlap(unsigned number, FlapDef &fd, bool &masked);
 };
 
 

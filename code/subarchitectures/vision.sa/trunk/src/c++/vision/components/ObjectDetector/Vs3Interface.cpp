@@ -57,7 +57,7 @@ int Vs3Interface::ProcessSingleImage(IplImage *image)
 
 
 /**
- * @brief Get all objects from the vision system (vs3).
+ * @brief Get all cubes from the vision system (vs3).
  * @param number Number of requested cube
  * @param cd Cube parameter
  * @param masked True, if cube is masked.
@@ -66,6 +66,19 @@ int Vs3Interface::ProcessSingleImage(IplImage *image)
 bool Vs3Interface::GetCube(unsigned number, Z::CubeDef &cd, bool &masked)
 {
 	if(vcore->GetCube(number, cd, masked)) return true;
+	else return false;
+}
+
+/**
+ * @brief Get all flaps from the vision system (vs3).
+ * @param number Number of requested flap
+ * @param cd Flap parameter
+ * @param masked True, if flap is masked.
+ * @return Return true, if flap exists.
+ */
+bool Vs3Interface::GetFlap(unsigned number, Z::FlapDef &fd, bool &masked)
+{
+	if(vcore->GetFlap(number, fd, masked)) return true;
 	else return false;
 }
 
