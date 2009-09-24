@@ -41,7 +41,7 @@ public class ThingBelief
 	extends AbstractBeliefFactory
 {
 
-	private const String sort = "thing";
+	private final String sort = "thing";
 	
 	public String getSort() { return sort; }
 	
@@ -57,7 +57,6 @@ public class ThingBelief
 		belief.sigma = frame;
 		belief.agents = agents; 
 		// create the formula
-		belief.phi = 
 		
 		
 		return belief;
