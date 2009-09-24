@@ -24,7 +24,7 @@ add_definitions(-Wall)
 
 # UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
 
-add_subdirectory (tools/d-lib)
+#add_subdirectory (tools/d-lib)
 
 option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
 if(BUILD_SA_BINDING)
@@ -78,7 +78,7 @@ endif(BUILD_HAL_TESTS)
 # UNCOMMENT THE FOLLOWING FOR THE VISION SUBARCHITECTURE
 
 
-add_subdirectory (tools/math)
+#add_subdirectory (tools/math)
 
 option(BUILD_HAL_VIDEO "Build hardware video" YES)
 if(BUILD_HAL_VIDEO)
@@ -119,7 +119,7 @@ if(BUILD_SA_FAKE_MOTIVATION)
     add_subdirectory (subarchitectures/fakemotivation.sa)
 endif(BUILD_SA_FAKE_MOTIVATION)
 
-add_subdirectory(tools/scripts)
+#add_subdirectory(tools/scripts)
 
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
