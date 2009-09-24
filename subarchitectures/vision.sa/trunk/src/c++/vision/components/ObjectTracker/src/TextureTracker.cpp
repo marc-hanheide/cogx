@@ -306,7 +306,7 @@ void TextureTracker::textureFromImage()
 
 // Draw result of texture tracking (particle with maximum likelihood)
 void TextureTracker::drawResult(Particle* p){
-	bool texmodel = true;
+	bool texmodel = false;
 	
 	m_cam_perspective->Activate();
 	m_lighting.Activate();
@@ -314,7 +314,7 @@ void TextureTracker::drawResult(Particle* p){
 	
 	m_opengl.RenderSettings(true, false);
 	glDisable(GL_DEPTH_TEST);
-	
+
 	
 	if(m_showmodel){
 		m_model->restoreTexture();
@@ -327,6 +327,7 @@ void TextureTracker::drawResult(Particle* p){
 		m_shadeTextureCompare->setUniform("compare", true);
 		m_model->drawFaces();
 	}else{
+	
 		glEnable(GL_DEPTH_TEST);
 		m_lighting.Deactivate();
 		m_opengl.RenderSettings(false, true);

@@ -180,6 +180,9 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	
 	// converte pose of object to tracking pose (=particle)
 	convertPose2Particle(obj->pose, ids.trackpose);
+
+	// set zero pose of tracker to this trackpose
+	m_tracker->setZeroPose(ids.trackpose);
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);

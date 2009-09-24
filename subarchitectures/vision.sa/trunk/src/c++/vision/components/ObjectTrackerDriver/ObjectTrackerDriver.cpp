@@ -62,8 +62,8 @@ void ObjectTrackerDriver::runComponent()
   obj->label = model.c_str();
   obj->detectionConfidence = 0.0;
   Particle p = Particle(0.0);
-  p.tX = 0.2;
-  p.tY = 0.2;
+  p.translate(0.1, 0.1, 0.0);
+	p.rotate(0.0,0.0,0.78);
   convertParticle2Pose(p, obj->pose);  
   	
   // Add VisualObject to working memoryabs(trajectory[i].rot.m00 - obj->pose.rot.m00) +

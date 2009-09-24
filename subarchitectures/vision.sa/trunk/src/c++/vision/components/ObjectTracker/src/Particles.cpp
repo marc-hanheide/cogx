@@ -91,6 +91,19 @@ void Particle::getPose(mat3 &rot, vec3 &pos){
 	pos[2] = tZ;
 }
 
+void Particle::rotate(float x, float y, float z){
+	Quaternion q2;
+	
+	q2.fromEuler(x,y,z);
+	q = q2 * q;
+	//q.normalise();
+}
+
+void Particle::translate(float x, float y, float z){
+	tX = tX + x;
+	tY = tY + y;
+	tZ = tZ + z;
+}
 
 // PARTICLES
 
@@ -185,10 +198,10 @@ void Particles::perturb(Particle noise_particle, int num_particles, Particle* p_
         pIt->rX = noiseRotX;
         pIt->rY = noiseRotY;
         pIt->rZ = noiseRotZ;
-
-        q2.fromEuler(noiseRotX, noiseRotY, noiseRotZ);
-        pIt->q = q2 * pMax->q;
         
+        pIt->q = pMax->q;
+		pIt->rotate(noiseRotX, noiseRotY, noiseRotZ);
+		
        	pIt->tX = pMax->tX + noiseTransX;
         pIt->tY = pMax->tY + noiseTransY;
         pIt->tZ = pMax->tZ + noiseTransZ;
@@ -289,6 +302,8 @@ void Particles::calcLikelihood(int num_particles, unsigned int num_avaraged_part
 		p.tY = p.tY * divider;
 		p.tZ = p.tZ * divider;
 		p.w  = p.w / float(mean_range);
+		
+		//p.rotate(p.rX, p.rY, p.rZ);
 		
 		Quaternion q2;
 		q2.fromEuler(p.rX, p.rY, p.rZ);

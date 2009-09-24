@@ -98,7 +98,8 @@ public:
 				float n_r_max=45.0,									// standard deviation of rotational noise in degree
 				float n_t_max=0.1,									// standard deviation of translational noise in meter
 				float et=20.0,										// edge matching tolerance in degree
-				float tt=0.05);										// goal tracking time in seconds
+				float tt=0.05,										// goal tracking time in seconds
+				Particle zp=Particle(0));
 	
 	virtual bool track(	unsigned char* image,
 						Model* model,
@@ -120,6 +121,7 @@ public:
 	void setNoise(float rot, float trans){ params.noise_rot_max=rot; params.noise_trans_max=trans; }
 	void setTestflag(bool val){ m_testflag = val; }
 	void setBFC(bool val){ m_bfc=val; }
+	void setZeroPose(Particle zp){ params.zP = zp; }
 	
 	void lock(bool val){ m_lock=val; m_particles->setAll(*m_particles->getMax()); }
 	
