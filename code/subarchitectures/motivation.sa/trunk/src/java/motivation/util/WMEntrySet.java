@@ -84,7 +84,6 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 				break;
 			case OVERWRITE:
 				try {
-					component.println("overwrite entry");
 					map.put(newWmc.address, (Ice.ObjectImpl) component.getMemoryEntry(
 							newWmc.address, specClass).clone());
 					if (updateHandler != null)
@@ -92,7 +91,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 								.get(newWmc.address), oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
-					component.println("we expected to overwrite, but actually it has gone...");
+					component.log("we expected to overwrite, but actually it has gone...");
 					newWmc.operation = WorkingMemoryOperation.DELETE;
 					Ice.ObjectImpl o = map.remove(newWmc.address);
 					map.remove(newWmc.address);

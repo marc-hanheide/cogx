@@ -6,6 +6,7 @@ package motivation.factories;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
+import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -24,6 +25,10 @@ public class MotiveFactory {
 	public static ExploreMotive createExploreMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new ExploreMotive(created, created, src, null, MotiveStatus.UNSURFACED, 0, 0, 0, 0, 0, 0);
+	}
+	public static CategorizePlaceMotive createCategorizePlaceMotive(WorkingMemoryAddress src) {
+		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
+		return new CategorizePlaceMotive(created, created, src, null, MotiveStatus.UNSURFACED, 0, 0, 0, 0, 0, 0);
 	}
 	public static TestMotive createTestMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();

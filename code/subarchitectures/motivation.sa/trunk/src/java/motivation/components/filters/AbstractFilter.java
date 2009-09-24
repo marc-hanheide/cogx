@@ -6,6 +6,7 @@ package motivation.components.filters;
 import java.util.LinkedList;
 import java.util.List;
 
+import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -62,6 +63,7 @@ public abstract class AbstractFilter extends ManagedComponent {
 							overwriteWorkingMemory(_wmc.address, motive);
 						}
 						break;
+					case ACTIVE:
 					case SURFACED:
 						log("check surfaced motive " + motive.toString());
 						if (shouldBeUnsurfaced(motive)) {
@@ -128,6 +130,18 @@ public abstract class AbstractFilter extends ManagedComponent {
 		getMemoryEntries(HomingMotive.class, homingMotives);
 		// trigger them all by overwriting them
 		for (Motive m : homingMotives) {
+			WorkingMemoryChange wmc = new WorkingMemoryChange();
+			wmc.address = m.thisEntry;
+			wmc.operation = WorkingMemoryOperation.OVERWRITE;
+			wmc.src = "explicit self-trigger";
+			receiver.workingMemoryChanged(wmc);
+		}
+	
+		List<CategorizePlaceMotive> categorizePlaceMotives;
+		categorizePlaceMotives = new LinkedList<CategorizePlaceMotive>();
+		getMemoryEntries(CategorizePlaceMotive.class, categorizePlaceMotives);
+		// trigger them all by overwriting them
+		for (Motive m : categorizePlaceMotives) {
 			WorkingMemoryChange wmc = new WorkingMemoryChange();
 			wmc.address = m.thisEntry;
 			wmc.operation = WorkingMemoryOperation.OVERWRITE;

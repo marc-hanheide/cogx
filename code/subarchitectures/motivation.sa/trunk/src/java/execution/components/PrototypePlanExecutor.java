@@ -169,7 +169,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			GoToPlace act = newActionInstance(GoToPlace.class);
 			act.placeID = Long.parseLong(_plannedAction.arguments[1]);
 			return act;
-		} else if (_plannedAction.name.equals("explore_place")) {
+		} else if (_plannedAction.name.equals("categorize_place")) {
 			return newActionInstance(ExplorePlace.class);
 		}
 

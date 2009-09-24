@@ -1,12 +1,21 @@
 package motivation.util;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import cast.CASTException;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 
-public class WMEventQueue extends SynchronousQueue<WorkingMemoryChange> implements WorkingMemoryChangeReceiver{
+public class WMEventQueue extends LinkedBlockingQueue<WorkingMemoryChange>
+		implements WorkingMemoryChangeReceiver {
+
+	/**
+	 * @param arg0
+	 */
+	public WMEventQueue() {
+		super();
+	}
 
 	/**
 	 * 
@@ -16,7 +25,14 @@ public class WMEventQueue extends SynchronousQueue<WorkingMemoryChange> implemen
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange wmc)
 			throws CASTException {
-		this.add(wmc);
+		System.out.println("WMEventQueue: received change");
+		try {
+			this.put(wmc);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("WMEventQueue: received change");
 	}
-	
+
 }
