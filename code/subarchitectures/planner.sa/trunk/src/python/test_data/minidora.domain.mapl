@@ -26,7 +26,7 @@
 		(place_id ?n - place) - place_id
 		(position ?r -  agent) - place_id
 		(explored ?n - place) - boolean
-		(category ?n - place) - place_category
+		(place_category ?n - place) - place_category
  	)
 	
 
@@ -51,7 +51,7 @@
 	 	(= (position ?a) ?loc_id)
 		(= (place_id ?loc) ?loc_id)
 		)
-     :sense (category ?loc)
+     :sense (place_category ?loc)
     )
 
 	(:action move
