@@ -109,6 +109,9 @@ class PlaceManager : public cast::ManagedComponent
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
     void processPlaceArrival(bool failed, NavData::FNodePtr newNavNode=0); 
 
+    void deletePlaceProperties(int placeID);
+    void deletePlaceholderProperties(int placeID);
+
     // Frontier based exploration path parameters
     double m_maxFrontierDist; // Culling distance for frontiers around a given node
     double m_minFrontierDist; // Culling distance for frontiers around a given node
@@ -127,7 +130,14 @@ class PlaceManager : public cast::ManagedComponent
     				   // came from last
     int m_goalPlaceForCurrentPath; // During transitions, stores where the robot
     				   // thought it was going
-    std::map<int, std::set<int> > m_connectivities;
+    std::map<int, std::set<int> > m_connectivities; // Keeps track of the
+    					// connectivity properties maintained
+    std::map<int, std::string> m_gatewayProperties;
+    std::map<int, std::string> m_freeSpaceProperties; // Keeps track of the
+    					// freespace placeholder properties maintained
+    std::map<int, std::string> m_borderProperties; // Keeps track of the
+    				// border placeholder properties maintained
+
     FrontierInterface::FrontierReaderPrx frontierReader;
     FrontierInterface::HypothesisEvaluatorPrx hypothesisEvaluator;
 }; // class PlaceManager
