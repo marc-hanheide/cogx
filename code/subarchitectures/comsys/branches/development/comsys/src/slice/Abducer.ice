@@ -7,25 +7,45 @@ module Abducer {
 		string message;
 	};
 	
-	exception ParseException extends AbducerException {};
+	exception FileNotFoundException extends AbducerException {};
+	exception SyntaxErrorException extends AbducerException {};
 
 	//-----------------------------------------------------------------
 
-	class Term;
-	sequence<Term> TermSeq;
-	
+	// TERMS & PREDICATES
+
+	enum TermType {
+		Function,
+		Variable
+	};
+
+	// Base class for both types of terms.
 	class Term {
-		bool variable;
+		TermType type;
+	};
+
+	sequence<Term> TermSeq;
+
+	// Variable.
+	class VariableTerm extends Term {
 		string name;
+	};
+
+	// Function term is a term of the form f(t1,...tn)
+	// where f is a functor and t1... are terms.
+	class FunctionTerm extends Term {
+		string functor;
 		TermSeq args;
 	};
-	
+
 	class Predicate {
 		string predSym;
 		TermSeq args;
 	};
 
 	//-----------------------------------------------------------------
+
+	// MODALITIES
 
 	enum ModalityType {
 		Event,
@@ -45,17 +65,24 @@ module Abducer {
 		Mutual
 	};
 
+	// Base modality class.
 	class Modality {
 		ModalityType type;
 	};
+	
+	sequence<Modality> ModalitySeq;
+
+	class EventModality extends Modality { };
+	
+	class InfoModality extends Modality { };
+	
+	class AttStateModality extends Modality { };
 
 	class KModality extends Modality {
 		Agent act;
 		Agent pat;
 		Sharing share;
 	};
-
-	sequence<Modality> ModalitySeq;
 
 	//-----------------------------------------------------------------
 
@@ -67,6 +94,8 @@ module Abducer {
 	sequence<ModalisedFormula> ModalisedFormulaSeq;
 
 	//-----------------------------------------------------------------
+
+	// PIECES OF PROOF
 
 	// marking as used in the abductive proof
 	enum Marking {
@@ -111,6 +140,8 @@ module Abducer {
 
 	//-----------------------------------------------------------------
 
+	// PROOF
+
 	sequence<MarkedQuery> MarkedQuerySeq;
 
 	// an abductive proof is a list of marked queries and its overall
@@ -120,6 +151,10 @@ module Abducer {
 		MarkedQuerySeq body;
 	};
 
+	//-----------------------------------------------------------------
+
+	// SERVER INTERFACE
+
 	enum ProveResult {
 		SUCCESS,
 		FAILED,
@@ -128,10 +163,10 @@ module Abducer {
 
 	interface AbducerServer {
 		void clearRules();
-		void loadRulesFromFile(string filename);
+		void loadRulesFromFile(string filename) throws FileNotFoundException, SyntaxErrorException;
 
 		void clearFacts();
-		void loadFactsFromFile(string filename);
+		void loadFactsFromFile(string filename) throws FileNotFoundException, SyntaxErrorException;
 		void addFact(ModalisedFormula f);
 
 		void clearAssumables();

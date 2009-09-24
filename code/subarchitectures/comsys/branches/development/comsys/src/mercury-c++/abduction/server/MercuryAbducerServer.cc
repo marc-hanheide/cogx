@@ -32,7 +32,7 @@ MercuryAbducerServer::clearRules(const Ice::Current&)
 void
 MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Current&)
 {
-	char * s = stringToMercString(filename);
+	char * s = cc2m::string(filename);
 	cerr << "[log] adding explicit rules from: " << s << endl;
 	load_rules_from_file(s, ctx, &ctx);
 	delete s;
@@ -48,7 +48,7 @@ MercuryAbducerServer::clearFacts(const Ice::Current&)
 void
 MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Current&)
 {
-	char * s = stringToMercString(filename);
+	char * s = cc2m::string(filename);
 	cerr << "[log] adding explicit facts from: " << filename << endl;
 	load_facts_from_file(s, ctx, &ctx);
 	delete s;
@@ -82,7 +82,7 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 	new_varset(&w_vs);
 
 	MR_Word w_mprop = modalisedFormulaToMercMProp(f, &w_vs);
-	add_assumable(stringToMercString(function), w_mprop, cost, ctx, &ctx);	
+	add_assumable(cc2m::string(function), w_mprop, cost, ctx, &ctx);	
 }
 
 ProveResult

@@ -21,11 +21,22 @@ typedef MR_Word  MR_proof__ctx_modality;
 typedef MR_Word  MR_list__term;
 typedef MR_Word  MR_list__ctx_modality;
 
-MR_Char *
-stringToMercString(const std::string & s);
+namespace cc2m {
 
-MR_term
-termToMercTerm(const Abducer::TermPtr & t, MR_varset * w_vs);
+	MR_Char *
+	string(const std::string & s);
+
+	MR_term
+	term(const Abducer::TermPtr & t, MR_varset * w_vs);
+
+}
+
+namespace m2cc {
+
+	Abducer::TermPtr
+	term(MR_varset w_vs, MR_term w_t);
+
+}
 
 MR_atomic_formula
 predicateToMercAtomicFormula(const Abducer::PredicatePtr & p, MR_varset * w_vs);
@@ -49,9 +60,6 @@ markedQueryToMercQuery(const Abducer::MarkedQueryPtr & mq, MR_Word * w_vs);
 
 Abducer::ModalityPtr
 MR_WordToModality(MR_ctx_modality w);
-
-Abducer::TermPtr
-MR_WordToTerm(MR_varset w_vs, MR_term w_t);
 
 Abducer::PredicatePtr
 MR_WordToPredicate(MR_varset w_vs, MR_atomic_formula w_p);

@@ -232,18 +232,6 @@ public class cc_ContinualCollabActing extends ManagedComponent {
         	e.printStackTrace();
         }
     }
-
- /*
-  * BROKEN
-    private void select(ProcessingData pd) throws ComsysException {
-        CASTData pWM = pd.getByType(CASTUtils.typeName(autogen.Abducer.AbductiveProof.class)); 
-        if (pWM != null) {
-        	autogen.Abducer.AbductiveProof p = (autogen.Abducer.AbductiveProof) pWM.getData();
-        	autogen.Abducer.RevGoal rg = srv.reverseGoal(p);
-        	log(tg.toString());
-        }
-    }
-*/    
     
     // =================================================================
     // CAST CONFIGURATION METHODS

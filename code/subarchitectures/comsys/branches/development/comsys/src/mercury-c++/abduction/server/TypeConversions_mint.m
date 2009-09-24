@@ -5,13 +5,16 @@
 :- import_module ctx_specific, ctx_modality, abduction, formula, belief_model, costs.
 :- import_module varset.
 
+:- pred is_function_term(formula.term::in, string::out, list(formula.term)::out) is semidet.
+:- pred is_variable_term(varset::in, formula.term::in, string::out) is semidet.
+
 :- pred new_with_const_cost_function(mprop(ctx_modality)::in, float::in, with_cost_function(mprop(ctx_modality))::out) is det.
 
 :- pred new_mprop(list(ctx_modality)::in, atomic_formula::in, mprop(ctx_modality)::out, varset::in, varset::out) is det.
 
 :- pred new_atomic_formula(string::in, list(formula.term)::in, atomic_formula::out, varset::in, varset::out) is det.
-:- pred new_term(string::in, list(formula.term)::in, formula.term::out, varset::in, varset::out) is det.
-:- pred new_var(string::in, formula.term::out, varset::in, varset::out) is det.
+:- pred new_function_term(string::in, list(formula.term)::in, formula.term::out, varset::in, varset::out) is det.
+:- pred new_variable_term(string::in, formula.term::out, varset::in, varset::out) is det.
 
 :- pred new_varset(varset::out) is det.
 
@@ -104,6 +107,17 @@ print_err(Str, !IO) :-
 
 %------------------------------------------------------------------------------%
 
+:- pragma foreign_export("C", is_function_term(in, out, out), "is_function_term").
+
+is_function_term(t(Functor, Args), Functor, Args).
+
+:- pragma foreign_export("C", is_variable_term(in, in, out), "is_variable_term").
+
+is_variable_term(VS, v(Var), VarName) :-
+	varset.lookup_name(VS, Var, "V_", VarName).
+
+%------------------------------------------------------------------------------%
+
 :- pragma foreign_export("C", new_mprop(in, in, out, in, out), "new_mprop").
 
 new_mprop(Mod, F, MProp, !VS) :-
@@ -116,15 +130,15 @@ new_atomic_formula(PredSym, Args, F, !VS) :-
 	F = p(PredSym, Args).
 %	trace [io(!IO)] (print_err("Atomic formula = " ++ string(F), !IO), nl(!IO) ).
 
-:- pragma foreign_export("C", new_term(in, in, out, in, out), "new_term").
+:- pragma foreign_export("C", new_function_term(in, in, out, in, out), "new_function_term").
 
-new_term(Functor, Args, T, !VS) :-
+new_function_term(Functor, Args, T, !VS) :-
 	T = t(Functor, Args).
 %	trace [io(!IO)] (print_err("Term = " ++ string(T), !IO), nl(!IO) ).
 
-:- pragma foreign_export("C", new_var(in, out, in, out), "new_var").
+:- pragma foreign_export("C", new_variable_term(in, out, in, out), "new_variable_term").
 
-new_var(Name, T, !VS) :-
+new_variable_term(Name, T, !VS) :-
 	varset.create_name_var_map(!.VS, VarNames),
 	(if map.search(VarNames, Name, Var0)
 	then Var = Var0
