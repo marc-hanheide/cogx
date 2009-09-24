@@ -34,8 +34,8 @@ public class Decoder {
 	public boolean extractContextualFeatures = true;
 	public boolean extractNoParseFeature = true;
 
-	public String contextdependentwordsFilename = "./subarchitectures/comsys.mk4/learning/contextdependentwords.txt";
-	public String salientwordsFilename = "./subarchitectures/comsys.mk4/learning/salientwords.txt";
+	public String contextdependentwordsFilename = "./subarchitectures/comsys/learning/contextdependentwords.txt";
+	public String salientwordsFilename = "./subarchitectures/comsys/learning/salientwords.txt";
 
 
 	LFPacking packingTool;
