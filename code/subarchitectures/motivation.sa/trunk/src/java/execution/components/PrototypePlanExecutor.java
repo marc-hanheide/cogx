@@ -22,6 +22,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import execution.slice.ActionExecutionException;
+import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.util.ActionConverter;
 import execution.util.SerialPlanExecutor;
@@ -44,7 +45,6 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	private boolean m_generateOwnPlans;
 	private boolean m_kanyeWest;
 
-	
 	// private WorkingMemoryAddress m_lastPlanProxyAddr;
 
 	public PrototypePlanExecutor() {
@@ -72,7 +72,6 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 		}
 		log("interrupting own execution: " + m_kanyeWest);
 
-	
 	}
 
 	@Override
@@ -111,7 +110,7 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 
 	private void newPlanProxy(WorkingMemoryAddress _planProxyAddr)
 			throws SubarchitectureComponentException {
-		println("newPlanProxy so creating new plan executor");
+		log("newPlanProxy so creating new plan executor");
 
 		PlanProxy pp = getMemoryEntry(_planProxyAddr, PlanProxy.class);
 		PlanningTask pt = getMemoryEntry(pp.planAddress, PlanningTask.class);
@@ -170,6 +169,8 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			GoToPlace act = newActionInstance(GoToPlace.class);
 			act.placeID = Long.parseLong(_plannedAction.arguments[1]);
 			return act;
+		} else if (_plannedAction.name.equals("explore_place")) {
+			return newActionInstance(ExplorePlace.class);
 		}
 
 		throw new ActionExecutionException("No conversion available for: "

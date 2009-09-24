@@ -77,6 +77,9 @@ public class PlaceGenerator extends AbstractMotiveGenerator {
 				checkMotive(newMotive);
 			}
 		});
+		
+		
+		
 	}
 
 	/* (non-Javadoc)
