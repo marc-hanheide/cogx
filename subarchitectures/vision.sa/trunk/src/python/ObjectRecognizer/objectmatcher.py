@@ -156,7 +156,6 @@ class CObjectMatcher:
             score += 1.0/d
         return score
 
-             
     def getTotalScore(self):
         if len(self.scores) == 0: return 1e99
         return self.scores[0]
@@ -191,16 +190,16 @@ class CObjectMatcher:
     #    bvsort = comparator.CPriq(maxcount = 5, best=max)
     #    for vpidx, vx in enumerate(vpts):
     #        allgrps = vx.featurePacks[0]
-
+    #
     #        # print vpidx, vx.id
     #        dists = comp.matchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
     #        if len(dists) < 1: continue
-
+    #
     #        dists.sort(key=lambda x: x[1][0])
     #        score = self.calcDistScore(dists)
-
+    #
     #        bvsort.add([vx, dists], score)
-
+    #
     #    self._setBestResults(bvsort)
     #    return len(self.bestViews)
 
@@ -238,7 +237,7 @@ class CObjectMatcher:
         self._setBestResults(bvsort)
         # TODO: approximate pose estimation - rotations are missing 
         #for el in bvsort.toplist:
-           #print "Score", el[0], el[1][0].id
+        #    print "Score", el[0], el[1][0].id
 
         return len(self.bestViews)
 
@@ -314,4 +313,45 @@ class CObjectMatcher:
         clpoints = [ (clp[0] / score, clp[1], clp[2], clp[3]) for clp in clpoints ]
         return sorted(clpoints)
 
+# An attempt to upgrade the recognizer to a detector
+# TODO: Use geometric matching to score each view
+class CObjectDetector(CObjectMatcher):
+    def __init__(self):
+        self.bestViews = []
+        self.consists = []
+        self.scores = []
+        self.totalScore = 0.0
+        self.descriptorMatcher = None
+
+    # model - CObjectModel
+    # example - Featurepack
+    def match(self, model, example):
+        if model == None or example == None: return 0
+        comp = self.descriptorMatcher
+        self._clear()
+        bvsort = comparator.CPriq(maxcount = len(model.viewPoints)/2, best=max)
+        consistCalc = CConsistencyCalculator()
+        for vpidx, vx in enumerate(model.viewPoints):
+            allgrps = vx.featurePacks[0]
+
+            (dists, homography) = comp.homographyMatchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
+            if len(dists) < 1: continue
+            print "# Matched sifts", len(dists), "/", len(allgrps.descriptors)
+
+            dists.sort(key=lambda x: x[1][0])
+            maxMatches = len(vx.featurePacks[0])
+            # H: shorten if the example has more features than the view; 
+            #    duplicate matches may still remain among best scores
+            dists = dists[:maxMatches]
+            score = self.calcDistScore(dists)
+            consist = consistCalc.getConsistency(dists, example, allgrps)
+
+            bvsort.add([vx, consist], score)
+
+        self._setBestResults(bvsort)
+        # TODO: approximate pose estimation - rotations are missing 
+        #for el in bvsort.toplist:
+        #    print "Score", el[0], el[1][0].id
+
+        return len(self.bestViews)
 
