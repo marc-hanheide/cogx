@@ -2,6 +2,7 @@
 # -*- coding: latin-1 -*-
 
 from collections import defaultdict
+import itertools
 
 import parser
 import mapltypes
@@ -34,7 +35,7 @@ class MAPLDomain(scope.Scope):
 
     def getAction(self, name):
         if not self.name2action:
-            self.name2action = dict((a.name, a) for a in self.actions)
+            self.name2action = dict((a.name, a) for a in itertools.chain(self.actions, self.sensors))
         return self.name2action[name]
 
     def stratifyAxioms(self):

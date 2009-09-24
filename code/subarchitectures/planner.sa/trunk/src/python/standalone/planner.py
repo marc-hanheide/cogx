@@ -2,6 +2,7 @@ import os, sys, shutil
 import time
 import re
 import itertools as itools
+from itertools import imap
 
 import utils
 import globals as global_vars
@@ -9,6 +10,7 @@ import globals as global_vars
 from task import PlanningStatusEnum, Task
 import mapl_new as mapl
 import plans
+import plan_postprocess
 
 class Planner(object):
     """ 
@@ -73,7 +75,41 @@ class Planner(object):
                 task.set_plan(task.get_plan(), update_status=True)
             else:
                 task.set_planning_status(PlanningStatusEnum.PLAN_AVAILABLE)
-            
+                
+
+    def check_node(self, pnode, state, replan=False):
+        if replan:
+            read = pnode.replanconds
+            universal = pnode.replan_universal
+            cond = pnode.action.replan
+        else:
+            read = pnode.preconds
+            universal = pnode.preconds_universal
+            cond = pnode.action.precondition
+
+        if not universal:
+            #no universal preconditions => quickcheck
+            return all(imap(lambda f: f in state, read))
+        
+        action = pnode.action
+        if cond:
+            action.instantiate(pnode.full_args)
+            extstate = state.getExtendedState(state.getRelevantVars(cond))
+            result = extstate.isSatisfied(cond)
+            action.uninstantiate()
+            return result
+        
+        return True
+
+    def update_plan(self, plan, mapltask):
+        for pnode in plan.V:
+            if isinstance(pnode.action, plans.GoalAction):
+                pnode.action.precondition = mapltask.goal
+            elif isinstance(pnode.action, plans.DummyAction):
+                continue
+            else:
+                pnode.action = mapltask.getAction(pnode.action.name)
+    
     def _evaluate_current_plan(self, task):
         """
         Plan monitoring: checks whether a plan is still valid given
@@ -82,6 +118,8 @@ class Planner(object):
         """
         if task.get_plan() is None:
             return True
+
+        self.update_plan(task.get_plan(), task._mapltask)
         
         t0 = time.time()
         state = task.get_state().copy()
@@ -90,15 +128,11 @@ class Planner(object):
         for pnode in plan:
             if isinstance(pnode, plans.DummyNode):
                 continue
-            
-            action = pnode.action
-            if action.replan:
-                action.instantiate(pnode.full_args)
-                extstate = state.getExtendedState(state.getRelevantVars(action.replan))
-                if extstate.isSatisfied(action.replan):
+
+            if pnode.action.replan:
+                if self.check_node(pnode, state, replan=True):
                     print "Assertion (%s %s) is expandable, triggering replanning." % (action.name, " ".join(a.name for a in pnode.full_args))
                     return True
-                action.uninstantiate()
         #print "time for checking assertions:", time.time()-t0
 
         print "checking plan validity."
@@ -112,11 +146,8 @@ class Planner(object):
             
             t1 = time.time()
             action = pnode.action
-            action.instantiate(pnode.full_args)
-            #evaluate neccessary axioms
-            extstate = state.getExtendedState(state.getRelevantVars(action.replan) | state.getRelevantVars(action.precondition))
             #don't check preconditions of actions in progress
-            if not pnode.is_inprogress() and (not extstate.isSatisfied(action.precondition) or not extstate.isSatisfied(action.replan)):
+            if not pnode.is_inprogress() and (not self.check_node(pnode, state, replan=True) or not self.check_node(pnode, state)):
                 if not first_invalid_action:
                     first_invalid_action = pnode
                 print "Action (%s %s) is not executable, trying to skip it." % (action.name, " ".join(a.name for a in pnode.full_args))
@@ -126,18 +157,15 @@ class Planner(object):
                 state = task.get_state().copy()
             else:
                 print "Action (%s %s) ok." % (action.name, " ".join(a.name for a in pnode.full_args))
-                for eff in action.effects:
-                    state.applyEffect(eff)
-            action.uninstantiate()
+                for f in pnode.effects:
+                    state.set(f)
             #print "time for checking action (%s %s): %f" % (action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
 
         t2 = time.time()
         #Now check if the goal is satisfied
-        goal = task._mapltask.goal
         #print "state after execution is:", map(str, state.iterfacts())
         print "checking if goal is still satisfied."
-        extstate = state.getExtendedState(state.getRelevantVars(goal))
-        if extstate.isSatisfied(goal):
+        if self.check_node(task.get_plan().goal_node, state):
             if skipped_actions > 0:
                 print "Skipped the first %d actions." % skipped_actions
                 #newplan = task.get_plan().copy()
@@ -159,6 +187,7 @@ class Planner(object):
 
         return True  # no monitoring currently
 
+    
     def _start_planner(self, task):
         """
         Call base planner for this task.  The base planner should
@@ -296,16 +325,17 @@ class ContinualAxiomsFF(BasePlanner):
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
         #action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
         times_actions = enumerate(action_list)  # keep it sequentially for now
-        nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
-        for i in xrange(0, len(nodes)-1):
-            plan.add_node(nodes[i])
-            link = plans.OrderingConstraint(nodes[i], nodes[i+1])
-            plan.add_link(link)
-        if nodes:
-            plan.add_link(plan.init_node, nodes[0])
-            plan.add_link(nodes[-1], plan.goal_node)
-        else:
-            plan.add_link(plan.init_node, plan.goal_node)
+        plan = plan_postprocess.make_po_plan(times_actions, task)
+#         nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
+#         for i in xrange(0, len(nodes)-1):
+#             plan.add_node(nodes[i])
+#             link = plans.OrderingConstraint(nodes[i], nodes[i+1])
+#             plan.add_link(link)
+#         if nodes:
+#             plan.add_link(plan.init_node, nodes[0])
+#             plan.add_link(nodes[-1], plan.goal_node)
+#         else:
+#             plan.add_link(plan.init_node, plan.goal_node)
         return plan
 
     def createPlanNode(self, action, time, task):
@@ -402,10 +432,10 @@ class TFD(BasePlanner):
         - knowledge preconditions: make them explicit?
         - negotiation actions --> requests: when and how?
         """
-        # very preliminary implementation of the above!
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
+        #action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
         times_actions = [(a[0], a[1]) for a in action_list]  # keep it sequentially for now
-        nodes = [plans.PlanNode(a, t+1) for t,a in times_actions]
+        nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
         for i in xrange(0, len(nodes)-1):
             plan.add_node(nodes[i])
             link = plans.OrderingConstraint(nodes[i], nodes[i+1])
@@ -417,6 +447,15 @@ class TFD(BasePlanner):
             plan.add_link(plan.init_node, plan.goal_node)
             
         return plan
+    
+    def createPlanNode(self, action, time, task):
+        elmts = action.split()
+        action, args = elmts[0], elmts[1:]
+        actions = dict((a.name,a) for a in itools.chain(task.actions, task.sensors))
+        assert action in actions
+        action_def = actions[action]
+        args = [task[a] for a in args]
+        return plans.PlanNode(action_def, args, time, plans.ActionStatusEnum.EXECUTABLE)
             
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""
@@ -426,4 +465,5 @@ if __name__ == '__main__':
     task.load_mapl_domain(domain_fn)
     task.load_mapl_problem(problem_fn)
     planner._start_planner(task)
+    planner._evaluate_current_plan(task)
     plan = task.get_plan()

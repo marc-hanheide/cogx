@@ -21,7 +21,7 @@ from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 
-TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.mapl")
+TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.axiomized.mapl")
 
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):
@@ -115,7 +115,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       fullname = str(pnode)
       outplan.append(Planner.Action(task.taskID, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
       #outplan.append(Planner.Action(task_desc.id, pnode.action.name, pnode.args, fullname, Planner.Completion.PENDING))
-    #print outplan
+    #print [a.fullName for a in  outplan]
     plan.execution_position = first_action
     
     self.getClient().deliverPlan(task.taskID, outplan);
