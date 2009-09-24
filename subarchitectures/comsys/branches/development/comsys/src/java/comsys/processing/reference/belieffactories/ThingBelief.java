@@ -16,9 +16,11 @@ package comsys.components.reference.belieffactories;
 // BELIEFMODEL imports
 // ---------------------------------------------------------
 
-import beliefmodel.adl.Belief; 
+import beliefmodels.adl.Agents; 
+import beliefmodels.adl.Belief; 
+import beliefmodels.adl.SpatioTemporalFrame; 
 
-import beliefmodel.domainmodel.cogx.MaterialObject; 
+import beliefmodels.domainmodel.cogx.MaterialObject; 
 
 // ---------------------------------------------------------
 // COMSYS / LF imports

@@ -16,13 +16,13 @@ package comsys.components.reference.belieffactories;
 // BELIEFMODEL imports
 // ---------------------------------------------------------
 
-import beliefmodel.adl.Agents; 
-import beliefmodel.adl.Belief; 
-import beliefmodel.adl.SpatialInterval; 
-import beliefmodel.adl.TemporalInterval; 
-import beliefmodel.adl.Perspective;
-import beliefmodel.adl.SpatioTemporalFrame; 
-import beliefmodel.adl.SpatioTemporalFrame; 
+import beliefmodels.adl.Agents; 
+import beliefmodels.adl.Belief; 
+import beliefmodels.adl.SpatialInterval; 
+import beliefmodels.adl.TemporalInterval; 
+import beliefmodels.adl.Perspective;
+import beliefmodels.adl.SpatioTemporalFrame; 
+import beliefmodels.adl.SpatioTemporalFrame; 
 
 
 
