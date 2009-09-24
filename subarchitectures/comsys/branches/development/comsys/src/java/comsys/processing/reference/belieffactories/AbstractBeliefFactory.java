@@ -63,7 +63,7 @@ public abstract class AbstractBeliefFactory
 	
 	protected Agent[] createAgents(String id) { 
 		Agent[] agents = new Agent[1];
-		Agent agent = new Agent;
+		Agent agent = new Agent();
 		agent.id = id; 
 		agents[0] = agent;		
 		return agents; 
