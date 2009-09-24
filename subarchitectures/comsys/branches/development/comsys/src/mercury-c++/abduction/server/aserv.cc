@@ -1,3 +1,5 @@
+#include "common.h"
+
 extern "C" {
 #include "mercury_imp.h"
 #include "MercuryAbducerServer_mint.mh"

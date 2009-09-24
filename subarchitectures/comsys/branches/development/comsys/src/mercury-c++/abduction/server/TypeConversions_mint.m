@@ -159,7 +159,7 @@ cons_mprop_list(H, T, [H|T]).
 :- pragma foreign_export("C", cons_marked_query_list(in, in, out), "cons_marked_query_list").
 
 empty_marked_query_list([]).
-cons_marked_query_list(H, T, [H|T]) :- trace[io(!IO)] (print_err(string([H|T]) ++ "\n", !IO)).
+cons_marked_query_list(H, T, [H|T]) :- trace[compile_time(flag("debug")), io(!IO)] (print_err(string([H|T]) ++ "\n", !IO)).
 
 :- pragma foreign_export("C", empty_ctx_modality_list(out), "empty_ctx_modality_list").
 :- pragma foreign_export("C", cons_ctx_modality_list(in, in, out), "cons_ctx_modality_list").
@@ -183,10 +183,10 @@ modality_k(k(now, private(human))).
 :- pragma foreign_export("C", impure_print_list_modalities(in), "print_list_modalities").
 
 impure_print_modality(Mod) :-
-	trace[io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
+	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
 
 impure_print_list_modalities(Mod) :-
-	trace[io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
+	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
 
 :- pragma foreign_export("C", is_modality_event(in), "is_modality_event").
 :- pragma foreign_export("C", is_modality_info(in), "is_modality_info").
@@ -232,22 +232,22 @@ is_named_cost_function(f(Name), Name).
 :- pragma foreign_export("C", assumed_query(in, in, out), "assumed_query").
 :- pragma foreign_export("C", asserted_query(in, in, out), "asserted_query").
 
-proved_query(MProp, proved(MProp)) :- trace[io(!IO)] (print_err("proved_query :" ++ string(proved(MProp)), !IO)).
-unsolved_query(MProp, CostFunc, unsolved(MProp, CostFunc)) :- trace[io(!IO)] (print_err("unsolved_query :" ++ string(unsolved(MProp, CostFunc)), !IO)).
-assumed_query(MProp, CostFunc, assumed(MProp, CostFunc)) :- trace[io(!IO)] (print_err("proved_query :" ++ string(assumed(MProp, CostFunc)), !IO)).
-asserted_query(MProp, [], asserted(prop(MProp))) :- trace[io(!IO)] (print_err("proved_query :" ++ string(asserted(prop(MProp))), !IO)).
-asserted_query(MProp, [H|T], asserted(impl([H|T], MProp))) :- trace[io(!IO)] (print_err("proved_query :" ++ string(asserted(impl([H|T], MProp))), !IO)).
+proved_query(MProp, proved(MProp)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("proved_query :" ++ string(proved(MProp)), !IO)).
+unsolved_query(MProp, CostFunc, unsolved(MProp, CostFunc)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("unsolved_query :" ++ string(unsolved(MProp, CostFunc)), !IO)).
+assumed_query(MProp, CostFunc, assumed(MProp, CostFunc)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("proved_query :" ++ string(assumed(MProp, CostFunc)), !IO)).
+asserted_query(MProp, [], asserted(prop(MProp))) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("proved_query :" ++ string(asserted(prop(MProp))), !IO)).
+asserted_query(MProp, [H|T], asserted(impl([H|T], MProp))) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("proved_query :" ++ string(asserted(impl([H|T], MProp))), !IO)).
 
 :- pragma foreign_export("C", is_proved_query(in, out), "is_proved_query").
 :- pragma foreign_export("C", is_unsolved_query(in, out, out), "is_unsolved_query").
 :- pragma foreign_export("C", is_assumed_query(in, out, out), "is_assumed_query").
 :- pragma foreign_export("C", is_asserted_query(in, out, out), "is_asserted_query").
 
-is_proved_query(proved(MProp), MProp) :- trace[io(!IO)] (print_err("is_proved_query : " ++ string(proved(MProp)), !IO)).
-is_unsolved_query(unsolved(MProp, CostFunction), MProp, CostFunction) :- trace[io(!IO)] (print_err("is_unsolved_query : " ++ string(unsolved(MProp, CostFunction)), !IO)).
-is_assumed_query(assumed(MProp, CostFunction), MProp, CostFunction) :- trace[io(!IO)] (print_err("is_assumed_query : " ++ string(assumed(MProp, CostFunction)), !IO)).
-is_asserted_query(asserted(prop(MProp)), MProp, []) :- trace[io(!IO)] (print_err("is_asserted_query : " ++ string(asserted(prop(MProp))), !IO)).
-is_asserted_query(asserted(impl(AnteProps, MProp)), MProp, AnteProps) :- trace[io(!IO)] (print_err("is_asserted_query : " ++ string(asserted(impl(AnteProps, MProp))), !IO)).
+is_proved_query(proved(MProp), MProp) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("is_proved_query : " ++ string(proved(MProp)), !IO)).
+is_unsolved_query(unsolved(MProp, CostFunction), MProp, CostFunction) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("is_unsolved_query : " ++ string(unsolved(MProp, CostFunction)), !IO)).
+is_assumed_query(assumed(MProp, CostFunction), MProp, CostFunction) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("is_assumed_query : " ++ string(assumed(MProp, CostFunction)), !IO)).
+is_asserted_query(asserted(prop(MProp)), MProp, []) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("is_asserted_query : " ++ string(asserted(prop(MProp))), !IO)).
+is_asserted_query(asserted(impl(AnteProps, MProp)), MProp, AnteProps) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("is_asserted_query : " ++ string(asserted(impl(AnteProps, MProp))), !IO)).
 
 %------------------------------------------------------------------------------%
 

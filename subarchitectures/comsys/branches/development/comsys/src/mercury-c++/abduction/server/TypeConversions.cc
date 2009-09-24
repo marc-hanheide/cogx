@@ -1,3 +1,4 @@
+#include "common.h"
 #include "TypeConversions.h"
 
 #include <string>
@@ -25,7 +26,7 @@ stringToMercString(const string & s)
 MR_term
 termToMercTerm(const TermPtr & t, MR_varset * vs)
 {
-	cerr << "termToMercTerm" << endl;
+	debug(cerr << "termToMercTerm" << endl);
 	if (t->variable) {
 		char * s = stringToMercString(t->name);
 		MR_term mv;
@@ -60,7 +61,7 @@ termToMercTerm(const TermPtr & t, MR_varset * vs)
 MR_atomic_formula
 predicateToMercAtomicFormula(const PredicatePtr & p, MR_varset * vs)
 {
-	cerr << "predicateToMercAtomicFormula" << endl;
+	debug(cerr << "predicateToMercAtomicFormula" << endl);
 	MR_atomic_formula mp;
 	MR_list__term margs;
 	empty_term_list(&margs);
@@ -81,7 +82,7 @@ predicateToMercAtomicFormula(const PredicatePtr & p, MR_varset * vs)
 MR_mprop__ctx_modality
 modalisedFormulaToMercMProp(const ModalisedFormulaPtr & p, MR_varset * vs)
 {
-	cerr << "modalisedFormulaToMercProp" << endl;
+	debug(cerr << "modalisedFormulaToMercProp" << endl);
 	MR_atomic_formula maf = predicateToMercAtomicFormula(p->p, vs);
 	MR_list__ctx_modality mm = modalitySeqToMercListOfModalities(p->m);
 
@@ -94,7 +95,7 @@ modalisedFormulaToMercMProp(const ModalisedFormulaPtr & p, MR_varset * vs)
 MR_with_cost_function__mprop__ctx_modality
 withConstCostFunction(MR_mprop__ctx_modality mprop, double cost)
 {
-	cerr << "withConstCostFunction" << endl;
+	debug(cerr << "withConstCostFunction" << endl);
 	MR_with_cost_function__mprop__ctx_modality result;
 	new_with_const_cost_function(mprop, cost, &result);
 	return result;
@@ -103,7 +104,7 @@ withConstCostFunction(MR_mprop__ctx_modality mprop, double cost)
 MR_ctx_modality
 modalityToMercModality(const ModalityPtr & m)
 {
-	cerr << "modalityToMercModality" << endl;
+	debug(cerr << "modalityToMercModality" << endl);
 	MR_ctx_modality mm;
 
 	switch (m->type) {
@@ -117,12 +118,12 @@ modalityToMercModality(const ModalityPtr & m)
 			modality_att(&mm);
 			break;
 		case K:
-			cerr << "TODO: K modality!" << endl;
+			debug(cerr << "TODO: K modality!" << endl);
 			modality_k(&mm);
 			break;
 
 		default:
-			cerr << "unsupported modality" << endl;
+			debug(cerr << "unsupported modality" << endl);
 	}
 
 	return mm;
@@ -131,15 +132,15 @@ modalityToMercModality(const ModalityPtr & m)
 MR_list__ctx_modality
 modalitySeqToMercListOfModalities(const ModalitySeq & ms)
 {
-	cerr << "modalitySeqToMercListOfModalities" << endl;
+	debug(cerr << "modalitySeqToMercListOfModalities" << endl);
 	MR_list__ctx_modality w_list;
 	empty_ctx_modality_list(&w_list);
 
 	vector<ModalityPtr>::const_reverse_iterator rit;
-	cerr << "  size = " << ms.size() << endl;
+	debug(cerr << "  size = " << ms.size() << endl);
 	for (rit = ms.rbegin(); rit != ms.rend(); ++rit) {
 //	for (int i = ms.size() - 1; i >= 0; i--) {
-		cerr << "  trying" << endl;
+		debug(cerr << "  trying" << endl);
 		MR_ctx_modality w_m = modalityToMercModality(*rit);
 		cons_ctx_modality_list(w_m, w_list, &w_list);
 	}
@@ -150,7 +151,7 @@ modalitySeqToMercListOfModalities(const ModalitySeq & ms)
 MR_Word
 markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 {
-	cerr << "markedQueryToMercQuery" << endl;
+	debug(cerr << "markedQueryToMercQuery" << endl);
 	MR_Word w_mprop = modalisedFormulaToMercMProp(mq->body, w_vs);
 
 	MR_Word w_query = 0;
@@ -204,7 +205,7 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 		break;
 	
 	default:
-		cerr << "unknown marking in markedQueryToMercQuery!" << endl;
+		debug(cerr << "unknown marking in markedQueryToMercQuery!" << endl);
 	}
 	return w_query;
 }
@@ -214,17 +215,17 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 Agent
 stringToAgent(const char * s)
 {
-	cerr << "stringToAgent" << endl;
+	debug(cerr << "stringToAgent" << endl);
 	if (strcmp(s, "h") == 0) {
-		//cerr << "human" << endl;
+		debug(cerr << "human" << endl);
 		return Human;
 	}
 	else if (strcmp(s, "r") == 0) {
-		//cerr << "robot" << endl;
+		debug(cerr << "robot" << endl);
 		return Robot;
 	}
 	else {
-		cerr << "unknown agent in stringToAgent: \"" << s << "\"" << endl;
+		debug(cerr << "unknown agent in stringToAgent: \"" << s << "\"" << endl);
 		return Robot;
 	}
 }
@@ -232,31 +233,31 @@ stringToAgent(const char * s)
 ModalityPtr
 MR_WordToModality(MR_Word w)
 {
-	cerr << "MR_WordToModality" << endl;
+	debug(cerr << "MR_WordToModality" << endl);
 	MR_Word w_bel;
 
 //	print_modality(w);
 
 	if (is_modality_event(w)) {
-		//cerr << "cc: event" << endl;
+		debug(cerr << "cc: event" << endl);
 		ModalityPtr m = new Modality();
 		m->type = Event;
 		return m;
 	}
 	else if (is_modality_info(w)) {
-		//cerr << "cc: info" << endl;
+		debug(cerr << "cc: info" << endl);
 		ModalityPtr m = new Modality();
 		m->type = Info;
 		return m;
 	}
 	else if (is_modality_att(w)) {
-		//cerr << "cc: att" << endl;
+		debug(cerr << "cc: att" << endl);
 		ModalityPtr m = new Modality();
 		m->type = AttState;
 		return m;
 	}
 	else if (is_modality_k(w, &w_bel)) {
-		//cerr << "cc: k" << endl;
+		debug(cerr << "cc: k" << endl);
 		KModalityPtr km = new KModality();
 		km->type = K;
 
@@ -266,35 +267,35 @@ MR_WordToModality(MR_Word w)
 		MR_Word w_strlist;
 
 		if (is_belief_private(w_bel, &s1)) {
-			//cerr << "private " << s1 << endl;
+			debug(cerr << "private " << s1 << endl);
 			km->share = Private;
 			km->act = stringToAgent(s1);
 			km->pat = Human; // so that it isn't uninitialised
 		}
 		else if (is_belief_attrib(w_bel, &s1, &s2)) {
-			//cerr << "attrib " << s1 << " -> " << s2 << endl;
+			debug(cerr << "attrib " << s1 << " -> " << s2 << endl);
 			km->share = Attribute;
 			km->act = stringToAgent(s1);
 			km->pat = stringToAgent(s2);
 		}
 		else if (is_belief_mutual(w_bel, &w_strlist)) {
-			//cerr << "mutual" << endl;
+			debug(cerr << "mutual" << endl);
 			// XXX this!!
 			km->share = Mutual;
 			km->act = Human;
 			km->act = Robot;
 		}
 		else {
-			cerr << "unknown belief!" << endl;
+			debug(cerr << "unknown belief!" << endl);
 			return 0;
 		}
-		//cerr << "share = " << km->share << endl;
-		//cerr << "act = " << km->act << endl;
-		//cerr << "pat = " << km->pat << endl;
+		debug(cerr << "share = " << km->share << endl);
+		debug(cerr << "act = " << km->act << endl);
+		debug(cerr << "pat = " << km->pat << endl);
 		return km;
 	}
 	else {
-		cerr << "unknown modality!" << endl;
+		debug(cerr << "unknown modality!" << endl);
 		return 0;
 	}
 }
@@ -302,7 +303,7 @@ MR_WordToModality(MR_Word w)
 ModalitySeq
 MR_WordToModalitySeq(MR_Word w_list)
 {
-	cerr << "MR_WordToModalitySeq" << endl;
+	debug(cerr << "MR_WordToModalitySeq" << endl);
 	ModalitySeq seq = vector<ModalityPtr>();
 
 //	print_list_modalities(w_list);
@@ -317,7 +318,7 @@ MR_WordToModalitySeq(MR_Word w_list)
 TermPtr
 MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
 {
-	cerr << "MR_WordToTerm" << endl;
+	debug(cerr << "MR_WordToTerm" << endl);
 	char * name;
 	MR_Bool is_var;
 	MR_Word w_list;
@@ -341,7 +342,7 @@ MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
 PredicatePtr
 MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
 {
-	cerr << "MR_WordToPredicate" << endl;
+	debug(cerr << "MR_WordToPredicate" << endl);
 	char * predSym;
 	MR_Word w_list;
 	dissect_predicate(w_vs, w_p, &predSym, &w_list);
@@ -361,7 +362,7 @@ MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
 ModalisedFormulaPtr
 MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 {
-	cerr << "MR_WordToModalisedFormula" << endl;
+	debug(cerr << "MR_WordToModalisedFormula" << endl);
 	ModalisedFormulaPtr f = new ModalisedFormula();
 	MR_Word w_m;
 	MR_Word w_p;
@@ -375,19 +376,19 @@ MR_WordToModalisedFormula(MR_Word w_vs, MR_Word w_mf)
 MarkedQueryPtr
 MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 {
-	cerr << "MR_WordToMarkedQuery" << endl;
+	debug(cerr << "MR_WordToMarkedQuery" << endl);
 	MR_Word w_arg1;
 	MR_Word w_arg2;
 
 	if (is_proved_query(w_mq, &w_arg1)) {
-		cerr << "  cc: is_proved_query" << endl;
+		debug(cerr << "  cc: is_proved_query" << endl);
 		ProvedQueryPtr pq = new ProvedQuery();
 		pq->mark = Proved;
 		pq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
 		return pq;
 	}
 	else if (is_unsolved_query(w_mq, &w_arg1, &w_arg2)) {
-		cerr << "  cc: is_unsolved_query" << endl;
+		debug(cerr << "  cc: is_unsolved_query" << endl);
 		UnsolvedQueryPtr uq = new UnsolvedQuery();
 		uq->mark = Unsolved;
 		uq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
@@ -397,7 +398,7 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 		return uq;
 	}
 	else if (is_assumed_query(w_mq, &w_arg1, &w_arg2)) {
-		cerr << "  cc: is_assumed_query" << endl;
+		debug(cerr << "  cc: is_assumed_query" << endl);
 		AssumedQueryPtr asmq = new AssumedQuery();
 		asmq->mark = Assumed;
 		asmq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
@@ -407,7 +408,7 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 		return asmq;
 	}
 	else if (is_asserted_query(w_mq, &w_arg1, &w_arg2)) {
-		cerr << "  cc: is_asserted_query" << endl;
+		debug(cerr << "  cc: is_asserted_query" << endl);
 		AssertedQueryPtr asrq = new AssertedQuery();
 		asrq->mark = Asserted;
 		asrq->body = MR_WordToModalisedFormula(w_vs, w_arg1);
@@ -419,7 +420,7 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 		return asrq;
 	}
 	else {
-		cerr << "unknown marked query!" << endl;
+		debug(cerr << "unknown marked query!" << endl);
 		return 0;
 	}
 }
@@ -427,7 +428,7 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 AbductiveProofPtr
 MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
 {
-	cerr << "MR_WordToAbductiveProof" << endl;
+	debug(cerr << "MR_WordToAbductiveProof" << endl);
 	AbductiveProofPtr p = new AbductiveProof();
 	p->body = vector<MarkedQueryPtr>();
 	

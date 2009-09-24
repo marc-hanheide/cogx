@@ -12,12 +12,14 @@ MFILES=abducer-server.m MercuryAbducerServer_mint.m TypeConversions_mint.m
 #
 MCFLAGS?=--search-lib-files-dir ../lib \
 		--init-file ../lib/abducer.init \
-		--link-object ../lib/libabducer.a \
-		--cflag -g
+		--link-object ../lib/libabducer.a
 
 #------------------------------------------------------------------------------#
 
 SLICE_PATH?=.
+
+#------------------------------------------------------------------------------#
+# You shouldn't need to edit anything below.
 
 ifeq ($(origin ICE_HOME), undefined)
 $(info )
@@ -38,11 +40,8 @@ $(error MERCURY_HOME undefined)
 endif
 #MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
 
-CXXFLAGS=-Wall -g
+CXXFLAGS=-Wall
 LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
-
-#------------------------------------------------------------------------------#
-# You shouldn't need to edit anything below.
 
 ifeq ($(shell uname -s), Darwin)
 # on Darwin, Mercury doesn't support asm_fast (although it should for
@@ -51,6 +50,14 @@ GRADE?=hlc.gc
 else
 # try asm_fast.gc otherwise
 GRADE?=asm_fast.gc
+endif
+
+ifeq ($(origin DEBUG), undefined)
+else
+MCFLAGS+=--trace-flag=debug
+MCFLAGS+=--cflag -g
+CXXFLAGS+=-DDEBUG
+CXXFLAGS+=-g
 endif
 
 # on BSD, without deactivating suffix rules, any "non-suffixed"

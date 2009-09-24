@@ -1,3 +1,4 @@
+#include "common.h"
 #include "MercuryAbducerServer.h"
 
 extern "C" {
@@ -95,11 +96,11 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 	MR_Word mgs;
 	empty_marked_query_list(&mgs);
 
-	cerr << "  no of goals = " << goals.size() << endl;
+	debug(cerr << "  no of goals = " << goals.size() << endl);
 	vector<MarkedQueryPtr>::const_reverse_iterator rit;
 //	for (int i = goals.size() - 1; i >= 0; i--) {
 	for (rit = goals.rbegin(); rit != goals.rend(); ++rit) {
-		cerr << "  doing a goal" << endl;
+		debug(cerr << "  doing a goal" << endl);
 		MR_Word w_mq = markedQueryToMercQuery(*rit, &vs);
 		//MR_Word w_mq = markedQueryToMercQuery(goals[i], vs);
 		cons_marked_query_list(w_mq, mgs, &mgs);
