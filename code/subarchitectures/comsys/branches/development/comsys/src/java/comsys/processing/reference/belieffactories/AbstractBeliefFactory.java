@@ -33,10 +33,14 @@ import comsys.processing.reference.BeliefFactory;
 import comsys.datastructs.lf.LogicalForm;
 
 
-public class AbstractBeliefFactory 
+public abstract class AbstractBeliefFactory 
 	implements BeliefFactory
 	
 {
+	
+	
+	public abstract String getSort();
+	
 
 	/** constructs a belief with default settings for agents (human) and spatiotemporal frame (here-and-now) */ 
 	
@@ -51,11 +55,17 @@ public class AbstractBeliefFactory
 		return constructBelief(lf,agents,createHereNowFrame(agents)); 
 	} // end method		
 	
+	
+	public abstract Belief constructBelief (LogicalForm lf, Agent[] agents, SpatioTemporalFrame frame); 
+	
+	
 	/** creates an agents-list consisting of a single agent. */
 	
 	protected Agent[] createAgents(String id) { 
 		Agent[] agents = new Agent[1];
-		agents[0] = id;		
+		Agent agent = new Agent;
+		agent.id = id; 
+		agents[0] = agent;		
 		return agents; 
 	} // end method
 	
@@ -71,10 +81,12 @@ public class AbstractBeliefFactory
 		} else { 
 			Agent[] helper = new Agent[1+agents.length];
 			for (int i=0; i < agents.length; i++) { helper[i] = agents[i]; }
-			helper[agents.length] = id;
+			Agent agent = new Agent();
+			agent.id = id;
+			helper[agents.length] = agent;
 			agents = helper;
 		} // end if..else
-		belief.agents = agents;
+		belief.ags = agents;
 		return belief;
 	} // end method
 	
@@ -93,7 +105,7 @@ public class AbstractBeliefFactory
 		tmpInt.end   = "now";
 		Perspective persp = new Perspective();
 		persp.id = "here";
-		persp.agents = agents;
+		persp.ags = agents;
 		SpatioTemporalFrame frame = new SpatioTemporalFrame();
 		frame.spatialint = spInt;
 		frame.tempint = tmpInt;
