@@ -224,7 +224,8 @@ PyObject* PyCS_HomographyMatchDescriptors(PyObject *self, PyObject *args)
    MatchSiftData(&siftData1, &siftData2); // result in siftData1
    float homography[9];
    int numMatches;
-   FindHomography(&siftData1, homography, &numMatches, 1000, 0.85f, 0.95f, 5.0);
+   const float maxPixDist = 3.0;
+   FindHomography(&siftData1, homography, &numMatches, 1000, 0.85f, 0.95f, maxPixDist);
 
    int numPts = siftData1.numPts;
    SiftPoint *sift1 = siftData1.h_data;
@@ -240,7 +241,7 @@ PyObject* PyCS_HomographyMatchDescriptors(PyObject *self, PyObject *args)
       float erx = x2 - sift2[k].xpos;
       float ery = y2 - sift2[k].ypos;
       float er2 = erx*erx + ery*ery;
-      if (er2<25.0f && sift1[j].score>0.85f && sift1[j].ambiguity<0.95f) {
+      if (er2 < maxPixDist*maxPixDist && sift1[j].score > 0.85f && sift1[j].ambiguity < 0.95f) {
          ma.push_back(j);
          mb.push_back(k); 
       }
@@ -248,8 +249,11 @@ PyObject* PyCS_HomographyMatchDescriptors(PyObject *self, PyObject *args)
    FreeSiftData(&siftData1);
    FreeSiftData(&siftData2);
 
+   //PyObject *pRes = PyTuple_New(2);
+   PyObject *pRes = NULL;
    int i, count = ma.size();
-   if (count > 0) {
+   if (count < 1) pRes = Py_BuildValue("O", Py_None, Py_None);
+   else {
       // copy ma, mb to PyObject
       npy_intp dims[2] = { count, 2 };
       PyObject *pPairs = PyArray_SimpleNew(2, dims, PyArray_FLOAT);
@@ -267,12 +271,11 @@ PyObject* PyCS_HomographyMatchDescriptors(PyObject *self, PyObject *args)
       memcpy(hgr_data, homography, 9 * sizeof(float));
 
       // pass the results to Python
-      PyObject *pRes = PyTuple_New(2);
-      PyTuple_SetItem(pRes, 0, pPairs);
-      PyTuple_SetItem(pRes, 1, pHgr);
-      return pRes;
+      pRes = Py_BuildValue("OO", pPairs, pHgr);
+      //PyTuple_SetItem(pRes, 0, pPairs);
+      //PyTuple_SetItem(pRes, 1, pHgr);
    }
-   return NULL;
+   return pRes;
 }
 
 /* ****************************************************************************** 

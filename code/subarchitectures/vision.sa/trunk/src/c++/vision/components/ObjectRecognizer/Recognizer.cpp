@@ -218,7 +218,7 @@ void CRecognizer::runComponent()
 
       sleepComponent(100);
    }
-   log("It looks like we've stopped running!");
+   log("runComponent Done.");
 }
 
 void CRecognizer::onRecognitionTaskAdded(const cdl::WorkingMemoryChange & _wmc)

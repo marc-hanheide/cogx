@@ -83,6 +83,12 @@ class CDescriptorMatcher(object):
         assert(False)
         return None
 
+    # Match the two lists of descriptors and calculate a homography.
+    # return the list of descriptor pairs that fit the calculated homography.
+    def homographyMatchLists(self, list1, list2, maxRatio=1.0):
+        assert(False)
+        return None
+
 def distance(f1, f2):
     diff = f2 - f1 # subtract f from every row
     sqdiff = diff*diff
@@ -199,6 +205,16 @@ class CDescriptorMatcherCuda(CDescriptorMatcher):
             for p in iidx if p[1] != 0
             ]
         return result
+
+    def homographyMatchLists(self, list1, list2, maxRatio=1.0):
+        (iidx, homography) = siftcuda.homographyMatchDescriptors(list1, list2)
+        if iidx == None: result = []
+        else: result = [
+            (p[0], [( distance(list1[p[0]], list2[p[1]]), p[1])])
+            for p in iidx if p[1] >= 0
+            ]
+        return (result, homography)
+
 
 class CSiftSetup:
     NUMPY = 0
