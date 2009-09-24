@@ -507,7 +507,7 @@ PlaceManager::evaluateUnexploredPaths()
 
 	      // Property exists; change it
 	      freeProp->distribution = discDistr;
-	      freeProp->placeId = getPlaceFromHypID(hypID);
+	      freeProp->placeId = getPlaceFromHypID(hypID)->id;
 	      freeProp->mapValue = freespacevalue;
 	      freeProp->mapValueReliable = 1;
 	      overwriteWorkingMemory
@@ -517,7 +517,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      SpatialProperties::AssociatedSpacePlaceholderPropertyPtr freeProp =
 		new SpatialProperties::AssociatedSpacePlaceholderProperty;
 	      freeProp->distribution = discDistr;
-	      freeProp->placeId = getPlaceFromHypID(hypID);
+	      freeProp->placeId = getPlaceFromHypID(hypID)->id;
 	      freeProp->mapValue = freespacevalue;
 	      freeProp->mapValueReliable = 1;
 
@@ -551,7 +551,7 @@ PlaceManager::evaluateUnexploredPaths()
 
 	      // Property exists; change it
 	      borderProp->distribution = discDistr;
-	      borderProp->placeId = getPlaceFromHypID(hypID);
+	      borderProp->placeId = getPlaceFromHypID(hypID)->id;
 	      borderProp->mapValue = bordervalue;
 	      borderProp->mapValueReliable = 1;
 	      overwriteWorkingMemory
@@ -561,7 +561,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      SpatialProperties::AssociatedBorderPlaceholderPropertyPtr borderProp =
 		new SpatialProperties::AssociatedBorderPlaceholderProperty;
 	      borderProp->distribution = discDistr;
-	      borderProp->placeId = getPlaceFromHypID(hypID);
+	      borderProp->placeId = getPlaceFromHypID(hypID)->id;
 	      borderProp->mapValue = bordervalue;
 	      borderProp->mapValueReliable = 1;
 
