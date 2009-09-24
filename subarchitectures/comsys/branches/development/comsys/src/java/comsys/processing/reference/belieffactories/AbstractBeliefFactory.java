@@ -10,7 +10,7 @@
 // PACKAGE
 // ---------------------------------------------------------
 
-package comsys.components.reference.belieffactories;
+package comsys.processing.reference.belieffactories;
 
 // ---------------------------------------------------------
 // BELIEFMODEL imports
