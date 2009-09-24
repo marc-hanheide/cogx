@@ -125,10 +125,15 @@ public class ContinualCollaborativeActivity {
 	 */ 
 	 
 	public void initAbducer() {
-		abducer.clearFacts();
-		abducer.loadFactsFromFile(factsFilename);
-		abducer.clearRules();
-		abducer.loadRulesFromFile(rulesFilename);	
+		try {
+			abducer.clearFacts();
+			abducer.loadFactsFromFile(factsFilename);
+			abducer.clearRules();
+			abducer.loadRulesFromFile(rulesFilename);
+		}
+		catch (AbducerException e) {
+			System.err.println(e.message);
+		}
 	} // end 
 	
 	/** returns the filename for the facts file for the abducer */
@@ -168,12 +173,16 @@ public class ContinualCollaborativeActivity {
 		
 		Abducer.MarkedQuery[] goals = new Abducer.MarkedQuery[] {goal};
 		
-		log("proving: " + MercuryUtils.modalisedFormulaToString(goals[0].body));
+		String listGoalsStr = "";
+		for (int i = 0; i < goals.length; i++) {
+			listGoalsStr += MercuryUtils.modalisedFormulaToString(goals[0].body);
+			if (i < goals.length - 1) listGoalsStr += ", ";
+		}
+		log("proving: [" + listGoalsStr + "]");
 		
 		//           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
 		
 		ProveResult result = abducer.prove(goals);
-		//            	ProofResult result = abducer.proveGoal("e(now) : uttered(h, " + LFUtils.lfToMercString(slf.lf) + ").");
 		if (result == Abducer.ProveResult.SUCCESS) {
 			log("seems we've got a proof");
 			AbductiveProof p = abducer.getBestProof();

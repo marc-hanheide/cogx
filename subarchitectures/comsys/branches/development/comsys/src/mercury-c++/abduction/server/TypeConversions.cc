@@ -14,7 +14,7 @@ using namespace std;
 using namespace Abducer;
 
 MR_Char *
-stringToMercString(const string & s)
+cc2m::string(const std::string & s)
 {
 	char * cs = new char[s.length() + 1];
 	memset(cs, '\0', s.length() + 1);
@@ -24,37 +24,37 @@ stringToMercString(const string & s)
 }
 
 MR_term
-termToMercTerm(const TermPtr & t, MR_varset * vs)
+cc2m::term(const TermPtr & t, MR_varset * w_vs)
 {
-	debug(cerr << "termToMercTerm" << endl);
-	if (t->variable) {
-		char * s = stringToMercString(t->name);
-		MR_term mv;
-		new_var(s, &mv, *vs, vs);
-//		delete s;
+	debug(cerr << "cc2m::term" << endl);
 
-		return mv;
-	}
-	else {
-		MR_term mt;
-//		MR_Word margs = MR_list_empty();
-		MR_list__term margs;
-		empty_term_list(&margs);
+	switch (t->type) {
 
-//		vector<TermPtr>::const_reverse_iterator rit;
-//		for (rit = t->args.rbegin(); rit != t->args.rend(); ++rit) {
-		for (int i = t->args.size() - 1; i >= 0; i--) {
-			//margs = MR_list_cons(termToMercTerm(t->args[i], vs), margs);
-			MR_term arg = termToMercTerm(t->args[i], vs);
-			//MR_term arg = termToMercTerm(*rit, vs);
-			cons_term_list(arg, margs, &margs);
+	case Function: {
+			FunctionTermPtr f = FunctionTermPtr::dynamicCast(t);
+			MR_term w_f;
+			MR_list__term w_args;
+			empty_term_list(&w_args);
+
+			for (int i = f->args.size() - 1; i >= 0; i--) {
+				MR_term w_arg = cc2m::term(f->args[i], w_vs);
+				cons_term_list(w_arg, w_args, &w_args);
+			}
+
+			new_function_term(cc2m::string(f->functor), w_args, &w_f, *w_vs, w_vs);
+			return w_f;
 		}
 
-		char * s = stringToMercString(t->name);
-		new_term(s, margs, &mt, *vs, vs);
-//		delete s;
+	case Variable: {
+			VariableTermPtr v = VariableTermPtr::dynamicCast(t);
+			MR_term w_v;
+			new_variable_term(cc2m::string(v->name), &w_v, *w_vs, w_vs);
+			return w_v;
+		}
 
-		return mt;
+	default:
+		cerr << "unknown termType" << endl;
+		return 0;
 	}
 }
 
@@ -67,12 +67,12 @@ predicateToMercAtomicFormula(const PredicatePtr & p, MR_varset * vs)
 	empty_term_list(&margs);
 
 	for (int i = p->args.size() - 1; i >= 0; i--) {
-		MR_term arg = termToMercTerm(p->args[i], vs);
+		MR_term arg = cc2m::term(p->args[i], vs);
 		cons_term_list(arg, margs, &margs);
 //		margs = MR_list_cons(arg, margs);
 	}
 
-	char * s = stringToMercString(p->predSym);
+	char * s = cc2m::string(p->predSym);
 	new_atomic_formula(s, margs, &mp, *vs, vs);
 //	delete s;
 
@@ -170,7 +170,7 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 				const_cost_function(uq->constCost, &w_costfunc);
 			}
 			else {
-				named_cost_function(stringToMercString(uq->costFunction), &w_costfunc);
+				named_cost_function(cc2m::string(uq->costFunction), &w_costfunc);
 			}
 			unsolved_query(w_mprop, w_costfunc, &w_query);
 		}
@@ -183,7 +183,7 @@ markedQueryToMercQuery(const MarkedQueryPtr & mq, MR_varset * w_vs)
 				const_cost_function(aq->constCost, &w_costfunc);
 			}
 			else {
-				named_cost_function(stringToMercString(aq->costFunction), &w_costfunc);
+				named_cost_function(cc2m::string(aq->costFunction), &w_costfunc);
 			}
 			assumed_query(w_mprop, w_costfunc, &w_query);
 		}
@@ -240,21 +240,21 @@ MR_WordToModality(MR_Word w)
 
 	if (is_modality_event(w)) {
 		debug(cerr << "cc: event" << endl);
-		ModalityPtr m = new Modality();
-		m->type = Event;
-		return m;
+		EventModalityPtr em = new EventModality();
+		em->type = Event;
+		return em;
 	}
 	else if (is_modality_info(w)) {
 		debug(cerr << "cc: info" << endl);
-		ModalityPtr m = new Modality();
-		m->type = Info;
-		return m;
+		InfoModalityPtr im = new InfoModality();
+		im->type = Info;
+		return im;
 	}
 	else if (is_modality_att(w)) {
 		debug(cerr << "cc: att" << endl);
-		ModalityPtr m = new Modality();
-		m->type = AttState;
-		return m;
+		ModalityPtr am = new Modality();
+		am->type = AttState;
+		return am;
 	}
 	else if (is_modality_k(w, &w_bel)) {
 		debug(cerr << "cc: k" << endl);
@@ -316,6 +316,42 @@ MR_WordToModalitySeq(MR_Word w_list)
 }
 
 TermPtr
+m2cc::term(MR_Word w_vs, MR_Word w_t)
+{
+	debug(cerr << "m2cc::term" << endl);
+
+	char * name;
+	MR_Word w_args;
+
+	if (is_function_term(w_t, &name, &w_args)) {
+		debug(cerr << "function term" << endl);
+		FunctionTermPtr f = new FunctionTerm();
+		f->type = Function;
+		f->functor = name;
+		debug(cerr << "functor = " << f->functor << endl);
+		f->args = vector<TermPtr>();
+
+		MR_Word w_iter;
+		for (w_iter = w_args; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
+			f->args.push_back(m2cc::term(w_vs, MR_list_head(w_iter)));
+		}
+		return f;
+	}
+	else if (is_variable_term(w_vs, w_t, &name)) {
+		debug(cerr << "variable term" << endl);
+		VariableTermPtr v = new VariableTerm();
+		v->type = Variable;
+		v->name = name;
+		return v;
+	}
+	else {
+		cerr << "neither function, nor var" << endl;
+		return 0;
+	}
+}
+
+/*
+TermPtr
 MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
 {
 	debug(cerr << "MR_WordToTerm" << endl);
@@ -338,6 +374,7 @@ MR_WordToTerm(MR_Word w_vs, MR_Word w_t)
 
 	return t;
 }
+*/
 
 PredicatePtr
 MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
@@ -353,7 +390,7 @@ MR_WordToPredicate(MR_Word w_vs, MR_Word w_p)
 
 	MR_Word w_iter;
 	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
-		p->args.push_back(MR_WordToTerm(w_vs, MR_list_head(w_iter)));
+		p->args.push_back(m2cc::term(w_vs, MR_list_head(w_iter)));
 	}
 
 	return p;

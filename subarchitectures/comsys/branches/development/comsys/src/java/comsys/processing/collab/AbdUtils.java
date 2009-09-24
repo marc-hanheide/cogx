@@ -22,38 +22,33 @@ public class AbdUtils {
 		return p;
 	}
 	
-	public static Term term(String functor, Term[] args) {
-		Term t = new Term();
-		t.variable = false;
-		t.name = functor;
-		t.args = args;
-		return t;
+	public static FunctionTerm term(String functor, Term[] args) {
+		FunctionTerm f = new FunctionTerm();
+		f.type = Abducer.TermType.Function;
+		f.functor = functor;
+		f.args = args;
+		return f;
 	}
 
-	public static Term term(String functor) {
-		Term t = new Term();
-		t.variable = false;
-		t.name = functor;
-		t.args = new Term[0];
-		return t;
+	public static FunctionTerm term(String functor) {
+		return term(functor, new Term[0]);
 	}
 	
-	public static Term var(String name) {
-		Term t = new Term();
-		t.variable = true;
-		t.name = name;
-		t.args = null;
-		return t;
+	public static VariableTerm var(String name) {
+		VariableTerm v = new VariableTerm();
+		v.type = Abducer.TermType.Variable;
+		v.name = name;
+		return v;
 	}
 
-	public static Modality modInfo() {
-		Modality m = new Modality();
+	public static InfoModality modInfo() {
+		InfoModality m = new InfoModality();
 		m.type = ModalityType.Info;
 		return m;
 	}
 	
-	public static Modality modEvent() {
-		Modality m = new Modality();
+	public static EventModality modEvent() {
+		EventModality m = new EventModality();
 		m.type = ModalityType.Event;
 		return m;
 	}
