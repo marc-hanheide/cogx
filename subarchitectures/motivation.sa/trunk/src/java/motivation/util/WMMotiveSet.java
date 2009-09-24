@@ -46,18 +46,23 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		 */
 		@Override
 		public boolean equals(Object arg0) {
-			if (((MotiveStateTransition) arg0).from == null && this.from==null
-				&& ((MotiveStateTransition) arg0).to == null && this.to==null)
+			if (((MotiveStateTransition) arg0).from == null
+					&& this.from == null
+					&& ((MotiveStateTransition) arg0).to == null
+					&& this.to == null)
 				return true;
-			if (((MotiveStateTransition) arg0).from == null && this.from!=null)
+			if (((MotiveStateTransition) arg0).from == null
+					&& this.from != null)
 				return false;
-			if (((MotiveStateTransition) arg0).to == null && this.to!=null)
+			if (((MotiveStateTransition) arg0).to == null && this.to != null)
 				return false;
-			if (((MotiveStateTransition) arg0).from == null && this.from==null)
+			if (((MotiveStateTransition) arg0).from == null
+					&& this.from == null)
 				return to.equals(((MotiveStateTransition) arg0).to);
-			if (((MotiveStateTransition) arg0).to == null && this.to==null)
+			if (((MotiveStateTransition) arg0).to == null && this.to == null)
 				return from.equals(((MotiveStateTransition) arg0).from);
-			return from.equals(((MotiveStateTransition) arg0).from) && to.equals(((MotiveStateTransition) arg0).to);
+			return from.equals(((MotiveStateTransition) arg0).from)
+					&& to.equals(((MotiveStateTransition) arg0).to);
 		}
 
 		/*
@@ -162,8 +167,6 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		if (wmc.operation != WorkingMemoryOperation.ADD)
 			fromState = oldMotive.status;
 
-		Set<MotiveStateTransition> m = stateChangeReceivers.keySet();
-
 		Set<ChangeHandler> handlersToCall = new HashSet<ChangeHandler>();
 
 		ChangeHandler enterReceiver = null;
@@ -193,7 +196,18 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		for (ChangeHandler h : handlersToCall) {
 			h.motiveChanged(map, wmc, newMotive, oldMotive);
 		}
-		System.out.println("handlers returned");
+
 
 	}
+
+	public Set<Motive> getSubsetByStatus(MotiveStatus status) {
+		Set<Motive> result = new HashSet<Motive>();
+		for (ObjectImpl o : super.values()) {
+			Motive m = (Motive) o;
+			if (m.status.equals(status)) 
+				result.add(m);
+		}
+		return result;
+	}
+
 }

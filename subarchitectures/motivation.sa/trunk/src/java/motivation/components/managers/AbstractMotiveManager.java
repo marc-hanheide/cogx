@@ -10,9 +10,7 @@ import java.util.Map;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMEntrySet;
-import motivation.util.WMMotiveDisplay;
 import motivation.util.WMMotiveSet;
-import motivation.util.WMMotiveSet.MotiveStateTransition;
 import Ice.ObjectImpl;
 import binder.autogen.core.OriginMap;
 import cast.CASTException;
@@ -24,7 +22,7 @@ import cast.cdl.WorkingMemoryChange;
  * @author marc
  * 
  */
-public abstract class MotiveManager extends ManagedComponent {
+public abstract class AbstractMotiveManager extends ManagedComponent {
 
 	Class<? extends Motive> specificType;
 	WMMotiveSet motives;
@@ -33,7 +31,7 @@ public abstract class MotiveManager extends ManagedComponent {
 	/**
 	 * @param specificType
 	 */
-	protected MotiveManager(Class<? extends Motive> specificType) {
+	protected AbstractMotiveManager(Class<? extends Motive> specificType) {
 		super();
 		this.specificType = specificType;
 		motives = WMMotiveSet.create(this, specificType);
@@ -101,6 +99,10 @@ public abstract class MotiveManager extends ManagedComponent {
 		motives.setStateChangeHandler(new WMMotiveSet.MotiveStateTransition(
 				MotiveStatus.SURFACED, null), retractHandler);
 
+		// transition from surfaced to anything (besides ACTIVE) triggers a motive to be unmanaged
+		motives.setStateChangeHandler(new WMMotiveSet.MotiveStateTransition(
+				MotiveStatus.ACTIVE, null), retractHandler);
+		
 
 
 		// motives.setHandler(new WMMotiveSet.ChangeHandler() {

@@ -3,21 +3,18 @@
  */
 package motivation.components.managers;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import motivation.components.managers.comparators.AgeComparator;
+import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -25,41 +22,79 @@ import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
 import motivation.util.GoalTranslator;
 import motivation.util.WMEntryQueue;
+import motivation.util.WMMotiveEventQueue;
+import motivation.util.WMMotiveSet;
 import motivation.util.WMEntryQueue.QueueElement;
+import motivation.util.WMEntrySet.ChangeHandler;
+import motivation.util.WMMotiveSet.MotiveStateTransition;
+import Ice.ObjectImpl;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
+import binder.autogen.core.Feature;
+import binder.autogen.core.Union;
+import binder.autogen.core.UnionConfiguration;
+import binder.autogen.featvalues.StringValue;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
+import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 
 /**
  * @author marc
  * 
  */
-public class PlanAllManager extends MotiveManager {
+public class PlanAllManager extends ManagedComponent {
 
-	Set<Motive> surfacedMotives;
-	List<Motive> activeMotives;
+	WMMotiveSet motives;
+	volatile private boolean interrupt;
+	private WMMotiveEventQueue activeMotiveEventQueue;
 
-
+	Executor backgroundExecutor;
+	private Union agentUnion;
 	
-	
-	private int maxPlannedMotives;
-	private Comparator<? super Motive> motiveComparator;
-	private boolean interrupt;
+	int exectionTimeoutSecs = 10;
 
 	/**
 	 * @param specificType
 	 */
 	public PlanAllManager() {
-		super(Motive.class);
-		surfacedMotives = Collections.synchronizedSet(new HashSet<Motive>());
-		activeMotives = Collections.synchronizedList(new LinkedList<Motive>());
-		// defaults
-		motiveComparator = new AgeComparator();
-		maxPlannedMotives = 3;
+		super();
+		motives = WMMotiveSet.create(this);
+		activeMotiveEventQueue = new WMMotiveEventQueue();
+		backgroundExecutor = Executors.newCachedThreadPool();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#start()
+	 */
+	@Override
+	protected void start() {
+		// TODO Auto-generated method stub
+		super.start();
+		log("start up");
+		motives.start();
+		motives.setStateChangeHandler(new MotiveStateTransition(null,
+				MotiveStatus.ACTIVE), activeMotiveEventQueue);
+		motives.setStateChangeHandler(new MotiveStateTransition(
+				MotiveStatus.ACTIVE, null), new ChangeHandler() {
+
+			@Override
+			public void motiveChanged(
+					Map<WorkingMemoryAddress, ObjectImpl> map,
+					WorkingMemoryChange wmc, ObjectImpl newMotive,
+					ObjectImpl oldMotive) {
+				interrupt = true;
+
+			}
+		});
 	}
 
 	/*
@@ -67,90 +102,9 @@ public class PlanAllManager extends MotiveManager {
 	 * 
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure(Map<String, String> arg0) {
-		// TODO Auto-generated method stub
 		super.configure(arg0);
-
-		String arg;
-		// parsing stuff
-		arg = arg0.get("--orderPolicy");
-		if (arg != null) {
-			String className = this.getClass().getPackage().getName()
-					+ ".comparators." + arg.trim() + "Comparator";
-			try {
-				this.getClass().getPackage().getName();
-				println("add type '" + className + "'");
-				ClassLoader.getSystemClassLoader().loadClass(className);
-				Class<Comparator<? super Motive>> cl = (Class<Comparator<? super Motive>>) Class
-						.forName(className);
-				motiveComparator = cl.newInstance();
-			} catch (ClassNotFoundException e) {
-				println("trying to register for a class that doesn't exist.");
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				println("failed to get an instance.");
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				println("failed to get an instance.");
-				e.printStackTrace();
-			}
-		}
-
-		arg = arg0.get("--maxPlannedMotives");
-		if (arg != null) {
-			maxPlannedMotives = Integer.parseInt(arg);
-		}
-		println("maxPlannedMotives is " + maxPlannedMotives);
-	}
-
-	void deactivateMotives() {
-		try {
-			for (Motive m : activeMotives) {
-				Motive me = getMemoryEntry(m.thisEntry, Motive.class);
-				if (me.status == MotiveStatus.ACTIVE) {
-					me.status = MotiveStatus.SURFACED;
-					m.status = MotiveStatus.SURFACED;
-				}
-			}
-			activeMotives.clear();
-		} catch (CASTException e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	void scheduleMotives() {
-		// if we don't have anything to do... just quit.
-		log("scheduleMotives");
-		if (surfacedMotives.size() < 0)
-			return;
-		try {
-			List<Motive> sortedMotives = new LinkedList<Motive>(surfacedMotives);
-			// rank the motives according to the comparator
-			Collections.sort(sortedMotives, motiveComparator);
-			activeMotives.clear();
-			activeMotives.addAll(sortedMotives.subList(0, maxPlannedMotives));
-			// create a conjunction of motives
-			int rankCount=0;
-			for (Motive m : activeMotives) {
-				m.status=MotiveStatus.ACTIVE;
-				m.tries++;
-				m.rank=rankCount++;
-				log("before overwrite");
-				try {
-					overwriteWorkingMemory(m.thisEntry, m);
-				}
-				catch(DoesNotExistOnWMException e) {
-					// safely ignore
-				}
-			}
-		} catch (CASTException e) {
-			e.printStackTrace();
-		}
-		
-		
 	}
 
 	/*
@@ -160,70 +114,89 @@ public class PlanAllManager extends MotiveManager {
 	 */
 	@Override
 	protected void runComponent() {
-		super.runComponent();
+		log("running");
 		try {
 			while (isRunning()) {
 				log("runComponent loop");
-				if (surfacedMotives.size() > 0) { // if we have motives to
-					// 1. step: schedule the motives we have
-					scheduleMotives();
-					// 2. step: find a plan for these
-					
-					// manage
-					// this waits until we have a plan or return null, if it
-					// fails
+				while (isRunning()) {
+					if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null)
+						break;
+				}
+				log("received relevant change");
+				interrupt = false;
+				final List<Motive> activeMotives = new LinkedList<Motive>(
+						motives.getSubsetByStatus(MotiveStatus.ACTIVE));
+
+				if (activeMotives.size() > 0) { // if we have motives to
 					log("we have some motives that should be planned for");
-				    FutureTask<QueueElement> generatedPlan =
-				        new FutureTask<QueueElement>(new Callable<QueueElement>() {
-				          public QueueElement call() {
-				            try {
-								return generatePlan();
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							return null;
-				        }});
+					FutureTask<QueueElement> generatedPlan = new FutureTask<QueueElement>(
+							new Callable<QueueElement>() {
+								public QueueElement call() {
+									try {
+										return generatePlan(activeMotives);
+									} catch (InterruptedException e) {
+										println("planning was interrupted");
+									}
+									return null;
+								}
+							});
 
-				    // generate the plan asynchronously
-				    Executors.newSingleThreadExecutor().execute(generatedPlan);
-				    // wait for the future to be completed
-				    QueueElement pt ;
-				    do {
-				    	try {
-				    		pt=generatedPlan.get(1, TimeUnit.SECONDS);
-				    		break;
-				    	} catch (TimeoutException e) {
-				    		log("no plan yet... continue waiting");
-				    	}
-				    	// TODO we might want to interrupt planning here for a good reason
-				    	// generatedPlan.cancel(true);
-				    } while (true);
+					// generate the plan asynchronously
+					backgroundExecutor.execute(generatedPlan);
 
-				    
-				    if (pt != null) { // if we got a plan...
+					// wait for the future to be completed
+					QueueElement pt = null;
+					while (!interrupt) {
+						try {
+							pt = generatedPlan.get(1, TimeUnit.SECONDS);
+							break;
+						} catch (TimeoutException e) {
+							log("no plan yet... continue waiting");
+						}
+						// TODO we might want to interrupt planning here for a
+						// good reason
+						// generatedPlan.cancel(true);
+					}
+
+					if (!generatedPlan.isDone())
+						generatedPlan.cancel(true);
+
+					if (pt != null) { // if we got a plan...
 						log("a plan has been generated. it's time to execute it");
 						final PlanProxy pp = new PlanProxy();
 						pp.planAddress = pt.getEvent().address;
-						FutureTask<Object> executionResult = new FutureTask<Object>(new Callable<Object>() {
-							@Override
-							public Object call() {
-								executePlan(pp);
-								return null;
+						FutureTask<Object> executionResult = new FutureTask<Object>(
+								new Callable<Object>() {
+									@Override
+									public Object call() {
+										try {
+											executePlan(pp);
+										} catch (InterruptedException e) {
+											log("execution has been interrupted");
+										} finally {
+											deactivateMotives();
+										}
+										return null;
+									}
+								});
+						backgroundExecutor.execute(executionResult);
+						int loopCount=0;
+						while (!interrupt) {
+							try {
+								executionResult.get(1, TimeUnit.SECONDS);
+								// interrupt any execution after timeout
+								break;
+							} catch (TimeoutException e) {
+								log("not finished execution yet... continue waiting");
+								if (++loopCount>exectionTimeoutSecs) {
+									log("timeout in execution");
+									interrupt=true;
+								}
 							}
-						});
-						Executors.newSingleThreadExecutor().execute(executionResult);
-					    do {
-					    	try {
-					    		executionResult.get(1, TimeUnit.SECONDS);
-					    		break;
-					    	} catch (TimeoutException e) {
-					    		log("not finished execution yet... continue waiting");
-					    	}
-					    	// TODO we might want to interrupt planning here for a good reason
-					    	// executionResult.cancel(true);
-					    } while (true);
-;
+
+						}
+						if (!executionResult.isDone())
+							executionResult.cancel(true);
 					}
 					log("execution finished... wait 1 sec to let state changes propagate");
 					sleepComponent(1000); // TODO: wait for motives to
@@ -252,17 +225,31 @@ public class PlanAllManager extends MotiveManager {
 				0, Completion.PENDING, 0);
 	}
 
+	void deactivateMotives() {
+		try {
+			for (Motive m : motives.getSubsetByStatus(MotiveStatus.ACTIVE)) {
+				m.status = MotiveStatus.SURFACED;
+				overwriteWorkingMemory(m.thisEntry, m);
+			}
+		} catch (DoesNotExistOnWMException e) {
+			log("deactive a motive that doesn't exist... no worries");
+		} catch (CASTException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	/**
 	 * @throws InterruptedException
 	 * 
 	 */
-	private synchronized QueueElement generatePlan()
+	private synchronized QueueElement generatePlan(List<Motive> activeMotives)
 			throws InterruptedException {
 		WMEntryQueue planQueue = new WMEntryQueue(this);
 		QueueElement pt = null;
 
 		// if we don't have anything to do... just quit.
-		if (surfacedMotives.size() < 0)
+		if (activeMotives.size() < 0)
 			return null;
 
 		try {
@@ -276,14 +263,21 @@ public class PlanAllManager extends MotiveManager {
 					log("---> add goal to explore node "
 							+ ((ExploreMotive) m).placeID);
 					goalString = goalString
-							+ GoalTranslator.motive2PlannerGoal(
-									(ExploreMotive) m, getOriginMap());
+							+ GoalTranslator
+									.motive2PlannerGoal((ExploreMotive) m);
 				} else if (m instanceof HomingMotive) {
 					log("---> add goal to go home "
 							+ ((HomingMotive) m).homePlaceID);
 					goalString = goalString
+							+ GoalTranslator
+									.motive2PlannerGoal((HomingMotive) m);
+				} else if (m instanceof CategorizePlaceMotive) {
+
+					log("---> add goal to categorize place "
+							+ ((CategorizePlaceMotive) m).placeID);
+					goalString = goalString
 							+ GoalTranslator.motive2PlannerGoal(
-									(HomingMotive) m, getOriginMap());
+									(CategorizePlaceMotive) m, getAgentUnion());
 				}
 			}
 
@@ -350,7 +344,8 @@ public class PlanAllManager extends MotiveManager {
 		return pt;
 	}
 
-	private void executePlan(PlanProxy pp) {
+	
+	private void executePlan(PlanProxy pp) throws InterruptedException {
 		String id = newDataID();
 		WMEntryQueue planProxyQueue = new WMEntryQueue(this);
 		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
@@ -358,7 +353,6 @@ public class PlanAllManager extends MotiveManager {
 		// submit the planProxy
 		try {
 			addToWorkingMemory(id, pp);
-
 			// wait for the PlanProxy to be deleted
 			// TODO: we should move to status information in here and not only
 			// listen for deletion
@@ -368,52 +362,42 @@ public class PlanAllManager extends MotiveManager {
 			println("CASTException");
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			println("executor should be interrupted");
+			try {
+				deleteFromWorkingMemory(id);
+				throw (e);
+			} catch (DoesNotExistOnWMException e1) {
+				e1.printStackTrace();
+			} catch (PermissionException e1) {
+				e1.printStackTrace();
+			}
 		}
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * motivation.components.managers.MotiveManager#manageMotive(motivation.
-	 * slice.Motive)
-	 */
-	@Override
-	protected void manageMotive(Motive motive) {
-		log("have a new motive to manage... type is "
-				+ Motive.class.getSimpleName());
-		// TODO check if this is an alarm that should trigger complete rescheduling
-		surfacedMotives.add(motive);
-	}
+	private Union getAgentUnion() throws UnknownSubarchitectureException {
+		List<UnionConfiguration> l = new LinkedList<UnionConfiguration>();
+		getMemoryEntries(UnionConfiguration.class, l,"binder");
+		// TODO: we ugly search for the agent union
+		Union[] unions = l.get(0).includedUnions;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * motivation.components.managers.MotiveManager#retractMotive(motivation
-	 * .slice.Motive)
-	 */
-	@Override
-	protected void retractMotive(Motive motive) {
-		// TODO if we retract a motive in the active list, we cause a retrigger
-		if (activeMotives.contains(motive)) {
-			log("an active motive has been retracted... we should reschedule immediately");
-			triggerScheduling();
+		if (agentUnion != null)
+			return agentUnion;
+		else {
+			for (Union u : unions) {
+				for (Feature f : u.features) {
+					if (f.featlabel.equals("category")) {
+						if (f.alternativeValues.length > 0)
+							if (((StringValue) f.alternativeValues[0]).val
+									.equals("robot")) {
+								agentUnion = u;
+								return agentUnion;
+							}
+					}
+				}
+			}
 		}
-		activeMotives.remove(motive);
-		surfacedMotives.remove(motive);
-	}
+		return null;
 
-	private void triggerScheduling() {
-		interrupt=true;
-		
-	}
-
-	@Override
-	protected void activateMotive(Motive newMotive) {
-		// nothing to be done
 	}
 
 }
