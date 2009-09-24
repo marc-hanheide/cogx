@@ -44,8 +44,7 @@ import binder.bayesiannetwork.BayesianNetworkManager;
  * the bayesian network to compute the internal coherence of the whole)
  * 
  * @author Pierre Lison
- * @version 24/09/2009
- * @started 15/08/2009
+ * @version 24/09/2009 (started 15/08/2009)
  */
 
 public class UnionConstructor  {

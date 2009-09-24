@@ -29,8 +29,7 @@ import binder.autogen.core.Proxy;
  * Fake proxy generator used to test the belief model
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 18/09/2009
+ * @version 23/09/2009 (started 18/09/2009)
  */
 public class FakeProxyGeneratorForBeliefModel extends AbstractProxyGenerator {
 

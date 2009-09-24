@@ -43,8 +43,7 @@ import binder.utils.ProbabilityUtils;
  * between features
  * 
  * @author Pierre Lison
- * @version 09/09/2009
- * @started 01/08/2009
+ * @version 09/09/2009 (started 01/08/2009)
  */
 
 public class BayesianNetworkManager {
@@ -97,11 +96,11 @@ public class BayesianNetworkManager {
 	
 	
 	/**
-	 * Compute the prior distribution for a proxy, based on a bayesian network
+	 * Compute the prior distribution for an entity, based on a bayesian network
 	 * 
 	 * NOTE: only limited to discrete probability distributions for now
 	 * 
-	 * @param proxy the proxy
+	 * @param entity the entity
 	 * @return the probability distribution
 	 */
 	public DiscreteProbabilityDistribution getPriorDistribution(PerceivedEntity entity) {

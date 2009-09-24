@@ -29,8 +29,7 @@ import java.io.IOException;
  * Generic utility library
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 23/09/2009
+ * @version 23/09/2009 (started 23/09/2009)
  */
 
 public class GenericUtils {

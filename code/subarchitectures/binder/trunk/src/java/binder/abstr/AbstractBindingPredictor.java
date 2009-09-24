@@ -39,8 +39,7 @@ import cast.cdl.WorkingMemoryPointer;
  * based on the Bayesian network
  * 
  * @author Pierre Lison
- * @version 22/09/2009
- * @started 10/09/2009
+ * @version 22/09/2009 (tarted 10/09/2009)
  */
 
 public class AbstractBindingPredictor extends BindingWorkingMemoryWriter {

@@ -27,8 +27,7 @@ import binder.autogen.core.*;
  * Fake proxy generator for vision
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 25/08/2009
+ * @version 23/09/2009 (started 25/08/2009)
  */
 public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 

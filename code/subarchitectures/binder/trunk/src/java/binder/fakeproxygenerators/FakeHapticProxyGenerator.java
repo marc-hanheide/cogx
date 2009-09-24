@@ -32,8 +32,7 @@ import binder.autogen.specialentities.RelationProxy;
  * and one relation proxy
  * 
  * @author Pierre Lison
- * @version 22/09/2009
- * @started 20/08/2008
+ * @version 22/09/2009 (started 20/08/2008)
  */
 
 public class FakeHapticProxyGenerator extends AbstractProxyGenerator {

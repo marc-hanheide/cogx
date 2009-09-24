@@ -32,8 +32,7 @@ import binder.autogen.featvalues.UnknownValue;
  * Generic utility methods to manipulate feature values
  * 
  * @author Pierre Lison
- * @version 10/09/2009
- * @started 10/09/2009
+ * @version 10/09/2009 (started 10/09/2009)
  */
 
 public class FeatureValueUtils {

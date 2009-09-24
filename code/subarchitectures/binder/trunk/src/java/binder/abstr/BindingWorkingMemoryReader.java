@@ -39,8 +39,7 @@ import cast.cdl.WorkingMemoryOperation;
  * 				   activated in the CAST configuration
  * 
  * @author Pierre Lison
- * @version 09/09/2009
- * @started 15/08/2009
+ * @version 09/09/2009 (started 15/08/2009)
  */
 
 public class BindingWorkingMemoryReader extends ManagedComponent {

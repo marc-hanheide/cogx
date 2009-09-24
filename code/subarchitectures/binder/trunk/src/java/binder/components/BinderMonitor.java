@@ -42,8 +42,7 @@ import cast.core.CASTData;
  * the evolution of its content (either textually or graphically)
  * 
  * @author Pierre Lison
- * @version 21/09/2009
- * @started 15/08/2009
+ * @version 21/09/2009 (started 15/08/2009)
  */
 
 public class BinderMonitor extends ManagedComponent {
@@ -125,9 +124,9 @@ public class BinderMonitor extends ManagedComponent {
 	}
 	
 	/**
-	 * Update the monitor with the new union configurations
+	 * Update the monitor with the new union configuration
 	 * 
-	 * @param alterconfigs (the new union configuration)
+	 * @param bestConfig the union configuration
 	 */
 	public void updateMonitorWithNewConfiguration
 			(UnionConfiguration bestConfig) {

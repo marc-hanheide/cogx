@@ -41,8 +41,8 @@ import binder.autogen.specialentities.RelationUnion;
  * Utility library for the core binder mechanism
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 01/09/2009
+ * @version 23/09/2009 (started 01/09/2009)
+ * 
  */
 
 public class BinderUtils {
@@ -114,7 +114,6 @@ public class BinderUtils {
 	 *     
 	 * @param proxy the proxy
 	 * @param addUnknowns whether to add unknown feature values
-	 * @return
 	 */
 	
 	public static void completeProxy (Proxy proxy, boolean addUnknowns) {

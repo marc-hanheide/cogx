@@ -32,8 +32,7 @@ import binder.autogen.core.UnionConfiguration;
  * union configurations
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 10/09/2009
+ * @version 23/09/2009 (started 10/09/2009)
  */
 
 public class ConfigurationFilter {
@@ -110,7 +109,7 @@ public class ConfigurationFilter {
 	/**
 	 * Check whether the configuration probabilities are already computed or not
 	 * @param configs
-	 * @return
+	 * @return true if already computed, false otherwise
 	 */
 	public static boolean areConfigProbsAlreadyComputed 
 		(Vector<UnionConfiguration> configs) {

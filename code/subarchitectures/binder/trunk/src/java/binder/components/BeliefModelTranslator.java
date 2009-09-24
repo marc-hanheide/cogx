@@ -19,8 +19,7 @@ import cast.cdl.WorkingMemoryOperation;
  * Translate the union configurations on the binder working memory into belief models
  * 
  * @author Pierre Lison
- * @started 15/09/2009
- * @version 21/09/2009
+ * @version 15/09/2009 (version 21/09/2009)
  */
 public class BeliefModelTranslator extends ManagedComponent {
 	

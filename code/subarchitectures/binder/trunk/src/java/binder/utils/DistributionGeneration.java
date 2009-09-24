@@ -38,8 +38,8 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
  * associated with independent probabilities
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 20/08/2009
+ * @version 23/09/2009 (started 20/08/2009)
+ * 
  */
 
 public class DistributionGeneration {
@@ -245,7 +245,6 @@ public class DistributionGeneration {
 	 * 
 	 * @param distrib the distribution
 	 * @param totalSum the sum of all probabilities to enforce
-	 * @return
 	 */
 	
 	public static void normaliseDistribution 
@@ -267,7 +266,6 @@ public class DistributionGeneration {
 	 * 
 	 * @param distrib the discrete distribution
 	 * @param totalSum the sum of all probabilities to enforce
-	 * @return
 	 */
 	
 	public static void normaliseDistribution (DiscreteProbabilityDistribution distrib, float totalSum) {
@@ -297,7 +295,6 @@ public class DistributionGeneration {
 	 * 
 	 * @param distrib the combined distribution
 	 * @param totalSum the sum of all probabilities to enforce
-	 * @return
 	 */
 	
 	public static void normaliseDistribution

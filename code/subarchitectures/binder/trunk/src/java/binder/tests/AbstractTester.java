@@ -25,8 +25,7 @@ import binder.abstr.BindingWorkingMemoryWriter;
  * Abstract class for testing
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 15/09/2009
+ * @version 23/09/2009 (started 15/09/2009)
  */
 public abstract class AbstractTester extends BindingWorkingMemoryWriter {
 
