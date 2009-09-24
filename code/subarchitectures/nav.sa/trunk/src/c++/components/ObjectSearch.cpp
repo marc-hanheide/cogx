@@ -273,7 +273,7 @@ void ObjectSearch::runComponent() {
 
     setupPushScan2d(*this, -1);
     setupPushOdometry(*this, -1);
-	MovePanTilt(0 , 5*M_PI/180);
+	MovePanTilt(20 , 5*M_PI/180);
 
     //clock_t start_time,elapsed;
     //double elapsed_time;
