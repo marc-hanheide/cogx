@@ -16,7 +16,7 @@ package comsys.components.reference.belieffactories;
 // BELIEFMODEL imports
 // ---------------------------------------------------------
 
-import beliefmodels.adl.Agents; 
+import beliefmodels.adl.Agent; 
 import beliefmodels.adl.Belief; 
 import beliefmodels.adl.SpatioTemporalFrame; 
 
@@ -50,7 +50,7 @@ public class ThingBelief
 	
 
 	
-	public Belief constructBelief (LogicalForm lf, Agents agents, SpatioTemporalFrame frame) { 
+	public Belief constructBelief (LogicalForm lf, Agent[] agents, SpatioTemporalFrame frame) { 
 		// initialize the belief
 		LFNominal root = lf.root;
 		assert root.sort.equals(sort);
