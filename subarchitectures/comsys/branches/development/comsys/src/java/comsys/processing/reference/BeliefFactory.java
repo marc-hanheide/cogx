@@ -10,7 +10,7 @@
 // PACKAGE
 // ---------------------------------------------------------
 
-package comsys.components.reference;
+package comsys.processing.reference;
 
 
 
