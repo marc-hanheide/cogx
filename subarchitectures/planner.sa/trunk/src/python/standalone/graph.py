@@ -138,8 +138,8 @@ class Graph(object):
 
 class DAG(Graph):
     def add_edge(self, fnode, tnode, label=None):
-        if self.transitive_closure().has_edge(tnode, fnode):
-            raise ValueError("Attempt to add a cyclic edge %s -> %s to graph." % (fnode, tnode))
+        #if self.transitive_closure().has_edge(tnode, fnode):
+        #    raise ValueError("Attempt to add a cyclic edge %s -> %s to graph." % (fnode, tnode))
         Graph.add_edge(self, fnode, tnode, label)
     def __str__(self, sort_fn=None):
         if sort_fn is None:

@@ -40,6 +40,12 @@ class PlanNode(object):
         self.full_args = args
         self.time = time
         self.status = status
+
+        self.preconds = []
+        self.replanconds = []
+        self.effects = []
+        self.preconds_universal = []
+        self.replan_universal = []
         
         if not isinstance(action, DummyAction):
             num = len(action.agents) + len(action.args)
@@ -69,6 +75,17 @@ class PlanNode(object):
 class DummyAction(object):
     def __init__(self, name):
         self.name = name
+    def __str__(self):
+        return str(self.name)
+
+class GoalAction(DummyAction):
+    def __init__(self, goal):
+        self.name = "goal"
+        self.precondition = goal
+    def instantiate(self, x):
+        pass
+    def uninstantiate(self):
+        pass
     def __str__(self):
         return str(self.name)
 

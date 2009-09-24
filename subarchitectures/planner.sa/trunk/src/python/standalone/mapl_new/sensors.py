@@ -81,5 +81,7 @@ class Sensor(actions.Action):
         elif first.string in scope.functions:
             term = predicates.FunctionTerm.parse(j.reset(), sensor)
             sensor.sense = term
-            
+        else:
+            raise parser.UnexpectedTokenError(first, "predicate, function or literal")
+
         return sensor

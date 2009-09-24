@@ -284,7 +284,7 @@ class StateTest(unittest.TestCase):
         """Testing finding reasons of derived predicates """
         
         state = State.fromProblem(self.prob)
-        extstate, reasons = state.getExtendedState(getReasons=True)
+        extstate, reasons, universalReasons = state.getExtendedState(getReasons=True)
 
         relevantVars = []
         relevantReplanVars = []
