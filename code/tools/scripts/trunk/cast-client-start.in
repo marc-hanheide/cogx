@@ -1,8 +1,10 @@
 #!/bin/bash
 
 export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:$CLASSPATH:
-export LD_LIBRARY_PATH=@PREFIX@/lib:@CURE_INSTALLROOT@/lib/cure:$LD_LIBRARY_PATH
-export PYTHONPATH=@PREFIX@/python:@PREFIX@/planner:${PYTHONPATH}
+export LD_LIBRARY_PATH=@PREFIX@/lib:@CURE_INSTALLROOT@/lib/cure:$LD_LIBRARY_PATH:
+export PYTHONPATH=@PREFIX@/python:@PREFIX@/planner:$PYTHONPATH:
+export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DYLD_LIBRARY_PATH:"
+
 
 @CAST_INSTALL_ROOT@/bin/cast-client "$@"
 
