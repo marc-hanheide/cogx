@@ -20,12 +20,16 @@ package comsys.components.reference;
 // BELIEFMODEL imports
 // ---------------------------------------------------------
 
+import beliefmodels.adl.Belief;
+
 // ---------------------------------------------------------
 // COMSYS / LF imports
 // ---------------------------------------------------------
 
 import comsys.datastructs.lf.LFNominal;
 import comsys.datastructs.lf.LogicalForm;
+
+import comsys.processing.reference.BeliefFactory; 
 
 // ---------------------------------------------------------
 // JAVA imports

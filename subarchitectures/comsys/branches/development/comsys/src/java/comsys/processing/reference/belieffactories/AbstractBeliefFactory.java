@@ -16,7 +16,7 @@ package comsys.components.reference.belieffactories;
 // BELIEFMODEL imports
 // ---------------------------------------------------------
 
-import beliefmodels.adl.Agents; 
+import beliefmodels.adl.Agent; 
 import beliefmodels.adl.Belief; 
 import beliefmodels.adl.SpatialInterval; 
 import beliefmodels.adl.TemporalInterval; 
@@ -24,13 +24,13 @@ import beliefmodels.adl.Perspective;
 import beliefmodels.adl.SpatioTemporalFrame; 
 import beliefmodels.adl.SpatioTemporalFrame; 
 
-
-
 // ---------------------------------------------------------
 // COMSYS / LF imports
 // ---------------------------------------------------------
 
 import comsys.processing.reference.BeliefFactory;
+
+import comsys.datastructs.lf.LogicalForm;
 
 
 public class AbstractBeliefFactory 
@@ -47,13 +47,13 @@ public class AbstractBeliefFactory
 	
 	/** constructs a belief with default settings for spatiotemporal frame (here-and-now) */ 
 	
-	public Belief constructBelief (LogicalForm lf, Agents agents) { 
+	public Belief constructBelief (LogicalForm lf, Agent[] agents) { 
 		return constructBelief(lf,agents,createHereNowFrame(agents)); 
 	} // end method		
 	
 	/** creates an agents-list consisting of a single agent. */
 	
-	protected Agents createAgents(String id) { 
+	protected Agent[] createAgents(String id) { 
 		Agent[] agents = new Agent[1];
 		agents[0] = id;		
 		return agents; 
@@ -84,7 +84,7 @@ public class AbstractBeliefFactory
 	 is initialized by the given agent. 
 	 */ 
 
-	protected SpatioTemporalFrame createHereNowFrame(Agents agents) { 
+	protected SpatioTemporalFrame createHereNowFrame(Agent[] agents) { 
 		SpatialInterval spInt = new SpatialInterval();
 		spInt.id = "here";
 		TemporalInterval tmpInt = new TemporalInterval();
