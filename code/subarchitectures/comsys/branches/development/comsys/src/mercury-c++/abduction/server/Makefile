@@ -19,9 +19,24 @@ MCFLAGS?=--search-lib-files-dir ../lib \
 
 SLICE_PATH?=.
 
-ICE_HOME=$(HOME)/Developer/Ice-3.3.1
+ifeq ($(origin ICE_HOME), undefined)
+$(info )
+$(info Please set the environment variable ICE_HOME to the root of your Ice)
+$(info installation.)
+$(info e.g. export ICE_HOME=$$(HOME)/Developer/Ice-3.3.1)
+$(info )
+$(error ICE_HOME undefined)
+endif
+#ICE_HOME=$(HOME)/Developer/Ice-3.3.1
 
-MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
+ifeq ($(origin MERCURY_HOME), undefined)
+$(info )
+$(info Please set the variable MERCURY_HOME to the root of your Mercury installation.)
+$(info e.g. export MERCURY_HOME=/usr/local/mercury-rotd-2008-11-30)
+$(info )
+$(error MERCURY_HOME undefined)
+endif
+#MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
 
 CXXFLAGS=-Wall -g
 LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
