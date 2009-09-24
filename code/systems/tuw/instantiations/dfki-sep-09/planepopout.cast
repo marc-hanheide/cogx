@@ -6,10 +6,20 @@ HOST localhost
 # reading stored images
 #COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "instantiations/dfki-sep-09/calib/stereo/img%03d-L.bmp instantiations/dfki-sep-09/calib/stereo/img%03d-R.bmp" --start 0 --end 9 --framerate_ms 1000
 
+#robot base
+COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
+
 # live images
 COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "instantiations/dfki-sep-09/stereo.ini:L instantiations/dfki-sep-09/stereo.ini:R"
 
 COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig instantiations/dfki-sep-09/stereo.ini --display
+
+SUBARCHITECTURE nav.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log #--read-ptu --log #--debug 
+
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
