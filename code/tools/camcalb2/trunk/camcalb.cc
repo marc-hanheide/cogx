@@ -537,7 +537,7 @@ int main_live(int argc, char **argv)
   vector<CvPoint2D32f> centers;
   vector<Ellipse> ells;
   vector<EllipsePair> pairs;
-  Model model = {7, 5, 38., 38.};
+  Model model = {7, 5, 40., 40.};
 
   if(argc != 2)
   {
