@@ -55,6 +55,8 @@ public class ConfigurationFilter {
 	 * Compute confidence scores for union configurations, normalise them, and set the results
 	 * in their respective configProb fields
 	 * 
+	 * TODO: find a way to overcome the very small confidence score to scale up to hundreds of proxies
+	 * 
 	 * @param configs
 	 */
 	public static void computeConfidenceScoresForUnionConfigurations

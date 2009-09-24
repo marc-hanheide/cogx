@@ -44,6 +44,14 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 
 public class DistributionGeneration {
 
+	
+	// flag to activate error logging
+	public static boolean ERRLOGGING = true;
+
+	// flag to activate logging
+	public static boolean LOGGING = false;
+
+	
 	// whether to normalise probability distributions (to sum up to 1.0) 
 	// after generating them
 	public static boolean normaliseDistributions = true;
@@ -328,5 +336,16 @@ public class DistributionGeneration {
 	}
 	
 
+
+
+	public static void log(String s) {
+		if (LOGGING)
+			System.out.println("[MaximumSearch] " + s);
+	}
+
+	public static void errlog(String s) {
+		if (ERRLOGGING)
+			System.err.println("[MaximumSearch] " + s);
+	}
 
 }

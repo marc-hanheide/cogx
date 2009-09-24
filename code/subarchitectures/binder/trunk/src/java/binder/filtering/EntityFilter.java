@@ -230,12 +230,12 @@ public class EntityFilter {
 
 	public static void log(String s) {
 		if (LOGGING)
-			System.out.println("[MaximumSearch] " + s);
+			System.out.println("[EntityFilter] " + s);
 	}
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-			System.err.println("[MaximumSearch] " + s);
+			System.err.println("[EntityFilter] " + s);
 	}
 	
 }
