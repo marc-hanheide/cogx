@@ -38,6 +38,8 @@ import cast.cdl.WorkingMemoryOperation;
  * IMPORTANT NOTE: this component will only work if the UnionDiscretizer is also 
  * 				   activated in the CAST configuration
  * 
+ * TODO: possibility to integrate handmade filters on binder WM changes
+ * 
  * @author Pierre Lison
  * @version 09/09/2009 (started 15/08/2009)
  */

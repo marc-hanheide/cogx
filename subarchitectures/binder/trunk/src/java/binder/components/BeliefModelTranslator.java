@@ -1,5 +1,6 @@
 package binder.components;
 
+import binder.autogen.beliefmodel.BindingUnionFormula;
 import binder.autogen.beliefmodel.ComplexFormula;
 import binder.autogen.beliefmodel.LogicalOp;
 import binder.autogen.beliefmodel.SuperFormula;
@@ -129,7 +130,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 		// Create the root formula (defined as a conjunction of formulae)
 		formula.id = "unionconfig-" + UnionConfigNb;
 		formula.op = LogicalOp.and;
-		formula.formulae = new SuperFormula[config.includedUnions.length];
+		formula.formulae = new BindingUnionFormula[config.includedUnions.length];
 	
 		// loop on the included unions
 		for (int i = 0 ; i < config.includedUnions.length ; i++) {

@@ -12,8 +12,12 @@
 //
 // ===================================================================
 
+
 #include <BeliefModels.ice>
+#include <BinderEssentials.ice>
  
+#include <CDL.ice>
+
  
 module binder {
 module autogen {
@@ -29,10 +33,12 @@ module beliefmodel {
 	// The class SuperFormula implements the Formula interface, acting as supertype class. 
 	// As an EpistemicObject, each SuperFormula has an identifier. 
 	
+	
 	class SuperFormula extends beliefmodels::adl::EpistemicObject {
-
+		cast::cdl::CASTTime timestamp;
 	};
-	 
+	
+	
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
 				
 	class UncertainSuperFormula extends SuperFormula { 
@@ -59,6 +65,11 @@ module beliefmodel {
 		SuperFormulaSeq formulae;
 	}; 
 	
+	  
+	class BindingUnionFormula extends UncertainSuperFormula { 
+		binder::autogen::core::ProxySeq includedProxies;
+	}; 
+
  
 	// GROUNDED BELIEFS
 	// We extend the ADL notion of Belief with structure to indicate how

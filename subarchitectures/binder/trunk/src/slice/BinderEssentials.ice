@@ -24,7 +24,8 @@
  */ 
  
  
-#include <cast/slice/CDL.ice>
+#include <CDL.ice>
+
 
 module binder {
 
