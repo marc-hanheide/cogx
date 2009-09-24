@@ -12,6 +12,13 @@
 
 package comsys.processing.reference;
 
+// ---------------------------------------------------------
+// IMPORTS
+// ---------------------------------------------------------
+
+import beliefmodels.adl.Belief;
+
+import comsys.datastructs.lf.LogicalForm;
 
 
 public interface BeliefFactory {
