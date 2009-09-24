@@ -10,5 +10,5 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Detector ObjectDetector --videohost localhost --videoname video --camid 0 --log
-CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --maxModels 2 --log
+CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --maxModels 6 --log
 CPP MG VisionDriver VisionDriver --log
