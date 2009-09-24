@@ -9,7 +9,7 @@ JAVA TM 		cast.architecture.AlwaysPositiveTaskManager --log --debug
 JAVA MG asr     comsys.components.asr.cc_ASR --src gui --log --debug
 JAVA GD parser  comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --log true --debug
 JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction true --discourse-level-composition true --disfluency-correction true --log true --debug
-JAVA GD collab  comsys.components.collab.cc_ContinualCollabActing --log --debug
+JAVA GD cca  comsys.components.collab.cc_ContinualCollabActing --facts /dev/null --rules ./subarchitectures/comsys/src/mercury-c++/abduction/rules.txt --log --debug
 
 #JAVA MG asr 	comsys.components.asr.cc_ASR --src gui --log #--debug
 #JAVA GD parser			comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --log true
