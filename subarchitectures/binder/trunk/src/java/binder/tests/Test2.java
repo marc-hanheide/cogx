@@ -41,8 +41,7 @@ import binder.autogen.featvalues.StringValue;
  * Test 2: generate single-proxy unions for a large set of random proxies 
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 18/09/2009
+ * @version 23/09/2009 (started 18/09/2009)
  */
 
 public class Test2 extends AbstractTester{

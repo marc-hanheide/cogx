@@ -34,8 +34,7 @@ import binder.utils.FeatureValueUtils;
  * Library for manipulation of probability values and assignments
  * 
  * @author Pierre Lison
- * @version 24/09/2009
- * @started 10/08/2009
+ * @version 24/09/2009 (started 10/08/2009)
  */
 
 public class ProbabilityUtils {

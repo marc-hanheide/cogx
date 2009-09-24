@@ -31,9 +31,7 @@ import binder.autogen.specialentities.PhantomProxy;
  * proxies
  * 
  * @author Pierre Lison
- * @author Pierre Lison
- * @version 22/09/2009
- * @started 05/09/2009
+ * @version 22/09/2009 (started 05/09/2009)
  * 
  */
 public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {

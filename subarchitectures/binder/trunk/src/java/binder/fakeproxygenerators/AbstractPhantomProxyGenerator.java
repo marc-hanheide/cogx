@@ -32,8 +32,7 @@ import binder.autogen.specialentities.PhantomProxy;
  * Abstract class to generate and insert phantom proxies into the binder
  * 
  * @author Pierre Lison
- * @version 22/09/2009
- * @started 05/09/2009
+ * @version 22/09/2009 (started 05/09/2009)
  */
 
 abstract public class AbstractPhantomProxyGenerator extends AbstractBindingPredictor{

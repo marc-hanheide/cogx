@@ -46,8 +46,7 @@ import cast.core.CASTData;
  * states and exploited for deliberative reasoning or learning.
  *
  * @author Pierre Lison
- * @version 22/09/2009
- * @started 01/09/2009
+ * @version 22/09/2009 (started 01/09/2009)
  *
  */
 

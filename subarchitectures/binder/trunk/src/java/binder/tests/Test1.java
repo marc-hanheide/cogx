@@ -40,8 +40,7 @@ import cast.cdl.WorkingMemoryPointer;
  * from the proxy
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 15/09/2009
+ * @version 23/09/2009 (started 15/09/2009)
  */
 
 public class Test1 extends AbstractTester {

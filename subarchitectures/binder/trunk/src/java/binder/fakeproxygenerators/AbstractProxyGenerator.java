@@ -30,8 +30,7 @@ import binder.autogen.core.Proxy;
  * Abstract class to generate and insert proxies into the binder
  * 
  * @author Pierre Lison
- * @version 22/09/2009
- * @started 05/08/2009
+ * @version 22/09/2009 (started 05/08/2009)
  */
 
 public abstract class AbstractProxyGenerator extends BindingWorkingMemoryWriter {

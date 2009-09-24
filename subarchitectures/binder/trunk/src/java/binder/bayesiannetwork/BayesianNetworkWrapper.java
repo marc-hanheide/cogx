@@ -20,8 +20,7 @@ import binder.utils.GenericUtils;
  * Wrapper library for operations on the bayesian network
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 10/08/2009
+ * @version 23/09/2009 (started 10/08/2009)
  */
 
 public class BayesianNetworkWrapper {
@@ -213,7 +212,7 @@ public class BayesianNetworkWrapper {
 
 	/**
 	 * Return the nodes of the network
-	 * @return
+	 * @return the array of network nodes
 	 */
 	public BayesianNetworkNode[] getNodes() {
 		return network.nodes;
@@ -222,7 +221,7 @@ public class BayesianNetworkWrapper {
 	
 	/**
 	 * Return the edges of the network
-	 * @return
+	 * @return the array of network edges
 	 */
 	public BayesianNetworkEdge[] getEdges() {
 		return network.edges;

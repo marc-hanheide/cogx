@@ -33,8 +33,7 @@ import binder.utils.FeatureValueUtils;
  * Utility library to filter/collapse probability distributions in perceived entities
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 05/09/2009
+ * @version 23/09/2009 (started 05/09/2009)
  */
 
 public class EntityFilter {

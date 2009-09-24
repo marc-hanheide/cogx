@@ -41,8 +41,8 @@ import binder.autogen.core.FeatureValue;
  * Utility library for creating and monitoring belief models
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 18/09/2009
+ * @version 23/09/2009 (started 18/09/2009)
+ * 
  */
 
 public class BeliefModelUtils {

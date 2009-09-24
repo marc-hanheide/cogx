@@ -53,8 +53,7 @@ import cast.core.CASTData;
  * the correlations between features
  * 
  * @author Pierre Lison
- * @version 22/09/2009
- * @started 01/07/2009
+ * @version 22/09/2009 (started 01/07/2009)
  */
 
 public class Binder extends ManagedComponent  {
@@ -615,7 +614,7 @@ public class Binder extends ManagedComponent  {
 	 * TODO: check whether this is still needed?
 	 * @param union
 	 * @param alreadyMergedUnions
-	 * @return
+	 * @return true if already computed, false otherwise
 	 */
 	public static boolean alreadyComputed(Union union, HashMap<Union, Union> alreadyMergedUnions) {
 		for (Iterator<Union> i = alreadyMergedUnions.keySet().iterator() ; i.hasNext() ; ) {

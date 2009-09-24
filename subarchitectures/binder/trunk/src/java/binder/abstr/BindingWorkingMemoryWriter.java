@@ -44,8 +44,7 @@ import cast.cdl.WorkingMemoryPointer;
  * memory
  * 
  * @author Pierre Lison
- * @version 09/09/2009
- * @started 15/08/2009
+ * @version 09/09/2009 (started 15/08/2009)
  */
  
 public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
@@ -136,10 +135,10 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            pointer to the object in the local working memory
 	 * @param probExists
 	 *            the probability of the proxy
-	 * @param sourceProxy
-	 *            the source proxy
-	 * @param targetProxy
-	 *            the target proxy
+	 * @param sources
+	 *            the addresses of the source proxies
+	 * @param targets
+	 *            the addresses of the target proxies
 	 * @return the new relation proxy
 	 */
 	public RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
@@ -174,10 +173,10 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the probability of the proxy
 	 * @param features
 	 *            the features
-	 * @param sourceProxy
-	 *            the source proxy
-	 * @param targetProxy
-	 *            the target proxy
+	 * @param sources
+	 *            the addresses of the source proxies
+	 * @param targets
+	 *            the addresses of the target proxies
 	 * @return the new relation proxy
 	 */
 	public RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
@@ -206,7 +205,6 @@ public abstract class BindingWorkingMemoryWriter extends ManagedComponent {
 	 *            the proxy
 	 * @param feat
 	 *            the feature to add
-	 * @return the proxy
 	 */
 
 	public void addFeatureToProxy(Proxy proxy, Feature feat) {

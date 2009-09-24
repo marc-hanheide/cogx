@@ -37,8 +37,7 @@ import binder.utils.ProbabilityUtils;
  * Utility library to search for maximum values in probability distributions
  * 
  * @author Pierre Lison
- * @version 23/09/2009
- * @started 10/08/2009
+ * @version 23/09/2009 (started 10/08/2009)
  */
 
 public class MaximumSearch {
