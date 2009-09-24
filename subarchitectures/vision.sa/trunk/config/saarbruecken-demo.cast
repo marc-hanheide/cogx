@@ -1,29 +1,11 @@
 HOST localhost
 
-#COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
-#COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
-#COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
-
 # reading stored images
 #COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids 0 --camconfigs "subarchitectures/vision.sa/config/cam.cal" --files #"subarchitectures/vision.sa/src/c++/vision/components/VisionDriver/img/00000%03d.jpg" --start 150 --end 400 --framerate_ms 50
 
 # live images
 COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --camconfigs "subarchitectures/vision.sa/config/camSB.cal" --devnums 1
 #COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --devnums 0 --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/cam.cal"
-
-
-
-#SUBARCHITECTURE nav.sa
-#CPP WM SubarchitectureWorkingMemory  #--log --debug
-#CPP TM AlwaysPositiveTaskManager
-
-#CPP MG trans.process TranslationProcess --log
-#CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --max-scan-rate 5 --no-file-output #--log #-m tmpmap.metric #--#debug 
-#CPP GD navgraph.process NavGraphProcess -c subarchitectures/nav.sa/config/cogxp3.ccf  #-m tmpmap.graph #--log --debug
-#CPP GD navctrl.process NavControl -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --no-x-window --log #--debug
-#CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --log --gridsize 125 --cellsize 0.1 --#objects "rice_near rice_middle rice_far rice_XXfar kellogs_1 kellogs_2" --samplesize 1000 --cam-range 2.5 --cam-fov 45 --coverage-threshold #30  --vp-threshold 5 --away-from-obstacles 1 --disp-magn 3 --ctrl-ptu --cam-step 60 #--display-coverage 
-#CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log --read-ptu --log #--debug 
-#CPP GD cure.debugger CureDataLogger 
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
@@ -32,6 +14,5 @@ CPP MG Detector ObjectDetector --videohost localhost --videoname video --camid 0
 CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --maxModels 6 --log
 
 #CPP MG DetectorDriver ObjectDetectorDriver --log
-
 CPP MG VisionDriver VisionDriver --log
 

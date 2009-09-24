@@ -56,7 +56,7 @@ void ObjectTracker::initTracker(){
 	int h=m_image.height;
 	if(m_image.width < 512)	w=512;
 	if(m_image.height < 512) h=512;
-  g_Resources->InitScreen(w,h);
+  g_Resources->InitScreen(512,512);
  
   // Initialize tracking (parameters for edge-based tracking)
   if(trackTexture)

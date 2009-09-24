@@ -130,7 +130,7 @@ void ObjectTracker::runTracker(){
 		// Track model
 		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
 		m_tracker->drawResult(&ids->trackpose);
-		//m_tracker->drawTest();
+		m_tracker->drawTest();
 	
 		// Query keyboard input		
 		running = inputsControl(m_tracker);

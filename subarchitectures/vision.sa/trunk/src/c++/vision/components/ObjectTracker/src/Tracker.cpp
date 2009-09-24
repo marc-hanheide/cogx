@@ -294,10 +294,10 @@ void Tracker::drawTest(){
 	glBegin(GL_LINE_LOOP);
 		glColor3f(1.0,0.0,0.0);
 		glVertex3f(0.000, 0.000, 0.000);
-		glVertex3f(0.225, 0.000, 0.000);
-		glVertex3f(0.225, 0.113, 0.000);
-		glVertex3f(0.188, 0.151, 0.000);
-		glVertex3f(0.000, 0.151, 0.000);
+		glVertex3f(0.240, 0.000, 0.000);
+		glVertex3f(0.240, 0.120, 0.000);
+		glVertex3f(0.200, 0.160, 0.000);
+		glVertex3f(0.000, 0.160, 0.000);
 	glEnd();
 	
 	glEnable(GL_DEPTH_TEST);
