@@ -270,10 +270,10 @@ module celm {
     
 
     /**
-     *  CELMEventQuery classs can be written to the
+     *  CELMEventQuery objects can be written to the
      *  working memory of the Recollector process which
-     *  which try to find events matching the cue and return 
-     *  them through the events member. For this to work
+     *  tries to find events matching the cue and return 
+     *  them through the "events" member. For this to work
      *  the process issuing the query should register a 
      *  WM change receiver on this particular item before
      *  actually issuing it!
