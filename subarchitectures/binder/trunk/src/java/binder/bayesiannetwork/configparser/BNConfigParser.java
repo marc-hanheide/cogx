@@ -11,6 +11,9 @@ import java.util.Enumeration;
 
 import cast.cdl.CASTTime;
 
+
+// TODO: bayesian network for non-string values
+
 public class BNConfigParser implements BNConfigParserConstants {
 
   /** Main entry point. */

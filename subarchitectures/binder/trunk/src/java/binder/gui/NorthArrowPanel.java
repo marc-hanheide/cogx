@@ -34,6 +34,7 @@ import javax.swing.JTextField;
 
 import binder.components.BinderMonitor;
 
+// TODO: implement arrow buttons to navigate in binder history
 
 public class NorthArrowPanel extends JPanel{
 
