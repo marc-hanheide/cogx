@@ -57,7 +57,7 @@ public class ThingBelief
 		Belief belief = new Belief();
 		belief.id = "thing";
 		belief.sigma = frame;
-		belief.agents = agents; 
+		belief.ags = agents; 
 		// create the formula
 		
 		
