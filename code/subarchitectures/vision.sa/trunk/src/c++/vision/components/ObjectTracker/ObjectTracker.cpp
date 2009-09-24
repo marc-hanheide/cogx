@@ -294,7 +294,7 @@ void ObjectTracker::runComponent(){
   {
   	if(track){
   	  // Run Tracker
-  	  sleepComponent(10);
+  	  //sleepComponent(10);
   	  runTracker();
   	  
 		}else{
