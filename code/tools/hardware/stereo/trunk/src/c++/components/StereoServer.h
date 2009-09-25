@@ -73,6 +73,15 @@ private:
    */
   CensusGPU census;
 
+  /**
+   * Size of median filter for specle removeal in the disparity image.
+   * 0 = not median filtering
+   */
+  int medianSize;
+
+  IplImage *colorImg[2];
+  IplImage *rectImg[2];
+  IplImage *greyImg[2];
   IplImage *disparityImg;
 
   bool doDisplay;
