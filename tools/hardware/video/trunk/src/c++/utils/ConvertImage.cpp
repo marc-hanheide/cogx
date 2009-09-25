@@ -13,24 +13,34 @@ namespace Video
 using namespace std;
 using namespace cast;
 
-IplImage* convertImageToIpl(const Video::Image & image)
+void convertImageToIpl(const Video::Image & img, IplImage ** iplImg)
 {
-  IplImage *iplImage =
-    cvCreateImage(cvSize(image.width,image.height), IPL_DEPTH_8U, 3);
-  assert(iplImage != 0);
+  if(*iplImg != 0)
+    if(img.width != (*iplImg)->width || img.height != (*iplImg)->height)
+      cvReleaseImage(iplImg);
+  if(*iplImg == 0)
+    *iplImg = cvCreateImage(cvSize(img.width,img.height), IPL_DEPTH_8U, 3);
+  assert(*iplImg != 0);
   int x, y, c;
   // note: this neat triple loop might be somewhat slower than a memcpy, but
   // makes sure images are copied correctly irrespective of memory layout and
   // line padding.
-  for(y = 0; y < image.height; y++)
-    for(x = 0; x < image.width; x++)
+  for(y = 0; y < img.height; y++)
+    for(x = 0; x < img.width; x++)
       for(c = 0; c < 3; c++)
-        iplImage->imageData[y*iplImage->widthStep + 3*x + c] =
-          image.data[3*(y*image.width + x) + c];
-  return iplImage;
+        (*iplImg)->imageData[y*(*iplImg)->widthStep + 3*x + c] =
+          img.data[3*(y*img.width + x) + c];
+
 }
 
-IplImage* convertImageToIplGray(const Video::Image & image)
+IplImage* convertImageToIpl(const Video::Image & img)
+{
+  IplImage *iplImg = 0;
+  convertImageToIpl(img, &iplImg);
+  return iplImg;
+}
+
+IplImage* convertImageToIplGray(const Video::Image & img)
 {
   // colour channel scaling factors, taken from OpenCV cvcolor.cpp
   const float cscGr_32f = 0.299;
@@ -38,16 +48,16 @@ IplImage* convertImageToIplGray(const Video::Image & image)
   const float cscGb_32f = 0.114;
 
   IplImage *grayImage =
-    cvCreateImage(cvSize(image.width,image.height), IPL_DEPTH_8U, 1);
+    cvCreateImage(cvSize(img.width,img.height), IPL_DEPTH_8U, 1);
   assert(grayImage != 0);
   int x, y;
-  for(y = 0; y < image.height; y++)
-    for(x = 0; x < image.width; x++)
+  for(y = 0; y < img.height; y++)
+    for(x = 0; x < img.width; x++)
     {
-      int i = 3*(y*image.width + x);
-      float rf = (float)image.data[i];
-      float gf = (float)image.data[i+1];
-      float bf = (float)image.data[i+2];
+      int i = 3*(y*img.width + x);
+      float rf = (float)img.data[i];
+      float gf = (float)img.data[i+1];
+      float bf = (float)img.data[i+2];
       grayImage->imageData[y*grayImage->widthStep + x] = (unsigned char)
         (cscGr_32f*rf + cscGg_32f*gf + cscGb_32f*bf);
     }
