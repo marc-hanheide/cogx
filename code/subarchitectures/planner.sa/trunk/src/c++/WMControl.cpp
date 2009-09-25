@@ -213,12 +213,10 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         if ((*i)->timeStamp > m_lastUpdate) {
             changed.push_back(*i);
         }
-
-	
-	if(first) {
-	  timestamp =  (*i)->timeStamp;
-	  first = false;
-	}
+        if(first) {
+            timestamp =  (*i)->timeStamp;
+            first = false;
+        }
         else if ((*i)->timeStamp > timestamp) {
             timestamp = (*i)->timeStamp;
         }
