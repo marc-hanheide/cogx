@@ -16,7 +16,8 @@ module motivation {
     		SURFACED,
     		POSSIBLE,
     		IMPOSSIBLE,
-    		ACTIVE
+    		ACTIVE,
+    		COMPLETED
     	};
     		
     	class Motive {
@@ -47,6 +48,14 @@ module motivation {
     	};
 
     	class ExploreMotive extends Motive {
+    		/**
+	 		* The ID of the place.
+	 		*/
+			long placeID;
+    		
+    	};
+    	
+    	class CategorizePlaceMotive extends Motive {
     		/**
 	 		* The ID of the place.
 	 		*/
