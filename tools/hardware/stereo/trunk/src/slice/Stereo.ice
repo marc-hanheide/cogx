@@ -7,15 +7,13 @@
 
 module Stereo {
 
-  sequence<cogx::Math::Vector3> Vector3Seq;
-
   /**
    * A stereo server, serving 3D point clouds from a pair of calibrated stereo
    * cameras.
    */
   interface StereoInterface {
-    void getPoints(out Vector3Seq points);
-    void getPointsInSOI(VisionData::SOI soi, out Vector3Seq points);
+    void getPoints(out VisionData::SurfacePointSeq points);
+    void getPointsInSOI(VisionData::SOI soi, out VisionData::SurfacePointSeq points);
   };
 };
 

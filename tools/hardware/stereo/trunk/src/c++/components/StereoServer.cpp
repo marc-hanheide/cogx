@@ -36,13 +36,13 @@ static const int STEREO_HEIGHT = 120;
 static const int LEFT_CLEAR_BORDER_WIDTH = 35;
 static const int RIGHT_CLEAR_BORDER_WIDTH = 5;
 
-void StereoServerI::getPoints(Stereo::Vector3Seq& points, const Ice::Current&)
+void StereoServerI::getPoints(VisionData::SurfacePointSeq& points, const Ice::Current&)
 {
   stereoSrv->getPoints(points);
 }
 
 void StereoServerI::getPointsInSOI(const VisionData::SOIPtr &soi,
-    Stereo::Vector3Seq& points, const Ice::Current&)
+    VisionData::SurfacePointSeq& points, const Ice::Current&)
 {
   stereoSrv->getPointsInSOI(*soi, points);
 }
@@ -131,7 +131,7 @@ void StereoServer::start()
   setupMyIceCommunication();
 }
 
-void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
+void StereoServer::getPoints(vector<VisionData::SurfacePoint> &points)
 {
   lockComponent();
 
@@ -158,18 +158,35 @@ void StereoServer::getPoints(vector<cogx::Math::Vector3> &points)
       if(d != 0)
       {
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
-           points[cnt].x, points[cnt].y, points[cnt].z);
+           points[cnt].p.x, points[cnt].p.y, points[cnt].p.z);
         // now get from left cam coord sys to global coord sys
-        points[cnt] = transform(global_left_pose, points[cnt]);
+        points[cnt].p = transform(global_left_pose, points[cnt].p);
         cnt++;
       }
     }
-
+/*
+  // HACK: return poinst of calibration pattern
+  points.push_back(vector3(0.000, 0.000, 0.000));
+  points.push_back(vector3(0.240, 0.000, 0.000));
+  points.push_back(vector3(0.240, 0.120, 0.000));
+  points.push_back(vector3(0.200, 0.160, 0.000));
+  points.push_back(vector3(0.000, 0.160, 0.000));
+  // tea box
+  points.push_back(vector3(0.000, 0.000, 0.073));
+  points.push_back(vector3(0.160, 0.000, 0.073));
+  points.push_back(vector3(0.160, 0.065, 0.073));
+  points.push_back(vector3(0.000, 0.065, 0.073));
+  points.push_back(vector3(0.000, 0.000, 0.000));
+  points.push_back(vector3(0.160, 0.000, 0.000));
+  points.push_back(vector3(0.160, 0.065, 0.000));
+  points.push_back(vector3(0.000, 0.065, 0.000));
+  // HACK END
+*/
   unlockComponent();
 }
 
 void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
-    std::vector<cogx::Math::Vector3> &points)
+    std::vector<VisionData::SurfacePoint> &points)
 {
   lockComponent();
 
@@ -190,7 +207,11 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
         // now get from left cam coord sys to global coord sys
         p = transform(global_left_pose, p);
         if(pointInsideSOI(soi, p))
-          points.push_back(p);
+        {
+          VisionData::SurfacePoint sp;
+          sp.p = p;
+          points.push_back(sp);
+        }
       }
     }
 
@@ -232,7 +253,8 @@ void StereoServer::runComponent()
         CV_FILLED);
 
     lockComponent();
-    cvSmooth(rawDisp, disparityImg, CV_MEDIAN, 5);
+    //cvSmooth(rawDisp, disparityImg, CV_MEDIAN, 5);
+    cvCopy(rawDisp, disparityImg);
     unlockComponent();
 
     // use OpenCV stereo match
