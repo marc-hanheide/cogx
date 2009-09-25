@@ -41,21 +41,5 @@
    </dectree>
 </chooser>
 
-<chooser id="c-structure.pronominalization" region="STRUCTURE" metafunction="ideational">
-   <dectree>
-       <choicenode answer="*TOP*">
-         <inquiry id="random" type="string" answerset="@pronoun-it @pronoun-this"> 
-	     </inquiry>
-  	     <choicenode answer="pronoun-it">
-	       <result val="pronoun-it"/>
-	     </choicenode>
-	     <choicenode answer="pronoun-this">
-	       <result val="pronoun-this"/>
-	     </choicenode>
-	</choicenode>
-   </dectree>
-</chooser>
-
-
 
 </choosers>

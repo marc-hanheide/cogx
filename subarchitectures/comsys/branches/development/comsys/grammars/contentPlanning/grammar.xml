@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!-- 
-     systemic grammar for utterance planning on top of the moloko.v5 grammar
+     systemic grammar for utterance planning on top of the moloko.v6 grammar
 
-     version: 08-06-23
+     version: Sept 2009
      authors: Ivana Kruijff-Korbayova (ivana.kruijff@dfki.de)
 -->
 
@@ -19,6 +19,9 @@
 
   <systems  file="quantification.systems.xml"/>
   <choosers file="quantification.choosers.xml"/>
+
+  <systems  file="pronominalization.systems.xml"/>
+  <choosers file="pronominalization.choosers.xml"/>
 
   <systems  file="attributes.systems.xml"/>
   <choosers file="attributes.choosers.xml"/>
