@@ -30,20 +30,20 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 		<action choice="vision-ackno1">  <!-- what do I have here --> 
 			<add-lf lf="@content:ascription(have ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c1:m-location ^ context ^ &lt;Proximity&gt;m-proximal) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> 
 		</action>
-		<action choice="vision-ackno2">
+		<action choice="vision-ackno2">  <!-- what can I see -->
 			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(c1:modal ^ can) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/>
 		</action>		
-		<action choice="vision-ackno3">
+		<action choice="vision-ackno3">  <!-- what do I see -->
 			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/>
 		</action>			
 	
-		<action choice="vision-rej1">
-			<add-lf lf="@content:cognition(believe ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s1:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Subject&gt;i2:person) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+		<action choice="vision-rej1">  <!-- I don't believe I have seen that -->
+			<add-lf lf="@content:cognition(believe ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s1:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Subject&gt;i2:person) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
 		</action>
-		<action choice="vision-rej2">
-			<add-lf lf="@content:communication(say ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s2:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Subject&gt;i2:person) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 		
+		<action choice="vision-rej2">  <!-- I can't say I have seen that -->
+			<add-lf lf="@content:communication(say ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s2:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Subject&gt;i2:person) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 		
 		</action>		
-		<action choice="vision-rej3">
+		<action choice="vision-rej3">  <!-- I must be looking at another table -->
 			<add-lf lf="@content:perception(look ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Modifier&gt;(m1:modal ^ must) ^ &lt;Modifier&gt;(a1:m-location ^ at ^ &lt;Anchor&gt;(t1:thing ^ table ^ &lt;Modifier&gt;(a2:quantity ^ another))) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
 		</action>
 
