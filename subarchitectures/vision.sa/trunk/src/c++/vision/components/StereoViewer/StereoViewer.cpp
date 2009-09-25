@@ -215,13 +215,13 @@ static void DrawOverlays()
 
 static void DrawPoints()
 {
+  glPointSize(3.);
   glBegin(GL_POINTS);
   for(size_t i = 0; i < points.size(); i++)
   {
-    if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
-      glColor3ub(0, 255, 0);
-    else
-      glColor3ub(255, 255, 255);
+    glColor3ub((unsigned char)points[i].c.r,
+               (unsigned char)points[i].c.g,
+               (unsigned char)points[i].c.b);
     glVertex3d(points[i].p.x, points[i].p.y, points[i].p.z);
   }
   glEnd();
@@ -382,13 +382,17 @@ void StereoViewer::runComponent()
     getPoints(points);
     selectPointNearLeftOpticalAxis();
 
+    //cvSet(iplImage, cvScalar(0));
     for(size_t i = 0; i < points.size(); i++)
     {
       if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
       {
         Vector2 p = projectPoint(image.camPars, points[i].p);
         distortPoint(image.camPars, p, p);
-        cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(255,0,0));
+        cvCircle(iplImage, cvPoint(p.x, p.y), 0,
+            CV_RGB((unsigned char)points[i].c.r,
+                   (unsigned char)points[i].c.g,
+                   (unsigned char)points[i].c.b));
       }
     }
 
@@ -432,7 +436,7 @@ void StereoViewer::runComponent()
     glutMainLoopEvent();
 
     // wait a bit so we don't hog the CPU
-    sleepComponent(50);
+    sleepComponent(200);
   }
 }
 
