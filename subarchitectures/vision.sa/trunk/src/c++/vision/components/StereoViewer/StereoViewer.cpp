@@ -25,9 +25,10 @@ namespace cast
 {
 
 using namespace std;
-using namespace Stereo;
 using namespace cogx;
 using namespace cogx::Math;
+using namespace Stereo;
+using namespace VisionData;
 
 static int win;
 static double cam_trans[3];
@@ -40,7 +41,7 @@ static GLfloat col_background[4];
 static GLfloat col_surface[4];
 static GLfloat col_overlay[4];
 static GLfloat col_highlight[4];
-static vector<Vector3> points;
+static vector<SurfacePoint> points;
 static size_t selected_point = UINT_MAX;
 static Vector3 img_cam_pos;
 
@@ -182,6 +183,34 @@ static void DrawOverlays()
   glTranslatef(img_cam_pos.x, img_cam_pos.y, img_cam_pos.z);
   glutWireSphere(0.01, 10, 10);
   glPopMatrix();
+
+  // HACK draw DFKI tea box
+  glBegin(GL_LINE_LOOP);
+  glColor4f(0., 1., 0., 1.);
+  glVertex3d(0.000, 0.000, 0.000);
+  glVertex3d(0.160, 0.000, 0.000);
+  glVertex3d(0.160, 0.065, 0.000);
+  glVertex3d(0.000, 0.065, 0.000);
+  glEnd();
+  glBegin(GL_LINE_LOOP);
+  glVertex3d(0.000, 0.000, 0.073);
+  glVertex3d(0.160, 0.000, 0.073);
+  glVertex3d(0.160, 0.065, 0.073);
+  glVertex3d(0.000, 0.065, 0.073);
+  glEnd();
+  glBegin(GL_LINE_LOOP);
+  glVertex3d(0.000, 0.000, 2*0.073);
+  glVertex3d(0.160, 0.000, 2*0.073);
+  glVertex3d(0.160, 0.065, 2*0.073);
+  glVertex3d(0.000, 0.065, 2*0.073);
+  glEnd();
+  glBegin(GL_LINE_LOOP);
+  glVertex3d(0.000, 0.000, 3*0.073);
+  glVertex3d(0.160, 0.000, 3*0.073);
+  glVertex3d(0.160, 0.065, 3*0.073);
+  glVertex3d(0.000, 0.065, 3*0.073);
+  glEnd();
+  // HACK END
 }
 
 static void DrawPoints()
@@ -189,11 +218,11 @@ static void DrawPoints()
   glBegin(GL_POINTS);
   for(size_t i = 0; i < points.size(); i++)
   {
-    if(points[i].z > 0.05)  // above the table plane, which is a z = 0
+    if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
       glColor3ub(0, 255, 0);
     else
       glColor3ub(255, 255, 255);
-    glVertex3d(points[i].x, points[i].y, points[i].z);
+    glVertex3d(points[i].p.x, points[i].p.y, points[i].p.z);
   }
   glEnd();
   if(selected_point < points.size())
@@ -205,13 +234,13 @@ static void DrawPoints()
 
     glDisable(GL_LIGHTING);
     glDisable(GL_COLOR_MATERIAL);
-    snprintf(text, 100, "%.3f", length(points[i]));
-    DrawText3D(text, points[i].x, points[i].y, points[i].z);
+    snprintf(text, 100, "%.3f", length(points[i].p));
+    DrawText3D(text, points[i].p.x, points[i].p.y, points[i].p.z);
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
 
     glPushMatrix();
-    glTranslatef(points[i].x, points[i].y, points[i].z);
+    glTranslatef(points[i].p.x, points[i].p.y, points[i].p.z);
     glutWireSphere(0.01, 10, 10);
     glPopMatrix();
   }
@@ -296,7 +325,7 @@ static void selectPointNearLeftOpticalAxis()
   Vector3 z = vector3(0., 0., 1.);
   for(size_t i = 0; i < points.size(); i++)
   {
-    double dist = distPointToLine(points[i], o, z);
+    double dist = distPointToLine(points[i].p, o, z);
     if(dist < min_dist)
     {
       min_dist = dist;
@@ -355,9 +384,9 @@ void StereoViewer::runComponent()
 
     for(size_t i = 0; i < points.size(); i++)
     {
-      //if(points[i].z > 0.05)  // above the table plane, which is a z = 0
+      if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
       {
-        Vector2 p = projectPoint(image.camPars, points[i]);
+        Vector2 p = projectPoint(image.camPars, points[i].p);
         distortPoint(image.camPars, p, p);
         cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(255,0,0));
       }
@@ -373,24 +402,24 @@ void StereoViewer::runComponent()
     }*/
 
     // draw points of the calibration pattern
-    {
+    /*{
       Vector2 p;
       p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.000));
       distortPoint(image.camPars, p, p);
       cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.225, 0.000, 0.000));
+      p = projectPoint(image.camPars, vector3(0.240, 0.000, 0.000));
       distortPoint(image.camPars, p, p);
       cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.225, 0.113, 0.000));
+      p = projectPoint(image.camPars, vector3(0.240, 0.120, 0.000));
       distortPoint(image.camPars, p, p);
       cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.188, 0.151, 0.000));
+      p = projectPoint(image.camPars, vector3(0.200, 0.120, 0.000));
       distortPoint(image.camPars, p, p);
       cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-      p = projectPoint(image.camPars, vector3(0.000, 0.151, 0.000));
+      p = projectPoint(image.camPars, vector3(0.000, 0.160, 0.000));
       distortPoint(image.camPars, p, p);
       cvCircle(iplImage, cvPoint(p.x, p.y), 1, CV_RGB(0,255,0));
-    }
+    }*/
 
     cvShowImage(getComponentID().c_str(), iplImage);
 
