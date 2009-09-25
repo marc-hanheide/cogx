@@ -14,23 +14,22 @@ import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
 import motivation.slice.TestMotive;
 import cast.CASTException;
 
-public class ManualSelectFilter extends AbstractFilter {
+public class ManualSelectFilter implements MotiveFilter {
 
-	/*
-	 * (non-Javadoc)
+	/**
 	 * 
-	 * @see motivation.components.filters.AbstractFilter#start()
 	 */
-	@Override
-	protected void start() {
-		super.start();
+	protected ManualSelectFilter() {
 		getJFrame();
 		jFrame.setVisible(true);
 		jFrame.pack();
 	}
+
+	private MotiveFilterManager component;
 
 	private JFrame jFrame = null; // @jve:decl-index=0:visual-constraint="1,21"
 	private JPanel jContentPane = null;
@@ -40,8 +39,7 @@ public class ManualSelectFilter extends AbstractFilter {
 	private JButton jButtonUpdate = null; // @jve:decl-index=0:visual-constraint="325,118"
 	private JCheckBox jCheckBoxCategorizePlace = null; // @jve:decl-index=0:visual-constraint="427,60"
 
-	@Override
-	protected boolean shouldBeSurfaced(Motive motive) {
+	public boolean shouldBeSurfaced(Motive motive) {
 		if (motive instanceof ExploreMotive)
 			return jCheckBoxExploreMotive.isSelected();
 		else if (motive instanceof TestMotive)
@@ -54,17 +52,17 @@ public class ManualSelectFilter extends AbstractFilter {
 			return true;
 	}
 
-	@Override
-	protected boolean shouldBeUnsurfaced(Motive motive) {
-		// if (motive instanceof ExploreMotive)
-		// return !jCheckBoxExploreMotive.isSelected();
-		// else if (motive instanceof TestMotive)
-		// return !jCheckBoxTestMotive.isSelected();
-		// else if (motive instanceof HomingMotive)
-		// return !jCheckBoxHomingMotive.isSelected();
-		// else
-		if (motive.tries>3)
-			return true;
+
+	public boolean shouldBeUnsurfaced(Motive motive) {
+		if (motive.status==MotiveStatus.ACTIVE)
+			return false;
+		
+		if (motive instanceof ExploreMotive)
+			return !jCheckBoxExploreMotive.isSelected();
+		else if (motive instanceof TestMotive)
+			return !jCheckBoxTestMotive.isSelected();
+		else if (motive instanceof HomingMotive)
+			return !jCheckBoxHomingMotive.isSelected();
 		else
 			return false;
 	}
@@ -158,8 +156,8 @@ public class ManualSelectFilter extends AbstractFilter {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						println("update everything");
-						checkAll();
+						component.println("update everything");
+						component.checkAll();
 					} catch (CASTException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -182,6 +180,10 @@ public class ManualSelectFilter extends AbstractFilter {
 			jCheckBoxCategorizePlace.setText("let CategorizePlaceMotives pass");
 		}
 		return jCheckBoxCategorizePlace;
+	}
+
+	public void setManager(MotiveFilterManager motiveFilterManager) {
+		component = motiveFilterManager;
 	}
 
 } // @jve:decl-index=0:visual-constraint="583,36"

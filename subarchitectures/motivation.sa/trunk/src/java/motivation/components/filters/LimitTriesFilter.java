@@ -4,17 +4,18 @@
 package motivation.components.filters;
 
 import motivation.slice.Motive;
+import cast.architecture.ManagedComponent;
 
 /**
  * @author marc
  * 
  */
-public class SurfaceAllFilter extends AbstractFilter {
-
+public class LimitTriesFilter implements MotiveFilter {
+	ManagedComponent component;
 	/**
 	 * @param specificType
 	 */
-	public SurfaceAllFilter() {
+	public  LimitTriesFilter() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -26,9 +27,8 @@ public class SurfaceAllFilter extends AbstractFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	@Override
-	protected boolean shouldBeSurfaced(Motive motive) {
-		return true;
+	public boolean shouldBeSurfaced(Motive motive) {
+		return (motive.tries<=3);
 	}
 
 	/*
@@ -38,9 +38,13 @@ public class SurfaceAllFilter extends AbstractFilter {
 	 * motivation.components.filters.Filter#shouldBeUnsurfaced(motivation.slice
 	 * .Motive)
 	 */
-	@Override
-	protected boolean shouldBeUnsurfaced(Motive motive) {
-		return false;
+	public boolean shouldBeUnsurfaced(Motive motive) {
+		return (motive.tries>3);
+	}
+
+	public void setManager(MotiveFilterManager motiveFilterManager) {
+		component = motiveFilterManager;
+		
 	}
 
 }

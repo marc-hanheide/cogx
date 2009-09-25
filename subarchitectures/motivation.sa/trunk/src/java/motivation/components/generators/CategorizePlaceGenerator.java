@@ -5,7 +5,6 @@ package motivation.components.generators;
 
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizePlaceMotive;
-import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
@@ -61,9 +60,11 @@ public class CategorizePlaceGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected void start() {
 		super.start();
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
-				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+		WorkingMemoryChangeReceiver receiver = new WorkingMemoryChangeReceiver() {
+			
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+					throws CASTException {
 				debug(CASTUtils.toString(_wmc));
 				// create a new motive from this node...
 				CategorizePlaceMotive newMotive = MotiveFactory.createCategorizePlaceMotive(_wmc.address);
@@ -76,8 +77,11 @@ public class CategorizePlaceGenerator extends AbstractMotiveGenerator {
 					e.printStackTrace();
 				} 
 				checkMotive(newMotive);
+				
 			}
-		});
+		};
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
+				WorkingMemoryOperation.ADD), receiver);
 	}
 
 	/* (non-Javadoc)

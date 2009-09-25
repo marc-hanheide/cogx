@@ -102,9 +102,10 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(800, 400);
+		this.setSize(1200, 400);
 		this.setContentPane(getJContentPane());
 		this.setTitle("WorkingMemory Monitor");
+		this.pack();
 	}
 
 	/**
@@ -115,7 +116,6 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			BorderLayout borderLayout = new BorderLayout();
-			borderLayout.setVgap(10);
 			jContentPane = new JPanel();
 			jContentPane.setLayout(borderLayout);
 			jContentPane.add(getJScrollPane(), BorderLayout.CENTER);
@@ -167,6 +167,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			sorter = new TableRowSorter<TableModel>(tableModel);
 			sorter.setSortsOnUpdates(true);
 			jTable.setRowSorter(sorter);
+			jTable.sizeColumnsToFit(7);
 			getContentPane().add(new JScrollPane(jTable));
 		}
 		return jTable;

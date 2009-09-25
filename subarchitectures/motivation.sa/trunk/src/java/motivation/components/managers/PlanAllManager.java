@@ -57,8 +57,8 @@ public class PlanAllManager extends ManagedComponent {
 
 	Executor backgroundExecutor;
 	private Union agentUnion;
-	
-	int exectionTimeoutSecs = 10;
+
+	int failsafeTimeoutSecs = 10;
 
 	/**
 	 * @param specificType
@@ -77,7 +77,6 @@ public class PlanAllManager extends ManagedComponent {
 	 */
 	@Override
 	protected void start() {
-		// TODO Auto-generated method stub
 		super.start();
 		log("start up");
 		motives.start();
@@ -97,14 +96,13 @@ public class PlanAllManager extends ManagedComponent {
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#configure(java.util.Map)
-	 */
 	@Override
 	protected void configure(Map<String, String> arg0) {
+		log("configure manager");
 		super.configure(arg0);
+		String valStr;
+		if ((valStr = arg0.get("--failsafetimeout")) != null)
+			failsafeTimeoutSecs = Integer.parseInt(valStr);
 	}
 
 	/*
@@ -180,7 +178,7 @@ public class PlanAllManager extends ManagedComponent {
 									}
 								});
 						backgroundExecutor.execute(executionResult);
-						int loopCount=0;
+						int loopCount = 0;
 						while (!interrupt) {
 							try {
 								executionResult.get(1, TimeUnit.SECONDS);
@@ -188,17 +186,19 @@ public class PlanAllManager extends ManagedComponent {
 								break;
 							} catch (TimeoutException e) {
 								log("not finished execution yet... continue waiting");
-								if (++loopCount>exectionTimeoutSecs) {
+								if (++loopCount > failsafeTimeoutSecs) {
 									log("timeout in execution");
-									interrupt=true;
+									interrupt = true;
 								}
 							}
 
 						}
 						if (!executionResult.isDone())
 							executionResult.cancel(true);
+						log("execution finished... wait 1 sec to let state changes propagate");
+					} else {
+						deactivateMotives();
 					}
-					log("execution finished... wait 1 sec to let state changes propagate");
 					sleepComponent(1000); // TODO: wait for motives to
 					// update
 				} else { // if we have no motives yet, we wait until something
@@ -209,7 +209,6 @@ public class PlanAllManager extends ManagedComponent {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -344,7 +343,6 @@ public class PlanAllManager extends ManagedComponent {
 		return pt;
 	}
 
-	
 	private void executePlan(PlanProxy pp) throws InterruptedException {
 		String id = newDataID();
 		WMEntryQueue planProxyQueue = new WMEntryQueue(this);
@@ -376,8 +374,8 @@ public class PlanAllManager extends ManagedComponent {
 
 	private Union getAgentUnion() throws UnknownSubarchitectureException {
 		List<UnionConfiguration> l = new LinkedList<UnionConfiguration>();
-		getMemoryEntries(UnionConfiguration.class, l,"binder");
-		// TODO: we ugly search for the agent union
+		getMemoryEntries(UnionConfiguration.class, l, "binder");
+		// TODO: we do VERY ugly search for the agent union... when will binder have a Map<> interface?
 		Union[] unions = l.get(0).includedUnions;
 
 		if (agentUnion != null)

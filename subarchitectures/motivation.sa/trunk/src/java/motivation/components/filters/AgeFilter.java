@@ -3,16 +3,19 @@
  */
 package motivation.components.filters;
 
+import cast.architecture.ManagedComponent;
+import cast.cdl.CASTTime;
+import cast.core.CASTUtils;
 import motivation.slice.Motive;
 import motivation.util.CASTTimeUtil;
-import motivation.components.filters.AbstractFilter;
+import motivation.components.filters.MotiveFilterManager;
 
 /**
  * @author marc
  * 
  */
-public class AgeFilter extends AbstractFilter {
-
+public class AgeFilter implements MotiveFilter {
+	ManagedComponent component;
 	/**
 	 * @param specificType
 	 */
@@ -28,8 +31,7 @@ public class AgeFilter extends AbstractFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	@Override
-	protected boolean shouldBeSurfaced(Motive motive) {
+	public boolean shouldBeSurfaced(Motive motive) {
 		return checkAge(motive);
 	}
 
@@ -40,16 +42,21 @@ public class AgeFilter extends AbstractFilter {
 	 * motivation.components.filters.Filter#shouldBeUnsurfaced(motivation.slice
 	 * .Motive)
 	 */
-	@Override
-	protected boolean shouldBeUnsurfaced(Motive motive) {
+	public boolean shouldBeUnsurfaced(Motive motive) {
 		if (checkAge(motive))
 			return false;
-		log("motive was too old... unsurfacing it!");
+		component.log("motive was too old... unsurfacing it!");
 		return true;
 	}
 
 	boolean checkAge(Motive motive) {
-		return (CASTTimeUtil.diff(getCASTTime(), motive.created) < 6000);
+		CASTTime time = CASTUtils.getTimeServer().getCASTTime();
+		return (CASTTimeUtil.diff(time, motive.created) < 6000);
+	}
+
+	public void setManager(MotiveFilterManager motiveFilterManager) {
+		component = motiveFilterManager;
+		
 	}
 
 }
