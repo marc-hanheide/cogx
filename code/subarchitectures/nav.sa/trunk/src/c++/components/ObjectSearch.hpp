@@ -59,8 +59,6 @@ class ObjectSearch : public cast::ManagedComponent,
     bool displayOn;
     int m_coveragetotal, m_covered;
     NavData::Completion cmp;
-    bool firstscanreceived;
-    bool runObjectSearch;
     int whereinplan;
     NavData::FNodeSequence fnodeseq;
     SpatialData::PlaceIDSeq placestosearch;

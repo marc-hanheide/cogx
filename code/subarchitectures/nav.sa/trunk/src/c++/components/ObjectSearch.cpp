@@ -243,7 +243,6 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     
 	m_coveragetotal = -1;
     m_covered = 0;
-    runObjectSearch = true;
     m_status = STOPPED;
     whereinplan = -1;
 
@@ -279,7 +278,7 @@ void ObjectSearch::runComponent() {
     //double elapsed_time;
     m_command = IDLE; //TURN;
 	log("hey I run");
-    while(runObjectSearch) {
+    while(isRunning()) {
 		
         Update_PDF_with_GridMap();
         Update_CoverageMap_with_GridMap();
@@ -439,6 +438,7 @@ void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
     log("ID post: %s",id.c_str());
     addToWorkingMemory<NavData::NavCommand>(id, cmd);
 }
+
 void ObjectSearch::ExecutePlan () {
 		ExecuteNextInPlan ();
 }
@@ -625,7 +625,6 @@ bool comp (double i,double j) {
 ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vector<double> PDFsum) {
     SearchPlan searchplan;
     log("GeneratePlan");
-    //runObjectSearch = false
     searchplan.plan.clear();
     searchplan.totalcoverage = 0;
     searchplan.indexarray.clear();
@@ -660,7 +659,7 @@ ObjectSearch::SearchPlan ObjectSearch::GeneratePlan(double covpercent,std::vecto
             searchplan.plan.push_back(candidatePoses[j]);
             searchplan.indexarray.push_back(j);
             searchplan.totalcoverage += extracoverage;
-            //println("Total Coverage %f", searchplan.totalcoverage);
+            //println("Total Coverage %f",  searchplan.totalcoverage);
             //println("Added to plan");
             if (searchplan.totalcoverage >= m_covthresh) {
               //  println("Found plan covers %f of the area", searchplan.totalcoverage);
@@ -987,7 +986,7 @@ void ObjectSearch::receiveOdometry(const Robotbase::Odometry &castOdom) {
    m_Mutex.unlock();
 }
 void ObjectSearch::UpdateDisplays () {
-    if (m_Displaylgm && displayOn && firstscanreceived) {
+    if (m_Displaylgm && displayOn) {
         Cure::Pose3D currentPose = m_TOPP.getPose();
         m_Displaylgm->updateDisplay(&currentPose,0,0,m_samplesize, m_samples,tpoints,ViewConePts,
                                     1,m_plan.plan,m_plan.indexarray);
