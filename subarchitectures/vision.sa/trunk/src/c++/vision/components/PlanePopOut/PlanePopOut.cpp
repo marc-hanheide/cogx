@@ -41,8 +41,10 @@ GLfloat col_background[4];
 GLfloat col_surface[4];
 GLfloat col_overlay[4];
 GLfloat col_highlight[4];
-vector<Vector3> points;
-vector<Vector3> pointsN;
+
+vector<SurfacePointsStructure> points;
+vector<SurfacePointsStructure>  pointsN;
+
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector< Vector3 > v3size;
 vector< Vector3 > v3center;
@@ -219,6 +221,7 @@ void DrawPoints()
   for(size_t i = 0; i < pointsN.size(); i++)
   {
 	if (points_label.at(i) == 0)   glColor3f(1.0,1.0,0.0); // plane/*DrawPlaneGrid();*/
+
 	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
 	else if (points_label.at(i) == 1)  glColor3f(0.0,0.0,1.0);  // 1st object
 	else if (points_label.at(i) == 2)  glColor3f(0.0,0.0,1.0);  //
@@ -281,7 +284,7 @@ void DrawOneCuboid(Vector3 Max, Vector3 Min)
 	glDisable(GL_BLEND);
 }
 
-void DrawCuboids(std::vector<Vector3> &points, std::vector <int> &labels)
+void DrawCuboids(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
 {
 	std::vector< Vector3 > Max;
 	std::vector< Vector3 > Min;
@@ -297,7 +300,7 @@ void DrawCuboids(std::vector<Vector3> &points, std::vector <int> &labels)
 
 	for(unsigned int i = 0; i<points.size(); i++)
 	{
-		Vector3 v3Obj = points.at(i);
+		Vector3 v3Obj = points.at(i).p;
 		int label = labels.at(i);
 		if (label > 0)
 		{
@@ -348,7 +351,7 @@ Vector3 ProjectOnDominantPlane(Vector3 InputP)
 	return OutputP;
 }
 
-void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
+void BoundingSphere(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
 {
 	std::vector< Vector3 > center;
 	Vector3 initial_vector;
@@ -371,7 +374,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 
 	for(unsigned int i = 0; i<points.size(); i++)
 	{
-		Vector3 v3Obj = points.at(i);
+		Vector3 v3Obj = points.at(i).p;
 		int label = labels.at(i);
 		if (label > 0)
 		{
@@ -391,7 +394,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 	////////////////////calculte radius in the real world//////////////////
 		for(unsigned int i = 0; i<points.size(); i++)
 		{
-			Vector3 v3Obj = points.at(i);
+			Vector3 v3Obj = points.at(i).p;
 			int label = labels.at(i);
 			if (label > 0 && dist(v3Obj,center.at(label-1)) > radius_world.at(label-1))
 				radius_world.at(label-1) = dist(v3Obj,center.at(label-1));
@@ -407,7 +410,7 @@ void BoundingSphere(std::vector<Vector3> &points, std::vector <int> &labels)
 		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i));//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
-			Vector3 v3Obj = points.at(j);
+			Vector3 v3Obj = points.at(j).p;
 			Vector3 Point_DP = ProjectOnDominantPlane(v3Obj);
 			int label = labels.at(j);
 			if (label == -1 && dist(Point_DP,Center_DP) < 1.1*radius_world.at(i)) // equivocal points
@@ -554,7 +557,7 @@ void PlanePopOut::runComponent()
 {	
   while(isRunning())
   {//cout<<"mbDrawWireSphere = "<<mbDrawWireSphere<<endl;
-	std::vector<Vector3> tempPoints = points;
+	vector<SurfacePointsStructure> tempPoints = points;
 	points.resize(0);
 	getPoints(points);
 	if (points.size() == 0)
@@ -565,7 +568,7 @@ void PlanePopOut::runComponent()
 		pointsN.clear();
 		objnumber = 0;
 		N = 5;
-		for (std::vector<Vector3>::iterator it=points.begin(); it<points.end(); it+=N)
+		for (std::vector<SurfacePointsStructure>::iterator it=points.begin(); it<points.end(); it+=N)
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
@@ -687,9 +690,9 @@ void PlanePopOut::runComponent()
   }
 }
 
-bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels)
+bool PlanePopOut::RANSAC(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
 {
-	std::vector<Vector3> R_points = points;
+	std::vector<SurfacePointsStructure> R_points = points;
 	unsigned int nPoints = R_points.size();
 	if(nPoints < 10)
 	{
@@ -717,19 +720,19 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 				nB = rand()%nPoints;
 			while(nC == nA || nC==nB)
 				nC = rand()%nPoints;
-			Vector3 v3CA = R_points.at(nC)  - R_points.at(nA);
-			Vector3 v3BA = R_points.at(nB)  - R_points.at(nA);
+			Vector3 v3CA = R_points.at(nC).p  - R_points.at(nA).p;
+			Vector3 v3BA = R_points.at(nB).p  - R_points.at(nA).p;
 			v3Normal = cross(v3CA, v3BA);
 			if (norm(v3Normal) != 0)
-				double length = normalise(v3Normal);
+				normalise(v3Normal);
 			else v3Normal = 99999.9*v3Normal;
 		} while (fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.1); //the plane should parallel with the initialisation motion of camera
 
-		Vector3 v3Mean = 0.33333333 * (R_points.at(nA) + R_points.at(nB) + R_points.at(nC));
+		Vector3 v3Mean = 0.33333333 * (R_points.at(nA).p + R_points.at(nB).p + R_points.at(nC).p);
 		double dSumError = 0.0;
 		for(unsigned int i=0; i<nPoints; i++)
 		{
-			Vector3 v3Diff = R_points.at(i) - v3Mean;
+			Vector3 v3Diff = R_points.at(i).p - v3Mean;
 			double dDistSq = dot(v3Diff, v3Diff);
 			if(dDistSq == 0.0)
 			continue;
@@ -749,10 +752,10 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 		}
 	}
 ////////////////////////////////use three points to cal plane////
-	para_a = ( (R_points.at(point2).y-R_points.at(point1).y)*(R_points.at(point3).z-R_points.at(point1).z)-(R_points.at(point2).z-R_points.at(point1).z)*(R_points.at(point3).y-R_points.at(point1).y) );
-	para_b = ( (R_points.at(point2).z-R_points.at(point1).z)*(R_points.at(point3).x-R_points.at(point1).x)-(R_points.at(point2).x-R_points.at(point1).x)*(R_points.at(point3).z-R_points.at(point1).z) );
-	para_c = ( (R_points.at(point2).x-R_points.at(point1).x)*(R_points.at(point3).y-R_points.at(point1).y)-(R_points.at(point2).y-R_points.at(point1).y)*(R_points.at(point3).x-R_points.at(point1).x) );
-	para_d = ( 0-(para_a*R_points.at(point1).x+para_b*R_points.at(point1).y+para_c*R_points.at(point1).z) );
+	para_a = ( (R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.z-R_points.at(point1).p.z)-(R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.y-R_points.at(point1).p.y) );
+	para_b = ( (R_points.at(point2).p.z-R_points.at(point1).p.z)*(R_points.at(point3).p.x-R_points.at(point1).p.x)-(R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.z-R_points.at(point1).p.z) );
+	para_c = ( (R_points.at(point2).p.x-R_points.at(point1).p.x)*(R_points.at(point3).p.y-R_points.at(point1).p.y)-(R_points.at(point2).p.y-R_points.at(point1).p.y)*(R_points.at(point3).p.x-R_points.at(point1).p.x) );
+	para_d = ( 0-(para_a*R_points.at(point1).p.x+para_b*R_points.at(point1).p.y+para_c*R_points.at(point1).p.z) );
 /////////////////////////////////end parameters calculation/////////////
 // Done the ransacs, now collect the supposed inlier set
 	if (para_d<0)
@@ -774,18 +777,18 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 	{
 		for(unsigned int i=0; i<nPoints; i++)
 		{
-			Vector3 v3Diff = R_points.at(i) - v3BestMean;
+			Vector3 v3Diff = R_points.at(i).p - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
 			if(dNormDist < 0.02)
 			{
 				labels.at(i) = 0; // dominant plane
-				double ddist = dot(R_points.at(i),R_points.at(i));
+				double ddist = dot(R_points.at(i).p,R_points.at(i).p);
 				if (ddist > dmax) {dmax = ddist; v3dmax = R_points.at(i);}
-				else if (ddist < dmin) {dmin = ddist; v3dmin = R_points.at(i);}
+				else if (ddist < dmin) {dmin = ddist; v3dmin = R_points.at(i).p;}
 			}
 			else
 			{
-				double d_parameter = -(A*R_points.at(i).x+B*R_points.at(i).y+C*R_points.at(i).z);
+				double d_parameter = -(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z);
 				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > fabs(D)/50)
 					labels.at(i) = -2; // objects
 				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= fabs(D)/50)
@@ -796,7 +799,7 @@ bool PlanePopOut::RANSAC(std::vector<Vector3> &points, std::vector <int> &labels
 	return true;
 }
 
-void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &labels)
+void PlanePopOut::SplitPoints(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
 {
 	std::vector<int> candidants;
 	std::vector <int> S_label = labels;
@@ -811,9 +814,9 @@ void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &l
 	unsigned int points_of_one_object = 0;
 	std::stack <int> objstack;
 	double split_threshold = Calc_SplitThreshold(points, labels);
-	int obj_number_threshold;
+	unsigned int obj_number_threshold;
 	if (N == 1) obj_number_threshold = 400;
-	if (N == 5) obj_number_threshold = 300;
+	if (N == 5) obj_number_threshold = 40;
 	if (N == 10) obj_number_threshold = 20;
 	while(!candidants.empty())
 	{
@@ -827,7 +830,7 @@ void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &l
 			objstack.pop();
 			for(std::vector<int>::iterator it=candidants.begin(); it<candidants.end(); it++)
 			{
-				if (dist(points.at(seed), points.at(*it))<split_threshold)
+				if (dist(points.at(seed).p, points.at(*it).p)<split_threshold)
 				{
 					S_label.at(*it) = S_label.at(seed);
 					objstack.push(*it);
@@ -848,7 +851,7 @@ void PlanePopOut::SplitPoints(std::vector<Vector3> &points, std::vector <int> &l
 	objnumber--;
 }
 
-double PlanePopOut::Calc_SplitThreshold(std::vector<Vector3> &points, std::vector <int> &labels)
+double PlanePopOut::Calc_SplitThreshold(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
 {
 	double max_x = -99999.0;
 	double min_x = 99999.0;
@@ -861,7 +864,7 @@ double PlanePopOut::Calc_SplitThreshold(std::vector<Vector3> &points, std::vecto
 	{
 		if (labels.at(i) == -2)
 		{
-			Vector3 v3Obj = points.at(i);
+			Vector3 v3Obj = points.at(i).p;
 			if (v3Obj.x>max_x) max_x = v3Obj.x;
 			if (v3Obj.x<min_x) min_x = v3Obj.x;
 			if (v3Obj.y>max_y) max_y = v3Obj.y;
@@ -884,7 +887,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::
 	obs->boundingBox.size.z = size.z;	//cout<<"radius in SOI = "<<radius<<endl;
 	obs->boundingSphere.rad = radius;       //cout<<"radius in SOI (obs) = "<<obs->boundingSphere.rad<<endl;
 	obs->time = getCASTTime();
-	obs->points = psIn1SOI;//cout<<"points in 1 SOI = "<<obs->points.at(1)<<obs->points.at(2)<<obs->points.at(10)<<endl;
+	obs->points = psIn1SOI;//cout<<"points in 1 SOI = "<<obs->points.at(1).p<<obs->points.at(2).p<<obs->points.at(10).p<<endl;
 	obs->BGpoints =	BGpIn1SOI;
 	obs->EQpoints =	EQpIn1SOI;//cout<<"EQ points in 1 SOI = "<<obs->EQpoints.size()<<endl;
 
