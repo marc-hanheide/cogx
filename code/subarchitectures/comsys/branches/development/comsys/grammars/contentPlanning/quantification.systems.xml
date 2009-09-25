@@ -24,9 +24,9 @@ Need to exclude cases where the nominal is under <Compound> relation.
 <system id="quantification.entity" region="QUANTIFICATION" metafunction="ideational">
    <chooser id="c-quantity"/>
    <conditions>
-      <condition features="@type:entity"/>  
-      <condition features="@type:thing"/> 		  
-      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:entity @feat:PRONOMINALIZED:false"/>  
+      <condition features="@type:thing @feat:PRONOMINALIZED:false"/> 		  
+      <condition features="@type:physical @feat:PRONOMINALIZED:false"/>  <!-- other than mass -->
    </conditions>
    <actions>
       <action choice="one-noquantifier">  <!-- just def/indef definite article -->
@@ -85,13 +85,13 @@ Need to exclude cases where the nominal is under <Compound> relation.
 </system>
 
 <!-- /**
-@system quantification.substance combines the assignment of number and quantification to mass/substance entities. 
+@system quantification.speaker  assigns number to speaker self-reference@feat:PRONOM. 
 */ --> 
 <system id="quantification.speaker" region="QUANTIFICATION" metafunction="ideational">
 <!-- instead of having a special gate for uncountable, the chooser in quantification.entity could check for ontological sort -->
    <chooser id="default"/>
    <conditions>
-      <condition features="@type:animate @prop:I"/>  
+      <condition features="@prop:I @type:animate"/>  
    </conditions>
    <actions>
       <action choice="default"> 
@@ -107,12 +107,37 @@ Need to exclude cases where the nominal is under <Compound> relation.
 <!-- instead of having a special gate for uncountable, the chooser in quantification.entity could check for ontological sort -->
    <chooser id="default"/>
    <conditions>
-      <condition features="@type:e-substance"/>  
+      <condition features="@type:e-substance @feat:PRONOMINALIZED:false"/>  
    </conditions>
    <actions>
       <action choice="default"> 
 	     <add-feature feature="Quantification" value="uncountable"/>
 <!--	     <add-feature feature="Num" value="sg"/>  -->
+      </action>
+   </actions>
+</system>
+
+
+<system id="quantification.demonstrative.pronoun" region="QUANTIFICATION" metafunction="ideational">
+<!-- instead of having a special gate for uncountable, the chooser in quantification.entity could check for ontological sort -->
+
+<!-- this only covers single entities so far
+ -->
+
+   <chooser id="c-quantification.demonstrative.pronoun"/>
+   <conditions>
+      <condition features="@prop:context @type:entity"/>  
+      <condition features="@prop:context @type:thing"/>  
+      <condition features="@prop:context @type:physical"/>  
+    </conditions>
+   <actions>
+      <action choice="single"> 
+	     <add-feature feature="Quantification" value="specific"/>
+	     <add-feature feature="Num" value="sg"/> 
+      </action>
+      <action choice="multiple"> 
+	     <add-feature feature="Quantification" value="unspecific"/>
+	     <add-feature feature="Num" value="pl"/> 
       </action>
    </actions>
 </system>

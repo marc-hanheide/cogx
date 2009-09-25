@@ -123,14 +123,17 @@ public class UPGCondition {
 		String nomvar = locus.nomVar;
 			Iterator fIter = features.keySet().iterator();
 		while (fIter.hasNext()) { // was &&!result -- but this precludes cycling over all 
+			// cycle over all features in the input cond.
 			String typeFeat = (String) fIter.next();
 			String feat = typeFeat.substring(0,typeFeat.indexOf("+"));
 			String val  = (String) features.get(typeFeat);
 			log("CHECKING ON ["+nomvar+"] FOR CONDITION ON FEATURE ["+feat+"] WITH VALUE ["+val+"]");
-			if (feat.equals("feat")) { 
-				// log("CHECKING FOR CONDITION ON FEATURE ["+feat+"] WITH VALUE ["+val+"]");
+
+
+			if (feat.equals("feat")) {							// CHECKING for feat
+				log("CHECKING FOR CONDITION ON FEATURE ["+feat+"] WITH VALUE ["+val+"]");
 				String lv = "";
-				for (int i=0; i < locus.feats.length ; i++) {
+				for (int i=0; i < locus.feats.length ; i++) {   // checking whether locus has the feature
 					log("Checking ["+val+"] against retrieved locus value ["+locus.feats[i].feat+"]");
 					if (locus.feats[i].feat.equals(val)) {   // here is a problem, something doesn't match
 						result = true;
@@ -138,40 +141,66 @@ public class UPGCondition {
 					}
 					// log("CHECKING FOR CONDITION ON FEATURE WITH VALUE "+val);
 				}
-				if (result) { 
+				log("Current result flag in-feat: ["+result+"]");
+				
+				if (result) {                                 //locus has the feature, checking whether value matches
 					if (featvals.containsKey(val)) {
 						String v = (String) featvals.get(val);
-						log("Check for equality on conditioned ["+v+"] against ["+lv+"]");
+						// log("Check for equality on conditioned ["+v+"] against ["+lv+"]");
 							if (!lv.startsWith(v)) { 
-								result = false;
+								result = false;  break;            // too bad, value doesn't match
 								// log("[UPL] !! Substring inequality on conditioned "+v+" against "+lv);
 							} 
-					} else { 
-						result = true;
-					} 
-				} // end if.. check for result
+							else { 
+								result = true;               // ok, value matches
+							} 
+					}
+				}  // end if.. check for result
+				else {
+					result = false;  break;                   // too bad, locus does not have the feature
+				}
 			} // end check for feature
-			if (feat.equals("prop")) { 
-				if (locus.prop.prop.equals(val)) { result = true; } 
+
+			
+			if (feat.equals("prop")) {						// CHECKING for prop
+				log("Checking condition ["+val+"] against proposition ["+locus.prop.prop+"]");
+				if (locus.prop.prop.equals(val)) { 
+					result = true;							// proposition matches
+				} else { 
+					result = false; break;					// proposition doesn't match (or isn't present?)
+				}
 			} // end check for proposition
-			if (feat.equals("rel")) { 
+			
+			
+			if (feat.equals("rel")) {						// CHECKING for rel 
 				// log("The condition is a relation");
 				for (int i=0; i < locus.rels.length ; i++) {
 					// log("Checking ["+locus.rels[i].mode+"] against ["+val+"]");
 					if (locus.rels[i].mode.equals(val)) {
 						// log("Check succeeded");
-						result = true;
+						result = true;						// ok, the rel is present
 					}
 				}
+				if (!result) {
+					break;									// too bad, the rel is not present
+				}
 			} // end check for relation
-			if (feat.equals("type")) { 
+			
+			
+			if (feat.equals("type")) {						// CHECKING for type
 				// log("Checking condition ["+val+"] against type ["+locus.sort+"]");
-				if (locus.sort.equals(val)) { result = true; } 
+				if (locus.sort.equals(val)) { result = true; } // ok, type matches
+				else {break;}								   // too bad, type doesn't match
 			} // end check for type
+			
+			
 			if (feat.equals("ctxt")) { 
-			if (l.holdsCtxtCond(val)) { result = true; }
+				if (l.holdsCtxtCond(val)) { result = true; }	// ok, context matches (whatever that means?)
+				else {break;}								    // too bad, context doesn't match
 			} // end check for context condition
-			if (!result) { break; } 
+			
+			if (!result) { break; }							// no condition matches 
+			
 		} // end for over condition feature 
 		//log("Locus: "+locus.toString());
 		//log("Cond : "+this.toString());

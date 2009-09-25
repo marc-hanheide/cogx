@@ -5,57 +5,44 @@
      "../ucpchoosers.xsd".
 --> 
 
-<choosers>
-
-<chooser id="c-structure.content-presence" region="STRUCTURE" metafunction="ideational">
-
+<chooser id="c-pronominalization.pronoun" region="PRONOMINALIZATION" metafunction="ideational">
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
-	     <q-ex-rel val="Content"/>	                                 
-	     </inquiry>
-  	     <choicenode answer="true">
-	       <result val="content"/>
-	     </choicenode>
-	     <choicenode answer="false">
-	       <result val="no-content"/>
-	     </choicenode>
-	</choicenode>
-   </dectree>
+            <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+                <q-ex-fv feat="Salient" val="true"/>	                                 
+            </inquiry>
+            <choicenode answer="true">  <!-- salient -->
+                <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+                    <q-ex-fv feat="InfoStatus" val="familiar"/>	                                 
+                </inquiry>
+                <choicenode answer="true">  <!-- familiar -->
+                    <result val="pronoun-it"/>
+                </choicenode>
+                <choicenode answer="false">  <!-- not familiar -->
+                <inquiry id="f-featval" type="string" answerset="@proximal @distal @unknown"> 
+                    <f-featval feat="Proximity" val="unknown"/>	                                 
+                </inquiry>
+                    <choicenode answer="unknown">     <!-- the feat proximity is not present, so make a random choice  -->
+                        <inquiry id="random" type="string" answerset="@pronoun-this @pronoun-that"> 
+                        </inquiry>
+                        <choicenode answer="pronoun-that">
+                            <result val="pronoun-that"/>
+                        </choicenode>
+                        <choicenode answer="pronoun-this">
+                            <result val="pronoun-this"/>
+                        </choicenode>
+                    </choicenode>  <!-- end proximity unknown -->
+                    <choicenode answer="proximal">     <!-- the feat proximity is present with value proximal-->
+                        <result val="pronoun-this"/>
+                    </choicenode>
+                    <choicenode answer="distal">      <!-- the feat proximity is present with value distal-->
+                        <result val="pronoun-that"/>
+                    </choicenode>
+                </choicenode>  <!-- end not familiar -->
+            </choicenode>  <!-- end salient -->
+            <choicenode answer="false">  <!-- not salient -->
+                <result val="no-pronoun"/>
+            </choicenode>  <!-- end not salient -->
+        </choicenode>
+    </dectree>
 </chooser>
-
-<chooser id="c-structure.list" region="STRUCTURE" metafunction="ideational">
-
-   <dectree>
-       <choicenode answer="*TOP*">
-         <inquiry id="q-ex-fv" type="string" answerset="@true @false"> 
-	     <q-ex-fv  feat="List" val="disjunction"/>	                                 
-	     </inquiry>
-  	     <choicenode answer="true">
-	       <result val="disjunction"/>
-	     </choicenode>
-	     <choicenode answer="false">
-	       <result val="conjunction"/>
-	     </choicenode>
-	</choicenode>
-   </dectree>
-</chooser>
-
-<chooser id="c-structure.pronominalization" region="STRUCTURE" metafunction="ideational">
-   <dectree>
-       <choicenode answer="*TOP*">
-         <inquiry id="random" type="string" answerset="@pronoun-it @pronoun-this"> 
-	     </inquiry>
-  	     <choicenode answer="pronoun-it">
-	       <result val="pronoun-it"/>
-	     </choicenode>
-	     <choicenode answer="pronoun-this">
-	       <result val="pronoun-this"/>
-	     </choicenode>
-	</choicenode>
-   </dectree>
-</chooser>
-
-
-
-</choosers>

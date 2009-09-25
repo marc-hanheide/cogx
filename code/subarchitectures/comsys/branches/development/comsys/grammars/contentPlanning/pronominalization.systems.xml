@@ -10,25 +10,35 @@
    <system id="pronominalization.pronoun" region="PRONOMINALIZATION" metafunction="ideational">
 	<chooser id="c-pronominalization.pronoun"/>
       <conditions>
-          <condition features="@type:entity @feat:Salient:true"/>
+          <condition features="@type:entity"/>
+          <condition features="@type:thing"/>
+          <condition features="@type:physical"/>
       </conditions>
       <actions>
 	  <action choice="pronoun-it">
 		<add-proposition propositions="@it" />
 		<add-feature feature="Num" value="sg"/>
+        <add-feature feature="PRONOMINALIZED" value="true"/>
 	  </action>
 
 	  <action choice="pronoun-this">
 		<add-proposition propositions="@context" />
 		<add-feature feature="Proximity" value="proximal"/>
 		<add-feature feature="Delimitation" value="unique"/>
+        <add-feature feature="PRONOMINALIZED" value="true"/>
 	  </action>
 
 	  <action choice="pronoun-that">
 		<add-proposition propositions="@context" />
 		<add-feature feature="Proximity" value="distal"/>
 		<add-feature feature="Delimitation" value="unique"/>
-	  </action>
+        <add-feature feature="PRONOMINALIZED" value="true"/>
+    </action>
+
+	  <action choice="no-pronoun">
+        <add-feature feature="PRONOMINALIZED" value="false"/>
+    </action>
+    
     </actions>
    </system>
 

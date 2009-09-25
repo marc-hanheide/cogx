@@ -114,4 +114,25 @@ Need to exclude cases where the nominal is under <Compound> relation.
 </chooser>
 
 
+<chooser id="c-quantification.demonstrative.pronoun" region="QUANTIFICATION" metafunction="ideational">
+   <dectree>
+     <choicenode answer="*TOP*">
+		 <inquiry id="q-ex-val" type="string" answerset="@true @false @unknown"> 
+			<q-ex-fv feat="Quantity" val="multiple"/>  <!-- this way of conditioning ignores <Quantity>num  where num>1 -->
+		 </inquiry>	
+		 <choicenode answer="true">
+			<result val="multiple"/> 
+	     </choicenode>
+	     <choicenode answer="false">	   
+			<result val="single"/> 
+	     </choicenode>
+	     <choicenode answer="unknown">	   
+			<result val="single"/> 
+	     </choicenode>
+ 	   </choicenode>  <!-- end TOP -->
+   </dectree>
+</chooser>
+
+
+
 </choosers>

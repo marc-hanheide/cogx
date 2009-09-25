@@ -21,9 +21,9 @@ Need to exclude cases where the nominal is under <Compound> relation.
 <system id="delimitation.entity" region="DELIMITATION" metafunction="ideational">
    <chooser id="c-delimitation"/>
    <conditions>
-      <condition features="@type:entity"/> 
-      <condition features="@type:thing"/> 	  
-      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:entity @feat:PRONOMINALIZED:false"/> 
+      <condition features="@type:thing @feat:PRONOMINALIZED:false"/> 	  
+      <condition features="@type:physical @feat:PRONOMINALIZED:false"/>  <!-- other than mass -->
    </conditions>
    <actions>
       <action choice="existential">
@@ -45,7 +45,7 @@ Need to exclude cases where the nominal is under <Compound> relation.
    <chooser id="default"/>
    <conditions>
 <!--      <condition features="@type:entity"/>  -->
-      <condition features="@type:e-substance"/> 	  
+      <condition features="@type:e-substance  @feat:PRONOMINALIZED:false"/> 	  
    </conditions>
    <actions>
       <action choice="default">
@@ -58,7 +58,7 @@ Need to exclude cases where the nominal is under <Compound> relation.
 <system id="delimitation.NumberID" region="DELIMITATION" metafunction="ideational">
    <chooser id="default"/>
    <conditions>
-      <condition features="@type:entity @feat:NumberID"/> 	  
+      <condition features="@type:entity @feat:NumberID @feat:PRONOMINALIZED:false"/> 	  
    </conditions>
    <actions>
       <action choice="default">
