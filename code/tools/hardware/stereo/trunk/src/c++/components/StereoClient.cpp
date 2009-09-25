@@ -68,13 +68,13 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
     throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
 }
 
-void StereoClient::getPoints(Stereo::Vector3Seq& points)
+void StereoClient::getPoints(VisionData::SurfacePointSeq& points)
 {
   stereoServer->getPoints(points);
 }
 
 void StereoClient::getPointsInSOI(const VisionData::SOI &soi,
-    Stereo::Vector3Seq& points)
+    VisionData::SurfacePointSeq& points)
 {
   VisionData::SOIPtr soiPtr = new VisionData::SOI;
   *soiPtr = soi;

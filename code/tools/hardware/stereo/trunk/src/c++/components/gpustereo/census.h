@@ -11,7 +11,9 @@ extern "C" float getCensusTiming(CensusStep s);
 extern "C" unsigned int getCensusMemory(CensusStep s);
 extern "C" unsigned int getCensusFLOP(CensusStep s);
 
-extern "C" void gpuCensusImageSetup(unsigned int w, unsigned int h, unsigned int disp_min=0, unsigned int disp_max=50, unsigned int disp_step=1, bool sparse = true, unsigned int blockSize = 5);
+// values by Michael Weber:
+//disp_min=0, unsigned int disp_max=50, unsigned int disp_step=1, bool sparse = true, unsigned int blockSize = 5
+extern "C" void gpuCensusImageSetup(unsigned int w, unsigned int h, unsigned int disp_min=0, unsigned int disp_max=100, unsigned int disp_step=1, bool sparse = true, unsigned int blockSize = 5);
 
 extern "C" void gpuCensusSetImages(unsigned char *left, unsigned char *right);
 
