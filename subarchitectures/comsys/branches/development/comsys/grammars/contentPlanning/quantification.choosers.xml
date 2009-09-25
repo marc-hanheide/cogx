@@ -17,6 +17,15 @@ Need to exclude cases where the nominal is under <Compound> relation.
 <chooser id="c-quantity" region="QUANTIFICATION" metafunction="ideational">
    <dectree>
      <choicenode answer="*TOP*">
+  	   <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+				<q-ex-feat feat="NO-QuantOrDelim" val="true"/>	                                 
+       </inquiry>
+							<choicenode answer="true">  <!-- quantification assignment prohibited -->
+							  <result val="no-quant"/>
+							</choicenode>
+							
+							<choicenode answer="false">  <!-- go ahead with quantification assignment -->
+       
 		 <inquiry id="q-ex-prop" type="string" answerset="@true @false"> 
 			<q-ex-prop val="what"/>
 		 </inquiry>	
@@ -109,6 +118,7 @@ Need to exclude cases where the nominal is under <Compound> relation.
 		 </choicenode> <!-- end SUBJECT -->
 		 </choicenode> <!-- check for IT -->
 		 </choicenode> <!-- check for what -->
+        </choicenode>  <!-- end go ahead with quant assignment -->
   	   </choicenode>  <!-- end TOP -->
    </dectree>
 </chooser>
