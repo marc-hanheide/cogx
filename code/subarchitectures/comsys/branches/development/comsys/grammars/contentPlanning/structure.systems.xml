@@ -41,6 +41,9 @@
 		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />
 		<add-feature feature="DVPassigned" value="true" dest="CONTENT" />
 <!--		<move-locus nomvar="CONTENT" /> -->
+<!-- 
+IMPORTANT NOTE: when inserting LF-templates for full sentences later, the top nominal has to be called "content", so that the @content:marker() that was inserted here because there was no content specified in the original input LF gets properly replaced by the new content !!!!!!!!!!
+-->
 	  </action>
       </actions>
    </system>

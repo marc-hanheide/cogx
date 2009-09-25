@@ -60,7 +60,10 @@ Need to exclude cases where the nominal is under <Compound> relation.
        <action choice="list-disjunction">   
       </action>
 	  
-      <action choice="unknown">   
+       <action choice="no-quant">   
+        </action>
+	  
+        <action choice="unknown">   
 	     <!-- this is the default for when the feature is not given; should also be for uninterpretable, but that needs a filter for numbers -->
 	     <add-feature feature="Num" value="sg"/>
 	     <add-feature feature="Quantification" value="specific"/>

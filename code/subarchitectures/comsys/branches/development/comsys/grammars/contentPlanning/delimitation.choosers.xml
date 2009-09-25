@@ -20,6 +20,16 @@ Need to exclude cases where the nominal is under <Compound> relation.
 
    <dectree>
        <choicenode answer="*TOP*">
+       
+  	   <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+				<q-ex-feat feat="NO-QuantOrDelim" val="true"/>	                                 
+       </inquiry>
+							<choicenode answer="true">  <!-- delimitation assignment prohibited -->
+							  <result val="no-delim"/>
+							</choicenode>
+							
+							<choicenode answer="false">  <!-- go ahead with delimitation assignment -->
+       
 			<!-- if has Owner dependent, then delim=unique -->
 	   		<inquiry id="q-ex-rel" type="string" answerset="@false @true"> 
 				<q-ex-rel val="Owner" />	                                 
@@ -152,6 +162,7 @@ Need to exclude cases where the nominal is under <Compound> relation.
 	     </choicenode>		<!-- end it -->		
 	     </choicenode>		<!-- end this -->		
 	    </choicenode>			<!-- end OWNER -->
+        </choicenode>  <!-- end go ahead with delimitation assignment -->
 	   </choicenode>			<!-- end TOP -->
    </dectree>
 </chooser>
