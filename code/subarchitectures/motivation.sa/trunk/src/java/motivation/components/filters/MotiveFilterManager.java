@@ -5,12 +5,15 @@ package motivation.components.filters;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
+import motivation.slice.TestMotive;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -27,12 +30,50 @@ import cast.cdl.WorkingMemoryPermissions;
  * @author marc
  * 
  */
-public abstract class AbstractFilter extends ManagedComponent {
+public class MotiveFilterManager extends ManagedComponent  {
 
 	WorkingMemoryChangeReceiver receiver;
 
-	protected AbstractFilter() {
+	List<MotiveFilter> pipe;
+
+	public MotiveFilterManager() {
 		super();
+		pipe = new LinkedList<MotiveFilter>();
+	}
+
+	@Override
+	protected void configure(Map<String, String> arg0) {
+		// TODO Auto-generated method stub
+		log("configure filter");
+		super.configure(arg0);
+		String subscrStr = arg0.get("--filter");
+		if (subscrStr != null) {
+			StringTokenizer st = new StringTokenizer(subscrStr, ",");
+			while (st.hasMoreTokens()) {
+				String className = st.nextToken();
+				className=this.getClass().getPackage().getName()+"."+className.trim();
+				try {
+					log("add type '" + className+"'");
+					ClassLoader.getSystemClassLoader().loadClass(className);
+					addFilter((MotiveFilter) Class
+							.forName(className).newInstance());
+				} catch (ClassNotFoundException e) {
+					println("trying to register for a class that doesn't exist.");
+					e.printStackTrace();
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public void addFilter(MotiveFilter mf) {
+		mf.setManager(this);
+		pipe.add(mf);
 	}
 
 	/*
@@ -109,10 +150,22 @@ public abstract class AbstractFilter extends ManagedComponent {
 
 	}
 
-	protected void checkAll() throws CASTException {
+	public void checkAll() throws CASTException {
 		// TODO: currently CAST::getMemoryEntries only considers the "real" type
 		// of entries, whihc means, getMemoryEntries(Motive.class) will not
 		// work... is a feature request for CAST
+		List<TestMotive> testMotives;
+		testMotives = new LinkedList<TestMotive>();
+		getMemoryEntries(TestMotive.class, testMotives);
+		// trigger them all by overwriting them
+		for (Motive m : testMotives) {
+			WorkingMemoryChange wmc = new WorkingMemoryChange();
+			wmc.address = m.thisEntry;
+			wmc.operation = WorkingMemoryOperation.OVERWRITE;
+			wmc.src = "explicit self-trigger";
+			receiver.workingMemoryChanged(wmc);
+		}
+
 		List<ExploreMotive> exploreMotives;
 		exploreMotives = new LinkedList<ExploreMotive>();
 		getMemoryEntries(ExploreMotive.class, exploreMotives);
@@ -136,7 +189,7 @@ public abstract class AbstractFilter extends ManagedComponent {
 			wmc.src = "explicit self-trigger";
 			receiver.workingMemoryChanged(wmc);
 		}
-	
+
 		List<CategorizePlaceMotive> categorizePlaceMotives;
 		categorizePlaceMotives = new LinkedList<CategorizePlaceMotive>();
 		getMemoryEntries(CategorizePlaceMotive.class, categorizePlaceMotives);
@@ -148,20 +201,23 @@ public abstract class AbstractFilter extends ManagedComponent {
 			wmc.src = "explicit self-trigger";
 			receiver.workingMemoryChanged(wmc);
 		}
-	
-	
+
 	}
 
-	/**
-	 * @param motive
-	 * @return
-	 */
-	protected abstract boolean shouldBeUnsurfaced(Motive motive);
+	public boolean shouldBeSurfaced(Motive motive) {
+		boolean result=true;
+		for (MotiveFilter filter : pipe) {
+			result=result && filter.shouldBeSurfaced(motive);
+		}
+		return result;
+	}
 
-	/**
-	 * @param motive
-	 * @return
-	 */
-	protected abstract boolean shouldBeSurfaced(Motive motive);
+	public boolean shouldBeUnsurfaced(Motive motive) {
+		boolean result=false;
+		for (MotiveFilter filter : pipe) {
+			result=result || filter.shouldBeUnsurfaced(motive);
+		}
+		return result;
+	}
 
 }

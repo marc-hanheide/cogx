@@ -1,10 +1,11 @@
 /**
  * 
  */
-package motivation.components.generators;
+package spatial.motivation;
 
 import java.util.HashMap;
 
+import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;

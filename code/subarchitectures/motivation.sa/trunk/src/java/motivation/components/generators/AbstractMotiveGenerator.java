@@ -31,7 +31,7 @@ import cast.cdl.WorkingMemoryPermissions;
  * @author marc
  * 
  */
-abstract class AbstractMotiveGenerator extends ManagedComponent {
+public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 	/**
 	 * a local MemoryReceiver that established the link between the "Supporter"
