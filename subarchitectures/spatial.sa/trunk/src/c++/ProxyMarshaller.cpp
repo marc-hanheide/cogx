@@ -31,8 +31,6 @@ ProxyMarshaller::~ProxyMarshaller()
 void
 ProxyMarshaller::start()
 {
-  Marshalling::MarshallerPtr servant = new MarshallingServer(this);
-  registerIceServer<Marshalling::Marshaller, Marshalling::Marshaller>(servant);
 
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cast::cdl::ADD),
 		  new cast::MemberFunctionChangeReceiver<ProxyMarshaller>(this,
@@ -69,6 +67,9 @@ ProxyMarshaller::configure(const std::map<std::string, std::string>& _config)
   } else {
     m_bindingSA="binding.sa";
   }
+
+  Marshalling::MarshallerPtr servant = new MarshallingServer(this);
+  registerIceServer<Marshalling::Marshaller, Marshalling::Marshaller>(servant);
 }
 
 void

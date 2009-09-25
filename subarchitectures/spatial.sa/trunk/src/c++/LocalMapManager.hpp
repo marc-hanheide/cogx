@@ -57,13 +57,19 @@ protected:
 
   double m_MaxLaserRange; 
 
-  Cure::LocalMap m_LMap;
-
-  Cure::GridLineRayTracer<unsigned char>* m_Glrt;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
-
   IceUtil::Mutex m_Mutex;
-  Cure::LocalGridMap<unsigned char>* m_lgm;
+  // This grid map represents the current Place
+  Cure::LocalGridMap<unsigned char>* m_lgm1;
+  Cure::GridLineRayTracer<unsigned char>* m_Glrt1;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm1;
+
+  // This grid map represents a potential new place and
+  // is reset each time the robot changes Place.
+  Cure::LocalGridMap<unsigned char>* m_lgm2;
+  Cure::GridLineRayTracer<unsigned char>* m_Glrt2;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm2;
+
+  std::map<int, Cure::LocalGridMap<unsigned char> *> m_nodeGridMaps;
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
@@ -78,6 +84,7 @@ private:
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+  NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
 };
 }; // namespace spatial
