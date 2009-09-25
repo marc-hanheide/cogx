@@ -82,7 +82,7 @@ public class UPDebugger
     
     public static final String HISTORY = "Command Line History";
 
-    private final String version = "0.25";
+    private final String version = "0.30";
 	
 	private Vector modelRedux;
 	private NgramScorer ngramScorer = null;
@@ -569,6 +569,20 @@ public class UPDebugger
 		    int lvl = (new Integer(lvlstr)).intValue();
 		    msg("Tracing level set to "+lvl);                    
 		    planner.setLoggingLevel(lvl);
+		} else if (input.startsWith(":whocan")) { 
+			String args = input.substring(6, input.length());
+			StringTokenizer st = new StringTokenizer();
+			Vector args = new Vector();
+			while (st.hasTokens()) { 
+				String token = st.nextToken();
+				args.add(token);
+			} // end while
+			HashMap results = checkWhoCan(args);
+			for (Iterator keysIter = results.keySet().iterator(); keysIter.hasNext(); ) { 
+				String systemId = (String)keysIter.next();
+				String action = (String)results.get(systemId);
+				System.out.println("System ["+systemId+"] can under action with choice ["+action+"]");
+			} // end for
 		} else { 
 		    if (input.length() > 0) {
 			String possnum = input.substring(1,input.length());
@@ -676,6 +690,7 @@ public class UPDebugger
 	System.out.println(":traceon            \t turns on tracing of steps in the planner");
 	System.out.println(":trace  :<lvl>      \t shows tracing of steps of level <lvl> and higher in the planner");
 	System.out.println(":<lvl>              \t shows tracing of steps of level <lvl> and higher in the planner");	
+		System.out.println(":whocan <op> [<value>] \t shows all the systems who perform the action OP with a given VALUE.");
 	System.out.println();
     }
 
@@ -683,7 +698,65 @@ public class UPDebugger
         if (logging) { System.out.println("[] "+m); }
     }
 
-
+	/** checks which systems can perform a certain action, possibly with a certain argument. */
+	
+	private HashMap checkWhoCan (Vector args) { 
+		HashMap results = new HashMap();
+		if (args.size() > 0) { 
+			String operand = (String)args.elementAt(0); 
+			String argument = null; 
+			if (args.size() > 1) { 
+				argument = (String)args.elementAt(1);
+			} // end if.. check for argument
+			for (Iterator systemsIter = planner.getSystems(); systemsIter.hasNext(); ) { 
+				UPGSystem system = (UPGSystem) systemsIter.next(); 
+				for (Iterator actionsIter = system.getActions(); actionsIter.hasNext(); ) { 
+					UPGAction action = (UPGAction) actionsIter.next();
+					Vector steps = action.getSteps();
+					for (Iterator stepsIter = steps.iterator(); stepsIter.hasNext(); ) { 
+						UPGActionStep step = (UPGActionStep) stepsIter.next();
+						if (step.getId().equals(operand)) {
+							if (argument != null) { 
+								if (operand.equals("assign-type")) { 
+									String type = step.getAttributeValue("type"); 
+									if (type.equals(argument)) { 
+										HashMap.put(system.getId(), action.getChoice()); 
+									} // end if .. check for type value
+								} else if (operand.equals("add-feature")) { 
+									String feature = step.getAttributeValue("feature"); 
+									if (feature.equals(argument)) { 
+										HashMap.put(system.getId(), action.getChoice()); 										
+									} // end if .. check for feature value											   
+								} else if (operand.equals("add-proposition")) { 
+									String propositions = step.getAttributeValue("propositions"); 
+									if (propositions.startsWith(argument)) { 
+										HashMap.put(system.getId(), action.getChoice()); 										
+									} // end if .. check for propositions value										
+								} else if (operand.equals("add-relation")) { 
+									String relation = step.getAttributeValue("mode"); 
+									if (relation.equals(argument)) { 
+										HashMap.put(system.getId(), action.getChoice()); 										
+									} // end if .. check for mode value	
+								} else if (operand.equals("replace-relation")) { 									
+									String mode = step.getAttributeValue("mode"); 
+									if (mode.equals(argument)) { 
+										HashMap.put(system.getId(), action.getChoice()); 										
+									} // end if .. check for feature value	
+								} else { 
+									
+								} // end if.. check for specific type 
+							} // end check whether argument
+						} // end check whether operand equals step
+					} // end for over steps
+				} // end for over actions
+			} // end for over systems
+		} else { 
+			System.out.println(":whocan requires at least one argument");
+		} // end if..else
+	} // end method
+	
+	
+	
     //=================================================================
     // MAIN METHOD
     //=================================================================
