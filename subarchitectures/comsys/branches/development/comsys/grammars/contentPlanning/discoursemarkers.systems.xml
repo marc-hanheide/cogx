@@ -9,23 +9,6 @@
 
 
 
-<system id="gre.thing" region="THING" metafunction="ideational">
-   <chooser id="default"/>
-   <conditions>
-      <condition features="@type:gre"/>
-   </conditions>
-   <actions>
-      <action choice="default">
-		<identify-nomvar root="DVP" mode="Gre" dest="GRE" scope="global"/>
-		<generate-rfx nomvar="GRE"/>
-      </action>
-   </actions>
-</system>
-
-
-
-
-
 <!-- /**
 
 @system blabla
@@ -40,6 +23,8 @@
    
    <actions>
    
+<!-- Honestly, what are the vision-... feedbacks doing? They are interrogative, so they seem to be asking for ackno, rather than giving it -->
+
 		<action choice="vision-ackno1">
 			<add-lf lf="@h1:ascription(have ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c1:m-location ^ context ^ &lt;Proximity&gt;m-proximal) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> 
 		</action>
@@ -59,6 +44,8 @@
 		<action choice="vision-rej3">
 			<add-lf lf="@l1:perception(look ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Modifier&gt;(m1:modal ^ must) ^ &lt;Modifier&gt;(a1:m-location ^ at ^ &lt;Anchor&gt;(t1:thing ^ table ^ &lt;Modifier&gt;(a2:quantity ^ another))) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
 		</action>
+
+
   
 		<action choice="action-ackno1">
 			<!-- <add-lf lf="@l1:d-units(list ^ &lt;First&gt;(o1:marker ^ ok) ^ &lt;Next&gt;(d11:event ^ do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>-->
@@ -73,13 +60,37 @@
 			<add-lf lf="@l1:d-units(list ^ &lt;First&gt;(y1:marker ^ yes) ^ &lt;Next&gt;(t1:modal ^ try ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c11:modal ^ could) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>
 		</action>  
   
-      <action choice="accept">
+  
+  
+      <action choice="accept-ok">
 	   <add-proposition propositions="@ok" />
       </action>      
 
-      <action choice="reject">
+      <action choice="accept-yes">
+	   <add-proposition propositions="@yes" />
+      </action>      
+
+      <action choice="accept-fine">
+	   <add-proposition propositions="@fine" />
+      </action>      
+
+      <action choice="accept-isee">
+			<add-lf lf="@s1:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person" 
+                    dest="CONTENT"/>
+      </action>      
+
+      <action choice="reject-sorry">
 	   <add-proposition propositions="@sorry" /> 
       </action>
+
+      <action choice="reject-no">
+	   <add-proposition propositions="@No" /> 
+      </action>
+
+      <action choice="reject-dontthinkthat">
+			<add-lf lf="@s1:cognition(think ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person ^ &lt;Event&gt;(context1_0:event ^ context)" 
+                    dest="CONTENT"/>
+      </action>      
 
       <action choice="already-true">
 		<assign-type type="ascription" />  

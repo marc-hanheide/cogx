@@ -14,31 +14,32 @@
          <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @unknown"> 
 	     <f-featval nomvar="DVP" feat="Relation" val="unknown" /> 
 	     </inquiry>
-  	     <choicenode answer="accept">
-			<inquiry id="ex-featval" type="string" answerset="@true @false">
-				<q-ex-fv nomvar="DVP" feat="AcknoModality" val="vision"/>
-			</inquiry>
-			<choicenode answer="true">
-				 <inquiry id="random" type="string" answerset="@vision-ackno1 @vision-ackno2 @vision-ackno3"> 
-				 </inquiry>			
-				 <choicenode answer="vision-ackno1">
-					<result val="vision-ackno1"/>
-				 </choicenode>
-				 <choicenode answer="vision-ackno2">
-					<result val="vision-ackno2"/>
-				 </choicenode>			
-				 <choicenode answer="vision-ackno3">
-					<result val="vision-ackno3"/>
-				 </choicenode>			
-			</choicenode>
-			<choicenode answer="false">
+  	     <choicenode answer="accept">   <!-- ACCEPT -->
+                <inquiry id="ex-featval" type="string" answerset="@true @false">
+                    <q-ex-fv nomvar="DVP" feat="AcknoModality" val="vision"/>
+                </inquiry>
+                <choicenode answer="true">  <!-- accept vision -->
+                    <inquiry id="random" type="string" answerset="@vision-ackno1 @vision-ackno2 @vision-ackno3"> 
+                    </inquiry>
+                    <choicenode answer="vision-ackno1">
+                        <result val="vision-ackno1"/>
+                    </choicenode>
+                    <choicenode answer="vision-ackno2">
+                        <result val="vision-ackno2"/>
+                    </choicenode>			
+                    <choicenode answer="vision-ackno3">
+                        <result val="vision-ackno3"/>
+                    </choicenode>			
+                </choicenode>
+
+			<choicenode answer="false">  <!-- non-vision accept -->
 				<inquiry id="ex-featval" type="string" answerset="@true @false">
 					<q-ex-fv nomvar="DVP" feat="AcknoModality" val="action"/>
 				</inquiry>			
-				<choicenode answer="true">
+                <choicenode answer="true">  <!-- explicit ref to action -->
 					 <inquiry id="random" type="string" answerset="@action-ackno2 @action-ackno1 @action-ackno3"> 
 					 </inquiry>			
-					 <choicenode answer="action-ackno1">
+                     <choicenode answer="action-ackno1">
 						<result val="action-ackno1"/>
 					 </choicenode>
 					 <choicenode answer="action-ackno2">
@@ -48,16 +49,30 @@
 						<result val="action-ackno3"/>
 					 </choicenode>				
 				</choicenode>
-				<choicenode answer="false">
-					<result val="accept"/>
+				<choicenode answer="false">  <!-- no explicit ref to action -->
+                    <inquiry id="random" type="string" answerset="@accept-ok @accept-yes @accept-isee"> 
+                    </inquiry>
+                    <choicenode answer="accept-ok">			
+                 				<result val="accept-ok"/>
+                    </choicenode>
+                    <choicenode answer="accept-yes">			
+                 				<result val="accept-yes"/>
+                    </choicenode>
+                    <choicenode answer="accept-fine">			
+                 				<result val="accept-fine"/>
+                    </choicenode>
+                    <choicenode answer="accept-isee">			
+                 				<result val="accept-isee"/>
+                    </choicenode>
 				</choicenode>
-			</choicenode>
-	     </choicenode>
-	     <choicenode answer="reject">
+			</choicenode>  <!-- end non-vision accept -->
+	     </choicenode>  <!-- end accept -->
+
+	     <choicenode answer="reject">   <!-- REJECT -->
 			<inquiry id="ex-featval" type="string" answerset="@true @false">
 				<q-ex-fv nomvar="DVP" feat="AcknoModality" val="vision"/>
 			</inquiry>
-			<choicenode answer="true">
+			<choicenode answer="true">   <!-- reject vision modality -->
 				 <inquiry id="random" type="string" answerset="@vision-rej1 @vision-rej2 @vision-rej3"> 
 				 </inquiry>			
 				 <choicenode answer="vision-rej1">
@@ -70,13 +85,25 @@
 					<result val="vision-rej3"/>
 				 </choicenode>			
 			</choicenode>			
-			<choicenode answer="false">
-				<result val="reject"/>
+			<choicenode answer="false">  <!-- reject no vision modality -->
+				 <inquiry id="random" type="string" answerset="@reject-sorry @reject-no @reject-dontthinkthat"> 
+				 </inquiry>
+                 <choicenode answer="reject-sorry">			
+                 				<result val="reject-sorry"/>
+                 </choicenode>
+                 <choicenode answer="reject-no">			
+                 				<result val="reject-no"/>
+                 </choicenode>
+                 <choicenode answer="reject-dontthinkthat">			
+                 				<result val="reject-dontthinkthat"/>
+                 </choicenode>
 			</choicenode>
 	     </choicenode>
-	     <choicenode answer="alreadytrue">
+
+	     <choicenode answer="alreadytrue">  <!-- already true -->
 	       <result val="already-true"/>
 	     </choicenode>
+         
 	</choicenode>
    </dectree>
 </chooser>

@@ -82,7 +82,7 @@ public class UPDebugger
     
     public static final String HISTORY = "Command Line History";
 
-    private final String version = "0.30";
+    private final String version = "0.25";
 	
 	private Vector modelRedux;
 	private NgramScorer ngramScorer = null;
@@ -570,21 +570,21 @@ public class UPDebugger
 		    msg("Tracing level set to "+lvl);                    
 		    planner.setLoggingLevel(lvl);
 		} else if (input.startsWith(":whocan")) { 
-			String args = input.substring(6, input.length());
-			StringTokenizer st = new StringTokenizer();
-			Vector args = new Vector();
-			while (st.hasTokens()) { 
+			String argsString = input.substring(6, input.length());
+			StringTokenizer st = new StringTokenizer(argsString);
+			Vector argsV = new Vector();
+			while (st.hasMoreTokens()) { 
 				String token = st.nextToken();
-				args.add(token);
+				argsV.add(token);
 			} // end while
-			HashMap results = checkWhoCan(args);
+			HashMap results = checkWhoCan(argsV,planner);
 			for (Iterator keysIter = results.keySet().iterator(); keysIter.hasNext(); ) { 
 				String systemId = (String)keysIter.next();
 				String action = (String)results.get(systemId);
 				System.out.println("System ["+systemId+"] can under action with choice ["+action+"]");
-			} // end for
+			} // end for 
 		} else { 
-		    if (input.length() > 0) {
+			if (input.length() > 0) {
 			String possnum = input.substring(1,input.length());
 			int lvl = -1;
 			try { 
@@ -690,7 +690,6 @@ public class UPDebugger
 	System.out.println(":traceon            \t turns on tracing of steps in the planner");
 	System.out.println(":trace  :<lvl>      \t shows tracing of steps of level <lvl> and higher in the planner");
 	System.out.println(":<lvl>              \t shows tracing of steps of level <lvl> and higher in the planner");	
-		System.out.println(":whocan <op> [<value>] \t shows all the systems who perform the action OP with a given VALUE.");
 	System.out.println();
     }
 
@@ -698,9 +697,11 @@ public class UPDebugger
         if (logging) { System.out.println("[] "+m); }
     }
 
-	/** checks which systems can perform a certain action, possibly with a certain argument. */
 	
-	private HashMap checkWhoCan (Vector args) { 
+	/** checks which systems can perform a certain action, possibly with a certain argument. 
+	does not compile  */
+	
+	private HashMap checkWhoCan (Vector args, UtterancePlanner planner) { 
 		HashMap results = new HashMap();
 		if (args.size() > 0) { 
 			String operand = (String)args.elementAt(0); 
@@ -720,27 +721,27 @@ public class UPDebugger
 								if (operand.equals("assign-type")) { 
 									String type = step.getAttributeValue("type"); 
 									if (type.equals(argument)) { 
-										HashMap.put(system.getId(), action.getChoice()); 
+										results.put(system.getId(), action.getChoice()); 
 									} // end if .. check for type value
 								} else if (operand.equals("add-feature")) { 
 									String feature = step.getAttributeValue("feature"); 
 									if (feature.equals(argument)) { 
-										HashMap.put(system.getId(), action.getChoice()); 										
+										results.put(system.getId(), action.getChoice()); 										
 									} // end if .. check for feature value											   
 								} else if (operand.equals("add-proposition")) { 
 									String propositions = step.getAttributeValue("propositions"); 
 									if (propositions.startsWith(argument)) { 
-										HashMap.put(system.getId(), action.getChoice()); 										
+										results.put(system.getId(), action.getChoice()); 										
 									} // end if .. check for propositions value										
 								} else if (operand.equals("add-relation")) { 
 									String relation = step.getAttributeValue("mode"); 
 									if (relation.equals(argument)) { 
-										HashMap.put(system.getId(), action.getChoice()); 										
+										results.put(system.getId(), action.getChoice()); 										
 									} // end if .. check for mode value	
 								} else if (operand.equals("replace-relation")) { 									
 									String mode = step.getAttributeValue("mode"); 
 									if (mode.equals(argument)) { 
-										HashMap.put(system.getId(), action.getChoice()); 										
+										results.put(system.getId(), action.getChoice()); 										
 									} // end if .. check for feature value	
 								} else { 
 									
@@ -753,7 +754,10 @@ public class UPDebugger
 		} else { 
 			System.out.println(":whocan requires at least one argument");
 		} // end if..else
+		return results;
 	} // end method
+	
+	
 	
 	
 	
