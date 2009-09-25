@@ -281,109 +281,15 @@ if(plan->planlist.size() > 0)
   color[2] = 0.1;
 		for (unsigned int i = 0; i < plan->planlist.size(); i++){
 			sprintf(path,"viewpoint_%i",i);
-			createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.05, plan->planlist[i], true);
+			createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.05, plan->planlist[i], 1.4,false);
+			
 		}
 		
 	}
- /* if(plan.planlist.size() > 0)
-    {
-      char order[32];
-      int counter = 48;
-      int conecounter = 0;
-      char coneorder[32];
-      for(unsigned int y=0; y < vpnodes.length(); y++){
-            counter++;
-            sprintf(order,"%c",char(counter));
-            char buf[32];              			       
-            sprintf(buf, "node%ld", tempgraph.m_FNodes[i].m_nodeID);
-
-            peekabot::LabelProxy text;
-            
-            text.add(m_ProxyNodes,buf); // FIXME: a 1 is always added at the end of buf ?!?!
-            text.set_text(order);
-            text.set_position(tempgraph.m_FNodes[i].m_x, tempgraph.m_FNodes[i].m_y, tempgraph.m_FNodes[i].m_z+0.2);
-            text.set_rotation(0,0,1.57);
-            text.set_scale(30, 30, 30);
-            text.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
-            text.set_color(0,0,1);
-            
-            for(unsigned int g=0; g < vpnodes[y].directions.length(); g++){
-              conecounter++;
-              sprintf(coneorder,"%c",char(counter));
-              //peekabot::GroupProxy temp;
-              //temp.assign(m_ProxyNodes, buf);
-              char conebuf[32];
-              sprintf(conebuf,"%s.viewcone%d",buf,conecounter);
-              double color[3];
-              color[0] = 1;
-              color[1] = 0;
-              color[2] = 0.8;
-             
-              createFOV(m_ProxyNodes, conebuf, 45.0, 35.0,color, 0.05, 1.25, vpnodes[y].directions[g]);
-              
-              peekabot::LabelProxy conetext;
-              char labelbuf[32];
-              sprintf(labelbuf,"%s.image.conelabel%d",conebuf,g);
-              conetext.add(m_ProxyNodes,labelbuf);
-              conetext.set_text(coneorder);
-              conetext.set_position(0, 0, tan(35*M_PI/180.0/2)*1 );
-              conetext.set_rotation(0,0,1.57);
-              conetext.set_scale(30, 30, 30);
-              conetext.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
-              conetext.set_color(0,0,1);
-            }
-            
-          }
-    }*/
   
 }
 
 
-void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
-	//log("I got new points.");
-	double color[3] = { 0.9, 0, 0};
-	
-	 numeric::ublas::matrix<double> m (3, 3);
-	 m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
-	 m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
-	 m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
-	peekabot::PointCloudProxy pcloud;
-	pcloud.add(m_ProxyCam,"planepopout", peekabot::REPLACE_ON_CONFLICT);
-	shared_ptr<CASTData<NavData::PlanePopout> > oobj =
-    getWorkingMemoryEntry<NavData::PlanePopout>(objID.address);
-	NavData::PlanePopoutPtr objData = oobj->getData();
-
-	numeric::ublas::vector<double> v (3);
-	numeric::ublas::vector<double> t (3);
-	//add plane points
-  for (unsigned int i =0; i < objData->pcloud.size(); i++){
-	  if (objData->plabels.at(i) == 0){
-	  v(0) = objData->pcloud.at(i).x;
-	  v(1) = objData->pcloud.at(i).y;
-	  v(2) = objData->pcloud.at(i).z;
-	  t = prod(v,m);
-	  pcloud.add_vertex(t(0),t(1),t(2));
-	  }
-  }
-  pcloud.set_color(color[0],color[1],color[2]);
-  //add objects
-  peekabot::PointCloudProxy pcloudobj;
-  pcloudobj.add(m_ProxyCam,"planepopoutobj", peekabot::REPLACE_ON_CONFLICT);
-  color[0] = 0;
-  color[1] = 0.9;
-  color[2] = 0;
-  for (unsigned int i =0; i < objData->pcloud.size(); i++){
-	  if (objData->plabels.at(i) > 0){
-	  v(0) = objData->pcloud.at(i).x;
-	  v(1) = objData->pcloud.at(i).y;
-	  v(2) = objData->pcloud.at(i).z;
-	  t = prod(v,m);
-	  pcloudobj.add_vertex(t(0),t(1),t(2));
-	  }
-  }
-  pcloudobj.set_color(color[0],color[1],color[2]);
-	
-}
 
 void DisplayNavInPB::createRobotFOV() 
 {
@@ -405,13 +311,13 @@ void DisplayNavInPB::createRobotFOV()
   peekabot::GroupProxy cam;
   cam.assign(m_ProxyRobot, path);
   cogx::Math::Vector3 dummypos;
-  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2, dummypos, true);
+  createFOV(cam, "cam_right.cone", m_FovH, m_FovV, color, 0.2, dummypos,0);
 }
 
 void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path, 
                                double fovHorizAngle, double fovVertiAngle, 
                                double* color, double opacity, 
-                               cogx::Math::Vector3 position, double zoffset, double yaw, bool robotfov){
+                               cogx::Math::Vector3 position, double zoffset, bool robotfov,double yaw){
 
 		peekabot::GroupProxy proxyCone;	
 		proxyCone.add(proxy, path, peekabot::REPLACE_ON_CONFLICT);
@@ -474,13 +380,14 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
                                      // larger or smaller
 	if (!robotfov )
 	{
+
 		proxyConeParts[i].set_position(position.x,position.y,zoffset);
 		proxyConeParts[i].set_rotation(position.z,0,0);
 			
 	}
 	else
 	{
-		
+
 		proxyConeParts[i].set_position(0,0,zoffset);
 			proxyConeParts[i].set_rotation(yaw,0,0);
 	}
@@ -489,6 +396,51 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 }
 
 
+void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
+	//log("I got new points.");
+	double color[3] = { 0.9, 0, 0};
+	
+	 numeric::ublas::matrix<double> m (3, 3);
+	 m(0,0) = 0; m(0,1) = 1; m(0,2) = 0;
+	 m(1,0) = 0; m(1,1) = 0; m(1,2) = -1;
+	 m(2,0) = 1; m(2,1) = 0; m(2,2) = 0;
+	peekabot::PointCloudProxy pcloud;
+	pcloud.add(m_ProxyCam,"planepopout", peekabot::REPLACE_ON_CONFLICT);
+	shared_ptr<CASTData<NavData::PlanePopout> > oobj =
+    getWorkingMemoryEntry<NavData::PlanePopout>(objID.address);
+	NavData::PlanePopoutPtr objData = oobj->getData();
+
+	numeric::ublas::vector<double> v (3);
+	numeric::ublas::vector<double> t (3);
+	//add plane points
+  for (unsigned int i =0; i < objData->pcloud.size(); i++){
+	  if (objData->plabels.at(i) == 0){
+	  v(0) = objData->pcloud.at(i).x;
+	  v(1) = objData->pcloud.at(i).y;
+	  v(2) = objData->pcloud.at(i).z;
+	  t = prod(v,m);
+	  pcloud.add_vertex(t(0),t(1),t(2));
+	  }
+  }
+  pcloud.set_color(color[0],color[1],color[2]);
+  //add objects
+  peekabot::PointCloudProxy pcloudobj;
+  pcloudobj.add(m_ProxyCam,"planepopoutobj", peekabot::REPLACE_ON_CONFLICT);
+  color[0] = 0;
+  color[1] = 0.9;
+  color[2] = 0;
+  for (unsigned int i =0; i < objData->pcloud.size(); i++){
+	  if (objData->plabels.at(i) > 0){
+	  v(0) = objData->pcloud.at(i).x;
+	  v(1) = objData->pcloud.at(i).y;
+	  v(2) = objData->pcloud.at(i).z;
+	  t = prod(v,m);
+	  pcloudobj.add_vertex(t(0),t(1),t(2));
+	  }
+  }
+  pcloudobj.set_color(color[0],color[1],color[2]);
+	
+}
 void DisplayNavInPB::runComponent() {
 
   log("runComponent");
