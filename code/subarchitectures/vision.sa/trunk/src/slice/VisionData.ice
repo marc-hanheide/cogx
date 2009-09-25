@@ -11,6 +11,23 @@ module VisionData {
 
   sequence<string> IdSeq;
 
+  // RGB color
+  // NOTE: bytes in ICE are -128..127! So you will need to cast to an unsigned
+  // char in your code.
+  struct ColorRGB {
+    byte r;
+    byte g;
+    byte b;
+  };
+
+  // A 3D point with a color, as e.g. returned by stereo
+  struct SurfacePoint {
+    cogx::Math::Vector3 p;
+    VisionData::ColorRGB c;
+  };
+
+  sequence<SurfacePoint> SurfacePointSeq;
+
   // A planar surface patch
   // An oriented disk of a certain size, which lies in the local x-y plane.
   class SurfacePatch {
