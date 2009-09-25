@@ -188,6 +188,10 @@ public class UPGSystem {
 
     public String getRegion () { return region; }
 
+	
+	public Iterator getActions() { return actions.keySet().iterator(); } 
+	
+	
     //----------------------------------------------------------------
     // IS METHODS (alphabetical order)
     //----------------------------------------------------------------    
