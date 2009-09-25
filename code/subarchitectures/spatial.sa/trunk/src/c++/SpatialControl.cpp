@@ -171,12 +171,13 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
                                                      m_RobotServerHost);
+
+  FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
+  registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
 } 
 
 void SpatialControl::start() 
 {
-  FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
-  registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
   //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
     //(getComponentPointer());
  

@@ -18,6 +18,7 @@
 
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
+#include <float.h>
 
 using namespace cast;
 using namespace std;
@@ -43,9 +44,17 @@ LocalMapManager::LocalMapManager()
 }
 
 LocalMapManager::~LocalMapManager() 
-{ }
-
-
+{ 
+  delete m_Displaylgm1;
+  delete m_Displaylgm2;
+  delete m_Glrt1;
+  delete m_Glrt2;
+  for (map<int, Cure::LocalGridMap<unsigned char> *>::iterator it =
+      m_nodeGridMaps.begin(); it != m_nodeGridMaps.end(); it++) {
+    delete it->second;
+  }
+  delete m_lgm2;
+}
 
 void LocalMapManager::configure(const map<string,string>& _config) 
 {
@@ -80,27 +89,30 @@ void LocalMapManager::configure(const map<string,string>& _config)
     str >> m_RobotServerHost;
   }
 
-  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
-  //m_Explorer->setExplorationConfinedByGateways(true);
-
+  m_lgm1 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_nodeGridMaps[0] = m_lgm1;
+  m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
+  m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
 
   if (_config.find("--no-x-window") == _config.end()) {
-    m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
+    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+    m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
     println("Will use X window to show the map");
   } else {
-    m_Displaylgm = 0;
+    m_Displaylgm1 = 0;
+    m_Displaylgm2 = 0;
     println("Will NOT use X window to show the map");
   }
 
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
                                                      m_RobotServerHost);
+  FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
+  registerIceServer<FrontierInterface::HypothesisEvaluator, FrontierInterface::HypothesisEvaluator>(servant);
 } 
 
 void LocalMapManager::start() 
 {
-  FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
-  registerIceServer<FrontierInterface::HypothesisEvaluator, FrontierInterface::HypothesisEvaluator>(servant);
 
   addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<LocalMapManager>(this,
@@ -120,12 +132,64 @@ void LocalMapManager::runComponent()
   setupPushOdometry(*this);
 
   log("I am running!");
-  
+
+  NavData::FNodePtr prevNode = getCurrentNavNode();
   while(isRunning()){
-    if (m_Displaylgm) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_Displaylgm->updateDisplay(&currentPose);
+    NavData::FNodePtr curNode = getCurrentNavNode();
+    if (curNode != prevNode) {
+      m_Mutex.lock();
+      // Node has changed! See if the node already has a lgm associated
+      // with it; if so, swap the current for it. Otherwise,
+      // assign the temporary to it.
+      if (m_nodeGridMaps.find(curNode->nodeId) == m_nodeGridMaps.end()) {
+	// There's no grid map for the current Node. Assign the 
+	// temporary lgm to it.
+	m_nodeGridMaps[curNode->nodeId] = m_lgm2;
+	log("Movin'");
+	m_lgm2->moveCenterTo(curNode->x, curNode->y);
+	log("Moved");
+	m_lgm1 = m_lgm2;
+	log("Allocatin'");
+	m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
+	log("Allocated");
+      }
+      else {
+	// Clear the temporary lgm
+	m_lgm1 = m_nodeGridMaps[curNode->nodeId];
+	log("Clearin'");
+	m_lgm2->clearMap();
+	log("Clear'd");
+	log("Movin' 2");
+	m_lgm2->moveCenterTo(curNode->x, curNode->y, false);
+	log("Moved");
+      }
+      delete m_Glrt1;
+      delete m_Glrt2;
+      m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
+      m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
+      log("Settin' maps");
+      if (m_Displaylgm1) {
+	m_Displaylgm1->setMap(m_lgm1);
+      }
+      if (m_Displaylgm2) {
+	m_Displaylgm2->setMap(m_lgm2);
+      }
+      log("Maps set");
+
+      m_Mutex.unlock();
     }
+    prevNode = curNode;
+
+    log("Updatin'");
+    if (m_Displaylgm1) {
+      Cure::Pose3D currentPose = m_TOPP.getPose();
+      m_Displaylgm1->updateDisplay(&currentPose);
+    }
+    if (m_Displaylgm2) {
+      Cure::Pose3D currentPose = m_TOPP.getPose();
+      m_Displaylgm2->updateDisplay(&currentPose);
+    }
+    log("Updated");
 
     usleep(250000);
   }
@@ -176,18 +240,51 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
     
     Cure::Pose3D scanPose;
     if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-      m_Mutex.lock();
-      m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-      m_Mutex.unlock();
-
       Cure::Pose3D lpW;
 //      m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
 //                                  0.5*Cure::NavController::getRobotWidth(), 
 //                                  '0');
       lpW.add(scanPose, m_LaserPoseR);
-      m_Glrt->addScan(cureScan, lpW, m_MaxLaserRange);      
+      m_Mutex.lock();
+      m_Glrt1->addScan(cureScan, lpW, m_MaxLaserRange);      
+      m_Glrt2->addScan(cureScan, lpW, m_MaxLaserRange);      
+      m_Mutex.unlock();
     }
   }
+}
+
+NavData::FNodePtr
+LocalMapManager::getCurrentNavNode()
+{
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  vector<NavData::RobotPose2dPtr> robotPoses;
+  getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+
+  if (robotPoses.size() == 0) {
+    log("Could not find RobotPose!");
+    return 0;
+  }
+  
+  //Find the node closest to the robotPose
+  double robotX = robotPoses[0]->x;
+  double robotY = robotPoses[0]->y;
+  double minDistance = FLT_MAX;
+  NavData::FNodePtr ret = 0;
+
+  for (vector<NavData::FNodePtr>::iterator it = nodes.begin();
+      it != nodes.end(); it++) {
+    double x = (*it)->x;
+    double y = (*it)->y;
+
+    double distance = (x - robotX)*(x-robotX) + (y-robotY)*(y-robotY);
+    if (distance < minDistance) {
+      ret = *it;
+      minDistance = distance;
+    }
+  }
+  return ret;
 }
 
 FrontierInterface::HypothesisEvaluation
@@ -242,7 +339,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	log("Hypothesis unexpectedly missing from WM!");
       }
     }
-    log("Relevant hypotheses: %i", hyps.size());
+    log("Relevant hypotheses: %i", relevantHypotheses.size());
 
     vector<NavData::FNodePtr> nodes;
     getMemoryEntries<NavData::FNode>(nodes);
@@ -251,11 +348,13 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     //Loop over local grid map
     double x;
     double y;
-    for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize()+1; yi++) {
-      y = m_lgm->getCentYW() + yi * m_lgm->getCellSize();
-      for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize()+1; xi++) {
-	x = m_lgm->getCentXW() + xi * m_lgm->getCellSize();
-	if ((*m_lgm)(xi,yi) == '0') {
+    m_Mutex.lock();
+    log("Checkin'");
+    for (int yi = -m_lgm1->getSize(); yi < m_lgm1->getSize()+1; yi++) {
+      y = m_lgm1->getCentYW() + yi * m_lgm1->getCellSize();
+      for (int xi = -m_lgm1->getSize(); xi < m_lgm1->getSize()+1; xi++) {
+	x = m_lgm1->getCentXW() + xi * m_lgm1->getCellSize();
+	if ((*m_lgm1)(xi,yi) == '0') {
 	  totalFreeCells++;
 	  //Cell is free
 	  double relevantDistSq = (x - relevantX)*(x - relevantX) +
@@ -298,7 +397,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	      //Check if it borders on unknown space
 	      for (int yi2 = yi - 1; yi2 <= yi + 1; yi2++) {
 		for (int xi2 = xi - 1; xi2 <= xi + 1; xi2++) {
-		  if ((*m_lgm)(xi2, yi2) == '2') {
+		  if ((*m_lgm1)(xi2, yi2) == '2') {
 		    ret.unexploredBorderValue += 1.0;
 		    yi2 = yi + 2;
 		    xi2 = xi + 2;
@@ -313,6 +412,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
       }
     }
     log("Total free cells: %i", totalFreeCells);
+    m_Mutex.unlock();
   }
   return ret;
 }

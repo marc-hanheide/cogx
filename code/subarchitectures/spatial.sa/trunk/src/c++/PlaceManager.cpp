@@ -91,13 +91,14 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   else {
     m_hypPathLength = 1.5;
   }
+
+  FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
+  registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
 }
 
 void 
 PlaceManager::start()
 {
-  FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
-  registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 					&PlaceManager::newNavNode));
@@ -119,6 +120,9 @@ PlaceManager::start()
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 					&PlaceManager::modifiedEdge));
 
+  frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
+  hypothesisEvaluator = FrontierInterface::HypothesisEvaluatorPrx(getIceServer<FrontierInterface::HypothesisEvaluator>("map.manager"));
+
 }
 
 void 
@@ -129,9 +133,6 @@ PlaceManager::stop()
 void 
 PlaceManager::runComponent()
 {
-  frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
-  hypothesisEvaluator = FrontierInterface::HypothesisEvaluatorPrx(getIceServer<FrontierInterface::HypothesisEvaluator>("map.manager"));
-
   debug("Interfaces created");
 }
 
@@ -663,7 +664,7 @@ SpatialData::PlacePtr PlaceManager::getPlaceFromHypID(int hypID)
   for(map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
       m_PlaceIDToHypMap.begin();
       it != m_PlaceIDToHypMap.end(); it++) {
-    if (it->second->hypID == hypID) {
+    if (it->second->hypID == hypID) { //Found a Place ID for the hypothesis
       map<int, PlaceHolder>::iterator it2 = m_Places.find(it->first);
       if (it2 != m_Places.end()) {
 	return getMemoryEntry<SpatialData::Place>(it2->second.m_WMid);
