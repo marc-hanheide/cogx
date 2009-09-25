@@ -163,9 +163,9 @@ module VisionData {
     cast::cdl::CASTTime time;
     // This is a temporary solution only: provide the 3D points that gave rise
     // to this SOI, iff the SOI was created by plane pop-out.
-    Vector3Seq points;   // frontground points
-    Vector3Seq BGpoints; //background points
-    Vector3Seq EQpoints; //equivocal points which either belongs to fg or bg
+    SurfacePointSeq points;   // frontground points
+    SurfacePointSeq BGpoints; //background points
+    SurfacePointSeq EQpoints; //equivocal points which either belongs to fg or bg
   };
 
   /**
