@@ -59,6 +59,23 @@
    </system>
 
 
+<system id="gre.thing" region="THING" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:gre"/>
+   </conditions>
+   <actions>
+      <action choice="default">
+		<identify-nomvar root="DVP" mode="Gre" dest="GRE" scope="global"/>
+		<generate-rfx nomvar="GRE"/>
+      </action>
+   </actions>
+</system>
+
+
+
+
+
    <system id="structure.list" region="STRUCTURE" metafunction="ideational">
 	<chooser id="c-structure.list"/>
       <conditions>
