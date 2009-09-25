@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.hp.hpl.jena.ontology.Individual;
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -57,6 +59,23 @@ public class CrowlWrapper {
 
 	public void addInstance(String _ins, String _con) throws ReasonerException {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
+		
+//		OntModel m;
+//		try {
+//			m = m_mycrowl.getOWLOntoModel();
+//			OntClass c = m.createClass(_con);
+//			
+//			// first way: use a call on OntModel
+////			Individual ind0 = m.createIndividual( _ins, c );
+//			
+////		// second way: use a call on OntClass
+////			Individual ind1 = c.createIndividual( _ins );
+//		} catch (ConfigError e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+// SPARQL way of doing it		
 		m_mycrowl.execute("INSERT { " +
 				_ins +
 				" rdf:type " +
@@ -85,7 +104,7 @@ public class CrowlWrapper {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String updateQuery = "INSERT { " + 	_ins1 + " " + _rel + " " + _ins2 + ". }";
 		log("going to execute SPARQL update query: " + updateQuery);
-//		m_mycrowl.execute(updateQuery);
+		m_mycrowl.execute(updateQuery);
 //		m_mycrowl.executeAndPrintQuery(updateQuery, false);
 		log("leaving assertRelation()");
 	}
@@ -268,10 +287,10 @@ public class CrowlWrapper {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String query = "SELECT DISTINCT ?ins WHERE { " +
 		" { " + _ins + " ?x ?ins . " +
-//	y	" ?ins rdf:type owl:Thing. " + 
+		" ?ins rdf:type owl:Thing. " + 
 		" }" +
 		" UNION { ?ins ?y " + _ins + " . " +
-//		" ?ins rdf:type owl:Thing.  " +
+		" ?ins rdf:type owl:Thing.  " +
 		"} ." +
 		" FILTER (?ins != " + _ins + " ) }";
 		
@@ -311,19 +330,19 @@ public class CrowlWrapper {
 			Resource _currAnswerRersource = _qs.getResource("?ins");
 //			Resource _currRelX = _qs.getResource("?x");
 //			Resource _currRelY = _qs.getResource("?y");
-//			try {
+			try {
 //				System.out.println(_ins.getFullName() + " related to " + (_currAnswerRersource!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()) : "null") + " via X="+(_currRelX!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currRelX.toString()) : "null")+" and Y="+(_currRelY!=null ? m_mycrowl.getOWLOntoModel().shortForm(_currRelY.toString()) : "null"));
 
-				// 2009-09-24
-//				log(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
-//				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
-				log(_currAnswerRersource.toString());
-				_returnSet.add(_currAnswerRersource.toString());
+				
+				log(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+//				log(_currAnswerRersource.toString());
+//				_returnSet.add(_currAnswerRersource.toString());
 
-//			} catch (ConfigError e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			} catch (ConfigError e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return _returnSet;
 	}
@@ -338,11 +357,12 @@ public class CrowlWrapper {
 	 */
 	public Set<String> getRelatedInstances(String _ins, String _rel) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
-		String query = "SELECT DISTINCT ?ins WHERE { " +
+		String query = "SELECT DISTINCT ?ins WHERE " +
+//		" { " +
 		" { " + _ins + " " + _rel + " ?ins . " +
-		" ?ins rdf:type oe:Entity. }" +
-//		" UNION { ?ins " + _rel.getFullRelationName() + " " + _ins.getFullName() +  " . " +
-//		" ?ins rdf:type oe:Entity. } ." +
+//		" ?ins rdf:type owl:Thing. }" +
+//		" UNION { ?ins " + _rel + _ins +  " . " +
+//		" ?ins rdf:type owl:Thing. } ." +
 		" FILTER (?ins != " + _ins + " ) }";
 //		System.out.println(query);
 		ResultSet results = (ResultSet) m_mycrowl.execute(query);
