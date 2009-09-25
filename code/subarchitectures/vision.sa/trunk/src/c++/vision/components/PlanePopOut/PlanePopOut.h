@@ -31,6 +31,18 @@ typedef struct ObjP
 	std::vector< Vector3 > EQInOneSOI;
 }ObjPara;
 
+typedef struct ColorRGB {
+    byte r;
+    byte g;
+    byte b;
+  }RGB;
+
+typedef struct PointsStructure
+{
+	Vector3 p;
+	RGB color;
+}SurfacePointsStructure;
+
 private:
   /**
    * Which camera to get images from
