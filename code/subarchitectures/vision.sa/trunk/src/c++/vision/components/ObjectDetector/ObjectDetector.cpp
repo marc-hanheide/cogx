@@ -27,6 +27,8 @@ extern "C"
 
 using namespace cogx;
 using namespace Math;
+using namespace std;
+using namespace VisionData;
 
 namespace cast
 {
@@ -35,11 +37,11 @@ bool showImage = true;									///< show openCv image from image server.
 bool getCubes = true;										///< get cubes from the object detector
 bool getFlaps = true; 									///< get flaps from the object detector
 
-using namespace std;
-using namespace VisionData;
 
 
-void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc){
+
+void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
+{
 	ObjectDetectionCommandPtr detect_cmd = getMemoryEntry<ObjectDetectionCommand>(_wmc.address);
 	
 	log("received detection command ...");
@@ -108,7 +110,7 @@ void ObjectDetector::runComponent()
 		if (cmd_detect) processImage();
 
     // wait a bit so we don't hog the CPU
-//     sleepComponent(10);
+		sleepComponent(50);
   }
 }
 
