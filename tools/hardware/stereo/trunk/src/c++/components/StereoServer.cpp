@@ -52,12 +52,26 @@ StereoServer::StereoServer()
   iceStereoName = "";
   iceStereoPort = cdl::CPPSERVERPORT;
   doDisplay = false;
+  for(int i = LEFT; i <= RIGHT; i++)
+  {
+    colorImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 3);
+    rectImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 3);
+    greyImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
+  }
   disparityImg = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
   cvSet(disparityImg, cvScalar(0));
+  // normally it's a good idea to do median filering on the disparity image
+  medianSize = 5;
 }
 
 StereoServer::~StereoServer()
 {
+  for(int i = LEFT; i <= RIGHT; i++)
+  {
+    cvReleaseImage(&colorImg[i]);
+    cvReleaseImage(&greyImg[i]);
+    cvReleaseImage(&rectImg[i]);
+  }
   cvReleaseImage(&disparityImg);
   if(doDisplay)
   {
@@ -115,6 +129,14 @@ void StereoServer::configure(const map<string,string> & _config)
     cvNamedWindow("disparity", 1);
   }
 
+  if((it = _config.find("--median")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> medianSize;
+    if(medianSize < 0)
+      medianSize = 0;
+  }
+
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
   if(camIds.size() != 2)
@@ -135,33 +157,25 @@ void StereoServer::getPoints(vector<VisionData::SurfacePoint> &points)
 {
   lockComponent();
 
-  // first count how many points we will have
-  int cnt = 0;
-  for(int y = 0; y < disparityImg->height; y += 1)
-    for(int x = 0; x < disparityImg->width; x += 1)
-    {
-      unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
-      if(d != 0)
-        cnt++;
-    }
-
   Pose3 global_left_pose;
   // get from relative left pose to global left pose
   transform(stereoCam.pose, stereoCam.cam[LEFT].pose, global_left_pose);
 
-  points.resize(cnt);
-  cnt = 0;
+  points.resize(0);
   for(int y = 0; y < disparityImg->height; y += 1)
     for(int x = 0; x < disparityImg->width; x += 1)
     {
       unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
       if(d != 0)
       {
+        VisionData::SurfacePoint p;
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
-           points[cnt].p.x, points[cnt].p.y, points[cnt].p.z);
+           p.p.x, p.p.y, p.p.z);
         // now get from left cam coord sys to global coord sys
-        points[cnt].p = transform(global_left_pose, points[cnt].p);
-        cnt++;
+        p.p = transform(global_left_pose, p.p);
+        VisionData::ColorRGB *c = (VisionData::ColorRGB*)Video::cvAccessImageData(colorImg[LEFT], x, y);
+        p.c = *c;
+        points.push_back(p);
       }
     }
 /*
@@ -201,16 +215,16 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
       unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
       if(d != 0)
       {
-        Vector3 p;
+        VisionData::SurfacePoint p;
         stereoCam.ReconstructPoint((double)x, (double)y, (double)d,
-           p.x, p.y, p.z);
+           p.p.x, p.p.y, p.p.z);
         // now get from left cam coord sys to global coord sys
-        p = transform(global_left_pose, p);
-        if(pointInsideSOI(soi, p))
+        p.p = transform(global_left_pose, p.p);
+        if(pointInsideSOI(soi, p.p))
         {
-          VisionData::SurfacePoint sp;
-          sp.p = p;
-          points.push_back(sp);
+          VisionData::ColorRGB *c = (VisionData::ColorRGB*)Video::cvAccessImageData(colorImg[LEFT], x, y);
+          p.c = *c;
+          points.push_back(p);
         }
       }
     }
@@ -221,12 +235,6 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
 void StereoServer::runComponent()
 {
   vector<Video::Image> images;
-  IplImage *grey[2] = {0, 0}, *rect[2] = {0, 0};
-  IplImage *rawDisp;
-
-  for(int i = LEFT; i <= RIGHT; i++)
-    rect[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
-  rawDisp = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
 
   while(isRunning())
   {
@@ -234,51 +242,50 @@ void StereoServer::runComponent()
     assert(images.size() == 2);
     for(int i = LEFT; i <= RIGHT; i++)
     {
-      grey[i] = convertImageToIplGray(images[i]);
-      stereoCam.RectifyImage(grey[i], rect[i], i);
+      convertImageToIpl(images[i], &colorImg[i]);
+      stereoCam.RectifyImage(colorImg[i], rectImg[i], i);
+      cvCvtColor(rectImg[i], greyImg[i], CV_RGB2GRAY);
     }
 
-    cvSet(rawDisp, cvScalar(0));
-    census.setImages(rect[LEFT], rect[RIGHT]);
+    lockComponent();
+    cvSet(disparityImg, cvScalar(0));
+    census.setImages(greyImg[LEFT], greyImg[RIGHT]);
     census.match();
     // in case we are interested how blazingly fast the matching is :)
     // census.printTiming();
-    census.getDisparityMap(rawDisp);
+    census.getDisparityMap(disparityImg);
     // HACK: clear the borders of the disparity image to get rid of odd values
-    cvRectangle(rawDisp, cvPoint(0, 0),
+    cvRectangle(disparityImg, cvPoint(0, 0),
         cvPoint(LEFT_CLEAR_BORDER_WIDTH -1, STEREO_HEIGHT - 1), cvScalarAll(0),
         CV_FILLED);
-    cvRectangle(rawDisp, cvPoint(STEREO_WIDTH - RIGHT_CLEAR_BORDER_WIDTH, 0),
+    cvRectangle(disparityImg, cvPoint(STEREO_WIDTH - RIGHT_CLEAR_BORDER_WIDTH, 0),
         cvPoint(STEREO_WIDTH - 1, STEREO_HEIGHT - 1), cvScalarAll(0),
         CV_FILLED);
 
-    lockComponent();
-    //cvSmooth(rawDisp, disparityImg, CV_MEDIAN, 5);
-    cvCopy(rawDisp, disparityImg);
+    if(medianSize > 0)
+    {
+      IplImage *tmp = cvCloneImage(disparityImg);
+      cvSmooth(disparityImg, tmp, CV_MEDIAN, medianSize);
+      swap(disparityImg, tmp);
+      cvReleaseImage(&tmp);
+    }
     unlockComponent();
 
     // use OpenCV stereo match
     //lockComponent();
-    //stereoCam.DisparityImage(rect[LEFT], rect[RIGHT], disparityImg);
+    //stereoCam.DisparityImage(greyImg[LEFT], greyImg[RIGHT], disparityImg);
     //unlockComponent();
-   
+ 
     if(doDisplay)
     {
-      cvShowImage("left", rect[LEFT]);
-      cvShowImage("right", rect[RIGHT]);
+      cvShowImage("left", colorImg[LEFT]);
+      cvShowImage("right", colorImg[RIGHT]);
       cvShowImage("disparity", disparityImg);
       cvWaitKey(10);
     }
 
-    for(int i = LEFT; i <= RIGHT; i++)
-      cvReleaseImage(&grey[i]);
-
-    sleepComponent(50);
+    sleepComponent(200);
   }
-
-  for(int i = LEFT; i <= RIGHT; i++)
-    cvReleaseImage(&rect[i]);
-  cvReleaseImage(&rawDisp);
 }
 
 }
