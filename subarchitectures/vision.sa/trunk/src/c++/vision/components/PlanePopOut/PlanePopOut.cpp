@@ -42,16 +42,16 @@ GLfloat col_surface[4];
 GLfloat col_overlay[4];
 GLfloat col_highlight[4];
 
-vector<SurfacePointsStructure> points;
-vector<SurfacePointsStructure>  pointsN;
+VisionData::SurfacePointSeq points;
+VisionData::SurfacePointSeq pointsN;
 
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector< Vector3 > v3size;
 vector< Vector3 > v3center;
 vector<double> vdradius;
-vector< vector< Vector3 > > SOIPointsSeq;
-vector< vector< Vector3 > > BGPointsSeq;
-vector< vector< Vector3 > > EQPointsSeq; //equivocal points
+vector< VisionData::SurfacePointSeq > SOIPointsSeq;
+vector< VisionData::SurfacePointSeq > BGPointsSeq;
+vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWireSphere;
@@ -229,7 +229,7 @@ void DrawPoints()
 	else if (points_label.at(i) == 4)  glColor3f(0.0,0.0,1.0);  //
 	else if (points_label.at(i) == 5)  glColor3f(0.0,0.0,1.0);  //
 	else glColor3f(0.0,0.0,1.0);  //rest object
-    glVertex3f(pointsN[i].x, pointsN[i].y, pointsN[i].z);
+    glVertex3f(pointsN[i].p.x, pointsN[i].p.y, pointsN[i].p.z);
   }
   glEnd();
 /*
@@ -284,19 +284,23 @@ void DrawOneCuboid(Vector3 Max, Vector3 Min)
 	glDisable(GL_BLEND);
 }
 
-void DrawCuboids(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
+void DrawCuboids(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
-	std::vector< Vector3 > Max;
-	std::vector< Vector3 > Min;
+	VisionData::SurfacePointSeq Max;
+	VisionData::SurfacePointSeq Min;
 	Vector3 initial_vector;
 	initial_vector.x = -9999;
 	initial_vector.y = -9999;
 	initial_vector.z = -9999;
-	Max.assign(objnumber, initial_vector);
+	VisionData::SurfacePoint InitialStructure;
+	InitialStructure.p = initial_vector;
+	InitialStructure.c.r = InitialStructure.c.g = InitialStructure.c.b = 0;
+	Max.assign(objnumber, InitialStructure);
 	initial_vector.x = 9999;
 	initial_vector.y = 9999;
 	initial_vector.z = 9999;
-	Min.assign(objnumber, initial_vector);
+	InitialStructure.p = initial_vector;
+	Min.assign(objnumber, InitialStructure);
 
 	for(unsigned int i = 0; i<points.size(); i++)
 	{
@@ -304,23 +308,23 @@ void DrawCuboids(std::vector<SurfacePointsStructure> &points, std::vector <int> 
 		int label = labels.at(i);
 		if (label > 0)
 		{
-			if (v3Obj.x>Max.at(label-1).x) Max.at(label-1).x = v3Obj.x;
-			if (v3Obj.x<Min.at(label-1).x) Min.at(label-1).x = v3Obj.x;
+			if (v3Obj.x>Max.at(label-1).p.x) Max.at(label-1).p.x = v3Obj.x;
+			if (v3Obj.x<Min.at(label-1).p.x) Min.at(label-1).p.x = v3Obj.x;
 	
-			if (v3Obj.y>Max.at(label-1).y) Max.at(label-1).y = v3Obj.y;
-			if (v3Obj.y<Min.at(label-1).y) Min.at(label-1).y = v3Obj.y;
+			if (v3Obj.y>Max.at(label-1).p.y) Max.at(label-1).p.y = v3Obj.y;
+			if (v3Obj.y<Min.at(label-1).p.y) Min.at(label-1).p.y = v3Obj.y;
 	
-			if (v3Obj.z>Max.at(label-1).z) Max.at(label-1).z = v3Obj.z;
-			if (v3Obj.z<Min.at(label-1).z) Min.at(label-1).z = v3Obj.z;
+			if (v3Obj.z>Max.at(label-1).p.z) Max.at(label-1).p.z = v3Obj.z;
+			if (v3Obj.z<Min.at(label-1).p.z) Min.at(label-1).p.z = v3Obj.z;
 		}
 	}
 	v3size.clear();
 	for (int i=0; i<objnumber; i++)
 	{
 		Vector3 s;
-		s.x = (Max.at(i).x-Min.at(i).x)/2;
-		s.y = (Max.at(i).y-Min.at(i).y)/2;
-		s.z = (Max.at(i).z-Min.at(i).z)/2;
+		s.x = (Max.at(i).p.x-Min.at(i).p.x)/2;
+		s.y = (Max.at(i).p.y-Min.at(i).p.y)/2;
+		s.z = (Max.at(i).p.z-Min.at(i).p.z)/2;
 		v3size.push_back(s);
 	}
 /*	
@@ -351,15 +355,18 @@ Vector3 ProjectOnDominantPlane(Vector3 InputP)
 	return OutputP;
 }
 
-void BoundingSphere(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
+void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
-	std::vector< Vector3 > center;
+	VisionData::SurfacePointSeq center;
 	Vector3 initial_vector;
 	initial_vector.x = 0;
 	initial_vector.y = 0;
 	initial_vector.z = 0;
-	center.assign(objnumber,initial_vector);
-	std::vector< Vector3 > pointsInOneSOI;
+	VisionData::SurfacePoint InitialStructure;
+	InitialStructure.p = initial_vector;
+	InitialStructure.c.r = InitialStructure.c.g = InitialStructure.c.b = 0;
+	center.assign(objnumber,InitialStructure);
+	VisionData::SurfacePointSeq pointsInOneSOI;
 	SOIPointsSeq.clear();
 	SOIPointsSeq.assign(objnumber, pointsInOneSOI);
 	BGPointsSeq.clear();
@@ -378,9 +385,12 @@ void BoundingSphere(std::vector<SurfacePointsStructure> &points, std::vector <in
 		int label = labels.at(i);
 		if (label > 0)
 		{
-			center.at(label-1) = center.at(label-1) + v3Obj;
+			center.at(label-1).p = center.at(label-1).p + v3Obj;
 			amount.at(label-1) = amount.at(label-1) + 1;
-			SOIPointsSeq.at(label-1).push_back(v3Obj);
+			VisionData::SurfacePoint PushStructure;
+			PushStructure.p = v3Obj;
+			PushStructure.c.r = PushStructure.c.g = PushStructure.c.b = 0;
+			SOIPointsSeq.at(label-1).push_back(PushStructure);
 		}
 	}
 	v3center.clear();
@@ -388,16 +398,16 @@ void BoundingSphere(std::vector<SurfacePointsStructure> &points, std::vector <in
 	{
 		for (unsigned int i=0; i<center.size(); i++)
 		{
-			center.at(i) = center.at(i)/amount.at(i);
-			v3center.push_back(center.at(i));
+			center.at(i).p = center.at(i).p/amount.at(i);
+			v3center.push_back(center.at(i).p);
 		}
 	////////////////////calculte radius in the real world//////////////////
 		for(unsigned int i = 0; i<points.size(); i++)
 		{
 			Vector3 v3Obj = points.at(i).p;
 			int label = labels.at(i);
-			if (label > 0 && dist(v3Obj,center.at(label-1)) > radius_world.at(label-1))
-				radius_world.at(label-1) = dist(v3Obj,center.at(label-1));
+			if (label > 0 && dist(v3Obj,center.at(label-1).p) > radius_world.at(label-1))
+				radius_world.at(label-1) = dist(v3Obj,center.at(label-1).p);
 		}
 		vdradius.clear();
 		for (int i=0; i<objnumber; i++)
@@ -406,30 +416,33 @@ void BoundingSphere(std::vector<SurfacePointsStructure> &points, std::vector <in
 
 	for (int i = 0; i<objnumber; i++)
 	{
-		if (mbDrawWireSphere)	DrawWireSphere(center.at(i),radius_world.at(i));
-		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i));//cout<<" center on DP ="<<Center_DP<<endl;
+		if (mbDrawWireSphere)	DrawWireSphere(center.at(i).p,radius_world.at(i));
+		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
-			Vector3 v3Obj = points.at(j).p;
-			Vector3 Point_DP = ProjectOnDominantPlane(v3Obj);
+			VisionData::SurfacePoint PushStructure;
+			PushStructure.p = points.at(j).p;
+			PushStructure.c = points.at(j).c;
+
+			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
 			int label = labels.at(j);
 			if (label == -1 && dist(Point_DP,Center_DP) < 1.1*radius_world.at(i)) // equivocal points
 			{
-				EQPointsSeq.at(i).push_back(v3Obj);
+				EQPointsSeq.at(i).push_back(PushStructure);
 				glPointSize(2);
 				glBegin(GL_POINTS);
 				glColor3f(0.0,1.0,0.0);  //equivocal points
-				glVertex3f(v3Obj.x, v3Obj.y, v3Obj.z);
+				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
 				glEnd();
 			}
 			if (label == 0 && dist(Point_DP,Center_DP)>1.1*dist(Point_DP,Center_DP) && dist(Point_DP,Center_DP) < 1.5*radius_world.at(i) ) //BG nearby also required
 			{
-				BGPointsSeq.at(i).push_back(v3Obj);
+				BGPointsSeq.at(i).push_back(PushStructure);
 
 				glPointSize(2);
 				glBegin(GL_POINTS);
 				glColor3f(1.0,0.0,0.0);  //nearby points
-				glVertex3f(v3Obj.x, v3Obj.y, v3Obj.z);
+				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
 				glEnd();
 			}
 		}
@@ -557,7 +570,7 @@ void PlanePopOut::runComponent()
 {	
   while(isRunning())
   {//cout<<"mbDrawWireSphere = "<<mbDrawWireSphere<<endl;
-	vector<SurfacePointsStructure> tempPoints = points;
+	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 	getPoints(points);
 	if (points.size() == 0)
@@ -568,7 +581,7 @@ void PlanePopOut::runComponent()
 		pointsN.clear();
 		objnumber = 0;
 		N = 5;
-		for (std::vector<SurfacePointsStructure>::iterator it=points.begin(); it<points.end(); it+=N)
+		for (VisionData::SurfacePointSeq::iterator it=points.begin(); it<points.end(); it+=N)
 			pointsN.push_back(*it);
 		points_label.clear();
 		points_label.assign(pointsN.size(), -3);
@@ -640,7 +653,7 @@ void PlanePopOut::runComponent()
 			}
 			if (PreviousObjList.size()!=CurrentObjList.size()) //need to delete the disappeared objects
 			{
-				std::vector <int> disappearedObjList; //store the serial number of disappeared objects in PreviousObjList
+				std::vector <unsigned int> disappearedObjList; //store the serial number of disappeared objects in PreviousObjList
 				for(unsigned int i=0; i<PreviousObjList.size(); i++)
 				{
 					bool flag = false;
@@ -690,9 +703,9 @@ void PlanePopOut::runComponent()
   }
 }
 
-bool PlanePopOut::RANSAC(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
+bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
-	std::vector<SurfacePointsStructure> R_points = points;
+	VisionData::SurfacePointSeq R_points = points;
 	unsigned int nPoints = R_points.size();
 	if(nPoints < 10)
 	{
@@ -783,7 +796,7 @@ bool PlanePopOut::RANSAC(std::vector<SurfacePointsStructure> &points, std::vecto
 			{
 				labels.at(i) = 0; // dominant plane
 				double ddist = dot(R_points.at(i).p,R_points.at(i).p);
-				if (ddist > dmax) {dmax = ddist; v3dmax = R_points.at(i);}
+				if (ddist > dmax) {dmax = ddist; v3dmax = R_points.at(i).p;}
 				else if (ddist < dmin) {dmin = ddist; v3dmin = R_points.at(i).p;}
 			}
 			else
@@ -799,7 +812,7 @@ bool PlanePopOut::RANSAC(std::vector<SurfacePointsStructure> &points, std::vecto
 	return true;
 }
 
-void PlanePopOut::SplitPoints(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
+void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
 	std::vector<int> candidants;
 	std::vector <int> S_label = labels;
@@ -851,7 +864,7 @@ void PlanePopOut::SplitPoints(std::vector<SurfacePointsStructure> &points, std::
 	objnumber--;
 }
 
-double PlanePopOut::Calc_SplitThreshold(std::vector<SurfacePointsStructure> &points, std::vector <int> &labels)
+double PlanePopOut::Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
 	double max_x = -99999.0;
 	double min_x = 99999.0;
@@ -876,7 +889,7 @@ double PlanePopOut::Calc_SplitThreshold(std::vector<SurfacePointsStructure> &poi
 	return sqrt((max_x-min_x)*(max_x-min_x)+(max_y-min_y)*(max_y-min_y)+(max_z-min_z)*(max_z-min_z))/40;
 }
 
-SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, std::vector< Vector3 > psIn1SOI, std::vector< Vector3 > BGpIn1SOI, std::vector< Vector3 > EQpIn1SOI)
+SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI)
 {
 	VisionData::SOIPtr obs = new VisionData::SOI;
 	obs->boundingBox.pos.x = obs->boundingSphere.pos.x = center.x;
