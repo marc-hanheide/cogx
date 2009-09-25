@@ -86,8 +86,14 @@ public class ComaReasoner extends ManagedComponent {
 		public String[] getRelatedInstances(String instance, Current __current) {
 			return m_reasoner.getRelatedInstances(instance).toArray(new String[0]);
 		}
-
+		public String[] getRelatedInstancesByRelation(String instance, String relation, Current __current) {
+			return m_reasoner.getRelatedInstances(instance, relation).toArray(new String[0]);
+		}
 		
+		public String[] getAllConcepts(String instance, Current __current) {
+			return m_reasoner.getAllConcepts(instance).toArray(new String[0]);
+		}
+
 		public boolean addInstance(String instance, String concept, Current __current) {
 			try {
 				m_reasoner.addInstance(instance, concept);
