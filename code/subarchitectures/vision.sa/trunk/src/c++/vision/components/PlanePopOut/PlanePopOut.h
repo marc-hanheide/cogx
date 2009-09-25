@@ -32,9 +32,9 @@ typedef struct ObjP
 }ObjPara;
 
 typedef struct ColorRGB {
-    byte r;
-    byte g;
-    byte b;
+    Byte r;
+    Byte g;
+    Byte b;
   }RGB;
 
 typedef struct PointsStructure
