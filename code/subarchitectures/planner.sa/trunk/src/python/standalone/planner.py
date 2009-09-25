@@ -272,7 +272,7 @@ class ContinualAxiomsFF(BasePlanner):
         cmd = "%(executable)s -o %(domain_path)s -f %(problem_path)s -O %(plan_path)s" % locals()
         proc = utils.run_process(cmd, output=stdout_path, error=stdout_path)
         
-        stdout_output = utils.run_command(cmd, output=stdout_path)
+#        stdout_output = utils.run_command(cmd, output=stdout_path)
 #         print "Planner output:"
 #         print stdout_output
         
