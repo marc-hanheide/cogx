@@ -1,0 +1,74 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :durative-actions :object-fluents)
+	
+	(:types 
+		place - object
+		robot - agent
+		place_type - object
+		place_id - object  ;; make this a number at some point 
+		place_category - object
+	)
+	
+	(:constants
+        R2D2 - robot
+	)
+
+    (:predicates
+		(place_connectivity ?n1 - place ?id2 - place_id)
+		;; special
+		(has-goal ?a - agent)
+		(commited ?a - agent)
+    )	
+
+	(:functions
+		(place_type ?n - place) - place_type
+		(place_id ?n - place) - place_id
+		(position ?r -  agent) - place_id
+		(explored ?n - place) - boolean
+		(place_category ?n - place) - place_category
+ 	)
+	
+
+;;; actions ;;;
+
+	(:sensor sense_place
+	 :agent (?a - robot)
+	 :parameters (?loc - place)
+	 :variables (?loc_id - place_id)
+	 :precondition (and
+	 	(= (position ?a) ?loc_id)
+		(= (place_id ?loc) ?loc_id)
+		)
+     :sense (explored ?loc)
+    )
+
+	(:sensor categorize_place
+	 :agent (?a - agent)
+	 :parameters (?loc - place)
+	 :variables (?loc_id - place_id)
+	 :precondition (and
+	 	(= (position ?a) ?loc_id)
+		(= (place_id ?loc) ?loc_id)
+		)
+     :sense (place_category ?loc)
+    )
+
+	(:action move
+	 :agent (?a - agent)
+	 :parameters (?to_id - place_id)
+	 :variables (?to - place ?from_id - place_id ?from - place)
+	 :precondition (and
+	    (= (place_id ?from) ?from_id)
+	    (= (place_id ?to) ?to_id)
+		(= (position ?a) ?from_id) 
+		(place_connectivity ?from ?to_id)
+		)
+	 :effect (and
+		(assign (position ?a) ?to_id)
+		(assign (explored ?to) true)
+		(place_connectivity ?to ?from_id)   ;; now we assume we can also move back
+	))
+	
+
+)
