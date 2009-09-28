@@ -93,9 +93,9 @@
    </action>
 
    <action choice="wh-other-property">   <!-- which/what color is the box -->
+                                         <!-- how about what color does the box have -->
      <!-- add wh-restr -->
 	 <add-relation mode="Wh-Restr" dest="w1" type="specifier" />
-<!-- 	 <add-proposition dest="w1" propositions="@which" />   should make a distinction between which,what -->
 	 <identify-nomvar mode="Wh-Restr" dest="w1" scope="global" />
     <add-feature  dest="w1" feature="QWhPropertyOther" value="true" /> 
      <move-locus nomvar="w1" />

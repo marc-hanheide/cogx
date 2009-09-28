@@ -77,6 +77,7 @@ checks wherther what is questioned is general location or another more specific 
 <!-- /**
 @chooser c-question.wh.property.wh-word
 selects "what" or "which" at random 
+could do better than random, but what are the rules, actually??
 **/
 -->
 
