@@ -1,7 +1,7 @@
 <!-- Top level make file for CogX system -->
 <project name="cogx" default="all">
 
-	<property name="castslice.dir" value="/usr/local/share" />
+	<property name="castslice.dir" value="/usr/local/share/" />
 	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
 	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
@@ -30,7 +30,6 @@
 	<target name="template" depends="init">
 		<echo>Executing &quot;${target}&quot; target for tools/cast module...</echo>
  		<ant target="${target}" dir="tools/interconnectivity" />
-		<ant target="${target}" dir="tools/beliefmodels" /> 
 		<ant target="${target}" dir="tools/beliefmodels" /> 
 		<ant target="${target}" dir="subarchitectures/binder" /> 
 		<ant target="${target}" dir="subarchitectures/comsys" />
