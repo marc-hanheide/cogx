@@ -74,4 +74,31 @@ checks wherther what is questioned is general location or another more specific 
    </dectree>
 </chooser>
 
+<!-- /**
+@chooser c-question.wh.property.wh-word
+selects "what" or "which" at random 
+**/
+-->
+
+<chooser id="c-question.wh.property.wh-word" region="QUESTIONS" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="random" type="string" answerset="@which @what"> 
+		 </inquiry>	
+  	       <choicenode answer="which"> 
+			  <result val="wh-which"/>
+	       </choicenode>
+           
+  	       <choicenode answer="what">
+				<result val="wh-what"/>
+            </choicenode>
+            
+		</choicenode>  <!-- end TOP -->
+   </dectree>
+</chooser>
+
+
+
+
+
 </choosers>

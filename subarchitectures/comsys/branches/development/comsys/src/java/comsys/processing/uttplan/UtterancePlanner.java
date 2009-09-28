@@ -561,6 +561,7 @@ public class UtterancePlanner {
 			if (inqcode.equals("q-ex-feat")) { answer = inqcodeQExFeat(inq,lf,lcs); }	
 			if (inqcode.equals("q-ex-fv"))   { answer = inqcodeQExFV(inq,lf,lcs); }
 			if (inqcode.equals("q-ex-prop")) { answer = inqcodeQExProp(inq,lf,lcs); }
+//			if (inqcode.equals("q-prop"))	 { answer = inqcodeQProp(inq,lf,lcs); } assuming a nominal always has one
 			if (inqcode.equals("q-ex-rel"))  { answer = inqcodeQExRel(inq,lf,lcs); }
 			if (inqcode.equals("q-mod-maxevid-bool")) { answer = inqcodeQModMaxevidBool(inq,lf,lcs); }	    
 			
@@ -866,6 +867,44 @@ public class UtterancePlanner {
 		} // end if..else check whether nominal in logical form
     } // end inqcodeFFeatVal
 
+	/**
+     *  The method <i>inqcodeFProp</i> checks whether the locus
+     *  nominal has some proposition. The answerset for this inquiry is <tt>{true,
+     *  false}</tt>.
+	 * taken out; assuming there always is one
+     */
+	
+/*    public String inqcodeQProp (UPGInquiry inq, LogicalForm lf, UPLocus lcs) throws UPGException { 
+		log(2,"Running inquiry code for q-prop");
+		String answer; 
+		boolean answerbool = false;
+		LFNominal nom = null; 
+		String nomvar = inq.getParameterValue("nomvar"); 
+		if (nomvar.equals("locus") || nomvar.equals("")) {
+			nom = lcs.getNominal();
+			nomvar = nom.nomVar;
+		} else {
+			nomvar = lcs.getVariableId(nomvar);
+		} // end if..else check for locus/other nominal		
+		
+		LFNominal lcn = LFUtils.lfGetNominal(lf, nomvar);
+		if (lcn.nomVar.equals("unknown")) { 
+			throw new UPGException("Unknown nominal "+nomvar+" in logical form "+LFUtils.lfToString(lf));
+		} else { 
+			// String val = inq.getParameterValue("val");
+			log(0,"Checking for any proposition at nominal ["+lcn.nomVar+"]");
+			answerbool = lcn.prop.prop.equals("");
+			log(0,"Does proposition eqal empty string? "+answerbool);
+			answerbool = lcn.prop.prop.equals("");
+			log(0,"Does proposition eqal null? "+answerbool);
+			if (answerbool) { answer = "true"; } else { answer = "false"; } 
+			log(2,"Returned answer: "+answer);
+			return answer;
+		} // end if..else check whether nominal in logical form
+    } // end inqcodeQExProp
+*/ 
+	
+	
     /**
      *  The method <i>inqcodeQExProp</i> checks whether the
      *  proposition given by the "val" parameter holds at the locus

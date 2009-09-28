@@ -1,6 +1,11 @@
 Starting the utterance planning debugger standalone:
 
-korbay@rebus:[~/Work/Projects/CogX/cogx-svn/code/comsys/branches/comsys.mk5] % java comsys.processing.uttplan.UPDebugger -grammar subarchitectures/comsys/grammars/contentPlanning/grammar.xml -ccg subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml -redux subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx -ngrams subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt 
+korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
+
+With arguments:
+
+java comsys.processing.uttplan.UPDebugger -grammar subarchitectures/comsys/grammars/contentPlanning/grammar.xml -ccg subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml -redux subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx -ngrams subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt 
+
 
 Utterance Planner Debugger v.0.25
 
