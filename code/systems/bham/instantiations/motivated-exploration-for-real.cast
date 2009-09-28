@@ -37,11 +37,15 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG Planner WMControl --log
 JAVA MG executor execution.components.PrototypePlanExecutor --log
-JAVA MG motivation.generators.PlaceGenerator motivation.components.generators.ExplorePlaceGenerator   --log
-JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
-#JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
+
+JAVA MG motivation.generators.ExplorePlaceGenerator motivation.components.generators.ExplorePlaceGenerator   --log
+# JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log
+# JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
+# JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
+
 JAVA MG motivation.filters.ManualSelectFilter motivation.components.filters.ManualSelectFilter  --log
-JAVA MG motivation.managers.PlanAllManager motivation.components.managers.PlanAllManager  --log --maxPlannedMotives 1 --orderPolicy InvertAge
+JAVA MG motivation.managers.Scheduler motivation.components.managers.Scheduler  --log --maxPlannedMotives 3 --orderPolicy InvertAge
+JAVA MG motivation.managers.PlanAllManager motivation.components.managers.PlanAllManager  --log
 JAVA MG motivation.util.viewer.ViewerCastComponent motivation.util.viewer.ViewerCastComponent --log --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action"
 
 
