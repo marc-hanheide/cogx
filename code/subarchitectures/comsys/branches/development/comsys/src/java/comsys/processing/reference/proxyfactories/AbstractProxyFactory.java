@@ -8,27 +8,27 @@
 
 package comsys.processing.reference.proxyfactories;
 
+import cast.cdl.CASTTime;
 import comsys.datastructs.lf.LogicalForm;
 import comsys.processing.reference.ProxyFactory;
 import comsys.processing.reference.ProxyResults;
 
-import binder.abstr.BindingPredictor;
 import binder.autogen.core.Feature;
 import binder.autogen.featvalues.AddressValue;
+import binder.utils.ProxyConstructor;
 
 // -------------------------------------------------------
 // BINDER imports
 // -------------------------------------------------------
 
 public abstract class AbstractProxyFactory 
-		extends BindingPredictor
 		implements ProxyFactory
 	
 {
 
 	abstract public String getSort (); 
 
-	abstract public ProxyResults constructProxy (LogicalForm lf); 
+	abstract public ProxyResults constructProxy (LogicalForm lf, CASTTime timestamp); 
 
 	protected AddressValue[] createAddressValueArray (AddressValue addr) { 	
 		AddressValue[] addressarray = new AddressValue[1];
@@ -36,8 +36,8 @@ public abstract class AbstractProxyFactory
 		return addressarray;
 	} // end method
 	
-	protected Feature createSimpleFeature (String feature, String value) {
-	    return createFeatureWithUniqueFeatureValue (feature, createStringValue (value, 1.0f)); 
+	protected Feature createSimpleFeature (String feature, String value, CASTTime timestamp) {
+	    return ProxyConstructor.createFeatureWithUniqueFeatureValue (feature, ProxyConstructor.createStringValue (value, 1.0f, timestamp)); 
 	} 
 	
 	

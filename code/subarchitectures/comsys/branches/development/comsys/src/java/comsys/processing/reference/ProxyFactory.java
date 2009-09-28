@@ -9,6 +9,7 @@
 package comsys.processing.reference;
 
 
+import cast.cdl.CASTTime;
 import binder.autogen.core.Proxy; 
 import comsys.datastructs.lf.LogicalForm; 
 
@@ -18,7 +19,7 @@ public interface ProxyFactory {
 
 	public String getSort (); 
 	
-	public ProxyResults constructProxy (LogicalForm lf); 
+	public ProxyResults constructProxy (LogicalForm lf, CASTTime timestamp); 
 	
 }
 

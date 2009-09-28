@@ -17,6 +17,7 @@ import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.abstr.BindingPredictor;
 import binder.autogen.core.Union;
 import binder.autogen.specialentities.PhantomProxy;
+import binder.utils.BeliefModelUtils;
 
 //-----------------------------------------------------------------
 // CAST IMPORTS
@@ -45,6 +46,7 @@ import comsys.lf.utils.LFUtils;
 //-----------------------------------------------------------------
 // JAVA IMPORTS
 //-----------------------------------------------------------------
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -57,16 +59,17 @@ public class cc_ReferentialBindings
 		extends BindingPredictor
 {
 
-	
+
+
 	// Hashtable used to record the tasks we want to carry out. For each
 	// taskID we store a Vector with the data it is to work on
-	private Hashtable<String, ProcessingData> m_proposedProcessing;
+	private Hashtable<String, ProcessingData> m_proposedProcessing = new Hashtable<String, ProcessingData>();
 	
 	// Hashtable linking data IDs to goal IDs
-	private Hashtable<String, String> m_dataToProcessingGoalMap;
+	private Hashtable<String, String> m_dataToProcessingGoalMap = new Hashtable<String, String>();
 	
 	// Hashtable linking task IDs to task types
-	private Hashtable<String, String> m_taskToTaskTypeMap;
+	private Hashtable<String, String> m_taskToTaskTypeMap = new Hashtable<String, String>();
 	
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
@@ -74,7 +77,8 @@ public class cc_ReferentialBindings
 	
 	// Counter for ProcessingData identifiers
 	private int pdIdCounter;	
-
+	
+	
 	
 	
 	@Override
@@ -126,6 +130,7 @@ public class cc_ReferentialBindings
 						handleRefReadings(_wmc);
 						}
 						});
+				
 	} // end start
 	
 	
@@ -168,29 +173,51 @@ public class cc_ReferentialBindings
 		log("Starting to create bindings for readings");
 		// boot up the factory
 		RestrictorProxyConstruction factory = new RestrictorProxyConstruction();
+		
 		// Get the cache 
 		CASTData data = pd.getByType(CASTUtils.typeName(RefReadings.class));
 		if (data != null) {
 			// get the readings
 			RefReadings readings = (RefReadings)data.getData();
 			LogicalForm lf = readings.lform; 
+			log("logical form: " + LFUtils.lfToString(lf));
 			assert readings != null; 
 			Vector<ReadingBindings> boundReadings = new Vector();
 			// get the restrictive readings
+			
+			log("Number of restrictive readings: "  + readings.refRdngs.length);
+			
 			for (ArrayIterator readingsIter = new ArrayIterator(readings.refRdngs); readingsIter.hasNext(); ) {
 				RefReading reading = (RefReading)readingsIter.next();
 				Vector<RefBinding> refBindings = new Vector();
-				if (reading.restrictiveTrees != null && reading.restrictiveTrees.length > 0) { 
+				
+				log("number of restrictive trees: "  + reading.restrictiveTrees.length);
+				
+				if (reading.restrictiveTrees != null && reading.restrictiveTrees.length > 0) {
+					
+					
 					for (ArrayIterator idsIter = new ArrayIterator(reading.restrictiveTrees); idsIter.hasNext(); ) { 
 						String restrTreeRoot = (String)idsIter.next();
+						log("restrTreeRoot: " + restrTreeRoot);
 						LogicalForm restrLF = LFUtils.lfConstructSubtree(LFUtils.lfGetNominal(lf,restrTreeRoot),lf);
-						ProxyResults prxResults = factory.constructProxy(restrLF);
+						
+						ProxyResults prxResults = factory.constructProxy(restrLF, getCASTTime());
 						for (Iterator<PhantomProxy> phantIter = prxResults.getProxies(); phantIter.hasNext(); ) {
 							PhantomProxy phant = phantIter.next();
+							
 							// get the unions, delete phantom afterwards
-							Vector<UncertainSuperFormula> formulae = getPredictedBindings(phant,true); 
+							Vector<UncertainSuperFormula> formulae = getPredictedBindings(phant,true);					
+							
+							log("Number of possible bindings found: " + formulae.size());
+							int count = 1;
+							for (Enumeration<UncertainSuperFormula> e = formulae.elements(); e.hasMoreElements() ; ) {
+								log("Belief formula for binding " + count + ": \n" + 
+										BeliefModelUtils.getFormulaPrettyPrint(e.nextElement()) + "\n");
+								count++;
+							}						
+							
 							// create the anchorings
-							Vector<Anchor> anchors  = new Vector();
+							Vector<Anchor> anchors  = new Vector<Anchor>();
 							for (Iterator<UncertainSuperFormula> formIter = formulae.iterator(); formIter.hasNext(); ) { 
 								UncertainSuperFormula curFormula = formIter.next();
 								Anchor anchor = createAnchorFromFormula(curFormula);

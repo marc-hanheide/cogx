@@ -48,12 +48,17 @@ import comsys.lf.utils.LFUtils;
  
 public class ReferentialReadings { 
 	
+	public ReferentialReadings() {
+		init();
+	}
 	
 	private HashMap readingFactories = null; 
 	
 	public RefReadings constructReadings (LogicalForm lf) { 
 		assert readingFactories != null; // make sure we have run through init and have factories to work with
 		RefReadings results = new RefReadings();
+		results.refRdngs = new RefReading[0];
+		
 		Vector excludes = new Vector();
 		// cycle over the nominals in the logical form, examine the non-yet-excluded ones
 		Iterator<LFNominal> lfnomsIter = LFUtils.lfGetNominals(lf);
@@ -61,19 +66,27 @@ public class ReferentialReadings {
 			LFNominal nom = lfnomsIter.next();
 			if (!excludes.contains(nom.nomVar)) { 
 				// construct the readings
-				assert readingFactories.containsKey(nom.sort);
+				if (readingFactories.containsKey(nom.sort)) {
 				ReadingFactory factory = (ReadingFactory) readingFactories.get(nom.sort);
 				ReadingFactoryResults fresults = factory.constructReadings(lf);
 				// get the results: update the readings, update the excludes
 				excludes.addAll(fresults.getExcludes());
 				RefReadings readings = fresults.getReadings();
-				results.refRdngs = addRefReadingArrays(results.refRdngs,readings.refRdngs);
+				if (results.refRdngs.length > 0 ) {
+					results.refRdngs = addRefReadingArrays(results.refRdngs,readings.refRdngs);
+				}
+				else {
+					results = readings;
+				}
+				}
 			} // end if.. 
 		} // end while
 		// return results
+		results.lform = lf;
 		return results;
 	} // end method constructReadings
 
+	
 	private RefReading[] addRefReadingArrays (RefReading[] array1, RefReading[] array2) { 
 		RefReading[] result = new RefReading[array1.length+array2.length];
 		int i;

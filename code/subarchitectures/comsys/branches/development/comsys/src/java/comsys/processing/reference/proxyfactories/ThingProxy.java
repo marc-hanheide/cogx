@@ -12,21 +12,21 @@ package comsys.processing.reference.proxyfactories;
 // BINDER imports
 // -------------------------------------------------------
 
-import binder.autogen.core.Feature; 
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.featvalues.AddressValue;
-import binder.autogen.featvalues.StringValue; 
 import binder.autogen.specialentities.RelationProxy; 
+import binder.utils.ProxyConstructor;
 
 // -------------------------------------------------------
 // COMSYS imports
 // -------------------------------------------------------
 
+import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryPointer;
 import comsys.datastructs.lf.LFNominal; 
 import comsys.datastructs.lf.LFRelation; 
 import comsys.datastructs.lf.LogicalForm; 
 import comsys.lf.utils.LFUtils;
-import comsys.processing.reference.ProxyFactory;
 import comsys.processing.reference.ProxyResults;
 
 // -------------------------------------------------------
@@ -41,23 +41,25 @@ import java.util.Iterator;
  */ 
 
 
-public class ThingProxy 
-	extends AbstractProxyFactory 
+public class ThingProxy extends AbstractProxyFactory 
 	{
+	
+	public static int idCounter = 0;
 		
 		private String sort = "thing";
 		
 		public String getSort () { return sort; }
 		
-		public ProxyResults constructProxy (LogicalForm lf) { 
+		public ProxyResults constructProxy (LogicalForm lf, CASTTime timestamp) { 
 			assert lf.root.sort.equals("thing");
 			ProxyResults prxs = new ProxyResults();
 			// get the root
 			LFNominal root = lf.root; 
 			// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
-			PhantomProxy prx = createNewPhantomProxy(createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf"), 1.0f);
-			addFeatureToProxy(prx, createSimpleFeature ("proposition", root.prop.prop));
-			addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort));		
+			WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf");
+			PhantomProxy prx = ProxyConstructor.createNewPhantomProxy(origin, getEntityID(),  1.0f);
+			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_label", root.prop.prop, timestamp));
+		//	ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort, timestamp));		
 			// iterate over the relations, and add the content
 			Iterator<LFRelation> relsIter = LFUtils.lfNominalGetRelations(root); 
 			while (relsIter.hasNext()) { 
@@ -66,12 +68,12 @@ public class ThingProxy
 					LFNominal mod = LFUtils.lfGetNominal(lf,rel.dep);
 					// check whether we have a quality
 					if (mod.sort.startsWith("q-")) {
-						prx = mapQualityModifier(prx,mod);
+						prx = mapQualityModifier(prx,mod, timestamp);
 					} else if (mod.sort.equals("m-location")) {		
 						
 					}
 				} else if (rel.mode.equals("Owner")) {
-					ProxyResults prxresults = mapOwner(prx, lf, rel.head, rel.dep);		  
+					ProxyResults prxresults = mapOwner(prx, lf, rel.head, rel.dep, timestamp);		  
 					
 				} // end if..else
 			} // end while
@@ -91,14 +93,14 @@ public class ThingProxy
 		 @returns Proxy The updated proxy
 		 */ 
 		
-		private PhantomProxy mapQualityModifier (PhantomProxy prx, LFNominal mod) { 
+		private PhantomProxy mapQualityModifier (PhantomProxy prx, LFNominal mod, CASTTime timestamp) { 
 			String feature = null;
 			String value   = null; 
 			if (mod.sort.equals("q-color")) { feature = "color"; value = mod.prop.prop; } 
 			if (mod.sort.equals("q-shape")) { feature = "shape"; value = mod.prop.prop; } 
 			if (mod.sort.equals("q-size"))  { feature = "size"; value = mod.prop.prop; } 
 			assert value != null && feature != null; 
-			addFeatureToProxy (prx, createSimpleFeature(feature,value));
+			ProxyConstructor.addFeatureToProxy (prx, createSimpleFeature(feature,value, timestamp));
 			return prx; 
 		} // end mapQualityModifier
 		
@@ -108,7 +110,7 @@ public class ThingProxy
 		 
 		 */ 
 		
-		private ProxyResults mapLocation (PhantomProxy head, LogicalForm lf, String headVar, String depVar) {  
+		private ProxyResults mapLocation (PhantomProxy head, LogicalForm lf, String headVar, String depVar, CASTTime timestamp) {  
 			// initialize the results
 			ProxyResults results = new ProxyResults();
 			// fetch the nominal heading the modifier construction
@@ -128,15 +130,16 @@ public class ThingProxy
 			ProxyResults ownerResults = null;
 			if (owner.sort.equals("thing") | owner.sort.equals("e-place")) { 
 				LogicalForm ownerLF = LFUtils.lfConstructSubtree(owner,lf);
-				ownerResults = this.constructProxy(ownerLF);
+				ownerResults = this.constructProxy(ownerLF, timestamp);
 			} // end if..	
 			assert ownerResults != null;	
 			PhantomProxy ownerProxy = ownerResults.getPhantomProxyByNom(owner.nomVar); 
 			assert ownerProxy != null; 
 			// construct the relation between the head and the owner directly
-			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
-			AddressValue[] targets = createAddressValueArray(createAddressValue(ownerProxy.entityID, 1.0f));
-			RelationProxy rprx = createNewRelationProxy(createWorkingMemoryPointer("comsys", headVar, "lf"), 1.0f, sources, targets);
+			AddressValue[] sources = createAddressValueArray(ProxyConstructor.createAddressValue(head.entityID, 1.0f, timestamp));
+			AddressValue[] targets = createAddressValueArray(ProxyConstructor.createAddressValue(ownerProxy.entityID, 1.0f, timestamp));
+			WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer("comsys", headVar, "lf");
+			RelationProxy rprx = ProxyConstructor.createNewRelationProxy(origin, getEntityID(), 1.0f, sources, targets);
 			// construct the results
 			results.addProxies(ownerResults);
 			results.addRelationProxies(ownerResults);
@@ -151,17 +154,19 @@ public class ThingProxy
 		 */ 
 		
 		
-		private ProxyResults mapOwner (PhantomProxy head, LogicalForm lf, String headVar, String depVar) { 
+		private ProxyResults mapOwner (PhantomProxy head, LogicalForm lf, String headVar, String depVar, CASTTime timestamp) { 
 			// Construct the proxy for the owner
 			LFNominal owner = LFUtils.lfGetNominal(lf,depVar);
-			PhantomProxy prx = createNewPhantomProxy(createWorkingMemoryPointer("comsys", depVar, "lf"), 1.0f);
-			addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop));
-			addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort));		
+			WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer("comsys", depVar, "lf");
+			PhantomProxy prx = ProxyConstructor.createNewPhantomProxy(origin, getEntityID(), 1.0f);
+			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop, timestamp));
+			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort, timestamp));		
 			// Construct the relation between the head and the owner
-			AddressValue[] sources = createAddressValueArray(createAddressValue(head.entityID, 1.0f));
-			AddressValue[] targets = createAddressValueArray(createAddressValue(prx.entityID, 1.0f));
-			RelationProxy rprx = createNewRelationProxy(createWorkingMemoryPointer("comsys", headVar, "lf"), 1.0f, sources, targets);		
-			addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy"));
+			AddressValue[] sources = createAddressValueArray(ProxyConstructor.createAddressValue(head.entityID, 1.0f, timestamp));
+			AddressValue[] targets = createAddressValueArray(ProxyConstructor.createAddressValue(prx.entityID, 1.0f, timestamp));
+			WorkingMemoryPointer origin2 = ProxyConstructor.createWorkingMemoryPointer("comsys", headVar, "lf");
+			RelationProxy rprx = ProxyConstructor.createNewRelationProxy(origin2, getEntityID(), 1.0f, sources, targets);		
+			ProxyConstructor.addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy", timestamp));
 			// Construct the results;
 			ProxyResults results = new ProxyResults();
 			results.addPhantomProxy(prx);
@@ -170,6 +175,10 @@ public class ThingProxy
 		} // end mapOwner
 		
 		
+		private String getEntityID() {
+			idCounter++;	
+			return "phantom" + idCounter;
+		}
 		
 		
 	} // end class

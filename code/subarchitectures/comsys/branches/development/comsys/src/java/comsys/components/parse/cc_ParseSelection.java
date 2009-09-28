@@ -51,11 +51,11 @@ import comsys.utils.ComsysUtils;
 
 import comsys.datastructs.comsysEssentials.PackedLFs;
 import comsys.datastructs.comsysEssentials.PhonString;
+import comsys.datastructs.comsysEssentials.SelectedLogicalForm;
 import comsys.datastructs.lf.LogicalForm;
 import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
 import comsys.arch.ProcessingData;
-import comsys.datastructs.SelectedLogicalForm;
 
 // -----------------------------------------------------------------
 // JAVA IMPORTS
@@ -388,13 +388,15 @@ public class cc_ParseSelection
                 	recogString += decoder.recogError;
                 	lastscore = decoder.getLastMaxScore();
                 	
-                	SelectedLogicalForm selectedLF = new SelectedLogicalForm();
-                	selectedLF.lf = lf;
+                	SelectedLogicalForm selectedLF = convertToSelectedLogicalForm(lf);
+                	
                 	selectedLF.score = lastscore;
                 	selectedLF.phon = phon;
                 	selectedLF.scoreOfSecondBest = decoder.getLast2ndMaxScore();
-                	
-                	addToWorkingMemory(newDataID(),selectedLF);
+                
+                	String id = newDataID();
+                	addToWorkingMemory(id,selectedLF);
+                	log("ID: "  + id);
                 	}
                 }
                 else {
@@ -409,6 +411,17 @@ public class cc_ParseSelection
     } // end executeParseSelectionTask
 	
 	
+    private SelectedLogicalForm convertToSelectedLogicalForm (LogicalForm lf) {
+    	SelectedLogicalForm selectedLF = new SelectedLogicalForm();
+
+    	selectedLF.logicalFormId = lf.logicalFormId;
+    	selectedLF.noms = lf.noms;
+    	selectedLF.root = lf.root;
+    	selectedLF.stringPos = lf.stringPos;
+    	selectedLF.preferenceScore = lf.preferenceScore;
+    	
+    	return selectedLF;
+    }
 		
 	// =================================================================
     // RUN METHODS

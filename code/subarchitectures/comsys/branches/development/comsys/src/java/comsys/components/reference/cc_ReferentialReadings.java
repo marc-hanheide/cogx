@@ -22,7 +22,6 @@ import cast.SubarchitectureComponentException;
 // COMSYS IMPORTS
 //-----------------------------------------------------------------
 import comsys.arch.*;
-import comsys.datastructs.SelectedLogicalForm;
 import comsys.datastructs.comsysEssentials.*;
 import comsys.processing.reference.ReferentialReadings;
 import comsys.utils.datastructs.*;
@@ -53,13 +52,13 @@ public class cc_ReferentialReadings
 
 	// Hashtable used to record the tasks we want to carry out. For each
 	// taskID we store a Vector with the data it is to work on
-	private Hashtable<String, ProcessingData> m_proposedProcessing;
+	private Hashtable<String, ProcessingData> m_proposedProcessing = new Hashtable<String, ProcessingData>();
 	
 	// Hashtable linking data IDs to goal IDs
-	private Hashtable<String, String> m_dataToProcessingGoalMap;
+	private Hashtable<String, String> m_dataToProcessingGoalMap = new Hashtable<String, String>();
 	
 	// Hashtable linking task IDs to task types
-	private Hashtable<String, String> m_taskToTaskTypeMap;
+	private Hashtable<String, String> m_taskToTaskTypeMap = new Hashtable<String, String>();
 	
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
@@ -116,6 +115,7 @@ public class cc_ReferentialReadings
 						ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class,  WorkingMemoryOperation.ADD),
 						new WorkingMemoryChangeReceiver() {
 						public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+							log("OHOHOHOHO");
 						handleLogicalForm(_wmc);
 						}
 						});
@@ -131,15 +131,16 @@ public class cc_ReferentialReadings
 			// get the id of the working memory entry
 			String id = _wmc.address.id;
 			// get the data from working memory
-			CASTData lfWM = getWorkingMemoryEntry(id);
-			LogicalForm lf = (LogicalForm) lfWM.getData();	
+
+			SelectedLogicalForm slf = getMemoryEntry(_wmc.address, SelectedLogicalForm.class);
 	
 			log("Starting task to determine the referential readings for the given LF");
 			// Create an id
 			String taskID = newTaskID();
 			// store the data we want to process for later
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
-			pd.add(lfWM);
+			CASTData<SelectedLogicalForm> data = new CASTData<SelectedLogicalForm>(id, slf);
+			pd.add(data);
 			m_proposedProcessing.put(taskID, pd);
 			// set up the goal
 			String taskGoal;
@@ -160,10 +161,13 @@ public class cc_ReferentialReadings
 	{
 		log("Starting to create dialogue move");
 		// Get the cache 
-		CASTData data = pd.getByType(CASTUtils.typeName(LogicalForm.class));
+		CASTData<SelectedLogicalForm> data = pd.getByType(CASTUtils.typeName(SelectedLogicalForm.class));
 		if (data != null) {
-				RefReadings readings = readingsConstructor.constructReadings((LogicalForm)data.getData());
+				RefReadings readings = readingsConstructor.constructReadings(data.getData());
 				assert readings != null; 
+				
+				assert readings.lform != null;
+				
 				addToWorkingMemory(newDataID(),	readings);
 				log("referential readings successfully added to working memory");
 			

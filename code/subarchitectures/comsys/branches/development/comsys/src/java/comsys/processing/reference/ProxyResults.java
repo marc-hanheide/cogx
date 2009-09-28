@@ -26,9 +26,9 @@ import java.util.Vector;
 
 public class ProxyResults {
 
-	private HashMap proxyMap = new HashMap();
-	private HashMap IDtoNom  = new HashMap();
-	private HashMap NomtoID  = new HashMap();
+	private HashMap<String, PhantomProxy> proxyMap = new HashMap<String, PhantomProxy>();
+	private HashMap<String, String> IDtoNom  = new HashMap<String, String>();
+	private HashMap<String, String> NomtoID  = new HashMap<String, String>();
 	
 	private Vector proxyRelations = new Vector();
 	
@@ -59,14 +59,14 @@ public class ProxyResults {
 	} // end method
 	
 	public Iterator<PhantomProxy> getProxies () { 
-		return (Iterator<PhantomProxy>) proxyMap.values();
+		return  proxyMap.values().iterator();
 	} // end method
 	
 	public Iterator<RelationProxy> getRelationProxies() { 
 		return (Iterator<RelationProxy>) proxyRelations.iterator();
 	} // end method
 	
-	public PhantomProxy getPhantomProxyByNom (String nom) { return (PhantomProxy) NomtoID.get(nom); }
+	public PhantomProxy getPhantomProxyByNom (String nom) { return (PhantomProxy) proxyMap.get(nom); }
 	
 	
 	
