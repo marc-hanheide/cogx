@@ -1,28 +1,24 @@
 package motivation.util;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 
 import Ice.Object;
-
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.Pair;
 
 public class WMEntryQueue extends
-		LinkedBlockingQueue<WMEntryQueue.QueueElement> implements
+		LinkedBlockingQueue<WMEntryQueue.WMEntryQueueElement> implements
 		WorkingMemoryChangeReceiver {
 
-	public class QueueElement {
+	public class WMEntryQueueElement {
 		/**
 		 * @param addr
 		 * @param entry
 		 */
-		QueueElement(WorkingMemoryChange wmc, Object entry) {
+		WMEntryQueueElement(WorkingMemoryChange wmc, Object entry) {
 			this.wmc = wmc;
 			this.entry = entry;
 		}
@@ -69,11 +65,11 @@ public class WMEntryQueue extends
 			if (wmc.operation != WorkingMemoryOperation.DELETE) {
 				Ice.Object o = component.getMemoryEntry(wmc.address,
 						Ice.Object.class);
-				QueueElement qe = new QueueElement(wmc, o);
+				WMEntryQueueElement qe = new WMEntryQueueElement(wmc, o);
 				this.put(qe);
 
 			} else {
-				QueueElement qe = new QueueElement(wmc, null);
+				WMEntryQueueElement qe = new WMEntryQueueElement(wmc, null);
 				this.put(qe);
 			}
 		} catch (InterruptedException e) {
