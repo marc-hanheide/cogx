@@ -259,6 +259,8 @@ public class Binder extends ManagedComponent  {
 
 			}
 
+			recompute(currentUnionConfigurations);
+			
 			// Update the alternative union configurations in the WM
 			AlternativeUnionConfigurations alters = 
 				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
@@ -336,6 +338,16 @@ public class Binder extends ManagedComponent  {
 
 			}
 
+					
+			// based on these scores, compute the existence probabilities for each union
+			BinderUtils.addProbExistsToUnions(currentUnionConfigurations);
+			
+			// Get the nbest configurations (with N as a parameter)
+			if (nbestsFilter > 0) {
+				currentUnionConfigurations = 
+					ConfigurationFilter.getNBestUnionConfigurations (currentUnionConfigurations, nbestsFilter);
+			}
+			
 			// Update the alternative union configurations
 			AlternativeUnionConfigurations alters = 
 				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
@@ -472,26 +484,7 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 
-			// Compute and normalise confidence scores for the union configurations
-			ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
-						
-			// based on these scores, compute the existence probabilities for each union
-			BinderUtils.addProbExistsToUnions(newUnionConfigs);
-			
-			// Get the nbest configurations (with N as a parameter)
-			if (nbestsFilter > 0) {
-				newUnionConfigs = 
-					ConfigurationFilter.getNBestUnionConfigurations (newUnionConfigs, nbestsFilter);
-			}
-			
-			// Normalise the union distributions
-			if (normaliseDistributions) {
-				log("Normalisation of the probability distributions");
-				normaliseDistributions(newUnionConfigs);
-			}
-			
-			// Compute the marginal probability values for the individual feature values
-			computeMarginalProbabilityValues(newUnionConfigs);
+			recompute(newUnionConfigs);
 
 			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 
@@ -539,6 +532,31 @@ public class Binder extends ManagedComponent  {
 	// UTILITY METHODS   
 	// ================================================================= 
 
+	
+	private void recompute (Vector<UnionConfiguration> configs) {
+		
+		// Compute and normalise confidence scores for the union configurations
+		ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(configs);
+					
+		// based on these scores, compute the existence probabilities for each union
+		BinderUtils.addProbExistsToUnions(configs);
+		
+		// Get the nbest configurations (with N as a parameter)
+		if (nbestsFilter > 0) {
+			configs = 
+				ConfigurationFilter.getNBestUnionConfigurations (configs, nbestsFilter);
+		}
+		
+		// Normalise the union distributions
+		if (normaliseDistributions) {
+			log("Normalisation of the probability distributions");
+			normaliseDistributions(configs);
+		}
+		
+		// Compute the marginal probability values for the individual feature values
+		computeMarginalProbabilityValues(configs);
+	}
+	
 	
 	/**
 	 * Normalise the union distribution in every configurations

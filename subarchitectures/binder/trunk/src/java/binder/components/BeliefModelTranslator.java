@@ -168,7 +168,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 		ComplexFormula formula = new ComplexFormula();
 		
 		// Create the root formula (defined as a conjunction of formulae)
-		formula.id = "unionconfig-" + configIncrement;
+		formula.id = "unionconf-" + configIncrement;
 		formula.op = LogicalOp.and;
 		formula.prob = (float) config.configProb;
 		formula.formulae = new SuperFormula[config.includedUnions.length];
@@ -205,7 +205,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 				}
 				formula.formulae[i] = entity;
 			}
-			formula.formulae[i].id = union.entityID;
+			formula.formulae[i].id = "union-" + union.entityID;
 
 		}
 

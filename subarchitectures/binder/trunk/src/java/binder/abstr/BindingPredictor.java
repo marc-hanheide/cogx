@@ -26,13 +26,8 @@ import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
-import binder.autogen.core.Feature;
 import binder.autogen.specialentities.PhantomProxy;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
-import cast.cdl.WorkingMemoryPointer;
+
 import cast.core.CASTData;
 
 /**
@@ -47,67 +42,7 @@ import cast.core.CASTData;
 public class BindingPredictor extends ProxyWriter {
 
 	//Last phantom proxy inserted onto the binder WM
-	static PhantomProxy lastPhantomProxy = new PhantomProxy();
-
-	// Change receiver for phantom proxies 
-	private static WorkingMemoryChangeReceiver receiverForPhantomProxies;	
-
-
-	// List of predicted beliefs for lastPhantomProxy
-	static boolean foundPossibleBindings = false;
-
-
-	// =================================================================
-	// METHODS FOR CREATING NEW PHANTOM PROXIES
-	// =================================================================
-
-
-	/**
-	 * Create a new phantom proxy, given the pointer to the originating object
-	 * and the existence probability
-	 * 
-	 * @param origin
-	 *            origin information
-	 * @param probExists
-	 *            the probability of the proxy
-	 * @return the new phantom
-	 */
-	public PhantomProxy createNewPhantomProxy(WorkingMemoryPointer origin,
-			float probExists) {
-
-		PhantomProxy newProxy = new PhantomProxy();
-
-		newProxy.entityID = newDataID();
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
-
-		log("new phantom proxy successfully created!");
-		return newProxy;
-	}
-
-
-
-	/**
-	 * Create a new phantom proxy, given a pointer to the data in the local working 
-	 * memory, its existence probability, and a list of features
-	 * 
-	 * @param origin
-	 *            origin information
-	 * @param probExists
-	 *            the probability of the proxy
-	 * @return the new phantom proxy
-	 */
-
-	public PhantomProxy createNewPhantomProxy(WorkingMemoryPointer origin,
-			float probExists, Feature[] features) {
-
-		PhantomProxy newProxy = createNewPhantomProxy(origin, probExists);
-		newProxy.features = features;
-
-		return newProxy;
-	}
-
+	PhantomProxy lastPhantomProxy = new PhantomProxy();
 
 	// =================================================================
 	// METHODS FOR PREDICTIONS POSSIBLE UNIONS FOR PHANTOM PROXIES
@@ -128,14 +63,13 @@ public class BindingPredictor extends ProxyWriter {
 	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 		try {
 
-			// Reinitialising the predicted unions
-			foundPossibleBindings = false;
-
 			// Adding the phantom proxy into the working memory
 			addPhantomProxyToWM (phantomProxy);
 
+			log("OK, just added phantom proxy onto the WM");
+			
 			// Wait for the predicted unions to be computed by the binder
-			while (!foundPossibleBindings) {
+			while (!arePossibleBindingsAvailable()) {
 				sleepComponent(20);
 			}
 
@@ -147,16 +81,15 @@ public class BindingPredictor extends ProxyWriter {
 			if (deleteProxyAfterBinding) {
 				log("now deleting phantom proxy...");
 				deleteEntityInWM(phantomProxy);
+
+				sleepComponent(50);
 				
-				foundPossibleBindings = false;
-				addChangeDetectorOnWM();
-				
-				while (!foundPossibleBindings) {
+				while (!arePossibleBindingsAvailable()) {
 					sleepComponent(20);
 				}
 			}
 						
-			CASTData<ComplexFormula>[] formulae = getWorkingMemoryEntries(ComplexFormula.class);
+			CASTData<ComplexFormula>[] formulae = getWorkingMemoryEntries("binder", ComplexFormula.class);
 			
 			for (int i = 0; i < formulae.length; i++) {
 				possibleBindings.addAll(getAllFormulaeIncludingProxy(formulae[i].getData(), lastPhantomProxy));
@@ -171,6 +104,23 @@ public class BindingPredictor extends ProxyWriter {
 	}
 
 
+	private boolean arePossibleBindingsAvailable() {
+		
+		try {
+		CASTData<ComplexFormula>[] formulae = getWorkingMemoryEntries("binder", ComplexFormula.class);
+		
+		for (int i = 0 ; i <formulae.length; i++) {
+			Vector<UncertainSuperFormula> matchingformula = getAllFormulaeIncludingProxy(formulae[i].getData(), lastPhantomProxy);
+			if (matchingformula.size() > 0) {
+				return true;
+			}
+		}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	/**
 	 * Retrieve the predicted belief binding with the highest probability of existence for the
 	 * given phantom proxy
@@ -240,8 +190,13 @@ public class BindingPredictor extends ProxyWriter {
 				else {
 					Vector<UncertainSuperFormula> partialResult = 
 					getAllFormulaeIncludingProxy ((UncertainSuperFormula)((ComplexFormula)formula).formulae[i], proxy);
-
-					buFormulae.addAll(partialResult);
+					
+					for (Enumeration<UncertainSuperFormula> e = partialResult.elements(); e.hasMoreElements(); ) {
+						UncertainSuperFormula form = e.nextElement();
+						if (!buFormulae.contains(form)) {
+							buFormulae.add(form);
+						}
+					}
 				}
 			}
 		}
@@ -260,39 +215,9 @@ public class BindingPredictor extends ProxyWriter {
 		// Set the last phantom proxy to be the current one
 		lastPhantomProxy = phantomProxy;
 
-		addChangeDetectorOnWM();
-
 		// And finally, add the phantom proxy into the working memory
 		addProxyToWM (phantomProxy);
 	}
 
-	
-	
-	private void addChangeDetectorOnWM () {
-		// Construct the change filter to detect new unions including the phantom proxy
-		receiverForPhantomProxies =  new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-				try {
-					UncertainSuperFormula initFormula = getMemoryEntry(_wmc.address, UncertainSuperFormula.class);
-
-					Vector<UncertainSuperFormula> possibleBindings = 
-						getAllFormulaeIncludingProxy(initFormula, lastPhantomProxy);
-
-
-					// Remove the change filter
-					if (possibleBindings.size() > 0) {
-						foundPossibleBindings = true;
-					}
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-			} 
-		};
-
-		// Add the change filter to the system
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(SuperFormula.class,
-				WorkingMemoryOperation.WILDCARD), receiverForPhantomProxies);
-	}
 	
 }

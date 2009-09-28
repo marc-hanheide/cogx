@@ -22,6 +22,7 @@ package binder.abstr;
 
 import java.util.HashMap;
 
+import Ice.Current;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.OriginMap;
@@ -38,6 +39,7 @@ import cast.PermissionException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
+import cast.interfaces.TimeServerPrx;
  
 /**
  * Abstract class for structuring and inserting proxies into the binder working
@@ -408,7 +410,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	protected void addProxyToWM(Proxy proxy) {
 
 		try {
-			addToWorkingMemory(proxy.entityID, proxy);
+			addToWorkingMemory(proxy.entityID, "binder", proxy);
 			storeOriginInfo(proxy);
 			log("new Proxy succesfully added to the binder working memory");
 
@@ -429,7 +431,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	protected void overwriteProxyInWM(Proxy proxy) {
  
 		try {
-			overwriteWorkingMemory(proxy.entityID, proxy);
+			overwriteWorkingMemory(proxy.entityID, "binder", proxy);
 			log("existing Proxy succesfully modified in the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -450,7 +452,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 		try {
 			removeOriginInfo(proxy);
-			deleteFromWorkingMemory(proxy.entityID);
+			deleteFromWorkingMemory(proxy.entityID, "binder");
 			log("existing Proxy succesfully deleted from the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
