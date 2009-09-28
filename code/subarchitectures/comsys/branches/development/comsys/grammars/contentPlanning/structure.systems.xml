@@ -75,9 +75,24 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences later, the top no
    </actions>
 </system>
 
-
-
-
+<!-- taken out; assuming a nominal always has a proposition 
+     idea: in case no proposition was included in input, we'll fill it with "object", so that something can be realized 
+<system id="object.thing" region="THING" metafunction="ideational">
+	<chooser id="c-objet.thing"/>
+      <conditions>
+          <condition features="@type:entity"/>
+          <condition features="@type:thing"/>
+          <condition features="@type:physical"/>
+      </conditions>
+      <actions>
+	  <action choice="thing-absent">
+		<add-proposition propositions="@object" />
+	  </action>
+	  <action choice="thing-present">
+	  </action>
+   </actions>
+</system>
+-->
 
    <system id="structure.list" region="STRUCTURE" metafunction="ideational">
 	<chooser id="c-structure.list"/>

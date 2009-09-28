@@ -42,4 +42,26 @@
 </chooser>
 
 
+
+<!-- taken out; assuming a nominal always has a proposition 
+<chooser id="c-object.thing" region="THING" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-prop" type="string" answerset="@true @false"> 
+	     <q-prop />	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="thing-present"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="thing-absent"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+-->
+
+
+
 </choosers>
