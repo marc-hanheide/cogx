@@ -29,13 +29,13 @@ module cogx {
 	// The class SuperFormula implements the Formula interface, acting as supertype class. 
 	// As an EpistemicObject, each SuperFormula has an identifier. 
 	
-	class SuperFormula extends beliefmodels::adl::EpistemicObject implements beliefmodels::adl::Formula  {
+	class SuperFormula extends beliefmodels::adl::EpistemicObject {
 	};
 	
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
 				
 	class UncertainSuperFormula extends SuperFormula { 
-		long unc;
+		float prob;
 	}; 
 		
 	// The class LogicalSuperFormula extends the supertype with a boolean value
@@ -49,13 +49,16 @@ module cogx {
 	// of this class, we can create arbitrarily complex formulas. Furthermore, LHS and RHS can be 
 	// logical formulas, or uncertain formulas (this is not determined a priori).  
 				
-	enum LogicalOp { and, or };				
+	enum LogicalOp { and, or , xor};				
+	 	
 					
-	class ComplexFormula extends SuperFormula { 
+	sequence<SuperFormula> SuperFormulaSeq;
+	 	
+	class ComplexFormula extends UncertainSuperFormula { 
 		LogicalOp op;
-		SuperFormula lhs;
-		SuperFormula rhs;
-	}; 
+		SuperFormulaSeq formulae;
+	};
+	 
 
 	// GROUNDED BELIEFS
 	// We extend the ADL notion of Belief with structure to indicate how
@@ -91,14 +94,27 @@ module cogx {
 	// ===================================================================
 	// DOMAINMODEL: VISUAL OBJECTS 
 	
-	enum Shape { cylindrical, square };
+	enum Shape { cylindrical, spherical, cubic };
 	
-	enum ObjectType { box, ball, cube }; 
+	enum ObjectType { box, ball, cube, mug }; 
 	
 	enum Color { red, blue, yellow, green };
 	
 	// A property is always a ContinualFormula
+	class ObjectTypeProperty extends ContinualFormula { 
+		ObjectType typeValue;
+	}; 
 	
+	class LocationProperty extends ContinualFormula {
+		string location;
+	};
+	
+	 
+	class GraspableProperty extends ContinualFormula {
+		bool graspableValue;
+	};
+	
+	// A property is always a ContinualFormula
 	class ColorProperty extends ContinualFormula { 
 		Color colorValue;
 	};  
@@ -106,17 +122,21 @@ module cogx {
 	sequence<ColorProperty> Colors;
 	
 	class ShapeProperty extends ContinualFormula { 
-		Shape shapedValue;
-	}; 
+		Shape shapeValue;
+	};  
 	
-	// A material object is a formula with one or more colors, a shape, and an object type; 
-	// the entirety has again an uncertain value associated with it. 
 	
-	class MaterialObject extends ContinualFormula { 
-		ObjectType type;
-		ColorProperty clr; 
-		ShapeProperty shp; 
-	}; 
+	class LinguisticLabelProperty extends ContinualFormula { 
+		string label;
+	};  
+	
+	class LinguisticAttributeProperty extends ContinualFormula {
+		string attribute;
+	};
+	
+	class BoundPhantomProxyProperty extends ContinualFormula {
+		string boundProxy;
+	};
 	
 }; // end cogx 
 }; // end domainmodel
