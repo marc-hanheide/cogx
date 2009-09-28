@@ -33,6 +33,8 @@ import binder.autogen.core.Union;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.autogen.featvalues.AddressValue;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.bayesiannetwork.BayesianNetworkManager;
@@ -170,12 +172,14 @@ public class UnionConstructor  {
 		union.features = features.toArray(union.features);
 
 		// Finally, compute the union distribution
-		if (includedEntities.size() > 1) {
-			union.distribution = computeUnionDistribution(union);
-		}
-		else {
+		
+		if  (includedEntities.size() == 1  && 
+				features.size() == includedEntities.elementAt(0).features.length) {
 			union.distribution = includedEntities.elementAt(0).distribution;
 		}
+		else {
+			union.distribution = computeUnionDistribution(union);
+		} 
 
 		return union;
 	}
@@ -309,8 +313,20 @@ public class UnionConstructor  {
 				}
 				features.add(feat);
 			}
+			
+			if (prox instanceof PhantomProxy) {
+				features.add(createSpecialBindingFeature((PhantomProxy)prox));
+			}
 		}
 		return features;
+	}
+	
+	public static Feature createSpecialBindingFeature (PhantomProxy phantom) {
+		Feature feat = new Feature();
+		feat.featlabel = "boundPhantomProxy";
+		feat.alternativeValues = new AddressValue[1];
+		feat.alternativeValues[0] = new AddressValue(1.0f, phantom.timeStamp, phantom.entityID);
+		return feat;
 	}
 	
 	

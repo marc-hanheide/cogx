@@ -49,7 +49,7 @@ public class BinderUtils {
 
 
 	// minimum threshold above which unknown values can be created in features
-	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.3f;
+	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.05f;
 
 
 
@@ -170,7 +170,7 @@ public class BinderUtils {
 	// RELATION UNION METHODS   
 	// ================================================================= 
 
-	
+
 	/**
 	 * Convert a normal union into a relation union (without source and target)
 	 * 

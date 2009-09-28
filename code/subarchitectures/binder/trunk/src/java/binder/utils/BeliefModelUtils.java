@@ -20,20 +20,21 @@
 package binder.utils;
 
 
-import binder.autogen.beliefmodel.Color;
-import binder.autogen.beliefmodel.ColorProperty;
-import binder.autogen.beliefmodel.ComplexFormula;
-import binder.autogen.beliefmodel.GraspableProperty;
-import binder.autogen.beliefmodel.LinguisticAttributeProperty;
-import binder.autogen.beliefmodel.LinguisticLabelProperty;
-import binder.autogen.beliefmodel.LocationProperty;
-import binder.autogen.beliefmodel.LogicalOp;
-import binder.autogen.beliefmodel.ObjectType;
-import binder.autogen.beliefmodel.ObjectTypeProperty;
-import binder.autogen.beliefmodel.Shape;
-import binder.autogen.beliefmodel.ShapeProperty;
-import binder.autogen.beliefmodel.SuperFormula;
-import binder.autogen.beliefmodel.UncertainSuperFormula;
+import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
+import beliefmodels.domainmodel.cogx.Color;
+import beliefmodels.domainmodel.cogx.ColorProperty;
+import beliefmodels.domainmodel.cogx.ComplexFormula;
+import beliefmodels.domainmodel.cogx.GraspableProperty;
+import beliefmodels.domainmodel.cogx.LinguisticAttributeProperty;
+import beliefmodels.domainmodel.cogx.LinguisticLabelProperty;
+import beliefmodels.domainmodel.cogx.LocationProperty;
+import beliefmodels.domainmodel.cogx.LogicalOp;
+import beliefmodels.domainmodel.cogx.ObjectType;
+import beliefmodels.domainmodel.cogx.ObjectTypeProperty;
+import beliefmodels.domainmodel.cogx.Shape;
+import beliefmodels.domainmodel.cogx.ShapeProperty;
+import beliefmodels.domainmodel.cogx.SuperFormula;
+import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.autogen.core.FeatureValue;
 
 
@@ -50,7 +51,7 @@ public class BeliefModelUtils {
 	// flag to activate logging
 	public static boolean LOGGING = true;
 
-	
+	public static boolean showProbabilitiesInPrettyPrint = true;
 	
 	// ================================================================= 
 	// FORMULA CREATION METHODS   
@@ -74,7 +75,7 @@ public class BeliefModelUtils {
 		if (featlabel.equals("colour")) {
 			
 			ColorProperty property = new ColorProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 
 			if (FeatureValueUtils.hasValue(fv, "red")) { property.colorValue = Color.red; }
 			else if (FeatureValueUtils.hasValue(fv, "blue")) {property.colorValue = Color.blue;	}
@@ -90,9 +91,9 @@ public class BeliefModelUtils {
 	
 		// types for the shape feature
 		else if (featlabel.equals("shape")) {
-			
+			 
 			ShapeProperty property = new ShapeProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 
 			if (FeatureValueUtils.hasValue(fv, "cylindrical")) { property.shapeValue = Shape.cylindrical; }
 			else if (FeatureValueUtils.hasValue(fv, "spherical")) {	property.shapeValue = Shape.spherical; }
@@ -109,7 +110,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("obj_label")) {
 			
 			ObjectTypeProperty property = new ObjectTypeProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 
 			if (FeatureValueUtils.hasValue(fv, "mug")) { property.typeValue = ObjectType.mug; }
 			else if (FeatureValueUtils.hasValue(fv,"ball")) { property.typeValue = ObjectType.ball;	}
@@ -117,7 +118,6 @@ public class BeliefModelUtils {
 				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
 						"\" currently not supported in the typed belief model");
 			}
-
 			return property;
 		}
 		
@@ -125,7 +125,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("graspable")) {
 			
 			GraspableProperty property = new GraspableProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 
 			if (FeatureValueUtils.hasValue(fv, true)) { property.graspableValue = true;	}
 			else if (FeatureValueUtils.hasValue(fv,false)) { property.graspableValue = false; }
@@ -141,7 +141,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("location")) {
 			
 			LocationProperty property = new LocationProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 			property.location = FeatureValueUtils.toString(fv);
 			
 			return property;
@@ -151,7 +151,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("ling_label")) {
 			
 			LinguisticLabelProperty property = new LinguisticLabelProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 			property.label = FeatureValueUtils.toString(fv);
 			
 			return property;
@@ -161,9 +161,18 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("ling_attribute")) {
 			
 			LinguisticAttributeProperty property = new LinguisticAttributeProperty();
-			property.unc = fv.independentProb;
+			property.prob = fv.independentProb;
 			property.attribute = FeatureValueUtils.toString(fv);
 			
+			return property;
+		}
+		
+		// types for the ling_attribute feature
+		else if (featlabel.equals("boundPhantomProxy")) {
+			
+			BoundPhantomProxyProperty property = new BoundPhantomProxyProperty();
+			property.prob = fv.independentProb;
+			property.boundProxy = FeatureValueUtils.toString(fv);
 			return property;
 		}
 		
@@ -188,7 +197,7 @@ public class BeliefModelUtils {
 	 * formula
 	 */
 	
-	public static String getFormulaPrettyPrint(SuperFormula formula) {
+	public static String getFormulaPrettyPrint(UncertainSuperFormula formula) {
 		String result = "@(" ;
 		
 		result += getFormulaPrettyPrint(formula, 1);
@@ -225,10 +234,10 @@ public class BeliefModelUtils {
 	 * @return the string
 	 */
 	
-	private static String getUncertaintyValuePrettyPrint(UncertainSuperFormula formula) {
+	private static String getProbabilityValuePrettyPrint(UncertainSuperFormula formula) {
 		String str = "";
-		if (formula.unc > 0.0) {
-			str += "[" + Math.round(formula.unc*100.0) / 100.0 + "]";
+		if (formula.prob > 0.0) {
+			str += "[" + Math.round(formula.prob*100.0) / 100.0 + "]";
 		}
 		return str;
 	}
@@ -243,21 +252,26 @@ public class BeliefModelUtils {
 	 * @return the string
 	 */
 	
-	public static String getFormulaPrettyPrint(SuperFormula formula, int depth) {
+	public static String getFormulaPrettyPrint(UncertainSuperFormula formula, int depth) {
 		
-		String result = formula.id + " ^";
+		String result = formula.id;
+		
 		
 		// If the formula is a complex formula, loop on its constituents and
 		// call getFormulaPrettyPrint recursively
 		if (formula instanceof ComplexFormula) {
 			
-			result += "\n" +  getIndent(depth) + "(";
+			if (showProbabilitiesInPrettyPrint && formula.id.contains("unionconfig")) {
+				result +=  " ["  + formula.prob + "]";
+			}
+			
+			result += " ^ \n" +  getIndent(depth) + "(";
 			
 			String operator = getOperatorPrettyPrint((ComplexFormula)formula);
 			
 			// loop on the formula constituents
 			for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
-				SuperFormula subformula = ((ComplexFormula)formula).formulae[i];
+				UncertainSuperFormula subformula = (UncertainSuperFormula) ((ComplexFormula)formula).formulae[i];
 				
 				result += getFormulaPrettyPrint(subformula, depth + 1);
 				
@@ -270,57 +284,65 @@ public class BeliefModelUtils {
 		
 		// if the formula is a simple colour property
 		else if (formula instanceof ColorProperty) {
-			result += " <Colour> " + ((ColorProperty)formula).colorValue;
+			result += " ^ <Colour> " + ((ColorProperty)formula).colorValue;
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 		
 		// if the formula is a simple shape property
 		else if (formula instanceof ShapeProperty) {
-			result += " <Shape> " + ((ShapeProperty)formula).shapeValue;
+			result += " ^ <Shape> " + ((ShapeProperty)formula).shapeValue;
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 		else if (formula instanceof ObjectTypeProperty) {
-			result += " <ObjectType> " + ((ObjectTypeProperty)formula).typeValue;	
+			result += " ^ <ObjectType> " + ((ObjectTypeProperty)formula).typeValue;	
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 
 		// if the formula is a simple graspable property
 		else if (formula instanceof GraspableProperty) {
-			result += " <Graspable> " + ((GraspableProperty)formula).graspableValue;	
+			result += " ^ <Graspable> " + ((GraspableProperty)formula).graspableValue;	
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 		
 		// if the formula is a simple location property
 		else if (formula instanceof LocationProperty) {
-			result += " <Location> " + ((LocationProperty)formula).location;	
+			result += " ^ <Location> " + ((LocationProperty)formula).location;	
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 
 		// if the formula is a simple linguistic label property
 		else if (formula instanceof LinguisticLabelProperty) {
-			result += " <LingLabel> " + ((LinguisticLabelProperty)formula).label;	
+			result += " ^ <LingLabel> " + ((LinguisticLabelProperty)formula).label;	
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 
 		// if the formula is a simple linguistic attribute property
 		else if (formula instanceof LinguisticAttributeProperty) {
-			result += " <LingAttribute> " + ((LinguisticAttributeProperty)formula).attribute;	
+			result += " ^ <LingAttribute> " + ((LinguisticAttributeProperty)formula).attribute;	
 			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getUncertaintyValuePrettyPrint((UncertainSuperFormula)formula);
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
-		}	
+		}
+		
+		// if the formula is a simple linguistic attribute property
+		else if (formula instanceof BoundPhantomProxyProperty) {
+			result += " ^ <BoundPhantomProxy> " + ((BoundPhantomProxyProperty)formula).boundProxy;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
 		 		
 		return result;
 	}

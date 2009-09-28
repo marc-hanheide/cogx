@@ -28,7 +28,7 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import binder.abstr.BindingWorkingMemoryWriter;
+import binder.abstr.ProxyWriter;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
@@ -38,9 +38,8 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.components.BinderMonitor;
 import binder.utils.DistributionGeneration;
-import binder.utils.ProbabilityUtils;
 
-public class InsertButtonListener extends BindingWorkingMemoryWriter implements ActionListener {
+public class InsertButtonListener extends ProxyWriter implements ActionListener {
 	
 	JPanel proxyPanel;
 	BinderMonitor bm;
