@@ -323,7 +323,7 @@ public class UnionConstructor  {
 	
 	public static Feature createSpecialBindingFeature (PhantomProxy phantom) {
 		Feature feat = new Feature();
-		feat.featlabel = "boundPhantomProxy";
+		feat.featlabel = "boundPhantom";
 		feat.alternativeValues = new AddressValue[1];
 		feat.alternativeValues[0] = new AddressValue(1.0f, phantom.timeStamp, phantom.entityID);
 		return feat;

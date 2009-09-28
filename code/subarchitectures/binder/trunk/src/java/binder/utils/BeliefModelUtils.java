@@ -168,7 +168,7 @@ public class BeliefModelUtils {
 		}
 		
 		// types for the ling_attribute feature
-		else if (featlabel.equals("boundPhantomProxy")) {
+		else if (featlabel.equals("boundPhantom")) {
 			
 			BoundPhantomProxyProperty property = new BoundPhantomProxyProperty();
 			property.prob = fv.independentProb;
@@ -261,7 +261,8 @@ public class BeliefModelUtils {
 		// call getFormulaPrettyPrint recursively
 		if (formula instanceof ComplexFormula) {
 			
-			if (showProbabilitiesInPrettyPrint && formula.id.contains("unionconfig")) {
+			if (showProbabilitiesInPrettyPrint && 
+					(formula.id.contains("unionconf-") || formula.id.contains("union-"))) {
 				result +=  " ["  + formula.prob + "]";
 			}
 			
@@ -338,7 +339,7 @@ public class BeliefModelUtils {
 		
 		// if the formula is a simple linguistic attribute property
 		else if (formula instanceof BoundPhantomProxyProperty) {
-			result += " ^ <BoundPhantomProxy> " + ((BoundPhantomProxyProperty)formula).boundProxy;	
+			result += " ^ <BoundPhantom> " + ((BoundPhantomProxyProperty)formula).boundProxy;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}

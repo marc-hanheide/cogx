@@ -23,6 +23,7 @@ package binder.fakeproxygenerators;
 import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.*;
 import binder.autogen.specialentities.PhantomProxy;
+import binder.utils.ProxyConstructor;
 
 
 /**
@@ -71,7 +72,7 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 	private PhantomProxy createProxyTwo() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakecomsys", "blabla", "Referent");
-		PhantomProxy proxy = createNewPhantomProxy (origin, 0.95f);
+		PhantomProxy proxy = ProxyConstructor.createNewPhantomProxy (origin, newDataID(), 0.95f);
 		
 		FeatureValue mug = createStringValue("mug", 0.91f);
 		Feature feat = createFeatureWithUniqueFeatureValue ("ling_label", mug);
@@ -88,7 +89,7 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 	private PhantomProxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakecomsys", "blabla2", "Referent");
-		PhantomProxy proxy = createNewPhantomProxy (origin, 0.85f);
+		PhantomProxy proxy = ProxyConstructor.createNewPhantomProxy (origin, newDataID(), 0.85f);
 	
 		FeatureValue ball = createStringValue ("ball", 0.8f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue ("ling_label", ball);
