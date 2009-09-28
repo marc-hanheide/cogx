@@ -1,6 +1,6 @@
 
 HOST localhost
-SUBARCHITECTURE abdint
+SUBARCHITECTURE comsys
 ## -------------------------------------------
 ## Working memory and task manager
 ## -------------------------------------------
@@ -8,7 +8,7 @@ JAVA WM			cast.architecture.SubarchitectureWorkingMemory #--log true --debug
 JAVA TM 		cast.architecture.AlwaysPositiveTaskManager #--log --debug
 JAVA MG asr     comsys.components.asr.cc_ASR --src gui #--log --debug
 JAVA GD parser  comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log true --debug
-JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction true --discourse-level-composition true --disfluency-correction true --log true --debug
+JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction false --discourse-level-composition true --disfluency-correction false --log true #--debug
 #JAVA GD cca  comsys.components.collab.cc_ContinualCollabActing --facts /dev/null --rules ./subarchitectures/comsys/src/mercury-c++/abduction/rules.txt --log --debug
 
 
@@ -21,12 +21,12 @@ SUBARCHITECTURE binder
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM binder.components.BindingWorkingMemory #--log
 
-JAVA MG fakehaptic binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxies 1  --pauses false  --log
+JAVA MG fakehaptic binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxies 2  --pauses false  --log
 #JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 1 --pauses true --deleteproxies true --log
 
-JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 5 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
 JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
-JAVA MG translator binder.components.BeliefModelTranslator --log
+JAVA MG translator binder.components.BeliefModelTranslator #--log
 
 #JAVA MG monitor binder.components.BinderMonitor --gui --log
 
