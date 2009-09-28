@@ -68,7 +68,7 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 	 * 
 	 * @return the proxy
 	 */
-	private PhantomProxy createProxyOne() {
+	private PhantomProxy createProxyTwo() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakecomsys", "blabla", "Referent");
 		PhantomProxy proxy = createNewPhantomProxy (origin, 0.95f);
@@ -85,7 +85,7 @@ public class FakeComsysProxyGenerator extends AbstractPhantomProxyGenerator {
 	 * 
 	 * @return the proxy
 	 */
-	private PhantomProxy createProxyTwo() {
+	private PhantomProxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakecomsys", "blabla2", "Referent");
 		PhantomProxy proxy = createNewPhantomProxy (origin, 0.85f);

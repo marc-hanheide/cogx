@@ -43,7 +43,7 @@ import cast.cdl.WorkingMemoryOperation;
  * @author Pierre Lison
  * @version 09/09/2009 (started 15/08/2009)
  */
-
+ 
 public class BindingWorkingMemoryReader extends ManagedComponent {
 
 	// The current set of unions
@@ -54,7 +54,7 @@ public class BindingWorkingMemoryReader extends ManagedComponent {
 	 * Apply a filter on the binder WM to detect possible changes in the 
 	 * best selected UnionConfiguration
 	 */
-	
+	 
 	@Override
 	public void start() {
 

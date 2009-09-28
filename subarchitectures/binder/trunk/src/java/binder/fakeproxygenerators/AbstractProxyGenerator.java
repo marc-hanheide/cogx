@@ -22,7 +22,7 @@ package binder.fakeproxygenerators;
 import java.util.Map;
 import java.util.Random;
 
-import binder.abstr.BindingWorkingMemoryWriter;
+import binder.abstr.ProxyWriter;
 import binder.autogen.core.Proxy;
 
 
@@ -33,7 +33,7 @@ import binder.autogen.core.Proxy;
  * @version 22/09/2009 (started 05/08/2009)
  */
 
-public abstract class AbstractProxyGenerator extends BindingWorkingMemoryWriter {
+public abstract class AbstractProxyGenerator extends ProxyWriter {
 
 	// Number of proxies to create
 	protected int nbOfProxiesToCreate = 0;

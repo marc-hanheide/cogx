@@ -19,7 +19,7 @@
 
 package binder.tests;
 
-import binder.abstr.BindingWorkingMemoryWriter;
+import binder.abstr.ProxyWriter;
 
 /**
  * Abstract class for testing
@@ -27,7 +27,7 @@ import binder.abstr.BindingWorkingMemoryWriter;
  * @author Pierre Lison
  * @version 23/09/2009 (started 15/09/2009)
  */
-public abstract class AbstractTester extends BindingWorkingMemoryWriter {
+public abstract class AbstractTester extends ProxyWriter {
 
 	// test number
 	public int testNumber;

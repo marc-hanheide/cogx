@@ -28,11 +28,13 @@ import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
+import binder.autogen.core.Feature;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.filtering.ConfigurationFilter;
@@ -66,7 +68,7 @@ public class Binder extends ManagedComponent  {
 	private boolean incrementalBinding = true;
 
 	// whether to add unknown values to each feature
-	private boolean addUnknowns = false;
+	private boolean addUnknowns = true;
 
 	// Text specification of the bay
 	private String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
@@ -75,7 +77,7 @@ public class Binder extends ManagedComponent  {
 	// to keep in the binder at a given time
 	private int nbestsFilter = 5;
 
-	private boolean normaliseDistributions = false;
+	private boolean normaliseDistributions = true;
 	
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
@@ -312,7 +314,14 @@ public class Binder extends ManagedComponent  {
 						if (existingProxy.entityID.equals(deletedProxyID)) {
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
+							
 							if (proxies.size() > 0) { 
+								
+								if (existingProxy instanceof PhantomProxy) {
+									proxies.elementAt(0).features = 
+										addSpecialBindingFeature(proxies.elementAt(0).features, (PhantomProxy)existingProxy);
+								}
+								
 								Union updatedUnion = 
 									constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 								existingUnionConfig.includedUnions[i] = updatedUnion;
@@ -579,7 +588,6 @@ public class Binder extends ManagedComponent  {
 						pair.featlabel = union.features[j].featlabel;
 
 						pair.featvalue = union.features[j].alternativeValues[k];
-
 						union.features[j].alternativeValues[k].independentProb = 
 							ProbabilityUtils.getMarginalProbabilityValue(union.distribution, pair); 
 					}
@@ -656,6 +664,19 @@ public class Binder extends ManagedComponent  {
 	}
 
 
+	
+	private Feature[] addSpecialBindingFeature (Feature[] existingFeatures, PhantomProxy phantom) {
+		Feature[] newFeats = new Feature[existingFeatures.length + 1];
+		for (int z = 0 ; z < existingFeatures.length; z++) {
+			newFeats[z] = existingFeatures[z]; 
+		}
+		newFeats[existingFeatures.length] = 
+			UnionConstructor.createSpecialBindingFeature(phantom);
+		
+		return newFeats;
+	}
+	
+	
 	/**
 	 * Build an AlternativeUnionConfigurations containing all configurations listed in
 	 * configuration vector

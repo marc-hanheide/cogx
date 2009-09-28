@@ -17,7 +17,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
-
+ 
 
 /**
  * Here should go a general introduction to the data structures specified in this file
@@ -47,13 +47,14 @@ class FeatureValue {
  */
 sequence<FeatureValue> FeatureValues;
  
-
+ 
 /**
  * A feature = feature label and a list of possible feature values
  *
  * TODO: extend this specification to handle continuous feature values
  *
  */
+
 class Feature {
 	string featlabel;
 	FeatureValues alternativeValues;
@@ -114,7 +115,7 @@ class UnionConfiguration {
 	UnionSequence includedUnions;
 	double configProb;
 };
-	
+	 
 sequence<UnionConfiguration> UnionConfigurationSeq ;
 
 class AlternativeUnionConfigurations {

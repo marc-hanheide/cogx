@@ -43,7 +43,7 @@ public class ProbabilityUtils {
 	public static boolean ERRLOGGING = true;
 
 	// flag to activate logging
-	public static boolean LOGGING = false;
+	public static boolean LOGGING = true;
 
 	
 	
@@ -63,7 +63,7 @@ public class ProbabilityUtils {
 
 	public static float getMarginalProbabilityValue
 	(ProbabilityDistribution distrib, FeatureValuePair pair) {
-
+				
 		// discrete distribution
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
 			return getMarginalProbabilityValue((DiscreteProbabilityDistribution) distrib, pair);
@@ -125,7 +125,7 @@ public class ProbabilityUtils {
 	(CombinedProbabilityDistribution distrib, FeatureValuePair pair) {
 
 		float result = 0.0f;
-
+		
 		if (distrib.distributions.length > 0) {
 
 			/** Here, we assume for the moment that the (1) the first distribution inside the combined 
