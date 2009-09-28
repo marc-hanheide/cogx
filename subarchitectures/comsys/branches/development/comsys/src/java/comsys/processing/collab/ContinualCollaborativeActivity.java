@@ -29,7 +29,6 @@ import comsys.datastructs.comsysEssentials.Anchor;
 import comsys.datastructs.comsysEssentials.ReadingBindings;
 import comsys.datastructs.lf.LogicalForm; 
 import comsys.lf.utils.ArrayIterator;
-import comsys.datastructs.SelectedLogicalForm;
 
 import comsys.processing.collab.AbdUtils;
 

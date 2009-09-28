@@ -70,8 +70,11 @@ public class CopulaReadings implements ReadingFactory {
 		assert restrRoot != null;
 		assert scopeRoot != null; 
 		// structures have now been properly initialized
-		Vector restrNoms = LFUtils.lfCollectNomvars (restrRoot,lf);
-		Vector scopeNoms = LFUtils.lfCollectNomvars (scopeRoot,lf);
+	
+		Vector<String> restrNoms = LFUtils.lfCollectNomvars (restrRoot,lf);
+		restrNoms.add(restrRoot.nomVar);
+		
+		Vector<String> scopeNoms = LFUtils.lfCollectNomvars (scopeRoot,lf);
 		Vector excludes = new Vector();
 		excludes.addAll(restrNoms);
 		excludes.addAll(scopeNoms);
@@ -80,14 +83,18 @@ public class CopulaReadings implements ReadingFactory {
 		// construct the (single) reading
 		RefReading reading = new RefReading();
 		reading.restrictiveTrees = new String[restrNoms.size()]; 
-		reading.restrictiveTrees = (String[])restrNoms.toArray(reading.restrictiveTrees);
+		reading.restrictiveTrees = restrNoms.toArray(reading.restrictiveTrees);
 		reading.attributiveTrees = new String[scopeNoms.size()]; 
 		reading.attributiveTrees = (String[])scopeNoms.toArray(reading.attributiveTrees);
 		// add the (single) reading to the readings
 		RefReadings readings = new RefReadings();
 		readings.refRdngs = new RefReading[1];
 		readings.refRdngs[0] = reading;
+		
+		readings.lform = lf;
+		
 		// return the results
+		results.setReadings(readings);
 		return results; 
 	} // end method
 	

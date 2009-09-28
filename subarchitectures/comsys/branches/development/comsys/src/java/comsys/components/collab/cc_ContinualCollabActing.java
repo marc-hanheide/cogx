@@ -9,7 +9,8 @@ import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
 import comsys.arch.ProcessingData;
 import comsys.datastructs.comsysEssentials.PackedLFs;
-import comsys.datastructs.SelectedLogicalForm;
+import comsys.datastructs.comsysEssentials.SelectedLogicalForm;
+import comsys.datastructs.comsysEssentials.SelectedLogicalFormHolder;
 
 import comsys.lf.utils.LFUtils;
 
@@ -215,7 +216,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 				// get the logical form
             	SelectedLogicalForm slf = (SelectedLogicalForm) slfWM.getData();
 				// construct the abductive proof
-				AbductiveProof proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, slf.lf); 
+				AbductiveProof proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, slf); 
 				// print the proof ... 
 				if (proof != null) { 	
             		String logString = "proof: body = [\n";

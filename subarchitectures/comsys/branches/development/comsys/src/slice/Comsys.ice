@@ -99,6 +99,22 @@ module comsysEssentials {
 
 
 
+ 
+
+
+	class SelectedLogicalForm extends lf::LogicalForm{
+
+	PhonString phon;	
+	double score;	
+	double scoreOfSecondBest;
+	bool exactMath;
+	float partialMatch;
+	};
+
+
+
+
+
 	// ----------------------------------------------------------------------
 	//	The struct InterpretationSupport provides info about a single relation (in a PLF), and provides
 	//	a list of supported or unsupported interpretations. Support is indicated by a boolean flag: "true" means
@@ -417,7 +433,7 @@ module comsysEssentials {
 	// @started	090923
 	// @version	090923
 	//---------------------------------------------------------------------------	
-	
+	 
 	class Anchor { 
 		string entityID;
 		float  probExists;	

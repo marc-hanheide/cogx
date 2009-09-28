@@ -583,8 +583,8 @@ public class cc_Parser
             m_proposedProcessing.put(taskID, pd);
 			// set the goal
             String taskGoal = ComsysGoals.INCREMENTAL_PARSING_STEP_TASK;
-            System.out.println("ID: " + taskID);
-            System.out.println("goal: " + taskGoal);
+       //     System.out.println("ID: " + taskID);
+        //    System.out.println("goal: " + taskGoal);
 			// store the goal with its information
             proposeInformationProcessingTask(taskID, taskGoal);
         }

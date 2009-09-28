@@ -18,6 +18,7 @@ import binder.autogen.core.Proxy;
 // COMSYS imports
 // -------------------------------------------------------
 
+import cast.cdl.CASTTime;
 import comsys.datastructs.comsysEssentials.RefReading;
 import comsys.datastructs.comsysEssentials.RefReadings;
 
@@ -49,7 +50,6 @@ import comsys.datastructs.lf.LogicalForm;
 
 public class RestrictorProxyConstruction {
 
-
 	
 	private HashMap proxyFactories = null; 
 	
@@ -59,12 +59,19 @@ public class RestrictorProxyConstruction {
 	
 	private void init () {
 		proxyFactories = new HashMap();
-		proxyFactories.put(new ThingProxy().getSort(), new ThingProxy());
+		ThingProxy thingProxy = new ThingProxy();
+		
+		proxyFactories.put(thingProxy.getSort(), thingProxy);
 	} // end init
 	
-	public ProxyResults constructProxy (LogicalForm lf) { 
-		assert proxyFactories.containsKey(lf.root.sort);
-		return ((ProxyFactory)proxyFactories.get(lf.root.sort)).constructProxy(lf);
+	public ProxyResults constructProxy (LogicalForm lf, CASTTime timestamp) { 
+	//	assert proxyFactories.containsKey(lf.root.sort);
+		if (proxyFactories.containsKey(lf.root.sort)) {
+			return ((ProxyFactory)proxyFactories.get(lf.root.sort)).constructProxy(lf, timestamp);
+		}
+		else {
+			return new ProxyResults();
+		}
 	} // end constructProxy
 
 	
