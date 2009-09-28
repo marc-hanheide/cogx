@@ -8,24 +8,20 @@
 
 package comsys.processing.reference.proxyfactories;
 
-// -------------------------------------------------------
-// BINDER imports
-// -------------------------------------------------------
+import comsys.datastructs.lf.LogicalForm;
+import comsys.processing.reference.ProxyFactory;
+import comsys.processing.reference.ProxyResults;
 
-import binder.abstr.AbstractBindingPredictor;
+import binder.abstr.BindingPredictor;
 import binder.autogen.core.Feature;
 import binder.autogen.featvalues.AddressValue;
 
 // -------------------------------------------------------
-// COMSYS imports
+// BINDER imports
 // -------------------------------------------------------
 
-import comsys.datastructs.lf.LogicalForm; 
-import comsys.processing.reference.ProxyFactory;
-import comsys.processing.reference.ProxyResults;
-
 public abstract class AbstractProxyFactory 
-		extends AbstractBindingPredictor
+		extends BindingPredictor
 		implements ProxyFactory
 	
 {

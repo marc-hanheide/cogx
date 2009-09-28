@@ -82,6 +82,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 		
     } // end init
     
+    
 	public void start() {
 		super.start();
 		// now call the initialization method for the object

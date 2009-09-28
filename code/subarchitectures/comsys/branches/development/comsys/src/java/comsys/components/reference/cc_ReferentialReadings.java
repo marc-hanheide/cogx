@@ -22,6 +22,7 @@ import cast.SubarchitectureComponentException;
 // COMSYS IMPORTS
 //-----------------------------------------------------------------
 import comsys.arch.*;
+import comsys.datastructs.SelectedLogicalForm;
 import comsys.datastructs.comsysEssentials.*;
 import comsys.processing.reference.ReferentialReadings;
 import comsys.utils.datastructs.*;
@@ -39,9 +40,6 @@ import java.util.Vector;
 // LOGICAL FORM IMPORTS
 //-----------------------------------------------------------------
 import comsys.datastructs.lf.*;
-
-
-
 
 
 
@@ -65,7 +63,7 @@ public class cc_ReferentialReadings
 	
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
-	private Vector<ProcessingData> m_dataObjects;	
+	private Vector<ProcessingData> m_dataObjects = new Vector<ProcessingData>();	
 	
 	// Counter for ProcessingData identifiers
 	private int pdIdCounter;	
@@ -115,7 +113,7 @@ public class cc_ReferentialReadings
 		init();
 		// Change filters for caches
 		addChangeFilter(
-						ChangeFilterFactory.createLocalTypeFilter(LogicalForm.class,  WorkingMemoryOperation.ADD),
+						ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class,  WorkingMemoryOperation.ADD),
 						new WorkingMemoryChangeReceiver() {
 						public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleLogicalForm(_wmc);
