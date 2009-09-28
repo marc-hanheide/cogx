@@ -20,8 +20,6 @@ import beliefmodels.adl.Agent;
 import beliefmodels.adl.Belief; 
 import beliefmodels.adl.SpatioTemporalFrame; 
 
-import beliefmodels.domainmodel.cogx.MaterialObject; 
-
 // ---------------------------------------------------------
 // COMSYS / LF imports
 // ---------------------------------------------------------

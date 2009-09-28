@@ -12,7 +12,9 @@ package comsys.components.reference;
 // BINDER IMPORTS
 //-----------------------------------------------------------------
 
-import binder.abstr.AbstractBindingPredictor;
+import beliefmodels.domainmodel.cogx.SuperFormula;
+import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
+import binder.abstr.BindingPredictor;
 import binder.autogen.core.Union;
 import binder.autogen.specialentities.PhantomProxy;
 
@@ -52,7 +54,7 @@ import java.util.Vector;
 
 
 public class cc_ReferentialBindings 
-		extends AbstractBindingPredictor
+		extends BindingPredictor
 {
 
 	
@@ -68,7 +70,7 @@ public class cc_ReferentialBindings
 	
 	// Vector with objects to be processed,
 	// can be ComSys:PhonString,...
-	private Vector<ProcessingData> m_dataObjects;	
+	private Vector<ProcessingData> m_dataObjects = new Vector<ProcessingData>();	
 	
 	// Counter for ProcessingData identifiers
 	private int pdIdCounter;	
@@ -186,14 +188,14 @@ public class cc_ReferentialBindings
 						for (Iterator<PhantomProxy> phantIter = prxResults.getProxies(); phantIter.hasNext(); ) {
 							PhantomProxy phant = phantIter.next();
 							// get the unions, delete phantom afterwards
-							Vector<Union> unions = getPredictedUnions(phant,true); 
+							Vector<UncertainSuperFormula> formulae = getPredictedBindings(phant,true); 
 							// create the anchorings
 							Vector<Anchor> anchors  = new Vector();
-							for (Iterator<Union> unionsIter = unions.iterator(); unionsIter.hasNext(); ) { 
-								Union union = unionsIter.next();
-								Anchor anchor = createAnchorFromUnion(union);
+							for (Iterator<UncertainSuperFormula> formIter = formulae.iterator(); formIter.hasNext(); ) { 
+								UncertainSuperFormula curFormula = formIter.next();
+								Anchor anchor = createAnchorFromFormula(curFormula);
 								anchors.add(anchor);
-							} // end for over possible unions
+							} // end for over possible formulae
 							// create the reference binding, add it to the vector of bindings for this reading
 							Anchor[] antecedents = new Anchor[anchors.size()];
 							antecedents = (Anchor[])anchors.toArray(antecedents);
@@ -201,7 +203,7 @@ public class cc_ReferentialBindings
 							binding.id = "refbinding";
 							binding.nomVar = restrTreeRoot;
 							binding.antecedents = antecedents; 
-							refBindings.add(binding);
+							refBindings.add(binding); 
 						} // end for over phantom proxies
 					} // end for over ids
 				} // end if.. check whether we have restrictors
@@ -295,10 +297,10 @@ public class cc_ReferentialBindings
 	} // end newProcessingDataId
 	
 	
-	private Anchor createAnchorFromUnion (Union union) { 
+	private Anchor createAnchorFromFormula (UncertainSuperFormula formula) { 
 		Anchor anchor = new Anchor();
-		anchor.entityID = union.entityID;
-		anchor.probExists = union.probExists; 
+		anchor.entityID = formula.id;
+		anchor.probExists = formula.prob;
 		return anchor; 
 	} 
 	
