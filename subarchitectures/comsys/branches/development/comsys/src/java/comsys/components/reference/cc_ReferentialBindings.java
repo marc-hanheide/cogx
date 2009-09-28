@@ -209,12 +209,17 @@ public class cc_ReferentialBindings
 							Vector<UncertainSuperFormula> formulae = getPredictedBindings(phant,true);					
 							
 							log("Number of possible bindings found: " + formulae.size());
+							log("===============================");
 							int count = 1;
 							for (Enumeration<UncertainSuperFormula> e = formulae.elements(); e.hasMoreElements() ; ) {
 								log("Belief formula for binding " + count + ": \n" + 
-										BeliefModelUtils.getFormulaPrettyPrint(e.nextElement()) + "\n");
+										BeliefModelUtils.getFormulaPrettyPrint(e.nextElement(), 1));
 								count++;
-							}						
+								if (e.hasMoreElements()) 
+										log("------------------------------");
+							}	
+							log("===============================");
+
 							
 							// create the anchorings
 							Vector<Anchor> anchors  = new Vector<Anchor>();
