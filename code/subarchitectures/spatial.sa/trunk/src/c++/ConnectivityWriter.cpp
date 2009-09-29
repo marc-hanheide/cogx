@@ -34,6 +34,7 @@ ConnectivityWriter::start()
       (cdl::WILDCARD),
 		  new MemberFunctionChangeReceiver<ConnectivityWriter>(this,
 					&ConnectivityWriter::changedGateway));
+  m_marshaller = Marshalling::MarshallerPrx(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
 }
 
 void
@@ -44,7 +45,6 @@ ConnectivityWriter::stop()
 void
 ConnectivityWriter::runComponent()
 {
-  m_marshaller = Marshalling::MarshallerPrx(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
 }
 
 void

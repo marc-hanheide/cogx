@@ -31,7 +31,6 @@ ProxyMarshaller::~ProxyMarshaller()
 void
 ProxyMarshaller::start()
 {
-
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cast::cdl::ADD),
 		  new cast::MemberFunctionChangeReceiver<ProxyMarshaller>(this,
 		    &ProxyMarshaller::newPlace));    

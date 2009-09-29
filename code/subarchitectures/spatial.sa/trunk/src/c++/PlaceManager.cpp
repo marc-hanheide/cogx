@@ -133,7 +133,6 @@ PlaceManager::stop()
 void 
 PlaceManager::runComponent()
 {
-  debug("Interfaces created");
 }
 
 void 
