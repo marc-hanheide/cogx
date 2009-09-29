@@ -24,7 +24,7 @@
  */ 
  
  
-#include <CDL.ice>
+#include <cast/slice/CDL.ice>
 
 
 module binder {
@@ -94,6 +94,7 @@ class Proxy extends PerceivedEntity {
 
 
 dictionary<string, string> StringMap;
+dictionary<string, cast::cdl::WorkingMemoryPointer> WMPointerMap;
 
 
 
@@ -140,6 +141,7 @@ class AlternativeUnionConfigurations {
      * The map itself
      */
     StringMap sourceID2ProxyID;
+    WMPointerMap proxyID2WMPointer;
   };
 
 
