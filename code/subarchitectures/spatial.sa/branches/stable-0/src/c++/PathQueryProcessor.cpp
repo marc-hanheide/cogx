@@ -64,6 +64,8 @@ PathQueryProcessor::start()
       new MemberFunctionChangeReceiver<PathQueryProcessor>(this,
 	&PathQueryProcessor::newPathTransitionCostRequest));
 
+  m_placeInterface = FrontierInterface::PlaceInterfacePrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
 }
 
 void 
@@ -85,8 +87,6 @@ PathQueryProcessor::configure(const std::map<std::string, std::string>& _config)
 void 
 PathQueryProcessor::runComponent()
 {
-  m_placeInterface = FrontierInterface::PlaceInterfacePrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-
 }
 
 void 

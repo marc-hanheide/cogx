@@ -77,6 +77,9 @@ void SpatialTranslation::start() {
 		  new MemberFunctionChangeReceiver<SpatialTranslation>(this,
 								       &SpatialTranslation::owtNavGraph));
 
+  m_placeInterface = FrontierInterface::PlaceInterfacePrx
+    (getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
   log("SpatialTranslation started");
 
 }
@@ -91,9 +94,6 @@ void SpatialTranslation::stop(){
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::runComponent() {
-  m_placeInterface = FrontierInterface::PlaceInterfacePrx
-    (getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-
   while(isRunning()){
     log("I am running, but I wait until getting work to do");
 		
