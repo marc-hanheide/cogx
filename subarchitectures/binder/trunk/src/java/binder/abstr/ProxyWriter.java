@@ -22,7 +22,6 @@ package binder.abstr;
 
 import java.util.HashMap;
 
-import Ice.Current;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.OriginMap;
@@ -39,7 +38,6 @@ import cast.PermissionException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
-import cast.interfaces.TimeServerPrx;
  
 /**
  * Abstract class for structuring and inserting proxies into the binder working
@@ -479,7 +477,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 		boolean firstEntry = false;
 		if (m_originMapID == null) {
 			m_originMapID = newDataID();
-			om = new OriginMap(getComponentID(), new HashMap<String, String>());
+			om = new OriginMap(getComponentID(), new HashMap<String, String>(), new HashMap<String, WorkingMemoryPointer>());
 			firstEntry = true;
 		} else {
 			om = getMemoryEntry(m_originMapID, OriginMap.class);
@@ -491,7 +489,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 		}
 
 		om.sourceID2ProxyID.put(_proxy.origin.address.id, _proxy.entityID);
+		om.proxyID2WMPointer.put(_proxy.entityID, _proxy.origin);
 
+		
 		if (firstEntry) {
 			addToWorkingMemory(m_originMapID, om);
 		} else {
@@ -520,6 +520,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 					+ _proxy.origin.address.id);
 		} else {
 			om.sourceID2ProxyID.remove(_proxy.origin.address.id);
+			om.proxyID2WMPointer.remove(_proxy.entityID);
 			overwriteWorkingMemory(m_originMapID, om);
 		}
 	}

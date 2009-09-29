@@ -19,29 +19,29 @@ namespace binder {
   class BindingWorkingMemoryWriter : 
     public virtual cast::ManagedComponent {
 
-//   private:
-//     /**
-//      * ID in current SA where origin map is stored.
-//      */
-//     std::string m_originMapID;
+  private:
+    /**
+     * ID in current SA where origin map is stored.
+     */
+    std::string m_originMapID;
 
-//     /**
-//      * Stores a mapping from the source to the proxy which is created from it.
-//      * 
-//      * @param _proxy
-//      * @throws AlreadyExistsOnWMException
-//      */
-//     void storeOriginInfo(autogen::core::ProxyPtr _proxy);
+    /**
+     * Stores a mapping from the source to the proxy which is created from it.
+     * 
+     * @param _proxy
+     * @throws AlreadyExistsOnWMException
+     */
+    void storeOriginInfo(autogen::core::ProxyPtr _proxy);
 
-//     /**
-//      * Removes source id mapping from WM map.
-//      * 
-//      * @param _proxy
-//      * @throws DoesNotExistOnWMException
-//      * @throws ConsistencyException
-//      * @throws PermissionException
-//      */
-//     void removeOriginInfo(autogen::core::ProxyPtr _proxy);
+    /**
+     * Removes source id mapping from WM map.
+     * 
+     * @param _proxy
+     * @throws DoesNotExistOnWMException
+     * @throws ConsistencyException
+     * @throws PermissionException
+     */
+    void removeOriginInfo(autogen::core::ProxyPtr _proxy);
       
   protected:
 

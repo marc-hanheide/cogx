@@ -147,7 +147,7 @@ namespace binder {
 
     try {
       addToWorkingMemory(proxy->entityID, proxy);
-      //storeOriginInfo(proxy);
+      storeOriginInfo(proxy);
       log("new Proxy succesfully added to the binder working memory");
     }
     catch (cast::CASTException &e) {
@@ -174,7 +174,7 @@ namespace binder {
   void BindingWorkingMemoryWriter::deleteEntityInWM(ProxyPtr proxy) {
 
     try {
-      //removeOriginInfo(proxy);
+      removeOriginInfo(proxy);
       deleteFromWorkingMemory(proxy->entityID);
       log("existing Proxy succesfully modified in the binder working memory");
 
@@ -184,47 +184,49 @@ namespace binder {
     }
   }
 
-//   void BindingWorkingMemoryWriter::storeOriginInfo(autogen::core::ProxyPtr _proxy) {
-//     OriginMapPtr om;
-//     bool firstEntry = false;
-//     if (m_originMapID.size()  == 0) {
-//       m_originMapID = newDataID();
-//       om = new OriginMap();
-//       om->componentID = getComponentID();
-//       firstEntry = true;
-//     } else {
-//       om = getMemoryEntry<OriginMap>(m_originMapID);
-//     }
+  void BindingWorkingMemoryWriter::storeOriginInfo(autogen::core::ProxyPtr _proxy) {
+    OriginMapPtr om;
+    bool firstEntry = false;
+    if (m_originMapID.size()  == 0) {
+      m_originMapID = newDataID();
+      om = new OriginMap();
+      om->componentID = getComponentID();
+      firstEntry = true;
+    } else {
+      om = getMemoryEntry<OriginMap>(m_originMapID);
+    }
 
-//     if (om->sourceID2ProxyID.find(_proxy->origin->localDataId) != om->sourceID2ProxyID.end()) {
-//       println("WARNING: OriginMap already contained entry for: %s",
-// 	      _proxy->origin->localDataId.c_str());
-//     }
+    if (om->sourceID2ProxyID.find(_proxy->origin->address.id) != om->sourceID2ProxyID.end()) {
+      println("WARNING: OriginMap already contained entry for: %s",
+	      _proxy->origin->address.id.c_str());
+    }
 
-//     om->sourceID2ProxyID[_proxy->origin->localDataId] =  _proxy->entityID;
+    om->sourceID2ProxyID[_proxy->origin->address.id] =  _proxy->entityID;
+    om->proxyID2WMPointer[_proxy->entityID] =  _proxy->origin;
 
-//     if (firstEntry) {
-//       addToWorkingMemory(m_originMapID, om);
-//     } else {
-//       overwriteWorkingMemory(m_originMapID, om);
-//     }
+    if (firstEntry) {
+      addToWorkingMemory(m_originMapID, om);
+    } else {
+      overwriteWorkingMemory(m_originMapID, om);
+    }
 
-//   }
+  }
 
 
-//   void BindingWorkingMemoryWriter::removeOriginInfo(autogen::core::ProxyPtr _proxy) {
-//     OriginMapPtr om = getMemoryEntry<OriginMap>(m_originMapID);
+  void BindingWorkingMemoryWriter::removeOriginInfo(autogen::core::ProxyPtr _proxy) {
+    OriginMapPtr om = getMemoryEntry<OriginMap>(m_originMapID);
 
-//     if (om->sourceID2ProxyID.find(_proxy->origin->localDataId) == om->sourceID2ProxyID.end()) {
-//       println("WARNING: OriginMap did no contain entry for: %s",
-// 	      _proxy->origin->localDataId.c_str());
-//     }
-//     else {
-//       om->sourceID2ProxyID.erase(_proxy->origin->localDataId);
-//       overwriteWorkingMemory(m_originMapID, om);
-//     }
+    if (om->sourceID2ProxyID.find(_proxy->origin->address.id) == om->sourceID2ProxyID.end()) {
+      println("WARNING: OriginMap did no contain entry for: %s",
+	      _proxy->origin->address.id.c_str());
+    }
+    else {
+      om->sourceID2ProxyID.erase(_proxy->origin->address.id);
+      om->proxyID2WMPointer.erase(_proxy->entityID);
+      overwriteWorkingMemory(m_originMapID, om);
+    }
 
-//   }
+  }
 
 
 }
