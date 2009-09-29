@@ -49,6 +49,7 @@
 	    <fileset dir="${slice.dir}" includes="BinderDomainModel.ice"/>
 	    <includepath>
              <pathelement path="${slice.dir}"/>
+ 	    	 <pathelement path="${castslice.dir}"/>	    	
  	    	 <pathelement path="${castslice.dir}/cast/slice/"/>	    	
               <pathelement path="../../tools/beliefmodels/src/slice"/> 
 	    </includepath> 
