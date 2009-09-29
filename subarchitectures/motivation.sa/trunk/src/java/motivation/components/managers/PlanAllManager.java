@@ -16,13 +16,14 @@ import java.util.concurrent.TimeoutException;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
-import motivation.util.ExecutorFacade;
-import motivation.util.PlannerFacade;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMEntryQueue.WMEntryQueueElement;
 import motivation.util.WMEntrySet.ChangeHandler;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.facades.BinderFacade;
+import motivation.util.facades.ExecutorFacade;
+import motivation.util.facades.PlannerFacade;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -42,6 +43,8 @@ public class PlanAllManager extends ManagedComponent {
 
 	PlannerFacade plannerFacade;
 	ExecutorFacade executorFacade;
+	BinderFacade binderFacade;
+
 	Executor backgroundExecutor;
 
 	int failsafeTimeoutSecs = 10;
@@ -52,7 +55,8 @@ public class PlanAllManager extends ManagedComponent {
 	public PlanAllManager() {
 		super();
 		motives = WMMotiveSet.create(this);
-		plannerFacade = new PlannerFacade(this);
+		binderFacade = new BinderFacade(this);
+		plannerFacade = new PlannerFacade(this, binderFacade);
 		executorFacade = new ExecutorFacade(this);
 		activeMotiveEventQueue = new WMMotiveEventQueue();
 		backgroundExecutor = Executors.newCachedThreadPool();
@@ -67,6 +71,7 @@ public class PlanAllManager extends ManagedComponent {
 	protected void start() {
 		super.start();
 		log("start up");
+		binderFacade.start();
 		motives.start();
 		motives.setStateChangeHandler(new MotiveStateTransition(null,
 				MotiveStatus.ACTIVE), activeMotiveEventQueue);
@@ -167,9 +172,6 @@ public class PlanAllManager extends ManagedComponent {
 					}
 					sleepComponent(1000); // TODO: wait for motives to
 					// update
-				} else { // if we have no motives yet, we wait until something
-					// happens
-					waitForChanges();
 				}
 			}
 		} catch (InterruptedException e) {
