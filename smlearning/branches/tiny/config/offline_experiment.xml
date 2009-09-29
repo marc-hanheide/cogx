@@ -57,7 +57,7 @@
   <!--</arm>-->
 
   <arm>
-    <type>kat_serial_arm</type>
+    <type>kat_sim_arm</type>
     <kat_serial_arm>
       <path>katana6M180.cfg</path>
       <comm_port>4</comm_port>
