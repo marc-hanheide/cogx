@@ -39,20 +39,6 @@
 namespace smlearning {
 
 ///
-///planer setup
-///
-template <typename Desc>
-void Scenario::setupPlanner(Desc &desc, XMLContext* xmlContext, golem::Context& context) {
-	// some planner parameter tuning
-	desc.pPlannerDesc->pHeuristicDesc->distJointcoordMax.j[4] = Real(1.0*MATH_PI);// last joint
-	// Enable signal synchronization (default value)
-	//desc.reacPlannerDesc.signalSync = true;
-// 	desc.armDesc.joints[2]->min.pos = Real(0.0*MATH_PI); // Katana hack to avoid sub-optimal inverse kinematics solutions
-}
-
-
-
-///
 ///creates object in the scene
 ///
 void Scenario::setupSimulatedObjects(Scene &scene, golem::Context &context) {
@@ -281,34 +267,6 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		physReacPlannerDesc.pArmDesc.reset(pDesc);
 	}
 
-
-	
-// 	// Setup PhysReacPlanner controller description
-// 	obj_ptr<Object::Desc> pPhysReacPlannerDesc;
-// 	if (!armType.compare("kat_serial_arm")) {
-// 		typedef PhysReacPlanner::Desc<KatSerialArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		// 			typedef PhysReacPlanner::Desc<KatSerialArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-// 		pPhysReacPlannerDesc.reset(pDesc);
-// 		setupPlanner(*pDesc, xmlContext, *context);
-// 		XMLData(pDesc->armDesc.cfgPath, xmlContext->getContextFirst("arm kat_serial_arm path"));
-// 		XMLData(pDesc->armDesc.serialDesc.commPort, xmlContext->getContextFirst("arm kat_serial_arm comm_port"));
-// 	}
-// 	else if (!armType.compare("kat_sim_arm")) {
-// 		typedef PhysReacPlanner::Desc<KatSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		// 			typedef PhysReacPlanner::Desc<KatSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-// 		pPhysReacPlannerDesc.reset(pDesc);
-// 		setupPlanner(*pDesc, xmlContext, *context);
-
-// 	}
-// 	else if (!armType.compare("gen_sim_arm")) {
-// 		typedef PhysReacPlanner::Desc<GenSimArm, MyGraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		// 			typedef PhysReacPlanner::Desc<GenSimArm, GraphPlanner, ReacPlanner> PhysReacPlannerDesc;
-// 		PhysReacPlannerDesc *pDesc = new PhysReacPlannerDesc();
-// 		pPhysReacPlannerDesc.reset(pDesc);
-// 		setupPlanner(*pDesc, xmlContext, *context);
-// 	}
 
 	
 	else {
@@ -556,18 +514,18 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		/////////////////////////////////////////////////
 		//writing in the initial vector
 		//Trajectory curve coefficients
-		infoVector.push_back(normalize(coefs[0], -5, 5));
-		infoVector.push_back(normalize(coefs[1], -5, 5));
-		infoVector.push_back(normalize(coefs[2], -5, 5));
-		infoVector.push_back(normalize(coefs[3], -5, 5));
+		infoVector.push_back(normalize<double>(coefs[0], -5, 5));
+		infoVector.push_back(normalize<double>(coefs[1], -5, 5));
+		infoVector.push_back(normalize<double>(coefs[2], -5, 5));
+		infoVector.push_back(normalize<double>(coefs[3], -5, 5));
 		//initial position, normalized
-		infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
-		infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
-		infoVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
+		infoVector.push_back(normalize<double>(positionT.v1, -maxRange, maxRange));
+		infoVector.push_back(normalize<double>(positionT.v2, -maxRange, maxRange));
+		infoVector.push_back(normalize<double>(positionT.v3, -maxRange, maxRange));
 		//innitial orientation, normalized
-		infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
-		infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
-		infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize<double>(orientationT.v1, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize<double>(orientationT.v2, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize<double>(orientationT.v3, -MATH_PI, MATH_PI));
 		//end pose info missing (must be added later 
 		/////////////////////////////////////////////////
 

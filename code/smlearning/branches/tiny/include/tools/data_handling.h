@@ -136,6 +136,8 @@ template<class Function>
 bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_netcdf_file, string target_dir, bool print_data = false) {
 
 	DataSet data;
+	if (n < 2)
+		return false;
 	if (!read_dataset (seqFileName, data)){
 		cout << "file " + seqFileName + " could not be read" << endl;
 		return false;
@@ -222,6 +224,7 @@ bool write_n_fold_cross_valid_sets (string seqFileName, int n, Function write_ne
 		
 	}
 
+	return true;
 	
 }
 
