@@ -91,6 +91,9 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   else {
     m_hypPathLength = 1.5;
   }
+
+  FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
+  registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
 }
 
 void 
@@ -119,6 +122,7 @@ PlaceManager::start()
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 					&PlaceManager::modifiedEdge));
 
+  frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
 }
 
 void 
@@ -129,9 +133,6 @@ PlaceManager::stop()
 void 
 PlaceManager::runComponent()
 {
-  frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
-
-  debug("Interface created");
 }
 
 void 
