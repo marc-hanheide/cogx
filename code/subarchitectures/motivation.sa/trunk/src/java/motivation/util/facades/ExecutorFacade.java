@@ -1,13 +1,14 @@
 /**
  * 
  */
-package motivation.util;
+package motivation.util.facades;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import motivation.slice.Motive;
 import motivation.slice.PlanProxy;
+import motivation.util.WMEntryQueue;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
