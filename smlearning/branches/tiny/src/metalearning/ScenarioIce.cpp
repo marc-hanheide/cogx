@@ -132,6 +132,10 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	TinyPrx pTiny = TinyPrx::checkedCast(base);
 	if (!pTiny)
 		throw ExTiny("Invalid proxy");
+	if (argc < 2) {
+		cout << "Usage: " << argv[0] << " 0/1 (0 for real arm, 0 for simulation) [nr. experiments] [starting position (1-24)]" << endl;
+		throw ExTiny("Invalid number of arguments");
+	}
 	
 	shutdownOnInterrupt();
 
@@ -147,12 +151,18 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	pGroundPlaneDesc->shapes.push_back(ShapeDescPtr(pGroundPlaneShapeDesc));
 	RigidBodyPrx pGroundPlane = RigidBodyPrx::checkedCast(pTiny->createActor(ActorDescPtr(pGroundPlaneDesc)));
 
+	ArmPrx pArm;
 	// create arm
-	//KatArmDesc* pArmDesc = new KatArmDescI; // Katana
-	KatSimArmDesc* pArmDesc = new KatSimArmDescI; // Katana simulator
-	//GenSimArmDesc* pArmDesc = new GenSimArmDescI; // 6DOF manipulator
 	printf("Creating the arm...\n");
-	ArmPrx pArm = ArmPrx::checkedCast(pTiny->createActor(ActorDescPtr(pArmDesc)));
+	if (atoi(argv[1]) == 0) {
+		KatArmDesc* pArmDesc = new KatArmDescI; // Katana
+		pArm = ArmPrx::checkedCast(pTiny->createActor(ActorDescPtr(pArmDesc)));
+	}
+	else {
+		KatSimArmDesc* pArmDesc = new KatSimArmDescI; // Katana simulator
+		pArm = ArmPrx::checkedCast(pTiny->createActor(ActorDescPtr(pArmDesc)));
+	}
+	//GenSimArmDesc* pArmDesc = new GenSimArmDescI; // 6DOF manipulator
 	
 	// attached a finger to the end-effector (the last joint)
 	JointPrx pEffector = pArm->getJoints().back();
@@ -243,6 +253,8 @@ int ScenarioIce::run (int argc, char *argv[]) {
 // 	}
 
 
+	// get initial configuration (it is the current joint configuration)
+	GenConfigspaceState initial = pArm->getGenConfigspaceState(pTiny->getTime());
 
 
 	
@@ -285,10 +297,10 @@ int ScenarioIce::run (int argc, char *argv[]) {
 
 	int numSequences = 10;
 	int startingPosition = 0;
-	if (argc > 1)
-		numSequences = atoi(argv[1]);
-	if (argc == 3)
-		startingPosition = atoi(argv[2]);
+	if (argc > 2)
+		numSequences = atoi(argv[2]);
+	if (argc == 4)
+		startingPosition = atoi(argv[3]);
 	
 	//start of the experiment loop
 	for (int e=0; e<numSequences; e++) {
@@ -600,6 +612,14 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	writeDownCollectedData(data);
 	/////////////////////////////////////////////////
 
+	// setup initial configuration
+	initial.t = pTiny->getTime() + pArm->getTimeDeltaAsync() + 5.0; // movement will last no shorter than 5 sec
+	// return to the initial configuration
+	printf("Moving back to the initial configuration...\n");
+	pArm->setGenConfigspaceState(initial, ActionTypeGlobal);
+	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
+	(void)pArm->waitForEnd(60.0);
+	
 	if (pPolyflapObject)
 		pTiny->releaseActor(pPolyflapObject);
 	pTiny->releaseActor(pArm);

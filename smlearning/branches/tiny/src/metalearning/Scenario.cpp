@@ -407,7 +407,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 
 	
 	// Define the Home pose in the Cartesian workspace
-	Vec3 positionH(Real(0.0), Real(0.1), Real(0.1));
+	Vec3 positionH(Real(0.1), Real(0.1), Real(0.1));
 	Vec3 orientationH(Real(-0.5*MATH_PI), Real(0.0*MATH_PI), Real(0.0*MATH_PI));
 		
 	// and set target waypoint
