@@ -1,17 +1,14 @@
 package coma.components;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.StringValue;
 
-import coma.components.ComaReasoner.ComaReasonerInterfaceI;
 import comadata.ComaReasonerInterfacePrx;
 
 import Ice.Identity;
@@ -148,6 +145,7 @@ public class PlaceMonitor extends ManagedComponent {
 		// TODO replace this with real room proxy creation!
 		if (m_proxyMarshall!=null) {
 			log("Baseline: simply create a room proxy");
+			log(m_proxyMarshall);
 			m_proxyMarshall.addProxy("room", "area1", 1, new WorkingMemoryPointer());
 			Feature _ftr = new Feature();
 			_ftr.featlabel="area1";

@@ -6,8 +6,8 @@ COMPONENT CPP robot.server RobotbaseServerPlayer --player-host localhost #--rand
 SUBARCHITECTURE coma
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
-JAVA MG testreasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
-JAVA MG placemon coma.components.PlaceMonitor --reasoner-name testreasoner --marshaller-name proxy.marshaller -bsa binder --log true
+JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name marshaller -bsa binder --log true
 
 #SUBARCHITECTURE binder 
 #JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
@@ -30,7 +30,7 @@ SUBARCHITECTURE spatial.sa
 CPP WM SubarchitectureWorkingMemory  #--log --debug
 CPP TM AlwaysPositiveTaskManager
 CPP MG spatial.translation SpatialTranslation #--log #--debug
-CPP GD proxy.marshaller ProxyMarshaller -bsa binder #--log
+CPP GD marshaller ProxyMarshaller -bsa binder #--log
 
 
 # Args for SlamProcess
