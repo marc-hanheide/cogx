@@ -371,13 +371,13 @@ int ScenarioIce::run (int argc, char *argv[]) {
 		infoVector.push_back(normalize<double>(coefs[2], -5, 5));
 		infoVector.push_back(normalize<double>(coefs[3], -5, 5));
 		//initial position, normalized
-		infoVector.push_back(normalize<double>(positionT.v1, -maxRange, maxRange));
-		infoVector.push_back(normalize<double>(positionT.v2, -maxRange, maxRange));
-		infoVector.push_back(normalize<double>(positionT.v3, -maxRange, maxRange));
+		infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
+		infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
+		infoVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
 		//innitial orientation, normalized
-		infoVector.push_back(normalize<double>(orientationT.v1, -MATH_PI, MATH_PI));
-		infoVector.push_back(normalize<double>(orientationT.v2, -MATH_PI, MATH_PI));
-		infoVector.push_back(normalize<double>(orientationT.v3, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
 		//end pose info missing (must be added later 
 		/////////////////////////////////////////////////
 
