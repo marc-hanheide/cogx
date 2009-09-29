@@ -109,6 +109,9 @@ class PlaceManager : public cast::ManagedComponent
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
     void processPlaceArrival(bool failed, NavData::FNodePtr newNavNode=0); 
 
+    // Helper function to create Gateway properties
+    void addNewGatewayProperty(int placeID);
+
     // Frontier based exploration path parameters
     double m_maxFrontierDist; // Culling distance for frontiers around a given node
     double m_minFrontierDist; // Culling distance for frontiers around a given node
