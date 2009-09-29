@@ -1,0 +1,79 @@
+Starting the utterance planning debugger standalone:
+korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
+
+-------
+To do
+-------
+
+Weird problem with ascription: 
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+
+NOTE: order within Target matters; if box not last, then Color gets not planned !!
+
+
+Ascription of object type
+"This is a/the ball"
+
+
+Ascription wh-questions: alternative formulations
+-- what color does the box have
+-- which box has blue color
+
+
+Multiple properties in ascription
+
+
+Reference to multiple objects
+
+
+Negation in ascription
+
+
+Y/N answer
+
+
+Ascription
+"The red object is a ball"
+"The red object is a big ball"
+
+
+Acknowledgment
+"Yes you are right"
+
+
+Multiple utterances within a turn
+
+e.g., sorry, (but) no
+      yes, I see
+      yes, it is blue
+      no, it is not blue
+      no/sorry, I do not see that
+
+
+NPs with demonstrative determiners
+
+e.g., this/that ball
+
+
+Proximal vs. distal reference currently selected at random
+
+e.g., this/that	  
+      this/that ball
+
+
+
+References to multiple objects (set of objects)
+
+e.g., the/these/those balls
+      the 3 balls
+      these/those
+      they				   
+
+
+Acknowledgments with modality are completely hacked by templates
+
+
+
+--------------------------------
+see cogx-targets for more to do
+--------------------------------
