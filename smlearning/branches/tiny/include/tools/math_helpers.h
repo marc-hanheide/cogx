@@ -28,27 +28,98 @@
 #ifndef SMLEARNING_MATHHELPERS_H_
 #define SMLEARNING_MATHHELPERS_H_
 
-#include <system/Vec3.h>
-
-using namespace golem;
+// #ifndef USING_ICE
+// #include <system/Vec3.h>
+// using namespace golem;
+// #else
+// #include <Ice/Ice.h>
+// #include <TinyIce/TinyIce.hh>
+// #include <tiny/ice/Desc.h>
+// typedef double Real;
+// using namespace golem::tinyice;
+// #endif
+#include <math.h>
+#include <stdlib.h>
 
 namespace smlearning {
+
+const double PI = 3.14159265358979323846;
 
 ///
 ///function for normalizing values according to given bounds
 ///
-Real normalize(const Real& value, const Real& min, const Real& max);	
+template <typename R>
+R normalize(const R& value, const R& min, const R& max) {
+	R val;
+	if (min == -PI && max == PI && (value > max || value < min)) {
+		val = fmod(value, PI);
+	}
+	else {
+		val = value;
+	}
+	R interval = max - min;
+	R relativeVal = val - min;
+	R res = relativeVal/interval;
+	return -1.0 + (res*2.0);
+}
 
 
 ///
 ///computer an orthogonal vector to some vector (which could be a surface normal vector)
 ///
-Vec3 computeOrthogonalVec(const Vec3& normalVec);
+template <typename V>
+V computeOrthogonalVec(const V& normalVec) {
+	V orthogonalVec;
+	orthogonalVec.v1 = normalVec.v2;
+	orthogonalVec.v2 = -1.0*normalVec.v1;
+	orthogonalVec.v3 = 0.0;
+	return orthogonalVec; 
+}
 
 ///
 ///compute the normal vector for vector1 with respect to vector2
 ///
-Vec3 computeNormalVector(const Vec3& vector1, const Vec3& vector2);
+template <typename V>
+V computeNormalVector(const V& vector1, const V& vector2) {
+	V res;
+	res.v1 = (vector2.v1 - vector1.v1)
+		/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2));
+	res.v2 = (vector2.v2 - vector1.v2)
+		/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2));
+	res.v3 = (vector2.v3 - vector1.v3)
+		/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2));
+	return res;
+
+}
+
+///
+///rotate around x axis
+///
+template <typename M, typename R>
+void rotX(M& m, R angle) {
+	R s = ::sin(angle), c = ::cos(angle);
+	
+	m.m11 = 1.;		m.m12 = 0.;		m.m13 = 0.;
+	m.m21 = 0.;		m.m22 = c;		m.m23 = -s;
+	m.m31 = 0.;		m.m32 = s;		m.m33 = c;
+}
+
+///
+///rotate around z axis
+///
+template <typename M, typename R>
+void rotZ(M& m, R angle) {
+	R s = ::sin(angle), c = ::cos(angle);
+	
+	m.m11 = c;		m.m12 = -s;		m.m13 = 0.;
+	m.m21 = s;		m.m22 = c;		m.m23 = 0.;
+	m.m31 = 0.;		m.m32 = 0.;		m.m33 = 1.;
+}
+
+///
+///generate random double nr. between min and max
+///
+double fRand(double min = 0., double max = 1.);
 
 }; /* smlearning namespace */
 

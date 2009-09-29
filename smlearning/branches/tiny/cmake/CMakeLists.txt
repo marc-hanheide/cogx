@@ -60,7 +60,7 @@ FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex )
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
-LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem
+LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem GolemTinyIce
 			   pthread rt GL glut expat SMLearning netcdf
  			   rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY})
 
@@ -88,10 +88,15 @@ LINK_DIRECTORIES(
 SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
 	${SMLEARNING_ROOT}/src/metalearning/OfflineRNN.cpp
+	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
 )
 
 SET(OFFLINE_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/offline_experiment.cpp
+)
+
+SET(OFFLINE_EXPERIMENT_ICE_SOURCE
+	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
 )
 
 SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
@@ -101,6 +106,7 @@ SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
 	${SMLEARNING_ROOT}/include/metalearning/OfflineRNN.h
+	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
 
@@ -145,6 +151,7 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
@@ -152,6 +159,7 @@ ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)

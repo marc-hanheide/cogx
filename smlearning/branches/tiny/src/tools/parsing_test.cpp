@@ -8,7 +8,8 @@ int main(int argc, char * argv[]) {
 
 	rnnlib::ConfigFile conf("/usr/local/bin/SMLearning/defaultnet.config");
 	myRNN.set_config_file (conf);
-
+	myRNN.set_testdatafile ("/usr/local/bin/SMLearning/valid.nc");
+	myRNN.set_traindatafile ("/usr/local/bin/SMLearning/train.nc");
 	myRNN.load_net ();
 	myRNN.print_net_data ();
 	myRNN.save_config_file (cout);

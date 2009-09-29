@@ -30,42 +30,13 @@
 namespace smlearning {
 
 ///
-///function for normalizing values according to given bounds (before storing)
+///generate random double nr. between min and max
 ///
-Real normalize(const Real& value, const Real& min, const Real& max) {
-	Real val;
-	if (min == -MATH_PI && max == MATH_PI && (value > max || value < min)) {
-		val = fmod(value, MATH_PI);
-	}
-	else {
-		val = value;
-	}
-	Real interval = max - min;
-	Real relativeVal = val - min;
-	Real res = relativeVal/interval;
-	return -1.0 + (res*2.0);
+double fRand(double min, double max) {
+	return min + (max - min)*::rand()/RAND_MAX;
 }
 
-///
-///computer an orthogonal vector to some vector (which could be a surface normal vector)
-///
-Vec3 computeOrthogonalVec(const Vec3& normalVec) {
-	Vec3 orthogonalVec(Real(normalVec.v2), Real(-1.0*normalVec.v1), Real(0.0));
-	return orthogonalVec; 
-}
 
-///
-///compute the normal vector for vector1 with respect to vector2
-///
-Vec3 computeNormalVector(const Vec3& vector1, const Vec3& vector2) {
-	Vec3 res(Real((vector2.v1 - vector1.v1)
-			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))),
-		Real((vector2.v2 - vector1.v2)
-			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))),
-		Real((vector2.v3 - vector1.v3)
-			/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2))));
-	return res;
 
-}
 
 }; /* namespace smlearning */

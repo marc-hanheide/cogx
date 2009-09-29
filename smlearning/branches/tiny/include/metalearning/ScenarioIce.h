@@ -1,4 +1,4 @@
-/** @file Scenario.h
+/** @file ScenarioIce.h
  * 
  * Learning scenario where the arm moves along a straight line
  * using reactive trajectory planner and collision detection
@@ -9,6 +9,7 @@
  * - the second runs the arm simulators
  *
  * offline and active modes of learning are available
+ * Ice Interface
  *
  * @author	Sergio Roa (DFKI)
  *
@@ -36,44 +37,53 @@
  
  */
 
-#ifndef SMLEARNING_SCENARIO_H_
-#define SMLEARNING_SCENARIO_H_
+#ifndef SMLEARNING_SCENARIOICE_H_
+#define SMLEARNING_SCENARIOICE_H_
+#define USING_ICE
 
-
-#include <system/XMLParser.h>
-#include <controller/PhysReacPlanner.h>
-#include <controller/Katana.h>
-#include <controller/Simulator.h>
-#include <tools/Msg.h>
+// #include <controller/PhysReacPlanner.h>
+// #include <controller/Katana.h>
+// #include <controller/Simulator.h>
+// #include <tools/Msg.h>
+#include <system/Bounds.h>
 #include <tools/Tools.h>
-#include <tools/Creator.h>
-#include <tools/XMLData.h>
-#include <iostream>
+// #include <tools/Creator.h>
 #include <tools/data_handling.h>
 #include <tools/math_helpers.h>
+#include <math.h>
+#include <tiny/ice/Types.h>
+#include <Ice/Ice.h>
+#include <TinyIce/TinyIce.hh>
+#include <tiny/ice/Desc.h>
+using namespace golem::tinyice;
+
+
+#include <iostream>
 
 using namespace std;
-using namespace golem;
-using namespace golem::ctrl;
-using namespace golem::phys;
-using namespace golem::tools;
+// using namespace golem;
+// using namespace golem::ctrl;
+// using namespace golem::phys;
+// using namespace golem::tools;
 
 
 namespace smlearning {
 
 #define MAX_PLANNER_TRIALS 50
 
+typedef double Real;
+
 ///
 ///This class encapsulates objects, agents and general configuration
 ///of the learning scenario for the robot
 ///
-class Scenario
+class ScenarioIce : virtual public Ice::Application
 {
 public:
 	///
 	///constructor
 	///
-	Scenario () {}
+	ScenarioIce () {}
 
 	///
 	///The experiment performed in this method behaves as follows:
@@ -81,32 +91,23 @@ public:
 	///Data are gathered and stored in a binary file for future use
 	///with learning machines running offline learning experiments.
 	///
-	bool runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences = 100, int startingPosition = 0);
-
-	///
-	///creates objects (groundplane, polyflap)
-	///
-	void setupSimulatedObjects(Scene &scene, golem::Context &context);
+	int run (int argc, char *argv[]);
 
 	///
 	///creates polyflap and puts it in the scene
 	///
-	Actor* setupPolyflap(Scene &scene, Vec3 position, Vec3 rotation, Vec3 dimensions, golem::Context &context);
+	void setupPolyflap(TinyPrx& pTiny, RigidBodyPrx& pObject, Vec3 position, Real rotationZ, Vec3 dimensions);
 
 	///
 	///creates a finger actor and sets bounds
 	///
-	void createFinger(std::vector<Bounds::Desc::Ptr> &bounds, Mat34 &referencePose, const Mat34 &pose, MemoryStream &buffer);
-	///
-	///Adding bounds to an actor
-	///
-	void addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, const std::vector<Bounds::Desc::Ptr> &boundsDescSeq);
+	void createFinger(JointPrx& pEffector, ArmPrx& pArm);
 
 	///
 	///Hack to solve a collision problem (don't know if it is still there):
 	///Function that checks if arm hitted the polyflap while approaching it
 	///
-	bool checkPfPosition(const Actor* polyFlapActor, const Mat34& refPos);
+	bool checkPfPosition(RigidBodyPrx& pObject, const Mat34& refPos);
 
 	///
 	///calculate final pose according to the given direction angle
