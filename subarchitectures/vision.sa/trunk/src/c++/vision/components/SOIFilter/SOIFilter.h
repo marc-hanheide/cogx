@@ -49,7 +49,7 @@ private:
   bool doDisplay;
   
   /**
-   * stetus of SOI persistency
+   * status of SOI persistency
    */
   enum SOIStatus {
   	CANDIDATE, //
@@ -94,21 +94,43 @@ private:
    */
   void deletedSOI(const cdl::WorkingMemoryChange & _wmc);
   
+  /**
+   * segment out object roi
+   */
   void segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMaskPtr &segMask);
   
+  
   void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
-					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const float ratio, const Video::CameraParameters &cam);
+					std::vector<CvPoint> &bgProjPoints, std::vector<int> &hull, const float ratio,
+					const Video::CameraParameters &cam);
+
+				
+  void project3DPoints(const std::vector<VisionData::SurfacePoint> surfPoints, const VisionData::ROI &roi,
+                    const float ratio, const Video::CameraParameters &cam,
+                    std::vector<CvPoint> &projPoints, std::vector<int> &hull);			
+
 					   
   void drawProjectedSOIPoints(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<CvPoint> bgProjPoints,
   					const std::vector<int> hull);
+
+  					
+  void drawPoints(IplImage *img, const std::vector<CvPoint> projPoints);
+
   
-  std::list<int> getSortedHueList(std::vector<CvPoint> projPoints, const IplImage* hueImg);
+  void drawHull(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<int> hull);
+
+  
+  std::list<int> getSortedHueList(std::vector<VisionData::SurfacePoint> surfPoints);
+
   
   std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg, int k);
+
   
   std::vector<int> getHueCostList(std::list<int> hueList, int k);
+
   
-  IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints, float huemod, float distmod);
+  IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
+                    std::vector<VisionData::SurfacePoint> surfPoints, float huemod, float distmod);
 
 protected:
   /**
