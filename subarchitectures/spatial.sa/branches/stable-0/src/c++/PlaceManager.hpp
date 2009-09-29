@@ -130,7 +130,9 @@ class PlaceManager : public cast::ManagedComponent
     				   // came from last
     int m_goalPlaceForCurrentPath; // During transitions, stores where the robot
     				   // thought it was going
-    std::map<int, std::set<int> > m_connectivities;
+    std::map<int, std::set<int> > m_connectivities; // Keeps track of the
+    					// connectivity properties maintained
+    std::map<int, std::string> m_gatewayProperties;
     FrontierInterface::FrontierReaderPrx frontierReader;
 }; // class PlaceManager
 
