@@ -99,8 +99,6 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 void 
 PlaceManager::start()
 {
-  FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
-  registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 					&PlaceManager::newNavNode));
