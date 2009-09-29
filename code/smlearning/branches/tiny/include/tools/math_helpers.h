@@ -28,16 +28,6 @@
 #ifndef SMLEARNING_MATHHELPERS_H_
 #define SMLEARNING_MATHHELPERS_H_
 
-// #ifndef USING_ICE
-// #include <system/Vec3.h>
-// using namespace golem;
-// #else
-// #include <Ice/Ice.h>
-// #include <TinyIce/TinyIce.hh>
-// #include <tiny/ice/Desc.h>
-// typedef double Real;
-// using namespace golem::tinyice;
-// #endif
 #include <math.h>
 #include <stdlib.h>
 
@@ -49,7 +39,7 @@ const double PI = 3.14159265358979323846;
 ///function for normalizing values according to given bounds
 ///
 template <typename R>
-R normalize(const R& value, const R& min, const R& max) {
+R normalize(R const& value, R const& min, R const& max) {
 	R val;
 	if (min == -PI && max == PI && (value > max || value < min)) {
 		val = fmod(value, PI);
@@ -68,7 +58,7 @@ R normalize(const R& value, const R& min, const R& max) {
 ///computer an orthogonal vector to some vector (which could be a surface normal vector)
 ///
 template <typename V>
-V computeOrthogonalVec(const V& normalVec) {
+V computeOrthogonalVec(V const& normalVec) {
 	V orthogonalVec;
 	orthogonalVec.v1 = normalVec.v2;
 	orthogonalVec.v2 = -1.0*normalVec.v1;
@@ -80,7 +70,7 @@ V computeOrthogonalVec(const V& normalVec) {
 ///compute the normal vector for vector1 with respect to vector2
 ///
 template <typename V>
-V computeNormalVector(const V& vector1, const V& vector2) {
+V computeNormalVector(V const& vector1, V const& vector2) {
 	V res;
 	res.v1 = (vector2.v1 - vector1.v1)
 		/sqrt(pow(vector2.v1 - vector1.v1,2) + pow(vector2.v2 - vector1.v2,2) + pow(vector2.v3 - vector1.v3,2));

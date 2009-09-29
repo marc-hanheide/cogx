@@ -366,10 +366,10 @@ int ScenarioIce::run (int argc, char *argv[]) {
 		/////////////////////////////////////////////////
 		//writing in the initial vector
 		//Trajectory curve coefficients
-		infoVector.push_back(normalize<double>(coefs[0], -5, 5));
-		infoVector.push_back(normalize<double>(coefs[1], -5, 5));
-		infoVector.push_back(normalize<double>(coefs[2], -5, 5));
-		infoVector.push_back(normalize<double>(coefs[3], -5, 5));
+		infoVector.push_back(normalize<Real>(coefs[0], -5, 5));
+		infoVector.push_back(normalize<Real>(coefs[1], -5, 5));
+		infoVector.push_back(normalize<Real>(coefs[2], -5, 5));
+		infoVector.push_back(normalize<Real>(coefs[3], -5, 5));
 		//initial position, normalized
 		infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
 		infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
