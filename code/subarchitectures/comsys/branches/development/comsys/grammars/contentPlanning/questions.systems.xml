@@ -55,15 +55,15 @@
    </conditions>
    <actions>
 
-   <action choice="wh-type-property"> <!-- kept this for future reference or use -->
+   <action choice="wh-type-property"> 
 	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
 	 <add-proposition dest="SCOPE" propositions="@what" />
 	 <add-relation mode="Wh-Restr" dest="SCOPE" type="*VAR*" />
      <add-feature  dest="SCOPE" feature="PRONOMINALIZED" value="true" /> 
    </action>
 
-   <action choice="wh-type-property-somesmart attempt"> 
-      <!-- a what-question; instead of "what is x" we're going to generate "what x is this" -->	  
+   <action choice="wh-type-property-somesmart attempt"> <!-- kept this for future reference or use -->
+      <!-- a what-question; instead of "what is this" we're going to generate "what x is this" -->	  
 	 <replace-relation mode="Cop-Scope" newmode="Cop-Scope-JunkIt"	  />
 	 <replace-relation mode="Cop-Restr" newmode="Cop-Scope"	  />
 	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
