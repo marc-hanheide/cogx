@@ -10,7 +10,7 @@
 // PACKAGE
 // ---------------------------------------------------------
 
-package comsys.processing.collab;
+package comsys.processing.cca;
 
 // ---------------------------------------------------------
 // BELIEFMODEL imports
@@ -30,7 +30,7 @@ import comsys.datastructs.comsysEssentials.ReadingBindings;
 import comsys.datastructs.lf.LogicalForm; 
 import comsys.lf.utils.ArrayIterator;
 
-import comsys.processing.collab.AbducerUtils;
+import comsys.processing.cca.AbducerUtils;
 
 // ---------------------------------------------------------
 // CAST imports

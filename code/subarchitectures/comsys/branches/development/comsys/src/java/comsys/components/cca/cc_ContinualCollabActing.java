@@ -1,4 +1,4 @@
-package comsys.components.collab;
+package comsys.components.cca;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -22,9 +22,9 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 import Abducer.*;
-import comsys.processing.collab.ContinualCollaborativeActivity;
-import comsys.processing.collab.MercuryUtils;
-import comsys.processing.collab.AbducerUtils;
+import comsys.processing.cca.ContinualCollaborativeActivity;
+import comsys.processing.cca.MercuryUtils;
+import comsys.processing.cca.AbducerUtils;
 
 public class cc_ContinualCollabActing extends ManagedComponent {
 
