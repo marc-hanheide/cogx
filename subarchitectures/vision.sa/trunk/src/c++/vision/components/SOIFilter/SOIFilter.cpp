@@ -9,14 +9,20 @@
 #define TIME_THR_DEFAULT 500
 #define UPD_THR_DEFAULT 5
 #define CAM_ID_DEFAULT 0
-#define DILATE_FACTOR 1.1  // HACK: Michael Zillich, was 1.5
+#define DILATE_FACTOR 1.3
 
 // Segmentation costants
 
-#define SMOOTH_COST 25
+#define SMOOTH_COST 15
 #define HUE_K_VAL 3 // Number of nearest neighbours taken when calculating the cost for hue
 
-#define LABEL_0_COST 15
+#define OBJ_HUE_TOLERANCE 20
+#define BG_HUE_TOLERANCE 5
+
+#define OBJ_DIST_TOLERANCE 9999
+#define BG_DIST_TOLERANCE 9999
+
+#define LABEL_FIX_COST 10
 
 #define MAX_HUE_VAL 180
 #define MIN_HUE_VAL 0
@@ -85,7 +91,7 @@ vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage*
 	
 		for(int i=0; i<num_pixels; i++) {
 			int idx = num_labels *i;
-			data[idx] = LABEL_0_COST;
+			data[idx] = lblFixCost;
 			data[idx + 1] = costImg->imageData[i];
 			data[idx + 2] = bgCostImg->imageData[i];
 		}
@@ -124,24 +130,35 @@ list<int> SOIFilter::getSortedHueList(vector<SurfacePoint> surfPoints)
 	vector<SurfacePoint>::iterator it;
 	int size = surfPoints.size();
 	
+	if(size == 0)
+	{ 
+		log("WARNING: Surface point list empty");
+		return hueList;
+	}
+	
 	IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
-	IplImage* dst = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
+	IplImage* dst = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
+	IplImage* srcL = cvCreateImage(cvSize(size*10, 10), IPL_DEPTH_8U, 3);
+	//IplImage* dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
 	
 	for(int i=0; i< size; i++)
 	{
 	  CvScalar v;
-	  
-	  v.val[0] = (unsigned) surfPoints[i].c.r;
+	  //log("red: %i green: %i blue: %i", (unsigned) surfPoints[i].c.r, (unsigned) surfPoints[i].c.g, (unsigned) surfPoints[i].c.b);	  
+	  v.val[0] = (unsigned) surfPoints[i].c.b;
 	  v.val[1] = (unsigned) surfPoints[i].c.g;
-	  v.val[2] = (unsigned) surfPoints[i].c.b;
+	  v.val[2] = (unsigned) surfPoints[i].c.r;
 	  
-	  cvSet2D(src, 1, i, v);
+	  cvSet2D(src, 0, i, v);
 	}
 	
-	cvCvtColor(src, dst, CV_RGB2HLS);
+	cvCvtColor(src, dst, CV_BGR2HLS);
 	
 	for(int i=0; i< size; i++)
-	  hueList.push_back(cvGet2D(dst, 1, i).val[0]);
+	{
+	  hueList.push_back(cvGet2D(dst, 0, i).val[0]);
+	  //log("hue: %i", (unsigned) cvGet2D(dst, 0, i).val[0]);
+	} 
 			
 	  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
 //	  if(it->x < hueImg->width && it->y < hueImg->height && it->x >= 0 && it->y >= 0) 
@@ -154,6 +171,15 @@ list<int> SOIFilter::getSortedHueList(vector<SurfacePoint> surfPoints)
 //	for( itr=hueList.begin(); itr!=hueList.end(); itr++)
 //		printf("%i ", *itr);
 //		printf("\n");
+	cvResize(src, srcL, CV_INTER_NN);
+	//cvResize(dst, dstL, CV_INTER_NN);
+	cvShowImage("Obj RGB Colors", srcL);
+    //cvShowImage("Obj HLS Colors", dstL);
+
+	cvReleaseImage(&srcL);
+	//cvReleaseImage(&dstL);
+	cvReleaseImage(&src);
+	cvReleaseImage(&dst);
 	
 	return hueList;
 }
@@ -260,6 +286,11 @@ void SOIFilter::configure(const map<string,string> & _config)
   timeThr = TIME_THR_DEFAULT;
   camId = CAM_ID_DEFAULT;
   doDisplay = false;
+  objHueTolerance = OBJ_HUE_TOLERANCE;
+  objDistTolerance = OBJ_DIST_TOLERANCE;
+  bgHueTolerance = BG_HUE_TOLERANCE;
+  bgDistTolerance = BG_DIST_TOLERANCE;
+  lblFixCost = LABEL_FIX_COST;
   
   if((it = _config.find("--upd")) != _config.end())
   {
@@ -284,6 +315,36 @@ void SOIFilter::configure(const map<string,string> & _config)
   {
     doDisplay = true;
   }
+  
+  if((it = _config.find("--objht")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> objHueTolerance;
+  }
+  
+  if((it = _config.find("--objdt")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> objDistTolerance;
+  }
+  
+  if((it = _config.find("--bght")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> bgHueTolerance;
+  }
+  
+  if((it = _config.find("--bgdt")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> bgDistTolerance;
+  }
+  
+    if((it = _config.find("--fixc")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> lblFixCost;
+  }
 }
 
 void SOIFilter::start()
@@ -301,6 +362,8 @@ void SOIFilter::start()
   	cvNamedWindow("Last segmentation", 1);
   	cvNamedWindow("Last object cost image", 1);
   	cvNamedWindow("Last surface cost image", 1);
+  	cvNamedWindow("Obj RGB Colors", 1);
+  	//cvNamedWindow("Obj HLS Colors", 1);
   }
   
   // we want to receive detected SOIs
@@ -378,6 +441,8 @@ void SOIFilter::runComponent()
   	cvDestroyWindow("Full image");
   	cvDestroyWindow("Last object cost image");
   	cvDestroyWindow("Last surface cost image");
+  	cvDestroyWindow("Obj RGB Colors");
+  	//cvDestroyWindow("Obj HLS Colors");
   }
 }
 
@@ -586,12 +651,12 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	vector<int> hueCostList = getHueCostList(getSortedHueList(surfPoints), HUE_K_VAL);  
  //   list<int> hueList = getSortedHueList(projPoints, huePatch);
  //   vector<int> hueCostList = getHueCostList(hueList, 3);
-    
+
     float hueSigma2 = 2*sqr(hueSigma);
     float distSigma2 = 2*sqr(distSigma);
     //float factor = 1/sqrt(2*acos(-1.0))/sigma;
     float norm = 100;
- 
+
 	for(int i=0; i < costImg->height; i++)
 	  for(int j=0; j < costImg->width; j++) {
 
@@ -641,7 +706,8 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	
 	cvSetImageROI(iplImg, rect);
 	
-	float ratio = cvGetSize(iplImg).width * cvGetSize(iplImg).height; log("width: %i height %i", cvGetSize(iplImg).width, cvGetSize(iplImg).height);
+	float ratio = cvGetSize(iplImg).width * cvGetSize(iplImg).height;
+	
 	if ( ratio > MAX_PATCH_SIZE)
 		ratio = sqrt(MAX_PATCH_SIZE / ratio);
 	else
@@ -664,18 +730,18 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
      
     vector<CvPoint> projPoints, bgProjPoints;
     vector<int>  hullPoints;    
-    
+   
     projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
 
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, 18, 60);
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance);
     
-    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, 3, 9000);  	
-	
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->EQpoints, bgHueTolerance, bgDistTolerance);  	
+
 	segMask = new SegmentMask;
     
     segMask->width = iplPatchHLS->width;
     segMask->height = iplPatchHLS->height;
- 
+
     vector<int> labels = graphCut(segMask->width, segMask->height, 3, costPatch, bgCostPatch, HUE_K_VAL);
     segMask->data = labels;
     convertImageFromIpl(iplPatch, imgPatch);
