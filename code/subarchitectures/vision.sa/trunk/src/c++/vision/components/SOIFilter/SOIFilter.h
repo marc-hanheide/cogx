@@ -49,6 +49,16 @@ private:
   bool doDisplay;
   
   /**
+  * Segmentation tolerances for distance and hue
+  *(gaussian dispersion)
+  */
+  float objHueTolerance;
+  float objDistTolerance;
+  float bgHueTolerance;
+  float bgDistTolerance;
+  int lblFixCost;
+  
+  /**
    * status of SOI persistency
    */
   enum SOIStatus {
