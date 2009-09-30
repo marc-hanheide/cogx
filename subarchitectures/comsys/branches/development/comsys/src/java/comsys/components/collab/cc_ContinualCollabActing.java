@@ -24,7 +24,7 @@ import cast.core.CASTUtils;
 import Abducer.*;
 import comsys.processing.collab.ContinualCollaborativeActivity;
 import comsys.processing.collab.MercuryUtils;
-import comsys.processing.collab.AbdUtils;
+import comsys.processing.collab.AbducerUtils;
 
 public class cc_ContinualCollabActing extends ManagedComponent {
 

@@ -30,7 +30,7 @@ import comsys.datastructs.comsysEssentials.ReadingBindings;
 import comsys.datastructs.lf.LogicalForm; 
 import comsys.lf.utils.ArrayIterator;
 
-import comsys.processing.collab.AbdUtils;
+import comsys.processing.collab.AbducerUtils;
 
 // ---------------------------------------------------------
 // CAST imports
@@ -160,13 +160,13 @@ public class ContinualCollaborativeActivity {
 		Abducer.UnsolvedQuery goal = new Abducer.UnsolvedQuery();
 		goal.mark = Abducer.Marking.Unsolved;
 
-		goal.body = AbdUtils.modalisedFormula(
+		goal.body = AbducerUtils.modalisedFormula(
 				new Modality[] {
-					AbdUtils.eventModality()
+					AbducerUtils.eventModality()
 				},
-				AbdUtils.predicate(activityMode, new Term[] {
-					AbdUtils.term("h"),
-					AbdUtils.term(lf.root.nomVar)
+				AbducerUtils.predicate(activityMode, new Term[] {
+					AbducerUtils.term("h"),
+					AbducerUtils.term(lf.root.nomVar)
 				}));
 
 		abducer.addAssumable("guess", goal.body, 1.0f);
@@ -207,7 +207,7 @@ public class ContinualCollaborativeActivity {
 	 * @param lf the logical form
 	 */
 	public void addFactualContext (LogicalForm lf) {
-		ModalisedFormula[] facts = AbdUtils.lfToFacts(new Modality[] {AbdUtils.infoModality()}, lf);
+		ModalisedFormula[] facts = AbducerUtils.lfToFacts(new Modality[] {AbducerUtils.infoModality()}, lf);
 		for (int i = 0; i < facts.length; i++) {
 			abducer.addFact(facts[i]);
 		}
@@ -236,13 +236,13 @@ public class ContinualCollaborativeActivity {
 					// now we can get the entityID, and the float -- i.e. the cost of this one being bound / anchored
 					float cost = 1.5f - anchor.probExists;
 
-					ModalisedFormula f = AbdUtils.modalisedFormula(
+					ModalisedFormula f = AbducerUtils.modalisedFormula(
 							new Modality[] {
-								AbdUtils.attStateModality()
+								AbducerUtils.attStateModality()
 							},
-							AbdUtils.predicate("refers_to", new Term[] {
-								AbdUtils.term(nomVar),
-								AbdUtils.term(anchor.entityID)
+							AbducerUtils.predicate("refers_to", new Term[] {
+								AbducerUtils.term(nomVar),
+								AbducerUtils.term(anchor.entityID)
 							}));			
 					abducer.addAssumable("whatif_binding", f, cost);
 					
