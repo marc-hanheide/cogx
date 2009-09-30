@@ -46,7 +46,6 @@
 	<target name="slice-BinderEssentials" depends="prepare" description="generates source from slice">
 	  <slice2java tie="true" outputdir="${src.dir}"> 
 	    <fileset dir="${slice.dir}" includes="BinderEssentials.ice"/>
-	    <fileset dir="${slice.dir}" includes="BinderDomainModel.ice"/>
 	    <includepath>
              <pathelement path="${slice.dir}"/>
  	    	 <pathelement path="${castslice.dir}"/>	    	
