@@ -254,6 +254,17 @@ public class cc_ReferentialBindings
 			ReadingBindings[] rbindings = new ReadingBindings[boundReadings.size()];
 			rbindings = (ReadingBindings[])boundReadings.toArray(rbindings);
 			bindings.bindings = rbindings;
+			for (int i = 0; i < bindings.bindings.length; i++) {
+				log(bindings.bindings[i].id);
+				for (int j = 0; j < bindings.bindings[i].bindings.length; j++) {
+					log("  " + bindings.bindings[i].bindings[j].nomVar);
+					for (int k = 0; k < bindings.bindings[i].bindings[j].antecedents.length; k++) {
+						log("    " + bindings.bindings[i].bindings[j].antecedents[k].entityID + " ["
+								+ bindings.bindings[i].bindings[j].antecedents[k].probExists + "]");
+					}
+				}
+			}
+
 			// add bindings object to working memory
 			addToWorkingMemory(newDataID(),	bindings);
 			log("restrictive referential bindings successfully added to working memory");
