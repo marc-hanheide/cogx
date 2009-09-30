@@ -9,6 +9,7 @@
 #include <stack>
 #include <vector>
 #include <VideoUtils.h>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 /**
  * The function called to create a new instance of our component.
@@ -28,6 +29,7 @@ using namespace Stereo;
 using namespace cogx;
 using namespace cogx::Math;
 using namespace VisionData;
+using namespace cdl;
 
 int win;
 int objnumber = 0;
@@ -389,7 +391,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			amount.at(label-1) = amount.at(label-1) + 1;
 			VisionData::SurfacePoint PushStructure;
 			PushStructure.p = v3Obj;
-			PushStructure.c.r = PushStructure.c.g = PushStructure.c.b = 0;
+			PushStructure.c = points.at(i).c;
 			SOIPointsSeq.at(label-1).push_back(PushStructure);
 		}
 	}
@@ -423,10 +425,9 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			VisionData::SurfacePoint PushStructure;
 			PushStructure.p = points.at(j).p;
 			PushStructure.c = points.at(j).c;
-
 			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
 			int label = labels.at(j);
-			if (label == -1 && dist(Point_DP,Center_DP) < 1.1*radius_world.at(i)) // equivocal points
+			if (label == -1 && dist(Point_DP,Center_DP) < 1.2*radius_world.at(i)) // equivocal points
 			{
 				EQPointsSeq.at(i).push_back(PushStructure);
 				glPointSize(2);
@@ -435,7 +436,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
 				glEnd();
 			}
-			if (label == 0 && dist(Point_DP,Center_DP)>1.1*dist(Point_DP,Center_DP) && dist(Point_DP,Center_DP) < 1.5*radius_world.at(i) ) //BG nearby also required
+			if (label == 0 && dist(Point_DP,Center_DP)>1.2*radius_world.at(i) && dist(Point_DP,Center_DP) < 1.5*radius_world.at(i) ) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(PushStructure);
 
