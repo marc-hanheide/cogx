@@ -283,6 +283,19 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.clearOutput()
         self.mainLog.rereadLogs()
 
+    def on_btCmakeGui_clicked(self, valid=True):
+        if not valid: return
+        root = options.xe("${COGX_ROOT}")
+        bdir = options.xe("${COGX_BUILD_DIR}")
+        bcmc = os.path.join(bdir, "CMakeCache.txt")
+        if not os.path.exists(bdir): os.makedirs(bdir)
+        cwd = os.getcwd()
+        try:
+            cmd = 'cmake-gui %s' % root
+            procman.runCommand(cmd, name="cmake-gui", workdir=bdir)
+        finally:
+            os.chdir(cwd)
+
     def editFile(self, fn):
         shell = "/bin/sh"
         cmd = self._userOptions.textEditCmd
