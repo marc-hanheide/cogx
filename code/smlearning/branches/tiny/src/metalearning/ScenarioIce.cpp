@@ -156,7 +156,26 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	printf("Creating the arm...\n");
 	if (atoi(argv[1]) == 0) {
 		KatArmDesc* pArmDesc = new KatArmDescI; // Katana
+		pArmDesc->bGripper = true;
 		pArm = ArmPrx::checkedCast(pTiny->createActor(ActorDescPtr(pArmDesc)));
+		KatSensorDataSet sensorData;
+		KatSensorDataSet thresholdData;
+		
+		KatArmPrx pKatArm = KatArmPrx::checkedCast(pArm);
+
+		KatGripperEncoderData encoderData;
+		if (pKatArm->gripperRecvSensorData(5.0, sensorData)) {
+			for (KatSensorDataSet::const_iterator iter = sensorData.begin(); iter != sensorData.end(); iter++) {
+				KatSensorData sensor = KatSensorData(*iter);
+				sensor.value = 150;
+				thresholdData.push_back (sensor);
+// 				cout << "thr. index " << sensor.index <<  ": " << sensor.value << endl;
+// 				cout << "read index " << (*iter).index <<  ": " << (*iter).value << endl;
+			}			
+
+		}
+		pKatArm->gripperClose(5.0, thresholdData);
+		
 	}
 	else {
 		KatSimArmDesc* pArmDesc = new KatSimArmDescI; // Katana simulator
@@ -168,14 +187,9 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	JointPrx pEffector = pArm->getJoints().back();
 
 	
-// 	// some useful pointers
-// 	ReacPlanner &reacPlanner = pPhysReacPlanner->getReacPlanner();
-// 	Planner &planner = pPhysReacPlanner->getPlanner();
-// 	Arm &arm = pPhysReacPlanner->getArm();
-
-// 		setupSimulatedObjects(*pScene, *context);
 	createFinger(pEffector, pArm);
-		
+
+	
 	// Display arm information
 	//armInfo(arm);
 	//sleep (1);
