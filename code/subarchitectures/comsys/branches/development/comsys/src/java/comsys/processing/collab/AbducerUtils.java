@@ -6,7 +6,7 @@ import comsys.datastructs.lf.*;
 import comsys.lf.utils.LFUtils;
 import Abducer.*;
 
-public class AbdUtils {
+public class AbducerUtils {
 
 	/** Return a new modalised formula.
 	 * 
