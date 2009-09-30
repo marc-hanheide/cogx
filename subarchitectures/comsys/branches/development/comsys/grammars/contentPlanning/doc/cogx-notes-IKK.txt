@@ -11,13 +11,10 @@ Weird problem with ascription:
 NOTE: order within Target matters; if box not last, then Color gets not planned !!
 
 
-Ascription of object type
-"This is a/the ball"
-
-
 Ascription wh-questions: alternative formulations
 -- what color does the box have
 -- which box has blue color
+-- what object is this (object)
 
 
 Multiple properties in ascription
