@@ -9,6 +9,7 @@ module Abducer {
 	
 	exception FileNotFoundException extends AbducerException {};
 	exception SyntaxErrorException extends AbducerException {};
+	exception NoProofException extends AbducerException {};
 
 	//-----------------------------------------------------------------
 
@@ -144,36 +145,32 @@ module Abducer {
 
 	sequence<MarkedQuery> MarkedQuerySeq;
 
-	// an abductive proof is a list of marked queries and its overall
-	// cost
-	class AbductiveProof {
-		float cost;
-		MarkedQuerySeq body;
-	};
-
 	//-----------------------------------------------------------------
 
 	// SERVER INTERFACE
 
 	enum ProveResult {
-		SUCCESS,
-		FAILED,
-		ERROR
+		ProofFound,
+		NoProofFound,
+		Error
 	};
 
 	interface AbducerServer {
 		void clearRules();
-		void loadRulesFromFile(string filename) throws FileNotFoundException, SyntaxErrorException;
+		void loadRulesFromFile(string filename)
+				throws FileNotFoundException, SyntaxErrorException;
 
 		void clearFacts();
-		void loadFactsFromFile(string filename) throws FileNotFoundException, SyntaxErrorException;
+		void loadFactsFromFile(string filename)
+				throws FileNotFoundException, SyntaxErrorException;
 		void addFact(ModalisedFormula f);
 
 		void clearAssumables();
 		void addAssumable(string function, ModalisedFormula f, float cost);
 
 		ProveResult prove(MarkedQuerySeq g);
-		AbductiveProof getBestProof();
+		MarkedQuerySeq getBestProof()
+				throws NoProofException;
 	};
 
 };
