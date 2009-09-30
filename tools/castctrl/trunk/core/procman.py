@@ -347,7 +347,7 @@ class CProcessManager(object):
  
 def runCommand(cmd, params=None, workdir=None, name="onetime"):
     try:
-        p = CProcess(name, cmd)
+        p = CProcess(name, cmd, params=params, workdir=workdir)
         p.start()
         pipes = p.getPipes()
         while p.isRunning():

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Sep 22 14:20:48 2009
-#      by: PyQt4 UI code generator 4.4.3
+# Created: Tue Sep 29 12:35:05 2009
+#      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -330,6 +330,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.btBuildInstall)
         spacerItem11 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem11)
+        self.btCmakeGui = QtGui.QPushButton(self.tab_4)
+        self.btCmakeGui.setObjectName("btCmakeGui")
+        self.horizontalLayout_6.addWidget(self.btCmakeGui)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
         self.buildLogfileTxt = QtGui.QTextEdit(self.tab_4)
         self.buildLogfileTxt.setUndoRedoEnabled(False)
@@ -341,7 +344,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 883, 23))
         self.menubar.setObjectName("menubar")
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName("menuCast")
@@ -401,6 +404,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Configure", None, QtGui.QApplication.UnicodeUTF8))
         self.btBuild.setText(QtGui.QApplication.translate("MainWindow", "make", None, QtGui.QApplication.UnicodeUTF8))
         self.btBuildInstall.setText(QtGui.QApplication.translate("MainWindow", "make install", None, QtGui.QApplication.UnicodeUTF8))
+        self.btCmakeGui.setText(QtGui.QApplication.translate("MainWindow", "Config...", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("MainWindow", "Build", None, QtGui.QApplication.UnicodeUTF8))
         self.menuCast.setTitle(QtGui.QApplication.translate("MainWindow", "&Cast", None, QtGui.QApplication.UnicodeUTF8))
         self.actQuit.setText(QtGui.QApplication.translate("MainWindow", "&Quit", None, QtGui.QApplication.UnicodeUTF8))
