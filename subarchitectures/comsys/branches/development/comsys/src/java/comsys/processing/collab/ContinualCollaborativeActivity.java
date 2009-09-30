@@ -153,24 +153,29 @@ public class ContinualCollaborativeActivity {
 	 
 	 @param activityMode The mode in which a proof is constructed
 	 @param lf The logical form for which a proof is constructed
-	 @returns AbductiveProof The abductive proof
+	 @returns MarkedQuery[] The abductive proof
 	 */ 
 	
-	public AbductiveProof constructProof (String activityMode, LogicalForm lf) {
-		AbdUtils.addLFAsExplicitFacts(abducer, lf);
+	public MarkedQuery[] constructProof (String activityMode, LogicalForm lf) {
 		Abducer.UnsolvedQuery goal = new Abducer.UnsolvedQuery();
 		goal.mark = Abducer.Marking.Unsolved;
-		goal.body = new ModalisedFormula();
-		goal.body.m = new Modality[] {AbdUtils.modEvent()};
-		goal.body.p = AbdUtils.predicate(activityMode, new Term[] {
-										 AbdUtils.term("h"),
-										 AbdUtils.term(lf.root.nomVar)
-										 });
-		goal.isConst = true;
-		goal.costFunction = "";
-		goal.constCost = 50.0f;
+
+		goal.body = AbdUtils.modalisedFormula(
+				new Modality[] {
+					AbdUtils.eventModality()
+				},
+				AbdUtils.predicate(activityMode, new Term[] {
+					AbdUtils.term("h"),
+					AbdUtils.term(lf.root.nomVar)
+				}));
+
+		abducer.addAssumable("guess", goal.body, 1.0f);
 		
-		Abducer.MarkedQuery[] goals = new Abducer.MarkedQuery[] {goal};
+		goal.isConst = false;
+		goal.costFunction = "true";
+		goal.constCost = 0.0f;
+
+		MarkedQuery[] goals = new MarkedQuery[] {goal};
 		
 		String listGoalsStr = "";
 		for (int i = 0; i < goals.length; i++) {
@@ -182,15 +187,31 @@ public class ContinualCollaborativeActivity {
 		//           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
 		
 		ProveResult result = abducer.prove(goals);
-		if (result == Abducer.ProveResult.SUCCESS) {
+		if (result == Abducer.ProveResult.ProofFound) {
 			log("seems we've got a proof");
-			AbductiveProof p = abducer.getBestProof();
-			return p; 
+			try {
+				MarkedQuery[] p = abducer.getBestProof();
+				return p;
+			}
+			catch (NoProofException e) {
+				e.printStackTrace();
+				return null;
+			}
 		} else { 
 			return null; 
 		} // end if.. else
 	} // end method
-
+	
+	/** Add the logical form to the set of abducer's facts.
+	 * 
+	 * @param lf the logical form
+	 */
+	public void addFactualContext (LogicalForm lf) {
+		ModalisedFormula[] facts = AbdUtils.lfToFacts(new Modality[] {AbdUtils.infoModality()}, lf);
+		for (int i = 0; i < facts.length; i++) {
+			abducer.addFact(facts[i]);
+		}
+	}
 	
 	/** 
 	 addAnchoringContext can be called to add (cost) information about anchoring restrictive LF content, to the abducer. this
@@ -213,7 +234,21 @@ public class ContinualCollaborativeActivity {
 				for (ArrayIterator anchorings = new ArrayIterator(binding.antecedents); anchorings.hasNext(); ) { 
 					Anchor anchor = (Anchor) anchorings.next();
 					// now we can get the entityID, and the float -- i.e. the cost of this one being bound / anchored
-					float probability = anchor.probExists; 
+					float cost = 1.5f - anchor.probExists;
+
+					ModalisedFormula f = AbdUtils.modalisedFormula(
+							new Modality[] {
+								AbdUtils.attStateModality()
+							},
+							AbdUtils.predicate("refers_to", new Term[] {
+								AbdUtils.term(nomVar),
+								AbdUtils.term(anchor.entityID)
+							}));			
+					abducer.addAssumable("whatif_binding", f, cost);
+					
+					log("add assumable: " + MercuryUtils.modalisedFormulaToString(f)
+							+ " / whatif_binding = "
+							+ new Float(cost).toString());
 					
 				} // end for over the antecedents for the nominal variable
 			} // end for over bindings for an individual reading

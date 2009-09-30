@@ -9,8 +9,7 @@ import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
 import comsys.arch.ProcessingData;
 import comsys.datastructs.comsysEssentials.PackedLFs;
-import comsys.datastructs.comsysEssentials.SelectedLogicalForm;
-import comsys.datastructs.comsysEssentials.SelectedLogicalFormHolder;
+import comsys.datastructs.comsysEssentials.BoundReadings;
 
 import comsys.lf.utils.LFUtils;
 
@@ -91,7 +90,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 		// now do the rest
 		// register change filters for ProductionLF, which triggers realization
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class,  WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(BoundReadings.class,  WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 //						System.err.println("slf");
@@ -211,18 +210,22 @@ public class cc_ContinualCollabActing extends ManagedComponent {
     private void executeEventInterpretTask(ProcessingData pd) throws ComsysException {
     	log("interpreting an event");
     	try {	
-            CASTData slfWM = pd.getByType(CASTUtils.typeName(SelectedLogicalForm.class));
-            if (slfWM != null) {
-				// get the logical form
-            	SelectedLogicalForm slf = (SelectedLogicalForm) slfWM.getData();
+            CASTData brsWM = pd.getByType(CASTUtils.typeName(BoundReadings.class));
+            if (brsWM != null) {
+				// get the data
+            	BoundReadings boundReadings = (BoundReadings) brsWM.getData();
+            	
 				// construct the abductive proof
-				AbductiveProof proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, slf); 
+            	ccaEngine.addFactualContext(boundReadings.lform);
+            	ccaEngine.addAnchoringContext(boundReadings);
+				MarkedQuery[] proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, boundReadings.lform);
+
 				// print the proof ... 
 				if (proof != null) { 	
             		String logString = "proof: body = [\n";
-            		for (int i = 0; i < proof.body.length; i++) {
-            			logString += MercuryUtils.modalisedFormulaToString(proof.body[i].body);
-            			if (i < proof.body.length-1) { logString += ",\n"; }
+            		for (int i = 0; i < proof.length; i++) {
+            			logString += MercuryUtils.modalisedFormulaToString(proof[i].body);
+            			if (i < proof.length-1) { logString += ",\n"; }
             		}
             		logString += "\n]";
             		log(logString);

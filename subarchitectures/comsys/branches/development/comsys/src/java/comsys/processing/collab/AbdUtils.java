@@ -8,13 +8,25 @@ import Abducer.*;
 
 public class AbdUtils {
 
-	public static ModalisedFormula modFormula(Modality[] ms, Predicate p) {
+	/** Return a new modalised formula.
+	 * 
+	 * @param ms list of modalities, m1...mn
+	 * @param p the formula to be modalised, p(t1...tn)
+	 * @return ModalisedFormula the modalised formula, "m1...mn:p(t1...tn)"
+	 */
+	public static ModalisedFormula modalisedFormula(Modality[] ms, Predicate p) {
 		ModalisedFormula mf = new ModalisedFormula();
 		mf.m = ms;
 		mf.p = p;
 		return mf;
 	}
 	
+	/** Return a new predicate.
+	 * 
+	 * @param predSym predicate symbol
+	 * @param args arguments (terms)
+	 * @return Predicate the predicate
+	 */
 	public static Predicate predicate(String predSym, Term[] args) {
 		Predicate p = new Predicate();
 		p.predSym = predSym;
@@ -22,6 +34,12 @@ public class AbdUtils {
 		return p;
 	}
 	
+	/** Return a function term.
+	 * 
+	 * @param functor term functor
+	 * @param args arguments (terms)
+	 * @return FunctionTerm the term
+	 */
 	public static FunctionTerm term(String functor, Term[] args) {
 		FunctionTerm f = new FunctionTerm();
 		f.type = Abducer.TermType.Function;
@@ -30,10 +48,20 @@ public class AbdUtils {
 		return f;
 	}
 
+	/** Return a function term with no arguments.
+	 * 
+	 * @param functor term functor
+	 * @return FunctionTerm the term
+	 */
 	public static FunctionTerm term(String functor) {
 		return term(functor, new Term[0]);
 	}
 	
+	/** Return a named variable.
+	 * 
+	 * @param name variable name
+	 * @return VariableTerm the term
+	 */
 	public static VariableTerm var(String name) {
 		VariableTerm v = new VariableTerm();
 		v.type = Abducer.TermType.Variable;
@@ -41,93 +69,96 @@ public class AbdUtils {
 		return v;
 	}
 
-	public static InfoModality modInfo() {
+	public static InfoModality infoModality() {
 		InfoModality m = new InfoModality();
 		m.type = ModalityType.Info;
 		return m;
 	}
 	
-	public static EventModality modEvent() {
+	public static EventModality eventModality() {
 		EventModality m = new EventModality();
 		m.type = ModalityType.Event;
 		return m;
 	}
 	
-	public static void addLFAsExplicitFacts(AbducerServerPrx abducer, LogicalForm lf) {
-		LFNominal rootnom = lf.root;
-		Vector rootDependents = LFUtils.lfCollectNomvars(rootnom,lf);
-
-		addNomToExplicitFacts(abducer, rootnom, lf);
-/*
-		for (int i=0; i < lf.noms.length; i++) {
-			LFNominal nom = lf.noms[i];			
-			if (!result.contains(nom.nomVar)) {
-//				log("Nominal ["+nom.nomVar+"] not subordinated to the root ["+rootnom.nomVar+"]");
-				addNomToExplicitFacts(abducer, nom, lf);
-			} else {
-//				log("Nominal ["+nom.nomVar+"] subordinated to the root ["+rootnom.nomVar+"]");				
-			} 
-		}
-*/
+	public static AttStateModality attStateModality() {
+		AttStateModality m = new AttStateModality();
+		m.type = ModalityType.AttState;
+		return m;
 	}
-	
-	private static void addNomToExplicitFacts (AbducerServerPrx abducer, LFNominal nom, LogicalForm lf) {
+
+	/** Convert a logical form to an array of modalised formulas.
+	 * 
+	 * @param modality prefixed to every fact
+	 * @param lf
+	 * @return set of corresponding facts
+	 */
+	public static ModalisedFormula[] lfToFacts(Modality[] modality, LogicalForm lf) {
+		ArrayList<ModalisedFormula> facts = new ArrayList<ModalisedFormula>();
+		for (int i=0; i < lf.noms.length; i++) {
+			LFNominal nom = lf.noms[i];
+			addNomToFactList(facts, modality, lf.noms[i], lf);
+		}
+		return facts.toArray(new ModalisedFormula[0]);
+	}
+
+	private static void addNomToFactList(AbstractList<ModalisedFormula> facts, Modality[] factModality, LFNominal nom, LogicalForm lf) {
+		// nominal term
 		Term nomTerm = term(nom.nomVar);
-//		System.err.println("add nom: " + nom.nomVar);
-		abducer.addFact(modFormula(
-				new Modality[] {modInfo()},
-				predicate("sort", new Term[] {nomTerm, term(nom.sort)})
-				));
+		
+		// sort
+		facts.add(modalisedFormula(
+				factModality,
+				predicate("sort", new Term[] {
+					nomTerm,
+					term(nom.sort)
+				})));
 
-		// Iterator pIter = nom.getPropositions();
-		boolean props = (!nom.prop.prop.equals("")); 	
-
-		Iterator fIter = LFUtils.lfNominalGetFeatures(nom);
-		boolean feats = (fIter.hasNext());
-		Iterator rIter = LFUtils.lfNominalGetRelations(nom); 
-		boolean rels = rIter.hasNext(); 
-
-//		System.err.println("before props");
-
-		//while (pIter.hasNext()) { 
-		String prop = nom.prop.prop;
-		if (props) {
-			abducer.addFact(modFormula(
-					new Modality[] {modInfo()},
-					predicate("prop", new Term[] {nomTerm, term(prop)})
-					));
+		// proposition, if there is one
+		if (!nom.prop.prop.equals("")) {
+			facts.add(modalisedFormula(
+					factModality,
+					predicate("prop", new Term[] {
+						nomTerm,
+						term(nom.prop.prop)
+					})));		
 		}
 
-//		System.err.println("before feats");
-
+		// features
+		Iterator fIter = LFUtils.lfNominalGetFeatures(nom);
 		while (fIter.hasNext()) { 
 			Feature feat = (Feature) fIter.next(); 
-			abducer.addFact(modFormula(
-					new Modality[] {modInfo()},
-					predicate("feat_" + feat.feat, new Term[] {nomTerm, term(feat.value)})
-					));
+			facts.add(modalisedFormula(
+					factModality,
+					predicate("feat_" + feat.feat, new Term[] {
+						nomTerm,
+						term(feat.value)
+					})));
 		}
 
-//		System.err.println("before rels");
-
-		while (rIter.hasNext()) { 
+		Iterator rIter = LFUtils.lfNominalGetRelations(nom); 
+		while (rIter.hasNext()) {
 			LFRelation rel = (LFRelation) rIter.next();
-			abducer.addFact(modFormula(
-					new Modality[] {modInfo()},
-					predicate("rel_" + rel.mode, new Term[] {nomTerm, term(rel.dep)})
-					));
-
+			facts.add(modalisedFormula(
+					factModality,
+					predicate("rel_" + rel.mode, new Term[] {
+						nomTerm, 
+						term(rel.dep)
+					})));
+/*
 			LFNominal depnom = LFUtils.lfGetNominal(lf, rel.dep); 
 			if(rel.coIndexedDep == true){
 				// we only want to generate <RelMode>var1:type1, not the complete nominal
-				abducer.addFact(modFormula(
-						new Modality[] {modInfo()},
-						predicate("sort", new Term[] {term(rel.dep), term(depnom.sort)})
-						));
+				facts.add(modalisedFormula(
+						factModality,
+						predicate("sort", new Term[] {
+							term(rel.dep),
+							term(depnom.sort)
+						})));
 			} else {
-				addNomToExplicitFacts(abducer, depnom, lf);
+				addNomToFactList(facts, depnom, lf);
 			}
+*/
 		}
-//		System.err.println("done add nom " + nom.nomVar);
 	}
 }
