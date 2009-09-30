@@ -17,6 +17,25 @@
 </utterance>
 
 
+
+<!-- ==========  ANSWER  ==========  -->
+
+<!-- yes/no answers -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <Content>(e1:answer ^ <AnswerType>positive))
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer)
+</input>
+<realizations>
+<string>yes</string>
+</realizations>
+</utterance>
+
+
+
 <!-- ==========  ACKNOWLEDGEMENT  ==========  -->
 
 
@@ -24,10 +43,11 @@
 
 <utterance>
 <input>
-				 <!--
+<!--
 @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept)
+*** NOTE: accept is "less" than answer:yes -->
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept)
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ <Content>(e1:answer ^ <AnswerType>positive))
 </input>
 <realizations>
 <string>ok</string>
