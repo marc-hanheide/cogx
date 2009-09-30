@@ -58,6 +58,8 @@ private:
   float bgDistTolerance;
   int lblFixCost;
   
+  char *colorImg;
+  
   /**
    * status of SOI persistency
    */
@@ -140,7 +142,7 @@ private:
 
   
   IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
-                    std::vector<VisionData::SurfacePoint> surfPoints, float huemod, float distmod);
+                    std::vector<VisionData::SurfacePoint> surfPoints, float huemod, float distmod, bool distcost);
 
 protected:
   /**

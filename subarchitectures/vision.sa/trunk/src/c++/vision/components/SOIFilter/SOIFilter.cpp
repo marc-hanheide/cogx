@@ -14,7 +14,7 @@
 // Segmentation costants
 
 #define SMOOTH_COST 15
-#define HUE_K_VAL 3 // Number of nearest neighbours taken when calculating the cost for hue
+#define HUE_K_VAL 4 // Number of nearest neighbours taken when calculating the cost for hue
 
 #define OBJ_HUE_TOLERANCE 20
 #define BG_HUE_TOLERANCE 5
@@ -139,20 +139,20 @@ list<int> SOIFilter::getSortedHueList(vector<SurfacePoint> surfPoints)
 	IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
 	IplImage* dst = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
 	IplImage* srcL = cvCreateImage(cvSize(size*10, 10), IPL_DEPTH_8U, 3);
-	//IplImage* dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
+	// IplImage* dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
 	
 	for(int i=0; i< size; i++)
 	{
 	  CvScalar v;
-	  //log("red: %i green: %i blue: %i", (unsigned) surfPoints[i].c.r, (unsigned) surfPoints[i].c.g, (unsigned) surfPoints[i].c.b);	  
-	  v.val[0] = (unsigned) surfPoints[i].c.b;
-	  v.val[1] = (unsigned) surfPoints[i].c.g;
-	  v.val[2] = (unsigned) surfPoints[i].c.r;
+	  //log("red: %i green: %i blue: %i", surfPoints[i].c.r, surfPoints[i].c.g, surfPoints[i].c.b);	  
+	  v.val[0] = surfPoints[i].c.b;
+	  v.val[1] = surfPoints[i].c.g;
+	  v.val[2] = surfPoints[i].c.r;
 	  
 	  cvSet2D(src, 0, i, v);
 	}
 	
-	cvCvtColor(src, dst, CV_BGR2HLS);
+	cvCvtColor(src, dst, CV_RGB2HLS);
 	
 	for(int i=0; i< size; i++)
 	{
@@ -173,7 +173,9 @@ list<int> SOIFilter::getSortedHueList(vector<SurfacePoint> surfPoints)
 //		printf("\n");
 	cvResize(src, srcL, CV_INTER_NN);
 	//cvResize(dst, dstL, CV_INTER_NN);
-	cvShowImage("Obj RGB Colors", srcL);
+	
+	const char *winame = colorImg;
+	cvShowImage(winame, srcL);
     //cvShowImage("Obj HLS Colors", dstL);
 
 	cvReleaseImage(&srcL);
@@ -362,8 +364,8 @@ void SOIFilter::start()
   	cvNamedWindow("Last segmentation", 1);
   	cvNamedWindow("Last object cost image", 1);
   	cvNamedWindow("Last surface cost image", 1);
-  	cvNamedWindow("Obj RGB Colors", 1);
-  	//cvNamedWindow("Obj HLS Colors", 1);
+  	cvNamedWindow("Object Colors", 1);
+  	cvNamedWindow("Surface Colors", 1);
   }
   
   // we want to receive detected SOIs
@@ -441,8 +443,8 @@ void SOIFilter::runComponent()
   	cvDestroyWindow("Full image");
   	cvDestroyWindow("Last object cost image");
   	cvDestroyWindow("Last surface cost image");
-  	cvDestroyWindow("Obj RGB Colors");
-  	//cvDestroyWindow("Obj HLS Colors");
+  	cvDestroyWindow("Object Colors");
+  	cvDestroyWindow("Surface Colors");
   }
 }
 
@@ -564,9 +566,9 @@ void SOIFilter::project3DPoints(const vector<SurfacePoint> surfPoints, const ROI
   }
   
    // calculate convex hull
-  CvMat pointMat = cvMat( 1, n, CV_32SC2, &projPoints[0] );
-  CvMat hullMat = cvMat( 1, n, CV_32SC1, &hull[0] );
-  cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+  //CvMat pointMat = cvMat( 1, n, CV_32SC2, &projPoints[0] );
+  //CvMat hullMat = cvMat( 1, n, CV_32SC1, &hull[0] );
+  //cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
 
 }
 
@@ -621,7 +623,7 @@ void SOIFilter::drawHull(IplImage *img, const vector<CvPoint> projPoints, const 
 
 
 
-IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> surfPoints, float hueSigma, float distSigma)
+IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> surfPoints, float hueSigma, float distSigma, bool distcost)
 {
     IplImage *huePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);  
 	IplImage *samplePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
@@ -631,22 +633,28 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
  
     cvSetImageCOI(iplPatchHLS, 1);
     cvCopy(iplPatchHLS, huePatch);
-   
-    cvSet(samplePatch,cvScalar(1));
-    vector<CvPoint>::iterator itr;
-   
-	for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
-	{ 
-	  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
-	  if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
-		cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
-	  else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
-	    
-	}
+     
+    if(distcost)
+    {
+    	cvSet(samplePatch,cvScalar(1));
+    	vector<CvPoint>::iterator itr;
+    	
+		for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
+		{ 
+		  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
+		  if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
+			cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
+		  else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
+			
+		}
 		
-	cvDistTransform(samplePatch, distPatch, CV_DIST_C);
-
-	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
+		cvDistTransform(samplePatch, distPatch, CV_DIST_C);
+	}
+	else
+		cvSet(distScaledPatch, cvScalar(0));
+		
+	cvConvertScale(distPatch, distScaledPatch, 1, 0);
+		
 	
 	vector<int> hueCostList = getHueCostList(getSortedHueList(surfPoints), HUE_K_VAL);  
  //   list<int> hueList = getSortedHueList(projPoints, huePatch);
@@ -664,7 +672,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	      float hueP = exp(-sqr((float) hueDiff)/hueSigma2);
 	      int distDiff = cvGet2D(distScaledPatch, i, j).val[0];
 	      float distP = exp(-sqr((float) distDiff)/distSigma2);
-	      int cost = (int) (-(hueP*distP - 1)*norm);
+	      int cost = (int) ((1 - hueP*distP)*norm);
 	      	
 	      cvSet2D(costImg, i, j, cvScalar(cost));
 	  }
@@ -731,11 +739,14 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
     vector<CvPoint> projPoints, bgProjPoints;
     vector<int>  hullPoints;    
    
-    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
+    //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
+    project3DPoints(soiPtr->points, *roiPtr, ratio, image.camPars, projPoints, hullPoints);
+    project3DPoints(soiPtr->BGpoints, *roiPtr, ratio, image.camPars, bgProjPoints, hullPoints);
 
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance);
-    
-    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->EQpoints, bgHueTolerance, bgDistTolerance);  	
+	colorImg = "Object Colors"; //HACK
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, false);
+    colorImg = "Surface Colors"; //HACK
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false);  	
 
 	segMask = new SegmentMask;
     
@@ -778,108 +789,6 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	cvReleaseImage(&segPatch);
 	cvReleaseImage(&costPatch);
 }
-
-/*
-void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMaskPtr &segMask)
-{
-	Video::Image image;
-	getImage(camId,image);
-    		
-   	soiPtr->boundingSphere.rad*=DILATE_FACTOR;
-	
-	ROIPtr roiPtr = projectSOI(image.camPars, *soiPtr);
-	
-	IplImage *iplImgBGR = convertImageToIpl(image);
-	IplImage *iplImg = cvCreateImage(cvGetSize(iplImgBGR),
-                          iplImgBGR->depth,
-                          iplImgBGR->nChannels);
-    
-	cvCvtColor(iplImgBGR, iplImg, CV_BGR2RGB);	
-
-	CvRect rect;
-	
-	rect.width = roiPtr->rect.width;
-	rect.height = roiPtr->rect.height;
-	rect.x = roiPtr->rect.pos.x - rect.width/2;
-	rect.y = roiPtr->rect.pos.y - rect.height/2;	
-	
-	log("Calculated ROI x=%i, y=%i, width=%i, height=%i",
-		rect.x, rect.y, rect.width, rect.height);
-	
-	cvSetImageROI(iplImg, rect);
-	
-	float ratio = cvGetSize(iplImg).width * cvGetSize(iplImg).height; log("width: %i height %i", cvGetSize(iplImg).width, cvGetSize(iplImg).height);
-//	if ( ratio > MAX_PATCH_SIZE)
-//		ratio = sqrt(MAX_PATCH_SIZE / ratio);
-//	else
-		ratio = 1;
-	
-	IplImage *iplPatch = cvCreateImage(cvSize(cvGetSize(iplImg).width*ratio, 
-											  cvGetSize(iplImg).height*ratio),
-                          iplImgBGR->depth,
-                          iplImgBGR->nChannels);;
-	
-	cvResize(iplImg, iplPatch, CV_INTER_LINEAR );
-	
-	IplImage *iplPatchHLS = cvCreateImage(cvGetSize(iplPatch),
-                          IPL_DEPTH_8U,
-                          iplPatch->nChannels);
-  
-    cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
-    
-    log("Actual ROI width=%i, height=%i", iplPatchHLS->width, iplPatchHLS->height);
-     
-    vector<CvPoint> projPoints, bgProjPoints;
-    vector<int>  hullPoints;    
-    
-    projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
-
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, 18, 60);
-    
-    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, 3, 9000);  	
-	
-	segMask = new SegmentMask;
-    
-    segMask->width = iplPatchHLS->width;
-    segMask->height = iplPatchHLS->height;
- 
-    vector<int> labels = graphCut(segMask->width, segMask->height, 3, costPatch, bgCostPatch, HUE_K_VAL);
-    segMask->data = labels;
-    convertImageFromIpl(iplPatch, imgPatch);
-    
-    IplImage *segPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
-
-	for(int i=0; i < labels.size(); i++)
-	{
-		segPatch->imageData[i] = labels[i]*120;
-	}   
- 
-    if (doDisplay)
-    {
-        drawProjectedSOIPoints(iplPatch, projPoints, bgProjPoints, hullPoints);
-        cvResetImageROI(iplImg);
-        cvRectangle(iplImg, cvPoint(roiPtr->rect.pos.x-1, roiPtr->rect.pos.y-1),
-            cvPoint(roiPtr->rect.pos.x+1, roiPtr->rect.pos.y+1),
-            CV_RGB(0,255,0));
-        cvRectangle(iplImg, cvPoint(rect.x, rect.y),
-            cvPoint(rect.x + rect.width, rect.y + rect.height),
-            CV_RGB(0,255,0));
-    	cvShowImage("Full image", iplImg);
-    	
-    	cvShowImage("Last ROI", iplPatch);
-    	cvShowImage("Last segmentation",segPatch);
-    	cvShowImage("Last object cost image", costPatch);
-    	cvShowImage("Last surface cost image", bgCostPatch);
-    }
-    
-    cvReleaseImage(&iplPatch);
-    cvReleaseImage(&iplImg);
-    cvReleaseImage(&iplPatchHLS);
-	cvReleaseImage(&iplImgBGR);
-	cvReleaseImage(&segPatch);
-	cvReleaseImage(&costPatch);
-}*/
-
 
 }
 
