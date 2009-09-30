@@ -1,14 +1,38 @@
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, ascription) / true,
-	i : 'prop'(Nom, be) / true,
-	i : 'feat_Mood'(Nom, int) / true,
+	i : prop(Nom, be) / true,
+	i : 'feat_Mood'(Nom, ind) / true,
 	i : 'feat_Tense'(Nom, pres) / true,
 	i : 'rel_Subject'(Nom, SubjNom) / true,
-	i : 'rel_Cop-Restr'(Nom, SubjNom) / true,
-	?( i : 'rel_Cop-Scope'(Nom, ScopeNom) ),
+	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
 		i : sort(ScopeNom, ScopeSort) / true,
 		i : prop(ScopeNom, ScopeProp) / true,
-	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
+	assert_prop(RestrRef, ScopeSort, ScopeProp) / true.
+
+assert_prop(RestrRef, 'q-color', Prop) <-
+	?( k(now, attrib(r, h)) : color(RestrRef, Prop) ).
+
+assert_prop(RestrRef, 'q-shape', Prop) <-
+	?( k(now, attrib(r, h)) : shape(RestrRef, Prop) ).
+
+%	?( i : 'rel_Cop-Scope'(Nom, ScopeNom) ),
+%		i : sort(ScopeNom, ScopeSort) / true,
+%		i : prop(ScopeNom, ScopeProp) / true,
+%	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
+
+%e(now) : uttered(h, Nom) <-
+%	i : sort(Nom, ascription) / true,
+%	i : prop(Nom, be) / true,
+%	i : 'feat_Mood'(Nom, int) / true,
+%	i : 'feat_Tense'(Nom, pres) / true,
+%	i : 'rel_Subject'(Nom, SubjNom) / true,
+%	i : 'rel_Cop-Restr'(Nom, SubjNom) / true,
+%	?( i : 'rel_Cop-Scope'(Nom, ScopeNom) ),
+%		i : sort(ScopeNom, ScopeSort) / true,
+%		i : prop(ScopeNom, ScopeProp) / true,
+%	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
 
 i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) <-
 	k(now, private(h)) : quality_uncertain(SubjNom, ScopeSort) / 0.5,

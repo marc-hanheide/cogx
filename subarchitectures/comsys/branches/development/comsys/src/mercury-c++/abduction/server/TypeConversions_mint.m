@@ -173,7 +173,7 @@ cons_mprop_list(H, T, [H|T]).
 :- pragma foreign_export("C", cons_marked_query_list(in, in, out), "cons_marked_query_list").
 
 empty_marked_query_list([]).
-cons_marked_query_list(H, T, [H|T]) :- trace[compile_time(flag("debug")), io(!IO)] (print_err(string([H|T]) ++ "\n", !IO)).
+cons_marked_query_list(H, T, [H|T]) :- trace[compile_time(flag("debug")), io(!IO)] (print_err(string([H|T]), !IO)).
 
 :- pragma foreign_export("C", empty_ctx_modality_list(out), "empty_ctx_modality_list").
 :- pragma foreign_export("C", cons_ctx_modality_list(in, in, out), "cons_ctx_modality_list").
@@ -197,20 +197,20 @@ modality_k(k(now, private(human))).
 :- pragma foreign_export("C", impure_print_list_modalities(in), "print_list_modalities").
 
 impure_print_modality(Mod) :-
-	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
+	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod), !IO)).
 
 impure_print_list_modalities(Mod) :-
-	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod) ++ "\n", !IO)).
+	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod), !IO)).
 
 :- pragma foreign_export("C", is_modality_event(in), "is_modality_event").
 :- pragma foreign_export("C", is_modality_info(in), "is_modality_info").
 :- pragma foreign_export("C", is_modality_att(in), "is_modality_att").
 :- pragma foreign_export("C", is_modality_k(in, out), "is_modality_k").
 
-is_modality_event(e(now)).% :- trace[io(!IO)] (print_err("merc: event\n", !IO)).
-is_modality_info(i).% :- trace[io(!IO)] (print_err("merc: info\n", !IO)).
-is_modality_att(a(com)).% :- trace[io(!IO)] (print_err("merc: att\n", !IO)).
-is_modality_k(k(now, Belief), Belief).% :- trace[io(!IO)] (print_err("merc: k, bel=" ++ string(Belief) ++ "\n", !IO)).
+is_modality_event(e(now)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: event", !IO)).
+is_modality_info(i) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: info", !IO)).
+is_modality_att(a(com)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: att", !IO)).
+is_modality_k(k(now, Belief), Belief) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: k, bel=" ++ string(Belief) ++ "", !IO)).
 
 :- pragma foreign_export("C", belief_private(out), "belief_private").
 
@@ -290,10 +290,12 @@ dissect_mprop(m(Mod, Pred), Mod, Pred).
 :- pragma foreign_export("C", dissect_proof(in, in, out, out, out), "dissect_proof").
 
 dissect_proof(Ctx, Proof, VS, Qs, Cost) :-
+	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(last_goal(Proof)), !IO)),
 	vs(Qs, VS) = last_goal(Proof),
 	Costs = costs(1.0, 1.0, 0.1),
-	Cost = cost(Ctx, Proof, Costs).
-%	trace [io(!IO)] ( print_err(LastGoals, !IO), nl(!IO) ).
+	%Cost = cost(Ctx, Proof, Costs),
+	Cost = 1.0,
+	trace[compile_time(flag("debug")), io(!IO)] (print_err("end of dissect_proof", !IO)).
 
 %------------------------------------------------------------------------------%
 

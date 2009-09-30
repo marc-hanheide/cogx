@@ -47,6 +47,12 @@ srv_init_ctx = new_ctx.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- func default_costs = costs.
+
+default_costs = costs(1.0, 1.0, 0.1).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- pragma foreign_export("C", srv_print_ctx(in, di, uo), "print_ctx").
 
 srv_print_ctx(C, !IO) :-
@@ -167,9 +173,8 @@ srv_prove_best(P0, Ctx, ProofCost, Proof) :-
 %	P0 = proof(vs([list.map((func(cf(MProp, Func)) = unsolved(MProp, Func)), AnnotMProps)], VS), []),
 
 	Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
-		Costs = costs(1.0, 1.0, 0.1),
-		prove(0.0, 100.0, P0, P, Costs, Ctx),
-		Cost = cost(Ctx, P, Costs)
+		prove(0.0, 100.0, P0, P, default_costs, Ctx),
+		Cost = cost(Ctx, P, default_costs)
 			))),
 
 	list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
@@ -201,12 +206,11 @@ srv_dissect_proof(Proof, _Ctx, Cost, Assumed, Asserted) :-
 :- pragma foreign_export("C", srv_proof_summary(in, in, di, uo), "proof_summary").
 
 srv_proof_summary(Proof, Ctx, !IO) :-
-	Costs = costs(1.0, 1.0, 0.1),
 	LastGoal = last_goal(Proof),
 
 	print_ctx(Ctx, !IO),
 
-	format("proof cost = %f\n\n", [f(cost(Ctx, Proof, Costs))], !IO),
+	format("proof cost = %f\n\n", [f(cost(Ctx, Proof, default_costs))], !IO),
 	print("proven goal:\n  " ++ goal_to_string(LastGoal) ++ "\n", !IO),
 	nl(!IO),
 
@@ -216,8 +220,8 @@ srv_proof_summary(Proof, Ctx, !IO) :-
 
 	print("assertions:\n", !IO),
 	print("  " ++ assertions_to_string(Ctx, goal_assertions(LastGoal)) ++ "\n", !IO),
-	nl(!IO),
+	nl(!IO).
 
-	print_proof_trace(Ctx, Proof, !IO),
-	nl(!IO),
-	print("that's it for the summary.\n", !IO).
+%	print_proof_trace(Ctx, Proof, !IO),
+%	nl(!IO),
+%	print("that's it for the summary.\n", !IO).

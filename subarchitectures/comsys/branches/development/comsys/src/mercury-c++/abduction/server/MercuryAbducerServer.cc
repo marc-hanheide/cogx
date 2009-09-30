@@ -117,25 +117,28 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 		//sleep(1);
 		cerr << " we're still alive!" << endl;
 		//sleep(1);
-		return (SUCCESS);
+		return (ProofFound);
 	}
 	else {
 		cerr << "  result: no proof found" << endl;
 		//print_ctx(ctx);
 		haveProof = false;
-		return (FAILED);
+		return (NoProofFound);
 	}
 }
 
-AbductiveProofPtr
+vector<MarkedQueryPtr>
 MercuryAbducerServer::getBestProof(const Ice::Current&)
 {
 	cerr << "[log] requested the best proof" << endl;
 	//sleep(2);
 
-	// TODO: test that we have a proof in curBestProof
-
-	return MR_WordToAbductiveProof(ctx, curBestProof);
+	if (haveProof) {
+		return MR_WordToMarkedQuerySeq(ctx, curBestProof);
+	}
+	else {
+		throw NoProofException();
+	}
 /*
 	double cost;
 	MR_Word assumed;
