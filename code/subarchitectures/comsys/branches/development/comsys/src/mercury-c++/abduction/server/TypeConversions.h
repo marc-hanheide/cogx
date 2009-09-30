@@ -6,6 +6,7 @@ extern "C" {
 }
 
 #include <string>
+#include <vector>
 
 #include "Abducer.h"
 
@@ -67,7 +68,7 @@ MR_WordToPredicate(MR_varset w_vs, MR_atomic_formula w_p);
 Abducer::ModalisedFormulaPtr
 MR_WordToModalisedFormula(MR_varset w_vs, MR_mprop__ctx_modality w_mf);
 
-Abducer::AbductiveProofPtr
-MR_WordToAbductiveProof(MR_ctx w_ctx, MR_proof__ctx_modality w_proof);
+std::vector<Abducer::MarkedQueryPtr>
+MR_WordToMarkedQuerySeq(MR_ctx w_ctx, MR_proof__ctx_modality w_proof);
 
 #endif

@@ -462,25 +462,30 @@ MR_WordToMarkedQuery(MR_Word w_vs, MR_Word w_mq)
 	}
 }
 
-AbductiveProofPtr
-MR_WordToAbductiveProof(MR_Word w_ctx, MR_Word w_proof)
+vector<MarkedQueryPtr>
+MR_WordToMarkedQuerySeq(MR_Word w_ctx, MR_Word w_proof)
 {
-	debug(cerr << "MR_WordToAbductiveProof" << endl);
-	AbductiveProofPtr p = new AbductiveProof();
-	p->body = vector<MarkedQueryPtr>();
+	debug(cerr << "MR_WordToMarkedQuerySeq" << endl);
+//	AbductiveProofPtr p = new AbductiveProof();
+	vector<MarkedQueryPtr> qs = vector<MarkedQueryPtr>();
+//	p->body = vector<MarkedQueryPtr>();
 	
 	MR_Word w_vs;
 	MR_Word w_list;
 	double cost;
 
+	debug(cerr << "about to call dissect_proof" << endl);
+
 	dissect_proof(w_ctx, w_proof, &w_vs, &w_list, &cost);
+
+	debug(cerr << "done dissect_proof" << endl);
 
 	MR_Word w_iter;
 	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
-		p->body.push_back(MR_WordToMarkedQuery(w_vs, MR_list_head(w_iter)));
+		qs.push_back(MR_WordToMarkedQuery(w_vs, MR_list_head(w_iter)));
 	}
 
-	p->cost = cost;
+//	p->cost = cost;
 
-	return p;
+	return qs;
 }
