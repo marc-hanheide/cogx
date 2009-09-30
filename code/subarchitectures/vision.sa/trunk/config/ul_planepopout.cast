@@ -9,14 +9,14 @@ HOST localhost
 #COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/stereotest2/img%03d-L.jpg subarchitectures/vision.sa/config/stereotest2/img%03d-R.jpg" --start 0 --end 26 --framerate_ms 1000
 
 # live images
-COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "1 0" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/camR.cal  subarchitectures/vision.sa/config/camL.cal"
+COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/ul_stereo.ini:L  subarchitectures/vision.sa/config:R"
 
-COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "1 0" --stereoconfig subarchitectures/vision.sa/config/ul_stereo.ini --display
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/ul_stereo.ini --display
 #COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini --display
 
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo
-CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo
+CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --log true
+CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo --objht 13 --objdt 9999 --bght 5 --bgdt 9999 --fixc 8
 
