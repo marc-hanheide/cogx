@@ -124,9 +124,10 @@
 
 <!-- ==========  ASCRIPTION ========== -->
 
-<!-- quality-properties -->
 
 <!-- ascription: assertion -->
+
+<!-- quality-properties -->
 
 <utterance>
 <input>
@@ -193,6 +194,23 @@
 </utterance>
 
 
+<!-- type-property -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Type>(b3:entity ^ box))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Type\(b3:entity ^ box ^ <Color>red)))
+</input>
+<realizations>
+<string>the object is a red box</string>
+<string>the object is one red box</string>
+</realizations>
+</utterance>
+
+
+
 <!-- ascription: yes/no question -->
 
 <utterance>
@@ -222,7 +240,7 @@
 </utterance>
 
 
-<!-- ascription: wh question: property -->
+<!-- ascription: wh question: quality-property -->
 
 <utterance>
 <input>
@@ -234,6 +252,24 @@
 <realizations>
 <string>which color is the object </string>
 <string>what color is the object </string>
+</realizations>
+</utterance>
+
+<!-- ascription: wh question: type-property -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )  
+*** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+</input>
+<realizations>
+<string>what is this </string>
+<string>what is that </string>
+<string>what is this object </string>
+<string>what is that object </string>
 </realizations>
 </utterance>
 
