@@ -16,11 +16,12 @@ import java.util.concurrent.TimeoutException;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
+import motivation.util.PlaceUnionEventRelation;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
-import motivation.util.WMEntryQueue.WMEntryQueueElement;
-import motivation.util.WMEntrySet.ChangeHandler;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
+import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 import motivation.util.facades.BinderFacade;
 import motivation.util.facades.ExecutorFacade;
 import motivation.util.facades.PlannerFacade;
@@ -41,13 +42,14 @@ public class PlanAllManager extends ManagedComponent {
 	volatile private boolean interrupt;
 	private WMMotiveEventQueue activeMotiveEventQueue;
 
+	PlaceUnionEventRelation placeUnionEventRelation;
 	PlannerFacade plannerFacade;
 	ExecutorFacade executorFacade;
 	BinderFacade binderFacade;
 
 	Executor backgroundExecutor;
 
-	int failsafeTimeoutSecs = 10;
+	int failsafeTimeoutSecs = 100;
 
 	/**
 	 * @param specificType
@@ -60,6 +62,7 @@ public class PlanAllManager extends ManagedComponent {
 		executorFacade = new ExecutorFacade(this);
 		activeMotiveEventQueue = new WMMotiveEventQueue();
 		backgroundExecutor = Executors.newCachedThreadPool();
+		placeUnionEventRelation = new PlaceUnionEventRelation(this);
 	}
 
 	/*
@@ -73,8 +76,11 @@ public class PlanAllManager extends ManagedComponent {
 		log("start up");
 		binderFacade.start();
 		motives.start();
+		// register listener for state transition to ACTIVE (trigger processing
+		// whenever some motive becomes ACTIVE)
 		motives.setStateChangeHandler(new MotiveStateTransition(null,
 				MotiveStatus.ACTIVE), activeMotiveEventQueue);
+		// causing an interrupt is some motive is de-activated by someone
 		motives.setStateChangeHandler(new MotiveStateTransition(
 				MotiveStatus.ACTIVE, null), new ChangeHandler() {
 
@@ -87,6 +93,8 @@ public class PlanAllManager extends ManagedComponent {
 
 			}
 		});
+		// start the causal event listening on places
+		placeUnionEventRelation.start();
 	}
 
 	@Override
@@ -110,16 +118,23 @@ public class PlanAllManager extends ManagedComponent {
 			while (isRunning()) {
 				log("runComponent loop");
 				while (isRunning()) {
-					if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null)
+					// wait that something happens
+					if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
+						// make sure all changes have been propagated to the unions!
+						log("wait to finialize propagation to unions");
+						placeUnionEventRelation.waitForPropagation();
+						// after this we can be quite sure that we actually have all required information on the binder
 						break;
+					}
 				}
 				log("received relevant change");
 				interrupt = false;
-				final List<Motive> activeMotives = new LinkedList<Motive>(
-						motives.getSubsetByStatus(MotiveStatus.ACTIVE));
+				List<Motive> activeMotives = new LinkedList<Motive>(motives
+						.getSubsetByStatus(MotiveStatus.ACTIVE));
 
 				if (activeMotives.size() > 0) { // if we have motives to
 					log("we have some motives that should be planned for");
+					// activeMotives = resolveMotives(activeMotives);
 					plannerFacade.setGoalMotives(activeMotives);
 					FutureTask<WMEntryQueueElement> generatedPlan = new FutureTask<WMEntryQueueElement>(
 							plannerFacade);

@@ -1,7 +1,6 @@
-package motivation.util;
+package motivation.util.castextensions;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 
 import cast.CASTException;
 import cast.architecture.WorkingMemoryChangeReceiver;

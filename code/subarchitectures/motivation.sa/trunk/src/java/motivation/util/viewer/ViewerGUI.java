@@ -24,7 +24,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import motivation.util.WMEntrySet.ChangeHandler;
+import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 import motivation.util.viewer.plugins.Plugin;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;

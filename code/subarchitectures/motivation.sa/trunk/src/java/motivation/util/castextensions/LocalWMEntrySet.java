@@ -1,9 +1,8 @@
 /**
  * 
  */
-package motivation.util;
+package motivation.util.castextensions;
 
-import motivation.util.WMEntrySet.WMChangeReceiver;
 import Ice.ObjectImpl;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;

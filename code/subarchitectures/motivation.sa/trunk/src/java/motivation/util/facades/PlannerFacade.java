@@ -3,6 +3,7 @@
  */
 package motivation.util.facades;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,12 +13,13 @@ import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
-import motivation.util.WMEntryQueue;
-import motivation.util.WMEntryQueue.WMEntryQueueElement;
+import motivation.util.castextensions.WMEntryQueue;
+import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.StringValue;
+import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -37,10 +39,12 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 			return new String("");
 		}
 
-		public static String motive2PlannerGoal(ExploreMotive m) {
-			String placeStr = Long.toString(m.placeID);
-			return "(exists (?p - place)  (and (= (place_id ?p) place_id_"
-					+ placeStr + ") (= (explored ?p) true)))";
+		public static String motive2PlannerGoal(ExploreMotive m,
+				String placeUnion) {
+			// String placeStr = Long.toString(m.placeID);
+			// return "(exists (?p - place)  (and (= (place_id ?p) place_id_"
+			// + placeUnion + ") (= (explored ?p) true)))";
+			return "(= (explored '" + placeUnion + "') true)";
 			// return new String ("(explored place_id_" + m.placeID+")");
 		}
 
@@ -71,7 +75,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 	private String agentUnionID = null;
 
 	public void setGoalMotives(List<Motive> m) {
-		motives = m;
+		motives = new LinkedList<Motive>(m);
 	}
 
 	@Override
@@ -93,12 +97,24 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 			throws UnknownSubarchitectureException {
 		PlanningTask plan = newPlanningTask();
 
+		try {
+			activeMotives = resolveMotives(activeMotives);
+		} catch (CASTException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// create a conjunction of motives
 		String goalString = "(and ";
 		for (Motive m : activeMotives) {
 			if (m instanceof ExploreMotive) {
-				goalString = goalString
-						+ GoalTranslator.motive2PlannerGoal((ExploreMotive) m);
+				ExploreMotive em = (ExploreMotive) m;
+				if (em.correspondingUnion != null)
+					goalString = goalString
+							+ GoalTranslator
+									.motive2PlannerGoal(
+											em,
+											binderFacade
+													.getUnion(em.correspondingUnion).entityID);
 			} else if (m instanceof HomingMotive) {
 				goalString = goalString
 						+ GoalTranslator.motive2PlannerGoal((HomingMotive) m);
@@ -114,6 +130,46 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		plan.goal = goalString;
 		return plan;
 
+	}
+
+	/**
+	 * resolves references in all the motives to prepare for planning
+	 * 
+	 * @throws CASTException
+	 */
+	List<Motive> resolveMotives(List<Motive> activeMotives)
+			throws CASTException {
+		component.log("resolve references in motives");
+		Map<String, FeatureValue> unionsWithPlaceID = binderFacade
+				.findFeaturesInUnion("place_id");
+		for (Motive m : activeMotives) {
+			// resolve place_ids for union ids
+			if (m instanceof ExploreMotive) { // resolve
+				// place_ids for
+				// union ids
+				ExploreMotive em = (ExploreMotive) m;
+				component.log("resolving place_id=" + em.placeID
+						+ " in ExploreMotive against "
+						+ unionsWithPlaceID.size()
+						+ " unions that have a place_id");
+				// search the unions for correct placeID
+				for (Entry<String, FeatureValue> entry : unionsWithPlaceID
+						.entrySet()) {
+					StringValue placeID = (StringValue) entry.getValue();
+					if (Integer.parseInt(placeID.val) == em.placeID) {
+						component
+								.log("found a corresponding union for place_id "
+										+ em.placeID + ": " + entry.getKey());
+						em.correspondingUnion = entry.getKey();
+						component.overwriteWorkingMemory(em.thisEntry, em);
+						// TODO: we hope, that there is only ONE union with this
+						// place_id, so let's break
+						break;
+					}
+				}
+			}
+		}
+		return activeMotives;
 	}
 
 	/**

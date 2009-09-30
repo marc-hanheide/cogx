@@ -1,7 +1,7 @@
 /**
  * 
  */
-package motivation.util;
+package motivation.util.castextensions;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -9,10 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import binder.autogen.core.PerceivedEntity;
-
-import motivation.slice.Motive;
 
 import Ice.ObjectImpl;
 import cast.AlreadyExistsOnWMException;
@@ -51,7 +47,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 				Ice.ObjectImpl oldMotive);
 	}
 
-	protected class WMChangeReceiver implements WorkingMemoryChangeReceiver {
+	public class WMChangeReceiver implements WorkingMemoryChangeReceiver {
 
 		public WMChangeReceiver(Class<? extends ObjectImpl> specClass) {
 			super();

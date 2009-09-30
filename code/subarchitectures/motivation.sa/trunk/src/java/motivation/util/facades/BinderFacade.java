@@ -1,11 +1,11 @@
 package motivation.util.facades;
 
-import java.awt.Component;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import motivation.util.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
@@ -14,7 +14,6 @@ import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import cast.architecture.ManagedComponent;
-import motivation.util.WMEntrySet;
 
 public class BinderFacade {
 	WMEntrySet unionConfigurations;
@@ -44,7 +43,7 @@ public class BinderFacade {
 	 * @param featureLabel
 	 * @return the alternativeFeatures
 	 */
-	List<FeatureValue> getFeatureValue(PerceivedEntity entity,
+	public List<FeatureValue> getFeatureValue(PerceivedEntity entity,
 			String featureLabel) {
 		List<FeatureValue> result = new LinkedList<FeatureValue>();
 		for (Feature f : entity.features) {
@@ -67,7 +66,7 @@ public class BinderFacade {
 	 * @return a map of union-ids (String) as keys and FeatureValues as value
 	 */
 
-	Map<String, FeatureValue> findFeaturesInUnion(String featureLabel) {
+	public Map<String, FeatureValue> findFeaturesInUnion(String featureLabel) {
 		Map<String, FeatureValue> result = new HashMap<String, FeatureValue>();
 		if (unionConfigurations.size() < 1)
 			return result;
@@ -93,7 +92,7 @@ public class BinderFacade {
 	 * @param id
 	 * @return the found union or null if non was found
 	 */
-	Union getUnion(String id) {
+	public Union getUnion(String id) {
 		if (unionConfigurations.size() < 1)
 			return null;
 		Union[] unions = ((UnionConfiguration) unionConfigurations.values()
@@ -112,7 +111,7 @@ public class BinderFacade {
 	 * @param id
 	 * @return the found union or null if non was found
 	 */
-	Map<String, Union> getUnions() {
+	public Map<String, Union> getUnions() {
 		Map<String, Union> result = new HashMap<String, Union>();
 
 		if (unionConfigurations.size() < 1)
@@ -131,7 +130,7 @@ public class BinderFacade {
 	 * @param id
 	 * @return the found proxy or null if non was found
 	 */
-	Proxy getProxy(String id) {
+	public Proxy getProxy(String id) {
 		for (ObjectImpl o : proxies.values()) {
 			Proxy proxy = (Proxy) o;
 			if (proxy.entityID.equals(id)) {
