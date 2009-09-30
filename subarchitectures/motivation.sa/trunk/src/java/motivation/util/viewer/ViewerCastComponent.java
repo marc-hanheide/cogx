@@ -6,15 +6,8 @@ package motivation.util.viewer;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import autogen.Planner.PlanningTask;
-import binder.autogen.core.PerceivedEntity;
-import binder.autogen.core.Proxy;
-import motivation.slice.Motive;
-import motivation.slice.PlanProxy;
-import motivation.util.WMEntrySet;
+import motivation.util.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
-import NavData.FNode;
-import SpatialData.Place;
 import cast.architecture.ManagedComponent;
 
 /**

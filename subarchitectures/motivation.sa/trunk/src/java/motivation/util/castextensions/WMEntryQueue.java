@@ -1,4 +1,4 @@
-package motivation.util;
+package motivation.util.castextensions;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

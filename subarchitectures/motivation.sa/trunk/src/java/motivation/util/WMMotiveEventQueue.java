@@ -2,14 +2,9 @@ package motivation.util;
 
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 
-import motivation.slice.Motive;
-
+import motivation.util.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
-
-import cast.CASTException;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 

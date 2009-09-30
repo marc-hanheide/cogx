@@ -5,8 +5,6 @@ package motivation.util;
 
 import java.util.Map;
 
-import Ice.ObjectImpl;
-
 import motivation.slice.Motive;
 import motivation.slice.TestMotive;
 import cast.architecture.ManagedComponent;

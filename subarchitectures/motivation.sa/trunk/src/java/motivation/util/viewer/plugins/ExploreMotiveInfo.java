@@ -3,8 +3,6 @@ package motivation.util.viewer.plugins;
 import java.util.Vector;
 
 import motivation.slice.ExploreMotive;
-import motivation.slice.Motive;
-import motivation.util.CASTTimeUtil;
 
 
 public class ExploreMotiveInfo implements Plugin {
