@@ -534,7 +534,7 @@ namespace CAST_SCAT
             
             VERBOSER(499, "Starting spinning to create a thread...");
             while(0 != (result = pthread_create(thread.get(),
-                                             0,
+                                             attributes.get(),
                                              _receive_call__pthread_METHOD_CALLBACK____receive_call
                                              <THING, FUNCTION, ICE_FUNCTION_CLASS, PARENT>,
                                              _tuple))){
@@ -558,7 +558,7 @@ namespace CAST_SCAT
                                       <<" Anyway, I will try again after waiting for threads"
                                       <<" I am perhaps responsible for...");
 //                         UNRECOVERABLE_ERROR("No second chances in this version.");/*FIX*/
-                        usleep(10);
+                        usleep(100 * number_of_attempted_thread_invocations);
                         break;
                     case EINVAL:
                         UNRECOVERABLE_ERROR("My bad. I specified thread attribute values that are invalid."
@@ -577,13 +577,26 @@ namespace CAST_SCAT
                         pthread_exit(0);
                         break;
                         /*#include<bits/local_lim.h>*/
+
+                    case ENOMEM:
+                        UNRECOVERABLE_ERROR("Oh great! pthread_create() just gave me a ENOMEM. "
+                                            <<"This undocumented behaviour occurs under Redhat Linux 2.4 "
+                                            <<"when too many threads have been created in the non-detached "
+                                            <<"mode, and the limited available memory in some system stack "
+                                            <<"is consumed. At that point no new threads can be created "
+                                            <<"in non-detached mode until those threads are "
+                                            <<"detached/killed, or the parent process(es) killed and restarted. "
+                                            <<"My behaviour here is to crash, better luck next time chief!");
+                        
+                        pthread_exit(0);
+                        break;
                     default:
                         WARNING("No idea why we couldn't spawn a thread. The error code we were given is :: "
                                       <<result<<" Trying again...");
-                        usleep(10);
+                        sleep(1 * number_of_attempted_thread_invocations);
+                        //usleep(10 * number_of_attempted_thread_invocations);
                         break;
                 }
-
                 
 //                 join_threads_in__my_Threads__that_are_completed();
                 
