@@ -151,7 +151,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager.addProcess(procman.CProcess("client", options.xe("${CMD_CAST_CLIENT}")))
         self._manager.addProcess(procman.CProcess("player", options.xe("${CMD_PLAYER}")))
         self._manager.addProcess(procman.CProcess("peekabot", options.xe("${CMD_PEEKABOT}")))
-        self.procBuild = procman.CProcess("BUILD", 'make [cmd]', workdir=options.xe("${COGX_BUILD_DIR}"))
+        self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=options.xe("${COGX_BUILD_DIR}"))
         self.procBuild.allowTerminate = True
         self._manager.addProcess(self.procBuild)
         self._processModel.rootItem.addHost(self._manager)
@@ -254,7 +254,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if p != None:
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
-            p.start(params={"cmd": ""})
+            p.start(params={"target": ""})
             # p.start()
 
     def on_btBuildInstall_clicked(self, valid=True):
@@ -263,7 +263,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         if p != None:
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
-            p.start(params={"cmd": "install"})
+            p.start(params={"target": "install"})
 
     def on_btLogViewControl_clicked(self, valid=True):
         if not valid: return

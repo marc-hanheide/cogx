@@ -344,6 +344,10 @@ class CProcessManager(object):
             if proc.process == None: return "0"
             return "%d" % proc.process.pid
         return "0"
+
+    # Remote hosts need to be locked for exclusive use before any process is started
+    def lockHost(self):
+        return True
  
 def runCommand(cmd, params=None, workdir=None, name="onetime"):
     try:
