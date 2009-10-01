@@ -1,20 +1,20 @@
+#include "test_harness__CAST_SCAT_client_clone2.hh"
 
-#include "test_harness__CAST_SCAT_client.hh"
 
 extern "C" {
   cast::CASTComponentPtr
   newComponent() {
-    return new test_harness__CAST_SCAT_client();
+    return new test_harness__CAST_SCAT_client_clone2();
   }
 }
 
-test_harness__CAST_SCAT_client::test_harness__CAST_SCAT_client(const Designator&designator)
+test_harness__CAST_SCAT_client_clone2::test_harness__CAST_SCAT_client_clone2(const Designator&designator)
     :Implement(designator)
 {
 }
 
 
-void test_harness__CAST_SCAT_client::configure(const std::map<std::string,std::string>& arguments)
+void test_harness__CAST_SCAT_client_clone2::configure(const std::map<std::string,std::string>& arguments)
 {
     auto _subarchitecture_name = arguments.find("--different-subarchitecture-name");
     if(arguments.end() != _subarchitecture_name){
@@ -27,16 +27,16 @@ void test_harness__CAST_SCAT_client::configure(const std::map<std::string,std::s
     }
 }
 
-void* unlikely_to_clash_with_anything__0095591(void* arg)
+void* unlikely_to_clash_with_anything__0095591_2(void* arg)
 {
-    auto thing = static_cast<test_harness__CAST_SCAT_client*>(arg);
+    auto thing = static_cast<test_harness__CAST_SCAT_client_clone2*>(arg);
 
     thing->eachThread__test2();
 
     return 0;
 }
 
-void test_harness__CAST_SCAT_client::eachThread__test2()
+void test_harness__CAST_SCAT_client_clone2::eachThread__test2()
 {
     auto result =
         call_to_subarchitecture
@@ -47,7 +47,7 @@ void test_harness__CAST_SCAT_client::eachThread__test2()
 
 }
 
-void test_harness__CAST_SCAT_client::runComponent()
+void test_harness__CAST_SCAT_client_clone2::runComponent()
 {
     /* Upper bound on counting tests.*/
     const auto MAX = 3;
@@ -87,7 +87,7 @@ void test_harness__CAST_SCAT_client::runComponent()
     
     for(auto i = 0; i < MAX; i ++){
         pthread_attr_init(&thread_attributes[i]);
-        pthread_create(&threads[i],0,unlikely_to_clash_with_anything__0095591, this);
+        pthread_create(&threads[i],0,unlikely_to_clash_with_anything__0095591_2, this);
     }
 
     for(auto i = 0; i < MAX; i++){
@@ -134,12 +134,12 @@ void test_harness__CAST_SCAT_client::runComponent()
     CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3b -- DONE");
 }
 
-void test_harness__CAST_SCAT_client::implement__computeFibonacci(testHarnessCASTSCAT::computeFibonacciPtr& input)
+void test_harness__CAST_SCAT_client_clone2::implement__computeFibonacci(testHarnessCASTSCAT::computeFibonacciPtr& input)
 {
 }
 
 
-void test_harness__CAST_SCAT_client::start()
+void test_harness__CAST_SCAT_client_clone2::start()
 {
 }
 
