@@ -22,7 +22,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-FOR COGX FOLK :
+FOR CcGX FOLK :
 ---------------
 
 Dear friendly CogX team member,
@@ -92,8 +92,8 @@ WHAT COMPILER IS REQUIRED?
 I use a lot of C++-0X features, so you will want to compile code that
 uses CAST::SCAT with the -std=c++0x switch.
 
-ON WHAT SYSTEMS HAS NMRDPP BEEN TESTED?
----------------------------------------
+ON WHAT SYSTEMS HAS CAST::SCAT BEEN TESTED?
+-------------------------------------------
 
 Testing is for wimps.
 
