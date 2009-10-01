@@ -34,7 +34,7 @@ module motivation {
     		/** [0-inf] encoding for costs */
     		float costs;
     		/** [0-1] encoding for information gain */
-    		float informationGain;
+    		double informationGain;
     		/** rank of activated motives */
     		int rank;
     		/** the derived single goal for the planner */
