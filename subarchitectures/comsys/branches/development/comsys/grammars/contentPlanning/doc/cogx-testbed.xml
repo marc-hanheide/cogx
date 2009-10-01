@@ -165,6 +165,69 @@
 
 
 
+
+<!-- ========== ENTITY REFERENCE ========= -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar)
+</input>
+<realizations>
+<string>the big red ball</string>
+<string>the red big ball</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red)
+</input>
+<realizations>
+<string>a big red ball</string>
+<string>a red big ball</string>
+<string>one big red ball</string>
+<string>one red big ball</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true)
+</input>
+<realizations>
+<string>that big red one</string>
+<string>that red big one</string>
+<string>this big red one</string>
+<string>this red big one</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
+*** NOT YET WORKING ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true ^ /InfoStatus>familiar)
+</input>
+<realizations>
+<string>the big red one</string>
+<string>the red big one</string>
+</realizations>
+</utterance>
+
+
+
+
 <!-- ==========  ASCRIPTION ========== -->
 
 

@@ -20,19 +20,8 @@ Ascription wh-questions: alternative formulations
 Multiple properties in ascription
 
 
-Reference to multiple objects
-
-
-Negation in ascription
-
-
-
-Ascription
-"The red object is a ball"
-"The red object is a big ball"
-
-
 Acknowledgment
+alternative form:
 "Yes you are right"
 
 
