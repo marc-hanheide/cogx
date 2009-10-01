@@ -15,7 +15,7 @@
 
 main(!IO) :-
 	aserv_main(RetVal, !IO),
-	format("Returned with status %d.\n", [i(RetVal)], !IO).
+	io.set_exit_status(RetVal, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
