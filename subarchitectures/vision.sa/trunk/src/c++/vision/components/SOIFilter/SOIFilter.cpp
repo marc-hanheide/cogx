@@ -13,11 +13,11 @@
 
 // Segmentation costants
 
-#define SMOOTH_COST 15
-#define HUE_K_VAL 4 // Number of nearest neighbours taken when calculating the cost for hue
+#define SMOOTH_COST 10
+#define HUE_K_RATIO 25 // Number of nearest neighbours taken when calculating the cost for hue
 
-#define OBJ_HUE_TOLERANCE 20
-#define BG_HUE_TOLERANCE 5
+#define OBJ_HUE_TOLERANCE 15
+#define BG_HUE_TOLERANCE 15
 
 #define OBJ_DIST_TOLERANCE 9999
 #define BG_DIST_TOLERANCE 9999
@@ -57,7 +57,7 @@ using namespace boost::posix_time;
 struct gCutData {
 	int numLab;
 	int k;
-	std::list<int> hueList;
+	std::list<colorHLS> hueList;
 	const IplImage *hueImg;
 	};
 
@@ -68,7 +68,7 @@ static long smoothFn(int p1, int p2, int l1, int l2)
 	else return 0;
 }
 
-vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg, int k)
+vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg)
 {
 	int num_pixels = width*height;
 	vector<int> result(num_pixels);   // stores result of optimization
@@ -510,43 +510,7 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
    		 
 }
 
-void SOIFilter::projectSOIPoints(const SOI &soi, const ROI &roi, vector<CvPoint> &projPoints,
-				vector<CvPoint> &bgProjPoints, vector<int> &hull, const float ratio, const Video::CameraParameters &cam)
-{
-  size_t n = soi.points.size();
-  size_t nbg = soi.BGpoints.size();
-  
-//  int dx = roi.rect.pos.x - roi.rect.width/2;
-//  int dy = roi.rect.pos.y - roi.rect.height/2;
-  
-  // calculate foreground points
-  for(size_t i = 0; i < n; i++)
-  {
-    cogx::Math::Vector2 p = projectPoint(cam, soi.points[i].p);
-    
-    /// HACK: artificially shrink cloud point
-    int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
-    int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
-	
-    projPoints.push_back(cvPoint(x, y));
-  }
-  
-   // calculate hull points
-//  CvMat pointMat = cvMat( 1, n, CV_32SC2, &projPoints[0] );
-//  CvMat hullMat = cvMat( 1, n, CV_32SC1, &hull[0] );
-//  cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
 
-  // calculate background points inside SOI
-  for(size_t i = 0; i < nbg; i++)
-  {  
-    cogx::Math::Vector2 p = projectPoint(cam, soi.BGpoints[i].p);
-    
-    int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
-    int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
-	   
-    bgProjPoints.push_back(cvPoint(x, y));
-  }  
-}
 
 void SOIFilter::project3DPoints(const vector<SurfacePoint> surfPoints, const ROI &roi, const float ratio,
                                 const Video::CameraParameters &cam, vector<CvPoint> &projPoints, vector<int> &hull)
@@ -633,6 +597,9 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
  
     cvSetImageCOI(iplPatchHLS, 1);
     cvCopy(iplPatchHLS, huePatch);
+    
+    int hueKval = surfPoints.size()/HUE_K_RATIO;
+	log("%i hue neighbuours", hueKval);
      
     if(distcost)
     {
@@ -653,10 +620,9 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	else
 		cvSet(distScaledPatch, cvScalar(0));
 		
-	cvConvertScale(distPatch, distScaledPatch, 1, 0);
-		
+	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
 	
-	vector<int> hueCostList = getHueCostList(getSortedHueList(surfPoints), HUE_K_VAL);  
+	vector<int> hueCostList = getHueCostList(getSortedHueList(surfPoints), hueKval);  
  //   list<int> hueList = getSortedHueList(projPoints, huePatch);
  //   vector<int> hueCostList = getHueCostList(hueList, 3);
 
@@ -744,7 +710,7 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
     project3DPoints(soiPtr->BGpoints, *roiPtr, ratio, image.camPars, bgProjPoints, hullPoints);
 
 	colorImg = "Object Colors"; //HACK
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, false);
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
     colorImg = "Surface Colors"; //HACK
     IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false);  	
 
@@ -753,7 +719,7 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
     segMask->width = iplPatchHLS->width;
     segMask->height = iplPatchHLS->height;
 
-    vector<int> labels = graphCut(segMask->width, segMask->height, 3, costPatch, bgCostPatch, HUE_K_VAL);
+    vector<int> labels = graphCut(segMask->width, segMask->height, 3, costPatch, bgCostPatch);
     segMask->data = labels;
     convertImageFromIpl(iplPatch, imgPatch);
     
