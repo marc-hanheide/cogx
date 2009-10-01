@@ -9,6 +9,7 @@ module Video {
   sequence<byte> ByteSeq;
   sequence<int> IntSeq;
 
+  // TODO: add iamge scale factor for properly dealing with subsampled images
   /**
    * Camera class.
    * For some theory:
