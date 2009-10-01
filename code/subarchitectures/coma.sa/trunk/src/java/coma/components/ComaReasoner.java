@@ -109,7 +109,13 @@ public class ComaReasoner extends ManagedComponent {
 			return true;
 		}
 
-		
+		public boolean deleteInstance(String instance, Current current) {
+			return m_reasoner.deleteInstance(instance);
+		}
+
+		public boolean isInstanceOf(String instance, String concept, Current __current) {
+			return m_reasoner.isInstanceOf(instance, concept);
+		}
 		
 		
 	}

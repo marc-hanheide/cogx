@@ -20,7 +20,7 @@ JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --mar
 SUBARCHITECTURE binder 
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM binder.components.BindingWorkingMemory #--log
-JAVA MG monitor binder.components.BinderMonitor #--gui #--log
+JAVA MG monitor binder.components.BinderMonitor --gui #--log
 JAVA MG binder binder.components.Binder #--log
 JAVA MG discretizer binder.components.UnionDiscretizer #--log
 
@@ -61,12 +61,12 @@ CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 # -c for config file which gives info about the robot shape etc
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf #--log #--debug --no-x-window 
 
-#CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --log #--debug 
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf #--log #--debug 
 
 CPP GD path.query PathQueryProcessor #--log --no-indirect-paths #--debug
 
-CPP GD exploration.tester ExplorationTester #--log #--debug
+#CPP GD exploration.tester ExplorationTester #--log #--debug
 
 #CPP GD cure.logger CureDataLogger
 #CPP GD key.command KeyCommander --fixed-prio --auto 1 --init-sleep 15000 --no-key
-#CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query --log #--debug
+CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query --log #--debug
