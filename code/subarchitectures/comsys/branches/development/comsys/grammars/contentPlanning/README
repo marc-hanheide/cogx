@@ -64,6 +64,14 @@ entity/thing/physical
 person
 quality
 ascription
+
+ont-entity = as an entity dummy, when we DO NOT want the usual entity-realization planning stuff to apply
+
+
+Types unknown to the grammar, but used in the planner:
+dvp
+answer
+ 
 ...?
 
 ----------------------------------

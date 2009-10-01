@@ -11,7 +11,7 @@
 
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @unknown"> 
+         <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @answer @unknown"> 
 	     <f-featval nomvar="DVP" feat="Relation" val="unknown" /> 
 	     </inquiry>
   	     <choicenode answer="accept">   <!-- ACCEPT -->
@@ -100,8 +100,24 @@
 			</choicenode>
 	     </choicenode>
 
-	     <choicenode answer="alreadytrue">  <!-- already true -->
+	     <choicenode answer="alreadytrue">  <!-- ALREADY TRUE -->
 	       <result val="already-true"/>
+	     </choicenode>
+
+
+	     <choicenode answer="answer">  <!-- ANSWER -->
+                <inquiry id="f-featval" type="string" answerset="@positive @negative @unknown">
+                    <f-featval nomvar="DVP" feat="AnswerType" val="unknown"/>
+				 </inquiry>
+                 <choicenode answer="positive">			
+                 				<result val="answer-positive"/>
+                 </choicenode>
+                 <choicenode answer="negative">			
+                 				<result val="answer-negative"/>
+                 </choicenode>
+                 <choicenode answer="unknown">			
+                 				<result val="answer-unknowntype"/>
+                 </choicenode>
 	     </choicenode>
          
 	</choicenode>
