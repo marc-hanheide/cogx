@@ -391,7 +391,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			amount.at(label-1) = amount.at(label-1) + 1;
 			VisionData::SurfacePoint PushStructure;
 			PushStructure.p = v3Obj;
-			PushStructure.c = points.at(i).c;
+			PushStructure.c = points.at(i).c;	//cout<<"in SOI"<<PushStructure.c.r+128<<PushStructure.c.g+128<<PushStructure.c.b+128<<endl;
 			SOIPointsSeq.at(label-1).push_back(PushStructure);
 		}
 	}
@@ -424,10 +424,10 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 		{
 			VisionData::SurfacePoint PushStructure;
 			PushStructure.p = points.at(j).p;
-			PushStructure.c = points.at(j).c;
+			PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
 			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
 			int label = labels.at(j);
-			if (label == -1 && dist(Point_DP,Center_DP) < 1.2*radius_world.at(i)) // equivocal points
+			if (label == -1 && dist(Point_DP,Center_DP) < 1.3*radius_world.at(i)) // equivocal points
 			{
 				EQPointsSeq.at(i).push_back(PushStructure);
 				glPointSize(2);
@@ -436,7 +436,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
 				glEnd();
 			}
-			if (label == 0 && dist(Point_DP,Center_DP)>1.2*radius_world.at(i) && dist(Point_DP,Center_DP) < 1.5*radius_world.at(i) ) //BG nearby also required
+			if (label == 0 && dist(Point_DP,Center_DP)>1.3*radius_world.at(i) && dist(Point_DP,Center_DP) < 1.5*radius_world.at(i) ) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(PushStructure);
 
@@ -740,7 +740,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 			if (norm(v3Normal) != 0)
 				normalise(v3Normal);
 			else v3Normal = 99999.9*v3Normal;
-		} while (fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.1); //the plane should parallel with the initialisation motion of camera
+		} while (fabs(v3Normal.x/(dot(v3Normal,v3Normal)+1))>0.01); //the plane should parallel with the initialisation motion of camera
 
 		Vector3 v3Mean = 0.33333333 * (R_points.at(nA).p + R_points.at(nB).p + R_points.at(nC).p);
 		double dSumError = 0.0;
@@ -830,7 +830,7 @@ void PlanePopOut::SplitPoints(VisionData::SurfacePointSeq &points, std::vector <
 	double split_threshold = Calc_SplitThreshold(points, labels);
 	unsigned int obj_number_threshold;
 	if (N == 1) obj_number_threshold = 400;
-	if (N == 5) obj_number_threshold = 40;
+	if (N == 5) obj_number_threshold = 60;
 	if (N == 10) obj_number_threshold = 20;
 	while(!candidants.empty())
 	{
