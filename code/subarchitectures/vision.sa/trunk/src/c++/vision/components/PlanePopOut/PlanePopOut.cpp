@@ -389,10 +389,6 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 		{
 			center.at(label-1).p = center.at(label-1).p + v3Obj;
 			amount.at(label-1) = amount.at(label-1) + 1;
-			VisionData::SurfacePoint PushStructure;
-			PushStructure.p = v3Obj;
-			PushStructure.c = points.at(i).c;	//cout<<"in SOI"<<PushStructure.c.r+128<<PushStructure.c.g+128<<PushStructure.c.b+128<<endl;
-			SOIPointsSeq.at(label-1).push_back(PushStructure);
 		}
 	}
 	v3center.clear();
@@ -416,6 +412,21 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			vdradius.push_back(radius_world.at(i));
 	}
 
+	for(unsigned int i = 0; i<points.size(); i++)
+	{
+		Vector3 v3Obj = points.at(i).p;
+		int label = labels.at(i);
+		if (label > 0)
+		{
+			center.at(label-1).p = center.at(label-1).p + v3Obj;
+			amount.at(label-1) = amount.at(label-1) + 1;
+			VisionData::SurfacePoint PushStructure;
+			PushStructure.p = v3Obj;
+			PushStructure.c = points.at(i).c;	//cout<<"in SOI"<<PushStructure.c.r+128<<PushStructure.c.g+128<<PushStructure.c.b+128<<endl;
+			SOIPointsSeq.at(label-1).push_back(PushStructure);
+		}
+	}
+
 	for (int i = 0; i<objnumber; i++)
 	{
 		if (mbDrawWireSphere)	DrawWireSphere(center.at(i).p,radius_world.at(i));
@@ -427,7 +438,11 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			PushStructure.c = points.at(j).c;	//cout<<"in BG"<<PushStructure.c.r<<PushStructure.c.g<<PushStructure.c.b<<endl;
 			Vector3 Point_DP = ProjectOnDominantPlane(PushStructure.p);
 			int label = labels.at(j);
-			if (label == -1 && dist(Point_DP,Center_DP) < 1.3*radius_world.at(i)) // equivocal points
+			if (label > 0 && dist(Point_DP,Center_DP) < 0.9*radius_world.at(i))
+			{
+				SOIPointsSeq.at(label-1).push_back(PushStructure);
+			}
+			if (label == -1 && dist(Point_DP,Center_DP) < 1.3*radius_world.at(i) && dist(Point_DP,Center_DP) > 0.9*radius_world.at(i)) // equivocal points
 			{
 				EQPointsSeq.at(i).push_back(PushStructure);
 				glPointSize(2);
