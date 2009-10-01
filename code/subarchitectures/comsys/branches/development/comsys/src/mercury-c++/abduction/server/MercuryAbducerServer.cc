@@ -8,6 +8,7 @@ extern "C" {
 }
 
 #include "TypeConversions.h"
+#include "ConsoleUtils.h"
 
 using namespace std;
 using namespace Abducer;
@@ -16,7 +17,7 @@ using namespace Abducer;
 
 MercuryAbducerServer::MercuryAbducerServer()
 {
-	cerr << "[log] initialising abduction context" << endl;
+	cerr << col::grn << "* initialising abducer context" << col::def << endl;
 	ctx = init_ctx();
 
 	haveProof = false;
@@ -25,7 +26,7 @@ MercuryAbducerServer::MercuryAbducerServer()
 void
 MercuryAbducerServer::clearRules(const Ice::Current&)
 {
-	cerr << "[log] clearing explicit rules" << endl;
+	cerr << col::grn << "* clearing rules" << col::def << endl;
 	clear_rules(ctx, &ctx);
 }
 
@@ -33,7 +34,7 @@ void
 MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Current&)
 {
 	char * s = cc2m::string(filename);
-	cerr << "[log] adding explicit rules from: " << s << endl;
+	cerr << col::grn << "* loading rules from `" << s << "'" << col::def << endl;
 	load_rules_from_file(s, ctx, &ctx);
 	delete s;
 }
@@ -41,7 +42,7 @@ MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Curre
 void
 MercuryAbducerServer::clearFacts(const Ice::Current&)
 {
-	cerr << "[log] clearing explicit facts" << endl;
+	cerr << col::grn << "* clearing facts" << col::def << endl;
 	clear_facts(ctx, &ctx);
 }
 
@@ -49,7 +50,7 @@ void
 MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Current&)
 {
 	char * s = cc2m::string(filename);
-	cerr << "[log] adding explicit facts from: " << filename << endl;
+	cerr << col::grn << "* loading facts from `" << s << "'" << col::def << endl;
 	load_facts_from_file(s, ctx, &ctx);
 	delete s;
 }
@@ -57,7 +58,7 @@ MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Curre
 void
 MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
-	cerr << "[log] adding fact " << fact->p->predSym << endl;
+	cerr << col::grn << "* adding fact: " << fact->p->predSym << "(...)" << col::def << endl;
 
 	MR_Word vs;
 	new_varset(&vs);
@@ -69,14 +70,14 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 void
 MercuryAbducerServer::clearAssumables(const Ice::Current&)
 {
-	cerr << "[log] clearing assumables" << endl;
+	cerr << col::grn << "* clearing assumables" << col::def << endl;
 	clear_assumables(ctx, &ctx);
 }
 
 void
 MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
-	cerr << "[log] adding assumable " << f->p->predSym << endl;
+	cerr << col::grn << "* adding assumable: " << f->p->predSym << "(...) / " << function << col::def << endl;
 
 	MR_Word w_vs;
 	new_varset(&w_vs);
@@ -88,7 +89,7 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 ProveResult
 MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
 {
-	cerr << "[log] proving" << endl;
+	cerr << col::grn << "* proving" << col::def << endl;
 
 	MR_Word vs;
 	new_varset(&vs);
@@ -111,7 +112,8 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 	double proofCost;
 
 	if (prove_best(minitproof, ctx, &proofCost, &curBestProof)) {
-		cerr << "  result: proof found" << endl;
+		cerr << "proof found" << endl;
+		cerr << endl;
 		proof_summary(curBestProof, ctx);
 		haveProof = true;
 		//sleep(1);
@@ -120,7 +122,7 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 		return (ProofFound);
 	}
 	else {
-		cerr << "  result: no proof found" << endl;
+		cerr << "no proof found" << endl;
 		//print_ctx(ctx);
 		haveProof = false;
 		return (NoProofFound);
@@ -130,39 +132,14 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 vector<MarkedQueryPtr>
 MercuryAbducerServer::getBestProof(const Ice::Current&)
 {
-	cerr << "[log] requested the best proof" << endl;
-	//sleep(2);
+	cerr << col::grn << "* sending the last proof" << col::def << endl;
 
 	if (haveProof) {
 		return MR_WordToMarkedQuerySeq(ctx, curBestProof);
 	}
 	else {
+		cerr << "ERROR: no proof" << endl;
 		throw NoProofException();
 	}
-/*
-	double cost;
-	MR_Word assumed;
-	MR_Word asserted;
-	dissect_proof(curBestProof, ctx, &cost, &assumed, &asserted);
-
-	MR_Word cur;
-	vector<string> asmVect;
-	vector<string> asrVect;
-
-	for (cur = assumed; !MR_list_is_empty(cur); cur = MR_list_tail(cur)) {
-		asmVect.push_back((const char *) MR_list_head(cur));
-	}
-
-	for (cur = asserted; !MR_list_is_empty(cur); cur = MR_list_tail(cur)) {
-		asrVect.push_back((const char *) MR_list_head(cur));
-	}
-
-	AbductiveProofPtr proof = new AbductiveProof();
-	proof->cost = cost;
-	proof->assumed = asmVect;
-	proof->asserted = asrVect;
-
-	return proof;
-*/
 }
 
