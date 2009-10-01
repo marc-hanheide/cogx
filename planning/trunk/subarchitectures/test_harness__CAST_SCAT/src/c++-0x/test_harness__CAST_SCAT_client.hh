@@ -16,12 +16,12 @@ using CAST_SCAT::Designators;
 
 
 class test_harness__CAST_SCAT_client :
-    public CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_client>,
-    public CAST_SCAT::procedure_call<>
+    public CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_client, CAST_SCAT::Locality::Local>,
+    public CAST_SCAT::procedure_call<CAST_SCAT::_recover_address, CAST_SCAT::Locality::Local>
 {
 public:
-    typedef CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_client> Implement;
-    typedef CAST_SCAT::procedure_call<> Call;
+    typedef CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_client, CAST_SCAT::Locality::Local> Implement;
+    typedef CAST_SCAT::procedure_call<CAST_SCAT::_recover_address, CAST_SCAT::Locality::Local> Call;
 
     /* argc and argv*/
     void configure(const std::map<std::string,std::string>& );

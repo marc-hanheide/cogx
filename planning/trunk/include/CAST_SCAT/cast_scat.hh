@@ -17,15 +17,31 @@
  * if you make a change to this and commit that change to SVN. In that
  * email, could you please include the source files you changed as
  * they appeared before you changed them (i.e., fresh out of SVN), and
- * the diff files. Alternatively, you could not commit your changes,
- * but rather post me a patch which I will test and then commit if it
+ * the diff files (*). Alternatively, you could not commit your changes, but
+ * rather post me a patch (**) which I will test and then commit if it
  * does not cause any bugs.
+ *
+ * (*) see http://www.gnu.org/software/diffutils/diffutils.html --
+ * GNU-09/2009
+ *
+ * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
+ *
  *
  * ABOUT :: 
  *
+ * WARNING ** This library is written in c++-0x, and thus contains
+ * WARNING ** instances of the "explicit" keyword. Any person over the
+ * WARNING ** age of.. say 35.. should not look at this source file
+ * WARNING ** without the supervision of a more agile (read immature) mind.
+ *
+ *
  * Executively speaking, \namespace{CAST_SCAT} gives a wrapper of
  * useful syntactic sugar for "subarchitecture" interactions via
- * classical -- i.e., circa August 2009 -- CAST.
+ * classical -- i.e., circa August 2009 -- CAST. It has been tested
+ * and modified to work with all releases of CAST since
+ * then. Essentially, it allows a CAST component to interact with
+ * another cast component in a C-like procedural way, and at the same
+ * time arbitrary components can snoop (i.e., listen in on) the calls.
  * 
  * In more detail.. What is CAST_SCAT?! The author believes.. CAST
  * (see \module{cast::*}) is lovely.. Wow!\footnote{CMAKE is also
@@ -67,7 +83,7 @@
  * do the same thing -- i.e., \module{utilities.hh} overloads
  * \function{template<typename T> ostream operator<<(ostream&, const
  * vector<T>&)}, so if you have also implemented this, problems are
- * going to arrise at runtime (a.k.a. crashtime).. unless CAST is
+ * going to arise at runtime (a.k.a. crashtime).. unless CAST is
  * clever and able to resolve to one implementation -- in which case
  * there are going to be horrible horrible bugs that take ages to
  * find...
@@ -87,6 +103,7 @@
 // -std=c++0x switch (include -lpthread for safety) activated during
 // GCC compilation.
 
+
 namespace CAST_SCAT
 {
 
@@ -99,9 +116,9 @@ namespace CAST_SCAT
     typedef std::string Designator;
     typedef std::vector<Designator> Designators;
 
-    /* The typing here is really really weak. Because the Id and the
-     * Subarchitecture have the same underlying type, they can be
-     * mixed without the programmer knowing about it until runtime.
+    /* The typing here is really weak. Because the \type{Id} and the
+     * \type{Subarchitecture} have the same underlying type, they can
+     * be mixed without the programmer knowing about it until runtime.
      * But there is nothing sensible we can do at this
      * stage. Something along the lines of what I commented below is
      * the start of a useful direction. At the moment, all checking of
@@ -149,7 +166,14 @@ namespace CAST_SCAT
     }
     
     
-    template<>/* FIX :: */
+    template<>/* FIX ::
+              *
+              *
+              * NOTE:: (Wed Sep 30 09:49:15 BST 2009) I wrote that FIX
+              * in a hurry it seems, because I am not sure what I am
+              * supposed to be fixing. The creating on a new
+              * \class{Address} perhaps?!
+              */
     std::shared_ptr<Address> _recover_address::operator()<cast::cdl::WorkingMemoryChange>
     (const cast::cdl::WorkingMemoryChange& wmc) const
     {
@@ -210,15 +234,13 @@ namespace CAST_SCAT
 
     /* If you start a thread that will invoke
      * \member{__receive_call()} of \class{_receive_call}, then this
-     * is what you should use. \argument{_argument} is a pair of
-     * \class{_receive_call<...>} and \type{const
-     * cast::cdl::WorkingMemoryChange&}.
+     * is what you should use.
      *
      * WHY?! CAST blocks when it invokes a member function based on
      * "change filter". So for example, if you ask CAST to call
      * \function{X::foo()} when an overwrite happens to \object{o},
      * then if two overwrites occur, the invocations of
-     * \function{X::foo()} is serialised.*/
+     * \function{X::foo()} are serialised.*/
     template<typename THING, typename FUNCTION, typename ICE_FUNCTION_CLASS, class PARENT>
     void* _receive_call__pthread_METHOD_CALLBACK____receive_call(void* _argument);
     
@@ -233,8 +255,11 @@ namespace CAST_SCAT
      * procedure at a time. This functionality uses the
      * \argument{mutex} to enforce this.
      */
-    template<typename THING, typename FUNCTION, typename ICE_FUNCTION_CLASS, class PARENT = NA>
-    class _receive_call : public PARENT
+    template<typename THING/*Probably a cast::ManagedComponent is also a \class{procedure_implementation}*/,
+             typename FUNCTION/*Member function from \type{THING}*/,
+             typename ICE_FUNCTION_CLASS/*SLICE classname*/,
+             class PARENT = NA>
+    class _receive_call : public PARENT 
     {
     public:
         friend void* _receive_call__pthread_METHOD_CALLBACK____receive_call<THING, FUNCTION, ICE_FUNCTION_CLASS, PARENT>(void*);
@@ -244,15 +269,18 @@ namespace CAST_SCAT
         void __receive_call(const cast::cdl::WorkingMemoryChange& _wmc)
         {
             
-            VERBOSER(601, "Pending call :: "
+            VERBOSER(601, "Pending call.");
+            
+            QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(mutex.get()),
+                                              "Unable to lock mutex.");
+
+            
+            VERBOSER(601, "Making call :: "
                      <<mutex.get()<<std::endl
                      <<_wmc.address.id
                      <<" "<<_wmc.address.subarchitecture
                      <<std::endl);
             
-            QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(mutex.get()),
-                                              "Unable to lock mutex.");
-
             VERBOSER(200, "Locked _receive_call mutex:: "
                      <<mutex.get()<<std::endl);
             
@@ -348,30 +376,84 @@ namespace CAST_SCAT
          * that \module{cast::*} has for calling event handlers.*/
         void operator()(const cast::cdl::WorkingMemoryChange& _wmc)
         {
+
+            
+            
+            VERBOSER(499, "Trying to receive a call...");
+            
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(mutex.get()),
                                               "Unable to lock mutex.");
+            
+            /* \module{cast::*} will make the argument _wmc invalid
+             * sometime after this thread of execution completes
+             * execution of this member function. Because of that, I
+             * have to copy the argument details and operate on the
+             * copy.
+             *
+             * Nick Hawes (Sep 29): \argument{_wmc} is only an event
+             * struct -- i.e. a small amount of information about the
+             * change that has occurred. It does not hold the slice
+             * object data or an encapsulated connection to working
+             * memory. It just obeys all the usual C rules about
+             * memory management. In this case the WorkingMemoryChange
+             * object passed in as _wmc will eventually go out of
+             * scope in the calling class and then your pointer will
+             * point to garbage. Hope that helps.
+             */
+            cast::cdl::WorkingMemoryChange wmc = _wmc;//new cast::cdl::WorkingMemoryChange(__wmc);
+            
+            
+            VERBOSER(499, "Entered call reception...");
             
             /* Only exercised on first invocation.*/
             if(my_Threads.empty())number_of_elements_in__my_threads =  0;
             
             auto thread = std::shared_ptr<pthread_t>(new pthread_t());
-            auto attributes = std::shared_ptr<pthread_attr_t>(new pthread_attr_t());/* FIX :: no attributes.*/
+            
+            /* FIX (below -- next line) :: At the moment I do not
+             * construct threads with anything but the default
+             * attributes. This is probably a bad thing, so I should
+             * look into that in the future.*/
+            auto attributes = std::shared_ptr<pthread_attr_t>(new pthread_attr_t());
+            
             auto thread_mutex = std::shared_ptr<pthread_mutex_t>(give_me_a_new__pthread_mutex_t());
-             
+            
             if(my_Threads.size() <= number_of_elements_in__my_threads){
+                assert(my_Threads.size() + 1 > number_of_elements_in__my_threads);
+                
+                VERBOSER(499, "Added entry to implementation thread mutexes...");
                 my_Threads.push_back(My_Thread_Details());
             }
             
+            VERBOSER(499, "I have a thread with some attributes and a mutex...");
             my_Threads[number_of_elements_in__my_threads++] = My_Thread_Details(thread, attributes, thread_mutex);
             
+            VERBOSER(499, "Now initialising the thread attributes...");
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_init(attributes.get()),
                                       "Failed to initialise thread attributes...");   
 
-            auto _tuple =
-                new std::tr1::tuple
-                <decltype(this), decltype(_wmc), decltype(thread_mutex)>
-                (this, _wmc, thread_mutex);
+//             QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_init(attributes.get()),
+//                                       "Making a thread that we don't have t...");  
+            
 
+            VERBOSER(499, "Preparing to pass-on the thread mutex...");
+
+            
+            typedef _receive_call<THING/*implementation*/, FUNCTION/*member function*/, ICE_FUNCTION_CLASS, PARENT> Receive_Call;
+            typedef std::tr1::tuple<Receive_Call*
+                , cast::cdl::WorkingMemoryChange
+                , std::shared_ptr<pthread_mutex_t>
+                > Argument;
+
+            /*FIX :: Memory leak. We never delete _tuple.*/
+            Argument* _tuple = new Argument(this, wmc, thread_mutex);
+            
+//             auto _tuple =
+//                 new std::tr1::tuple
+//                 <decltype(this), decltype(wmc), decltype(thread_mutex)>
+//                 (this, wmc, thread_mutex);
+
+            VERBOSER(499, "Locking the thread mutex...");
             /*Lock the mutex associated with a new thread we are about to spawn.*/
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(thread_mutex.get()), "Unable to lock mutex.");
             
@@ -380,11 +462,17 @@ namespace CAST_SCAT
             /*Attempt to spawn a new thread.*/
             auto result = 0;
             auto number_of_attempted_thread_invocations = 0;
+            
+            VERBOSER(499, "Starting spinning to create a thread...");
             while(0 != (result = pthread_create(thread.get(),
                                              0,
                                              _receive_call__pthread_METHOD_CALLBACK____receive_call
                                              <THING, FUNCTION, ICE_FUNCTION_CLASS, PARENT>,
                                              _tuple))){
+
+                VERBOSER(299, "Spinning to create a thread...");
+            
+//                 UNRECOVERABLE_ERROR("Unable to spawn a thread.");
 
 #ifdef _POSIX_THREAD_THREADS_MAX
                 WARNING("Failed to spawn a thread. "
@@ -400,11 +488,11 @@ namespace CAST_SCAT
                                       <<" a process {PTHREAD_THREADS_MAX} would be exceeded. Nice grammar!!"
                                       <<" Anyway, I will try again after joining some threads"
                                       <<" I am responsible for...");
-                        
+//                         UNRECOVERABLE_ERROR("No second chances in this version.");/*FIX*/
                         break;
                     case EINVAL:
                         UNRECOVERABLE_ERROR("My bad. I specified thread attribute values that are invalid."
-                                            <<" Nothing to be done.. so I am killing mysefl "
+                                            <<" Nothing to be done.. so I am killing myself "
                                             <<"-- i.e., \"pthread_exit(0)\".");
 
                         pthread_exit(0);
@@ -431,20 +519,25 @@ namespace CAST_SCAT
                 number_of_attempted_thread_invocations++;
                 VERBOSER(601, number_of_attempted_thread_invocations<<" attempted thread invocations.");
 
-                QUERY_UNRECOVERABLE_ERROR(number_of_attempted_thread_invocations > 500,
+                QUERY_UNRECOVERABLE_ERROR(number_of_attempted_thread_invocations > 3/*FIX : Magic number*/,
                                           "Can't implement a CAST_SCAT procedure call. Tried :: "
                                           <<number_of_attempted_thread_invocations
                                           <<" times and still nothing..."
                                           <<"Basically, we can't start a thread in which to "
                                           <<"execute the procedure call. Better luck next time chief!");
-            }
 
+//                 UNRECOVERABLE_ERROR("No second chances in this version.");/*FIX*/
+            }
+            VERBOSER(499, "Finished spinning to create a thread...");
+            
             /* We do not wait to join the thread just spawned, as that
              * is indeed the point of spawning it, to get around the
-             * cast problem of blocking on a call to an event
-             * handler.*/
-
-            
+             * \module{cast::*} problem of blocking on a call to an
+             * event handler -- i.e., A member function that is
+             * invoked by \module{cast::*} when an
+             * ADD/DELETE/OVERWRITE signal occurs on a SLICE object
+             * under its management.*/       
+            VERBOSER(499, "Releasing mutex...");
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(mutex.get()),
                                       "Unable to unlock mutex.");
         }
@@ -461,10 +554,11 @@ namespace CAST_SCAT
          * needless to say, but including it here helps me, the
          * author, a whole bunch when I am grepping for this
          * functionality. So I would really appreciate it if you, a
-         * person or class of persons who is not the author, not to
-         * use it in your comments. Incidentally, I believe "thusly"
-         * means: "in the way indicated".*/
+         * person, or class of persons who is not the author, not to
+         * use it in your own comments. Incidentally, while writing
+         * this I believed "thusly" meant: "in the way indicated".*/
         std::vector<My_Thread_Details> my_Threads;
+        
         /* (see \member{my_Threads}). Standard trick, we don't resize
          * the vector, but rather keep a prefix of valid entries, and
          * the following item stores the length of that prefix.*/
@@ -473,44 +567,72 @@ namespace CAST_SCAT
         
         inline void join_threads_in__my_Threads__that_are_completed()
         {
+            QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
+                                      "Procedure call mutex should have been locked.");
+            
+            VERBOSER(499, "Joining threads that we spawned...");
+
+//             return;/*FIX :: Remove this return, and get the
+//                     * functionality in this function happening...*/
+            
             for(uint my_Thread__index = 0
                     ; my_Thread__index < number_of_elements_in__my_threads
                     ; my_Thread__index++){
                     
-                assert(my_Threads.size() >= my_Thread__index);
+                assert(my_Threads.size() > my_Thread__index);
                 
                 auto my_Thread = my_Threads[my_Thread__index];
 
                 auto result = 0;
                 
+                VERBOSER(499, "Waiting for a thread that we spawned earlier...");
                 /*Has a thread that I spawned finished executing.*/
                 if(0 == (result = pthread_mutex_trylock(std::tr1::get<2>(my_Thread).get()))){
-                    VERBOSER(601, "Joining a thread that we spawned earlier...");
+                    VERBOSER(499, "Joining a thread that we spawned earlier...");
                         
                         
+                    VERBOSER(499, "Joining a thread that we spawned earlier...");
                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_join(*std::tr1::get<0>(my_Thread).get(), 0),
                                               "Unable to join a thread.\n");
                         
+                    VERBOSER(499, "Attribute destruction for a thread that we spawned earlier...");
                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_destroy(std::tr1::get<1>(my_Thread).get()),
                                               "Unable to destroy some thread attributes.\n");
                         
+                    VERBOSER(499, "Unlocking thread related mutex...");
                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(std::tr1::get<2>(my_Thread).get()),
                                               "Can't lock mutex that we just locked. Strange...");
                     
+                    VERBOSER(499, "Destroying thread related mutex...");
                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_destroy(std::tr1::get<2>(my_Thread).get()),
                                               "Unable to destroy mutex.");
                         
+                    VERBOSER(499, "Done cleanup...");
+                    
                     assert(my_Threads.size() >= number_of_elements_in__my_threads);
-                        
-                    my_Threads[my_Thread__index]
-                        = std::move(my_Threads[--number_of_elements_in__my_threads]);
+
+                    assert(number_of_elements_in__my_threads > 0);
+                    assert(number_of_elements_in__my_threads > 1);
+                    assert(my_Thread__index <= (number_of_elements_in__my_threads - 1));
+
+                    if((number_of_elements_in__my_threads - 1) == my_Thread__index){
+                        --number_of_elements_in__my_threads;                        
+                    } else {
+                        assert(my_Thread__index < (number_of_elements_in__my_threads - 1));
+                        /* Move the last element in the array to take
+                         * up the position of the just-now redundant
+                         * element.*/
+                        my_Threads[my_Thread__index]
+                            = std::move(my_Threads[--number_of_elements_in__my_threads]);
+                    }
+                    
                 } else {
                     switch(result){
                         case EBUSY:
-                            VERBOSER(601, "Still waiting for buzy mutex...");
+                            VERBOSER(499, "Still waiting for busy mutex...");
                             break;
                         case EINVAL:
-                            UNRECOVERABLE_ERROR("Locking on mutex that is not an initialized.");
+                            UNRECOVERABLE_ERROR("Locking on mutex that is not an initialised.");
                             break;
                         case EFAULT:
                             UNRECOVERABLE_ERROR("Locking on mutex that is an invalid pointer.");
@@ -526,34 +648,45 @@ namespace CAST_SCAT
         }
             
     private:
+        /*CAST-based managed component that implements the procedure call.*/
         THING* managed_Component;
         FUNCTION function;
         std::shared_ptr<pthread_mutex_t> mutex;
     };
 
-
     template<typename THING, typename FUNCTION, typename ICE_FUNCTION_CLASS, class PARENT>
     void* _receive_call__pthread_METHOD_CALLBACK____receive_call(void* _argument)
     {
+        VERBOSER(299, "Executing receive call...");
+        
         typedef _receive_call<THING, FUNCTION, ICE_FUNCTION_CLASS, PARENT> Receive_Call;
         typedef std::tr1::tuple<Receive_Call*
-            , const cast::cdl::WorkingMemoryChange&
+            , cast::cdl::WorkingMemoryChange/*const cast::cdl::WorkingMemoryChange& (is UNSAFE)*/
             , std::shared_ptr<pthread_mutex_t>
 //             , std::shared_ptr<pthread_t>
 //             , std::shared_ptr<pthread_attr_t>
             > Argument;
         
+        VERBOSER(299, "Recovering argument...");
         auto argument = static_cast<Argument* >(_argument);
+        VERBOSER(299, "Recovered argument...");
+        VERBOSER(299, "Recovering caller...");
         auto receive_Call = std::tr1::get<0>(*argument);//->first;
+        VERBOSER(299, "Recovering working memory change...");
         auto workingMemoryChange = std::tr1::get<1>(*argument);//->second;
+        VERBOSER(299, "Recovering thread mutex...");
         auto mutex = std::tr1::get<2>(*argument);
         
+        VERBOSER(299, "Making invocation...");
         receive_Call->__receive_call(workingMemoryChange);
 
+        VERBOSER(299, "Unlocking mutex...");
         QUERY_UNRECOVERABLE_ERROR((0 != pthread_mutex_unlock(mutex.get())),
                                           "Failed to unlock mutex!!");
 
-        return 0;
+        /*Threads execution has completed.*/
+        pthread_exit(_argument);
+        //return 0;
     }
     
     /* A \module{cast::*}-based procedure call is either "made" (i.e.,
@@ -577,6 +710,8 @@ namespace CAST_SCAT
      *
      * \end{conversation}
      *
+     * Right.. okay.. so I remain cluless ;)
+     *
      */
     enum class Locality
     {
@@ -597,7 +732,7 @@ namespace CAST_SCAT
      * \function{HelloReader::makeAnnouncement()}, the following code
      * would appear in \child{your} \method{start()}:
      * 
-     * implement<helloworld::Announcement>(&HelloReader::makeAnnouncement2);
+     * implement<helloworld::Announcement>(&HelloReader::makeAnnouncement);
      *
      */
     template<typename CHILD
@@ -691,6 +826,9 @@ namespace CAST_SCAT
          * \argument{audience}?*/
         bool intended_audience_test(const Designator& audience) const
         {
+             QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
+                                       "Procedure call mutex should have been locked.");
+            
             /* If we have not been specified to accept particular
              * designators, then we accept all invocations.*/
             if(designators.empty())return true;
@@ -713,6 +851,9 @@ namespace CAST_SCAT
          * audiences intersect with \member{designators}. */
         bool intended_audience_test(const decltype(designators)& audiences) const
         {
+             QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
+                                       "Procedure call mutex should have been locked.");
+             
             if(designators.empty())return true;
             if(audiences.empty())return true;
             if(designators.end() != std::find(designators.begin(), designators.end(), "")) return true; 
@@ -730,6 +871,9 @@ namespace CAST_SCAT
          * designation.*/
         void add_designator(const Designator& designator)
         {
+             QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
+                                       "Procedure call mutex should have been locked.");
+             
             if("" == designator) return;
             
             designators.push_back(designator);
@@ -738,6 +882,9 @@ namespace CAST_SCAT
         /* (see \member{add_designator()})*/
         void add_designator(Designator&& designator)
         {
+             QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
+                                       "Procedure call mutex should have been locked.");
+             
             if("" == designator) return;
             
             designators.push_back(std::move(designator));
@@ -753,7 +900,11 @@ namespace CAST_SCAT
         void implement(FUNCTION_TYPE function)
         {
 
-            typedef _receive_call<CHILD, FUNCTION_TYPE, ICE_FUNCTION_CLASS, can_be_deleted> __receive_call;
+            typedef _receive_call<CHILD,   /*Class that implements procedure calls for decltype(*this).*/
+                FUNCTION_TYPE,             /*Child's member function that is to be called.*/
+                ICE_FUNCTION_CLASS,        /*SLICE class, that we are listening for.*/
+                can_be_deleted             /*A procedure call can be deleted.*/
+                > __receive_call;
             
             to_be_deleted
                 .push_back(std::shared_ptr<can_be_deleted>
@@ -762,9 +913,9 @@ namespace CAST_SCAT
                                                mutex)
                             )
                            );
-
-
-
+            
+            
+            
             switch(locality){
                 case Locality::Global:
                     

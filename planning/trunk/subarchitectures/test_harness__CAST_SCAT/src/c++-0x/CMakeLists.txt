@@ -14,7 +14,7 @@ include_directories(${ROOT_OF_PLANNING}/include/)
     
 add_definitions(-std=c++0x -mno-align-stringops -minline-all-stringops -march=native)
 
-add_definitions(-pedantic -Wall -Wextra)
+add_definitions(-pedantic -vg -Wall -Wextra)
 
 set(CMAKE_VERBOSE_MAKEFILE true)
 
@@ -34,6 +34,18 @@ add_cast_component(test_harness__CAST_SCAT_client test_harness__CAST_SCAT_client
 
 link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
 
+add_cast_component(test_harness__CAST_SCAT_client_clone1 test_harness__CAST_SCAT_client_clone1.cc)
+
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+
+add_cast_component(test_harness__CAST_SCAT_client_clone2 test_harness__CAST_SCAT_client_clone2.cc)
+
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+
 add_cast_component(test_harness__CAST_SCAT_server test_harness__CAST_SCAT_server.cc)
+
+link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
+
+add_cast_component(test_harness__CAST_SCAT_server_clone1 test_harness__CAST_SCAT_server_clone1.cc)
 
 link_cast_component(${CAST_COMPONENT_NAME} testHarnessCASTSCAT)
