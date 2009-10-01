@@ -117,7 +117,7 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 		proof_summary(curBestProof, ctx);
 		haveProof = true;
 		//sleep(1);
-		cerr << " we're still alive!" << endl;
+		debug(cerr << " we're still alive!" << endl);
 		//sleep(1);
 		return (ProofFound);
 	}
