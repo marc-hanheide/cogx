@@ -84,6 +84,12 @@ private:
   	cdl::CASTTime deleteTime;
   };
   
+  struct colorHLS {
+  int h;
+  float l;
+  float s;
+  };
+  
   std::map<std::string, SOIData> SOIMap;
   
   std::queue<std::string> objToAdd;
@@ -135,7 +141,7 @@ private:
   std::list<int> getSortedHueList(std::vector<VisionData::SurfacePoint> surfPoints);
 
   
-  std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg, int k);
+  std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg);
 
   
   std::vector<int> getHueCostList(std::list<int> hueList, int k);
