@@ -38,6 +38,8 @@ StereoCamera::StereoCamera()
   mapx[LEFT] = mapx[RIGHT] = 0;
   mapy[LEFT] = mapy[RIGHT] = 0;
   sx = sy = 1.;
+  inImgSize.width = 0;
+  inImgSize.height = 0;
 }
 
 StereoCamera::~StereoCamera()
@@ -122,6 +124,9 @@ void StereoCamera::ReadSVSCalib(const string &calibfile)
   // "external" is the pose of the left w.r.t. right camera, so need to
   // invert:
   inverse(cam[RIGHT].pose, cam[RIGHT].pose);
+
+  inImgSize.width = cam[LEFT].width;
+  inImgSize.height = cam[LEFT].width;
 }
 
 /**
@@ -131,6 +136,10 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z,
     double &u, double &v, int side)
 {
   assert(Z != 0.);
+  // get from m to mm
+  X *= 1000.;
+  Y *= 1000.;
+  Z *= 1000.;
   u = sx*cam[side].proj[0][0]*X + sx*cam[side].proj[0][2]*Z +
       sx*cam[side].proj[0][3];
   v = sy*cam[side].proj[1][1]*Y + sy*cam[side].proj[1][2]*Z;
@@ -145,11 +154,18 @@ void StereoCamera::ProjectPoint(double X, double Y, double Z,
  */
 void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, double &Y, double &Z)
 {
-  // HACK: disparity output is often scaled (streched) to support subpixel
-  // disparities. Here we just boldly assume a factor for this scaling and
-  // divide the given disparity accordingly.
-  const double disp_scale = 4.;
-  d /= disp_scale;
+  // note: in gpustereo gpuRoundAndScaleDisparities() disparities are scaled
+  // with a fixed factor of 4
+  d /= 4.;
+
+  // HACK: for some reason projection matrix, rectification matrix and monocular
+  // camera parameters don't seem to match: principal point in real and ideal
+  // left image should be almost identical, however they differ by e.g. 10
+  // pixels. As a result, reconstructed points are offset in x-direction. This
+  // offset mostly corrects for that.
+  double x_correction_offset = sx*(cam[LEFT].cx - cam[LEFT].proj[0][2]);
+  u -= x_correction_offset;
+  // HACK END
 
   // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
   // proj[0][3] = -fx*tx  (where fx = proj[0][0])
