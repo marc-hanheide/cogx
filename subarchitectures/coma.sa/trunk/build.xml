@@ -8,6 +8,8 @@
           <fileset dir="lib">
             <include name="**/*.jar"/>
           </fileset>
+          <pathelement path="${ice.jar}"/>
+         <pathelement path="${cast.jar}"/>
         </path>
 
 	<!-- Controls where the output goes -->
@@ -36,6 +38,7 @@
 	    <fileset dir="${slice.dir}" includes="ComaData.ice"/>
 	    <includepath> 
   	    <pathelement path="${slice.dir}"/> 
+  	    <pathelement path="${castslice.dir}"/> 
 	    </includepath>
 	  </slice2java>
 	</target>
@@ -47,6 +50,15 @@
 	<target name="compile" depends="slice" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 		<classpath refid="build.classpath"/> </javac>
+		<mkdir  dir="${output.dir}/coma.libs"/>
+
+		<copy todir="${output.dir}/coma.libs">
+	        	<fileset dir="lib">
+            			<include name="**/*.jar"/>
+          		</fileset>
+		</copy>
+
+
 	</target>
 
 	<!-- =================================================================== -->
