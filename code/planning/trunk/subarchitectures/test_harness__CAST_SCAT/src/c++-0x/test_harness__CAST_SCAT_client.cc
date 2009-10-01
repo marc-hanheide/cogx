@@ -50,7 +50,7 @@ void test_harness__CAST_SCAT_client::eachThread__test2()
 void test_harness__CAST_SCAT_client::runComponent()
 {
     /* Upper bound on counting tests.*/
-    const auto MAX = 30;
+    const auto MAX = 3;
     
     CAST__VERBOSER(1000, "Test one :hello-world: 1a -- STARTING");
     
@@ -154,6 +154,26 @@ void test_harness__CAST_SCAT_client::runComponent()
     CAST__VERBOSER(1000, "Fibonacci number 15 is (expecting 610) ... :: "<<answer7);
     
     CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3c -- DONE");
+    
+    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3d -- STARTING");
+    
+    for(uint i = 0; i < MAX; i++){
+        
+        auto _answer7 =
+            call_to_subarchitecture
+            <testHarnessCASTSCAT::computeFibonacci> /* SLICE name of call.*/
+            (different_subarchitecture_name 
+             , 15 /* Input */
+             , 0 /* Return value */
+             , Designators());
+        
+        int answer7 = _answer7->answerIsAReturn;
+        
+        CAST__VERBOSER(1000, "Fibonacci number 15 is (expecting 610) ... :: "<<answer7);
+    }
+    
+    
+    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3d -- DONE");
 }
 
 void test_harness__CAST_SCAT_client::implement__computeFibonacci(testHarnessCASTSCAT::computeFibonacciPtr& input)
