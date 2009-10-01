@@ -24,6 +24,7 @@ module motivation {
 			cast::cdl::CASTTime created;
 			cast::cdl::CASTTime updated;
 			cast::cdl::WorkingMemoryAddress referenceEntry;
+			string correspondingUnion;
 			cast::cdl::WorkingMemoryAddress thisEntry;
     		MotiveStatus status;
     		/** a counter for the number of tries this motive has been planned */
@@ -36,6 +37,8 @@ module motivation {
     		float informationGain;
     		/** rank of activated motives */
     		int rank;
+    		/** the derived single goal for the planner */
+    		string goal;
     	};
     	
     	class TestMotive extends Motive {
