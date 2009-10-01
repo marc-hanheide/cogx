@@ -40,7 +40,8 @@
  * procedural way, and at the same time arbitrary components can snoop
  * (i.e., listen in on) the calls.
  *
- * you say: "I have no idea of the meaning for what you just wrote..."
+ * Now you say: "I have no idea of the meaning for what you just
+ * wrote..."
  *
  * - You are a CAST component. Yes, really, you are. I.e., you appear
  *    as an argument to \keyword{add_cast_component} in a
@@ -110,9 +111,9 @@
  *                we can't start a thread in which to execute the
  *                procedure call. Better luck next time chief!
  * 
- *        On any other other occasion, the system may simply hang, and
- *        then glib might get upset. If you run things in valgrind the
- *        crashes are, in my experience, always graceful.
+ * On any other other occasion, the system may simply hang, and
+ * then glib might get upset. If you run things in valgrind the
+ * crashes are, in my experience, always graceful.
  *                 
  *
  * Our main contribution is a template-based interface for
