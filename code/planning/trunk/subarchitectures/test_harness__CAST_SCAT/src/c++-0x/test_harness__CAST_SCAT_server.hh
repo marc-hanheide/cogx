@@ -19,12 +19,12 @@ using CAST_SCAT::Designators;
 
 
 class test_harness__CAST_SCAT_server :
-    public CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_server, CAST_SCAT::Locality::Local>,
-    public CAST_SCAT::procedure_call<CAST_SCAT::_recover_address, CAST_SCAT::Locality::Local>
+    public CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_server>,
+    public CAST_SCAT::procedure_call<>
 {
 public:
-    typedef CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_server, CAST_SCAT::Locality::Local> Implement;
-    typedef CAST_SCAT::procedure_call<CAST_SCAT::_recover_address, CAST_SCAT::Locality::Local> Call;
+    typedef CAST_SCAT::procedure_implementation<test_harness__CAST_SCAT_server> Implement;
+    typedef CAST_SCAT::procedure_call<> Call;
 
     /* argc and argv*/
     void configure(const std::map<std::string,std::string>& );
