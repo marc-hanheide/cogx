@@ -28,7 +28,7 @@ checksum-$(DISTFILES):
 checksum-$(PATCHFILES): 
 	true
 	
-SVN_REVISION=-r 1845
+SVN_REVISION=-r 2034
 
 	
 	
