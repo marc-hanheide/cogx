@@ -336,3 +336,23 @@
 
 
 
+<!-- ==========  NEGATION ========== -->
+
+<!-- negated ascription -->
+<!-- negation works with any ascription, just stick in negative polarity -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Polarity>neg ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Polarity\neg ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+</input>
+<realizations>
+<string>the box is not blue</string>
+<string>the box isn't blue</string>
+<string>the box ain't blue</string>
+</realizations>
+</utterance>
+
