@@ -69,22 +69,16 @@ endif
 compile: $(BIN)
 
 .PRECIOUS: %.o
-%.o: %.cc aserv.h Abducer.h BeliefModels.h TypeConversions.h TypeConversions_mint.mh MercuryAbducerServer.h MercuryAbducerServer_mint.mh ConsoleUtils.h
+%.o: %.cc aserv.h Abducer.h TypeConversions.h TypeConversions_mint.mh MercuryAbducerServer.h MercuryAbducerServer_mint.mh ConsoleUtils.h
 	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
 
-BELIEFMODELS_ICE_PATH=../../../../../../tools/beliefmodels/src/slice
+Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
+	slice2cpp -I$(SLICE_PATH) --source-ext cc $(SLICE_PATH)/Abducer.ice
 
-Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice $(BELIEFMODELS_ICE_PATH)/BeliefModels.ice
-	slice2cpp -I$(SLICE_PATH) -I$(BELIEFMODELS_ICE_PATH) --source-ext cc $(SLICE_PATH)/Abducer.ice
-
-BeliefModels.h BeliefModels.cc: $(BELIEFMODELS_ICE_PATH)/BeliefModels.ice
-	slice2cpp -I$(BELIEFMODELS_ICE_PATH) --source-ext cc $(BELIEFMODELS_ICE_PATH)/BeliefModels.ice
-
-abducer-server: $(MFILES) aserv.o Abducer.o BeliefModels.o TypeConversions.o MercuryAbducerServer.o ConsoleUtils.o
+abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o ConsoleUtils.o
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-object Abducer.o \
-		--link-object BeliefModels.o \
 		--link-object TypeConversions.o \
 		--link-object MercuryAbducerServer.o \
 		--link-object ConsoleUtils.o \
@@ -108,5 +102,4 @@ clean:
 		$(addsuffix .mh, $(basename $(MFILES))) \
 		abducer-server \
 		TypeConversions.o MercuryAbducerServer.o ConsoleUtils.o \
-		Abducer.o Abducer.cc Abducer.h \
-		BeliefModels.o BeliefModels.cc BeliefModels.h
+		Abducer.o Abducer.cc Abducer.h
