@@ -15,11 +15,11 @@
  *
  * Dear CogX team member :: Please email (charles.gretton@gmail.com)
  * if you make a change to this and commit that change to SVN. In that
- * email, could you please include the source files you changed as
- * they appeared before you changed them (i.e., fresh out of SVN), and
- * the diff files (*). Alternatively, you could not commit your changes, but
- * rather post me a patch (**) which I will test and then commit if it
- * does not cause any bugs.
+ * email, can you please attach the source files you changed as they
+ * appeared before you changed them (i.e., fresh out of SVN), and the
+ * diff files (*). Alternatively, you could not commit your changes,
+ * but rather post me a patch (**) which I will test and then commit
+ * if it does not cause any problems under testing.
  *
  * (*) see http://www.gnu.org/software/diffutils/diffutils.html --
  * GNU-09/2009
@@ -30,18 +30,55 @@
  * ABOUT :: 
  *
  * WARNING ** This library is written in c++-0x, and thus contains
- * WARNING ** instances of the "explicit" keyword. Any person over the
- * WARNING ** age of.. say 35.. should not look at this source file
- * WARNING ** without the supervision of a more agile (read immature) mind.
- *
+ * WARNING ** instances of the "explicit" keyword. 
  *
  * Executively speaking, \namespace{CAST_SCAT} gives a wrapper of
- * useful syntactic sugar for "subarchitecture" interactions via
- * classical -- i.e., circa August 2009 -- CAST. It has been tested
- * and modified to work with all releases of CAST since
- * then. Essentially, it allows a CAST component to interact with
- * another cast component in a C-like procedural way, and at the same
- * time arbitrary components can snoop (i.e., listen in on) the calls.
+ * useful sugar for "subarchitecture" interactions via classical --
+ * i.e., circa August 2009 -- CAST. It has been tested and modified to
+ * work with all releases of CAST since then. Essentially, it allows a
+ * CAST component to interact with another cast component in a C-like
+ * procedural way, and at the same time arbitrary components can snoop
+ * (i.e., listen in on) the calls.
+ *
+ * you say: "I have no idea of the meaning for what you just wrote..."
+ *
+ * - You are a CAST component. Yes, really, you are. I.e., you appear
+ *    as an argument to \keyword{add_cast_component} in a
+ *    \filename{CMakeLists.txt} file). Moreover, after execution of
+ *    \command{make -C BUILD} you appear somewhere with a ".so" suffix.
+ *    As a CAST component you want to post some information to a
+ *    different component in a procedural fashion. Consider, if you
+ *    will, the following C code:
+ *
+ *    void foo(){ do_something();}
+ *
+ *    void bar(){foo(); do_something_else(); }
+ *
+ *    During execution, when \function{bar()} is invoked it blocks for
+ *    the invocation of \function{foo()}, and then when
+ *    \function{foo()} completes execution and returns control to
+ *    \function{bar()}, \function{bar()} continues executing and
+ *    \function{do_something_else()} is invoked. This is a lovely
+ *    story, that even my 5 yo cousin can understand. Now suppose we
+ *    are in CAST so that we want the above procedural semantics but
+ *    have that:
+ *    
+ *    COMPONENT 1 (you): void foo(){ do_something();}
+ *    
+ *    COMPONENT 2 (you): void bar(){foo(); do_something_else(); }
+ *
+ *    I.e., the call is made in C(omponent)2 and the implementation is
+ *    in C1. Moreover, you might want arbitrary components to snoop
+ *    (i.e., listen in on), the conversation between C1 and C2. To
+ *    achieve this using CAST_SCAT, the code looks as follows:
+ *
+ *    COMPONENT 1 (you): void foo(foo__SLICE_classnamePtr&){ do_something();}
+ *    
+ *    COMPONENT 2 (you): void bar(){call<foo__SLICE_classname>(); do_something_else(); }
+ *
+ *    NOTE: This example is bogus because you can't put an underscore
+ *    in a slice classname. But you get the idea.
+ *     
  * 
  * In more detail.. What is CAST_SCAT?! The author believes.. CAST
  * (see \module{cast::*}) is lovely.. Wow!\footnote{CMAKE is also
@@ -52,7 +89,31 @@
  * planning parts of CogX.
  *
  * What does the author guarantee?.. that CAST_SCAT appears to work
- * without falling over itself.
+ * without falling over itself, under "normal" circumstances. Please
+ * take note of the following technical detail.
+ *
+ * TECHNICAL NOTE: Every procedure call is executed in a separate
+ * pthread (here 'p' stands for posix). Because no-one knows how to
+ * make threaded systems reliable, on many systems CAST_SCAT will
+ * become unstable where there are a lot of procedure calls (i.e.,
+ * threads) activated. You say:"okay, give it to me straight doc,
+ * what's the endgame.. how long've I got?". If you are silly, and try
+ * to make deep recursive calls, the system will fall on its backside,
+ * probably in an unpleasant way. So, if you are trying to compute the
+ * 15th Fibonacci number (i.e, 610), and doing this both recursively
+ * and three times in parallel across components and subarchitectures,
+ * then the system will fall on its face. Sometimes you will have a
+ * graceful crash where the output is something like:
+ * 
+ *       ** UNRECOVERABLE ERROR -- Can't implement a CAST_SCAT procedure
+ *                call. Tried :: 5 times and still nothing...Basically,
+ *                we can't start a thread in which to execute the
+ *                procedure call. Better luck next time chief!
+ * 
+ *        On any other other occasion, the system may simply hang, and
+ *        then glib might get upset. If you run things in valgrind the
+ *        crashes are, in my experience, always graceful.
+ *                 
  *
  * Our main contribution is a template-based interface for
  * procedural-like client and server interactions. A class that
@@ -405,59 +466,67 @@ namespace CAST_SCAT
             
             VERBOSER(499, "Entered call reception...");
             
-            /* Only exercised on first invocation.*/
-            if(my_Threads.empty())number_of_elements_in__my_threads =  0;
+//             /* Only exercised on first invocation.*/
+//             if(my_Threads.empty())number_of_elements_in__my_threads =  0;
             
             auto thread = std::shared_ptr<pthread_t>(new pthread_t());
             
-            /* FIX (below -- next line) :: At the moment I do not
-             * construct threads with anything but the default
-             * attributes. This is probably a bad thing, so I should
-             * look into that in the future.*/
             auto attributes = std::shared_ptr<pthread_attr_t>(new pthread_attr_t());
             
-            auto thread_mutex = std::shared_ptr<pthread_mutex_t>(give_me_a_new__pthread_mutex_t());
+//             auto thread_mutex = std::shared_ptr<pthread_mutex_t>(give_me_a_new__pthread_mutex_t());
             
-            if(my_Threads.size() <= number_of_elements_in__my_threads){
-                assert(my_Threads.size() + 1 > number_of_elements_in__my_threads);
+//             if(my_Threads.size() <= number_of_elements_in__my_threads){
+//                 assert(my_Threads.size() + 1 > number_of_elements_in__my_threads);
                 
-                VERBOSER(499, "Added entry to implementation thread mutexes...");
-                my_Threads.push_back(My_Thread_Details());
-            }
+//                 VERBOSER(499, "Added entry to implementation thread mutexes...");
+//                 my_Threads.push_back(My_Thread_Details());
+//             }
             
-            VERBOSER(499, "I have a thread with some attributes and a mutex...");
-            my_Threads[number_of_elements_in__my_threads++] = My_Thread_Details(thread, attributes, thread_mutex);
+//             VERBOSER(499, "I have a thread with some attributes and a mutex...");
+//             my_Threads[number_of_elements_in__my_threads++] = My_Thread_Details(thread, attributes, thread_mutex);
             
             VERBOSER(499, "Now initialising the thread attributes...");
             QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_init(attributes.get()),
-                                      "Failed to initialise thread attributes...");   
-
-//             QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_init(attributes.get()),
-//                                       "Making a thread that we don't have t...");  
+                                      "Failed to initialise thread attributes...");
             
+            QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setdetachstate(attributes.get(), PTHREAD_CREATE_DETACHED),
+                                      //PTHREAD_CREATE_JOINABLE
+                                      "Making a thread that we don't have to join...");   
+            
+            QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setscope(attributes.get(), PTHREAD_SCOPE_SYSTEM),//PTHREAD_SCOPE_PROCESS),
+                                      //PTHREAD_SCOPE_SYSTEM
+                                      "Give the thread a process scope...");   
 
+            
+            QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_setinheritsched(attributes.get(), PTHREAD_INHERIT_SCHED),
+                                      //PTHREAD_SCOP_SYSTEM
+                                      "Make the thread execution schedule, that of its parent...");
+    
             VERBOSER(499, "Preparing to pass-on the thread mutex...");
 
             
-            typedef _receive_call<THING/*implementation*/, FUNCTION/*member function*/, ICE_FUNCTION_CLASS, PARENT> Receive_Call;
+            typedef _receive_call<THING/*implementation*/,
+                FUNCTION/*member function*/,
+                ICE_FUNCTION_CLASS,
+                PARENT> Receive_Call;
             typedef std::tr1::tuple<Receive_Call*
                 , cast::cdl::WorkingMemoryChange
-                , std::shared_ptr<pthread_mutex_t>
+                //, std::shared_ptr<pthread_mutex_t>
                 > Argument;
 
-            /*FIX :: Memory leak. We never delete _tuple.*/
-            Argument* _tuple = new Argument(this, wmc, thread_mutex);
+            /* ALLOCATING -- 40598 (i.e., look for DELETING -- 40598 ) */
+            Argument* _tuple = new Argument(this, wmc);//, thread_mutex);
             
 //             auto _tuple =
 //                 new std::tr1::tuple
 //                 <decltype(this), decltype(wmc), decltype(thread_mutex)>
 //                 (this, wmc, thread_mutex);
 
-            VERBOSER(499, "Locking the thread mutex...");
-            /*Lock the mutex associated with a new thread we are about to spawn.*/
-            QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(thread_mutex.get()), "Unable to lock mutex.");
+//             VERBOSER(499, "Locking the thread mutex...");
+//             /*Lock the mutex associated with a new thread we are about to spawn.*/
+//             QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_lock(thread_mutex.get()), "Unable to lock mutex.");
             
-            join_threads_in__my_Threads__that_are_completed();
+//             join_threads_in__my_Threads__that_are_completed();
             
             /*Attempt to spawn a new thread.*/
             auto result = 0;
@@ -486,9 +555,10 @@ namespace CAST_SCAT
                                       <<" to create another thread, OR your system-imposed"
                                       <<" limit  on  the  total  number  of threads in"
                                       <<" a process {PTHREAD_THREADS_MAX} would be exceeded. Nice grammar!!"
-                                      <<" Anyway, I will try again after joining some threads"
-                                      <<" I am responsible for...");
+                                      <<" Anyway, I will try again after waiting for threads"
+                                      <<" I am perhaps responsible for...");
 //                         UNRECOVERABLE_ERROR("No second chances in this version.");/*FIX*/
+                        usleep(10);
                         break;
                     case EINVAL:
                         UNRECOVERABLE_ERROR("My bad. I specified thread attribute values that are invalid."
@@ -510,16 +580,17 @@ namespace CAST_SCAT
                     default:
                         WARNING("No idea why we couldn't spawn a thread. The error code we were given is :: "
                                       <<result<<" Trying again...");
+                        usleep(10);
                         break;
                 }
 
                 
-                join_threads_in__my_Threads__that_are_completed();
+//                 join_threads_in__my_Threads__that_are_completed();
                 
                 number_of_attempted_thread_invocations++;
                 VERBOSER(601, number_of_attempted_thread_invocations<<" attempted thread invocations.");
 
-                QUERY_UNRECOVERABLE_ERROR(number_of_attempted_thread_invocations > 3/*FIX : Magic number*/,
+                QUERY_UNRECOVERABLE_ERROR(number_of_attempted_thread_invocations > 4/*FIX : Magic number*/,
                                           "Can't implement a CAST_SCAT procedure call. Tried :: "
                                           <<number_of_attempted_thread_invocations
                                           <<" times and still nothing..."
@@ -542,110 +613,111 @@ namespace CAST_SCAT
                                       "Unable to unlock mutex.");
         }
     private:
-        typedef std::tr1::tuple<std::shared_ptr<pthread_t>
-                                , std::shared_ptr<pthread_attr_t>
-                                , std::shared_ptr<pthread_mutex_t> > My_Thread_Details;
-        /* To get around the CAST serialisation constraint -- i.e.,
-         * that a \class{ManagedComponent} can only receive one event
-         * from a change filter at a time -- we employ threads. This
-         * is the list of threads we thusly employ. Yes, thusly might
-         * be a real world in the English language, rather than, for
-         * example, an integral world, or some such. Needles to say
-         * needless to say, but including it here helps me, the
-         * author, a whole bunch when I am grepping for this
-         * functionality. So I would really appreciate it if you, a
-         * person, or class of persons who is not the author, not to
-         * use it in your own comments. Incidentally, while writing
-         * this I believed "thusly" meant: "in the way indicated".*/
-        std::vector<My_Thread_Details> my_Threads;
+//         typedef std::tr1::tuple<std::shared_ptr<pthread_t>
+//                                 , std::shared_ptr<pthread_attr_t>
+//                                 , std::shared_ptr<pthread_mutex_t> > My_Thread_Details;
         
-        /* (see \member{my_Threads}). Standard trick, we don't resize
-         * the vector, but rather keep a prefix of valid entries, and
-         * the following item stores the length of that prefix.*/
-        uint number_of_elements_in__my_threads;
+//         /* To get around the CAST serialisation constraint -- i.e.,
+//          * that a \class{ManagedComponent} can only receive one event
+//          * from a change filter at a time -- we employ threads. This
+//          * is the list of threads we thusly employ. Yes, thusly might
+//          * be a real world in the English language, rather than, for
+//          * example, an integral world, or some such. Needles to say
+//          * needless to say, but including it here helps me, the
+//          * author, a whole bunch when I am grepping for this
+//          * functionality. So I would really appreciate it if you, a
+//          * person, or class of persons who is not the author, not to
+//          * use it in your own comments. Incidentally, while writing
+//          * this I believed "thusly" meant: "in the way indicated".*/
+//         std::vector<My_Thread_Details> my_Threads;
+        
+//         /* (see \member{my_Threads}). Standard trick, we don't resize
+//          * the vector, but rather keep a prefix of valid entries, and
+//          * the following item stores the length of that prefix.*/
+//         uint number_of_elements_in__my_threads;
         
         
-        inline void join_threads_in__my_Threads__that_are_completed()
-        {
-            QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
-                                      "Procedure call mutex should have been locked.");
+//         inline void join_threads_in__my_Threads__that_are_completed()
+//         {
+//             QUERY_UNRECOVERABLE_ERROR(0 == pthread_mutex_trylock(mutex.get()),
+//                                       "Procedure call mutex should have been locked.");
             
-            VERBOSER(499, "Joining threads that we spawned...");
+//             VERBOSER(499, "Joining threads that we spawned...");
 
-//             return;/*FIX :: Remove this return, and get the
-//                     * functionality in this function happening...*/
+// //             return;/*FIX :: Remove this return, and get the
+// //                     * functionality in this function happening...*/
             
-            for(uint my_Thread__index = 0
-                    ; my_Thread__index < number_of_elements_in__my_threads
-                    ; my_Thread__index++){
+//             for(uint my_Thread__index = 0
+//                     ; my_Thread__index < number_of_elements_in__my_threads
+//                     ; my_Thread__index++){
                     
-                assert(my_Threads.size() > my_Thread__index);
+//                 assert(my_Threads.size() > my_Thread__index);
                 
-                auto my_Thread = my_Threads[my_Thread__index];
+//                 auto my_Thread = my_Threads[my_Thread__index];
 
-                auto result = 0;
+//                 auto result = 0;
                 
-                VERBOSER(499, "Waiting for a thread that we spawned earlier...");
-                /*Has a thread that I spawned finished executing.*/
-                if(0 == (result = pthread_mutex_trylock(std::tr1::get<2>(my_Thread).get()))){
-                    VERBOSER(499, "Joining a thread that we spawned earlier...");
+//                 VERBOSER(499, "Waiting for a thread that we spawned earlier...");
+//                 /*Has a thread that I spawned finished executing.*/
+//                 if(0 == (result = pthread_mutex_trylock(std::tr1::get<2>(my_Thread).get()))){
+//                     VERBOSER(499, "Joining a thread that we spawned earlier...");
                         
                         
-                    VERBOSER(499, "Joining a thread that we spawned earlier...");
-                    QUERY_UNRECOVERABLE_ERROR(0 != pthread_join(*std::tr1::get<0>(my_Thread).get(), 0),
-                                              "Unable to join a thread.\n");
+//                     VERBOSER(499, "Joining a thread that we spawned earlier...");
+//                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_join(*std::tr1::get<0>(my_Thread).get(), 0),
+//                                               "Unable to join a thread.\n");
                         
-                    VERBOSER(499, "Attribute destruction for a thread that we spawned earlier...");
-                    QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_destroy(std::tr1::get<1>(my_Thread).get()),
-                                              "Unable to destroy some thread attributes.\n");
+//                     VERBOSER(499, "Attribute destruction for a thread that we spawned earlier...");
+//                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_attr_destroy(std::tr1::get<1>(my_Thread).get()),
+//                                               "Unable to destroy some thread attributes.\n");
                         
-                    VERBOSER(499, "Unlocking thread related mutex...");
-                    QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(std::tr1::get<2>(my_Thread).get()),
-                                              "Can't lock mutex that we just locked. Strange...");
+//                     VERBOSER(499, "Unlocking thread related mutex...");
+//                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_unlock(std::tr1::get<2>(my_Thread).get()),
+//                                               "Can't lock mutex that we just locked. Strange...");
                     
-                    VERBOSER(499, "Destroying thread related mutex...");
-                    QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_destroy(std::tr1::get<2>(my_Thread).get()),
-                                              "Unable to destroy mutex.");
+//                     VERBOSER(499, "Destroying thread related mutex...");
+//                     QUERY_UNRECOVERABLE_ERROR(0 != pthread_mutex_destroy(std::tr1::get<2>(my_Thread).get()),
+//                                               "Unable to destroy mutex.");
                         
-                    VERBOSER(499, "Done cleanup...");
+//                     VERBOSER(499, "Done cleanup...");
                     
-                    assert(my_Threads.size() >= number_of_elements_in__my_threads);
+//                     assert(my_Threads.size() >= number_of_elements_in__my_threads);
 
-                    assert(number_of_elements_in__my_threads > 0);
-                    assert(number_of_elements_in__my_threads > 1);
-                    assert(my_Thread__index <= (number_of_elements_in__my_threads - 1));
+//                     assert(number_of_elements_in__my_threads > 0);
+//                     assert(number_of_elements_in__my_threads > 1);
+//                     assert(my_Thread__index <= (number_of_elements_in__my_threads - 1));
 
-                    if((number_of_elements_in__my_threads - 1) == my_Thread__index){
-                        --number_of_elements_in__my_threads;                        
-                    } else {
-                        assert(my_Thread__index < (number_of_elements_in__my_threads - 1));
-                        /* Move the last element in the array to take
-                         * up the position of the just-now redundant
-                         * element.*/
-                        my_Threads[my_Thread__index]
-                            = std::move(my_Threads[--number_of_elements_in__my_threads]);
-                    }
+//                     if((number_of_elements_in__my_threads - 1) == my_Thread__index){
+//                         --number_of_elements_in__my_threads;                        
+//                     } else {
+//                         assert(my_Thread__index < (number_of_elements_in__my_threads - 1));
+//                         /* Move the last element in the array to take
+//                          * up the position of the just-now redundant
+//                          * element.*/
+//                         my_Threads[my_Thread__index]
+//                             = std::move(my_Threads[--number_of_elements_in__my_threads]);
+//                     }
                     
-                } else {
-                    switch(result){
-                        case EBUSY:
-                            VERBOSER(499, "Still waiting for busy mutex...");
-                            break;
-                        case EINVAL:
-                            UNRECOVERABLE_ERROR("Locking on mutex that is not an initialised.");
-                            break;
-                        case EFAULT:
-                            UNRECOVERABLE_ERROR("Locking on mutex that is an invalid pointer.");
-                            break;
-                        default:
-                            UNRECOVERABLE_ERROR("Attempted to lock on a mutex and got a nonsense result."
-                                                <<" Something bad has happened, so we are aborting "
-                                                <<"-- sorry Ludwig van Beethoven.");
-                            break;
-                    }
-                }
-            }
-        }
+//                 } else {
+//                     switch(result){
+//                         case EBUSY:
+//                             VERBOSER(499, "Still waiting for busy mutex...");
+//                             break;
+//                         case EINVAL:
+//                             UNRECOVERABLE_ERROR("Locking on mutex that is not an initialised.");
+//                             break;
+//                         case EFAULT:
+//                             UNRECOVERABLE_ERROR("Locking on mutex that is an invalid pointer.");
+//                             break;
+//                         default:
+//                             UNRECOVERABLE_ERROR("Attempted to lock on a mutex and got a nonsense result."
+//                                                 <<" Something bad has happened, so we are aborting "
+//                                                 <<"-- sorry Ludwig van Beethoven.");
+//                             break;
+//                     }
+//                 }
+//             }
+//         }
             
     private:
         /*CAST-based managed component that implements the procedure call.*/
@@ -662,7 +734,7 @@ namespace CAST_SCAT
         typedef _receive_call<THING, FUNCTION, ICE_FUNCTION_CLASS, PARENT> Receive_Call;
         typedef std::tr1::tuple<Receive_Call*
             , cast::cdl::WorkingMemoryChange/*const cast::cdl::WorkingMemoryChange& (is UNSAFE)*/
-            , std::shared_ptr<pthread_mutex_t>
+//             , std::shared_ptr<pthread_mutex_t>
 //             , std::shared_ptr<pthread_t>
 //             , std::shared_ptr<pthread_attr_t>
             > Argument;
@@ -674,16 +746,19 @@ namespace CAST_SCAT
         auto receive_Call = std::tr1::get<0>(*argument);//->first;
         VERBOSER(299, "Recovering working memory change...");
         auto workingMemoryChange = std::tr1::get<1>(*argument);//->second;
-        VERBOSER(299, "Recovering thread mutex...");
-        auto mutex = std::tr1::get<2>(*argument);
+//         VERBOSER(299, "Recovering thread mutex...");
+//         auto mutex = std::tr1::get<2>(*argument);
         
         VERBOSER(299, "Making invocation...");
         receive_Call->__receive_call(workingMemoryChange);
 
-        VERBOSER(299, "Unlocking mutex...");
-        QUERY_UNRECOVERABLE_ERROR((0 != pthread_mutex_unlock(mutex.get())),
-                                          "Failed to unlock mutex!!");
+//         VERBOSER(299, "Unlocking mutex...");
+//         QUERY_UNRECOVERABLE_ERROR((0 != pthread_mutex_unlock(mutex.get())),
+//                                           "Failed to unlock mutex!!");
 
+        /* DELETING -- 40598 */
+        delete argument;
+        
         /*Threads execution has completed.*/
         pthread_exit(_argument);
         //return 0;
@@ -710,7 +785,7 @@ namespace CAST_SCAT
      *
      * \end{conversation}
      *
-     * Right.. okay.. so I remain cluless ;)
+     * Right.. okay.. so I remain clueless ;)
      *
      */
     enum class Locality
