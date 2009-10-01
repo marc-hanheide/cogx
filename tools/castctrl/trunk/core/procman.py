@@ -61,6 +61,7 @@ class CProcess(object):
         self.msgOrder = 0
         self.observers = []
         self.willClearAt = None # Flushing
+        self.pipeReader = None
 
     def __del__(self):
         self.stop()
@@ -117,15 +118,19 @@ class CProcess(object):
         if self.workdir != None: log("PWD=%s" % self.workdir)
         try:
             self._setStatus(CProcess.STARTING)
+            if self.pipeReader != None: self.pipeReader.stop()
+            self.pipeReader = CPipeReader_1(self)
+            self.pipeReader.start()
             self.process = subp.Popen(command, bufsize=1, stdout=subp.PIPE, stderr=subp.PIPE, cwd=self.workdir)
             time.sleep(0.01)
             self._setStatus(max(1, self.process.pid))
             log("Process '%s' started, pid=%d" % (self.name, self.process.pid))
-        except:
+        except Exception, e:
             self.process = None
             self.error = CProcess.ERRSTART
             self._setStatus(CProcess.STOPPED)
             error("Process '%s' failed to start" % (self.name))
+            error("%s" % e)
         time.sleep(0.01)
 
     def _clear(self, notify = True):
@@ -134,6 +139,9 @@ class CProcess(object):
         nextStatus = CProcess.STOPPED
         if not notify: self.status = nextStatus
         else: self._setStatus(nextStatus)
+        if self.pipeReader != None:
+            self.pipeReader.stop()
+            self.pipeReader = None
 
     def stop(self):
         self.error = CProcess.OK
@@ -250,6 +258,28 @@ class CProcess(object):
                 self.error = CProcess.ERRTERM
                 self._beginFlush()
 
+class CPipeReader_1(threading.Thread):
+    def __init__(self, process):
+        threading.Thread.__init__(self, name="Pipe Reader - %s" % process.name)
+        self.process = process
+        self.isRunning = False
+
+    def run(self):
+        self.isRunning = True
+        while self.isRunning:
+            pipes = []
+            pipes.extend(self.process.getPipes())
+            if len(pipes) < 1:
+                time.sleep(0.02)
+                continue
+            (rlist, wlist, xlist) = select.select(pipes, [], [], 0.1)
+            if len(rlist) > 0:
+                now = time.time(); tm = now; tmend = now + 0.1
+                nl = self.process.readPipes(rlist, 200)
+
+    def stop(self):
+        self.isRunning = False
+
 class CPipeReader(threading.Thread):
     def __init__(self, procManager):
         threading.Thread.__init__(self, name="Pipe Reader")
@@ -289,9 +319,9 @@ class CProcessManager(object):
                 warn("Process '%s' is already registered" % (process.name))
                 return
         self.proclist.append(process)
-        if self.pipeReaderThread == None:
-            self.pipeReaderThread = CPipeReader(self)
-            self.pipeReaderThread.start()
+        #if self.pipeReaderThread == None:
+        #    self.pipeReaderThread = CPipeReader(self)
+        #    self.pipeReaderThread.start()
 
     def getProcess(self, name):
         for p in self.proclist:
