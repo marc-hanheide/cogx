@@ -49,23 +49,41 @@ void test_harness__CAST_SCAT_client::eachThread__test2()
 
 void test_harness__CAST_SCAT_client::runComponent()
 {
-    CAST__VERBOSER(1000, "Test one :hello-world: 1 -- STARTING");
-    auto result =
-        call_to_subarchitecture
-        <testHarnessCASTSCAT::helloWorld> /* SLICE name of call.*/
-        (different_subarchitecture_name 
-         , std::string("") 
-         , Designators());
+    /* Upper bound on counting tests.*/
+    const auto MAX = 3;
+    
+//     CAST__VERBOSER(1000, "Test one :hello-world: 1a -- STARTING");
+    
+//     auto result =
+//         call_to_subarchitecture
+//         <testHarnessCASTSCAT::helloWorld> /* SLICE name of call.*/
+//         (different_subarchitecture_name 
+//          , std::string("") 
+//          , Designators());
 
-    CAST__VERBOSER(1000, "Test one :hello-world: 1 -- DONE");
+//     CAST__VERBOSER(1000, "Test one :hello-world: 1a -- DONE");
+
+
+//     CAST__VERBOSER(1000, "Test one :hello-world: 1b -- STARTING");
+    
+//     for(auto i = 0; i < MAX; i++){
+//         auto result =
+//             call_to_subarchitecture
+//             <testHarnessCASTSCAT::helloWorld> /* SLICE name of call.*/
+//             (different_subarchitecture_name 
+//              , std::string("") 
+//              , Designators());
+//     }
+    
+//     CAST__VERBOSER(1000, "Test one :hello-world: 1b -- DONE");
+    
+    
     
     CAST__VERBOSER(1000, "Test two :thread-safety: 2 -- STARTING");
 
     
-    const auto MAX = 10;
     std::vector<pthread_t> threads(MAX);
     std::vector<pthread_attr_t> thread_attributes(MAX);
-
     
     for(auto i = 0; i < MAX; i ++){
         pthread_attr_init(&thread_attributes[i]);
@@ -83,7 +101,7 @@ void test_harness__CAST_SCAT_client::runComponent()
     CAST__VERBOSER(1000, "Test two :thread-safety: 2 -- DONE");
 
 
-    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3 -- STARTING");
+    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3a -- STARTING");
     
     auto _answer5 =
         call_to_subarchitecture
@@ -95,11 +113,11 @@ void test_harness__CAST_SCAT_client::runComponent()
 
     int answer5 = _answer5->answerIsAReturn;
     
-    CAST__VERBOSER(1000, "Fibonacci number 5 is ... :: "<<answer5);
+    CAST__VERBOSER(1000, "Fibonacci number 5 is (expecting 5) ... :: "<<answer5);
     
-    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3 -- DONE");
+    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3a -- DONE");
     
-    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 4 -- STARTING");
+    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3b -- STARTING");
     
     auto _answer7 =
         call_to_subarchitecture
@@ -111,10 +129,9 @@ void test_harness__CAST_SCAT_client::runComponent()
 
     int answer7 = _answer7->answerIsAReturn;
     
-    CAST__VERBOSER(1000, "Fibonacci number 7 is ... :: "<<answer7);
+    CAST__VERBOSER(1000, "Fibonacci number 15 is (expecting 610) ... :: "<<answer7);
     
-    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 4 -- DONE");
-    
+    CAST__VERBOSER(1000, "Test three :Fibonacci-served: 3b -- DONE");
 }
 
 void test_harness__CAST_SCAT_client::implement__computeFibonacci(testHarnessCASTSCAT::computeFibonacciPtr& input)

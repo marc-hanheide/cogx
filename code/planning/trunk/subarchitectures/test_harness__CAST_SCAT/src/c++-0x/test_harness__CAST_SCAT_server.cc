@@ -38,7 +38,7 @@ void test_harness__CAST_SCAT_server::implement__computeFibonacci(testHarnessCAST
     
     if(1 == n){
         
-        CAST__VERBOSER(1000, " ** Computed Fibonacci of :: "<<n<<" := "<<n);
+        CAST__VERBOSER(199, " ** Computed Fibonacci of :: "<<n<<" := "<<n);
         input->answerIsAReturn = n;
         
         return;
@@ -68,13 +68,13 @@ void test_harness__CAST_SCAT_server::implement__computeFibonacci(testHarnessCAST
     
     input->answerIsAReturn = one_back + two_back;
     
-    CAST__VERBOSER(1000, " ## Computed Fibonacci of :: "<<n<<" := "<<input->answerIsAReturn);
+    CAST__VERBOSER(199, " ## Computed Fibonacci of :: "<<n<<" := "<<input->answerIsAReturn);
     return;
 }
 
 void test_harness__CAST_SCAT_server::implement__helloWorld(testHarnessCASTSCAT::helloWorldPtr& input)
 {
-    CAST__VERBOSER(1000, "Hello world!\n");
+    CAST__VERBOSER(499, "Hello world!\n");
 }
 
     
