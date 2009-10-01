@@ -242,13 +242,13 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Type>(b3:entity ^ box))) 
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Size>big ^ <InfoStatus>familiar ^ object)  ^ <Type>(b3:entity ^ <Color>red ^ box))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Type\(b3:entity ^ box ^ <Color>red)))
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Size\big ^ /InfoStatus\familiar ^ object)  ^ /Type\(b3:entity ^ box ^ /Color\red)))
 </input>
 <realizations>
-<string>the object is a red box</string>
-<string>the object is one red box</string>
+<string>the big object is a red box</string>
+<string>the big object is one red box</string>
 </realizations>
 </utterance>
 
