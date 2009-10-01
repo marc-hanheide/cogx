@@ -15,10 +15,10 @@
 	     <q-ex-rel val="Content"/>	                                 
 	     </inquiry>
   	     <choicenode answer="true">
-	       <result val="content"/>
+	       <result val="content-present"/>
 	     </choicenode>
 	     <choicenode answer="false">
-	       <result val="no-content"/>
+	       <result val="content-absent"/>
 	     </choicenode>
 	</choicenode>
    </dectree>

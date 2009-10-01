@@ -26,8 +26,6 @@ Reference to multiple objects
 Negation in ascription
 
 
-Y/N answer
-
 
 Ascription
 "The red object is a ball"
@@ -39,21 +37,20 @@ Acknowledgment
 
 
 Multiple utterances within a turn
-
 e.g., sorry, (but) no
       yes, I see
       yes, it is blue
       no, it is not blue
       no/sorry, I do not see that
+      yes, it's red
+      yes, a red ball
 
 
 NPs with demonstrative determiners
-
 e.g., this/that ball
 
 
 Proximal vs. distal reference currently selected at random
-
 e.g., this/that	  
       this/that ball
 
