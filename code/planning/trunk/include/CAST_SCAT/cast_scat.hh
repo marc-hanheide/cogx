@@ -824,7 +824,7 @@ namespace CAST_SCAT
      *
      */
     template<typename CHILD
-             , Locality locality = Locality::Global>
+             , Locality locality = Locality::Local>
     class procedure_implementation : public virtual cast::ManagedComponent
     {
     public:
@@ -1053,8 +1053,7 @@ namespace CAST_SCAT
     };
     
     
-    template<typename ADDRESS_RECOVERY = _recover_address
-             , Locality locality = Locality::Global>
+    template<typename ADDRESS_RECOVERY = _recover_address>
     class procedure_call : public virtual cast::ManagedComponent
     {
     public:
@@ -1123,7 +1122,7 @@ namespace CAST_SCAT
             
         }
         
-        typedef procedure_call<ADDRESS_RECOVERY, locality> THIS__TYPE;
+        typedef procedure_call<ADDRESS_RECOVERY> THIS__TYPE;
         typedef void (THIS__TYPE::*THIS__FUNCTION__WMC__TO__VOID)
             (const cast::cdl::WorkingMemoryChange&);        
 
@@ -1482,75 +1481,78 @@ namespace CAST_SCAT
             
             /* Listen for a change to the written data... */
             THIS__FUNCTION__WMC__TO__VOID p_to_release
-                = &procedure_call<ADDRESS_RECOVERY, locality>
+                = &procedure_call<ADDRESS_RECOVERY>
                 ::release_wrapper_for_cast;
             
 //             auto type_filter =  cast::createGlobalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
 
 
-            switch(locality){
-                case Locality::Global:
+            
+#define procedure_call____IMPLEMENTATION___call____addChangeFilter
+            {                                                           \
+                auto filter                                             \
+                    = cast::                                            \
+                    createAddressFilter(id,                             \
+                                        subarchitecture,                \
+                                        cast::cdl::OVERWRITE);  \ 
+                                                                    auto object_Identifier = \
+                                                                    Object_Identifier(id, subarchitecture); \
+                assert(objects_managed_by_cast.find(object_Identifier) == \
+                       objects_managed_by_cast.end());                  \
+                auto memberFunctionChangeReceiver =                     \
+                    new cast::MemberFunctionChangeReceiver<procedure_call<ADDRESS_RECOVERY>> \
+                    (this,                                              \
+                     p_to_release);                                     \
+                objects_managed_by_cast[object_Identifier]              \
+                    = memberFunctionChangeReceiver;                     \
+                addChangeFilter(filter,                                 \
+                                memberFunctionChangeReceiver);          \
+            }                                                           \
+            
+            
+            CAST__VERBOSER(601, "GLOBAL :: Listening to changes on :: "<<id<<" "<<subarchitecture<<std::endl);
+            
+            procedure_call____IMPLEMENTATION___call____addChangeFilter;
                     
-                {
-                    CAST__VERBOSER(12, "Procedure calls do not distinguish between local and global scope."<<std::endl
-                                   <<"You are using global.");
+            
+//             switch(locality){
+//                 case Locality::Global:
                     
-                    //UNRECOVERABLE_ERROR("Not expecting global...");
-                    //auto type_filter = cast::createGlobalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
+//                 {
+//                     CAST__VERBOSER(12, "Procedure calls do not distinguish between local and global scope."<<std::endl
+//                                    <<"You are using global.");
+                    
+//                     //UNRECOVERABLE_ERROR("Not expecting global...");
+//                     //auto type_filter = cast::createGlobalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
 
                 
-#define procedure_call____IMPLEMENTATION___call____addChangeFilter      \
-                    {                                                   \
-                        auto filter                                     \
-                            = cast::                                    \
-                            createAddressFilter(id,                     \
-                                                subarchitecture,        \
-                                                cast::cdl::OVERWRITE);  \ 
-                        auto object_Identifier =                        \
-                            Object_Identifier(id, subarchitecture);     \
-                        assert(objects_managed_by_cast.find(object_Identifier) == \
-                               objects_managed_by_cast.end());          \
-                        auto memberFunctionChangeReceiver =             \
-                            new cast::MemberFunctionChangeReceiver<procedure_call<ADDRESS_RECOVERY, locality>> \
-                            (this,                                      \
-                             p_to_release);                             \
-                        objects_managed_by_cast[object_Identifier]      \
-                            = memberFunctionChangeReceiver;             \
-                        addChangeFilter(filter,                         \
-                                        memberFunctionChangeReceiver);  \
-                    }                                                   \
-                    
-
-                        CAST__VERBOSER(601, "GLOBAL :: Listening to changes on :: "<<id<<" "<<subarchitecture<<std::endl);
-                        
-                    procedure_call____IMPLEMENTATION___call____addChangeFilter;
-                    
-                }
+//                 }
                 
                     
-                     break;
-                case Locality::Local:
+//                      break;
+//                 case Locality::Local:
                     
-                {
-                    CAST__VERBOSER(12, "Procedure calls do not distinguish between local and global scope."<<std::endl
-                                  <<"You are using local.");
-// //                     auto filter =  cast::createLocalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
-//                     auto filter
-//                         = cast::createAddressFilter(id,
-//                                                     subarchitecture,
-//                                                     cast::cdl::OVERWRITE);
+//                 {
+//                     CAST__VERBOSER(12, "Procedure calls do not distinguish between local and global scope."<<std::endl
+//                                   <<"You are using local.");
+// // //                     auto filter =  cast::createLocalTypeFilter<ICE_TYPE>(cast::cdl::OVERWRITE);
+// //                     auto filter
+// //                         = cast::createAddressFilter(id,
+// //                                                     subarchitecture,
+// //                                                     cast::cdl::OVERWRITE);
                     
-                        CAST__VERBOSER(601, "LOCAL :: Listening to changes on :: "<<id<<" "<<subarchitecture<<std::endl);
+//                         CAST__VERBOSER(601, "LOCAL :: Listening to changes on :: "<<id<<" "<<subarchitecture<<std::endl);
                         
-                    procedure_call____IMPLEMENTATION___call____addChangeFilter;  
-                }
+//                     procedure_call____IMPLEMENTATION___call____addChangeFilter;  
+//                 }
                 
                     
-                     break;
-                default:
-                    UNRECOVERABLE_ERROR("Component has unknown locality.");
-                    break;
-            }
+//                      break;
+//                 default:
+//                     UNRECOVERABLE_ERROR("Component has unknown locality.");
+//                     break;
+//             }
+            
 
             
             CAST__VERBOSER(200, "Added a change filter -- i.e., post the procedure call...");
