@@ -57,7 +57,7 @@ using namespace boost::posix_time;
 struct gCutData {
 	int numLab;
 	int k;
-	std::list<colorHLS> hueList;
+	std::list<int> hueList;
 	const IplImage *hueImg;
 	};
 
