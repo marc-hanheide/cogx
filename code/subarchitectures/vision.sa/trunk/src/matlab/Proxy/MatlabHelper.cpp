@@ -4,22 +4,22 @@ void CMatlabHelper::array2idl(mwArray &array, Matlab::Matrix& _matrix)
 {
    // TODO: test - array.IsNumeric();
    unsigned n_dims = array.NumberOfDimensions();
-   _matrix.dimensions_.length(n_dims);
+   _matrix.dimensions.resize(n_dims);
    mwArray dims = array.GetDimensions();
-   dims.GetData((mxInt32*)(&_matrix.dimensions_[0]), n_dims);
+   dims.GetData((mxInt32*)(&_matrix.dimensions[0]), n_dims); // UNSAFE
 
    unsigned length = array.NumberOfElements();
-   _matrix.data_.length(length);
+   _matrix.data.resize(length);
    if (length > 0) 
-      array.GetData((mxDouble*)(&_matrix.data_[0]), length);
+      array.GetData((mxDouble*)(&_matrix.data[0]), length); // UNSAFE
 }
 
 // Similar to mwArray-Get functions this one returns a mwArray.
 mwArray CMatlabHelper::idl2array(const Matlab::Matrix& _matrix)
 {
-   mwSize ndims = _matrix.dimensions_.length();
-   const double* data_ptr = (ndims > 0) ? &(_matrix.data_[0]) : NULL;
-   mwSize* dimensions = (mwSize*)(&_matrix.dimensions_[0]);
+   mwSize ndims = _matrix.dimensions.size();
+   const double* data_ptr = (ndims > 0) ? &(_matrix.data[0]) : NULL;
+   mwSize* dimensions = (mwSize*)(&_matrix.dimensions[0]);
    
    if (data_ptr == NULL) 
       return mwArray(mxDOUBLE_CLASS, mxREAL); // an empty array
@@ -77,13 +77,13 @@ void CMatlabHelper::iplImage2matrix(unsigned char *pImageData, Matlab::Matrix& m
    unsigned dataLength = width * height * nChannels;
 
    // Set the dimensions.
-   matrix.dimensions_.length(3);
-   matrix.dimensions_[0] = height;
-   matrix.dimensions_[1] = width;
-   matrix.dimensions_[2] = nChannels;
-   matrix.data_.length(dataLength);
+   matrix.dimensions.resize(3);
+   matrix.dimensions[0] = height;
+   matrix.dimensions[1] = width;
+   matrix.dimensions[2] = nChannels;
+   matrix.data.resize(dataLength);
 
-   double* pResult = &(matrix.data_[0]);
+   double* pResult = &(matrix.data[0]);
    CMatlabHelper::iplImage2rawArray<double>(
       pImageData, pResult, width, height, nChannels, align);
 }

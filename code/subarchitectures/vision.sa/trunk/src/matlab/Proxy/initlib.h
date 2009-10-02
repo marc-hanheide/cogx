@@ -1,3 +1,3 @@
 
-extern "C" void InitFeatureLearningLib();
-extern "C" void TermFeatureLearningLib();
+extern "C" void InitVisualLearnerLib();
+extern "C" void TermVisualLearnerLib();

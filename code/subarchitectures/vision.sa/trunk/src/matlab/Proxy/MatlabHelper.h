@@ -1,5 +1,5 @@
 #include <cv.h>
-#include <mlhelper/idl/Matlab.hh>
+#include <MatlabData.hpp>
 #include <mclmcr.h>
 #include <mclcppclass.h>
 
@@ -80,14 +80,14 @@ void CMatlabHelper::sequence2matrix(const T* _data, unsigned _length,
 				   Matlab::Matrix& _matrix)
 {
    // Set the dimensions.
-   _matrix.dimensions_.length(2);
-   _matrix.dimensions_[0] = 1;
-   _matrix.dimensions_[1] = _length;
+   _matrix.dimensions.resize(2);
+   _matrix.dimensions[0] = 1;
+   _matrix.dimensions[1] = _length;
 
    // Set the data.
-   _matrix.data_.length(_length);
+   _matrix.data.resize(_length);
    for (unsigned i = 0; i < _length; i++) {
-      _matrix.data_[i] = _data[i];
+      _matrix.data[i] = _data[i];
    }
 }
 
@@ -98,16 +98,16 @@ void CMatlabHelper::sequence2matrix(const T* _data, Matlab::Matrix& _matrix,
    unsigned dataLength = _width * _height * _depth;
 
    // Set the dimensions.
-   _matrix.dimensions_.length(3);
-   _matrix.dimensions_[0] = _height;
-   _matrix.dimensions_[1] = _width;
-   _matrix.dimensions_[2] = _depth;
-   _matrix.data_.length(dataLength);
+   _matrix.dimensions.resize(3);
+   _matrix.dimensions[0] = _height;
+   _matrix.dimensions[1] = _width;
+   _matrix.dimensions[2] = _depth;
+   _matrix.data.resize(dataLength);
 
    unsigned planeSize = _width * _height;
 
    const unsigned char* pData = _data;
-   double* pResult = &(_matrix.data_[0]);
+   double* pResult = &(_matrix.data[0]);
 
    for (unsigned c = 0; c < _depth; c++, 
          pData += planeSize, pResult += planeSize)
