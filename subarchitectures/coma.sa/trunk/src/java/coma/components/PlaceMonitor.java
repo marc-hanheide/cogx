@@ -387,6 +387,8 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	
 	private void logInstances(String _con) {
+		if (!m_bDebugOutput) return;
+		
 		StringBuffer _allInsLogMsg = new StringBuffer("all instances of " + _con + " ==> ");
 		String[] _allIns = m_comareasoner.getAllInstances(_con);
 		StringBuffer[] _allRelInsLogArray = new StringBuffer[_allIns.length];
@@ -417,13 +419,13 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		log(_allInsLogMsg);
 		for (StringBuffer stringBuffer : _allRelInsLogArray) {
-			log(stringBuffer);
+			debug(stringBuffer);
 		}
 		for (StringBuffer stringBuffer : _allRelInsByRelLogArray) {
-			log(stringBuffer);
+			debug(stringBuffer);
 		}
 		for (StringBuffer stringBuffer : _allConsLogArray) {
-			log(stringBuffer);
+			debug(stringBuffer);
 		}
 	}
 	
