@@ -52,7 +52,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 				// The more places are contained the more information we get from this room!
 				motive.informationGain=source.containedPlaceIds.length;
 				// priority is considered similarly as informationGain for now
-				motive.priority=motive.informationGain;
+				motive.priority=(float) motive.informationGain;
 				write(motive);
 				return true;
 			} else {
