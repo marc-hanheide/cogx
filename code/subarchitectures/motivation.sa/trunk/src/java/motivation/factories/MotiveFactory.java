@@ -7,6 +7,7 @@ import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import motivation.slice.CategorizePlaceMotive;
+import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -37,5 +38,9 @@ public class MotiveFactory {
 	public static HomingMotive createHomingMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
 		return new HomingMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, 0, 0, 0, 0, "",0);
+	}
+	public static CategorizeRoomMotive createCategorizeRoomMotive(WorkingMemoryAddress src) {
+		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
+		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, 0, 0, 0, 0, "");
 	}
 }
