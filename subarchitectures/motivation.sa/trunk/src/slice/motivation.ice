@@ -65,6 +65,10 @@ module motivation {
 			long placeID;
     		
     	};
+
+    	class CategorizeRoomMotive extends Motive {
+      		
+    	};
     	
     	class PlanProxy {
     	    cast::cdl::WorkingMemoryAddress planAddress;
