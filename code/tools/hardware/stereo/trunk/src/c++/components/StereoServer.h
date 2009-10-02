@@ -80,8 +80,8 @@ private:
   int medianSize;
 
   IplImage *colorImg[2];
-  IplImage *rectImg[2];
-  IplImage *greyImg[2];
+  IplImage *rectColorImg[2];
+  IplImage *rectGreyImg[2];
   IplImage *disparityImg;
 
   bool doDisplay;
