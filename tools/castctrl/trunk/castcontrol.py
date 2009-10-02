@@ -4,6 +4,7 @@
 # Created: June 2009
 
 import os, sys, time
+import re
 from PyQt4 import QtCore, QtGui
 
 from core import procman, options, messages
@@ -42,18 +43,21 @@ class CLogDisplayer:
                 if m.msgtype == messages.CMessage.CASTLOG:
                     self.qtext.append(pntr.paint(m.getText()))
                 else:
+                    text = m.getText()
                     co = None
                     if m.msgtype == messages.CMessage.WARNING:
                         if not self.showWarning: continue
                         co = "blue"
                     elif m.msgtype == messages.CMessage.ERROR:
                         if not self.showError: continue
+                        rx = re.compile("(error)", re.IGNORECASE)
+                        text = rx.sub(r'<span style="background-color: yellow;"> \1 </span>', text)
                         co = "red"
                     elif m.msgtype == messages.CMessage.FLUSHMSG:
                         if not self.showFlush: continue
                         co = "grey"
-                    if co == None: self.qtext.append(m.getText())
-                    else: self.qtext.append("<font color=%s>%s</font> " % (co, m.getText()))
+                    if co == None: self.qtext.append(text)
+                    else: self.qtext.append("<font color=%s>%s</font> " % (co, text))
             mods = True
         return mods
 
@@ -158,7 +162,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.processTree.expandAll()
 
     def statusUpdate(self):
-        rv = self._manager.checkProcesses()
+        # rv = self._manager.checkProcesses() # MOVED to separate thread
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()
