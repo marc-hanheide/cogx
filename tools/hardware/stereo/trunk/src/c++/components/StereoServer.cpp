@@ -55,8 +55,8 @@ StereoServer::StereoServer()
   for(int i = LEFT; i <= RIGHT; i++)
   {
     colorImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 3);
-    rectImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 3);
-    greyImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
+    rectColorImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 3);
+    rectGreyImg[i] = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
   }
   disparityImg = cvCreateImage(cvSize(STEREO_WIDTH, STEREO_HEIGHT), IPL_DEPTH_8U, 1);
   cvSet(disparityImg, cvScalar(0));
@@ -69,8 +69,8 @@ StereoServer::~StereoServer()
   for(int i = LEFT; i <= RIGHT; i++)
   {
     cvReleaseImage(&colorImg[i]);
-    cvReleaseImage(&greyImg[i]);
-    cvReleaseImage(&rectImg[i]);
+    cvReleaseImage(&rectColorImg[i]);
+    cvReleaseImage(&rectGreyImg[i]);
   }
   cvReleaseImage(&disparityImg);
   if(doDisplay)
@@ -162,8 +162,8 @@ void StereoServer::getPoints(vector<VisionData::SurfacePoint> &points)
   transform(stereoCam.pose, stereoCam.cam[LEFT].pose, global_left_pose);
 
   points.resize(0);
-  for(int y = 0; y < disparityImg->height; y += 1)
-    for(int x = 0; x < disparityImg->width; x += 1)
+  for(int y = 0; y < disparityImg->height; y++)
+    for(int x = 0; x < disparityImg->width; x++)
     {
       unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
       if(d != 0)
@@ -173,11 +173,54 @@ void StereoServer::getPoints(vector<VisionData::SurfacePoint> &points)
            p.p.x, p.p.y, p.p.z);
         // now get from left cam coord sys to global coord sys
         p.p = transform(global_left_pose, p.p);
-        VisionData::ColorRGB *c = (VisionData::ColorRGB*)Video::cvAccessImageData(colorImg[LEFT], x, y);
+        VisionData::ColorRGB *c = (VisionData::ColorRGB*)Video::cvAccessImageData(rectColorImg[LEFT], x, y);
         p.c = *c;
         points.push_back(p);
       }
     }
+
+  /*// HACK: project the world origin (e.g. the bottom legt corner of a tey box)
+  // int left and right recifiec image
+  Vector3 P = vector3(0.0, 0.0, 0.0), Q;
+  Vector2 p[2];
+  cout << "P left right Q ";
+  cout << P << " ";
+  P = transformInverse(global_left_pose, P);
+  for(int i = LEFT; i <= RIGHT; i++)
+    stereoCam.ProjectPoint(P.x, P.y, P.z, p[i].x, p[i].y, i);
+  // note: gpustereo scales disparities by a fixed factor of 4, so we have to do
+  // the same
+  stereoCam.ReconstructPoint(p[LEFT].x, p[LEFT].y, 4.*(p[LEFT].x - p[RIGHT].x),
+      Q.x, Q.y, Q.z);
+  Q = transform(global_left_pose, Q);
+  cout << p[LEFT] << " " << p[RIGHT] << " " << Q << endl;
+  
+  //double x = 100, y = 100, u, v;
+  //stereoCam.RectifyPoint(x, y, u, v, LEFT);
+  //cout << "[" << x << " " << y << "] rect [" << u << " " << v << "]" << endl;
+
+  Vector2 a = vector2(stereoCam.cam[LEFT].fx*P.x/P.z + stereoCam.cam[LEFT].cx,
+                      stereoCam.cam[LEFT].fy*P.y/P.z + stereoCam.cam[LEFT].cy);
+  Vector2 b;
+  stereoCam.RectifyPoint(a.x, a.y, b.x, b.y, LEFT);
+  cout << "project to original left, then rectify:\n" << a << " " << b << endl;
+  cout << "project to rectified left:\n" << p[LEFT] << endl;
+  */
+  /*
+P left right Q [0 0 0] [65.8446 63.4946] [6.51125 63.4946] [-1.11022e-16 -1.11022e-16 1.11022e-16]
+project to original left, then rectify:
+[75.6809 61.9228] [75.3184 62.3205]
+project to rectified left:
+[65.8446 63.4946]
+
+with SVS library:
+x = 75.6809;
+y = 61.9228;
+sourceObject->RectImagePoint(&u, &v, x, y, svsLEFT);
+cout << "[" << x << " " << y << "] rect [" << u << " " << v << "]" << endl;
+[75.6809 61.9228] rect [75.3098 62.3134]
+
+   */
 /*
   // HACK: return poinst of calibration pattern
   points.push_back(vector3(0.000, 0.000, 0.000));
@@ -209,8 +252,8 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
   transform(stereoCam.pose, stereoCam.cam[LEFT].pose, global_left_pose);
 
   points.resize(0);
-  for(int y = 0; y < disparityImg->height; y += 1)
-    for(int x = 0; x < disparityImg->width; x += 1)
+  for(int y = 0; y < disparityImg->height; y++)
+    for(int x = 0; x < disparityImg->width; x++)
     {
       unsigned char d = *Video::cvAccessImageData(disparityImg, x, y);
       if(d != 0)
@@ -222,7 +265,7 @@ void StereoServer::getPointsInSOI(const VisionData::SOI &soi,
         p.p = transform(global_left_pose, p.p);
         if(pointInsideSOI(soi, p.p))
         {
-          VisionData::ColorRGB *c = (VisionData::ColorRGB*)Video::cvAccessImageData(colorImg[LEFT], x, y);
+          VisionData::ColorRGB *c = (VisionData::ColorRGB*)Video::cvAccessImageData(rectColorImg[LEFT], x, y);
           p.c = *c;
           points.push_back(p);
         }
@@ -240,16 +283,20 @@ void StereoServer::runComponent()
   {
     getScaledImages(STEREO_WIDTH, STEREO_HEIGHT, images);
     assert(images.size() == 2);
+
+    lockComponent();
     for(int i = LEFT; i <= RIGHT; i++)
     {
       convertImageToIpl(images[i], &colorImg[i]);
-      stereoCam.RectifyImage(colorImg[i], rectImg[i], i);
-      cvCvtColor(rectImg[i], greyImg[i], CV_RGB2GRAY);
+      stereoCam.RectifyImage(colorImg[i], rectColorImg[i], i);
+      cvCvtColor(rectColorImg[i], rectGreyImg[i], CV_RGB2GRAY);
+      // HACK
+      //cvSaveImage(i == LEFT ? "orig-L.jpg" : "orig-R.jpg", colorImg[i]);
+      //cvSaveImage(i == LEFT ? "rect-L.jpg" : "rect-R.jpg", rectColorImg[i]);
     }
 
-    lockComponent();
     cvSet(disparityImg, cvScalar(0));
-    census.setImages(greyImg[LEFT], greyImg[RIGHT]);
+    census.setImages(rectGreyImg[LEFT], rectGreyImg[RIGHT]);
     census.match();
     // in case we are interested how blazingly fast the matching is :)
     // census.printTiming();
@@ -278,8 +325,8 @@ void StereoServer::runComponent()
  
     if(doDisplay)
     {
-      cvShowImage("left", colorImg[LEFT]);
-      cvShowImage("right", colorImg[RIGHT]);
+      cvShowImage("left", rectColorImg[LEFT]);
+      cvShowImage("right", rectColorImg[RIGHT]);
       cvShowImage("disparity", disparityImg);
       cvWaitKey(10);
     }
