@@ -368,10 +368,8 @@ public class cc_Realizer
 						addToWorkingMemory(newDataID(), spoi); 
 					} catch (AlreadyExistsOnWMException ioe) { 
 						log("ERROR: "+ioe.getMessage());
-					} catch (SubarchitectureComponentException se) { 
-						log("ERROR: "+se.getMessage());						
 					}
-					
+
 					addNewPLFToWorkingMemory(planLF, realString);
 					
 				} // end if

@@ -1000,9 +1000,6 @@ public class cc_Parser
 							}
 							catch (AlreadyExistsOnWMException ioe) { 
 								log("ERROR: "+ioe.getMessage());
-							}
-							catch (SubarchitectureComponentException ex) {
-								ex.printStackTrace();
 							} // end try..catch
 						} // end try..catch for processing exceptions
 					
@@ -1023,7 +1020,7 @@ public class cc_Parser
 
                 // wait for new tasks!
                 // waitForNotifications(m_dataObjects);
-				waitForNotifications();
+				//waitForNotifications();
 				
             } // end while running
         }
