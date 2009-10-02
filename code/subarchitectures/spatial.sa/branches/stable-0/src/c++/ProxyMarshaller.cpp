@@ -205,12 +205,13 @@ ProxyMarshaller::deleteFeature(const string & proxyType, const string & proxyUID
     if (typeMap.find(proxyUID) != typeMap.end()) {
       InternalProxy &intProxy = typeMap[proxyUID];
       vector<FeaturePtr>::iterator it = intProxy.proxy->features.begin();
-      for (; it != intProxy.proxy->features.end();
-	  it++) {
+      for (; it != intProxy.proxy->features.end();) {
 	if ((*it)->featlabel == featlabel) {
-	  intProxy.proxy->features.erase(it);
+	  it = intProxy.proxy->features.erase(it);
 	  log("Erasing feature %s; %i remaining", featlabel.c_str(), intProxy.proxy->features.size());
-	  break;
+	}
+	else {
+	  it++;
 	}
       }
       if (it == intProxy.proxy->features.end()) {
