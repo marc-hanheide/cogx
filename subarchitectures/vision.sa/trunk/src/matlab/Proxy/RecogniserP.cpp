@@ -8,11 +8,11 @@
  */
 #include "cv.h"
 #include "highgui.h"
-#include "FeatureExtractorP.h"
+#include "VisionData.hpp"
 #include "MatlabHelper.h"
 #include "libVisualLearnerCtf.h"
 
-void VL_recognise_attributes(Vision::ROI &Roi)
+void VL_recognise_attributes(VisionData::ROI &Roi)
 {
    // Add the ROI to Matlab engine
    mwArray x = CMatlabHelper::iplImage2array(&(Roi.m_region.m_image[0]), 
@@ -46,7 +46,7 @@ typedef unsigned char BYTE;
 // Assumption: channels in raw data are BGR, 8 bits per channel (uchar), 4 byte alignment.
 // Channels in CvMat are stored in the same matrix cell (CvScalar).
 // NOT TESTED!
-//~ static CvMat* rawImage2cvmat(Vision::Image &image)
+//~ static CvMat* rawImage2cvmat(VisionData::Image &image)
 //~ {
 //~    printf("rawImage2cvmat\n");
 //~    const unsigned align = 4;
@@ -68,7 +68,7 @@ typedef unsigned char BYTE;
 
 /// Copies image data from \p ImageFrame structure to a \p IplImage object.
 /// Assumption: rows are 4-byte aligned.
-IplImage* rawImage2iplImage(Vision::Image &Image)
+IplImage* rawImage2iplImage(VisionData::Image &Image)
 {
    IplImage *img = cvCreateImage(cvSize(Image.m_width, Image.m_height), 
       IPL_DEPTH_8U, Image.m_nChannels);
@@ -111,7 +111,7 @@ IplImage* rawImage2iplImage(Vision::Image &Image)
 //~ }
 
 // @param matrix3x3 Array with the parameters of the perspective transformation, storage: [Row0; Row1; Row2]
-static CvMat* getTrafoAndOutputBox(Vision::BBox2D &bbox, float* matrix3x3, Vision::BBox2D &outBox)
+static CvMat* getTrafoAndOutputBox(VisionData::BBox2D &bbox, float* matrix3x3, VisionData::BBox2D &outBox)
 {
    // printf("getTrafoAndOutputBox\n");
    struct _roi_position { double x0, y0, x1, y1; } ROI;
@@ -186,12 +186,12 @@ static CvMat* getTrafoAndOutputBox(Vision::BBox2D &bbox, float* matrix3x3, Visio
 // 4. transform with cvWarpPerspective (B = CA)
 // 5. create matlab array out, same size as B
 // 6. copy B to out; beware: channels are separeted in out!
-static mwArray transformRaw2array(Vision::Image &image, Vision::BBox2D &bbox, float* matrix3x3)
+static mwArray transformRaw2array(VisionData::Image &image, VisionData::BBox2D &bbox, float* matrix3x3)
 {
    // printf("transformRaw2array\n");
    IplImage *A = rawImage2iplImage(image);
 
-   Vision::BBox2D outBox;
+   VisionData::BBox2D outBox;
    CvMat *H1 = getTrafoAndOutputBox(bbox, matrix3x3, outBox);
    IplImage *B = cvCreateImage(cvSize(outBox.m_size.m_x, outBox.m_size.m_y), IPL_DEPTH_8U, image.m_nChannels); 
 
@@ -208,7 +208,7 @@ static mwArray transformRaw2array(Vision::Image &image, Vision::BBox2D &bbox, fl
 // Extract features from ROI. 
 // Transform the image before extraction.
 // @param matrix3x3 Array with the parameters of the perspective transformation, storage: [Row0; Row1; Row2]
-/*void FE_extract_features_transform(Vision::ROI &Roi, float* matrix3x3)
+/*void FE_extract_features_transform(VisionData::ROI &Roi, float* matrix3x3)
 {
    // Add the ROI to Matlab engine
    mwArray x = transformRaw2array(Roi.m_region, Roi.m_bbox, matrix3x3);

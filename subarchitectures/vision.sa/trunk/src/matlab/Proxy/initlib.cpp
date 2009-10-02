@@ -1,11 +1,11 @@
 #include "initlib.h"
-#include "libFeatureLearningCtf.h"
+#include "libVisualLearnerCtf.h"
 
 static int initialized = 0;
 static int terminated = 0;
 extern "C"
 {
-   void InitFeatureLearningLib()
+   void InitVisualLearnerLib()
    {
       if (terminated) {
          printf("WARNING: Initialize called after Terminate\n");
@@ -20,14 +20,14 @@ extern "C"
          printf("Could not initialize the program properly\n");
          return;
       }
-      if (! libFeatureLearningCtfInitialize() ) {
+      if (! libVisualLearnerCtfInitialize() ) {
          printf("Could not initialize the libFeatureLearningCtf library properly\n");
          return;
       }
       initialized++;
    }
 
-   void TermFeatureLearningLib()
+   void TermVisualLearnerLib()
    {
       try {
          if (initialized <= 0) return;
@@ -41,7 +41,7 @@ extern "C"
             //~ mclKillAllFigures(NULL); // crashes badly
             printf("calling libFeatureLearningCtfTerminate().\n");
             fflush(stdout);
-            libFeatureLearningCtfTerminate();
+            libVisualLearnerCtfTerminate();
             printf("calling mclTerminateApplication().\n");
             fflush(stdout);
             mclTerminateApplication();
