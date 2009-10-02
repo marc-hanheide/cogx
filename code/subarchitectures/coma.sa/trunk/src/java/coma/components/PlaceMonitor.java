@@ -455,7 +455,11 @@ public class PlaceMonitor extends ManagedComponent {
 				logRoom(_currentRoomStruct, "current room, as read from WM. ", comaRoomWME.getID());
 
 				// check if the current room's seed is a Doorway
-				if (m_comareasoner.isInstanceOf(_seedPlaceInstance, "dora:Doorway")) {
+				// or if the current room's seed is not in the list of remaining places,
+				// which means that that seed must already be in another room.
+				// in both cases, the existing room is obsolete and can be deleted
+				if (m_comareasoner.isInstanceOf(_seedPlaceInstance, "dora:Doorway")
+						|| !_remainingPlaceIds.contains(_seedPlaceId)) {
 					log("current room's seed is a doorway!");
 					// if the current room's seed is a Doorway
 					// remove the seed from the remaining places
@@ -468,6 +472,9 @@ public class PlaceMonitor extends ManagedComponent {
 				} else {
 					// otherwise -- i.e., if the current room's seed place is not a Doorway 
 					log("current room's seed is not a doorway.");
+					// check whether that room has changed at all...
+					boolean _hasChanged = false;
+					
 					// get places in the same room as the seed
 					String[] _placesInTheSameRoom = 
 						m_comareasoner.getRelatedInstancesByRelation(_seedPlaceInstance,"dora:sameRoomAs");
@@ -490,13 +497,25 @@ public class PlaceMonitor extends ManagedComponent {
 						_arrayOfPlaceIDsInTheSameRoom[j]=_currPlaceID.longValue();
 						j++;
 					}
-					// update the contained places in the room struct
-					_currentRoomStruct.containedPlaceIds=_arrayOfPlaceIDsInTheSameRoom;
+					// now check whether that has changed at all, 
+					// else we don't have to create WM and binder traffic!
+					Set<Long> _oldSetOfContainedPlaces = new HashSet<Long>();
+					for (long _currKnownContainedPlaceID : _currentRoomStruct.containedPlaceIds) {
+						_oldSetOfContainedPlaces.add(_currKnownContainedPlaceID);
+					}
+					if (!(_oldSetOfContainedPlaces.equals(_setOfPlaceIDsInTheSameRoom))) _hasChanged=true; 
 					
-					// now overwrite the existing room WME
-					overwriteWorkingMemory(comaRoomWME.getID(),_currentRoomStruct);
-					logRoom(_currentRoomStruct, "updated room WME. ", comaRoomWME.getID());
-					maintainRoomProxy(_currentRoomStruct, comaRoomWME.getID());
+					if (_hasChanged) {
+						// update the contained places in the room struct
+						_currentRoomStruct.containedPlaceIds=_arrayOfPlaceIDsInTheSameRoom;
+
+						// now overwrite the existing room WME
+						overwriteWorkingMemory(comaRoomWME.getID(),_currentRoomStruct);
+						logRoom(_currentRoomStruct, "updated room WME. ", comaRoomWME.getID());
+						maintainRoomProxy(_currentRoomStruct, comaRoomWME.getID());
+					} else {
+						logRoom(_currentRoomStruct, "did not update room WME or proxy. Room hasn't changed. ", comaRoomWME.getID());
+					}
 				}
 				log("remaining places: " + _remainingPlaceIds);
 			} // end for each room loop
@@ -586,33 +605,42 @@ public class PlaceMonitor extends ManagedComponent {
 				_roomIDFtr.featlabel = "roomID";
 				_roomIDFtr.alternativeValues = new FeatureValue[1];
 				_roomIDFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), _comaRoom.roomId);
+				
+				m_proxyMarshall.commitFeatures("room", _currRoomUID);
 			}
 
 			// containment
-			Feature _containsFtr = new Feature();
-			_containsFtr.featlabel = "contains";
-			_containsFtr.alternativeValues = new FeatureValue[_comaRoom.containedPlaceIds.length];
-			int i=0;
-			for (Long _currPlaceID : _comaRoom.containedPlaceIds) {
-				_containsFtr.alternativeValues[i++] = new IntegerValue(1, getCASTTime(), _currPlaceID.intValue());
+			// first clean existing containment facts
+			m_proxyMarshall.deleteFeature("room", _currRoomUID, "contains");
+			// now create individual feature-value pairs for all contained places
+			for (long _currContPlID : _comaRoom.containedPlaceIds) {
+				Feature _containsFtr = new Feature();
+				_containsFtr.featlabel = "contains";
+				_containsFtr.alternativeValues = new FeatureValue[1];
+				_containsFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), Long.valueOf(_currContPlID).intValue());
+				m_proxyMarshall.addFeature("room", _currRoomUID, _containsFtr);				
 			}
-			m_proxyMarshall.addFeature("room", _currRoomUID, _containsFtr);
+			
 
 			// areaclasses
-			Feature _classFtr = new Feature();
-			_classFtr.featlabel = "areaclass";
+			// first clean existing areaclass facts
+			m_proxyMarshall.deleteFeature("room", _currRoomUID, "areaclass");
+			// now create individual feature-value pairs for all concepts
 			if (_comaRoom.concepts.length!=0) {
-				_classFtr.alternativeValues = new FeatureValue[_comaRoom.concepts.length];
-				int j=0;
-				for (String _currCon : _comaRoom.concepts) {
-					_classFtr.alternativeValues[j++] = new StringValue(1, getCASTTime(), _currCon);
+				for (String _currConcept : _comaRoom.concepts) {
+					Feature _classFtr = new Feature();
+					_classFtr.featlabel = "areaclass";
+					_classFtr.alternativeValues = new FeatureValue[1];
+					_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
+					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 				}
 			} else {
+				Feature _classFtr = new Feature();
 				_classFtr.alternativeValues = new FeatureValue[1];
 				_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
+				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 			}
-			m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
-			
+			m_proxyMarshall.commitFeatures("room", _currRoomUID);
 			log("maintained proxy for " + _currRoomUID);
 			return true;
 		} else return false;
