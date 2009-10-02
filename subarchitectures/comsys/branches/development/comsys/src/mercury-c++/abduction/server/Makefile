@@ -16,7 +16,7 @@ MCFLAGS?=--search-lib-files-dir ../lib \
 
 #------------------------------------------------------------------------------#
 
-SLICE_PATH?=.
+SLICE_PATH?=../../../slice
 
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.
@@ -60,6 +60,10 @@ CXXFLAGS+=-DDEBUG
 CXXFLAGS+=-g
 endif
 
+# TODO: this just returns the revision of the directory the slice file
+# is in.
+ABDUCER_ICE_VERSION:=$(shell ./svn-file-version $(SLICE_PATH)/Abducer.ice)
+
 # on BSD, without deactivating suffix rules, any "non-suffixed"
 # target would be matched by some sort of default rule (using
 # $(CC)), not by our rule.
@@ -70,7 +74,7 @@ compile: $(BIN)
 
 .PRECIOUS: %.o
 %.o: %.cc aserv.h Abducer.h TypeConversions.h TypeConversions_mint.mh MercuryAbducerServer.h MercuryAbducerServer_mint.mh ConsoleUtils.h
-	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -c $*.cc
+	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -DABDUCER_ICE_VERSION=\"$(ABDUCER_ICE_VERSION)\" -c $*.cc
 
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
 	slice2cpp -I$(SLICE_PATH) --source-ext cc $(SLICE_PATH)/Abducer.ice

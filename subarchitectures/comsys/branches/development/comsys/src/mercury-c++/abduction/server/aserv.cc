@@ -27,16 +27,20 @@ static Ice::CommunicatorPtr ic;
 void
 shutdownServer(int);
 
+void
+printUsage();
+
 int
 aserv_main()
 {
+	printUsage();
 	IceUtil::CtrlCHandler ctrlCHandler(shutdownServer);
 	int status = 0;
 	try {
 		ic = Ice::initialize();
 
-		cerr << col::yel << "* server name = \"" << SERVER_NAME << "\"" << col::def << endl;
-		cerr << col::yel << "* server endpoints = \"" << SERVER_ENDPOINTS << "\"" << col::def << endl;
+		cout << tty::yellow << "* server name = \"" << SERVER_NAME << "\"" << tty::dcol << endl;
+		cout << tty::yellow << "* server endpoints = \"" << SERVER_ENDPOINTS << "\"" << tty::dcol << endl;
 
 		Ice::ObjectAdapterPtr adapter
 				= ic->createObjectAdapterWithEndpoints("AbducerAdapter", SERVER_ENDPOINTS);
@@ -56,7 +60,7 @@ aserv_main()
 		status = 1;
 	}
 
-	cerr << col::yel << "* server shut down" << col::def << endl;
+	cout << tty::yellow << "* server shut down" << tty::dcol << endl;
 
 	if (ic) {
 		try {
@@ -73,8 +77,8 @@ aserv_main()
 void
 shutdownServer(int signum)
 {
-	cerr << endl;
-	cerr << col::yel << "* received signal " << signum << col::def << endl;
+	cout << endl;
+	cout << tty::yellow << "* received signal " << signum << tty::dcol << endl;
 	try {
 		ic->shutdown();
 	}
@@ -82,4 +86,10 @@ shutdownServer(int signum)
 		cerr << e << endl;
 		exit(1);
 	}
+}
+
+void
+printUsage()
+{
+	cout << "* using server interface revision " << tty::white << ABDUCER_ICE_VERSION << tty::dcol << endl;
 }
