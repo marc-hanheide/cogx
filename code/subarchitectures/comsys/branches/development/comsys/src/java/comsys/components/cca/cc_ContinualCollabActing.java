@@ -222,14 +222,14 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
 				// print the proof ... 
 				if (proof != null) { 	
-            		String logString = "proof: body = [\n";
+            		String logString = "Obtained proof:\n";
             		for (int i = 0; i < proof.length; i++) {
+            			logString += "[" + proof[i].mark.toString() + "]\t";
             			logString += MercuryUtils.modalisedFormulaToString(proof[i].body);
             			if (i < proof.length-1) { logString += ",\n"; }
             		}
-            		logString += "\n]";
+            		logString += "\n";
             		log(logString);
-
             	}
             }
     	}

@@ -14,6 +14,8 @@
 
 #include <LF.ice>
 #include <CDL.ice>
+#include <BeliefModels.ice>
+#include <Abducer.ice>
  
 module comsys {
 module datastructs {
@@ -486,8 +488,22 @@ module comsysEssentials {
 		AnchoredReadings bindings; 
 	}; 
 	
+	//---------------------------------------------------------------------------
+	// Continual acting
+	//---------------------------------------------------------------------------
 	
-	
+	sequence<beliefmodels::adl::Belief> DeltaSet;
+
+	class ProofBlock {
+		//Abducer::MarkedQuerySeq proof;
+		string proofId;
+		DeltaSet assumptions;
+		DeltaSet assertions;
+	};
+
+	// Proof block stack, the top is the first element.
+	sequence<ProofBlock> ProofBlockSeq;
+
 };
 }; 
 };
@@ -496,6 +512,7 @@ module comsysEssentials {
 
 
 // EDIT LOG
+// 090930   janicek  Added ProofBlock, DeltaSet
 // 090921	GJ	Added ReferentialReadings, ReferentialReading classes
 // 090519	GJ	Added SpokenOutputItem: CHANGED: input stream is not an "any" object, but identified by id
 // 090519	GJ	Added RecogResult
