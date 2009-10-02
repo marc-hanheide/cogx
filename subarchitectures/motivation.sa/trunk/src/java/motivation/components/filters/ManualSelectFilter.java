@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import motivation.slice.CategorizePlaceMotive;
+import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -23,7 +24,7 @@ public class ManualSelectFilter implements MotiveFilter {
 	/**
 	 * 
 	 */
-	protected ManualSelectFilter() {
+	public ManualSelectFilter() {
 		getJFrame();
 		jFrame.setVisible(true);
 		jFrame.pack();
@@ -38,6 +39,7 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JCheckBox jCheckBoxTestMotive = null; // @jve:decl-index=0:visual-constraint="421,181"
 	private JButton jButtonUpdate = null; // @jve:decl-index=0:visual-constraint="325,118"
 	private JCheckBox jCheckBoxCategorizePlace = null; // @jve:decl-index=0:visual-constraint="427,60"
+	private JCheckBox jCheckBoxCategorizeRoomMotive;  //  @jve:decl-index=0:
 
 	public boolean shouldBeSurfaced(Motive motive) {
 		if (motive instanceof ExploreMotive)
@@ -48,6 +50,8 @@ public class ManualSelectFilter implements MotiveFilter {
 			return jCheckBoxHomingMotive.isSelected();
 		else if (motive instanceof CategorizePlaceMotive)
 			return jCheckBoxCategorizePlace.isSelected();
+		else if (motive instanceof CategorizeRoomMotive)
+			return jCheckBoxCategorizeRoomMotive.isSelected();
 		else
 			return true;
 	}
@@ -63,6 +67,10 @@ public class ManualSelectFilter implements MotiveFilter {
 			return !jCheckBoxTestMotive.isSelected();
 		else if (motive instanceof HomingMotive)
 			return !jCheckBoxHomingMotive.isSelected();
+		else if (motive instanceof CategorizePlaceMotive)
+			return !jCheckBoxCategorizePlace.isSelected();
+		else if (motive instanceof CategorizeRoomMotive)
+			return !jCheckBoxCategorizeRoomMotive.isSelected();
 		else
 			return false;
 	}
@@ -95,6 +103,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			jContentPane.add(getJCheckBoxTestMotive());
 			jContentPane.add(getJCheckBoxHomingMotive());
 			jContentPane.add(getJCheckBoxCategorizePlace());
+			jContentPane.add(getJCheckBoxCategorizeRoomMotive());
 			jContentPane.add(getJButtonUpdate());
 		}
 		return jContentPane;
@@ -112,6 +121,20 @@ public class ManualSelectFilter implements MotiveFilter {
 			jCheckBoxExploreMotive.setText("let ExploreMotives pass");
 		}
 		return jCheckBoxExploreMotive;
+	}
+
+	/**
+	 * This method initializes jCheckBox
+	 * 
+	 * @return javax.swing.JCheckBox
+	 */
+	private JCheckBox getJCheckBoxCategorizeRoomMotive() {
+		if (jCheckBoxCategorizeRoomMotive == null) {
+			jCheckBoxCategorizeRoomMotive = new JCheckBox();
+			jCheckBoxCategorizeRoomMotive.setSize(new Dimension(257, 29));
+			jCheckBoxCategorizeRoomMotive.setText("let CategorizeRoomMotives pass");
+		}
+		return jCheckBoxCategorizeRoomMotive;
 	}
 
 	/**
