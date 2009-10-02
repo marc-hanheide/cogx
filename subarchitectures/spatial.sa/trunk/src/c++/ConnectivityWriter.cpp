@@ -74,6 +74,7 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     feature->alternativeValues.push_back(new 
 					 binder::autogen::featvalues::StringValue(1,getCASTTime(),uid2));
     m_marshaller->addFeature(type, uid, feature);
+    m_marshaller->commitFeatures(type, uid);
   }
   else {
     log("The property struct disappeared!");
@@ -94,14 +95,16 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
     string uid = ss.str();
 
     if (wmc.type == "ADD") {
-    FeaturePtr feature = new Feature();
-    feature->featlabel = "gateway";
-    feature->alternativeValues.push_back(new 
-					 binder::autogen::featvalues::StringValue(1,getCASTTime(),"gateway"));
-    m_marshaller->addFeature(type, uid, feature);
+      FeaturePtr feature = new Feature();
+      feature->featlabel = "gateway";
+      feature->alternativeValues.push_back(new 
+	  binder::autogen::featvalues::StringValue(1,getCASTTime(),"gateway"));
+      m_marshaller->addFeature(type, uid, feature);
+      m_marshaller->commitFeatures(type, uid);
     }
     else if (wmc.type == "DELETE") {
       m_marshaller->deleteFeature(type, uid, "gateway");
+      m_marshaller->commitFeatures(type, uid);
     }
   }
 }

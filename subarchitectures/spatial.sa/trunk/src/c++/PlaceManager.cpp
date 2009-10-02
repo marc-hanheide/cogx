@@ -152,22 +152,26 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  shared_ptr<CASTData<NavData::FNode> > oobj =
-    getWorkingMemoryEntry<NavData::FNode>(objID.address);
+  NavData::FNodePtr oobj =
+    getMemoryEntry<NavData::FNode>(objID.address);
   
   if (oobj != 0) {
 
-    // Look for the place in the internal vector
-    //for (unsigned int i = 0; i < m_Places.size(); i++) {
-      //if (m_Places[i].m_data->id == oobj->getData()->nodeId) {
     for (map<int, NavData::FNodePtr>::iterator it =
 	m_PlaceIDToNodeMap.begin();
 	it != m_PlaceIDToNodeMap.end(); it++){
-      if (it->second->nodeId == oobj->getData()->nodeId) {
-
-        // Here we need to change mpore stuff, right now there is
-        // nothing really that can be changed since all we have is the
-        // id
+      NavData::FNodePtr node = it->second;
+      if (node->nodeId == oobj->nodeId) {
+	if (node->gateway == 0 && oobj->gateway == 1) {
+	  // Has gained gateway status; add gateway property to WM
+	  SpatialData::PlacePtr place = getPlaceFromNodeID(oobj->nodeId);
+	  if (place != 0) {
+	    addNewGatewayProperty(place->id);
+	  }
+	  else {
+	    log("Error! FNode became gateway, but could not find Place to correspond!");
+	  }
+	}
 
         /*
         log("Modified place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
@@ -758,6 +762,10 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	  deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
 	  m_HypIDToWMIDMap.erase(goalHyp->hypID);
 	  m_PlaceIDToHypMap.erase(it);
+
+	  if (curNode->gateway == 1) {
+	    addNewGatewayProperty(m_goalPlaceForCurrentPath);
+	  }
 	}
 	else {
 	  log("Missing Placeholder placeholder!");
@@ -909,48 +917,21 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	  p.m_data = new SpatialData::Place;   
 	  //p.m_data->id = oobj->getData()->nodeId;
 
-	  p.m_data->id = m_placeIDCounter;
-	  m_PlaceIDToNodeMap[m_placeIDCounter] = newNavNode;
+	  int newPlaceID = m_placeIDCounter;
+	  m_placeIDCounter++;
+	  p.m_data->id = newPlaceID;
+	  m_PlaceIDToNodeMap[newPlaceID] = newNavNode;
 
 	  p.m_data->status = SpatialData::TRUEPLACE;
 	  p.m_WMid = newDataID();
 	  log("Adding place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
 	  addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
 
-	  m_Places[m_placeIDCounter] = p;
-	  m_placeIDCounter++;
+	  m_Places[newPlaceID] = p;
 
 	  //Write the Gateway property if present
 	  if (newNavNode->gateway == 1) {
-	    SpatialProperties::BinaryValuePtr trueValue = 
-	      new SpatialProperties::BinaryValue;
-	    SpatialProperties::BinaryValuePtr falseValue = 
-	      new SpatialProperties::BinaryValue;
-	    trueValue->value = true;
-	    falseValue->value = false;
-
-	    SpatialProperties::ValueProbabilityPair pair1 =
-	    { trueValue, 0.9 };
-	    SpatialProperties::ValueProbabilityPair pair2 =
-	    { falseValue, 0.1 };
-
-	    SpatialProperties::ValueProbabilityPairs pairs;
-	    pairs.push_back(pair1);
-	    pairs.push_back(pair2);
-
-	    SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-	      new SpatialProperties::DiscreteProbabilityDistribution;
-	    discDistr->data = pairs;
-
-	    SpatialProperties::GatewayPlacePropertyPtr gwProp =
-	      new SpatialProperties::GatewayPlaceProperty;
-	    gwProp->placeId = p.m_data->id;
-	    gwProp->mapValue = trueValue;
-	    gwProp->mapValueReliable = 1;
-
-	    string newID = newDataID();
-	    addToWorkingMemory<SpatialProperties::GatewayPlaceProperty>(newID, gwProp);
-	    m_gatewayProperties[gwProp->placeId] = newID;
+	    addNewGatewayProperty(newPlaceID);
 	  }
 	}
       }
@@ -1072,4 +1053,38 @@ PlaceManager::deletePlaceholderProperties(int placeID)
       m_borderProperties.erase(it);
     }
   }
+}
+
+void
+PlaceManager::addNewGatewayProperty(int placeID)
+{
+  SpatialProperties::BinaryValuePtr trueValue = 
+    new SpatialProperties::BinaryValue;
+  SpatialProperties::BinaryValuePtr falseValue = 
+    new SpatialProperties::BinaryValue;
+  trueValue->value = true;
+  falseValue->value = false;
+
+  SpatialProperties::ValueProbabilityPair pair1 =
+  { trueValue, 0.9 };
+  SpatialProperties::ValueProbabilityPair pair2 =
+  { falseValue, 0.1 };
+
+  SpatialProperties::ValueProbabilityPairs pairs;
+  pairs.push_back(pair1);
+  pairs.push_back(pair2);
+
+  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+    new SpatialProperties::DiscreteProbabilityDistribution;
+  discDistr->data = pairs;
+
+  SpatialProperties::GatewayPlacePropertyPtr gwProp =
+    new SpatialProperties::GatewayPlaceProperty;
+  gwProp->placeId = placeID;
+  gwProp->mapValue = trueValue;
+  gwProp->mapValueReliable = 1;
+
+  string newID = newDataID();
+  addToWorkingMemory<SpatialProperties::GatewayPlaceProperty>(newID, gwProp);
+  m_gatewayProperties[gwProp->placeId] = newID;
 }

@@ -131,12 +131,12 @@ ProxyMarshaller::deleteProxy(const string & type, const string & UID)
       typeMap.erase(typeMap.find(UID));
     }
     else {
-      log("addFeature: Proxy type %s, UID %s not found!", type.c_str(),
+      log("deleteProxy: Proxy type %s, UID %s not found!", type.c_str(),
 	  UID.c_str());
     }
   }
   else {
-    log("addFeature: Proxy type %s not found!", type.c_str(),
+    log("deleteProxy: Proxy type %s not found!", type.c_str(),
 	UID.c_str());
   }
 }
@@ -173,7 +173,7 @@ ProxyMarshaller::addFeature(const string & proxyType, const string & proxyUID,
 	// Add the feature
 	intProxy.proxy->features.push_back(feature);
 
-	updateInternalProxy(typeMap[proxyUID]);
+	//updateInternalProxy(typeMap[proxyUID]);
 //      }
     }
     else {
@@ -195,6 +195,36 @@ ProxyMarshaller::MarshallingServer::deleteFeature(const string & proxyType, cons
   m_pOwner->deleteFeature(proxyType, proxyUID, featlabel);
 }
 
+void 
+ProxyMarshaller::MarshallingServer::commitFeatures(const string &proxyType, 
+    const string &proxyUID,
+    const Ice::Current &_context)
+{
+  m_pOwner->commitFeatures(proxyType, proxyUID);
+}
+
+
+void
+ProxyMarshaller::commitFeatures(const string & type, const string & UID)
+{
+  if (m_proxyTypeMap.find(type) != m_proxyTypeMap.end()) {
+    map<string, InternalProxy> &typeMap =
+      m_proxyTypeMap[type];
+    if (typeMap.find(UID) != typeMap.end()) {
+      InternalProxy &intProxy = typeMap[UID];
+      updateInternalProxy(intProxy);
+    }
+    else {
+      log("commitFeatures: Proxy type %s, UID %s not found!", type.c_str(),
+	  UID.c_str());
+    }
+  }
+  else {
+    log("commitFeatures: Proxy type %s not found!", type.c_str(),
+	UID.c_str());
+  }
+}
+
 void
 ProxyMarshaller::deleteFeature(const string & proxyType, const string & proxyUID,
 	const string & featlabel)
@@ -205,12 +235,13 @@ ProxyMarshaller::deleteFeature(const string & proxyType, const string & proxyUID
     if (typeMap.find(proxyUID) != typeMap.end()) {
       InternalProxy &intProxy = typeMap[proxyUID];
       vector<FeaturePtr>::iterator it = intProxy.proxy->features.begin();
-      for (; it != intProxy.proxy->features.end();
-	  it++) {
+      for (; it != intProxy.proxy->features.end();) {
 	if ((*it)->featlabel == featlabel) {
-	  intProxy.proxy->features.erase(it);
+	  it = intProxy.proxy->features.erase(it);
 	  log("Erasing feature %s; %i remaining", featlabel.c_str(), intProxy.proxy->features.size());
-	  break;
+	}
+	else {
+	  it++;
 	}
       }
       if (it == intProxy.proxy->features.end()) {
@@ -296,6 +327,7 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
+    commitFeatures("place", ss.str());
   }
 }
 
@@ -323,6 +355,7 @@ ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
           //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
+    commitFeatures("place", ss.str());
   }
 }
 
@@ -337,5 +370,36 @@ ProxyMarshaller::deletedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     ss << it->second;
     log("Deleting proxy for (place, %s)", ss.str().c_str());
     deleteProxy("place", ss.str());
+  }
+}
+
+void
+ProxyMarshaller::updateLocalForegrounding()
+{
+  // Check for any "robot" proxies, and foreground all Places
+  // that are locations of such robots
+  if(m_proxyTypeMap.find("robot") != m_proxyTypeMap.end()) {
+    map<string, InternalProxy> &robotProxies = m_proxyTypeMap["robot"];
+    // Foreground the current Places of all robots
+//    for (map<string, InternalProxy>::iterator it = robotProxies.begin();
+//	it != robotProxies.end(); it++) {
+//      InternalProxy &robotPrx = it->second;
+//
+//      for (vector<binder::autogen::core::FeaturePtr>::iterator it2 =
+//	  robotPrx.proxy->features.begin();
+//	  it2 != robotPrx.proxy->features.end(); it2++) {
+//	if ((*it2)->featlabel == "position") {
+//	  string
+//	}
+//      }
+//
+//    }
+
+    // Find all local foregrounded Places that are no longer
+    // supported by a robot, and background them.
+
+  }
+  else {
+    log("Found no robot proxy!");
   }
 }
