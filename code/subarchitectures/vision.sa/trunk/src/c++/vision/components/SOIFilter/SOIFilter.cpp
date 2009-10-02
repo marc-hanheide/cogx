@@ -674,9 +674,9 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	rect.height = roiPtr->rect.height;
 	rect.x = roiPtr->rect.pos.x - rect.width/2;
 	rect.y = roiPtr->rect.pos.y - rect.height/2;	
-	
+
 	log("Calculated ROI x=%i, y=%i, width=%i, height=%i",
-		rect.x, rect.y, rect.width, rect.height);
+		rect.x, rect.y, roiPtr->rect.width, rect.height);
 	
 	cvSetImageROI(iplImg, rect);
 	
