@@ -28,7 +28,9 @@ install(TARGETS testHarnessCASTSCAT LIBRARY DESTINATION lib ARCHIVE DESTINATION 
 # add_definitions(-DCLASSICAL_PLANNER_DESIGNATION="Classical planner")
 # add_definitions(-DDEBUG_LEVEL=400)
 
-add_definitions(-DDEBUG_LEVEL=700)
+add_definitions(-DDEBUG_LEVEL=2000)
+    
+add_definitions(-DSCAT_WARNINGS=0)
 
 add_cast_component(test_harness__CAST_SCAT_client test_harness__CAST_SCAT_client.cc)
 
