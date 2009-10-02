@@ -55,6 +55,7 @@
 	    <includepath>
               <pathelement path="${slice.dir}"/>
 	      <pathelement path="${castslice.dir}/cast/slice/"/>
+	      <pathelement path="${slice.dir}:../../tools/beliefmodels/src/slice"/>
 	    </includepath>
 	  </slice2java>
 	</target>

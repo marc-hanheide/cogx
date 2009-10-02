@@ -325,7 +325,7 @@ public class cc_ReferentialBindings
 				unlockComponent();
                 sleepComponent(20);
 				// wait for new tasks!
-				waitForNotifications();
+				//waitForNotifications();
 			} // end while running
 		}
 		catch (Exception e) {

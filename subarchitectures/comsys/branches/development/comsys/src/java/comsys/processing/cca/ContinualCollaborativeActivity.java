@@ -126,8 +126,9 @@ public class ContinualCollaborativeActivity {
 	public void initAbducer() {
 		try {
 			abducer.clearFacts();
-			abducer.loadFactsFromFile(factsFilename);
 			abducer.clearRules();
+			abducer.clearAssumables();
+			abducer.loadFactsFromFile(factsFilename);
 			abducer.loadRulesFromFile(rulesFilename);
 		}
 		catch (AbducerException e) {
@@ -169,8 +170,6 @@ public class ContinualCollaborativeActivity {
 					AbducerUtils.term(lf.root.nomVar)
 				}));
 
-		abducer.addAssumable("guess", goal.body, 1.0f);
-		
 		goal.isConst = false;
 		goal.costFunction = "true";
 		goal.constCost = 0.0f;
