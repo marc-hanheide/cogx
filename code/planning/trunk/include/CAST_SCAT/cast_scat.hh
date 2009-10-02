@@ -27,93 +27,169 @@
  * (**) see http://savannah.gnu.org/projects/patch -- GNU-09/2009
  *
  *
- * ABOUT :: 
+ * ABOUT CAST_SCAT :: 
  *
  * WARNING ** This library is written in c++-0x, and thus contains
  * WARNING ** instances of the "explicit" keyword. 
  *
+ * NOTE ** Below, when we refer to CAST and \module{cast::*} we are
+ * NOTE ** talking about the The CoSy Architecture Schema Toolkit versions 2.0
+ * NOTE ** and above. These use ICE ("highly efficient middleware" -- it is an
+ * NOTE ** alternative to CORBA, see \url{http://www.zeroc.com/iceVsCorba.html} )
+ * NOTE ** rather than CORBA (Common Object Request Broker Architecture -- see
+ * NOTE ** \url{http://en.wikipedia.org/wiki/Common_Object_Request_Broker_Architecture}
+ * NOTE ** ). CAST is: "a software toolkit to support the developments of
+ * NOTE ** intelligent systems based on a space of possible architecture
+ * NOTE ** designs.". Basically, a very cool library written by:
+ * 
+ *     * Nick Hawes (first author -- n.a.hawes@cs.bham.ac.uk)
+ *     * Michael Zillich
+ *     * Patric Jensfelt
+ *     * Henrik Jacobsson
+ *     * Gregor Berginc
+ * 
+ *
  * Executively speaking, \namespace{CAST_SCAT} gives a wrapper of
  * useful sugar for "subarchitecture" interactions via classical --
  * i.e., circa August 2009 -- CAST. It has been tested and modified to
- * work with all releases of CAST since then. Essentially, it allows a
- * CAST component to interact with another cast component in a C-like
+ * work with all releases of CAST since then. It allows a CAST
+ * component to interact with another cast component in a C-like
  * procedural way, and at the same time arbitrary components can snoop
- * (i.e., listen in on) the calls.
+ * (i.e., listen in on) the calls. It also supports a kind of dynamic
+ * component instantiation.
  *
  * Now you say: "I have no idea of the meaning for what you just
  * wrote..."
  *
  * - You are a CAST component. Yes, really, you are. I.e., you appear
- *    as an argument to \keyword{add_cast_component} in a
- *    \filename{CMakeLists.txt} file). Moreover, after execution of
- *    \command{make -C BUILD} you appear somewhere with a ".so" suffix.
- *    As a CAST component you want to post some information to a
- *    different component in a procedural fashion. Consider, if you
- *    will, the following C code:
+ *   as an argument to \keyword{add_cast_component} in a
+ *   \filename{CMakeLists.txt} file. Moreover, after execution of
+ *   \command{make -C BUILD} you appear somewhere with a ".so" suffix.
+ *   As a CAST component you want to post some information to a
+ *   different component in a procedural fashion. Consider, if you
+ *   will, the following C code:
  *
- *    void foo(){ do_something();}
+ *   void foo(){ do_something();}
  *
- *    void bar(){foo(); do_something_else(); }
+ *   void bar(){foo(); do_something_else(); }
  *
- *    During execution, when \function{bar()} is invoked it blocks for
- *    the invocation of \function{foo()}, and then when
- *    \function{foo()} completes execution and returns control to
- *    \function{bar()}, \function{bar()} continues executing and
- *    \function{do_something_else()} is invoked. This is a lovely
- *    story, that even my 5 yo cousin can understand. Now suppose we
- *    are in CAST so that we want the above procedural semantics but
- *    have that:
- *    
- *    COMPONENT 1 (you): void foo(){ do_something();}
- *    
- *    COMPONENT 2 (you): void bar(){foo(); do_something_else(); }
+ *   During execution, when \function{bar()} is invoked it blocks for
+ *   the invocation of \function{foo()}, and then when
+ *   \function{foo()} completes execution and returns control to
+ *   \function{bar()}, \function{bar()} continues executing and
+ *   \function{do_something_else()} is invoked. This is a lovely
+ *   story, that even my 5 yo cousin can understand. Now suppose we
+ *   are in CAST so that we want the above procedural semantics but
+ *   have that:
+ *   
+ *   COMPONENT 1 (you): void foo(){ do_something();}
+ *   
+ *   COMPONENT 2 (you): void bar(){foo(); do_something_else(); }
  *
- *    I.e., the call is made in C(omponent)2 and the implementation is
- *    in C1. Moreover, you might want arbitrary components to snoop
- *    (i.e., listen in on), the conversation between C1 and C2. To
- *    achieve this using CAST_SCAT, the code looks as follows:
+ *   I.e., the call is made in C(omponent)2 and the implementation is
+ *   in C1. Moreover, you might want arbitrary components to snoop
+ *   (i.e., listen in on), the conversation between C1 and C2. To
+ *   achieve this using CAST_SCAT, the code looks as follows:
  *
- *    COMPONENT 1 (you): void foo(foo__SLICE_classnamePtr&){ do_something();}
- *    
- *    COMPONENT 2 (you): void bar(){call<foo__SLICE_classname>(); do_something_else(); }
+ *   COMPONENT 1 (you): void foo(foo__SLICE_classnamePtr&){ do_something();}
+ *   
+ *   COMPONENT 2 (you): void bar(){call<foo__SLICE_classname>(); do_something_else(); }
  *
- *    NOTE: This example is bogus because you can't put an underscore
- *    in a slice classname. But you get the idea.
+ *   NOTE: This example is bogus because you can't put an underscore
+ *   in a slice classname. But you get the idea.
  *     
  * 
- * In more detail.. What is CAST_SCAT?! The author believes.. CAST
- * (see \module{cast::*}) is lovely.. Wow!\footnote{CMAKE is also
- * lovely, however that is another story for another day.}
- * Unfortunately the authors cannot get their head around all of
- * it. So, they have got their head around a (perhaps) tiny piece of
- * it that they believe is all that is required for the automated
- * planning parts of CogX.
+ * Now you say: "What about that `dynamic component instantiation`
+ * stuff you mentioned..." -- Am I projecting or what?!
+ *
+ * -  You are a CAST component. Yes, really, you are. I.e., you appear
+ *    as an argument to \keyword{add_cast_component} in a
+ *    \filename{CMakeLists.txt} file. Moreover, after execution of
+ *    \command{make -C BUILD} you appear somewhere with a ".so"
+ *    suffix. ALSO, you are mentioned in a file with a .cast suffix that
+ *    is likely to appear in a directory called "config". In that file
+ *    you are given a name. For example, lets say your CPP name is X-CPP,
+ *    and you appear in a \filename{CMakeLists.txt} as:
+ *
+ *       add_cast_component(X-CPP X-CPP.cc)
+ *
+ *    Then, in the file with the .cast suffix you are given a new name
+ *    X-CAST-COMPONENT-NAME, and appear in a line along the lines of:
+ *
+ *       CPP MG X-CAST-COMPONENT-NAME X-CPP [SOME ARGUMENTS MAY OCCUR HERE]
+ *
+ *    ASIDE: Talk to Nick Hawes if you want to know what the "MG"
+ *    stands for. I can never remember. Last time I checked they made
+ *    nice motor vehicles. But that was back in the days when James
+ *    Bond had hair on his chest.
+ *
+ *    You also occur in the .cast file below a line having the form:
+ *
+ *       SUBARCHITECTURE STRING-NAME-OF-SUBARCHITECTURE
+ *
+ *    If a cast component wants to post an object to you, they would have
+ *    the following code in their C++ source implementation:
+ *
+ *    
+ *              addToWorkingMemory( id, 
+ *                                  "STRING-NAME-OF-SUBARCHITECTURE",
+ *                                  ice_handle);
+ *
+ *    Problem is, you might want to react differently to different posted
+ *    objects as the application execution progresses. For example, as a
+ *    component you might be a factory that builds planning systems
+ *    depending on the requirements in of a planning problem
+ *    description. Once a planner is built, the factory would inform the
+ *    client that requested planning of the identifier of the planning
+ *    system just built. That system would listen for, and react to
+ *    commands sent to its particular designation. Okay, so rather than
+ *    making you write all that code each time you have such a factory
+ *    like scenario, where a component builds dynamic components at
+ *    runtime, we have encapsulated all this functionality in
+ *    \class{procedure_implementation} and \class{procedure_call}.
+ *
+ * 
+ *
+ * Non-executively speaking and in more detail.. What is CAST_SCAT?!
+ * The author believes.. CAST (see \module{cast::*}) is
+ * lovely.. Wow!\footnote{CMAKE is also lovely, however that is
+ * another story for another day.}  Unfortunately the authors cannot
+ * get their head around all of it, and it seems to lack some
+ * functionality that the author required for their work. So, they
+ * have got their head around a (perhaps) tiny piece of it that they
+ * believe is all that is required for the automated planning parts of
+ * CogX, and extended those aspects of CAST to support working-memory
+ * interactions that have a C-like procedural semantics and dynamic
+ * components.
  *
  * What does the author guarantee?.. that CAST_SCAT appears to work
  * without falling over itself, under "normal" circumstances. Please
  * take note of the following technical detail.
  *
- * TECHNICAL NOTE: Every procedure call is executed in a separate
- * pthread (here 'p' stands for posix). Because no-one knows how to
- * make threaded systems reliable, on many systems CAST_SCAT will
- * become unstable where there are a lot of procedure calls (i.e.,
- * threads) activated. You say:"okay, give it to me straight doc,
- * what's the endgame.. how long've I got?". If you are silly, and try
- * to make deep recursive calls, the system will fall on its backside,
- * probably in an unpleasant way. So, if you are trying to compute the
- * 15th Fibonacci number (i.e, 610), and doing this both recursively
- * and three times in parallel across components and subarchitectures,
- * then the system will fall on its face. Sometimes you will have a
- * graceful crash where the output is something like:
- * 
- *       ** UNRECOVERABLE ERROR -- Can't implement a CAST_SCAT procedure
- *                call. Tried :: 5 times and still nothing...Basically,
- *                we can't start a thread in which to execute the
- *                procedure call. Better luck next time chief!
- * 
- * On any other other occasion, the system may simply hang, and
- * then glib might get upset. If you run things in valgrind the
- * crashes are, in my experience, always graceful.
+ * TECHNICAL NOTE:
+ *
+ *    Every procedure call is executed in a separate
+ *    pthread (here 'p' stands for posix). Because no-one knows how to
+ *    make threaded systems reliable, on many systems CAST_SCAT will
+ *    become unstable where there are a lot of procedure calls (i.e.,
+ *    threads) activated. You say:"okay, give it to me straight doc,
+ *    what's the endgame.. how long've I got?". If you are silly, and try
+ *    to make deep recursive calls, the system will fall on itself (like
+ *    a Klein bottle, but a little more dramatic); probably in an
+ *    unpleasant way. So, if you are trying to compute the 15th Fibonacci
+ *    number (i.e, 610), and doing this both recursively and three times
+ *    in parallel across components and subarchitectures, then the system
+ *    will fall on its face. Sometimes you will have a graceful crash
+ *    where the output is:
+ *    
+ *          **    UNRECOVERABLE ERROR -- Can't implement a CAST_SCAT procedure
+ *                   call. Tried :: 5 times and still nothing...Basically,
+ *                   we can't start a thread in which to execute the
+ *                   procedure call. Better luck next time chief!
+ *    
+ *    On any other other occasion, the system may simply hang, and
+ *    then glib might get upset. If you run things in valgrind the
+ *    crashes are, in my experience, always graceful.
  *                 
  *
  * Our main contribution is a template-based interface for
@@ -128,13 +204,13 @@
  * \class{cast::ManagedComponent\member{overwriteWorkingMemory}} made
  * by the \class{procedure_implementation}. A caller and callee should
  * never interact with CAST working memory, because that is bound to
- * cause problems, rather these interactions are all done via
+ * cause problems. Rather, these interactions should all occur via
  * \class{procedure_implementation} and \class{procedure_call}.
  * Continuing with the "caller" story, a \class{procedure_call} then
- * reads data from the modified object and compiles that into a return
- * value, and finally deletes the object from working memory. The
- * implementation listens for objects of a specific \slice{type} with
- * a specific \CAST_SCAT{designation}.
+ * reads data from the modified object and derives from that a return
+ * value, and finally the caller deletes the object from working
+ * memory. The implementation listens for objects of a specific
+ * \slice{type} with a specific \CAST_SCAT{designation}.
  *
  * Finally, one thing we cannot do here (in C++) is stop CAST users
  * shooting themselves in the foot when making CMakeLists.txt files,
@@ -146,8 +222,8 @@
  * \function{template<typename T> ostream operator<<(ostream&, const
  * vector<T>&)}, so if you have also implemented this, problems are
  * going to arise at runtime (a.k.a. crashtime).. unless CAST is
- * clever and able to resolve to one implementation -- in which case
- * there are going to be horrible horrible bugs that take ages to
+ * clever and able to resolve to a correct implementation -- in which
+ * case there are going to be horrible horrible bugs that take ages to
  * find...
  */
 
@@ -558,7 +634,6 @@ namespace CAST_SCAT
                                       <<" a process {PTHREAD_THREADS_MAX} would be exceeded. Nice grammar!!"
                                       <<" Anyway, I will try again after waiting for threads"
                                       <<" I am perhaps responsible for...");
-//                         UNRECOVERABLE_ERROR("No second chances in this version.");/*FIX*/
                         usleep(100 * number_of_attempted_thread_invocations);
                         break;
                     case EINVAL:
@@ -611,7 +686,6 @@ namespace CAST_SCAT
                                           <<"Basically, we can't start a thread in which to "
                                           <<"execute the procedure call. Better luck next time chief!");
 
-//                 UNRECOVERABLE_ERROR("No second chances in this version.");/*FIX*/
             }
             VERBOSER(499, "Finished spinning to create a thread...");
             
@@ -780,13 +854,11 @@ namespace CAST_SCAT
     
     /* A \module{cast::*}-based procedure call is either "made" (i.e.,
      * make a call) "implemented" (i.e., we implement the call)
-     * locally or globally (see the relevant template parameters of
-     * \class{procedure_implementation} and \class{procedure_call}
-     * respectively).
+     * locally or globally.
      *
      * NOTE : I do not know the distinction between \module{cast::*}
      * "local" v.s. "global". So I wrote the code below to support
-     * both options.. defaulting to "global".
+     * both options.. defaulting to "local".
      *
      * \begin{conversation -- Aug 18 2009}
      *
