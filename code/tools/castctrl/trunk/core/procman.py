@@ -242,7 +242,7 @@ class CProcess(object):
                 self.error = CProcess.ERROR
                 self._setStatus(CProcess.STOPPED)
             return
-        if self.isRunning(): return
+        if self.status == self.STOPPED or self.isRunning(): return
         if self.status == CProcess.FLUSH:
             if time.time() > self.willClearAt: self._clear()
         if self.status > 0:
@@ -269,13 +269,11 @@ class CPipeReader_1(threading.Thread):
         while self.isRunning:
             pipes = []
             pipes.extend(self.process.getPipes())
-            if len(pipes) < 1:
-                time.sleep(0.02)
-                continue
-            (rlist, wlist, xlist) = select.select(pipes, [], [], 0.1)
-            if len(rlist) > 0:
-                now = time.time(); tm = now; tmend = now + 0.1
-                nl = self.process.readPipes(rlist, 200)
+            if len(pipes) < 1: time.sleep(0.02)
+            else:
+                (rlist, wlist, xlist) = select.select(pipes, [], [], 0.1)
+                if len(rlist) > 0:
+                    nl = self.process.readPipes(rlist, 200)
 
     def stop(self):
         self.isRunning = False
@@ -303,11 +301,29 @@ class CPipeReader(threading.Thread):
     def stop(self):
         self.isRunning = False
 
+class CProcessChecker(threading.Thread):
+    def __init__(self, procManager):
+        # TODO: Multiple process managers, different hosts!
+        threading.Thread.__init__(self, name="Process Checker")
+        self.procManager = procManager
+        self.isRunning = False
+
+    def run(self):
+        self.isRunning = True
+        while self.isRunning:
+            for p in self.procManager.proclist: p.check()
+            time.sleep(0.1)
+
+    def stop(self):
+        self.isRunning = False
+
 class CProcessManager(object):
     def __init__(self, name="localhost"):
         self.name = name   # maybe machine name
         self.proclist = [] # managed processes
         self.pipeReaderThread = None
+        self.procCheckerThread = CProcessChecker(self) # TODO: move to main or make global!
+        self.procCheckerThread.start()
 
     def __del__(self):
         self.stopAll()
@@ -339,14 +355,16 @@ class CProcessManager(object):
     def stopAll(self):
         for proc in self.proclist: proc.stop()
 
-    def checkProcesses(self):
-        for proc in self.proclist: proc.check()
+    #def checkProcesses(self): # MOVED to a separate thread
+    #    for proc in self.proclist: proc.check()
 
     def stopReaderThread(self):
         if self.pipeReaderThread != None: self.pipeReaderThread.stop()
         self.pipeReaderThread = None
+        if self.procCheckerThread != None: self.procCheckerThread.stop()
+        self.procCheckerThread = None
 
-    # Moved to a separate thread!
+    # MOVED to a separate thread!
     #def communicate(self, timeout=0.01):
     #    return 0
     #    procs = self.proclist
