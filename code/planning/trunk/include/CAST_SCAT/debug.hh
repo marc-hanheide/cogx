@@ -89,10 +89,15 @@ Old fashioned debugging -- ERROR STREAM
 
 #define QUERY_UNRECOVERABLE_ERROR(Q,X) {if(Q)UNRECOVERABLE_ERROR(X);}
 
-#define WARNING(X) {                                             \
-        DEBUG_OUT(" ** WARNING -- "<<std::endl                   \
-                  <<X);                                          \
-    }                                                            \
+#ifndef SCAT_WARNINGS
+#define SCAT_WARNINGS 1
+#endif
+
+#define WARNING(X) { if(SCAT_WARNINGS){                            \
+            DEBUG_OUT(" ** WARNING -- "<<std::endl                 \
+                      <<X);                                        \
+        }                                                          \
+    }                                                              \
         
 
 #define QUERY_WARNING(Q,X) {if(Q)WARNING(X);}
