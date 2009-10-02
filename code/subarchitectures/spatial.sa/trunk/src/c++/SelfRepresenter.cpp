@@ -90,6 +90,7 @@ SelfRepresenter::runComponent()
       feature->alternativeValues.push_back(new
 					   binder::autogen::featvalues::StringValue(1, getCASTTime(), "robot"));
       agg->addFeature("robot", "1", feature);
+      agg->commitFeatures("robot","1");
     }
     catch (Ice::Exception e) {
       log("Failed to add robot proxy!");
@@ -117,6 +118,7 @@ SelfRepresenter::runComponent()
 	  feature->alternativeValues.push_back(new
 					       binder::autogen::featvalues::StringValue(1, getCASTTime(), ss.str()));
 	  agg->addFeature("robot", "1", feature);
+	  agg->commitFeatures("robot", "1");
 	}
 	prevPlaceID = curPlaceID;
       }

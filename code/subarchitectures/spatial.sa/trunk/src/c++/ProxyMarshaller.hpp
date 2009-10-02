@@ -43,6 +43,8 @@ namespace spatial {
 	  const Ice::Current &_context);
       virtual void deleteFeature(const string & proxyType, const string & proxyUID,
 	  const string & featLabel, const Ice::Current &_context);
+      void commitFeatures(const string &typ, const string &UID,
+	  const Ice::Current &_context);
       virtual void publishProxy(const string & type, const string & UID, const Ice::Current &_context);
       ProxyMarshaller *m_pOwner;
       MarshallingServer(ProxyMarshaller *owner) : m_pOwner(owner)
@@ -81,6 +83,7 @@ namespace spatial {
 	const binder::autogen::core::FeaturePtr feature);
     void deleteFeature(const string & proxyType, const string & proxyUID,
 	const string & featLabel);
+    void commitFeatures(const string &typ, const string &UID);
     void publishProxy(const string & type, const string & UID);
 
     void newPlace(const cdl::WorkingMemoryChange &_wmc);
@@ -88,6 +91,14 @@ namespace spatial {
     void deletedPlace(const cdl::WorkingMemoryChange &_wmc);
 
     void updateInternalProxy(InternalProxy &intProxy);
+    protected:
+    // Implementation-specific methods
+
+    void updateLocalForegrounding(); // Foregrounding of the Place the robot is in
+    void updateMotivePlaces(); // Foregrounding of Places Motivation is thinking of
+    void updatePaths(); //Foregrounding of paths relevant to 
+    			//Places already foregrounded
+
     private:
     // Main storage structure: A map over proxy types, each with
     // a map over UIDs
@@ -96,6 +107,9 @@ namespace spatial {
     string m_bindingSA;
 
     map<string, int> m_PlaceAddressToIDMap;
+
+    // Places that are foregrounded because of their local importance
+    set<InternalProxy> m_localContextPlaces;
 };
 };
 
