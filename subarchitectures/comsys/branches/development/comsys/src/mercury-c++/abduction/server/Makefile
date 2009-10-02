@@ -73,19 +73,19 @@ ABDUCER_ICE_VERSION:=$(shell ./svn-file-version $(SLICE_PATH)/Abducer.ice)
 compile: $(BIN)
 
 .PRECIOUS: %.o
-%.o: %.cc aserv.h Abducer.h TypeConversions.h TypeConversions_mint.mh MercuryAbducerServer.h MercuryAbducerServer_mint.mh ConsoleUtils.h
+%.o: %.cc aserv.h Abducer.h TypeConversions.h TypeConversions_mint.mh MercuryAbducerServer.h MercuryAbducerServer_mint.mh TtyUtils.h
 	$(CXX) $(CXXFLAGS) -I. -I$(ICE_HOME)/include -I$(MERCURY_HOME)/lib/mercury/inc -I$(MERCURY_HOME)/lib/mercury/conf -DABDUCER_ICE_VERSION=\"$(ABDUCER_ICE_VERSION)\" -c $*.cc
 
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
 	slice2cpp -I$(SLICE_PATH) --source-ext cc $(SLICE_PATH)/Abducer.ice
 
-abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o ConsoleUtils.o
+abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o TtyUtils.o
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-object Abducer.o \
 		--link-object TypeConversions.o \
 		--link-object MercuryAbducerServer.o \
-		--link-object ConsoleUtils.o \
+		--link-object TtyUtils.o \
 		--link-object aserv.o \
 		--grade $(GRADE) \
 		$(MCFLAGS) \
@@ -105,5 +105,5 @@ clean:
 		$(addsuffix .err, $(basename $(MFILES))) \
 		$(addsuffix .mh, $(basename $(MFILES))) \
 		abducer-server \
-		TypeConversions.o MercuryAbducerServer.o ConsoleUtils.o \
+		TypeConversions.o MercuryAbducerServer.o TtyUtils.o \
 		Abducer.o Abducer.cc Abducer.h

@@ -8,7 +8,7 @@ extern "C" {
 }
 
 #include "TypeConversions.h"
-#include "ConsoleUtils.h"
+#include "TtyUtils.h"
 
 using namespace std;
 using namespace Abducer;
