@@ -21,7 +21,7 @@ inline VisionData::ROIPtr projectSOI(const Video::CameraParameters &cam, const V
    // assuming that the image is a raw, distorted camera image, we now have to
    // to distort the position to match the image
    distortPoint(cam, roi->rect.pos, roi->rect.pos);
-   roi->rect.width = projectSize(cam, soi.boundingSphere.pos, 2.*soi.boundingSphere.rad);
+   roi->rect.width = projectSize(cam, soi.boundingSphere.pos, 2.*soi.boundingSphere.rad);//std::cout<<"roi->rect.width "<<roi->rect.width<<std::endl;
    roi->rect.height = projectSize(cam, soi.boundingSphere.pos, 2.*soi.boundingSphere.rad);
    roi->time = soi.time;
    return roi;
