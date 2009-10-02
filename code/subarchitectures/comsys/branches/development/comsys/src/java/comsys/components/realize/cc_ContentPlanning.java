@@ -341,8 +341,6 @@ public class cc_ContentPlanning
 						addToWorkingMemory(newDataID(), plf); 
 					} catch (AlreadyExistsOnWMException ioe) { 
 						log("ERROR: "+ioe.getMessage());
-					} catch (SubarchitectureComponentException se) { 
-						log("ERROR: "+se.getMessage());						
 					}
 				} // end if
 			} // end if.. check for data presence	
