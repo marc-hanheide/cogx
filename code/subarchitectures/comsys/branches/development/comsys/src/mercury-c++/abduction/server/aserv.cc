@@ -14,7 +14,7 @@ extern "C" {
 
 #include "TypeConversions.h"
 #include "MercuryAbducerServer.h"
-#include "ConsoleUtils.h"
+#include "TtyUtils.h"
 
 using namespace std;
 
