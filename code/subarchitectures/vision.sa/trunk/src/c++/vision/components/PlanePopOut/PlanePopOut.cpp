@@ -636,6 +636,7 @@ void PlanePopOut::runComponent()
 					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
 					{
 						flag = true;
+						CurrentObjList.at(i).c = PreviousObjList.at(i).c*4/5 + CurrentObjList.at(i).c/5;
 						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 //cout<<"x in SOI after overwrite in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
 						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);	
