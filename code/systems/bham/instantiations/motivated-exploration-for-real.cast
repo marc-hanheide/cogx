@@ -38,7 +38,7 @@ CPP TM AlwaysPositiveTaskManager
 CPP MG Planner WMControl --log
 JAVA MG executor execution.components.PrototypePlanExecutor --log
 
-JAVA MG motivation.generators.ExplorePlaceGenerator motivation.components.generators.ExplorePlaceGenerator   --log
+JAVA MG spatial.motivation.ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator   --log
 # JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log
 # JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
 # JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
