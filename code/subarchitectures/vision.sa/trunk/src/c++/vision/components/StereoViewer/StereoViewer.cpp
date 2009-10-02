@@ -185,7 +185,7 @@ static void DrawOverlays()
   glPopMatrix();
 
   // HACK draw DFKI tea box
-  glBegin(GL_LINE_LOOP);
+  /*glBegin(GL_LINE_LOOP);
   glColor4f(0., 1., 0., 1.);
   glVertex3d(0.000, 0.000, 0.000);
   glVertex3d(0.160, 0.000, 0.000);
@@ -209,7 +209,7 @@ static void DrawOverlays()
   glVertex3d(0.160, 0.000, 3*0.073);
   glVertex3d(0.160, 0.065, 3*0.073);
   glVertex3d(0.000, 0.065, 3*0.073);
-  glEnd();
+  glEnd();*/
   // HACK END
 }
 
@@ -385,17 +385,81 @@ void StereoViewer::runComponent()
     //cvSet(iplImage, cvScalar(0));
     for(size_t i = 0; i < points.size(); i++)
     {
-      if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
+      //if(points[i].p.z > 0.05)  // above the table plane, which is a z = 0
       {
         Vector2 p = projectPoint(image.camPars, points[i].p);
         distortPoint(image.camPars, p, p);
         cvCircle(iplImage, cvPoint(p.x, p.y), 0,
+            CV_RGB(255, 0, 0));
+        cvCircle(iplImage, cvPoint(p.x, p.y), 1,
             CV_RGB((unsigned char)points[i].c.r,
                    (unsigned char)points[i].c.g,
                    (unsigned char)points[i].c.b));
       }
     }
 
+    // HACK draw DFKI tea box
+    /*Vector2 p;
+    p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.000));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.000, 0.000));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.065, 0.000));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.000, 0.065, 0.000));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+
+    p = projectPoint(image.camPars, vector3(0.000, 0.000, 0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.000, 0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.065, 0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.000, 0.065, 0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+
+    p = projectPoint(image.camPars, vector3(0.000, 0.000, 2*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.000, 2*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.065, 2*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.000, 0.065, 2*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+
+    p = projectPoint(image.camPars, vector3(0.000, 0.000, 3*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.000, 3*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.160, 0.065, 3*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    p = projectPoint(image.camPars, vector3(0.000, 0.065, 3*0.073));
+    distortPoint(image.camPars, p, p);
+    cvCircle(iplImage, cvPoint(p.x, p.y), 3, CV_RGB(255, 0, 0));
+    */
+
+    /*p = projectPoint(image.camPars, vector3(0.000, -1.000, 1.000));
+    cout << "StereoViewer projected origin " << p;
+    distortPoint(image.camPars, p, p);
+    cout << "  distorted " << p << endl;
+    */
+
+    // HACK END
     /* image being the right camera image, this draws a nice epipolar line
     for(int i = 1; i <= 5; i++)
     {
