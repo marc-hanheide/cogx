@@ -150,8 +150,8 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  shared_ptr<CASTData<NavData::FNode> > oobj =
-    getWorkingMemoryEntry<NavData::FNode>(objID.address);
+  NavData::FNodePtr oobj =
+    getMemoryEntry<NavData::FNode>(objID.address);
   
   if (oobj != 0) {
 
@@ -161,11 +161,18 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
     for (map<int, NavData::FNodePtr>::iterator it =
 	m_PlaceIDToNodeMap.begin();
 	it != m_PlaceIDToNodeMap.end(); it++){
-      if (it->second->nodeId == oobj->getData()->nodeId) {
-
-        // Here we need to change mpore stuff, right now there is
-        // nothing really that can be changed since all we have is the
-        // id
+      NavData::FNodePtr node = it->second;
+      if (node->nodeId == oobj->nodeId) {
+	if (node->gateway == 0 && oobj->gateway == 1) {
+	  // Has gained gateway status; add gateway property to WM
+	  SpatialData::PlacePtr place = getPlaceFromNodeID(oobj->nodeId);
+	  if (place != 0) {
+	    addNewGatewayProperty(place->id);
+	  }
+	  else {
+	    log("Error! FNode became gateway, but could not find Place to correspond!");
+	  }
+	}
 
         /*
         log("Modified place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
