@@ -3,6 +3,7 @@
  */
 package spatial.motivation;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import cast.core.CASTUtils;
  */
 public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
+
 	private HashMap<Long, Double> m_placeIDtoBorderProperty;
 	private HashMap<Long, Double> m_placeIDtoSpaceProperty;
 	private HashMap<Long, WorkingMemoryAddress> m_placeIDtoMotiveWMA;
@@ -40,13 +42,14 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	private double m_borderMeasureConstant;
 
 	public ExplorePlaceGenerator() {
+		super();
 		m_placeIDtoBorderProperty = new HashMap<Long, Double>();
 		m_placeIDtoSpaceProperty = new HashMap<Long, Double>();
 		m_placeIDtoMotiveWMA = new HashMap<Long, WorkingMemoryAddress>();
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * (non-Javadoc) 
 	 * 
 	 * @see
 	 * motivation.generators.Generator#updateMotive(cast.cdl.WorkingMemoryAddress

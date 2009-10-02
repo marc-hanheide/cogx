@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
 import motivation.slice.CategorizePlaceMotive;
+import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -35,6 +36,11 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 	public static class GoalTranslator {
 
 		public static String motive2PlannerGoal(HomingMotive m) {
+			// TODO: this has to be implemented with lookup to the unions
+			return new String("");
+		}
+
+		public static String motive2PlannerGoal(CategorizeRoomMotive m) {
 			// TODO: this has to be implemented with lookup to the unions
 			return new String("");
 		}
@@ -115,6 +121,9 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 											em,
 											binderFacade
 													.getUnion(em.correspondingUnion).entityID);
+			} else if (m instanceof CategorizeRoomMotive) {
+				goalString = goalString
+						+ GoalTranslator.motive2PlannerGoal((CategorizeRoomMotive) m);
 			} else if (m instanceof HomingMotive) {
 				goalString = goalString
 						+ GoalTranslator.motive2PlannerGoal((HomingMotive) m);
@@ -167,6 +176,8 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 						break;
 					}
 				}
+			} else if (m instanceof CategorizeRoomMotive) {
+				
 			}
 		}
 		return activeMotives;
