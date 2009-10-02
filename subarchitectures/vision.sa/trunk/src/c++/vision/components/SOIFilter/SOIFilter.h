@@ -12,6 +12,7 @@
 #include <string>
 #include <queue>
 #include <map>
+#include <algorithm>
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -57,6 +58,7 @@ private:
   float bgHueTolerance;
   float bgDistTolerance;
   int lblFixCost;
+  int smoothCost;
   
   char *colorImg;
   
@@ -138,17 +140,18 @@ private:
   void drawHull(IplImage *img, const std::vector<CvPoint> projPoints, const std::vector<int> hull);
 
   
-  std::list<int> getSortedHueList(std::vector<VisionData::SurfacePoint> surfPoints);
+  std::vector<CvScalar> getSortedHlsList(std::vector<VisionData::SurfacePoint> surfPoints);
 
   
   std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg);
 
   
-  std::vector<int> getHueCostList(std::list<int> hueList, int k);
+  std::vector<int> getHlsCostList(std::vector<CvScalar> hslList, int k);
 
   
   IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
                     std::vector<VisionData::SurfacePoint> surfPoints, float huemod, float distmod, bool distcost);
+
 
 protected:
   /**
