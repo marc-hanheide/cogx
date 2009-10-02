@@ -17,7 +17,7 @@ using namespace Abducer;
 
 MercuryAbducerServer::MercuryAbducerServer()
 {
-	cerr << col::grn << "* initialising abducer context" << col::def << endl;
+	cout << tty::green << "* initialising abducer context" << tty::dcol << endl;
 	ctx = init_ctx();
 
 	haveProof = false;
@@ -26,7 +26,7 @@ MercuryAbducerServer::MercuryAbducerServer()
 void
 MercuryAbducerServer::clearRules(const Ice::Current&)
 {
-	cerr << col::grn << "* clearing rules" << col::def << endl;
+	cout << tty::green << "* clearing rules" << tty::dcol << endl;
 	clear_rules(ctx, &ctx);
 }
 
@@ -34,7 +34,7 @@ void
 MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Current&)
 {
 	char * s = cc2m::string(filename);
-	cerr << col::grn << "* loading rules from `" << s << "'" << col::def << endl;
+	cout << tty::green << "* loading rules from `" << s << "'" << tty::dcol << endl;
 	load_rules_from_file(s, ctx, &ctx);
 	delete s;
 }
@@ -42,7 +42,7 @@ MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Curre
 void
 MercuryAbducerServer::clearFacts(const Ice::Current&)
 {
-	cerr << col::grn << "* clearing facts" << col::def << endl;
+	cout << tty::green << "* clearing facts" << tty::dcol << endl;
 	clear_facts(ctx, &ctx);
 }
 
@@ -50,7 +50,7 @@ void
 MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Current&)
 {
 	char * s = cc2m::string(filename);
-	cerr << col::grn << "* loading facts from `" << s << "'" << col::def << endl;
+	cout << tty::green << "* loading facts from `" << s << "'" << tty::dcol << endl;
 	load_facts_from_file(s, ctx, &ctx);
 	delete s;
 }
@@ -58,7 +58,7 @@ MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Curre
 void
 MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
-	cerr << col::grn << "* adding fact: " << fact->p->predSym << "(...)" << col::def << endl;
+	cout << tty::green << "* adding fact: " << fact->p->predSym << "(...)" << tty::dcol << endl;
 
 	MR_Word vs;
 	new_varset(&vs);
@@ -70,14 +70,14 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 void
 MercuryAbducerServer::clearAssumables(const Ice::Current&)
 {
-	cerr << col::grn << "* clearing assumables" << col::def << endl;
+	cout << tty::green << "* clearing assumables" << tty::dcol << endl;
 	clear_assumables(ctx, &ctx);
 }
 
 void
 MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
-	cerr << col::grn << "* adding assumable: " << f->p->predSym << "(...) / " << function << col::def << endl;
+	cout << tty::green << "* adding assumable: " << f->p->predSym << "(...) / " << function << tty::dcol << endl;
 
 	MR_Word w_vs;
 	new_varset(&w_vs);
@@ -89,7 +89,7 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 ProveResult
 MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
 {
-	cerr << col::grn << "* proving" << col::def << endl;
+	cout << tty::green << "* proving" << tty::dcol << endl;
 
 	MR_Word vs;
 	new_varset(&vs);
@@ -97,7 +97,7 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 	MR_Word mgs;
 	empty_marked_query_list(&mgs);
 
-	debug(cerr << "  no of goals = " << goals.size() << endl);
+	debug(cout << "  no of goals = " << goals.size() << endl);
 	vector<MarkedQueryPtr>::const_reverse_iterator rit;
 //	for (int i = goals.size() - 1; i >= 0; i--) {
 	for (rit = goals.rbegin(); rit != goals.rend(); ++rit) {
@@ -112,8 +112,8 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 	double proofCost;
 
 	if (prove_best(minitproof, ctx, &proofCost, &curBestProof)) {
-		cerr << "proof found" << endl;
-		cerr << endl;
+		cout << "proof found" << endl;
+		cout << endl;
 		proof_summary(curBestProof, ctx);
 		haveProof = true;
 		//sleep(1);
@@ -122,7 +122,7 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 		return (ProofFound);
 	}
 	else {
-		cerr << "no proof found" << endl;
+		cout << "no proof found" << endl;
 		//print_ctx(ctx);
 		haveProof = false;
 		return (NoProofFound);
@@ -132,13 +132,13 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 vector<MarkedQueryPtr>
 MercuryAbducerServer::getBestProof(const Ice::Current&)
 {
-	cerr << col::grn << "* sending the last proof" << col::def << endl;
+	cout << tty::green << "* sending the last proof" << tty::dcol << endl;
 
 	if (haveProof) {
 		return MR_WordToMarkedQuerySeq(ctx, curBestProof);
 	}
 	else {
-		cerr << "ERROR: no proof" << endl;
+		cout << "ERROR: no proof" << endl;
 		throw NoProofException();
 	}
 }
