@@ -26,34 +26,36 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import javax.sound.sampled.*;
-
 import de.dfki.lt.mary.client.MaryClient;
 
 import de.dfki.lt.signalproc.util.AudioPlayer;
-import de.dfki.lt.mary.client.MaryClient.AudioPlayerListener;
+
+
 import java.io.File;
 /**
  * TTS system for local synthesis (ie. using directly accessible speakers).
  */
 public class TTSLocal {
 
-
-    // The name of the voice to be used
-   String voiceName = "female";
-	
 	// mary client
-	MaryClient mary ;
+	private  MaryClient m_mary ;
 	
-	// basic TTS parameters
-	static String inputType = "TEXT_EN";
-	static String outputType = "AUDIO";
-	static String audioType = "WAVE";
+   	// basic TTS parameters
+	private  String m_inputType = "TEXT_EN";
+	//private  String m_inputType = "RAWMARYXML";
+	private  String m_outputType = "AUDIO";
+	private  String m_audioType = "WAVE";
+	//private  String m_locale = "en_US"; for Mary.4
 	
+	// The name of the voice to be used
+	//private   String m_voiceName = "female";
+	private   String m_voiceName = "us2"; //MBROLO sounds
+		
 	// System lock
-	protected boolean isFree = true ;
+	protected boolean m_isFree = true ;
 	
 	// Silence
-   boolean m_bSilentMode;
+	private boolean m_bSilentMode;
 	
    
 	/** 
@@ -65,12 +67,22 @@ public class TTSLocal {
 	* @param m_bSilentMode true if system must remain silent, false otherwise
 	*/
 	
-	public TTSLocal (MaryClient mary, String voiceName, boolean m_bSilentMode, String audioType) {
-			this.mary = mary ;
-			this.voiceName = voiceName ;
-			this.m_bSilentMode = m_bSilentMode ;
-			this.audioType = audioType;
+	public TTSLocal (MaryClient mary, String inputType, String voiceName, boolean bSilentMode,  String audioType) {
+			this.m_mary = mary ;
+			this.m_inputType = inputType;
+			this.m_voiceName = voiceName ;
+			this.m_bSilentMode = bSilentMode ;
+			this.m_audioType = audioType;
+			
 	}
+	/* for Mary.4
+	public TTSLocal (MaryClient mary, String voiceName, boolean bSilentMode, String locale, String audioType) {
+		this.m_mary = mary ;
+		this.m_voiceName = voiceName ;
+		this.m_bSilentMode = bSilentMode ;
+		this.m_audioType = audioType;
+		this.m_locale=locale;
+}*/
 
 	
 	/**
@@ -88,8 +100,9 @@ public class TTSLocal {
 		   else {
 		   try {
 		        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		        mary.process(tosay, inputType, outputType, audioType,
-		        		voiceName, baos);
+		        //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
+		        m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, baos);
+		        
 		        
 			   AudioInputStream ais = AudioSystem.getAudioInputStream(
 			            new ByteArrayInputStream(baos.toByteArray()));
@@ -131,9 +144,8 @@ public class TTSLocal {
 			   else {
 			   try {
 			        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			        mary.process(tosay, inputType, outputType, audioType,
-			        		voiceName, baos);
-			        
+			         m_mary.process(tosay, m_inputType, m_outputType,  m_audioType, m_voiceName, baos);
+			         //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos);  for Mary.4
 			        File file = new File(filename);
 				   AudioInputStream ais = AudioSystem.getAudioInputStream(
 				            new ByteArrayInputStream(baos.toByteArray()));
