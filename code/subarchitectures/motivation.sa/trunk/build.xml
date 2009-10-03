@@ -7,6 +7,9 @@
         <path id="build.classpath">
             <pathelement path="${ice.jar}"/>
             <pathelement path="${cast.jar}"/>
+            <fileset dir="lib">
+              <include name="**/*.jar"/>
+            </fileset>
         </path>
 
 	<!-- Controls where the output goes -->
