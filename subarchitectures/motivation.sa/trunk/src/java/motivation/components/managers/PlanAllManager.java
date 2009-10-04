@@ -120,10 +120,12 @@ public class PlanAllManager extends ManagedComponent {
 				while (isRunning()) {
 					// wait that something happens
 					if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
-						// make sure all changes have been propagated to the unions!
+						// make sure all changes have been propagated to the
+						// unions!
 						log("wait to finialize propagation to unions");
 						placeUnionEventRelation.waitForPropagation();
-						// after this we can be quite sure that we actually have all required information on the binder
+						// after this we can be quite sure that we actually have
+						// all required information on the binder
 						break;
 					}
 				}
@@ -165,6 +167,7 @@ public class PlanAllManager extends ManagedComponent {
 								executorFacade);
 						backgroundExecutor.execute(executionResult);
 						int loopCount = 0;
+						boolean timeout = false;
 						while (!interrupt) {
 							try {
 								executionResult.get(1, TimeUnit.SECONDS);
@@ -175,12 +178,23 @@ public class PlanAllManager extends ManagedComponent {
 								if (++loopCount > failsafeTimeoutSecs) {
 									log("timeout in execution");
 									interrupt = true;
+									timeout = true;
 								}
 							}
 
 						}
-						if (!executionResult.isDone())
+
+						// nah: ok, the bugs were actually mine and somewhere else...
+						// log("interrupt is: " + interrupt);
+						//
+						// if(interrupt && !timeout) {
+						// sleepComponent(3000);
+						// }
+
+						if (!executionResult.isDone()) {
+							log("cancelling execution");
 							executionResult.cancel(true);
+						}
 						log("execution finished... wait 1 sec to let state changes propagate");
 					} else {
 						deactivateMotives();

@@ -226,16 +226,16 @@ public class SerialPlanExecutor extends Thread {
 
 				// check that we should still do something
 				if (m_component.isRunning()) {
-					
-					//if we've been explicitly stopped
-					if(m_exeState == ExecutionState.HALTED) {
-						//if something is happening
-						if(actionWrapper.isInProgress()) {
+
+					// if we've been explicitly stopped
+					if (m_exeState == ExecutionState.HALTED) {
+						// if something is happening
+						if (actionWrapper.isInProgress()) {
 							m_component.log("stopping action in progress");
-							m_component.stopExecution(actionWrapper.getActionAddress());
+							m_component.stopExecution(actionWrapper
+									.getActionAddress());
 						}
-					}
-					else if (hasNotBeenStopped()) {
+					} else if (hasNotBeenStopped()) {
 						// if one of the changes completed our action
 						if (!actionWrapper.isInProgress()) {
 							// and we haven't told the planner its complete
@@ -287,8 +287,14 @@ public class SerialPlanExecutor extends Thread {
 
 		m_exeState = _state;
 		m_component.log("plan complete");
-		m_component.deleteFromWorkingMemory(m_planProxyAddress);
-		m_component.log("plan deleted proxy");
+		try {
+			m_component.deleteFromWorkingMemory(m_planProxyAddress);
+			m_component.log("plan deleted proxy");
+		} catch (DoesNotExistOnWMException e) {
+			m_component
+					.println("plan proxy was deleted before we could remove it: "
+							+ e.getMessage());
+		}
 	}
 
 	/**
@@ -331,8 +337,8 @@ public class SerialPlanExecutor extends Thread {
 		if (action.status == Completion.PENDING) {
 			actionWrapper = new PlannedActionWrapper(action, m_converter
 					.toSystemAction(action));
-			WorkingMemoryAddress actionAddr = m_component
-					.triggerExecution(actionWrapper.execute(), actionWrapper);
+			WorkingMemoryAddress actionAddr = m_component.triggerExecution(
+					actionWrapper.execute(), actionWrapper);
 			actionWrapper.setActionAddress(actionAddr);
 		}
 		return actionWrapper;

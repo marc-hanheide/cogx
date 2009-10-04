@@ -60,6 +60,7 @@ public class ExecutorFacade implements Callable<PlanProxy> {
 			// TODO: we should move to status information in here and not only
 			// listen for deletion
 			planProxyQueue.take();
+			component.log("plan proxy deletion seen");
 			component.removeChangeFilter(planProxyQueue);
 		} catch (CASTException e) {
 			component.println("CASTException");
