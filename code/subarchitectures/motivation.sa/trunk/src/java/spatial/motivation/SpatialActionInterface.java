@@ -246,8 +246,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 			// read in the nav cmd
 			NavCommand cmd = getMemoryEntry(_wmc.address, NavCommand.class);
-			if (cmd.comp == Completion.COMMANDABORTED
-					|| cmd.comp == Completion.COMMANDFAILED) {
+			if (cmd.comp == Completion.COMMANDFAILED) {
 				log("command failed by the looks of this: " + cmd.comp);
 				m_isComplete = true;
 				m_callback.executionComplete(TriBool.TRIFALSE);
@@ -269,6 +268,7 @@ public class SpatialActionInterface extends ManagedComponent {
 			// remove overwrite receiver
 			if (!m_isComplete) {
 				try {
+					log("aborting execution");
 					removeChangeFilter(this);
 					// reread
 					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
