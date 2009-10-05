@@ -60,8 +60,9 @@ public class RestrictorProxyConstruction {
 	private void init () {
 		proxyFactories = new HashMap();
 		ThingProxy thingProxy = new ThingProxy();
-		
 		proxyFactories.put(thingProxy.getSort(), thingProxy);
+		EntityProxy entityProxy = new EntityProxy();
+		proxyFactories.put(entityProxy.getSort(), entityProxy);
 	} // end init
 	
 	public ProxyResults constructProxy (LogicalForm lf, CASTTime timestamp) { 
