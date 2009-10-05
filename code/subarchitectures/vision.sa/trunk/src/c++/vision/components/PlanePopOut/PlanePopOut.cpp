@@ -361,6 +361,76 @@ Vector3 ProjectOnDominantPlane(Vector3 InputP)
 	return OutputP;
 }
 
+Matrix33 GetAffineTransMatrix()
+{
+	Vector3 vb; //translation vector
+	Vector3 v3normal;  //normal vector of dominant plane
+	v3normal.x = A;	v3normal.y = B;	v3normal.z = C;
+	normalise(v3normal);
+	if(v3normal.z < 0)
+	v3normal *= -1.0;
+
+	Matrix33 rot;
+	setIdentity(rot);
+	setColumn(rot,2,v3normal);
+	vb.x = 1;	vb.y = 0;	vb.z = 0;
+	vb = vb-(v3normal*v3normal.x);
+	normalise(vb);
+	setRow(rot,0,vb);
+	setZero(vb);
+	vb = cross(getRow(rot,2),getRow(rot,0));
+	setRow(rot,1,vb);
+	setZero(vb);
+
+	return rot;
+}
+
+inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3)
+{
+	return m33*v3;
+}
+
+void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
+{
+	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
+	vector<Vector3> PlanePoints3D;
+	Matrix33 AffineM33 = GetAffineTransMatrix();
+	int j = 0;
+
+	for(unsigned int i = 0; i<points.size(); i++)
+	{
+		Vector3 v3Obj = points.at(i).p;
+		int label = labels.at(i);
+		if (label == 0) // collect points seq for drawing convex hull of the dominant plane
+		{
+			CvPoint cvp;
+			Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
+			cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
+			points2D[j] = cvp;
+			j++;
+			PlanePoints3D.push_back(v3Obj);
+		}
+	}
+	// calculate convex hull
+	if (j>0)
+	{
+		//cout<<"2d points number ="<<j-1<<endl;
+		int* hull = (int*)malloc( (j-1) * sizeof(hull[0]));
+
+		CvMat pointMat = cvMat( 1, j-1, CV_32SC2, points2D);
+		CvMat hullMat = cvMat( 1, j-1, CV_32SC1, hull);
+		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+		//draw the hull
+		glBegin(GL_LINE_LOOP);
+		glColor3f(1.0,1.0,1.0);
+		for (unsigned int i = 0; i<hullMat.cols; i++)
+		{
+			glVertex3f(PlanePoints3D.at(hull[i]).x,PlanePoints3D.at(hull[i]).y,PlanePoints3D.at(hull[i]).z);
+		}
+		glEnd();
+	}
+}
+
 void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
 {
 	VisionData::SurfacePointSeq center;
@@ -385,6 +455,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 	std::vector<double> radius_world;
 	radius_world.assign(objnumber,0);
 ////////////////////calculate the center of each object/////////////////////////
+
 	for(unsigned int i = 0; i<points.size(); i++)
 	{
 		Vector3 v3Obj = points.at(i).p;
@@ -395,6 +466,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			amount.at(label-1) = amount.at(label-1) + 1;
 		}
 	}
+
 	v3center.clear();
 	if (amount.at(0) != 0)
 	{
@@ -416,6 +488,8 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			vdradius.push_back(radius_world.at(i));
 	}
 
+
+
 	for (int i = 0; i<objnumber; i++)
 	{
 		if (mbDrawWireSphere)	DrawWireSphere(center.at(i).p,radius_world.at(i));
@@ -430,6 +504,12 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			if (label > 0 && dist(Point_DP,Center_DP) < Shrink_SOI*radius_world.at(i))
 			{
 				SOIPointsSeq.at(label-1).push_back(PushStructure);
+
+				glPointSize(2);
+				glBegin(GL_POINTS);
+				glColor3f(0.0,0.0,1.0);  //obj points
+				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
+				glEnd();
 			}
 			if (label == -1 && dist(Point_DP,Center_DP) < Lower_BG*radius_world.at(i)) // equivocal points
 			{
@@ -443,13 +523,13 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 			if (label == 0 && dist(Point_DP,Center_DP) < Upper_BG*radius_world.at(i) && dist(Point_DP,Center_DP) > Lower_BG*radius_world.at(i)) //BG nearby also required
 			{
 				BGPointsSeq.at(i).push_back(PushStructure);
-
+/*
 				glPointSize(2);
 				glBegin(GL_POINTS);
 				glColor3f(1.0,0.0,0.0);  //nearby points
 				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
 				glEnd();
-			}
+*/			}
 		}
 	}
 	
@@ -480,11 +560,12 @@ void DisplayWin()
   glEnable(GL_LIGHTING);
   glEnable(GL_COLOR_MATERIAL);
   glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-  DrawPoints();
+  //DrawPoints();
   if (objnumber != 0)
   {
 	DrawCuboids(pointsN,points_label);
 	BoundingSphere(pointsN,points_label);
+	ConvexHullOfPlane(pointsN,points_label);
   }
   else
   {
