@@ -29,7 +29,7 @@ module cogx {
 	// The class SuperFormula implements the Formula interface, acting as supertype class. 
 	// As an EpistemicObject, each SuperFormula has an identifier. 
 	
-	class SuperFormula extends beliefmodels::adl::EpistemicObject {
+	class SuperFormula extends beliefmodels::adl::Formula {
 	};
 	
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value

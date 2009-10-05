@@ -114,7 +114,7 @@ module beliefmodels {
 		// collection of classes, which directly or through inheritance implement
 		// the interface. 
 
-		interface Formula { 		
+		class Formula extends EpistemicObject { 		
 		}; // 
 
 		class Belief extends EpistemicObject { 
