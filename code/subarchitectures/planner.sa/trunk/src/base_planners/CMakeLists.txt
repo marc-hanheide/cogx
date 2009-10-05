@@ -2,6 +2,9 @@
 
 add_subdirectory(ContinualAxFF)
 
+option(BUILD_SA_PLANNER_TFD "Build TFD planner in planner.sa" NO)
+if(BUILD_SA_PLANNER_TFD)
+
 set(TFD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tfd")
 
 add_custom_target(tfd_preprocess
@@ -15,3 +18,5 @@ add_custom_target(tfd_search
 
 add_custom_target(tfd ALL)
 add_dependencies(tfd tfd_preprocess tfd_search)
+
+endif(BUILD_SA_PLANNER_TFD)
