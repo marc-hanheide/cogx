@@ -1,3 +1,60 @@
+% h: hi robot
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, 'd-units') / true,
+	i : prop(Nom, list) / true,
+	i : rel_First(Nom, FirstNom) / true,
+		i : sort(FirstNom, greeting) / true,
+		i : prop(FirstNom, hi) / true,
+	i : rel_Next(Nom, NextNom) / true,
+		i : sort(NextNom, animate) / true,
+		i : prop(NextNom, 'Robot') / true,
+	e(now) : greeting(h, r) / 0.1.
+
+% h: do you know what this is
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, cognition) / true,
+	i : prop(Nom, know) / true,  % type of cognition
+	i : feat_Mood(Nom, int) / true,  % question
+	i : rel_Actor(Nom, ActorNom) / true,
+		you(ActorNom) / true,
+	i : rel_Patient(Nom, WhatNom) / true,
+		what(WhatNom) / true,
+
+	i : sort(AscrNom, ascription) / true,
+	i : 'rel_Cop-Restr'(AscrNom, ThisNom) / true,
+		this(ThisNom) / true,
+	i : 'rel_Cop-Scope'(AscrNom, WhatNom) / true.
+
+you(Nom) <-
+	i : sort(Nom, person) / true,
+	i : prop(Nom, you) / true.
+
+what(Nom) <-
+	i : sort(Nom, entity) / true,
+	i : prop(Nom, what) / true.
+
+this(Nom) <-
+	i : sort(Nom, entity) / true,
+	i : feat_Delimitation(Nom, unique) / true,
+	i : feat_Num(Nom, sg) / true,
+	i : feat_Proximity(Nom, proximal) / true,
+	i : feat_Quantification(Nom, specific) / true.
+
+% h: this is a X
+% --> objecttype
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : prop(Nom, be) / true,
+	i : 'feat_Mood'(Nom, ind) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, ThisNom) / true,
+	i : 'rel_Cop-Restr'(Nom, ThisNom) / true,
+		this(ThisNom) / true,
+	a(com) : refers_to(ThisNom, something) / 1.0,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+	assert_prop(something, ScopeNom) / true.
+
+% h: X is Y
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, ascription) / true,
 	i : prop(Nom, be) / true,
@@ -7,69 +64,37 @@ e(now) : uttered(h, Nom) <-
 	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
 	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
-		i : sort(ScopeNom, ScopeSort) / true,
-		i : prop(ScopeNom, ScopeProp) / true,
-	assert_prop(RestrRef, ScopeSort, ScopeProp) / true.
-
-assert_prop(RestrRef, 'q-color', Prop) <-
-	?( k(now, attrib(r, h)) : color(RestrRef, Prop) ).
-
-assert_prop(RestrRef, 'q-shape', Prop) <-
-	?( k(now, attrib(r, h)) : shape(RestrRef, Prop) ).
-
-%	?( i : 'rel_Cop-Scope'(Nom, ScopeNom) ),
 %		i : sort(ScopeNom, ScopeSort) / true,
 %		i : prop(ScopeNom, ScopeProp) / true,
-%	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
+	assert_prop(RestrRef, ScopeNom) / true.
+
+%-------------------------------------------------------------------------
 
 %e(now) : uttered(h, Nom) <-
 %	i : sort(Nom, ascription) / true,
 %	i : prop(Nom, be) / true,
-%	i : 'feat_Mood'(Nom, int) / true,
+%	i : 'feat_Mood'(Nom, ind) / true,
 %	i : 'feat_Tense'(Nom, pres) / true,
 %	i : 'rel_Subject'(Nom, SubjNom) / true,
-%	i : 'rel_Cop-Restr'(Nom, SubjNom) / true,
-%	?( i : 'rel_Cop-Scope'(Nom, ScopeNom) ),
-%		i : sort(ScopeNom, ScopeSort) / true,
-%		i : prop(ScopeNom, ScopeProp) / true,
-%	i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) / true.
+%	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+%	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+%	assert_prop(RestrRef, ScopeNom) / true.
 
-i : verify_quality(h, SubjNom, ScopeSort, ScopeProp) <-
-	k(now, private(h)) : quality_uncertain(SubjNom, ScopeSort) / 0.5,
-	k(now, private(h)) : quality_hypothesis(SubjNom, ScopeSort, ScopeProp) / 0.5.
+assert_prop(RestrRef, Nom) <-
+	i : sort(Nom, 'q-color') / true,
+	i : prop(Nom, Prop) / true,
+	?( k(now, attrib(r, h)) : color(RestrRef, Prop) ).
 
-% interpretation
+assert_prop(RestrRef, Nom) <-
+	i : sort(Nom, 'q-shape') / true,
+	i : prop(Nom, Prop) / true,
+	?( k(now, attrib(r, h)) : shape(RestrRef, Prop) ).
 
-k(now, private(h)) : quality_known(SubjNom, QualitySort, QualityProp) <-
-	k(now, private(h)) : quality_hypothesis(SubjNom, QualitySort, QualityProp) / true,
-	produce_yesno(SubjNom, QualitySort, Bool) / 1.0.
-
-k(now, private(h)) : quality_known(SubjNom, QualitySort, QualityProp) <-
-	k(now, private(h)) : quality_unknown(SubjNom, QualitySort) / true,
-	describe(SubjNom) / 1.0.
-
-% ------------------------------
-
-salient(Nom) <-
-	feat_Salient(Nom, true) / 0.5.
-
-questioned(Nom) <-
-	feat_Questioned(Nom, true) / 0.5.
-
-the_box(Nom) <-
-	sort(Nom, entity) / 0.2,
-	prop(Nom, box) / 0.2,
-	salient(Nom) / expand.
-
-protolf(Nom) <-
-	sort(Nom, dvp) / 0.2,
-	prop(Nom, 'c-goal') / 0.2.
-
-assertion(Nom) <-
-	feat_SpeechAct(Nom, assertion) / 0.2.
-
-ascription(Nom, NomThis, NomX) <-
-	rel_Content(Nom, NomContent) / 0.2,
-	sort(NomContent, ascription) / 0.2,
-	rel_Target(NomContent, NomThis) / 0.2,
-	rel_Property(NomContent, NomX) / 0.2.
+assert_prop(Ref, Nom) <-
+	i : sort(Nom, thing) / true,
+	i : prop(Nom, Prop) / true,
+	i : feat_Delimitation(Nom, existential) / true,
+	i : feat_Num(Nom, sg) / true,
+	i : feat_Quantification(Nom, specific) / true,
+	?( k(now, attrib(r, h)) : objecttype(Ref, Prop) ).

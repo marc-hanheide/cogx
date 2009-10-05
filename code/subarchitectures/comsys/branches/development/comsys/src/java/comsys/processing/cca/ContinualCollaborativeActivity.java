@@ -213,6 +213,7 @@ public class ContinualCollaborativeActivity {
 		ModalisedFormula[] facts = AbducerUtils.lfToFacts(new Modality[] {AbducerUtils.infoModality()}, lf);
 		for (int i = 0; i < facts.length; i++) {
 			abducer.addFact(facts[i]);
+			log("add fact: " + MercuryUtils.modalisedFormulaToString(facts[i]));
 		}
 	}
 	

@@ -205,6 +205,13 @@ public class ProofUtils {
 		else
 			return null;
 	}
+
+	public static ObjectType termToObjectType(Term t) {
+		if (t instanceof FunctionTerm)
+			return ObjectType.convert(((FunctionTerm) t).functor);
+		else
+			return null;
+	}
 	
 	/**
 	 * Convert predicate to a continual formula.
@@ -232,6 +239,14 @@ public class ProofUtils {
 			ShapeProperty prop = new ShapeProperty();
 			prop.id = termToString(p.args[0]);  // Object
 			prop.shapeValue = termToShape(p.args[1]);  // Value
+			prop.prob = 1.0f;
+			return prop;
+		}
+		else if (p.predSym.equals("objecttype")) {
+			// objecttype(Object, Value)
+			ObjectTypeProperty prop = new ObjectTypeProperty();
+			prop.id = termToString(p.args[0]); // Object
+			prop.typeValue = termToObjectType(p.args[1]); // Value
 			prop.prob = 1.0f;
 			return prop;
 		}
