@@ -36,7 +36,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-
 import comsys.datastructs.comsysEssentials.PhonString;
 import comsys.datastructs.comsysEssentials.RecogResult;
 import comsys.datastructs.comsysEssentials.SpokenOutputItem;
