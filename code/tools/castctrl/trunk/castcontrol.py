@@ -30,6 +30,13 @@ class CLogDisplayer:
         self.showFlush = False
         self.showWarning = True
         self.showError = True
+        self.reError = re.compile(r"\b(error)\b", re.IGNORECASE)
+        self.reWarning = re.compile(r"\b(warning)\b", re.IGNORECASE)
+
+    def _markWords(self, text):
+        text = self.reError.sub(r'<span style="background-color: yellow;"> \1 </span>', text)
+        text = self.reWarning.sub(r'<span style="background-color: #ddddff;"> \1 </span>', text)
+        return text
 
     def pullLogs(self):
         mods = False
@@ -50,11 +57,11 @@ class CLogDisplayer:
                         co = "blue"
                     elif m.msgtype == messages.CMessage.ERROR:
                         if not self.showError: continue
-                        rx = re.compile("(error)", re.IGNORECASE)
-                        text = rx.sub(r'<span style="background-color: yellow;"> \1 </span>', text)
+                        text = self._markWords(text)
                         co = "red"
                     elif m.msgtype == messages.CMessage.FLUSHMSG:
                         if not self.showFlush: continue
+                        text = self._markWords(text)
                         co = "grey"
                     if co == None: self.qtext.append(text)
                     else: self.qtext.append("<font color=%s>%s</font> " % (co, text))
@@ -113,6 +120,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actOpenPlayerConfig, QtCore.SIGNAL("triggered()"), self.onBrowsePlayerConfig)
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("currentIndexChanged(int)"), self.onClientConfigChanged)
+        self.connect(self.ui.actCtxShowBuildError, QtCore.SIGNAL("triggered()"), self.onEditBuildError)
+
+        # Context menu actions for QTextEdit
+        self.ui.buildLogfileTxt.contextActions.append(self.ui.actCtxShowBuildError)
 
     def _initContent(self):
         for fn in self._options.mruCfgCast:
@@ -300,10 +311,15 @@ class CCastControlWnd(QtGui.QMainWindow):
         finally:
             os.chdir(cwd)
 
-    def editFile(self, fn):
+    def editFile(self, filename, line=None):
         shell = "/bin/sh"
         cmd = self._userOptions.textEditCmd
-        xrun([shell, "-c", cmd % fn, " &"])
+        mo = re.search("%l(\[([^\]]+)\])?", cmd)
+        if mo != None:
+            if line == None: lexpr = ""
+            else: lexpr = "%s%d" % (mo.group(2), line)
+            cmd = cmd[:mo.start()] + lexpr + cmd[mo.end():]
+        xrun([shell, "-c", cmd % filename, " &"])
 
     def on_btEditClientConfig_clicked(self, valid=True):
         if not valid: return
@@ -316,6 +332,13 @@ class CCastControlWnd(QtGui.QMainWindow):
     def onShowEnvironment(self):
         cmd = "bash -c env"
         procman.runCommand(cmd, name="ENV")
+
+    def onEditBuildError(self):
+        tcur = self.ui.buildLogfileTxt.textCursor()
+        line = "%s" % tcur.block().text().trimmed()
+        mo = re.search("\s(/[^:]+)" + ":(\d+)" + "(:(\d+))?", line)
+        if mo != None:
+            self.editFile(mo.group(1), int(mo.group(2)))
 
     def onBrowseClientConfig(self):
         qfd = QtGui.QFileDialog

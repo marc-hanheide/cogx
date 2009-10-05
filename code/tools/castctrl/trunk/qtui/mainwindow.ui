@@ -786,6 +786,11 @@
     <string>Show ENV</string>
    </property>
   </action>
+  <action name="actCtxShowBuildError">
+   <property name="text">
+    <string>Show code</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections>
