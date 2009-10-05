@@ -54,6 +54,8 @@ public class DUnitsReadings
 	
 	private String sort = "d-units"; 	
 	
+	public String getSort() { return sort; }
+	
 	public ReadingFactoryResults constructReadings (LogicalForm lf) { 
 		// initialize the results
 		ReadingFactoryResults results = new ReadingFactoryResults();
