@@ -23,7 +23,10 @@ package comsys.processing.cca;
 
 import Abducer.*;
 
+import beliefmodels.adl.Belief;
+import beliefmodels.adl.BeliefModel;
 import comsys.datastructs.comsysEssentials.BoundReadings;
+import comsys.datastructs.comsysEssentials.ProofBlock;
 import comsys.datastructs.comsysEssentials.RefBinding;
 import comsys.datastructs.comsysEssentials.Anchor;
 import comsys.datastructs.comsysEssentials.ReadingBindings;
@@ -31,6 +34,7 @@ import comsys.datastructs.lf.LogicalForm;
 import comsys.lf.utils.ArrayIterator;
 
 import comsys.processing.cca.AbducerUtils;
+import comsys.processing.cca.StackUtils;
 
 // ---------------------------------------------------------
 // CAST imports
@@ -45,7 +49,7 @@ import cast.core.CASTUtils;
 // ---------------------------------------------------------
 
 import java.lang.*;
-
+import java.util.*;
 
 // ----------------------------------------------------------
 // The class <b>ContinualCollaborativeActivity</b> implements
@@ -76,7 +80,8 @@ public class ContinualCollaborativeActivity {
 	
     private String rulesFilename = "/dev/null";
     private String factsFilename = "/dev/null";	
-	
+
+    private ProofBlock[] stack = new ProofBlock[0];
 	
 	boolean logging = true;
 	
@@ -154,7 +159,7 @@ public class ContinualCollaborativeActivity {
 	 
 	 @param activityMode The mode in which a proof is constructed
 	 @param lf The logical form for which a proof is constructed
-	 @returns MarkedQuery[] The abductive proof
+	 @return The abductive proof
 	 */ 
 	
 	public MarkedQuery[] constructProof (String activityMode, LogicalForm lf) {
@@ -183,8 +188,6 @@ public class ContinualCollaborativeActivity {
 		}
 		log("proving: [" + listGoalsStr + "]");
 		
-		//           	goal.body.termString = LFUtils.lfToMercString(slf.lf);
-		
 		ProveResult result = abducer.prove(goals);
 		if (result == Abducer.ProveResult.ProofFound) {
 			log("seems we've got a proof");
@@ -201,7 +204,8 @@ public class ContinualCollaborativeActivity {
 		} // end if.. else
 	} // end method
 	
-	/** Add the logical form to the set of abducer's facts.
+	/**
+	 * Add the logical form to the set of abducer's facts.
 	 * 
 	 * @param lf the logical form
 	 */
@@ -212,14 +216,13 @@ public class ContinualCollaborativeActivity {
 		}
 	}
 	
-	/** 
-	 addAnchoringContext can be called to add (cost) information about anchoring restrictive LF content, to the abducer. this
-	 cost information is based on different readings the LF might have. 
-
-	 MIRA DO SOMETHING SMART HERE WITH THE BOUND READINGS	 
-	 GJ: provided a loop already	 
-	 */ 
-			
+	/**
+	 * Add information about anchoring of restrictive references to the abducer.
+	 * This instantiates a assumability function in the abducer based on different readings of the LF and
+	 * their probability.
+	 * 
+	 * @param boundReadings anchoring information
+	 */
 	public void addAnchoringContext (BoundReadings boundReadings) {			
 		for (ArrayIterator readingsIter = new ArrayIterator(boundReadings.bindings); readingsIter.hasNext(); ) { 
 			// get all the bindings for one reading
@@ -254,7 +257,55 @@ public class ContinualCollaborativeActivity {
 		} // end for over readings 		
 		
 	} // end method
+	
+	/**
+	 * Perform verifiable update.
+	 * 
+	 * @param proof the proof to be considered
+	 * @param model current belief model
+	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
+	 */
+	public Belief[] verifiableUpdate(MarkedQuery[] proof, BeliefModel model) {
+		ProofBlock pi = StackUtils.construct(proof, "");
+		ProofBlock piPrime = null;
+		ArrayList<Belief> consistentUpdates = new ArrayList<Belief>();
+		boolean verified;
+
+		if (StackUtils.isEmpty(stack)) {
+			StackUtils.push(stack, pi);
+			return new Belief[0];
+		}
+		else {
+			piPrime = StackUtils.pop(stack);
+		}
+		verified = true;
 		
+		for (int i = 0; i < piPrime.assertions.length; i++) {
+			switch (VerifiableUpdate.consistent(model, piPrime.assertions[i], pi.assumptions)) {
+			
+				case Consistent:
+					// assertion verified -> change its continual status to "proposition"
+					for (int j = 0; j < pi.assumptions.length; j++) {
+						consistentUpdates.add(pi.assumptions[j]);
+					}
+					break;
+				
+				case Inconsistent:
+					// assertion falsified
+					verified = false;
+					// TODO: look here
+					break;					
+			}
+		}
+		
+		StackUtils.push(stack, pi);
+		if (verified == false) {
+			StackUtils.push(stack, piPrime);
+		}
+		
+		return consistentUpdates.toArray(new Belief[0]);
+	}
+	
 	private void log(String str) {
 		if (logging)
 			System.out.println("\033[32m[CCA]\t" + str  + "\033[0m");
