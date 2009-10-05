@@ -155,23 +155,32 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
   NavData::FNodePtr oobj =
     getMemoryEntry<NavData::FNode>(objID.address);
   
+	log("1");
   if (oobj != 0) {
 
+	log("2");
     for (map<int, NavData::FNodePtr>::iterator it =
 	m_PlaceIDToNodeMap.begin();
 	it != m_PlaceIDToNodeMap.end(); it++){
       NavData::FNodePtr node = it->second;
+	log("nodeID = %i", node->nodeId);
       if (node->nodeId == oobj->nodeId) {
-	if (node->gateway == 0 && oobj->gateway == 1) {
+	log("3");
+	if (oobj->gateway == 1) {
+	  log("4");
 	  // Has gained gateway status; add gateway property to WM
 	  SpatialData::PlacePtr place = getPlaceFromNodeID(oobj->nodeId);
 	  if (place != 0) {
-	    addNewGatewayProperty(place->id);
+	    if (m_gatewayProperties.find(place->id) == m_gatewayProperties.end()) {
+	      addNewGatewayProperty(place->id);
+	    }
 	  }
 	  else {
 	    log("Error! FNode became gateway, but could not find Place to correspond!");
 	  }
 	}
+
+	it->second = oobj;
 
         /*
         log("Modified place %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
@@ -212,6 +221,8 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	  deleteFromWorkingMemory(m_Places[placeID].m_WMid);
 	  return;
 	}
+	m_PlaceIDToNodeMap.erase(it);
+	return;
       }
     }
     
@@ -1058,6 +1069,7 @@ PlaceManager::deletePlaceholderProperties(int placeID)
 void
 PlaceManager::addNewGatewayProperty(int placeID)
 {
+  log("addNewGatewayProperty(%i)", placeID);
   SpatialProperties::BinaryValuePtr trueValue = 
     new SpatialProperties::BinaryValue;
   SpatialProperties::BinaryValuePtr falseValue = 
