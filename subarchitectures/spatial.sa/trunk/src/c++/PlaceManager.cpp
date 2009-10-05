@@ -903,6 +903,11 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 		      deleteFromWorkingMemory(m_HypIDToWMIDMap[hyp->hypID]); //Delete NodeHypothesis
 		      m_HypIDToWMIDMap.erase(hyp->hypID);
 		      m_PlaceIDToHypMap.erase(placeholder->id);
+
+		      //Write the Gateway property if present
+		      if (curNode->gateway == 1) {
+			addNewGatewayProperty(placeholder->id);
+		      }
 		    }
 		    else {
 		      log("Could not find Placeholder placeholder!");
