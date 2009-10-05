@@ -1025,6 +1025,9 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
       }
     }
 
+    // We also redraw the edge just to make sure that it is drawn
+    // correctly if the position of the node changed.
+    redisplayEdgesToNode(n->second);
   }
 
   for (std::list< std::pair<long,long> >::iterator ei = m_NewEdges.begin();
@@ -1037,6 +1040,8 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
     if (n1 != m_Nodes.end() && n2 != m_Nodes.end()) { // Found nodes
 
       displayEdge(n1->second, n2->second);
+
+      addEdgeToList(n1->second.m_Id, n2->second.m_Id);
 
       ei = m_NewEdges.erase(ei);
 
@@ -1097,6 +1102,8 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
   if (n1 != m_Nodes.end() && n2 != m_Nodes.end()) { // Found nodes
 
     displayEdge(n1->second, n2->second);
+
+    addEdgeToList(n1->second.m_Id, n2->second.m_Id);
 
   } else {
     m_NewEdges.push_back(std::make_pair(aedge->startNodeId, 
@@ -1182,6 +1189,17 @@ void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b)
   }
 }
 
+void DisplayNavInPB::addEdgeToList(long id1, long id2)
+{
+  if (id1 > id2) {
+    m_Edges.push_back( std::make_pair(id1, id2) );
+  } else if (id2 > id1) {
+    m_Edges.push_back( std::make_pair(id2, id1) );    
+  } else {
+    log("WARNING: Trying to connect node with id %d with itself", id1);
+  }
+}
+
 void DisplayNavInPB::displayEdge(const DisplayNavInPB::Node &node1,
                                  const DisplayNavInPB::Node &node2)
 {
@@ -1202,6 +1220,36 @@ void DisplayNavInPB::displayEdge(const DisplayNavInPB::Node &node1,
               node2.m_X, node2.m_Y, 0);
   lp.set_color(0., 0., 0.);
   lp.set_opacity(1);
+}
+
+void DisplayNavInPB::redisplayEdgesToNode(const DisplayNavInPB::Node &node)
+{
+  std::map<long,Node>::iterator n;
+
+  for (std::list< std::pair<long,long> >::iterator e = m_Edges.begin();
+       e != m_Edges.end(); e++) {
+    if (e->first == node.m_Id) {
+      n = m_Nodes.find(e->second);
+      if (n != m_Nodes.end()) {
+        displayEdge(node, n->second);
+        log("Redisplaying edge between nodes %ld and %ld", 
+            node.m_Id, e->second);
+      } else {
+        log("WARNING: Did not find node %ld, couldn't redisplay edge from %ld",
+            e->second, node.m_Id);
+      }
+    } else if (e->second == node.m_Id) {
+      n = m_Nodes.find(e->first);
+      if (n != m_Nodes.end()) {
+        displayEdge(node, n->second);
+        log("Redisplaying edge between nodes %ld and %ld", 
+            node.m_Id, e->first);
+      } else {
+        log("WARNING: Did not find node %ld, couldn't redisplay edge from %ld",
+            e->first, node.m_Id);
+      }
+    }
+  }
 }
 
 void DisplayNavInPB::connectPeekabot()

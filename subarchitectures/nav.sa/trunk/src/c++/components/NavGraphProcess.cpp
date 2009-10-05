@@ -1460,7 +1460,7 @@ void NavGraphProcess::checkForNodeChanges()
           }
 
           m_ChangedNodes.push_back( &(fni->second) );
-
+	  changesMade = true;
         }
         
         break;
