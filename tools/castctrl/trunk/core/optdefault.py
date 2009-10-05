@@ -44,8 +44,8 @@ cleanup="""
 #dc1394_reset_bus
 """
 useroptions="""
-#EDITOR=emacs %s
-#EDITOR=kate %s
-#EDITOR=gedit %s
-#EDITOR=gvim --servername CAST --remote %s
+#EDITOR=emacs %l[+] %s
+#EDITOR=kate %l[-l ] %s
+#EDITOR=gedit %l[+] %s
+#EDITOR=gvim --servername CAST --remote-silent %l[+:] %s
 """
