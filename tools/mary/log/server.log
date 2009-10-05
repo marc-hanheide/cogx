@@ -1,0 +1,587 @@
+2009-10-03 17:12:41,508 [main] INFO  main       Mary starting up...
+2009-10-03 17:12:41,508 [main] INFO  main       Specification version 3.6.0
+2009-10-03 17:12:41,508 [main] INFO  main       Implementation version 20080521
+2009-10-03 17:12:41,508 [main] INFO  main       Running on a Java 1.5.0_13 implementation by Apple Inc., on a Mac OS X platform (i386, 10.5.8)
+2009-10-03 17:12:41,663 [main] INFO  UnitSelectionSynthesizer started.
+2009-10-03 17:12:41,665 [main] INFO  XML2Utt AcoustParams Module started.
+2009-10-03 17:12:41,668 [main] INFO  FreeTTSVoices Loading US English FreeTTS voices...
+2009-10-03 17:12:41,671 [main] INFO  FreeTTSVoices done.
+2009-10-03 17:12:41,671 [main] INFO  TargetFeatureLister Module started.
+2009-10-03 17:12:41,671 [main] INFO  HTSContextTranslator Module started.
+2009-10-03 17:12:41,671 [main] INFO  HTSEngine  Module started.
+2009-10-03 17:12:41,734 [main] INFO  HMMVoice   Loading Model Set:
+2009-10-03 17:12:41,734 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-jmk/dur.pdf
+2009-10-03 17:12:41,736 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-jmk/mgc.pdf
+2009-10-03 17:12:41,770 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-jmk/str.pdf
+2009-10-03 17:12:41,774 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-jmk/lf0.pdf
+2009-10-03 17:12:41,781 [main] INFO  HMMVoice   Loading Tree Set:
+2009-10-03 17:12:41,786 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-jmk/tree-dur.inf
+2009-10-03 17:12:41,882 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-jmk/tree-lf0.inf
+2009-10-03 17:12:41,948 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-jmk/tree-mgc.inf
+2009-10-03 17:12:41,984 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-jmk/tree-str.inf
+2009-10-03 17:12:42,010 [main] INFO  HMMVoice   Loading GV Model Set:
+2009-10-03 17:12:42,010 [main] INFO  GVModelSet LoadGVModelSet reading: tools/mary/lib/voices/hmm-jmk/gv-mgc-littend.pdf
+2009-10-03 17:12:42,010 [main] INFO  GVModelSet LoadGVModelSet reading: tools/mary/lib/voices/hmm-jmk/gv-lf0-littend.pdf
+2009-10-03 17:12:42,010 [main] INFO  GVModelSet LoadGVModelSet reading: tools/mary/lib/voices/hmm-jmk/gv-str-littend.pdf
+2009-10-03 17:12:42,010 [main] INFO  HMMVoice   Loading Context feature list:
+2009-10-03 17:12:42,011 [main] INFO  HMMData    readFeatureList: loaded 5 context features from tools/mary/lib/voices/hmm-jmk/feature_list_en_05.pl
+2009-10-03 17:12:42,011 [main] INFO  Voice      Registering voice `hmm-jmk': male, locale en_US
+2009-10-03 17:12:42,469 [main] INFO  Voice      New default voice for locale en_US: hmm-jmk (desire 0)
+2009-10-03 17:12:42,470 [main] INFO  HMMVoice   Loading Model Set:
+2009-10-03 17:12:42,476 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-slt/dur.pdf
+2009-10-03 17:12:42,477 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-slt/mgc.pdf
+2009-10-03 17:12:42,518 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-slt/str.pdf
+2009-10-03 17:12:42,523 [main] INFO  ModelSet   LoadModelSet reading: tools/mary/lib/voices/hmm-slt/lf0.pdf
+2009-10-03 17:12:42,529 [main] INFO  HMMVoice   Loading Tree Set:
+2009-10-03 17:12:42,529 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-slt/tree-dur.inf
+2009-10-03 17:12:42,571 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-slt/tree-lf0.inf
+2009-10-03 17:12:42,651 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-slt/tree-mgc.inf
+2009-10-03 17:12:42,694 [main] INFO  TreeSet    LoadTreeSet reading: tools/mary/lib/voices/hmm-slt/tree-str.inf
+2009-10-03 17:12:42,726 [main] INFO  HMMVoice   Loading GV Model Set:
+2009-10-03 17:12:42,726 [main] INFO  GVModelSet LoadGVModelSet reading: tools/mary/lib/voices/hmm-slt/gv-mgc-littend.pdf
+2009-10-03 17:12:42,726 [main] INFO  GVModelSet LoadGVModelSet reading: tools/mary/lib/voices/hmm-slt/gv-lf0-littend.pdf
+2009-10-03 17:12:42,726 [main] INFO  GVModelSet LoadGVModelSet reading: tools/mary/lib/voices/hmm-slt/gv-str-littend.pdf
+2009-10-03 17:12:42,726 [main] INFO  HMMVoice   Loading Context feature list:
+2009-10-03 17:12:42,727 [main] INFO  HMMData    readFeatureList: loaded 5 context features from tools/mary/lib/voices/hmm-slt/feature_list_en_05.pl
+2009-10-03 17:12:42,727 [main] INFO  Voice      Registering voice `hmm-slt': female, locale en_US
+2009-10-03 17:12:42,728 [main] INFO  HMMSynthesizer started.
+2009-10-03 17:12:42,730 [main] INFO  MaryXMLToMbrola Module started.
+2009-10-03 17:12:42,730 [main] INFO  MbrolaCaller Module started.
+2009-10-03 17:12:42,731 [main] INFO  Voice      Registering voice `us1': female, locale en_US
+2009-10-03 17:12:42,732 [main] INFO  Voice      New default voice for locale en_US: us1 (desire 50)
+2009-10-03 17:12:42,734 [main] INFO  Voice      Registering voice `us2': male, locale en_US
+2009-10-03 17:12:42,736 [main] INFO  Voice      Registering voice `us3': male, locale en_US
+2009-10-03 17:12:42,737 [main] INFO  MbrolaSynthesizer started.
+2009-10-03 17:12:42,737 [main] INFO  Synthesis  Module started.
+2009-10-03 17:12:42,739 [main] INFO  HMMSynthesizer Starting power-on self test.
+2009-10-03 17:12:42,771 [main] INFO  HTSEngine  Number of models in sentence numModel=8  Total number of states numState=40
+2009-10-03 17:12:42,771 [main] INFO  HTSEngine  Total number of frames=118  Number of voiced frames=95
+2009-10-03 17:12:42,777 [main] INFO  ParameterGeneration Parameter generation for MCEP: 
+2009-10-03 17:12:42,777 [main] INFO  PStream    Generation using Global Variance
+2009-10-03 17:12:42,779 [main] INFO  PStream    Optimization MCP feature: (0)
+2009-10-03 17:12:42,782 [main] INFO  PStream      First iteration:  GVobj=39.41891882398533 (HMMobj=39.41891882398533  GVobj=-1.1899916687165483E-30)
+2009-10-03 17:12:42,783 [main] INFO  PStream      Number of iterations: [   12   ] GVobj=39.421692735814766 (HMMobj=39.42243390540165  GVobj=-7.411695868794323E-4)
+2009-10-03 17:12:42,784 [main] INFO  PStream      Converged (norm=0.0389031405707553, change=9.707537004288724E-5)
+2009-10-03 17:12:42,784 [main] INFO  PStream    Optimization MCP feature: (1)
+2009-10-03 17:12:42,787 [main] INFO  PStream      First iteration:  GVobj=16.325885124889453 (HMMobj=16.325885124889453  GVobj=-2.850548636827311E-31)
+2009-10-03 17:12:42,788 [main] INFO  PStream      Number of iterations: [   63   ] GVobj=16.63614588122766 (HMMobj=16.660993234007165  GVobj=-0.02484735277950768)
+2009-10-03 17:12:42,788 [main] INFO  PStream      Converged (norm=0.04856232943656072, change=1.708181140003262E-5)
+2009-10-03 17:12:42,788 [main] INFO  PStream    Optimization MCP feature: (2)
+2009-10-03 17:12:42,788 [main] INFO  PStream      First iteration:  GVobj=0.7687309536994339 (HMMobj=0.7687309536994339  GVobj=-0.0)
+2009-10-03 17:12:42,789 [main] INFO  PStream      Number of iterations: [   42   ] GVobj=0.7877974591649615 (HMMobj=0.7889734090422745  GVobj=-0.0011759498773131077)
+2009-10-03 17:12:42,789 [main] INFO  PStream      Converged (norm=0.026816659686279214, change=9.991516210783313E-5)
+2009-10-03 17:12:42,790 [main] INFO  PStream    Optimization MCP feature: (3)
+2009-10-03 17:12:42,790 [main] INFO  PStream      First iteration:  GVobj=1.4810874897076964 (HMMobj=1.4810874897076964  GVobj=-1.7613235885190774E-31)
+2009-10-03 17:12:42,791 [main] INFO  PStream      Number of iterations: [   45   ] GVobj=1.5144458136142207 (HMMobj=1.5157614312739973  GVobj=-0.0013156176597766112)
+2009-10-03 17:12:42,791 [main] INFO  PStream      Converged (norm=0.03286619953963023, change=7.077658304432966E-5)
+2009-10-03 17:12:42,791 [main] INFO  PStream    Optimization MCP feature: (4)
+2009-10-03 17:12:42,791 [main] INFO  PStream      First iteration:  GVobj=1.5162736741574854 (HMMobj=1.5162736741574854  GVobj=-2.589053582186154E-31)
+2009-10-03 17:12:42,792 [main] INFO  PStream      Number of iterations: [   18   ] GVobj=1.529041640321318 (HMMobj=1.5324793949014714  GVobj=-0.0034377545801534777)
+2009-10-03 17:12:42,792 [main] INFO  PStream      Converged (norm=0.041283703690821676, change=5.070981587973478E-7)
+2009-10-03 17:12:42,793 [main] INFO  PStream    Optimization MCP feature: (5)
+2009-10-03 17:12:42,793 [main] INFO  PStream      First iteration:  GVobj=0.7151955333597177 (HMMobj=0.7151955333597177  GVobj=-5.054415446104643E-31)
+2009-10-03 17:12:42,793 [main] INFO  PStream      Number of iterations: [   27   ] GVobj=0.7376921683904847 (HMMobj=0.7377262615843964  GVobj=-3.4093193911634065E-5)
+2009-10-03 17:12:42,794 [main] INFO  PStream      Converged (norm=0.07487548654922435, change=8.406401030980337E-5)
+2009-10-03 17:12:42,794 [main] INFO  PStream    Optimization MCP feature: (6)
+2009-10-03 17:12:42,794 [main] INFO  PStream      First iteration:  GVobj=0.328868102835704 (HMMobj=0.328868102835704  GVobj=-2.737423075567993E-31)
+2009-10-03 17:12:42,794 [main] INFO  PStream      Number of iterations: [   4   ] GVobj=0.3356635188559676 (HMMobj=0.3453925643028968  GVobj=-0.009729045446929168)
+2009-10-03 17:12:42,794 [main] INFO  PStream      Converged (norm=0.1398188711839126, change=4.539003040093803E-8)
+2009-10-03 17:12:42,794 [main] INFO  PStream    Optimization MCP feature: (7)
+2009-10-03 17:12:42,794 [main] INFO  PStream      First iteration:  GVobj=0.15383410346772092 (HMMobj=0.15383410346772092  GVobj=-2.028814184159494E-31)
+2009-10-03 17:12:42,795 [main] INFO  PStream      Number of iterations: [   32   ] GVobj=0.19508884848143326 (HMMobj=0.19855573422213027  GVobj=-0.003466885740696997)
+2009-10-03 17:12:42,795 [main] INFO  PStream      Converged (norm=0.06177909352026911, change=7.604840302727345E-5)
+2009-10-03 17:12:42,795 [main] INFO  PStream    Optimization MCP feature: (8)
+2009-10-03 17:12:42,796 [main] INFO  PStream      First iteration:  GVobj=0.5410649434400312 (HMMobj=0.5410649434400312  GVobj=-7.032589936520952E-31)
+2009-10-03 17:12:42,796 [main] INFO  PStream      Number of iterations: [   16   ] GVobj=0.5759845510467411 (HMMobj=0.5832873286508394  GVobj=-0.007302777604098407)
+2009-10-03 17:12:42,796 [main] INFO  PStream      Converged (norm=0.11937710293552994, change=5.7088468274568704E-5)
+2009-10-03 17:12:42,796 [main] INFO  PStream    Optimization MCP feature: (9)
+2009-10-03 17:12:42,797 [main] INFO  PStream      First iteration:  GVobj=0.3502659141578044 (HMMobj=0.3502659141578044  GVobj=-1.4066395048412465E-30)
+2009-10-03 17:12:42,799 [main] INFO  PStream      Number of iterations: [   16   ] GVobj=0.35967186505868615 (HMMobj=0.3619096627470471  GVobj=-0.0022377976883609634)
+2009-10-03 17:12:42,799 [main] INFO  PStream      Converged (norm=0.0382287546254981, change=6.307586831910683E-5)
+2009-10-03 17:12:42,799 [main] INFO  PStream    Optimization MCP feature: (10)
+2009-10-03 17:12:42,799 [main] INFO  PStream      First iteration:  GVobj=0.5207526133487503 (HMMobj=0.5207526133487503  GVobj=-1.8318980186751957E-30)
+2009-10-03 17:12:42,800 [main] INFO  PStream      Number of iterations: [   27   ] GVobj=0.5359234225157223 (HMMobj=0.5359784027448395  GVobj=-5.498022911721869E-5)
+2009-10-03 17:12:42,800 [main] INFO  PStream      Converged (norm=0.045051924819559025, change=8.382012582131004E-6)
+2009-10-03 17:12:42,800 [main] INFO  PStream    Optimization MCP feature: (11)
+2009-10-03 17:12:42,800 [main] INFO  PStream      First iteration:  GVobj=0.39071782906449 (HMMobj=0.39071782906449  GVobj=-0.0)
+2009-10-03 17:12:42,800 [main] INFO  PStream      Number of iterations: [   2   ] GVobj=0.39075985208082176 (HMMobj=0.3997878300457858  GVobj=-0.009027977964963995)
+2009-10-03 17:12:42,800 [main] INFO  PStream      Converged (norm=0.1347800122532231, change=4.202301633177141E-5)
+2009-10-03 17:12:42,800 [main] INFO  PStream    Optimization MCP feature: (12)
+2009-10-03 17:12:42,801 [main] INFO  PStream      First iteration:  GVobj=0.38592068388890255 (HMMobj=0.38592068388890255  GVobj=-0.0)
+2009-10-03 17:12:42,801 [main] INFO  PStream      Number of iterations: [   23   ] GVobj=0.40179852650699577 (HMMobj=0.401842285205084  GVobj=-4.375869808827274E-5)
+2009-10-03 17:12:42,801 [main] INFO  PStream      Converged (norm=0.047432996668888214, change=9.297299343985488E-5)
+2009-10-03 17:12:42,801 [main] INFO  PStream    Optimization MCP feature: (13)
+2009-10-03 17:12:42,801 [main] INFO  PStream      First iteration:  GVobj=0.21727633201201718 (HMMobj=0.21727633201201718  GVobj=-1.7692418586255628E-30)
+2009-10-03 17:12:42,802 [main] INFO  PStream      Number of iterations: [   8   ] GVobj=0.22150462833220186 (HMMobj=0.2235591156776974  GVobj=-0.0020544873454955426)
+2009-10-03 17:12:42,802 [main] INFO  PStream      Converged (norm=0.0696304103233317, change=7.41454761174487E-5)
+2009-10-03 17:12:42,802 [main] INFO  PStream    Optimization MCP feature: (14)
+2009-10-03 17:12:42,802 [main] INFO  PStream      First iteration:  GVobj=0.7232931343608524 (HMMobj=0.7232931343608524  GVobj=-1.1371202086414675E-30)
+2009-10-03 17:12:42,803 [main] INFO  PStream      Number of iterations: [   37   ] GVobj=0.7348059409165036 (HMMobj=0.7348766355703553  GVobj=-7.069465385164555E-5)
+2009-10-03 17:12:42,803 [main] INFO  PStream      Converged (norm=0.03246837994124575, change=2.0741878900776278E-5)
+2009-10-03 17:12:42,803 [main] INFO  PStream    Optimization MCP feature: (15)
+2009-10-03 17:12:42,803 [main] INFO  PStream      First iteration:  GVobj=0.7083525687869588 (HMMobj=0.7083525687869588  GVobj=-1.4158899587958622E-30)
+2009-10-03 17:12:42,803 [main] INFO  PStream      Number of iterations: [   22   ] GVobj=0.7198430955621998 (HMMobj=0.7219357732204331  GVobj=-0.0020926776582332364)
+2009-10-03 17:12:42,803 [main] INFO  PStream      Converged (norm=0.0213252053421062, change=7.122894446198735E-5)
+2009-10-03 17:12:42,803 [main] INFO  PStream    Optimization MCP feature: (16)
+2009-10-03 17:12:42,804 [main] INFO  PStream      First iteration:  GVobj=0.05109954322188603 (HMMobj=0.05109954322188603  GVobj=-1.2891750873580772E-29)
+2009-10-03 17:12:42,804 [main] INFO  PStream      Number of iterations: [   27   ] GVobj=0.08355859841320176 (HMMobj=0.08356035218807747  GVobj=-1.753774875709051E-6)
+2009-10-03 17:12:42,804 [main] INFO  PStream      Converged (norm=0.08684705320824439, change=4.436051596772017E-5)
+2009-10-03 17:12:42,804 [main] INFO  PStream    Optimization MCP feature: (17)
+2009-10-03 17:12:42,804 [main] INFO  PStream      First iteration:  GVobj=0.5856821806883176 (HMMobj=0.5856821806883176  GVobj=-1.7757001429760368E-31)
+2009-10-03 17:12:42,805 [main] INFO  PStream      Number of iterations: [   24   ] GVobj=0.593080003245408 (HMMobj=0.5943550855279701  GVobj=-0.0012750822825621125)
+2009-10-03 17:12:42,805 [main] INFO  PStream      Converged (norm=0.02085250297530149, change=6.18306162140092E-5)
+2009-10-03 17:12:42,805 [main] INFO  PStream    Optimization MCP feature: (18)
+2009-10-03 17:12:42,805 [main] INFO  PStream      First iteration:  GVobj=0.019642652996900677 (HMMobj=0.019642652996900677  GVobj=-2.048932317148637E-30)
+2009-10-03 17:12:42,806 [main] INFO  PStream      Number of iterations: [   38   ] GVobj=0.039948976023800334 (HMMobj=0.042338880827453414  GVobj=-0.0023899048036530785)
+2009-10-03 17:12:42,806 [main] INFO  PStream      Converged (norm=0.02555101743552794, change=7.609095791443615E-5)
+2009-10-03 17:12:42,806 [main] INFO  PStream    Optimization MCP feature: (19)
+2009-10-03 17:12:42,806 [main] INFO  PStream      First iteration:  GVobj=0.0707319805717034 (HMMobj=0.0707319805717034  GVobj=-1.3285598272334288E-30)
+2009-10-03 17:12:42,807 [main] INFO  PStream      Number of iterations: [   17   ] GVobj=0.08234670441253678 (HMMobj=0.08241077867311308  GVobj=-6.407426057631286E-5)
+2009-10-03 17:12:42,807 [main] INFO  PStream      Converged (norm=0.04469469525889008, change=9.77603776522451E-5)
+2009-10-03 17:12:42,807 [main] INFO  PStream    Optimization MCP feature: (20)
+2009-10-03 17:12:42,807 [main] INFO  PStream      First iteration:  GVobj=0.2497443724045842 (HMMobj=0.2497443724045842  GVobj=-5.521382090351523E-31)
+2009-10-03 17:12:42,808 [main] INFO  PStream      Number of iterations: [   42   ] GVobj=0.28125164654017587 (HMMobj=0.28447145869214346  GVobj=-0.0032198121519675933)
+2009-10-03 17:12:42,808 [main] INFO  PStream      Converged (norm=0.04307797395131147, change=4.532045908839377E-5)
+2009-10-03 17:12:42,808 [main] INFO  PStream    Optimization MCP feature: (21)
+2009-10-03 17:12:42,808 [main] INFO  PStream      First iteration:  GVobj=-0.06384261895434641 (HMMobj=-0.06384261895434641  GVobj=-6.013601166493145E-31)
+2009-10-03 17:12:42,809 [main] INFO  PStream      Number of iterations: [   37   ] GVobj=-0.04439662895679472 (HMMobj=-0.0442877938111519  GVobj=-1.0883514564281756E-4)
+2009-10-03 17:12:42,809 [main] INFO  PStream      Converged (norm=0.04779526561547606, change=5.4721395390103234E-5)
+2009-10-03 17:12:42,809 [main] INFO  PStream    Optimization MCP feature: (22)
+2009-10-03 17:12:42,809 [main] INFO  PStream      First iteration:  GVobj=0.3149023096355211 (HMMobj=0.3149023096355211  GVobj=-2.6432978551638155E-31)
+2009-10-03 17:12:42,810 [main] INFO  PStream      Number of iterations: [   2   ] GVobj=0.3149549265805335 (HMMobj=0.3183100879765826  GVobj=-0.003355161396049159)
+2009-10-03 17:12:42,810 [main] INFO  PStream      Converged (norm=0.07923591720881967, change=5.261694501235148E-5)
+2009-10-03 17:12:42,810 [main] INFO  PStream    Optimization MCP feature: (23)
+2009-10-03 17:12:42,810 [main] INFO  PStream      First iteration:  GVobj=-0.05678142024875111 (HMMobj=-0.05678142024875111  GVobj=-2.780507053665458E-30)
+2009-10-03 17:12:42,810 [main] INFO  PStream      Number of iterations: [   12   ] GVobj=-0.05239522548589063 (HMMobj=-0.05056597886689922  GVobj=-0.001829246618991413)
+2009-10-03 17:12:42,810 [main] INFO  PStream      Converged (norm=0.04991604437342839, change=6.127800283996926E-5)
+2009-10-03 17:12:42,810 [main] INFO  PStream    Optimization MCP feature: (24)
+2009-10-03 17:12:42,810 [main] INFO  PStream      First iteration:  GVobj=-0.013305806494762073 (HMMobj=-0.013305806494762073  GVobj=-3.0589825281408958E-30)
+2009-10-03 17:12:42,811 [main] INFO  PStream      Number of iterations: [   22   ] GVobj=-0.00681975156194898 (HMMobj=-0.0062426050624137565  GVobj=-5.771464995352234E-4)
+2009-10-03 17:12:42,811 [main] INFO  PStream      Converged (norm=0.013760935756073343, change=9.796170565088292E-5)
+2009-10-03 17:12:42,811 [main] INFO  ParameterGeneration Parameter generation for LF0: 
+2009-10-03 17:12:42,811 [main] INFO  PStream    Generation using Global Variance
+2009-10-03 17:12:42,811 [main] INFO  PStream    Optimization LF0 feature: (0)
+2009-10-03 17:12:42,811 [main] INFO  PStream      First iteration:  GVobj=1393.6652134993449 (HMMobj=1393.6652134993449  GVobj=-7.692359886202368E-32)
+2009-10-03 17:12:42,811 [main] INFO  PStream      Number of iterations: [   7   ] GVobj=1393.6669232559243 (HMMobj=1393.6669299362295  GVobj=-6.6803051761959386E-6)
+2009-10-03 17:12:42,811 [main] INFO  PStream      Converged (norm=0.015453986454249781, change=3.0294881980807986E-7)
+2009-10-03 17:12:42,811 [main] INFO  ParameterGeneration Parameter generation for STR: 
+2009-10-03 17:12:42,828 [main] INFO  Vocoder    HMM speech generation with mixed-excitation.
+2009-10-03 17:12:42,875 [main] INFO  Vocoder    Finish processing 118 mcep frames.  Num samples in bytes s=0
+2009-10-03 17:12:42,875 [main] INFO  Vocoder    length in samples=9440
+2009-10-03 17:12:42,877 [main] INFO  HMMSynthesizer Power-on self test complete.
+2009-10-03 17:12:42,877 [main] INFO  MbrolaSynthesizer Starting power-on self test.
+2009-10-03 17:12:42,882 [main] INFO  MbrolaCaller Starting Synthesis with command: tools/mary/bin/mbrola -e tools/mary/lib/voices/us1/us1 - -.raw
+2009-10-03 17:12:42,893 [main] INFO  MbrolaCaller Writing to module.
+2009-10-03 17:12:42,939 [main reader] INFO  Audio reader Finished reading.
+2009-10-03 17:12:42,940 [main] INFO  MbrolaCaller Conversion required for voice us1
+2009-10-03 17:12:42,968 [main] INFO  MbrolaSynthesizer Power-on self test complete.
+2009-10-03 17:12:43,065 [main] INFO  SableParser Module started.
+2009-10-03 17:12:43,066 [main] INFO  SableParser Starting power-on self test.
+2009-10-03 17:12:43,099 [main] INFO  SSMLParser Module started.
+2009-10-03 17:12:43,099 [main] INFO  SSMLParser Starting power-on self test.
+2009-10-03 17:12:43,135 [main] INFO  APMLParser Module started.
+2009-10-03 17:12:43,135 [main] INFO  APMLParser Starting power-on self test.
+2009-10-03 17:12:43,135 [main] INFO  Utt2XML AcoustParams Module started.
+2009-10-03 17:12:43,135 [main] INFO  Utt2XML AcoustParams Starting power-on self test.
+2009-10-03 17:12:43,135 [main] INFO  FreeTTS2FestivalUtt Module started.
+2009-10-03 17:12:43,135 [main] INFO  FreeTTS2FestivalUtt Starting power-on self test.
+2009-10-03 17:12:43,136 [main] INFO  Realised acoustparams extractor Module started.
+2009-10-03 17:12:43,136 [main] INFO  Realised acoustparams extractor Starting power-on self test.
+2009-10-03 17:12:43,136 [main] INFO  Realised durations extractor Module started.
+2009-10-03 17:12:43,136 [main] INFO  Realised durations extractor Starting power-on self test.
+2009-10-03 17:12:43,136 [main] INFO  TextToMaryXML Module started.
+2009-10-03 17:12:43,136 [main] INFO  TextToMaryXML Starting power-on self test.
+2009-10-03 17:12:43,137 [main] INFO  TextToMaryXML Power-on self test complete.
+2009-10-03 17:12:43,137 [main] INFO  JTokeniser Module started.
+2009-10-03 17:12:43,141 [main] INFO  de.dfki.lt.tools.tokenizer.JTok loading language resources for en
+2009-10-03 17:12:43,157 [main] INFO  de.dfki.lt.tools.tokenizer.JTok loading language resources for de
+2009-10-03 17:12:43,170 [main] INFO  JTokeniser Starting power-on self test.
+2009-10-03 17:12:43,174 [main] INFO  JTokeniser Power-on self test complete.
+2009-10-03 17:12:43,174 [main] INFO  TokenToWords Module started.
+2009-10-03 17:12:43,181 [main] INFO  TokenToWords Starting power-on self test.
+2009-10-03 17:12:43,182 [main] INFO  PartOfSpeechTagger Module started.
+2009-10-03 17:12:43,182 [main] INFO  PartOfSpeechTagger Starting power-on self test.
+2009-10-03 17:12:43,182 [main] INFO  Segmenter  Module started.
+2009-10-03 17:12:43,183 [main] INFO  Segmenter  Starting power-on self test.
+2009-10-03 17:12:43,183 [main] INFO  Prosody    Module started.
+2009-10-03 17:12:43,188 [main] INFO  Prosody    Starting power-on self test.
+2009-10-03 17:12:43,191 [main] INFO  Prosody    Power-on self test complete.
+2009-10-03 17:12:43,191 [main] INFO  PostLexicalAnalyzer Module started.
+2009-10-03 17:12:43,191 [main] INFO  PostLexicalAnalyzer Starting power-on self test.
+2009-10-03 17:12:43,191 [main] INFO  CARTDurationModeller Module started.
+2009-10-03 17:12:43,359 [main] INFO  CARTDurationModeller Starting power-on self test.
+2009-10-03 17:12:43,360 [main] INFO  SimplePhoneme2AP Module started.
+2009-10-03 17:12:43,360 [main] INFO  SimplePhoneme2AP Starting power-on self test.
+2009-10-03 17:12:43,362 [main] INFO  SimplePhoneme2AP Power-on self test complete.
+2009-10-03 17:12:43,362 [main] INFO  CARTF0Modeller Module started.
+2009-10-03 17:12:43,522 [main] INFO  CARTF0Modeller Starting power-on self test.
+2009-10-03 17:12:43,524 [main] INFO  Utt2XML TokensEn Module started.
+2009-10-03 17:12:43,524 [main] INFO  Utt2XML TokensEn Starting power-on self test.
+2009-10-03 17:12:43,524 [main] INFO  Utt2XML WordsEn Module started.
+2009-10-03 17:12:43,524 [main] INFO  Utt2XML WordsEn Starting power-on self test.
+2009-10-03 17:12:43,525 [main] INFO  Utt2XML PosEn Module started.
+2009-10-03 17:12:43,525 [main] INFO  Utt2XML PosEn Starting power-on self test.
+2009-10-03 17:12:43,526 [main] INFO  Utt2XML SegmentsEn Module started.
+2009-10-03 17:12:43,526 [main] INFO  Utt2XML SegmentsEn Starting power-on self test.
+2009-10-03 17:12:43,530 [main] INFO  Utt2XML IntonationEn Module started.
+2009-10-03 17:12:43,530 [main] INFO  Utt2XML IntonationEn Starting power-on self test.
+2009-10-03 17:12:43,531 [main] INFO  Utt2XML PostprocessedEn Module started.
+2009-10-03 17:12:43,531 [main] INFO  Utt2XML PostprocessedEn Starting power-on self test.
+2009-10-03 17:12:43,532 [main] INFO  Utt2XML DurationsEn Module started.
+2009-10-03 17:12:43,532 [main] INFO  Utt2XML DurationsEn Starting power-on self test.
+2009-10-03 17:12:43,532 [main] INFO  XML2Utt TokensEn Module started.
+2009-10-03 17:12:43,532 [main] INFO  XML2Utt TokensEn Starting power-on self test.
+2009-10-03 17:12:43,533 [main] INFO  XML2Utt TokensEn Power-on self test complete.
+2009-10-03 17:12:43,533 [main] INFO  XML2Utt WordsEn Module started.
+2009-10-03 17:12:43,533 [main] INFO  XML2Utt WordsEn Starting power-on self test.
+2009-10-03 17:12:43,536 [main] INFO  XML2Utt WordsEn Power-on self test complete.
+2009-10-03 17:12:43,536 [main] INFO  XML2Utt PosEn Module started.
+2009-10-03 17:12:43,536 [main] INFO  XML2Utt PosEn Starting power-on self test.
+2009-10-03 17:12:43,537 [main] INFO  XML2Utt PosEn Power-on self test complete.
+2009-10-03 17:12:43,537 [main] INFO  XML2Utt SegmentsEn Module started.
+2009-10-03 17:12:43,537 [main] INFO  XML2Utt SegmentsEn Starting power-on self test.
+2009-10-03 17:12:43,539 [main] INFO  XML2Utt SegmentsEn Power-on self test complete.
+2009-10-03 17:12:43,539 [main] INFO  XML2Utt IntonationEn Module started.
+2009-10-03 17:12:43,539 [main] INFO  XML2Utt IntonationEn Starting power-on self test.
+2009-10-03 17:12:43,540 [main] INFO  XML2Utt IntonationEn Power-on self test complete.
+2009-10-03 17:12:43,540 [main] INFO  XML2Utt PostprocessedEn Module started.
+2009-10-03 17:12:43,540 [main] INFO  XML2Utt PostprocessedEn Starting power-on self test.
+2009-10-03 17:12:43,542 [main] INFO  XML2Utt PostprocessedEn Power-on self test complete.
+2009-10-03 17:12:43,542 [main] INFO  XML2Utt DurationsEn Module started.
+2009-10-03 17:12:43,542 [main] INFO  XML2Utt DurationsEn Starting power-on self test.
+2009-10-03 17:12:43,545 [main] INFO  XML2Utt DurationsEn Power-on self test complete.
+2009-10-03 17:12:43,545 [main] INFO  TargetFeatureLister Starting power-on self test.
+2009-10-03 17:12:43,545 [main] INFO  MaryXMLToMbrola Module started.
+2009-10-03 17:12:43,545 [main] INFO  main       Startup complete.
+2009-10-03 17:12:43,546 [main] INFO  server     Starting server.
+2009-10-03 17:12:43,550 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:19:17,768 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:19:17,771 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:19:17,775 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:19:17,775 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:19:17,780 [Thread-4] INFO  R 1        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:19:17,780 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:19:17,781 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:19:17,784 [RH 1] INFO  RH 1       Read:
+<?xml version="1.0" encoding="UTF-8" ?> <maryxml version="0.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://mary.dfki.de/2002/MaryXML" xml:lang="en"> Raveesh<boundary breakindex="4"/> welcome to the world of speech synthesis! </maryxml>
+
+2009-10-03 17:19:17,785 [RH 1] INFO  Durator    Module started.
+2009-10-03 17:19:17,793 [RH 1] INFO  Duration Mbroliser Module started.
+2009-10-03 17:19:17,798 [RH 1] INFO  ContourGenerator Module started.
+2009-10-03 17:19:17,826 [RH 1] INFO  Parameter Mbroliser Module started.
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        Handling request using the following modules:
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - JTokeniser (de.dfki.lt.mary.modules.en.JTokeniser)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - XML2Utt TokensEn (de.dfki.lt.mary.modules.en.XML2UttTokensEn)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - TokenToWords (de.dfki.lt.mary.modules.en.FreeTTSTokenToWords)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - PartOfSpeechTagger (de.dfki.lt.mary.modules.en.FreeTTSPartOfSpeechTagger)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - Segmenter (de.dfki.lt.mary.modules.en.FreeTTSSegmenter)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - Utt2XML SegmentsEn (de.dfki.lt.mary.modules.en.Utt2XMLSegmentsEn)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - Prosody (de.dfki.lt.mary.modules.en.Prosody)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - XML2Utt IntonationEn (de.dfki.lt.mary.modules.en.XML2UttIntonationEn)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - PostLexicalAnalyzer (de.dfki.lt.mary.modules.en.FreeTTSPostLexicalAnalyzer)
+2009-10-03 17:19:17,826 [RH 1] INFO  R 1        - Durator (de.dfki.lt.mary.modules.en.FreeTTSDurator)
+2009-10-03 17:19:17,827 [RH 1] INFO  R 1        - Duration Mbroliser (de.dfki.lt.mary.modules.en.FreeTTSDurationMbroliser)
+2009-10-03 17:19:17,827 [RH 1] INFO  R 1        - Utt2XML DurationsEn (de.dfki.lt.mary.modules.en.Utt2XMLDurationsEn)
+2009-10-03 17:19:17,827 [RH 1] INFO  R 1        - ContourGenerator (de.dfki.lt.mary.modules.en.ContourGenerator)
+2009-10-03 17:19:17,827 [RH 1] INFO  R 1        - Synthesis (de.dfki.lt.mary.modules.Synthesis)
+2009-10-03 17:19:17,827 [RH 1] INFO  R 1        Next module: JTokeniser
+2009-10-03 17:19:17,827 [RH 1] INFO  R 1        Next module: XML2Utt TokensEn
+2009-10-03 17:19:17,828 [RH 1] INFO  R 1        Next module: TokenToWords
+2009-10-03 17:19:17,828 [RH 1] INFO  R 1        Next module: PartOfSpeechTagger
+2009-10-03 17:19:17,829 [RH 1] INFO  R 1        Next module: Segmenter
+2009-10-03 17:19:17,829 [RH 1] INFO  R 1        Next module: Utt2XML SegmentsEn
+2009-10-03 17:19:17,831 [RH 1] INFO  R 1        Next module: Prosody
+2009-10-03 17:19:17,835 [RH 1] INFO  R 1        Next module: XML2Utt IntonationEn
+2009-10-03 17:19:17,836 [RH 1] INFO  R 1        Next module: PostLexicalAnalyzer
+2009-10-03 17:19:17,838 [RH 1] INFO  R 1        Next module: Durator
+2009-10-03 17:19:17,845 [RH 1] INFO  R 1        Next module: Duration Mbroliser
+2009-10-03 17:19:17,845 [RH 1] INFO  R 1        Next module: Utt2XML DurationsEn
+2009-10-03 17:19:17,848 [RH 1] INFO  R 1        Next module: ContourGenerator
+2009-10-03 17:19:17,851 [RH 1] INFO  R 1        Next module: Synthesis
+2009-10-03 17:19:17,853 [RH 1] INFO  MbrolaSynthesizer Synthesizing one sentence.
+2009-10-03 17:19:17,854 [RH 1] INFO  MbrolaCaller Starting Synthesis with command: tools/mary/bin/mbrola -e tools/mary/lib/voices/us2/us2 - -.raw
+2009-10-03 17:19:17,863 [RH 1] INFO  MbrolaCaller Writing to module.
+2009-10-03 17:19:18,048 [RH 1 reader] INFO  Audio reader Finished reading.
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1        Request processed in 265 ms.
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           JTokeniser took 0 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           XML2Utt TokensEn took 1 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           TokenToWords took 0 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           PartOfSpeechTagger took 1 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           Segmenter took 0 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           Utt2XML SegmentsEn took 2 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           Prosody took 4 ms
+2009-10-03 17:19:18,050 [RH 1] INFO  R 1           XML2Utt IntonationEn took 1 ms
+2009-10-03 17:19:18,051 [RH 1] INFO  R 1           PostLexicalAnalyzer took 2 ms
+2009-10-03 17:19:18,051 [RH 1] INFO  R 1           Durator took 7 ms
+2009-10-03 17:19:18,051 [RH 1] INFO  R 1           Duration Mbroliser took 0 ms
+2009-10-03 17:19:18,051 [RH 1] INFO  R 1           Utt2XML DurationsEn took 3 ms
+2009-10-03 17:19:18,051 [RH 1] INFO  R 1           ContourGenerator took 3 ms
+2009-10-03 17:19:18,051 [RH 1] INFO  R 1           Synthesis took 198 ms
+2009-10-03 17:19:18,070 [RH 1] INFO  RH 1       Request handled successfully.
+2009-10-03 17:29:44,092 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:44,092 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:44,097 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:44,097 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:44,098 [Thread-10] INFO  R 2        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:29:44,099 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:44,099 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:44,104 [RH 2] WARN  RH 2       Problem reading input
+org.xml.sax.SAXParseException: Content is not allowed in prolog.
+	at org.apache.xerces.parsers.DOMParser.parse(Unknown Source)
+	at org.apache.xerces.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+	at de.dfki.lt.mary.MaryData.readFrom(MaryData.java:338)
+	at de.dfki.lt.mary.Request.readInputData(Request.java:238)
+	at de.dfki.lt.mary.RequestHandler.run(RequestHandler.java:145)
+2009-10-03 17:29:44,105 [RH 2] INFO  RH 2       Request couldn't be handled successfully.
+2009-10-03 17:29:47,112 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:47,112 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:47,115 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:47,115 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:47,116 [Thread-14] INFO  R 3        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:29:47,117 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:47,117 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:47,119 [RH 3] WARN  RH 3       Problem reading input
+org.xml.sax.SAXParseException: Content is not allowed in prolog.
+	at org.apache.xerces.parsers.DOMParser.parse(Unknown Source)
+	at org.apache.xerces.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+	at de.dfki.lt.mary.MaryData.readFrom(MaryData.java:338)
+	at de.dfki.lt.mary.Request.readInputData(Request.java:238)
+	at de.dfki.lt.mary.RequestHandler.run(RequestHandler.java:145)
+2009-10-03 17:29:47,119 [RH 3] INFO  RH 3       Request couldn't be handled successfully.
+2009-10-03 17:29:50,123 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:50,124 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:50,126 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:50,126 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:50,126 [Thread-18] INFO  R 4        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:29:50,127 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:29:50,128 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:29:50,131 [RH 4] WARN  RH 4       Problem reading input
+org.xml.sax.SAXParseException: Content is not allowed in prolog.
+	at org.apache.xerces.parsers.DOMParser.parse(Unknown Source)
+	at org.apache.xerces.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+	at de.dfki.lt.mary.MaryData.readFrom(MaryData.java:338)
+	at de.dfki.lt.mary.Request.readInputData(Request.java:238)
+	at de.dfki.lt.mary.RequestHandler.run(RequestHandler.java:145)
+2009-10-03 17:29:50,131 [RH 4] INFO  RH 4       Request couldn't be handled successfully.
+2009-10-03 17:31:22,836 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:22,837 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:22,842 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:22,842 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:22,842 [Thread-22] INFO  R 5        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:31:22,843 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:22,843 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:22,845 [RH 5] WARN  RH 5       Problem reading input
+org.xml.sax.SAXParseException: Content is not allowed in prolog.
+	at org.apache.xerces.parsers.DOMParser.parse(Unknown Source)
+	at org.apache.xerces.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+	at de.dfki.lt.mary.MaryData.readFrom(MaryData.java:338)
+	at de.dfki.lt.mary.Request.readInputData(Request.java:238)
+	at de.dfki.lt.mary.RequestHandler.run(RequestHandler.java:145)
+2009-10-03 17:31:22,845 [RH 5] INFO  RH 5       Request couldn't be handled successfully.
+2009-10-03 17:31:25,852 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:25,853 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:25,855 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:25,855 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:25,856 [Thread-26] INFO  R 6        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:31:25,856 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:25,857 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:25,858 [RH 6] WARN  RH 6       Problem reading input
+org.xml.sax.SAXParseException: Content is not allowed in prolog.
+	at org.apache.xerces.parsers.DOMParser.parse(Unknown Source)
+	at org.apache.xerces.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+	at de.dfki.lt.mary.MaryData.readFrom(MaryData.java:338)
+	at de.dfki.lt.mary.Request.readInputData(Request.java:238)
+	at de.dfki.lt.mary.RequestHandler.run(RequestHandler.java:145)
+2009-10-03 17:31:25,859 [RH 6] INFO  RH 6       Request couldn't be handled successfully.
+2009-10-03 17:31:28,863 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:28,864 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:28,866 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:28,866 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:28,866 [Thread-30] INFO  R 7        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:31:28,867 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:31:28,868 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:31:28,871 [RH 7] WARN  RH 7       Problem reading input
+org.xml.sax.SAXParseException: Content is not allowed in prolog.
+	at org.apache.xerces.parsers.DOMParser.parse(Unknown Source)
+	at org.apache.xerces.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+	at de.dfki.lt.mary.MaryData.readFrom(MaryData.java:338)
+	at de.dfki.lt.mary.Request.readInputData(Request.java:238)
+	at de.dfki.lt.mary.RequestHandler.run(RequestHandler.java:145)
+2009-10-03 17:31:28,871 [RH 7] INFO  RH 7       Request couldn't be handled successfully.
+2009-10-03 17:32:23,199 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:23,199 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:23,204 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:23,204 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:23,204 [Thread-34] INFO  R 8        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:32:23,205 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:23,205 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:23,207 [RH 8] INFO  RH 8       Read:
+<?xml version="1.0" encoding="UTF-8" ?> <maryxml version="0.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://mary.dfki.de/2002/MaryXML" xml:lang="en"> the <t accent="H*">box</t> <boundary tone="L-L%" breakindex="4"/> is <t accent="L+H*">red</t> <boundary tone="L-H%" breakindex="4"/> </maryxml>
+
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        Handling request using the following modules:
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - JTokeniser (de.dfki.lt.mary.modules.en.JTokeniser)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - XML2Utt TokensEn (de.dfki.lt.mary.modules.en.XML2UttTokensEn)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - TokenToWords (de.dfki.lt.mary.modules.en.FreeTTSTokenToWords)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - PartOfSpeechTagger (de.dfki.lt.mary.modules.en.FreeTTSPartOfSpeechTagger)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Segmenter (de.dfki.lt.mary.modules.en.FreeTTSSegmenter)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Utt2XML SegmentsEn (de.dfki.lt.mary.modules.en.Utt2XMLSegmentsEn)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Prosody (de.dfki.lt.mary.modules.en.Prosody)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - XML2Utt IntonationEn (de.dfki.lt.mary.modules.en.XML2UttIntonationEn)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - PostLexicalAnalyzer (de.dfki.lt.mary.modules.en.FreeTTSPostLexicalAnalyzer)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Durator (de.dfki.lt.mary.modules.en.FreeTTSDurator)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Duration Mbroliser (de.dfki.lt.mary.modules.en.FreeTTSDurationMbroliser)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Utt2XML DurationsEn (de.dfki.lt.mary.modules.en.Utt2XMLDurationsEn)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - ContourGenerator (de.dfki.lt.mary.modules.en.ContourGenerator)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        - Synthesis (de.dfki.lt.mary.modules.Synthesis)
+2009-10-03 17:32:23,208 [RH 8] INFO  R 8        Next module: JTokeniser
+2009-10-03 17:32:23,209 [RH 8] INFO  R 8        Next module: XML2Utt TokensEn
+2009-10-03 17:32:23,209 [RH 8] INFO  R 8        Next module: TokenToWords
+2009-10-03 17:32:23,209 [RH 8] INFO  R 8        Next module: PartOfSpeechTagger
+2009-10-03 17:32:23,209 [RH 8] INFO  R 8        Next module: Segmenter
+2009-10-03 17:32:23,210 [RH 8] INFO  R 8        Next module: Utt2XML SegmentsEn
+2009-10-03 17:32:23,211 [RH 8] INFO  R 8        Next module: Prosody
+2009-10-03 17:32:23,212 [RH 8] INFO  R 8        Next module: XML2Utt IntonationEn
+2009-10-03 17:32:23,212 [RH 8] INFO  R 8        Next module: PostLexicalAnalyzer
+2009-10-03 17:32:23,212 [RH 8] INFO  R 8        Next module: Durator
+2009-10-03 17:32:23,214 [RH 8] INFO  R 8        Next module: Duration Mbroliser
+2009-10-03 17:32:23,214 [RH 8] INFO  R 8        Next module: Utt2XML DurationsEn
+2009-10-03 17:32:23,214 [RH 8] INFO  R 8        Next module: ContourGenerator
+2009-10-03 17:32:23,215 [RH 8] INFO  R 8        Next module: Synthesis
+2009-10-03 17:32:23,216 [RH 8] INFO  MbrolaSynthesizer Synthesizing one sentence.
+2009-10-03 17:32:23,216 [RH 8] INFO  MbrolaCaller Starting Synthesis with command: tools/mary/bin/mbrola -e tools/mary/lib/voices/us2/us2 - -.raw
+2009-10-03 17:32:23,225 [RH 8] INFO  MbrolaCaller Writing to module.
+2009-10-03 17:32:23,340 [RH 8 reader] INFO  Audio reader Finished reading.
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8        Request processed in 134 ms.
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8           JTokeniser took 1 ms
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8           XML2Utt TokensEn took 0 ms
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8           TokenToWords took 0 ms
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8           PartOfSpeechTagger took 0 ms
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8           Segmenter took 1 ms
+2009-10-03 17:32:23,341 [RH 8] INFO  R 8           Utt2XML SegmentsEn took 1 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           Prosody took 1 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           XML2Utt IntonationEn took 0 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           PostLexicalAnalyzer took 0 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           Durator took 2 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           Duration Mbroliser took 0 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           Utt2XML DurationsEn took 0 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           ContourGenerator took 1 ms
+2009-10-03 17:32:23,342 [RH 8] INFO  R 8           Synthesis took 126 ms
+2009-10-03 17:32:23,345 [RH 8] INFO  RH 8       Request handled successfully.
+2009-10-03 17:32:26,385 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:26,385 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:26,387 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:26,388 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:26,388 [Thread-40] INFO  R 9        New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:32:26,389 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:26,389 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:26,392 [RH 9] INFO  RH 9       Read:
+<?xml version="1.0" encoding="UTF-8" ?> <maryxml version="0.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://mary.dfki.de/2002/MaryXML" xml:lang="en"> is the <t accent="H*">box</t> <t accent="L+H*">red</t> <boundary tone="H-H%" breakindex="4"/> </maryxml>
+
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        Handling request using the following modules:
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - JTokeniser (de.dfki.lt.mary.modules.en.JTokeniser)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - XML2Utt TokensEn (de.dfki.lt.mary.modules.en.XML2UttTokensEn)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - TokenToWords (de.dfki.lt.mary.modules.en.FreeTTSTokenToWords)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - PartOfSpeechTagger (de.dfki.lt.mary.modules.en.FreeTTSPartOfSpeechTagger)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Segmenter (de.dfki.lt.mary.modules.en.FreeTTSSegmenter)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Utt2XML SegmentsEn (de.dfki.lt.mary.modules.en.Utt2XMLSegmentsEn)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Prosody (de.dfki.lt.mary.modules.en.Prosody)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - XML2Utt IntonationEn (de.dfki.lt.mary.modules.en.XML2UttIntonationEn)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - PostLexicalAnalyzer (de.dfki.lt.mary.modules.en.FreeTTSPostLexicalAnalyzer)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Durator (de.dfki.lt.mary.modules.en.FreeTTSDurator)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Duration Mbroliser (de.dfki.lt.mary.modules.en.FreeTTSDurationMbroliser)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Utt2XML DurationsEn (de.dfki.lt.mary.modules.en.Utt2XMLDurationsEn)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - ContourGenerator (de.dfki.lt.mary.modules.en.ContourGenerator)
+2009-10-03 17:32:26,394 [RH 9] INFO  R 9        - Synthesis (de.dfki.lt.mary.modules.Synthesis)
+2009-10-03 17:32:26,395 [RH 9] INFO  R 9        Next module: JTokeniser
+2009-10-03 17:32:26,395 [RH 9] INFO  R 9        Next module: XML2Utt TokensEn
+2009-10-03 17:32:26,396 [RH 9] INFO  R 9        Next module: TokenToWords
+2009-10-03 17:32:26,396 [RH 9] INFO  R 9        Next module: PartOfSpeechTagger
+2009-10-03 17:32:26,396 [RH 9] INFO  R 9        Next module: Segmenter
+2009-10-03 17:32:26,396 [RH 9] INFO  R 9        Next module: Utt2XML SegmentsEn
+2009-10-03 17:32:26,397 [RH 9] INFO  R 9        Next module: Prosody
+2009-10-03 17:32:26,398 [RH 9] INFO  R 9        Next module: XML2Utt IntonationEn
+2009-10-03 17:32:26,399 [RH 9] INFO  R 9        Next module: PostLexicalAnalyzer
+2009-10-03 17:32:26,399 [RH 9] INFO  R 9        Next module: Durator
+2009-10-03 17:32:26,401 [RH 9] INFO  R 9        Next module: Duration Mbroliser
+2009-10-03 17:32:26,402 [RH 9] INFO  R 9        Next module: Utt2XML DurationsEn
+2009-10-03 17:32:26,403 [RH 9] INFO  R 9        Next module: ContourGenerator
+2009-10-03 17:32:26,405 [RH 9] INFO  R 9        Next module: Synthesis
+2009-10-03 17:32:26,405 [RH 9] INFO  MbrolaSynthesizer Synthesizing one sentence.
+2009-10-03 17:32:26,405 [RH 9] INFO  MbrolaCaller Starting Synthesis with command: tools/mary/bin/mbrola -e tools/mary/lib/voices/us2/us2 - -.raw
+2009-10-03 17:32:26,417 [RH 9] INFO  MbrolaCaller Writing to module.
+2009-10-03 17:32:26,472 [RH 9 reader] INFO  Audio reader Finished reading.
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9        Request processed in 80 ms.
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           JTokeniser took 0 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           XML2Utt TokensEn took 1 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           TokenToWords took 0 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           PartOfSpeechTagger took 0 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Segmenter took 0 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Utt2XML SegmentsEn took 1 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Prosody took 1 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           XML2Utt IntonationEn took 1 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           PostLexicalAnalyzer took 0 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Durator took 2 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Duration Mbroliser took 1 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Utt2XML DurationsEn took 1 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           ContourGenerator took 2 ms
+2009-10-03 17:32:26,473 [RH 9] INFO  R 9           Synthesis took 67 ms
+2009-10-03 17:32:26,474 [RH 9] INFO  RH 9       Request handled successfully.
+2009-10-03 17:32:29,478 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:29,479 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:29,484 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:29,485 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:29,485 [Thread-46] INFO  R 10       New request (input type "RAWMARYXML", output type "AUDIO", voice "us2", audio "WAVE")
+2009-10-03 17:32:29,486 [main] INFO  server     Connection from localhost (127.0.0.1).
+2009-10-03 17:32:29,486 [main] INFO  server     Waiting for client to connect on port 59125
+2009-10-03 17:32:29,490 [RH 10] INFO  RH 10      Read:
+<?xml version="1.0" encoding="UTF-8" ?> <maryxml version="0.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://mary.dfki.de/2002/MaryXML" xml:lang="en"> is the <t accent="L+H*">box</t> <t accent="H*">red</t> <boundary tone="H-H%" breakindex="4"/> </maryxml>
+
+2009-10-03 17:32:29,493 [RH 10] INFO  R 10       Handling request using the following modules:
+2009-10-03 17:32:29,494 [RH 10] INFO  R 10       - JTokeniser (de.dfki.lt.mary.modules.en.JTokeniser)
+2009-10-03 17:32:29,494 [RH 10] INFO  R 10       - XML2Utt TokensEn (de.dfki.lt.mary.modules.en.XML2UttTokensEn)
+2009-10-03 17:32:29,494 [RH 10] INFO  R 10       - TokenToWords (de.dfki.lt.mary.modules.en.FreeTTSTokenToWords)
+2009-10-03 17:32:29,494 [RH 10] INFO  R 10       - PartOfSpeechTagger (de.dfki.lt.mary.modules.en.FreeTTSPartOfSpeechTagger)
+2009-10-03 17:32:29,494 [RH 10] INFO  R 10       - Segmenter (de.dfki.lt.mary.modules.en.FreeTTSSegmenter)
+2009-10-03 17:32:29,494 [RH 10] INFO  R 10       - Utt2XML SegmentsEn (de.dfki.lt.mary.modules.en.Utt2XMLSegmentsEn)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - Prosody (de.dfki.lt.mary.modules.en.Prosody)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - XML2Utt IntonationEn (de.dfki.lt.mary.modules.en.XML2UttIntonationEn)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - PostLexicalAnalyzer (de.dfki.lt.mary.modules.en.FreeTTSPostLexicalAnalyzer)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - Durator (de.dfki.lt.mary.modules.en.FreeTTSDurator)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - Duration Mbroliser (de.dfki.lt.mary.modules.en.FreeTTSDurationMbroliser)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - Utt2XML DurationsEn (de.dfki.lt.mary.modules.en.Utt2XMLDurationsEn)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - ContourGenerator (de.dfki.lt.mary.modules.en.ContourGenerator)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       - Synthesis (de.dfki.lt.mary.modules.Synthesis)
+2009-10-03 17:32:29,495 [RH 10] INFO  R 10       Next module: JTokeniser
+2009-10-03 17:32:29,496 [RH 10] INFO  R 10       Next module: XML2Utt TokensEn
+2009-10-03 17:32:29,496 [RH 10] INFO  R 10       Next module: TokenToWords
+2009-10-03 17:32:29,496 [RH 10] INFO  R 10       Next module: PartOfSpeechTagger
+2009-10-03 17:32:29,496 [RH 10] INFO  R 10       Next module: Segmenter
+2009-10-03 17:32:29,497 [RH 10] INFO  R 10       Next module: Utt2XML SegmentsEn
+2009-10-03 17:32:29,497 [RH 10] INFO  R 10       Next module: Prosody
+2009-10-03 17:32:29,498 [RH 10] INFO  R 10       Next module: XML2Utt IntonationEn
+2009-10-03 17:32:29,499 [RH 10] INFO  R 10       Next module: PostLexicalAnalyzer
+2009-10-03 17:32:29,499 [RH 10] INFO  R 10       Next module: Durator
+2009-10-03 17:32:29,501 [RH 10] INFO  R 10       Next module: Duration Mbroliser
+2009-10-03 17:32:29,501 [RH 10] INFO  R 10       Next module: Utt2XML DurationsEn
+2009-10-03 17:32:29,502 [RH 10] INFO  R 10       Next module: ContourGenerator
+2009-10-03 17:32:29,503 [RH 10] INFO  R 10       Next module: Synthesis
+2009-10-03 17:32:29,503 [RH 10] INFO  MbrolaSynthesizer Synthesizing one sentence.
+2009-10-03 17:32:29,504 [RH 10] INFO  MbrolaCaller Starting Synthesis with command: tools/mary/bin/mbrola -e tools/mary/lib/voices/us2/us2 - -.raw
+2009-10-03 17:32:29,516 [RH 10] INFO  MbrolaCaller Writing to module.
+2009-10-03 17:32:29,570 [RH 10 reader] INFO  Audio reader Finished reading.
+2009-10-03 17:32:29,570 [RH 10] INFO  R 10       Request processed in 78 ms.
+2009-10-03 17:32:29,570 [RH 10] INFO  R 10          JTokeniser took 1 ms
+2009-10-03 17:32:29,570 [RH 10] INFO  R 10          XML2Utt TokensEn took 0 ms
+2009-10-03 17:32:29,570 [RH 10] INFO  R 10          TokenToWords took 0 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          PartOfSpeechTagger took 0 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Segmenter took 1 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Utt2XML SegmentsEn took 0 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Prosody took 1 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          XML2Utt IntonationEn took 1 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          PostLexicalAnalyzer took 0 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Durator took 2 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Duration Mbroliser took 0 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Utt2XML DurationsEn took 1 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          ContourGenerator took 1 ms
+2009-10-03 17:32:29,571 [RH 10] INFO  R 10          Synthesis took 67 ms
+2009-10-03 17:32:29,572 [RH 10] INFO  RH 10      Request handled successfully.
