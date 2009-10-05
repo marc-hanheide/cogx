@@ -1,22 +1,32 @@
 package comsys.processing.cca;
 
-import comsys.datastructs.comsysEssentials.*;
 import Abducer.*;
+import comsys.datastructs.comsysEssentials.*;
+import beliefmodels.adl.*;
+import beliefmodels.domainmodel.cogx.*;
+import binder.utils.BeliefModelUtils;
+
+import comsys.processing.cca.ProofUtils;
 
 public class StackUtils {
 
-	/** Construct a proof block based on an abductive proof.
+	/**
+	 * Construct a proof block based on an abductive proof.
 	 * 
 	 * @param proof
 	 * @param proofId
 	 * @return
 	 */
 	public static ProofBlock construct(MarkedQuery[] proof, String proofId) {
-		// TODO
-		return null;
+		ProofBlock pb = new ProofBlock();
+		pb.proofId = proofId;
+		pb.assertions = ProofUtils.extractAssertedBeliefs(proof);
+		pb.assumptions = ProofUtils.extractAssumedBeliefs(proof);
+		return pb;
 	}
 	
-	/** Push the proof block onto the stack.
+	/**
+	 * Push the proof block onto the stack.
 	 * 
 	 * @param stack
 	 * @param block
@@ -30,7 +40,8 @@ public class StackUtils {
 		stack = newStack;
 	}
 	
-	/** Pop the top proof block from the stack.
+	/**
+	 * Pop the top proof block from the stack.
 	 * 
 	 * @param stack
 	 * @return the proof block, null if the stack is empty
@@ -49,7 +60,8 @@ public class StackUtils {
 		return result;
 	}
 	
-	/** Inspect the top proof block on the stack (which remains there).
+	/**
+	 * Inspect the top proof block on the stack (which remains there).
 	 * 
 	 * @param stack
 	 * @return the proof block, null if the stack is empty
@@ -63,7 +75,8 @@ public class StackUtils {
 		}
 	}
 	
-	/** Boolean indicating whether the stack is empty or not.
+	/**
+	 * Boolean indicating whether the stack is empty or not.
 	 * 
 	 * @param stack
 	 * @return true iff the stack is empty
@@ -72,7 +85,8 @@ public class StackUtils {
 		return (stack.length == 0);
 	}
 	
-	/** Retrieve the proof block with the given proofID; the proof block remains on stack.
+	/**
+	 * Retrieve the proof block with the given proofID; the proof block remains on stack.
 	 * 
 	 * @param stack
 	 * @param proofId
@@ -86,8 +100,9 @@ public class StackUtils {
 		return null;
 	}
 	
-	/** Retrieve the top-most proof block which contains an asserted belief (DeltaSet) with the given
-	 *  beliefID; the proof block remains on stack.
+	/**
+	 * Retrieve the top-most proof block which contains an asserted belief (DeltaSet) with the given
+	 * beliefID; the proof block remains on stack.
 	 *
 	 * @param stack
 	 * @param beliefId
@@ -104,8 +119,10 @@ public class StackUtils {
 		return null;
 	}
 
-	/** Retrieve the top-most proof block which contains an assumed belief (DeltaSet) with the given
-	 *  beliefID; the proof block remains on stack.
+	/**
+	 * Retrieve the top-most proof block which contains an assumed belief (DeltaSet) with the given
+	 * beliefID; the proof block remains on stack.
+	 * 
 	 * @param stack
 	 * @param beliefId
 	 * @return
@@ -121,7 +138,8 @@ public class StackUtils {
 		return null;
 	}
 	
-	/** Retrieve the proof block with the given proofID; the proof block is removed from the stack.
+	/**
+	 * Retrieve the proof block with the given proofID; the proof block is removed from the stack.
 	 * 
 	 * @param stack
 	 * @param proofId
@@ -145,10 +163,11 @@ public class StackUtils {
 		return result;
 	}
 	
-	/** Retrieve the top-most proof block which contains an asserted belief (DeltaSet) with the given
-	 *  beliefID; the proof block is removed from the stack.
+	/**
+	 * Retrieve the top-most proof block which contains an asserted belief (DeltaSet) with the given
+	 * beliefID; the proof block is removed from the stack.
 	 *  
-	 *  FIXME: will fail array bounds check when no such proof block exists!
+	 * FIXME: will fail array bounds check when no such proof block exists!
 	 * 
 	 * @param stack the stack
 	 * @param beliefId id of the belief
@@ -174,10 +193,11 @@ public class StackUtils {
 		return result;
 	}
 
-	/** Retrieve the top-most proof block which contains an assumed belief (DeltaSet) with the given
-	 *  beliefID; the proof block is removed from the stack.
+	/**
+	 * Retrieve the top-most proof block which contains an assumed belief (DeltaSet) with the given
+	 * beliefID; the proof block is removed from the stack.
 	 *  
-	 *  FIXME: will fail array bounds check when no such proof block exists!
+	 * FIXME: will fail array bounds check when no such proof block exists!
 	 * 
 	 * @param stack
 	 * @param beliefId
@@ -202,5 +222,4 @@ public class StackUtils {
 		stack = newStack;
 		return result;
 	}
-	
 }

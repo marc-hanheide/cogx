@@ -10,6 +10,7 @@ import comsys.arch.ComsysGoals;
 import comsys.arch.ProcessingData;
 import comsys.datastructs.comsysEssentials.PackedLFs;
 import comsys.datastructs.comsysEssentials.BoundReadings;
+import comsys.datastructs.comsysEssentials.ProofBlock;
 
 import comsys.lf.utils.LFUtils;
 
@@ -25,6 +26,11 @@ import Abducer.*;
 import comsys.processing.cca.ContinualCollaborativeActivity;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.cca.AbducerUtils;
+import comsys.processing.cca.StackUtils;
+import comsys.processing.cca.ProofUtils;
+import comsys.processing.cca.PrettyPrinting;
+
+import beliefmodels.adl.*;
 
 public class cc_ContinualCollabActing extends ManagedComponent {
 
@@ -222,14 +228,22 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
 				// print the proof ... 
 				if (proof != null) { 	
-            		String logString = "Obtained proof:\n";
-            		for (int i = 0; i < proof.length; i++) {
-            			logString += "[" + proof[i].mark.toString() + "]\t";
-            			logString += MercuryUtils.modalisedFormulaToString(proof[i].body);
-            			if (i < proof.length-1) { logString += ",\n"; }
+            		log("Found an abductive proof:\n" + PrettyPrinting.proofToString(proof));
+            		
+            		log("starting verifiable update");
+            		// TODO: where do I get the belief model?
+            		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, null);
+
+            		String ls = "updates = {\n";
+            		for (int i = 0; i < contextUpdates.length; i++) {
+            			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
+            			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
             		}
-            		logString += "\n";
-            		log(logString);
+            		ls += "}";
+            		log(ls);
+            		
+            		// TODO: update the belief model
+            		log("TODO: updating the belief model");
             	}
             }
     	}
