@@ -428,7 +428,9 @@ void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &l
 			glVertex3f(PlanePoints3D.at(hull[i]).x,PlanePoints3D.at(hull[i]).y,PlanePoints3D.at(hull[i]).z);
 		}
 		glEnd();
+	        free( hull );
 	}
+	free( points2D );
 }
 
 void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labels)
