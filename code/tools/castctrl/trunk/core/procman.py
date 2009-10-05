@@ -234,7 +234,7 @@ class CProcess(object):
         return nl
 
     def check(self):
-        if (self.status != self.STOPPED) != (self.process != None):
+        if ((self.status != self.STOPPED) != (self.process != None)) and self.status != self.STARTING:
             error("Internal error: Process '%s' in invalid state" % (self.name))
             if self.isRunning(): self.status = max(1, self.process.pid)
             else:
