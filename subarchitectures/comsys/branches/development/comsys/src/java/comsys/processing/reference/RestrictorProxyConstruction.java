@@ -22,6 +22,7 @@ import cast.cdl.CASTTime;
 import comsys.datastructs.comsysEssentials.RefReading;
 import comsys.datastructs.comsysEssentials.RefReadings;
 
+import comsys.processing.reference.proxyfactories.EntityProxy;
 import comsys.processing.reference.proxyfactories.ThingProxy;
 
 // -------------------------------------------------------

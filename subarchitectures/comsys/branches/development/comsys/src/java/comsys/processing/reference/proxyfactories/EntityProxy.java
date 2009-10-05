@@ -60,7 +60,7 @@ public class EntityProxy extends AbstractProxyFactory
 			PhantomProxy prx = ProxyConstructor.createNewPhantomProxy(origin, getEntityID(),  1.0f);
 			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_label", root.prop.prop, timestamp));
 			// Add the proximity of the (deictic)
-			if (LFUtils.lfNominalHasFeature("Proximity")) { 
+			if (LFUtils.lfNominalHasFeature(root,"Proximity")) { 
 				String proximity = LFUtils.lfNominalGetFeature(root,"Proximity");
 				ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("proximity", proximity, timestamp));			
 			} // end if.. check for proximity

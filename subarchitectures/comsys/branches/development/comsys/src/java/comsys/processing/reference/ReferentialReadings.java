@@ -15,7 +15,9 @@ package comsys.processing.reference;
 import comsys.datastructs.comsysEssentials.RefReading;
 import comsys.datastructs.comsysEssentials.RefReadings;
 
+import comsys.processing.reference.readingfactories.CognitionReadings;
 import comsys.processing.reference.readingfactories.CopulaReadings;
+import comsys.processing.reference.readingfactories.DUnitsReadings;
 
 // -------------------------------------------------------
 // JAVA imports
