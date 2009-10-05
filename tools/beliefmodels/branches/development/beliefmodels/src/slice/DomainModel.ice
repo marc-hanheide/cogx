@@ -94,11 +94,13 @@ module cogx {
 	// ===================================================================
 	// DOMAINMODEL: VISUAL OBJECTS 
 	
-	enum Shape { cylindrical, spherical, cubic };
+	enum Shape { cylindrical, spherical, cubic, unknownShape };
 	
-	enum ObjectType { box, ball, cube, mug }; 
+	enum ObjectType { box, ball, cube, mug, unknownObjectType }; 
 	
-	enum Color { red, blue, yellow, green };
+	enum Color { red, blue, yellow, green, unknownColor };
+	
+	enum Graspable { grasp, nograsp , unknownGrasp } ;
 	
 	// A property is always a ContinualFormula
 	class ObjectTypeProperty extends ContinualFormula { 
@@ -111,7 +113,7 @@ module cogx {
 	
 	 
 	class GraspableProperty extends ContinualFormula {
-		bool graspableValue;
+		Graspable graspableValue;
 	};
 	
 	// A property is always a ContinualFormula
