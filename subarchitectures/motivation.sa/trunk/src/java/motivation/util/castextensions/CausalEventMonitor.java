@@ -16,6 +16,7 @@ import binder.autogen.core.UnionConfiguration;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.architecture.WorkingMemoryReaderComponent.ChangeReceiverPriority;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryChangeFilter;
@@ -321,10 +322,18 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 	 * 
 	 */
 	public void start() {
+		// we register the triggers with HIGH priority to ensure they are put on
+		// the list before any other receiver in this components receives them
 		for (WorkingMemoryChangeFilter wmcf : triggerFilters)
-			component.addChangeFilter(wmcf, triggerReceiver);
+			component.addChangeFilter(wmcf, triggerReceiver,
+					ChangeReceiverPriority.HIGH);
+
+		// we register the implication receiver with LOW priority in order to
+		// make sure that all other receivers receive it before we actually
+		// release the stuff here
 		for (WorkingMemoryChangeFilter wmcf : implicationFilters)
-			component.addChangeFilter(wmcf, implicationReceiver);
+			component.addChangeFilter(wmcf, implicationReceiver,
+					ChangeReceiverPriority.LOW);
 
 	}
 
