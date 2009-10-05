@@ -12,6 +12,7 @@ package comsys.components.reference;
 // BINDER IMPORTS
 //-----------------------------------------------------------------
 
+import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.abstr.BindingPredictor;
@@ -33,8 +34,13 @@ import cast.SubarchitectureComponentException;
 // COMSYS IMPORTS
 //-----------------------------------------------------------------
 import comsys.arch.*;
-import comsys.datastructs.comsysEssentials.*;
-import comsys.datastructs.lf.*;
+import comsys.datastructs.comsysEssentials.Anchor;
+import comsys.datastructs.comsysEssentials.BoundReadings;
+import comsys.datastructs.comsysEssentials.ReadingBindings;
+import comsys.datastructs.comsysEssentials.RefBinding;
+import comsys.datastructs.comsysEssentials.RefReading;
+import comsys.datastructs.comsysEssentials.RefReadings;
+import comsys.datastructs.lf.LogicalForm;
 import comsys.processing.reference.ProxyResults;
 import comsys.processing.reference.ReferentialReadings;
 import comsys.processing.reference.RestrictorProxyConstruction;
@@ -198,7 +204,7 @@ public class cc_ReferentialBindings
 					
 					for (ArrayIterator idsIter = new ArrayIterator(reading.restrictiveTrees); idsIter.hasNext(); ) { 
 						String restrTreeRoot = (String)idsIter.next();
-						log("restrTreeRoot: " + restrTreeRoot);
+						log("Current restrTreeRoot: " + restrTreeRoot);
 						LogicalForm restrLF = LFUtils.lfConstructSubtree(LFUtils.lfGetNominal(lf,restrTreeRoot),lf);
 						
 						ProxyResults prxResults = factory.constructProxy(restrLF, getCASTTime());
@@ -206,15 +212,18 @@ public class cc_ReferentialBindings
 							PhantomProxy phant = phantIter.next();
 							
 							// get the unions, delete phantom afterwards
-							Vector<UncertainSuperFormula> formulae = getPredictedBindings(phant,true);					
+							Vector<ComplexFormula> formulae = getPredictedBindings(phant,true);					
 							
-							log("Number of possible bindings found: " + formulae.size());
+							log("Number of possible bindings found for restrTreeRoot: " + formulae.size());
 							log("===============================");
 							int count = 1;
-							for (Enumeration<UncertainSuperFormula> e = formulae.elements(); e.hasMoreElements() ; ) {
+							for (Enumeration<ComplexFormula> e = formulae.elements(); e.hasMoreElements() ; ) {
+								ComplexFormula curFor = e.nextElement();
+								if (curFor.prob > 0.01) {
 								log("Belief formula for binding " + count + ": \n" + 
-										BeliefModelUtils.getFormulaPrettyPrint(e.nextElement(), 1));
+										BeliefModelUtils.getFormulaPrettyPrint(curFor, 1));
 								count++;
+								}
 								if (e.hasMoreElements()) 
 										log("------------------------------");
 							}	
@@ -223,7 +232,7 @@ public class cc_ReferentialBindings
 							
 							// create the anchorings
 							Vector<Anchor> anchors  = new Vector<Anchor>();
-							for (Iterator<UncertainSuperFormula> formIter = formulae.iterator(); formIter.hasNext(); ) { 
+							for (Iterator<ComplexFormula> formIter = formulae.iterator(); formIter.hasNext(); ) { 
 								UncertainSuperFormula curFormula = formIter.next();
 								Anchor anchor = createAnchorFromFormula(curFormula);
 								anchors.add(anchor);
@@ -317,9 +326,10 @@ public class cc_ReferentialBindings
 					} // end
 					// Clean up!
 					// no matter what happened, remove the data item
-					// from the queue
+					// from the queue			
 					i.remove();
 					m_taskToTaskTypeMap.remove(taskID);
+				
 				} // end while
 				// Free the process
 				unlockComponent();

@@ -17,7 +17,7 @@
 // For an edit log, see the bottom of this file. 
 //
 // ===================================================================
-  
+   
 module comsys {
 module datastructs {
 module lf {
