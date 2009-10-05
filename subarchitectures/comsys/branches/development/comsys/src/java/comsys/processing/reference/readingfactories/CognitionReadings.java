@@ -53,6 +53,7 @@ public class CognitionReadings
 	
 	private String sort = "cognition"; 	
 	
+	public String getSort() { return sort; }	
 	
 	public ReadingFactoryResults constructReadings (LogicalForm lf) { 
 		// initialize the results
@@ -72,7 +73,7 @@ public class CognitionReadings
 		if (pscopeRoot.sort.equals("ascription")) { 
 			LogicalForm scopeInLF = LFUtils.lfConstructSubtree(pscopeRoot,lf); 
 			CopulaReadings factory = new CopulaReadings();
-			results = factory.constructReadings();
+			results = factory.constructReadings(scopeInLF);
 		} else { 
 			
 			
