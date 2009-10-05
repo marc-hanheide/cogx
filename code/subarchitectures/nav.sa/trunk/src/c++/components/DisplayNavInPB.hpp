@@ -102,8 +102,10 @@ private:
   void newPerson(const cast::cdl::WorkingMemoryChange &objID);
   void deletePerson(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonFollowed(const cast::cdl::WorkingMemoryChange &objID);
+  void addEdgeToList(long id1, long id2);
   void displayEdge(const DisplayNavInPB::Node &node1, 
                    const DisplayNavInPB::Node &node2);
+  void redisplayEdgesToNode(const DisplayNavInPB::Node &node);
   void addDoorpost(double x, double y, double theta, 
                    double width, peekabot::SphereProxy &node);
   void connectPeekabot();
@@ -169,6 +171,7 @@ private:
   int m_CurrPersonId;
 
   std::map<long, Node> m_Nodes;
+  std::list< std::pair<long,long> > m_Edges;
   std::list< std::pair<long,long> > m_NewEdges;
 
   bool m_LaserConnected;
