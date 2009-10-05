@@ -550,7 +550,7 @@ public class cc_TTS extends ManagedComponent {
 
             // create local and remote TTS
             ttsLocal =
-                    new TTSLocal(mary, voiceName, m_bSilentModeLocal, "WAVE");
+		new TTSLocal(mary, "TEXT", voiceName, m_bSilentModeLocal, "WAVE");
        //     ttsRemote =
        //             new TTSRemote(mary, voiceName, m_bSilentModeRemote);
 			
