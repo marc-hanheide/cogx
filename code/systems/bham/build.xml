@@ -63,7 +63,7 @@
 	<!-- =================================================================== -->
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="init">
+	<target name="compile" depends="slice">
 		<echo>compiling all builds"</echo>
 		<antcall target="template">
 			<param name="target" value="compile" />
