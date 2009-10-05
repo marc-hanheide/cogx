@@ -36,6 +36,7 @@ import beliefmodels.domainmodel.cogx.Shape;
 import beliefmodels.domainmodel.cogx.ShapeProperty;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
+import beliefmodels.domainmodel.cogx.ContinualFormula;
 import binder.autogen.core.FeatureValue;
 
 
@@ -310,6 +311,17 @@ public class BeliefModelUtils {
 		return str;
 	}
 
+	private static String getContinualStatusPrettyPrint(ContinualFormula formula) {
+		String str = "";
+		if (formula.cstatus != null) {
+			str += "{" + formula.cstatus.toString() + "}";
+		}
+		else {
+			str += "{CONT-STATUS?}";
+		}
+		return str;
+	}
+	
 	/**
 	 * Returns a string-formatted version of the formula, indented by depth
 	 * 
@@ -371,7 +383,7 @@ public class BeliefModelUtils {
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
-		}
+	}
 
 		// if the formula is a simple graspable property
 		else if (formula instanceof GraspableProperty) {
@@ -411,6 +423,10 @@ public class BeliefModelUtils {
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
+		}
+
+		if (formula instanceof ContinualFormula) {
+			result += " " + getContinualStatusPrettyPrint((ContinualFormula) formula);
 		}
 
 		return result;
