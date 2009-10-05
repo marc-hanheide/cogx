@@ -2,10 +2,11 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Sep 29 12:35:05 2009
+# Created: Mon Oct  5 11:31:22 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
+from cctextedit import CCastTextEdit
 
 from PyQt4 import QtCore, QtGui
 
@@ -199,7 +200,7 @@ class Ui_MainWindow(object):
         self.ckShowFlushMsgs.setObjectName("ckShowFlushMsgs")
         self.horizontalLayout_2.addWidget(self.ckShowFlushMsgs)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.mainLogfileTxt = QtGui.QTextEdit(self.tabLogs)
+        self.mainLogfileTxt = CCastTextEdit(self.tabLogs)
         self.mainLogfileTxt.setUndoRedoEnabled(False)
         self.mainLogfileTxt.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.mainLogfileTxt.setObjectName("mainLogfileTxt")
@@ -334,7 +335,7 @@ class Ui_MainWindow(object):
         self.btCmakeGui.setObjectName("btCmakeGui")
         self.horizontalLayout_6.addWidget(self.btCmakeGui)
         self.verticalLayout_6.addLayout(self.horizontalLayout_6)
-        self.buildLogfileTxt = QtGui.QTextEdit(self.tab_4)
+        self.buildLogfileTxt = CCastTextEdit(self.tab_4)
         self.buildLogfileTxt.setUndoRedoEnabled(False)
         self.buildLogfileTxt.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.buildLogfileTxt.setObjectName("buildLogfileTxt")
@@ -360,6 +361,8 @@ class Ui_MainWindow(object):
         self.actOpenPlayerConfig.setObjectName("actOpenPlayerConfig")
         self.actShowEnv = QtGui.QAction(MainWindow)
         self.actShowEnv.setObjectName("actShowEnv")
+        self.actCtxShowBuildError = QtGui.QAction(MainWindow)
+        self.actCtxShowBuildError.setObjectName("actCtxShowBuildError")
         self.menuCast.addAction(self.actShowEnv)
         self.menuCast.addSeparator()
         self.menuCast.addAction(self.actQuit)
@@ -412,4 +415,5 @@ class Ui_MainWindow(object):
         self.actOpenClientConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Client Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.actOpenPlayerConfig.setText(QtGui.QApplication.translate("MainWindow", "Select Player Configuration", None, QtGui.QApplication.UnicodeUTF8))
         self.actShowEnv.setText(QtGui.QApplication.translate("MainWindow", "Show ENV", None, QtGui.QApplication.UnicodeUTF8))
+        self.actCtxShowBuildError.setText(QtGui.QApplication.translate("MainWindow", "Show code", None, QtGui.QApplication.UnicodeUTF8))
 
