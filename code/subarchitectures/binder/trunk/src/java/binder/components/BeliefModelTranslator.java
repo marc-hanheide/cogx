@@ -180,7 +180,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 			Union union = config.includedUnions[i];
 			
 			// If there is only one feature, create a simple formula
-			if (union.features.length == 1) {
+	/**		if (union.features.length == 1) {
 
 				Feature feat = union.features[0];
 				formula.formulae[i] = getFeatureValuesAsFormula(feat);
@@ -189,7 +189,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 						
 			// Else, create a complex conjunctive formula for the union
 			else if (union.features.length > 1) {
-				
+			*/	
 				ComplexFormula entity = new ComplexFormula();
 				entity.id = newDataID();
 				entity.op = LogicalOp.and;
@@ -204,7 +204,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 			 		
 				}
 				formula.formulae[i] = entity;
-			}
+	//		}
 			formula.formulae[i].id = "union-" + union.entityID;
 
 		}

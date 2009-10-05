@@ -24,9 +24,13 @@ import java.util.Vector;
 
 import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
+import beliefmodels.domainmodel.cogx.LinguisticLabelProperty;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
+import binder.autogen.core.Feature;
+import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.PhantomProxy;
+import binder.utils.BeliefModelUtils;
 
 import cast.core.CASTData;
 
@@ -59,7 +63,7 @@ public class BindingPredictor extends ProxyWriter {
 	 * @return list of predicted belief bindings
 	 */
 
-	protected Vector<UncertainSuperFormula> getPredictedBindings 
+	protected Vector<ComplexFormula> getPredictedBindings 
 	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 		try {
 
@@ -68,33 +72,23 @@ public class BindingPredictor extends ProxyWriter {
 
 			log("OK, just added phantom proxy onto the WM");
 			
+			Vector<ComplexFormula> bindings = getPossibleBindings();
+			
 			// Wait for the predicted unions to be computed by the binder
-			while (!arePossibleBindingsAvailable()) {
+			while (bindings.size() == 0) {
 				sleepComponent(20);
+				bindings = getPossibleBindings();
 			}
 
 			log("Predicted beliefs for phantom proxy is sucessfully retrieved");
-
-			Vector<UncertainSuperFormula> possibleBindings = new Vector<UncertainSuperFormula>();
 
 			// If deleteProxyAfterBinding==true, delete the phantom proxy, and also update 
 			if (deleteProxyAfterBinding) {
 				log("now deleting phantom proxy...");
 				deleteEntityInWM(phantomProxy);
-
-				sleepComponent(50);
-				
-				while (!arePossibleBindingsAvailable()) {
-					sleepComponent(20);
-				}
 			}
 						
-			CASTData<ComplexFormula>[] formulae = getWorkingMemoryEntries("binder", ComplexFormula.class);
-			
-			for (int i = 0; i < formulae.length; i++) {
-				possibleBindings.addAll(getAllFormulaeIncludingProxy(formulae[i].getData(), lastPhantomProxy));
-			}
-			return possibleBindings;
+			return bindings;
 			
 		}
 		catch (Exception e) {
@@ -104,22 +98,22 @@ public class BindingPredictor extends ProxyWriter {
 	}
 
 
-	private boolean arePossibleBindingsAvailable() {
+	private Vector<ComplexFormula> getPossibleBindings() {
 		
+		Vector<ComplexFormula> matchingFormulae = new Vector<ComplexFormula>(); 
+
 		try {
 		CASTData<ComplexFormula>[] formulae = getWorkingMemoryEntries("binder", ComplexFormula.class);
 		
 		for (int i = 0 ; i <formulae.length; i++) {
-			Vector<UncertainSuperFormula> matchingformula = getAllFormulaeIncludingProxy(formulae[i].getData(), lastPhantomProxy);
-			if (matchingformula.size() > 0) {
-				return true;
-			}
+			Vector<ComplexFormula> matchingFormula = getAllFormulaeIncludingProxy((ComplexFormula)formulae[i].getData(), lastPhantomProxy);
+			matchingFormulae.addAll(matchingFormula);
 		}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
+		return matchingFormulae;
 	}
 	/**
 	 * Retrieve the predicted belief binding with the highest probability of existence for the
@@ -131,7 +125,7 @@ public class BindingPredictor extends ProxyWriter {
 	 * @return list of predicted belief binding 
 	 */
 
-	protected UncertainSuperFormula getBestPredictedBinding
+	protected ComplexFormula getBestPredictedBinding
 	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 
 		return getMaximum(getPredictedBindings(phantomProxy, deleteProxyAfterBinding));
@@ -146,13 +140,13 @@ public class BindingPredictor extends ProxyWriter {
 	 * @return the max-likelihood union
 	 */
 
-	private UncertainSuperFormula getMaximum (Vector<UncertainSuperFormula> beliefs) {
+	private ComplexFormula getMaximum (Vector<ComplexFormula> beliefs) {
 
-		UncertainSuperFormula maxFormula = new UncertainSuperFormula();
+		ComplexFormula maxFormula = new ComplexFormula();
 		float maxValue = -1.0f;
 
 		// Loop on the union vector
-		for (Enumeration<UncertainSuperFormula> e = beliefs.elements(); e.hasMoreElements() ; ) {
+		for (Enumeration<ComplexFormula> e = beliefs.elements(); e.hasMoreElements() ; ) {
 			SuperFormula cuf = e.nextElement();
 
 			// If the existence probability of current union is higher than the 
@@ -160,7 +154,7 @@ public class BindingPredictor extends ProxyWriter {
 			if (cuf instanceof UncertainSuperFormula) {
 			if (((UncertainSuperFormula)cuf).prob > maxValue) {
 				maxValue = ((UncertainSuperFormula)cuf).prob;
-				maxFormula = ((UncertainSuperFormula)cuf);
+				maxFormula = ((ComplexFormula)cuf);
 			}
 			}
 		}
@@ -174,26 +168,45 @@ public class BindingPredictor extends ProxyWriter {
 	// =================================================================
 
 
-	public static Vector<UncertainSuperFormula> getAllFormulaeIncludingProxy (UncertainSuperFormula formula, PhantomProxy proxy) {
+	public static Vector<ComplexFormula> getAllFormulaeIncludingProxy (ComplexFormula formula, PhantomProxy proxy) {
 
-		Vector<UncertainSuperFormula> buFormulae = new Vector<UncertainSuperFormula>();
+		Vector<ComplexFormula> buFormulae = new Vector<ComplexFormula>();
+
+		
+		Vector<UncertainSuperFormula> propertiesInPhantom = new Vector<UncertainSuperFormula>();
+		for (int i = 0 ; i < proxy.features.length ; i++) {
+			for (int j = 0 ; j < proxy.features[i].alternativeValues.length ; j++) {
+				UncertainSuperFormula newProp = 
+					BeliefModelUtils.createNewProperty
+					(proxy.features[i].featlabel, proxy.features[i].alternativeValues[j]);
+				propertiesInPhantom.add(newProp);
+			}
+		}
+		
 
 		if (formula instanceof ComplexFormula) {
 			for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
 
 				UncertainSuperFormula subformula = (UncertainSuperFormula) ((ComplexFormula)formula).formulae[i];
 				
-				if (subformula instanceof BoundPhantomProxyProperty) {
-					buFormulae.add (formula);
+				if (! (subformula instanceof ComplexFormula)) {
+				
+					// TODO: fix this
+					for (int j = 0 ; j < propertiesInPhantom.size(); j++) {
+					UncertainSuperFormula curProp = propertiesInPhantom.elementAt(j);
+					if (BeliefModelUtils.arePropertiesEqual(subformula, curProp)) {
+						buFormulae.add (formula);	
+					}
 				}
 				
+				}
 				else {
-					Vector<UncertainSuperFormula> partialResult = 
-					getAllFormulaeIncludingProxy ((UncertainSuperFormula)((ComplexFormula)formula).formulae[i], proxy);
+					Vector<ComplexFormula> partialResult = 
+					getAllFormulaeIncludingProxy ((ComplexFormula) subformula, proxy);
 					
-					for (Enumeration<UncertainSuperFormula> e = partialResult.elements(); e.hasMoreElements(); ) {
-						UncertainSuperFormula form = e.nextElement();
-						if (!buFormulae.contains(form)) {
+					for (Enumeration<ComplexFormula> e = partialResult.elements(); e.hasMoreElements(); ) {
+						ComplexFormula form = e.nextElement();
+						if (!containsFormula(buFormulae, form)) {
 							buFormulae.add(form);
 						}
 					}
@@ -204,6 +217,19 @@ public class BindingPredictor extends ProxyWriter {
 		return buFormulae;
 	}
 
+	private static boolean containsFormula (Vector<ComplexFormula> formulae, ComplexFormula form) {
+		
+		for (Enumeration<ComplexFormula> e = formulae.elements(); e.hasMoreElements(); ) {
+			ComplexFormula curForm = e.nextElement();
+			// TODO: correct this
+			if (curForm.id.equals(form.id) && curForm.formulae.length == form.formulae.length) {
+				return true;
+			}
+	}
+		return false;
+	
+	}
+	
 	/**
 	 * Add the phantom proxy to the binding working memory, and specify a new change filter
 	 * to detect possible unions for this proxy
