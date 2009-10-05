@@ -278,7 +278,7 @@ class ContinualAxiomsFF(BasePlanner):
         
         if proc.returncode != 0:
             print "Warning: FF returned with nonzero exitcode:\n\n>>>"
-            print stdout_output
+            print open(stdout_path).read()
             print "<<<\n"
             if proc.returncode > 0:
                 print "Exit code was %d" % proc.returncode
@@ -290,7 +290,7 @@ class ContinualAxiomsFF(BasePlanner):
             pddl_output = open(plan_path).read()
         except IOError:
             print "Warning: FF did not find a plan or crashed.  FF output was:\n\n>>>"
-            print stdout_output
+            print open(stdout_path).read()
             print "<<<\n"
             return None
         pddl_plan = self.parse_ff_output(pddl_output)
@@ -412,7 +412,13 @@ class TFD(BasePlanner):
         actions = []
         for line in lines:
             result = self.TFD_REXP.search(line)
-            actions.append((float(result.group(1)), result.group(2).lower(), float(result.group(3))))
+            start = float(result.group(1))
+            action =  result.group(2).lower()
+            duration = float(result.group(3))
+            if start == 0:
+                #start of a new (usually better plan)
+                actions = []
+            actions.append((start, action, duration))
                 
         return actions
 
@@ -435,16 +441,17 @@ class TFD(BasePlanner):
         plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
         #action_list = [self.remove_inferable_vars(action, task._mapltask) for action in action_list]
         times_actions = [(a[0], a[1]) for a in action_list]  # keep it sequentially for now
-        nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
-        for i in xrange(0, len(nodes)-1):
-            plan.add_node(nodes[i])
-            link = plans.OrderingConstraint(nodes[i], nodes[i+1])
-            plan.add_link(link)
-        if nodes:
-            plan.add_link(plan.init_node, nodes[0])
-            plan.add_link(nodes[-1], plan.goal_node)
-        else:
-            plan.add_link(plan.init_node, plan.goal_node)
+        plan = plan_postprocess.make_po_plan(times_actions, task)
+        #nodes = [self.createPlanNode(a, t+1, task._mapltask) for t,a in times_actions]
+        #for i in xrange(0, len(nodes)-1):
+        #    plan.add_node(nodes[i])
+        #    link = plans.OrderingConstraint(nodes[i], nodes[i+1])
+        #    plan.add_link(link)
+        #if nodes:
+        #    plan.add_link(plan.init_node, nodes[0])
+        #    plan.add_link(nodes[-1], plan.goal_node)
+        #else:
+        #    plan.add_link(plan.init_node, plan.goal_node)
             
         return plan
     

@@ -84,7 +84,7 @@ increase = Predicate("increase", [Parameter("?f", FunctionType(numberType)), Par
 decrease = Predicate("decrease", [Parameter("?f", FunctionType(numberType)), Parameter("?v", numberType)], builtin=True)
 
 numericOps = [num_assign, scale_up, scale_down, increase, decrease]
-assignmentOps = [assign, num_assign, equalAssign, num_equalAssign]
+assignmentOps = [assign, change, num_assign, equalAssign, num_equalAssign]
 
 gt = Predicate(">", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
 lt = Predicate("<", [Parameter("?n1", numberType), Parameter("?n2", numberType)], builtin=True)
