@@ -295,34 +295,32 @@ public class Binder extends ManagedComponent  {
 			// The ID of the deleted proxy
 			String deletedProxyID= wmc.address.id;
 
+			Vector<UnionConfiguration> newUnionConfigs = new Vector<UnionConfiguration>();
+
 			// Loop on the current union configurations to update each of them in turn
 			for (Enumeration<UnionConfiguration> configs = 
 				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
-
+				
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
-
+				
 				// Loop on the unions in the configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
-
+					
 					Union existingUnion = existingUnionConfig.includedUnions[i];
 
 					// Loop on the proxies included in the unions
 					for (int j = 0; j < existingUnion.includedProxies.length ; j++) {
-
+						
 						Proxy existingProxy = existingUnion.includedProxies[j];
 
 						// If the proxy turns out to be the deleted proxy, update or remove
 						// the union and the configuration
 						if (existingProxy.entityID.equals(deletedProxyID)) {
+						
 							Vector<PerceivedEntity> proxies = 
 								getOtherProxies(existingUnion.includedProxies, existingProxy);
 							
 							if (proxies.size() > 0) { 
-								
-								if (existingProxy instanceof PhantomProxy) {
-									proxies.elementAt(0).features = 
-										addSpecialBindingFeature(proxies.elementAt(0).features, (PhantomProxy)existingProxy);
-								}
 								
 								Union updatedUnion = 
 									constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
@@ -332,21 +330,22 @@ public class Binder extends ManagedComponent  {
 								existingUnionConfig = 
 									removeUnionFromConfig(existingUnionConfig, existingUnion);
 							}
+							
+							if (!isConfigurationAlreadyIncluded(currentUnionConfigurations, existingUnionConfig)) {
+								newUnionConfigs.add(existingUnionConfig);
+							}
 						}
 					}
 				}
 
 			}
 
-					
-			// based on these scores, compute the existence probabilities for each union
-			BinderUtils.addProbExistsToUnions(currentUnionConfigurations);
+			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
+
+			currentUnionConfigurations = newUnionConfigs;
 			
-			// Get the nbest configurations (with N as a parameter)
-			if (nbestsFilter > 0) {
-				currentUnionConfigurations = 
-					ConfigurationFilter.getNBestUnionConfigurations (currentUnionConfigurations, nbestsFilter);
-			}
+			recompute(currentUnionConfigurations);	
+
 			
 			// Update the alternative union configurations
 			AlternativeUnionConfigurations alters = 
@@ -461,6 +460,7 @@ public class Binder extends ManagedComponent  {
 					// check if the current union and the new one can be merged
 					if ( !hasConflicts(existingUnion, newUnion)) {
 
+						log("constructing new union between "  + existingUnion.entityID + " and " + newUnion.entityID );
 						if (!alreadyComputed(existingUnion, alreadyMergedUnions)) {
 
 							// If not, construct the merged union
@@ -484,9 +484,10 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 
+			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
+
 			recompute(newUnionConfigs);
 
-			log("Total number of union configurations generated: " + currentUnionConfigurations.size());
 
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations(newUnionConfigs);
@@ -615,6 +616,45 @@ public class Binder extends ManagedComponent  {
 	}
 	
 	
+	private boolean isConfigurationAlreadyIncluded 
+		(Vector<UnionConfiguration> configs, UnionConfiguration config) {
+		
+		for (int i = 0 ; i < configs.size(); i++) {
+			UnionConfiguration curConfig = configs.elementAt(i);
+			
+			boolean foundMatchingConfig = true;
+			
+			if ((!curConfig.equals(config)) && (curConfig.includedUnions.length == config.includedUnions.length)) {
+						
+				HashMap<String, Union> entityIDsForCurConfig = new HashMap<String, Union>();
+				for (int j = 0 ; j < curConfig.includedUnions.length ; j++) {
+					entityIDsForCurConfig.put(curConfig.includedUnions[j].entityID, curConfig.includedUnions[j]);
+				}
+				
+				for (int j = 0 ; j < config.includedUnions.length ; j++) {
+					if (entityIDsForCurConfig.containsKey(config.includedUnions[j].entityID)) {
+						Union unionInCurConfig = entityIDsForCurConfig.get(config.includedUnions[j].entityID);
+						if (unionInCurConfig.features.length != config.includedUnions[j].features.length) {
+							foundMatchingConfig = false;
+						}
+					}
+					else {
+						foundMatchingConfig = false;
+					}
+				}
+			}
+			else {
+				foundMatchingConfig = false;
+			}
+			
+			if (foundMatchingConfig) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Get a vector containing all elements in the "proxies" array apart from proxyToExclude
 	 * 
@@ -679,19 +719,6 @@ public class Binder extends ManagedComponent  {
 		existingconfig.includedUnions = unionsInConfig.toArray(existingconfig.includedUnions);
 
 		return existingconfig;
-	}
-
-
-	
-	private Feature[] addSpecialBindingFeature (Feature[] existingFeatures, PhantomProxy phantom) {
-		Feature[] newFeats = new Feature[existingFeatures.length + 1];
-		for (int z = 0 ; z < existingFeatures.length; z++) {
-			newFeats[z] = existingFeatures[z]; 
-		}
-		newFeats[existingFeatures.length] = 
-			UnionConstructor.createSpecialBindingFeature(phantom);
-		
-		return newFeats;
 	}
 	
 	
