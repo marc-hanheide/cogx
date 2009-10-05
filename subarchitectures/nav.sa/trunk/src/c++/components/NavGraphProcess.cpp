@@ -1345,10 +1345,12 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
         double dir = atan2(yR - yL, xR - xL);
 
         m_Mutex.lock();
-        long lastid = m_cureNavGraph.m_Nodes.back()->getId();
+        //long lastid = m_cureNavGraph.m_Nodes.back()->getId();
+	long lastsize = m_cureNavGraph.m_Nodes.size();
         m_cureNavGraph.addGatewayNode(x,y,dir,
                                       m_DoorDetector.m_Width);
-	if (m_cureNavGraph.m_Nodes.back()->getId() == lastid) {
+	//if (m_cureNavGraph.m_Nodes.back()->getId() == lastid) {
+	if (m_cureNavGraph.m_Nodes.size() == lastsize) {
           checkForNodeChanges();
 	} else {
           addFreeNode(m_cureNavGraph.m_Nodes.back()->getId(), 
