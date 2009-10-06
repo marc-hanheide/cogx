@@ -4,15 +4,15 @@ e(now) : uttered(h, Nom) <-
 	i : prop(Nom, list) / true,
 	i : rel_First(Nom, FirstNom) / true,
 		i : sort(FirstNom, greeting) / true,
-		i : prop(FirstNom, hi) / true,
+		i : prop(FirstNom, GreetProp) / true,
 	i : rel_Next(Nom, NextNom) / true,
 		i : sort(NextNom, animate) / true,
-		i : prop(NextNom, 'Robot') / true,
+		i : prop(NextNom, Robot) / true,
 	e(now) : greeting(h, r) / 0.1.
 
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, greeting) / true,
-	i : prop(Nom, hi) / true,
+	i : prop(Nom, GreetProp) / true,
 	e(now) : greeting(h, r) / 0.5.
 
 e(now) : clarify(h, CR) <-
