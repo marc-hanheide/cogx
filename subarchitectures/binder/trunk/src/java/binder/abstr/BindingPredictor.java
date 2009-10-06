@@ -23,7 +23,6 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import beliefmodels.adl.Belief;
-import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.LinguisticLabelProperty;
 import beliefmodels.domainmodel.cogx.SuperFormula;
