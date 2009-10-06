@@ -12,6 +12,7 @@ package comsys.components.reference;
 // BINDER IMPORTS
 //-----------------------------------------------------------------
 
+import beliefmodels.adl.Belief;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
@@ -143,7 +144,7 @@ public class cc_ReferentialBindings
 	public void init () { 
 
 	} // end method init
-	
+	 
 	private void handleRefReadings (WorkingMemoryChange _wmc) {
 		try {
 			// get the id of the working memory entry
@@ -212,16 +213,16 @@ public class cc_ReferentialBindings
 							PhantomProxy phant = phantIter.next();
 							
 							// get the unions, delete phantom afterwards
-							Vector<ComplexFormula> formulae = getPredictedBindings(phant,true);					
+							Vector<Belief> beliefs = getPredictedBindings(phant,true);					
 							
-							log("Number of possible bindings found for restrTreeRoot: " + formulae.size());
+							log("Number of possible bindings found for restrTreeRoot: " + beliefs.size());
 							log("===============================");
 							int count = 1;
-							for (Enumeration<ComplexFormula> e = formulae.elements(); e.hasMoreElements() ; ) {
-								ComplexFormula curFor = e.nextElement();
-								if (curFor.prob > 0.01) {
+							for (Enumeration<Belief> e = beliefs.elements(); e.hasMoreElements() ; ) {
+								Belief curB = e.nextElement();
+								if (((UncertainSuperFormula)curB.phi).prob > 0.01) {
 								log("Belief formula for binding " + count + ": \n" + 
-										BeliefModelUtils.getFormulaPrettyPrint(curFor, 1));
+										BeliefModelUtils.getBeliefPrettyPrint(curB, 1));
 								count++;
 								}
 								if (e.hasMoreElements()) 
@@ -232,9 +233,9 @@ public class cc_ReferentialBindings
 							
 							// create the anchorings
 							Vector<Anchor> anchors  = new Vector<Anchor>();
-							for (Iterator<ComplexFormula> formIter = formulae.iterator(); formIter.hasNext(); ) { 
-								UncertainSuperFormula curFormula = formIter.next();
-								Anchor anchor = createAnchorFromFormula(curFormula);
+							for (Iterator<Belief> beliefIter = beliefs.iterator(); beliefIter.hasNext(); ) { 
+								Belief curB = beliefIter.next();
+								Anchor anchor = createAnchorFromFormula((UncertainSuperFormula)curB.phi);
 								anchors.add(anchor);
 							} // end for over possible formulae
 							// create the reference binding, add it to the vector of bindings for this reading
