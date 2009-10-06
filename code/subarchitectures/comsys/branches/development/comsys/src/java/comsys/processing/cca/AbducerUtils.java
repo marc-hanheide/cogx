@@ -6,6 +6,8 @@ import comsys.datastructs.lf.*;
 import comsys.lf.utils.LFUtils;
 import Abducer.*;
 
+import comsys.processing.cca.ProofUtils;
+
 public class AbducerUtils {
 
 	/** Return a new modalised formula.
@@ -161,4 +163,129 @@ public class AbducerUtils {
 */
 		}
 	}
+	
+	public static LogicalForm factsToLogicalForm(ModalisedFormula[] facts, String root) {
+		LogicalForm lf = LFUtils.newLogicalForm();
+		
+		// go through the facts, extending the logical form
+		for (int i = 0; i < facts.length; i++) {
+			ModalisedFormula f = facts[i];
+			String nomVar = "";
+			
+			if (f.p.predSym.equals("sort") && f.p.args.length == 2) {
+				//System.err.println("sort...");
+				nomVar = ProofUtils.termToString(f.p.args[0]);
+				String sort = ProofUtils.termToString(f.p.args[1]);
+
+				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
+				if (nom == null) {
+					nom = LFUtils.newLFNominal(nomVar, sort);
+				}
+				else {
+					nom.sort = sort;
+				}
+				//System.err.println("  " + sort);
+				//System.err.println("  " + LFUtils.lfNominalToString(nom));
+				lf.noms = LFUtils.lfAddNominal(lf.noms, nom);
+			}
+
+			else if (f.p.predSym.equals("prop") && f.p.args.length == 2) {
+				//System.err.println("prop...");
+				nomVar = ProofUtils.termToString(f.p.args[0]);
+				String prop = ProofUtils.termToString(f.p.args[1]);
+				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
+				if (nom == null) {
+					nom = LFUtils.newLFNominal(nomVar);
+				}
+				nom.prop = LFUtils.lfNominalAddProposition(nom, prop);
+				//System.err.println("  " + prop);
+				//System.err.println("  " + LFUtils.lfNominalToString(nom));
+				lf.noms = LFUtils.lfAddNominal(lf.noms, nom);
+			}
+
+			else if (f.p.predSym.matches("feat_.*") && f.p.args.length == 2) {
+				//System.err.println("feat...");
+				nomVar = ProofUtils.termToString(f.p.args[0]);
+				Feature feat = new Feature();
+				feat.feat = f.p.predSym.substring(5);
+				feat.value = ProofUtils.termToString(f.p.args[1]);
+				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
+				if (nom == null) {
+					nom = LFUtils.newLFNominal(nomVar);
+				}
+				nom.feats = LFUtils.lfNominalAddFeature(nom, feat);
+				//System.err.println("  " + feat.feat + " -> " + feat.value);
+				//System.err.println("  " + LFUtils.lfNominalToString(nom));
+				lf.noms = LFUtils.lfAddNominal(lf.noms, nom);
+			}
+						
+			else if (f.p.predSym.matches("rel_.*") && f.p.args.length == 2) {
+				//System.err.println("rel...");
+				nomVar = ProofUtils.termToString(f.p.args[0]);
+				String mode = f.p.predSym.substring(4);
+				String dep = ProofUtils.termToString(f.p.args[1]);
+				LFNominal nom = LFUtils.lfGetNominal(lf, nomVar);
+				LFRelation rel = LFUtils.newLFRelation(nomVar, mode, dep);
+				if (nom == null) {
+					nom = LFUtils.newLFNominal(nomVar);
+				}
+				nom.rels = LFUtils.lfNominalAddRelation(nom, rel);
+				lf.noms = LFUtils.lfAddNominal(lf.noms, nom);
+			}
+		}
+		//System.err.println(LFUtils.lfToString(lf));
+
+		// set the root
+		LFNominal rootNom = LFUtils.lfGetNominal(lf, root);
+		if (rootNom == null) {
+			rootNom = LFUtils.newLFNominal(root);
+		}
+		lf.root = rootNom;
+
+		//System.err.println(LFUtils.lfToString(lf));
+
+		return lf;
+	}
+
+/*
+	public static LFNominal factsToLFNominal(ModalisedFormula[] facts, String nomVar) {
+		String sort = "";
+		String prop = "";
+		ArrayList<Feature> feats = new ArrayList<Feature>();
+		ArrayList<LFRelation> rels = new ArrayList<LFRelation>();
+
+		for (int i = 0; i < facts.length; i++) {
+
+			ModalisedFormula f = facts[i];
+
+			if (f.p.predSym.equals("sort") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
+				sort = ProofUtils.termToString(f.p.args[1]);
+			}
+
+			if (f.p.predSym.equals("prop") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
+				prop = ProofUtils.termToString(f.p.args[1]);
+			}
+			
+			if (f.p.predSym.matches("feat_.*") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
+				Feature feat = new Feature();
+				feat.feat = f.p.predSym.substring(5);
+				feat.value = ProofUtils.termToString(f.p.args[1]);
+				feats.add(feat);
+			}
+			
+			if (f.p.predSym.matches("rel_.*") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
+				LFRelation rel = new LFRelation();
+				rel.mode = f.p.predSym.substring(4);
+				rel.head = nomVar;
+				rel.dep = ProofUtils.termToString(f.p.args[1]);
+				rels.add(rel);
+			}
+		}
+		
+		LFNominal nom = LFUtils.newLFNominal(nomVar, sort);
+		nom.feats = feats.toArray(new Feature[0]);
+		nom.rels = rels.toArray(new LFRelation[0]);
+		return nom;
+	}
+*/
 }

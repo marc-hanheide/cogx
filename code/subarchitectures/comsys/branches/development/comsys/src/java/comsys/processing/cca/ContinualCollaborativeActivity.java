@@ -26,6 +26,7 @@ import Abducer.*;
 import beliefmodels.adl.Belief;
 import beliefmodels.adl.BeliefModel;
 import comsys.datastructs.comsysEssentials.BoundReadings;
+import comsys.datastructs.comsysEssentials.ClarificationRequest;
 import comsys.datastructs.comsysEssentials.ProofBlock;
 import comsys.datastructs.comsysEssentials.RefBinding;
 import comsys.datastructs.comsysEssentials.Anchor;
@@ -66,6 +67,7 @@ public class ContinualCollaborativeActivity {
 	/** Activity modes */
 	
 	public static final String UNDERSTAND = "uttered";
+	public static final String CLARIFY    = "clarify";
 	public static final String GENERATE   = "produce";
 	
 	/** The abduction engine */ 
@@ -78,8 +80,10 @@ public class ContinualCollaborativeActivity {
 	
 	/** path names to abduction rules and facts; class provides get-/set-methods */ 
 	
-    private String rulesFilename = "/dev/null";
-    private String factsFilename = "/dev/null";	
+    private String understandRulesFilename = "/dev/null";
+    private String understandFactsFilename = "/dev/null";
+    private String generateRulesFilename = "/dev/null";
+    private String generateFactsFilename = "/dev/null";
 
     private ProofBlock[] stack = new ProofBlock[0];
 	
@@ -133,26 +137,21 @@ public class ContinualCollaborativeActivity {
 			abducer.clearFacts();
 			abducer.clearRules();
 			abducer.clearAssumables();
-			abducer.loadFactsFromFile(factsFilename);
-			abducer.loadRulesFromFile(rulesFilename);
+			abducer.loadFactsFromFile(understandFactsFilename);
+			abducer.loadFactsFromFile(generateFactsFilename);
+			abducer.loadRulesFromFile(understandRulesFilename);
+			abducer.loadRulesFromFile(generateRulesFilename);
 		}
 		catch (AbducerException e) {
 			System.err.println(e.message);
 		}
 	} // end 
 	
-	/** returns the filename for the facts file for the abducer */
-	public String getFactsFileName () { return factsFilename; } 	
-
-	/** returns the filename for the rules file for the abducer */	
-	public String getRulesFileName () { return rulesFilename; }
-
-	/** sets the filename for the facts file for the abducer */	
-	public void setFactsFileName (String fn) { factsFilename = fn; }
-	
-	/** sets the filename for the rules file for the abducer */		
-	public void setRulesFileName (String fn) { rulesFilename = fn; } 
-	
+	public void setUnderstandFactsFileName (String fn) { understandFactsFilename = fn; }
+	public void setUnderstandRulesFileName (String fn) { understandRulesFilename = fn; }
+	public void setGenerateFactsFileName (String fn) { generateFactsFilename = fn; }
+	public void setGenerateRulesFileName (String fn) { generateRulesFilename = fn; }
+		
 	/**
 	 constructProof constructs an abductive proof for a given 
 	 logical form. 	 
@@ -162,7 +161,7 @@ public class ContinualCollaborativeActivity {
 	 @return The abductive proof
 	 */ 
 	
-	public MarkedQuery[] constructProof (String activityMode, LogicalForm lf) {
+	public MarkedQuery[] understandProof (String activityMode, Term nomTerm) {
 		Abducer.UnsolvedQuery goal = new Abducer.UnsolvedQuery();
 		goal.mark = Abducer.Marking.Unsolved;
 
@@ -172,7 +171,8 @@ public class ContinualCollaborativeActivity {
 				},
 				AbducerUtils.predicate(activityMode, new Term[] {
 					AbducerUtils.term("h"),
-					AbducerUtils.term(lf.root.nomVar)
+					nomTerm
+					//AbducerUtils.term(lf.root.nomVar)
 				}));
 
 		goal.isConst = false;
@@ -180,6 +180,47 @@ public class ContinualCollaborativeActivity {
 		goal.constCost = 0.0f;
 
 		MarkedQuery[] goals = new MarkedQuery[] {goal};
+		
+		String listGoalsStr = "";
+		for (int i = 0; i < goals.length; i++) {
+			listGoalsStr += MercuryUtils.modalisedFormulaToString(goals[0].body);
+			if (i < goals.length - 1) listGoalsStr += ", ";
+		}
+		log("proving: [" + listGoalsStr + "]");
+		
+		ProveResult result = abducer.prove(goals);
+		if (result == Abducer.ProveResult.ProofFound) {
+			log("seems we've got a proof");
+			try {
+				MarkedQuery[] p = abducer.getBestProof();
+				return p;
+			}
+			catch (NoProofException e) {
+				e.printStackTrace();
+				return null;
+			}
+		} else { 
+			return null; 
+		} // end if.. else
+	} // end method
+
+	/**
+	 * Find the most appropriate feedback to a given event.
+	 * @param activityMode
+	 * @param nomTerm
+	 * @return
+	 */
+	public MarkedQuery[] generateProof (ModalisedFormula[] evts) {
+
+		UnsolvedQuery[] goals = new UnsolvedQuery[evts.length];
+		for (int i = 0; i < evts.length; i++) {
+			goals[i] = new UnsolvedQuery();
+			goals[i].mark = Abducer.Marking.Unsolved;
+			goals[i].body = evts[i];
+			goals[i].isConst = false;
+			goals[i].costFunction = "true";
+			goals[i].constCost = 0.0f;
+		}
 		
 		String listGoalsStr = "";
 		for (int i = 0; i < goals.length; i++) {
@@ -258,6 +299,19 @@ public class ContinualCollaborativeActivity {
 		} // end for over readings 		
 		
 	} // end method
+	
+	public void addCRContext(ClarificationRequest cr) {
+		abducer.addFact(AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.infoModality()},
+				AbducerUtils.predicate("cr_modality", new Term[] {
+					AbducerUtils.term(cr.id),
+					AbducerUtils.term(cr.sourceModality)
+				})));
+		abducer.addFact(AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.infoModality()},
+				AbducerUtils.predicate("cr_entity", new Term[] {
+						AbducerUtils.term(cr.id),
+						AbducerUtils.term(cr.sourceModality)
+					})));
+	}
 	
 	/**
 	 * Perform verifiable update.

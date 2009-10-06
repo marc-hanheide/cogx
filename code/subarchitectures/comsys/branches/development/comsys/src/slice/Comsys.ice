@@ -504,6 +504,22 @@ module comsysEssentials {
 	// Proof block stack, the top is the first element.
 	sequence<ProofBlock> ProofBlockSeq;
 
+	// A ClarificationRequest formulates a request which is a certain formula, 
+	// (about) requesting the clarification of another formula relative to 
+	// that formula (clarificationNeed). 
+	// The about formula is grounded in the models of a source modality 
+	// (sourceModality), referring to a structure in those models by an 
+	// identifier (sourceEntityID). 
+	
+	class ClarificationRequest extends beliefmodels::adl::EpistemicObject 
+	{ 
+		beliefmodels::adl::Formula about;
+		string  sourceModality;
+		string  sourceEntityID;
+		beliefmodels::adl::Formula clarificationNeed;
+	}; 
+
+
 };
 }; 
 };
