@@ -115,7 +115,6 @@ public class cc_ReferentialReadings
 						ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class,  WorkingMemoryOperation.ADD),
 						new WorkingMemoryChangeReceiver() {
 						public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-							log("OHOHOHOHO");
 						handleLogicalForm(_wmc);
 						}
 						});
