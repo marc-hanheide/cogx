@@ -929,19 +929,6 @@ extern "C" void gpuCensusImageSetup(unsigned int w, unsigned int h, unsigned int
 	CUDA_SAFE_CALL(cudaMalloc((void**)&d_Costs, g_Width * g_Height * sizeof(int)));
 	CUDA_SAFE_CALL(cudaMalloc((void**)&d_Costs_RL, g_Width * g_Height * sizeof(int)));
 	CUDA_SAFE_CALL(cudaMalloc((void**)&d_Costs_LR, g_Width * g_Height * sizeof(int)));
-
-	//CUDA_SAFE_CALL(cudaMemset(d_integralImage, 0, ((g_Width-disp_max) + 2 * g_blockSize) * (g_Height + 2 * g_blockSize) * sizeof(unsigned int)));
-	CUDA_SAFE_CALL(cudaMemset(d_DSI, 0, disparities * g_Width * g_Height * sizeof(unsigned int)));
-	CUDA_SAFE_CALL(cudaMemset(d_Costs, 0, g_Width * g_Height * sizeof(int)));
-	CUDA_SAFE_CALL(cudaMemset(d_Costs_RL, 0, g_Width * g_Height * sizeof(int)));
-	CUDA_SAFE_CALL(cudaMemset(d_Costs_LR, 0, g_Width * g_Height * sizeof(int)));
-
-	dim3 grid(iDivUp(g_Width, 16), iDivUp(g_Height, 16));
-	dim3 block(16, 16);
-
-	setArray<<<grid, block>>>(d_DMI, 0.f, g_Width, g_Height);
-	setArray<<<grid, block>>>(d_DMI_RL, -1.f, g_Width, g_Height);
-	setArray<<<grid, block>>>(d_DMI_LR, -1.f, g_Width, g_Height);
 }
 
 extern "C" void gpuCensusImageCleanup() {
@@ -1000,6 +987,20 @@ extern "C" void gpuCensusLoadImages(int nr) {
 }
 
 extern "C" void gpuCensusSetImages(unsigned char *left, unsigned char *right) {
+	unsigned int disparities = (g_disp_max + 1 - g_disp_min) / g_disp_step;
+
+	//CUDA_SAFE_CALL(cudaMemset(d_integralImage, 0, ((g_Width-disp_max) + 2 * g_blockSize) * (g_Height + 2 * g_blockSize) * sizeof(unsigned int)));
+	CUDA_SAFE_CALL(cudaMemset(d_DSI, 0, disparities * g_Width * g_Height * sizeof(unsigned int)));
+	CUDA_SAFE_CALL(cudaMemset(d_Costs, 0, g_Width * g_Height * sizeof(int)));
+	CUDA_SAFE_CALL(cudaMemset(d_Costs_RL, 0, g_Width * g_Height * sizeof(int)));
+	CUDA_SAFE_CALL(cudaMemset(d_Costs_LR, 0, g_Width * g_Height * sizeof(int)));
+
+	dim3 grid(iDivUp(g_Width, 16), iDivUp(g_Height, 16));
+	dim3 block(16, 16);
+
+	setArray<<<grid, block>>>(d_DMI, 0.f, g_Width, g_Height);
+	setArray<<<grid, block>>>(d_DMI_RL, -1.f, g_Width, g_Height);
+	setArray<<<grid, block>>>(d_DMI_LR, -1.f, g_Width, g_Height);
 	CUDA_SAFE_CALL( cudaMemcpyToArray(cuImageLeft, 0, 0, left, DATA_SIZE, cudaMemcpyHostToDevice) );
 	CUDA_SAFE_CALL( cudaMemcpyToArray(cuImageRight, 0, 0, right, DATA_SIZE, cudaMemcpyHostToDevice) );
 }
