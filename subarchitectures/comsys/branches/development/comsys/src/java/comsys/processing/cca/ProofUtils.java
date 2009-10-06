@@ -253,5 +253,12 @@ public class ProofUtils {
 		
 		return null;
 	}
-	
+
+	public static ModalisedFormula[] proofToFacts(MarkedQuery[] proof) {
+		ModalisedFormula[] result = new ModalisedFormula[proof.length];
+		for (int i = 0; i < proof.length; i++) {
+			result[i] = proof[i].body;
+		}
+		return result;
+	}
 }

@@ -76,6 +76,9 @@ public class ComsysGoals {
 	
 	public static final String PARSESELECTION_TASK = "parseselection";
 
+	public static final String CCA_BM_TASK = "ccaBM";
+	public static final String CCA_SENSE_TASK = "ccaSense";
+	public static final String CCA_CLARIFICATION_REQUEST_TASK = "ccaClarif";
 	public static final String CCA_UNDERSTAND_TASK = "ccaUnderstand";
 	public static final String CCA_TACIT_ACTION_TASK = "ccaTacitAction";
 	

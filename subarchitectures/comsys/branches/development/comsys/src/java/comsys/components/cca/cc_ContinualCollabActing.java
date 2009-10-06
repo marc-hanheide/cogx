@@ -8,15 +8,12 @@ import java.util.*;
 import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
 import comsys.arch.ProcessingData;
-import comsys.datastructs.comsysEssentials.PackedLFs;
-import comsys.datastructs.comsysEssentials.BoundReadings;
-import comsys.datastructs.comsysEssentials.ProofBlock;
+import comsys.datastructs.comsysEssentials.*;
 
 import comsys.lf.utils.LFUtils;
+import comsys.datastructs.lf.LogicalForm;
 
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
-import cast.architecture.ManagedComponent;
+import cast.architecture.*;
 import cast.SubarchitectureComponentException;
 import cast.cdl.*;
 import cast.core.CASTData;
@@ -59,8 +56,10 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 	// Main engine handling the processing for the component
 	ContinualCollaborativeActivity ccaEngine = null; 
 	
-	private String rulesFileName = null;
-	private String factsFileName = null;
+	private String understandRulesFileName = null;
+	private String understandFactsFileName = null;
+	private String generateRulesFileName = null;
+	private String generateFactsFileName = null;
     
     // =================================================================
     // CONSTRUCTOR METHODS
@@ -82,8 +81,10 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 		ccaEngine = new ContinualCollaborativeActivity();
 		// if needed, set facts/rules-filenames
 		// initialize the abduction engine
-		if (factsFileName != null) ccaEngine.setFactsFileName(factsFileName);
-		if (rulesFileName != null) ccaEngine.setRulesFileName(rulesFileName);
+		if (understandFactsFileName != null) ccaEngine.setUnderstandFactsFileName(understandFactsFileName);
+		if (understandRulesFileName != null) ccaEngine.setUnderstandRulesFileName(understandRulesFileName);
+		if (generateFactsFileName != null) ccaEngine.setGenerateFactsFileName(generateFactsFileName);
+		if (generateRulesFileName != null) ccaEngine.setGenerateRulesFileName(generateRulesFileName);
 		ccaEngine.initAbducer();
 		
     } // end init
@@ -99,8 +100,15 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 				ChangeFilterFactory.createLocalTypeFilter(BoundReadings.class,  WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-//						System.err.println("slf");
-						handleWorkingMemoryChange(_wmc);
+						handleBoundReadings(_wmc);
+					}
+				});
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(ClarificationRequest.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleClarificationRequest(_wmc);
 					}
 				});
 	}
@@ -137,7 +145,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
     // CAST WORKING MEMORY MONITORING
     // =================================================================
 
-	private void handleWorkingMemoryChange(WorkingMemoryChange _wmc) {
+	private void handleBoundReadings(WorkingMemoryChange _wmc) {
 		log("Got a WM change");
 		try {
 			String id = _wmc.address.id;
@@ -153,7 +161,26 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 		catch (SubarchitectureComponentException e) {
 			e.printStackTrace();
 		}
+	}		
+	
+	private void handleClarificationRequest(WorkingMemoryChange _wmc) {
+		log("Got a WM change");
+		try {
+			String id = _wmc.address.id;
+			CASTData data = getWorkingMemoryEntry(id);
+			String taskID = newTaskID();
+			ProcessingData pd = new ProcessingData(newProcessingDataId());
+			pd.add(data);
+			m_proposedProcessing.put(taskID, pd);
+			String taskGoal = ComsysGoals.CCA_CLARIFICATION_REQUEST_TASK;
+			proposeInformationProcessingTask(taskID, taskGoal);
+        	m_taskToTaskTypeMap.put(taskID, taskGoal);       
+		}
+		catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		}
 	}			
+
 	
 	private String newProcessingDataId() {
 		String result = "pd" + pdIdCounter;
@@ -183,6 +210,9 @@ public class cc_ContinualCollabActing extends ManagedComponent {
                         try {
                             if (taskType.equals(ComsysGoals.CCA_UNDERSTAND_TASK)) {
                                 executeEventInterpretTask(data);
+                            }
+                            else if (taskType.equals(ComsysGoals.CCA_CLARIFICATION_REQUEST_TASK)) {
+                            	executeClarificationRequestTask(data);
                             }
                             else {
                                 log("Unknown task type to process in Comsys:continualCollabActing component");
@@ -224,12 +254,13 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 				// construct the abductive proof
             	ccaEngine.addFactualContext(boundReadings.lform);
             	ccaEngine.addAnchoringContext(boundReadings);
-				MarkedQuery[] proof = ccaEngine.constructProof(ContinualCollaborativeActivity.UNDERSTAND, boundReadings.lform);
+				MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.UNDERSTAND,
+						AbducerUtils.term(boundReadings.lform.root.nomVar));
 
 				// print the proof ... 
 				if (proof != null) { 	
             		log("Found an abductive proof:\n" + PrettyPrinting.proofToString(proof));
-            		
+     		
             		log("starting verifiable update");
             		// TODO: where do I get the belief model?
             		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, null);
@@ -242,14 +273,138 @@ public class cc_ContinualCollabActing extends ManagedComponent {
             		ls += "}";
             		log(ls);
             		
+            		if (contextUpdates.length == 0) {
+            			log("no belief updates...");
+            		}
+            		
+        			log("looking for linguistic feedback");
+        			ModalisedFormula[] assumptions = ProofUtils.proofToFacts(ProofUtils.filterAssumed(proof));
+        			
+        			// filter out just the event modality
+        			ArrayList<ModalisedFormula> list = new ArrayList<ModalisedFormula>();
+        			for (int i = 0; i < assumptions.length; i++) {
+        				if (assumptions[i].m.length == 1 && assumptions[i].m[0] instanceof EventModality) {
+        					list.add(assumptions[i]);
+        				}
+        			}
+
+        			// generate feedback
+            		MarkedQuery[] feedbackProof = ccaEngine.generateProof(list.toArray(new ModalisedFormula[0]));
+            		if (feedbackProof != null) {
+            			log("Production proof:\n" + PrettyPrinting.proofToString(feedbackProof));
+            			if (toBeRealised(feedbackProof)) {
+            				log("feedback to be realised");
+            				
+                			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(feedbackProof), "dummy1");
+                			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
+                			ContentPlanningGoal cpg = new ContentPlanningGoal();
+                			cpg.cpgid = "x";
+                			cpg.lform = prodLF;
+                			addToWorkingMemory(newDataID(), cpg);
+            			}
+            			else {
+            				log("no feedback for realisation");
+            			}
+            		}
+            		
             		// TODO: update the belief model
-            		log("TODO: updating the belief model");
+            		log("update the belief model");            		
             	}
             }
     	}
         catch (Exception e) {
         	e.printStackTrace();
         }
+    }
+
+    private void executeClarificationRequestTask(ProcessingData pd) throws ComsysException {
+    	log("interpreting an event");
+    	try {	
+            CASTData crWM = pd.getByType(CASTUtils.typeName(ClarificationRequest.class));
+            if (crWM != null) {
+				// get the data
+            	ClarificationRequest cr = (ClarificationRequest) crWM.getData();
+            	
+				// construct the abductive proof
+
+            	ccaEngine.addCRContext(cr);
+				MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.CLARIFY,
+						AbducerUtils.term(cr.id));
+
+				// print the proof ... 
+				if (proof != null) { 	
+            		log("Found an abductive proof:\n" + PrettyPrinting.proofToString(proof));
+     		
+            		log("starting verifiable update");
+            		// TODO: where do I get the belief model?
+            		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, null);
+
+            		String ls = "updates = {\n";
+            		for (int i = 0; i < contextUpdates.length; i++) {
+            			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
+            			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
+            		}
+            		ls += "}";
+            		log(ls);
+            		
+            		if (contextUpdates.length == 0) {
+            			log("no belief updates");
+            		}
+            		
+        			log("looking for linguistic feedback");
+        			ModalisedFormula[] assumptions = ProofUtils.proofToFacts(ProofUtils.filterAssumed(proof));
+        			
+        			// filter out just the event modality
+        			ArrayList<ModalisedFormula> list = new ArrayList<ModalisedFormula>();
+        			for (int i = 0; i < assumptions.length; i++) {
+        				if (assumptions[i].m.length == 1 && assumptions[i].m[0] instanceof EventModality) {
+        					list.add(assumptions[i]);
+        				}
+        			}
+
+        			// generate feedback
+            		MarkedQuery[] feedbackProof = ccaEngine.generateProof(list.toArray(new ModalisedFormula[0]));
+            		if (feedbackProof != null) {
+            			log("Production proof:\n" + PrettyPrinting.proofToString(feedbackProof));
+            			if (toBeRealised(feedbackProof)) {
+            				log("feedback to be realised");
+            				
+                			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(feedbackProof), "dummy1");
+                			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
+                			ContentPlanningGoal cpg = new ContentPlanningGoal();
+                			cpg.cpgid = "x";
+                			cpg.lform = prodLF;
+                			addToWorkingMemory(newDataID(), cpg);
+            			}
+            			else {
+            				log("no feedback for realisation");
+            			}
+            		}
+
+            		// TODO: update the belief model
+            		log("update the belief model");
+            	}
+            }
+    	}
+        catch (Exception e) {
+        	e.printStackTrace();
+        }
+    }
+
+    /**
+     * Return true iff the proof assumes realisation of an utterance that can be extracted from the proof.
+     * @param proof the proof
+     * @return true if the proof assumes its realisation
+     */
+    private boolean toBeRealised(MarkedQuery[] proof) {
+    	ModalisedFormula[] assumed = ProofUtils.proofToFacts(ProofUtils.filterAssumed(proof));
+    	for (int i = 0; i < assumed.length; i++) {
+    		if (assumed[i].m.length == 1 && assumed[i].m[0] instanceof Abducer.EventModality
+    				&& assumed[i].p.predSym.equals("produce") && ProofUtils.termToString(assumed[i].p.args[0]).equals("r")) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
     // =================================================================
@@ -258,14 +413,18 @@ public class cc_ContinualCollabActing extends ManagedComponent {
 
     @Override
     public void configure(Map<String, String> _config) {
-		if (_config.containsKey("--facts")) {
-			log("have configured facts");
-			factsFileName = _config.get("--facts");
+		if (_config.containsKey("--understandFacts")) {
+			understandFactsFileName = _config.get("--understandFacts");
+		}
+		if (_config.containsKey("--generateFacts")) {
+			generateFactsFileName = _config.get("--generateFacts");
 		}
 		
-		if (_config.containsKey("--rules")) {
-			log("have configured rules");
-			rulesFileName = _config.get("--rules");
+		if (_config.containsKey("--understandRules")) {
+			understandRulesFileName = _config.get("--understandRules");
+		}
+		if (_config.containsKey("--generateRules")) {
+			generateRulesFileName = _config.get("--generateRules");
 		}
 	}
     

@@ -10,8 +10,17 @@ e(now) : uttered(h, Nom) <-
 		i : prop(NextNom, 'Robot') / true,
 	e(now) : greeting(h, r) / 0.1.
 
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, greeting) / true,
+	i : prop(Nom, hi) / true,
+	e(now) : greeting(h, r) / 0.5.
+
+e(now) : clarify(h, CR) <-
+	i : cr_modality(CR, vision) / true,
+	i : cr_entity(CR, Entity) / true,
+	e(now) : new_object_visible(Entity) / 0.5.
+
 % h: do you know what this is
-% XXX completely broken, no referential readings
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, cognition) / true,
 	i : prop(Nom, know) / true,  % type of cognition
@@ -24,7 +33,10 @@ e(now) : uttered(h, Nom) <-
 	i : sort(AscrNom, ascription) / true,
 	i : 'rel_Cop-Restr'(AscrNom, ThisNom) / true,
 		this(ThisNom) / true,
-	i : 'rel_Cop-Scope'(AscrNom, WhatNom) / true.
+		a(com) : refers_to(ThisNom, Ref) / whatif_binding,
+	i : 'rel_Cop-Scope'(AscrNom, WhatNom) / true,  % XXX "questioned" flag?
+	e(now) : asked_about(h, Ref, objecttype) / 0.5,
+	?( k(now, private(r)) : objecttype(Ref, X)).
 
 you(Nom) <-
 	i : sort(Nom, person) / true,
@@ -65,9 +77,20 @@ e(now) : uttered(h, Nom) <-
 	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
 	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
-%		i : sort(ScopeNom, ScopeSort) / true,
-%		i : prop(ScopeNom, ScopeProp) / true,
 	assert_prop(RestrRef, ScopeNom) / true.
+
+% h: is X Y
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : prop(Nom, be) / true,
+	i : 'feat_Mood'(Nom, int) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, SubjNom) / true,
+	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+	assert_prop(RestrRef, ScopeNom) / true,
+	i : question_about(RestrRef) / 1.0.
 
 %-------------------------------------------------------------------------
 
@@ -85,12 +108,14 @@ e(now) : uttered(h, Nom) <-
 assert_prop(RestrRef, Nom) <-
 	i : sort(Nom, 'q-color') / true,
 	i : prop(Nom, Prop) / true,
-	?( k(now, attrib(r, h)) : color(RestrRef, Prop) ).
+	?( k(now, attrib(r, h)) : color(RestrRef, Prop) ),
+	e(now) : assert_prop(h, RestrRef, color) / 0.5.
 
 assert_prop(RestrRef, Nom) <-
 	i : sort(Nom, 'q-shape') / true,
 	i : prop(Nom, Prop) / true,
-	?( k(now, attrib(r, h)) : shape(RestrRef, Prop) ).
+	?( k(now, attrib(r, h)) : shape(RestrRef, Prop) ),
+	e(now) : assert_prop(h, RestrRef, shape) / 0.5.
 
 assert_prop(Ref, Nom) <-
 	i : sort(Nom, thing) / true,
@@ -98,4 +123,5 @@ assert_prop(Ref, Nom) <-
 	i : feat_Delimitation(Nom, existential) / true,
 	i : feat_Num(Nom, sg) / true,
 	i : feat_Quantification(Nom, specific) / true,
-	?( k(now, attrib(r, h)) : objecttype(Ref, Prop) ).
+	?( k(now, attrib(r, h)) : objecttype(Ref, Prop) ),
+	e(now) : assert_prop(h, Ref, objecttype) / 0.5.
