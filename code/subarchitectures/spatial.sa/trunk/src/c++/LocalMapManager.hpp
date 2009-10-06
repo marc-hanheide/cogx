@@ -30,6 +30,24 @@
 #include <FrontierInterface.hpp>
 
 namespace spatial {
+/**
+ * This class maintains small grid maps around individual nav nodes. The maps
+ * are centered on the nav node, and continually updated as long as the robot
+ * is at that node. This makes sure that the robot doesn't know about free space
+ * behind walls, in other rooms.
+ * Also maintains a tentative local map that is used to initialize the grid
+ * map of a newly discovered node; this tentative map is cleared each time a known
+ * node is visited.
+ * @param -c cure config file to define the robot shape, sensor pose, etc
+ * @param --laser-range the range at which the laser is capped when sweeping out
+ * free space
+ * @param --robot-server-host the ice server name for the robot server (default RobotbaseServer)
+ * @param --no-tentative-window Do not show the window displaying the tentative map
+ * @param --no-local-map-window Do not show the window displaying the current node's map
+ *
+ * @author Kristoffer Sjöö
+ * @see
+ */
 class LocalMapManager : public cast::ManagedComponent,
   		  public OdometryReceiver,
 		  public Scan2dReceiver
