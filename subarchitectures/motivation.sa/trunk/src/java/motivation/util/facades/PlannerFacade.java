@@ -111,33 +111,42 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		}
 		// create a conjunction of motives
 		String goalString = "(and ";
+		int countGoals = 0;
 		for (Motive m : activeMotives) {
+			String conjunctiveGoal = null;
 			if (m instanceof ExploreMotive) {
 				ExploreMotive em = (ExploreMotive) m;
 				if (em.correspondingUnion != null)
-					goalString = goalString
-							+ GoalTranslator
-									.motive2PlannerGoal(
-											em,
-											binderFacade
-													.getUnion(em.correspondingUnion).entityID);
+					conjunctiveGoal = GoalTranslator
+							.motive2PlannerGoal(em, binderFacade
+									.getUnion(em.correspondingUnion).entityID);
 			} else if (m instanceof CategorizeRoomMotive) {
-				goalString = goalString
-						+ GoalTranslator.motive2PlannerGoal((CategorizeRoomMotive) m);
+				conjunctiveGoal = GoalTranslator
+						.motive2PlannerGoal((CategorizeRoomMotive) m);
 			} else if (m instanceof HomingMotive) {
-				goalString = goalString
-						+ GoalTranslator.motive2PlannerGoal((HomingMotive) m);
+				conjunctiveGoal = GoalTranslator
+						.motive2PlannerGoal((HomingMotive) m);
 			} else if (m instanceof CategorizePlaceMotive) {
-				goalString = goalString
-						+ GoalTranslator.motive2PlannerGoal(
-								(CategorizePlaceMotive) m, getAgentUnion());
+				conjunctiveGoal = GoalTranslator.motive2PlannerGoal(
+						(CategorizePlaceMotive) m, getAgentUnion());
 			}
+			if (conjunctiveGoal != null) {
+				if (conjunctiveGoal.length() > 0) {
+					countGoals++;
+					goalString = goalString + conjunctiveGoal;
+				}
+			}
+
 		}
 
-		goalString = goalString + ")";
-		component.log("generated goal string: " + goalString);
-		plan.goal = goalString;
-		return plan;
+		if (countGoals > 0) {
+			goalString = goalString + ")";
+			component.log("generated goal string: " + goalString);
+			plan.goal = goalString;
+			return plan;
+		} else {
+			return null; // generated empty plan
+		}
 
 	}
 
@@ -177,7 +186,7 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					}
 				}
 			} else if (m instanceof CategorizeRoomMotive) {
-				
+
 			}
 		}
 		return activeMotives;
@@ -240,6 +249,11 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 
 		try {
 			PlanningTask plan = generatePlanningTask(activeMotives);
+			if (plan == null) {// we couldn't generate a proper goal... there is
+								// nothing to be done
+				component.println("the goal is empty... there is nothing to plan for");
+				return null;
+			}
 			String id = component.newDataID();
 
 			component.addChangeFilter(ChangeFilterFactory.createIDFilter(id,
@@ -300,5 +314,4 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		}
 		return pt;
 	}
-
 }
