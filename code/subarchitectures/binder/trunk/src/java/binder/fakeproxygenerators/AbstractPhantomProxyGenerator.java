@@ -23,6 +23,7 @@ package binder.fakeproxygenerators;
 import java.util.Map;
 import java.util.Random;
 
+import beliefmodels.adl.Belief;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.abstr.BindingPredictor;
@@ -80,7 +81,7 @@ abstract public class AbstractPhantomProxyGenerator extends BindingPredictor {
 	 * for each
 	 * 
 	 */
-
+  
 	protected void randomPrediction() {
 
 		Random rand = new Random();
@@ -93,7 +94,7 @@ abstract public class AbstractPhantomProxyGenerator extends BindingPredictor {
 				if (pauses) {
 				sleepComponent(500 + rand.nextInt(2000));
 				}
-				
+				 
 				// Create the phantom proxy
 				PhantomProxy p;
 				if (!reverted) {
@@ -102,10 +103,10 @@ abstract public class AbstractPhantomProxyGenerator extends BindingPredictor {
 				else {
 					p = createPhantomProxy(nbOfProxiesToCreate-i+1);
 				}
-				  
+				   
 				// Get the best predicted union for the phantom proxy
-				UncertainSuperFormula formula = getBestPredictedBinding(p, deleteProxiesAfterBinding);
-				log("PREDICTED FORMULA: " + BeliefModelUtils.getFormulaPrettyPrint(formula));
+				Belief belief = getBestPredictedBinding(p, deleteProxiesAfterBinding);
+				log("PREDICTED BELIEF: \n" + BeliefModelUtils.getBeliefPrettyPrint(belief, 1));
 
 			}	
 		}

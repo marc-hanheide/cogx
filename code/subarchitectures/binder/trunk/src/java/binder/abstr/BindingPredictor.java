@@ -22,6 +22,7 @@ package binder.abstr;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import beliefmodels.adl.Belief;
 import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.LinguisticLabelProperty;
@@ -63,7 +64,7 @@ public class BindingPredictor extends ProxyWriter {
 	 * @return list of predicted belief bindings
 	 */
 
-	protected Vector<ComplexFormula> getPredictedBindings 
+	protected Vector<Belief> getPredictedBindings 
 	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 		try {
 
@@ -72,12 +73,14 @@ public class BindingPredictor extends ProxyWriter {
 
 			log("OK, just added phantom proxy onto the WM");
 			
-			Vector<ComplexFormula> bindings = getPossibleBindings();
+			Vector<UncertainSuperFormula> constraints = getPhantomProxyConstraints(phantomProxy);
+
+			Vector<Belief> bindings = getPossibleBindings(constraints);
 			
 			// Wait for the predicted unions to be computed by the binder
 			while (bindings.size() == 0) {
 				sleepComponent(20);
-				bindings = getPossibleBindings();
+				bindings = getPossibleBindings(constraints);
 			}
 
 			log("Predicted beliefs for phantom proxy is sucessfully retrieved");
@@ -98,22 +101,26 @@ public class BindingPredictor extends ProxyWriter {
 	}
 
 
-	private Vector<ComplexFormula> getPossibleBindings() {
+	private Vector<Belief> getPossibleBindings(Vector<UncertainSuperFormula> constraints) {
 		
-		Vector<ComplexFormula> matchingFormulae = new Vector<ComplexFormula>(); 
+		Vector<Belief> matchingBeliefs = new Vector<Belief>(); 
 
 		try {
-		CASTData<ComplexFormula>[] formulae = getWorkingMemoryEntries("binder", ComplexFormula.class);
+		CASTData<Belief>[] beliefs = getWorkingMemoryEntries("binder", Belief.class);
 		
-		for (int i = 0 ; i <formulae.length; i++) {
-			Vector<ComplexFormula> matchingFormula = getAllFormulaeIncludingProxy((ComplexFormula)formulae[i].getData(), lastPhantomProxy);
-			matchingFormulae.addAll(matchingFormula);
+		Vector<Belief> allBeliefs = new Vector<Belief>();
+
+		for (int i = 0 ; i <beliefs.length; i++) {
+			allBeliefs.add(beliefs[i].getData());
 		}
+		
+		matchingBeliefs = getAllBeliefsSatisfyingConstraints(allBeliefs, constraints);
+	
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		return matchingFormulae;
+		return matchingBeliefs;
 	}
 	/**
 	 * Retrieve the predicted belief binding with the highest probability of existence for the
@@ -125,7 +132,7 @@ public class BindingPredictor extends ProxyWriter {
 	 * @return list of predicted belief binding 
 	 */
 
-	protected ComplexFormula getBestPredictedBinding
+	protected Belief getBestPredictedBinding
 	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 
 		return getMaximum(getPredictedBindings(phantomProxy, deleteProxyAfterBinding));
@@ -140,21 +147,21 @@ public class BindingPredictor extends ProxyWriter {
 	 * @return the max-likelihood union
 	 */
 
-	private ComplexFormula getMaximum (Vector<ComplexFormula> beliefs) {
+	private Belief getMaximum (Vector<Belief> beliefs) {
 
-		ComplexFormula maxFormula = new ComplexFormula();
+		Belief maxFormula = new Belief();
 		float maxValue = -1.0f;
 
 		// Loop on the union vector
-		for (Enumeration<ComplexFormula> e = beliefs.elements(); e.hasMoreElements() ; ) {
-			SuperFormula cuf = e.nextElement();
+		for (Enumeration<Belief> e = beliefs.elements(); e.hasMoreElements() ; ) {
+			Belief b = e.nextElement();
 
 			// If the existence probability of current union is higher than the 
 			// temporary maximum, update the maximum
-			if (cuf instanceof UncertainSuperFormula) {
-			if (((UncertainSuperFormula)cuf).prob > maxValue) {
-				maxValue = ((UncertainSuperFormula)cuf).prob;
-				maxFormula = ((ComplexFormula)cuf);
+			if (b.phi instanceof UncertainSuperFormula) {
+			if (((UncertainSuperFormula)b.phi).prob > maxValue) {
+				maxValue = ((UncertainSuperFormula)b.phi).prob;
+				maxFormula = ((Belief)b);
 			}
 			}
 		}
@@ -167,11 +174,8 @@ public class BindingPredictor extends ProxyWriter {
 	// METHODS FOR INSERTING PHANTOM PROXIES INTO THE WM
 	// =================================================================
 
-
-	public static Vector<ComplexFormula> getAllFormulaeIncludingProxy (ComplexFormula formula, PhantomProxy proxy) {
-
-		Vector<ComplexFormula> buFormulae = new Vector<ComplexFormula>();
-
+	
+	private Vector<UncertainSuperFormula> getPhantomProxyConstraints (PhantomProxy proxy) {
 		
 		Vector<UncertainSuperFormula> propertiesInPhantom = new Vector<UncertainSuperFormula>();
 		for (int i = 0 ; i < proxy.features.length ; i++) {
@@ -182,47 +186,87 @@ public class BindingPredictor extends ProxyWriter {
 				propertiesInPhantom.add(newProp);
 			}
 		}
-		
-
-		if (formula instanceof ComplexFormula) {
-			for (int i = 0; i < ((ComplexFormula)formula).formulae.length ; i++) {
-
-				UncertainSuperFormula subformula = (UncertainSuperFormula) ((ComplexFormula)formula).formulae[i];
-				
-				if (! (subformula instanceof ComplexFormula)) {
-				
-					// TODO: fix this
-					for (int j = 0 ; j < propertiesInPhantom.size(); j++) {
-					UncertainSuperFormula curProp = propertiesInPhantom.elementAt(j);
-					if (BeliefModelUtils.arePropertiesEqual(subformula, curProp)) {
-						buFormulae.add (formula);	
-					}
-				}
-				
-				}
-				else {
-					Vector<ComplexFormula> partialResult = 
-					getAllFormulaeIncludingProxy ((ComplexFormula) subformula, proxy);
-					
-					for (Enumeration<ComplexFormula> e = partialResult.elements(); e.hasMoreElements(); ) {
-						ComplexFormula form = e.nextElement();
-						if (!containsFormula(buFormulae, form)) {
-							buFormulae.add(form);
-						}
-					}
-				}
-			}
-		}
-
-		return buFormulae;
+		return propertiesInPhantom;
 	}
 
-	private static boolean containsFormula (Vector<ComplexFormula> formulae, ComplexFormula form) {
+	
+	public Vector<Belief> getAllBeliefsSatisfyingConstraints 
+			(Vector<Belief> allBeliefs, Vector<UncertainSuperFormula> constraints) {
+
+		log("retrieving possible beliefs including the constraints imposed in the phantom proxy...");
 		
-		for (Enumeration<ComplexFormula> e = formulae.elements(); e.hasMoreElements(); ) {
-			ComplexFormula curForm = e.nextElement();
+		log("constraints: " + constraints.size());
+		for (int z = 0; z < constraints.size(); z++) {
+			log("C" + (z+1) + ": "  + BeliefModelUtils.getFormulaPrettyPrint(constraints.elementAt(z)));
+		}
+		
+		log("total number of beliefs: " + allBeliefs.size());
+		
+		Vector<Belief> boundBeliefs = new Vector<Belief>();
+	
+
+
+		// looping on all beliefs
+		for (Enumeration<Belief> e = allBeliefs.elements(); e.hasMoreElements();) {
+
+			Belief curBelief = e.nextElement();
+
+			boolean allConstraintsSatisfied = true;
+
+			// looping on the constraints, verifying if each of them is satisfied
+			for (int j = 0 ; j < constraints.size(); j++) {
+
+				UncertainSuperFormula constraint = constraints.elementAt(j);
+
+				boolean constraintSatisfied = false;
+				if (curBelief.phi instanceof ComplexFormula) {
+
+					for (int i = 0; i < ((ComplexFormula)curBelief.phi).formulae.length ; i++) {
+
+						UncertainSuperFormula formula = 
+							(UncertainSuperFormula) ((ComplexFormula)curBelief.phi).formulae[i];
+
+						if (formula instanceof ComplexFormula) {
+							
+							for (int k = 0; k < ((ComplexFormula)formula).formulae.length ; k++) {
+								
+								UncertainSuperFormula subformula = 
+									(UncertainSuperFormula) ((ComplexFormula)formula).formulae[k];
+								if (BeliefModelUtils.arePropertiesEqual(subformula, constraint)) {
+									constraintSatisfied = true;
+								}
+							}
+						}
+						else {
+							if (BeliefModelUtils.arePropertiesEqual(formula, constraint)) {
+								constraintSatisfied = true;
+							}
+						}
+						
+					}
+				}
+				
+				if (!constraintSatisfied) {
+					allConstraintsSatisfied = false;
+				}
+			}
+			
+			if (allConstraintsSatisfied && !containsBelief(boundBeliefs, curBelief)) {
+				boundBeliefs.add(curBelief);
+			}
+		}
+		
+		return boundBeliefs;
+	}
+	
+
+	private boolean containsBelief (Vector<Belief> beliefs, Belief belief) {
+		
+		for (Enumeration<Belief> e = beliefs.elements(); e.hasMoreElements(); ) {
+			Belief curBelief = e.nextElement();
 			// TODO: correct this
-			if (curForm.id.equals(form.id) && curForm.formulae.length == form.formulae.length) {
+			if (belief.id.equals(curBelief.id) && 
+					((ComplexFormula)belief.phi).formulae.length == ((ComplexFormula)curBelief.phi).formulae.length) {
 				return true;
 			}
 	}
