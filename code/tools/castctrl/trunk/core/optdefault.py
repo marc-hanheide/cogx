@@ -40,12 +40,18 @@ CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
 """
+
 cleanup="""
 #dc1394_reset_bus
+#rm robotpose.ccf 
 """
+
 useroptions="""
-#EDITOR=emacs %l[+] %s
+#EDITOR=gvim --servername CAST --remote-silent %l[+:] %s
+#EDITOR=xemacs %l[+] %s
 #EDITOR=kate %l[-l ] %s
 #EDITOR=gedit %l[+] %s
-#EDITOR=gvim --servername CAST --remote-silent %l[+:] %s
+#EDITOR=xjed %s %l[-g ]
+#EDITOR=edit %l[+] %s
+#EDITOR=open -a textwrangler %s
 """

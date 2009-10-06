@@ -294,6 +294,10 @@ class CCastControlWnd(QtGui.QMainWindow):
         for proc in self._manager.proclist:
             if proc != self.procBuild: self.mainLog.log.addSource(proc)
 
+    def on_btClearMainLog_clicked(self, valid=True):
+        if not valid: return
+        self.mainLog.clearOutput()
+
     def on_ckShowFlushMsgs_stateChanged(self, value):
         self.mainLog.clearOutput()
         self.mainLog.rereadLogs()

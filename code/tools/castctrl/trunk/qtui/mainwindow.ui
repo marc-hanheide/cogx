@@ -423,6 +423,13 @@
               </spacer>
              </item>
              <item>
+              <widget class="QPushButton" name="btClearMainLog">
+               <property name="text">
+                <string>Clear</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QCheckBox" name="ckShowFlushMsgs">
                <property name="text">
                 <string>Show Flushed</string>
