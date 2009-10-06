@@ -56,8 +56,8 @@ module Abducer {
 	};
 
 	enum Agent {
-		Human,
-		Robot
+		human,
+		robot
 	};
 
 	enum Sharing {

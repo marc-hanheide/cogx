@@ -3,6 +3,7 @@ package comsys.processing.cca;
 import java.util.*;
 import beliefmodels.adl.*;
 import beliefmodels.domainmodel.cogx.*;
+import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 import Abducer.*;
 
 public class ProofUtils {
@@ -134,7 +135,7 @@ public class ProofUtils {
 	public static Belief modalityToBeliefStub(Modality m) {
 		if (m instanceof KModality) {
 			Belief b = new Belief();
-			b.ags = kModalityToAgents((KModality) m);
+			b.ags = kModalityToAgentStatus((KModality) m);
 			b.sigma = kModalityToSpatioTemporalFrame((KModality) m);
 			b.phi = null;
 			return b;
@@ -156,24 +157,24 @@ public class ProofUtils {
 	public static beliefmodels.adl.Agent agent(Abducer.Agent aAgent) {
 		beliefmodels.adl.Agent bAgent = new beliefmodels.adl.Agent();
 		switch (aAgent) {
-			case Human: bAgent.id = "human"; break;
-			case Robot: bAgent.id = "robot"; break;
+			case human: bAgent.id = "human"; break;
+			case robot: bAgent.id = "robot"; break;
 			default: bAgent = null; break;
 		}
 		return bAgent;
 	}
 	
-	public static beliefmodels.adl.Agent[] kModalityToAgents(KModality m) {
+	public static AgentStatus kModalityToAgentStatus(KModality m) {
 		switch (m.share) {
 
 			case Private:
-				return new beliefmodels.adl.Agent[] { agent(m.act) };
+				return AbstractBeliefFactory.createAgentStatus(m.act.toString());
 
 			case Mutual:
-				return new beliefmodels.adl.Agent[] { agent(m.act), agent(m.pat) };
+				return AbstractBeliefFactory.createAgentStatus(new String[] {m.act.toString(), m.pat.toString()});
 			
 			case Attribute:
-				return new beliefmodels.adl.Agent[] { agent(m.act), agent(m.pat) }; // FIXME: this isn't right
+				return AbstractBeliefFactory.createAgentStatus(m.act.toString(), m.pat.toString());
 				
 			default:
 				// not a recognised agent relation

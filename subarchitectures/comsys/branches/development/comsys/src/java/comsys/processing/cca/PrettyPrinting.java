@@ -36,13 +36,32 @@ public class PrettyPrinting {
 		return s;
 	}
 	
+	public static String agentStatusToString(AgentStatus as) {
+		if (as instanceof PrivateAgentStatus) {
+			PrivateAgentStatus priv = (PrivateAgentStatus) as;
+			return "{" + priv.ag.id + "}";
+		}
+		else if (as instanceof AttributedAgentStatus) {
+			AttributedAgentStatus attrib = (AttributedAgentStatus) as;
+			return "{[" + attrib.ag.id + "]" + attrib.ag2.id + "}";
+		}
+		else if (as instanceof MutualAgentStatus) {
+			MutualAgentStatus mutual = (MutualAgentStatus) as;
+			String s = "";
+			for (int i = 0; i < mutual.ags.length; i++) {
+				s += mutual.ags[i].id;
+				s += (i < mutual.ags.length-1) ? "," : "";
+			}
+			return "{" + s + "}";
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public static String beliefToString(Belief b) {
 		String s = "[Belief ";
-		s += "agents = {";
-		for (int i = 0; i < b.ags.length; i++) {
-			s += b.ags[i].id;
-			s += (i < b.ags.length-1) ? "," : "";
-		}
+		s += "agents = " + agentStatusToString(b.ags);
 		s += ": ";
 		s += BeliefModelUtils.getFormulaPrettyPrint((UncertainSuperFormula)b.phi);
 		s += "]";
