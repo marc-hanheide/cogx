@@ -54,10 +54,10 @@
 
 [removeDoorwaySameRoomAs:
   (?x dora:sameRoomAs ?y),
-  (?x rdf:type dora:Doorway)
-# noValue(dora:tweety dora:isa dora:Bird)
+  (?x rdf:type dora:Doorway),
+  noValue(dora:tweety dora:isa dora:Bird)
   ->
-# (dora:tweety dora:isa dora:Bird),
+  (dora:tweety dora:isa dora:Bird),
   print(removeDoorwaySameRoomAs called),
   doorcleaner(?x)]
   
