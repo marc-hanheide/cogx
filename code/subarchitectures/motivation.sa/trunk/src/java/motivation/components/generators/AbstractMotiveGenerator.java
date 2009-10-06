@@ -98,10 +98,8 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 				removeChangeFilter(this);
 			} catch (DoesNotExistOnWMException e1) {
 				println("tried to remove motive from WM that didn't exist... nevermind.");
-				e1.printStackTrace();
 			} catch (PermissionException e1) {
 				println("not allowed to remove motive from WM...  nevermind.");
-				e1.printStackTrace();
 			} catch (UnknownSubarchitectureException e1) {
 				println("UnknownSubarchitectureException when remove motive from WM...  nevermind.");
 				e1.printStackTrace();
