@@ -133,63 +133,67 @@ void LocalMapManager::runComponent()
 
   log("I am running!");
 
-  NavData::FNodePtr prevNode = getCurrentNavNode();
+  NavData::FNodePtr curNode = getCurrentNavNode();
+  int prevNode = -1;
   while(isRunning()){
-    NavData::FNodePtr curNode = getCurrentNavNode();
-    if (curNode != prevNode) {
-      m_Mutex.lock();
-      // Node has changed! See if the node already has a lgm associated
-      // with it; if so, swap the current for it. Otherwise,
-      // assign the temporary to it.
-      if (m_nodeGridMaps.find(curNode->nodeId) == m_nodeGridMaps.end()) {
-	// There's no grid map for the current Node. Assign the 
-	// temporary lgm to it.
-	m_nodeGridMaps[curNode->nodeId] = m_lgm2;
-	log("Movin'");
-	m_lgm2->moveCenterTo(curNode->x, curNode->y);
-	log("Moved");
-	m_lgm1 = m_lgm2;
-	log("Allocatin'");
-	m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
-	log("Allocated");
+    curNode = getCurrentNavNode();
+    if (curNode != 0) {
+      if (curNode->nodeId != prevNode) {
+	m_Mutex.lock();
+	// Node has changed! See if the node already has a lgm associated
+	// with it; if so, swap the current for it. Otherwise,
+	// assign the temporary to it.
+	if (m_nodeGridMaps.find(curNode->nodeId) == m_nodeGridMaps.end()) {
+	  // There's no grid map for the current Node. Assign the 
+	  // temporary lgm to it.
+	  m_nodeGridMaps[curNode->nodeId] = m_lgm2;
+	  log("Movin'");
+	  m_lgm2->moveCenterTo(curNode->x, curNode->y);
+	  //log("Moved");
+	  m_lgm1 = m_lgm2;
+	  log("Allocatin'");
+	  m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1, curNode->x, curNode->y);
+	  //log("Allocated");
+	}
+	else {
+	  // Clear the temporary lgm
+	  m_lgm1 = m_nodeGridMaps[curNode->nodeId];
+	  log("Clearin'");
+	  m_lgm2->clearMap();
+	  //log("Clear'd");
+	  log("Movin' 2");
+	  m_lgm2->moveCenterTo(curNode->x, curNode->y, false);
+	  //log("Moved");
+	}
+	delete m_Glrt1;
+	delete m_Glrt2;
+	m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
+	m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
+	//log("Settin' maps");
+	if (m_Displaylgm1) {
+	  m_Displaylgm1->setMap(m_lgm1);
+	}
+	if (m_Displaylgm2) {
+	  m_Displaylgm2->setMap(m_lgm2);
+	}
+	//log("Maps set");
+
+	m_Mutex.unlock();
       }
-      else {
-	// Clear the temporary lgm
-	m_lgm1 = m_nodeGridMaps[curNode->nodeId];
-	log("Clearin'");
-	m_lgm2->clearMap();
-	log("Clear'd");
-	log("Movin' 2");
-	m_lgm2->moveCenterTo(curNode->x, curNode->y, false);
-	log("Moved");
-      }
-      delete m_Glrt1;
-      delete m_Glrt2;
-      m_Glrt1  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm1);
-      m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
-      log("Settin' maps");
+      prevNode = curNode->nodeId;
+
+      //log("Updatin'");
       if (m_Displaylgm1) {
-	m_Displaylgm1->setMap(m_lgm1);
+	Cure::Pose3D currentPose = m_TOPP.getPose();
+	m_Displaylgm1->updateDisplay(&currentPose);
       }
       if (m_Displaylgm2) {
-	m_Displaylgm2->setMap(m_lgm2);
+	Cure::Pose3D currentPose = m_TOPP.getPose();
+	m_Displaylgm2->updateDisplay(&currentPose);
       }
-      log("Maps set");
+      //log("Updated");
 
-      m_Mutex.unlock();
     }
-    prevNode = curNode;
-
-    log("Updatin'");
-    if (m_Displaylgm1) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_Displaylgm1->updateDisplay(&currentPose);
-    }
-    if (m_Displaylgm2) {
-      Cure::Pose3D currentPose = m_TOPP.getPose();
-      m_Displaylgm2->updateDisplay(&currentPose);
-    }
-    log("Updated");
 
     usleep(250000);
   }
