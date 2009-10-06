@@ -14,7 +14,7 @@ JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile
 
 JAVA GD refreadings comsys.components.reference.cc_ReferentialReadings --log
 JAVA GD refbindings comsys.components.reference.cc_ReferentialBindings --log
-JAVA GD cca comsys.components.cca.cc_ContinualCollabActing --facts ./subarchitectures/comsys/src/mercury-c++/abduction/understand.facts --rules ./subarchitectures/comsys/src/mercury-c++/abduction/understand.rules --log --debug
+JAVA GD cca comsys.components.cca.cc_ContinualCollabActing --understandFacts ./subarchitectures/comsys/src/mercury-c++/abduction/understand.facts --understandRules ./subarchitectures/comsys/src/mercury-c++/abduction/understand.rules --generateFacts ./subarchitectures/comsys/src/mercury-c++/abduction/generate.facts --generateRules ./subarchitectures/comsys/src/mercury-c++/abduction/generate.rules --log --debug
 
 SUBARCHITECTURE binder 
 
