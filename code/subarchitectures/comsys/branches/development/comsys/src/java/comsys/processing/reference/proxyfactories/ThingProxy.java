@@ -43,8 +43,6 @@ import java.util.Iterator;
 
 public class ThingProxy extends AbstractProxyFactory 
 	{
-	
-	public static int idCounter = 0;
 		
 		private String sort = "thing";
 		
@@ -175,10 +173,6 @@ public class ThingProxy extends AbstractProxyFactory
 		} // end mapOwner
 		
 		
-		private String getEntityID() {
-			idCounter++;	
-			return "phantom" + idCounter;
-		}
 		
 		
 	} // end class

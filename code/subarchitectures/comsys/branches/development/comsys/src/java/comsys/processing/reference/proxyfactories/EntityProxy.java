@@ -43,9 +43,7 @@ import java.util.Iterator;
 
 public class EntityProxy extends AbstractProxyFactory 
 	{
-	
-	public static int idCounter = 0;
-		
+			
 		private String sort = "entity";
 		
 		public String getSort () { return sort; }
@@ -58,11 +56,11 @@ public class EntityProxy extends AbstractProxyFactory
 			// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
 			WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf");
 			PhantomProxy prx = ProxyConstructor.createNewPhantomProxy(origin, getEntityID(),  1.0f);
-			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_label", root.prop.prop, timestamp));
+	//		ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_label", root.prop.prop, timestamp));
 			// Add the proximity of the (deictic)
 			if (LFUtils.lfNominalHasFeature(root,"Proximity")) { 
 				String proximity = LFUtils.lfNominalGetFeature(root,"Proximity");
-				ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("proximity", proximity, timestamp));			
+				ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_proximity", proximity, timestamp));			
 			} // end if.. check for proximity
 			
 			// Add the resulting proxy
@@ -72,11 +70,7 @@ public class EntityProxy extends AbstractProxyFactory
 		} // end method
 		
 		
-		private String getEntityID() {
-			idCounter++;	
-			return "phantom" + idCounter;
-		}
-		
+	
 		
 	} // end class
 

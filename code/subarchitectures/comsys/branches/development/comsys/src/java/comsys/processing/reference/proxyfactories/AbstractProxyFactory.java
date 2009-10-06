@@ -25,6 +25,7 @@ public abstract class AbstractProxyFactory
 		implements ProxyFactory
 	
 {
+	public static int idCounter = 0;
 
 	abstract public String getSort (); 
 
@@ -40,5 +41,10 @@ public abstract class AbstractProxyFactory
 	    return ProxyConstructor.createFeatureWithUniqueFeatureValue (feature, ProxyConstructor.createStringValue (value, 1.0f, timestamp)); 
 	} 
 	
+	
+	protected String getEntityID() {
+		idCounter++;	
+		return "phantom" + idCounter;
+	}
 	
 }
