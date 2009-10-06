@@ -28,7 +28,6 @@ import beliefmodels.adl.BeliefModel;
 import beliefmodels.adl.MutualAgentStatus;
 import beliefmodels.adl.PrivateAgentStatus;
 import beliefmodels.adl.SpatioTemporalFrame;
-import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
 import beliefmodels.domainmodel.cogx.Color;
 import beliefmodels.domainmodel.cogx.ColorProperty;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
