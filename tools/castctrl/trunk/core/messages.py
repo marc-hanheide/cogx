@@ -92,6 +92,7 @@ class CMessageSource(object):
         self.yieldMessages = True
         self.yieldErrors = True
 
+    # FIXME: Iterators crash if the queue is changed from another thread.
     def getIterators(self):
         its = []
         if self.tmLastSeen < self.tmLastPop: self.tmLastSeen = self.tmLastPop

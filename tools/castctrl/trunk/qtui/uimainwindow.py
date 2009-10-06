@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon Oct  5 11:31:22 2009
+# Created: Tue Oct  6 15:10:17 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -196,6 +196,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.btLogViewControl)
         spacerItem7 = QtGui.QSpacerItem(88, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem7)
+        self.btClearMainLog = QtGui.QPushButton(self.tabLogs)
+        self.btClearMainLog.setObjectName("btClearMainLog")
+        self.horizontalLayout_2.addWidget(self.btClearMainLog)
         self.ckShowFlushMsgs = QtGui.QCheckBox(self.tabLogs)
         self.ckShowFlushMsgs.setObjectName("ckShowFlushMsgs")
         self.horizontalLayout_2.addWidget(self.ckShowFlushMsgs)
@@ -390,6 +393,7 @@ class Ui_MainWindow(object):
         self.logfileCmbx.setStatusTip(QtGui.QApplication.translate("MainWindow", "Active log", None, QtGui.QApplication.UnicodeUTF8))
         self.btLogViewAll.setText(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
         self.btLogViewControl.setText(QtGui.QApplication.translate("MainWindow", "Control", None, QtGui.QApplication.UnicodeUTF8))
+        self.btClearMainLog.setText(QtGui.QApplication.translate("MainWindow", "Clear", None, QtGui.QApplication.UnicodeUTF8))
         self.ckShowFlushMsgs.setText(QtGui.QApplication.translate("MainWindow", "Show Flushed", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLogs), QtGui.QApplication.translate("MainWindow", "Logs", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Client", None, QtGui.QApplication.UnicodeUTF8))

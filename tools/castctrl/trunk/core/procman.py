@@ -38,6 +38,7 @@ class CProcessObserver(object):
 class CProcess(object):
     STOPPED = 0     # noraml state, not running
     STARTING = 1    # starting
+    STOPPING = 2    # stopping
     FLUSH = -1      # flushing when terminated correctly
     OK = 0
     ERRTERM = -1    # terminated unexpectedly
@@ -72,6 +73,7 @@ class CProcess(object):
         if self.error == CProcess.ERROR: return "Internal error"
         if self.error == CProcess.ERRSTART: return "Failed to start"
         if self.status == CProcess.STARTING: return "Starting..."
+        if self.status == CProcess.STOPPING: return "Stopping..."
         if self.process == None: return "Not started"
         if self.restarted > 0: return "%d (r%d)" % (self.process.pid, self.restarted)
         return "%d" % self.process.pid
@@ -148,6 +150,7 @@ class CProcess(object):
         if self.process == None:
             self._clear()
             return
+        self._setStatus(CProcess.STOPPING)
         try:
             # for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
             for sig in [signal.SIGTERM, signal.SIGKILL]:
@@ -234,7 +237,8 @@ class CProcess(object):
         return nl
 
     def check(self):
-        if ((self.status != self.STOPPED) != (self.process != None)) and self.status != self.STARTING:
+        if self.status == self.STARTING or self.status == self.STOPPING: return
+        if ((self.status == self.STOPPED) != (self.process == None)):
             error("Internal error: Process '%s' in invalid state" % (self.name))
             if self.isRunning(): self.status = max(1, self.process.pid)
             else:
