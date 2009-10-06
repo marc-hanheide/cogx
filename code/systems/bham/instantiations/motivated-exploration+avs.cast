@@ -51,6 +51,8 @@ CPP MG Planner WMControl #--log
 JAVA MG executor execution.components.PrototypePlanExecutor --log
 
 JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator   #--log
+JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator   #--log
+
 #JAVA MG CategorizePlaceGenerator motivation.components.generators.CategorizePlaceGenerator   #--log
 # JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log
 # JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
