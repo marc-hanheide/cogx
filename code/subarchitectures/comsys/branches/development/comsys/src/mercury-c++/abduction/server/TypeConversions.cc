@@ -218,15 +218,15 @@ stringToAgent(const char * s)
 	debug(cerr << "stringToAgent" << endl);
 	if (strcmp(s, "h") == 0) {
 		debug(cerr << "human" << endl);
-		return Human;
+		return human;
 	}
 	else if (strcmp(s, "r") == 0) {
 		debug(cerr << "robot" << endl);
-		return Robot;
+		return robot;
 	}
 	else {
 		debug(cerr << "unknown agent in stringToAgent: \"" << s << "\"" << endl);
-		return Robot;
+		return robot;
 	}
 }
 
@@ -270,7 +270,7 @@ MR_WordToModality(MR_Word w)
 			debug(cerr << "private " << s1 << endl);
 			km->share = Private;
 			km->act = stringToAgent(s1);
-			km->pat = Human; // so that it isn't uninitialised
+			km->pat = human; // so that it isn't uninitialised
 		}
 		else if (is_belief_attrib(w_bel, &s1, &s2)) {
 			debug(cerr << "attrib " << s1 << " -> " << s2 << endl);
@@ -282,8 +282,8 @@ MR_WordToModality(MR_Word w)
 			debug(cerr << "mutual" << endl);
 			// XXX this!!
 			km->share = Mutual;
-			km->act = Human;
-			km->act = Robot;
+			km->act = human;
+			km->act = robot;
 		}
 		else {
 			debug(cerr << "unknown belief!" << endl);
