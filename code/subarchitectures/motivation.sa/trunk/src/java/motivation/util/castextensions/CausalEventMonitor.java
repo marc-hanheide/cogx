@@ -170,7 +170,7 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 		@Override
 		public void workingMemoryChanged(WorkingMemoryChange wmc)
 				throws CASTException {
-			component.log("received trigger on " + wmc.address.id
+			component.debug("received trigger on " + wmc.address.id
 					+ ", store as pending (number of pending events is "
 					+ pendingChanges.size());
 			pendingChanges.put(wmc, null);
@@ -192,26 +192,26 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 		public void workingMemoryChanged(WorkingMemoryChange wmc)
 				throws CASTException {
 			// only if we await a certain change
-			component.log("testing for trigger leading to implication "
+			component.debug("testing for trigger leading to implication "
 					+ wmc.address.id);
 			if (pendingChanges.size() > 0) {
 				// copy to allow removal from original list
 				Set<WorkingMemoryChange> copySet = new HashSet<WorkingMemoryChange>(
 						pendingChanges.keySet());
 				for (WorkingMemoryChange triggerChange : copySet) {
-					component.log("comparing trigger "
+					component.debug("comparing trigger "
 							+ triggerChange.address.id
 							+ " with current implication" + wmc.address.id);
 
 					if (compare(triggerChange, wmc)) {
 						component
-								.log("  there is a match, we fire all pending processes");
+								.debug("  there is a match, we fire all pending processes");
 						// the corresponding event has occured!
 						fireCorrespondence();
 						pendingChanges.remove(triggerChange);
 						lastPropagatedEvents.put(triggerChange, wmc);
 						lastPropagatedEntries.put(triggerChange.address, wmc);
-						component.log("there remain " + pendingChanges.size()
+						component.debug("there remain " + pendingChanges.size()
 								+ " pending changes and "
 								+ lastPropagatedEvents.size()
 								+ " propagated changes");
@@ -433,7 +433,7 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 		while (result == null) {
 			if (!lastPropagatedEntries.containsKey(addrToPropagate)) {
 				component
-						.log("  waitForPropagation: nothing to wait for address "
+						.debug("  waitForPropagation: nothing to wait for address "
 								+ addrToPropagate);
 				// we know nothing about this entry, so assume it's propagated
 				result = null;
@@ -441,7 +441,7 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 			}
 			result = lastPropagatedEntries.get(addrToPropagate);
 			if (result == null) {// if not yet there... wait until it is...
-				component.log("  waitForPropagation: still waiting for "
+				component.debug("  waitForPropagation: still waiting for "
 						+ addrToPropagate);
 				this.wait(timeout);
 				// if we consumed our time...
@@ -449,7 +449,7 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 					return null;
 			} else {
 				lastPropagatedEntries.remove(addrToPropagate);
-				component.log("  waitForPropagation: propagated for "
+				component.debug("  waitForPropagation: propagated for "
 						+ addrToPropagate);
 			}
 		}
