@@ -67,7 +67,10 @@ module motivation {
     	};
 
     	class CategorizeRoomMotive extends Motive {
-      		
+      		/**
+	 		* The ID of the place.
+	 		*/
+			long roomId;
     	};
     	
     	class PlanProxy {
