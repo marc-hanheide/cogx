@@ -24,6 +24,7 @@ add_definitions(-Wall)
 # UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
 
 add_subdirectory (tools/d-lib)
+add_subdirectory(tools/python)
 
 option(BUILD_SA_BINDING "Build binder subarchitecure" YES)
 if(BUILD_SA_BINDING)
