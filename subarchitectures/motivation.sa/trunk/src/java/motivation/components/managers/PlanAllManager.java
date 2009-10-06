@@ -17,6 +17,7 @@ import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
 import motivation.util.PlaceUnionEventRelation;
+import motivation.util.RoomUnionEventRelation;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
@@ -38,11 +39,19 @@ import cast.cdl.WorkingMemoryChange;
  */
 public class PlanAllManager extends ManagedComponent {
 
+	/**
+	 * check for pending active motives at least every N seconds, N given here.
+	 * If a motive is being activated, the Managers considers it immediately.
+	 * This forced check frequency is a failsafe mechanism that assures that older
+	 * pending motives are considered appropriately.
+	 */
+	private static final long FORCED_CHECK_FREQUENCY = 5;
 	WMMotiveSet motives;
 	volatile private boolean interrupt;
 	private WMMotiveEventQueue activeMotiveEventQueue;
 
 	PlaceUnionEventRelation placeUnionEventRelation;
+	RoomUnionEventRelation roomUnionEventRelation;
 	PlannerFacade plannerFacade;
 	ExecutorFacade executorFacade;
 	BinderFacade binderFacade;
@@ -63,6 +72,7 @@ public class PlanAllManager extends ManagedComponent {
 		activeMotiveEventQueue = new WMMotiveEventQueue();
 		backgroundExecutor = Executors.newCachedThreadPool();
 		placeUnionEventRelation = new PlaceUnionEventRelation(this);
+		roomUnionEventRelation = new RoomUnionEventRelation(this);
 	}
 
 	/*
@@ -74,8 +84,6 @@ public class PlanAllManager extends ManagedComponent {
 	protected void start() {
 		super.start();
 		log("start up");
-		binderFacade.start();
-		motives.start();
 		// register listener for state transition to ACTIVE (trigger processing
 		// whenever some motive becomes ACTIVE)
 		motives.setStateChangeHandler(new MotiveStateTransition(null,
@@ -93,8 +101,12 @@ public class PlanAllManager extends ManagedComponent {
 
 			}
 		});
+
+		binderFacade.start();
+		motives.start();
 		// start the causal event listening on places
 		placeUnionEventRelation.start();
+		roomUnionEventRelation.start();
 	}
 
 	@Override
@@ -117,19 +129,22 @@ public class PlanAllManager extends ManagedComponent {
 		try {
 			while (isRunning()) {
 				log("runComponent loop");
-				while (isRunning()) {
-					// wait that something happens
-					if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
-						// make sure all changes have been propagated to the
-						// unions!
-						log("wait to finialize propagation to unions");
-						placeUnionEventRelation.waitForPropagation();
-						// after this we can be quite sure that we actually have
-						// all required information on the binder
-						break;
-					}
-				}
-				log("received relevant change");
+				// wait that something happens
+				activeMotiveEventQueue.poll(FORCED_CHECK_FREQUENCY,
+						TimeUnit.SECONDS);
+				// make sure all changes have been propagated to the
+				// unions!
+				log("wait to finalize propagation of places to unions");
+				placeUnionEventRelation.waitForPropagation();
+				log("wait to finalize propagation of rooms to unions");
+				roomUnionEventRelation.waitForPropagation();
+				// after this we can be quite sure that we actually have
+				// all required information on the binder, available to the
+				// planner
+				if (!isRunning())
+					break;
+
+				log("checking for active motives to manage them");
 				interrupt = false;
 				List<Motive> activeMotives = new LinkedList<Motive>(motives
 						.getSubsetByStatus(MotiveStatus.ACTIVE));
@@ -184,7 +199,8 @@ public class PlanAllManager extends ManagedComponent {
 
 						}
 
-						// nah: ok, the bugs were actually mine and somewhere else...
+						// nah: ok, the bugs were actually mine and somewhere
+						// else...
 						// log("interrupt is: " + interrupt);
 						//
 						// if(interrupt && !timeout) {
@@ -201,6 +217,8 @@ public class PlanAllManager extends ManagedComponent {
 					}
 					sleepComponent(1000); // TODO: wait for motives to
 					// update
+				} else {
+					log("there are no active motives right now");
 				}
 			}
 		} catch (InterruptedException e) {
