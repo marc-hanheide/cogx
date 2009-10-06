@@ -41,7 +41,7 @@ public class ConfigurationFilter {
 	public static boolean ERRLOGGING = true;
 	
 	// flag to activate logging
-	public static boolean LOGGING = false;
+	public static boolean LOGGING = true;
 
 	
 
@@ -73,7 +73,6 @@ public class ConfigurationFilter {
 			} 
 			
 			config.configProb = multiplication;
-			log("configProb: " + config.configProb);
 		}
 		
 		// normalise the results
@@ -288,13 +287,13 @@ public class ConfigurationFilter {
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-		System.out.println("[GradientDescent] " + s);
+		System.out.println("[ConfigFilter] " + s);
 	}
 	
 	
 	public static void log(String s) {
 		if (LOGGING)
-		System.out.println("[GradientDescent] " + s);
+		System.out.println("[ConfigFilter] " + s);
 	}
 
 }

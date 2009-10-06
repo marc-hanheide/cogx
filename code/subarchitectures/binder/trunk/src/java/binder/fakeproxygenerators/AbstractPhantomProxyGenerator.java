@@ -106,8 +106,9 @@ abstract public class AbstractPhantomProxyGenerator extends BindingPredictor {
 				   
 				// Get the best predicted union for the phantom proxy
 				Belief belief = getBestPredictedBinding(p, deleteProxiesAfterBinding);
-				log("PREDICTED BELIEF: \n" + BeliefModelUtils.getBeliefPrettyPrint(belief, 1));
-
+				if (belief != null) {
+					log("PREDICTED BELIEF: \n" + BeliefModelUtils.getBeliefPrettyPrint(belief, 1));
+				}
 			}	
 		}
 	}

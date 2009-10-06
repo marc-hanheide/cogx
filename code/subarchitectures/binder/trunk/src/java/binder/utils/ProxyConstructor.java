@@ -64,6 +64,29 @@ public class ProxyConstructor {
 		return newProxy;
 	}
 	
+	
+	/**
+	 * Create a new proxy given the pointer to the originating object, the
+	 * probability of the proxy, and a list of features
+	 * 
+	 * @param origin
+	 *            pointer to the object in the local working memory
+	 * @param probExists
+	 *            the probability of the proxy
+	 * @param features
+	 *            the features
+	 * @return the created proxy
+	 */
+	public static Proxy createNewProxy(WorkingMemoryPointer origin, String entityID, float probExists,
+			Feature[] features) {
+
+		Proxy newProxy = createNewProxy(origin, entityID, probExists);
+
+		newProxy.features = features;
+
+		return newProxy;
+	}
+	
 	/**
 	 * Create a new phantom proxy, given the origin info and the existence
 	 * probability
@@ -265,7 +288,7 @@ public class ProxyConstructor {
 		floatVal.independentProb = prob;
 		floatVal.timeStamp = timestamp;
 		return floatVal;
-	}
+	} 
 	
 	
 	/**

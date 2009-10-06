@@ -14,12 +14,15 @@ import beliefmodels.adl.SpatioTemporalModel;
 import beliefmodels.adl.TemporalInterval;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.LogicalOp;
+import beliefmodels.domainmodel.cogx.Saliency;
+import beliefmodels.domainmodel.cogx.SaliencyProperty;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.autogen.core.Feature;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.AddressValue;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.utils.BeliefModelUtils;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
@@ -41,6 +44,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	public final Agent robotAgent = new Agent() ;
 	public final SpatioTemporalFrame curFrame = new SpatioTemporalFrame();
 
+	public final float SALIENCY_THRESHOLD = 0.5f;
 
 	// =================================================================
 	// INITIALISATION
@@ -76,6 +80,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 		// monitor accordingly
 
 		// TODO: extend to handle ambiguities
+		// TODO: implement a garbase collector for outdated beliefs (which are not supported in the current config)
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class,
 				WorkingMemoryOperation.WILDCARD), new WorkingMemoryChangeReceiver() {
 
@@ -122,6 +127,46 @@ public class BeliefModelTranslator extends ManagedComponent {
 	// =================================================================
 
 
+	
+	private String[] constructForeground (Vector<Belief> allBeliefs) {
+		
+		Vector<String> foregroundedBeliefsV = new Vector<String>();
+		
+		for (int i = 0; i < allBeliefs.size(); i++) {
+			Belief curB = allBeliefs.elementAt(i);
+			Saliency saliency = getSaliencyValue (curB);
+			
+			if (saliency.equals(Saliency.high)) {
+				foregroundedBeliefsV.add(curB.id);
+			}
+		}
+		
+		String[] foregroundedBeliefs = new String [foregroundedBeliefsV.size()];
+		foregroundedBeliefs = foregroundedBeliefsV.toArray(foregroundedBeliefs);
+		
+		return foregroundedBeliefs;
+	}
+	
+	
+	
+	private Saliency getSaliencyValue (Belief belief) {
+		
+		if (belief.phi instanceof ComplexFormula) {
+			
+			for (int i = 0 ; i < ((ComplexFormula)belief.phi).formulae.length ; i++) {
+				
+				SuperFormula formula = ((ComplexFormula)belief.phi).formulae[i];
+				
+				if (formula instanceof SaliencyProperty) {
+					return ((SaliencyProperty)formula).sal;
+				}
+			}
+		}
+		
+		return Saliency.low;
+	}
+	
+	
 
 	/**
 	 * Translate a set of alternative feature values into a belief model superformula
@@ -183,15 +228,19 @@ public class BeliefModelTranslator extends ManagedComponent {
 		beliefModel.a = new Agent[1];
 		beliefModel.a[0] = robotAgent;
 		beliefModel.t = new String[0];
-		beliefModel.f = beliefModel.k;
+		beliefModel.f = constructForeground(beliefs);
 
 		return beliefModel;
 	}
 
 
 
+	private boolean containsOnlyOnePhantomProxy (Union union) {
+		return ((union.includedProxies.length == 1) && (union.includedProxies[0] instanceof PhantomProxy));
+	}
+	
 	/**
-	 * Translate the union configuration into a belief model formula
+	 * Translate the union configuration into a belief model
 	 * 
 	 * @param config the union configuration
 	 * @return the super formula
@@ -202,7 +251,10 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 		for (int i = 0 ; i < config.includedUnions.length ; i++) {
 			Belief newBelief = translateIntoBelief (config.includedUnions[i]);
-			beliefs.add(newBelief);
+
+			if (!containsOnlyOnePhantomProxy(config.includedUnions[i])) {
+				beliefs.add(newBelief);
+			}
 		}	
 
 		log("Belief set successfully built!");
@@ -213,7 +265,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 
 	/**
-	 * Translate the union configuration into a belief model formula
+	 * Translate the union configuration into a belief model
 	 * 
 	 * @param config the union configuration
 	 * @return the super formula

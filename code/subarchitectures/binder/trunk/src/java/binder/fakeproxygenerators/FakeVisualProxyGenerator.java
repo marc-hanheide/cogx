@@ -77,6 +77,10 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		Feature feat2 = createFeatureWithUniqueFeatureValue ("colour", blue);
 		addFeatureToProxy (proxy, feat2);
 		
+		FeatureValue highsaliency = createStringValue("high", 0.9f);
+		Feature feat3 = createFeatureWithUniqueFeatureValue ("saliency", highsaliency);
+		addFeatureToProxy (proxy, feat3);
+		
 		return proxy;
 	}
 
@@ -106,6 +110,10 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		FeatureValue ontable = createStringValue("on_table", 0.7f);
 		Feature feat3 = createFeatureWithUniqueFeatureValue ("location", ontable);
 		addFeatureToProxy (proxy, feat3);
+		
+		FeatureValue lowsaliency = createStringValue("low", 0.9f);
+		Feature feat4 = createFeatureWithUniqueFeatureValue ("saliency", lowsaliency);
+		addFeatureToProxy (proxy, feat4);
 		
 		return proxy;
 	}

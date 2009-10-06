@@ -115,9 +115,14 @@ public class FeatureValueUtils {
 		if (fv instanceof IntegerValue && fv2 instanceof IntegerValue) {
 			return ((IntegerValue)fv).val == (((IntegerValue)fv2).val);
 		}
+		
+		
+		// TODO:  CORRECT THIS!!! (quick fix for saliency values)
 		if (fv instanceof FloatValue && fv2 instanceof FloatValue) {
-			return ((FloatValue)fv).val == (((FloatValue)fv2).val);
+			return true;
 		}
+		
+		
 		if (fv instanceof BooleanValue && fv2 instanceof BooleanValue) {
 			return ((BooleanValue)fv).val == (((BooleanValue)fv2).val);
 		}
@@ -159,6 +164,18 @@ public class FeatureValueUtils {
 		return false;
 	}
 	
+	
+	public static FeatureValue mergeFeatureValues (FeatureValue fv1, FeatureValue fv2) {
+		
+		if (fv1 instanceof FloatValue && fv2 instanceof FloatValue) {
+			float mean = (((FloatValue)fv1).val + ((FloatValue)fv2).val) / 2.0f;
+			float meanProb = (fv1.independentProb + fv2.independentProb) / 2.0f;
+			FloatValue mergedFV = ProxyConstructor.createFloatValue(mean, meanProb, fv2.timeStamp);
+			return mergedFV;
+		}
+		
+		return new FeatureValue();
+	}
 	
 	// ================================================================= 
 	// FEATURE VALUE CLONING METHODS   

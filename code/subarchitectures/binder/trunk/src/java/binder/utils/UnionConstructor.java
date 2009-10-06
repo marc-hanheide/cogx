@@ -19,7 +19,9 @@
 
 package binder.utils;
 
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Vector;
 
 import cast.cdl.CASTTime;
@@ -167,7 +169,7 @@ public class UnionConstructor  {
 		// TODO: check correctness of prob. exists computation, especially for single-proxy unions!
 		
 		// Extract the possible features for the union
-		Vector<Feature> features = getFeatures(includedEntities);
+		Collection<Feature> features = getFeatures(includedEntities);
 		union.features = new Feature[features.size()];
 		union.features = features.toArray(union.features);
 
@@ -298,10 +300,9 @@ public class UnionConstructor  {
 	 * @return the list of features
 	 */
 	
-	private Vector<Feature> getFeatures (Vector<PerceivedEntity> includedEntities) {
-		Vector<Feature> features = new Vector<Feature>();
+	private Collection<Feature> getFeatures (Vector<PerceivedEntity> includedEntities) {
 
-		Vector<String> featlabels = new Vector<String>();
+		HashMap<String, Feature> features = new HashMap<String, Feature>();
 		
 		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
 			PerceivedEntity prox = e.nextElement();
@@ -314,14 +315,34 @@ public class UnionConstructor  {
 						FeatureValueUtils.cloneFeatureValue(prox.features[i].alternativeValues[j]);
 				}
 				
-				features.add(feat);
-				featlabels.add(feat.featlabel);
+				if (!features.containsKey(feat.featlabel)) {
+					features.put(feat.featlabel, feat);
+				}
+				else {
+					Feature mergedFeature = mergeFeatures (features.get(feat.featlabel), feat);
+					features.remove(feat.featlabel);
+					features.put(feat.featlabel, mergedFeature);
+				}
 			}
 			
 
 		}
-		return features;
+		return features.values();
 	}
+	
+	
+	private static Feature mergeFeatures (Feature feat1, Feature feat2) {
+		
+		Feature mergedFeature = new Feature();
+		mergedFeature.featlabel = feat1.featlabel;
+		if (feat1.alternativeValues.length == 1 && feat2.alternativeValues.length == 1) {
+			mergedFeature.alternativeValues = new FeatureValue[1];
+			mergedFeature.alternativeValues[0] = 
+				FeatureValueUtils.mergeFeatureValues(feat1.alternativeValues[0], feat2.alternativeValues[0]);
+		}
+		return mergedFeature;
+	}
+	
 	
 	/**
 	public static Feature createSpecialBindingFeature (PhantomProxy phantom) {

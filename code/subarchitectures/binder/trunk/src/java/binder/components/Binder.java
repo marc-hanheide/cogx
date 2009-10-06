@@ -460,7 +460,7 @@ public class Binder extends ManagedComponent  {
 					// check if the current union and the new one can be merged
 					if ( !hasConflicts(existingUnion, newUnion)) {
 
-						log("constructing new union between "  + existingUnion.entityID + " and " + newUnion.entityID );
+		//				log("constructing new union between "  + existingUnion.entityID + " and " + newUnion.entityID );
 						if (!alreadyComputed(existingUnion, alreadyMergedUnions)) {
 
 							// If not, construct the merged union
@@ -469,7 +469,7 @@ public class Binder extends ManagedComponent  {
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
-						}
+						} 
 						// or simply fetch the already computed union
 						else {
 							newMergedUnion = alreadyMergedUnions.get(existingUnion);

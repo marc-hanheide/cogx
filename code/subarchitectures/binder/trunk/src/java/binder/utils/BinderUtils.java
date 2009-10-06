@@ -33,7 +33,9 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.FloatValue;
+import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 
@@ -52,8 +54,8 @@ public class BinderUtils {
 	// minimum threshold above which unknown values can be created in features
 	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.02f;
 
-	public static boolean ADD_DEFAULT_SALIENCY = true;
-	public static float DEFAULT_SALIENCY = 1.0f;
+	public static boolean ADD_DEFAULT_SALIENCY = false;
+	public static String DEFAULT_SALIENCY = "high";
 	
 	
 	// ================================================================= 
@@ -125,7 +127,7 @@ public class BinderUtils {
 		}
 
 		
-		if (ADD_DEFAULT_SALIENCY && !hasFeature(proxy, "saliency")) {
+		if (ADD_DEFAULT_SALIENCY && !hasFeature(proxy, "saliency") && !(proxy instanceof PhantomProxy)) {
 			addSaliencyFeature(proxy);
 		}
 		
@@ -144,9 +146,9 @@ public class BinderUtils {
 		for (int i = 0 ; i < entity.features.length ; i++) {
 			newFeatures[i] = entity.features[i];
 		}
-		FloatValue floatValue = ProxyConstructor.createFloatValue(DEFAULT_SALIENCY, 1.0f, entity.timeStamp);
+		StringValue stringValue = ProxyConstructor.createStringValue(DEFAULT_SALIENCY, 1.0f, entity.timeStamp);
 		newFeatures[entity.features.length] = 
-			ProxyConstructor.createFeatureWithUniqueFeatureValue("saliency", floatValue);
+			ProxyConstructor.createFeatureWithUniqueFeatureValue("saliency", stringValue);
 		
 		entity.features = newFeatures;
 	}
