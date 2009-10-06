@@ -7,12 +7,15 @@ SUBARCHITECTURE coma.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 JAVA TM cast.architecture.AlwaysPositiveTaskManager
 JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg --log true
-JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name marshaller -bsa binder --log true
+JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --marshaller-name marshaller --log true --debug true
+
+JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, comadata.ComaRoom, SpatialData.Place, SpatialProperties.ConnectivityPathProperty, SpatialProperties.GatewayPlaceProperty"
+
 
 SUBARCHITECTURE binder.sa
 JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM binder.components.BindingWorkingMemory #--log
-JAVA MG monitor binder.components.BinderMonitor --gui #--log
+JAVA MG monitor binder.components.BinderMonitor #--gui #--log
 JAVA MG binder binder.components.Binder #--log
 JAVA MG discretizer binder.components.UnionDiscretizer #--log
 
@@ -38,4 +41,4 @@ CPP GD path.query PathQueryProcessor #--log --no-indirect-paths #--debug
 
 #CPP GD cure.logger CureDataLogger
 #CPP GD key.command KeyCommander --fixed-prio --auto 1 --init-sleep 15000 --no-key
-#CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query --log #--debug
+#CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query #--log #--debug
