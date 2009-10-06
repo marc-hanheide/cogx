@@ -28,6 +28,6 @@ JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 5 --addunkno
 JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
 JAVA MG translator binder.components.BeliefModelTranslator --log
 
-#JAVA MG monitor binder.components.BinderMonitor --gui --log
+JAVA MG monitor binder.components.BinderMonitor --gui --log
 
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 

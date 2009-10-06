@@ -16,7 +16,7 @@ JAVA GD refreadings comsys.components.reference.cc_ReferentialReadings --log
 JAVA GD refbindings comsys.components.reference.cc_ReferentialBindings --log
 JAVA GD cca comsys.components.cca.cc_ContinualCollabActing --understandFacts ./subarchitectures/comsys/src/mercury-c++/abduction/understand.facts --understandRules ./subarchitectures/comsys/src/mercury-c++/abduction/understand.rules --generateFacts ./subarchitectures/comsys/src/mercury-c++/abduction/generate.facts --generateRules ./subarchitectures/comsys/src/mercury-c++/abduction/generate.rules --log --debug
 
-JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --log
+JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --redux ./subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx --log
 JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --log
 
 SUBARCHITECTURE binder 
