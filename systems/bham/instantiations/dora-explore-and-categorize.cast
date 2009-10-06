@@ -26,7 +26,7 @@ INCLUDE includes/coma.sa/coma.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/planner.cast
-INCLUDE includes/planner.sa/motivation.cast
+INCLUDE includes/motivation.sa/motivation.cast
 
 
 JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action, comadata.ComaRoom"
