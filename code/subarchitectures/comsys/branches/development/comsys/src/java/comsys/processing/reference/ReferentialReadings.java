@@ -69,11 +69,13 @@ public class ReferentialReadings {
 			if (!excludes.contains(nom.nomVar)) { 
 				// construct the readings
 				if (readingFactories.containsKey(nom.sort)) {
-				ReadingFactory factory = (ReadingFactory) readingFactories.get(nom.sort);
-				ReadingFactoryResults fresults = factory.constructReadings(lf);
-				// get the results: update the readings, update the excludes
-				excludes.addAll(fresults.getExcludes());
-				RefReadings readings = fresults.getReadings();
+					ReadingFactory factory = (ReadingFactory) readingFactories.get(nom.sort);
+					ReadingFactoryResults fresults = factory.constructReadings(lf);
+					// get the results: update the readings, update the excludes
+					if (fresults.getExcludes() != null) { 
+					excludes.addAll(fresults.getExcludes()); }
+					
+					RefReadings readings = fresults.getReadings();
 				if (results.refRdngs.length > 0 ) {
 					results.refRdngs = addRefReadingArrays(results.refRdngs,readings.refRdngs);
 				}
