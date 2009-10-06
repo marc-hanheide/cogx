@@ -20,6 +20,14 @@
 package binder.utils;
 
 
+import beliefmodels.adl.Agent;
+import beliefmodels.adl.AgentStatus;
+import beliefmodels.adl.AttributedAgentStatus;
+import beliefmodels.adl.Belief;
+import beliefmodels.adl.BeliefModel;
+import beliefmodels.adl.MutualAgentStatus;
+import beliefmodels.adl.PrivateAgentStatus;
+import beliefmodels.adl.SpatioTemporalFrame;
 import beliefmodels.domainmodel.cogx.BoundPhantomProxyProperty;
 import beliefmodels.domainmodel.cogx.Color;
 import beliefmodels.domainmodel.cogx.ColorProperty;
@@ -37,6 +45,7 @@ import beliefmodels.domainmodel.cogx.ShapeProperty;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import beliefmodels.domainmodel.cogx.ContinualFormula;
+import beliefmodels.domainmodel.cogx.UnionRefProperty;
 import binder.autogen.core.FeatureValue;
 
 
@@ -177,13 +186,22 @@ public class BeliefModelUtils {
 		}
 
 		// types for the ling_attribute feature
-		else if (featlabel.equals("boundPhantom")) {
+	/**	else if (featlabel.equals("boundPhantom")) {
 
 			BoundPhantomProxyProperty property = new BoundPhantomProxyProperty();
 			property.prob = fv.independentProb;
 			property.boundProxy = FeatureValueUtils.toString(fv);
 			return property;
+		} */
+		
+		else if (featlabel.equals("unionRef")) {
+			UnionRefProperty property = new UnionRefProperty();
+			property.prob = fv.independentProb;
+			property.unionRef = FeatureValueUtils.toString(fv);
+			
+			return property;
 		}
+		
 
 		// and if the feature doesn't belong to one of the above categories...
 		else {
@@ -244,6 +262,13 @@ public class BeliefModelUtils {
 				String attr2 = ((LinguisticAttributeProperty)form2).attribute;
 				return (attr1.equals(attr2));
 			}
+			
+			else if (form1 instanceof UnionRefProperty) {
+				String ur1 = ((UnionRefProperty)form1).unionRef;
+				String ur2 = ((UnionRefProperty)form2).unionRef;
+				return (ur1.equals(ur2));
+			}		
+			
 			else {
 				log("WARNING: Property unknown!");
 				return false;
@@ -322,6 +347,105 @@ public class BeliefModelUtils {
 		return str;
 	}
 	
+		
+	
+	private static String getAgentsPrettyPrint (Agent[] agents) {
+		String result = "";
+		for (int i = 0 ; i < agents.length; i++) {
+			result += agents[i].id;
+			if ( i < (agents.length - 1)) {
+				result += ", ";
+			}
+		}
+		return result;
+	}
+	
+	public static String getAgentStatusPrettyPrint (AgentStatus status) {
+	
+		String result = "{" ;
+		if (status instanceof PrivateAgentStatus) {
+			result += ((PrivateAgentStatus)status).ag.id;
+		}
+		else if (status instanceof AttributedAgentStatus) {
+			result += " ["  + ((AttributedAgentStatus)status).ag.id + "] " + ((AttributedAgentStatus)status).ag2.id;
+		}
+		else if (status instanceof MutualAgentStatus) {
+			result += getAgentsPrettyPrint(((MutualAgentStatus)status).ags);
+		}
+		
+		result += "}";
+		return result;
+	}
+	
+	public static String getSpatioTemporalFramePrettyPrint (SpatioTemporalFrame frame) {
+		String result = "S_{"  + frame.id + "}";
+		return result;
+	}
+	
+	private static String getSpatioTemporalFramesPrettyPrint (SpatioTemporalFrame[] frames) {
+		String result = "";
+		for (int i = 0 ; i < frames.length; i++) {
+			result += getSpatioTemporalFramePrettyPrint(frames[i]);
+			if ( i < (frames.length - 1)) {
+				result += ", ";
+			}
+		}
+		return result;
+	}
+	
+	public static String getBeliefPrettyPrint (Belief belief, int indent) {
+		String result = getIndent(indent) + "Belief " + belief.id + " defined as \"" + "K_{" + belief.id + "} S_k A_k Phi\", with: \n" ;
+		
+		result += getIndent(indent+1) + "S_k spatio-temporal frame: " + getSpatioTemporalFramePrettyPrint(belief.sigma) + "\n";
+		
+		result += getIndent(indent+1) + "A_k agent status of the belief: " + getAgentStatusPrettyPrint (belief.ags) + " \n";
+		
+		result += getIndent(indent+1) + "Phi formula incorporated in the belief, expressed as:\n";
+		result += getIndent(indent+2) + "@(" ;
+		result += getFormulaPrettyPrint((UncertainSuperFormula)belief.phi, indent+3);
+		result += ")";
+		
+		return result;
+	}
+	
+	public static String getBeliefModelPrettyPrint (BeliefModel bmodel, int indent) {
+		String result = getIndent(indent) + "Belief model defined as tuple B = <A,S, K, T, F>, with: \n";
+		
+		result += getIndent(indent+1) + "A set of agents: {"  + getAgentsPrettyPrint(bmodel.a) + "}\n";
+		
+		result += getIndent(indent+1) + "S spatio-temporal model, defined on the set of spatio-temporal frames: {" + 
+			getSpatioTemporalFramesPrettyPrint (bmodel.s.frames)+ "}\n";
+		
+		result += getIndent(indent+1) + "K set of private and/or mutual beliefs: {";
+		for (int i = 0; i < bmodel.k.length; i++) {
+			result += bmodel.k[i];
+			if (i < (bmodel.k.length -1)) {
+				result += ", ";
+			}
+		}
+		result += "}\n";
+		
+		result += getIndent(indent+1) + "T set of tasks : {";  
+		for (int i = 0; i < bmodel.t.length; i++) {
+			result += bmodel.t[i];
+			if (i < (bmodel.t.length -1)) {
+				result += ", ";
+			}
+		}	
+		result += "}\n";
+		
+		result += getIndent(indent+1) + "F set of foregrounded beliefs and tasks: {";
+		for (int i = 0; i < bmodel.f.length; i++) {
+			result += bmodel.f[i];
+			if (i < (bmodel.f.length -1)) {
+				result += ", ";
+			}
+		}	
+		result += "}";
+		
+		return result;
+	}
+	
 	/**
 	 * Returns a string-formatted version of the formula, indented by depth
 	 * 
@@ -342,7 +466,7 @@ public class BeliefModelUtils {
 		if (formula instanceof ComplexFormula) {
 
 			if (showProbabilitiesInPrettyPrint && 
-					(formula.id.contains("unionconf-") || formula.id.contains("union-"))) {
+					(formula.id.contains("unionconf-") || formula.id.contains("form-"))) {
 				result +=  " ["  + formula.prob + "]";
 			}
 
@@ -418,16 +542,23 @@ public class BeliefModelUtils {
 		}
 
 		// if the formula is a simple linguistic attribute property
-		else if (formula instanceof BoundPhantomProxyProperty) {
+	/**	else if (formula instanceof BoundPhantomProxyProperty) {
 			result += " ^ <BoundPhantom> " + ((BoundPhantomProxyProperty)formula).boundProxy;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		} */
+		
+		else if (formula instanceof UnionRefProperty) {
+			result += " ^ <UnionRef> " + ((UnionRefProperty)formula).unionRef;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 
-		if (formula instanceof ContinualFormula) {
+	/**	if (formula instanceof ContinualFormula) {
 			result += " " + getContinualStatusPrettyPrint((ContinualFormula) formula);
-		}
+		} */
 
 		return result;
 	}
