@@ -106,6 +106,7 @@ public class ReferentialReadings {
 		readingFactories.put("ascription",new CopulaReadings());
 		readingFactories.put("cognition", new CognitionReadings());
 		readingFactories.put("d-units", new DUnitsReadings());
+		readingFactories.put("greeting", new GreetingReadings());		
 	} // end method init
 	
 	
