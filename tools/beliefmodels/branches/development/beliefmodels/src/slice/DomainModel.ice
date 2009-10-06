@@ -31,7 +31,7 @@ module cogx {
 	
 	class SuperFormula extends beliefmodels::adl::Formula {
 	};
-	
+	 
 	// The class UncertainSuperFormula extends the supertype with an uncertainty value
 				
 	class UncertainSuperFormula extends SuperFormula { 
@@ -136,9 +136,16 @@ module cogx {
 		string attribute;
 	};
 	
-	class BoundPhantomProxyProperty extends ContinualFormula {
-		string boundProxy;
+	class UnionRefProperty extends ContinualFormula {
+		string unionRef;
 	};
+	
+	// ==========================
+	// FOREGROUNDING STUFF
+	
+	dictionary<string,double> SaliencyAssignment;
+	
+	
 	
 }; // end cogx 
 }; // end domainmodel
