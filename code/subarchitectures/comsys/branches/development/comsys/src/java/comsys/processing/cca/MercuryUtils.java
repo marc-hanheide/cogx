@@ -76,9 +76,9 @@ public class MercuryUtils {
 
 	public static String agentToString(Agent a) {
 		switch (a) {
-		case Human:
+		case human:
 			return "h";
-		case Robot:
+		case robot:
 			return "r";
 		default:
 			return "?";
