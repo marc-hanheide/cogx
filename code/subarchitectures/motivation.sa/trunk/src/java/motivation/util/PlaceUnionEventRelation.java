@@ -60,7 +60,7 @@ public class PlaceUnionEventRelation extends
 	@Override
 	protected boolean compare(WorkingMemoryChange wmcTrigger,
 			WorkingMemoryChange wmcImplication) throws CASTException {
-		component.log("comparing changes");
+		component.debug("comparing changes");
 
 		UnionConfiguration unionConfiguration = component.getMemoryEntry(
 				wmcImplication.address, UnionConfiguration.class);
@@ -101,7 +101,7 @@ public class PlaceUnionEventRelation extends
 					int placeId = Integer
 							.parseInt(((StringValue) f.alternativeValues[0]).val);
 					if (placeId == searchedPlaceID) {
-						component.log("found corresponding ID");
+						component.debug("found corresponding ID");
 						return true;
 					}
 				}

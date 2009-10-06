@@ -41,6 +41,6 @@ public class MotiveFactory {
 	}
 	public static CategorizeRoomMotive createCategorizeRoomMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, 0, 0, 0, 0, "");
+		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, 0, 0, 0, 0, "",-1);
 	}
 }
