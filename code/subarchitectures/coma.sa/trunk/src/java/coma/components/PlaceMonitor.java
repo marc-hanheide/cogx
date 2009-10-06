@@ -2,6 +2,8 @@ package coma.components;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -182,6 +184,8 @@ public class PlaceMonitor extends ManagedComponent {
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) { 
 				// TRUEPLACE block
 				log("create dora:Place instance");
+				debug("check whether place WME is null: " + ((_newPlaceNode==null) ? "null!" : "not null!"));
+				debug("check whether the comareasoner connection is initialized: " + ((m_comareasoner==null) ? "null!" : "not null!"));
 				m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
 				// keep track of created true place instances
 				m_trueplaces.add(Long.valueOf(_newPlaceNode.id));
@@ -441,6 +445,7 @@ public class PlaceMonitor extends ManagedComponent {
 				_remainingPlaceIds.add(Long.valueOf(_placeIns.replaceAll("\\D","")));
 			}
 			log("remaining places: " + _remainingPlaceIds);
+			Collections.sort((List<Long>)_remainingPlaceIds);
 			
 			// get all rooms previously known from WM
 			List<CASTData<ComaRoom>> _knownRoomsOnWM;
@@ -448,6 +453,19 @@ public class PlaceMonitor extends ManagedComponent {
 			int _count=0;
 			getMemoryEntriesWithData(ComaRoom.class, _knownRoomsOnWM, _count);
 			log("loaded all room WMEs. no. of room WMEs: " + _knownRoomsOnWM.size());
+			Collections.sort(_knownRoomsOnWM, new Comparator<CASTData<ComaRoom>>() {
+				@Override
+					public int compare(CASTData<ComaRoom> arg0, CASTData<ComaRoom> arg1) {
+					int x = arg0.getData().roomId;
+					int y = arg1.getData().roomId;
+					if(x < y) {
+					return -1;
+					} else if(x == y) {
+					return 0;
+					} else {
+					return 1;
+					}}});
+			debug("sorted _knownRoomsOnWM: " + _knownRoomsOnWM);
 
 			// for each room:
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
@@ -588,6 +606,7 @@ public class PlaceMonitor extends ManagedComponent {
 	}
 	
 	private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
+		debug("maintainRoomProxy() called");
 		if (m_proxyMarshall!=null) {
 			// current room UID:
 			String _currRoomUID = "area"+_comaRoom.roomId;
@@ -607,8 +626,9 @@ public class PlaceMonitor extends ManagedComponent {
 				_roomIDFtr.featlabel = "roomID";
 				_roomIDFtr.alternativeValues = new FeatureValue[1];
 				_roomIDFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), _comaRoom.roomId);
+				m_proxyMarshall.addFeature("room", _currRoomUID, _roomIDFtr);
 				
-				m_proxyMarshall.commitFeatures("room", _currRoomUID);
+//				m_proxyMarshall.commitFeatures("room", _currRoomUID);
 			}
 
 			// containment
@@ -638,6 +658,7 @@ public class PlaceMonitor extends ManagedComponent {
 				}
 			} else {
 				Feature _classFtr = new Feature();
+				_classFtr.featlabel = "areaclass";
 				_classFtr.alternativeValues = new FeatureValue[1];
 				_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
 				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
