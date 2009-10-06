@@ -43,7 +43,7 @@ public class PrettyPrinting {
 		}
 		else if (as instanceof AttributedAgentStatus) {
 			AttributedAgentStatus attrib = (AttributedAgentStatus) as;
-			return "{[" + attrib.ag.id + "]" + attrib.ag2.id + "}";
+			return "{" + attrib.ag.id + "[" + attrib.ag2.id + "]}";
 		}
 		else if (as instanceof MutualAgentStatus) {
 			MutualAgentStatus mutual = (MutualAgentStatus) as;
