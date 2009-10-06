@@ -121,10 +121,6 @@ public class cc_TTS extends ManagedComponent {
     // CONSTRUCTOR METHODS
     // =================================================================
 
-    public cc_TTS(String _id) {
-        init();
-    } // end constructor
-
     private void init() {
         log("Initializing text-to-speech synthesis component");
 
@@ -154,6 +150,7 @@ public class cc_TTS extends ManagedComponent {
     @Override
     public void start() {
         super.start();
+        init();
         try {
 			/**
             addChangeFilter(ComsysOntology.SPOKENOUTPUTITEM_TYPE,
@@ -458,7 +455,8 @@ public class cc_TTS extends ManagedComponent {
      * 
      * @see cast.core.components.CASTProcessingComponent#configure(java.util.Properties)
      */
-    public void configure(Properties _config) {
+    @Override
+    public void configure(Map<String, String> _config) {
 //         _config.list(System.out);
 
         // nah: adding switch to ignore Mary for ease of testing
@@ -515,12 +513,12 @@ public class cc_TTS extends ManagedComponent {
 
             // voice name
             if (_config.containsKey("--voice")) {
-                voiceName = _config.getProperty("--voice");
+                voiceName = _config.get("--voice");
             }
 
             // IP address of the Mary server
             if (_config.containsKey("--serverHost")) {
-                serverHost = _config.getProperty("--serverHost");
+                serverHost = _config.get("--serverHost");
             }
 
 			
@@ -529,14 +527,14 @@ public class cc_TTS extends ManagedComponent {
             if (_config.containsKey("--serverPort")) {
                 serverPort =
                         Integer.valueOf(_config
-                            .getProperty("--serverPort"));
+                            .get("--serverPort"));
             }
 
 			String startingUp = ""; 
 			
             // Line to be said on startup
             if (_config.containsKey("--startingUp")) {
-                startingUp = _config.getProperty("--startingUp");
+                startingUp = _config.get("--startingUp");
             }						
 			
             try {
