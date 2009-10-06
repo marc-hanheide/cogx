@@ -95,16 +95,22 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_lgm2 = new Cure::LocalGridMap<unsigned char>(70, 0.1, '2', Cure::LocalGridMap<unsigned char>::MAP1);
   m_Glrt2  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm2);
 
-  if (_config.find("--no-x-window") == _config.end()) {
-    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+  if (_config.find("--no-tentative-window") == _config.end()) {
     m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
-    println("Will use X window to show the map");
+    println("Will use X window to show the tentative local map");
   } else {
-    m_Displaylgm1 = 0;
     m_Displaylgm2 = 0;
-    println("Will NOT use X window to show the map");
+    println("Will NOT use X window to show the tentative local map");
   }
 
+  if (_config.find("--no-local-map-window") == _config.end()) {
+    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+    println("Will use X window to show the current local map");
+  } else {
+    m_Displaylgm1 = 0;
+    println("Will NOT use X window to show the current local map");
+  }
+  
   m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
                                                      m_RobotServerHost);
   FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
