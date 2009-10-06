@@ -54,6 +54,23 @@ module beliefmodels {
 		
 		sequence<Agent> Agents; 
 		
+		class AgentStatus { };
+
+		// private knowledge, "ag knows"
+		class PrivateAgentStatus extends AgentStatus {
+			Agent ag;
+		};
+
+		// attributed knowledge, "ag knows that ag2 knows"
+		class AttributedAgentStatus extends PrivateAgentStatus {
+			Agent ag2;
+		};
+
+		// mutual knowledge, "all agents in ags know"
+		class MutualAgentStatus extends AgentStatus {
+			Agents ags;
+		};
+				
 		// ===================================================================
 		// SPATIO-TEMPORAL FRAMES
 		// Formally, a spatiotemporal frame is a tuple over a spatial interval, 
@@ -119,7 +136,7 @@ module beliefmodels {
 
 		class Belief extends EpistemicObject { 
 			SpatioTemporalFrame sigma; 
-			Agents ags;
+			AgentStatus ags;
 			Formula phi; 
 		}; // end Belief
 		
