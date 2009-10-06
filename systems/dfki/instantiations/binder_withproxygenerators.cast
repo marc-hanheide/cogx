@@ -11,6 +11,7 @@ JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxi
 
 JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
 JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
+JAVA MG translator binder.components.BeliefModelTranslator #--log
 
 JAVA MG monitor binder.components.BinderMonitor --gui --log
 
