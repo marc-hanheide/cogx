@@ -33,22 +33,10 @@ JAVA MG discretizer binder.components.UnionDiscretizer #--log
 
 
 SUBARCHITECTURE planner.sa
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA WM cast.architecture.SubarchitectureWorkingMemory 
 CPP TM AlwaysPositiveTaskManager
-CPP MG Planner WMControl --log
-JAVA MG executor execution.components.PrototypePlanExecutor --log
+CPP MG Planner WMControl 
+JAVA MG executor execution.components.PrototypePlanExecutor --log --self-motivate --interrupt
+# JAVA MG vis.plan motivation.util.viewer.ViewerCastComponent --subscribe autogen.Planner.PlanningTask,autogen.Planner.Action
 
-JAVA MG ExplorePlaceGenerator spatial.motivation.ExplorePlaceGenerator   #--log
-#JAVA MG CategorizePlaceGenerator motivation.components.generators.CategorizePlaceGenerator   #--log
-# JAVA MG motivation.generators.TestGenerator motivation.components.generators.TestGenerator   --log
-# JAVA MG motivation.generators.HomingGenerator motivation.components.generators.HomingGenerator   --log
-# JAVA MG motivation.filters.SurfaceFilter motivation.components.filters.SurfaceAllFilter  --log
-
-# JAVA MG motivation.filters.ManualSelectFilter motivation.components.filters.ManualSelectFilter  #--log
-JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" --log
-
-JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --log --maxPlannedMotives 3 --orderPolicy InvertAge
-JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager  --log
-
-#JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, autogen.Planner.Action"
 
