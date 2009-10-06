@@ -163,7 +163,7 @@ module beliefmodels {
 		}; // end Task
 		
 		sequence<Task> Tasks;
-		
+		  
 		// ===================================================================
 		// FOREGROUND
 		// The foreground collection is an interface, which needs to define access
@@ -171,25 +171,25 @@ module beliefmodels {
 		// foreground collection (e.g. a stack, etc.) is to be defined at the 
 		// implementation level. 
 		
-		interface Foreground { 
-			Beliefs	getForegroundedBeliefs();
-			Tasks	getForegroundedTasks();
-			void	addForegroundedBelief(Belief K);
-			void	addForegroundedTask(Task T);
-			void	removeForegroundedBelief (Belief K);
-			void	removeForegroundedTask (Task T);
-		}; // end Foregrounding
-
+	
 		// ===================================================================
 		// BELIEF MODEL
 		// A belief model is a tuple consisting of a set of agents, a spatio- 
 		// temporal model, a set of beliefs, a set of tasks, and the foregrounding
 
+		sequence<string> BeliefPointers;
+		
+		sequence<string> TaskPointers;
+		
+		sequence<string> Foreground;
+		
+		
 		class BeliefModel { 
+			string id;
 			Agents   a;
 			SpatioTemporalModel s;
-			Beliefs	 k;
-			Tasks	 t;
+			BeliefPointers	 k;
+			TaskPointers	 t;
 			Foreground f;
 		}; 
 
