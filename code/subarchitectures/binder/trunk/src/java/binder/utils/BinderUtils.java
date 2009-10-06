@@ -32,6 +32,7 @@ import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
@@ -51,8 +52,9 @@ public class BinderUtils {
 	// minimum threshold above which unknown values can be created in features
 	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.02f;
 
-
-
+	public static boolean ADD_DEFAULT_SALIENCY = true;
+	public static float DEFAULT_SALIENCY = 1.0f;
+	
 	
 	// ================================================================= 
 	// EXISTENCE PROBABILITY METHODS   
@@ -122,15 +124,44 @@ public class BinderUtils {
 			addUnknownFeatureValues(proxy.features);
 		}
 
+		
+		if (ADD_DEFAULT_SALIENCY && !hasFeature(proxy, "saliency")) {
+			addSaliencyFeature(proxy);
+		}
+		
 		// if the probability distribution of the updated proxy is unavailable, regenerate it
 		if (proxy.distribution == null) {
 			proxy.distribution = 
 				DistributionGeneration.generateProbabilityDistribution(proxy);
 		}
+
 	}
 	
 	
+	public static void addSaliencyFeature (PerceivedEntity entity) {
+		
+		Feature[] newFeatures = new Feature[entity.features.length + 1];
+		for (int i = 0 ; i < entity.features.length ; i++) {
+			newFeatures[i] = entity.features[i];
+		}
+		FloatValue floatValue = ProxyConstructor.createFloatValue(DEFAULT_SALIENCY, 1.0f, entity.timeStamp);
+		newFeatures[entity.features.length] = 
+			ProxyConstructor.createFeatureWithUniqueFeatureValue("saliency", floatValue);
+		
+		entity.features = newFeatures;
+	}
+	
+	
+	public static boolean hasFeature(PerceivedEntity entity, String featlabel) {
+		for (int i = 0 ; i < entity.features.length ; i++) {
+			if (entity.features[i].featlabel.equals(featlabel)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
+	
 	/**
 	 * If necessary, add unknown feature values to the feature.  The parameter 
 	 * MINIMUM_PROB_OF_UNKNOWN_FEATVALUES determines the threshold above which an 

@@ -1,5 +1,6 @@
 package binder.utils;
 
+
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
@@ -8,6 +9,7 @@ import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.PhantomProxy;
@@ -247,6 +249,25 @@ public class ProxyConstructor {
 		return addressVal;
 	}
 
+	/**
+	 * Create a new AddressValue given a string and a probability
+	 * 
+	 * @param integer
+	 *            the integer
+	 * @param prob
+	 *            the probability value
+	 * @return the IntegerValue
+	 */
+
+	public static FloatValue createFloatValue(float floatv, float prob, CASTTime timestamp) {
+		FloatValue floatVal = new FloatValue();
+		floatVal.val = floatv;
+		floatVal.independentProb = prob;
+		floatVal.timeStamp = timestamp;
+		return floatVal;
+	}
+	
+	
 	/**
 	 * Create a new AddressValue given a string and a probability
 	 * 

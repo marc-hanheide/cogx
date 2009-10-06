@@ -24,11 +24,7 @@ import java.util.Vector;
 
 import beliefmodels.adl.Belief;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
-import beliefmodels.domainmodel.cogx.LinguisticLabelProperty;
-import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
-import binder.autogen.core.Feature;
-import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.utils.BeliefModelUtils;
 
@@ -77,12 +73,19 @@ public class BindingPredictor extends ProxyWriter {
 			Vector<Belief> bindings = getPossibleBindings(constraints);
 			
 			// Wait for the predicted unions to be computed by the binder
-			while (bindings.size() == 0) {
+			int count = 0;
+			while (bindings.size() == 0 && count < 10) {
 				sleepComponent(20);
 				bindings = getPossibleBindings(constraints);
+				count++;
 			}
 
+			if (count > 10) {
 			log("Predicted beliefs for phantom proxy is sucessfully retrieved");
+			}
+			else {
+				log("WARNING: *no* predicted beliefs found");
+			}
 
 			// If deleteProxyAfterBinding==true, delete the phantom proxy, and also update 
 			if (deleteProxyAfterBinding) {
@@ -192,14 +195,14 @@ public class BindingPredictor extends ProxyWriter {
 	public Vector<Belief> getAllBeliefsSatisfyingConstraints 
 			(Vector<Belief> allBeliefs, Vector<UncertainSuperFormula> constraints) {
 
-		log("retrieving possible beliefs including the constraints imposed in the phantom proxy...");
+	/**	log("retrieving possible beliefs including the constraints imposed in the phantom proxy...");
 		
 		log("constraints: " + constraints.size());
 		for (int z = 0; z < constraints.size(); z++) {
 			log("C" + (z+1) + ": "  + BeliefModelUtils.getFormulaPrettyPrint(constraints.elementAt(z)));
 		}
 		
-		log("total number of beliefs: " + allBeliefs.size());
+		log("total number of beliefs: " + allBeliefs.size()); */
 		
 		Vector<Belief> boundBeliefs = new Vector<Belief>();
 	

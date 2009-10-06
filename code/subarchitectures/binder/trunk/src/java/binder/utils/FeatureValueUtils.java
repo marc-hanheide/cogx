@@ -24,6 +24,7 @@ import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
@@ -114,6 +115,9 @@ public class FeatureValueUtils {
 		if (fv instanceof IntegerValue && fv2 instanceof IntegerValue) {
 			return ((IntegerValue)fv).val == (((IntegerValue)fv2).val);
 		}
+		if (fv instanceof FloatValue && fv2 instanceof FloatValue) {
+			return ((FloatValue)fv).val == (((FloatValue)fv2).val);
+		}
 		if (fv instanceof BooleanValue && fv2 instanceof BooleanValue) {
 			return ((BooleanValue)fv).val == (((BooleanValue)fv2).val);
 		}
@@ -148,6 +152,9 @@ public class FeatureValueUtils {
 		if (fv instanceof IntegerValue && o instanceof Integer) {
 			return ((IntegerValue)fv).val == (((Integer)o).intValue());
 		}
+		if (fv instanceof FloatValue && o instanceof Float) {
+			return ((FloatValue)fv).val == (((Float)o).floatValue());
+		}
 		
 		return false;
 	}
@@ -175,6 +182,9 @@ public class FeatureValueUtils {
 		}
 		else if (fv instanceof IntegerValue) {
 			return new IntegerValue(fv.independentProb, fv.timeStamp, ((IntegerValue) fv).val);
+		}
+		else if (fv instanceof FloatValue) {
+			return new FloatValue(fv.independentProb, fv.timeStamp, ((FloatValue) fv).val);
 		}
 		else if (fv instanceof BooleanValue) {
 			return new BooleanValue(fv.independentProb, fv.timeStamp, ((BooleanValue) fv).val);
@@ -238,6 +248,9 @@ public class FeatureValueUtils {
 		}
 		else if (fv instanceof IntegerValue) {
 			return (""+((IntegerValue)fv).val);
+		}
+		else if (fv instanceof FloatValue) {
+			return (""+((FloatValue)fv).val);
 		}
 		else if (fv instanceof BooleanValue) {
 			return (""+((BooleanValue)fv).val);
