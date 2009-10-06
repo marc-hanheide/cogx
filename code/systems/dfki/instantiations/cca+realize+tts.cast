@@ -18,6 +18,7 @@ JAVA GD cca comsys.components.cca.cc_ContinualCollabActing --understandFacts ./s
 
 JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --redux ./subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx --log
 JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --log
+JAVA GD speech.synth   comsys.components.tts.cc_TTS --startserver --serverHost localhost --serverPort 59125 --voice us2 --log true --debug true
 
 SUBARCHITECTURE binder 
 
