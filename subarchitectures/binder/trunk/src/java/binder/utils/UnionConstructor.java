@@ -301,6 +301,8 @@ public class UnionConstructor  {
 	private Vector<Feature> getFeatures (Vector<PerceivedEntity> includedEntities) {
 		Vector<Feature> features = new Vector<Feature>();
 
+		Vector<String> featlabels = new Vector<String>();
+		
 		for (Enumeration<PerceivedEntity> e = includedEntities.elements(); e.hasMoreElements();) {
 			PerceivedEntity prox = e.nextElement();
 			for (int i = 0; i < prox.features.length ; i++) {
@@ -311,12 +313,12 @@ public class UnionConstructor  {
 					feat.alternativeValues[j] = 
 						FeatureValueUtils.cloneFeatureValue(prox.features[i].alternativeValues[j]);
 				}
+				
 				features.add(feat);
+				featlabels.add(feat.featlabel);
 			}
 			
-			if (prox instanceof PhantomProxy) {
-		//		features.add(createSpecialBindingFeature((PhantomProxy)prox));
-			}
+
 		}
 		return features;
 	}

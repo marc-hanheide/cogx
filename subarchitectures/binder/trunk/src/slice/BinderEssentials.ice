@@ -202,6 +202,13 @@ class IntegerValue extends core::FeatureValue {
 };
 
 /** 
+ * A feature value instantiated as a float
+ */
+class FloatValue extends core::FeatureValue {
+	float val;
+};
+
+/** 
  * A feature value instantiated as a boolean
  */
 class BooleanValue extends core::FeatureValue {
