@@ -127,6 +127,11 @@ module cogx {
 		Shape shapeValue;
 	};  
 	
+	enum Saliency {low, high };
+	
+	class SaliencyProperty extends ContinualFormula {
+		Saliency sal;
+	};
 	
 	class LinguisticLabelProperty extends ContinualFormula { 
 		string label;
@@ -138,6 +143,12 @@ module cogx {
 	
 	class UnionRefProperty extends ContinualFormula {
 		string unionRef;
+	};
+	
+	enum Proximity {proximal, distal };
+	
+	class ProximityProperty extends ContinualFormula {
+		Proximity prox;
 	};
 	
 	// ==========================

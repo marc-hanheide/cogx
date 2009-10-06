@@ -171,7 +171,7 @@ module beliefmodels {
 		// foreground collection (e.g. a stack, etc.) is to be defined at the 
 		// implementation level. 
 		
-	
+	 
 		// ===================================================================
 		// BELIEF MODEL
 		// A belief model is a tuple consisting of a set of agents, a spatio- 
