@@ -94,9 +94,9 @@ public class ThingProxy extends AbstractProxyFactory
 		private PhantomProxy mapQualityModifier (PhantomProxy prx, LFNominal mod, CASTTime timestamp) { 
 			String feature = null;
 			String value   = null; 
-			if (mod.sort.equals("q-color")) { feature = "color"; value = mod.prop.prop; } 
-			if (mod.sort.equals("q-shape")) { feature = "shape"; value = mod.prop.prop; } 
-			if (mod.sort.equals("q-size"))  { feature = "size"; value = mod.prop.prop; } 
+			if (mod.sort.equals("q-color")) { feature = "ling_attribute"; value = mod.prop.prop; } 
+			if (mod.sort.equals("q-shape")) { feature = "ling_attribute"; value = mod.prop.prop; } 
+			if (mod.sort.equals("q-size"))  { feature = "ling_attribute"; value = mod.prop.prop; } 
 			assert value != null && feature != null; 
 			ProxyConstructor.addFeatureToProxy (prx, createSimpleFeature(feature,value, timestamp));
 			return prx; 
