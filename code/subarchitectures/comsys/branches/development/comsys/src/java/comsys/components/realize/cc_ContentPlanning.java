@@ -112,16 +112,7 @@ public class cc_ContentPlanning
 		// =================================================================
 		// CONSTRUCTOR METHODS
 		// =================================================================		
-		
-		/**
-		 * The unary constructor. The initialization is called after the start() method. 
-		 * 
-		 * @param _id
-		 */
-		public cc_ContentPlanning (String _id) {
-			// super(_id);
-		} // constructor/1
-		
+				
 		/**
 		 * The method <i>init</i> initializes the global data structures.
 		 * The variable <tt>grammarFile</tt> is set in the <i>configure</tt> method.
@@ -533,7 +524,7 @@ public class cc_ContentPlanning
 					unlockComponent();
 					sleepComponent(20);
 					// wait for new tasks!
-					waitForNotifications();
+					//waitForNotifications();
 				} // end while running
 			}
 			catch (Exception e) {
@@ -556,25 +547,26 @@ public class cc_ContentPlanning
 		 * @param _config The properties table
 		 */ 
 		
-		public void configure(Properties _config) {
-			_config.list(System.out);
+		@Override
+	    public void configure(Map<String, String> _config) {
+			//_config.list(System.out);
 			// super.configure(_config);
 			String parserArg = "";
 			if (_config.containsKey("--grammar")) {
-				grammarfile = _config.getProperty("--grammar");
+				grammarfile = _config.get("--grammar");
 			} else if (_config.containsKey("-grammar")) {
-				grammarfile = _config.getProperty("-grammar");
+				grammarfile = _config.get("-grammar");
 			} else {
 				grammarfile = "./subarchitectures/comsys.mk4/grammars/contentPlanning/grammar.xml";
 			} // end if..else check for command-line argument
 			
 			if (_config.containsKey("--redux")) { 
-				reduxfile = _config.getProperty("--redux");
+				reduxfile = _config.get("--redux");
 			} else { 
 				reduxfile = null;
 			}
 			if (_config.containsKey("--contentBody")) { 
-				contentBody = _config.getProperty("--contentBody");
+				contentBody = _config.get("--contentBody");
 			} else { 
 				contentBody = "Content";
 			}			

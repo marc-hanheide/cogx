@@ -121,15 +121,7 @@ public class cc_Realizer
 		// =================================================================
 		// CONSTRUCTOR METHODS
 		// =================================================================		
-		
-		/**
-		 * The unary constructor. The initialization is called after the start() method. 
-		 * 
-		 * @param _id
-		 */
-		public cc_Realizer (String _id) {
-		} // constructor/1
-		
+				
 		/**
 		 * The method <i>init</i> initializes the global data structures.
 		 * The variable <tt>grammarFile</tt> is set in the <i>configure</tt> method.
@@ -387,6 +379,8 @@ public class cc_Realizer
 			LogicalForm[] lfs = new LogicalForm[1];
 			lfs[0] = planLF;
 			plf.packedLF = packingTool.packLogicalForms(lfs);
+			plf.phonStringLFPairs = new PhonStringLFPair[1];
+			plf.phonStringLFPairs[0] = new PhonStringLFPair();
 			plf.phonStringLFPairs[0].phonStr = new PhonString();
 			plf.phonStringLFPairs[0].phonStr.wordSequence = realization;
 			plf.type = "production";
@@ -482,7 +476,7 @@ public class cc_Realizer
 					unlockComponent();
 					sleepComponent(20);
 					// wait for new tasks!
-					waitForNotifications();
+					//waitForNotifications();
 				} // end while running
 			}
 			catch (Exception e) {
@@ -505,27 +499,27 @@ public class cc_Realizer
 		 * @param _config The properties table
 		 */ 
 		
-		// @Override
-		public void configure(Properties _config) {
-			_config.list(System.out);
+		@Override
+	    public void configure(Map<String, String> _config) {
+		    //_config.list(System.out);
 			// super.configure(_config);
 			String parserArg = "";
 			if (_config.containsKey("--ccg")) {
-				grammarfile = _config.getProperty("--ccg");
+				grammarfile = _config.get("--ccg");
 			} else if (_config.containsKey("-ccg")) {
-				grammarfile = _config.getProperty("-ccg");
+				grammarfile = _config.get("-ccg");
 			} else {
 				grammarfile = "./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml";
 			} // end if..else check for command-line argument
 			
 			if (_config.containsKey("--contentBody")) { 
-				contentBody = _config.getProperty("--contentBody");
+				contentBody = _config.get("--contentBody");
 			} else { 
 				contentBody = "Content";
 			}				
 			
 			if (_config.containsKey("--ngrams")) { 
-				String ngramsCorpus = _config.getProperty("--ngrams");
+				String ngramsCorpus = _config.get("--ngrams");
 				String[] targets = loadCorpus(ngramsCorpus);
 				// ngramScorer = new NgramPrecisionModel(targets);
 			} 	
