@@ -155,7 +155,7 @@ public class BayesianNetworkWrapper {
 		BayesianNetworkNode node1 = getNodeWithFeature(pair1.featlabel);
 		BayesianNetworkNode node2 = getNodeWithFeature(pair2.featlabel);
 		Vector<BayesianNetworkEdge> between = getEdgesBetweenNodes(node1, node2);
-
+	
 		for (Enumeration<BayesianNetworkEdge> e = between.elements(); e.hasMoreElements(); ) {
 			BayesianNetworkEdge edge = e.nextElement();
 			for (int i = 0; i < edge.correlations.length; i++) {

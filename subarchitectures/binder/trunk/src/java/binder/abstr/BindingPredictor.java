@@ -70,18 +70,22 @@ public class BindingPredictor extends ProxyWriter {
 			
 			Vector<UncertainSuperFormula> constraints = getPhantomProxyConstraints(phantomProxy);
 
+			log("retrieving possible beliefs including the constraints imposed in the phantom proxy...");
+
+			log("First try...");
 			Vector<Belief> bindings = getPossibleBindings(constraints);
 			
 			// Wait for the predicted unions to be computed by the binder
 			int count = 0;
-			while (bindings.size() == 0 && count < 10) {
+			while ((bindings.size() == 0) && (count < 5)) {
 				sleepComponent(20);
+				log("Try " + (count+2));
 				bindings = getPossibleBindings(constraints);
 				count++;
 			}
 
-			if (count > 10) {
-			log("Predicted beliefs for phantom proxy is sucessfully retrieved");
+			if (count < 5) {
+				log("Predicted beliefs for phantom proxy is sucessfully retrieved!");
 			}
 			else {
 				log("WARNING: *no* predicted beliefs found");
@@ -151,7 +155,7 @@ public class BindingPredictor extends ProxyWriter {
 
 	private Belief getMaximum (Vector<Belief> beliefs) {
 
-		Belief maxFormula = new Belief();
+		Belief maxFormula = null;
 		float maxValue = -1.0f;
 
 		// Loop on the union vector
@@ -194,15 +198,13 @@ public class BindingPredictor extends ProxyWriter {
 	
 	public Vector<Belief> getAllBeliefsSatisfyingConstraints 
 			(Vector<Belief> allBeliefs, Vector<UncertainSuperFormula> constraints) {
-
-	/**	log("retrieving possible beliefs including the constraints imposed in the phantom proxy...");
 		
-		log("constraints: " + constraints.size());
+	/**	log("constraints: " + constraints.size());
 		for (int z = 0; z < constraints.size(); z++) {
 			log("C" + (z+1) + ": "  + BeliefModelUtils.getFormulaPrettyPrint(constraints.elementAt(z)));
 		}
 		
-		log("total number of beliefs: " + allBeliefs.size()); */
+		log("total number of beliefs: " + allBeliefs.size());  */
 		
 		Vector<Belief> boundBeliefs = new Vector<Belief>();
 	

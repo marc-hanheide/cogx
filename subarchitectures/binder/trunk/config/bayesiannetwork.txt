@@ -82,6 +82,20 @@ nodes {
 			black
 		}
 	}
+	
+	ling_proximity {
+		featurevalues {
+			proximal,
+			distal
+		}
+	}
+	
+	saliency {
+		featurevalues {
+			low,
+			high
+		}
+	}
 		
 }
 
@@ -106,13 +120,18 @@ edges {
 	   P(ling_label=ball|obj_label=mug)=0.000001
    }
    
-   colour -> ling_attribute {
+   ling_attribute -> colour {
        P(colour=red|ling_attribute=red)=0.5,
        P(colour=red|ling_attribute=blue)=0.00001,
        P(colour=blue|ling_attribute=blue)=0.99,
        P(colour=blue|ling_attribute=red)=0.00001
    }
    
+   ling_proximity -> saliency {
+   		P(saliency=high|ling_proximity=proximal) = 0.999,
+   		P(saliency=high|ling_proximity=distal) = 0.999
+   	}
+   	
 }
 	
 		

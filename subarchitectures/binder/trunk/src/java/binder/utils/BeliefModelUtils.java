@@ -39,13 +39,17 @@ import beliefmodels.domainmodel.cogx.LocationProperty;
 import beliefmodels.domainmodel.cogx.LogicalOp;
 import beliefmodels.domainmodel.cogx.ObjectType;
 import beliefmodels.domainmodel.cogx.ObjectTypeProperty;
+import beliefmodels.domainmodel.cogx.Proximity;
+import beliefmodels.domainmodel.cogx.ProximityProperty;
+import beliefmodels.domainmodel.cogx.Saliency;
+import beliefmodels.domainmodel.cogx.SaliencyProperty;
 import beliefmodels.domainmodel.cogx.Shape;
 import beliefmodels.domainmodel.cogx.ShapeProperty;
-import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import beliefmodels.domainmodel.cogx.ContinualFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.featvalues.FloatValue;
 
 
 /**
@@ -201,6 +205,23 @@ public class BeliefModelUtils {
 			return property;
 		}
 		
+		else if (featlabel.equals("saliency")) {
+			SaliencyProperty property = new SaliencyProperty();
+			property.prob = fv.independentProb;
+			if (FeatureValueUtils.hasValue(fv, "low")) { property.sal = Saliency.low; }
+			if (FeatureValueUtils.hasValue(fv, "high")) { property.sal = Saliency.high; }
+			
+			return property;
+		}
+		
+		else if (featlabel.equals("ling_proximity")) {
+			ProximityProperty property = new ProximityProperty();
+			property.prob = fv.independentProb;
+			if (FeatureValueUtils.hasValue(fv, "proximal")) { property.prox = Proximity.proximal; }
+			if (FeatureValueUtils.hasValue(fv, "distal")) { property.prox = Proximity.distal; }
+			
+			return property;
+		}
 
 		// and if the feature doesn't belong to one of the above categories...
 		else {
@@ -266,7 +287,19 @@ public class BeliefModelUtils {
 				String ur1 = ((UnionRefProperty)form1).unionRef;
 				String ur2 = ((UnionRefProperty)form2).unionRef;
 				return (ur1.equals(ur2));
-			}		
+			}	
+			
+			else if (form1 instanceof SaliencyProperty) {
+				Saliency s1 = ((SaliencyProperty)form1).sal;
+				Saliency s2 = ((SaliencyProperty)form2).sal;
+				return s1.equals(s2);
+			}	
+			
+			else if (form1 instanceof ProximityProperty) {
+				Proximity prox1 = ((ProximityProperty)form1).prox;
+				Proximity prox2 = ((ProximityProperty)form2).prox;
+				return (prox1.equals(prox2));
+			}
 			
 			else {
 				log("WARNING: Property unknown!");
@@ -395,10 +428,12 @@ public class BeliefModelUtils {
 	public static String getBeliefPrettyPrint (Belief belief, int indent) {
 		String result = getIndent(indent) + "Belief " + belief.id + " defined as \"" + "K_{" + belief.id + "} S_k A_k Phi\", with: \n" ;
 		
+		if (belief.sigma != null) {
 		result += getIndent(indent+1) + "S_k spatio-temporal frame: " + getSpatioTemporalFramePrettyPrint(belief.sigma) + "\n";
-		
+		}
+		if (belief.ags != null) {
 		result += getIndent(indent+1) + "A_k agent status of the belief: " + getAgentStatusPrettyPrint (belief.ags) + " \n";
-		
+		}
 		result += getIndent(indent+1) + "Phi formula incorporated in the belief, expressed as:\n";
 		result += getIndent(indent+2) + "@(" ;
 		result += getFormulaPrettyPrint((UncertainSuperFormula)belief.phi, indent+3);
@@ -550,6 +585,20 @@ public class BeliefModelUtils {
 		
 		else if (formula instanceof UnionRefProperty) {
 			result += " ^ <UnionRef> " + ((UnionRefProperty)formula).unionRef;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		}
+		
+		else if (formula instanceof SaliencyProperty) {
+			result += " ^ <Saliency> " + ((SaliencyProperty)formula).sal;	
+			if (formula instanceof UncertainSuperFormula) {
+				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
+			}
+		} 
+		
+		else if (formula instanceof ProximityProperty) {
+			result += " ^ <Proximity> " + ((ProximityProperty)formula).prox;	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}

@@ -1,5 +1,6 @@
 package binder.abstr;
 
+import beliefmodels.adl.Belief;
 import cast.architecture.ManagedComponent;
 
 
@@ -7,5 +8,8 @@ import cast.architecture.ManagedComponent;
 
 public class BeliefModelWriter extends ManagedComponent {
  
+
+
+	
 }
  

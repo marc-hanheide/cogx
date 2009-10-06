@@ -28,14 +28,17 @@ import binder.autogen.core.OriginMap;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.RelationProxy;
+import binder.utils.ProxyConstructor;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
  
@@ -78,12 +81,8 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 * @return a new OriginInfo object
 	 */
 	public WorkingMemoryPointer createWorkingMemoryPointer (String subarchId, String localDataId,
-			String localDataType) {
-		
-		WorkingMemoryPointer origin = new WorkingMemoryPointer();
-		origin.address = new WorkingMemoryAddress(localDataId, subarchId);
-		origin.type = localDataType;
-		return origin;
+			String localDataType) {	
+		return ProxyConstructor.createWorkingMemoryPointer(subarchId, localDataId, localDataType);
 	}
 
 	/**
@@ -98,15 +97,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 * @return a new proxy
 	 */
 	public Proxy createNewProxy(WorkingMemoryPointer origin, float probExists) {
-
-		Proxy newProxy = new Proxy();
-
-		newProxy.entityID = newDataID();
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
-
-		return newProxy;
+		return ProxyConstructor.createNewProxy(origin, newDataID(), probExists);
 	}
 
 	/**
@@ -124,11 +115,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	public Proxy createNewProxy(WorkingMemoryPointer origin, float probExists,
 			Feature[] features) {
 
-		Proxy newProxy = createNewProxy(origin, probExists);
-
-		newProxy.features = features;
-
-		return newProxy;
+		return ProxyConstructor.createNewProxy(origin, newDataID(), probExists, features);
 	}
 
 	/**
@@ -148,22 +135,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	public RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
 			float probExists, AddressValue[] sources, AddressValue[] targets) {
 
-		RelationProxy newProxy = new RelationProxy();
-
-		newProxy.entityID = newDataID();
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
-
-		newProxy.source = new Feature();
-		newProxy.source.featlabel = "source";
-		newProxy.source.alternativeValues = sources;
-
-		newProxy.target = new Feature();
-		newProxy.target.featlabel = "target";
-		newProxy.target.alternativeValues = targets;
-
-		return newProxy;
+		return ProxyConstructor.createNewRelationProxy(origin, newDataID(), probExists, sources, targets);
 	}
 
 	/**
@@ -186,13 +158,8 @@ public abstract class ProxyWriter extends ManagedComponent {
 	public RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
 			float probExists, Feature[] features, AddressValue[] sources,
 			AddressValue[] targets) {
-
-		RelationProxy newProxy = createNewRelationProxy(origin, probExists,
-				sources, targets);
-
-		newProxy.features = features;
-
-		return newProxy;
+		
+		return ProxyConstructor.createNewRelationProxy(origin, newDataID(), probExists, features, sources, targets);
 	}
 
 
@@ -213,30 +180,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 	public void addFeatureToProxy(Proxy proxy, Feature feat) {
 
-		Feature[] newFeatures;
-		
-		if (feat.featlabel == null) {
-			System.out.println("WARNING: feature has no specified feature label, cannot insert feature");
-		}
-		else if (feat.alternativeValues == null) {
-			System.out.println("WARNING: feature has no specified feature values, cannot insert feature");
-		}
-		else if (feat.alternativeValues.length == 0) {
-			System.out.println("WARNING: feature has no specified feature values, cannot insert feature");
-		}
-		
-		if (proxy.features != null) {
-			newFeatures = new Feature[proxy.features.length + 1];
-			for (int i = 0; i < proxy.features.length; i++) {
-				newFeatures[i] = proxy.features[i];
-			}
-			newFeatures[proxy.features.length] = feat;
-		} else {
-			newFeatures = new Feature[1];
-			newFeatures[0] = feat;
-		}
-		
-		proxy.features = newFeatures;
+		ProxyConstructor.addFeatureToProxy(proxy, feat);
 
 	}
 
@@ -251,11 +195,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public StringValue createStringValue(String val, float prob) {
-		StringValue stringVal = new StringValue();
-		stringVal.val = val;
-		stringVal.independentProb = prob;
-		stringVal.timeStamp = getCASTTime();
-		return stringVal;
+		return ProxyConstructor.createStringValue(val, prob, getCASTTime());
 	}
 
 	/**
@@ -269,11 +209,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public AddressValue createAddressValue(String address, float prob) {
-		AddressValue addressVal = new AddressValue();
-		addressVal.val = address;
-		addressVal.independentProb = prob;
-		addressVal.timeStamp = getCASTTime();
-		return addressVal;
+		return ProxyConstructor.createAddressValue(address, prob, getCASTTime());
 	}
 
 	/**
@@ -287,11 +223,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public IntegerValue createIntegerValue(int integer, float prob) {
-		IntegerValue integerVal = new IntegerValue();
-		integerVal.val = integer;
-		integerVal.independentProb = prob;
-		integerVal.timeStamp = getCASTTime();
-		return integerVal;
+		return ProxyConstructor.createIntegerValue(integer, prob, getCASTTime());
 	}
 
 	/**
@@ -305,13 +237,23 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public BooleanValue createBooleanValue(boolean val, float prob) {
-		BooleanValue boolVal = new BooleanValue();
-		boolVal.val = val;
-		boolVal.independentProb = prob;
-		boolVal.timeStamp = getCASTTime();
-		return boolVal;
+		return ProxyConstructor.createBooleanValue(val, prob, getCASTTime());
 	}
 
+	
+	/**
+	 * Create a new FloatValue given a float and a probability
+	 * 
+	 * @param floatv
+	 *            the float
+	 * @param prob
+	 *            the probability value
+	 * @return the BooleanValue
+	 */
+	
+	public FloatValue createFloatValue(float floatv, float prob) {
+		return ProxyConstructor.createFloatValue(floatv, prob, getCASTTime());
+	}
 	/**
 	 * Create a new feature, without feature values
 	 * 
@@ -321,10 +263,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public static Feature createFeature(String featlabel) {
-		Feature feat = new Feature();
-		feat.featlabel = featlabel;
-		feat.alternativeValues = new FeatureValue[0];
-		return feat;
+		return ProxyConstructor.createFeature(featlabel);
 	}
 
 	/**
@@ -339,12 +278,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 	public static Feature createFeatureWithUniqueFeatureValue(String featlabel,
 			FeatureValue featvalue) {
-
-		Feature feat = createFeature(featlabel);
-		feat.alternativeValues = new FeatureValue[1];
-		feat.alternativeValues[0] = featvalue;
-
-		return feat;
+		return ProxyConstructor.createFeatureWithUniqueFeatureValue(featlabel, featvalue);
 	}
 
 	/**
@@ -354,25 +288,10 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 *            the feature
 	 * @param featval
 	 *            the feature value
-	 * @return the feature
 	 */
 
-	public static Feature addFeatureValueToFeature(Feature feat, FeatureValue featval) {
-
-		if (feat.alternativeValues != null) {
-		FeatureValue[] featvals = new FeatureValue[feat.alternativeValues.length +1];
-
-		for (int i = 0; i < feat.alternativeValues.length; i++) {
-			featvals[i] = feat.alternativeValues[i];
-		}
-		featvals[feat.alternativeValues.length] = featval;
-		feat.alternativeValues = featvals;
-		}
-		else {
-			feat.alternativeValues = new FeatureValue[1];
-			feat.alternativeValues[0] = featval;
-		}
-		return feat;
+	public static void addFeatureValueToFeature(Feature feat, FeatureValue featval) {
+		ProxyConstructor.addFeatureValueToFeature(feat, featval);
 	}
 
 	/**
@@ -387,13 +306,10 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 	public static Feature createFeatureWithAlternativeFeatureValues(String featlabel,
 			FeatureValue[] featvalues) {
-
-		Feature feat = createFeature(featlabel);
-		feat.alternativeValues = featvalues;
-
-		return feat;
+		return ProxyConstructor.createFeatureWithAlternativeFeatureValues(featlabel, featvalues);
 	}
 
+	
 	// =================================================================
 	// METHODS FOR INSERTING/MODIFYING/DELETING PROXIES IN THE WM
 	// =================================================================
