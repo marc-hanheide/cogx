@@ -96,7 +96,7 @@ public class ReferentialReadings {
 		RefReading[] result = new RefReading[array1.length+array2.length];
 		int i;
 		for (i=0; i<array1.length; i++) { result[i] = array1[i]; } 
-		i = i+1; // move one beyond the array1 length
+		// i = i+1; // move one beyond the array1 length
 		for (int j=0; j < array2.length; j++) { result[i+j] = array2[j]; }
 		return result;
 	} // end addReadingArrays
