@@ -58,8 +58,8 @@ public class ManualSelectFilter implements MotiveFilter {
 
 
 	public boolean shouldBeUnsurfaced(Motive motive) {
-		if (motive.status==MotiveStatus.ACTIVE)
-			return false;
+//		if (motive.status==MotiveStatus.ACTIVE)
+//			return false;
 		
 		if (motive instanceof ExploreMotive)
 			return !jCheckBoxExploreMotive.isSelected();

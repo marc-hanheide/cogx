@@ -19,6 +19,7 @@ import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
@@ -40,9 +41,13 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 			return new String("");
 		}
 
-		public static String motive2PlannerGoal(CategorizeRoomMotive m) {
-			// TODO: this has to be implemented with lookup to the unions
-			return new String("");
+		public static String motive2PlannerGoal(CategorizeRoomMotive m,
+				String roomUnion) {
+			String placeStr = Long.toString(m.roomId);
+			return "(exists (?p - room)  (and (= (roomID ?p) roomID_"
+					+ placeStr + ") (kval '" + roomUnion
+					+ "' (room_category ?p))))";
+
 		}
 
 		public static String motive2PlannerGoal(ExploreMotive m,
@@ -121,8 +126,11 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 							.motive2PlannerGoal(em, binderFacade
 									.getUnion(em.correspondingUnion).entityID);
 			} else if (m instanceof CategorizeRoomMotive) {
-				conjunctiveGoal = GoalTranslator
-						.motive2PlannerGoal((CategorizeRoomMotive) m);
+				CategorizeRoomMotive crm = (CategorizeRoomMotive) m;
+				if (crm.correspondingUnion != null)
+					conjunctiveGoal = GoalTranslator
+							.motive2PlannerGoal(crm, binderFacade
+									.getUnion(crm.correspondingUnion).entityID);
 			} else if (m instanceof HomingMotive) {
 				conjunctiveGoal = GoalTranslator
 						.motive2PlannerGoal((HomingMotive) m);
@@ -160,6 +168,8 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		component.log("resolve references in motives");
 		Map<String, FeatureValue> unionsWithPlaceID = binderFacade
 				.findFeaturesInUnion("place_id");
+		Map<String, FeatureValue> unionsWithRoomId = binderFacade
+				.findFeaturesInUnion("roomID");
 		for (Motive m : activeMotives) {
 			// resolve place_ids for union ids
 			if (m instanceof ExploreMotive) { // resolve
@@ -186,6 +196,27 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 					}
 				}
 			} else if (m instanceof CategorizeRoomMotive) {
+				// place_ids for
+				// union ids
+				CategorizeRoomMotive crm = (CategorizeRoomMotive) m;
+				component.log("resolving roomId=" + crm.roomId
+						+ " in CategorizeRoomMotive against "
+						+ unionsWithRoomId.size()
+						+ " unions that have a roomId");
+				// search the unions for correct placeID
+				for (Entry<String, FeatureValue> entry : unionsWithRoomId
+						.entrySet()) {
+					IntegerValue placeID =  (IntegerValue) entry.getValue();
+					if (placeID.val == crm.roomId) {
+						component.log("found a corresponding union for roomId "
+								+ crm.roomId + ": " + entry.getKey());
+						crm.correspondingUnion = entry.getKey();
+						component.overwriteWorkingMemory(crm.thisEntry, crm);
+						// TODO: we hope, that there is only ONE union with this
+						// roomId, so let's break
+						break;
+					}
+				}
 
 			}
 		}
@@ -250,8 +281,9 @@ public class PlannerFacade implements Callable<WMEntryQueueElement> {
 		try {
 			PlanningTask plan = generatePlanningTask(activeMotives);
 			if (plan == null) {// we couldn't generate a proper goal... there is
-								// nothing to be done
-				component.println("the goal is empty... there is nothing to plan for");
+				// nothing to be done
+				component
+						.println("the goal is empty... there is nothing to plan for");
 				return null;
 			}
 			String id = component.newDataID();

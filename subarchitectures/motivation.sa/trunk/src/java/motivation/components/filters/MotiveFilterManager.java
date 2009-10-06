@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import motivation.slice.CategorizePlaceMotive;
+import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
@@ -195,6 +196,18 @@ public class MotiveFilterManager extends ManagedComponent  {
 		getMemoryEntries(CategorizePlaceMotive.class, categorizePlaceMotives);
 		// trigger them all by overwriting them
 		for (Motive m : categorizePlaceMotives) {
+			WorkingMemoryChange wmc = new WorkingMemoryChange();
+			wmc.address = m.thisEntry;
+			wmc.operation = WorkingMemoryOperation.OVERWRITE;
+			wmc.src = "explicit self-trigger";
+			receiver.workingMemoryChanged(wmc);
+		}
+
+		List<CategorizeRoomMotive> categorizeRoomMotives;
+		categorizeRoomMotives = new LinkedList<CategorizeRoomMotive>();
+		getMemoryEntries(CategorizeRoomMotive.class, categorizeRoomMotives);
+		// trigger them all by overwriting them
+		for (Motive m : categorizeRoomMotives) {
 			WorkingMemoryChange wmc = new WorkingMemoryChange();
 			wmc.address = m.thisEntry;
 			wmc.operation = WorkingMemoryOperation.OVERWRITE;

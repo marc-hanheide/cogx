@@ -47,13 +47,15 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 					+ " seconds ago");
 
 			if (source.concepts.length == 0) {
+				CategorizeRoomMotive crm = (CategorizeRoomMotive) motive;
 				log("  nothing's known about it, so it should be considered as a motive");
-				motive.costs=1;
+				crm.costs=1;
 				// The more places are contained the more information we get from this room!
-				motive.informationGain=source.containedPlaceIds.length;
+				crm.informationGain=source.containedPlaceIds.length;
 				// priority is considered similarly as informationGain for now
-				motive.priority=(float) motive.informationGain;
-				write(motive);
+				crm.priority=(float) motive.informationGain;
+				crm.roomId = source.roomId;
+				write(crm);
 				return true;
 			} else {
 				log("  turns out this room is categorized already, so it should be no motive then");
