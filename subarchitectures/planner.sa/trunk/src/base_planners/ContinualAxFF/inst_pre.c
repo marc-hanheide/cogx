@@ -826,7 +826,7 @@ void collect_inertia_information( void )
 	Bool remove_inertia;
 	Bool default_value;
 
-	remove_inertia = FALSE;
+	remove_inertia = TRUE;
 	/* if inertia are removed, then default to false, otherwise to true. */
 	default_value = !remove_inertia;
 
