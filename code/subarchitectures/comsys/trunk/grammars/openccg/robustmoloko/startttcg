@@ -1,3 +1,0 @@
-export PATH=$PATH:../bin/
-export CLASSPATH=$CLASSPATH:../../../../../output/classes/
-tccg
