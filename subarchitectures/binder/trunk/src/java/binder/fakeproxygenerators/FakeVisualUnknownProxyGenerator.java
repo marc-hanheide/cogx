@@ -23,6 +23,8 @@ package binder.fakeproxygenerators;
 import binder.autogen.core.*;
 import binder.autogen.featvalues.*;
 
+
+
 public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
 
 	public void start () {
@@ -42,7 +44,7 @@ public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
 
 	protected Proxy createProxyOne() {
 		
-		OriginInfo origin = createOriginInfo ("fakevision", "blublu2", "VisualObject");
+		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.9f);
 		
 		FeatureValue unknown = new UnknownValue();
