@@ -1,4 +1,10 @@
+From: Miroslav Janicek <mira.janicek@gmail.com>
+---
+
 HOW TO INSTALL MERCURY
+
+This file describes the process of installing the Mercury compiler
+in your system.
 
 1) Download the Mercury compiler, it's the package "Compiler" at the
    bottom this page:
@@ -38,3 +44,10 @@ HOW TO INSTALL MERCURY
 
 7) Export environment variable MERCURY_HOME to INSTALLPATH in your shell.
    You will need this to compile the abduction server.
+
+
+Voila! Your Mercury is compiled. For the instructions on how to build
+and use the abducer, see the file `README.Abducer.txt' in this directory.
+
+If you encounter any problems, ask me! My email is on the first line of
+this file.
