@@ -49,7 +49,11 @@ public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
 		
 		FeatureValue unknown = createUnknownValue(0.8f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", unknown);
-		addFeatureToProxy (proxy, feat1);		
+		addFeatureToProxy (proxy, feat1);
+		
+		FeatureValue highsaliency = createStringValue("high", 0.9f);
+		Feature feat2 = createFeatureWithUniqueFeatureValue ("saliency", highsaliency);
+		addFeatureToProxy (proxy, feat2);
 	
 		return proxy;
 	}
