@@ -136,7 +136,7 @@ module cogx {
 	class LinguisticLabelProperty extends ContinualFormula { 
 		string label;
 	};  
-	
+	 
 	class LinguisticAttributeProperty extends ContinualFormula {
 		string attribute;
 	};
