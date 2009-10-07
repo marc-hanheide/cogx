@@ -16,6 +16,21 @@
 </realizations>
 </utterance>
 
+<!-- ==========  THANKING  ==========  -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>thanking)
+-->
+@d1:dvp(c-goal ^ /SpeechAct\thanking)
+</input>
+<realizations>
+<string>thank you</string> 
+<string>thanks</string>
+<string>cheers</string>  <!-- not in the lexicon -->
+</realizations>
+</utterance>
 
 
 <!-- ==========  ANSWER  ==========  -->

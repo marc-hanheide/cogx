@@ -1,5 +1,22 @@
 
 ======
+Demo script Sept 30 09
+
+h: “hi robot”
+r: “hello”							
+h: puts a red box in front of the robot
+r: “hm.. what IS that” (situated grounding feedback)		
+h: “do you know what this is?”
+r: “no I do not know what this is” (situated grounding)		
+h: “this is a box”						
+r: “let me see” (linguistic grounding feedback)
+   “is the box red or orange?” / “what color does the box have?” (situated grounding)	check for second part
+h: “it is red”
+r: “okay thanks” (situated grounding ... the question is, should we have linguistic feedback here too, like before?)
+
+======
+
+======
 DORA
 ======
 
