@@ -604,9 +604,9 @@ public class BeliefModelUtils {
 			}
 		}
 
-	/**	if (formula instanceof ContinualFormula) {
+		if (formula instanceof ContinualFormula) {
 			result += " " + getContinualStatusPrettyPrint((ContinualFormula) formula);
-		} */
+		}
 
 		return result;
 	}
