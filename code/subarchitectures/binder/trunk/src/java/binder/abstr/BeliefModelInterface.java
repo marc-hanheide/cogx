@@ -252,6 +252,7 @@ public class BeliefModelInterface extends ManagedComponent{
 		return relatedBeliefs;
 	 }
 
+
 	/**
 	 * Get a belief by belief ID.
 	 * 
@@ -260,6 +261,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	 * @throws DoesNotExistOnWMException
 	 * @throws UnknownSubarchitectureException
 	 */
+
 	public Belief getBelief(String beliefId) 
 		throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
