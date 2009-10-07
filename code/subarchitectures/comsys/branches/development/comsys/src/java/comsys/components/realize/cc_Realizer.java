@@ -338,6 +338,7 @@ public class cc_Realizer
 					opennlp.ccg.realize.Chart chart = realizer.getChart();
 					String bestRealization = "";
 					List bestEdges = chart.bestEdges();
+					log("Number of best edges on realization chart: ["+bestEdges.size()+"]");
 					for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
 						opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
 						// Sign sign = edge.getSign();
@@ -509,7 +510,7 @@ public class cc_Realizer
 			} else if (_config.containsKey("-ccg")) {
 				grammarfile = _config.get("-ccg");
 			} else {
-				grammarfile = "./subarchitectures/comsys.mk4/grammars/openccg/moloko.v5/grammar.xml";
+				grammarfile = "./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml";
 			} // end if..else check for command-line argument
 			
 			if (_config.containsKey("--contentBody")) { 
