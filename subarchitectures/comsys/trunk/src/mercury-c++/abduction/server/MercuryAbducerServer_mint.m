@@ -12,7 +12,11 @@
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
+:- pred srv_clear_e_facts(ctx::in, ctx::out) is det.
+:- pred srv_clear_a_facts(ctx::in, ctx::out) is det.
+:- pred srv_clear_i_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_k_facts(ctx::in, ctx::out) is det.
+
 :- pred srv_load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_add_mprop_fact(varset::in, mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
 
@@ -100,23 +104,33 @@ srv_load_rules_from_file(Filename, !Ctx, !IO) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pragma foreign_export("C", srv_clear_facts(in, out), "clear_facts").
+:- pragma foreign_export("C", srv_clear_e_facts(in, out), "clear_e_facts").
+:- pragma foreign_export("C", srv_clear_a_facts(in, out), "clear_a_facts").
+:- pragma foreign_export("C", srv_clear_i_facts(in, out), "clear_i_facts").
+:- pragma foreign_export("C", srv_clear_k_facts(in, out), "clear_k_facts").
 
 srv_clear_facts(!Ctx) :-
 	set_facts(set.init, !Ctx).
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+srv_clear_e_facts(!Ctx) :-
+	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
+		Mod \= [e(_)|_]
+			), !.Ctx^facts), !Ctx).
 
-:- pragma foreign_export("C", srv_clear_k_facts(in, out), "clear_k_facts").
+srv_clear_a_facts(!Ctx) :-
+	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
+		Mod \= [a(_)|_]
+			), !.Ctx^facts), !Ctx).
+
+srv_clear_i_facts(!Ctx) :-
+	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
+		Mod \= [i|_]
+			), !.Ctx^facts), !Ctx).
 
 srv_clear_k_facts(!Ctx) :-
-	AllFacts = !.Ctx^facts,
-	FilteredFacts = set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
-		(if Mod = [k(_, _)|_]
-		 then fail
-		 else true
-		)
-			), AllFacts),
-	set_facts(FilteredFacts, !Ctx).
+	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
+		Mod \= [k(_, _)|_]
+			), !.Ctx^facts), !Ctx).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

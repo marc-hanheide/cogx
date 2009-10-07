@@ -300,7 +300,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
                 		log(ls);
             		}
             		
-            		ccaEngine.abducer.clearKFacts();
+            		ccaEngine.abducer.clearFactsByModality(ModalityType.K);
             		syncWithBeliefModel(getCurrentBeliefModel());
             		
         			log("looking for linguistic feedback");
