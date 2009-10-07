@@ -84,6 +84,10 @@ public class Binder extends ManagedComponent  {
 	// of the binder WM (modulo filtering)
 	private Vector<UnionConfiguration> currentUnionConfigurations ;
 
+	
+	public static String BINDER_SA = "binder";
+
+	
 	// flag to activate error logging
 	public static boolean ERRLOGGING = true;
 
@@ -153,6 +157,8 @@ public class Binder extends ManagedComponent  {
 		// Initialisation stuff
 		initializeUnionConfigurations();
 
+		BINDER_SA = this.getSubarchitectureID();
+		
 		log("Binder successfully started");
 	}
 
@@ -531,7 +537,7 @@ public class Binder extends ManagedComponent  {
 
 			initializeUnionConfigurations();
 
-			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(BinderUtils.BINDER_SA, Proxy.class);
+			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(Binder.BINDER_SA, Proxy.class);
 			for (int i = 0 ; i < proxies.length; i++) {
 				incrementalBinding(proxies[i].getData());
 			}
@@ -917,13 +923,13 @@ public class Binder extends ManagedComponent  {
 		try {
 
 			CASTData<AlternativeUnionConfigurations>[] alterconfigs = 
-				getWorkingMemoryEntries(BinderUtils.BINDER_SA, AlternativeUnionConfigurations.class);
+				getWorkingMemoryEntries(Binder.BINDER_SA, AlternativeUnionConfigurations.class);
 
 			if (alterconfigs.length == 0) {
-				addToWorkingMemory(newDataID(), BinderUtils.BINDER_SA, configs);
+				addToWorkingMemory(newDataID(), Binder.BINDER_SA, configs);
 			}
 			else {
-				overwriteWorkingMemory(alterconfigs[0].getID(), BinderUtils.BINDER_SA,  configs);
+				overwriteWorkingMemory(alterconfigs[0].getID(), Binder.BINDER_SA,  configs);
 			}
 		}
 		catch (Exception e) {

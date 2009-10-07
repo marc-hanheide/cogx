@@ -33,6 +33,7 @@ import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.RelationProxy;
+import binder.components.Binder;
 import binder.utils.BinderUtils;
 import binder.utils.ProxyConstructor;
 import cast.AlreadyExistsOnWMException;
@@ -336,7 +337,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	protected void addProxyToWM(Proxy proxy) {
 
 		try {
-			addToWorkingMemory(proxy.entityID, BinderUtils.BINDER_SA, proxy);
+			addToWorkingMemory(proxy.entityID, Binder.BINDER_SA, proxy);
 			storeOriginInfo(proxy);
 			log("new Proxy succesfully added to the binder working memory");
 
@@ -357,7 +358,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	protected void overwriteProxyInWM(Proxy proxy) {
  
 		try {
-			overwriteWorkingMemory(proxy.entityID, BinderUtils.BINDER_SA, proxy);
+			overwriteWorkingMemory(proxy.entityID, Binder.BINDER_SA, proxy);
 			log("existing Proxy succesfully modified in the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -378,7 +379,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 		try {
 			removeOriginInfo(proxy);
-			deleteFromWorkingMemory(proxy.entityID, BinderUtils.BINDER_SA);
+			deleteFromWorkingMemory(proxy.entityID, Binder.BINDER_SA);
 			log("existing Proxy succesfully deleted from the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -408,7 +409,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 			om = new OriginMap(getComponentID(), new HashMap<String, String>(), new HashMap<String, WorkingMemoryPointer>());
 			firstEntry = true;
 		} else {
-			om = getMemoryEntry(m_originMapID, BinderUtils.BINDER_SA, OriginMap.class);
+			om = getMemoryEntry(m_originMapID, Binder.BINDER_SA, OriginMap.class);
 		}
 
 		if (om.sourceID2ProxyID.containsKey(_proxy.origin.address.id)) {
@@ -421,9 +422,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 		
 		if (firstEntry) {
-			addToWorkingMemory(m_originMapID, BinderUtils.BINDER_SA, om);
+			addToWorkingMemory(m_originMapID, Binder.BINDER_SA, om);
 		} else {
-			overwriteWorkingMemory(m_originMapID, BinderUtils.BINDER_SA, om);
+			overwriteWorkingMemory(m_originMapID, Binder.BINDER_SA, om);
 		}
 
 	}
@@ -441,7 +442,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	private void removeOriginInfo(Proxy _proxy)
 			throws DoesNotExistOnWMException, ConsistencyException,UnknownSubarchitectureException, 
 			PermissionException {
-		OriginMap om = getMemoryEntry(m_originMapID, BinderUtils.BINDER_SA, OriginMap.class);
+		OriginMap om = getMemoryEntry(m_originMapID, Binder.BINDER_SA, OriginMap.class);
 
 		if (!om.sourceID2ProxyID.containsKey(_proxy.origin.address.id)) {
 			println("WARNING: OriginMap did not contain entry for: "
@@ -449,7 +450,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 		} else {
 			om.sourceID2ProxyID.remove(_proxy.origin.address.id);
 			om.proxyID2WMPointer.remove(_proxy.entityID);
-			overwriteWorkingMemory(m_originMapID, BinderUtils.BINDER_SA, om);
+			overwriteWorkingMemory(m_originMapID, Binder.BINDER_SA, om);
 		}
 	}
 	

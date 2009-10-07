@@ -36,6 +36,7 @@ import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
+import binder.components.Binder;
 import binder.components.BinderMonitor;
 import binder.utils.BinderUtils;
 import binder.utils.DistributionGeneration;
@@ -189,7 +190,7 @@ public class InsertButtonListener extends ProxyWriter implements ActionListener 
 		}
 		
 		try {
-			bm.addToWorkingMemory(newProxy.entityID, BinderUtils.BINDER_SA, newProxy);
+			bm.addToWorkingMemory(newProxy.entityID, Binder.BINDER_SA, newProxy);
 			log("new Proxy succesfully added to the binding working memory");
 			
 			}

@@ -49,9 +49,6 @@ import binder.autogen.specialentities.RelationUnion;
  */
 
 public class BinderUtils {
-
-
-	public static final String BINDER_SA = "binder";
 	
 	
 	// minimum threshold above which unknown values can be created in features
