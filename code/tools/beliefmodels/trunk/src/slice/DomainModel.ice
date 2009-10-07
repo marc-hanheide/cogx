@@ -131,7 +131,7 @@ module cogx {
 	
 	class SaliencyProperty extends ContinualFormula {
 		Saliency sal;
-	};
+	}; 
 	
 	class LinguisticLabelProperty extends ContinualFormula { 
 		string label;

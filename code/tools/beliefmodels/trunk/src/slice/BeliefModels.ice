@@ -12,6 +12,8 @@
 //
 // ===================================================================
 
+#include <cast/slice/CDL.ice>
+
 module beliefmodels { 
 	module adl {  
 		
@@ -30,7 +32,7 @@ module beliefmodels {
 			int argPos;
 			EpistemicObject arg; 
 		}; 
-		
+		 
 		sequence<RelationArgument> RelationArguments;
 
 		class EpistemicRelation extends EpistemicObject { 
@@ -138,6 +140,7 @@ module beliefmodels {
 			SpatioTemporalFrame sigma; 
 			AgentStatus ags;
 			Formula phi; 
+			cast::cdl::CASTTime timeStamp;
 		}; // end Belief
 		
 		sequence<Belief> Beliefs; 
@@ -182,7 +185,6 @@ module beliefmodels {
 		sequence<string> TaskPointers;
 		
 		sequence<string> Foreground;
-		
 		
 		class BeliefModel { 
 			string id;
