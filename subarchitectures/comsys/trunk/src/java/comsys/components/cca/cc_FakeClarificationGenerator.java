@@ -36,9 +36,16 @@ import beliefmodels.adl.*;
 import beliefmodels.clarification.ClarificationRequest; 
 
 //-----------------------------------------------------------------
-// COMSYS IMPORTS
+// CAST IMPORTS
 //-----------------------------------------------------------------
 
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.architecture.ManagedComponent;
+import cast.SubarchitectureComponentException;
+import cast.cdl.*;
+import cast.core.CASTData;
+import cast.core.CASTUtils;
 
 //-----------------------------------------------------------------
 // JAVA IMPORTS
