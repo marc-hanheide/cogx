@@ -248,6 +248,8 @@ void SpatialPeekabotControl::runComponent() {
 		if (cmd->destId[0] < 0) cmd->destId[0] = 0;
 
 		cmd->cmd = SpatialData::GOTOPLACE;
+		cmd->status = SpatialData::NONE;
+		cmd->comp = SpatialData::COMMANDPENDING;
 
 		if (m_doPathQuery) {
 		  // Check that the path has some chance of completing, first

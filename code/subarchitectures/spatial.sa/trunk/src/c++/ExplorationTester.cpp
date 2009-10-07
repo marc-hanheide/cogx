@@ -124,6 +124,10 @@ ExplorationTester::runComponent()
     //log("currNodeID = %i", currNodeID);
     SpatialData::PlacePtr currPlace = 
       agg->getPlaceFromNodeID(currNodeID);
+    if (!currPlace) {
+      sleepComponent(1000);
+      continue;
+    }
     unsigned int currPlaceID = currPlace->id;
     //log("currPlaceID = %i", currPlaceID);
     //
@@ -440,7 +444,7 @@ ExplorationTester::runComponent()
       }
       else {
 	log("Could not find a path to an unxeplored Place. Sleeping...");
-	sleepComponent(50000);
+	sleepComponent(15000);
       }
 
 

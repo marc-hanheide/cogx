@@ -143,7 +143,7 @@ void SpatialControl::configure(const map<string,string>& _config)
                                              Cure::HelpFunctions::deg2rad(10));
   Cure::NavController::setUsePathTrimming(true);
   Cure::NavController::setMaxPathTrimDist(3);
-  Cure::NavController::setProgressTimeout(15);
+  Cure::NavController::setProgressTimeout(10);
   Cure::NavController::setGotoMaxSpeeds(maxGotoV, maxGotoW);
   Cure::NavController::setGatewayMaxSpeeds(0.3, 0.3);
   
