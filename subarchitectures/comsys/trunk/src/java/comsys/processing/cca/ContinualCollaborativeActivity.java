@@ -26,7 +26,6 @@ import Abducer.*;
 import beliefmodels.adl.Belief;
 import beliefmodels.adl.BeliefModel;
 import comsys.datastructs.comsysEssentials.BoundReadings;
-import comsys.datastructs.comsysEssentials.ClarificationRequest;
 import comsys.datastructs.comsysEssentials.ProofBlock;
 import comsys.datastructs.comsysEssentials.RefBinding;
 import comsys.datastructs.comsysEssentials.Anchor;
@@ -326,7 +325,7 @@ public class ContinualCollaborativeActivity {
 		
 	} // end method
 	
-	public void addCRContext(ClarificationRequest cr) {
+	public void addCRContext(beliefmodels.clarification.ClarificationRequest cr) {
 		abducer.addFact(AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.infoModality()},
 				AbducerUtils.predicate("cr_modality", new Term[] {
 					AbducerUtils.term(cr.id),

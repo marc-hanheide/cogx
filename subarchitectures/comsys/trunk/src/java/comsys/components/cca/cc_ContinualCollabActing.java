@@ -26,8 +26,10 @@ import comsys.processing.cca.AbducerUtils;
 import comsys.processing.cca.StackUtils;
 import comsys.processing.cca.ProofUtils;
 import comsys.processing.cca.PrettyPrinting;
+import comsys.processing.cca.Counter;
 
 import beliefmodels.adl.*;
+import beliefmodels.clarification.*;
 import beliefmodels.domainmodel.cogx.*;
 
 import binder.abstr.BeliefModelInterface;
@@ -62,7 +64,9 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	private String understandFactsFileName = null;
 	private String generateRulesFileName = null;
 	private String generateFactsFileName = null;
-    
+
+	private Counter counter = null;
+	
     // =================================================================
     // CONSTRUCTOR METHODS
     // =================================================================
@@ -79,6 +83,8 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 
         m_queueBehaviour = WorkingMemoryChangeQueueBehaviour.QUEUE;
 
+        counter = new Counter("cca");
+        
 		// Initialize the CCA engine
 		ccaEngine = new ContinualCollaborativeActivity();
 		// if needed, set facts/rules-filenames
@@ -107,7 +113,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				});
 		
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(ClarificationRequest.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createLocalTypeFilter(beliefmodels.clarification.ClarificationRequest.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleClarificationRequest(_wmc);
@@ -286,7 +292,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
                 				}
                 			}
                 			if (!found) {
-                				contextUpdates[i].id = "update-" + referringUnionId(contextUpdates[i]);
+                				contextUpdates[i].id = counter.inc("update(" + referringUnionId(contextUpdates[i]) + ")");
                 				addNewBelief(contextUpdates[i]);
                 			}
                 		}
