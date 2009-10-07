@@ -276,7 +276,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
                 			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
                 			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
                 			
-                			Belief[] related = getBeliefsByUnionEntityId(referringUnion(contextUpdates[i])).toArray(new Belief[] {});
+                			Belief[] related = getBeliefsByUnionEntityId(referringUnionId(contextUpdates[i])).toArray(new Belief[] {});
                 			
                 			for (int j = 0; j < related.length; j++) {
                 				if (related[j].ags.equals(contextUpdates[i].ags)) {
@@ -331,7 +331,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
         }
     }
 
-    public String referringUnion(Belief b) {
+    public static String referringUnionId(Belief b) {
     	if (b.phi instanceof ComplexFormula) {
 			
 			for (int i = 0; i < ((ComplexFormula)b.phi).formulae.length ; i++) {
@@ -371,7 +371,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			}
 			log("got a belief, id=" + model.k[i]);
 			Modality[] mod = new Modality[] { AbducerUtils.kModality(b.ags) };
-			String unionId = referringUnion(b);
+			String unionId = referringUnionId(b);
 
 			log("inspecting feats");
 

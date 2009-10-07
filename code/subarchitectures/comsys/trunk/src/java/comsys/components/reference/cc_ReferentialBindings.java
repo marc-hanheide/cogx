@@ -16,6 +16,7 @@ import beliefmodels.adl.Belief;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
+import binder.abstr.BeliefModelInterface;
 import binder.abstr.BindingPredictor;
 import binder.autogen.core.Union;
 import binder.autogen.specialentities.PhantomProxy;
@@ -235,7 +236,7 @@ public class cc_ReferentialBindings
 							Vector<Anchor> anchors  = new Vector<Anchor>();
 							for (Iterator<Belief> beliefIter = beliefs.iterator(); beliefIter.hasNext(); ) { 
 								Belief curB = beliefIter.next();
-								Anchor anchor = createAnchorFromFormula((UncertainSuperFormula)curB.phi);
+								Anchor anchor = createAnchorFromBelief(curB);
 								anchors.add(anchor);
 							} // end for over possible formulae
 							// create the reference binding, add it to the vector of bindings for this reading
@@ -351,10 +352,10 @@ public class cc_ReferentialBindings
 	} // end newProcessingDataId
 	
 	
-	private Anchor createAnchorFromFormula (UncertainSuperFormula formula) { 
+	private Anchor createAnchorFromBelief (Belief b) { 
 		Anchor anchor = new Anchor();
-		anchor.entityID = formula.id;
-		anchor.probExists = formula.prob;
+		anchor.entityID = BeliefModelInterface.referringUnionId(b);
+		anchor.probExists = ((UncertainSuperFormula)b.phi).prob;
 		return anchor; 
 	} 
 	
