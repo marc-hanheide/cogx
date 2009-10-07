@@ -65,6 +65,11 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 		</action>  
   
 
+      <action choice="hold">
+	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:person ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:person) ^ &lt;Patient&gt;(i1_0:person ^ I) ^ &lt;Subject&gt;addressee1_0:person)" dest="CONTENT" />
+      </action>      
+
+
       <action choice="accept-ok">
 	   <add-proposition propositions="@ok" />
       </action>      
@@ -78,8 +83,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
       </action>      
 
       <action choice="accept-isee">
-			<add-lf lf="@s1:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person" 
-                    dest="CONTENT"/>
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>
       </action>      
 
       <action choice="reject-sorry">

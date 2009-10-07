@@ -17,15 +17,16 @@
 		 <choicenode answer = "true">
 			<result val="no-mood"/>
 		 </choicenode>
+
 		 <choicenode answer = "false">
-			 <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
-				<q-ex-fv feat="DVPassigned" val="true" />
+			 <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
+				<f-featval feat="DVPassigned" val="true" />
 			 </inquiry>	
 			   <choicenode answer="false"> 
 				  <result val="indicative"/>
 			   </choicenode>
 			   <choicenode answer="unknown"> 
-				  <result val="indicative"/>
+				  <result val="non-mood"/>
 			   </choicenode>
 			   
 			   <choicenode answer="true"> 			
