@@ -39,7 +39,6 @@ public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
 	
 	public Proxy createProxy(int nb) {
 		return createProxyOne();
-		return null;
 	}
 	
 
