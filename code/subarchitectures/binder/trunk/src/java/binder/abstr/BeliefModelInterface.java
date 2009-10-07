@@ -85,8 +85,8 @@ public class BeliefModelInterface extends ManagedComponent{
 		newBeliefSet[currentBeliefModel.k.length] = belief.id;
 		
 		try {
-			addToWorkingMemory(belief.id, this.getSubarchitectureID(), belief);
-			overwriteWorkingMemory(currentBeliefModel.id, this.getSubarchitectureID(), currentBeliefModel);
+			addToWorkingMemory(belief.id, BinderUtils.BINDER_SA, belief);
+			overwriteWorkingMemory(currentBeliefModel.id, BinderUtils.BINDER_SA, currentBeliefModel);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -103,12 +103,12 @@ public class BeliefModelInterface extends ManagedComponent{
 	
 	public void updateExistingBelief (Belief belief) {
 		try {
-			if (existsOnWorkingMemory(belief.id, this.getSubarchitectureID())) {
-				overwriteWorkingMemory(belief.id, this.getSubarchitectureID(), belief);
+			if (existsOnWorkingMemory(belief.id, BinderUtils.BINDER_SA)) {
+				overwriteWorkingMemory(belief.id, BinderUtils.BINDER_SA, belief);
 			}
 			else {
 				log("WARNING: belief not currently in working memory");
-				addToWorkingMemory(belief.id, this.getSubarchitectureID(), belief);
+				addToWorkingMemory(belief.id, BinderUtils.BINDER_SA, belief);
 			}
 		}
 		catch (Exception e) {
@@ -125,7 +125,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	
 	public void removeBelief (String beliefID) {
 		try {
-			deleteFromWorkingMemory(beliefID, this.getSubarchitectureID());
+			deleteFromWorkingMemory(beliefID, BinderUtils.BINDER_SA);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -240,7 +240,7 @@ public class BeliefModelInterface extends ManagedComponent{
 		Vector<Belief> relatedBeliefs = new Vector<Belief>();
 		try {
 		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
-			Belief b = getMemoryEntry(currentBeliefModel.k[i], this.getSubarchitectureID(), Belief.class);
+			Belief b = getMemoryEntry(currentBeliefModel.k[i], BinderUtils.BINDER_SA, Belief.class);
 			if (isBeliefReferringToUnion(b, entityID)) {
 				relatedBeliefs.add(b);
 			}
@@ -265,7 +265,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	public Belief getBelief(String beliefId) 
 		throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
-			Belief b = getMemoryEntry(currentBeliefModel.k[i], this.getSubarchitectureID(), Belief.class);
+			Belief b = getMemoryEntry(currentBeliefModel.k[i], BinderUtils.BINDER_SA, Belief.class);
 			if (b.id.equals(beliefId)) {
 				return b;
 			}

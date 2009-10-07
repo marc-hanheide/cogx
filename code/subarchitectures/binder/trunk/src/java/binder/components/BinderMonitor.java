@@ -142,19 +142,19 @@ public class BinderMonitor extends ManagedComponent {
 		try {
 			
 			// Extract the proxies in the working memory
-			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(this.getSubarchitectureID(), Proxy.class);
+			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(BinderUtils.BINDER_SA, Proxy.class);
 			for (int i = (proxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(proxies[i].getData());
 			}
 			
 			// Extract the relation proxies in the working memory
-			CASTData<RelationProxy>[] rproxies = getWorkingMemoryEntries(this.getSubarchitectureID(), RelationProxy.class);
+			CASTData<RelationProxy>[] rproxies = getWorkingMemoryEntries(BinderUtils.BINDER_SA, RelationProxy.class);
 			for (int i = (rproxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(rproxies[i].getData());
 			}
 
 			// Extract the phantom proxies in the working memory
-			CASTData<PhantomProxy>[] pproxies = getWorkingMemoryEntries(this.getSubarchitectureID(), PhantomProxy.class);
+			CASTData<PhantomProxy>[] pproxies = getWorkingMemoryEntries(BinderUtils.BINDER_SA, PhantomProxy.class);
 			for (int i = (pproxies.length - 1) ; i >= 0 ; i--) {
 				proxiesV.add(pproxies[i].getData());
 			}

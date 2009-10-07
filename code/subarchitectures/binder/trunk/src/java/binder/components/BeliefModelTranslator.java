@@ -313,6 +313,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 		try {
 			if (!existsOnWorkingMemory(belief.id, this.getSubarchitectureID())) {
 				addBeliefToWM(belief);
+				log("belief not currently in working memory, added");
 			}
 			else {
 				overwriteBeliefInWM(belief);
