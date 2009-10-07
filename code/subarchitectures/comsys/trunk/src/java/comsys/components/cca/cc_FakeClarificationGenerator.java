@@ -260,10 +260,10 @@ public class cc_FakeClarificationGenerator
 	
 	
 	private ComplexFormula constructFormula (String phi) { 
+		ComplexFormula formula = new ComplexFormula();
 	
 	
-	
-	
+		return formula;
 	} // end 
 	
 	
