@@ -58,7 +58,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		}
 		return null;
 	}
-	
+	 
 	/**
 	 * Create proxy one (blue mug)
 	 * 

@@ -42,7 +42,7 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 
 	// entity ID for the second proxy
 	String proxyTwoId;
-
+ 
 	/**
 	 * Start
 	 */

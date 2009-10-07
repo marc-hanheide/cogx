@@ -378,22 +378,22 @@ public class BinderMonitorGUI extends JFrame
 	
 	public void insertSourceAndTargetEdges(RelationUnion union, Object mothervertex) {
 			
-		if (union.source != null) {
-			for (int j = 0; j < union.source.alternativeValues.length ; j++) {
-				AddressValue v = (AddressValue) union.source.alternativeValues[j];
-				if (insertedProxies.containsKey(v.val)) {
-					Object daughter_vertex = insertedProxies.get(v.val);
+		if (union.usource != null) {
+			for (int j = 0; j < union.usource.alternativeValues.length ; j++) {
+				AddressValue v = (AddressValue) union.usource.alternativeValues[j];
+				if (insertedUnions.containsKey(v.val)) {
+					Object daughter_vertex = insertedUnions.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
 					insertedObjects.add(edge);
 				}
 			}
 		}
 		
-		if (union.target != null) {
-			for (int j = 0; j < union.target.alternativeValues.length ; j++) {
-				AddressValue v = (AddressValue) union.target.alternativeValues[j];
-				if (insertedProxies.containsKey(v.val)) {
-					Object daughter_vertex = insertedProxies.get(v.val);
+		if (union.utarget != null) {
+			for (int j = 0; j < union.utarget.alternativeValues.length ; j++) {
+				AddressValue v = (AddressValue) union.utarget.alternativeValues[j];
+				if (insertedUnions.containsKey(v.val)) {
+					Object daughter_vertex = insertedUnions.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
 					insertedObjects.add(edge);
 				}

@@ -146,18 +146,27 @@ public class EntityFilter {
 		RelationUnion newRUnion = BinderUtils.convertIntoRelationUnion(bunion);
 
 		// specify the source of the relation union
-		newRUnion.source = new Feature();
-		newRUnion.source.featlabel = initRUnion.source.featlabel;	
-		newRUnion.source.alternativeValues = new FeatureValue[1];
 		
-		newRUnion.source.alternativeValues[0] = initRUnion.source.alternativeValues[0];
+		newRUnion.psource = new Feature();
+		newRUnion.psource.featlabel = initRUnion.psource.featlabel;	
+		newRUnion.psource.alternativeValues = new FeatureValue[1];
+		newRUnion.usource.alternativeValues[0] = initRUnion.usource.alternativeValues[0];
+		
+		newRUnion.usource = new Feature();
+		newRUnion.usource.featlabel = initRUnion.usource.featlabel;	
+		newRUnion.usource.alternativeValues = new FeatureValue[1];	
+		newRUnion.usource.alternativeValues[0] = initRUnion.usource.alternativeValues[0];
 
 		// specify the target of the relation union
-		newRUnion.target = new Feature();
-		newRUnion.target.featlabel = initRUnion.target.featlabel;	
-		newRUnion.target.alternativeValues = new FeatureValue[1];
-
-		newRUnion.target.alternativeValues[0] = initRUnion.target.alternativeValues[0];
+		newRUnion.ptarget = new Feature();
+		newRUnion.ptarget.featlabel = initRUnion.ptarget.featlabel;	
+		newRUnion.ptarget.alternativeValues = new FeatureValue[1];
+		newRUnion.ptarget.alternativeValues[0] = initRUnion.ptarget.alternativeValues[0];
+		
+		newRUnion.utarget = new Feature();
+		newRUnion.utarget.featlabel = initRUnion.utarget.featlabel;	
+		newRUnion.utarget.alternativeValues = new FeatureValue[1];
+		newRUnion.utarget.alternativeValues[0] = initRUnion.utarget.alternativeValues[0];
 
 		return newRUnion;
 	}
