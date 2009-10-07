@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /**
+
+@system perception.see produces a perception verb (e.g.,"see") and fills the Actor slot with "I" and the Patient slot with the input object(s), iff the input modality is vision. Otherwise, no event structure is introduced.
+
+*/ --> 
+
+<system id="perception.insert" region="TRANSITIVITY" metafunction="ideational">
+   <chooser id="c-perception.insert"/>
+   <conditions>
+      <condition features="@type:dvp @feat:Modality:vision"/>
+   </conditions>
+
+   <actions>
+   
+	<action choice="insert-perception-ind">
+	
+		 <adjoin-lf mode="Content" lf="@s1:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:animate ^ I ) ^ &lt;Patient&gt;(t1:entity ^ p ) ^ &lt;Subject&gt;i1:animate )" foot="t1" />
+    </action>
+
+	<action choice="insert-perception-int">
+		 <adjoin-lf mode="Content" lf="@s1:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(y1:animate ^ you ) ^ &lt;Patient&gt;(t1:entity ^ p ) ^ &lt;Subject&gt;i1:animate )" foot="t1" />
+    </action>
+
+    <action choice="not-insert-perception">
+    </action>      
+   
+   </actions>
+</system>
+
+<!-- /**
+
+@system blabla
+
+*/ --> 
+
+<system id="ascription.be.targetreplace" region="TRANSITIVITY" metafunction="ideational">
+   <chooser id="default"/> 
+   <conditions>
+      <condition features="@type:ascription @rel:Target"/> 
+   </conditions>
+
+   <actions>
+
+   <action choice="default">
+     <add-proposition propositions="@be" />
+
+	 <!-- rename Target to Cop-Restr -->
+	 <replace-relation mode="Target" newmode="Cop-Restr"/>
+      	  
+     <!-- add subject coreferential with target -->
+	 <identify-nomvar mode="Cop-Restr" dest="RESTR" scope="global"/>
+     <add-relation mode="Subject" dest="RESTR" type="*VAR*"/> 
+	 
+	 <add-feature feature="AscriptionTargetReplaced" value="true" />  <!-- this allows the application of the system that replaces also the property -->
+	 
+	</action>
+	</actions>
+</system>
+
+
+<system id="ascription.be.propertyreplace" region="TRANSITIVITY" metafunction="ideational">
+   <chooser id="c-ascription.propertyreplace"/> 
+   <conditions>
+      <condition features="@type:ascription @feat:AscriptionTargetReplaced:true"/> 
+   </conditions>
+
+   <actions>
+
+   <action choice="attitude-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <replace-relation mode="Attitude" newmode="Cop-Scope"/>
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+	 <add-feature feature="AscriptionProperty" value="attitude" />  <!-- used in wh.question -->
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+
+   <action choice="type-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <replace-relation mode="Type" newmode="Cop-Scope"/>
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+	 <add-feature feature="AscriptionProperty" value="type" />  <!-- used in wh.question -->
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+
+   <action choice="size-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <replace-relation mode="Size" newmode="Cop-Scope"/>
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+	 <add-feature feature="AscriptionProperty" value="size" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+
+   <action choice="color-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <replace-relation mode="Color" newmode="Cop-Scope"/>
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+	 <add-feature feature="AscriptionProperty" value="color" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+   
+   <action choice="shape-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <replace-relation mode="Shape" newmode="Cop-Scope"/>
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+	 <add-feature feature="AscriptionProperty" value="shape" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+   
+   <action choice="owner-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="Owner" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="Owner" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-owner1:entity ^ &lt;Owner&gt;(owner1:entity)))" foot="owner1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="owner" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+
+   <action choice="location-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="Location" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="Location" newmode="Cop-Scope" />
+	 <!-- lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-loc2:m-location ^ &lt;Anchor&gt;(loc2:entity)))" foot="loc2"  />  -->
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+	 <add-feature feature="AscriptionProperty" value="location" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+   
+   <action choice="topin-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="TopIn" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="TopIn" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-topin1:m-location ^ in ^ &lt;Anchor&gt;(topin1:entity)))" foot="topin1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="topin" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+
+   <action choice="topon-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="TopOn" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="TopOn" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-topin1:m-location ^ on ^ &lt;Anchor&gt;(topon1:entity)))" foot="topon1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="topon" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>         
+   
+   <action choice="topat-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="TopAt" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="TopAt" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-topin1:m-location ^ at ^ &lt;Anchor&gt;(topat1:entity)))" foot="topat1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="topat" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+   
+   <action choice="nearto-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="NearTo" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="NearTo" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-nearto:m-location ^ near ^ &lt;Anchor&gt;(nearto1:entity)))" foot="nearto1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="nearto" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>         
+
+   <action choice="farfrom-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="FarFrom" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="FarFrom" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-farfrom1:m-location ^ far ^ &lt;Anchor&gt;(farfrom1:entity)))" foot="farfrom1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="farfrom" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>         
+   
+   <action choice="nextto-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="NextTo" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="NextTo" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-nextto1:m-location ^ next ^ &lt;Anchor&gt;(nextto1:entity)))" foot="nextto1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="nextto" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+ 
+   <action choice="leftof-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="LeftOf" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="LeftOf" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-leftof1:m-location ^ left ^ &lt;Anchor&gt;(leftof1:entity)))" foot="leftof1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="leftof" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+
+   <action choice="rightof-property-present">	 
+	 <!-- rename Property to Cop-Scope -->
+	 <identify-nomvar mode="RightOf" dest="SCOPE" scope="global"/>
+	 <replace-relation mode="RightOf" lf="@x1:entity(bla ^ &lt;Cop-Scope&gt;(prop-rightof1:m-location ^ right ^ &lt;Anchor&gt;(rightof1:entity)))" foot="rightof1"  />
+	 <identify-nomvar mode="Cop-Scope" dest="SCOPE" scope="global"/>
+
+	 <add-feature feature="AscriptionProperty" value="rightof" />
+	 <add-feature feature="AscriptionRelsReplaced" value="true" />  <!-- this allows the application of dependent systems which work on the new relations -->	 	 
+   </action>      
+      	     
+   <action choice="unknown">
+   </action>
+
+   </actions>
+</system>
+
+
+<!-- /**
+
+@system perception.see produces a perception verb (e.g.,"see") and fills the Actor slot with "I" and the Patient slot with the input object(s), iff the input modality is vision. Otherwise, no event structure is introduced.
+
+*/ --> 
+
+<system id="playing.insert" region="TRANSITIVITY" metafunction="ideational">
+   <chooser id="c-playing.insert"/>
+   <conditions>
+      <condition features="@type:dvp"/>
+   </conditions>
+
+   <actions>
+   
+	<action choice="insert">
+		 <adjoin-lf mode="Content" lf="@p1:action-non-motion(play ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(t1:entity ^ p) ^ &lt;Subject&gt;i1:person)" foot="t1"/>
+
+		 
+    </action>
+
+
+	<action choice="no-insert">
+    </action>
+
+   </actions>
+</system>
+
+
+
+
+</systems>
+                                                                    
