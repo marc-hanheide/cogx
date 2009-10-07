@@ -63,9 +63,9 @@ e(now) : uttered(h, Nom) <-
 	i : 'rel_Subject'(Nom, ThisNom) / true,
 	i : 'rel_Cop-Restr'(Nom, ThisNom) / true,
 		this(ThisNom) / true,
-	a(com) : refers_to(ThisNom, something) / 1.0,  % XXX refer to "this"!
+	a(com) : refers_to(ThisNom, Red) / whatif_binding,  % XXX refer to "this"!
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
-	assert_prop(something, ScopeNom) / true.
+	assert_prop(Ref, ScopeNom) / true.
 
 % h: X is Y
 e(now) : uttered(h, Nom) <-

@@ -321,14 +321,15 @@ public class ContinualCollaborativeActivity {
 	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
 	 */
 	public Belief[] verifiableUpdate(MarkedQuery[] proof, BeliefModel model) {
-		ProofBlock pi = StackUtils.construct(proof, "");
+		ProofBlock pi = StackUtils.construct(proof, "proof-X");
 		ProofBlock piPrime = null;
 		ArrayList<Belief> consistentUpdates = new ArrayList<Belief>();
 		boolean verified;
 
 		if (StackUtils.isEmpty(stack)) {
 			StackUtils.push(stack, pi);
-			return new Belief[0];
+			//return new Belief[0];
+			return pi.assertions;
 		}
 		else {
 			piPrime = StackUtils.pop(stack);

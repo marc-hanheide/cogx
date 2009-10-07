@@ -47,6 +47,14 @@ MercuryAbducerServer::clearFacts(const Ice::Current&)
 }
 
 void
+MercuryAbducerServer::clearKFacts(const Ice::Current&)
+{
+	cout << tty::green << "* clearing K facts" << tty::dcol << endl;
+	clear_k_facts(ctx, &ctx);
+}
+
+
+void
 MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Current&)
 {
 	char * s = cc2m::string(filename);

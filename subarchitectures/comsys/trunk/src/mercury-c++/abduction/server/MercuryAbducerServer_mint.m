@@ -12,6 +12,7 @@
 :- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
+:- pred srv_clear_k_facts(ctx::in, ctx::out) is det.
 :- pred srv_load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_add_mprop_fact(varset::in, mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
 
@@ -105,6 +106,20 @@ srv_clear_facts(!Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- pragma foreign_export("C", srv_clear_k_facts(in, out), "clear_k_facts").
+
+srv_clear_k_facts(!Ctx) :-
+	AllFacts = !.Ctx^facts,
+	FilteredFacts = set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
+		(if Mod = [k(_, _)|_]
+		 then fail
+		 else true
+		)
+			), AllFacts),
+	set_facts(FilteredFacts, !Ctx).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
 :- pragma foreign_export("C", srv_load_facts_from_file(in, in, out, di, uo), "load_facts_from_file").
 
 srv_load_facts_from_file(Filename, !Ctx, !IO) :-
@@ -173,7 +188,7 @@ srv_prove_best(P0, Ctx, ProofCost, Proof) :-
 %	P0 = proof(vs([list.map((func(cf(MProp, Func)) = unsolved(MProp, Func)), AnnotMProps)], VS), []),
 
 	Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
-		prove(0.0, 100.0, P0, P, default_costs, Ctx),
+		prove(0.0, 200.0, P0, P, default_costs, Ctx),
 		Cost = cost(Ctx, P, default_costs)
 			))),
 
