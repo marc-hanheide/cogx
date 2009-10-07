@@ -34,6 +34,7 @@ import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
+import binder.autogen.featvalues.AddressValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
@@ -83,6 +84,8 @@ public class Binder extends ManagedComponent  {
 	// of the binder WM (modulo filtering)
 	private Vector<UnionConfiguration> currentUnionConfigurations ;
 
+	// flag to activate error logging
+	public static boolean ERRLOGGING = true;
 
 
 
@@ -428,7 +431,7 @@ public class Binder extends ManagedComponent  {
 			log("Constructing initial union...");
 			// Construct the initial union (containing only the new proxy)
 			Union newUnion = constructor.constructInitialUnion(newProxy, newDataID(), getCASTTime());
-
+			
 			log("Construction of initial union finished, moving to unions of more than 1 proxy...");
 
 			log("Number of current configurations: "  + currentUnionConfigurations.size());
@@ -450,6 +453,11 @@ public class Binder extends ManagedComponent  {
 					createNewUnionConfiguration (existingUnionConfig, newUnion);
 				newUnionConfigs.add(newConfigWithSingleUnion);	
 
+				
+				if (newUnion instanceof RelationUnion) {
+					convertSourceAndTargetFeatures((RelationUnion)newUnion, existingUnionConfig);
+				}
+				
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
 					Union existingUnion = existingUnionConfig.includedUnions[i];
@@ -468,6 +476,11 @@ public class Binder extends ManagedComponent  {
 							unionsToMerge.add(existingUnion);
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
+							
+							if (newMergedUnion instanceof RelationUnion) {
+								convertSourceAndTargetFeatures((RelationUnion)newMergedUnion, existingUnionConfig);
+							}
+							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						} 
 						// or simply fetch the already computed union
@@ -676,6 +689,54 @@ public class Binder extends ManagedComponent  {
 	}
 
 
+	
+	private RelationUnion convertSourceAndTargetFeatures (RelationUnion union, UnionConfiguration config) {
+		
+		HashMap<String, String> unionForProxy = new HashMap<String, String>();
+		for (int j = 0; j < config.includedUnions.length ; j++) {
+			Union curUnion = config.includedUnions[j];
+			for (int k = 0 ; k < curUnion.includedProxies.length; k++) {
+				unionForProxy.put(curUnion.includedProxies[k].entityID, curUnion.entityID);
+			}
+		}
+		
+		for (int i = 0 ; i < union.source.alternativeValues.length; i++) {
+			String sourceId = ((AddressValue)union.source.alternativeValues[i]).val;
+			
+			if (unionForProxy.containsKey(sourceId)) {
+				AddressValue newSource = new AddressValue();
+				newSource.independentProb = union.source.alternativeValues[i].independentProb;
+				newSource.timeStamp = union.source.alternativeValues[i].timeStamp;
+				newSource.val = unionForProxy.get(sourceId);
+				System.out.println("old source val: " + sourceId);
+				System.out.println("new source val: " + newSource.val);
+				union.source.alternativeValues[i] = newSource;
+			}
+			else {
+				errlog("WARNING: no union has been created for the proxy " + sourceId +
+							", referenced by the relation union " + union.entityID);
+			}
+		}
+		
+		for (int i = 0 ; i < union.target.alternativeValues.length; i++) {
+			String targetId = ((AddressValue)union.target.alternativeValues[i]).val;
+			
+			if (unionForProxy.containsKey(targetId)) {
+				AddressValue newTarget = new AddressValue();
+				newTarget.independentProb = union.target.alternativeValues[i].independentProb;
+				newTarget.timeStamp = union.target.alternativeValues[i].timeStamp;
+				newTarget.val = unionForProxy.get(targetId);
+				union.target.alternativeValues[i] = newTarget;
+			}
+			else {
+				errlog("WARNING: no union has been created for the proxy " + targetId +
+							", referenced by the relation union " + union.entityID);
+			}
+		}
+		
+		return union;
+	}
+	
 	/**
 	 * Check whether the union has been already computed
 	 * 
@@ -862,6 +923,13 @@ public class Binder extends ManagedComponent  {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+
+	private static void errlog (String s) {
+		if (ERRLOGGING)
+		System.out.println("[UnionConstructor] " + s);
 	}
 
 }

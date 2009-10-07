@@ -205,13 +205,26 @@ public class UnionConstructor  {
 		RelationUnion runion = BinderUtils.convertIntoRelationUnion(bunion);
 		
 		// TODO: INCORRECT - should change this at some point to handle merged relation unions
-		runion.source = ((RelationProxy)includedEntities.elementAt(0)).source ;
-		runion.target = ((RelationProxy)includedEntities.elementAt(0)).target ;
+		runion.source = cloneFeature (((RelationProxy)includedEntities.elementAt(0)).source);
+	//	System.out.println("SOURCE: " + (((RelationProxy)includedEntities.elementAt(0)).source.alternativeValues[0]);
+		runion.target = cloneFeature (((RelationProxy)includedEntities.elementAt(0)).target);
 
 		return runion;
 
 	}
 
+	
+	private Feature cloneFeature (Feature feat) {
+		
+		Feature newFeat = new Feature();
+		newFeat.featlabel = feat.featlabel;
+		newFeat.alternativeValues = new FeatureValue[feat.alternativeValues.length];
+		
+		for (int i = 0 ; i < feat.alternativeValues.length ; i++) {
+			newFeat.alternativeValues[i] = FeatureValueUtils.cloneFeatureValue(feat.alternativeValues[i]);
+		}
+		return newFeat;
+	}
 
 
 
@@ -340,6 +353,9 @@ public class UnionConstructor  {
 			mergedFeature.alternativeValues[0] = 
 				FeatureValueUtils.mergeFeatureValues(feat1.alternativeValues[0], feat2.alternativeValues[0]);
 		}
+		else {
+			errlog("WARNING: feature merging of this type are not implemented yet!");
+		}
 		return mergedFeature;
 	}
 	
@@ -354,12 +370,12 @@ public class UnionConstructor  {
 	}*/
 	
 	
-	private void log (String s) {
+	private static void log (String s) {
 		if (LOGGING)
 		System.out.println("[UnionConstructor] " + s);
 	}
 	
-	private void errlog (String s) {
+	private static void errlog (String s) {
 		if (ERRLOGGING)
 		System.out.println("[UnionConstructor] " + s);
 	}

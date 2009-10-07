@@ -37,9 +37,12 @@ import binder.autogen.featvalues.UnknownValue;
  */
 
 public class FeatureValueUtils {
-	
+
+	// flag to activate error logging
+	public static boolean ERRLOGGING = true;
+
 	// flag to activate logging
-	public static boolean LOGGING = true;
+	public static boolean LOGGING = false;
 	
 
 	// ================================================================= 
@@ -173,6 +176,9 @@ public class FeatureValueUtils {
 			FloatValue mergedFV = ProxyConstructor.createFloatValue(mean, meanProb, fv2.timeStamp);
 			return mergedFV;
 		}
+		else {
+			errlog("WARNING: feature merging for these type of values not implemented yet!");
+		}
 		
 		return new FeatureValue();
 	}
@@ -297,5 +303,9 @@ public class FeatureValueUtils {
 		}
 	}
 	
+	private static void errlog (String s) {
+		if (ERRLOGGING)
+		System.out.println("[FeatureValueUtils] " + s);
+	}
 
 }

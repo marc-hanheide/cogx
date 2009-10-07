@@ -83,8 +83,6 @@ public class BinderMonitorGUI extends JFrame
 	HashMap<String,Object> insertedProxies;
 	HashMap<String,Object> insertedUnions;
 	
-	HashMap<String, String> unionForProxy;
-	
 	Vector<Object> insertedObjects ;
 	
 	Vector<RelationUnion> relationUnions;
@@ -111,9 +109,7 @@ public class BinderMonitorGUI extends JFrame
 		
 		insertedProxies = new HashMap<String, Object>();
 		insertedUnions = new HashMap<String, Object>();
-		
-		unionForProxy = new HashMap<String, String>();
-		
+				
 		insertedObjects = new Vector<Object>();
 		
 		relationUnions = new Vector<RelationUnion>();
@@ -325,9 +321,6 @@ public class BinderMonitorGUI extends JFrame
 					horizontalIncr += 250;
 				}
 				
-			
-			unionForProxy.put(proxy.entityID, union.entityID);
-			
 			}
 		}
 		
@@ -383,20 +376,15 @@ public class BinderMonitorGUI extends JFrame
 	
 	}
 	
-	
 	public void insertSourceAndTargetEdges(RelationUnion union, Object mothervertex) {
 			
 		if (union.source != null) {
 			for (int j = 0; j < union.source.alternativeValues.length ; j++) {
 				AddressValue v = (AddressValue) union.source.alternativeValues[j];
-				String unionId = unionForProxy.get(v.val);
-				if (insertedUnions.containsKey(unionId)) {
-					Object daughter_vertex = insertedUnions.get(unionId);
+				if (insertedProxies.containsKey(v.val)) {
+					Object daughter_vertex = insertedProxies.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
 					insertedObjects.add(edge);
-				}
-				else {
-					log("WARNING: " + unionId + " not found in the inserted unions");
 				}
 			}
 		}
@@ -404,17 +392,14 @@ public class BinderMonitorGUI extends JFrame
 		if (union.target != null) {
 			for (int j = 0; j < union.target.alternativeValues.length ; j++) {
 				AddressValue v = (AddressValue) union.target.alternativeValues[j];
-				String unionId = unionForProxy.get(v.val);
-				if (insertedUnions.containsKey(unionId)) {
-					Object daughter_vertex = insertedUnions.get(unionId);
+				if (insertedProxies.containsKey(v.val)) {
+					Object daughter_vertex = insertedProxies.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
 					insertedObjects.add(edge);
 				}
-				else {
-					log("WARNING: " + unionId + " not found in the inserted unions");
-				}
 			}
 		}
+	
 	}
 	
 	
@@ -503,15 +488,8 @@ public class BinderMonitorGUI extends JFrame
 
 			deleteProxy(updatedProxy);
 
-			if (unionForProxy.containsKey(updatedProxy.entityID)) {
-				Object unionVertex = insertedUnions.get(unionForProxy.get(updatedProxy.entityID));
+			addNewProxy(updatedProxy);
 
-				addNewProxy(updatedProxy);
-
-				Object proxy_vertex = insertedProxies.get(updatedProxy.entityID);
-				Object edge = graph.insertEdge(parent, null, "includes", unionVertex, proxy_vertex);
-				insertedObjects.add(edge);
-			}
 		}
 		finally {
 			graph.getModel().endUpdate();
@@ -552,12 +530,7 @@ public class BinderMonitorGUI extends JFrame
 				Union union = e.nextElement();
 				if (!insertedUnions.containsKey(union.entityID)) {
 					log("Adding new union..." + union.entityID);
-					for (int i = 0 ; i < union.includedProxies.length ; i++) {
-						if (unionForProxy.containsKey(union.includedProxies[i].entityID)) {
-							mustRegenerateRelationUnions = true;
-						}
-						unionForProxy.put(union.includedProxies[i].entityID, union.entityID);
-					}
+					
 					addNewUnionAndIncludedProxies(union);
 				}
 			}

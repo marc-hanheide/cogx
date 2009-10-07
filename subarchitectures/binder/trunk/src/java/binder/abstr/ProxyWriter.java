@@ -31,6 +31,7 @@ import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.RelationProxy;
 import binder.utils.BinderUtils;
 import binder.utils.ProxyConstructor;
@@ -257,6 +258,12 @@ public abstract class ProxyWriter extends ManagedComponent {
 	public FloatValue createFloatValue(float floatv, float prob) {
 		return ProxyConstructor.createFloatValue(floatv, prob, getCASTTime());
 	}
+	
+	
+	public UnknownValue createUnknownValue(float prob) {
+		return ProxyConstructor.createUnknownValue(prob, getCASTTime());
+	}
+	
 	/**
 	 * Create a new feature, without feature values
 	 * 
@@ -265,7 +272,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 * @return the new feature
 	 */
 
-	public static Feature createFeature(String featlabel) {
+	public Feature createFeature(String featlabel) {
 		return ProxyConstructor.createFeature(featlabel);
 	}
 
@@ -279,7 +286,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 * @return the new feature
 	 */
 
-	public static Feature createFeatureWithUniqueFeatureValue(String featlabel,
+	public Feature createFeatureWithUniqueFeatureValue(String featlabel,
 			FeatureValue featvalue) {
 		return ProxyConstructor.createFeatureWithUniqueFeatureValue(featlabel, featvalue);
 	}
@@ -293,7 +300,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 *            the feature value
 	 */
 
-	public static void addFeatureValueToFeature(Feature feat, FeatureValue featval) {
+	public void addFeatureValueToFeature(Feature feat, FeatureValue featval) {
 		ProxyConstructor.addFeatureValueToFeature(feat, featval);
 	}
 
@@ -307,12 +314,14 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 * @return the feature
 	 */
 
-	public static Feature createFeatureWithAlternativeFeatureValues(String featlabel,
+	public Feature createFeatureWithAlternativeFeatureValues(String featlabel,
 			FeatureValue[] featvalues) {
 		return ProxyConstructor.createFeatureWithAlternativeFeatureValues(featlabel, featvalues);
 	}
 
-	
+
+
+		
 	// =================================================================
 	// METHODS FOR INSERTING/MODIFYING/DELETING PROXIES IN THE WM
 	// =================================================================

@@ -47,7 +47,7 @@ public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.9f);
 		
-		FeatureValue unknown = new UnknownValue();
+		FeatureValue unknown = createUnknownValue(0.8f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", unknown);
 		addFeatureToProxy (proxy, feat1);		
 	

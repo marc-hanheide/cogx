@@ -56,6 +56,9 @@ public class UnionDiscretizer extends ManagedComponent {
 	// whether to consider only maximum feature values in feature or not
 	private boolean onlyMaxFeatureValues = true;
 	
+	// flag to activate error logging
+	public static boolean ERRLOGGING = true;
+
 	
 	/**
 	 * Initialisation - add a change filter for AlternativeUnionConfigurations on the binder WM
@@ -113,6 +116,7 @@ public class UnionDiscretizer extends ManagedComponent {
 		log("--------START DISCRETISATION ----------");
 		long initTime = System.currentTimeMillis();
 
+		UnionConfiguration discretizedConfig = new UnionConfiguration();
 
 		log("Number of alternative union configurations: "  + alterconfigs.alterconfigs.length);
 		
@@ -120,11 +124,13 @@ public class UnionDiscretizer extends ManagedComponent {
 		UnionConfiguration bestConfiguration = 
 			ConfigurationFilter.getBestUnionConfiguration(alterconfigs);
 
+		Vector<Union> unions = new Vector<Union>();
+
+		if (bestConfiguration != null) {
 		log("Best union configuration successfully computed");
 		log("Number of unions in selected configuration: " + 
 				bestConfiguration.includedUnions.length);
 
-		Vector<Union> unions = new Vector<Union>();
 		
 		// In the chosen union configuration, loop on the included unions, and compute
 		// for each of them the instance with the maximum probability
@@ -140,11 +146,15 @@ public class UnionDiscretizer extends ManagedComponent {
 		} 
 		
 		// Create a new configuration with the updated unions
-		UnionConfiguration discretizedConfig = new UnionConfiguration();
 		discretizedConfig.includedUnions = new Union[unions.size()];
 		discretizedConfig.includedUnions = unions.toArray(discretizedConfig.includedUnions);
 		discretizedConfig.configProb = bestConfiguration.configProb;
 
+		}
+		else {
+			errlog("WARNING: no best union configuration could be found! (returned null)");
+		}
+		
 		long finalTime = System.currentTimeMillis();
 		log("Total discretisation time: " + (finalTime - initTime)/1000.0 + " seconds");
 		log("--------STOP DISCRETISATION ----------");
@@ -174,6 +184,14 @@ public class UnionDiscretizer extends ManagedComponent {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	
+
+	private static void errlog (String s) {
+		if (ERRLOGGING)
+		System.out.println("[UnionConstructor] " + s);
 	}
 
 }
