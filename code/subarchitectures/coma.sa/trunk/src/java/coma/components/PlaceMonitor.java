@@ -1,7 +1,5 @@
 package coma.components;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,7 +9,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
+
+import quicktime.streaming.NewPresentationParams;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
@@ -59,19 +58,12 @@ import cast.core.CASTData;
  */
 public class PlaceMonitor extends ManagedComponent {
 
-
-	
-	private Identity m_reasoner_id;
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
 	
 	private String m_marshaller_component_name;
 	private MarshallerPrx m_proxyMarshall;
 	
-	private String m_bindingSA;
-	//Map<String, String> m_placeID2proxyWMID;
-	// removed place proxy handling
-	//	Map<Long,ComaPlace> m_placeID2ComaPlace;
 	private HashSet<Long> m_placeholders;
 	private HashSet<Long> m_trueplaces;
 	private HashMap<Long, HashSet<WorkingMemoryAddress>> m_tempAdjacencyStore;
@@ -81,42 +73,28 @@ public class PlaceMonitor extends ManagedComponent {
 
 	public void configure(Map<String, String> args) {
 		log("configure() called");
-		m_reasoner_id = new Identity();
-		m_reasoner_id.name="";
-		m_reasoner_id.category="ComaReasoner";
 
 		if (args.containsKey("--reasoner-name")) {
-			m_reasoner_id.name=args.get("--reasoner-name");
 			m_comareasoner_component_name=args.get("--reasoner-name");
 		}
 		if (args.containsKey("--marshaller-name")) {
 			m_marshaller_component_name=args.get("--marshaller-name");
 		}
 
-		
-		if (args.containsKey("-bsa")) {
-			m_bindingSA=args.get("-bsa");
-		} else if (args.containsKey("--binding-sa")) {
-			m_bindingSA=args.get("--binding-sa");
-		} else if (args.containsKey("--bsa")) {
-			m_bindingSA=args.get("--bsa");
-		}
-	
 		m_placeholders = new HashSet<Long>();
 		m_trueplaces = new HashSet<Long>();
 		m_tempAdjacencyStore = new HashMap<Long, HashSet<WorkingMemoryAddress>>();
 		m_existingRoomProxies = new HashSet<String>();
-		// removed place proxy handling
-//		if (m_bindingSA!=null) {
-////			m_placeID2proxyWMID = new HashMap<String, String>();
-//			m_placeID2ComaPlace = new HashMap<Long, ComaPlace>();
-//		}
-		
 	}
 	
 	
 	public void start() {
-		
+		if (m_marshaller_component_name==null) log("No proxy marshaller present. Will ignore proxy creation. (Specify the proxy marshaller component name using --marshaller-name)");
+		if (m_comareasoner_component_name==null) {
+			log("No coma reasoner present. Exiting! (Specify the coma reasoner component name using --reasoner-name)");
+			System.exit(-1);
+		}
+			
 		// register the monitoring change filters
 		// this is the "proper" Place monitor
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class, WorkingMemoryOperation.ADD), 
@@ -144,48 +122,46 @@ public class PlaceMonitor extends ManagedComponent {
 			}
 		});
 
+		// initiate ice server connections
 		
-		log("Initiating connection to server " + m_reasoner_id.category + "::" + m_reasoner_id.name + "...");
-		ObjectPrx base = getObjectAdapter().createProxy(m_reasoner_id);
-		m_comareasoner = comadata.ComaReasonerInterfacePrxHelper.checkedCast(base);
-
+		// connection to the coma reasoner
+		try {
+			if (m_comareasoner_component_name!=null) log("initiating connection to Ice server " + m_comareasoner_component_name);
+			if (m_comareasoner_component_name!=null) m_comareasoner = getIceServer(m_comareasoner_component_name, comadata.ComaReasonerInterface.class , comadata.ComaReasonerInterfacePrx.class);
+			if (m_comareasoner!=null) log("initiated comareasoner connection");
+			else throw new CASTException();
+		} catch (CASTException e) {
+			e.printStackTrace();
+			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Exiting. (Specify the coma reasoner component name using --reasoner-name)");
+			System.exit(-1);
+		}	
+		
+		// connection to the proxy marshaller
 		try {
 			if (m_marshaller_component_name!=null) log("initiating connection to Ice server " + m_marshaller_component_name);
 			if (m_marshaller_component_name!=null) m_proxyMarshall = getIceServer(m_marshaller_component_name, Marshaller.class , MarshallerPrx.class);
 			if (m_proxyMarshall!=null) log("initiated marshaller connection");
+			else throw new CASTException();
 		} catch (CASTException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			log("connection to Ice server "+ m_marshaller_component_name + " failed!");
+			log("Connection to the proxy marshaller Ice server at "+ m_marshaller_component_name + " failed! Will ignore proxy creation. (Specify the proxy marshaller component name using --marshaller-name)");
+			m_proxyMarshall=null;
 		}	
-		// this code does not work :-(
-//		try {
-//			if (m_comareasoner_component_name!=null) log("initiating connection to Ice server " + m_comareasoner_component_name);
-//			if (m_comareasoner_component_name!=null) m_comareasoner = getIceServer(m_comareasoner_component_name, comadata.ComaReasonerInterface.class , comadata.ComaReasonerInterfacePrxHelper.class);
-//			if (m_comareasoner!=null) log("initiated comareasoner connection");
-//		} catch (CASTException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			log("connection to Ice server "+ m_comareasoner_component_name + " failed!");
-//		}	
 	}
-
 	
 	
 	private void processAddedPlace(WorkingMemoryChange _wmc) {
-		log("Got a callback for an ADDed Place WME:");
+		debug("Got a callback for an ADDed Place WME:");
 		try {
 			// read place struct from WM
 			Place _newPlaceNode = getMemoryEntry(_wmc.address, Place.class);
-			log("Place ID = " + _newPlaceNode.id + " " +
+			debug("Place ID = " + _newPlaceNode.id + " " +
 			"Place status = " + (_newPlaceNode.status.equals(PlaceStatus.PLACEHOLDER) ? "PLACEHOLDER" : "TRUEPLACE"));
 
 			// check the Place status
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) { 
 				// TRUEPLACE block
-				log("create dora:Place instance");
-				debug("check whether place WME is null: " + ((_newPlaceNode==null) ? "null!" : "not null!"));
-				debug("check whether the comareasoner connection is initialized: " + ((m_comareasoner==null) ? "null!" : "not null!"));
+				log("create dora:Place instance " + "dora:place"+_newPlaceNode.id);
 				m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
 				// keep track of created true place instances
 				m_trueplaces.add(Long.valueOf(_newPlaceNode.id));
@@ -193,23 +169,28 @@ public class PlaceMonitor extends ManagedComponent {
 				logInstances("dora:Place");
 				logInstances("dora:PhysicalRoom");
 				
+				// creating an initial seed room for the first Place added!
+				if (_newPlaceNode.id==0) maintainRooms();
+				
 				// process pending paths
 				HashSet<WorkingMemoryAddress> _pendingPaths = m_tempAdjacencyStore.remove(_newPlaceNode.id);
 				if (_pendingPaths!=null) {
-					log("process pending paths:");
+					debug("process pending paths:");
 					for (WorkingMemoryAddress _workingMemoryAddress : _pendingPaths) {
 						ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
 						log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
 						m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+						// trigger room creation, splitting, merging, maintenance
 					}
+					maintainRooms();
 				}
 
 			} else { 
 				// PLACEHOLDER block
-				log("going to add " + _newPlaceNode.id + " to m_placeholders");
+				debug("going to add " + _newPlaceNode.id + " to m_placeholders");
 				// keep track of placeholders that should not be put into the ontology
 				m_placeholders.add(Long.valueOf(_newPlaceNode.id));
-				log("added " + _newPlaceNode.id + " to m_placeholders");
+				debug("added " + _newPlaceNode.id + " to m_placeholders");
 				
 				// add a change filter so that they are processed when they turn into true places
 				addChangeFilter(ChangeFilterFactory.createAddressFilter(_wmc.address, WorkingMemoryOperation.OVERWRITE),
@@ -234,11 +215,6 @@ public class PlaceMonitor extends ManagedComponent {
 				}
 			});
 			
-//example code for place property handling
-//			_newPlaceNode.status.equals(PlaceStatus.PLACEHOLDER);
-//			SpatialProperties.GatewayPlaceProperty cpp;
-//			cpp.
-
 		} catch (DoesNotExistOnWMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -246,17 +222,17 @@ public class PlaceMonitor extends ManagedComponent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		maintainRooms();
+//		maintainRooms();
 	}
 	
 	
 	private void processAddedConnectivityPath(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		ConnectivityPathProperty _path = getMemoryEntry(_wmc.address, ConnectivityPathProperty.class);
-		log("got a callback for an ADDED ConnectivityPathProperty between " + _path.place1Id + " and " +_path.place2Id);
+		debug("got a callback for an ADDED ConnectivityPathProperty between " + _path.place1Id + " and " +_path.place2Id);
 		
-		log("Set of known placeholders: " + m_placeholders);
-		log("Set of known places: " + m_trueplaces);
+		debug("Set of known placeholders: " + m_placeholders);
+		debug("Set of known places: " + m_trueplaces);
 		// suspend paths that involve placeholders
 		if (m_placeholders.contains(Long.valueOf(_path.place1Id))) {
 			// place1 is a placeholder, that means its connectivity should be marked as pending
@@ -286,11 +262,11 @@ public class PlaceMonitor extends ManagedComponent {
 			// might still be the case that one of them is still unknown, 
 			// in which case adjacency creation is also postponed!
 			if (m_trueplaces.contains(Long.valueOf(_path.place1Id)) && m_trueplaces.contains(Long.valueOf(_path.place2Id))) {
-				log("*** about to assert an adjacency relation between: " + _path.place1Id + " and " + _path.place2Id + ". Please check whether one of them is contained in the following list!");
-				logInstances("dora:Place");
 				m_comareasoner.addRelation("dora:place"+_path.place1Id, "dora:adjacent", "dora:place"+_path.place2Id);
-				log("added adjacency relation: dora:place"+_path.place1Id + " dora:adjacent " + " dora:place"+_path.place2Id);
+				debug("added adjacency relation: dora:place"+_path.place1Id + " dora:adjacent " + " dora:place"+_path.place2Id);
 				logInstances("dora:Place");
+				// trigger room creation, splitting, merging, maintenance
+				maintainRooms();
 			} else {
 				if (!m_trueplaces.contains(Long.valueOf(_path.place1Id))) {
 					HashSet<WorkingMemoryAddress> _allPaths4PH;
@@ -314,42 +290,42 @@ public class PlaceMonitor extends ManagedComponent {
 					_allPaths4PH.add(_wmc.address);
 				} else {
 					log("There was an inconsistency! ABORTING!");
-					System.exit(0);
+					System.exit(-1);
 				}
 			}
 		}
-		maintainRooms();
 	}
 	
 	private void processAddedGatewayProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		GatewayPlaceProperty _gateProp = getMemoryEntry(_wmc.address, GatewayPlaceProperty.class);
-		log("got a callback for an ADDED GatewayPlaceProperty for " + _gateProp.placeId + ". The probability distribution is not yet taken into account!");
-		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
+		debug("got a callback for an ADDED GatewayPlaceProperty for " + _gateProp.placeId + ". The probability distribution is not yet taken into account!");
 		
 		// TODO handle probability distribution 
 		// for now this property is only added for true gateways, but it is not guaranteed to remain like that
+//		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
 		
-		m_comareasoner.addInstance("dora:place"+_gateProp.placeId, "dora:Doorway");
 		// the place is immediately asserted to instantiate Doorway
 		// this should be safe because Doorway Placeholders are seldom and their connectivity
 		// is not stored in the ontology anyway.
-		
+		m_comareasoner.addInstance("dora:place"+_gateProp.placeId, "dora:Doorway");
+
+		// trigger room creation, splitting, merging, maintenance
 		maintainRooms();
 	}
 	
 	private boolean processOverwrittenPlace(WorkingMemoryChange _wmc) {
 		boolean _removeFilterAfterwards = false;
-		log("Got a callback for an OVERWRITTEN former Placeholder WME!");
+		debug("Got a callback for an OVERWRITTEN former Placeholder WME!");
 		try {
 			// get the place from WM
 			Place _newPlaceNode = getMemoryEntry(_wmc.address, Place.class);
-			log("Place ID = " + _newPlaceNode.id + " " +
+			debug("Place ID = " + _newPlaceNode.id + " " +
 			"Place status = " + (_newPlaceNode.status.equals(PlaceStatus.PLACEHOLDER) ? "PLACEHOLDER" : "TRUEPLACE"));
 
 			// for the moment we are only interested in true places
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) {
-				log("create dora:place instance");
+				log("create dora:place instance " + "dora:place"+_newPlaceNode.id);
 				m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
 				logInstances("owl:Thing");
 				logInstances("dora:Place");
@@ -361,36 +337,39 @@ public class PlaceMonitor extends ManagedComponent {
 				// process pending paths
 				HashSet<WorkingMemoryAddress> _pendingPaths = m_tempAdjacencyStore.remove(_newPlaceNode.id);
 				if (_pendingPaths!=null) {
-					log("process pending paths:");
+					debug("process pending paths:");
 					for (WorkingMemoryAddress _workingMemoryAddress : _pendingPaths) {
 						ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
 						log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
 						m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
 					}
+					// trigger room creation, splitting, merging, maintenance
+					maintainRooms();
 				}
 				_removeFilterAfterwards = true;
 			}
 		} catch (DoesNotExistOnWMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log("The overwritten Place WME at " + _wmc.address + " ceased to exist. Not taking any further steps. Its deletion should be handled by the deletion change filter.");
 		} catch (UnknownSubarchitectureException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		maintainRooms();
+//		maintainRooms();
 		return _removeFilterAfterwards;
 	}
 	
 	private void processDeletedPlace(long _deletedPlaceID) {
-		log("Got a callback for a DELETED Place with ID: " + _deletedPlaceID);
+		debug("Got a callback for a DELETED Place with ID: " + _deletedPlaceID);
 		boolean _successfullyDeleted = m_comareasoner.deleteInstance("dora:place"+_deletedPlaceID);
 		if (_successfullyDeleted) log("successfully deleted " + "dora:place"+_deletedPlaceID);
 		else log("There was an error deleting " + "dora:place"+_deletedPlaceID);
-		maintainRooms();
+		m_placeholders.remove(_deletedPlaceID);
+		if (m_trueplaces.remove(_deletedPlaceID)) maintainRooms();
 	}
 	
 	
 	private void logInstances(String _con) {
+		// logInstances is now restricted to debug mode only. otherwise it gets too messy.
 		if (!m_bDebugOutput) return;
 		
 		StringBuffer _allInsLogMsg = new StringBuffer("all instances of " + _con + " ==> ");
@@ -444,7 +423,7 @@ public class PlaceMonitor extends ManagedComponent {
 			for (String _placeIns : _allPlaceIns) {
 				_remainingPlaceIds.add(Long.valueOf(_placeIns.replaceAll("\\D","")));
 			}
-			log("remaining places: " + _remainingPlaceIds);
+			debug("remaining places: " + _remainingPlaceIds);
 			Collections.sort((List<Long>)_remainingPlaceIds);
 			
 			// get all rooms previously known from WM
@@ -480,18 +459,18 @@ public class PlaceMonitor extends ManagedComponent {
 				// in both cases, the existing room is obsolete and can be deleted
 				if (m_comareasoner.isInstanceOf(_seedPlaceInstance, "dora:Doorway")
 						|| !_remainingPlaceIds.contains(_seedPlaceId)) {
-					log("current room's seed is a doorway!");
+					log("current room's seed has turned into a doorway or the seed has been merged with an existing room.");
 					// if the current room's seed is a Doorway
 					// remove the seed from the remaining places
 					_remainingPlaceIds.remove(_seedPlaceId);
 					// and delete the current room from WM!
 					// TODO does this really work? i.e., is ID() the correct arg?
 					deleteFromWorkingMemory(comaRoomWME.getID());
-					logRoom(_currentRoomStruct, "deleted obsolete room WME. ", comaRoomWME.getID());
+					logRoom(_currentRoomStruct, "deleted obsolete room WME ", comaRoomWME.getID());
 					deleteRoomProxy(_currentRoomStruct, comaRoomWME.getID());
 				} else {
 					// otherwise -- i.e., if the current room's seed place is not a Doorway 
-					log("current room's seed is not a doorway.");
+					log("current room's seed is not a doorway. going to maintain.");
 					// check whether that room has changed at all...
 					boolean _hasChanged = false;
 					
@@ -537,7 +516,7 @@ public class PlaceMonitor extends ManagedComponent {
 						logRoom(_currentRoomStruct, "did not update room WME or proxy. Room hasn't changed. ", comaRoomWME.getID());
 					}
 				}
-				log("remaining places: " + _remainingPlaceIds);
+				debug("remaining places: " + _remainingPlaceIds);
 			} // end for each room loop
 			
 			// for each remaining place
@@ -548,7 +527,7 @@ public class PlaceMonitor extends ManagedComponent {
 				String _currentplaceInstance = "dora:place"+_remainingPlace;
 				if (m_comareasoner.isInstanceOf(_currentplaceInstance, "dora:Doorway")) {
 					// current place is a doorway
-					log(_currentplaceInstance + " is a doorway. discarding...");
+					debug(_currentplaceInstance + " is a doorway. discarding this place...");
 					_remainingPlaceIds.remove(_remainingPlace);
 				} else {
 					// current place can be a seed for a new room
@@ -582,10 +561,10 @@ public class PlaceMonitor extends ManagedComponent {
 					// write out the new room to WM
 					String _newRoomWMEID = newDataID();
 					addToWorkingMemory(_newRoomWMEID, _newRoom);
-					logRoom(_newRoom, "added new room WMD. ", _newRoomWMEID);
+					logRoom(_newRoom, "added new room WME. ", _newRoomWMEID);
 					maintainRoomProxy(_newRoom, _newRoomWMEID);
 				} // end else create a new room for non-doorway seeds
-				log("remaining places: " + _remainingPlaceIds);
+				debug("remaining places: " + _remainingPlaceIds);
 			} // end for each remaining place loop
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
@@ -607,6 +586,10 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
 		debug("maintainRoomProxy() called");
+		// temporary solution -- the proxy marshaller will create relations
+		// TODO create relations for contained places!
+		if (true) return false;
+		
 		if (m_proxyMarshall!=null) {
 			// current room UID:
 			String _currRoomUID = "area"+_comaRoom.roomId;

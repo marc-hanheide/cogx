@@ -4,6 +4,7 @@ import java.util.Map;
 
 import coma.reasoning.CrowlWrapper;
 import coma.reasoning.ReasonerException;
+import comadata.ComaReasonerInterface;
 
 import Ice.Current;
 import Ice.Identity;
@@ -25,23 +26,25 @@ public class ComaReasoner extends ManagedComponent {
 	}
 	
 	protected void configure(Map<String, String> args) {
-		// establish ICE identity of the ComaReasonerInterface
-		id = new Identity();
-		id.name=this.getComponentID(); // use my component name
-		id.category="ComaReasoner";
+		this.registerIceServer(ComaReasonerInterface.class, new ComaReasonerInterfaceI(args.get("--crowl-cfg"), m_bLogOutput));
 		
-		if (args.containsKey("--crowl-cfg")) {
-			getObjectAdapter().add(new ComaReasonerInterfaceI(args.get("--crowl-cfg"), m_bLogOutput), id);
-	       	// done registering ComaReasonerInterface	
-		} else {
-			try {
-				throw new CASTException("You need to specify a crowl config file using the --crowl-cfg flag! Exiting...");
-			} catch (CASTException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.exit(0);
-			}
-		}
+//		// establish ICE identity of the ComaReasonerInterface
+//		id = new Identity();
+//		id.name=this.getComponentID(); // use my component name
+//		id.category="ComaReasoner";
+//		
+//		if (args.containsKey("--crowl-cfg")) {
+//			getObjectAdapter().add(new ComaReasonerInterfaceI(args.get("--crowl-cfg"), m_bLogOutput), id);
+//	       	// done registering ComaReasonerInterface	
+//		} else {
+//			try {
+//				throw new CASTException("You need to specify a crowl config file using the --crowl-cfg flag! Exiting...");
+//			} catch (CASTException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				System.exit(0);
+//			}
+//		}
 		
        	
 	}
