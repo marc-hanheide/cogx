@@ -278,10 +278,16 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
                 			
                 			Belief[] related = getBeliefsByUnionEntityId(referringUnionId(contextUpdates[i])).toArray(new Belief[] {});
                 			
+                			boolean found = false;
                 			for (int j = 0; j < related.length; j++) {
                 				if (related[j].ags.equals(contextUpdates[i].ags)) {
                 					mergeFormulaIntoBelief(related[j], (SuperFormula) contextUpdates[i].phi);
+                					found = true;
                 				}
+                			}
+                			if (!found) {
+                				contextUpdates[i].id = "update-" + referringUnionId(contextUpdates[i]);
+                				addNewBelief(contextUpdates[i]);
                 			}
                 		}
                 		ls += "}";
