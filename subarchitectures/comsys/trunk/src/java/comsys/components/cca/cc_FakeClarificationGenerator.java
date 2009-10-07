@@ -51,6 +51,7 @@ import cast.core.CASTUtils;
 // JAVA IMPORTS
 //-----------------------------------------------------------------
 
+import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
