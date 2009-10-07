@@ -531,7 +531,7 @@ public class Binder extends ManagedComponent  {
 
 			initializeUnionConfigurations();
 
-			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(this.getSubarchitectureID(), Proxy.class);
+			CASTData<Proxy>[] proxies = getWorkingMemoryEntries(BinderUtils.BINDER_SA, Proxy.class);
 			for (int i = 0 ; i < proxies.length; i++) {
 				incrementalBinding(proxies[i].getData());
 			}
@@ -917,13 +917,13 @@ public class Binder extends ManagedComponent  {
 		try {
 
 			CASTData<AlternativeUnionConfigurations>[] alterconfigs = 
-				getWorkingMemoryEntries(this.getSubarchitectureID(), AlternativeUnionConfigurations.class);
+				getWorkingMemoryEntries(BinderUtils.BINDER_SA, AlternativeUnionConfigurations.class);
 
 			if (alterconfigs.length == 0) {
-				addToWorkingMemory(newDataID(), this.getSubarchitectureID(), configs);
+				addToWorkingMemory(newDataID(), BinderUtils.BINDER_SA, configs);
 			}
 			else {
-				overwriteWorkingMemory(alterconfigs[0].getID(), this.getSubarchitectureID(),  configs);
+				overwriteWorkingMemory(alterconfigs[0].getID(), BinderUtils.BINDER_SA,  configs);
 			}
 		}
 		catch (Exception e) {

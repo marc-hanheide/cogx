@@ -189,7 +189,7 @@ public class InsertButtonListener extends ProxyWriter implements ActionListener 
 		}
 		
 		try {
-			bm.addToWorkingMemory(newProxy.entityID, this.getSubarchitectureID(), newProxy);
+			bm.addToWorkingMemory(newProxy.entityID, BinderUtils.BINDER_SA, newProxy);
 			log("new Proxy succesfully added to the binding working memory");
 			
 			}

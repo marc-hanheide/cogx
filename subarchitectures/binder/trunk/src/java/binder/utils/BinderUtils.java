@@ -49,7 +49,10 @@ import binder.autogen.specialentities.RelationUnion;
  */
 
 public class BinderUtils {
- 
+
+
+	public static final String BINDER_SA = "binder";
+	
 	
 	// minimum threshold above which unknown values can be created in features
 	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.02f;
