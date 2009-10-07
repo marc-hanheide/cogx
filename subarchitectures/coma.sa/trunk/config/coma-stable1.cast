@@ -42,7 +42,7 @@ SUBARCHITECTURE spatial.sa
 CPP WM SubarchitectureWorkingMemory  #--log --debug
 CPP TM AlwaysPositiveTaskManager
 CPP MG spatial.translation SpatialTranslation #--log #--debug
-CPP GD marshaller ProxyMarshaller -bsa binder --log
+CPP GD marshaller ProxyMarshaller -bsa binder.sa --log
 
 CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #--log #-m tmpmap.metric --debug 
 CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #--log #--debug
