@@ -1,0 +1,336 @@
+
+Utterance planner input:
+
+======
+Syntax
+======
+HLDS
+
+=========
+Structure
+=========
+ 
+@d1:dvp(c-goal  ^ <SpeechAct>...  ^ <Relation>...  ^  <Modality>... ^ <Content>(...) )
+
+where 
+
+None of the structure elements is required (but the planner is not (yet) completely fool-proof, so ommissions may led to no output sentence being generated). 
+
+==================
+Structure elements
+==================
+ 
+-- SpeechAct adopts a classification based on Searle's general SA types, currently:
+   assertion
+   question
+   directive
+   commitment
+   greeting (eventually also thanking)
+   unknown
+
+-- Relation is intended as something like the DAMSL backward looking function, currently:
+   accept
+   reject
+   already-true
+   answer
+   clarification
+   none
+
+-- Modality is inspired by the earlier version, and should specify, if relevant, from which modality some information originates, so that a corresponding verbalization can be used (e.g., a perception verb); currently: 
+   vision
+   discourse (anything else?)
+
+-- Content is the propositional content that should be (more or less) verbalized; either it's just one nominal, or a list (in the OpenCCG list structure)
+   For example, 
+
+    -- for a simple assertion describing an entity, e.g., as an answer to a question: 
+       @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Modality>vision ^ <Content>(b1:physical ^ ball ^ <InfoStatus>familiar) )
+
+    -- for a simple positive acknowledgment without further content:
+       @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept  ^  <Modality>none ^ <Content>(e1:event) )
+
+For further examples of content see 
+comsys-devil/subarchitectures/comsys.mk4/grammars/contentPlanning/testbed.txt
+
+
+===================================
+Input specifications within content
+===================================
+
+----------------------------------------------------
+Types of nominals recognized (& used) by the planner
+----------------------------------------------------
+entity/thing/physical 
+person
+quality
+ascription
+
+ont-entity = as an entity dummy, when we DO NOT want the usual entity-realization planning stuff to apply
+
+
+Types unknown to the grammar, but used in the planner:
+dvp
+answer
+ 
+...?
+
+----------------------------------
+Features for entity/thing/physical
+----------------------------------
+
+-- Quantity (for physical objects): specifies the count 
+   feature
+   values: 0, 1..N, multiple, unknown, -- (= feature not present)
+
+-- InfoStatus
+   feature
+   values: 
+      -- (=feat not present)
+      familiar (= discourse old / given / previously mentioned)
+      (this list will extend)
+
+-- Unique: whether the description is assumed to uniquely determine a referent in the given context
+   feature
+   values: true, false
+
+-- Salient: whether the entity is prominent above any competitors in the context 
+            (is assumed to combine both visual and textual aspects; 
+             if not, then we need two features)
+             e.g., an object just (last) introduced or pointed to or just mentioned
+    true
+    false
+
+-- unary properties/attributes:
+   Color: e.g., <Color>red
+   Size:  e.g., <Size>big
+   Shape: e.g., <Shape>round
+   Name: e.g., <Name>Borland
+
+-- relational properties:
+   Owner: e.g., <Owner>(x:entity ^  office)
+   topological inclusion:
+     TopIn: e.g., <TopIn>(x:physical ^ ball...)
+     TopOn: e.g., <TopOn>(x:physical ^ ball...)
+     TopAt: e.g., TopAt(x:physical ^ ball...)
+   spatial relations:
+     NearTo: e.g., <NearTo>(x:physical ^ ball...)
+     FarFrom: e.g., <Far-from>(x:physical ^ ball...)
+     NextTo: e.g., <NextTo>(x:physical ^ ball...)
+     LeftOf: e.g., <LeftOf>(x:physical ^ ball...)
+     RightOf: e.g, <RightOf>(x:physical ^ ball...)
+
+
+------------------------
+Relations for ascription
+------------------------
+Target
+"Property", which can be one of the following:
+  Color
+  Size
+  Shape
+  Owner
+  TopIn
+  TopOn
+  TopAt
+  NearTo
+  FarFrom
+  NextTo
+  LeftOf
+  RightOf
+(= same list as entity features, except that <Name> is not supported, because there is no realization)
+plus:
+  Location
+  Type
+  Attitude
+
+--------------------------------------
+Ascription Wh-Question Specifications
+--------------------------------------
+- <SpeechAct>question
+- <Content> as for normal ascription
+- either the target or the property can be the questioned element; this is specified by including the feature
+  <Questioned>true
+  within Target/Property
+(note that questioning the target does not yet work, due to improper LF)
+
+
+--------------
+List structure
+--------------
+- type:entity
+- <List>conjunction or <List>disjunction>
+- <First>(...)
+- <Next>(...)
+
+
+===============================
+Utterance planning to-do list:
+===============================
+(items with "#" are done; items with "??" may not be relevant anymore)
+
+------------------
+Planner / debugger
+------------------
+
+- ascription + <InfoStatus>familiar in Target: scope-replacement does not happen; why oh why?
+
+- @feat:x without value in system entry condition does not seem to work
+
+- extra "^" in some LF parts, see e.g., 
+:p @d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ box)  ^ <Location>(b3:m-location ^ <Questioned>true))  ) 
+Resulting logical form:       
+(@d1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(e1:ascription ^ be ^ <DVPassigned>true ^ <AscriptionTargetReplaced>true ^ <Tense>pres ^ <Mood>int ^ <AscriptionProperty>location ^ <AscriptionRelsReplaced>true ^ <QWhProperty>true ^  <Cop-Restr>(b2:entity ^ box ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Cop-Scope>(b3:m-location ^ where ^ <Questioned>true) ^  <Subject>(b2:entity ^ box ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Wh-Restr>(w1:m-location ^ )))
+
+
+# inquiry for checking whether a given nominal is the destination (=dependent) of a given relation: needs to look up, not down from the given nominal: f-rel-type, q-deprel-type 
+
+- action for getting the type of a nominal under a certain relation
+
+- ?? copy-feature when applied to copying a nominal under a relation does not create a correct output structure (dangling "^")
+  :p @e1:ascription(<Target>(b2:thing ^ box)  ^ <Property>(b3:q-size ^ big)
+
+# support OR in <choicenode> in chooser 
+
+- type subsumption in system-entry conditions and in queries
+  (now doing it explicitly)
+
+- making sure words used in LF are in the lexicon (or otherwise handling the ensuing situation when no output is generated appropriately, which needs to be done anyway)
+
+# random choices: random pick in a system, or in a chooser or through random inquiry code?
+  through random inquiry code result seems best and most general 
+  (can combine random informed decisions in a chooser)
+  see utterancePlanner.java: UPResult runSystem 
+  see UPGchoiceNode,....
+
+- debugger: feed an edited LF to realizer
+
+# add-feature needs a destination attribute
+
+# LF traversal if system structure.dvp-ident is used
+
+# redux creates a list:
+
+# something is wrong with copy-feature when there are multiple Modifiers
+# something is wrong with processing an LF with an embedded element
+# cleaning up of irrelevant features in the output ("model reduction")
+- cleaning up of dangling relations (currently not needed)
+
+
+------------------------
+Content planning grammar
+------------------------
+
+- "what is this room" doesnt work, because what is of type entity: <Cop-Scope>(w1:entity ^ what), but without  delim and quant, and that's hard to block
+   so, generating  "what room is this " instead
+
+# <system id="question.wh" region="QUESTIONS" metafunction="ideational">
+<!-- need to make sure that this system only ges entered for wh-questions, or that is only inserts specifier for them and not for other ascriptions! -->
+ 
+# quantification and delimitation for pronouns (--> no delim!)
+
+- calling refex algo from the planner
+
+# unique delimitation for expressions produced with refex algo
+  feature <Unique>true|false
+
+# exclude nominals under <Subject> relation from applying delimitation and quantification
+# exclude nominals under <Compound> relation, too (currently done by assigning type "dummy")
+
+- handling persons: seems to work now at least for simple case; don't know how about embedded in some relation
+  Parse 3: np : 
+   @g1:person(GJ)
+
+- pronouns should get <Num>sg
+   @b1:entity(it)
+
+- Delim and Quant of prop-owner1:entity under Cop-Scope in ascription:
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ ball)  ^ <Owner>(b3:person ^ GJ)))
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ ball)  ^ <Owner>(b3:entity ^ robot)))
+
+Final reduced LF: (@e1:ascription(be ^ <Tense>pres ^ <Mood>ind ^  <Cop-Restr>(b2:entity ^ ball ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Subject>(b2:entity ^ ball ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Cop-Scope>(prop-owner1:entity ^  ^  <Owner>(b3:entity ^ robot ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential))))       
+
+
+- where-ascription questions
+
+- which/what decision un wh-questions
+
+- "How big" would probably be better than "Which size"; but: answer "big"???
+
+- <Owner> in ascription doesn't work: LF not correct yet
+
+-  ascription wh-question: 
+   <Shape>(b3:quality ^ shape ^ <Questioned>true))  )
+   input could be just 
+    <Shape>(b3:quality ^ <Questioned>true))  )
+ 
+# simple quantification & grammatical number
+# real quantification using Quantity (see comments in system for known problems)
+# simple delimitation
+
+# delimitation and quantification: update "a/one ball" w.r.t. grammar
+
+- handling list structures in OpenCCG format: should already work (if LF does not get messed up)
+  decision: input will have FIRST/NEXT list structure 
+   - moving locus over conjuncts: not necessary
+   - inserting list structure for OpenCCG: not necesary
+  test for the presence of first and next in system structure.list: removed the system, don't see need
+  # check how come <Next> doesn't get NP attributes  
+  # fix that list entity gets plural and nothing else
+  remaining problems: reuse of nominals in modifying features (if any, the LF does not generate)
+
+- modifying attributes
+  - make simple and complexer version available in parallel!
+  - in simple form: <Attribute>value
+    # color = only simple string value, nothing fancy; almost done: missing copy feature value;
+    # size (same as color) 
+problem with current solution: nominal always has the same name when system (re)entered 
+- change modifying attributes to the more general: <Property>(p1:q-color ^ red)
+  this will make input specification consistent for generating color as attribute of something and generating it stand-alone (as an answer to "What color does x have?")
+   - color, size 
+   - location (PP!)
+
+- <Quantity>2 does not generate; why?; don't see a prob in LF
+
+- speech act types:
+# simple mood and tense
+# greetings: opening
+- thanking
+# ascription assertions (x is red. x is big.)
+# ascription questions (What color is/has x? How big is x? 
+
+- assigning InfoStatus to familiar entities from discourse context
+
+- making fool-proof: fill system structure.emptyinput
+  it should handle the situation when no input is given from which something sensible would be planned;
+for
+- a nominal with or without type and no other features, produce "something"
+- ..??
+
+  but note: "something" could be produced also in embedded positions when head prop is missing; but, it should not overwrite  cases where the planner planned something
+
+
+---------------------------
+Problems to look at with GJ
+---------------------------
+
+# LF gets messed up in UPDebugger.java: startInterface class
+
+# utt planner not descending deeper into LF:	
+
+# renaming a relation: rewriting a relation (or feature) name
+
+-- adjoin-lf in TRANSITIVITY: perception.insert not working, though according to manual
+[UPL] In system perception.insert the chooser c-perception.insert returns as answer "insert-perception-ind"
+[UPL] Running action steps
+[UPL] Handling stepid adjoin-lf
+[UPL] Running code for action step adjoin-lf
+[UPL] Warning: The auxiliary LF has a root of type "perception" different from dependent type "entity"
+[UPL] Non-empty auxiliary node will be replaced: nominal "t1" has relations!
+[UPL] Adding nominal org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal@c06a6d
+[UPL] Adding nominal org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal@8b3fee
+[UPL] Adding nominal org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal@125f92
+[UPL] Locus: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Modality>vision ^ <contentPresent>true ^<Content>b1)
+	(DVP=d1), (CONTENT=b1)
+
+
+

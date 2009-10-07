@@ -1,0 +1,436 @@
+
+
+<!-- ==========  GREETING  ==========  -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>greeting)
+-->
+@d1:dvp(c-goal ^ /SpeechAct\greeting)
+</input>
+<realizations>
+<string>hi</string>
+<string>hi there</string>
+<string>hello</string>
+</realizations>
+</utterance>
+
+<!-- ==========  THANKING  ==========  -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>thanking)
+-->
+@d1:dvp(c-goal ^ /SpeechAct\thanking)
+</input>
+<realizations>
+<string>thank you</string> 
+<string>thanks</string>
+<string>cheers</string>  <!-- not in the lexicon -->
+</realizations>
+</utterance>
+
+
+<!-- ==========  ANSWER  ==========  -->
+
+<!-- yes/no answers -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <AnswerType>positive)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer ^ /AnswerType\positive)
+</input>
+<realizations>
+<string>yes</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <AnswerType>negative)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer ^ /AnswerType\negative)
+</input>
+<realizations>
+<string>No</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer)
+</input>
+<realizations>
+<string>sorry</string>
+</realizations>
+</utterance>
+
+
+<!-- ==========  ACKNOWLEDGEMENT  ==========  -->
+
+
+<!-- Simple acknowledgments, without context-sensitive content -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept)
+*** NOTE: accept is "less" than answer:yes -->
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept)
+</input>
+<realizations>
+<string>ok</string>
+<string>I see</string>
+<string>yes</string>
+<string>fine</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>reject) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\reject) 
+</input>
+<realizations>
+<string>sorry</string>
+<string>no</string>
+<string>I don't think that</string> 
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>alreadyTrue) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\alreadyTrue) 
+</input>
+<realizations>
+<string>it is already the case</string>
+</realizations>
+</utterance>
+
+
+<!-- Acknowledgements with AcknoModality -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept ^ <AcknoModality>action)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\action)
+</input>
+<realizations>
+<string>I can do that</string>
+<string>a sure thing</string>
+<string>yes I can try that</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>reject ^ <AcknoModality>action)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\reject ^ /AcknoModality\action)
+</input>
+<realizations>
+<string>sorry</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept ^ <AcknoModality>vision)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
+</input>
+<realizations>
+<string>what do I see</string>
+<string>what can I see</string>
+<string>what do I have here</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>reject ^ <AcknoModality>vision)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\reject ^ /AcknoModality\vision)
+</input>
+<realizations>
+<string>I can 't say I have seen that</string>
+<string>I do not believe I have seen that</string>
+<string>I must be looking at another table</string>
+</realizations>
+</utterance>
+
+
+
+
+<!-- ========== ENTITY REFERENCE ========= -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar)
+</input>
+<realizations>
+<string>the big red ball</string>
+<string>the red big ball</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red)
+</input>
+<realizations>
+<string>a big red ball</string>
+<string>a red big ball</string>
+<string>one big red ball</string>
+<string>one red big ball</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true)
+</input>
+<realizations>
+<string>that big red one</string>
+<string>that red big one</string>
+<string>this big red one</string>
+<string>this red big one</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
+*** NOT YET WORKING ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true ^ /InfoStatus>familiar)
+</input>
+<realizations>
+<string>the big red one</string>
+<string>the red big one</string>
+</realizations>
+</utterance>
+
+
+
+
+<!-- ==========  ASCRIPTION ========== -->
+
+
+<!-- ascription: assertion -->
+
+<!-- quality-properties -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+</input>
+<realizations>
+<string>the box is blue</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^  <InfoStatus>familiar ^ box)  ^ <Size>(b3:quality ^ big))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box)  ^ /Size\(b3:quality ^ big)))
+</input>
+<realizations>
+<string>the box is big</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!-- 
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^  <InfoStatus>familiar ^ box)  ^ <Shape>(b3:quality ^ tall))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box)  ^ /Shape\(b3:quality ^ tall)))
+</input>
+<realizations>
+<string>the box is tall</string>
+</realizations>
+</utterance>
+
+<!-- Target pronominalization -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^  /InfoStatus\familiar ^ /Salient\true ^ box)  ^ /Color\(b3:quality ^ blue)))
+</input>
+<realizations>
+<string>it is blue</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ box)  ^ /Color\(b3:quality ^ blue)))
+</input>
+<realizations>
+<string>this is blue</string>
+<string>that is blue</string>
+</realizations>
+</utterance>
+
+
+<!-- type-property -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Size>big ^ <InfoStatus>familiar ^ object)  ^ <Type>(b3:entity ^ <Color>red ^ box))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Size\big ^ /InfoStatus\familiar ^ object)  ^ /Type\(b3:entity ^ box ^ /Color\red)))
+</input>
+<realizations>
+<string>the big object is a red box</string>
+<string>the big object is one red box</string>
+</realizations>
+</utterance>
+
+
+
+<!-- ascription: yes/no question -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue))) 
+** NOTE: order within Target matters; !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Color\(b3:quality ^ blue))) 
+</input>
+<realizations>
+<string>is the object blue</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ object)  ^ <Color>(b3:quality ^ blue))) 
+*** NOTE: order within Target matters; if object not last, then Color gets not planned !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^  /InfoStatus\familiar ^ /Salient\true ^ object)  ^ /Color\(b3:quality ^ blue))) 
+</input>
+<realizations>
+<string>is it blue</string>
+</realizations>
+</utterance>
+
+
+<!-- ascription: wh question: quality-property -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ color ^ <Questioned>true))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Color\(b3:quality ^ color ^ /Questioned\true))) 
+</input>
+<realizations>
+<string>which color is the object </string>
+<string>what color is the object </string>
+</realizations>
+</utterance>
+
+<!-- ascription: wh question: type-property -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )  
+*** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+</input>
+<realizations>
+<string>what is this </string>
+<string>what is that </string>
+<string>what is this object </string>
+<string>what is that object </string>
+</realizations>
+</utterance>
+
+
+<!-- ascription: wh question: target -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Questioned>true ^ box)  ^ <Color>(b3:quality ^ blue) ))
+*** again, orger within target is important! ***
+*** target must not contain <Salient>true ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Questioned\true ^ box)  ^ /Color\(b3:quality ^ blue) ))
+</input>
+<realizations>
+<string>which box is blue</string>
+<string>which box has blue color</string>
+</realizations>
+</utterance>
+
+
+
+<!-- ==========  NEGATION ========== -->
+
+<!-- negated ascription -->
+<!-- negation works with any ascription, just stick in negative polarity -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Polarity>neg ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Polarity\neg ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+</input>
+<realizations>
+<string>the box is not blue</string>
+<string>the box isn't blue</string>
+<string>the box ain't blue</string>
+</realizations>
+</utterance>
+

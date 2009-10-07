@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-delimitation" region="IDEATIONAL" metafunction="ideational">
+<!-- For the time being, only assigning "unique" when something is familiar (= discourse old, given, previously mentioned). 
+This should be elaborated further, e.g., to take "identifiability" into account. Also unique descriptions, e.g., "the Borland" book. 
+Relevant idea: Entities involved in "state-descriptions" get existential delimitation even when they are uniquely identifiable, e.g. "I see a ball", "I brought a ball", "I ate a cake" vs. "Take the ball", "Bring the ball", "Eat the cake"
+Definites in state descriptions (seem to) imply previous mention;
+Indefinites in instructions really imply arbitrariness.
+
+Need to exclude cases where the nominal is under <Compound> relation.
+
+-->
+
+   <dectree>
+       <choicenode answer="*TOP*">
+       
+<!-- not needed now, never mind -->
+  	   <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+				<q-ex-feat feat="NO-QuantOrDelim" val="true"/>	                                 
+       </inquiry>
+							<choicenode answer="true">  <!-- delimitation assignment prohibited -->
+							  <result val="no-delim"/>
+							</choicenode>
+							
+							<choicenode answer="false">  <!-- go ahead with delimitation assignment  -->
+       
+			<!-- if has Owner dependent, then delim=unique -->
+	   		<inquiry id="q-ex-rel" type="string" answerset="@false @true"> 
+				<q-ex-rel val="Owner" />	                                 
+			</inquiry>	
+			<choicenode answer="true">   
+				<result val="unique"/>			   
+			</choicenode>
+			<choicenode answer="false"> 
+			<inquiry id="q-ex-prop" type="string" answerset="@true @false">
+				<q-ex-prop val="context"/>
+			</inquiry>
+		
+			<choicenode answer="true">
+				<result val="no-delim"/> <!-- because already there -->
+			</choicenode>
+
+			<choicenode answer="false">
+				<!-- check whether this is a pronoun which gets no delimitation / quantification -->
+				<inquiry id="q-ex-prop" type="string" answerset="@true @false">
+					<q-ex-prop val="it"/>
+				</inquiry>
+		
+				<choicenode answer="true">
+					<result val="no-delim"/>
+				</choicenode>
+
+				<choicenode answer="false">
+					<inquiry id="q-ex-prop" type="string" answerset="@true @false"> 
+						<q-ex-prop val="what"/>
+					</inquiry>	
+
+					<choicenode answer="true">
+						<result val="no-delim"/>
+					</choicenode>
+
+					<choicenode answer="false">
+		
+			   <!-- check if in the scope of a wh-restr in a ascription wh-question -->
+			   <!-- simplified: if is being questioned in an ascription wh-question -->
+			   <inquiry id="f-featval" type="string" answerset="@false @true"> 
+				   <q-ex-fv feat="Questioned" val="true" />	                                 
+			   </inquiry>
+					 
+			   <choicenode answer="true">   
+					<result val="unique"/>
+			   </choicenode>
+			   
+			   <choicenode answer="false">  				
+
+				<!-- check if a compound- or subject-dependent -->
+				<!-- SUbject no, because of the correference hack -->
+	<!--			<inquiry id="q-deprel-type" type="string" answerset="@false @true @unknown"> 
+				 <q-deprel-type mode="Subject" />	                                 
+				</inquiry>		 
+					<choicenode answer="unknown">   
+						<result val="no-delim"/>			   
+					</choicenode>
+
+					<choicenode answer="true">   
+						<result val="no-delim"/>			   
+					</choicenode>
+
+					<choicenode answer="false"> 
+	-->
+						<inquiry id="q-deprel-type" type="string" answerset="@false @true @unknown"> 
+							<q-deprel-type mode="Compound" />	                                 
+						</inquiry>		 
+
+					<choicenode answer="unknown">   
+						<result val="no-delim"/>			   
+					</choicenode>
+
+						<choicenode answer="true">   
+							<result val="no-delim"/>			   
+						</choicenode>
+
+						<choicenode answer="false"> 
+
+						<!-- check if handling a list structure -->
+						<inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+							<q-ex-rel val="First"/>	                                 
+						</inquiry>		 
+						<choicenode answer="true">   
+						  <result val="no-delim"/>			   
+						</choicenode>
+				 
+					   <choicenode answer="false">  <!-- not list -->
+					   
+						<!-- check if uniquely distinguishing description -->
+						  <inquiry id="q-ex-fv" type="string" answerset="@true @false"> 
+							<q-ex-fv feat="Unique" val="true"/>	                                 
+						  </inquiry>
+							<choicenode answer="true">  <!-- unique -->
+							  <result val="unique"/>
+							</choicenode>
+							
+							<choicenode answer="false">  <!-- not unique -->
+							  <!-- check if rererent is discourse-old -->
+							  <inquiry id="q-ex-fv" type="string" answerset="@true @false"> 
+								<q-ex-fv feat="InfoStatus" val="familiar"/>	                                 
+							  </inquiry>
+							  <choicenode answer="true">  <!-- familiar -->
+								<result val="unique"/>
+							  </choicenode>
+							  <choicenode answer="false">  <!-- not familiar -->
+								<inquiry id="q-ex-feat" type="string" answerset="@true @false">   <!-- is quantity present ? -->
+									<q-ex-feat feat="Quantity"/>	                                 
+								</inquiry>
+								<choicenode answer="true">     <!-- the feat is present  -->
+									<inquiry id="q-ex-fv" type="string" answerset="@true @false"> <!-- is quantity=0 -->
+									<q-ex-fv feat="Quantity" val="0"/>	                                 
+									</inquiry>
+									<choicenode answer="true">  <!-- quantity has value 0 -->
+									  <result val="variable"/>
+									</choicenode>
+									<choicenode answer="false"> <!-- quantity has value other than "0" -->
+									  <result val="existential"/>
+									</choicenode>
+								</choicenode>  <!-- end quantity present -->
+								<choicenode answer="false">     <!-- the feat is not present  -->	
+									  <result val="existential"/>
+								</choicenode>  <!-- end QUANTITY -->
+							  </choicenode>  <!-- end INFOSTATUS -->
+							</choicenode>  <!-- end UNIQUENESS -->
+						</choicenode>	<!-- end LIST -->
+				  </choicenode>		<!-- end COMPOUND -->		
+	<!--			</choicenode>		end SUBJECT -->		
+			  </choicenode>		<!-- end QUESTIONED false -->		
+			  </choicenode>		<!-- end what -->
+	     </choicenode>		<!-- end it -->		
+	     </choicenode>		<!-- end this -->		
+	    </choicenode>			<!-- end OWNER -->
+     </choicenode>  <!-- end go ahead with delimitation assignment -->
+	   </choicenode>			<!-- end TOP -->
+   </dectree>
+</chooser>
+
+</choosers>
