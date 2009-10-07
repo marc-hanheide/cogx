@@ -57,6 +57,7 @@
 		    <fileset dir="${slice.dir}" includes="LF.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
 	     <pathelement path="${castslice.dir}/cast/slice/"/>
 	    </includepath>
 	  </slice2java>
@@ -67,6 +68,7 @@
 	    <fileset dir="${slice.dir}" includes="Comsys.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
 	      <pathelement path="${castslice.dir}/cast/slice/"/>
 	      <pathelement path="${slice.dir}:../../tools/beliefmodels/src/slice"/>
 	    </includepath>
@@ -78,6 +80,7 @@
 	    <fileset dir="${slice.dir}" includes="Abducer.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
 	      <pathelement path="${slice.dir}:../../tools/cast/src/slice"/>
 	    </includepath>
 	  </slice2java>
