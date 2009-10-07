@@ -101,6 +101,20 @@ withConstCostFunction(MR_mprop__ctx_modality mprop, double cost)
 	return result;
 }
 
+MR_Word
+agent(Agent ag) {
+	MR_Word w = 0;
+	switch (ag) {
+		case human:
+			agent_human(&w);
+			break;
+		case robot:
+			agent_robot(&w);
+			break;
+	}
+	return w;
+}
+
 MR_ctx_modality
 modalityToMercModality(const ModalityPtr & m)
 {
@@ -117,9 +131,26 @@ modalityToMercModality(const ModalityPtr & m)
 		case AttState:
 			modality_att(&mm);
 			break;
-		case K:
-			debug(cerr << "TODO: K modality!" << endl);
-			modality_k(&mm);
+		case K: {
+				KModalityPtr km = KModalityPtr::dynamicCast(m);
+
+				switch (km->share) {
+					case Private:
+						modality_k_private(agent(km->act), &mm);
+						break;
+
+					case Attribute:
+						modality_k_attrib(agent(km->act), agent(km->pat), &mm);
+						break;
+
+					case Mutual:
+						modality_k_mutual(&mm);
+						break;
+
+					default:
+						cerr << "UNSUPPORTED AGENT STATUS" << endl;
+				}
+			}
 			break;
 
 		default:

@@ -90,9 +90,8 @@ public class ProofUtils {
 		if (q.body.m.length == 1) {
 			Belief b = modalityToBeliefStub(q.body.m[0]);
 			if (b != null) {
-				ContinualFormula f = predicateToContinualFormula(q.body.p);
+				ComplexFormula f = predicateToComplexFormula(q.body.p, ContinualStatus.assertion);
 //				if (f == null) System.err.println("formula null");
-				f.cstatus = ContinualStatus.assertion;
 				b.phi = f;
 			}
 			return b;
@@ -112,9 +111,8 @@ public class ProofUtils {
 		if (q.body.m.length == 1) {
 			Belief b = modalityToBeliefStub(q.body.m[0]);
 			if (b != null) {
-				ContinualFormula f = predicateToContinualFormula(q.body.p);
+				ComplexFormula f = predicateToComplexFormula(q.body.p, ContinualStatus.proposition);
 //				if (f == null) System.err.println("formula null");
-				f.cstatus = ContinualStatus.proposition;
 				b.phi = f;
 			}
 			return b;
@@ -217,42 +215,58 @@ public class ProofUtils {
 	/**
 	 * Convert predicate to a continual formula.
 	 * 
-	 * NOTE: the formula's continual status is unset.
-	 *
 	 * @param p the predicate
 	 * @return corresponding continual formula, null if conversion not possible
 	 */
-	public static ContinualFormula predicateToContinualFormula(Predicate p) {
+	public static ComplexFormula predicateToComplexFormula(Predicate p, ContinualStatus cstatus) {
 
-//		System.out.println("p2cf: " + p.predSym);
+		ComplexFormula f = new ComplexFormula();
+		f.id = "p2cf";
+		f.op = LogicalOp.and;
+		f.formulae = new ContinualFormula[2];
+		
+		String ref = "";
+			
+		System.out.println("p2cf: " + p.predSym);
+		
+		ContinualFormula cprop = null;
 		
 		if (p.predSym.equals("color")) {
-//			System.err.println("color");
+			System.err.println("color");
 			// color(Object, Value)
 			ColorProperty prop = new ColorProperty();
-			prop.id = termToString(p.args[0]);  // Object
+			ref = termToString(p.args[0]);  // Object
 			prop.colorValue = termToColor(p.args[1]);  // Value
-			prop.prob = 1.0f;
-			return prop;
+			cprop = prop;
 		}
 		else if (p.predSym.equals("shape")) {
+			System.err.println("shape");
 			// shape(Object, Value)
 			ShapeProperty prop = new ShapeProperty();
-			prop.id = termToString(p.args[0]);  // Object
+			ref = termToString(p.args[0]);  // Object
 			prop.shapeValue = termToShape(p.args[1]);  // Value
-			prop.prob = 1.0f;
-			return prop;
+			cprop = prop;
 		}
 		else if (p.predSym.equals("objecttype")) {
+			System.err.println("objecttype");
 			// objecttype(Object, Value)
 			ObjectTypeProperty prop = new ObjectTypeProperty();
-			prop.id = termToString(p.args[0]); // Object
+			ref = termToString(p.args[0]); // Object
 			prop.typeValue = termToObjectType(p.args[1]); // Value
-			prop.prob = 1.0f;
-			return prop;
+			cprop = prop;
 		}
 		
-		return null;
+		UnionRefProperty unionRef = new UnionRefProperty();
+		unionRef.cstatus = ContinualStatus.proposition;
+		unionRef.prob = 1.0f;
+		unionRef.unionRef = ref;
+		f.formulae[0] = unionRef;
+		
+		cprop.cstatus = cstatus;
+		cprop.prob = 1.0f;
+		f.formulae[1] = cprop;
+		
+		return f;
 	}
 
 	public static ModalisedFormula[] proofToFacts(MarkedQuery[] proof) {

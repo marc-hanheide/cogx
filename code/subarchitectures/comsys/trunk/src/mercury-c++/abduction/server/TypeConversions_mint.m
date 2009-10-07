@@ -37,7 +37,9 @@
 :- pred modality_event(ctx_modality::out) is det.
 :- pred modality_info(ctx_modality::out) is det.
 :- pred modality_att(ctx_modality::out) is det.
-:- pred modality_k(ctx_modality::out) is det.
+:- pred modality_k_private(agent::in, ctx_modality::out) is det.
+:- pred modality_k_attrib(agent::in, agent::in, ctx_modality::out) is det.
+:- pred modality_k_mutual(ctx_modality::out) is det.
 
 :- pred impure_print_list_modalities(list(ctx_modality)::in) is det.
 :- pred impure_print_modality(ctx_modality::in) is det.
@@ -46,6 +48,9 @@
 :- pred is_modality_info(ctx_modality::in) is semidet.
 :- pred is_modality_att(ctx_modality::in) is semidet.
 :- pred is_modality_k(ctx_modality::in, belief::out) is semidet.
+
+:- pred agent_robot(agent::out) is det.
+:- pred agent_human(agent::out) is det.
 
 :- pred belief_private(belief::out) is det.
 
@@ -183,15 +188,25 @@ cons_ctx_modality_list(H, T, [H|T]).
 
 %------------------------------------------------------------------------------%
 
+:- pragma foreign_export("C", agent_human(out), "agent_human").
+:- pragma foreign_export("C", agent_robot(out), "agent_robot").
+
+agent_human(human).
+agent_robot(robot).
+
 :- pragma foreign_export("C", modality_event(out), "modality_event").
 :- pragma foreign_export("C", modality_info(out), "modality_info").
 :- pragma foreign_export("C", modality_att(out), "modality_att").
-:- pragma foreign_export("C", modality_k(out), "modality_k").
+:- pragma foreign_export("C", modality_k_private(in, out), "modality_k_private").
+:- pragma foreign_export("C", modality_k_attrib(in, in, out), "modality_k_attrib").
+:- pragma foreign_export("C", modality_k_mutual(out), "modality_k_mutual").
 
 modality_event(e(now)).
 modality_info(i).
 modality_att(a(com)).
-modality_k(k(now, private(robot))).
+modality_k_private(Ag, k(now, private(Ag))).
+modality_k_attrib(Ag, Ag2, k(now, attrib(Ag, Ag2))).
+modality_k_mutual(k(now, mutual(set.from_list([robot, human])))).
 
 :- pragma foreign_export("C", impure_print_modality(in), "print_modality").
 :- pragma foreign_export("C", impure_print_list_modalities(in), "print_list_modalities").

@@ -265,20 +265,30 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
      		
             		log("starting verifiable update");
             		// TODO: where do I get the belief model?
-            		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, null);
+            		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, getCurrentBeliefModel());
 
-            		String ls = "updates = {\n";
-            		for (int i = 0; i < contextUpdates.length; i++) {
-            			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
-            			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
-            		}
-            		ls += "}";
-            		log(ls);
-            		
             		if (contextUpdates.length == 0) {
             			log("no belief updates...");
             		}
+            		else {
+                		String ls = "updates = {\n";
+                		for (int i = 0; i < contextUpdates.length; i++) {
+                			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
+                			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
+                			
+                			Belief[] related = getBeliefsByUnionEntityId(referringUnion(contextUpdates[i])).toArray(new Belief[] {});
+                			
+                			for (int j = 0; j < related.length; j++) {
+                				if (related[j].ags.equals(contextUpdates[i].ags)) {
+                					mergeFormulaIntoBelief(related[j], (SuperFormula) contextUpdates[i].phi);
+                				}
+                			}
+                		}
+                		ls += "}";
+                		log(ls);
+            		}
             		
+            		ccaEngine.abducer.clearKFacts();
             		syncWithBeliefModel(getCurrentBeliefModel());
             		
         			log("looking for linguistic feedback");
