@@ -107,13 +107,16 @@ class PlaceManager : public cast::ManagedComponent
 
     // Callback function for metric movement
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
-    void processPlaceArrival(bool failed, NavData::FNodePtr newNavNode=0); 
+    void processPlaceArrival(bool failed); 
 
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
 
     // Helper function to create Gateway properties
     void addNewGatewayProperty(int placeID);
+
+    // Abort any movement commands
+    void cancelMovement();
 
     // Frontier based exploration path parameters
     double m_maxFrontierDist; // Culling distance for frontiers around a given node

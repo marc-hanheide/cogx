@@ -236,7 +236,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 
 	  if(pcmd){
 	    aborted = 
-	      (pcmd->getData()->comp == SpatialData::COMMANDABORTED);
+	      (pcmd->getData()->comp == SpatialData::COMMANDABORTED ||
+	      pcmd->getData()->comp == SpatialData::COMMANDSUCCEEDED ); 
+	    // I.e. someone outside decided we're done now - the internal cmd needs
+	    // to be cancelled either way.
 	  }else{
 	    log("The NavCommand suddenly disappeared...");
 	    some_error = true;
@@ -601,30 +604,6 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
       m_placeInterface->beginPlaceTransition((int)nav->destId[0]);
       log("Sending transition start signal (place ID=%i)",(int)nav->destId[0]);
     }
-  //}else if (nav->cmd == NavData::GOTONODE){
-  //  log("read navcommand: GOTONODE");
-  //      
-  //  if (nav->destId.size() < 1) {
-  //    println("cmd syntax error, need NavCommand.destId (size 1)");
-  //    status = NavData::CMDMALFORMATTED;
-  //    return false;
-  //  } else {
-  //    ctrl.cmd = NavData::lGOTONODE;
-  //    ctrl.nodeId = nav->destId[0];
-  //    ctrl.tolerance = nav->tolerance;
-  //  }
-  //    
-//  }else if (nav->cmd == NavData::GOTOAREA){
-//
-//    log("read navcommand: GOTOAREA");
-//	
-//    if (nav->destId.empty()) {
-//      println("cmd syntax error, need NavCommand.destId (size 1)");
-//    } else {
-//      ctrl.cmd = NavData::lGOTOAREA;
-//      ctrl.areaId = nav->destId[0];
-//    }
-//	
   }else if (nav->cmd == SpatialData::GOFORWARD) {
 
     log("read navcommand: GOFORWARD");
@@ -844,6 +823,7 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
     pcmd = getWorkingMemoryEntry<SpatialData::NavCommand>(id);	
   } catch (DoesNotExistOnWMException) {
     debug("changeNavCmdCompletion called for nonexistent NavCommand");
+    return;
   }
   while(!stop){
     newcmd = new SpatialData::NavCommand(*pcmd->getData());

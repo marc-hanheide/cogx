@@ -17,6 +17,7 @@
 #include <Navigation/NavGraphNode.hh>
 #include <FrontierInterface.hpp>
 #include <SpatialProperties.hpp>
+#include <Rendezvous.h>
 #include <Ice/Ice.h>
 #include <float.h>
 #include <limits>
@@ -133,6 +134,17 @@ PlaceManager::stop()
 void 
 PlaceManager::runComponent()
 {
+  Rendezvous *rv = new Rendezvous(*this);
+  rv->addChangeFilter(
+      createLocalTypeFilter<NavData::FNode>(cdl::ADD));
+  cdl::WorkingMemoryChange change = rv->wait();
+  shared_ptr<CASTData<NavData::FNode> > oobj =
+    getWorkingMemoryEntry<NavData::FNode>(change.address);
+  
+  if (oobj != 0) {
+    processPlaceArrival(false);
+  }
+
 }
 
 void 
@@ -142,11 +154,44 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
     getWorkingMemoryEntry<NavData::FNode>(objID.address);
   
   if (oobj != 0) {
-    
-    processPlaceArrival(false, oobj->getData());
+    processPlaceArrival(false);
+  }
+}
 
+void
+PlaceManager::cancelMovement()
+{
+  log("CancelMovement called");
+
+  // Stop the robot
+  vector<CASTData<SpatialData::NavCommand> > commands;
+  getMemoryEntriesWithData<SpatialData::NavCommand>(commands, "spatial.sa");
+  for (vector<CASTData<SpatialData::NavCommand> >::iterator it =
+      commands.begin(); it != commands.end(); it++) {
+    try {
+      //lockEntry(it->getID(), cdl::LOCKEDODR);
+      if (it->getData()->cmd == SpatialData::GOTOPLACE &&
+	  it->getData()->comp == SpatialData::COMMANDINPROGRESS) {
+	it->getData()->comp = SpatialData::COMMANDSUCCEEDED;
+	overwriteWorkingMemory<SpatialData::NavCommand>(it->getID(), it->getData());
+      }
+      //unlockEntry(it->getID());
+    }
+    catch (IceUtil::NullHandleException e) {
+      //Just ignore it, it obviously doesn't need to be cancelled
+    }
+    catch (cast::DoesNotExistOnWMException e) {
+    }
   }
 
+//  SpatialData::NavCommandPtr stopCmd = new
+//    SpatialData::NavCommand();
+//  stopCmd->cmd = SpatialData::STOP;
+//  stopCmd->prio = SpatialData::URGENT;
+//  stopCmd->status = SpatialData::NONE;
+//  stopCmd->comp = SpatialData::COMMANDPENDING;
+//  addToWorkingMemory<SpatialData::NavCommand>(newDataID(), stopCmd);
+  m_isPathFollowing = false;
 }
 
 void 
@@ -155,19 +200,15 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
   NavData::FNodePtr oobj =
     getMemoryEntry<NavData::FNode>(objID.address);
   
-	log("1");
   if (oobj != 0) {
 
-	log("2");
     for (map<int, NavData::FNodePtr>::iterator it =
 	m_PlaceIDToNodeMap.begin();
 	it != m_PlaceIDToNodeMap.end(); it++){
       NavData::FNodePtr node = it->second;
 	log("nodeID = %i", node->nodeId);
       if (node->nodeId == oobj->nodeId) {
-	log("3");
 	if (oobj->gateway == 1) {
-	  log("4");
 	  // Has gained gateway status; add gateway property to WM
 	  SpatialData::PlacePtr place = getPlaceFromNodeID(oobj->nodeId);
 	  if (place != 0) {
@@ -722,17 +763,20 @@ void PlaceManager::beginPlaceTransition(int goalPlaceID)
 void PlaceManager::endPlaceTransition(int failed)
 {
   log("endPlaceTransition called");
-  m_isPathFollowing = false;
-  // If successful and the transition was unexplored, 
-  // check current node.
-  // If the node is different from the previous,
-  // change the Place struct to non-placeholder,
-  // remove the NodeHypothesis struct and change the
-  // m_PlaceToNodeIDMap/m_PlaceToHypIDMap members
-  processPlaceArrival(failed);
+  if (m_isPathFollowing) {
+    log("  We were still trying to follow a path; must have failed");
+    m_isPathFollowing = false;
+    // If successful and the transition was unexplored, 
+    // check current node.
+    // If the node is different from the previous,
+    // change the Place struct to non-placeholder,
+    // remove the NodeHypothesis struct and change the
+    // m_PlaceToNodeIDMap/m_PlaceToHypIDMap members
+    processPlaceArrival(failed);
+  }
 }
 
-void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode) 
+void PlaceManager::processPlaceArrival(bool failed) 
 {
   log("processPlaceArrival called");
   debug("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
@@ -740,69 +784,81 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
   map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
     m_PlaceIDToHypMap.find(m_goalPlaceForCurrentPath);
 
+  bool wasExploring = it != (m_PlaceIDToHypMap.end());
+
+  int wasHeadingForPlace = m_goalPlaceForCurrentPath;
+  int wasComingFromNode = m_startNodeForCurrentPath;
+
+  FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
+
   NavData::FNodePtr curNode = getCurrentNavNode();
   if (curNode != 0) {
     int curNodeId = curNode->nodeId;
     log("current node id: %i", curNodeId);
+
+    SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNodeId);
+    bool placeExisted = (curPlace != 0);
+
     double curNodeX = curNode->x;
     double curNodeY = curNode->y;
+    int curNodeGateway = curNode->gateway;
 
-    if (it != m_PlaceIDToHypMap.end()) {
+    int arrivalCase = -1;
+
+    if (wasExploring) {
       //The transition was an exploration action
-      FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
-
-      SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNodeId);
-
-      if (curPlace == 0) { //No Place exists for current node -> it must be new
-
+      if (!placeExisted) { //No Place exists for current node -> it must be new
+	arrivalCase = 1;
 	//CASE 1: We were exploring a path, and a new node was discovered.
 	//Stop moving, upgrade the placeholder we were heading for and connect it
 	//to this new node, and delete the NodeHypotheses
-	//TODO: Stop moving
 	log("  CASE 1: New node discovered while exploring");
-	m_isPathFollowing = false;
-	map<int, PlaceHolder>::iterator it2 = m_Places.find(m_goalPlaceForCurrentPath);
+	map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
+
 	if (it2 != m_Places.end()) {
-	  log("  Upgrading Place %i from Placeholder status", m_goalPlaceForCurrentPath);
-	  deletePlaceholderProperties(m_goalPlaceForCurrentPath);
+	  log("  Upgrading Place %i from Placeholder status", wasHeadingForPlace);
+	  deletePlaceholderProperties(wasHeadingForPlace);
 	  it2->second.m_data->status = SpatialData::TRUEPLACE;
 	  string goalPlaceWMID = it2->second.m_WMid;
 	  overwriteWorkingMemory(goalPlaceWMID, it2->second.m_data);
-	  m_PlaceIDToNodeMap[m_goalPlaceForCurrentPath] = curNode;
+	  m_PlaceIDToNodeMap[wasHeadingForPlace] = curNode;
 
 	  deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
 	  m_HypIDToWMIDMap.erase(goalHyp->hypID);
 	  m_PlaceIDToHypMap.erase(it);
 
-	  if (curNode->gateway == 1) {
-	    addNewGatewayProperty(m_goalPlaceForCurrentPath);
+	  if (curNodeGateway == 1) {
+	    addNewGatewayProperty(wasHeadingForPlace);
 	  }
 	}
 	else {
 	  log("Missing Placeholder placeholder!");
 	  m_goalPlaceForCurrentPath = -1;
+	  m_isPathFollowing = false;
 	  return;
 	}
       }
 
-      else if (!failed && curNodeId != m_startNodeForCurrentPath) {
+      else if (!failed && curNodeId != wasComingFromNode) {
+	arrivalCase = 2;
 	int currentPlaceID = curPlace->id;
 	//CASE 2: We were exploring, but ended up in a known Place which was not
 	//the one we started from.
 	//Remove the NodeHypothesis and its Placeholder, and
 	//send the Place merge message
 
-	log("  CASE 2: Exploration action failed - place already known. Deleting Place %i",
-	    m_goalPlaceForCurrentPath);
 
-	deletePlaceProperties(m_goalPlaceForCurrentPath);
+	log("  CASE 2: Exploration action failed - place already known. Deleting Place %i",
+	    wasHeadingForPlace);
+
+	deletePlaceProperties(wasHeadingForPlace);
 
 	deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
 	m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
 	m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
 
 	//Delete Place struct and entry in m_Places
-	map<int, PlaceHolder>::iterator it2 = m_Places.find(m_goalPlaceForCurrentPath);
+	map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 	if (it2 != m_Places.end()) {
 	  deleteFromWorkingMemory(it2->second.m_WMid);
 	  m_Places.erase(it2);
@@ -814,30 +870,32 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	//Prepare and send merge notification
 	SpatialData::PlaceMergeNotificationPtr newNotify = new
 	  SpatialData::PlaceMergeNotification;
-	newNotify->mergedPlaces.push_back(m_goalPlaceForCurrentPath);
+	newNotify->mergedPlaces.push_back(wasHeadingForPlace);
 	newNotify->mergedPlaces.push_back(currentPlaceID);
 	newNotify->resultingPlace = currentPlaceID;
 	log("Sending merge notification between places %i and %i", 
-	    currentPlaceID, m_goalPlaceForCurrentPath);
+	    currentPlaceID, wasHeadingForPlace);
 
 	addToWorkingMemory<SpatialData::PlaceMergeNotification>(newDataID(), newNotify);
 	//TODO:delete notifications sometime
+
       }
 
-      else {//curPlace != 0 && (failed || curNodeId == m_startNodeForCurrentPath))
+      else {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
+	arrivalCase = 3;
 	//CASE 3: We were exploring but one way or another, we ended up
 	//were we'd started.
 	//Just delete the NodeHypothesis and its Placeholder.
 	log("  CASE 3: Exploration action failed; couldn't reach goal. Deleting place %i",
-	    m_goalPlaceForCurrentPath);
+	    wasHeadingForPlace);
 
-	deletePlaceProperties(m_goalPlaceForCurrentPath);
+	deletePlaceProperties(wasHeadingForPlace);
 	deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
 	m_HypIDToWMIDMap.erase(goalHyp->hypID); //Delete entry in m_HypIDToWMIDMap
 	m_PlaceIDToHypMap.erase(it); //Delete entry in m_PlaceIDToHypMap
 
 	//Delete Place struct and entry in m_Places
-	map<int, PlaceHolder>::iterator it2 = m_Places.find(m_goalPlaceForCurrentPath);
+	map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 	if (it2 != m_Places.end()) {
 	  deleteFromWorkingMemory(it2->second.m_WMid);
 	  m_Places.erase(it2);
@@ -848,10 +906,12 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
       }
 
     }
-    else { // it == m_PlaceIDToHypMap.end()), i.e. the goal place was not hypothetical
+    else { // (wasExploring); i.e. the goal place was not hypothetical
       SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNodeId);
+      bool placeExisted = (curPlace != 0);
 
-      if (curPlace == 0) { 
+      if (!placeExisted) { 
+	arrivalCase = 4;
 	//CASE 4: We were *not* exploring, but a new node was discovered.
 	//We may have been going between known Places, or following a person
 	//or pushed around in Stage.
@@ -866,8 +926,8 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	vector<FrontierInterface::NodeHypothesisPtr> hyps;
 	getMemoryEntries<FrontierInterface::NodeHypothesis>(hyps);
 
-	if (m_startNodeForCurrentPath >= 0) {
-	  SpatialData::PlacePtr prevPlace = getPlaceFromNodeID(m_startNodeForCurrentPath);
+	if (wasComingFromNode >= 0) {
+	  SpatialData::PlacePtr prevPlace = getPlaceFromNodeID(wasComingFromNode);
 	  if (prevPlace != 0) {
 	    NavData::FNodePtr prevNode = getNodeFromPlaceID(prevPlace->id);
 	    for(vector<FrontierInterface::NodeHypothesisPtr>::iterator it2 =
@@ -887,6 +947,7 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 		    if (placeholder == 0) {
 		      log("Could not find placeholder to upgrade");
 		      m_goalPlaceForCurrentPath = -1;
+		      m_isPathFollowing = false;
 		      return;
 		    }
 
@@ -905,13 +966,14 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 		      m_PlaceIDToHypMap.erase(placeholder->id);
 
 		      //Write the Gateway property if present
-		      if (curNode->gateway == 1) {
+		      if (curNodeGateway == 1) {
 			addNewGatewayProperty(placeholder->id);
 		      }
 		    }
 		    else {
 		      log("Could not find Placeholder placeholder!");
 		      m_goalPlaceForCurrentPath = -1;
+		      m_isPathFollowing = false;
 		      return;
 		    }
 		    foundHypothesis = true;
@@ -936,7 +998,7 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	  int newPlaceID = m_placeIDCounter;
 	  m_placeIDCounter++;
 	  p.m_data->id = newPlaceID;
-	  m_PlaceIDToNodeMap[newPlaceID] = newNavNode;
+	  m_PlaceIDToNodeMap[newPlaceID] = curNode;
 
 	  p.m_data->status = SpatialData::TRUEPLACE;
 	  p.m_WMid = newDataID();
@@ -946,12 +1008,13 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
 	  m_Places[newPlaceID] = p;
 
 	  //Write the Gateway property if present
-	  if (newNavNode->gateway == 1) {
+	  if (curNodeGateway == 1) {
 	    addNewGatewayProperty(newPlaceID);
 	  }
 	}
       }
       else {
+	arrivalCase = 5;
 	// We weren't exploring, and the place was known before - don't
 	// do anything.
 	// (Could check whether we ended up in the expected Place, but
@@ -961,7 +1024,16 @@ void PlaceManager::processPlaceArrival(bool failed, NavData::FNodePtr newNavNode
     }
 
     evaluateUnexploredPaths();
+
+    //Once any new Placeholders have been added, it's safe to stop the robot
+    //and signal the client component that we're done moving
+    if (arrivalCase == 1 || arrivalCase == 2 || arrivalCase == 4) {
+      // In Case 3, the robot will already have stopped moving
+      // In Case 5, we don't need to stop
+      cancelMovement();
+    }
     m_goalPlaceForCurrentPath = -1;
+    m_isPathFollowing = false;
   }
 }
 
@@ -1010,10 +1082,16 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
   //(but people-following, being joypadded or dragged along in Stage),
   //check if the robot has changed its closest node.
   //If so, reset the m_startNodeForCurrentPath
-  if (!m_isPathFollowing) {
-    NavData::FNodePtr curNode = getCurrentNavNode();
-    if (curNode != 0) {
+  NavData::FNodePtr curNode = getCurrentNavNode();
+  if (curNode != 0) {
+    if (!m_isPathFollowing) {
       m_startNodeForCurrentPath = curNode->nodeId;
+    }
+    else {
+      // If we were following a path and changed nodes, we've arrived at a Place
+      if (curNode->nodeId != m_startNodeForCurrentPath) {
+	processPlaceArrival(false);
+      }
     }
   }
 }
