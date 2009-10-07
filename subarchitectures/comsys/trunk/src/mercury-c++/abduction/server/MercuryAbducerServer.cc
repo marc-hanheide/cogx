@@ -119,8 +119,11 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 
 	double proofCost;
 
+	print_ctx(ctx);
+	cout << endl;
+
 	if (prove_best(minitproof, ctx, &proofCost, &curBestProof)) {
-		cout << "proof found" << endl;
+		cout << "RESULT: proof found" << endl;
 		cout << endl;
 		proof_summary(curBestProof, ctx);
 		haveProof = true;
@@ -130,7 +133,7 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 		return (ProofFound);
 	}
 	else {
-		cout << "no proof found" << endl;
+		cout << "RESULT: no proof found" << endl;
 		//print_ctx(ctx);
 		haveProof = false;
 		return (NoProofFound);
