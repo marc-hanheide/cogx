@@ -207,7 +207,7 @@ public class cc_ReferentialBindings
 						String restrTreeRoot = (String)idsIter.next();
 						log("Current restrTreeRoot: " + restrTreeRoot);
 						LogicalForm restrLF = LFUtils.lfConstructSubtree(LFUtils.lfGetNominal(lf,restrTreeRoot),lf);
-						
+						log("Restrictive logical form:" +LFUtils.lfToString(restrLF));
 						ProxyResults prxResults = factory.constructProxy(restrLF, getCASTTime());
 						for (Iterator<PhantomProxy> phantIter = prxResults.getProxies(); phantIter.hasNext(); ) {
 							PhantomProxy phant = phantIter.next();
