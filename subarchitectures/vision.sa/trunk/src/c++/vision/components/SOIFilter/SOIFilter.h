@@ -60,7 +60,10 @@ private:
   int lblFixCost;
   int smoothCost;
   
-  char *colorImg;
+  char *colorImg; //HACK
+  bool filterFlag; //HACK
+  std::vector<CvScalar> filterList;
+  
   
   /**
    * status of SOI persistency
@@ -144,14 +147,16 @@ private:
 
   
   std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg);
-
   
-  std::vector<int> getHlsCostList(std::vector<CvScalar> hslList, int k);
+  int getHlsDiff(std::vector<CvScalar> hlsList, CvScalar hls, int k);
+
+  std::vector<int> getHueDiffList(std::vector<CvScalar> hslList, int k);
 
   
   IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
                     std::vector<VisionData::SurfacePoint> surfPoints, float huemod, float distmod, bool distcost);
 
+  std::vector<CvScalar> colorFilter(std::vector<CvScalar> colors, std::vector<CvScalar> filterColors, int k);
 
 protected:
   /**

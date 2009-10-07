@@ -13,7 +13,7 @@
 
 // Segmentation costants
 
-#define SMOOTH_COST 10
+#define SMOOTH_COST 30
 #define HUE_K_RATIO 20 // Number of nearest neighbours taken when calculating the cost for hue
 
 #define OBJ_HUE_TOLERANCE 15
@@ -30,7 +30,7 @@
 #define EXPAND_ITERS 3
 #define SWAP_ITERS 2
 
-#define MAX_PATCH_SIZE 90000
+#define MAX_PATCH_SIZE 36000
 
 /**
  * The function called to create a new instance of our component.
@@ -137,8 +137,7 @@ void SOIFilter::configure(const map<string,string> & _config)
   {
     istringstream str(it->second);
     str >> lblFixCost;
-  }
-  
+  }  
   
   if((it = _config.find("--smoc")) != _config.end())
   {
@@ -164,6 +163,7 @@ void SOIFilter::start()
   	cvNamedWindow("Last surface cost image", 1);
   	cvNamedWindow("Object Colors", 1);
   	cvNamedWindow("Surface Colors", 1);
+  	cvNamedWindow("Filtered Colors", 1);
   }
   
   // we want to receive detected SOIs
@@ -202,7 +202,8 @@ void SOIFilter::runComponent()
 		        SOIPtr soiPtr = getMemoryEntry<VisionData::SOI>(soi.addr);
 		        
 		        ProtoObjectPtr pobj = new ProtoObject;
-		        pobj->time = getCASTTime();pobj->SOIList.push_back(soi.addr.id);
+		        pobj->time = getCASTTime();
+		        pobj->SOIList.push_back(soi.addr.id);
 		        segmentObject(soiPtr, pobj->image, pobj->mask);
 		
 		        string objId = newDataID();
@@ -243,6 +244,7 @@ void SOIFilter::runComponent()
   	cvDestroyWindow("Last surface cost image");
   	cvDestroyWindow("Object Colors");
   	cvDestroyWindow("Surface Colors");
+  	cvDestroyWindow("Filtered Colors");
   }
 }
 
@@ -321,8 +323,8 @@ void SOIFilter::project3DPoints(const vector<SurfacePoint> surfPoints, const ROI
     cogx::Math::Vector2 p = projectPoint(cam, surfPoints[i].p);
     
     /// HACK: artificially shrink cloud point
-    int x = (p.x - roi.rect.pos.x)*ratio + roi.rect.width/2;
-    int y = (p.y - roi.rect.pos.y)*ratio + roi.rect.height/2;
+    int x = (p.x - roi.rect.pos.x)*ratio*0.8 + roi.rect.width/2;
+    int y = (p.y - roi.rect.pos.y)*ratio*0.8 + roi.rect.height/2;
 	
     projPoints.push_back(cvPoint(x, y));
   }
@@ -385,10 +387,70 @@ void SOIFilter::drawHull(IplImage *img, const vector<CvPoint> projPoints, const 
 
 
 
-bool hslComparator(CvScalar i, CvScalar j)
+static bool hslCompare(CvScalar i, CvScalar j)
 {
 	return (i.val[0] + i.val[2]*0 + i.val[1]*0  <  j.val[0] + j.val[2]*0 + j.val[1]*0);
 }
+
+
+/*
+static int hslAbsDiff(CvScalar i, CvScalar j, float hueOverflow, float norm)
+{
+	
+	float hueDiff = (float) abs((i.val[0] - j.val[0]));
+	
+	if (hueDiff > hueOverflow)
+		hueDiff = hueOverflow*2 - hueDiff;
+								
+	if (hueDiff > norm)
+		hueDiff = norm;
+		
+	hueDiff/=norm;
+		
+	float satDiff = (float) abs(i.val[2] - j.val[2])/255;
+	float lumDiff = (float) abs(i.val[1] - j.val[1])/255;
+	
+	float satAvg = (float) (i.val[2] + j.val[2])/510;
+	
+	float hlDiff = satAvg*hueDiff*hueDiff + (1-satAvg)*lumDiff*lumDiff;
+	float hlsDiff =  pow(satDiff, 3) + (1 - satDiff)*hlDiff;
+
+	if (i.val[1] >200 && j.val[1] > 200)
+	{
+	  printf("huei %f huej %f lumi %f lumj %f sati %f satj %f \n", i.val[0], j.val[0], i.val[1], j.val[1], i.val[2], j.val[2]);
+	  printf("hueDiff %f lumDiff %f satDiff %f \n", hueDiff, lumDiff,  satDiff);
+	  printf("satAvg %f hlDiff %f hlsDiff %f \n", satAvg, hlDiff, hlsDiff);
+	}
+	
+	return (int) (sqrt(hlsDiff) * norm * 3);
+}
+*/
+
+
+static int hslAbsDiff(CvScalar i, CvScalar j, float hueOverflow, float norm)
+{
+	
+	float hueDiff = (float) abs((i.val[0] - j.val[0]));
+	
+	if (hueDiff > hueOverflow)
+		hueDiff = hueOverflow*2 - hueDiff;
+								
+	if (hueDiff > norm)
+		hueDiff = norm;
+		
+	hueDiff/=norm;
+		
+	float satDiff = (float) abs(i.val[2] - j.val[2])/255;
+	float lumDiff = (float) abs(i.val[1] - j.val[1])/255;
+	
+	float satAvg = (float) (i.val[2] + j.val[2])/510;
+	
+	float hlDiff = satAvg*hueDiff + (1-satAvg)*lumDiff;
+	float hlsDiff =  satDiff*satDiff + (1 - satDiff)*hlDiff;
+
+	return (int) (hlsDiff * norm * 3); 	
+}
+
 
 
 
@@ -424,16 +486,16 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
 	cvCvtColor(src, dst, CV_RGB2HLS);
 	
 	for(int i=0; i< size; i++)
-	{
+	{	
 	  hlsList.push_back(cvGet2D(dst, 0, i));
-	  //log("hue: %i", (unsigned) cvGet2D(dst, 0, i).val[0]);
+//	  log("h: %i l: %i s: %i", (unsigned) cvGet2D(dst, 0, i).val[0], (unsigned) cvGet2D(dst, 0, i).val[1], (unsigned) cvGet2D(dst, 0, i).val[2]);
 	} 
 			
 	  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
 //	  if(it->x < hueImg->width && it->y < hueImg->height && it->x >= 0 && it->y >= 0) 
 //	    hueList.push_back(cvGet2D(hueImg, it->y, it->x).val[0]);
 	
-	sort(hlsList.begin(), hlsList.end(), hslComparator);
+//	sort(hlsList.begin(), hlsList.end(), hslCompare);
 	
 //	list<int>::iterator itr;	
 //	printf("HueList: ");	
@@ -455,9 +517,140 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
 	return hlsList;
 }
 
+/*
+int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
+{
+	int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
+	int overflow = domainwdt/2;
+	int maxdiff = domainwdt/6;	
+
+	list<int> costs;
+			
+	for(vector<CvScalar>::iterator it=hlsList.begin(); it != hlsList.end(); it++)
+	{	
+		costs.push_back(hslAbsDiff(hls, *it, overflow, maxdiff));
+	}	
+	
+	long totalCost = 0;
+	
+	for (int i=0; i < k && i < costs.size(); i++)
+	{
+		list<int>::iterator min = min_element(costs.begin(), costs.end());
+		totalCost += *min;
+		costs.erase(min);
+	}
+	
+	return totalCost/k;
+}
+*/
 
 
-vector<int> SOIFilter::getHlsCostList(vector<CvScalar> hlsList, int k)
+
+
+int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
+{
+	int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
+	int overflow = domainwdt/2;
+	int maxdiff = domainwdt/6;	
+
+	list<int> costs;
+	
+	costs.assign(k, maxdiff*3);
+		
+	list<int>::iterator maxmin = costs.begin();	
+	
+	for(vector<CvScalar>::iterator it=hlsList.begin(); it != hlsList.end(); it++)
+	{	
+		int cost =	hslAbsDiff(hls, *it, overflow, maxdiff);
+		
+		if(cost < *maxmin)
+		{
+//			costs.erase(maxmin);
+//			costs.push_back(cost);
+			*maxmin = cost;
+			maxmin = max_element(costs.begin(), costs.end());
+		}
+	}
+	
+	long totalCost = 0;
+	
+	for (list<int>::iterator it=costs.begin(); it != costs.end(); it++)
+		totalCost += *it;
+	
+	return totalCost/k;
+}
+
+/*
+int SOIFilter::getHlsDiff(vector<CvScalar> hlsList, CvScalar hls, int k)
+{
+	int domainwdt = MAX_HUE_VAL - MIN_HUE_VAL;
+	int overflow = domainwdt/2;
+	int maxdiff = domainwdt/6;	
+
+	long cost, mincost;
+	vector<CvScalar> ordsamp = hlsList; 
+	vector<CvScalar>::iterator ith, itl;
+	  
+	for(ith=ordsamp.begin(); hslCompare(*ith, hls)  && ith != ordsamp.end(); ith++) // ith->val[0] < hls.val[0]
+	{}
+	  
+	cost = 0;
+	itl = ith;
+	int r=-1;
+
+	if (ith != ordsamp.begin())
+	{
+	  for(int i = 0; i < k; i++)
+		if (itl == ordsamp.begin() && r>=-1) {
+		
+			cost+=maxdiff;
+			r++;
+		} 
+		else {
+		
+		    itl--;
+			int diff = hslAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //hls.val[0] - itl->val[0];
+		  	cost+= diff;	  	
+		  	
+		  	if(itl == ordsamp.begin())
+		  		r++;
+	  	}
+	} 
+	else {
+	
+	  cost = k*maxdiff;
+	  r=k;
+	}  
+	  
+	mincost = cost;
+								// printf("hue %i cost %i \n ", hue, cost);	  
+	while (cost <= mincost && ith!=ordsamp.end()) {
+	  mincost = cost;
+	  	
+	  if (r>0) {
+	  
+	  	 cost-=maxdiff;
+	  	 r--;
+	  }
+	  else {
+	  	    
+	  	int diff = hslAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //abs(itl->val[0] - hls.val[0]);  		
+	  	itl++;	
+		cost-= diff;		
+	  }	 
+	  int diff = hslAbsDiff(hls, *itl, overflow, maxdiff, 0.4, 0.4); //abs(ith->val[0] - hls.val[0]); 
+	  cost+= diff;
+	  ith++;
+	      
+	}	  
+	mincost/=k;
+	
+	return mincost;
+}
+/*
+
+
+vector<int> SOIFilter::getHueDiffList(vector<CvScalar> hlsList, int k)
 {
 	vector<int> hueCostList;
 	
@@ -466,77 +659,7 @@ vector<int> SOIFilter::getHlsCostList(vector<CvScalar> hlsList, int k)
 	int maxdiff = domainwdt/6;
 	
 	for(int hue=MIN_HUE_VAL; hue < MAX_HUE_VAL; hue++)
-	{	
-		long cost, mincost;
-		vector<CvScalar> ordsamp = hlsList; 
-		vector<CvScalar>::iterator ith, itl;
-		  
-		for(ith=ordsamp.begin(); hue > ith->val[0] && ith != ordsamp.end(); ith++)
-		{}
-		  
-		cost = 0;
-		itl = ith;
-		int r=-1;
-
-		if (ith != ordsamp.begin())
-		{
-		  for(int i = 0; i < k; i++)
-			if (itl == ordsamp.begin() && r>=-1) {
-				cost+=maxdiff;
-				r++;
-			} else {
-			    itl--;
-				int diff = hue - itl->val[0];
-			  	if (diff > overflow)
-			  		diff = domainwdt - diff;
-									
-				if (diff > maxdiff)
-					diff = maxdiff;
-					 		// printf("diff %i \n", diff);
-			  	cost+= diff;	  	
-			  	
-			  	if(itl == ordsamp.begin())
-			  		r++;
-		  	}
-		} else {
-		  cost = k*maxdiff;
-		  r=k;
-		}  
-		  
-		mincost = cost;
-									// printf("hue %i cost %i \n ", hue, cost);	  
-		while (cost <= mincost && ith!=ordsamp.end()) {
-		  mincost = cost;
-		  	
-		  if (r>0) {
-		  	 cost-=maxdiff;
-		  	 r--;
-		  } else {	    
-		  	int diff = abs(itl->val[0] - hue);
-		  	
-		  	if (diff > overflow)
-			  	diff = domainwdt - diff;
-							
-			if (diff > maxdiff)
-				diff = maxdiff;
-		  		
-		  	itl++;	
-			cost-= diff;		
-		  }	 
-		  int diff = abs(ith->val[0] - hue);  
-		  
-		  if (diff > overflow)
-			  diff = domainwdt - diff;
-							
-		  if (diff > maxdiff)
-			  diff = maxdiff; //printf("hue: %i diff: %i ", hue, diff);
-		  
-		  cost+= diff;
-		  ith++;    
-		}	  
-		mincost/=k;
-		hueCostList.push_back(mincost);
-	}
+		hueCostList.push_back(getHlsDiff(hlsList, cvScalar(hue, 0, 0), k));
 
 //	    vector<int>::iterator itr;
 //	    int h = 0;
@@ -549,7 +672,7 @@ vector<int> SOIFilter::getHlsCostList(vector<CvScalar> hlsList, int k)
 }
 
 
-
+/*
 IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> surfPoints, float hueSigma, float distSigma, bool distcost)
 {
     IplImage *huePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);  
@@ -562,7 +685,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
     cvCopy(iplPatchHLS, huePatch);
     
     int hueKval = surfPoints.size()/HUE_K_RATIO;
-	log("%i hue neighbuours", hueKval);
+	log("%i hue neighbours", hueKval);
      
     if(distcost)
     {
@@ -585,7 +708,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 		
 	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
 	
-	vector<int> hueCostList = getHlsCostList(getSortedHlsList(surfPoints), hueKval);  
+	vector<int> hueCostList = getHueDiffList(getSortedHlsList(surfPoints), hueKval);  
 
     float hueSigma2 = 2*sqr(hueSigma);
     float distSigma2 = 2*sqr(distSigma);
@@ -604,6 +727,130 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	  }
 	
 	cvReleaseImage(&huePatch);      
+	cvReleaseImage(&samplePatch);
+	cvReleaseImage(&distPatch);      
+	cvReleaseImage(&distScaledPatch);
+	
+	return costImg;
+}*/
+
+
+vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScalar> filterColors, int k)
+{
+	
+	vector<CvScalar> filteredList;
+	
+	for(vector<CvScalar>::iterator it= colors.begin(); it != colors.end(); it++)
+	{
+		int cost = getHlsDiff(filterColors, *it, k);
+		
+		if( cost >= objHueTolerance)
+			filteredList.push_back(*it);
+	}
+	
+	return filteredList;
+
+}
+
+
+IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> allSurfPoints, float hueSigma, float distSigma, bool distcost)
+{
+    IplImage *hlsPatch; // = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 3);
+	IplImage *samplePatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
+    IplImage *distPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_32F, 1);
+    IplImage *distScaledPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
+    IplImage *costImg = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
+ 
+    //cvSetImageCOI(iplPatchHLS, 1);
+    hlsPatch = cvCloneImage(iplPatchHLS);
+    
+    vector<SurfacePoint> surfPoints =  allSurfPoints;
+   
+    if(filterFlag) //HACK
+   	{
+    	if (surfPoints.size() > 90)
+    		surfPoints.resize(90);
+    }
+    else
+    	if (surfPoints.size() > 60)
+    		surfPoints.resize(60);
+    	
+    	  
+    int colorKval = surfPoints.size()/HUE_K_RATIO;
+    	
+	log("%i color neighbours", colorKval);
+     
+    if(distcost)
+    {
+    	cvSet(samplePatch,cvScalar(1));
+    	vector<CvPoint>::iterator itr;
+    	
+		for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
+		{ 
+		  //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
+		  if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
+			cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
+		  else log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
+			
+		}
+		
+		cvDistTransform(samplePatch, distPatch, CV_DIST_C);
+	}
+	else
+		cvSet(distPatch, cvScalar(0));
+	
+	cvConvertScale(distPatch, distScaledPatch, 1, 0);	
+
+
+	vector<CvScalar> sortHlsList = getSortedHlsList(surfPoints); 
+	
+	if (!filterFlag)			//HACK
+		filterList = sortHlsList;
+	else
+	{	
+		int size = sortHlsList.size();
+		sortHlsList = colorFilter(sortHlsList, filterList, colorKval);
+		
+		log("Filtered out %i color samples", size - sortHlsList.size());
+		
+		size = sortHlsList.size();
+		
+		IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
+		IplImage* dst = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
+		IplImage* dstL = cvCreateImage(cvSize(size*10, 10), IPL_DEPTH_8U, 3);
+	
+		for(int i=0; i< size; i++)
+		{
+		  CvScalar v = sortHlsList[i];
+		  
+		  cvSet2D(src, 0, i, v);
+		}
+		cvCvtColor(src, dst, CV_HLS2RGB);
+		cvResize(dst, dstL, CV_INTER_NN);
+		cvShowImage("Filtered Colors", dstL);
+
+		cvReleaseImage(&dst);
+		cvReleaseImage(&dstL);
+		cvReleaseImage(&src);
+	}
+	
+    float hueSigma2 = 2*sqr(hueSigma);
+    float distSigma2 = 2*sqr(distSigma);
+    float norm = 100;
+
+	for(int i=0; i < costImg->height; i++)
+	  for(int j=0; j < costImg->width; j++) {
+
+	      int hueDiff = getHlsDiff(sortHlsList, cvGet2D(hlsPatch, i, j), colorKval);
+	      float hueP = exp(-sqr((float) hueDiff)/hueSigma2);
+	      int distDiff = cvGet2D(distScaledPatch, i, j).val[0];
+	      float distP = exp(-sqr((float) distDiff)/distSigma2);
+	      int cost = (int) ((1 - hueP*distP)*norm);
+	      	
+	      cvSet2D(costImg, i, j, cvScalar(cost));
+	  }
+
+	cvReleaseImage(&hlsPatch);      
 	cvReleaseImage(&samplePatch);
 	cvReleaseImage(&distPatch);      
 	cvReleaseImage(&distScaledPatch);
@@ -647,28 +894,34 @@ vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage*
 		gc->setSmoothCost(&smoothFn);
 		
 		
-		log("\nBefore optimization energy is %d\n",gc->compute_energy());
+		log("Before optimization energy is %d\n",gc->compute_energy());
 		
-		int diff = 11;
-		int iter = 0;
-		while(diff > 10)
+		int e1 = gc->compute_energy();
+		gc->expansion(3);
+		int e2 = gc->compute_energy();
+		
+		int diff = abs(e1 - e2);
+		int iter = 3;
+/*		
+		while(diff > 15)
 		{
-			int e1 = gc->compute_energy();
+			e1 = gc->compute_energy();
 			gc->expansion(1); // run expansion
-			int e2 = gc->compute_energy();
+			e2 = gc->compute_energy();
 			iter++;
 			diff = abs(e1 - e2);
 		}
+*/		
+		log("After %i expand iterations the energy is %d\n", iter, gc->compute_energy());
 		
-		log("\nAfter %i expand iterations the energy is %d\n", iter, gc->compute_energy());
-		
-		gc->swap(SWAP_ITERS);		 // run swap
-		log("\nAfter %i swap iterations the energy is %d\n", SWAP_ITERS, gc->compute_energy());
+//		gc->swap(SWAP_ITERS);		 // run swap
+//		log("\nAfter %i swap iterations the energy is %d\n", SWAP_ITERS, gc->compute_energy());
 
 		for ( int  i = 0; i < num_pixels; i++ )
 			result[i] = gc->whatLabel(i);
 
 		delete gc;
+		delete data;
 	}
 	catch (GCException e){
 		e.Report();
@@ -735,12 +988,15 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
     //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
     project3DPoints(soiPtr->points, *roiPtr, ratio, image.camPars, projPoints, hullPoints);
     project3DPoints(soiPtr->BGpoints, *roiPtr, ratio, image.camPars, bgProjPoints, hullPoints);
-
+ 
+ 	colorImg = "Surface Colors"; //HACK
+ 	filterFlag = false;
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false); 
+	
 	colorImg = "Object Colors"; //HACK
+	filterFlag = true;
     IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
-    colorImg = "Surface Colors"; //HACK
-    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false);  	
-
+    	
 	segMask = new SegmentMask;
     
     segMask->width = iplPatchHLS->width;
@@ -774,13 +1030,14 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
     	cvShowImage("Last object cost image", costPatch);
     	cvShowImage("Last surface cost image", bgCostPatch);
     }
-    
+   
     cvReleaseImage(&iplPatch);
     cvReleaseImage(&iplImg);
     cvReleaseImage(&iplPatchHLS);
 	cvReleaseImage(&iplImgBGR);
-	cvReleaseImage(&segPatch);
+//	cvReleaseImage(&segPatch);
 	cvReleaseImage(&costPatch);
+	cvReleaseImage(&bgCostPatch);
 }
 
 }
