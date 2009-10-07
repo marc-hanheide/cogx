@@ -1624,7 +1624,7 @@ public class LFUtils {
 		diamond = diamond.addContent(nom);
 		
 		
-		
+		// HERE is the hack for avoiding duplication of features under a <Subject> relation whn it's coreferential 
 		
 		if (!rel.mode.equals("Subject") && !rel.mode.equals("Scope")) { 
 			

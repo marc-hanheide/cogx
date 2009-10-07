@@ -66,7 +66,11 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
   
 
       <action choice="hold">
-	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:person ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:person) ^ &lt;Patient&gt;(i1_0:person ^ I) ^ &lt;Subject&gt;addressee1_0:person)" dest="CONTENT" />
+	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:animate ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:animate) ^ &lt;Patient&gt;(i1_0:animate ^ I) ^ &lt;Subject&gt;addressee1_0:animate)" dest="CONTENT" />
+<!-- PROBLEM WITH INCOMPLETE EDGE -->
+
+<!--  <add-lf lf="@content:perception(see ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(act:person ^ speaker+addressee) ^ &lt;Subject&gt;act:person)" dest="CONTENT" />   THIS PARSES (let's see), BUT DOES NOT GENERATE -->
+
       </action>      
 
 
