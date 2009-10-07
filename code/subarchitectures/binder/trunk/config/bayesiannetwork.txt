@@ -129,7 +129,9 @@ edges {
    
    ling_proximity -> saliency {
    		P(saliency=high|ling_proximity=proximal) = 0.999,
-   		P(saliency=high|ling_proximity=distal) = 0.999
+   		P(saliency=high|ling_proximity=distal) = 0.999,
+   		P(saliency=low|ling_proximity=proximal) = 0.001,
+   		P(saliency=low|ling_proximity=distal) = 0.001
    	}
    	
 }
