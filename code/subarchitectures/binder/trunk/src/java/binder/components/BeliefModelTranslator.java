@@ -1,6 +1,7 @@
 package binder.components;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Vector;
 
 import beliefmodels.adl.Agent;
@@ -29,6 +30,7 @@ import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -47,6 +49,9 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 	public final float SALIENCY_THRESHOLD = 0.5f;
 
+	
+	HashMap<String, Belief> currentBeliefs = new HashMap<String, Belief>() ;
+	
 	// =================================================================
 	// INITIALISATION
 	// =================================================================
@@ -98,9 +103,16 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 					for (Enumeration<Belief> e = beliefs.elements(); e.hasMoreElements(); ) {
 						Belief curB = e.nextElement();
-						updateBeliefInWM(curB);
-						log("Updated belief : \n" + BeliefModelUtils.getBeliefPrettyPrint(curB, 1));
-						log("----------------------");
+						if (isUpdateNeeded(curB)) {
+							updateBeliefInWM(curB);
+							currentBeliefs.put(curB.id, curB);
+							log("Updated belief : \n" + BeliefModelUtils.getBeliefPrettyPrint(curB, 1));
+							log("----------------------");
+						}
+						else {
+							log("belief update not necessary");
+						}
+
 					}
 
 					BeliefModel bmodel = constructBeliefModel (beliefs);
@@ -298,6 +310,9 @@ public class BeliefModelTranslator extends ManagedComponent {
 		formula.formulae[union.features.length] = 
 			BeliefModelUtils.createNewProperty("unionRef", new AddressValue(1.0f, union.timeStamp, union.entityID));
 		formula.formulae[union.features.length].id = "f" + (union.features.length+1);
+		
+		belief.timeStamp = union.timeStamp;
+		
 		return belief;
 	}
 
@@ -306,19 +321,47 @@ public class BeliefModelTranslator extends ManagedComponent {
 	// METHODS FOR INSERTING/MODIFYING/DELETING FORMULAE IN THE WM
 	// =================================================================
 
+	
+	private boolean isMoreRecent (CASTTime time1, CASTTime time2) {
+		
+		if (time1.s > time2.s) {
+			return true;
+		}
+		else if (time1.s < time2.s) {
+			return false;
+		}
+		else if (time1.us > time2.us) {
+			return true;
+		}
+		return false;
+	}
 
+	
+	protected boolean isUpdateNeeded (Belief belief) {
+		if (currentBeliefs.containsKey(belief.id)) {
+			Belief curBelief = currentBeliefs.get(belief.id);
+
+			if (isMoreRecent(belief.timeStamp, curBelief.timeStamp)) {
+				return true;
+			}
+			else {
+				return false;
+			}		
+		}
+		return true;
+	}
+	
 	protected void updateBeliefInWM (Belief belief) {
-
+	
 		try {
 			if (!existsOnWorkingMemory(belief.id, Binder.BINDER_SA)) {
 				addBeliefToWM(belief);
-				log("belief not currently in working memory, added");
+				log("belief " + belief.id + " not currently in working memory, added");
 			}
 			else {
 				overwriteBeliefInWM(belief);
-				
+				log("belief " + belief.id + " already in working memory, bein overwritten");			
 			}
-
 		}
 
 		catch (Exception e) {
