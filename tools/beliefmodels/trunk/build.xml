@@ -37,7 +37,9 @@
 		    <fileset dir="${slice.dir}" includes="BeliefModels.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
 	     <pathelement path="/usr/local/share/cast/slice/"/>
+                <pathelement path="${castslice.dir}/cast/slice/"/>
 	    </includepath>
 	  </slice2java>
 	</target>
@@ -47,6 +49,8 @@
 	    <fileset dir="${slice.dir}" includes="DomainModel.ice"/>
 	    <includepath>
               <pathelement path="${slice.dir}"/>
+                 <pathelement path="${castslice.dir}"/>
+                <pathelement path="${castslice.dir}/cast/slice/"/>
 	      <pathelement path="/usr/local/share/cast/slice/"/>
 	    </includepath>
 	  </slice2java>
