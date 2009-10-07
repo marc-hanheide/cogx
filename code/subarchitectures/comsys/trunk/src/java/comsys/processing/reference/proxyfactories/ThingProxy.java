@@ -59,6 +59,12 @@ public class ThingProxy extends AbstractProxyFactory
 			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_label", root.prop.prop, timestamp));
 		//	ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("sort", root.sort, timestamp));		
 			// iterate over the relations, and add the content
+			
+			if (LFUtils.lfNominalHasFeature(root,"Proximity")) { 
+				String proximity = LFUtils.lfNominalGetFeature(root,"Proximity");
+				ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature ("ling_proximity", proximity, timestamp));			
+			} // end if.. check for proximity
+			
 			Iterator<LFRelation> relsIter = LFUtils.lfNominalGetRelations(root); 
 			while (relsIter.hasNext()) { 
 				LFRelation rel = relsIter.next();
