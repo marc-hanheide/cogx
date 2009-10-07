@@ -161,8 +161,10 @@ class GroupProxy extends core::Proxy {
 };
  
 class RelationUnion extends core::Union {
-	core::Feature source;
-	core::Feature target;
+	core::Feature psource;
+	core::Feature ptarget;
+	core::Feature usource;
+	core::Feature utarget;
 };
 
 class GroupUnion extends core::Union {

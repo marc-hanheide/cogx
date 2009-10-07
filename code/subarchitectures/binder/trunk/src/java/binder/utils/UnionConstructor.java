@@ -204,10 +204,8 @@ public class UnionConstructor  {
 		// Copy the info of the basic union into a new relation union
 		RelationUnion runion = BinderUtils.convertIntoRelationUnion(bunion);
 		
-		// TODO: INCORRECT - should change this at some point to handle merged relation unions
-		runion.source = cloneFeature (((RelationProxy)includedEntities.elementAt(0)).source);
-	//	System.out.println("SOURCE: " + (((RelationProxy)includedEntities.elementAt(0)).source.alternativeValues[0]);
-		runion.target = cloneFeature (((RelationProxy)includedEntities.elementAt(0)).target);
+		runion.psource = ((RelationProxy)includedEntities.elementAt(0)).source;
+		runion.ptarget = ((RelationProxy)includedEntities.elementAt(0)).target;
 
 		return runion;
 

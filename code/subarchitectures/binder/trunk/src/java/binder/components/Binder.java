@@ -435,7 +435,7 @@ public class Binder extends ManagedComponent  {
 			log("Construction of initial union finished, moving to unions of more than 1 proxy...");
 
 			log("Number of current configurations: "  + currentUnionConfigurations.size());
-
+ 
 			// The new union configurations
 			Vector<UnionConfiguration> newUnionConfigs = new Vector<UnionConfiguration>();
 
@@ -455,7 +455,7 @@ public class Binder extends ManagedComponent  {
 
 				
 				if (newUnion instanceof RelationUnion) {
-					convertSourceAndTargetFeatures((RelationUnion)newUnion, existingUnionConfig);
+					specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
 				}
 				
 				// Loop on the unions in the union configuration
@@ -478,7 +478,7 @@ public class Binder extends ManagedComponent  {
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
 							if (newMergedUnion instanceof RelationUnion) {
-								convertSourceAndTargetFeatures((RelationUnion)newMergedUnion, existingUnionConfig);
+								specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
 							}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
@@ -690,7 +690,7 @@ public class Binder extends ManagedComponent  {
 
 
 	
-	private RelationUnion convertSourceAndTargetFeatures (RelationUnion union, UnionConfiguration config) {
+	private RelationUnion specifyUnionSourceAndTarget (RelationUnion union, UnionConfiguration config) {
 		
 		HashMap<String, String> unionForProxy = new HashMap<String, String>();
 		for (int j = 0; j < config.includedUnions.length ; j++) {
@@ -700,17 +700,19 @@ public class Binder extends ManagedComponent  {
 			}
 		}
 		
-		for (int i = 0 ; i < union.source.alternativeValues.length; i++) {
-			String sourceId = ((AddressValue)union.source.alternativeValues[i]).val;
+		union.usource = new Feature();
+		union.usource.featlabel = "source";
+		union.usource.alternativeValues = new AddressValue[union.psource.alternativeValues.length];
+		
+		for (int i = 0 ; i < union.psource.alternativeValues.length; i++) {
+			String sourceId = ((AddressValue)union.psource.alternativeValues[i]).val;
 			
 			if (unionForProxy.containsKey(sourceId)) {
 				AddressValue newSource = new AddressValue();
-				newSource.independentProb = union.source.alternativeValues[i].independentProb;
-				newSource.timeStamp = union.source.alternativeValues[i].timeStamp;
+				newSource.independentProb = union.psource.alternativeValues[i].independentProb;
+				newSource.timeStamp = union.psource.alternativeValues[i].timeStamp;
 				newSource.val = unionForProxy.get(sourceId);
-				System.out.println("old source val: " + sourceId);
-				System.out.println("new source val: " + newSource.val);
-				union.source.alternativeValues[i] = newSource;
+				union.usource.alternativeValues[i] = newSource;
 			}
 			else {
 				errlog("WARNING: no union has been created for the proxy " + sourceId +
@@ -718,15 +720,19 @@ public class Binder extends ManagedComponent  {
 			}
 		}
 		
-		for (int i = 0 ; i < union.target.alternativeValues.length; i++) {
-			String targetId = ((AddressValue)union.target.alternativeValues[i]).val;
+		union.utarget = new Feature();
+		union.utarget.featlabel = "target";
+		union.utarget.alternativeValues = new AddressValue[union.ptarget.alternativeValues.length];
+
+		for (int i = 0 ; i < union.ptarget.alternativeValues.length; i++) {
+			String targetId = ((AddressValue)union.ptarget.alternativeValues[i]).val;
 			
 			if (unionForProxy.containsKey(targetId)) {
 				AddressValue newTarget = new AddressValue();
-				newTarget.independentProb = union.target.alternativeValues[i].independentProb;
-				newTarget.timeStamp = union.target.alternativeValues[i].timeStamp;
+				newTarget.independentProb = union.ptarget.alternativeValues[i].independentProb;
+				newTarget.timeStamp = union.ptarget.alternativeValues[i].timeStamp;
 				newTarget.val = unionForProxy.get(targetId);
-				union.target.alternativeValues[i] = newTarget;
+				union.utarget.alternativeValues[i] = newTarget;
 			}
 			else {
 				errlog("WARNING: no union has been created for the proxy " + targetId +
