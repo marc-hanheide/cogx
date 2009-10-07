@@ -17,7 +17,7 @@ public:
 	virtual void loadRulesFromFile(const std::string& filename, const Ice::Current&);
 
 	virtual void clearFacts(const Ice::Current&);
-	virtual void clearKFacts(const Ice::Current&);
+	virtual void clearFactsByModality(Abducer::ModalityType type, const Ice::Current&);
 	virtual void loadFactsFromFile(const std::string& filename, const Ice::Current&);
 	virtual void addFact(const Abducer::ModalisedFormulaPtr & f, const Ice::Current&);
 

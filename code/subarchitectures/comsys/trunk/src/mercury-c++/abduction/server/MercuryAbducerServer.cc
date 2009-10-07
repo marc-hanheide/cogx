@@ -42,15 +42,38 @@ MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Curre
 void
 MercuryAbducerServer::clearFacts(const Ice::Current&)
 {
-	cout << tty::green << "* clearing facts" << tty::dcol << endl;
+	cout << tty::green << "* clearing all facts" << tty::dcol << endl;
 	clear_facts(ctx, &ctx);
 }
 
 void
-MercuryAbducerServer::clearKFacts(const Ice::Current&)
+MercuryAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current&)
 {
-	cout << tty::green << "* clearing K facts" << tty::dcol << endl;
-	clear_k_facts(ctx, &ctx);
+	switch (type) {
+		case Event:
+			cout << tty::green << "* clearing Event facts" << tty::dcol << endl;
+			clear_e_facts(ctx, &ctx);
+			break;
+
+		case Info:
+			cout << tty::green << "* clearing Info facts" << tty::dcol << endl;
+			clear_i_facts(ctx, &ctx);
+			break;
+
+		case AttState:
+			cout << tty::green << "* clearing AttState facts" << tty::dcol << endl;
+			clear_a_facts(ctx, &ctx);
+			break;
+
+		case K:
+			cout << tty::green << "* clearing K facts" << tty::dcol << endl;
+			clear_k_facts(ctx, &ctx);
+			break;
+
+		default:
+			cout << tty::red << "* asked to clear facts with unknown modality!" << tty::dcol << endl;
+			break;
+	}
 }
 
 

@@ -161,7 +161,7 @@ module Abducer {
 				throws FileNotFoundException, SyntaxErrorException;
 
 		void clearFacts();
-		void clearKFacts();
+		void clearFactsByModality(ModalityType type);
 		void loadFactsFromFile(string filename)
 				throws FileNotFoundException, SyntaxErrorException;
 		void addFact(ModalisedFormula f);
