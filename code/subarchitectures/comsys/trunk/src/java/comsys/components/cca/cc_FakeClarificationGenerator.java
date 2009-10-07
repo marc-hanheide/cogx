@@ -48,6 +48,12 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 //-----------------------------------------------------------------
+// COMSYS IMPORTS
+//-----------------------------------------------------------------
+
+import comsys.arch.ProcessingData;
+
+//-----------------------------------------------------------------
 // JAVA IMPORTS
 //-----------------------------------------------------------------
 
@@ -172,7 +178,7 @@ public class cc_FakeClarificationGenerator
 	
 	public ClarificationRequest getGUIRequest() {
 		
-		textField.requestFocusInWindow();
+		aboutField.requestFocusInWindow();
 		
 		while (!OKBUTTON_PUSHED) {
 			this.sleepComponent(100);
@@ -192,7 +198,7 @@ public class cc_FakeClarificationGenerator
 		result.clarificationNeed = constructFormula(needField.getText());
 		
 		// return the result
-		textField.setText("");
+		aboutField.setText("");
 		return result;
 	} // end getGUIPhonString	
 	
