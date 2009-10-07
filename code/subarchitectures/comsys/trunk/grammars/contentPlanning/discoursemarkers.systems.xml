@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+
+<!-- /**
+
+@system blabla
+
+IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal has to be called "content", so that the @content:marker() that was inserted because there was no content specified in the original input LF gets properly replaced by the new content !!!!!!!!!!
+
+*/ --> 
+
+<system id="relation-marker" region="DISCOURSE-MARKER" metafunction="textual">
+   <chooser id="c-relation-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+   
+   <actions>
+   
+<!-- Honestly, what are the vision-... feedbacks doing? They are interrogative, so they seem to be asking for ackno, rather than giving it -->
+
+		<action choice="vision-ackno1">  <!-- what do I have here --> 
+			<add-lf lf="@content:ascription(have ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c1:m-location ^ context ^ &lt;Proximity&gt;m-proximal) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> 
+		</action>
+		<action choice="vision-ackno2">  <!-- what can I see -->
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(c1:modal ^ can) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/>
+		</action>		
+		<action choice="vision-ackno3">  <!-- what do I see -->
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/>
+		</action>			
+	
+		<action choice="vision-rej1">  <!-- I don't believe I have seen that -->
+			<add-lf lf="@content:cognition(believe ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s1:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Subject&gt;i2:person) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+		</action>
+		<action choice="vision-rej2">  <!-- I can't say I have seen that -->
+			<add-lf lf="@content:communication(say ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s2:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Subject&gt;i2:person) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 		
+		</action>		
+		<action choice="vision-rej3">  <!-- I must be looking at another table -->
+			<add-lf lf="@content:perception(look ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Modifier&gt;(m1:modal ^ must) ^ &lt;Modifier&gt;(a1:m-location ^ at ^ &lt;Anchor&gt;(t1:thing ^ table ^ &lt;Modifier&gt;(a2:quantity ^ another))) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+		</action>
+
+
+  
+		<action choice="action-ackno1">  <!-- I can do that -->
+            
+			<add-lf lf="@content:event(do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/>
+		</action>
+
+			<!-- <add-lf lf="@l1:d-units(list ^ &lt;First&gt;(o1:marker ^ ok) ^ &lt;Next&gt;(d11:event ^ do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>-->
+  <!--  &lt;NO-QuantOrDelim&gt;true ^ -->
+		<action choice="action-ackno2">		<!-- sure thing -->
+			<add-lf lf="@content:thing(thing ^ &lt;Modifier&gt;(s1:q-attitude ^ sure))" dest="CONTENT"/>
+		</action>
+
+		<action choice="action-ackno3">  
+			<add-lf lf="@content:d-units(list ^ &lt;First&gt;(y1:marker ^ yes) ^ &lt;Next&gt;(t1:modal ^ try ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c11:modal ^ could) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>
+		</action>  
+  
+
+      <action choice="hold">
+	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:person ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:person) ^ &lt;Patient&gt;(i1_0:person ^ I) ^ &lt;Subject&gt;addressee1_0:person)" dest="CONTENT" />
+      </action>      
+
+
+      <action choice="accept-ok">
+	   <add-proposition propositions="@ok" />
+      </action>      
+
+      <action choice="accept-yes">
+	   <add-proposition propositions="@yes" />
+      </action>      
+
+      <action choice="accept-fine">
+	   <add-proposition propositions="@fine" />
+      </action>      
+
+      <action choice="accept-isee">
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>
+      </action>      
+
+      <action choice="reject-sorry">
+	   <add-proposition propositions="@sorry" /> 
+      </action>
+
+      <action choice="reject-no">
+	   <add-proposition propositions="@No" /> 
+      </action>
+
+      <action choice="reject-dontthinkthat">
+			<add-lf lf="@content:cognition(think ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person ^ &lt;Event&gt;(context1_0:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific)" 
+                    dest="CONTENT"/>
+      </action>      
+
+      <action choice="already-true">
+		<assign-type type="ascription" />  
+                    <!-- change type from marker to event, this is going to be a sentence -->
+		<add-proposition propositions="@be" />  
+
+		<add-relation mode="Cop-Restr" dest="it" type="thing"/>
+		<identify-nomvar mode="Cop-Restr" dest="it" scope="global" />
+		<add-proposition propositions="@it" dest="it" />  
+		<add-feature feature="Num" value="sg" dest="it" />  
+
+		<add-relation mode="Cop-Scope" dest="case" type="entity"/>
+		<add-proposition propositions="@case" dest="case"/>
+ 		<add-feature feature="InfoStatus" value="familiar" dest="case"/>
+
+		<add-relation mode="Modifier" dest="already" type="m-time"/>
+		<add-proposition propositions="@already" dest="already" />  
+
+		<add-relation mode="Subject" dest="it" type="*VAR*" />
+      </action>
+
+      <action choice="answer-positive">
+	   <add-proposition propositions="@yes" />
+      </action>      
+
+      <action choice="answer-negative">
+	   <add-proposition propositions="@No" />
+      </action>      
+
+      <action choice="answer-unknowntype">
+       <add-proposition propositions="@sorry" />
+      </action>      
+
+   </actions>
+</system>
+
+
+<system id="speechact-type" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="c-speechact-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+   
+   <actions>
+      <action choice="hello">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hello" /> 
+      </action>
+      <action choice="hi">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hi" /> 
+      </action>	  
+      <action choice="hithere">
+			<add-lf lf="@content:greeting(hi ^ &lt;Addressee&gt;(c1:e-location ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Num&gt;sg ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific))" dest="CONTENT"/> 
+			<identify-nomvar root="CONTENT" mode="Addressee" dest="ADDRESSEE" scope="global"/>
+      </action>	  
+
+	<action choice="thanks">	
+			<add-lf lf="@content:communication(thank ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(speaker1_0:person ^ speaker ^ &lt;Num&gt;sg)  ^  &lt;Recipient&gt;(addressee1_0:person ^ addressee))" dest="CONTENT"/>
+		</action>
+
+   </actions>
+</system>
+
+<system id="speechact-thanking" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="c-speechact-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+   
+   <actions>
+      <action choice="hello">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hello" /> 
+      </action>
+      <action choice="hi">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hi" /> 
+      </action>	  
+      <action choice="hithere">
+			<add-lf lf="@content:greeting(hi ^ &lt;Addressee&gt;(c1:e-location ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Num&gt;sg ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific))" dest="CONTENT"/> 
+			<identify-nomvar root="CONTENT" mode="Addressee" dest="ADDRESSEE" scope="global"/>
+      </action>	  
+
+
+   </actions>
+</system>
+
+
+
+<system id="speechact-feedback" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="c-feedback-type"/> 
+   <conditions>
+      <condition features="@type:feedback"/> 
+   </conditions>
+   
+   <actions>
+	  <!-- what did you just mean ? -->
+      <action choice="parser-neg-var1">
+			<add-lf lf="@content:cognition(mean ^ &lt;Mood&gt;int ^ &lt;Tense&gt;past ^ &lt;Actor&gt;(y1:person ^ you ^ &lt;Num&gt;sg ) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(j1:m-time ^ just) ^ &lt;Subject&gt;y1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/> 
+      </action>	  
+
+	  <!-- I am sorry but I could not understand that -->
+      <action choice="parser-neg-var2">
+			<add-lf lf="@content:event(but ^ &lt;First&gt;(b2:ascription ^ be ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Cop-Restr&gt;(i1:person ^ I ) ^ &lt;Cop-Scope&gt;(s1:q-attitude ^ sorry) ^ &lt;Subject&gt;i1:person) ^ &lt;Next&gt;(u1:cognition ^ understand ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i2:person ^ I ) ^ &lt;Modifier&gt;(c1:modal ^ could) ^ &lt;Patient&gt;(c2:entity ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ) ^ &lt;Subject&gt;i2:person))" dest="CONTENT"/> 
+      </action>	  
+ 
+   </actions>
+</system>
+
+
+
+<!--
+
+The idea is to insert the main structure, then identify the variables / slots in that structure, and insert the content later on the basis of the communicative goal. 
+
+
+
+<system id="speechact-question" region="QUESTIONS" metafunction="textual">
+   <chooser id="c-speechact-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+
+
+
+   <action choice="wh-property">
+		<add-lf lf="@b1:ascription(be ^ &lt;Mood&gt;int ^                  &lt;Tense&gt;pres ^                  &lt;Cop-Restr&gt;(c1:entity ^ PROPERTY ^          &lt;Delimitation&gt;unique ^          &lt;Num&gt;;sg ^          &lt;Quantification&gt;specific ^          &lt;Owner&gt;(b2:thing ^ OBJECT ^                  &lt;Delimitation&gt;unique ^                  &lt;Num&gt;sg ^                  &lt;Quantification&gt;specific)) ^                  &lt;Cop-Scope&gt;(w1:entity ^ what) ^                  &lt;Subject&gt;c1:entity ^                  &lt;Wh-Restr&gt;w1:entity)"
+				 dest="CONTENT"/>
+		<identify-nomvar root="CONTENT" mode="Cop-Restr" dest="PROPERTY" scope="global"/>
+		<identify-nomvar root="PROPERTY" mode="OWNER" dest="OBJECT" scope="global"/>
+		
+				 
+	</action>
+
+-->
+
+
+
+<!-- /**
+
+@system blabla
+
+*/ --> 
+
+<system id="marker-nonsense" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="default"/> 
+   <conditions>
+      <condition features="@type:nonsense"/> 
+<!--
+      <condition features="@type:event"/> 
+      <condition features="@type:relational"/>   
+      <condition features="@type:action"/>   
+      <condition features="@type:state"/>   
+      <condition features="@type:internal"/>   
+      <condition features="@type:modal"/>   
+      <condition features="@type:communication"/>   
+      <condition features="@type:symbolic"/>   
+      <condition features="@type:action-motion"/>   
+      <condition features="@type:action-non-motion"/>   
+      <condition features="@type:presentational"/>   
+      <condition features="@type:ascription"/>   
+      <condition features="@type:perception"/>   
+      <condition features="@type:cognition"/>   
+   -->
+   </conditions>
+   
+   <actions>
+      <action choice="nothing">
+	   <add-proposition propositions="@sorry" /> 
+      </action>
+   </actions>
+</system>
+
+
+</systems>
