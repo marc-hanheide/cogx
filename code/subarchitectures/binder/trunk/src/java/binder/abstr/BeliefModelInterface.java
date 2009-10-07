@@ -204,7 +204,28 @@ public class BeliefModelInterface extends ManagedComponent{
 		}
 		return false;
 	}
- 	
+	
+	
+ 	/**
+ 	 * Return the union entity ID of the union the belief refers to.
+ 	 * @param b
+ 	 * @return
+ 	 */
+    public static String referringUnionId(Belief b) {
+    	if (b.phi instanceof ComplexFormula) {
+			
+			for (int i = 0; i < ((ComplexFormula)b.phi).formulae.length ; i++) {
+				SuperFormula formula = ((ComplexFormula)b.phi).formulae[i];
+				
+				if (formula instanceof UnionRefProperty) {
+					return ((UnionRefProperty)formula).unionRef;
+				}
+			}
+		}
+		return null;
+    }
+
+	
 	/**
 	 * Get the set of all beliefs in the working memory which refer to the
 	 * given union entity ID
@@ -231,6 +252,14 @@ public class BeliefModelInterface extends ManagedComponent{
 		return relatedBeliefs;
 	 }
 
+	/**
+	 * Get a belief by belief ID.
+	 * 
+	 * @param beliefId
+	 * @return
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
 	public Belief getBelief(String beliefId) 
 		throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
