@@ -171,12 +171,12 @@ public class UnionDiscretizer extends ManagedComponent {
 
 		try {
 			CASTData<UnionConfiguration>[] existingconfigs = 
-				getWorkingMemoryEntries(BinderUtils.BINDER_SA, UnionConfiguration.class);
+				getWorkingMemoryEntries(this.getSubarchitectureID(), UnionConfiguration.class);
 			if (existingconfigs != null && existingconfigs.length > 0) {
-				overwriteWorkingMemory (existingconfigs[0].getID(), BinderUtils.BINDER_SA, config);
+				overwriteWorkingMemory (existingconfigs[0].getID(), this.getSubarchitectureID(), config);
 			}
 			else {				
-				addToWorkingMemory(newDataID(), BinderUtils.BINDER_SA, config);
+				addToWorkingMemory(newDataID(), this.getSubarchitectureID(), config);
 			}
 			log("Union configuration succesfully added/updated");
 

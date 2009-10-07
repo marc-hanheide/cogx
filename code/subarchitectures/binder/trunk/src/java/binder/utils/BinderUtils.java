@@ -49,11 +49,7 @@ import binder.autogen.specialentities.RelationUnion;
  */
 
 public class BinderUtils {
-
-
-	public static final String BINDER_SA = "binder";
-
-	
+ 
 	
 	// minimum threshold above which unknown values can be created in features
 	public static float MINIMUM_PROB_OF_UNKNOWN_FEATVALUES = 0.02f;
@@ -210,9 +206,7 @@ public class BinderUtils {
 
 	/**
 	 * Convert a normal union into a relation union (without source and target)
-	 * 
-	 * TODO: have relation unions points to unions and not proxies!
-	 * 
+	 * 	
 	 * @param bunion the normal union
 	 * @return the relation union
 	 */

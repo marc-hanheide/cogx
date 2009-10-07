@@ -113,7 +113,7 @@ public class BindingPredictor extends ProxyWriter {
 		Vector<Belief> matchingBeliefs = new Vector<Belief>(); 
 
 		try {
-		CASTData<Belief>[] beliefs = getWorkingMemoryEntries(BinderUtils.BINDER_SA, Belief.class);
+		CASTData<Belief>[] beliefs = getWorkingMemoryEntries(this.getSubarchitectureID(), Belief.class);
 		
 		Vector<Belief> allBeliefs = new Vector<Belief>();
 
