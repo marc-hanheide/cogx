@@ -174,7 +174,7 @@ public class Binder extends ManagedComponent  {
 		currentUnionConfigurations.add(initialConfig);
 	}
 
-
+ 
 
 	/**
 	 * Set configuration parameters
