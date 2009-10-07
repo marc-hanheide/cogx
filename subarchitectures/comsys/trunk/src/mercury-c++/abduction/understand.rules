@@ -33,7 +33,7 @@ e(now) : uttered(h, Nom) <-
 	i : sort(AscrNom, ascription) / true,
 	i : 'rel_Cop-Restr'(AscrNom, ThisNom) / true,
 		this(ThisNom) / true,
-		a(com) : refers_to(ThisNom, Ref) / whatif_binding,
+		a(com) : refers_to(ThisNom, Ref) / ref_resolution,
 	i : 'rel_Cop-Scope'(AscrNom, WhatNom) / true,  % XXX "questioned" flag?
 	e(now) : ask_yn(h, Ref, objecttype, no(unknownObjectType)) / 0.5.
 	%?( k(now, private(r)) : objecttype(Ref, not(unknownObjectType))).
@@ -63,7 +63,7 @@ e(now) : uttered(h, Nom) <-
 	i : 'rel_Subject'(Nom, ThisNom) / true,
 	i : 'rel_Cop-Restr'(Nom, ThisNom) / true,
 		this(ThisNom) / true,
-	a(com) : refers_to(ThisNom, Red) / whatif_binding,  % XXX refer to "this"!
+	a(com) : refers_to(ThisNom, Red) / ref_resolution,  % XXX refer to "this"!
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
 	assert_prop(Ref, ScopeNom) / true.
 
@@ -75,7 +75,7 @@ e(now) : uttered(h, Nom) <-
 	i : 'feat_Tense'(Nom, pres) / true,
 	i : 'rel_Subject'(Nom, SubjNom) / true,
 	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
-	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
+	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
 	assert_prop(RestrRef, ScopeNom) / true.
 
@@ -87,7 +87,7 @@ e(now) : uttered(h, Nom) <-
 	i : 'feat_Tense'(Nom, pres) / true,
 	i : 'rel_Subject'(Nom, SubjNom) / true,
 	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
-	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
+	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
 	assert_prop(RestrRef, ScopeNom) / true,
 	i : question_about(RestrRef) / 1.0.
@@ -101,7 +101,7 @@ e(now) : uttered(h, Nom) <-
 %	i : 'feat_Tense'(Nom, pres) / true,
 %	i : 'rel_Subject'(Nom, SubjNom) / true,
 %	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
-%	a(com) : refers_to(RestrNom, RestrRef) / whatif_binding,
+%	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
 %	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
 %	assert_prop(RestrRef, ScopeNom) / true.
 

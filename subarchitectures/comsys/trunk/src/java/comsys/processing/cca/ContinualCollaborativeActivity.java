@@ -86,6 +86,8 @@ public class ContinualCollaborativeActivity {
     private String generateFactsFilename = "/dev/null";
 
     private ProofBlock[] stack = new ProofBlock[0];
+    
+    private Stack<RefBinding> refStack = new Stack<RefBinding>();
 	
 	boolean logging = true;
 	
@@ -251,10 +253,11 @@ public class ContinualCollaborativeActivity {
 	 * @param lf the logical form
 	 */
 	public void addFactualContext (LogicalForm lf) {
+		log("expanding LF into facts");
 		ModalisedFormula[] facts = AbducerUtils.lfToFacts(new Modality[] {AbducerUtils.infoModality()}, lf);
 		for (int i = 0; i < facts.length; i++) {
 			abducer.addFact(facts[i]);
-			log("add fact: " + MercuryUtils.modalisedFormulaToString(facts[i]));
+			log("  add fact: " + MercuryUtils.modalisedFormulaToString(facts[i]));
 		}
 	}
 	
@@ -265,7 +268,8 @@ public class ContinualCollaborativeActivity {
 	 * 
 	 * @param boundReadings anchoring information
 	 */
-	public void addAnchoringContext (BoundReadings boundReadings) {			
+	public void addAnchoringContext (BoundReadings boundReadings) {
+		log("adding anchoring context");
 		for (ArrayIterator readingsIter = new ArrayIterator(boundReadings.bindings); readingsIter.hasNext(); ) { 
 			// get all the bindings for one reading
 			ReadingBindings readingBindings = (ReadingBindings) readingsIter.next();
@@ -275,9 +279,31 @@ public class ContinualCollaborativeActivity {
 				// the binding(s) are for the following nominal variable: 
 				String nomVar = binding.nomVar; 
 				// cycle over the anchorings for this nominal, ordered by costs -- we have all, not just the maximum
-				for (ArrayIterator anchorings = new ArrayIterator(binding.antecedents); anchorings.hasNext(); ) { 
+
+				Anchor[] antecedents = null;
+				
+				if (binding.antecedents.length == 0) {
+					log("! no binding anchors for " + binding.nomVar);
+					
+					if (refStack.empty()) {
+						log("  refStack empty");
+					}
+					else {
+						log("  -> using the last RefBinding");
+						antecedents = refStack.peek().antecedents;
+					}
+					
+				}
+				else {
+					// use the bound readings
+					antecedents = binding.antecedents;
+					
+					// and add them to the stack for eventual later use
+					refStack.push(binding);
+				}
+				
+				for (ArrayIterator anchorings = new ArrayIterator(antecedents); anchorings.hasNext(); ) { 
 					Anchor anchor = (Anchor) anchorings.next();
-					// now we can get the entityID, and the float -- i.e. the cost of this one being bound / anchored
 					float cost = 1.5f - anchor.probExists;
 
 					ModalisedFormula f = AbducerUtils.modalisedFormula(
@@ -288,9 +314,9 @@ public class ContinualCollaborativeActivity {
 								AbducerUtils.term(nomVar),
 								AbducerUtils.term(anchor.entityID)
 							}));			
-					abducer.addAssumable("whatif_binding", f, cost);
+					abducer.addAssumable("ref_resolution", f, cost);
 					
-					log("add assumable: " + MercuryUtils.modalisedFormulaToString(f)
+					log("  add assumable: " + MercuryUtils.modalisedFormulaToString(f)
 							+ " / whatif_binding = "
 							+ new Float(cost).toString());
 					
