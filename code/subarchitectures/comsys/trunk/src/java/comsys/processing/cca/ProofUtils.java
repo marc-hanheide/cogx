@@ -260,10 +260,12 @@ public class ProofUtils {
 		unionRef.cstatus = ContinualStatus.proposition;
 		unionRef.prob = 1.0f;
 		unionRef.unionRef = ref;
+		unionRef.id = "ref";
 		f.formulae[0] = unionRef;
 		
 		cprop.cstatus = cstatus;
 		cprop.prob = 1.0f;
+		cprop.id = "prop";
 		f.formulae[1] = cprop;
 		
 		return f;
