@@ -9,7 +9,9 @@
 
 <!-- /**
 
-@system blabla
+@system tense
+
+Only assign tense if there already is mood
 
 */ --> 
 
@@ -17,19 +19,19 @@
    <chooser id="c-tense"/> 
    <conditions>
       <!-- <condition features="@type:event"/>  -->
-      <condition features="@type:relational"/>   
-      <condition features="@type:action"/>   
-      <condition features="@type:state"/>   
-      <condition features="@type:internal"/>   
+      <condition features="@type:relational  @feat:Mood"/>   
+      <condition features="@type:action  @feat:Mood"/>   
+      <condition features="@type:state  @feat:Mood"/>   
+      <condition features="@type:internal  @feat:Mood"/>   
       <!-- <condition features="@type:modal"/>   MODAL verbs never receive tense, the tense of the utterance is determined by the governing verb --> 
-      <condition features="@type:communication"/>   
-      <condition features="@type:symbolic"/>   
-      <condition features="@type:action-motion"/>   
-      <condition features="@type:action-non-motion"/>   
-      <condition features="@type:presentational"/>   
-      <condition features="@type:ascription"/>   
-      <condition features="@type:perception"/>   
-      <condition features="@type:cognition"/>   	   
+      <condition features="@type:communication  @feat:Mood"/>   
+      <condition features="@type:symbolic  @feat:Mood"/>   
+      <condition features="@type:action-motion  @feat:Mood"/>   
+      <condition features="@type:action-non-motion  @feat:Mood"/>   
+      <condition features="@type:presentational  @feat:Mood"/>   
+      <condition features="@type:ascription  @feat:Mood"/>   
+      <condition features="@type:perception @feat:Mood"/>   
+      <condition features="@type:cognition  @feat:Mood"/>   	   
    </conditions>
    <actions>
       <action choice="do-tense">

@@ -11,7 +11,7 @@
 
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @answer @unknown"> 
+         <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @answer @hold @unknown"> 
 	     <f-featval nomvar="DVP" feat="Relation" val="unknown" /> 
 	     </inquiry>
   	     <choicenode answer="accept">   <!-- ACCEPT -->
@@ -102,6 +102,10 @@
 
 	     <choicenode answer="alreadytrue">  <!-- ALREADY TRUE -->
 	       <result val="already-true"/>
+	     </choicenode>
+
+	     <choicenode answer="hold">  <!-- ALREADY TRUE -->
+	       <result val="hold"/>
 	     </choicenode>
 
 

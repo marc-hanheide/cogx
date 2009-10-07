@@ -82,6 +82,18 @@
 <utterance>
 <input>
 <!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>hold)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\hold)
+</input>
+<realizations>
+<string>let me see</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
 @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept)
 *** NOTE: accept is "less" than answer:yes -->
 -->
