@@ -25,6 +25,7 @@ import java.util.Vector;
 
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.utils.BinderUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;

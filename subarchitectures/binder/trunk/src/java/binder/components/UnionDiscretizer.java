@@ -27,6 +27,7 @@ import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.filtering.ConfigurationFilter;
 import binder.filtering.EntityFilter;
+import binder.utils.BinderUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -160,12 +161,12 @@ public class UnionDiscretizer extends ManagedComponent {
 
 		try {
 			CASTData<UnionConfiguration>[] existingconfigs = 
-				getWorkingMemoryEntries(UnionConfiguration.class);
+				getWorkingMemoryEntries(BinderUtils.BINDER_SA, UnionConfiguration.class);
 			if (existingconfigs != null && existingconfigs.length > 0) {
-				overwriteWorkingMemory (existingconfigs[0].getID(), config);
+				overwriteWorkingMemory (existingconfigs[0].getID(), BinderUtils.BINDER_SA, config);
 			}
 			else {				
-				addToWorkingMemory(newDataID(), config);
+				addToWorkingMemory(newDataID(), BinderUtils.BINDER_SA, config);
 			}
 			log("Union configuration succesfully added/updated");
 

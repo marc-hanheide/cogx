@@ -27,6 +27,7 @@ import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.utils.BeliefModelUtils;
+import binder.utils.BinderUtils;
 
 import cast.core.CASTData;
 
@@ -112,7 +113,7 @@ public class BindingPredictor extends ProxyWriter {
 		Vector<Belief> matchingBeliefs = new Vector<Belief>(); 
 
 		try {
-		CASTData<Belief>[] beliefs = getWorkingMemoryEntries("binder", Belief.class);
+		CASTData<Belief>[] beliefs = getWorkingMemoryEntries(BinderUtils.BINDER_SA, Belief.class);
 		
 		Vector<Belief> allBeliefs = new Vector<Belief>();
 

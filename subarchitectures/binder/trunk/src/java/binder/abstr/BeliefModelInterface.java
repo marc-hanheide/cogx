@@ -8,6 +8,7 @@ import beliefmodels.adl.BeliefModel;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
+import binder.utils.BinderUtils;
 
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -51,7 +52,7 @@ public class BeliefModelInterface extends ManagedComponent{
 		});
 	}
 	
-	
+	 
 	/**
 	 * Retrieve the current belief model
 	 * 
@@ -71,7 +72,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	 * @param belief the new belief to insert
 	 * 
 	 */
-	
+	 
 	public void addNewBelief (Belief belief) {
 		
 		String[] newBeliefSet = new String[currentBeliefModel.k.length + 1];
@@ -82,8 +83,8 @@ public class BeliefModelInterface extends ManagedComponent{
 		newBeliefSet[currentBeliefModel.k.length] = belief.id;
 		
 		try {
-			addToWorkingMemory(belief.id, "binder", belief);
-			overwriteWorkingMemory(currentBeliefModel.id, "binder", currentBeliefModel);
+			addToWorkingMemory(belief.id, BinderUtils.BINDER_SA, belief);
+			overwriteWorkingMemory(currentBeliefModel.id, BinderUtils.BINDER_SA, currentBeliefModel);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -100,12 +101,12 @@ public class BeliefModelInterface extends ManagedComponent{
 	
 	public void updateExistingBelief (Belief belief) {
 		try {
-			if (existsOnWorkingMemory(belief.id)) {
-				overwriteWorkingMemory(belief.id, "binder", belief);
+			if (existsOnWorkingMemory(belief.id, BinderUtils.BINDER_SA)) {
+				overwriteWorkingMemory(belief.id, BinderUtils.BINDER_SA, belief);
 			}
 			else {
 				log("WARNING: belief not currently in working memory");
-				addToWorkingMemory(belief.id, "binder", belief);
+				addToWorkingMemory(belief.id, BinderUtils.BINDER_SA, belief);
 			}
 		}
 		catch (Exception e) {
@@ -122,7 +123,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	
 	public void removeBelief (String beliefID) {
 		try {
-			deleteFromWorkingMemory(beliefID);
+			deleteFromWorkingMemory(beliefID, BinderUtils.BINDER_SA);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -216,7 +217,7 @@ public class BeliefModelInterface extends ManagedComponent{
 		Vector<Belief> relatedBeliefs = new Vector<Belief>();
 		try {
 		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
-			Belief b = getMemoryEntry(currentBeliefModel.k[i], Belief.class);
+			Belief b = getMemoryEntry(currentBeliefModel.k[i], BinderUtils.BINDER_SA, Belief.class);
 			if (isBeliefReferringToUnion(b, entityID)) {
 				relatedBeliefs.add(b);
 			}

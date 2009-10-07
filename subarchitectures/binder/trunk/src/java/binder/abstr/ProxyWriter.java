@@ -32,11 +32,13 @@ import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.specialentities.RelationProxy;
+import binder.utils.BinderUtils;
 import binder.utils.ProxyConstructor;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
@@ -56,6 +58,7 @@ import cast.cdl.WorkingMemoryPointer;
 
 public abstract class ProxyWriter extends ManagedComponent {
  
+	
 	
 	// =================================================================
 	// METHODS FOR CREATING NEW PROXIES
@@ -324,7 +327,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	protected void addProxyToWM(Proxy proxy) {
 
 		try {
-			addToWorkingMemory(proxy.entityID, "binder", proxy);
+			addToWorkingMemory(proxy.entityID, BinderUtils.BINDER_SA, proxy);
 			storeOriginInfo(proxy);
 			log("new Proxy succesfully added to the binder working memory");
 
@@ -345,7 +348,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	protected void overwriteProxyInWM(Proxy proxy) {
  
 		try {
-			overwriteWorkingMemory(proxy.entityID, "binder", proxy);
+			overwriteWorkingMemory(proxy.entityID, BinderUtils.BINDER_SA, proxy);
 			log("existing Proxy succesfully modified in the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -366,7 +369,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 		try {
 			removeOriginInfo(proxy);
-			deleteFromWorkingMemory(proxy.entityID, "binder");
+			deleteFromWorkingMemory(proxy.entityID, BinderUtils.BINDER_SA);
 			log("existing Proxy succesfully deleted from the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -374,7 +377,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	} 
 	
 	/**
 	 * Stores a mapping from the source to the proxy which is created from it.
@@ -387,7 +390,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 	
 	private void storeOriginInfo(Proxy _proxy)
-			throws DoesNotExistOnWMException, ConsistencyException,
+			throws DoesNotExistOnWMException, ConsistencyException, UnknownSubarchitectureException, 
 			PermissionException, AlreadyExistsOnWMException {
 		OriginMap om = null;
 		boolean firstEntry = false;
@@ -396,7 +399,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 			om = new OriginMap(getComponentID(), new HashMap<String, String>(), new HashMap<String, WorkingMemoryPointer>());
 			firstEntry = true;
 		} else {
-			om = getMemoryEntry(m_originMapID, OriginMap.class);
+			om = getMemoryEntry(m_originMapID, BinderUtils.BINDER_SA, OriginMap.class);
 		}
 
 		if (om.sourceID2ProxyID.containsKey(_proxy.origin.address.id)) {
@@ -409,9 +412,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 
 		
 		if (firstEntry) {
-			addToWorkingMemory(m_originMapID, om);
+			addToWorkingMemory(m_originMapID, BinderUtils.BINDER_SA, om);
 		} else {
-			overwriteWorkingMemory(m_originMapID, om);
+			overwriteWorkingMemory(m_originMapID, BinderUtils.BINDER_SA, om);
 		}
 
 	}
@@ -427,9 +430,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 	
 	private void removeOriginInfo(Proxy _proxy)
-			throws DoesNotExistOnWMException, ConsistencyException,
+			throws DoesNotExistOnWMException, ConsistencyException,UnknownSubarchitectureException, 
 			PermissionException {
-		OriginMap om = getMemoryEntry(m_originMapID, OriginMap.class);
+		OriginMap om = getMemoryEntry(m_originMapID, BinderUtils.BINDER_SA, OriginMap.class);
 
 		if (!om.sourceID2ProxyID.containsKey(_proxy.origin.address.id)) {
 			println("WARNING: OriginMap did not contain entry for: "
@@ -437,7 +440,7 @@ public abstract class ProxyWriter extends ManagedComponent {
 		} else {
 			om.sourceID2ProxyID.remove(_proxy.origin.address.id);
 			om.proxyID2WMPointer.remove(_proxy.entityID);
-			overwriteWorkingMemory(m_originMapID, om);
+			overwriteWorkingMemory(m_originMapID, BinderUtils.BINDER_SA, om);
 		}
 	}
 	

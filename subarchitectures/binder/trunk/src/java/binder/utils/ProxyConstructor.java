@@ -133,7 +133,7 @@ public class ProxyConstructor {
 	 * Add a new feature to the proxy (and regenerate the probability
 	 * distribution, given this new information)
 	 * 
-	 * @param proxy
+	 * @param proxy  
 	 *            the proxy
 	 * @param feat
 	 *            the feature to add
