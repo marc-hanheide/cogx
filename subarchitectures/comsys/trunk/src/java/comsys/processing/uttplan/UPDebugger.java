@@ -288,8 +288,8 @@ public class UPDebugger
 		chart.printBestEdge();
 		// log("Best joined edge: ");
 		// chart.printBestJoinedEdge();
-		// log("All edges: ");
-		// chart.printEdges();
+		log("All edges: ");
+		chart.printEdges();
 	List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();
 	log("Number of best edges handed over from chart: "+bestEdges.size()+"\n");
 	//int bestcounter=0;

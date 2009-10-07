@@ -55,6 +55,9 @@ Parse 17: du :
                 <Patient>(i1_0:person ^ I ^ 
                           <Num>sg) ^ 
                 <Subject>addressee1_0:entity)
+I produce this LF (well, I produce one with "person" type everywhere, which works with the grammar, too). 
+But, realizations are empty. Huh?
+
 
 Alternative questions
 "Is the box red or orange"

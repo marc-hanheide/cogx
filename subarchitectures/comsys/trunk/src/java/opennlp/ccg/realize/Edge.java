@@ -103,6 +103,7 @@ public class Edge extends Tracker
     
     /** Returns whether this edge has completeness 1.0, ie, covers all the input preds. */
     public boolean complete() {
+//		System.out.println("Edge completeness: " + completeness);
         return (completeness == 1.0);
     }
     
