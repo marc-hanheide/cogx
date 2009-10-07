@@ -34,6 +34,7 @@ package comsys.components.cca;
 
 import beliefmodels.adl.*;
 import beliefmodels.clarification.ClarificationRequest; 
+import beliefmodels.domainmodel.cogx.*;
 
 //-----------------------------------------------------------------
 // CAST IMPORTS
