@@ -1,1 +1,1 @@
-k(now, private(r)) : objecttype(X, 'unknownObjectType').
+%k(now, private(r)) : objecttype(X, 'unknownObjectType').

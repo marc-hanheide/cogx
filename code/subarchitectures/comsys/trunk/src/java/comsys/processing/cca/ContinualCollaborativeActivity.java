@@ -72,7 +72,7 @@ public class ContinualCollaborativeActivity {
 	
 	/** The abduction engine */ 
 	
-    private AbducerServerPrx abducer;
+    public AbducerServerPrx abducer;
 
 	/** Ice engine */
 	

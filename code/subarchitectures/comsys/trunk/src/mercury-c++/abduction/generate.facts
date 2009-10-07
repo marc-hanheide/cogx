@@ -6,6 +6,12 @@ dummy_nom3(dummy3).
 dummy_nom4(dummy4).
 dummy_nom5(dummy5).
 
-%property(color).
-%property(shape).
-%property(objecttype).
+opposite_answertype(positive, negative).
+opposite_answertype(negative, positive).
+
+equal(X, X).
+
+% CHEATING
+
+%k(now, private(r)) : objecttype('form-2:B', mug).
+%k(now, private(r)) : objecttype('form-2:B', unknownObjectType).
