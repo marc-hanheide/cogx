@@ -505,8 +505,7 @@ public class Binder extends ManagedComponent  {
 
 			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
 
-			recompute(newUnionConfigs);
-
+			newUnionConfigs = recompute(newUnionConfigs);
 
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations(newUnionConfigs);
@@ -553,7 +552,7 @@ public class Binder extends ManagedComponent  {
 	// ================================================================= 
 
 	
-	private void recompute (Vector<UnionConfiguration> configs) {
+	private Vector<UnionConfiguration> recompute (Vector<UnionConfiguration> configs) {
 		
 		// Compute and normalise confidence scores for the union configurations
 		ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(configs);
@@ -575,6 +574,8 @@ public class Binder extends ManagedComponent  {
 		
 		// Compute the marginal probability values for the individual feature values
 		computeMarginalProbabilityValues(configs);
+		
+		return configs;
 	}
 	
 	
