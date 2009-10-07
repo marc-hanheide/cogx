@@ -23,6 +23,7 @@ package binder.fakeproxygenerators;
 import binder.autogen.core.*;
 import binder.autogen.featvalues.*;
 
+import cast.cdl.WorkingMemoryPointer;
 
 
 public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
