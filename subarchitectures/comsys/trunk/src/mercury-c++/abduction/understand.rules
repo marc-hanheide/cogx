@@ -35,8 +35,8 @@ e(now) : uttered(h, Nom) <-
 		this(ThisNom) / true,
 		a(com) : refers_to(ThisNom, Ref) / whatif_binding,
 	i : 'rel_Cop-Scope'(AscrNom, WhatNom) / true,  % XXX "questioned" flag?
-	e(now) : asked_about(h, Ref, objecttype) / 0.5,
-	?( k(now, private(r)) : objecttype(Ref, X)).
+	e(now) : ask_yn(h, Ref, objecttype, no(unknownObjectType)) / 0.5.
+	%?( k(now, private(r)) : objecttype(Ref, not(unknownObjectType))).
 
 you(Nom) <-
 	i : sort(Nom, person) / true,

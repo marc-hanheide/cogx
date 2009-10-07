@@ -191,7 +191,7 @@ cons_ctx_modality_list(H, T, [H|T]).
 modality_event(e(now)).
 modality_info(i).
 modality_att(a(com)).
-modality_k(k(now, private(human))).
+modality_k(k(now, private(robot))).
 
 :- pragma foreign_export("C", impure_print_modality(in), "print_modality").
 :- pragma foreign_export("C", impure_print_list_modalities(in), "print_list_modalities").

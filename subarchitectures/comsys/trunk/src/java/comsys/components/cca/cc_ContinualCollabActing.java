@@ -28,8 +28,11 @@ import comsys.processing.cca.ProofUtils;
 import comsys.processing.cca.PrettyPrinting;
 
 import beliefmodels.adl.*;
+import beliefmodels.domainmodel.cogx.*;
 
-public class cc_ContinualCollabActing extends ManagedComponent {
+import binder.abstr.BeliefModelInterface;
+
+public class cc_ContinualCollabActing extends BeliefModelInterface {
 
 	// =================================================================
 	// CLASS-INTERNAL GLOBAL VARIABLES
@@ -52,7 +55,6 @@ public class cc_ContinualCollabActing extends ManagedComponent {
     // Identifiers for ProcessData objects
     private int pdIdCounter;
 	
-
 	// Main engine handling the processing for the component
 	ContinualCollaborativeActivity ccaEngine = null; 
 	
@@ -277,6 +279,8 @@ public class cc_ContinualCollabActing extends ManagedComponent {
             			log("no belief updates...");
             		}
             		
+            		syncWithBeliefModel(getCurrentBeliefModel());
+            		
         			log("looking for linguistic feedback");
         			ModalisedFormula[] assumptions = ProofUtils.proofToFacts(ProofUtils.filterAssumed(proof));
         			
@@ -298,7 +302,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
                 			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(feedbackProof), "dummy1");
                 			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
                 			ContentPlanningGoal cpg = new ContentPlanningGoal();
-                			cpg.cpgid = "x";
+                			cpg.cpgid = newDataID();
                 			cpg.lform = prodLF;
                 			addToWorkingMemory(newDataID(), cpg);
             			}
@@ -317,6 +321,64 @@ public class cc_ContinualCollabActing extends ManagedComponent {
         }
     }
 
+    public String referringUnion(Belief b) {
+    	if (b.phi instanceof ComplexFormula) {
+			
+			for (int i = 0; i < ((ComplexFormula)b.phi).formulae.length ; i++) {
+				SuperFormula formula = ((ComplexFormula)b.phi).formulae[i];
+				
+				if (formula instanceof UnionRefProperty) {
+					return ((UnionRefProperty)formula).unionRef;
+				}
+			}
+		}
+		return null;
+    }
+    
+    public Abducer.Predicate formulaToPredicate(String unionId, SuperFormula cf) {
+    	Abducer.Predicate pred = new Abducer.Predicate();
+    	pred.args = new Abducer.Term[2];
+    	pred.args[0] = AbducerUtils.term("form-" + unionId);
+    	
+    	if (cf instanceof ObjectTypeProperty) {
+    		pred.predSym = "objecttype";
+    		pred.args[1] = AbducerUtils.term( ((ObjectTypeProperty)cf).typeValue.toString() );
+    		return pred;
+    	}
+
+    	return null;
+    }
+    
+	public void syncWithBeliefModel(BeliefModel model) {
+		log("syncing with the belief model");
+		for (int i = 0 ; i < model.k.length; i++) {
+			Belief b = null;
+			try {
+				b = getBelief(model.k[i]);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			log("got a belief, id=" + model.k[i]);
+			Modality[] mod = new Modality[] { AbducerUtils.kModality(b.ags) };
+			String unionId = referringUnion(b);
+
+			log("inspecting feats");
+
+			for (int j = 0; j < ((ComplexFormula)b.phi).formulae.length ; j++) {
+				SuperFormula formula = ((ComplexFormula)b.phi).formulae[j];
+
+				Predicate pred = formulaToPredicate(unionId, formula);
+				ModalisedFormula mf = AbducerUtils.modalisedFormula(mod, pred);
+
+				if (pred != null) {
+					log("adding " + MercuryUtils.modalisedFormulaToString(mf));
+					ccaEngine.abducer.addFact(mf);
+				}
+			}
+		}
+	}
+	    
     private void executeClarificationRequestTask(ProcessingData pd) throws ComsysException {
     	log("interpreting an event");
     	try {	
@@ -372,7 +434,7 @@ public class cc_ContinualCollabActing extends ManagedComponent {
                 			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(feedbackProof), "dummy1");
                 			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
                 			ContentPlanningGoal cpg = new ContentPlanningGoal();
-                			cpg.cpgid = "x";
+                			cpg.cpgid = newDataID();
                 			cpg.lform = prodLF;
                 			addToWorkingMemory(newDataID(), cpg);
             			}

@@ -6,6 +6,8 @@ import comsys.datastructs.lf.*;
 import comsys.lf.utils.LFUtils;
 import Abducer.*;
 
+import beliefmodels.adl.*;
+
 import comsys.processing.cca.ProofUtils;
 
 public class AbducerUtils {
@@ -86,6 +88,36 @@ public class AbducerUtils {
 	public static AttStateModality attStateModality() {
 		AttStateModality m = new AttStateModality();
 		m.type = ModalityType.AttState;
+		return m;
+	}
+	
+	public static Abducer.Agent toAbducerAgent(beliefmodels.adl.Agent ag) {
+		if (ag.id.equals("human")) {
+			return Abducer.Agent.human;
+		}
+		else {
+			return Abducer.Agent.robot;
+		}
+	}
+
+	public static KModality kModality(AgentStatus as) {
+		KModality m = new KModality();
+		m.type = ModalityType.K;
+		if (as instanceof PrivateAgentStatus) {
+			m.share = Abducer.Sharing.Private;
+			m.act = toAbducerAgent(((PrivateAgentStatus) as).ag);
+			m.pat = Abducer.Agent.human;
+		}
+		if (as instanceof AttributedAgentStatus) {
+			m.share = Abducer.Sharing.Attribute;
+			m.act = toAbducerAgent(((AttributedAgentStatus) as).ag);
+			m.pat = toAbducerAgent(((AttributedAgentStatus) as).ag2);
+		}
+		if (as instanceof AttributedAgentStatus) {
+			m.share = Abducer.Sharing.Mutual;
+			m.act = Abducer.Agent.robot;
+			m.act = Abducer.Agent.human;
+		}
 		return m;
 	}
 
