@@ -307,16 +307,16 @@ public class BeliefModelTranslator extends ManagedComponent {
 	// =================================================================
 
 
-
 	protected void updateBeliefInWM (Belief belief) {
 
 		try {
-			if (!existsOnWorkingMemory(belief.id, this.getSubarchitectureID())) {
+			if (!existsOnWorkingMemory(belief.id, Binder.BINDER_SA)) {
 				addBeliefToWM(belief);
 				log("belief not currently in working memory, added");
 			}
 			else {
 				overwriteBeliefInWM(belief);
+				
 			}
 
 		}
@@ -329,7 +329,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	protected void updateBeliefModelInWM (BeliefModel bmodel) {
 
 		try {
-			if (!existsOnWorkingMemory(bmodel.id, this.getSubarchitectureID())) {
+			if (!existsOnWorkingMemory(bmodel.id, Binder.BINDER_SA)) {
 				addBeliefModelToWM(bmodel);
 			}
 			else {
@@ -353,7 +353,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	protected void addBeliefToWM (Belief belief) {
 
 		try {
-			addToWorkingMemory(belief.id, this.getSubarchitectureID(), belief);
+			addToWorkingMemory(belief.id, Binder.BINDER_SA, belief);
 			log("new belief succesfully added to the binder working memory");
 
 		} catch (Exception e) {
@@ -373,7 +373,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	protected void overwriteBeliefInWM (Belief belief) {
 
 		try {
-			overwriteWorkingMemory(belief.id, this.getSubarchitectureID(), belief);
+			overwriteWorkingMemory(belief.id, Binder.BINDER_SA, belief);
 			log("existing belief succesfully modified in the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -394,7 +394,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	protected void addBeliefModelToWM (BeliefModel bmodel) {
 
 		try {
-			addToWorkingMemory(bmodel.id, this.getSubarchitectureID(), bmodel);
+			addToWorkingMemory(bmodel.id, Binder.BINDER_SA, bmodel);
 			log("new belief model succesfully added to the binder working memory");
 
 		} catch (Exception e) {
@@ -414,7 +414,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	protected void overwriteBeliefModelInWM (BeliefModel bmodel) {
 
 		try {
-			overwriteWorkingMemory(bmodel.id, this.getSubarchitectureID(), bmodel);
+			overwriteWorkingMemory(bmodel.id, Binder.BINDER_SA, bmodel);
 			log("existing belief model succesfully modified in the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
@@ -434,7 +434,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	protected void deleteFormulaInWM (SuperFormula formula) {
 
 		try {
-			deleteFromWorkingMemory(formula.id, this.getSubarchitectureID());
+			deleteFromWorkingMemory(formula.id, Binder.BINDER_SA);
 			log("existing belief model formula  succesfully deleted from the binder working memory");
 
 		} catch (DoesNotExistOnWMException e) {
