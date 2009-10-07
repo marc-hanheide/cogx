@@ -334,7 +334,7 @@ public class ContinualCollaborativeActivity {
 		abducer.addFact(AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.infoModality()},
 				AbducerUtils.predicate("cr_entity", new Term[] {
 						AbducerUtils.term(cr.id),
-						AbducerUtils.term(cr.sourceModality)
+						AbducerUtils.term(cr.sourceEntityID)
 					})));
 	}
 	

@@ -59,6 +59,7 @@ import comsys.arch.ProcessingData;
 //-----------------------------------------------------------------
 
 import java.util.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -92,6 +93,9 @@ public class cc_FakeClarificationGenerator
 	JTextField modalityField;
 	JTextField sourceField;	
 	JTextField formulaField;	
+	
+	private String defaultModality = "";
+	private String defaultSourceId = "";
 	
 	JButton ok;
 	
@@ -211,28 +215,64 @@ public class cc_FakeClarificationGenerator
 			e.printStackTrace();
 		}
 		Frame frame = null;
-		ok = new JButton("OK");
-		JLabel l = new JLabel("Please provide info for the clarification request");
+				
+        JPanel dialogPanel = new JPanel();
+        dialogPanel.setLayout(new BoxLayout(dialogPanel, BoxLayout.Y_AXIS));
+
+        JPanel modalityPanel = new JPanel();
+        modalityPanel.setLayout(new BoxLayout(modalityPanel, BoxLayout.LINE_AXIS));
+        JLabel modalityLabel = new JLabel("Modality:");
+        modalityPanel.add(modalityLabel);
+        modalityField = new JTextField();
+        modalityField.setText(defaultModality);
+		//modalityField.setPreferredSize(new Dimension(100,20));
+		modalityPanel.add(modalityField);
+		dialogPanel.add(modalityPanel);
+
+        JPanel sourcePanel = new JPanel();
+        sourcePanel.setLayout(new BoxLayout(sourcePanel, BoxLayout.LINE_AXIS));
+        JLabel sourceLabel = new JLabel("Source ID:");
+        sourcePanel.add(sourceLabel);
+        sourceField = new JTextField();
+        sourceField.setText(defaultSourceId);
+		//sourceField.setPreferredSize(new Dimension(100,20));
+		sourcePanel.add(sourceField);
+		dialogPanel.add(sourcePanel);
+
+        JPanel aboutPanel = new JPanel();
+        aboutPanel.setLayout(new BoxLayout(aboutPanel, BoxLayout.LINE_AXIS));
+        JLabel aboutLabel = new JLabel("About:");
+        aboutPanel.add(aboutLabel);
 		aboutField = new JTextField();
-		aboutField.setPreferredSize(new Dimension(100,20));
-		needField = new JTextField();
-		needField.setPreferredSize(new Dimension(100,20));
-		modalityField = new JTextField();
-		modalityField.setPreferredSize(new Dimension(100,20));
-		sourceField = new JTextField();
-		sourceField.setPreferredSize(new Dimension(100,20));		
+		//aboutField.setPreferredSize(new Dimension(100,20));
+		aboutPanel.add(aboutField);
+		dialogPanel.add(aboutPanel);
+
+        JPanel needPanel = new JPanel();
+        needPanel.setLayout(new BoxLayout(needPanel, BoxLayout.LINE_AXIS));
+        JLabel needLabel = new JLabel("Need:");
+        needPanel.add(needLabel);
+        needField = new JTextField();
+		//needField.setPreferredSize(new Dimension(100,20));
+		needPanel.add(needField);
+		dialogPanel.add(needPanel);
 		
-		JPanel panel = new JPanel();
-		panel.add(ok);
+		dialogPanel.add(Box.createVerticalGlue());
+		
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
+		buttonPanel.add(Box.createHorizontalGlue());
+		ok = new JButton("Issue");
+		buttonPanel.add(ok);
+		dialogPanel.add(buttonPanel);
+
 		JDialog dialog = new JDialog(frame, "Clarification Request");
-		dialog.setLocation(600, 600);
-		dialog.getContentPane().add(l, BorderLayout.NORTH);
-		dialog.getContentPane().add(aboutField, BorderLayout.CENTER);
-		dialog.getContentPane().add(needField, BorderLayout.CENTER);		
-		dialog.getContentPane().add(modalityField, BorderLayout.CENTER);		
-		dialog.getContentPane().add(sourceField, BorderLayout.CENTER);				
-		dialog.getContentPane().add(panel, BorderLayout.SOUTH);
-		dialog.setSize(500,100);
+		dialog.add(dialogPanel);
+
+		dialog.setLocation(600, 400);
+
+		Dimension dim = dialogPanel.getPreferredSize();
+		dialog.setSize(300, dim.height + 25);
 		dialog.setVisible(true);
 		aboutField.requestFocusInWindow();
 		
@@ -265,6 +305,15 @@ public class cc_FakeClarificationGenerator
 	
 		return formula;
 	} // end 
-	
+
+	@Override
+    public void configure(Map<String, String> _config) {
+		if (_config.containsKey("--modality")) {
+			defaultModality = _config.get("--modality");
+		}
+		if (_config.containsKey("--sourceId")) {
+			defaultSourceId = _config.get("--sourceId");
+		}
+	}
 	
 } // end class
