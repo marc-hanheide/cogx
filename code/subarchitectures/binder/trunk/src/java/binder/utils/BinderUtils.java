@@ -38,6 +38,7 @@ import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
+import binder.filtering.EntityFilter;
 
 
 /**
@@ -109,7 +110,7 @@ public class BinderUtils {
 	// PROXY COMPLETION METHODS   
 	// ================================================================= 
 	
-	
+	 
 	/**
 	 * Complete the proxy with additional information: 
 	 * 	1) if addUnknowns == true, add the unknown feature values to the features 
@@ -120,7 +121,7 @@ public class BinderUtils {
 	 * @param addUnknowns whether to add unknown feature values
 	 */
 	
-	public static void completeProxy (Proxy proxy, boolean addUnknowns) {
+	public static void completeProxy (Proxy proxy, boolean addUnknowns, int proxyDistribFilter) {
 		// If necessary, add unknown values
 		if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
 			addUnknownFeatureValues(proxy.features);
@@ -135,6 +136,11 @@ public class BinderUtils {
 		if (proxy.distribution == null) {
 			proxy.distribution = 
 				DistributionGeneration.generateProbabilityDistribution(proxy);
+			
+			if (proxyDistribFilter > 0) {
+				proxy.distribution = 
+					EntityFilter.filterDistribution((DiscreteProbabilityDistribution)proxy.distribution, proxyDistribFilter);
+			}
 		}
 
 	}

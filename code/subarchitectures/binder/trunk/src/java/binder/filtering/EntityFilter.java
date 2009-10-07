@@ -19,11 +19,16 @@
 
 package binder.filtering;
 
+import java.util.Enumeration;
+import java.util.Vector;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Union;
+import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
+import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
@@ -52,7 +57,109 @@ public class EntityFilter {
 
 	
 	// TODO: implement methods for filtering probability distributions in proxies and unions!
+
+
+	public static DiscreteProbabilityDistribution filterDistribution 
+	(DiscreteProbabilityDistribution distribution, int nb_nbests) {
+
+		Vector<DiscreteProbabilityAssignment> assignments = new Vector<DiscreteProbabilityAssignment>();
+
+		for (int i = 0 ; i < distribution.assignments.length ; i++) {
+			assignments.add(distribution.assignments[i]);
+		}
+		assignments = getNBestAssignments(assignments, nb_nbests);
+
+		distribution.assignments = new DiscreteProbabilityAssignment[assignments.size()];
+		distribution.assignments = assignments.toArray(distribution.assignments);
+		
+		return distribution;
+	}
+
+	/**
+	 * Extract the NBests assignments amongst the complete set of union assignments.  
+	 * The exact number of assignments to extract is set by the nb_nbests parameter
+	 * 
+	 * @param configs the assignments
+	 * @param nb_nbests number of assignments to keep
+	 * @return set of selected assignments
+	 */
 	
+	public static Vector<DiscreteProbabilityAssignment> getNBestAssignments
+	(Vector<DiscreteProbabilityAssignment> assignments, int nb_nbests) {
+
+
+		// List of NBests configuration
+		Vector<DiscreteProbabilityAssignment> nbests = new Vector<DiscreteProbabilityAssignment>();
+
+		// the threshold is set to be the lowest configuration probability in the NBests set
+		double threshold = 9999.0f;
+		
+		// loop on the union configurations
+		for (Enumeration<DiscreteProbabilityAssignment> e = assignments.elements(); e.hasMoreElements() ; ) {
+			DiscreteProbabilityAssignment assignment = e.nextElement();
+		
+			// if the number of current nbests hasn't reached the maximum number, simply 
+			// add the configuration
+			if (nbests.size() < nb_nbests) {
+
+				nbests.add(assignment);
+
+				// if the current config probability is lower than the current threshold, 
+				// assign the probability to the threshold
+				if (assignment.prob < threshold) {
+					threshold = assignment.prob;
+				}
+			}
+
+			// else, we check if the config probability is higher than the threshold
+			else if (assignment.prob > threshold) {
+				
+					// If it is, we extract the lowest-probability union configuration ...
+					DiscreteProbabilityAssignment worstinNBests = getWorstAssignments(nbests);
+					
+					// ... and we remove it...
+					nbests.remove(worstinNBests);
+					
+					// ... to replace it by the new configuration
+					nbests.add(assignment);
+					
+					// Finally, we search for the second lowest-probability configuration, and
+					// assign the threshold to be its configuration probability
+					DiscreteProbabilityAssignment secondworst = getWorstAssignments(nbests);
+					threshold = secondworst.prob;
+				}
+		}
+		return nbests;
+	}
+	
+	
+	/**
+	 * Extract the worst (lowest-probability) union configuration out of the configs set
+	 * 
+	 * @param configs the union configurations
+	 * @return the lowest-probability configuration
+	 */
+	
+	public static DiscreteProbabilityAssignment getWorstAssignments(Vector<DiscreteProbabilityAssignment> assignments) {
+
+		double threshold = 99999.0f;
+		DiscreteProbabilityAssignment worstAssign = null;
+
+		// loop on the union configurations
+		for (Enumeration<DiscreteProbabilityAssignment> e = assignments.elements(); e.hasMoreElements() ; ) {
+			DiscreteProbabilityAssignment assign = e.nextElement();
+
+				// if the current probability is lower than the threshold, reassign the threshold
+				// and the worst config
+				if (assign.prob < threshold) {
+					threshold = assign.prob;
+					worstAssign = assign;
+				}
+		}
+
+		return worstAssign;
+	}
+
 	
 	// ===================================================================
 	// METHODS FOR SELECTING MAX PROBABILITY UNIONS

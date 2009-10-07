@@ -74,9 +74,16 @@ public class Binder extends ManagedComponent  {
 	// Text specification of the bay
 	private String bayesianNetworkConfigFile = "./subarchitectures/binder/config/bayesiannetwork.txt";
 
-	// Filtering parameters: maximum number of union configurations
+	// Filtering parameters: 
+	
+	// maximum number of union configurations
 	// to keep in the binder at a given time
 	private int nbestsFilter = 5;
+	
+	// maximum number of assignments in proxy distribution
+	// to keep in each proxy (0 means no filtering)
+	static public int proxyDistribFilter = 10;
+
 
 	private boolean normaliseDistributions = true;
 	
@@ -206,6 +213,9 @@ public class Binder extends ManagedComponent  {
 		if (_config.containsKey("--nbestsfilter")) {
 			nbestsFilter = Integer.parseInt(_config.get("--nbestsfilter"));
 		}
+		if (_config.containsKey("--proxydistribfilter")) {
+			proxyDistribFilter = Integer.parseInt(_config.get("--proxydistribfilter"));
+		}
 	}
 
 
@@ -235,7 +245,7 @@ public class Binder extends ManagedComponent  {
 			// The proxy which was modified
 			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
 
-			BinderUtils.completeProxy(updatedProxy, addUnknowns);
+			BinderUtils.completeProxy(updatedProxy, addUnknowns, proxyDistribFilter);
 			updatedProxy.timeStamp = getCASTTime();
 
 			// Loop on the current union configurations to update each of them in turn
@@ -394,7 +404,7 @@ public class Binder extends ManagedComponent  {
 			log("TRIGGERED BY: insertion of new proxy " + newProxy.entityID +
 					" (" + newProxy.getClass().getSimpleName() + ") ");
 
-			BinderUtils.completeProxy(newProxy, addUnknowns);
+			BinderUtils.completeProxy(newProxy, addUnknowns, proxyDistribFilter);
 
 			// Perform the binding (either incrementally or by full rebinding)
 			if (incrementalBinding) {

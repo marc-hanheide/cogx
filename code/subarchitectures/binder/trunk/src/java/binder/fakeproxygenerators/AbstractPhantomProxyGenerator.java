@@ -92,7 +92,7 @@ abstract public class AbstractPhantomProxyGenerator extends BindingPredictor {
 				
 				// Make a short pause
 				if (pauses) {
-				sleepComponent(500 + rand.nextInt(2000));
+				sleepComponent(2000 + rand.nextInt(1000));
 				}
 				 
 				// Create the phantom proxy
