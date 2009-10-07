@@ -180,8 +180,8 @@ public class PlaceMonitor extends ManagedComponent {
 						ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
 						log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
 						m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
-						// trigger room creation, splitting, merging, maintenance
 					}
+					// trigger room creation, splitting, merging, maintenance
 					maintainRooms();
 				}
 
