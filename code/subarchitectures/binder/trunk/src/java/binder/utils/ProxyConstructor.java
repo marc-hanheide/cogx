@@ -12,6 +12,7 @@ import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
+import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 
@@ -326,6 +327,25 @@ public class ProxyConstructor {
 		boolVal.timeStamp = timestamp;
 		return boolVal;
 	}
+	
+	
+	
+
+	/**
+	 * Create a new UnknownValue given a probability
+	 * 
+	 * @param prob
+	 *            the probability value
+	 * @return the BooleanValue
+	 */
+
+	public static UnknownValue createUnknownValue(float prob, CASTTime timestamp) {
+		UnknownValue unknownVal = new UnknownValue();
+		unknownVal.independentProb = prob;
+		unknownVal.timeStamp = timestamp;
+		return unknownVal;
+	}
+
 
 	/**
 	 * Create a new feature, without feature values
