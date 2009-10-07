@@ -10,6 +10,8 @@ import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
 import binder.utils.BinderUtils;
 
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -229,6 +231,14 @@ public class BeliefModelInterface extends ManagedComponent{
 		return relatedBeliefs;
 	 }
 
-	
+	public Belief getBelief(String beliefId) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
+			Belief b = getMemoryEntry(currentBeliefModel.k[i], BinderUtils.BINDER_SA, Belief.class);
+			if (b.id.equals(beliefId)) {
+				return b;
+			}
+		}
+		return null;
+	}
 	
 }
