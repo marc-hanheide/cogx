@@ -82,11 +82,11 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	 * @return the proxy
 	 */
 	private Proxy createProxyOne() {
-
+		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakehaptic", "blibli2", "GraspableObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);
 
-		FeatureValue spherical = createStringValue ("spherical", 0.67f);
+		FeatureValue spherical = createStringValue ("spherical", 0.97f);
 		Feature feat1 = createFeatureWithUniqueFeatureValue("shape", spherical);
 		addFeatureToProxy (proxy, feat1);
 

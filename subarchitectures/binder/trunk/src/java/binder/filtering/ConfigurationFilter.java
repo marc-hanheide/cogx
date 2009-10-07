@@ -25,6 +25,8 @@ import java.util.Vector;
 import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
+import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 
 
 /**

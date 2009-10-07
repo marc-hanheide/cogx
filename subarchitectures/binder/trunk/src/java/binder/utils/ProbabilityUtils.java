@@ -28,6 +28,7 @@ import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.combined.OperationType;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.components.Binder;
 import binder.utils.FeatureValueUtils;
 
 /**
@@ -322,9 +323,11 @@ public class ProbabilityUtils {
 			errlog("ERROR, distribution contains no assignment");
 		}
 
-		errlog("WARNING, no probability value found for assignment: " + 
+		if (Binder.proxyDistribFilter == 0) {
+			errlog("WARNING, no probability value found for assignment: " + 
 				BinderUtils.getPrettyPrintProbabilityAssignment(assignment));
-		errlog("distrib: " + BinderUtils.getPrettyPrintProbabilityDistribution(distrib));
+			errlog("distrib: " + BinderUtils.getPrettyPrintProbabilityDistribution(distrib));
+		}
 		return result;
 	}
 
