@@ -1,0 +1,59 @@
+% hi
+e(now) : greeting(h, r) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, greeting) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
+% what do i have here
+e(now) : new_object_visible(Entity) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	i : feat_AcknoModality(Nom, vision) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% no I do not know what this is
+e(now) : asked_about(h, Object, objecttype) <-
+	k(now, private(r)) : objecttype(Object, unknownObjectType) / true,
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : feat_AnswerType(Nom, negative) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+e(now) : assert_prop(h, Object, Property) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% NOT THE FIRST is the box red or orange?” / “what color does the box have
+%what color does the box have
+e(now) : produce(r, Nom) <-
+	dummy_nom1(Nom) / true,
+	dummy_nom2(ContentNom) / true,
+	dummy_nom3(TargetNom) / true,
+	dummy_nom4(QualityNom) / true,
+	k(now, private(r)) : objecttype(Object, box) / true,
+	k(now, private(r)) : color(Object, unknownColor) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+			i : prop(TargetNom, box) / 1.0,
+		i : rel_Color(ContentNom, QualityNom) / 1.0,
+			i : sort(QualityNom, quality) / 1.0,
+			i : prop(QualityNom, color) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0.

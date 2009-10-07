@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-mood" region="MOOD" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+		 <!-- first check whether Mood has already been set -->
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false @unknown"> 
+		    <q-ex-feat feat="Mood"/>
+		 </inquiry>			
+		 <choicenode answer = "true">
+			<result val="no-mood"/>
+		 </choicenode>
+		 <choicenode answer = "false">
+			 <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+				<q-ex-fv feat="DVPassigned" val="true" />
+			 </inquiry>	
+			   <choicenode answer="false"> 
+				  <result val="indicative"/>
+			   </choicenode>
+			   <choicenode answer="unknown"> 
+				  <result val="indicative"/>
+			   </choicenode>
+			   
+			   <choicenode answer="true"> 			
+				<inquiry id="f-featval" type="string" answerset="@assertion @question @directive @commitment @unknown"> 
+				<f-featval nomvar="DVP" feat="SpeechAct" val="unknown" /> 
+				</inquiry>
+					<choicenode answer="assertion"> 
+					  <result val="indicative"/>
+					</choicenode>
+					<choicenode answer="question">
+					  <result val="interrogative"/>
+					</choicenode>
+					<choicenode answer="directive">
+					  <result val="imperative"/>  <!-- add: could also be indicative in polite style -->
+					</choicenode>
+					<choicenode answer="commitment">
+					   <result val="indicative"/>
+					</choicenode>
+					<choicenode answer="unknown">
+					  <result val="no-mood"/>
+					</choicenode>
+			   </choicenode>
+			</choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+</choosers>

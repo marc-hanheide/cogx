@@ -1,0 +1,41 @@
+Utterance planner
+input-->output LF
+
+Examples:
+
+
+Adding or changing nominal sort
+
+IN1: @b1(ball)
+In2: @b1:entity(ball)
+OUT: @b1:physical(ball)
+
+Adding propositions: like before
+Adding feature/value pairs: like before
+Adding/adjoining LF: like before
+
+Creating a new discourse referent
+IN:  @b1(ball)
+Out: @s1:perception(see ^ 
+                 <Actor>(i1:person ^ I ^ 
+                         <Num>sg) ^ 
+                 <Patient>(b1(ball)) )
+or
+IN:  @b1(ball)
+OUT:  @b1:entity(ball ^ <Modifier>(p1:q-color ^ red))
+
+Replacing feature/value
+IN: @b1(ball ^ <Quantity>1)
+OUT: @b1(ball ^ <Num>sg ^ <Quantification>specific)
+[Note: Input feature, e.g., <Quantity>, may be needed in several systems]
+
+Changing relation
+
+IN: @b1:entity(ball ^ <Color>(p1 ^ red))
+OUT: @b1:entity(ball ^ <Modifier>(p1:q-color ^ red))
+
+In:  @b1:entity(ball ^ <Left-of>(n1 ^ box...) )
+OUT: @b1:entity(ball ^ <Modifier>(n1:m-location ^ left/right/near ^ 
+              <Anchor>(b2:thing ^ box ...)))
+
+

@@ -1,0 +1,12 @@
+subarchitectures/comsys.mk4/learning/wavfiles/utt1.wav where is it
+subarchitectures/comsys.mk4/learning/wavfiles/utt2.wav what can you see
+subarchitectures/comsys.mk4/learning/wavfiles/utt4.wav what colour is the green box
+subarchitectures/comsys.mk4/learning/wavfiles/utt5.wav  okay
+subarchitectures/comsys.mk4/learning/wavfiles/utt7.wav look at the laptop
+subarchitectures/comsys.mk4/learning/wavfiles/utt9.wav what do you see
+subarchitectures/comsys.mk4/learning/wavfiles/utt10.wav and bring me it
+subarchitectures/comsys.mk4/learning/wavfiles/utt8.wav the cylinder is open
+subarchitectures/comsys.mk4/learning/wavfiles/utt12.wav you can't
+subarchitectures/comsys.mk4/learning/wavfiles/utt13.wav what do you see near the yellow mug
+subarchitectures/comsys.mk4/learning/wavfiles/utt14.wav put it into the pizza
+subarchitectures/comsys.mk4/learning/wavfiles/utt15.wav the box

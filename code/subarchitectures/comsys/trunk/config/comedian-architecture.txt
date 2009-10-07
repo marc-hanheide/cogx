@@ -1,0 +1,22 @@
+HOST localhost
+
+SUBARCHITECTURE stage.subarch 
+CPP WM SubarchitectureWorkingMemory  --log --debug
+CPP TM AlwaysPositiveTaskManager #--log --debug
+JAVA UM straight.man comedyarch.StraightMan -s "what's brown and sticky" --log --debug
+CPP MG funny.man FunnyMan --punchline "a stick" --log --debug
+
+SUBARCHITECTURE audience.subarch 
+CPP WM SubarchitectureWorkingMemory  --log --debug
+CPP TM AlwaysPositiveTaskManager #--log --debug
+JAVA MG audience.member comedyarch.AudienceMember --reaction "YAY!" --log --debug
+
+
+SUBARCHITECTURE director.subarch
+#CPP WM SubarchitectureWorkingMemory  --log --debug
+JAVA WM cast.architecture.SubarchitectureWorkingMemory  --log --debug
+CPP TM AlwaysPositiveTaskManager #--log --debug
+JAVA MG ass.director comedyarch.AssistantDirector --log #--debug
+JAVA MG director comedyarch.Director --audience audience.subarch --log  #--debug
+
+

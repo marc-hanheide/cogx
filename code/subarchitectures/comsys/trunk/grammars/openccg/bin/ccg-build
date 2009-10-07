@@ -1,0 +1,15 @@
+#!/bin/sh
+
+. ccg-env
+ANT_HOME="$OPENCCG_HOME/lib"
+PROPS="-Dant.home=$ANT_HOME -Dopenccg.home=$OPENCCG_HOME"
+case `uname` in
+  CYGWIN* ) XALAN_JARS="$OPENCCG_HOME/lib/xalan.jar;$OPENCCG_HOME/lib/xercesImpl.jar;$OPENCCG_HOME/lib/xml-apis.jar"
+            CP="$JAVA_HOME/lib/tools.jar;$OPENCCG_HOME/lib/ant.jar;$OPENCCG_HOME/lib/ant-launcher.jar;$XALAN_JARS"
+            PROPS="$PROPS -Dcygwin=true"
+  ;;
+  * ) XALAN_JARS="$OPENCCG_HOME/lib/xalan.jar:$OPENCCG_HOME/lib/xercesImpl.jar:$OPENCCG_HOME/lib/xml-apis.jar"
+      CP="$JAVA_HOME/lib/tools.jar:$OPENCCG_HOME/lib/ant.jar:$OPENCCG_HOME/lib/ant-launcher.jar:$XALAN_JARS"
+  ;;
+esac
+"$JAVA" -classpath "$CP" $PROPS org.apache.tools.ant.Main $@
