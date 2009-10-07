@@ -144,7 +144,7 @@ module beliefmodels {
 		}; // end Belief
 		
 		sequence<Belief> Beliefs; 
-		
+		 
 		
 		
 		// ===================================================================
