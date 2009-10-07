@@ -131,7 +131,34 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 </system>
 
 
-<system id="speechact-greeting" region="DISCOURSE-MARKERS" metafunction="textual">
+<system id="speechact-type" region="DISCOURSE-MARKERS" metafunction="textual">
+   <chooser id="c-speechact-type"/> 
+   <conditions>
+      <condition features="@type:marker"/> 
+   </conditions>
+   
+   <actions>
+      <action choice="hello">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hello" /> 
+      </action>
+      <action choice="hi">
+			<assign-type type="greeting"/>
+			<add-proposition propositions="@hi" /> 
+      </action>	  
+      <action choice="hithere">
+			<add-lf lf="@content:greeting(hi ^ &lt;Addressee&gt;(c1:e-location ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Num&gt;sg ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific))" dest="CONTENT"/> 
+			<identify-nomvar root="CONTENT" mode="Addressee" dest="ADDRESSEE" scope="global"/>
+      </action>	  
+
+	<action choice="thanks">	
+			<add-lf lf="@content:communication(thank ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(speaker1_0:person ^ speaker ^ &lt;Num&gt;sg)  ^  &lt;Recipient&gt;(addressee1_0:person ^ addressee))" dest="CONTENT"/>
+		</action>
+
+   </actions>
+</system>
+
+<system id="speechact-thanking" region="DISCOURSE-MARKERS" metafunction="textual">
    <chooser id="c-speechact-type"/> 
    <conditions>
       <condition features="@type:marker"/> 

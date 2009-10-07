@@ -129,7 +129,7 @@
 
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="f-featval" type="string" answerset="@assertion @greeting"> 
+         <inquiry id="f-featval" type="string" answerset="@assertion @greeting @ thanking"> 
 	     <f-featval nomvar="DVP" feat="SpeechAct" val="unknown" /> 
 	     </inquiry>
   	     <choicenode answer="assertion">
@@ -148,6 +148,11 @@
 			   <result val="hithere"/>
 			 </choicenode>	
 	     </choicenode>
+
+	     <choicenode answer="thanking">
+			   <result val="thanks"/>
+	     </choicenode>
+
 	</choicenode>
    </dectree>
 </chooser>
