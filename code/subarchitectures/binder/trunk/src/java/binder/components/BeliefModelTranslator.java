@@ -147,7 +147,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 		
 		for (int i = 0; i < allBeliefs.size(); i++) {
 			Belief curB = allBeliefs.elementAt(i);
-			Saliency saliency = getSaliencyValue (curB);
+			Saliency saliency = BeliefModelUtils.getSaliencyValue (curB);
 			
 			if (saliency.equals(Saliency.high)) {
 				foregroundedBeliefsV.add(curB.id);
@@ -161,23 +161,6 @@ public class BeliefModelTranslator extends ManagedComponent {
 	}
 	
 	
-	
-	private Saliency getSaliencyValue (Belief belief) {
-		
-		if (belief.phi instanceof ComplexFormula) {
-			
-			for (int i = 0 ; i < ((ComplexFormula)belief.phi).formulae.length ; i++) {
-				
-				SuperFormula formula = ((ComplexFormula)belief.phi).formulae[i];
-				
-				if (formula instanceof SaliencyProperty) {
-					return ((SaliencyProperty)formula).sal;
-				}
-			}
-		}
-		
-		return Saliency.low;
-	}
 	
 	
 

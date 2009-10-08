@@ -50,13 +50,9 @@ public class EntityFilter {
 	public static boolean LOGGING = false;
 	
 	
-
 	// ===================================================================
 	// METHODS FOR FILTERING MAX PROBABILITY UNIONS
 	// =================================================================== 
-
-	
-	// TODO: implement methods for filtering probability distributions in proxies and unions!
 
 
 	public static DiscreteProbabilityDistribution filterDistribution 
