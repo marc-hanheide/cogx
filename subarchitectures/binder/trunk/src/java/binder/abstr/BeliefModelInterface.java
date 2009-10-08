@@ -46,6 +46,7 @@ public class BeliefModelInterface extends ManagedComponent{
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
+					log("current belief model has been updated!");
 					currentBeliefModel = getMemoryEntry(_wmc.address, BeliefModel.class);
 				}
 				catch (Exception e) {
