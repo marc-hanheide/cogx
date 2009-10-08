@@ -25,7 +25,6 @@
 
 %:- pred srv_prove_best(string::in, float::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
 :- pred srv_prove_best(proof(ctx_modality)::in, ctx::in, float::out, proof(ctx_modality)::out) is semidet.
-:- pred srv_dissect_proof(proof(ctx_modality)::in, ctx::in, float::out, list(string)::out, list(string)::out) is det.
 :- pred srv_print_ctx(ctx::in, io::di, io::uo) is det.
 :- pred srv_proof_summary(proof(ctx_modality)::in, ctx::in, io::di, io::uo) is det.
 
@@ -193,9 +192,15 @@ srv_add_assumable(Function, m(Mod, Prop), Cost, !Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- import_module gc.
+
 :- pragma foreign_export("C", srv_prove_best(in, in, out, out), "prove_best").
 
 srv_prove_best(P0, Ctx, ProofCost, Proof) :-
+	trace[compile_time(flag("debug")), io(!IO)] (print(stderr_stream, "in prove_best\n", !IO)),
+
+	%trace[io(!IO)] ( garbage_collect(!IO) ),
+
 %	VSMProp = vs(InitMProp, InitVarset),
 %	vs(InitMProp, InitVarset) = det_string_to_vsmprop(GoalStr),
 
@@ -208,27 +213,8 @@ srv_prove_best(P0, Ctx, ProofCost, Proof) :-
 
 	list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
 		float_compare(CA, CB, Comp)
-			), Proofs0, [ProofCost-Proof|_]).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-%:- pragma foreign_export("C", srv_dissect_proof(in, in, out, out, out), "dissect_proof").
-
-srv_dissect_proof(Proof, _Ctx, Cost, Assumed, Asserted) :-
-%	Costs = costs(1.0, 1.0, 0.1),
-	Cost = 0.0,
-
-	LastGoal = last_goal(Proof),
-	Assumed = list.map((func(cf(m(Mod, GProp), _AssFunc)) = String :-
-		String = mprop_to_string(varset.init, m(Mod, ground_formula_to_formula(GProp)))
-			), bag.to_list(goal_assumptions(LastGoal))),
-
-	Asserted = [],
-
-	(if Asserted = []
-	then true %error("conversion error!")
-	else true
-	).
+			), Proofs0, [ProofCost-Proof|_]),
+	trace[compile_time(flag("debug")), io(!IO)] (print(stderr_stream, "done prove_best\n", !IO)).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

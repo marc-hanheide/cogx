@@ -8,11 +8,13 @@ BIN=abducer-server
 #
 MFILES=abducer-server.m MercuryAbducerServer_mint.m TypeConversions_mint.m
 
+LIBABDUCER=../lib/libabducer.a
+
 # Mercury compiler flags
 #
 MCFLAGS?=--search-lib-files-dir ../lib \
 		--init-file ../lib/abducer.init \
-		--link-object ../lib/libabducer.a
+		--link-object $(LIBABDUCER)
 
 #------------------------------------------------------------------------------#
 
@@ -41,7 +43,7 @@ endif
 #MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
 
 CXXFLAGS=-Wall
-LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
+LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil --runtime-flags '--nondetstack-size 100000'
 
 ifeq ($(shell uname -s), Darwin)
 # on Darwin, Mercury doesn't support asm_fast (although it should for
@@ -79,7 +81,7 @@ compile: $(BIN)
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
 	slice2cpp -I$(SLICE_PATH) --source-ext cc $(SLICE_PATH)/Abducer.ice
 
-abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o TtyUtils.o
+abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o TtyUtils.o $(LIBABDUCER)
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-object Abducer.o \

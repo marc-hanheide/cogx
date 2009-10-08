@@ -90,20 +90,25 @@ assumables(Ctx) = Ctx^ctx_assumables.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- import_module io.
+
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
-ctx_fact(Ctx, _, Fact) :-
-	set.member(Fact, Ctx^ctx_facts).
+ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, p(PredSym, Args)), VS)) :-
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "F", !IO) ),
+	set.member(vs(m(Mod, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
 :- pred ctx_rule(ctx::in, vscope(mrule(ctx_modality))::out) is nondet.
 
 ctx_rule(Ctx, Rule) :-
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "R", !IO) ),
 	set.member(Rule, Ctx^ctx_rules).
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
 ctx_assumable_func(Ctx, FuncName, GProp, Cost) :-
 	map.search(Ctx^ctx_assumables, FuncName, MapCosts),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "A", !IO) ),
 	map.member(MapCosts, GProp, Cost).
 
 :- func ctx_min_assumption_cost(ctx, ctx_modality) = float.
