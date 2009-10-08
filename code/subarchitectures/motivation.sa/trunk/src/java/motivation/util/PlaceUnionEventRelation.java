@@ -65,6 +65,9 @@ public class PlaceUnionEventRelation extends
 		UnionConfiguration unionConfiguration = component.getMemoryEntry(
 				wmcImplication.address, UnionConfiguration.class);
 
+		// sanity check...
+		if (unionConfiguration.includedUnions == null)
+			return false;
 		// if we have a delete event... simply return true
 		if (wmcTrigger.operation == WorkingMemoryOperation.DELETE) {
 			return true;
@@ -75,6 +78,7 @@ public class PlaceUnionEventRelation extends
 				|| wmcTrigger.operation == WorkingMemoryOperation.OVERWRITE) {
 			// on add or overwrite we expect to find the place in the
 			// unions
+			
 			return findPlaceIdInUnions(unionConfiguration.includedUnions,
 					place.id);
 		}
