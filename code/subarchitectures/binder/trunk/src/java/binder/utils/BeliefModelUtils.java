@@ -416,11 +416,12 @@ public class BeliefModelUtils {
 	public static String getAgentStatusPrettyPrint (AgentStatus status) {
 	
 		String result = "{" ;
-		if (status instanceof PrivateAgentStatus) {
-			result += ((PrivateAgentStatus)status).ag.id;
-		}
-		else if (status instanceof AttributedAgentStatus) {
+
+		if (status instanceof AttributedAgentStatus) {
 			result += " ["  + ((AttributedAgentStatus)status).ag.id + "] " + ((AttributedAgentStatus)status).ag2.id;
+		}
+		else if (status instanceof PrivateAgentStatus) {
+			result += ((PrivateAgentStatus)status).ag.id;
 		}
 		else if (status instanceof MutualAgentStatus) {
 			result += getAgentsPrettyPrint(((MutualAgentStatus)status).ags);
