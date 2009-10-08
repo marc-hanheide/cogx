@@ -1,0 +1,252 @@
+
+// =================================================================                                                        
+// Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
+//                                                                                                                          
+// This library is free software; you can redistribute it and/or                                                            
+// modify it under the terms of the GNU Lesser General Public License                                                       
+// as published by the Free Software Foundation; either version 2.1 of                                                      
+// the License, or (at your option) any later version.                                                                      
+//                                                                                                                          
+// This library is distributed in the hope that it will be useful, but                                                      
+// WITHOUT ANY WARRANTY; without even the implied warranty of                                                               
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                                                         
+// Lesser General Public License for more details.                                                                          
+//                                                                                                                          
+// You should have received a copy of the GNU Lesser General Public                                                         
+// License along with this program; if not, write to the Free Software                                                      
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA                                                                
+// 02111-1307, USA.                                                                                                         
+// =================================================================                                                        
+
+
+
+PARSER_BEGIN(BNConfigParser)
+
+/** New line translator. */
+
+package binder.bayesiannetwork.configparser;
+
+import binder.autogen.core.*;
+import binder.autogen.featvalues.*;
+import binder.autogen.bayesiannetworks.*;
+import java.util.Vector;
+import java.util.Enumeration;
+
+public class BNConfigParser {
+
+  /** Main entry point. */
+  public static void main(String args[]) throws ParseException {
+    BNConfigParser parser = new BNConfigParser(System.in);
+    BayesianNetwork network = parser.Configuration();
+    
+    log("number of nodes in BN: " + network.nodes.length);
+    for (int i = 0; i < network.nodes.length; i++) {
+    	log("nb of feat values: " + network.nodes[i].feat.alternativeValues.length);
+    }
+    
+  }
+
+
+public static BayesianNetworkNode getNode(String s, BayesianNetworkNode[] nodes) {
+	for (int i = 0; i< nodes.length; i++) {
+		BayesianNetworkNode node = nodes[i];
+		if (node.feat.featlabel.equals(s)) {
+			return node;
+		}
+	}
+	return null;
+}
+
+public static void log(String s) {
+	System.out.println("[BayesianNetworkConfigParser] " + s);
+}
+
+
+}
+
+
+PARSER_END(BNConfigParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+ <NODEID: "nodes">
+ | <EDGEID: "edges">
+ | <FEATVALUESID: "featurevalues">
+  | <FEATPROBSID: "featureprobs">
+|  < ID: ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","_","0"-"9"] )* >
+|
+  < NUM: ( ["0"-"9"] )+ >
+|   <LBRACE: "{">
+| <RBRACE: "}">
+| <PROB: <NUM> | <NUM>"."(<NUM>)+>
+}
+
+
+Vector<FeatureValue> FeatureValues() :
+{
+Vector<FeatureValue> features = new Vector<FeatureValue>();
+Token featvalue;
+}
+{
+	featvalue=<ID> { features.add(new StringValue(0, 0, featvalue.image)); } 
+	("," featvalue=<ID> {features.add(new StringValue(0, 0, featvalue.image));  } )*
+{ 
+return features; }
+}
+
+
+FeatureValue FeatureProb() :
+{
+Token tok1;
+Token tok2;
+Token tok3;
+ }
+{
+ "P(" tok1=<ID> "=" tok2=<ID> ")" "=" tok3=<PROB>
+ { FeatureValue featvalue = new StringValue(0, 0, tok2.image);
+  featvalue.independentProb = Float.parseFloat (tok3.image);
+ // System.out.println( featvalue.independentProb);
+ return featvalue; }
+ }
+
+
+
+Vector<FeatureValue> FeatureProbs() :
+{ Vector<FeatureValue> features = new Vector<FeatureValue>();
+FeatureValue featvalue;
+}
+{
+	featvalue=FeatureProb() {features.add(featvalue); } ( "," featvalue=FeatureProb()  {features.add(featvalue); } )*
+{ 
+return features; }
+}
+
+BayesianNetworkNode Node() :
+{
+BayesianNetworkNode node = new BayesianNetworkNode();
+node.feat = new Feature();
+Token label;
+Vector<FeatureValue> featuresVector1;
+Vector<FeatureValue> featuresVector = new Vector<FeatureValue>();
+}
+{
+	label=<ID> { node.feat.featlabel = label.image; } <LBRACE> <FEATVALUESID> <LBRACE>  featuresVector1=FeatureValues()  <RBRACE> [ <FEATPROBSID> <LBRACE> featuresVector=FeatureProbs() <RBRACE> ] <RBRACE>
+	{ 
+	for (Enumeration<FeatureValue> e = featuresVector1.elements() ; e.hasMoreElements(); ) {
+		FeatureValue v = e.nextElement();
+		boolean existsAlready = false;
+		for (Enumeration<FeatureValue> f = featuresVector.elements() ; f.hasMoreElements(); ) {
+			if (((StringValue)f.nextElement()).val.equals(((StringValue)v).val)) {
+				existsAlready = true;
+			}
+		}
+		if (!existsAlready) {
+			featuresVector.add(v);
+		}
+	}
+	 node.feat.alternativeValues = new FeatureValue[featuresVector.size()];
+for (int i = 0; i <  node.feat.alternativeValues.length ; i++) {
+	 node.feat.alternativeValues[i] = featuresVector.elementAt(i);
+	}
+	return node; } 
+}
+
+FeatureValueCorrelation ConditionalProb() :
+{
+FeatureValueCorrelation corr = new FeatureValueCorrelation(); 
+Token tok1;
+Token tok2;
+Token tok3;
+}
+{
+ "P(" <ID> "=" tok1=<ID> "|" <ID> "=" tok2=<ID> ")" "=" tok3=<PROB>
+ {corr.value1 = new StringValue(0, 0, tok1.image);
+ corr.value2 = new StringValue(0, 0, tok2.image);
+  corr.condProb = Float.parseFloat(tok3.image);
+ return corr;
+}
+}
+
+
+Vector<FeatureValueCorrelation> ConditionalProbs() :
+{
+Vector<FeatureValueCorrelation> correlations = new Vector<FeatureValueCorrelation>();
+FeatureValueCorrelation prob;
+}
+{
+	prob=ConditionalProb() {correlations.add(prob); } ("," prob=ConditionalProb() {correlations.add(prob); } )*
+
+	{return correlations; }
+}
+
+
+
+BayesianNetworkEdge Edge(BayesianNetworkNode[] nodes) : 
+{Token tok1;
+Token tok2;
+BayesianNetworkEdge edge = new BayesianNetworkEdge();
+Vector<FeatureValueCorrelation> correlationsVector;
+}
+{
+	tok1=<ID> { edge.incomingNode = getNode(tok1.image,nodes); }  "->" tok2=<ID> { edge.outgoingNode = getNode(tok2.image,nodes); }  <LBRACE> correlationsVector=ConditionalProbs() <RBRACE>
+{
+edge.correlations = new FeatureValueCorrelation[correlationsVector.size()];
+for (int i = 0; i < edge.correlations.length; i++) {
+	edge.correlations[i] = correlationsVector.elementAt(i);
+}
+return edge; }
+}
+
+
+
+BayesianNetworkNode[] Nodes() :
+{
+Vector<BayesianNetworkNode> nodesVector = new Vector<BayesianNetworkNode>();
+BayesianNetworkNode n;
+
+}
+{
+( n=Node() {nodesVector.add(n); } )*
+{
+BayesianNetworkNode[] nodes = new BayesianNetworkNode[nodesVector.size()];
+for (int i = 0; i < nodes.length ; i++) {
+	nodes[i] = nodesVector.elementAt(i);
+}
+return nodes; }
+}
+
+
+BayesianNetworkEdge[] Edges(BayesianNetworkNode[] nodes) :
+{
+Vector<BayesianNetworkEdge> edgesVector = new Vector<BayesianNetworkEdge>();
+BayesianNetworkEdge e;
+
+}
+{
+( e=Edge(nodes) {edgesVector.add(e); } )*
+{
+BayesianNetworkEdge[] edges = new BayesianNetworkEdge[edgesVector.size()];
+for (int i = 0; i < edges.length ; i++) {
+	edges[i] = edgesVector.elementAt(i);
+}
+return edges; }
+}
+
+
+/** Top level production. */
+BayesianNetwork Configuration() :
+{
+	BayesianNetwork network = new BayesianNetwork();
+}
+{
+	<NODEID> <LBRACE> network.nodes=Nodes()  <RBRACE> <EDGEID>  <LBRACE> network.edges=Edges(network.nodes)  <RBRACE> <EOF>
+	{return network; }
+}

@@ -1,0 +1,139 @@
+
+
+nodes {
+	
+	shape {
+		featurevalues {
+			spherical, 
+			cylindrical,
+			cubic
+		}		
+		featureprobs {
+			P(shape=spherical)=0.15,
+			P(shape=cylindrical)=0.4,
+			P(shape=cubic)=0.3
+		}
+	}
+		
+	colour {		
+		featurevalues {
+			white,
+			black,
+			green,
+			blue,
+			pink,
+			purple,
+			yellow,
+			orange,
+			red,
+			gray
+		}
+		featureprobs {
+			P(colour=blue) = 0.1,
+			P(colour=pink)=0.02
+		}
+	}
+	
+	graspable {
+		featurevalues {
+			true,
+			false
+		}
+	}
+	
+	obj_label {
+		featurevalues {
+			mug,
+			table,
+			ball,
+			shelf,
+			book
+		}
+		featureprobs {
+			P(obj_label=mug)=0.2,
+			P(obj_label=ball)=0.25
+		}
+	}
+	
+	position {
+		featurevalues {
+			on_table,
+			on_shelf,
+			on_the_floor
+		}
+		featureprobs {
+			P(position=on_the_floor)=0.4
+		}
+	}
+	
+	ling_label {
+		featurevalues {
+			mug,
+			ball
+		}
+	}
+	
+	ling_attribute {
+		featurevalues {
+			red,
+			blue,
+			green,
+			white,
+			black
+		}
+	}
+	
+	ling_proximity {
+		featurevalues {
+			proximal,
+			distal
+		}
+	}
+	
+	saliency {
+		featurevalues {
+			low,
+			high
+		}
+	}
+		
+}
+
+edges {
+	shape -> obj_label {
+		P(obj_label=mug|shape=cylindrical)=0.8,
+		P(obj_label=ball|shape=spherical)=0.95,
+		P(obj_label=mug|shape=spherical)=0.001,
+		P(obj_label=ball|shape=cylindrical)=0.001
+	}
+	
+
+	position -> obj_label {
+		P(obj_label=shelf|position=on_the_floor)=0.4,
+		P(obj_label=mug|position=on_the_floor)=0.05
+	}
+	
+	obj_label -> ling_label {
+	   P(ling_label=mug|obj_label=mug)=0.9,
+	   P(ling_label=mug|obj_label=ball)=0.000001,
+	   P(ling_label=ball|obj_label=ball)=0.8,
+	   P(ling_label=ball|obj_label=mug)=0.000001
+   }
+   
+   ling_attribute -> colour {
+       P(colour=red|ling_attribute=red)=0.5,
+       P(colour=red|ling_attribute=blue)=0.00001,
+       P(colour=blue|ling_attribute=blue)=0.99,
+       P(colour=blue|ling_attribute=red)=0.00001
+   }
+   
+   ling_proximity -> saliency {
+   		P(saliency=high|ling_proximity=proximal) = 0.999,
+   		P(saliency=high|ling_proximity=distal) = 0.999,
+   		P(saliency=low|ling_proximity=proximal) = 0.001,
+   		P(saliency=low|ling_proximity=distal) = 0.001
+   	}
+   	
+}
+	
+		
