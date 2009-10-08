@@ -203,9 +203,9 @@ public class BinderMonitor extends ManagedComponent {
 			// Check if unions need to be deleted from the monitor
 			for (Enumeration<Union> e = lastUnions.elements(); e.hasMoreElements(); ) {
 				Union union = e.nextElement();
-				if (!UnionsV.contains(union)) {
+		//		if (!UnionsV.contains(union)) {
 					UnionsToDelete.add(union);
-				}
+		//		}
 			}
 		}
 		catch (Exception e) {

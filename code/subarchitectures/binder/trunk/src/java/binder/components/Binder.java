@@ -35,6 +35,7 @@ import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.featvalues.AddressValue;
+import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.utils.BinderUtils;
 import binder.filtering.ConfigurationFilter;
@@ -55,7 +56,7 @@ import cast.core.CASTData;
  * the correlations between features
  * 
  * @author Pierre Lison
- * @version $Date$ (started 01/07/2009)
+ * @version 22/09/2009 (started 01/07/2009)
  */
 
 public class Binder extends ManagedComponent  {
