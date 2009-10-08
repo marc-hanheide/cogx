@@ -10,8 +10,8 @@
 #include <vector>
 #include <stdexcept>
 #include <sys/time.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <cv.h>
+#include <highgui.h>
 #include "VideoServer.h"
 
 namespace cast
