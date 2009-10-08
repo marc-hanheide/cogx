@@ -533,9 +533,6 @@ public class BinderMonitorGUI extends JFrame
 					
 					addNewUnionAndIncludedProxies(union);
 				}
-				else if (!insertedUnions.get(union.entityID).equals(union)) {
-					addNewUnionAndIncludedProxies(union);
-				}
 			}
 		
 			if (mustRegenerateRelationUnions) {

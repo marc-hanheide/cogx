@@ -132,6 +132,8 @@ public class FakeHapticProxyGenerator extends AbstractProxyGenerator {
 	 */
 	private Proxy createRelationProxy() {
 
+		sleepComponent(2000);
+		
 		AddressValue[] sources = new AddressValue[1];
 		sources[0] = createAddressValue(proxyOneId, 0.9f);
 
