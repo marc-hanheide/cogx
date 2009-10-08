@@ -156,10 +156,7 @@ public class Scheduler extends ManagedComponent {
 			while (isRunning()) {
 				log("runComponent loop");
 				// retrieve next event
-				while (isRunning()) {
-					if (surfacedEventQueue.poll(1, TimeUnit.SECONDS) != null)
-						break;
-				}
+				surfacedEventQueue.poll(1, TimeUnit.SECONDS);
 				scheduleMotives();
 			}
 		} catch (InterruptedException e) {

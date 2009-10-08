@@ -28,10 +28,13 @@ import motivation.util.facades.ExecutorFacade;
 import motivation.util.facades.PlannerFacade;
 import Ice.ObjectImpl;
 import cast.CASTException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
@@ -42,8 +45,8 @@ public class PlanAllManager extends ManagedComponent {
 	/**
 	 * check for pending active motives at least every N seconds, N given here.
 	 * If a motive is being activated, the Managers considers it immediately.
-	 * This forced check frequency is a failsafe mechanism that assures that older
-	 * pending motives are considered appropriately.
+	 * This forced check frequency is a failsafe mechanism that assures that
+	 * older pending motives are considered appropriately.
 	 */
 	private static final long FORCED_CHECK_FREQUENCY = 5;
 	WMMotiveSet motives;
@@ -241,15 +244,26 @@ public class PlanAllManager extends ManagedComponent {
 	// }
 
 	void deactivateMotives() {
-		try {
-			for (Motive m : motives.getSubsetByStatus(MotiveStatus.ACTIVE)) {
-				m.status = MotiveStatus.SURFACED;
+		for (Motive m : motives.getSubsetByStatus(MotiveStatus.ACTIVE)) {
+			m.status = MotiveStatus.SURFACED;
+			try {
+				lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
+				getMemoryEntry(m.thisEntry, Motive.class);
 				overwriteWorkingMemory(m.thisEntry, m);
+
+			} catch (DoesNotExistOnWMException e) {
+				log("deactive a motive that doesn't exist... no worries");
+			} catch (CASTException e) {
+				e.printStackTrace();
 			}
-		} catch (DoesNotExistOnWMException e) {
-			log("deactive a motive that doesn't exist... no worries");
-		} catch (CASTException e) {
-			e.printStackTrace();
+			finally {
+				try {
+					unlockEntry(m.thisEntry);
+				} catch (CASTException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			}
 		}
 
 	}

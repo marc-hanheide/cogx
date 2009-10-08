@@ -47,7 +47,7 @@ public class BinderFacade {
 			String featureLabel) {
 		List<FeatureValue> result = new LinkedList<FeatureValue>();
 		for (Feature f : entity.features) {
-			component.log("  check feature: " + f.featlabel);
+			component.debug("  check feature: " + f.featlabel);
 			if (f.featlabel.equals(featureLabel)) {
 				for (FeatureValue av : f.alternativeValues) {
 					result.add(av);
@@ -73,10 +73,10 @@ public class BinderFacade {
 		List<FeatureValue> features;
 		Union[] unions = ((UnionConfiguration) unionConfigurations.values()
 				.iterator().next()).includedUnions;
-		component.log("unions:  " + unionConfigurations.size());
-		component.log("proxies: " + proxies.size());
+		component.debug("unions:  " + unionConfigurations.size());
+		component.debug("proxies: " + proxies.size());
 		for (Union union : unions) {
-			component.log("check union " + union.entityID);
+			component.debug("check union " + union.entityID);
 			features = getFeatureValue(union, featureLabel);
 			for (FeatureValue fv : features) {
 				result.put(union.entityID, fv);
