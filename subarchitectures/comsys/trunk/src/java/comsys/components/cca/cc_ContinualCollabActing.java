@@ -360,14 +360,24 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     public Abducer.Predicate formulaToPredicate(String unionId, SuperFormula cf) {
     	Abducer.Predicate pred = new Abducer.Predicate();
     	pred.args = new Abducer.Term[2];
-    	pred.args[0] = AbducerUtils.term("form-" + unionId);
-    	
+    	pred.args[0] = AbducerUtils.term(unionId);
+
     	if (cf instanceof ObjectTypeProperty) {
     		pred.predSym = "objecttype";
     		pred.args[1] = AbducerUtils.term( ((ObjectTypeProperty)cf).typeValue.toString() );
     		return pred;
     	}
-
+    	if (cf instanceof ColorProperty) {
+    		pred.predSym = "color";
+    		pred.args[1] = AbducerUtils.term( ((ColorProperty)cf).colorValue.toString() );
+    		return pred;
+    	}
+    	if (cf instanceof ShapeProperty) {
+    		pred.predSym = "shape";
+    		pred.args[1] = AbducerUtils.term( ((ShapeProperty)cf).shapeValue.toString() );
+    		return pred;
+    	}
+    	
     	return null;
     }
     
@@ -381,11 +391,11 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			log("got a belief, id=" + model.k[i]);
+			//log("got a belief, id=" + model.k[i]);
 			Modality[] mod = new Modality[] { AbducerUtils.kModality(b.ags) };
 			String unionId = referringUnionId(b);
 
-			log("inspecting feats");
+			//log("inspecting feats");
 
 			for (int j = 0; j < ((ComplexFormula)b.phi).formulae.length ; j++) {
 				SuperFormula formula = ((ComplexFormula)b.phi).formulae[j];
@@ -394,11 +404,12 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				ModalisedFormula mf = AbducerUtils.modalisedFormula(mod, pred);
 
 				if (pred != null) {
-					log("adding " + MercuryUtils.modalisedFormulaToString(mf));
+					log("adding " + MercuryUtils.modalisedFormulaToString(mf) + " ... from " + model.k[i]);
 					ccaEngine.abducer.addFact(mf);
 				}
 			}
 		}
+		log("sync done");
 	}
 	    
     private void executeClarificationRequestTask(ProcessingData pd) throws ComsysException {
