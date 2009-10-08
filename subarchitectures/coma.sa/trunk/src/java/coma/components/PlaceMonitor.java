@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import quicktime.streaming.NewPresentationParams;
-
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.IntegerValue;
@@ -20,14 +18,11 @@ import binder.autogen.featvalues.StringValue;
 import comadata.ComaReasonerInterfacePrx;
 import comadata.ComaRoom;
 
-import Ice.Identity;
-import Ice.ObjectPrx;
 import Marshalling.MarshallerPrx;
 import Marshalling.Marshaller;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialProperties.ConnectivityPathProperty;
-import SpatialProperties.DiscreteProbabilityDistribution;
 import SpatialProperties.GatewayPlaceProperty;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
