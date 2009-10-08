@@ -12,7 +12,7 @@ ubuntu-install:	$(DEB_PACKAGES)
 	
 
 %@ubuntu:
-	@(if [ `lsb_release -i -s` == "Ubuntu" ]; then if dpkg-query -s $* | grep "Status:.*install[^e]" >/dev/null 2>&1; then \
+	@(if [ `lsb_release -i -s` = "Ubuntu" ]; then if dpkg-query -s $* | grep "Status:.*install[^e]" >/dev/null 2>&1; then \
 		echo "	[ubuntu-check] $* is already installed.";\
 		exit 0;\
 	else \
