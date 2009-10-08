@@ -479,9 +479,7 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 	 */
 	public synchronized void waitForPropagation(long timeout)
 			throws InterruptedException {
-		while (pendingChanges.size() > 0) {
-			wait(timeout);
-		}
+		wait(timeout);
 	}
 
 	/**

@@ -66,6 +66,9 @@ public class RoomUnionEventRelation extends
 		UnionConfiguration unionConfiguration = component.getMemoryEntry(
 				wmcImplication.address, UnionConfiguration.class);
 
+		// sanity check...
+		if (unionConfiguration.includedUnions == null)
+			return false;
 		// if we have a delete event... simply return true
 		if (wmcTrigger.operation == WorkingMemoryOperation.DELETE) {
 			return true;

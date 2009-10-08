@@ -135,9 +135,10 @@ public class PlanAllManager extends ManagedComponent {
 				// make sure all changes have been propagated to the
 				// unions!
 				log("wait to finalize propagation of places to unions");
-				placeUnionEventRelation.waitForPropagation();
+				placeUnionEventRelation.waitForPropagation(1000);
 				log("wait to finalize propagation of rooms to unions");
-				roomUnionEventRelation.waitForPropagation();
+				roomUnionEventRelation.waitForPropagation(1000);
+				log("got all changes");
 				// after this we can be quite sure that we actually have
 				// all required information on the binder, available to the
 				// planner
