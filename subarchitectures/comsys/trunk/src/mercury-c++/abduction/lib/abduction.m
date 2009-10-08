@@ -165,6 +165,10 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 
 %------------------------------------------------------------------------------%
 
+:- import_module io, formula_io.
+
+%------------------------------------------------------------------------------%
+
 :- pred transform(step(M)::out,
 		list(query(M))::in, varset::in,
 		list(query(M))::out, varset::out,
@@ -172,7 +176,9 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 
 transform(Step, L0, VS0, L, VS, Ctx) :-
 	segment_proof_state(L0, SegL0),
-	step(Step, SegL0, VS0, L, VS, Ctx).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[", !IO) ),
+	step(Step, SegL0, VS0, L, VS, Ctx),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "]", !IO) ).
 
 %------------------------------------------------------------------------------%
 
@@ -201,17 +207,26 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 		QsL ++ [assumed(m(MQ, PQ), F)] ++ QsR, VS,
 		Ctx) :-
 
+
 	assumable(Ctx, vs(m(MQ, PQ0), VS0), F, vs(m(MA, PA0), VSA), _Cost),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "a{(" ++ atomic_formula_to_string(VSA, PA0), !IO) ),
 	match(compose_list(MQ), compose_list(MA)),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "~", !IO) ),
 
 	varset.merge_renaming(VS0, VSA, VS, Renaming),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "!", !IO) ),
 	PA = rename_vars_in_formula(Renaming, PA0),
 
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "@", !IO) ),
 	unify_formulas(PQ0, PA, Uni),
 
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "#", !IO) ),
 	PQ = apply_subst_to_formula(Uni, PQ0),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "$", !IO) ),
 	QsL = list.map(apply_subst_to_query(Uni), QsL0),
-	QsR = list.map(apply_subst_to_query(Uni), QsR0).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "%", !IO) ),
+	QsR = list.map(apply_subst_to_query(Uni), QsR0),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
 
 %	formula.is_ground(Q^p).
 
@@ -224,6 +239,7 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 		Ctx) :-
 
 	fact_found(Ctx, vs(m(MQ, PQ0), VS0), vs(m(MF, PF0), VSF)),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "f{", !IO) ),
 	match(compose_list(MF), compose_list(MQ)),
 
 	varset.merge_renaming(VS0, VSF, VS, Renaming),
@@ -233,7 +249,8 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 
 	PQ = apply_subst_to_formula(Uni, PQ0),
 	QsL = list.map(apply_subst_to_query(Uni), QsL0),
-	QsR = list.map(apply_subst_to_query(Uni), QsR0).
+	QsR = list.map(apply_subst_to_query(Uni), QsR0),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -244,6 +261,7 @@ step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 		Ctx) :-
 
 	rule_found(Ctx, Rule),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "r{", !IO) ),
 	Rule = vs(m(MR, _-RHead0), VSR),
 	( RHead0 = std(m(MH, _))
 	; RHead0 = test(prop(m(MH, _)))
@@ -282,7 +300,8 @@ step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 %			++ [m(MQ, apply_subst_to_formula(Uni, PQ))-resolved],
 
 	QsL = list.map(apply_subst_to_query(Uni), QsL0),
-	QsR = list.map(apply_subst_to_query(Uni), QsR0).
+	QsR = list.map(apply_subst_to_query(Uni), QsR0),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -300,13 +319,16 @@ step(factor(Uni, VS),
 	; Prev = asserted(impl(_, MProp))
 	),
 
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "t{", !IO) ),
+
 	MProp = m(MP, PP),
 	match(compose_list(MP), compose_list(MQ)),
 
 	unify_formulas(PP, PQ, Uni),
 
 	QsL = list.map(apply_subst_to_query(Uni), QsL0),
-	QsR = list.map(apply_subst_to_query(Uni), QsR0).
+	QsR = list.map(apply_subst_to_query(Uni), QsR0),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
 
 %------------------------------------------------------------------------------%
 

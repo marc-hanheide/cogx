@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <iomanip>
 
 extern "C" {
 #include "TypeConversions_mint.mh"
@@ -503,11 +504,10 @@ MR_WordToMarkedQuerySeq(MR_Word w_ctx, MR_Word w_proof)
 	
 	MR_Word w_vs;
 	MR_Word w_list;
-	double cost;
 
-	debug(cerr << "about to call dissect_proof" << endl);
+	debug(cerr << "about to call dissect_proof, w_proof=" << hex << w_proof << dec << endl);
 
-	dissect_proof(w_ctx, w_proof, &w_vs, &w_list, &cost);
+	dissect_proof(w_proof, &w_vs, &w_list);
 
 	debug(cerr << "done dissect_proof" << endl);
 
@@ -515,6 +515,8 @@ MR_WordToMarkedQuerySeq(MR_Word w_ctx, MR_Word w_proof)
 	for (w_iter = w_list; !MR_list_is_empty(w_iter); w_iter = MR_list_tail(w_iter)) {
 		qs.push_back(MR_WordToMarkedQuery(w_vs, MR_list_head(w_iter)));
 	}
+
+	debug(cerr << "done the vector build" << endl);
 
 //	p->cost = cost;
 

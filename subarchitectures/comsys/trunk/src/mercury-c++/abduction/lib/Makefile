@@ -30,6 +30,12 @@ else
 GRADE?=asm_fast.gc
 endif
 
+ifeq ($(origin DEBUG), undefined)
+else
+MCFLAGS+=--trace-flag=debug
+MCFLAGS+=--cflag -g
+endif
+
 # on BSD, without deactivating suffix rules, any "non-suffixed"
 # target would be matched by some sort of default rule (using
 # $(CC)), not by our rule.

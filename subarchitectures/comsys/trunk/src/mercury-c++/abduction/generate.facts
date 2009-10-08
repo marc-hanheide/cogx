@@ -15,3 +15,4 @@ equal(X, X).
 
 %k(now, private(r)) : objecttype('form-2:B', mug).
 %k(now, private(r)) : objecttype('form-2:B', unknownObjectType).
+%k(now, attrib(r, h)) : objecttype('0:F', box).

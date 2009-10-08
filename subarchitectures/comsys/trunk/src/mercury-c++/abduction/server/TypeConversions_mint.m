@@ -83,8 +83,7 @@
 :- pred dissect_term(varset::in, formula.term::in, bool::out, string::out, list(formula.term)::out) is det.
 :- pred dissect_predicate(varset::in, atomic_formula::in, string::out, list(formula.term)::out) is det.
 :- pred dissect_mprop(mprop(ctx_modality)::in, list(ctx_modality)::out, atomic_formula::out) is det.
-:- pred dissect_proof(ctx::in, proof(ctx_modality)::in, varset::out, list(query(ctx_modality))::out,
-		float::out) is det.
+:- pred dissect_proof(proof(ctx_modality)::in, varset::out, list(query(ctx_modality))::out) is det.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -302,15 +301,13 @@ dissect_mprop(m(Mod, Pred), Mod, Pred).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", dissect_proof(in, in, out, out, out), "dissect_proof").
+:- pragma foreign_export("C", dissect_proof(in, out, out), "dissect_proof").
 
-dissect_proof(Ctx, Proof, VS, Qs, Cost) :-
-	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(last_goal(Proof)), !IO)),
+dissect_proof(Proof, VS, Qs) :-
+	trace[compile_time(flag("debug")), io(!IO)] (print_err("in dissect_proof\n", !IO)),
+	%trace[compile_time(flag("debug")), io(!IO)] (print_err(string(last_goal(Proof)) ++ "\n", !IO)),
 	vs(Qs, VS) = last_goal(Proof),
-	Costs = costs(1.0, 1.0, 0.1),
-	%Cost = cost(Ctx, Proof, Costs),
-	Cost = 1.0,
-	trace[compile_time(flag("debug")), io(!IO)] (print_err("end of dissect_proof", !IO)).
+	trace[compile_time(flag("debug")), io(!IO)] (print_err("end of dissect_proof\n", !IO)).
 
 %------------------------------------------------------------------------------%
 
