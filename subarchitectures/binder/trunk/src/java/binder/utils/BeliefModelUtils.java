@@ -45,6 +45,7 @@ import beliefmodels.domainmodel.cogx.Saliency;
 import beliefmodels.domainmodel.cogx.SaliencyProperty;
 import beliefmodels.domainmodel.cogx.Shape;
 import beliefmodels.domainmodel.cogx.ShapeProperty;
+import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import beliefmodels.domainmodel.cogx.ContinualFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
@@ -312,6 +313,26 @@ public class BeliefModelUtils {
 		}
 	}
 
+	
+
+	
+	public static Saliency getSaliencyValue (Belief belief) {
+		
+		if (belief.phi instanceof ComplexFormula) {
+			
+			for (int i = 0 ; i < ((ComplexFormula)belief.phi).formulae.length ; i++) {
+				
+				SuperFormula formula = ((ComplexFormula)belief.phi).formulae[i];
+				
+				if (formula instanceof SaliencyProperty) {
+					return ((SaliencyProperty)formula).sal;
+				}
+			}
+		}
+		
+		return Saliency.low;
+	}
+	
 	// ================================================================= 
 	// PRETTY PRINT METHODS   
 	// ================================================================= 

@@ -85,6 +85,7 @@ public class BeliefModelInterface extends ManagedComponent{
 			newBeliefSet[i] = currentBeliefModel.k[i];
 		}
 		newBeliefSet[currentBeliefModel.k.length] = belief.id;
+		currentBeliefModel.k = newBeliefSet;
 		
 		try {
 			addToWorkingMemory(belief.id, Binder.BINDER_SA, belief);
