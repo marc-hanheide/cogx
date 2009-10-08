@@ -56,11 +56,11 @@ import cast.core.CASTData;
  * the correlations between features
  * 
  * @author Pierre Lison
- * @version 22/09/2009 (started 01/07/2009)
+ * @version $LastChangedDate$ (started 01/07/2009)
  */
 
 public class Binder extends ManagedComponent  {
-
+ 
 
 	// the union constructor
 	private UnionConstructor constructor;

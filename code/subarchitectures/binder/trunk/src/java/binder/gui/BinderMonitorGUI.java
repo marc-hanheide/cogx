@@ -203,10 +203,10 @@ public class BinderMonitorGUI extends JFrame
 	private int computeHeight(Feature feat) {
 		int height = MIN_FEATURE_BOX_HEIGHT;
 		for (int i = 0 ; i < feat.alternativeValues.length ; i++) {
-			if (!FeatureValueUtils.isUnknownValue(feat.alternativeValues[i])) {
+	//		if (!FeatureValueUtils.isUnknownValue(feat.alternativeValues[i])) {
 			height += FEATURELINE_HEIGHT;
 		}
-		}
+	//	}
 		return height;
 	}
 
@@ -239,7 +239,7 @@ public class BinderMonitorGUI extends JFrame
 			for (int i = 0; i < featvalues.length ; i ++) {
 		
 				FeatureValue featvalue = featvalues[i];
-				if (!FeatureValueUtils.isUnknownValue(featvalue)) {
+		//		if (!FeatureValueUtils.isUnknownValue(featvalue)) {
 				double roundedProb = Math.round(featvalue.independentProb*100.0) / 100.0;
 				if (i==0) {
 					text += " " + key +  ": ";
@@ -249,7 +249,7 @@ public class BinderMonitorGUI extends JFrame
 				}
 				text += createSpace(maxLength - key.length()) + 
 				FeatureValueUtils.toString(featvalue) + " (prob = " + roundedProb + ") " ;
-				}
+		//		}
 			}
 		}
 		return text;
@@ -531,6 +531,9 @@ public class BinderMonitorGUI extends JFrame
 				if (!insertedUnions.containsKey(union.entityID)) {
 					log("Adding new union..." + union.entityID);
 					
+					addNewUnionAndIncludedProxies(union);
+				}
+				else if (!insertedUnions.get(union.entityID).equals(union)) {
 					addNewUnionAndIncludedProxies(union);
 				}
 			}
