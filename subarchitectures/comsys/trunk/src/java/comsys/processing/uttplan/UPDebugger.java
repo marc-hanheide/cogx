@@ -285,7 +285,12 @@ public class UPDebugger
 		opennlp.ccg.realize.Chart chart = realizer.getChart();
 		log("Chart has "+chart.numEdgesInChart()+" representative edges.");
 		log("Best edge: ");
-		chart.printBestEdge();
+		// chart.printBestEdge();
+		opennlp.ccg.realize.Edge bestEdge = chart.bestEdge; 
+		log(bestEdge.toString());
+
+		
+		
 		// log("Best joined edge: ");
 		// chart.printBestJoinedEdge();
 		log("All edges: ");
