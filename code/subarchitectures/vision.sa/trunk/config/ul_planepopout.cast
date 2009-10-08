@@ -18,5 +18,5 @@ SUBARCHITECTURE vision.sa
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --log true
-CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo --objht 15 --objdt 9999 --bght 15 --bgdt 9999 --fixc 8
+CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo --objht 23 --objdt 60 --bght 24 --bgdt 9999 --fixc 24
 
