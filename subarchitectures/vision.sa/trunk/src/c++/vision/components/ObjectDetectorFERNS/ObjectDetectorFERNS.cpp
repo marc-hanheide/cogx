@@ -11,7 +11,7 @@
 #include <cctype>
 #include <cassert>
 #include <sstream>
-#include <opencv/highgui.h>
+#include <highgui.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <VideoUtils.h>
 #include "ObjectDetectorFERNS.h"

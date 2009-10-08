@@ -3,7 +3,7 @@
  * @date February 2009
  */
 
-#include <opencv/highgui.h>
+#include <highgui.h>
 #include <VideoUtils.h>
 #include "VideoViewer.h"
 
