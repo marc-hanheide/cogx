@@ -1,6 +1,6 @@
 #ifndef ABDUCER_ICE
 #define ABDUCER_ICE
-
+ 
 module Abducer {
 
 	exception AbducerException {
