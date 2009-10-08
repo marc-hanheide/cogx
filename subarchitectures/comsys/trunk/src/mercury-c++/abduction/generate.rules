@@ -95,7 +95,8 @@ e(now) : need_get_value(Modality, Entity, Prop) <-
 		i : rel_Color(ContentNom, QualityNom) / 1.0,
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, Prop) / 1.0,
-			i : feat_Questioned(QualityNom, true) / 1.0.
+			i : feat_Questioned(QualityNom, true) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
 
 % NOT THE FIRST is the box red or orange?” / “what color does the box have
 %what color does the box have
