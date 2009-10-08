@@ -93,6 +93,7 @@ public class cc_FakeClarificationGenerator
 	JTextField modalityField;
 	JTextField sourceField;	
 	JTextField formulaField;	
+	JDialog dialog;
 	
 	private String defaultModality = "";
 	private String defaultSourceId = "";
@@ -266,7 +267,7 @@ public class cc_FakeClarificationGenerator
 		buttonPanel.add(ok);
 		dialogPanel.add(buttonPanel);
 
-		JDialog dialog = new JDialog(frame, "Clarification Request");
+		dialog = new JDialog(frame, "Clarification Request");
 		dialog.add(dialogPanel);
 
 		dialog.setLocation(600, 400);
@@ -283,7 +284,7 @@ public class cc_FakeClarificationGenerator
 							   {
 							   if(((KeyEvent) ke).getKeyCode() == KeyEvent.VK_ENTER)
 							   {
-							   ok.doClick();
+							   if (dialog.isActive()) ok.doClick();
 							   }
 							   }
 							   return false;
