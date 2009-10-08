@@ -79,7 +79,13 @@ link_cast_component(${CAST_COMPONENT_NAME} NavData Robotbase OdometryReceiver Cu
 # link_cast_component(${CAST_COMPONENT_NAME} NavData)
 
 option(BUILD_SA_NAV_OBJECTSEARCH "Build objectsearch nav.sa comp" NO)
+
 if(BUILD_SA_NAV_OBJECTSEARCH)
+
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
+
 set(SOURCES ObjPdf.cpp)
 add_cast_component(ObjectSearch ObjectSearch.cpp ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} PTZ FrontierInterface NavData SpatialData VisionData Video VideoUtils VideoClient Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils) 

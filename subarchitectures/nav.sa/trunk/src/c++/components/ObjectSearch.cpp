@@ -39,30 +39,31 @@ void ObjectSearch::start() {
     addChangeFilter(createLocalTypeFilter<NavData::NavCommand>(cdl::OVERWRITE),
                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
                             &ObjectSearch::owtNavCommand));
-	 addChangeFilter(createChangeFilter<VisionData::VisualObject>
-      (cdl::ADD,
-      "",
-      "",
-      "vision.sa",
-      cdl::ALLSA),
-      new MemberFunctionChangeReceiver<ObjectSearch>(this,
-	&ObjectSearch::ObjectDetected));
-							
-	addChangeFilter(createChangeFilter<VisionData::VisualObject>
-      (cdl::OVERWRITE,
-      "",
-      "",
-      "vision.sa",
-      cdl::ALLSA),
-      new MemberFunctionChangeReceiver<ObjectSearch>(this,
-	&ObjectSearch::ObjectDetected));
-	
-	addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
-                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                                        &ObjectSearch::newNavGraphNode));  
-  addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
-                  new MemberFunctionChangeReceiver<ObjectSearch>(this,
-                                        &ObjectSearch::newNavGraphNode)); 
+
+    addChangeFilter(createChangeFilter<VisionData::VisualObject>
+		    (cdl::ADD,
+		     "",
+		     "",
+		     "vision.sa",
+		     cdl::ALLSA),
+		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								   &ObjectSearch::ObjectDetected));
+    
+    addChangeFilter(createChangeFilter<VisionData::VisualObject>
+		    (cdl::OVERWRITE,
+		     "",
+		     "",
+		     "vision.sa",
+		     cdl::ALLSA),
+		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								   &ObjectSearch::ObjectDetected));
+    
+    addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
+		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								   &ObjectSearch::newNavGraphNode));  
+    addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE),
+		    new MemberFunctionChangeReceiver<ObjectSearch>(this,
+								   &ObjectSearch::newNavGraphNode)); 
                                         
      
 	addChangeFilter(createLocalTypeFilter<SpatialData::AVSCommand>(cdl::ADD),
@@ -83,7 +84,7 @@ void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
     	
     	    placestosearch = oobj->getData()->placestosearch;
 	  		m_command = PLAN;
-    }
+	}
 	else if (oobj->getData()->cmd == SpatialData::STOPAVS)
 			m_command = STOP;
 }
