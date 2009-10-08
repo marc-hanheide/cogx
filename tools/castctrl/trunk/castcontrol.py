@@ -74,6 +74,10 @@ class CLogDisplayer:
     def rereadLogs(self):
         for src in self.log.sources: src.restart()
 
+    def saveLogs(self, stream): # TODO: save all available messages from currently registered sourcess
+        # maybe: restart, pullRawLogs-->stream, clearOutput, restart
+        pass
+
 class CCastControlWnd(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -111,7 +115,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         # Auxiliary components
         self.tmStatus = QtCore.QTimer()
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
-        self.tmStatus.start(200)
+        self.tmStatus.start(1000)
         LOGGER.log("CAST Control initialized")
 
         # Event connections
