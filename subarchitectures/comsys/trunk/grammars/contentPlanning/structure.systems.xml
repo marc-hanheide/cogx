@@ -31,11 +31,16 @@
           <condition features="@type:dvp"/>
       </conditions>
       <actions>
+
+	  <action choice="content-canned">
+	  </action>
+
 	  <action choice="content-present">
 		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />
 		<add-feature feature="DVPassigned" value="true" dest="CONTENT" />
 <!--		<move-locus nomvar="CONTENT" /> -->
 	  </action>
+
 	  <action choice="content-absent">
 		<add-relation mode="Content" dest="content" type="marker" /> 
 		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />

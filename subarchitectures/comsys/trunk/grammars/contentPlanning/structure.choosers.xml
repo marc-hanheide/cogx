@@ -17,9 +17,21 @@
   	     <choicenode answer="true">
 	       <result val="content-present"/>
 	     </choicenode>
+         
 	     <choicenode answer="false">
-	       <result val="content-absent"/>
-	     </choicenode>
+            <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+                <q-ex-feat feat="CannedText"/>	                                 
+            </inquiry>
+            <choicenode answer="true">
+                <result val="content-canned"/>
+            </choicenode>
+            <choicenode answer="false">
+                <result val="content-absent"/>
+            </choicenode>
+            <choicenode answer="unknown">
+                <result val="content-absent"/>
+            </choicenode>
+        </choicenode>
 	</choicenode>
    </dectree>
 </chooser>

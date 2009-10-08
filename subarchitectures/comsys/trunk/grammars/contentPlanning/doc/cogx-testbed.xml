@@ -425,6 +425,40 @@
 </utterance>
 
 
+<!-- ========== COGNITION ========= -->
+
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Modality>cognition ^ <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Color>(b3:quality ^ red ))  )
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+</input>
+<realizations>
+<string>I know this is red </string>
+<string>I know that is red </string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )
+  
+*** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+</input>
+<realizations>
+<string>what is this </string>
+<string>what is that </string>
+<string>what is this object </string>
+<string>what is that object </string>
+</realizations>
+</utterance>
+
+
 
 <!-- ==========  NEGATION ========== -->
 
@@ -445,4 +479,232 @@
 <string>the box ain't blue</string>
 </realizations>
 </utterance>
+
+
+
+
+<!-- ========== DORA TEMPLATES ========== -->
+
+<!-- 
+- found new place N
+- found new placeholder N
+- found new room N
+==> verbalize N
+-->    
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(k1:entity ^ kitchen ^ <Size>big)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(k1:entity ^ kitchen ^ /Size\big)
+</input>
+<realizations>
+<string>a big kitchen</string>
+<string>one big kitchen</string>
+</realizations>
+</utterance>
+
+<!-- 
+- found a doorway
+==> verbalize "door" ('cause "doorway" not in the grammar)
+-->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(k1:entity ^ door)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(k1:entity ^ door)
+</input>
+<realizations>
+<string>a door</string>
+<string>one door</string>
+</realizations>
+</utterance>
+
+<!--  
+- seen object O 
+==> verbalize O
+-->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(k1:entity ^ ball ^ <Size>big)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(k1:entity ^ ball ^ /Size\big)
+</input>
+<realizations>
+<string>a big ball</string>
+<string>one big ball</string>
+</realizations>
+</utterance>
+
+<!-- 
+- room N is categorised as a C
+==> verbalize N is a C
+-->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ room)  ^ <Type>(b3:entity ^ kitchen))) 
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ room)  ^ /Type\(b3:entity ^ kitchen)))
+</input>
+<realizations>
+<string>the room is a box</string>
+<string>the big object is one kitchen</string>
+</realizations>
+</utterance>
+
+
+<!-- 
+- going to place N
+TO DO
+-->
+
+
+<!-- 
+- going to categorise room b
+TO DO; WHAT IS THIS MEANT TO BE?
+-->
+
+<!-- 
+- activated goals G
+==> verbalize as "activated goals"
+-->
+
+<!-- canned text:
+- activated goals 
+- planning for active goals
+- planning succeeded/failed
+- executing plan
+- executing next action
+- action succeeded/failed
+- plan execution succeeded/failed
+-->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>activatedGoals ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\activatedGoals )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>planningForActiveGoals ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\planningForActiveGoals )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>planningSucceeded ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\planningSucceeded )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>planning_failed ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\planningFailed )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>executingPlan ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\executingPlan )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>executingNextAction ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\executingNextAction )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>actionSucceeded ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\actionSucceeded )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>actionFailed ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\actionFailed )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>planExecutionSucceeded ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\planExecutionSucceeded )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <CannedText>planExecutionFailed ) 
+-->
+@d1:dvp(c-goal  ^ /CannedText\planExecutionFailed )
+</input>
+<realizations>
+<string></string>
+</realizations>
+</utterance>
+
 

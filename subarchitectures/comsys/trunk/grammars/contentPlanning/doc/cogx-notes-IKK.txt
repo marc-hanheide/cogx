@@ -26,6 +26,9 @@ Weird problem with ascription:
 NOTE: order within Target matters; if box not last, then Color gets not planned !!
 
 
+DORA: "going to the kitchen"
+
+
 "I (do not) know what this is"
   @know1_0:cognition(know ^ 
                      <Mood>ind ^ 
@@ -43,10 +46,6 @@ NOTE: order within Target matters; if box not last, then Color gets not planned 
                                           <Cop-Scope>what1_0:entity ^ 
                                           <Subject>context1_0:entity)) ^ 
                      <Subject>i1_0:person)
-
-
-"let me see"
-make sure realization is returned (also in component)
 
 
 Alternative questions

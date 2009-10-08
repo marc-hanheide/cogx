@@ -245,7 +245,7 @@ public class UPDebugger
 	
     public String realizeLF (Realizer realizer, LogicalForm logicalForm) {
 	
-	// String output = "";
+	String output = "";
 	String contentBody = "Content"; // the content of the LF to realize will always be under relation CONTENT
 
 	// Retrieve the content subtree (adapted from cc_Realizer)
@@ -255,6 +255,9 @@ public class UPDebugger
 		contentRoot = content.dep;
 	} else {
 		contentRoot = logicalForm.root.nomVar;
+		log("IKK: empty content");
+// type?		LFFeature cannedTextKey = LFUtils.lfNominalGetRelation(logicalForm.root,CannedText);
+//		log("IKK: key: "+cannedTextKey+"\n");
 	} 
 	LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
 	LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
@@ -284,35 +287,33 @@ public class UPDebugger
 
 		opennlp.ccg.realize.Chart chart = realizer.getChart();
 		log("Chart has "+chart.numEdgesInChart()+" representative edges.");
+
+		// list best edges according to OpenCCG
+		List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();				
+		for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
+			//  log("entered iterator");
+			opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
+			// Sign sign = edge.getSign();
+			// output = output+sign.toString()+"\n";
+			output = output+edge.toString()+"\n";
+			// msg(output);
+			// log("Iteration number: "+bestcounter++); 
+		} // end for over best edges
+		log("Best edges according to OpenCCG:\n"+output+"\n");
+		
+		/* // needed when debuging realization: 	
+		 log("These are all the edges: ");
+		 chart.printEdges();
+		 log("Number of best edges handed over from chart: "+chart.bestEdges().size()+"\n");
+		 */
+
+		// retrieve the one edge with best scoring (even if incomplete)
+		opennlp.ccg.realize.Edge bestEdge = chart.bestEdge; 
 		log("Best edge: ");
 		// chart.printBestEdge();
-		opennlp.ccg.realize.Edge bestEdge = chart.bestEdge; 
 		if (bestEdge != null) log(bestEdge.toString());		
-		
-		// log("Best joined edge: ");
-		// chart.printBestJoinedEdge();
-		
-	/* // needed when debuging realization: 	
-		log("These are all the edges: ");
-		chart.printEdges();
-	  // List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();
-	log("Number of best edges handed over from chart: "+chart.bestEdges().size()+"\n");
-		
-	*/	
-	//int bestcounter=0;
-	/*	
-	for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
-	  //  log("entered iterator");
-		opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
-	    // Sign sign = edge.getSign();
-	    // output = output+sign.toString()+"\n";
-		output = output+edge.toString()+"\n";
-		// msg(output);
-	    // log("Iteration number: "+bestcounter++); 
-	} // end for over best edges
-	 */
-	log("Realization: "+ bestEdge.getSign().getOrthography().toString());
-	return bestEdge.getSign().getOrthography().toString();
+		log("Output realization: "+ bestEdge.getSign().getOrthography().toString());
+		return bestEdge.getSign().getOrthography().toString();
     } // end realizeLF
 
 	
