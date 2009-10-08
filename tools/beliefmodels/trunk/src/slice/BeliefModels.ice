@@ -1,6 +1,6 @@
 #ifndef BELIEF_ICE
-#define BELIEF_ICE
-
+#define BELIEF_ICE  
+ 
 // ===================================================================
 // MODULE: beliefmodels.adl
 // 
@@ -145,7 +145,7 @@ module beliefmodels {
 		
 		sequence<Belief> Beliefs; 
 		 
-		
+		 
 		
 		// ===================================================================
 		// TASKS 
