@@ -153,6 +153,7 @@ public class cc_ASR extends ManagedComponent {
 	// text field
 	JTextField textField;
 	JButton ok;
+	JDialog dialog;
 
 	//utterance specified as rec result in config file
 	private String m_utterance;
@@ -616,7 +617,7 @@ public class cc_ASR extends ManagedComponent {
 
 		JPanel panel = new JPanel();
 		panel.add(ok);
-		JDialog dialog = new JDialog(frame, "ASR Speech Input");
+		dialog = new JDialog(frame, "ASR Speech Input");
 		dialog.setLocation(600, 600);
 		dialog.getContentPane().add(l, BorderLayout.NORTH);
 		dialog.getContentPane().add(textField, BorderLayout.CENTER);
@@ -632,7 +633,7 @@ public class cc_ASR extends ManagedComponent {
 				{
 					if(((KeyEvent) ke).getKeyCode() == KeyEvent.VK_ENTER)
 					{
-						ok.doClick();
+						if (dialog.isActive()) ok.doClick();
 					}
 				}
 				return false;
