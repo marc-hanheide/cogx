@@ -10,35 +10,6 @@
 
 <!-- /**
 
-@system perception.see produces a perception verb (e.g.,"see") and fills the Actor slot with "I" and the Patient slot with the input object(s), iff the input modality is vision. Otherwise, no event structure is introduced.
-
-*/ --> 
-
-<system id="perception.insert" region="TRANSITIVITY" metafunction="ideational">
-   <chooser id="c-perception.insert"/>
-   <conditions>
-      <condition features="@type:dvp @feat:Modality:vision"/>
-   </conditions>
-
-   <actions>
-   
-	<action choice="insert-perception-ind">
-	
-		 <adjoin-lf mode="Content" lf="@s1:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:animate ^ I ) ^ &lt;Patient&gt;(t1:entity ^ p ) ^ &lt;Subject&gt;i1:animate )" foot="t1" />
-    </action>
-
-	<action choice="insert-perception-int">
-		 <adjoin-lf mode="Content" lf="@s1:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(y1:animate ^ you ) ^ &lt;Patient&gt;(t1:entity ^ p ) ^ &lt;Subject&gt;i1:animate )" foot="t1" />
-    </action>
-
-    <action choice="not-insert-perception">
-    </action>      
-   
-   </actions>
-</system>
-
-<!-- /**
-
 @system blabla
 
 */ --> 
@@ -221,6 +192,39 @@
 
    </actions>
 </system>
+
+
+
+
+<!-- /**
+
+@system perception.see produces a perception verb (e.g.,"see") and fills the Actor slot with "I" and the Patient slot with the input object(s), iff the input modality is vision. Otherwise, no event structure is introduced.
+
+*/ --> 
+
+<system id="perception.insert" region="TRANSITIVITY" metafunction="ideational">
+   <chooser id="c-perception.insert"/>
+   <conditions>
+      <condition features="@type:dvp @feat:Modality:vision"/>
+   </conditions>
+
+   <actions>
+   
+	<action choice="insert-perception-ind">
+	
+		 <adjoin-lf mode="Content" lf="@s1:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:animate ^ I ) ^ &lt;Patient&gt;(t1:entity ^ p ) ^ &lt;Subject&gt;i1:animate )" foot="t1" />
+    </action>
+
+	<action choice="insert-perception-int">
+		 <adjoin-lf mode="Content" lf="@s1:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(y1:animate ^ you ) ^ &lt;Patient&gt;(t1:entity ^ p ) ^ &lt;Subject&gt;i1:animate )" foot="t1" />
+    </action>
+
+    <action choice="not-insert-perception">
+    </action>      
+   
+   </actions>
+</system>
+
 
 
 <!-- /**
