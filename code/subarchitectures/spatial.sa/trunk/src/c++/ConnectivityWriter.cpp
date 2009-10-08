@@ -86,9 +86,9 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
 
     // Add the "relationType" label feature
     FeaturePtr feature = new Feature();
-    feature->featlabel = "relationType";
+    feature->featlabel = "connected";
     feature->alternativeValues.push_back(new 
-					 binder::autogen::featvalues::StringValue(1,getCASTTime(),"connectivity"));
+					 binder::autogen::featvalues::BooleanValue(1,getCASTTime(),true));
     m_marshaller->addFeature("connectivity", relationUID, feature);
 
     m_marshaller->commitFeatures("connectivity", relationUID);
