@@ -1,5 +1,3 @@
-PROJECT(VideoServer)
-
 include_directories(.)
 include_directories(/opt/local/include)
 link_directories (/opt/local/lib)
@@ -8,36 +6,25 @@ link_directories (/opt/local/lib)
 SET(SOURCES VideoServer.cpp)
 SET(HEADERS VideoServer.h)
 
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(VideoServer SHARED ${SOURCES})
+target_link_libraries(VideoServer CASTCore CDL)
+target_link_libraries(VideoServer Video VideoUtils)
 
-# Add libraries to link against.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore CDL)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} Video VideoUtils)
+INSTALL(TARGETS VideoServer LIBRARY DESTINATION lib)
 
-INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
-
-PROJECT(VideoClient)
-
-include_directories(.)
-include_directories(/opt/local/include)
-link_directories (/opt/local/lib)
 
 # Set the sources.
 SET(SOURCES VideoClient.cpp)
 SET(HEADERS VideoClient.h)
 
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(VideoClient SHARED ${SOURCES})
 
 # Add libraries to link against.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore CDL)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} Video VideoUtils)
+TARGET_LINK_LIBRARIES(VideoClient CASTCore CDL)
+TARGET_LINK_LIBRARIES(VideoClient Video VideoUtils)
 
-INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+INSTALL(TARGETS VideoClient LIBRARY DESTINATION lib)
 
-# Components!
-
-find_package(OpenCV REQUIRED)
-include_directories(${OPENCV_CFLAGS})
 
 add_cast_component(OpenCvImgSeqServer OpenCvImgSeqServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
