@@ -3305,6 +3305,9 @@ def be-forms (args) {
   name+vocative(Chandana, person,)	
    name+vocative(Hans, person,)
    name+vocative(Dennis, person,)
+   name+vocative(George, person,)
+
+
 
   _noun(Robot, rowboat, animate, asr-correction)
 
@@ -4113,6 +4116,8 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   dis-marker(well, marker)
   dis-marker(huh, marker)
   dis-marker(um, marker)
+  dis-marker(aha, marker)
+  dis-marker(hum, marker)
   dis-marker(but, marker)
   dis-marker(and, marker)
   dis-marker(so, marker)
