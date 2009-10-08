@@ -287,7 +287,7 @@ public class UPDebugger
 		log("Best edge: ");
 		// chart.printBestEdge();
 		opennlp.ccg.realize.Edge bestEdge = chart.bestEdge; 
-		log(bestEdge.toString());
+		if (bestEdge != null) log(bestEdge.toString());
 
 		
 		
