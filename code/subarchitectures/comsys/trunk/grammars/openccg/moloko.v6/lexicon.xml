@@ -494,6 +494,7 @@
     <member stem="Chandana-name" pred="Chandana"/>
     <member stem="Hans-name" pred="Hans"/>
     <member stem="Dennis-name" pred="Dennis"/>
+    <member stem="George-name" pred="George"/>
     <member stem="Robot-name" pred="Robot"/>
     <member stem="robot-name" pred="Robot"/>
     <member stem="DFKI-name" pred="DFKI"/>
@@ -14685,6 +14686,7 @@
     <member stem="Chandanaxx-du" pred="Chandana"/>
     <member stem="Hansxx-du" pred="Hans"/>
     <member stem="Dennisxx-du" pred="Dennis"/>
+    <member stem="Georgexx-du" pred="George"/>
     <member stem="Robotxx-du" pred="Robot"/>
     <member stem="robotxx-du" pred="Robot"/>
     <member stem="rightxx-du" pred="right"/>
@@ -14700,6 +14702,8 @@
     <member stem="wellxx-du" pred="well"/>
     <member stem="huhxx-du" pred="huh"/>
     <member stem="umxx-du" pred="um"/>
+    <member stem="ahaxx-du" pred="aha"/>
+    <member stem="humxx-du" pred="hum"/>
     <member stem="butxx-du" pred="but"/>
     <member stem="andxx-du" pred="and"/>
     <member stem="soxx-du" pred="so"/>

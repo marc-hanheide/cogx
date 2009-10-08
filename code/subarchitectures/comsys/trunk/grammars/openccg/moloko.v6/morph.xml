@@ -995,6 +995,8 @@
   <entry word="Hans" macros="@fin-full" pos="du" stem="Hansxx-du" class="person" pred="Hans"/>
   <entry word="Dennis" macros="@s-sg @3rd @full" pos="Bare-np" stem="Dennis-name" class="person" pred="Dennis"/>
   <entry word="Dennis" macros="@fin-full" pos="du" stem="Dennisxx-du" class="person" pred="Dennis"/>
+  <entry word="George" macros="@s-sg @3rd @full" pos="Bare-np" stem="George-name" class="person" pred="George"/>
+  <entry word="George" macros="@fin-full" pos="du" stem="Georgexx-du" class="person" pred="George"/>
   <entry word="rowboat" macros="@s-sg @full @asr-correction" pos="Noun" stem="rowboat-noun-n" class="animate" pred="Robot"/>
   <entry word="rowboats" macros="@s-pl-unsp @full @asr-correction" pos="Noun" stem="rowboat-noun-n" class="animate" pred="Robot"/>
   <entry word="Borland" macros="@s-sg @full" pos="Noun" stem="Borland-noun-n" class="entity" pred="Borland"/>
@@ -2681,6 +2683,8 @@
   <entry word="well" pos="du" stem="wellxx-du" class="marker" pred="well"/>
   <entry word="huh" pos="du" stem="huhxx-du" class="marker" pred="huh"/>
   <entry word="um" pos="du" stem="umxx-du" class="marker" pred="um"/>
+  <entry word="aha" pos="du" stem="ahaxx-du" class="marker" pred="aha"/>
+  <entry word="hum" pos="du" stem="humxx-du" class="marker" pred="hum"/>
   <entry word="but" pos="du" stem="butxx-du" class="marker" pred="but"/>
   <entry word="and" pos="du" stem="andxx-du" class="marker" pred="and"/>
   <entry word="so" pos="du" stem="soxx-du" class="marker" pred="so"/>
