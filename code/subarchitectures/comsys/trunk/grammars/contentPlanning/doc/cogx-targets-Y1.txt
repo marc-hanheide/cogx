@@ -17,6 +17,27 @@ r: “okay thanks” (situated grounding ... the question is, should we have linguis
 ======
 
 ======
+DORA templates
+======
+
+- found new place N
+- found new placeholder N
+- found new room N
+- seen object O
+- room N is categorised as a C
+- found a doorway
+- going to place N
+- going room categorise room b
+- activated goals G
+- planning for active goals
+- planning succeeded/failed
+- executing plan
+- executing next action
+- action succeeded/failed
+- plan execution succeeded/failed
+
+
+======
 DORA
 ======
 
