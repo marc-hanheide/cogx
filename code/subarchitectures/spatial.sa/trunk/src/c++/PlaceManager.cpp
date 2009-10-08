@@ -120,6 +120,9 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::AEdge>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
 					&PlaceManager::modifiedEdge));
+  addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::ADD),
+      		  new MemberFunctionChangeReceiver<PlaceManager>(this,
+		    			&PlaceManager::newObject));
 
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
   hypothesisEvaluator = FrontierInterface::HypothesisEvaluatorPrx(getIceServer<FrontierInterface::HypothesisEvaluator>("map.manager"));
@@ -356,6 +359,92 @@ PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 */
 }
 
+void 
+PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
+{
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  NavData::ObjDataPtr object = getMemoryEntry<NavData::ObjData>(objID.address);
+  
+  string category;
+  double objX;
+  double objY;
+  try {
+  //Find the node closest to the robotPose
+  objX = object->x;
+  objY = object->y;
+  category = object->category;
+  }
+  catch (DoesNotExistOnWMException e) {
+    log("Error! New ObjData couldn't be read!");
+    return;
+  }
+
+  double minDistance = FLT_MAX;
+  NavData::FNodePtr closestNode = 0;
+
+  for (vector<NavData::FNodePtr>::iterator it = nodes.begin();
+      it != nodes.end(); it++) {
+    try {
+      double x = (*it)->x;
+      double y = (*it)->y;
+
+      double distance = (x - objX)*(x-objX) + (y-objY)*(y-objY);
+      if (distance < minDistance) {
+	closestNode = *it;
+	minDistance = distance;
+      }
+    }
+    catch (IceUtil::NullHandleException e) {
+      log("Error! FNode suddenly disappeared!");
+    }
+  }
+
+  if (closestNode != 0) {
+    SpatialData::PlacePtr place = getPlaceFromNodeID(closestNode->nodeId);
+    if (place != 0) {
+      int placeID = place->id;
+      try {
+	SpatialProperties::StringValuePtr objCat = 
+	  new SpatialProperties::StringValue;
+	objCat->value = category;
+
+	SpatialProperties::ValueProbabilityPair pair1 =
+	{ objCat, 1.0 };
+
+	SpatialProperties::ValueProbabilityPairs pairs;
+	pairs.push_back(pair1);
+
+	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+	  new SpatialProperties::DiscreteProbabilityDistribution;
+	discDistr->data = pairs;
+
+	SpatialProperties::ObjectPlacePropertyPtr objProp =
+	  new SpatialProperties::ObjectPlaceProperty();
+	objProp->placeId = placeID;
+	objProp->mapValue = objCat;
+	objProp->mapValueReliable = 1;
+
+	string newID = newDataID();
+	addToWorkingMemory<SpatialProperties::ObjectPlaceProperty>(newID, objProp);
+      }
+      catch (DoesNotExistOnWMException e) {
+	log("Error! Failed to create new object property!");
+	return;
+      }
+    }
+    else {
+      log("Could not find Place for object!");
+      return;
+    }
+  }
+  else {
+    log("Could not find Node for object!");
+    return;
+  }
+}
+
 bool 
 FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInterface::FrontierPtPtr &b)
 {
@@ -539,7 +628,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      eval.unexploredBorderValue);
 
 	  //Create/update the placeholder properties
-	  
+
 	  {
 	    //Free space property
 	    SpatialProperties::FloatValuePtr freespacevalue = 
@@ -649,7 +738,7 @@ PlaceManager::getCurrentNavNode()
     log("Could not find RobotPose!");
     return 0;
   }
-  
+
   //Find the node closest to the robotPose
   double robotX = robotPoses[0]->x;
   double robotY = robotPoses[0]->y;
@@ -675,7 +764,8 @@ PlaceManager::getCurrentNavNode()
   return ret;
 }
 
-FrontierInterface::NodeHypothesisPtr PlaceManager::getHypFromPlaceID(int placeID)
+FrontierInterface::NodeHypothesisPtr
+PlaceManager::getHypFromPlaceID(int placeID)
 {
   map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
     m_PlaceIDToHypMap.find(placeID);
@@ -687,7 +777,8 @@ FrontierInterface::NodeHypothesisPtr PlaceManager::getHypFromPlaceID(int placeID
   }
 }
 
-NavData::FNodePtr PlaceManager::getNodeFromPlaceID(int placeID)
+NavData::FNodePtr
+PlaceManager::getNodeFromPlaceID(int placeID)
 {
   map<int, NavData::FNodePtr>::iterator it =
     m_PlaceIDToNodeMap.find(placeID);
@@ -699,7 +790,8 @@ NavData::FNodePtr PlaceManager::getNodeFromPlaceID(int placeID)
   }
 }
 
-SpatialData::PlacePtr PlaceManager::getPlaceFromNodeID(int nodeID)
+SpatialData::PlacePtr 
+PlaceManager::getPlaceFromNodeID(int nodeID)
 {
   for(map<int, NavData::FNodePtr>::iterator it =
       m_PlaceIDToNodeMap.begin();
@@ -714,7 +806,8 @@ SpatialData::PlacePtr PlaceManager::getPlaceFromNodeID(int nodeID)
   return 0;
 }
 
-SpatialData::PlacePtr PlaceManager::getPlaceFromHypID(int hypID)
+SpatialData::PlacePtr 
+PlaceManager::getPlaceFromHypID(int hypID)
 {
   for(map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
       m_PlaceIDToHypMap.begin();
@@ -729,7 +822,8 @@ SpatialData::PlacePtr PlaceManager::getPlaceFromHypID(int hypID)
   return 0;
 }
 
-void PlaceManager::beginPlaceTransition(int goalPlaceID)
+void 
+PlaceManager::beginPlaceTransition(int goalPlaceID)
 {
   log("beginPlaceTransition called; goal place ID=%i", goalPlaceID);
   // Check whether the transition is an explored or unexplored edge
@@ -760,7 +854,8 @@ void PlaceManager::beginPlaceTransition(int goalPlaceID)
 
 //TODO: placeholder upgrade on new node
 
-void PlaceManager::endPlaceTransition(int failed)
+void 
+PlaceManager::endPlaceTransition(int failed)
 {
   log("endPlaceTransition called");
   if (m_isPathFollowing) {
@@ -776,7 +871,8 @@ void PlaceManager::endPlaceTransition(int failed)
   }
 }
 
-void PlaceManager::processPlaceArrival(bool failed) 
+void 
+PlaceManager::processPlaceArrival(bool failed) 
 {
   log("processPlaceArrival called");
   debug("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
@@ -1050,7 +1146,7 @@ PlaceManager::PlaceServer::getNodeFromPlaceID(int placeID,
   return m_pOwner->getNodeFromPlaceID(placeID);
 }
 
-SpatialData::PlacePtr 
+  SpatialData::PlacePtr 
 PlaceManager::PlaceServer::getPlaceFromNodeID(int nodeID,
     const Ice::Current &_context)
 {
