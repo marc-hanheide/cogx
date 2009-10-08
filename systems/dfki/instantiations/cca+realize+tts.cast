@@ -35,5 +35,6 @@ JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false
 JAVA MG translator binder.components.BeliefModelTranslator --log
 
 JAVA MG monitor binder.components.BinderMonitor --gui --log
+JAVA MG bmmonitor binder.components.BeliefModelMonitor --log
 
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 
