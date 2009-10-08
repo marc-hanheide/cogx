@@ -1,7 +1,7 @@
 #ifndef COMSYS_ICE
 #define COMSYS_ICE
-
-// ========================= ==========================================
+ 
+// ========================= ===== =====================================
 // MODULE: Comsys
 // 
 // Defines the data structures appearing on the comsys working memory 
