@@ -82,11 +82,7 @@ ctx_modality_from_term(functor(atom("e"), [
 	], _)) = e(from_term(STFTerm)).
 
 	% "knows"
-ctx_modality_to_string(k(STF, private(A))) = "k(" ++ to_string(STF) ++ "," ++ to_string(A) ++ ")".
-ctx_modality_to_string(k(STF, attrib(A, B))) = "k(" ++ to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
-		++ to_string(B) ++ ")".
-ctx_modality_to_string(k(STF, mutual(AgS))) = "k(" ++ to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
-	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
+ctx_modality_to_string(k(STF, Ags)) = "k(" ++ to_string(STF) ++ "," ++ belief_to_string(Ags) ++ ")".
 
 ctx_modality_from_term(functor(atom("k"), [
 		STFTerm,
@@ -94,11 +90,7 @@ ctx_modality_from_term(functor(atom("k"), [
 	], _)) = k(from_term(STFTerm), term_to_belief(BeliefTerm)).
 
 	% tasks
-ctx_modality_to_string(t(STF, private(A))) = "t(" ++ to_string(STF) ++ "," ++ to_string(A) ++ ")".
-ctx_modality_to_string(t(STF, attrib(A, B))) = "t(" ++ to_string(STF) ++ ",[" ++ to_string(A) ++ "]"
-		++ to_string(B) ++ ")".
-ctx_modality_to_string(t(STF, mutual(AgS))) = "t(" ++ to_string(STF) ++ ",{" ++ AgSStr ++ "})" :-
-	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
+ctx_modality_to_string(t(STF, Ags)) = "t(" ++ to_string(STF) ++ "," ++ belief_to_string(Ags) ++ ")".
 
 ctx_modality_from_term(functor(atom("t"), [
 		STFTerm,
@@ -110,7 +102,7 @@ ctx_modality_from_term(functor(atom("t"), [
 :- func belief_to_string(belief) = string.
 
 belief_to_string(private(A)) = to_string(A).
-belief_to_string(attrib(A, B)) = "[" ++ to_string(A) ++ "]" ++ to_string(B).
+belief_to_string(attrib(A, B)) = to_string(A) ++ "[" ++ to_string(B) ++ "]".
 belief_to_string(mutual(AgS)) = "{" ++ AgSStr ++ "}" :-
 	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
