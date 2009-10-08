@@ -127,10 +127,10 @@ SelfRepresenter::runComponent()
 
 	  // Add the "relationType" label feature
 	  FeaturePtr feature = new Feature();
-	  feature->featlabel = "relationType";
+	  feature->featlabel = "located";
 
 	  feature->alternativeValues.push_back(new
-	      binder::autogen::featvalues::StringValue(1, getCASTTime(), "position"));
+	      binder::autogen::featvalues::BooleanValue(1, getCASTTime(), true));
 	  agg->addFeature("robotpos", "robot", feature);
 
 	  // Foreground relation proxy
