@@ -16,13 +16,13 @@
 #define SMOOTH_COST 30
 #define HUE_K_RATIO 20 // Number of nearest neighbours taken when calculating the cost for hue
 
-#define OBJ_HUE_TOLERANCE 15
-#define BG_HUE_TOLERANCE 15
+#define OBJ_HUE_TOLERANCE 23
+#define BG_HUE_TOLERANCE 24
 
-#define OBJ_DIST_TOLERANCE 9999
+#define OBJ_DIST_TOLERANCE 60
 #define BG_DIST_TOLERANCE 9999
 
-#define LABEL_FIX_COST 10
+#define LABEL_FIX_COST 24
 
 #define MAX_HUE_VAL 180
 #define MIN_HUE_VAL 0
@@ -739,12 +739,12 @@ vector<CvScalar> SOIFilter::colorFilter( vector<CvScalar> colors, vector<CvScala
 {
 	
 	vector<CvScalar> filteredList;
-	
+	int tolerance = objHueTolerance*0.7;
 	for(vector<CvScalar>::iterator it= colors.begin(); it != colors.end(); it++)
 	{
 		int cost = getHlsDiff(filterColors, *it, k);
 		
-		if( cost >= objHueTolerance)
+		if( cost >= tolerance)
 			filteredList.push_back(*it);
 	}
 	
@@ -777,8 +777,6 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
     	
     	  
     int colorKval = surfPoints.size()/HUE_K_RATIO;
-    	
-	log("%i color neighbours", colorKval);
      
     if(distcost)
     {
@@ -809,7 +807,10 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 	else
 	{	
 		int size = sortHlsList.size();
-		sortHlsList = colorFilter(sortHlsList, filterList, colorKval);
+		int k = filterList.size()/HUE_K_RATIO;
+		sortHlsList = colorFilter(sortHlsList, filterList, k);
+		
+		colorKval = sortHlsList.size()/HUE_K_RATIO;
 		
 		log("Filtered out %i color samples", size - sortHlsList.size());
 		
@@ -833,6 +834,8 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 		cvReleaseImage(&dstL);
 		cvReleaseImage(&src);
 	}
+	
+	log("%i color neighbours", colorKval);
 	
     float hueSigma2 = 2*sqr(hueSigma);
     float distSigma2 = 2*sqr(distSigma);
