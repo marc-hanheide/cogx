@@ -41,7 +41,7 @@ public class FakeVisualUnknownProxyGenerator extends AbstractProxyGenerator {
 		return createProxyOne();
 	}
 	
-
+	
 	protected Proxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");

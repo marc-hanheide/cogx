@@ -534,6 +534,16 @@ public class BinderMonitorGUI extends JFrame
 					addNewUnionAndIncludedProxies(union);
 				}
 			}
+			
+			// UNSTABLE ?? TESTING!
+			for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
+				Proxy proxy = e.nextElement();
+				if (!insertedProxies.containsKey(proxy.entityID)) {
+					log("Adding new proxy..." + proxy.entityID);
+					
+					addNewProxy(proxy);
+				}
+			}
 		
 			if (mustRegenerateRelationUnions) {
 			for (Enumeration<RelationUnion> e = relationUnions.elements(); e.hasMoreElements();) {

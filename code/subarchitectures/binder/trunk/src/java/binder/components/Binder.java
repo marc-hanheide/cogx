@@ -178,6 +178,7 @@ public class Binder extends ManagedComponent  {
 		currentUnionConfigurations = new Vector<UnionConfiguration>();
 		UnionConfiguration initialConfig = new UnionConfiguration();
 		initialConfig.includedUnions = new Union[0];
+		initialConfig.orphanProxies = new Proxy[0];
 		currentUnionConfigurations.add(initialConfig);
 	}
 
@@ -464,6 +465,12 @@ public class Binder extends ManagedComponent  {
 
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
 
+				// create a new configuration with an orphan proxy (proxy without corresponding union)
+				UnionConfiguration unionConfigWithOrphanProxy = 
+					createNewUnionConfigurationWithOrphanProxy(existingUnionConfig, newProxy);
+				newUnionConfigs.add(unionConfigWithOrphanProxy);
+				
+				
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
 					createNewUnionConfiguration (existingUnionConfig, newUnion);
@@ -836,6 +843,27 @@ public class Binder extends ManagedComponent  {
 	(UnionConfiguration existingUnionConfig, Union unionToAdd) {			
 		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, new Vector<Union>());
 	}
+	
+	
+	
+	private UnionConfiguration createNewUnionConfigurationWithOrphanProxy(UnionConfiguration existingUnionConfig, Proxy orphan) {
+	
+		UnionConfiguration unionConfigWithOrphanProxy = new UnionConfiguration();
+		unionConfigWithOrphanProxy.includedUnions = existingUnionConfig.includedUnions;
+		if (existingUnionConfig.orphanProxies != null) {
+		unionConfigWithOrphanProxy.orphanProxies = new Proxy[existingUnionConfig.orphanProxies.length +1 ];
+		for (int t = 0; t < existingUnionConfig.orphanProxies.length ; t++) {
+			unionConfigWithOrphanProxy.orphanProxies[t] = existingUnionConfig.orphanProxies[t];
+		}
+		unionConfigWithOrphanProxy.orphanProxies[existingUnionConfig.orphanProxies.length] = orphan;
+		}
+		else {
+			unionConfigWithOrphanProxy.orphanProxies = new Proxy[1];
+			unionConfigWithOrphanProxy.orphanProxies[0] = orphan;
+		}
+		
+		return unionConfigWithOrphanProxy;
+	}
 
 
 	/**
@@ -873,6 +901,7 @@ public class Binder extends ManagedComponent  {
 		UnionConfiguration newConfig = new UnionConfiguration();
 		int nbUnions = existingUnionConfig.includedUnions.length + 1 - unionsToRemove.size();
 		newConfig.includedUnions = new Union[nbUnions];
+		newConfig.orphanProxies = existingUnionConfig.orphanProxies;
 
 		int count = 0;
 		for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
