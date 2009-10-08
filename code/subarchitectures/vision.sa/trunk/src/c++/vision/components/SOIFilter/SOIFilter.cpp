@@ -150,7 +150,7 @@ void SOIFilter::start()
 {
   startVideoCommunication(*this);
 
-  char *name = "queueSemaphore";
+  char *name = "filterSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
   
@@ -255,12 +255,12 @@ void SOIFilter::runComponent()
 	      objToDelete.pop(); */
 	   }
     }
-    else
-		log("Timeout");   
+//    else
+//		log("Timeout");   
   }
 
   log("Removing semaphore ...");
-  queuesNotEmpty->remove("queueSemaphore");
+  queuesNotEmpty->remove("filterSemaphore");
   delete queuesNotEmpty;
   
   if (doDisplay)
