@@ -1,7 +1,7 @@
 <!-- Top level make file for CogX system -->
 <project name="cogx" default="all">
 
-	<property name="castslice.dir" value="/home/goebelbe/local/share" />
+	<property name="castslice.dir" value="/usr/local/share" />
 	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
 	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
