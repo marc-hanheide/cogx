@@ -71,6 +71,7 @@ public class ComaVerbTester extends ManagedComponent {
 		ContentPlanningGoal _cpg = new ContentPlanningGoal(newDataID(), _whatLF);
 		try {
 			addToWorkingMemory(new WorkingMemoryAddress(newDataID(), m_comsys_SA), _cpg);
+			log("wrote content planning goal to WM " + _cpg + " with LF " + _whatLF);
 		} catch (AlreadyExistsOnWMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
