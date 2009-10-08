@@ -262,7 +262,7 @@ public class cc_FakeClarificationGenerator
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 		buttonPanel.add(Box.createHorizontalGlue());
-		ok = new JButton("Issue");
+		ok = new JButton("Issue request");
 		buttonPanel.add(ok);
 		dialogPanel.add(buttonPanel);
 
@@ -301,8 +301,19 @@ public class cc_FakeClarificationGenerator
 	
 	private ComplexFormula constructFormula (String phi) { 
 		ComplexFormula formula = new ComplexFormula();
-	
-	
+		formula.id = newDataID();
+		formula.prob = 1.0f;
+		
+		String predicate = "";
+		String argument = null; 
+		
+		if (phi.indexOf("(") != -1) { 
+			predicate = phi.substring(0,phi.indexOf("("));
+			argument  = phi.substring(phi.indexOf("(")+1,phi.indexOf(")"));
+			log("Predicate[argument]: "+predicate+"["+argument+"]");
+		} 
+		
+		
 		return formula;
 	} // end 
 
