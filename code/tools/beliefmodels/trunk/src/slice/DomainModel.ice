@@ -1,6 +1,6 @@
-#ifndef DOMAINMODEL_ICE
+#ifndef DOMAINMODEL_ICE 
 #define DOMAINMODEL_ICE
-
+  
 // ===================================================================
 // MODULE: beliefmodels.domainmodel.sample
 // 
@@ -17,7 +17,7 @@
 module beliefmodels { 
 module domainmodel { 
 module cogx { 
-	
+	 
 			
 	// ===================================================================
 	// GROUNDED DOMAIN MODEL 
@@ -49,7 +49,7 @@ module cogx {
 	// of this class, we can create arbitrarily complex formulas. Furthermore, LHS and RHS can be 
 	// logical formulas, or uncertain formulas (this is not determined a priori).  
 				
-	enum LogicalOp { and, or , xor};				
+	enum LogicalOp { and, or , xor, none};				
 	 	
 					
 	sequence<SuperFormula> SuperFormulaSeq;
