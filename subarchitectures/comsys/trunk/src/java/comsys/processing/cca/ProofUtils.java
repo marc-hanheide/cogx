@@ -134,8 +134,10 @@ public class ProofUtils {
 		if (m instanceof KModality) {
 			Belief b = new Belief();
 			b.ags = kModalityToAgentStatus((KModality) m);
+			System.out.println(b.ags.getClass());
 			b.sigma = kModalityToSpatioTemporalFrame((KModality) m);
 			b.phi = null;
+			//System.out.println("in modalityToBeliefStub: b.ags=" + PrettyPrinting.agentStatusToString(b.ags));
 			return b;
 		}
 		else {
@@ -163,6 +165,7 @@ public class ProofUtils {
 	}
 	
 	public static AgentStatus kModalityToAgentStatus(KModality m) {
+		//System.out.println("kModalityToAgentStatus: share=" + m.share.toString() + ", act=" + m.act.toString() + ", pat=" + m.pat.toString());
 		switch (m.share) {
 
 			case Private:

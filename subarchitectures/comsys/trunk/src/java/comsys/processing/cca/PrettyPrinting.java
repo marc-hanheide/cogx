@@ -37,13 +37,13 @@ public class PrettyPrinting {
 	}
 	
 	public static String agentStatusToString(AgentStatus as) {
-		if (as instanceof PrivateAgentStatus) {
-			PrivateAgentStatus priv = (PrivateAgentStatus) as;
-			return "{" + priv.ag.id + "}";
-		}
-		else if (as instanceof AttributedAgentStatus) {
+		if (as instanceof AttributedAgentStatus) {
 			AttributedAgentStatus attrib = (AttributedAgentStatus) as;
 			return "{" + attrib.ag.id + "[" + attrib.ag2.id + "]}";
+		}
+		else if (as instanceof PrivateAgentStatus) {
+			PrivateAgentStatus priv = (PrivateAgentStatus) as;
+			return "{" + priv.ag.id + "}";
 		}
 		else if (as instanceof MutualAgentStatus) {
 			MutualAgentStatus mutual = (MutualAgentStatus) as;

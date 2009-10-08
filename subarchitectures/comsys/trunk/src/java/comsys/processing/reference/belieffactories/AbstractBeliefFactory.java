@@ -86,14 +86,16 @@ public abstract class AbstractBeliefFactory
 	
 	/** creates an agents-list consisting of a single agent. */
 	
-	public static PrivateAgentStatus createAgentStatus(String id) { 
+	public static AgentStatus createAgentStatus(String id) { 
+		//System.out.println("AbstractBeliefFactory.createAgentStatus: private");
 		PrivateAgentStatus priv = new PrivateAgentStatus();
 		priv.ag = new Agent();
 		priv.ag.id = id;
 		return priv;
 	} // end method
 	
-	public static AttributedAgentStatus createAgentStatus(String id1, String id2) {
+	public static AgentStatus createAgentStatus(String id1, String id2) {
+		//System.out.println("AbstractBeliefFactory.createAgentStatus: attributed");
 		AttributedAgentStatus attrib = new AttributedAgentStatus();
 		attrib.ag = new Agent();
 		attrib.ag.id = id1;
@@ -102,7 +104,8 @@ public abstract class AbstractBeliefFactory
 		return attrib;
 	}
 	
-	public static MutualAgentStatus createAgentStatus(String[] ags) {
+	public static AgentStatus createAgentStatus(String[] ags) {
+		//System.out.println("AbstractBeliefFactory.createAgentStatus: mutual");
 		MutualAgentStatus mutual = new MutualAgentStatus();
 		mutual.ags = new Agent[ags.length];
 		for (int i = 0; i < mutual.ags.length; i++) {
