@@ -298,22 +298,93 @@ public class cc_FakeClarificationGenerator
 		
 	} 
 	
+	// 	
 	
 	private ComplexFormula constructFormula (String phi) { 
 		ComplexFormula formula = new ComplexFormula();
 		formula.id = newDataID();
 		formula.prob = 1.0f;
-		
+		// establish simple predicate/argument structure
 		String predicate = "";
 		String argument = null; 
-		
 		if (phi.indexOf("(") != -1) { 
 			predicate = phi.substring(0,phi.indexOf("("));
 			argument  = phi.substring(phi.indexOf("(")+1,phi.indexOf(")"));
 			log("Predicate[argument]: "+predicate+"["+argument+"]");
+		} else { 
+			predicate = phi;
+		} // end if..else check for predicate argument
+		// construct the formula
+		if (predicate.startsWith("colo")) { 
+			ColorProperty color = new ColorProperty();
+			color.cstatus = ContinualStatus.proposition;
+			color.prob = 1.0f;
+			if (argument != null) { 
+				if (argument.equals("red")) { 
+					color.colorValue = beliefmodels.domainmodel.cogx.Color.red;
+				} else if (argument.equals("blue")) { 
+					color.colorValue = beliefmodels.domainmodel.cogx.Color.blue;					
+				} else if (argument.equals("green")) { 
+					color.colorValue = beliefmodels.domainmodel.cogx.Color.green;									
+				} else if (argument.equals("yellow")) { 
+					color.colorValue = beliefmodels.domainmodel.cogx.Color.yellow;										
+				} else { 	
+					color.colorValue = beliefmodels.domainmodel.cogx.Color.unknownColor;					
+				} // end if..else check for specified color
+			} else { 
+				color.colorValue = beliefmodels.domainmodel.cogx.Color.unknownColor;		
+			} // end if..else check whether specified color
+			SuperFormula[] frms = new SuperFormula[1];
+			frms[0] = color;
+			formula.op = LogicalOp.none;
+			formula.formulae = frms;
+		} else if (predicate.startsWith("shape")) { 
+			ShapeProperty shape = new ShapeProperty();
+			shape.cstatus = ContinualStatus.proposition;
+			shape.prob = 1.0f;
+			if (argument != null) { 
+				if (argument.equals("cylindrical")) { 
+					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.cylindrical;
+				} else if (argument.equals("spherical")) { 
+					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.spherical;
+				} else if (argument.equals("cubic")) { 
+					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.cubic;									
+				} else { 	
+					shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.unknownShape;					
+				} // end if..else check for specified shape
+			} else { 
+				shape.shapeValue = beliefmodels.domainmodel.cogx.Shape.unknownShape;		
+			} // end if..else check whether specified shape
+			SuperFormula[] frms = new SuperFormula[1];
+			frms[0] = shape;
+			formula.op = LogicalOp.none;
+			formula.formulae = frms;			
+		} else if (predicate.startsWith("type")) { 
+			ObjectTypeProperty type = new ObjectTypeProperty();
+			type.cstatus = ContinualStatus.proposition;
+			type.prob = 1.0f;
+			if (argument != null) { 
+				if (argument.equals("box")) { 
+					type.typeValue = beliefmodels.domainmodel.cogx.ObjectType.box;
+				} else if (argument.equals("ball")) { 
+					type.typeValue = beliefmodels.domainmodel.cogx.ObjectType.ball;					
+				} else if (argument.equals("cube")) { 
+					type.typeValue = beliefmodels.domainmodel.cogx.ObjectType.cube;								
+				} else if (argument.equals("mug")) { 
+					type.typeValue = beliefmodels.domainmodel.cogx.ObjectType.mug;
+				} else { 	
+					type.typeValue = beliefmodels.domainmodel.cogx.ObjectType.unknownObjectType;					
+				} // end if..else check for specified type
+			} else { 
+				type.typeValue = beliefmodels.domainmodel.cogx.ObjectType.unknownObjectType;		
+			} // end if..else check whether specified type
+			SuperFormula[] frms = new SuperFormula[1];
+			frms[0] = type;
+			formula.op = LogicalOp.none;
+			formula.formulae = frms;			
+		} else { 
+			log("Unknown predicate: ["+predicate+"]");
 		} 
-		
-		
 		return formula;
 	} // end 
 
