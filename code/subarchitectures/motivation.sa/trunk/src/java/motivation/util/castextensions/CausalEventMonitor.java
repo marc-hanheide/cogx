@@ -474,12 +474,26 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 	 * wait that all pending changes have been propagated through the system.
 	 * 
 	 * @param timeout
-	 *            timeout in milliseconds
+	 *            timeout in milliseconds (zero for infinite waiting)
 	 * @throws InterruptedException
 	 */
-	public synchronized void waitForPropagation(long timeout)
+	public synchronized boolean waitForPropagation(long timeout)
 			throws InterruptedException {
-		wait(timeout);
+		long startTime = System.currentTimeMillis();
+
+		while (pendingChanges.size() > 0) {
+			component.log(this.getClass().getSimpleName() + ": waiting for "
+					+ pendingChanges.size() + " pending triggers");
+			wait(timeout);
+			if (timeout > 0)
+				if (System.currentTimeMillis() > startTime + timeout) {
+					component.log(this.getClass().getSimpleName()
+							+ ": timeout while waiting for propagation of "
+							+ pendingChanges.size() + "triggers");
+					return false;
+				}
+		}
+		return true;
 	}
 
 	/**
@@ -487,7 +501,8 @@ public abstract class CausalEventMonitor<TypeTrigger extends Ice.Object, TypeImp
 	 * 
 	 * @throws InterruptedException
 	 */
-	public synchronized void waitForPropagation() throws InterruptedException {
-		waitForPropagation(0);
+	public synchronized boolean waitForPropagation()
+			throws InterruptedException {
+		return waitForPropagation(0);
 	}
 }

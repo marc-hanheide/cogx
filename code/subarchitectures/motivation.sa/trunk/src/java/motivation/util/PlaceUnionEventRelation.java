@@ -3,6 +3,8 @@
  */
 package motivation.util;
 
+import comadata.ComaRoom;
+
 import motivation.util.castextensions.CausalEventMonitor;
 import SpatialData.Place;
 import binder.autogen.core.Feature;
@@ -10,6 +12,7 @@ import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.StringValue;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
@@ -73,14 +76,21 @@ public class PlaceUnionEventRelation extends
 			return true;
 		}
 
-		Place place = component.getMemoryEntry(wmcTrigger.address, Place.class);
-		if (wmcTrigger.operation == WorkingMemoryOperation.ADD
-				|| wmcTrigger.operation == WorkingMemoryOperation.OVERWRITE) {
-			// on add or overwrite we expect to find the place in the
-			// unions
-			
-			return findPlaceIdInUnions(unionConfiguration.includedUnions,
-					place.id);
+		try {
+			Place place = component.getMemoryEntry(wmcTrigger.address,
+					Place.class);
+			if (wmcTrigger.operation == WorkingMemoryOperation.ADD
+					|| wmcTrigger.operation == WorkingMemoryOperation.OVERWRITE) {
+				// on add or overwrite we expect to find the place in the
+				// unions
+
+				return findPlaceIdInUnions(unionConfiguration.includedUnions,
+						place.id);
+			}
+		} catch (DoesNotExistOnWMException e) {
+			component
+					.log("the trigger does not exist anymore, so consider it being propagated");
+			return true;
 		}
 
 		return false;
