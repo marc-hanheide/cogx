@@ -197,10 +197,10 @@ module VisionData {
     ObjectRecognitionMatchSeq matches;
   };
   
-  class SegmentMask {
+  struct SegmentMask {
   	int width;
     int height;
-    IntSeq data;
+    Video::ByteSeq data;
   };
 
   /**
@@ -216,6 +216,9 @@ module VisionData {
     
     // Segmentation mask;
     SegmentMask mask;
+    
+    // List of surface 3D points
+    SurfacePointSeq points;
     
     // time the object was last changed
     cast::cdl::CASTTime time;

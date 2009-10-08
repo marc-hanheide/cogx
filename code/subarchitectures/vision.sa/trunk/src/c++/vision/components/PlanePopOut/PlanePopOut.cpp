@@ -11,7 +11,7 @@
 #include <VideoUtils.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#define Shrink_SOI 0.75
+#define Shrink_SOI 1
 #define Upper_BG 1.8
 #define Lower_BG 1.2	// 1.2-1.8 radius of BoundingSphere
 
@@ -228,13 +228,13 @@ void DrawPoints()
   {
 	if (points_label.at(i) == 0)   glColor3f(1.0,1.0,0.0); // plane/*DrawPlaneGrid();*/
 
-	else if (points_label.at(i) < 0)  glColor3f(0.0,0.0,0.0);  // discarded points
-	else if (points_label.at(i) == 1)  glColor3f(0.0,0.0,1.0);  // 1st object
-	else if (points_label.at(i) == 2)  glColor3f(0.0,0.0,1.0);  //
-	else if (points_label.at(i) == 3)  glColor3f(0.0,0.0,1.0);  //
-	else if (points_label.at(i) == 4)  glColor3f(0.0,0.0,1.0);  //
-	else if (points_label.at(i) == 5)  glColor3f(0.0,0.0,1.0);  //
-	else glColor3f(0.0,0.0,1.0);  //rest object
+	else if (points_label.at(i) < 0)  glColor3f(0.2,1.0,0.2);  // discarded points
+	else if (points_label.at(i) == 1)  glColor3f(0.2,1.0,0.2);  // 1st object
+	else if (points_label.at(i) == 2)  glColor3f(0.2,1.0,0.2);  //
+	else if (points_label.at(i) == 3)  glColor3f(0.2,1.0,0.2);  //
+	else if (points_label.at(i) == 4)  glColor3f(0.2,1.0,0.2);  //
+	else if (points_label.at(i) == 5)  glColor3f(0.2,1.0,0.2);  //
+	else glColor3f(0.0,1.0,0.2);  //rest object
     glVertex3f(pointsN[i].p.x, pointsN[i].p.y, pointsN[i].p.z);
   }
   glEnd();
@@ -442,7 +442,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 	initial_vector.z = 0;
 	VisionData::SurfacePoint InitialStructure;
 	InitialStructure.p = initial_vector;
-	InitialStructure.c.r = InitialStructure.c.g = InitialStructure.c.b = 0;
+//
 	center.assign(objnumber,InitialStructure);
 	VisionData::SurfacePointSeq pointsInOneSOI;
 	SOIPointsSeq.clear();
@@ -719,7 +719,9 @@ void PlanePopOut::runComponent()
 					if(Compare2SOI(CurrentObjList.at(i), PreviousObjList.at(j)))// if these two objects were the same one
 					{
 						flag = true;
+						
 						CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
+						
 						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
 //cout<<"x in SOI after overwrite in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
 						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);	
@@ -881,7 +883,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		{
 			Vector3 v3Diff = R_points.at(i).p - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-			if(dNormDist < 0.02)
+			if(dNormDist < 0.02) // org 0.02
 			{
 				labels.at(i) = 0; // dominant plane
 				double ddist = dot(R_points.at(i).p,R_points.at(i).p);
@@ -998,7 +1000,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 
 bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
-	if (sqrt((obj1.c.x-obj2.c.x)*(obj1.c.x-obj2.c.x)+(obj1.c.y-obj2.c.y)*(obj1.c.y-obj2.c.y)+(obj1.c.z-obj2.c.z)*(obj1.c.z-obj2.c.z))<0.25*obj1.r && obj1.r/obj2.r>0.5 && obj1.r/obj2.r<2)
+	if (sqrt((obj1.c.x-obj2.c.x)*(obj1.c.x-obj2.c.x)+(obj1.c.y-obj2.c.y)*(obj1.c.y-obj2.c.y)+(obj1.c.z-obj2.c.z)*(obj1.c.z-obj2.c.z))<0.30*obj1.r && obj1.r/obj2.r>0.5 && obj1.r/obj2.r<2)
 		return true; //the same object
 	else	
 		return false; //not the same one
