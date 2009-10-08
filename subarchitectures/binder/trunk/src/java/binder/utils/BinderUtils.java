@@ -94,6 +94,7 @@ public class BinderUtils {
 
 		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
 			Union u = e.next();
+
 			u.probExists = 0.0f;
 			for (Enumeration<UnionConfiguration> f = configs.elements() ; f.hasMoreElements() ;) {
 				UnionConfiguration config = f.nextElement();
@@ -123,7 +124,7 @@ public class BinderUtils {
 	
 	public static void completeProxy (Proxy proxy, boolean addUnknowns, int proxyDistribFilter) {
 		// If necessary, add unknown values
-		if (addUnknowns && !FeatureValueUtils.hasUnknownValues(proxy.features)) {
+		if (addUnknowns) {
 			addUnknownFeatureValues(proxy.features);
 		}
 
@@ -183,16 +184,21 @@ public class BinderUtils {
 		// loop on the features
 		for (int i = 0 ; i < features.length ; i++) {
 
+			boolean alreadyIncludesUnknownValue = false;
+
 			// sum up the probabilities of each feature value for the feature
 			float totalProb = 0.0f;
 			Vector<FeatureValue> values = new Vector<FeatureValue>();
 			for (int j= 0 ; j < features[i].alternativeValues.length ; j++) {
 				values.add(features[i].alternativeValues[j]);
 				totalProb += features[i].alternativeValues[j].independentProb;
+				if (FeatureValueUtils.isUnknownValue(features[i].alternativeValues[j])) {
+					alreadyIncludesUnknownValue = true;
+				}
 			}
 
 			// If the unknown feature value is likely enough, add it to the feature values set
-			if (totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 3) {
+			if (!alreadyIncludesUnknownValue && totalProb < (1.0f - MINIMUM_PROB_OF_UNKNOWN_FEATVALUES) && features.length < 4) {
 				features[i].alternativeValues = new FeatureValue[values.size() + 1];
 				for (int j = 0 ; j < values.size(); j++ ) {
 					features[i].alternativeValues[j] = values.elementAt(j);
@@ -361,7 +367,8 @@ public class BinderUtils {
 				Union union = config.includedUnions[i];
 
 				// TODO: check if this is still necessary
-				if (!isInList(unions, union)) {
+				if (!unions.contains(union)) {
+					System.out.println("added union: " + union.entityID + " with " + union.includedProxies.length + " proxies");
 					unions.add(union);
 				}
 			}

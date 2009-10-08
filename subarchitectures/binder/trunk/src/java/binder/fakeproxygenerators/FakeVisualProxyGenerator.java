@@ -64,13 +64,16 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	 * 
 	 * @return the proxy
 	 */
-	protected Proxy createProxyTwo() {
+	protected Proxy createProxyOne() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.75f);
 		
-		FeatureValue mug = createStringValue ("mug", 0.8f);
-		Feature feat1 = createFeatureWithUniqueFeatureValue ("obj_label", mug);
+		FeatureValue mug = createStringValue ("mug", 0.75f);
+		FeatureValue ball = createStringValue ("ball", 0.08f);
+		Feature feat1 = createFeature ("obj_label");
+		addFeatureValueToFeature(feat1, mug);
+		addFeatureValueToFeature(feat1, ball);
 		addFeatureToProxy (proxy, feat1);
 		
 		FeatureValue blue = createStringValue ("blue", 0.95f);
@@ -90,7 +93,7 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 	 * 
 	 * @return the proxy
 	 */
-	protected Proxy createProxyOne() {
+	protected Proxy createProxyTwo() {
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.9f);
