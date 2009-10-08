@@ -75,6 +75,28 @@ e(now) : assert_prop(h, Object, Property) <-
 	i : feat_Relation(Nom, accept) / 1.0,
 	e(now) : produce(r, Nom) / 1.0.
 
+%what color does the box have
+e(now) : need_get_value(Modality, Entity, Prop) <-
+	dummy_nom1(Nom) / true,
+	dummy_nom2(ContentNom) / true,
+	dummy_nom3(TargetNom) / true,
+	dummy_nom4(QualityNom) / true,
+	%k(now, private(r)) : objecttype(Object, box) / true,
+	%k(now, private(r)) : color(Object, unknownColor) / true,
+	k(now, attrib(r, h)) : objecttype(Entity, Type) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+			i : prop(TargetNom, Type) / 1.0,
+		i : rel_Color(ContentNom, QualityNom) / 1.0,
+			i : sort(QualityNom, quality) / 1.0,
+			i : prop(QualityNom, Prop) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0.
+
 % NOT THE FIRST is the box red or orange?” / “what color does the box have
 %what color does the box have
 e(now) : produce(r, Nom) <-
