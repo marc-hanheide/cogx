@@ -8,32 +8,32 @@ extern "C"
 {
   cast::CASTComponentPtr newComponent()
   {
-    return new cast::FeatureExtractor();
+    return new cast::VisualLearner();
   }
 }
 
-FeatureExtractor::FeatureExtractor() :
+VisualLearner::VisualLearner() :
       WorkingMemoryAttachedComponent(),
       ManagedComponent()
 {
 //   m_pProposedProcessing = new SOIMap();
    m_pSOIs = new SOIVector();
    
-} // FeatureExtractor::FeatureExtractor
+} // VisualLearner::VisualLearner
 
-FeatureExtractor::~FeatureExtractor()
+VisualLearner::~VisualLearner()
 {
    delete m_pProposedProcessing;
    delete m_pSOIs;
    // delete this->bla_;
-} // FeatureExtractor::~FeatureExtractor
+} // VisualLearner::~VisualLearner
 
 /**
  * Some of the options:
  * -soisource ..Name of the soi source, the name of the segmentor component. Defaults to segmentor
  *              however, another common choice is soi.detector
  */
-void FeatureExtractor::configure(map<string, string>& _config)
+void VisualLearner::configure(map<string, string>& _config)
 {
    // first let the base class configure itself
    ManagedComponent::configure(_config);
@@ -56,30 +56,29 @@ void FeatureExtractor::configure(map<string, string>& _config)
 //	   allowedSoiSource=string("segmentor");
 //	 }
 
-} // FeatureExtractor::configure
+} // VisualLearner::configure
 
-void FeatureExtractor::start()
+void VisualLearner::start()
 {
    ManagedComponent::start();
    debug("::start");
 
    addChangeFilter(createLocalTypeFilter<ProtoObject>(cdl::ADD),
-         new MemberFunctionChangeReceiver<FeatureExtractor>(this, &FeatureExtractor::newProtoObject));
+         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onNewProtoObject));
 
 }
 
-void FeatureExtractor::stop()
+void VisualLearner::stop()
 {
    ManagedComponent::stop();
    log("!!!STOP CALL!!!");
    TermFeatureLearningLib();
 }
 
-void FeatureExtractor::newProtoObject(
-   const cdl::WorkingMemoryChange & _wmc)
+void VisualLearner::onNewProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
 
-  //HACK FeatureExtractor cannot deal with SOIs that were created by
+  //HACK VisualLearner cannot deal with SOIs that were created by
   //anything but the segmentor
 //  string soiSource(_wmc.src);
 //  if(soiSource != allowedSoiSource) {
@@ -97,15 +96,15 @@ void FeatureExtractor::newProtoObject(
    string id(_wmc.address.id);
 
    log("data id: " + id);
-    ProtoObjectPtr pProtoObjectData;
+   ProtoObjectPtr pProtoObjectData;
    try{
-        // get the data from working memory
-        pProtoObjectData = getWorkingMemoryEntry<ProtoObject>(id);
-    }
-    catch(cast::DoesNotExistOnWMException){
-        log("FeatureExtractor: ProtoObject deleted while working...\n");
-        return;
-     };
+      // get the data from working memory
+      pProtoObjectData = getWorkingMemoryEntry<ProtoObject>(id);
+   }
+   catch(cast::DoesNotExistOnWMException){
+      log("VisualLearner: ProtoObject deleted while working...\n");
+      return;
+   };
 
    if (pProtoObjectData != NULL) {
 
@@ -121,10 +120,10 @@ void FeatureExtractor::newProtoObject(
       proposeTask(component, taskID, "s"); */
    } // if
 
-} // FeatureExtractor::WorkingMemoryChange
+} // VisualLearner::WorkingMemoryChange
 
 
-void FeatureExtractor::taskAdopted(const string &_taskID)
+void VisualLearner::taskAdopted(const string &_taskID)
 {
    debug("::taskAdopted");
 //   SOIMap::iterator i = m_pProposedProcessing->find(_taskID);
@@ -143,9 +142,9 @@ void FeatureExtractor::taskAdopted(const string &_taskID)
    // and now we're finished, tell the goal manager that the task is
    // over successfully (assuming it is... naughty!)
    taskComplete(_taskID, cast::cdl::ProcessingCompleteSuccess); */
-} // FeatureExtractor::taskAdopted
+} // VisualLearner::taskAdopted
 
-void FeatureExtractor::taskRejected(const string &_taskID)
+void VisualLearner::taskRejected(const string &_taskID)
 {
    debug("::taskRejected");
    println(":(");
@@ -156,9 +155,9 @@ void FeatureExtractor::taskRejected(const string &_taskID)
       // remove it
       m_pProposedProcessing->erase(i);
    } // if
-} // FeatureExtractor::taskRejected
+} // VisualLearner::taskRejected
 
-void FeatureExtractor::runComponent()
+void VisualLearner::runComponent()
 {
   debug("::runComponent");
   while (isRunning()) {
@@ -188,17 +187,17 @@ void FeatureExtractor::runComponent()
          unlockComponent();
       } // if
    } // while
-} // FeatureExtractor::runComponent
+} // VisualLearner::runComponent
 
-void FeatureExtractor::recogniseAttributes(ProtoObjectPtr _pData) //shared_ptr<const CASTData<SOI> > _pData)
+void VisualLearner::recogniseAttributes(ProtoObjectPtr _pData) //shared_ptr<const CASTData<SOI> > _pData)
 {
    try{
-        lockEntry(_pData->getID(), cdl::LOCKEDODR);
+      lockEntry(_pData->getID(), cdl::LOCKEDODR);
    }
-    catch(cast::DoesNotExistOnWMException){
-        printf("VisualLearner: ProtoObject deleted while working...\n");
-        return;
-     };
+   catch(cast::DoesNotExistOnWMException){
+      printf("VisualLearner: ProtoObject deleted while working...\n");
+      return;
+   };
    debug("::recogniseAttributes");
   
    // get the SOI data nah: this is naughty, but as we're overwriting
@@ -208,7 +207,7 @@ void FeatureExtractor::recogniseAttributes(ProtoObjectPtr _pData) //shared_ptr<c
    AttrObjectPtr pAttrObject = new AttrObject();
    //ProtoObjectPtr pProtoObject = (_pData->getData()); //*_pData->getData());
    
-   FE_recognise_attributes(*pAttrObject, _pData->getData())
+   VL_recognise_attributes(*pAttrObject, _pData->getData())
    //FE_extract_features(*pSOI);
    
    // Now write this back into working memory, this will manage the memory for us.
@@ -218,7 +217,7 @@ void FeatureExtractor::recogniseAttributes(ProtoObjectPtr _pData) //shared_ptr<c
    unlockEntry(_pData->getID());
 } // FeatureSupport::extractFeatures
 
-//void FeatureExtractor::quip(CASTData<Vision::Joke> *_pData) {
+//void VisualLearner::quip(CASTData<Vision::Joke> *_pData) {
 //
 // //get the joke data
 // Vision::Joke *pJK = _pData->data();

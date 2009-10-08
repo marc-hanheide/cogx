@@ -1,5 +1,5 @@
-#ifndef __cast_FEATURE_EXTRACTOR_H__
-#define __cast_FEATURE_EXTRACTOR_H__
+#ifndef __CAST_VISUAL_LEARNER_H__
+#define __CAST_VISUAL_LEARNER_H__
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
@@ -20,36 +20,37 @@ typedef vector<shared_ptr<const CASTData<VisionData::SOI> > > SOIVector;
 namespace cast
 {
 
-class FeatureExtractor : public ManagedComponent {
-	public:
-		VisualLearner();
-		virtual ~VisualLearner();
+class VisualLearner : public ManagedComponent {
+   public:
+      VisualLearner();
+      virtual ~VisualLearner();
 
-		virtual void runComponent();
-		virtual void configure(map<string,string> & _config);
-		virtual void start();
-                virtual void stop();
+      virtual void runComponent();
+      virtual void configure(map<string,string> & _config);
+      virtual void start();
+      virtual void stop();
 
-	protected:
-		virtual void taskAdopted(const string &_taskID);
-		virtual void taskRejected(const string &_taskID);
+   protected:
+      virtual void taskAdopted(const string &_taskID);
+      virtual void taskRejected(const string &_taskID);
 
-		void recogniseAttributes(ProtoObjectPtr _pData); //shared_ptr<const CASTData<SOI> > _pData);
+      void recogniseAttributes(ProtoObjectPtr _pData); //shared_ptr<const CASTData<SOI> > _pData);
 
-	private:
+   private:
 
-		void newSOI(const cdl::WorkingMemoryChange & _wmc);
-//                string allowedSoiSource;
-//		void quip(CASTData<ComedyEssentials::Joke> *_pData);
-//		string generatePunchline(const string &_setup);
+      void onNewProtoObject(const cdl::WorkingMemoryChange & _wmc);
+//      string allowedSoiSource;
+//      void quip(CASTData<ComedyEssentials::Joke> *_pData);
+//      string generatePunchline(const string &_setup);
 
-		// Hashtable used to record the tasks we want to carry out
-//		SOIMap * m_pProposedProcessing;
-		SOIVector * m_pSOIs;
-//                float m_PerspectiveTrafo[9];
-//                bool m_bTrafoEnabled;
-}; // class FeatureExtractor
+      // Hashtable used to record the tasks we want to carry out
+//      SOIMap * m_pProposedProcessing;
+      SOIVector * m_pSOIs;
+//      float m_PerspectiveTrafo[9];
+//      bool m_bTrafoEnabled;
+}; // class VisualLearner
 
 }
 
-#endif
+#endif //  __CAST_VISUAL_LEARNER_H__
+
