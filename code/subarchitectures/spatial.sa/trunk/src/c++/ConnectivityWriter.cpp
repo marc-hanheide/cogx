@@ -58,6 +58,11 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
   SpatialProperties::ConnectivityPathPropertyPtr prop =
     getMemoryEntry<SpatialProperties::ConnectivityPathProperty>(wmc.address);
   if (prop != 0) {
+    cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
+    origin->address.subarchitecture = "no";
+    origin->address.id = "local";
+    origin->type = "data"; 
+
     int place1 = prop->place1Id;
     int place2 = prop->place2Id;
 
@@ -65,16 +70,28 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     stringstream ss;
     ss << place1;
     string uid = ss.str();
+
     stringstream ss2;
     ss2 << place2;
     string uid2 = ss2.str();
 
+    stringstream ss3;
+    ss3 << place1 << "-" << place2;
+    string relationUID = ss3.str();
+
+    m_marshaller->addRelation("connectivity", relationUID,
+	"place", uid,
+	"place", uid2,
+	1.0, origin);
+
+    // Add the "relationType" label feature
     FeaturePtr feature = new Feature();
-    feature->featlabel = "place_connectivity";
+    feature->featlabel = "relationType";
     feature->alternativeValues.push_back(new 
-					 binder::autogen::featvalues::StringValue(1,getCASTTime(),uid2));
-    m_marshaller->addFeature(type, uid, feature);
-    m_marshaller->commitFeatures(type, uid);
+					 binder::autogen::featvalues::StringValue(1,getCASTTime(),"connectivity"));
+    m_marshaller->addFeature("connectivity", relationUID, feature);
+
+    m_marshaller->commitFeatures("connectivity", relationUID);
   }
   else {
     log("The property struct disappeared!");

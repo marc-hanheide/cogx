@@ -99,6 +99,12 @@ SelfRepresenter::runComponent()
     FrontierInterface::PlaceInterfacePrx agg2(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
     int prevPlaceID = -1;
+
+    cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
+    origin->address.subarchitecture = "no";
+    origin->address.id = "local";
+    origin->type = "data"; //uh oh, do we always need to include this?
+
     while (isRunning()) {
       // Regularly check robot pose
       NavData::FNodePtr curFNode = getCurrentNavNode();
@@ -107,18 +113,28 @@ SelfRepresenter::runComponent()
 
 	int curPlaceID = curPlace->id;
 	if (curPlaceID != prevPlaceID) {
+	  // Place has changed!
+
 	  // replace position feature
-	  agg->deleteFeature("robot", "1", "position");
-	  
-	  FeaturePtr feature = new Feature();
-	  feature->featlabel = "position";
+	  agg->deleteProxy("robotpos", "robot");
+
 	  stringstream ss;
 	  ss << curPlaceID;
 
+	  agg->addRelation("robotpos", "robot",
+	      "robot", "1",
+	      "place", ss.str(), 1.0, origin);
+
+	  // Add the "relationType" label feature
+	  FeaturePtr feature = new Feature();
+	  feature->featlabel = "relationType";
+
 	  feature->alternativeValues.push_back(new
-					       binder::autogen::featvalues::StringValue(1, getCASTTime(), ss.str()));
-	  agg->addFeature("robot", "1", feature);
-	  agg->commitFeatures("robot", "1");
+	      binder::autogen::featvalues::StringValue(1, getCASTTime(), "position"));
+	  agg->addFeature("robotpos", "robot", feature);
+
+	  // Foreground relation proxy
+	  agg->commitFeatures("robotpos", "robot");
 	}
 	prevPlaceID = curPlaceID;
       }
