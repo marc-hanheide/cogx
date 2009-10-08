@@ -64,11 +64,20 @@
 
 	<target name="slice" depends="slice-motivation,slice-execution" description="generates source from slice"/>
 
+	<!-- =================================================================== -->
+	<!-- Expand libraries                                                    -->
+	<!-- =================================================================== -->
+
+    <target name="expandlibs" depends="prepare">
+           <echo message="Expanding external libraries for the binder to output/classes"/>
+           <unzip dest="${output.dir}" src="./lib/jcommon-1.0.16.jar"/>
+           <unzip dest="${output.dir}" src="./lib/jfreechart-1.0.13.jar"/>
+    </target>
 	
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
+	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 		<classpath refid="build.classpath"/> </javac>
 	</target>
