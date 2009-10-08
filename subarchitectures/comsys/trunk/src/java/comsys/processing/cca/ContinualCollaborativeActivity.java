@@ -36,6 +36,8 @@ import comsys.lf.utils.ArrayIterator;
 import comsys.processing.cca.AbducerUtils;
 import comsys.processing.cca.StackUtils;
 
+import beliefmodels.domainmodel.cogx.*;
+
 // ---------------------------------------------------------
 // CAST imports
 // ---------------------------------------------------------
@@ -326,16 +328,104 @@ public class ContinualCollaborativeActivity {
 	} // end method
 	
 	public void addCRContext(beliefmodels.clarification.ClarificationRequest cr) {
-		abducer.addFact(AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.infoModality()},
+		Modality[] mod = new Modality[] {AbducerUtils.infoModality()};
+		ModalisedFormula mfModality = AbducerUtils.modalisedFormula(mod,
 				AbducerUtils.predicate("cr_modality", new Term[] {
 					AbducerUtils.term(cr.id),
 					AbducerUtils.term(cr.sourceModality)
-				})));
-		abducer.addFact(AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.infoModality()},
+				}));
+		ModalisedFormula mfSourceId = AbducerUtils.modalisedFormula(mod,
 				AbducerUtils.predicate("cr_entity", new Term[] {
 						AbducerUtils.term(cr.id),
 						AbducerUtils.term(cr.sourceEntityID)
-					})));
+					}));
+		abducer.addFact(mfModality);
+		abducer.addFact(mfSourceId);
+		log("adding fact: " + MercuryUtils.modalisedFormulaToString(mfModality));
+		log("adding fact: " + MercuryUtils.modalisedFormulaToString(mfSourceId));
+
+		if (cr.clarificationNeed instanceof ComplexFormula) {
+			ComplexFormula cplxF = (ComplexFormula) cr.clarificationNeed;
+			log("ignoring the logicalOp for the moment");
+			SuperFormula[] needFs = cplxF.formulae;
+			for (int i = 0; i < needFs.length; i++) {
+				
+				if (needFs[i] instanceof ContinualFormula) {
+					String[] args = valueTermArgs((ContinualFormula) needFs[i]);
+
+					Term[] tArgs = null;
+					if (args.length == 1) {
+						tArgs = new Term[] {AbducerUtils.term(cr.id), AbducerUtils.term(args[0])};
+					}
+					else if (args.length == 2) {
+						tArgs = new Term[] {AbducerUtils.term(cr.id), AbducerUtils.term(args[0]), AbducerUtils.term(args[1])};
+					}
+					ModalisedFormula mfNeed = AbducerUtils.modalisedFormula(mod, AbducerUtils.predicate("cr_need", tArgs));
+					
+					abducer.addFact(mfNeed);
+					log("adding fact: " + MercuryUtils.modalisedFormulaToString(mfNeed));
+				}
+			}
+		}
+	}
+	
+	public static FunctionTerm continualFormulaToTerm(ContinualFormula cf) {
+		String functor = "";
+		String arg = "";
+		
+		
+		if (cf instanceof ObjectTypeProperty) {
+			ObjectTypeProperty pf = (ObjectTypeProperty) cf;
+			functor = "objecttype";
+			arg = pf.typeValue.toString();
+		}
+		if (cf instanceof ColorProperty) {
+			ColorProperty pf = (ColorProperty) cf;
+			functor = "color";
+			arg = pf.colorValue.toString();
+		}
+		if (cf instanceof ShapeProperty) {
+			ShapeProperty pf = (ShapeProperty) cf;
+			functor = "shape";
+			arg = pf.shapeValue.toString();
+		}
+		
+		if (!functor.equals("")) {
+			return AbducerUtils.term(functor, new Term[] {AbducerUtils.term(arg)});
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public String[] valueTermArgs(ContinualFormula cf) {
+		String propName = "";
+		String propValue = null;
+		
+		if (cf instanceof ColorProperty) {
+			propName = "color";
+			Color val = ((ColorProperty)cf).colorValue;
+			if (val != Color.unknownColor)
+				propValue = val.toString();
+		}
+		if (cf instanceof ShapeProperty) {
+			propName = "shape";
+			Shape val = ((ShapeProperty)cf).shapeValue;
+			if (val != Shape.unknownShape)
+				propValue = val.toString();
+		}
+		if (cf instanceof ObjectTypeProperty) {
+			propName = "objecttype";
+			ObjectType val = ((ObjectTypeProperty)cf).typeValue;
+			if (val != ObjectType.unknownObjectType)
+				propValue = val.toString();
+		}
+		if (propValue != null) {
+			return new String[] {propName, propValue};
+		}
+		else {
+			return new String[] {propName};
+		}
 	}
 	
 	/**
