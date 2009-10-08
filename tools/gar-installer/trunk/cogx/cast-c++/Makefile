@@ -11,6 +11,7 @@ MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tag
 LIBDEPS = 
 
 DEB_PACKAGES=\
+	liblog4cxx10-dev@ubuntu \
         libzeroc-ice33-dev@ubuntu \
         libboost1.35-dev@ubuntu \
         python-zeroc-ice@ubuntu

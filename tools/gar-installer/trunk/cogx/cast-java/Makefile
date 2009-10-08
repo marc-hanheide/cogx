@@ -13,6 +13,7 @@ MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tag
 LIBDEPS = cogx/cast-c++
 
 DEB_PACKAGES=\
+	liblog4j1.2-java@ubuntu \
         sun-java6-jdk@ubuntu \
         ant@ubuntu \
         libzeroc-ice-java@ubuntu
@@ -24,8 +25,8 @@ CONFIGURE_SCRIPTS =
 BUILD_SCRIPTS = $(WORKSRC)/ant
 INSTALL_SCRIPTS = $(WORKSRC)/ant
 
-BUILD_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:
-INSTALL_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:
+BUILD_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:/usr/share/java/log4j-1.2.jar:
+INSTALL_ENV += CLASSPATH=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar:/usr/share/java/log4j-1.2.jar:
 
 
 
