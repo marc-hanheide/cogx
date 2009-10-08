@@ -46,17 +46,7 @@ NOTE: order within Target matters; if box not last, then Color gets not planned 
 
 
 "let me see"
-Parse 17: du : 
-  @let1_0:modal(let ^ 
-                <Mood>imp ^ 
-                <Actor>(addressee1_0:entity ^ addressee) ^ 
-                <Event>(see1_0:perception ^ see ^ 
-                        <Actor>i1_0:person) ^ 
-                <Patient>(i1_0:person ^ I ^ 
-                          <Num>sg) ^ 
-                <Subject>addressee1_0:entity)
-I produce this LF (well, I produce one with "person" type everywhere, which works with the grammar, too). 
-But, realizations are empty. Huh?
+make sure realization is returned (also in component)
 
 
 Alternative questions
