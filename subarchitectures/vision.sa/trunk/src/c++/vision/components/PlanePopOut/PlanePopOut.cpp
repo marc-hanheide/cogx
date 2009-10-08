@@ -10,6 +10,7 @@
 #include <vector>
 #include <VideoUtils.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+//#include <NavData.hpp>
 
 #define Shrink_SOI 1
 #define Upper_BG 1.8
@@ -33,6 +34,7 @@ using namespace Stereo;
 using namespace cogx;
 using namespace cogx::Math;
 using namespace VisionData;
+//using namespace navsa;
 using namespace cdl;
 
 int win;
@@ -60,7 +62,7 @@ vector< VisionData::SurfacePointSeq > BGPointsSeq;
 vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
-bool mbDrawWireSphere;
+bool mbDrawWire;
 Vector3 v3dmax;
 Vector3 v3dmin;
 
@@ -122,7 +124,7 @@ void InitWin()
   col_overlay[2] = 0.0;
   col_overlay[3] = 1.0;
 
-  mbDrawWireSphere = true;
+  mbDrawWire = true;
 }
 
 void ResizeWin(int w, int h)
@@ -247,6 +249,7 @@ glEnd();
 */
 }
 
+
 void DrawOneCuboid(Vector3 Max, Vector3 Min)
 {
 	glLineWidth(1);
@@ -361,7 +364,7 @@ Vector3 ProjectOnDominantPlane(Vector3 InputP)
 	return OutputP;
 }
 
-Matrix33 GetAffineTransMatrix()
+Matrix33 GetAffineRotMatrix()
 {
 	Vector3 vb; //translation vector
 	Vector3 v3normal;  //normal vector of dominant plane
@@ -385,6 +388,12 @@ Matrix33 GetAffineTransMatrix()
 	return rot;
 }
 
+Vector3 GetAffineTransVec(Vector3 v3p) // translation vector from p to original point
+{
+	Matrix33 m33 = GetAffineRotMatrix();
+	return -(m33*v3p);
+}
+
 inline Vector3 AffineTrans(Matrix33 m33, Vector3 v3)
 {
 	return m33*v3;
@@ -394,7 +403,7 @@ void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &l
 {
 	CvPoint* points2D = (CvPoint*)malloc( points.size() * sizeof(points2D[0]));
 	vector<Vector3> PlanePoints3D;
-	Matrix33 AffineM33 = GetAffineTransMatrix();
+	Matrix33 AffineM33 = GetAffineRotMatrix();
 	int j = 0;
 
 	for(unsigned int i = 0; i<points.size(); i++)
@@ -421,14 +430,82 @@ void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &l
 		CvMat hullMat = cvMat( 1, j-1, CV_32SC1, hull);
 		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
 		//draw the hull
-		glBegin(GL_LINE_LOOP);
+		if (mbDrawWire)	glBegin(GL_LINE_LOOP); else glBegin(GL_POLYGON);
 		glColor3f(1.0,1.0,1.0);
-		for (unsigned int i = 0; i<hullMat.cols; i++)
+		Vector3 v3OnPlane;
+		for (int i = 0; i<hullMat.cols; i++)
 		{
-			glVertex3f(PlanePoints3D.at(hull[i]).x,PlanePoints3D.at(hull[i]).y,PlanePoints3D.at(hull[i]).z);
+			v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
+			glVertex3f(v3OnPlane.x,v3OnPlane.y,v3OnPlane.z);
 		}
 		glEnd();
 	        free( hull );
+	}
+	free( points2D );
+}
+
+void DrawOneCylinder(Vector3 pcenter, float rad, double hei)
+{
+	GLUquadricObj *quadratic;
+	quadratic=gluNewQuadric();
+	gluQuadricNormals(quadratic, GLU_SMOOTH);
+
+	Matrix33 m33 = GetAffineRotMatrix();
+	double ang = 0.0; Vector3 axis;
+	toAngleAxis(m33, ang, axis);
+	glRotated(ang, axis.x,axis.y,axis.z);
+	Vector3 v3translate = GetAffineTransVec (pcenter);
+	glTranslated (v3translate.x, v3translate.y, v3translate.z);
+	gluCylinder(quadratic, rad, rad, hei, 16, 16);
+
+	gluDeleteQuadric(quadratic);
+}
+
+void BoundingCylinder(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
+{
+	CvPoint* points2D = (CvPoint*)malloc( pointsN.size() * sizeof(points2D[0]));
+
+	Matrix33 AffineM33 = GetAffineRotMatrix();
+	Matrix33 AffineM33_1;
+	inverse(AffineM33,AffineM33_1);
+	vector < CvPoint* > objSeq;
+	objSeq.assign(objnumber,points2D);
+	vector < int > index;
+	index.assign(objnumber,0);
+	vector < double > height;
+	height.assign(objnumber,0.0);
+
+	for(unsigned int i = 0; i<pointsN.size(); i++)
+	{
+		Vector3 v3Obj = pointsN.at(i).p;
+		int label = labels.at(i);
+		if (label < 1)	continue;
+		CvPoint cvp;
+		Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
+		cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
+		objSeq.at(label-1)[index.at(label-1)] = cvp;
+		index.at(label-1)++;
+		if (fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C) > height.at(label-1))
+			height.at(label-1) = fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C);
+	}
+	// calculate Enclosing Circle
+	if (index.at(0)>0)
+	{
+		vector <Vector3> Seqv3center_cy;
+		Vector3 initial_vec; initial_vec.x = initial_vec.y = initial_vec.z = 0.0;
+		Seqv3center_cy.assign(objnumber, initial_vec);
+		vector <float> Seqdradius_cy; 	Seqdradius_cy.assign(objnumber,0.0);
+		for (int i = 0; i<objnumber; i++)
+		{
+			realloc(objSeq.at(i), index.at(i));
+			CvPoint2D32f cc; cc.x=cc.y=0.0; CvPoint2D32f* Cf=&cc;  float rr = 0.0; float* frad =&rr;
+			CvMat pointMat = cvMat( 1, index.at(i), CV_32SC2, objSeq.at(i));
+			cvMinEnclosingCircle(&pointMat,Cf,frad);
+			Seqv3center_cy.at(i).x = (Cf->x)/100.0; Seqv3center_cy.at(i).y = (Cf->y)/100.0;
+			Seqv3center_cy.at(i).z = -(D+A*Seqv3center_cy.at(i).x+B*Seqv3center_cy.at(i).y)/C;
+			//draw the cylinders
+			DrawOneCylinder(Seqv3center_cy.at(i), *frad, height.at(i));cout<<"rad = "<<*frad<<" height = "<<height.at(i)<<endl;
+		}
 	}
 	free( points2D );
 }
@@ -494,7 +571,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 
 	for (int i = 0; i<objnumber; i++)
 	{
-		if (mbDrawWireSphere)	DrawWireSphere(center.at(i).p,radius_world.at(i));
+		if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
 		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
@@ -509,7 +586,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 
 				glPointSize(2);
 				glBegin(GL_POINTS);
-				glColor3f(0.0,0.0,1.0);  //obj points
+				glColor3b(PushStructure.c.r,PushStructure.c.g,PushStructure.c.b);  //obj points
 				glVertex3f(PushStructure.p.x, PushStructure.p.y, PushStructure.p.z);
 				glEnd();
 			}
@@ -568,6 +645,7 @@ void DisplayWin()
 	DrawCuboids(pointsN,points_label);
 	BoundingSphere(pointsN,points_label);
 	ConvexHullOfPlane(pointsN,points_label);
+	//BoundingCylinder(pointsN,points_label);
   }
   else
   {
@@ -589,8 +667,8 @@ void KeyPress(unsigned char key, int x, int y)
       exit(EXIT_SUCCESS);
       break;*/
     case 's':
-	{if (mbDrawWireSphere) mbDrawWireSphere = false;
-	 else mbDrawWireSphere = true;}
+	{if (mbDrawWire) mbDrawWire = false;
+	 else mbDrawWire = true;}
       break;
     default:
       break;
@@ -657,7 +735,7 @@ void PlanePopOut::start()
 void PlanePopOut::runComponent()
 {	
   while(isRunning())
-  {//cout<<"mbDrawWireSphere = "<<mbDrawWireSphere<<endl;
+  {
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
 	getPoints(points);
@@ -1006,7 +1084,17 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 		return false; //not the same one
 }
 
-
-
+/*
+void PlanePopOut::AddPointsInNav()
+{
+	for(size_t i = 0; i < pointsN.size(); i++)
+	{
+		NavData::PlanePopoutPtr ppo = new NavData::PlanePopout;
+		ppo->pcloud.push_back(pointsN[i]);
+		ppo->plabels.push_back(points_label.at(i));
+ 	}
+	addToWorkingMemory(newDataID(),ppo);
+}
+*/
 }
 

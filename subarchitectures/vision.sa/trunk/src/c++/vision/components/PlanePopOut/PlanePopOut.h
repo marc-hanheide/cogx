@@ -12,6 +12,7 @@
 #include <StereoClient.h>
 #include <VisionData.hpp>
 
+
 namespace cast
 {
 using namespace cogx;
