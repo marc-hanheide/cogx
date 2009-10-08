@@ -106,7 +106,7 @@ module SpatialProperties
   /** Represents the object-based property of a place for a single object. */
   class ObjectPlaceProperty extends PlaceProperty
   {
-    long objectId;
+    string category;
   };
   const bool ObjectPresent = true;
   const bool ObjectNotPresent = false;
