@@ -336,21 +336,21 @@ public class cc_Realizer
 					} 
 					// Get the best string out of the results
 					opennlp.ccg.realize.Chart chart = realizer.getChart();
-					String bestRealization = "";
-					List bestEdges = chart.bestEdges();
+					opennlp.ccg.realize.Edge bestEdge = chart.bestEdge; 
+					if (bestEdge != null) log(bestEdge.toString());		
+
+/*					List bestEdges = chart.bestEdges();
 					log("Number of best edges on realization chart: ["+bestEdges.size()+"]");
 					for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
 						opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
 						// Sign sign = edge.getSign();
 						bestRealization = bestRealization+edge.toString()+"\n";
 					} // end for over best edges
-					log("Best realization: "+bestRealization);
 					
-					int start = bestRealization.indexOf("]");
-					int end   = bestRealization.indexOf(":-");
-					String realString = "I am sorry I am lost for words on this one";
-					if (start != -1 && end != -1) { 
-						realString = bestRealization.substring(start+1,end);
+*/
+					String realString = "I am sorry I am lost for words on this one";  //default in case null produced
+					if (bestEdge != null) { 
+						realString = bestEdge.getSign().getOrthography().toString();
 					}
 					
 					// Forward the string to WM, to be synthesized
