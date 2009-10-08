@@ -77,6 +77,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	 */
 	 
 	public void addNewBelief (Belief belief) {
+		debug("adding new belief: " + belief.id);
 		
 		String[] newBeliefSet = new String[currentBeliefModel.k.length + 1];
 		
@@ -103,6 +104,7 @@ public class BeliefModelInterface extends ManagedComponent{
 	 */
 	
 	public void updateExistingBelief (Belief belief) {
+		debug("updating belief: " + belief.id);
 		try {
 			if (existsOnWorkingMemory(belief.id, Binder.BINDER_SA)) {
 				overwriteWorkingMemory(belief.id, Binder.BINDER_SA, belief);
