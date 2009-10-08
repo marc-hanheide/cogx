@@ -33,9 +33,13 @@ namespace spatial {
   {
     class MarshallingServer: public Marshalling::Marshaller {
       virtual void addProxy(const string & type, const string & UID,
-			    double probExists,
-			    const cast::cdl::WorkingMemoryPointerPtr & origin, 
-			    const Ice::Current &_context);
+	  double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
+	  const Ice::Current &_context);
+      virtual void addRelation(const string & relationType,const string & relationUID,
+	  const string &sourceType, const string &sourceUID,
+	  const string &targetType, const string &targetUID,
+	  double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
+	  const Ice::Current &_context);
       void deleteProxy(const string &typ, const string &UID,
 	  const Ice::Current &_context);
       virtual void addFeature(const string & proxyType, const string & proxyUID, 
@@ -57,6 +61,7 @@ namespace spatial {
     struct InternalProxy {
       ProxyPtr proxy;
       bool onBinder;
+      bool isRelation;
     };
 
     public:
@@ -76,8 +81,11 @@ namespace spatial {
     virtual void configure(const std::map<std::string, std::string>& _config);
 
     void addProxy(const string & type, const string & UID,
-		  double probExists, 
-		  const cast::cdl::WorkingMemoryPointerPtr & origin);
+	double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin);
+    void addRelation(const string & relationType, const string & relationUID,
+	const string & sourceType, const string & sourceUID,
+	const string & targetType, const string & targetUID,
+	double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin);
     void deleteProxy(const string &typ, const string &UID);
     void addFeature(const string & proxyType, const string & proxyUID, 
 	const binder::autogen::core::FeaturePtr feature);

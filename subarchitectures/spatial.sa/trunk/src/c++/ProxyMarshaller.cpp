@@ -1,5 +1,6 @@
 #include "ProxyMarshaller.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <BinderEssentials.hpp>
 
 using namespace std;
 using namespace boost;
@@ -7,6 +8,7 @@ using namespace cast;
 using namespace spatial;
 using namespace Ice;
 using namespace binder::autogen::core;
+using namespace binder::autogen::featvalues;
 
 /**
  * The function called to create a new instance of our component.
@@ -81,6 +83,18 @@ ProxyMarshaller::MarshallingServer::addProxy(const string & type, const string &
 }
 
 void
+ProxyMarshaller::MarshallingServer::addRelation(const string & relationType, 
+    const string & relationUID,
+    const string & sourceType, const string &sourceUID,
+    const string & targetType, const string &targetUID,
+    double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
+    const Ice::Current &_context)
+{
+  m_pOwner->addRelation(relationType, relationUID, 
+      sourceType, sourceUID, targetType, targetUID, probExists, origin);
+}
+
+void
 ProxyMarshaller::addProxy(const string & type, const string & UID,
 			  double probExists,
 			  const cast::cdl::WorkingMemoryPointerPtr & origin)
@@ -96,6 +110,7 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
     log("creating a new proxy.");
 
     typeMap[UID].proxy = createNewProxy(origin, probExists);
+    typeMap[UID].isRelation = false;
     //typeMap[UID].proxy->entityID = newDataID();
     //typeMap[UID].proxy->subarchId = getSubarchitectureID();
     //typeMap[UID].proxy->probExists = probExists;
@@ -106,6 +121,78 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
   }
   else {
     // The proxy already existed.
+    log("Warning: Proxy already existed creating normal proxy!");
+  }
+}
+
+void
+ProxyMarshaller::addRelation(const string & relationType, 
+    const string & relationUID,
+    const string & sourceType, const string &sourceUID,
+    const string & targetType, const string &targetUID,
+    double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin)
+{
+  log("addRelation: %s, %s, %s, %s, %s, %s", relationType.c_str(), relationUID.c_str(),
+      sourceType.c_str(), sourceUID.c_str(),
+      targetType.c_str(), targetUID.c_str());
+  map<string, InternalProxy> &relTypeMap =
+    m_proxyTypeMap[relationType];
+
+  map<string, InternalProxy>::iterator it = 
+    relTypeMap.find(relationUID);
+
+  if (it == relTypeMap.end()) {
+    // No such relation exists; potentially create a new one
+    // First, check that the source and target proxies exist, though.
+    map<string, InternalProxy> &sourceTypeMap =
+      m_proxyTypeMap[sourceType];
+
+    map<string, InternalProxy>::iterator sourceIt = 
+      sourceTypeMap.find(sourceUID);
+
+    if (sourceIt == sourceTypeMap.end()) {
+      log("Error! Could not create relation proxy; source didn't exist!");
+      return;
+    }
+    else {
+      map<string, InternalProxy> &targetTypeMap =
+	m_proxyTypeMap[targetType];
+
+      map<string, InternalProxy>::iterator targetIt = 
+	targetTypeMap.find(targetUID);
+      if (targetIt == targetTypeMap.end()) {
+	log("Error! Could not create relation proxy; target didn't exist!");
+	return;
+      }
+      else {
+	// create new proxy
+	log("creating a new relation proxy.");
+
+	FeatureValues sources;
+	AddressValuePtr source = new AddressValue(1, getCASTTime(), 
+	    sourceIt->second.proxy->entityID);
+	sources.push_back(source);
+
+	FeatureValues targets;
+	AddressValuePtr target = new AddressValue(1, getCASTTime(),
+	    targetIt->second.proxy->entityID);
+	targets.push_back(target);
+
+	relTypeMap[relationUID].proxy = createNewRelationProxy(origin, probExists, sources, targets);
+	relTypeMap[relationUID].isRelation = true;
+	//relTypeMap[relationUID].proxy->entityID = newDataID();
+	//relTypeMap[relationUID].proxy->subarchId = getSubarchitectureID();
+	//relTypeMap[relationUID].proxy->probExists = probExists;
+	//relTypeMap[relationUID].proxy->distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
+	relTypeMap[relationUID].onBinder = false; //Not represented on binder yet
+
+	//updateInternalProxy(relTypeMap[relationUID]); //Don't upload it until some features are added
+      }
+    }
+  }
+  else {
+    // The proxy already existed.
+    log("Warning: Proxy already existed creating relation proxy!");
   }
 }
 
@@ -119,6 +206,7 @@ ProxyMarshaller::MarshallingServer::deleteProxy(const string & type, const strin
 void
 ProxyMarshaller::deleteProxy(const string & type, const string & UID)
 {
+  //TODO: Make sure connected relations are not left on the Binder!
   if (m_proxyTypeMap.find(type) != m_proxyTypeMap.end()) {
     map<string, InternalProxy> &typeMap =
       m_proxyTypeMap[type];

@@ -19,6 +19,10 @@ module Marshalling {
     //   such as Place ID)
     void addProxy(string type, string UID, double probExists, 
 		  cast::cdl::WorkingMemoryPointer origin);
+    void addRelation(string relationType, string relationUID, 
+	string sourceType, string sourceUID,
+	string targetType, string targetUID,
+	double probExists, cast::cdl::WorkingMemoryPointer origin);
     // Delete a proxy from the Marshaller (and Binding, if present)
     void deleteProxy(string type, string UID);
     // Add a feature to a proxy in the Marshaller. Changes are not
