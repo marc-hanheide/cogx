@@ -192,8 +192,12 @@ void SOIFilter::runComponent()
 	    log("Got something in my queues");
 
 	    if(!objToAdd.empty())
-	    {
+	    { 
+	    
+	      log("An add proto-object instruction");
 	      SOIData &soi = SOIMap[objToAdd.front()];
+	      
+	      log("SOI retrieved");
 	      
 	      if(soi.status == STABLE)
 	      {
@@ -205,6 +209,7 @@ void SOIFilter::runComponent()
 		        pobj->time = getCASTTime();
 		        pobj->SOIList.push_back(soi.addr.id);
 		        segmentObject(soiPtr, pobj->image, pobj->mask);
+		        
 		
 		        string objId = newDataID();
 		        addToWorkingMemory(objId, pobj);
@@ -219,18 +224,42 @@ void SOIFilter::runComponent()
 		    }
 		    catch (DoesNotExistOnWMException e)
 		    {
-	            log("SOI <%s> was removed before it could be processed", soi.addr.id);
+	            log("SOI ID: %s was removed before it could be processed", soi.addr.id);
 		    }
 		  }
 	   	   
 	      objToAdd.pop();
 	   }
-     }
-//     else
-//	log("Timeout");   
+	   else if(!objToDelete.empty())
+	   {
+	   	  log("A delete proto-object instruction");
+/*	      SOIData &soi = SOIMap[objToDelete.front()];
+	       
+	      if(soi.status == DELETED)
+	      {
+		    try
+		    {
+		       	deleteFromWorkingMemory(soi.objId);
+		        
+		        SOIMap.erase(objToDelete.front());
+		
+		        log("A proto-object deleted ID: %s TIME: %u",
+	           			soi.objId, soi.stableTime.s, soi.stableTime.us);
+		    }
+		    catch (DoesNotExistOnWMException e)
+		    {
+	            log("WARNING: Proto-object ID %s already removed", soi.objId);
+		    }
+		  }
+	   	   
+	      objToDelete.pop(); */
+	   }
+    }
+    else
+		log("Timeout");   
   }
 
-  log("Removing semaphor..");
+  log("Removing semaphore ...");
   queuesNotEmpty->remove("queueSemaphore");
   delete queuesNotEmpty;
   
@@ -283,13 +312,11 @@ void SOIFilter::updatedSOI(const cdl::WorkingMemoryChange & _wmc)
   	  soi.status= STABLE;
   	  soi.stableTime = time;
   	  objToAdd.push(soi.addr.id);
-
-	  queuesNotEmpty->post();
   	  
   	  log("An object candidate ID %s count %u at %u ",
-   		soi.addr.id.c_str(), soi.updCount,
-   		soi.stableTime.s, soi.stableTime.us
-   		);
+   		soi.addr.id.c_str(), soi.updCount, soi.stableTime.s, soi.stableTime.us);
+   		
+	  queuesNotEmpty->post();
   	}
 }
 
@@ -302,12 +329,11 @@ void SOIFilter::deletedSOI(const cdl::WorkingMemoryChange & _wmc)
   soi.status= DELETED;
   soi.deleteTime = time;
   objToDelete.push(soi.addr.id);
-  
-   debug("deleted SOI ID %s count %u at %u:%u",
-   		soi.addr.id.c_str(), soi.updCount,
-   		time.s, time.us
-   		);
-   		 
+    
+  log("Deleted SOI ID %s count %u at %u:%u",
+  	soi.addr.id.c_str(), soi.updCount, time.s, time.us);
+  	
+  queuesNotEmpty->post();		 
 }
 
 
@@ -863,10 +889,10 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 
 
 
-vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg)
+vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg)
 {
 	int num_pixels = width*height;
-	vector<int> result(num_pixels);   // stores result of optimization
+	vector<unsigned char> result(num_pixels);   // stores result of optimization
 	
 	log("Segment image %ix%i \n", width, height);
 	
@@ -921,7 +947,7 @@ vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage*
 //		log("\nAfter %i swap iterations the energy is %d\n", SWAP_ITERS, gc->compute_energy());
 
 		for ( int  i = 0; i < num_pixels; i++ )
-			result[i] = gc->whatLabel(i);
+			result[i] = (unsigned char) gc->whatLabel(i);
 
 		delete gc;
 		delete data;
@@ -935,7 +961,7 @@ vector<int> SOIFilter::graphCut(int width, int height, int num_labels, IplImage*
 
 
 
-void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMaskPtr &segMask)
+void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
 {
 	Video::Image image;
 	getImage(camId,image);
@@ -1000,20 +1026,17 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	filterFlag = true;
     IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
     	
-	segMask = new SegmentMask;
-    
-    segMask->width = iplPatchHLS->width;
-    segMask->height = iplPatchHLS->height;
+    segMask.width = iplPatchHLS->width;
+    segMask.height = iplPatchHLS->height;
 
-    vector<int> labels = graphCut(segMask->width, segMask->height, 3, costPatch, bgCostPatch);
-    segMask->data = labels;
+    segMask.data =  graphCut(segMask.width, segMask.height, 3, costPatch, bgCostPatch);
     convertImageFromIpl(iplPatch, imgPatch);
     
     IplImage *segPatch = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 1);
 
-	for(int i=0; i < labels.size(); i++)
+	for(int i=0; i < segMask.data.size(); i++)
 	{
-		segPatch->imageData[i] = labels[i]*120;
+		segPatch->imageData[i] = segMask.data[i]*120;
 	}   
  
     if (doDisplay)

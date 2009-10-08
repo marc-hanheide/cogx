@@ -80,7 +80,7 @@ private:
   struct SOIData {
   	cdl::WorkingMemoryAddress addr;
   	SOIStatus status;
-  	VisionData::Vector3Seq points;
+ // 	VisionData::SurfacePointsSeq points;
   	int updCount;
   	std::string objId;
   	cdl::CASTTime addTime;
@@ -120,7 +120,7 @@ private:
   /**
    * segment out object roi
    */
-  void segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMaskPtr &segMask);
+  void segmentObject(const VisionData::SOIPtr soiPtr, Video::Image &imgPatch, VisionData::SegmentMask &segMask);
   
   
   void projectSOIPoints(const VisionData::SOI &soi, const VisionData::ROI &roi, std::vector<CvPoint> &projPoints,
@@ -146,7 +146,7 @@ private:
   std::vector<CvScalar> getSortedHlsList(std::vector<VisionData::SurfacePoint> surfPoints);
 
   
-  std::vector<int> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg);
+  std::vector<unsigned char> graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg);
   
   int getHlsDiff(std::vector<CvScalar> hlsList, CvScalar hls, int k);
 
