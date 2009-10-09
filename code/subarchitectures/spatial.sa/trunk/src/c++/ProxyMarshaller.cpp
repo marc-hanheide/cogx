@@ -60,14 +60,7 @@ void
 ProxyMarshaller::configure(const std::map<std::string, std::string>& _config)
 {
   log("Configure entered");
-
-  if (_config.find("-bsa") != _config.end()) {
-    m_bindingSA=_config.find("-bsa")->second;
-  } else if (_config.find("--bsa") != _config.end()) {
-    m_bindingSA=_config.find("--bsa")->second;
-  } else {
-    m_bindingSA="binding.sa";
-  }
+  BindingWorkingMemoryWriter::configure(_config);
 
   Marshalling::MarshallerPtr servant = new MarshallingServer(this);
   registerIceServer<Marshalling::Marshaller, Marshalling::Marshaller>(servant);
