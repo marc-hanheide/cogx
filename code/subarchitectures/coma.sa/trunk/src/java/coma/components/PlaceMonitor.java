@@ -669,6 +669,14 @@ public class PlaceMonitor extends ManagedComponent {
 		if (m_proxyMarshall!=null) {
 			// current room UID:
 			String _currRoomUID = "area"+_comaRoom.roomId;
+
+			// first delete its relations:
+			HashSet<String> prevKnownRels = m_existingRelationProxies.remove(_currRoomUID);
+			for (String _obsoleteRel : prevKnownRels) {
+				m_proxyMarshall.deleteProxy("contains", _obsoleteRel);
+			}
+			
+			// then delete the actual room proxy
 			m_proxyMarshall.deleteProxy("room", _currRoomUID);
 			m_existingRoomProxies.remove(_currRoomUID);
 			logRoom(_comaRoom, "deleted room proxy for: ", _wmid);
