@@ -43,7 +43,9 @@ import beliefmodels.domainmodel.cogx.*;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.architecture.ManagedComponent;
+import cast.DoesNotExistOnWMException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.*;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
@@ -54,6 +56,7 @@ import cast.core.CASTUtils;
 
 import comsys.arch.ProcessingData;
 import binder.abstr.BeliefModelInterface;
+import binder.components.Binder;
 
 //-----------------------------------------------------------------
 // JAVA IMPORTS
@@ -106,6 +109,7 @@ public class cc_FakeVerificationGenerator
 	
 	@Override
 	public void start() {
+		super.start();
 		init();
 	}	
 	
@@ -168,8 +172,8 @@ public class cc_FakeVerificationGenerator
 		GroundedBelief request = getGUIRequest();
 		try {
 			if (request != null) {
-				log("Storing clarification request on working memory");
-				addToWorkingMemory(newDataID(), request);
+				log("Storing grounded belief on working memory");
+				addToWorkingMemory(newDataID(), Binder.BINDER_SA, request);
 			}
 		} catch (SubarchitectureComponentException e) {
 				e.printStackTrace();
@@ -186,15 +190,35 @@ public class cc_FakeVerificationGenerator
 		
 		OKBUTTON_PUSHED = false;
 		
-		// construct the clarification request
-		
-		GroundedBelief verif = new GroundedBelief();
+		Belief b = null;
+		try {
+			String beliefId = entityField.getText();
+			log("retrieving belief id '" + beliefId + "'");
+			b = getBelief(beliefId);
+			if (b == null) {
+				log("null!");
+			}
+			b.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
+			
+		} catch (DoesNotExistOnWMException e) {
+			e.printStackTrace();
+		} catch (UnknownSubarchitectureException e) {
+			e.printStackTrace();
+		}
+
 		Ground g = new Ground();
 		g.gstatus = GroundStatus.assertionVerified;
 		g.indexSet = new String[] { };
-		g.reason = new Formula(); // truth -> empty formula
+		g.reason = new SuperFormula(); // truth -> empty formula
+
+		GroundedBelief verif = new GroundedBelief();
+		verif.ags = b.ags;
+		verif.phi = b.phi;
+		verif.sigma = b.sigma;
+		verif.timeStamp = b.timeStamp;
+		verif.id = newDataID();
 		verif.grounding = g;
-		
+
 		//use entityField.getText();
 		
 		// return the result
@@ -202,6 +226,23 @@ public class cc_FakeVerificationGenerator
 		return verif;
 	} // end getGUIPhonString	
 	
+	public SuperFormula changeAssertionsToPropositions(SuperFormula sf) {
+		if (sf instanceof ComplexFormula) {
+			ComplexFormula cf = (ComplexFormula) sf;
+			for (int i = 0; i < cf.formulae.length; i++) {
+				cf.formulae[i] = changeAssertionsToPropositions(cf.formulae[i]);
+			}
+			return cf;
+		}
+		if (sf instanceof ContinualFormula) {
+			ContinualFormula cof = (ContinualFormula) sf;
+			if (cof.cstatus == ContinualStatus.assertion) {
+				cof.cstatus = ContinualStatus.proposition;
+			}
+			return cof;
+		}
+		return sf;
+	}
 	
 	public void configureGUI() {
 		try {
