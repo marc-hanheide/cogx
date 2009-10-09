@@ -151,7 +151,7 @@ public class SpatialActionInterface extends ManagedComponent {
 				} catch (DoesNotExistOnWMException e) {
 					e.printStackTrace();
 				} catch (ConsistencyException e) {
-					// TODO Auto-generated catch block
+					e.printStackTrace();
 				} catch (PermissionException e) {
 					e.printStackTrace();
 				} catch (UnknownSubarchitectureException e) {
