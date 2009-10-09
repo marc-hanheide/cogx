@@ -3,12 +3,17 @@
  */
 package execution.components;
 
+import java.util.List;
 import java.util.Map;
 
 import motivation.slice.PlanProxy;
+import motivation.util.facades.BinderFacade;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
+import binder.autogen.core.FeatureValue;
+import binder.autogen.core.Union;
+import binder.autogen.featvalues.StringValue;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -44,12 +49,15 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	private long m_sleepMillis;
 	private boolean m_generateOwnPlans;
 	private boolean m_kanyeWest;
-
+	private final BinderFacade m_binderFacade;
+	
+	
 	// private WorkingMemoryAddress m_lastPlanProxyAddr;
 
 	public PrototypePlanExecutor() {
 		m_goal = "(forall (?p - place) (= (explored ?p) true))";
 		m_sleepMillis = 10000;
+		m_binderFacade = new BinderFacade(this);
 	}
 
 	@Override
@@ -77,6 +85,8 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 	@Override
 	protected void start() {
 
+		m_binderFacade.start();
+		
 		// listen for new PlanProxy structs which trigger execution
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
 				PlanProxy.class, WorkingMemoryOperation.ADD),
@@ -86,7 +96,6 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 							throws CASTException {
 						newPlanProxy(_wmc.address);
 					}
-
 				});
 
 		// if generating own plans, listen for execution completions by myself!
@@ -167,7 +176,20 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);
-			act.placeID = Long.parseLong(_plannedAction.arguments[1]);
+			String placeUnionID = plannerLiteralToWMID(_plannedAction.arguments[1]);
+			Union placeUnion = m_binderFacade.getUnion(placeUnionID);
+			if(placeUnion == null) {
+				throw new ActionExecutionException("No union for place union id: "
+						+ placeUnionID);
+			}
+			List<FeatureValue> placeIDFeatures = m_binderFacade.getFeatureValue(placeUnion, "place_id");
+			if(placeIDFeatures.isEmpty()) {
+				throw new ActionExecutionException("No place_id features for union id: "
+						+ placeUnionID);
+
+			}
+			StringValue placeIDString = (StringValue) placeIDFeatures.get(0);
+			act.placeID = Long.parseLong(placeIDString.val);
 			return act;
 		} else if (_plannedAction.name.equals("categorize_place")) {
 			return newActionInstance(ExplorePlace.class);
@@ -175,6 +197,10 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
+	}
+
+	private String plannerLiteralToWMID(String _string) {
+		return _string.substring(_string.indexOf("_")+1).replace("__", ":");
 	}
 
 	private class PlanGenerator extends SleepyThread {
@@ -243,6 +269,12 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 		if (m_generateOwnPlans) {
 			new PlanGenerator().start();
 		}
+	}
+
+	public static void main(String[] args) {
+		String testCase = "place_3__f";
+		System.out.println(testCase.substring(testCase.indexOf("_")+1).replace("__", ":"));
+
 	}
 
 }
