@@ -8,7 +8,12 @@ INCLUDE includes/spatial.sa/spatial-binder.cast
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-INCLUDE includes/binder.sa/binder.cast
+#INCLUDE includes/binder.sa/binder.cast
+INCLUDE includes/binder.sa/binder-quiet.cast
+
+# coma ########################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-base.cast
