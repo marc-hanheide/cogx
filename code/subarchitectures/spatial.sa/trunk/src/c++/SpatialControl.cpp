@@ -53,6 +53,7 @@ SpatialControl::SpatialControl()
 {
   m_CurrPerson = -1;
   m_CurrPersonWMid = "";
+  m_firstScanAdded = false;
 
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
@@ -866,6 +867,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
                                   '0');
       lpW.add(scanPose, m_LaserPoseR);
       m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
+      m_firstScanAdded = true;
     }
   }
     
@@ -950,6 +952,11 @@ FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
 {
   log("SpatialControl::getFrontiers() called");
+  while (!m_firstScanAdded) {
+    log("  Waiting for first scan to be added...");
+    usleep(1000000);
+  }
+
   m_Explorer->updateFrontiers();
   FrontierInterface::FrontierPtSeq outArray;
   log("m_Fronts contains %i frontiers", m_Explorer->m_Fronts.size());
