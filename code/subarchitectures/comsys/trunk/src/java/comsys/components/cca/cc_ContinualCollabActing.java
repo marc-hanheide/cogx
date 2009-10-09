@@ -36,6 +36,7 @@ import beliefmodels.domainmodel.cogx.*;
 
 import binder.abstr.BeliefModelInterface;
 import binder.components.Binder;
+import binder.utils.BeliefModelUtils;
 
 public class cc_ContinualCollabActing extends BeliefModelInterface {
 
@@ -456,6 +457,9 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     
 	public void syncWithBeliefModel(BeliefModel model) {
 		log("syncing with the belief model");
+		
+		log("current belief model:\n" + BeliefModelUtils.getBeliefModelPrettyPrint(model, 1));
+		
 		for (int i = 0 ; i < model.k.length; i++) {
 			Belief b = null;
 			try {
@@ -484,7 +488,14 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		}
 		log("sync done");
 	}
-	    
+
+	public AgentStatus[] subsumedAgentStatuses(AgentStatus s) {
+		if (s instanceof AttributedAgentStatus) {
+			return null;
+		}
+		return null;
+	}
+	
     /**
      * Return true iff the proof assumes realisation of an utterance that can be extracted from the proof.
      * @param proof the proof

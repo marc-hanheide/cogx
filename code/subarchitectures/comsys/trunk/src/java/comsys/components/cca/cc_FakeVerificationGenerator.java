@@ -55,6 +55,7 @@ import cast.core.CASTUtils;
 //-----------------------------------------------------------------
 
 import comsys.arch.ProcessingData;
+import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 import binder.abstr.BeliefModelInterface;
 import binder.components.Binder;
 
@@ -204,7 +205,6 @@ public class cc_FakeVerificationGenerator
 				log("no such belief found!");
 				return null;
 			}
-			b.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
 			
 		} catch (DoesNotExistOnWMException e) {
 			e.printStackTrace();
@@ -219,11 +219,11 @@ public class cc_FakeVerificationGenerator
 		g.reason = new SuperFormula(); // truth -> empty formula
 
 		GroundedBelief verif = new GroundedBelief();
-		verif.ags = b.ags;
-		verif.phi = b.phi;
+		verif.ags = AbstractBeliefFactory.createAgentStatus(new String[] {"robot", "human"}); // XXX
+		verif.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
 		verif.sigma = b.sigma;
 		verif.timeStamp = b.timeStamp;
-		verif.id = newDataID();
+		verif.id = b.id;
 		verif.grounding = g;
 
 		//use entityField.getText();
