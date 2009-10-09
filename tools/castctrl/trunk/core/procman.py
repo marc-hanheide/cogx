@@ -431,8 +431,15 @@ class CProcessManager(object):
 def xrun(cmdline, workdir=None):
     # XRUN may create zombies.
     cmds = cmdline.split()
-    pid = subp.Popen(cmds, workdir=workdir).pid
-    log("CMD pid=%d: %s" % (pid, cmdline))
+    cwd = os.getcwd()
+    try:
+        pid = subp.Popen(cmds).pid
+        log("CMD pid=%d: %s" % (pid, cmdline))
+    except Exception, e:
+        error("xrun Internal: %s" % e)
+    finally:
+        os.chdir(cwd)
+    log("")
 
 def xrun_wait(cmdline, workdir=None):
     # XRUN may create zombies.
@@ -451,7 +458,7 @@ def xrun_wait(cmdline, workdir=None):
         for ln in err.readlines(): error(ln)
         err.close()
     except Exception, e:
-        error("Internal: %s" % e)
+        error("xrun_wait Internal: %s" % e)
     finally:
         os.chdir(cwd)
     log("")
