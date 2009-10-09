@@ -7,6 +7,7 @@ import os, sys, errno
 import re
 import time
 import subprocess as subp
+import tempfile
 import select, signal, threading
 import options, messages
 import itertools
@@ -402,44 +403,57 @@ class CProcessManager(object):
     def lockHost(self):
         return True
  
-def runCommand(cmd, params=None, workdir=None, name="onetime"):
-    try:
-        p = CProcess(name, cmd, params=params, workdir=workdir)
-        p.start()
-        pipes = p.getPipes()
-        while p.isRunning():
-            ready = select.select(pipes, [], [], 0.1)
-            if len(ready[0]) > 0: p.readPipes(ready[0], 100)
-        ready = select.select(pipes, [], [], 0.0)
-        if len(ready[0]) > 0: p.readPipes(ready[0], 100)
-        if LOGGER != None:
-            log = messages.CLogMerger()
-            try: # TODO: these messages should be internal!
-                log.addSource(p)
-                log.merge()
-                msgs = [m for m in log.messages]
-                for m in msgs: LOGGER.addMessage(m)
-            finally: log.removeSource(p)
-    except Exception, e:
-        error("Internal error")
-        error("%s" % e)
+# BAD: causes castcontrol to go to 100% of CPU use
+#def runCommand(cmd, params=None, workdir=None, name="onetime"):
+#    try:
+#        p = CProcess(name, cmd, params=params, workdir=workdir)
+#        p.start()
+#        pipes = p.getPipes()
+#        while p.isRunning():
+#            ready = select.select(pipes, [], [], 0.1)
+#            if len(ready[0]) > 0: p.readPipes(ready[0], 100)
+#        ready = select.select(pipes, [], [], 0.0)
+#        if len(ready[0]) > 0: p.readPipes(ready[0], 100)
+#        if LOGGER != None:
+#            log = messages.CLogMerger()
+#            try: # TODO: these messages should be internal!
+#                log.addSource(p)
+#                log.merge()
+#                msgs = [m for m in log.messages]
+#                for m in msgs: LOGGER.addMessage(m)
+#            finally: log.removeSource(p)
+#    except Exception, e:
+#        error("Internal error")
+#        error("%s" % e)
+#    finally:
+#        if p != None: p.stop()
 
 def xrun(cmdline, workdir=None):
     # XRUN may create zombies.
     cmds = cmdline.split()
     pid = subp.Popen(cmds, workdir=workdir).pid
-    log("XRUN: pid=%d %s" % (pid, cmdline))
+    log("CMD pid=%d: %s" % (pid, cmdline))
 
 def xrun_wait(cmdline, workdir=None):
     # XRUN may create zombies.
     cmds = cmdline.split()
-    log("XRUN&wait: %s" % (cmdline))
+    log("CMD: %s" % (cmdline))
     cwd = os.getcwd()
     try:
+        std = tempfile.TemporaryFile()
+        err = tempfile.TemporaryFile()
         if workdir != None: os.chdir(workdir)
-        rv = subp.call(cmds)
-        # TODO: notify exceptions
+        rv = subp.call(cmds, stdout=std, stderr=err)
+        std.seek(0)
+        for ln in std.readlines(): log(ln)
+        std.close()
+        err.seek(0)
+        for ln in err.readlines(): error(ln)
+        err.close()
+    except Exception, e:
+        error("Internal: %s" % e)
     finally:
         os.chdir(cwd)
+    log("")
 
 

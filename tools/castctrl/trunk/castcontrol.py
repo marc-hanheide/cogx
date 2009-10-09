@@ -218,7 +218,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             if len(stm) < 1: continue
             script.append(stm)
         for i,cmd in enumerate(script):
-            procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
+            # procman.runCommand(cmd, name="cleanup-cmd-%d" % (i+1))
+            procman.xrun_wait(cmd)
 
     # Somehow we get 2 events for a button click ... filter one out
     def on_btServerStart_clicked(self, valid=True):
@@ -307,7 +308,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         bcmc = os.path.join(bdir, "CMakeCache.txt")
         if not os.path.exists(bdir): os.makedirs(bdir)
         cmd = 'cmake-gui %s' % root
-        # procman.runCommand(cmd, name="cmake-gui", workdir=bdir)
         procman.xrun_wait(cmd, bdir)
 
     def editFile(self, filename, line=None):
@@ -329,7 +329,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onShowEnvironment(self):
         cmd = "bash -c env"
-        procman.runCommand(cmd, name="ENV")
+        # procman.runCommand(cmd, name="ENV")
+        procman.xrun_wait(cmd)
 
     def onEditBuildError(self):
         tcur = self.ui.buildLogfileTxt.textCursor()
