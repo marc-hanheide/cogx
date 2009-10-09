@@ -14,7 +14,7 @@ CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --log #--debug --no-x-window 
 #CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf #--log #--debug 
 CPP GD path.query PathQueryProcessor --log --no-indirect-paths #--debug
-CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --log #--debug
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-x-window #--log #--debug
 # Conceptual->Binding interface components
 CPP GD proxy.marshaller ProxyMarshaller -bsa binder --log
 CPP GD connectivity.writer ConnectivityWriter --log
@@ -33,9 +33,9 @@ JAVA MG discretizer binder.components.UnionDiscretizer #--log
 
 
 SUBARCHITECTURE planner.sa
-JAVA WM cast.architecture.SubarchitectureWorkingMemory 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory --log --debug
 CPP TM AlwaysPositiveTaskManager
-CPP MG Planner WMControl 
+CPP MG Planner WMControl --log
 JAVA MG executor execution.components.PrototypePlanExecutor --log --self-motivate 
 # JAVA MG vis.plan motivation.util.viewer.ViewerCastComponent --subscribe autogen.Planner.PlanningTask,autogen.Planner.Action
 
