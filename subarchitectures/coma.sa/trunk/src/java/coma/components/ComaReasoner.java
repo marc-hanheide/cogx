@@ -62,6 +62,10 @@ public class ComaReasoner extends ManagedComponent {
 	 */
 	public class ComaReasonerInterfaceI extends comadata._ComaReasonerInterfaceDisp {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -8225078913601911718L;
 		CrowlWrapper m_reasoner;
 		
 		public ComaReasonerInterfaceI(String _crowl_cfg_file, boolean _logging) {
@@ -114,6 +118,10 @@ public class ComaReasoner extends ManagedComponent {
 
 		public boolean deleteInstance(String instance, Current current) {
 			return m_reasoner.deleteInstance(instance);
+		}
+
+		public boolean deleteRelation(String instance1, String relation, String instance2, Current current) {
+			return m_reasoner.deleteRelation(instance1, relation, instance2);
 		}
 
 		public boolean isInstanceOf(String instance, String concept, Current __current) {

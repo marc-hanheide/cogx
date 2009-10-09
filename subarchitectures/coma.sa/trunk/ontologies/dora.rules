@@ -80,21 +80,29 @@
   ->
   (?b dora:possiblySameRoomAs ?c)]
   
-[bottomUpRoomFormation:
-  (?x rdf:type dora:Place),
-  (?y rdf:type dora:Place),
-  (?x dora:sameRoomAs ?y),
-  (?r rdf:type dora:PhysicalRoom),
-  (?x dora:constituentOf ?r)
+[objectContainmentRule:
+  (?a rdf:type dora:Object),
+  (?b rdf:type dora:Place),
+  (?a dora:in ?b),
+  (?b dora:constituentOfRoom ?c)
   ->
-  (?y dora:constituentOf ?r),
-#  roomcleaner(?x)
-]
+  (?a dora:in ?c)]
   
-[doorwaysBelongToAllRooms:
-  (?x rdf:type dora:Doorway),
-  (?x dora:adjacent ?y),
-  (?y dora:constituentOf ?r),
-  (?r rdf:type dora:PhysicalRoom)
-  ->
-  (?x dora:constituentOf ?r)]
+#[bottomUpRoomFormation:
+#  (?x rdf:type dora:Place),
+#  (?y rdf:type dora:Place),
+#  (?x dora:sameRoomAs ?y),
+#  (?r rdf:type dora:PhysicalRoom),
+#  (?x dora:constituentOf ?r)
+#  ->
+#  (?y dora:constituentOf ?r),
+##  roomcleaner(?x)
+#]
+  
+#[doorwaysBelongToAllRooms:
+#  (?x rdf:type dora:Doorway),
+#  (?x dora:adjacent ?y),
+#  (?y dora:constituentOf ?r),
+#  (?r rdf:type dora:PhysicalRoom)
+#  ->
+#  (?x dora:constituentOf ?r)]
