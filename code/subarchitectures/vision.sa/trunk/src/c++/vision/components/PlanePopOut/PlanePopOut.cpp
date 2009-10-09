@@ -53,6 +53,8 @@ GLfloat col_highlight[4];
 VisionData::SurfacePointSeq points;
 VisionData::SurfacePointSeq pointsN;
 
+VisionData::Vector3Seq mConvexHullPoints;
+
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector< Vector3 > v3size;
 vector< Vector3 > v3center;
@@ -437,6 +439,7 @@ void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &l
 		{
 			v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
 			glVertex3f(v3OnPlane.x,v3OnPlane.y,v3OnPlane.z);
+			mConvexHullPoints.push_back(v3OnPlane);
 		}
 		glEnd();
 	        free( hull );
@@ -768,6 +771,7 @@ void PlanePopOut::runComponent()
 			SplitPoints(pointsN,points_label);
 			glutPostRedisplay();
 			glutMainLoopEvent();
+			AddConvexHullinWM();
 		}
 	}
 	if (para_a!=0.0 || para_b!=0.0 || para_c!=0.0 || para_d!=0.0)
@@ -1092,6 +1096,18 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 		return true; //the same object
 	else	
 		return false; //not the same one
+}
+
+void PlanePopOut::AddConvexHullinWM()
+{
+	if (mConvexHullPoints.size()>0)
+	{
+		VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
+		CHPtr->PointsSeq = mConvexHullPoints;
+		CHPtr->time = getCASTTime();
+		addToWorkingMemory(newDataID(),CHPtr);
+	}
+	mConvexHullPoints.clear();
 }
 
 /*

@@ -46,6 +46,7 @@ private:
 	std::vector<ObjPara> CurrentObjList;
 	VisionData::SOIPtr createObj(Vector3 center, Vector3 size, double radius, VisionData::SurfacePointSeq psIn1SOI, VisionData::SurfacePointSeq BGpIn1SOI, VisionData::SurfacePointSeq EQpIn1SOI);
 	bool Compare2SOI(ObjPara obj1, ObjPara obj2);
+	void AddConvexHullinWM();
 
 
 protected:
