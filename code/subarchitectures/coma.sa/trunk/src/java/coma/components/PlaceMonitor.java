@@ -607,6 +607,29 @@ public class PlaceMonitor extends ManagedComponent {
 				_roomIDFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), _comaRoom.roomId);
 				m_proxyMarshall.addFeature("room", _currRoomUID, _roomIDFtr);
 			}
+			
+			// areaclasses
+			// first clean existing areaclass facts
+			m_proxyMarshall.deleteFeature("room", _currRoomUID, "areaclass");
+			// now create individual feature-value pairs for all concepts
+			if (_comaRoom.concepts.length!=0) {
+				for (String _currConcept : _comaRoom.concepts) {
+					Feature _classFtr = new Feature();
+					_classFtr.featlabel = "areaclass";
+					_classFtr.alternativeValues = new FeatureValue[1];
+					_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
+					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
+				}
+			} else {
+				Feature _classFtr = new Feature();
+				_classFtr.featlabel = "areaclass";
+				_classFtr.alternativeValues = new FeatureValue[1];
+				_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
+				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
+			}
+			m_proxyMarshall.commitFeatures("room", _currRoomUID);
+			log("maintained proxy for " + _currRoomUID);
+
 
 			// containment
 			HashSet<String> prevKnownRels = m_existingRelationProxies.remove(_currRoomUID);
@@ -638,28 +661,6 @@ public class PlaceMonitor extends ManagedComponent {
 			// update the set of known relations
 			m_existingRelationProxies.put(_currRoomUID, trueKnownRels);
 			
-
-			// areaclasses
-			// first clean existing areaclass facts
-			m_proxyMarshall.deleteFeature("room", _currRoomUID, "areaclass");
-			// now create individual feature-value pairs for all concepts
-			if (_comaRoom.concepts.length!=0) {
-				for (String _currConcept : _comaRoom.concepts) {
-					Feature _classFtr = new Feature();
-					_classFtr.featlabel = "areaclass";
-					_classFtr.alternativeValues = new FeatureValue[1];
-					_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
-					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
-				}
-			} else {
-				Feature _classFtr = new Feature();
-				_classFtr.featlabel = "areaclass";
-				_classFtr.alternativeValues = new FeatureValue[1];
-				_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
-				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
-			}
-			m_proxyMarshall.commitFeatures("room", _currRoomUID);
-			log("maintained proxy for " + _currRoomUID);
 			return true;
 		} else return false;
 	}
