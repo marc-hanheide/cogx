@@ -21,7 +21,7 @@ from standalone.task import PlanningStatusEnum, Task
 from standalone.planner import Planner as StandalonePlanner
 
 
-TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.axiomized.mapl")
+TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.mapl")
 
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def __init__(self):

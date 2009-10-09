@@ -7,6 +7,7 @@ from standalone.task import Task  # requires standalone planner to be in PYTHONP
 import standalone.mapl_new as mapl
 import standalone.state_new as state
 import binder.autogen
+import binder.autogen.specialentities as specialentities
 import binder.autogen.featvalues as featvalues
 
 forbidden_letters = "-:"
@@ -67,56 +68,68 @@ def feature_val_to_object(fval):
 
 def gen_fact_tuples(unions):
   for union in unions:
-    #name = map_name(union.entityID, prefix="union")
-    name = union.entityID
-    object = mapl.types.TypedObject(name, mapl.types.objectType)
+    if isinstance(union, specialentities.RelationUnion):
+      source = feature_val_to_object(union.usource.alternativeValues[0])
+      target = feature_val_to_object(union.utarget.alternativeValues[0])
 
-    add_features = []
-    if isinstance(union, binder.autogen.specialentities.RelationUnion):
-      add_features = [union.source, union.target]
+      for feature in union.features:
+        # choose feature val with highest probability:
+        max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
+        yield (feature.featlabel, source, target, feature_val_to_object(max_val))
+        
+    else:
+      name = union.entityID
+      object = mapl.types.TypedObject(name, mapl.types.objectType)
       
-    for feature in itertools.chain(union.features, add_features):
-      # choose feature val with highest probability:
-      max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
-      yield (feature.featlabel, object, feature_val_to_object(max_val))
+      for feature in union.features:
+        # choose feature val with highest probability:
+        max_val = max((val for val in feature.alternativeValues), key=lambda v: v.independentProb)
+        yield (feature.featlabel, object, feature_val_to_object(max_val))
 
 def filter_unknown_preds(fact_tuples):
   for ft in fact_tuples:
-    feature_label, union_object, val = ft
+    feature_label = ft[0]
     if feature_label not in current_domain.functions and \
           feature_label not in current_domain.predicates:
       print "filtering feature assignment %s, because '%s' is not part of the planning domain" \
           % (map(str,ft), feature_label)
     else:
+      print "using", map(str, ft)
       yield ft
 
 def tuples2facts(fact_tuples):
-  for feature_label, union, val in fact_tuples:
+  for ftup in fact_tuples:
+    feature_label = ftup[0]
+    args = ftup[1:-1]
+    val = ftup[-1]
     if feature_label in current_domain.functions:
-      func = current_domain.functions.get(feature_label, [union])
-      yield state.Fact(state.StateVariable(func, [union]), val)
+      func = current_domain.functions.get(feature_label, args)
+      yield state.Fact(state.StateVariable(func, args), val)
     else:
       assert feature_label in current_domain.predicates
-      pred = current_domain.predicates.get(feature_label, [union, val])
-      yield state.Fact(state.StateVariable(pred, [union, val]), mapl.types.TRUE)
+      pred = current_domain.predicates.get(feature_label, args)
+      yield state.Fact(state.StateVariable(pred, args), val)
 
 def unify_objects(obj_descriptions):
   namedict = {}
-  for feature_label, union, val in obj_descriptions:
-    if union.name in namedict:
-      union = namedict[union.name]
-    else:
-      namedict[union.name] = union
-      
-    if val.name in namedict:
-      val = namedict[val.name]
-    else:
-      namedict[val.name] = val
-    yield feature_label, union, val
+  for ftup in obj_descriptions:
+    feature_label = ftup[0]
+
+    result = [feature_label]
+    for obj in ftup[1:]:
+      if obj.name in namedict:
+        result.append(namedict[obj.name])
+      else:
+        namedict[obj.name] = obj
+        result.append(obj)
+        
+    yield tuple(result)
       
 def infer_types(obj_descriptions):
   constraints = defaultdict(set)
-  for pred, name, val in obj_descriptions:
+  for ftup in obj_descriptions:
+    pred = ftup[0]
+    args = ftup[1:]
     if pred in current_domain.functions:
       declarations = current_domain.functions[pred]
       is_function = True
@@ -124,12 +137,13 @@ def infer_types(obj_descriptions):
       declarations = current_domain.predicates[pred]
       is_function = False
     for declaration in declarations:
-      nametype = declaration.args[0].type
-      valtype = declaration.type if is_function else declaration.args[1].type
+      ftypes = map(lambda a: a.type, declaration.args)
+      ftypes.append(declaration.type)
+
       #only consider this function if the basic value types (object, boolean, number) match
-      if nametype.equalOrSubtypeOf(name.type) and valtype.equalOrSubtypeOf(val.type):
-        constraints[name].add(nametype)
-        constraints[val].add(valtype)
+      if len(args) == len(ftypes) and all(map(lambda t, a: t.equalOrSubtypeOf(a.type), ftypes, args)):
+        for arg, type in zip(args, ftypes):
+          constraints[arg].add(type)
         #print "Inferring: %s is instance of %s because of use in %s" % (name, nametype, declaration)
         #print "Inferring: %s is instance of %s because of use in %s" % (val, valtype, declaration)
         
