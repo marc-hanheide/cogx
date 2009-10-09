@@ -802,7 +802,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
     		surfPoints.resize(60);
     	
     	  
-    int colorKval = surfPoints.size()/HUE_K_RATIO;
+    int colorKval = surfPoints.size()/HUE_K_RATIO + 1;
      
     if(distcost)
     {
@@ -836,7 +836,7 @@ IplImage* SOIFilter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoi
 		int k = filterList.size()/HUE_K_RATIO;
 		sortHlsList = colorFilter(sortHlsList, filterList, k);
 		
-		colorKval = sortHlsList.size()/HUE_K_RATIO;
+		colorKval = sortHlsList.size()/HUE_K_RATIO + 1;
 		
 		log("Filtered out %i color samples", size - sortHlsList.size());
 		
