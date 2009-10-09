@@ -4,5 +4,5 @@ include_directories(.)
 SET(SOURCES VideoViewer.cpp)
 
 add_cast_component(VideoViewer ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils VideoClient ${OPENCV_LDFLAGS})
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils ${OPENCV_LDFLAGS})
 

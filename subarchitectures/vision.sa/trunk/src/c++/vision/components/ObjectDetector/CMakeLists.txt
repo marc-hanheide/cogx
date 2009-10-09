@@ -39,5 +39,5 @@ link_cast_component(${CAST_COMPONENT_NAME} qt-mt)
 
 
 link_cast_component(${CAST_COMPONENT_NAME} Vs3Src Vs3Matas Vs3MxCvTools)
-link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils VideoClient)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 

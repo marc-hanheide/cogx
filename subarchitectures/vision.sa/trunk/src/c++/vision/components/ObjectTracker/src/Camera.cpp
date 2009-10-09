@@ -27,6 +27,7 @@ void Camera::Set(	float posx,  float posy,  float posz,
 	m_vPos	= TM_Vector3(posx,  posy,  posz ); // set position
 	m_vView	= TM_Vector3(viewx, viewy, viewz); // set view point
 	m_vUp	= TM_Vector3(upx,   upy,   upz  ); // set the up vector
+printf(">>> A\n");
 	pvu2fsu();
 	
 	m_fovy = fovy;
@@ -36,8 +37,11 @@ void Camera::Set(	float posx,  float posy,  float posz,
 	m_zFar = zFar;
 	m_projection = projection;
 	
+printf(">>> B\n");
 	fwh2intrinsic();
+printf(">>> C\n");
 	fsu2extrinsic();
+printf(">>> D\n");
 }
 
 void Camera::SetExtrinsic(float* M){
@@ -144,17 +148,21 @@ void Camera::extrinsic2fsu()
 void Camera::fwh2intrinsic()
 {
 	float m[16];
+printf(">>>>>> A\n");
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	
+printf(">>>>>> B\n");
 	if(m_projection == GL_ORTHO){
 		glOrtho(-m_width/2, m_width/2, -m_height/2, m_height/2, m_zNear, m_zFar);
 	}
 	else if(m_projection == GL_PERSPECTIVE){
 		gluPerspective( m_fovy, m_width/m_height, m_zNear, m_zFar);
 	}
+printf(">>>>>> C\n");
 	glGetFloatv(GL_PROJECTION_MATRIX, m);
 	m_intrinsic = mat4(m);		
+printf(">>>>>> D\n");
 }
 
 //****************************************************************************

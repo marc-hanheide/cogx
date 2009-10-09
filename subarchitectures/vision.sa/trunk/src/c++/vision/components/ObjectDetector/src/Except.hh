@@ -12,7 +12,9 @@
 #include <stdexcept>
 #include "Namespace.hh"
 
+#ifndef __HERE__
 #define __HERE__   __FILE__, __FUNCTION__, __LINE__
+#endif
 
 namespace Z
 {

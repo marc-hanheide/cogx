@@ -54,7 +54,7 @@ void DummyDriver::start()
 
 void DummyDriver::runComponent()
 {
-  sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
+  sleepProcess(2000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
   // and initiate detection
   VisionData::DetectionCommandPtr cmd = new VisionData::DetectionCommand;

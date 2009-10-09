@@ -339,8 +339,12 @@ void StereoViewer::configure(const map<string,string> & _config)
   map<string,string>::const_iterator it;
 
   // first let the base classes configure themselves
-  configureVideoCommunication(_config);
   configureStereoCommunication(_config);
+
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+    videoServerName = it->second;
+  }
 
   if((it = _config.find("--camid")) != _config.end())
   {
@@ -351,9 +355,13 @@ void StereoViewer::configure(const map<string,string> & _config)
 
 void StereoViewer::start()
 {
-  startVideoCommunication(*this);
-  startStereoCommunication(*this);
+  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
+  startStereoCommunication(*this);
+}
+
+void StereoViewer::runComponent()
+{
   int argc = 1;
   char argv0[] = "StereoViewer";
   char *argv[1] = {argv0};
@@ -367,21 +375,19 @@ void StereoViewer::start()
   glutDisplayFunc(DisplayWin);
 
   cvNamedWindow(getComponentID().c_str(), 1);
-}
-
-void StereoViewer::runComponent()
-{
+ 
   while(isRunning())
   {
     Video::Image image;
-    getImage(camId, image);
+    getRectImage(LEFT, image);
     IplImage *iplImage = convertImageToIpl(image);
     img_cam_pos = image.camPars.pose.pos;
 
     points.resize(0);
-    getPoints(points);
+    getPoints(false, points);
     selectPointNearLeftOpticalAxis();
 
+    cvSaveImage("viewer-rect-L.png", iplImage);
     //cvSet(iplImage, cvScalar(0));
     for(size_t i = 0; i < points.size(); i++)
     {
@@ -390,13 +396,12 @@ void StereoViewer::runComponent()
         Vector2 p = projectPoint(image.camPars, points[i].p);
         distortPoint(image.camPars, p, p);
         cvCircle(iplImage, cvPoint(p.x, p.y), 0,
-            CV_RGB(255, 0, 0));
-        cvCircle(iplImage, cvPoint(p.x, p.y), 1,
             CV_RGB((unsigned char)points[i].c.r,
                    (unsigned char)points[i].c.g,
                    (unsigned char)points[i].c.b));
       }
     }
+    cvSaveImage("viewer-overlay.png", iplImage);
 
     // HACK draw DFKI tea box
     /*Vector2 p;

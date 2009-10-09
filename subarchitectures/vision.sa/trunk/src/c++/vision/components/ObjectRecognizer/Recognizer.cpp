@@ -104,12 +104,14 @@ CRecognizer::CRecognizer()
 
 void CRecognizer::configure(const map<string,string> & _config)
 {
-   // first let the base classes configure themselves
-   configureVideoCommunication(_config);
-
    string dir(".");
    vector<string> models;
    map<string,string>::const_iterator it;
+
+   if((it = _config.find("--videoname")) != _config.end())
+   {
+      videoServerName = it->second;
+   }
 
    if((it = _config.find("--testmode")) != _config.end())
    {
@@ -173,7 +175,9 @@ void CRecognizer::configure(const map<string,string> & _config)
 void CRecognizer::start()
 {
    log("Recognizer starting");
-   startVideoCommunication(*this);
+
+   // get connection to the video server
+   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
    // Global change filter expecting message from vision.sa
    // (ID set in CAST file, subarchitecture entry)
@@ -280,7 +284,7 @@ void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
    std::vector<string>::iterator s;
    std::vector<Video::Image>::iterator pim;
    Video::ImageSeq images;
-   getImages(images);
+   videoServer->getImages(images);
 
    if (images.size() < 1) {
       println("No images are available.");

@@ -26,16 +26,24 @@ namespace cast
 class ObjectTracker : public VideoClient, public ManagedComponent
 {
 private:
+  Tracker* m_tracker;
+  Camera* m_camera;
+  Timer m_timer;
+  Video::Image m_image;
+  //Particle m_trackpose;
+  
   /**
    * Which camera to get images from
    */
-  Tracker* m_tracker;
-  Camera* m_camera;
-  Video::Image m_image;
-  Timer m_timer;
-  //Particle m_trackpose;
-  
   int camId;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
 	int m_maxModels;
   bool track;
   bool running;
@@ -51,8 +59,8 @@ private:
   
   std::vector<IDList> m_modelID_list;
   
-  void initTracker();
-  void runTracker();
+  void initTracker(const Video::Image &image);
+  void runTracker(const Video::Image &image);
   
   void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
@@ -67,6 +75,10 @@ protected:
    */
   virtual void start();
   /**
+   * called by the framework upon deletion of the component
+   */
+  virtual void destroy();
+  /**
    * called by the framework to start compnent run loop
    */
   virtual void runComponent();
@@ -74,6 +86,11 @@ protected:
 public:
   ObjectTracker();
   virtual ~ObjectTracker();
+  /**
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
+   */
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }

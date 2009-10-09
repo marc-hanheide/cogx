@@ -10,20 +10,33 @@
 #define VIDEO_VIEWER_H
 
 #include <cast/architecture/ManagedComponent.hpp>
-#include <VideoClient.h>
+#include <Video.hpp>
 #include <VisionData.hpp>
+#include <VideoClient.h>
 
 namespace cast
 {
 
-class VideoViewer : public VideoClient,
-                    public ManagedComponent
+class VideoViewer : public ManagedComponent,
+                    public VideoClient
 {
 private:
   /**
    * Which camera to get images from
    */
   int camId;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
+  /**
+   * wether we are currently receiving images from the server
+   */
+  bool receiving;
 
 protected:
   /**
@@ -35,18 +48,25 @@ protected:
    */
   virtual void start();
   /**
-   * called by the framework to start compnent run loop
+   * called by the framework upon deletion of the component
+   */
+  virtual void destroy();
+  /**
+   * Our run loop. Essentially just wait for key strokes.
    */
   virtual void runComponent();
 
 public:
   VideoViewer() : camId(0) {}
   virtual ~VideoViewer() {}
+  /**
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
+   */
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }
 
 #endif
-
-
 

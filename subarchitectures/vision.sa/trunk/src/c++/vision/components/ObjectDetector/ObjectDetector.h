@@ -28,6 +28,14 @@ private:
    * Which camera to get images from
    */
   int camId;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
 
   /**
    *	Interface for working with vision system 3 (vs3)
@@ -66,25 +74,23 @@ protected:
    * Called by the framework after configuration, before run loop
    */
   virtual void start();
-  /**
-   * Called by the framework to start compnent run loop
-   */
-  virtual void runComponent();
 
   /**
    * Called to start processing of one image
    */
-	virtual void processImage();
-
+	virtual void processImage(const Video::Image &image);
 
 public:
   ObjectDetector() : camId(0) {}
   virtual ~ObjectDetector() {}
+  /**
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
+   */
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }
 
 #endif
-
-
 

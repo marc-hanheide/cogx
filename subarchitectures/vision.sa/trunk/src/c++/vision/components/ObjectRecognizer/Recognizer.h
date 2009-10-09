@@ -12,6 +12,14 @@
 class CRecognizer: public cast::ManagedComponent, public cast::VideoClient
 {
 private:
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
+  /**
+   * wether we are currently receiving images from the server
+   */
    int testmode;
 
 public:

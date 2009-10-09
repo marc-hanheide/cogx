@@ -229,8 +229,16 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
 
-  // first let the base classes configure themselves
-  configureVideoCommunication(_config);
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+    videoServerName = it->second;
+  }
+
+  if((it = _config.find("--camid")) != _config.end())
+  {
+    istringstream istr(it->second);
+    istr >> camId;
+  }
 
   if((it = _config.find("--models")) != _config.end())
   {
@@ -306,15 +314,7 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
 
 void ObjectDetectorFERNS::start()
 {
-  try
-  {
-    startVideoCommunication(*this);
-  }
-  catch (const IceUtil::NullHandleException & e)
-  {
-    println("Caught exception: %s", e.what());
-    std::abort();
-  }
+  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
   // we want to receive DetectionCommands
   addChangeFilter(createLocalTypeFilter<DetectionCommand>(cdl::ADD),
@@ -334,7 +334,7 @@ void ObjectDetectorFERNS::receiveDetectionCommand(
   log("FERNS detecting: %s", ostr.str().c_str());
 
   Video::Image image;
-  getImage(camId, image);
+  videoServer->getImage(camId, image);
   IplImage *grayImage = convertImageToIplGray(image);
   detectObjects(grayImage, cmd->labels);
   postObjectsToWM(cmd->labels, image);

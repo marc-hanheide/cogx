@@ -13,6 +13,7 @@
 #include <VideoClient.h>
 #include <VisionData.hpp>
 #include <TooN/numerics.h>
+#include "System.h"
 
 namespace cast
 {
@@ -35,6 +36,16 @@ private:
    * Which camera to get images from
    */
   int camId;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
+
+  System s;
 
   VisionData::SOIPtr createObj(Vector<3> center, Vector<3> size, double radius);
 
@@ -50,14 +61,15 @@ protected:
    * called by the framework after configuration, before run loop
    */
   virtual void start();
-  /**
-   * called by the framework to start compnent run loop
-   */
-  virtual void runComponent();
 
 public:
   Reconstructor() : camId(0) {}
   virtual ~Reconstructor() {}
+  /**
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
+   */
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }
