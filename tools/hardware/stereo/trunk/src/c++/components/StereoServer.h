@@ -114,6 +114,8 @@ private:
 
   virtual void start();
 
+  virtual void runComponent();
+
 public:
   StereoServer();
   virtual ~StereoServer();
