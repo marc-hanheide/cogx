@@ -368,7 +368,7 @@ public class BinderUtils {
 
 				// TODO: check if this is still necessary
 				if (!unions.contains(union)) {
-					System.out.println("added union: " + union.entityID + " with " + union.includedProxies.length + " proxies");
+//					System.out.println("added union: " + union.entityID + " with " + union.includedProxies.length + " proxies");
 					unions.add(union);
 				}
 			}
