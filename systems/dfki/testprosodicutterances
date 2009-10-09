@@ -1,0 +1,1 @@
+java -classpath $CLASSPATH:output/classes/ comsys.components.tts.ProsodicTextToRawMARYXml $1 subarchitectures/comsys/src/java/comsys/components/tts/RAWMARYXMLhead.xml maryXMLs/ 
