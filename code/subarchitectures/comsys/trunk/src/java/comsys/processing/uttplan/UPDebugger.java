@@ -250,14 +250,14 @@ public class UPDebugger
     public String realizeLF (Realizer realizer, LogicalForm logicalForm) {
 		String output = "";
 		if (LFUtils.lfNominalHasFeature(logicalForm.root,CANNED_TEXT)) { 
-			String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,cannedTextFeature);
+			String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,CANNED_TEXT);
 			log("IKK: key: "+cannedTextKey+"\n");
 			output = realizeLfCannedText(cannedTextKey);			
 		} else { 
 			LogicalForm planLF = logicalForm;
 			String contentRoot = logicalForm.root.nomVar;
 			if (LFUtils.lfNominalHasRelation(logicalForm.root, CONTENT_BODY)) { 
-				LFRelation contentR = LFUtils.lfNominalGetRelation(logicalForm,root, CONTENT_BODY);
+				LFRelation contentR = LFUtils.lfNominalGetRelation(logicalForm.root, CONTENT_BODY);
 				contentRoot = contentR.dep;
 				LFNominal contentRootNom = LFUtils.lfGetNominal(logicalForm, contentRoot);
 				planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);	
