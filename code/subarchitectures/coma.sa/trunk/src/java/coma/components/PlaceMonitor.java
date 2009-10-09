@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 
@@ -64,7 +66,8 @@ public class PlaceMonitor extends ManagedComponent {
 	private HashMap<Long, HashSet<WorkingMemoryAddress>> m_tempAdjacencyStore;
 	
 	private int m_roomIndexCounter = 0;
-	private HashSet<String> m_existingRoomProxies; 
+	private HashSet<String> m_existingRoomProxies;
+	private HashMap<String,HashSet<String>> m_existingRelationProxies;
 
 	public void configure(Map<String, String> args) {
 		log("configure() called");
@@ -80,6 +83,7 @@ public class PlaceMonitor extends ManagedComponent {
 		m_trueplaces = new HashSet<Long>();
 		m_tempAdjacencyStore = new HashMap<Long, HashSet<WorkingMemoryAddress>>();
 		m_existingRoomProxies = new HashSet<String>();
+		m_existingRelationProxies = new HashMap<String,HashSet<String>>();
 	}
 	
 	
@@ -581,9 +585,6 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
 		debug("maintainRoomProxy() called");
-		// temporary solution -- the proxy marshaller will create relations
-		// TODO create relations for contained places!
-		if (true) return false;
 		
 		if (m_proxyMarshall!=null) {
 			// current room UID:
@@ -605,21 +606,37 @@ public class PlaceMonitor extends ManagedComponent {
 				_roomIDFtr.alternativeValues = new FeatureValue[1];
 				_roomIDFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), _comaRoom.roomId);
 				m_proxyMarshall.addFeature("room", _currRoomUID, _roomIDFtr);
-				
-//				m_proxyMarshall.commitFeatures("room", _currRoomUID);
 			}
 
 			// containment
-			// first clean existing containment facts
-			m_proxyMarshall.deleteFeature("room", _currRoomUID, "contains");
-			// now create individual feature-value pairs for all contained places
+			HashSet<String> prevKnownRels = m_existingRelationProxies.remove(_currRoomUID);
+			if (prevKnownRels==null) prevKnownRels=new HashSet<String>();
+			HashSet<String> trueKnownRels = new HashSet<String>();
 			for (long _currContPlID : _comaRoom.containedPlaceIds) {
-				Feature _containsFtr = new Feature();
-				_containsFtr.featlabel = "contains";
-				_containsFtr.alternativeValues = new FeatureValue[1];
-				_containsFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), Long.valueOf(_currContPlID).intValue());
-				m_proxyMarshall.addFeature("room", _currRoomUID, _containsFtr);				
+				String _relUID = _comaRoom.roomId + ":" + _currContPlID;
+				if (prevKnownRels.remove(_relUID)) {
+					// the relation was known before,
+					// so it is already on the binder
+					// doing nothing
+				} else {
+					m_proxyMarshall.addRelation("contains", _relUID, 
+							"room", _currRoomUID, "place", new Long(_currContPlID).toString(), 
+							1, new WorkingMemoryPointer( new WorkingMemoryAddress(this.getSubarchitectureID(), _wmid), _comaRoom.ice_id()));
+					Feature _containsFtr = new Feature();
+					_containsFtr.featlabel = "contains";
+					_containsFtr.alternativeValues = new FeatureValue[1];
+					_containsFtr.alternativeValues[0] = new BooleanValue(1, getCASTTime(), true);
+					m_proxyMarshall.addFeature("contains", _relUID, _containsFtr);
+					m_proxyMarshall.commitFeatures("contains", _relUID);
+				}
+				trueKnownRels.add(_relUID);
 			}
+			// now each remaining relation must be deleted because it no longer holds
+			for (String _obsoleteRel : prevKnownRels) {
+				m_proxyMarshall.deleteProxy("contains", _obsoleteRel);
+			}
+			// update the set of known relations
+			m_existingRelationProxies.put(_currRoomUID, trueKnownRels);
 			
 
 			// areaclasses
