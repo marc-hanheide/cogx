@@ -227,33 +227,6 @@
 
 
 
-<!-- /**
-
-@system perception.see produces a perception verb (e.g.,"see") and fills the Actor slot with "I" and the Patient slot with the input object(s), iff the input modality is vision. Otherwise, no event structure is introduced.
-
-*/ --> 
-
-<system id="playing.insert" region="TRANSITIVITY" metafunction="ideational">
-   <chooser id="c-playing.insert"/>
-   <conditions>
-      <condition features="@type:dvp"/>
-   </conditions>
-
-   <actions>
-   
-	<action choice="insert">
-		 <adjoin-lf mode="Content" lf="@p1:action-non-motion(play ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(t1:entity ^ p) ^ &lt;Subject&gt;i1:person)" foot="t1"/>
-
-		 
-    </action>
-
-
-	<action choice="no-insert">
-    </action>
-
-   </actions>
-</system>
-
 
 
 
