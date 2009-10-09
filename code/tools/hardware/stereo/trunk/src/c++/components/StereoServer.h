@@ -36,17 +36,19 @@ public:
   /**
    * Returns the 3D point cloud.
    */
-  virtual void getPoints(VisionData::SurfacePointSeq& points, const Ice::Current&);
+  virtual void getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points, const Ice::Current&);
 
   /**
    * Returns part of the 3D point cloud inside given SOI.
    */
-  virtual void getPointsInSOI(const VisionData::SOIPtr &soi,
+  virtual void getPointsInSOI(bool transformToGlobal, const VisionData::SOIPtr &soi,
       VisionData::SurfacePointSeq& points, const Ice::Current&);
+
+  virtual void getRectImage(Ice::Int side, Video::Image& image, const Ice::Current&);
 };
 
-class StereoServer : public VideoClient,
-                     virtual public CASTComponent
+class StereoServer : public CASTComponent,
+                     public VideoClient
 {
 private:
   /**
@@ -64,6 +66,16 @@ private:
   std::vector<int> camIds;
 
   /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
+
+  /**
    * Stereo parameters
    */
   StereoCamera stereoCam;
@@ -72,6 +84,11 @@ private:
    * The GPU stereo matching code.
    */
   CensusGPU census;
+
+  // stereo works better/faster with smaller images, so we might want to use a
+  // smaller resolution
+  int stereoWidth;
+  int stereoHeight;
 
   /**
    * Size of median filter for specle removeal in the disparity image.
@@ -85,33 +102,40 @@ private:
   IplImage *disparityImg;
 
   bool doDisplay;
+  bool logImages;
 
   /**
    * Create Ice video interface.
    */
   void setupMyIceCommunication();
 
-public:
-  StereoServer();
-  virtual ~StereoServer();
-
   void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
 
   virtual void start();
 
-  virtual void runComponent();
+public:
+  StereoServer();
+  virtual ~StereoServer();
 
   /**
    * Returns the 3D point cloud.
    */
-  void getPoints(std::vector<VisionData::SurfacePoint> &points);
+  void getPoints(bool transformToGlobal, std::vector<VisionData::SurfacePoint> &points);
 
   /**
    * Returns part of the 3D point cloud inside given SOI.
    */
-  void getPointsInSOI(const VisionData::SOI &soi,
+  void getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
       std::vector<VisionData::SurfacePoint> &points);
+
+  void getRectImage(int side, Video::Image& image);
+
+  /**
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
+   */
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }

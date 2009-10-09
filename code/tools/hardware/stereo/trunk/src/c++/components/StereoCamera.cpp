@@ -163,8 +163,8 @@ void StereoCamera::ReconstructPoint(double u, double v, double d, double &X, dou
   // left image should be almost identical, however they differ by e.g. 10
   // pixels. As a result, reconstructed points are offset in x-direction. This
   // offset mostly corrects for that.
-  double x_correction_offset = sx*(cam[LEFT].cx - cam[LEFT].proj[0][2]);
-  u -= x_correction_offset;
+  //double x_correction_offset = sx*(cam[LEFT].cx - cam[LEFT].proj[0][2]);
+  //u -= x_correction_offset;
   // HACK END
 
   // NOTE: actually tx = -proj[0][3]/proj[0][0] because:
@@ -267,6 +267,21 @@ void StereoCamera::RectifyPoint(double ud, double vd, double &ur, double &vr,
   vr = yr*sy*cam[side].proj[1][1] + sy*cam[side].proj[1][2];
 }
 
+void StereoCamera::UnrectifyPointFast(double ur, double vr, double &ud, double &vd,
+    int side)
+{
+  int ui = (int)floor(ur), vi =  (int)floor(vr);
+  if(ui >= 0 && ui < inImgSize.width && vi >= 0 && vi < inImgSize.height)
+  {
+    ud = *(float*)cvAccessImageData(mapx[side], ui, vi);
+    vd = *(float*)cvAccessImageData(mapy[side], ui, vi);
+  }
+  else
+  {
+    ud = vd = 0.;
+  }
+}
+
 void StereoCamera::SetupImageRectification()
 {
   for(int side = LEFT; side <= RIGHT; side++)
@@ -346,6 +361,7 @@ void StereoCamera::SetInputImageSize(CvSize size)
   // width/height
   sx = (double)inImgSize.width/(double)cam[LEFT].width;
   sy = (double)inImgSize.height/(double)cam[LEFT].height;
+  cout << "StereoCamera: sx sy " << sx << " " << sy << endl;
 }
 
 }
