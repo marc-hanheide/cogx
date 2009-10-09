@@ -1,0 +1,72 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def adj(args)         { adj<25>[M DEGREE args] }
+  def from-adj(args)    { adj<~25>[M args] }
+
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def adj-cat(args, sem)   { adj() args  :  M(* sem) }
+  
+  ## The Families ##
+
+  family Adj                         { entry:  adj-cat(,) ;}
+  family Adj+of-np                   { entry:  adj-cat( / obl_ma(of,), ARG() ) ;}
+  
+  ## Modifiers ##
+  
+  family Mod-pre-adj-                { entry:  from-adj() /^ adj()                :  M( M-MOD(*) ) ;}
+  family Mod-pre-adj-comparative-    { entry:  from-adj() /^ adj(s-comparative)   :  M( M-MOD(*) ) ;}
+  
+  family Mod-post-adj-               { entry:  from-adj() \ adj()                 :  M( M-MOD(*) ) ;}
+    
+  family More-adj(indexRel=degree)   { entry:  from-adj(s-comparative)  / adj(s-degree-base)   ;}
+  family Most-adj(indexRel=degree)   { entry:  from-adj(s-superlative)  / adj(s-degree-base)   ;}
+  
+  family Adj-er-than                 { entry:  from-adj() / np_ma() \* adj(s-comparative) : M( M-MOD(* ARG() )  ) ;}
+
+  ## Negation and Coordition ##
+  
+  family Negation-adj-(indexRel=polarity)  { entry:  from-adj() \ adj() :  M( NEG()  ) ;}
+  family Coord-adj-                  { entry:  adj[R COM=yes] / adj[N] \* adj[F COM=no] : COORD(*) ;}
+
+
+###########
+## RULES ##
+###########
+
+  # The following rule converts the 'base-generated' atomic cat versions of adjectives into
+  # their complex-cat form (i.e. the form that actually attach to and modify nouns)
+
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() )
+  # categories used in these rules  
+
+  rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; } 
+  
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  def _adj-none(prd, base, class, args) {
+    word base.prd.-adj:Adj(class, pred=prd) {
+      base : s-degree-base args;
+    }
+  }
+  def adj-none(base, class, args) { _adj-none(base, base, class, args) }
+
+  def _adj-deg(prd, base, comp, sup, class, args) {
+    word base.-adj:Adj(class, pred=prd) {
+      base : s-degree-base pre-n args;
+	  comp : s-comparative pre-n comparative args;
+	  sup  : s-superlative pre-n superlative args;
+    }
+  }
+  def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, class, args) }

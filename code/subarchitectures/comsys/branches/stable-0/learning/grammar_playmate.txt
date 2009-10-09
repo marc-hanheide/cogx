@@ -1,0 +1,564 @@
+
+.SENTENCE  [
+	(CONTENT)
+	(DISFL CONTENT)
+	(CONTENT DISFL)
+	(DISC_PARTICLE_1 CONTENT)
+	(CONTENT DISC_PARTICLE_1)
+	(DISFL DISC_PARTICLE_1 CONTENT)
+	(DISFL CONTENT DISC_PARTICLE_1)
+	(DISC_PARTICLE_2 CONTENT)
+	(CONTENT DISC_PARTICLE_2)
+	(DISC_PARTICLE_2 DISC_PARTICLE_1 CONTENT)
+	(DISC_PARTICLE_2 DISC_PARTICLE_2 CONTENT)
+	(CONTENT CONTENT)
+	(DISC_PARTICLE_2 CONTENT CONTENT)
+]
+
+CONTENT [
+	(COMMAND)
+	(EVALUATION)
+	(LOCATION)
+	(OBJ)
+	(ASSERTION)
+	(QUESTION)
+	(GREETINGS)
+	(MISC)
+	(DISC_PARTICLE_1)
+	(QUALIFIER)
+]
+
+
+DISC_PARTICLE_2 [
+	(and)
+	(now)
+	(so)
+	(well)
+	(CUEWORD_MARKER)
+	(PERSON_LC)
+]
+
+DISC_PARTICLE_1 [
+	(TEMPORAL_LC)
+]
+
+DISFL [
+	(uh)
+	(um)
+	(mm)
+	(err)
+	(ah)
+]
+
+
+MISC [
+	(i mean)
+	(you know)
+	(i see)
+]
+
+
+GREETINGS [
+	(hi)
+	(hello)
+	(bye)
+	(how are you)
+]
+
+TEMPORAL_LC [
+	(now)
+	(first)
+	(again)
+	(afterwards)
+	(then)
+	(after that)
+	(next)
+]
+
+
+CONNECTIVE_BINARY [
+	(then)
+	(and)
+	(or)
+]
+
+
+
+COMMAND  [
+	(COMMAND_DIRECT)
+	(COMMAND_DIRECT CONNECTIVE_BINARY COMMAND_DIRECT)
+	(ADV_LC COMMAND_DIRECT)
+	(COMMAND_INDIRECT)
+]
+
+COMMAND_DIRECT [
+	(ACTION_TRANS_LC OBJ)
+	(pick OBJ up)
+	(listen)
+	(look)
+	(look)
+	(look at OBJ)
+	(move OBJ)
+	(move OBJ LOCATION_RESULT)
+	(put OBJ LOCATION_RESULT)
+	(give OBJ to PERSON_LC)
+	(bring OBJ)
+	(bring OBJ to PERSON_LC)
+	(stop)
+	(stop it)
+	(stop that)
+	(tell me where is OBJ)
+]
+
+
+ACTION_TRANS_LC [
+	(take)
+	(bring me)
+	(pick up)
+	(give me)
+	(get)
+	(get me)
+	(open)
+	(close)
+]
+
+
+MODAL [
+	(must)
+	(can)
+	(could)
+	(should)
+	(would)
+]
+
+
+COMMAND_INDIRECT [
+	(you MODAL COMMAND_DIRECT)
+	(you MODAL ADV_LC COMMAND_DIRECT)
+	(you have to COMMAND_DIRECT)
+	(i want you to COMMAND_DIRECT)
+	(MODAL you COMMAND_DIRECT)
+	(MODAL you ADV_LC COMMAND_DIRECT)
+	(i want OBJ)
+	(do not COMMAND_DIRECT)
+]
+
+
+PRONOUNS [
+	(i)
+	(you)
+	(we)
+]
+
+
+
+
+ADV_LC [
+	(just)
+	(never)
+	(also)
+	(please)
+	(already)
+]
+
+ASSERTION [
+	(PRONOUNS see OBJ)
+	(PRONOUNS ADV_LC see OBJ)
+	(LOCATION_MOD is OBJ_SG)
+	(LOCATION_MOD is ADV_LC OBJ_SG)
+	(LOCATION_MOD are OBJ_PL)
+	(LOCATION_MOD are ADV_LC OBJ_PL)
+	(OBJ_SG is LOCATION_MOD)
+	(OBJ_SG is ADV_LC LOCATION_MOD)
+	(OBJ_SG was LOCATION_MOD)
+	(PRONOUNS have OBJ)
+	(PRONOUNS have OBJ LOCATION_MOD)
+	(OBJ_SG is QUALIFIER)
+	(OBJ_SG is ADV_LC QUALIFIER)
+	(it is QUALIFIER)
+	(OBJ_PL are QUALIFIER)
+	(OBJ_PL are ADV_LC QUALIFIER)
+]
+
+OBJ [
+	(OBJ_SG)
+	(OBJ_PL)
+]
+
+OBJ_SG [
+	(DEM_SG_PRONOUN)
+	(DET_SG OBJ_SG_LC)
+	(DET_SG ADJUNCT_LC OBJ_SG_LC)
+	(DET_SG OBJ_SG_LC LOCATION_MOD)
+	(DET_SG ADJUNCT_LC OBJ_SG_LC LOCATION_MOD)
+	(something)
+	(food)
+	(furniture)
+	(it)
+	(one)
+]	
+
+OBJ_PL [
+	(DEM_PL_PRONOUN)
+	(DET_PL OBJ_PL_LC)
+	(them)
+]	
+
+DET_SG [
+	(DET_SG_LC)
+	(DEM_SG_LC)
+
+	(DET_SG_LC DET_SG_LC)
+]
+
+DET_PL [
+	(DET_PL_LC)
+	(DEM_PL_LC)
+]
+
+
+QUESTION  [
+	(where is OBJ_SG)
+	(where are OBJ_PL)
+	(what can you see)
+	(what can you see LOCATION_MOD)
+	(what do you see)
+	(what do you see LOCATION_MOD)
+	(do you see OBJ)
+	(do you see OBJ LOCATION_MOD)
+	(what colour is OBJ_SG)
+	(what is the colour of OBJ)
+	(what colour are OBJ_PL)
+	(what size is OBJ_SG)
+	(what size are OBJ_PL)
+	(how ADJUNCT_LC is OBJ_SG)
+	(how is OBJ_SG)
+	(how are OBJ_PL)
+	(what is LOCATION_MOD)
+	(what is OBJ_SG)
+	(is OBJ_SG QUALIFIER)
+	(are OBJ_PL QUALIFIER)
+	(is OBJ_SG LOCATION_MOD)
+	(is OBJ_SG LOCATION_MOD)
+	(is there OBJ_SG LOCATION_MOD)
+	(can you do DEM_SG_EVENT)
+	(which OBJ_SG_LC is QUALIFIER)
+]
+
+
+
+OBJ_SG_LC [
+	(one)
+	(ball)
+	(box)
+	(book)
+	(chocolate)
+	(chocolate bar)
+	(coffee)
+	(coffee machine)
+	(computer)
+	(corner)
+	(cup)
+	(laptop)
+	(mug)
+	(object)
+	(pile of OBJ_PL_UNSPEC)
+	(pizza)
+	(place)
+	(robot)
+	(screen)
+	(table)
+	(thing)
+	(top)
+	(couch)
+	(cube)
+	(column)
+	(closet)
+	(desk)
+	(desktop)
+	(door)
+	(fax)
+	(floor)
+	(flower)
+	(needle)
+	(oven)
+	(phone)
+	(fridge)
+	(letter)
+	(jug)
+	(keyboard)
+	(mailbox)
+	(microwave)
+	(printer)
+	(block)
+	(bucket)
+	(chair)
+	(thread)
+	(tea)
+	(telephone)
+	(television)
+	(tabletop)
+	(sofa)
+	(stove)
+	(shelf)
+	(pin)
+	(side)
+]
+
+OBJ_PL_UNSPEC [
+	(boxes)
+]
+
+OBJ_PL_LC [
+	(balls)
+	(boxes)
+	(books)
+	(computers)
+	(corners)
+	(cups)
+	(laptops)
+	(mugs)
+	(objects)
+	(pizzas)
+	(places)
+	(robots)
+	(screens)
+	(tables)
+	(things)
+	(cubes)
+	(columns)
+	(doors)
+	(needles)
+	(ovens)
+	(letters)
+	(jugs)
+	(blocks)
+	(chairs)
+	(threads)
+	(pins)
+	(sides)
+]
+
+DET_SG_LC [
+	(the)
+	(a)
+]
+
+
+DEM_SG_PRONOUN [
+	(it)
+	(this)
+	(that)
+]
+
+DEM_SG_LC [
+	(this)
+	(that)
+]
+
+
+DET_PL_LC [
+	(the)
+	(two)
+	(three)
+	(four)
+	(five)
+	(several)
+	(some)
+]
+
+
+DEM_PL_PRONOUN [
+	(these)
+	(those)
+]
+
+DEM_PL_LC [
+	(those)
+	(these)
+]
+
+LOCATION_RESULT [
+	(between OBJ and OBJ)
+	(LOC_PREP_LC OBJ)
+	(LOC_PREP_LC PERSON_LC)
+	(LOCATION_LC)
+	(from OBJ)
+	(out of OBJ)
+	(off OBJ)
+	(on the left of OBJ)
+	(on the right of OBJ)
+	(to the left of OBJ)
+	(to the right of OBJ)
+	(to OBJ)
+	(into OBJ)
+	(onto OBJ)
+	(away)
+	(aside)
+
+	(OBJ)
+	(OBJ)
+]
+
+LOCATION_MOD [
+	(between OBJ and OBJ)
+	(LOC_PREP_LC OBJ)
+	(LOC_PREP_LC PERSON_LC)
+	(on the left of OBJ)
+	(on the right of OBJ)
+	(to the left of OBJ)
+	(to the right of OBJ)
+	(LOCATION_LC)
+]
+
+
+LOCATION_LC [
+	(to the right)
+	(to the left)
+	(to my left)
+	(to my right)
+	(to your left)
+	(to your right)
+	(here)
+	(there)
+]
+
+
+LOC_PREP_LC [
+	(above)
+	(behind)
+	(close to)
+	(in)
+	(inside)
+	(near)
+	(near to)
+	(next to)
+	(on)
+	(left of)
+	(right of)
+	(under)
+	(over)
+	(along)
+	(around)
+	(below)
+	(beside)
+	(by)
+	(down)
+	(outside)
+	(in front of)
+]
+
+
+
+QUALIFIER [
+	(ADJUNCT_LC)
+	(COMPARATIVE)
+	(ADJUNCT_LC and ADJUNCT_LC)
+	(ADJUNCT_LC or ADJUNCT_LC)
+	(DEGREE_ADV_LC ADJUNCT_LC)
+]
+
+
+DEGREE_ADV_LC [
+	(too)
+	(very)
+]
+
+COMPARATIVE [	
+	(bigger)
+	(bigger than OBJ)
+	(smaller)
+	(smaller than OBJ)
+	(closer)
+	(closer than OBJ)
+	(nearer)
+	(nearer than OBJ)
+]
+
+ADJUNCT_LC [
+	(white)
+	(black)
+	(blue)
+	(green)
+	(brown)
+	(red)
+	(yellow)
+	(open)
+	(closed)
+	(round)
+	(big)
+	(small)
+	(on)
+	(left)
+	(right)
+	(off)
+	(full)
+	(far)
+	(empty)
+	(top)
+	(better)
+	(last)
+]
+
+
+EVALUATION [
+	(CUEWORD_ATTITUDE)
+	(CUEWORD_MARKER)
+	(DEM_SG_PRONOUN is CUEWORD_ATTITUDE)
+	(DEM_PL_PRONOUN are CUEWORD_ATTITUDE)
+	(CUEWORD_MARKER DEM_SG_PRONOUN is CUEWORD_ATTITUDE)
+	(thanks)
+	(thank you)
+	(it is)
+	(it is not)
+	(you can't)
+	(you can't do DEM_SG_EVENT)
+	(don't do DEM_SG_EVENT)
+	(do not do DEM_SG_EVENT)
+	(do DEM_SG_EVENT)
+]
+
+DEM_SG_EVENT [
+	(this)
+	(that)
+]
+
+
+CUEWORD_ATTITUDE [
+	(wrong)
+	(right)
+	(sure)
+	(great)
+	(correct)
+	(wonderful)
+	(good)
+	(very good)
+	(true)
+	(false)
+	(bad)
+	(sorry)
+]
+
+CUEWORD_MARKER [
+	(ok):
+	(okay)
+	(fine)
+	(yes)
+	(yeah)
+	(no)
+	(right)
+	(good)
+	(sorry)
+]
+
+PERSON_LC [
+	(me)
+	(you)
+	(robot)
+	(pierre)
+	(gj)
+]
+
+
+
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-tense" region="TENSE" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+		 <!-- first check whether Mood has already been set -->
+         <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+		    <q-ex-feat feat="Mood" val="int"/>
+		 </inquiry>			
+		 <choicenode answer = "true">
+			<!-- <result val="no-tense"/> --> 
+			<result val="do-tense"/>			
+		 </choicenode>
+		 <choicenode answer = "false">
+			<result val="do-tense"/>
+		 </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+</choosers>

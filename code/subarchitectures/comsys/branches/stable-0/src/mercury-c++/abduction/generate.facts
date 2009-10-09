@@ -1,0 +1,18 @@
+% The following dummy facts are bound to nominals in the rules for
+% generation.
+dummy_nom1(dummy1).
+dummy_nom2(dummy2).
+dummy_nom3(dummy3).
+dummy_nom4(dummy4).
+dummy_nom5(dummy5).
+
+opposite_answertype(positive, negative).
+opposite_answertype(negative, positive).
+
+equal(X, X).
+
+% CHEATING
+
+%k(now, private(r)) : objecttype('form-2:B', mug).
+%k(now, private(r)) : objecttype('form-2:B', unknownObjectType).
+%k(now, attrib(r, h)) : objecttype('0:F', box).

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /**
+
+@system ball.thing
+
+Just sets the proposition of things to be "ball". 
+
+*/ --> 
+
+<system id="ball.thing" region="THING" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:thing"/>
+   </conditions>
+   <actions>
+      <action choice="default">
+		<add-proposition propositions="@ball"/>
+      </action>
+   </actions>
+</system>
+
+
+
+
+</systems>

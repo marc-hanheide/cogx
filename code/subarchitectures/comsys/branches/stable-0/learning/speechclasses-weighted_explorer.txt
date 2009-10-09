@@ -1,0 +1,136 @@
+OBJ_SG_LC:dynaref [
+	(objects)~1.214
+	(things)~0.785
+ ]
+
+PERSON_LC:dynaref [
+	(me)~1.492
+	(you)~2.811
+	(robot)~1.167
+	(pierre)~0.8
+	(gj)~0.777
+	(nick)~0.8
+	(henrik)~0.8
+	(hendrik)~0.8
+	(patric)~0.8
+	(jeremy)~0.8
+	(aaron)~0.8
+	(kristoffer)~0.8
+	(michael)~0.8
+ ]
+
+TEMPORAL_LC:dynaref [
+	(now)~2.191
+	(first)~0.799
+	(again)~0.823
+	(afterwards)~0.8
+	(then)~0.848
+	(after that)~0.762
+	(next)~0.823
+ ]
+
+DET_PL_LC:dynaref [
+	(the)~1.721
+	(two)~0.756
+	(three)~0.754
+	(some)~0.768
+ ]
+
+DET_SG_LC:dynaref [
+	(the)~0.960
+	(a)~1.039
+ ]
+
+PLACE_LC:dynaref [
+	(kitchen)~0.8
+	(office)~0.8
+	(room)~0.8
+	(area)~0.8
+	(corridor)~0.8
+	(floor)~1.35
+	(library)~1.95
+	(living room)~0.8
+	(lab)~1.35
+	(laboratory)~0.8
+	(hall)~1.35
+	(hallway)~0.8
+ ]
+
+DEM_PL_LC:dynaref [
+	(those)~0.916
+	(these)~1.083
+ ]
+
+DEM_SG_LC:dynaref [
+	(it)~1.224
+	(this)~0.798
+	(that)~0.976
+ ]
+
+GREETINGS_LC:dynaref [
+	(hi)~1.477
+	(hello)~0.772
+	(bye)~0.8
+ ]
+
+LOC_PREP_LC:dynaref [
+	(behind)~0.773
+	(close to)~0.755
+	(near)~0.803
+	(near to)~0.779
+	(next to)~0.785
+	(left of)~0.803
+	(right of)~0.803
+	(in front of)~0.916
+	(in)~1.773
+	(on)~1.803
+ ]
+
+DIRECTION_LC:dynaref [
+	(left)~1.257
+	(right)~2.011
+	(forward)~0.8
+	(backward)~0.8
+	(backwards)~0.8
+	(forwards)~0.8
+	(around)~0.780
+	(back)~0.95
+ ]
+
+CUEWORD_LC:dynaref [
+	(wrong)~0.775
+	(right)~1.786
+	(sure)~0.768
+	(great)~0.800
+	(correct)~0.857
+	(good)~1.040
+	(very good)~0.756
+	(true)~0.775
+	(false)~0.8
+	(bad)~0.8
+	(ok)~1.856
+	(okay)~1.173
+	(fine)~0.756
+	(yes)~0.990
+	(no)~1.906
+	(right)~0.761
+	(good)~0.756
+	(sorry)~0.756
+ ]
+
+CONNECTIVE_LC:dynaref [
+	(then)~0.781
+	(and)~1.247
+	(or)~1.022
+	(now)~1.211
+	(so)~0.951
+	(well)~0.785
+ ]
+
+LOCATION_LC:dynaref [
+	(to the right)~0.795
+	(to the left)~0.824
+	(here)~1.31
+	(there)~1.069
+ ]
+

@@ -1,0 +1,118 @@
+Starting the utterance planning debugger standalone:
+korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
+
+-------
+To do
+-------
+
+Exclude it-pronominalization when modifiers are present
+this is working:
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
+this is not:
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
+
+Parse 7: np : 
+  @context1_0:entity(context ^ 
+                     <Delimitation>unique ^ 
+                     <Num>sg ^ 
+                     <Quantification>specific ^ 
+                     <Modifier>(big1_0:q-size ^ big) ^ 
+                     <Modifier>(red1_0:q-color ^ red))
+
+
+Weird problem with ascription: 
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+
+NOTE: order within Target matters; if box not last, then Color gets not planned !!
+
+
+DORA: "going to the kitchen"
+
+
+"I (do not) know what this is"
+  @know1_0:cognition(know ^ 
+                     <Mood>ind ^ 
+                     <Tense>pres ^ 
+                     <Actor>(i1_0:person ^ I ^ 
+                             <Num>sg) ^ 
+                     <Patient>(what1_0:entity ^ what ^ 
+                               <Scope-in>(be1_0:ascription ^ be ^ 
+                                          <Tense>pres ^ 
+                                          <Cop-Restr>(context1_0:entity ^ context ^ 
+                                                      <Delimitation>unique ^ 
+                                                      <Num>sg ^ 
+                                                      <Proximity>proximal ^ 
+                                                      <Quantification>specific) ^ 
+                                          <Cop-Scope>what1_0:entity ^ 
+                                          <Subject>context1_0:entity)) ^ 
+                     <Subject>i1_0:person)
+
+
+Alternative questions
+"Is the box red or orange"
+Parse 10: s : 
+  @be1_0:ascription(be ^ 
+                    <Mood>int ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Delimitation>unique ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific) ^ 
+                    <Cop-Scope>(or1_0:quality ^ or ^ 
+                                <First>(red1_0:q-color ^ red) ^ 
+                                <Next>(orange1_0:q-color ^ orange)) ^ 
+                    <Subject>box1_0:thing)
+
+
+
+Ascription wh-questions: alternative formulations
+-- what color does the box have
+-- which box has blue color
+-- what object is this (object)
+
+
+Multiple properties in ascription
+
+
+Acknowledgment
+alternative form:
+"Yes you are right"
+
+
+Multiple utterances within a turn
+e.g., sorry, (but) no
+      yes, I see
+      yes, it is blue
+      no, it is not blue
+      no/sorry, I do not see that
+      yes, it's red
+      yes, a red ball	
+      ok thanks
+      hm, what is that
+
+
+NPs with demonstrative determiners
+e.g., this/that ball
+
+
+Proximal vs. distal reference currently selected at random
+e.g., this/that	  
+      this/that ball
+
+
+
+References to multiple objects (set of objects)
+
+e.g., the/these/those balls
+      the 3 balls
+      these/those
+      they				   
+
+
+Acknowledgments with modality are completely hacked by templates
+
+
+
+--------------------------------
+see cogx-targets for more to do
+--------------------------------
