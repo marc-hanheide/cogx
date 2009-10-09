@@ -118,6 +118,10 @@ public class cc_Realizer
 		
 		String contentBody = "";
 		
+		private final static String CANNED_TEXT = "CannedText";
+		private final static String CONTENT_BODY = "Content";		
+		
+		
 		// =================================================================
 		// CONSTRUCTOR METHODS
 		// =================================================================		
@@ -305,56 +309,46 @@ public class cc_Realizer
 				String dataType = data.getType();
 				log("Execute realization task on data item [" + dataType + "]");
 				if (data != null) {
+					String outputRealization = "";
 					log("Now try to start realization with the production LF");
 					// Get the input object
 					ProductionLF productionLF = (ProductionLF) data.getData();
 					// Get the logical form
 					LogicalForm logicalForm = productionLF.lform;
 					
-					// Retrieve the content subtree
-					LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);					
-					// get nominal and  the corresponding LF to realize 					
-					LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,content.dep);
-					LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
-					
-					String contentRoot = "";
-					String outputRealization = "";  
-					String cannedTextFeature = "CannedText";
-					if (content != null) {
-						contentRoot = content.dep;
-						// use ccg realizer to produce sentence output
+					// check whether we have canned text, or content
+					if (LFUtils.lfNominalHasFeature(logicalForm.root, CANNED_TEXT)) {
+						// we're generating canned text, so get the key for the canned text from the CannedText feature
+						String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,CANNED_TEXT);
+						// log("IKK: key: "+cannedTextKey+"\n");
+						outputRealization = realizeLfCannedText(cannedTextKey);					
+					} else { 
+						LogicalForm planLF = logicalForm; 
+						String contentRoot = planLF.root.nomVar;
+						// check whether to retrieve content body, or just use entire lf
+						if (LFUtils.lfNominalHasRelation(logicalForm.root, CONTENT_BODY)) { 
+							LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,CONTENT_BODY);					
+							// get nominal and  the corresponding LF to realize
+							contentRoot = content.dep;
+							LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
+							planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);							
+						} // end if.. check whether to reset planLF to embedded content
 						outputRealization = realizeLfWithGrammar(realizer,planLF,contentRoot);
-					} else {
-						//log("IKK: no content in LF");
-						contentRoot = logicalForm.root.nomVar;
-						if (LFUtils.lfNominalHasFeature(logicalForm.root,cannedTextFeature)){
-							// we're generating canned text, so get the key for the canned text from the CannedText feature
-							String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,cannedTextFeature);
-							// log("IKK: key: "+cannedTextKey+"\n");
-							outputRealization = realizeLfCannedText(cannedTextKey);
-						} else {
-							// not canned, so let's try with the grammar on the LF root as is
-							outputRealization = realizeLfWithGrammar(realizer,planLF,contentRoot);
-						}
-					}
+					} 
 					log("Output realization: " + outputRealization);
-					
 					// Assign a default in case realization failed
 					if ( outputRealization == "" || outputRealization == " "){
 						outputRealization = "I am sorry I am lost for words on this one"; 
 					}
-					
-				// Forward the string to WM, to be synthesized
-				try { 
-					log("Sending on for synthesis: ["+outputRealization+"]");
-					SpokenOutputItem spoi = new SpokenOutputItem();
-					spoi.phonString = outputRealization;
-					addToWorkingMemory(newDataID(), spoi); 
-				} catch (AlreadyExistsOnWMException ioe) { 
-					log("ERROR: "+ioe.getMessage());
-				}
-				addNewPLFToWorkingMemory(planLF, outputRealization);
-
+					// Forward the string to WM, to be synthesized
+					try { 
+						log("Sending on for synthesis: ["+outputRealization+"]");
+						SpokenOutputItem spoi = new SpokenOutputItem();
+						spoi.phonString = outputRealization;
+						addToWorkingMemory(newDataID(), spoi); 
+					} catch (AlreadyExistsOnWMException ioe) { 
+						log("ERROR: "+ioe.getMessage());
+					}
 				}
 				
 		} // end if.. check for data presence	
