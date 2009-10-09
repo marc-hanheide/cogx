@@ -50,7 +50,7 @@ class MAPLDomain(scope.Scope):
         domname = j.get(None, "domain identifier").token.string
         
         typeDict = dict((t.name, t) for t in default_types)
-        constants = set([TRUE, FALSE])
+        constants = set([TRUE, FALSE, UNKNOWN])
         preds = scope.FunctionTable([predicates.equals])
         functions = scope.FunctionTable()
         
