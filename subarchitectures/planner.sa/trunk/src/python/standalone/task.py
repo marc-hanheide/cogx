@@ -178,6 +178,8 @@ class PDDLWriter(mapl.writer.MAPLWriter):
             name_elems.append(literal.predicate.name)
             
         for arg in literal.args:
+            if arg == mapl.types.UNKNOWN:
+                return ""
             if isinstance(arg, mapl.predicates.FunctionTerm):
                 name_elems.append(arg.function.name)
                 assert not any(map(lambda a: isinstance(a, mapl.predicates.FunctionTerm), arg.args)), "no nested function allowed!"

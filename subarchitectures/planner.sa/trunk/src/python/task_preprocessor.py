@@ -94,7 +94,7 @@ def filter_unknown_preds(fact_tuples):
       print "filtering feature assignment %s, because '%s' is not part of the planning domain" \
           % (map(str,ft), feature_label)
     else:
-      print "using", map(str, ft)
+      #print "using", map(str, ft)
       yield ft
 
 def tuples2facts(fact_tuples):
