@@ -3,23 +3,23 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
+#include <MatlabData.hpp>
 
 #include <vector>
 #include <map>
 
+namespace cogx
+{
 //default useful namespaces, fix to reflect your own code
 using namespace std;
-using namespace VisionData; // ROI
+using namespace VisionData;
 using namespace cast;
 using namespace boost;
 using namespace Matlab; // Matrix
 
 // typedef map<string, shared_ptr<const CASTData<VisionData::SOI> > > SOIMap;
-typedef vector<shared_ptr<const CASTData<VisionData::SOI> > > SOIVector;
-
-namespace cast
-{
-
+// typedef vector<shared_ptr<const cast::CASTData<VisionData::SOI> > > SOIVector;
+typedef vector<cdl::WorkingMemoryAddress> WmAddressVector;
 class VisualLearner : public ManagedComponent {
    public:
       VisualLearner();
@@ -30,26 +30,21 @@ class VisualLearner : public ManagedComponent {
       virtual void start();
       virtual void stop();
 
-   protected:
-      virtual void taskAdopted(const string &_taskID);
-      virtual void taskRejected(const string &_taskID);
-
-      void recogniseAttributes(ProtoObjectPtr _pData); //shared_ptr<const CASTData<SOI> > _pData);
-
    private:
+      WmAddressVector m_RequestIdQueue;
+      void onNewRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+      void recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
 
-      void onNewProtoObject(const cdl::WorkingMemoryChange & _wmc);
-//      string allowedSoiSource;
-//      void quip(CASTData<ComedyEssentials::Joke> *_pData);
-//      string generatePunchline(const string &_setup);
+      //string allowedSoiSource;
+      //void quip(CASTData<ComedyEssentials::Joke> *_pData);
+      //string generatePunchline(const string &_setup);
 
       // Hashtable used to record the tasks we want to carry out
-//      SOIMap * m_pProposedProcessing;
-      SOIVector * m_pSOIs;
-//      float m_PerspectiveTrafo[9];
-//      bool m_bTrafoEnabled;
+      //SOIMap * m_pProposedProcessing;
+      //SOIVector * m_pSOIs;
+      //float m_PerspectiveTrafo[9];
+      //bool m_bTrafoEnabled;
 }; // class VisualLearner
-
 }
 
 #endif //  __CAST_VISUAL_LEARNER_H__

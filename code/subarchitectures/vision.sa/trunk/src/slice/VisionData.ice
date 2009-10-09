@@ -196,6 +196,15 @@ module VisionData {
     // RESPONSE
     ObjectRecognitionMatchSeq matches;
   };
+
+  class VisualLearnerRecognitionTask {
+    // REQUEST:
+    string protoObjectId;
+
+    // RESPONSE
+    StringSeq labels;
+    DoubleSeq something;
+  };
   
   struct SegmentMask {
   	int width;

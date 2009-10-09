@@ -69,18 +69,18 @@ endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
 option(BUILD_VISUAL_LEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
 option(BUILD_VISUAL_LEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF from SVN" NO)
+
 mark_as_advanced(BUILD_VISUAL_LEARNER_CTF)
+if (BUILD_VISUAL_LEARNER_CTF)
+   add_subdirectory(src/matlab)
+else (BUILD_VISUAL_LEARNER_CTF)
+   add_subdirectory(prebuilt/VisualLearner)   
+endif (BUILD_VISUAL_LEARNER_CTF)
+
 if (BUILD_VISUAL_LEARNER)
-   if (BUILD_VISUAL_LEARNER_CTF)
-      add_subdirectory(src/matlab)
-   else (BUILD_VISUAL_LEARNER_CTF)
-      add_subdirectory(prebuilt/VisualLearner)   
-   endif (BUILD_VISUAL_LEARNER_CTF)
-
-
    find_file( # TODO: Why is FIND_LIBRARY (FeatureLearningProxy) not working????
       VISUAL_LEARNER_MATLAB_PROXY
-       NAMES libVisualLearnerProxy.so
+      NAMES libVisualLearnerProxy.so
       PATHS ${OUTPUT}  ${OUTPUT}/lib
       NO_DEFAULT_PATH
       DOC "Matlab Library required for VisualLearner"
@@ -93,7 +93,7 @@ if (BUILD_VISUAL_LEARNER)
          "   Run 'make install' to generate and install it.\n"
          "   Then run 'ccmake' again.\n"
          "   (For now, VisualLearner won't be built)\n"
-         "   (see also: BUILD_VISUAL_LEARNER_CTF)"
+         "   (see also: BUILD_VISUAL_LEARNER_CTF - Advanced)"
       )
       endif (VISUAL_LEARNER_MATLAB_PROXY)
 endif (BUILD_VISUAL_LEARNER)
