@@ -15,12 +15,6 @@ import processtree
 LOGGER = messages.CInternalLogger()
 procman.LOGGER = LOGGER
 
-def xrun(cmdline):
-    if type(cmdline) == type(""): cmds = cmdline.split()
-    else: cmds = cmdline # assume list
-    cmd = cmds[0]
-    return os.spawnvp(os.P_NOWAIT, cmd, cmds)
-
 class CLogDisplayer:
     def __init__(self, qtext):
         self.log = messages.CLogMerger()
@@ -115,7 +109,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         # Auxiliary components
         self.tmStatus = QtCore.QTimer()
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
-        self.tmStatus.start(1000)
+        self.tmStatus.start(632)
         LOGGER.log("CAST Control initialized")
 
         # Event connections
@@ -320,14 +314,13 @@ class CCastControlWnd(QtGui.QMainWindow):
             os.chdir(cwd)
 
     def editFile(self, filename, line=None):
-        shell = "/bin/sh"
         cmd = self._userOptions.textEditCmd
         mo = re.search("%l(\[([^\]]+)\])?", cmd)
         if mo != None:
             if line == None: lexpr = ""
             else: lexpr = "%s%d" % (mo.group(2), line)
             cmd = cmd[:mo.start()] + lexpr + cmd[mo.end():]
-        xrun([shell, "-c", cmd % filename, " &"])
+        procman.xrun(cmd % filename)
 
     def on_btEditClientConfig_clicked(self, valid=True):
         if not valid: return
