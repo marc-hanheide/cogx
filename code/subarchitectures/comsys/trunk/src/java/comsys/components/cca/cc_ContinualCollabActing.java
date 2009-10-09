@@ -14,12 +14,14 @@ import comsys.lf.utils.LFUtils;
 import comsys.datastructs.lf.LogicalForm;
 
 import cast.architecture.*;
+import cast.AlreadyExistsOnWMException;
 import cast.SubarchitectureComponentException;
 import cast.cdl.*;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 import Abducer.*;
+import comsys.processing.cca.ContextUpdate;
 import comsys.processing.cca.ContinualCollaborativeActivity;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.cca.AbducerUtils;
@@ -216,20 +218,34 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 
                     if (taskType != null && data != null) {
                         try {
-                            if (taskType.equals(ComsysGoals.CCA_UNDERSTAND_TASK)) {
-                                executeEventInterpretTask(data);
-                            }
-                            else if (taskType.equals(ComsysGoals.CCA_CLARIFICATION_REQUEST_TASK)) {
-                            	executeClarificationRequestTask(data);
-                            }
+                        	if (taskType.equals(ComsysGoals.CCA_UNDERSTAND_TASK)
+                        			|| taskType.equals(ComsysGoals.CCA_CLARIFICATION_REQUEST_TASK)) {
+                        	
+                        		ContextUpdate cu = null;
+	                            if (taskType.equals(ComsysGoals.CCA_UNDERSTAND_TASK)) {
+	                            	CASTData brsWM = data.getByType(CASTUtils.typeName(BoundReadings.class));
+	                            	if (brsWM != null) {
+	                            		cu = understandBoundReadings((BoundReadings) brsWM.getData());
+	                            	}
+	                            }
+	                            else if (taskType.equals(ComsysGoals.CCA_CLARIFICATION_REQUEST_TASK)) {
+	                            	CASTData crWM = data.getByType(CASTUtils.typeName(ClarificationRequest.class));
+	                            	if (crWM != null) {
+	                            		cu = understandClarifRequest((ClarificationRequest) crWM.getData());
+	                            	}
+	                            }
+	                            updateContext(cu);
+	                            actPublicly(selectAction(cu));
+                        	}
                             else {
                                 log("Unknown task type to process in Comsys:continualCollabActing component");
                             }                                
                             taskComplete(taskID, TaskOutcome.ProcessingCompleteSuccess);
                         }
-                        catch (ComsysException e) {
-                            log("Exception while executing a task in cont. collab acting: " + e.getMessage());
-                                taskComplete(taskID, TaskOutcome.ProcessingCompleteFailure);
+                        catch (Exception e) {
+                        	log("Exception while executing a task in cont. collab acting: " + e.getMessage());
+                        	taskComplete(taskID, TaskOutcome.ProcessingCompleteFailure);
+                        	e.printStackTrace();
                         }
                     }
                     else {
@@ -251,97 +267,106 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     // COMPUTATION METHODS
     // =================================================================
 
-    private void executeEventInterpretTask(ProcessingData pd) throws ComsysException {
-    	log("interpreting an event");
-    	try {	
-            CASTData brsWM = pd.getByType(CASTUtils.typeName(BoundReadings.class));
-            if (brsWM != null) {
-				// get the data
-            	BoundReadings boundReadings = (BoundReadings) brsWM.getData();
-            	
-				// construct the abductive proof
-            	ccaEngine.addFactualContext(boundReadings.lform);
-            	ccaEngine.addAnchoringContext(boundReadings);
-				MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.UNDERSTAND,
-						AbducerUtils.term(boundReadings.lform.root.nomVar));
+    
+    private ContextUpdate understandBoundReadings(BoundReadings boundReadings) {
+    	log("got bound readings");
 
-				// print the proof ... 
-				if (proof != null) { 	
-            		log("Found an abductive proof:\n" + PrettyPrinting.proofToString(proof));
-     		
-            		log("starting verifiable update");
-            		// TODO: where do I get the belief model?
-            		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, getCurrentBeliefModel());
+    	ccaEngine.addFactualContext(boundReadings.lform);
+    	ccaEngine.addAnchoringContext(boundReadings);
+		MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.UNDERSTAND,
+				AbducerUtils.term(boundReadings.lform.root.nomVar));
 
-            		if (contextUpdates.length == 0) {
-            			log("no belief updates...");
-            		}
-            		else {
-                		String ls = "updates = {\n";
-                		for (int i = 0; i < contextUpdates.length; i++) {
-                			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
-                			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
-                			
-                			Belief[] related = getBeliefsByUnionEntityId(referringUnionId(contextUpdates[i])).toArray(new Belief[] {});
-                			
-                			boolean found = false;
-                			for (int j = 0; j < related.length; j++) {
-                				if (related[j].ags.equals(contextUpdates[i].ags)) {
-                					mergeFormulaIntoBelief(related[j], (SuperFormula) contextUpdates[i].phi);
-                					found = true;
-                				}
-                			}
-                			if (!found) {
-                				contextUpdates[i].id = counter.inc("update(" + referringUnionId(contextUpdates[i]) + ")");
-                				addNewBelief(contextUpdates[i]);
-                			}
-                		}
-                		ls += "}";
-                		log(ls);
-            		}
-            		
-            		ccaEngine.abducer.clearFactsByModality(ModalityType.K);
-            		syncWithBeliefModel(getCurrentBeliefModel());
-            		
-        			log("looking for linguistic feedback");
-        			ModalisedFormula[] assumptions = ProofUtils.proofToFacts(ProofUtils.filterAssumed(proof));
-        			
-        			// filter out just the event modality
-        			ArrayList<ModalisedFormula> list = new ArrayList<ModalisedFormula>();
-        			for (int i = 0; i < assumptions.length; i++) {
-        				if (assumptions[i].m.length == 1 && assumptions[i].m[0] instanceof EventModality) {
-        					list.add(assumptions[i]);
-        				}
-        			}
-
-        			// generate feedback
-            		MarkedQuery[] feedbackProof = ccaEngine.generateProof(list.toArray(new ModalisedFormula[0]));
-            		if (feedbackProof != null) {
-            			log("Production proof:\n" + PrettyPrinting.proofToString(feedbackProof));
-            			if (toBeRealised(feedbackProof)) {
-            				log("feedback to be realised");
-            				
-                			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(feedbackProof), "dummy1");
-                			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
-                			ContentPlanningGoal cpg = new ContentPlanningGoal();
-                			cpg.cpgid = newDataID();
-                			cpg.lform = prodLF;
-                			addToWorkingMemory(newDataID(), cpg);
-            			}
-            			else {
-            				log("no feedback for realisation");
-            			}
-            		}
-            		
-            		// TODO: update the belief model
-            		log("update the belief model");            		
-            	}
-            }
-    	}
-        catch (Exception e) {
-        	e.printStackTrace();
-        }
+		if (proof != null) {
+    		log("Abductive proof found:\n" + PrettyPrinting.proofToString(proof));
+    		return new ContextUpdate(proof);
+		}
+		else {
+			return new ContextUpdate();
+		}
     }
+    
+    private ContextUpdate understandClarifRequest(ClarificationRequest cr) {
+    	log("got clarif request");
+    	ccaEngine.addCRContext(cr);
+		MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.CLARIFY,
+				AbducerUtils.term(cr.id));
+
+		if (proof != null) {
+    		log("Abductive proof found:\n" + PrettyPrinting.proofToString(proof));
+    		return new ContextUpdate(proof);
+		}
+		else {
+			return new ContextUpdate();
+		}
+    }
+    
+    private void updateContext(ContextUpdate cu) {
+    	log("updating context");
+		Belief[] beliefUpdates = ccaEngine.verifiableUpdate(cu.proof, getCurrentBeliefModel());
+		
+		if (beliefUpdates.length == 0) {
+			log("no belief updates...");
+		}
+		else {
+			log("starting belief model update, " + beliefUpdates.length + " beliefs total");
+    		
+			for (int i = 0; i < beliefUpdates.length; i++) {
+				log("  update #" + i + ": " + PrettyPrinting.beliefToString(beliefUpdates[i]));
+
+				Belief[] related = getBeliefsByUnionEntityId(referringUnionId(beliefUpdates[i])).toArray(new Belief[] {});
+				
+				boolean found = false;
+				for (int j = 0; j < related.length; j++) {
+					if (related[j].ags.equals(beliefUpdates[i].ags)) {
+						mergeFormulaIntoBelief(related[j], (SuperFormula) beliefUpdates[i].phi);
+						found = true;
+					}
+				}
+				if (!found) {
+					beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
+					addNewBelief(beliefUpdates[i]);
+				}
+
+			}
+			log("done with belief model update");
+		}
+		
+		log("syncing abducer with current belief model");
+		ccaEngine.abducer.clearFactsByModality(ModalityType.K);
+		syncWithBeliefModel(getCurrentBeliefModel());
+    }
+
+    private Predicate selectAction(ContextUpdate cu) {
+    	return cu.intention;
+    }
+
+    private void actPublicly(Predicate action) {
+    	log("initiating public acting");
+    	ModalisedFormula actionMF = AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.eventModality()}, action);
+		MarkedQuery[] actionProof = ccaEngine.generateProof(new ModalisedFormula[] {actionMF});
+		
+		if (actionProof != null) {
+			log("Action proof:\n" + PrettyPrinting.proofToString(actionProof));
+			
+			// TODO: do this in a less hardcoded way
+			if (toBeRealised(actionProof)) {				
+    			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(actionProof), "dummy1");
+    			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
+    			ContentPlanningGoal cpg = new ContentPlanningGoal();
+    			cpg.cpgid = newDataID();
+    			cpg.lform = prodLF;
+    			try {
+					addToWorkingMemory(newDataID(), cpg);
+				} catch (AlreadyExistsOnWMException e) {
+					e.printStackTrace();
+				}
+			}
+			else {
+				log("no public action");
+			}
+		}
+    }
+    
 
     public static String referringUnionId(Belief b) {
     	if (b.phi instanceof ComplexFormula) {
@@ -412,80 +437,6 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		log("sync done");
 	}
 	    
-    private void executeClarificationRequestTask(ProcessingData pd) throws ComsysException {
-    	log("interpreting an event");
-    	try {	
-            CASTData crWM = pd.getByType(CASTUtils.typeName(ClarificationRequest.class));
-            if (crWM != null) {
-				// get the data
-            	ClarificationRequest cr = (ClarificationRequest) crWM.getData();
-            	
-				// construct the abductive proof
-
-            	ccaEngine.addCRContext(cr);
-				MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.CLARIFY,
-						AbducerUtils.term(cr.id));
-
-				// print the proof ... 
-				if (proof != null) { 	
-            		log("Found an abductive proof:\n" + PrettyPrinting.proofToString(proof));
-     		
-            		log("starting verifiable update");
-            		// TODO: where do I get the belief model?
-            		Belief[] contextUpdates = ccaEngine.verifiableUpdate(proof, null);
-
-            		String ls = "updates = {\n";
-            		for (int i = 0; i < contextUpdates.length; i++) {
-            			ls += "  " + PrettyPrinting.beliefToString(contextUpdates[i]);
-            			ls += (i < contextUpdates.length-1) ? ",\n" : "\n";
-            		}
-            		ls += "}";
-            		log(ls);
-            		
-            		if (contextUpdates.length == 0) {
-            			log("no belief updates");
-            		}
-            		
-        			log("looking for linguistic feedback");
-        			ModalisedFormula[] assumptions = ProofUtils.proofToFacts(ProofUtils.filterAssumed(proof));
-        			
-        			// filter out just the event modality
-        			ArrayList<ModalisedFormula> list = new ArrayList<ModalisedFormula>();
-        			for (int i = 0; i < assumptions.length; i++) {
-        				if (assumptions[i].m.length == 1 && assumptions[i].m[0] instanceof EventModality) {
-        					list.add(assumptions[i]);
-        				}
-        			}
-
-        			// generate feedback
-            		MarkedQuery[] feedbackProof = ccaEngine.generateProof(list.toArray(new ModalisedFormula[0]));
-            		if (feedbackProof != null) {
-            			log("Production proof:\n" + PrettyPrinting.proofToString(feedbackProof));
-            			if (toBeRealised(feedbackProof)) {
-            				log("feedback to be realised");
-            				
-                			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(feedbackProof), "dummy1");
-                			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
-                			ContentPlanningGoal cpg = new ContentPlanningGoal();
-                			cpg.cpgid = newDataID();
-                			cpg.lform = prodLF;
-                			addToWorkingMemory(newDataID(), cpg);
-            			}
-            			else {
-            				log("no feedback for realisation");
-            			}
-            		}
-
-            		// TODO: update the belief model
-            		log("update the belief model");
-            	}
-            }
-    	}
-        catch (Exception e) {
-        	e.printStackTrace();
-        }
-    }
-
     /**
      * Return true iff the proof assumes realisation of an utterance that can be extracted from the proof.
      * @param proof the proof

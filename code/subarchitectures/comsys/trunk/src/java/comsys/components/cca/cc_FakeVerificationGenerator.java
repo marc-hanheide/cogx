@@ -93,7 +93,9 @@ public class cc_FakeVerificationGenerator
 
 	static boolean OKBUTTON_PUSHED = false ;
 	JTextField entityField;
+	JTextField modalityField;
 	JDialog dialog;
+	String defaultModality = "";
 	
 	JButton ok;
 	
@@ -255,12 +257,20 @@ public class cc_FakeVerificationGenerator
         JPanel dialogPanel = new JPanel();
         dialogPanel.setLayout(new BoxLayout(dialogPanel, BoxLayout.Y_AXIS));
 
+        JPanel modalityPanel = new JPanel();
+        modalityPanel.setLayout(new BoxLayout(modalityPanel, BoxLayout.LINE_AXIS));
+        JLabel modalityLabel = new JLabel("Modality:");
+        modalityPanel.add(modalityLabel);
+        modalityField = new JTextField();
+        modalityField.setText(defaultModality);
+		modalityPanel.add(modalityField);
+		dialogPanel.add(modalityPanel);
+
         JPanel entityPanel = new JPanel();
         entityPanel.setLayout(new BoxLayout(entityPanel, BoxLayout.LINE_AXIS));
-        JLabel entityLabel = new JLabel("Entity ID:");
+        JLabel entityLabel = new JLabel("Belief ID:");
         entityPanel.add(entityLabel);
         entityField = new JTextField();
-		//sourceField.setPreferredSize(new Dimension(100,20));
 		entityPanel.add(entityField);
 		dialogPanel.add(entityPanel);
 
@@ -269,17 +279,17 @@ public class cc_FakeVerificationGenerator
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 		buttonPanel.add(Box.createHorizontalGlue());
-		ok = new JButton("Verify all beliefs");
+		ok = new JButton("Verify all assertions");
 		buttonPanel.add(ok);
 		dialogPanel.add(buttonPanel);
 
-		dialog = new JDialog(frame, "Verification");
+		dialog = new JDialog(frame, "Assertion verification");
 		dialog.add(dialogPanel);
 
-		dialog.setLocation(400, 400);
+		dialog.setLocation(600, 250);
 
 		Dimension dim = dialogPanel.getPreferredSize();
-		dialog.setSize(150, dim.height + 25);
+		dialog.setSize(200, dim.height + 25);
 		dialog.setVisible(true);
 		entityField.requestFocusInWindow();
 		
@@ -305,4 +315,11 @@ public class cc_FakeVerificationGenerator
 		
 	} 
 	
+	@Override
+    public void configure(Map<String, String> _config) {
+		if (_config.containsKey("--modality")) {
+			defaultModality = _config.get("--modality");
+		}
+	}
+
 } // end class
