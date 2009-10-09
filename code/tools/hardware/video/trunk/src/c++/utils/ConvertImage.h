@@ -7,7 +7,7 @@
 #define CONVERT_IMAGE_H
 
 #include <stdexcept>
-#include <cv.h>
+#include <opencv/cv.h>
 #include "Video.hpp"
 
 namespace Video

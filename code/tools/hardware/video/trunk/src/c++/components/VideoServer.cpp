@@ -4,6 +4,7 @@
  */
 
 #include <sstream>
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cogxmath.h>
 #include "VideoServer.h"
 
@@ -12,6 +13,7 @@ namespace cast
 
 using namespace std;
 using namespace cogx::Math;
+using namespace Video;
 
 Ice::Int VideoServerI::getNumCameras(const Ice::Current&)
 {
@@ -31,36 +33,35 @@ Ice::Int VideoServerI::getFramerateMilliSeconds(const Ice::Current&)
   return (Ice::Int)vidSrv->getFramerateMilliSeconds();
 }
 
-void VideoServerI::getImage(Ice::Int camId, Video::Image& image, const Ice::Current&)
+void VideoServerI::getImage(Ice::Int camId, Image& image, const Ice::Current&)
 {
-  vidSrv->retrieveFrame((int)camId, image);
+  vidSrv->getImage(camId, image);
 }
 
-void VideoServerI::getImages(Video::ImageSeq& images, const Ice::Current&)
+void VideoServerI::getImages(ImageSeq& images, const Ice::Current&)
 {
-  // prividing width = height = 0 means using native image size
-  vidSrv->retrieveFrames(0, 0, images);
+  vidSrv->getImages(images);
 }
 
 void VideoServerI::getScaledImages(Ice::Int width, Ice::Int height,
-      Video::ImageSeq& images, const Ice::Current&)
+      ImageSeq& images, const Ice::Current&)
 {
-  vidSrv->retrieveFrames(width, height, images);
+  vidSrv->getScaledImages(width, height, images);
 }
 
-VideoServer::VideoServer()
+void VideoServerI::startReceiveImages(const std::string& receiverComponentId,
+    const vector<Ice::Int> &camIds, Ice::Int width, Ice::Int height,
+    const Ice::Current&)
 {
-  iceVideoName = "";
-  iceVideoPort = cdl::CPPSERVERPORT;
+  vidSrv->startReceiveImages(receiverComponentId, camIds, width, height);
 }
 
-void VideoServer::setupMyIceCommunication()
+void VideoServerI::stopReceiveImages(const std::string& receiverComponentId,
+    const Ice::Current&)
 {
-  Ice::Identity id;
-  id.name = iceVideoName;
-  id.category = "VideoServer";
-  getObjectAdapter()->add(new VideoServerI(this), id);
+  vidSrv->stopReceiveImages(receiverComponentId);
 }
+
 
 /**
  * Configure options common to all video servers.
@@ -88,7 +89,7 @@ void VideoServer::configure(const map<string,string> & _config)
     string file;
     while(str >> file)
     {
-      Video::CameraParameters pars;
+      CameraParameters pars;
       // calibration files can be either monocular calibration files (e.g.
       // "flea0.cal", "flea1.cal") or SVS stereo calib files (e.g.
       // "stereo.ini:L", "stereo.ini:R"). Note that in the latter case the
@@ -98,7 +99,7 @@ void VideoServer::configure(const map<string,string> & _config)
       if(file.find(":") == string::npos)
       {
         // monocular case
-        Video::loadCameraParameters(pars, file);
+        loadCameraParameters(pars, file);
       }
       else
       {
@@ -110,9 +111,9 @@ void VideoServer::configure(const map<string,string> & _config)
         char side = file[pos + 1];
         string pure_filename(file, 0, pos);
         if(side == 'L')
-          Video::loadCameraParametersFromSVSCalib(pars, pure_filename, LEFT);
+          loadCameraParametersFromSVSCalib(pars, pure_filename, LEFT);
         else if(side == 'R')
-          Video::loadCameraParametersFromSVSCalib(pars, pure_filename, RIGHT);
+          loadCameraParametersFromSVSCalib(pars, pure_filename, RIGHT);
         else
           throw runtime_error(exceptionMessage(__HERE__,
                 "camera '%c' invalid in config '%s', must be either :L or :R",
@@ -122,23 +123,12 @@ void VideoServer::configure(const map<string,string> & _config)
     }
   }
 
-  if((it = _config.find("--videoname")) != _config.end())
-  {
-    iceVideoName = it->second;
-  }
-
-  /*if((it = _config.find("--videoport")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> iceVideoPort;
-  }*/
-
   // in case no camera config files were given, assume default configs
   if(camPars.size() == 0)
   {
     camPars.resize(camIds.size());
     for(size_t i = 0; i < camPars.size(); i++)
-      Video::initCameraParameters(camPars[i]);
+      initCameraParameters(camPars[i]);
   }
 
   // sanity checks: Have all important things be configured? Is the
@@ -147,30 +137,133 @@ void VideoServer::configure(const map<string,string> & _config)
     throw runtime_error(exceptionMessage(__HERE__,
       "numbers of camera IDs %d and camera config files %d do not match",
       (int)camIds.size(), (int)camPars.size()));
-  if(iceVideoName.empty())
-    throw runtime_error(exceptionMessage(__HERE__, "no video server name given"));
   if(camIds.empty())
     throw runtime_error(exceptionMessage(__HERE__, "no camera IDs given"));
 
+  // fill camIds and current time stamp into cam parameters
+  // TODO: avoid this double ids at some point
+  for(size_t i = 0; i < camPars.size(); i++)
+  {
+    camPars[i].id = camIds[i];
+    camPars[i].time = getCASTTime();
+  }
+
+  // got all configuration into, now do actual configuration
+  VideoInterfacePtr servant = new VideoServerI(this);
+  registerIceServer<VideoInterface, VideoInterface>(servant);
 }
 
 void VideoServer::start()
 {
-  setupMyIceCommunication();
+  addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::ADD),
+      new MemberFunctionChangeReceiver<VideoServer>(this,
+        &VideoServer::receiveCameraParameters));
+
+  addChangeFilter(createLocalTypeFilter<CameraParametersWrapper>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<VideoServer>(this,
+        &VideoServer::receiveCameraParameters));
+}
+
+void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange &
+    _wmc)
+{
+	CameraParametersWrapperPtr newCam = getMemoryEntry<CameraParametersWrapper>(_wmc.address);
+  // find the camera paramters that need updating and update pose and time stamp
+  // Note that we don't change any other (instrinsic) parameters yet as we
+  // assume these fixed. At a later stage (with zoom cameras) also the intrinsic
+  // parameters might change.
+  // Note: if we don't find a camera with matching id in our list, no problem,
+  // then these parameters were meant for another video server.
+  for(size_t i = 0; i < camPars.size(); i++)
+  {
+    if(newCam->cam.id == camPars[i].id)
+    {
+      camPars[i].pose = newCam->cam.pose;
+      camPars[i].time = newCam->cam.time;
+      break;
+    }
+  }
+}
+
+void VideoServer::startReceiveImages(const std::string &receiverComponentId,
+    const vector<int> &camIds, int width, int height)
+{
+  lockComponent();
+  ImageReceiver rcv;
+  rcv.imgWidth = width;
+  rcv.imgHeight = height;
+  rcv.camIds = camIds;
+  rcv.receiverComponentId = receiverComponentId;
+  rcv.videoClient =
+    getIceServer<VideoClientInterface>(rcv.receiverComponentId);
+  imageReceivers.push_back(rcv);
+  unlockComponent();
+}
+
+void VideoServer::stopReceiveImages(const std::string &receiverComponentId)
+{
+  lockComponent();
+  for(vector<ImageReceiver>::iterator i = imageReceivers.begin();
+      i != imageReceivers.end(); i++)
+  {
+    if(i->receiverComponentId == receiverComponentId)
+    {
+      imageReceivers.erase(i);
+      break;
+    }
+  }
+  unlockComponent();
+}
+
+int VideoServer::getNumCameras() const
+{
+  return (int)camIds.size();
+}
+
+void VideoServer::getImage(int camId, Video::Image &img)
+{
+  lockComponent();
+  // width and height = 0 means no resizing
+  retrieveFrame((int)camId, 0, 0, img);
+  unlockComponent();
+}
+
+void VideoServer::getImages(std::vector<Video::Image> &images)
+{
+  lockComponent();
+  // providing width = height = 0 means using native image size
+  retrieveFrames(0, 0, images);
+  unlockComponent();
+}
+
+void VideoServer::getScaledImages(int width, int height, std::vector<Video::Image> &images)
+{
+  lockComponent();
+  retrieveFrames(width, height, images);
+  unlockComponent();
 }
 
 void VideoServer::runComponent()
 {
+  vector<Image> frames;
   while(isRunning())
   {
+    // TODO: If I could have this lock after grabFrames() I could avoid the
+    // stupid sleep.
+    lockComponent();
     grabFrames();
+    for(size_t i = 0; i < imageReceivers.size(); i++)
+    {
+      retrieveFrames(imageReceivers[i].camIds,
+        imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
+      imageReceivers[i].videoClient->receiveImages(frames);
+    }
+    unlockComponent();
+    // HACK: to let getImages() have chance to lockComponent()
+    sleepComponent(20);
     int fr = getFramerateMilliSeconds();
     log("grabbing with %d ms per frame (%.2f frames per second)",
         fr, (fr > 0. ? 1000./fr : 0.));
-    // need this fucking sleep to avoid grabFrames() hogging the mutex and thus
-    // excluding retrieveFrames()
-    // (note: 2009-02-13: first appearance of the f-word in the new code :)
-    //sleepComponent(10);
   }
 }
 

@@ -64,6 +64,13 @@ private:
    */
   bool haveFrames();
   void grabFramesInternal() throw(std::runtime_error);
+  void retrieveFrameInternal(int camIdx, int width, int height,
+    Video::Image &frame);
+  virtual void retrieveFrames(const std::vector<int> &camIds,
+    int width, int height, std::vector<Video::Image> &frames);
+  virtual void retrieveFrames(int width, int height,
+    std::vector<Video::Image> &frames);
+  virtual void retrieveFrame(int camId, int width, int height, Video::Image &frame);
 
 public:
   OpenCvImgSeqServer();
@@ -71,11 +78,6 @@ public:
   virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
   virtual void grabFrames();
-  virtual void retrieveFrames(int width, int height,
-      std::vector<Video::Image> &frames);
-  virtual void retrieveFrame(int camId, Video::Image &frame)
-    throw(std::runtime_error);
-  virtual int getNumCameras();
   virtual void getImageSize(int &width, int &height);
   virtual int getFramerateMilliSeconds();
 };

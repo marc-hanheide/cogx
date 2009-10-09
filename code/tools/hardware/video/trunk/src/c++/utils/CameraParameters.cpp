@@ -88,11 +88,13 @@ static const char *pose_header =
 
 void initCameraParameters(CameraParameters &cam)
 {
+  cam.id = -1;
   cam.width = cam.height = 0;
   cam.fx = cam.fy = 1.;
   cam.cx = cam.cy = 0.;
   cam.k1 = cam.k2 = cam.k3 = cam.p1 = cam.p2 = 0.;
   setIdentity(cam.pose);
+  cam.time.s = cam.time.us = 0;
 }
 
 void loadCameraParameters(CameraParameters &cam, const string &configfile)
