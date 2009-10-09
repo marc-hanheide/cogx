@@ -99,6 +99,29 @@ e(now) : need_get_value(Modality, Entity, color) <-
 			i : feat_Questioned(QualityNom, true) / 1.0,
 	e(now) : produce(r, Nom) / 1.0.
 
+% is the object blue
+%d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
+e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
+	dummy_nom1(Nom) / true,
+	dummy_nom2(ContentNom) / true,
+	dummy_nom3(TargetNom) / true,
+	dummy_nom4(QualityNom) / true,
+	k(now, attrib(r, h)) : objecttype(Entity, Type) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : sort(TargetNom, entity) / 1.0,
+			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+			i : prop(TargetNom, Type) / 1.0,
+		i : rel_Color(ContentNom, QualityNom) / 1.0,
+			i : sort(QualityNom, quality) / 1.0,
+			i : prop(QualityNom, Hypothesis) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
 % NOT THE FIRST is the box red or orange?” / “what color does the box have
 %what color does the box have
 %e(now) : produce(r, Nom) <-
