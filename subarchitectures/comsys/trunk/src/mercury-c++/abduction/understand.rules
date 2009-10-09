@@ -21,15 +21,15 @@ e(now) : uttered(h, Nom) <-
 %	e(now) : new_object_visible(Entity) / 10.0.
 
 e(now) : clarify(X, CR) <-
-	i : cr_modality(CR, Modality) / true,
-	i : cr_entity(CR, Entity) / true,
 	i : cr_need(CR, Prop) / true,
+	i : cr_entity(CR, Entity) / true,
+	i : cr_modality(CR, Modality) / true,
 	e(now) : need_get_value(Modality, Entity, Prop) / 0.5.
 
 e(now) : clarify(X, CR) <-
+	i : cr_need(CR, Prop, Hypothesis) / true,
 	i : cr_modality(CR, Modality) / true,
 	i : cr_entity(CR, Entity) / true,
-	i : cr_need(CR, Prop, Hypothesis) / true,
 	e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) / 0.5.
 
 % h: do you know what this is
