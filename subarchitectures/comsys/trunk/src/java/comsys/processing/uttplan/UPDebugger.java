@@ -565,6 +565,11 @@ public class UPDebugger
 		    if (atop > -1) { 
 				String lfstr = input.substring(atop,input.length());
 				LogicalForm lf = LFUtils.convertFromString(lfstr);
+				// check whether canned text or not
+				
+				
+				
+				
 				LogicalForm planlf = planner.plan(lf);
 				// Apply model reduction
 				lastLF = applyModelReduction(planlf);
