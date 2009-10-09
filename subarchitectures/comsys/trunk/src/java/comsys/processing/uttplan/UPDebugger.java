@@ -247,21 +247,53 @@ public class UPDebugger
 	
 	String output = "";
 	String contentBody = "Content"; // the content of the LF to realize will always be under relation CONTENT
+	String cannedTextFeature = "CannedText"; 
+	String contentRoot = "";
 
 	// Retrieve the content subtree (adapted from cc_Realizer)
 	LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
-	String contentRoot = "";
+					
+		
 	if (content != null) {
 		contentRoot = content.dep;
+		// use ccg realizer to produce sentence output
+		// get nominal and  the corresponding LF to realize 
+		LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
+		LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);		
+		output = realizeLfWithGrammar(realizer,planLF,contentRoot);
 	} else {
+		//log("IKK: no content in LF");
 		contentRoot = logicalForm.root.nomVar;
-		log("IKK: empty content");
-// type?		LFFeature cannedTextKey = LFUtils.lfNominalGetRelation(logicalForm.root,CannedText);
-//		log("IKK: key: "+cannedTextKey+"\n");
-	} 
-	LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
-	LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
+		if (LFUtils.lfNominalHasFeature(logicalForm.root,cannedTextFeature)){
+			// we're generating canned text, so get the key for the canned text from the CannedText feature
+			String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,cannedTextFeature);
+			// log("IKK: key: "+cannedTextKey+"\n");
+			output = realizeLfCannedText(cannedTextKey);
+		} else {
+			// not canned, so let's try with the grammar on the LF root as is
+			output = realizeLfWithGrammar(realizer,logicalForm,contentRoot);
+		}
+	}
+		log("Output realization: " + output);
+		// Assign a default in case realization failed
+		if ( output == "" || output == " ") {
+			output = "I am sorry I am lost for words on this one"; 
+		}
+		return output;
+	}
+		
+		/** Produces a string (hopefully sentence) for a given LF.
+			Extracts the root nominal of the LF under contentRoot in logicalForm, and the corresponding tree, 
+		    then calls the OpenCCG realizer on this
+		 
+		 @param realizer the OpenCCG realizer
+		 @param logicalForm the LF to realize from
+		 @param contentRoot the root of the subtree to realize
+		 @return the realized string 
+		 */
 	
+	public String realizeLfWithGrammar (Realizer realizer, LogicalForm planLF, String contentRoot) {
+			
 	log("Planning a realization for the following logical form: \n"+LFUtils.lfToString(planLF)+"\n");
 			
 	// Translate the planLF logical form into XML for OpenCCG
@@ -289,7 +321,8 @@ public class UPDebugger
 		log("Chart has "+chart.numEdgesInChart()+" representative edges.");
 
 		// list best edges according to OpenCCG
-		List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();				
+		List<opennlp.ccg.realize.Edge> bestEdges = chart.bestEdges();	
+		String output = "";
 		for (Iterator beIter = bestEdges.iterator(); beIter.hasNext(); ) {
 			//  log("entered iterator");
 			opennlp.ccg.realize.Edge edge = (opennlp.ccg.realize.Edge) beIter.next(); 
@@ -311,11 +344,27 @@ public class UPDebugger
 		opennlp.ccg.realize.Edge bestEdge = chart.bestEdge; 
 		log("Best edge: ");
 		// chart.printBestEdge();
-		if (bestEdge != null) log(bestEdge.toString());		
-		log("Output realization: "+ bestEdge.getSign().getOrthography().toString());
-		return bestEdge.getSign().getOrthography().toString();
-    } // end realizeLF
+		if (bestEdge != null) {
+			log(bestEdge.toString());	// log("Grammar output realization: "+ bestEdge.getSign().getOrthography().toString());
+			output =bestEdge.getSign().getOrthography().toString();
+		} else {
+			output = "";
+		}
+		return output;
+    } // end realizeLfWithGrammar
 
+	
+	/**  Produces a canned text string by replacing every occurrence of "_" with a space. 
+
+	 @param cannedTextKey the string that specifies the canned text
+	 @return the canned text where "_" is replaced with " "
+	 
+	 */
+	
+	public String realizeLfCannedText (String cannedTextKey) {
+		return cannedTextKey.replace('_',' ');
+	}
+	
 	
     public LogicalForm solvePlanGRE (LFNominal nom) { 
 	LogicalForm lf = new LogicalForm ();

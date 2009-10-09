@@ -554,7 +554,7 @@
 @d1:dvp(c-goal  ^ /SpeechAct\assertion ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ room)  ^ /Type\(b3:entity ^ kitchen)))
 </input>
 <realizations>
-<string>the room is a box</string>
+<string>the room is a kitchen</string>
 <string>the big object is one kitchen</string>
 </realizations>
 </utterance>
@@ -563,12 +563,14 @@
 <!-- 
 - going to place N
 TO DO
+please use some canned text in the meantime
 -->
 
 
 <!-- 
 - going to categorise room b
-TO DO; WHAT IS THIS MEANT TO BE?
+TO DO; 
+please use some canned text in the meantime
 -->
 
 <!-- 
@@ -584,127 +586,18 @@ TO DO; WHAT IS THIS MEANT TO BE?
 - executing next action
 - action succeeded/failed
 - plan execution succeeded/failed
+==> put the desired canned text with "_" between words as the value of the feature <CannedText>
+    see the example below
 -->
 
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <CannedText>activatedGoals ) 
+@d1:dvp(c-goal  ^ <CannedText>activated_goals ) 
 -->
-@d1:dvp(c-goal  ^ /CannedText\activatedGoals )
+@d1:dvp(c-goal  ^ /CannedText\activated_goals )
 </input>
 <realizations>
-<string></string>
+<string>activated goals</string>
 </realizations>
 </utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>planningForActiveGoals ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\planningForActiveGoals )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>planningSucceeded ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\planningSucceeded )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>planning_failed ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\planningFailed )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>executingPlan ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\executingPlan )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>executingNextAction ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\executingNextAction )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>actionSucceeded ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\actionSucceeded )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>actionFailed ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\actionFailed )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>planExecutionSucceeded ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\planExecutionSucceeded )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-<utterance>
-<input>
-<!--
-@d1:dvp(c-goal  ^ <CannedText>planExecutionFailed ) 
--->
-@d1:dvp(c-goal  ^ /CannedText\planExecutionFailed )
-</input>
-<realizations>
-<string></string>
-</realizations>
-</utterance>
-
-
