@@ -79,6 +79,7 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     ss3 << place1 << "-" << place2;
     string relationUID = ss3.str();
 
+    log("Adding connectivity relation between Place %s and %s", uid.c_str(), uid2.c_str());
     m_marshaller->addRelation("connectivity", relationUID,
 	"place", uid,
 	"place", uid2,
