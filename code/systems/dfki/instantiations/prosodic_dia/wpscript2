@@ -1,0 +1,19 @@
+h: hi robot!
+r: hello!
+#Act h: puts a red box in front of the robot
+r: what is_H* that LH%
+h: do you know what this is ?
+r: no, I do not know what this is 
+h: this is a box
+r: let me see 
+r: is the box red_H* LH%
+h: yes, it is red
+r: okay!
+#Act h: puts a blue box in front of the robot
+h: what is this?
+r: this is a blue_H* box LL%
+h: right!
+#Act h: puts a blue cone in front of the robot
+h: do you know what this is ?
+r: it is a blue cone_H* LL%
+h: right!
