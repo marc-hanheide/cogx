@@ -181,9 +181,12 @@ void StereoServer::start()
   disparityImg = cvCreateImage(cvSize(stereoWidth, stereoHeight), IPL_DEPTH_8U, 1);
   cvSet(disparityImg, cvScalar(0));
 
+  // NOTE: stupid polling runloop is still necessary
+  // push interface does not work for stereo server, probably some threading
+  // issue with cuda or whatever
   // start receiving images pushed by the video server
-  videoServer->startReceiveImages(getComponentID().c_str(), camIds, stereoWidth,
-      stereoHeight);
+  //videoServer->startReceiveImages(getComponentID().c_str(), camIds, stereoWidth,
+  //    stereoHeight);
 }
 
 void StereoServer::getPoints(bool transformToGlobal, vector<VisionData::SurfacePoint> &points)
@@ -218,7 +221,7 @@ void StereoServer::getPoints(bool transformToGlobal, vector<VisionData::SurfaceP
 }
 
 void StereoServer::getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
-    std::vector<VisionData::SurfacePoint> &points)
+    vector<VisionData::SurfacePoint> &points)
 {
   lockComponent();
 
@@ -270,7 +273,7 @@ void StereoServer::getRectImage(int side, Video::Image& image)
   unlockComponent();
 }
 
-void StereoServer::receiveImages(const std::vector<Video::Image>& images)
+void StereoServer::receiveImages(const vector<Video::Image>& images)
 {
   lockComponent();
 
@@ -317,6 +320,20 @@ void StereoServer::receiveImages(const std::vector<Video::Image>& images)
     cvShowImage("right", rectColorImg[RIGHT]);
     cvShowImage("disparity", disparityImg);
     cvWaitKey(10);
+  }
+}
+
+void StereoServer::runComponent()
+{
+  // NOTE: stupid polling runloop is still necessary
+  // push interface does not work for stereo server, probably some threading
+  // issue with cuda or whatever
+  vector<Video::Image> images;
+  while(isRunning())
+  {
+    videoServer->getScaledImages(stereoWidth, stereoHeight, images);
+    receiveImages(images);
+    sleepComponent(100);
   }
 }
 
