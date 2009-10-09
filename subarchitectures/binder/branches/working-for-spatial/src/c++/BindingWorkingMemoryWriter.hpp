@@ -18,8 +18,16 @@ namespace binder {
    */
   class BindingWorkingMemoryWriter : 
     public virtual cast::ManagedComponent {
-
+  
+  public:
+      void configure(const std::map<std::string, std::string>& _config);
+      
   private:
+    /**
+     * Name of the binder subarchitecture
+     */
+    std::string m_bindingSA;
+
     /**
      * ID in current SA where origin map is stored.
      */

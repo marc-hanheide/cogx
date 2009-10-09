@@ -10,6 +10,19 @@ namespace binder {
 
    // TODO: 	Check the c++ code is running and up to date
 
+  void BindingWorkingMemoryWriter::configure(const std::map<std::string, std::string>& _config)
+  {
+     ManagedComponent::configure(_config);
+
+     if (_config.find("-bsa") != _config.end()) {
+       m_bindingSA=_config.find("-bsa")->second;
+     } else if (_config.find("--bsa") != _config.end()) {
+       m_bindingSA=_config.find("--bsa")->second;
+     } else {
+       m_bindingSA="binding.sa";
+     }
+  }
+
 
   WorkingMemoryPointerPtr BindingWorkingMemoryWriter::createWorkingMemoryPointer (const std::string & subarchId,
 									const std::string &  localDataId, const std::string &  localDataType) {
@@ -130,7 +143,7 @@ namespace binder {
   void BindingWorkingMemoryWriter::addProxyToWM(ProxyPtr proxy) {
 
     try {
-      addToWorkingMemory(proxy->entityID, proxy);
+      addToWorkingMemory(proxy->entityID, m_bindingSA, proxy);
       storeOriginInfo(proxy);
       log("new Proxy succesfully added to the binder working memory");
     }
@@ -144,7 +157,7 @@ namespace binder {
   void BindingWorkingMemoryWriter::overwriteProxyInWM(ProxyPtr proxy) {
 
     try {
-      overwriteWorkingMemory(proxy->entityID, proxy);
+      overwriteWorkingMemory(proxy->entityID, m_bindingSA, proxy);
       log("existing Proxy succesfully modified in the binder working memory");
 
     }
@@ -159,7 +172,7 @@ namespace binder {
 
     try {
       removeOriginInfo(proxy);
-      deleteFromWorkingMemory(proxy->entityID);
+      deleteFromWorkingMemory(proxy->entityID, m_bindingSA);
       log("existing Proxy succesfully modified in the binder working memory");
 
     }
