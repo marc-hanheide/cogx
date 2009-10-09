@@ -10,7 +10,7 @@ lib:
 .PHONY: server
 server: lib
 	make -C server
-	[ -e abducer-server ] || ln -s server/abducer-server
+	[ -e abducer-server-bin ] || ln -s server/abducer-server-bin
 
 .PHONY: cli
 cli: lib
@@ -26,4 +26,4 @@ clean:
 	make -C lib clean
 	make -C server clean
 	make -C tests clean
-	rm -f abducer-server check-rules-file
+	rm -f abducer-server-bin check-rules-file

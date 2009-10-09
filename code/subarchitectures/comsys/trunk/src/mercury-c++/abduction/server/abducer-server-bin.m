@@ -1,4 +1,4 @@
-:- module 'abducer-server'.
+:- module 'abducer-server-bin'.
 
 :- interface.
 :- import_module io.

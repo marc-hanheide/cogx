@@ -39,7 +39,10 @@ cc2m::term(const TermPtr & t, MR_varset * w_vs)
 
 			for (int i = f->args.size() - 1; i >= 0; i--) {
 				MR_term w_arg = cc2m::term(f->args[i], w_vs);
+				addr(w_arg);
+				addr(w_args);
 				cons_term_list(w_arg, w_args, &w_args);
+				addr(w_args);
 			}
 
 			new_function_term(cc2m::string(f->functor), w_args, &w_f, *w_vs, w_vs);
@@ -50,6 +53,8 @@ cc2m::term(const TermPtr & t, MR_varset * w_vs)
 			VariableTermPtr v = VariableTermPtr::dynamicCast(t);
 			MR_term w_v;
 			new_variable_term(cc2m::string(v->name), &w_v, *w_vs, w_vs);
+			addr(w_v);
+			addr(w_vs);
 			return w_v;
 		}
 
