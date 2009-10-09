@@ -37,6 +37,8 @@ public class ProsodicTextToRawMARYXml {
 		RAWMARYXMLHead = new String(args[1]);
 		
 		String l_xmlfile = new String();
+		String l_voicename = new String();
+		Integer l_substr;
 		if(debug){
 			System.out.println("RAWMARYXMLHead is in file : " + RAWMARYXMLHead);
 		}
@@ -46,28 +48,43 @@ public class ProsodicTextToRawMARYXml {
 			BufferedReader l_inp= new BufferedReader(l_file);  
 			String l_utterance = new String();
 			
-			Integer l_count=0;
 			//read a line
 			while((l_utterance=l_inp.readLine())!=null){
 				if(debug){
 					System.out.println("I read: " + l_utterance);
 				}
+				if(l_utterance.startsWith("#")){
+					continue;
+				}
+				if(l_utterance.startsWith("h")){
+					l_voicename="hmm-jmk";
+					l_substr=2;
+				}else if(l_utterance.startsWith("r")){
+					l_voicename="us2";
+					l_substr=2;
+				}else {
+					l_voicename="us2"; 
+					l_substr=0;
+				}
+				
+				
 			//Keep the trace of line count
 				++UtteranceCount;
 			//pass this line to the conversion function
-				l_xmlfile=ConvertToRawMarxXml(l_utterance);
+				l_xmlfile=ConvertToRawMarxXml(l_utterance.substring(l_substr));
 				
 				//A function that takes the prosodic text as input and returns a filename
 				System.out.println("XML file written: "+ l_xmlfile);
 				
 				//Synthesiz this file
 				try {
-					Thread.sleep(3000);
+						SynthesisRAWMaryXMLInput.Utter(GenretedXMLFileLocation.concat(l_xmlfile),l_voicename);
+						Thread.sleep(2500);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				SynthesisRAWMaryXMLInput.Utter(GenretedXMLFileLocation.concat(l_xmlfile));
+				
 			}
 			
 			
