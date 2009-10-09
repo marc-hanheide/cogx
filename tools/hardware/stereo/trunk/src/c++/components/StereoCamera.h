@@ -92,7 +92,8 @@ public:
   void DistortPoint(double u, double d, double &ud, double &vd, int side);
   bool UndistortPoint(double ud, double vd, double &u, double &v,int side);
   void SetMaxDistortion(double err = .5) {maxDistortion = err;}
-  void RectifyPoint(double u, double v, double &ur, double &vr, int side);
+  void RectifyPoint(double ud, double vd, double &ur, double &vr, int side);
+  void UnrectifyPointFast(double ur, double vr, double &ud, double &vd, int side);
   void SetupImageRectification();
   void RectifyImage(const IplImage *src, IplImage *dst, int side);
   void DisparityImage(const IplImage *left, const IplImage *right,

@@ -11,7 +11,7 @@ link_directories (/usr/local/cuda/sdk/C/lib)
 link_directories (${COGX_ROOT}/tools/hardware/stereo/src/c++/components/gpustereo)
 
 add_cast_component(StereoServer StereoServer.cpp StereoCamera.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoUtils VideoClient)
+link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} gpustereo)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} cudart cutil)
 

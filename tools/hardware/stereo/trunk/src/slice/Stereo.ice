@@ -3,6 +3,7 @@
 
 #include <cast/slice/CDL.ice>
 #include <Math.ice>
+#include <Video.ice>
 #include <VisionData.ice>
 
 module Stereo {
@@ -12,8 +13,9 @@ module Stereo {
    * cameras.
    */
   interface StereoInterface {
-    void getPoints(out VisionData::SurfacePointSeq points);
-    void getPointsInSOI(VisionData::SOI soi, out VisionData::SurfacePointSeq points);
+    void getPoints(bool transformToGlobal, out VisionData::SurfacePointSeq points);
+    void getPointsInSOI(bool transformToGlobal, VisionData::SOI soi, out VisionData::SurfacePointSeq points);
+    void getRectImage(int side, out Video::Image img);
   };
 };
 

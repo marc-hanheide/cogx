@@ -54,11 +54,6 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
   {
     stereoServerName = it->second;
   }
-  /*if((it = _config.find("--stereoport")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> stereoServerPort;
-  }*/
 
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
@@ -68,17 +63,22 @@ void StereoClient::configureStereoCommunication(const map<string,string> & _conf
     throw runtime_error(exceptionMessage(__HERE__, "no stereo server name given"));
 }
 
-void StereoClient::getPoints(VisionData::SurfacePointSeq& points)
+void StereoClient::getPoints(bool transformToGlobal, VisionData::SurfacePointSeq& points)
 {
-  stereoServer->getPoints(points);
+  stereoServer->getPoints(transformToGlobal, points);
 }
 
-void StereoClient::getPointsInSOI(const VisionData::SOI &soi,
+void StereoClient::getPointsInSOI(bool transformToGlobal, const VisionData::SOI &soi,
     VisionData::SurfacePointSeq& points)
 {
   VisionData::SOIPtr soiPtr = new VisionData::SOI;
   *soiPtr = soi;
-  stereoServer->getPointsInSOI(soiPtr, points);
+  stereoServer->getPointsInSOI(transformToGlobal, soiPtr, points);
+}
+
+void StereoClient::getRectImage(int side, Video::Image& image)
+{
+  stereoServer->getRectImage(side, image);
 }
 
 }
