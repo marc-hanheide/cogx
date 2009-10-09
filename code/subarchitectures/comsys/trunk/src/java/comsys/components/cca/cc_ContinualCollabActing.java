@@ -368,7 +368,6 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 					beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
 					addNewBelief(beliefUpdates[i]);
 				}
-
 			}
 			log("done with belief model update");
 		}
@@ -429,6 +428,13 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     	pred.args = new Abducer.Term[2];
     	pred.args[0] = AbducerUtils.term(unionId);
 
+    	if (cf instanceof ContinualFormula) {
+    		if (((ContinualFormula)cf).cstatus == ContinualStatus.assertion) {
+    			log("NOT adding an asserted formula");
+    			return null;
+    		}
+    	}
+    	
     	if (cf instanceof ObjectTypeProperty) {
     		pred.predSym = "objecttype";
     		pred.args[1] = AbducerUtils.term( ((ObjectTypeProperty)cf).typeValue.toString() );
