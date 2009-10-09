@@ -83,8 +83,10 @@ ProxyMarshaller::MarshallingServer::addRelation(const string & relationType,
     double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
     const Ice::Current &_context)
 {
-  m_pOwner->addRelation(relationType, relationUID, 
+  ProxyMarshaller::RelationCandidate cand (relationType, relationUID, 
       sourceType, sourceUID, targetType, targetUID, probExists, origin);
+  if (m_pOwner->addRelation(cand) != 0)
+    m_pOwner->m_queuedRelations.push_back(cand);
 }
 
 void
@@ -111,6 +113,28 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
     typeMap[UID].onBinder = false; //Not represented on binder yet
 
     //updateInternalProxy(typeMap[UID]); //Don't upload it until some features are added
+    
+    // Check all previously failed relations to see if they work now
+
+    for(list<RelationCandidate>::iterator rIt = m_queuedRelations.begin();
+	rIt != m_queuedRelations.end();) {
+      // Try adding the pending relation
+      if (addRelation(*rIt) == 0) {
+	// Add all the Features pending for this Relation
+	//FIXME: It won't work without this - but it crashes with it... no clue why
+	//for(vector<binder::autogen::core::FeaturePtr>::iterator fIt =
+	    //rIt->addedFeatures.begin(); fIt != rIt->addedFeatures.end(); fIt++) {
+	  //addFeature(rIt->relationType, rIt->relationUID, *fIt);
+	//}
+	//commitFeatures(rIt->relationType, rIt->relationUID);
+
+	// Erase the candidate from the pending list
+	rIt = m_queuedRelations.erase(rIt);
+      }
+      else {
+	rIt++;
+      }
+    }
   }
   else {
     // The proxy already existed.
@@ -118,16 +142,22 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
   }
 }
 
-void
-ProxyMarshaller::addRelation(const string & relationType, 
-    const string & relationUID,
-    const string & sourceType, const string &sourceUID,
-    const string & targetType, const string &targetUID,
-    double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin)
+int
+ProxyMarshaller::addRelation(const RelationCandidate &cand)
 {
+  const string & relationType = cand.relationType;
+  const string & relationUID = cand.relationUID;
+  const string & sourceType = cand.sourceType;
+  const string &sourceUID = cand.sourceUID;
+  const string & targetType = cand.targetType;
+  const string &targetUID = cand.targetUID;
+  double probExists = cand.probExists;
+  const cast::cdl::WorkingMemoryPointerPtr origin = cand.origin;
+
   log("addRelation: %s, %s, %s, %s, %s, %s", relationType.c_str(), relationUID.c_str(),
       sourceType.c_str(), sourceUID.c_str(),
       targetType.c_str(), targetUID.c_str());
+
   map<string, InternalProxy> &relTypeMap =
     m_proxyTypeMap[relationType];
 
@@ -144,8 +174,9 @@ ProxyMarshaller::addRelation(const string & relationType,
       sourceTypeMap.find(sourceUID);
 
     if (sourceIt == sourceTypeMap.end()) {
-      log("Error! Could not create relation proxy; source didn't exist!");
-      return;
+      log("Could not create relation proxy; source didn't exist! Queuing...");
+
+      return -1;
     }
     else {
       map<string, InternalProxy> &targetTypeMap =
@@ -154,8 +185,9 @@ ProxyMarshaller::addRelation(const string & relationType,
       map<string, InternalProxy>::iterator targetIt = 
 	targetTypeMap.find(targetUID);
       if (targetIt == targetTypeMap.end()) {
-	log("Error! Could not create relation proxy; target didn't exist!");
-	return;
+	log("Could not create relation proxy; target didn't exist! Queuing...");
+
+	return -1;
       }
       else {
 	// create new proxy
@@ -187,6 +219,7 @@ ProxyMarshaller::addRelation(const string & relationType,
     // The proxy already existed.
     log("Warning: Proxy already existed creating relation proxy!");
   }
+  return 0;
 }
 
 void
@@ -199,6 +232,19 @@ ProxyMarshaller::MarshallingServer::deleteProxy(const string & type, const strin
 void
 ProxyMarshaller::deleteProxy(const string & type, const string & UID)
 {
+  //Check pending relations; delete from there if applicable
+  for(list<RelationCandidate>::iterator rIt = m_queuedRelations.begin();
+      rIt != m_queuedRelations.end();)
+  {
+    if (rIt->relationType == type && rIt->relationUID == UID) {
+      m_queuedRelations.erase(rIt);
+      return;
+    }
+    else {
+      rIt++;
+    }
+  }
+
   //TODO: Make sure connected relations are not left on the Binder!
   if (m_proxyTypeMap.find(type) != m_proxyTypeMap.end()) {
     map<string, InternalProxy> &typeMap =
@@ -234,6 +280,16 @@ void
 ProxyMarshaller::addFeature(const string & proxyType, const string & proxyUID, 
 	const binder::autogen::core::FeaturePtr feature)
 {
+  //Check pending relations; add there if applicable
+  for(list<RelationCandidate>::iterator rIt = m_queuedRelations.begin();
+      rIt != m_queuedRelations.end();rIt++)
+  {
+    if (rIt->relationType == proxyType && rIt->relationUID == proxyUID) {
+      rIt->addedFeatures.push_back(feature);
+      return;
+    }
+  }
+
   if (m_proxyTypeMap.find(proxyType) != m_proxyTypeMap.end()) {
     map<string, InternalProxy> &typeMap =
       m_proxyTypeMap[proxyType];

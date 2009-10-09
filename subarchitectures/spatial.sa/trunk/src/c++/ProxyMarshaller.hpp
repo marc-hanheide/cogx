@@ -57,6 +57,27 @@ namespace spatial {
     };
     friend class MarshallingServer;
 
+    class RelationCandidate {
+      public:
+	RelationCandidate(const string &rt, const string &ru,
+	  const string &st,const string &su,
+	  const string &tt,const string &tu,
+	  double p, const cast::cdl::WorkingMemoryPointerPtr o) :
+	relationType(rt), relationUID(ru),
+	sourceType(st), sourceUID(su),
+	targetType(tt), targetUID(tu),
+	probExists(p), origin(o) {}
+
+      string relationType;
+      string relationUID;
+      string sourceType;
+      string sourceUID;
+      string targetType;
+      string targetUID;
+      double probExists;
+      const cast::cdl::WorkingMemoryPointerPtr origin;
+      vector<binder::autogen::core::FeaturePtr> addedFeatures;
+    };
 
     struct InternalProxy {
       ProxyPtr proxy;
@@ -82,10 +103,7 @@ namespace spatial {
 
     void addProxy(const string & type, const string & UID,
 	double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin);
-    void addRelation(const string & relationType, const string & relationUID,
-	const string & sourceType, const string & sourceUID,
-	const string & targetType, const string & targetUID,
-	double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin);
+    int addRelation(const RelationCandidate &cand);
     void deleteProxy(const string &typ, const string &UID);
     void addFeature(const string & proxyType, const string & proxyUID, 
 	const binder::autogen::core::FeaturePtr feature);
@@ -118,6 +136,9 @@ namespace spatial {
 
     // Places that are foregrounded because of their local importance
     set<InternalProxy> m_localContextPlaces;
+
+    // Relations that were not added properly; waiting for their source/target
+    list<RelationCandidate> m_queuedRelations;
 };
 };
 
