@@ -35,6 +35,7 @@ import beliefmodels.clarification.*;
 import beliefmodels.domainmodel.cogx.*;
 
 import binder.abstr.BeliefModelInterface;
+import binder.components.Binder;
 
 public class cc_ContinualCollabActing extends BeliefModelInterface {
 
@@ -123,7 +124,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				});
 		
 		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(beliefmodels.domainmodel.cogx.GroundedBelief.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createGlobalTypeFilter(beliefmodels.domainmodel.cogx.GroundedBelief.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleGroundedBelief(_wmc);
@@ -203,7 +204,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		log("Got a WM change");
 		try {
 			String id = _wmc.address.id;
-			CASTData data = getWorkingMemoryEntry(id);
+			CASTData data = getWorkingMemoryEntry(id, Binder.BINDER_SA);
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
