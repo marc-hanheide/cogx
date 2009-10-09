@@ -1,0 +1,2 @@
+CPP GD objsearch.process ObjectSearch -c subarchitectures/nav.sa/config/cogxp3.ccf --explore-range 5 --log --gridsize 125 --cellsize 0.1 --objects "tea" --samplesize 1000 --cam-range 2.5 --cam-fov 45 --coverage-threshold 30  --vp-threshold 5 --away-from-obstacles 1 --disp-magn 3  --cam-step 60 --log	#--display-coverage --ctrl-ptu
+
