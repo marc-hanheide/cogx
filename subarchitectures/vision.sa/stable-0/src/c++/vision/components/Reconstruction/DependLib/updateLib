@@ -1,0 +1,16 @@
+#!/bin/sh
+
+cd TooN/
+rm -r /usr/local/include/TooN
+./configure
+sudo make install
+cd ..
+cd libcvd
+./configure --without-ffmpeg
+make
+sudo make install
+cd ..
+cd gvars3
+./configure --disable-widgets
+make
+sudo make install

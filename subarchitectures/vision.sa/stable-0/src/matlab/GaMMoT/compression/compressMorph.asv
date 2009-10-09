@@ -1,0 +1,25 @@
+function kernel_pdf = compressMorph( kernel_pdf, varargin )
+
+scale = 1.2;%^2 ;
+args = varargin;
+nargs = length(args);
+for i=1:2:nargs
+  switch args{i}
+   case 'scale', scale = args{i+1} ;   
+  end
+end
+
+% maxItFitting = 30 ;
+% pdf1 = generateReference( kernel_pdf, scale ) ;
+% pdf2 = compressDistribution( pdf1, 'f_init', kernel_pdf, varargin{:}, 'gradient', 1 ) ;
+% kernel_pdf = refitGaussianMixture( kernel_pdf, varargin{:}, ... 
+%                                   'opt_weights',1, 'maxIterations', maxItFitting, 'f_init', pdf2 ) ;
+
+pdf2 = compressDistribution( kernel_pdf, 'f_init', kernel_pdf,...
+                             varargin{:}, 'gradient', 1,...
+                             'morph_scale', scale) ;
+kernel_pdf = compressDistribution( kernel_pdf, 'f_init', pdf2,...
+                             varargin{:}, 'gradient', 1 ) ;                         
+
+function pdf = generateReference( pdf, scale )
+pdf.covariances = pdf.covariances*scale ; 

@@ -1,0 +1,53 @@
+function f0 = developAppFunComp()
+
+installPaths() 
+
+f_ref_X = getUniMixture( 20 ) ;
+f_approx_X = getUniMixture( 1 ) ;
+
+% manage distribution
+f_ref.mu = f_ref_X.means ;
+f_ref.weights = f_ref_X.weights ; f_ref.weights
+f_ref.covariances = f_ref_X.covariances' ;
+f_approx.mu = f_approx_X.means ;
+f_approx.weights = f_approx_X.weights ;
+f_approx.covariances = f_approx_X.covariances' ;
+% managed.
+
+figure(1) ;
+tic
+f_approx1 = compressFunApp( f_ref, f_approx ) ;
+toc
+
+% figure(1); clf ; hold on ;
+% 
+% returnBounds = showDecomposedPdf( f_ref, 'linTypeSum', 'b', 'linTypeSub', 'b--' ) ;
+% showDecomposedPdf( f_approx1, 'bounds', returnBounds ) ;
+
+% ---------------------------------------------------------------------- %
+function f = getUniMixture( siz )
+%
+% Matej Kristan (2007)
+%
+% Randomly generates a Gaussian distribution of size 'siz'.
+%
+
+factor = 0.1 ;
+f.siz = siz ;
+
+f.means = rand(1,siz)*10 ;
+
+f.weights = rand(1,siz) ;
+f.weights = f.weights / sum(f.weights) ;
+f.covariances = abs(rand(1,siz)+0.1)*2 ;
+
+f.covariances = f.covariances*factor^2;
+f.means = f.means*factor  ;
+
+
+% ---------------------------------------------------------------------- %
+function installPaths() 
+curr = cd ;
+cd ..\..\ ;
+installGaMMotPaths() ;
+cd(curr) ;

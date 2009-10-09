@@ -1,0 +1,12 @@
+function pdf = estimateKDEfromData( data )
+% data ... a row of column vectors of data features (one sample per column)
+% pdf  ... output distribution
+%           .mu = mean vectors (data)
+%           .covariances = covariances reshaped to rows
+%           .weights = weights of components (one per row)
+
+Covariance = getSilvermanCovarianceFromData( data ) ;
+N = cols(data) ;
+d = rows(data) ;
+pdf.mu = data ;
+pdf.covariances = repmat( reshape(Covariance,))

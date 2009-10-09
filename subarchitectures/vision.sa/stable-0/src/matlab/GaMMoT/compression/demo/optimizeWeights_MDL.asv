@@ -1,0 +1,34 @@
+function alpha = optimizeWeights_MDL( f_ref_data_X, f_ref_data_Y, f_fit )
+
+len_fit = length(f_fit.weights) ;
+num_data = cols(f_ref_data_X) ;
+d = rows(f_fit.mu) ;
+N_b = 1 + d + d*d ; % complexity of basis function: w + mu + cov 
+s = 0.1 ; t = 0.01 ; bit = 32 ; theta = 0.1 ;
+K1 = 1 ; K3 = 1 ; K2 = (log(s^2*2*pi*exp(1)/t^2 )/log(2))/(2*s^2)/bit ;
+
+% get pointwise approximation and responsibility
+[R, Y, norms] = getPartitionedResponsibility( f_fit.mu, f_fit.weights, f_fit.covariances, f_ref_data_X ) ;
+for i = 1 : len_fit
+    R(i,:) = R(i,:) > theta*norms(i) ;
+end
+
+% error matrix
+Ceta = R.*repmat(Y-f_ref_data_Y,rows(R),1) ;
+C_ii = K1*sum(R,2) - K2*sum(Ceta,2) - K3*N_b ;
+
+C = zeros(len_fit,len_fit) ;
+for i = 1 : len_fit
+    R_i = R(i,:) ;
+    for j = i+1 : len_fit
+        select = R_i.*R(j,:) ;
+        C(i,j) = (-K1*sum(select) + K2*sum(Y.*select))/2 ;
+    end
+end
+C = (C + transpose(C) + diag(C_ii)) ;
+
+i_max = 50 ; L = ceil(i_max*0.2) ;
+alpha = (f_fit.weights > max(f_fit.weights)*0.1)  ; 
+[optp,alpha] = tabuQO(alpha,C,i_max,L) ;
+alpha = alpha' ;
+

@@ -1,0 +1,7 @@
+test/diskbuffer2
+test/test_images
+test/v4l1buffer_mono
+test/v4l2buffer
+test/v4l1buffer_bayer
+test/v4l1buffer_rgb
+test/font

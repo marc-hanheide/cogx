@@ -1,0 +1,11 @@
+HOST localhost
+
+# live images
+COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids 0 --camconfigs "subarchitectures/vision.sa/config/camSB.cal" --devnums 1
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG Tracker ObjectTracker --videohost localhost --videoname video --camid 0 --log
+CPP MG TrackerDriver ObjectTrackerDriver --log --model subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/polyflapSB.ply
+

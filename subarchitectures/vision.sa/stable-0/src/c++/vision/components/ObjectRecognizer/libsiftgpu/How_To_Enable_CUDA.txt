@@ -1,0 +1,16 @@
+The CUDA implementation in the package is not compiled by default.
+
+To enable it for visual stuio 2005, you need to open the build configuration management, and cancel SiftGPU and check SiftGPU_CUDA_Enabled project. This is not supported by MSVC6. Since TestWinGLUT and Speed are linking statically to SiftGPU, you'll first need to compile SiftGPU_CUDA_Enabled, then compile TestWin and Speed to make them to use CUDA. You'll also need to specify "-cuda" to parameter list to use it. 
+
+
+To enable it for other operation systems, makefile must be changed to include CuTexImage.h, CuTexImage.cpp PyramidCU.h, PyramidCU.cpp, ProgramCU.cu and SiftMatchCU.h/SiftMatchCU.cpp. Macro CUDA_SIFTGPU_ENABLED need to be defined to the compiler. I have attached one in the Linux folder: makefile_cuda_enabled, and you probably need to make changes to the SSE option yourself to make it work. 
+
+
+One parameter for CUDA is "-di", which controls whether dynamic indexing is used in descriptor generations. It is turned off by default. My experiments on 8800 GTX show that unrolled loop of 8 if-assigns are faster than dynamic indexing, but it might be different on other GPUs.
+
+
+If the size of the first octave (multiply the original size by 2 if upsample is used) is less than or around 1024x768, CUDA version will be faster than OpenGL versions, otherwise the OpenGL versions are still faster. This is observed on nVidia 8800 GTX, it might be different on other GPUs. 
+
+**********************************************************************
+Note: the thread block settings are currently tuned for my GPU nVidia GTX 8800, which may not be optimized for other GPUs.
+**********************************************************************
