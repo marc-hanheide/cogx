@@ -80,10 +80,12 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     string relationUID = ss3.str();
 
     log("Adding connectivity relation between Place %s and %s", uid.c_str(), uid2.c_str());
-    m_marshaller->addRelation("connectivity", relationUID,
-	"place", uid,
-	"place", uid2,
-	1.0, origin);
+    while(!m_marshaller->addRelation("connectivity", relationUID,
+				     "place", uid,
+				     "place", uid2,
+				     1.0, origin)) {
+      log("looping for failed relation addition");
+    }
 
     // Add the "relationType" label feature
     FeaturePtr feature = new Feature();

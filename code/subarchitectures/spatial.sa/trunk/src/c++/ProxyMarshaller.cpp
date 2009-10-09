@@ -75,7 +75,7 @@ ProxyMarshaller::MarshallingServer::addProxy(const string & type, const string &
   m_pOwner->addProxy(type, UID, probExists, origin);
 }
 
-void
+bool
 ProxyMarshaller::MarshallingServer::addRelation(const string & relationType, 
     const string & relationUID,
     const string & sourceType, const string &sourceUID,
@@ -85,8 +85,13 @@ ProxyMarshaller::MarshallingServer::addRelation(const string & relationType,
 {
   ProxyMarshaller::RelationCandidate cand (relationType, relationUID, 
       sourceType, sourceUID, targetType, targetUID, probExists, origin);
-  if (m_pOwner->addRelation(cand) != 0)
-    m_pOwner->m_queuedRelations.push_back(cand);
+  if (m_pOwner->addRelation(cand) != 0) {
+    //m_pOwner->m_queuedRelations.push_back(cand);
+    return false;
+  }
+  else {
+    return true;
+  }
 }
 
 void

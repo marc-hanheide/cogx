@@ -35,7 +35,7 @@ namespace spatial {
       virtual void addProxy(const string & type, const string & UID,
 	  double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
 	  const Ice::Current &_context);
-      virtual void addRelation(const string & relationType,const string & relationUID,
+      virtual bool addRelation(const string & relationType,const string & relationUID,
 	  const string &sourceType, const string &sourceUID,
 	  const string &targetType, const string &targetUID,
 	  double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
