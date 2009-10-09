@@ -268,7 +268,7 @@ public class UPDebugger
 		// Assign a default in case realization failed
 		if ( output == "" || output == " ") {
 			output = "I am sorry I am lost for words on this one"; 
-		}		
+		} 
 		return output;
 	} // end realizeLF
 		
@@ -528,7 +528,7 @@ public class UPDebugger
 	    System.out.println("You can use the tab key for command completion, ");
 	    System.out.println();
 
-	    planner.setLogging(false);
+	    planner.setLogging(true);
 
 	    // next, loop over the commandline until the user wants to quit
 	    while (true) {
@@ -565,11 +565,6 @@ public class UPDebugger
 		    if (atop > -1) { 
 				String lfstr = input.substring(atop,input.length());
 				LogicalForm lf = LFUtils.convertFromString(lfstr);
-				// check whether canned text or not
-				
-				
-				
-				
 				LogicalForm planlf = planner.plan(lf);
 				// Apply model reduction
 				lastLF = applyModelReduction(planlf);

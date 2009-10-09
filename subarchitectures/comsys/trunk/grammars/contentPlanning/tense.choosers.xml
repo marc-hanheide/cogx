@@ -15,7 +15,8 @@
 		    <q-ex-feat feat="Mood" val="int"/>
 		 </inquiry>			
 		 <choicenode answer = "true">
-			<result val="no-tense"/>
+			<!-- <result val="no-tense"/> --> 
+			<result val="do-tense"/>			
 		 </choicenode>
 		 <choicenode answer = "false">
 			<result val="do-tense"/>

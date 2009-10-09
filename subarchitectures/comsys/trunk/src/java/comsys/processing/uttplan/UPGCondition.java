@@ -102,8 +102,10 @@ public class UPGCondition {
 				featvals.put(f,v);
 				// log(">>>> Condition: adding feature "+f+" of type "+type+" with value "+v);
 			} else {
-				// log(">>>> Condition: adding feature "+f+" of type "+type);
-			}
+				log(">>>> Condition: adding feature "+f+" of type "+type);
+				// we have a feature but we don't have a value, so make it null
+				featvals.put(f,null);
+			} // end if..else
 		} // end if check for explicit type mention
 		// log("Condition: adding feature "+f+" of type "+type);
 		features.put(type+"+"+f,f);
@@ -142,24 +144,32 @@ public class UPGCondition {
 					// log("CHECKING FOR CONDITION ON FEATURE WITH VALUE "+val);
 				}
 				log("Current result flag in-feat: ["+result+"]");
-				
-				if (result) {                                 //locus has the feature, checking whether value matches
+				if (result) {                                 
+					//locus has the feature, checking whether value matches
+					// featvals is the condition's hashmap with feature/value pairs
 					if (featvals.containsKey(val)) {
-						String v = (String) featvals.get(val);
-						log("IKK: checking feature value: [" +v+ "]"); 
-						// log("Check for equality on conditioned ["+v+"] against ["+lv+"]");
+						String v = (String) featvals.get(val); 
+						// if we have a null value for v, just presence of the feature counts
+						if (v != null) { 
+							log("IKK: checking feature value: [" +v+ "]"); 
+							// log("Check for equality on conditioned ["+v+"] against ["+lv+"]");
 							if (!lv.startsWith(v)) { 
 								result = false;  break;            // too bad, value doesn't match
 								// log("[UPL] !! Substring inequality on conditioned "+v+" against "+lv);
-							} 
-							else { 
-								result = true;               // ok, value matches
-							} 
-					}
+							} else { 
+								// the locus value matched the condition value, so true
+								result = true;               
+							} // end if..else check for matching values
+						} else { 
+							// we have a null value on the condition, so feature presence suffices for true
+							result = true;
+						} // end if..else
+					} // 
 				}  // end if.. check for result
 				else {
 					result = false;  break;                   // too bad, locus does not have the feature
 				}
+				log("FINAL result flag for feat: ["+result+"]");
 			} // end check for feature
 
 			
