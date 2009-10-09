@@ -61,6 +61,16 @@ if(BUILD_SA_VISION_SOIFILTER)
 add_subdirectory (src/c++/vision/components/SOIFilter)
 endif(BUILD_SA_VISION_SOIFILTER)
 
+option(BUILD_SA_VISION_OBJANALYZER "build Object Analyzer" YES)
+if(BUILD_SA_VISION_OBJANALYZER)
+add_subdirectory (src/c++/vision/components/ObjectAnalyzer)
+endif(BUILD_SA_VISION_OBJANALYZER)
+
+option(BUILD_SA_VISION_VISMEDIATOR "build Visual Mediator" YES)
+if(BUILD_SA_VISION_VISMEDIATOR)
+add_subdirectory (src/c++/vision/components/VisualMediator)
+endif(BUILD_SA_VISION_VISMEDIATOR)
+
 option(BUILD_SA_VISION_OBJRECOGNIZER "build object recognizer" NO)
 if (BUILD_SA_VISION_OBJRECOGNIZER)
 add_subdirectory (src/c++/vision/components/ObjectRecognizer)
