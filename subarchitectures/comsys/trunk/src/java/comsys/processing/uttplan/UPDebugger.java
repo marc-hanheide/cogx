@@ -267,10 +267,10 @@ public class UPDebugger
 		if (LFUtils.lfNominalHasFeature(logicalForm.root,cannedTextFeature)){
 			// we're generating canned text, so get the key for the canned text from the CannedText feature
 			String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,cannedTextFeature);
-			// log("IKK: key: "+cannedTextKey+"\n");
+			log("IKK: key: "+cannedTextKey+"\n");
 			output = realizeLfCannedText(cannedTextKey);
 		} else {
-			// not canned, so let's try with the grammar on the LF root as is
+			log("not canned, so let's try with the grammar on the LF root as is");
 			output = realizeLfWithGrammar(realizer,logicalForm,contentRoot);
 		}
 	}
@@ -297,7 +297,6 @@ public class UPDebugger
 	log("Planning a realization for the following logical form: \n"+LFUtils.lfToString(planLF)+"\n");
 			
 	// Translate the planLF logical form into XML for OpenCCG
-	// in the new comsys realization component, this happens with: LF lf = LFUtils.convertToLF(planLF);
 	LF lf = LFUtils.convertToLF(planLF);
 	// Dump the LF in the XML format to a file
 		String curDir = System.getProperty("user.dir");
@@ -309,6 +308,7 @@ public class UPDebugger
 		} 
 		log("Wrote LF to \"" + dumpLFfile + "\"");
 	
+		log("Calling realizer for the following logical form: \n"+lf.toString()+"\n");
 		
 	// Realize the XML-based logical form
 	if (ngramScorer == null) { 
