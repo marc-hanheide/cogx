@@ -47,7 +47,7 @@ import comsys.lf.utils.*;
  *  grammar. 
  * 
  *  @started 050210
- *  @version 080822
+ *  @version 091009
  *  @author  Geert-Jan M. Kruijff, Maria Staudte, Ivana Kruijff-Korbayova
  */ 
 
@@ -73,7 +73,7 @@ public class UtterancePlanner {
     UPReqHandler upAgent;
 	GREHandler   greHandler;
     
-    boolean logging = true; 
+    boolean logging = false; 
     int     logginglvl = 0;
 
     //=================================================================
