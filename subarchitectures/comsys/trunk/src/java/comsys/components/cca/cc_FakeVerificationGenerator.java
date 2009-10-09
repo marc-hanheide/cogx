@@ -177,6 +177,9 @@ public class cc_FakeVerificationGenerator
 				log("Storing grounded belief on working memory");
 				addToWorkingMemory(newDataID(), Binder.BINDER_SA, request);
 			}
+			else {
+				log("null request, ignoring");
+			}
 		} catch (SubarchitectureComponentException e) {
 				e.printStackTrace();
 		} // end try .. catch
@@ -198,7 +201,8 @@ public class cc_FakeVerificationGenerator
 			log("retrieving belief id '" + beliefId + "'");
 			b = getBelief(beliefId);
 			if (b == null) {
-				log("null!");
+				log("no such belief found!");
+				return null;
 			}
 			b.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
 			
@@ -210,6 +214,7 @@ public class cc_FakeVerificationGenerator
 
 		Ground g = new Ground();
 		g.gstatus = GroundStatus.assertionVerified;
+		g.modality = modalityField.getText();
 		g.indexSet = new String[] { };
 		g.reason = new SuperFormula(); // truth -> empty formula
 

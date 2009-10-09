@@ -121,6 +121,14 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 						handleClarificationRequest(_wmc);
 					}
 				});
+		
+		addChangeFilter(
+				ChangeFilterFactory.createLocalTypeFilter(beliefmodels.domainmodel.cogx.GroundedBelief.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleGroundedBelief(_wmc);
+					}
+				});
 	}
     
     // =================================================================
@@ -191,6 +199,23 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		}
 	}			
 
+	private void handleGroundedBelief(WorkingMemoryChange _wmc) {
+		log("Got a WM change");
+		try {
+			String id = _wmc.address.id;
+			CASTData data = getWorkingMemoryEntry(id);
+			String taskID = newTaskID();
+			ProcessingData pd = new ProcessingData(newProcessingDataId());
+			pd.add(data);
+			m_proposedProcessing.put(taskID, pd);
+			String taskGoal = ComsysGoals.CCA_WAS_VERIFIED_TASK;
+			proposeInformationProcessingTask(taskID, taskGoal);
+        	m_taskToTaskTypeMap.put(taskID, taskGoal);       
+		}
+		catch (SubarchitectureComponentException e) {
+			e.printStackTrace();
+		}
+	}			
 	
 	private String newProcessingDataId() {
 		String result = "pd" + pdIdCounter;
@@ -236,6 +261,15 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	                            }
 	                            updateContext(cu);
 	                            actPublicly(selectAction(cu));
+                        	}
+                        	else if (taskType.equals(ComsysGoals.CCA_WAS_VERIFIED_TASK)) {
+                        		ContextUpdate cu = null;
+                            	CASTData gbWM = data.getByType(CASTUtils.typeName(GroundedBelief.class));
+                            	if (gbWM != null) {
+                            		cu = processGroundedBelief((GroundedBelief) gbWM.getData());
+                            	}
+                            	updateContext(cu);
+                            	actPublicly(selectAction(cu));
                         	}
                             else {
                                 log("Unknown task type to process in Comsys:continualCollabActing component");
@@ -298,6 +332,13 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		else {
 			return new ContextUpdate();
 		}
+    }
+    
+    private ContextUpdate processGroundedBelief(GroundedBelief gb) {
+    	ContextUpdate cu = new ContextUpdate();
+    	cu.proof = new MarkedQuery[] { };
+    	cu.intention = AbducerUtils.predicate("have_sensed", new Term[] { AbducerUtils.term(gb.grounding.modality) });
+    	return cu;
     }
     
     private void updateContext(ContextUpdate cu) {
