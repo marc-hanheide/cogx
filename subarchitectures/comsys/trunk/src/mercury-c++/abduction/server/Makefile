@@ -2,11 +2,11 @@
 
 # Binary files to be built.
 #
-BIN=abducer-server
+BIN=abducer-server-bin
 
 # Mercury source files.
 #
-MFILES=abducer-server.m MercuryAbducerServer_mint.m TypeConversions_mint.m
+MFILES=abducer-server-bin.m MercuryAbducerServer_mint.m TypeConversions_mint.m
 
 LIBABDUCER=../lib/libabducer.a
 
@@ -81,7 +81,7 @@ compile: $(BIN)
 Abducer.h Abducer.cc: $(SLICE_PATH)/Abducer.ice
 	slice2cpp -I$(SLICE_PATH) --source-ext cc $(SLICE_PATH)/Abducer.ice
 
-abducer-server: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o TtyUtils.o $(LIBABDUCER)
+abducer-server-bin: $(MFILES) aserv.o Abducer.o TypeConversions.o MercuryAbducerServer.o TtyUtils.o $(LIBABDUCER)
 	mmc --make \
 		--link-executable-command=$(CXX) \
 		--link-object Abducer.o \

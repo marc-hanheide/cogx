@@ -13,12 +13,6 @@ MFILES=abduction.m context.m formula.m costs.m modality.m stringable.m ctx_modal
 MCFLAGS?=
 
 #------------------------------------------------------------------------------#
-
-ICE_HOME=$(HOME)/Developer/Ice-3.3.1
-
-MERCURY_HOME=$(HOME)/Developer/mercury-rotd-2008-11-30
-
-#------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.
 
 ifeq ($(shell uname -s), Darwin)
@@ -49,6 +43,7 @@ $(MLIB): $(MFILES)
 		--link-shared-lib-command=$(CXX) \
 		--lib-linkage static \
 		--grade $(GRADE) \
+		--libgrade $(GRADE) \
 		$(MCFLAGS) \
 		$(LDFLAGS) \
 		$@
