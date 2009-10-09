@@ -424,8 +424,22 @@ def runCommand(cmd, params=None, workdir=None, name="onetime"):
         error("Internal error")
         error("%s" % e)
 
-def xrun(cmdline):
+def xrun(cmdline, workdir=None):
     # XRUN may create zombies.
     cmds = cmdline.split()
-    pid = subp.Popen(cmds).pid
+    pid = subp.Popen(cmds, workdir=workdir).pid
     log("XRUN: pid=%d %s" % (pid, cmdline))
+
+def xrun_wait(cmdline, workdir=None):
+    # XRUN may create zombies.
+    cmds = cmdline.split()
+    log("XRUN&wait: %s" % (cmdline))
+    cwd = os.getcwd()
+    try:
+        if workdir != None: os.chdir(workdir)
+        rv = subp.call(cmds)
+        # TODO: notify exceptions
+    finally:
+        os.chdir(cwd)
+
+
