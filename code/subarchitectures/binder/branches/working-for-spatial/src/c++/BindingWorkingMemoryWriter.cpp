@@ -12,7 +12,7 @@ namespace binder {
 
   void BindingWorkingMemoryWriter::configure(const std::map<std::string, std::string>& _config)
   {
-     ManagedComponent::configure(_config);
+    //ManagedComponent::configure(_config);
 
      if (_config.find("-bsa") != _config.end()) {
        m_bindingSA=_config.find("-bsa")->second;
