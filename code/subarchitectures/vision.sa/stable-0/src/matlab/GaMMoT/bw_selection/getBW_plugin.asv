@@ -1,0 +1,118 @@
+function [covariance, pars ]= getBW_plugin( kernel_pdf, x_new, prior_adapt, sg, n_sg ) 
+% Matej Kristan (2007)
+%
+% A two-stage plugin rule for bandwidth selection 
+%
+% Fist use Silverman and assume the underlying distribution is Gaussian
+% to obtain a rough estimate of the bandwidths for the incoming samples.
+% Augment the distribtuion from previous time-step by the kernels using 
+% the new samples. Use this distribtion to approximate the integral of 
+% the squared second derivative of the target distribution. Use this 
+% result to reestimate the bandwidth, and scale the estimated bandwidth
+% by factor 1.3 to arrive at the final estimate.
+ 
+global h_plugin N_eff ;
+it_max = 20 ;
+N_eff = n_sg ;
+
+% calculate the effective sample size
+wt = prior_adapt/( (1-prior_adapt)*kernel_pdf.components + prior_adapt ) ;
+wt1 = kernel_pdf.pars.wt1 ;
+Wt1 = kernel_pdf.pars.Wt1 ;
+Wt = (1-wt1)^2 * Wt1+ wt1^2 ;
+N_eff = ((1-wt)^2 * Wt + wt^2)^(-1) ;
+ 
+figure(3); title(sprintf('effective sample size: N_{eff}=%f',N_eff)) ;
+
+pars.Wt1 = Wt ;  
+pars.wt1 = wt ; 
+ 
+d = max(rows(x_new),rows(kernel_pdf.mu) ) ;
+
+Mu2k = d ;
+Rk = (1/(2*sqrt(pi)))^d ;
+Const1 = ( Rk/(Mu2k^2)/N_eff )^(2/(d+4)) ;
+
+
+% % initialize covariance
+% C0 = getSilvermanBWfromGaussian( sg, n_sg ) ;
+% for i = 1 : 1
+%    scale = 1 ;  
+%    kernel_pdf_1 = augmentMixtureWithCurrentData( kernel_pdf, prior_adapt, C0*scale , x_new ) ;
+% %   kernel_pdf_1 = kernel_pdf ;
+%   
+%    Rp1 = evalR2( kernel_pdf_1.mu, kernel_pdf_1.covariances, kernel_pdf_1.weights ) ;   
+%    C1 = Const1* Rp1^(-2/(d+4)) ;
+% end
+% scl = 1.3^2 ; %1.229^2 ;
+% covariance = C1 * scl ; 
+
+Rp0 = evalR2( kernel_pdf.mu, kernel_pdf.covariances, kernel_pdf.weights ) ;   
+C0 = Const1* Rp0^(-2/(d+4));
+    
+
+
+N = kernel_pdf.components 
+
+scl = 1.0 ;
+% scl = 1.1 ;1.1 ;  %  TALE PARAMETER JE ZA PREPREÈEVANJE UNDERSMOOTHINGA
+for i = 1 : 6
+   scale = 1 ;  
+   kernel_pdf_1 = augmentMixtureWithCurrentData( kernel_pdf, prior_adapt, C0*scale , x_new ) ;
+%   kernel_pdf_1 = kernel_pdf ;
+  
+   Rp1 = evalR2( kernel_pdf_1.mu, kernel_pdf_1.covariances, kernel_pdf_1.weights ) ;   
+   C1 = Const1* Rp1^(-2/(d+4)) *scl^2 ;
+   C0 = C1 /scl^2 ;
+end
+scl = 1;%1.3^2; 1.3^2 ; %1.229^2 ;
+%scl = (1./(N./chi2inv(0.90,N-1))) ; 
+scl = 1 ; %+ 1*sqrt(2)./sqrt(N-1) ;
+covariance = C1 * scl ; 
+
+
+C0 = 0.5^2*(sqrt(sg)*(4/(3*n_sg))^(1/5))^2 ; % silverman rule-of-thumb 
+ 
+lambda = 4 ;
+w_mix = exp(-N/lambda) ;
+covariance = C0*w_mix + (1.0 - w_mix)*covariance ;
+
+% sample-point estimation of bandwidth
+% covariance = samplePointEstimate(kernel_pdf, prior_adapt, covariance, x_new) ;
+
+% bet = (N - 1)/2 ;
+% alph = (N-1)/( 2* C1) ;
+% covariance = gaminv(0.5,bet+1,alph^(-1)) ;
+
+
+h_plugin = sqrt(covariance) ;
+
+function covariance = samplePointEstimate(kernel_pdf, prior_adapt, covariance, x_new)
+
+kernel_pdf_1 = augmentMixtureWithCurrentData( kernel_pdf, prior_adapt, covariance , x_new ) ;
+
+
+pdf = evaluateDistributionAt( kernel_pdf_1.mu, kernel_pdf_1.weights, kernel_pdf_1.covariances, kernel_pdf_1.mu ) ;
+lam = exp((1/length(kernel_pdf_1.mu))*sum(log(pdf))) ;
+
+covariance = covariance*( lam/pdf(length(pdf)) ) ;
+
+
+
+function F = opt_h_functionMy(h,data)
+ kernel_pdf_1 = augmentMixtureWithCurrentData( data.kernel_pdf, data.prior_adapt, h^2, data.x_new ) ;
+ Rp2 = evalR2( kernel_pdf_1.mu, kernel_pdf_1.covariances, kernel_pdf_1.weights ) ;
+ F = h - sqrt(data.Const1* Rp2^(-2/(data.d+4))) ;
+
+
+ 
+
+% --------------------------------------------------------- % 
+function kernel_pdf = augmentMixtureWithCurrentData( kernel_pdf, prior_adapt, covariance, x_new ) 
+kernel_pdf.mu = [ kernel_pdf.mu, x_new ] ;
+kernel_pdf.weights = [ kernel_pdf.weights*kernel_pdf.components*(1-prior_adapt), 1.0*1.0*prior_adapt ] ; 
+kernel_pdf.weights  = kernel_pdf.weights  / sum(kernel_pdf.weights ) ;
+kernel_pdf.covariances = [ kernel_pdf.covariances; covariance ] ;
+kernel_pdf.components = kernel_pdf.components + 1.0 ;
+kernel_pdf.weights = kernel_pdf.weights / sum(kernel_pdf.weights) ;
+    
