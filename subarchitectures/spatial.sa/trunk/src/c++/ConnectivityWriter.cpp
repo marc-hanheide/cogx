@@ -114,7 +114,20 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
     ss << place;
     string uid = ss.str();
 
-    if (wmc.type == "ADD") {
+//     if (wmc.type == "ADD") {
+//       FeaturePtr feature = new Feature();
+//       feature->featlabel = "gateway";
+//       feature->alternativeValues.push_back(new 
+// 	  binder::autogen::featvalues::StringValue(1,getCASTTime(),"gateway"));
+//       m_marshaller->addFeature(type, uid, feature);
+//       m_marshaller->commitFeatures(type, uid);
+//     }
+//     else if (wmc.type == "DELETE") {
+//       m_marshaller->deleteFeature(type, uid, "gateway");
+//       m_marshaller->commitFeatures(type, uid);
+//     }
+
+    if (wmc.operation == cdl::ADD) {
       FeaturePtr feature = new Feature();
       feature->featlabel = "gateway";
       feature->alternativeValues.push_back(new 
@@ -122,7 +135,7 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
       m_marshaller->addFeature(type, uid, feature);
       m_marshaller->commitFeatures(type, uid);
     }
-    else if (wmc.type == "DELETE") {
+    else if (wmc.operation == cdl::DELETE) {
       m_marshaller->deleteFeature(type, uid, "gateway");
       m_marshaller->commitFeatures(type, uid);
     }
