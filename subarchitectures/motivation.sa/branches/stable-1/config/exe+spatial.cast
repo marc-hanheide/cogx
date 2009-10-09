@@ -1,0 +1,26 @@
+HOST localhost
+
+
+COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+
+SUBARCHITECTURE motivation.sa
+CPP WM SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+
+CPP MG dispatcher-dummy-for-linking TestActionGenerator --log
+JAVA MG dispatcher execution.components.TestExecutionManager --log
+
+
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory  #--log --debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation --log #--debug
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 --log #-m tmpmap.metric --debug 
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf --log #--debug
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 #--log #--debug
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --log #--debug --no-x-window 
+CPP GD path.query PathQueryProcessor --log --no-indirect-paths #--debug
+JAVA MG exe-spatial spatial.motivation.SpatialActionInterface  --log
+CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10 --do-path-query --log #--debug
