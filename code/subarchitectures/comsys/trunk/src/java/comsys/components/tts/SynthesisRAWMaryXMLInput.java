@@ -15,7 +15,7 @@ public class SynthesisRAWMaryXMLInput {
 	/**
 	 * @param args
 	 */
-	public static void Utter(String i_filename) {
+	public static void Utter(String i_filename, String i_voicename) {
 		// TODO Auto-generated method stub
 		
 		try {
@@ -27,9 +27,9 @@ public class SynthesisRAWMaryXMLInput {
         }
          
        //	m_ttsLocal = new TTSLocal(m_mary, "female", false, "en_US", "WAVE");
-    	m_ttsLocal = new TTSLocal(m_mary,"RAWMARYXML", "us2", false, "WAVE");
+    	m_ttsLocal = new TTSLocal(m_mary,"RAWMARYXML", i_voicename, false, "WAVE");
 		
-       	System.out.println("input filename: "+ i_filename);
+       	System.out.println("synthesize input file: "+ i_filename);
        	
        	StringBuffer output = new StringBuffer();
 		try {
@@ -45,7 +45,7 @@ public class SynthesisRAWMaryXMLInput {
 			in.close();
 			}
 		catch (Exception fx) {
-			System.out.println("IO error in Synthesis : " + fx.toString());
+			System.out.println("IO error in Synthesis: " + fx.toString());
 		}
 		
 		m_ttsLocal.speak(output.toString());
