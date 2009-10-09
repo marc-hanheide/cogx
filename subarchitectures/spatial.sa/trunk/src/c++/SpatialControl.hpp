@@ -164,6 +164,8 @@ protected:
   int m_NumInhibitors;
   bool m_SentInhibitStop;
 
+  bool m_firstScanAdded;
+
 protected:
   /* 
    * This functions is called with m_taskStatusMutex locked

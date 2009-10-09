@@ -409,6 +409,8 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
     }
   }
   debug("8");
+  if (ptr->status == SpatialData::QUERYPENDING)
+    ptr->status = SpatialData::QUERYCOMPLETED;
   overwriteWorkingMemory<SpatialData::PathTransitionProbRequest>(objID.address, ptr);
 
   m_GraphMutex.unlock();
@@ -442,6 +444,7 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
     debug("Requested path cost from Placeholder with Place ID %i",
 	ptr->startPlaceID);
     ptr->cost = 1e100;
+    ptr->status = SpatialData::QUERYCOMPLETED;
   }
   else {
     NavData::FNodePtr startNode =
