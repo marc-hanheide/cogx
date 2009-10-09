@@ -52,7 +52,7 @@
 
 :- instance context(ctx, ctx_modality) where [
 	pred(fact_found/3) is ctx_fact,
-	pred(rule_found/2) is ctx_rule,
+	pred(rule_found/3) is ctx_rule,
 	pred(assumable_func/4) is ctx_assumable_func,
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
@@ -90,9 +90,9 @@ ctx_min_assumption_cost(_, _) = 0.1.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred ctx_rule(ctx::in, vscope(mrule(ctx_modality))::out) is nondet.
+:- pred ctx_rule(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mrule(ctx_modality))::out) is nondet.
 
-ctx_rule(Ctx, Rule) :-
+ctx_rule(Ctx, _, Rule) :-
 	set.member(Rule, Ctx^ctx_expl_rules).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

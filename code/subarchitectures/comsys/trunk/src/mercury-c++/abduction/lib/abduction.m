@@ -260,7 +260,7 @@ step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 		QsL ++ QsInsert ++ QsR, VS,
 		Ctx) :-
 
-	rule_found(Ctx, Rule),
+	rule_found(Ctx, vs(m(MQ, PQ), VS0), Rule),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "r{", !IO) ),
 	Rule = vs(m(MR, _-RHead0), VSR),
 	( RHead0 = std(m(MH, _))
