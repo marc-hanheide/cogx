@@ -90,6 +90,10 @@ public class UPDebugger
 	private Grammar grammar; 
 	
 	
+	private final static String CANNED_TEXT = "CannedText";
+	private final static String CONTENT_BODY = "Content";
+	
+	
     //=================================================================
     // CONSTRUCTOR METHODS
     //=================================================================
@@ -244,43 +248,29 @@ public class UPDebugger
 	
 	
     public String realizeLF (Realizer realizer, LogicalForm logicalForm) {
-	
-	String output = "";
-	String contentBody = "Content"; // the content of the LF to realize will always be under relation CONTENT
-	String cannedTextFeature = "CannedText"; 
-	String contentRoot = "";
-
-	// Retrieve the content subtree (adapted from cc_Realizer)
-	LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
-					
-		
-	if (content != null) {
-		contentRoot = content.dep;
-		// use ccg realizer to produce sentence output
-		// get nominal and  the corresponding LF to realize 
-		LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
-		LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);		
-		output = realizeLfWithGrammar(realizer,planLF,contentRoot);
-	} else {
-		//log("IKK: no content in LF");
-		contentRoot = logicalForm.root.nomVar;
-		if (LFUtils.lfNominalHasFeature(logicalForm.root,cannedTextFeature)){
-			// we're generating canned text, so get the key for the canned text from the CannedText feature
+		String output = "";
+		if (LFUtils.lfNominalHasFeature(logicalForm.root,CANNED_TEXT)) { 
 			String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,cannedTextFeature);
 			log("IKK: key: "+cannedTextKey+"\n");
-			output = realizeLfCannedText(cannedTextKey);
-		} else {
-			log("not canned, so let's try with the grammar on the LF root as is");
-			output = realizeLfWithGrammar(realizer,logicalForm,contentRoot);
-		}
-	}
+			output = realizeLfCannedText(cannedTextKey);			
+		} else { 
+			LogicalForm planLF = logicalForm;
+			String contentRoot = logicalForm.root.nomVar;
+			if (LFUtils.lfNominalHasRelation(logicalForm.root, CONTENT_BODY)) { 
+				LFRelation contentR = LFUtils.lfNominalGetRelation(logicalForm,root, CONTENT_BODY);
+				contentRoot = contentR.dep;
+				LFNominal contentRootNom = LFUtils.lfGetNominal(logicalForm, contentRoot);
+				planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);	
+			} // end if.. check for embedded content body
+			output = realizeLfWithGrammar(realizer,planLF,contentRoot);
+		} // end if..else check for canned text or content body
 		log("Output realization: " + output);
 		// Assign a default in case realization failed
 		if ( output == "" || output == " ") {
 			output = "I am sorry I am lost for words on this one"; 
-		}
+		}		
 		return output;
-	}
+	} // end realizeLF
 		
 		/** Produces a string (hopefully sentence) for a given LF.
 			Extracts the root nominal of the LF under contentRoot in logicalForm, and the corresponding tree, 
