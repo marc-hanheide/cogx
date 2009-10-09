@@ -73,7 +73,7 @@ public class UtterancePlanner {
     UPReqHandler upAgent;
 	GREHandler   greHandler;
     
-    boolean logging = false; 
+    boolean logging = true; 
     int     logginglvl = 0;
 
     //=================================================================
