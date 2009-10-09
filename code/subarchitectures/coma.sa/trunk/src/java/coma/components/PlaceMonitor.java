@@ -1,5 +1,6 @@
 package coma.components;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
@@ -17,6 +19,7 @@ import binder.autogen.featvalues.BooleanValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 
+import coma.aux.ComaHelper;
 import comadata.ComaReasonerInterfacePrx;
 import comadata.ComaRoom;
 
@@ -26,6 +29,7 @@ import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialProperties.ConnectivityPathProperty;
 import SpatialProperties.GatewayPlaceProperty;
+import SpatialProperties.ObjectPlaceProperty;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -68,6 +72,8 @@ public class PlaceMonitor extends ManagedComponent {
 	private int m_roomIndexCounter = 0;
 	private HashSet<String> m_existingRoomProxies;
 	private HashMap<String,HashSet<String>> m_existingRelationProxies;
+	
+	private boolean m_createDummyObjects;
 
 	public void configure(Map<String, String> args) {
 		log("configure() called");
@@ -77,6 +83,11 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 		if (args.containsKey("--marshaller-name")) {
 			m_marshaller_component_name=args.get("--marshaller-name");
+		}
+		if (args.containsKey("--dummy-objects")) {
+			if (!args.get("--dummy-objects").equals("false")) {
+				m_createDummyObjects = true;
+			}
 		}
 
 		m_placeholders = new HashSet<Long>();
@@ -121,6 +132,16 @@ public class PlaceMonitor extends ManagedComponent {
 			}
 		});
 
+		// track objects found by AVS
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
+			throws CASTException {
+				processAddedObjectProperty(_wmc);
+			}
+		});
+
+		
 		// initiate ice server connections
 		
 		// connection to the coma reasoner
@@ -168,6 +189,17 @@ public class PlaceMonitor extends ManagedComponent {
 				logInstances("dora:Place");
 				logInstances("dora:PhysicalRoom");
 				
+				if (m_createDummyObjects) {
+					// TODO *** this is just test code *** REMOVE afterwards!
+					log("***** THIS IS JUST TEST CODE!!!!!");
+					log("going to add random objects");
+					if (_newPlaceNode.id%3==0) {
+						// log every third place creates a dummy object
+						createObject(new ObjectPlaceProperty(_newPlaceNode.id,
+								null, null, true, "dummyObject"));
+					}
+				}
+
 				// creating an initial seed room for the first Place added!
 				if (_newPlaceNode.id==0) maintainRooms();
 				
@@ -183,7 +215,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// trigger room creation, splitting, merging, maintenance
 					maintainRooms();
 				}
-
+				
 			} else { 
 				// PLACEHOLDER block
 				debug("going to add " + _newPlaceNode.id + " to m_placeholders");
@@ -313,6 +345,26 @@ public class PlaceMonitor extends ManagedComponent {
 		maintainRooms();
 	}
 	
+	private void processAddedObjectProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		// get path from WM
+		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
+		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ _objProp.category + ". The probability distribution is not yet taken into account!");
+		
+		// TODO handle probability distribution 
+//		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
+		
+		createObject(_objProp);
+		// trigger room creation, splitting, merging, maintenance
+		// because their class might have changed
+		maintainRooms();
+	}
+		
+	private void createObject(ObjectPlaceProperty _objProp) {
+		// the place is immediately asserted to contain an instance of the object category
+		m_comareasoner.addInstance("dora:object"+_objProp.placeId, "dora:" + ComaHelper.firstCap(_objProp.category));
+		m_comareasoner.addRelation("dora:object"+_objProp.placeId, "dora:in", "dora:place"+_objProp.placeId);
+	}
+
 	private boolean processOverwrittenPlace(WorkingMemoryChange _wmc) {
 		boolean _removeFilterAfterwards = false;
 		debug("Got a callback for an OVERWRITTEN former Placeholder WME!");
@@ -345,6 +397,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// trigger room creation, splitting, merging, maintenance
 					maintainRooms();
 				}
+				
 				_removeFilterAfterwards = true;
 			}
 		} catch (DoesNotExistOnWMException e) {
@@ -362,8 +415,15 @@ public class PlaceMonitor extends ManagedComponent {
 		boolean _successfullyDeleted = m_comareasoner.deleteInstance("dora:place"+_deletedPlaceID);
 		if (_successfullyDeleted) log("successfully deleted " + "dora:place"+_deletedPlaceID);
 		else log("There was an error deleting " + "dora:place"+_deletedPlaceID);
+		
+		// delete objects associated with that place
+		_successfullyDeleted= m_comareasoner.deleteInstance("dora:object"+_deletedPlaceID);
+		if (_successfullyDeleted) log("successfully deleted " + "dora:object"+_deletedPlaceID);
+		else log("There was an error deleting " + "dora:object"+_deletedPlaceID);
+
 		m_placeholders.remove(_deletedPlaceID);
 		if (m_trueplaces.remove(_deletedPlaceID)) maintainRooms();
+		logInstances("dora:Place");
 	}
 	
 	
@@ -375,6 +435,8 @@ public class PlaceMonitor extends ManagedComponent {
 		String[] _allIns = m_comareasoner.getAllInstances(_con);
 		StringBuffer[] _allRelInsLogArray = new StringBuffer[_allIns.length];
 		StringBuffer[] _allRelInsByRelLogArray = new StringBuffer[_allIns.length];
+		StringBuffer[] _allRelInsByRel2LogArray = new StringBuffer[_allIns.length];
+		StringBuffer[] _allRelInsByRel3LogArray = new StringBuffer[_allIns.length];
 		StringBuffer[] _allConsLogArray = new StringBuffer[_allIns.length];
 		
 		for (int i = 0; i < _allIns.length; i++) {
@@ -392,6 +454,16 @@ public class PlaceMonitor extends ManagedComponent {
 				_allRelInsByRelLogArray[i].append(_currRelIns + " ");
 			}
 
+			_allRelInsByRel2LogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:constituentOfRoom ==> ");
+			for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:constituentOfRoom")) {
+				_allRelInsByRel2LogArray[i].append(_currRelIns + " ");
+			}
+
+			_allRelInsByRel3LogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:in ==> ");
+			for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:in")) {
+				_allRelInsByRel3LogArray[i].append(_currRelIns + " ");
+			}
+
 			_allConsLogArray[i] = new StringBuffer("all concepts of " + _currIns + " ==> ");
 			for (String _currCon : m_comareasoner.getAllConcepts(_currIns)) {
 				_allConsLogArray[i].append(_currCon + " ");
@@ -401,13 +473,19 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		log(_allInsLogMsg);
 		for (StringBuffer stringBuffer : _allRelInsLogArray) {
-			debug(stringBuffer);
+			log(stringBuffer);
 		}
 		for (StringBuffer stringBuffer : _allRelInsByRelLogArray) {
-			debug(stringBuffer);
+			log(stringBuffer);
+		}
+		for (StringBuffer stringBuffer : _allRelInsByRel2LogArray) {
+			log(stringBuffer);
+		}
+		for (StringBuffer stringBuffer : _allRelInsByRel3LogArray) {
+			log(stringBuffer);
 		}
 		for (StringBuffer stringBuffer : _allConsLogArray) {
-			debug(stringBuffer);
+			log(stringBuffer);
 		}
 	}
 	
@@ -445,7 +523,7 @@ public class PlaceMonitor extends ManagedComponent {
 					}}});
 			debug("sorted _knownRoomsOnWM: " + _knownRoomsOnWM);
 
-			// for each room:
+			// for each known room:
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
 				ComaRoom _currentRoomStruct = comaRoomWME.getData();
 				String _seedPlaceInstance = _currentRoomStruct.seedPlaceInstance;
@@ -467,6 +545,9 @@ public class PlaceMonitor extends ManagedComponent {
 					deleteFromWorkingMemory(comaRoomWME.getID());
 					logRoom(_currentRoomStruct, "deleted obsolete room WME ", comaRoomWME.getID());
 					deleteRoomProxy(_currentRoomStruct, comaRoomWME.getID());
+					log("deleted room WME and corresponding room proxy.");
+					m_comareasoner.deleteInstance("dora:room" + _currentRoomStruct.roomId);
+					log("deleted instance dora:room" + _currentRoomStruct.roomId + " from the coma reasoner");
 				} else {
 					// otherwise -- i.e., if the current room's seed place is not a Doorway 
 					log("current room's seed is not a doorway. going to maintain.");
@@ -481,10 +562,20 @@ public class PlaceMonitor extends ManagedComponent {
 					for (String _placeIns : _placesInTheSameRoom) {
 						Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
 						_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
+						m_comareasoner.addRelation((_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns),
+								"dora:constituentOfRoom", 
+								"dora:room" + _currentRoomStruct.roomId);
+						log("added relation to the coma reasoner: " 
+								+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
+								+ " dora:constituentOfRoom " 
+								+ "dora:room" + _currentRoomStruct.roomId);
 						i++;
 					}
 					// add the seed to the list of contained places to be written to WM!
 					_setOfPlaceIDsInTheSameRoom.add(_seedPlaceId);
+					m_comareasoner.addRelation(_seedPlaceInstance, "dora:constituentOfRoom", "dora:room" + _currentRoomStruct.roomId);
+					log("added relation to the coma reasoner: " + _seedPlaceInstance + " dora:constituentOfRoom " + "dora:room" + _currentRoomStruct.roomId);
+
 					// discard the found places from the set of remaining places
 					_remainingPlaceIds.removeAll(_setOfPlaceIDsInTheSameRoom);
 
@@ -501,7 +592,20 @@ public class PlaceMonitor extends ManagedComponent {
 					for (long _currKnownContainedPlaceID : _currentRoomStruct.containedPlaceIds) {
 						_oldSetOfContainedPlaces.add(_currKnownContainedPlaceID);
 					}
-					if (!(_oldSetOfContainedPlaces.equals(_setOfPlaceIDsInTheSameRoom))) _hasChanged=true; 
+					if (!(_oldSetOfContainedPlaces.equals(_setOfPlaceIDsInTheSameRoom))) {
+						_hasChanged = true;
+					}
+					
+					log("checking whether new room concepts are known...");
+					if (!new TreeSet<String>(Arrays.asList(_currentRoomStruct.concepts)).
+							equals(new TreeSet<String>(Arrays.asList(
+									m_comareasoner.getAllConcepts("dora:room" + _currentRoomStruct.roomId))))) {
+						// now refresh the room concepts
+						_currentRoomStruct.concepts = 
+							m_comareasoner.getAllConcepts("dora:room" + _currentRoomStruct.roomId);
+						log("room concept list has changed!");
+						_hasChanged = true;
+					}
 					
 					if (_hasChanged) {
 						// update the contained places in the room struct
@@ -533,18 +637,36 @@ public class PlaceMonitor extends ManagedComponent {
 					log(_currentplaceInstance + " serving as seed for a new room");
 					// create new room
 					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0]);
-
+					
+					// create new room on the reasoner
+					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
+					log("created new instance " + "dora:room" + _newRoom.roomId +  " of concept dora:PhysicalRoom");
+					
+					// now initialize the room concepts
+					_newRoom.concepts = m_comareasoner.getAllConcepts("dora:room" + _newRoom.roomId);
+					
 					String[] _placesInTheSameRoom = 
 						m_comareasoner.getRelatedInstancesByRelation(_currentplaceInstance,"dora:sameRoomAs");
 					Set<Long> _setOfPlaceIDsInTheSameRoom = new HashSet<Long>();
 					int i=0;
 					for (String _placeIns : _placesInTheSameRoom) {
 						Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
+						m_comareasoner.addRelation(
+								(_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns), 
+								"dora:constituentOfRoom", 
+								"dora:room" + _newRoom.roomId);
+						log("added relation to the coma reasoner: " 
+								+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
+								+ " dora:constituentOfRoom " 
+								+ "dora:room" + _newRoom.roomId);
 						_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
 						i++;
 					}
 					// add the seed to the list of contained places to be written to WM!
 					_setOfPlaceIDsInTheSameRoom.add(_remainingPlace);
+					m_comareasoner.addRelation("dora:place" + _remainingPlace, "dora:constituentOfRoom", "dora:room" + _newRoom.roomId);
+					log("added relation to the coma reasoner: dora:place" + _remainingPlace + " dora:constituentOfRoom " + "dora:room" + _newRoom.roomId);
+
 					// discard the found places from the set of remaining places
 					_remainingPlaceIds.removeAll(_setOfPlaceIDsInTheSameRoom);
 
@@ -581,6 +703,7 @@ public class PlaceMonitor extends ManagedComponent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		logInstances("owl:Thing");
 	}
 	
 	private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
@@ -612,15 +735,24 @@ public class PlaceMonitor extends ManagedComponent {
 			// first clean existing areaclass facts
 			m_proxyMarshall.deleteFeature("room", _currRoomUID, "areaclass");
 			// now create individual feature-value pairs for all concepts
+			boolean _unknown = true;
 			if (_comaRoom.concepts.length!=0) {
 				for (String _currConcept : _comaRoom.concepts) {
+					if (_currConcept.equals("owl:Thing") 
+							|| _currConcept.equals(":PhysicalRoom") 
+							|| _currConcept.equals(":Portion_of_Space") ) {
+						continue;
+					}
+					log("current concept for proxy feature areaclass: " + _currConcept);
 					Feature _classFtr = new Feature();
 					_classFtr.featlabel = "areaclass";
 					_classFtr.alternativeValues = new FeatureValue[1];
 					_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
 					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
+					_unknown = false;
 				}
-			} else {
+			} 
+			if (_unknown) {
 				Feature _classFtr = new Feature();
 				_classFtr.featlabel = "areaclass";
 				_classFtr.alternativeValues = new FeatureValue[1];
@@ -657,6 +789,10 @@ public class PlaceMonitor extends ManagedComponent {
 			// now each remaining relation must be deleted because it no longer holds
 			for (String _obsoleteRel : prevKnownRels) {
 				m_proxyMarshall.deleteProxy("contains", _obsoleteRel);
+				String[] _rel = _obsoleteRel.split(":");
+				m_comareasoner.deleteRelation("dora:place" + _rel[1], "dora:constituentOfRoom", "dora:room" + _rel[0]);
+				log("deleted obsolete containment relations from binder and reasoner: " +
+						"dora:place" + _rel[1] + " dora:constituentOfRoom " + "dora:room" + _rel[0]);
 			}
 			// update the set of known relations
 			m_existingRelationProxies.put(_currRoomUID, trueKnownRels);

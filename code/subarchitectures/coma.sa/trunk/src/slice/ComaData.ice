@@ -16,6 +16,7 @@ module comadata {
 		bool addInstance(string instance, string concept);
 		bool addRelation(string instance1, string relation, string instance2);
 		bool deleteInstance(string instance);
+		bool deleteRelation(string instance1, string relation, string instance2);
 		bool isInstanceOf(string instance, string concept);
     };
     

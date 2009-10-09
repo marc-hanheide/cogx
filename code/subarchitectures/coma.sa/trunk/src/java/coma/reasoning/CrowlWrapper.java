@@ -521,7 +521,7 @@ public class CrowlWrapper {
 
 	public boolean deleteRelation(String _ins1, String _relation, String _ins2) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
-		String query = "DELETE { " + _ins1 + _relation + _ins2 + " . }";
+		String query = "DELETE { " + _ins1 + " " + _relation + " " + _ins2 + " . }";
 		m_mycrowl.execute(query);
 		return (!getRelatedInstances(_ins1, _relation).contains(_ins2));
 	}
