@@ -13,18 +13,6 @@ target_link_libraries(VideoServer Video VideoUtils)
 INSTALL(TARGETS VideoServer LIBRARY DESTINATION lib)
 
 
-# Set the sources.
-SET(SOURCES VideoClient.cpp)
-SET(HEADERS VideoClient.h)
-
-add_library(VideoClient SHARED ${SOURCES})
-
-# Add libraries to link against.
-TARGET_LINK_LIBRARIES(VideoClient CASTCore CDL)
-TARGET_LINK_LIBRARIES(VideoClient Video VideoUtils)
-
-INSTALL(TARGETS VideoClient LIBRARY DESTINATION lib)
-
 
 add_cast_component(OpenCvImgSeqServer OpenCvImgSeqServer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)

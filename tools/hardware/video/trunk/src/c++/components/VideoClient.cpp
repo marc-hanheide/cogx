@@ -12,33 +12,19 @@ namespace cast
 {
 
 using namespace std;
+using namespace Video;
 
 VideoClient::VideoClient()
 {
   videoServerHost = "localhost";
   videoServerName = "";
-  videoServerPort = cdl::CPPSERVERPORT;
 }
 
 void VideoClient::startVideoCommunication(CASTComponent &owner)
   throw(runtime_error)
 {
-  ostringstream videoServerAddr;
-  Ice::Identity id;
-
-  id.name = videoServerName;
-  id.category = "VideoServer";
-  videoServerAddr << owner.getCommunicator()->identityToString(id)
-    << ":default -h " << videoServerHost << " -p " << videoServerPort;
-
-  Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(videoServerAddr.str());
-  // doing a checkedCast here freezes the server
-  // videoServer = Video::VideoInterfacePrx::checkedCast(base);
-  videoServer = Video::VideoInterfacePrx::uncheckedCast(base);
-  if(!videoServer)
-    throw runtime_error(exceptionMessage(__HERE__,
-          "failed to connect to video server: %s",
-          videoServerAddr.str().c_str()));
+  videoServer = getIceServer<VideoInterface>(videoServerName);
+//  VideoInterfacePrx vidk(getIceServer<VideoInterface>(videoServerName));
 }
 
 void VideoClient::configureVideoCommunication(const map<string,string> & _config)
@@ -54,11 +40,6 @@ void VideoClient::configureVideoCommunication(const map<string,string> & _config
   {
     videoServerName = it->second;
   }
-  /*if((it = _config.find("--videoport")) != _config.end())
-  {
-    istringstream str(it->second);
-    str >> videoServerPort;
-  }*/
 
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
@@ -83,17 +64,17 @@ int VideoClient::getFramerateMilliSeconds()
   return videoServer->getFramerateMilliSeconds();
 }
 
-void VideoClient::getImage(int camId, Video::Image& image)
+void VideoClient::getImage(int camId, Image& image)
 {
   videoServer->getImage(camId, image);
 }
 
-void VideoClient::getImages(Video::ImageSeq& images)
+void VideoClient::getImages(ImageSeq& images)
 {
   videoServer->getImages(images);
 }
 
-void VideoClient::getScaledImages(int width, int height, Video::ImageSeq& images)
+void VideoClient::getScaledImages(int width, int height, ImageSeq& images)
 {
   videoServer->getScaledImages(width, height, images);
 }

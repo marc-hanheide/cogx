@@ -15,5 +15,5 @@ add_subdirectory(src/c++/autogen)
 
 add_subdirectory(src/c++/utils)
 add_subdirectory(src/c++/components)
-#add_subdirectory(src/c++/test)
+add_subdirectory(src/c++/test)
 

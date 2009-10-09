@@ -19,67 +19,29 @@ namespace cast
 /**
  * Client to a VideoServer.
  * Inherit from this class if You want to connect to video servers.
- * You will have to call configureServerCommunication() and
- * startServerCommunication() in that order from somewhere in Your code,
- * probably from the configure() and start() methods of Your CAST component.
  */
 class VideoClient
 {
-private:
-  std::string videoServerHost;
-  std::string videoServerName;
-  int videoServerPort;
-  Video::VideoInterfacePrx videoServer;
-
 protected:
-  void startVideoCommunication(CASTComponent &owner) throw(std::runtime_error);
+  class VideoClientI : virtual public Video::VideoClientInterface
+  {
+  private:
+    VideoClient *vidClt;
 
-  void configureVideoCommunication(const std::map<std::string,std::string> & _config)
-    throw(std::runtime_error);
+  public:
+    VideoClientI(VideoClient *clt) : vidClt(clt) {}
+    virtual void receiveImages(const Video::ImageSeq &images, const Ice::Current&)
+    {
+      vidClt->receiveImages(images);
+    }
+  };
 
 public:
-  VideoClient();
-
   /**
-   * Returns number of cameras this device manages.
+   * The callback function for images pushed by the image server.
+   * To be overwritten by derived classes.
    */
-  int getNumCameras();
-
-  /**
-   * Returns the devices image size, must be > 0.
-   * Note that all images have the same size (and colour format). This class is
-   * not intended to manage video sources of different sizes/formats.
-   */
-  void getImageSize(int& width, int& height);
-
-  /**
-   * Returns the frame rate in [ms], must be > 0.
-   * Note that all video sources have the same frame rate.
-   */
-  int getFramerateMilliSeconds();
-
-  /**
-   * Get just image from one source.
-   * \param camId  (in) which video source (camera)
-   * \param image (out) image, including timestamp
-   */
-  void getImage(int camId, Video::Image& image);
-
-  /**
-   * Get images from all sources.
-   * \param images  (out) array of images, as many as num cameras,
-   *                      including timestamps
-   */
-  void getImages(Video::ImageSeq& images);
-
-  /**
-   * Get images from all sources scaled to given image size.
-   * \param width (in) size of output image
-   * \param height (in)
-   * \param images  (out) array of images, as many as num cameras,
-   *                      including timestamps
-   */
-  void getScaledImages(int width, int height, Video::ImageSeq& images);
+  virtual void receiveImages(const std::vector<Video::Image>& images) {}
 };
 
 }

@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <cast/core/CASTComponent.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 #include <VideoUtils.h>
 #include "Video.hpp"
 
@@ -68,6 +68,13 @@ public:
    */
   virtual void getScaledImages(Ice::Int width, Ice::Int height,
       Video::ImageSeq& images, const Ice::Current&);
+
+  virtual void startReceiveImages(const std::string& receiverComponentId,
+      const std::vector<int> &camIds, Ice::Int width, Ice::Int height,
+      const Ice::Current&);
+
+  virtual void stopReceiveImages(const std::string& receiverComponentId,
+      const Ice::Current&);
 };
 
 /**
@@ -81,24 +88,30 @@ public:
  * If several sources are used, calls to Grab() shall aways fill the
  * provided array in the same order.
  */
-class VideoServer : virtual public CASTComponent
+class VideoServer : virtual public ManagedComponent
 {
-private:
-  /**
-   * Ice (servant) name for video interface
-   */
-  std::string iceVideoName;
-  /**
-   * Ice port for video interface
-   */
-  int iceVideoPort;
-
-  /**
-   * Create Ice video interface.
-   */
-  void setupMyIceCommunication();
-
 protected:
+  class ImageReceiver
+  {
+  public:
+    /**
+     * our ICE proxy to the video client
+     */
+    Video::VideoClientInterfacePrx videoClient;
+    /**
+     * component ID of the client
+     */
+    std::string receiverComponentId;
+    /**
+     * image size of received images, 0 means the videos native image size
+     */
+    int imgWidth, imgHeight;
+    /**
+     * which images to receive
+     */
+    std::vector<int> camIds;
+  };
+
   /**
    * Camera IDs for the video sources: camIds[sourceNum]
    * e.g. camIds[0] = 3; camIds[1] = 4;
@@ -110,16 +123,35 @@ protected:
    */
   std::vector<Video::CameraParameters> camPars;
 
-public:
-  VideoServer();
-  virtual ~VideoServer() {}
+  /**
+   * list of clients which have registered via some startReceiveImage() and want
+   * to receive images from us
+   */
+  std::vector<ImageReceiver> imageReceivers;
 
-  void configure(const std::map<std::string,std::string> & _config)
+  /**
+   * return the index of the camera for a given camera ID
+   */
+  size_t getCamIndex(int camId) throw(std::runtime_error)
+  {
+    for(size_t i = 0; i < camIds.size(); i++)
+      if(camId == camIds[i])
+        return i;
+    throw std::runtime_error(exceptionMessage(__HERE__, "video has no camera %d", camId));
+  }
+
+  void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
+
+  virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
 
   virtual void start();
 
   virtual void runComponent();
+
+public:
+  VideoServer() {}
+  virtual ~VideoServer() {}
 
   /**
    * Grabs frames from all sources and stores them internally, including
@@ -127,6 +159,18 @@ public:
    * This is typically very fast, little copying etc.
    */
   virtual void grabFrames() = 0;
+
+  /**
+   * Retrieves previously grabbed frames for given camera IDs.
+   * \param camIds (in) camera IDs
+   * \param width (in) size of output image. If 0 then use native image size of
+   *                   video.
+   * \param height (in)
+   * \param frames  (out) array of images, as many as size of camIds,
+   *                      including timestamps
+   */
+  virtual void retrieveFrames(const std::vector<int> &camIds,
+    int width, int height, std::vector<Video::Image> &frames) = 0;
 
   /**
    * Retrieves previously grabbed frames from all sources.
@@ -140,18 +184,20 @@ public:
       std::vector<Video::Image> &frames) = 0;
 
   /**
-   * Retrieve just frame from one source.
+   * Retrieve previously grabbed frame from just one source.
    * \param camId  (in) which video source (camera)
+   * \param width (in) size of output image. If 0 then use native image size of
+   *                   video.
+   * \param height (in)
    * \param frame  (out) image, including timestamp
    */
-  virtual void retrieveFrame(int camId, Video::Image &frame) = 0;
+  virtual void retrieveFrame(int camId, int width, int height,
+      Video::Image &frame) = 0;
 
   /**
    * Returns number of cameras this device manages.
-   * Note: not const (as one might assume) as we don't know what derived
-   * classes will have to do internally.
    */
-  virtual int getNumCameras() = 0;
+  int getNumCameras() const;
 
   /**
    * Returns the devices image size, must be > 0.
@@ -169,6 +215,13 @@ public:
    * classes will have to do internally.
    */
   virtual int getFramerateMilliSeconds() = 0;
+
+  void getImage(int camId, Video::Image &img);
+  void getImages(std::vector<Video::Image> &images);
+  void getScaledImages(int width, int height, std::vector<Video::Image> &images);
+  void startReceiveImages(const std::string &receiverComponentId,
+      const std::vector<int> &camIds, int width, int height);
+  void stopReceiveImages(const std::string &receiverComponentId);
 };
 
 }

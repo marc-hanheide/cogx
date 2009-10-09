@@ -79,6 +79,7 @@ module Video {
    *   u_y' = f_x*y' + c_y
    */
   struct CameraParameters {
+    int id;
     // image dimension
     int width;
     int height;
@@ -97,6 +98,16 @@ module Video {
     double p2;
     // extrinsic parameters: 3D pose of camera w.r.t. world
     cogx::Math::Pose3 pose;
+    // time stamp (important for cameras on pan-tilt head etc.)
+    cast::cdl::CASTTime time;
+  };
+
+  /**
+   * *sigh* Need this wrapper CLASS around CameraParameters STRUCT, cause
+   * otherwise it just won't work bla bla bla
+   */
+  class CameraParametersWrapper {
+    CameraParameters cam;
   };
 
   /**
@@ -131,6 +142,13 @@ module Video {
     //void getScaledImage(int camId, int width, int height, out Image img);
     void getScaledImages(int width, int height, out ImageSeq images);
     //void getScaledImages(IntSeq camIds, int width, int height, out ImageSeq images);
+    void startReceiveImages(string receiverComponentId, IntSeq camIds,
+        int width, int height);
+    void stopReceiveImages(string receiverComponentId);
+  };
+  
+  interface VideoClientInterface {
+    void receiveImages(ImageSeq images);
   };
 };
 

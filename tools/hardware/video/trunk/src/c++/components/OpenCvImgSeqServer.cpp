@@ -162,72 +162,57 @@ void OpenCvImgSeqServer::grabFrames()
   // note that by just calling sleep(framrate) we actually do not really
   // get a fixed framerate, this would require setitimer() and pause()
   sleepComponent(framerateMillis);
-
-  // needed to prevent retrieving while grabbing
-  lockComponent();
-
   grabFramesInternal();
+}
 
-  unlockComponent();
+void OpenCvImgSeqServer::retrieveFrameInternal(int camIdx, int width, int height,
+    Video::Image &frame)
+{
+  // To handle the case where retrieve is called before any Grab
+  if(!haveFrames())
+    grabFramesInternal();
+    // no size given, use native size
+    if(width == 0 || height == 0)
+    {
+      convertImageFromIpl(grabbedImages[camIdx], frame);
+    }
+    else
+    {
+      IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+      cvResize(grabbedImages[camIdx], tmp);
+      convertImageFromIpl(tmp, frame);
+      // TODO: avoid allocate/deallocating all the time
+      cvReleaseImage(&tmp);
+    }
+    frame.time = grabTimes[camIdx];
+    frame.camId = camIds[camIdx];
+    frame.camPars = camPars[camIdx];
+}
+
+void OpenCvImgSeqServer::retrieveFrames(const std::vector<int> &camIds,
+    int width, int height, std::vector<Video::Image> &frames)
+{
+  frames.resize(camIds.size());
+  for(size_t j = 0; j < camIds.size(); j++)
+  {
+    size_t i = getCamIndex(camIds[j]);
+    retrieveFrameInternal(i, width, height, frames[j]);
+  }
 }
 
 void OpenCvImgSeqServer::retrieveFrames(int width, int height,
     vector<Video::Image> &frames)
 {
-  // needed to prevent retrieving while grabbing
-  lockComponent();
-
-  // To handle the case where retrieve is called before any Grab
-  if(!haveFrames())
-    grabFramesInternal();
-  frames.resize(grabbedImages.size());
-  for(size_t i = 0; i < grabbedImages.size(); i++)
-  {
-    // no size given, use native size
-    if(width == 0 || height == 0)
-    {
-      convertImageFromIpl(grabbedImages[i], frames[i]);
-    }
-    else
-    {
-      IplImage *tmp = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
-      cvResize(grabbedImages[i], tmp);
-      convertImageFromIpl(tmp, frames[i]);
-      // TODO: avoid allocate/deallocating all the time
-      cvReleaseImage(&tmp);
-    }
-    frames[i].time = grabTimes[i];
-    frames[i].camId = camIds[i];
-    frames[i].camPars = camPars[i];
-  }
-
-  unlockComponent();
+  frames.resize(getNumCameras());
+  for(size_t i = 0; i < (size_t)getNumCameras(); i++)
+    retrieveFrameInternal(i, width, height, frames[i]);
 }
 
-void OpenCvImgSeqServer::retrieveFrame(int camId, Video::Image &frame)
-  throw(runtime_error)
+void OpenCvImgSeqServer::retrieveFrame(int camId, int width, int height,
+    Video::Image &frame)
 {
-  // needed to prevent retrieving while grabbing
-  lockComponent();
-
-  bool haveCam = false;
-  // To handle the case where retrieve is called before any Grab
-  if(!haveFrames())
-    grabFramesInternal();
-  for(size_t i = 0; i < camIds.size(); i++)
-    if(camId == camIds[i])
-    {
-      convertImageFromIpl(grabbedImages[i], frame);
-      frame.time = grabTimes[i];
-      frame.camId = camIds[i];
-      frame.camPars = camPars[i];
-      haveCam = true;
-    }
-  if(!haveCam)
-    throw runtime_error(exceptionMessage(__HERE__,
-          "video has no camera %d", camId));
-
-  unlockComponent();
+  size_t i = getCamIndex(camIds[camId]);
+  retrieveFrameInternal(i, width, height, frame);
 }
 
 /**
@@ -239,11 +224,6 @@ bool OpenCvImgSeqServer::haveFrames()
     if(grabbedImages[i] == 0)
       return false;
   return true;
-}
-
-int OpenCvImgSeqServer::getNumCameras()
-{
-  return (int)camIds.size();
 }
 
 void OpenCvImgSeqServer::getImageSize(int &width, int &height)

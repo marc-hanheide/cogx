@@ -12,15 +12,31 @@
 namespace cast
 {
 
-class TestVideoClient : public VideoClient,
-                        public CASTComponent
+class TestVideoClient : public CASTComponent,
+                        public VideoClient
 {
-public:
-  virtual ~TestVideoClient() {}
+private:
+  /**
+   * Which camera to get images from
+   */
+  std::vector<int> camIds;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
+
+protected:
   virtual void start();
   virtual void configure(const std::map<std::string,std::string> & _config)
     throw(std::runtime_error);
-  virtual void runComponent();
+
+public:
+  virtual ~TestVideoClient() {}
+  virtual void receiveImages(const std::vector<Video::Image>& images);
 };
 
 }
