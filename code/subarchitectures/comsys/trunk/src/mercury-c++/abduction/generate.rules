@@ -28,6 +28,14 @@ e(now) : ask_yn(h, Object, Prop, PropValue) <-
 	i : feat_AnswerType(Nom, AnswerType) / 1.0,
 	e(now) : produce(r, Nom) / 1.0.
 
+e(now) : have_sensed(vision) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
 % a positive query
 % max cost = 3.5
 query_belief(Object, Prop, yes(PropValue), AnswerType) <-
