@@ -312,16 +312,72 @@ public class cc_Realizer
 					LogicalForm logicalForm = productionLF.lform;
 					
 					// Retrieve the content subtree
-					LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);
-					String contentRoot = "";
-					if (content != null) {
-						contentRoot = content.dep;
-					} else {
-						contentRoot = logicalForm.root.nomVar;
-					} 
-					LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
+					LFRelation content = LFUtils.lfNominalGetRelation(logicalForm.root,contentBody);					
+					// get nominal and  the corresponding LF to realize 					
+					LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,content.dep);
 					LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
 					
+					String contentRoot = "";
+					String outputRealization = "";  
+					String cannedTextFeature = "CannedText";
+					if (content != null) {
+						contentRoot = content.dep;
+						// use ccg realizer to produce sentence output
+						outputRealization = realizeLfWithGrammar(realizer,planLF,contentRoot);
+					} else {
+						//log("IKK: no content in LF");
+						contentRoot = logicalForm.root.nomVar;
+						if (LFUtils.lfNominalHasFeature(logicalForm.root,cannedTextFeature)){
+							// we're generating canned text, so get the key for the canned text from the CannedText feature
+							String cannedTextKey = LFUtils.lfNominalGetFeature(logicalForm.root,cannedTextFeature);
+							// log("IKK: key: "+cannedTextKey+"\n");
+							outputRealization = realizeLfCannedText(cannedTextKey);
+						} else {
+							// not canned, so let's try with the grammar on the LF root as is
+							outputRealization = realizeLfWithGrammar(realizer,planLF,contentRoot);
+						}
+					}
+					log("Output realization: " + outputRealization);
+					
+					// Assign a default in case realization failed
+					if ( outputRealization == "" || outputRealization == " "){
+						outputRealization = "I am sorry I am lost for words on this one"; 
+					}
+					
+				// Forward the string to WM, to be synthesized
+				try { 
+					log("Sending on for synthesis: ["+outputRealization+"]");
+					SpokenOutputItem spoi = new SpokenOutputItem();
+					spoi.phonString = outputRealization;
+					addToWorkingMemory(newDataID(), spoi); 
+				} catch (AlreadyExistsOnWMException ioe) { 
+					log("ERROR: "+ioe.getMessage());
+				}
+				addNewPLFToWorkingMemory(planLF, outputRealization);
+
+				}
+				
+		} // end if.. check for data presence	
+	} // end executeRealizationTask
+
+		
+					
+		/** Produces a string (hopefully sentence) for a given LF.
+			 Extracts the root nominal of the LF under contentRoot in logicalForm, and the corresponding tree, 
+			 then calls the OpenCCG realizer on this
+			 
+			 @param realizer the OpenCCG realizer
+			 @param logicalForm the LF to realize from
+			 @param contentRoot the root of the subtree to realize
+			 @return the realized string 
+		*/
+			
+			public String realizeLfWithGrammar (Realizer realizer, LogicalForm planLF, String contentRoot) {
+				
+/*					// get nominal and  the corresponding LF to realize 					
+					LFNominal contentRootNom  = LFUtils.lfGetNominal(logicalForm,contentRoot);
+					LogicalForm planLF = LFUtils.lfConstructSubtree(contentRootNom,logicalForm);					
+*/					
 					log("Planning a realization for the following logical form: "+LFUtils.lfToString(planLF));
 					
 					
@@ -348,26 +404,24 @@ public class cc_Realizer
 					} // end for over best edges
 					
 */
-					String realString = "I am sorry I am lost for words on this one";  //default in case null produced
 					if (bestEdge != null) { 
-						realString = bestEdge.getSign().getOrthography().toString();
+						return bestEdge.getSign().getOrthography().toString();
+					} else {
+						return "";
 					}
-					
-					// Forward the string to WM, to be synthesized
-					try { 
-						log("Sending on for synthesis: ["+realString+"]");
-						SpokenOutputItem spoi = new SpokenOutputItem();
-						spoi.phonString = realString;
-						addToWorkingMemory(newDataID(), spoi); 
-					} catch (AlreadyExistsOnWMException ioe) { 
-						log("ERROR: "+ioe.getMessage());
-					}
+			}// end realizeLfWithGrammar
 
-					addNewPLFToWorkingMemory(planLF, realString);
-					
-				} // end if
-			} // end if.. check for data presence	
-		} // end executeRealizationTask
+			
+			/**  Produces a canned text string by replacing every occurrence of "_" with a space. 
+			 
+			 @param cannedTextKey the string that specifies the canned text
+			 @return the canned text where "_" is replaced with " "
+			 
+			 */
+			
+			public String realizeLfCannedText (String cannedTextKey) {
+				return cannedTextKey.replace('_',' ');
+			}			
 
 		
 		
