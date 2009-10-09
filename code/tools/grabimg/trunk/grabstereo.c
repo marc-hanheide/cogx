@@ -161,7 +161,9 @@ int main(int argc, char** argv)
     cvShowImage("grabstereo - left", frame[0]);
     cvShowImage("grabstereo - right", frame[1]);
 
-    switch(cvWaitKey(10))
+    // note: filter the integer you get with 0xFF - it seems the low byte is
+    // actually the correct ASCII key
+    switch(cvWaitKey(10) & 0xFF)
     {
       case ESCAPE:
       case 'q':
