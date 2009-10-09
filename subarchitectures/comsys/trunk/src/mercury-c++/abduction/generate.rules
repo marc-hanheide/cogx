@@ -77,10 +77,14 @@ equality(X, Y, negative) <-
 
 e(now) : assert_prop(h, Object, Property) <-
 	dummy_nom1(Nom) / true,
+	dummy_nom2(ContentNom) / true,
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	i : feat_Relation(Nom, accept) / 1.0,
+	%i : feat_Relation(Nom, accept) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, marker) / 1.0,
+		i : prop(ContentNom, aha) / 1.0,
 	e(now) : produce(r, Nom) / 1.0.
 
 %what color does the box have
