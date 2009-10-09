@@ -69,8 +69,13 @@ def feature_val_to_object(fval):
 def gen_fact_tuples(unions):
   for union in unions:
     if isinstance(union, specialentities.RelationUnion):
-      source = feature_val_to_object(union.usource.alternativeValues[0])
-      target = feature_val_to_object(union.utarget.alternativeValues[0])
+      try:
+        source = feature_val_to_object(union.usource.alternativeValues[0])
+        target = feature_val_to_object(union.utarget.alternativeValues[0])
+      except Exception, e:
+        print "Error getting source or target of relation %s." % union.entityID
+        print "Message was: %s" % str(e)
+        continue
 
       for feature in union.features:
         # choose feature val with highest probability:
