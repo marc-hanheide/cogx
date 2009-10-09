@@ -885,8 +885,6 @@ PlaceManager::processPlaceArrival(bool failed)
   int wasHeadingForPlace = m_goalPlaceForCurrentPath;
   int wasComingFromNode = m_startNodeForCurrentPath;
 
-  FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
-
   NavData::FNodePtr curNode = getCurrentNavNode();
   if (curNode != 0) {
     int curNodeId = curNode->nodeId;
@@ -902,6 +900,7 @@ PlaceManager::processPlaceArrival(bool failed)
     int arrivalCase = -1;
 
     if (wasExploring) {
+        FrontierInterface::NodeHypothesisPtr goalHyp = it->second;
       //The transition was an exploration action
       if (!placeExisted) { //No Place exists for current node -> it must be new
 	arrivalCase = 1;
