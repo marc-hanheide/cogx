@@ -461,6 +461,11 @@ public class Binder extends ManagedComponent  {
 			// loop on the current union configurations
 			for (Enumeration<UnionConfiguration> configs = 
 				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
+                //make a copy of relation unions for each configuration
+                //because source and target may be different in different configs
+				if (newUnion instanceof RelationUnion) {
+                    newUnion = constructor.constructInitialUnion(newProxy, newDataID(), getCASTTime());                    
+                }
 
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
 
@@ -470,9 +475,9 @@ public class Binder extends ManagedComponent  {
 				newUnionConfigs.add(newConfigWithSingleUnion);	
 
 				
-				if (newUnion instanceof RelationUnion) {
-					specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
-				}
+				//if (newUnion instanceof RelationUnion) {
+				//	specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
+				//}
 				
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
@@ -493,9 +498,9 @@ public class Binder extends ManagedComponent  {
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
-							if (newMergedUnion instanceof RelationUnion) {
-								specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
-							}
+							//if (newMergedUnion instanceof RelationUnion) {
+							//	specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
+							//}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						} 
@@ -708,7 +713,8 @@ public class Binder extends ManagedComponent  {
 
 	
 	private RelationUnion specifyUnionSourceAndTarget (RelationUnion union, UnionConfiguration config) {
-		
+		log("start relation processing");
+
 		HashMap<String, String> unionForProxy = new HashMap<String, String>();
 		for (int j = 0; j < config.includedUnions.length ; j++) {
 			Union curUnion = config.includedUnions[j];
@@ -730,6 +736,7 @@ public class Binder extends ManagedComponent  {
 				newSource.timeStamp = union.psource.alternativeValues[i].timeStamp;
 				newSource.val = unionForProxy.get(sourceId);
 				union.usource.alternativeValues[i] = newSource;
+                log("bound source of " + union.entityID + " to " + newSource.val);
 			}
 			else {
 				errlog("WARNING: no union has been created for the proxy " + sourceId +
@@ -750,6 +757,7 @@ public class Binder extends ManagedComponent  {
 				newTarget.timeStamp = union.ptarget.alternativeValues[i].timeStamp;
 				newTarget.val = unionForProxy.get(targetId);
 				union.utarget.alternativeValues[i] = newTarget;
+                log("bound target of " + union.entityID + " to " + newTarget.val);
 			}
 			else {
 				errlog("WARNING: no union has been created for the proxy " + targetId +
@@ -885,6 +893,15 @@ public class Binder extends ManagedComponent  {
 		}
 
 		newConfig.includedUnions[nbUnions - 1] = unionToAdd;
+
+        // Recompute source and target for all relations
+        log("prob:" + existingUnionConfig.configProb);
+        for (int i = 0 ; i < newConfig.includedUnions.length; i++) {
+            Union existingUnion = newConfig.includedUnions[i];
+            if (existingUnion instanceof RelationUnion) {
+                specifyUnionSourceAndTarget((RelationUnion)existingUnion, newConfig);
+            }
+        }
 
 		return newConfig;
 
