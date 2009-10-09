@@ -20,6 +20,7 @@ import motivation.util.WMMotiveSet.MotiveStateTransition;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
@@ -133,9 +134,13 @@ public class Scheduler extends ManagedComponent {
 				m.tries++;
 				m.rank = rankCount++;
 				try {
+					lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
 					overwriteWorkingMemory(m.thisEntry, m);
 				} catch (DoesNotExistOnWMException e) {
 					// safely ignore
+				}
+				finally {
+					unlockEntry(m.thisEntry);
 				}
 			}
 		} catch (CASTException e) {
