@@ -3,6 +3,9 @@
  *
  * @author Marko Mahnic
  */
+#include <stdio.h>
+#include <stdarg.h>
+#include <string>
 #include "cv.h"
 #include "highgui.h"
 #include "VisionData.hpp"
@@ -10,24 +13,68 @@
 #include "libVisualLearnerCtf.h"
 #include "VisualLearnerProxy.h"
 
+// http://www.senzee5.com/2006/05/c-formatting-stdstring.html
+std::string format_arg_list(const char *fmt, va_list args)
+{
+   if (!fmt) return "";
+   int   result = -1, length = 256;
+   char *buffer = 0;
+   while (result == -1) {
+      if (buffer) delete [] buffer;
+      buffer = new char [length + 1];
+      memset(buffer, 0, length + 1);
+      result = vsnprintf(buffer, length, fmt, args);
+      length *= 2;
+   }
+   std::string s(buffer);
+   delete [] buffer;
+   return s;
+}
+
+std::string format(const char *fmt, ...)
+{
+   va_list args;
+   va_start(args, fmt);
+   std::string s = format_arg_list(fmt, args);
+   va_end(args);
+   return s;
+}
+
+static void addLabels(mwArray &ans, VisionData::AttrObject &Attrs, double weight)
+{
+   unsigned n_dims = ans.NumberOfDimensions();
+   // TODO: assert n_dims = 1
+   mwArray dims = ans.GetDimensions();
+   double dim0 = dims.Get(mwSize(1), 0);
+   for (int i = 0; i < dim0; i++) {
+      double label = ans.Get(mwSize(1), i);
+      Attrs.colorLabel.push_back(format("%.0f", label));
+      Attrs.colorDistr.push_back(weight);
+   }
+}
+
 //void FE_recognise_attributes(VisionData::ROI &Roi)
 void VL_recognise_attributes(VisionData::AttrObject &Attrs, VisionData::ProtoObject &Object)
 {
    // Add the ROI to Matlab engine
    mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
-          Object.image.width, Object.image.height, 3); // WISH: number of channels in image
-   
+         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
+
    // Add the segmentation mask to the Matlab engine.
    // TODO: FIXME: mask data is int, should be byte
    mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
          Object.mask.width, Object.mask.height, 1);
 
+   mwArray ansYes, ansPy, answ;
+
    // Extract features and recognise.
    mwArray f;
-   // cogxVisualLearner_recognise(2, ansYes, ansPy, x, b0);
+   cogxVisualLearner_recognise(3, ansYes, ansPy, answ, x, b0);
 
-   // Add extracted features to the Roi.
-   // CMatlabHelper::array2idl(f, Attrs); // TODO: Attrs is not a Matlab::Matrix !
+   Attrs.colorLabel.clear();
+   Attrs.colorDistr.clear();
+   addLabels(ansYes, Attrs, 1.0);
+   addLabels(ansPy, Attrs, 0.5);
 }
 
 void VL_prepare()
@@ -123,7 +170,7 @@ typedef unsigned char BYTE;
 
 //   CvMat H = cvMat(3, 3, CV_32FC1, matrix3x3);
 //   CvMat *matTraRoi = cvCreateMat(4, 1, CV_32FC3); // Transformed ROI, a polygon
-   
+
 //   // cvPerspectiveTransform doesn't work as expected, so: Transform + normalize
 //   cvTransform(matbbRoi, matTraRoi, &H); // NOT cvPerspectiveTransform
 //   for (int i=0; i < 4; i++) { // Normalize
@@ -131,7 +178,7 @@ typedef unsigned char BYTE;
 //      for (int c = 0; c < 3; c++) coord.val[c] /= coord.val[2];
 //      cvSet2D(matTraRoi, i, 0, coord);
 //   }      
-   
+
 //   CvPoint2D32f traRoi[4];
 //   for (int i=0; i < 4; i++) {
 //      CvScalar coord = cvGet2D(matTraRoi, i, 0);
@@ -158,7 +205,7 @@ typedef unsigned char BYTE;
 //   outBox.m_center.m_y = (traRoiYmin + traRoiYmax) / 2;
 //   outBox.m_size.m_x = (traRoiXmax - traRoiXmin);
 //   outBox.m_size.m_y = (traRoiYmax - traRoiYmin);
-   
+
 //   // Shift ROI and transformed ROI to image (0, 0)
 //   for (int i=0; i < 4; i++) {
 //      bbRoi[i].x -= ROI.x0;
@@ -195,7 +242,7 @@ typedef unsigned char BYTE;
 
 //   mwArray out = CMatlabHelper::iplImage2array(B);
 //   cvReleaseImage(&B);
-   
+
 //   return out;
 //}
 
@@ -203,19 +250,19 @@ typedef unsigned char BYTE;
 // Transform the image before extraction.
 // @param matrix3x3 Array with the parameters of the perspective transformation, storage: [Row0; Row1; Row2]
 /*void FE_extract_features_transform(VisionData::ROI &Roi, float* matrix3x3)
-{
-   // Add the ROI to Matlab engine
-   mwArray x = transformRaw2array(Roi.m_region, Roi.m_bbox, matrix3x3);
-   mwArray b0 = transformRaw2array(Roi.m_mask, Roi.m_bbox, matrix3x3);
-   
-   // Segment the Roi.
-   mwArray b;
-   cosyFeatureExtractor_limitvalue(1, b, b0, mwArray(1.0));
-   
-   // Extract features.
-   mwArray f;
-   cosyFeatureExtractor_extract(1, f, x, b);
+  {
+// Add the ROI to Matlab engine
+mwArray x = transformRaw2array(Roi.m_region, Roi.m_bbox, matrix3x3);
+mwArray b0 = transformRaw2array(Roi.m_mask, Roi.m_bbox, matrix3x3);
 
-   // Add extracted features to the Roi.
-   CMatlabHelper::array2idl(f, Roi.m_features);
+// Segment the Roi.
+mwArray b;
+cosyFeatureExtractor_limitvalue(1, b, b0, mwArray(1.0));
+
+// Extract features.
+mwArray f;
+cosyFeatureExtractor_extract(1, f, x, b);
+
+// Add extracted features to the Roi.
+CMatlabHelper::array2idl(f, Roi.m_features);
 }*/
