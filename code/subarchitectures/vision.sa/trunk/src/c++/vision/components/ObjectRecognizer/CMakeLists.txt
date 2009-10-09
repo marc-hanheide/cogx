@@ -9,7 +9,7 @@ set_target_properties(ObjectRecognizer PROPERTIES
    )
 
 link_cast_component(${CAST_COMPONENT_NAME}
-   VisionData Video VideoUtils VideoClient
+   VisionData Video VideoUtils
    ${PYTHON_LIBRARY})
 
 add_subdirectory(pysiftgpu/siftgpu)

@@ -713,6 +713,16 @@ void PlanePopOut::configure(const map<string,string> & _config)
 {
   // first let the base classes configure themselves
   configureStereoCommunication(_config);
+
+  map<string,string>::const_iterator it;
+
+  useGlobalPoints = true;
+  if((it = _config.find("--globalPoints")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> useGlobalPoints;
+  }
+  println("use global points: %d", (int)useGlobalPoints);
 }
 
 void PlanePopOut::start()
@@ -738,7 +748,7 @@ void PlanePopOut::runComponent()
   {
 	VisionData::SurfacePointSeq tempPoints = points;
 	points.resize(0);
-	getPoints(points);
+	getPoints(useGlobalPoints, points);
 	if (points.size() == 0)
 		points = tempPoints;
 	else

@@ -37,6 +37,10 @@ private:
    * Which camera to get images from
    */
   int camId;
+  /**
+   * whether to use stereo points in global or left camear coord system.
+   */
+  bool useGlobalPoints;
 	double Calc_SplitThreshold(VisionData::SurfacePointSeq &points, std::vector <int> &label);
 	std::vector<ObjPara> PreviousObjList;
 	std::vector<ObjPara> CurrentObjList;

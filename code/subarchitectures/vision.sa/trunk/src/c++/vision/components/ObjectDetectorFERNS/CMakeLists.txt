@@ -30,7 +30,7 @@ ferns_demo-1.0/template_matching_based_tracker.cc)
 
 
 add_cast_component(ObjectDetectorFERNS ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils VideoClient)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} NavData)
 link_cast_component(${CAST_COMPONENT_NAME} cv highgui cxcore z)
 

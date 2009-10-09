@@ -52,12 +52,17 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			}else{
 				log("starting detection");
 				cmd_detect = true;
+        vector<int> camIds;
+        camIds.push_back(camId);
+        // start receiving images pushed by the video server
+        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 			}
 			break;
 		case VisionData::DSTOP:
 			if(cmd_detect){
 				log("stopping detection");
 				cmd_detect = false;
+        videoServer->stopReceiveImages(getComponentID().c_str());
 			}else{
 				log("allready stopped detection");
 			}
@@ -73,8 +78,10 @@ void ObjectDetector::configure(const map<string,string> & _config)
 // 	log("VisionSystem3::configure: Running configuration");
   map<string,string>::const_iterator it;
  
-  // first let the base classes configure themselves
-  configureVideoCommunication(_config);
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+    videoServerName = it->second;
+  }
 
   if((it = _config.find("--camid")) != _config.end())
   {
@@ -92,37 +99,36 @@ void ObjectDetector::configure(const map<string,string> & _config)
 void ObjectDetector::start()
 {
 	log("ObjectDetector::start: Start Component");
-  startVideoCommunication(*this);
+
+  // get connection to the video server
+  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+
+  // register our client interface to allow the video server pushing images
+  Video::VideoClientInterfacePtr servant = new VideoClientI(this);
+  registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
 
   addChangeFilter(createLocalTypeFilter<ObjectDetectionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectDetector>(this,
         &ObjectDetector::receiveDetectionCommand));
 
+  cmd_detect = false;
+
   if(showImage) cvNamedWindow(getComponentID().c_str(), 1);
 }
 
-void ObjectDetector::runComponent()
+void ObjectDetector::receiveImages(const std::vector<Video::Image>& images)
 {
-// 	log("VisionSystem3::runComponent");
-  while(isRunning())
-  {
-		// process a single image
-		if (cmd_detect) processImage();
-
-    // wait a bit so we don't hog the CPU
-		sleepComponent(50);
-  }
+  if(images.size() == 0)
+    throw runtime_error(exceptionMessage(__HERE__, "image list is empty"));
+  // process a single image
+  processImage(images[0]);
 }
 
-
-void ObjectDetector::processImage()
+void ObjectDetector::processImage(const Video::Image &image)
 {
 	frame_counter++;
 	int number = 0;
 	bool masked = true;
-
-	Video::Image image;
-	getImage(camId, image);
 
 	GetCameraParameter(image);
 	IplImage *iplImage = convertImageToIpl(image);

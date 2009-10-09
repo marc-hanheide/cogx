@@ -39,6 +39,18 @@ private:
   };
 
   /**
+   * Which camera to get images from
+   */
+  int camId;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
+  /**
    * mode (detection, tracking, detection and tracking ...) for the FERNS stuff
    */
   Mode mode;
@@ -62,10 +74,6 @@ private:
    * remember whether we could track in the last frame
    */
   std::vector<bool> last_frame_ok;
-  /**
-   * Which camera to get images from
-   */
-  int camId;
   /**
    * WM Id of our tracked objects
    */

@@ -14,5 +14,5 @@ SET(CMAKE_CXX_FLAGS "-Wall -g -march=nocona -msse3 -fno-strict-aliasing -fno-tre
 
 add_cast_component(Reconstructor ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} GVars3 cvd cv highgui cxcore)
-link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils VideoClient)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 

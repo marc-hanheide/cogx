@@ -70,9 +70,10 @@ static long smoothFn(int p1, int p2, int l1, int l2)
 
 void SOIFilter::configure(const map<string,string> & _config)
 {
-  configureVideoCommunication(_config);
-
   map<string,string>::const_iterator it;
+
+  // first let the base classes configure themselves
+  configureStereoCommunication(_config);
   
   updateThr = UPD_THR_DEFAULT;
   timeThr = TIME_THR_DEFAULT;
@@ -98,6 +99,11 @@ void SOIFilter::configure(const map<string,string> & _config)
   }
   timeThr*= 1000;
   
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+    videoServerName = it->second;
+  }
+
   if((it = _config.find("--camid")) != _config.end())
   {
     istringstream str(it->second);
@@ -148,7 +154,9 @@ void SOIFilter::configure(const map<string,string> & _config)
 
 void SOIFilter::start()
 {
-  startVideoCommunication(*this);
+  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+
+  startStereoCommunication(*this);
 
   char *name = "filterSemaphore";
   named_semaphore(open_or_create, name, 0);
@@ -964,7 +972,7 @@ vector<unsigned char> SOIFilter::graphCut(int width, int height, int num_labels,
 void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask)
 {
 	Video::Image image;
-	getImage(camId,image);
+	getRectImage(LEFT, image);
     		
    	soiPtr->boundingSphere.rad*=DILATE_FACTOR;
 	

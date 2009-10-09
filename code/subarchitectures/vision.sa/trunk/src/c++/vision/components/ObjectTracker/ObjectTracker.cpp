@@ -39,7 +39,7 @@ ObjectTracker::~ObjectTracker(){
   delete(g_Resources);
 }
 
-void ObjectTracker::initTracker(){
+void ObjectTracker::initTracker(const Video::Image &image){
   // *** Initialisation of Tracker ***
   int id = 0;
   
@@ -48,18 +48,15 @@ void ObjectTracker::initTracker(){
   g_Resources->SetTexturePath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/texture/");
   g_Resources->SetShaderPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/shader/");
 
-  // Grab one image from VideoServer for initialisation
-  getImage(camId, m_image);
-  
   // Initialize SDL screen
-  g_Resources->InitScreen(m_image.width, m_image.height);
+  g_Resources->InitScreen(image.width, image.height);
  
   // Initialize tracking (parameters for edge-based tracking)
   if(trackTexture)
   	m_tracker = new TextureTracker();
   else
 		m_tracker = new EdgeTracker();
-  if(!m_tracker->init(	m_image.width, m_image.height,		// image size in pixels
+  if(!m_tracker->init(	image.width, image.height,				// image size in pixels
 												3000,															// maximum number of particles (=storage size of particle list)
 												20.0*PIOVER180,										// standard deviation of rotational noise in degree
 												0.03,															// standard deviation of translational noise in meter
@@ -76,7 +73,7 @@ void ObjectTracker::initTracker(){
   m_camera = g_Resources->GetCamera(id);
   
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
-  loadCameraParameters(m_camera, m_image.camPars, 0.1, 10.0);
+  loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
   
   // link camera with tracker
 	m_tracker->setCamPerspective(m_camera);
@@ -87,7 +84,8 @@ void ObjectTracker::initTracker(){
 }
 
 
-void ObjectTracker::runTracker(){
+void ObjectTracker::runTracker(const Video::Image &image){
+println("A");
 	
 	// *** Tracking Loop ***
 	Model* model;
@@ -102,20 +100,22 @@ void ObjectTracker::runTracker(){
 	m_timer.Update();
 	//dTimeStamp = m_timer.GetApplicationTime();
 
-	// Grab image from VideoServer
-	getImage(camId, m_image);
-	
+println("B");
 	fTimeImage = m_timer.Update();
+println("BB w h %d %d", image.width, image.height);
 	if(testmode){
 		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
 										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
 										0.0, 1.0, 0.0,											// Up vector (y-axis)
-										45, m_image.width, m_image.height,  // field of view angle, image width and height
+										45, image.width, image.height,		  // field of view angle, image width and height
 										0.1, 10.0,													// camera z-clipping planes (far, near)
 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 	
+m_camera->Print();
+println("C");
 	m_tracker->drawImage(NULL);
+println("D");
 	
 	// Track all models
 	for(i=0; i<m_modelID_list.size() && i<m_maxModels; i++){
@@ -128,12 +128,12 @@ void ObjectTracker::runTracker(){
 		m_modelID_list[i].trackpose.w = obj->detectionConfidence;
 
 		// Track model
-		m_tracker->track((unsigned char*)(&m_image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
+		m_tracker->track((unsigned char*)(&image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
 		m_tracker->drawResult(&ids->trackpose);
 		m_tracker->drawTest();
 	
 		// Query keyboard input		
-		running = inputsControl(m_tracker);
+		//running = inputsControl(m_tracker); HACK
 				
 		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
 		convertParticle2Pose(ids->trackpose, obj->pose);
@@ -146,11 +146,13 @@ void ObjectTracker::runTracker(){
 		
 	}
 	
+println("Y");
 	m_tracker->drawCoordinates();
 	m_tracker->swap();
 	
 	
 	fTimeTracker = m_timer.Update();
+println("Z");
 }
 
 
@@ -208,6 +210,10 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 					log("start tracking: no model to track in memory");
 				else{
 					log("start tracking: ok");
+					//vector<int> camIds;
+					//camIds.push_back(camId);
+					// start receiving images pushed by the video server
+					//videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 					track = true;
 				}
 			}
@@ -215,6 +221,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 		case VisionData::STOP:
 			if(track){
 				log("stop tracking: ok");
+				//videoServer->stopReceiveImages(getComponentID().c_str());
 				track = false;
 			}else{
 				log("stop tracking: I'm not tracking");
@@ -236,8 +243,10 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
  
-  // first let the base classes configure themselves
-  configureVideoCommunication(_config);
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+    videoServerName = it->second;
+  }
 
   if((it = _config.find("--camid")) != _config.end())
   {
@@ -271,8 +280,13 @@ void ObjectTracker::configure(const map<string,string> & _config){
 }
 
 void ObjectTracker::start(){
-  startVideoCommunication(*this);
-  
+  // get connection to the video server
+  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+
+  // register our client interface to allow the video server pushing images
+  Video::VideoClientInterfacePtr servant = new VideoClientI(this);
+  registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
+
   addChangeFilter(createLocalTypeFilter<VisualObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectTracker>(this,
         &ObjectTracker::receiveVisualObject));
@@ -282,32 +296,39 @@ void ObjectTracker::start(){
         &ObjectTracker::receiveTrackingCommand));
 }
 
+void ObjectTracker::destroy(){
+  // Release Tracker
+  delete(m_tracker);
+}
+
+void ObjectTracker::receiveImages(const std::vector<Video::Image>& images)
+{
+  assert(images.size() > 0);
+  m_image = images[0];
+  runTracker(m_image);
+}
 
 void ObjectTracker::runComponent(){
   
   // Initialize Tracker
-  initTracker();
-  sleepComponent(1000);
-  
+  // Grab one image from VideoServer for initialisation
+  videoServer->getImage(camId, m_image);
+  initTracker(m_image);
   
   while(running)
   {
-  	if(track){
-  	  // Run Tracker
-  	  //sleepComponent(10);
-  	  runTracker();
-  	  
-		}else{
+    if(track){
+      // HACK: actually should use receiveImages(), but that is still buggy
+      videoServer->getImage(camId, m_image);
+      runTracker(m_image);
+    }
+    else if(!track){
 			// * Idle *
 			sleepComponent(1000);
 			running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
-	    
 		}
   }
   
-  // Release Tracker
-  delete(g_Resources);
-  delete(m_tracker);
   log("stop");
 }
 

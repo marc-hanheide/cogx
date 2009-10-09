@@ -28,45 +28,82 @@ void VideoViewer::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
  
-  // first let the base classes configure themselves
-  configureVideoCommunication(_config);
+  if((it = _config.find("--videoname")) != _config.end())
+  {
+    videoServerName = it->second;
+  }
 
   if((it = _config.find("--camid")) != _config.end())
   {
     istringstream istr(it->second);
     istr >> camId;
   }
+
+  // sanity checks: Have all important things be configured? Is the
+  // configuration consistent?
+  if(videoServerName.empty())
+    throw runtime_error(exceptionMessage(__HERE__, "no video server name given"));
 }
 
 void VideoViewer::start()
 {
-  startVideoCommunication(*this);
+  // get connection to the video server
+  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+
+  // register our client interface to allow the video server pushing images
+  Video::VideoClientInterfacePtr servant = new VideoClientI(this);
+  registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
+
   cvNamedWindow(getComponentID().c_str(), 1);
+
+  vector<int> camIds;
+  camIds.push_back(camId);
+  // start receiving images pushed by the video server
+  videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
+  receiving = true;
+}
+
+void VideoViewer::destroy()
+{
+  cvDestroyWindow(getComponentID().c_str());
+}
+
+void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
+{
+  IplImage *iplImage = convertImageToIpl(images[0]);
+  cvShowImage(getComponentID().c_str(), iplImage);
+  cvReleaseImage(&iplImage);
 }
 
 void VideoViewer::runComponent()
 {
+  println("press <s> to stop/start receving images");
   while(isRunning())
   {
-    Video::Image image;
-    getImage(camId, image);
-    IplImage *iplImage = convertImageToIpl(image);
-
-    //vector<Video::Image> images;
-    //getImages(images);
-    //IplImage *iplImage = convertImageToIpl(images[0]);
-
-    cvShowImage(getComponentID().c_str(), iplImage);
-
     // needed to make the window appear
     // (an odd behaviour of OpenCV windows!)
-    cvWaitKey(10);
-    cvReleaseImage(&iplImage);
-
-    // wait a bit so we don't hog the CPU
-    sleepComponent(100);
+    int key = cvWaitKey(100);
+    switch(key)
+    {
+      case 's':  // start/stop getting images
+        if(receiving)
+        {
+          videoServer->stopReceiveImages(getComponentID().c_str());
+          println("stopped receving images");
+        }
+        else
+        {
+          vector<int> camIds;
+          camIds.push_back(camId);
+          videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
+          println("started receving images");
+        }
+        receiving = !receiving;
+        break;
+      default:
+        break;
+    }
   }
-  cvDestroyWindow(getComponentID().c_str());
 }
 
 }

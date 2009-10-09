@@ -32,7 +32,8 @@ namespace cast
 {
 
 class SOIFilter : public ManagedComponent,
-		  public VideoClient
+		  public VideoClient,
+      public StereoClient
 {
 private:
 
@@ -40,6 +41,14 @@ private:
   * Which camera to get images from
   */
   int camId;
+  /**
+   * component ID of the video server to connect to
+   */
+  std::string videoServerName;
+  /**
+   * our ICE proxy to the video server
+   */
+  Video::VideoInterfacePrx videoServer;
   
   /**
   * Time and update thresholds
