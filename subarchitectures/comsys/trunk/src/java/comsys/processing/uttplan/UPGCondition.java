@@ -59,7 +59,7 @@ public class UPGCondition {
     private HashMap features = new HashMap();
     private HashMap featvals = new HashMap();
 
-	private boolean logging = true;
+	private boolean logging = false;
 	
     //=================================================================
     // CONSTRUCTOR METHODS
