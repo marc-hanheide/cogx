@@ -2,6 +2,7 @@
 
 namespace binder {
   using namespace autogen::core;
+  using namespace autogen::specialentities;
   using namespace autogen::featvalues;
   using namespace cast;
   using namespace cast::cdl;
@@ -33,54 +34,38 @@ namespace binder {
     return newProxy;
   }
 
-  ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin,
+  RelationProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin,
 							       float probExists,
 							       const autogen::core::FeatureValues source,
 							       const autogen::core::FeatureValues target) {
 
-    ProxyPtr newProxy = new Proxy();
+    RelationProxyPtr newProxy = new RelationProxy();
 
     newProxy->entityID = newDataID();
     newProxy->origin = origin;
     newProxy->probExists = probExists;
 
-    FeaturePtr feat1 = new Feature();
-    feat1->featlabel = "source";
-    feat1->alternativeValues = source;
-    newProxy->features.push_back(feat1);
+    newProxy->source = new Feature();
+    newProxy->source->featlabel = "source";
+    newProxy->source->alternativeValues = source;
 
-    FeaturePtr feat2 = new Feature();
-    feat2->featlabel = "target";
-    feat2->alternativeValues = target;
-    newProxy->features.push_back(feat2);
+    newProxy->target = new Feature();
+    newProxy->target->featlabel = "target";
+    newProxy->target->alternativeValues = target;
 
     return newProxy;
   }
 
 
-  ProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin,
+  RelationProxyPtr BindingWorkingMemoryWriter::createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin,
 							       float probExists,
 							       const FeaturesList & features,
 							       const autogen::core::FeatureValues source,
 							       const autogen::core::FeatureValues target) {
 
-    ProxyPtr newProxy = new Proxy();
-
-    newProxy->origin = origin;
-    newProxy->entityID = newDataID();
-    newProxy->probExists = probExists;
-
+    RelationProxyPtr newProxy = createNewRelationProxy(origin, probExists, source, target);
+    
     newProxy->features = features;
-
-    FeaturePtr feat1 = new Feature();
-    feat1->featlabel = "source";
-    feat1->alternativeValues = source;
-    newProxy->features.push_back(feat1);
-
-    FeaturePtr feat2 = new Feature();
-    feat2->featlabel = "target";
-    feat2->alternativeValues = target;
-    newProxy->features.push_back(feat2);
 
     return newProxy;
   }
@@ -90,7 +75,6 @@ namespace binder {
 						       const FeaturesList & features) {
 
     ProxyPtr newProxy = createNewProxy(origin, probExists);
-    newProxy->origin = origin;
 
     newProxy->features = features;
 
