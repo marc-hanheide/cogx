@@ -249,11 +249,10 @@ public class EntityFilter {
 		RelationUnion newRUnion = BinderUtils.convertIntoRelationUnion(bunion);
 
 		// specify the source of the relation union
-		
 		newRUnion.psource = new Feature();
 		newRUnion.psource.featlabel = initRUnion.psource.featlabel;	
 		newRUnion.psource.alternativeValues = new FeatureValue[1];
-		newRUnion.usource.alternativeValues[0] = initRUnion.usource.alternativeValues[0];
+		newRUnion.psource.alternativeValues[0] = initRUnion.psource.alternativeValues[0];
 		
 		newRUnion.usource = new Feature();
 		newRUnion.usource.featlabel = initRUnion.usource.featlabel;	

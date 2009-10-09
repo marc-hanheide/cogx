@@ -79,7 +79,7 @@ namespace binder {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */
-    autogen::core::ProxyPtr createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
+    autogen::specialentities::RelationProxyPtr createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
 						    float probExists,
 						    const autogen::core::FeatureValues source, 
 						    const autogen::core::FeatureValues target);
@@ -98,7 +98,7 @@ namespace binder {
 	 * @param targetProxy the target proxy
 	 * @return the new relation proxy
 	 */						
-    autogen::core::ProxyPtr createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
+    autogen::specialentities::RelationProxyPtr createNewRelationProxy (const cast::cdl::WorkingMemoryPointerPtr & origin, 
 						    float probExists,
 						    const autogen::core::FeaturesList & features,
 						    const autogen::core::FeatureValues source, 
