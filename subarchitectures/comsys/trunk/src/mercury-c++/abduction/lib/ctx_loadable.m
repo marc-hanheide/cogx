@@ -48,7 +48,7 @@
 
 :- instance context(ctx, ctx_modality) where [
 	pred(fact_found/3) is ctx_fact,
-	pred(rule_found/2) is ctx_rule,
+	pred(rule_found/3) is ctx_rule,
 	pred(assumable_func/4) is ctx_assumable_func,
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
@@ -98,11 +98,19 @@ ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, p(PredSym, Args)), VS)) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "F", !IO) ),
 	set.member(vs(m(Mod, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
-:- pred ctx_rule(ctx::in, vscope(mrule(ctx_modality))::out) is nondet.
+:- pred ctx_rule(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mrule(ctx_modality))::out) is nondet.
 
-ctx_rule(Ctx, Rule) :-
+ctx_rule(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(ModR, Ante-Head), VS)) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "R", !IO) ),
-	set.member(Rule, Ctx^ctx_rules).
+	set.member(vs(m(ModR, Ante-Head), VS), Ctx^ctx_rules),
+	(
+		Head = std(m(_, p(PredSym, _)))
+	;
+		Head = test(MTest),
+		( MTest = prop(m(_, p(PredSym, _)))
+		; MTest = impl(_, m(_, p(PredSym, _)))
+		)
+	).
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 

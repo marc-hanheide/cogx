@@ -17,8 +17,8 @@
 %	pred fact(C, vscope(mprop(M))),
 %	mode fact(in, out) is nondet,
 
-	pred rule_found(C, vscope(mrule(M))),
-	mode rule_found(in, out) is nondet,
+	pred rule_found(C, vscope(mprop(M)), vscope(mrule(M))),
+	mode rule_found(in, in, out) is nondet,
 
 	pred assumable_func(C, cost_function_name, mgprop(M), float),
 	mode assumable_func(in, in, out, out) is nondet,
