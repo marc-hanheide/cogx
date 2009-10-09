@@ -13,9 +13,12 @@ LRvisUpdate
 KDBFupdate
 KDBFunlearn
 # some glue
-cosyRecogniser_recognise
-cosyRecogniser_update
-cosyRecogniser_unlearn
-cosyFeatureExtractor_limitvalue
-cosyFeatureExtractor_extract
+#cosyRecogniser_recognise
+#cosyRecogniser_update
+#cosyRecogniser_unlearn
+#cosyFeatureExtractor_limitvalue
+#cosyFeatureExtractor_extract
+cogxVisualLearner_recognise
+cogxVisualLearner_update
+cogxVisualLearner_unlearn
 cosyMatlabWarnings

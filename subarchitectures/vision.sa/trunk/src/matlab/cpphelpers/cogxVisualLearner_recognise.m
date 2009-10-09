@@ -1,15 +1,15 @@
 function [ansYes, ansPy, answ] = cogxVisualLearner_recognise(X, B)
-   % X - image
-   % B - segmentation mask
+   % X - image - byte_array
+   % B - segmentation mask - byte_array
    % Copied from cosyFeatureExtractor_limitvalue
-   B = double(B)
+   B = double(B) % TODO: is it really necessary to convert the mask to double?
    B(B > 1.0) = 1.0
 
    % Copied from cosyFeatureExtractor_extract
    global Params
    X = uint8(X);
-   F = extAPfeatures(X,B,Params.FV);
-   showROI(X,B,F);
+   f = extAPfeatures(X,B,Params.FV);
+   showROI(X,B,f);
 
    % Copied from cosyRecogniser_recogise
    readConstants;

@@ -1,8 +1,5 @@
 /** 
- * @brief Proxy for the FeatureExtractor component of FeatureLearning.
- *
- * The images of ROI can be transfromed before feature extraction.
- * @see FE_extract_features_transform
+ * @brief Proxy for the VisualLearner component.
  *
  * @author Marko Mahnic
  */
@@ -11,28 +8,26 @@
 #include "VisionData.hpp"
 #include "MatlabHelper.h"
 #include "libVisualLearnerCtf.h"
+#include "VisualLearnerProxy.h"
 
 //void FE_recognise_attributes(VisionData::ROI &Roi)
 void VL_recognise_attributes(VisionData::AttrObject &Attrs, VisionData::ProtoObject &Object)
 {
    // Add the ROI to Matlab engine
-   mwArray x = CMatlabHelper::iplImage2array(&(Object.image[0]), 
+   mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
           Object.image.width, Object.image.height, 3); // WISH: number of channels in image
    
    // Add the segmentation mask to the Matlab engine.
-   mwArray b0 = CMatlabHelper::iplImage2array(&(Object.mask.data[0]), 
-         Object.mask.width, Object.mask.hieght, 1);
+   // TODO: FIXME: mask data is int, should be byte
+   mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
+         Object.mask.width, Object.mask.height, 1);
 
-   // Segment the Roi.
-   //mwArray b;
-   //cosyFeatureExtractor_limitvalue(1, b, b0, mwArray(1.0)); // TODO: Rename
-
-   // Extract features.
+   // Extract features and recognise.
    mwArray f;
-   cogxVisualLearner_recognise(1, f, x, b); // TODO: Rename, extract + recognise
+   // cogxVisualLearner_recognise(2, ansYes, ansPy, x, b0);
 
    // Add extracted features to the Roi.
-   CMatlabHelper::array2idl(f, Attrs); // TODO: Attrs is not a Matlab::Matrix !
+   // CMatlabHelper::array2idl(f, Attrs); // TODO: Attrs is not a Matlab::Matrix !
 }
 
 void VL_prepare()

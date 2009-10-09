@@ -16,6 +16,7 @@
     <MCR_runtime_options/>
     <generate_code_only>false</generate_code_only>
     <verbose>true</verbose>
+    <create_CTF>true</create_CTF>
     <options_file/>
     <debug>false</debug>
     <toolboxes_on_path shortcut="all"/>

@@ -49,9 +49,9 @@ extern "C"
          }
       }
       catch (...) {
-            printf("WARNING: Unknown Exception in TermFeatureLearningLib.\n");
-            fflush(stdout);
-            return;
+         printf("WARNING: Unknown Exception in TermFeatureLearningLib.\n");
+         fflush(stdout);
+         return;
       }
    }
 }
