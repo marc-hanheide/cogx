@@ -146,6 +146,7 @@ class CProcess(object):
             self.pipeReader = None
 
     def stop(self):
+        log("Stopping process %s" % self.name)
         self.error = CProcess.OK
         if self.process == None:
             self._clear()
@@ -423,4 +424,8 @@ def runCommand(cmd, params=None, workdir=None, name="onetime"):
         error("Internal error")
         error("%s" % e)
 
-
+def xrun(cmdline):
+    # XRUN may create zombies.
+    cmds = cmdline.split()
+    pid = subp.Popen(cmds).pid
+    log("XRUN: pid=%d %s" % (pid, cmdline))
