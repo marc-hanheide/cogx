@@ -1,0 +1,153 @@
+% hi
+e(now) : greeting(h, r) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, greeting) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
+% what do i have here
+e(now) : new_object_visible(Entity) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	i : feat_AcknoModality(Nom, vision) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% no I do not know what this is
+e(now) : ask_yn(h, Object, Prop, PropValue) <-
+	query_belief(Object, Prop, PropValue, AnswerType) / true,
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : feat_AnswerType(Nom, AnswerType) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+e(now) : have_sensed(vision) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% a positive query
+% max cost = 3.5
+query_belief(Object, Prop, yes(PropValue), AnswerType) <-
+	query_belief0(Object, Prop, PropValue, AnswerType) / true,
+	dummy_assumption(x) / 1.0.
+
+% negative query
+% max cost = 3.5
+query_belief(Object, Prop, no(PropValue), AnswerType) <-
+	query_belief0(Object, Prop, PropValue, OppAnswerType) / true,
+	opposite_answertype(OppAnswerType, AnswerType) / true.
+
+% positive/negative query about something unknown
+query_belief(Object, Prop, Value, negative) <-
+	feature_value_unknown(Object, Prop, Value) / 6.0.
+
+
+	% query atomic value
+
+% max cost = 2.5
+query_belief0(Object, objecttype, Value, Polarity) <-
+	k(now, private(r)) : objecttype(Object, FeatValue) / true,
+	equality(Value, FeatValue, Polarity) / true.
+
+equality(X, Y, positive) <-
+	equal(X, Y) / true.
+
+equality(X, Y, negative) <-
+	not_equal(X, Y) / 1.5.
+
+% we know the value
+%query_belief0(Object, objecttype, PropValue, positive) <-
+%	k(now, private(r)) : objecttype(Object, PropValue) / true,
+%	dummy_assumption(x) / 2.0.  % to make it more costly in case of "not"
+
+% we can assume that the value is unknown, but for a huge cost
+%query_belief0(Object, Prop, PropValue, negative) <-
+%	feat_not_equal_to(Object, Prop, PropValue) / 20.0.
+
+e(now) : assert_prop(h, Object, Property) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+%what color does the box have
+e(now) : need_get_value(Modality, Entity, color) <-
+	dummy_nom1(Nom) / true,
+	dummy_nom2(ContentNom) / true,
+	dummy_nom3(TargetNom) / true,
+	dummy_nom4(QualityNom) / true,
+	%k(now, private(r)) : objecttype(Object, box) / true,
+	%k(now, private(r)) : color(Object, unknownColor) / true,
+	k(now, attrib(r, h)) : objecttype(Entity, Type) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : sort(TargetNom, entity) / 1.0,
+			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+			i : prop(TargetNom, Type) / 1.0,
+		i : rel_Color(ContentNom, QualityNom) / 1.0,
+			i : sort(QualityNom, quality) / 1.0,
+			i : prop(QualityNom, color) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% is the object blue
+%d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
+e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
+	dummy_nom1(Nom) / true,
+	dummy_nom2(ContentNom) / true,
+	dummy_nom3(TargetNom) / true,
+	dummy_nom4(QualityNom) / true,
+	k(now, attrib(r, h)) : objecttype(Entity, Type) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : sort(TargetNom, entity) / 1.0,
+			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+			i : prop(TargetNom, Type) / 1.0,
+		i : rel_Color(ContentNom, QualityNom) / 1.0,
+			i : sort(QualityNom, quality) / 1.0,
+			i : prop(QualityNom, Hypothesis) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+% NOT THE FIRST is the box red or orange?” / “what color does the box have
+%what color does the box have
+%e(now) : produce(r, Nom) <-
+%	dummy_nom1(Nom) / true,
+%	dummy_nom2(ContentNom) / true,
+%	dummy_nom3(TargetNom) / true,
+%	dummy_nom4(QualityNom) / true,
+%	k(now, private(r)) : objecttype(Object, box) / true,
+%	k(now, private(r)) : color(Object, unknownColor) / true,
+%	i : sort(Nom, dvp) / 1.0,
+%	i : prop(Nom, 'c-goal') / 1.0,
+%	i : feat_SpeechAct(Nom, question) / 1.0,
+%	i : rel_Content(Nom, ContentNom) / 1.0,
+%		i : sort(ContentNom, ascription) / 1.0,
+%		i : rel_Target(ContentNom, TargetNom) / 1.0,
+%			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
+%			i : prop(TargetNom, box) / 1.0,
+%		i : rel_Color(ContentNom, QualityNom) / 1.0,
+%			i : sort(QualityNom, quality) / 1.0,
+%			i : prop(QualityNom, color) / 1.0,
+%			i : feat_Questioned(QualityNom, true) / 1.0.

@@ -1,0 +1,289 @@
+
+
+GREETING_LC [
+	(hi)
+	(hello)
+	(bye)
+	(thanks)
+	(thank you)
+]
+
+DISFL_LC [
+	(err)
+	(hum)
+	(mm)
+	(uh)
+]
+
+CONNECTIVE_LC [
+	(then)
+	(and)
+	(or)
+	(but)
+	(so)
+	(well)
+]
+
+TEMPORAL_LC [
+	(now)
+	(first)
+	(again)
+	(afterwards)
+	(after that)
+	(next)
+]
+
+
+VERB_LC [
+	(play)
+	(take)
+	(bring me)
+	(pick)
+	(pick up)
+	(give me)
+	(get)
+	(get me)
+	(rotate)
+	(point at)
+	(move)
+	(remove)
+	(put)
+	(see)
+	(want)
+	(know)
+]
+
+
+ADV_LC [
+	(just)
+	(never)
+	(not)
+	(also)
+	(please)
+	(already)
+	(only)
+	(all)
+]
+
+NOUN_SG_LC [
+	(game)
+	(size)
+	(colour)
+	(shape)
+	(colour game)
+	(shape game)
+	(one)
+	(ball)
+	(box)
+	(book)
+	(chocolate)
+	(coffee)
+	(coffee machine)
+	(computer)
+	(cup)
+	(laptop)
+	(mug)
+	(object)
+	(table)
+	(thing)
+	(cube)
+	(door)
+	(floor)
+	(block)
+	(star)
+	(triangle)
+	(square)
+	(car)
+	(circle)
+	(cylinder)
+	(cone)
+	(arm)
+]
+
+NOUN_PL_LC [
+	(balls)
+	(boxes)
+	(books)
+	(cups)
+	(mugs)
+	(objects)
+	(things)
+	(cubes)
+	(blocks)
+	(stars)
+	(triangles)
+	(squares)
+	(cars)
+	(circles)
+]
+
+
+DET_SG_LC [
+	(the)
+	(a)
+	(an)
+	(your)
+]
+
+
+DEM_SG_LC [
+	(it)
+	(this)
+	(that)
+	(one)
+]
+
+
+DET_PL_LC [
+	(the)
+	(two)
+	(three)
+	(five)
+	(some)
+	(all)
+	(all the)
+]
+
+COMPARATIVE_LC [
+	(bigger)
+	(smaller)
+	(closer)
+	(nearer)
+]
+
+DEM_PL_LC [
+	(them)
+	(they)
+	(those)
+	(these)
+]
+
+
+LOCATION_LC [
+	(to the right)
+	(to the right)
+	(to my left)
+	(to my right)
+	(to your left)
+	(to your right)
+	(here)
+	(there)
+	(down)
+	(back)
+	(aside)
+	(somewhere)
+	(far)
+	(up)
+]
+
+
+PRONOUN_LC [
+	(i)
+	(you)
+	(we)
+]
+
+MODAL_LC [
+	(can)
+	(could)
+	(should)
+	(can't)
+	(cannot)
+	(must)
+]
+
+PREP_LC [
+	(behind)
+	(close to)
+	(closer to)
+	(near)
+	(near to)
+	(next to)
+	(left of)
+	(right of)
+	(in front of)
+	(in the middle of)
+	(on the middle of)
+	(under)
+	(on)
+	(on top of)
+	(from)
+	(on the left of)
+	(on the right of)
+	(to the left of)
+	(to the right of)
+	(to)
+]
+
+
+
+DEGREE_ADV_LC [
+	(too)
+	(very)
+]
+
+
+
+ADJUNCT_LC [
+	(white)
+	(black)
+	(blue)
+	(green)
+	(brown)
+	(red)
+	(yellow)
+	(round)
+	(big)
+	(small)
+	(left)
+	(right)
+	(full)
+	(last)
+	(other)
+	(elongated)
+	(same)
+	(orange)
+	(purple)
+]
+
+
+CUEWORD_LC [
+	(wrong)
+	(right)
+	(sure)
+	(great)
+	(correct)
+	(incorrect)
+	(good)
+	(very good)
+	(true)
+	(false)
+	(bad)
+	(ok)
+	(okay)
+	(fine)
+	(yes)
+	(no)
+	(good)
+	(sorry)
+	(excellent)
+	(yeah)
+	(alright)
+	(well done)
+]
+
+WH_WORD_LC [
+	(how many)
+	(how much)
+	(what)
+	(where)
+	(which)
+	(when)
+	(why)
+]
+
+PERSON_LC [
+	(me)
+	(you)
+	(robot)
+]

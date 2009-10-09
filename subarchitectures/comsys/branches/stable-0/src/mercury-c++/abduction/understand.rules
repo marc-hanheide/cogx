@@ -1,0 +1,139 @@
+% h: hi robot
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, 'd-units') / true,
+	i : prop(Nom, list) / true,
+	i : rel_First(Nom, FirstNom) / true,
+		i : sort(FirstNom, greeting) / true,
+		i : prop(FirstNom, GreetProp) / true,
+	i : rel_Next(Nom, NextNom) / true,
+		i : sort(NextNom, animate) / true,
+		i : prop(NextNom, Robot) / true,
+	e(now) : greeting(h, r) / 0.1.
+
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, greeting) / true,
+	i : prop(Nom, GreetProp) / true,
+	e(now) : greeting(h, r) / 0.5.
+
+%e(now) : clarify(h, CR) <-
+%	i : cr_modality(CR, vision) / true,
+%	i : cr_entity(CR, Entity) / true,
+%	e(now) : new_object_visible(Entity) / 10.0.
+
+e(now) : clarify(X, CR) <-
+	i : cr_need(CR, Prop) / true,
+	i : cr_entity(CR, Entity) / true,
+	i : cr_modality(CR, Modality) / true,
+	e(now) : need_get_value(Modality, Entity, Prop) / 0.5.
+
+e(now) : clarify(X, CR) <-
+	i : cr_need(CR, Prop, Hypothesis) / true,
+	i : cr_modality(CR, Modality) / true,
+	i : cr_entity(CR, Entity) / true,
+	e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) / 0.5.
+
+% h: do you know what this is
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, cognition) / true,
+	i : prop(Nom, know) / true,  % type of cognition
+	i : feat_Mood(Nom, int) / true,  % question
+	i : rel_Actor(Nom, ActorNom) / true,
+		you(ActorNom) / true,
+	i : rel_Patient(Nom, WhatNom) / true,
+		what(WhatNom) / true,
+
+	i : sort(AscrNom, ascription) / true,
+	i : 'rel_Cop-Restr'(AscrNom, ThisNom) / true,
+		this(ThisNom) / true,
+		a(com) : refers_to(ThisNom, Ref) / ref_resolution,
+	i : 'rel_Cop-Scope'(AscrNom, WhatNom) / true,  % XXX "questioned" flag?
+	e(now) : ask_yn(h, Ref, objecttype, no(unknownObjectType)) / 0.5.
+	%?( k(now, private(r)) : objecttype(Ref, not(unknownObjectType))).
+
+you(Nom) <-
+	i : sort(Nom, person) / true,
+	i : prop(Nom, you) / true.
+
+what(Nom) <-
+	i : sort(Nom, entity) / true,
+	i : prop(Nom, what) / true.
+
+this(Nom) <-
+	i : sort(Nom, entity) / true,
+	i : feat_Delimitation(Nom, unique) / true,
+	i : feat_Num(Nom, sg) / true,
+	i : feat_Proximity(Nom, proximal) / true,
+	i : feat_Quantification(Nom, specific) / true.
+
+% h: this is a X
+% --> objecttype
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : prop(Nom, be) / true,
+	i : 'feat_Mood'(Nom, ind) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, ThisNom) / true,
+	i : 'rel_Cop-Restr'(Nom, ThisNom) / true,
+		this(ThisNom) / true,
+	a(com) : refers_to(ThisNom, Red) / ref_resolution,  % XXX refer to "this"!
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+	assert_prop(Ref, ScopeNom) / true.
+
+% h: X is Y
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : prop(Nom, be) / true,
+	i : 'feat_Mood'(Nom, ind) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, SubjNom) / true,
+	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+	assert_prop(RestrRef, ScopeNom) / true.
+
+% h: is X Y
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, ascription) / true,
+	i : prop(Nom, be) / true,
+	i : 'feat_Mood'(Nom, int) / true,
+	i : 'feat_Tense'(Nom, pres) / true,
+	i : 'rel_Subject'(Nom, SubjNom) / true,
+	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+	assert_prop(RestrRef, ScopeNom) / true,
+	i : question_about(RestrRef) / 1.0.
+
+%-------------------------------------------------------------------------
+
+%e(now) : uttered(h, Nom) <-
+%	i : sort(Nom, ascription) / true,
+%	i : prop(Nom, be) / true,
+%	i : 'feat_Mood'(Nom, ind) / true,
+%	i : 'feat_Tense'(Nom, pres) / true,
+%	i : 'rel_Subject'(Nom, SubjNom) / true,
+%	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+%	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+%	assert_prop(RestrRef, ScopeNom) / true.
+
+assert_prop(RestrRef, Nom) <-
+	i : sort(Nom, 'q-color') / true,
+	i : prop(Nom, Prop) / true,
+	?( k(now, attrib(r, h)) : color(RestrRef, Prop) ),
+	e(now) : assert_prop(h, RestrRef, color) / 0.5.
+
+assert_prop(RestrRef, Nom) <-
+	i : sort(Nom, 'q-shape') / true,
+	i : prop(Nom, Prop) / true,
+	?( k(now, attrib(r, h)) : shape(RestrRef, Prop) ),
+	e(now) : assert_prop(h, RestrRef, shape) / 0.5.
+
+assert_prop(Ref, Nom) <-
+	i : sort(Nom, thing) / true,
+	i : prop(Nom, Prop) / true,
+	i : feat_Delimitation(Nom, existential) / true,
+	i : feat_Num(Nom, sg) / true,
+	i : feat_Quantification(Nom, specific) / true,
+	?( k(now, attrib(r, h)) : objecttype(Ref, Prop) ),
+	e(now) : assert_prop(h, Ref, objecttype) / 0.5.

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<!-- /** 
+@chooser c-quantity looks at the quantity feature of an entity and decides about the assigment of number and quantification, and also the insertion on an explicit quantifier (this is not yet fully worked out).  
+
+Need to exclude cases where the nominal is under <Compound> relation.
+
+*/ -->
+
+<chooser id="c-quantity" region="QUANTIFICATION" metafunction="ideational">
+   <dectree>
+     <choicenode answer="*TOP*">
+<!-- not needed now, never mind -->
+  	   <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+				<q-ex-feat feat="NO-QuantOrDelim" val="true"/>	                                 
+       </inquiry>
+							<choicenode answer="true">  <!-- quantification assignment prohibited -->
+							  <result val="no-quant"/>
+							</choicenode>
+							
+							<choicenode answer="false">  <!-- go ahead with quantification assignment -->      
+		 <inquiry id="q-ex-prop" type="string" answerset="@true @false"> 
+			<q-ex-prop val="what"/>
+		 </inquiry>	
+		 <choicenode answer="true">
+			<result val="no-num"/> 
+	     </choicenode>
+	     <choicenode answer="false">	   
+		 <inquiry id="q-ex-prop" type="string" answerset="@true @false"> 
+			<q-ex-prop val="it"/>
+		 </inquiry>	
+		 <choicenode answer="true">
+			<result val="no-num"/> 
+	     </choicenode>
+	     <choicenode answer="false">	   
+	   <!-- check if a compound- or subject-dependent -->
+	   <inquiry id="q-deprel-type" type="string" answerset="@false @true @unknown"> 
+		   <q-deprel-type mode="Subject" />	                                 
+	   </inquiry>		 
+	   <choicenode answer="unknown">   
+	        <result val="no-quant"/>			   
+	   </choicenode>
+       <choicenode answer="true">   
+	        <result val="no-quant"/>			   
+	   </choicenode>
+
+	   <choicenode answer="false"> 
+		 <inquiry id="q-deprel-type" type="string" answerset="@false @true @unknown"> 
+		      <q-deprel-type mode="Compound" />	                                 
+		 </inquiry>		 
+		 <choicenode answer="true">   
+	           <result val="no-quant"/>			   
+		 </choicenode>
+
+		 <choicenode answer="false"> 	   
+	   	   
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+	     <q-ex-feat feat="Quantity"/>	                                 
+	     </inquiry>
+	     <choicenode answer="false">  <!-- Quantity feature is not present -->
+			<!-- check if handling a list structure -->
+				<inquiry id="f-featval" type="string" answerset="@conjunction @disjunction @unknown"> 
+				<f-featval feat="List"/>	                                 
+				</inquiry>		 
+					<choicenode answer="conjunction">   
+						<result val="list-conjunction"/>			   
+					</choicenode>
+					<choicenode answer="disjunction">    
+						<result val="list-disjunction"/>			   
+					</choicenode>
+					<choicenode answer="unknown">  <!-- the feat is not present -->
+						<result val="unknown"/>	
+					</choicenode>
+	     </choicenode>  <!-- end no Quantity feature -->
+	     <choicenode answer="true">     <!-- the Quantity feat is present  -->
+            <inquiry id="q-ex-fv" type="string" answerset="@true @false"> 
+ 	        <q-ex-fv feat="Quantity" val="unknown"/>	                                 
+	        </inquiry>
+	        <choicenode answer="true">  <!-- feat has value unknown -->
+			   <result val="unknown"/>
+			</choicenode>
+	        <choicenode answer="false">    <!-- the feat is present and has value other than "unknown" -->
+            <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+ 	        <q-ex-fv feat="Quantity" val="0"/>	                                 
+	        </inquiry>
+	        <choicenode answer="true">
+	           <result val="zero-sg"/>  <!-- could also be zero-pl; randomly or by alignment -->
+	        </choicenode>
+	        <choicenode answer="false">		 		 		 
+               <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+	           <q-ex-fv feat="Quantity" val="1"/>	                            
+		   	   </inquiry>
+	           <choicenode answer="true">
+	              <result val="one-quantifier"/>
+	           </choicenode>				 
+	           <choicenode answer="false">
+					<inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+					<q-ex-fv feat="Quantity" val="multiple"/>	                            
+					</inquiry>
+					<choicenode answer="true">
+						<result val="multiple-noquantifier"/>
+					</choicenode>				 
+					<choicenode answer="false">
+						<result val="multiple-quantifier"/>  <!-- for explicit quantifier testing; can also be multipl-noquantifier; random choice or by alignment -->   
+				</choicenode>
+			   </choicenode>
+			</choicenode>
+     	 </choicenode>
+     	 </choicenode>
+		 </choicenode>  <!-- end COMPOUND -->
+		 </choicenode> <!-- end SUBJECT -->
+		 </choicenode> <!-- check for IT -->
+		 </choicenode> <!-- check for what -->
+      </choicenode>  <!-- end go ahead with quant assignment -->
+  	   </choicenode>  <!-- end TOP -->
+   </dectree>
+</chooser>
+
+
+<chooser id="c-quantification.demonstrative.pronoun" region="QUANTIFICATION" metafunction="ideational">
+   <dectree>
+     <choicenode answer="*TOP*">
+		 <inquiry id="q-ex-val" type="string" answerset="@true @false @unknown"> 
+			<q-ex-fv feat="Quantity" val="multiple"/>  <!-- this way of conditioning ignores <Quantity>num  where num>1 -->
+		 </inquiry>	
+		 <choicenode answer="true">
+			<result val="multiple"/> 
+	     </choicenode>
+	     <choicenode answer="false">	   
+			<result val="single"/> 
+	     </choicenode>
+	     <choicenode answer="unknown">	   
+			<result val="single"/> 
+	     </choicenode>
+ 	   </choicenode>  <!-- end TOP -->
+   </dectree>
+</chooser>
+
+
+
+</choosers>
