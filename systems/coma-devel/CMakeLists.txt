@@ -80,20 +80,20 @@ endif(BUILD_HAL_TESTS)
 
 add_subdirectory (tools/math)
 
-#option(BUILD_HAL_VIDEO "Build hardware video" YES)
-#if(BUILD_HAL_VIDEO)
-#add_subdirectory (tools/hardware/video)
-#endif(BUILD_HAL_VIDEO)
+option(BUILD_HAL_VIDEO "Build hardware video" YES)
+if(BUILD_HAL_VIDEO)
+add_subdirectory (tools/hardware/video)
+endif(BUILD_HAL_VIDEO)
 
-#option(BUILD_HAL_STEREO "Build hardware stereo" NO)
-#if(BUILD_HAL_STEREO)
-#add_subdirectory (tools/hardware/stereo)
-#endif(BUILD_HAL_STEREO)
+option(BUILD_HAL_STEREO "Build hardware stereo" NO)
+if(BUILD_HAL_STEREO)
+add_subdirectory (tools/hardware/stereo)
+endif(BUILD_HAL_STEREO)
 
-#option(BUILD_SA_VISION "Build vision subarchitecure" YES)
-#if(BUILD_SA_VISION)
-#add_subdirectory (subarchitectures/vision.sa)
-#endif(BUILD_SA_VISION)
+option(BUILD_SA_VISION "Build vision subarchitecure" YES)
+if(BUILD_SA_VISION)
+add_subdirectory (subarchitectures/vision.sa)
+endif(BUILD_SA_VISION)
 
 
 # Spatial
