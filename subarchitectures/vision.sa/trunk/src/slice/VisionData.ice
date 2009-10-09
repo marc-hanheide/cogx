@@ -9,6 +9,10 @@ module VisionData {
 
   sequence<cogx::Math::Vector3> Vector3Seq;
 
+  class ConvexHull {
+  Vector3Seq PointsSeq;
+  cast::cdl::CASTTime time;
+  };
   sequence<string> IdSeq;
 
   // RGB color
