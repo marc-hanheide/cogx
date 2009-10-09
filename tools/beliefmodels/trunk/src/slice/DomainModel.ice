@@ -75,6 +75,7 @@ module cogx {
 	class Ground { 
 		Ids indexSet;
 		GroundStatus gstatus;
+		string modality;  // source modality 
 		beliefmodels::adl::Formula reason;
 	}; 
 
