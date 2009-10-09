@@ -59,7 +59,7 @@ public class UPGCondition {
     private HashMap features = new HashMap();
     private HashMap featvals = new HashMap();
 
-	private boolean logging = false;
+	private boolean logging = true;
 	
     //=================================================================
     // CONSTRUCTOR METHODS
@@ -146,6 +146,7 @@ public class UPGCondition {
 				if (result) {                                 //locus has the feature, checking whether value matches
 					if (featvals.containsKey(val)) {
 						String v = (String) featvals.get(val);
+						log("IKK: checking feature value: [" +v+ "]"); 
 						// log("Check for equality on conditioned ["+v+"] against ["+lv+"]");
 							if (!lv.startsWith(v)) { 
 								result = false;  break;            // too bad, value doesn't match
