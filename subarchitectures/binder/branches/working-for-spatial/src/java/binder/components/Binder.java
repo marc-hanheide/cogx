@@ -464,7 +464,8 @@ public class Binder extends ManagedComponent  {
                 //make a copy of relation unions for each configuration
                 //because source and target may be different in different configs
 				if (newUnion instanceof RelationUnion) {
-                    newUnion = constructor.constructInitialUnion(newProxy, newDataID(), getCASTTime());                    
+                    newUnion = constructor.constructInitialUnion(newProxy, newDataID(), getCASTTime());
+                    //log("new relation: " + newUnion.entityID +" from "+ newProxy.entityID);
                 }
 
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
@@ -474,6 +475,10 @@ public class Binder extends ManagedComponent  {
 					createNewUnionConfiguration (existingUnionConfig, newUnion);
 				newUnionConfigs.add(newConfigWithSingleUnion);	
 
+                //FIXME: Don't bind relation proxies as it doesn't work
+				if (newUnion instanceof RelationUnion) {
+                    continue;
+                }
 				
 				//if (newUnion instanceof RelationUnion) {
 				//	specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
