@@ -35,8 +35,24 @@ MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Curre
 {
 	char * s = cc2m::string(filename);
 	cout << tty::green << "* loading rules from `" << s << "'" << tty::dcol << endl;
-	load_rules_from_file(s, ctx, &ctx);
-	delete s;
+
+	MR_Word w_result;
+	char * args;
+
+	load_rules_from_file(s, &w_result, ctx, &ctx);
+
+	if (load_result_is_ok(w_result)) {
+		cout << tty::green << "  result: ok" << tty::dcol << endl;
+	}
+	else if (load_result_is_file_not_found(w_result)) {
+		cout << tty::red << "  file not found" << tty::dcol << endl;
+		throw FileNotFoundException();
+	}
+	else if (load_result_is_syntax_error(w_result, &args)) {
+		//const char * args = (const char *) w_arg;
+		cout << tty::red << "  syntax error: " << args << tty::dcol << endl;
+		throw SyntaxErrorException(args);
+	}
 }
 
 void
@@ -82,8 +98,24 @@ MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Curre
 {
 	char * s = cc2m::string(filename);
 	cout << tty::green << "* loading facts from `" << s << "'" << tty::dcol << endl;
-	load_facts_from_file(s, ctx, &ctx);
-	delete s;
+
+	MR_Word w_result;
+	char * args;
+
+	load_facts_from_file(s, &w_result, ctx, &ctx);
+
+	if (load_result_is_ok(w_result)) {
+		cout << tty::green << "  result: ok" << tty::dcol << endl;
+	}
+	else if (load_result_is_file_not_found(w_result)) {
+		cout << tty::red << "  file not found" << tty::dcol << endl;
+		throw FileNotFoundException();
+	}
+	else if (load_result_is_syntax_error(w_result, &args)) {
+		//const char * args = (const char *) w_arg;
+		cout << tty::red << "  syntax error: " << args << tty::dcol << endl;
+		throw SyntaxErrorException(args);
+	}
 }
 
 void
