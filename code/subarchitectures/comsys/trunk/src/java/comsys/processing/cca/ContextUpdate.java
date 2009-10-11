@@ -15,7 +15,7 @@ public class ContextUpdate {
 	public MarkedQuery[] proof;
 	
 	public ContextUpdate() {
-		this.proof = null;
+		this.proof = new MarkedQuery[] { };
 		this.intention = null;
 	}
 	
