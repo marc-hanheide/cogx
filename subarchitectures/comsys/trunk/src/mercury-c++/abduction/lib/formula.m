@@ -137,6 +137,7 @@
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred unify_formulas(atomic_formula::in, atomic_formula::in, subst::out) is semidet.
+:- pred unify_terms(formula.term::in, formula.term::in, subst::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -248,6 +249,10 @@ rename_vars_in_mrule(Renaming, m(M, Ante-Succ)) =
 
 unify_formulas(A, B, U) :-
 	unify_term(atomic_formula_to_term(A), atomic_formula_to_term(B), init, TermU),
+	U = map.map_values((func(_, TermTgt) = det_term_to_formula_term(TermTgt)), TermU).
+
+unify_terms(TA, TB, U) :-
+	unify_term(formula_term_to_term(TA), formula_term_to_term(TB), init, TermU),
 	U = map.map_values((func(_, TermTgt) = det_term_to_formula_term(TermTgt)), TermU).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

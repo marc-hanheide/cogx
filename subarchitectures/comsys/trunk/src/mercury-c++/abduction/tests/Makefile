@@ -8,6 +8,8 @@ MBIN=test_abduction test_formulae test_lf test_modality test_rcc test_abd_bm
 #
 MFILES=test_abduction.m test_formulae.m test_lf.m test_modality.m test_rcc.m test_abd_bm.m
 
+LIBABDUCER=../lib/libabducer.a
+
 # Mercury compiler flags
 #
 MCFLAGS?=--search-lib-files-dir ../lib \
@@ -34,7 +36,7 @@ endif
 .PHONY: compile
 compile: $(MBIN)
 
-$(MBIN): $(MFILES)
+$(MBIN): $(MFILES) $(LIBABDUCER)
 	mmc --make \
 		--grade $(GRADE) \
 		$(MCFLAGS) \

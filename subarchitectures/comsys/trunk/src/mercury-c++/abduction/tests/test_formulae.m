@@ -26,6 +26,8 @@ main(!IO) :-
 	test_mprop_parse("e0:p(x).", !IO),
 	test_mprop_parse("i0:a0:p(x).", !IO),
 	test_mprop_parse("axiom : p(x).", !IO),
+	test_mprop_parse("i : A \\= B.", !IO),
+	test_mprop_parse("i : A = B.", !IO),
 
 	nl(!IO),
 
@@ -36,14 +38,19 @@ main(!IO) :-
 	test_term_parse("\"Jakysi string\", g-q.", !IO),
 	test_term_parse("\"Jakysi string\"::\"g-q\".", !IO),
 	test_term_parse("e(now) : @(\"be1_1\"::\"ascription\", p(\"be\") ^ r(\"Mood\", p(\"int\")) ^ r(\"Tense\", p(\"pres\")) ^  r(\"Cop-Restr\", \"ball1_1\"::\"thing\" ^ p(\"ball\") ^ r(\"Delimitation\", p(\"unique\")) ^ r(\"Num\", p(\"sg\")) ^ r(\"Quantification\", p(\"specific\")))) ^  r(\"Cop-Scope\", \"red1_1\"::\"q-color\" ^ p(\"red\"))) ^  r(\"Subject\", \"ball1_1\"::\"thing\")).", !IO),
+	test_term_parse("a = b.", !IO),
+	test_term_parse("A = B.", !IO),
+	test_term_parse("a \\= B.", !IO),
+	test_term_parse("A \\= B.", !IO),
 
 	nl(!IO),
 
-	test_mrule_parse("a / 0.1 -> b.", !IO),
-	test_mrule_parse("a / 0.1, b / 0.2, c / 0.3 -> d.", !IO),
-	test_mrule_parse("i0:(e0:first(x) / f1, e0:second(x) / 0.1 -> a0:head(x)).", !IO),
-	test_mrule_parse("[]:(e0:first(f(x)) / f1, e0:second(x) / f2 -> a0:head(x)).", !IO),
-	test_mrule_parse("[]:i0:(e0:first(f(x)) / f1, e0:second(x) / f2 -> a0:head(x)).", !IO),
+	test_mrule_parse("b <- a / 0.1.", !IO),
+	test_mrule_parse("d <- a / 0.1, b / 0.2, c / 0.3.", !IO),
+	test_mrule_parse("d <- A = B / x, b / 0.2, c / 0.3.", !IO),
+	test_mrule_parse("i0:(a0:head(x) <- e0:first(x) / f1, e0:second(x) / 0.1).", !IO),
+	test_mrule_parse("[]:(a0:head(x) <- e0:first(f(x)) / f1, e0:second(x) / f2).", !IO),
+	test_mrule_parse("[]:i0:(a0:head(x) <- e0:first(f(x)) / f1, e0:second(x) / f2).", !IO),
 
 	nl(!IO),
 
