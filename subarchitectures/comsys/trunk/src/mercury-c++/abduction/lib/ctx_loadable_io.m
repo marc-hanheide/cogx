@@ -8,6 +8,8 @@
 :- import_module abduction, ctx_modality, costs, formula, stringable, modality.
 :- import_module ctx_loadable.
 
+:- pred print_facts(ctx::in, string::in, io::di, io::uo) is det.
+:- pred print_rules(ctx::in, string::in, io::di, io::uo) is det.
 :- pred print_ctx(ctx::in, io::di, io::uo) is det.
 :- pred print_proof_trace(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
 :- func assumptions_to_string(ctx, bag(with_cost_function(mgprop(ctx_modality)))) = string.
@@ -33,13 +35,28 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-print_ctx(Ctx, !IO) :-
-	print("facts:\n", !IO),
+print_facts(Ctx, Indent, !IO) :-
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
-		print("  ", !IO),
+		print(Indent, !IO),
 		print(vsmprop_to_string(Fact), !IO),
 		nl(!IO)
-			), facts(Ctx), !IO),
+			), facts(Ctx), !IO).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+print_rules(Ctx, Indent, !IO) :-
+	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
+			% XXX global context
+		print(Indent, !IO),
+		print(vsmrule_to_string(Rule), !IO),
+		nl(!IO)
+			), rules(Ctx), !IO).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+print_ctx(Ctx, !IO) :-
+	print("facts:\n", !IO),
+	print_facts(Ctx, "  ", !IO),
 
 	nl(!IO),
 
@@ -59,12 +76,7 @@ print_ctx(Ctx, !IO) :-
 	nl(!IO),
 
 	print("rules:\n", !IO),
-	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
-			% XXX global context
-		print("  ", !IO),
-		print(vsmrule_to_string(Rule), !IO),
-		nl(!IO)
-			), rules(Ctx), !IO).
+	print_rules(Ctx, "  ", !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
