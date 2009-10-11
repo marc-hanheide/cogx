@@ -2,17 +2,19 @@
 
 # Binary files to be built.
 #
-MBIN=check-rules-file
+MBIN=check-rules-file check-facts-file
 
 # Mercury source files.
 #
-MFILES=check-rules-file.m
+MFILES=check-rules-file.m check-facts-file.m
+
+LIBABDUCER=../lib/libabducer.a
 
 # Mercury compiler flags
 #
 MCFLAGS?=--search-lib-files-dir ../lib \
 		--init-file ../lib/abducer.init \
-		--link-object ../lib/libabducer.a
+		--link-object $(LIBABDUCER)
 
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.
@@ -34,7 +36,7 @@ endif
 .PHONY: compile
 compile: $(MBIN)
 
-$(MBIN): $(MFILES)
+$(MBIN): $(MFILES) $(LIBABDUCER)
 	mmc --make \
 		--grade $(GRADE) \
 		$(MCFLAGS) \
