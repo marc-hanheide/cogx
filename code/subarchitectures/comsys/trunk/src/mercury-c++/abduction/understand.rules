@@ -104,6 +104,9 @@ e(now) : uttered(h, Nom) <-
 	assert_prop(RestrRef, ScopeNom) / true,
 	i : question_about(RestrRef) / 1.0.
 
+%e(now) : uttered(h, Nom) <-
+%	e(now) : not_understood(r, Nom) / 50.0.
+
 %-------------------------------------------------------------------------
 
 %e(now) : uttered(h, Nom) <-

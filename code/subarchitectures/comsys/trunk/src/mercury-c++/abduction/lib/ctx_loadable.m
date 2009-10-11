@@ -98,6 +98,20 @@ ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, p(PredSym, Args)), VS)) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "F", !IO) ),
 	set.member(vs(m(Mod, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
+ctx_fact(_Ctx, vs(m(Mod, p("=", [T01, T02])), VS), vs(m(Mod, p("=", [T1, T2])), VS)) :-
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "=", !IO) ),
+	unify_terms(T01, T02, Subst),
+	T1 = apply_subst_to_term(Subst, T01),
+	T2 = apply_subst_to_term(Subst, T02).
+
+	% TODO: make this more general (i.e. don't require ground terms)
+ctx_fact(_Ctx, vs(m(Mod, p("\\=", [T01, T02])), VS),
+		vs(m(Mod, p("=", [ground_term_to_term(T1), ground_term_to_term(T2)])), VS)) :-
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "!", !IO) ),
+	ground_term(T01, T1),
+	ground_term(T02, T2),
+	not T1 = T2.
+
 :- pred ctx_rule(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mrule(ctx_modality))::out) is nondet.
 
 ctx_rule(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(ModR, Ante-Head), VS)) :-

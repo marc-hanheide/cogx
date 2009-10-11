@@ -61,10 +61,12 @@ query_belief0(Object, objecttype, Value, Polarity) <-
 	equality(Value, FeatValue, Polarity) / true.
 
 equality(X, Y, positive) <-
-	equal(X, Y) / true.
+	=(X, Y) / true.
+	%equal(X, Y) / true.
 
 equality(X, Y, negative) <-
-	not_equal(X, Y) / 1.5.
+	X \= Y / true.
+	%not_equal(X, Y) / 1.5.
 
 % we know the value
 %query_belief0(Object, objecttype, PropValue, positive) <-
@@ -132,6 +134,15 @@ e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, Hypothesis) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
+	e(now) : produce(r, Nom) / 1.0.
+
+e(now) : not_understood(Ag) <-
+	dummy_nom1(Nom) / true,
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, reject) / 1.0,
+	i : feat_AcknoModality(Nom, action) / 1.0,
 	e(now) : produce(r, Nom) / 1.0.
 
 % NOT THE FIRST is the box red or orange?” / “what color does the box have
