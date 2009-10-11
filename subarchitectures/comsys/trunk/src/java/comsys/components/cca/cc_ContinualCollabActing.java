@@ -313,11 +313,12 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				AbducerUtils.term(boundReadings.lform.root.nomVar));
 
 		if (proof != null) {
-    		log("Abductive proof found:\n" + PrettyPrinting.proofToString(proof));
+    		log("abductive proof found:\n" + PrettyPrinting.proofToString(proof));
     		return new ContextUpdate(proof);
 		}
 		else {
-			return new ContextUpdate();
+			log("no proof found");
+			return understandingFailed();
 		}
     }
     
@@ -328,10 +329,11 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				AbducerUtils.term(cr.id));
 
 		if (proof != null) {
-    		log("Abductive proof found:\n" + PrettyPrinting.proofToString(proof));
+    		log("abductive proof found:\n" + PrettyPrinting.proofToString(proof));
     		return new ContextUpdate(proof);
 		}
 		else {
+			log("no proof found");
 			return new ContextUpdate();
 		}
     }
@@ -383,32 +385,50 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     }
 
     private void actPublicly(Predicate action) {
-    	log("initiating public acting");
-    	ModalisedFormula actionMF = AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.eventModality()}, action);
-		MarkedQuery[] actionProof = ccaEngine.generateProof(new ModalisedFormula[] {actionMF});
-		
-		if (actionProof != null) {
-			log("Action proof:\n" + PrettyPrinting.proofToString(actionProof));
+    	if (action != null) {
+	    	log("initiating public acting");
+	    	ModalisedFormula actionMF = AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.eventModality()}, action);
+			MarkedQuery[] actionProof = ccaEngine.generateProof(new ModalisedFormula[] {actionMF});
 			
-			// TODO: do this in a less hardcoded way
-			if (toBeRealised(actionProof)) {				
-    			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(actionProof), "dummy1");
-    			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
-    			ContentPlanningGoal cpg = new ContentPlanningGoal();
-    			cpg.cpgid = newDataID();
-    			cpg.lform = prodLF;
-    			try {
-					addToWorkingMemory(newDataID(), cpg);
-				} catch (AlreadyExistsOnWMException e) {
-					e.printStackTrace();
+			if (actionProof != null) {
+				log("Action proof:\n" + PrettyPrinting.proofToString(actionProof));
+				
+				// TODO: do this in a less hardcoded way
+				if (toBeRealised(actionProof)) {				
+	    			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(actionProof), "dummy1");
+	    			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
+	    			realizeLogicalForm(prodLF);
+				}
+				else {
+					log("no action found in the action intention proof");
 				}
 			}
 			else {
-				log("no public action");
+				log("public acting: no proof found");
 			}
-		}
+    	}
+    	else {
+    		log("no public action intention selected");
+    	}
     }
     
+    public ContextUpdate understandingFailed() {
+    	ContextUpdate cu = new ContextUpdate();
+    	cu.proof = new MarkedQuery[0];
+    	cu.intention = AbducerUtils.predicate("not_understood", new Term[] { AbducerUtils.term("r") });
+    	return cu;
+    }
+    
+    public void realizeLogicalForm(LogicalForm lf) {
+		ContentPlanningGoal cpg = new ContentPlanningGoal();
+		cpg.cpgid = newDataID();
+		cpg.lform = lf;
+		try {
+			addToWorkingMemory(newDataID(), cpg);
+		} catch (AlreadyExistsOnWMException e) {
+			e.printStackTrace();
+		}
+    }
 
     public static String referringUnionId(Belief b) {
     	if (b.phi instanceof ComplexFormula) {

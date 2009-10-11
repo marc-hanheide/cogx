@@ -288,6 +288,7 @@ public class ContinualCollaborativeActivity {
 					
 					if (refStack.empty()) {
 						log("  refStack empty");
+						return;
 					}
 					else {
 						log("  -> using the last RefBinding");
