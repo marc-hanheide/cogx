@@ -13,6 +13,10 @@
 :- mode do_while((pred(out, in, out, di, uo) is det), in, out, di, uo) is det.
 :- mode do_while((pred(out, in, out, in, out) is det), in, out, in, out) is det.
 
+:- pred do_while_result(pred(bool, RT, A, A, T, T), RT, A, A, T, T).
+:- mode do_while_result((pred(out, out, in, out, di, uo) is det), out, in, out, di, uo) is det.
+:- mode do_while_result((pred(out, out, in, out, in, out) is det), out, in, out, in, out) is det.
+
 :- pred float_compare(float::in, float::in, comparison_result::out) is det.
 
 :- pred read_file_as_lines(string::in, list(string)::out, io::di, io::uo) is det.
@@ -65,6 +69,17 @@ do_while(Pred, A0, A, B0, B) :-
 		do_while(Pred, A1, A, B1, B)
 	;
 		Result = no,
+		A = A1, B = B1
+	).
+
+do_while_result(Pred, R, A0, A, B0, B) :-
+	call(Pred, Result, LoopR, A0, A1, B0, B1),
+	(
+		Result = yes,
+		do_while_result(Pred, R, A1, A, B1, B)
+	;
+		Result = no,
+		R = LoopR,
 		A = A1, B = B1
 	).
 

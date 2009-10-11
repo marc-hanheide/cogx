@@ -2,14 +2,20 @@
 
 :- interface.
 :- import_module io.
-:- import_module float, list.
+:- import_module float.
 :- import_module ctx_loadable, ctx_modality, abduction, formula.
 :- import_module varset.
+
+:- type load_result
+	--->	ok
+	;	file_not_found
+	;	syntax_error(string)
+	.
 
 :- func srv_init_ctx = ctx.
 
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
-:- pred srv_load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
+:- pred srv_load_rules_from_file(string::in, load_result::out, ctx::in, ctx::out, io::di, io::uo) is det.
 
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_e_facts(ctx::in, ctx::out) is det.
@@ -17,7 +23,7 @@
 :- pred srv_clear_i_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_k_facts(ctx::in, ctx::out) is det.
 
-:- pred srv_load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
+:- pred srv_load_facts_from_file(string::in, load_result::out, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_add_mprop_fact(varset::in, mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
 
 :- pred srv_clear_assumables(ctx::in, ctx::out) is det.
@@ -28,10 +34,16 @@
 :- pred srv_print_ctx(ctx::in, io::di, io::uo) is det.
 :- pred srv_proof_summary(proof(ctx_modality)::in, ctx::in, io::di, io::uo) is det.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred load_result_is_ok(load_result::in) is semidet.
+:- pred load_result_is_file_not_found(load_result::in) is semidet.
+:- pred load_result_is_syntax_error(load_result::in, string::out) is semidet.
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
-:- import_module set, map, list, bool, string, pair, bag, assoc_list.
+:- import_module set, map, list, bool, string, pair, bag, assoc_list, list.
 :- import_module utils.
 :- import_module term, term_io, formula.
 :- import_module formula_io, formula_ops, ctx_io.
@@ -71,34 +83,44 @@ srv_clear_rules(!Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_load_rules_from_file(in, in, out, di, uo), "load_rules_from_file").
+:- pragma foreign_export("C", srv_load_rules_from_file(in, out, in, out, di, uo), "load_rules_from_file").
 
-srv_load_rules_from_file(Filename, !Ctx, !IO) :-
+srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
 	see(Filename, SeeRes, !IO),
-	(SeeRes = ok -> true ; error("can't open the rule file")),
-
-	do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
-		term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
-		(
-			ReadResult = term(VS, Term),
-			generic_term(Term),
-			(if term_to_mrule(Term, MRule)
-			then add_rule(vs(MRule, VS), !Ctx), Continue = yes
-			else
-				context(_, Line) = get_term_context(Term),
-				error("Syntax error in rule file " ++ Filename
-						++ " at line " ++ string.from_int(Line) ++ ".")
+	(if
+		SeeRes = ok
+	then
+		do_while_result((pred(Continue::out, LoopResult::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
+			term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
+			(
+				ReadResult = term(VS, Term),
+				generic_term(Term),
+				(if term_to_mrule(Term, MRule)
+				then
+					add_rule(vs(MRule, VS), !Ctx),
+					LoopResult = ok,
+					Continue = yes
+				else
+					context(_, Line) = get_term_context(Term),
+					LoopResult = syntax_error("Syntax error in rule file " ++ Filename
+							++ " at line " ++ string.from_int(Line) ++ "."),
+					Continue = no
+				)
+			;
+				ReadResult = error(Message, Linenumber),
+				LoopResult = syntax_error(Message ++ " at line " ++ string.from_int(Linenumber) ++ "."),
+				Continue = no
+			;
+				ReadResult = eof,
+				LoopResult = ok,
+				Continue = no
 			)
-		;
-			ReadResult = error(Message, Linenumber),
-			error(Message ++ " at line " ++ string.from_int(Linenumber) ++ ".")
-		;
-			ReadResult = eof,
-			Continue = no
-		)
-			), !Ctx, !IO),
+				), Result, !Ctx, !IO),
+		seen(!IO)
+	else
+		Result = file_not_found
+	).
 
-	seen(!IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -133,34 +155,42 @@ srv_clear_k_facts(!Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_load_facts_from_file(in, in, out, di, uo), "load_facts_from_file").
+:- pragma foreign_export("C", srv_load_facts_from_file(in, out, in, out, di, uo), "load_facts_from_file").
 
-srv_load_facts_from_file(Filename, !Ctx, !IO) :-
+srv_load_facts_from_file(Filename, Result, !Ctx, !IO) :-
 	see(Filename, SeeRes, !IO),
-	(SeeRes = ok -> true ; error("can't open the facts file")),
-
-	do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
-		term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
-		(
-			ReadResult = term(VS, Term),
-			generic_term(Term),
-			(if term_to_mprop(Term, m(Mod, Prop))
-			then add_fact(vs(m(Mod, Prop), VS), !Ctx), Continue = yes
-			else
-				context(_, Line) = get_term_context(Term),
-				error("Syntax error in facts file " ++ Filename
-						++ " at line " ++ string.from_int(Line) ++ ".")
+	(if
+		SeeRes = ok
+	then
+		do_while_result((pred(Continue::out, LoopResult::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
+			term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
+			(
+				ReadResult = term(VS, Term),
+				generic_term(Term),
+				(if term_to_mprop(Term, m(Mod, Prop))
+				then
+					add_fact(vs(m(Mod, Prop), VS), !Ctx),
+					LoopResult = ok,
+					Continue = yes
+				else
+					context(_, Line) = get_term_context(Term),
+					LoopResult = syntax_error("Syntax error in facts file " ++ Filename
+							++ " at line " ++ string.from_int(Line) ++ "."),
+					Continue = no
+				)
+			;
+				ReadResult = error(Message, Linenumber),
+				LoopResult = syntax_error(Message ++ " at line " ++ string.from_int(Linenumber) ++ "."),
+				Continue = no
+			;
+				ReadResult = eof,
+				LoopResult = ok,
+				Continue = no
 			)
-		;
-			ReadResult = error(Message, Linenumber),
-			error(Message ++ " at line " ++ string.from_int(Linenumber) ++ ".")
-		;
-			ReadResult = eof,
-			Continue = no
-		)
-			), !Ctx, !IO),
-
-	seen(!IO).
+				), Result, !Ctx, !IO)
+	else
+		Result = file_not_found
+	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -240,3 +270,13 @@ srv_proof_summary(Proof, Ctx, !IO) :-
 %	print_proof_trace(Ctx, Proof, !IO),
 %	nl(!IO),
 %	print("that's it for the summary.\n", !IO).
+
+%------------------------------------------------------------------------------%
+
+:- pragma foreign_export("C", load_result_is_ok(in), "load_result_is_ok").
+:- pragma foreign_export("C", load_result_is_file_not_found(in), "load_result_is_file_not_found").
+:- pragma foreign_export("C", load_result_is_syntax_error(in, out), "load_result_is_syntax_error").
+
+load_result_is_ok(ok).
+load_result_is_file_not_found(file_not_found).
+load_result_is_syntax_error(syntax_error(Msg), Msg).
