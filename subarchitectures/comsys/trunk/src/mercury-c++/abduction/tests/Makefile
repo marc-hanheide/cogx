@@ -14,7 +14,7 @@ LIBABDUCER=../lib/libabducer.a
 #
 MCFLAGS?=--search-lib-files-dir ../lib \
 		--init-file ../lib/abducer.init \
-		--link-object ../lib/libabducer.a
+		--link-object $(LIBABDUCER)
 
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.

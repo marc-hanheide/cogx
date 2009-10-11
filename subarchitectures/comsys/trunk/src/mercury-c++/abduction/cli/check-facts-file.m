@@ -1,4 +1,4 @@
-:- module 'check-rules-file'.
+:- module 'check-facts-file'.
 
 :- interface.
 :- import_module io.
@@ -21,31 +21,31 @@ main(!IO) :-
 	(if
 		CmdLineArgs = [Filename]
 	then
-		load_rules_from_file(Filename, new_ctx, _Ctx, !IO),
+		load_facts_from_file(Filename, new_ctx, _Ctx, !IO),
 		print("File ok.\n", !IO)
 	else
-		print("Usage: check-rules-file FILENAME\n", !IO)
+		print("Usage: check-facts-file FILENAME\n", !IO)
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred load_rules_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
+:- pred load_facts_from_file(string::in, ctx::in, ctx::out, io::di, io::uo) is det.
 	
-load_rules_from_file(Filename, !Ctx, !IO) :-
+load_facts_from_file(Filename, !Ctx, !IO) :-
 	see(Filename, SeeRes, !IO),
-	(SeeRes = ok -> true ; error("can't open the rule file")),
+	(SeeRes = ok -> true ; error("can't open the facts file")),
 
 	do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
 		term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
 		(
 			ReadResult = term(VS, Term),
 			generic_term(Term),
-			(if term_to_mrule(Term, MRule)
-			then add_rule(vs(MRule, VS), !Ctx), Continue = yes
+			(if term_to_mprop(Term, m(Mod, Prop))
+			then add_fact(vs(m(Mod, Prop), VS), !Ctx), Continue = yes
 			else
 				context(_, Line) = get_term_context(Term),
-				error("Cannot convert term to rule in `" ++ Filename
-						++ "' at line " ++ string.from_int(Line) ++ ".")
+				error("Syntax error in facts file " ++ Filename
+						++ " at line " ++ string.from_int(Line) ++ ".")
 			)
 		;
 			ReadResult = error(Message, Linenumber),

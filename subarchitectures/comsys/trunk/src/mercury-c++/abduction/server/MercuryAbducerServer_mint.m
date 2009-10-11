@@ -137,7 +137,7 @@ srv_clear_k_facts(!Ctx) :-
 
 srv_load_facts_from_file(Filename, !Ctx, !IO) :-
 	see(Filename, SeeRes, !IO),
-	(SeeRes = ok -> true ; error("can't open the rule file")),
+	(SeeRes = ok -> true ; error("can't open the facts file")),
 
 	do_while((pred(Continue::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
 		term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
