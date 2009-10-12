@@ -1,43 +1,71 @@
 ## Use precompiled binaries from SVN for FeatureLearning
-PROJECT(VisualLearnerPrebuilt)
-IF(UNIX)
-   GET_FILENAME_COMPONENT(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../glnx86 ABSOLUTE)
-ELSEIF(WIN32)
-   GET_FILENAME_COMPONENT(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../win32  ABSOLUTE)
-ENDIF(UNIX)
+project(VisualLearnerPrebuilt)
+if(UNIX)
+   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../glnx86 ABSOLUTE)
+elseif(WIN32)
+   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../win32  ABSOLUTE)
+endif(UNIX)
 
-SET (LIBRARY_NAME VisualLearnerCtf)
-IF(UNIX)
-   SET(MCCPROJECT_NAME lib${LIBRARY_NAME})
-#~    SET(OUTHEADERS ${PREBUILT_DIR}/${MCCPROJECT_NAME}.h)
-   SET(OUTLIBRARIES
-      ${PREBUILT_DIR}/${MCCPROJECT_NAME}.ctf
-      ${PREBUILT_DIR}/${MCCPROJECT_NAME}.so
-      ${PREBUILT_DIR}/libVisualLearnerProxy.so
+set (LIBRARY_NAME VisualLearner)
+set (CTF_EXISTS)
+if(UNIX)
+   set(CTF_ARCHIVE  "lib${LIBRARY_NAME}Ctf.ctf")
+   set(CTF_LIB)
+   set(CTF_SOLIB    "lib${LIBRARY_NAME}Ctf.so")
+   set(CTF_SOPROXY  "lib${LIBRARY_NAME}Proxy.so")
+   set(OUTLIBRARIES
+      ${PREBUILT_DIR}/${CTF_ARCHIVE}
+      ${PREBUILT_DIR}/${CTF_SOLIB}
+      ${PREBUILT_DIR}/${CTF_SOPROXY}
    )
-   SET(OUTRUNTIMES)
-ELSEIF(WIN32)
-   SET(MCCPROJECT_NAME ${LIBRARY_NAME})
-#~    SET(OUTHEADERS ${PREBUILT_DIR}/${MCCPROJECT_NAME}.h)
-   SET(OUTLIBRARIES
-      ${PREBUILT_DIR}/${MCCPROJECT_NAME}.lib
+   set(OUTRUNTIMES)
+   file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
+elseif(WIN32)
+   set(CTF_ARCHIVE  "${LIBRARY_NAME}Ctf.ctf")
+   set(CTF_LIB      "${LIBRARY_NAME}Ctf.lib")
+   set(CTF_SOLIB    "${LIBRARY_NAME}Ctf.dll")
+   set(CTF_SOPROXY  "${LIBRARY_NAME}Proxy.dll")
+   set(OUTLIBRARIES
+      ${PREBUILT_DIR}/${CTF_LIB}
    )
-   SET(OUTRUNTIMES
-      ${PREBUILT_DIR}/${MCCPROJECT_NAME}.ctf
-      ${PREBUILT_DIR}/${MCCPROJECT_NAME}.dll
-      ${PREBUILT_DIR}/VisualLearnerProxy.dll
+   set(OUTRUNTIMES
+      ${PREBUILT_DIR}/${CTF_ARCHIVE}.ctf
+      ${PREBUILT_DIR}/${CTF_SOLIB}.dll
+      ${PREBUILT_DIR}/${CTF_SOPROXY}.dll
    )
-ENDIF(UNIX)
+   file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
+endif(UNIX)
 
-INSTALL(FILES   ${OUTLIBRARIES} 
-   DESTINATION lib
-)
-
-#~ INSTALL(FILES   ${OUTHEADERS}
-#~    DESTINATION include/vision/matlab
-#~ )
-IF (OUTRUNTIMES)
-   INSTALL(FILES   ${OUTRUNTIMES}
-      DESTINATION bin
+if (CTF_EXISTS)
+   install(FILES   ${OUTLIBRARIES} 
+      DESTINATION lib
    )
-ENDIF(OUTRUNTIMES)
+
+   #~ INSTALL(FILES   ${OUTHEADERS}
+   #~    DESTINATION include/vision/matlab
+   #~ )
+
+   if (OUTRUNTIMES)
+      install(FILES   ${OUTRUNTIMES}
+         DESTINATION lib
+      )
+   endif(OUTRUNTIMES)
+else (CTF_EXISTS)
+   if(CTF_ARCHIVE)
+      file(GLOB CTF_INSTALLED  ${PREBUILT_DIR}/${CTF_ARCHIVE})
+   endif(CTF_ARCHIVE)
+
+   if (NOT CTF_INSTALLED)
+      message(
+         "${LIBRARY_NAME}: Prebuilt Matlab Libraries (CTF) not found.\n"
+         "   You can download them from:\n"
+         "      http://cogx.eu/data/Cosy/libVisualLearnerCtf.zip\n"
+         "   and unpack them into:\n"
+         "      ${PREBUILT_DIR}\n"
+         "   Then run 'ccmake' again.\n"
+         "If you have Matlab installed you can also build the libraries.\n"
+         "   See: BUILD_VISUAL_LEARNER_CTF (Advanced)\n"
+      )
+   endif (NOT CTF_INSTALLED)
+endif (CTF_EXISTS)
+
