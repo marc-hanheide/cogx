@@ -12,7 +12,8 @@ import comsys.processing.cca.ProofUtils;
 
 public class AbducerUtils {
 
-	/** Return a new modalised formula.
+	/**
+	 * Return a new modalised formula.
 	 * 
 	 * @param ms list of modalities, m1...mn
 	 * @param p the formula to be modalised, p(t1...tn)
@@ -25,7 +26,8 @@ public class AbducerUtils {
 		return mf;
 	}
 	
-	/** Return a new predicate.
+	/**
+	 * Return a new predicate.
 	 * 
 	 * @param predSym predicate symbol
 	 * @param args arguments (terms)
@@ -38,7 +40,20 @@ public class AbducerUtils {
 		return p;
 	}
 	
-	/** Return a function term.
+	/**
+	 * Return a two-place predicate.
+	 * 
+	 * @param predSym predicate symbol
+	 * @param arg1 first argument
+	 * @param arg2 second argument
+	 * @return the predicate
+	 */
+	public static Predicate twoPlacePredicate(String predSym, String arg1, String arg2) {
+		return predicate(predSym, new Term[] { term(arg1), term(arg2)});
+	}
+	
+	/**
+	 * Return a function term.
 	 * 
 	 * @param functor term functor
 	 * @param args arguments (terms)
@@ -52,7 +67,8 @@ public class AbducerUtils {
 		return f;
 	}
 
-	/** Return a function term with no arguments.
+	/**
+	 * Return a function term with no arguments.
 	 * 
 	 * @param functor term functor
 	 * @return FunctionTerm the term
@@ -61,7 +77,8 @@ public class AbducerUtils {
 		return term(functor, new Term[0]);
 	}
 	
-	/** Return a named variable.
+	/**
+	 * Return a named variable.
 	 * 
 	 * @param name variable name
 	 * @return VariableTerm the term

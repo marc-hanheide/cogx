@@ -220,7 +220,6 @@ public class cc_FakeVerificationGenerator
 
 		GroundedBelief verif = new GroundedBelief();
 		verif.ags = AbstractBeliefFactory.createMutualAgentStatus(new String[] {"robot", "human"}); // XXX
-//		verif.ags = b.ags;
 		verif.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
 		verif.sigma = b.sigma;
 		verif.timeStamp = getCASTTime();
@@ -232,7 +231,7 @@ public class cc_FakeVerificationGenerator
 		// return the result
 		entityField.setText("");
 		return verif;
-	} // end getGUIPhonString	
+	} // end getGUIRequest	
 	
 	public SuperFormula changeAssertionsToPropositions(SuperFormula sf) {
 		if (sf instanceof ComplexFormula) {

@@ -29,6 +29,8 @@ import comsys.processing.cca.StackUtils;
 import comsys.processing.cca.ProofUtils;
 import comsys.processing.cca.PrettyPrinting;
 import comsys.processing.cca.Counter;
+import comsys.processing.cca.abduction.BeliefModelSynchronization;
+import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 
 import beliefmodels.adl.*;
 import beliefmodels.clarification.*;
@@ -429,56 +431,23 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			e.printStackTrace();
 		}
     }
-
-    public static String referringUnionId(Belief b) {
-    	if (b.phi instanceof ComplexFormula) {
-			
-			for (int i = 0; i < ((ComplexFormula)b.phi).formulae.length ; i++) {
-				SuperFormula formula = ((ComplexFormula)b.phi).formulae[i];
-				
-				if (formula instanceof UnionRefProperty) {
-					return ((UnionRefProperty)formula).unionRef;
-				}
-			}
-		}
-		return null;
-    }
-    
-    public Abducer.Predicate formulaToPredicate(String unionId, SuperFormula cf) {
-    	Abducer.Predicate pred = new Abducer.Predicate();
-    	pred.args = new Abducer.Term[2];
-    	pred.args[0] = AbducerUtils.term(unionId);
-
-    	if (cf instanceof ContinualFormula) {
-    		if (((ContinualFormula)cf).cstatus == ContinualStatus.assertion) {
-    			log("NOT adding an asserted formula");
-    			return null;
-    		}
-    	}
-    	
-    	if (cf instanceof ObjectTypeProperty) {
-    		pred.predSym = "objecttype";
-    		pred.args[1] = AbducerUtils.term( ((ObjectTypeProperty)cf).typeValue.toString() );
-    		return pred;
-    	}
-    	if (cf instanceof ColorProperty) {
-    		pred.predSym = "color";
-    		pred.args[1] = AbducerUtils.term( ((ColorProperty)cf).colorValue.toString() );
-    		return pred;
-    	}
-    	if (cf instanceof ShapeProperty) {
-    		pred.predSym = "shape";
-    		pred.args[1] = AbducerUtils.term( ((ShapeProperty)cf).shapeValue.toString() );
-    		return pred;
-    	}
-    	
-    	return null;
-    }
-    
+        
 	public void syncWithBeliefModel(BeliefModel model) {
-		log("syncing with the belief model");
+		try {
+			log("syncing with the belief model");
 		
-		log("current belief model:\n" + BeliefModelUtils.getBeliefModelPrettyPrint(model, 1));
+			Vector<Belief> vectKBeliefs = new Vector<Belief>();
+			for (int i = 0; i < model.k.length; i++) {
+				vectKBeliefs.add(getBelief(model.k[i]));
+			}
+		
+			BeliefModelSynchronization.sync(ccaEngine.abducer, vectKBeliefs.toArray(new Belief[] {}));
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+/*
+		Map<AgentStatus, Predicate> toAdd = new HashMap<AgentStatus, Predicate>();
 		
 		for (int i = 0 ; i < model.k.length; i++) {
 			Belief b = null;
@@ -508,13 +477,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			}
 		}
 		log("sync done");
-	}
-
-	public AgentStatus[] subsumedAgentStatuses(AgentStatus s) {
-		if (s instanceof AttributedAgentStatus) {
-			return null;
-		}
-		return null;
+*/
 	}
 	
     /**
