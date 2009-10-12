@@ -19,7 +19,7 @@ namespace binder {
      } else if (_config.find("--bsa") != _config.end()) {
        m_bindingSA=_config.find("--bsa")->second;
      } else {
-       m_bindingSA="binding.sa";
+       m_bindingSA="binder";
      }
   }
 
@@ -77,7 +77,7 @@ namespace binder {
 							       const autogen::core::FeatureValues target) {
 
     RelationProxyPtr newProxy = createNewRelationProxy(origin, probExists, source, target);
-    
+
     newProxy->features = features;
 
     return newProxy;
