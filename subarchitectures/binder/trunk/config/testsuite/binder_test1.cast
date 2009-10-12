@@ -1,0 +1,11 @@
+HOST localhost
+
+SUBARCHITECTURE binder 
+
+JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+JAVA WM binder.components.BindingWorkingMemory #--log
+
+JAVA MG binder binder.components.Binder --alpha 0.99f --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt #--log
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false #--log
+
+JAVA MG test1 binder.tests.Test1 #--log
