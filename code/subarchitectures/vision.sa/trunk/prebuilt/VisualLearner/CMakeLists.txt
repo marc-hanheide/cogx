@@ -1,9 +1,9 @@
 ## Use precompiled binaries from SVN for FeatureLearning
 project(VisualLearnerPrebuilt)
 if(UNIX)
-   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../glnx86 ABSOLUTE)
+   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glnx86 ABSOLUTE)
 elseif(WIN32)
-   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../win32  ABSOLUTE)
+   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/win32  ABSOLUTE)
 endif(UNIX)
 
 set (LIBRARY_NAME VisualLearner)
