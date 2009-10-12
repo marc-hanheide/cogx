@@ -21,7 +21,6 @@ import motivation.slice.MotiveStatus;
 import motivation.slice.TestMotive;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
-import motivation.util.castextensions.EventWaiter;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -42,7 +41,6 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	WorkingMemoryChangeReceiver receiver;
 	WMMotiveSet motives;
-	EventWaiter eventWaiter;
 
 	List<MotiveFilter> pipe;
 
@@ -50,7 +48,6 @@ public class MotiveFilterManager extends ManagedComponent {
 		super();
 		pipe = new LinkedList<MotiveFilter>();
 		motives = WMMotiveSet.create(this);
-		eventWaiter = new EventWaiter();
 	}
 
 	@Override
