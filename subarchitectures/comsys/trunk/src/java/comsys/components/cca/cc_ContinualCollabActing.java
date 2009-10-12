@@ -488,23 +488,8 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			if (b == null) {
-				log("b == null !");
-			}
-			else {
-				log("b != null");
-			}
-			
-			if (b.ags == null) {
-				log("b.ags == null !");
-			}
-			else {
-				log("b.ags != null");
-				log(b.ags.getClass().toString());
-				log(MercuryUtils.kModalityToString(AbducerUtils.kModality(b.ags)));
-			}
 
-			log("got a belief, id=" + model.k[i]);
+			//log("got a belief, id=" + model.k[i]);
 			Modality[] mod = new Modality[] { AbducerUtils.kModality(b.ags) };
 			String unionId = referringUnionId(b);
 
