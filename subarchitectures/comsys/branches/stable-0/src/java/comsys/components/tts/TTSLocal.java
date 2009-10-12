@@ -109,19 +109,20 @@ public class TTSLocal {
 			        LineListener lineListener = new LineListener() {
 			            public void update(LineEvent event) {
 			                if (event.getType() == LineEvent.Type.START) {
-			                    System.err.println("Audio started playing.");
+//			                    System.err.println("Audio started playing.");
 			                } else if (event.getType() == LineEvent.Type.STOP) {
-			                    System.err.println("Audio stopped playing.");
+//			                    System.err.println("Audio stopped playing.");
 			                } else if (event.getType() == LineEvent.Type.OPEN) {
-			                    System.err.println("Audio line opened.");
+//			                    System.err.println("Audio line opened.");
 			                } else if (event.getType() == LineEvent.Type.CLOSE) {
-			                    System.err.println("Audio line closed.");
+//			                    System.err.println("Audio line closed.");
 			                }
 			            }
 			        };
 
 			        AudioPlayer ap = new AudioPlayer(ais, lineListener);
 			        ap.start();
+			        ap.join();
 			   
 		   }
 		   catch (Exception e) {e.printStackTrace() ; } 
