@@ -351,7 +351,7 @@ public class Binder extends ManagedComponent  {
 									removeUnionFromConfig(existingUnionConfig, existingUnion);
 							}
 							
-							if (!isConfigurationAlreadyIncluded(currentUnionConfigurations, existingUnionConfig)) {
+							if (!isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
 								newUnionConfigs.add(existingUnionConfig);
 							}
 						}
