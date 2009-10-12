@@ -131,6 +131,9 @@ public class BeliefModelInterface extends ManagedComponent{
 	public void removeBelief (String beliefID) {
 		try {
 			deleteFromWorkingMemory(beliefID, Binder.BINDER_SA);
+			
+			// TODO: also update the belief model
+			
 		}
 		catch (Exception e) {
 			e.printStackTrace();
