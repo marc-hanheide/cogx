@@ -85,8 +85,12 @@
 	<!-- =================================================================== -->
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
-	<target name="clean">
+	<property name="generated.dir"
+              value="${src.dir}/motivation/slice"/>
 
+	<target name="clean">
+	        <delete file="${src.dir}/.depend"/>
+	        <delete dir="${generated.dir}"/>
 	</target>
 
 
