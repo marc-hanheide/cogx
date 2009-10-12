@@ -101,6 +101,9 @@ public class BeliefModelTranslator extends ManagedComponent {
 					// Translate the union configuration into a belief model
 					Vector<Belief> beliefs = extractBeliefs(uc);
 
+					// add non-binder beliefs
+					beliefs.addAll(getNonBinderBeliefs());
+					
 					for (Enumeration<Belief> e = beliefs.elements(); e.hasMoreElements(); ) {
 						Belief curB = e.nextElement();
 						if (isUpdateNeeded(curB)) {
@@ -161,7 +164,28 @@ public class BeliefModelTranslator extends ManagedComponent {
 	}
 	
 	
-	
+	private Vector<Belief> getNonBinderBeliefs() {
+		
+		Vector<Belief> nonbinderbeliefs = new Vector<Belief>();
+		
+		try {
+			CASTData<Belief>[] beliefs = getWorkingMemoryEntries (Belief.class);
+			
+			for (int i = 0; i < beliefs.length ; i++ ) {
+				Belief belief = beliefs[i].getData();
+				if (belief.id.contains("cca")) {
+					nonbinderbeliefs.add(belief);
+				}
+			}
+			
+		}
+		
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return nonbinderbeliefs;
+	}
 	
 
 	/**

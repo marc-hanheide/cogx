@@ -11,9 +11,14 @@
 
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
-
+	
 	<!-- Controls what is compiled -->
 	<property name="src.dir" value="./src/java" />
+	
+	<property name="generated.dir"
+	             value="${src.dir}/binder/autogen"/>
+
+	
 	<property name="slice.dir" value="./src/slice" />
 
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
@@ -69,11 +74,14 @@
 	</target>
 
 	<!-- =================================================================== -->
-	<!-- Cleanup                                                             -->
+	<!-- Clean                                                             -->
 	<!-- =================================================================== -->
-	<target name="clean">
+	
 
-	</target>
+		<target name="clean">
+		        <delete file="${src.dir}/.depend"/>
+		        <delete dir="${generated.dir}"/>
+		</target>
 
 
 </project>
