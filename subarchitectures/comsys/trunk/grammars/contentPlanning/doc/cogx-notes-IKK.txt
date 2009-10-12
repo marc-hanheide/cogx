@@ -34,7 +34,7 @@ Distinguish feedback according to <Modality>
 DORA: "going to the kitchen"
 
 "I (do not) know this is red"
-"I (do not) know what this is red"
+"I (do not) know what this is"
   @know1_0:cognition(know ^ 
                      <Mood>ind ^ 
                      <Tense>pres ^ 

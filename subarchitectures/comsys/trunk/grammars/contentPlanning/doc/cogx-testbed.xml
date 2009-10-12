@@ -82,6 +82,19 @@
 <utterance>
 <input>
 <!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>filler)
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\filler)
+</input>
+<realizations>
+<string>aha</string>
+<string>hum</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
 @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>hold)
 -->
 @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\hold)

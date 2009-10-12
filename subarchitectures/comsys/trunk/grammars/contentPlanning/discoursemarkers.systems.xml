@@ -136,6 +136,14 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
        <add-proposition propositions="@sorry" />
       </action>      
 
+      <action choice="filler-hum">
+       <add-proposition propositions="@hum" />
+      </action>      
+
+     <action choice="filler-aha">
+       <add-proposition propositions="@aha" />
+      </action>      
+
    </actions>
 </system>
 
