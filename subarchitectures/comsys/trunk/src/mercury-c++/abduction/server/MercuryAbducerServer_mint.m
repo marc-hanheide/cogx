@@ -8,8 +8,8 @@
 
 :- type load_result
 	--->	ok
-	;	file_not_found
-	;	syntax_error(string)
+	;	file_read_error
+	;	syntax_error(string, int)
 	.
 
 :- func srv_init_ctx = ctx.
@@ -37,8 +37,8 @@
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- pred load_result_is_ok(load_result::in) is semidet.
-:- pred load_result_is_file_not_found(load_result::in) is semidet.
-:- pred load_result_is_syntax_error(load_result::in, string::out) is semidet.
+:- pred load_result_is_file_read_error(load_result::in) is semidet.
+:- pred load_result_is_syntax_error(load_result::in, string::out, int::out) is semidet.
 
 %------------------------------------------------------------------------------%
 
@@ -102,14 +102,12 @@ srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
 					Continue = yes
 				else
 					context(_, Line) = get_term_context(Term),
-					LoopResult = syntax_error("Syntax error in rules file `" ++ Filename
-							++ "' at line " ++ string.from_int(Line) ++ "."),
+					LoopResult = syntax_error("Unable to convert term to rule", Line),
 					Continue = no
 				)
 			;
 				ReadResult = error(Message, Linenumber),
-				LoopResult = syntax_error(Message ++ " in rules file `" ++ Filename
-						++ "' at line " ++ string.from_int(Linenumber) ++ "."),
+				LoopResult = syntax_error(Message, Linenumber),
 				Continue = no
 			;
 				ReadResult = eof,
@@ -119,7 +117,7 @@ srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
 				), Result, !Ctx, !IO),
 		seen(!IO)
 	else
-		Result = file_not_found
+		Result = file_read_error
 	).
 
 
@@ -175,14 +173,12 @@ srv_load_facts_from_file(Filename, Result, !Ctx, !IO) :-
 					Continue = yes
 				else
 					context(_, Line) = get_term_context(Term),
-					LoopResult = syntax_error("Syntax error in facts file `" ++ Filename
-							++ "' at line " ++ string.from_int(Line) ++ "."),
+					LoopResult = syntax_error("Unable to convert term to modalised formula", Line),
 					Continue = no
 				)
 			;
 				ReadResult = error(Message, Linenumber),
-				LoopResult = syntax_error(Message ++ " in facts file `" ++ Filename 
-						++ "' at line " ++ string.from_int(Linenumber) ++ "."),
+				LoopResult = syntax_error(Message, Linenumber),
 				Continue = no
 			;
 				ReadResult = eof,
@@ -191,7 +187,7 @@ srv_load_facts_from_file(Filename, Result, !Ctx, !IO) :-
 			)
 				), Result, !Ctx, !IO)
 	else
-		Result = file_not_found
+		Result = file_read_error
 	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -276,9 +272,9 @@ srv_proof_summary(Proof, Ctx, !IO) :-
 %------------------------------------------------------------------------------%
 
 :- pragma foreign_export("C", load_result_is_ok(in), "load_result_is_ok").
-:- pragma foreign_export("C", load_result_is_file_not_found(in), "load_result_is_file_not_found").
-:- pragma foreign_export("C", load_result_is_syntax_error(in, out), "load_result_is_syntax_error").
+:- pragma foreign_export("C", load_result_is_file_read_error(in), "load_result_is_file_read_error").
+:- pragma foreign_export("C", load_result_is_syntax_error(in, out, out), "load_result_is_syntax_error").
 
 load_result_is_ok(ok).
-load_result_is_file_not_found(file_not_found).
-load_result_is_syntax_error(syntax_error(Msg), Msg).
+load_result_is_file_read_error(file_read_error).
+load_result_is_syntax_error(syntax_error(Msg, Line), Msg, Line).
