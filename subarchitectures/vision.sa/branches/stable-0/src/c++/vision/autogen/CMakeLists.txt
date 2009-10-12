@@ -10,9 +10,9 @@ cast_slice2cpp(GEN_CPP GEN_HPP VisionData.ice ${CAST_SLICE_DIR}
     ${COGX_ROOT}/tools/hardware/video/src/slice)
 #    ${COGX_ROOT}/tools/hardware/stereo/src/slice)
 
-cast_slice2cpp(GEN_CPP_ML GEN_HPP_ML MatlabData.ice ${CAST_SLICE_DIR}
-    ${COGX_ROOT}/tools/math/src/slice
-    ${COGX_ROOT}/tools/hardware/video/src/slice)
+#cast_slice2cpp(GEN_CPP_ML GEN_HPP_ML MatlabData.ice ${CAST_SLICE_DIR}
+#    ${COGX_ROOT}/tools/math/src/slice
+#    ${COGX_ROOT}/tools/hardware/video/src/slice)
 #    ${COGX_ROOT}/tools/hardware/stereo/src/slice)
 add_library(VisionData SHARED ${GEN_CPP} ${GEN_CPP_ML})
 target_link_libraries(VisionData CDL)
