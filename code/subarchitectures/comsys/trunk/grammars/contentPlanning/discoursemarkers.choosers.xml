@@ -124,6 +124,17 @@
                  </choicenode>
 	     </choicenode>
          
+         <choicenode answer="filler">  <!-- FILLER -->
+              <inquiry id="random" type="string" answerset="@filler-aha @filler-hum"> 
+              </inquiry>
+              <choicenode answer="filler-aha">
+                  <result val="filler-aha"/>
+              </choicenode>
+              <choicenode answer="filler-hum">
+                  <result val="filler-hum"/>
+              </choicenode>
+	     </choicenode>
+         
 	</choicenode>
    </dectree>
 </chooser>
