@@ -95,10 +95,13 @@ void VisualLearner::runComponent()
             VisualLearnerRecognitionTaskPtr pTaskData;
             try{
                // get the data from working memory
-               pTaskData = getWorkingMemoryEntry<VisualLearnerRecognitionTask>(*pwma)->getData();
+               pTaskData = getMemoryEntry<VisualLearnerRecognitionTask>(*pwma);
 
                // TODO: check if pTaskData is valid
-               recogniseAttributes(pTaskData);
+               // TODO: lock pTaskData
+               recogniseAttributes(pTaskData); // TODO: if recogn... then overwr...
+               overwriteWorkingMemory(*pwma, pTaskData);
+               // TODO: unlock pTaskData
             }
             catch(cast::DoesNotExistOnWMException){
                log("VisualLearner: VisualLearnerRecognitionTask deleted while working...\n");
@@ -128,11 +131,28 @@ void VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    // get the SOI data nah: this is naughty, but as we're overwriting
    // the soi in wm anyway it's not too bad
 
-   //FIX ME --- probably can optimise
-   AttrObjectPtr pAttrObject = new AttrObject();
-   //ProtoObjectPtr pProtoObject = (_pData->getData()); //*_pData->getData());
+   cdl::WorkingMemoryAddress addr;
+   addr.subarchitecture = getSubarchitectureID();
+   addr.id = _pTask->protoObjectId;
+   ProtoObjectPtr pProtoObj = getMemoryEntry<ProtoObject>(addr);
+   // TODO: lock pProtoObj
 
-   //VL_recognise_attributes(*pAttrObject, _pProtoObj->getData());
+   // FIXME --- probably can optimise
+   AttrObjectPtr pAttrObject = new AttrObject(); // will not be added to WM
+   VL_recognise_attributes(*pAttrObject, *pProtoObj);
+   // copy from pAttrObject to _pTask
+   _pTask->colorLabel.clear();
+   _pTask->colorDistr.clear();
+   vector<string>::const_iterator pstr;
+   for( pstr = pAttrObject->colorLabel.begin(); pstr != pAttrObject->colorLabel.end(); pstr++) {
+      _pTask->colorLabel.push_back(*pstr);
+   }
+   vector<double>::const_iterator pdbl;
+   for( pdbl = pAttrObject->colorDistr.begin(); pdbl != pAttrObject->colorDistr.end(); pdbl++) {
+      _pTask->colorDistr.push_back(*pdbl);
+   }
+   // delete pAttrObject;
+   // TODO: unlock pProtoObj
 
    // Now write this back into working memory, this will manage the memory for us.
    //debug("::recogniseAttributes writing");

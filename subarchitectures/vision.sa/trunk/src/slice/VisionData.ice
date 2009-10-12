@@ -206,8 +206,8 @@ module VisionData {
     string protoObjectId;
 
     // RESPONSE
-    StringSeq labels;
-    DoubleSeq something;
+    StringSeq colorLabel;
+    DoubleSeq colorDistr;
   };
   
   struct SegmentMask {
