@@ -38,6 +38,9 @@
   <systems file="voice.systems.xml"/>
   <choosers file="voice.choosers.xml"/>
 
+  <systems file="polarity.systems.xml"/>
+  <choosers file="polarity.choosers.xml"/>
+
   <systems file="transitivity.systems.xml"/> 
   <choosers file="transitivity.choosers.xml"/> 
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-polarity" region="POLARITY" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
+		    <q-ex-fv feat="AnswerType" val="negative" nomvar="DVP" />
+		 </inquiry>			
+		 <choicenode answer = "true">  
+			<result val="polarity-negative"/>			
+		 </choicenode>
+		 <choicenode answer = "false">
+			<result val="polarity-positive"/>
+		 </choicenode>
+		 <choicenode answer = "unknown">
+			<result val="polarity-positive"/>
+	     </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+</choosers>
