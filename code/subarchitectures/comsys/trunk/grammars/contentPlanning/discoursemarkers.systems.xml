@@ -28,30 +28,30 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 <!-- Honestly, what are the vision-... feedbacks doing? They are interrogative, so they seem to be asking for ackno, rather than giving it -->
 
 		<action choice="vision-ackno1">  <!-- what do I have here --> 
-			<add-lf lf="@content:ascription(have ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c1:m-location ^ context ^ &lt;Proximity&gt;m-proximal) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> 
+			<add-lf lf="@content:ascription(have ^ &lt;Mood&gt;int ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c1:m-location ^ context ^ &lt;Proximity&gt;m-proximal) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/> 
 		</action>
 		<action choice="vision-ackno2">  <!-- what can I see -->
-			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(c1:modal ^ can) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/>
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(c1:modal ^ can) ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/>
 		</action>		
 		<action choice="vision-ackno3">  <!-- what do I see -->
-			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Subject&gt;i1:person ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/>
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;int ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Patient&gt;(w1:entity ^ what) ^ &lt;Wh-Restr&gt;w1:entity)" dest="CONTENT"/>
 		</action>			
 	
 		<action choice="vision-rej1">  <!-- I don't believe I have seen that -->
-			<add-lf lf="@content:cognition(believe ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s1:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Subject&gt;i2:person) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+			<add-lf lf="@content:cognition(believe ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s1:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific)))" dest="CONTENT"/> 
 		</action>
 		<action choice="vision-rej2">  <!-- I can't say I have seen that -->
-			<add-lf lf="@content:communication(say ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s2:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Subject&gt;i2:person) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 		
+			<add-lf lf="@content:communication(say ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Event&gt;(s2:perception ^ see ^ &lt;Aspect&gt;perfect ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i2:person ^ I) ^ &lt;Event&gt;(c1:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific)) ^ &lt;Modifier&gt;(c2:modal ^ can))" dest="CONTENT"/> 		
 		</action>		
 		<action choice="vision-rej3">  <!-- I must be looking at another table -->
-			<add-lf lf="@content:perception(look ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Modifier&gt;(m1:modal ^ must) ^ &lt;Modifier&gt;(a1:m-location ^ at ^ &lt;Anchor&gt;(t1:thing ^ table ^ &lt;Modifier&gt;(a2:quantity ^ another))) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/> 
+			<add-lf lf="@content:perception(look ^ &lt;Aspect&gt;continuous ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I) ^ &lt;Modifier&gt;(m1:modal ^ must) ^ &lt;Modifier&gt;(a1:m-location ^ at ^ &lt;Anchor&gt;(t1:thing ^ table ^ &lt;Modifier&gt;(a2:quantity ^ another))))" dest="CONTENT"/> 
 		</action>
 
 
   
 		<action choice="action-ackno1">  <!-- I can do that -->
             
-			<add-lf lf="@content:event(do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person)" dest="CONTENT"/>
+			<add-lf lf="@content:event(do ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific) ^ &lt;Modifier&gt;(c2:modal ^ can))" dest="CONTENT"/>
 		</action>
 
 			<!-- <add-lf lf="@l1:d-units(list ^ &lt;First&gt;(o1:marker ^ ok) ^ &lt;Next&gt;(d11:event ^ do ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(c11:event ^ context ^ &lt;Proximity&gt;e-distal) ^ &lt;Modifier&gt;(c2:modal ^ can) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>-->
@@ -60,13 +60,13 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
 			<add-lf lf="@content:thing(thing ^ &lt;Modifier&gt;(s1:q-attitude ^ sure))" dest="CONTENT"/>
 		</action>
 
-		<action choice="action-ackno3">  
-			<add-lf lf="@content:d-units(list ^ &lt;First&gt;(y1:marker ^ yes) ^ &lt;Next&gt;(t1:modal ^ try ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c11:modal ^ could) ^ &lt;Subject&gt;i1:person))" dest="CONTENT"/>
+		<action choice="action-ackno3">   <!-- yes I could try ; STRANGE THINGS HAPPEN HERE -->
+			<add-lf lf="@content:d-units(list ^ &lt;First&gt;(y1:marker ^ yes) ^ &lt;Next&gt;(t1:modal ^ try ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Modifier&gt;(c11:modal ^ could)))" dest="CONTENT"/>
 		</action>  
   
 
       <action choice="hold">
-	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:animate ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:animate) ^ &lt;Patient&gt;(i1_0:animate ^ I) ^ &lt;Subject&gt;addressee1_0:animate)" dest="CONTENT" />
+	   <add-lf lf="@content:modal(let ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(addressee1_0:animate ^ addressee) ^ &lt;Event&gt;(see1_0:perception ^ see ^ &lt;Actor&gt;i1_0:animate) ^ &lt;Patient&gt;(i1_0:animate ^ I))" dest="CONTENT" />
 <!-- PROBLEM WITH INCOMPLETE EDGE -->
 
 <!--  <add-lf lf="@content:perception(see ^ &lt;Mood&gt;imp ^ &lt;Actor&gt;(act:person ^ speaker+addressee) ^ &lt;Subject&gt;act:person)" dest="CONTENT" />   THIS PARSES (let's see), BUT DOES NOT GENERATE -->
@@ -87,7 +87,8 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
       </action>      
 
       <action choice="accept-isee">
-			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>
+<!--			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person"   dest="CONTENT"/>  -->
+			<add-lf lf="@content:perception(see ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(i1:person ^ I )"   dest="CONTENT"/>
       </action>      
 
       <action choice="reject-sorry">
@@ -99,7 +100,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
       </action>
 
       <action choice="reject-dontthinkthat">
-			<add-lf lf="@content:cognition(think ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Subject&gt;i1:person ^ &lt;Event&gt;(context1_0:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific)" 
+			<add-lf lf="@content:cognition(think ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i1:person ^ I ) ^ &lt;Event&gt;(context1_0:event ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ^ &lt;Quantification&gt;specific)" 
                     dest="CONTENT"/>
       </action>      
 
@@ -160,7 +161,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
       </action>	  
 
 	<action choice="thanks">	
-			<add-lf lf="@content:communication(thank ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Actor&gt;(speaker1_0:person ^ speaker ^ &lt;Num&gt;sg)  ^  &lt;Recipient&gt;(addressee1_0:person ^ addressee))" dest="CONTENT"/>
+			<add-lf lf="@content:communication(thank ^ &lt;Mood&gt;ind ^ &lt;Actor&gt;(speaker1_0:person ^ speaker ^ &lt;Num&gt;sg)  ^  &lt;Recipient&gt;(addressee1_0:person ^ addressee))" dest="CONTENT"/>
 		</action>
 
    </actions>
@@ -201,12 +202,12 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences, the top nominal 
    <actions>
 	  <!-- what did you just mean ? -->
       <action choice="parser-neg-var1">
-			<add-lf lf="@content:cognition(mean ^ &lt;Mood&gt;int ^ &lt;Tense&gt;past ^ &lt;Actor&gt;(y1:person ^ you ^ &lt;Num&gt;sg ) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(j1:m-time ^ just) ^ &lt;Subject&gt;y1:person ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/> 
+			<add-lf lf="@content:cognition(mean ^ &lt;Mood&gt;int ^ &lt;Tense&gt;past ^ &lt;Actor&gt;(y1:person ^ you ^ &lt;Num&gt;sg ) ^ &lt;Event&gt;(w1:event ^ what) ^ &lt;Modifier&gt;(j1:m-time ^ just) ^ &lt;Wh-Restr&gt;w1:event)" dest="CONTENT"/> 
       </action>	  
 
 	  <!-- I am sorry but I could not understand that -->
       <action choice="parser-neg-var2">
-			<add-lf lf="@content:event(but ^ &lt;First&gt;(b2:ascription ^ be ^ &lt;Mood&gt;ind ^ &lt;Tense&gt;pres ^ &lt;Cop-Restr&gt;(i1:person ^ I ) ^ &lt;Cop-Scope&gt;(s1:q-attitude ^ sorry) ^ &lt;Subject&gt;i1:person) ^ &lt;Next&gt;(u1:cognition ^ understand ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i2:person ^ I ) ^ &lt;Modifier&gt;(c1:modal ^ could) ^ &lt;Patient&gt;(c2:entity ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal ) ^ &lt;Subject&gt;i2:person))" dest="CONTENT"/> 
+			<add-lf lf="@content:event(but ^ &lt;First&gt;(b2:ascription ^ be ^ &lt;Mood&gt;ind ^ &lt;Cop-Restr&gt;(i1:person ^ I ) ^ &lt;Cop-Scope&gt;(s1:q-attitude ^ sorry) ^ &lt;Subject&gt;i1:person) ^ &lt;Next&gt;(u1:cognition ^ understand ^ &lt;Mood&gt;ind ^ &lt;Polarity&gt;neg ^ &lt;Actor&gt;(i2:person ^ I ) ^ &lt;Modifier&gt;(c1:modal ^ could) ^ &lt;Patient&gt;(c2:entity ^ context ^ &lt;Delimitation&gt;unique ^ &lt;Proximity&gt;distal )))" dest="CONTENT"/> 
       </action>	  
  
    </actions>

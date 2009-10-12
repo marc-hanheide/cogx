@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+<!-- /**
+
+@system voice
+
+Currently always decides for active voice.
+Inserts <Subject> coreferential with <Actor> if there is one
+Ignores <Cop-Restr> in ascriptions for now, because there the coref subject is inserted in the corresponding system.
+
+*/ --> 
+
+<system id="voice" region="VOICE" metafunction="ideational">
+   <chooser id="default"/> 
+   <conditions>
+      <condition features="@rel:Actor"/>   
+   </conditions>
+   <actions>
+      <action choice="default">
+        <!-- add subject coreferential with Actor -->
+	    <identify-nomvar mode="Actor" dest="ACTOR" scope="global"/>
+        <add-relation mode="Subject" dest="ACTOR" type="*VAR*"/> 
+      </action>     
+   </actions>
+</system>
+
+</systems>
