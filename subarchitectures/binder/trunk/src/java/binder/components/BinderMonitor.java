@@ -57,6 +57,7 @@ public class BinderMonitor extends ManagedComponent {
 	// Vector listing all the unions currently in the WM
 	private Vector<Union> lastUnions;
 	
+	static final boolean REGENERATE_UNIONS = true;
 	
 	/**
 	 * Initialisation of the monitor
@@ -199,13 +200,13 @@ public class BinderMonitor extends ManagedComponent {
 					proxiesToDelete.add(proxy);
 				}
 			}
-			
+			 
 			// Check if unions need to be deleted from the monitor
 			for (Enumeration<Union> e = lastUnions.elements(); e.hasMoreElements(); ) {
 				Union union = e.nextElement();
-		//		if (!UnionsV.contains(union)) {
+				if (!UnionsV.contains(union) || REGENERATE_UNIONS) {
 					UnionsToDelete.add(union);
-		//		}
+				}
 			}
 		}
 		catch (Exception e) {

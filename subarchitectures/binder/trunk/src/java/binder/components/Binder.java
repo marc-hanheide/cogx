@@ -178,6 +178,7 @@ public class Binder extends ManagedComponent  {
 		currentUnionConfigurations = new Vector<UnionConfiguration>();
 		UnionConfiguration initialConfig = new UnionConfiguration();
 		initialConfig.includedUnions = new Union[0];
+		initialConfig.orphanProxies = new Proxy[0];
 		currentUnionConfigurations.add(initialConfig);
 	}
 
@@ -430,7 +431,6 @@ public class Binder extends ManagedComponent  {
 	// INCREMENTAL AND FULL BINDING METHODS   
 	// ================================================================= 
 
-
 	/**
 	 * Update the binding working memory by recomputing the union configurations
 	 * after the insertion of a new proxy
@@ -461,28 +461,24 @@ public class Binder extends ManagedComponent  {
 			// loop on the current union configurations
 			for (Enumeration<UnionConfiguration> configs = 
 				currentUnionConfigurations.elements() ; configs.hasMoreElements(); ) {
-                //make a copy of relation unions for each configuration
-                //because source and target may be different in different configs
-				if (newUnion instanceof RelationUnion) {
-                    newUnion = constructor.constructInitialUnion(newProxy, newDataID(), getCASTTime());
-                    //log("new relation: " + newUnion.entityID +" from "+ newProxy.entityID);
-                }
 
 				UnionConfiguration existingUnionConfig = configs.nextElement();				
 
+				// create a new configuration with an orphan proxy (proxy without corresponding union)
+				UnionConfiguration unionConfigWithOrphanProxy = 
+					createNewUnionConfigurationWithOrphanProxy(existingUnionConfig, newProxy);
+				newUnionConfigs.add(unionConfigWithOrphanProxy);
+				
+				
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
 					createNewUnionConfiguration (existingUnionConfig, newUnion);
 				newUnionConfigs.add(newConfigWithSingleUnion);	
 
-                //FIXME: Don't bind relation proxies as it doesn't work
-				if (newUnion instanceof RelationUnion) {
-                    continue;
-                }
 				
-				//if (newUnion instanceof RelationUnion) {
-				//	specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
-				//}
+				if (newUnion instanceof RelationUnion) {
+					specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
+				}
 				
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
@@ -503,9 +499,9 @@ public class Binder extends ManagedComponent  {
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
-							//if (newMergedUnion instanceof RelationUnion) {
-							//	specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
-							//}
+							if (newMergedUnion instanceof RelationUnion) {
+								specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
+							}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						} 
@@ -836,6 +832,28 @@ public class Binder extends ManagedComponent  {
 		return alters;
 	}
 
+	
+
+	private UnionConfiguration createNewUnionConfigurationWithOrphanProxy
+		(UnionConfiguration existingUnionConfig, Proxy orphan) {
+	
+		UnionConfiguration unionConfigWithOrphanProxy = new UnionConfiguration();
+		unionConfigWithOrphanProxy.includedUnions = existingUnionConfig.includedUnions;
+		if (existingUnionConfig.orphanProxies != null) {
+		unionConfigWithOrphanProxy.orphanProxies = new Proxy[existingUnionConfig.orphanProxies.length +1 ];
+		for (int t = 0; t < existingUnionConfig.orphanProxies.length ; t++) {
+			unionConfigWithOrphanProxy.orphanProxies[t] = existingUnionConfig.orphanProxies[t];
+		}
+		unionConfigWithOrphanProxy.orphanProxies[existingUnionConfig.orphanProxies.length] = orphan;
+		}
+		else {
+			unionConfigWithOrphanProxy.orphanProxies = new Proxy[1];
+			unionConfigWithOrphanProxy.orphanProxies[0] = orphan;
+		}
+		
+		return unionConfigWithOrphanProxy;
+	}
+
 
 	/**
 	 * Create a new union configuration based on an existing one and a new union 
@@ -868,8 +886,6 @@ public class Binder extends ManagedComponent  {
 		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, unionsToRemove);
 	}
 
-
-
 	/**
 	 * Create a new union configuration based on an existing configuration, a new
 	 * union to add, and a list of unions to remove
@@ -886,6 +902,7 @@ public class Binder extends ManagedComponent  {
 		UnionConfiguration newConfig = new UnionConfiguration();
 		int nbUnions = existingUnionConfig.includedUnions.length + 1 - unionsToRemove.size();
 		newConfig.includedUnions = new Union[nbUnions];
+		newConfig.orphanProxies = existingUnionConfig.orphanProxies;
 
 		int count = 0;
 		for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
@@ -899,18 +916,9 @@ public class Binder extends ManagedComponent  {
 
 		newConfig.includedUnions[nbUnions - 1] = unionToAdd;
 
-        // Recompute source and target for all relations
-        log("prob:" + existingUnionConfig.configProb);
-        for (int i = 0 ; i < newConfig.includedUnions.length; i++) {
-            Union existingUnion = newConfig.includedUnions[i];
-            if (existingUnion instanceof RelationUnion) {
-                specifyUnionSourceAndTarget((RelationUnion)existingUnion, newConfig);
-            }
-        }
-
 		return newConfig;
-
 	}
+	
 
 	/**
 	 * Check if the two unions are from different originating subarchitectures
