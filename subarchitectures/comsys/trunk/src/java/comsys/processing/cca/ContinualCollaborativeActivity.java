@@ -146,7 +146,7 @@ public class ContinualCollaborativeActivity {
 			abducer.loadRulesFromFile(generateRulesFilename);
 		}
 		catch (AbducerException e) {
-			System.err.println(e.message);
+			e.printStackTrace();
 		}
 	} // end 
 	

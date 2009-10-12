@@ -102,13 +102,14 @@ srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
 					Continue = yes
 				else
 					context(_, Line) = get_term_context(Term),
-					LoopResult = syntax_error("Syntax error in rule file " ++ Filename
-							++ " at line " ++ string.from_int(Line) ++ "."),
+					LoopResult = syntax_error("Syntax error in rules file `" ++ Filename
+							++ "' at line " ++ string.from_int(Line) ++ "."),
 					Continue = no
 				)
 			;
 				ReadResult = error(Message, Linenumber),
-				LoopResult = syntax_error(Message ++ " at line " ++ string.from_int(Linenumber) ++ "."),
+				LoopResult = syntax_error(Message ++ " in rules file `" ++ Filename
+						++ "' at line " ++ string.from_int(Linenumber) ++ "."),
 				Continue = no
 			;
 				ReadResult = eof,
@@ -174,13 +175,14 @@ srv_load_facts_from_file(Filename, Result, !Ctx, !IO) :-
 					Continue = yes
 				else
 					context(_, Line) = get_term_context(Term),
-					LoopResult = syntax_error("Syntax error in facts file " ++ Filename
-							++ " at line " ++ string.from_int(Line) ++ "."),
+					LoopResult = syntax_error("Syntax error in facts file `" ++ Filename
+							++ "' at line " ++ string.from_int(Line) ++ "."),
 					Continue = no
 				)
 			;
 				ReadResult = error(Message, Linenumber),
-				LoopResult = syntax_error(Message ++ " at line " ++ string.from_int(Linenumber) ++ "."),
+				LoopResult = syntax_error(Message ++ " in facts file `" ++ Filename 
+						++ "' at line " ++ string.from_int(Linenumber) ++ "."),
 				Continue = no
 			;
 				ReadResult = eof,
