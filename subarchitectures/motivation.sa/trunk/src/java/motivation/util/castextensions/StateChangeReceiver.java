@@ -87,6 +87,7 @@ public class StateChangeReceiver<EntryType extends Ice.Object, MemberType>
 				m_startTransition = checkEquals(value, m_before);
 			} else {
 				if (checkEquals(value, m_after)) {
+					m_startTransition = false;
 					return true;
 				}
 				else if(!m_allowIntermediateChanges && !checkEquals(value, m_before)) {
