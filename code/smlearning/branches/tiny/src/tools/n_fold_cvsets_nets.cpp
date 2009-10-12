@@ -1,5 +1,5 @@
 #include <tools/data_handling.h>
-#include <metalearning/OfflineRNN.h>
+#include <metalearning/RNN.h>
 
 using namespace smlearning;
 

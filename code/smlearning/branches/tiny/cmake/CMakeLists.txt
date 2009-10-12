@@ -60,9 +60,10 @@ FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex )
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
-LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI Golem GolemTinyIce
-			   pthread rt GL glut expat SMLearning netcdf
- 			   rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY})
+LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
+               GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools GolemTinyIce
+	       pthread rt GL glut expat SMLearning netcdf
+ 	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY})
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}
@@ -86,9 +87,11 @@ LINK_DIRECTORIES(
 )
 
 SET(METALEARNING_SOURCES
+	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
+	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
-	${SMLEARNING_ROOT}/src/metalearning/OfflineRNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
+	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
 )
 
 SET(OFFLINE_EXPERIMENT_SOURCE
@@ -104,9 +107,11 @@ SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
 )
 
 SET(METALEARNING_HEADERS
+	${SMLEARNING_ROOT}/include/metalearning/RNN.h
+	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
-	${SMLEARNING_ROOT}/include/metalearning/OfflineRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
+	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
 

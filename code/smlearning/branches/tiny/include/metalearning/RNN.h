@@ -1,4 +1,4 @@
-/** @file OfflineRNN.h
+/** @file RNN.h
  * 
  * 
  * @author	Sergio Roa (DFKI)
@@ -33,15 +33,13 @@ namespace smlearning {
 ///
 ///encapsulation of structs to generate RNNs config files in offline experiments
 ///
-class OfflineRNN {
+struct RNN {
 
 	rnnlib::Mdrnn *net;
 	rnnlib::ConfigFile conf;
 	string task;
 	
- public:
-
-	OfflineRNN () : conf ("/usr/local/bin/SMLearning/defaultnet.config") {
+	RNN () : conf ("/usr/local/bin/SMLearning/defaultnet.config") {
 		//data loaded in from config file (default values below)
 		rnnlib::GlobalVariables::instance().setVerbose (false);
 		task = conf.get<string>("task");
@@ -58,14 +56,20 @@ class OfflineRNN {
 	ostream& save_config_file (ostream& out = cout);
 
 	///
-	///open RNN for verification
+	///construct RNN machine using config data
 	///
-	void load_net (ostream& out = cout);
+	virtual void build () { };
 
 	///
 	///read config file data from a given file
 	///
 	void set_config_file (rnnlib::ConfigFile &configFile);
+
+};
+
+struct OfflineRNN :  RNN {
+
+	OfflineRNN () : RNN () { }
 
 	///
 	///set test data file to be used with the RNN
@@ -76,6 +80,12 @@ class OfflineRNN {
 	///set train data file to be used with the RNN
 	///
 	void set_traindatafile (string fileName);
+
+	///
+	///construct RNN machine using config data
+	///
+	virtual void build (ostream& out = cout);
+	
 };
 
 ///

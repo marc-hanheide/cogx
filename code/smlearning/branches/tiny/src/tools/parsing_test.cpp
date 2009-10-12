@@ -1,4 +1,4 @@
-#include <metalearning/OfflineRNN.h>
+#include <metalearning/RNN.h>
 
 using namespace smlearning;
 
@@ -10,7 +10,7 @@ int main(int argc, char * argv[]) {
 	myRNN.set_config_file (conf);
 	myRNN.set_testdatafile ("/usr/local/bin/SMLearning/valid.nc");
 	myRNN.set_traindatafile ("/usr/local/bin/SMLearning/train.nc");
-	myRNN.load_net ();
+	myRNN.build ();
 	myRNN.print_net_data ();
 	myRNN.save_config_file (cout);
 	return 0;

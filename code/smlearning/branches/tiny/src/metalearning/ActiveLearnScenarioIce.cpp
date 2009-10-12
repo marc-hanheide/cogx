@@ -35,96 +35,16 @@
  
  */
 
-#include <metalearning/ScenarioIce.h>
+#include <metalearning/ActiveLearnScenarioIce.h>
 
 namespace smlearning {
 
-
-///
-///creates a polyflap object
-///
-void ScenarioIce::setupPolyflap(TinyPrx &pTiny, RigidBodyPrx& pObject, golem::tinyice::Vec3 position, Real rotationZ, golem::tinyice::Vec3 dimensions) {
-
-	// setup an object (polyflap) as a set of two boxes
-	RigidBodyDesc* pObjectDesc = new RigidBodyDescI;
-	const Real objectWidthY = dimensions.v1 * 0.5;
-	const Real objectWidthZ = dimensions.v1 * 0.5;
-	const Real objectLength = dimensions.v2 * 0.5;
-	const Real objectHeight = dimensions.v3 * 0.5;
-	const Real objectAngle = 0.5*REAL_PI;
-	const Real objectThickness = 0.001;
-	// Y-up shape
-	BoxShapeDesc* pYShapeDesc = new BoxShapeDescI;
-	pYShapeDesc->dimensions.v1 = objectWidthY;
-	pYShapeDesc->dimensions.v2 = objectLength;
-	pYShapeDesc->dimensions.v3 = objectThickness;
-	pYShapeDesc->localPose.p.v1 = 0.0;
-	pYShapeDesc->localPose.p.v2 = objectLength;
-	pYShapeDesc->localPose.p.v3 = objectThickness;
-	pYShapeDesc->density = 0.5;
-	pObjectDesc->shapes.push_back(ShapeDescPtr(pYShapeDesc));
-	// Y-up shape
-	BoxShapeDesc* pZShapeDesc = new BoxShapeDescI;
-	double objectSin = ::sin(objectAngle), objectCos = ::cos(objectAngle);
-	pZShapeDesc->dimensions.v1 = objectWidthZ;
-	pZShapeDesc->dimensions.v2 = objectHeight;
-	pZShapeDesc->dimensions.v3 = objectThickness;
-	pZShapeDesc->localPose.p.v1 = 0.0;
-	pZShapeDesc->localPose.p.v2 = objectCos*objectHeight;
-	pZShapeDesc->localPose.p.v3 = objectSin*objectHeight + objectThickness;
-	pZShapeDesc->density = 0.5;
-	rotX(pZShapeDesc->localPose.R, objectAngle);
-	pObjectDesc->shapes.push_back(ShapeDescPtr(pZShapeDesc));
-	// global pose
-	pObjectDesc->globalPose.p.v1 = position.v1;
-	pObjectDesc->globalPose.p.v2 = position.v2;
-	pObjectDesc->globalPose.p.v3 = position.v3;
-	rotZ(pObjectDesc->globalPose.R, rotationZ);
-	// delete previous object, create a new one. Optionally only global pose can be set
-	if (pObject)
-		pTiny->releaseActor(pObject);
-	pObject = RigidBodyPrx::checkedCast(pTiny->createActor(ActorDescPtr(pObjectDesc)));
-}
-
-
-///
-///create finger
-///
-void ScenarioIce::createFinger(JointPrx& pEffector, ArmPrx& pArm) {
-
-	// get the end-effector reference pose
-	golem::tinyice::Mat34 referencePose = pArm->getReferencePose();
-
-	const double fingerLength = 0.1;
-	const double fingerDiam = 0.005;
-	const double fingerTipRadius = 0.015;
-	BoxShapeDesc* pFingerRodShapeDesc = new BoxShapeDescI;
-	pFingerRodShapeDesc->dimensions.v1 = fingerDiam/2.0;
-	pFingerRodShapeDesc->dimensions.v2 = fingerLength/2.0;
-	pFingerRodShapeDesc->dimensions.v3 = fingerDiam/2.0;
-	pFingerRodShapeDesc->localPose = referencePose;
-	pFingerRodShapeDesc->localPose.p.v2 += fingerLength/2.0;
-	ShapePrx pFingerRodShape = pEffector->createShape(ShapeDescPtr(pFingerRodShapeDesc));
-	SphereShapeDesc* pFingerTipShapeDesc = new SphereShapeDescI;
-	pFingerTipShapeDesc->radius = fingerTipRadius;
-	pFingerTipShapeDesc->localPose = referencePose;
-	pFingerTipShapeDesc->localPose.p.v2 += fingerLength;
-	ShapePrx pFingerTipShape = pEffector->createShape(ShapeDescPtr(pFingerTipShapeDesc));
-	// change reference pose, so the end-effector pose will be further referred to the finger tip
-	referencePose.p.v2 += fingerLength;
-	pArm->setReferencePose(referencePose);
-	
-}
-
-
-
 ///
 ///The experiment performed in this method behaves as follows:
-///The arm randomly selects any of the possible actions.
-///Data are gathered and stored in a binary file for future use
-///with learning machines running offline learning experiments.
+///The arm selects an action according to a learning progress
+///associated to the RNN machine.
 ///
-int ScenarioIce::run (int argc, char *argv[]) {
+int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 
 
 	Ice::ObjectPrx base = communicator()->stringToProxy("GolemTiny:default -p 8172");
@@ -186,7 +106,6 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	// attached a finger to the end-effector (the last joint)
 	JointPrx pEffector = pArm->getJoints().back();
 
-	
 	createFinger(pEffector, pArm);
 
 	
@@ -247,9 +166,15 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	Real distance = 0.2;
 
 		
-	//Dataset in which all sequences are stored; sequences and featureVectors are created
+	//Datasets in which all sequences are stored
+	//Arranged in a vector associated to region indices
+	//sequences and featureVectors are created
 	//in every loop run
-	DataSet data;
+	vector<DataSet> data;
+	for (int i=0; i<18; i++) {
+		DataSet currentDataset;
+		data.push_back (currentDataset);
+	}
 
 // 	//getting the maximal and minimal Velocities of arm joints	
 // 	const int numOfJoints = pArm->getJoints().size();
@@ -317,10 +242,7 @@ int ScenarioIce::run (int argc, char *argv[]) {
 		startingPosition = atoi(argv[3]);
 	
 	//start of the experiment loop
-	//for (int e=0; e<numSequences; e++) {
-	int e=-1;
-	while (!pTiny->isUniverseInterrupted()) {
-		e++;
+	for (int e=0; e<numSequences; e++) {
 		//polyflap object
 		setupPolyflap(pTiny, pPolyflapObject, startPolyflapPosition, startPolyflapZRotation, polyflapDimensions);
 		/*golem::Bounds::SeqPtr curPol = pPolyflapObject->getGlobalBoundsSeq();*/
@@ -581,7 +503,7 @@ int ScenarioIce::run (int argc, char *argv[]) {
 				
 			/////////////////////////////////////////////////
 			//writing the sequence into the dataset
-			data.push_back(seq);
+			data[startPosition-1].push_back(seq);
 			/////////////////////////////////////////////////
 			
 		} //end of the if(checkPosition...) block
@@ -621,12 +543,13 @@ int ScenarioIce::run (int argc, char *argv[]) {
 		cout << "Iteration " << e << " completed!" << endl;
 
 				
-		}// end of the for-loop (experiment loop)
+	}// end of the for-loop (experiment loop)
 
 
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	writeDownCollectedData(data);
+	for (int i=0; i<18; i++)
+		writeDownCollectedData(data[i]);
 	/////////////////////////////////////////////////
 
 	// setup initial configuration
@@ -644,172 +567,6 @@ int ScenarioIce::run (int argc, char *argv[]) {
 
 	return 0;
 }
-
-
-///
-///Hack to solve a collision problem (don't know if it is still there):
-///Function that checks if arm hitted the polyflap while approaching it
-///
-bool ScenarioIce::checkPfPosition(RigidBodyPrx& pObject, const golem::tinyice::Mat34& refPos) {
-	golem::WorkspaceCoord pose = make (pObject->getGlobalPose());
-	return (pose.equals(make(refPos), 0.001));
-}
-
-///
-///calculate final pose according to the given direction angle
-///
-void ScenarioIce::setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const golem::tinyice::Vec3& normVec,const golem::tinyice::Vec3& orthVec) {
-	pose.p.v1 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
-	pose.p.v2 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
-	pose.p.v1 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 
-	pose.p.v2 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v2)); 
-	pose.p.v3 += 0.0;	
-}
-
-///
-///calculate position to direct the arm given parameters set in the learning scenario
-///
-void ScenarioIce::setPointCoordinates(golem::tinyice::Vec3& position, const golem::tinyice::Vec3& normalVec, const golem::tinyice::Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical) {
-	position.v1 += (spacing*normalVec.v1); 
-	position.v2 += (spacing*normalVec.v2); 
-	position.v1 += (horizontal*orthogonalVec.v1); 
-	position.v2 +=(horizontal*orthogonalVec.v2); 
-	position.v3 += vertical; 
-}
-
-///
-///calls setPointCoordinates for a discrete number of different actions
-///
-void ScenarioIce::setCoordinatesIntoTarget(const int startPosition, golem::tinyice::Vec3& positionT,const golem::tinyice::Vec3& polyflapNormalVec, const golem::tinyice::Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
-
-
-			//set it's coordinates into target
-			switch (startPosition) {
-			case 1: 
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, over);
-				cout << "Front down left (1)" << endl;
-				break;
-
-			case 2:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), over);
-				cout << "Front down middle (2)" << endl;
-				break;
-
-			case 3:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, over);
-				cout << "Front down right (3)" << endl;
-				break;
-
-			case 4:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center);
-				cout << "Front center left (4)" << endl;
-				break;
-
-			case 5:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
-				cout << "Front center middle (5)" << endl;
-				break;
-
-			case 6:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, center);
-				cout << "Front center right (6)" << endl;
-				break;
-
-			case 7:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, top);
-				cout << "Front up left (7)" << endl;
-				break;
-
-			case 8:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
-				cout << "Front up middle (8)" << endl;
-				break;
-
-			case 9:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, -side, top);
-				cout << "Front up right (9)" << endl;
-				break;
-
-			case 10:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, over);
-				cout << "Back down left (10)" << endl;
-				break;
-
-			case 11:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), over);
-				cout << "Back down middle (11)" << endl;
-				break;
-
-			case 12:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, over);
-				cout << "Back down right (12)" << endl;
-				break;
-
-			case 13:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, center);
-				cout << "Back center left (13)" << endl;
-				break;
-
-			case 14:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
-				cout << "Back center middle (14)" << endl;
-				break;
-
-			case 15:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, center);
-				cout << "Back center right (15)" << endl;
-				break;
-
-			case 16:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, side, top);
-				cout << "Back up left (16)" << endl;
-				break;
-
-			case 17:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
-				cout << "Back up middle (17)" << endl;
-				break;
-
-			case 18:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, -side, top);
-				cout << "Back up right (18)" << endl;
-				break;
-
-			case 19:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, over);
-				cout << "Side down left (19)" << endl;
-				break;
-
-			case 20:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, over);
-				cout << "Side down right (20)" << endl;
-				break;
-
-			case 21:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
-				cout << "Side center left (21)" << endl;
-				break;
-
-			case 22:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
-				cout << "Side center right (22)" << endl;
-				break;
-
-			case 23:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
-				cout << "Side up left (23)" << endl;
-				break;
-
-			case 24:
-				setPointCoordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
-				cout << "Side up right (24)" << endl;
-				break;
-
-			};
-
-}
-
-
 
 
 }; /* namespace smlearning */

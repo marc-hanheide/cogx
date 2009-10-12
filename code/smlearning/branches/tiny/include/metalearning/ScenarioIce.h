@@ -39,22 +39,18 @@
 
 #ifndef SMLEARNING_SCENARIOICE_H_
 #define SMLEARNING_SCENARIOICE_H_
-#define USING_ICE
 
-// #include <controller/PhysReacPlanner.h>
-// #include <controller/Katana.h>
-// #include <controller/Simulator.h>
-// #include <tools/Msg.h>
-#include <system/Bounds.h>
-#include <tools/Tools.h>
-// #include <tools/Creator.h>
+#include <Bounds.h>
+#include <Tools/Tools.h>
 #include <tools/data_handling.h>
 #include <tools/math_helpers.h>
 #include <math.h>
-#include <tiny/ice/Types.h>
+#include <Math.h>
+#include <TinyIce/Types.h>
 #include <Ice/Ice.h>
 #include <TinyIce/TinyIce.hh>
-#include <tiny/ice/Desc.h>
+#include <TinyIce/Desc.h>
+
 using namespace golem::tinyice;
 
 
@@ -96,7 +92,7 @@ public:
 	///
 	///creates polyflap and puts it in the scene
 	///
-	void setupPolyflap(TinyPrx& pTiny, RigidBodyPrx& pObject, Vec3 position, Real rotationZ, Vec3 dimensions);
+	void setupPolyflap(TinyPrx& pTiny, RigidBodyPrx& pObject, golem::tinyice::Vec3 position, Real rotationZ, golem::tinyice::Vec3 dimensions);
 
 	///
 	///creates a finger actor and sets bounds
@@ -107,22 +103,22 @@ public:
 	///Hack to solve a collision problem (don't know if it is still there):
 	///Function that checks if arm hitted the polyflap while approaching it
 	///
-	bool checkPfPosition(RigidBodyPrx& pObject, const Mat34& refPos);
+	bool checkPfPosition(RigidBodyPrx& pObject, const golem::tinyice::Mat34& refPos);
 
 	///
 	///calculate final pose according to the given direction angle
 	///
-	void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
+	void setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const golem::tinyice::Vec3& normVec,const golem::tinyice::Vec3& orthVec);
 
 	///
 	///calculate position to direct the arm given parameters set in the learning scenario
 	///
-	void setPointCoordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
+	void setPointCoordinates(golem::tinyice::Vec3& position, const golem::tinyice::Vec3& normalVec, const golem::tinyice::Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical);
 
 	///
 	///calls setPointCoordinates for a discrete number of different actions
 	///
-	void setCoordinatesIntoTarget(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+	void setCoordinatesIntoTarget(const int startPosition, golem::tinyice::Vec3& positionT,const golem::tinyice::Vec3& polyflapNormalVec, const golem::tinyice::Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
 
 	
 };
