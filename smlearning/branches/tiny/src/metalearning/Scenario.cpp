@@ -408,10 +408,10 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	
 	// Define the Home pose in the Cartesian workspace
 	Vec3 positionH(Real(0.1), Real(0.1), Real(0.1));
-	Vec3 orientationH(Real(-0.5*MATH_PI), Real(0.0*MATH_PI), Real(0.0*MATH_PI));
+	Vec3 orientationH(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 		
 	// and set target waypoint
-	golem::ctrl::GenWorkspaceState home;
+	golem::GenWorkspaceState home;
 	fromCartesianPose(home.pos, positionH, orientationH);
 	home.vel.setId(); // it doesn't move
 		
@@ -426,7 +426,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 
 
 	// Define the initial pose in the Cartesian workspace
-	Vec3 orientationT(Real(-0.5*MATH_PI), Real(0.0*MATH_PI), Real(0.0*MATH_PI));
+	Vec3 orientationT(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 
 
 
@@ -485,7 +485,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		context->getLogger()->post(Message::LEVEL_INFO, "Position %i", startPosition);
 
 		// and set target waypoint
-		golem::ctrl::GenWorkspaceState target;
+		golem::GenWorkspaceState target;
 		fromCartesianPose(target.pos, positionT, orientationT);
 		target.vel.setId(); // it doesn't mov
 
@@ -523,9 +523,9 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		infoVector.push_back(normalize<double>(positionT.v2, -maxRange, maxRange));
 		infoVector.push_back(normalize<double>(positionT.v3, -maxRange, maxRange));
 		//innitial orientation, normalized
-		infoVector.push_back(normalize<double>(orientationT.v1, -MATH_PI, MATH_PI));
-		infoVector.push_back(normalize<double>(orientationT.v2, -MATH_PI, MATH_PI));
-		infoVector.push_back(normalize<double>(orientationT.v3, -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize<double>(orientationT.v1, -REAL_PI, REAL_PI));
+		infoVector.push_back(normalize<double>(orientationT.v2, -REAL_PI, REAL_PI));
+		infoVector.push_back(normalize<double>(orientationT.v3, -REAL_PI, REAL_PI));
 		//end pose info missing (must be added later 
 		/////////////////////////////////////////////////
 
@@ -580,12 +580,12 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 // 		infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
 // 		infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
 // 		//end orientation, normalized
-// 		infoVector.push_back(normalize(orientationT.v1, -MATH_PI, MATH_PI));
-// 		infoVector.push_back(normalize(orientationT.v2, -MATH_PI, MATH_PI));
-// 		infoVector.push_back(normalize(orientationT.v3, -MATH_PI, MATH_PI));
+// 		infoVector.push_back(normalize(orientationT.v1, -REAL_PI, REAL_PI));
+// 		infoVector.push_back(normalize(orientationT.v2, -REAL_PI, REAL_PI));
+// 		infoVector.push_back(normalize(orientationT.v3, -REAL_PI, REAL_PI));
 // 		/////////////////////////////////////////////////
 		
-		infoVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -MATH_PI, MATH_PI));
+		infoVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 
 		/////////////////////////////////////////////////
 		//writing of the initial vector into sequence
@@ -633,8 +633,8 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 
 
 				// arm state at a time t and finishes at some time later
-				// 					golem::ctrl::JointState state;
-				golem::ctrl::GenConfigspaceState state;
+				// 					golem::JointState state;
+				golem::GenConfigspaceState state;
 				arm.lookupInp(state, target.t); // last sent trajectory waypoint
 			
 				//to get polyflap pose information
@@ -673,10 +673,10 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 					/////////////////////////////////////////////////
 					//writing in the feature vector
 					// joint position and joint velocity
-// 					for (U32 i = 0; i < numOfJoints; i++) {
-// 						features.push_back(normalize(state.pos[i], -MATH_PI, MATH_PI));
-// 						features.push_back(normalize(state.vel[i], minVelocities[i], maxVelocities[i]));
-// 					}
+					for (U32 i = 0; i < numOfJoints; i++) {
+						features.push_back(normalize(state.pos[i], -REAL_PI, REAL_PI));
+						features.push_back(normalize(state.vel[i], minVelocities[i], maxVelocities[i]));
+					}
 					/////////////////////////////////////////////////
 						
 					/////////////////////////////////////////////////
@@ -685,9 +685,9 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 					features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
 					features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
 					features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
-// 					features.push_back(normalize(roll, -MATH_PI, MATH_PI));
-// 					features.push_back(normalize(pitch, -MATH_PI, MATH_PI));
-// 					features.push_back(normalize(yaw, -MATH_PI, MATH_PI));
+// 					features.push_back(normalize(roll, -REAL_PI, REAL_PI));
+// 					features.push_back(normalize(pitch, -REAL_PI, REAL_PI));
+// 					features.push_back(normalize(yaw, -REAL_PI, REAL_PI));
 					features.push_back(normalize(polyFlapPose.R._m._11, -1.0, 1.0));
 					features.push_back(normalize(polyFlapPose.R._m._12, -1.0, 1.0));
 					features.push_back(normalize(polyFlapPose.R._m._13, -1.0, 1.0));
@@ -744,7 +744,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 
 		Vec3 positionPreH(target.pos.p.v1, target.pos.p.v2, target.pos.p.v3 += (polyflapDimensions.v2*1.1));
 		// and set target waypoint
-		golem::ctrl::GenWorkspaceState preHome;
+		golem::GenWorkspaceState preHome;
 		fromCartesianPose(preHome.pos, positionPreH, orientationH);
 		preHome.vel.setId(); // it doesn't move
 
@@ -788,7 +788,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		context->getLogger()->post(Message::LEVEL_INFO, "Iteration %d completed!", e);
 
 				
-		}// end of the for-loop (experiment loop)
+	}// end of the for-loop (experiment loop)
 
 
 	/////////////////////////////////////////////////
@@ -809,7 +809,7 @@ bool Scenario::checkPfPosition(const Actor* polyFlapActor, const Mat34& refPos) 
 ///
 ///calculate final pose according to the given direction angle
 ///
-void Scenario::setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
+void Scenario::setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec) {
 	pose.p.v1 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v1)); 
 	pose.p.v2 += Real(sin(angle/180.0*REAL_PI)*(distance*normVec.v2)); 
 	pose.p.v1 += Real(cos(angle/180.0*REAL_PI)*(distance*orthVec.v1)); 

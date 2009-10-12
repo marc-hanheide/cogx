@@ -29,11 +29,14 @@
 #define SMLEARNING_MATHHELPERS_H_
 
 #include <math.h>
+#include <Math.h>
 #include <stdlib.h>
+
+using namespace golem;
 
 namespace smlearning {
 
-const double PI = 3.14159265358979323846;
+//const double PI = 3.14159265358979323846;
 
 ///
 ///function for normalizing values according to given bounds
@@ -41,8 +44,8 @@ const double PI = 3.14159265358979323846;
 template <typename R>
 R normalize(R const& value, R const& min, R const& max) {
 	R val;
-	if (min == -PI && max == PI && (value > max || value < min)) {
-		val = fmod(value, PI);
+	if (min == -REAL_PI && max == REAL_PI && (value > max || value < min)) {
+		val = fmod(value, REAL_PI);
 	}
 	else {
 		val = value;

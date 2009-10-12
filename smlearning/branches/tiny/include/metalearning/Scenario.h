@@ -40,22 +40,22 @@
 #define SMLEARNING_SCENARIO_H_
 
 
-#include <system/XMLParser.h>
-#include <controller/PhysReacPlanner.h>
-#include <controller/Katana.h>
-#include <controller/Simulator.h>
-#include <tools/Msg.h>
-#include <tools/Tools.h>
-#include <tools/Creator.h>
-#include <tools/XMLData.h>
+#include <XMLParser.h>
+#include <PhysReacPlanner.h>
+#include <Katana.h>
+#include <Simulator.h>
+#include <Message.h>
+#include <Tools/MsgTools.h>
+#include <Tools/Tools.h>
+#include <Creator.h>
+#include <Math.h>
+#include <XMLDataPhys.h>
 #include <iostream>
 #include <tools/data_handling.h>
 #include <tools/math_helpers.h>
 
 using namespace std;
 using namespace golem;
-using namespace golem::ctrl;
-using namespace golem::phys;
 using namespace golem::tools;
 
 
@@ -111,7 +111,7 @@ public:
 	///
 	///calculate final pose according to the given direction angle
 	///
-	void setMovementAngle(const int angle, golem::ctrl::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
+	void setMovementAngle(const int angle, golem::WorkspaceCoord& pose,const Real& distance,const Vec3& normVec,const Vec3& orthVec);
 
 	///
 	///calculate position to direct the arm given parameters set in the learning scenario

@@ -1,4 +1,4 @@
-/** @file OfflineRNN.h
+/** @file RNN.cpp
  * 
  * 
  * @author	Sergio Roa (DFKI)
@@ -23,31 +23,31 @@
  
  */
 
-#include <metalearning/OfflineRNN.h>
+#include <metalearning/RNN.h>
 
 namespace smlearning {
 
-ostream& OfflineRNN::save_config_file (ostream& out)
+ostream& RNN::save_config_file (ostream& out)
 {
 	out << conf;
 	return out;
 }
 
-void OfflineRNN::load_net (ostream& out) {
-	string dataFile = conf.get<string>("trainFile");
-	rnnlib::DataHeader header(dataFile, task, 1);
-	net = new rnnlib::MultilayerNet(out, conf, header);
-}
-
-void OfflineRNN::print_net_data (ostream& out)
+void RNN::print_net_data (ostream& out)
 {
 	out << endl << "network:" << endl;
 	PRINT(task, out);
 	out << *net;
 }
 
-void OfflineRNN::set_config_file (rnnlib::ConfigFile &configFile) {
+void RNN::set_config_file (rnnlib::ConfigFile &configFile) {
 	conf = configFile;
+}
+
+void OfflineRNN::build (ostream& out) {
+	string dataFile = conf.get<string>("trainFile");
+	rnnlib::DataHeader header(dataFile, task, 1);
+	net = new rnnlib::MultilayerNet(out, conf, header);
 }
 
 void OfflineRNN::set_testdatafile (string fileName) {
