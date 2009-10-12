@@ -277,6 +277,10 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
 {
   lockComponent();
 
+  // assuming that the left camera pose is equal to stereo head pose,
+  // save the head pose for this pair of images
+  stereoCam.pose = images[LEFT].camPars.pose;
+
   for(int i = LEFT; i <= RIGHT; i++)
   {
     convertImageToIpl(images[i], &colorImg[i]);
