@@ -102,8 +102,7 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences later, the top no
    <system id="structure.list" region="STRUCTURE" metafunction="ideational">
 	<chooser id="c-structure.list"/>
       <conditions>
-          <condition features="@type:entity @feat:List:conjunction"/>
-          <condition features="@type:entity @feat:List:disjunction"/>
+          <condition features="@feat:List"/>
       </conditions>
       <actions>
 	  <action choice="conjunction">

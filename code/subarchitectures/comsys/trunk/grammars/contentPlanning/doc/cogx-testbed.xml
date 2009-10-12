@@ -559,6 +559,63 @@
 </realizations>
 </utterance>
 
+
+<!-- ==========  LISTs  ========= -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <Content>(e1:entity ^ <List>conjunction ^ <First>(b1:physical ^ ball ^ <Size>big) ^ <Next>(b2:physical ^ box ^ <Shape>tall))  )
+-->
+@d1:dvp(c-goal  ^ /Content\(e1:entity ^ /List\conjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
+</input>
+<realizations>
+<string>a big ball and a tall box</string>
+<string>one big ball and one tall box</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <Content>(e1:entity ^ <List>disjunction ^ <First>(b1:physical ^ ball ^ <Size>big) ^ <Next>(b2:physical ^ box ^ <Shape>tall))  )
+-->
+@d1:dvp(c-goal  ^ /Content\(e1:entity ^ /List\disjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
+</input>
+<realizations>
+<string>a big ball or a tall box</string>
+<string>one big ball or one tall box</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <Content>(e1:quality ^ <List>disjunction ^ <First>(b1:quality ^ blue) ^ <Next>(b2:quality ^ brown))  )
+-->
+@d1:dvp(c-goal  ^ /Content\(e1:quality ^ /List\disjunction ^ /First\(b1:quality ^ blue) ^ /Next\(b2:quality ^ brown)))
+</input>
+<realizations>
+<string>blue or brown</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <Content>(l1:d-units ^ list ^ <First>(dvp1:c-goal ^ <SpeechAct>greeting) ^ <Next>(dvp2:c-goal ^ <SpeechAct>thanking )))
+-->
+@d1:dvp(c-goal  ^ /Content\(e1:quality ^ /List\disjunction ^ /First\(b1:quality ^ blue) ^ /Next\(b2:quality ^ brown)))
+</input>
+<realizations>
+<string>blue or brown</string>
+</realizations>
+</utterance>
+
+
+
+
+
 <!-- ========== DORA TEMPLATES ========== -->
 
 <!-- 
