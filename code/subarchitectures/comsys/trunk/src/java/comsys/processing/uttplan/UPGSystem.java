@@ -59,7 +59,9 @@ public class UPGSystem {
     private String chooserId = "";
     private Vector conditions = new Vector();
     private HashMap actions = new HashMap ();
-
+	
+	private boolean logging = false;
+	
     //=================================================================
     // CONSTRUCTOR METHODS
     //=================================================================
@@ -212,7 +214,7 @@ public class UPGSystem {
 	    if (cond.isSatisfied(l)) {satconds++; } 
 	} // end for over conditions
 	result = (satconds > 0); 
-	//System.out.println("System ["+id+"] applicable: ["+result+"]");
+	log("System ["+id+"] applicable: ["+result+"]");
 	return result;
     } // end isApplicable
 
@@ -276,5 +278,12 @@ public class UPGSystem {
     // MAIN METHOD
     //=================================================================
 
+	
+	
+	public void log (String m) { 
+		if (logging) { System.out.println(m); }
+		
+		
+	} 
 
 } // end class definition 
