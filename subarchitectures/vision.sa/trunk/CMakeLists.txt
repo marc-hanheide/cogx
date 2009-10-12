@@ -83,8 +83,8 @@ option(BUILD_VISUAL_LEARNER_CTF "Build Matlab CTF for UOL visual learner; off=us
 mark_as_advanced(BUILD_VISUAL_LEARNER_CTF)
 if (BUILD_VISUAL_LEARNER_CTF)
    add_subdirectory(src/matlab)
-else (BUILD_VISUAL_LEARNER_CTF)
-   add_subdirectory(prebuilt/VisualLearner)   
+#else (BUILD_VISUAL_LEARNER_CTF)
+#   add_subdirectory(prebuilt/VisualLearner)   
 endif (BUILD_VISUAL_LEARNER_CTF)
 
 if (BUILD_VISUAL_LEARNER)
