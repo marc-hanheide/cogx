@@ -106,9 +106,6 @@ public class BinderMonitorGUI extends JFrame
 
 		graph = new mxGraph();
 		parent = graph.getDefaultParent();
-
-        mxGraphComponent graphComponent = new mxGraphComponent(graph);
-        getContentPane().add(graphComponent);
 		
 		insertedProxies = new HashMap<String, Object>();
 		insertedUnions = new HashMap<String, Object>();
@@ -498,12 +495,12 @@ public class BinderMonitorGUI extends JFrame
 			graph.getModel().endUpdate();
 		}
 
-/*		try {
+		try {
 			mxGraphComponent graphComponent = new mxGraphComponent(graph);
 			getContentPane().add(graphComponent);
 			setVisible(true);
 		}
-		catch (Exception e) {		}*/
+		catch (Exception e) {		}
 	}
 
 	
@@ -537,6 +534,16 @@ public class BinderMonitorGUI extends JFrame
 					addNewUnionAndIncludedProxies(union);
 				}
 			}
+			
+			// UNSTABLE ?? TESTING!
+			for (Enumeration<Proxy> e = newProxies.elements(); e.hasMoreElements();) {
+				Proxy proxy = e.nextElement();
+				if (!insertedProxies.containsKey(proxy.entityID)) {
+					log("Adding new proxy..." + proxy.entityID);
+					
+					addNewProxy(proxy);
+				}
+			}
 		
 			if (mustRegenerateRelationUnions) {
 			for (Enumeration<RelationUnion> e = relationUnions.elements(); e.hasMoreElements();) {
@@ -554,13 +561,13 @@ public class BinderMonitorGUI extends JFrame
 		{
 			graph.getModel().endUpdate();
 		}
-
-		/*try {
+ 
+		try {
 		mxGraphComponent graphComponent = new mxGraphComponent(graph);
 		getContentPane().add(graphComponent);
 		setVisible(true);
 		}
-		catch (Exception e) {		}*/
+		catch (Exception e) {		}
 		
 	}
 	

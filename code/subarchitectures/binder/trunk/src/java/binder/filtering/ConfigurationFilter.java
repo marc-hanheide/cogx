@@ -23,10 +23,15 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
+import binder.autogen.core.PerceivedEntity;
+import binder.autogen.core.ProbabilityDistribution;
+import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.utils.ProbabilityUtils;
 
 
 /**
@@ -66,15 +71,28 @@ public class ConfigurationFilter {
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
 
-			double multiplication = 1.0f;
+			double score = 1.0f;
 			for (int i = 0; i < config.includedUnions.length ; i++) {	
 				Union union = config.includedUnions[i];
-				float max = MaximumSearch.getMaximum(union);
-				multiplication = multiplication * max;
+				float val;
+				if (union.probExists > 0.0f) {
+					val = union.probExists;
+				}
+				else  {
+					val = getProbabilitiesSum (union.distribution);
+				}
+				score = score * val;
 				
 			} 
 			
-			config.configProb = multiplication;
+			if (config.orphanProxies != null) {
+				for (int i = 0 ; i < config.orphanProxies.length ; i++) {
+					Proxy orphan = config.orphanProxies[i];
+					float probNoUnionExists = (1.0f - orphan.probExists) ;
+					score = score * probNoUnionExists;
+				}
+			}
+			config.configProb = score;
 		}
 		
 		// normalise the results
@@ -82,6 +100,87 @@ public class ConfigurationFilter {
 	}
 	
 
+	/**
+	 * Get the sum of all probability assignments a given distribution
+	 * 
+	 * @param distrib the probability distribution
+	 * @return the probability value
+	 */
+
+	public static float getProbabilitiesSum (ProbabilityDistribution distrib) {
+
+		// Case 1: distribution is discrete
+		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
+			return getProbabilitiesSum((DiscreteProbabilityDistribution) distrib);
+		}
+
+		// Case 2: distribution is a combined one
+		else if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
+			return getProbabilitiesSum((CombinedProbabilityDistribution) distrib);
+		}
+
+		// and, "Houston we have a problem" 
+		else {
+			errlog("Sorry, only discrete or combined feature distributions are handled right now");
+			log("Used class: " + distrib.getClass());
+			return 0.0f;
+		}
+	}
+	
+	
+	private static float getProbabilitiesSum (DiscreteProbabilityDistribution distrib) {
+				
+		float sum = 0.0f;
+		for  (int i = 0 ; i < distrib.assignments.length ; i++) {
+			sum += distrib.assignments[i].prob;
+		}
+		return sum;
+	}
+	
+	
+	
+	
+
+	/**
+	 * Get the maximum probability value for a given combined distribution
+	 * 
+	 * @param distrib the combined probability distribution
+	 * @return the probability value
+	 */
+
+	public static float getProbabilitiesSum (CombinedProbabilityDistribution distrib) {
+
+		float sum = 0.0f;
+
+		/** Here, we assume for the moment that the (1) the first distribution inside the combined 
+		 * distribution is discrete, and (2) that it contains the complete list of possible assignments 
+		 * for the combined distribution 
+		 * TODO: find a nicer specification for the assignment in the combined distribution */
+
+		if (distrib.distributions[0] instanceof DiscreteProbabilityDistribution) {
+			DiscreteProbabilityDistribution firstDistrib = (DiscreteProbabilityDistribution) distrib.distributions[0];
+
+			// loop on the possible assignments
+			for (int i = 0; i < firstDistrib.assignments.length; i++) {
+
+				DiscreteProbabilityAssignment assignment = firstDistrib.assignments[i];
+
+				// Extract the probability value for the assignment
+				float probValue = ProbabilityUtils.getProbabilityValue(distrib, assignment);		
+				sum += probValue;
+			}
+		}
+		else {
+			errlog("WARNING: first distribution insided the combined distribution is not discrete!");
+		}
+
+		return sum;
+	}
+
+	
+	
+	
+	
 	
 	/**
 	 * Normalise the probabilities of the union configurations (in order to have a sum = 1)

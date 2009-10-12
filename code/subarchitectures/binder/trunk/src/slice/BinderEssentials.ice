@@ -114,7 +114,8 @@ sequence<Union> UnionSequence;
 
 class UnionConfiguration {
 	UnionSequence includedUnions;
-	double configProb;
+	ProxySeq orphanProxies;
+	double configProb;	
 };
 	 
 sequence<UnionConfiguration> UnionConfigurationSeq ;

@@ -75,6 +75,7 @@ public class Test2 extends AbstractTester{
 	int featurecount = 1;
 	int featurevaluecount = 1;
 	
+	int nbLowProbabilityProxies = 0;
 	
 	/**
 	 * Initialise
@@ -148,19 +149,20 @@ public class Test2 extends AbstractTester{
 		}
 		
 		int counts = 0;
-		while ((curConfig.includedUnions.length < NUMBER_OF_PROXIES) && counts < (NUMBER_OF_PROXIES*2)) {
+		while ((curConfig.includedUnions.length < (NUMBER_OF_PROXIES - nbLowProbabilityProxies)) && counts < (NUMBER_OF_PROXIES*2)) {
 		try {
-			sleepComponent(50);
+			sleepComponent(60);
 			counts++;
 		}
 		catch (Exception e){ }
 		}
 		log("Final number of unions: " + curConfig.includedUnions.length);
 		
-		boolean result = (curConfig.includedUnions.length == NUMBER_OF_PROXIES);
+		boolean result = (curConfig.includedUnions.length == (NUMBER_OF_PROXIES - nbLowProbabilityProxies));
 		
 		if (!result) {
 			System.out.println("Final number of unions: " + curConfig.includedUnions.length);
+			System.out.println("expected number: " +(NUMBER_OF_PROXIES - nbLowProbabilityProxies));
 		}
 		
 		return result;
@@ -177,6 +179,10 @@ public class Test2 extends AbstractTester{
 		WorkingMemoryPointer origin = createWorkingMemoryPointer("subarch"+subarchNb, "localID"+proxyCount, "localType");
 		proxyCount++;
 		float probExists = rand.nextFloat();
+		if (probExists < 0.5f) {
+			nbLowProbabilityProxies++;
+		}
+		
 		Proxy proxy = createNewProxy(origin, probExists);
 		
 		int nbFeatures = rand.nextInt(MAX_NUMBER_OF_FEATURES) ;
@@ -195,7 +201,7 @@ public class Test2 extends AbstractTester{
 		}
 		
 		return proxy;
-	}
+	} 
 
 	/**
 	 * Create a random feature value
