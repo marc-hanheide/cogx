@@ -444,6 +444,18 @@
 <utterance>
 <input>
 <!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know)  )
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know)  )
+</input>
+<realizations>
+<string>I know </string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
 @d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )
   
 *** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***

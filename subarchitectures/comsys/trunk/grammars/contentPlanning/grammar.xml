@@ -35,6 +35,8 @@
   <systems file="tense.systems.xml"/>
   <choosers file="tense.choosers.xml"/>
 
+  <systems file="voice.systems.xml"/>
+  <choosers file="voice.choosers.xml"/>
 
   <systems file="transitivity.systems.xml"/> 
   <choosers file="transitivity.choosers.xml"/> 
