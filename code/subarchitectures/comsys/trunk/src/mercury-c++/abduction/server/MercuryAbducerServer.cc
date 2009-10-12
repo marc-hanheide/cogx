@@ -38,20 +38,20 @@ MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Curre
 
 	MR_Word w_result;
 	char * args;
+	int argi;
 
 	load_rules_from_file(s, &w_result, ctx, &ctx);
 
 	if (load_result_is_ok(w_result)) {
 		cout << tty::green << "  result: ok" << tty::dcol << endl;
 	}
-	else if (load_result_is_file_not_found(w_result)) {
-		cout << tty::red << "  file not found" << tty::dcol << endl;
-		throw FileNotFoundException();
+	else if (load_result_is_file_read_error(w_result)) {
+		cout << tty::red << "  file read error" << tty::dcol << endl;
+		throw FileReadErrorException(filename);
 	}
-	else if (load_result_is_syntax_error(w_result, &args)) {
-		//const char * args = (const char *) w_arg;
-		cout << tty::red << "  syntax error: " << args << tty::dcol << endl;
-		throw SyntaxErrorException(args);
+	else if (load_result_is_syntax_error(w_result, &args, &argi)) {
+		cout << tty::red << "  syntax error: " << args << " on line " << argi << tty::dcol << endl;
+		throw SyntaxErrorException(filename, args, argi);
 	}
 }
 
@@ -101,20 +101,20 @@ MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Curre
 
 	MR_Word w_result;
 	char * args;
+	int argi;
 
 	load_facts_from_file(s, &w_result, ctx, &ctx);
 
 	if (load_result_is_ok(w_result)) {
 		cout << tty::green << "  result: ok" << tty::dcol << endl;
 	}
-	else if (load_result_is_file_not_found(w_result)) {
-		cout << tty::red << "  file not found" << tty::dcol << endl;
-		throw FileNotFoundException();
+	else if (load_result_is_file_read_error(w_result)) {
+		cout << tty::red << "  file read error" << tty::dcol << endl;
+		throw FileReadErrorException(filename);
 	}
-	else if (load_result_is_syntax_error(w_result, &args)) {
-		//const char * args = (const char *) w_arg;
-		cout << tty::red << "  syntax error: " << args << tty::dcol << endl;
-		throw SyntaxErrorException(args);
+	else if (load_result_is_syntax_error(w_result, &args, &argi)) {
+		cout << tty::red << "  syntax error: " << args << " on line " << argi << tty::dcol << endl;
+		throw SyntaxErrorException(filename, args, argi);
 	}
 }
 

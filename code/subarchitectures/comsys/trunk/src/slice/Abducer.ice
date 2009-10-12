@@ -3,16 +3,6 @@
  
 module Abducer {
 
-	exception AbducerException {
-		string message;
-	};
-	
-	exception FileNotFoundException extends AbducerException {};
-	exception SyntaxErrorException extends AbducerException {};
-	exception NoProofException extends AbducerException {};
-
-	//-----------------------------------------------------------------
-
 	// TERMS & PREDICATES
 
 	enum TermType {
@@ -155,15 +145,34 @@ module Abducer {
 		Error
 	};
 
+	//-----------------------------------------------------------------
+
+	exception AbducerException { };
+	
+	exception FileReadErrorException extends AbducerException {
+		string filename;
+	};
+
+	exception SyntaxErrorException extends AbducerException {
+		string filename;
+		string error;
+		int line;
+	};
+
+	exception NoProofException extends AbducerException {};
+
+	//-----------------------------------------------------------------
+
+
 	interface AbducerServer {
 		void clearRules();
 		void loadRulesFromFile(string filename)
-				throws FileNotFoundException, SyntaxErrorException;
+				throws FileReadErrorException, SyntaxErrorException;
 
 		void clearFacts();
 		void clearFactsByModality(ModalityType type);
 		void loadFactsFromFile(string filename)
-				throws FileNotFoundException, SyntaxErrorException;
+				throws FileReadErrorException, SyntaxErrorException;
 		void addFact(ModalisedFormula f);
 
 		void clearAssumables();
