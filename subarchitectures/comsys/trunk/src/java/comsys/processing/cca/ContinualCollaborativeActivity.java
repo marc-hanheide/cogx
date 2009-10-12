@@ -482,16 +482,5 @@ public class ContinualCollaborativeActivity {
 		if (logging)
 			System.out.println("\033[32m[CCA]\t" + str  + "\033[0m");
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-		
 
 } // end class
