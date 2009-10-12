@@ -11,8 +11,10 @@ import cast.cdl.WorkingMemoryChange;
 public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.MotiveEvent> implements WMEntrySet.ChangeHandler{
 
 	public class MotiveEvent {
-		Map<WorkingMemoryAddress, ObjectImpl> map;
-		WorkingMemoryChange wmc; ObjectImpl newMotive; ObjectImpl oldMotive;
+		public Map<WorkingMemoryAddress, ObjectImpl> map;
+		public WorkingMemoryChange wmc; 
+		public ObjectImpl newMotive; 
+		public ObjectImpl oldMotive;
 	}
 	
 	/**
@@ -26,6 +28,10 @@ public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.M
 			WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive) {
 		MotiveEvent m = new MotiveEvent(); 
 		try {
+			m.map=map;
+			m.wmc=wmc;
+			m.newMotive=newMotive;
+			m.oldMotive=oldMotive;
 			this.put(m);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

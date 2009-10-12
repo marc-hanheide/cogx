@@ -7,6 +7,7 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
 import cast.core.CASTUtils;
 import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
 import motivation.util.CASTTimeUtil;
 import motivation.components.filters.MotiveFilterManager;
 
@@ -15,11 +16,13 @@ import motivation.components.filters.MotiveFilterManager;
  * 
  */
 public class AgeFilter implements MotiveFilter {
+	private static final long MAX_AGE_MILLIS = 6000;
 	ManagedComponent component;
+
 	/**
 	 * @param specificType
 	 */
-	public  AgeFilter() {
+	public AgeFilter() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -31,8 +34,11 @@ public class AgeFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public boolean shouldBeSurfaced(Motive motive) {
-		return checkAge(motive);
+	public MotivePriority shouldBeSurfaced(Motive motive) {
+		if (checkAge(motive))
+			return MotivePriority.HIGH;
+		else
+			return MotivePriority.UNSURFACE;
 	}
 
 	/*
@@ -51,12 +57,12 @@ public class AgeFilter implements MotiveFilter {
 
 	boolean checkAge(Motive motive) {
 		CASTTime time = CASTUtils.getTimeServer().getCASTTime();
-		return (CASTTimeUtil.diff(time, motive.created) < 6000);
+		return (CASTTimeUtil.diff(time, motive.created) < MAX_AGE_MILLIS);
 	}
 
 	public void setManager(MotiveFilterManager motiveFilterManager) {
 		component = motiveFilterManager;
-		
+
 	}
 
 }

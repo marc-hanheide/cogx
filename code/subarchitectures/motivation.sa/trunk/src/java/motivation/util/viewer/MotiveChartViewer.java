@@ -27,6 +27,7 @@ import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.CombinedDomainCategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.BarRenderer3D;
 import org.jfree.chart.renderer.category.LayeredBarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
@@ -104,15 +105,15 @@ public class MotiveChartViewer extends ManagedComponent implements
 					gainRender);
 			gainPlot.setDomainGridlinesVisible(true);
 
-			final NumberAxis triesAxis = new NumberAxis("# tries");
+			final NumberAxis triesAxis = new NumberAxis("# tries / priority");
 			triesAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			final StackedBarRenderer3D triesRender = new StackedBarRenderer3D();
+			final BarRenderer3D triesRender = new BarRenderer3D();
 			triesRender
 					.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
 			triesPlot = new CategoryPlot(dsTries, null, triesAxis, triesRender);
 			triesPlot.setDomainGridlinesVisible(true);
 
-			final CategoryAxis domainAxis = new CategoryAxis("Category");
+			final CategoryAxis domainAxis = new CategoryAxis("WM Id");
 			final CombinedDomainCategoryPlot plot = new CombinedDomainCategoryPlot(
 					domainAxis);
 			plot.add(statusPlot, 3);
@@ -122,6 +123,7 @@ public class MotiveChartViewer extends ManagedComponent implements
 			final JFreeChart result = new JFreeChart("Motive Monitor",
 					new Font("SansSerif", Font.BOLD, 10), plot, false);
 			result.addLegend(new LegendTitle(statusPlot));
+			result.addLegend(new LegendTitle(triesPlot));
 			return result;
 
 		}
@@ -133,20 +135,23 @@ public class MotiveChartViewer extends ManagedComponent implements
 						.getSimpleName(), wmc.address.id);
 				dsInformationGain.addValue(motive.informationGain, "",
 						wmc.address.id);
-				dsTries.addValue(motive.tries, "", wmc.address.id);
+				dsTries.addValue(motive.tries, "tries", wmc.address.id);
+				dsTries.addValue(motive.priority.value(), "priority", wmc.address.id);
 				break;
 			case DELETE:
 				dsStatus.removeValue(motive.getClass().getSimpleName(),
 						wmc.address.id);
 				dsInformationGain.removeValue("", wmc.address.id);
-				dsTries.removeValue("", wmc.address.id);
+				dsTries.removeValue("tries", wmc.address.id);
+				dsTries.removeValue("priority", wmc.address.id);
 				break;
 			case OVERWRITE:
 				dsStatus.setValue(motive.status.value() + 1, motive.getClass()
 						.getSimpleName(), wmc.address.id);
 				dsInformationGain.setValue(motive.informationGain, "",
 						wmc.address.id);
-				dsTries.setValue(motive.tries, "", wmc.address.id);
+				dsTries.setValue(motive.tries, "tries", wmc.address.id);
+				dsTries.setValue(motive.priority.value(), "priority", wmc.address.id);
 				break;
 			}
 

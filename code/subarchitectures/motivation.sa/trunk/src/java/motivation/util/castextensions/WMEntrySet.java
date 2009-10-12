@@ -44,7 +44,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	public interface ChangeHandler {
 		void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
 				WorkingMemoryChange wmc, Ice.ObjectImpl newMotive,
-				Ice.ObjectImpl oldMotive);
+				Ice.ObjectImpl oldMotive) throws CASTException;
 	}
 
 	public class WMChangeReceiver implements WorkingMemoryChangeReceiver {

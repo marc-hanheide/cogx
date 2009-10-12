@@ -4,6 +4,7 @@
 package motivation.components.filters;
 
 import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
 import cast.architecture.ManagedComponent;
 
 /**
@@ -11,6 +12,8 @@ import cast.architecture.ManagedComponent;
  * 
  */
 public class LimitTriesFilter implements MotiveFilter {
+	private static final long MAX_TRIES = 3;
+	
 	ManagedComponent component;
 	/**
 	 * @param specificType
@@ -27,8 +30,10 @@ public class LimitTriesFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public boolean shouldBeSurfaced(Motive motive) {
-		return (motive.tries<=3);
+	public MotivePriority shouldBeSurfaced(Motive motive) {
+		if (motive.tries<=MAX_TRIES) 
+			return MotivePriority.HIGH;
+		return MotivePriority.UNSURFACE;
 	}
 
 	/*

@@ -91,7 +91,7 @@ public class PlanAllManager extends ManagedComponent {
 		// whenever some motive becomes ACTIVE)
 		motives.setStateChangeHandler(new MotiveStateTransition(null,
 				MotiveStatus.ACTIVE), activeMotiveEventQueue);
-		// causing an interrupt is some motive is de-activated by someone
+		// causing an interrupt if some motive is de-activated by someone
 		motives.setStateChangeHandler(new MotiveStateTransition(
 				MotiveStatus.ACTIVE, null), new ChangeHandler() {
 
@@ -131,23 +131,6 @@ public class PlanAllManager extends ManagedComponent {
 		log("running");
 		try {
 			while (isRunning()) {
-				log("runComponent loop");
-				// wait that something happens
-				activeMotiveEventQueue.poll(FORCED_CHECK_FREQUENCY,
-						TimeUnit.SECONDS);
-				// make sure all changes have been propagated to the
-				// unions!
-				log("wait to finalize propagation of places to unions");
-				placeUnionEventRelation.waitForPropagation(1000);
-				log("wait to finalize propagation of rooms to unions");
-				roomUnionEventRelation.waitForPropagation(1000);
-				log("got all changes");
-				// after this we can be quite sure that we actually have
-				// all required information on the binder, available to the
-				// planner
-				if (!isRunning())
-					break;
-
 				log("checking for active motives to manage them");
 				interrupt = false;
 				List<Motive> activeMotives = new LinkedList<Motive>(motives
@@ -155,7 +138,18 @@ public class PlanAllManager extends ManagedComponent {
 
 				if (activeMotives.size() > 0) { // if we have motives to
 					log("we have some motives that should be planned for");
-					// activeMotives = resolveMotives(activeMotives);
+
+					// make sure all changes have been propagated to the
+					// unions!
+					log("wait to finalize propagation of places to unions");
+					placeUnionEventRelation.waitForPropagation(1000);
+					log("wait to finalize propagation of rooms to unions");
+					roomUnionEventRelation.waitForPropagation(1000);
+					log("got all changes");
+					// after this we can be quite sure that we actually have
+					// all required information on the binder, available to the
+					// planner
+
 					plannerFacade.setGoalMotives(activeMotives);
 					FutureTask<WMEntryQueueElement> generatedPlan = new FutureTask<WMEntryQueueElement>(
 							plannerFacade);
@@ -186,7 +180,6 @@ public class PlanAllManager extends ManagedComponent {
 								executorFacade);
 						backgroundExecutor.execute(executionResult);
 						int loopCount = 0;
-						boolean timeout = false;
 						while (!interrupt) {
 							try {
 								executionResult.get(1, TimeUnit.SECONDS);
@@ -197,32 +190,33 @@ public class PlanAllManager extends ManagedComponent {
 								if (++loopCount > failsafeTimeoutSecs) {
 									log("timeout in execution");
 									interrupt = true;
-									timeout = true;
 								}
 							}
 
 						}
 
-						// nah: ok, the bugs were actually mine and somewhere
-						// else...
-						// log("interrupt is: " + interrupt);
-						//
-						// if(interrupt && !timeout) {
-						// sleepComponent(3000);
-						// }
-
 						if (!executionResult.isDone()) {
 							log("cancelling execution");
 							executionResult.cancel(true);
 						}
-						log("execution finished... wait 1 sec to let state changes propagate");
 					} else {
-						deactivateMotives();
+						log("no plan available, deactivating motives");
 					}
+
+					// deactivate motives
+					deactivateMotives();
+					log("wait 1 sec to let state changes propagate");
 					sleepComponent(1000); // TODO: wait for motives to
 					// update
 				} else {
-					log("there are no active motives right now");
+					log("there are no active motives right now... sleeping until some turn up");
+					// wait that something happens
+					while (isRunning()) {
+						if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
+							activeMotiveEventQueue.clear();
+							break;
+						}
+					}
 				}
 			}
 		} catch (InterruptedException e) {
@@ -255,14 +249,13 @@ public class PlanAllManager extends ManagedComponent {
 				log("deactive a motive that doesn't exist... no worries");
 			} catch (CASTException e) {
 				e.printStackTrace();
-			}
-			finally {
+			} finally {
 				try {
 					unlockEntry(m.thisEntry);
 				} catch (CASTException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} 
+				}
 			}
 		}
 
