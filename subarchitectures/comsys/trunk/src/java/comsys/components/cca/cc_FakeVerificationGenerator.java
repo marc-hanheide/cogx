@@ -175,8 +175,8 @@ public class cc_FakeVerificationGenerator
 		GroundedBelief request = getGUIRequest();
 		try {
 			if (request != null) {
-				log("Storing grounded belief on working memory");
-				addToWorkingMemory(newDataID(), Binder.BINDER_SA, request);
+				log("Storing grounded belief on binder WM");
+				overwriteWorkingMemory(request.id, Binder.BINDER_SA, request);
 			}
 			else {
 				log("null request, ignoring");
@@ -219,10 +219,11 @@ public class cc_FakeVerificationGenerator
 		g.reason = new SuperFormula(); // truth -> empty formula
 
 		GroundedBelief verif = new GroundedBelief();
-		verif.ags = AbstractBeliefFactory.createAgentStatus(new String[] {"robot", "human"}); // XXX
+		verif.ags = AbstractBeliefFactory.createMutualAgentStatus(new String[] {"robot", "human"}); // XXX
+//		verif.ags = b.ags;
 		verif.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
 		verif.sigma = b.sigma;
-		verif.timeStamp = b.timeStamp;
+		verif.timeStamp = b.timeStamp; // XXX change the timestamp?
 		verif.id = b.id;
 		verif.grounding = g;
 

@@ -125,7 +125,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				});
 		
 		addChangeFilter(
-				ChangeFilterFactory.createGlobalTypeFilter(beliefmodels.domainmodel.cogx.GroundedBelief.class, WorkingMemoryOperation.ADD),
+				ChangeFilterFactory.createGlobalTypeFilter(beliefmodels.domainmodel.cogx.GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleGroundedBelief(_wmc);
@@ -166,7 +166,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     // =================================================================
 
 	private void handleBoundReadings(WorkingMemoryChange _wmc) {
-		log("Got a WM change");
+		log("Got a WM change: bound readings");
 		try {
 			String id = _wmc.address.id;
 			CASTData data = getWorkingMemoryEntry(id);
@@ -184,7 +184,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	}		
 	
 	private void handleClarificationRequest(WorkingMemoryChange _wmc) {
-		log("Got a WM change");
+		log("Got a WM change: clarification request");
 		try {
 			String id = _wmc.address.id;
 			CASTData data = getWorkingMemoryEntry(id);
@@ -202,7 +202,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	}			
 
 	private void handleGroundedBelief(WorkingMemoryChange _wmc) {
-		log("Got a WM change");
+		log("Got a WM change: grounded belief");
 		try {
 			String id = _wmc.address.id;
 			CASTData data = getWorkingMemoryEntry(id, Binder.BINDER_SA);
@@ -210,7 +210,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
 			pd.add(data);
 			m_proposedProcessing.put(taskID, pd);
-			String taskGoal = ComsysGoals.CCA_WAS_VERIFIED_TASK;
+			String taskGoal = ComsysGoals.CCA_VERIFICATION_TASK;
 			proposeInformationProcessingTask(taskID, taskGoal);
         	m_taskToTaskTypeMap.put(taskID, taskGoal);       
 		}
@@ -264,7 +264,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	                            updateContext(cu);
 	                            actPublicly(selectAction(cu));
                         	}
-                        	else if (taskType.equals(ComsysGoals.CCA_WAS_VERIFIED_TASK)) {
+                        	else if (taskType.equals(ComsysGoals.CCA_VERIFICATION_TASK)) {
                         		ContextUpdate cu = null;
                             	CASTData gbWM = data.getByType(CASTUtils.typeName(GroundedBelief.class));
                             	if (gbWM != null) {
@@ -488,7 +488,23 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-			//log("got a belief, id=" + model.k[i]);
+			if (b == null) {
+				log("b == null !");
+			}
+			else {
+				log("b != null");
+			}
+			
+			if (b.ags == null) {
+				log("b.ags == null !");
+			}
+			else {
+				log("b.ags != null");
+				log(b.ags.getClass().toString());
+				log(MercuryUtils.kModalityToString(AbducerUtils.kModality(b.ags)));
+			}
+
+			log("got a belief, id=" + model.k[i]);
 			Modality[] mod = new Modality[] { AbducerUtils.kModality(b.ags) };
 			String unionId = referringUnionId(b);
 
