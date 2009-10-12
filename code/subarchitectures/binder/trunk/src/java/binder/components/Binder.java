@@ -246,6 +246,8 @@ public class Binder extends ManagedComponent  {
 			// The proxy which was modified
 			Proxy updatedProxy= getMemoryEntry(wmc.address, Proxy.class);
 
+			Vector<UnionConfiguration> newUnionConfigs = new Vector<UnionConfiguration>();
+
 			BinderUtils.completeProxy(updatedProxy, addUnknowns, proxyDistribFilter);
 			updatedProxy.timeStamp = getCASTTime();
 
@@ -273,15 +275,24 @@ public class Binder extends ManagedComponent  {
 							proxies.add(updatedProxy);
 							Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 							existingUnionConfig.includedUnions[i] = updatedUnion;
+							
+							if (!isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
+								newUnionConfigs.add(existingUnionConfig);
+							}
 						}
 					}
 				}
 
 			}
-
-			recompute(currentUnionConfigurations);
 			
-			// Update the alternative union configurations in the WM
+			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
+
+			currentUnionConfigurations = newUnionConfigs;
+			
+			recompute(currentUnionConfigurations);	
+
+			
+			// Update the alternative union configurations
 			AlternativeUnionConfigurations alters = 
 				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
 			updateWM(alters); 
