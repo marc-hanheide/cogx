@@ -115,7 +115,6 @@ public class BeliefModelTranslator extends ManagedComponent {
 						else {
 							log("belief update not necessary");
 						}
-
 					}
 
 					BeliefModel bmodel = constructBeliefModel (beliefs);
@@ -169,7 +168,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 		Vector<Belief> nonbinderbeliefs = new Vector<Belief>();
 		
 		try {
-			CASTData<Belief>[] beliefs = getWorkingMemoryEntries (Belief.class);
+			CASTData<Belief>[] beliefs = getWorkingMemoryEntries (Binder.BINDER_SA, Belief.class);
 			
 			for (int i = 0; i < beliefs.length ; i++ ) {
 				Belief belief = beliefs[i].getData();

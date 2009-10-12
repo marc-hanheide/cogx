@@ -76,7 +76,7 @@ public class BinderMonitor extends ManagedComponent {
 				try {
 					UnionConfiguration config = 
 					getMemoryEntry(_wmc.address, UnionConfiguration.class);
-					updateMonitorWithNewConfiguration(config);
+					updateMonitorWithSingleBestConfiguration(config);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -130,7 +130,7 @@ public class BinderMonitor extends ManagedComponent {
 	 * 
 	 * @param bestConfig the union configuration
 	 */
-	public void updateMonitorWithNewConfiguration
+	public void updateMonitorWithSingleBestConfiguration
 			(UnionConfiguration bestConfig) {
 		
 		log("Change in the binding working memory, update necessary");
