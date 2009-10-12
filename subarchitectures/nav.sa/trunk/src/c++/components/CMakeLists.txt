@@ -88,7 +88,7 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 
 set(SOURCES ObjPdf.cpp)
 add_cast_component(ObjectSearch ObjectSearch.cpp ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} PTZ FrontierInterface NavData SpatialData VisionData Video VideoUtils VideoClient Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils) 
+link_cast_component(${CAST_COMPONENT_NAME} PTZ FrontierInterface NavData SpatialData VisionData Video VideoUtils Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils) 
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 endif(BUILD_SA_NAV_OBJECTSEARCH)
