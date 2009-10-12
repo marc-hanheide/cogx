@@ -6,15 +6,22 @@ package motivation.components.filters;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+
+import Ice.ObjectImpl;
 
 import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import motivation.slice.TestMotive;
+import motivation.util.WMMotiveSet;
+import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.castextensions.EventWaiter;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -31,15 +38,19 @@ import cast.cdl.WorkingMemoryPermissions;
  * @author marc
  * 
  */
-public class MotiveFilterManager extends ManagedComponent  {
+public class MotiveFilterManager extends ManagedComponent {
 
 	WorkingMemoryChangeReceiver receiver;
+	WMMotiveSet motives;
+	EventWaiter eventWaiter;
 
 	List<MotiveFilter> pipe;
 
 	public MotiveFilterManager() {
 		super();
 		pipe = new LinkedList<MotiveFilter>();
+		motives = WMMotiveSet.create(this);
+		eventWaiter = new EventWaiter();
 	}
 
 	@Override
@@ -52,12 +63,13 @@ public class MotiveFilterManager extends ManagedComponent  {
 			StringTokenizer st = new StringTokenizer(subscrStr, ",");
 			while (st.hasMoreTokens()) {
 				String className = st.nextToken();
-				className=this.getClass().getPackage().getName()+"."+className.trim();
+				className = this.getClass().getPackage().getName() + "."
+						+ className.trim();
 				try {
-					log("add type '" + className+"'");
+					log("add type '" + className + "'");
 					ClassLoader.getSystemClassLoader().loadClass(className);
-					addFilter((MotiveFilter) Class
-							.forName(className).newInstance());
+					addFilter((MotiveFilter) Class.forName(className)
+							.newInstance());
 				} catch (ClassNotFoundException e) {
 					println("trying to register for a class that doesn't exist.");
 					e.printStackTrace();
@@ -87,6 +99,8 @@ public class MotiveFilterManager extends ManagedComponent  {
 		// TODO Auto-generated method stub
 		super.start();
 
+		motives.start();
+
 		receiver = new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				// avoid self calls
@@ -99,18 +113,20 @@ public class MotiveFilterManager extends ManagedComponent  {
 					switch (motive.status) {
 					case UNSURFACED:
 						log("check unsurfaced motive " + motive.toString());
-						if (shouldBeSurfaced(motive)) {
+						MotivePriority priority = shouldBeSurfaced(motive);
+						if (priority != MotivePriority.UNSURFACE) {
 							log("-> surfaced motive " + motive.toString());
 							motive.status = MotiveStatus.SURFACED;
+							motive.priority = priority;
 							overwriteWorkingMemory(_wmc.address, motive);
 						}
 						break;
-					case ACTIVE:
-					case SURFACED:
+					default:
 						log("check surfaced motive " + motive.toString());
 						if (shouldBeUnsurfaced(motive)) {
 							log("-> unsurfaced motive " + motive.toString());
 							motive.status = MotiveStatus.UNSURFACED;
+							motive.priority = MotivePriority.UNSURFACE;
 							overwriteWorkingMemory(_wmc.address, motive);
 						}
 						break;
@@ -120,23 +136,14 @@ public class MotiveFilterManager extends ManagedComponent  {
 				} catch (UnknownSubarchitectureException e) {
 					println("UnknownSubarchitectureException: this shouldn't happen.");
 					e.printStackTrace();
-				} catch (ConsistencyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (PermissionException e) {
-					// TODO Auto-generated catch block
+				} catch (CASTException e) {
+					println("CASTException in motive filtering ");
 					e.printStackTrace();
 				} finally {
 					try {
 						unlockEntry(_wmc.address);
-					} catch (ConsistencyException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (DoesNotExistOnWMException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (UnknownSubarchitectureException e) {
-						// TODO Auto-generated catch block
+					} catch (CASTException e) {
+						println("CASTException while unlocking: ");
 						e.printStackTrace();
 					}
 				}
@@ -152,83 +159,101 @@ public class MotiveFilterManager extends ManagedComponent  {
 	}
 
 	public void checkAll() throws CASTException {
-		// TODO: currently CAST::getMemoryEntries only considers the "real" type
-		// of entries, whihc means, getMemoryEntries(Motive.class) will not
-		// work... is a feature request for CAST
-		List<TestMotive> testMotives;
-		testMotives = new LinkedList<TestMotive>();
-		getMemoryEntries(TestMotive.class, testMotives);
-		// trigger them all by overwriting them
-		for (Motive m : testMotives) {
+
+		for (ObjectImpl obj : motives.values()) {
+			Motive motive = (Motive) obj;
 			WorkingMemoryChange wmc = new WorkingMemoryChange();
-			wmc.address = m.thisEntry;
+			wmc.address = motive.thisEntry;
 			wmc.operation = WorkingMemoryOperation.OVERWRITE;
 			wmc.src = "explicit self-trigger";
 			receiver.workingMemoryChanged(wmc);
 		}
 
-		List<ExploreMotive> exploreMotives;
-		exploreMotives = new LinkedList<ExploreMotive>();
-		getMemoryEntries(ExploreMotive.class, exploreMotives);
-		// trigger them all by overwriting them
-		for (Motive m : exploreMotives) {
-			WorkingMemoryChange wmc = new WorkingMemoryChange();
-			wmc.address = m.thisEntry;
-			wmc.operation = WorkingMemoryOperation.OVERWRITE;
-			wmc.src = "explicit self-trigger";
-			receiver.workingMemoryChanged(wmc);
-		}
-
-		List<HomingMotive> homingMotives;
-		homingMotives = new LinkedList<HomingMotive>();
-		getMemoryEntries(HomingMotive.class, homingMotives);
-		// trigger them all by overwriting them
-		for (Motive m : homingMotives) {
-			WorkingMemoryChange wmc = new WorkingMemoryChange();
-			wmc.address = m.thisEntry;
-			wmc.operation = WorkingMemoryOperation.OVERWRITE;
-			wmc.src = "explicit self-trigger";
-			receiver.workingMemoryChanged(wmc);
-		}
-
-		List<CategorizePlaceMotive> categorizePlaceMotives;
-		categorizePlaceMotives = new LinkedList<CategorizePlaceMotive>();
-		getMemoryEntries(CategorizePlaceMotive.class, categorizePlaceMotives);
-		// trigger them all by overwriting them
-		for (Motive m : categorizePlaceMotives) {
-			WorkingMemoryChange wmc = new WorkingMemoryChange();
-			wmc.address = m.thisEntry;
-			wmc.operation = WorkingMemoryOperation.OVERWRITE;
-			wmc.src = "explicit self-trigger";
-			receiver.workingMemoryChanged(wmc);
-		}
-
-		List<CategorizeRoomMotive> categorizeRoomMotives;
-		categorizeRoomMotives = new LinkedList<CategorizeRoomMotive>();
-		getMemoryEntries(CategorizeRoomMotive.class, categorizeRoomMotives);
-		// trigger them all by overwriting them
-		for (Motive m : categorizeRoomMotives) {
-			WorkingMemoryChange wmc = new WorkingMemoryChange();
-			wmc.address = m.thisEntry;
-			wmc.operation = WorkingMemoryOperation.OVERWRITE;
-			wmc.src = "explicit self-trigger";
-			receiver.workingMemoryChanged(wmc);
-		}
+		// // TODO: currently CAST::getMemoryEntries only considers the "real"
+		// type
+		// // of entries, whihc means, getMemoryEntries(Motive.class) will not
+		// // work... is a feature request for CAST
+		// List<TestMotive> testMotives;
+		// testMotives = new LinkedList<TestMotive>();
+		// getMemoryEntries(TestMotive.class, testMotives);
+		// // trigger them all by overwriting them
+		// for (Motive m : testMotives) {
+		// WorkingMemoryChange wmc = new WorkingMemoryChange();
+		// wmc.address = m.thisEntry;
+		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
+		// wmc.src = "explicit self-trigger";
+		// receiver.workingMemoryChanged(wmc);
+		// }
+		//
+		// List<ExploreMotive> exploreMotives;
+		// exploreMotives = new LinkedList<ExploreMotive>();
+		// getMemoryEntries(ExploreMotive.class, exploreMotives);
+		// // trigger them all by overwriting them
+		// for (Motive m : exploreMotives) {
+		// WorkingMemoryChange wmc = new WorkingMemoryChange();
+		// wmc.address = m.thisEntry;
+		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
+		// wmc.src = "explicit self-trigger";
+		// receiver.workingMemoryChanged(wmc);
+		// }
+		//
+		// List<HomingMotive> homingMotives;
+		// homingMotives = new LinkedList<HomingMotive>();
+		// getMemoryEntries(HomingMotive.class, homingMotives);
+		// // trigger them all by overwriting them
+		// for (Motive m : homingMotives) {
+		// WorkingMemoryChange wmc = new WorkingMemoryChange();
+		// wmc.address = m.thisEntry;
+		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
+		// wmc.src = "explicit self-trigger";
+		// receiver.workingMemoryChanged(wmc);
+		// }
+		//
+		// List<CategorizePlaceMotive> categorizePlaceMotives;
+		// categorizePlaceMotives = new LinkedList<CategorizePlaceMotive>();
+		// getMemoryEntries(CategorizePlaceMotive.class,
+		// categorizePlaceMotives);
+		// // trigger them all by overwriting them
+		// for (Motive m : categorizePlaceMotives) {
+		// WorkingMemoryChange wmc = new WorkingMemoryChange();
+		// wmc.address = m.thisEntry;
+		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
+		// wmc.src = "explicit self-trigger";
+		// receiver.workingMemoryChanged(wmc);
+		// }
+		//
+		// List<CategorizeRoomMotive> categorizeRoomMotives;
+		// categorizeRoomMotives = new LinkedList<CategorizeRoomMotive>();
+		// getMemoryEntries(CategorizeRoomMotive.class, categorizeRoomMotives);
+		// // trigger them all by overwriting them
+		// for (Motive m : categorizeRoomMotives) {
+		// WorkingMemoryChange wmc = new WorkingMemoryChange();
+		// wmc.address = m.thisEntry;
+		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
+		// wmc.src = "explicit self-trigger";
+		// receiver.workingMemoryChanged(wmc);
+		// }
 
 	}
 
-	public boolean shouldBeSurfaced(Motive motive) {
-		boolean result=true;
+	public MotivePriority shouldBeSurfaced(Motive motive) {
+		MotivePriority result = MotivePriority.HIGH;
 		for (MotiveFilter filter : pipe) {
-			result=result && filter.shouldBeSurfaced(motive);
+			MotivePriority filterResult = filter.shouldBeSurfaced(motive);
+			// if one filter rejects, reject this motive
+			if (filterResult == MotivePriority.UNSURFACE)
+				return MotivePriority.UNSURFACE;
+			// otherwise always provide the lowest priority
+			if (filterResult.value() < result.value())
+				result = filterResult;
 		}
 		return result;
 	}
 
 	public boolean shouldBeUnsurfaced(Motive motive) {
-		boolean result=false;
+		boolean result = false;
 		for (MotiveFilter filter : pipe) {
-			result=result || filter.shouldBeUnsurfaced(motive);
+			result = result || filter.shouldBeUnsurfaced(motive);
 		}
 		return result;
 	}

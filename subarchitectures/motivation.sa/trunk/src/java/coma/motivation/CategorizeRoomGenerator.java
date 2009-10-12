@@ -7,6 +7,7 @@ import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
@@ -52,8 +53,6 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 				crm.costs=1;
 				// The more places are contained the more information we get from this room!
 				crm.informationGain=source.containedPlaceIds.length;
-				// priority is considered similarly as informationGain for now
-				crm.priority=(float) motive.informationGain;
 				crm.roomId = source.roomId;
 				write(crm);
 				return true;

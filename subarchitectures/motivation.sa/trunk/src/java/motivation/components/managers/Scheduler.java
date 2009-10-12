@@ -16,6 +16,7 @@ import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
+import motivation.util.WMMotiveEventQueue.MotiveEvent;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -31,7 +32,7 @@ public class Scheduler extends ManagedComponent {
 
 	private int maxPlannedMotives;
 	private Comparator<? super Motive> motiveComparator;
-	private WMMotiveEventQueue surfacedEventQueue;
+	private WMMotiveEventQueue relevantEventQueue;
 
 	/**
 	 * @param specificType
@@ -41,7 +42,7 @@ public class Scheduler extends ManagedComponent {
 		// defaults
 		motives = WMMotiveSet.create(this);
 		motiveComparator = new AgeComparator();
-		surfacedEventQueue = new WMMotiveEventQueue();
+		relevantEventQueue = new WMMotiveEventQueue();
 		maxPlannedMotives = 3;
 	}
 
@@ -98,54 +99,84 @@ public class Scheduler extends ManagedComponent {
 		super.start();
 		motives.start();
 		motives.setStateChangeHandler(new MotiveStateTransition(null,
-				MotiveStatus.SURFACED), surfacedEventQueue);
+				MotiveStatus.SURFACED), relevantEventQueue);
+		motives.setStateChangeHandler(new MotiveStateTransition(
+				MotiveStatus.ACTIVE, null), relevantEventQueue);
 	}
 
 	void scheduleMotives() {
-		// if we don't have anything to do... just quit.
 		log("scheduleMotives");
-		Set<Motive> activeMotives = motives
-				.getSubsetByStatus(MotiveStatus.ACTIVE);
-
-		if (activeMotives.size() > 0) {
-			log("there are still active motives... so we don't reschedule any new");
-			// this scheduler does no rescheduling so far
-			return;
-		}
 
 		Set<Motive> surfacedMotives = motives
 				.getSubsetByStatus(MotiveStatus.SURFACED);
+		Set<Motive> activeMotives = motives
+				.getSubsetByStatus(MotiveStatus.ACTIVE);
 
-		if (surfacedMotives.size() < 0)
+		if (surfacedMotives.isEmpty())
 			return;
 
 		try {
-			log("ok, let's schedule "+ maxPlannedMotives + " of the "+ surfacedMotives.size() + "surfaced ones.");
-			int freeCapacity = Math.max(0, maxPlannedMotives
-					- activeMotives.size());
+			int freeCapacity = Math.max(maxPlannedMotives
+					- activeMotives.size(), 0);
+			// if we have no capacity left check if we need to reschedule due to
+			// priorities
+			if (freeCapacity == 0) {
+				log("checking if we have to reschedule due to priorities");
+				int priorityActives = maxPriority(activeMotives);
+				int prioritySurfaced = maxPriority(surfacedMotives);
+
+				log("max priority in actives: " + priorityActives);
+				log("max priority in surfaced: " + prioritySurfaced);
+				// reschedule if we have no active motives or one of the
+				// surfaced
+				// motives is high priority forcing rescheduling
+				if (priorityActives < prioritySurfaced) {
+					log("there are some surfaced motives that have a highe priority. Forcing rescheduling");
+					// deactivate all motives
+					motives.setState(MotiveStatus.SURFACED, activeMotives);
+					activeMotives.clear();
+					freeCapacity = maxPlannedMotives;
+				}
+			}
+			// if there is no capacity we do nothing
+			if (freeCapacity == 0)
+				return;
+
 			List<Motive> sortedMotives = new LinkedList<Motive>(surfacedMotives);
 			// rank the motives according to the comparator
 			Collections.sort(sortedMotives, motiveComparator);
 
 			int rankCount = 0;
-			for (Motive m : sortedMotives.subList(0, Math.min(sortedMotives
-					.size(), freeCapacity))) {
+			int numberToSchedule = Math.min(sortedMotives.size(), freeCapacity);
+			log("ok, let's schedule " + numberToSchedule + " motives of the "
+					+ surfacedMotives.size() + " surfaced ones.");
+			for (Motive m : sortedMotives.subList(0, numberToSchedule)) {
 				m.status = MotiveStatus.ACTIVE;
 				m.tries++;
 				m.rank = rankCount++;
 				try {
 					lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
+					getMemoryEntry(m.thisEntry, Motive.class);
 					overwriteWorkingMemory(m.thisEntry, m);
 				} catch (DoesNotExistOnWMException e) {
 					// safely ignore
-				}
-				finally {
+				} finally {
 					unlockEntry(m.thisEntry);
 				}
 			}
 		} catch (CASTException e) {
 			e.printStackTrace();
 		}
+
+	}
+
+	private int maxPriority(Set<Motive> motives) {
+		int result = -1;
+		for (Motive m : motives) {
+			result = Math.max(m.priority.value(), result);
+		}
+
+		return result;
 
 	}
 
@@ -160,9 +191,17 @@ public class Scheduler extends ManagedComponent {
 		try {
 			while (isRunning()) {
 				log("runComponent loop");
-				// retrieve next event
-				surfacedEventQueue.poll(1, TimeUnit.SECONDS);
+				// check if we have any active motives already... then we don't
+				// schedule
+
 				scheduleMotives();
+				while (isRunning()) {
+					if ((relevantEventQueue.poll(1, TimeUnit.SECONDS)) != null) {
+						relevantEventQueue.clear();
+						break;
+					}
+
+				}
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

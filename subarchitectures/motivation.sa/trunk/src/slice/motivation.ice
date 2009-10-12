@@ -19,6 +19,13 @@ module motivation {
     		ACTIVE,
     		COMPLETED
     	};
+    	
+    	enum MotivePriority {
+    		UNSURFACE,
+    		LOW,
+    		NORMAL,
+    		HIGH
+    	};
     		
     	class Motive {
 			cast::cdl::CASTTime created;
@@ -30,7 +37,7 @@ module motivation {
     		/** a counter for the number of tries this motive has been planned */
     		long tries; 	
     		/** [0-1] encoding for a priority */
-    		float priority;
+    		MotivePriority priority;
     		/** [0-inf] encoding for costs */
     		float costs;
     		/** [0-1] encoding for information gain */

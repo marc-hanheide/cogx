@@ -3,6 +3,7 @@
  */
 package motivation.util;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,7 +14,9 @@ import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.castextensions.WMEntrySet;
 import motivation.util.castextensions.WMEntrySet.ChangeHandler;
+import cast.CASTException;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -134,6 +137,19 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		stateChangeReceivers.put(status, handler);
 	}
 
+	public void setStateChangeHandler(MotiveStateTransition status,
+			final WorkingMemoryChangeReceiver handler) {
+		stateChangeReceivers.put(status, new WMEntrySet.ChangeHandler() {
+			
+			@Override
+			public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
+					WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive) throws CASTException {
+				handler.workingMemoryChanged(wmc);
+				
+			}
+		});
+	}
+
 	/**
 	 * Factory method
 	 * 
@@ -155,7 +171,7 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 
 	@Override
 	public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-			WorkingMemoryChange wmc, ObjectImpl newObj, ObjectImpl oldObj) {
+			WorkingMemoryChange wmc, ObjectImpl newObj, ObjectImpl oldObj) throws CASTException {
 		if (externalHandler != null)
 			externalHandler.motiveChanged(map, wmc, newObj, oldObj);
 		Motive newMotive = (Motive) newObj;
@@ -174,38 +190,57 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 
 		// call all handlers, also those that a wildcards
 
-		// if state has not changed, simply return
-		if (fromState != null && toState != null)
-			if (fromState.equals(toState))
-				return;
-
 		enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
 				fromState, toState));
-		if (enterReceiver != null)
+		if (enterReceiver != null) {
+			component.log("call " + fromState + " -> " + toState + " with "
+					+ fromState + " -> " + toState);
 			handlersToCall.add(enterReceiver);
+		}
 
-		enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
-				fromState, null));
-		if (enterReceiver != null)
-			handlersToCall.add(enterReceiver);
+		// if state has not changed, don't call the wildcard handlers
+		if (!(((fromState != null && toState != null)) && (fromState
+				.equals(toState)))) {
+			enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
+					fromState, null));
+			if (enterReceiver != null) {
+				component.log("call " + fromState + " -> null" + " with "
+						+ fromState + " -> " + toState);
+				handlersToCall.add(enterReceiver);
+			}
 
-		enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
-				null, toState));
-		if (enterReceiver != null)
-			handlersToCall.add(enterReceiver);
-
+			enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
+					null, toState));
+			if (enterReceiver != null) {
+				component.log("call null -> " + toState + " with " + fromState
+						+ " -> " + toState);
+				handlersToCall.add(enterReceiver);
+			}
+		}
 		for (ChangeHandler h : handlersToCall) {
 			h.motiveChanged(map, wmc, newMotive, oldMotive);
 		}
 
-
+	}
+	
+	public void setState(MotiveStatus status, Collection<Motive> motives) {
+		for (Motive m : motives) {
+			try {
+				component.getMemoryEntry(m.thisEntry, Motive.class);
+				m.status = status;
+				component.overwriteWorkingMemory(m.thisEntry, m);
+			}
+			catch (CASTException e) {
+				component.println("*** CASTException in setState " + e.message);
+			}
+		}
 	}
 
 	public Set<Motive> getSubsetByStatus(MotiveStatus status) {
 		Set<Motive> result = new HashSet<Motive>();
 		for (ObjectImpl o : super.values()) {
 			Motive m = (Motive) o;
-			if (m.status.equals(status)) 
+			if (m.status.equals(status))
 				result.add(m);
 		}
 		return result;

@@ -4,18 +4,21 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 
-import motivation.slice.CategorizePlaceMotive;
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.HomingMotive;
 import motivation.slice.Motive;
-import motivation.slice.MotiveStatus;
+import motivation.slice.MotivePriority;
 import motivation.slice.TestMotive;
 import cast.CASTException;
 
@@ -34,43 +37,43 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JFrame jFrame = null; // @jve:decl-index=0:visual-constraint="1,21"
 	private JPanel jContentPane = null;
-	private JCheckBox jCheckBoxExploreMotive = null; // @jve:decl-index=0:visual-constraint="367,125"
-	private JCheckBox jCheckBoxHomingMotive = null; // @jve:decl-index=0:visual-constraint="365,163"
-	private JCheckBox jCheckBoxTestMotive = null; // @jve:decl-index=0:visual-constraint="421,181"
 	private JButton jButtonUpdate = null; // @jve:decl-index=0:visual-constraint="325,118"
-	private JCheckBox jCheckBoxCategorizePlace = null; // @jve:decl-index=0:visual-constraint="427,60"
-	private JCheckBox jCheckBoxCategorizeRoomMotive;  //  @jve:decl-index=0:
 
-	public boolean shouldBeSurfaced(Motive motive) {
+	private JPanel jMotivesPanel = null;
+
+	private JSlider jExplorePrioritySlider = null; // @jve:decl-index=0:visual-constraint="414,85"
+
+	private JSlider jTestPrioritySlider =null;
+
+	private JSlider jHomePrioritySlider = null;
+
+	private JSlider jCategorizePrioritySlider = null;
+	
+	public MotivePriority shouldBeSurfaced(Motive motive) {
 		if (motive instanceof ExploreMotive)
-			return jCheckBoxExploreMotive.isSelected();
+			return MotivePriority.convert(jExplorePrioritySlider.getValue());
 		else if (motive instanceof TestMotive)
-			return jCheckBoxTestMotive.isSelected();
+			return MotivePriority.convert(jTestPrioritySlider.getValue());
 		else if (motive instanceof HomingMotive)
-			return jCheckBoxHomingMotive.isSelected();
-		else if (motive instanceof CategorizePlaceMotive)
-			return jCheckBoxCategorizePlace.isSelected();
+			return MotivePriority.convert(jHomePrioritySlider.getValue());
 		else if (motive instanceof CategorizeRoomMotive)
-			return jCheckBoxCategorizeRoomMotive.isSelected();
+			return MotivePriority.convert(jCategorizePrioritySlider.getValue());
 		else
-			return true;
+			return MotivePriority.NORMAL;
 	}
 
-
 	public boolean shouldBeUnsurfaced(Motive motive) {
-//		if (motive.status==MotiveStatus.ACTIVE)
-//			return false;
-		
+		// if (motive.status==MotiveStatus.ACTIVE)
+		// return false;
+
 		if (motive instanceof ExploreMotive)
-			return !jCheckBoxExploreMotive.isSelected();
+			return MotivePriority.convert(jExplorePrioritySlider.getValue())==MotivePriority.UNSURFACE;
 		else if (motive instanceof TestMotive)
-			return !jCheckBoxTestMotive.isSelected();
+			return MotivePriority.convert(jTestPrioritySlider.getValue())==MotivePriority.UNSURFACE;
 		else if (motive instanceof HomingMotive)
-			return !jCheckBoxHomingMotive.isSelected();
-		else if (motive instanceof CategorizePlaceMotive)
-			return !jCheckBoxCategorizePlace.isSelected();
+			return MotivePriority.convert(jHomePrioritySlider.getValue())==MotivePriority.UNSURFACE;
 		else if (motive instanceof CategorizeRoomMotive)
-			return !jCheckBoxCategorizeRoomMotive.isSelected();
+			return MotivePriority.convert(jCategorizePrioritySlider.getValue())==MotivePriority.UNSURFACE;
 		else
 			return false;
 	}
@@ -83,7 +86,7 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JFrame getJFrame() {
 		if (jFrame == null) {
 			jFrame = new JFrame();
-			jFrame.setSize(new Dimension(318, 184));
+			jFrame.setSize(new Dimension(618, 184));
 			jFrame.setTitle("Motivation::ManualSelectFilter");
 			jFrame.setContentPane(getJContentPane());
 		}
@@ -99,71 +102,13 @@ public class ManualSelectFilter implements MotiveFilter {
 		if (jContentPane == null) {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new GridLayout(0, 1));
-			jContentPane.add(getJCheckBoxExploreMotive());
-			jContentPane.add(getJCheckBoxTestMotive());
-			jContentPane.add(getJCheckBoxHomingMotive());
-			jContentPane.add(getJCheckBoxCategorizePlace());
-			jContentPane.add(getJCheckBoxCategorizeRoomMotive());
-			jContentPane.add(getJButtonUpdate());
+			jContentPane.add(getJMotivesPanel());
+			jMotivesPanel.add(getJButtonUpdate());
 		}
 		return jContentPane;
 	}
 
-	/**
-	 * This method initializes jCheckBox
-	 * 
-	 * @return javax.swing.JCheckBox
-	 */
-	private JCheckBox getJCheckBoxExploreMotive() {
-		if (jCheckBoxExploreMotive == null) {
-			jCheckBoxExploreMotive = new JCheckBox();
-			jCheckBoxExploreMotive.setSize(new Dimension(257, 29));
-			jCheckBoxExploreMotive.setText("let ExploreMotives pass");
-		}
-		return jCheckBoxExploreMotive;
-	}
 
-	/**
-	 * This method initializes jCheckBox
-	 * 
-	 * @return javax.swing.JCheckBox
-	 */
-	private JCheckBox getJCheckBoxCategorizeRoomMotive() {
-		if (jCheckBoxCategorizeRoomMotive == null) {
-			jCheckBoxCategorizeRoomMotive = new JCheckBox();
-			jCheckBoxCategorizeRoomMotive.setSize(new Dimension(257, 29));
-			jCheckBoxCategorizeRoomMotive.setText("let CategorizeRoomMotives pass");
-		}
-		return jCheckBoxCategorizeRoomMotive;
-	}
-
-	/**
-	 * This method initializes jCheckBox
-	 * 
-	 * @return javax.swing.JCheckBox
-	 */
-	private JCheckBox getJCheckBoxHomingMotive() {
-		if (jCheckBoxHomingMotive == null) {
-			jCheckBoxHomingMotive = new JCheckBox();
-			jCheckBoxHomingMotive.setSize(new Dimension(257, 29));
-			jCheckBoxHomingMotive.setText("let HomingMotives pass");
-		}
-		return jCheckBoxHomingMotive;
-	}
-
-	/**
-	 * This method initializes jCheckBox1
-	 * 
-	 * @return javax.swing.JCheckBox
-	 */
-	private JCheckBox getJCheckBoxTestMotive() {
-		if (jCheckBoxTestMotive == null) {
-			jCheckBoxTestMotive = new JCheckBox();
-			jCheckBoxTestMotive.setSize(new Dimension(125, 22));
-			jCheckBoxTestMotive.setText("let TestMotives pass");
-		}
-		return jCheckBoxTestMotive;
-	}
 
 	/**
 	 * This method initializes jButton
@@ -182,7 +127,7 @@ public class ManualSelectFilter implements MotiveFilter {
 						component.println("update everything");
 						component.checkAll();
 					} catch (CASTException e1) {
-						// TODO Auto-generated catch block
+						component.println("unexpected exception in checkAll: ");
 						e1.printStackTrace();
 					}
 
@@ -192,21 +137,98 @@ public class ManualSelectFilter implements MotiveFilter {
 		return jButtonUpdate;
 	}
 
-	/**
-	 * This method initializes jCheckBoxCategorizePlace
-	 * 
-	 * @return javax.swing.JCheckBox
-	 */
-	private JCheckBox getJCheckBoxCategorizePlace() {
-		if (jCheckBoxCategorizePlace == null) {
-			jCheckBoxCategorizePlace = new JCheckBox();
-			jCheckBoxCategorizePlace.setText("let CategorizePlaceMotives pass");
-		}
-		return jCheckBoxCategorizePlace;
-	}
-
 	public void setManager(MotiveFilterManager motiveFilterManager) {
 		component = motiveFilterManager;
 	}
 
+	/**
+	 * This method initializes jMotivesPanel
+	 * 
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJMotivesPanel() {
+		if (jMotivesPanel == null) {
+			GridLayout gridLayout = new GridLayout(0, 1);
+			gridLayout.setColumns(1);
+			jMotivesPanel = new JPanel();
+			jMotivesPanel.setLayout(gridLayout);
+			jMotivesPanel.add(new JLabel("Categorize"));
+			jMotivesPanel.add(getJSliderCategorize());
+			jMotivesPanel.add(new JLabel("Explore"));
+			jMotivesPanel.add(getJSliderExplore());
+			jMotivesPanel.add(new JLabel("Test"));
+			jMotivesPanel.add(getJSliderTest());
+			jMotivesPanel.add(new JLabel("Homing"));
+			jMotivesPanel.add(getJSliderHome());
+		}
+		return jMotivesPanel;
+	}
+
+	private JSlider createPrioritySlider() {
+		JSlider jSlider = new JSlider(JSlider.HORIZONTAL,
+				MotivePriority.UNSURFACE.value(), MotivePriority.HIGH.value(), MotivePriority.UNSURFACE.value());
+		Dictionary<Integer, JComponent> labels;
+		labels = new Hashtable<Integer, JComponent>();
+		labels.put(MotivePriority.UNSURFACE.value(), new JLabel(
+				MotivePriority.UNSURFACE.name()));
+		labels.put(MotivePriority.LOW.value(), new JLabel(
+				MotivePriority.LOW.name()));
+		labels.put(MotivePriority.NORMAL.value(), new JLabel(
+				MotivePriority.NORMAL.name()));
+		labels.put(MotivePriority.HIGH.value(), new JLabel(
+				MotivePriority.HIGH.name()));
+		jSlider.setLabelTable(labels);
+		jSlider.setPaintTicks(true);
+		jSlider.setPaintLabels(true);
+		jSlider.setSnapToTicks(true);
+		return jSlider;
+		
+	}
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderExplore() {
+		if (jExplorePrioritySlider == null) {
+			jExplorePrioritySlider = createPrioritySlider();
+		}
+		return jExplorePrioritySlider;
+	}
+
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderTest() {
+		if (jTestPrioritySlider == null) {
+			jTestPrioritySlider = createPrioritySlider();
+		}
+		return jTestPrioritySlider;
+	}
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderCategorize() {
+		if (jCategorizePrioritySlider == null) {
+			jCategorizePrioritySlider = createPrioritySlider();
+		}
+		return jCategorizePrioritySlider;
+	}
+	/**
+	 * This method initializes jExplorePrioritySlider
+	 * 
+	 * @return javax.swing.JSlider
+	 */
+	private JSlider getJSliderHome() {
+		if (jHomePrioritySlider == null) {
+			jHomePrioritySlider = createPrioritySlider();
+		}
+		return jHomePrioritySlider;
+	}
+
+	
 } // @jve:decl-index=0:visual-constraint="583,36"
