@@ -441,17 +441,45 @@
 </realizations>
 </utterance>
 
+
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know)  )
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) ^ <Patient>(b:entity ^ object ^ <Salient>true)  )  )
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know)  )
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
+</input>
+<realizations>
+<string>I know this</string>
+<string>I know that</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) ^ <Patient>(c:entity ^ color ^ <InfoStatus>familiar)  )  )
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(c:entity ^ color ^ /InfoStatus\familiar))  )
+</input>
+<realizations>
+<string>I know the color</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) )  )
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
 </input>
 <realizations>
 <string>I know </string>
 </realizations>
 </utterance>
+
+
 
 <utterance>
 <input>
@@ -492,8 +520,31 @@
 </realizations>
 </utterance>
 
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Polarity>neg ^ <Actor>(i:person ^ I) )  )
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Polarity\neg ^ /Actor\(i:person ^ I) )  )
+</input>
+<realizations>
+<string>I don't know </string>
+<string>I do not know </string>
+</realizations>
+</utterance>
 
-
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) )  )
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /AnswerType\negative ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
+</input>
+<realizations>
+<string>I don't know </string>
+<string>I do not know </string>
+</realizations>
+</utterance>
 
 <!-- ========== DORA TEMPLATES ========== -->
 

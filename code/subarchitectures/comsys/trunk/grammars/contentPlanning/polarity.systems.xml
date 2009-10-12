@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+<!-- /**
+
+@system polarity
+
+Inserts negative polarity iff <AnswerType>negative for full clauses
+
+*/ --> 
+
+<system id="polarity" region="POLARITY" metafunction="ideational">
+   <chooser id="c-polarity"/> 
+   <conditions>
+      <condition features="@feat:Mood"/>   
+   </conditions>
+   <actions>
+      <action choice="polarity-positive">
+      </action>     
+
+      <action choice="polarity-negative">
+      		<add-feature feature="Polarity" value="neg" />  
+      </action>     
+   </actions>
+</system>
+
+</systems>

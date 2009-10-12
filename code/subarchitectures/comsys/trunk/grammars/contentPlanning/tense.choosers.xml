@@ -10,13 +10,12 @@
 <chooser id="c-tense" region="TENSE" metafunction="ideational">
    <dectree>
        <choicenode answer="*TOP*">
-		 <!-- first check whether Mood has already been set -->
-         <inquiry id="q-ex-fv" type="string" answerset="@true @false @unknown"> 
-		    <q-ex-feat feat="Mood" val="int"/>
+		 <!-- first check whether Tense has already been set -->
+         <inquiry id="q-ex-fat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="Tense"/>
 		 </inquiry>			
 		 <choicenode answer = "true">
-			<!-- <result val="no-tense"/> --> 
-			<result val="do-tense"/>			
+			<result val="no-tense"/>
 		 </choicenode>
 		 <choicenode answer = "false">
 			<result val="do-tense"/>
