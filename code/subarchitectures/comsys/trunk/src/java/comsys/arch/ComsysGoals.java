@@ -81,6 +81,6 @@ public class ComsysGoals {
 	public static final String CCA_CLARIFICATION_REQUEST_TASK = "ccaClarif";
 	public static final String CCA_UNDERSTAND_TASK = "ccaUnderstand";
 	public static final String CCA_TACIT_ACTION_TASK = "ccaTacitAction";
-	public static final String CCA_WAS_VERIFIED_TASK = "ccaWasVerified";
+	public static final String CCA_VERIFICATION_TASK = "ccaVerification";
 	
 } // end class

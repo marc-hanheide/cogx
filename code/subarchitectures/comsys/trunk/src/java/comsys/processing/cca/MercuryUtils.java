@@ -77,10 +77,13 @@ public class MercuryUtils {
 	public static String agentToString(Agent a) {
 		switch (a) {
 		case human:
+			//System.err.println("hum");
 			return "h";
 		case robot:
+			//System.err.println("rob");
 			return "r";
 		default:
+			//System.err.println("unk");
 			return "?";
 		}
 	}
@@ -116,15 +119,19 @@ public class MercuryUtils {
 		String s = "k(";
 		switch (km.share) {
 		case Private:
+			//System.err.println("priv");
 			s += agentToString(km.act);
 			break;
 		case Attribute:
+			//System.err.println("attrib");
 			s += agentToString(km.act) + "[" + agentToString(km.pat) + "]";
 			break;
 		case Mutual:
+			//System.err.println("mutu");
 			s += "{" + agentToString(km.act) + "," + agentToString(km.pat) + "}";
 			break;
 		default:
+			//System.err.println("unknown");
 			s += "!";
 		}
 		s += ")";

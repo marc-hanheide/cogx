@@ -113,11 +113,16 @@ public class AbducerUtils {
 			m.act = toAbducerAgent(((PrivateAgentStatus) as).ag);
 			m.pat = Abducer.Agent.human;
 		}
-		else if (as instanceof AttributedAgentStatus) {
+		else if (as instanceof MutualAgentStatus) {
 			m.share = Abducer.Sharing.Mutual;
 			m.act = Abducer.Agent.robot;
-			m.act = Abducer.Agent.human;
+			m.pat = Abducer.Agent.human;
 		}
+		else {
+			//System.err.println("unknown AgentStatus in AbducerUtils.kModality() !");
+			return null;
+		}
+		//System.err.println("AU.kMo: share=" + m.share.toString() + ", act=" + m.act.toString() + ", pat=" + m.pat.toString());
 		return m;
 	}
 

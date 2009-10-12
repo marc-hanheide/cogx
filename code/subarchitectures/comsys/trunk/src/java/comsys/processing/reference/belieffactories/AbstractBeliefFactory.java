@@ -49,7 +49,7 @@ public abstract class AbstractBeliefFactory
 	/** constructs a belief with default settings for agents (human) and spatiotemporal frame (here-and-now) */ 
 	
 	public Belief constructBelief (LogicalForm lf) { 
-		AgentStatus as = createAgentStatus("human");
+		AgentStatus as = createPrivateAgentStatus("human");
 		return constructBelief(lf,as);
 	} // end method
 	
@@ -86,16 +86,16 @@ public abstract class AbstractBeliefFactory
 	
 	/** creates an agents-list consisting of a single agent. */
 	
-	public static AgentStatus createAgentStatus(String id) { 
-		//System.out.println("AbstractBeliefFactory.createAgentStatus: private");
+	public static PrivateAgentStatus createPrivateAgentStatus(String id) { 
+		//System.out.println("AbstractBeliefFactory.createPrivateAgentStatus");
 		PrivateAgentStatus priv = new PrivateAgentStatus();
 		priv.ag = new Agent();
 		priv.ag.id = id;
 		return priv;
 	} // end method
 	
-	public static AgentStatus createAgentStatus(String id1, String id2) {
-		//System.out.println("AbstractBeliefFactory.createAgentStatus: attributed");
+	public static AttributedAgentStatus createAttributedAgentStatus(String id1, String id2) {
+		//System.out.println("AbstractBeliefFactory.createAttributedAgentStatus");
 		AttributedAgentStatus attrib = new AttributedAgentStatus();
 		attrib.ag = new Agent();
 		attrib.ag.id = id1;
@@ -104,13 +104,14 @@ public abstract class AbstractBeliefFactory
 		return attrib;
 	}
 	
-	public static AgentStatus createAgentStatus(String[] ags) {
-		//System.out.println("AbstractBeliefFactory.createAgentStatus: mutual");
+	public static MutualAgentStatus createMutualAgentStatus(String[] ags) {
+		//System.out.println("AbstractBeliefFactory.createMutualAgentStatus: mutual");
 		MutualAgentStatus mutual = new MutualAgentStatus();
 		mutual.ags = new Agent[ags.length];
 		for (int i = 0; i < mutual.ags.length; i++) {
 			mutual.ags[i] = new Agent();
 			mutual.ags[i].id = ags[i];
+			//System.out.println("  " + ags[i]);
 		}
 		return mutual;
 	}

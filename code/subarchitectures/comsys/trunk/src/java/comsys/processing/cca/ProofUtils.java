@@ -169,13 +169,13 @@ public class ProofUtils {
 		switch (m.share) {
 
 			case Private:
-				return AbstractBeliefFactory.createAgentStatus(m.act.toString());
+				return AbstractBeliefFactory.createPrivateAgentStatus(m.act.toString());
 
 			case Mutual:
-				return AbstractBeliefFactory.createAgentStatus(new String[] {m.act.toString(), m.pat.toString()});
+				return AbstractBeliefFactory.createMutualAgentStatus(new String[] {m.act.toString(), m.pat.toString()});
 			
 			case Attribute:
-				return AbstractBeliefFactory.createAgentStatus(m.act.toString(), m.pat.toString());
+				return AbstractBeliefFactory.createAttributedAgentStatus(m.act.toString(), m.pat.toString());
 				
 			default:
 				// not a recognised agent relation
