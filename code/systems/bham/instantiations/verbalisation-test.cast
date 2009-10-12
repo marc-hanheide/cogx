@@ -35,5 +35,5 @@ JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
 
 
 # verb stuff
-JAVA MG verbal.kint dora.Verbalisation
+JAVA MG verbal.kint dora.DoraVerbalisation
 
