@@ -1,46 +1,66 @@
-FIND_PROGRAM(MATLAB_BIN_MCC mcc)
-FIND_PROGRAM(MATLAB_BIN_MBUILD mbuild)
-MARK_AS_ADVANCED(MATLAB_BIN_MCC)
-MARK_AS_ADVANCED(MATLAB_BIN_MBUILD)
+find_program(MATLAB_BIN_MCC mcc)
+find_program(MATLAB_BIN_MBUILD mbuild)
+mark_as_advanced(MATLAB_BIN_MCC)
+mark_as_advanced(MATLAB_BIN_MBUILD)
 
-IF (NOT MATLAB_BIN_MCC OR NOT MATLAB_BIN_MBUILD)
-   MESSAGE("Matlab Compiler (mcc+mbuild) was not found.")
-   SET(MATLAB_DIR "" CACHE PATH "Root of Matlab instal tree.")
-ELSE (NOT MATLAB_BIN_MCC OR NOT MATLAB_BIN_MBUILD)
+if (NOT MATLAB_BIN_MCC OR NOT MATLAB_BIN_MBUILD)
+   message("Matlab Compiler (mcc+mbuild) was not found.")
+   set(MATLAB_DIR "")
+else (NOT MATLAB_BIN_MCC OR NOT MATLAB_BIN_MBUILD)
    # Guess matlab install root
-   get_filename_component(MCC_PATH ${MATLAB_BIN_MCC} PATH)
-   SET (MATLAB_DIR ${MCC_PATH} CACHE PATH  "Root of Matlab instal tree.")
-ENDIF (NOT MATLAB_BIN_MCC OR NOT MATLAB_BIN_MBUILD)
+
+   #~ABSOLUTE doesn't resolve links
+   #~get_filename_component(MCC_ABS ${MATLAB_BIN_MCC} ABSOLUTE)
+
+   # Try to resolve mcc symlink
+   EXECUTE_PROCESS(
+	  COMMAND /bin/sh -c "ls -l ${MATLAB_BIN_MCC}" 
+	  COMMAND grep -oe "->\\s*.*" 
+	  COMMAND sed -e "s/->\\s*//"
+	  OUTPUT_VARIABLE  MCC_SYM_RESOLVED
+	  ERROR_VARIABLE   COMMAND_ERROR
+	  OUTPUT_STRIP_TRAILING_WHITESPACE
+	  )
+   if (MCC_SYM_RESOLVED)
+	  get_filename_component(MATLAB_DIR ${MCC_SYM_RESOLVED} PATH)
+   else(MCC_SYM_RESOLVED)
+	  get_filename_component(MATLAB_DIR ${MATLAB_BIN_MCC} PATH)
+   endif(MCC_SYM_RESOLVED)
+
+   # .../matlab/bin --> .../matlab
+   get_filename_component(MATLAB_DIR ${MATLAB_DIR} PATH)
+endif (NOT MATLAB_BIN_MCC OR NOT MATLAB_BIN_MBUILD)
+set (MATLAB_DIR ${MATLAB_DIR} CACHE PATH  "Root of Matlab instal tree.")
 
 # Set some common Matlab paths.
-SET (MATLAB_PATH
+set (MATLAB_PATH
+	${MATLAB_DIR}
 	/usr/local/matlab
 	/opt/matlab
 	/usr/matlab
 	~/apps/matlab
 	~/bin/matlab
-	${MATLAB_DIR}
 )
 
 # Look for Matlab's main include file, mclmcr.h. 
-FIND_PATH (MATLAB_INCLUDE_DIR
+find_path (MATLAB_INCLUDE_DIR
 	NAMES mclmcr.h
 	PATHS ${MATLAB_PATH}
 	PATH_SUFFIXES extern/include
 )
 
 # TODO Add more different architecture names.
-SET (ARCH_SUFFIXES
-	bin/glnx86
-)
+#set (ARCH_SUFFIXES
+#    bin/glnx86
+#)
 
-MACRO (FIND_MATLAB_LIB _var _name)
-	FIND_LIBRARY(${_var}
-		NAMES ${_name} 
-		PATHS ${MATLAB_PATH}
-		PATH_SUFFIXES ${ARCH_SUFFIXES}	
-	)
-ENDMACRO (FIND_MATLAB_LIB _var _name)
+#macro (FIND_MATLAB_LIB _var _name)
+#    FIND_LIBRARY(${_var}
+#        NAMES ${_name} 
+#        PATHS ${MATLAB_PATH}
+#        PATH_SUFFIXES ${ARCH_SUFFIXES}	
+#    )
+#endmacro (FIND_MATLAB_LIB _var _name)
 
 # Try to find some libraries before exporting the matlab variables.
 #~ FIND_MATLAB_LIB(MATLAB_LIB_ENG eng)
