@@ -223,7 +223,7 @@ public class cc_FakeVerificationGenerator
 //		verif.ags = b.ags;
 		verif.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
 		verif.sigma = b.sigma;
-		verif.timeStamp = b.timeStamp; // XXX change the timestamp?
+		verif.timeStamp = getCASTTime();
 		verif.id = b.id;
 		verif.grounding = g;
 
