@@ -26,6 +26,11 @@ Weird problem with ascription:
 NOTE: order within Target matters; if box not last, then Color gets not planned !!
 
 
+Distinguish feedback according to <Modality>
+(vision, discourse)
+
+
+
 DORA: "going to the kitchen"
 
 
