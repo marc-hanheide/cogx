@@ -10,11 +10,20 @@ link_directories (/usr/local/cuda/sdk/lib)
 link_directories (/usr/local/cuda/sdk/C/lib)
 link_directories (${COGX_ROOT}/tools/hardware/stereo/src/c++/components/gpustereo)
 
+option(BUILD_HAL_STEREO_GPU "Build the GPU Library for Stereo Server" YES)
+if(BUILD_HAL_STEREO_GPU)
+   add_subdirectory(gpustereo)
+   link_directories (${CMAKE_CURRENT_BINARY_DIR}/gpustereo)
+endif(BUILD_HAL_STEREO_GPU)
+
 add_cast_component(StereoServer StereoServer.cpp StereoCamera.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} gpustereo)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} cudart cutil)
 
+if(BUILD_HAL_STEREO_GPU)
+   add_dependencies(StereoServer GpuStereo)
+endif(BUILD_HAL_STEREO_GPU)
 
 ADD_LIBRARY(StereoClient SHARED StereoClient.cpp)
 
@@ -24,5 +33,4 @@ TARGET_LINK_LIBRARIES(StereoClient Stereo)
 
 INSTALL(TARGETS StereoClient LIBRARY DESTINATION lib)
 
-#add_subdirectory(gpustereo)
 
