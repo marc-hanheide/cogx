@@ -44,7 +44,8 @@ import cast.core.CASTData;
 public class BeliefModelTranslator extends ManagedComponent {
 
 
-	public final Agent robotAgent = new Agent() ;
+	public final Agent robotAgent = new Agent("robot");
+	public final Agent humanAgent = new Agent("human");
 	public final SpatioTemporalFrame curFrame = new SpatioTemporalFrame();
 
 	public final float SALIENCY_THRESHOLD = 0.5f;
@@ -244,8 +245,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 			beliefModel.k[i] = beliefs.elementAt(i).id;
 		}
 
-		beliefModel.a = new Agent[1];
-		beliefModel.a[0] = robotAgent;
+		beliefModel.a = new Agent[] { robotAgent, humanAgent };
 		beliefModel.t = new String[0];
 		beliefModel.f = constructForeground(beliefs);
 
