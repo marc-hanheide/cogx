@@ -3,6 +3,8 @@
 
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
+	<property name="generated.comsys.dir" value="${src.dir}/comsys/datastructs/comsysEssentials"/
+	<property name="generated.lf.dir" value="${src.dir}/comsys/datastructs/lf"/
 
         <!-- =================================================================== -->
         <!-- Add JAR files to classpath                                          -->
@@ -22,6 +24,12 @@
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
 	<taskdef name="slice2java" classname="Slice2JavaTask">
 	</taskdef>
+
+	<target name="clean">
+             <delete file="${src.dir}/.depend"/>
+	     <delete dir="${generated.comsys.dir}"/>
+	     <delete dir="${generated.lf.dir}"/>
+	</target>
 
 	
 	<property name="castslice.dir" value="/usr/local/share"/>
