@@ -64,7 +64,8 @@ module beliefmodels {
 		};
 
 		// attributed knowledge, "ag knows that ag2 knows"
-		class AttributedAgentStatus extends PrivateAgentStatus {
+		class AttributedAgentStatus extends AgentStatus {
+			Agent ag;
 			Agent ag2;
 		};
 
