@@ -70,8 +70,8 @@ module Abducer {
 	class AttStateModality extends Modality { };
 
 	class KModality extends Modality {
-		Agent act;
-		Agent pat;
+		Agent ag;
+		Agent ag2;
 		Sharing share;
 	};
 

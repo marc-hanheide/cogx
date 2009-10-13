@@ -15,15 +15,15 @@ public class Pair<A, B> {
         this.snd = _snd;
     }
     
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof Pair))
             return false;
  
-        final Pair<?, ?> other = (Pair) o;
+        Pair<?, ?> other = (Pair) o;
         return equal(fst, other.fst) && equal(snd, other.snd);
     }
     
-    public static final boolean equal(Object o1, Object o2) {
+    private static final boolean equal(Object o1, Object o2) {
         if (o1 == null) {
             return o2 == null;
         }

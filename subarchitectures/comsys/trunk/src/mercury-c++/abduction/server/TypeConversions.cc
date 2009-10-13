@@ -142,11 +142,11 @@ modalityToMercModality(const ModalityPtr & m)
 
 				switch (km->share) {
 					case Private:
-						modality_k_private(agent(km->act), &mm);
+						modality_k_private(agent(km->ag), &mm);
 						break;
 
 					case Attribute:
-						modality_k_attrib(agent(km->act), agent(km->pat), &mm);
+						modality_k_attrib(agent(km->ag), agent(km->ag2), &mm);
 						break;
 
 					case Mutual:
@@ -306,29 +306,29 @@ MR_WordToModality(MR_Word w)
 		if (is_belief_private(w_bel, &s1)) {
 			debug(cerr << "private " << s1 << endl);
 			km->share = Private;
-			km->act = stringToAgent(s1);
-			km->pat = human; // so that it isn't uninitialised
+			km->ag = stringToAgent(s1);
+			km->ag2 = human; // so that it isn't uninitialised
 		}
 		else if (is_belief_attrib(w_bel, &s1, &s2)) {
 			debug(cerr << "attrib " << s1 << " -> " << s2 << endl);
 			km->share = Attribute;
-			km->act = stringToAgent(s1);
-			km->pat = stringToAgent(s2);
+			km->ag = stringToAgent(s1);
+			km->ag2 = stringToAgent(s2);
 		}
 		else if (is_belief_mutual(w_bel, &w_strlist)) {
 			debug(cerr << "mutual" << endl);
 			// XXX this!!
 			km->share = Mutual;
-			km->act = human;
-			km->act = robot;
+			km->ag = human;
+			km->ag2 = robot;
 		}
 		else {
 			debug(cerr << "unknown belief!" << endl);
 			return 0;
 		}
 		debug(cerr << "share = " << km->share << endl);
-		debug(cerr << "act = " << km->act << endl);
-		debug(cerr << "pat = " << km->pat << endl);
+		debug(cerr << "ag = " << km->ag << endl);
+		debug(cerr << "ag2 = " << km->ag2 << endl);
 		return km;
 	}
 	else {
