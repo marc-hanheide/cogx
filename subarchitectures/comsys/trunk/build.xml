@@ -3,8 +3,8 @@
 
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
-	<property name="generated.comsys.dir" value="${src.dir}/comsys/datastructs/comsysEssentials"/
-	<property name="generated.lf.dir" value="${src.dir}/comsys/datastructs/lf"/
+	<property name="generated.comsys.dir" value="${src.dir}/comsys/datastructs/comsysEssentials"/>
+	<property name="generated.lf.dir" value="${src.dir}/comsys/datastructs/lf"/>
 
         <!-- =================================================================== -->
         <!-- Add JAR files to classpath                                          -->
