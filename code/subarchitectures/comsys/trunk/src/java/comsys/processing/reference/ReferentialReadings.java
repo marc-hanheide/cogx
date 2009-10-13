@@ -19,6 +19,8 @@ import comsys.processing.reference.readingfactories.CognitionReadings;
 import comsys.processing.reference.readingfactories.CopulaReadings;
 import comsys.processing.reference.readingfactories.DUnitsReadings;
 import comsys.processing.reference.readingfactories.GreetingReadings;
+import comsys.processing.reference.readingfactories.MarkerReadings;
+import comsys.processing.reference.readingfactories.QAttitudeReadings;
 
 // -------------------------------------------------------
 // JAVA imports
