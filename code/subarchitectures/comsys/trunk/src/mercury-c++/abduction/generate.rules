@@ -123,7 +123,7 @@ e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
 	dummy_nom2(ContentNom) / true,
 	dummy_nom3(TargetNom) / true,
 	dummy_nom4(QualityNom) / true,
-	k(now, attrib(r, h)) : objecttype(Entity, Type) / true,
+	k(now, private(r)) : objecttype(Entity, Type) / true,
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, question) / 1.0,
