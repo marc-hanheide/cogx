@@ -69,7 +69,6 @@ this(Nom) <-
 % --> objecttype
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, ascription) / true,
-	i : prop(Nom, be) / true,
 	i : 'feat_Mood'(Nom, ind) / true,
 	i : 'feat_Tense'(Nom, pres) / true,
 	i : 'rel_Subject'(Nom, ThisNom) / true,
@@ -82,7 +81,6 @@ e(now) : uttered(h, Nom) <-
 % h: X is Y
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, ascription) / true,
-	i : prop(Nom, be) / true,
 	i : 'feat_Mood'(Nom, ind) / true,
 	i : 'feat_Tense'(Nom, pres) / true,
 	polarity(Nom, Polarity) / true,
@@ -92,25 +90,70 @@ e(now) : uttered(h, Nom) <-
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
 	assert_prop(RestrRef, Polarity, ScopeNom) / true.
 
-% h: is X Y
+%h: is X Y
 e(now) : uttered(h, Nom) <-
 	i : sort(Nom, ascription) / true,
-	i : prop(Nom, be) / true,
 	i : 'feat_Mood'(Nom, int) / true,
 	i : 'feat_Tense'(Nom, pres) / true,
-	polarity(Nom, Polarity) / true,
+	%polarity(Nom, Polarity) / true,
 	i : 'rel_Subject'(Nom, SubjNom) / true,
 	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
 	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
-	assert_prop(RestrRef, Polarity, ScopeNom) / true,
-	i : question_about(RestrRef) / 1.0.
+	query_prop(ScopeNom, Prop, PropValue) / true,
+	e(now) : ask_yn(h, RestrRef, Prop, yes(PropValue)) / 0.2.
+
+query_prop(Nom, color, PropValue) <-
+	i : sort(Nom, 'q-color') / true,
+	i : prop(Nom, PropValue) / true.
+
+query_prop(Nom, shape, PropValue) <-
+	i : sort(Nom, 'q-shape') / true,
+	i : prop(Nom, PropValue) / true.
+
+query_prop(Nom, objecttype, PropValue) <-
+	i : sort(Nom, thing) / true,
+	i : prop(Nom, PropValue) / true,
+	i : feat_Delimitation(Nom, existential) / true,
+	i : feat_Num(Nom, sg) / true,
+	i : feat_Quantification(Nom, specific) / true.
+
+% h: is X Y
+%e(now) : uttered(h, Nom) <-
+%	i : sort(Nom, ascription) / true,
+%	i : 'feat_Mood'(Nom, int) / true,
+%	i : 'feat_Tense'(Nom, pres) / true,
+%	polarity(Nom, Polarity) / true,
+%	i : 'rel_Subject'(Nom, SubjNom) / true,
+%	i : 'rel_Cop-Restr'(Nom, RestrNom) / true,
+%	a(com) : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom) / true,
+%	assert_prop(RestrRef, Polarity, ScopeNom) / true,
+%	e(now) : question_about(RestrRef) / 1.0.
 
 polarity(Nom, Polarity) <-
 	i : feat_Polarity(Nom, Polarity) / true.
 
 polarity(Nom, pos) <-
 	assume_positive_polarity(Nom) / 2.0.
+
+%-------------------------------------------------------------------------
+
+% "good"
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, marker) / true,
+	i : prop(Nom, Prop) / true,
+	e(now) : positive_feedback(Nom) / 2.0.
+
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, marker) / true,
+	i : prop(Nom, yes) / true,
+	e(now) : answer_yn(h, positive) / 1.0.
+
+e(now) : uttered(h, Nom) <-
+	i : sort(Nom, marker) / true,
+	i : prop(Nom, 'No') / true,
+	e(now) : answer_yn(h, negative) / 1.0.
 
 %e(now) : uttered(h, Nom) <-
 %	e(now) : not_understood(r, Nom) / 50.0.
@@ -148,6 +191,14 @@ assert_prop(Ref, Polarity, Nom) <-
 	i : feat_Delimitation(Nom, existential) / true,
 	i : feat_Num(Nom, sg) / true,
 	i : feat_Quantification(Nom, specific) / true,
+	%maybe_assert_modifier(Ref, Polarity, Nom) / true,  % XXX explosion!!
 	polarprop(Prop, Polarity, PolarProp) / true,
 	?( k(now, attrib(r, h)) : objecttype(Ref, PolarProp) ),
 	e(now) : assert_prop(h, Ref, objecttype) / 0.5.
+
+maybe_assert_modifier(Ref, Polarity, Nom) <-
+	no_modifier(Nom) / 8.0.
+
+maybe_assert_modifier(Ref, Polarity, Nom) <-
+	i : rel_Modifier(Nom, ModifierNom) / true,
+	assert_prop(Ref, Polarity, ModifierNom) / true.
