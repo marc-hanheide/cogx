@@ -11,7 +11,9 @@ LIBDEPS =
 
 DEB_PACKAGES=\
         libdc1394-22-dev@ubuntu \
-        libdc1394-utils@ubuntu
+        libdc1394-utils@ubuntu \
+        cmake@ubuntu \
+        libgtk2.0-dev@ubuntu
 
 MFLAGS=$(MFLAGS_NUMCPU)
 
