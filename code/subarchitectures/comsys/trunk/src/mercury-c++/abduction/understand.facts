@@ -1,1 +1,4 @@
 %k(now, private(r)) : objecttype(X, 'unknownObjectType').
+
+polarprop(Prop, pos, Prop).
+polarprop(Prop, neg, not(Prop)).
