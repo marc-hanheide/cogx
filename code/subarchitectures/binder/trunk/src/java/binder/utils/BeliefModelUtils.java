@@ -91,6 +91,7 @@ public class BeliefModelUtils {
 
 			ColorProperty property = new ColorProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 
 			if (FeatureValueUtils.hasValue(fv, "red")) { property.colorValue = Color.red; }
 			else if (FeatureValueUtils.hasValue(fv, "blue")) {property.colorValue = Color.blue;	}
@@ -110,6 +111,7 @@ public class BeliefModelUtils {
 
 			ShapeProperty property = new ShapeProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 
 			if (FeatureValueUtils.hasValue(fv, "cylindrical")) { property.shapeValue = Shape.cylindrical; }
 			else if (FeatureValueUtils.hasValue(fv, "spherical")) {	property.shapeValue = Shape.spherical; }
@@ -129,6 +131,7 @@ public class BeliefModelUtils {
 
 			ObjectTypeProperty property = new ObjectTypeProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 
 			if (FeatureValueUtils.hasValue(fv, "mug")) { property.typeValue = ObjectType.mug; }
 			else if (FeatureValueUtils.hasValue(fv,"ball")) { property.typeValue = ObjectType.ball;	}
@@ -146,6 +149,7 @@ public class BeliefModelUtils {
 
 			GraspableProperty property = new GraspableProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 
 			if (FeatureValueUtils.hasValue(fv, true)) { property.graspableValue = Graspable.grasp;	}
 			else if (FeatureValueUtils.hasValue(fv,false)) { property.graspableValue = Graspable.nograsp; }
@@ -164,6 +168,7 @@ public class BeliefModelUtils {
 
 			LocationProperty property = new LocationProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 			property.location = FeatureValueUtils.toString(fv);
 
 			return property;
@@ -174,6 +179,7 @@ public class BeliefModelUtils {
 
 			LinguisticLabelProperty property = new LinguisticLabelProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 			property.label = FeatureValueUtils.toString(fv);
 
 			return property;
@@ -184,6 +190,7 @@ public class BeliefModelUtils {
 
 			LinguisticAttributeProperty property = new LinguisticAttributeProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 			property.attribute = FeatureValueUtils.toString(fv);
 
 			return property;
@@ -201,6 +208,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("unionRef")) {
 			UnionRefProperty property = new UnionRefProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 			property.unionRef = FeatureValueUtils.toString(fv);
 			
 			return property;
@@ -209,6 +217,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("saliency")) {
 			SaliencyProperty property = new SaliencyProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 			if (FeatureValueUtils.hasValue(fv, "low")) { property.sal = Saliency.low; }
 			if (FeatureValueUtils.hasValue(fv, "high")) { property.sal = Saliency.high; }
 			
@@ -218,6 +227,7 @@ public class BeliefModelUtils {
 		else if (featlabel.equals("ling_proximity")) {
 			ProximityProperty property = new ProximityProperty();
 			property.prob = fv.independentProb;
+			property.polarity = true;
 			if (FeatureValueUtils.hasValue(fv, "proximal")) { property.prox = Proximity.proximal; }
 			if (FeatureValueUtils.hasValue(fv, "distal")) { property.prox = Proximity.distal; }
 			
@@ -503,7 +513,7 @@ public class BeliefModelUtils {
 	}
 	
 	public static String maybeNegate(boolean polarity, String arg) {
-		if (polarity)
+		if (!polarity)
 			return "not(" + arg + ")";
 		else
 			return arg;
