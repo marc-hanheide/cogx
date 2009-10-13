@@ -603,12 +603,13 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <Content>(l1:d-units ^ list ^ <First>(dvp1:c-goal ^ <SpeechAct>greeting) ^ <Next>(dvp2:c-goal ^ <SpeechAct>thanking )))
+
+@d1:dvp(c-goal  ^ <List>(l1:c-goal-list ^ list ^ <First>(dvp1:dvp ^ c-goal ^ <SpeechAct>greeting) ^ <Next>(dvp2:dvp ^ c-goal ^ <SpeechAct>thanking )))  
+
 -->
-@d1:dvp(c-goal  ^ /Content\(e1:quality ^ /List\disjunction ^ /First\(b1:quality ^ blue) ^ /Next\(b2:quality ^ brown)))
 </input>
 <realizations>
-<string>blue or brown</string>
+<string>hello thanks</string>
 </realizations>
 </utterance>
 
