@@ -6,6 +6,7 @@ package motivation.components.filters;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryChange;
 
 /**
  * @author marc
@@ -30,7 +31,7 @@ public class LimitTriesFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public MotivePriority shouldBeSurfaced(Motive motive) {
+	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
 		if (motive.tries<=MAX_TRIES) 
 			return MotivePriority.HIGH;
 		return MotivePriority.UNSURFACE;
@@ -43,7 +44,7 @@ public class LimitTriesFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeUnsurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public boolean shouldBeUnsurfaced(Motive motive) {
+	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
 		return (motive.tries>3);
 	}
 

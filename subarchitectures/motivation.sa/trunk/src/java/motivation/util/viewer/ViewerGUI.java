@@ -243,7 +243,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			Plugin pluginToCall = findPlugin(motive.getClass());
 
 			Vector<Object> row = new Vector<Object>();
-			row.add(counter++);
+			row.add(String.format("%06d",counter++));
 			// mark additions
 			if (wmc.operation == WorkingMemoryOperation.ADD)
 				row.add("*");
