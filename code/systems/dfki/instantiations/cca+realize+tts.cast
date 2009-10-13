@@ -38,4 +38,7 @@ JAVA MG translator binder.components.BeliefModelTranslator --log
 JAVA MG monitor binder.components.BinderMonitor --gui --log
 JAVA MG bmmonitor binder.components.BeliefModelMonitor --log
 
+JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer --log
+
+
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 
