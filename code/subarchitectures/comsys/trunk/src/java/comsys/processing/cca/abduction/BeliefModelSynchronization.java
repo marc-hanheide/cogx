@@ -142,6 +142,13 @@ public class BeliefModelSynchronization {
 		return s;
 	}
 
+	public static String negate(boolean polarity, String s) {
+		if (polarity)
+			return s;
+		else
+			return "not(" + s + ")";
+	}
+	
     public static Vector<Pair<String, String>> formulaToPredSymValuePairs(SuperFormula sf) {
     	Vector<Pair<String, String>> preds = new Vector<Pair<String, String>>();
     	
@@ -153,24 +160,27 @@ public class BeliefModelSynchronization {
     			preds.addAll(formulaToPredSymValuePairs(cf.formulae[i]));
     		}
     	}
-   
+
+    	boolean polarity = true;
+
     	if (sf instanceof ContinualFormula) {
     		if (((ContinualFormula)sf).cstatus == ContinualStatus.assertion) {
     			//log("NOT adding an asserted formula");
     			return preds;
     		}
+    		polarity = ((ContinualFormula)sf).polarity;
     	}
     	
     	if (sf instanceof ObjectTypeProperty) {
-    		String valueString = ((ObjectTypeProperty)sf).typeValue.toString();
+    		String valueString = negate(polarity, ((ObjectTypeProperty)sf).typeValue.toString());
     		preds.add(new Pair<String, String>("objecttype", valueString));
     	}
     	if (sf instanceof ColorProperty) {
-    		String valueString = ((ColorProperty)sf).colorValue.toString();
+    		String valueString = negate(polarity, ((ColorProperty)sf).colorValue.toString());
     		preds.add(new Pair<String, String>("color", valueString));
     	}
     	if (sf instanceof ShapeProperty) {
-    		String valueString = ((ShapeProperty)sf).shapeValue.toString();
+    		String valueString = negate(polarity, ((ShapeProperty)sf).shapeValue.toString());
     		preds.add(new Pair<String, String>("shape", valueString));
     	}
     	
