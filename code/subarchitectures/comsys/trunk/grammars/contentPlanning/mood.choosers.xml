@@ -20,7 +20,7 @@
 
 		 <choicenode answer = "false">
 			 <inquiry id="f-featval" type="string" answerset="@true @false @unknown"> 
-				<f-featval feat="DVPassigned" val="true" />
+				<f-featval feat="DVPassigned" val="true"  />
 			 </inquiry>	
 			   <choicenode answer="false"> 
 				  <result val="indicative"/>

@@ -600,6 +600,37 @@
 </realizations>
 </utterance>
 
+
+<!-- ascription: disjunction in property -->
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(l1:quality ^ <List>disjunction ^ <First>(q1:quality ^ blue) ^ <Next>(q2:quality ^ brown)))) 
+** NOTE: order within Target matters; !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Color\(l1:quality ^ /List\disjunction ^ /First\(q1:quality ^ blue) ^ /Next\(q2:quality ^ brown)))) 
+</input>
+<realizations>
+<string>is the object blue or brown</string>
+</realizations>
+</utterance>
+
+
+<!-- ascription: conjunction in target -->
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Content>(a1:ascription ^ <Target>(e1:entity ^ <List>conjunction ^ <First>(b1:physical ^ <Size>big ^ ball) ^ <Next>(b2:physical ^ <Shape>tall ^ box))  ^ <Color>(c1:quality ^ red)  ))
+-->
+@d1:dvp(c-goal  ^ /Content\(e1:entity ^ /List\disjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
+</input>
+<realizations>
+<string>a big ball and a tall box</string>
+<string>one big ball or one tall box</string>
+</realizations>
+</utterance>
+
 <utterance>
 <input>
 <!--
