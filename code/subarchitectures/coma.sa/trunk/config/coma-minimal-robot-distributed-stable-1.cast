@@ -1,4 +1,4 @@
-HOST bamboo1.sb.dfki.de
+HOST localhost
 
 COMPONENT CPP laser.server LaserServerPlayer  --player-host bamboo1.sb.dfki.de --log #134.96.187.202 #localhost #--rand-data --log
 COMPONENT CPP robot.server RobotbaseServerPlayer --player-host bamboo1.sb.dfki.de --log #134.96.187.202 #localhost #--rand-data --log
