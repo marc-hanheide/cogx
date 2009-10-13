@@ -56,7 +56,6 @@
            <unzip dest="${output.dir}" src="./lib/vcomsc.jar"/>    <!-- VOiP for ASR  -->
            <unzip dest="${output.dir}" src="./lib/jdom.jar"/>       <!-- JDOM for openCCG  -->
            <unzip dest="${output.dir}" src="./lib/jline.jar"/>      <!-- JLINE for openCCG -->
-           <unzip dest="${output.dir}" src="./lib/jfreechart-1.0.13.jar"/>      <!-- JFREECHART -->
            <unzip dest="${output.dir}" src="./lib/trove.jar"/>      <!-- TROVE for openCCG -->
            <unzip dest="${output.dir}" src="./lib/maryclient.jar"/> <!-- Maryclient for TTS -->         
 </target>
