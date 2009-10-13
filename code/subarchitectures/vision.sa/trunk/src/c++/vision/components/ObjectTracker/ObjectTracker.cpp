@@ -85,7 +85,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
 
 
 void ObjectTracker::runTracker(const Video::Image &image){
-println("A");
+//println("A");
 	
 	// *** Tracking Loop ***
 	Model* model;
@@ -100,9 +100,9 @@ println("A");
 	m_timer.Update();
 	//dTimeStamp = m_timer.GetApplicationTime();
 
-println("B");
+//println("B");
 	fTimeImage = m_timer.Update();
-println("BB w h %d %d", image.width, image.height);
+//println("BB w h %d %d", image.width, image.height);
 	if(testmode){
 		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
 										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
@@ -112,47 +112,50 @@ println("BB w h %d %d", image.width, image.height);
 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 	
-m_camera->Print();
-println("C");
+//m_camera->Print();
+//println("C");
 	m_tracker->drawImage(NULL);
-println("D");
+//println("D");
 	
 	// Track all models
 	for(i=0; i<m_modelID_list.size() && i<m_maxModels; i++){
-		IDList* ids = &m_modelID_list[i];
-		model = g_Resources->GetModel(ids->resources_ID);
-		obj = getMemoryEntry<VisualObject>(ids->cast_AD);
+		if(m_modelID_list.size() <= 0){
+			sleepComponent(20);
+		}else{
+			IDList* ids = &m_modelID_list[i];
+			model = g_Resources->GetModel(ids->resources_ID);
+			obj = getMemoryEntry<VisualObject>(ids->cast_AD);
 				
-		// conversion from CogX.vision coordinates to ObjectTracker coordinates
-		convertPose2Particle(obj->pose, m_modelID_list[i].trackpose);
-		m_modelID_list[i].trackpose.w = obj->detectionConfidence;
+			// conversion from CogX.vision coordinates to ObjectTracker coordinates
+			convertPose2Particle(obj->pose, m_modelID_list[i].trackpose);
+			m_modelID_list[i].trackpose.w = obj->detectionConfidence;
 
-		// Track model
-		m_tracker->track((unsigned char*)(&image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
-		m_tracker->drawResult(&ids->trackpose);
-		m_tracker->drawTest();
+			// Track model
+			m_tracker->track((unsigned char*)(&image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
+			m_tracker->drawResult(&ids->trackpose);
+			m_tracker->drawTest();
 	
-		// Query keyboard input		
-		//running = inputsControl(m_tracker); HACK
+			// Query keyboard input		
+			//running = inputsControl(m_tracker); HACK
 				
-		// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
-		convertParticle2Pose(ids->trackpose, obj->pose);
+			// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
+			convertParticle2Pose(ids->trackpose, obj->pose);
 		
-		// Send new data to working memory
-		obj->detectionConfidence = ids->trackpose.w;
-		obj->time = convertTime(dTimeStamp);
-		//log("WM_id: %s", m_modelID_list[i].cast_AD.id.c_str());
-		overwriteWorkingMemory(ids->cast_AD.id, obj);
-		
+			// Send new data to working memory
+			obj->detectionConfidence = ids->trackpose.w;
+			obj->time = convertTime(dTimeStamp);
+			//log("WM_id: %s", m_modelID_list[i].cast_AD.id.c_str());
+			overwriteWorkingMemory(ids->cast_AD.id, obj);
+		}
 	}
 	
-println("Y");
+//println("Y");
 	m_tracker->drawCoordinates();
 	m_tracker->swap();
 	
 	
 	fTimeTracker = m_timer.Update();
-println("Z");
+//println("Z");
 }
 
 
@@ -207,15 +210,15 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 				log("start tracking: I'm allready tracking");
 			}else{
 				if(g_Resources->GetNumModels()<=0)
-					log("start tracking: no model to track in memory");
+					log("start tracking: warning no model to track in memory");
 				else{
 					log("start tracking: ok");
 					//vector<int> camIds;
 					//camIds.push_back(camId);
 					// start receiving images pushed by the video server
 					//videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
-					track = true;
 				}
+				track = true;
 			}
 			break;
 		case VisionData::STOP:
