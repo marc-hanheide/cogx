@@ -9,10 +9,22 @@ module VisionData {
 
   sequence<cogx::Math::Vector3> Vector3Seq;
 
+  
+  struct OneObj {
+  Vector3Seq pPlane;
+  Vector3Seq pTop;
+  };
+  sequence<OneObj> ObjSeq;
+
   class ConvexHull {
   Vector3Seq PointsSeq;
   cast::cdl::CASTTime time;
+  cogx::Math::Vector3 center;
+  double radius;
+  ObjSeq Objects;
   };
+
+
   sequence<string> IdSeq;
 
   // RGB color
