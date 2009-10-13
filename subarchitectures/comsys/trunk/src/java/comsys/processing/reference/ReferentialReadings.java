@@ -46,7 +46,7 @@ import comsys.lf.utils.LFUtils;
  @author	Geert-Jan Kruijff
  @email		gj@dfki.de
  @started	090921
- @version	090921
+ @version	091013
  */ 
  
 public class ReferentialReadings { 
@@ -108,6 +108,8 @@ public class ReferentialReadings {
 		readingFactories.put("cognition", new CognitionReadings());
 		readingFactories.put("d-units", new DUnitsReadings());
 		readingFactories.put("greeting", new GreetingReadings());		
+		readingFactories.put("marker", new MarkerReadings());				
+		readingFactories.put("q-attitude", new QAttitudeReadings());				
 	} // end method init
 	
 	
