@@ -196,10 +196,13 @@ public class ProofUtils {
 	
 	public static boolean termPolarity(Term t) {
 		if (t instanceof FunctionTerm) {
-			if (((FunctionTerm)t).functor.equals("not"))
+			if (((FunctionTerm)t).functor.equals("not")) {
+				System.err.println("neg polarity at " + MercuryUtils.termToString(t));
 				return false;
-			else
+			}
+			else {
 				return true;
+			}
 		}
 		else {
 			return true;

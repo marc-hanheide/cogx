@@ -364,7 +364,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				
 				boolean found = false;
 				for (int j = 0; j < related.length; j++) {
-					if (related[j].ags.equals(beliefUpdates[i].ags)) {
+					if (BeliefModelSynchronization.agentStatusesEqual(related[j].ags, beliefUpdates[i].ags)) {
 						mergeFormulaIntoBelief(related[j], (SuperFormula) beliefUpdates[i].phi);
 						found = true;
 					}
