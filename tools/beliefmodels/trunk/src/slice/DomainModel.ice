@@ -90,6 +90,7 @@ module cogx {
 	
 	class ContinualFormula extends UncertainSuperFormula {
 		ContinualStatus cstatus;
+		bool polarity;
 	}; 
 					
 	// ===================================================================
