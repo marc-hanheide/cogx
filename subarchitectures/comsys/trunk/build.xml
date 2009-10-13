@@ -25,6 +25,11 @@
 	<taskdef name="slice2java" classname="Slice2JavaTask">
 	</taskdef>
 
+	<!-- =================================================================== -->
+	<!-- Cleanup                                                              -->
+	<!-- =================================================================== -->
+
+
 	<target name="clean">
              <delete file="${src.dir}/.depend"/>
 	     <delete dir="${generated.comsys.dir}"/>
@@ -108,12 +113,6 @@
 		<classpath refid="build.classpath"/> </javac>
 	</target>
 
-	<!-- =================================================================== -->
-	<!-- Cleanup                                                              -->
-	<!-- =================================================================== -->
-	<target name="clean">
-
-	</target>
 
 
 </project>
