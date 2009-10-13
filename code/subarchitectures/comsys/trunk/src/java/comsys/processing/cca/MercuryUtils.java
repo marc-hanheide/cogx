@@ -120,15 +120,15 @@ public class MercuryUtils {
 		switch (km.share) {
 		case Private:
 			//System.err.println("priv");
-			s += agentToString(km.act);
+			s += agentToString(km.ag);
 			break;
 		case Attribute:
 			//System.err.println("attrib");
-			s += agentToString(km.act) + "[" + agentToString(km.pat) + "]";
+			s += agentToString(km.ag) + "[" + agentToString(km.ag2) + "]";
 			break;
 		case Mutual:
 			//System.err.println("mutu");
-			s += "{" + agentToString(km.act) + "," + agentToString(km.pat) + "}";
+			s += "{" + agentToString(km.ag) + "," + agentToString(km.ag2) + "}";
 			break;
 		default:
 			//System.err.println("unknown");

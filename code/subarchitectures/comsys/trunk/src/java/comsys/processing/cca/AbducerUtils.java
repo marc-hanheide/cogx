@@ -122,18 +122,18 @@ public class AbducerUtils {
 		m.type = ModalityType.K;
 		if (as instanceof AttributedAgentStatus) {
 			m.share = Abducer.Sharing.Attribute;
-			m.act = toAbducerAgent(((AttributedAgentStatus) as).ag);
-			m.pat = toAbducerAgent(((AttributedAgentStatus) as).ag2);
+			m.ag = toAbducerAgent(((AttributedAgentStatus) as).ag);
+			m.ag2 = toAbducerAgent(((AttributedAgentStatus) as).ag2);
 		}
 		else if (as instanceof PrivateAgentStatus) {
 			m.share = Abducer.Sharing.Private;
-			m.act = toAbducerAgent(((PrivateAgentStatus) as).ag);
-			m.pat = Abducer.Agent.human;
+			m.ag = toAbducerAgent(((PrivateAgentStatus) as).ag);
+			m.ag2 = Abducer.Agent.human;
 		}
 		else if (as instanceof MutualAgentStatus) {
 			m.share = Abducer.Sharing.Mutual;
-			m.act = Abducer.Agent.robot;
-			m.pat = Abducer.Agent.human;
+			m.ag = Abducer.Agent.robot;
+			m.ag2 = Abducer.Agent.human;
 		}
 		else {
 			//System.err.println("unknown AgentStatus in AbducerUtils.kModality() !");
