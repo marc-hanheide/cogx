@@ -59,11 +59,19 @@
 	<target name="slice" depends="slice-bm, slice-domain" description="generates source from slice for belief models (bm), domain models (domain)">
 
 	</target>
+
+       <target name="expandlibs" depends="prepare">
+           <echo message="Expanding external libraries for comsys.mk5 to output/classes"/>
+           <unzip dest="${output.dir}" src="./lib/jfreechart-1.0.13.jar"/>      <!-- JFREECHART -->
+       </target>
+
+
+
 	
 	<!-- =================================================================== -->
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="slice" description="compiles the source code">
+	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
 		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
 		<classpath refid="build.classpath"/> </javac>
 	</target>
