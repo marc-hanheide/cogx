@@ -53,7 +53,10 @@ GLfloat col_highlight[4];
 VisionData::SurfacePointSeq points;
 VisionData::SurfacePointSeq pointsN;
 
+VisionData::ObjSeq mObjSeq;
 VisionData::Vector3Seq mConvexHullPoints;
+Vector3 mCenterOfHull;
+double mConvexHullRadius;
 
 vector <int> points_label;  //0->plane; 1~999->objects index; -1->discarded points
 vector< Vector3 > v3size;
@@ -440,31 +443,50 @@ void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &l
 			v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
 			glVertex3f(v3OnPlane.x,v3OnPlane.y,v3OnPlane.z);
 			mConvexHullPoints.push_back(v3OnPlane);
+			mCenterOfHull += v3OnPlane;
 		}
+		mCenterOfHull /= hullMat.cols;
+		mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
 		glEnd();
 	        free( hull );
 	}
 	free( points2D );
 }
 
-void DrawOneCylinder(Vector3 pcenter, float rad, double hei)
+void DrawOnePrism(vector <Vector3> ppSeq, double hei)
 {
-	GLUquadricObj *quadratic;
-	quadratic=gluNewQuadric();
-	gluQuadricNormals(quadratic, GLU_SMOOTH);
-
-	Matrix33 m33 = GetAffineRotMatrix();
-	double ang = 0.0; Vector3 axis;
-	toAngleAxis(m33, ang, axis);
-	glRotated(ang, axis.x,axis.y,axis.z);
-	Vector3 v3translate = GetAffineTransVec (pcenter);
-	glTranslated (v3translate.x, v3translate.y, v3translate.z);
-	gluCylinder(quadratic, rad, rad, hei, 16, 16);
-
-	gluDeleteQuadric(quadratic);
+	double dd = D - hei*sqrt(A*A+B*B+C*C);
+	vector <Vector3> pphSeq;
+	VisionData::OneObj OObj;
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+	{
+		Vector3 v;
+		v.x =((C*C+B*B)*ppSeq.at(i).x-A*(C*ppSeq.at(i).z+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
+		v.y =((A*A+C*C)*ppSeq.at(i).y-B*(A*ppSeq.at(i).x+C*ppSeq.at(i).z+dd))/(A*A+B*B+C*C);
+		v.z =((A*A+B*B)*ppSeq.at(i).z-C*(A*ppSeq.at(i).x+B*ppSeq.at(i).y+dd))/(A*A+B*B+C*C);
+		pphSeq.push_back(v);
+		OObj.pPlane.push_back(v); OObj.pTop.push_back(ppSeq.at(i));
+	}
+	mObjSeq.push_back(OObj);
+	glBegin(GL_POLYGON);
+	glColor3f(1.0,1.0,1.0);	
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
+	glEnd();
+	glBegin(GL_POLYGON);
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
+	glEnd();
+	for (unsigned int i = 0; i<ppSeq.size(); i++)
+	{
+		glBegin(GL_LINES);
+		glVertex3f(ppSeq.at(i).x,ppSeq.at(i).y,ppSeq.at(i).z);
+		glVertex3f(pphSeq.at(i).x,pphSeq.at(i).y,pphSeq.at(i).z);
+		glEnd();
+	}
 }
 
-void BoundingCylinder(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
+void BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labels)
 {
 	CvPoint* points2D = (CvPoint*)malloc( pointsN.size() * sizeof(points2D[0]));
 
@@ -477,6 +499,11 @@ void BoundingCylinder(VisionData::SurfacePointSeq &pointsN, std::vector <int> &l
 	index.assign(objnumber,0);
 	vector < double > height;
 	height.assign(objnumber,0.0);
+	vector < vector<Vector3> > PlanePoints3DSeq;
+	Vector3 v3init; v3init.x = v3init.y = v3init.z =0.0;
+	vector<Vector3> vv3init; vv3init.assign(1,v3init);
+	PlanePoints3DSeq.assign(objnumber, vv3init);
+
 
 	for(unsigned int i = 0; i<pointsN.size(); i++)
 	{
@@ -487,27 +514,26 @@ void BoundingCylinder(VisionData::SurfacePointSeq &pointsN, std::vector <int> &l
 		Vector3 v3AfterAffine = AffineTrans(AffineM33, v3Obj);
 		cvp.x =100.0*v3AfterAffine.x; cvp.y =100.0*v3AfterAffine.y;
 		objSeq.at(label-1)[index.at(label-1)] = cvp;
+		PlanePoints3DSeq.at(label-1).push_back(v3Obj);
 		index.at(label-1)++;
 		if (fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C) > height.at(label-1))
 			height.at(label-1) = fabs(A*v3Obj.x+B*v3Obj.y+C*v3Obj.z+D)/sqrt(A*A+B*B+C*C);
 	}
-	// calculate Enclosing Circle
+	// calculate convex hull
 	if (index.at(0)>0)
 	{
-		vector <Vector3> Seqv3center_cy;
-		Vector3 initial_vec; initial_vec.x = initial_vec.y = initial_vec.z = 0.0;
-		Seqv3center_cy.assign(objnumber, initial_vec);
-		vector <float> Seqdradius_cy; 	Seqdradius_cy.assign(objnumber,0.0);
-		for (int i = 0; i<objnumber; i++)
+		for (int i = 0; i < objnumber; i++)
 		{
-			realloc(objSeq.at(i), index.at(i));
-			CvPoint2D32f cc; cc.x=cc.y=0.0; CvPoint2D32f* Cf=&cc;  float rr = 0.0; float* frad =&rr;
-			CvMat pointMat = cvMat( 1, index.at(i), CV_32SC2, objSeq.at(i));
-			cvMinEnclosingCircle(&pointMat,Cf,frad);
-			Seqv3center_cy.at(i).x = (Cf->x)/100.0; Seqv3center_cy.at(i).y = (Cf->y)/100.0;
-			Seqv3center_cy.at(i).z = -(D+A*Seqv3center_cy.at(i).x+B*Seqv3center_cy.at(i).y)/C;
-			//draw the cylinders
-			DrawOneCylinder(Seqv3center_cy.at(i), *frad, height.at(i));cout<<"rad = "<<*frad<<" height = "<<height.at(i)<<endl;
+			int* hull = (int*)malloc( (index.at(i)-1) * sizeof(hull[0]));
+			CvMat pointMat = cvMat( 1, index.at(i)-1, CV_32SC2, objSeq.at(i));
+			CvMat hullMat = cvMat( 1, index.at(i)-1, CV_32SC1, hull);
+			cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
+			//calculate convex hull points on the plane
+			std::vector <Vector3> v3OnPlane;
+			for (int j = 0; j<hullMat.cols; j++)
+				v3OnPlane.push_back(ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1)));
+			free( hull );
+			DrawOnePrism(v3OnPlane, height.at(i));
 		}
 	}
 	free( points2D );
@@ -574,7 +600,7 @@ void BoundingSphere(VisionData::SurfacePointSeq &points, std::vector <int> &labe
 
 	for (int i = 0; i<objnumber; i++)
 	{
-		if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
+		//if (mbDrawWire)	DrawWireSphere(center.at(i).p,radius_world.at(i));
 		Vector3 Center_DP = ProjectOnDominantPlane(center.at(i).p);//cout<<" center on DP ="<<Center_DP<<endl;
 		for (unsigned int j = 0; j<points.size(); j++)
 		{
@@ -648,7 +674,7 @@ void DisplayWin()
 	DrawCuboids(pointsN,points_label);
 	BoundingSphere(pointsN,points_label);
 	ConvexHullOfPlane(pointsN,points_label);
-	//BoundingCylinder(pointsN,points_label);
+	BoundingPrism(pointsN,points_label);
   }
   else
   {
@@ -1101,26 +1127,16 @@ bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 void PlanePopOut::AddConvexHullinWM()
 {
 	if (mConvexHullPoints.size()>0)
-	{
+	{	debug("There are %u points in the convex hull", mConvexHullPoints.size());
 		VisionData::ConvexHullPtr CHPtr = new VisionData::ConvexHull;
 		CHPtr->PointsSeq = mConvexHullPoints;
 		CHPtr->time = getCASTTime();
+		CHPtr->center = mCenterOfHull;
+		CHPtr->radius = mConvexHullRadius;
+		CHPtr->Objects = mObjSeq;
 		addToWorkingMemory(newDataID(),CHPtr);
 	}
 	mConvexHullPoints.clear();
 }
-
-/*
-void PlanePopOut::AddPointsInNav()
-{
-	for(size_t i = 0; i < pointsN.size(); i++)
-	{
-		NavData::PlanePopoutPtr ppo = new NavData::PlanePopout;
-		ppo->pcloud.push_back(pointsN[i]);
-		ppo->plabels.push_back(points_label.at(i));
- 	}
-	addToWorkingMemory(newDataID(),ppo);
-}
-*/
 }
 
