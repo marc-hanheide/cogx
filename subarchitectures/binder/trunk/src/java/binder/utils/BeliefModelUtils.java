@@ -418,7 +418,7 @@ public class BeliefModelUtils {
 		String result = "{" ;
 
 		if (status instanceof AttributedAgentStatus) {
-			result += " ["  + ((AttributedAgentStatus)status).ag.id + "] " + ((AttributedAgentStatus)status).ag2.id;
+			result += ((AttributedAgentStatus)status).ag.id + " [" + ((AttributedAgentStatus)status).ag2.id + "]";
 		}
 		else if (status instanceof PrivateAgentStatus) {
 			result += ((PrivateAgentStatus)status).ag.id;
