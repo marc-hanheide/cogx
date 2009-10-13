@@ -12,7 +12,7 @@ JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile
 #JAVA GD cca  comsys.components.collab.cc_ContinualCollabActing --facts /dev/null --rules ./subarchitectures/comsys/src/mercury-c++/abduction/rules.txt --log --debug
 
 JAVA GD fakeclarification comsys.components.cca.cc_FakeClarificationGenerator --modality vision --log
-JAVA GD fakeverification comsys.components.cca.cc_FakeVerificationGenerator --log
+JAVA GD fakeverification comsys.components.cca.cc_FakeVerificationGenerator --modality vision --log
 
 JAVA GD refreadings comsys.components.reference.cc_ReferentialReadings --log
 JAVA GD refbindings comsys.components.reference.cc_ReferentialBindings --log
