@@ -446,38 +446,6 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-/*
-		Map<AgentStatus, Predicate> toAdd = new HashMap<AgentStatus, Predicate>();
-		
-		for (int i = 0 ; i < model.k.length; i++) {
-			Belief b = null;
-			try {
-				b = getBelief(model.k[i]);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			//log("got a belief, id=" + model.k[i]);
-			Modality[] mod = new Modality[] { AbducerUtils.kModality(b.ags) };
-			String unionId = referringUnionId(b);
-
-			//log("inspecting feats");
-
-			for (int j = 0; j < ((ComplexFormula)b.phi).formulae.length ; j++) {
-				SuperFormula formula = ((ComplexFormula)b.phi).formulae[j];
-
-				Predicate pred = formulaToPredicate(unionId, formula);
-				ModalisedFormula mf = AbducerUtils.modalisedFormula(mod, pred);
-
-				if (pred != null) {
-					log("adding " + MercuryUtils.modalisedFormulaToString(mf) + " ... from " + model.k[i]);
-					ccaEngine.abducer.addFact(mf);
-				}
-			}
-		}
-		log("sync done");
-*/
 	}
 	
     /**

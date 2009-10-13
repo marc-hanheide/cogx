@@ -194,25 +194,55 @@ public class ProofUtils {
 			return null;	
 	}
 	
+	public static boolean termPolarity(Term t) {
+		if (t instanceof FunctionTerm) {
+			if (((FunctionTerm)t).functor.equals("not"))
+				return false;
+			else
+				return true;
+		}
+		else {
+			return true;
+		}
+	}
+	
 	public static Color termToColor(Term t) {
-		if (t instanceof FunctionTerm)
-			return Color.convert(((FunctionTerm) t).functor);
-		else
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
+			if (ft.functor.equals("not"))
+				return Color.convert(((FunctionTerm)ft.args[0]).functor);
+			else
+				return Color.convert(ft.functor);
+		}
+		else {
 			return null;
+		}
 	}
 	
 	public static Shape termToShape(Term t) {
-		if (t instanceof FunctionTerm)
-			return Shape.convert(((FunctionTerm) t).functor);
-		else
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
+			if (ft.functor.equals("not"))
+				return Shape.convert(((FunctionTerm)ft.args[0]).functor);
+			else
+				return Shape.convert(ft.functor);
+		}
+		else {
 			return null;
+		}
 	}
 
 	public static ObjectType termToObjectType(Term t) {
-		if (t instanceof FunctionTerm)
-			return ObjectType.convert(((FunctionTerm) t).functor);
-		else
+		if (t instanceof FunctionTerm) {
+			FunctionTerm ft = (FunctionTerm) t;
+			if (ft.functor.equals("not"))
+				return ObjectType.convert(((FunctionTerm)ft.args[0]).functor);
+			else
+				return ObjectType.convert(ft.functor);
+		}
+		else {
 			return null;
+		}
 	}
 	
 	/**
@@ -239,6 +269,7 @@ public class ProofUtils {
 			// color(Object, Value)
 			ColorProperty prop = new ColorProperty();
 			ref = termToString(p.args[0]);  // Object
+			prop.polarity = termPolarity(p.args[1]);
 			prop.colorValue = termToColor(p.args[1]);  // Value
 			cprop = prop;
 		}
@@ -247,6 +278,7 @@ public class ProofUtils {
 			// shape(Object, Value)
 			ShapeProperty prop = new ShapeProperty();
 			ref = termToString(p.args[0]);  // Object
+			prop.polarity = termPolarity(p.args[1]);
 			prop.shapeValue = termToShape(p.args[1]);  // Value
 			cprop = prop;
 		}
@@ -255,6 +287,7 @@ public class ProofUtils {
 			// objecttype(Object, Value)
 			ObjectTypeProperty prop = new ObjectTypeProperty();
 			ref = termToString(p.args[0]); // Object
+			prop.polarity = termPolarity(p.args[1]);
 			prop.typeValue = termToObjectType(p.args[1]); // Value
 			cprop = prop;
 		}
