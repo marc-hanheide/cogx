@@ -68,13 +68,18 @@ else (CTF_EXISTS)
    endif(CTF_ARCHIVE)
 
    if (NOT CTF_INSTALLED)
+      set(ZIP_NAME "libVisualLearnerCtf${SYS_ARCH}.zip")
+      set(URL_PREBUILT "http://cogx.eu/data/cogx/prebuilt/${ZIP_NAME}")
       message(
          "${LIBRARY_NAME}: Prebuilt Matlab Libraries (CTF) not found.\n"
          "   You can download them from:\n"
-         "      http://cogx.eu/data/cogx/prebuilt/libVisualLearnerCtf${SYS_ARCH}.zip\n"
+         "      ${URL_PREBUILT}\n"
          "   and unpack them into:\n"
          "      ${PREBUILT_DIR}\n"
          "   Then run 'ccmake' again.\n"
+         "Commands: \n"
+         "   wget ${URL_PREBUILT}\n"
+         "   unzip -j  ${ZIP_NAME} -d ${PREBUILT_DIR}\n"
          "If you have Matlab installed you can also build the libraries.\n"
          "   See: BUILD_VISUAL_LEARNER_CTF (Advanced)\n"
       )
