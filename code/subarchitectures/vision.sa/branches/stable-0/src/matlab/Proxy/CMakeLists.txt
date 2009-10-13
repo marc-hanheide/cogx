@@ -12,11 +12,11 @@ add_library(VisualLearnerProxy SHARED ${SOURCES})
 target_link_libraries(VisualLearnerProxy VisionData)
 target_link_libraries(VisualLearnerProxy VisualLearnerCtf)
 
-# Use pkg-config to find opencv libraries...
-include(UsePkgConfig)
-PKGCONFIG("opencv" OCV_INCLUDE_DIR OCV_LINK_DIR OCV_LINK_FLAGS OCV_CFLAGS)
-include_directories(${OCV_INCLUDE_DIR})
-target_link_libraries(VisualLearnerProxy ${OCV_LINK_FLAGS})
+# include(UsePkgConfig)
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
+target_link_libraries(VisualLearnerProxy cv highgui cxcore)
 
 install(TARGETS VisualLearnerProxy LIBRARY DESTINATION lib)
 
