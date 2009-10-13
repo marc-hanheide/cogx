@@ -502,6 +502,13 @@ public class BeliefModelUtils {
 		return result;
 	}
 	
+	public static String maybeNegate(boolean polarity, String arg) {
+		if (polarity)
+			return "not(" + arg + ")";
+		else
+			return arg;
+	}
+	
 	/**
 	 * Returns a string-formatted version of the formula, indented by depth
 	 * 
@@ -545,7 +552,8 @@ public class BeliefModelUtils {
 
 		// if the formula is a simple colour property
 		else if (formula instanceof ColorProperty) {
-			result += " ^ <Colour> " + ((ColorProperty)formula).colorValue;
+			ColorProperty p = (ColorProperty) formula;
+			result += " ^ <Colour> " + maybeNegate(p.polarity, p.colorValue.toString());
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
@@ -553,13 +561,15 @@ public class BeliefModelUtils {
 
 		// if the formula is a simple shape property
 		else if (formula instanceof ShapeProperty) {
-			result += " ^ <Shape> " + ((ShapeProperty)formula).shapeValue;
+			ShapeProperty p = (ShapeProperty) formula;
+			result += " ^ <Shape> " + maybeNegate(p.polarity, p.shapeValue.toString());
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 		else if (formula instanceof ObjectTypeProperty) {
-			result += " ^ <ObjectType> " + ((ObjectTypeProperty)formula).typeValue;	
+			ObjectTypeProperty p = (ObjectTypeProperty) formula;
+			result += " ^ <ObjectType> " + maybeNegate(p.polarity, p.typeValue.toString());	
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
