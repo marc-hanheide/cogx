@@ -5,6 +5,7 @@ package motivation.components.filters;
 
 import cast.architecture.ManagedComponent;
 import cast.cdl.CASTTime;
+import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
@@ -34,7 +35,7 @@ public class AgeFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public MotivePriority shouldBeSurfaced(Motive motive) {
+	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
 		if (checkAge(motive))
 			return MotivePriority.HIGH;
 		else
@@ -48,7 +49,7 @@ public class AgeFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeUnsurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public boolean shouldBeUnsurfaced(Motive motive) {
+	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
 		if (checkAge(motive))
 			return false;
 		component.log("motive was too old... unsurfacing it!");

@@ -197,7 +197,7 @@ public class Scheduler extends ManagedComponent {
 				scheduleMotives();
 				while (isRunning()) {
 					if ((relevantEventQueue.poll(1, TimeUnit.SECONDS)) != null) {
-						relevantEventQueue.clear();
+						//relevantEventQueue.clear();
 						break;
 					}
 

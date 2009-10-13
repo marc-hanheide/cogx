@@ -110,7 +110,7 @@ public class MotiveFilterManager extends ManagedComponent {
 					switch (motive.status) {
 					case UNSURFACED:
 						log("check unsurfaced motive " + motive.toString());
-						MotivePriority priority = shouldBeSurfaced(motive);
+						MotivePriority priority = shouldBeSurfaced(motive, _wmc);
 						if (priority != MotivePriority.UNSURFACE) {
 							log("-> surfaced motive " + motive.toString());
 							motive.status = MotiveStatus.SURFACED;
@@ -120,7 +120,7 @@ public class MotiveFilterManager extends ManagedComponent {
 						break;
 					default:
 						log("check surfaced motive " + motive.toString());
-						if (shouldBeUnsurfaced(motive)) {
+						if (shouldBeUnsurfaced(motive, _wmc)) {
 							log("-> unsurfaced motive " + motive.toString());
 							motive.status = MotiveStatus.UNSURFACED;
 							motive.priority = MotivePriority.UNSURFACE;
@@ -166,77 +166,12 @@ public class MotiveFilterManager extends ManagedComponent {
 			receiver.workingMemoryChanged(wmc);
 		}
 
-		// // TODO: currently CAST::getMemoryEntries only considers the "real"
-		// type
-		// // of entries, whihc means, getMemoryEntries(Motive.class) will not
-		// // work... is a feature request for CAST
-		// List<TestMotive> testMotives;
-		// testMotives = new LinkedList<TestMotive>();
-		// getMemoryEntries(TestMotive.class, testMotives);
-		// // trigger them all by overwriting them
-		// for (Motive m : testMotives) {
-		// WorkingMemoryChange wmc = new WorkingMemoryChange();
-		// wmc.address = m.thisEntry;
-		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
-		// wmc.src = "explicit self-trigger";
-		// receiver.workingMemoryChanged(wmc);
-		// }
-		//
-		// List<ExploreMotive> exploreMotives;
-		// exploreMotives = new LinkedList<ExploreMotive>();
-		// getMemoryEntries(ExploreMotive.class, exploreMotives);
-		// // trigger them all by overwriting them
-		// for (Motive m : exploreMotives) {
-		// WorkingMemoryChange wmc = new WorkingMemoryChange();
-		// wmc.address = m.thisEntry;
-		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
-		// wmc.src = "explicit self-trigger";
-		// receiver.workingMemoryChanged(wmc);
-		// }
-		//
-		// List<HomingMotive> homingMotives;
-		// homingMotives = new LinkedList<HomingMotive>();
-		// getMemoryEntries(HomingMotive.class, homingMotives);
-		// // trigger them all by overwriting them
-		// for (Motive m : homingMotives) {
-		// WorkingMemoryChange wmc = new WorkingMemoryChange();
-		// wmc.address = m.thisEntry;
-		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
-		// wmc.src = "explicit self-trigger";
-		// receiver.workingMemoryChanged(wmc);
-		// }
-		//
-		// List<CategorizePlaceMotive> categorizePlaceMotives;
-		// categorizePlaceMotives = new LinkedList<CategorizePlaceMotive>();
-		// getMemoryEntries(CategorizePlaceMotive.class,
-		// categorizePlaceMotives);
-		// // trigger them all by overwriting them
-		// for (Motive m : categorizePlaceMotives) {
-		// WorkingMemoryChange wmc = new WorkingMemoryChange();
-		// wmc.address = m.thisEntry;
-		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
-		// wmc.src = "explicit self-trigger";
-		// receiver.workingMemoryChanged(wmc);
-		// }
-		//
-		// List<CategorizeRoomMotive> categorizeRoomMotives;
-		// categorizeRoomMotives = new LinkedList<CategorizeRoomMotive>();
-		// getMemoryEntries(CategorizeRoomMotive.class, categorizeRoomMotives);
-		// // trigger them all by overwriting them
-		// for (Motive m : categorizeRoomMotives) {
-		// WorkingMemoryChange wmc = new WorkingMemoryChange();
-		// wmc.address = m.thisEntry;
-		// wmc.operation = WorkingMemoryOperation.OVERWRITE;
-		// wmc.src = "explicit self-trigger";
-		// receiver.workingMemoryChanged(wmc);
-		// }
-
 	}
 
-	public MotivePriority shouldBeSurfaced(Motive motive) {
+	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
 		MotivePriority result = MotivePriority.HIGH;
 		for (MotiveFilter filter : pipe) {
-			MotivePriority filterResult = filter.shouldBeSurfaced(motive);
+			MotivePriority filterResult = filter.shouldBeSurfaced(motive,wmc);
 			// if one filter rejects, reject this motive
 			if (filterResult == MotivePriority.UNSURFACE)
 				return MotivePriority.UNSURFACE;
@@ -247,10 +182,10 @@ public class MotiveFilterManager extends ManagedComponent {
 		return result;
 	}
 
-	public boolean shouldBeUnsurfaced(Motive motive) {
+	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
 		boolean result = false;
 		for (MotiveFilter filter : pipe) {
-			result = result || filter.shouldBeUnsurfaced(motive);
+			result = result || filter.shouldBeUnsurfaced(motive,wmc);
 		}
 		return result;
 	}

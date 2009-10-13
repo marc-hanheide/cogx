@@ -21,6 +21,7 @@ import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.TestMotive;
 import cast.CASTException;
+import cast.cdl.WorkingMemoryChange;
 
 public class ManualSelectFilter implements MotiveFilter {
 
@@ -49,7 +50,8 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider jCategorizePrioritySlider = null;
 	
-	public MotivePriority shouldBeSurfaced(Motive motive) {
+	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
+		
 		if (motive instanceof ExploreMotive)
 			return MotivePriority.convert(jExplorePrioritySlider.getValue());
 		else if (motive instanceof TestMotive)
@@ -62,7 +64,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.NORMAL;
 	}
 
-	public boolean shouldBeUnsurfaced(Motive motive) {
+	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
 		// if (motive.status==MotiveStatus.ACTIVE)
 		// return false;
 

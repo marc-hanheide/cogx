@@ -70,6 +70,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 				addHypothesisFeatures((ExploreMotive) motive);
 
+				log("writing ExploreMotive to WM for place_id " + ((ExploreMotive) motive).placeID);
 				WorkingMemoryAddress motiveAddress = write(motive);
 				// need to store mapping back to place struct to establish
 				// relations between places and their properties
@@ -80,13 +81,10 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 				return true;
 			} else {
 				log("  turn out this place is not a placeholder, so, it should be no motive then");
+				log("  getting rid of ExploreMotive for place_id " + ((ExploreMotive) motive).placeID);				
 				remove(motive);
 			}
-		} catch (DoesNotExistOnWMException e) {
-			e.printStackTrace();
-		} catch (UnknownSubarchitectureException e) {
-			e.printStackTrace();
-		} catch (PermissionException e) {
+		} catch (CASTException e) {
 			e.printStackTrace();
 		}
 		return false;
@@ -228,13 +226,5 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see cast.core.CASTComponent#stop()
-	 */
-	@Override
-	protected void stop() {
-	}
 
 }
