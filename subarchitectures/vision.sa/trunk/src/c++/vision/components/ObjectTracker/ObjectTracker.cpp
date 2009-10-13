@@ -119,9 +119,6 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	
 	// Track all models
 	for(i=0; i<m_modelID_list.size() && i<m_maxModels; i++){
-		if(m_modelID_list.size() <= 0){
-			sleepComponent(20);
-		}else{
 			IDList* ids = &m_modelID_list[i];
 			model = g_Resources->GetModel(ids->resources_ID);
 			obj = getMemoryEntry<VisualObject>(ids->cast_AD);
@@ -146,7 +143,6 @@ void ObjectTracker::runTracker(const Video::Image &image){
 			obj->time = convertTime(dTimeStamp);
 			//log("WM_id: %s", m_modelID_list[i].cast_AD.id.c_str());
 			overwriteWorkingMemory(ids->cast_AD.id, obj);
-		}
 	}
 	
 //println("Y");
@@ -323,7 +319,11 @@ void ObjectTracker::runComponent(){
     if(track){
       // HACK: actually should use receiveImages(), but that is still buggy
       videoServer->getImage(camId, m_image);
-      runTracker(m_image);
+      if(m_modelID_list.size() <= 0){
+				sleepComponent(20);
+			}else{
+      	runTracker(m_image);
+      }
     }
     else if(!track){
 			// * Idle *
