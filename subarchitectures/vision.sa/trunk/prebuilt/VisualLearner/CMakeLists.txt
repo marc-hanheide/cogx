@@ -1,7 +1,19 @@
 ## Use precompiled binaries from SVN for FeatureLearning
 project(VisualLearnerPrebuilt)
 if(UNIX)
-   get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glnx86 ABSOLUTE)
+   execute_process(
+      COMMAND getconf LONG_BIT
+      OUTPUT_VARIABLE SYS_ARCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+   if (NOT SYS_ARCH)
+      SET(SYS_ARCH 32)
+   endif(NOT SYS_ARCH)
+   if (SYS_ARCH EQUAL 64)
+      get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glnxa64 ABSOLUTE)
+   else(SYS_ARCH EQUAL 64)
+      get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glnx86 ABSOLUTE)
+   endif(SYS_ARCH EQUAL 64)
 elseif(WIN32)
    get_filename_component(PREBUILT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/win32  ABSOLUTE)
 endif(UNIX)
@@ -59,7 +71,7 @@ else (CTF_EXISTS)
       message(
          "${LIBRARY_NAME}: Prebuilt Matlab Libraries (CTF) not found.\n"
          "   You can download them from:\n"
-         "      http://cogx.eu/data/Cosy/libVisualLearnerCtf.zip\n"
+         "      http://cogx.eu/data/cogx/prebuilt/libVisualLearnerCtf${SYS_ARCH}.zip\n"
          "   and unpack them into:\n"
          "      ${PREBUILT_DIR}\n"
          "   Then run 'ccmake' again.\n"
