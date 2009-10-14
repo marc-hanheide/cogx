@@ -29,11 +29,13 @@
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <VisionData.hpp>
 
 using namespace std;
 using namespace cast;
 using namespace boost;
 using namespace navsa;
+using namespace VisionData;
 
 /**
  * The function called to create a new instance of our component.
@@ -60,6 +62,7 @@ DisplayNavInPB::DisplayNavInPB() {
 
   m_FovH = 45.0;
   m_FovV = 35.0;
+  previouscenter.assign(3,0.0);
 }
 
 DisplayNavInPB::~DisplayNavInPB() 
@@ -230,6 +233,21 @@ void DisplayNavInPB::start() {
   addChangeFilter(createLocalTypeFilter<NavData::PersonFollowed>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                &DisplayNavInPB::newPersonFollowed));
+
+addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::ADD,
+							   "",
+							   "",
+							   "vision.sa",
+							   cdl::ALLSA),
+		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+								 &DisplayNavInPB::newConvexHull));
+addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
+							   "",
+							   "",
+							   "vision.sa",
+							   cdl::ALLSA),
+		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+								 &DisplayNavInPB::newConvexHull));
 
 
   // Hook up changes to the LineMap to a callback function
@@ -466,7 +484,7 @@ void DisplayNavInPB::runComponent() {
 	// If we are not connecting and reading from PTU we assume
 	// angles are 0
 	ptuPose.pose.pan = 0;
-	ptuPose.pose.tilt = 0;
+	ptuPose.pose.tilt = -0.75;
       }
       
       m_Mutex.lock();
@@ -559,6 +577,63 @@ void DisplayNavInPB::runComponent() {
   }
 }
 
+void DisplayNavInPB::newConvexHull(const cdl::WorkingMemoryChange
+				   &objID){
+
+  debug("newConvexHull called");
+  shared_ptr<CASTData<VisionData::ConvexHull> > oobj =
+ getWorkingMemoryEntry<VisionData::ConvexHull>(objID.address);
+  m_Mutex.lock();
+  VisionData::ConvexHullPtr m_ConvexHull = oobj->getData();
+
+  if (previouscenter.at(0) == 0.0)
+
+    {
+      previouscenter.at(0) = m_ConvexHull->center.x;
+      previouscenter.at(1) = m_ConvexHull->center.y;
+      previouscenter.at(2) = m_ConvexHull->center.z;
+      
+      peekabot::GroupProxy planes;
+      planes.add(m_PeekabotClient,
+		 
+		 "root.ConvexHull", peekabot::REPLACE_ON_CONFLICT);
+      
+      peekabot::PolygonProxy pp;
+      char buf[32];
+      pp.add(planes, buf);
+      for (unsigned int i = 0; i < m_ConvexHull->PointsSeq.size(); i++)
+	pp.add_vertex(m_ConvexHull->PointsSeq[i].x,
+		      m_ConvexHull->PointsSeq[i].y, m_ConvexHull->PointsSeq[i].z);
+      pp.set_color(1.0, 0.0, 0.0);
+      pp.set_opacity(0.2);
+    }
+  else
+    {
+      
+      double dist =
+	sqrt((previouscenter.at(0)-m_ConvexHull->center.x)*(previouscenter.at(0)-m_ConvexHull->center.x)+(previouscenter.at(1)-m_ConvexHull->center.y)*(previouscenter.at(1)-m_ConvexHull->center.y)+(previouscenter.at(2)-m_ConvexHull->center.z)*(previouscenter.at(2)-m_ConvexHull->center.z));
+      
+      if (dist > m_ConvexHull->radius)
+	
+	{
+	  
+	  peekabot::GroupProxy planes;
+	  planes.add(m_PeekabotClient,
+		     "root.ConvexHull", peekabot::REPLACE_ON_CONFLICT);
+	  
+	  peekabot::PolygonProxy pp;
+	  char buf[32];
+	  pp.add(planes, buf);
+	  for (unsigned int i = 0; i < m_ConvexHull->PointsSeq.size(); i++)
+	    pp.add_vertex(m_ConvexHull->PointsSeq[i].x,
+			  m_ConvexHull->PointsSeq[i].y, m_ConvexHull->PointsSeq[i].z);
+	  pp.set_color(1.0, 0.0, 0.0);
+	  pp.set_opacity(0.2);
+	}
+      
+    }
+  m_Mutex.unlock();
+}
 
 void DisplayNavInPB::displayPeople()
 {
