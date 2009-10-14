@@ -44,34 +44,48 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 	
 	log("received detection command ...");
 	switch(detect_cmd->cmd){
-		case VisionData::DSTART:
-			if(cmd_detect){
-				log("allready started detection");
+		case VisionData::DVSSTART:
+			if(vs_started){
+				log("already receiving images");
 			}else{
-				log("starting detection");
-				cmd_detect = true;
+				log("starting receiving images");
+				vs_started = true;
         // start receiving images pushed by the video server
         vector<int> camIds;
         camIds.push_back(camId);
         videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 			}
 			break;
+		case VisionData::DVSSTOP:
+			if(!vs_started){
+				log("already stopped receiving images");
+			}else{
+				log("stop receiving images");
+				vs_started = false;
+        // stop receiving images pushed by the video server
+        videoServer->stopReceiveImages(getComponentID().c_str());
+			}
+			break;
+		case VisionData::DSTART:
+			if(cmd_detect){
+				log("already started detection");
+			}else{
+				log("starting detection");
+				cmd_detect = true;
+			}
+			break;
 		case VisionData::DSTOP:
 			if(cmd_detect){
 				log("stopping detection");
 				cmd_detect = false;
-        videoServer->stopReceiveImages(getComponentID().c_str());
 			}else{
-				log("allready stopped detection");
+				log("already stopped detection");
 			}
+			break;
 		case VisionData::DSINGLE:
 			if(!cmd_single){
 				log("single detection");
-				vector<int> camIds;
-        // start receiving images pushed by the video server
-  			camIds.push_back(camId);
 				cmd_single = true;
-        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 			}else{
 				log("got already single detection command: too fast triggering!");
 			}
@@ -106,11 +120,12 @@ void ObjectDetector::configure(const map<string,string> & _config)
 
   cmd_detect = false;
 	cmd_single = false;
+	vs_started = false;
 }
 
 void ObjectDetector::start()
 {
-	log("ObjectDetector::start: Start Component");
+	log("start component");
 
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
@@ -128,7 +143,6 @@ void ObjectDetector::start()
 
 void ObjectDetector::receiveImages(const std::vector<Video::Image>& images)
 {
-printf("############ receive Images !!! cmd_single = %u\n", cmd_single);
   if(images.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__, "image list is empty"));
 
@@ -140,7 +154,6 @@ printf("############ receive Images !!! cmd_single = %u\n", cmd_single);
 	else if(cmd_single)
 	{
 		processImage(images[0]);
-		videoServer->stopReceiveImages(getComponentID().c_str());
 		cmd_single = false;
 	}
 }
@@ -316,7 +329,6 @@ void ObjectDetector::processImage(const Video::Image &image)
 			break;
 		default: break;
 	}
-
 
 	// ----------------------------------------------------------------
 	// Draw Gestalts to IplImage for the openCv window
