@@ -14,12 +14,12 @@ include "../common/urg_04LX.inc"
 
 # set the size of a pixel in meters
 #resolution 0.10
-resolution 0.20
+resolution 0.10
 
 # configure the GUI window
 window
 ( 
-  size [ 1000.000 480.000 ] 
+  size [ 700.000 400.000 ] 
 #  center [-2.450 -3.650] 
 #  center [0 0]
   scale 0.050 
@@ -40,7 +40,7 @@ size [ 30 15 ]
 map
 (
   bitmap "review_arena-dfki_lt.jpg"
-  bitmap_resolution 1.200
+  bitmap_resolution 0.200
   size [24 12]
   #boundary 1
   name "dfki_floor1"
@@ -62,14 +62,14 @@ box2d
 (
 name "greenbox1"
 color "green"
-pose [1.000 -2.000 0.000]
+pose [3.000 -1.000 0.000]
 )
 
 box2d
 (
 name "greenbox2"
 color "green"
-pose [1.000 -2.200 0.000]
+pose [-1.000 -2.200 0.000]
 )
 
 #create two blue boxs
@@ -77,14 +77,14 @@ box2d
 (
 name "bluebox1"
 color "blue"
-pose [1.000 -2.800 0.000]
+pose [1.000 -4.800 0.000]
 )
 
 box2d
 (
 name "bluebox2"
 color "blue"
-pose [1.000 -3.000 0.000]
+pose [3.000 -3.000 0.000]
 )
 
 
@@ -93,7 +93,7 @@ box2d
 (
 name "redbox1"
 color "red"
-pose [0.000 -3.000 0.000]
+pose [5.000 -3.000 0.000]
 )
 
 box2d
@@ -109,7 +109,7 @@ box2d
 (
 name "yellowbox1"
 color "yellow"
-pose [2.000 -2.000 0.000]
+pose [-2.000 -0.400 0.000]
 )
 
 box2d
