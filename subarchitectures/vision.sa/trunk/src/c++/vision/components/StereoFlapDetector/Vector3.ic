@@ -1,0 +1,120 @@
+/**
+ * $Id: ZVector3.ic,v 1.14 2006/08/17 20:11:32 mz Exp mz $
+ *
+ * @author Michael Zillich
+ * @date September 2006
+ */
+
+#include <math.h>
+
+inline Vector3 operator-(const Vector3 &v)
+{
+  return Vector3(-v.x, -v.y, -v.z);
+}
+
+inline Vector3& Vector3::operator+=(const Vector3 &v)
+{
+  x += v.x;
+  y += v.y;
+  z += v.z;
+  return *this;
+}
+
+inline Vector3& Vector3::operator-=(const Vector3 &v)
+{
+  x -= v.x;
+  y -= v.y;
+  z -= v.z;
+  return *this;
+}
+
+inline Vector3& Vector3::operator*=(double s)
+{
+  x *= s;
+  y *= s;
+  z *= s;
+  return *this;
+}
+
+inline Vector3& Vector3::operator/=(double s) throw(std::runtime_error)
+{
+  if(s == 0)
+    throw std::runtime_error("Vector3::operator/= : division by zero");
+  x /= s;
+  y /= s;
+  z /= s;
+  return *this;
+}
+
+
+inline Vector3 operator+(const Vector3 &a, const Vector3 &b)
+{
+  return Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+inline Vector3 operator-(const Vector3 &a, const Vector3 &b)
+{
+  return Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+inline Vector3 operator*(const double s, const Vector3 &v)
+{
+  return Vector3(v.x*s, v.y*s, v.z*s);
+}
+
+inline Vector3 operator*(const Vector3 &v, const double s)
+{
+  return s*v;
+}
+
+inline Vector3 operator/(const Vector3 &v, const double s) throw(std::runtime_error)
+{
+  if(s == 0)
+    throw std::runtime_error("Vector3::operator/ : division by zero");
+  return Vector3(v.x/s, v.y/s, v.z/s);
+}
+
+inline double Norm(const Vector3 &v)
+{
+  return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+inline double Length(const Vector3 &v)
+{
+  return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+/**
+ * Vector dot product.
+ */
+inline double Dot(const Vector3 &a, const Vector3 &b)
+{
+  return a.x*b.x + a.y*b.y + a.z*b.z;
+}
+
+/**
+ * Vector cross product.
+ */
+inline Vector3 Cross(const Vector3 &a, const Vector3 &b)
+{
+  return Vector3(a.y*b.z - a.z*b.y,
+                 a.z*b.x - a.x*b.z,
+                 a.x*b.y - a.y*b.x);
+}
+
+inline Vector3 Normalise(const Vector3 &v)
+{
+  double n = Norm(v);
+  return v/n;
+}
+
+inline std::istream& operator>>(std::istream &is, Vector3 &v)
+{
+  return is >> v.x >> v.y >> v.z;
+}
+
+inline std::ostream& operator<<(std::ostream &os, const Vector3 &v)
+{
+  return os << v.x << " " << v.y << " " << v.z;
+}
+
