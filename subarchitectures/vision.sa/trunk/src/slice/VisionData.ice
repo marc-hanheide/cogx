@@ -160,7 +160,7 @@ module VisionData {
    * @brief Object Detector Commands
    * @author Andreas Richtsfeld
    */
-  enum ObjectDetectionCommandType{ DSTART, DSTOP};
+  enum ObjectDetectionCommandType{ DSTART, DSTOP, DSINGLE, DVSSTART, DVSSTOP};
   class ObjectDetectionCommand {
     ObjectDetectionCommandType cmd;
   };
