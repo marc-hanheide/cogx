@@ -66,20 +66,16 @@ ctx_modality_to_string(any) = "[]".
 ctx_modality_from_term(functor(atom("[]"), [], _)) = any.
 
 	% info
-ctx_modality_to_string(i) = "i".
-ctx_modality_from_term(functor(atom("i"), [], _)) = i.
+ctx_modality_to_string(info) = "i".
+ctx_modality_from_term(functor(atom("i"), [], _)) = info.
 
 	% attention state
-ctx_modality_to_string(a(Fgr)) = "a(" ++ FgrStr ++ ")" :- foreground_as_string(Fgr, FgrStr).
-ctx_modality_from_term(functor(atom("a"), [
-		functor(atom(FgrStr), [], _)
-	], _)) = a(Fgr) :- foreground_as_string(Fgr, FgrStr).
+ctx_modality_to_string(att) = "att".
+ctx_modality_from_term(functor(atom("att"), [], _)) = att.
 
 	% events
-ctx_modality_to_string(e(STF)) = "e(" ++ to_string(STF) ++ ")".
-ctx_modality_from_term(functor(atom("e"), [
-		STFTerm
-	], _)) = e(from_term(STFTerm)).
+ctx_modality_to_string(evt) = "event".
+ctx_modality_from_term(functor(atom("event"), [], _)) = evt.
 
 	% "knows"
 ctx_modality_to_string(k(STF, Ags)) = "k(" ++ to_string(STF) ++ "," ++ belief_to_string(Ags) ++ ")".
@@ -96,6 +92,15 @@ ctx_modality_from_term(functor(atom("t"), [
 		STFTerm,
 		BeliefTerm
 	], _)) = t(from_term(STFTerm), term_to_belief(BeliefTerm)).
+
+ctx_modality_to_string(intention) = "intention".
+ctx_modality_from_term(functor(atom("intention"), [], _)) = intention.
+
+ctx_modality_to_string(understanding) = "understand".
+ctx_modality_from_term(functor(atom("understand"), [], _)) = understanding.
+
+ctx_modality_to_string(generation) = "generate".
+ctx_modality_from_term(functor(atom("generate"), [], _)) = generation.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

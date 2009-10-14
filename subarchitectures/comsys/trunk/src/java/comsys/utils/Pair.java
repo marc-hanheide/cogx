@@ -1,4 +1,4 @@
-package comsys.processing.cca.abduction;
+package comsys.utils;
 
 public class Pair<A, B> {
 	

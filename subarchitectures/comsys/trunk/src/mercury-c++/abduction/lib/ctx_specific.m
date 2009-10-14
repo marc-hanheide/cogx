@@ -127,7 +127,7 @@ ctx_fact(Ctx, vs(m(Mod, p("<<", [_, _])), VS), vs(m(Mod, p("<<", [t(Sub, []), t(
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
 ctx_assumable_func(Ctx, _, m(Mod, GProp), Cost) :-
-	Mod = [a(com)],
+	Mod = [att],
 	att_model(Ctx^ont, Ctx^rrel, Ctx^bm, AM),
 	map.member(AM^worlds, WName, Sort),
 	(

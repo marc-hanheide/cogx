@@ -92,8 +92,20 @@ public class MercuryUtils {
 		String s = "";
 		switch (m.type) {
 		
+		case Understanding:
+			s = "understand";
+			break;
+		
+		case Generation:
+			s = "generate";
+			break;
+		
 		case Event:
-			s = "e";
+			s = "event";
+			break;
+			
+		case Intention:
+			s = "intention";
 			break;
 			
 		case Info:

@@ -209,6 +209,7 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 
 
 	assumable(Ctx, vs(m(MQ, PQ0), VS0), F, vs(m(MA, PA0), VSA), _Cost),
+
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "a{(" ++ atomic_formula_to_string(VSA, PA0), !IO) ),
 	match(compose_list(MQ), compose_list(MA)),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "~", !IO) ),
@@ -305,12 +306,38 @@ step(resolve_rule(vs(m(MR, Ante-RHead), VS), Uni),
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- func head_mprop(query(M)) = mprop(M) is det <= modality(M).
+
+head_mprop(proved(MProp)) = MProp.
+head_mprop(unsolved(MProp, _)) = MProp.
+head_mprop(assumed(MProp, _)) = MProp.
+head_mprop(asserted(prop(MProp))) = MProp.
+head_mprop(asserted(impl(_, MProp))) = MProp.
+
+:- pred leftmost_unifiable(mprop(M)::in, list(mprop(M))::in, subst::out) is semidet.
+
+leftmost_unifiable(m(Mod, Pred), [m(ModH, PredH) | T], Subst) :-
+	(if
+		Mod = ModH,
+		unify_formulas(PredH, Pred, Subst0)
+	then
+		Subst = Subst0
+	else
+		leftmost_unifiable(m(Mod, Pred), T, Subst)
+	).
+
 	% factoring
 step(factor(Uni, VS),
 		{QsL0, cf(m(MQ, PQ), _F), QsR0}, VS,
 		QsL ++ QsR, VS,
 		_Ctx) :-
 
+	% find leftmost modalised formula that might be unified with Q
+	leftmost_unifiable(m(MQ, PQ), list.map(head_mprop, QsL0), Uni),
+
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "t{", !IO) ),
+
+/*
 	member(Prev, QsL0),
 	( Prev = proved(MProp)
 	; Prev = unsolved(MProp, _)
@@ -319,12 +346,11 @@ step(factor(Uni, VS),
 	; Prev = asserted(impl(_, MProp))
 	),
 
-	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "t{", !IO) ),
-
 	MProp = m(MP, PP),
 	match(compose_list(MP), compose_list(MQ)),
 
 	unify_formulas(PP, PQ, Uni),
+*/
 
 	QsL = list.map(apply_subst_to_query(Uni), QsL0),
 	QsR = list.map(apply_subst_to_query(Uni), QsR0),

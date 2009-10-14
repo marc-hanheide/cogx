@@ -50,6 +50,8 @@
 :- import_module set, list, pair, string.
 :- import_module varset.
 
+:- import_module io.
+
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
 %------------------------------------------------------------------------------%
@@ -59,7 +61,8 @@ assumable(C, vs(m(Mod, PropIn), VS), f(FuncName), vs(m(Mod, Prop), VS), Cost) :-
 	ground_formula(Prop, GroundProp),
 	unify_formulas(PropIn, Prop, _).  % XXX this?
 
-assumable(_C, Prop, const(Cost), Prop, Cost).
+assumable(_C, Prop, const(Cost), Prop, Cost) :-
+	trace[compile_time(flag("debug")), io(!IO)] ( format(stderr_stream, "/%f\\", [f(Cost)], !IO) ).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
