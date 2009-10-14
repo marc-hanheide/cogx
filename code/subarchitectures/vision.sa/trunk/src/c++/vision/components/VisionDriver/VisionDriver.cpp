@@ -83,7 +83,7 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
   VisionData::VisualObjectPtr obj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
   log("object detected: '%s'", obj->label.c_str());
-  
+
    // Object detected send tracking command (if not already tracking)
 	if(!tracking){
 	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
