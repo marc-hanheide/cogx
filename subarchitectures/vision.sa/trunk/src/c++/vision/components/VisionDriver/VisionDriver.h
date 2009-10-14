@@ -30,8 +30,9 @@ private:
    * callback function called whenever a new object appears ore an object
    * changes
    */
-   bool tracking;
-   bool detecting;
+   bool tracking;		///< track objects with object tracker
+   bool detecting;	///< detecting objects with object detector
+   bool pushing;		///< pushing images from video server
 	 bool running;
    
    void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
