@@ -31,6 +31,7 @@ private:
    * changes
    */
    bool tracking;
+   bool detecting;
 	 bool running;
    
    void receiveVisualObject(const cdl::WorkingMemoryChange & _wmc);
