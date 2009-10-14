@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
 	CensusGPU census;
 
   if(argc != 3) {
-    printf("usage: %s <lef image> <right image>", argv[0]);
+    printf("usage: %s <left rect image> <right rect image>\n", argv[0]);
     return 1;
   }
 
