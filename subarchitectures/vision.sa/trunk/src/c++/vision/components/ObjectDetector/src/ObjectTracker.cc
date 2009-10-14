@@ -448,7 +448,7 @@ void ObjectTracker::InitCamModel()
 		m_cCamModel.LoadIntrinsic (confFile.data());
 		m_cCamModel.LoadDistortion (confFile.data());
 		m_cCamModel.LoadReferencePointsToComputeExtrinsic(confFile.data());
-		m_cCamModel.Save("subarchitectures/vision.sa/src/c++/vision/components/ObjectDetector/cfg/calFromFileRef.xml");
+		m_cCamModel.Save("subarchitectures/vision.sa/src/c++/vision/components/ObjectDetector/cfg/ExtrinsicFromCalibration.xml");
 	}
 	m_cCamModel.PreProcessing (m_tImgSize);
 
