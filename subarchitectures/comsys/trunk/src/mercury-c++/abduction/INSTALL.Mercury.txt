@@ -40,10 +40,10 @@ in your system.
      $ make install
    (For this you might need root access rights.)
 
-6) Make sure that INSTALLPATH/bin is in your $PATH environment variable.
-
-7) Export environment variable MERCURY_HOME to INSTALLPATH in your shell.
+6) Export environment variable MERCURY_HOME to INSTALLPATH in your shell.
    You will need this to compile the abduction server.
+
+7) Make sure that MERCURY_HOME/bin is in your $PATH environment variable.
 
 
 Voila! Your Mercury is compiled. For the instructions on how to build
