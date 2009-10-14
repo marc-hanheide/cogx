@@ -23,8 +23,6 @@
  * and related inline factory-function
  * \function{CAST_SCAT::give_me_a_new__pthread_mutex_}.
  * 
- * WARNING :: I have not tested this code under normal pthread
- * conditions.
  *
  * NOTES :: 
  * 
