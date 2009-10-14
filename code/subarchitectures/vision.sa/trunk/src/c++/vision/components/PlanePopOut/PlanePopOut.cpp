@@ -522,19 +522,22 @@ void BoundingPrism(VisionData::SurfacePointSeq &pointsN, std::vector <int> &labe
 	// calculate convex hull
 	if (index.at(0)>0)
 	{
+		int* hull = (int*)malloc( pointsN.size() * sizeof(hull[0]));
 		for (int i = 0; i < objnumber; i++)
 		{
-			int* hull = (int*)malloc( (index.at(i)-1) * sizeof(hull[0]));
+
 			CvMat pointMat = cvMat( 1, index.at(i)-1, CV_32SC2, objSeq.at(i));
 			CvMat hullMat = cvMat( 1, index.at(i)-1, CV_32SC1, hull);
 			cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
 			//calculate convex hull points on the plane
 			std::vector <Vector3> v3OnPlane;
+			v3OnPlane.assign(hullMat.cols, v3init);
 			for (int j = 0; j<hullMat.cols; j++)
-				v3OnPlane.push_back(ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1)));
-			free( hull );
+				v3OnPlane.at(j) =ProjectOnDominantPlane(PlanePoints3DSeq.at(i).at(hull[j]+1));
+
 			DrawOnePrism(v3OnPlane, height.at(i));
 		}
+		free( hull );
 	}
 	free( points2D );
 }
@@ -1137,6 +1140,6 @@ void PlanePopOut::AddConvexHullinWM()
 		addToWorkingMemory(newDataID(),CHPtr);
 	}
 	mConvexHullPoints.clear();
+	mObjSeq.clear();
 }
 }
-
