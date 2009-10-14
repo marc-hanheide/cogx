@@ -165,6 +165,15 @@ module VisionData {
     ObjectDetectionCommandType cmd;
   };
 
+  /** 
+   * @brief Stereo Flap Detector Commands
+   * @author Andreas Richtsfeld
+   */
+  enum StereoFlapDetectionCommandType{ SFSTART, SFSTOP};
+  class StereoFlapDetectionCommand {
+    StereoFlapDetectionCommandType cmd;
+  };
+
   /**
    * Space of interest.
    * Coarsely described by a bounding sphere.
