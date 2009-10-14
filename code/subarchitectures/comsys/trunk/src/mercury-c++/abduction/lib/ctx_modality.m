@@ -11,11 +11,14 @@
 
 :- type ctx_modality
 	--->	any  % the axiom
-	;	a(foreground)
-	;	e(stf)
-	;	i
+	;	att
+	;	evt
+	;	info
 	;	k(stf, belief)
 	;	t(stf, belief)
+	;	intention
+	;	understanding
+	;	generation
 	.
 
 :- instance modality(ctx_modality).

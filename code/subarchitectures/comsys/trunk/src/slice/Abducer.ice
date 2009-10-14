@@ -39,7 +39,10 @@ module Abducer {
 	// MODALITIES
 
 	enum ModalityType {
+		Understanding,
+		Generation,
 		Event,
+		Intention,
 		Info,
 		AttState,
 		K
@@ -63,7 +66,13 @@ module Abducer {
 	
 	sequence<Modality> ModalitySeq;
 
+	class UnderstandingModality extends Modality { };
+
+	class GenerationModality extends Modality { };
+
 	class EventModality extends Modality { };
+
+	class IntentionModality extends Modality { };
 	
 	class InfoModality extends Modality { };
 	

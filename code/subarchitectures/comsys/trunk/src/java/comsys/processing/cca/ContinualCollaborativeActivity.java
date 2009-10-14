@@ -34,9 +34,12 @@ import comsys.datastructs.lf.LogicalForm;
 import comsys.lf.utils.ArrayIterator;
 
 import comsys.processing.cca.AbducerUtils;
-import comsys.processing.cca.StackUtils;
+import comsys.processing.cca.ProofStack;
+import comsys.processing.cca.abduction.ModalityFactory;
+import comsys.processing.cca.abduction.PredicateFactory;
 
 import beliefmodels.domainmodel.cogx.*;
+import binder.utils.BeliefModelUtils;
 
 // ---------------------------------------------------------
 // CAST imports
@@ -86,7 +89,7 @@ public class ContinualCollaborativeActivity {
     private String generateRulesFilename = "/dev/null";
     private String generateFactsFilename = "/dev/null";
 
-    private ProofBlock[] stack = new ProofBlock[0];
+    private ProofStack stack = new ProofStack();
     
     private Stack<RefBinding> refStack = new Stack<RefBinding>();
 	
@@ -170,10 +173,11 @@ public class ContinualCollaborativeActivity {
 
 		goal.body = AbducerUtils.modalisedFormula(
 				new Modality[] {
-					AbducerUtils.eventModality()
+					ModalityFactory.understandingModality(),
+					ModalityFactory.eventModality()
 				},
-				AbducerUtils.predicate(activityMode, new Term[] {
-					AbducerUtils.term("h"),
+				PredicateFactory.predicate(activityMode, new Term[] {
+					PredicateFactory.term("h"),
 					nomTerm
 					//AbducerUtils.term(lf.root.nomVar)
 				}));
@@ -255,7 +259,7 @@ public class ContinualCollaborativeActivity {
 	 */
 	public void addFactualContext (LogicalForm lf) {
 		log("expanding LF into facts");
-		ModalisedFormula[] facts = AbducerUtils.lfToFacts(new Modality[] {AbducerUtils.infoModality()}, lf);
+		ModalisedFormula[] facts = AbducerUtils.lfToFacts(new Modality[] {ModalityFactory.infoModality()}, lf);
 		for (int i = 0; i < facts.length; i++) {
 			abducer.addFact(facts[i]);
 			log("  add fact: " + MercuryUtils.modalisedFormulaToString(facts[i]));
@@ -310,11 +314,11 @@ public class ContinualCollaborativeActivity {
 
 					ModalisedFormula f = AbducerUtils.modalisedFormula(
 							new Modality[] {
-								AbducerUtils.attStateModality()
+								ModalityFactory.attStateModality()
 							},
-							AbducerUtils.predicate("refers_to", new Term[] {
-								AbducerUtils.term(nomVar),
-								AbducerUtils.term(anchor.entityID)
+							PredicateFactory.predicate("refers_to", new Term[] {
+								PredicateFactory.term(nomVar),
+								PredicateFactory.term(anchor.entityID)
 							}));			
 					abducer.addAssumable("ref_resolution", f, cost);
 					
@@ -329,16 +333,16 @@ public class ContinualCollaborativeActivity {
 	} // end method
 	
 	public void addCRContext(beliefmodels.clarification.ClarificationRequest cr) {
-		Modality[] mod = new Modality[] {AbducerUtils.infoModality()};
+		Modality[] mod = new Modality[] {ModalityFactory.infoModality()};
 		ModalisedFormula mfModality = AbducerUtils.modalisedFormula(mod,
-				AbducerUtils.predicate("cr_modality", new Term[] {
-					AbducerUtils.term(cr.id),
-					AbducerUtils.term(cr.sourceModality)
+				PredicateFactory.predicate("cr_modality", new Term[] {
+					PredicateFactory.term(cr.id),
+					PredicateFactory.term(cr.sourceModality)
 				}));
 		ModalisedFormula mfSourceId = AbducerUtils.modalisedFormula(mod,
-				AbducerUtils.predicate("cr_entity", new Term[] {
-						AbducerUtils.term(cr.id),
-						AbducerUtils.term(cr.sourceEntityID)
+				PredicateFactory.predicate("cr_entity", new Term[] {
+						PredicateFactory.term(cr.id),
+						PredicateFactory.term(cr.sourceEntityID)
 					}));
 		abducer.addFact(mfModality);
 		abducer.addFact(mfSourceId);
@@ -356,12 +360,12 @@ public class ContinualCollaborativeActivity {
 
 					Term[] tArgs = null;
 					if (args.length == 1) {
-						tArgs = new Term[] {AbducerUtils.term(cr.id), AbducerUtils.term(args[0])};
+						tArgs = new Term[] {PredicateFactory.term(cr.id), PredicateFactory.term(args[0])};
 					}
 					else if (args.length == 2) {
-						tArgs = new Term[] {AbducerUtils.term(cr.id), AbducerUtils.term(args[0]), AbducerUtils.term(args[1])};
+						tArgs = new Term[] {PredicateFactory.term(cr.id), PredicateFactory.term(args[0]), PredicateFactory.term(args[1])};
 					}
-					ModalisedFormula mfNeed = AbducerUtils.modalisedFormula(mod, AbducerUtils.predicate("cr_need", tArgs));
+					ModalisedFormula mfNeed = AbducerUtils.modalisedFormula(mod, PredicateFactory.predicate("cr_need", tArgs));
 					
 					abducer.addFact(mfNeed);
 					log("adding fact: " + MercuryUtils.modalisedFormulaToString(mfNeed));
@@ -392,7 +396,7 @@ public class ContinualCollaborativeActivity {
 		}
 		
 		if (!functor.equals("")) {
-			return AbducerUtils.term(functor, new Term[] {AbducerUtils.term(arg)});
+			return PredicateFactory.term(functor, new Term[] {PredicateFactory.term(arg)});
 		}
 		else {
 			return null;
@@ -436,29 +440,35 @@ public class ContinualCollaborativeActivity {
 	 * @param model current belief model
 	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
 	 */
-	public Belief[] verifiableUpdate(MarkedQuery[] proof, BeliefModel model) {
-		ProofBlock pi = StackUtils.construct(proof, "proof-X");
+	public Belief[] verifiableUpdate(ContextUpdate cu, BeliefModel model) {
+		ProofBlock pi = ProofStack.construct(cu);
 		ProofBlock piPrime = null;
 		ArrayList<Belief> consistentUpdates = new ArrayList<Belief>();
 		boolean verified;
 
-		if (StackUtils.isEmpty(stack)) {
-			StackUtils.push(stack, pi);
+		//System.err.println(ProofStack.proofBlockToString(pi));
+		
+		if (stack.isEmpty()) {
+			log("  VU: stack empty");
+			stack.push(pi);
+			//printStack();
 			//return new Belief[0];
-			return pi.assertions;
+			return null;
+			//return pi.assertedBeliefs;
 		}
 		else {
-			piPrime = StackUtils.pop(stack);
+			log("  VU: stack non-empty");
+			piPrime = stack.pop();
 		}
 		verified = true;
-		
-		for (int i = 0; i < piPrime.assertions.length; i++) {
-			switch (VerifiableUpdate.consistent(model, piPrime.assertions[i], pi.assumptions)) {
+/*
+		for (int i = 0; i < piPrime.assertedBeliefs.length; i++) {
+			switch (VerifiableUpdate.consistent(model, piPrime.assertedBeliefs[i], pi.assertedBeliefs)) {  // XXX !!!
 			
 				case Consistent:
 					// assertion verified -> change its continual status to "proposition"
-					for (int j = 0; j < pi.assumptions.length; j++) {
-						consistentUpdates.add(pi.assumptions[j]);
+					for (int j = 0; j < pi.assertedBeliefs.length; j++) {
+						consistentUpdates.add(pi.assertedBeliefs[j]);
 					}
 					break;
 				
@@ -469,13 +479,22 @@ public class ContinualCollaborativeActivity {
 					break;					
 			}
 		}
+*/
 		
-		StackUtils.push(stack, pi);
+		stack.push(pi);
 		if (verified == false) {
-			StackUtils.push(stack, piPrime);
+			stack.push(piPrime);
 		}
 		
 		return consistentUpdates.toArray(new Belief[0]);
+	}
+
+	public void printStack() {
+		log("printing current stack status, top first (" + stack.blocks.length + " items total):");
+		for (int i = 0; i < stack.blocks.length; i++) {
+			log(PrettyPrinting.proofBlockToString(stack.blocks[i]));
+		}
+		log("done printing stack");
 	}
 	
 	private void log(String str) {

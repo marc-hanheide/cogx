@@ -128,8 +128,17 @@ modalityToMercModality(const ModalityPtr & m)
 	MR_ctx_modality mm;
 
 	switch (m->type) {
+		case Understanding:
+			modality_understanding(&mm);
+			break;
+		case Generation:
+			modality_generation(&mm);
+			break;
 		case Event:
 			modality_event(&mm);
+			break;
+		case Intention:
+			modality_intention(&mm);
 			break;
 		case Info:
 			modality_info(&mm);
@@ -275,11 +284,29 @@ MR_WordToModality(MR_Word w)
 
 //	print_modality(w);
 
+	if (is_modality_understanding(w)) {
+		debug(cerr << "cc: understanding" << endl);
+		UnderstandingModalityPtr um = new UnderstandingModality();
+		um->type = Understanding;
+		return um;
+	}
+	if (is_modality_generation(w)) {
+		debug(cerr << "cc: generate" << endl);
+		GenerationModalityPtr gm = new GenerationModality();
+		gm->type = Generation;
+		return gm;
+	}
 	if (is_modality_event(w)) {
 		debug(cerr << "cc: event" << endl);
 		EventModalityPtr em = new EventModality();
 		em->type = Event;
 		return em;
+	}
+	if (is_modality_intention(w)) {
+		debug(cerr << "cc: intention" << endl);
+		IntentionModalityPtr nm = new IntentionModality();
+		nm->type = Intention;
+		return nm;
 	}
 	else if (is_modality_info(w)) {
 		debug(cerr << "cc: info" << endl);

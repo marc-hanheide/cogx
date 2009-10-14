@@ -2,7 +2,7 @@
 
 :- interface.
 :- import_module float, list, bool.
-:- import_module ctx_specific, ctx_modality, abduction, formula, belief_model, costs.
+:- import_module ctx_modality, abduction, formula, belief_model, costs.
 :- import_module varset.
 
 :- pred is_function_term(formula.term::in, string::out, list(formula.term)::out) is semidet.
@@ -34,7 +34,10 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
+:- pred modality_understanding(ctx_modality::out) is det.
+:- pred modality_generation(ctx_modality::out) is det.
 :- pred modality_event(ctx_modality::out) is det.
+:- pred modality_intention(ctx_modality::out) is det.
 :- pred modality_info(ctx_modality::out) is det.
 :- pred modality_att(ctx_modality::out) is det.
 :- pred modality_k_private(agent::in, ctx_modality::out) is det.
@@ -44,7 +47,10 @@
 :- pred impure_print_list_modalities(list(ctx_modality)::in) is det.
 :- pred impure_print_modality(ctx_modality::in) is det.
 
+:- pred is_modality_understanding(ctx_modality::in) is semidet.
+:- pred is_modality_generation(ctx_modality::in) is semidet.
 :- pred is_modality_event(ctx_modality::in) is semidet.
+:- pred is_modality_intention(ctx_modality::in) is semidet.
 :- pred is_modality_info(ctx_modality::in) is semidet.
 :- pred is_modality_att(ctx_modality::in) is semidet.
 :- pred is_modality_k(ctx_modality::in, belief::out) is semidet.
@@ -193,16 +199,22 @@ cons_ctx_modality_list(H, T, [H|T]).
 agent_human(human).
 agent_robot(robot).
 
+:- pragma foreign_export("C", modality_understanding(out), "modality_understanding").
+:- pragma foreign_export("C", modality_generation(out), "modality_generation").
 :- pragma foreign_export("C", modality_event(out), "modality_event").
+:- pragma foreign_export("C", modality_intention(out), "modality_intention").
 :- pragma foreign_export("C", modality_info(out), "modality_info").
 :- pragma foreign_export("C", modality_att(out), "modality_att").
 :- pragma foreign_export("C", modality_k_private(in, out), "modality_k_private").
 :- pragma foreign_export("C", modality_k_attrib(in, in, out), "modality_k_attrib").
 :- pragma foreign_export("C", modality_k_mutual(out), "modality_k_mutual").
 
-modality_event(e(now)).
-modality_info(i).
-modality_att(a(com)).
+modality_understanding(understanding).
+modality_generation(generation).
+modality_event(evt).
+modality_intention(intention).
+modality_info(info).
+modality_att(att).
 modality_k_private(Ag, k(now, private(Ag))).
 modality_k_attrib(Ag, Ag2, k(now, attrib(Ag, Ag2))).
 modality_k_mutual(k(now, mutual(set.from_list([robot, human])))).
@@ -216,14 +228,20 @@ impure_print_modality(Mod) :-
 impure_print_list_modalities(Mod) :-
 	trace[compile_time(flag("debug")), io(!IO)] (print_err(string(Mod), !IO)).
 
+:- pragma foreign_export("C", is_modality_understanding(in), "is_modality_understanding").
+:- pragma foreign_export("C", is_modality_generation(in), "is_modality_generation").
 :- pragma foreign_export("C", is_modality_event(in), "is_modality_event").
+:- pragma foreign_export("C", is_modality_intention(in), "is_modality_intention").
 :- pragma foreign_export("C", is_modality_info(in), "is_modality_info").
 :- pragma foreign_export("C", is_modality_att(in), "is_modality_att").
 :- pragma foreign_export("C", is_modality_k(in, out), "is_modality_k").
 
-is_modality_event(e(now)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: event", !IO)).
-is_modality_info(i) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: info", !IO)).
-is_modality_att(a(com)) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: att", !IO)).
+is_modality_understanding(understanding) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: understanding", !IO)).
+is_modality_generation(generation) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: generation", !IO)).
+is_modality_event(evt) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: event", !IO)).
+is_modality_intention(intention) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: intention", !IO)).
+is_modality_info(info) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: info", !IO)).
+is_modality_att(att) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: att", !IO)).
 is_modality_k(k(now, Belief), Belief) :- trace[compile_time(flag("debug")), io(!IO)] (print_err("merc: k, bel=" ++ string(Belief) ++ "", !IO)).
 
 :- pragma foreign_export("C", belief_private(out), "belief_private").

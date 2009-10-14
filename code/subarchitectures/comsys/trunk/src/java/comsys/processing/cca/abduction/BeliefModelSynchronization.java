@@ -2,6 +2,8 @@ package comsys.processing.cca.abduction;
 
 import java.util.*;
 
+import comsys.utils.Pair;
+import comsys.utils.Triple;
 import comsys.processing.cca.AbducerUtils;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.cca.PrettyPrinting;
@@ -104,9 +106,9 @@ public class BeliefModelSynchronization {
 				//log("     " + PrettyPrinting.agentStatusToString(as) + ", " + predSym + ")");
 				//log("    =" + new Integer(key.hashCode()).toString() + "; " + new Integer(key.fst.hashCode()).toString() + ", " + new Integer(key.snd.hashCode()).toString());
 				
-				Modality[] mod = new Modality[] { AbducerUtils.kModality(as) };
+				Modality[] mod = new Modality[] { ModalityFactory.kModality(as) };
 				ModalisedFormula mf = AbducerUtils.modalisedFormula(mod,
-						AbducerUtils.predicate(predSym, new Term[] { AbducerUtils.term(unionId), AbducerUtils.term(valueStr) }));
+						PredicateFactory.predicate(predSym, new Term[] { PredicateFactory.term(unionId), PredicateFactory.term(valueStr) }));
 				log("    adding fact: " + MercuryUtils.modalisedFormulaToString(mf));
 				abducer.addFact(mf);
 				

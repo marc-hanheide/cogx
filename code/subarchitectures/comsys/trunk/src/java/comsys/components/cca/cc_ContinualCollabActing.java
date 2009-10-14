@@ -25,11 +25,13 @@ import comsys.processing.cca.ContextUpdate;
 import comsys.processing.cca.ContinualCollaborativeActivity;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.cca.AbducerUtils;
-import comsys.processing.cca.StackUtils;
+import comsys.processing.cca.ProofStack;
 import comsys.processing.cca.ProofUtils;
 import comsys.processing.cca.PrettyPrinting;
 import comsys.processing.cca.Counter;
 import comsys.processing.cca.abduction.BeliefModelSynchronization;
+import comsys.processing.cca.abduction.ModalityFactory;
+import comsys.processing.cca.abduction.PredicateFactory;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 
 import beliefmodels.adl.*;
@@ -312,7 +314,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     	ccaEngine.addFactualContext(boundReadings.lform);
     	ccaEngine.addAnchoringContext(boundReadings);
 		MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.UNDERSTAND,
-				AbducerUtils.term(boundReadings.lform.root.nomVar));
+				PredicateFactory.term(boundReadings.lform.root.nomVar));
 
 		if (proof != null) {
     		log("abductive proof found:\n" + PrettyPrinting.proofToString(proof));
@@ -328,7 +330,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     	log("got clarif request");
     	ccaEngine.addCRContext(cr);
 		MarkedQuery[] proof = ccaEngine.understandProof(ContinualCollaborativeActivity.CLARIFY,
-				AbducerUtils.term(cr.id));
+				PredicateFactory.term(cr.id));
 
 		if (proof != null) {
     		log("abductive proof found:\n" + PrettyPrinting.proofToString(proof));
@@ -342,21 +344,25 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     
     private ContextUpdate processGroundedBelief(GroundedBelief gb) {
     	ContextUpdate cu = new ContextUpdate();
-    	cu.proof = new MarkedQuery[] { };
-    	cu.intention = AbducerUtils.predicate("have_sensed", new Term[] { AbducerUtils.term(gb.grounding.modality) });
+    	//cu.proof = new MarkedQuery[] { };
+    	cu.intention = PredicateFactory.predicate("have_sensed", new Term[] { PredicateFactory.term(gb.grounding.modality) });
     	return cu;
     }
     
     private void updateContext(ContextUpdate cu) {
     	log("updating context");
-		Belief[] beliefUpdates = ccaEngine.verifiableUpdate(cu.proof, getCurrentBeliefModel());
+    	log("stack before update");
+    	ccaEngine.printStack();
+		Belief[] beliefUpdates = new Belief[] {};//ccaEngine.verifiableUpdate(cu, getCurrentBeliefModel());
+		log("stack after update");
+    	ccaEngine.printStack();
 		
 		if (beliefUpdates.length == 0) {
 			log("no belief updates...");
 		}
 		else {
 			log("starting belief model update, " + beliefUpdates.length + " beliefs total");
-    		
+
 			for (int i = 0; i < beliefUpdates.length; i++) {
 				log("  update #" + i + ": " + PrettyPrinting.beliefToString(beliefUpdates[i]));
 
@@ -386,10 +392,11 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     	return cu.intention;
     }
 
-    private void actPublicly(Predicate action) {
-    	if (action != null) {
+    private void actPublicly(Predicate actionPredicate) {
+    	if (actionPredicate != null) {
 	    	log("initiating public acting");
-	    	ModalisedFormula actionMF = AbducerUtils.modalisedFormula(new Modality[] {AbducerUtils.eventModality()}, action);
+	    	Modality[] actionModality = new Modality[] { ModalityFactory.generationModality(), ModalityFactory.intentionModality() };
+	    	ModalisedFormula actionMF = AbducerUtils.modalisedFormula(actionModality, actionPredicate);
 			MarkedQuery[] actionProof = ccaEngine.generateProof(new ModalisedFormula[] {actionMF});
 			
 			if (actionProof != null) {
@@ -416,8 +423,8 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     
     public ContextUpdate understandingFailed() {
     	ContextUpdate cu = new ContextUpdate();
-    	cu.proof = new MarkedQuery[0];
-    	cu.intention = AbducerUtils.predicate("not_understood", new Term[] { AbducerUtils.term("r") });
+    	//cu.proof = new MarkedQuery[0];
+    	cu.intention = PredicateFactory.predicate("not_understood", new Term[] { PredicateFactory.term("r") });
     	return cu;
     }
     

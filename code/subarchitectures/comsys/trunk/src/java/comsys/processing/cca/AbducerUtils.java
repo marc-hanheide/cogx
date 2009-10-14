@@ -9,8 +9,9 @@ import Abducer.*;
 import beliefmodels.adl.*;
 
 import comsys.processing.cca.ProofUtils;
+import comsys.processing.cca.abduction.PredicateFactory;
 
-public class AbducerUtils {
+public abstract class AbducerUtils {
 
 	/**
 	 * Return a new modalised formula.
@@ -24,123 +25,6 @@ public class AbducerUtils {
 		mf.m = ms;
 		mf.p = p;
 		return mf;
-	}
-	
-	/**
-	 * Return a new predicate.
-	 * 
-	 * @param predSym predicate symbol
-	 * @param args arguments (terms)
-	 * @return Predicate the predicate
-	 */
-	public static Predicate predicate(String predSym, Term[] args) {
-		Predicate p = new Predicate();
-		p.predSym = predSym;
-		p.args = args;
-		return p;
-	}
-	
-	/**
-	 * Return a two-place predicate.
-	 * 
-	 * @param predSym predicate symbol
-	 * @param arg1 first argument
-	 * @param arg2 second argument
-	 * @return the predicate
-	 */
-	public static Predicate twoPlacePredicate(String predSym, String arg1, String arg2) {
-		return predicate(predSym, new Term[] { term(arg1), term(arg2)});
-	}
-	
-	/**
-	 * Return a function term.
-	 * 
-	 * @param functor term functor
-	 * @param args arguments (terms)
-	 * @return FunctionTerm the term
-	 */
-	public static FunctionTerm term(String functor, Term[] args) {
-		FunctionTerm f = new FunctionTerm();
-		f.type = Abducer.TermType.Function;
-		f.functor = functor;
-		f.args = args;
-		return f;
-	}
-
-	/**
-	 * Return a function term with no arguments.
-	 * 
-	 * @param functor term functor
-	 * @return FunctionTerm the term
-	 */
-	public static FunctionTerm term(String functor) {
-		return term(functor, new Term[0]);
-	}
-	
-	/**
-	 * Return a named variable.
-	 * 
-	 * @param name variable name
-	 * @return VariableTerm the term
-	 */
-	public static VariableTerm var(String name) {
-		VariableTerm v = new VariableTerm();
-		v.type = Abducer.TermType.Variable;
-		v.name = name;
-		return v;
-	}
-
-	public static InfoModality infoModality() {
-		InfoModality m = new InfoModality();
-		m.type = ModalityType.Info;
-		return m;
-	}
-	
-	public static EventModality eventModality() {
-		EventModality m = new EventModality();
-		m.type = ModalityType.Event;
-		return m;
-	}
-	
-	public static AttStateModality attStateModality() {
-		AttStateModality m = new AttStateModality();
-		m.type = ModalityType.AttState;
-		return m;
-	}
-	
-	public static Abducer.Agent toAbducerAgent(beliefmodels.adl.Agent ag) {
-		if (ag.id.equals("human")) {
-			return Abducer.Agent.human;
-		}
-		else {
-			return Abducer.Agent.robot;
-		}
-	}
-
-	public static KModality kModality(AgentStatus as) {
-		KModality m = new KModality();
-		m.type = ModalityType.K;
-		if (as instanceof AttributedAgentStatus) {
-			m.share = Abducer.Sharing.Attribute;
-			m.ag = toAbducerAgent(((AttributedAgentStatus) as).ag);
-			m.ag2 = toAbducerAgent(((AttributedAgentStatus) as).ag2);
-		}
-		else if (as instanceof PrivateAgentStatus) {
-			m.share = Abducer.Sharing.Private;
-			m.ag = toAbducerAgent(((PrivateAgentStatus) as).ag);
-			m.ag2 = Abducer.Agent.human;
-		}
-		else if (as instanceof MutualAgentStatus) {
-			m.share = Abducer.Sharing.Mutual;
-			m.ag = Abducer.Agent.robot;
-			m.ag2 = Abducer.Agent.human;
-		}
-		else {
-			//System.err.println("unknown AgentStatus in AbducerUtils.kModality() !");
-			return null;
-		}
-		//System.err.println("AU.kMo: share=" + m.share.toString() + ", act=" + m.act.toString() + ", pat=" + m.pat.toString());
-		return m;
 	}
 
 	/** Convert a logical form to an array of modalised formulas.
@@ -158,25 +42,25 @@ public class AbducerUtils {
 		return facts.toArray(new ModalisedFormula[0]);
 	}
 
-	private static void addNomToFactList(AbstractList<ModalisedFormula> facts, Modality[] factModality, LFNominal nom, LogicalForm lf) {
+	private static void addNomToFactList(AbstractList<ModalisedFormula> facts, Modality[] mod, LFNominal nom, LogicalForm lf) {
 		// nominal term
-		Term nomTerm = term(nom.nomVar);
+		Term nomTerm = PredicateFactory.term(nom.nomVar);
 		
 		// sort
 		facts.add(modalisedFormula(
-				factModality,
-				predicate("sort", new Term[] {
+				mod,
+				PredicateFactory.predicate("sort", new Term[] {
 					nomTerm,
-					term(nom.sort)
+					PredicateFactory.term(nom.sort)
 				})));
 
 		// proposition, if there is one
 		if (!nom.prop.prop.equals("")) {
 			facts.add(modalisedFormula(
-					factModality,
-					predicate("prop", new Term[] {
+					mod,
+					PredicateFactory.predicate("prop", new Term[] {
 						nomTerm,
-						term(nom.prop.prop)
+						PredicateFactory.term(nom.prop.prop)
 					})));		
 		}
 
@@ -185,10 +69,10 @@ public class AbducerUtils {
 		while (fIter.hasNext()) { 
 			Feature feat = (Feature) fIter.next(); 
 			facts.add(modalisedFormula(
-					factModality,
-					predicate("feat_" + feat.feat, new Term[] {
+					mod,
+					PredicateFactory.predicate("feat_" + feat.feat, new Term[] {
 						nomTerm,
-						term(feat.value)
+						PredicateFactory.term(feat.value)
 					})));
 		}
 
@@ -196,25 +80,11 @@ public class AbducerUtils {
 		while (rIter.hasNext()) {
 			LFRelation rel = (LFRelation) rIter.next();
 			facts.add(modalisedFormula(
-					factModality,
-					predicate("rel_" + rel.mode, new Term[] {
+					mod,
+					PredicateFactory.predicate("rel_" + rel.mode, new Term[] {
 						nomTerm, 
-						term(rel.dep)
+						PredicateFactory.term(rel.dep)
 					})));
-/*
-			LFNominal depnom = LFUtils.lfGetNominal(lf, rel.dep); 
-			if(rel.coIndexedDep == true){
-				// we only want to generate <RelMode>var1:type1, not the complete nominal
-				facts.add(modalisedFormula(
-						factModality,
-						predicate("sort", new Term[] {
-							term(rel.dep),
-							term(depnom.sort)
-						})));
-			} else {
-				addNomToFactList(facts, depnom, lf);
-			}
-*/
 		}
 	}
 	
@@ -300,46 +170,4 @@ public class AbducerUtils {
 
 		return lf;
 	}
-
-/*
-	public static LFNominal factsToLFNominal(ModalisedFormula[] facts, String nomVar) {
-		String sort = "";
-		String prop = "";
-		ArrayList<Feature> feats = new ArrayList<Feature>();
-		ArrayList<LFRelation> rels = new ArrayList<LFRelation>();
-
-		for (int i = 0; i < facts.length; i++) {
-
-			ModalisedFormula f = facts[i];
-
-			if (f.p.predSym.equals("sort") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
-				sort = ProofUtils.termToString(f.p.args[1]);
-			}
-
-			if (f.p.predSym.equals("prop") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
-				prop = ProofUtils.termToString(f.p.args[1]);
-			}
-			
-			if (f.p.predSym.matches("feat_.*") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
-				Feature feat = new Feature();
-				feat.feat = f.p.predSym.substring(5);
-				feat.value = ProofUtils.termToString(f.p.args[1]);
-				feats.add(feat);
-			}
-			
-			if (f.p.predSym.matches("rel_.*") && ProofUtils.termToString(f.p.args[0]).equals(nomVar)) {
-				LFRelation rel = new LFRelation();
-				rel.mode = f.p.predSym.substring(4);
-				rel.head = nomVar;
-				rel.dep = ProofUtils.termToString(f.p.args[1]);
-				rels.add(rel);
-			}
-		}
-		
-		LFNominal nom = LFUtils.newLFNominal(nomVar, sort);
-		nom.feats = feats.toArray(new Feature[0]);
-		nom.rels = rels.toArray(new LFRelation[0]);
-		return nom;
-	}
-*/
 }

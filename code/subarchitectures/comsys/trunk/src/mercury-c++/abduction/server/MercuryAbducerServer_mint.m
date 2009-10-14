@@ -134,17 +134,17 @@ srv_clear_facts(!Ctx) :-
 
 srv_clear_e_facts(!Ctx) :-
 	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
-		Mod \= [e(_)|_]
+		Mod \= [evt|_]
 			), !.Ctx^facts), !Ctx).
 
 srv_clear_a_facts(!Ctx) :-
 	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
-		Mod \= [a(_)|_]
+		Mod \= [att|_]
 			), !.Ctx^facts), !Ctx).
 
 srv_clear_i_facts(!Ctx) :-
 	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
-		Mod \= [i|_]
+		Mod \= [info|_]
 			), !.Ctx^facts), !Ctx).
 
 srv_clear_k_facts(!Ctx) :-
@@ -238,6 +238,8 @@ srv_prove_best(P0, Ctx, ProofCost, Proof) :-
 		prove(0.0, 200.0, P0, P, default_costs, Ctx),
 		Cost = cost(Ctx, P, default_costs)
 			))),
+
+	trace[io(!IO)] (format("%d proofs found.\n", [i(list.length(Proofs0))], !IO)),
 
 	list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
 		float_compare(CA, CB, Comp)

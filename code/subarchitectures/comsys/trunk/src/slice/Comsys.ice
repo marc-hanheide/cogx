@@ -492,18 +492,15 @@ module comsysEssentials {
 	// Continual acting
 	//---------------------------------------------------------------------------
 	
-	sequence<beliefmodels::adl::Belief> DeltaSet;
+	sequence<string> Ids;
 
 	class ProofBlock {
-		//Abducer::MarkedQuerySeq proof;
-		string proofId;
-		DeltaSet assumptions;
-		DeltaSet assertions;
+		Abducer::Predicate intention;
+		Ids assertedBeliefIds;
 	};
 
 	// Proof block stack, the top is the first element.
 	sequence<ProofBlock> ProofBlockSeq;
- 
 
 
 };

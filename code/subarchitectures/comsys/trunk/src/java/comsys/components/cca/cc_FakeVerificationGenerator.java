@@ -197,19 +197,12 @@ public class cc_FakeVerificationGenerator
 		OKBUTTON_PUSHED = false;
 		
 		Belief b = null;
-		try {
-			String beliefId = entityField.getText();
-			log("retrieving belief id '" + beliefId + "'");
-			b = getBelief(beliefId);
-			if (b == null) {
-				log("no such belief found!");
-				return null;
-			}
-			
-		} catch (DoesNotExistOnWMException e) {
-			e.printStackTrace();
-		} catch (UnknownSubarchitectureException e) {
-			e.printStackTrace();
+		String beliefId = entityField.getText();
+		log("retrieving belief id '" + beliefId + "'");
+		b = getBelief(beliefId);
+		if (b == null) {
+			log("no such belief found!");
+			return null;
 		}
 
 		Ground g = new Ground();

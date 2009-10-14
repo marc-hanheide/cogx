@@ -5,6 +5,7 @@ import Abducer.*;
 import beliefmodels.adl.*;
 import beliefmodels.domainmodel.cogx.*;
 import binder.utils.BeliefModelUtils;
+import binder.abstr.BeliefModelInterface;
 
 public class PrettyPrinting {
 
@@ -20,19 +21,14 @@ public class PrettyPrinting {
 		
 	public static String proofBlockToString(ProofBlock block) {
 		String s = "[ProofBlock ";
-		s += "proofId = " + block.proofId + ",\n";
-		s += "  assertions = {\n";
-		for (int i = 0; i < block.assertions.length; i++) {
-			s += "    " + beliefToString(block.assertions[i]);
-			s += (i < block.assertions.length-1) ? ",\n" : "\n";
+		s += "  intention = " + MercuryUtils.predicateToString(block.intention) + ",\n";
+		s += "  beliefs = { ";
+		for (int i = 0; i < block.assertedBeliefIds.length; i++) {
+			s += block.assertedBeliefIds[i];
+//			+ BeliefModelUtils.getBeliefPrettyPrint(BeliefModelInterface.block.assertedBeliefIds[i], 1);
+			s += (i < block.assertedBeliefIds.length-1) ? ", " : "";
 		}
-		s += "  }\n";
-		s += "  assumptions = {\n";
-		for (int i = 0; i < block.assumptions.length; i++) {
-			s += "    " + beliefToString(block.assumptions[i]);
-			s += (i < block.assumptions.length-1) ? ",\n" : "\n";
-		}
-		s += "  }\n]";
+		s += "  }]\n";
 		return s;
 	}
 	

@@ -1,24 +1,24 @@
 % hi
-e(now) : greeting(h, r) <-
+generate : intention : greeting(h, r) <-
 	dummy_nom1(Nom) / true,
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, greeting) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
 % @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
 % what do i have here
-e(now) : new_object_visible(Entity) <-
+generate : intention : new_object_visible(Entity) <-
 	dummy_nom1(Nom) / true,
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, accept) / 1.0,
 	i : feat_AcknoModality(Nom, vision) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
 % no I do not know what this is
-e(now) : ask_yn(h, Object, Prop, PropValue) <-
+generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	query_belief(Object, Prop, PropValue, AnswerType) / true,
 	dummy_nom1(Nom) / true,
 	i : sort(Nom, dvp) / 1.0,
@@ -26,16 +26,19 @@ e(now) : ask_yn(h, Object, Prop, PropValue) <-
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, answer) / 1.0,
 	i : feat_AnswerType(Nom, AnswerType) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
-e(now) : have_sensed(Modality) <-
+%intention : ask_property(h, Object, Prop) <-
+	%query_belief(Object, Prop, yes(PropValue), AnswerType) / true,
+
+generate : intention : have_sensed(Modality) <-
 	dummy_nom1(Nom) / true,
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, accept) / 1.0,
 	i : feat_Modality(Nom, Modality) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
 % a positive query
 % max cost = 3.5
@@ -78,7 +81,7 @@ equality(X, Y, negative) <-
 %query_belief0(Object, Prop, PropValue, negative) <-
 %	feat_not_equal_to(Object, Prop, PropValue) / 20.0.
 
-e(now) : assert_prop(h, Object, Property) <-
+generate : intention : assert_prop(h, Object, Property) <-
 	dummy_nom1(Nom) / true,
 	dummy_nom2(ContentNom) / true,
 	i : sort(Nom, dvp) / 1.0,
@@ -88,10 +91,10 @@ e(now) : assert_prop(h, Object, Property) <-
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, marker) / 1.0,
 		i : prop(ContentNom, aha) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
 %what color does the box have
-e(now) : need_get_value(Modality, Entity, color) <-
+generate : intention : need_get_value(Modality, Entity, color) <-
 	dummy_nom1(Nom) / true,
 	dummy_nom2(ContentNom) / true,
 	dummy_nom3(TargetNom) / true,
@@ -114,11 +117,11 @@ e(now) : need_get_value(Modality, Entity, color) <-
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, color) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
 % is the object blue
 %d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
-e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
+generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
 	dummy_nom1(Nom) / true,
 	dummy_nom2(ContentNom) / true,
 	dummy_nom3(TargetNom) / true,
@@ -137,9 +140,9 @@ e(now) : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, Hypothesis) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
-e(now) : not_understood(Ag) <-
+generate : intention : not_understood(Ag) <-
 	dummy_nom1(Nom) / true,
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
@@ -147,11 +150,11 @@ e(now) : not_understood(Ag) <-
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, reject) / 1.0,
 	i : feat_AcknoModality(Nom, action) / 1.0,
-	e(now) : produce(r, Nom) / 1.0.
+	event : produce(r, Nom) / 1.0.
 
 % NOT THE FIRST is the box red or orange?” / “what color does the box have
 %what color does the box have
-%e(now) : produce(r, Nom) <-
+%intention : produce(r, Nom) <-
 %	dummy_nom1(Nom) / true,
 %	dummy_nom2(ContentNom) / true,
 %	dummy_nom3(TargetNom) / true,
