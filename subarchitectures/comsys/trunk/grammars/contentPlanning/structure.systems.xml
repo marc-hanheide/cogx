@@ -112,7 +112,15 @@ IMPORTANT NOTE: when inserting LF-templates for full sentences later, the top no
 	  <action choice="disjunction">
 		<add-proposition propositions="@or" />
 	  </action>
-      </actions>
+
+	  <action choice="list">
+		<add-proposition propositions="@list" />
+	  </action>
+      
+      <action choice="no-list">
+	  </action>
+      
+    </actions>
    </system>
 
 

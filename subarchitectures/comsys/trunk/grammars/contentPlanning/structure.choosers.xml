@@ -40,14 +40,20 @@
 
    <dectree>
        <choicenode answer="*TOP*">
-         <inquiry id="q-ex-fv" type="string" answerset="@true @false"> 
-	     <q-ex-fv  feat="List" val="disjunction"/>	                                 
+         <inquiry id="f-featval" type="string" answerset="@conjunction @disjunction @list @unknown"> 
+	     <f-featval  feat="List" />	                                 
 	     </inquiry>
-  	     <choicenode answer="true">
+  	     <choicenode answer="disjunction">
 	       <result val="disjunction"/>
 	     </choicenode>
-	     <choicenode answer="false">
+	     <choicenode answer="conjunction">
 	       <result val="conjunction"/>
+	     </choicenode>
+	     <choicenode answer="list">
+	       <result val="conjunction"/>
+	     </choicenode>
+	     <choicenode answer="unknown">
+	       <result val="no-list"/>
 	     </choicenode>
 	</choicenode>
    </dectree>

@@ -22,13 +22,14 @@ Parse 7: np :
 
 Weird problem with ascription: 
 @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
-
-NOTE: order within Target matters; if box not last, then Color gets not planned !!
+--> NOTE: order within Target matters; if box not last, then Color gets not planned !!
 
 
 Distinguish feedback according to <Modality>
 (vision, discourse)
 
+
+Check whether conjunction/disjunction in ascription works with all types of objects and all speech acts
 
 
 DORA: "going to the kitchen"
@@ -53,22 +54,6 @@ DORA: "going to the kitchen"
                      <Subject>i1_0:person)
 
 
-Alternative questions
-"Is the box red or orange"
-Parse 10: s : 
-  @be1_0:ascription(be ^ 
-                    <Mood>int ^ 
-                    <Tense>pres ^ 
-                    <Cop-Restr>(box1_0:thing ^ box ^ 
-                                <Delimitation>unique ^ 
-                                <Num>sg ^ 
-                                <Quantification>specific) ^ 
-                    <Cop-Scope>(or1_0:quality ^ or ^ 
-                                <First>(red1_0:q-color ^ red) ^ 
-                                <Next>(orange1_0:q-color ^ orange)) ^ 
-                    <Subject>box1_0:thing)
-
-
 
 Ascription wh-questions: alternative formulations
 -- what color does the box have
@@ -77,7 +62,7 @@ Ascription wh-questions: alternative formulations
 
 
 Multiple properties in ascription
-
+The box is red and big. --> list of properties, not list within one property
 
 Acknowledgment
 alternative form:
@@ -94,6 +79,9 @@ e.g., sorry, (but) no
       yes, a red ball	
       ok thanks
       hm, what is that
+Problems:
+  -- multiple <Content>s  --> need to be extracted and collected into a du-list
+  -- Content-nominal reappears  --> messed up graph structure, messed up referencing within LF
 
 
 NPs with demonstrative determiners
