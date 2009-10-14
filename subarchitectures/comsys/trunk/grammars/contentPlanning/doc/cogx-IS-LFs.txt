@@ -1,0 +1,177 @@
+(the box)Th (is blue)Rh
+
+the box_L+H* LH% is blue_H* LL%
+
+Parse 2: du : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-false ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-false ^ 
+                    <RhOwner>rh-speaker ^ 
+                    <Tense>pres ^ 
+                    <ThOwner>th-hearer ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-false) ^ 
+                    <Cop-Scope>(blue1_0:q-color ^ blue ^ 
+                                <Commitment>m-uncontentious ^ 
+                                <Focus>m-focus-true ^ 
+                                <Rheme>m-rheme-true) ^ 
+                    <Subject>box1_0:thing)
+
+tccg> :r
+[1.000] the box_L+H* LH% is blue_H* LL% 
+
+-----------------
+(the box is)Th (blue) Rh
+
+Will need grammar changes, type raising a adjective to type 's$'  because rh-th boundaries takes an 's$' as argument!
+
+------------------
+(the box )Rh  (is blue)Th
+
+the box_H* LL% is blue_L+H* LH%
+
+Parse 1: du : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-false ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-true ^ 
+                    <RhOwner>rh-speaker ^ 
+                    <Tense>pres ^ 
+                    <ThOwner>th-hearer ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-true) ^ 
+                    <Cop-Scope>(blue1_0:q-color ^ blue ^ 
+                                <Commitment>m-uncontentious ^ 
+                                <Focus>m-focus-true ^ 
+                                <Rheme>m-rheme-false) ^ 
+                    <Subject>box1_0:thing)
+
+tccg> :r
+[1.000] the box_H* LL% is blue_L+H* LH%
+
+------------------
+(the box is blue) Rh
+
+the box_H* is blue_H* LL%
+
+Parse 2: du : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-false ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-true ^ 
+                    <RhOwner>rh-speaker ^ 
+                    <Tense>pres ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-true) ^ 
+                    <Cop-Scope>(blue1_0:q-color ^ blue ^ 
+                                <Commitment>m-uncontentious ^ 
+                                <Focus>m-focus-true ^ 
+                                <Rheme>m-rheme-true) ^ 
+                    <Subject>box1_0:thing)
+
+tccg> :r
+[1.000] the box_H* is blue_H* LL%
+
+Note: 
+Rheme ( H*) focus placement can be varied with appropriate values on feature: <Focus> 
+e.g.
+ the box_H* is blue LL%
+ the box is blue_H* LL%
+
+---------------------
+
+(the box is blue)Th
+
+ the box_L+H* is blue_L+H* LH%
+
+Parse 2: du : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-false ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-false ^ 
+                    <Tense>pres ^ 
+                    <ThOwner>th-hearer ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-false) ^ 
+                    <Cop-Scope>(blue1_0:q-color ^ blue ^ 
+                                <Commitment>m-uncontentious ^ 
+                                <Focus>m-focus-true ^ 
+                                <Rheme>m-rheme-false) ^ 
+                    <Subject>box1_0:thing)
+
+tccg> :r
+[1.000] the box_L+H* is blue_L+H* LH%
+
+Note: 
+Theme (L+H*) focus placement can be varied with appropriate values on feature:
+<Focus> 
+e.g.
+ the box_L+H* is blue LL%
+ the box is blue_L+H* LL%
+
+-------------------
+
+(the box)Th (is) Rh (blue) Th
+the box_L+H* LH% is_H* LL% blue_L+H* LH%
+
+Will need grammar changes, type raising a adjective to type 's$'  as rh-th boundaries takes an 's$' as argument!
+
+--------------------
+General Note:
+Feature <Focus> can take values { m-focus-true, e-focus-true ,t-focus-true}
+The choice of using something like "e-focus-true" and not simply "true" or "false" is:
+a) due to the DotCCG platform limitation. It does not allow two Feature values to be same. That is, something like 
+ <Focus>true ^ 
+ <Rheme>true) ^
+is not possible. Therefore I had to resort to 
+ <Focus>e-focus-true ^ 
+ <Rheme>e-rheme-true) ^
+
+b) Prosodic semantic features can contribute meaning to nominal of all type, e.g. <Focus> can be on "is" or "box" and "blue". However, this hasn't been the need of syntactic grammar. Therefore using mere
+ <Focus>focus-true ^ 
+ <Rheme>rheme-true) ^
+on DotCCG platform will not allow our prosodic features to behave the way we expect. Therefore, I had to resort to 
+<Focus>e-focus-true ^ 
+<Rheme>e-rheme-true) ^
+for nominal of type event
+and
+<Focus>m-focus-true ^ 
+ <Rheme>m-rheme-true) ^ 
+for nominal of type modifiers
+and
+<Focus>t-focus-true ^ 
+ <Rheme>t-rheme-true) ^
+for Nouns...
+
+The same follows for the choice of all feature values in LF with m-, t-, and e- as prefixes
+
+m- (modifer)
+t- (thing)
+e- (event)
+th- (theme)
+rh- (rheme)
