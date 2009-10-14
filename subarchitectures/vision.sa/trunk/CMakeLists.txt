@@ -51,6 +51,12 @@ add_subdirectory (src/c++/vision/components/ObjectDetector)
 add_subdirectory (src/c++/vision/components/ObjectDetectorDriver)
 endif (BUILD_SA_VISION_OBJDETECTOR)
 
+option(BUILD_SA_VISION_STEREOFLAPDETECTOR "build stereo flap detector" NO)
+if (BUILD_SA_VISION_STEREOFLAPDETECTOR)
+add_subdirectory (src/c++/vision/components/StereoFlapDetector)
+add_subdirectory (src/c++/vision/components/StereoFlapDetectorDriver)
+endif (BUILD_SA_VISION_STEREOFLAPDETECTOR)
+
 option(BUILD_SA_VISION_PLANEPOPOUT "build plane pop-out (needs hardware/stereo)" YES)
 if(BUILD_SA_VISION_PLANEPOPOUT)
 add_subdirectory (src/c++/vision/components/PlanePopOut)
