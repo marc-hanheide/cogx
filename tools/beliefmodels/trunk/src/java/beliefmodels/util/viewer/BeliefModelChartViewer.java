@@ -18,6 +18,10 @@ import beliefmodels.adl.BeliefModel;
 import beliefmodels.adl.AttributedAgentStatus;
 import beliefmodels.adl.PrivateAgentStatus;
 import beliefmodels.adl.MutualAgentStatus;
+import beliefmodels.domainmodel.cogx.ContinualStatus;
+import beliefmodels.domainmodel.cogx.ContinualFormula;
+import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
+
 
 
 // ---------------------------------------------------------
@@ -80,7 +84,7 @@ import org.jfree.ui.RefineryUtilities;
 The class <b>BeliefModelChartViewer</b> on-line charts the operations on a belief model: 
  
  <ul>
- <li> number of private (robot), attributed (robot[human]), and shared ({robot,human}) beliefs. 
+ <li> number of beliefs (robot), certainty (robot[human]), and truth ({robot,human}) beliefs. 
  </ul>
 
  
@@ -96,16 +100,16 @@ public class BeliefModelChartViewer
 
 	protected class Frame extends JFrame {
 
-		// private beliefs
-		DefaultCategoryDataset dsPrivate;
-		// attributed beliefs
-		DefaultCategoryDataset dsAttributed;
-		// shared beliefs
-		DefaultCategoryDataset dsShared;
+		// beliefs beliefs
+		DefaultCategoryDataset dsBeliefs;
+		// certainty beliefs
+		DefaultCategoryDataset dsCertainty;
+		// truth beliefs
+		DefaultCategoryDataset dsTruth;
 		
-		CategoryPlot privatePlot;
-		CategoryPlot attributedPlot;
-		CategoryPlot sharedPlot;
+		CategoryPlot beliefsPlot;
+		CategoryPlot certaintyPlot;
+		CategoryPlot truthPlot;
 
 
 		
@@ -121,9 +125,9 @@ public class BeliefModelChartViewer
 		 */
 		public Frame(final String title) {
 			super(title);
-			dsPrivate = new DefaultCategoryDataset();
-			dsAttributed = new DefaultCategoryDataset();
-			dsShared = new DefaultCategoryDataset();
+			dsBeliefs = new DefaultCategoryDataset();
+			dsCertainty = new DefaultCategoryDataset();
+			dsTruth = new DefaultCategoryDataset();
 			final ChartPanel chartPanel = new ChartPanel(createChart());
 			chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
 			setContentPane(chartPanel);
@@ -142,50 +146,50 @@ public class BeliefModelChartViewer
 		 */
 		private JFreeChart createChart() {
 
-			// set up the private beliefs
-			final NumberAxis privateAxis = new NumberAxis3D("#Beliefs: {robot}");
-			privateAxis.setLowerBound(0);
-			privateAxis.setUpperBound(5);
-			privateAxis
+			// set up the beliefs beliefs
+			final NumberAxis beliefsAxis = new NumberAxis3D("Beliefs");
+			beliefsAxis.setLowerBound(0);
+			beliefsAxis.setUpperBound(5);
+			beliefsAxis
 					.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			final StackedBarRenderer3D privateRender = new StackedBarRenderer3D();
-			privateRender
+			final StackedBarRenderer3D beliefsRender = new StackedBarRenderer3D();
+			beliefsRender
 					.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-			privatePlot = new CategoryPlot(dsPrivate, null, privateAxis,
-					privateRender);
-			privatePlot.setDomainGridlinesVisible(true);
+			beliefsPlot = new CategoryPlot(dsBeliefs, null, beliefsAxis,
+					beliefsRender);
+			beliefsPlot.setDomainGridlinesVisible(true);
 
-			// set up the attributed beliefs
-			final NumberAxis attributedAxis = new NumberAxis("#Beliefs: {robot[human]}");
-			attributedAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			final StackedBarRenderer3D attributedRender = new StackedBarRenderer3D();
-			attributedRender
+			// set up the certainty beliefs
+			final NumberAxis certaintyAxis = new NumberAxis("Certainty");
+			certaintyAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+			final StackedBarRenderer3D certaintyRender = new StackedBarRenderer3D();
+			certaintyRender
 					.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-			attributedPlot = new CategoryPlot(dsAttributed, null, attributedAxis,
-					attributedRender);
-			attributedPlot.setDomainGridlinesVisible(true);
+			certaintyPlot = new CategoryPlot(dsCertainty, null, certaintyAxis,
+					certaintyRender);
+			certaintyPlot.setDomainGridlinesVisible(true);
 
-			// set up the shared beliefs
-			final NumberAxis sharedAxis = new NumberAxis("#Beliefs: {robot,human}");
-			sharedAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-			final BarRenderer3D sharedRender = new BarRenderer3D();
-			sharedRender
+			// set up the truth beliefs
+			final NumberAxis truthAxis = new NumberAxis("Truth status");
+			truthAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+			final BarRenderer3D truthRender = new BarRenderer3D();
+			truthRender
 					.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-			sharedPlot = new CategoryPlot(dsShared, null, sharedAxis, sharedRender);
-			sharedPlot.setDomainGridlinesVisible(true);
+			truthPlot = new CategoryPlot(dsTruth, null, truthAxis, truthRender);
+			truthPlot.setDomainGridlinesVisible(true);
 
 			final CategoryAxis domainAxis = new CategoryAxis("WM Id");
 			final CombinedDomainCategoryPlot plot = new CombinedDomainCategoryPlot(
 					domainAxis);
-			plot.add(privatePlot, 3);
-			plot.add(attributedPlot, 2);
-			plot.add(sharedPlot, 1);
+			plot.add(beliefsPlot, 3);
+			plot.add(certaintyPlot, 2);
+			plot.add(truthPlot, 1);
 
 			final JFreeChart result = new JFreeChart("BeliefModel Monitor",
 					new Font("SansSerif", Font.BOLD, 10), plot, false);
-			result.addLegend(new LegendTitle(privatePlot));
-			result.addLegend(new LegendTitle(attributedPlot));			
-			result.addLegend(new LegendTitle(sharedPlot));
+			result.addLegend(new LegendTitle(beliefsPlot));
+			result.addLegend(new LegendTitle(certaintyPlot));			
+			result.addLegend(new LegendTitle(truthPlot));
 			return result;
 
 		}
@@ -194,36 +198,56 @@ public class BeliefModelChartViewer
 			switch (wmc.operation) {
 			case ADD:
 					if (belief.ags instanceof PrivateAgentStatus) {
-						dsPrivate.addValue(1, "private", wmc.address.id);
+						dsBeliefs.addValue(1, "private: {robot}", wmc.address.id);
+						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
+						updateTruth(wmc,belief);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
-						dsPrivate.addValue(1, "attributed", wmc.address.id);						
+						dsBeliefs.addValue(1, "attributed: {robot[human]}", wmc.address.id);				
+						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
+						updateTruth(wmc,belief);						
 					} else if (belief.ags instanceof MutualAgentStatus) {
-						dsPrivate.addValue(1, "shared", wmc.address.id);													   
+						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);
+						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
+						updateTruth(wmc,belief);						
 					}
 				break;
 			case DELETE:
-				dsPrivate.removeValue("private", wmc.address.id);
+				dsBeliefs.removeValue("beliefs", wmc.address.id);
 					if (belief.ags instanceof PrivateAgentStatus) {
-						dsPrivate.removeValue("private", wmc.address.id);
+						dsBeliefs.removeValue("private: {robot}", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
-						dsPrivate.removeValue("attributed", wmc.address.id);						
+						dsBeliefs.removeValue("attributed: {robot[human]}", wmc.address.id);						
 					} else if (belief.ags instanceof MutualAgentStatus) {
-						dsPrivate.removeValue("shared", wmc.address.id);													   
+						dsBeliefs.removeValue("shared: {robot,human}", wmc.address.id);													   
 					}
 				break;
 			case OVERWRITE:
 					if (belief.ags instanceof PrivateAgentStatus) {
-						dsPrivate.addValue(1, "private", wmc.address.id);
+						dsBeliefs.addValue(1, "private: {robot}", wmc.address.id);
+						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
-						dsPrivate.addValue(1, "attributed", wmc.address.id);						
+						dsBeliefs.addValue(1, "attributed: {robot[human]}", wmc.address.id);						
+						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
 					} else if (belief.ags instanceof MutualAgentStatus) {
-						dsPrivate.addValue(1, "shared", wmc.address.id);													   
+						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);
+						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob,"certainty", wmc.address.id);
 					}
 				break;
 			}
 
 		}
 
+		synchronized void updateTruth(WorkingMemoryChange wmc, final Belief belief) { 
+			if (((ContinualFormula)belief.phi).cstatus.equals(ContinualStatus.proposition)) {
+				dsTruth.setValue(1,"factual content",wmc.address.id);
+			} else if (((ContinualFormula)belief.phi).cstatus.equals(ContinualStatus.assertion)) {
+				dsTruth.setValue(1,"asserted content",wmc.address.id);				
+			} else { 
+			
+			}
+		} 
+		
+		
 	}
 
 		
