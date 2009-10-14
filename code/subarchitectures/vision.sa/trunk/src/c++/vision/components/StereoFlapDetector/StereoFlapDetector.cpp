@@ -82,7 +82,7 @@ void StereoFlapDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange 
 void StereoFlapDetector::configure(const map<string,string> & _config)
 {
 	// create stereo core
-	score = new Z::StereoCore("subarchitectures/vision.sa/src/c++/vision/components/StereoFlapDetector/stereo.ini");
+	score = new Z::StereoCore("subarchitectures/vision.sa/config/tuw_stereo_new.ini");
 
 // 	log("VisionSystem3::configure: Running configuration");
   map<string,string>::const_iterator it;

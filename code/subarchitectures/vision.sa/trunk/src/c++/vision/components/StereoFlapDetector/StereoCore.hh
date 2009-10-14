@@ -110,8 +110,8 @@ private:
 	IplImage *img_l, *img_r;
 
   double MatchingScore(TmpSurf &left_surf, TmpSurf &right_surf, unsigned &match_offs);
-  unsigned FindMatchingSurf(TmpSurf &left_surf, Array<TmpSurf> &right_surfs, unsigned l);
-  void MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches);
+//   unsigned FindMatchingSurf(TmpSurf &left_surf, Array<TmpSurf> &right_surfs, unsigned l);
+//   void MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches);
   void Calculate3DSurfs(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &nmatches, Array<Surf3D> &surf3ds);
   double MatchingScore(TmpFlap &left_flap, TmpFlap &right_flap, unsigned &off_0, unsigned &off_1, bool &cross);
   unsigned FindMatchingFlap(TmpFlap &left_flap, Array<TmpFlap> &right_flaps, unsigned l);
