@@ -40,6 +40,7 @@ void VisionDriver::configure(const map<string,string> & _config)
 //    log("detecting objects: %s", ostr.str().c_str());
 //  }
 	tracking = false;
+	detecting = false;
 	running = true;
 }
 
@@ -60,21 +61,21 @@ void VisionDriver::runComponent()
                        // object observations too soon.
   
 	VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
-		
-	while(running){
-		// start detection
-		detect_cmd->cmd = VisionData::DSTART;
-		addToWorkingMemory(newDataID(), detect_cmd);
-		log("detection start-command sent!");
-		
-  	sleepProcess(2000);	// detection time
+	
+	// start detection
+	detect_cmd->cmd = VisionData::DSTART;
+	addToWorkingMemory(newDataID(), detect_cmd);
+	detecting = true;
+	log("detection start-command sent!");
 
-		// stop detection
-		detect_cmd->cmd = VisionData::DSTOP;
+	while(running)
+	{
+		sleepProcess(2000);	// detection time
+
+		// start single detection
+		detect_cmd->cmd = VisionData::DSINGLE;
 		addToWorkingMemory(newDataID(), detect_cmd);
-		log("detection stop-command sent!");
-  
-  	sleepProcess(10000); // idle
+		log("single detection command sent!");
   }
 }
 
@@ -84,8 +85,19 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
   log("object detected: '%s'", obj->label.c_str());
 
-   // Object detected send tracking command (if not already tracking)
-	if(!tracking){
+	// stop detection
+	if(detecting)
+	{
+		VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
+		detect_cmd->cmd = VisionData::DSTOP;
+		addToWorkingMemory(newDataID(), detect_cmd);
+		detecting = false;
+		log("detection stop-command sent!");
+	}
+
+	// Object detected send tracking command (if not already tracking)
+	if(!tracking)
+	{
 	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
 		track_cmd->cmd = VisionData::START;
 		addToWorkingMemory(newDataID(), track_cmd);
