@@ -2,12 +2,15 @@
 
 
 
-CensusGPU::CensusGPU() {
+CensusGPU::CensusGPU(int _dispMax) {
 	iWidth = 0;
 	iHeight = 0;
 	async = false;
 	asyncImgLoadNr = 0;
 	asyncImgMatchNr = 0;
+  // always assume min disparity of 0
+	dispMin = 0;
+	dispMax = _dispMax;
 }
 
 CensusGPU::~CensusGPU() {
@@ -40,7 +43,7 @@ void CensusGPU::setImages(IplImage* left, IplImage* right) {
 			if (this->iWidth || this->iHeight)
 				gpuCensusImageCleanup();
 
-			gpuCensusImageSetup(modWidth, left->height);
+			gpuCensusImageSetup(modWidth, left->height, dispMin, dispMax);
 
 			this->iWidth = modWidth;
 			this->iHeight = left->height;
@@ -103,7 +106,7 @@ void CensusGPU::setImages(unsigned char *left, unsigned char *right, unsigned in
 		if (this->iWidth || this->iHeight)
 			gpuCensusImageCleanup();
 
-		gpuCensusImageSetup(iWidth, iHeight);
+		gpuCensusImageSetup(iWidth, iHeight, dispMin, dispMax);
 	}
 
 	this->iWidth = iWidth;

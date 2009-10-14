@@ -46,6 +46,7 @@ void StereoServerI::getRectImage(Ice::Int side, Video::Image& image, const Ice::
 
 StereoServer::StereoServer()
 {
+  census = 0;
   iceStereoName = "";
   iceStereoPort = cdl::CPPSERVERPORT;
   // these are quite small, but work nice'n'fast
@@ -55,10 +56,13 @@ StereoServer::StereoServer()
   logImages = false;
   // normally it's a good idea to do median filering on the disparity image
   medianSize = 5;
+  // 50 is a good start for not-too-strong disparity
+  maxDisp = 50;
 }
 
 StereoServer::~StereoServer()
 {
+  delete census;
   for(int i = LEFT; i <= RIGHT; i++)
   {
     cvReleaseImage(&colorImg[i]);
@@ -140,6 +144,12 @@ void StereoServer::configure(const map<string,string> & _config)
     logImages = true;
   }
 
+  if((it = _config.find("--maxdisp")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> maxDisp;
+  }
+
   // if no extra image size was given, use the original grabbed image size
   if(stereoWidth == 0 || stereoHeight == 0)
   {
@@ -149,6 +159,9 @@ void StereoServer::configure(const map<string,string> & _config)
   // now set the input image size to be used by stereo matching
   stereoCam.SetInputImageSize(cvSize(stereoWidth, stereoHeight));
   stereoCam.SetupImageRectification();
+
+  // allocate the actual stereo matcher with given max disparity
+  census = new CensusGPU(maxDisp);
 
   // sanity checks: Have all important things be configured? Is the
   // configuration consistent?
@@ -289,11 +302,11 @@ void StereoServer::receiveImages(const vector<Video::Image>& images)
   }
 
   cvSet(disparityImg, cvScalar(0));
-  census.setImages(rectGreyImg[LEFT], rectGreyImg[RIGHT]);
-  census.match();
+  census->setImages(rectGreyImg[LEFT], rectGreyImg[RIGHT]);
+  census->match();
   // in case we are interested how blazingly fast the matching is :)
-  // census.printTiming();
-  census.getDisparityMap(disparityImg);
+  // census->printTiming();
+  census->getDisparityMap(disparityImg);
 
   if(medianSize > 0)
   {
