@@ -457,17 +457,20 @@ double StereoCore::MatchingScore(TmpSurf &left_surf, TmpSurf &right_surf,
       {
         j = (i + offs)%ncorners;
         // distance in y-dir (should be zero)
+// printf("		pr.y vs. pr.y: %4.3f / %4.3f\n", left_surf.pr[i].y - right_surf.pr[j].y);
         dv = fabs(left_surf.pr[i].y - right_surf.pr[j].y);
+// printf("		dv: %4.3f\n", dv);
         sumv += dv;
+// printf("		sumv: %4.3f\n", sumv);
         dv_max = fmax(dv_max, dv);
         // distance in x-dir = disparity, must be > 0
         du = left_surf.pr[i].x - right_surf.pr[j].x;
         du_min = fmin(du_min, du);
       }
-// if(dv_max < 10) {
-// printf("	sumv: %4.3f  < sumv_min: %4.3f\n", sumv, sumv_min);
+// if(dv_max < 20) {
+// printf("	sumv: %4.3f \n", sumv);
 // printf("	  dv_max: %4.3f < MAX_DELTA_V: %4.3f\n", dv_max, MAX_DELTA_V);
-// printf("	    du_min: %4.3f > MIN_DISPARITY: %4.3f\n", du_min, MIN_DISPARITY);
+// printf("	    du_min: %4.3f\n", du_min);
 // }
       if(dv_max < MAX_DELTA_V && du_min > MIN_DISPARITY)
         if(sumv < sumv_min)
@@ -482,51 +485,51 @@ double StereoCore::MatchingScore(TmpSurf &left_surf, TmpSurf &right_surf,
   return sumv_min;
 }
 
-unsigned StereoCore::FindMatchingSurf(TmpSurf &left_surf, 
-    Array<TmpSurf> &right_surfs, unsigned l)
-{
-  double match, best_match = HUGE;
-  unsigned j, j_best = UNDEF_ID, offs, offs_best = UNDEF_ID;
-  for(j = l; j < right_surfs.Size(); j++)
-  {
-    match = MatchingScore(left_surf, right_surfs[j], offs);
-    if(match < best_match)
-    {
-      best_match = match;
-      j_best = j;
-      offs_best = offs;
-    }
-  }
-  if(j_best != UNDEF_ID)
-  {
-    right_surfs[j_best].ShiftPointsLeft(offs_best);
-  }
-  return j_best;
-}
+// unsigned StereoCore::FindMatchingSurf(TmpSurf &left_surf, 
+//     Array<TmpSurf> &right_surfs, unsigned l)
+// {
+//   double match, best_match = HUGE;
+//   unsigned j, j_best = UNDEF_ID, offs, offs_best = UNDEF_ID;
+//   for(j = l; j < right_surfs.Size(); j++)
+//   {
+// printf(" right: %u\n", j);
+//     match = MatchingScore(left_surf, right_surfs[j], offs);
+//     if(match < best_match)
+//     {
+//       best_match = match;
+//       j_best = j;
+//       offs_best = offs;
+//     }
+//   }
+//   if(j_best != UNDEF_ID)
+//   {
+//     right_surfs[j_best].ShiftPointsLeft(offs_best);
+//   }
+//   return j_best;
+// }
 
-void StereoCore::MatchSurfaces(Array<TmpSurf> &left_surfs,
-    Array<TmpSurf> &right_surfs, int &matches)
-{
-  unsigned j, l = 0, u = left_surfs.Size();
-  for(; l < u && l < right_surfs.Size();)
-  {
-    j = FindMatchingSurf(left_surfs[l], right_surfs, l);
-    // found a matching right, move it to same index position as left
-    if(j != UNDEF_ID)
-    {
-      right_surfs.Swap(l, j);
-      l++;
-    }
-    // found no right, move left to end and decrease end
-    else
-    {
-      left_surfs.Swap(l, u-1);
-      u--;
-    }
-  }
-  u = min(u, right_surfs.Size());
-  matches = u;
-}
+// void StereoCore::MatchSurfaces(Array<TmpSurf> &left_surfs, Array<TmpSurf> &right_surfs, int &matches)
+// {
+//   unsigned j, l = 0, u = left_surfs.Size();
+//   for(; l < u && l < right_surfs.Size();)
+//   {
+//     j = FindMatchingSurf(left_surfs[l], right_surfs, l);
+//     // found a matching right, move it to same index position as left
+//     if(j != UNDEF_ID)
+//     {
+//       right_surfs.Swap(l, j);
+//       l++;
+//     }
+//     // found no right, move left to end and decrease end
+//     else
+//     {
+//       left_surfs.Swap(l, u-1);
+//       u--;
+//     }
+//   }
+//   u = min(u, right_surfs.Size());
+//   matches = u;
+// }
 
 void StereoCore::Calculate3DSurfs(Array<TmpSurf> &left_surfs,
     Array<TmpSurf> &right_surfs, int &matches, Array<Surf3D> &surf3ds)
@@ -556,6 +559,7 @@ double StereoCore::MatchingScore(TmpFlap &left_flap, TmpFlap &right_flap, unsign
   // _s .. straight (left flap surf 0 matches right flap surf 0)
   // _x .. crossed (left flap surf 0 matches right flap surf 1)
   unsigned off_s0, off_s1, off_x0, off_x1;
+printf("  Find Matching Score:\n");
   double sc_s = MatchingScore(left_flap.surf[0], right_flap.surf[0], off_s0) +
                 MatchingScore(left_flap.surf[1], right_flap.surf[1], off_s1);
   double sc_x = MatchingScore(left_flap.surf[0], right_flap.surf[1], off_x1) +
@@ -590,7 +594,7 @@ unsigned StereoCore::FindMatchingFlap(TmpFlap &left_flap, Array<TmpFlap> &right_
   for(j = l; j < right_flaps.Size(); j++)
   {
     match = MatchingScore(left_flap, right_flaps[j], off_0, off_1, cross);
-// printf("      %u: match-score: %4.3f\n", j, match);
+printf("      %u: match-score: %4.3f\n", j, match);
     if(match < best_match)
     {
 // printf("      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  match < best_match\n");
@@ -613,7 +617,7 @@ void StereoCore::MatchFlaps(Array<TmpFlap> &left_flaps, Array<TmpFlap> &right_fl
   unsigned j, l = 0, u = left_flaps.Size();
   for(; l < u && l < right_flaps.Size();)
   {
-// printf("Match flap Nr. %u\n", l);
+printf("\n### Match flap Nr. %u\n", l);
     j = FindMatchingFlap(left_flaps[l], right_flaps, l);
     // found a matching right, move it to same index position as left
     if(j != UNDEF_ID)
@@ -708,13 +712,14 @@ void StereoCore::ProcessStereoImage(/*const IplImage *left_img, const IplImage *
       flaps[side][i].Refine();
   }
 
-// 	PrintResults();
 
   // do stereo matching and depth calculation
   nmatches = 0;
   MatchFlaps(flaps[LEFT], flaps[RIGHT], nmatches);
 // printf("Machted flaps: %u\n", nmatches);
   Calculate3DFlaps(flaps[LEFT], flaps[RIGHT], nmatches, flap3ds);
+
+	PrintResults();
   printf("flaps left/right: %d %d\n", flaps[LEFT].Size(), flaps[RIGHT].Size());  // HACK
   printf("nmatches: %d\n", nmatches); // HACK
 }
@@ -740,7 +745,6 @@ void StereoCore::DrawFlaps()
 
 void StereoCore::SetIplImages(IplImage *iIl, IplImage *iIr)
 {
-// SetActiveDrawArea(iIr);
 	img_l = iIl;
 	img_r = iIr;
 }
@@ -749,11 +753,11 @@ void StereoCore::SetActiveDrawAreaSide(int side)
 {
 	if (side == 0) SetActiveDrawArea(img_l);
 	if (side == 1) SetActiveDrawArea(img_r);
-// 	else printf("StereoCore::SetActiveDrawArea: unknown image.\n");
 }
 
 void StereoCore::PrintResults()
 {
+printf("PRINT RESULTS:  \n");
 	for(unsigned i=0; i<flaps[LEFT].Size(); i++)
 	{
 		for(unsigned j=0; j<flaps[LEFT][i].surf[0].pr.size(); j++)
