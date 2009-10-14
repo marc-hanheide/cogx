@@ -170,7 +170,7 @@ public class BeliefModelChartViewer
 			certaintyPlot.setDomainGridlinesVisible(true);
 
 			// set up the truth beliefs
-			final NumberAxis truthAxis = new NumberAxis("Truth status");
+			final NumberAxis truthAxis = new NumberAxis("Status");
 			truthAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 			final BarRenderer3D truthRender = new BarRenderer3D();
 			truthRender
@@ -199,18 +199,23 @@ public class BeliefModelChartViewer
 			case ADD:
 					if (belief.ags instanceof PrivateAgentStatus) {
 						dsBeliefs.addValue(1, "private: {robot}", wmc.address.id);
-						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
-						updateTruth(wmc,belief);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
 						dsBeliefs.addValue(1, "attributed: {robot[human]}", wmc.address.id);				
-						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
-						updateTruth(wmc,belief);						
 					} else if (belief.ags instanceof MutualAgentStatus) {
-						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);
-						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
-						updateTruth(wmc,belief);						
+						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);						
 					}
-				break;
+					dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
+					int polarity = 1;
+					if (belief.phi instanceof ContinualFormula) { 
+						ContinualFormula phi = (ContinualFormula)belief.phi;
+						if (phi.polarity == false) { polarity = -1; }
+						if (phi.cstatus == ContinualStatus.proposition) { 
+							dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "factual", wmc.address.id);
+						} else { 
+							dsTruth.setValue(((UncertainSuperFormula)belief.phi).prob * polarity, "unknown", wmc.address.id);
+						} 
+					} 
+					break;
 			case DELETE:
 				dsBeliefs.removeValue("beliefs", wmc.address.id);
 					if (belief.ags instanceof PrivateAgentStatus) {
@@ -220,33 +225,23 @@ public class BeliefModelChartViewer
 					} else if (belief.ags instanceof MutualAgentStatus) {
 						dsBeliefs.removeValue("shared: {robot,human}", wmc.address.id);													   
 					}
+					dsTruth.removeColumn(wmc.address.id);
 				break;
 			case OVERWRITE:
 					if (belief.ags instanceof PrivateAgentStatus) {
 						dsBeliefs.addValue(1, "private: {robot}", wmc.address.id);
-						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
 					} else if (belief.ags instanceof AttributedAgentStatus) { 
 						dsBeliefs.addValue(1, "attributed: {robot[human]}", wmc.address.id);						
-						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
 					} else if (belief.ags instanceof MutualAgentStatus) {
 						dsBeliefs.addValue(1, "shared: {robot,human}", wmc.address.id);
-						dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob,"certainty", wmc.address.id);
 					}
-				break;
+					dsCertainty.setValue(((UncertainSuperFormula)belief.phi).prob, "certainty", wmc.address.id);
+					break;
 			}
 
 		}
 
-		synchronized void updateTruth(WorkingMemoryChange wmc, final Belief belief) { 
-			if (((ContinualFormula)belief.phi).cstatus.equals(ContinualStatus.proposition)) {
-				dsTruth.setValue(1,"factual content",wmc.address.id);
-			} else if (((ContinualFormula)belief.phi).cstatus.equals(ContinualStatus.assertion)) {
-				dsTruth.setValue(1,"asserted content",wmc.address.id);				
-			} else { 
 			
-			}
-		} 
-		
 		
 	}
 
