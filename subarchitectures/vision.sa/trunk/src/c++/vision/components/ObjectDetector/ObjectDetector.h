@@ -83,6 +83,7 @@ protected:
 public:
   ObjectDetector() : camId(0) {}
   virtual ~ObjectDetector() {}
+
   /**
    * The callback function for images pushed by the image server.
    * To be overwritten by derived classes.
