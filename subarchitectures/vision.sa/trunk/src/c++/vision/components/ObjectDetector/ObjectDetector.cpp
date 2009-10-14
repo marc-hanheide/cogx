@@ -38,8 +38,6 @@ bool getCubes = true;										///< get cubes from the object detector
 bool getFlaps = true; 									///< get flaps from the object detector
 
 
-
-
 void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
 	ObjectDetectionCommandPtr detect_cmd = getMemoryEntry<ObjectDetectionCommand>(_wmc.address);
