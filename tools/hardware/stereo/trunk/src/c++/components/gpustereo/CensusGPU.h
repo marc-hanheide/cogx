@@ -23,6 +23,7 @@ class CensusGPU {
 private:
 	bool async;
 	int  asyncImgLoadNr, asyncImgMatchNr;
+	int  dispMin, dispMax;
 
 	unsigned int iWidth, iHeight, iOrgWidth;
 
@@ -31,7 +32,7 @@ private:
 		*d_disparityMap;
 
 public:
-	CensusGPU();
+	CensusGPU(int _dispMax = 50);
 	~CensusGPU();
 
 	//void SetImages(IplImage* _Left, IplImage* _Right, IplImage* _DM, IplImage *_GT = 0, IplImage *_EM = 0, float _bad_match_thresh = 0.0);

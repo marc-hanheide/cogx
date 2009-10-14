@@ -83,7 +83,7 @@ private:
   /**
    * The GPU stereo matching code.
    */
-  CensusGPU census;
+  CensusGPU *census;
 
   // stereo works better/faster with smaller images, so we might want to use a
   // smaller resolution
@@ -95,6 +95,11 @@ private:
    * 0 = not median filtering
    */
   int medianSize;
+
+  /**
+   * maximum disparity range we want to search
+   */
+  int maxDisp;
 
   IplImage *colorImg[2];
   IplImage *rectColorImg[2];
