@@ -35,7 +35,7 @@ namespace cast
 
 bool showImage = true;									///< show openCv image from image server.
 bool getCubes = true;										///< get cubes from the object detector
-bool getFlaps = true; 									///< get flaps from the object detector
+bool getFlaps = false; 									///< get flaps from the object detector
 
 
 void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
@@ -50,9 +50,9 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			}else{
 				log("starting detection");
 				cmd_detect = true;
+        // start receiving images pushed by the video server
         vector<int> camIds;
         camIds.push_back(camId);
-        // start receiving images pushed by the video server
         videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 			}
 			break;
@@ -63,6 +63,17 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
         videoServer->stopReceiveImages(getComponentID().c_str());
 			}else{
 				log("allready stopped detection");
+			}
+		case VisionData::DSINGLE:
+			if(!cmd_single){
+				log("single detection");
+				vector<int> camIds;
+        // start receiving images pushed by the video server
+  			camIds.push_back(camId);
+				cmd_single = true;
+        videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
+			}else{
+				log("got already single detection command: too fast triggering!");
 			}
 			break;
 		default:
@@ -92,6 +103,9 @@ void ObjectDetector::configure(const map<string,string> & _config)
 	detail = 0;
 	type = 0;
 	frame_counter = 0;
+
+  cmd_detect = false;
+	cmd_single = false;
 }
 
 void ObjectDetector::start()
@@ -109,17 +123,26 @@ void ObjectDetector::start()
       new MemberFunctionChangeReceiver<ObjectDetector>(this,
         &ObjectDetector::receiveDetectionCommand));
 
-  cmd_detect = false;
-
   if(showImage) cvNamedWindow(getComponentID().c_str(), 1);
 }
 
 void ObjectDetector::receiveImages(const std::vector<Video::Image>& images)
 {
+printf("############ receive Images !!! cmd_single = %u\n", cmd_single);
   if(images.size() == 0)
     throw runtime_error(exceptionMessage(__HERE__, "image list is empty"));
-  // process a single image
-  processImage(images[0]);
+
+	if(cmd_detect)
+	{
+  	// process a single image
+  	processImage(images[0]);
+	}
+	else if(cmd_single)
+	{
+		processImage(images[0]);
+		videoServer->stopReceiveImages(getComponentID().c_str());
+		cmd_single = false;
+	}
 }
 
 void ObjectDetector::processImage(const Video::Image &image)
@@ -128,15 +151,16 @@ void ObjectDetector::processImage(const Video::Image &image)
 	int number = 0;
 	bool masked = true;
 
+	// Get camera parameters and convert image to openCV iplImage
 	GetCameraParameter(image);
 	IplImage *iplImage = convertImageToIpl(image);
 
+	// Process the image and find all Gestalts
 	vs3Interface->ProcessSingleImage(iplImage);
 
 	// ----------------------------------------------------------------------------
 	// Get objects after processing and create visual object for working memory
 	// ----------------------------------------------------------------------------
-
 	// get all cubes and create visual object as working memory entry 
 	if(getCubes)
 	{
@@ -293,6 +317,7 @@ void ObjectDetector::processImage(const Video::Image &image)
 		default: break;
 	}
 
+
 	// ----------------------------------------------------------------
 	// Draw Gestalts to IplImage for the openCv window
 	// ----------------------------------------------------------------
@@ -309,7 +334,6 @@ void ObjectDetector::processImage(const Video::Image &image)
 		cvReleaseImage(&iplImage);
 	}
 }
-
 
 
 /**
@@ -342,8 +366,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-// printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x, v0.pos.y, v0.pos.z);
-// printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x, v1.pos.y, v1.pos.z);
+printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x*1000, v0.pos.y*1000, v0.pos.z*1000);
+printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x*1000, v1.pos.y*1000, v1.pos.z*1000);
 	}
 
 
