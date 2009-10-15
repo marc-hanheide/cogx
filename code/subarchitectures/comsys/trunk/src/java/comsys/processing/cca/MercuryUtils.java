@@ -62,7 +62,9 @@ public class MercuryUtils {
 	}
 
 	public static String modalisedFormulaToString(ModalisedFormula mf) {
-		return modalitySeqToString(mf.m) + ":" + predicateToString(mf.p);
+		String modStr = modalitySeqToString(mf.m);
+		String predStr = predicateToString(mf.p);
+		return !modStr.equals("") ? modStr + ":" + predStr : predStr;
 	}
 	
 	public static String modalitySeqToString(Modality[] m) {
