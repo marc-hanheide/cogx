@@ -785,7 +785,7 @@ void PlanePopOut::runComponent()
 	if (points.size() == 0)
 		points = tempPoints;
 	else
-	{
+	{if (points.at(0).p.x !=0.0)	//log("first point is %f, %f, %f",points.at(0).p.x, points.at(0).p.y, points.at(0).p.z);
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
@@ -1142,5 +1142,7 @@ void PlanePopOut::AddConvexHullinWM()
 	}
 	mConvexHullPoints.clear();
 	mObjSeq.clear();
+	mCenterOfHull.x = mCenterOfHull.y = mCenterOfHull.z = 0.0;
+	mConvexHullRadius = 0.0;
 }
 }
