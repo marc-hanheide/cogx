@@ -1340,6 +1340,7 @@ PlaceManager::processPlaceArrival(bool failed)
     cout<<e.message<<endl;
     abort();
   }
+  m_isPathFollowing = false; //
   debug("processPlaceArrival exited");
 
 }
