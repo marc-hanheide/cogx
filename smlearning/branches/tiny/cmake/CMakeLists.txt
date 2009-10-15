@@ -106,6 +106,10 @@ SET(ENSEMBLE_OFF_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/metalearning/ensemble_off_experiment.cpp
 )
 
+SET(ACTIVELEARN_EXPERIMENT_ICE_SOURCE
+	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
+)
+
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
@@ -158,6 +162,7 @@ INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
@@ -166,6 +171,7 @@ INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLear
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)

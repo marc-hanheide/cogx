@@ -44,23 +44,57 @@ namespace smlearning {
 struct ActiveRNN : RNN {
 
 	ActiveRNN () : RNN () {	}
-	
+
+	~ActiveRNN () {
+		delete opt;
+		delete header;
+	}
+
+	///
+	///Optimization algorithm
+	///
+	rnnlib::Optimiser* opt;
+	rnnlib::DataHeader *header;
+
+	///
+	///constants to define the smoothing and time window parameters in the evaluation of learning progress
+	///
+	static const int SMOOTHING = 25;
+	static const int TIMEWINDOW = 15;
+	static const double neargreedyActionProb = 0.35;
+	///
+	///normalization factor for prediction error
+	///
+	double normalizationFactor;
+
 	///
 	///associative map of an indexed sensorimotor region and corresponding
 	///learning progress and error history
 	///
-	map<int, pair<vector<double>, double> > learnProg_errorsMap;
+	map<int, pair<double, vector<double> > > learnProg_errorsMap;
 
 	///methods
 
 	///
 	///construct RNN machine using config data
 	///
-	virtual void build (const string& dataFile, ostream& out = cout);
-	
+	virtual void build (string dataFile, int smregionsCount, int patternSize, ostream& out = cout);
+
+	///
 	///update the machine state with current sequence
 	///
-	double update (const rnnlib::DataSequence& seq, ostream& out = cout);
+	double update (const rnnlib::DataSequence& seq, int smregionIdx, ostream& out = cout);
+
+	///
+	///update the learning progress associated to region r
+	///
+	double updateLearnProgress (int smregionIdx);
+
+	///
+	///active selection of samples
+	///
+	int chooseSMRegion ();
+	
 };
 
 }; /* namespace smlearning */

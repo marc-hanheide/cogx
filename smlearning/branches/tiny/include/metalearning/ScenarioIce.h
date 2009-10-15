@@ -51,17 +51,10 @@
 #include <TinyIce/TinyIce.hh>
 #include <TinyIce/Desc.h>
 
-using namespace golem::tinyice;
-
-
 #include <iostream>
 
+using namespace golem::tinyice;
 using namespace std;
-// using namespace golem;
-// using namespace golem::ctrl;
-// using namespace golem::phys;
-// using namespace golem::tools;
-
 
 namespace smlearning {
 
