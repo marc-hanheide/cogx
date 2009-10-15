@@ -1,0 +1,4 @@
+./subarchitectures/comsys/rulesets/understand.abd
+./subarchitectures/comsys/rulesets/generate.abd
+./subarchitectures/comsys/rulesets/dummy-nominals.abd
+./subarchitectures/comsys/rulesets/cheating.abd

@@ -1,6 +1,9 @@
 package comsys.components.cca;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -68,10 +71,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	// Main engine handling the processing for the component
 	ContinualCollaborativeActivity ccaEngine = null; 
 	
-	private String understandRulesFileName = null;
-	private String understandFactsFileName = null;
-	private String generateRulesFileName = null;
-	private String generateFactsFileName = null;
+	private String rulesetFilename = null;
 
 	private Counter counter = null;
 	
@@ -97,10 +97,28 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		ccaEngine = new ContinualCollaborativeActivity();
 		// if needed, set facts/rules-filenames
 		// initialize the abduction engine
-		if (understandFactsFileName != null) ccaEngine.setUnderstandFactsFileName(understandFactsFileName);
-		if (understandRulesFileName != null) ccaEngine.setUnderstandRulesFileName(understandRulesFileName);
-		if (generateFactsFileName != null) ccaEngine.setGenerateFactsFileName(generateFactsFileName);
-		if (generateRulesFileName != null) ccaEngine.setGenerateRulesFileName(generateRulesFileName);
+
+		if (rulesetFilename != null) {
+			try {
+				BufferedReader f = new BufferedReader(new FileReader(rulesetFilename));
+				String file = null;
+				while ((file = f.readLine()) != null) {
+					log("adding file " + file);
+					ccaEngine.addFileToLoad(file);
+				}
+				f.close();
+			}
+			catch (FileNotFoundException e) {
+				log("ruleset filename not found");
+			}
+			catch (IOException e) {
+				log("I/O exception while reading files from list");
+				e.printStackTrace();
+			}
+		}
+		else {
+			log("no ruleset to read");
+		}
 		ccaEngine.initAbducer();
 		
     } // end init
@@ -477,19 +495,9 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 
     @Override
     public void configure(Map<String, String> _config) {
-		if (_config.containsKey("--understandFacts")) {
-			understandFactsFileName = _config.get("--understandFacts");
-		}
-		if (_config.containsKey("--generateFacts")) {
-			generateFactsFileName = _config.get("--generateFacts");
-		}
-		
-		if (_config.containsKey("--understandRules")) {
-			understandRulesFileName = _config.get("--understandRules");
-		}
-		if (_config.containsKey("--generateRules")) {
-			generateRulesFileName = _config.get("--generateRules");
-		}
+    	if (_config.containsKey("--ruleset")) {
+    		rulesetFilename = _config.get("--ruleset");
+    	}
 	}
     
 }

@@ -15,7 +15,7 @@
 :- func srv_init_ctx = ctx.
 
 :- pred srv_clear_rules(ctx::in, ctx::out) is det.
-:- pred srv_load_rules_from_file(string::in, load_result::out, ctx::in, ctx::out, io::di, io::uo) is det.
+:- pred srv_load_file(string::in, load_result::out, ctx::in, ctx::out, io::di, io::uo) is det.
 
 :- pred srv_clear_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_e_facts(ctx::in, ctx::out) is det.
@@ -23,7 +23,6 @@
 :- pred srv_clear_i_facts(ctx::in, ctx::out) is det.
 :- pred srv_clear_k_facts(ctx::in, ctx::out) is det.
 
-:- pred srv_load_facts_from_file(string::in, load_result::out, ctx::in, ctx::out, io::di, io::uo) is det.
 :- pred srv_add_mprop_fact(varset::in, mprop(ctx_modality)::in, ctx::in, ctx::out) is det.
 
 :- pred srv_clear_assumables(ctx::in, ctx::out) is det.
@@ -83,9 +82,9 @@ srv_clear_rules(!Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pragma foreign_export("C", srv_load_rules_from_file(in, out, in, out, di, uo), "load_rules_from_file").
+:- pragma foreign_export("C", srv_load_file(in, out, in, out, di, uo), "load_file").
 
-srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
+srv_load_file(Filename, Result, !Ctx, !IO) :-
 	see(Filename, SeeRes, !IO),
 	(if
 		SeeRes = ok
@@ -101,9 +100,16 @@ srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
 					LoopResult = ok,
 					Continue = yes
 				else
-					context(_, Line) = get_term_context(Term),
-					LoopResult = syntax_error("Unable to convert term to rule", Line),
-					Continue = no
+					(if term_to_mprop(Term, MProp)
+					then
+						add_fact(vs(MProp, VS), !Ctx),
+						LoopResult = ok,
+						Continue = yes
+					else
+						context(_, Line) = get_term_context(Term),
+						LoopResult = syntax_error("Unable to convert term to rule or fact", Line),
+						Continue = no
+					)
 				)
 			;
 				ReadResult = error(Message, Linenumber),
@@ -122,6 +128,8 @@ srv_load_rules_from_file(Filename, Result, !Ctx, !IO) :-
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+	% TODO: full coverage
 
 :- pragma foreign_export("C", srv_clear_facts(in, out), "clear_facts").
 :- pragma foreign_export("C", srv_clear_e_facts(in, out), "clear_e_facts").
@@ -151,44 +159,6 @@ srv_clear_k_facts(!Ctx) :-
 	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
 		Mod \= [k(_, _)|_]
 			), !.Ctx^facts), !Ctx).
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- pragma foreign_export("C", srv_load_facts_from_file(in, out, in, out, di, uo), "load_facts_from_file").
-
-srv_load_facts_from_file(Filename, Result, !Ctx, !IO) :-
-	see(Filename, SeeRes, !IO),
-	(if
-		SeeRes = ok
-	then
-		do_while_result((pred(Continue::out, LoopResult::out, !.Ctx::in, !:Ctx::out, !.IO::di, !:IO::uo) is det :-
-			term_io.read_term_with_op_table(init_wabd_op_table, ReadResult, !IO),
-			(
-				ReadResult = term(VS, Term),
-				generic_term(Term),
-				(if term_to_mprop(Term, m(Mod, Prop))
-				then
-					add_fact(vs(m(Mod, Prop), VS), !Ctx),
-					LoopResult = ok,
-					Continue = yes
-				else
-					context(_, Line) = get_term_context(Term),
-					LoopResult = syntax_error("Unable to convert term to modalised formula", Line),
-					Continue = no
-				)
-			;
-				ReadResult = error(Message, Linenumber),
-				LoopResult = syntax_error(Message, Linenumber),
-				Continue = no
-			;
-				ReadResult = eof,
-				LoopResult = ok,
-				Continue = no
-			)
-				), Result, !Ctx, !IO)
-	else
-		Result = file_read_error
-	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
