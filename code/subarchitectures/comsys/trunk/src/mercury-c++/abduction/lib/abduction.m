@@ -253,6 +253,16 @@ step(use_fact(vs(m(MF, PF), VS), Uni),
 	QsR = list.map(apply_subst_to_query(Uni), QsR0),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "}", !IO) ).
 
+	% built-in (isn't it actually a rule?)
+step(use_fact(vs(m(MQ, PQ), VS), map.init),
+		{QsL, cf(m(MQ, PQ), _F), QsR}, VS,
+		QsL ++ [proved(m(MQ, PQ))] ++ QsR, VS,
+		_Ctx) :-
+
+	PQ = p("\\=", [T1, T2]),
+	not unify_terms(T1, T2, _Subst),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "!", !IO) ).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 	% resolution with a rule
