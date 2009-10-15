@@ -15,6 +15,7 @@
 #define Shrink_SOI 1
 #define Upper_BG 1.8
 #define Lower_BG 1.2	// 1.2-1.8 radius of BoundingSphere
+#define min_height_of_obj 0.015	//unit cm, due to the error of stereo, >0.01 is suggested
 
 /**
  * The function called to create a new instance of our component.
@@ -962,8 +963,8 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 			if(dDistSq == 0.0)
 			continue;
 			double dNormDist = fabs(dot(v3Diff, v3Normal));	
-			if(dNormDist > 0.02)
-			dNormDist = 0.02;
+			if(dNormDist > min_height_of_obj)
+			dNormDist = min_height_of_obj;
 			dSumError += dNormDist;
 		}
 		if(dSumError < dBestDistSquared)
@@ -1004,7 +1005,7 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		{
 			Vector3 v3Diff = R_points.at(i).p - v3BestMean;
 			double dNormDist = fabs(dot(v3Diff, v3BestNormal));
-			if(dNormDist < 0.02) // org 0.02
+			if(dNormDist < min_height_of_obj)
 			{
 				labels.at(i) = 0; // dominant plane
 				double ddist = dot(R_points.at(i).p,R_points.at(i).p);
@@ -1014,9 +1015,9 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 			else
 			{
 				double d_parameter = -(A*R_points.at(i).p.x+B*R_points.at(i).p.y+C*R_points.at(i).p.z);
-				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > fabs(D)/50)
+				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) > sqrt(A*A+B*B+C*C)*min_height_of_obj)
 					labels.at(i) = -2; // objects
-				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= fabs(D)/50)
+				if (d_parameter > 0 && d_parameter < D && fabs(d_parameter-D) <= sqrt(A*A+B*B+C*C)*min_height_of_obj)
 					labels.at(i) = -1; // cannot distingush
 			}
 		}
