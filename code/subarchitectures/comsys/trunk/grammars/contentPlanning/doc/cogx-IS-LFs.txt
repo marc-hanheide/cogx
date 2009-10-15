@@ -30,7 +30,37 @@ tccg> :r
 -----------------
 (the box is)Th (blue) Rh
 
-Will need grammar changes, type raising a adjective to type 's$'  because rh-th boundaries takes an 's$' as argument!
+the ball_L+H* is LH% red_H* LL%
+
+made following grammar changes,
+type raising a adjective to type 's$'  because rh-th boundaries takes an 's$' as argument!
+adj => s/!adj
+
+changing the syntactic definition of "copular verb"
+is :- s\!np/adj  to is :- s\!np/(s/!adj)
+
+Parse 1: du : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-false ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-false ^ 
+                    <RhOwner>rh-speaker ^ 
+                    <Tense>pres ^ 
+                    <ThOwner>th-hearer ^ 
+                    <Cop-Restr>(ball1_0:thing ^ ball ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-false) ^ 
+                    <Cop-Scope>x1_0:quality ^ 
+                    <Modifier>(red1_0:q-color ^ red ^ 
+                               <Commitment>m-uncontentious ^ 
+                               <Focus>m-focus-true ^ 
+                               <Rheme>m-rheme-true) ^ 
+                    <Subject>ball1_0:thing)
 
 ------------------
 (the box )Rh  (is blue)Th
@@ -139,7 +169,30 @@ e.g.
 (the box)Th (is) Rh (blue) Th
 the box_L+H* LH% is_H* LL% blue_L+H* LH%
 
-Will need grammar changes, type raising a adjective to type 's$'  as rh-th boundaries takes an 's$' as argument!
+NOTE: The LF has a wierd problem. There shall be 3 Ownerships,
+two for Th and one for Rh, however, in the LF only one ThOwner is shown, whereasit is present in the derivation process (this could be due to Sorting of features)
+Parse 2: du{index=E_39:ascription} : 
+  @be1_0:ascription(be ^ 
+                    <Commitment>e-uncontentious ^ 
+                    <Focus>e-focus-true ^ 
+                    <Mood>ind ^ 
+                    <Rheme>e-rheme-true ^ 
+                    <RhOwner>rh-speaker ^ 
+                    <Tense>pres ^ 
+                    <ThOwner>th-hearer ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
+                                <Commitment>t-uncontentious ^ 
+                                <Delimitation>unique ^ 
+                                <Focus>t-focus-true ^ 
+                                <Num>sg ^ 
+                                <Quantification>specific ^ 
+                                <Rheme>t-rheme-false) ^ 
+                    <Cop-Scope>x1_0:quality ^ 
+                    <Modifier>(blue1_0:q-color ^ blue ^ 
+                               <Commitment>m-uncontentious ^ 
+                               <Focus>m-focus-true ^ 
+                               <Rheme>m-rheme-false) ^ 
+                    <Subject>box1_0:thing)
 
 --------------------
 General Note:
