@@ -118,8 +118,17 @@ public class BeliefModelTranslator extends ManagedComponent {
 						}
 					}
 
-					BeliefModel bmodel = constructBeliefModel (beliefs);
+					String id = "";
+					CASTData<BeliefModel>[] bmodels = getWorkingMemoryEntries(Binder.BINDER_SA, BeliefModel.class);
+					if (bmodels.length > 0) {
+						id = bmodels[0].getData().id;
+					}
+					else {
+						id = newDataID();
+					}
+					BeliefModel bmodel = constructBeliefModel (beliefs, id);
 					updateBeliefModelInWM(bmodel);
+					
 					log("Updated belief model: \n" + BeliefModelUtils.getBeliefModelPrettyPrint(bmodel, 1));
 					log("-------- STOP BELIEF MODEL TRANSLATION ----------");
 
@@ -166,6 +175,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	
 	private Vector<Belief> getNonBinderBeliefs() {
 		
+		log("now getting non-binder beliefs...");
 		Vector<Belief> nonbinderbeliefs = new Vector<Belief>();
 		
 		try {
@@ -173,8 +183,10 @@ public class BeliefModelTranslator extends ManagedComponent {
 			
 			for (int i = 0; i < beliefs.length ; i++ ) {
 				Belief belief = beliefs[i].getData();
+				log("considering belief " + belief.id);
 				if (belief.id.contains("cca")) {
 					nonbinderbeliefs.add(belief);
+					log("OK, found one! " + belief.id);
 				}
 			}
 			
@@ -229,11 +241,12 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 
 
-	public BeliefModel constructBeliefModel (Vector<Belief> beliefs) {
+	public BeliefModel constructBeliefModel (Vector<Belief> beliefs, String id) {
 
 
 		BeliefModel beliefModel = new BeliefModel();
-		beliefModel.id = newDataID();
+	
+		beliefModel.id = id;
 		
 		beliefModel.s = new SpatioTemporalModel();
 		beliefModel.s.frames = new SpatioTemporalFrame[1];
@@ -459,7 +472,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 	 * @param formula
 	 *            the belief model formula
 	 */
-
+ 
 	protected void overwriteBeliefModelInWM (BeliefModel bmodel) {
 
 		try {

@@ -18,6 +18,7 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTData;
 
 
 /**
@@ -80,6 +81,14 @@ public class BeliefModelInterface extends ManagedComponent{
 	public void addNewBelief (Belief belief) {
 		debug("adding new belief: " + belief.id);
 		
+		if (currentBeliefModel != null) {
+		try {
+		currentBeliefModel = getMemoryEntry(currentBeliefModel.id, Binder.BINDER_SA, BeliefModel.class);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		}
 		String[] newBeliefSet = new String[currentBeliefModel.k.length + 1];
 		
 		for (int i = 0; i < currentBeliefModel.k.length ; i++) {
@@ -89,7 +98,7 @@ public class BeliefModelInterface extends ManagedComponent{
 		currentBeliefModel.k = newBeliefSet;
 		
 		try {
-			addToWorkingMemory(belief.id, Binder.BINDER_SA, belief);
+			addToWorkingMemory(belief.id, Binder.BINDER_SA, belief);		
 			overwriteWorkingMemory(currentBeliefModel.id, Binder.BINDER_SA, currentBeliefModel);
 		}
 		catch (Exception e) {
