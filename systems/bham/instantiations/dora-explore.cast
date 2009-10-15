@@ -29,7 +29,6 @@ INCLUDE includes/motivation.sa/motivation.cast
 #JAVA MG HomingGenerator motivation.components.generators.HomingGenerator
 
 JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, comadata.ComaRoom, binder.autogen.core.UnionConfiguration, execution.slice.Action, SpatialData.NavCommand"
-JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
 
 # verb stuff
 JAVA MG verbal.kint dora.DoraVerbalisation
