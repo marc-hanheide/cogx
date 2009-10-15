@@ -68,7 +68,11 @@ class SpatialControl : public cast::ManagedComponent ,
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
       virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
-	return m_pOwner->getFrontiers();
+	m_pOwner->lockComponent();
+	FrontierInterface::FrontierPtSeq ret =
+	  m_pOwner->getFrontiers();
+	m_pOwner->unlockComponent();
+	return ret;
       }
       SpatialControl *m_pOwner;
       FrontierServer(SpatialControl *owner) : m_pOwner(owner)

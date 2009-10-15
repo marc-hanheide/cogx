@@ -72,7 +72,9 @@ ProxyMarshaller::MarshallingServer::addProxy(const string & type, const string &
 					     const cast::cdl::WorkingMemoryPointerPtr & origin, 
 					     const Ice::Current &_context)
 {
+  m_pOwner->lockComponent();
   m_pOwner->addProxy(type, UID, probExists, origin);
+  m_pOwner->unlockComponent();
 }
 
 bool
@@ -85,8 +87,12 @@ ProxyMarshaller::MarshallingServer::addRelation(const string & relationType,
 {
   ProxyMarshaller::RelationCandidate cand (relationType, relationUID, 
       sourceType, sourceUID, targetType, targetUID, probExists, origin);
-  if (m_pOwner->addRelation(cand) != 0) {
-    //m_pOwner->m_queuedRelations.push_back(cand);
+
+  m_pOwner->lockComponent();
+  int status = m_pOwner->addRelation(cand);
+  m_pOwner->unlockComponent();
+
+  if (status) {
     return false;
   }
   else {
@@ -231,7 +237,9 @@ void
 ProxyMarshaller::MarshallingServer::deleteProxy(const string & type, const string & UID,
     const Ice::Current &_context)
 {
+  m_pOwner->lockComponent();
   m_pOwner->deleteProxy(type, UID);
+  m_pOwner->unlockComponent();
 }
 
 void
@@ -278,7 +286,9 @@ ProxyMarshaller::MarshallingServer::addFeature(const string & proxyType,
     const string & proxyUID, const binder::autogen::core::FeaturePtr &feature,
 	const Ice::Current &_context)
 {
+  m_pOwner->lockComponent();
   m_pOwner->addFeature(proxyType, proxyUID, feature);
+  m_pOwner->unlockComponent();
 }
 
 void
@@ -334,7 +344,9 @@ ProxyMarshaller::MarshallingServer::deleteFeature(const string & proxyType, cons
 	const string & featlabel,
 	const Ice::Current &_context)
 {
+  m_pOwner->lockComponent();
   m_pOwner->deleteFeature(proxyType, proxyUID, featlabel);
+  m_pOwner->unlockComponent();
 }
 
 void 
@@ -342,7 +354,9 @@ ProxyMarshaller::MarshallingServer::commitFeatures(const string &proxyType,
     const string &proxyUID,
     const Ice::Current &_context)
 {
+  m_pOwner->lockComponent();
   m_pOwner->commitFeatures(proxyType, proxyUID);
+  m_pOwner->unlockComponent();
 }
 
 
@@ -406,7 +420,9 @@ void
 ProxyMarshaller::MarshallingServer::publishProxy(const string & proxyType, const string & proxyUID,
     const Ice::Current &_context)
 {
+  m_pOwner->lockComponent();
   m_pOwner->publishProxy(proxyType, proxyUID);
+  m_pOwner->unlockComponent();
 }
   
 void
@@ -439,12 +455,16 @@ ProxyMarshaller::updateInternalProxy(InternalProxy &intProxy)
 void
 ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
+  log("1");
+  lockEntry(_wmc.address.id, cdl::LOCKEDOD);
   SpatialData::PlacePtr place = getMemoryEntry<SpatialData::Place>(_wmc.address);
+  log("2");
   if (place != 0) {
     stringstream ss;
     ss << place->id;
     log("Adding proxy (place, %s)", ss.str().c_str());
     addProxy("place", ss.str(), 1.0, createWorkingMemoryPointer(_wmc.address, _wmc.type));
+  log("3");
     m_PlaceAddressToIDMap[_wmc.address.id] = place->id;
     
     // Add place id feature
@@ -453,6 +473,7 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     feature->alternativeValues.push_back(createStringValue(ss.str(), 1));
 	//binder::autogen::featvalues::IntegerValue(1, place->id));
     addFeature("place", ss.str(), feature);
+  log("4");
 
     // Add Placeholder feature
     if (place->status == SpatialData::PLACEHOLDER) {
@@ -469,13 +490,18 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
+  log("5");
     commitFeatures("place", ss.str());
   }
+  log("6");
+  unlockEntry(_wmc.address.id);
+  log("7");
 }
 
 void
 ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
+  lockEntry(_wmc.address.id, cdl::LOCKEDODR);
   SpatialData::PlacePtr place = getMemoryEntry<SpatialData::Place>(_wmc.address);
   if (place != 0) {
     stringstream ss;
@@ -499,6 +525,7 @@ ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     }
     commitFeatures("place", ss.str());
   }
+  unlockEntry(_wmc.address.id);
 }
 
 void

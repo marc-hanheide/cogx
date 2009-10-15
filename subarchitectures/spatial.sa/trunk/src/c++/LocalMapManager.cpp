@@ -431,6 +431,10 @@ FrontierInterface::HypothesisEvaluation
 LocalMapManager::EvaluationServer::getHypothesisEvaluation(int hypID, 
     const Ice::Current &_context)
 {
-  return m_pOwner->getHypothesisEvaluation(hypID);
+  m_pOwner->lockComponent();
+  FrontierInterface::HypothesisEvaluation ret =
+    m_pOwner->getHypothesisEvaluation(hypID);
+  m_pOwner->unlockComponent();
+  return ret;
 }
 

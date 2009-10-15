@@ -25,6 +25,7 @@
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
 #include <FrontierInterface.hpp>
+#include <Utils/CureDebug.hh>
 
 using namespace cast;
 using namespace std;
@@ -57,7 +58,7 @@ SpatialControl::SpatialControl()
 
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
-  cure_debug_level = -10;
+  cure_debug_level = 60;
 
   m_RobotServerHost = "localhost";
 
