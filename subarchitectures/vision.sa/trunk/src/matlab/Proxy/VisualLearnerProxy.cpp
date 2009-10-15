@@ -1,3 +1,4 @@
+/* vim:set fileencoding=utf-8 sw=3 ts=8 et:vim */
 /** 
  * @brief Proxy for the VisualLearner component.
  *
@@ -10,8 +11,38 @@
 #include "highgui.h"
 #include "VisionData.hpp"
 #include "MatlabHelper.h"
-#include "libVisualLearnerCtf.h"
 #include "VisualLearnerProxy.h"
+#include "libVisualLearnerCtf.h"
+#include "initlib.h"
+
+class CInitializer
+{
+public:
+   CInitializer() {
+      printf("VisualLearnerProxy initializing\n");
+      InitVisualLearnerLib();
+
+      // Load global variables (was: R_RunComponent)
+      mwArray flag(0); // 0 - don't need the return value
+      CLFstart(flag);
+   }
+   ~CInitializer() {
+      printf("VisualLearnerProxy terminating\n");
+      TermVisualLearnerLib();
+   }
+} *pInitializer=NULL;
+class CTerminator
+{
+public:
+   ~CTerminator() {
+      if (pInitializer) delete pInitializer;
+      pInitializer = NULL;
+   }
+} Terminator;
+static void CheckInit()
+{
+   if (!pInitializer) pInitializer = new CInitializer();
+}
 
 // http://www.senzee5.com/2006/05/c-formatting-stdstring.html
 std::string format_arg_list(const char *fmt, va_list args)
@@ -45,25 +76,35 @@ static void addLabels(mwArray &ans, VisionData::AttrObject &Attrs, double weight
    unsigned n_dims = ans.NumberOfDimensions();
    // TODO: assert n_dims = 1
    mwArray dims = ans.GetDimensions();
-   double dim0 = dims.Get(mwSize(1), 0);
+   double dim0 = dims.Get(mwSize(1), 1);
    for (int i = 0; i < dim0; i++) {
-      double label = ans.Get(mwSize(1), i);
+      double label = ans.Get(mwSize(1), i+1);
       Attrs.colorLabel.push_back(format("%.0f", label));
       Attrs.colorDistr.push_back(weight);
    }
 }
 
+void VL_LoadAvModels(const char* filename)
+{
+   CheckInit();
+   mwArray fname (filename);
+   LRloadAVmodels(fname);
+}
+
 //void FE_recognise_attributes(VisionData::ROI &Roi)
 void VL_recognise_attributes(VisionData::AttrObject &Attrs, VisionData::ProtoObject &Object)
 {
+   CheckInit();
    // Add the ROI to Matlab engine
    mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
          Object.image.width, Object.image.height, 3); // WISH: number of channels in image
+   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
 
    // Add the segmentation mask to the Matlab engine.
    // TODO: FIXME: mask data is int, should be byte
    mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
          Object.mask.width, Object.mask.height, 1);
+   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
 
    mwArray ansYes, ansPy, answ;
 
@@ -77,12 +118,46 @@ void VL_recognise_attributes(VisionData::AttrObject &Attrs, VisionData::ProtoObj
    addLabels(ansPy, Attrs, 0.5);
 }
 
-void VL_prepare()
-{
-   // cvNamedWindow( "FE_Transform", CV_WINDOW_AUTOSIZE );
-}
+//void VL_Update(const Vision::LearnInstruction &learnInstruction, const Vision::ROI &Roi)
+//{
+//   // Put features of the ROI to the matlab engine.
+//   mwArray features = CMatlabHelper::idl2array(Roi.m_features);
 
-typedef unsigned char BYTE;
+//   long cntPlus = 0, cntMinus = 0;
+//   for (unsigned i = 0; i < learnInstruction.m_features.length(); i++) {
+//      if (learnInstruction.m_features[i].m_confidence > 0) cntPlus++;
+//      if (learnInstruction.m_features[i].m_confidence < 0) cntMinus++;
+//   }
+
+//   if (cntPlus > 0) {
+//      mwArray avw(cntPlus, 2, mxDOUBLE_CLASS, mxREAL);
+//      int row = 1;
+//      for (unsigned i = 0; i < learnInstruction.m_features.length(); i++) {
+//         if (learnInstruction.m_features[i].m_confidence > 0) {
+//            avw(row, 1) =  (double) learnInstruction.m_features[i].m_int;
+//            avw(row, 2) =  (double) learnInstruction.m_features[i].m_confidence;
+//            row++;
+//         }
+//      }
+//      cosyRecogniser_update(features, avw);
+//   }
+
+//   if (cntMinus > 0) {
+//      mwArray avw(cntMinus, 2, mxDOUBLE_CLASS, mxREAL);
+//      int row = 1;
+//      for (unsigned i = 0; i < learnInstruction.m_features.length(); i++) {
+//         if (learnInstruction.m_features[i].m_confidence < 0) {
+//            avw(row, 1) =  (double) learnInstruction.m_features[i].m_int;
+//            avw(row, 2) =  (double) - learnInstruction.m_features[i].m_confidence;
+//            row++;
+//         }
+//      }
+//      cosyRecogniser_unlearn(features, avw);
+//   }
+//}
+
+
+// typedef unsigned char BYTE;
 
 // Assumption: channels in raw data are BGR, 8 bits per channel (uchar), 4 byte alignment.
 // Channels in CvMat are stored in the same matrix cell (CvScalar).
@@ -266,3 +341,5 @@ cosyFeatureExtractor_extract(1, f, x, b);
 // Add extracted features to the Roi.
 CMatlabHelper::array2idl(f, Roi.m_features);
 }*/
+
+

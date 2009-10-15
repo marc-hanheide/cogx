@@ -9,11 +9,11 @@
 ## When mcc/mbuild is not available, try to use precompiled binaries from SVN
 
 SET(CAN_BUILD_CTF "No")
-IF (BUILD_VISUAL_LEARNER_CTF)
+IF (BUILD_SA_VISION_VISLEARNER_CTF)
    IF (MATLAB_BIN_MCC AND MATLAB_BIN_MBUILD)
       SET(CAN_BUILD_CTF "Yes")
    ENDIF (MATLAB_BIN_MCC AND MATLAB_BIN_MBUILD)
-ENDIF (BUILD_VISUAL_LEARNER_CTF)
+ENDIF (BUILD_SA_VISION_VISLEARNER_CTF)
 
 
 PROJECT(VisualLearnerCtf)
@@ -60,7 +60,7 @@ IF(CAN_BUILD_CTF)
    ADD_CUSTOM_COMMAND(OUTPUT ${MCC_PROJECT}
          COMMAND ${CMAKE_PYTHON}
             makeproject.py 
-            --matlabversion 751 
+            --matlabversion 780 
             --mscriptroot ${MSOURCE_DIR}
             --libraryname  ${MCCPROJECT_NAME}
             --projectroot ${CMAKE_CURRENT_BINARY_DIR}

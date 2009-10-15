@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
   <!--%(prjname)s.prj-->
-  <MATLABPath>
-%(directories)s
-  </MATLABPath>
   <MCCProperties>
     <wrapper>
       <type>cpplib</type>
@@ -47,4 +44,7 @@
     <mcr include="false"/>
     <additional_files/>
   </packaging>
+  <MATLABPath>
+%(directories)s
+  </MATLABPath>
 </project>
