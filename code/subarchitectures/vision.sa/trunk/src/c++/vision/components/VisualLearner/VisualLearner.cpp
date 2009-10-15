@@ -30,21 +30,20 @@ void VisualLearner::configure(map<string, string>& _config)
 
 void VisualLearner::start()
 {
-   ManagedComponent::start();
    debug("::start");
+   ManagedComponent::start();
 
    addChangeFilter(createLocalTypeFilter<VisualLearnerRecognitionTask>(cdl::ADD),
-         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onNewRecognitionTask));
+         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAddRecognitionTask));
 }
 
 void VisualLearner::stop()
 {
-   ManagedComponent::stop();
    log("!!!STOP CALL!!!");
-   TermVisualLearnerLib();
+   ManagedComponent::stop();
 }
 
-void VisualLearner::onNewRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+void VisualLearner::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
    debug("::onNewRecognitionTask");
    string type(_wmc.type);
@@ -72,7 +71,6 @@ void VisualLearner::onNewRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
    } // if
 
 } // VisualLearner::WorkingMemoryChange
-
 
 void VisualLearner::runComponent()
 {
@@ -106,6 +104,7 @@ void VisualLearner::runComponent()
             catch(cast::DoesNotExistOnWMException){
                log("VisualLearner: VisualLearnerRecognitionTask deleted while working...\n");
             };
+            // TODO: catch other stuff from Matlab Proxy
 
             // Erase and move to the next point in the list.
             pwma = m_RequestIdQueue.erase(pwma);
@@ -139,10 +138,14 @@ void VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
 
    // FIXME --- probably can optimise
    AttrObjectPtr pAttrObject = new AttrObject(); // will not be added to WM
+
    VL_recognise_attributes(*pAttrObject, *pProtoObj);
+
    // copy from pAttrObject to _pTask
    _pTask->colorLabel.clear();
    _pTask->colorDistr.clear();
+   _pTask->colorLabel.push_back("demo");
+   _pTask->colorDistr.push_back(2.0);
    vector<string>::const_iterator pstr;
    for( pstr = pAttrObject->colorLabel.begin(); pstr != pAttrObject->colorLabel.end(); pstr++) {
       _pTask->colorLabel.push_back(*pstr);

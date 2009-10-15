@@ -83,24 +83,17 @@ add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 add_subdirectory (src/python/ObjectRecognizer)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
-option(BUILD_VISUAL_LEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
-option(BUILD_VISUAL_LEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF from SVN" NO)
+option(BUILD_SA_VISION_VISLEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
+option(BUILD_SA_VISION_VISLEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF" NO)
+mark_as_advanced(BUILD_SA_VISION_VISLEARNER_CTF)
 
-mark_as_advanced(BUILD_VISUAL_LEARNER_CTF)
-if (BUILD_VISUAL_LEARNER_CTF)
+if (BUILD_SA_VISION_VISLEARNER_CTF)
    add_subdirectory(src/matlab)
-elseif (BUILD_VISUAL_LEARNER)
+elseif (BUILD_SA_VISION_VISLEARNER)
    add_subdirectory(prebuilt/VisualLearner)   
-endif (BUILD_VISUAL_LEARNER_CTF)
+endif (BUILD_SA_VISION_VISLEARNER_CTF)
 
-if (BUILD_VISUAL_LEARNER)
-   #find_file( # TODO: Why is FIND_LIBRARY (FeatureLearningProxy) not working????
-   #   VISUAL_LEARNER_MATLAB_PROXY
-   #   NAMES libVisualLearnerProxy.so
-   #   PATHS ${OUTPUT}  ${OUTPUT}/lib
-   #   NO_DEFAULT_PATH
-   #   DOC "Matlab Library required for VisualLearner"
-   #)
+if (BUILD_SA_VISION_VISLEARNER)
    set (LIB_VLPROXY_SO "libVisualLearnerProxy.so")
    file(GLOB VISUAL_LEARNER_MATLAB_PROXY ${OUTPUT}/lib/${LIB_VLPROXY_SO})
    if (VISUAL_LEARNER_MATLAB_PROXY)
@@ -111,10 +104,10 @@ if (BUILD_VISUAL_LEARNER)
          "   Run 'make install' to generate and install it.\n"
          "   Then run 'ccmake' again.\n"
          "   (For now, VisualLearner won't be built)\n"
-         "   (see also: BUILD_VISUAL_LEARNER_CTF - Advanced)"
+         "   (see also: BUILD_SA_VISION_VISLEARNER_CTF - Advanced)"
       )
    endif (VISUAL_LEARNER_MATLAB_PROXY)
-endif (BUILD_VISUAL_LEARNER)
+endif (BUILD_SA_VISION_VISLEARNER)
 
 option(BUILD_SA_VISION_CAMERA_MOUNT "build camera mount" YES)
 if (BUILD_SA_VISION_CAMERA_MOUNT)

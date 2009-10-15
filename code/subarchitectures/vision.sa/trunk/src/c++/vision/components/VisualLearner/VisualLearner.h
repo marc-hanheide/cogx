@@ -32,7 +32,7 @@ class VisualLearner : public ManagedComponent {
 
    private:
       WmAddressVector m_RequestIdQueue;
-      void onNewRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+      void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
       void recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
 
       //string allowedSoiSource;
