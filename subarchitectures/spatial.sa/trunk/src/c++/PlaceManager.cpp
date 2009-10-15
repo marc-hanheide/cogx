@@ -601,7 +601,7 @@ PlaceManager::evaluateUnexploredPaths()
 	      // Check already-rejected hypotheses for this node
 	      if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
 		for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
-		    m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[currentPlaceID].end(); rejectedHypIt++) {
+		    m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
 		  double distanceSq = ((*rejectedHypIt)->x - x)*((*rejectedHypIt)->x - x) + ((*rejectedHypIt)->y - y)*((*rejectedHypIt)->y - y);
 		  log ("distanceSq = %f", distanceSq);
 		  if (distanceSq < minDistanceSq) minDistanceSq = distanceSq;
