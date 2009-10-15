@@ -391,6 +391,9 @@ public class ContinualCollaborativeActivity {
 		// TODO: find topmost relevant block
 		piPrime = stack.pop();
 
+		return ProofStack.blockToBeliefs(pi, localBeliefs);
+		//if (piPrime.intention.predSym)
+		
 /*
 		if (updateConsistent()) {
 			
@@ -421,7 +424,7 @@ public class ContinualCollaborativeActivity {
 			stack.push(piPrime);
 		}
 */
-		return consistentUpdates.toArray(new Belief[0]);
+		//return consistentUpdates.toArray(new Belief[0]);
 	}
 
 	public void printStack() {

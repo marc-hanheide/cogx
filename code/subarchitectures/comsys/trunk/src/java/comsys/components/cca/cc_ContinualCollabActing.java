@@ -390,7 +390,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				log("  update #" + i + ": " + PrettyPrinting.beliefToString(beliefUpdates[i]));
 
 				Belief[] related = getBeliefsByUnionEntityId(referringUnionId(beliefUpdates[i])).toArray(new Belief[] {});
-				
+/*
 				boolean found = false;
 				for (int j = 0; j < related.length; j++) {
 					if (BeliefModelSynchronization.agentStatusesEqual(related[j].ags, beliefUpdates[i].ags)) {
@@ -400,8 +400,9 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				}
 				if (!found) {
 					//beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
+*/
 					addNewBelief(beliefUpdates[i]);
-				}
+//				}
 			}
 			log("done with belief model update");
 		}

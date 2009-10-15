@@ -165,10 +165,15 @@ understand : event : uttered(h, Nom) <-
 	i : prop(Nom, Prop),
 	intention : positive_feedback(Nom) / 2.0.
 
+%understand : event : uttered(h, Nom) <-
+%	i : sort(Nom, marker),
+%	i : prop(Nom, yes),
+%	intention : answer_yn(h, positive) / 1.0.
+
 understand : event : uttered(h, Nom) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, yes),
-	intention : answer_yn(h, positive) / 1.0.
+	intention : grounding(discourse, assertionVerified) / 1.0.
 
 understand : event : uttered(h, Nom) <-
 	i : sort(Nom, marker),
