@@ -30,7 +30,7 @@ tccg> :r
 -----------------
 (the box is)Th (blue) Rh
 
-the ball_L+H* is LH% red_H* LL%
+the box_L+H* is LH% blue_H* LL%
 
 made following grammar changes,
 type raising a adjective to type 's$'  because rh-th boundaries takes an 's$' as argument!
