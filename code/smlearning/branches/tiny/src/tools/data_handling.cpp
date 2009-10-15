@@ -507,6 +507,54 @@ bool write_nc_file_basis (string fileName, const DataSet& data) {
 	
 }
 
+///
+///load a sequence into inputs and target vectors (for machine learning)
+///
+void load_sequence (vector<float>& inputVector, vector<float>& targetVector, Sequence s) {
+
+	int initialVectorSize = s[0].size();
+	int featureVectorSize = initialVectorSize + s[1].size();
+	Sequence::const_iterator v;
+	int contInput = 0;
+	int contTarget = 0;
+	for (v=s.begin(); v!= s.end(); v++) {
+		FeatureVector::const_iterator n;
+		//put inputs and targetPatterns data
+		if (v+1 != s.end()) {
+			if (v != s.begin()) {
+				//zero padding
+				for (int i=0; i<initialVectorSize; i++)
+					inputVector[contInput++] = 0.0;
+			}
+			for (n=(*v).begin(); n!= (*v).end(); n++) {
+				inputVector[contInput++] = *n;
+			}
+			if (v == s.begin()) {
+				//zero padding
+				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
+					inputVector[contInput++] = 0.0;
+			}
+		}
+			
+		if (v != s.begin()) {
+			if (v != s.begin()) {
+				//zero padding
+				for (int i=0; i<initialVectorSize; i++)
+					targetVector[contTarget++] = 0.0;
+			}
+			for (n=(*v).begin(); n!= (*v).end(); n++) {
+				targetVector[contTarget++] = *n;
+			}
+			//zero padding
+			if (v == s.begin() ) {
+				for (int i=0; i<featureVectorSize - initialVectorSize; i++)
+					targetVector[contTarget++] = 0.0;
+			}
+		}
+	}
+
+	
+}
 
 bool concatenate_datasets (string dir, string writeFileName) {
 	boost::regex seqfile_re ("(.*)\\.seq");

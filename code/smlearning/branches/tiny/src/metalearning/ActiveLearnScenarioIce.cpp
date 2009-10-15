@@ -170,8 +170,9 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	//Arranged in a vector associated to region indices
 	//sequences and featureVectors are created
 	//in every loop run
+	int smregionsCount = 18;
 	vector<DataSet> data;
-	for (int i=0; i<18; i++) {
+	for (int i=0; i<smregionsCount; i++) {
 		DataSet currentDataset;
 		data.push_back (currentDataset);
 	}
@@ -234,15 +235,16 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	// Object pointer
 	RigidBodyPrx pPolyflapObject;
 
-	int numSequences = 10;
+	int numSequences = 10000;
 	int startingPosition = 0;
 	if (argc > 2)
 		numSequences = atoi(argv[2]);
-	if (argc == 4)
+	if (argc > 3)
 		startingPosition = atoi(argv[3]);
 	
 	//start of the experiment loop
-	for (int e=0; e<numSequences; e++) {
+	int e = 0;
+	while (e<numSequences && !pTiny->isUniverseInterrupted()) {
 		//polyflap object
 		setupPolyflap(pTiny, pPolyflapObject, startPolyflapPosition, startPolyflapZRotation, polyflapDimensions);
 		/*golem::Bounds::SeqPtr curPol = pPolyflapObject->getGlobalBoundsSeq();*/
@@ -250,9 +252,9 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 
 
 		/////////////////////////////////////////////////
-		//create sequence for this loop run and initial vector
+		//create sequence for this loop run and initial (motor command) vector
 		smlearning::Sequence seq;
-		FeatureVector infoVector;
+		FeatureVector motorcommandVector;
 		/////////////////////////////////////////////////
 
 		golem::tinyice::Mat34 polPosZShape = pPolyflapObject->getShapes().back()->getLocalPose();
@@ -282,11 +284,22 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		positionT.v3 = polPosYShape.p.v3;  //considering object thickness and fingertip radius
 
 		int startPosition;
+
 		if (startingPosition == 0)
-			startPosition = rand() % 17 + 1;
+			if ( e < smregionsCount )
+				startPosition = rand() % smregionsCount + 1;
+			else {
+				//active selection of samples
+				double neargreedyActionRand = rand() / (double) RAND_MAX;
+				cout << "neargreedyRand: " << neargreedyActionRand << endl;
+				if (neargreedyActionRand <= learner.neargreedyActionProb)
+					startPosition = rand() % smregionsCount + 1;
+				else
+					assert ((startPosition = learner.chooseSMRegion () + 1) != -1);
+			}
 		else
 			startPosition = startingPosition;
-	
+		
 		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
 		cout << "Position " << startPosition << endl;
 
@@ -309,7 +322,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		golem::Polynomial4::Desc polynomDesc;
 		golem::Profile::Ptr pProfile(/*Polynomial4::Desc().create()*/ polynomDesc.create());
 
-		//initializing infoVector
+		//initializing motorcommandVector
 		golem::Polynomial4 polynom;
 		polynom.create(polynomDesc);
 		const Real* coefs  = polynom.getCoeffs();
@@ -317,18 +330,18 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		/////////////////////////////////////////////////
 		//writing in the initial vector
 		//Trajectory curve coefficients
-		infoVector.push_back(normalize<Real>(coefs[0], -5, 5));
-		infoVector.push_back(normalize<Real>(coefs[1], -5, 5));
-		infoVector.push_back(normalize<Real>(coefs[2], -5, 5));
-		infoVector.push_back(normalize<Real>(coefs[3], -5, 5));
+		motorcommandVector.push_back(normalize<Real>(coefs[0], -5, 5));
+		motorcommandVector.push_back(normalize<Real>(coefs[1], -5, 5));
+		motorcommandVector.push_back(normalize<Real>(coefs[2], -5, 5));
+		motorcommandVector.push_back(normalize<Real>(coefs[3], -5, 5));
 		//initial position, normalized
-		infoVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
-		infoVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
-		infoVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
+		motorcommandVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
+		motorcommandVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
+		motorcommandVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
 		//innitial orientation, normalized
-		infoVector.push_back(normalize(orientationT.v1, -REAL_PI, REAL_PI));
-		infoVector.push_back(normalize(orientationT.v2, -REAL_PI, REAL_PI));
-		infoVector.push_back(normalize(orientationT.v3, -REAL_PI, REAL_PI));
+		motorcommandVector.push_back(normalize(orientationT.v1, -REAL_PI, REAL_PI));
+		motorcommandVector.push_back(normalize(orientationT.v2, -REAL_PI, REAL_PI));
+		motorcommandVector.push_back(normalize(orientationT.v3, -REAL_PI, REAL_PI));
 		//end pose info missing (must be added later 
 		/////////////////////////////////////////////////
 
@@ -343,7 +356,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 				
 		/////////////////////////////////////////////////
 		//writing in the initial vector
-		infoVector.push_back(Real(speed));
+		motorcommandVector.push_back(Real(speed));
 		/////////////////////////////////////////////////
 
 		// Trajectory end pose equals begin + shift along Y axis
@@ -375,22 +388,21 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 // 		/////////////////////////////////////////////////
 // 		//writing in the initial vector
 // 		//add info about end position
-// 		infoVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
-// 		infoVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
-// 		infoVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
+// 		motorcommandVector.push_back(normalize(end.p.v1, -maxRange, maxRange));
+// 		motorcommandVector.push_back(normalize(end.p.v2, -maxRange, maxRange));
+// 		motorcommandVector.push_back(normalize(end.p.v3, -maxRange, maxRange));
 // 		//end orientation, normalized
-// 		infoVector.push_back(normalize(orientationT.v1, -REAL_PI, REAL_PI));
-// 		infoVector.push_back(normalize(orientationT.v2, -REAL_PI, REAL_PI));
-// 		infoVector.push_back(normalize(orientationT.v3, -REAL_PI, REAL_PI));
+// 		motorcommandVector.push_back(normalize(orientationT.v1, -REAL_PI, REAL_PI));
+// 		motorcommandVector.push_back(normalize(orientationT.v2, -REAL_PI, REAL_PI));
+// 		motorcommandVector.push_back(normalize(orientationT.v3, -REAL_PI, REAL_PI));
 // 		/////////////////////////////////////////////////
 		
-		infoVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
+		motorcommandVector.push_back(normalize(Real(horizontalAngle/180.0*REAL_PI), -REAL_PI, REAL_PI));
 
 		/////////////////////////////////////////////////
 		//writing of the initial vector into sequence
-		seq.push_back(infoVector);
+		seq.push_back(motorcommandVector);
 		/////////////////////////////////////////////////
-
 
 		// Current time is the same for all threads and it is the time that has elapsed since the start of the program
 		Real timeBegin = pTiny->getTime();
@@ -401,14 +413,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		pArm->setCollisionGroup(0x0);
 
 
-// 		Mat34 polyFlapPose = polyFlapActor->getPose();
-// 		Real roll, pitch, yaw;
-// 		referencePolyflapPos.R.toEuler (roll, pitch, yaw);
-// 		context->getLogger()->post(Message::LEVEL_INFO, "referencePose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", referencePolyflapPos.p.v1, referencePolyflapPos.p.v2, referencePolyflapPos.p.v3, roll, pitch, yaw);
-// 		polyFlapPose.R.toEuler (roll, pitch, yaw);
-// 		context->getLogger()->post(Message::LEVEL_INFO, "polyflapPose: %1.20f, %1.20f, %1.20f, %1.20f, %1.20f, %1.20f", polyFlapPose.p.v1, polyFlapPose.p.v2, polyFlapPose.p.v3, roll, pitch, yaw);
-
-			
+		
 		//if the arm didn't touch the polyflap when approaching, we can proceed with the experiment
 		//otherwise we skip it
 		//if (checkPfPosition(pScene, polyFlapActor, referencePolyflapPosVec1, referencePolyflapPosVec2)) {
@@ -508,7 +513,24 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 			
 		} //end of the if(checkPosition...) block
 
+		//initialize RNN learner with a dummy dataset
+		//TODO: this is a hack!
+		string dummyDataFile = "tmp_dummy";
+		if (e == 0) {
+			write_nc_file_basis (dummyDataFile, data[startPosition-1]);
+			learner.build (dummyDataFile, smregionsCount, seq[0].size() );
+		}
 
+		//update RNN learner with current sequence
+		rnnlib::DataSequence trainseq(learner.header->inputSize, learner.header->outputSize);
+		vector<int> inputShape, targetShape;
+		inputShape.push_back (seq.size() - 1);
+		targetShape.push_back (seq.size() - 1);
+		trainseq.inputs.reshape(inputShape);
+		trainseq.targetPatterns.reshape(targetShape);
+		load_sequence (trainseq.inputs.data, trainseq.targetPatterns.data, seq);
+		learner.update (trainseq, startPosition-1);
+		
 		//OFF collision detection
 		pArm->setCollisionGroup(0x0);
 
@@ -540,7 +562,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		cout << "Moving home..." << endl;
 		pArm->waitForEnd(60.0);
 		cout << "Done" << endl;
-		cout << "Iteration " << e << " completed!" << endl;
+		cout << "Iteration " << e++ << " completed!" << endl;
 
 				
 	}// end of the for-loop (experiment loop)
@@ -548,8 +570,8 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 
 	/////////////////////////////////////////////////
 	//writing the dataset into binary file
-	for (int i=0; i<18; i++)
-		writeDownCollectedData(data[i]);
+// 	for (int i=0; i<smregionsCount; i++)
+// 		writeDownCollectedData(data[i]);
 	/////////////////////////////////////////////////
 
 	// setup initial configuration

@@ -28,12 +28,13 @@
 namespace smlearning {
 
 ///
-///open RNN for verification
+///construct RNN for active learning
 ///
-void ActiveRNN::build (const string& dataFile, ostream& out) {
+void ActiveRNN::build (string dataFile, int smregionsCount, int patternSize, ostream& out) {
 
-	rnnlib::DataHeader header( dataFile, task, 1);
-	net = new rnnlib::MultilayerNet(out, conf, header);
+	dataFile += ".nc";
+	header = new rnnlib::DataHeader ( dataFile, task, 1);
+	net = new rnnlib::MultilayerNet(out, conf, *header);
 	//build weight container after net is created
 	rnnlib::WeightContainer::instance().build();
 	int numWeights = rnnlib::WeightContainer::instance().weights.size();
@@ -42,7 +43,6 @@ void ActiveRNN::build (const string& dataFile, ostream& out) {
 	net->build();
 	
 	//only construct optimiser after weight container is built
-	rnnlib::Optimiser* opt;
 	if (conf.get<string>("optimiser", "steepest") == "rprop")
 	{
 		opt = new rnnlib::Rprop(out);
@@ -57,21 +57,88 @@ void ActiveRNN::build (const string& dataFile, ostream& out) {
 	rnnlib::WeightContainer::instance().randomise(initWeightRange);	
 	out << "optimiser:" << endl << *opt << endl;
 
-	
+	print_net_data();
+
+	//build the map for learning progress and errors list associations
+	for (int i=0; i<smregionsCount; i++) {
+		vector<double> errorsHistory;
+		pair<double, vector<double> > learnProg_errors;
+		learnProg_errors.first = 0.0;
+		learnProg_errors.second = errorsHistory;
+		learnProg_errorsMap[i] = learnProg_errors;
+	}
+	normalizationFactor = patternSize * 4 * 0.5;
+
 }
 
-double ActiveRNN::update (const rnnlib::DataSequence& seq, ostream& out) {
+///
+///update the machine state with current sequence
+///
+double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostream& out) {
 	
 	if (rnnlib::GlobalVariables::instance().isVerbose()) {
 		out << "data sequence:" << endl;
 		out << seq;
 	}
-	double error = net->train(seq);
-	out << "error: " << endl;
-	out << error << endl;
+	double error;
+	for (int i=0; i<10; i++) {
+		error = net->train(seq);
+		opt->update_weights();
+		rnnlib::WeightContainer::instance().reset_derivs();
+	}
+	out << "Region: " << smregionIdx << endl;
+	error /= normalizationFactor;
+	out << "\tError: " << endl;
+	out << "\t" << error << endl;
+	learnProg_errorsMap[smregionIdx].second.push_back (error);
+	if (learnProg_errorsMap[smregionIdx].second.size () > SMOOTHING+TIMEWINDOW)
+		learnProg_errorsMap[smregionIdx].second.erase (learnProg_errorsMap[smregionIdx].second.begin());
+	out << "\tLearning progress: " << endl;
+	out << "\t" << updateLearnProgress (smregionIdx) << endl;
+
 	return error;
 
 }
+
+///
+///update the learning progress associated to region r
+///
+double ActiveRNN::updateLearnProgress (int smregionIdx) {
+
+	double timewindowRatio = TIMEWINDOW / double(SMOOTHING + TIMEWINDOW);
+	double smoothingRatio = SMOOTHING / double(SMOOTHING + TIMEWINDOW);
+	double smoothing = learnProg_errorsMap[smregionIdx].second.size() * smoothingRatio + 1;
+	int lastPrevSmoothErrorIdx = (int)ceil(learnProg_errorsMap[smregionIdx].second.size() * (1 - timewindowRatio));
+	double accPrevSmoothError = 0.0;
+	for (int i=0; i != lastPrevSmoothErrorIdx; i++)
+		accPrevSmoothError += learnProg_errorsMap[smregionIdx].second[i];
+	accPrevSmoothError /= smoothing;
+
+	int firstCurrSmoothErrorIdx = (int)floor(learnProg_errorsMap[smregionIdx].second.size() * (1 - smoothingRatio));
+	double accCurrSmoothError = 0.0;
+	for (int i=firstCurrSmoothErrorIdx; i<learnProg_errorsMap[smregionIdx].second.size(); i++)
+		accCurrSmoothError += learnProg_errorsMap[smregionIdx].second[i];
+	accCurrSmoothError /= smoothing; 
+	return learnProg_errorsMap[smregionIdx].first = -(accCurrSmoothError - accPrevSmoothError);
+	
+}
+
+///
+///active selection of samples
+///
+int ActiveRNN::chooseSMRegion () {
+	double maxLearningProgress = -1.0;
+	int regionIdx = -1;
+	for (int i=0; i<learnProg_errorsMap.size(); i++)
+		if (learnProg_errorsMap[i].first > maxLearningProgress) {
+			regionIdx = i;
+			maxLearningProgress = learnProg_errorsMap[i].first;
+		}
+			
+	return regionIdx;
+	
+}
+
 
 
 }; /* namespace smlearning */

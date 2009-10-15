@@ -23,8 +23,8 @@
  
  */
 
-#ifndef SMLEARNING_OFFLINERNN_H_
-#define SMLEARNING_OFFLINERNN_H_
+#ifndef SMLEARNING_RNN_H_
+#define SMLEARNING_RNN_H_
 
 #include <MultilayerNet.hpp>
 
@@ -45,6 +45,10 @@ struct RNN {
 		task = conf.get<string>("task");
 	}
 
+	~RNN () {
+		delete net;
+	}
+	
 	///
 	///print network topology and learning algorithm information
 	///
@@ -97,4 +101,4 @@ bool generate_network_files_nfoldcv_set (const string defaultnetFileName, const 
 }; /* namespace smlearning */
 
 
-#endif /* SMLEARNING_OFFLINERNN_H_ */
+#endif /* SMLEARNING_RNN_H_ */

@@ -41,10 +41,14 @@
 #define SMLEARNING_ACTIVELEARNSCENARIOICE_H_
 
 #include <metalearning/ScenarioIce.h>
+#include <metalearning/ActiveRNN.h>
+#include <Helpers.hpp>
 
 namespace smlearning {
 
 class ActiveLearnScenarioIce : public ScenarioIce {
+	ActiveRNN learner;
+public:
 	///
 	///constructor
 	///

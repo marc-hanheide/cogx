@@ -476,7 +476,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 		srand(context->getRandSeed()._U32[0]  + e);
 		int startPosition;
 		if (startingPosition == 0)
-			startPosition = rand() % 17 + 1;
+			startPosition = rand() % 18 + 1;
 		else
 			startPosition = startingPosition;
 		//			int startPosition = 1;

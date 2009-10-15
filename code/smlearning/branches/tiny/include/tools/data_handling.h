@@ -60,7 +60,7 @@ void print_item (const T& elem) {
 ///print a FeatureVector struct
 ///
 template <typename T>
-void print_featvector (const FeatureVector& v) {
+void print_featvector (const vector<T>& v) {
 
 	for_each (v.begin(), v.end(), print_item<T>);
 
@@ -128,6 +128,11 @@ bool write_nc_file_basis (string fileName, const DataSet& data);
 ///concatenate .seq files in one file
 ///
 bool concatenate_datasets (string dir, string writeFileName);
+
+///
+///load a sequence into inputs and target vectors (for machine learning)
+///
+void load_sequence (vector<float>& inputVector, vector<float>& targetVector, Sequence s);
 
 ///
 ///generation of n-fold cross-validation sets from a particular sequence file

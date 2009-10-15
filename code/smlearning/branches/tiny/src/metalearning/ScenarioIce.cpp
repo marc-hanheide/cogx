@@ -313,14 +313,11 @@ int ScenarioIce::run (int argc, char *argv[]) {
 	int startingPosition = 0;
 	if (argc > 2)
 		numSequences = atoi(argv[2]);
-	if (argc == 4)
+	if (argc > 3)
 		startingPosition = atoi(argv[3]);
 	
 	//start of the experiment loop
-	//for (int e=0; e<numSequences; e++) {
-	int e=-1;
-	while (!pTiny->isUniverseInterrupted()) {
-		e++;
+	for (int e=0; e<numSequences && !pTiny->isUniverseInterrupted(); e++) {
 		//polyflap object
 		setupPolyflap(pTiny, pPolyflapObject, startPolyflapPosition, startPolyflapZRotation, polyflapDimensions);
 		/*golem::Bounds::SeqPtr curPol = pPolyflapObject->getGlobalBoundsSeq();*/
@@ -361,7 +358,7 @@ int ScenarioIce::run (int argc, char *argv[]) {
 
 		int startPosition;
 		if (startingPosition == 0)
-			startPosition = rand() % 17 + 1;
+			startPosition = rand() % 18 + 1;
 		else
 			startPosition = startingPosition;
 	
@@ -621,7 +618,7 @@ int ScenarioIce::run (int argc, char *argv[]) {
 		cout << "Iteration " << e << " completed!" << endl;
 
 				
-		}// end of the for-loop (experiment loop)
+}// end of the for-loop (experiment loop)
 
 
 	/////////////////////////////////////////////////
