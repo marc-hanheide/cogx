@@ -184,10 +184,8 @@ public class BeliefModelTranslator extends ManagedComponent {
 			
 			for (int i = 0; i < beliefs.length ; i++ ) {
 				Belief belief = beliefs[i].getData();
-				log("considering belief " + belief.id);
 				if (belief.id.contains("cca")) {
 					nonbinderbeliefs.add(belief);
-					log("OK, found one! " + belief.id);
 				}
 			}
 			
@@ -195,13 +193,10 @@ public class BeliefModelTranslator extends ManagedComponent {
 			
 			for (int i = 0; i < gbeliefs.length ; i++ ) {
 				Belief gbelief = gbeliefs[i].getData();
-				log("considering gbelief " + gbelief.id);
 				if (gbelief.id.contains("cca")) {
 					nonbinderbeliefs.add(gbelief);
-					log("OK, found one! " + gbelief.id);
 				}
-			}
-			
+			}	
 		}
 		
 		catch (Exception e) {

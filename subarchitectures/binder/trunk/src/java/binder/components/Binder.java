@@ -494,7 +494,7 @@ public class Binder extends ManagedComponent  {
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
 					Union existingUnion = existingUnionConfig.includedUnions[i];
-
+ 
 					// A new, several-proxies union
 					Union newMergedUnion;
 
@@ -511,7 +511,7 @@ public class Binder extends ManagedComponent  {
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
 							if (newMergedUnion instanceof RelationUnion) {
-								specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
+								newUnion = specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
 							}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
@@ -750,10 +750,6 @@ public class Binder extends ManagedComponent  {
 				union.usource.alternativeValues[i] = newSource;
                 log("bound source of " + union.entityID + " to " + newSource.val);
 			}
-			else {
-				errlog("WARNING: no union has been created for the proxy " + sourceId +
-							", referenced by the relation union " + union.entityID);
-			}
 		}
 		
 		union.utarget = new Feature();
@@ -770,10 +766,6 @@ public class Binder extends ManagedComponent  {
 				newTarget.val = unionForProxy.get(targetId);
 				union.utarget.alternativeValues[i] = newTarget;
                 log("bound target of " + union.entityID + " to " + newTarget.val);
-			}
-			else {
-				errlog("WARNING: no union has been created for the proxy " + targetId +
-							", referenced by the relation union " + union.entityID);
 			}
 		}
 		
@@ -993,7 +985,7 @@ public class Binder extends ManagedComponent  {
 
 	private static void errlog (String s) {
 		if (ERRLOGGING)
-		System.out.println("[UnionConstructor] " + s);
+		System.out.println("[Binder] " + s);
 	}
 
 }

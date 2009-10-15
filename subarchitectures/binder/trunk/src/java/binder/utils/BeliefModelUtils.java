@@ -536,8 +536,9 @@ public class BeliefModelUtils {
 
 		// If the formula is a complex formula, loop on its constituents and
 		// call getFormulaPrettyPrint recursively
-		if (formula instanceof ComplexFormula) {
-
+		if (formula != null && formula instanceof ComplexFormula && 
+				((ComplexFormula)formula).formulae != null) {
+			
 			if (showProbabilitiesInPrettyPrint && 
 					(formula.id.contains("unionconf-") || formula.id.contains("form-"))) {
 				result +=  " ["  + formula.prob + "]";
@@ -559,11 +560,14 @@ public class BeliefModelUtils {
 			}
 			result += ")";
 		}
+		
 
 		// if the formula is a simple colour property
 		else if (formula instanceof ColorProperty) {
 			ColorProperty p = (ColorProperty) formula;
-			result += " ^ <Colour> " + maybeNegate(p.polarity, p.colorValue.toString());
+			if (p.colorValue != null) {
+				result += " ^ <Colour> " + maybeNegate(p.polarity, p.colorValue.toString());
+			}
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
@@ -572,14 +576,18 @@ public class BeliefModelUtils {
 		// if the formula is a simple shape property
 		else if (formula instanceof ShapeProperty) {
 			ShapeProperty p = (ShapeProperty) formula;
-			result += " ^ <Shape> " + maybeNegate(p.polarity, p.shapeValue.toString());
+			if (p.shapeValue != null) {
+				result += " ^ <Shape> " + maybeNegate(p.polarity, p.shapeValue.toString());
+			}
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
 		else if (formula instanceof ObjectTypeProperty) {
 			ObjectTypeProperty p = (ObjectTypeProperty) formula;
-			result += " ^ <ObjectType> " + maybeNegate(p.polarity, p.typeValue.toString());	
+			if (p.typeValue != null) {
+				result += " ^ <ObjectType> " + maybeNegate(p.polarity, p.typeValue.toString());	
+			}
 			if (formula instanceof UncertainSuperFormula) {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
@@ -616,14 +624,6 @@ public class BeliefModelUtils {
 				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
 			}
 		}
-
-		// if the formula is a simple linguistic attribute property
-	/**	else if (formula instanceof BoundPhantomProxyProperty) {
-			result += " ^ <BoundPhantom> " + ((BoundPhantomProxyProperty)formula).boundProxy;	
-			if (formula instanceof UncertainSuperFormula) {
-				result += " " + getProbabilityValuePrettyPrint((UncertainSuperFormula)formula);
-			}
-		} */
 		
 		else if (formula instanceof UnionRefProperty) {
 			result += " ^ <UnionRef> " + ((UnionRefProperty)formula).unionRef;	
