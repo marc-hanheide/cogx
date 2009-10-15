@@ -44,11 +44,14 @@ generate : intention : grounding(Modality, BeliefId, GrResult) <-
 grounding_result_to_relation(assertionVerified, accept).
 grounding_result_to_relation(assertionFalsified, reject).
 
+opposite_answertype(positive, negative).
+opposite_answertype(negative, positive).
+
 % a positive query
 % max cost = 3.5
 query_belief(Object, Prop, yes(PropValue), AnswerType) <-
 	query_belief0(Object, Prop, PropValue, AnswerType),
-	dummy_assumption(x) / 1.0.
+	dummy_assumption(x) / 1.0.  % XXX don't remember why?
 
 % negative query
 % max cost = 3.5
@@ -66,15 +69,13 @@ query_belief(Object, Prop, Value, negative) <-
 % max cost = 2.5
 query_belief0(Object, objecttype, Value, Polarity) <-
 	k(now, private(r)) : objecttype(Object, FeatValue),
-	equality(Value, FeatValue, Polarity).
+	equality_to_polarity(Value, FeatValue, Polarity).
 
-equality(X, Y, positive) <-
-	=(X, Y).
-	%equal(X, Y).
+equality_to_polarity(X, Y, positive) <-
+	X = Y.
 
-equality(X, Y, negative) <-
+equality_to_polarity(X, Y, negative) <-
 	X \= Y.
-	%not_equal(X, Y) / 1.5.
 
 % we know the value
 %query_belief0(Object, objecttype, PropValue, positive) <-

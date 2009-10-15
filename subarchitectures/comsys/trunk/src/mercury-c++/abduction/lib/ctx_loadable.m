@@ -104,13 +104,20 @@ ctx_fact(_Ctx, vs(m(Mod, p("=", [T01, T02])), VS), vs(m(Mod, p("=", [T1, T2])), 
 	T1 = apply_subst_to_term(Subst, T01),
 	T2 = apply_subst_to_term(Subst, T02).
 
-	% TODO: make this more general (i.e. don't require ground terms)
-ctx_fact(_Ctx, vs(m(Mod, p("\\=", [T01, T02])), VS),
-		vs(m(Mod, p("=", [ground_term_to_term(T1), ground_term_to_term(T2)])), VS)) :-
+/*
+ctx_fact(_Ctx, vs(m(Mod, p("\\=", [T1, T2])), VS),
+		vs(m(Mod, p("=", [T1, T2])), VS)) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "!", !IO) ),
-	ground_term(T01, T1),
-	ground_term(T02, T2),
-	not T1 = T2.
+	(if
+		unify_terms(T1, T2, _Subst)
+	then
+		% unifiable -> possibly equal
+		fail
+	else
+		% not unifiable -> certainly not equal
+		true
+	).
+*/
 
 :- pred ctx_rule(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mrule(ctx_modality))::out) is nondet.
 
