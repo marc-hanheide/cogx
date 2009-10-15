@@ -39,7 +39,7 @@ adj => s/!adj
 changing the syntactic definition of "copular verb"
 is :- s\!np/adj  to is :- s\!np/(s/!adj)
 
-Parse 1: du : 
+Parse 4: du{index=E_13:ascription} : 
   @be1_0:ascription(be ^ 
                     <Commitment>e-uncontentious ^ 
                     <Focus>e-focus-false ^ 
@@ -48,7 +48,7 @@ Parse 1: du :
                     <RhOwner>rh-speaker ^ 
                     <Tense>pres ^ 
                     <ThOwner>th-hearer ^ 
-                    <Cop-Restr>(ball1_0:thing ^ ball ^ 
+                    <Cop-Restr>(box1_0:thing ^ box ^ 
                                 <Commitment>t-uncontentious ^ 
                                 <Delimitation>unique ^ 
                                 <Focus>t-focus-true ^ 
@@ -56,11 +56,11 @@ Parse 1: du :
                                 <Quantification>specific ^ 
                                 <Rheme>t-rheme-false) ^ 
                     <Cop-Scope>x1_0:quality ^ 
-                    <Modifier>(red1_0:q-color ^ red ^ 
+                    <Modifier>(blue1_0:q-color ^ blue ^ 
                                <Commitment>m-uncontentious ^ 
                                <Focus>m-focus-true ^ 
                                <Rheme>m-rheme-true) ^ 
-                    <Subject>ball1_0:thing)
+                    <Subject>box1_0:thing)
 
 ------------------
 (the box )Rh  (is blue)Th
