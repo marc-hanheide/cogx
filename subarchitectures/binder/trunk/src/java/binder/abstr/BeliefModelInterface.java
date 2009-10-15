@@ -266,12 +266,23 @@ public class BeliefModelInterface extends ManagedComponent{
 	 * 
 	 * @param beliefId
 	 * @return
-	 * @throws DoesNotExistOnWMException
-	 * @throws UnknownSubarchitectureException
 	 */
 
-	public Belief getBelief(String beliefId) 
-		throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+	public Belief getBelief(String beliefId) {
+		Belief b;
+		try {
+			b = getMemoryEntry(beliefId, Binder.BINDER_SA, Belief.class);
+			return b;
+		}
+		catch (DoesNotExistOnWMException e) {
+			e.printStackTrace();
+		}
+		catch (UnknownSubarchitectureException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+		/*
 		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
 			Belief b = getMemoryEntry(currentBeliefModel.k[i], Binder.BINDER_SA, Belief.class);
 			if (b.id.equals(beliefId)) {
@@ -279,6 +290,7 @@ public class BeliefModelInterface extends ManagedComponent{
 			}
 		}
 		return null;
+		*/
 	}
 	
 	
