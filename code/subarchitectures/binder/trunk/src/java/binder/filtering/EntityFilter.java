@@ -248,29 +248,38 @@ public class EntityFilter {
 		Union bunion = getBasicUnionWithMaximumProbability(initRUnion);
 		RelationUnion newRUnion = BinderUtils.convertIntoRelationUnion(bunion);
 
+		
 		// specify the source of the relation union
 		
 		newRUnion.psource = new Feature();
 		newRUnion.psource.featlabel = initRUnion.psource.featlabel;	
 		newRUnion.psource.alternativeValues = new FeatureValue[1];
-		newRUnion.usource.alternativeValues[0] = initRUnion.usource.alternativeValues[0];
+		if (initRUnion.psource.alternativeValues[0] != null) {
+			newRUnion.psource.alternativeValues[0] = initRUnion.psource.alternativeValues[0];
+		}
 		
 		newRUnion.usource = new Feature();
 		newRUnion.usource.featlabel = initRUnion.usource.featlabel;	
 		newRUnion.usource.alternativeValues = new FeatureValue[1];	
-		newRUnion.usource.alternativeValues[0] = initRUnion.usource.alternativeValues[0];
-
+		if (initRUnion.usource.alternativeValues[0] != null) {
+			newRUnion.usource.alternativeValues[0] = initRUnion.usource.alternativeValues[0];
+		}
+		
 		// specify the target of the relation union
 		newRUnion.ptarget = new Feature();
 		newRUnion.ptarget.featlabel = initRUnion.ptarget.featlabel;	
 		newRUnion.ptarget.alternativeValues = new FeatureValue[1];
-		newRUnion.ptarget.alternativeValues[0] = initRUnion.ptarget.alternativeValues[0];
+		if (initRUnion.ptarget.alternativeValues[0] != null) {
+			newRUnion.ptarget.alternativeValues[0] = initRUnion.ptarget.alternativeValues[0];
+		}
 		
 		newRUnion.utarget = new Feature();
 		newRUnion.utarget.featlabel = initRUnion.utarget.featlabel;	
 		newRUnion.utarget.alternativeValues = new FeatureValue[1];
-		newRUnion.utarget.alternativeValues[0] = initRUnion.utarget.alternativeValues[0];
-
+		if (initRUnion.utarget.alternativeValues[0] != null) {
+			newRUnion.utarget.alternativeValues[0] = initRUnion.utarget.alternativeValues[0];
+		}
+		
 		return newRUnion;
 	}
 	
