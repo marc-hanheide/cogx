@@ -9,6 +9,7 @@
 :- type cost_function
 	--->	f(cost_function_name)  % named cost function
 	;	const(float)  % constant cost function
+	;	not_assumable  % not an assumable predicate
 	.
 
 :- func cost_function_to_string(cost_function) = string.
@@ -21,4 +22,4 @@
 
 cost_function_to_string(f(S)) = S.
 cost_function_to_string(const(Float)) = string.float_to_string(Float).
-
+cost_function_to_string(not_assumable) = "T".

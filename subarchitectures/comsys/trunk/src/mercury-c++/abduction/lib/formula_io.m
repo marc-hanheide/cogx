@@ -245,20 +245,34 @@ term_to_mtest(functor(atom("?"), [T], _), MTest) :-
 :- pred term_to_rule_antecedent(term.term::in, rule_antecedent(M)::out) is semidet
 		<= (modality(M), term_parsable(M)).
 
-term_to_rule_antecedent(functor(atom("/"), [T, functor(atom(FName), [], _)], _), std(cf(MP, f(FName)))) :-
-	term_to_mprop(T, MP).
-term_to_rule_antecedent(functor(atom("/"), [T, functor(float(Cost), [], _)], _), std(cf(MP, const(Cost)))) :-
-	term_to_mprop(T, MP).
-term_to_rule_antecedent(T, test(MTest)) :-
-	T = functor(atom("?"), [_], _),
-	term_to_mtest(T, MTest).
+term_to_rule_antecedent(MainT, Antecedent) :-
+	(if
+		MainT = functor(atom("/"), [T, AnnotT], _)
+	then
+		% it's an annotated mprop
+		term_to_mprop(T, MP),
+		term_to_cost_function(AnnotT, Func),
+		Antecedent = std(cf(MP, Func))
+	else
+		(if
+			MainT = functor(atom("?"), [_], _)
+		then
+			% it's an assertion
+			term_to_mtest(MainT, MTest),
+			Antecedent = test(MTest)
+		else
+			% it's a non-annotated mprop
+			term_to_mprop(MainT, MP),
+			Antecedent = std(cf(MP, not_assumable))
+		)
+	).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-:- pred func_annotation(term.term::in, cost_function::out, term.term::out) is semidet.
+:- pred term_to_cost_function(term.term::in, cost_function::out) is semidet.
 
-func_annotation(functor(atom("/"), [T, functor(atom(FName), [], _)], _), f(FName), T).
-func_annotation(functor(atom("/"), [T, functor(float(FValue), [], _)], _), const(FValue), T).
+term_to_cost_function(functor(atom(FName), [], _), f(FName)).
+term_to_cost_function(functor(float(FValue), [], _), const(FValue)).
 
 %------------------------------------------------------------------------------%
 
