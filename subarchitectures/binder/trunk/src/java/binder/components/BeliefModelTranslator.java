@@ -14,6 +14,7 @@ import beliefmodels.adl.SpatioTemporalFrame;
 import beliefmodels.adl.SpatioTemporalModel;
 import beliefmodels.adl.TemporalInterval;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
+import beliefmodels.domainmodel.cogx.GroundedBelief;
 import beliefmodels.domainmodel.cogx.LogicalOp;
 import beliefmodels.domainmodel.cogx.Saliency;
 import beliefmodels.domainmodel.cogx.SaliencyProperty;
@@ -187,6 +188,17 @@ public class BeliefModelTranslator extends ManagedComponent {
 				if (belief.id.contains("cca")) {
 					nonbinderbeliefs.add(belief);
 					log("OK, found one! " + belief.id);
+				}
+			}
+			
+			CASTData<GroundedBelief>[] gbeliefs = getWorkingMemoryEntries (Binder.BINDER_SA, GroundedBelief.class);
+			
+			for (int i = 0; i < gbeliefs.length ; i++ ) {
+				Belief gbelief = gbeliefs[i].getData();
+				log("considering gbelief " + gbelief.id);
+				if (gbelief.id.contains("cca")) {
+					nonbinderbeliefs.add(gbelief);
+					log("OK, found one! " + gbelief.id);
 				}
 			}
 			
