@@ -84,10 +84,7 @@ public class ContinualCollaborativeActivity {
 	
 	/** path names to abduction rules and facts; class provides get-/set-methods */ 
 	
-    private String understandRulesFilename = "/dev/null";
-    private String understandFactsFilename = "/dev/null";
-    private String generateRulesFilename = "/dev/null";
-    private String generateFactsFilename = "/dev/null";
+    private Vector<String> files = new Vector<String>();
 
     private ProofStack stack = new ProofStack();
     
@@ -139,24 +136,23 @@ public class ContinualCollaborativeActivity {
 	 */ 
 	 
 	public void initAbducer() {
+		abducer.clearFacts();
+		abducer.clearRules();
+		abducer.clearAssumables();
 		try {
-			abducer.clearFacts();
-			abducer.clearRules();
-			abducer.clearAssumables();
-			abducer.loadFactsFromFile(understandFactsFilename);
-			abducer.loadFactsFromFile(generateFactsFilename);
-			abducer.loadRulesFromFile(understandRulesFilename);
-			abducer.loadRulesFromFile(generateRulesFilename);
+			Iterator<String> it = files.iterator();
+			while (it.hasNext()) {
+				abducer.loadFile(it.next());
+			}
 		}
 		catch (AbducerException e) {
 			e.printStackTrace();
 		}
 	} // end 
 	
-	public void setUnderstandFactsFileName (String fn) { understandFactsFilename = fn; }
-	public void setUnderstandRulesFileName (String fn) { understandRulesFilename = fn; }
-	public void setGenerateFactsFileName (String fn) { generateFactsFilename = fn; }
-	public void setGenerateRulesFileName (String fn) { generateRulesFilename = fn; }
+	public void addFileToLoad(String filename) {
+		files.add(filename);
+	}
 		
 	/**
 	 constructProof constructs an abductive proof for a given 

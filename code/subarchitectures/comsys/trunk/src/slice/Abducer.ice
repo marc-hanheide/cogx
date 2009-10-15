@@ -174,17 +174,16 @@ module Abducer {
 
 
 	interface AbducerServer {
-		void clearRules();
-		void loadRulesFromFile(string filename)
+
+		void loadFile(string filename)
 				throws FileReadErrorException, SyntaxErrorException;
 
+		void clearRules();
 		void clearFacts();
 		void clearFactsByModality(ModalityType type);
-		void loadFactsFromFile(string filename)
-				throws FileReadErrorException, SyntaxErrorException;
-		void addFact(ModalisedFormula f);
-
 		void clearAssumables();
+
+		void addFact(ModalisedFormula f);
 		void addAssumable(string function, ModalisedFormula f, float cost);
 
 		ProveResult prove(MarkedQuerySeq g);

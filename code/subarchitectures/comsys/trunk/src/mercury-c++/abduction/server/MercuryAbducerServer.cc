@@ -24,23 +24,16 @@ MercuryAbducerServer::MercuryAbducerServer()
 }
 
 void
-MercuryAbducerServer::clearRules(const Ice::Current&)
-{
-	cout << tty::green << "* clearing rules" << tty::dcol << endl;
-	clear_rules(ctx, &ctx);
-}
-
-void
-MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Current&)
+MercuryAbducerServer::loadFile(const string& filename, const Ice::Current&)
 {
 	char * s = cc2m::string(filename);
-	cout << tty::green << "* loading rules from `" << s << "'" << tty::dcol << endl;
+	cout << tty::green << "* loading file `" << s << "'" << tty::dcol << endl;
 
 	MR_Word w_result;
 	char * args;
 	int argi;
 
-	load_rules_from_file(s, &w_result, ctx, &ctx);
+	load_file(s, &w_result, ctx, &ctx);
 
 	if (load_result_is_ok(w_result)) {
 		cout << tty::green << "  result: ok" << tty::dcol << endl;
@@ -53,6 +46,13 @@ MercuryAbducerServer::loadRulesFromFile(const string& filename, const Ice::Curre
 		cout << tty::red << "  syntax error: " << args << " on line " << argi << tty::dcol << endl;
 		throw SyntaxErrorException(filename, args, argi);
 	}
+}
+
+void
+MercuryAbducerServer::clearRules(const Ice::Current&)
+{
+	cout << tty::green << "* clearing rules" << tty::dcol << endl;
+	clear_rules(ctx, &ctx);
 }
 
 void
@@ -92,30 +92,11 @@ MercuryAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current
 	}
 }
 
-
 void
-MercuryAbducerServer::loadFactsFromFile(const string& filename, const Ice::Current&)
+MercuryAbducerServer::clearAssumables(const Ice::Current&)
 {
-	char * s = cc2m::string(filename);
-	cout << tty::green << "* loading facts from `" << s << "'" << tty::dcol << endl;
-
-	MR_Word w_result;
-	char * args;
-	int argi;
-
-	load_facts_from_file(s, &w_result, ctx, &ctx);
-
-	if (load_result_is_ok(w_result)) {
-		cout << tty::green << "  result: ok" << tty::dcol << endl;
-	}
-	else if (load_result_is_file_read_error(w_result)) {
-		cout << tty::red << "  file read error" << tty::dcol << endl;
-		throw FileReadErrorException(filename);
-	}
-	else if (load_result_is_syntax_error(w_result, &args, &argi)) {
-		cout << tty::red << "  syntax error: " << args << " on line " << argi << tty::dcol << endl;
-		throw SyntaxErrorException(filename, args, argi);
-	}
+	cout << tty::green << "* clearing assumables" << tty::dcol << endl;
+	clear_assumables(ctx, &ctx);
 }
 
 void
@@ -128,13 +109,6 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 
 	MR_Word mprop = modalisedFormulaToMercMProp(fact, &vs);
 	add_mprop_fact(vs, mprop, ctx, &ctx);
-}
-
-void
-MercuryAbducerServer::clearAssumables(const Ice::Current&)
-{
-	cout << tty::green << "* clearing assumables" << tty::dcol << endl;
-	clear_assumables(ctx, &ctx);
 }
 
 void

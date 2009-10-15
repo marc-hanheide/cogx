@@ -222,3 +222,6 @@ maybe_assert_modifier(Ref, Polarity, Nom) <-
 maybe_assert_modifier(Ref, Polarity, Nom) <-
 	i : rel_Modifier(Nom, ModifierNom) / true,
 	assert_prop(Ref, Polarity, ModifierNom) / true.
+
+polarprop(Prop, pos, Prop).
+polarprop(Prop, neg, not(Prop)).
