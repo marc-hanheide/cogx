@@ -8,9 +8,8 @@ JAVA MG CategorizeRoomGenerator coma.motivation.CategorizeRoomGenerator
 
 JAVA MG MotiveFilterManager motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,LimitTriesFilter" 
 
-JAVA MG MotivationScheduler motivation.components.managers.Scheduler --log --maxPlannedMotives 1 --orderPolicy InformationGain
+JAVA MG MotivationScheduler motivation.components.managers.Scheduler  --maxPlannedMotives 1 --orderPolicy PriorityGain
 
-JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager  --log
+JAVA MG MotivationPlanAllManager motivation.components.managers.PlanAllManager 
 
-
-
+JAVA MG MotiveChartViewer motivation.util.viewer.MotiveChartViewer
