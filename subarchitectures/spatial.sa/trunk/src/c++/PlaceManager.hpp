@@ -134,7 +134,8 @@ class PlaceManager : public cast::ManagedComponent
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
     std::map<int, FrontierInterface::NodeHypothesisPtr> m_PlaceIDToHypMap;
     std::map<int, std::string> m_HypIDToWMIDMap;
-    std::map<int, std::vector<FrontierInterface::NodeHypothesisPtr> > m_rejectedHypotheses;
+    //List of hypotheses that have already been tried and failed from each Node
+    std::map<int, std::vector<FrontierInterface::NodeHypothesisPtr> > m_rejectedHypotheses; 
     bool m_isPathFollowing;
   bool m_nickSanity;
     int m_startNodeForCurrentPath; // During transitions, stores where the robot
