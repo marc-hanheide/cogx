@@ -383,18 +383,21 @@ public class ContinualCollaborativeActivity {
 		if (stack.isEmpty()) {
 			log("  VU: stack empty");
 			stack.push(pi);
-			//printStack();
-			//return new Belief[0];
 			return ProofStack.blockToBeliefs(pi, localBeliefs);
-			//return pi.assertedBeliefs;
-		}
-		else {
-			log("  VU: stack non-empty");
-			piPrime = stack.pop();
 		}
 
-		boolean verified = true;
+		log("  VU: stack non-empty");
+		
+		// TODO: find topmost relevant block
+		piPrime = stack.pop();
+
 /*
+		if (updateConsistent()) {
+			
+		}
+		
+		boolean verified = true;
+
 		for (int i = 0; i < piPrime.assertedBeliefs.length; i++) {
 			switch (VerifiableUpdate.consistent(model, piPrime.assertedBeliefs[i], pi.assertedBeliefs)) {  // XXX !!!
 			
@@ -412,13 +415,12 @@ public class ContinualCollaborativeActivity {
 					break;					
 			}
 		}
-*/
 		
 		stack.push(pi);
 		if (verified == false) {
 			stack.push(piPrime);
 		}
-		
+*/
 		return consistentUpdates.toArray(new Belief[0]);
 	}
 

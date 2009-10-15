@@ -363,7 +363,11 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     private ContextUpdate processGroundedBelief(GroundedBelief gb) {
     	ContextUpdate cu = new ContextUpdate();
     	//cu.proof = new MarkedQuery[] { };
-    	cu.intention = PredicateFactory.predicate("have_sensed", new Term[] { PredicateFactory.term(gb.grounding.modality) });
+    	cu.intention = PredicateFactory.predicate("grounding", new Term[] {
+    			PredicateFactory.term(gb.grounding.modality), // source modality
+    			PredicateFactory.term(gb.id), // belief id
+    			PredicateFactory.term(gb.grounding.gstatus.toString())  // grounding status
+    		});
     	return cu;
     }
     
@@ -395,7 +399,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 					}
 				}
 				if (!found) {
-					beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
+					//beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
 					addNewBelief(beliefUpdates[i]);
 				}
 			}

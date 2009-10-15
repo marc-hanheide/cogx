@@ -31,14 +31,18 @@ generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 %intention : ask_property(h, Object, Prop) <-
 	%query_belief(Object, Prop, yes(PropValue), AnswerType),
 
-generate : intention : have_sensed(Modality) <-
+generate : intention : grounding(Modality, BeliefId, GrResult) <-
 	dummy_nom1(Nom),
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	i : feat_Relation(Nom, accept) / 1.0,
+	grounding_result_to_relation(GrResult, Relation),
+	i : feat_Relation(Nom, Relation) / 1.0,
 	i : feat_Modality(Nom, Modality) / 1.0,
 	event : produce(r, Nom) / 1.0.
+
+grounding_result_to_relation(assertionVerified, accept).
+grounding_result_to_relation(assertionFalsified, reject).
 
 % a positive query
 % max cost = 3.5
