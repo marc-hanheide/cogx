@@ -148,6 +148,7 @@ class PlaceManager : public cast::ManagedComponent
     					// freespace placeholder properties maintained
     std::map<int, std::string> m_borderProperties; // Keeps track of the
     				// border placeholder properties maintained
+    bool m_firstNodeProcessed;
 
     FrontierInterface::FrontierReaderPrx frontierReader;
     FrontierInterface::HypothesisEvaluatorPrx hypothesisEvaluator;

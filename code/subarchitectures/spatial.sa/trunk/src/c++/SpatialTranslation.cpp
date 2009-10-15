@@ -231,23 +231,33 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	debug("abort?");
 	// abort got?
 	try {
-	  shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
-	    getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
+	  log("locking");
+	  lockEntry(navCmdId, cdl::LOCKEDODR);
+	  log("locked");
+	  try {
 
-	  if(pcmd){
-	    aborted = 
-	      (pcmd->getData()->comp == SpatialData::COMMANDABORTED ||
-	      pcmd->getData()->comp == SpatialData::COMMANDSUCCEEDED ); 
-	    // I.e. someone outside decided we're done now - the internal cmd needs
-	    // to be cancelled either way.
-	  }else{
+	    shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
+	      getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
+
+	    if(pcmd){
+	      aborted = 
+		(pcmd->getData()->comp == SpatialData::COMMANDABORTED ||
+		 pcmd->getData()->comp == SpatialData::COMMANDSUCCEEDED ); 
+	      // I.e. someone outside decided we're done now - the internal cmd needs
+	      // to be cancelled either way.
+	    }else{
+	      log("The NavCommand suddenly disappeared...");
+	      some_error = true;
+	    }
+	  } catch (DoesNotExistOnWMException) {
 	    log("The NavCommand suddenly disappeared...");
 	    some_error = true;
-	  }
-	} catch (DoesNotExistOnWMException) {
-	  log("The NavCommand suddenly disappeared...");
-	  some_error = true;
-	}				
+	  }				
+	  log("unlocking");
+	  unlockEntry(navCmdId);
+	}catch (ConsistencyException e) {
+	  log("Error! ConsistencyException in SpatialTranslation::executeCommand!");
+	}
 	debug(aborted? "yes": "no");
 			
       }else if(type == typeName<NavData::InternalNavCommand>()){
@@ -820,6 +830,7 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
   bool stop = false;
 
   try {
+    lockEntry(id, cdl::LOCKEDODR);
     pcmd = getWorkingMemoryEntry<SpatialData::NavCommand>(id);	
   } catch (DoesNotExistOnWMException) {
     debug("changeNavCmdCompletion called for nonexistent NavCommand");
@@ -846,6 +857,7 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
       stop = true;
     }
   }
+  unlockEntry(id);
 }
 
 // ----------------------------------------------------------------------------
