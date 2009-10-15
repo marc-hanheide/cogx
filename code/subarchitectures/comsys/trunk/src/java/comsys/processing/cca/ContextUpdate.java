@@ -13,6 +13,8 @@ import binder.utils.BeliefModelUtils;
 
 public class ContextUpdate {
 
+	private static Counter counter = new Counter("cca");
+	
 	public Predicate intention;
 	//public MarkedQuery[] proof;
 	public Belief[] beliefs;
@@ -54,9 +56,11 @@ public class ContextUpdate {
 		Belief[] bs = new Belief[asserted.length + assumed.length];
 		for (int i = 0; i < asserted.length; i++) {
 			bs[i] = asserted[i];
+			bs[i].id = counter.inc("cu-assert");
 		}
 		for (int j = 0; j < assumed.length; j++) {
 			bs[j+asserted.length] = assumed[j];
+			bs[j+asserted.length].id = counter.inc("cu-assume");
 		}
 		return bs;
 	}

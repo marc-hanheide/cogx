@@ -90,6 +90,8 @@ public class ContinualCollaborativeActivity {
     
     private Stack<RefBinding> refStack = new Stack<RefBinding>();
 	
+    private Map<String, Belief> localBeliefs = new HashMap<String, Belief>(); 
+    
 	boolean logging = true;
 	
 	
@@ -331,15 +333,9 @@ public class ContinualCollaborativeActivity {
 	public void addCRContext(beliefmodels.clarification.ClarificationRequest cr) {
 		Modality[] mod = new Modality[] {ModalityFactory.infoModality()};
 		ModalisedFormula mfModality = AbducerUtils.modalisedFormula(mod,
-				PredicateFactory.predicate("cr_modality", new Term[] {
-					PredicateFactory.term(cr.id),
-					PredicateFactory.term(cr.sourceModality)
-				}));
+				PredicateFactory.twoPlacePredicate("cr_modality", cr.id, cr.sourceModality));
 		ModalisedFormula mfSourceId = AbducerUtils.modalisedFormula(mod,
-				PredicateFactory.predicate("cr_entity", new Term[] {
-						PredicateFactory.term(cr.id),
-						PredicateFactory.term(cr.sourceEntityID)
-					}));
+				PredicateFactory.twoPlacePredicate("cr_entity", cr.id, cr.sourceEntityID));
 		abducer.addFact(mfModality);
 		abducer.addFact(mfSourceId);
 		log("adding fact: " + MercuryUtils.modalisedFormulaToString(mfModality));
@@ -352,7 +348,7 @@ public class ContinualCollaborativeActivity {
 			for (int i = 0; i < needFs.length; i++) {
 				
 				if (needFs[i] instanceof ContinualFormula) {
-					String[] args = valueTermArgs((ContinualFormula) needFs[i]);
+					String[] args = ClarificationUtils.valueTermArgs((ContinualFormula) needFs[i]);
 
 					Term[] tArgs = null;
 					if (args.length == 1) {
@@ -370,65 +366,6 @@ public class ContinualCollaborativeActivity {
 		}
 	}
 	
-	public static FunctionTerm continualFormulaToTerm(ContinualFormula cf) {
-		String functor = "";
-		String arg = "";
-		
-		
-		if (cf instanceof ObjectTypeProperty) {
-			ObjectTypeProperty pf = (ObjectTypeProperty) cf;
-			functor = "objecttype";
-			arg = pf.typeValue.toString();
-		}
-		if (cf instanceof ColorProperty) {
-			ColorProperty pf = (ColorProperty) cf;
-			functor = "color";
-			arg = pf.colorValue.toString();
-		}
-		if (cf instanceof ShapeProperty) {
-			ShapeProperty pf = (ShapeProperty) cf;
-			functor = "shape";
-			arg = pf.shapeValue.toString();
-		}
-		
-		if (!functor.equals("")) {
-			return PredicateFactory.term(functor, new Term[] {PredicateFactory.term(arg)});
-		}
-		else {
-			return null;
-		}
-	}
-	
-	public String[] valueTermArgs(ContinualFormula cf) {
-		String propName = "";
-		String propValue = null;
-		
-		if (cf instanceof ColorProperty) {
-			propName = "color";
-			Color val = ((ColorProperty)cf).colorValue;
-			if (val != Color.unknownColor)
-				propValue = val.toString();
-		}
-		if (cf instanceof ShapeProperty) {
-			propName = "shape";
-			Shape val = ((ShapeProperty)cf).shapeValue;
-			if (val != Shape.unknownShape)
-				propValue = val.toString();
-		}
-		if (cf instanceof ObjectTypeProperty) {
-			propName = "objecttype";
-			ObjectType val = ((ObjectTypeProperty)cf).typeValue;
-			if (val != ObjectType.unknownObjectType)
-				propValue = val.toString();
-		}
-		if (propValue != null) {
-			return new String[] {propName, propValue};
-		}
-		else {
-			return new String[] {propName};
-		}
-	}
-	
 	/**
 	 * Perform verifiable update.
 	 * 
@@ -437,26 +374,26 @@ public class ContinualCollaborativeActivity {
 	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
 	 */
 	public Belief[] verifiableUpdate(ContextUpdate cu, BeliefModel model) {
-		ProofBlock pi = ProofStack.construct(cu);
+		ProofBlock pi = ProofStack.construct(cu, localBeliefs);
 		ProofBlock piPrime = null;
-		ArrayList<Belief> consistentUpdates = new ArrayList<Belief>();
-		boolean verified;
+		List<Belief> consistentUpdates = new ArrayList<Belief>();
 
-		//System.err.println(ProofStack.proofBlockToString(pi));
+		log("new proofblock: " + PrettyPrinting.proofBlockToString(pi));
 		
 		if (stack.isEmpty()) {
 			log("  VU: stack empty");
 			stack.push(pi);
 			//printStack();
 			//return new Belief[0];
-			return null;
+			return ProofStack.blockToBeliefs(pi, localBeliefs);
 			//return pi.assertedBeliefs;
 		}
 		else {
 			log("  VU: stack non-empty");
 			piPrime = stack.pop();
 		}
-		verified = true;
+
+		boolean verified = true;
 /*
 		for (int i = 0; i < piPrime.assertedBeliefs.length; i++) {
 			switch (VerifiableUpdate.consistent(model, piPrime.assertedBeliefs[i], pi.assertedBeliefs)) {  // XXX !!!

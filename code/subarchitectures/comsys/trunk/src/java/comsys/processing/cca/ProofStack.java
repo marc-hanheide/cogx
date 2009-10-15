@@ -1,5 +1,7 @@
 package comsys.processing.cca;
 
+import java.util.*;
+
 import Abducer.*;
 import comsys.datastructs.comsysEssentials.*;
 import beliefmodels.adl.*;
@@ -31,12 +33,26 @@ public class ProofStack {
 	 * @param proofId
 	 * @return
 	 */
-	public static ProofBlock construct(ContextUpdate cu) {
+	public static ProofBlock construct(ContextUpdate cu, Map<String, Belief> localBeliefs) {
 		System.err.println("stack.construct()");
 		ProofBlock pb = new ProofBlock();
 		pb.intention = cu.intention;
-		pb.assertedBeliefIds = beliefIds(cu.beliefs);
+		List<String> ids = new ArrayList<String>();
+		for (int i = 0; i < cu.beliefs.length; i++) {
+			Belief b = cu.beliefs[i];
+			localBeliefs.put(b.id, b);
+			ids.add(b.id);
+		}
+		pb.assertedBeliefIds = ids.toArray(new String[] {});
 		return pb;
+	}
+
+	public static Belief[] blockToBeliefs(ProofBlock block, Map<String, Belief> localBeliefs) {
+		List<Belief> bs = new ArrayList<Belief>();
+		for (int i = 0; i < block.assertedBeliefIds.length; i++) {
+			bs.add(localBeliefs.get(block.assertedBeliefIds[i]));
+		}
+		return bs.toArray(new Belief[]{});
 	}
 	
 	/**

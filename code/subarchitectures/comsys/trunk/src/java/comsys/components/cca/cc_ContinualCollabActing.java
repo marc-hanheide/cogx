@@ -369,9 +369,10 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     
     private void updateContext(ContextUpdate cu) {
     	log("updating context");
+    	log("context update: " + cu.toString());
     	log("stack before update");
     	ccaEngine.printStack();
-		Belief[] beliefUpdates = new Belief[] {};//ccaEngine.verifiableUpdate(cu, getCurrentBeliefModel());
+		Belief[] beliefUpdates = ccaEngine.verifiableUpdate(cu, getCurrentBeliefModel());
 		log("stack after update");
     	ccaEngine.printStack();
 		
