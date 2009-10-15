@@ -1,5 +1,5 @@
 <!-- Inner build file for a module in the CogX system -->
-<project name="myproject" default="compile" basedir=".">
+<project name="binder" default="compile" basedir=".">
         <!-- =================================================================== -->
         <!-- Add JAR files to classpath                                          -->
         <!-- =================================================================== -->

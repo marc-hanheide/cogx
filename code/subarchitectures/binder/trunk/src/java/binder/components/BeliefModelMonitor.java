@@ -3,12 +3,14 @@ package binder.components;
 
 import beliefmodels.adl.Belief;
 import beliefmodels.adl.BeliefModel;
+import beliefmodels.domainmodel.cogx.GroundedBelief;
 import binder.utils.BeliefModelUtils;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTData;
 
 
 public class BeliefModelMonitor extends ManagedComponent {
@@ -57,5 +59,37 @@ public class BeliefModelMonitor extends ManagedComponent {
 		
 		
 		log("Binding Monitor successfully started");
+	}
+	
+	
+	public void run () {
+		while (isRunning()) {
+			sleepComponent(500);
+			try {
+				CASTData<Belief>[] beliefs = getWorkingMemoryEntries(Binder.BINDER_SA, Belief.class);
+				log("number of beliefs in WM: " + beliefs.length);
+				
+				for (int i = 0 ; i < beliefs.length ; i++) {
+					log("belief " + i + " " + beliefs[i].getData().id); 
+				}
+				
+				CASTData<GroundedBelief>[] beliefs2 = getWorkingMemoryEntries(Binder.BINDER_SA, GroundedBelief.class);
+				log("number of grounded beliefs in WM: " + beliefs2.length);
+				
+				for (int i = 0 ; i < beliefs2.length ; i++) {
+					log("gbelief " + i + " " + beliefs2[i].getData().id); 
+				}
+				
+				CASTData<BeliefModel>[] bmodel = getWorkingMemoryEntries(Binder.BINDER_SA, BeliefModel.class);
+				log("number of beliefs in model: " + bmodel[0].getData().k.length);
+				
+				for (int i = 0 ; i < bmodel[0].getData().k.length ; i++) {
+					log("belief in model " + i + " " + bmodel[0].getData().k[i]); 
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

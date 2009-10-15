@@ -360,7 +360,7 @@ public class ProbabilityUtils {
 		return containsAll(pairs1, pairs2);	
 	}
 
-
+	
 	/**
 	 * Returns true if the elements in pairs2 are contained in pairs1, false otherwise
 	 * 
@@ -368,7 +368,7 @@ public class ProbabilityUtils {
 	 * @param pairs2 second feature pair
 	 * @return true if contained, false if not
 	 */
-	
+	 
 	public static boolean containsAll(Vector<FeatureValuePair> pairs1, 
 			Vector<FeatureValuePair> pairs2) {
 	
