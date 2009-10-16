@@ -163,9 +163,10 @@ void ObjectTrackerTest::receiveVisualObject(const cdl::WorkingMemoryChange & _wm
   */
   int i;
   
+  // Get index of trajectory entry with respect to actual time
   for(i=0; i<timestamps.size() && timestamps[i]<t; i++)
   {;}
-  
+  /*
   m_error_pos +=	abs(trajectory[i].pos.x - obj->pose.pos.x) +
   								abs(trajectory[i].pos.y - obj->pose.pos.y) + 
   								abs(trajectory[i].pos.z - obj->pose.pos.z);
@@ -179,7 +180,7 @@ void ObjectTrackerTest::receiveVisualObject(const cdl::WorkingMemoryChange & _wm
   								abs(trajectory[i].rot.m20 - obj->pose.rot.m20) +
   								abs(trajectory[i].rot.m21 - obj->pose.rot.m21) +
   								abs(trajectory[i].rot.m22 - obj->pose.rot.m22);
-  								
+  	*/							
   //log("Pose error position: %f", m_error_pos);
   //log("Pose error rotation: %f", m_error_rot);
 }
