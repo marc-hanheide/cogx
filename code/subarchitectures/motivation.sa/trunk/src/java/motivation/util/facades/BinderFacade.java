@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import motivation.util.castextensions.WMEntrySet;
 import Ice.ObjectImpl;
@@ -13,11 +14,15 @@ import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
+import binder.autogen.featvalues.AddressValue;
+import binder.autogen.specialentities.RelationProxy;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 
 public class BinderFacade {
 	WMEntrySet unionConfigurations;
 	WMEntrySet proxies;
+	WMEntrySet relations;
 	ManagedComponent component;
 
 	/**
@@ -29,11 +34,13 @@ public class BinderFacade {
 		this.unionConfigurations = WMEntrySet.create(component,
 				UnionConfiguration.class);
 		this.proxies = WMEntrySet.create(component, Proxy.class);
+		this.relations = WMEntrySet.create(component, RelationProxy.class);
 	}
 
 	public void start() {
 		unionConfigurations.start();
 		proxies.start();
+		relations.start();
 	}
 
 	/**
@@ -73,7 +80,10 @@ public class BinderFacade {
 		List<FeatureValue> features;
 		Union[] unions = ((UnionConfiguration) unionConfigurations.values()
 				.iterator().next()).includedUnions;
-		component.debug("unions:  " + unionConfigurations.size());
+		if (unions == null)
+			return result;
+
+		component.debug("unions:  " + unions.length);
 		component.debug("proxies: " + proxies.size());
 		for (Union union : unions) {
 			component.debug("check union " + union.entityID);
@@ -138,6 +148,30 @@ public class BinderFacade {
 			}
 		}
 		return null;
+	}
+
+	public Map<WorkingMemoryAddress, RelationProxy> findRelationBySrc(
+			String src) {
+		Map<WorkingMemoryAddress, RelationProxy> result=  new HashMap<WorkingMemoryAddress, RelationProxy>();
+		for (Entry<WorkingMemoryAddress, ObjectImpl> e : relations.entrySet()) {
+			RelationProxy rp = (RelationProxy) e.getValue();
+			if (((AddressValue) rp.source.alternativeValues[0]).val.equals(src))
+				result.put(e.getKey(), rp);
+		}
+		return result;
+
+	}
+
+	public Map<WorkingMemoryAddress, RelationProxy> findRelationBytarget(
+			String target) {
+		Map<WorkingMemoryAddress, RelationProxy> result=  new HashMap<WorkingMemoryAddress, RelationProxy>();
+		for (Entry<WorkingMemoryAddress, ObjectImpl> e : relations.entrySet()) {
+			RelationProxy rp = (RelationProxy) e.getValue();
+			if (((AddressValue) rp.target.alternativeValues[0]).val.equals(target))
+				result.put(e.getKey(), rp);
+		}
+		return result;
+
 	}
 
 }

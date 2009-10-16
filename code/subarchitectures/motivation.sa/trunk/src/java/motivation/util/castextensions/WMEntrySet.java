@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+
+import motivation.slice.Motive;
 
 import Ice.ObjectImpl;
 import cast.AlreadyExistsOnWMException;
@@ -22,6 +25,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryPermissions;
 
 /**
  * @author marc
@@ -80,20 +84,22 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 				break;
 			case OVERWRITE:
 				try {
-					map.put(newWmc.address, (Ice.ObjectImpl) component.getMemoryEntry(
-							newWmc.address, specClass).clone());
+					map.put(newWmc.address, (Ice.ObjectImpl) component
+							.getMemoryEntry(newWmc.address, specClass).clone());
 					if (updateHandler != null)
 						updateHandler.motiveChanged(map, newWmc, map
 								.get(newWmc.address), oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
-					component.log("we expected to overwrite, but actually it has gone...");
+					component
+							.log("we expected to overwrite, but actually it has gone...");
 					newWmc.operation = WorkingMemoryOperation.DELETE;
 					Ice.ObjectImpl o = map.remove(newWmc.address);
 					map.remove(newWmc.address);
 					if (o != null)
 						if (updateHandler != null)
-							updateHandler.motiveChanged(map, newWmc, o, oldEntry);
+							updateHandler.motiveChanged(map, newWmc, o,
+									oldEntry);
 				}
 
 				break;
@@ -264,7 +270,15 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	public Ice.ObjectImpl put(WorkingMemoryAddress key, Ice.ObjectImpl value) {
 		try {
 			if (map.containsKey(key)) {
-				component.overwriteWorkingMemory(key, value);
+				try {
+					component
+							.lockEntry(key, WorkingMemoryPermissions.LOCKEDODR);
+					component.overwriteWorkingMemory(key, value);
+				} catch (CASTException e) {
+					e.printStackTrace();
+				} finally {
+					component.unlockEntry(key);
+				}
 			} else { // if it is not yet in there
 				component.addToWorkingMemory(key, value);
 			}
@@ -288,8 +302,9 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	@Override
 	public void putAll(
 			Map<? extends WorkingMemoryAddress, ? extends Ice.ObjectImpl> m) {
-		throw (new UnsupportedOperationException(
-				"this method is not implemented in WMMotiveSet"));
+		for (Entry<? extends WorkingMemoryAddress, ? extends ObjectImpl> e : m.entrySet()) {
+			put(e.getKey(),e.getValue());
+		}
 	}
 
 	/*

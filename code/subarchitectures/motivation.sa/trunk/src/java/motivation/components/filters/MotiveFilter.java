@@ -5,10 +5,10 @@ import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 
 interface MotiveFilter {
-	MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc);
-
-	boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc);
+	MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc);
 
 	void setManager(MotiveFilterManager motiveFilterManager);
+
+	void start();
 	
 }

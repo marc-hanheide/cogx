@@ -3,6 +3,7 @@
  */
 package motivation.components.managers;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -18,9 +19,11 @@ import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveEventQueue.MotiveEvent;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.castextensions.WMLock;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPermissions;
 
 /**
@@ -29,6 +32,7 @@ import cast.cdl.WorkingMemoryPermissions;
  */
 public class Scheduler extends ManagedComponent {
 	WMMotiveSet motives;
+	WMLock wmLock;
 
 	private int maxPlannedMotives;
 	private Comparator<? super Motive> motiveComparator;
@@ -36,14 +40,16 @@ public class Scheduler extends ManagedComponent {
 
 	/**
 	 * @param specificType
+	 * @throws CASTException
 	 */
-	public Scheduler() {
+	public Scheduler() throws CASTException {
 		super();
 		// defaults
 		motives = WMMotiveSet.create(this);
 		motiveComparator = new AgeComparator();
 		relevantEventQueue = new WMMotiveEventQueue();
 		maxPlannedMotives = 3;
+		wmLock = new WMLock(this, "SchedulerManagerSync");
 	}
 
 	/*
@@ -102,28 +108,31 @@ public class Scheduler extends ManagedComponent {
 				MotiveStatus.SURFACED), relevantEventQueue);
 		motives.setStateChangeHandler(new MotiveStateTransition(
 				MotiveStatus.ACTIVE, null), relevantEventQueue);
+		motives.setStateChangeHandler(new MotiveStateTransition(
+				MotiveStatus.SURFACED, null), relevantEventQueue);
 	}
 
 	void scheduleMotives() {
-		log("scheduleMotives");
-
-		Set<Motive> surfacedMotives = motives
-				.getSubsetByStatus(MotiveStatus.SURFACED);
-		Set<Motive> activeMotives = motives
-				.getSubsetByStatus(MotiveStatus.ACTIVE);
-
-		if (surfacedMotives.isEmpty())
-			return;
-
 		try {
+			log("scheduleMotives: wait to acquire lock");
+			wmLock.lock();
+
+			Map<WorkingMemoryAddress, Motive> surfacedMotives = motives
+					.getMapByStatus(MotiveStatus.SURFACED);
+			Map<WorkingMemoryAddress, Motive> activeMotives = motives
+					.getMapByStatus(MotiveStatus.ACTIVE);
+
+			if (surfacedMotives.isEmpty())
+				return;
+
 			int freeCapacity = Math.max(maxPlannedMotives
 					- activeMotives.size(), 0);
 			// if we have no capacity left check if we need to reschedule due to
 			// priorities
 			if (freeCapacity == 0) {
 				log("checking if we have to reschedule due to priorities");
-				int priorityActives = maxPriority(activeMotives);
-				int prioritySurfaced = maxPriority(surfacedMotives);
+				int priorityActives = maxPriority(activeMotives.values());
+				int prioritySurfaced = maxPriority(surfacedMotives.values());
 
 				log("max priority in actives: " + priorityActives);
 				log("max priority in surfaced: " + prioritySurfaced);
@@ -133,7 +142,8 @@ public class Scheduler extends ManagedComponent {
 				if (priorityActives < prioritySurfaced) {
 					log("there are some surfaced motives that have a highe priority. Forcing rescheduling");
 					// deactivate all motives
-					motives.setState(MotiveStatus.SURFACED, activeMotives);
+					motives.setState(MotiveStatus.SURFACED, activeMotives
+							.values());
 					activeMotives.clear();
 					freeCapacity = maxPlannedMotives;
 				}
@@ -142,7 +152,8 @@ public class Scheduler extends ManagedComponent {
 			if (freeCapacity == 0)
 				return;
 
-			List<Motive> sortedMotives = new LinkedList<Motive>(surfacedMotives);
+			List<Motive> sortedMotives = new LinkedList<Motive>(surfacedMotives
+					.values());
 			// rank the motives according to the comparator
 			Collections.sort(sortedMotives, motiveComparator);
 
@@ -166,13 +177,16 @@ public class Scheduler extends ManagedComponent {
 			}
 		} catch (CASTException e) {
 			e.printStackTrace();
+		} finally {
+			log("unlocking lock");
+			wmLock.unlock();
 		}
 
 	}
 
-	private int maxPriority(Set<Motive> motives) {
+	private int maxPriority(Collection<Motive> collection) {
 		int result = -1;
-		for (Motive m : motives) {
+		for (Motive m : collection) {
 			result = Math.max(m.priority.value(), result);
 		}
 
@@ -189,6 +203,7 @@ public class Scheduler extends ManagedComponent {
 	protected void runComponent() {
 		super.runComponent();
 		try {
+			wmLock.initialize();
 			while (isRunning()) {
 				log("runComponent loop");
 				// check if we have any active motives already... then we don't
@@ -197,13 +212,19 @@ public class Scheduler extends ManagedComponent {
 				scheduleMotives();
 				while (isRunning()) {
 					if ((relevantEventQueue.poll(1, TimeUnit.SECONDS)) != null) {
-						//relevantEventQueue.clear();
+						// relevantEventQueue.clear();
 						break;
 					}
 
 				}
+				// flush queue
+				while (!relevantEventQueue.isEmpty())
+					relevantEventQueue.poll();
 			}
 		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CASTException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import Ice.ObjectImpl;
 import motivation.slice.Motive;
@@ -140,12 +141,14 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 	public void setStateChangeHandler(MotiveStateTransition status,
 			final WorkingMemoryChangeReceiver handler) {
 		stateChangeReceivers.put(status, new WMEntrySet.ChangeHandler() {
-			
+
 			@Override
-			public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-					WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive) throws CASTException {
+			public void motiveChanged(
+					Map<WorkingMemoryAddress, ObjectImpl> map,
+					WorkingMemoryChange wmc, ObjectImpl newMotive,
+					ObjectImpl oldMotive) throws CASTException {
 				handler.workingMemoryChanged(wmc);
-				
+
 			}
 		});
 	}
@@ -171,7 +174,8 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 
 	@Override
 	public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-			WorkingMemoryChange wmc, ObjectImpl newObj, ObjectImpl oldObj) throws CASTException {
+			WorkingMemoryChange wmc, ObjectImpl newObj, ObjectImpl oldObj)
+			throws CASTException {
 		if (externalHandler != null)
 			externalHandler.motiveChanged(map, wmc, newObj, oldObj);
 		Motive newMotive = (Motive) newObj;
@@ -222,26 +226,36 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		}
 
 	}
-	
+
 	public void setState(MotiveStatus status, Collection<Motive> motives) {
 		for (Motive m : motives) {
 			try {
 				component.getMemoryEntry(m.thisEntry, Motive.class);
 				m.status = status;
 				component.overwriteWorkingMemory(m.thisEntry, m);
-			}
-			catch (CASTException e) {
+			} catch (CASTException e) {
 				component.println("*** CASTException in setState " + e.message);
 			}
 		}
 	}
 
-	public Set<Motive> getSubsetByStatus(MotiveStatus status) {
-		Set<Motive> result = new HashSet<Motive>();
-		for (ObjectImpl o : super.values()) {
-			Motive m = (Motive) o;
+	public Map<WorkingMemoryAddress, Motive> getMapByStatus(MotiveStatus status) {
+		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
+		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
+			Motive m = (Motive) o.getValue();
 			if (m.status.equals(status))
-				result.add(m);
+				result.put(o.getKey(),m);
+		}
+		return result;
+	}
+
+	public Map<WorkingMemoryAddress, Motive> getMapByType(Class<? extends Motive> className) {
+		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
+		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
+			if (o.getValue().getClass().equals(className)) {
+				Motive m = (Motive) o.getValue();
+				result.put(o.getKey(), m);
+			}
 		}
 		return result;
 	}

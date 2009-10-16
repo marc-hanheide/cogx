@@ -25,7 +25,9 @@ public class ViewerCastComponent extends ManagedComponent {
 		gui = new ViewerGUI();
 		gui.pack();
 		gui.setVisible(true);
+		
 		entrySet.setHandler(gui);
+		gui.setSize(1000, 400);
 		
 	}
 

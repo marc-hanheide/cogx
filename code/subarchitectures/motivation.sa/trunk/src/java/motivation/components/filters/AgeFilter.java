@@ -18,7 +18,6 @@ import motivation.components.filters.MotiveFilterManager;
  */
 public class AgeFilter implements MotiveFilter {
 	private static final long MAX_AGE_MILLIS = 6000;
-	ManagedComponent component;
 
 	/**
 	 * @param specificType
@@ -35,26 +34,14 @@ public class AgeFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
+	@Override
+	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 		if (checkAge(motive))
 			return MotivePriority.HIGH;
 		else
 			return MotivePriority.UNSURFACE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * motivation.components.filters.Filter#shouldBeUnsurfaced(motivation.slice
-	 * .Motive)
-	 */
-	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
-		if (checkAge(motive))
-			return false;
-		component.log("motive was too old... unsurfacing it!");
-		return true;
-	}
 
 	boolean checkAge(Motive motive) {
 		CASTTime time = CASTUtils.getTimeServer().getCASTTime();
@@ -62,8 +49,12 @@ public class AgeFilter implements MotiveFilter {
 	}
 
 	public void setManager(MotiveFilterManager motiveFilterManager) {
-		component = motiveFilterManager;
+	}
 
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
