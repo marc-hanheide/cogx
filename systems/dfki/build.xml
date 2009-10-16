@@ -32,7 +32,7 @@
  		<ant target="${target}" dir="tools/interconnectivity" />
 		<ant target="${target}" dir="tools/beliefmodels" /> 
 		<ant target="${target}" dir="subarchitectures/binder" /> 
-<!--		<ant target="${target}" dir="subarchitectures/motivation.sa" />  -->
+		<ant target="${target}" dir="subarchitectures/motivation.sa" />  
 		<ant target="${target}" dir="subarchitectures/comsys" />
 
 <!--		<ant target="${target}" dir="subarchitectures/nav.sa" /> -->
