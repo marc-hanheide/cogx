@@ -21,6 +21,9 @@
           <feat attr="NFORM">
             <featvar name="NFORM"/>
           </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
+          </feat>
           <feat attr="NUM" val="s-pl-unsp"/>
         </fs>
       </atomcat>
@@ -94,6 +97,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="CC-TYPE" val="compound-head"/>
           </fs>
         </atomcat>
@@ -119,6 +125,12 @@
             </feat>
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
             </feat>
             <feat attr="CC-TYPE" val="pre-n"/>
           </fs>
@@ -158,6 +170,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash/>
@@ -173,6 +188,89 @@
     </result>
   </typechanging>
   <typechanging name="typechange-4">
+    <arg>
+      <complexcat>
+        <atomcat type="adj">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat attr="DEGREE">
+              <featvar name="DEGREE"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
+            <feat attr="CC-TYPE" val="pre-n"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+      </complexcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" ability="inert" mode="&gt;"/>
+        <atomcat type="adj">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <lf>
+          <satop nomvar="E:event">
+            <diamond mode="Modifier">
+              <nomvar name="M"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+  <typechanging name="typechange-5">
     <arg>
       <complexcat>
         <atomcat type="pp">
@@ -230,6 +328,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -242,7 +343,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-5">
+  <typechanging name="typechange-6">
     <arg>
       <complexcat>
         <atomcat type="pp">
@@ -309,6 +410,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -321,7 +425,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-6">
+  <typechanging name="typechange-7">
     <arg>
       <complexcat>
         <atomcat type="adv">
@@ -383,6 +487,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash/>
@@ -397,7 +504,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-7">
+  <typechanging name="typechange-8">
     <arg>
       <complexcat>
         <atomcat type="adv">
@@ -477,6 +584,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
             </fs>
           </atomcat>
           <slash dir="\" ability="inert" mode="&lt;"/>
@@ -509,7 +619,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-8">
+  <typechanging name="typechange-9">
     <arg>
       <complexcat>
         <atomcat type="adv">
@@ -542,7 +652,7 @@
             </feat>
           </fs>
         </atomcat>
-        <slash dir="/" mode="&gt;"/>
+        <slash dir="/" mode="^"/>
         <atomcat type="np">
           <fs id="42">
             <feat attr="index">
@@ -552,6 +662,9 @@
             </feat>
             <feat attr="NUM">
               <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="CASE" val="acc"/>
           </fs>
@@ -588,10 +701,13 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="FIN" val="be"/>
             </fs>
           </atomcat>
-          <slash dir="/" mode="&gt;"/>
+          <slash dir="/" mode="^"/>
           <atomcat type="np">
             <fs id="42">
               <feat attr="index">
@@ -601,6 +717,9 @@
               </feat>
               <feat attr="NUM">
                 <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="CASE" val="acc"/>
             </fs>
@@ -618,7 +737,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-9">
+  <typechanging name="typechange-10">
     <arg>
       <complexcat>
         <atomcat type="adv">
@@ -693,6 +812,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="FIN" val="be"/>
             </fs>
           </atomcat>
@@ -719,7 +841,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-10">
+  <typechanging name="typechange-11">
     <arg>
       <complexcat>
         <atomcat type="np">
@@ -784,6 +906,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:fin-clause"/>
               </feat>
@@ -823,7 +948,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-11">
+  <typechanging name="typechange-12">
     <arg>
       <complexcat>
         <atomcat type="s">
@@ -853,6 +978,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -902,109 +1030,6 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="typechange-12">
-    <arg>
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="VFORM" val="vf-to-imp"/>
-          </fs>
-        </atomcat>
-        <slash dir="\" ability="inert" mode="&lt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-      </complexcat>
-    </arg>
-    <result>
-      <complexcat>
-        <atomcat type="s">
-          <fs inheritsFrom="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="VFORM" val="fin-full"/>
-            <feat attr="MOOD" val="s-imp"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <diamond mode="Mood">
-              <prop name="imp"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-              <prop name="addressee"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </result>
-  </typechanging>
   <typechanging name="typechange-13">
     <arg>
       <complexcat>
@@ -1036,6 +1061,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1059,10 +1087,10 @@
         </atomcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
-          <fs id="3">
+          <fs id="2">
             <feat attr="index">
               <lf>
-                <nomvar name="Y"/>
+                <nomvar name="X"/>
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
@@ -1085,10 +1113,10 @@
         </atomcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
-          <fs id="3">
+          <fs id="2">
             <feat attr="index">
               <lf>
-                <nomvar name="Y"/>
+                <nomvar name="X"/>
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
@@ -1139,6 +1167,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1161,15 +1192,14 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
-          <fs id="2">
+        <atomcat type="np">
+          <fs id="3">
             <feat attr="index">
               <lf>
-                <nomvar name="X"/>
+                <nomvar name="Y"/>
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="of"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -1188,15 +1218,14 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
-          <fs id="2">
+        <atomcat type="np">
+          <fs id="3">
             <feat attr="index">
               <lf>
-                <nomvar name="X"/>
+                <nomvar name="Y"/>
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="of"/>
           </fs>
         </atomcat>
         <lf>
@@ -1244,6 +1273,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1274,7 +1306,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="with"/>
+            <feat attr="MARK" val="of"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -1301,7 +1333,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="with"/>
+            <feat attr="MARK" val="of"/>
           </fs>
         </atomcat>
         <lf>
@@ -1349,6 +1381,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1379,7 +1414,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="for"/>
+            <feat attr="MARK" val="with"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -1406,7 +1441,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="for"/>
+            <feat attr="MARK" val="with"/>
           </fs>
         </atomcat>
         <lf>
@@ -1454,6 +1489,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1484,7 +1522,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="to"/>
+            <feat attr="MARK" val="for"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -1511,7 +1549,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="to"/>
+            <feat attr="MARK" val="for"/>
           </fs>
         </atomcat>
         <lf>
@@ -1559,6 +1597,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1589,7 +1630,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="from"/>
+            <feat attr="MARK" val="to"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -1616,7 +1657,7 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="from"/>
+            <feat attr="MARK" val="to"/>
           </fs>
         </atomcat>
         <lf>
@@ -1664,6 +1705,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1686,13 +1730,15 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
+        <atomcat type="obl">
+          <fs id="2">
             <feat attr="index">
               <lf>
-                <nomvar name="Y"/>
+                <nomvar name="X"/>
               </lf>
             </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="from"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -1711,13 +1757,15 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
+        <atomcat type="obl">
+          <fs id="2">
             <feat attr="index">
               <lf>
-                <nomvar name="Y"/>
+                <nomvar name="X"/>
               </lf>
             </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="from"/>
           </fs>
         </atomcat>
         <lf>
@@ -1764,6 +1812,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
@@ -1866,6 +1917,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1967,6 +2021,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -1989,7 +2046,7 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
+        <atomcat type="pp">
           <fs id="3">
             <feat attr="index">
               <lf>
@@ -2014,7 +2071,7 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
+        <atomcat type="pp">
           <fs id="3">
             <feat attr="index">
               <lf>
@@ -2068,6 +2125,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2090,24 +2150,13 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="prt">
+        <atomcat type="adj">
           <fs id="3">
             <feat attr="index">
               <lf>
                 <nomvar name="Y"/>
               </lf>
             </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -2126,24 +2175,13 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="prt">
+        <atomcat type="adj">
           <fs id="3">
             <feat attr="index">
               <lf>
                 <nomvar name="Y"/>
               </lf>
             </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -2191,6 +2229,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2213,6 +2254,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="prt">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2221,16 +2272,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="prt">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2249,6 +2290,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="prt">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2257,16 +2308,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="prt">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -2314,6 +2355,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2336,16 +2380,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2354,6 +2388,16 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="prt">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2372,16 +2416,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2390,6 +2424,16 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="prt">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -2437,6 +2481,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2459,6 +2506,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2467,16 +2524,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2495,6 +2542,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2503,16 +2560,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -2560,6 +2607,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2582,16 +2632,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2600,6 +2640,16 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2618,16 +2668,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2636,6 +2676,16 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -2683,6 +2733,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2705,6 +2758,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2713,16 +2776,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2741,6 +2794,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2749,16 +2812,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="pp">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -2806,6 +2859,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2828,16 +2884,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2846,6 +2892,16 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2864,16 +2920,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2882,6 +2928,16 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="pp">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -2929,6 +2985,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -2951,6 +3010,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="adj">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2959,16 +3028,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
       </complexcat>
@@ -2987,6 +3046,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="adj">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -2995,16 +3064,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -3052,6 +3111,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3085,14 +3147,13 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
+        <atomcat type="adj">
           <fs id="3">
             <feat attr="index">
               <lf>
                 <nomvar name="Y"/>
               </lf>
             </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3122,14 +3183,13 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
+        <atomcat type="adj">
           <fs id="3">
             <feat attr="index">
               <lf>
                 <nomvar name="Y"/>
               </lf>
             </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -3177,6 +3237,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3199,7 +3262,7 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
+        <atomcat type="np">
           <fs id="2">
             <feat attr="index">
               <lf>
@@ -3207,7 +3270,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="for"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -3237,7 +3299,7 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
+        <atomcat type="np">
           <fs id="2">
             <feat attr="index">
               <lf>
@@ -3245,7 +3307,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="for"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -3304,6 +3365,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3326,17 +3390,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="2">
             <feat attr="index">
@@ -3346,6 +3399,17 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="for"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3364,17 +3428,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="2">
             <feat attr="index">
@@ -3384,6 +3437,17 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="for"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -3431,6 +3495,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3453,18 +3520,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="to"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="3">
             <feat attr="index">
@@ -3473,6 +3528,18 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="obl">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="for"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3491,18 +3558,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="to"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="3">
             <feat attr="index">
@@ -3511,6 +3566,18 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="obl">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="for"/>
           </fs>
         </atomcat>
         <lf>
@@ -3558,6 +3625,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3580,17 +3650,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="2">
             <feat attr="index">
@@ -3600,6 +3659,17 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="to"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3618,17 +3688,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="2">
             <feat attr="index">
@@ -3638,6 +3697,17 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="to"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -3685,6 +3755,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3707,14 +3780,26 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="s">
-          <fs id="4">
+        <atomcat type="np">
+          <fs id="3">
             <feat attr="index">
               <lf>
-                <nomvar name="Z"/>
+                <nomvar name="Y"/>
               </lf>
             </feat>
-            <feat attr="VFORM" val="fin"/>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="obl">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="to"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3733,14 +3818,26 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="s">
-          <fs id="4">
+        <atomcat type="np">
+          <fs id="3">
             <feat attr="index">
               <lf>
-                <nomvar name="Z"/>
+                <nomvar name="Y"/>
               </lf>
             </feat>
-            <feat attr="VFORM" val="fin"/>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="obl">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="to"/>
           </fs>
         </atomcat>
         <lf>
@@ -3788,6 +3885,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3817,9 +3917,7 @@
                 <nomvar name="Z"/>
               </lf>
             </feat>
-            <feat attr="s-dependant">
-              <featvar name="S-DEPENDANT"/>
-            </feat>
+            <feat attr="VFORM" val="fin"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3845,9 +3943,7 @@
                 <nomvar name="Z"/>
               </lf>
             </feat>
-            <feat attr="s-dependant">
-              <featvar name="S-DEPENDANT"/>
-            </feat>
+            <feat attr="VFORM" val="fin"/>
           </fs>
         </atomcat>
         <lf>
@@ -3895,6 +3991,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -3927,7 +4026,6 @@
             <feat attr="s-dependant">
               <featvar name="S-DEPENDANT"/>
             </feat>
-            <feat attr="MARK" val="that"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -3956,7 +4054,6 @@
             <feat attr="s-dependant">
               <featvar name="S-DEPENDANT"/>
             </feat>
-            <feat attr="MARK" val="that"/>
           </fs>
         </atomcat>
         <lf>
@@ -4004,6 +4101,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4033,7 +4133,10 @@
                 <nomvar name="Z"/>
               </lf>
             </feat>
-            <feat attr="VFORM" val="fin-deictic"/>
+            <feat attr="s-dependant">
+              <featvar name="S-DEPENDANT"/>
+            </feat>
+            <feat attr="MARK" val="that"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -4059,7 +4162,10 @@
                 <nomvar name="Z"/>
               </lf>
             </feat>
-            <feat attr="VFORM" val="fin-deictic"/>
+            <feat attr="s-dependant">
+              <featvar name="S-DEPENDANT"/>
+            </feat>
+            <feat attr="MARK" val="that"/>
           </fs>
         </atomcat>
         <lf>
@@ -4107,6 +4213,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4129,35 +4238,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <complexcat>
-          <atomcat type="s">
-            <fs id="4">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="Z"/>
-                </lf>
-              </feat>
-              <feat attr="VFORM" val="ing"/>
-            </fs>
-          </atomcat>
-          <slash dir="\" ability="inert" mode="&lt;"/>
-          <atomcat type="np">
-            <fs id="9">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="S"/>
-                </lf>
-              </feat>
-              <feat attr="CASE" val="nom"/>
-              <feat attr="NUM">
-                <featvar name="NUM:NUM"/>
-              </feat>
-              <feat attr="PERS">
-                <featvar name="PERS:PERS"/>
-              </feat>
-            </fs>
-          </atomcat>
-        </complexcat>
+        <atomcat type="s">
+          <fs id="4">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Z"/>
+              </lf>
+            </feat>
+            <feat attr="VFORM" val="fin-deictic"/>
+          </fs>
+        </atomcat>
       </complexcat>
     </arg>
     <result>
@@ -4174,35 +4264,16 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <complexcat>
-          <atomcat type="s">
-            <fs id="4">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="Z"/>
-                </lf>
-              </feat>
-              <feat attr="VFORM" val="ing"/>
-            </fs>
-          </atomcat>
-          <slash dir="\" ability="inert" mode="&lt;"/>
-          <atomcat type="np">
-            <fs id="9">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="S"/>
-                </lf>
-              </feat>
-              <feat attr="CASE" val="nom"/>
-              <feat attr="NUM">
-                <featvar name="NUM:NUM"/>
-              </feat>
-              <feat attr="PERS">
-                <featvar name="PERS:PERS"/>
-              </feat>
-            </fs>
-          </atomcat>
-        </complexcat>
+        <atomcat type="s">
+          <fs id="4">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Z"/>
+              </lf>
+            </feat>
+            <feat attr="VFORM" val="fin-deictic"/>
+          </fs>
+        </atomcat>
         <lf>
           <satop nomvar="E:event">
             <diamond mode="Mood">
@@ -4248,6 +4319,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4278,7 +4352,7 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="inf"/>
+              <feat attr="VFORM" val="ing"/>
             </fs>
           </atomcat>
           <slash dir="\" ability="inert" mode="&lt;"/>
@@ -4323,7 +4397,7 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="inf"/>
+              <feat attr="VFORM" val="ing"/>
             </fs>
           </atomcat>
           <slash dir="\" ability="inert" mode="&lt;"/>
@@ -4389,6 +4463,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4411,27 +4488,35 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="s">
-          <fs id="4">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Z"/>
-              </lf>
-            </feat>
-            <feat attr="VFORM" val="fin"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="4">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="Z"/>
+                </lf>
+              </feat>
+              <feat attr="VFORM" val="inf"/>
+            </fs>
+          </atomcat>
+          <slash dir="\" ability="inert" mode="&lt;"/>
+          <atomcat type="np">
+            <fs id="9">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="S"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="nom"/>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
       </complexcat>
     </arg>
     <result>
@@ -4448,27 +4533,35 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="s">
-          <fs id="4">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Z"/>
-              </lf>
-            </feat>
-            <feat attr="VFORM" val="fin"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="4">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="Z"/>
+                </lf>
+              </feat>
+              <feat attr="VFORM" val="inf"/>
+            </fs>
+          </atomcat>
+          <slash dir="\" ability="inert" mode="&lt;"/>
+          <atomcat type="np">
+            <fs id="9">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="S"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="nom"/>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
         <lf>
           <satop nomvar="E:event">
             <diamond mode="Mood">
@@ -4514,6 +4607,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4543,9 +4639,7 @@
                 <nomvar name="Z"/>
               </lf>
             </feat>
-            <feat attr="s-dependant">
-              <featvar name="S-DEPENDANT"/>
-            </feat>
+            <feat attr="VFORM" val="fin"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -4582,9 +4676,7 @@
                 <nomvar name="Z"/>
               </lf>
             </feat>
-            <feat attr="s-dependant">
-              <featvar name="S-DEPENDANT"/>
-            </feat>
+            <feat attr="VFORM" val="fin"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -4643,6 +4735,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4675,7 +4770,6 @@
             <feat attr="s-dependant">
               <featvar name="S-DEPENDANT"/>
             </feat>
-            <feat attr="MARK" val="that"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -4715,7 +4809,6 @@
             <feat attr="s-dependant">
               <featvar name="S-DEPENDANT"/>
             </feat>
-            <feat attr="MARK" val="that"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -4774,6 +4867,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4796,29 +4892,19 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <complexcat>
-          <atomcat type="s">
-            <fs id="4">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="Z"/>
-                </lf>
-              </feat>
-              <feat attr="VFORM" val="ing"/>
-            </fs>
-          </atomcat>
-          <slash dir="\" mode="&lt;"/>
-          <atomcat type="np">
-            <fs inheritsFrom="2">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="X"/>
-                </lf>
-              </feat>
-              <feat attr="CASE" val="nom"/>
-            </fs>
-          </atomcat>
-        </complexcat>
+        <atomcat type="s">
+          <fs id="4">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Z"/>
+              </lf>
+            </feat>
+            <feat attr="s-dependant">
+              <featvar name="S-DEPENDANT"/>
+            </feat>
+            <feat attr="MARK" val="that"/>
+          </fs>
+        </atomcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
@@ -4846,29 +4932,19 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <complexcat>
-          <atomcat type="s">
-            <fs id="4">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="Z"/>
-                </lf>
-              </feat>
-              <feat attr="VFORM" val="ing"/>
-            </fs>
-          </atomcat>
-          <slash dir="\" mode="&lt;"/>
-          <atomcat type="np">
-            <fs inheritsFrom="2">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="X"/>
-                </lf>
-              </feat>
-              <feat attr="CASE" val="nom"/>
-            </fs>
-          </atomcat>
-        </complexcat>
+        <atomcat type="s">
+          <fs id="4">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Z"/>
+              </lf>
+            </feat>
+            <feat attr="s-dependant">
+              <featvar name="S-DEPENDANT"/>
+            </feat>
+            <feat attr="MARK" val="that"/>
+          </fs>
+        </atomcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
@@ -4925,6 +5001,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -4955,7 +5034,7 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="inf"/>
+              <feat attr="VFORM" val="ing"/>
             </fs>
           </atomcat>
           <slash dir="\" mode="&lt;"/>
@@ -5005,7 +5084,7 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="inf"/>
+              <feat attr="VFORM" val="ing"/>
             </fs>
           </atomcat>
           <slash dir="\" mode="&lt;"/>
@@ -5076,6 +5155,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5106,7 +5188,7 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="vf-base"/>
+              <feat attr="VFORM" val="inf"/>
             </fs>
           </atomcat>
           <slash dir="\" mode="&lt;"/>
@@ -5156,7 +5238,7 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="vf-base"/>
+              <feat attr="VFORM" val="inf"/>
             </fs>
           </atomcat>
           <slash dir="\" mode="&lt;"/>
@@ -5227,6 +5309,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5249,6 +5334,30 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="4">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="Z"/>
+                </lf>
+              </feat>
+              <feat attr="VFORM" val="vf-base"/>
+            </fs>
+          </atomcat>
+          <slash dir="\" mode="&lt;"/>
+          <atomcat type="np">
+            <fs inheritsFrom="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="nom"/>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -5257,18 +5366,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="of"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -5287,6 +5384,30 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="4">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="Z"/>
+                </lf>
+              </feat>
+              <feat attr="VFORM" val="vf-base"/>
+            </fs>
+          </atomcat>
+          <slash dir="\" mode="&lt;"/>
+          <atomcat type="np">
+            <fs inheritsFrom="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="nom"/>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
             <feat attr="index">
@@ -5295,18 +5416,6 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="obl">
-          <fs id="3">
-            <feat attr="index">
-              <lf>
-                <nomvar name="Y"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="of"/>
           </fs>
         </atomcat>
         <lf>
@@ -5354,6 +5463,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5376,6 +5488,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5385,17 +5508,6 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="of"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -5414,6 +5526,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5423,17 +5546,6 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="of"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -5481,6 +5593,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5503,17 +5618,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5522,7 +5626,18 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="from"/>
+            <feat attr="MARK" val="of"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -5541,17 +5656,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5560,7 +5664,18 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="from"/>
+            <feat attr="MARK" val="of"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -5608,6 +5723,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5630,6 +5748,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5639,17 +5768,6 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="from"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -5668,6 +5786,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5677,17 +5806,6 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="from"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -5735,6 +5853,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5757,17 +5878,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5776,7 +5886,18 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="out_of"/>
+            <feat attr="MARK" val="from"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -5795,17 +5916,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5814,7 +5924,18 @@
               </lf>
             </feat>
             <feat attr="CASE" val="acc"/>
-            <feat attr="MARK" val="out_of"/>
+            <feat attr="MARK" val="from"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -5862,6 +5983,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -5884,6 +6008,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5893,17 +6028,6 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="out_of"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
       </complexcat>
@@ -5922,6 +6046,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="obl">
           <fs id="3">
             <feat attr="index">
@@ -5931,17 +6066,6 @@
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="MARK" val="out_of"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -5989,6 +6113,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6011,35 +6138,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <complexcat>
-          <atomcat type="s">
-            <fs id="4">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="Z"/>
-                </lf>
-              </feat>
-              <feat attr="VFORM" val="inf"/>
-            </fs>
-          </atomcat>
-          <slash dir="\" ability="inert" mode="&lt;"/>
-          <atomcat type="np">
-            <fs id="9">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="S"/>
-                </lf>
-              </feat>
-              <feat attr="CASE" val="nom"/>
-              <feat attr="NUM">
-                <featvar name="NUM:NUM"/>
-              </feat>
-              <feat attr="PERS">
-                <featvar name="PERS:PERS"/>
-              </feat>
-            </fs>
-          </atomcat>
-        </complexcat>
+        <atomcat type="obl">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="out_of"/>
+          </fs>
+        </atomcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
@@ -6067,35 +6176,17 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
-        <complexcat>
-          <atomcat type="s">
-            <fs id="4">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="Z"/>
-                </lf>
-              </feat>
-              <feat attr="VFORM" val="inf"/>
-            </fs>
-          </atomcat>
-          <slash dir="\" ability="inert" mode="&lt;"/>
-          <atomcat type="np">
-            <fs id="9">
-              <feat attr="index">
-                <lf>
-                  <nomvar name="S"/>
-                </lf>
-              </feat>
-              <feat attr="CASE" val="nom"/>
-              <feat attr="NUM">
-                <featvar name="NUM:NUM"/>
-              </feat>
-              <feat attr="PERS">
-                <featvar name="PERS:PERS"/>
-              </feat>
-            </fs>
-          </atomcat>
-        </complexcat>
+        <atomcat type="obl">
+          <fs id="3">
+            <feat attr="index">
+              <lf>
+                <nomvar name="Y"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+            <feat attr="MARK" val="out_of"/>
+          </fs>
+        </atomcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="2">
@@ -6152,6 +6243,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6182,18 +6276,24 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="for-ing"/>
+              <feat attr="VFORM" val="inf"/>
             </fs>
           </atomcat>
-          <slash dir="\" mode="&lt;"/>
+          <slash dir="\" ability="inert" mode="&lt;"/>
           <atomcat type="np">
-            <fs inheritsFrom="2">
+            <fs id="9">
               <feat attr="index">
                 <lf>
-                  <nomvar name="X"/>
+                  <nomvar name="S"/>
                 </lf>
               </feat>
               <feat attr="CASE" val="nom"/>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
             </fs>
           </atomcat>
         </complexcat>
@@ -6232,18 +6332,24 @@
                   <nomvar name="Z"/>
                 </lf>
               </feat>
-              <feat attr="VFORM" val="for-ing"/>
+              <feat attr="VFORM" val="inf"/>
             </fs>
           </atomcat>
-          <slash dir="\" mode="&lt;"/>
+          <slash dir="\" ability="inert" mode="&lt;"/>
           <atomcat type="np">
-            <fs inheritsFrom="2">
+            <fs id="9">
               <feat attr="index">
                 <lf>
-                  <nomvar name="X"/>
+                  <nomvar name="S"/>
                 </lf>
               </feat>
               <feat attr="CASE" val="nom"/>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
             </fs>
           </atomcat>
         </complexcat>
@@ -6303,6 +6409,163 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="VFORM" val="vf-to-imp"/>
+          </fs>
+        </atomcat>
+        <slash dir="\" ability="inert" mode="&lt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="4">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="Z"/>
+                </lf>
+              </feat>
+              <feat attr="VFORM" val="for-ing"/>
+            </fs>
+          </atomcat>
+          <slash dir="\" mode="&lt;"/>
+          <atomcat type="np">
+            <fs inheritsFrom="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="nom"/>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+      </complexcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="s">
+          <fs inheritsFrom="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="VFORM" val="fin-full"/>
+            <feat attr="MOOD" val="s-imp"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="4">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="Z"/>
+                </lf>
+              </feat>
+              <feat attr="VFORM" val="for-ing"/>
+            </fs>
+          </atomcat>
+          <slash dir="\" mode="&lt;"/>
+          <atomcat type="np">
+            <fs inheritsFrom="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+              <feat attr="CASE" val="nom"/>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="acc"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E:event">
+            <diamond mode="Mood">
+              <prop name="imp"/>
+            </diamond>
+            <diamond mode="Subject">
+              <nomvar name="S:entity"/>
+              <prop name="addressee"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+  <typechanging name="typechange-57">
+    <arg>
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="vf-to-imp"/>
           </fs>
         </atomcat>
@@ -6441,7 +6704,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-57">
+  <typechanging name="x2du-58">
     <arg>
       <atomcat type="np">
         <fs>
@@ -6468,7 +6731,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-58">
+  <typechanging name="x2du-59">
     <arg>
       <atomcat type="n">
         <fs>
@@ -6495,7 +6758,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-59">
+  <typechanging name="x2du-60">
     <arg>
       <atomcat type="adj">
         <fs>
@@ -6522,7 +6785,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-60">
+  <typechanging name="x2du-61">
     <arg>
       <atomcat type="adv">
         <fs>
@@ -6549,7 +6812,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-61">
+  <typechanging name="x2du-62">
     <arg>
       <atomcat type="s">
         <fs>
@@ -6576,7 +6839,7 @@
       </atomcat>
     </result>
   </typechanging>
-  <typechanging name="x2du-62">
+  <typechanging name="x2du-63">
     <arg>
       <atomcat type="pp">
         <fs>
@@ -6653,7 +6916,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="correction-64">
+  <typechanging name="correction-65">
     <arg>
       <atomcat type="np">
         <fs>
@@ -6699,7 +6962,7 @@
       </complexcat>
     </result>
   </typechanging>
-  <typechanging name="correction-65">
+  <typechanging name="correction-66">
     <arg>
       <atomcat type="n">
         <fs>

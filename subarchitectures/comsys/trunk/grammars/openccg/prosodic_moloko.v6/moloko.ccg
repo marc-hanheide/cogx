@@ -8,6 +8,9 @@
 ################################################################ 
  
  # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
 
 # This file contains a cats, families, and dicionary-forms for
 # important things (sentence, subject, coordination and particles). 
@@ -23,9 +26,8 @@
   
   def EVENT(args)     { E:event( args ) }
 
-  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM args]}
+  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT args]}
   def from-s(args)    { s<~10>[E args] }
- 
 
 ###############
 # The SUBJECT #
@@ -78,6 +80,29 @@
   def prt(args)      { prt<25>[P args] }
   family Particle    { entry:  prt(MARK= *) : P(*) ;}
 
+###########
+# PROSG09 #
+###########
+# We do not want to enumerate all possible prosodic markers on words in the dictionary.
+# It saves effort to use these proxy-lexical rules for marking words with prosodic indicatores
+
+# input is 'word', output is 'word_H*'
+def markWordHs(word) {
+    ifmatch(word, word, word .'_H*', word)
+  }
+
+# input is 'word', output is 'word_L*'
+def markWordLs(word) {
+    ifmatch(word, word, word .'_L*', word)
+  }
+
+# input is 'word', output is 'word_L+H*'
+def markWordLpHs(word) {
+    ifmatch(word, word, word .'_L+H*', word)
+  }
+
+# We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.
+
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains the 'basic' semantic and syntactic features 
@@ -121,6 +146,45 @@ feature{
   DEGREE<M:Degree>: no-degrees degrees{degree-base comparative superlative};
   M-PROXIMITY<M:Proximity>: m-distal m-proximal;
 
+##Raveesh 10 Aug##
+## PROSODY ##
+ #TINFOSTAT<T:InfoStatus>: t-contrast t-new t-given;
+ #MINFOSTAT<M:InfoStatus>: m-contrast m-new m-given;
+ #EINFOSTAT<E:InfoStatus>: e-contrast e-new e-given;
+
+ TFOCUS<T:Focus>: t-focus-true t-focus-false;
+ MFOCUS<M:Focus>: m-focus-true m-focus-false;
+ EFOCUS<E:Focus>: e-focus-true e-focus-false;
+
+ ThOWNERSHIP<E:ThOwner>: th-speaker th-hearer;
+ RhOWNERSHIP<E:RhOwner>: rh-speaker rh-hearer;
+ #DIRECTION<E:Discourse>: frwd-referring finality;
+
+ TUNCERTAINITY<T:Commitment>: t-contentious t-uncontentious;
+ MUNCERTAINITY<M:Commitment>: m-contentious m-uncontentious;
+ EUNCERTAINITY<E:Commitment>: e-contentious e-uncontentious;
+
+ RHEME<T:Rheme>: t-rheme-true t-rheme-false;
+ MRHEME<M:Rheme>: m-rheme-true m-rheme-false;
+ ERHEME<E:Rheme>: e-rheme-true e-rheme-false;
+
+ #TMARKED<T:Marked>: t-unmarker t-marked;
+ #MMARKED<M:Marked>: m-unmarker m-marked;
+ #EMARKED<E:Marked>: e-unmarker e-marked;
+
+ #TBELIEF<T:BeliefState>: t-mutual t-private t-addToMB;
+ #MBELIEF<M:BeliefState>: m-mutual m-private m-addToMB;
+ #EBELIEF<E:BeliefState>: e-mutual e-private e-addToMB;
+
+ #INTMEDPH<T:PhMarker>: t-LL% t-LH% t-HL% t-HH%;
+ #CURVE<T:F0Curve>: t-low-falling t-low-rising t-high-falling t-high-rising ;
+ #OWNERSHIP<T:Owner>: t-speaker t-hearer;
+ #DIRECTION<T:Discourse>: t-frwd-refering t-finality;
+
+ #M_INTMEDPH<M:PhMarker>: m-LL% m-LH% m-HL% m-HH%;
+ #M_CURVE<M:F0Curve>: m-low-falling m-low-rising m-high-falling m-high-rising ;
+ #M_OWNERSHIP<M:Owner>: m-speaker m-hearer;
+ #M_DIRECTION<M:Discourse>: m-frwd-refering m-finality;
 } # end feature
 
 # These are the semantic features which are used inside family definitions in the grammar
@@ -139,7 +203,6 @@ feature{
   def EXISTENTIAL() { <Delimitation>(existential) }
   
   def IND() { <Mood>(ind) }   def IMP() { <Mood>(imp) }   def INT() { <Mood>(int) }
-  
 ######################
 # SYNTACTIC FEATURES #
 ######################
@@ -150,7 +213,7 @@ feature{
   # 11 is the feature id for finites when 'selected' for by interrogative utterance templates
   #       the finite determines subj agreement and pol, vform & fin.
   # 42 is used for the np compliment in 'I am a man', used to block ' these are a ball'
-
+  # 
 feature{
 
 ## Noun features ##
@@ -201,6 +264,15 @@ feature {
 
   CORRECTED<1,10,15,25,34>: default asr-correction ;
 
+######################
+## Prosodic Feature ##
+######################
+  ##Raveesh 10 Aug##
+  ## Sytactic Feature indicating pitch accent on nouns, verbs, finites(?) and ajectives
+  !ACCENT<15,9,10,11,25,42>: tone stressed[tone] unstressed[tone] rhthm[stressed] thmf[rhthm] lphs[thmf] lsph[thmf] rhmf[rhthm] hs[rhmf] ls[rhmf] hspl[rhmf] hpls [rhmf]; 
+  ## Feature indicating intonational phrases: pitch accent marked (pam) word, intermediate phrase(ip) and intonational phrase(cp)
+  !INTOPH<15,9,10,11,25>: nulltn pam{rhm thm} ip cp; 
+  INTBD<17>: mbt;
 } 
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
@@ -324,7 +396,13 @@ feature{
   # this needs re-doing!
   ont-discourse: marker{ d-units alignment cue greeting closing reject acknowledge evaluate };
 				
+###############
+## PROSODY ##
+###############
+  #ont-prosody: tunes{ rhm-thm {thmf rhmf} };
+
 }
+
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains the more 'complex' features used in defining
@@ -464,6 +542,9 @@ feature {
 
 } # end feature
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
 
 # This file contains some important categories used by modifiers like
 # adjectives, adverbs and prepositions 
@@ -523,7 +604,7 @@ feature {
  
   def post-n(args, syn)         {  from-n(args) syn \* n()  }
  def post-n2(syn)         {  from-n() syn \* n()  }
-  def pre-n(args, syn)          {  from-n(args) / n() syn  }		
+ def pre-n(args, syn)          {  from-n(args) / n() syn  }		
 
 ########################################
 # SPECIAL MODIFIER 'SLOTS' FOR COPULA. #
@@ -538,9 +619,11 @@ feature {
   
   # The three possible compliments
 
-  def +cop-np(args)  { / np<42>[X NUM:NUM acc args] }    # the restr & Scope must share number (*these are a ball) 
+  def +cop-np(args)  { /^ np<42>[X NUM:NUM ACCENT acc args] }    # the restr & Scope must share number (*these are a ball) 
   def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
   def +cop-adj(args) { / adj<2>[X args] }
+  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+  def +cop-adj-ip(args) { /! adj<2>[X args] }
 
   # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
   def pre-cop-comp (moder, modee, arg)      { from-s(moder) arg \^ ( s(modee be) arg ) } 
@@ -580,6 +663,7 @@ feature {
   #       is handled using the semantic sort hierarchy (see types-ontology.ccg)
 
   def MODIFIER(args) {<Modifier>(M  args) }
+  def RHMODIFIER(args) {<Modifier>(M args ^ <RhFocus>Hs) }
 
   # This is the semantic dependency relation used by modifier modifiers,
   #     e.g.  'really' big , 'over' on the table, etc. 
@@ -630,8 +714,9 @@ feature {
 ## SYNTACTIC DEFINITIONS ##
 ###########################
 
-  def n(args)         { n<15> [T CASE NUM PERS NFORM args] }
-  def np(args)        { np<15>[T CASE NUM PERS NFORM args] }
+  def n(args)         { n<15> [T CASE NUM PERS NFORM ACCENT args] }
+  def np(args)        { np<15>[T CASE NUM PERS NFORM ACCENT args] }
+  def -np(args)        {\! np<15>[T CASE NUM PERS NFORM ACCENT args] }
    
   def from-n(args)    { n<~15> [T args] }
   def from-np(args)   { np<~15>[T args] }
@@ -731,14 +816,27 @@ feature {
 
   # Basic nouns, regular and irr
   #
-  def  noun(sing, class, args)       {  noun-irr(sing, pluralize(sing), class, args) }
-  def _noun(prd, sing, class, args) { _noun-irr(prd, sing, pluralize(sing), class, args) }
+  def  noun(sing, class, args)       {  noun-irr-accnt(sing, pluralize(sing), markWordHs(sing),markWordLs(sing),markWordLpHs(sing), class, args) }
+  def  noun-irr-accnt(sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
+
+  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), markWordHs(sing), markWordLs(sing),markWordLpHs(sing), class, args) }
+  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
   
-  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, class, args) } 
-  def _noun-irr(prd, sing, plur, class, args) {
+  
+  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, markWordHs(sing),markWordLs(sing), markWordLpHs(sing),markWordHs(plur),markWordLs(plur),markWordLpHs(plur),class, args) } 
+
+  def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      sing :  s-sg full args;
-      plur :  s-pl-unsp full args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true args;
+      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true hs args;
+      sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true ls args;
+      sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false lphs args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true args;
+      plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true hs args;
+      plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true ls args;
+      plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false lphs args;
     }
   }
   
@@ -785,8 +883,8 @@ feature {
  
   def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {
     word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
-      nom-form :  pers s-.num nom pro num;
-      acc-form :  pers s-.num acc pro num;
+      nom-form :  pers s-.num nom pro num ;
+      acc-form :  pers s-.num acc pro num ;
     }
     word prd.-owner-.num:Owner-pro('entity', pred=prd) {
       owner : num ;
@@ -850,14 +948,16 @@ feature {
 
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#	 : grep change with: PROSG09
 
 ###########################
 ## SYNTACTIC DEFINITIONS ##
 ###########################
 
-  def adj(args)         { adj<25>[M DEGREE args] }
+  def adj(args)         { adj<25>[M DEGREE ACCENT INFOD args] }
   def from-adj(args)    { adj<~25>[M args] }
-
 
 ##############
 ## FAMILIES ##
@@ -869,7 +969,7 @@ feature {
   
   ## The Families ##
 
-  family Adj                         { entry:  adj-cat(,) ;}
+  family Adj                         { entry:  adj-cat(, ) ;}
   family Adj+of-np                   { entry:  adj-cat( / obl_ma(of,), ARG() ) ;}
   
   ## Modifiers ##
@@ -900,8 +1000,11 @@ feature {
   # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() )
   # categories used in these rules  
 
-  rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; } 
-  
+  rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
+
+ #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
+  rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
+
 #######################
 ## DICTIONARY FORMS  ##
 #######################
@@ -913,14 +1016,76 @@ feature {
   }
   def adj-none(base, class, args) { _adj-none(base, base, class, args) }
 
-  def _adj-deg(prd, base, comp, sup, class, args) {
+  #PROSG09 : change in the number of arguments for prosodically inflected args e.g red_H*i, redder_H*. 
+  #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
+ def _adj-deg(prd, base, comp, sup, base_hs,base_ls, base_lphs, comp_hs, comp_ls,comp_lphs, sup_hs,sup_ls, sup_lphs,class, args) {
     word base.-adj:Adj(class, pred=prd) {
-      base : s-degree-base pre-n args;
-	  comp : s-comparative pre-n comparative args;
-	  sup  : s-superlative pre-n superlative args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false args;
+      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true hs args;
+      base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true ls args;
+      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false lphs args;
+	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-true args;
+	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-false args;
+	comp_hs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-true hs args;
+	comp_ls : s-comparative pre-n comparative   m-focus-true m-contentious m-rheme-true ls args;
+	comp_lphs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-false lphs args;
+	sup  : s-superlative pre-n superlative m-uncontentious m-focus-false m-rheme-true args;
+	sup  : s-superlative pre-n superlative m-uncontentious m-focus-false m-rheme-false args;
+	sup_hs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-false hs args;
+	sup_ls  : s-superlative pre-n superlative   m-focus-true m-contentious m-rheme-false ls args;
+	sup_lphs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-true lphs args;
     }
   }
-  def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, class, args) }
+
+  #PROSG09 : A function markWord**(word) is used to inflect a word for prosody i.e. red->red_H*. 
+  def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, markWordHs(base),markWordLs(base), markWordLpHs(base),markWordHs(comp),markWordLs(comp),markWordLpHs(comp),markWordHs(sup),markWordLs(sup), markWordLpHs(sup), class, args) }
+
+# Authors: Raveesh Meena (rame01@dfki.de), 2009
+
+# This file contains definition of family, and dictionary entries for boundary tones as per Steedman 2000.
+
+##
+##########################
+## Syntactic Definition ##
+##########################
+# Boundary take intermediate phrase of type Rheme ans results into a Rheme intonation phrase.
+# Ownership of Rheme is indicated by semantic feature RhOwner in the LF.
+# Argument category, an intermediate phrase ("ip"), must bear ACCENT of type Rheme i.e. rhmf as per type definition
+# Resultant category is an intonation phrase("cp") with ACCENT of type rhthm as per type definition. 
+# This allows unification of two intonation phrases.
+
+family IntmPhr_r(indexRel=RhOwner) {entry: (from-s(cp rhthm)$1)\*(s(ip rhmf)$1);}
+
+# Boundary take intermediate phrase of type Theme ans results into a Theme intonation phrase.
+# Ownership of Theme is indicated by semantic feature ThOwner in the LF.
+# Argument category, an intermediate phrase ("ip"), must bear ACCENT of type Theme i.e. thmf as per type definition
+# Resultant category is an intonation phrase("cp") with ACCENT of type rhthm as per type definition. 
+# This allows unification of two intonation phrases.
+
+family IntmPhr_t(indexRel=ThOwner) {entry: (from-s(cp rhthm)$1)\*(s(ip thmf)$1);}
+
+################
+## DICTIONARY ##
+################
+
+##Steedman 2000,pg 15. Rhemes can be marked by all types of boundaries. 
+##Steedman 2000,pg 16-17. Ownership of Rhemes could be of speaker or hearer. 
+word r_intmphr:IntmPhr_r{
+LL%: rh-speaker;
+LH%: rh-hearer;
+HL%: rh-speaker;
+HH%: rh-hearer;
+}
+
+##Steedman 2000,pg 15. Themes can be marked by all types of boundaries. 
+##Steedman 2000,pg 16-17. Ownership of Themes could be of speaker or hearer. 
+word t_intmphr:IntmPhr_t{
+LL%: th-speaker;
+LH%: th-hearer;
+HL%: th-speaker;
+HH%: th-hearer;
+}
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
@@ -1332,6 +1497,8 @@ feature {
 
 
   def SUBJECT(args)         { <Subject>(S:entity args) }
+  def LDSP(args)         { <InterpretiveB>(D:ph-tone args) }
+  def GDSP(args)         { <DiscourseSeg>(B:bn-tone args) }
 
   rule {
     
@@ -1788,6 +1955,9 @@ feature {
  
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
  
 # This file contains the stuff for the copular and presentational 
 # uses of 'be'. 
@@ -1811,15 +1981,22 @@ feature {
   def pres-sem(sem) { EVENT(* <Presented>(S:entity) sem ) }
 
   def cop-entry(arg, sem){
-  
-       entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-       entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+ 
+  #PROSG09: we comment 
+  #     entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+  #    entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
        entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
   }
      # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
      #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
      # NOTE: this is NOT INCREMENTAL! (**sigh**)
- 
+
+  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
+  def cop-entry-ip(arg, sem){
+       entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+       entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+  }
+
    #---  Families ----
 
    family Copular(V){   
@@ -1832,12 +2009,14 @@ feature {
     cop-entry( +cop-pp()  , <Cop-Scope>(X:m-comparison) )
   
     cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
+    #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+    cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(X:quality) )  
     
     # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), 
     # we must block the subj from being questionable for entity scopes
     #
     entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : cop-sem(                 <Cop-Scope>(X:entity) )  ; 
-    entry: s(s-int) +cop-np() / subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+    entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
     entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
   }
 
@@ -1895,6 +2074,7 @@ feature {
   }
 
  
+
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
  
 # This file contains the stuff for: 
@@ -3032,14 +3212,18 @@ testbed {
 # These forms of the be verb are used by be as copular & as its various aux forms 
 # ( be + v+ing, be + passive )
 
+#PROSG09
 def be-forms (args) {
-    am:        be  pres  1st     s-sg s-prov-pos      args;
+    	am:        be  pres  1st     s-sg s-prov-pos      args;
 	are:       be  pres          s-pl s-prov-pos      args;
         far:	   be  pres          s-pl s-prov-pos  asr-correction;
 	are:       be  pres  2nd     s-sg s-prov-pos      args;
 	"aren't":  be  pres          s-pl s-neg      neg  args;
 	"aren't":  be  pres  2nd     s-sg s-neg      neg  args;
-        is:        be  pres  3rd     s-sg s-prov-pos      args;
+        is:        be  pres  3rd     s-sg s-prov-pos      e-focus-false e-uncontentious e-rheme-true args;
+        is:        be  pres  3rd     s-sg s-prov-pos      e-focus-false e-uncontentious e-rheme-false args;
+        "is_H*":     be  pres  3rd     s-sg s-prov-pos     hs e-focus-true e-uncontentious e-rheme-true args;
+        "is_L+H*":   be  pres  3rd     s-sg s-prov-pos      e-focus-true e-uncontentious e-rheme-false lphs args;
         "isn't":   be  pres  3rd     s-sg s-neg      neg  args;
 	"ain't":   be  pres               s-neg      neg  args;
 	was:       be  past  1st     s-sg s-prov-pos      args;
@@ -3173,7 +3357,7 @@ def be-forms (args) {
 
 
   word be-aux-vf-be: Aux-vf-be (aux) {
-    be-forms()
+    be-forms(nulltn)
   }
   word be-aux-vf-be-no-int: Aux-no-int-vf-be (aux) {
     be:       vf-base  ;      # will be going, can be going, etc.
@@ -3307,8 +3491,6 @@ def be-forms (args) {
    name+vocative(Dennis, person,)
    name+vocative(George, person,)
 
-
-
   _noun(Robot, rowboat, animate, asr-correction)
 
 
@@ -3369,7 +3551,7 @@ def be-forms (args) {
 
   word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
   word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }
-word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
+  word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
 
  
   noun(bucket, thing,) 
@@ -3579,6 +3761,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   adj-deg(small, smaller, smallest, q-size,)
   adj-deg(tiny, tinier, tiniest, q-size,) 
   adj-deg(huge, huger, hugest, q-size,) 
+  adj-deg(large, larger, largest, q-size,) 
 
   #-- q-color --#
 
@@ -3586,7 +3769,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   adj-deg(blue, bluer, bluest, q-color,)
   adj-deg(green, greener, greenest, q-color,)  
   adj-deg(yellow, yellower, yellowest, q-color,)  
-    adj-deg(orange, oranger, orangest, q-color,)
+  adj-deg(orange, oranger, orangest, q-color,)
 
   adj-deg(pink, pinker, pinkest, q-color,)
   adj-deg(black, blacker, blackest, q-color,)  
@@ -3792,11 +3975,11 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   verb(thank, thanking, thanked, thanked, m-class-2, communication,      dtv-for v+Rec-np+for-verb-ing)
   word thanks-verb: Thanks(communication, pred=thank) { thanks: m-class-5 fin pres s-pos ; thank_you: m-class-5 fin pres s-pos;}
      # special verb family which creates indicative with <recipient>addressee and <actor>speaker
-     # m-class5 blocks all modification but comments
-  
-  #-- perception --#
-  
-  def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event} 
+# m-class5 blocks all modification but comments
+
+#-- perception --#
+
+def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event} 
   
   verb(see, seeing, saw, seen, m-class-2, perception,                   per-fams() )
   verb-reg(watch, m-class-2, perception,                                per-fams() )
@@ -4162,7 +4345,112 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   modifier(up, prep, pre, manner )
 
 
+####################
+# Prosodic Entries #
+####################
 
+#  noun("ball_L+H*", thing, t-given t-thm-focus lphs ) 
+#  noun("ball_H*", thing, t-new  t-rhm-focus hs ) 
+#  noun("ball_L*", thing, t-new  t-rhm-focus hs ) 
+#  noun("box_L+H*", thing, t-given t-thm-focus lphs ) 
+#  noun("box_H*", thing, t-new  t-rhm-focus hs ) 
+#  noun("box_L*", thing, t-new  t-rhm-focus ls ) 
+#  noun("robot_L+H*", animate, t-given t-thm-focus lphs ) 
+#  noun("robot_H*", animate, t-new  t-rhm-focus hs ) 
+#  noun("robot_L*", animate, t-new  t-rhm-focus ls ) 
+
+#  adj-deg("red_L+H*", redder, reddest, q-color, m-given  m-thm-focus lphs)
+#  adj-deg("red_H*", redder, reddest, q-color, m-new  m-rhm-focus hs)
+#  adj-deg("red_H*c", redder, reddest, q-color, m-contrast  m-rhm-focus hs)
+#  adj-deg("red_L*", redder, reddest, q-color, m-new  m-rhm-focus hs)
+
+
+
+
+# NOTE: In some of the cases below, the 'expected' number of parses will be incorrect
+#       This is because as new features get added, old ones removed, these numbers fluxuate
+#       this is especially true with various 'discourse phenomena' and 'complex constructions'
+
+testbed {
+	  
+###################
+# Prosodic Tesbed #
+###################
+
+#### following works as intended.####
+
+### Rheme or Theme only utterance###
+## assertions##
+this is a red box:1;
+this is a "red_H*" box LL%: 1 ;
+this is a "red_H*" "box_H*" LL%: 1 ;
+this is a red "box_H*" LL%: 1 ;
+this is a "blue_H*" "mug_H*" LL%: 1 ;
+it is a red box:1;
+it is a "red_H*" box LL%: 1 ;
+it is a "blue_H*" "mug_H*" LL%: 1 ;
+it is a red "box_H*" LL%: 1 ;
+
+## verification requests ## 
+is it a red box: 1 ;
+is it a red "box_L*" HH%: 1 ;
+is it a "red_L*" box HH%: 1 ;
+is it a "red_L*" "box_L*" HH%: 1 ;
+
+is this a red box: 1 ;
+is this a red "box_L*" HH%: 1 ;
+is this a "red_L*" box HH%: 1 ;
+is this a "red_L*" "box_L*" HH%: 1 ;
+
+is it a blue mug: 1 ;
+is it a blue "mug_L*" HH%:1 ;
+is it a "blue_L*" "mug_L*" HH%:1 ;
+is it a large blue "mug_L*" HH%:1 ;
+is it a large "blue_L*" mug HH%:1 ;
+is it a "large_L*" blue mug HH%:1 ;
+
+## disambiguation requests ##
+is the box "red_L*" or "orange_L*" HH%:1;
+
+## information requests ##
+what color is the mug:1;
+#what "color_H*" is the mug HH%:1;
+what color is the "mug_H*" HH%:1;
+#what "color_H*" is "this_H*" mug HH%:1;
+what color is the bigger "mug_H*" HH%:1;
+what color is the "bigger_H*" mug HH%:1;
+#what "color_H*" is the bigger mug HH%:1;
+#"what_H*" color is the mug HH%:1;
+
+### Rheme-Theme Utterances ###
+## assertions ##
+the "box_L+H*" LH% is "red_H*" LL%:1 ;
+the "box_H*" LL% is "red_L+H*" LH%:1 ;
+the "robot_L+H*" LH% moves a "ball_H*" LL%:1 ;
+the "robot_H*" LL% moves a "ball_L+H*" LH%:1 ;
+
+the box is blue:1;
+the "box_L+H*" LH% is "blue_H*" LL%:1;
+the "box_L+H*" is LH% "blue_H*" LL%:1;
+the "box_H*" is "blue_H*" LL%:1;
+the "box_L+H*" is "blue_L+H*" LL%:1;
+the "box_L+H*" LH% "is_H*" LL% "blue_L+H*" LH%:1;
+
+## verifications ##
+is the box red:1;
+is the "box_L+H*" LH%  "red_L*" HH%:1 ;
+is the "box_L*" LL% "red_L+H*" HH%:1 ;
+
+##disambiguations ##
+
+##information questions ##
+
+### following parses need to be constrained or not allowed ###
+is it a "red_H*" "box_L+H*" LH%: 0 ;
+is it a "red_L+H*" "box_H*" LH%: 0 ;
+is it a red box LL%: 0 ;        
+a red box LL%: 0 ;
+}
 
 
 

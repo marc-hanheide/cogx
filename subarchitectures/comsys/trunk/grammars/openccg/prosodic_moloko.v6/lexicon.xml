@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ccg-lexicon name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../lexicon.xsd">
+  <distributive-features attrs="ACCENT INTOPH"/>
   <family name="Particle" pos="Particle" closed="true">
     <entry name="Entry-1">
       <atomcat type="prt">
@@ -41,6 +42,9 @@
           </feat>
           <feat attr="NFORM">
             <featvar name="NFORM"/>
+          </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
           </feat>
         </fs>
         <lf>
@@ -277,6 +281,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -351,6 +358,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -401,6 +411,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -444,6 +457,9 @@
           </feat>
           <feat attr="NFORM">
             <featvar name="NFORM"/>
+          </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
           </feat>
         </fs>
         <lf>
@@ -522,6 +538,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -567,6 +586,9 @@
           </feat>
           <feat attr="NFORM">
             <featvar name="NFORM"/>
+          </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
           </feat>
         </fs>
         <lf>
@@ -671,6 +693,9 @@
           </feat>
           <feat attr="NFORM">
             <featvar name="NFORM"/>
+          </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
           </feat>
         </fs>
         <lf>
@@ -1072,6 +1097,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -1105,6 +1133,9 @@
             </feat>
             <feat attr="NFORM">
               <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="COM" val="yes"/>
           </fs>
@@ -1171,6 +1202,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="COM" val="yes"/>
           </fs>
         </atomcat>
@@ -1220,6 +1254,12 @@
           </feat>
           <feat attr="DEGREE">
             <featvar name="DEGREE"/>
+          </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
+          </feat>
+          <feat attr="INFOD">
+            <featvar name="INFOD"/>
           </feat>
         </fs>
         <lf>
@@ -1313,6 +1353,7 @@
     <member stem="small-adj" pred="small"/>
     <member stem="tiny-adj" pred="tiny"/>
     <member stem="huge-adj" pred="huge"/>
+    <member stem="large-adj" pred="large"/>
     <member stem="red-adj" pred="red"/>
     <member stem="blue-adj" pred="blue"/>
     <member stem="green-adj" pred="green"/>
@@ -1392,6 +1433,12 @@
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
           </fs>
         </atomcat>
         <slash dir="/" mode="&gt;"/>
@@ -1439,6 +1486,12 @@
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -1478,6 +1531,12 @@
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
             <feat attr="DEGREE" val="s-comparative"/>
           </fs>
         </atomcat>
@@ -1516,6 +1575,12 @@
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -1553,6 +1618,12 @@
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
             <feat attr="DEGREE" val="s-degree-base"/>
           </fs>
         </atomcat>
@@ -1583,6 +1654,12 @@
             </feat>
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
             </feat>
             <feat attr="DEGREE" val="s-degree-base"/>
           </fs>
@@ -1624,6 +1701,12 @@
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
+            </feat>
             <feat attr="DEGREE" val="s-comparative"/>
           </fs>
         </atomcat>
@@ -1664,6 +1747,12 @@
             </feat>
             <feat attr="DEGREE">
               <featvar name="DEGREE"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="INFOD">
+              <featvar name="INFOD"/>
             </feat>
           </fs>
         </atomcat>
@@ -1727,6 +1816,126 @@
     <member stem="and-coord-adj" pred="and"/>
     <member stem="or-coord-adj" pred="or"/>
   </family>
+  <family name="IntmPhr_r" indexRel="RhOwner" pos="IntmPhr_r" closed="true">
+    <entry name="Entry-1">
+      <complexcat>
+        <atomcat type="s">
+          <fs inheritsFrom="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="INTOPH" val="cp"/>
+            <feat attr="ACCENT" val="rhthm"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash dir="\" mode="*"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="E"/>
+                </lf>
+              </feat>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
+              <feat attr="MCLASS">
+                <featvar name="MCLASS:MCLASS"/>
+              </feat>
+              <feat attr="MOOD">
+                <featvar name="MOOD:MOOD"/>
+              </feat>
+              <feat attr="POL">
+                <featvar name="POL:POL"/>
+              </feat>
+              <feat attr="FIN">
+                <featvar name="FIN:FIN"/>
+              </feat>
+              <feat attr="VFORM">
+                <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="INTOPH" val="ip"/>
+              <feat attr="ACCENT" val="rhmf"/>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+      </complexcat>
+    </entry>
+    <member stem="r_intmphr"/>
+  </family>
+  <family name="IntmPhr_t" indexRel="ThOwner" pos="IntmPhr_t" closed="true">
+    <entry name="Entry-1">
+      <complexcat>
+        <atomcat type="s">
+          <fs inheritsFrom="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="INTOPH" val="cp"/>
+            <feat attr="ACCENT" val="rhthm"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash dir="\" mode="*"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="E"/>
+                </lf>
+              </feat>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
+              <feat attr="MCLASS">
+                <featvar name="MCLASS:MCLASS"/>
+              </feat>
+              <feat attr="MOOD">
+                <featvar name="MOOD:MOOD"/>
+              </feat>
+              <feat attr="POL">
+                <featvar name="POL:POL"/>
+              </feat>
+              <feat attr="FIN">
+                <featvar name="FIN:FIN"/>
+              </feat>
+              <feat attr="VFORM">
+                <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+              <feat attr="INTOPH" val="ip"/>
+              <feat attr="ACCENT" val="thmf"/>
+            </fs>
+          </atomcat>
+          <slash/>
+          <dollar name="1"/>
+        </complexcat>
+      </complexcat>
+    </entry>
+    <member stem="t_intmphr"/>
+  </family>
   <family name="Det" indexRel="Delimitation" pos="Det" closed="true">
     <entry name="Entry-1">
       <complexcat>
@@ -1759,6 +1968,9 @@
             </feat>
             <feat attr="NFORM">
               <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
           </fs>
         </atomcat>
@@ -1844,6 +2056,9 @@
             </feat>
             <feat attr="NFORM">
               <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
           </fs>
         </atomcat>
@@ -2117,6 +2332,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="NUM" val="s-pl-unsp"/>
           </fs>
         </atomcat>
@@ -2323,6 +2541,9 @@
             </feat>
             <feat attr="NFORM">
               <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
           </fs>
         </atomcat>
@@ -3163,6 +3384,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="MCLASS">
                 <featvar name="MCLASS:MCLASS"/>
               </feat>
@@ -3291,6 +3515,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="MCLASS">
                 <featvar name="MCLASS:MCLASS"/>
@@ -3521,6 +3748,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -3628,6 +3858,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -3754,6 +3987,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -3830,6 +4066,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -3908,6 +4147,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -3989,6 +4231,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -4069,6 +4314,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -4152,6 +4400,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -4230,6 +4481,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -4305,6 +4559,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -4383,6 +4640,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -4460,6 +4720,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -4544,6 +4807,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -4632,6 +4898,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -4724,6 +4993,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -4811,6 +5083,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -4907,6 +5182,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -4994,6 +5272,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -5090,6 +5371,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -5177,6 +5461,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -5271,6 +5558,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -5375,6 +5665,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -5464,6 +5757,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -5560,6 +5856,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -5649,6 +5948,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -5748,6 +6050,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -5825,6 +6130,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -5901,6 +6209,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -5995,6 +6306,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -6080,6 +6394,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -6185,6 +6502,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -6298,6 +6618,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -6389,6 +6712,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -6479,6 +6805,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -6575,6 +6904,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -6689,6 +7021,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -6797,6 +7132,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -6910,6 +7248,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -6999,6 +7340,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -7093,6 +7437,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -7182,6 +7529,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -7276,6 +7626,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -7365,6 +7718,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -7458,6 +7814,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -7576,6 +7935,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
@@ -7696,6 +8058,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="vf-base"/>
             </fs>
           </atomcat>
@@ -7775,6 +8140,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="vf-base"/>
             </fs>
           </atomcat>
@@ -7841,6 +8209,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-ind"/>
           </fs>
@@ -7923,6 +8294,9 @@
           <feat attr="VFORM">
             <featvar name="VFORM:VFORM"/>
           </feat>
+          <feat attr="ACCENT">
+            <featvar name="ACCENT"/>
+          </feat>
           <feat attr="MOOD" val="s-ind"/>
         </fs>
         <lf>
@@ -7975,6 +8349,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-ind"/>
           </fs>
@@ -8736,6 +9113,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-dependent"/>
             <feat attr="MARK" val="none"/>
           </fs>
@@ -8804,6 +9184,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="vf-base"/>
             </fs>
           </atomcat>
@@ -8856,6 +9239,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="inf"/>
           </fs>
@@ -8946,6 +9332,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="ing"/>
             </fs>
           </atomcat>
@@ -8974,109 +9363,13 @@
   <family name="Copular" pos="V" closed="true">
     <entry name="Entry-1">
       <complexcat>
-        <atomcat type="s">
+        <atomcat type="cop">
           <fs id="10">
             <feat attr="index">
               <lf>
                 <nomvar name="E"/>
               </lf>
             </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-minor"/>
-          </fs>
-        </atomcat>
-        <slash dir="\" ability="inert" mode="&lt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:m-benefactor"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-2">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-int"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="^"/>
@@ -9113,14 +9406,66 @@
             <diamond mode="Cop-Restr">
               <nomvar name="S:entity"/>
             </diamond>
-            <diamond mode="Mood">
-              <prop name="int"/>
-            </diamond>
             <diamond mode="Subject">
               <nomvar name="S:entity"/>
             </diamond>
             <diamond mode="Cop-Scope">
               <nomvar name="X:m-benefactor"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <entry name="Entry-2">
+      <complexcat>
+        <atomcat type="cop">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="^"/>
+        <atomcat type="pp">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Cop-Restr">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Subject">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Cop-Scope">
+              <nomvar name="X:m-accompaniment"/>
             </diamond>
           </satop>
         </lf>
@@ -9175,7 +9520,7 @@
               <nomvar name="S:entity"/>
             </diamond>
             <diamond mode="Cop-Scope">
-              <nomvar name="X:m-benefactor"/>
+              <nomvar name="X:m-comparison"/>
             </diamond>
           </satop>
         </lf>
@@ -9183,38 +9528,26 @@
     </entry>
     <entry name="Entry-4">
       <complexcat>
-        <atomcat type="s">
+        <atomcat type="cop">
           <fs id="10">
             <feat attr="index">
               <lf>
                 <nomvar name="E"/>
               </lf>
             </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
-        <slash dir="\" ability="inert" mode="&lt;"/>
+        <slash dir="/" mode="&gt;"/>
+        <atomcat type="adj">
+          <fs id="2">
+            <feat attr="index">
+              <lf>
+                <nomvar name="X"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="9">
             <feat attr="index">
@@ -9232,24 +9565,17 @@
             <feat attr="NFORM" val="nf-real"/>
           </fs>
         </atomcat>
-        <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
         <lf>
           <satop nomvar="E:event">
             <prop name="[*DEFAULT*]"/>
             <diamond mode="Cop-Restr">
               <nomvar name="S:entity"/>
             </diamond>
+            <diamond mode="Subject">
+              <nomvar name="S:entity"/>
+            </diamond>
             <diamond mode="Cop-Scope">
-              <nomvar name="X:m-accompaniment"/>
+              <nomvar name="X:quality"/>
             </diamond>
           </satop>
         </lf>
@@ -9285,19 +9611,171 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="MOOD" val="s-minor"/>
+          </fs>
+        </atomcat>
+        <slash dir="\" ability="inert" mode="&lt;"/>
+        <atomcat type="np">
+          <fs id="9">
+            <feat attr="index">
+              <lf>
+                <nomvar name="S"/>
+              </lf>
+            </feat>
+            <feat attr="CASE" val="nom"/>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="NFORM" val="nf-real"/>
+          </fs>
+        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="E"/>
+                </lf>
+              </feat>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
+              <feat attr="MCLASS">
+                <featvar name="MCLASS:MCLASS"/>
+              </feat>
+              <feat attr="MOOD">
+                <featvar name="MOOD:MOOD"/>
+              </feat>
+              <feat attr="POL">
+                <featvar name="POL:POL"/>
+              </feat>
+              <feat attr="FIN">
+                <featvar name="FIN:FIN"/>
+              </feat>
+              <feat attr="VFORM">
+                <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="adj">
+            <fs id="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
+        <lf>
+          <satop nomvar="E:event">
+            <prop name="[*DEFAULT*]"/>
+            <diamond mode="Cop-Restr">
+              <nomvar name="S:entity"/>
+            </diamond>
+            <diamond mode="Cop-Scope">
+              <nomvar name="X:quality"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </entry>
+    <entry name="Entry-6">
+      <complexcat>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E"/>
+              </lf>
+            </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="PERS">
+              <featvar name="PERS:PERS"/>
+            </feat>
+            <feat attr="MCLASS">
+              <featvar name="MCLASS:MCLASS"/>
+            </feat>
+            <feat attr="MOOD">
+              <featvar name="MOOD:MOOD"/>
+            </feat>
+            <feat attr="POL">
+              <featvar name="POL:POL"/>
+            </feat>
+            <feat attr="FIN">
+              <featvar name="FIN:FIN"/>
+            </feat>
+            <feat attr="VFORM">
+              <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-int"/>
           </fs>
         </atomcat>
-        <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
+        <slash dir="/" mode="&gt;"/>
+        <complexcat>
+          <atomcat type="s">
+            <fs id="10">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="E"/>
+                </lf>
+              </feat>
+              <feat attr="NUM">
+                <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="PERS">
+                <featvar name="PERS:PERS"/>
+              </feat>
+              <feat attr="MCLASS">
+                <featvar name="MCLASS:MCLASS"/>
+              </feat>
+              <feat attr="MOOD">
+                <featvar name="MOOD:MOOD"/>
+              </feat>
+              <feat attr="POL">
+                <featvar name="POL:POL"/>
+              </feat>
+              <feat attr="FIN">
+                <featvar name="FIN:FIN"/>
+              </feat>
+              <feat attr="VFORM">
+                <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
+            </fs>
+          </atomcat>
+          <slash dir="/" ability="inert" mode="&gt;"/>
+          <atomcat type="adj">
+            <fs id="2">
+              <feat attr="index">
+                <lf>
+                  <nomvar name="X"/>
+                </lf>
+              </feat>
+            </fs>
+          </atomcat>
+        </complexcat>
         <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="9">
@@ -9329,62 +9807,7 @@
               <nomvar name="S:entity"/>
             </diamond>
             <diamond mode="Cop-Scope">
-              <nomvar name="X:m-accompaniment"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-6">
-      <complexcat>
-        <atomcat type="cop">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:m-accompaniment"/>
+              <nomvar name="X:quality"/>
             </diamond>
           </satop>
         </lf>
@@ -9420,6 +9843,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -9439,16 +9865,24 @@
               <featvar name="PERS:PERS"/>
             </feat>
             <feat attr="NFORM" val="nf-real"/>
+            <feat attr="Questionable" val="no"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
+        <atomcat type="np">
+          <fs id="42">
             <feat attr="index">
               <lf>
                 <nomvar name="X"/>
               </lf>
             </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
         <lf>
@@ -9458,7 +9892,7 @@
               <nomvar name="S:entity"/>
             </diamond>
             <diamond mode="Cop-Scope">
-              <nomvar name="X:m-comparison"/>
+              <nomvar name="X:entity"/>
             </diamond>
           </satop>
         </lf>
@@ -9494,20 +9928,30 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-int"/>
           </fs>
         </atomcat>
         <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
+        <atomcat type="np">
+          <fs id="42">
             <feat attr="index">
               <lf>
                 <nomvar name="X"/>
               </lf>
             </feat>
+            <feat attr="NUM">
+              <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
+            <feat attr="CASE" val="acc"/>
           </fs>
         </atomcat>
-        <slash dir="/" mode="&gt;"/>
+        <slash dir="/" mode="^"/>
         <atomcat type="np">
           <fs id="9">
             <feat attr="index">
@@ -9538,7 +9982,7 @@
               <nomvar name="S:entity"/>
             </diamond>
             <diamond mode="Cop-Scope">
-              <nomvar name="X:m-comparison"/>
+              <nomvar name="X:entity"/>
             </diamond>
           </satop>
         </lf>
@@ -9556,311 +10000,6 @@
           </fs>
         </atomcat>
         <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:m-comparison"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-10">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-minor"/>
-          </fs>
-        </atomcat>
-        <slash dir="\" ability="inert" mode="&lt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:quality"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-11">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-int"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Mood">
-              <prop name="int"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:quality"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-12">
-      <complexcat>
-        <atomcat type="cop">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="adj">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:quality"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-13">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-minor"/>
-          </fs>
-        </atomcat>
-        <slash dir="\" ability="inert" mode="&lt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-            <feat attr="Questionable" val="no"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
         <atomcat type="np">
           <fs id="42">
             <feat attr="index">
@@ -9871,127 +10010,8 @@
             <feat attr="NUM">
               <featvar name="NUM:NUM"/>
             </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:entity"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-14">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-int"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="42">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="CASE" val="acc"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Mood">
-              <prop name="int"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:entity"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-15">
-      <complexcat>
-        <atomcat type="cop">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="42">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="CASE" val="acc"/>
             <feat attr="CC-TYPE" val="no-q"/>
@@ -10035,160 +10055,6 @@
   </family>
   <family name="Copular-location" pos="V" closed="true">
     <entry name="Entry-1">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-minor"/>
-          </fs>
-        </atomcat>
-        <slash dir="\" ability="inert" mode="&lt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:m-location"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-2">
-      <complexcat>
-        <atomcat type="s">
-          <fs id="10">
-            <feat attr="index">
-              <lf>
-                <nomvar name="E"/>
-              </lf>
-            </feat>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="MCLASS">
-              <featvar name="MCLASS:MCLASS"/>
-            </feat>
-            <feat attr="MOOD">
-              <featvar name="MOOD:MOOD"/>
-            </feat>
-            <feat attr="POL">
-              <featvar name="POL:POL"/>
-            </feat>
-            <feat attr="FIN">
-              <featvar name="FIN:FIN"/>
-            </feat>
-            <feat attr="VFORM">
-              <featvar name="VFORM:VFORM"/>
-            </feat>
-            <feat attr="MOOD" val="s-int"/>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="^"/>
-        <atomcat type="pp">
-          <fs id="2">
-            <feat attr="index">
-              <lf>
-                <nomvar name="X"/>
-              </lf>
-            </feat>
-          </fs>
-        </atomcat>
-        <slash dir="/" mode="&gt;"/>
-        <atomcat type="np">
-          <fs id="9">
-            <feat attr="index">
-              <lf>
-                <nomvar name="S"/>
-              </lf>
-            </feat>
-            <feat attr="CASE" val="nom"/>
-            <feat attr="NUM">
-              <featvar name="NUM:NUM"/>
-            </feat>
-            <feat attr="PERS">
-              <featvar name="PERS:PERS"/>
-            </feat>
-            <feat attr="NFORM" val="nf-real"/>
-          </fs>
-        </atomcat>
-        <lf>
-          <satop nomvar="E:event">
-            <prop name="[*DEFAULT*]"/>
-            <diamond mode="Cop-Restr">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Mood">
-              <prop name="int"/>
-            </diamond>
-            <diamond mode="Subject">
-              <nomvar name="S:entity"/>
-            </diamond>
-            <diamond mode="Cop-Scope">
-              <nomvar name="X:m-location"/>
-            </diamond>
-          </satop>
-        </lf>
-      </complexcat>
-    </entry>
-    <entry name="Entry-3">
       <complexcat>
         <atomcat type="cop">
           <fs id="10">
@@ -10276,6 +10142,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-minor"/>
           </fs>
         </atomcat>
@@ -10346,6 +10215,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-int"/>
           </fs>
@@ -10479,6 +10351,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-ind"/>
           </fs>
         </atomcat>
@@ -10584,6 +10459,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="POL" val="s-prov-pos"/>
               <feat attr="FIN" val="be"/>
             </fs>
@@ -10613,7 +10491,7 @@
             <feat attr="POL" val="s-neg"/>
           </fs>
         </atomcat>
-        <slash dir="/" mode="&gt;"/>
+        <slash dir="/" mode="^"/>
         <atomcat type="np">
           <fs id="42">
             <feat attr="index">
@@ -10623,6 +10501,9 @@
             </feat>
             <feat attr="NUM">
               <featvar name="NUM:NUM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="CASE" val="acc"/>
           </fs>
@@ -10657,11 +10538,14 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="POL" val="s-prov-pos"/>
               <feat attr="FIN" val="be"/>
             </fs>
           </atomcat>
-          <slash dir="/" mode="&gt;"/>
+          <slash dir="/" mode="^"/>
           <atomcat type="np">
             <fs id="42">
               <feat attr="index">
@@ -10671,6 +10555,9 @@
               </feat>
               <feat attr="NUM">
                 <featvar name="NUM:NUM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="CASE" val="acc"/>
             </fs>
@@ -10730,6 +10617,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="POL" val="s-prov-pos"/>
               <feat attr="FIN" val="be"/>
             </fs>
@@ -10780,6 +10670,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -10882,6 +10775,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -10996,6 +10892,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="vf-base"/>
             </fs>
           </atomcat>
@@ -11079,6 +10978,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-int"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -11157,6 +11059,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
               <featvar name="MCLASS:MCLASS"/>
@@ -11250,6 +11155,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -11352,6 +11260,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="vf-base"/>
             </fs>
           </atomcat>
@@ -11432,6 +11343,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-int"/>
             <feat attr="MCLASS" val="m-class-4"/>
             <feat attr="VFORM" val="fin-ctxt"/>
@@ -11499,6 +11413,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -11593,6 +11510,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -11683,6 +11603,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -11777,6 +11700,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -11879,6 +11805,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="pp"/>
             </fs>
           </atomcat>
@@ -11959,6 +11888,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-int"/>
             <feat attr="MCLASS" val="m-class-4"/>
             <feat attr="VFORM" val="fin-ctxt"/>
@@ -12026,6 +11958,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -12120,6 +12055,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -12212,6 +12150,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
               <featvar name="MCLASS:MCLASS"/>
@@ -12305,6 +12246,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -12407,6 +12351,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="ing"/>
             </fs>
           </atomcat>
@@ -12487,6 +12434,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-int"/>
             <feat attr="MCLASS" val="m-class-4"/>
             <feat attr="VFORM" val="fin-ctxt"/>
@@ -12554,6 +12504,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -12648,6 +12601,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -12740,6 +12696,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
               <featvar name="MCLASS:MCLASS"/>
@@ -12833,6 +12792,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
@@ -12935,6 +12897,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="vf-be"/>
             </fs>
           </atomcat>
@@ -13015,6 +12980,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="MOOD" val="s-int"/>
             <feat attr="MCLASS" val="m-class-4"/>
             <feat attr="VFORM" val="fin-ctxt"/>
@@ -13082,6 +13050,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -13177,6 +13148,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="fin-ctxt"/>
             <feat attr="MCLASS" val="m-class-4"/>
             <feat attr="POL">
@@ -13267,6 +13241,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -13369,6 +13346,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -13503,6 +13483,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
               <featvar name="MCLASS:MCLASS"/>
@@ -13604,6 +13587,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MCLASS">
@@ -13734,6 +13720,9 @@
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
             <feat attr="VFORM" val="fin-full"/>
             <feat attr="MOOD" val="s-int"/>
           </fs>
@@ -13832,6 +13821,9 @@
             </feat>
             <feat attr="VFORM">
               <featvar name="VFORM:VFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
             <feat attr="MOOD" val="s-int"/>
             <feat attr="VFORM" val="fin-full"/>
@@ -13995,6 +13987,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="POL" val="s-prov-pos"/>
             </fs>
           </atomcat>
@@ -14105,6 +14100,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="MOOD" val="s-int"/>
               <feat attr="POL" val="s-prov-pos"/>
@@ -14220,6 +14218,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="POL" val="s-prov-pos"/>
             </fs>
@@ -14366,6 +14367,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="POL" val="s-prov-pos"/>
             </fs>
           </atomcat>
@@ -14494,6 +14498,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="MOOD" val="s-int"/>
               <feat attr="POL" val="s-prov-pos"/>
             </fs>
@@ -14605,6 +14612,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="MOOD" val="s-int"/>
               <feat attr="POL" val="s-prov-pos"/>
@@ -14752,6 +14762,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -14814,6 +14827,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -14981,6 +14997,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -15173,6 +15192,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -15256,6 +15278,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -15445,6 +15470,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -15683,6 +15711,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -15784,6 +15815,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -15974,6 +16008,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -16212,6 +16249,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -16319,6 +16359,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -16492,6 +16535,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -16698,6 +16744,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -16788,6 +16837,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -16977,6 +17029,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -17215,6 +17270,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -17316,6 +17374,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -17496,6 +17557,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -17714,6 +17778,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -17809,6 +17876,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -17995,6 +18065,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -18228,6 +18301,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
           </atomcat>
@@ -18325,6 +18401,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -18502,6 +18581,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -18714,6 +18796,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -18806,6 +18891,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -19009,6 +19097,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -19276,6 +19367,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
           </atomcat>
@@ -19390,6 +19484,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -19594,6 +19691,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -19860,6 +19960,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
             </fs>
@@ -19979,6 +20082,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -20144,6 +20250,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -20341,6 +20450,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -20506,6 +20618,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -20650,6 +20765,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -20856,6 +20974,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -21003,6 +21124,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -21168,6 +21292,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -21364,6 +21491,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -21541,6 +21671,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -21764,6 +21897,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -21941,6 +22077,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -22216,6 +22355,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -22344,6 +22486,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -22435,6 +22580,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <slash dir="/" mode="^"/>
@@ -22484,6 +22632,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -22532,6 +22683,9 @@
               </feat>
               <feat attr="NFORM">
                 <featvar name="NFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
             </fs>
           </atomcat>
@@ -22597,6 +22751,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -22745,6 +22902,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -23045,6 +23205,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -23142,6 +23305,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -23260,6 +23426,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -23382,6 +23551,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -23502,6 +23674,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -23643,6 +23818,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -23782,6 +23960,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -23902,6 +24083,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -24043,6 +24227,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -24186,6 +24373,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -24290,6 +24480,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -24415,6 +24608,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -24542,6 +24738,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -24659,6 +24858,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -24797,6 +24999,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -24933,6 +25138,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -25040,6 +25248,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -25168,6 +25379,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -25298,6 +25512,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -25415,6 +25632,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -25555,6 +25775,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -25690,6 +25913,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -25796,6 +26022,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -25924,6 +26153,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -26053,6 +26285,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -26175,6 +26410,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -26320,6 +26558,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -26460,6 +26701,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -26573,6 +26817,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -26708,6 +26955,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -26866,6 +27116,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -26983,6 +27236,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -27129,6 +27385,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -27247,6 +27506,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -27390,6 +27652,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -27507,6 +27772,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -27648,6 +27916,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -27781,6 +28052,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
@@ -27938,6 +28212,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -28069,6 +28346,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -28197,6 +28477,9 @@
               </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
+              </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
               </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
@@ -28407,6 +28690,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -28616,6 +28902,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
@@ -28695,6 +28984,9 @@
             <feat attr="NFORM">
               <featvar name="NFORM"/>
             </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
+            </feat>
           </fs>
         </atomcat>
         <lf>
@@ -28750,6 +29042,9 @@
               <feat attr="VFORM">
                 <featvar name="VFORM:VFORM"/>
               </feat>
+              <feat attr="ACCENT">
+                <featvar name="ACCENT"/>
+              </feat>
               <feat attr="VFORM" val="fin-full"/>
               <feat attr="MOOD" val="s-minor"/>
             </fs>
@@ -28786,6 +29081,9 @@
             </feat>
             <feat attr="NFORM">
               <featvar name="NFORM"/>
+            </feat>
+            <feat attr="ACCENT">
+              <featvar name="ACCENT"/>
             </feat>
           </fs>
         </atomcat>

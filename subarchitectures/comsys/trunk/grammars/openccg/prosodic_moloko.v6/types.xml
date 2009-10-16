@@ -1,14 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <types name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../types.xsd">
+  <type name="DELIMINATION"/>
+  <type name="unique" parents="DELIMINATION"/>
+  <type name="existential" parents="DELIMINATION"/>
+  <type name="variable" parents="DELIMINATION"/>
   <type name="DEGREE"/>
   <type name="s-no-degrees" parents="DEGREE"/>
   <type name="s-degrees" parents="DEGREE"/>
   <type name="s-degree-base" parents="s-degrees"/>
   <type name="s-comparative" parents="s-degrees"/>
   <type name="s-superlative" parents="s-degrees"/>
+  <type name="TFOCUS"/>
+  <type name="t-focus-true" parents="TFOCUS"/>
+  <type name="t-focus-false" parents="TFOCUS"/>
   <type name="NUMBER"/>
   <type name="sg" parents="NUMBER"/>
   <type name="pl" parents="NUMBER"/>
+  <type name="ont-modifier"/>
+  <type name="modifier" parents="ont-modifier"/>
+  <type name="m-dynamic" parents="modifier"/>
+  <type name="m-manner" parents="modifier"/>
+  <type name="m-time" parents="modifier"/>
+  <type name="m-location" parents="modifier"/>
+  <type name="m-probability" parents="modifier"/>
+  <type name="m-frequency" parents="modifier"/>
+  <type name="m-comment" parents="modifier"/>
+  <type name="m-serial" parents="modifier"/>
+  <type name="m-accompaniment" parents="modifier"/>
+  <type name="m-instrumental" parents="modifier"/>
+  <type name="m-benefactor" parents="modifier"/>
+  <type name="m-relational" parents="modifier"/>
+  <type name="m-purpose" parents="modifier"/>
+  <type name="m-intensity" parents="modifier"/>
+  <type name="m-comparison" parents="modifier"/>
+  <type name="m-restriction" parents="modifier"/>
+  <type name="m-direction" parents="m-dynamic"/>
+  <type name="m-whereto" parents="m-dynamic"/>
+  <type name="m-wherefrom" parents="m-dynamic"/>
+  <type name="m-through" parents="m-dynamic"/>
+  <type name="m-time-point" parents="m-time"/>
+  <type name="m-time-sequence" parents="m-time"/>
+  <type name="m-time-interval" parents="m-time"/>
+  <type name="m-cause" parents="m-relational"/>
+  <type name="m-result" parents="m-relational"/>
+  <type name="m-condition" parents="m-relational"/>
+  <type name="RHEME"/>
+  <type name="t-rheme-true" parents="RHEME"/>
+  <type name="t-rheme-false" parents="RHEME"/>
   <type name="ont-quality"/>
   <type name="quality" parents="ont-quality"/>
   <type name="q-physical" parents="quality"/>
@@ -27,6 +65,12 @@
   <type name="number-cardinal" parents="q-number"/>
   <type name="number-ordinal" parents="q-number"/>
   <type name="number-id" parents="q-number"/>
+  <type name="EUNCERTAINITY"/>
+  <type name="e-contentious" parents="EUNCERTAINITY"/>
+  <type name="e-uncontentious" parents="EUNCERTAINITY"/>
+  <type name="MFOCUS"/>
+  <type name="m-focus-true" parents="MFOCUS"/>
+  <type name="m-focus-false" parents="MFOCUS"/>
   <type name="ASPECT"/>
   <type name="continuous" parents="ASPECT"/>
   <type name="perfect" parents="ASPECT"/>
@@ -98,40 +142,18 @@
   <type name="POLARITY"/>
   <type name="pos" parents="POLARITY"/>
   <type name="neg" parents="POLARITY"/>
-  <type name="PROXIMITY"/>
-  <type name="distal" parents="PROXIMITY"/>
-  <type name="proximal" parents="PROXIMITY"/>
+  <type name="TUNCERTAINITY"/>
+  <type name="t-contentious" parents="TUNCERTAINITY"/>
+  <type name="t-uncontentious" parents="TUNCERTAINITY"/>
   <type name="CORRECTED"/>
   <type name="default" parents="CORRECTED"/>
   <type name="asr-correction" parents="CORRECTED"/>
-  <type name="ont-modifier"/>
-  <type name="modifier" parents="ont-modifier"/>
-  <type name="m-dynamic" parents="modifier"/>
-  <type name="m-manner" parents="modifier"/>
-  <type name="m-time" parents="modifier"/>
-  <type name="m-location" parents="modifier"/>
-  <type name="m-probability" parents="modifier"/>
-  <type name="m-frequency" parents="modifier"/>
-  <type name="m-comment" parents="modifier"/>
-  <type name="m-serial" parents="modifier"/>
-  <type name="m-accompaniment" parents="modifier"/>
-  <type name="m-instrumental" parents="modifier"/>
-  <type name="m-benefactor" parents="modifier"/>
-  <type name="m-relational" parents="modifier"/>
-  <type name="m-purpose" parents="modifier"/>
-  <type name="m-intensity" parents="modifier"/>
-  <type name="m-comparison" parents="modifier"/>
-  <type name="m-restriction" parents="modifier"/>
-  <type name="m-direction" parents="m-dynamic"/>
-  <type name="m-whereto" parents="m-dynamic"/>
-  <type name="m-wherefrom" parents="m-dynamic"/>
-  <type name="m-through" parents="m-dynamic"/>
-  <type name="m-time-point" parents="m-time"/>
-  <type name="m-time-sequence" parents="m-time"/>
-  <type name="m-time-interval" parents="m-time"/>
-  <type name="m-cause" parents="m-relational"/>
-  <type name="m-result" parents="m-relational"/>
-  <type name="m-condition" parents="m-relational"/>
+  <type name="EFOCUS"/>
+  <type name="e-focus-true" parents="EFOCUS"/>
+  <type name="e-focus-false" parents="EFOCUS"/>
+  <type name="E-PROXIMITY"/>
+  <type name="e-distal" parents="E-PROXIMITY"/>
+  <type name="e-proximal" parents="E-PROXIMITY"/>
   <type name="PERS"/>
   <type name="non-3rd" parents="PERS"/>
   <type name="3rd" parents="PERS"/>
@@ -204,13 +226,15 @@
   <type name="e-material" parents="e-substance"/>
   <type name="e-time-point" parents="e-time"/>
   <type name="e-time-unit" parents="e-time"/>
-  <type name="NFORM"/>
-  <type name="nf-real" parents="NFORM"/>
-  <type name="nf-dummy" parents="NFORM"/>
-  <type name="full" parents="nf-real"/>
-  <type name="pro" parents="nf-real"/>
-  <type name="nf-ctxt" parents="nf-real"/>
-  <type name="dummy-there" parents="nf-dummy"/>
+  <type name="INTBD"/>
+  <type name="mbt" parents="INTBD"/>
+  <type name="ERHEME"/>
+  <type name="e-rheme-true" parents="ERHEME"/>
+  <type name="e-rheme-false" parents="ERHEME"/>
+  <type name="QUANTIFICATION"/>
+  <type name="specific" parents="QUANTIFICATION"/>
+  <type name="unspecific" parents="QUANTIFICATION"/>
+  <type name="uncountable" parents="QUANTIFICATION"/>
   <type name="ont-event"/>
   <type name="event" parents="ont-event"/>
   <type name="relational" parents="event"/>
@@ -250,6 +274,19 @@
   <type name="would" parents="FIN"/>
   <type name="must" parents="FIN"/>
   <type name="have" parents="FIN"/>
+  <type name="INTOPH"/>
+  <type name="nulltn" parents="INTOPH"/>
+  <type name="pam" parents="INTOPH"/>
+  <type name="ip" parents="INTOPH"/>
+  <type name="cp" parents="INTOPH"/>
+  <type name="rhm" parents="pam"/>
+  <type name="thm" parents="pam"/>
+  <type name="ThOWNERSHIP"/>
+  <type name="th-speaker" parents="ThOWNERSHIP"/>
+  <type name="th-hearer" parents="ThOWNERSHIP"/>
+  <type name="MRHEME"/>
+  <type name="m-rheme-true" parents="MRHEME"/>
+  <type name="m-rheme-false" parents="MRHEME"/>
   <type name="MOOD"/>
   <type name="s-major" parents="MOOD"/>
   <type name="s-minor" parents="MOOD"/>
@@ -259,14 +296,32 @@
   <type name="s-int" parents="s-major"/>
   <type name="s-ind-ell" parents="s-major"/>
   <type name="s-mood-mixed" parents="s-major"/>
-  <type name="QUANTIFICATION"/>
-  <type name="specific" parents="QUANTIFICATION"/>
-  <type name="unspecific" parents="QUANTIFICATION"/>
-  <type name="uncountable" parents="QUANTIFICATION"/>
-  <type name="DELIMINATION"/>
-  <type name="unique" parents="DELIMINATION"/>
-  <type name="existential" parents="DELIMINATION"/>
-  <type name="variable" parents="DELIMINATION"/>
+  <type name="NFORM"/>
+  <type name="nf-real" parents="NFORM"/>
+  <type name="nf-dummy" parents="NFORM"/>
+  <type name="full" parents="nf-real"/>
+  <type name="pro" parents="nf-real"/>
+  <type name="nf-ctxt" parents="nf-real"/>
+  <type name="dummy-there" parents="nf-dummy"/>
+  <type name="MUNCERTAINITY"/>
+  <type name="m-contentious" parents="MUNCERTAINITY"/>
+  <type name="m-uncontentious" parents="MUNCERTAINITY"/>
+  <type name="ACCENT"/>
+  <type name="tone" parents="ACCENT"/>
+  <type name="stressed" parents="tone"/>
+  <type name="unstressed" parents="tone"/>
+  <type name="rhthm" parents="stressed"/>
+  <type name="thmf" parents="rhthm"/>
+  <type name="lphs" parents="thmf"/>
+  <type name="lsph" parents="thmf"/>
+  <type name="rhmf" parents="rhthm"/>
+  <type name="hs" parents="rhmf"/>
+  <type name="ls" parents="rhmf"/>
+  <type name="hspl" parents="rhmf"/>
+  <type name="hpls" parents="rhmf"/>
+  <type name="RhOWNERSHIP"/>
+  <type name="rh-speaker" parents="RhOWNERSHIP"/>
+  <type name="rh-hearer" parents="RhOWNERSHIP"/>
   <type name="M-PROXIMITY"/>
   <type name="m-distal" parents="M-PROXIMITY"/>
   <type name="m-proximal" parents="M-PROXIMITY"/>
@@ -280,7 +335,7 @@
   <type name="reject" parents="marker"/>
   <type name="acknowledge" parents="marker"/>
   <type name="evaluate" parents="marker"/>
-  <type name="E-PROXIMITY"/>
-  <type name="e-distal" parents="E-PROXIMITY"/>
-  <type name="e-proximal" parents="E-PROXIMITY"/>
+  <type name="PROXIMITY"/>
+  <type name="distal" parents="PROXIMITY"/>
+  <type name="proximal" parents="PROXIMITY"/>
 </types>
