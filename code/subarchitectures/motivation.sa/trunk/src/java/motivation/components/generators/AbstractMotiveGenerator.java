@@ -91,8 +91,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 				try {
 					unlockEntry(motiveAddress);
 				} catch (CASTException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log("caught a CASTException when unlocking entry: "+e.message+ ". This can be safely ignored...");
 				}
 			}
 		}
