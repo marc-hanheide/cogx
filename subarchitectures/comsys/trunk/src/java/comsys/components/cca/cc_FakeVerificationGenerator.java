@@ -55,6 +55,7 @@ import cast.core.CASTUtils;
 //-----------------------------------------------------------------
 
 import comsys.arch.ProcessingData;
+import comsys.processing.cca.BeliefUtils;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 import binder.abstr.BeliefModelInterface;
 import binder.components.Binder;
@@ -95,8 +96,10 @@ public class cc_FakeVerificationGenerator
 	static boolean OKBUTTON_PUSHED = false ;
 	JTextField entityField;
 	JTextField modalityField;
+	JTextField probField;
 	JDialog dialog;
 	String defaultModality = "";
+	float defaultProb = 1.0f;
 	
 	JButton ok;
 	
@@ -204,6 +207,16 @@ public class cc_FakeVerificationGenerator
 			log("no such belief found!");
 			return null;
 		}
+		
+		float prob;
+		String probStr = probField.getText();
+		try {
+			prob = Float.parseFloat(probStr);
+		}
+		catch (NumberFormatException e) {
+			prob = 1.0f;
+			log("not a valid float: \"" + probStr + "\", using " + Float.toString(prob));
+		}
 
 		Ground g = new Ground();
 		g.gstatus = GroundStatus.assertionVerified;
@@ -213,7 +226,7 @@ public class cc_FakeVerificationGenerator
 
 		GroundedBelief verif = new GroundedBelief();
 		verif.ags = AbstractBeliefFactory.createMutualAgentStatus(new String[] {"robot", "human"}); // XXX
-		verif.phi = changeAssertionsToPropositions((SuperFormula) b.phi);
+		verif.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, prob);
 		verif.sigma = b.sigma;
 		verif.timeStamp = getCASTTime();
 		verif.id = b.id;
@@ -225,25 +238,7 @@ public class cc_FakeVerificationGenerator
 		entityField.setText("");
 		return verif;
 	} // end getGUIRequest	
-	
-	public SuperFormula changeAssertionsToPropositions(SuperFormula sf) {
-		if (sf instanceof ComplexFormula) {
-			ComplexFormula cf = (ComplexFormula) sf;
-			for (int i = 0; i < cf.formulae.length; i++) {
-				cf.formulae[i] = changeAssertionsToPropositions(cf.formulae[i]);
-			}
-			return cf;
-		}
-		if (sf instanceof ContinualFormula) {
-			ContinualFormula cof = (ContinualFormula) sf;
-			if (cof.cstatus == ContinualStatus.assertion) {
-				cof.cstatus = ContinualStatus.proposition;
-			}
-			return cof;
-		}
-		return sf;
-	}
-	
+		
 	public void configureGUI() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -271,6 +266,15 @@ public class cc_FakeVerificationGenerator
         entityField = new JTextField();
 		entityPanel.add(entityField);
 		dialogPanel.add(entityPanel);
+		
+        JPanel probPanel = new JPanel();
+        probPanel.setLayout(new BoxLayout(probPanel, BoxLayout.LINE_AXIS));
+        JLabel probLabel = new JLabel("Probability:");
+        probPanel.add(probLabel);
+        probField = new JTextField();
+        probField.setText(Float.toString(defaultProb));
+		probPanel.add(probField);
+		dialogPanel.add(probPanel);
 
 		dialogPanel.add(Box.createVerticalGlue());
 		
@@ -284,7 +288,7 @@ public class cc_FakeVerificationGenerator
 		dialog = new JDialog(frame, "Assertion verification");
 		dialog.add(dialogPanel);
 
-		dialog.setLocation(600, 250);
+		dialog.setLocation(600, 220);
 
 		Dimension dim = dialogPanel.getPreferredSize();
 		dialog.setSize(200, dim.height + 25);

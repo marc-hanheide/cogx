@@ -2,6 +2,8 @@ package comsys.processing.cca;
 
 import java.util.*;
 
+import comsys.processing.cca.abduction.ProofUtils;
+
 import Abducer.AssumedQuery;
 import Abducer.IntentionModality;
 import Abducer.MarkedQuery;
