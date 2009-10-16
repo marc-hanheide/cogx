@@ -165,8 +165,6 @@ public class UnionConstructor  {
 		Vector<Proxy> includedProxies = BinderUtils.getProxies(includedEntities);
 		union.includedProxies = new Proxy[includedProxies.size()];
 		union.includedProxies = includedProxies.toArray(union.includedProxies);
-
-		// TODO: check correctness of prob. exists computation, especially for single-proxy unions!
 		
 		// Extract the possible features for the union
 		Collection<Feature> features = getFeatures(includedEntities);

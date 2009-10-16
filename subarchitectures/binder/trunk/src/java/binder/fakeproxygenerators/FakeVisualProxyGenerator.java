@@ -83,14 +83,16 @@ public class FakeVisualProxyGenerator extends AbstractProxyGenerator {
 		
 		return proxy;
 	}
-
-
+  
+ 
 	/**
 	 * Create proxy two (red ball on a table)
 	 * 
 	 * @return the proxy
 	 */
 	protected Proxy createProxyOne() {
+		
+		sleepComponent(100);
 		
 		WorkingMemoryPointer origin = createWorkingMemoryPointer ("fakevision", "blublu2", "VisualObject");
 		Proxy proxy = createNewProxy (origin, 0.9f);
