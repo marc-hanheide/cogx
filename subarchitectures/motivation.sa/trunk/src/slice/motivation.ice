@@ -5,6 +5,12 @@
 
 module motivation {
     module slice {
+		class WMMutex {
+			string name;
+			string holderName;
+			cast::cdl::WorkingMemoryAddress addr;
+		};
+
     	class TestSource {
     		string name;
     		cast::cdl::CASTTime time;
