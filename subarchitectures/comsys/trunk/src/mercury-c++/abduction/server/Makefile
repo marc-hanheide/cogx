@@ -62,6 +62,11 @@ CXXFLAGS+=-DDEBUG
 CXXFLAGS+=-g
 endif
 
+ifeq ($(origin PROF), undefined)
+else
+MCFLAGS+=--profiling --memory-profiling --time-profiling
+endif
+
 # TODO: this just returns the revision of the directory the slice file
 # is in.
 ABDUCER_ICE_VERSION:=$(shell ./svn-file-version $(SLICE_PATH)/Abducer.ice)
