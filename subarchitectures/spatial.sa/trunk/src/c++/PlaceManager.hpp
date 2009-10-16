@@ -32,6 +32,7 @@ namespace spatial {
  * Parameters: --max-frontier-dist x : Culling distance for frontiers around a certain node
  *		--min-frontier-length x : Minimum size of exploration frontiers to consider
  *		--min-node-separation x : Spread of new hypothetical targets around a node
+ *		--no-local-maps : disables PlaceholderPlaceProperty maintenance and connection to LocalMapManager
  *
  * @author Patric Jensfelt
  * @see
@@ -129,6 +130,8 @@ class PlaceManager : public cast::ManagedComponent
     // hypothetical nodes generated at a place
     double m_hypPathLength;     // How far to try and move in the direction of the
     // frontier
+    bool m_useLocalMaps; 	// Whether to connect to the LocalMapManager and
+    				// generate PlaceholderPlaceProperties
 
     long m_hypIDCounter;
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;

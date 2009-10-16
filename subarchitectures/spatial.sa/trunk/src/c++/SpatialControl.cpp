@@ -320,6 +320,7 @@ void SpatialControl::runComponent()
 }
 
 void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
+  lockComponent(); //Don't allow any interface calls while processing a callback
 
   m_Mutex.lock();
 	
@@ -393,10 +394,12 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
 
   m_Mutex.unlock();
 
+  unlockComponent();
 }
 
 void SpatialControl::newPersonData(const cdl::WorkingMemoryChange &objID)
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("newPersonData called");
 
   // Person entries can be removed at any time
@@ -427,10 +430,12 @@ void SpatialControl::newPersonData(const cdl::WorkingMemoryChange &objID)
 	  }
 
   }catch(DoesNotExistOnWMException){}
+  unlockComponent();
 }
   
 void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
   log("deletePersonData called");
 
   int i = 0;
@@ -456,6 +461,7 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
       break;
     }
   }
+  unlockComponent();
 }
   
 void SpatialControl::newInhibitor(const cdl::WorkingMemoryChange &objID) 
@@ -472,6 +478,7 @@ void SpatialControl::deleteInhibitor(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
 
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
@@ -486,11 +493,13 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
   
+  unlockComponent();
 }
 
 
 void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) 
 {
+  lockComponent(); //Don't allow any interface calls while processing a new nav cmd
   // This component only manages one nav ctrl command at a time
   log("newNavCtrlCommand called");
   
@@ -579,6 +588,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
         changeCurrentCommandCompletion(NavData::ABORTED,
                                        NavData::PERSONNOTFOUND);
         m_Mutex.unlock();
+	unlockComponent();
         return;
       }
 
@@ -588,11 +598,13 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
     log("read new ctrlCommand");
     m_taskStatus = NewTask;
   }
+  unlockComponent();
 }
 
 
 void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
@@ -827,10 +839,12 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
     m_Mutex.unlock();
     
   } // if (m_ready)    
+  unlockComponent();
 }
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
@@ -893,6 +907,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
       debug("updated id of person to follow");
     }
   }
+  unlockComponent();
 }
 
 void 
