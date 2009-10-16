@@ -481,15 +481,14 @@ public class Binder extends ManagedComponent  {
 				newUnionConfigs.add(unionConfigWithOrphanProxy);
 				
 				
+				if (newUnion instanceof RelationUnion) {
+					newUnion = specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
+				}
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
 					createNewUnionConfiguration (existingUnionConfig, newUnion);
 				newUnionConfigs.add(newConfigWithSingleUnion);	
 
-				
-				if (newUnion instanceof RelationUnion) {
-					newUnion = specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
-				}
 				
 				// Loop on the unions in the union configuration
 				for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
@@ -511,7 +510,7 @@ public class Binder extends ManagedComponent  {
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
 							if (newMergedUnion instanceof RelationUnion) {
-								newUnion = specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
+								newMergedUnion = specifyUnionSourceAndTarget((RelationUnion)newMergedUnion, existingUnionConfig);
 							}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);

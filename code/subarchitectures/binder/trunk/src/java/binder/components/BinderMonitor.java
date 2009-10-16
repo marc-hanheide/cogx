@@ -72,7 +72,6 @@ public class BinderMonitor extends ManagedComponent {
 	/**
 	 * Initialisation of the monitor
 	 * 
-	 * TODO: extend this to AlternativeUnionConfigurations
 	 */
 	@Override
 	public void start() {

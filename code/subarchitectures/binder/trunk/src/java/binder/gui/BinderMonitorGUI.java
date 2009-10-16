@@ -385,23 +385,27 @@ public class BinderMonitorGUI extends JFrame
 			
 		if (union.usource != null) {
 			for (int j = 0; j < union.usource.alternativeValues.length ; j++) {
+				if (union.usource.alternativeValues[j] != null) {
 				AddressValue v = (AddressValue) union.usource.alternativeValues[j];
 				if (insertedUnions.containsKey(v.val)) {
 					Object daughter_vertex = insertedUnions.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "source", mothervertex, daughter_vertex);
 					insertedObjects.add(edge);
 				}
+				}
 			}
 		}
 		
 		if (union.utarget != null) {
 			for (int j = 0; j < union.utarget.alternativeValues.length ; j++) {
+				if (union.utarget.alternativeValues[j] != null) {
 				AddressValue v = (AddressValue) union.utarget.alternativeValues[j];
 				if (insertedUnions.containsKey(v.val)) {
 					Object daughter_vertex = insertedUnions.get(v.val);
 					Object edge = graph.insertEdge(parent, null, "target", mothervertex, daughter_vertex);
 					insertedObjects.add(edge);
 				}
+			}
 			}
 		}
 	
