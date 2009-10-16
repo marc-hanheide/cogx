@@ -19,6 +19,8 @@
 
 package binder.filtering;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -349,6 +351,39 @@ public class ConfigurationFilter {
 		return getBestUnionConfiguration (unionconfigsV);
 	}
 
+	
+	
+	
+	
+
+	/**
+	 * Extract the union configuration of rank n out of the 
+	 * AlternativeUnionConfigurations object
+	 * 
+	 * @param configs the union AlternativeUnionConfigurations object
+	 * @return the configuration of rank n
+	 */
+	
+	public static UnionConfiguration getUnionConfigurationOfRankN
+		(AlternativeUnionConfigurations configs, int rank) {
+		
+		// creates a vector of unions configurations
+		Vector<UnionConfiguration> unionconfigsV = new Vector<UnionConfiguration>();
+		for (int i = 0 ; i < configs.alterconfigs.length ; i++) {
+			unionconfigsV.add(configs.alterconfigs[i]);
+		}
+		
+		// and extract the best union configuration from it
+		Vector<UnionConfiguration> nbests = getNBestUnionConfigurations (unionconfigsV, rank);
+		UnionConfiguration [] nbestsArray = new UnionConfiguration[nbests.size()];
+		nbestsArray = nbests.toArray(nbestsArray);
+				
+		Comparator<UnionConfiguration> comparator = new ConfigurationComparator();
+		
+		Arrays.sort(nbestsArray, comparator);
+		
+		return nbestsArray[nbestsArray.length - rank];
+	}
 	
 
 	/**

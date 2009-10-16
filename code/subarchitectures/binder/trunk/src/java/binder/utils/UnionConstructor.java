@@ -204,8 +204,14 @@ public class UnionConstructor  {
 		// Copy the info of the basic union into a new relation union
 		RelationUnion runion = BinderUtils.convertIntoRelationUnion(bunion);
 		
+		if (includedEntities.elementAt(0) instanceof RelationProxy) {
 		runion.psource = ((RelationProxy)includedEntities.elementAt(0)).source;
 		runion.ptarget = ((RelationProxy)includedEntities.elementAt(0)).target;
+		}
+		else if (includedEntities.elementAt(0) instanceof RelationUnion){
+			runion.psource = ((RelationUnion)includedEntities.elementAt(0)).psource;
+			runion.ptarget = ((RelationUnion)includedEntities.elementAt(0)).ptarget;	
+		}
 
 		return runion;
 

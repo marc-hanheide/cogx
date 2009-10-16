@@ -33,12 +33,14 @@ import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.Proxy;
+import binder.autogen.core.UnionConfiguration;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.autogen.core.Union;
 import binder.utils.FeatureValueUtils;
+import binder.utils.GenericUtils;
 import binder.components.BinderMonitor;
 
 import cast.cdl.CASTTime;
@@ -78,6 +80,9 @@ public class BinderMonitorGUI extends JFrame
 	
 	ControlPanel controlPanel;
 	BinderMonitor bm;
+	
+	WestArrowPanel arrowPanel;
+	
 	public boolean LOGGING = false;
 
 	HashMap<String,Object> insertedProxies;
@@ -101,7 +106,7 @@ public class BinderMonitorGUI extends JFrame
 		controlPanel = new ControlPanel(bm);
 		getContentPane().add(controlPanel, BorderLayout.LINE_END);
 		
-		WestArrowPanel arrowPanel = new WestArrowPanel(bm);
+		arrowPanel = new WestArrowPanel(bm);
 		getContentPane().add(arrowPanel, BorderLayout.LINE_START);
 
 		graph = new mxGraph();
@@ -482,6 +487,7 @@ public class BinderMonitorGUI extends JFrame
 
 	
 	public void updateGUI (Proxy updatedProxy) {
+
 		try {
 
 			graph.getModel().beginUpdate();
@@ -508,7 +514,9 @@ public class BinderMonitorGUI extends JFrame
 	 public void updateGUI(Vector<Proxy> newProxies, 
 			Vector<Union> newUnions, 
 			Vector<Proxy> proxiesToDelete, 
-			Vector<Union> unionsToDelete) {
+			Vector<Union> unionsToDelete, UnionConfiguration config) {
+		 
+	 arrowPanel.resetNumberOfConfigurations(bm.alternativeConfigs.alterconfigs.length);
 		 
 		try {
 			graph.getModel().beginUpdate();
@@ -559,11 +567,26 @@ public class BinderMonitorGUI extends JFrame
  
 		finally
 		{
+			int rank = bm.alternativeConfigs.alterconfigs.length -
+							GenericUtils.getIndex(bm.alternativeConfigs.alterconfigs, config);
+			Object configinfo = graph.insertVertex(parent, null, "\n Union configuration: \n Prob:  " +
+					roundProb((float)config.configProb) + "\n Rank: " + rank + 
+					" (out of " + bm.alternativeConfigs.alterconfigs.length + ")", 10 , 10, 150, 80);
+			Object[] configinfos = new Object[1];
+			configinfos[0] = configinfo;
+			graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, "white", configinfos);
+			graph.setCellStyles(mxConstants.STYLE_ROUNDED, "false", configinfos);
+			graph.setCellStyles(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT, configinfos);
+			graph.setCellStyles(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP, configinfos);
+			graph.setCellStyles(mxConstants.STYLE_SHADOW, "true", configinfos);
+			graph.setCellStyles(mxConstants.STYLE_FONTSIZE, "14", configinfos);
+			
 			graph.getModel().endUpdate();
 		}
  
 		try {
 		mxGraphComponent graphComponent = new mxGraphComponent(graph);
+
 		getContentPane().add(graphComponent);
 		setVisible(true);
 		}
