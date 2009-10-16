@@ -94,7 +94,7 @@ assumables(Ctx) = Ctx^ctx_assumables.
 
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
-ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, p(PredSym, Args)), VS)) :-
+ctx_fact(Ctx, vs(m(Mod, p(PredSym, _)), _), vs(m(Mod, p(PredSym, Args)), VS)) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "F", !IO) ),
 	set.member(vs(m(Mod, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
@@ -121,17 +121,18 @@ ctx_fact(_Ctx, vs(m(Mod, p("\\=", [T1, T2])), VS),
 
 :- pred ctx_rule(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mrule(ctx_modality))::out) is nondet.
 
-ctx_rule(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(ModR, Ante-Head), VS)) :-
+ctx_rule(Ctx, vs(m(Mod, p(PredSym, _)), _), vs(m(ModR, Ante-Head), VS)) :-
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "R", !IO) ),
 	set.member(vs(m(ModR, Ante-Head), VS), Ctx^ctx_rules),
 	(
-		Head = std(m(_, p(PredSym, _)))
+		Head = std(m(ModH, p(PredSym, _)))
 	;
 		Head = test(MTest),
-		( MTest = prop(m(_, p(PredSym, _)))
-		; MTest = impl(_, m(_, p(PredSym, _)))
+		( MTest = prop(m(ModH, p(PredSym, _)))
+		; MTest = impl(_, m(ModH, p(PredSym, _)))
 		)
-	).
+	),
+	Mod = ModR ++ ModH.
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
