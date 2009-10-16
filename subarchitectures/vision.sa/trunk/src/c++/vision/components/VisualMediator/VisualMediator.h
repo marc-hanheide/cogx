@@ -31,36 +31,36 @@ namespace cast
 
 class VisualMediator : public binder::BindingWorkingMemoryWriter
 {
-private:
+ private:
 
   /**
-  * Time and update thresholds
-  *(part of the ROI persistency criteria)
-  */
+   * Time and update thresholds
+   *(part of the ROI persistency criteria)
+   */
   int updateThr;
   bool doDisplay;
-  
+
   /**
    * status of VisualObject persistency
    */
   enum VisualObjectStatus {
-  	STABLE,
-  	DELETED };
-  
+   STABLE,
+   DELETED };
+
   /** 
    * VisualObject data, contains also data used to evaluate VisualObject persistency
    */	
   struct VisualObjectData {
-  	cdl::WorkingMemoryAddress addr;
-  	VisualObjectStatus status;
-  	std::string proxyId;
-  	cdl::CASTTime addedTime;
-  	cdl::CASTTime lastUpdateTime;
-  	cdl::CASTTime deleteTime;
+   cdl::WorkingMemoryAddress addr;
+   VisualObjectStatus status;
+   std::string proxyId;
+   cdl::CASTTime addedTime;
+   cdl::CASTTime lastUpdateTime;
+   cdl::CASTTime deleteTime;
   };
-  
+
   std::map<std::string, VisualObjectData>VisualObjectMap;
-  
+
   std::queue<std::string> proxyToAdd;
   std::queue<std::string> proxyToDelete;
 
@@ -70,18 +70,18 @@ private:
    * callback function called whenever a new VisualObject appears
    */
   void newVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  
+
   /**
    * callback function called whenever a VisualObject changes
    */
   void updatedVisualObject(const cdl::WorkingMemoryChange & _wmc);
-  
+
   /**
    * callback function called whenever a VisualObject is deleted
    */
   void deletedVisualObject(const cdl::WorkingMemoryChange & _wmc);
 
-protected:
+ protected:
   /**
    * called by the framework to configure our component
    */
@@ -94,12 +94,12 @@ protected:
    * called by the framework to start compnent run loop
    */
   virtual void runComponent();
- 
-public:
+
+ public:
   virtual ~VisualMediator() {}
 };
 
 }
 
 #endif
-
+/* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim*/

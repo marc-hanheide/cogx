@@ -23,7 +23,7 @@ public:
       InitVisualLearnerLib();
 
       // Load global variables (was: R_RunComponent)
-      mwArray flag(0); // 0 - don't need the return value
+      mwArray flag(1); // 1 - show dialogs
       CLFstart(flag);
    }
    ~CInitializer() {

@@ -28,7 +28,7 @@ extern "C"
 
 CTestRecognizer::CTestRecognizer()
 {
-   testmode = 0;
+   testmode = "standalone";
    nRequests = 0;
 }
 
@@ -61,6 +61,12 @@ void CTestRecognizer::start()
       new MemberFunctionChangeReceiver<CTestRecognizer>(
          this, &CTestRecognizer::onAddProtoObject)
       );
+
+   addChangeFilter(
+      createLocalTypeFilter<AttrObject>(cdl::ADD),
+      new MemberFunctionChangeReceiver<CTestRecognizer>(
+         this, &CTestRecognizer::onAddAttrObject)
+      );
 }
 
 void CTestRecognizer::configure(const std::map<std::string,std::string> & _config)
@@ -72,11 +78,16 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
       string mode;
       istringstream istr(it->second);
       istr >> mode;
-      if (mode == "1") testmode = 1;
-      else if (mode == "2") testmode = 2;
-      else if (mode == "3") testmode = 3;
-      else testmode = 0;
-      log("TEST MODE: %ld", testmode);
+      if (mode == "standalone") testmode = mode;
+      else if (mode == "fake-proto") testmode = mode;
+      else testmode = "***unknown***";
+      log("TEST MODE: %s", testmode.c_str());
+   }
+   else if((it = _config.find("--delay")) != _config.end()) {
+      string delay;
+      istringstream istr(it->second);
+      istr >> delay;
+      // TODO: convert to number
    }
 }
 
@@ -110,23 +121,28 @@ void CTestRecognizer::onChangeRecognitionTask(const cast::cdl::WorkingMemoryChan
 
 void CTestRecognizer::onAddProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   // log("New proto object");
+   log("Detected: new proto object");
 }
 
-void CTestRecognizer::_test_addRecognitionTask()
+void CTestRecognizer::onAddAttrObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   println("Adding new ProtoObject");
+   log("Detected: new attr object");
+}
+
+ProtoObjectPtr CTestRecognizer::loadFakeProtoObject()
+{
    ProtoObjectPtr pproto = new ProtoObject();
    pproto->time = getCASTTime();
 
-   IplImage *pimg = cvLoadImage("xdata/TestVisualLearner/image.png");
-   IplImage *pmsk = cvLoadImage("xdata/TestVisualLearner/mask.png");
-   Video::Image imgMask;
+   IplImage *pimg = cvLoadImage("subarchitectures/vision.sa/config/test-vislearner/image.png");
    Video::convertImageFromIpl(pimg, pproto->image);
-   Video::convertImageFromIpl(pmsk, imgMask);
    cvReleaseImage(&pimg);
-   cvReleaseImage(&pmsk);
+
    // imgMask bytes to pproto->mask bytes
+   IplImage *pmsk = cvLoadImage("subarchitectures/vision.sa/config/test-vislearner/mask.png");
+   Video::Image imgMask;
+   Video::convertImageFromIpl(pmsk, imgMask);
+   cvReleaseImage(&pmsk);
    int count = imgMask.width * imgMask.height;
    pproto->mask.width = imgMask.width;
    pproto->mask.height = imgMask.height;
@@ -134,16 +150,33 @@ void CTestRecognizer::_test_addRecognitionTask()
    for (int ipix = 0; ipix < count; ipix++)
       pproto->mask.data[ipix] = imgMask.data[ipix*3]; // copy one channel
 
-   string protoId = newDataID();
-   addToWorkingMemory(protoId, pproto);
+   return pproto;
+}
 
-   println("Adding new VisualLearnerRecognitionTask");
-   VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-   ptask->protoObjectId = protoId;
+// Add a new recognition task with an artificial protoobject.
+// The resutls are parsed in onChangeRecognitionTask
+void CTestRecognizer::_test_addRecognitionTask()
+{
+   println("Adding new ProtoObject");
 
-   string reqId(newDataID());
-   nRequests++;
-   addToWorkingMemory(reqId, ptask);
+   if (testmode == "standalone") {
+      ProtoObjectPtr pproto = loadFakeProtoObject();
+      string protoId = newDataID();
+      addToWorkingMemory(protoId, pproto);
+
+      println("Adding new VisualLearnerRecognitionTask");
+      VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
+      ptask->protoObjectId = protoId;
+
+      string reqId(newDataID());
+      nRequests++;
+      addToWorkingMemory(reqId, ptask);
+   }
+   else if (testmode == "fake-proto") {
+      ProtoObjectPtr pproto = loadFakeProtoObject();
+      string protoId = newDataID();
+      addToWorkingMemory(protoId, pproto);
+   }
 }
 
 void CTestRecognizer::runComponent()
@@ -152,7 +185,12 @@ void CTestRecognizer::runComponent()
 
    while(isRunning()) {
       // TODO: if request queue not empty and not processing
-      if (nRequests < 3) _test_addRecognitionTask();
+      // If deleteFromWorkingMemory is disabled in onChangeRecognitionTask
+      // then stop after 3 requests, otherwise create new tasks indefinitely.
+      if (nRequests < 3) {
+         _test_addRecognitionTask();
+         sleepComponent(500);
+      }
 
       sleepComponent(300);
    }

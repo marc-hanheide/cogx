@@ -9,19 +9,18 @@ module VisionData {
 
   sequence<cogx::Math::Vector3> Vector3Seq;
 
-  
   struct OneObj {
-  Vector3Seq pPlane;
-  Vector3Seq pTop;
+    Vector3Seq pPlane;
+    Vector3Seq pTop;
   };
   sequence<OneObj> ObjSeq;
 
   class ConvexHull {
-  Vector3Seq PointsSeq;
-  cast::cdl::CASTTime time;
-  cogx::Math::Vector3 center;
-  double radius;
-  ObjSeq Objects;
+    Vector3Seq PointsSeq;
+    cast::cdl::CASTTime time;
+    cogx::Math::Vector3 center;
+    double radius;
+    ObjSeq Objects;
   };
 
 
@@ -69,7 +68,7 @@ module VisionData {
   struct VisualObjectView {
     // 2D bounding box in the image
     cogx::Math::Rect2 boundingBox;
-    
+
     // a value between 0 and 1 indicating confidence in the pose
     double detectionConfidence;
 
@@ -125,7 +124,7 @@ module VisionData {
 
     // List of views of the object from different cameras
     VisualObjectViewSeq views;
-    
+
     // Geometric representation in 3D space
     GeometryModel model;
 
@@ -135,6 +134,9 @@ module VisionData {
     // a value bwtween 0 and 1 indicating confidence in the label (i.e.
     // typically confidence of the recognition process that produced the label)
     double labelConfidence;
+
+    // a value between 0 and 1
+    double salience;
   };
 
   sequence<string> StringSeq;
@@ -143,11 +145,11 @@ module VisionData {
   class DetectionCommand {
     StringSeq labels;
   };
-  
+
   class DominantPlane {
-  	cogx::Math::Plane3 plane;
+    cogx::Math::Plane3 plane;
   };
-  
+
   /** Commands for Object Tracker
    *  @author Thomas Mörwald
    */
@@ -230,9 +232,9 @@ module VisionData {
     StringSeq colorLabel;
     DoubleSeq colorDistr;
   };
-  
+
   struct SegmentMask {
-  	int width;
+    int width;
     int height;
     Video::ByteSeq data;
   };
@@ -244,16 +246,16 @@ module VisionData {
 
     // List of source SOIs
     IdSeq SOIList;
-    
+
     // 2D image patch
     Video::Image image;
-    
+
     // Segmentation mask;
     SegmentMask mask;
-    
+
     // List of surface 3D points
     SurfacePointSeq points;
-    
+
     // time the object was last changed
     cast::cdl::CASTTime time;
   };
@@ -265,11 +267,11 @@ module VisionData {
 
     // Source proto object
     string protoObjectID;
-    
+
     // Color distribution
     StringSeq colorLabel;
     DoubleSeq colorDistr;
-    
+
     // time the object was last changed
     cast::cdl::CASTTime time;
   };

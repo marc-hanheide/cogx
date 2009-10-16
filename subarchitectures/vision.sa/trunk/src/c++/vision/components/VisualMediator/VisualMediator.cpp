@@ -38,13 +38,13 @@ void VisualMediator::configure(const map<string,string> & _config)
 
   if((it = _config.find("--upd")) != _config.end())
   {
-    istringstream str(it->second);
-    str >> updateThr;
+	istringstream str(it->second);
+	str >> updateThr;
   }
 
   if((it = _config.find("--display")) != _config.end())
   {
-    doDisplay = true;
+	doDisplay = true;
   }
 }
 
@@ -60,16 +60,16 @@ void VisualMediator::start()
 
   // we want to receive detected VisualObjects
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::ADD),
-      new MemberFunctionChangeReceiver<VisualMediator>(this,
-        &VisualMediator::newVisualObject));
+	  new MemberFunctionChangeReceiver<VisualMediator>(this,
+		&VisualMediator::newVisualObject));
   // .., when they are updated
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<VisualMediator>(this,
-        &VisualMediator::updatedVisualObject));
+	  new MemberFunctionChangeReceiver<VisualMediator>(this,
+		&VisualMediator::updatedVisualObject));
   // .. and when they are deleted
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
-      new MemberFunctionChangeReceiver<VisualMediator>(this,
-        &VisualMediator::deletedVisualObject));
+	  new MemberFunctionChangeReceiver<VisualMediator>(this,
+		&VisualMediator::deletedVisualObject));
 
 }
 
@@ -77,76 +77,76 @@ void VisualMediator::runComponent()
 {
   while(isRunning())
   {
-    ptime t(second_clock::universal_time() + seconds(2));
+	ptime t(second_clock::universal_time() + seconds(2));
 
-    if (queuesNotEmpty->timed_wait(t))
-    {
-      log("Got something in my queues");
+	if (queuesNotEmpty->timed_wait(t))
+	{
+	  log("Got something in my queues");
 
-      if(!proxyToAdd.empty())
-      { 
+	  if(!proxyToAdd.empty())
+	  { 
 
-        log("An add object instruction");
-        VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
+		log("An add object instruction");
+		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
 
-        if(data.status == STABLE)
-        {
-          try
-          {
-            VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
+		if(data.status == STABLE)
+		{
+		  try
+		  {
+			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
 
-            WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
+			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
 
-            FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
-            FeaturePtr label = createFeatureWithUniqueFeatureValue ("label", value);
+			FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
+			FeaturePtr label = createFeatureWithUniqueFeatureValue ("label", value);
 
-            ProxyPtr proxy = createNewProxy (origin, 1.0f);
+			ProxyPtr proxy = createNewProxy (origin, 1.0f);
 
-            addFeatureToProxy (proxy, label);
+			addFeatureToProxy (proxy, label);
 
-            addProxyToWM(proxy);
+			addProxyToWM(proxy);
 
-            data.proxyId = proxy->entityID;
+			data.proxyId = proxy->entityID;
 
-            log("A visual proxy ID %s added for object ID %s",
-                proxy->entityID.c_str(), data.addr.id.c_str());
+			log("A visual proxy ID %s added for object ID %s",
+				proxy->entityID.c_str(), data.addr.id.c_str());
 
-          }
-          catch (DoesNotExistOnWMException e)
-          {
-            log("VisualObject ID: %s was removed before it could be processed", data.addr.id.c_str());
-          }
-        }
+		  }
+		  catch (DoesNotExistOnWMException e)
+		  {
+			log("VisualObject ID: %s was removed before it could be processed", data.addr.id.c_str());
+		  }
+		}
 
-        proxyToAdd.pop();
-      }
-      else if(!proxyToDelete.empty())
-      {
-        log("A delete proto-object instruction");
-        /*isualObjectData &obj = VisualObjectMap[proxyToDelete.front()];
+		proxyToAdd.pop();
+	  }
+	  else if(!proxyToDelete.empty())
+	  {
+		log("A delete proto-object instruction");
+		/* VisualObjectData &obj = VisualObjectMap[proxyToDelete.front()];
 
-          if(obj.status == DELETED)
-          {
-            try
-            {
-              deleteFromWorkingMemory(obj.objId);
+		  if(obj.status == DELETED)
+		  {
+			try
+			{
+			  deleteFromWorkingMemory(obj.objId);
 
-              VisualObjectMap.erase(proxyToDelete.front());
+			  VisualObjectMap.erase(proxyToDelete.front());
 
-              log("A proto-object deleted ID: %s TIME: %u",
-              obj.objId, obj.stableTime.s, obj.stableTime.us);
-            }
-            catch (DoesNotExistOnWMException e)
-            {
-              log("WARNING: Proto-object ID %s already removed", obj.objId);
-            }
-          }
+			  log("A proto-object deleted ID: %s TIME: %u",
+			  obj.objId, obj.stableTime.s, obj.stableTime.us);
+			}
+			catch (DoesNotExistOnWMException e)
+			{
+			  log("WARNING: Proto-object ID %s already removed", obj.objId);
+			}
+		  }
 
-          proxyToDelete.pop(); */
-      }
-    }
-    //    else
-    //		log("Timeout");   
+		  proxyToDelete.pop(); */
+	  }
+	}
+	//    else
+	//		log("Timeout");   
   }
 
   log("Removing semaphore ...");
@@ -161,7 +161,7 @@ void VisualMediator::runComponent()
 void VisualMediator::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisualObjectPtr obj =
-    getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+	getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
   VisualObjectData data;
 
@@ -179,7 +179,7 @@ void VisualMediator::newVisualObject(const cdl::WorkingMemoryChange & _wmc)
 void VisualMediator::updatedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   VisionData::VisualObjectPtr obj =
-    getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+	getMemoryEntry<VisionData::VisualObject>(_wmc.address);
 
   VisualObjectData &data = VisualObjectMap[_wmc.address.id];
 
@@ -205,11 +205,12 @@ void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
   proxyToDelete.push(obj.addr.id);
 
   log("Deleted Visual object ID %s ",
-      obj.addr.id.c_str());
+	  obj.addr.id.c_str());
 
   queuesNotEmpty->post();		 
 }
 
 
 }
+/* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim*/
 
