@@ -4,11 +4,22 @@
 *  
 */
 
+The ObjectTracker is a component that tracks objects within a camera
+image by using a geometrical model, given by the working memory. (VisualObject)
+It is able to run in real time and to track several objects within one image.
+
+Therefore a particle filtering system is implemented. To rise the accuracy,
+please increase the number of particles and recursions. This of course reduces
+the speed of the system.
+
+
 Installation prerequieries:
 ---------------------------
 
 MODERN GRAPHICS CARD
 	best: NVIDIA
+	not working on ATI and old graphics cards because of poor implementation of the
+	drivers, especially regarding glsl (opengl shading language)
 
 SDL:
 	libsdl1.2-dev
@@ -36,10 +47,9 @@ Works only if focus is on the Visualisation-Window of the tracker
 
 Esc:	quit tracker
 e:		draw edge map of camera image (toggle)
-k:		toggle kalman filtering
 l:		lock tracker at current position
 m:		show matching pixels (red=match, blue=edge tolerance failed, black=no edge)
 p:		show particles
 s:		show statistics
-z:		set tracker to position (0,0,0, 0,0,0); best is to lock 'l', then zero 'z' and unlock 'l' to reset tracker
+z:		set tracker to initial position
 
