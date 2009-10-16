@@ -94,8 +94,6 @@
    name+vocative(Dennis, person,)
    name+vocative(George, person,)
 
-
-
   _noun(Robot, rowboat, animate, asr-correction)
 
 
@@ -156,7 +154,7 @@
 
   word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
   word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }
-word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
+  word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
 
  
   noun(bucket, thing,) 
@@ -366,6 +364,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   adj-deg(small, smaller, smallest, q-size,)
   adj-deg(tiny, tinier, tiniest, q-size,) 
   adj-deg(huge, huger, hugest, q-size,) 
+  adj-deg(large, larger, largest, q-size,) 
 
   #-- q-color --#
 
@@ -373,7 +372,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   adj-deg(blue, bluer, bluest, q-color,)
   adj-deg(green, greener, greenest, q-color,)  
   adj-deg(yellow, yellower, yellowest, q-color,)  
-    adj-deg(orange, oranger, orangest, q-color,)
+  adj-deg(orange, oranger, orangest, q-color,)
 
   adj-deg(pink, pinker, pinkest, q-color,)
   adj-deg(black, blacker, blackest, q-color,)  
@@ -579,11 +578,11 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   verb(thank, thanking, thanked, thanked, m-class-2, communication,      dtv-for v+Rec-np+for-verb-ing)
   word thanks-verb: Thanks(communication, pred=thank) { thanks: m-class-5 fin pres s-pos ; thank_you: m-class-5 fin pres s-pos;}
      # special verb family which creates indicative with <recipient>addressee and <actor>speaker
-     # m-class5 blocks all modification but comments
-  
-  #-- perception --#
-  
-  def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event} 
+# m-class5 blocks all modification but comments
+
+#-- perception --#
+
+def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event} 
   
   verb(see, seeing, saw, seen, m-class-2, perception,                   per-fams() )
   verb-reg(watch, m-class-2, perception,                                per-fams() )
@@ -949,4 +948,22 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   modifier(up, prep, pre, manner )
 
 
+####################
+# Prosodic Entries #
+####################
+
+#  noun("ball_L+H*", thing, t-given t-thm-focus lphs ) 
+#  noun("ball_H*", thing, t-new  t-rhm-focus hs ) 
+#  noun("ball_L*", thing, t-new  t-rhm-focus hs ) 
+#  noun("box_L+H*", thing, t-given t-thm-focus lphs ) 
+#  noun("box_H*", thing, t-new  t-rhm-focus hs ) 
+#  noun("box_L*", thing, t-new  t-rhm-focus ls ) 
+#  noun("robot_L+H*", animate, t-given t-thm-focus lphs ) 
+#  noun("robot_H*", animate, t-new  t-rhm-focus hs ) 
+#  noun("robot_L*", animate, t-new  t-rhm-focus ls ) 
+
+#  adj-deg("red_L+H*", redder, reddest, q-color, m-given  m-thm-focus lphs)
+#  adj-deg("red_H*", redder, reddest, q-color, m-new  m-rhm-focus hs)
+#  adj-deg("red_H*c", redder, reddest, q-color, m-contrast  m-rhm-focus hs)
+#  adj-deg("red_L*", redder, reddest, q-color, m-new  m-rhm-focus hs)
 
