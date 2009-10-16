@@ -324,9 +324,11 @@ void ObjectTracker::destroy(){
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images)
 {
+/*
   assert(images.size() > 0);
   m_image = images[0];
   runTracker(m_image);
+  */
 }
 
 void ObjectTracker::runComponent(){

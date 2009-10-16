@@ -36,6 +36,8 @@ private:
    * our ICE proxy to the video server
    */
   Video::VideoInterfacePrx videoServer;
+  
+  Video::Image m_image;
 
   /**
    *	Interface for working with vision system 3 (vs3)
