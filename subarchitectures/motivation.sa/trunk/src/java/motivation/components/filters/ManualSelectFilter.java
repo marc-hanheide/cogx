@@ -30,11 +30,9 @@ public class ManualSelectFilter implements MotiveFilter {
 	 */
 	public ManualSelectFilter() {
 		getJFrame();
-		jFrame.setVisible(true);
-		jFrame.pack();
 	}
 
-	private MotiveFilterManager component;
+	private MotiveFilterManager component;  //  @jve:decl-index=0:
 
 	private JFrame jFrame = null; // @jve:decl-index=0:visual-constraint="1,21"
 	private JPanel jContentPane = null;
@@ -50,7 +48,7 @@ public class ManualSelectFilter implements MotiveFilter {
 
 	private JSlider jCategorizePrioritySlider = null;
 	
-	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
+	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 		
 		if (motive instanceof ExploreMotive)
 			return MotivePriority.convert(jExplorePrioritySlider.getValue());
@@ -64,21 +62,6 @@ public class ManualSelectFilter implements MotiveFilter {
 			return MotivePriority.NORMAL;
 	}
 
-	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
-		// if (motive.status==MotiveStatus.ACTIVE)
-		// return false;
-
-		if (motive instanceof ExploreMotive)
-			return MotivePriority.convert(jExplorePrioritySlider.getValue())==MotivePriority.UNSURFACE;
-		else if (motive instanceof TestMotive)
-			return MotivePriority.convert(jTestPrioritySlider.getValue())==MotivePriority.UNSURFACE;
-		else if (motive instanceof HomingMotive)
-			return MotivePriority.convert(jHomePrioritySlider.getValue())==MotivePriority.UNSURFACE;
-		else if (motive instanceof CategorizeRoomMotive)
-			return MotivePriority.convert(jCategorizePrioritySlider.getValue())==MotivePriority.UNSURFACE;
-		else
-			return false;
-	}
 
 	/**
 	 * This method initializes jFrame
@@ -88,7 +71,6 @@ public class ManualSelectFilter implements MotiveFilter {
 	private JFrame getJFrame() {
 		if (jFrame == null) {
 			jFrame = new JFrame();
-			jFrame.setSize(new Dimension(618, 184));
 			jFrame.setTitle("Motivation::ManualSelectFilter");
 			jFrame.setContentPane(getJContentPane());
 		}
@@ -230,6 +212,14 @@ public class ManualSelectFilter implements MotiveFilter {
 			jHomePrioritySlider = createPrioritySlider();
 		}
 		return jHomePrioritySlider;
+	}
+
+
+	@Override
+	public void start() {
+		jFrame.setVisible(true);
+		jFrame.pack();
+		jFrame.setSize(500, 500);
 	}
 
 	

@@ -77,7 +77,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 		public void overwritten(WorkingMemoryChange _wmc) {
 			try {
-				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDO);
+				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				checkMotive(motive);
 			} catch (DoesNotExistOnWMException e) {
@@ -99,6 +99,7 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 		public void deleted(WorkingMemoryChange _wmc) {
 			try {
+				lockEntry(motiveAddress, WorkingMemoryPermissions.LOCKEDODR);
 				Motive motive = getMemoryEntry(motiveAddress, Motive.class);
 				if (motive.referenceEntry.equals(_wmc.address)) { // if it is
 					// really
@@ -115,25 +116,25 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 
 				} else { // if it is some other link entry, do not delete, but
 					// check
-					log("referenced entry " + _wmc.address.subarchitecture + "::"
-							+ motive.referenceEntry.id + "/"
+					log("referenced entry " + _wmc.address.subarchitecture
+							+ "::" + motive.referenceEntry.id + "/"
 							+ _wmc.address.subarchitecture
 							+ " has been deleted, need to check motive");
-					checkMotive(motive);
+						checkMotive(motive);
 				}
 			} catch (DoesNotExistOnWMException e1) {
 				println("tried to remove motive from WM that didn't exist... nevermind.");
-			} catch (PermissionException e1) {
-				println("not allowed to remove motive from WM...  nevermind.");
-			} catch (UnknownSubarchitectureException e1) {
-				println("UnknownSubarchitectureException when remove motive from WM...  nevermind.");
+			} catch (CASTException e1) {
+				println("CASTException...  nevermind.");
 				e1.printStackTrace();
-			} catch (SubarchitectureComponentException e) {
-				println("exception removing WorkingMemoryChangeReceiver: "
-						+ e.message);
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} finally {
+				try {
+					unlockEntry(motiveAddress);
+				} catch (CASTException e) {
+					log("caught a CASTException when unlocking entry: "+e.message+ ". This can be safely ignored...");
+				}
 			}
+
 		}
 
 	}

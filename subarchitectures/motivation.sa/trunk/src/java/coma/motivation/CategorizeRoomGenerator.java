@@ -3,6 +3,10 @@
  */
 package coma.motivation;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizeRoomMotive;
@@ -19,7 +23,9 @@ import cast.core.CASTUtils;
 
 import comadata.ComaRoom;
 
-/** create Motive for yet uncategorized rooms
+/**
+ * create Motive for yet uncategorized rooms
+ * 
  * @author marc
  * 
  */
@@ -47,12 +53,17 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 					+ Long.toString(motive.created.s - getCASTTime().s)
 					+ " seconds ago");
 
-			if (source.concepts.length == 0) {
+			// we assume here, that a room initially has two concepts:
+			// Portion_of_Space and PhysicalRoom; but we are trying to obtain
+			// more
+			
+			if (source.concepts.length <= 2) {
 				CategorizeRoomMotive crm = (CategorizeRoomMotive) motive;
 				log("  nothing's known about it, so it should be considered as a motive");
-				crm.costs=1;
-				// The more places are contained the more information we get from this room!
-				crm.informationGain=source.containedPlaceIds.length;
+				crm.costs = 1;
+				// The more places are contained the more information we get
+				// from this room!
+				crm.informationGain = source.containedPlaceIds.length;
 				crm.roomId = source.roomId;
 				write(crm);
 				return true;
@@ -77,8 +88,6 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 	 */
 	@Override
 	protected void start() {
-		super.start();
-
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				ComaRoom.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -98,6 +107,8 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 						checkMotive(newMotive);
 					}
 				});
+		super.start();
+		log("Starting up...");
 	}
 
 	/*

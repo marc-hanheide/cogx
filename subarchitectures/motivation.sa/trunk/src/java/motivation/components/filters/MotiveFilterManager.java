@@ -48,6 +48,54 @@ public class MotiveFilterManager extends ManagedComponent {
 		super();
 		pipe = new LinkedList<MotiveFilter>();
 		motives = WMMotiveSet.create(this);
+
+		receiver = new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				// avoid self calls
+				if (_wmc.src.equals(getComponentID()))
+					return;
+				log("src of motive change: " + _wmc.src);
+				try {
+					lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDO);
+					Motive motive = getMemoryEntry(_wmc.address, Motive.class);
+					MotivePriority priority = checkMotive(motive, _wmc);
+					// if we have to reprioritize
+					if (priority != motive.priority) {
+						switch (priority) {
+						case UNSURFACE: // if the priority is UNSURFACE then
+							// change status
+							motive.status = MotiveStatus.UNSURFACED;
+							break;
+						default:
+							// only if the previous status was UNSURFACED we
+							// change it here to SURFACED
+							if (motive.status == MotiveStatus.UNSURFACED)
+								motive.status = MotiveStatus.SURFACED;
+							break;
+						}
+						motive.priority = priority;
+						overwriteWorkingMemory(_wmc.address, motive);
+					}
+				} catch (DoesNotExistOnWMException e) {
+					println("filter failed to access motive from WM, maybe has been removed... ignore");
+				} catch (UnknownSubarchitectureException e) {
+					println("UnknownSubarchitectureException: this shouldn't happen.");
+					e.printStackTrace();
+				} catch (CASTException e) {
+					println("CASTException in motive filtering ");
+					e.printStackTrace();
+				} finally {
+					try {
+						unlockEntry(_wmc.address);
+					} catch (CASTException e) {
+						println("CASTException while unlocking: ");
+						e.printStackTrace();
+					}
+				}
+
+			}
+		};
+
 	}
 
 	@Override
@@ -93,66 +141,20 @@ public class MotiveFilterManager extends ManagedComponent {
 	 */
 	@Override
 	protected void start() {
-		// TODO Auto-generated method stub
-		super.start();
 
 		motives.start();
 
-		receiver = new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-				// avoid self calls
-				if (_wmc.src.equals(getComponentID()))
-					return;
-				log("src of motive change: " + _wmc.src);
-				try {
-					lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDO);
-					Motive motive = getMemoryEntry(_wmc.address, Motive.class);
-					switch (motive.status) {
-					case UNSURFACED:
-						log("check unsurfaced motive " + motive.toString());
-						MotivePriority priority = shouldBeSurfaced(motive, _wmc);
-						if (priority != MotivePriority.UNSURFACE) {
-							log("-> surfaced motive " + motive.toString());
-							motive.status = MotiveStatus.SURFACED;
-							motive.priority = priority;
-							overwriteWorkingMemory(_wmc.address, motive);
-						}
-						break;
-					default:
-						log("check surfaced motive " + motive.toString());
-						if (shouldBeUnsurfaced(motive, _wmc)) {
-							log("-> unsurfaced motive " + motive.toString());
-							motive.status = MotiveStatus.UNSURFACED;
-							motive.priority = MotivePriority.UNSURFACE;
-							overwriteWorkingMemory(_wmc.address, motive);
-						}
-						break;
-					}
-				} catch (DoesNotExistOnWMException e) {
-					println("filter failed to access motive from WM, maybe has been removed... ignore");
-				} catch (UnknownSubarchitectureException e) {
-					println("UnknownSubarchitectureException: this shouldn't happen.");
-					e.printStackTrace();
-				} catch (CASTException e) {
-					println("CASTException in motive filtering ");
-					e.printStackTrace();
-				} finally {
-					try {
-						unlockEntry(_wmc.address);
-					} catch (CASTException e) {
-						println("CASTException while unlocking: ");
-						e.printStackTrace();
-					}
-				}
-
-			}
-		};
+		for (MotiveFilter f : pipe) {
+			f.start();
+		}
 
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(Motive.class,
 				WorkingMemoryOperation.ADD), receiver);
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(Motive.class,
 				WorkingMemoryOperation.OVERWRITE), receiver);
 
+		super.start();
+		
 	}
 
 	public void checkAll() throws CASTException {
@@ -168,10 +170,11 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	}
 
-	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
+	public MotivePriority checkMotive(Motive motive,
+			WorkingMemoryChange wmc) {
 		MotivePriority result = MotivePriority.HIGH;
 		for (MotiveFilter filter : pipe) {
-			MotivePriority filterResult = filter.shouldBeSurfaced(motive,wmc);
+			MotivePriority filterResult = filter.checkMotive(motive, wmc);
 			// if one filter rejects, reject this motive
 			if (filterResult == MotivePriority.UNSURFACE)
 				return MotivePriority.UNSURFACE;
@@ -181,13 +184,4 @@ public class MotiveFilterManager extends ManagedComponent {
 		}
 		return result;
 	}
-
-	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
-		boolean result = false;
-		for (MotiveFilter filter : pipe) {
-			result = result || filter.shouldBeUnsurfaced(motive,wmc);
-		}
-		return result;
-	}
-
 }

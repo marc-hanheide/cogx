@@ -21,6 +21,7 @@ import motivation.util.RoomUnionEventRelation;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
+import motivation.util.castextensions.WMLock;
 import motivation.util.castextensions.WMEntryQueue.WMEntryQueueElement;
 import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 import motivation.util.facades.BinderFacade;
@@ -28,9 +29,7 @@ import motivation.util.facades.ExecutorFacade;
 import motivation.util.facades.PlannerFacade;
 import Ice.ObjectImpl;
 import cast.CASTException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -50,6 +49,7 @@ public class PlanAllManager extends ManagedComponent {
 	 */
 	private static final long FORCED_CHECK_FREQUENCY = 5;
 	WMMotiveSet motives;
+	WMLock wmLock;
 	volatile private boolean interrupt;
 	private WMMotiveEventQueue activeMotiveEventQueue;
 
@@ -65,9 +65,11 @@ public class PlanAllManager extends ManagedComponent {
 
 	/**
 	 * @param specificType
+	 * @throws CASTException 
 	 */
-	public PlanAllManager() {
+	public PlanAllManager() throws CASTException {
 		super();
+		wmLock = new WMLock(this, "SchedulerManagerSync");
 		motives = WMMotiveSet.create(this);
 		binderFacade = new BinderFacade(this);
 		plannerFacade = new PlannerFacade(this, binderFacade);
@@ -129,12 +131,20 @@ public class PlanAllManager extends ManagedComponent {
 	@Override
 	protected void runComponent() {
 		log("running");
+
 		try {
+			wmLock.initialize();
 			while (isRunning()) {
 				log("checking for active motives to manage them");
 				interrupt = false;
-				List<Motive> activeMotives = new LinkedList<Motive>(motives
-						.getSubsetByStatus(MotiveStatus.ACTIVE));
+				List<Motive> activeMotives = null;
+				try {
+					wmLock.lock();
+					activeMotives = new LinkedList<Motive>(motives
+							.getMapByStatus(MotiveStatus.ACTIVE).values());
+				} finally {
+					wmLock.unlock();
+				}
 
 				if (activeMotives.size() > 0) { // if we have motives to
 					log("we have some motives that should be planned for");
@@ -223,6 +233,9 @@ public class PlanAllManager extends ManagedComponent {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
 			e.printStackTrace();
+		} catch (CASTException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
@@ -238,7 +251,7 @@ public class PlanAllManager extends ManagedComponent {
 	// }
 
 	void deactivateMotives() {
-		for (Motive m : motives.getSubsetByStatus(MotiveStatus.ACTIVE)) {
+		for (Motive m : motives.getMapByStatus(MotiveStatus.ACTIVE).values()) {
 			m.status = MotiveStatus.SURFACED;
 			try {
 				lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);

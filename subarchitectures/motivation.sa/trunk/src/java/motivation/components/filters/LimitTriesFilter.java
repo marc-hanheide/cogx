@@ -15,7 +15,6 @@ import cast.cdl.WorkingMemoryChange;
 public class LimitTriesFilter implements MotiveFilter {
 	private static final long MAX_TRIES = 3;
 	
-	ManagedComponent component;
 	/**
 	 * @param specificType
 	 */
@@ -31,26 +30,18 @@ public class LimitTriesFilter implements MotiveFilter {
 	 * motivation.components.filters.Filter#shouldBeSurfaced(motivation.slice
 	 * .Motive)
 	 */
-	public MotivePriority shouldBeSurfaced(Motive motive, WorkingMemoryChange wmc) {
+	@Override
+	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 		if (motive.tries<=MAX_TRIES) 
 			return MotivePriority.HIGH;
 		return MotivePriority.UNSURFACE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * motivation.components.filters.Filter#shouldBeUnsurfaced(motivation.slice
-	 * .Motive)
-	 */
-	public boolean shouldBeUnsurfaced(Motive motive, WorkingMemoryChange wmc) {
-		return (motive.tries>3);
+	public void setManager(MotiveFilterManager motiveFilterManager) {
 	}
 
-	public void setManager(MotiveFilterManager motiveFilterManager) {
-		component = motiveFilterManager;
-		
+	@Override
+	public void start() {
 	}
 
 }
