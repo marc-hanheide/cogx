@@ -30,18 +30,22 @@ vec2 getOffset(vec2 vG){
 
 vec4 thinning(){
     vec2 vG;
-    vec2 vN;
+    vec3 vG_tmp;
+    //vec2 vN;
+    float fNm;
     vec2 offset;
+    float fGm;
     float ft = fThreshold;
     float f_len_1, f_len_2;
     
     // get edge gradient from texture
-    vG = texture2D(frame, gl_TexCoord[0].st).xy;
-    vG = (vG - 0.5) * 2.0;  // scale to range [-1 ... 1]
+    vG_tmp = texture2D(frame, gl_TexCoord[0].st).xyz;
+    fGm = vG_tmp.z;	// magnitude
+    vG = (vG_tmp.xy - 0.5) * 2.0;  // scale to range [-1 ... 1]
     //vG = normalize(vG);
     
     // if pixel is not part of an edge then do nothing
-    if(abs(vG.x) < 0.01 && abs(vG.y) < 0.01)
+    if(fGm < 0.01)
         return vNull;
     
     // get offset in texture coordinates for neighbouring pixel
@@ -50,19 +54,19 @@ vec4 thinning(){
 		offset = getOffset(vG);
 		
 		// get color of neighbouring pixel
-		vN = texture2D(frame, gl_TexCoord[0].st + offset ).xy;
-		vN = (vN - 0.5) * 2.0;  // scale to  [-1 ... 1]
+		fNm = texture2D(frame, gl_TexCoord[0].st + offset ).z;
+		//vN = (vN - 0.5) * 2.0;  // scale to  [-1 ... 1]
 		// remove this pixel if neighbouring pixel is stronger
-		f_len_1 = length(vN);
+		f_len_1 = fNm;
 		if(length(vG)+ft < f_len_1) 
 			return vNull;
 		
 		// Compare again for negative gradient direction 
-		vN = texture2D(frame, gl_TexCoord[0].st - offset ).xy;
-		vN = (vN - 0.5) * 2.0;
+		fNm = texture2D(frame, gl_TexCoord[0].st - offset ).z;
+		//vN = (vN - 0.5) * 2.0;
 		
 		// remove this pixel if neighbouring pixel is stronger
-		f_len_2 = length(vN);
+		f_len_2 = fNm;
 		if(length(vG)+ft < f_len_2) 
 			return vNull;
 			
