@@ -6,10 +6,8 @@ package motivation.components.generators;
 
 import motivation.slice.Motive;
 import cast.CASTException;
-import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
-import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;

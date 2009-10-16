@@ -3,7 +3,6 @@
  */
 package spatial.motivation;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,12 +13,12 @@ import motivation.slice.Motive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialProperties.AssociatedBorderPlaceholderProperty;
+import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.AssociatedSpacePlaceholderProperty;
 import SpatialProperties.DiscreteProbabilityDistribution;
 import SpatialProperties.FloatValue;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -34,22 +33,24 @@ import cast.core.CASTUtils;
  */
 public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
-
 	private HashMap<Long, Double> m_placeIDtoBorderProperty;
+	private HashMap<Long, Double> m_placeIDtoGatewayProperty;
 	private HashMap<Long, Double> m_placeIDtoSpaceProperty;
 	private HashMap<Long, WorkingMemoryAddress> m_placeIDtoMotiveWMA;
 	private double m_spaceMeasureConstant;
 	private double m_borderMeasureConstant;
+	private double m_gatewayMeasureConstant;
 
 	public ExplorePlaceGenerator() {
 		super();
 		m_placeIDtoBorderProperty = new HashMap<Long, Double>();
+		m_placeIDtoGatewayProperty = new HashMap<Long, Double>();
 		m_placeIDtoSpaceProperty = new HashMap<Long, Double>();
 		m_placeIDtoMotiveWMA = new HashMap<Long, WorkingMemoryAddress>();
 	}
 
 	/*
-	 * (non-Javadoc) 
+	 * (non-Javadoc)
 	 * 
 	 * @see
 	 * motivation.generators.Generator#updateMotive(cast.cdl.WorkingMemoryAddress
@@ -70,7 +71,8 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 				addHypothesisFeatures((ExploreMotive) motive);
 
-				log("writing ExploreMotive to WM for place_id " + ((ExploreMotive) motive).placeID);
+				log("writing ExploreMotive to WM for place_id "
+						+ ((ExploreMotive) motive).placeID);
 				WorkingMemoryAddress motiveAddress = write(motive);
 				// need to store mapping back to place struct to establish
 				// relations between places and their properties
@@ -81,7 +83,8 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 				return true;
 			} else {
 				log("  turn out this place is not a placeholder, so, it should be no motive then");
-				log("  getting rid of ExploreMotive for place_id " + ((ExploreMotive) motive).placeID);				
+				log("  getting rid of ExploreMotive for place_id "
+						+ ((ExploreMotive) motive).placeID);
 				remove(motive);
 			}
 		} catch (CASTException e) {
@@ -107,6 +110,16 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 					public void workingMemoryChanged(WorkingMemoryChange _arg0)
 							throws CASTException {
 						associatedSpaceChange(_arg0);
+					}
+				});
+
+		addChangeFilter(ChangeFilterFactory
+				.createGlobalTypeFilter(GatewayPlaceProperty.class),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _arg0)
+							throws CASTException {
+						associatedGateway(_arg0);
 					}
 				});
 
@@ -165,6 +178,33 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		}
 	}
 
+	protected void associatedGateway(WorkingMemoryChange _wmc)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+
+		if (_wmc.operation != WorkingMemoryOperation.DELETE) {
+			GatewayPlaceProperty gatewayProperty = getMemoryEntry(_wmc.address,
+					GatewayPlaceProperty.class);
+			// first time through, add the place to the source list for the
+			// place's motive
+			if (_wmc.operation == WorkingMemoryOperation.ADD) {
+				if (m_placeIDtoMotiveWMA.containsKey(gatewayProperty.placeId))
+					addReceivers(m_placeIDtoMotiveWMA
+							.get(gatewayProperty.placeId), _wmc.address);
+			}
+			// TODO: This is a hacky way of doing it. We just assume that the
+			// existence of this property is taken as the 100% evidence of
+			// existence
+			m_placeIDtoGatewayProperty.put(gatewayProperty.placeId, 1.0);
+			// m_placeIDtoGatewayProperty
+			// .put(
+			// gatewayProperty.placeId,
+			// getFirstPropertyValue((DiscreteProbabilityDistribution)
+			// gatewayProperty.distribution));
+			println("associate gateway to " + gatewayProperty.placeId + ": "
+					+ m_placeIDtoGatewayProperty.get(gatewayProperty.placeId));
+		}
+	}
+
 	protected void associatedSpaceChange(WorkingMemoryChange _wmc)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		if (_wmc.operation != WorkingMemoryOperation.DELETE) {
@@ -207,16 +247,22 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		Double spaceMeasureBoxed = m_placeIDtoSpaceProperty.get(placeID);
 		double spaceMeasure = spaceMeasureBoxed == null ? 0 : spaceMeasureBoxed;
 
+		Double gatewayMeasureBoxed = m_placeIDtoGatewayProperty.get(placeID);
+		double gatewayMeasure = gatewayMeasureBoxed == null ? 0
+				: gatewayMeasureBoxed;
+
 		// A measure of how much of the frontier borders on unknown space
 		Double borderMeasureBoxed = m_placeIDtoBorderProperty.get(placeID);
 		double borderMeasure = borderMeasureBoxed == null ? 0
 				: borderMeasureBoxed;
 		_em.informationGain = (spaceMeasure * m_spaceMeasureConstant)
-				+ (borderMeasure * m_borderMeasureConstant);
+				+ (borderMeasure * m_borderMeasureConstant)
+				+ (gatewayMeasure * m_gatewayMeasureConstant);
 
 		log(CASTUtils.concatenate(_em.informationGain, " = space(",
 				spaceMeasure, " * ", m_spaceMeasureConstant, ") + border(",
-				borderMeasure, " * ", m_borderMeasureConstant, ")"));
+				borderMeasure, " * ", m_borderMeasureConstant, ") + gateway(",
+				gatewayMeasure, " * ", m_gatewayMeasureConstant, ")"));
 	}
 
 	@Override
@@ -225,6 +271,5 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		m_borderMeasureConstant = 1;
 
 	}
-
 
 }
