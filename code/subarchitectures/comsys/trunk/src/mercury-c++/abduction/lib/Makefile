@@ -30,6 +30,11 @@ MCFLAGS+=--trace-flag=debug
 MCFLAGS+=--cflag -g
 endif
 
+ifeq ($(origin PROF), undefined)
+else
+MCFLAGS+=--profiling --memory-profiling --time-profiling
+endif
+
 # on BSD, without deactivating suffix rules, any "non-suffixed"
 # target would be matched by some sort of default rule (using
 # $(CC)), not by our rule.

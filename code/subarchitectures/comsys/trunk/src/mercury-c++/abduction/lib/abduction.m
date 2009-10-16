@@ -47,14 +47,7 @@
 
 :- func new_proof(list(query(M)), varset) = proof(M) <= modality(M).
 
-:- pred prove_best(float::in, proof(M)::in, proof(M)::out, costs::in, C::in) is semidet <= (modality(M), context(C, M)).
-
-%:- pred cc_prove(float, float, proof(M), proof(M), costs, C) is nondet <= (modality(M), context(C, M)).
-%:- mode cc_prove(in, in, in, out, in, in) is cc_nondet.
-
-:- pred prove(float, float, proof(M), proof(M), costs, C) is nondet <= (modality(M), context(C, M)).
-:- mode prove(in, in, in, out, in, in) is nondet.
-:- mode prove(in, in, in, out, in, in) is cc_nondet.
+:- pred prove(float::in, float::in, proof(M)::in, proof(M)::out, costs::in, C::in) is nondet <= (modality(M), context(C, M)).
 
 :- func last_goal(proof(M)) = vscope(list(query(M))) <= modality(M).
 
@@ -133,42 +126,6 @@ goal_solved(L) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-prove_best(MaxCost, P0, P, Costs, Ctx) :-
-	P = P0.
-	%cc_prove(0.0, MaxCost, P0, P, Costs, Ctx),
-	%ProofCost = cost(Ctx, P, Costs).
-
-/*
-cc_prove(CurCost, CostBound, P0, P, Costs, Ctx) :-
-	P0 = proof(vs([L0|Ls], VS0), Ss0),
-	(if
-		goal_solved(L0)
-	then
-		% check that all assumptions, assertions are ground
-		% (because we may have constant weight functions)
-		% XXX: check assertions?
-		% XXX: check resolved stuff too?
-		LAss = list.filter_map((func(Q) = MPr is semidet :-
-			Q = assumed(MPr, _)
-				), L0),
-		all_true((pred(MProp::in) is semidet :-
-			ground_formula(MProp^p, _)
-				), LAss),
-		P = P0,
-		trace[io(!IO)] ( format(stderr_stream, "---PROOF (%f)---\n", [f(CurCost)], !IO) )
-	else
-		L-VS = promise_only_solution((pred(XL-XVS::out) is cc_nondet :-
-			transform(Step, L0, VS0, XL, XVS, Ctx)
-				)),
-		P1 = proof(vs([L, L0|Ls], VS), [Step|Ss0]),
-
-		StepCost = step_cost(Ctx, Step, Costs),
-		CurCost + StepCost =< CostBound,
-
-		cc_prove(CurCost + StepCost, CostBound, P1, P, Costs, Ctx)
-	).
-*/
-
 prove(CurCost, CostBound, P0, P, Costs, Ctx) :-
 	P0 = proof(vs([L0|Ls], VS0), Ss0),
 	(if
@@ -184,8 +141,7 @@ prove(CurCost, CostBound, P0, P, Costs, Ctx) :-
 		all_true((pred(MProp::in) is semidet :-
 			ground_formula(MProp^p, _)
 				), LAss),
-		P = P0,
-		trace[io(!IO)] ( format(stderr_stream, "---PROOF (%f)---\n", [f(CurCost)], !IO) )
+		P = P0
 	else
 		transform(Step, L0, VS0, L, VS, Ctx),
 		P1 = proof(vs([L, L0|Ls], VS), [Step|Ss0]),
@@ -213,10 +169,10 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 
 %------------------------------------------------------------------------------%
 
-:- pred transform(step(M), list(query(M)), varset, list(query(M)), varset, C)
-		<= (modality(M), context(C, M)).
-:- mode transform(out, in, in, out, out, in) is nondet.
-:- mode transform(out, in, in, out, out, in) is cc_nondet.
+:- pred transform(step(M)::out,
+		list(query(M))::in, varset::in,
+		list(query(M))::out, varset::out,
+		C::in) is nondet <= (modality(M), context(C, M)).
 
 transform(Step, L0, VS0, L, VS, Ctx) :-
 	segment_proof_state(L0, SegL0),
@@ -243,6 +199,7 @@ transform(Step, L0, VS0, L, VS, Ctx) :-
 
 		C::in  % knowledge base
 	) is nondet <= (modality(M), context(C, M)).
+
 
 	% assumption
 step(assume(vs(m(MQ, PQ), VS), Uni, F),
@@ -278,7 +235,7 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 
 	% resolution with a fact
 step(use_fact(vs(m(MF, PF), VS), Uni),
-		{QsL0, cf(m(MQ, PQ0), not_assumable), QsR0}, VS0,
+		{QsL0, cf(m(MQ, PQ0), _F), QsR0}, VS0,
 		QsL ++ [proved(m(MQ, PQ))] ++ QsR, VS,
 		Ctx) :-
 
