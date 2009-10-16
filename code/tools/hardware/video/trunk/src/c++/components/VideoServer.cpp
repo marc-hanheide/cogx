@@ -123,6 +123,12 @@ void VideoServer::configure(const map<string,string> & _config)
     }
   }
 
+  if((it = _config.find("--swapredblue")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> boolalpha >> swapRB;
+  }
+
   // in case no camera config files were given, assume default configs
   if(camPars.size() == 0)
   {
@@ -225,6 +231,8 @@ void VideoServer::getImage(int camId, Video::Image &img)
   lockComponent();
   // width and height = 0 means no resizing
   retrieveFrame((int)camId, 0, 0, img);
+  if(swapRB)
+    SwapRedBlueChannel(img);
   unlockComponent();
 }
 
@@ -233,6 +241,9 @@ void VideoServer::getImages(std::vector<Video::Image> &images)
   lockComponent();
   // providing width = height = 0 means using native image size
   retrieveFrames(0, 0, images);
+  if(swapRB)
+    for(size_t i = 0; i < images.size(); i++)
+      SwapRedBlueChannel(images[i]);
   unlockComponent();
 }
 
@@ -240,6 +251,9 @@ void VideoServer::getScaledImages(int width, int height, std::vector<Video::Imag
 {
   lockComponent();
   retrieveFrames(width, height, images);
+  if(swapRB)
+    for(size_t i = 0; i < images.size(); i++)
+      SwapRedBlueChannel(images[i]);
   unlockComponent();
 }
 
@@ -256,6 +270,9 @@ void VideoServer::runComponent()
     {
       retrieveFrames(imageReceivers[i].camIds,
         imageReceivers[i].imgWidth, imageReceivers[i].imgHeight, frames);
+      if(swapRB)
+        for(size_t i = 0; i < frames.size(); i++)
+          SwapRedBlueChannel(frames[i]);
       imageReceivers[i].videoClient->receiveImages(frames);
     }
     unlockComponent();
