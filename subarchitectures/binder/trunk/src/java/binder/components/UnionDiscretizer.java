@@ -161,6 +161,70 @@ public class UnionDiscretizer extends ManagedComponent {
 		return discretizedConfig;
 	}
 
+	
+
+	/**
+	 * Extract the union configuration of rank n from the set of possible ones specified in
+	 * the AlternativeUnionConfigurations object.
+	 * 
+	 * @param alterconfigs the alternative union configurations
+	 * @param rank the rank of the configuration (1 being the rank with the highest score, 
+	 *             2 the rank for the second-highest score, etc.)
+	 * @return the single best (highest-probability) union configuration
+	 */
+	
+	public UnionConfiguration extractUnionConfigurationOfRankN 
+	(AlternativeUnionConfigurations alterconfigs, int rank) {
+
+		log("--------START DISCRETISATION ----------");
+		long initTime = System.currentTimeMillis();
+
+		UnionConfiguration discretizedConfig = new UnionConfiguration();
+
+		log("Number of alternative union configurations: "  + alterconfigs.alterconfigs.length);
+		
+		// Compute the best union configuration out of the possible ones
+		UnionConfiguration rankNConfig = 
+			ConfigurationFilter.getUnionConfigurationOfRankN(alterconfigs, rank);
+
+		Vector<Union> unions = new Vector<Union>();
+
+		if (rankNConfig != null) {
+		log("Rank n union configuration successfully computed");
+		log("Number of unions in selected configuration: " + 
+				rankNConfig.includedUnions.length);
+
+		
+		// In the chosen union configuration, loop on the included unions, and compute
+		// for each of them the instance with the maximum probability
+		for (int i = 0 ; i < rankNConfig.includedUnions.length ; i++) {
+			Union union = rankNConfig.includedUnions[i];
+			// If only maximum-probability values are allowed, compute a new union with only these
+			if (onlyMaxFeatureValues) {
+				union = EntityFilter.getUnionWithMaximumProbability(union);
+			}
+			
+			unions.add(union);
+		} 
+		
+		// Create a new configuration with the updated unions
+		discretizedConfig.includedUnions = new Union[unions.size()];
+		discretizedConfig.includedUnions = unions.toArray(discretizedConfig.includedUnions);
+		discretizedConfig.configProb = rankNConfig.configProb;
+
+		}
+		else {
+			errlog("WARNING: no best union configuration could be found! (returned null)");
+		}
+		
+		long finalTime = System.currentTimeMillis();
+		log("Total discretisation time: " + (finalTime - initTime)/1000.0 + " seconds");
+		log("--------STOP DISCRETISATION ----------");
+
+		return discretizedConfig;
+	}
+	
+	
 	/**
 	 * Add union configuration to the binder working memory
 	 * 

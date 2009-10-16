@@ -24,8 +24,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -48,6 +51,12 @@ public class WestArrowPanel extends JPanel{
 //	InsertButtonListener buttonListener;
 	
 	BinderMonitor bm;
+	
+	static JLabel introLabelf;
+	
+	public static enum DIRECTION {UP, DOWN};
+
+	int currentRank = 1;
 
 	public WestArrowPanel(BinderMonitor bm) {
 		super(new BorderLayout());
@@ -58,7 +67,16 @@ public class WestArrowPanel extends JPanel{
 	    add(createArrowPanel());
 	    setVisible(true);
 	}
-		
+	
+	
+	public int getCurrentRank() {
+		return currentRank;
+	}
+	
+	public void setCurrentRank(int rank) {
+		currentRank = rank;
+	}
+	
 	private JPanel createArrowPanel() {
 		
 		arrowPanel = new JPanel();
@@ -66,21 +84,70 @@ public class WestArrowPanel extends JPanel{
 		
 		buttonPanel = new JPanel(new BorderLayout());
 		
-	//	JLabel upLabel = new JLabel("Go to more likely union configuration");
-	//	buttonPanel.add(upLabel, BorderLayout.WEST);
+		JLabel introLabel0 = new JLabel("  ");
+		JLabel introLabel0b = new JLabel("  Use the arrows to ");
+		JLabel introLabel1 = new JLabel("  navigate in the  ");
+		JLabel introLabel2 = new JLabel("  alternative union  ");
+		JLabel introLabel3 = new JLabel("  configurations:  ");
+		JLabel introLabel4 = new JLabel("  ");
+		arrowPanel.add(introLabel0, BorderLayout.NORTH);	
+		arrowPanel.add(introLabel0b, BorderLayout.NORTH);
+		arrowPanel.add(introLabel1, BorderLayout.NORTH);
+		arrowPanel.add(introLabel2, BorderLayout.SOUTH);
+		arrowPanel.add(introLabel3, BorderLayout.SOUTH);
+		arrowPanel.add(introLabel4, BorderLayout.SOUTH);
+
 		JButton upButton = new BasicArrowButton(BasicArrowButton.NORTH);
 		upButton.setName("upbutton");
+		upButton.setToolTipText("Go to more likely configurations");
 		buttonPanel.add(upButton, BorderLayout.NORTH);
-		
+	
+		upButton.addActionListener(new ChangeConfigListener(bm, this, DIRECTION.UP));
+
 		JButton downButton = new BasicArrowButton(BasicArrowButton.SOUTH);
 		downButton.setName("downbutton");
+		downButton.setToolTipText("Go to less likely configurations");
 		buttonPanel.add(downButton, BorderLayout.SOUTH);
+		
+		buttonPanel.add(new JLabel(" "));
 		
 		arrowPanel.add(buttonPanel);
 		
-	//	sendbutton.addActionListener(new InsertButtonListener(arrowPanel, bm));
+		JLabel introLabela = new JLabel("  ");
+		JLabel introLabelaa = new JLabel("  ");
+		JLabel introLabelaaa = new JLabel("  ");
+		JLabel introLabelb = new JLabel("  ");
+		JLabel introLabelc = new JLabel("  ");
+		JLabel introLabeld = new JLabel("  Current number of  ");
+		JLabel introLabele = new JLabel("  alternative union  ");
+		int number = 0;
+		if (bm.alternativeConfigs != null) {
+			number = bm.alternativeConfigs.alterconfigs.length;
+		}
+		introLabelf = new JLabel("  configurations: " + number);
+		
+		arrowPanel.add(introLabela, BorderLayout.NORTH);	
+		arrowPanel.add(introLabelaa, BorderLayout.NORTH);
+		arrowPanel.add(introLabelaaa, BorderLayout.NORTH);
+		arrowPanel.add(introLabelb, BorderLayout.NORTH);
+		arrowPanel.add(introLabelc, BorderLayout.NORTH);
+		arrowPanel.add(introLabeld, BorderLayout.NORTH);
+		arrowPanel.add(introLabele, BorderLayout.NORTH);
+		arrowPanel.add(introLabelf, BorderLayout.NORTH);
+
+		
+		downButton.addActionListener(new ChangeConfigListener(bm, this, DIRECTION.DOWN));
 		
 		return arrowPanel;
 	}
 	
+	protected static ImageIcon createImageIcon(String path) {
+	    return new ImageIcon(path);
+	}
+	
+	public void resetNumberOfConfigurations (int newNumber) {
+		arrowPanel.remove(introLabelf);
+		introLabelf = new JLabel("  configurations: " + newNumber);
+		arrowPanel.add(introLabelf, BorderLayout.NORTH);
+	}
 }

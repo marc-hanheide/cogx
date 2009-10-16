@@ -18,16 +18,20 @@
 // =================================================================                                                        
 package binder.components;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Vector;
 
+import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
+import binder.filtering.ConfigurationComparator;
 import binder.gui.BinderMonitorGUI;
 import binder.utils.BinderUtils;
 import cast.architecture.ManagedComponent;
@@ -57,6 +61,12 @@ public class BinderMonitor extends ManagedComponent {
 	// Vector listing all the unions currently in the WM
 	private Vector<Union> lastUnions;
 	
+	
+	public AlternativeUnionConfigurations alternativeConfigs;
+		
+	UnionDiscretizer discretizer = new UnionDiscretizer();
+	
+	
 	static final boolean REGENERATE_UNIONS = true;
 	
 	/**
@@ -67,16 +77,42 @@ public class BinderMonitor extends ManagedComponent {
 	@Override
 	public void start() {
 
+		
 		// if the set of possible union configurations has been updated, update the
 		// monitor accordingly
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class,
+		/** addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(UnionConfiguration.class,
 				WorkingMemoryOperation.WILDCARD), new WorkingMemoryChangeReceiver() {
 
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 				try {
 					UnionConfiguration config = 
 					getMemoryEntry(_wmc.address, UnionConfiguration.class);
-					updateMonitorWithSingleBestConfiguration(config);
+					updateMonitorWithConfiguration(config);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			} 
+		}); */
+		
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(AlternativeUnionConfigurations.class,
+				WorkingMemoryOperation.WILDCARD), new WorkingMemoryChangeReceiver() {
+
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				try {
+					
+					log("Change in the binding working memory, update necessary");
+
+					alternativeConfigs =	
+						getMemoryEntry(_wmc.address, AlternativeUnionConfigurations.class);
+					
+					Comparator<UnionConfiguration> comparator = new ConfigurationComparator();
+					
+					Arrays.sort(alternativeConfigs.alterconfigs, comparator);
+					
+					UnionConfiguration config = 
+						discretizer.extractUnionConfigurationOfRankN(alternativeConfigs, 1);
+					updateMonitorWithConfiguration(config);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -112,6 +148,13 @@ public class BinderMonitor extends ManagedComponent {
 	}
 	
 	
+	public void showConfigurationOfRank(int rank) {
+		UnionConfiguration config = 
+			discretizer.extractUnionConfigurationOfRankN(alternativeConfigs, rank);
+		updateMonitorWithConfiguration(config);
+	}
+	
+	
 	/**
 	 * Configure the binding monitor with various parameters
 	 * (use --gui to activate the graphical interface)
@@ -130,10 +173,9 @@ public class BinderMonitor extends ManagedComponent {
 	 * 
 	 * @param bestConfig the union configuration
 	 */
-	public void updateMonitorWithSingleBestConfiguration
-			(UnionConfiguration bestConfig) {
+	public void updateMonitorWithConfiguration
+			(UnionConfiguration config) {
 		
-		log("Change in the binding working memory, update necessary");
 		Vector<Proxy> proxiesV = new Vector<Proxy>();
 		Vector<Union> UnionsV = new Vector<Union>();
 		
@@ -177,19 +219,19 @@ public class BinderMonitor extends ManagedComponent {
 			
 			// Extract the unions in the union configuration
 			int nbRelationUnions = 0;
-			for (int i = 0 ; i < bestConfig.includedUnions.length ; i++) {
-				Union u = bestConfig.includedUnions[i];
+			for (int i = 0 ; i < config.includedUnions.length ; i++) {
+				Union u = config.includedUnions[i];
 				if (u instanceof RelationUnion) {
 					nbRelationUnions++;
 				}
-				UnionsV.add(bestConfig.includedUnions[i]);
+				UnionsV.add(config.includedUnions[i]);
 			}
 			
 			// Create summary for the unions in the binder WM
-			String unionText = (bestConfig.includedUnions.length - nbRelationUnions) + " normal";
+			String unionText = (config.includedUnions.length - nbRelationUnions) + " normal";
 			if (nbRelationUnions > 0) {
 				unionText += " + " + nbRelationUnions + " relation" ;
-				unionText += " = " + bestConfig.includedUnions.length;
+				unionText += " = " + config.includedUnions.length;
 			}
 			log("Current number of unions: " + unionText);
 			
@@ -219,7 +261,7 @@ public class BinderMonitor extends ManagedComponent {
 		
 		// And finally, trigger the GUI update
 		if (gui != null) {
-			gui.updateGUI(proxiesV, UnionsV, proxiesToDelete, UnionsToDelete);
+			gui.updateGUI(proxiesV, UnionsV, proxiesToDelete, UnionsToDelete, config);
 		}
 	}
 	

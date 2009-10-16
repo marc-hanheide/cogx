@@ -23,6 +23,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import binder.autogen.core.UnionConfiguration;
+
 
 
 /**
@@ -71,6 +73,17 @@ public class GenericUtils {
 		return contents.toString();
 	}
 
+	
+	public static int getIndex (UnionConfiguration[] array, UnionConfiguration obj) {
+		
+		for (int i = 0; i < array.length ; i++) {
+			if (array[i].configProb == obj.configProb) {
+				return i;
+			}
+		}
+		
+		return -1;
+	}
 
 
 }
