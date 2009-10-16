@@ -47,7 +47,7 @@ void ObjectTrackerDriver::start()
 
 void ObjectTrackerDriver::runComponent()
 {
-  sleepProcess(1000);  // HACK: the nav visualisation might crash if we send it
+  sleepComponent(1000);  // HACK: the nav visualisation might crash if we send it
                        // object observations too soon.
                        
   // Load geometry from ply-file
@@ -70,7 +70,7 @@ void ObjectTrackerDriver::runComponent()
   log("add model to working memory: '%s'", obj->label.c_str());
   addToWorkingMemory(newDataID(), obj);
   
-  sleepProcess(1000);
+  sleepComponent(1000);
   
   // Send start tracking command
   log("send tracking command: START");

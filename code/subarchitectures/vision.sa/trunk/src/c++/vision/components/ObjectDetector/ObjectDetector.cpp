@@ -83,12 +83,18 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			}
 			break;
 		case VisionData::DSINGLE:
+			
+			videoServer->getImage(camId, m_image);
+			processImage(m_image);
+      
+			/* commented by TM
 			if(!cmd_single){
 				log("single detection");
 				cmd_single = true;
 			}else{
 				log("got already single detection command: too fast triggering!");
 			}
+			*/
 			break;
 		default:
 			log("unknown detection command received, doing nothing");

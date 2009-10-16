@@ -63,6 +63,7 @@ void VisionDriver::runComponent()
 	VisionData::ObjectDetectionCommandPtr detect_cmd = new VisionData::ObjectDetectionCommand;
 	
 	// start pushing images from video server
+	/* commented by TM
 	detect_cmd->cmd = VisionData::DVSSTART;
 	addToWorkingMemory(newDataID(), detect_cmd);
 	pushing = true;
@@ -75,10 +76,10 @@ void VisionDriver::runComponent()
 	addToWorkingMemory(newDataID(), detect_cmd);
 	detecting = true;
 	log("detection start-command sent!");
-
+	*/
 	while(running)
 	{
-		sleepProcess(4000);	// detection time
+		sleepProcess(1000);	// detection time
 
 		// start single detection
 		detect_cmd->cmd = VisionData::DSINGLE;
