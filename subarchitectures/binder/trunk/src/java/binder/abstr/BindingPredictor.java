@@ -28,7 +28,6 @@ import beliefmodels.domainmodel.cogx.UncertainSuperFormula;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.components.Binder;
 import binder.utils.BeliefModelUtils;
-import binder.utils.BinderUtils;
 
 import cast.core.CASTData;
 
@@ -50,8 +49,7 @@ public class BindingPredictor extends ProxyWriter {
 	// METHODS FOR PREDICTIONS POSSIBLE UNIONS FOR PHANTOM PROXIES
 	// =================================================================
 
-
-
+	
 	/**
 	 * Get a list of predicted possible belief bindings for the phantom proxy
 	 * 
@@ -145,7 +143,7 @@ public class BindingPredictor extends ProxyWriter {
 
 		return getMaximum(getPredictedBindings(phantomProxy, deleteProxyAfterBinding));
 	}
-
+	
 	
 	/**
 	 * Retrieve the union with the hightest probability of existence amongst a list of 

@@ -488,7 +488,7 @@ public class Binder extends ManagedComponent  {
 
 				
 				if (newUnion instanceof RelationUnion) {
-					specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
+					newUnion = specifyUnionSourceAndTarget((RelationUnion)newUnion, existingUnionConfig);
 				}
 				
 				// Loop on the unions in the union configuration
@@ -727,6 +727,16 @@ public class Binder extends ManagedComponent  {
 	private RelationUnion specifyUnionSourceAndTarget (RelationUnion union, UnionConfiguration config) {
 		log("start relation processing");
 
+		RelationUnion newUnion = new RelationUnion();
+		newUnion.entityID = union.entityID;
+		newUnion.distribution = union.distribution;
+		newUnion.includedProxies = union.includedProxies;
+		newUnion.features = union.features;
+		newUnion.probExists = union.probExists;
+		newUnion.timeStamp = union.timeStamp;
+		newUnion.psource = union.psource;
+		newUnion.ptarget = union.ptarget;
+		
 		HashMap<String, String> unionForProxy = new HashMap<String, String>();
 		for (int j = 0; j < config.includedUnions.length ; j++) {
 			Union curUnion = config.includedUnions[j];
@@ -735,9 +745,9 @@ public class Binder extends ManagedComponent  {
 			}
 		}
 		
-		union.usource = new Feature();
-		union.usource.featlabel = "source";
-		union.usource.alternativeValues = new AddressValue[union.psource.alternativeValues.length];
+		newUnion.usource = new Feature();
+		newUnion.usource.featlabel = "source";
+		newUnion.usource.alternativeValues = new AddressValue[union.psource.alternativeValues.length];
 		
 		for (int i = 0 ; i < union.psource.alternativeValues.length; i++) {
 			String sourceId = ((AddressValue)union.psource.alternativeValues[i]).val;
@@ -747,14 +757,14 @@ public class Binder extends ManagedComponent  {
 				newSource.independentProb = union.psource.alternativeValues[i].independentProb;
 				newSource.timeStamp = union.psource.alternativeValues[i].timeStamp;
 				newSource.val = unionForProxy.get(sourceId);
-				union.usource.alternativeValues[i] = newSource;
+				newUnion.usource.alternativeValues[i] = newSource;
                 log("bound source of " + union.entityID + " to " + newSource.val);
 			}
 		}
 		
-		union.utarget = new Feature();
-		union.utarget.featlabel = "target";
-		union.utarget.alternativeValues = new AddressValue[union.ptarget.alternativeValues.length];
+		newUnion.utarget = new Feature();
+		newUnion.utarget.featlabel = "target";
+		newUnion.utarget.alternativeValues = new AddressValue[union.ptarget.alternativeValues.length];
 
 		for (int i = 0 ; i < union.ptarget.alternativeValues.length; i++) {
 			String targetId = ((AddressValue)union.ptarget.alternativeValues[i]).val;
@@ -764,12 +774,12 @@ public class Binder extends ManagedComponent  {
 				newTarget.independentProb = union.ptarget.alternativeValues[i].independentProb;
 				newTarget.timeStamp = union.ptarget.alternativeValues[i].timeStamp;
 				newTarget.val = unionForProxy.get(targetId);
-				union.utarget.alternativeValues[i] = newTarget;
+				newUnion.utarget.alternativeValues[i] = newTarget;
                 log("bound target of " + union.entityID + " to " + newTarget.val);
 			}
 		}
 		
-		return union;
+		return newUnion;
 	}
 	
 	/**
