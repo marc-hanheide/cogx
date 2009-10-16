@@ -130,6 +130,12 @@ protected:
   std::vector<ImageReceiver> imageReceivers;
 
   /**
+   * As is often the case with OpenCV capture devices, red and blue channel
+   * might be swapped. Set this to true if needed to correct for that.
+   */
+  bool swapRB;
+
+  /**
    * return the index of the camera for a given camera ID
    */
   size_t getCamIndex(int camId) throw(std::runtime_error)
@@ -150,7 +156,7 @@ protected:
   virtual void runComponent();
 
 public:
-  VideoServer() {}
+  VideoServer() : swapRB(false) {}
   virtual ~VideoServer() {}
 
   /**

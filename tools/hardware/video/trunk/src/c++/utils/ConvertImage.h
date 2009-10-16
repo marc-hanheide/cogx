@@ -46,6 +46,11 @@ IplImage* convertImageToIplGray(const Video::Image & image);
 void convertImageFromIpl(const IplImage *iplImg, Video::Image &img)
   throw(runtime_error);
 
+/**
+ * Swap red and blue channel.
+ */
+void SwapRedBlueChannel(Video::Image & img);
+
 }
 
 #endif

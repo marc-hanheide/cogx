@@ -106,11 +106,17 @@ IplImage* convertImageToIplGray(const Video::Image & img)
   return grayImg;
 }
 
-/*void swapRedBlueChannels(IplImage *iplImage)
+void SwapRedBlueChannel(Video::Image & img)
 {
-  char *p = 
-}*/
-
+  unsigned char t;
+  size_t i, j;
+  for(i = 0, j = 2; j < img.data.size(); i += 3, j += 3)
+  {
+    t = img.data[i];
+    img.data[i] = img.data[j];
+    img.data[j] = t;
+  }
+}
 
 }
 
