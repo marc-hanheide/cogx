@@ -2,9 +2,7 @@
 #ifndef __OPENGL_CONTROL_H__
 #define __OPENGL_CONTROL_H__
 
-#include <stdio.h>
-#include <GL/gl.h>
-#include <string.h>
+#include "headers.h"
 
 class OpenGLControl
 {

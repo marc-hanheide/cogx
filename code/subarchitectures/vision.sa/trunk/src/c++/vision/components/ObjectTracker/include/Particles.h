@@ -14,16 +14,16 @@ class Particles;
 #include <GL/gl.h>
 #include <vector>
 
-#define GAUSS 0
-#define NORMAL 1
+const unsigned int GAUSS  = 0;
+const unsigned int NORMAL = 1;
 
 class Particle
 {
 public:
 	float rX, rY, rZ;	// rotation
 	float tX, tY, tZ;	// translation
-	float w;			// Likelihood
-	float v, d;
+	float s;			// scale
+	double w;			// Likelihood
 	Quaternion q;		// representing rotation with quaternions
 
 	Particle();
@@ -51,33 +51,41 @@ class Particles
 {
 private:
 	
+	Particle m_maxParticle;
 	Particle* m_particlelist;
 	int m_num_particles;
 	int id_max;
 	int v_max;
 	int d_max;
-	float w_max;
+	float w_normalizer;
+	float w_sum;
 	float m_frustum_offset;
+	TM_Vector3 m_cam_view, m_cam_s, m_cam_u;
 	
 	unsigned int* queryMatches; // query for all edge pixel count with NV_Occlusion_Query
     unsigned int* queryEdges; // query for coinciding edge pixel count with NV_Occlusion_Query
     
-    float noise(float rMin, float rMax, unsigned int precision, unsigned int distribution=GAUSS);
+    float noise(float rMin, float rMax, unsigned int distribution=GAUSS);
 
 public:
 	Particles(int num, Particle p);
 	~Particles();
 	
 	void set(int id, Particle p){ m_particlelist[id] = p; }
+	void setCamViewVector(TM_Vector3 v){ m_cam_view = v; }
+	void setCamS(TM_Vector3 v){ m_cam_s = v; }
+	void setCamU(TM_Vector3 v){ m_cam_s = v; }
 	
 	Particle* get(int id){ return &m_particlelist[id]; }
-	Particle* getMax(){ return &m_particlelist[id_max]; }
+	Particle* getMax(int num_particles);
+	float getMaxW(int num_particles);
 	int getMaxID(){ return id_max; }
 	int getVMax(){ return v_max; }
 	void setVMax(int val){ v_max = val; }
 	int getNumParticles(){ return m_num_particles; }
 	void printMax(){ m_particlelist[id_max].print(); }
 	
+	void resample(int num_particles, float noise_rot_max, float noise_trans_max, float noise_zoom_max);
 	void perturb(Particle noise_particle, int num_particles, Particle* p_ref=NULL, unsigned int distribution=GAUSS);
 	void activate(int id);
 	void deactivate(int id);
@@ -90,6 +98,8 @@ public:
 	void endCountV();
 	
 	void calcLikelihood(int num_particles, unsigned int num_avaraged_particles=1);
+	
+	float getVariance(int num_particles);
 	
 	void setAll(Particle p);
 

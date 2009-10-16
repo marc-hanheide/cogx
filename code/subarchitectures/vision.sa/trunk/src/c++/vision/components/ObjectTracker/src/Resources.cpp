@@ -25,18 +25,19 @@ Resources::Resources(){
 	m_image = 0;
 	m_screen = 0;
 	m_ip = 0;
-	m_particles = 0;
 	m_frustum = 0;
 	m_showlog = false;
+	m_tracker_id = 0;
 }
 
 Resources::~Resources(){
 	ReleaseCapture();
 	ReleaseScreen();
 	ReleaseImageProcessor();
-	ReleaseParticles();
 	ReleaseFrustum();
 	
+	
+	ReleaseParticles();
 	ReleaseModel();
 	ReleaseTexture();
 	ReleaseShader();
@@ -46,6 +47,23 @@ Resources::~Resources(){
 }
 
 // *** Initialisation ***
+IplImage* Resources::InitCapture(const char* file){
+	m_capture = cvCaptureFromFile(file);
+	if(!m_capture) {
+		printf( "[Resources::InitCapture] Error could not read %s\n", file );
+		return 0;
+	}
+	
+	float w = cvGetCaptureProperty( m_capture, CV_CAP_PROP_FRAME_WIDTH );
+	float h = cvGetCaptureProperty( m_capture, CV_CAP_PROP_FRAME_HEIGHT );
+	
+	if(m_showlog) printf("Camera settings: %.1f x %.1f\n", w, h);
+	
+	m_image = cvQueryFrame(m_capture);
+	cvConvertImage(m_image, m_image, CV_CVTIMG_FLIP | CV_CVTIMG_SWAP_RB);
+	//cvFlip(m_image, m_image, 1);
+	return m_image;
+}
 
 IplImage* Resources::InitCapture(float width, float height, int camID){
 	m_capture = cvCreateCameraCapture(camID);
@@ -88,7 +106,7 @@ SDL_Surface* Resources::InitScreen(int width, int height){
 	return m_screen;
 }
 
-ImageProcessor* Resources::InitImageProcessor(int width, int height, Camera* cam){
+ImageProcessor* Resources::InitImageProcessor(int width, int height){
 	if(width==0||height==0){
 		printf("[Resources::GetImageProcessor] Error ImageProcessor needs width and height for initialisation\n");
 		return 0;
@@ -96,10 +114,8 @@ ImageProcessor* Resources::InitImageProcessor(int width, int height, Camera* cam
 	
 	if(!m_ip)
 		m_ip = new(ImageProcessor);
-	else
-		printf("[Resources::GetImageProcessor] Warning re-initialising ImageProcessor\n");
 		
-	if( !(m_ip->init(width, height, cam)) ){
+	if( !(m_ip->init(width, height)) ){
 		printf("[Resources::GetImageProcessor] Error could not initialise ImageProcessor\n");
 		delete(m_ip);
 		m_ip = 0;
@@ -107,13 +123,6 @@ ImageProcessor* Resources::InitImageProcessor(int width, int height, Camera* cam
 	}
 
 	return m_ip;
-}
-
-Particles* Resources::InitParticles(int num, Particle p){
-	if(!m_particles)
-		m_particles = new Particles(num, p);
-	
-	return m_particles;
 }
 
 Frustum* Resources::InitFrustum(){
@@ -141,12 +150,6 @@ void Resources::ReleaseImageProcessor(){
 	m_ip = 0;
 }
 
-void Resources::ReleaseParticles(){
-	if(m_particles)
-		delete(m_particles);
-	m_particles = 0;
-}
-
 void Resources::ReleaseFrustum(){
 	if(m_frustum)
 		delete(m_frustum);
@@ -154,7 +157,6 @@ void Resources::ReleaseFrustum(){
 }
 
 // *** Get-functions ***
-
 IplImage* Resources::GetNewImage(){
 	
 	if(!m_capture){
@@ -162,6 +164,8 @@ IplImage* Resources::GetNewImage(){
 		return 0;
 	}
 	m_image = cvQueryFrame(m_capture);
+	if ( m_image == NULL ) return NULL;
+
 	cvConvertImage(m_image, m_image, CV_CVTIMG_SWAP_RB);
 	//cvFlip(m_image, m_image, 1);
 	return m_image;
@@ -190,14 +194,6 @@ ImageProcessor* Resources::GetImageProcessor(){
 	return m_ip;	
 }
 
-Particles* Resources::GetParticles(){
-	if(!m_particles){
-		printf("[Resources::GetImageProcessor] Error Particles not initialised\n" );
-		return 0;
-	}
-	return m_particles;
-}
-
 Frustum* Resources::GetFrustum(){
 	if(!m_frustum){
 		printf("[Resources::GetFrustum] Warning Frustum not initialised\n" );
@@ -208,6 +204,25 @@ Frustum* Resources::GetFrustum(){
 
 
 // *** Add-functions ***
+int Resources::AddParticles(int num, Particle p, const char* parname){
+	int parID = SearchParticlesName(parname);
+	if(parID != -1)
+		return parID;
+	
+	Particles* ps = new Particles(num, p);
+	
+	char* name = new char[FN_LEN];
+	strcpy(name, parname);
+	
+	m_particlesNameList.push_back(name);
+	m_particlesList.push_back(ps);
+	
+	parID = m_particlesList.size() -1;
+	
+	if(m_showlog) printf("Particles %i loaded: %s\n", parID, name);
+	
+	return parID;	
+}
 
 int Resources::AddModel(Model* model, const char* name){
 	// check if texture allready loaded before by comparing filename
@@ -393,6 +408,21 @@ int	Resources::AddCamera(const char* camname){
 
 
 // *** Release
+void Resources::ReleaseParticles(){
+	// release Particles
+	ParticlesList::iterator it_particles = m_particlesList.begin();
+	while(it_particles != m_particlesList.end()){
+		delete(*it_particles);
+		it_particles++;
+	}
+	// release Particlesnames
+	NameList::iterator it_name = m_particlesNameList.begin();
+	while(it_name != m_particlesNameList.end()){
+		delete(*it_name);
+		it_name++;
+	}
+}
+
 void Resources::ReleaseModel(){
 	// release Models
 	ModelList::iterator it_model = m_modelList.begin();
@@ -454,19 +484,22 @@ void Resources::ReleaseCamera(){
 }
 
 // *** Search-functions ***
+int Resources::SearchParticlesName(const char* name){
+	return SearchName(&m_particlesNameList, name);
+}
 
 int	Resources::SearchModelName(const char* filename){
-	SearchName(&m_modelNameList, filename);
+	return SearchName(&m_modelNameList, filename);
 }
 
 int	Resources::SearchTextureName(const char* filename){
-	SearchName(&m_textureNameList, filename);
+	return SearchName(&m_textureNameList, filename);
 }
 
 int	Resources::SearchShaderName(const char* filename){
-	SearchName(&m_shaderNameList, filename);
+	return SearchName(&m_shaderNameList, filename);
 }
 
 int	Resources::SearchCameraName(const char* name){
-	SearchName(&m_cameraNameList, name);
+	return SearchName(&m_cameraNameList, name);
 }

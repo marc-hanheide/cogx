@@ -3,12 +3,7 @@
 #define __MODEL_H__
 class Model;
 
-#include <stdlib.h>
-#include <stddef.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <vector>
-
+#include "headers.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "mathlib.h"

@@ -36,6 +36,18 @@ Quaternion Quaternion::getConjugate(){
 	return Quaternion(-x, -y, -z, w);
 }
 
+// Adding
+Quaternion Quaternion::operator+ (const Quaternion &q2){
+	Quaternion rq;
+	rq.x = x+q2.x;
+	rq.y = y+q2.y;
+	rq.z = z+q2.z;
+	rq.w = w+q2.w;
+	
+	return rq;
+}
+
+
 // Multiplying q1 with q2 applies the rotation q2 to q1
 Quaternion Quaternion::operator* (const Quaternion &rq){
 	// the constructor takes its arguments as (x, y, z, w)
@@ -44,6 +56,11 @@ Quaternion Quaternion::operator* (const Quaternion &rq){
 	                  w * rq.z + z * rq.w + x * rq.y - y * rq.x,
 	                  w * rq.w - x * rq.x - y * rq.y - z * rq.z);
 }
+
+Quaternion Quaternion::operator* (const float f){
+	return Quaternion(x*f, y*f, z*f, w*f);
+}
+
 
 // Multiplying a quaternion q with a vector v applies the q-rotation to v
 vec3 Quaternion::operator* (const vec3 &vec){

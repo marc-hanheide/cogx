@@ -50,7 +50,7 @@ void Lighting::getLightDirection(Texture* tex_image, Particle* pose, Model* mode
 	float* image = (float*)malloc( sizeof(float) * w * h );
 	
 	// collect necessary resources
-	Texture* tex_model = model->getOriginalTexture();
+	//Texture* tex_model = model->getOriginalTexture();
 	
 	// Evaluate modelview and projection matrix
 	camera->Activate();
@@ -76,7 +76,7 @@ void Lighting::getLightDirection(Texture* tex_image, Particle* pose, Model* mode
 	
 	tex_image->bind(1);
 	model->restoreTexture();
-	for(i=0; i<facelist.size(); i++){
+	for(i=0; i<(int)facelist.size(); i++){
 		glClear(GL_COLOR_BUFFER_BIT);
 		model->drawFace(i);
 		glReadPixels(0, 0, w, h, GL_RED, GL_FLOAT, image);
@@ -102,7 +102,7 @@ void Lighting::getLightDirection(Texture* tex_image, Particle* pose, Model* mode
 			
 	}
 	
-	for(i=0; i<vError.size(); i++){
+	for(i=0; i<(int)vError.size(); i++){
 		lightDir = lightDir + vError[i];
 	}
 	lightDir.normalize();
