@@ -753,7 +753,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
   if((it = _config.find("--globalPoints")) != _config.end())
   {
     istringstream str(it->second);
-    str >> useGlobalPoints;
+    str >> boolalpha >> useGlobalPoints;
   }
   println("use global points: %d", (int)useGlobalPoints);
 }
