@@ -17,9 +17,6 @@ public class BeliefModelMonitor extends ManagedComponent {
 
 	
 	
-	
-
-	
 	/**
 	 * Initialisation of the monitor
 	 * 

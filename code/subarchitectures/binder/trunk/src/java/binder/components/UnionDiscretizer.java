@@ -180,7 +180,7 @@ public class UnionDiscretizer extends ManagedComponent {
 		long initTime = System.currentTimeMillis();
 
 		UnionConfiguration discretizedConfig = new UnionConfiguration();
-
+ 
 		log("Number of alternative union configurations: "  + alterconfigs.alterconfigs.length);
 		
 		// Compute the best union configuration out of the possible ones
