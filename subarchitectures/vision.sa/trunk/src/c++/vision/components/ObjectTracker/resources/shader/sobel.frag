@@ -13,11 +13,14 @@ uniform mat3 mSobelY;
 // Threshold for removing noise
 uniform float fThreshold;
 
+const vec4 vNull = vec4(0.5,0.5,0.0,0.0);
+
 vec4 sobel(){
 	vec4 vTemp;
 	float fTemp;
 	float fGx, fGy;
 	vec2 vG;
+	float fGm;
 	
 	// convolute sobel kernel
 	for(int i=0; i<3; i++){
@@ -32,13 +35,17 @@ vec4 sobel(){
 	// normalized vector; range = [-1 ... 1]
 	vG = vec2(fGx,fGy)/(mSobelY[0][0]+mSobelY[0][1]+mSobelY[0][2]);
 	
-	// Threshold for removing background noise
-	if(length(vG) < fThreshold)
-        vG = 0.0;
+	// magnitude of edge
+	fGm = length(vG);
 	
-	// scale to range = [0 ... 1]
+	// Threshold for removing background noise
+	if(fGm < fThreshold)
+		return vNull;
+	
+	// scale gradient to range = [0 ... 1]
+	//vG = normalize(vG);
 	vG = vG * 0.5 + 0.5;  
-	return vec4(vG, 0.0, 0.0);
+	return vec4(vG, fGm, 0.0);
 }
 
 void main(){
