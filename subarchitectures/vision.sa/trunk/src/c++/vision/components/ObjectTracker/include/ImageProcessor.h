@@ -4,8 +4,7 @@
 
 class ImageProcessor;
 
-#include <stdio.h>
-#include <GL/gl.h>
+#include "headers.h"
 
 #include "Shader.h"
 #include "Texture.h"
@@ -15,7 +14,7 @@ class ImageProcessor;
 #define NONE 0          // No rectification
 #define BARREL 1        // Rectification using Barrel equation
 
-#define SOBEL_THRESHOLD 0.05       // high -> less noise & less edges
+#define SOBEL_THRESHOLD 0.04       // high -> less noise & less edges
 #define THINNING_THRESHOLD 0.0     // low -> thin lines
 #define SPREADING_THRESHOLD 0.01   // low -> wider lines
 #define DISTANCE_SCALING 0.75      // distance to edge slope; low -> steep slope
@@ -59,7 +58,7 @@ public:
     void render(Texture* tex);
     
     // Main functions
-    bool init(int w, int h, Camera* cam);
+    bool init(int w, int h);
 
 };
 

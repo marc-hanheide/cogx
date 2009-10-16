@@ -19,12 +19,13 @@ void TextureTracker::image_processing(unsigned char* image){
 	m_ip->spreading(m_tex_frame_ip[0], m_tex_frame_ip[1]);
 	m_ip->spreading(m_tex_frame_ip[1], m_tex_frame_ip[2]);
 	m_ip->spreading(m_tex_frame_ip[2], m_tex_frame_ip[3]);
+	
 }
 
 // Calculate motion function (noise) and perturb particles
 void TextureTracker::particle_motion(float pow_scale, Particle* p_ref, unsigned int distribution){
 	// Perturbing noise function for rotation (powR) and translation (powT)
-	float w = m_particles->getMax()->w;
+	float w = m_particles->getMax(params.number_of_particles)->w;
 	Particle noise_particle;
 	
 	// Standard deviation for gaussian noise
@@ -41,32 +42,31 @@ void TextureTracker::particle_motion(float pow_scale, Particle* p_ref, unsigned 
 }
 
 // Particle filtering
-void TextureTracker::particle_filtering(Particle* p_estimate){
+void TextureTracker::particle_filtering(Particle& p_result, int recursions){
+	// Calculate Zoom Direction and pass it to the particle filter
+	TM_Vector3 vCam = m_cam_perspective->GetPos();
+	TM_Vector3 vObj = TM_Vector3(p_result.tX, p_result.tY, p_result.tZ);
+	TM_Vector3 vCamObj = vObj - vCam;
+	vCamObj.normalize();
+	m_particles->setCamViewVector(vCamObj);
+	m_particles->setCamS( m_cam_perspective->GetS() );
+	m_particles->setCamU( m_cam_perspective->GetU() );
 	
 	m_shadeTextureCompare->bind();
 	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,0.0,1.0,0.0));
 	m_shadeTextureCompare->unbind();
-	m_tex_frame_ip[3]->bind(1);
-	m_model->setTexture(m_tex_model_ip[3]);
-	particle_motion(1.0, p_estimate, GAUSS);
-	particle_processing(params.number_of_particles*0.75, 1);
-	
-	m_shadeTextureCompare->bind();
-	m_shadeTextureCompare->setUniform("drawcolor", vec4(1.0,0.0,0.0,0.0));
-	m_shadeTextureCompare->unbind();
-	m_tex_frame_ip[2]->bind(1);
-	m_model->setTexture(m_tex_model_ip[2]);
-	particle_motion(0.5, NULL, GAUSS);
-	particle_processing(params.number_of_particles*0.125, 1);
-	
-	m_shadeTextureCompare->bind();
-	m_shadeTextureCompare->setUniform("drawcolor", vec4(0.0,1.0,0.0,0.0));
-	m_shadeTextureCompare->unbind();
-	m_tex_frame_ip[1]->bind(1);
+	m_tex_frame_ip[2]->bind(1);	
 	m_model->setTexture(m_tex_model_ip[1]);
-	particle_motion(0.1, NULL, GAUSS);
-	particle_processing(params.number_of_particles*0.125, 1);
+	float ns = 1.0;
 	
+	particle_processing(params.number_of_particles, 1);
+	
+	m_particles->resample(	params.number_of_particles,
+							params.noise_rot_max * ns,
+							params.noise_trans_max * ns,
+							params.noise_scale_max * ns);
+								
+	p_result = *m_particles->getMax(params.number_of_particles);
 }
 
 // Draw Model to screen, extract modelview matrix, perform image processing for model
@@ -155,10 +155,11 @@ void TextureTracker::particle_processing(int num_particles, unsigned int num_ava
 		
 		m_particles->deactivate(i);
 	}
+	m_shadeTextureCompare->unbind();
 	
 	// Calculate likelihood of particles
 	m_particles->calcLikelihood(num_particles, num_avaraged_particles);
-	m_shadeTextureCompare->unbind();
+	
 
 	m_opengl.RenderSettings(true, true);
 }
@@ -170,7 +171,6 @@ TextureTracker::TextureTracker(){
 	m_lock = false;
 	m_showparticles = false;
 	m_showmodel = true;
-	m_kalman_enabled = true;
 	m_zero_particles = false;
 	m_draw_edges = false;
 	m_tracker_initialized = false;
@@ -201,75 +201,91 @@ bool TextureTracker::initInternal()
 	return (m_tracker_initialized = true);
 }
 
-// Tracking function for texture tracking
-bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, unsigned byte each)
-							Model* model,				// tracking model (textured, vertexlist, facelist) 
+bool TextureTracker::track(	Model* model,				// tracking model (textured, vertexlist, facelist) 
 							Camera* camera,				// extrinsic camera (defining pose and projection)
-							Particle p_estimate,		// position estimate of model (R,t)
 							Particle& p_result)			// storage to write tracked position
 {
-	// Start time measurement
-	m_timer.Update();
-	
-	// Check if input is valid
-	isReady(image, model, camera, &p_estimate);	
-	
-	// Process image from camera (edge detection)
-	image_processing(m_image);
+	m_model = model;
+	m_cam_perspective = camera;
 	
 	// Process model (texture reprojection, edge detection)
 	model_processing();
 	
-	// Clear framebuffer and render image from camera
+	m_opengl.RenderSettings(true, true); 	// (color-enabled, depth-enabled)
 	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
-	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)
 	
-	
+	/*
+	// Clear framebuffer and render image from camera
+	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)	
 	if(m_draw_edges)
-		m_ip->render(m_tex_frame_ip[1]);
+		m_ip->render(m_tex_frame_ip[0]);
 	else
 		m_ip->render(m_tex_frame);
+	*/
 	
 	if(!m_lock){
-	
-		particle_filtering(&p_estimate);
-		
-		// Kalman filter
-		if(m_kalman_enabled)
-			kalman_filtering(m_particles->getMax());
-			
-		// Copy result to output
-		p_result = Particle(*m_particles->getMax());
-		
-		// adjust number of particles according to tracking speed
-		time_tracking = m_timer.Update();
-		params.number_of_particles += 10;
-		if(time_tracking > params.track_time && params.number_of_particles > 100)
-			params.number_of_particles += 1000 * (params.track_time - time_tracking);
-		else if(time_tracking < params.track_time)
-			params.number_of_particles += 1000 * (params.track_time - time_tracking);
-		if(params.number_of_particles > m_particles->getNumParticles())
-			params.number_of_particles = m_particles->getNumParticles();
-
+		particle_filtering( p_result, params.recursions);
 	}else{
-		time_tracking = m_timer.Update();
-		p_result = p_estimate;
+		time_tracking += m_timer.Update();
 	}
 	
 	// Copy result to output
 	if(m_zero_particles){
 		p_result = params.zP;
+		m_particles->setAll(params.zP);
 		m_zero_particles = false;
-	//}else if(m_particles->getMax()->w < 0.2){
-		//p_result = p_estimate;
 	}
 	
+	return true;
+}
+
+// Tracking function for texture tracking
+bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, unsigned byte each)
+							Model* model,				// tracking model (textured, vertexlist, facelist) 
+							Camera* camera,				// extrinsic camera (defining pose and projection)
+							Particle& p_result)			// storage to write tracked position
+{
+	m_timer.Update();
+	time_tracking = 0.0;
+	
+	// Check if input is valid
+	isReady(image, model, camera);	
+	
+	// Process image from camera (edge detection)
+	image_processing(image);
+	
+	// Process model (texture reprojection, edge detection)
+	model_processing();
+	
+	m_opengl.RenderSettings(true, true); 	// (color-enabled, depth-enabled)
+	m_opengl.ClearBuffers(true, true);		// clear frame buffers (color, depth)
+	
+	// Clear framebuffer and render image from camera
+	m_opengl.RenderSettings(true, false); 	// (color-enabled, depth-enabled)	
+	if(m_draw_edges)
+		m_ip->render(m_tex_frame_ip[0]);
+	else
+		m_ip->render(m_tex_frame);
+	
+	if(!m_lock){
+		particle_filtering( p_result, params.recursions);
+	}else{
+		time_tracking += m_timer.Update();
+	}
+	
+	// Copy result to output
+	if(m_zero_particles){
+		p_result = params.zP;
+		m_particles->setAll(params.zP);
+		m_zero_particles = false;
+	}
+	
+	time_tracking += m_timer.Update();
 	
 	
-	/*
-		m_opengl.RenderSettings(true, true); 	// (color-enabled, depth-enabled)
-		m_lighting.getLightDirection(m_tex_frame, m_particles->getMax(), m_model, m_cam_perspective);
-	*/	
+// 	m_opengl.RenderSettings(true, true); 	// (color-enabled, depth-enabled)
+// 	m_lighting.getLightDirection(m_tex_frame, m_particles->getMax(), m_model, m_cam_perspective);
+	
 	
 	return true;
 }
@@ -277,7 +293,6 @@ bool TextureTracker::track(	unsigned char* image,		// camera image (3 channel, u
 // grabs texture from camera image and attaches it to faces of model
 void TextureTracker::textureFromImage()
 {
-	Particle p_estimate = *m_particles->getMax();
 	Particle p_result, p_old, p_new;	
 	
 	m_model->setOriginalTexture(0);
@@ -285,10 +300,9 @@ void TextureTracker::textureFromImage()
 	m_model->enableTexture(false);
 	//params.noise_rot_max = params.noise_rot_max * 0.5;
 	//params.noise_trans_max = params.noise_trans_max * 0.5;
-	m_kalman_enabled=false;
 	
-	track(m_image, m_model, m_cam_perspective, p_estimate, p_result);
-	drawResult(&p_result);
+	track(m_image, m_model, m_cam_perspective, p_result);
+	drawResult(&p_result, m_model);
 	swap();
 	SDL_Delay(100);	
 	
@@ -300,13 +314,12 @@ void TextureTracker::textureFromImage()
 	m_model->enableTexture(true);
 	
 	//params.noise_rot_max = params.noise_rot_max * 2;
-	//params.noise_trans_max = params.noise_trans_max * 2;
-	m_kalman_enabled=true;	
+// 	//params.noise_trans_max = params.noise_trans_max * 2;
 }
 
 // Draw result of texture tracking (particle with maximum likelihood)
-void TextureTracker::drawResult(Particle* p){
-	bool texmodel = false;
+void TextureTracker::drawResult(Particle* p, Model* m){
+	bool texmodel = true;
 	
 	m_cam_perspective->Activate();
 	m_lighting.Activate();

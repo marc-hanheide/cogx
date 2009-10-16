@@ -3,7 +3,7 @@
 #ifndef LIGHTING_H
 #define LIGHTING_H
 
-#include <GL/gl.h>
+#include "headers.h"
 #include "Resources.h"
 #include "mathlib.h"
 

@@ -31,8 +31,12 @@ public:
 	
 	void normalise();
 	Quaternion getConjugate();
+	Quaternion operator+ (const Quaternion &q2);
 	Quaternion operator* (const Quaternion &rq);
+	Quaternion operator* (const float f);
+	
 	vec3 operator* (const vec3 &vec);
+	
 	
 	void fromAxis(const vec3 &v, float angle);
 	void fromEuler(float pitch, float yaw, float roll);

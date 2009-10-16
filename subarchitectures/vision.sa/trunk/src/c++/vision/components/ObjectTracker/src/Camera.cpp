@@ -63,10 +63,10 @@ void Camera::SetViewport(float w, float h)
 	m_height = h;
 }
 
-void Camera::SetZRange(float near, float far)
+void Camera::SetZRange(float _near, float _far)
 {
-	m_zNear = near;
-	m_zFar = far;
+	m_zNear = _near;
+	m_zFar = _far;
 }
 
 void Camera::Activate()
@@ -83,7 +83,7 @@ void Camera::Activate()
 	glDepthRange(m_zNear,m_zFar);
 	
 	// Extract frustum planes
-	g_Resources->GetFrustum()->ExtractFrustum();
+	//g_Resources->GetFrustum()->ExtractFrustum();
 }
 
 void Camera::Print(){
@@ -156,6 +156,7 @@ void Camera::fwh2intrinsic()
 	glGetFloatv(GL_PROJECTION_MATRIX, m);
 	m_intrinsic = mat4(m);		
 }
+
 
 //****************************************************************************
 // Translations

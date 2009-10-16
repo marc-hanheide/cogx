@@ -5,6 +5,12 @@ ImageProcessor::ImageProcessor(){
     m_shadeSobel = 0;
     m_shadeThinning = 0;
     m_shadeSpreading = 0;
+    
+    int id;
+    if((id = g_Resources->AddCamera("cam_ortho")) == -1)
+		exit(1);
+	m_cam_ortho = g_Resources->GetCamera(id);
+	
 }
 
 ImageProcessor::~ImageProcessor(){
@@ -19,7 +25,7 @@ bool ImageProcessor::initShader(){
     float w = (float)m_width;
     float h = (float)m_height;
     float hi,lo;
-    float sq2 = 1/sqrt(2);
+    float sq2 = 1.0f/sqrt(2.0f);
     
     // offsets of neighbouring pixels in texture coordinates
     GLfloat offX[9] = { -1.0/w, 0.0, 1.0/w,
@@ -148,6 +154,7 @@ bool ImageProcessor::dlRectification(){
             }
         } 
     glEnd();    
+	return true;
 }
 
 // Gets rectificated texture coordinates ix, iy for pixel at position i,j
@@ -268,11 +275,18 @@ void ImageProcessor::render(Texture* tex){
 }
 
 // Main initialisation function
-bool ImageProcessor::init(int w, int h, Camera* cam){
+bool ImageProcessor::init(int w, int h){
     
     m_width = w;
     m_height = h;
-    m_cam_ortho = cam;
+    
+    // Initialise camera
+    m_cam_ortho->Set(	0.0, 0.0, 1.0,
+						0.0, 0.0, 0.0,
+						0.0, 1.0, 0.0,
+						45, w, h,
+						0.1, 10.0,
+						GL_ORTHO);
     
     // Initialize shaders
     if(!initShader()){

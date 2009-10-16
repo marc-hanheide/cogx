@@ -10,10 +10,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "headers.h"
+
 class Camera;
-#include <stdio.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 #include "TM_Vector3.h"
 #include "Resources.h"
@@ -58,6 +57,7 @@ public:
 	void SetZRange(float near, float far);
 	void SetPerspective(){m_projection=GL_PERSPECTIVE;}
 	void SetOrtho(){m_projection=GL_ORTHO;}
+	void SetPos(float x, float y, float z){ m_vPos.x=x; m_vPos.y=y; m_vPos.z=z; }
 	
 	void Activate();
 	void Print();

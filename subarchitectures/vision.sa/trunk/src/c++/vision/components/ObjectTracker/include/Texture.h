@@ -2,10 +2,7 @@
 #ifndef __TEXTURE_H__
 #define __TEXTURE_H__
 
-#include <stdio.h>
-#include <opencv/highgui.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "headers.h"
 
 class Texture
 {

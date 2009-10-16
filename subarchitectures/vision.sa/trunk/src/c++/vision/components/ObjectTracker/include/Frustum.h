@@ -5,8 +5,7 @@
 #ifndef __TMFRUSTUM__
 #define __TMFRUSTUM__
 
-#include <math.h>
-#include <GL/gl.h>
+#include "headers.h"
 
 class Frustum{
     

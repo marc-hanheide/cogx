@@ -20,8 +20,7 @@
 #ifndef __SHADER_H__
 #define __SHADER_H__
 
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "headers.h"
 #include "mathlib.h"
 
 /**

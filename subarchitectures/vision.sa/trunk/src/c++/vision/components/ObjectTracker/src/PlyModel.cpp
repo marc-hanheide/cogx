@@ -40,15 +40,15 @@ bool PlyModel::propertyIsInList(PlyProperty* prop, PlyProperty* list, int n, int
 
 // read ply file
 bool PlyModel::read(const char* filename){
-    int i,j,k,l;
+    int i,j;
     int nelems;
     char **elist;
     int file_type;
     float version;
     char *elem_name;
-    PlyElement *elem_ptr;
+    //PlyElement *elem_ptr;
     PlyProperty **plist;
-    PlyProperty* prop_ptr;
+    //PlyProperty* prop_ptr;
     int num_elems;
     int nprops;
     int index;

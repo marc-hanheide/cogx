@@ -9,18 +9,18 @@ void Model::print(){
 	int i,j;
 	
 	printf("Model:\n");
-	for(i=0; i<m_vertexlist.size(); i++){
+	for(i=0; i<(int)m_vertexlist.size(); i++){
 		Vertex v = m_vertexlist[i];
 		printf("Vertex %i: %f %f %f, %f %f %f, %f %f\n", i, v.pos.x, v.pos.y, v.pos.z, v.normal.x, v.normal.y, v.normal.z, v.texCoord.x, v.texCoord.y);
 	}
-	for(i=0; i<m_facelist.size(); i++){
+	for(i=0; i<(int)m_facelist.size(); i++){
 		printf("Face %i: ",i);
-		for(j=0; j<m_facelist[i].v.size(); j++){
+		for(j=0; j<(int)m_facelist[i].v.size(); j++){
 			printf("%i ", m_facelist[i].v[j]);
 		}
 		printf("\n");
 	}
-	for(i=0; i<m_edgelist.size(); i++){
+	for(i=0; i<(int)m_edgelist.size(); i++){
 		printf("Edge %i: %i %i\n", i, m_edgelist[i].start, m_edgelist[i].end);
 	}
 }
@@ -30,7 +30,7 @@ bool Model::isRedundant(Edge* e1){
 	Edge* e2;
 	vec3 vs, ve;
 	
-	for(int i=0; i<m_edgelist.size(); i++){
+	for(int i=0; i<(int)m_edgelist.size(); i++){
 		e2 = &m_edgelist[i];
 		
 		// Get Vector between start-start and end-end points of edges
@@ -68,7 +68,7 @@ void Model::genEdgeDisplayList(){
 	edgeDisplayList = glGenLists(1);
     glNewList(edgeDisplayList, GL_COMPILE);
     	glBegin(GL_LINES);
-        for(int i=0; i<m_edgelist.size(); i++){
+        for(int i=0; i<(int)m_edgelist.size(); i++){
         	glNormal3f( m_vertexlist[m_edgelist[i].end].pos.x - m_vertexlist[m_edgelist[i].start].pos.x,
                         m_vertexlist[m_edgelist[i].end].pos.y - m_vertexlist[m_edgelist[i].start].pos.y,
                         m_vertexlist[m_edgelist[i].end].pos.z - m_vertexlist[m_edgelist[i].start].pos.z );
@@ -115,6 +115,7 @@ Model& Model::operator=(const Model& m2){
     
     m_tex_original = m2.m_tex_original;
     m_texture = m2.m_texture; 
+	return *this;
 }
 
 // Generate Edges from faces
@@ -122,8 +123,8 @@ void Model::computeEdges(){
     int i,j;
     
     // Extract edges from faces
-    for(i=0; i<m_facelist.size(); i++){
-        for(j=0; j<m_facelist[i].v.size(); j++){
+    for(i=0; i<(int)m_facelist.size(); i++){
+        for(j=0; j<(int)m_facelist[i].v.size(); j++){
         	Edge e;
             e.start = m_facelist[i].v[j];
             e.end = m_facelist[i].v[(j+1)%m_facelist[i].v.size()];
@@ -143,7 +144,7 @@ void Model::computeNormals(){
 	vec3 v0, v1, v2, e1, e2, n;
 	
 	// calculate vertex normals using the face normal
-	for(i=0; i<m_facelist.size(); i++){
+	for(i=0; i<(int)m_facelist.size(); i++){
 		f = &m_facelist[i];
 		
 		//if(f->v.size() == 3){ // this is because of some bug in Blender flipping normals of triangles
@@ -158,7 +159,7 @@ void Model::computeNormals(){
 			n.normalize();
 			f->normal = vec3(n);
 			
-			for(j=0; j<m_facelist[i].v.size(); j++){
+			for(j=0; j<(int)m_facelist[i].v.size(); j++){
 				m_vertexlist[f->v[j]].normal.x = n.x;
 				m_vertexlist[f->v[j]].normal.y = n.y;
 				m_vertexlist[f->v[j]].normal.z = n.z;
@@ -173,7 +174,7 @@ void Model::flipNormals(){
 	int i;
 	Face* f;
 	
-	for(i=0; i<m_facelist.size(); i++){
+	for(i=0; i<(int)m_facelist.size(); i++){
 		f = &m_facelist[i];
 		f->normal.x = -f->normal.x;
 		f->normal.y = -f->normal.y;
@@ -199,7 +200,7 @@ void Model::drawPass(Shader* shadeTexturing){
 	glEnable(GL_TEXTURE_2D);
 	
 	// Draw render passes (textured)
-	for(p=0; p<m_passlist.size(); p++){
+	for(p=0; p<(int)m_passlist.size(); p++){
 		
 		// bind texture of pass
 		m_passlist[p]->texture->bind();
@@ -208,7 +209,7 @@ void Model::drawPass(Shader* shadeTexturing){
 		shadeTexturing->setUniform("modelviewprojection", m_passlist[p]->modelviewprojection, GL_FALSE);
 		
 		// parse through faces of pass
-		for(i=0; i<m_passlist[p]->f.size(); i++){
+		for(i=0; i<(int)m_passlist[p]->f.size(); i++){
 			f = &m_facelist[m_passlist[p]->f[i]];
 			drawnFaces.push_back(m_passlist[p]->f[i]);
 			
@@ -219,7 +220,7 @@ void Model::drawPass(Shader* shadeTexturing){
 			else
 				printf("[Model::drawFaces] Warning unsupported face structure");
 				
-				for(j=0; j<f->v.size(); j++){
+				for(j=0; j<(int)f->v.size(); j++){
 					glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 					glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 					glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
@@ -251,7 +252,7 @@ void Model::drawPass(Shader* shadeTexturing){
 	shadeTexturing->unbind();
 	
 	// Draw remaining faces for contours
-	for(i=0; i<m_facelist.size(); i++){
+	for(i=0; i<(int)m_facelist.size(); i++){
 		
 		f = &m_facelist[i];
 		if(f->max_pixels == 0){
@@ -263,7 +264,7 @@ void Model::drawPass(Shader* shadeTexturing){
 			else
 				printf("[Model::drawFaces] Warning unsupported face structure");
 				
-			for(j=0; j<f->v.size(); j++){
+			for(j=0; j<(int)f->v.size(); j++){
 				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 				glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
@@ -305,17 +306,17 @@ void Model::drawFaces(){
 		m_texture->bind();
 	}	
 	
-	for(i=0; i<m_facelist.size(); i++){
+	for(i=0; i<(int)m_facelist.size(); i++){
 		f = &m_facelist[i];
 		
-		if(f->v.size() == 3)
+		if((int)f->v.size() == 3)
 			glBegin(GL_TRIANGLES);
-		else if(f->v.size() == 4)
+		else if((int)f->v.size() == 4)
 			glBegin(GL_QUADS);
 		else
 			printf("[Model::drawFaces] Warning unsupported face structure");
 			
-			for(j=0; j<f->v.size(); j++){
+			for(j=0; j<(int)f->v.size(); j++){
 				glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 				glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 				//glNormal3f(f->normal.x, f->normal.y, f->normal.z);
@@ -330,7 +331,7 @@ void Model::drawFaces(){
 			glColor3f(0.0, 0.0, 1.0);
 			glBegin(GL_LINES);
 				float normal_length = 0.01;
-				for(j=0; j<m_facelist[i].v.size(); j++){
+				for(j=0; j<(int)m_facelist[i].v.size(); j++){
 					glVertex3f( m_vertexlist[f->v[j]].pos.x,
 								m_vertexlist[f->v[j]].pos.y,
 								m_vertexlist[f->v[j]].pos.z );
@@ -361,14 +362,14 @@ void Model::drawFace(int i){
 	
 	
 	f = &m_facelist[i];
-	if(f->v.size() == 3)
+	if((int)f->v.size() == 3)
 		glBegin(GL_TRIANGLES);
 	else if(f->v.size() == 4)
 		glBegin(GL_QUADS);
 	else
 		printf("[Model::drawFaces] Warning unsupported face structure");
 	
-	for(j=0; j<f->v.size(); j++){
+	for(j=0; j<(int)f->v.size(); j++){
 		glTexCoord2f(m_vertexlist[f->v[j]].texCoord.x, m_vertexlist[f->v[j]].texCoord.y);
 		glNormal3f(m_vertexlist[f->v[j]].normal.x, m_vertexlist[f->v[j]].normal.y, m_vertexlist[f->v[j]].normal.z);
 		glVertex3f(m_vertexlist[f->v[j]].pos.x, m_vertexlist[f->v[j]].pos.y, m_vertexlist[f->v[j]].pos.z);
@@ -429,7 +430,7 @@ void Model::drawEdges(){
 			glCallList(edgeDisplayList);
 		else{
 			glBegin(GL_LINES);
-				for(int i=0; i<m_edgelist.size(); i++){
+				for(int i=0; i<(int)m_edgelist.size(); i++){
 					glNormal3f( m_vertexlist[m_edgelist[i].end].pos.x - m_vertexlist[m_edgelist[i].start].pos.x,
 								m_vertexlist[m_edgelist[i].end].pos.y - m_vertexlist[m_edgelist[i].start].pos.y,
 								m_vertexlist[m_edgelist[i].end].pos.z - m_vertexlist[m_edgelist[i].start].pos.z );
@@ -461,13 +462,13 @@ vector<int> Model::getFaceUpdateList(Particle* p_max){
 	// count pixels for each face and choose if its texture has to be updated
 	p_max->activate();
 		
-		for(i=0; i<m_facelist.size(); i++){
+		for(i=0; i<(int)m_facelist.size(); i++){
 			glBeginQueryARB(GL_SAMPLES_PASSED_ARB, queryPixels[i]);
 			drawFace(i);
 			glEndQueryARB(GL_SAMPLES_PASSED_ARB);			
 		}
 		
-		for(i=0; i<m_facelist.size(); i++){
+		for(i=0; i<(int)m_facelist.size(); i++){
 			glGetQueryObjectivARB(queryPixels[i], GL_QUERY_RESULT_ARB, &n);
 			//printf("pixels[%d]: %d %d\n", i, n, m_facelist[i].max_pixels);
 			if(m_facelist[i].max_pixels < n){
@@ -485,7 +486,7 @@ vector<int> Model::getFaceUpdateList(Particle* p_max){
 }
 
 void Model::textureFromImage(unsigned char* image, int width, int height, Particle* p_max){
-	int i,j,k, id;
+	int i,j,k;
 	vec4 texcoords_model;
 	vec4 vertex;
 	mat4 modelview, projection, modelviewprojection;
@@ -519,9 +520,9 @@ void Model::textureFromImage(unsigned char* image, int width, int height, Partic
 		Pass* p = m_passlist[i];					// current pass
 		bool destroy = true;
 		
-		for(j=0; j<p->f.size(); j++){				// for each face of pass
+		for(j=0; j<(int)p->f.size(); j++){				// for each face of pass
 			bool face_allready_in_use = false;
-			for(k=0; k<usedfaces.size(); k++){
+			for(k=0; k<(int)usedfaces.size(); k++){
 				if(p->f[j] == usedfaces[k])			// compare with each face in usedfaces
 					face_allready_in_use = true;
 			}

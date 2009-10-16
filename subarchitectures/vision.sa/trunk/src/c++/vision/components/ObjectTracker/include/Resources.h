@@ -2,12 +2,8 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
+#include "headers.h"
 #include "Singleton.h"
-#include <vector>
-#include <stdio.h>
-#include <opencv/highgui.h>
-#include <SDL/SDL.h>
-
 #include "ImageProcessor.h"
 #include "Model.h"
 #include "PlyModel.h"
@@ -23,11 +19,14 @@
 
 #define g_Resources Resources::GetInstance()
 
+
+typedef std::vector<Particles*> ParticlesList;
 typedef std::vector<Model*> ModelList;
 typedef std::vector<Texture*> TextureList;
 typedef std::vector<Shader*> ShaderList;
 typedef std::vector<Camera*> CameraList;
 typedef std::vector<char*> NameList;
+
 
 class Resources : public Singleton <Resources>
 {
@@ -35,21 +34,24 @@ friend class Singleton <Resources>;
 private:
 	Resources();
 	
+	int m_tracker_id;
+	
 	// Singleton Resources (one instance in programm)
 	CvCapture* 			m_capture;
 	IplImage* 			m_image;
 	SDL_Surface* 		m_screen;
 	ImageProcessor* 	m_ip;
-	Particles*			m_particles;
 	Frustum*			m_frustum;
 	
 	// Resources lists
+	ParticlesList	m_particlesList;
 	ModelList		m_modelList;
 	TextureList		m_textureList;
 	ShaderList		m_shaderList;
 	CameraList		m_cameraList;
 	
 	// Name lists
+	NameList		m_particlesNameList;
 	NameList 		m_modelNameList;
 	NameList		m_textureNameList;
 	NameList		m_shaderNameList;
@@ -70,17 +72,16 @@ public:
     }
     
     // Initialisation
+    IplImage*		InitCapture(const char* file);
     IplImage* 		InitCapture(float width=320.0, float height=240.0, int camID = CV_CAP_ANY);
     SDL_Surface* 	InitScreen(int width, int height);
-    ImageProcessor*	InitImageProcessor(int width, int height, Camera* cam);
-    Particles*		InitParticles(int num, Particle p);
+    ImageProcessor*	InitImageProcessor(int width, int height);
     Frustum*		InitFrustum();
     
     // Release-functions
 	void ReleaseScreen();
 	void ReleaseCapture();
 	void ReleaseImageProcessor();
-	void ReleaseParticles();
 	void ReleaseFrustum();
     
     // Set-function
@@ -94,18 +95,21 @@ public:
     IplImage* 		GetImage();
     SDL_Surface* 	GetScreen();
     ImageProcessor* GetImageProcessor();
-    Particles*		GetParticles();
     Frustum*		GetFrustum();
     
+    Particles*	GetParticles(int id){ return m_particlesList[id]; }
     Model*		GetModel(int id){ return m_modelList[id]; }
     Texture*	GetTexture(int id){ return m_textureList[id]; }
     Shader*		GetShader(int id){ return m_shaderList[id]; }
     Camera*		GetCamera(int id){ return m_cameraList[id]; }
     
+    int		GetNumTracker(){ return m_tracker_id; }
+    int		GetNumParticles(){ return m_particlesList.size(); }
     int		GetNumModels(){ return m_modelList.size(); }
     int		GetNumTextures(){ return m_textureList.size(); }
 
     // Add-functions
+    int		AddParticles(int num, Particle p, const char* name);
     int		AddModel(Model* model, const char* name);
 	int		AddPlyModel(const char* filename);
 	int		AddTexture(const char* filename, const char* texturename = NULL);
@@ -114,19 +118,21 @@ public:
 						const char* fragment_file = NULL,
 						const char* header = NULL);
 	int		AddCamera(const char* name);
+	void	AddTracker(){ m_tracker_id++; }
 	
-	
-	
+	// Release-functions
+	void ReleaseParticles();
 	void ReleaseModel();
 	void ReleaseTexture();
 	void ReleaseShader();
 	void ReleaseCamera();
 	
 	// Search-functions
-    int		SearchModelName(const char* filename);
-	int		SearchTextureName(const char* filename);
-	int		SearchShaderName(const char* filename);
-	int		SearchCameraName(const char* name);	
+	int	SearchParticlesName(const char* name);
+    int	SearchModelName(const char* filename);
+	int	SearchTextureName(const char* filename);
+	int	SearchShaderName(const char* filename);
+	int	SearchCameraName(const char* name);	
 };
 
 #endif
