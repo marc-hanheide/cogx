@@ -40,47 +40,49 @@ ObjectTracker::~ObjectTracker(){
 }
 
 void ObjectTracker::initTracker(const Video::Image &image){
+  
+  log("Initialising ...");
   // *** Initialisation of Tracker ***
   int id = 0;
+  
+  m_ImageWidth = image.width;
+  m_ImageHeight = image.height;
   
   // Set pathes for resource manager
   g_Resources->SetModelPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/model/");
   g_Resources->SetTexturePath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/texture/");
   g_Resources->SetShaderPath("subarchitectures/vision.sa/src/c++/vision/components/ObjectTracker/resources/shader/");
 
-  // Initialize SDL screen
-  g_Resources->InitScreen(image.width, image.height);
- 
-  // Initialize tracking (parameters for edge-based tracking)
-  if(trackTexture)
-  	m_tracker = new TextureTracker();
-  else
-		m_tracker = new EdgeTracker();
-  if(!m_tracker->init(	image.width, image.height,				// image size in pixels
-												3000,															// maximum number of particles (=storage size of particle list)
-												20.0*PIOVER180,										// standard deviation of rotational noise in degree
-												0.03,															// standard deviation of translational noise in meter
-												40.0,															// edge matching tolerance in degree
-												0.05))														// goal tracking time in seconds
-	{														
-		log("initialisation of tracker failed!");
-		running = false;
-  }
+  // initialize SDL screen
+  g_Resources->InitScreen(m_ImageWidth, m_ImageHeight);
   
-  // *** Setting up camera ***
+  // add Tracker
+  for(int i=0; i<m_maxModels; i++){
+		Tracker* tracker = new EdgeTracker();
+		if(!tracker->init(m_ImageWidth, m_ImageHeight,	// image size in pixels
+									200,															// number of particles for each recursion (lower if tracker consumes too much power)
+									4,																// recursions of particle filter (lower if tracker consumes too much power)
+									float(30.0 * PIOVER180),					// standard deviation of rotational noise in degree
+									0.05f,														// standard deviation of translational noise in meter
+									30.0f,														// edge matching tolerance in degree
+									0.05f,														// goal tracking time in seconds (not implemented yet)
+									Particle(0.0)))									// initial pose (where to reset when pressing 'z')
+		{														
+			log("initialisation of tracker failed!");
+			running = false;
+		}
+		m_tracker_list.push_back(tracker);
+	}
+ 
+  // initialize camera
   if((id = g_Resources->AddCamera("cam_extrinsic")) == -1)
   	running = false;
   m_camera = g_Resources->GetCamera(id);
-  
+   
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
   
-  // link camera with tracker
-	m_tracker->setCamPerspective(m_camera);
-	m_tracker->lock(false);
-	m_tracker->setBFC(bfc);
-	
-  log("initialisation successfull!");
+  log("... initialisation successfull!");
 }
 
 
@@ -90,19 +92,15 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	// *** Tracking Loop ***
 	Model* model;
 	VisualObjectPtr obj;
-	float fTimeImage;
-	float fTimeTracker;
 	double dTimeStamp;
+	fTimeTracker=0.0;
 	int i;
 	
 	
 	// * Tracking *
 	m_timer.Update();
-	//dTimeStamp = m_timer.GetApplicationTime();
+	dTimeStamp = m_timer.GetApplicationTime();
 
-//println("B");
-	fTimeImage = m_timer.Update();
-//println("BB w h %d %d", image.width, image.height);
 	if(testmode){
 		m_camera->Set(	0.2, 0.2, 0.2,											// Position of camera relative to Object
 										0.0, 0.0, 0.0,											// Point where camera looks at (world origin)
@@ -112,57 +110,63 @@ void ObjectTracker::runTracker(const Video::Image &image){
 										GL_PERSPECTIVE);										// Type of projection (GL_ORTHO, GL_PERSPECTIVE)
 	}
 	
-//m_camera->Print();
-//println("C");
-	m_tracker->drawImage(NULL);
-//println("D");
+	m_tracker_list[0]->image_processing((unsigned char*)(&image.data[0]));
+	m_tracker_list[0]->drawImage(NULL);
 	
 	// Track all models
-	for(i=0; i<m_modelID_list.size() && i<m_maxModels; i++){
-			IDList* ids = &m_modelID_list[i];
-			model = g_Resources->GetModel(ids->resources_ID);
-			obj = getMemoryEntry<VisualObject>(ids->cast_AD);
-				
+	for(i=0; i<(int)m_modelID_list.size() && i<m_maxModels; i++){
+			model = g_Resources->GetModel(m_modelID_list[i].resources_ID);
+			obj = getMemoryEntry<VisualObject>(m_modelID_list[i].cast_AD);
+			
 			// conversion from CogX.vision coordinates to ObjectTracker coordinates
-			convertPose2Particle(obj->pose, m_modelID_list[i].trackpose);
-			m_modelID_list[i].trackpose.w = obj->detectionConfidence;
-
+			// *** not needed any more -> to change tracking pose use:
+			//		 tracker->setZeroPose() and tracker->zeroPose()
+			//convertPose2Particle(obj->pose, m_modelID_list[i].trackpose);
+			//m_modelID_list[i].trackpose.w = obj->detectionConfidence;
+						
 			// Track model
-			m_tracker->track((unsigned char*)(&image.data[0]), model, m_camera, ids->trackpose, ids->trackpose);
-			m_tracker->drawResult(&ids->trackpose);
-			m_tracker->drawTest();
-	
-			// Query keyboard input		
-			//running = inputsControl(m_tracker); HACK
-				
+			m_tracker_list[i]->track(	model,
+																m_camera,
+																m_modelID_list[i].trackpose);
+			
+			
 			// conversion from ObjectTracker coordinates to ObjectTracker CogX.vision coordinates
-			convertParticle2Pose(ids->trackpose, obj->pose);
+			convertParticle2Pose(m_modelID_list[i].trackpose, obj->pose);
 		
 			// Send new data to working memory
-			obj->detectionConfidence = ids->trackpose.w;
+			obj->detectionConfidence = m_modelID_list[i].trackpose.w;
 			obj->time = convertTime(dTimeStamp);
-			//log("WM_id: %s", m_modelID_list[i].cast_AD.id.c_str());
-			overwriteWorkingMemory(ids->cast_AD.id, obj);
+			overwriteWorkingMemory(m_modelID_list[i].cast_AD.id, obj);
 	}
 	
-//println("Y");
-	m_tracker->drawCoordinates();
-	m_tracker->swap();
+	for(int id=0; id<i; id++){
+		m_tracker_list[id]->drawResult(&m_modelID_list[id].trackpose, g_Resources->GetModel(m_modelID_list[id].resources_ID));
+	}
 	
+	//m_tracker->drawTest();
+	m_tracker_list[0]->drawCoordinates();
+	m_tracker_list[0]->swap();
 	
 	fTimeTracker = m_timer.Update();
-//println("Z");
 }
 
 
 // *** Working Memory Listeners ***
 
 void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
+	log("receiving VisualObject");
+	
 	VisualObjectPtr obj = getMemoryEntry<VisualObject>(_wmc.address);
+	
+	// Test if number of max. trackable models reached
+	if((int)m_modelID_list.size()>=m_maxModels){
+		log("  number of maximum trackable models reached (%d)", m_maxModels);
+		return;
+	}
 	
 	// Test if model is valid
 	if(!obj->model || obj->model->vertices.size()<=0){
-		log("receive VisualObject: no valid model received, adding nothing");
+		log("  no valid model received, adding nothing");
 		return;
 	}
 	
@@ -170,7 +174,7 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	Model* model = new Model();
 	if(!convertGeometryModel(obj->model, model)){
 		delete(model);
-		log("receive VisualObject: can not convert VisualObject to tracker model");
+		log("  can not convert VisualObject to tracker model");
 		return;
 	}
 	
@@ -182,16 +186,20 @@ void ObjectTracker::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc){
 	// converte pose of object to tracking pose (=particle)
 	convertPose2Particle(obj->pose, ids.trackpose);
 
-	// set zero pose of tracker to this trackpose
-	m_tracker->setZeroPose(ids.trackpose);
+	// set detection pose to this trackpose
+	ids.detectpose = ids.trackpose;
+	
+	// set zero pose of tracker
+	m_tracker_list[m_modelID_list.size()]->setZeroPose(ids.detectpose);
+	m_tracker_list[m_modelID_list.size()]->zeroParticles();
 	
 	// add IDs and visual object to lists
 	m_modelID_list.push_back(ids);
 	
-	
+	// Standard outputs
 	log("received VisualObject: '%s'", obj->label.c_str());
-
-	if(m_modelID_list.size()>m_maxModels){
+	
+	if((int)m_modelID_list.size()>m_maxModels){
 		log("warning: maximum trackable models set to %d", m_maxModels);
 	}
 }
@@ -209,10 +217,6 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 					log("start tracking: warning no model to track in memory");
 				else{
 					log("start tracking: ok");
-					//vector<int> camIds;
-					//camIds.push_back(camId);
-					// start receiving images pushed by the video server
-					//videoServer->startReceiveImages(getComponentID().c_str(), camIds, 0, 0);
 				}
 				track = true;
 			}
@@ -220,7 +224,6 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 		case VisionData::STOP:
 			if(track){
 				log("stop tracking: ok");
-				//videoServer->stopReceiveImages(getComponentID().c_str());
 				track = false;
 			}else{
 				log("stop tracking: I'm not tracking");
@@ -238,9 +241,14 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 
 
 // *** base functions *** (configure, start, runcomponent)
-
 void ObjectTracker::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
+  
+  log("**    ObjectTracker by Thomas Moerwald    **");
+  log("**       moerwald@acin.tuwien.ac.at       **");
+  log("**                                        **");
+  log("** please lookup the README file in the   **");
+  log("** component directory for usage          **");
  
   if((it = _config.find("--videoname")) != _config.end())
   {
@@ -253,14 +261,23 @@ void ObjectTracker::configure(const map<string,string> & _config){
     istr >> camId;
   }
   
-	if((it = _config.find("--testmode")) != _config.end())
+	if((it = _config.find("--testmode")) != _config.end()){
 		testmode = true;
+		log("test mode enabled (only for ObjectTrackerTest component)");
+	}
 	
-	if((it = _config.find("--BFC_disabled")) != _config.end())
+	if((it = _config.find("--BFC_disabled")) != _config.end()){
 		bfc = false;
+		if(bfc)
+			log("Backface culling enabled: suitable for objects with closed surface (i.e. a cube)");
+		else
+			log("Backface culling disabled: suitable for non closed surfaces (i.e. a polyflap)");
+	}
 
-	if((it = _config.find("--trackTexture")) != _config.end())
+	if((it = _config.find("--trackTexture")) != _config.end()){
 		trackTexture = true;
+		log("Texture tracking enabled!");
+	}
 
 	if((it = _config.find("--maxModels")) != _config.end())
 	{
@@ -269,13 +286,15 @@ void ObjectTracker::configure(const map<string,string> & _config){
   }else{
 		m_maxModels = 3;
 	}
+	
+	log("Maximal number of trackable models: %d", m_maxModels);
+	
 		
-  /*
-  if((it = _config.find("--log")) != _config.end())
-  	g_Resources->ShowLog(true);
-  else
+ // if((it = _config.find("--log")) != _config.end())
+ // 	g_Resources->ShowLog(true);
+ // else
   	g_Resources->ShowLog(false);
-  */
+  	
 }
 
 void ObjectTracker::start(){
@@ -297,7 +316,10 @@ void ObjectTracker::start(){
 
 void ObjectTracker::destroy(){
   // Release Tracker
-  delete(m_tracker);
+  for(int id=0; id<m_maxModels; id++){
+  	delete(m_tracker_list[id]);
+  }
+  delete(g_Resources);
 }
 
 void ObjectTracker::receiveImages(const std::vector<Video::Image>& images)
@@ -319,8 +341,8 @@ void ObjectTracker::runComponent(){
     if(track){
       // HACK: actually should use receiveImages(), but that is still buggy
       videoServer->getImage(camId, m_image);
-      if(m_modelID_list.size() <= 0){
-				sleepComponent(20);
+      if(	m_modelID_list.size() <= 0){
+				sleepComponent(50);
 			}else{
       	runTracker(m_image);
       }
@@ -328,8 +350,9 @@ void ObjectTracker::runComponent(){
     else if(!track){
 			// * Idle *
 			sleepComponent(1000);
-			running = inputsControl(m_tracker);	// ask for inputs (e.g. quit command)
 		}
+		// Query keyboard input		
+		running = inputsControl(m_tracker_list, fTimeTracker);
   }
   
   log("stop");

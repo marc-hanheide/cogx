@@ -30,7 +30,9 @@ private:
   Camera* m_camera;
   Timer m_timer;
   Video::Image m_image;
-  //Particle m_trackpose;
+  int m_ImageWidth;
+  int m_ImageHeight;
+  float fTimeTracker;
   
   /**
    * Which camera to get images from
@@ -54,10 +56,12 @@ private:
   struct IDList{
   	int resources_ID;
   	cdl::WorkingMemoryAddress cast_AD;
-  	Particle trackpose;
+  	Particle trackpose, detectpose;
   };
   
   std::vector<IDList> m_modelID_list;
+  std::vector<Tracker*> m_tracker_list;
+  
   
   void initTracker(const Video::Image &image);
   void runTracker(const Video::Image &image);

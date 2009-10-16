@@ -48,7 +48,7 @@ bool convertGeometryModel(VisionData::GeometryModelPtr geom, Model* model){
 	model->computeEdges();
 	
 	/*
-	for(i=0; i<model->m_edgelist.size(); i++){
+	for(i=0; i<(int)model->m_edgelist.size(); i++){
 		printf(	"Edge: %i %i\n",
 						model->m_edgelist[i].start,
 						model->m_edgelist[i].end);
@@ -188,12 +188,13 @@ void loadCameraParameters(Camera* camera, Video::CameraParameters camPars, float
 	camera->SetViewport(camPars.width,camPars.height);
 	camera->SetZRange(zNear, zFar);
 	camera->SetIntrinsic(intrinsic);
-	camera->SetExtrinsic(extrinsic);
+	camera->SetExtrinsic(extrinsic);  
 }
 
 // SDL - Keyboard and Mouse input control
-bool inputsControl(Tracker* tracker){
- 
+bool inputsControl(std::vector<Tracker*> tracker_list, float fTimeTracker){
+ 	int i=0;
+ 	
 	SDL_Event event;
 	while(SDL_PollEvent(&event)){
 		switch(event.type){
@@ -203,28 +204,33 @@ bool inputsControl(Tracker* tracker){
 					return false;
 					break;
 				case SDLK_e:
-					tracker->showEdgesImage( !tracker->getEdgesImage() );
-					break;
-				case SDLK_k:
-					tracker->enableKalman( !tracker->getKalmanEnabled() );
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->showEdgesImage( !tracker_list[i]->getEdgesImage() );
 					break;
 				case SDLK_l:
-					tracker->lock( !tracker->getLock() );
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->lock( !tracker_list[i]->getLock() );
 					break;
 				case SDLK_m:
-					tracker->showEdgesModel( !tracker->getEdgesModel() );
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->showEdgesModel( !tracker_list[i]->getEdgesModel() );
 					break;
 				case SDLK_p:
-					tracker->showParticles( !tracker->getParticlesVisible() );
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->showParticles( !tracker_list[i]->getParticlesVisible() );
 					break;
 				case SDLK_s:
-					tracker->showStatistics();
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->showStatistics();
+					printf("\nTotal tracking time: %.0f ms\n", fTimeTracker*1000);
 					break;
 				case SDLK_t:
-					tracker->textureFromImage();
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->textureFromImage();
 					break;			
 				case SDLK_z:
-					tracker->zeroParticles();
+					for(i=0; i<(int)tracker_list.size(); i++)
+						tracker_list[i]->zeroParticles();
 					break;
                 default:
 					break;
