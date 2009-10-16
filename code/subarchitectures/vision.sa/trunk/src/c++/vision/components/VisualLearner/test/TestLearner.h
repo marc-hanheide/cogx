@@ -12,7 +12,7 @@
 class CTestRecognizer: public cast::ManagedComponent
 {
 private:
-   int testmode;
+   std::string testmode;
    int nRequests;
 
    // Proof of concept
@@ -36,11 +36,13 @@ protected:
    void onDeleteRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
    void onChangeRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
 
-   // not really used
+   // not really used, just for logging
    void onAddProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onAddAttrObject(const cast::cdl::WorkingMemoryChange & _wmc);
 
    // Some helpers for testing
    void _test_addRecognitionTask();
+   VisionData::ProtoObjectPtr loadFakeProtoObject();
 };
 
 //class CommandListener: public cast::WorkingMemoryChangeReceiver 

@@ -14,4 +14,4 @@ CPP TM AlwaysPositiveTaskManager
 # CPP MG recognizer ObjectRecognizer --videohost localhost --videoname video --log --testmode 2 --models "SwGreenTea ShelcoreCube CvetMetaTea" --modeldir xdata/models/800 --matcher-cuda
 
 CPP MG learner VisualLearner --log #--debug
-CPP MG tester  TestVisualLearner --log 
+CPP MG tester  TestVisualLearner --testmode "standalone" --log 

@@ -32,6 +32,6 @@ function [ansYes, ansPy, answ] = cogxVisualLearner_recognise(X, B)
    ansYes = lf2sfa(ansQl, ANSyes);
    ansPy = lf2sfa(ansQl, ANSpy);
    % disp(['Recognised: ',idx2name(ansYes,avAcronyms)]);
-   % showRec(ansYes,ansPy,answ,f);
+   showRec(ansYes,ansPy,answ,f);
    disp(['MATLAB: cogxVisualLearner_recognise DONE']);
 end

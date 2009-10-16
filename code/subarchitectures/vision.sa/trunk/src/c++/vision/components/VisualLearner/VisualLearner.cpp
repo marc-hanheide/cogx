@@ -45,7 +45,7 @@ void VisualLearner::stop()
 
 void VisualLearner::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
-   debug("::onNewRecognitionTask");
+   debug("::onAddRecognitionTask");
    string type(_wmc.type);
 
    log(type + " added");

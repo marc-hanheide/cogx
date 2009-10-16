@@ -19,7 +19,9 @@ global SaveImgs ImgNo Dirs Data
 SaveImgs=0;
 ImgNo=0;
 Dirs.images='./imgs/';
-Dirs.cogLearn='/home/user/localsvn/CosyDevVision/trunk/subarchitectures/vision/src/matlab/';
+% Dirs.cogLearn='/home/user/localsvn/CosyDevVision/trunk/subarchitectures/vision/src/matlab/';
+Dirs.cogLearn='./subarchitectures/vision.sa/src/matlab';
+Dirs.models = './subarchitectures/vision.sa/src/matlab';
 
 global ASVon ASVidx
 ASVon=0;
@@ -34,6 +36,7 @@ Data.imgName='img';
 Data.mskName='msk';
 Data.numDigit=3;
 Data.cgtName='Cgt.mat';
+Data.StartupWithModel='';
 
 global Params
 Params.HEG=.1;
@@ -43,7 +46,7 @@ Params.FV=3;
 
 
 %Reload global variables from CONFIG FILE
-confFile='./config/cogLearn.config';
+confFile='./subarchitectures/vision.sa/config/test-vislearner/cogLearn.config';
 loadConfig(confFile);
 
 %Initialize process
@@ -55,6 +58,10 @@ loadConfig(confFile);
 if flag==1
    set(LRguiL,'Visible','On');
    set(LRguiR,'Visible','On');
+end;
+
+if length(Data.StartupWithModel) > 0
+   LRloadAVmodels(Data.StartupWithModel);
 end;
 
 disp('CLF Start');
