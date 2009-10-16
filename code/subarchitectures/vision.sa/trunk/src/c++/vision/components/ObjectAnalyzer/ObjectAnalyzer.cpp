@@ -75,7 +75,7 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto)
 {
    log("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-   ptask->protoObjectId = protoId;
+   ptask->protoObjectId = pproto->ice_id(); // TODO: Check if ice_id is the right ID.
 
    string reqId(newDataID());
    addToWorkingMemory(reqId, ptask);
@@ -83,11 +83,11 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto)
 
 void ObjectAnalyzer::onChangeRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisualLearnerRecognitionTaskPtr ptask = getMemoryEntry<VisualLearnerRecognitionTaskPtr>(_wmc.addr);
+  VisualLearnerRecognitionTaskPtr ptask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
   AttrObjectPtr pAttrObject = new AttrObject();
-  pAttrObject->protoObjectId = ptask->protoObjectId;
+  pAttrObject->protoObjectID = ptask->protoObjectId;
   vector<string>::const_iterator pstr;
   for( pstr = ptask->colorLabel.begin(); pstr != ptask->colorLabel.end(); pstr++) {
     pAttrObject->colorLabel.push_back(*pstr);
@@ -138,7 +138,7 @@ void ObjectAnalyzer::runComponent()
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
-			log("ProtoObject ID: %s was removed before it could be processed", data.addr.id);
+			log("ProtoObject ID: %s was removed before it could be processed", data.addr.id.c_str());
 		  }
 		}
 

@@ -83,7 +83,7 @@ class ObjectAnalyzer : public ManagedComponent
 	/**
 	 * Recognize object attrubutes using VisualLearner
 	 */
-	void start_VL_RecognitionTask(const ProtoObjectPtr& pproto);
+	void start_VL_RecognitionTask(const VisionData::ProtoObjectPtr& pproto);
 	void onChangeRecognitionTask(const cdl::WorkingMemoryChange & _wmc);
 
   protected:
