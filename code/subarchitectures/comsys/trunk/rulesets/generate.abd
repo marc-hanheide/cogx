@@ -8,14 +8,14 @@ generate : intention : greeting(h, r) <-
 
 % @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
 % what do i have here
-generate : intention : new_object_visible(Entity) <-
-	dummy_nom1(Nom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
-	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	i : feat_Relation(Nom, accept) / 1.0,
-	i : feat_AcknoModality(Nom, vision) / 1.0,
-	event : produce(r, Nom) / 1.0.
+%generate : intention : new_object_visible(Entity) <-
+%	dummy_nom1(Nom),
+%	i : sort(Nom, dvp) / 1.0,
+%	i : prop(Nom, 'c-goal') / 1.0,
+%	i : feat_SpeechAct(Nom, assertion) / 1.0,
+%	i : feat_Relation(Nom, accept) / 1.0,
+%	i : feat_AcknoModality(Nom, vision) / 1.0,
+%	event : produce(r, Nom) / 1.0.
 
 % no I do not know what this is
 generate : intention : ask_yn(h, Object, Prop, PropValue) <-
@@ -28,17 +28,51 @@ generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	i : feat_AnswerType(Nom, AnswerType) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-%intention : ask_property(h, Object, Prop) <-
-	%query_belief(Object, Prop, yes(PropValue), AnswerType),
+generate : it(Nom) <-
+	i : sort(Nom, entity) / 1.0,
+	i : feat_Salient(Nom, true) / 1.0.
 
-generate : intention : grounding(Modality, BeliefId, GrResult) <-
+% what Prop is the Object
+generate : intention : ask_property(h, Object, Prop) <-
+	dummy_nom1(Nom),
+	i : feat_CannedText(Nom, 'You_asked_me_about_a_property') / 1.0,
+%	query_belief(Object, Prop, yes(PropValue), AnswerType).
+	event : produce(r, Nom) / 1.0.
+
+utt_head(Nom) <-
+	dummy_nom1(Nom),
+	i : sort(Nom, dvp) / 1.0,
+	i : prop(Nom, 'c-goal') / 1.0.
+
+% "ok", "i see" etc
+%generate : intention : grounding(Modality, assertionVerified) <-
+%	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, assertion) / 1.0,
+%	grounding_result_to_relation(assertionVerified, Relation),
+%	i : feat_Relation(Nom, Relation) / 1.0,
+%	i : feat_Modality(Nom, Modality) / 1.0,
+%	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(vision, assertionVerified) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Yes_I_can_see_that') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(discourse, assertionVerified) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(discourse, assertionFalsified) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Too_bad') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(vision, assertionFalsified) <-
 	dummy_nom1(Nom),
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
-	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	grounding_result_to_relation(GrResult, Relation),
-	i : feat_Relation(Nom, Relation) / 1.0,
-	i : feat_Modality(Nom, Modality) / 1.0,
+	i : feat_CannedText(Nom, 'I_do_not_see_that') / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 grounding_result_to_relation(assertionVerified, accept).
@@ -71,6 +105,10 @@ query_belief0(Object, objecttype, Value, Polarity) <-
 	k(now, private(r)) : objecttype(Object, FeatValue),
 	equality_to_polarity(Value, FeatValue, Polarity).
 
+query_belief0(Object, color, Value, Polarity) <-
+	k(now, private(r)) : color(Object, FeatValue),
+	equality_to_polarity(Value, FeatValue, Polarity).
+
 equality_to_polarity(X, Y, positive) <-
 	X = Y.
 
@@ -91,11 +129,7 @@ generate : intention : assert_prop(h, Object, Property) <-
 	dummy_nom2(ContentNom),
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
-	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	%i : feat_Relation(Nom, accept) / 1.0,
-	i : rel_Content(Nom, ContentNom) / 1.0,
-		i : sort(ContentNom, marker) / 1.0,
-		i : prop(ContentNom, aha) / 1.0,
+	i : feat_Relation(Nom, filler) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 %what color does the box have
@@ -151,10 +185,10 @@ generate : intention : not_understood(Ag) <-
 	dummy_nom1(Nom),
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0,
-	%i : feat_Canned(Nom, 'Sorry_I_do_not_understand') / 1.0,
-	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	i : feat_Relation(Nom, reject) / 1.0,
-	i : feat_AcknoModality(Nom, action) / 1.0,
+	i : feat_CannedText(Nom, 'Sorry_I_did_not_understand') / 1.0,
+	%i : feat_SpeechAct(Nom, assertion) / 1.0,
+	%i : feat_Relation(Nom, reject) / 1.0,
+	%i : feat_AcknoModality(Nom, action) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 % NOT THE FIRST is the box red or orange?” / “what color does the box have

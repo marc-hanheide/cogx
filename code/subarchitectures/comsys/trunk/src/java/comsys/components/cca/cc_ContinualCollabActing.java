@@ -19,22 +19,24 @@ import comsys.datastructs.lf.LogicalForm;
 import cast.architecture.*;
 import cast.AlreadyExistsOnWMException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.*;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 import Abducer.*;
+import comsys.processing.cca.BeliefUtils;
 import comsys.processing.cca.ContextUpdate;
 import comsys.processing.cca.ContinualCollaborativeActivity;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.cca.AbducerUtils;
 import comsys.processing.cca.ProofStack;
-import comsys.processing.cca.ProofUtils;
 import comsys.processing.cca.PrettyPrinting;
 import comsys.processing.cca.Counter;
 import comsys.processing.cca.abduction.BeliefModelSynchronization;
 import comsys.processing.cca.abduction.ModalityFactory;
 import comsys.processing.cca.abduction.PredicateFactory;
+import comsys.processing.cca.abduction.ProofUtils;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 
 import beliefmodels.adl.*;
@@ -283,8 +285,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 	                            		cu = understandClarifRequest((ClarificationRequest) crWM.getData());
 	                            	}
 	                            }
-	                            updateContext(cu);
-	                            actPublicly(selectAction(cu));
+	                            actPublicly(selectAction(updateContext(cu)));
                         	}
                         	else if (taskType.equals(ComsysGoals.CCA_VERIFICATION_TASK)) {
                         		ContextUpdate cu = null;
@@ -292,8 +293,12 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
                             	if (gbWM != null) {
                             		cu = processGroundedBelief((GroundedBelief) gbWM.getData());
                             	}
-                            	updateContext(cu);
-                            	actPublicly(selectAction(cu));
+                            	if (cu != null) {
+                            		actPublicly(selectAction(updateContext(cu)));
+                            	}
+                            	else {
+                            		log("context update is null in GroundedBelief handle");
+                            	}
                         	}
                             else {
                                 log("Unknown task type to process in Comsys:continualCollabActing component");
@@ -359,27 +364,40 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			return new ContextUpdate();
 		}
     }
-    
+
     private ContextUpdate processGroundedBelief(GroundedBelief gb) {
-    	ContextUpdate cu = new ContextUpdate();
     	//cu.proof = new MarkedQuery[] { };
-    	cu.intention = PredicateFactory.predicate("grounding", new Term[] {
-    			PredicateFactory.term(gb.grounding.modality), // source modality
-    			PredicateFactory.term(gb.id), // belief id
-    			PredicateFactory.term(gb.grounding.gstatus.toString())  // grounding status
-    		});
-    	return cu;
+    	if (ccaEngine.stack.beliefPresent(gb.id)) {
+        	ContextUpdate cu = new ContextUpdate();
+    		cu.intention = PredicateFactory.predicate("grounding", new Term[] {
+	    			PredicateFactory.term(gb.grounding.modality), // source modality
+	    			//PredicateFactory.term(gb.id), // belief id
+	    			PredicateFactory.term(gb.grounding.gstatus.toString())  // grounding status
+	    		});
+	    	return cu;
+    	}
+    	else {
+    		return null;
+    	}
     }
     
-    private void updateContext(ContextUpdate cu) {
+    private ContextUpdate updateContext(ContextUpdate cu) {
     	log("updating context");
     	log("context update: " + cu.toString());
     	log("stack before update");
     	ccaEngine.printStack();
-		Belief[] beliefUpdates = ccaEngine.verifiableUpdate(cu, getCurrentBeliefModel());
+
+    	String[] nonAssertedIds = beliefsWithNoAssertions(getCurrentBeliefModel());
+    	for (int i = 0; i < nonAssertedIds.length; i++) {
+    		ccaEngine.stack.removeBeliefFromBlocks(nonAssertedIds[i]);
+    	}
+    	
+		cu = verifiableUpdate(cu, getCurrentBeliefModel());
 		log("stack after update");
     	ccaEngine.printStack();
 		
+    	Belief[] beliefUpdates = cu.beliefs;
+
 		if (beliefUpdates.length == 0) {
 			log("no belief updates...");
 		}
@@ -387,9 +405,22 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			log("starting belief model update, " + beliefUpdates.length + " beliefs total");
 
 			for (int i = 0; i < beliefUpdates.length; i++) {
-				log("  update #" + i + ": " + PrettyPrinting.beliefToString(beliefUpdates[i]));
+				log("  update #" + i + ": " + BeliefModelUtils.getBeliefPrettyPrint(beliefUpdates[i], 1));
 
-				Belief[] related = getBeliefsByUnionEntityId(referringUnionId(beliefUpdates[i])).toArray(new Belief[] {});
+				try {
+					
+					if (existsOnWorkingMemory(beliefUpdates[i].id, Binder.BINDER_SA)) {
+						updateExistingBelief(beliefUpdates[i]);
+					}
+					else {
+						addNewBelief(beliefUpdates[i]);
+					}
+					
+				} catch (UnknownSubarchitectureException e) {
+					e.printStackTrace();
+				}
+				
+//				Belief[] related = getBeliefsByUnionEntityId(referringUnionId(beliefUpdates[i])).toArray(new Belief[] {});
 /*
 				boolean found = false;
 				for (int j = 0; j < related.length; j++) {
@@ -401,7 +432,7 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				if (!found) {
 					//beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
 */
-					addNewBelief(beliefUpdates[i]);
+//					addNewBelief(beliefUpdates[i]);
 //				}
 			}
 			log("done with belief model update");
@@ -410,6 +441,8 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		log("syncing abducer with current belief model");
 		ccaEngine.abducer.clearFactsByModality(ModalityType.K);
 		syncWithBeliefModel(getCurrentBeliefModel());
+		
+		return cu;
     }
 
     private Predicate selectAction(ContextUpdate cu) {
@@ -462,7 +495,141 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			e.printStackTrace();
 		}
     }
-        
+	/**
+	 * Perform verifiable update.
+	 * 
+	 * @param proof the proof to be considered
+	 * @param model current belief model
+	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
+	 */
+	public ContextUpdate verifiableUpdate(ContextUpdate cu, BeliefModel model) {
+		ProofBlock pi = ProofStack.construct(cu, new HashMap<String, Belief>());
+//		List<Belief> consistentUpdates = new ArrayList<Belief>();
+
+		log("new proofblock: " + PrettyPrinting.proofBlockToString(pi));
+
+		if (ccaEngine.stack.isEmpty()) {
+			// no outstanding assertions
+			if (pi.assertedBeliefIds.length != 0) {
+				// we've got new assertions
+				ccaEngine.stack.push(pi);
+				return cu;
+			}
+			else {
+				// we don't have any assertions at all
+				// -> no stack manipulation
+				return cu;
+			}
+		}
+		else {
+			// there are some unverified assertions on the stack
+			
+			// the operation may be:
+			// * verification -- remove from the stack, change the belief's agent status etc
+			// * falsification -- change the formula, put on top of the stack (at the end)
+			// * neither of these -- change the formula appropriately, but leave it where it was
+
+			Belief[] updates = null;
+			
+			if (cu.intention.predSym.equals("grounding")) {
+				String modality = ((FunctionTerm) cu.intention.args[0]).functor;
+				String result = ((FunctionTerm) cu.intention.args[1]).functor;
+
+				ProofBlock related = ccaEngine.stack.retrieveByIntention("need_verify_hypothesis");
+				
+				if (related != null && result.equals("assertionVerified")) {
+					updates = new Belief[related.assertedBeliefIds.length];
+					for (int i = 0; i < related.assertedBeliefIds.length; i++) {
+						Belief b = getBelief(related.assertedBeliefIds[i]);
+						b.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, 1.0f);
+						b.ags = AbstractBeliefFactory.createMutualAgentStatus(new String[] {"robot", "human"});
+						updates[i] = b;
+					}
+				}
+				else if (related != null && result.equals("assertionFalsified")) {
+					
+					if (pi.assertedBeliefIds.length == 0) {
+						// no reason, just flip the polarities
+						updates = new Belief[related.assertedBeliefIds.length];
+						for (int i = 0; i < related.assertedBeliefIds.length; i++) {
+							Belief b = getBelief(related.assertedBeliefIds[i]);
+							
+							b.phi = BeliefUtils.swapPolarityOfAssertions((SuperFormula) b.phi);
+							b.ags = AbstractBeliefFactory.createAttributedAgentStatus("robot", "human");
+							updates[i] = b;
+						}
+					}
+					else {
+						// with reason, overwrite the belief formula
+						// TODO: consistency
+						assert related.assertedBeliefIds.length == 1;
+						updates = new Belief[1];
+						
+						Belief b = getBelief(related.assertedBeliefIds[0]);
+						b.phi = cu.beliefs[0].phi;
+						b.ags = AbstractBeliefFactory.createAttributedAgentStatus("robot", "human");
+						updates[0] = b;
+					}
+					// push it back, it's still asserted
+					ccaEngine.stack.push(related);
+				}
+				cu.beliefs = updates;
+			}
+
+			// assert_prop(h, 0:G, color)
+			else if (cu.intention.predSym.equals("assert_prop")) {
+				
+				// need_get_value(vision, 0:G, color)
+				ProofBlock related = ccaEngine.stack.retrieveByIntention("need_get_value");
+				if (related != null) {
+					
+					assert related.assertedBeliefIds.length == 1;
+	
+					updates = new Belief[1];
+					
+					Belief b = getBelief(related.assertedBeliefIds[0]);
+					b.phi = cu.beliefs[0].phi;
+					b.ags = AbstractBeliefFactory.createAttributedAgentStatus("robot", "human");
+					updates[0] = b;
+
+					cu.beliefs = updates;
+
+					// push back as we still haven't grounded it
+					ccaEngine.stack.push(related);
+				}
+			}
+			
+			return cu;
+		}
+	}
+		
+/*
+		boolean verified = true;
+
+		for (int i = 0; i < piPrime.assertedBeliefs.length; i++) {
+			switch (VerifiableUpdate.consistent(model, piPrime.assertedBeliefs[i], pi.assertedBeliefs)) {  // XXX !!!
+			
+				case Consistent:
+					// assertion verified -> change its continual status to "proposition"
+					for (int j = 0; j < pi.assertedBeliefs.length; j++) {
+						consistentUpdates.add(pi.assertedBeliefs[j]);
+					}
+					break;
+				
+				case Inconsistent:
+					// assertion falsified
+					verified = false;
+					// TODO: look here
+					break;					
+			}
+		}
+		
+		stack.push(pi);
+		if (verified == false) {
+			stack.push(piPrime);
+		}
+*/
+
 	public void syncWithBeliefModel(BeliefModel model) {
 		try {
 			log("syncing with the belief model");
@@ -477,6 +644,17 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public String[] beliefsWithNoAssertions(BeliefModel model) {
+		Vector<String> closed = new Vector<String>();
+		for (int i = 0; i < model.k.length; i++) {
+			Belief b = getBelief(model.k[i]);
+			if (!BeliefUtils.formulaHasAssertions((SuperFormula) b.phi)) {
+				closed.add(b.id);
+			}
+		}
+		return closed.toArray(new String[]{});
 	}
 	
     /**

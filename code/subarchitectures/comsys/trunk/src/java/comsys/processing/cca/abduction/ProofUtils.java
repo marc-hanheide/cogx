@@ -1,8 +1,9 @@
-package comsys.processing.cca;
+package comsys.processing.cca.abduction;
 
 import java.util.*;
 import beliefmodels.adl.*;
 import beliefmodels.domainmodel.cogx.*;
+import comsys.processing.cca.MercuryUtils;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 import Abducer.*;
 
@@ -260,38 +261,42 @@ public class ProofUtils {
 		f.id = "p2cf";
 		f.op = LogicalOp.and;
 		f.formulae = new ContinualFormula[2];
+		f.prob = 1.0f;
 		
 		String ref = "";
 			
-		System.out.println("p2cf: " + p.predSym);
+		//System.out.println("p2cf: " + p.predSym);
 		
 		ContinualFormula cprop = null;
 		
 		if (p.predSym.equals("color")) {
-			System.err.println("color");
+			//System.err.println("color");
 			// color(Object, Value)
 			ColorProperty prop = new ColorProperty();
 			ref = termToString(p.args[0]);  // Object
 			prop.polarity = termPolarity(p.args[1]);
 			prop.colorValue = termToColor(p.args[1]);  // Value
+			prop.prob = 1.0f;
 			cprop = prop;
 		}
 		else if (p.predSym.equals("shape")) {
-			System.err.println("shape");
+			//System.err.println("shape");
 			// shape(Object, Value)
 			ShapeProperty prop = new ShapeProperty();
 			ref = termToString(p.args[0]);  // Object
 			prop.polarity = termPolarity(p.args[1]);
 			prop.shapeValue = termToShape(p.args[1]);  // Value
+			prop.prob = 1.0f;
 			cprop = prop;
 		}
 		else if (p.predSym.equals("objecttype")) {
-			System.err.println("objecttype");
+			//System.err.println("objecttype");
 			// objecttype(Object, Value)
 			ObjectTypeProperty prop = new ObjectTypeProperty();
 			ref = termToString(p.args[0]); // Object
 			prop.polarity = termPolarity(p.args[1]);
 			prop.typeValue = termToObjectType(p.args[1]); // Value
+			prop.prob = 1.0f;
 			cprop = prop;
 		}
 		

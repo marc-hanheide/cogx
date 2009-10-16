@@ -8,8 +8,8 @@ import Abducer.*;
 
 import beliefmodels.adl.*;
 
-import comsys.processing.cca.ProofUtils;
 import comsys.processing.cca.abduction.PredicateFactory;
+import comsys.processing.cca.abduction.ProofUtils;
 
 public abstract class AbducerUtils {
 

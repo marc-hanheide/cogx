@@ -86,7 +86,7 @@ public class ContinualCollaborativeActivity {
 	
     private Vector<String> files = new Vector<String>();
 
-    private ProofStack stack = new ProofStack();
+    public ProofStack stack = new ProofStack();
     
     private Stack<RefBinding> refStack = new Stack<RefBinding>();
 	
@@ -366,66 +366,11 @@ public class ContinualCollaborativeActivity {
 		}
 	}
 	
-	/**
-	 * Perform verifiable update.
-	 * 
-	 * @param proof the proof to be considered
-	 * @param model current belief model
-	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
-	 */
-	public Belief[] verifiableUpdate(ContextUpdate cu, BeliefModel model) {
-		ProofBlock pi = ProofStack.construct(cu, localBeliefs);
-		ProofBlock piPrime = null;
-		List<Belief> consistentUpdates = new ArrayList<Belief>();
-
-		log("new proofblock: " + PrettyPrinting.proofBlockToString(pi));
-		
-		if (stack.isEmpty()) {
-			log("  VU: stack empty");
-			stack.push(pi);
-			return ProofStack.blockToBeliefs(pi, localBeliefs);
-		}
-
-		log("  VU: stack non-empty");
-		
-		// TODO: find topmost relevant block
-		piPrime = stack.pop();
-
-		return ProofStack.blockToBeliefs(pi, localBeliefs);
-		//if (piPrime.intention.predSym)
-		
 /*
-		if (updateConsistent()) {
-			
-		}
-		
-		boolean verified = true;
-
-		for (int i = 0; i < piPrime.assertedBeliefs.length; i++) {
-			switch (VerifiableUpdate.consistent(model, piPrime.assertedBeliefs[i], pi.assertedBeliefs)) {  // XXX !!!
-			
-				case Consistent:
-					// assertion verified -> change its continual status to "proposition"
-					for (int j = 0; j < pi.assertedBeliefs.length; j++) {
-						consistentUpdates.add(pi.assertedBeliefs[j]);
-					}
-					break;
-				
-				case Inconsistent:
-					// assertion falsified
-					verified = false;
-					// TODO: look here
-					break;					
-			}
-		}
-		
-		stack.push(pi);
-		if (verified == false) {
-			stack.push(piPrime);
-		}
-*/
-		//return consistentUpdates.toArray(new Belief[0]);
+	public String[] findRelevantBeliefs(ProofStack stack, Predicate intention) {
+		return null;
 	}
+*/
 
 	public void printStack() {
 		log("printing current stack status, top first (" + stack.blocks.length + " items total):");

@@ -8,7 +8,7 @@ import beliefmodels.adl.*;
 import beliefmodels.domainmodel.cogx.*;
 import binder.utils.BeliefModelUtils;
 
-import comsys.processing.cca.ProofUtils;
+import comsys.processing.cca.abduction.ProofUtils;
 
 public class ProofStack {
 
@@ -89,6 +89,67 @@ public class ProofStack {
 		}
 		blocks = newBlocks;
 		return result;
+	}
+
+	public ProofBlock retrieveByIntention(String intentionPredSym) {
+		boolean found = false;
+		ProofBlock result = null;
+		//int index = 999;  // XXX nasty!
+		Vector<ProofBlock> newBlocks = new Vector<ProofBlock>();
+		for (int i = 0; i < blocks.length; i++) {
+			if (!found && blocks[i].intention.predSym.equals(intentionPredSym)) {
+				//index = i;
+				result = blocks[i];
+				found = true;
+			}
+			else {
+				newBlocks.add(blocks[i]);
+			}
+		}
+		blocks = newBlocks.toArray(new ProofBlock[]{});
+		return result;
+		//return index;
+	}
+	
+	public void removeBeliefFromBlocks(String beliefId) {
+		// TODO
+		Vector<ProofBlock> newBlocks = new Vector<ProofBlock>();
+		for (int i = 0; i < blocks.length; i++) {
+			ProofBlock block = blockWithoutBelief(blocks[i], beliefId);
+			if (block != null) {
+				newBlocks.add(block);
+			}
+		}
+		blocks = newBlocks.toArray(new ProofBlock[]{});
+	}
+	
+	private ProofBlock blockWithoutBelief(ProofBlock block, String beliefId) {
+		Vector<String> ids = new Vector<String>();
+		for (int i = 0; i < block.assertedBeliefIds.length; i++) {
+			if (!block.assertedBeliefIds[i].equals(beliefId)) {
+				ids.add(block.assertedBeliefIds[i]);
+			}
+		}
+		if (ids.size() > 0) {
+			ProofBlock newBlock = new ProofBlock();
+			newBlock.intention = block.intention;
+			newBlock.assertedBeliefIds = ids.toArray(new String[]{});
+			return newBlock;
+		}
+		else {
+			return null;
+		}
+	}
+
+	public boolean beliefPresent(String beliefId) {
+		for (int i = 0; i < blocks.length; i++) {
+			for (int j = 0; j < blocks[i].assertedBeliefIds.length; j++) {
+				if (blocks[i].assertedBeliefIds[j].equals(beliefId)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	/**
