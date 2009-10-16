@@ -1,4 +1,7 @@
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
 
 # This file contains a cats, families, and dicionary-forms for
 # important things (sentence, subject, coordination and particles). 
@@ -14,9 +17,8 @@
   
   def EVENT(args)     { E:event( args ) }
 
-  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM args]}
+  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT args]}
   def from-s(args)    { s<~10>[E args] }
- 
 
 ###############
 # The SUBJECT #
@@ -68,3 +70,26 @@
 
   def prt(args)      { prt<25>[P args] }
   family Particle    { entry:  prt(MARK= *) : P(*) ;}
+
+###########
+# PROSG09 #
+###########
+# We do not want to enumerate all possible prosodic markers on words in the dictionary.
+# It saves effort to use these proxy-lexical rules for marking words with prosodic indicatores
+
+# input is 'word', output is 'word_H*'
+def markWordHs(word) {
+    ifmatch(word, word, word .'_H*', word)
+  }
+
+# input is 'word', output is 'word_L*'
+def markWordLs(word) {
+    ifmatch(word, word, word .'_L*', word)
+  }
+
+# input is 'word', output is 'word_L+H*'
+def markWordLpHs(word) {
+    ifmatch(word, word, word .'_L+H*', word)
+  }
+
+# We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.

@@ -18,6 +18,8 @@
 
 
   def SUBJECT(args)         { <Subject>(S:entity args) }
+  def LDSP(args)         { <InterpretiveB>(D:ph-tone args) }
+  def GDSP(args)         { <DiscourseSeg>(B:bn-tone args) }
 
   rule {
     

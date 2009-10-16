@@ -1,4 +1,7 @@
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
  
 # This file contains the stuff for the copular and presentational 
 # uses of 'be'. 
@@ -22,15 +25,22 @@
   def pres-sem(sem) { EVENT(* <Presented>(S:entity) sem ) }
 
   def cop-entry(arg, sem){
-  
-       entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-       entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+ 
+  #PROSG09: we comment 
+  #     entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+  #    entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
        entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
   }
      # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
      #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
      # NOTE: this is NOT INCREMENTAL! (**sigh**)
- 
+
+  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
+  def cop-entry-ip(arg, sem){
+       entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+       entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+  }
+
    #---  Families ----
 
    family Copular(V){   
@@ -43,12 +53,14 @@
     cop-entry( +cop-pp()  , <Cop-Scope>(X:m-comparison) )
   
     cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
+    #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+    cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(X:quality) )  
     
     # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), 
     # we must block the subj from being questionable for entity scopes
     #
     entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : cop-sem(                 <Cop-Scope>(X:entity) )  ; 
-    entry: s(s-int) +cop-np() / subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+    entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
     entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
   }
 

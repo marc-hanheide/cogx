@@ -1,4 +1,7 @@
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
 
 # This file contains some important categories used by modifiers like
 # adjectives, adverbs and prepositions 
@@ -58,7 +61,7 @@
  
   def post-n(args, syn)         {  from-n(args) syn \* n()  }
  def post-n2(syn)         {  from-n() syn \* n()  }
-  def pre-n(args, syn)          {  from-n(args) / n() syn  }		
+ def pre-n(args, syn)          {  from-n(args) / n() syn  }		
 
 ########################################
 # SPECIAL MODIFIER 'SLOTS' FOR COPULA. #
@@ -73,9 +76,11 @@
   
   # The three possible compliments
 
-  def +cop-np(args)  { / np<42>[X NUM:NUM acc args] }    # the restr & Scope must share number (*these are a ball) 
+  def +cop-np(args)  { /^ np<42>[X NUM:NUM ACCENT acc args] }    # the restr & Scope must share number (*these are a ball) 
   def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
   def +cop-adj(args) { / adj<2>[X args] }
+  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+  def +cop-adj-ip(args) { /! adj<2>[X args] }
 
   # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
   def pre-cop-comp (moder, modee, arg)      { from-s(moder) arg \^ ( s(modee be) arg ) } 
@@ -115,6 +120,7 @@
   #       is handled using the semantic sort hierarchy (see types-ontology.ccg)
 
   def MODIFIER(args) {<Modifier>(M  args) }
+  def RHMODIFIER(args) {<Modifier>(M args ^ <RhFocus>Hs) }
 
   # This is the semantic dependency relation used by modifier modifiers,
   #     e.g.  'really' big , 'over' on the table, etc. 

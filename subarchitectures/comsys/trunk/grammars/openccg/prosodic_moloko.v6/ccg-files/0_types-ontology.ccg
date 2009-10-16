@@ -119,4 +119,9 @@ feature{
   # this needs re-doing!
   ont-discourse: marker{ d-units alignment cue greeting closing reject acknowledge evaluate };
 				
+###############
+## PROSODY ##
+###############
+  #ont-prosody: tunes{ rhm-thm {thmf rhmf} };
+
 }

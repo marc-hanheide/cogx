@@ -4,8 +4,9 @@
 ## SYNTACTIC DEFINITIONS ##
 ###########################
 
-  def n(args)         { n<15> [T CASE NUM PERS NFORM args] }
-  def np(args)        { np<15>[T CASE NUM PERS NFORM args] }
+  def n(args)         { n<15> [T CASE NUM PERS NFORM ACCENT args] }
+  def np(args)        { np<15>[T CASE NUM PERS NFORM ACCENT args] }
+  def -np(args)        {\! np<15>[T CASE NUM PERS NFORM ACCENT args] }
    
   def from-n(args)    { n<~15> [T args] }
   def from-np(args)   { np<~15>[T args] }
@@ -105,14 +106,27 @@
 
   # Basic nouns, regular and irr
   #
-  def  noun(sing, class, args)       {  noun-irr(sing, pluralize(sing), class, args) }
-  def _noun(prd, sing, class, args) { _noun-irr(prd, sing, pluralize(sing), class, args) }
+  def  noun(sing, class, args)       {  noun-irr-accnt(sing, pluralize(sing), markWordHs(sing),markWordLs(sing),markWordLpHs(sing), class, args) }
+  def  noun-irr-accnt(sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
+
+  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), markWordHs(sing), markWordLs(sing),markWordLpHs(sing), class, args) }
+  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, markWordHs(plur),markWordLs(plur), markWordLpHs(plur), class, args) }
   
-  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, class, args) } 
-  def _noun-irr(prd, sing, plur, class, args) {
+  
+  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, markWordHs(sing),markWordLs(sing), markWordLpHs(sing),markWordHs(plur),markWordLs(plur),markWordLpHs(plur),class, args) } 
+
+  def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
     word sing.-noun-n:Noun(class, pred=prd) {
-      sing :  s-sg full args;
-      plur :  s-pl-unsp full args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true args;
+      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true hs args;
+      sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true ls args;
+      sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false lphs args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true args;
+      plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true hs args;
+      plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true ls args;
+      plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false lphs args;
     }
   }
   
@@ -159,8 +173,8 @@
  
   def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {
     word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
-      nom-form :  pers s-.num nom pro num;
-      acc-form :  pers s-.num acc pro num;
+      nom-form :  pers s-.num nom pro num ;
+      acc-form :  pers s-.num acc pro num ;
     }
     word prd.-owner-.num:Owner-pro('entity', pred=prd) {
       owner : num ;
