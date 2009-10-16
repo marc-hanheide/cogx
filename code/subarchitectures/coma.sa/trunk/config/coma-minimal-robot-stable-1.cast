@@ -36,7 +36,7 @@ CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cure
 
 CPP GD path.query PathQueryProcessor #--log --no-indirect-paths #--debug
 
-#CPP GD exploration.tester ExplorationTester #--log #--debug
+CPP GD exploration.tester ExplorationTester #--log #--debug
 
 #CPP GD cure.logger CureDataLogger
 #CPP GD key.command KeyCommander --fixed-prio --auto 1 --init-sleep 15000 --no-key
