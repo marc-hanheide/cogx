@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.List;
@@ -510,7 +509,6 @@ public class PlaceMonitor extends ManagedComponent {
 			getMemoryEntriesWithData(ComaRoom.class, _knownRoomsOnWM, _count);
 			log("loaded all room WMEs. no. of room WMEs: " + _knownRoomsOnWM.size());
 			Collections.sort(_knownRoomsOnWM, new Comparator<CASTData<ComaRoom>>() {
-				@Override
 					public int compare(CASTData<ComaRoom> arg0, CASTData<ComaRoom> arg1) {
 					int x = arg0.getData().roomId;
 					int y = arg1.getData().roomId;
