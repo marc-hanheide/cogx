@@ -28,21 +28,85 @@ generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	i : feat_AnswerType(Nom, AnswerType) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-generate : it(Nom) <-
-	i : sort(Nom, entity) / 1.0,
-	i : feat_Salient(Nom, true) / 1.0.
-
-% what Prop is the Object
-generate : intention : ask_property(h, Object, Prop) <-
-	dummy_nom1(Nom),
-	i : feat_CannedText(Nom, 'You_asked_me_about_a_property') / 1.0,
-%	query_belief(Object, Prop, yes(PropValue), AnswerType).
-	event : produce(r, Nom) / 1.0.
-
 utt_head(Nom) <-
 	dummy_nom1(Nom),
 	i : sort(Nom, dvp) / 1.0,
 	i : prop(Nom, 'c-goal') / 1.0.
+
+generate : it(Nom) <-
+	i : sort(Nom, entity) / 1.0,
+	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
+	i : feat_Salient(Nom, true) / 1.0.
+
+generate: i_dont_know(Nom) <-
+	i : feat_CannedText(Nom, 'I_do_not_know') / 1.0.
+
+% what Prop is the Object
+generate : intention : ask_property(h, Object, Prop) <-
+	check_property_value(Object, Prop, Result),
+	reply_to_result(Nom, Object, Prop, Result),
+	utt_head(Nom),
+%	i : feat_CannedText(Nom, 'You_asked_me_about_a_property') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+reply_to_result(Nom, Object, Prop, unknown) <-
+	utt_head(Nom),
+	generate : i_dont_know(Nom).
+
+%@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue)))
+reply_to_result(Nom, Object, Prop, known(Value)) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			generate : it(TargetNom),
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
+
+add_prop_value_to_protolf(Nom, UsedNom, color, Value) <-
+	i : rel_Color(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, quality) / 1.0,
+		i : prop(UsedNom, Value) / 1.0.
+
+%----------------------------------------------------------------------
+
+check_property_value(Union, color, known(Value)) <-
+	k(now, private(r)) : color(Union, Value),
+	Value \= unknownColor.
+
+check_property_value(Union, shape, known(Value)) <-
+	k(now, private(r)) : shape(Union, Value),
+	Value \= unknownShape.
+
+check_property_value(Union, objecttype, known(Value)) <-
+	k(now, private(r)) : objecttype(Union, Value),
+	Value \= unknownObjectType.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	% The following might not be necessary as we don't
+	% make a distinction between "known unknown" and
+	% truly unknown property values.
+
+check_property_value(Union, color, unknown) <-
+	k(now, private(r)) : color(Union, unknownColor).
+
+check_property_value(Union, shape, unknown) <-
+	k(now, private(r)) : shape(Union, unknownShape).
+
+check_property_value(Union, objecttyp, unknown) <-
+	k(now, private(r)) : objecttyp(Union, unknownObjectType).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+check_property_value(Union, Prop, unknown) <-
+	property_value_unknown(Union, Prop) / 15.0.
+
+%----------------------------------------------------------------------
 
 % "ok", "i see" etc
 %generate : intention : grounding(Modality, assertionVerified) <-
