@@ -9,8 +9,8 @@ JAVA MG fakevisual binder.fakeproxygenerators.FakeVisualProxyGenerator --nbproxi
 JAVA MG fakehaptic binder.fakeproxygenerators.FakeHapticProxyGenerator --nbproxies 3  --pauses true  --log
 #JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 2 --pauses true --deleteproxies false --log
 
-JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
-JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 5 --proxydistribfilter 6 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt  --log
+JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues true  #--log
 JAVA MG translator binder.components.BeliefModelTranslator #--log
 
 JAVA MG monitor binder.components.BinderMonitor --gui --log
