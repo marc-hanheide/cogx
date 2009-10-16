@@ -142,6 +142,7 @@ void LocalMapManager::runComponent()
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
   while(isRunning()){
+    lockComponent(); //Don't allow any interface calls while processing a callback
     curNode = getCurrentNavNode();
     if (curNode != 0) {
       if (curNode->nodeId != prevNode) {
@@ -200,6 +201,7 @@ void LocalMapManager::runComponent()
       //log("Updated");
 
     }
+    unlockComponent();
 
     usleep(250000);
   }
@@ -207,6 +209,7 @@ void LocalMapManager::runComponent()
 
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
 
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
@@ -221,10 +224,12 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
   
+  unlockComponent();
 }
 
 void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
@@ -235,10 +240,12 @@ void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
   m_TOPP.addOdometry(cureOdom);
   
   m_CurrPose = m_TOPP.getPose();
+  unlockComponent();
 }
 
 void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
 {
+  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
@@ -261,6 +268,7 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
       m_Mutex.unlock();
     }
   }
+  unlockComponent();
 }
 
 NavData::FNodePtr
