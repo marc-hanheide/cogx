@@ -8,7 +8,6 @@ import java.util.concurrent.locks.Lock;
 
 import motivation.slice.WMMutex;
 
-import EDU.oswego.cs.dl.util.concurrent.LockedExecutor;
 import Ice.Object;
 
 import cast.CASTException;
