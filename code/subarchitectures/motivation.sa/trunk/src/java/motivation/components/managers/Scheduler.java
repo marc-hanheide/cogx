@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import motivation.components.managers.comparators.AgeComparator;
@@ -17,7 +16,6 @@ import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveEventQueue;
 import motivation.util.WMMotiveSet;
-import motivation.util.WMMotiveEventQueue.MotiveEvent;
 import motivation.util.WMMotiveSet.MotiveStateTransition;
 import motivation.util.castextensions.WMLock;
 import cast.CASTException;
@@ -105,6 +103,8 @@ public class Scheduler extends ManagedComponent {
 		super.start();
 		motives.start();
 		motives.setStateChangeHandler(new MotiveStateTransition(null,
+				MotiveStatus.SURFACED), relevantEventQueue);
+		motives.setStateChangeHandler(new MotiveStateTransition(MotiveStatus.SURFACED,
 				MotiveStatus.SURFACED), relevantEventQueue);
 		motives.setStateChangeHandler(new MotiveStateTransition(
 				MotiveStatus.ACTIVE, null), relevantEventQueue);
@@ -217,9 +217,6 @@ public class Scheduler extends ManagedComponent {
 					}
 
 				}
-				// flush queue
-				while (!relevantEventQueue.isEmpty())
-					relevantEventQueue.poll();
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

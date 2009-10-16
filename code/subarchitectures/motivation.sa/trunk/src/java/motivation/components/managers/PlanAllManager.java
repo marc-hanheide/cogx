@@ -41,13 +41,6 @@ import cast.cdl.WorkingMemoryPermissions;
  */
 public class PlanAllManager extends ManagedComponent {
 
-	/**
-	 * check for pending active motives at least every N seconds, N given here.
-	 * If a motive is being activated, the Managers considers it immediately.
-	 * This forced check frequency is a failsafe mechanism that assures that
-	 * older pending motives are considered appropriately.
-	 */
-	private static final long FORCED_CHECK_FREQUENCY = 5;
 	WMMotiveSet motives;
 	WMLock wmLock;
 	volatile private boolean interrupt;
@@ -136,6 +129,10 @@ public class PlanAllManager extends ManagedComponent {
 			wmLock.initialize();
 			while (isRunning()) {
 				log("checking for active motives to manage them");
+				// flush queue
+				while (!activeMotiveEventQueue.isEmpty())
+					activeMotiveEventQueue.poll();
+
 				interrupt = false;
 				List<Motive> activeMotives = null;
 				try {
