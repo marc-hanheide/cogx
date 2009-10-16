@@ -143,7 +143,7 @@ void ObjectTracker::runTracker(const Video::Image &image){
 		m_tracker_list[id]->drawResult(&m_modelID_list[id].trackpose, g_Resources->GetModel(m_modelID_list[id].resources_ID));
 	}
 	
-	//m_tracker->drawTest();
+	//m_tracker_list[0]->drawTest();
 	m_tracker_list[0]->drawCoordinates();
 	m_tracker_list[0]->swap();
 	
