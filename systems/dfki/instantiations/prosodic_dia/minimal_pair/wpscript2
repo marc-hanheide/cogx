@@ -1,0 +1,26 @@
+h: hi robot!
+r: hello!
+#Act h: puts a green box in front of the robot
+r: what is_L* that HH%
+#Hypothesis: express uncertainity about sth
+h: do you know what this is ?
+r: no, I do not know what this is 
+h: this is a box.
+r: let me see 
+r: is the box red_L* HH%
+#Hypothesis: verify uncertainity of color
+#Default voice always focuses on the box, suggesting presence of another red object.
+h: yes, it is red.
+r: okay!
+#Act h: puts a red ball in front of the robot
+h: what is this?
+r: this is a red ball_H* LL%
+#Hypothesis: red is the background, ball is the focus in the set of alternatives
+#Default voice always focuses on the color
+h: right!
+#Act h: puts a green box in front of the robot
+h: do you know what this is ?
+r: it is a green_H* box LL%
+#Hypothesis: box is the background, color green is the focus in the set of alternatives
+#Default voice always focuses on the color
+h: that is right!
