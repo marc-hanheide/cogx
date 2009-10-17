@@ -221,6 +221,7 @@ public class PlanAllManager extends ManagedComponent {
 					while (isRunning()) {
 						if (activeMotiveEventQueue.poll(1, TimeUnit.SECONDS) != null) {
 							activeMotiveEventQueue.clear();
+							log("received relevant event");
 							break;
 						}
 					}
