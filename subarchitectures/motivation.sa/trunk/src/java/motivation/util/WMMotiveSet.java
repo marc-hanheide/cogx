@@ -51,24 +51,36 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		 */
 		@Override
 		public boolean equals(Object arg0) {
-			if (((MotiveStateTransition) arg0).from == null
-					&& this.from == null
-					&& ((MotiveStateTransition) arg0).to == null
-					&& this.to == null)
-				return true;
-			if (((MotiveStateTransition) arg0).from == null
-					&& this.from != null)
-				return false;
-			if (((MotiveStateTransition) arg0).to == null && this.to != null)
-				return false;
-			if (((MotiveStateTransition) arg0).from == null
-					&& this.from == null)
-				return to.equals(((MotiveStateTransition) arg0).to);
-			if (((MotiveStateTransition) arg0).to == null && this.to == null)
-				return from.equals(((MotiveStateTransition) arg0).from);
-			return from.equals(((MotiveStateTransition) arg0).from)
-					&& to.equals(((MotiveStateTransition) arg0).to);
+			if (!(arg0 instanceof MotiveStateTransition))
+				return super.equals(arg0);
+
+			MotiveStateTransition other = (MotiveStateTransition) arg0;
+
+			boolean equalsFrom = (other.from==null);
+			if (other.from != null && this.from != null)
+				equalsFrom = this.from.equals(other.from);
+
+			boolean equalsTo = (other.to==null);
+			if (other.to != null && this.to != null)
+				equalsTo = this.to.equals(other.to);
+
+			return equalsFrom && equalsTo;
 		}
+
+//		public boolean match(MotiveStateTransition other) {
+//			boolean equalsFrom = true;
+//			if (other.from != null && this.from != null)
+//				equalsFrom = this.from.equals(other.from);
+//			else
+//				equalsFrom = true;
+//
+//			boolean equalsTo = true;
+//			if (other.to != null && this.to != null)
+//				equalsTo = this.to.equals(other.to);
+//			else
+//				equalsTo = true;
+//			return equalsFrom && equalsTo;
+//		}
 
 		/*
 		 * (non-Javadoc)
@@ -77,12 +89,8 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		 */
 		@Override
 		public int hashCode() {
-			if (from == null && to == null)
+			if (from == null || to == null)
 				return 0;
-			if (from == null)
-				return to.hashCode();
-			if (to == null)
-				return from.hashCode();
 			return from.hashCode() & to.hashCode();
 		}
 
@@ -222,6 +230,7 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 			}
 		}
 		for (ChangeHandler h : handlersToCall) {
+			component.log("call handler");
 			h.motiveChanged(map, wmc, newMotive, oldMotive);
 		}
 
@@ -244,12 +253,13 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
 			Motive m = (Motive) o.getValue();
 			if (m.status.equals(status))
-				result.put(o.getKey(),m);
+				result.put(o.getKey(), m);
 		}
 		return result;
 	}
 
-	public Map<WorkingMemoryAddress, Motive> getMapByType(Class<? extends Motive> className) {
+	public Map<WorkingMemoryAddress, Motive> getMapByType(
+			Class<? extends Motive> className) {
 		Map<WorkingMemoryAddress, Motive> result = new HashMap<WorkingMemoryAddress, Motive>();
 		for (Entry<WorkingMemoryAddress, ObjectImpl> o : super.entrySet()) {
 			if (o.getValue().getClass().equals(className)) {
