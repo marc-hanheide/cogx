@@ -34,7 +34,7 @@ int
 aserv_main()
 {
 	printUsage();
-	IceUtil::CtrlCHandler ctrlCHandler(shutdownServer);
+	//IceUtil::CtrlCHandler ctrlCHandler(shutdownServer);
 	int status = 0;
 	try {
 		ic = Ice::initialize();
