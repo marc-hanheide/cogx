@@ -6,5 +6,5 @@ INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 # place #####################################################################
-CPP GD Place.Controller PlaceController --config place.cfg --start false
+INCLUDE includes/place.sa/base.cast
 
