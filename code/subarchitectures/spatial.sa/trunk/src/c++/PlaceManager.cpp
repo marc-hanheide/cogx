@@ -176,7 +176,6 @@ PlaceManager::runComponent()
 void 
 PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   if (m_firstNodeProcessed) {
     debug("newNavNode called");
     shared_ptr<CASTData<NavData::FNode> > oobj =
@@ -187,7 +186,6 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
     }
     debug("newNavNode exited");
   }
-  unlockComponent();
 }
 
 void
@@ -232,7 +230,6 @@ PlaceManager::cancelMovement()
 void 
 PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("modifiedNavNode called");
   try {
     lockEntry(objID.address.id, cdl::LOCKEDODR);
@@ -270,7 +267,6 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	   */
 	  unlockEntry(objID.address.id);
 	  debug("modifiedNavNode exited");
-	  unlockComponent();
 	  return;
 	}
       }
@@ -286,13 +282,11 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
     log("Couldn't find supposedly modified node!");
   }
   debug("modifiedNavNode exited");
-  unlockComponent();
 }
 
 void 
 PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("deletedNavNode called");
   //TODO: This will never work!
   shared_ptr<CASTData<NavData::FNode> > oobj =
@@ -311,12 +305,10 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	if(it2 != m_Places.end()) {
 	  deleteFromWorkingMemory(m_Places[placeID].m_WMid);
 	  debug("deletedNavNode exited");
-	  unlockComponent();
 	  return;
 	}
 	m_PlaceIDToNodeMap.erase(it);
 	debug("deletedNavNode exited");
-	unlockComponent();
 	return;
       }
     }
@@ -324,13 +316,11 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
     log("WARNING: Did not find the node to delete!!!");
   }
   debug("deletedNavNode exited");
-  unlockComponent();
 }
 
 void 
 PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("newEdge called");
   try {
     lockEntry(objID.address.id, cdl::LOCKEDODR);
@@ -405,13 +395,11 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
     log("Error! edge object disappeared!");
   }
   debug("newEdge exited");
-  unlockComponent();
 }
 
 void 
 PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("modifiedEdge called");
   // This will probably never be called...
   /*
@@ -423,13 +411,11 @@ PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
   // Look for the place in the internal vector
    */
   debug("modifiedEdge exited");
-  unlockComponent();
 }
 
 void 
 PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   debug("newObject called");
   try {
     lockEntry(objID.address.id, cdl::LOCKEDODR);
@@ -452,7 +438,6 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
       log("Error! New ObjData couldn't be read!");
       unlockEntry(objID.address.id);
       debug("newObject exited");
-      unlockComponent();
       return;
     }
 
@@ -508,7 +493,6 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 	  log("Error! Failed to create new object property!");
 	  unlockEntry(objID.address.id);
 	  debug("newObject exited");
-	  unlockComponent();
 	  return;
 	}
       }
@@ -516,7 +500,6 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 	log("Could not find Place for object!");
 	unlockEntry(objID.address.id);
 	debug("newObject exited");
-	unlockComponent();
 	return;
       }
     }
@@ -524,7 +507,6 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
       log("Could not find Node for object!");
       unlockEntry(objID.address.id);
       debug("newObject exited");
-      unlockComponent();
       return;
     }
     unlockEntry(objID.address.id);
@@ -533,7 +515,6 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
     log ("Object disappeared!");
   }
   debug("newObject exited");
-  unlockComponent();
 }
 
 bool 
@@ -1439,7 +1420,6 @@ PlaceManager::PlaceServer::endPlaceTransition(int failed, const Ice::Current &_c
 void 
 PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
   //log("robotMoved called");
 
   //If the robot is not currently executing a path transition
@@ -1459,7 +1439,6 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
     }
   }
   //log("robotMoved exited");
-  unlockComponent();
 }
 
 void 

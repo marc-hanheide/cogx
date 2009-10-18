@@ -142,6 +142,7 @@ void LocalMapManager::runComponent()
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
   while(isRunning()){
+    log("lock in isRunning");
     lockComponent(); //Don't allow any interface calls while processing a callback
     curNode = getCurrentNavNode();
     if (curNode != 0) {
@@ -202,6 +203,7 @@ void LocalMapManager::runComponent()
 
     }
     unlockComponent();
+    log("unlock in isRunning");
 
     usleep(250000);
   }
@@ -209,8 +211,6 @@ void LocalMapManager::runComponent()
 
 void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
-  lockComponent(); //Don't allow any interface calls while processing a callback
-
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
   
@@ -223,8 +223,6 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
-  
-  unlockComponent();
 }
 
 void LocalMapManager::receiveOdometry(const Robotbase::Odometry &castOdom)
