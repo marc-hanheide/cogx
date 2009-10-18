@@ -87,12 +87,8 @@ public abstract class ModalityFactory {
 	 * @return
 	 */
 	private static Abducer.Agent toAbducerAgent(beliefmodels.adl.Agent ag) {
-		if (ag.id.equals("human")) {
-			return Abducer.Agent.human;
-		}
-		else {
-			return Abducer.Agent.robot;
-		}
+		// TODO: what exceptions does this raise?
+		return Abducer.Agent.convert(ag.id);
 	}
 
 	/**

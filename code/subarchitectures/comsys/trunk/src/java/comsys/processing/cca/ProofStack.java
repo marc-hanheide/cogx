@@ -91,14 +91,12 @@ public class ProofStack {
 		return result;
 	}
 
-	public ProofBlock retrieveByIntention(String intentionPredSym) {
+	public ProofBlock retrieveBlockByIntention(String intentionPredSym) {
 		boolean found = false;
 		ProofBlock result = null;
-		//int index = 999;  // XXX nasty!
 		Vector<ProofBlock> newBlocks = new Vector<ProofBlock>();
 		for (int i = 0; i < blocks.length; i++) {
 			if (!found && blocks[i].intention.predSym.equals(intentionPredSym)) {
-				//index = i;
 				result = blocks[i];
 				found = true;
 			}
@@ -108,7 +106,6 @@ public class ProofStack {
 		}
 		blocks = newBlocks.toArray(new ProofBlock[]{});
 		return result;
-		//return index;
 	}
 	
 	public void removeBeliefFromBlocks(String beliefId) {
