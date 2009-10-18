@@ -2,11 +2,11 @@
 
 # Binary files to be built.
 #
-MBIN=check-rules-file check-facts-file
+MBIN=check-file
 
 # Mercury source files.
 #
-MFILES=check-rules-file.m check-facts-file.m
+MFILES=check-file.m
 
 LIBABDUCER=../lib/libabducer.a
 
