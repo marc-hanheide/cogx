@@ -1,0 +1,49 @@
+HOST localhost
+
+SUBARCHITECTURE nav.sa
+CPP WM NavWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG Nav.TP TranslationProcess --log 
+#CPP GD Nav.NavControl NavControl -c onrobone.ccf --log -e 1 #--debug
+CPP GD Nav.SlamProcess SlamProcess -c onrobone.ccf #--debug --log
+CPP GD Nav.DisplayNavInPB DisplayNavInPB -c onrobone.ccf --log #--retry-interval 10
+CPP GD Nav.LaserMotionDetector LaserMotionDetectorTracker -c onrobone.ccf #--debug --log
+CPP GD Nav.NavGraphProcess NavGraphProcess -c onrobone.ccf -t 0.05 --log #--debug
+#CPP MG Nav.TagCreator TagCreator --log
+
+#SUBARCHITECTURE debug.sa
+#CPP WM ObjectWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+#CPP MG dummy.client DummyExternalClient --log # console vs TranslationProcess and ObjectTranslationProcess
+
+
+SUBARCHITECTURE place.sa
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD Place.Monitor PlaceMonitor --config test.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config test.cfg --load /home/czikus/Current/CAST/Data/Labeled/bcc_night1_4c.data
+CPP GD Place.DataSaver PlaceDataSaver --config test.cfg
+
+# Connections to NAV.SA
+# NavGraphProcess
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.NavGraphProcess
+CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.NavGraphProcess
+# SlamProcess
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.SlamProcess
+CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.SlamProcess
+# NavControl
+#CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.NavControl
+#CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.NavControl
+# Display
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.DisplayNavInPB
+# Laser
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.LaserMotionDetector
+CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.LaserMotionDetector
+
+
+#CONNECTION Robotbase::MotionCommand nav.control PUSH_TO hardware.robotbase.server
+#CONNECTION Laser::Scan nav.control PULL_FROM hardware.laserodom.server
+
+
+
+

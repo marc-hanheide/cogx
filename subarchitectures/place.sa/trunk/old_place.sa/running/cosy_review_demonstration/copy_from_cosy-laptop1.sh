@@ -1,0 +1,1 @@
+scp cosy@cosy-laptop1:/home/cosy/CAST/runtime/scenario-mapping-only/scenario-mapping-only.cast .

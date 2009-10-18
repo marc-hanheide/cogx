@@ -1,0 +1,28 @@
+# Peekabot
+CPP GD Nav.DisplayNavInPB DisplayNavInPB -c onrobone.ccf --no-people --no-scans
+
+# DCamVideoServer
+COMPONENT cosy-laptop2 CPP Hardware.VideoServer DCamVideoServer --log true --port 3434 --red 85 --blue 60 --gain 60
+
+# Place.SA
+SUBARCHITECTURE place.sa cosy-andrzej
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+CPP GD Place.Controller PlaceController --config place.cfg --start true
+CPP GD Place.Monitor PlaceMonitor --config place.cfg
+CPP GD Place.PeekabotClient PlacePeekabotClient --config place.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config place.cfg --videoserver dcam_sock
+#CPP GD Place.DataSaver PlaceDataSaver --config place.cfg
+CPP GD Place.VisualProcessor PlaceVisualProcessor --config place.cfg
+CPP GD Place.LaserProcessor PlaceLaserProcessor --config place.cfg
+CPP GD Place.CueIntegrator PlaceCueIntegrator --config place.cfg
+CPP GD Place.NodeLabeller PlaceNodeLabeller --config place.cfg
+
+# Data servers -> Place.SA
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO Place.DataProvider
+CONNECTION Robotbase::Odometry hardware.robotbase.server PUSH_TO Place.DataProvider
+CONNECTION Vision::ImageFrame Place.DataProvider PULL_FROM hardware.video.server
+
+# Place.SA -> Nav.SA
+CONNECTION PlaceData::NodePlaceInfo navgraph.process PULL_FROM Place.NodeLabeller
+

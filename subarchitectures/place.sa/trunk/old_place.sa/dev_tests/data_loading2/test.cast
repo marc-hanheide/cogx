@@ -1,0 +1,8 @@
+HOST localhost
+
+SUBARCHITECTURE place.sa
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD Place.Monitor PlaceMonitor --config test.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config test.cfg --load /home/czikus/Current/CAST/Data/Labeled/bcc_night1_4c.data
+CPP GD Place.DataSaver PlaceDataSaver --config test.cfg

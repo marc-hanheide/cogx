@@ -1,0 +1,9 @@
+HOST localhost
+
+SUBARCHITECTURE place.sa
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD Place.Monitor PlaceMonitor --log true --debug true --config test.cfg
+CPP GD Place.DataProvider PlaceDataProvider --log true --debug true --config test.cfg --load test.data
+CPP GD Place.DataSaver PlaceDataSaver --log true --debug true --config test.cfg
+

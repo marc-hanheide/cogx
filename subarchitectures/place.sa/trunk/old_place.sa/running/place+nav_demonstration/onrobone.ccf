@@ -1,0 +1,27 @@
+JOYSTICK_DRIVEAXES_IDS
+0 1
+
+INCLUDEPATH
+/home/czikus/Repos/CoSy/kth/cosycure/cfg
+
+DISPLAYMODE
+1
+
+PEEKABOT_PERSON_PBMF_FILE
+rolf.pbmf
+
+PEEKABOT_ROBOT_XML_FILE
+Robone.xml
+
+ROBOT
+Robone
+
+PEEKABOT_HOST
+127.0.0.1
+#192.168.1.10
+#cosy1
+#cosy-laptop4
+
+INCLUDE
+robotpose.ccf
+robone.ccf
