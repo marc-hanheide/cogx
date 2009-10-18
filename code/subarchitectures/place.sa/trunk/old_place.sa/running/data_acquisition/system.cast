@@ -1,0 +1,18 @@
+#HOST localhost
+
+COMPONENT cosy-laptop1 CPP Hardware.RobotbaseServer RobotbaseServer -t curehal -c /home/cosy/CAST/robone/sickp2os.cfg
+COMPONENT cosy-laptop1 CPP Hardware.LaserServer LaserServer -t curehal -c /home/cosy/CAST/robone/sickp2os.cfg
+COMPONENT cosy-laptop2 CPP Hardware.VideoServer DCamVideoServer --log true --port 3434 --red 85 --blue 60 --gain 60
+
+SUBARCHITECTURE place.sa cosy-andrzej
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+CPP GD Place.Controller PlaceController --config place.cfg --start false
+CPP GD Place.Monitor PlaceMonitor --config place.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config place.cfg --videoserver dcam_sock
+CPP GD Place.DataSaver PlaceDataSaver --config place.cfg
+
+
+CONNECTION Laser::Scan Hardware.LaserServer PUSH_TO Place.DataProvider
+CONNECTION Robotbase::Odometry Hardware.RobotbaseServer PUSH_TO Place.DataProvider
+CONNECTION Vision::ImageFrame Place.DataProvider PULL_FROM Hardware.VideoServer

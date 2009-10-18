@@ -1,0 +1,16 @@
+<tests>
+    <test>
+	<name>place.sa_test1</name>
+	<file>subarchitectures/place.sa/tests/test1/test.cast</file>
+	<description>Tests DataProvider for synchronized data acquired from RobotbaseServer, LaserServer and VideoServer</description>
+	<output>false</output>
+	<timeout>300000</timeout>
+    </test>
+    <test>
+	<name>place.sa_test2</name>
+	<file>subarchitectures/place.sa/tests/test2/test.cast</file>
+	<description>Tests DataSaver for synchronized data acquired by DataProvider from RobotbaseServer, LaserServer and VideoServer</description>
+	<output>false</output>
+	<timeout>300000</timeout>
+    </test>
+</tests>

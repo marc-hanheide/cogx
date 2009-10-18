@@ -1,0 +1,17 @@
+HOST localhost
+
+COMPONENT CPP Hardware.RobotbaseServer RobotbaseServer -t logfile -T cure -L data/odom.tdf
+COMPONENT CPP Hardware.LaserServer LaserServer -t logfile -T cure -L data/scans.tdf
+
+SUBARCHITECTURE place.sa
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+CPP GD Place.Monitor PlaceMonitor --log true --debug true --config test.cfg
+CPP GD Place.DataProvider PlaceDataProvider --log true --debug true --config test.cfg --videoserver dcam
+CPP GD Place.DataSaver PlaceDataSaver --log true --debug true --config test.cfg
+CPP UM Hardware.VideoServer DCamVideoServer --debug true --log true
+
+CONNECTION Laser::Scan Hardware.LaserServer PUSH_TO Place.DataProvider
+CONNECTION Robotbase::Odometry Hardware.RobotbaseServer PUSH_TO Place.DataProvider
+CONNECTION Vision::ImageFrame Place.DataProvider PULL_FROM Hardware.VideoServer
+

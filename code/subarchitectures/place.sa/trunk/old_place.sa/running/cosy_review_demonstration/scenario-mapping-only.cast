@@ -1,0 +1,59 @@
+
+COMPONENT cosy-laptop1 CPP hardware.laser.server LaserServer -t curehal -c /home/cosy/CAST/robone/sickp2os.cfg #--realtime
+COMPONENT cosy-laptop1 CPP hardware.robotbase.server RobotbaseServer -t curehal -c /home/cosy/CAST/robone/sickp2os.cfg
+COMPONENT cosy-laptop2 CPP hardware.video.server DCamVideoServer --log true --port 3434 --red 85 --blue 60 --gain 60
+
+SUBARCHITECTURE nav.sa cosy-laptop1
+CPP WM NavWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG nav.tp TranslationProcess --log 
+CPP GD nav.control NavControl -c /home/cosy/CAST/robone/onrobone.ccf  --log -e 1 #--no-x-window #--debug
+CPP GD slam.process SlamProcess -c /home/cosy/CAST/robone/onrobone.ccf --log #--debug
+CPP GD display.process DisplayNavInPB -c /home/cosy/CAST/robone/onrobone.ccf --log --no-people --no-scans #--retry-interval 10
+CPP GD navgraph.process NavGraphProcess -c /home/cosy/CAST/robone/onrobone.ccf -t 0.05 --remove-motion --log --min-door-width 0.70 --max-door-width 0.85 #--debug
+CPP GD sensordata.logger SensorDataLogger --log
+
+SUBARCHITECTURE debug.sa cosy-laptop4
+CPP WM ObjectWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG dummy.client DummyExternalClient --log # console vs TranslationProcess and ObjectTranslationProcess
+
+SUBARCHITECTURE place.sa cosy-andrzej
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+CPP GD Place.Controller PlaceController --config place.cfg --start true
+CPP GD Place.Monitor PlaceMonitor --config place.cfg
+CPP GD Place.PeekabotClient PlacePeekabotClient --config place.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config place.cfg --videoserver dcam_sock
+CPP GD Place.DataSaver PlaceDataSaver --config place.cfg
+CPP GD Place.VisualProcessor PlaceVisualProcessor --config place.cfg
+CPP GD Place.LaserProcessor PlaceLaserProcessor --config place.cfg
+CPP GD Place.CueIntegrator PlaceCueIntegrator --config place.cfg
+CPP GD Place.NodeLabeller PlaceNodeLabeller --config place.cfg
+
+#NavGraph Process
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO navgraph.process
+CONNECTION Robotbase::Odometry hardware.robotbase.server PUSH_TO navgraph.process
+
+# Slam Process
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO slam.process
+CONNECTION Robotbase::Odometry hardware.robotbase.server PUSH_TO slam.process
+
+# Nav Control
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO nav.control
+CONNECTION Robotbase::Odometry hardware.robotbase.server PUSH_TO nav.control
+CONNECTION Robotbase::MotionCommand nav.control PUSH_TO hardware.robotbase.server
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO display.process
+
+#Sensor data logger
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO sensordata.logger
+CONNECTION Robotbase::Odometry hardware.robotbase.server PUSH_TO sensordata.logger
+
+# Data servers -> Place.SA
+CONNECTION Laser::Scan hardware.laser.server PUSH_TO Place.DataProvider
+CONNECTION Robotbase::Odometry hardware.robotbase.server PUSH_TO Place.DataProvider
+CONNECTION Vision::ImageFrame Place.DataProvider PULL_FROM hardware.video.server
+
+# Place.SA -> Nav.SA
+CONNECTION PlaceData::NodePlaceInfo navgraph.process PULL_FROM Place.NodeLabeller
+

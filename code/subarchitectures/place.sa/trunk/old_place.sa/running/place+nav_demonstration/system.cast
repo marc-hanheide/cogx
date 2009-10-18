@@ -1,0 +1,49 @@
+HOST localhost
+
+SUBARCHITECTURE nav.sa
+CPP WM NavWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG Nav.TP TranslationProcess --log 
+#CPP GD Nav.NavControl NavControl -c onrobone.ccf --log -e 1 #--debug
+CPP GD Nav.SlamProcess SlamProcess -c onrobone.ccf
+CPP GD Nav.DisplayNavInPB DisplayNavInPB -c onrobone.ccf --no-people --no-scans #--retry-interval 10
+CPP GD Nav.LaserMotionDetector LaserMotionDetectorTracker -c onrobone.ccf
+CPP GD Nav.NavGraphProcess NavGraphProcess -c onrobone.ccf -t 0.05 --log
+#CPP MG Nav.TagCreator TagCreator --log
+
+
+SUBARCHITECTURE place.sa
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+CPP GD Place.Controller PlaceController --config place.cfg --start false
+CPP GD Place.Monitor PlaceMonitor --config place.cfg
+CPP GD Place.PeekabotClient PlacePeekabotClient --config place.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config place.cfg --load /home/czikus/Current/CAST/Data/Labeled/bcr_cloudy_env3.data
+#CPP GD Place.DataProvider PlaceDataProvider --config place.cfg --load /home/czikus/Current/CAST/Data/Original/BhamCoSyReview/night_env09.data
+CPP GD Place.DataSaver PlaceDataSaver --config place.cfg
+CPP GD Place.VisualProcessor PlaceVisualProcessor --config place.cfg
+CPP GD Place.LaserProcessor PlaceLaserProcessor --config place.cfg
+CPP GD Place.CueIntegrator PlaceCueIntegrator --config place.cfg
+CPP GD Place.NodeLabeller PlaceNodeLabeller --config place.cfg
+
+
+# Connections to DataProvider
+# NavGraphProcess
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.NavGraphProcess
+CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.NavGraphProcess
+# SlamProcess
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.SlamProcess
+CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.SlamProcess
+# NavControl
+#CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.NavControl
+#CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.NavControl
+# Display
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.DisplayNavInPB
+# Laser
+CONNECTION Laser::Scan Place.DataProvider PUSH_TO Nav.LaserMotionDetector
+CONNECTION Robotbase::Odometry Place.DataProvider PUSH_TO Nav.LaserMotionDetector
+
+# Connections to NodeLabeller
+CONNECTION PlaceData::NodePlaceInfo Place.Monitor PULL_FROM Place.NodeLabeller
+CONNECTION PlaceData::NodePlaceInfo Nav.NavGraphProcess PULL_FROM Place.NodeLabeller
+

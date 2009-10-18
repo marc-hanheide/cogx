@@ -1,0 +1,22 @@
+- Add new mode to the videoserver 640x480 gray scale
+- test -O3 and no -g
+
+- app for doing feature extraction with laser features
+- LaserProcessor
+- CueIntegrator
+- TemporalIntegrator
+- DoorValidator, implement fake door canceling
+- Implement OcclusionDetector, to detect cases when people occlude the view
+
+
+
+Notes on integration with NAV.SA
+====================================
+- nav.sa pulls information from place.sa
+- in the pull request, it sends the following string: "id=<node_id> new=<0/1> gateway=<0/1>"
+- if new=1, the robot just created or revisited a new node
+- if new=1, the id is one of those we know and gateway= has changed, it means that the node was updated
+- we sent back the NodePlaceInfo structure
+- in this struct, class 0 is "Unknown"
+- we should agree on place names with others
+

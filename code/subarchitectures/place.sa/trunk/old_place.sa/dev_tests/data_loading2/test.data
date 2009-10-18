@@ -1,0 +1,16 @@
+FramesSaved = 4
+
+[Laser]
+Available = True
+DataFile = test_data/scans.dat
+
+[Odometry]
+Available = True
+DataFile = test_data/odometry.dat
+
+[Target]
+DataFile = test_data/target.dat
+
+[Vision]
+Available = True
+DataDir = test_data/images

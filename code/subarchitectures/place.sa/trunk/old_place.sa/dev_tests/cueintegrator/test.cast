@@ -1,0 +1,14 @@
+HOST localhost
+
+SUBARCHITECTURE place.sa
+CPP WM PlaceWorkingMemory
+CPP TM AlwaysPositiveTaskManager 
+CPP GD Place.Controller PlaceController  --log true --debug true --config test.cfg --start false
+CPP GD Place.Monitor PlaceMonitor --config test.cfg
+CPP GD Place.PeekabotClient PlacePeekabotClient --config test.cfg
+CPP GD Place.DataProvider PlaceDataProvider --config test.cfg --load /home/czikus/Current/CAST/Data/Labeled/bcc_night1_4c.data
+CPP GD Place.DataSaver PlaceDataSaver --config test.cfg
+CPP GD Place.VisualProcessor PlaceVisualProcessor --config test.cfg
+CPP GD Place.LaserProcessor PlaceLaserProcessor --config test.cfg
+CPP GD Place.CueIntegrator PlaceCueIntegrator --log true --debug true --config test.cfg
+
