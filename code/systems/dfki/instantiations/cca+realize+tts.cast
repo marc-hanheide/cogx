@@ -9,14 +9,13 @@ JAVA TM 		cast.architecture.AlwaysPositiveTaskManager #--log --debug
 JAVA MG asr     comsys.components.asr.cc_ASR --src gui #--log --debug
 JAVA GD parser  comsys.components.parse.cc_Parser --grammar ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml #--log true #--debug
 JAVA GD parseselection comsys.components.parse.cc_ParseSelection --parameterfile ./subarchitectures/comsys/learning/params.txt --asr-correction false --discourse-level-composition true --disfluency-correction false --log true #--debug
-#JAVA GD cca  comsys.components.collab.cc_ContinualCollabActing --facts /dev/null --rules ./subarchitectures/comsys/src/mercury-c++/abduction/rules.txt --log --debug
 
 JAVA GD fakeclarification comsys.components.cca.cc_FakeClarificationGenerator --modality vision --log
 JAVA GD fakeverification comsys.components.cca.cc_FakeVerificationGenerator --modality vision --log
 
 JAVA GD refreadings comsys.components.reference.cc_ReferentialReadings --log
 JAVA GD refbindings comsys.components.reference.cc_ReferentialBindings --log
-JAVA GD cca comsys.components.cca.cc_ContinualCollabActing --ruleset ./subarchitectures/comsys/rulesets/comsys-rulefiles.txt --log #--debug
+JAVA GD cca comsys.components.cca.cc_CCA --ruleset ./subarchitectures/comsys/rulesets/comsys-rulefiles.txt --log #--debug
 
 JAVA GD contentPlanning comsys.components.realize.cc_ContentPlanning --grammar ./subarchitectures/comsys/grammars/contentPlanning/grammar.xml --redux ./subarchitectures/comsys/grammars/contentPlanning/modelredux.rdx --log
 JAVA GD realizer comsys.components.realize.cc_Realizer --ccg ./subarchitectures/comsys/grammars/openccg/moloko.v6/grammar.xml --ngrams ./subarchitectures/comsys/grammars/contentPlanning/ngram-corpus.txt --log
