@@ -1,0 +1,3 @@
+Requires:
+- Qt >= 4.3
+- cmake >= 2.6.3

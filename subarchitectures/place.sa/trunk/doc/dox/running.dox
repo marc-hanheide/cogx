@@ -1,0 +1,28 @@
+/*!
+\page running Running Place.SA
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section models Place Models
+<hr>
+Models required to run Place.SA are available in the \c kth/place_models directory within the CoSy SVN tree. The following models and configuration files are required:
+- visual models
+- laser-based models
+- scaling factors for the laser features
+- integration models
+- scaling factors for the classifiers outputs (used before integration is performed)
+
+Currently, the following models can be found there:
+- \c bcr.* - models created based on the data acquired before the CoSy Review in Birmingham. See the \c bcr.txt file for detailed information.
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section devtests Development Tests
+<hr>
+- data_loading - Tests loading data saved with DataSaver. Simple data are there in the test directory.
+- data_loading2 - Tests loading data saved with DataSaver. Loads data from some external directory.
+- streaming_from_robot - Used to test data streaming from all servers running on the robot.
+
+*/

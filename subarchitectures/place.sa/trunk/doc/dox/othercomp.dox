@@ -1,0 +1,169 @@
+/*!
+\page othercomp Specification of Other Related Components
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section dcamvideoserver DCamVideoServer
+<hr>
+\b Class: \ref DCamVideoServer
+\n
+
+\b Brief: Replacement for the VideoServer tailored for the Videre cameras.
+\n
+
+\b Description: A video server acquiring images using the DCam library provided with Videre cameras. The server is able to output images through a CAST pull connection as well as a socket connection. The images are grabbed using the DCam interface with the resolution of 640x480 pixels and using the RGB24 format. Then, if the CAST pull connection is used, they are sent in this format directly. If the socket connection is used, the client can request an image convertion which will be performed on the server side to reduce the network load. The following output formats are supported: 640x480 RGB24 (should be avoided if the high resolution is not required by the client), 320x240 gray. Several parameters of the cameras can be controlled through the command line arguments of the component. These are: brightness (manual/auto), exposure (manual/auto), gain, white balance (manual red/blue), gamma (manual/auto).
+\n
+
+\b Building: The \c BUILD_DCAMVIDEOSERVER switch must be on.
+\n
+
+\b Inputs:
+- image frame request
+- if the socket connection is used, the client asks for specific image format
+\n
+
+\b Outputs:
+- \ref Vision::ImageFrame through a CAST pull connection or image streamed through a socket on request
+\n
+
+\b Arguments:
+- <tt> --port \<number\> </tt> - Used to specify the port on which the server should reside. Default 3434.
+- <tt> --gain \<value\> </tt> - Allows to specify gain. Automatic mode is used if <0. Default 60.
+- <tt> --exposure \<value\> </tt> - Allows to specify exposure time. Automatic mode is used if <0. Default: automatic.
+- <tt> --brightness \<value\> </tt> - Allows to specify brightness. Automatic mode is used if <0. Default: automatic.
+- <tt> --autogamma \<bool\> </tt> - Allows to enable automatic gamma selection. Default: automatic.
+- <tt> --blue \<value\> </tt> - Allows to specify white balance parameters. Automatic mode is used if <0. Default: automatic.
+- <tt> --red \<value\> </tt> - Allows to specify white balance parameters. Automatic mode is used if <0. Default: automatic.
+\n
+
+<b>Socket communication protocol:</b>
+- Open connection with the server
+- Send one byte describing the requested image format: RGB24/gray
+- Send one byte describing the requested image size: full 640x480/downsampled 320x240
+- Receive 2 bytes (short) with the image width
+- Receive 2 bytes (short) with the image height
+- Receive timeval structure with the image timestamp
+- Receive the image data (width*height*bpp bytes)
+- Close the connection
+\n
+
+<b>Code snippet for grabbing an image from the server through the socket connection.</b>\n
+This code is used in DataProvider to grab gray scale images of resolution 320x240. It can be easily modified to support other image formats/sizes.
+\code
+bool grabImageFromDCamVideoServerSocket(PlaceData::Image *image)
+{
+  // Create the socket
+  int sock = socket(PF_INET, SOCK_STREAM, 0);
+  if (sock < 0) 
+  {
+    println("DCamVideoServer socket client: Cannot open socket!");
+    return false;
+  }
+
+  // Init server address
+  sockaddr_in serverName;
+  hostent *hostInfo;
+  serverName.sin_family = AF_INET;
+  serverName.sin_port = htons(_socketServerPort);
+  hostInfo = gethostbyname(_socketServerHostname.c_str());
+  if (hostInfo == NULL)
+  {
+    println("DCamVideoServer socket client: Unknown host %s!", _socketServerHostname.c_str());
+    close(sock);
+    return false;
+  }
+  serverName.sin_addr = *(struct in_addr *) hostInfo->h_addr;
+
+  // Connect to the server
+  if (0 > connect (sock, (struct sockaddr *) &serverName, sizeof (serverName)))
+  {
+    println("DCamVideoServer socket client: Cannot connect to the server!");
+    close(sock);
+    return false;
+  }
+
+  // Send the image format and size information
+  char format = ImageSocketServer::FORMAT_GREY;
+  char size = ImageSocketServer::SIZE_320240;
+  if (write(sock, &format, 1) != 1)
+  {
+    println("DCamVideoServer socket client: Cannot send the image format!");
+    close(sock);
+    return false;
+  }
+  if (write(sock, &size, 1) != 1)
+  {
+    println("DCamVideoServer socket client: Cannot send the image size!");
+    close(sock);
+    return false;
+  }
+
+  // Read the size
+  uint16_t width;
+  uint16_t height;
+
+  int bytesRead;
+  bytesRead = read(sock, &width, sizeof(uint16_t));
+  if (bytesRead!=sizeof(uint16_t))
+  {
+    println("DCamVideoServer socket client: Incorrect number of bytes received from server!");
+    close(sock);
+    return false;
+  }
+
+  bytesRead = read(sock, &height, sizeof(uint16_t));
+  if (bytesRead!=sizeof(uint16_t))
+  {
+    println("DCamVideoServer socket client: Incorrect number of bytes received from server!");
+    close(sock);
+    return false;
+  }
+
+  // Check the size received
+  if ((width!=320) || (height!=240))
+    throw CASTException(__HERE__, "Incorrect image size (%d, %d)!", width, height);
+
+  // Set image size and channels
+  image->imageBuffer.m_width = width;
+  image->imageBuffer.m_height = height;
+  image->imageBuffer.m_nChannels = 1;
+
+  // Read the time
+  timeval time;
+
+  bytesRead = read(sock, &time, sizeof(timeval));
+  if (bytesRead!=sizeof(timeval))
+  {
+    println("DCamVideoServer socket client: Incorrect number of bytes received from server!");
+    close(sock);
+    return false;
+  }
+
+  image->realTimeStamp.m_s = time.tv_sec;
+  image->realTimeStamp.m_us = time.tv_usec;
+
+  // Read the data
+  image->imageBuffer.m_image.length(width*height);
+  bytesRead=0;
+  while (bytesRead<width*height)
+  {
+    int br = read(sock, &(image->imageBuffer.m_image[0])+bytesRead, width*height-bytesRead);
+    if (br<=0)
+    {
+      println("DCamVideoServer socket client: Connection broken!");
+      close(sock);
+      return false;
+    }
+    bytesRead+=br;
+  }
+
+  // Close socket
+  close(sock);
+
+  return true;
+}
+\endcode
+
+
+*/
