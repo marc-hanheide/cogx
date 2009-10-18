@@ -1,0 +1,10 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+#HOST 192.168.218.14
+#HOST 130.237.218.219
+HOST localhost
+COMPONENT CPP laser.server LaserServerPlayer --log --player-host 192.168.218.4 #--debug
+#COMPONENT CPP laser.server LaserServerPlayer --log --player-host minnie.nada.kth.se #--debug
+#COMPONENT CPP laser.server LaserServerPlayer --log --player-host 130.237.218.108 #--debug
+COMPONENT CPP laser.client PullClientLaser --log  #--debug
+
