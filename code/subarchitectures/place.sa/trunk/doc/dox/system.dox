@@ -1,0 +1,134 @@
+/*!
+\page system Architecture of the Place Classification System
+
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section csd System Context Diagram
+<hr>
+\image html scd.png "Place Classification System Implemented in Place.SA - System Context Diagram"
+
+
+
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section dfd Data Flow Diagrams
+<hr>
+\image html legend.png "Data Flow Diagrams -  Legend"
+\n
+\image html dfd.png "Place Classification System Implemented in Place.SA - Data Flow Diagram"
+
+
+
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section components Component Specification
+<hr>
+
+List of components and algorithms used to implement them. Components are marked with <strong>C:</strong>, algorithms with <strong>A:</strong>.
+The components and algorithms are organized in a hierarchy which encodes their encapsulation relationship. Each component/algorithm is given an ID which also reflects its position in the hierarchy. If two components are given the same number (with different letters after a hyphen) then they are used alternatively.
+
+<table border='1' cellpadding='5' cellspacing='0' width='100%' >
+<tr>
+  <td bgcolor='#eeeeee' width='90%' > Components/Algorithms </td>
+</tr>
+<tr><td>
+  <strong>C:1:</strong> Global visual feature extractor
+</td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>A:1.1:</strong> Composed Receptive Field Histograms (CRFH) <br>
+  <strong>Comment:</strong> Calculated from the second-order Gaussian derivatives applied to the illumination channel. Filtering of small values can be used to improve speed. <br>
+  <strong>Parameters:</strong> scales, bins per dimension
+</div></td></tr>
+<tr><td >
+  <strong>C:2:</strong> Extractor of Geometric Features from Laser Range Scans
+</td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>A:2.1:</strong> Simple Geometric Features (martinez05supervised)
+</div></td></tr>
+<tr><td >
+  <strong>C:3:</strong> Redundant Frame Filter
+</td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>A:3.1:</strong> Kernelized Distance-based filter
+</div></td></tr>
+<tr><td >
+    <strong>C:4:</strong> Classifier<br>
+    <strong>Specifications:</strong> Multi-class classifier able to produce class scores.
+</td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>A:4.1:</strong> The Support Vector Machine Binary Classifier<br>
+  <strong>Parameters:</strong> C
+</div></td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>C:4.2:</strong> Multiclass SVM Extension
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>A:4.2.1:</strong> Modified One-against-all Multi-class Extension (pronobis07iros)
+</div></td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>C:4.3:</strong> Kernel Function
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>A:4.3.1-A:</strong> Gaussian Kernel<br>
+  <strong>Comment:</strong> Used for laser features.<br>
+  <strong>Parameters:</strong> gamma
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>A:4.3.1-B:</strong> Chi2 Kernel<br>
+  <strong>Comment:</strong> Used for CRFHs.<br>
+  <strong>Parameters:</strong> gamma
+</div></td></tr>
+<tr><td >
+  <strong>C:5:</strong> Integrator <br>
+  <strong>Specification:</strong> Performs integration of the scores (outputs) from several classifiers and across time. Estimates confidence of the decision based on these outputs and ranks hypotheses.
+</td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>C:5.1:</strong> SVM-based Disciminative Accumulation Scheme (SVM-DAS) (pronobis08icra)<br>
+  <strong>Specification:</strong> Performs integration of the scores (outputs) from several classifiers.
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>A:5.1.1:</strong> The Support Vector Machine Binary Classifier<br>
+  <strong>Parameters:</strong> C
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>C:5.1.2:</strong> Multiclass SVM Extension
+</div></td></tr>
+<tr><td ><div style='margin-left:120px;'>
+  <strong>A:5.1.2.1:</strong> One-against-one Multi-class Extension
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>C:5.1.3:</strong> Kernel Function
+</div></td></tr>
+<tr><td ><div style='margin-left:120px;'>
+  <strong>A:5.1.3.1:</strong> Gaussian Kernel<br>
+  <strong>Parameters:</strong> gamma
+</div></td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>C:5.2:</strong> Confidence Estimation and Hypotheses Ranking Mechanism
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>A:5.2.1:</strong> Distance-based Confidence Estimation and Hypotheses Ranking Algorithm  (pronobis07iros).<br>
+</div></td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>C:5.3:</strong> Temporal Cue Integration Mechanism<br>
+  <strong>Specification:</strong> Is able to integrate cues across time. Is able to use the information about robot movement.
+</div></td></tr>
+<tr><td ><div style='margin-left:80px;'>
+  <strong>A:5.3.1:</strong> Voting-based Algorithm.<br>
+  <strong>Parameters:</strong> STM size
+</div></td></tr>
+<tr><td >
+  <strong>C:6:</strong> Movement Estimator
+</td></tr>
+<tr><td ><div style='margin-left:40px;'>
+  <strong>A:6.1:</strong> Odometry-based Movement Estimator
+</div></td></tr>
+</table>
+*/
+

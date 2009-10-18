@@ -1,0 +1,16 @@
+#!/bin/bash
+
+files=( legend scd dfd )
+widths=( 350 550 900 )
+
+for i in `seq 1 ${#files[*]}`
+do
+    let i=$i-1
+    f=${files[$i]}
+    w=${widths[$i]}
+
+    unoconv -d graphics -f png ${f}.odg
+    convert ${f}.png -trim -scale ${w}x\> ${f}.png
+done
+
+

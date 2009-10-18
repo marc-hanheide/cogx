@@ -1,0 +1,16 @@
+/*!
+\mainpage Place Classification Subarchitecture (Place.SA)
+
+The Place Classification Subarchitecture (Place.SA) provides topological and semantic information about the
+place where the robot is located extracted from multi-modal (laser-range and visual) sensory data. 
+It implements a multi-sensory place classification system. More information about the place classification 
+system and its implementation in the Place.SA can be found below.
+\n\n
+
+<b>Table of Contents</b>
+- \subpage system "Architecture of the Place Classification System"
+- \subpage sa "Specification of Place.SA"
+- \subpage othercomp "Specification of Other Related Components"
+- \subpage impl "Implementation of Place.SA"
+- \subpage running "Running Place.SA"
+*/

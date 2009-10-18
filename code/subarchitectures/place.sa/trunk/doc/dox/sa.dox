@@ -1,0 +1,585 @@
+/*!
+\page sa Specification of Place.SA
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section workingmem Working Memory
+<hr>
+See \ref PlaceData and \ref PlaceData.idl for a list and descriptions of the data types used
+for exchanging data through the working memory. The usage of these types is explained in the
+sections below.
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section extinterface External Interface
+<hr>
+
+\subsection ei_input Input:
+- \ref Vision::ImageFrame or image streamed over a socket - Image frame, please see the description of
+DataProvider below for more info.
+- \ref Laser::Scan - Laser range scan
+- \ref Robotbase::Odometry - Odometry reading
+\n\n
+
+\subsection ei_output Output:
+- \ref PlaceData::CurrentPlaceInfo - The most recent classification result with frame number and timestamps.
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section components Specification of Place.SA Components
+<hr>
+
+<!-- ---------------------------------- -->
+\subsection c_wmem PlaceWorkingMemory
+\b Class: PlaceWorkingMemory
+\n
+
+\b Brief: Working memory of the Place.SA
+\n\n
+
+
+<!-- ---------------------------------- -->
+\subsection c_datprovider DataProvider
+\b Class: \ref PlaceDataProvider
+\n
+
+\b Brief: Collects and synchronizes multi-sensory data when triggered.
+\n
+
+\b Description: In the standard mode, this component continuously grabs laser scans and odometry 
+readings and keeps a history of the last few. When triggered, it grabs an image (either
+through a CAST pull connection or through a socket) and looks up a
+scan and odometry reading that are closest in time. A delay can be introduced between
+the image grabbing operation and scan/odometry lookup to ensure that the best matching scan/odometry
+can always be found. The component can also load synchronized data directly
+from disk. The data must be in the format used by DataSaver and can contain target label information.
+It also resizes/converts the image if necessary.
+
+After the data have been grabbed, the component outputs all the collected information together 
+with a frame number (identical for all synchronized sensory data) and real timestamp
+to the working memory. The time at which the data was placed in the WM is also saved. 
+
+The component can output data acquired using only selected sensors 
+(depending on the selection in the config file). If for some reason data from one source are 
+unavailable, the component returns empty data structure marked as invalid.
+\n
+
+\b Inputs:
+- \ref PlaceData::DataProviderCommand (Removed) - the component waits for the DP_CMD_UPDATE
+\n
+
+\b Outputs:
+- \ref PlaceData::Image (Overwritten) - with \c status=DS_INVALID in case the image was unavailable
+- \ref PlaceData::LaserScan (Overwritten) - with \c status=DS_INVALID in case the scan was unavailable
+- \ref PlaceData::Odometry (Overwritten) - with \c status=DS_INVALID in case the odometry was unavailable
+- \ref PlaceData::Target (Overwritten) - with \c status=DS_INVALID in case the target information was unavailable
+- \ref PlaceData::DataProviderCommandAck (Overwritten) - ack that the command was received
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+- <tt> --load \<data_file\> </tt> - Load data from disk.
+- <tt> --videoserver \<server_type\> </tt> - Allows to specify the video server that should be used for grabbing images. Currently the following options are available: \c std for standard VideoServer, \c dcam for the DCamVideoServer and CAST pull connection, \c dcam_sock for the DCamVideoServer and socket connection.
+\n
+
+\b Configuration (group <tt>DataProvider</tt>):
+- <tt> UseLaser = \<bool\> </tt> - Determines which data to grab.
+- <tt> UseVision = \<bool\> </tt> - Determines which data to grab.
+- <tt> UseOdometry = \<bool\> </tt> - Determines which data to grab.
+- <tt> QueueTimeWindow = \<time\> </tt> - Size of the scan/odometry queue in seconds.
+- <tt> QueueSize = \<size\> </tt> - Size of the scan/odometry queue in no. of elements.
+- <tt> CameraIndex = \<cam_id\> </tt> - Index of the camera from which we grab images.
+- <tt> SocketServerPort = \<port_no\> </tt> - Host on which the socket-based image server is running.
+- <tt> SocketServerHostname = \<hostname\> </tt> - Port on which the socket-based image server is running.
+- <tt> ScanDelay = \<delay_in_us\> </tt> - Delay between image pulling and scan lookup in us.
+\n
+\n\n
+
+
+<!-- ---------------------------------- -->
+\subsection c_datasaver DataSaver
+\b Class: PlaceDataSaver
+\n
+
+\b Brief: Grabs synchronized multi-sensory data and, if in the saving mode, saves the data to disk.
+\n
+
+\b Description: This component grabs the synchronized data produced by 
+DataProvider from the WM. Then, it saves the data to disk if in the saving mode. 
+The mode can be changed by sending DataSaverCommand
+to the working memory. When command \c DS_CMD_START is received the component enters the saving mode.
+The command contains paths used to store the data. At first, the component is paused and 
+\c DS_CMD_UNPAUSE must be sent to start saving. When \c DS_CMD_STOP is received, the component 
+leaves the saving mode. Command \c DS_CMD_PAUSE allows to
+pause saving until the command \c DS_CMD_UNPAUSE is received. The component outputs status (to WM)
+which indicates the result of the last operation performed by the component.
+
+The component is able to save target labels together with the data. The command \c DS_CMD_NEW_TARGET
+must be sent to change the target label used for saving.
+
+The component can automatically send the \c DP_CMD_UPDATE commands to allow continuous 
+data grabbing. The command \c DS_CMD_UPDATE_START and \c DS_CMD_UPDATE_STOP are used to
+enable and disable this. When automatic updates are enabled, the component will send
+\c DP_CMD_UPDATE after it has grabbed the data from the WM. A delay can be introduced 
+so that the component waits some time specified in us before \c DP_CMD_UPDATE is sent.
+
+For testing, if the directory to which the data should be saved equals \c \<DO_NOT_SAVE\>,
+the data writing is skipped (everything else works like described above).
+\n
+
+\b Inputs:
+- \ref PlaceData::DataSaverCommand (Removed) - the command
+- \ref PlaceData::Image
+- \ref PlaceData::LaserScan
+- \ref PlaceData::Odometry
+\n
+
+\b Outputs:
+- \ref PlaceData::DataSaverStatus (overwritten) - indicates what kinds of data were saved and provides the frameNo of the data.
+- \ref PlaceData::DataSaverCommandAck (Overwritten) - ack that the command was received
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+\n
+
+\b Configuration (group <tt>DataSaver</tt>):
+- <tt> UpdateDelay = \<delay_in_us\> </tt> - Delay in us before new DP_CMD_UPDATE is sent.
+\n
+\n\n
+
+
+<!-- ---------------------------------- -->
+\subsection c_monitor Monitor
+\b Class: PlaceMonitor
+\n
+
+\b Brief: Provides graphical interface for the SA and monitors SA parameters, results and working memory contents.
+\n
+
+\b Description: Run Monitor to see for yourself :)
+\n
+
+\b Inputs:
+- monitors everything
+\n
+
+\b Outputs:
+- \ref PlaceData::DataSaverCommand
+- \ref PlaceData::DataProviderCommand
+- \ref PlaceData::VisualProcessorCommand
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file
+- <tt> --nogui \<bool\> </tt> - If set to true, disables gui
+\n
+
+\b Configuration (group <tt>Common</tt>):
+- <tt> LabelFile = \<label_file\> </tt> - Path to the label file
+\n
+
+\b Configuration (group <tt>Monitor</tt>):
+- nothing yet
+\n
+\n\n
+
+
+<!-- ---------------------------------- -->
+\subsection c_tester Tester
+\b Class: PlaceTester
+\n
+
+\b Brief: Performs tests of the Place.SA.
+\n
+
+\b Description: Implements tests as subclasses of PlaceTest.
+\n
+
+\b Inputs:
+- depends on the test
+\n
+
+\b Removes:
+- depends on the test
+\n
+
+\b Outputs:
+- depends on the test
+
+\b Arguments:
+- no arguments
+\n
+\n\n
+
+
+<!-- ---------------------------------- -->
+\subsection c_visproc VisualProcessor
+\b Class: \ref PlaceVisualProcessor
+\n
+
+\b Brief: Performs extraction of global visual features and vision-based place classification.
+\n
+
+\b Description: This component waits until a new image is placed in the WM and makes a local
+copy of it. If the image is valid,
+the global visual features are extracted from the image. Then,
+the features are classified using an SVM place model loaded at startup. The component outputs
+to the WM the classifier outputs (used for cue integration), classification results 
+and additional information such as the
+classification/extraction time which can be used for debugging. If the image grabbed from the WM
+is invalid, the component outputs results/output that are also invalid.
+Confidence threshold can be specified in the config file. Based on that threshold, 
+the \c confident boolean will be set in the output struct.
+
+The component can automatically send the \c DP_CMD_UPDATE commands to allow continuous 
+processing. The command \c VP_CMD_UPDATE_ON_READ_START and \c VP_CMD_UPDATE_STOP are used to
+enable and disable this feature. When automatic updates are enabled using the 
+\c VP_CMD_UPDATE_ON_READ_START command, the component will send
+\c DP_CMD_UPDATE after it has read the image from the WM.
+\n
+
+\b Inputs:
+- \ref PlaceData::VisualProcessorCommand (Removed) - the command
+- \ref PlaceData::Image
+\n
+
+\b Outputs:
+- \ref PlaceData::VisualProcessorCommandAck (Overwritten) - Ack that the command was received
+- \ref PlaceData::VisualProcessorStatus (Overwritten) - Additional information about the processing that was just completed. Can be used for debugging.
+- \ref PlaceData::VisualResults (Overwritten) - Classification results and classifier outputs.
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+\n
+
+\b Configuration (group <tt>Common</tt>):
+- <tt> LabelFile = \<label_file\> </tt> - Path to the label file
+\n
+
+\b Configuration (group <tt>VisualProcessor</tt>):
+- <tt> CrfhDescriptors = \<descr_str\> </tt> 
+- <tt> CrfhSmallValueFiltering = \<bool\> </tt> 
+- <tt> CrfhFilteringThreshold = \<threshold\> </tt> 
+- <tt> CrfhSkipBorderPixels = \<px_no\> </tt> 
+- <tt> ModelFile = \<model_path\> </tt> 
+- <tt> SvmOaoAlg = \<alg_no\> </tt> 
+- <tt> SvmOaaAlg = \<alg_no\> </tt> 
+- <tt> SvmMeasure = \<meas_no\> </tt> 
+- <tt> ConfidenceThreshold = \<confidence_value\> </tt>
+- <tt> Delay = \<us\> </tt> - Additional delay, to decrease framerate and yield.
+\n
+\n\n
+
+
+
+<!-- ---------------------------------- -->
+\subsection c_visproc LaserProcessor
+\b Class: \ref PlaceLaserProcessor
+\n
+
+\b Brief: Performs extraction of geometric features and laser-based place classification.
+\n
+
+\b Description: This component waits until a new laser scan is placed in the WM and makes 
+a local copy of it. If the scan is valid,
+geometric features are extracted from the scan. Then,
+the features are classified using an SVM place model loaded at startup. The component outputs
+to the WM the classifier outputs (used for cue integration), classification results 
+and additional information such as the
+classification/extraction time which can be used for debugging. If the scan grabbed from the WM
+is invalid, the component outputs results/output that are also invalid.
+Confidence threshold can be specified in the config file. Based on that threshold, 
+the \c confident boolean will be set in the output struct.
+
+The component can automatically send the \c DP_CMD_UPDATE commands to allow continuous 
+processing. The command \c LP_CMD_UPDATE_ON_READ_START and \c LP_CMD_UPDATE_STOP are used to
+enable and disable this feature. When automatic updates are enabled using the 
+\c LP_CMD_UPDATE_ON_READ_START command, the component will send
+\c DP_CMD_UPDATE after it has read the image from the WM.
+\n
+
+\b Inputs:
+- \ref PlaceData::LaserProcessorCommand (Removed) - the command
+- \ref PlaceData::LaserScan
+\n
+
+\b Outputs:
+- \ref PlaceData::LaserProcessorCommandAck (Overwritten) - Ack that the command was received
+- \ref PlaceData::LaserProcessorStatus (Overwritten) - Additional information about the processing that was just completed. Can be used for debugging.
+- \ref PlaceData::LaserResults (Overwritten) - Classification results and classifier outputs.
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+\n
+
+\b Configuration (group <tt>Common</tt>):
+- <tt> LabelFile = \<label_file\> </tt> - Path to the label file
+\n
+
+\b Configuration (group <tt>LaserProcessor</tt>):
+- <tt> ModelFile = \<model_path\> </tt> 
+- <tt> FeatureConfigFile = \<file_path\> </tt> - config file specifying which geometric features to use
+- <tt> ScaleConfigFile = \<file_path\> </tt> - scale factors, used to rescale features
+- <tt> SvmOaoAlg = \<alg_no\> </tt> 
+- <tt> SvmOaaAlg = \<alg_no\> </tt> 
+- <tt> SvmMeasure = \<meas_no\> </tt> 
+- <tt> ConfidenceThreshold = \<confidence_value\> </tt>
+\n
+\n\n
+
+
+
+<!-- ---------------------------------- -->
+\subsection c_cueint CueIntegrator
+\b Class: \ref CueIntegrator
+\n
+
+\b Brief:  Integrates the outputs produced by the visual and laser-based models in the 
+           \ref VisualProcessor and \ref LaserProcessor.
+\n
+
+\b Description: This component wait until new \ref PlaceData::VisualResults and 
+\ref PlaceData::LaserResults appear in the WM. The, if none of them is valid, it
+returns invalid \ref PlaceData::IntegratedResults. If only one of them is valid, 
+it simply copies the results and returns them as integrated results. If both are 
+valid, the component performs cue integration using SVM-DAS (integrates classifiers
+outputs found in the Results structs). Then returns the results
+of integration in the \ref PlaceData::IntegratedResults struct. Confidence
+threshold can be specified in the config file. Based on that threshold, 
+the \c confident boolean will be set in the output struct.
+\n
+
+\b Inputs:
+- \ref PlaceData::VisualResults - the results from VisualProcessor
+- \ref PlaceData::LaserResults - the results from LaserProcessor
+\n
+
+\b Outputs:
+- \ref PlaceData::IntegratedResults (Overwritten) - Integrated classification results and classifier outputs.
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+\n
+
+\b Configuration (group <tt>Common</tt>):
+- <tt> LabelFile = \<label_file\> </tt> - Path to the label file
+\n
+
+\b Configuration (group <tt>CueIntegrator</tt>):
+- <tt> ModelFile = \<model_path\> </tt> - integration model file
+- <tt> ScaleConfigFile = \<file_path\> </tt> - scale factors, used to rescale outputs
+- <tt> SvmOaoAlg = \<alg_no\> </tt> 
+- <tt> SvmOaaAlg = \<alg_no\> </tt> 
+- <tt> SvmMeasure = \<meas_no\> </tt> 
+- <tt> ConfidenceThreshold = \<confidence_value\> </tt>
+\n
+\n\n
+
+
+
+
+<!-- ---------------------------------- -->
+\subsection c_nodelab NodeLabeller
+\b Class: \ref NodeLabeller
+\n
+
+\b Brief: Performs spatial and temporal accumulation and provides labels for nodes and areas.
+\n
+
+\b Description: The component waits for integrated results and odometry information. Then, based on the
+  odometry reading, performs spatial and/or temporal integration using the grid-like cache. Additionally,
+  the component handles pull connection queries from the \ref NavGraphProcess. The pull queries behave
+  like commands from the \ref NavGraphProcess which are used to inform the NodeLabeller that the robot changed
+  node or node gateway status changed. In return, the NodeLabeller sends the node and area class to
+  the \ref NavGraphProcess in the \ref PlaceData::NodePlaceInfo struct.
+  Confidence threshold can be specified in the config file. Based on that threshold, 
+  the \c confident boolean will be set in the output struct.
+
+  \ref NavGraphProcess sends information about the node as a string attached to the query. The string
+  is formatted as follows: <tt>"node_id=\<id\> gateway=0/1 query_type=\<type\>"</tt>. The \c node_id
+  gives the id of the node which the robot visited or the information about which is being provided or
+  requested. The \c gateway boolean equals 1 if the node is a gateway. The query_type is used to specify the
+  type of the query. The following types are used:
+  - NL_QT_INFO - Read-only query. NodeLabeller should only provide classifications for the node.
+  - NL_QT_NEW - Informs the NodeLabeller that the robot created or revisited the node. If the node
+                is revisited, the gateway status must remain unchanged.
+  - NL_QT_UPDATE - Informs the NodeLabeller that the gateway status of the node has changed.
+\n
+
+\b Inputs:
+- \ref PlaceData::IntegratedResults - the integrated classification results
+- \ref PlaceData::Odometry - odometry reading
+- Pull query from the NavGraphProcess
+\n
+
+\b Outputs:
+- \ref PlaceData::NodePlaceInfo (Over the pull connection) - Info about the node and area class
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+\n
+
+\b Configuration (group <tt>Common</tt>):
+- <tt> LabelFile = \<label_file\> </tt> - Path to the label file
+\n
+
+\b Configuration (group <tt>NodeLabeller</tt>):
+- <tt> PositionBinSize = \<bin_size\> </tt> - Size of the position bins in the cache (in m)
+- <tt> HeadingBinSize = \<bin_size\> </tt> - Size of the heading bins in the cache (in rad)
+- <tt> MaxPriorOutputsCount = \<value\> </tt> - Specifies the influence of the prior (in cache bins)
+- <tt> AccumulateOnlyConfident = \<bool\> </tt> - If true, only confident results will be accumulated in the cache
+- <tt> CachePoseDecay = \<meas_no\> </tt> -  No. of traveled cache bins after which pose information is forgotten (<0 means "never")
+- <tt> ConfidenceThreshold = \<confidence_value\> </tt>
+\n
+\n\n
+
+
+
+<!-- ---------------------------------- -->
+\subsection c_peekabot PeekabotClient
+\b Class: \ref PeekabotClient
+\n
+
+\b Brief: Displays results on a tray attached to the robot in Peekabot.
+\n
+
+\b Description: The component receives results from \ref VisualProcessor, \ref LaserProcessor and \ref CueIntegrator
+  and displays them on a nice semi-transparent tray in PeekaBot.
+\n
+
+\b Inputs:
+- \ref PlaceData::VisualResults - the results from VisualProcessor
+- \ref PlaceData::LaserResults - the results from LaserProcessor
+- \ref PlaceData::IntegratedResults - the integrated classification results
+\n
+
+\b Outputs:
+- nothing, just displays in Peekabot
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+\n
+
+\b Configuration (group <tt>PeekabotClient</tt>):
+- <tt> RobotName = \<name\> </tt> - Name of the robot in Peekabot.
+- <tt> ConnectionRetryDelay = \<delay\> </tt> - Delay in us.
+- <tt> Port = \<value\> </tt> - Port number of Peekabot.
+- <tt> Hostname = \<host_name\> </tt> - Hostname where Peekabot is running.
+- <tt> LoadScene = \<boolean\> </tt> -  If true, scene file will be loaded.
+- <tt> Scene = \<scene_file\> </tt> - Name of the scene file which should be loaded.
+\n
+\n\n
+
+
+<!-- ---------------------------------- -->
+\subsection c_controller Controller
+\b Class: \ref Controller
+\n
+
+\b Brief: Interprets the commands sent to Place.SA.
+\n
+
+\b Description: The component interprets the commands sent to Place.SA from other SAs and controls the internal
+components of Place.SA by sending appropriate commands. Which commands are sent in response to external
+commands can be configured in the config file. Currently the following external commands are supported:
+- CMD_UPDATE - controller sends the DP_CMD_UPDATE command
+- CMD_START - controller sends the VP_CMD_UPDATE_ON_READ_START or DS_CMD_UPDATE_START commands and then DP_CMD_UPDATE
+- CMD_STOP - controller sends the VP_CMD_UPDATE_STOP or DS_CMD_UPDATE_STOP command
+ The controller can be instructed to behave as CMD_START was sent
+automatically, without waiting for an external command.
+\n
+
+\b Inputs:
+- \ref PlaceData::PlaceCommand - external command sent to Place.SA
+\n
+
+\b Outputs:
+- \ref PlaceData::DataProviderCommand
+- \ref PlaceData::VisualProcessorCommand
+\n
+
+\b Arguments:
+- <tt> --debug \<bool\> </tt> - If set to true, debug info will be produced.
+- <tt> --log \<bool\> </tt> - If set to true, log info will be produced.
+- <tt> --config \<config_file\> </tt> - Path to the Place.SA config file.
+- <tt> --start \<bool\> </tt> - If true, the controller will automatically send the START command.
+\n
+
+\b Configuration (group <tt>Controller</tt>):
+- <tt> UpdatesSentOn = \<enum\> </tt> - Used to define, what event should trigger sending the \ref DP_CMD_UPDATE
+ command. If equal to \ref VP_READ, the VisualProcessor will be instructed to send the command when data are read.
+If equal to \ref DS_READ, the DataSaver will be used instead.
+\n
+\n\n
+
+
+
+
+<!-- ------------------------------------------------------------------------------------------ -->
+\n\n
+\section msc Message Sequence Chart
+<hr>
+The chart below is a bit outdated.
+\msc
+hscale = "2";
+
+WM, DataProvider, VisualFeatureExtractor, VisualFrameFilter, VisualClassifier, LaserFeatureExtractor, LaserFrameFilter, LaserClassifier, Integrator;
+--- [ label="START" ];
+WM->DataProvider [ label="PlaceCommand(command=CMD_UPDATE)" ];
+DataProvider=>DataProvider [ label="Acquisition and\nSynchronization" ];
+DataProvider>>WM [ label="Image(frameNo=i)" ];
+DataProvider>>WM [ label="LaserScan(frameNo=i)" ];
+DataProvider>>WM [ label="MovementInfo(frameNo=i)" ];
+--- [ label="Visual Path (runs in parallel to Laser-based Path)" ];
+WM->VisualFeatureExtractor [ label="Image(frameNo=i)" ];
+VisualFeatureExtractor=>VisualFeatureExtractor [ label="Feature\nExtraction" ];
+VisualFeatureExtractor>>WM [ label="VisualFeatures(frameNo=i, FS_UNFILTERED)" ];
+WM->VisualFrameFilter [ label="VisualFeatures(frameNo=i, FS_UNFILTERED)" ];
+VisualFrameFilter=>VisualFrameFilter [ label="Distance\nEstimation" ];
+VisualFrameFilter>>WM [ label="VisualFeatures(frameNo=i, FS_VALID)" ];
+WM->VisualClassifier [ label="VisualFeatures(frameNo=i, FS_VALID)" ];
+VisualClassifier=>VisualClassifier [ label="Classification" ];
+VisualClassifier>>WM [ label="VisualScores(frameNo=i, SS_VALID)" ];
+--- [ label="Laser-based Path (runs in parallel to Visual Path)" ];
+WM->LaserFeatureExtractor [ label="LaserScan(frameNo=i)" ];
+LaserFeatureExtractor=>LaserFeatureExtractor [ label="Feature\nExtraction" ];
+LaserFeatureExtractor>>WM [ label="LaserFeatures(frameNo=i, FS_UNFILTERED)" ];
+WM->LaserFrameFilter [ label="LaserFeatures(frameNo=i, FS_UNFILTERED)" ];
+LaserFrameFilter=>LaserFrameFilter [ label="Distance\nEstimation" ];
+LaserFrameFilter>>WM [ label="LaserFeatures(frameNo=i, FS_INVALID)" ];
+WM->LaserClassifier [ label="LaserFeatures(frameNo=i, FS_INVALID)" ];
+LaserClassifier>>WM [ label="LaserScores(frameNo=i, SS_INVALID)" ];
+--- [ label="Synchronization of Laser-based and Visual Paths" ];
+WM->Integrator [ label="VisualScores(frameNo=i, SS_VALID)" ];
+WM->Integrator [ label="LaserScores(frameNo=i, SS_INVALID)" ];
+Integrator=>Integrator [ label="Cue and Temporal\nIntegration" ];
+Integrator>>WM [ label="CurrentPlaceInfo(frameNo=i)" ];
+Integrator>>WM [ label="PlaceCommand(command=CMD_UPDATE)" ];
+--- [ label="GOTO START" ];
+\endmsc
+
+
+*/
