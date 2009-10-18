@@ -1,0 +1,170 @@
+<ui version="4.0" >
+ <class>WMDialog</class>
+ <widget class="QDialog" name="WMDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>503</width>
+    <height>589</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Working Memory</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset resource="Monitor.qrc" >:/Monitor/resources/monitor.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <widget class="QSplitter" name="splitter" >
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="QGroupBox" name="groupBox_4" >
+      <property name="title" >
+       <string>Working Memory Contents</string>
+      </property>
+      <layout class="QVBoxLayout" >
+       <property name="leftMargin" >
+        <number>4</number>
+       </property>
+       <property name="topMargin" >
+        <number>0</number>
+       </property>
+       <property name="rightMargin" >
+        <number>4</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>4</number>
+       </property>
+       <item>
+        <widget class="QListWidget" name="wmListWidget" >
+         <property name="viewMode" >
+          <enum>QListView::IconMode</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_5" >
+      <property name="title" >
+       <string>Working Memory Log</string>
+      </property>
+      <layout class="QVBoxLayout" >
+       <property name="leftMargin" >
+        <number>4</number>
+       </property>
+       <property name="topMargin" >
+        <number>0</number>
+       </property>
+       <property name="rightMargin" >
+        <number>4</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>4</number>
+       </property>
+       <item>
+        <widget class="QTreeWidget" name="wmLogTreeWidget" >
+         <property name="alternatingRowColors" >
+          <bool>true</bool>
+         </property>
+         <property name="rootIsDecorated" >
+          <bool>false</bool>
+         </property>
+         <property name="allColumnsShowFocus" >
+          <bool>true</bool>
+         </property>
+         <property name="columnCount" >
+          <number>5</number>
+         </property>
+         <column>
+          <property name="text" >
+           <string>Time</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Op.</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Source</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Type</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>ID</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_6" >
+      <property name="title" >
+       <string>Commands</string>
+      </property>
+      <layout class="QVBoxLayout" >
+       <property name="leftMargin" >
+        <number>4</number>
+       </property>
+       <property name="topMargin" >
+        <number>0</number>
+       </property>
+       <property name="rightMargin" >
+        <number>4</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>4</number>
+       </property>
+       <item>
+        <widget class="QTreeWidget" name="commandsTreeWidget" >
+         <property name="alternatingRowColors" >
+          <bool>true</bool>
+         </property>
+         <property name="rootIsDecorated" >
+          <bool>false</bool>
+         </property>
+         <property name="allColumnsShowFocus" >
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text" >
+           <string>Time</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Command</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Source</string>
+          </property>
+         </column>
+         <column>
+          <property name="text" >
+           <string>Params</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="Monitor.qrc" />
+ </resources>
+ <connections/>
+</ui>

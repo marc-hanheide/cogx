@@ -1,0 +1,45 @@
+<RCC>
+    <qresource prefix="/Monitor" >
+        <file>resources/cmd_start_16.png</file>
+        <file>resources/cmd_start_22.png</file>
+        <file>resources/cmd_stop_16.png</file>
+        <file>resources/cmd_stop_22.png</file>
+        <file>resources/cmd_unknown_16.png</file>
+        <file>resources/cmd_update_16.png</file>
+        <file>resources/cmd_update_22.png</file>
+        <file>resources/data_preview_22.png</file>
+        <file>resources/data_save_22.png</file>
+        <file>resources/dp_cmd_update_16.png</file>
+        <file>resources/ds_cmd_new_target_16.png</file>
+        <file>resources/ds_cmd_pause_16.png</file>
+        <file>resources/ds_cmd_start_16.png</file>
+        <file>resources/ds_cmd_stop_16.png</file>
+        <file>resources/ds_cmd_unpause_16.png</file>
+        <file>resources/exit_22.png</file>
+        <file>resources/map_22.png</file>
+        <file>resources/monitor.png</file>
+        <file>resources/nodes_22.png</file>
+        <file>resources/refresh_16.png</file>
+        <file>resources/results_22.png</file>
+        <file>resources/save_16.png</file>
+        <file>resources/save_pause_22.png</file>
+        <file>resources/save_stop_22.png</file>
+        <file>resources/stats_22.png</file>
+        <file>resources/type_ack_32.png</file>
+        <file>resources/type_command_32.png</file>
+        <file>resources/type_data_saver_status_32.png</file>
+        <file>resources/type_image_32.png</file>
+        <file>resources/type_odometry_32.png</file>
+        <file>resources/type_results_32.png</file>
+        <file>resources/type_scan_32.png</file>
+        <file>resources/type_status_32.png</file>
+        <file>resources/type_target_32.png</file>
+        <file>resources/type_unknown_32.png</file>
+        <file>resources/wm_22.png</file>
+        <file>resources/wm_add_16.png</file>
+        <file>resources/wm_delete_16.png</file>
+        <file>resources/wm_get_16.png</file>
+        <file>resources/wm_overwrite_16.png</file>
+        <file>resources/wm_unknown_16.png</file>
+    </qresource>
+</RCC>
