@@ -20,6 +20,7 @@
 :- import_module lf.
 :- import_module lf_io.
 :- import_module ling.
+:- import_module loading.
 :- import_module modality.
 :- import_module model.
 :- import_module model_io.
