@@ -2,5 +2,4 @@ SUBARCHITECTURE place.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
-CPP GD Place.Controller PlaceController --config place.cfg --start false
-
+CPP GD Place.Controller PlaceController --config instantiations/place.sa_config/place.cfg --start false --log
