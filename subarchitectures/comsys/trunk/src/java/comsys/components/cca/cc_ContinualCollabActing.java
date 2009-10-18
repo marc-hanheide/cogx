@@ -40,6 +40,7 @@ import comsys.processing.cca.abduction.ProofUtils;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
 
 import beliefmodels.adl.*;
+import beliefmodels.adl.Agent;
 import beliefmodels.clarification.*;
 import beliefmodels.domainmodel.cogx.*;
 
@@ -419,21 +420,6 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				} catch (UnknownSubarchitectureException e) {
 					e.printStackTrace();
 				}
-				
-//				Belief[] related = getBeliefsByUnionEntityId(referringUnionId(beliefUpdates[i])).toArray(new Belief[] {});
-/*
-				boolean found = false;
-				for (int j = 0; j < related.length; j++) {
-					if (BeliefModelSynchronization.agentStatusesEqual(related[j].ags, beliefUpdates[i].ags)) {
-						mergeFormulaIntoBelief(related[j], (SuperFormula) beliefUpdates[i].phi);
-						found = true;
-					}
-				}
-				if (!found) {
-					//beliefUpdates[i].id = counter.inc("ub-" + referringUnionId(beliefUpdates[i]));
-*/
-//					addNewBelief(beliefUpdates[i]);
-//				}
 			}
 			log("done with belief model update");
 		}
@@ -497,7 +483,9 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
     }
 	/**
 	 * Perform verifiable update.
-	 * 
+	 *
+	 * TODO: return <i>grounded</i> beliefs?
+	 *
 	 * @param proof the proof to be considered
 	 * @param model current belief model
 	 * @return beliefs that are consistent with the belief model, and with which this model needs to be updated
@@ -535,14 +523,26 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 				String modality = ((FunctionTerm) cu.intention.args[0]).functor;
 				String result = ((FunctionTerm) cu.intention.args[1]).functor;
 
-				ProofBlock related = ccaEngine.stack.retrieveByIntention("need_verify_hypothesis");
+				ProofBlock related = ccaEngine.stack.retrieveBlockByIntention("need_verify_hypothesis");
+				
+				Agent speaker = new Agent("human");
 				
 				if (related != null && result.equals("assertionVerified")) {
 					updates = new Belief[related.assertedBeliefIds.length];
 					for (int i = 0; i < related.assertedBeliefIds.length; i++) {
 						Belief b = getBelief(related.assertedBeliefIds[i]);
+
+						if (b.ags instanceof PrivateAgentStatus) {
+							b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+						}
+						if (b.ags instanceof AttributedAgentStatus) {
+							b.ags = BeliefUtils.raise((AttributedAgentStatus) b.ags);
+						}
+						if (b.ags instanceof MutualAgentStatus) {
+							b.ags = BeliefUtils.addToGroup((MutualAgentStatus) b.ags, speaker);
+						}
+
 						b.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, 1.0f);
-						b.ags = AbstractBeliefFactory.createMutualAgentStatus(new String[] {"robot", "human"});
 						updates[i] = b;
 					}
 				}
@@ -553,9 +553,12 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 						updates = new Belief[related.assertedBeliefIds.length];
 						for (int i = 0; i < related.assertedBeliefIds.length; i++) {
 							Belief b = getBelief(related.assertedBeliefIds[i]);
-							
+
+							if (b.ags instanceof PrivateAgentStatus) {
+								b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+							}
+
 							b.phi = BeliefUtils.swapPolarityOfAssertions((SuperFormula) b.phi);
-							b.ags = AbstractBeliefFactory.createAttributedAgentStatus("robot", "human");
 							updates[i] = b;
 						}
 					}
@@ -566,8 +569,12 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 						updates = new Belief[1];
 						
 						Belief b = getBelief(related.assertedBeliefIds[0]);
+
+						if (b.ags instanceof PrivateAgentStatus) {
+							b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+						}
+
 						b.phi = cu.beliefs[0].phi;
-						b.ags = AbstractBeliefFactory.createAttributedAgentStatus("robot", "human");
 						updates[0] = b;
 					}
 					// push it back, it's still asserted
@@ -580,7 +587,10 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 			else if (cu.intention.predSym.equals("assert_prop")) {
 				
 				// need_get_value(vision, 0:G, color)
-				ProofBlock related = ccaEngine.stack.retrieveByIntention("need_get_value");
+				ProofBlock related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
+				
+				Agent speaker = new Agent("human");
+
 				if (related != null) {
 					
 					assert related.assertedBeliefIds.length == 1;
@@ -588,14 +598,22 @@ public class cc_ContinualCollabActing extends BeliefModelInterface {
 					updates = new Belief[1];
 					
 					Belief b = getBelief(related.assertedBeliefIds[0]);
-					b.phi = cu.beliefs[0].phi;
-					b.ags = AbstractBeliefFactory.createAttributedAgentStatus("robot", "human");
-					updates[0] = b;
+					
+					if (b.ags instanceof PrivateAgentStatus) {
+						b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+					}
 
+					b.phi = cu.beliefs[0].phi;
+					updates[0] = b;
 					cu.beliefs = updates;
 
 					// push back as we still haven't grounded it
 					ccaEngine.stack.push(related);
+				}
+				else {
+					// related == null, i.e. no explicit info request from the robot
+					// (this doesn't exclude verification requests from the robot!)
+					ccaEngine.stack.push(pi);
 				}
 			}
 			

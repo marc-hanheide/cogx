@@ -5,6 +5,7 @@ import java.util.*;
 import comsys.utils.Pair;
 import comsys.utils.Triple;
 import comsys.processing.cca.AbducerUtils;
+import comsys.processing.cca.BeliefUtils;
 import comsys.processing.cca.MercuryUtils;
 import comsys.processing.cca.PrettyPrinting;
 import comsys.processing.reference.belieffactories.AbstractBeliefFactory;
@@ -230,7 +231,7 @@ public class BeliefModelSynchronization {
     	AgentStatus[] expanded = expandedAgentStatuses(as1);
     	
     	for (int i = 0; i < expanded.length; i++) {
-    		if (agentStatusesEqual(expanded[i], as2)) {
+    		if (BeliefUtils.agentStatusesEqual(expanded[i], as2)) {
     	    	//log("implies(" + PrettyPrinting.agentStatusToString(as1) + ", " + PrettyPrinting.agentStatusToString(as2) + ")");
     			return true;
     		}
@@ -239,35 +240,7 @@ public class BeliefModelSynchronization {
     	return false;
     }
 
-    public static boolean agentStatusesEqual(AgentStatus as1, AgentStatus as2) {
-    	if (as1 instanceof PrivateAgentStatus && as2 instanceof PrivateAgentStatus) {
-    		PrivateAgentStatus p1 = (PrivateAgentStatus) as1;
-    		PrivateAgentStatus p2 = (PrivateAgentStatus) as2;
-    		return p1.ag.id.equals(p2.ag.id);
-    	}
-    	else if (as1 instanceof AttributedAgentStatus && as2 instanceof AttributedAgentStatus) {
-    		AttributedAgentStatus a1 = (AttributedAgentStatus) as1;
-    		AttributedAgentStatus a2 = (AttributedAgentStatus) as2;
-    		return a1.ag.id.equals(a2.ag.id) && a1.ag2.equals(a2.ag2.id);
-    	}
-    	else if (as1 instanceof MutualAgentStatus && as2 instanceof MutualAgentStatus) {
-    		MutualAgentStatus m1 = (MutualAgentStatus) as1;
-    		MutualAgentStatus m2 = (MutualAgentStatus) as2;
-
-    		HashSet<String> ids1 = new HashSet<String>();
-    		HashSet<String> ids2 = new HashSet<String>();
-    		for (int i = 0; i < m1.ags.length; i++) {
-    			ids1.add(m1.ags[i].id);
-    		}
-    		for (int j = 0; j < m2.ags.length; j++) {
-    			ids2.add(m2.ags[j].id);
-    		}
-    		return ids1.equals(ids2);
-    	}
-    	return false;
-    }
-
-	private static void log(String str) {
+    private static void log(String str) {
 		if (logging)
 			System.out.println("\033[36m[BeliefModelSynchronization] " + str  + "\033[0m");
 	}
