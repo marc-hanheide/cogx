@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/DataEditor" >
+        <file>marked_removal_16.png</file>
+        <file>unmarked_16.png</file>
+    </qresource>
+</RCC>
