@@ -48,7 +48,7 @@ import binder.abstr.BeliefModelInterface;
 import binder.components.Binder;
 import binder.utils.BeliefModelUtils;
 
-public class cc_ContinualCollabActing extends BeliefModelInterface {
+public class cc_CCA extends BeliefModelInterface {
 
 	// =================================================================
 	// CLASS-INTERNAL GLOBAL VARIABLES
