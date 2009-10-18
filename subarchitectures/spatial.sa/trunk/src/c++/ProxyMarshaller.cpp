@@ -455,7 +455,6 @@ ProxyMarshaller::updateInternalProxy(InternalProxy &intProxy)
 void
 ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  lockComponent(); //Don't allow any interfaces to be called on this component while adding a Place
   lockEntry(_wmc.address.id, cdl::LOCKEDOD);
   SpatialData::PlacePtr place = getMemoryEntry<SpatialData::Place>(_wmc.address);
   log("2");
@@ -496,13 +495,11 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
   log("6");
   unlockEntry(_wmc.address.id);
   log("7");
-  unlockComponent();
 }
 
 void
 ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  lockComponent(); //Don't allow any interfaces to be called on this component while modifying a Place
   lockEntry(_wmc.address.id, cdl::LOCKEDODR);
   SpatialData::PlacePtr place = getMemoryEntry<SpatialData::Place>(_wmc.address);
   if (place != 0) {
@@ -528,13 +525,11 @@ ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     commitFeatures("place", ss.str());
   }
   unlockEntry(_wmc.address.id);
-  unlockComponent();
 }
 
 void
 ProxyMarshaller::deletedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  lockComponent(); //Don't allow any interfaces to be called on this component while deleting a Place
   map<string, int>::iterator it = 
     m_PlaceAddressToIDMap.find(_wmc.address.id);
 
@@ -544,7 +539,6 @@ ProxyMarshaller::deletedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     log("Deleting proxy for (place, %s)", ss.str().c_str());
     deleteProxy("place", ss.str());
   }
-  unlockComponent();
 }
 
 void
