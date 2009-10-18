@@ -8,20 +8,17 @@
 
 extern "C" {
 #include "TypeConversions_mint.mh"
+#include "mercury_memory.h"
 #include <unistd.h>
 }
 
 using namespace std;
 using namespace Abducer;
 
-MR_Char *
+MR_String
 cc2m::string(const std::string & s)
 {
-	char * cs = new char[s.length() + 1];
-	memset(cs, '\0', s.length() + 1);
-	s.copy(cs, s.length());
-
-	return cs;
+	return MR_copy_string(s.c_str());
 }
 
 MR_term

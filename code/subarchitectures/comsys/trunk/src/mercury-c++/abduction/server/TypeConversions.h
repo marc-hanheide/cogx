@@ -24,7 +24,7 @@ typedef MR_Word  MR_list__ctx_modality;
 
 namespace cc2m {
 
-	MR_Char *
+	MR_String
 	string(const std::string & s);
 
 	MR_term
