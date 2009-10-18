@@ -1,0 +1,101 @@
+<ui version="4.0" >
+ <class>NodesDialog</class>
+ <widget class="QDialog" name="NodesDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>943</width>
+    <height>362</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Nodes</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset resource="Monitor.qrc" >:/Monitor/resources/monitor.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <widget class="QFrame" name="frame" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" >
+      <item>
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Last Node:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lastNodeLabel" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Preferred" hsizetype="Expanding" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTreeWidget" name="nodesTreeWidget" >
+     <column>
+      <property name="text" >
+       <string>ID</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>GW</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Node Outputs</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Node Outputs Nrmlzd</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Node Results</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Area Outputs</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Area Outputs Nrmlzd</string>
+      </property>
+     </column>
+     <column>
+      <property name="text" >
+       <string>Area Results</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="Monitor.qrc" />
+ </resources>
+ <connections/>
+</ui>
