@@ -1,0 +1,5 @@
+#!/bin/bash
+#./AnClassResults.py -c -k -u -e -w -p -m -r -i -a 2 -s 0.1 -f output.m target out
+#./AnClassResults.py -A -v -a 2 -s 0.1 -f output.m testdata/target testdata/out
+./AnClassResults.py -A -v -a 2 -s 0.1 -f output.m -n Prefix testdata/EO.target testdata/EO.out testdata/BO.target testdata/BO.out testdata/CR.target testdata/CR.out
+
