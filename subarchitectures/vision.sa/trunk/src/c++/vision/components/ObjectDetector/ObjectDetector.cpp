@@ -174,6 +174,10 @@ void ObjectDetector::processImage(const Video::Image &image)
 	GetCameraParameter(image);
 	IplImage *iplImage = convertImageToIpl(image);
 
+	// read visual objects from working memory (check occurence)
+	std::vector <VisionData::VisualObjectPtr> results;
+	getMemoryEntries<VisionData::VisualObject>(results);
+	
 	// Process the image and find all Gestalts
 	vs3Interface->ProcessSingleImage(iplImage);
 
@@ -188,13 +192,9 @@ void ObjectDetector::processImage(const Video::Image &image)
 		while(vs3Interface->GetCube(number, cd, masked))
 		{
 			number++;
-			if(!masked)
+			if(!masked && cd.height > 0.04)							/// TODO HACK Threshold for height 4 cm
 			{
 				bool cubeExists = false;
-	
-				// read visual objects from working memory and assign already detected cubes
-				std::vector <VisionData::VisualObjectPtr> results;
-				getMemoryEntries<VisionData::VisualObject>(results);
 	
 				for(unsigned i=0; i<results.size(); i++)
 				{
@@ -209,7 +209,10 @@ void ObjectDetector::processImage(const Video::Image &image)
 					double radius = length(vertices[0].pos);
 	
 					if(length(results[i]->pose.pos - newCubeCenter) < radius)
+{
 						cubeExists = true;
+printf("!!! Cube exists !!!\n");
+}
 				}
 	
 				// Create visual object, if it does not already exists in the working memory
@@ -243,10 +246,6 @@ void ObjectDetector::processImage(const Video::Image &image)
 // 			if(!masked)
 // 			{
 // 				bool cubeExists = false;
-// 	
-// 				// read visual objects from working memory and assign already detected cubes
-// 				std::vector <VisionData::VisualObjectPtr> results;
-// 				getMemoryEntries<VisionData::VisualObject>(results);
 // 	
 // 				for(unsigned i=0; i<results.size(); i++)
 // 				{
@@ -384,8 +383,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x*1000, v0.pos.y*1000, v0.pos.z*1000);
-printf("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x*1000, v1.pos.y*1000, v1.pos.z*1000);
+		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x*1000, v0.pos.y*1000, v0.pos.z*1000);
+		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x*1000, v1.pos.y*1000, v1.pos.z*1000);
 	}
 
 
