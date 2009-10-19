@@ -166,7 +166,9 @@ enum ObjSearchCommand {
     };
     
     static SpatialData::NavCommandPtr newNavCommand();
-    
+    ///the address of the last command received. stored so it can be
+    ///deleted on completion
+    cast::cdl::WorkingMemoryAddress m_lastCmdAddr;
 };
 
 #endif /*OBJECTSEARCH_HPP_*/
