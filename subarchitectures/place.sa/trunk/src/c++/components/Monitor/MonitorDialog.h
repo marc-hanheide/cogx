@@ -29,8 +29,8 @@
 #define __PLACE_MONITOR_DIALOG__
 
 #include "ui_MonitorDialog.h"
-#include <place/idl/PlaceData.hh>
-#include <cast/architecture/ManagedProcess.hpp>
+#include <PlaceData.hpp>
+//#include <cast/architecture/ManagedComponent.hpp>
 #include <QDialog>
 
 class PlaceMonitor;
@@ -59,42 +59,53 @@ public:
 
 public: // Public interface of the dialog
 
-  void addWmChange(cast::cdl::WorkingMemoryOperation operation, const char *id, const char *src, const char *type, double time);
-  void newImage(const PlaceData::Image &image);
-  void newLaserScan(const PlaceData::LaserScan &scan);
-  void newOdometry(const PlaceData::Odometry &odom);
-  void newTarget(const PlaceData::Target &target);
+  void addWmChange(cast::cdl::WorkingMemoryOperation operation,
+      std::string id, std::string src, std::string type, double time);
+  void newImage(const PlaceData::ImagePtr image);
+  void newLaserScan(const PlaceData::LaserScanPtr scan);
+  void newOdometry(const PlaceData::OdometryPtr odom);
+  void newTarget(const PlaceData::TargetPtr target);
   void newDataSaverStatus(bool vision, bool laser, bool odometry, long framesSaved, long frameNo, bool error);
-  void newCommand(const char *cmd, const char *params, const char *src, double time);
-  void newVisualProcessorStatus(const PlaceData::VisualProcessorStatus &stat);
-  void newLaserProcessorStatus(const PlaceData::LaserProcessorStatus &stat);
-  void newVisualResults(const PlaceData::VisualResults &res);
-  void newLaserResults(const PlaceData::LaserResults &res);
-  void newIntegratedResults(const PlaceData::IntegratedResults &res);
-  void newNodeLabellerData(const PlaceData::NodeLabellerData &res);
+  void newCommand(std::string cmd, std::string params, std::string src, double time);
+  void newVisualProcessorStatus(const PlaceData::VisualProcessorStatusPtr stat);
+  void newLaserProcessorStatus(const PlaceData::LaserProcessorStatusPtr stat);
+  void newVisualResults(const PlaceData::VisualResultsPtr res);
+  void newLaserResults(const PlaceData::LaserResultsPtr res);
+  void newIntegratedResults(const PlaceData::IntegratedResultsPtr res);
+  void newNodeLabellerData(const PlaceData::NodeLabellerDataPtr res);
 
 
 signals:
 
-  void updateWmInfoSignal(int operation, QString id, QString src, QString type, double time);
+  void updateWmInfoSignal(int operation, QString id, QString src,
+      QString type, double time);
   void updatePreviewImageSignal(QImage image, long frameNo, double time);
-  void updatePreviewLaserScanSignal(double startAngle, double angleStep, double maxRange, QVector<double> range, long frameNo, double time);
-  void updatePreviewOdometrySignal(double x, double y, double theta, long frameNo, double time);
+  void updatePreviewLaserScanSignal(double startAngle, double angleStep,
+      double maxRange, QVector<double> range, long frameNo, double time);
+  void updatePreviewOdometrySignal(double x, double y, double theta,
+      long frameNo, double time);
   void updatePreviewTargetSignal(long targetNo, QString targetName, long frameNo);
-  void updateDataSavedInfoSignal(bool vision, bool laser, bool odometry, long framesSaved, long frameNo, bool error);
+  void updateDataSavedInfoSignal(bool vision, bool laser, bool odometry,
+      long framesSaved, long frameNo, bool error);
   void updateCommandLogSignal(QString cmd, QString params, QString src, double time);
-  void addMapLaserScanSignal(double startAngle, double angleStep, double maxRange, QVector<double> range, long frameNo, double time);
+  void addMapLaserScanSignal(double startAngle, double angleStep,
+      double maxRange, QVector<double> range, long frameNo, double time);
   void addMapOdometrySignal(double x, double y, double theta, long frameNo, double time);
   void updateImageStatsSignal(long frameNo, double time, double wmTime);
   void updateLaserScanStatsSignal(long frameNo, double time, double wmTime);
   void updateOdometryStatsSignal(long frameNo, double time, double wmTime);
-  void updateVisualProcessorStatsSignal(double startTime, double extractionTime, double classificationTime);
-  void updateVisualResultsSignal(long frameNo, QVector<PlaceData::ClassifierResult> results);
-  void updateLaserProcessorStatsSignal(double startTime, double extractionTime, double classificationTime);
-  void updateLaserResultsSignal(long frameNo, QVector<PlaceData::ClassifierResult> results);
+  void updateVisualProcessorStatsSignal(double startTime, double extractionTime,
+      double classificationTime);
+  void updateVisualResultsSignal(long frameNo,
+      QVector<PlaceData::ClassifierResult> results);
+  void updateLaserProcessorStatsSignal(double startTime, double extractionTime,
+      double classificationTime);
+  void updateLaserResultsSignal(long frameNo,
+      QVector<PlaceData::ClassifierResult> results);
   void updateResultsTargetSignal(long targetNo, QString targetName, long frameNo);
-  void updateIntegratedResultsSignal(long frameNo, bool usedVision, bool usedLaser, QVector<PlaceData::ClassifierResult> results);
-  void updateNodeLabellerDataSignal(PlaceData::NodeLabellerData nodeLabellerData);
+  void updateIntegratedResultsSignal(long frameNo, bool usedVision,
+      bool usedLaser, QVector<PlaceData::ClassifierResult> results);
+  void updateNodeLabellerDataSignal(PlaceData::NodeLabellerDataPtr nodeLabellerData);
 
 
 private slots:

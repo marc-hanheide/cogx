@@ -28,10 +28,11 @@
 #ifndef __PLACE_MONITOR__
 #define __PLACE_MONITOR__
 
-#include "place/shared/LabelFile.h"
-#include "place/shared/NodePlaceInfoPullSender.h"
-#include <place/idl/PlaceData.hh>
-#include <cast/architecture/ManagedProcess.hpp>
+#include "shared/LabelFile.h"
+//#include "shared/NodePlaceInfoPullSender.h"
+#include <PlaceData.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
+
 
 namespace place 
 {
@@ -43,19 +44,19 @@ class QApplication;
 /**
  * Implements the Monitor component
  */
-class PlaceMonitor: public cast::ManagedProcess,
-                    public place::NodePlaceInfoPullSender
+class PlaceMonitor: public cast::ManagedComponent
+                    //public place::NodePlaceInfoPullSender
 {
 public: // Component management
 
   /** Constructor. */
-  PlaceMonitor(const std::string &_id);
+  PlaceMonitor();
 
   /** Destructor. */
   virtual ~PlaceMonitor();
 
   /** Handles component configuration. */
-  virtual void configure(std::map<std::string,std::string> &_config);
+  virtual void configure(const std::map<std::string,std::string> &config);
 
   /** Main thread of the component. */
   virtual void runComponent();
@@ -74,22 +75,8 @@ public: // Public monitor interace
   void sendVisualProcessorCommand(PlaceData::VisualProcessorCommandType cmd);
   void sendDataSaverCommand(PlaceData::DataSaverCommandType cmd, std::string dirPath, std::string baseName, int targetNo, std::string targetName);
 
-  bool isStatusRun()
-    { return m_status == STATUS_RUN; }
-
   const place::LabelFile &getLabels()
   { return _labels; }
-
-
-protected: // Pure virtual
-
-  /** Needed as pure virtual in the parent class. */
-  virtual void taskAdopted(const std::string &_taskID)
-    {}
-
-  /** Needed as pure virtual in the parent class. */
-  virtual void taskRejected(const std::string &_taskID)
-    {}
 
 
 private:

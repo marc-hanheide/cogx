@@ -28,7 +28,7 @@
 // Place.SA
 #include "Monitor.h"
 #include "MonitorDialog.h"
-#include "place/shared/ConfigFile.h"
+#include "shared/ConfigFile.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Qt
@@ -41,23 +41,19 @@ using namespace std;
 using namespace cast;
 using namespace place;
 using boost::bad_lexical_cast;
+using boost::shared_ptr;
 
 
 // ------------------------------------------------------
-extern "C" 
-{
-  FrameworkProcess* newComponent(const string &_id)
-  {
-    return new PlaceMonitor(_id);
+extern "C" {
+  cast::interfaces::CASTComponentPtr newComponent() {
+    return new PlaceMonitor();
   }
 }
 
 
 // ------------------------------------------------------
-PlaceMonitor::PlaceMonitor(const string &_id):
-                        WorkingMemoryAttachedComponent(_id),
-                        ManagedProcess(_id),
-                        _cfgGroup("Monitor")
+PlaceMonitor::PlaceMonitor(): _cfgGroup("Monitor")
 {
   _qApp=0;
   _dialog=0;
@@ -71,13 +67,15 @@ PlaceMonitor::~PlaceMonitor()
 
 
 // ------------------------------------------------------
-void PlaceMonitor::configure(map<string,string> &_config)
+void PlaceMonitor::configure(const map<string,string> &config)
 {
-  ManagedProcess::configure(_config);
-
   // Read cmd line options
-  string configFile=_config["--config"];
-  _gui=!(_config["--nogui"]=="true");
+  map<string, string>::const_iterator it = config.find("--config");
+  string configFile;
+  if (it!=config.end())
+    configFile = it->second;
+  it = config.find("--nogui");
+  _gui=!(((it!=config.end()) && (it->second == "true")));
   string labelFile="";
 
   // Read config file
@@ -87,7 +85,7 @@ void PlaceMonitor::configure(map<string,string> &_config)
   else
   {
     if (!cf.read(configFile))
-      throw CASTException(__HERE__, "Unable to load configuration file '%s'!", configFile.c_str());
+      throw(CASTException(exceptionMessage(__HERE__, "Unable to load configuration file '%s'!", configFile.c_str() )));
   }
 
   // Get configuration from the file
@@ -97,18 +95,18 @@ void PlaceMonitor::configure(map<string,string> &_config)
   }
   catch(bad_lexical_cast &)
   {
-    throw CASTException(__HERE__, "Incorrect item value in the config file '%s'!", configFile.c_str());
+    throw(CASTException(exceptionMessage(__HERE__, "Incorrect item value in the config file '%s'!", configFile.c_str() )));
   }
 
   // Read label file
   if (labelFile.empty())
   {
-    throw CASTException(__HERE__, "No label file provided! Use the LabelFile option in the config file!");
+    throw(CASTException(exceptionMessage(__HERE__, "No label file provided! Use the LabelFile option in the config file!" )));
   }
   else
   {
     if (!_labels.read(labelFile))
-      throw CASTException(__HERE__, "Unable to load the label file '%s'!", labelFile.c_str());
+      throw(CASTException(exceptionMessage(__HERE__, "Unable to load the label file '%s'!", labelFile.c_str() )));
 
   }
 
@@ -121,96 +119,60 @@ void PlaceMonitor::configure(map<string,string> &_config)
 // ------------------------------------------------------
 void PlaceMonitor::start()
 {
-  ManagedProcess::start();
-
   // wmChange
-  MemberFunctionChangeReceiver<PlaceMonitor> * pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::wmChange);
-
-  addChangeFilter( createChangeFilter("", // All types
-                                      cdl::WILDCARD, // All operations
-                                      "", // All sources
-                                      "", // All IDs
-                                      "",
-                                      cdl::LOCAL_SA // Only on local SA
+  addChangeFilter(createChangeFilter("", // All types
+                                     cdl::WILDCARD, // All operations
+                                     "", // All sources
+                                     "", // All IDs
+                                     "",
+                                     cdl::LOCALSA // Only on local SA
                                      ),
-                   pReceiver );
+     new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::wmChange) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newImage);
-  addChangeFilter( createLocalTypeFilter<PlaceData::Image>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::Image>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newImage) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserScan);
-  addChangeFilter( createLocalTypeFilter<PlaceData::LaserScan>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::LaserScan>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserScan) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newOdometry);
-  addChangeFilter( createLocalTypeFilter<PlaceData::Odometry>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::Odometry>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newOdometry) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newTarget);
-  addChangeFilter( createLocalTypeFilter<PlaceData::Target>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::Target>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newTarget) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newDataProviderCommandAck);
-  addChangeFilter( createLocalTypeFilter<PlaceData::DataProviderCommandAck>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::DataProviderCommandAck>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newDataProviderCommandAck) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newDataSaverCommandAck);
-  addChangeFilter( createLocalTypeFilter<PlaceData::DataSaverCommandAck>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::DataSaverCommandAck>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newDataSaverCommandAck) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newDataSaverStatus);
-  addChangeFilter( createLocalTypeFilter<PlaceData::DataSaverStatus>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::DataSaverStatus>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newDataSaverStatus) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newVisualProcessorCommandAck);
-  addChangeFilter( createLocalTypeFilter<PlaceData::VisualProcessorCommandAck>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::VisualProcessorCommandAck>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newVisualProcessorCommandAck) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newVisualProcessorStatus);
-  addChangeFilter( createLocalTypeFilter<PlaceData::VisualProcessorStatus>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::VisualProcessorStatus>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newVisualProcessorStatus) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newVisualResults);
-  addChangeFilter( createLocalTypeFilter<PlaceData::VisualResults>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::VisualResults>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newVisualResults) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserProcessorCommandAck);
-  addChangeFilter( createLocalTypeFilter<PlaceData::LaserProcessorCommandAck>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::LaserProcessorCommandAck>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserProcessorCommandAck) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserProcessorStatus);
-  addChangeFilter( createLocalTypeFilter<PlaceData::LaserProcessorStatus>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::LaserProcessorStatus>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserProcessorStatus) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserResults);
-  addChangeFilter( createLocalTypeFilter<PlaceData::LaserResults>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::LaserResults>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newLaserResults) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newIntegratedResults);
-  addChangeFilter( createLocalTypeFilter<PlaceData::IntegratedResults>(cdl::OVERWRITE),
-                   pReceiver );
+  addChangeFilter(createLocalTypeFilter<PlaceData::IntegratedResults>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newIntegratedResults) );
 
-  pReceiver =
-      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newNodeLabellerData);
-  addChangeFilter( createLocalTypeFilter<PlaceData::NodeLabellerData>(cdl::OVERWRITE),
-                   pReceiver );
-
+  addChangeFilter(createLocalTypeFilter<PlaceData::NodeLabellerData>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceMonitor>(this, &PlaceMonitor::newNodeLabellerData) );
 
   debug("Started!");
 }
@@ -219,8 +181,6 @@ void PlaceMonitor::start()
 // ------------------------------------------------------
 void PlaceMonitor::stop()
 {
-  ManagedProcess::stop();
-
   debug("Stop!");
 }
 
@@ -229,7 +189,7 @@ void PlaceMonitor::stop()
 void PlaceMonitor::runComponent()
 {
   debug("Running...");
-  set_priority(PRIORITY_HIGH);
+  // set_priority(PRIORITY_HIGH); Couldn't find counterpart in CAST 2.0
 
   if (_gui)
     //startGuiThread();
@@ -244,7 +204,7 @@ void PlaceMonitor::runComponent()
 // ------------------------------------------------------
 void PlaceMonitor::runConsole()
 {
-  throw CASTException(__HERE__, "Not implemented! Use GUI instead!");
+  throw(CASTException(exceptionMessage(__HERE__, "Not implemented! Use GUI instead!" )));
 }
 
 
@@ -256,25 +216,25 @@ void PlaceMonitor::startGuiThread()
 
   int retval=pthread_attr_setinheritsched(&thrAttr, PTHREAD_EXPLICIT_SCHED);
   if (retval)
-    throw CASTException(__HERE__, "Cannot set inherit params for the GUI thread.");
+    throw(CASTException(exceptionMessage(__HERE__, "Cannot set inherit params for the GUI thread." )));
   retval=pthread_attr_setscope(&thrAttr, PTHREAD_SCOPE_SYSTEM);
   if (retval)
-    throw CASTException(__HERE__, "Cannot set scope of the GUI thread.");
+    throw(CASTException(exceptionMessage(__HERE__, "Cannot set scope of the GUI thread." )));
   retval=pthread_attr_setschedpolicy(&thrAttr, SCHED_FIFO);
   if (retval)
-    throw CASTException(__HERE__, "Cannot set policy of the GUI thread.");
+    throw(CASTException(exceptionMessage(__HERE__, "Cannot set policy of the GUI thread." )));
   struct sched_param thrParam;
   retval=pthread_attr_getschedparam(&thrAttr, &thrParam);
   if (retval)
-    throw CASTException(__HERE__, "Cannot get scheduling params of the GUI thread.");
+    throw(CASTException(exceptionMessage(__HERE__, "Cannot get scheduling params of the GUI thread." )));
   thrParam.sched_priority = sched_get_priority_max(SCHED_FIFO);
   retval=pthread_attr_setschedparam(&thrAttr, &thrParam);
   if (retval)
-    throw CASTException(__HERE__, "Cannot set scheduling params of the GUI thread.");
+    throw(CASTException(exceptionMessage(__HERE__, "Cannot set scheduling params of the GUI thread." )));
   // Creating the thread
   retval=pthread_create(&_guiThread, &thrAttr, &guiThreadEntryPoint, reinterpret_cast<void*>(this));
   if (retval)
-    throw CASTException(__HERE__, "Cannot create the GUI thread!");
+    throw(CASTException(exceptionMessage(__HERE__, "Cannot create the GUI thread!" )));
 }
 
 
@@ -310,11 +270,12 @@ void PlaceMonitor::runGui()
 // ------------------------------------------------------
 void PlaceMonitor::wmChange(const cast::cdl::WorkingMemoryChange & change)
 {
-  FrameworkBasics::BALTTime time = BALTTimer::getBALTTime();
+  cdl::CASTTime time = getCASTTime();
   if (_dialog)
   {
     // Send the change to the dialog
-    _dialog->addWmChange(change.m_operation, change.m_address.m_id, change.m_src, change.m_type, BALTTimer::toSeconds(time));
+    _dialog->addWmChange(change.operation, change.address.id,
+        change.src, change.type, time.s+10e-6*time.us);
   }
 }
 
@@ -323,21 +284,21 @@ void PlaceMonitor::wmChange(const cast::cdl::WorkingMemoryChange & change)
 void PlaceMonitor::newDataProviderCommandAck(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  FrameworkBasics::BALTTime time = BALTTimer::getBALTTime();
-  boost::shared_ptr<const CASTTypedData<PlaceData::DataProviderCommandAck> > cmdTD =
-      getWorkingMemoryEntry<PlaceData::DataProviderCommandAck>(change.m_address);
-  if (!cmdTD)
+  cdl::CASTTime time = getCASTTime();
+  shared_ptr<CASTData<PlaceData::DataProviderCommandAck> > cmdCast =
+      getWorkingMemoryEntry<PlaceData::DataProviderCommandAck>(change.address);
+  if (!cmdCast)
     return;
-  const boost::shared_ptr<const PlaceData::DataProviderCommandAck> cmd=cmdTD->getData();
+  const PlaceData::DataProviderCommandAckPtr cmd = cmdCast->getData();
 
   // Convert the command id to name
   std::string cmdName="UNKNOWN";
-  if (cmd->cmd.cmd==PlaceData::DP_CMD_UPDATE)
-    cmdName="DP_CMD_UPDATE";
+  if (cmd->cmd->cmd==PlaceData::DpCmdUpdate)
+    cmdName="DpCmdUpdate";
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName.c_str(), "", cmd->src, BALTTimer::toSeconds(time));
+    _dialog->newCommand(cmdName, "", cmd->src, time.s+10e-6*time.us);
   }
 }
 
@@ -346,37 +307,37 @@ void PlaceMonitor::newDataProviderCommandAck(const cast::cdl::WorkingMemoryChang
 void PlaceMonitor::newDataSaverCommandAck(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  FrameworkBasics::BALTTime time = BALTTimer::getBALTTime();
-  boost::shared_ptr<const CASTTypedData<PlaceData::DataSaverCommandAck> > cmdTD =
-      getWorkingMemoryEntry<PlaceData::DataSaverCommandAck>(change.m_address);
-  if (!cmdTD)
+  cdl::CASTTime time = getCASTTime();
+  shared_ptr<CASTData<PlaceData::DataSaverCommandAck> > cmdCast =
+      getWorkingMemoryEntry<PlaceData::DataSaverCommandAck>(change.address);
+  if (!cmdCast)
     return;
-  const boost::shared_ptr<const PlaceData::DataSaverCommandAck> cmd=cmdTD->getData();
+  const PlaceData::DataSaverCommandAckPtr cmd=cmdCast->getData();
 
   // Convert the command id to name
-  std::string cmdName="UNKNOWN";
-  std::string cmdParams="";
-  if (cmd->cmd.cmd==PlaceData::DS_CMD_START)
-    cmdName="DS_CMD_START";
-  else if (cmd->cmd.cmd==PlaceData::DS_CMD_UPDATE_START)
-    cmdName="DS_CMD_UPDATE_START";
-  else if (cmd->cmd.cmd==PlaceData::DS_CMD_UPDATE_STOP)
-    cmdName="DS_CMD_UPDATE_STOP";
-  else if (cmd->cmd.cmd==PlaceData::DS_CMD_STOP)
-    cmdName="DS_CMD_STOP";
-  else if (cmd->cmd.cmd==PlaceData::DS_CMD_PAUSE)
-    cmdName="DS_CMD_PAUSE";
-  else if (cmd->cmd.cmd==PlaceData::DS_CMD_UNPAUSE)
-    cmdName="DS_CMD_UNPAUSE";
-  else if (cmd->cmd.cmd==PlaceData::DS_CMD_NEW_TARGET)
+  string cmdName="UNKNOWN";
+  string cmdParams="";
+  if (cmd->cmd->cmd==PlaceData::DsCmdStart)
+    cmdName="DsCmdStart";
+  else if (cmd->cmd->cmd==PlaceData::DsCmdUpdateStart)
+    cmdName="DsCmdUpdateStart";
+  else if (cmd->cmd->cmd==PlaceData::DsCmdUpdateStop)
+    cmdName="DsCmdUpdateStop";
+  else if (cmd->cmd->cmd==PlaceData::DsCmdStop)
+    cmdName="DsCmdStop";
+  else if (cmd->cmd->cmd==PlaceData::DsCmdPause)
+    cmdName="DsCmdPause";
+  else if (cmd->cmd->cmd==PlaceData::DsCmdUnpause)
+    cmdName="DsCmdUnpause";
+  else if (cmd->cmd->cmd==PlaceData::DsCmdNewTarget)
   {
-    cmdName="DS_CMD_NEW_TARGET";
-    cmdParams="Target: "+boost::lexical_cast<string>(cmd->cmd.targetNo)+" "+string(cmd->cmd.targetName);
+    cmdName="DsCmdNewTarget";
+    cmdParams="Target: "+boost::lexical_cast<string>(cmd->cmd->targetNo)+" "+cmd->cmd->targetName;
   }
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName.c_str(), cmdParams.c_str(), cmd->src, BALTTimer::toSeconds(time));
+    _dialog->newCommand(cmdName, cmdParams, cmd->src, time.s+10e-6*time.us);
   }
 }
 
@@ -385,23 +346,23 @@ void PlaceMonitor::newDataSaverCommandAck(const cast::cdl::WorkingMemoryChange &
 void PlaceMonitor::newVisualProcessorCommandAck(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  FrameworkBasics::BALTTime time = BALTTimer::getBALTTime();
-  boost::shared_ptr<const CASTTypedData<PlaceData::VisualProcessorCommandAck> > cmdTD =
-      getWorkingMemoryEntry<PlaceData::VisualProcessorCommandAck>(change.m_address);
-  if (!cmdTD)
+  cdl::CASTTime time = getCASTTime();
+  shared_ptr<CASTData<PlaceData::VisualProcessorCommandAck> > cmdCast =
+      getWorkingMemoryEntry<PlaceData::VisualProcessorCommandAck>(change.address);
+  if (!cmdCast)
     return;
-  const boost::shared_ptr<const PlaceData::VisualProcessorCommandAck> cmd=cmdTD->getData();
+  const PlaceData::VisualProcessorCommandAckPtr cmd=cmdCast->getData();
 
   // Convert the command id to name
-  std::string cmdName="UNKNOWN";
-  if (cmd->cmd.cmd==PlaceData::VP_CMD_UPDATE_ON_READ_START)
-    cmdName="VP_CMD_UPDATE_ON_READ_START";
-  else if (cmd->cmd.cmd==PlaceData::VP_CMD_UPDATE_STOP)
-    cmdName="VP_CMD_UPDATE_STOP";
+  string cmdName="UNKNOWN";
+  if (cmd->cmd->cmd==PlaceData::VpCmdUpdateOnReadStart)
+    cmdName="VpCmdUpdateOnReadStart";
+  else if (cmd->cmd->cmd==PlaceData::VpCmdUpdateStop)
+    cmdName="VpCmdUpdateStop";
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName.c_str(), "", cmd->src, BALTTimer::toSeconds(time));
+    _dialog->newCommand(cmdName, "", cmd->src, time.s+10e-6*time.us);
   }
 }
 
@@ -410,15 +371,15 @@ void PlaceMonitor::newVisualProcessorCommandAck(const cast::cdl::WorkingMemoryCh
 void PlaceMonitor::newVisualProcessorStatus(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::VisualProcessorStatus> > statTD =
-      getWorkingMemoryEntry<PlaceData::VisualProcessorStatus>(change.m_address);
-  if (!statTD)
+  shared_ptr<CASTData<PlaceData::VisualProcessorStatus> > statCast =
+      getWorkingMemoryEntry<PlaceData::VisualProcessorStatus>(change.address);
+  if (!statCast)
     return;
-  const boost::shared_ptr<const PlaceData::VisualProcessorStatus> stat=statTD->getData();
+  const PlaceData::VisualProcessorStatusPtr stat = statCast->getData();
 
   if (_dialog)
   {
-    _dialog->newVisualProcessorStatus(*stat);
+    _dialog->newVisualProcessorStatus(stat);
   }
 }
 
@@ -427,15 +388,15 @@ void PlaceMonitor::newVisualProcessorStatus(const cast::cdl::WorkingMemoryChange
 void PlaceMonitor::newVisualResults(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::VisualResults> > resTD =
-      getWorkingMemoryEntry<PlaceData::VisualResults>(change.m_address);
-  if (!resTD)
+  shared_ptr<CASTData<PlaceData::VisualResults> > resCast =
+      getWorkingMemoryEntry<PlaceData::VisualResults>(change.address);
+  if (!resCast)
     return;
-  const boost::shared_ptr<const PlaceData::VisualResults> res=resTD->getData();
+  const PlaceData::VisualResultsPtr res = resCast->getData();
 
   if (_dialog)
   {
-    _dialog->newVisualResults(*res);
+    _dialog->newVisualResults(res);
   }
 }
 
@@ -444,23 +405,23 @@ void PlaceMonitor::newVisualResults(const cast::cdl::WorkingMemoryChange & chang
 void PlaceMonitor::newLaserProcessorCommandAck(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  FrameworkBasics::BALTTime time = BALTTimer::getBALTTime();
-  boost::shared_ptr<const CASTTypedData<PlaceData::LaserProcessorCommandAck> > cmdTD =
-      getWorkingMemoryEntry<PlaceData::LaserProcessorCommandAck>(change.m_address);
-  if (!cmdTD)
+  cdl::CASTTime time = getCASTTime();
+  shared_ptr<CASTData<PlaceData::LaserProcessorCommandAck> > cmdCast =
+      getWorkingMemoryEntry<PlaceData::LaserProcessorCommandAck>(change.address);
+  if (!cmdCast)
     return;
-  const boost::shared_ptr<const PlaceData::LaserProcessorCommandAck> cmd=cmdTD->getData();
+  const PlaceData::LaserProcessorCommandAckPtr cmd=cmdCast->getData();
 
   // Convert the command id to name
   std::string cmdName="UNKNOWN";
-  if (cmd->cmd.cmd==PlaceData::LP_CMD_UPDATE_ON_READ_START)
-    cmdName="LP_CMD_UPDATE_ON_READ_START";
-  else if (cmd->cmd.cmd==PlaceData::LP_CMD_UPDATE_STOP)
-    cmdName="LP_CMD_UPDATE_STOP";
+  if (cmd->cmd->cmd==PlaceData::LpCmdUpdateOnReadStart)
+    cmdName="LpCmdUpdateOnReadStart";
+  else if (cmd->cmd->cmd==PlaceData::LpCmdUpdateStop)
+    cmdName="LpCmdUpdateStop";
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName.c_str(), "", cmd->src, BALTTimer::toSeconds(time));
+    _dialog->newCommand(cmdName, "", cmd->src, time.s+10e-6*time.us);
   }
 }
 
@@ -469,15 +430,15 @@ void PlaceMonitor::newLaserProcessorCommandAck(const cast::cdl::WorkingMemoryCha
 void PlaceMonitor::newLaserProcessorStatus(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::LaserProcessorStatus> > statTD =
-      getWorkingMemoryEntry<PlaceData::LaserProcessorStatus>(change.m_address);
-  if (!statTD)
+  shared_ptr<CASTData<PlaceData::LaserProcessorStatus> > statCast =
+      getWorkingMemoryEntry<PlaceData::LaserProcessorStatus>(change.address);
+  if (!statCast)
     return;
-  const boost::shared_ptr<const PlaceData::LaserProcessorStatus> stat=statTD->getData();
+  const PlaceData::LaserProcessorStatusPtr stat = statCast->getData();
 
   if (_dialog)
   {
-    _dialog->newLaserProcessorStatus(*stat);
+    _dialog->newLaserProcessorStatus(stat);
   }
 }
 
@@ -486,15 +447,15 @@ void PlaceMonitor::newLaserProcessorStatus(const cast::cdl::WorkingMemoryChange 
 void PlaceMonitor::newLaserResults(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::LaserResults> > resTD =
-      getWorkingMemoryEntry<PlaceData::LaserResults>(change.m_address);
-  if (!resTD)
+  shared_ptr<CASTData<PlaceData::LaserResults> > resCast =
+      getWorkingMemoryEntry<PlaceData::LaserResults>(change.address);
+  if (!resCast)
     return;
-  const boost::shared_ptr<const PlaceData::LaserResults> res=resTD->getData();
+  const PlaceData::LaserResultsPtr res = resCast->getData();
 
   if (_dialog)
   {
-    _dialog->newLaserResults(*res);
+    _dialog->newLaserResults(res);
   }
 }
 
@@ -503,15 +464,15 @@ void PlaceMonitor::newLaserResults(const cast::cdl::WorkingMemoryChange & change
 void PlaceMonitor::newIntegratedResults(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::IntegratedResults> > resTD =
-      getWorkingMemoryEntry<PlaceData::IntegratedResults>(change.m_address);
-  if (!resTD)
+  shared_ptr<CASTData<PlaceData::IntegratedResults> > resCast =
+      getWorkingMemoryEntry<PlaceData::IntegratedResults>(change.address);
+  if (!resCast)
     return;
-  const boost::shared_ptr<const PlaceData::IntegratedResults> res=resTD->getData();
+  const PlaceData::IntegratedResultsPtr res = resCast->getData();
 
   if (_dialog)
   {
-    _dialog->newIntegratedResults(*res);
+    _dialog->newIntegratedResults(res);
   }
 }
 
@@ -520,15 +481,15 @@ void PlaceMonitor::newIntegratedResults(const cast::cdl::WorkingMemoryChange & c
 void PlaceMonitor::newNodeLabellerData(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::NodeLabellerData> > infoTD =
-      getWorkingMemoryEntry<PlaceData::NodeLabellerData>(change.m_address);
-  if (!infoTD)
+  shared_ptr<CASTData<PlaceData::NodeLabellerData> > infoCast =
+      getWorkingMemoryEntry<PlaceData::NodeLabellerData>(change.address);
+  if (!infoCast)
     return;
-  const boost::shared_ptr<const PlaceData::NodeLabellerData> info=infoTD->getData();
+  const PlaceData::NodeLabellerDataPtr info = infoCast->getData();
 
   if (_dialog)
   {
-    _dialog->newNodeLabellerData(*info);
+    _dialog->newNodeLabellerData(info);
   }
 }
 
@@ -537,12 +498,12 @@ void PlaceMonitor::newNodeLabellerData(const cast::cdl::WorkingMemoryChange & ch
 void PlaceMonitor::newDataSaverStatus(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  FrameworkBasics::BALTTime time = BALTTimer::getBALTTime();
-  boost::shared_ptr<const CASTTypedData<PlaceData::DataSaverStatus> > statusTD =
-      getWorkingMemoryEntry<PlaceData::DataSaverStatus>(change.m_address);
-  if (!statusTD)
+  cdl::CASTTime time = getCASTTime();
+  shared_ptr<CASTData<PlaceData::DataSaverStatus> > statusCast =
+      getWorkingMemoryEntry<PlaceData::DataSaverStatus>(change.address);
+  if (!statusCast)
     return;
-  const boost::shared_ptr<const PlaceData::DataSaverStatus> status=statusTD->getData();
+  const PlaceData::DataSaverStatusPtr status=statusCast->getData();
 
   if (_dialog)
   {
@@ -557,15 +518,15 @@ void PlaceMonitor::newDataSaverStatus(const cast::cdl::WorkingMemoryChange & cha
 void PlaceMonitor::newImage(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::Image> > imageTD =
-      getWorkingMemoryEntry<PlaceData::Image>(change.m_address);
-  if (!imageTD)
+  shared_ptr<CASTData<PlaceData::Image> > imageCast =
+      getWorkingMemoryEntry<PlaceData::Image>(change.address);
+  if (!imageCast)
     return;
-  const boost::shared_ptr<const PlaceData::Image> image=imageTD->getData();
+  const PlaceData::ImagePtr image = imageCast->getData();
 
   if (_dialog)
   {
-    _dialog->newImage(*image);
+    _dialog->newImage(image);
   }
 }
 
@@ -574,15 +535,15 @@ void PlaceMonitor::newImage(const cast::cdl::WorkingMemoryChange & change)
 void PlaceMonitor::newLaserScan(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::LaserScan> > laserScanTD =
-      getWorkingMemoryEntry<PlaceData::LaserScan>(change.m_address);
-  if (!laserScanTD)
+  shared_ptr<CASTData<PlaceData::LaserScan> > laserScanCast =
+      getWorkingMemoryEntry<PlaceData::LaserScan>(change.address);
+  if (!laserScanCast)
     return;
-  const boost::shared_ptr<const PlaceData::LaserScan> laserScan=laserScanTD->getData();
+  const PlaceData::LaserScanPtr laserScan = laserScanCast->getData();
 
   if (_dialog)
   {
-    _dialog->newLaserScan(*laserScan);
+    _dialog->newLaserScan(laserScan);
   }
 }
 
@@ -591,15 +552,16 @@ void PlaceMonitor::newLaserScan(const cast::cdl::WorkingMemoryChange & change)
 void PlaceMonitor::newOdometry(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::Odometry> > odometryTD =
-      getWorkingMemoryEntry<PlaceData::Odometry>(change.m_address);
-  if (!odometryTD)
+  shared_ptr<CASTData<PlaceData::Odometry> > odometryCast =
+      getWorkingMemoryEntry<PlaceData::Odometry>(change.address);
+  if (!odometryCast)
     return;
-  const boost::shared_ptr<const PlaceData::Odometry> odometry=odometryTD->getData();
+  PlaceData::OdometryPtr odometry =
+      new PlaceData::Odometry( *odometryCast->getData() );
 
   if (_dialog)
   {
-    _dialog->newOdometry(*odometry);
+    _dialog->newOdometry(odometry);
   }
 }
 
@@ -608,15 +570,15 @@ void PlaceMonitor::newOdometry(const cast::cdl::WorkingMemoryChange & change)
 void PlaceMonitor::newTarget(const cast::cdl::WorkingMemoryChange & change)
 {
   // Get
-  boost::shared_ptr<const CASTTypedData<PlaceData::Target> > targetTD =
-      getWorkingMemoryEntry<PlaceData::Target>(change.m_address);
-  if (!targetTD)
+  shared_ptr<CASTData<PlaceData::Target> > targetCast =
+      getWorkingMemoryEntry<PlaceData::Target>(change.address);
+  if (!targetCast)
     return;
-  const boost::shared_ptr<const PlaceData::Target> target=targetTD->getData();
+  const PlaceData::TargetPtr target = targetCast->getData();
 
   if (_dialog)
   {
-    _dialog->newTarget(*target);
+    _dialog->newTarget(target);
   }
 }
 
@@ -624,16 +586,16 @@ void PlaceMonitor::newTarget(const cast::cdl::WorkingMemoryChange & change)
 // ------------------------------------------------------
 void PlaceMonitor::sendPlaceCommand(PlaceData::PlaceCommandType cmd)
 {
-  PlaceData::PlaceCommand *placeCommand = new PlaceData::PlaceCommand;
+  PlaceData::PlaceCommandPtr placeCommand = new PlaceData::PlaceCommand;
   placeCommand->cmd = cmd;
   string dataId = newDataID();
-  addToWorkingMemory<PlaceData::PlaceCommand>(dataId, placeCommand);
-  if (cmd==PlaceData::CMD_UPDATE)
-    println("Sent CMD_UPDATE command.");
-  else if (cmd==PlaceData::CMD_START)
-    println("Sent CMD_START command.");
-  else if (cmd==PlaceData::CMD_STOP)
-    println("Sent CMD_STOP command.");
+  addToWorkingMemory(dataId, placeCommand);
+  if (cmd==PlaceData::CmdUpdate)
+    println("Sent CmdUpdate command.");
+  else if (cmd==PlaceData::CmdStart)
+    println("Sent CmdStart command.");
+  else if (cmd==PlaceData::CmdStop)
+    println("Sent CmdStop command.");
   else
     println("Sent unknown command.");
 }
@@ -642,12 +604,13 @@ void PlaceMonitor::sendPlaceCommand(PlaceData::PlaceCommandType cmd)
 // ------------------------------------------------------
 void PlaceMonitor::sendDataProviderCommand(PlaceData::DataProviderCommandType cmd)
 {
-  PlaceData::DataProviderCommand *dataProviderCommand = new PlaceData::DataProviderCommand;
+  PlaceData::DataProviderCommandPtr dataProviderCommand =
+      new PlaceData::DataProviderCommand;
   dataProviderCommand->cmd = cmd;
   string dataId = newDataID();
-  addToWorkingMemory<PlaceData::DataProviderCommand>(dataId, dataProviderCommand);
-  if (cmd==PlaceData::DP_CMD_UPDATE)
-    println("Sent DP_CMD_UPDATE command.");
+  addToWorkingMemory(dataId, dataProviderCommand);
+  if (cmd==PlaceData::DpCmdUpdate)
+    println("Sent DpCmdUpdate command.");
   else
     println("Sent unknown command.");
 }
@@ -656,14 +619,15 @@ void PlaceMonitor::sendDataProviderCommand(PlaceData::DataProviderCommandType cm
 // ------------------------------------------------------
 void PlaceMonitor::sendVisualProcessorCommand(PlaceData::VisualProcessorCommandType cmd)
 {
-  PlaceData::VisualProcessorCommand *visualProcessorCommand = new PlaceData::VisualProcessorCommand;
+  PlaceData::VisualProcessorCommandPtr visualProcessorCommand =
+      new PlaceData::VisualProcessorCommand;
   visualProcessorCommand->cmd = cmd;
   string dataId = newDataID();
-  addToWorkingMemory<PlaceData::VisualProcessorCommand>(dataId, visualProcessorCommand);
-  if (cmd==PlaceData::VP_CMD_UPDATE_ON_READ_START)
-    println("Sent VP_CMD_UPDATE_ON_READ_START command.");
-  if (cmd==PlaceData::VP_CMD_UPDATE_STOP)
-    println("Sent VP_CMD_UPDATE_STOP command.");
+  addToWorkingMemory(dataId, visualProcessorCommand);
+  if (cmd==PlaceData::VpCmdUpdateOnReadStart)
+    println("Sent VpCmdUpdateOnReadStart command.");
+  if (cmd==PlaceData::VpCmdUpdateStop)
+    println("Sent VpCmdUpdateStop command.");
   else
     println("Sent unknown command.");
 }
@@ -672,28 +636,28 @@ void PlaceMonitor::sendVisualProcessorCommand(PlaceData::VisualProcessorCommandT
 // ------------------------------------------------------
 void PlaceMonitor::sendDataSaverCommand(PlaceData::DataSaverCommandType cmd, std::string dirPath, std::string baseName, int targetNo, std::string targetName)
 {
-  PlaceData::DataSaverCommand *dsCommand = new PlaceData::DataSaverCommand;
+  PlaceData::DataSaverCommandPtr dsCommand = new PlaceData::DataSaverCommand;
   dsCommand->cmd = cmd;
   dsCommand->dataDirPath=dirPath.c_str();
   dsCommand->dataBaseName=baseName.c_str();
   dsCommand->targetNo=(long)targetNo;
   dsCommand->targetName=targetName.c_str();
   string dataId = newDataID();
-  addToWorkingMemory<PlaceData::DataSaverCommand>(dataId, dsCommand);
-  if (cmd==PlaceData::DS_CMD_START)
-    println("Sent DS_CMD_START command.");
-  else if (cmd==PlaceData::DS_CMD_UPDATE_START)
-    println("Sent DS_CMD_UPDATE_START command.");
-  else if (cmd==PlaceData::DS_CMD_UPDATE_STOP)
-    println("Sent DS_CMD_UPDATE_STOP command.");
-  else if (cmd==PlaceData::DS_CMD_STOP)
-    println("Sent DS_CMD_STOP command.");
-  else if (cmd==PlaceData::DS_CMD_PAUSE)
-    println("Sent DS_CMD_PAUSE command.");
-  else if (cmd==PlaceData::DS_CMD_UNPAUSE)
-    println("Sent DS_CMD_UNPAUSE command.");
-  else if (cmd==PlaceData::DS_CMD_NEW_TARGET)
-    println("Sent DS_CMD_NEW_TARGET command.");
+  addToWorkingMemory(dataId, dsCommand);
+  if (cmd==PlaceData::DsCmdStart)
+    println("Sent DsCmdStart command.");
+  else if (cmd==PlaceData::DsCmdUpdateStart)
+    println("Sent DsCmdUpdateStart command.");
+  else if (cmd==PlaceData::DsCmdUpdateStop)
+    println("Sent DsCmdUpdateStop command.");
+  else if (cmd==PlaceData::DsCmdStop)
+    println("Sent DsCmdStop command.");
+  else if (cmd==PlaceData::DsCmdPause)
+    println("Sent DsCmdPause command.");
+  else if (cmd==PlaceData::DsCmdUnpause)
+    println("Sent DsCmdUnpause command.");
+  else if (cmd==PlaceData::DsCmdNewTarget)
+    println("Sent DsCmdNewTarget command.");
   else
     println("Sent unknown command.");
 }

@@ -27,9 +27,9 @@
 
 // Place.SA
 #include "WMDialog.h"
-#include <place/idl/PlaceData.hh>
+#include <PlaceData.hpp>
 // CAST
-#include <cast/architecture/ManagedProcess.hpp>
+#include <cast/architecture/ManagedComponent.hpp>
 // Qt
 #include <QHeaderView>
 #include <QDesktopWidget>

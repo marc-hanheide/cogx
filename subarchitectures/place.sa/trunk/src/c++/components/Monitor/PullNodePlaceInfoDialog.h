@@ -29,7 +29,7 @@
 #define __PLACE_PULL_NODE_PLACE_INFO_DIALOG__
 
 #include "ui_PullNodePlaceInfoDialog.h"
-#include <place/idl/PlaceData.hh>
+#include <PlaceData.hpp>
 #include <QDialog>
 
 namespace place

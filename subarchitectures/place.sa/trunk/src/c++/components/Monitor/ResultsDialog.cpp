@@ -94,7 +94,9 @@ void ResultsDialog::updateVisualResults(long frameNo, QVector<PlaceData::Classif
 
   // Last result
   visLastFrameLabel->setText(QString::number(frameNo));
-  vis1stHypLabel->setText(QString::number(results[0].classNo)+" - "+QString(results[0].className));
+  vis1stHypLabel->setText(
+      QString::number(results[0].classNo) + " - " +
+      QString::fromStdString(results[0].className) );
   visConfLabel->setText(QString::number(results[0].confidence, 'f', 4));
   QString hypStr="";
   for (int i=1; i<results.count(); ++i)
@@ -102,7 +104,7 @@ void ResultsDialog::updateVisualResults(long frameNo, QVector<PlaceData::Classif
     if (i>1)
       hypStr+="\n";
     hypStr+=QString::number(results[i].classNo)+" - "+
-            QString(results[i].className)+" : " + 
+            QString::fromStdString(results[i].className)+" : " +
             QString::number(results[i].confidence, 'f', 4);
   }
   visOtherHypLabel->setText(hypStr);
@@ -124,7 +126,7 @@ void ResultsDialog::updateVisualResults(long frameNo, QVector<PlaceData::Classif
   {
     _visTargetFramesNo++;
 
-    visTargetLabel->setText(QString::number(t.no)+" - "+QString(t.name));
+    visTargetLabel->setText(QString::number(t.no)+" - "+t.name);
 
     // Calculate class rate
     if (t.no==results[0].classNo)
@@ -148,7 +150,8 @@ void ResultsDialog::updateLaserResults(long frameNo, QVector<PlaceData::Classifi
 
   // Last result
   lasLastFrameLabel->setText(QString::number(frameNo));
-  las1stHypLabel->setText(QString::number(results[0].classNo)+" - "+QString(results[0].className));
+  las1stHypLabel->setText(QString::number(results[0].classNo) + " - " +
+      QString::fromStdString(results[0].className));
   lasConfLabel->setText(QString::number(results[0].confidence, 'f', 4));
   QString hypStr="";
   for (int i=1; i<results.count(); ++i)
@@ -156,7 +159,7 @@ void ResultsDialog::updateLaserResults(long frameNo, QVector<PlaceData::Classifi
     if (i>1)
       hypStr+="\n";
     hypStr+=QString::number(results[i].classNo)+" - "+
-        QString(results[i].className)+" : " + 
+        QString::fromStdString(results[i].className)+" : " +
         QString::number(results[i].confidence, 'f', 4);
   }
   lasOtherHypLabel->setText(hypStr);
@@ -178,7 +181,7 @@ void ResultsDialog::updateLaserResults(long frameNo, QVector<PlaceData::Classifi
   {
     _lasTargetFramesNo++;
 
-    lasTargetLabel->setText(QString::number(t.no)+" - "+QString(t.name));
+    lasTargetLabel->setText(QString::number(t.no)+" - "+t.name);
 
     // Calculate class rate
     if (t.no==results[0].classNo)
@@ -214,7 +217,8 @@ void ResultsDialog::updateIntegratedResults(long frameNo, bool usedVision, bool 
 
   // Last result
   intgLastFrameLabel->setText(QString::number(frameNo));
-  intg1stHypLabel->setText(QString::number(results[0].classNo)+" - "+QString(results[0].className));
+  intg1stHypLabel->setText(QString::number(results[0].classNo) + " - " +
+      QString::fromStdString(results[0].className));
   intgConfLabel->setText(QString::number(results[0].confidence, 'f', 4));
   QString hypStr="";
   for (int i=1; i<results.count(); ++i)
@@ -222,7 +226,7 @@ void ResultsDialog::updateIntegratedResults(long frameNo, bool usedVision, bool 
     if (i>1)
       hypStr+="\n";
     hypStr+=QString::number(results[i].classNo)+" - "+
-        QString(results[i].className)+" : " + 
+        QString::fromStdString(results[i].className)+" : " +
         QString::number(results[i].confidence, 'f', 4);
   }
   intgOtherHypLabel->setText(hypStr);
@@ -244,7 +248,7 @@ void ResultsDialog::updateIntegratedResults(long frameNo, bool usedVision, bool 
   {
     _intgTargetFramesNo++;
 
-    intgTargetLabel->setText(QString::number(t.no)+" - "+QString(t.name));
+    intgTargetLabel->setText(QString::number(t.no)+" - "+t.name);
 
     // Calculate class rate
     if (t.no==results[0].classNo)
