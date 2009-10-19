@@ -23,7 +23,8 @@ module motivation {
     		POSSIBLE,
     		IMPOSSIBLE,
     		ACTIVE,
-    		COMPLETED
+    		COMPLETED,
+    		WILDCARD
     	};
     	
     	enum MotivePriority {
