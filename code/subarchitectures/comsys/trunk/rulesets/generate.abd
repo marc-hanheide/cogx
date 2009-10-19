@@ -204,7 +204,7 @@ generate : intention : need_get_value(Modality, Entity, color) <-
 	dummy_nom4(QualityNom),
 	%k(now, private(r)) : objecttype(Object, box),
 	%k(now, private(r)) : color(Object, unknownColor),
-	k(now, private(r)) : objecttype(Entity, Type) / 1.0,
+	k(now, private(r)) : objecttype(Entity, Type),
 %	k(now, attrib(r, h)) : objecttype(Entity, Type) / 1.0,
 	%k(now, attrib(r, h)) : objecttype(Entity, Type),
 	i : sort(Nom, dvp) / 1.0,
