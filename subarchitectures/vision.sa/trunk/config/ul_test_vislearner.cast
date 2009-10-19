@@ -19,5 +19,5 @@ CPP MG vis.learner VisualLearner --log #--debug
 CPP MG vis.tester  TestVisualLearner --testmode "standalone" --log 
 
 # B) test visual analyzer
-CPP MG vis.analyzer  ObjectAnalyzer --testmode "fake-proto" --log 
-CPP MG vis.tester  TestVisualLearner --testmode "fake-proto" --log 
+# CPP MG vis.analyzer  ObjectAnalyzer --testmode "fake-proto" --log 
+# CPP MG vis.tester  TestVisualLearner --testmode "fake-proto" --log 
