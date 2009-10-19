@@ -7,7 +7,7 @@ SET(SOURCES VideoServer.cpp)
 SET(HEADERS VideoServer.h)
 
 add_library(VideoServer SHARED ${SOURCES})
-target_link_libraries(VideoServer CASTCore CDL)
+target_link_libraries(VideoServer CASTCore CDL CASTArchitecture)
 target_link_libraries(VideoServer Video VideoUtils)
 
 INSTALL(TARGETS VideoServer LIBRARY DESTINATION lib)
