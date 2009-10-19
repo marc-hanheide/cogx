@@ -84,7 +84,7 @@ protected:
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
   int m_CtrlAction;
-
+  SpatialData::PlaceIDSeq placeseq;
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_controlmodule;
   const double gadget_y;
