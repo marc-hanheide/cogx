@@ -42,13 +42,13 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 {
 	ObjectDetectionCommandPtr detect_cmd = getMemoryEntry<ObjectDetectionCommand>(_wmc.address);
 	
-	log("received detection command ...");
+// 	log("received detection command ...");
 	switch(detect_cmd->cmd){
 		case VisionData::DVSSTART:
 			if(vs_started){
-				log("already receiving images");
+// 				log("already receiving images");
 			}else{
-				log("starting receiving images");
+// 				log("starting receiving images");
 				vs_started = true;
         // start receiving images pushed by the video server
         vector<int> camIds;
@@ -58,9 +58,9 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			break;
 		case VisionData::DVSSTOP:
 			if(!vs_started){
-				log("already stopped receiving images");
+// 				log("already stopped receiving images");
 			}else{
-				log("stop receiving images");
+// 				log("stop receiving images");
 				vs_started = false;
         // stop receiving images pushed by the video server
         videoServer->stopReceiveImages(getComponentID().c_str());
@@ -68,18 +68,18 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			break;
 		case VisionData::DSTART:
 			if(cmd_detect){
-				log("already started detection");
+// 				log("already started detection");
 			}else{
-				log("starting detection");
+// 				log("starting detection");
 				cmd_detect = true;
 			}
 			break;
 		case VisionData::DSTOP:
 			if(cmd_detect){
-				log("stopping detection");
+// 				log("stopping detection");
 				cmd_detect = false;
 			}else{
-				log("already stopped detection");
+// 				log("already stopped detection");
 			}
 			break;
 		case VisionData::DSINGLE:
@@ -97,7 +97,7 @@ void ObjectDetector::receiveDetectionCommand(const cdl::WorkingMemoryChange & _w
 			*/
 			break;
 		default:
-			log("unknown detection command received, doing nothing");
+// 			log("unknown detection command received, doing nothing");
 			break;
 	}	
 }
@@ -131,8 +131,6 @@ void ObjectDetector::configure(const map<string,string> & _config)
 
 void ObjectDetector::start()
 {
-	log("start component");
-
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
@@ -209,11 +207,7 @@ void ObjectDetector::processImage(const Video::Image &image)
 					double radius = length(vertices[0].pos);
 	
 					if(length(results[i]->pose.pos - newCubeCenter) < radius)
-{
 						cubeExists = true;
-printf("!!! Cube exists !!!\n");
-}
-				}
 	
 				// Create visual object, if it does not already exists in the working memory
 				if(!cubeExists)
@@ -228,7 +222,7 @@ printf("!!! Cube exists !!!\n");
 	
 						// Add VisualObject to working memory
 						addToWorkingMemory(newDataID(), obj);
-						log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
+// 						log("new cube at frame number %u: added visual object to working memory: %s", frame_counter, obj->label.c_str());
 					}
 				}
 			}
@@ -383,8 +377,8 @@ bool ObjectDetector::Cube2VisualObject(VisionData::VisualObjectPtr &obj, Z::Cube
 		obj->model->vertices.push_back(v0);
 		obj->model->vertices.push_back(v1);
 
-		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x*1000, v0.pos.y*1000, v0.pos.z*1000);
-		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x*1000, v1.pos.y*1000, v1.pos.z*1000);
+// 		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 0, cd.corner_points[i][0].x, cd.corner_points[i][1].y, v0.pos.x*1000, v0.pos.y*1000, v0.pos.z*1000);
+// 		log("cp[%u][%u]: 2D: %4.0f / %4.0f	3D: %4.1f / %4.1f/ %4.1f [mm]\n", i, 1, cd.corner_points[i][1].x, cd.corner_points[i][1].y, v1.pos.x*1000, v1.pos.y*1000, v1.pos.z*1000);
 	}
 
 
