@@ -83,7 +83,8 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
-	private class AVSExecutor extends Thread implements ActionExecutor {
+	private class AVSExecutor extends Thread implements ActionExecutor,
+			WorkingMemoryChangeReceiver {
 
 		private long[] m_avsPlaceIDs;
 		private ExecutionCompletionCallback m_callback;
@@ -116,6 +117,8 @@ public class SpatialActionInterface extends ManagedComponent {
 			m_avsAddr = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
 			try {
+				addChangeFilter(ChangeFilterFactory.createAddressFilter(
+						m_avsAddr, WorkingMemoryOperation.DELETE), this);
 				addToWorkingMemory(m_avsAddr, m_avsCmd);
 				m_callback = _callback;
 				if (useAVSTimeout()) {
@@ -144,6 +147,7 @@ public class SpatialActionInterface extends ManagedComponent {
 						// stop avs
 						m_avsCmd.cmd = AVSAction.STOPAVS;
 						overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+						removeChangeFilter(this);
 						m_callback.executionComplete(TriBool.TRITRUE);
 					}
 				} catch (InterruptedException e) {
@@ -156,26 +160,51 @@ public class SpatialActionInterface extends ManagedComponent {
 					e.printStackTrace();
 				} catch (UnknownSubarchitectureException e) {
 					e.printStackTrace();
+				} catch (SubarchitectureComponentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}
 
 		@Override
 		public void stopExecution() {
-			try {
-				m_isStopped = true;
-				m_avsCmd.cmd = AVSAction.STOPAVS;
-				overwriteWorkingMemory(m_avsAddr, m_avsCmd);
-			} catch (DoesNotExistOnWMException e) {
-				e.printStackTrace();
-			} catch (ConsistencyException e) {
-				e.printStackTrace();
-			} catch (PermissionException e) {
-				e.printStackTrace();
-			} catch (UnknownSubarchitectureException e) {
-				e.printStackTrace();
-			}
+			if (!m_isStopped) {
+				try {
+					m_isStopped = true;
+					m_avsCmd.cmd = AVSAction.STOPAVS;
+					overwriteWorkingMemory(m_avsAddr, m_avsCmd);
+					removeChangeFilter(this);
 
+				} catch (DoesNotExistOnWMException e) {
+					e.printStackTrace();
+				} catch (ConsistencyException e) {
+					e.printStackTrace();
+				} catch (PermissionException e) {
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					e.printStackTrace();
+				} catch (SubarchitectureComponentException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _arg0)
+				throws CASTException {
+			// only called when command has been deleted, i.e. avs has finished
+			// for some reason
+			if (!m_isStopped) {
+				println("AVS finished on its own");
+				m_isStopped = true;
+				m_callback.executionComplete(TriBool.TRITRUE);
+				try {
+					removeChangeFilter(this);
+				} catch (SubarchitectureComponentException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 	}
