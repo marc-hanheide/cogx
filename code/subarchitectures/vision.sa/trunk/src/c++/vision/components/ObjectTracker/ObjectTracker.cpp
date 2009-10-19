@@ -144,8 +144,11 @@ void ObjectTracker::runTracker(const Video::Image &image){
 	m_tracker_list[0]->drawCoordinates();
 	
 	for(int id=0; id<i; id++){
+		printf("1: %.3f %.3f %.3f   2: %.3f %.3f %.3f   3: %.3f %.3f %.3f\n",
+			m_modelID_list[0].trackpose.tX, m_modelID_list[0].trackpose.tY, m_modelID_list[0].trackpose.tZ,
+			m_modelID_list[1].trackpose.tX, m_modelID_list[1].trackpose.tY, m_modelID_list[1].trackpose.tZ,
+			m_modelID_list[2].trackpose.tX, m_modelID_list[2].trackpose.tY, m_modelID_list[2].trackpose.tZ);
 		m_tracker_list[id]->drawResult(&m_modelID_list[id].trackpose, g_Resources->GetModel(m_modelID_list[id].resources_ID));
-		//log("Pose: %.3f %.3f %.3f\n", m_modelID_list[0].trackpose.tX, m_modelID_list[0].trackpose.tY, m_modelID_list[0].trackpose.tZ);
 	}
 	
 	m_tracker_list[0]->swap();
