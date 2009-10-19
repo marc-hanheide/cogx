@@ -29,13 +29,13 @@
 #include <Navigation/NavGraphEdge.hh>
 #include <Navigation/NavGraphGateway.hh>
 #include <boost/numeric/ublas/matrix.hpp>
-#include <VisionData.hpp>
+//#include <VisionData.hpp>
 
 using namespace std;
 using namespace cast;
 using namespace boost;
 using namespace navsa;
-using namespace VisionData;
+//using namespace VisionData;
 
 /**
  * The function called to create a new instance of our component.
@@ -234,7 +234,7 @@ void DisplayNavInPB::start() {
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                &DisplayNavInPB::newPersonFollowed));
 
-addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::ADD,
+  /*addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::ADD,
 							   "",
 							   "",
 							   "vision.sa",
@@ -247,7 +247,7 @@ addChangeFilter(createChangeFilter<VisionData::ConvexHull>(cdl::OVERWRITE,
 							   "vision.sa",
 							   cdl::ALLSA),
 		new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-								 &DisplayNavInPB::newConvexHull));
+		&DisplayNavInPB::newConvexHull));*/
 
 
   // Hook up changes to the LineMap to a callback function
@@ -577,7 +577,7 @@ void DisplayNavInPB::runComponent() {
   }
 }
 
-void DisplayNavInPB::newConvexHull(const cdl::WorkingMemoryChange
+/*void DisplayNavInPB::newConvexHull(const cdl::WorkingMemoryChange
 				   &objID){
 
   debug("newConvexHull called");
@@ -633,7 +633,7 @@ void DisplayNavInPB::newConvexHull(const cdl::WorkingMemoryChange
       
     }
   m_Mutex.unlock();
-}
+}*/
 
 void DisplayNavInPB::displayPeople()
 {
