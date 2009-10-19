@@ -179,6 +179,7 @@ public class Binder extends ManagedComponent  {
 		UnionConfiguration initialConfig = new UnionConfiguration();
 		initialConfig.includedUnions = new Union[0];
 		initialConfig.orphanProxies = new Proxy[0];
+		initialConfig.configProb = -1.0f;
 		currentUnionConfigurations.add(initialConfig);
 	}
 
@@ -455,6 +456,9 @@ public class Binder extends ManagedComponent  {
 		try {
 			log("--> Perform incremental binding");
 
+			// checking the proxy correctness
+			checkProxyCorrectness(newProxy);
+			
 			log("Constructing initial union...");
 			// Construct the initial union (containing only the new proxy)
 			Union newUnion = constructor.constructInitialUnion(newProxy, newDataID(), getCASTTime());
@@ -577,6 +581,51 @@ public class Binder extends ManagedComponent  {
 	// UTILITY METHODS   
 	// ================================================================= 
 
+	
+	private void checkProxyCorrectness(Proxy proxy) {
+		
+		if (proxy == null) {
+			errlog("WARNING: proxy is null!");
+		}
+		else {
+			if (proxy.entityID == null || proxy.entityID.equals("")) {
+				errlog("WARNING: not entity ID defined for the proxy!");
+			}
+			
+			else {
+				if (proxy.distribution == null) {
+					errlog("WARNING: proxy distribution for " + proxy.entityID + " is null");
+				}
+				if (proxy.features == null) {
+					errlog("WARNING: features for proxy " + proxy.entityID + " is null");
+				}
+				
+				if (proxy.origin == null) {
+					errlog("WARNING: origin for proxy " + proxy.entityID + " is null");
+				}
+				else {
+					if (proxy.origin.address == null) {
+						errlog("WARNING: originating address of proxy " + proxy.entityID + " is null");
+					}
+					else {
+						if (proxy.origin.address.subarchitecture == null ||
+							proxy.origin.address.subarchitecture.equals("")) {
+							errlog ("WARNING: originating subarchitecture of proxy " + proxy.entityID + " is null");
+						}
+					}
+				}
+				
+				if (proxy.probExists < 0.5f) {
+					log("warning: existence probability of proxy " + proxy.entityID + " is lower than 0.5f");
+				}
+				if (proxy.timeStamp == null) {
+					errlog("WARNING: timestamp for proxy " + proxy.entityID + " is null");
+				}
+			}
+		}
+		
+	}
+	
 	
 	private Vector<UnionConfiguration> recompute (Vector<UnionConfiguration> configs) {
 		
@@ -850,6 +899,7 @@ public class Binder extends ManagedComponent  {
 		(UnionConfiguration existingUnionConfig, Proxy orphan) {
 	
 		UnionConfiguration unionConfigWithOrphanProxy = new UnionConfiguration();
+		unionConfigWithOrphanProxy.configProb = -1.0f;
 		unionConfigWithOrphanProxy.includedUnions = existingUnionConfig.includedUnions;
 		if (existingUnionConfig.orphanProxies != null) {
 		unionConfigWithOrphanProxy.orphanProxies = new Proxy[existingUnionConfig.orphanProxies.length +1 ];
@@ -912,6 +962,7 @@ public class Binder extends ManagedComponent  {
 			Union unionToAdd, Vector<Union> unionsToRemove) {
 
 		UnionConfiguration newConfig = new UnionConfiguration();
+		newConfig.configProb = -1.0f;
 		int nbUnions = existingUnionConfig.includedUnions.length + 1 - unionsToRemove.size();
 		newConfig.includedUnions = new Union[nbUnions];
 		newConfig.orphanProxies = existingUnionConfig.orphanProxies;
