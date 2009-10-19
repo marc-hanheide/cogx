@@ -11,6 +11,8 @@
   xsi:noNamespaceSchemaLocation="../grammar.xsd"
 >
 
+  <choosers  file="general.choosers.xml"/> 
+
   <systems  file="attention.systems.xml"/>
   <choosers  file="attention.choosers.xml"/> 
 

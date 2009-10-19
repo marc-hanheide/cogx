@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-general.check.feature.NumberID" region="GENERAL" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-fv feat="NumberID" />
+		 </inquiry>			
+		 <choicenode answer = "true">  
+			<result val="numberID-absent"/>			
+		 </choicenode>
+		 <choicenode answer = "false">
+			<result val="numberID-present"/>
+		 </choicenode>
+	 </choicenode>
+   </dectree>
+</chooser>
+
+
+<chooser id="c-general.check.type.substance" region="GENERAL" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+          <inquiry id="q-rel-eq" type="string" answerset="@true @false"> 
+			 <q-rel-eq focus="type" val="substance" /> 
+		 </inquiry>
+
+		 <choicenode answer = "true">  
+			<result val="type-substance"/>			
+		 </choicenode>
+		 <choicenode answer = "false">
+			<result val="type-non-substance"/>
+		 </choicenode>
+	 </choicenode>
+   </dectree>
+</chooser>
+
+</choosers>
