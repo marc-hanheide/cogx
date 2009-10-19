@@ -51,7 +51,7 @@ main(!IO) :-
 
 			Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-G)-P::out) is nondet :-
 				Costs = costs(1.0, 0.1, 0.1),
-				prove(0.0, 11.0, P0, P, Costs, !.Ctx),
+				prove(0.0, InitAssumeCost, P0, P, Costs, !.Ctx),
 				G = last_goal(P),
 				Cost = cost(!.Ctx, P, Costs)
 					))),
