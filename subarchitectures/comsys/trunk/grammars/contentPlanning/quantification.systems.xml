@@ -108,14 +108,16 @@ Need to exclude cases where the nominal is under <Compound> relation.
 */ --> 
 <system id="quantification.substance" region="QUANTIFICATION" metafunction="ideational">
 <!-- instead of having a special gate for uncountable, the chooser in quantification.entity could check for ontological sort -->
-   <chooser id="default"/>
+   <chooser id="c-general.check.type.substance"/>
    <conditions>
       <condition features="@type:e-substance @feat:PRONOMINALIZED:false"/>  
    </conditions>
    <actions>
-      <action choice="default"> 
+      <action choice="type-substance"> 
 	     <add-feature feature="Quantification" value="uncountable"/>
 <!--	     <add-feature feature="Num" value="sg"/>  -->
+      </action>
+      <action choice="type-non-substance">
       </action>
    </actions>
 </system>
