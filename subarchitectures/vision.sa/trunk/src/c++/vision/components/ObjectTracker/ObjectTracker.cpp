@@ -81,6 +81,7 @@ void ObjectTracker::initTracker(const Video::Image &image){
    
   // load camera parameters from Video::Image.camPars to OpenGL camera 'm_camera'
   loadCameraParameters(m_camera, image.camPars, 0.1, 10.0);
+  m_tracker_list[0]->setCamPerspective(m_camera);
   
   log("... initialisation successfull!");
 }
@@ -213,11 +214,7 @@ void ObjectTracker::receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc
 			if(track){
 				log("start tracking: I'm allready tracking");
 			}else{
-				if(g_Resources->GetNumModels()<=0)
-					log("start tracking: warning no model to track in memory");
-				else{
-					log("start tracking: ok");
-				}
+				log("start tracking: ok");
 				track = true;
 			}
 			break;
@@ -341,13 +338,8 @@ void ObjectTracker::runComponent(){
   while(running)
   {
     if(track){
-      // HACK: actually should use receiveImages(), but that is still buggy
       videoServer->getImage(camId, m_image);
-      if(	m_modelID_list.size() <= 0){
-				sleepComponent(50);
-			}else{
-      	runTracker(m_image);
-      }
+      runTracker(m_image);
     }
     else if(!track){
 			// * Idle *
