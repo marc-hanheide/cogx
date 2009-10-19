@@ -1349,7 +1349,7 @@ PlaceManager::processPlaceArrival(bool failed)
 	// at the location we're heading for.
 	// In Case 3, the robot will already have stopped moving
 	// In Case 5, we don't need to stop
-	//cancelMovement();
+	cancelMovement();
       }
     }
   }

@@ -470,7 +470,6 @@ void SpatialControl::deleteInhibitor(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
-  log("a");
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
   
@@ -481,10 +480,8 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
   m_SlamRobotPose.setY(oobj->getData()->y);
   m_SlamRobotPose.setTheta(oobj->getData()->theta);
   
-  log("b");
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
-  log("c");
 }
 
 
@@ -592,9 +589,9 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
-  log("lock receiveOdometry");
+  debug("lock receiveOdometry");
   lockComponent(); //Don't allow any interface calls while processing a callback
-  log("lock acquired");
+  debug("lock acquired");
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
@@ -830,14 +827,14 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
     
   } // if (m_ready)    
   unlockComponent();
-  log("unlock receiveOdometry");
+  debug("unlock receiveOdometry");
 }
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 {
-  log("lock receiveScan2d");
+  debug("lock receiveScan2d");
   lockComponent(); //Don't allow any interface calls while processing a callback
-  log("lock acquired");
+  debug("lock acquired");
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
@@ -901,7 +898,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
     }
   }
   unlockComponent();
-  log("unlock receiveScan2d");
+  debug("unlock receiveScan2d");
 }
 
 void 
@@ -964,7 +961,9 @@ SpatialControl::getFrontiers()
   log("SpatialControl::getFrontiers() called");
   while (!m_firstScanAdded) {
     log("  Waiting for first scan to be added...");
+    unlockComponent();
     usleep(1000000);
+    lockComponent();
   }
 
   m_Explorer->updateFrontiers();
