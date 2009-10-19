@@ -1,1 +1,2 @@
 #dc1394_reset_bus
+#rm robotpose.ccf 
