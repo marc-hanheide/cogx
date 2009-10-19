@@ -24,11 +24,6 @@ Parse 7: np :
                      <Modifier>(red1_0:q-color ^ red))
 
 
-Weird problem with ascription: 
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
---> NOTE: order within Target matters; if box not last, then Color gets not planned !!
-
-
 Distinguish feedback according to <Modality>
 (vision, discourse)
 
