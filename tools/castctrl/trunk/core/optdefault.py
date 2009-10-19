@@ -24,9 +24,13 @@ CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
 ICE_CONFIG=${CAST_ICE_CONFIG}
 ICE_JARS=/usr/share/java/Ice.jar:/usr/share/java/ant-ice.jar
 
+MATLAB_RUNTIME_DIR=/opt/MATLAB/MATLAB_Compiler_Runtime/v78/runtime/glnx86
+# MATLAB_RUNTIME_DIR=/usr/share/matlabR2008a/bin/glnx86
+
 PATH=${COGX_ROOT}/output/bin:${PATH}
-LD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:/usr/local/cuda/lib:${LD_LIBRARY_PATH}
-DYLD_LIBRARY_PATH=${CAST_LIB_DIR}:${COGX_LIB_DIR}:/usr/local/cuda/lib:${DYLD_LIBRARY_PATH}
+LD_LIB_EXTRA=${CAST_LIB_DIR}:${COGX_LIB_DIR}:/usr/local/cuda/lib:${MATLAB_RUNTIME_DIR}
+LD_LIBRARY_PATH=${LD_LIB_EXTRA}:${LD_LIBRARY_PATH}
+DYLD_LIBRARY_PATH=${LD_LIB_EXTRA}:${DYLD_LIBRARY_PATH}
 
 CLASSPATH=${CLASSPATH}:${ICE_JARS}:${CAST_JAR}:${COGX_CLASS_DIR}
 CMD_JAVA=java -ea -classpath ${CLASSPATH}
@@ -40,14 +44,12 @@ CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
 CMD_PLAYER=player [PLAYER_CONFIG]
 CMD_PEEKABOT=peekabot
 """
-
 cleanup="""
 #dc1394_reset_bus
 #rm robotpose.ccf 
 """
-
 useroptions="""
-#EDITOR=gvim --servername CAST --remote-silent %l[+:] %s
+#EDITOR=gvim --servername GVIM --remote-silent %l[+:] %s
 #EDITOR=xemacs %l[+] %s
 #EDITOR=kate %l[-l ] %s
 #EDITOR=gedit %l[+] %s

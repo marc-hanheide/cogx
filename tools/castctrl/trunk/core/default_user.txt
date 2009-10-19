@@ -1,4 +1,7 @@
-#EDITOR=emacs %s
-#EDITOR=kate %s
-#EDITOR=gedit %s
-#EDITOR=gvim --servername CAST --remote %s
+#EDITOR=gvim --servername GVIM --remote-silent %l[+:] %s
+#EDITOR=xemacs %l[+] %s
+#EDITOR=kate %l[-l ] %s
+#EDITOR=gedit %l[+] %s
+#EDITOR=xjed %s %l[-g ]
+#EDITOR=edit %l[+] %s
+#EDITOR=open -a textwrangler %s
