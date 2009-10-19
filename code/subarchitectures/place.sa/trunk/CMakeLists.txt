@@ -33,7 +33,7 @@ add_subdirectory(src/c++/shared)
 add_subdirectory(src/c++/tools/libsvm-mod)
 add_subdirectory(src/c++/components/Controller)
 add_subdirectory(src/c++/components/DataProvider)
-#add_subdirectory(src/c++/components/DataSaver)
+add_subdirectory(src/c++/components/DataSaver)
 add_subdirectory(src/c++/components/CueIntegrator)
 #add_subdirectory(src/c++/components/NodeLabeller)
 
