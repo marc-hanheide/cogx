@@ -192,6 +192,20 @@ module PlaceData
     DsValid
   };
 
+
+  /** Sequence of bytes. */
+  sequence<byte> ByteSeq;
+
+
+  /** Image buffer. */
+  struct ImageData 
+  {
+    int width;
+    int height;
+    ByteSeq data;  // width*height bytes of data
+  };
+
+
   /** Image provided by the DataProvider. */
   class Image
   {
@@ -205,7 +219,7 @@ module PlaceData
     cast::cdl::CASTTime wmTimeStamp;
 
     /** Image buffer. */
-    Video::Image imageBuffer;
+    ImageData imageBuffer;
 
     /** Status of the image. */
     DataStatus status;

@@ -183,6 +183,8 @@ private: // Configuration
   bool _useVision;
   bool _useOdometry;
 
+  bool _startServers;
+
   /**
    * The timeWindow specifies the length of the queue in seconds.
    * It indicates the biggest time difference allowed between the 
