@@ -14,6 +14,7 @@ CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --log 
 CPP MG Filter SOIFilter --log true --videoname video --camid 0 --display --stereoname stereo --objht 23 --objdt 60 --bght 24 --bgdt 9999 --fixc 24
 CPP MG ObjAnalyzer ObjectAnalyzer --log true
 CPP MG Mediator VisualMediator --log true
+CPP MG vis.learner   VisualLearner --log true
 
 
 SUBARCHITECTURE binding 
