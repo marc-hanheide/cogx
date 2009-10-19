@@ -67,6 +67,7 @@ module FrontierInterface {
     SpatialData::Place getPlaceFromHypID(int hypID);
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
+    SpatialData::Place getCurrentPlace();
   };
   interface PlaceInterfaceAsComponent extends cast::interfaces::CASTComponent {
     NodeHypothesis getHypFromPlaceID(int placeID);
@@ -75,6 +76,7 @@ module FrontierInterface {
     SpatialData::Place getPlaceFromHypID(int hypID);
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
+    SpatialData::Place getCurrentPlace();
   };
 };
 
