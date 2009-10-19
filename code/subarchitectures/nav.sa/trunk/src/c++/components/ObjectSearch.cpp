@@ -426,9 +426,9 @@ void ObjectSearch::ExecuteNextInPlan () {
     }
 }
 void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
-    NavData::NavCommandPtr cmd = new NavData::NavCommand;
-    cmd->prio = NavData::URGENT;
-    cmd->cmd = NavData::GOTOPOSITION;
+    SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
+    cmd->prio = SpatialData::URGENT;
+    cmd->cmd = SpatialData::GOTOPOSITION;
     cmd->pose.resize(2);
     cmd->pose[0] = position.getX();
     cmd->pose[1] = position.getY();
@@ -437,7 +437,7 @@ void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
     cmd->tolerance[0] = 0.1;
     string id = newDataID();
     log("ID post: %s",id.c_str());
-    addToWorkingMemory<NavData::NavCommand>(id, cmd);
+    addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
 }
 
 void ObjectSearch::ExecutePlan () {
