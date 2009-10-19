@@ -5,6 +5,10 @@ korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
 To do
 -------
 
+Java 1.6 problem:
+entry condition checking for @type:substance and @feat:NumberID 
+systems in delimitation and quantification entered though shouldn't be
+
 Exclude it-pronominalization when modifiers are present
 this is working:
 @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
