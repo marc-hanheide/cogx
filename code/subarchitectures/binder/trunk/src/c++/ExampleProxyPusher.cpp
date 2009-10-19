@@ -2,7 +2,7 @@
 
 
 extern "C" {
-  cast::interfaces::CASTComponentPtr 
+  cast::interfaces::CASTComponentPtr
   newComponent() {
     return new ExampleProxyPusher();
   }
@@ -23,20 +23,34 @@ void ExampleProxyPusher::start() {
 }
 
 void ExampleProxyPusher::runComponent() {
-  sleepComponent(5000);
+  sleepComponent(1000);
   println("faking stuff up");
 
   //copied from fake visual thingy
-    
-  WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), "blablabla", "anyDatatype");
-  
-  FeatureValuePtr relation = createStringValue ("relation", 0.8f);
-  FeaturePtr feat1 = createFeatureWithUniqueFeatureValue ("type", relation);
-  
-  ProxyPtr proxy = createNewProxy (origin, 0.75f);
-  
+
+  WorkingMemoryPointerPtr origin1 = createWorkingMemoryPointer("spatial.sa", "bing", "robot");
+
+  ProxyPtr proxy = createNewProxy (origin1, 1.0f);
+
+  FeatureValuePtr robot = createStringValue ("robot", 1.0f);
+  FeaturePtr feat1 = createFeatureWithUniqueFeatureValue("category", robot);
   addFeatureToProxy (proxy, feat1);
-  
+
   addProxyToWM(proxy);
+
+  sleepComponent(1000);
+
+  WorkingMemoryPointerPtr origin2 = createWorkingMemoryPointer ("spatial.sa", "bong", "place");
+  ProxyPtr proxy2 = createNewProxy (origin2, 1.0f);
+
+  FeatureValuePtr zero = createIntegerValue (0 , 1.0f);
+  FeaturePtr feat1b = createFeatureWithUniqueFeatureValue("place.id", zero);
+  addFeatureToProxy (proxy2, feat1b);
+
+  FeatureValuePtr explored = createBooleanValue (true , 1.0f);
+  FeaturePtr feat2b = createFeatureWithUniqueFeatureValue("explored", explored);
+  addFeatureToProxy (proxy2, feat2b);
+
+  addProxyToWM(proxy2);
 
 }

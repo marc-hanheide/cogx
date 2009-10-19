@@ -111,6 +111,25 @@ namespace binder {
     return stringVal;
   }
 
+
+
+  IntegerValuePtr BindingWorkingMemoryWriter::createIntegerValue(int val, float prob) {
+    IntegerValuePtr intVal = new IntegerValue();
+    intVal->val = val;
+    intVal->independentProb = prob;
+    return intVal;
+  }
+
+
+
+  BooleanValuePtr BindingWorkingMemoryWriter::createBooleanValue(bool val, float prob) {
+	  BooleanValuePtr boolVal = new BooleanValue();
+	  boolVal->val = val;
+	  boolVal->independentProb = prob;
+    return boolVal;
+  }
+
+
   FeaturePtr BindingWorkingMemoryWriter::createFeature(const std::string & featlabel) {
     FeaturePtr feat = new Feature();
     feat->featlabel = featlabel;
