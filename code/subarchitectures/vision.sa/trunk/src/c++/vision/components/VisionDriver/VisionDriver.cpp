@@ -77,6 +77,16 @@ void VisionDriver::runComponent()
 	detecting = true;
 	log("detection start-command sent!");
 	*/
+	
+	if(!tracking)
+	{
+	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
+		track_cmd->cmd = VisionData::START;
+		addToWorkingMemory(newDataID(), track_cmd);
+		log("tracking start-command sent!");
+		tracking = true;
+	}
+	
 	while(running)
 	{
 		sleepProcess(1000);	// detection time
@@ -105,6 +115,7 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 	}
 
 	// Object detected send tracking command (if not already tracking)
+	/*
 	if(!tracking)
 	{
 	  VisionData::TrackingCommandPtr track_cmd = new VisionData::TrackingCommand;
@@ -113,6 +124,7 @@ void VisionDriver::receiveVisualObject(const cdl::WorkingMemoryChange & _wmc)
 		log("tracking start-command sent!");
 		tracking = true;
 	}
+	*/
 }
 
 void VisionDriver::receiveVisualObjectPoseChange(const cdl::WorkingMemoryChange & _wmc)
