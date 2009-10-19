@@ -79,16 +79,19 @@ void ObjectSearch::start() {
 
 void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
 	  
-	  shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
-    	getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
-    	
-    	if (oobj->getData()->cmd == SpatialData::PLAN){
-    	
-    	    placestosearch = oobj->getData()->placestosearch;
-	  		m_command = PLAN;
-	}
-	else if (oobj->getData()->cmd == SpatialData::STOPAVS)
-			m_command = STOP;
+  shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
+    getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
+  
+  //store for later possible deletion
+  m_lastCmdAddr = objID.address;
+  
+  if (oobj->getData()->cmd == SpatialData::PLAN){    
+    placestosearch = oobj->getData()->placestosearch;
+    m_command = PLAN;
+  }
+  else if (oobj->getData()->cmd == SpatialData::STOPAVS) {
+    m_command = STOP;
+  }
 }
 void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
@@ -404,28 +407,42 @@ void ObjectSearch::InterpretCommand () {
     }
 }
 void ObjectSearch::ExecuteNextInPlan () {
-	whereinplan++;
-    log("Plan size %i, where in plan: %i.",m_plan.plan.size(),whereinplan);
-	if (whereinplan >= m_plan.plan.size()){
-        log("Plan finished.");
-        m_command = IDLE;
-        m_status = STOPPED;
-        return;
-		}
-    if (m_plan.plan.size() == 0) {
-        log("Nothing to execute.");
-        m_command = IDLE;
-        m_status = STOPPED;
-        return;
+  whereinplan++;
+  log("Plan size %i, where in plan: %i.",m_plan.plan.size(),whereinplan);
+  if (whereinplan >= m_plan.plan.size()){
+    log("Plan finished.");
+    try {
+      whereinplan = -1;
+      deleteFromWorkingMemory(m_lastCmdAddr);
+    }	    
+    catch(const CASTException &e) {
+      println("failed to delete AVSCommand: %s", e.message.c_str());
     }
-    if (m_status != NAVCOMMANDINPROGRESS) {
-        log("Posting NavCommand");
-        PostNavCommand(m_plan.plan[whereinplan]);
-        m_status = NAVCOMMANDINPROGRESS;
-        
-    } else if (m_status == NAVCOMMANDINPROGRESS) {
-        log("NavCommand in progress.");
+    m_command = IDLE;
+    m_status = STOPPED;
+    return;
+  }
+  if (m_plan.plan.size() == 0) {
+    log("Nothing to execute.");
+    try {
+      whereinplan = -1;
+      deleteFromWorkingMemory(m_lastCmdAddr);
+    }	    
+    catch(const CASTException &e) {
+      println("failed to delete AVSCommand: %s", e.message.c_str());
     }
+    m_command = IDLE;
+    m_status = STOPPED;
+    return;
+  }
+  if (m_status != NAVCOMMANDINPROGRESS) {
+    log("Posting NavCommand");
+    PostNavCommand(m_plan.plan[whereinplan]);
+    m_status = NAVCOMMANDINPROGRESS;
+    
+  } else if (m_status == NAVCOMMANDINPROGRESS) {
+    log("NavCommand in progress.");
+  }
 }
 
 
@@ -516,40 +533,41 @@ void ObjectSearch::GenViewPoints() {
 
     while (i < m_samplesize) {
 
-      log("processing sample %i/%i", i+1, m_samplesize);
-
-        randx = rand();
-        randy = rand();
-        randx = (randx % (m_gridsize)) - m_gridsize/2;
-        randy = (randy % (m_gridsize)) - m_gridsize/2;
-        m_lgm->index2WorldCoords(randx,randy,xW,yW);
-        
-        if ((*m_lgm)(randx,randy) == 0) {
-            if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
-            	m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
-            	long nodeid = GetClosestFNode(xW,yW);
-        		SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
-        		long id = -1;
-        		if (place != NULL)
-        			id = place->id;
-        	    bool isincluded = false;
-        		for (unsigned int q= 0; q < placestosearch.size(); q++){
-        			if (placestosearch[q] == id){
-        				isincluded = true;
-        				break;
-        			}
-        		}
-            	if (isincluded) { //if sample is in a place we were asked to search
-                	m_samples[2*i] = randx;
-                	m_samples[2*i+1] = randy;
-                	int the = (int)(rand() % angles.size());
-                	m_samplestheta[i] = angles[the];
-                	i++;
-            	}
-            }
-        }
+      //log("processing sample %i/%i", i+1, m_samplesize);
+      
+      randx = rand();
+      randy = rand();
+      randx = (randx % (m_gridsize)) - m_gridsize/2;
+      randy = (randy % (m_gridsize)) - m_gridsize/2;
+      m_lgm->index2WorldCoords(randx,randy,xW,yW);
+      
+      if ((*m_lgm)(randx,randy) == 0) {
+	if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
+	    m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
+	  long nodeid = GetClosestFNode(xW,yW);
+	  SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
+	  long id = -1;
+	  if (place != NULL)
+	    id = place->id;
+	  bool isincluded = false;
+	  for (unsigned int q= 0; q < placestosearch.size(); q++){
+	    if (placestosearch[q] == id){
+	      isincluded = true;
+	      //log("searching place: %i", id);
+	      break;
+	    }
+	  }
+	  if (isincluded) { //if sample is in a place we were asked to search
+	    m_samples[2*i] = randx;
+	    m_samples[2*i+1] = randy;
+	    int the = (int)(rand() % angles.size());
+	    m_samplestheta[i] = angles[the];
+	    i++;
+	  }
+	}
+      }
     }
-
+    
     //log("Calculating view cones for generated samples");
     Cure::Pose3D candidatePose;
     XVector3D a;
