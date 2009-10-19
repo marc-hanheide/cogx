@@ -70,13 +70,15 @@ void NodesDialog::clearAll()
 // ------------------------------------------------------
 QString NodesDialog::getOutputString(PlaceData::ClassifierOutputs outs, double outputsCount)
 {
-  if (outs.length()==0)
+  if (outs.empty())
     return "";
 
-  QString outStr = (QString(outs[0].name)+":"+QString::number(outs[0].value/outputsCount));
-  for (unsigned int i=1; i<outs.length(); ++i)
+  QString outStr = QString::fromStdString(outs[0].name) + ":" +
+      QString::number(outs[0].value/outputsCount);
+  for (unsigned int i=1; i<outs.size(); ++i)
   {
-    outStr+=(QString(" ")+QString(outs[i].name)+":"+QString::number(outs[i].value/outputsCount));
+    outStr+=(QString(" ") + QString::fromStdString(outs[i].name) + ":" +
+        QString::number(outs[i].value/outputsCount));
   }
   return outStr;
 }
@@ -85,52 +87,56 @@ QString NodesDialog::getOutputString(PlaceData::ClassifierOutputs outs, double o
 // ------------------------------------------------------
 QString NodesDialog::getResultString(PlaceData::ClassifierResults res)
 {
-  if (res.length()==0)
+  if (res.empty())
     return "";
 
-  QString resStr = QString::number(res[0].classNo)+"-"+QString(res[0].className)+":"+QString::number(res[0].confidence);
-  for (unsigned int i=1; i<res.length(); ++i)
+  QString resStr = QString::number(res[0].classNo) + "-" +
+      QString::fromStdString(res[0].className) + ":" +
+      QString::number(res[0].confidence);
+  for (unsigned int i=1; i<res.size(); ++i)
   {
-    resStr+=(QString(" ")+QString::number(res[i].classNo)+"-"+QString(res[i].className)+":"+QString::number(res[i].confidence));
+    resStr+=(QString(" ") + QString::number(res[i].classNo) + "-" +
+        QString::fromStdString(res[i].className) + ":" +
+        QString::number(res[i].confidence));
   }
   return resStr;
 }
 
 
 // ------------------------------------------------------
-void NodesDialog::updateNodeLabellerData(PlaceData::NodeLabellerData nodeLabellerData)
+void NodesDialog::updateNodeLabellerData(PlaceData::NodeLabellerDataPtr nodeLabellerData)
 {
-  lastNodeLabel->setText(QString::number(nodeLabellerData.lastNodeId));
+  lastNodeLabel->setText(QString::number(nodeLabellerData->lastNodeId));
   nodesTreeWidget->clear();
 
   // Current node info
   QTreeWidgetItem *twItem = new QTreeWidgetItem();
   twItem->setText(0, "Cur");
-  twItem->setText(1, ((nodeLabellerData.currentNode.gateway)?"1":"0") );
-  twItem->setText(2, getOutputString(nodeLabellerData.currentNode.nodeAccumulatedOutputs, 1));
-  twItem->setText(3, getOutputString(nodeLabellerData.currentNode.nodeAccumulatedOutputs, 
-                  nodeLabellerData.currentNode.nodeOutputCount));
-  twItem->setText(4, getResultString(nodeLabellerData.currentNode.nodeResults));
-  twItem->setText(5, getOutputString(nodeLabellerData.currentNode.areaAccumulatedOutputs, 1));
-  twItem->setText(6, getOutputString(nodeLabellerData.currentNode.areaAccumulatedOutputs, 
-                  nodeLabellerData.currentNode.areaOutputCount));
-  twItem->setText(7, getResultString(nodeLabellerData.currentNode.areaResults));
+  twItem->setText(1, ((nodeLabellerData->currentNode.gateway)?"1":"0") );
+  twItem->setText(2, getOutputString(nodeLabellerData->currentNode.nodeAccumulatedOutputs, 1));
+  twItem->setText(3, getOutputString(nodeLabellerData->currentNode.nodeAccumulatedOutputs,
+                  nodeLabellerData->currentNode.nodeOutputCount));
+  twItem->setText(4, getResultString(nodeLabellerData->currentNode.nodeResults));
+  twItem->setText(5, getOutputString(nodeLabellerData->currentNode.areaAccumulatedOutputs, 1));
+  twItem->setText(6, getOutputString(nodeLabellerData->currentNode.areaAccumulatedOutputs,
+                  nodeLabellerData->currentNode.areaOutputCount));
+  twItem->setText(7, getResultString(nodeLabellerData->currentNode.areaResults));
   nodesTreeWidget->addTopLevelItem(twItem);
 
-  for (unsigned int i=0; i<nodeLabellerData.nodes.length(); ++i)
+  for (unsigned int i=0; i<nodeLabellerData->nodes.size(); ++i)
   {
     QTreeWidgetItem *twItem = new QTreeWidgetItem();
-    twItem->setText(0, QString::number(nodeLabellerData.nodes[i].nodeId));
-    twItem->setText(1, ((nodeLabellerData.nodes[i].gateway)?"1":"0") );
-    twItem->setText(2, getOutputString(nodeLabellerData.nodes[i].nodeAccumulatedOutputs, 1));
-    twItem->setText(3, getOutputString(nodeLabellerData.nodes[i].nodeAccumulatedOutputs, 
-                    nodeLabellerData.nodes[i].nodeOutputCount));
-    twItem->setText(4, getResultString(nodeLabellerData.nodes[i].nodeResults));
-    twItem->setText(5, getOutputString(nodeLabellerData.nodes[i].areaAccumulatedOutputs, 1));
-    twItem->setText(6, getOutputString(nodeLabellerData.nodes[i].areaAccumulatedOutputs, 
-                    nodeLabellerData.nodes[i].areaOutputCount));
-    twItem->setText(7, getResultString(nodeLabellerData.nodes[i].areaResults));
-    if (nodeLabellerData.nodes[i].nodeId==nodeLabellerData.lastNodeId)
+    twItem->setText(0, QString::number(nodeLabellerData->nodes[i].nodeId));
+    twItem->setText(1, ((nodeLabellerData->nodes[i].gateway)?"1":"0") );
+    twItem->setText(2, getOutputString(nodeLabellerData->nodes[i].nodeAccumulatedOutputs, 1));
+    twItem->setText(3, getOutputString(nodeLabellerData->nodes[i].nodeAccumulatedOutputs,
+                    nodeLabellerData->nodes[i].nodeOutputCount));
+    twItem->setText(4, getResultString(nodeLabellerData->nodes[i].nodeResults));
+    twItem->setText(5, getOutputString(nodeLabellerData->nodes[i].areaAccumulatedOutputs, 1));
+    twItem->setText(6, getOutputString(nodeLabellerData->nodes[i].areaAccumulatedOutputs,
+                    nodeLabellerData->nodes[i].areaOutputCount));
+    twItem->setText(7, getResultString(nodeLabellerData->nodes[i].areaResults));
+    if (nodeLabellerData->nodes[i].nodeId==nodeLabellerData->lastNodeId)
     {
       twItem->setBackground(0, QColor(230, 0, 0));
       twItem->setBackground(1, QColor(230, 0, 0));

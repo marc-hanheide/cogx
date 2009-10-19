@@ -36,7 +36,7 @@
 #include "MapDialog.h"
 #include "StatsDialog.h"
 #include "WMDialog.h"
-#include <place/idl/PlaceData.hh>
+#include <PlaceData.hpp>
 // Qt
 #include <QMessageBox>
 #include <QFileDialog>
@@ -85,50 +85,91 @@ MonitorDialog::MonitorDialog(PlaceMonitor *monitor, QWidget *parent):
   connect(statsButton, SIGNAL(clicked()), this, SLOT(statsButtonClicked()));
   connect(resultsButton, SIGNAL(clicked()), this, SLOT(resultsButtonClicked()));
   connect(nodesButton, SIGNAL(clicked()), this, SLOT(nodesButtonClicked()));
-  connect(pullNodePlaceInfoButton, SIGNAL(clicked()), this, SLOT(pullNodePlaceInfoButtonClicked()));
+  connect(pullNodePlaceInfoButton, SIGNAL(clicked()), this,
+      SLOT(pullNodePlaceInfoButtonClicked()));
 
   // PullNodePlaceInfoDialog
-  connect(_pullNodePlaceInfoDialog->sendQueryButton, SIGNAL(clicked()), this, SLOT(sendNodePlaceInfoPullQueryButtonClicked()));
+  connect(_pullNodePlaceInfoDialog->sendQueryButton, SIGNAL(clicked()),
+      this, SLOT(sendNodePlaceInfoPullQueryButtonClicked()));
 
   // NodesDialog
-  connect(this, SIGNAL(updateNodeLabellerDataSignal(PlaceData::NodeLabellerData)), _nodesDialog, SLOT(updateNodeLabellerData(PlaceData::NodeLabellerData)));
+  connect(this, SIGNAL(updateNodeLabellerDataSignal(PlaceData::NodeLabellerDataPtr)),
+      _nodesDialog, SLOT(updateNodeLabellerData(PlaceData::NodeLabellerDataPtr)));
 
   // ResultsDialog
-  connect(this, SIGNAL(updateVisualResultsSignal(long, QVector<PlaceData::ClassifierResult>)), _resultsDialog, SLOT(updateVisualResults(long, QVector<PlaceData::ClassifierResult>)));
-  connect(this, SIGNAL(updateResultsTargetSignal(long, QString, long)), _resultsDialog, SLOT(updateTarget(long, QString, long)));
-  connect(this, SIGNAL(updateLaserResultsSignal(long, QVector<PlaceData::ClassifierResult>)), _resultsDialog, SLOT(updateLaserResults(long, QVector<PlaceData::ClassifierResult>)));
-  connect(this, SIGNAL(updateIntegratedResultsSignal(long, bool, bool, QVector<PlaceData::ClassifierResult>)), _resultsDialog, SLOT(updateIntegratedResults(long, bool, bool, QVector<PlaceData::ClassifierResult>)));
+  connect(this,
+      SIGNAL(updateVisualResultsSignal(long, QVector<PlaceData::ClassifierResult>)),
+      _resultsDialog,
+      SLOT(updateVisualResults(long, QVector<PlaceData::ClassifierResult>)));
+  connect(this, SIGNAL(updateResultsTargetSignal(long, QString, long)),
+      _resultsDialog, SLOT(updateTarget(long, QString, long)));
+  connect(this,
+      SIGNAL(updateLaserResultsSignal(long, QVector<PlaceData::ClassifierResult>)),
+      _resultsDialog,
+      SLOT(updateLaserResults(long, QVector<PlaceData::ClassifierResult>)));
+  connect(this,
+      SIGNAL(updateIntegratedResultsSignal(long, bool, bool, QVector<PlaceData::ClassifierResult>)),
+      _resultsDialog,
+      SLOT(updateIntegratedResults(long, bool, bool, QVector<PlaceData::ClassifierResult>)));
 
   // WMDialog
-  connect(this, SIGNAL(updateWmInfoSignal(int, QString, QString, QString, double)), _wmDialog, SLOT(updateWmInfo(int, QString, QString, QString, double)));
-  connect(this, SIGNAL(updateCommandLogSignal(QString, QString, QString, double)), _wmDialog, SLOT(updateCommandLog(QString, QString, QString, double)));
+  connect(this, SIGNAL(updateWmInfoSignal(int, QString, QString, QString, double)),
+      _wmDialog, SLOT(updateWmInfo(int, QString, QString, QString, double)));
+  connect(this, SIGNAL(updateCommandLogSignal(QString, QString, QString, double)),
+      _wmDialog, SLOT(updateCommandLog(QString, QString, QString, double)));
 
   // StatsDialog
-  connect(this, SIGNAL(updateImageStatsSignal(long, double, double)), _statsDialog, SLOT(updateImageStats(long, double, double)));
-  connect(this, SIGNAL(updateLaserScanStatsSignal(long, double, double)), _statsDialog, SLOT(updateLaserScanStats(long, double, double)));
-  connect(this, SIGNAL(updateOdometryStatsSignal(long, double, double)), _statsDialog, SLOT(updateOdometryStats(long, double, double)));
-  connect(this, SIGNAL(updateVisualProcessorStatsSignal(double, double, double)), _statsDialog, SLOT(updateVisualProcessorStats(double, double, double)));
-  connect(this, SIGNAL(updateLaserProcessorStatsSignal(double, double, double)), _statsDialog, SLOT(updateLaserProcessorStats(double, double, double)));
+  connect(this, SIGNAL(updateImageStatsSignal(long, double, double)),
+      _statsDialog, SLOT(updateImageStats(long, double, double)));
+  connect(this, SIGNAL(updateLaserScanStatsSignal(long, double, double)),
+      _statsDialog, SLOT(updateLaserScanStats(long, double, double)));
+  connect(this, SIGNAL(updateOdometryStatsSignal(long, double, double)),
+      _statsDialog, SLOT(updateOdometryStats(long, double, double)));
+  connect(this, SIGNAL(updateVisualProcessorStatsSignal(double, double, double)),
+      _statsDialog, SLOT(updateVisualProcessorStats(double, double, double)));
+  connect(this, SIGNAL(updateLaserProcessorStatsSignal(double, double, double)),
+      _statsDialog, SLOT(updateLaserProcessorStats(double, double, double)));
 
   // PreviewDialog
-  connect(this, SIGNAL(updatePreviewImageSignal(QImage, long, double)), _previewDialog, SLOT(updateImage(QImage, long, double)));
-  connect(this, SIGNAL(updatePreviewLaserScanSignal(double, double, double, QVector<double>, long, double)), _previewDialog, SLOT(updateLaserScan(double, double, double, QVector<double>, long, double)));
-  connect(this, SIGNAL(updatePreviewOdometrySignal(double, double, double, long, double)), _previewDialog, SLOT(updateOdometry(double, double, double, long, double)));
-  connect(this, SIGNAL(updatePreviewTargetSignal(long, QString, long)), _previewDialog, SLOT(updateTarget(long, QString, long)));
+  connect(this, SIGNAL(updatePreviewImageSignal(QImage, long, double)),
+      _previewDialog, SLOT(updateImage(QImage, long, double)));
+  connect(this,
+      SIGNAL(updatePreviewLaserScanSignal(double, double, double, QVector<double>, long, double)),
+      _previewDialog,
+      SLOT(updateLaserScan(double, double, double, QVector<double>, long, double)));
+  connect(this,
+      SIGNAL(updatePreviewOdometrySignal(double, double, double, long, double)),
+      _previewDialog,
+      SLOT(updateOdometry(double, double, double, long, double)));
+  connect(this,
+      SIGNAL(updatePreviewTargetSignal(long, QString, long)),
+      _previewDialog,
+      SLOT(updateTarget(long, QString, long)));
 
   // MapDialog
-  connect(this, SIGNAL(addMapLaserScanSignal(double, double, double, QVector<double>, long, double)), _mapDialog, SLOT(addLaserScan(double, double, double, QVector<double>, long, double)));
-  connect(this, SIGNAL(addMapOdometrySignal(double, double, double, long, double)), _mapDialog, SLOT(addOdometry(double, double, double, long, double)));
+  connect(this,
+      SIGNAL(addMapLaserScanSignal(double, double, double, QVector<double>, long, double)),
+      _mapDialog,
+      SLOT(addLaserScan(double, double, double, QVector<double>, long, double)));
+  connect(this,
+      SIGNAL(addMapOdometrySignal(double, double, double, long, double)),
+      _mapDialog,
+      SLOT(addOdometry(double, double, double, long, double)));
 
   // SaveDataDialog
-  connect(_saveDataDialog->pauseButton, SIGNAL(clicked(bool)), this, SLOT(pauseSavingDataButtonClicked(bool)));
-  connect(_saveDataDialog->stopButton, SIGNAL(clicked()), this, SLOT(stopSavingDataButtonClicked()));
-  connect(_saveDataDialog, SIGNAL(closeEventHappened()), this, SLOT(stopSavingDataButtonClicked()));
-  connect(_saveDataDialog->targetComboBox, SIGNAL(activated(int)), this, SLOT(targetComboItemActivated(int)));
-  connect(this, SIGNAL(updateDataSavedInfoSignal(bool, bool, bool, long, long, bool)), _saveDataDialog, SLOT(updateDataSavedInfo(bool, bool, bool, long, long, bool)));
+  connect(_saveDataDialog->pauseButton, SIGNAL(clicked(bool)),
+      this, SLOT(pauseSavingDataButtonClicked(bool)));
+  connect(_saveDataDialog->stopButton, SIGNAL(clicked()),
+      this, SLOT(stopSavingDataButtonClicked()));
+  connect(_saveDataDialog, SIGNAL(closeEventHappened()),
+      this, SLOT(stopSavingDataButtonClicked()));
+  connect(_saveDataDialog->targetComboBox, SIGNAL(activated(int)),
+      this, SLOT(targetComboItemActivated(int)));
+  connect(this, SIGNAL(updateDataSavedInfoSignal(bool, bool, bool, long, long, bool)),
+      _saveDataDialog, SLOT(updateDataSavedInfo(bool, bool, bool, long, long, bool)));
 
   qRegisterMetaType< QVector<double> >("QVector<double>");
-  qRegisterMetaType< PlaceData::NodeLabellerData >("PlaceData::NodeLabellerData");
+  qRegisterMetaType< PlaceData::NodeLabellerDataPtr >("PlaceData::NodeLabellerDataPtr");
   qRegisterMetaType< QVector<PlaceData::ClassifierResult> >("QVector<PlaceData::ClassifierResult>");
   // Color map for images
   for (int i=0; i<256; ++i)
@@ -142,224 +183,252 @@ MonitorDialog::MonitorDialog(PlaceMonitor *monitor, QWidget *parent):
 
 
 // ------------------------------------------------------
-void MonitorDialog::addWmChange(cast::cdl::WorkingMemoryOperation operation, const char *id, const char *src, const char *type, double time)
+void MonitorDialog::addWmChange(cast::cdl::WorkingMemoryOperation operation,
+    std::string id, std::string src, std::string type, double time)
 {
   if (_wmDialog->isVisible())
   {
-    emit updateWmInfoSignal((int)operation, QString(id), QString(src), QString(type), time);
+    emit updateWmInfoSignal((int)operation, QString::fromStdString(id),
+        QString::fromStdString(src), QString::fromStdString(type), time);
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newImage(const PlaceData::Image &image)
+void MonitorDialog::newImage(const PlaceData::ImagePtr image)
 {
-  dataFrameLabel->setText(QString::number(image.frameNo));
+  dataFrameLabel->setText(QString::number(image->frameNo));
 
-  if (image.status==PlaceData::DS_VALID)
+  if (image->status==PlaceData::DsValid)
   {
     if (_previewDialog->isVisible())
     {
       // Convert image to pixmap
-      int w=image.imageBuffer.m_width;
-      int h=image.imageBuffer.m_height;
+      int w=image->imageBuffer.width;
+      int h=image->imageBuffer.height;
       QImage tmpImage(w, h, QImage::Format_Indexed8);
       tmpImage.setColorTable(_colorMap);
 
       for (int i=0; i<h; ++i)
         for (int j=0; j<w; ++j)
-          tmpImage.setPixel(j, i, (unsigned char)(image.imageBuffer.m_image[i*w+j]) );
+          tmpImage.setPixel(j, i, (unsigned char)(image->imageBuffer.data[i*w+j]) );
 
       // Emit signal
-      emit updatePreviewImageSignal(tmpImage, image.frameNo, BALTTimer::toSeconds(image.realTimeStamp));
+      emit updatePreviewImageSignal(tmpImage, image->frameNo,
+          image->realTimeStamp.s + 10e-6*image->realTimeStamp.us);
     }
   }
 
   if (_statsDialog->isVisible())
   {
-    emit updateImageStatsSignal(image.frameNo, BALTTimer::toSeconds(image.realTimeStamp), 
-                                BALTTimer::toSeconds(image.wmTimeStamp));
+    emit updateImageStatsSignal(image->frameNo,
+        image->realTimeStamp.s + 10e-6*image->realTimeStamp.us,
+        image->wmTimeStamp.s + 10e-6*image->wmTimeStamp.us );
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newLaserScan(const PlaceData::LaserScan &scan)
+void MonitorDialog::newLaserScan(const PlaceData::LaserScanPtr scan)
 {
-  dataFrameLabel->setText(QString::number(scan.frameNo));
+  dataFrameLabel->setText(QString::number(scan->frameNo));
 
-  if (scan.status==PlaceData::DS_VALID)
+  if (scan->status==PlaceData::DsValid)
   {
     // Convert scan info
-    QVector<double> range(scan.scanBuffer.m_numPts);
-    for(int i=0; i<scan.scanBuffer.m_numPts; ++i)
-      range[i]=scan.scanBuffer.m_range[i];
-    double max=scan.scanBuffer.m_max_range;
-    double startAngle=scan.scanBuffer.m_start_angle;
-    double angleStep=scan.scanBuffer.m_angle_step;
+    QVector<double> range(scan->scanBuffer.ranges.size());
+    for(unsigned int i=0; i<scan->scanBuffer.ranges.size(); ++i)
+      range[i]=scan->scanBuffer.ranges[i];
+    double max=scan->scanBuffer.maxRange;
+    double startAngle=scan->scanBuffer.startAngle;
+    double angleStep=scan->scanBuffer.angleStep;
 
     if (_previewDialog->isVisible())
-      emit updatePreviewLaserScanSignal(startAngle, angleStep, max, range, scan.frameNo, BALTTimer::toSeconds(scan.realTimeStamp));
+      emit updatePreviewLaserScanSignal(startAngle, angleStep, max, range,
+          scan->frameNo, scan->realTimeStamp.s + 10e-6*scan->realTimeStamp.us);
     if (_mapDialog->isVisible())
-      emit addMapLaserScanSignal(startAngle, angleStep, max, range, scan.frameNo, BALTTimer::toSeconds(scan.realTimeStamp));
+      emit addMapLaserScanSignal(startAngle, angleStep, max, range,
+          scan->frameNo, scan->realTimeStamp.s + 10e-6*scan->realTimeStamp.us);
   }
 
   if (_statsDialog->isVisible())
   {
-    emit updateLaserScanStatsSignal(scan.frameNo, BALTTimer::toSeconds(scan.realTimeStamp),
-                                    BALTTimer::toSeconds(scan.wmTimeStamp));
+    emit updateLaserScanStatsSignal(scan->frameNo,
+        scan->realTimeStamp.s + 10e-6*scan->realTimeStamp.us,
+        scan->wmTimeStamp.s + 10e-6*scan->wmTimeStamp.us);
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newOdometry(const PlaceData::Odometry &odom)
+void MonitorDialog::newOdometry(const PlaceData::OdometryPtr odom)
 {
-  dataFrameLabel->setText(QString::number(odom.frameNo));
+  dataFrameLabel->setText(QString::number(odom->frameNo));
 
-  if (odom.status==PlaceData::DS_VALID)
+  if (odom->status==PlaceData::DsValid)
   {
     // Convert odom info
-    double x = odom.odometryBuffer.m_x;
-    double y = odom.odometryBuffer.m_y;
-    double theta = odom.odometryBuffer.m_theta;
+    double x = 0.0;
+    double y = 0.0;
+    double theta = 0.0;
+    if (!odom->odometryBuffer.odompose.empty())
+    {
+      x=odom->odometryBuffer.odompose[0].x;
+      y=odom->odometryBuffer.odompose[0].y;
+      theta= odom->odometryBuffer.odompose[0].theta;
+    }
+
     if (_previewDialog->isVisible())
-      emit updatePreviewOdometrySignal(x, y, theta, odom.frameNo, BALTTimer::toSeconds(odom.realTimeStamp));
+      emit updatePreviewOdometrySignal(x, y, theta,
+          odom->frameNo, odom->realTimeStamp.s + 10e-6*odom->realTimeStamp.us);
     if (_mapDialog->isVisible())
-      emit addMapOdometrySignal(x, y, theta, odom.frameNo, BALTTimer::toSeconds(odom.realTimeStamp));
+      emit addMapOdometrySignal(x, y, theta, odom->frameNo,
+          odom->realTimeStamp.s + 10e-6 * odom->realTimeStamp.us);
   }
 
   if (_statsDialog->isVisible())
   {
-    emit updateOdometryStatsSignal(odom.frameNo, BALTTimer::toSeconds(odom.realTimeStamp), 
-                                   BALTTimer::toSeconds(odom.wmTimeStamp));
+    emit updateOdometryStatsSignal(odom->frameNo,
+        odom->realTimeStamp.s + 10e-6*odom->realTimeStamp.s,
+        odom->wmTimeStamp.s + 10e-6*odom->wmTimeStamp.us);
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newTarget(const PlaceData::Target &target)
+void MonitorDialog::newTarget(const PlaceData::TargetPtr target)
 {
-  if (target.status==PlaceData::DS_VALID)
+  if (target->status==PlaceData::DsValid)
   {
     if (_previewDialog->isVisible())
     {
-      emit updatePreviewTargetSignal(target.targetNo, QString(target.targetName), target.frameNo);
+      emit updatePreviewTargetSignal(target->targetNo,
+          QString::fromStdString(target->targetName), target->frameNo);
     }
     if (_resultsDialog->isVisible())
     {
-      emit updateResultsTargetSignal(target.targetNo, QString(target.targetName), target.frameNo);
+      emit updateResultsTargetSignal(target->targetNo,
+          QString::fromStdString(target->targetName), target->frameNo);
     }
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newVisualProcessorStatus(const PlaceData::VisualProcessorStatus &stat)
+void MonitorDialog::newVisualProcessorStatus(const PlaceData::VisualProcessorStatusPtr stat)
 {
-  if (stat.status==PlaceData::DS_VALID)
+  if (stat->status==PlaceData::DsValid)
   {
     if (_statsDialog->isVisible())
     {
-      emit updateVisualProcessorStatsSignal(BALTTimer::toSeconds(stat.processingStartTimeStamp),
-                                            BALTTimer::toSeconds(stat.extractionEndTimeStamp),
-                                            BALTTimer::toSeconds(stat.classificationEndTimeStamp) );
+      emit updateVisualProcessorStatsSignal(
+          stat->processingStartTimeStamp.s + 10e-6*stat->processingStartTimeStamp.us,
+          stat->extractionEndTimeStamp.s + 10e-6*stat->extractionEndTimeStamp.us,
+          stat->classificationEndTimeStamp.s + 10e-6*stat->classificationEndTimeStamp.us );
     }
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newVisualResults(const PlaceData::VisualResults &res)
+void MonitorDialog::newVisualResults(const PlaceData::VisualResultsPtr res)
 {
-  if (res.status==PlaceData::DS_VALID)
+  if (res->status==PlaceData::DsValid)
   {
     if (_resultsDialog->isVisible())
     {
-      QVector<PlaceData::ClassifierResult> results(res.results.length());
-      for (unsigned int i=0; i<res.results.length(); ++i)
-        results[i]=res.results[i];
-      emit updateVisualResultsSignal(res.frameNo, results);
+      QVector<PlaceData::ClassifierResult> results(res->results.size());
+      for (unsigned int i=0; i<res->results.size(); ++i)
+        results[i]=res->results[i];
+      emit updateVisualResultsSignal(res->frameNo, results);
     }
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newLaserProcessorStatus(const PlaceData::LaserProcessorStatus &stat)
+void MonitorDialog::newLaserProcessorStatus(const PlaceData::LaserProcessorStatusPtr stat)
 {
-  if (stat.status==PlaceData::DS_VALID)
+  if (stat->status==PlaceData::DsValid)
   {
     if (_statsDialog->isVisible())
     {
-      emit updateLaserProcessorStatsSignal(BALTTimer::toSeconds(stat.processingStartTimeStamp),
-                                           BALTTimer::toSeconds(stat.extractionEndTimeStamp),
-                                           BALTTimer::toSeconds(stat.classificationEndTimeStamp) );
+      emit updateLaserProcessorStatsSignal(
+          stat->processingStartTimeStamp.s + 10e-6*stat->processingStartTimeStamp.us,
+          stat->extractionEndTimeStamp.s + 10e-6*stat->extractionEndTimeStamp.us,
+          stat->classificationEndTimeStamp.s + 10e-6*stat->classificationEndTimeStamp.us );
     }
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newLaserResults(const PlaceData::LaserResults &res)
+void MonitorDialog::newLaserResults(const PlaceData::LaserResultsPtr res)
 {
-  if (res.status==PlaceData::DS_VALID)
+  if (res->status==PlaceData::DsValid)
   {
     if (_resultsDialog->isVisible())
     {
-      QVector<PlaceData::ClassifierResult> results(res.results.length());
-      for (unsigned int i=0; i<res.results.length(); ++i)
-        results[i]=res.results[i];
-      emit updateLaserResultsSignal(res.frameNo, results);
+      QVector<PlaceData::ClassifierResult> results(res->results.size());
+      for (unsigned int i=0; i<res->results.size(); ++i)
+        results[i]=res->results[i];
+      emit updateLaserResultsSignal(res->frameNo, results);
     }
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newIntegratedResults(const PlaceData::IntegratedResults &res)
+void MonitorDialog::newIntegratedResults(const PlaceData::IntegratedResultsPtr res)
 {
-  intgResFrameLabel->setText(QString::number(res.frameNo));
+  intgResFrameLabel->setText(QString::number(res->frameNo));
 
-  if (res.status==PlaceData::DS_VALID)
+  if (res->status==PlaceData::DsValid)
   {
     if (_resultsDialog->isVisible())
     {
-      QVector<PlaceData::ClassifierResult> results(res.results.length());
-      for (unsigned int i=0; i<res.results.length(); ++i)
-        results[i]=res.results[i];
-      emit updateIntegratedResultsSignal(res.frameNo, res.usedVision, res.usedLaser, results);
+      QVector<PlaceData::ClassifierResult> results(res->results.size());
+      for (unsigned int i=0; i<res->results.size(); ++i)
+        results[i]=res->results[i];
+      emit updateIntegratedResultsSignal(res->frameNo,
+          res->usedVision, res->usedLaser, results);
     }
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newNodeLabellerData(const PlaceData::NodeLabellerData &info)
+void MonitorDialog::newNodeLabellerData(const PlaceData::NodeLabellerDataPtr info)
 {
   if (_nodesDialog->isVisible())
   {
-    emit updateNodeLabellerDataSignal(info);
+    const PlaceData::NodeLabellerDataPtr info2 =
+        new PlaceData::NodeLabellerData(*info);
+    emit updateNodeLabellerDataSignal(info2);
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newDataSaverStatus(bool vision, bool laser, bool odometry, long framesSaved, long frameNo, bool error)
+void MonitorDialog::newDataSaverStatus(bool vision, bool laser,
+    bool odometry, long framesSaved, long frameNo, bool error)
 {
   if (_saveDataDialog->isVisible())
   {
-    emit updateDataSavedInfoSignal(vision, laser, odometry, framesSaved, frameNo, error);
+    emit updateDataSavedInfoSignal(vision, laser, odometry,
+        framesSaved, frameNo, error);
   }
 }
 
 
 // ------------------------------------------------------
-void MonitorDialog::newCommand(const char *cmd, const char *params, const char *src, double time)
+void MonitorDialog::newCommand(std::string cmd, std::string params,
+    std::string src, double time)
 {
   if (_wmDialog->isVisible())
   {
-    emit updateCommandLogSignal(QString(cmd), QString(params), QString(src), time);
+    emit updateCommandLogSignal(QString::fromStdString(cmd),
+        QString::fromStdString(params), QString::fromStdString(src), time);
   }
 }
 
@@ -367,49 +436,49 @@ void MonitorDialog::newCommand(const char *cmd, const char *params, const char *
 // ------------------------------------------------------
 void MonitorDialog::updateButtonClicked()
 {
-  _monitor->sendDataProviderCommand(PlaceData::DP_CMD_UPDATE);
+  _monitor->sendDataProviderCommand(PlaceData::DpCmdUpdate);
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::startPlaceButtonClicked()
 {
-  _monitor->sendPlaceCommand(PlaceData::CMD_START);
+  _monitor->sendPlaceCommand(PlaceData::CmdStart);
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::stopPlaceButtonClicked()
 {
-  _monitor->sendPlaceCommand(PlaceData::CMD_STOP);
+  _monitor->sendPlaceCommand(PlaceData::CmdStop);
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::startOnReadVPButtonClicked()
 {
-  _monitor->sendVisualProcessorCommand(PlaceData::VP_CMD_UPDATE_ON_READ_START);
+  _monitor->sendVisualProcessorCommand(PlaceData::VpCmdUpdateOnReadStart);
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::startOnReadDSButtonClicked()
 {
-  _monitor->sendDataSaverCommand(PlaceData::DS_CMD_UPDATE_START, "", "", -1, "");
+  _monitor->sendDataSaverCommand(PlaceData::DsCmdUpdateStart, "", "", -1, "");
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::stopVPButtonClicked()
 {
-  _monitor->sendVisualProcessorCommand(PlaceData::VP_CMD_UPDATE_STOP);
+  _monitor->sendVisualProcessorCommand(PlaceData::VpCmdUpdateStop);
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::stopDSButtonClicked()
 {
-  _monitor->sendDataSaverCommand(PlaceData::DS_CMD_UPDATE_STOP, "", "", -1, "");
+  _monitor->sendDataSaverCommand(PlaceData::DsCmdUpdateStop, "", "", -1, "");
 }
 
 
@@ -496,8 +565,9 @@ void MonitorDialog::saveDataButtonClicked()
   // Open dialog and start saving
   _saveDataDialog->clearStats();
   _saveDataDialog->show();
-  _monitor->sendDataSaverCommand(PlaceData::DS_CMD_START, dirPath.toStdString(), baseName.toStdString(), 
-                                 _monitor->getLabels().begin()->number, _monitor->getLabels().begin()->name);
+  _monitor->sendDataSaverCommand(PlaceData::DsCmdStart, dirPath.toStdString(),
+      baseName.toStdString(), _monitor->getLabels().begin()->number,
+      _monitor->getLabels().begin()->name);
 }
 
 
@@ -506,7 +576,7 @@ void MonitorDialog::stopSavingDataButtonClicked()
 {
   _saveDataDialog->_stopOnClose=false;
   _saveDataDialog->close();
-  _monitor->sendDataSaverCommand(PlaceData::DS_CMD_STOP, "", "", -1, "");
+  _monitor->sendDataSaverCommand(PlaceData::DsCmdStop, "", "", -1, "");
   saveDataButton->setEnabled(true);
 }
 
@@ -515,16 +585,16 @@ void MonitorDialog::stopSavingDataButtonClicked()
 void MonitorDialog::pauseSavingDataButtonClicked(bool checked)
 {
   if (checked)
-    _monitor->sendDataSaverCommand(PlaceData::DS_CMD_PAUSE, "", "", -1, "");
+    _monitor->sendDataSaverCommand(PlaceData::DsCmdPause, "", "", -1, "");
   else
-    _monitor->sendDataSaverCommand(PlaceData::DS_CMD_UNPAUSE, "", "", -1, "");
+    _monitor->sendDataSaverCommand(PlaceData::DsCmdUnpause, "", "", -1, "");
 }
 
 
 // ------------------------------------------------------
 void MonitorDialog::exitTimerFired()
 {
-  if (!_monitor->isStatusRun())
+  if (!_monitor->isRunning())
   {
     done(0);
   }
@@ -539,12 +609,13 @@ void MonitorDialog::targetComboItemActivated(int index)
 
   if (targetName.empty())
   {
-    QMessageBox::critical(this, "Target Not Found", "Target number was not found in the list!");
+    QMessageBox::critical(this, "Target Not Found",
+        "Target number was not found in the list!");
     return;
   }
 
-  _monitor->sendDataSaverCommand(PlaceData::DS_CMD_NEW_TARGET, "", "", targetNo, 
-                                 targetName);
+  _monitor->sendDataSaverCommand(PlaceData::DsCmdNewTarget, "", "",
+      targetNo, targetName);
 }
 
 
@@ -558,19 +629,21 @@ void MonitorDialog::killButtonClicked()
 // ------------------------------------------------------
 void MonitorDialog::sendNodePlaceInfoPullQueryButtonClicked()
 {
+  /* Commented out for now since, this part of code might not be used
   if (_monitor->isConnectedToNodeLabeller())
   {
     // Prepare query
     bool gateway=_pullNodePlaceInfoDialog->yesRadioButton->isChecked();
-    PlaceData::NodeLabellerQueryType queryType = PlaceData::NL_QT_INFO;
+    PlaceData::NodeLabellerQueryType queryType = PlaceData::NlQtInfo;
     if (_pullNodePlaceInfoDialog->infoRadioButton->isChecked())
-      queryType = PlaceData::NL_QT_INFO;
+      queryType = PlaceData::NlQtInfo;
     else if (_pullNodePlaceInfoDialog->newRadioButton->isChecked())
-      queryType = PlaceData::NL_QT_NEW;
+      queryType = PlaceData::NlQtNew;
     else if (_pullNodePlaceInfoDialog->updateRadioButton->isChecked())
-      queryType = PlaceData::NL_QT_UPDATE;
+      queryType = PlaceData::NlQtUpdate;
 
     // Pull
+
     PlaceData::NodePlaceInfo nodePlaceInfo =
         _monitor->pullNodePlaceInfo(_pullNodePlaceInfoDialog->nodeIdSpinBox->value(), queryType, gateway);
 
@@ -579,11 +652,13 @@ void MonitorDialog::sendNodePlaceInfoPullQueryButtonClicked()
                                                       QString(nodePlaceInfo.nodeClassName));
     _pullNodePlaceInfoDialog->areaClassLabel->setText(QString::number(nodePlaceInfo.areaClassNo)+" - "+
                                                       QString(nodePlaceInfo.areaClassName));
+
   }
   else
   {
     QMessageBox::critical(this, "Error!", "NodeLabeller not connected to Monitor!");
   }
+  */
 }
 
 

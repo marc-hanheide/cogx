@@ -29,7 +29,7 @@
 #define __PLACE_NODES_DIALOG__
 
 #include "ui_NodesDialog.h"
-#include <place/idl/PlaceData.hh>
+#include <PlaceData.hpp>
 #include <QDialog>
 
 namespace place
@@ -48,7 +48,7 @@ public:
 
 public slots:
 
-  void updateNodeLabellerData(PlaceData::NodeLabellerData nodeLabellerData);
+  void updateNodeLabellerData(PlaceData::NodeLabellerDataPtr nodeLabellerData);
 
 
 private:

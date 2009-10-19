@@ -27,7 +27,7 @@
 
 // Place.SA
 #include "MapDialog.h"
-#include "place/shared/OdomScanWidget.h"
+#include "shared/OdomScanWidget.h"
 // Qt
 #include <QGraphicsScene>
 #include <QPainter>

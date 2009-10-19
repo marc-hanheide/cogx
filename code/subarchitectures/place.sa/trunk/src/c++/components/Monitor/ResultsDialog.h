@@ -29,7 +29,7 @@
 #define __PLACE_RESULTS_DIALOG__
 
 #include "ui_ResultsDialog.h"
-#include <place/idl/PlaceData.hh>
+#include <PlaceData.hpp>
 #include <QDialog>
 
 namespace place
