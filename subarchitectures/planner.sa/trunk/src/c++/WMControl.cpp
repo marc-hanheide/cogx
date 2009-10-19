@@ -254,6 +254,7 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
             || ((m_runqueue[task->id].tv_sec == tval.tv_sec) 
                 && (m_runqueue[task->id].tv_usec > tval.tv_usec))) {
             //Task already in queue for a later time
+            m_queue_mutex.unlock();
             return;
         }
     }
