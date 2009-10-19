@@ -411,6 +411,8 @@ r = searchhere.get_position(peekabot::WORLD_COORDINATES);
 		cmd->pose[0] = xT;
 		cmd->pose[1] = yT;
 		cmd->cmd = SpatialData::GOTOPOSITION;
+		cmd->status = SpatialData::NONE;
+		cmd->comp = SpatialData::COMMANDPENDING;
 		id = "gotoxy-" + newDataID();
 		log("Sending robot to new target position (%.2f, %.2f) task id: %s", xT, yT, id.c_str());
 
