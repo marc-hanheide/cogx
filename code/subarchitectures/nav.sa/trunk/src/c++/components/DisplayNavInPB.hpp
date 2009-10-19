@@ -99,7 +99,7 @@ private:
   void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraphObject(const cast::cdl::WorkingMemoryChange &objID);
   void newLineMap(const cast::cdl::WorkingMemoryChange &objID);
-  void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
+  //  void newConvexHull(const cast::cdl::WorkingMemoryChange &objID);
   void newPerson(const cast::cdl::WorkingMemoryChange &objID);
   void deletePerson(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonFollowed(const cast::cdl::WorkingMemoryChange &objID);
