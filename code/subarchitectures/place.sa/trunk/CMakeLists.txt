@@ -31,11 +31,10 @@ add_subdirectory (src/c++/autogen)
 # The following tools and components are mandatory for Placa.SA
 add_subdirectory(src/c++/shared)
 add_subdirectory(src/c++/tools/libsvm-mod)
-#add_subdirectory(src/c++/components/WorkingMemory)
-#add_subdirectory(src/c++/components/Controller)
-#add_subdirectory(src/c++/components/DataProvider)
+add_subdirectory(src/c++/components/Controller)
+add_subdirectory(src/c++/components/DataProvider)
 #add_subdirectory(src/c++/components/DataSaver)
-#add_subdirectory(src/c++/components/CueIntegrator)
+add_subdirectory(src/c++/components/CueIntegrator)
 #add_subdirectory(src/c++/components/NodeLabeller)
 
 # Options
@@ -48,13 +47,13 @@ option(BUILD_SA_PLACE_TESTING "Build Place.SA testing components" YES)
 if(BUILD_SA_PLACE_LASER)
     add_subdirectory(src/c++/tools/sequentialadaboost)
     add_subdirectory(src/c++/tools/laserextractor)
-#    add_subdirectory(src/c++/components/LaserProcessor)
+    add_subdirectory(src/c++/components/LaserProcessor)
 endif(BUILD_SA_PLACE_LASER)
 
 # Visual path
 if(BUILD_SA_PLACE_VISION)
     add_subdirectory(src/c++/tools/libcrfh)
-#    add_subdirectory(src/c++/components/VisualProcessor)
+    add_subdirectory(src/c++/components/VisualProcessor)
 endif(BUILD_SA_PLACE_VISION)
 
 # Check if at least one path is selected
@@ -66,8 +65,8 @@ endif(NOT BUILD_SA_PLACE_LASER)
 
 # Auxiliary components
 if(BUILD_SA_PLACE_AUX)
-#    add_subdirectory(src/c++/components/Monitor)
-#    add_subdirectory(src/c++/components/PeekabotClient)
+    add_subdirectory(src/c++/components/Monitor)
+    add_subdirectory(src/c++/components/PeekabotClient)
     add_subdirectory(src/c++/tools/dataeditor)
 endif(BUILD_SA_PLACE_AUX)
 

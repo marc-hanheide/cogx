@@ -1,7 +1,7 @@
 project(PlaceShared)
 
-set(SOURCES ConfigFile.cpp DataWriter.cpp LabelFile.cpp DataReader.cpp OdomScanWidget.cpp ColorMap.cpp)  # NodePlaceInfoPullSender.cpp
-set(HEADERS ConfigFile.h DataWriter.h LabelFile.h DataReader.h OdomScanWidget.h ColorMap.h)  # NodePlaceInfoPullSender.h
+set(SOURCES ConfigFile.cpp DataWriter.cpp LabelFile.cpp DataReader.cpp OdomScanWidget.cpp ColorMap.cpp CastTools.cpp)  # NodePlaceInfoPullSender.cpp
+set(HEADERS ConfigFile.h DataWriter.h LabelFile.h DataReader.h OdomScanWidget.h ColorMap.h CastTools.h)  # NodePlaceInfoPullSender.h
 set(MOC_HEADERS OdomScanWidget.h)
 
 qt4_wrap_cpp( MOC_SOURCES ${MOC_HEADERS} )

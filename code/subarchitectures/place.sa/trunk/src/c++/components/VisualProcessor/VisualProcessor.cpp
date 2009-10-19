@@ -207,6 +207,8 @@ void PlaceVisualProcessor::createInvalidVisualResults(PlaceData::VisualResultsPt
   visRes->imageRealTimeStamp.us=0;
   visRes->imageWmTimeStamp.s=0;
   visRes->imageWmTimeStamp.us=0;
+  visRes->outputs.clear();
+  visRes->results.clear();
 }
 
 

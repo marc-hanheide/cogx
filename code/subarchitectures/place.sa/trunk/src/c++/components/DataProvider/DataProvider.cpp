@@ -101,6 +101,9 @@ void PlaceDataProvider::configure(const std::map<std::string,std::string> &confi
   string vidServ;
   if (it!=config.end())
     vidServ = it->second;
+  it = config.find("--startservers");
+  _startServers=(((it!=config.end()) && (it->second == "true")));
+
 
   // Read config file
   ConfigFile cf;
@@ -171,18 +174,21 @@ void PlaceDataProvider::configure(const std::map<std::string,std::string> &confi
   log("-> Scan delay: %d", _scanDelay);
 
   // Start the robotbase interface
-  Ice::Identity id1;
-  id1.name = "RobotbaseServer";
-  id1.category = "RobotbaseServer";
-  getObjectAdapter()->add(&_robotbaseServer, id1);
-  println("Robotbase server registered.");
+  if (_startServers)
+  {
+    Ice::Identity id1;
+    id1.name = "RobotbaseServer";
+    id1.category = "RobotbaseServer";
+    getObjectAdapter()->add(&_robotbaseServer, id1);
+    println("Robotbase server registered.");
 
-  // Start the laser interface
-  Ice::Identity id2;
-  id2.name = "LaserServer";
-  id2.category = "LaserServer";
-  getObjectAdapter()->add(&_laserServer, id2);
-  println("Laser server registered.");
+    // Start the laser interface
+    Ice::Identity id2;
+    id2.name = "LaserServer";
+    id2.category = "LaserServer";
+    getObjectAdapter()->add(&_laserServer, id2);
+    println("Laser server registered.");
+  }
 }
 
 

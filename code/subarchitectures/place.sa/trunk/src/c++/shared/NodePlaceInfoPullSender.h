@@ -30,9 +30,9 @@
 #define __PLACE_NODE_PLACE_INFO_PULL_SENDER__
 
 // Place.SA
-#include <place/idl/PlaceData.hh>
+#include <PlaceData.hpp>
 // CAST/Balt
-#include <balt/core/Interfaces.hpp>
+//#include <balt/core/Interfaces.hpp>
 
 namespace place
 {
