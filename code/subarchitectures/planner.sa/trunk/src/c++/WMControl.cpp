@@ -89,9 +89,10 @@ void WMControl::runComponent() {
 
         if (!execute.empty()) {
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
-                log("accessing wm");
+                lockComponent();
                 PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it].address);
-                task->state = m_currentState;
+                task->state = vector<UnionPtr>(m_currentState);
+                unlockComponent();
                 pyServer->updateTask(task);
                 log("returning..:");
             }
@@ -129,23 +130,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
 
 void WMControl::generateInitialState(autogen::Planner::PlanningTaskPtr& task) {
     log("Planner WMControl:: generating Initial State");
-
-    vector<cast::CASTData<UnionConfiguration> > configs;
-    getMemoryEntriesWithData<UnionConfiguration>(configs, "binder");
-
-    if (configs.size() == 0) {
-        log("Planner WMControl:: No union configurations on binder. Doing nothing.");
-        return;
-    }
-    log("Planner WMControl:: %d union configurations on binder. Using first one.", configs.size());
-
-    binder::autogen::core::UnionConfigurationPtr config = configs[0].getData();
-
-    task->state = vector<UnionPtr>();
-    for (UnionSequence::iterator i = config->includedUnions.begin(); 
-         i < config->includedUnions.end() ; ++i) {
-        task->state.push_back(*i);
-    }
+    task->state = vector<UnionPtr>(m_currentState);
 }
 
 void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
