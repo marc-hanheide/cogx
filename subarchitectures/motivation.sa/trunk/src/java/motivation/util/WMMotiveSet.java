@@ -44,6 +44,7 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 	Map<MotiveStateTransition, ChangeHandler> stateChangeReceivers;
 
 	public static class MotiveStateTransition {
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -55,32 +56,8 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 				return super.equals(arg0);
 
 			MotiveStateTransition other = (MotiveStateTransition) arg0;
-
-			boolean equalsFrom = (other.from==null);
-			if (other.from != null && this.from != null)
-				equalsFrom = this.from.equals(other.from);
-
-			boolean equalsTo = (other.to==null);
-			if (other.to != null && this.to != null)
-				equalsTo = this.to.equals(other.to);
-
-			return equalsFrom && equalsTo;
+			return to.equals(other.to) && from.equals(other.from);
 		}
-
-//		public boolean match(MotiveStateTransition other) {
-//			boolean equalsFrom = true;
-//			if (other.from != null && this.from != null)
-//				equalsFrom = this.from.equals(other.from);
-//			else
-//				equalsFrom = true;
-//
-//			boolean equalsTo = true;
-//			if (other.to != null && this.to != null)
-//				equalsTo = this.to.equals(other.to);
-//			else
-//				equalsTo = true;
-//			return equalsFrom && equalsTo;
-//		}
 
 		/*
 		 * (non-Javadoc)
@@ -89,8 +66,6 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		 */
 		@Override
 		public int hashCode() {
-			if (from == null || to == null)
-				return 0;
 			return from.hashCode() & to.hashCode();
 		}
 
@@ -100,8 +75,14 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		 */
 		public MotiveStateTransition(MotiveStatus from, MotiveStatus to) {
 			super();
-			this.from = from;
-			this.to = to;
+			if (from == null)
+				this.from = MotiveStatus.WILDCARD;
+			else
+				this.from = from;
+			if (to == null)
+				this.to = MotiveStatus.WILDCARD;
+			else
+				this.to = to;
 		}
 
 		/**
@@ -188,8 +169,8 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 			externalHandler.motiveChanged(map, wmc, newObj, oldObj);
 		Motive newMotive = (Motive) newObj;
 		Motive oldMotive = (Motive) oldObj;
-		MotiveStatus fromState = null;
-		MotiveStatus toState = null;
+		MotiveStatus fromState = MotiveStatus.WILDCARD;
+		MotiveStatus toState = MotiveStatus.WILDCARD;
 
 		if (wmc.operation != WorkingMemoryOperation.DELETE)
 			toState = newMotive.status;
@@ -200,8 +181,8 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 
 		ChangeHandler enterReceiver = null;
 
-		// call all handlers, also those that a wildcards
-
+		// call all handlers, including wildcards
+		component.debug("status transition check " + fromState + " -> " + toState);
 		enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
 				fromState, toState));
 		if (enterReceiver != null) {
@@ -209,22 +190,20 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 					+ fromState + " -> " + toState);
 			handlersToCall.add(enterReceiver);
 		}
-
 		// if state has not changed, don't call the wildcard handlers
-		if (!(((fromState != null && toState != null)) && (fromState
-				.equals(toState)))) {
+		if (!fromState.equals(toState)) {
 			enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
-					fromState, null));
+					fromState, MotiveStatus.WILDCARD));
 			if (enterReceiver != null) {
-				component.log("call " + fromState + " -> null" + " with "
+				component.log("call " + fromState + " -> *" + " with "
 						+ fromState + " -> " + toState);
 				handlersToCall.add(enterReceiver);
 			}
 
 			enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
-					null, toState));
+					MotiveStatus.WILDCARD, toState));
 			if (enterReceiver != null) {
-				component.log("call null -> " + toState + " with " + fromState
+				component.log("call * -> " + toState + " with " + fromState
 						+ " -> " + toState);
 				handlersToCall.add(enterReceiver);
 			}
