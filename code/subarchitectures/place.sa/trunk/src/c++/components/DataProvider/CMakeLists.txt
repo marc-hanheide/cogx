@@ -1,0 +1,12 @@
+include_directories(.)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/components/)
+include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen/)
+include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/components/)
+include_directories(${COGX_ROOT}/tools/hardware/robotbase/src/c++/autogen/)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/components)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
+
+add_cast_component(PlaceDataProvider DataProvider.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} PlaceData PlaceShared)
+
