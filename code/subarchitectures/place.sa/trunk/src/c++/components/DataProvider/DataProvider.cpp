@@ -190,7 +190,10 @@ void PlaceDataProvider::configure(const std::map<std::string,std::string> &confi
 void PlaceDataProvider::start()
 {
   // Get connection to the video server
-  _videoServer = getIceServer<Video::VideoInterface>(_videoServerName);
+  if ((!_loadDataFromDisk) && (_useVision))
+  {
+    _videoServer = getIceServer<Video::VideoInterface>(_videoServerName);
+  }
 
   addChangeFilter(createLocalTypeFilter<PlaceData::DataProviderCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceDataProvider>(this,

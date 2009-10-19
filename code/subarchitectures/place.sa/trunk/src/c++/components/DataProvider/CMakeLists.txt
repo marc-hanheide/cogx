@@ -9,4 +9,6 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 
 add_cast_component(PlaceDataProvider DataProvider.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} PlaceData PlaceShared)
+link_cast_component(${CAST_COMPONENT_NAME} Laser Scan2dReceiver Robotbase OdometryReceiver)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 
