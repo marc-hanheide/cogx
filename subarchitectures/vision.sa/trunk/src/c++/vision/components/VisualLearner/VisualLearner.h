@@ -28,12 +28,11 @@ class VisualLearner : public ManagedComponent {
       virtual void runComponent();
       virtual void configure(map<string,string> & _config);
       virtual void start();
-      virtual void stop();
 
    private:
       WmAddressVector m_RequestIdQueue;
       void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-      void recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
+      bool recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
 
       //string allowedSoiSource;
       //void quip(CASTData<ComedyEssentials::Joke> *_pData);

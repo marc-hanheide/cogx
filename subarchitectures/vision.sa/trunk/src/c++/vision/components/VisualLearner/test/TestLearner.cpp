@@ -26,6 +26,12 @@ extern "C"
    }
 }
 
+static string descAddr(const cdl::WorkingMemoryAddress &addr)
+{
+   string res("[" + addr.subarchitecture + "/" + addr.id + "]");
+   return res;
+}
+
 CTestRecognizer::CTestRecognizer()
 {
    testmode = "standalone";
@@ -93,18 +99,19 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
 
 void CTestRecognizer::onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   log("Recognition task added. %d requests in WM.", nRequests);
+   nRequests++;
+   log("Recognition task %s added. %d requests in WM.", descAddr(_wmc.address).c_str(), nRequests);
 }
 
 void CTestRecognizer::onDeleteRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    nRequests--;
-   log("Recognition task removed. %d requests in WM.", nRequests);
+   log("Recognition task %s removed. %d requests in WM.", descAddr(_wmc.address).c_str(), nRequests);
 }
 
 void CTestRecognizer::onChangeRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   log("Recognition task modified. %d requests in WM.", nRequests);
+   log("Recognition task %s modified. %d requests in WM.", descAddr(_wmc.address).c_str(), nRequests);
    VisualLearnerRecognitionTaskPtr pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
    std::vector<string>::iterator pstr;
    std::vector<double>::iterator pdbl;
@@ -116,17 +123,17 @@ void CTestRecognizer::onChangeRecognitionTask(const cast::cdl::WorkingMemoryChan
    }
 
    sleepComponent(100);
-   // deleteFromWorkingMemory(_wmc.address);
+   deleteFromWorkingMemory(_wmc.address);
 }
 
 void CTestRecognizer::onAddProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   log("Detected: new proto object");
+   log("Detected: new proto object: %s", descAddr(_wmc.address).c_str());
 }
 
 void CTestRecognizer::onAddAttrObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   log("Detected: new attr object");
+   log("Detected: new attr object: %s", descAddr(_wmc.address).c_str());
 }
 
 ProtoObjectPtr CTestRecognizer::loadFakeProtoObject()
@@ -169,7 +176,6 @@ void CTestRecognizer::_test_addRecognitionTask()
       ptask->protoObjectId = protoId;
 
       string reqId(newDataID());
-      nRequests++;
       addToWorkingMemory(reqId, ptask);
    }
    else if (testmode == "fake-proto") {
@@ -183,12 +189,16 @@ void CTestRecognizer::runComponent()
 {
    sleepComponent(2000);
 
+   int nCalls = 3;
    while(isRunning()) {
       // TODO: if request queue not empty and not processing
       // If deleteFromWorkingMemory is disabled in onChangeRecognitionTask
       // then stop after 3 requests, otherwise create new tasks indefinitely.
-      if (nRequests < 3) {
-         _test_addRecognitionTask();
+      if (nRequests < 1) {
+         if (nCalls) {
+            _test_addRecognitionTask();
+            nCalls --;
+         }
          sleepComponent(500);
       }
 
