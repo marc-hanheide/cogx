@@ -208,7 +208,8 @@ void ObjectDetector::processImage(const Video::Image &image)
 	
 					if(length(results[i]->pose.pos - newCubeCenter) < radius)
 						cubeExists = true;
-	
+				}
+
 				// Create visual object, if it does not already exists in the working memory
 				if(!cubeExists)
 				{
