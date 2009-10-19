@@ -631,17 +631,53 @@
 </utterance>
 
 
-<!-- multiple communicative goals -->
+<!-- multiple utterances in content -->
+<utterance>
+<input>
+<!--
+to do
+-->
+</input>
+<realizations>
+<string>I see a ball it is red</string>
+</realizations>
+</utterance>
+
+
+
+<!-- ========== INFORMATION STRUCTURE ========== -->
+
 <utterance>
 <input>
 <!--
 
-@d1:dvp(c-goal ^ <List>(l1:c-goal-list ^ <List>list ^ <First>(dvp1:dvp ^ c-goal ^ <SpeechAct>greeting) ^ <Next>(dvp2:dvp ^ c-goal ^ <SpeechAct>thanking )))  
+Q: What color does the box have?
+A: (the box is)Th (blue_F)Rh
 
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStructure>asserted ^ <BeliefStatus>private ^  ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
 -->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^  /InfoStatus\familiar ^ box)  ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
-<string>hello thanks</string>
+<string>the box is blue</string>
+<string>the box is blue</string>
+<string>the box isblue</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
+*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+-->
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+</input>
+<realizations>
+<string>the box is blue</string>
+<string>the box is blue</string>
+<string>the box isblue</string>
 </realizations>
 </utterance>
 
