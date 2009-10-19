@@ -1,2 +1,2 @@
-CPP GD Place.Monitor PlaceMonitor --config instantiations/place.sa_config/place.cfg
-CPP GD Place.PeekabotClient PlacePeekabotClient --config instantiations/place.sa_config/place.cfg
+CPP GD Place.Monitor PlaceMonitor --config instantiations/place.sa/place.cfg
+CPP GD Place.PeekabotClient PlacePeekabotClient --config instantiations/place.sa/place.cfg
