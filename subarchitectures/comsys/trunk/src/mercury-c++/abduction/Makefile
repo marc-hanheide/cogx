@@ -15,8 +15,8 @@ server: lib
 .PHONY: cli
 cli: lib
 	make -C cli
-	[ -e check-rules-file ] || ln -s cli/check-rules-file
-	[ -e check-facts-file ] || ln -s cli/check-facts-file
+	[ -e check-file ] || ln -s cli/check-file
+	[ -e abducer-cli ] || ln -s cli/abducer-cli
 
 .PHONY: tests
 tests: lib
@@ -27,4 +27,4 @@ clean:
 	make -C lib clean
 	make -C server clean
 	make -C tests clean
-	rm -f abducer-server-bin check-rules-file check-facts-file
+	rm -f abducer-server-bin abducer-cli check-file
