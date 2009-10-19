@@ -17,10 +17,12 @@ private:
 
    // Proof of concept
    class CMyVideoClient: public cast::VideoClient {
+      public:
       void receiveImages(const std::vector<Video::Image>& images)
       {
          printf("Got some images\n");
       }
+      virtual ~CMyVideoClient() {}
    } Video;
 
 public:

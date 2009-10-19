@@ -13,6 +13,12 @@ extern "C"
    }
 }
 
+static string descAddr(const cdl::WorkingMemoryAddress &addr)
+{
+   string res("[" + addr.subarchitecture + "/" + addr.id + "]");
+   return res;
+}
+
 VisualLearner::VisualLearner()
    // : WorkingMemoryAttachedComponent(), ManagedComponent()
 {
@@ -37,38 +43,25 @@ void VisualLearner::start()
          new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAddRecognitionTask));
 }
 
-void VisualLearner::stop()
-{
-   log("!!!STOP CALL!!!");
-   ManagedComponent::stop();
-}
-
 void VisualLearner::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
    debug("::onAddRecognitionTask");
    string type(_wmc.type);
-
-   log(type + " added");
-
-   // get the id of the changed entry
    string id(_wmc.address.id);
 
-   log("Task id: " + id);
-   VisualLearnerRecognitionTaskPtr pTaskData;
+   log("Added: " + type + ", id: " + id);
+   VisualLearnerRecognitionTaskPtr pTask;
    try{
       // get the data from working memory
-      pTaskData = getWorkingMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address)->getData();
+      // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+      m_RequestIdQueue.push_back(_wmc.address);
+      log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
    }
    catch(cast::DoesNotExistOnWMException){
-      log("VisualLearner: VisualLearnerRecognitionTask deleted while working...\n");
+      log("VisualLearner.OnAdd: VisualLearnerRecognitionTask deleted while working...\n");
       return;
    };
 
-   if (pTaskData != NULL) {
-      m_RequestIdQueue.push_back(_wmc.address);
-      // proposeTask(component, taskID, "s");
-      log("done");
-   } // if
 
 } // VisualLearner::WorkingMemoryChange
 
@@ -82,41 +75,45 @@ void VisualLearner::runComponent()
       // must check that we're still running after sleep
       if (isRunning()) {
          //prevent external access
-         lockComponent();
+         // lockComponent();
 
          // check (synchronised) joke queue
          WmAddressVector::iterator pwma = m_RequestIdQueue.begin();
 
          // see what's in there
          while (pwma != m_RequestIdQueue.end()) {
-            log("Update another ProtoObject.");
+            cdl::WorkingMemoryAddress addr = *pwma;
+            log("Request addr popped: %s", descAddr(addr).c_str());
             VisualLearnerRecognitionTaskPtr pTaskData;
             try{
                // get the data from working memory
-               pTaskData = getMemoryEntry<VisualLearnerRecognitionTask>(*pwma);
+               pTaskData = getMemoryEntry<VisualLearnerRecognitionTask>(addr);
 
                // TODO: check if pTaskData is valid
                // TODO: lock pTaskData
-               recogniseAttributes(pTaskData); // TODO: if recogn... then overwr...
-               overwriteWorkingMemory(*pwma, pTaskData);
+               if (recogniseAttributes(pTaskData)) {
+                  debug("Will overwrite task: %s", descAddr(addr).c_str());
+                  // sleepComponent(100);
+                  overwriteWorkingMemory(addr, pTaskData);
+               }
                // TODO: unlock pTaskData
             }
             catch(cast::DoesNotExistOnWMException){
-               log("VisualLearner: VisualLearnerRecognitionTask deleted while working...\n");
+               log("VisualLearner.run: VisualLearnerRecognitionTask deleted while working...\n");
             };
             // TODO: catch other stuff from Matlab Proxy
 
             // Erase and move to the next point in the list.
             pwma = m_RequestIdQueue.erase(pwma);
-            log("ProtoObject processed");
+            log("VL_Recognition Task processed");
          } // while
 
-         unlockComponent();
+         // unlockComponent();
       } // if
    } // while
 } // VisualLearner::runComponent
 
-void VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
+bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
 {
    debug("::recogniseAttributes");
    //try{
@@ -131,9 +128,16 @@ void VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    // the soi in wm anyway it's not too bad
 
    cdl::WorkingMemoryAddress addr;
-   addr.subarchitecture = getSubarchitectureID();
+   addr.subarchitecture = string(getSubarchitectureID());
    addr.id = _pTask->protoObjectId;
-   ProtoObjectPtr pProtoObj = getMemoryEntry<ProtoObject>(addr);
+   ProtoObjectPtr pProtoObj;
+   try{
+      pProtoObj = getMemoryEntry<ProtoObject>(addr);
+   }
+   catch(cast::DoesNotExistOnWMException){
+      log("VisualLearner.recogAttr: ProtoObject %s deleted while working...\n", descAddr(addr).c_str());
+      return false;
+   };
    // TODO: lock pProtoObj
 
    // FIXME --- probably can optimise
@@ -146,9 +150,10 @@ void VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    _pTask->colorDistr.clear();
    _pTask->colorLabel.push_back("demo");
    _pTask->colorDistr.push_back(2.0);
+   debug("Copy results from pAttrObject to _pTask");
    vector<string>::const_iterator pstr;
    for( pstr = pAttrObject->colorLabel.begin(); pstr != pAttrObject->colorLabel.end(); pstr++) {
-      _pTask->colorLabel.push_back(*pstr);
+      _pTask->colorLabel.push_back(string(*pstr));
    }
    vector<double>::const_iterator pdbl;
    for( pdbl = pAttrObject->colorDistr.begin(); pdbl != pAttrObject->colorDistr.end(); pdbl++) {
@@ -156,6 +161,8 @@ void VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    }
    // delete pAttrObject;
    // TODO: unlock pProtoObj
+   debug("COPIED");
+   return true;
 
    // Now write this back into working memory, this will manage the memory for us.
    //debug("::recogniseAttributes writing");

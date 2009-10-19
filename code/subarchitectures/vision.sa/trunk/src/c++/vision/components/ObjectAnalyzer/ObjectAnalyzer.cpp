@@ -71,11 +71,11 @@ void ObjectAnalyzer::start()
 
 }
 
-void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto)
+void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
 {
    log("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
-   ptask->protoObjectId = pproto->ice_id(); // TODO: Check if ice_id is the right ID.
+   ptask->protoObjectId = addr.id;
 
    string reqId(newDataID());
    addToWorkingMemory(reqId, ptask);
@@ -133,8 +133,8 @@ void ObjectAnalyzer::runComponent()
 
 			data.visualObjId = objId;
 
-			log("A visual object added ID %s", data.addr.id.c_str());
-			start_VL_RecognitionTask(objPtr); 
+			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
+			start_VL_RecognitionTask(objPtr, data.addr); 
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
