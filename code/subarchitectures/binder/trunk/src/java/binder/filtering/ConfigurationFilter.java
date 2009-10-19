@@ -219,7 +219,7 @@ public class ConfigurationFilter {
 		for (Enumeration<UnionConfiguration> e = configs.elements(); e.hasMoreElements() ; ) {
 			UnionConfiguration config = e.nextElement();
 			
-			if (config.configProb == 0.0f) {
+			if (config.configProb == -1.0f) {
 				return false;
 			}
 		}

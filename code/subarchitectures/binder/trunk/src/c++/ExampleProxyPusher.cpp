@@ -28,15 +28,20 @@ void ExampleProxyPusher::runComponent() {
 
   //copied from fake visual thingy
 
-  WorkingMemoryPointerPtr origin1 = createWorkingMemoryPointer("spatial.sa", "bing", "robot");
+  cast::cdl::WorkingMemoryPointerPtr origin1 = new cast::cdl::WorkingMemoryPointer();
+  origin1->address.subarchitecture = "no";
+  origin1->address.id = "local";
+  origin1->type = "data"; //uh oh, do we always need to include this?
 
-  ProxyPtr proxy = createNewProxy (origin1, 1.0f);
+  ProxyPtr proxy1 = createNewProxy(origin1, 1.0f);
 
-  FeatureValuePtr robot = createStringValue ("robot", 1.0f);
-  FeaturePtr feat1 = createFeatureWithUniqueFeatureValue("category", robot);
-  addFeatureToProxy (proxy, feat1);
+  FeaturePtr feature = new Feature();
+  feature->featlabel = "category";
+  feature->alternativeValues.push_back(new
+				   binder::autogen::featvalues::StringValue(1, getCASTTime(), "robot"));
+  addFeatureToProxy(proxy1, feature);
 
-  addProxyToWM(proxy);
+  addProxyToWM(proxy1);
 
   sleepComponent(1000);
 
