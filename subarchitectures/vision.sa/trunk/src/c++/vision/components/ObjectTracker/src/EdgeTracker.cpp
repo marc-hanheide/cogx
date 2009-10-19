@@ -214,7 +214,7 @@ void EdgeTracker::drawResult(Particle* p, Model* m){
 		
 	m_opengl.RenderSettings(false, true);
 	m_opengl.ClearBuffers(false, true);
-	glColor3f(0.0,0.0,0.0);
+	//glColor3f(1.0,0.0,0.0);
 	m_model->drawFaces();
 	m_opengl.RenderSettings(true, true);
 
