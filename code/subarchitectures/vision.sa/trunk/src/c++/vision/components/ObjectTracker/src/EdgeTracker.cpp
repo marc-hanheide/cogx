@@ -208,25 +208,27 @@ bool EdgeTracker::track(	unsigned char* image,
 
 // Draw result of edge tracking (particle with maximum likelihood)
 void EdgeTracker::drawResult(Particle* p, Model* m){
-	glLineWidth(1);
 	m_cam_perspective->Activate();
-	p->activate();
-		
-	m_opengl.RenderSettings(false, true);
-	m_opengl.ClearBuffers(false, true);
-	//glColor3f(1.0,0.0,0.0);
-	m_model->drawFaces();
-	m_opengl.RenderSettings(true, true);
-
+	
 	glColor3f(1.0,0.0,0.0);
-	if(!m_showmodel)m_shadeEdgeCompare->bind();
-	if(!m_showmodel)m_shadeEdgeCompare->setUniform("analyze", true);
 	glLineWidth(5);
+	
+	p->activate();
+	glColorMask(0,0,0,0); glDepthMask(1);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	
+	m_model->drawFaces();
+	glColorMask(1,1,1,1);
+	//m_opengl.RenderSettings(true, true);
+
+	//if(!m_showmodel)m_shadeEdgeCompare->bind();
+	//if(!m_showmodel)m_shadeEdgeCompare->setUniform("analyze", true);
 	m_model->drawEdges();
-	if(!m_showmodel)m_shadeEdgeCompare->unbind();
+	//if(!m_showmodel)m_shadeEdgeCompare->unbind();
 	
 	glColor3f(1.0,1.0,1.0);	
 	p->deactivate();
+	
 }
 
 

@@ -168,8 +168,8 @@ Particles::~Particles(){
 Particle* Particles::getMax(int num_particles){
 	m_maxParticle = Particle(0.0);
 	vec3 maxAxis = vec3(0.0, 0.0, 0.0);
-	float maxAngle = 0.0;
-	vec3 axis; float angle;
+	double maxAngle = 0.0;
+	vec3 axis; double angle;
 	w_sum = 0.0;
 	int id;
 	
