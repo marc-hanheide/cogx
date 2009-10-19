@@ -1,11 +1,9 @@
 HOST localhost
 
 # spatial #####################################################################
-INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/place.sa/spatial-db.cast
 
 # place #####################################################################
-INCLUDE includes/place.sa/base.cast
+INCLUDE includes/place.sa/base-db.cast
 INCLUDE includes/place.sa/aux.cast
 
