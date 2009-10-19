@@ -2,9 +2,9 @@
 <!-- ==========  END_TO_END ========== -->
 
 <!-- 
-@dummy1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy2:ascription ^  ^  <Target>(dummy3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy4:quality ^ red ^ <Questioned>true)))
+@dummy1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(dummy2:ascription ^ ^ <Target>(dummy3:entity ^ box ^ <InfoStatus>familiar) ^ <Color>(dummy4:quality ^ red ^ <Questioned>true)))
 
-@dummy1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy2:ascription ^ dummy ^  <Target>(dummy3:entity ^ <InfoStatus>familiar ^ box) ^  <Color>(dummy4:quality ^ <Questioned>true ^ red)))
+@dummy1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(dummy2:ascription ^ dummy ^ <Target>(dummy3:entity ^ <InfoStatus>familiar ^ box) ^ <Color>(dummy4:quality ^ <Questioned>true ^ red)))
 
 
 -->
@@ -49,9 +49,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <AnswerType>positive)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>positive)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer ^ /AnswerType\positive)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /AnswerType\positive)
 </input>
 <realizations>
 <string>yes</string>
@@ -61,9 +61,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <AnswerType>negative)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer ^ /AnswerType\negative)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /AnswerType\negative)
 </input>
 <realizations>
 <string>No</string>
@@ -73,9 +73,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer)
 </input>
 <realizations>
 <string>sorry</string>
@@ -91,9 +91,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>filler)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>filler)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\filler)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\filler)
 </input>
 <realizations>
 <string>aha</string>
@@ -104,9 +104,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>hold)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>hold)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\hold)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\hold)
 </input>
 <realizations>
 <string>let me see</string>
@@ -116,10 +116,10 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept)
 *** NOTE: accept is "less" than answer:yes -->
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept)
 </input>
 <realizations>
 <string>ok</string>
@@ -132,9 +132,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>reject) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>reject) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\reject) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\reject) 
 </input>
 <realizations>
 <string>sorry</string>
@@ -146,9 +146,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>alreadyTrue) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>alreadyTrue) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\alreadyTrue) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\alreadyTrue) 
 </input>
 <realizations>
 <string>it is already the case</string>
@@ -161,9 +161,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept ^ <AcknoModality>action)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>action)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\action)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept ^ /AcknoModality\action)
 </input>
 <realizations>
 <string>I can do that</string>
@@ -175,9 +175,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>reject ^ <AcknoModality>action)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>reject ^ <AcknoModality>action)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\reject ^ /AcknoModality\action)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\reject ^ /AcknoModality\action)
 </input>
 <realizations>
 <string>sorry</string>
@@ -187,9 +187,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>accept ^ <AcknoModality>vision)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>vision)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept ^ /AcknoModality\vision)
 </input>
 <realizations>
 <string>what do I see</string>
@@ -201,9 +201,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>reject ^ <AcknoModality>vision)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>reject ^ <AcknoModality>vision)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\reject ^ /AcknoModality\vision)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\reject ^ /AcknoModality\vision)
 </input>
 <realizations>
 <string>I can 't say I have seen that</string>
@@ -220,9 +220,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar))
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar))
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar))
 </input>
 <realizations>
 <string>the big red ball</string>
@@ -233,9 +233,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red)
 </input>
 <realizations>
 <string>a big red ball</string>
@@ -248,9 +248,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true)
 </input>
 <realizations>
 <string>that big red one</string>
@@ -263,10 +263,10 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
 *** NOT YET WORKING ***
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true ^ /InfoStatus>familiar)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true ^ /InfoStatus>familiar)
 </input>
 <realizations>
 <string>the big red one</string>
@@ -287,10 +287,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
-*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^ /InfoStatus\familiar) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>the box is blue</string>
@@ -300,9 +299,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^  <InfoStatus>familiar ^ box)  ^ <Size>(b3:quality ^ big))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box) ^ <Size>(b3:quality ^ big))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box)  ^ /Size\(b3:quality ^ big)))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box) ^ /Size\(b3:quality ^ big)))
 </input>
 <realizations>
 <string>the box is big</string>
@@ -312,9 +311,9 @@
 <utterance>
 <input>
 <!-- 
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^  <InfoStatus>familiar ^ box)  ^ <Shape>(b3:quality ^ tall))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box) ^ <Shape>(b3:quality ^ tall))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box)  ^ /Shape\(b3:quality ^ tall)))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box) ^ /Shape\(b3:quality ^ tall)))
 </input>
 <realizations>
 <string>the box is tall</string>
@@ -326,9 +325,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ box) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^  /InfoStatus\familiar ^ /Salient\true ^ box)  ^ /Color\(b3:quality ^ blue)))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ /Salient\true ^ box) ^ /Color\(b3:quality ^ blue)))
 </input>
 <realizations>
 <string>it is blue</string>
@@ -338,9 +337,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ box) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ box)  ^ /Color\(b3:quality ^ blue)))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ box) ^ /Color\(b3:quality ^ blue)))
 </input>
 <realizations>
 <string>this is blue</string>
@@ -354,9 +353,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Size>big ^ <InfoStatus>familiar ^ object)  ^ <Type>(b3:entity ^ <Color>red ^ box))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Size>big ^ <InfoStatus>familiar ^ object) ^ <Type>(b3:entity ^ <Color>red ^ box))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Size\big ^ /InfoStatus\familiar ^ object)  ^ /Type\(b3:entity ^ box ^ /Color\red)))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /Size\big ^ /InfoStatus\familiar ^ object) ^ /Type\(b3:entity ^ box ^ /Color\red)))
 </input>
 <realizations>
 <string>the big object is a red box</string>
@@ -371,10 +370,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue))) 
-** NOTE: order within Target matters; !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>is the object blue</string>
@@ -384,10 +382,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ object)  ^ <Color>(b3:quality ^ blue))) 
-*** NOTE: order within Target matters; if object not last, then Color gets not planned !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ object) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^  /InfoStatus\familiar ^ /Salient\true ^ object)  ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ /Salient\true ^ object) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>is it blue</string>
@@ -400,9 +397,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ color ^ <Questioned>true))) 
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object) ^ <Color>(b3:quality ^ color ^ <Questioned>true))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Color\(b3:quality ^ color ^ /Questioned\true))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object) ^ /Color\(b3:quality ^ color ^ /Questioned\true))) 
 </input>
 <realizations>
 <string>which color is the object </string>
@@ -415,10 +412,10 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>question ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )  
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ object) ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )  
 *** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object) ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
 </input>
 <realizations>
 <string>what is this </string>
@@ -434,11 +431,10 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Questioned>true ^ box)  ^ <Color>(b3:quality ^ blue) ))
-*** again, orger within target is important! ***
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Questioned>true ^ box) ^ <Color>(b3:quality ^ blue) ))
 *** target must not contain <Salient>true ***
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Questioned\true ^ box)  ^ /Color\(b3:quality ^ blue) ))
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /Questioned\true ^ box) ^ /Color\(b3:quality ^ blue) ))
 </input>
 <realizations>
 <string>which box is blue</string>
@@ -453,10 +449,10 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Modality>cognition ^ <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Color>(b3:quality ^ red ))  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Modality>cognition ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ object) ^ <Color>(b3:quality ^ red ))  )
 *** NOTE: this currently generates "that/this is red"
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object) ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
 </input>
 <realizations>
 <string>I know this is red </string>
@@ -468,9 +464,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) ^ <Patient>(b:entity ^ object ^ <Salient>true)  )  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) ^ <Patient>(b:entity ^ object ^ <Salient>true)  )  )
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
 </input>
 <realizations>
 <string>I know this</string>
@@ -481,9 +477,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) ^ <Patient>(c:entity ^ color ^ <InfoStatus>familiar)  )  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) ^ <Patient>(c:entity ^ color ^ <InfoStatus>familiar)  )  )
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(c:entity ^ color ^ /InfoStatus\familiar))  )
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(c:entity ^ color ^ /InfoStatus\familiar))  )
 </input>
 <realizations>
 <string>I know the color</string>
@@ -493,9 +489,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) )  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) )  )
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
 </input>
 <realizations>
 <string>I know </string>
@@ -507,13 +503,13 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ object) ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )
 
 *** NOTE: "I don't know what this is" does not work yet!!!!
   
 *** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object) ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
 </input>
 <realizations>
 <string>I know what this is </string>
@@ -530,10 +526,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Polarity>neg ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
-*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Polarity>neg ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Polarity\neg ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Polarity\neg ^ /Target\(b2:entity ^ box ^ /InfoStatus\familiar) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>the box is not blue</string>
@@ -545,9 +540,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Polarity>neg ^ <Actor>(i:person ^ I) )  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Polarity>neg ^ <Actor>(i:person ^ I) )  )
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Polarity\neg ^ /Actor\(i:person ^ I) )  )
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Polarity\neg ^ /Actor\(i:person ^ I) )  )
 </input>
 <realizations>
 <string>I don't know </string>
@@ -558,9 +553,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) )  )
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative ^ <Content>(e1:cognition ^ know ^ <Actor>(i:person ^ I) )  )
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Relation\answer ^ /AnswerType\negative ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /AnswerType\negative ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) )  )
 </input>
 <realizations>
 <string>I don't know </string>
@@ -574,9 +569,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <Content>(e1:entity ^ <List>conjunction ^ <First>(b1:physical ^ ball ^ <Size>big) ^ <Next>(b2:physical ^ box ^ <Shape>tall))  )
+@d1:dvp(c-goal ^ <Content>(e1:entity ^ <List>conjunction ^ <First>(b1:physical ^ ball ^ <Size>big) ^ <Next>(b2:physical ^ box ^ <Shape>tall))  )
 -->
-@d1:dvp(c-goal  ^ /Content\(e1:entity ^ /List\conjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
+@d1:dvp(c-goal ^ /Content\(e1:entity ^ /List\conjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
 </input>
 <realizations>
 <string>a big ball and a tall box</string>
@@ -587,9 +582,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <Content>(e1:entity ^ <List>disjunction ^ <First>(b1:physical ^ ball ^ <Size>big) ^ <Next>(b2:physical ^ box ^ <Shape>tall))  )
+@d1:dvp(c-goal ^ <Content>(e1:entity ^ <List>disjunction ^ <First>(b1:physical ^ ball ^ <Size>big) ^ <Next>(b2:physical ^ box ^ <Shape>tall))  )
 -->
-@d1:dvp(c-goal  ^ /Content\(e1:entity ^ /List\disjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
+@d1:dvp(c-goal ^ /Content\(e1:entity ^ /List\disjunction ^ /First\(b1:physical ^ ball ^ /Size\big) ^ /Next\(b2:physical ^ box ^ /Shape\tall)))
 </input>
 <realizations>
 <string>a big ball or a tall box</string>
@@ -600,9 +595,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <Content>(e1:quality ^ <List>disjunction ^ <First>(b1:quality ^ blue) ^ <Next>(b2:quality ^ brown))  )
+@d1:dvp(c-goal ^ <Content>(e1:quality ^ <List>disjunction ^ <First>(b1:quality ^ blue) ^ <Next>(b2:quality ^ brown))  )
 -->
-@d1:dvp(c-goal  ^ /Content\(e1:quality ^ /List\disjunction ^ /First\(b1:quality ^ blue) ^ /Next\(b2:quality ^ brown)))
+@d1:dvp(c-goal ^ /Content\(e1:quality ^ /List\disjunction ^ /First\(b1:quality ^ blue) ^ /Next\(b2:quality ^ brown)))
 </input>
 <realizations>
 <string>blue or brown</string>
@@ -614,11 +609,10 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(l1:quality ^ <List>disjunction ^ <First>(q1:quality ^ blue) ^ <Next>(q2:quality ^ brown)))) 
-*** NOTE: order within Target matters; !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object) ^ <Color>(l1:quality ^ <List>disjunction ^ <First>(q1:quality ^ blue) ^ <Next>(q2:quality ^ brown)))) 
 *** NOTE: this only works for conjunction/disjunction of the same property type ***
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object)  ^ /Color\(l1:quality ^ /List\disjunction ^ /First\(q1:quality ^ blue) ^ /Next\(q2:quality ^ brown)))) 
+@d1:dvp(c-goal ^ /SpeechAct\question ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ object) ^ /Color\(l1:quality ^ /List\disjunction ^ /First\(q1:quality ^ blue) ^ /Next\(q2:quality ^ brown)))) 
 </input>
 <realizations>
 <string>is the object blue or brown</string>
@@ -630,9 +624,8 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^ <Content>(a1:ascription ^ <Target>(e1:entity ^ <List>conjunction ^ <First>(b1:physical ^ <InfoStatus>familiar ^ <Size>big ^ ball) ^ <Next>(b2:physical ^ <InfoStatus>familiar ^ <Shape>tall ^ box))  ^ <Color>(c1:quality ^ red)  ))
--->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^ /Content\(a1:ascription ^ /Target\(e1:entity ^ /List\conjunction ^ /First\(b1:physical ^ /InfoStatus\familiar ^ /Size\big ^ ball) ^ /Next\(b2:physical ^ /InfoStatus\familiar ^ /Shape\tall ^ box))))
+<-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(a1:ascription ^ /Target\(e1:entity ^ /List\conjunction ^ /First\(b1:physical ^ /InfoStatus\familiar ^ /Size\big ^ ball) ^ /Next\(b2:physical ^ /InfoStatus\familiar ^ /Shape\tall ^ box))))
 </input>
 <realizations>
 <string>the big ball and the tall box are red</string>
@@ -663,10 +656,9 @@ to do
 Q: What color does the box have?
 A: (the box is)Th (blue_F)Rh
 
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStructure>asserted ^ <BeliefStatus>private ^  ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
-*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStructure>asserted ^ <BeliefStatus>private ^ ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^  /InfoStatus\familiar ^ box)  ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>the box is blue</string>
@@ -678,10 +670,9 @@ A: (the box is)Th (blue_F)Rh
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box)  ^ <Color>(b3:quality ^ blue))) 
-*** NOTE: order within Target matters; if box not last, then Color gets not planned !!! weird problem ***
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\answer  ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^  /InfoStatus\familiar)  ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^ /InfoStatus\familiar) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>the box is blue</string>
@@ -706,9 +697,9 @@ A: (the box is)Th (blue_F)Rh
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(k1:entity ^ kitchen ^ <Size>big)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(k1:entity ^ kitchen ^ <Size>big)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(k1:entity ^ kitchen ^ /Size\big)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(k1:entity ^ kitchen ^ /Size\big)
 </input>
 <realizations>
 <string>a big kitchen</string>
@@ -724,9 +715,9 @@ A: (the box is)Th (blue_F)Rh
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(k1:entity ^ door)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(k1:entity ^ door)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(k1:entity ^ door)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(k1:entity ^ door)
 </input>
 <realizations>
 <string>a door</string>
@@ -742,9 +733,9 @@ A: (the box is)Th (blue_F)Rh
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(k1:entity ^ ball ^ <Size>big)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(k1:entity ^ ball ^ <Size>big)
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(k1:entity ^ ball ^ /Size\big)
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(k1:entity ^ ball ^ /Size\big)
 </input>
 <realizations>
 <string>a big ball</string>
@@ -760,9 +751,9 @@ A: (the box is)Th (blue_F)Rh
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ room)  ^ <Type>(b3:entity ^ kitchen))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ room) ^ <Type>(b3:entity ^ kitchen))) 
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ room)  ^ /Type\(b3:entity ^ kitchen)))
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ room) ^ /Type\(b3:entity ^ kitchen)))
 </input>
 <realizations>
 <string>the room is a kitchen</string>
@@ -804,9 +795,9 @@ please use some canned text in the meantime
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <CannedText>activated_goals ) 
+@d1:dvp(c-goal ^ <CannedText>activated_goals ) 
 -->
-@d1:dvp(c-goal  ^ /CannedText\activated_goals )
+@d1:dvp(c-goal ^ /CannedText\activated_goals )
 </input>
 <realizations>
 <string>activated goals</string>
