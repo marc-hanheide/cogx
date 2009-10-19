@@ -106,6 +106,12 @@ if(BUILD_MULTI_TESTER)
     add_subdirectory (tools/testing)
 endif(BUILD_MULTI_TESTER)
 
+# Place
+option(BUILD_SA_PLACE "Build place subarchitecure" NO)
+if(BUILD_SA_PLACE)
+    add_subdirectory (subarchitectures/place.sa)
+endif(BUILD_SA_PLACE)
+
 # Planner
 option(BUILD_SA_PLANNER "Build planner subarchitecure" YES)
 if(BUILD_SA_PLANNER)
