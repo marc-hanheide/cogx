@@ -55,6 +55,7 @@ Need to exclude cases where the nominal is under <Compound> relation.
 </system>
 
 
+<!--
 <system id="delimitation.NumberID" region="DELIMITATION" metafunction="ideational">
    <chooser id="default"/>
    <conditions>
@@ -68,7 +69,7 @@ Need to exclude cases where the nominal is under <Compound> relation.
       </action>      
    </actions>
 </system>
-
+--> 
 
 
 </systems>
