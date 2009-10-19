@@ -157,7 +157,7 @@ namespace binder {
      * @param prob the probability value
      * @return the IntegerValue
      */
-    autogen::featvalues::IntegerValuePtr  BindingWorkingMemoryWriter::createIntegerValue(int val, float prob) ;
+    autogen::featvalues::IntegerValuePtr  createIntegerValue(int val, float prob) ;
 
 
     /**
@@ -167,7 +167,7 @@ namespace binder {
      * @param prob the probability value
      * @return the BooleanValue
      */
-    autogen::featvalues::BooleanValuePtr  BindingWorkingMemoryWriter::createBooleanValue(bool val, float prob) ;
+    autogen::featvalues::BooleanValuePtr  createBooleanValue(bool val, float prob) ;
 
 
     /**
