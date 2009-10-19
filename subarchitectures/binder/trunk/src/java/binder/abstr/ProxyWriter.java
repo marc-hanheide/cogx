@@ -50,7 +50,6 @@ import cast.cdl.WorkingMemoryPointer;
  * Abstract class for structuring and inserting proxies into the binder working
  * memory
  * 
- * TODO: refactor the methods to make them more accessible (static, or external library)
  * 
  * TODO: define extensions to handle group proxies
  * 
