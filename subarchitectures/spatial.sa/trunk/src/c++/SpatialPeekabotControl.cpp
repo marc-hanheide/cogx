@@ -19,6 +19,7 @@
 #include <FrontierInterface.hpp>
 #include <float.h>
 
+using namespace cast;
 using namespace std;
 using namespace spatial;
 
@@ -138,9 +139,10 @@ void SpatialPeekabotControl::runComponent() {
       <FrontierInterface::PlaceInterface>("place.manager"));
 
   println("Connected to peekabot, ready to go");
-
+  bool sentplancommand = false;
   double radius = 0.75;
   double xNoA = 10, yNoA = 10;
+  double searchx = 13, searchy = 13;
 
   peekabot::GroupProxy root;
   root.assign(m_PeekabotClient, "root");
@@ -173,17 +175,126 @@ void SpatialPeekabotControl::runComponent() {
   actionZone.set_position(xNoA,yNoA,0);
   actionZone.set_color(0,1,0);
 
+    peekabot::CylinderProxy searchhere;
+    searchhere.add(m_controlmodule, "search-here",
+                   peekabot::REPLACE_ON_CONFLICT);
+    searchhere.set_scale(radius,radius,0);
+    searchhere.set_position(searchx,searchy,0);
+    searchhere.set_color(0,1,0);
+
+    peekabot::CylinderProxy startspot;
+    startspot.add(m_controlmodule, "start-spot ",
+                  peekabot::REPLACE_ON_CONFLICT);
+    startspot.set_scale(0.2,0.2,0.3);
+    startspot.set_position(searchx,searchy,0);
+    startspot.set_color(1,0,0);
+
+
   updatePeekabotGadget();
 
   bool wasInCtrl = false;
   float xT, yT;
+ short lsize = 10;
+    std::vector<int> dirlist(lsize,0);
+    double oldposx = searchx;
+    double oldposy = searchy;
+    int i = 0;
+
   
   debug("Entering main loop");
   if (m_PeekabotClient.is_connected()) {
 
     while (isRunning()) {
-
+	double dir;
       peekabot::Result<peekabot::Vector3ru> r;
+
+r = searchhere.get_position(peekabot::WORLD_COORDINATES);
+            if (r.succeeded()) {
+                dir = atan2( (r.get_result().m_c[1] - oldposy), (r.get_result().m_c[0] - oldposx))*180/M_PI;
+                if (dir < 0)
+                    dir += 360;
+                //log("dir of search: %.2f",dir);
+
+                oldposx = r.get_result().m_c[0];
+                oldposy = r.get_result().m_c[1];
+                if (dir >= 0 and dir <= 90)
+                    dirlist[i % lsize] = 0;
+                else if (dir >= 90 and dir <= 180)
+                    dirlist[i % lsize] = 1;
+                else if (dir >= 180 and dir <= 270)
+                    dirlist[i % lsize] = 2;
+                else if (dir >= 270 and dir <= 360)
+                    dirlist[i % lsize] = 3;
+/*                for (unsigned int j = 0; j < dirlist.size(); j++)
+                    printf("%i",dirlist[j]);
+                printf("\n");*/
+
+                i++;
+                // if dirlist contains all 1 2 3 directions we have a wobble!
+                bool has1 = false;
+                bool has2 = false;
+                bool has3 = false;
+
+                for (unsigned int j = 0; j < dirlist.size(); j++) {
+                    if (dirlist[j] == 1)
+                        has1 = true;
+                    if (dirlist[j] == 2)
+                        has2 = true;
+                    if (dirlist[j] == 3)
+                        has3 = true;
+                }
+                // if we have a wobble check if we are in a free node and add that to search list
+
+                if (has1 and has2 and has3) {
+                    NavData::FNodeSequence fnodeseq;
+//                    log("WOOBLEE!!!");
+                    std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
+                    while (obj.empty()) {
+                        getWorkingMemoryEntries<NavData::FNode>(20, obj);
+                        usleep(1000);
+                    }
+                    for (unsigned int i = 0; i < obj.size() ; i++) {
+                        fnodeseq.push_back(obj[i]->getData());
+                    }
+
+
+                    for (unsigned int h = 0; h < fnodeseq.size(); h++) {
+
+                        if (hypot(fnodeseq[h]->y - r.get_result().m_c[1],
+                                  fnodeseq[h]->x - r.get_result().m_c[0]) < radius) {
+                            // seems we are asked to search this node
+                            //log("fnodeid %i",fnodeseq[h]->nodeId);
+                            SpatialData::PlacePtr place = agg->getPlaceFromNodeID(fnodeseq[h]->nodeId);
+                            //check if we already added this 
+                            bool isadded = false;
+                            for (unsigned int l = 0; l < placeseq.size(); l++){
+                            	if (placeseq[l] == place->id)
+                            		isadded = true;
+                            }
+                            if (!isadded){
+                            	placeseq.push_back(place->id);
+                            	log("placeid : %i (fnodeid: %li) added to search plan!",place->id,fnodeseq[h]->nodeId);
+                            }
+                        }
+                    }
+
+                }
+
+                //check if we are back to start zone
+                r = searchhere.get_position(peekabot::WORLD_COORDINATES);
+
+                if ( r.succeeded() && hypot(searchy - r.get_result().m_c[1],
+                                            searchx - r.get_result().m_c[0]) < radius && !placeseq.empty()
+                                            && !sentplancommand) {
+
+                   SpatialData::AVSCommandPtr avscmd = new SpatialData::AVSCommand;
+                   avscmd->cmd = SpatialData::PLAN;
+                   avscmd->placestosearch = placeseq;
+                   addToWorkingMemory(newDataID(), avscmd);
+                   sentplancommand = true;
+                }
+            }
+
 
       // Check if the control marker is inside or outside the control
       // zone. If it is 
@@ -322,7 +433,7 @@ void SpatialPeekabotControl::runComponent() {
 
 
       // Sleep for a second and check again
-      sleepComponent(1000);
+      sleepComponent(100);
 
     }
 
