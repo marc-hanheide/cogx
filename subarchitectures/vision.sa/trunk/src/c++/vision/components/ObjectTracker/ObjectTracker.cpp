@@ -140,12 +140,14 @@ void ObjectTracker::runTracker(const Video::Image &image){
 			overwriteWorkingMemory(m_modelID_list[i].cast_AD.id, obj);
 	}
 	
-	for(int id=0; id<i; id++){
-		m_tracker_list[id]->drawResult(&m_modelID_list[id].trackpose, g_Resources->GetModel(m_modelID_list[id].resources_ID));
-	}
-	
 	//m_tracker_list[0]->drawTest();
 	m_tracker_list[0]->drawCoordinates();
+	
+	for(int id=0; id<i; id++){
+		m_tracker_list[id]->drawResult(&m_modelID_list[id].trackpose, g_Resources->GetModel(m_modelID_list[id].resources_ID));
+		//log("Pose: %.3f %.3f %.3f\n", m_modelID_list[0].trackpose.tX, m_modelID_list[0].trackpose.tY, m_modelID_list[0].trackpose.tZ);
+	}
+	
 	m_tracker_list[0]->swap();
 	
 	fTimeTracker = m_timer.Update();
