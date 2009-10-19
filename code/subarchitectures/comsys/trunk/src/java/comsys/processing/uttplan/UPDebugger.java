@@ -576,7 +576,7 @@ public class UPDebugger
 				error("':plan' requires a communicative goal, specified as HLDS logical form.");
 		    } // end if..else check for lf 
 		} else if (input.startsWith(":test")) { 
-			String lfstr = "@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <Content>(b1:physical ^ ball)";
+			String lfstr = "@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(b1:physical ^ ball)";
 			log("Testing with LF: "+lfstr); 
 			LogicalForm lf = LFUtils.convertFromString(lfstr);
 			LogicalForm planlf = planner.plan(lf);
