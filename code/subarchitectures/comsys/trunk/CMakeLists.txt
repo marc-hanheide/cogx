@@ -3,6 +3,10 @@ project (Comsys)
 
 get_filename_component (COMSYS_ROOT . ABSOLUTE)
 
+option(BUILD_ABDUCER "Build abducer" YES)
+
+if(BUILD_ABDUCER)
+
 find_package(Mercury REQUIRED)
 
 # build the abducer
@@ -11,3 +15,5 @@ add_custom_target (
 	make MERCURY_HOME=${MERCURY_HOME} ICE_HOME=${ICE_HOME}
 	WORKING_DIRECTORY ${COMSYS_ROOT}/src/mercury-c++/abduction
 )
+
+endif(BUILD_ABDUCER)
