@@ -42,34 +42,37 @@ Need to exclude cases where the nominal is under <Compound> relation.
 
 
 <system id="delimitation.substance" region="DELIMITATION" metafunction="ideational">
-   <chooser id="default"/>
+   <chooser id="c-general.check.type.substance"/>
    <conditions>
 <!--      <condition features="@type:entity"/>  -->
       <condition features="@type:e-substance  @feat:PRONOMINALIZED:false"/> 	  
    </conditions>
    <actions>
-      <action choice="default">
+      <action choice="type-substance">
 	 <add-feature feature="Delimitation" value="variable"/> 
       </action>      
-   </actions>
+      <action choice="type-non-substance">
+      </action>
+    </actions>
 </system>
 
 
-<!--
 <system id="delimitation.NumberID" region="DELIMITATION" metafunction="ideational">
-   <chooser id="default"/>
+   <chooser id="c-general.check.feat.NumberID"/>
    <conditions>
       <condition features="@type:entity @feat:NumberID @feat:PRONOMINALIZED:false"/> 	  
    </conditions>
    <actions>
-      <action choice="default">
+      <action choice="numberID-present">
 	   <add-relation mode="Modifier" 
 	                 dest="floornum" type="number-ordinal"/>
        <copy-feature mode="relation"  srcfeat="NumberID" destfeat="Modifier" destnom="floornum" />	
-      </action>      
+      </action> 
+      
+      <action choice="numberID-absent">
+      </action>
    </actions>
 </system>
---> 
 
 
 </systems>

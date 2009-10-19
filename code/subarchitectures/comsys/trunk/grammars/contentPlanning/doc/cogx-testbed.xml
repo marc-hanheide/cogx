@@ -1,4 +1,13 @@
 
+<!-- ==========  END_TO_END ========== -->
+
+<!-- 
+@dummy1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy2:ascription ^  ^  <Target>(dummy3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy4:quality ^ red ^ <Questioned>true)))
+
+@dummy1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy2:ascription ^ dummy ^  <Target>(dummy3:entity ^ <InfoStatus>familiar ^ box) ^  <Color>(dummy4:quality ^ <Questioned>true ^ red)))
+
+
+-->
 
 <!-- ==========  GREETING  ==========  -->
 
@@ -211,9 +220,9 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar)
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar))
 -->
-@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar)
+@d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar))
 </input>
 <realizations>
 <string>the big red ball</string>
@@ -445,6 +454,7 @@
 <input>
 <!--
 @d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Modality>cognition ^ <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Color>(b3:quality ^ red ))  )
+*** NOTE: this currently generates "that/this is red"
 -->
 @d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
 </input>
@@ -498,16 +508,15 @@
 <input>
 <!--
 @d1:dvp(c-goal  ^ <SpeechAct>assertion ^  <Content>(e1:ascription ^ <Target>(b2:entity  ^ <Salient>true ^ object)  ^ <Type>(b3:ont-entity ^ <Questioned>true ^ object ))  )
+
+*** NOTE: "I don't know what this is" does not work yet!!!!
   
 *** NOTE: the type under <Type> has to be some type the grammar knows, but not something that delimitation and quantification applies to; so I've chosen the super-type for entities ***
 -->
 @d1:dvp(c-goal  ^ /SpeechAct\question ^  /Content\(e1:ascription ^ /Target\(b2:entity ^ /Salient\true ^ object)  ^ /Type\(b3:ont-entity ^ object ^ /Questioned\true))) 
 </input>
 <realizations>
-<string>what is this </string>
-<string>what is that </string>
-<string>what is this object </string>
-<string>what is that object </string>
+<string>I know what this is </string>
 </realizations>
 </utterance>
 
