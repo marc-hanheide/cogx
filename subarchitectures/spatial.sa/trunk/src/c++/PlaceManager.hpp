@@ -51,6 +51,8 @@ class PlaceManager : public cast::ManagedComponent
 	  const Ice::Current &_context);
       virtual void beginPlaceTransition(int goalPlaceID, const Ice::Current &_context);
       virtual void endPlaceTransition(int failed, const Ice::Current &_context);
+      virtual SpatialData::PlacePtr getCurrentPlace(const Ice::Current &_context);
+
       PlaceManager *m_pOwner;
       PlaceServer(PlaceManager *owner) : m_pOwner(owner)
       {}

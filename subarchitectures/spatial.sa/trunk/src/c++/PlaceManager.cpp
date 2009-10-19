@@ -1533,3 +1533,12 @@ PlaceManager::addNewGatewayProperty(int placeID)
   m_gatewayProperties[gwProp->placeId] = newID;
   log("addNewGatewayProperty exited");
 }
+
+SpatialData::PlacePtr
+PlaceManager::PlaceServer::getCurrentPlace(const Ice::Current &_context) {
+  m_pOwner->lockComponent();
+  NavData::FNodePtr curNode = m_pOwner->getCurrentNavNode();
+  SpatialData::PlacePtr curPlace = m_pOwner->getPlaceFromNodeID(curNode->nodeId);
+  m_pOwner->unlockComponent();
+  return curPlace;
+}
