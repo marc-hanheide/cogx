@@ -3,3 +3,5 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 CPP GD Place.Controller PlaceController --config instantiations/place.sa_config/place.cfg --start false --log
+CPP GD Place.DataProvider PlaceDataProvider --config instantiations/place.sa_config/place.cfg --load /home/czikus/Current/CAST/Data/Labeled/bcr_cloudy_env3.data
+

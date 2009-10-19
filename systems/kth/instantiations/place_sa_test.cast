@@ -7,4 +7,5 @@ INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 # place #####################################################################
 INCLUDE includes/place.sa/base.cast
+INCLUDE includes/place.sa/aux.cast
 
