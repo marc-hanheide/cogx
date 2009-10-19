@@ -31,6 +31,11 @@ if(BUILD_SA_BINDING)
 add_subdirectory (subarchitectures/binder)
 endif(BUILD_SA_BINDING)
 
+option(BUILD_SA_COMSYS "Build comsys subarchitecture" YES)
+if(BUILD_SA_COMSYS)
+add_subdirectory (subarchitectures/comsys)
+endif(BUILD_SA_COMSYS)
+
 option(BUILD_SA_MOTIVATION "Build motivation subarchitecure" YES)
 if(BUILD_SA_MOTIVATION)
 add_subdirectory (subarchitectures/motivation.sa)
