@@ -167,7 +167,8 @@ void PlaceController::newPlaceCommand(const cast::cdl::WorkingMemoryChange & cha
     getWorkingMemoryEntry<PlaceData::PlaceCommand>(change.address);
   if (!commandCast)
     return;
-  const PlaceData::PlaceCommandPtr command = commandCast->getData();
+  const PlaceData::PlaceCommandPtr command =
+      new PlaceData::PlaceCommand(*commandCast->getData());
   deleteFromWorkingMemory(change.address);
 
   // Execute command
