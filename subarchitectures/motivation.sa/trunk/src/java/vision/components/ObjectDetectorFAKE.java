@@ -42,7 +42,9 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 		for (String label : dc.labels) {
 			// for the time being just fail
 			VisualObject obj = newVisualObject();
-			obj.detectionConfidence = 0d;
+			
+			//over 0.5 is a detection for AVS
+			obj.detectionConfidence = 0.6d;
 			obj.label = label;
 			addToWorkingMemory(newDataID(), obj);
 		}
