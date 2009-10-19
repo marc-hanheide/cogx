@@ -17,6 +17,7 @@
 #include "ObjPdf.hpp"
 #include "XVector3D.h"
 #include <Navigation/LocalMap.hh>
+
 class ObjectSearch : public cast::ManagedComponent,
       public Scan2dReceiver,
       public OdometryReceiver
@@ -149,6 +150,23 @@ enum ObjSearchCommand {
     bool m_CtrlPTU;
     ptz::PTZInterfacePrx m_PTUServer;
  
-  };
+
+    /**
+     * Local receiver type to manage nav command execution.
+     */
+    class NavCommandReceiver: public cast::WorkingMemoryChangeReceiver {
+    public:
+      
+      NavCommandReceiver(ObjectSearch & _component, SpatialData::NavCommandPtr _cmd);
+
+      void workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc);
+    private:
+      ObjectSearch & m_component;
+      SpatialData::NavCommandPtr m_cmd;
+    };
+    
+    static SpatialData::NavCommandPtr newNavCommand();
+    
+};
 
 #endif /*OBJECTSEARCH_HPP_*/
