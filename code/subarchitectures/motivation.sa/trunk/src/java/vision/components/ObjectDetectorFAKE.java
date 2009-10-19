@@ -1,7 +1,8 @@
 package vision.components;
 
-import cogx.Math.Matrix33;
-import cogx.Math.Vector3;
+import java.util.HashMap;
+import java.util.Map;
+
 import VisionData.DetectionCommand;
 import VisionData.Face;
 import VisionData.GeometryModel;
@@ -14,11 +15,37 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cogx.Math.Matrix33;
+import cogx.Math.Vector3;
 
+/**
+ * A fake object detector.
+ * 
+ * Configure options: --confidence-X=label1,label2,...,labelN: return confidence
+ * X for each label. e.g. --confidence-0.6=tea,biscuits
+ * 
+ * --default-confidence -> the value to give all detections which are not
+ * recognised
+ * 
+ * 
+ * @author nah
+ * 
+ */
 public class ObjectDetectorFAKE extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
+	private static final String DEFAULT_CONFIDENCE_PREFIX = "--default-confidence";
+
+	private static final String LABEL_CONFIG_PREFIX = "--confidence-";
+	private static final int LABEL_CONFIG_PREFIX_LENGTH = LABEL_CONFIG_PREFIX
+			.length();
+
+	private final Map<String, Double> m_label2confidence;
+	private double m_defaultConfidence;
+
 	public ObjectDetectorFAKE() {
+		m_label2confidence = new HashMap<String, Double>();
+		m_defaultConfidence = 0d;
 	}
 
 	@Override
@@ -36,28 +63,74 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 		DetectionCommand dc = getMemoryEntry(_arg0.address,
 				DetectionCommand.class);
 
-		// just 'cos
-		sleepComponent(500);
+		// because vision is never this quick...
+		sleepComponent(100);
 
 		for (String label : dc.labels) {
 			// for the time being just fail
 			VisualObject obj = newVisualObject();
-			
-			//over 0.5 is a detection for AVS
-			obj.detectionConfidence = 0.6d;
+
+			obj.detectionConfidence = getConfidenceForLabel(label);
 			obj.label = label;
 			addToWorkingMemory(newDataID(), obj);
 		}
 
 	}
 
+	@Override
+	protected void configure(Map<String, String> _arg0) {
+
+		for (String key : _arg0.keySet()) {
+			if (key.startsWith(LABEL_CONFIG_PREFIX)) {
+				// parse out confidence
+				String confString = key.substring(LABEL_CONFIG_PREFIX_LENGTH);
+				try {
+					double labelConfidence = Double.parseDouble(confString);
+					String labelsJoined = _arg0.get(key);
+					String[] labels = labelsJoined.split(",");
+					for (String label : labels) {
+						m_label2confidence.put(label, labelConfidence);
+						log("fakey fakey: " + label + " -> " + labelConfidence);
+					}
+				} catch (NumberFormatException e) {
+					println("Unable to parse confidence string: " + confString);
+				}
+			}
+		}
+
+		String defaultString = _arg0.get(DEFAULT_CONFIDENCE_PREFIX);
+		if (defaultString != null) {
+			m_defaultConfidence = Double.parseDouble(defaultString);
+		}
+		log("default confidence: " + m_defaultConfidence);
+	}
+
+	/**
+	 * 
+	 * over 0.5 is a detection for AVS
+	 * 
+	 * @param _label
+	 * @return
+	 */
+	protected double getConfidenceForLabel(String _label) {
+		Double conf = m_label2confidence.get(_label);
+		if(conf != null) {
+			return conf;
+		}
+		else {
+			return m_defaultConfidence;
+		}
+	}
+
 	/**
 	 * @return
 	 */
 	private VisualObject newVisualObject() {
-		VisualObject obj = new VisualObject(new cogx.Math.Pose3(newVector3(), new Matrix33(0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d)),
-				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d), getCASTTime(),
-				new VisualObjectView[0], new GeometryModel(new Vertex[0], new Face[0]), "", 0d, 0d);
+		VisualObject obj = new VisualObject(new cogx.Math.Pose3(newVector3(),
+				new Matrix33(0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d)),
+				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d),
+				getCASTTime(), new VisualObjectView[0], new GeometryModel(
+						new Vertex[0], new Face[0]), "", 0d, 0d);
 		return obj;
 	}
 
@@ -65,8 +138,7 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 	 * @return
 	 */
 	private Vector3 newVector3() {
-		return new Vector3(0d,
-				0d, 0d);
+		return new Vector3(0d, 0d, 0d);
 	}
 
 }
