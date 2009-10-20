@@ -22,6 +22,8 @@ static Ice::CommunicatorPtr ic;
 static int pipe_to_child[2];
 static int pipe_from_child[2];
 
+static const char * abducer_path = "/usr/bin/false";
+
 int
 runServer();
 
@@ -37,6 +39,12 @@ preparePlumbing(bool child);
 int
 main(int argc, void ** argv)
 {
+	if (argc != 2) {
+		cerr << "Usage error" << endl;
+		return EXIT_FAILURE;
+	}
+	abducer_path = (const char *) argv[1];
+
 	pipe(pipe_to_child);
 	pipe(pipe_from_child);
 
@@ -45,8 +53,7 @@ main(int argc, void ** argv)
 	if ((pchild = fork()) == 0) {
 		preparePlumbing(true);
 
-		execlp("sh", "sh", "-c", "echo here we go ; tr a-z A-Z", NULL);
-		//execvp("cat", NULL);
+		execlp(abducer_path, abducer_path, NULL);
 		perror("Exec failed");
 	}
 	else {
@@ -121,6 +128,7 @@ void
 printUsage()
 {
 	cerr << "* using server interface revision " << tty::white << ABDUCER_ICE_VERSION << tty::dcol << endl;
+	cerr << tty::yellow << "* path to the abducer: " << abducer_path << tty::dcol << endl;
 }
 
 void

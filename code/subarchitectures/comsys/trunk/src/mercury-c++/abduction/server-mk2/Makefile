@@ -26,8 +26,8 @@ LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
 
 # Mercury
 
-MBIN=abducer-cli
-M_SOURCES=abducer-cli.m
+MBIN=abducer-lfd
+M_SOURCES=abducer-lfd.m protocol.m
 
 LIBABDUCER=../lib/libabducer.a
 
