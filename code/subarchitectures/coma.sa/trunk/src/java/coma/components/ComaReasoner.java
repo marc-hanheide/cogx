@@ -1,6 +1,11 @@
 package coma.components;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Map;
+
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.ResultSetFormatter;
 
 import coma.reasoning.CrowlWrapper;
 import coma.reasoning.ReasonerException;
@@ -101,6 +106,10 @@ public class ComaReasoner extends ManagedComponent {
 			return m_reasoner.getAllConcepts(instance).toArray(new String[0]);
 		}
 
+		public String[] getAllSubconcepts(String concept, Current current) {
+			return m_reasoner.getAllSubConcepts(concept).toArray(new String[0]);
+		}
+		
 		public boolean addInstance(String instance, String concept, Current __current) {
 			try {
 				m_reasoner.addInstance(instance, concept);
@@ -127,6 +136,14 @@ public class ComaReasoner extends ManagedComponent {
 		public boolean isInstanceOf(String instance, String concept, Current __current) {
 			return m_reasoner.isInstanceOf(instance, concept);
 		}
+
+		public String executeSPARQL(String sparqlQuery, Current current) {
+			ResultSet _results = m_reasoner.executeSPARQLQuery(sparqlQuery);
+			OutputStream stream = new ByteArrayOutputStream();
+			ResultSetFormatter.out(stream, _results);
+			return stream.toString();
+		}
+
 		
 		
 	}

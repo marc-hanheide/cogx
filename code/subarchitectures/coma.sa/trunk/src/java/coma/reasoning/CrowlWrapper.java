@@ -570,7 +570,7 @@ public class CrowlWrapper {
 
 	public Set<String> getAllSubConcepts(String _con) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
-		String query = "SELECT ?con WHERE {?con rdfs:subClassOf oe:Entity. " +
+		String query = "SELECT ?con WHERE { " +
 					   " ?con rdfs:subClassOf " + _con + ". " +	
 					   " FILTER (!isblank(?con)) . FILTER (?con != rdfs:Resource) . "+
 					   " FILTER (?con != owl:Thing). FILTER (?con != owl:Nothing) ."+
