@@ -1,6 +1,7 @@
 find_package(OpenCV REQUIRED)
 
 include_directories(.)
+include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(${OPENCV_CFLAGS})
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
