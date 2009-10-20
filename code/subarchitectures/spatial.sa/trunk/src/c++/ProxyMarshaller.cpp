@@ -457,13 +457,11 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
   lockEntry(_wmc.address.id, cdl::LOCKEDOD);
   SpatialData::PlacePtr place = getMemoryEntry<SpatialData::Place>(_wmc.address);
-  log("2");
   if (place != 0) {
     stringstream ss;
     ss << place->id;
     log("Adding proxy (place, %s)", ss.str().c_str());
     addProxy("place", ss.str(), 1.0, createWorkingMemoryPointer(_wmc.address, _wmc.type));
-  log("3");
     m_PlaceAddressToIDMap[_wmc.address.id] = place->id;
     
     // Add place id feature
@@ -472,7 +470,6 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     feature->alternativeValues.push_back(createStringValue(ss.str(), 1));
 	//binder::autogen::featvalues::IntegerValue(1, place->id));
     addFeature("place", ss.str(), feature);
-  log("4");
 
     // Add Placeholder feature
     if (place->status == SpatialData::PLACEHOLDER) {
@@ -489,12 +486,9 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
-  log("5");
     commitFeatures("place", ss.str());
   }
-  log("6");
   unlockEntry(_wmc.address.id);
-  log("7");
 }
 
 void
