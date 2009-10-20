@@ -24,7 +24,7 @@ public class WMMotiveEventQueue extends LinkedBlockingQueue<WMMotiveEventQueue.M
 
 
 	@Override
-	public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
+	public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 			WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive) {
 		MotiveEvent m = new MotiveEvent(); 
 		try {

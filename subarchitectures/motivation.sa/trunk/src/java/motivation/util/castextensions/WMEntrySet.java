@@ -46,9 +46,9 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	private Map<WorkingMemoryAddress, Ice.ObjectImpl> map;
 
 	public interface ChangeHandler {
-		void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
-				WorkingMemoryChange wmc, Ice.ObjectImpl newMotive,
-				Ice.ObjectImpl oldMotive) throws CASTException;
+		void entryChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
+				WorkingMemoryChange wmc, Ice.ObjectImpl newEntry,
+				Ice.ObjectImpl oldEntry) throws CASTException;
 	}
 
 	public class WMChangeReceiver implements WorkingMemoryChangeReceiver {
@@ -74,7 +74,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 					if (oldEntry != null)
 						newWmc.operation = WorkingMemoryOperation.OVERWRITE;
 					if (updateHandler != null)
-						updateHandler.motiveChanged(map, newWmc, map
+						updateHandler.entryChanged(map, newWmc, map
 								.get(newWmc.address), oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// it's fine... if it's been deleted already, we have
@@ -87,7 +87,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 					map.put(newWmc.address, (Ice.ObjectImpl) component
 							.getMemoryEntry(newWmc.address, specClass).clone());
 					if (updateHandler != null)
-						updateHandler.motiveChanged(map, newWmc, map
+						updateHandler.entryChanged(map, newWmc, map
 								.get(newWmc.address), oldEntry);
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
@@ -98,7 +98,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 					map.remove(newWmc.address);
 					if (o != null)
 						if (updateHandler != null)
-							updateHandler.motiveChanged(map, newWmc, o,
+							updateHandler.entryChanged(map, newWmc, o,
 									oldEntry);
 				}
 
@@ -107,7 +107,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 				Ice.ObjectImpl o = map.remove(newWmc.address);
 				if (o != null)
 					if (updateHandler != null)
-						updateHandler.motiveChanged(map, newWmc, o, o);
+						updateHandler.entryChanged(map, newWmc, o, o);
 
 				break;
 			}
@@ -238,7 +238,7 @@ public class WMEntrySet implements Map<WorkingMemoryAddress, Ice.ObjectImpl> {
 	 */
 	@Override
 	public Ice.ObjectImpl get(Object key) {
-		return get(key);
+		return map.get(key);
 	}
 
 	/*

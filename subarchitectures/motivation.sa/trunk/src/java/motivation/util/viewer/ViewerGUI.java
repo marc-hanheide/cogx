@@ -234,7 +234,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	}
 
 	@Override
-	public void motiveChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
+	public void entryChanged(Map<WorkingMemoryAddress, Ice.ObjectImpl> map,
 			final WorkingMemoryChange wmc, final Ice.ObjectImpl motive, final Ice.ObjectImpl oldMotive) {
 
 		switch (wmc.operation) {

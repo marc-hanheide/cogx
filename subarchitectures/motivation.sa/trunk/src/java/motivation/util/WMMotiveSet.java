@@ -132,7 +132,7 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		stateChangeReceivers.put(status, new WMEntrySet.ChangeHandler() {
 
 			@Override
-			public void motiveChanged(
+			public void entryChanged(
 					Map<WorkingMemoryAddress, ObjectImpl> map,
 					WorkingMemoryChange wmc, ObjectImpl newMotive,
 					ObjectImpl oldMotive) throws CASTException {
@@ -162,11 +162,11 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 	private static final long serialVersionUID = 6388467413187493228L;
 
 	@Override
-	public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
+	public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 			WorkingMemoryChange wmc, ObjectImpl newObj, ObjectImpl oldObj)
 			throws CASTException {
 		if (externalHandler != null)
-			externalHandler.motiveChanged(map, wmc, newObj, oldObj);
+			externalHandler.entryChanged(map, wmc, newObj, oldObj);
 		Motive newMotive = (Motive) newObj;
 		Motive oldMotive = (Motive) oldObj;
 		MotiveStatus fromState = MotiveStatus.WILDCARD;
@@ -210,7 +210,7 @@ public class WMMotiveSet extends WMEntrySet implements ChangeHandler {
 		}
 		for (ChangeHandler h : handlersToCall) {
 			component.log("call handler");
-			h.motiveChanged(map, wmc, newMotive, oldMotive);
+			h.entryChanged(map, wmc, newMotive, oldMotive);
 		}
 
 	}

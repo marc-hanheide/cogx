@@ -136,6 +136,7 @@ public class MotiveChartViewer extends ManagedComponent implements
 				dsInformationGain.addValue(motive.informationGain, "",
 						wmc.address.id);
 				dsTries.addValue(motive.tries, "tries", wmc.address.id);
+				dsTries.addValue(motive.costs, "costs", wmc.address.id);
 				dsTries.addValue(motive.priority.value(), "priority", wmc.address.id);
 				break;
 			case DELETE:
@@ -143,6 +144,7 @@ public class MotiveChartViewer extends ManagedComponent implements
 						wmc.address.id);
 				dsInformationGain.removeValue("", wmc.address.id);
 				dsTries.removeValue("tries", wmc.address.id);
+				dsTries.removeValue("costs", wmc.address.id);
 				dsTries.removeValue("priority", wmc.address.id);
 				break;
 			case OVERWRITE:
@@ -151,6 +153,7 @@ public class MotiveChartViewer extends ManagedComponent implements
 				dsInformationGain.setValue(motive.informationGain, "",
 						wmc.address.id);
 				dsTries.setValue(motive.tries, "tries", wmc.address.id);
+				dsTries.setValue(motive.costs, "costs", wmc.address.id);
 				dsTries.setValue(motive.priority.value(), "priority", wmc.address.id);
 				break;
 			}
@@ -215,7 +218,7 @@ public class MotiveChartViewer extends ManagedComponent implements
 	}
 
 	@Override
-	public void motiveChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
+	public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
 			WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive) {
 		Motive motive = (Motive) newMotive;
 		guiFrame.update(wmc, motive);
