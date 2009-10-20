@@ -77,8 +77,6 @@ class ObjectSearch : public cast::ManagedComponent,
     
    
    enum ObjSearchStatus {
-	IDLEMODE,
-	INITCOMP,
 	PLANNING,
 	EXECUTINGPLAN,
 	NAVCOMMANDINPROGRESS,
@@ -98,8 +96,7 @@ enum ObjSearchCommand {
 	RESUME,
 	TURN,
 	RECOGNIZE,
-	IDLE,
-	INIT
+	IDLE
 };
 	std::vector<std::string> detectedObjects;
     ObjSearchStatus m_status;
