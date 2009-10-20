@@ -4,10 +4,10 @@
 #include "Abducer.h"
 #include <vector>
 
-class MercuryAbducerServer : public Abducer::AbducerServer {
+class ForwardedAbducerServer : public Abducer::AbducerServer {
 
 public:
-	MercuryAbducerServer();
+	ForwardedAbducerServer();
 
 	virtual void loadFile(const std::string& filename, const Ice::Current&);
 

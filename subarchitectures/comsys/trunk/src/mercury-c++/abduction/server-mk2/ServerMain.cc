@@ -74,7 +74,7 @@ runServer()
 		Ice::ObjectAdapterPtr adapter
 				= ic->createObjectAdapterWithEndpoints("AbducerAdapter", SERVER_ENDPOINTS);
 
-		Ice::ObjectPtr object = new MercuryAbducerServer();
+		Ice::ObjectPtr object = new ForwardedAbducerServer();
 		adapter->add(object, ic->stringToIdentity(SERVER_NAME));
 		adapter->activate();
 
