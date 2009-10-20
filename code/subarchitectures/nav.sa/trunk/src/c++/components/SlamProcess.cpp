@@ -257,7 +257,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
    m_Mutex.unlock();
 }
 
-void SlamProcess::receiveScan2d(const Laser::Scan2d &castScan)
+void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 {
   if (m_ScansToIgnoreBeforeStart > 0) {
     m_ScansToIgnoreBeforeStart--;

@@ -49,6 +49,7 @@ NavGraphProcess::NavGraphProcess()
 {
   m_TopRobPos = 0;
   m_TopRobPosWMid = "";
+  m_InDoor = false;
 
   m_MaxNumFNodes = 10000;
 
