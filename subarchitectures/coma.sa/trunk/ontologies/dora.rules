@@ -29,6 +29,12 @@
 # OWL rules
 #------------------------------------------------------------------
 
+[omicsClassesRule:
+  (?thing dora:typicalObjectInRoom ?loc)
+  ->
+  (?thing rdfs:subClassOf dora:Object),
+  (?loc rdfs:subClassOf dora:PhysicalRoom)]
+
 [sameRoomRuleDirect:
   (?a dora:adjacent ?b),
   noValue(?a rdf:type dora:Doorway),

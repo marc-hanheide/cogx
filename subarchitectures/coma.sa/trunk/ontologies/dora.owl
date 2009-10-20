@@ -13,7 +13,7 @@
   <owl:Ontology rdf:about=""/>
   <owl:Class rdf:ID="FunctionalRegion">
     <rdfs:subClassOf>
-      <owl:Class rdf:ID="Portion_of_Space"/>
+      <owl:Class rdf:ID="Portion_of_space"/>
     </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:ID="KitchenTable">
@@ -42,12 +42,12 @@
       <owl:Class>
         <owl:intersectionOf rdf:parseType="Collection">
           <owl:Restriction>
-            <owl:someValuesFrom>
-              <owl:Class rdf:ID="DummyObject"/>
-            </owl:someValuesFrom>
             <owl:onProperty>
               <owl:ObjectProperty rdf:ID="contains"/>
             </owl:onProperty>
+            <owl:someValuesFrom>
+              <owl:Class rdf:ID="DummyObject"/>
+            </owl:someValuesFrom>
           </owl:Restriction>
           <owl:Class rdf:about="#PhysicalRoom"/>
         </owl:intersectionOf>
@@ -55,7 +55,7 @@
     </owl:equivalentClass>
   </owl:Class>
   <owl:Class rdf:about="#PhysicalRoom">
-    <rdfs:subClassOf rdf:resource="#Portion_of_Space"/>
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
   </owl:Class>
   <owl:Class rdf:about="#KitchenObject">
     <rdfs:subClassOf rdf:resource="#Object"/>
@@ -64,7 +64,7 @@
     <rdfs:subClassOf rdf:resource="#PhysicalRoom"/>
   </owl:Class>
   <owl:Class rdf:ID="Doorway">
-    <rdfs:subClassOf rdf:resource="#Portion_of_Space"/>
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
   </owl:Class>
   <owl:Class rdf:about="#DummyObject">
     <rdfs:subClassOf rdf:resource="#Object"/>
@@ -75,12 +75,6 @@
       <owl:ObjectProperty rdf:ID="constituentOf"/>
     </rdfs:subPropertyOf>
     <rdfs:range rdf:resource="#PhysicalRoom"/>
-  </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:ID="possiblySameRoomAs">
-    <rdfs:domain rdf:resource="#Place"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
-    <owl:inverseOf rdf:resource="#possiblySameRoomAs"/>
-    <rdfs:range rdf:resource="#Place"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="constituentOfRegion">
     <rdfs:range rdf:resource="#FunctionalRegion"/>
@@ -105,12 +99,18 @@
     <rdfs:range rdf:resource="#Object"/>
     <owl:inverseOf rdf:resource="#in"/>
   </owl:ObjectProperty>
-  <owl:ObjectProperty rdf:ID="adjacent">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+  <owl:SymmetricProperty rdf:ID="possiblySameRoomAs">
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <owl:inverseOf rdf:resource="#possiblySameRoomAs"/>
+    <rdfs:range rdf:resource="#Place"/>
+  </owl:SymmetricProperty>
+  <owl:SymmetricProperty rdf:ID="adjacent">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
     <rdfs:domain rdf:resource="#Place"/>
     <rdfs:range rdf:resource="#Place"/>
     <owl:inverseOf rdf:resource="#adjacent"/>
-  </owl:ObjectProperty>
+  </owl:SymmetricProperty>
 </rdf:RDF>
 
 <!-- Created with Protege (with OWL Plugin 3.4, Build 533)  http://protege.stanford.edu -->
