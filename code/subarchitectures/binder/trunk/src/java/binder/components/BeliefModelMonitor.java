@@ -63,7 +63,7 @@ public class BeliefModelMonitor extends ManagedComponent {
 	
 	
 	public void run () {
-		while (isRunning()) {
+	/**	while (isRunning()) {
 			sleepComponent(500);
 			try {
 				CASTData<Belief>[] beliefs = getWorkingMemoryEntries(Binder.BINDER_SA, Belief.class);
@@ -90,6 +90,6 @@ public class BeliefModelMonitor extends ManagedComponent {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+		} */
 	}
 }

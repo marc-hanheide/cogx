@@ -61,8 +61,30 @@ public class ProxyConstructor {
 		newProxy.origin = origin;
 		newProxy.probExists = probExists;
 		newProxy.features = new Feature[0];
-
 		return newProxy;
+	}
+	
+	
+	/**
+	 * Set the timestamp
+	 * 
+	 * @param proxy
+	 * @param timestamp
+	 */
+	public static void setTimeStamp (Proxy proxy, CASTTime timestamp) {
+		proxy.timeStamp = timestamp;
+	}
+	
+	
+	
+	/**
+	 * Set the timestamp
+	 * 
+	 * @param proxy
+	 * @param timestamp
+	 */
+	public static void setTimeStamp (FeatureValue featval, CASTTime timestamp) {
+		featval.timeStamp = timestamp;
 	}
 	
 	
@@ -247,11 +269,10 @@ public class ProxyConstructor {
 	 * @return the StringValue
 	 */
 
-	public static StringValue createStringValue(String val, float prob, CASTTime timestamp) {
+	public static StringValue createStringValue(String val, float prob) {
 		StringValue stringVal = new StringValue();
 		stringVal.val = val;
 		stringVal.independentProb = prob;
-		stringVal.timeStamp = timestamp;
 		return stringVal;
 	}
 
@@ -265,11 +286,10 @@ public class ProxyConstructor {
 	 * @return the AddressValue
 	 */
 
-	public static AddressValue createAddressValue(String address, float prob, CASTTime timestamp) {
+	public static AddressValue createAddressValue(String address, float prob) {
 		AddressValue addressVal = new AddressValue();
 		addressVal.val = address;
 		addressVal.independentProb = prob;
-		addressVal.timeStamp = timestamp;
 		return addressVal;
 	}
 
@@ -283,11 +303,10 @@ public class ProxyConstructor {
 	 * @return the IntegerValue
 	 */
 
-	public static FloatValue createFloatValue(float floatv, float prob, CASTTime timestamp) {
+	public static FloatValue createFloatValue(float floatv, float prob) {
 		FloatValue floatVal = new FloatValue();
 		floatVal.val = floatv;
 		floatVal.independentProb = prob;
-		floatVal.timeStamp = timestamp;
 		return floatVal;
 	} 
 	
@@ -302,11 +321,10 @@ public class ProxyConstructor {
 	 * @return the IntegerValue
 	 */
 
-	public static IntegerValue createIntegerValue(int integer, float prob, CASTTime timestamp) {
+	public static IntegerValue createIntegerValue(int integer, float prob) {
 		IntegerValue integerVal = new IntegerValue();
 		integerVal.val = integer;
 		integerVal.independentProb = prob;
-		integerVal.timeStamp = timestamp;
 		return integerVal;
 	}
 
@@ -320,11 +338,10 @@ public class ProxyConstructor {
 	 * @return the BooleanValue
 	 */
 
-	public static BooleanValue createBooleanValue(boolean val, float prob, CASTTime timestamp) {
+	public static BooleanValue createBooleanValue(boolean val, float prob) {
 		BooleanValue boolVal = new BooleanValue();
 		boolVal.val = val;
 		boolVal.independentProb = prob;
-		boolVal.timeStamp = timestamp;
 		return boolVal;
 	}
 	
@@ -339,10 +356,9 @@ public class ProxyConstructor {
 	 * @return the BooleanValue
 	 */
 
-	public static UnknownValue createUnknownValue(float prob, CASTTime timestamp) {
+	public static UnknownValue createUnknownValue(float prob) {
 		UnknownValue unknownVal = new UnknownValue();
 		unknownVal.independentProb = prob;
-		unknownVal.timeStamp = timestamp;
 		return unknownVal;
 	}
 
@@ -360,7 +376,7 @@ public class ProxyConstructor {
 		feat.featlabel = featlabel;
 		feat.alternativeValues = new FeatureValue[0];
 		return feat;
-	}
+	} 
 
 	/**
 	 * Create a new feature with a unique feature value

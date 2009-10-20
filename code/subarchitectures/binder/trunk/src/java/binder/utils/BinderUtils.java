@@ -153,7 +153,8 @@ public class BinderUtils {
 		for (int i = 0 ; i < entity.features.length ; i++) {
 			newFeatures[i] = entity.features[i];
 		}
-		StringValue stringValue = ProxyConstructor.createStringValue(DEFAULT_SALIENCY, 1.0f, entity.timeStamp);
+		StringValue stringValue = ProxyConstructor.createStringValue(DEFAULT_SALIENCY, 1.0f);
+		ProxyConstructor.setTimeStamp(stringValue, entity.timeStamp);
 		newFeatures[entity.features.length] = 
 			ProxyConstructor.createFeatureWithUniqueFeatureValue("saliency", stringValue);
 		
