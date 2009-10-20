@@ -1,9 +1,9 @@
 HOST localhost
 
 # spatial #####################################################################
-INCLUDE includes/place.sa/spatial-db.cast
+INCLUDE includes/place.sa/spatial_db.cast
 
 # place #####################################################################
-INCLUDE includes/place.sa/base-db.cast
+INCLUDE includes/place.sa/base_db-bcr.cast
 INCLUDE includes/place.sa/aux.cast
 
