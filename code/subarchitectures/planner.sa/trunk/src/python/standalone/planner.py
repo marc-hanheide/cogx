@@ -240,7 +240,12 @@ def create_unique_dir(base_path, unique_dirname_fn, may_exist=True):
         tmp_dir = os.path.join(base_path, unique_id)
         if os.path.exists(tmp_dir):
             if may_exist:
-                shutil.rmtree(tmp_dir)  # remove old version
+                try:
+                    shutil.rmtree(tmp_dir)  # remove old version
+                except OSError:
+                    print "Warning: smutil.rmtree failed on:\n\n>>>"
+                    print tmp_dir
+                    print "<<<\n"
             else:
                 continue  # create a new, unique name
         os.makedirs(tmp_dir)
