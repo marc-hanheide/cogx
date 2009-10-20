@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <time.h>
+#include <Python.h>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
@@ -32,9 +33,9 @@ protected:
 
    /* Capture addition/change of a Recognition Task
     */
-   void onRecognitionTaskAdded(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onRecognitionTaskRemoved(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onRecognitionTaskModified(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onDeleteRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onChangeRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
 
    // Workers
    void doRecognize(const cast::cdl::WorkingMemoryChange & _wmc);
@@ -42,6 +43,9 @@ protected:
 
    // Some helpers for testing
    void _test_addRecognitionTask();
+private:
+   PyObject* pyProcessImage(Video::Image &image, const int *region);
+   void pyParseMatches(PyObject *pMatches, VisionData::ObjectRecognitionMatchPtr &imatch);
 };
 
 //class CommandListener: public cast::WorkingMemoryChangeReceiver 

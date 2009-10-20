@@ -10,19 +10,27 @@ import numpy as np
 import mods.cameraview as camview
 import osmods.sift
 
+import logging
+LOG = logging.getLogger("ObjectRecognizer")
+
+#class MyLogger():
+#    def debug(self, msg): print "D", msg
+#    def info(self, msg): print "I", msg
+#LOG = MyLogger()
+
 try:
     import siftgpu
 except:
     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
     traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
-    print "**** ObjectRecognizer: SIFTGPU will not be available"
+    LOG.error("**** ObjectRecognizer: SIFTGPU will not be available")
 
 try:
     import siftcuda
 except:
     exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
     traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
-    print "**** ObjectRecognizer: SIFTCUDA will not be available"
+    LOG.error("**** ObjectRecognizer: SIFTCUDA will not be available")
 
 class CFeatureExtractor:
     # Processes a RGB image and returns a CFeaturepack with the extracted features
@@ -207,12 +215,18 @@ class CDescriptorMatcherCuda(CDescriptorMatcher):
         return result
 
     def homographyMatchLists(self, list1, list2, maxRatio=1.0):
-        (iidx, homography) = siftcuda.homographyMatchDescriptors(list1, list2)
-        if iidx == None: result = []
-        else: result = [
-            (p[0], [( distance(list1[p[0]], list2[p[1]]), p[1])])
-            for p in iidx if p[1] >= 0
-            ]
+        res = siftcuda.homographyMatchDescriptors(list1, list2)
+        if res == None:
+            result = []
+            homography = None
+        else:
+            (iidx, homography) = res
+            if iidx == None: result = []
+            else:
+                result = [
+                (p[0], [( distance(list1[p[0]], list2[p[1]]), p[1])])
+                for p in iidx if p[1] >= 0
+                ]
         return (result, homography)
 
 
