@@ -1,25 +1,132 @@
+#include <unistd.h>
+
+#include <Ice/Ice.h>
+#include <IceUtil/CtrlCHandler.h>
+#include <Abducer.h>
+
 #include <iostream>
 
-#include <unistd.h>
+#include "ForwardedAbducerServer.h"
+#include "TtyUtils.h"
 
 using namespace std;
 
 #define PIPE_READ   0
 #define PIPE_WRITE  1
 
+const char * SERVER_NAME = "AbducerServer";
+const char * SERVER_ENDPOINTS = "default -p 10000";
+
+// this probably shouldn't be static
+static Ice::CommunicatorPtr ic;
+static int pipe_to_child[2];
+static int pipe_from_child[2];
+
+int
+runServer();
+
+void
+shutdownServer(int);
+
+void
+printUsage();
+
+void
+preparePlumbing(bool child);
+
 int
 main(int argc, void ** argv)
 {
-	int pipe_to_child[2];
-	int pipe_from_child[2];
-
 	pipe(pipe_to_child);
 	pipe(pipe_from_child);
 
 	pid_t pchild;
 
 	if ((pchild = fork()) == 0) {
-		// child
+		preparePlumbing(true);
+
+		execlp("sh", "sh", "-c", "echo here we go ; tr a-z A-Z", NULL);
+		//execvp("cat", NULL);
+		perror("Exec failed");
+	}
+	else {
+		preparePlumbing(false);
+		runServer();
+
+		wait(0);
+	}
+
+	return EXIT_SUCCESS;
+}
+
+int
+runServer()
+{
+	printUsage();
+	IceUtil::CtrlCHandler ctrlCHandler(shutdownServer);
+	int status = 0;
+	try {
+		ic = Ice::initialize();
+
+		cerr << tty::yellow << "* server name = \"" << SERVER_NAME << "\"" << tty::dcol << endl;
+		cerr << tty::yellow << "* server endpoints = \"" << SERVER_ENDPOINTS << "\"" << tty::dcol << endl;
+
+		Ice::ObjectAdapterPtr adapter
+				= ic->createObjectAdapterWithEndpoints("AbducerAdapter", SERVER_ENDPOINTS);
+
+		Ice::ObjectPtr object = new MercuryAbducerServer();
+		adapter->add(object, ic->stringToIdentity(SERVER_NAME));
+		adapter->activate();
+
+		ic->waitForShutdown();
+	}
+	catch (const Ice::Exception& e) {
+		cerr << e << endl;
+		status = 1;
+	}
+	catch (const char* msg) {
+		cerr << msg << endl;
+		status = 1;
+	}
+
+	cerr << tty::yellow << "* server shut down" << tty::dcol << endl;
+
+	if (ic) {
+		try {
+			ic->destroy();
+		}
+		catch (const Ice::Exception& e) {
+			cerr << e << endl;
+			status = 1;
+		}
+	}
+	return status;
+}
+
+void
+shutdownServer(int signum)
+{
+	cerr << endl;
+	cerr << tty::yellow << "* received signal " << signum << tty::dcol << endl;
+	try {
+		ic->shutdown();
+	}
+	catch (const Ice::Exception e) {
+		cerr << e << endl;
+		exit(1);
+	}
+}
+
+void
+printUsage()
+{
+	cerr << "* using server interface revision " << tty::white << ABDUCER_ICE_VERSION << tty::dcol << endl;
+}
+
+void
+preparePlumbing(bool child)
+{
+	if (child) {
 		close(STDOUT_FILENO);
 		dup(pipe_from_child[PIPE_WRITE]);
 
@@ -30,13 +137,8 @@ main(int argc, void ** argv)
 		close(pipe_to_child[1]);
 		close(pipe_from_child[0]);
 		close(pipe_from_child[1]);
-
-		execlp("sh", "sh", "-c", "echo here we go ; tr a-z A-Z", NULL);
-		//execvp("cat", NULL);
-		perror("Exec failed");
 	}
 	else {
-		// parent
 		close(STDOUT_FILENO);
 		dup(pipe_to_child[PIPE_WRITE]);
 
@@ -47,21 +149,5 @@ main(int argc, void ** argv)
 		close(pipe_to_child[1]);
 		close(pipe_from_child[0]);
 		close(pipe_from_child[1]);
-
-		cout << "sending this to the child" << endl;
-
-		close(STDOUT_FILENO);
-
-		char buf[4096];
-		while (cin) {
-			cin.getline(buf, 4096);
-			if (*buf) {
-				cerr << buf << endl;
-			}
-		}
-
-		wait(0);
 	}
-
-	return EXIT_SUCCESS;
 }

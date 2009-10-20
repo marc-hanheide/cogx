@@ -10,8 +10,8 @@ using namespace Abducer;
 
 MercuryAbducerServer::MercuryAbducerServer()
 {
-	cout << tty::green << "* initialising abducer context" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* initialising abducer context" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //	ctx = init_ctx();
 //	haveProof = false;
 }
@@ -20,8 +20,8 @@ void
 MercuryAbducerServer::loadFile(const string& filename, const Ice::Current&)
 {
 //	char * s = cc2m::string(filename);
-	cout << tty::green << "* loading file `" << filename << "'" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* loading file `" << filename << "'" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 
 /*
 	MR_Word w_result;
@@ -47,16 +47,16 @@ MercuryAbducerServer::loadFile(const string& filename, const Ice::Current&)
 void
 MercuryAbducerServer::clearRules(const Ice::Current&)
 {
-	cout << tty::green << "* clearing rules" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* clearing rules" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //	clear_rules(ctx, &ctx);
 }
 
 void
 MercuryAbducerServer::clearFacts(const Ice::Current&)
 {
-	cout << tty::green << "* clearing all facts" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* clearing all facts" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //	clear_facts(ctx, &ctx);
 }
 
@@ -65,31 +65,31 @@ MercuryAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current
 {
 	switch (type) {
 		case Event:
-			cout << tty::green << "* clearing Event facts" << tty::dcol << endl;
-			cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+			cerr << tty::green << "* clearing Event facts" << tty::dcol << endl;
+			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //			clear_e_facts(ctx, &ctx);
 			break;
 
 		case Info:
-			cout << tty::green << "* clearing Info facts" << tty::dcol << endl;
-			cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+			cerr << tty::green << "* clearing Info facts" << tty::dcol << endl;
+			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //			clear_i_facts(ctx, &ctx);
 			break;
 
 		case AttState:
-			cout << tty::green << "* clearing AttState facts" << tty::dcol << endl;
-			cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+			cerr << tty::green << "* clearing AttState facts" << tty::dcol << endl;
+			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //			clear_a_facts(ctx, &ctx);
 			break;
 
 		case K:
-			cout << tty::green << "* clearing K facts" << tty::dcol << endl;
-			cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+			cerr << tty::green << "* clearing K facts" << tty::dcol << endl;
+			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //			clear_k_facts(ctx, &ctx);
 			break;
 
 		default:
-			cout << tty::red << "* asked to clear facts with unknown modality!" << tty::dcol << endl;
+			cerr << tty::red << "* asked to clear facts with unknown modality!" << tty::dcol << endl;
 			break;
 	}
 }
@@ -97,16 +97,16 @@ MercuryAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current
 void
 MercuryAbducerServer::clearAssumables(const Ice::Current&)
 {
-	cout << tty::green << "* clearing assumables" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* clearing assumables" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 //	clear_assumables(ctx, &ctx);
 }
 
 void
 MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
-	cout << tty::green << "* adding fact: " << fact->p->predSym << "(...)" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* adding fact: " << fact->p->predSym << "(...)" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 
 /*
 	MR_Word vs;
@@ -120,8 +120,8 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 void
 MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
-	cout << tty::green << "* adding assumable: " << f->p->predSym << "(...) / " << function << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* adding assumable: " << f->p->predSym << "(...) / " << function << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 
 /*
 	MR_Word w_vs;
@@ -135,8 +135,8 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 ProveResult
 MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
 {
-	cout << tty::green << "* proving" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* proving" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 
 	return Error;
 /*
@@ -185,8 +185,8 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 vector<MarkedQueryPtr>
 MercuryAbducerServer::getBestProof(const Ice::Current&)
 {
-	cout << tty::green << "* retrieving the last proof" << tty::dcol << endl;
-	cout << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cerr << tty::green << "* retrieving the last proof" << tty::dcol << endl;
+	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 
 	throw NoProofException();
 
