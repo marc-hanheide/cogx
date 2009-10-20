@@ -1,6 +1,4 @@
-% $Id: abducer-cli.m -1   $
-
-:- module 'abducer-cli'.
+:- module 'abducer-lfd'.
 
 :- interface.
 
@@ -23,10 +21,94 @@
 
 :- import_module parser, term_io, term, varset, formula_io, formula_ops, costs.
 :- import_module gc.
+:- import_module protocol.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 main(!IO) :-
+	inner_loop(new_ctx, _, !IO).
+
+:- pred inner_loop(ctx::in, ctx::out, io::di, io::uo) is det.
+
+inner_loop(!Ctx, !IO) :-
+	io.read_line_as_string(ReadResult, !IO),
+	(
+		ReadResult = ok(ReqStr),
+		read_term_from_string("ICE request", ReqStr, _Pos, ReadTermResult),
+		(
+		 	ReadTermResult = term(_Varset, Term),
+			(if
+				term_to_type(Term, Request),
+				is_request(Request)
+			then
+				print(stderr_stream, "[abd] got a valid request: " ++ ReqStr, !IO),
+				process_request(Request, !Ctx, !IO),
+				inner_loop(!Ctx, !IO)
+			else
+				print(stderr_stream, "failed to parse the request\n", !IO)
+			)
+		;
+			ReadTermResult = error(_Err, _LineNum),
+			print(stderr_stream, "got an error in read_term\n", !IO)
+		;
+			ReadTermResult = eof,
+			print(stderr_stream, "end of file in read_term\n", !IO)
+		)
+	;
+		ReadResult = error(_Err),
+		print(stderr_stream, "error in read_line\n", !IO),
+		true
+	;
+		ReadResult = eof,
+		print(stderr_stream, "end of file in read_line\n", !IO),
+		true
+	).
+
+:- pred process_request(protocol.request::in, ctx::in, ctx::out, io::di, io::uo) is det.
+
+process_request(init_ctx, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] init_ctx\n", !IO),
+	!:Ctx = new_ctx.
+
+process_request(load_file(Filename), !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] load_file\n", !IO),
+	loading.load_file(Filename, _Result, !Ctx, !IO),
+	print("ok.\n", !IO),
+	flush_output(!IO),
+	print(stderr_stream, "[done] load_file\n", !IO).
+
+process_request(clear_rules, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] clear_rules\n", !IO),
+	set_rules(set.init, !Ctx),
+	print(stderr_stream, "[done] clear_rules\n", !IO).
+
+process_request(clear_facts, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] clear_facts\n", !IO),
+	set_facts(set.init, !Ctx),
+	print(stderr_stream, "[done] clear_rules\n", !IO).
+
+process_request(clear_facts_by_modality(Modality), !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] clear_facts_by_modality\n", !IO).
+
+process_request(clear_assumables, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] clear_assumables\n", !IO),
+	set_assumables(map.init, !Ctx),
+	print(stderr_stream, "[done] clear_rules\n", !IO).
+
+process_request(add_fact, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] add_fact\n", !IO).
+
+process_request(add_assumable, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] add_assumable\n", !IO).
+
+process_request(prove, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] prove\n", !IO).
+
+process_request(get_best_proof, !Ctx, !IO) :-
+	print(stderr_stream, "[REQUEST] get_best_proof\n", !IO).
+
+
+/*
 	io.command_line_arguments(CmdArgs, !IO),
 	(if
 		CmdArgs = [Goal, GoalAssumeCost],
@@ -145,3 +227,5 @@ term_list(functor(atom("[|]"), [HeadTerm, TailTerms], _), [HeadTerm | Tail]) :-
 :- pred is_ctx_proof(proof(ctx_modality)::in) is det.
 
 is_ctx_proof(_).
+
+*/

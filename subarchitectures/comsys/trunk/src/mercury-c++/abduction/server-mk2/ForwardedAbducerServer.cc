@@ -8,20 +8,30 @@ using namespace Abducer;
 
 #include <vector>
 
+static const size_t bufsize = 8192;
+
+static char buf[bufsize];
+
 ForwardedAbducerServer::ForwardedAbducerServer()
 {
 	cerr << tty::green << "* initialising abducer context" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//	ctx = init_ctx();
-//	haveProof = false;
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+
+	cout << "init_ctx." << endl;
 }
 
 void
 ForwardedAbducerServer::loadFile(const string& filename, const Ice::Current&)
 {
-//	char * s = cc2m::string(filename);
 	cerr << tty::green << "* loading file `" << filename << "'" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+
+	cout << "load_file(\"" << filename << "\")." << endl;
+
+	if (cin) {
+		cin.getline(buf, bufsize);
+		cerr << "load file reply: " << buf << endl;
+	}
 
 /*
 	MR_Word w_result;
@@ -48,16 +58,16 @@ void
 ForwardedAbducerServer::clearRules(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing rules" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//	clear_rules(ctx, &ctx);
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cout << "clear_rules." << endl;
 }
 
 void
 ForwardedAbducerServer::clearFacts(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing all facts" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//	clear_facts(ctx, &ctx);
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cout << "clear_facts." << endl;
 }
 
 void
@@ -98,8 +108,8 @@ void
 ForwardedAbducerServer::clearAssumables(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing assumables" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//	clear_assumables(ctx, &ctx);
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cout << "clear_assumables." << endl;
 }
 
 void
