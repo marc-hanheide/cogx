@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
 	IplImage *ImgLeft, *ImgRight, *ImgResult;
-	CensusGPU census;
+	CensusGPU census(100);
 
   if(argc != 3) {
     printf("usage: %s <left rect image> <right rect image>\n", argv[0]);
