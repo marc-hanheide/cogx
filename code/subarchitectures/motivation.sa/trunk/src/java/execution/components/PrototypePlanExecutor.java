@@ -3,19 +3,16 @@
  */
 package execution.components;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import motivation.slice.Motive;
 import motivation.slice.PlanProxy;
 import motivation.util.facades.BinderFacade;
 import autogen.Planner.Action;
 import autogen.Planner.Completion;
 import autogen.Planner.PlanningTask;
-import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
@@ -243,6 +240,9 @@ public class PrototypePlanExecutor extends AbstractExecutionManager implements
 			for (Long o : placeIDs)
 				avs.placeIDs[count++] = o.longValue();
 			return avs;
+		}
+		else if (_plannedAction.name.equals("explore_place")) {
+			return new ExplorePlace();
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
