@@ -45,6 +45,8 @@ public class BindingPredictor extends ProxyWriter {
 	//Last phantom proxy inserted onto the binder WM
 	PhantomProxy lastPhantomProxy = new PhantomProxy();
 
+	public static boolean lastPhantomProxyToDelete = false;
+	
 	// =================================================================
 	// METHODS FOR PREDICTIONS POSSIBLE UNIONS FOR PHANTOM PROXIES
 	// =================================================================
@@ -63,6 +65,8 @@ public class BindingPredictor extends ProxyWriter {
 	(PhantomProxy phantomProxy, boolean deleteProxyAfterBinding) {
 		try {
 
+			lastPhantomProxyToDelete = deleteProxyAfterBinding;
+			
 			// Adding the phantom proxy into the working memory
 			addPhantomProxyToWM (phantomProxy);
 
@@ -96,6 +100,8 @@ public class BindingPredictor extends ProxyWriter {
 				log("now deleting phantom proxy...");
 				deleteEntityInWM(phantomProxy);
 			}
+			
+			
 						
 			return bindings;
 			

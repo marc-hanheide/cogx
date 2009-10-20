@@ -29,6 +29,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 
 
+import binder.abstr.BindingPredictor;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -318,8 +319,10 @@ public class BinderMonitorGUI extends JFrame
 					addNewRelationProxy((RelationProxy) proxy, Math.abs(curUnionPosition_X - (DEFAULT_ENTITY_BOX_WIDTH + 100)));
 				}
 				else if (proxy instanceof PhantomProxy) {
+					if (!BindingPredictor.lastPhantomProxyToDelete) {
 					addNewPhantomProxy((PhantomProxy) proxy, curUnionPosition_X + horizontalIncr);
 					horizontalIncr += 250;
+					}
 				}
 				else {
 					addNewProxy(proxy, curUnionPosition_X + horizontalIncr, curProxyPosition_Y, "");
