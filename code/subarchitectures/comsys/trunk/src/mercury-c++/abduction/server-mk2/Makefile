@@ -3,9 +3,11 @@ LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
 
 BIN=abducer-server-mk2
 
-HEADERS=Tokens.h TermTokeniser.h TermParsing.h Terms.h Abducer.h
+HEADERS=Tokens.h TermTokeniser.h TermParsing.h Terms.h TtyUtils.h
+HEADERS+=Abducer.h
 
-CXX_SOURCES=Tokens.cc TermTokeniser.cc ServerMain.cc TermParsing.cc Terms.cc Abducer.cc
+CXX_SOURCES=Tokens.cc TermTokeniser.cc ServerMain.cc TermParsing.cc Terms.cc TtyUtils.cc
+CXX_SOURCES+=Abducer.cc
 
 #------------------------------------------------------------------------------#
 
