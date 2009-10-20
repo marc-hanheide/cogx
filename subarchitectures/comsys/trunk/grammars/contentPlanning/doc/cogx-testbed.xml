@@ -652,36 +652,44 @@ to do
 <utterance>
 <input>
 <!--
-
-Q: What color does the box have?
-A: (the box is)Th (blue_F)Rh
-
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStructure>asserted ^ <BeliefStatus>private ^ ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <InfoStatus>familiar ^ <ProofStatus>assumed))
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box) ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /InfoStatus\familiar))
 </input>
 <realizations>
-<string>the box is blue</string>
-<string>the box is blue</string>
-<string>the box isblue</string>
+<string>the big red ball</string>
+<string>the red big ball</string>
 </realizations>
 </utterance>
 
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue))) 
+
+Q: What color does the box have?
+A: (the box is)Th (blue_F)Rh
+
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(e1:ascription ^ <ProofStatus>assumed ^ <Target>(b2:entity ^ <ProofStatus>assumed ^ <BeliefStatus>private ^ <InfoStatus>familiar ^ box) ^ <Color>(b3:quality ^ blue ^ <ProofStatus>asserted )) 
 -->
-@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ box ^ /InfoStatus\familiar) ^ /Color\(b3:quality ^ blue))) 
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:ascription ^ /Target\(b2:entity ^ /InfoStatus\familiar ^ box ^ /ProofStatus\assumed) ^ /Color\(b3:quality ^ blue))) 
 </input>
 <realizations>
 <string>the box is blue</string>
-<string>the box is blue</string>
-<string>the box isblue</string>
 </realizations>
 </utterance>
 
-
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <ProofStatus>asserted ^ <Actor>(i:person ^ I ^ <ProofStatus>assumed) ^ <Patient>(b:entity ^ object ^ <Salient>true ^ <ProofStatus>assumed )  )  )
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
+</input>
+<realizations>
+<string>I know this</string>
+<string>I know that</string>
+</realizations>
+</utterance>
 
 
 
