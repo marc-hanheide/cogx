@@ -202,7 +202,7 @@ public class VerbalisationFacade {
 
 			@SuppressWarnings("unchecked")
 			@Override
-			public void motiveChanged(
+			public void entryChanged(
 					Map<WorkingMemoryAddress, ObjectImpl> _map,
 					WorkingMemoryChange _wmc, ObjectImpl _newMotive,
 					ObjectImpl _oldMotive) throws CASTException {

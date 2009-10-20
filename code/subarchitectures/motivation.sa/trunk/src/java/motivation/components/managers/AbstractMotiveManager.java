@@ -68,7 +68,7 @@ public abstract class AbstractMotiveManager extends ManagedComponent {
 
 		WMEntrySet.ChangeHandler manageHandler = new WMEntrySet.ChangeHandler() {
 			@Override
-			public void motiveChanged(
+			public void entryChanged(
 					Map<WorkingMemoryAddress, ObjectImpl> map,
 					WorkingMemoryChange wmc, ObjectImpl newMotive,
 					ObjectImpl oldMotive) {
@@ -79,7 +79,7 @@ public abstract class AbstractMotiveManager extends ManagedComponent {
 
 		WMEntrySet.ChangeHandler retractHandler = new WMEntrySet.ChangeHandler() {
 			@Override
-			public void motiveChanged(
+			public void entryChanged(
 					Map<WorkingMemoryAddress, ObjectImpl> map,
 					WorkingMemoryChange wmc, ObjectImpl newMotive,
 					ObjectImpl oldMotive) {

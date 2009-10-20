@@ -116,7 +116,13 @@ public class Scheduler extends ManagedComponent {
 		try {
 			log("scheduleMotives: wait to acquire lock");
 			wmLock.lock();
-
+			// TODO: big hack to wait for all propagation
+			sleepComponent(1000);
+			while(!relevantEventQueue.isEmpty())
+				try {
+					relevantEventQueue.take();
+				} catch (InterruptedException e1) {
+				}
 			Map<WorkingMemoryAddress, Motive> surfacedMotives = motives
 					.getMapByStatus(MotiveStatus.SURFACED);
 			Map<WorkingMemoryAddress, Motive> activeMotives = motives

@@ -91,7 +91,7 @@ public class PlanAllManager extends ManagedComponent {
 				MotiveStatus.ACTIVE, null), new ChangeHandler() {
 
 			@Override
-			public void motiveChanged(
+			public void entryChanged(
 					Map<WorkingMemoryAddress, ObjectImpl> map,
 					WorkingMemoryChange wmc, ObjectImpl newMotive,
 					ObjectImpl oldMotive) {
