@@ -13,7 +13,7 @@ BIN=abducer-server-mk2
 CXX_HEADERS=Tokens.h TermTokeniser.h TermParsing.h Terms.h TtyUtils.h ForwardedAbducerServer.h
 CXX_HEADERS+=Abducer.h
 
-CXX_SOURCES=Tokens.cc TermTokeniser.cc ServerMain.cc TermParsing.cc Terms.cc TtyUtils.cc
+CXX_SOURCES=Tokens.cc TermTokeniser.cc ServerMain.cc TermParsing.cc Terms.cc TtyUtils.cc ForwardedAbducerServer.cc
 CXX_SOURCES+=Abducer.cc
 
 CXXFLAGS=-Wall
