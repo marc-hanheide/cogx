@@ -10,7 +10,7 @@
 // define this to use memcpy() instead of looping over image lines and pixels
 // memcpy() is a LOT faster, but will screw up the images if the memory layout
 // (byte per pixel, bytes per line) is not exactly the same.
-#define FAST_DIRTY_CONVERSION
+//#define FAST_DIRTY_CONVERSION
 
 namespace Video
 {
