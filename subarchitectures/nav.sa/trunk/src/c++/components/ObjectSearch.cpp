@@ -32,7 +32,13 @@ void ObjectSearch::start() {
     addChangeFilter(createLocalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
                     new MemberFunctionChangeReceiver<ObjectSearch>(this,
                             &ObjectSearch::newRobotPose));
+    addChangeFilter(createLocalTypeFilter<SpatialData::NavCommand>(cdl::ADD),
+                    new MemberFunctionChangeReceiver<ObjectSearch>(this,
+                            &ObjectSearch::owtNavCommand));
 
+    addChangeFilter(createLocalTypeFilter<SpatialData::NavCommand>(cdl::OVERWRITE),
+                 new MemberFunctionChangeReceiver<ObjectSearch>(this,
+                            &ObjectSearch::owtNavCommand));
 
     addChangeFilter(createChangeFilter<VisionData::VisualObject>
 		    (cdl::ADD,
@@ -71,20 +77,16 @@ void ObjectSearch::start() {
 
 void ObjectSearch::newAVSCommand(const cdl::WorkingMemoryChange &objID){
 	  
-  shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
-    getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
-  
-  //store for later possible deletion
-  m_lastCmdAddr = objID.address;
-  
-  if (oobj->getData()->cmd == SpatialData::PLAN){    
-    placestosearch = oobj->getData()->placestosearch;
-    m_command = PLAN;
-  }
-  else if (oobj->getData()->cmd == SpatialData::STOPAVS) {
-    m_command = STOP;
-    m_status = STOPPED;
-  }
+	  shared_ptr<CASTData<SpatialData::AVSCommand> > oobj =
+    	getWorkingMemoryEntry<SpatialData::AVSCommand>(objID.address);
+    	
+    	if (oobj->getData()->cmd == SpatialData::PLAN){
+    	
+    	    placestosearch = oobj->getData()->placestosearch;
+	  		m_command = TURN;
+	}
+	else if (oobj->getData()->cmd == SpatialData::STOPAVS)
+			m_command = STOP;
 }
 void ObjectSearch::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
@@ -267,28 +269,24 @@ void ObjectSearch::configure(const map<string,string>& _config) {
 }
 
 void ObjectSearch::runComponent() {
-  log("ObjectSearch running ");
-  
-  
-  lockComponent();
-  setupPushScan2d(*this, -1);
-  setupPushOdometry(*this, -1);
-  MovePanTilt(20 , 5*M_PI/180);
-  unlockComponent();
-  
-  //clock_t start_time,elapsed;
-  //double elapsed_time;
-  m_command = IDLE; //TURN;
-  log("hey I run");
-  while(isRunning()) {	
-    lockComponent();
-    Update_PDF_with_GridMap();
-    Update_CoverageMap_with_GridMap();
-    InterpretCommand ();
-    UpdateDisplays();
-    unlockComponent();
-    sleepComponent(1000);
-  }
+    log("ObjectSearch running ");
+
+    setupPushScan2d(*this, -1);
+    setupPushOdometry(*this, -1);
+	MovePanTilt(20 , 5*M_PI/180);
+
+    //clock_t start_time,elapsed;
+    //double elapsed_time;
+    m_command = INIT;
+	log("hey I run");
+    while(isRunning()) {
+		
+        Update_PDF_with_GridMap();
+        Update_CoverageMap_with_GridMap();
+        InterpretCommand ();
+        UpdateDisplays();
+        sleep(1);
+    }
 }
 void ObjectSearch::MovePanTilt(double pan,double tolerance){
 		if (m_CtrlPTU)
@@ -352,151 +350,106 @@ void ObjectSearch::Plan () {
     }
 }
 void ObjectSearch::InterpretCommand () {
-  switch(m_command) {
-  case STOP: {
-    m_command = IDLE;
-    log("Command: STOP");
-    SpatialData::NavCommandPtr cmd = newNavCommand();
-    cmd->prio = SpatialData::URGENT;
-    cmd->cmd = SpatialData::STOP;
-    new NavCommandReceiver(*this, cmd);
-    break;
-  }
-  case TURN: {
-    log("Command: TURN");
-    m_command = IDLE;
-    SpatialData::NavCommandPtr cmd = newNavCommand();
-    cmd->prio = SpatialData::URGENT;
-    cmd->cmd = SpatialData::TURN;
-    cmd->angle.resize(1);
-    cmd->angle[0] = M_PI;
-    new NavCommandReceiver(*this, cmd);
-    break;
-  }
-  case PLAN:
-    log("Command: PLAN");
-    m_command = IDLE;
-    m_status = PLANNING;
-    Plan();
-    break;
-  case EXECUTE:
-    log("Command: EXECUTE");
-    m_command = IDLE;
-    m_status = EXECUTINGPLAN;
-    ExecutePlan();
-    break;
-  case RECOGNIZE:
-    log("Command: RECOGNIZE");
-    m_command = IDLE;
-    m_status = RECOGNITIONINPROGRESS;
-    Recognize();
-  case IDLE:
-    if(m_status == RECOGNITIONINCOMPLETE )
-      {
-	m_command = EXECUTE;
-	log("Recognition complete. Execute next in plan.");
-      }
-    //        log("Command: IDLE");
-    break;
-  default:
-    log("Command: Default.");
-    break;
-  }
+    switch(m_command) {
+    case STOP: {
+            m_command = IDLE;
+            log("Command: STOP");
+            SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
+            cmd->prio = SpatialData::URGENT;
+            cmd->cmd = SpatialData::STOP;
+	    cmd->status = SpatialData::NONE;
+	    cmd->comp = SpatialData::COMMANDPENDING;
+            addToWorkingMemory<SpatialData::NavCommand>(newDataID(), cmd);
+            break;
+        }
+    case TURN: {
+            log("Command: TURN");
+            m_command = IDLE;
+	    m_status = IDLEMODE;
+            SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
+            cmd->prio = SpatialData::URGENT;
+            cmd->cmd = SpatialData::TURN;
+            cmd->angle.resize(1);
+            cmd->angle[0] = M_PI;
+    	    cmd->status = SpatialData::NONE;
+	    cmd->comp = SpatialData::COMMANDPENDING;
+            addToWorkingMemory<SpatialData::NavCommand>(newDataID(), cmd);
+            break;
+        }
+    case PLAN:
+        log("Command: PLAN");
+        m_command = IDLE;
+		m_status = PLANNING;
+        Plan();
+        break;
+    case EXECUTE:
+        log("Command: EXECUTE");
+        m_command = IDLE;
+		m_status = EXECUTINGPLAN;
+        ExecutePlan();
+        break;
+	case RECOGNIZE:
+	log("Command: RECOGNIZE");
+		m_command = IDLE;
+		m_status = RECOGNITIONINPROGRESS;
+		Recognize();
+    case IDLE:
+	
+		if(m_status == RECOGNITIONINCOMPLETE )
+		{
+			m_command = EXECUTE;
+			log("Recognition complete. Execute next in plan.");
+		}
+//        log("Command: IDLE");
+        break;
+    case INIT:
+	m_status = INITCOMP;
+	break;
+    default:
+        log("Command: Default.");
+        break;
+    }
 }
 void ObjectSearch::ExecuteNextInPlan () {
-  whereinplan++;
-  log("Plan size %i, where in plan: %i.",m_plan.plan.size(),whereinplan);
-  if (whereinplan >= m_plan.plan.size()){
-    log("Plan finished.");
-    try {
-      whereinplan = -1;
-      deleteFromWorkingMemory(m_lastCmdAddr);
-    }	    
-    catch(const CASTException &e) {
-      println("failed to delete AVSCommand: %s", e.message.c_str());
+	whereinplan++;
+    log("Plan size %i, where in plan: %i.",m_plan.plan.size(),whereinplan);
+	if (whereinplan >= m_plan.plan.size()){
+        log("Plan finished.");
+        m_command = IDLE;
+        m_status = STOPPED;
+        return;
+		}
+    if (m_plan.plan.size() == 0) {
+        log("Nothing to execute.");
+        m_command = IDLE;
+        m_status = STOPPED;
+        return;
     }
-    m_command = IDLE;
-    m_status = STOPPED;
-    return;
-  }
-  if (m_plan.plan.size() == 0) {
-    log("Nothing to execute.");
-    try {
-      whereinplan = -1;
-      deleteFromWorkingMemory(m_lastCmdAddr);
-    }	    
-    catch(const CASTException &e) {
-      println("failed to delete AVSCommand: %s", e.message.c_str());
+    if (m_status != NAVCOMMANDINPROGRESS) {
+        log("Posting NavCommand");
+        PostNavCommand(m_plan.plan[whereinplan]);
+        m_status = NAVCOMMANDINPROGRESS;
+        
+    } else if (m_status == NAVCOMMANDINPROGRESS) {
+        log("NavCommand in progress.");
     }
-    m_command = IDLE;
-    m_status = STOPPED;
-    return;
-  }
-  if (m_status != NAVCOMMANDINPROGRESS) {
-    log("Posting NavCommand");
-    PostNavCommand(m_plan.plan[whereinplan]);
-    m_status = NAVCOMMANDINPROGRESS;
-    
-  } else if (m_status == NAVCOMMANDINPROGRESS) {
-    log("NavCommand in progress.");
-  }
 }
-
-
-
-
-ObjectSearch::NavCommandReceiver::NavCommandReceiver(ObjectSearch & _component, SpatialData::NavCommandPtr _cmd) :
-  m_component(_component), m_cmd(_cmd) {
-
-  string id(m_component.newDataID());
-  m_component.log("ID post: %s",id.c_str());
-
-  m_component.addChangeFilter(createIDFilter(id,cdl::OVERWRITE),this);  
-  m_component.addToWorkingMemory<SpatialData::NavCommand>(id, m_cmd);  
-
-}
-
-void ObjectSearch::NavCommandReceiver::workingMemoryChanged(const cast::cdl::WorkingMemoryChange &_wmc) {
-  m_component.log("received inner notification");
-  
-  m_component.owtNavCommand(_wmc);
-
-  SpatialData::NavCommandPtr cmd(m_component.getMemoryEntry<SpatialData::NavCommand>(_wmc.address));
-
-  if(cmd->comp == SpatialData::COMMANDSUCCEEDED) {
-    m_component.log("receiver cleaning up on success");
-    //delete nav cmd
-    m_component.deleteFromWorkingMemory(_wmc.address);
-    //get CAST to delete self
-    m_component.removeChangeFilter(this, cdl::DELETERECEIVER);
-  }
-  
-}
-
-
-SpatialData::NavCommandPtr ObjectSearch::newNavCommand() {
-  SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
-  cmd->prio = SpatialData::NORMAL;
-  cmd->cmd = SpatialData::STOP;
-  cmd->status = SpatialData::NONE;
-  cmd->comp = SpatialData::COMMANDPENDING;
-  return cmd;
-}
-
 void ObjectSearch::PostNavCommand(Cure::Pose3D position) {
-    SpatialData::NavCommandPtr cmd = newNavCommand();
+    SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
     cmd->prio = SpatialData::URGENT;
     cmd->cmd = SpatialData::GOTOPOSITION;
-    cmd->pose.resize(2);
+    cmd->pose.resize(3);
     cmd->pose[0] = position.getX();
     cmd->pose[1] = position.getY();
-	//cmd->pose[2] = position.getTheta();
+    cmd->pose[2] = position.getTheta();
     cmd->tolerance.resize(1);
     cmd->tolerance[0] = 0.1;
     cmd->status = SpatialData::NONE;
     cmd->comp = SpatialData::COMMANDPENDING;
-
-    new NavCommandReceiver(*this, cmd);
+    string id = newDataID();
+    log("ID post: %s",id.c_str());
+    addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
+    log("posted NavCommand");
 }
 
 void ObjectSearch::ExecutePlan () {
@@ -531,41 +484,38 @@ void ObjectSearch::GenViewPoints() {
 
     while (i < m_samplesize) {
 
-      //log("processing sample %i/%i", i+1, m_samplesize);
-      
-      randx = rand();
-      randy = rand();
-      randx = (randx % (m_gridsize)) - m_gridsize/2;
-      randy = (randy % (m_gridsize)) - m_gridsize/2;
-      m_lgm->index2WorldCoords(randx,randy,xW,yW);
-      
-      if ((*m_lgm)(randx,randy) == 0) {
-	if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
-	    m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
-	  long nodeid = GetClosestFNode(xW,yW);
-	  SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
-	  long id = -1;
-	  if (place != NULL)
-	    id = place->id;
-	  bool isincluded = false;
-	  for (unsigned int q= 0; q < placestosearch.size(); q++){
-	    if (placestosearch[q] == id){
-	      isincluded = true;
-	      //log("searching place: %i", id);
-	      break;
-	    }
-	  }
-	  if (isincluded) { //if sample is in a place we were asked to search
-	    m_samples[2*i] = randx;
-	    m_samples[2*i+1] = randy;
-	    int the = (int)(rand() % angles.size());
-	    m_samplestheta[i] = angles[the];
-	    i++;
-	  }
-	}
-      }
+        randx = rand();
+        randy = rand();
+        randx = (randx % (m_gridsize)) - m_gridsize/2;
+        randy = (randy % (m_gridsize)) - m_gridsize/2;
+        m_lgm->index2WorldCoords(randx,randy,xW,yW);
+        
+        if ((*m_lgm)(randx,randy) == 0) {
+            if (m_lgm->isCircleObstacleFree(xW,yW, m_awayfromobstacles) &&
+            	m_LMap.goalReachable(xW,yW, 1,0.3)) { //if random point is free space
+            	long nodeid = GetClosestFNode(xW,yW);
+        		SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeid);
+        		long id = -1;
+        		if (place != NULL)
+        			id = place->id;
+        	    bool isincluded = false;
+        		for (unsigned int q= 0; q < placestosearch.size(); q++){
+        			if (placestosearch[q] == id){
+        				isincluded = true;
+        				break;
+        			}
+        		}
+            	if (isincluded) { //if sample is in a place we were asked to search
+                	m_samples[2*i] = randx;
+                	m_samples[2*i+1] = randy;
+                	int the = (int)(rand() % angles.size());
+                	m_samplestheta[i] = angles[the];
+                	i++;
+            	}
+            }
+        }
     }
-    
+
     //log("Calculating view cones for generated samples");
     Cure::Pose3D candidatePose;
     XVector3D a;
@@ -854,71 +804,69 @@ bool ObjectSearch::isPointSameSide(XVector3D p1,XVector3D p2,XVector3D a,XVector
 
 }
 void ObjectSearch::owtNavCommand(const cdl::WorkingMemoryChange & objID) {
+    log("NavCommand Overwritten: %s", objID.address.id.c_str());
+	if (m_status == INITCOMP)
+		return;
+    boost::shared_ptr<CASTData<SpatialData::NavCommand> > oobj =
+        getWorkingMemoryEntry<SpatialData::NavCommand>(objID.address);
 
-  if(m_status == STOPPED) {
-    log("Ignoring NAV command overwrite after STOP received");
-    return;
-  }
-
-  log("NavCommand Overwritten: %s", objID.address.id.c_str());
-  boost::shared_ptr<CASTData<SpatialData::NavCommand> > oobj =
-    getWorkingMemoryEntry<SpatialData::NavCommand>(objID.address);
-  
-  if (oobj != 0) {
-    switch(oobj->getData()->comp) {
-    case SpatialData::COMMANDSUCCEEDED:
-      m_status = NAVCOMMANDCOMPLETED;
-      if (m_plan.plan.size() == 0) {
-	m_command = PLAN;
-      } else {
-	
-	Cure::Pose3D currpos = m_TOPP.getPose();
-	double plantheta = m_plan.plan[whereinplan].getTheta();
-	double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
-	if ( fabs(anglediff) > M_PI_2 )
-	  {
-	    log("First turning the robot a little.");
-	    double turnangle;
-	    if (anglediff < 0) {
-	      turnangle = anglediff + M_PI_2 - 0.2;
-	    } else {
-	      turnangle = anglediff - M_PI_2 + 0.2;
-	    }
-	    SpatialData::NavCommandPtr cmd = newNavCommand();
-	    cmd->prio = SpatialData::URGENT;
-	    cmd->cmd = SpatialData::TURN;
-	    cmd->angle.resize(1);
-	    cmd->angle[0] = turnangle;
-	    cmd->tolerance.resize(1);
-	    cmd->tolerance[0] = 0.1;
-	    
-	    new NavCommandReceiver(*this, cmd);
-	    break;
-	  }
-	
-	log("command set to recognize");
-	m_command = RECOGNIZE;
-      }
-      log("Task accomplished!");
-      break;
-    case SpatialData::COMMANDFAILED:
-      m_status = NAVCOMMANDCOMPLETED;
-      m_command = EXECUTE;
-      log("Task failed");
-      break;
-    case SpatialData::COMMANDABORTED:
-      log("Task aborted :(");
-      break;
-    case SpatialData::COMMANDINPROGRESS:
-      log("Task in progress...");
-      break;
-    case SpatialData::COMMANDPENDING:
-      log("Task pending...");
-      break;
+    if (oobj != 0) {
+        switch(oobj->getData()->comp) {
+        case SpatialData::COMMANDSUCCEEDED:
+            m_status = NAVCOMMANDCOMPLETED;
+            if (m_plan.plan.size() == 0) {
+                m_command = PLAN;
+            } else {
+				
+				Cure::Pose3D currpos = m_TOPP.getPose();
+				double plantheta = m_plan.plan[whereinplan].getTheta();
+				double anglediff = Cure::HelpFunctions::angleDiffRad(plantheta,currpos.getTheta());
+				if ( fabs(anglediff) > M_PI_2 )
+				{
+					log("First turning the robot a little.");
+					double turnangle;
+					if (anglediff < 0) {
+						turnangle = anglediff + M_PI_2 - 0.2;
+					} else {
+						turnangle = anglediff - M_PI_2 + 0.2;
+					}
+					SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand;
+					cmd->prio = SpatialData::URGENT;
+					cmd->cmd = SpatialData::TURN;
+					cmd->angle.resize(1);
+					cmd->angle[0] = turnangle;
+					cmd->tolerance.resize(1);
+					cmd->tolerance[0] = 0.1;
+				        cmd->status = SpatialData::NONE;
+    					cmd->comp = SpatialData::COMMANDPENDING;
+					string id = newDataID();
+					log("ID post: %s",id.c_str());
+					addToWorkingMemory<SpatialData::NavCommand>(id, cmd);
+					break;
+				}
+				
+				log("command set to recognize");
+                m_command = RECOGNIZE;
+            }
+            log("Task accomplished!");
+            break;
+        case SpatialData::COMMANDFAILED:
+            m_status = NAVCOMMANDCOMPLETED;
+            m_command = EXECUTE;
+            log("Task failed");
+            break;
+        case SpatialData::COMMANDABORTED:
+            log("Task aborted :(");
+            break;
+        case SpatialData::COMMANDINPROGRESS:
+            log("Task in progress...");
+            break;
+        case SpatialData::COMMANDPENDING:
+            log("Task pending...");
+            break;
+        }
     }
-  }
 }
-
 void ObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
 	
     debug("Received Scan");
@@ -928,8 +876,6 @@ void ObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
         Cure::Pose3D scanPose;
         if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
         	m_Mutex.lock();
-
-
             m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
             m_Mutex.unlock();
             
@@ -939,7 +885,6 @@ void ObjectSearch::receiveScan2d(const Laser::Scan2d &castScan) {
                                         0);
             lpW.add(scanPose, m_LaserPoseR);
             m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);
-	    //log("added scan");
             
         }
     }
@@ -985,7 +930,7 @@ void ObjectSearch::ObjectDetected(const cast::cdl::WorkingMemoryChange &objID) {
 	
 }
 void ObjectSearch::Recognize(){
-	ptz::PTZReading ptz;
+/*	ptz::PTZReading ptz;
 	ptz.pose.pan = 0;
 	if (m_CtrlPTU)
 		ptz::PTZReading ptz = m_PTUServer->getPose();
@@ -999,39 +944,26 @@ void ObjectSearch::Recognize(){
 	log("ptz reading: %f", ptz.pose.pan);
 	MovePanTilt(anglediff);
 	m_status = 	RECOGNITIONINPROGRESS;
-
-
-	//need to unlock to allow changes through for the original design, but this is dodgy
-	unlockComponent();
-
 	PostRecognitionCommand();
-	while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED) {
-	  sleepComponent(10);
-	}
+	while(m_status != RECOGNITIONINCOMPLETE);
 	log("now moving extras");
 	int n = 1;
-	while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
-	  m_status = 	RECOGNITIONINPROGRESS;
-	  MovePanTilt(anglediff + n*m_ptustep);
-	  PostRecognitionCommand();
-	  while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
-	    sleepComponent(10);
-	  }
-	  n++;
+	while(anglediff + n*m_ptustep < M_PI/2){
+		m_status = 	RECOGNITIONINPROGRESS;
+		MovePanTilt(anglediff + n*m_ptustep);
+		PostRecognitionCommand();
+		while(m_status != RECOGNITIONINCOMPLETE);
+		n++;
 	}
 	n= 1;
-	while(anglediff - n*m_ptustep > -M_PI/2  && m_status != STOPPED){
-	  m_status = 	RECOGNITIONINPROGRESS;
-	  MovePanTilt(anglediff - n*m_ptustep);
-	  PostRecognitionCommand();
-	  while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED)  {
-	    sleepComponent(10);
-	  }
-	  n++;
-	}
-
-	//belt up for safety
-	lockComponent();	
+	while(anglediff - n*m_ptustep > -M_PI/2){
+		m_status = 	RECOGNITIONINPROGRESS;
+		MovePanTilt(anglediff - n*m_ptustep);
+		PostRecognitionCommand();
+		while(m_status != RECOGNITIONINCOMPLETE);
+		n++;
+}*/
+	m_status = RECOGNITIONINCOMPLETE;
 }
 void ObjectSearch::PostRecognitionCommand(){
 	log("Posting Recog. Command now");
