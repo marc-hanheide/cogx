@@ -23,7 +23,8 @@ const char * FG_WHITE   = "\033[37m";
 
 ostream & tty_print(ostream & out, const char * seq)
 {
-	if (isatty(fileno(stdout)))
+	// FIXME: nasty hack
+	if (isatty(fileno(stderr)))
 		return out << seq;
 	else
 		return out;
