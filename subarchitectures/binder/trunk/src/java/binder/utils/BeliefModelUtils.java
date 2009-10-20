@@ -366,6 +366,23 @@ public class BeliefModelUtils {
 
 
 	/**
+	 * Returns a string containing a string-formatted version of the belief model formula, 
+	 * formatted to one line
+	 * 
+	 */
+	
+	public static String getFormulaPrettyPrintOneLine(UncertainSuperFormula formula) {
+		String result = "@(" ;
+		
+		result += getFormulaPrettyPrint(formula,0);
+		
+		result += ")";
+		
+		return result;
+	}
+	
+	
+	/**
 	 * Returns a string-formatted version of the logical operator included in form
 	 * 
 	 * @param form the complex formula

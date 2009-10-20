@@ -1,4 +1,4 @@
-
+ 
 // =================================================================                                                        
 // Copyright (C) 2009-2011 Pierre Lison (pierre.lison@dfki.de)                                                                
 //                                                                                                                          
@@ -152,7 +152,7 @@ class AlternativeUnionConfigurations {
 
 module specialentities {
 
-class RelationProxy extends core::Proxy {
+class RelationProxy extends core::Proxy { 
 	core::Feature source;
 	core::Feature target;
 };
