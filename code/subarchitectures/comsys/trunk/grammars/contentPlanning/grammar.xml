@@ -52,6 +52,9 @@
   <systems  file="structure.systems.xml"/> 
   <choosers  file="structure.choosers.xml"/>
 
+  <systems  file="infoStruct.systems.xml"/> 
+  <choosers  file="infoStruct.choosers.xml"/>
+
 <!--  <systems  file="CONCEPT.systems.xml"/> -->
 
 </grammar>

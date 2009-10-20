@@ -1445,7 +1445,8 @@ public class UtterancePlanner {
      *  feature in the "feature" parameter stored with the
      *  step, and the value in the "value" parameter. It then assigns
         the feature with the given value in the logical form to
-     *  the nominal that is the current locus. The method returns a
+     *  the nominal given as "dest" parameter, otherwise the current locus. 
+	 *  The method returns a
      *  <tt>UPResult</tt> object that includes the new logical form,
      *  and the (unchanged) locus.
      */

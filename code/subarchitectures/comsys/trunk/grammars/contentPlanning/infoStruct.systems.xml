@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /** @system proofStatus.entity
+
+Simple first-shot version: 
+  if assumed then Theme
+  if asserted then Rheme
+*/ -->
+
+<system id="proofStatus.entity" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus"/> 
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:thing"/> 	  
+      <condition features="@type:physical"/>  <!-- other than mass -->
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="t-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="t-rheme-true" />
+      </action>   
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>     
+   </actions>
+</system>
+
+
+<!-- /** @system proofStatus.quality
+
+Simple first-shot version: 
+  if assumed then Theme
+  if asserted then Rheme
+  
+This should only apply to quality in ascription-property; quality to realize as a modifier is curretly modeled as a feature in the input, ad thus should not trigger this system.
+
+BUT: if quality-standalone were to be generated, this system should apply.
+
+*/ -->
+<system id="proofStatus.quality" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus"/> 
+   <conditions>
+      <condition features="@type:quality"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+
+<system id="proofStatus.event" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus"/> 
+   <conditions>  <!-- all types of events: -->
+      <condition features="@type:relational"/>   
+      <condition features="@type:action"/>   
+      <condition features="@type:state"/>   
+      <condition features="@type:internal"/>   
+      <condition features="@type:modal"/>  
+      <condition features="@type:communication"/>   
+      <condition features="@type:symbolic"/>   
+      <condition features="@type:action-motion"/>   
+      <condition features="@type:action-non-motion"/>   
+      <condition features="@type:presentational"/>   
+      <condition features="@type:ascription"/>   
+      <condition features="@type:perception"/>   
+      <condition features="@type:cognition"/>
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="e-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="e-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+
+
+<!-- /**
+
+@system ownership.rheme
+
+if Rheme present then
+   if SpeechAct == question then RhOwner = rh-hearer
+   if SpeechAct == assertion then RhOwner = rh-speaker
+
+Simplest first-shot version
+
+@system ownership.theme
+
+if Theme present then
+   ThOwner == th-hearer  (standard Theme)
+
+Theme present iff <Rheme> == t-rheme-false or m-rheme-false or e-rheme-false
+no rheme feature also means Theme (for the grammar)
+
+Simplest first-shot version
+
+*/ --> 
+
+<system id="ownership.theme" region="infoStruct" metafunction="textual">
+   <chooser id="default"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-false"/>   
+      <condition features="@feat:Rheme:m-rheme-false"/>   
+      <condition features="@feat:Rheme:e-rheme-false"/>   
+   </conditions>
+   <actions>
+      <action choice="default">
+        	<add-feature feature="ThOwner" value="th-hearer" />      <!-- BUT: must go to main-predicate level !!!!!! -->
+      </action>     
+   </actions>
+</system>
+
+</systems>
