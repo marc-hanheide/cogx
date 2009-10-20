@@ -130,7 +130,7 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 				new Matrix33(0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d, 0d)),
 				new String[0], 0d, new cogx.Math.Sphere3(newVector3(), 0d),
 				getCASTTime(), new VisualObjectView[0], new GeometryModel(
-						new Vertex[0], new Face[0]), "", 0d, 0d);
+						new Vertex[0], new Face[0]), "", 0d);
 		return obj;
 	}
 
