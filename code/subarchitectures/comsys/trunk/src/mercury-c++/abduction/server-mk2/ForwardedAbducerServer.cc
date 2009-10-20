@@ -8,7 +8,7 @@ using namespace Abducer;
 
 #include <vector>
 
-MercuryAbducerServer::MercuryAbducerServer()
+ForwardedAbducerServer::ForwardedAbducerServer()
 {
 	cerr << tty::green << "* initialising abducer context" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -17,7 +17,7 @@ MercuryAbducerServer::MercuryAbducerServer()
 }
 
 void
-MercuryAbducerServer::loadFile(const string& filename, const Ice::Current&)
+ForwardedAbducerServer::loadFile(const string& filename, const Ice::Current&)
 {
 //	char * s = cc2m::string(filename);
 	cerr << tty::green << "* loading file `" << filename << "'" << tty::dcol << endl;
@@ -45,7 +45,7 @@ MercuryAbducerServer::loadFile(const string& filename, const Ice::Current&)
 }
 
 void
-MercuryAbducerServer::clearRules(const Ice::Current&)
+ForwardedAbducerServer::clearRules(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing rules" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -53,7 +53,7 @@ MercuryAbducerServer::clearRules(const Ice::Current&)
 }
 
 void
-MercuryAbducerServer::clearFacts(const Ice::Current&)
+ForwardedAbducerServer::clearFacts(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing all facts" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -61,7 +61,7 @@ MercuryAbducerServer::clearFacts(const Ice::Current&)
 }
 
 void
-MercuryAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current&)
+ForwardedAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current&)
 {
 	switch (type) {
 		case Event:
@@ -95,7 +95,7 @@ MercuryAbducerServer::clearFactsByModality(ModalityType type, const Ice::Current
 }
 
 void
-MercuryAbducerServer::clearAssumables(const Ice::Current&)
+ForwardedAbducerServer::clearAssumables(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing assumables" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -103,7 +103,7 @@ MercuryAbducerServer::clearAssumables(const Ice::Current&)
 }
 
 void
-MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
+ForwardedAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
 	cerr << tty::green << "* adding fact: " << fact->p->predSym << "(...)" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -118,7 +118,7 @@ MercuryAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Curre
 }
 
 void
-MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
+ForwardedAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
 	cerr << tty::green << "* adding assumable: " << f->p->predSym << "(...) / " << function << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -133,7 +133,7 @@ MercuryAbducerServer::addAssumable(const string & function, const ModalisedFormu
 }
 
 ProveResult
-MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
+ForwardedAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
 {
 	cerr << tty::green << "* proving" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
@@ -183,7 +183,7 @@ MercuryAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Cur
 }
 
 vector<MarkedQueryPtr>
-MercuryAbducerServer::getBestProof(const Ice::Current&)
+ForwardedAbducerServer::getBestProof(const Ice::Current&)
 {
 	cerr << tty::green << "* retrieving the last proof" << tty::dcol << endl;
 	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
