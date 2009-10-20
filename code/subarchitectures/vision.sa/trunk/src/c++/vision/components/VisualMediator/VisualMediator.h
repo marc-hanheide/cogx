@@ -24,7 +24,9 @@
 
 #include <VisionData.hpp>
 #include <BindingWorkingMemoryWriter.hpp>
-#include <autogen/BinderEssentials.hpp>
+#include <BinderEssentials.hpp>
+#include <BeliefModels.hpp>
+#include <DomainModel.hpp>
 
 namespace cast
 {
@@ -80,6 +82,16 @@ class VisualMediator : public binder::BindingWorkingMemoryWriter
    * callback function called whenever a VisualObject is deleted
    */
   void deletedVisualObject(const cdl::WorkingMemoryChange & _wmc);
+
+  /**
+   * callback function called whenever a Belief changes
+   */
+  void updatedBelief(const cdl::WorkingMemoryChange & _wmc);
+
+
+//  bool unionRef(beliefmodels::domainmodel::cogx::SuperFormulaPtr f, std::string &unionID);
+
+  bool unionRef(beliefmodels::adl::FormulaPtr f, std::string &unionID);
 
  protected:
   /**

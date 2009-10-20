@@ -30,6 +30,9 @@ using namespace boost::posix_time;
 using namespace binder::autogen::core;
 using namespace binder::autogen::featvalues;
 
+using namespace beliefmodels::adl;
+using namespace beliefmodels::domainmodel::cogx;
+
 void VisualMediator::configure(const map<string,string> & _config)
 {
   map<string,string>::const_iterator it;
@@ -70,6 +73,11 @@ void VisualMediator::start()
   addChangeFilter(createLocalTypeFilter<VisionData::VisualObject>(cdl::DELETE),
 	  new MemberFunctionChangeReceiver<VisualMediator>(this,
 		&VisualMediator::deletedVisualObject));
+
+ // a filter for belief updates
+  addChangeFilter(createLocalTypeFilter<Belief>(cdl::WILDCARD),
+	  new MemberFunctionChangeReceiver<VisualMediator>(this,
+		&VisualMediator::updatedBelief));
 
 }
 
@@ -209,6 +217,108 @@ void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
   queuesNotEmpty->post();		 
 }
+
+
+void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
+{
+  BeliefPtr obj =
+	getMemoryEntry<Belief>(_wmc.address);
+
+  string unionID;
+  if(unionRef(obj->phi, unionID))
+  {
+	log("Found reference to union ID %s in belief", unionID.c_str());
+  }
+  else
+	return;
+
+//  VisualObjectData &data = VisualObjectMap[_wmc.address.id];
+
+//  CASTTime time=getCASTTime();
+
+//  data.status= STABLE;
+//  data.lastUpdateTime = time;
+  //	queuesNotEmpty->post();proxyToAdd.push(obj.addr.id);
+
+//  debug("A VisualObject ID %s ",data.addr.id.c_str());
+
+  //  queuesNotEmpty->post();
+}
+
+
+bool VisualMediator::unionRef(FormulaPtr fp, string &unionID)
+{
+  Formula *f = &(*fp);
+
+  if(typeid(*f).name() == "UnionRefProperty")
+  {
+	UnionRefPropertyPtr unif = dynamic_cast<UnionRefProperty*>(f);
+	unionID =  unif->unionRef;	
+
+	return true;
+  }
+  else if(typeid(*f).name() == "ComplexFormula")
+  {
+	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
+	vector<SuperFormulaPtr>::iterator it; 
+
+	for(it = unif->formulae.begin(); it != unif->formulae.end(); it++)
+	{
+	  SuperFormulaPtr sf = *it;
+  
+	  if(unionRef(sf, unionID))
+		return true;
+	}
+  
+	unionID = "";
+	return false;
+	
+  }
+  else
+  {
+	unionID = "";
+	return false;
+  }
+
+}
+
+
+bool VisualMediator::colorAsserted(FormulaPtr fp, Color &color)
+{
+  Formula *f = &(*fp);
+
+  if(typeid(*f).name() == "ColorProperty")
+  {
+	ColorPropertyPtr col = dynamic_cast<ColorProperty*>(f);
+	unionID =  col->unionRef;	
+
+	return true;
+  }
+  else if(typeid(*f).name() == "ComplexFormula")
+  {
+	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
+	vector<SuperFormulaPtr>::iterator it; 
+
+	for(it = unif->formulae.begin(); it != unif->formulae.end(); it++)
+	{
+	  SuperFormulaPtr sf = *it;
+  
+	  if(unionRef(sf, unionID))
+		return true;
+	}
+  
+	unionID = "";
+	return false;
+	
+  }
+  else
+  {
+	unionID = "";
+	return false;
+  }
+
+}
+
 
 
 }
