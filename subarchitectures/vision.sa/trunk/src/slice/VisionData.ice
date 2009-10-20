@@ -205,8 +205,9 @@ module VisionData {
   };
 
   class ObjectRecognitionMatch {
-    // ID of the SOI that was processed
-    string soiId;
+    // ID of the SOI/ProtoObject that was processed
+    string sourceType; // sourceType[0]: "S"-SOI or "P"-ProtoObject, "I"-image
+    cast::cdl::WorkingMemoryAddress sourceId;
 
     // IDs of the internal representation of objects
     StringSeq objectId;
@@ -218,6 +219,10 @@ module VisionData {
 
   class ObjectRecognitionTask {
     // REQUEST:
+    //    1. If protoObjectAddress set, process a ProtoObject
+    //    2. If soiIds set, process SOIs
+    //    3. Otherwise process the image from whole camera
+    cast::cdl::WorkingMemoryAddress protoObjectAddr;
     IdSeq soiIds;
 
     // RESPONSE

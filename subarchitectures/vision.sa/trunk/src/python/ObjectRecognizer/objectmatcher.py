@@ -9,6 +9,9 @@ from scipy.cluster import hierarchy
 from mods import comparator, numutil
 from osmods import greatcircle # distances on ellipsoids
 
+import logging
+LOG = logging.getLogger("ObjectRecognizer")
+
 class CConsistency(object):
     def __init__(self, dists, fpackExample, fpackModel, nOrientations, nScales):
         self.dists = dists
@@ -336,14 +339,16 @@ class CObjectDetector(CObjectMatcher):
 
             (dists, homography) = comp.homographyMatchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
             if len(dists) < 1: continue
-            print "# Matched sifts", len(dists), "/", len(allgrps.descriptors)
+            LOG.debug("# Matched sifts %d/%d" % (len(dists), len(allgrps.descriptors)))
 
             dists.sort(key=lambda x: x[1][0])
             maxMatches = len(vx.featurePacks[0])
             # H: shorten if the example has more features than the view; 
             #    duplicate matches may still remain among best scores
+            scfactor = 1.0
+            if len(dists) < 4: scfactor = len(dists) / 4.0
             dists = dists[:maxMatches]
-            score = self.calcDistScore(dists)
+            score = self.calcDistScore(dists) * scfactor
             consist = consistCalc.getConsistency(dists, example, allgrps)
 
             bvsort.add([vx, consist], score)

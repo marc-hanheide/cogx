@@ -11,11 +11,17 @@ import objectmodel
 import objectmatcher
 import numpy as np
 
+import logging
+LOG = logging.getLogger("ObjectRecognizer")
+LOG.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+LOG.addHandler(ch)
+
 from featuresetup import CSiftSetup
 # Because of OpenGL, siftgpu should only be used in one thread.
 
 T = mods.timing.TimerOn()
-
 
 class CModelManager:
     def __init__(self):
@@ -42,7 +48,7 @@ class CModelManager:
         m.FM.setModelStorePath(mdldir)
         model[0] = m
         m.loadViews(delayedLoad=False)
-        print len(m.viewPoints), "views"
+        LOG.info("%ld views" % len(m.viewPoints))
         m.loadPairMatches(mdldir, name)
 
     def getModel(self, name):
@@ -83,7 +89,7 @@ Manager = CModelManager()
 
 def reconfigSift(extractor, matcher):
     global Setup
-    print "Reconfig SIFT"
+    LOG.info("Reconfig SIFT")
     Setup = CSiftSetup(extractor, matcher)
     print Setup
 
@@ -97,10 +103,11 @@ def _findMatchingObject(features):
     sclimit = (4.0, 20.0)
     for mn in Manager.modelNames:
         model = Manager.getModel(mn)
-        T.tic(); print "\nMATCH Model %s" % mn
+        T.tic();
+        LOG.info("MATCH Model %s" % mn)
         Matcher.match(model, features) # Matcher.quickMatch(model, features)
         T.toc("Time to match:")
-        print len(Matcher.scores), "scores"
+        LOG.info("%ld scores" % len(Matcher.scores))
         if len(Matcher.scores) < 1: continue
         names.append(mn)
         matches.append( (Matcher.bestViews[:3], Matcher.scores[:3], Matcher.consists[:3]) )
@@ -161,7 +168,7 @@ def _findMatchingObject(features):
     # convert to something for CPP
     n = min(len(names), len(poses), len(probs))
     if len(names) != n or len(poses) != n or len(probs) != n:
-        print "_findMatchingObject: Inconsistent results"
+        LOG.debug("_findMatchingObject: Inconsistent results")
 
     return (names, probs, poses)
 
@@ -170,9 +177,9 @@ def _findMatchingObject(features):
 def findMatchingObject(image, region=None):
     global Setup, Matcher, Manager
     try:
-        print "Image shape", image.shape
+        LOG.debug("Image shape: %s" % [image.shape])
         if len(Manager.modelNames) < 1:
-            print "No model loaded"
+            LOG.warnring("No model loaded")
             return ( ["*unknown*"], [1.0], [None] )
         if region != None:
             x0, x1, y0, y1 = region
@@ -190,13 +197,13 @@ def findMatchingObject(image, region=None):
 def testCppInterface(image, region=None):
     global Setup, Matcher, Manager
     try:
-        print "testCppInterface (No processing done.)"
-        print "Image shape", image.shape
+        LOG.info("testCppInterface (No processing done.)")
+        LOG.info("Image shape %s:" % image.shape)
         if region != None:
             x0, y0, x1, y1 = region
-            print "ROI x0x1y0y1 w h", x0, x1, y0, y1, x1-x0, y1-y0
+            LOG.info("ROI (%d %d, %d %d) %d %d" % (x0, x1, y0, y1, x1-x0, y1-y0))
             image = np.copy(image[x0:x1, y0:y1])
-            print "ROI shape", image.shape
+            LOG.info("ROI shape %s" % image.shape)
         matches = ( ["A", "B", "C"], [0.7, 0.2, 0.1], [None, None, None] )
         return matches
     except:
@@ -209,9 +216,9 @@ def testMatching(image, region=None):
     global Setup, Matcher, Manager
     # Take first featurepack of first object and perform matching
     try:
-        print "testMatching (No feature extraction.)"
+        LOG.info("testMatching (No feature extraction.)")
         if len(Manager.modelNames) < 1:
-            print "No model loaded"
+            LOG.info("No model loaded")
             return ( ["*unknown*"], [1.0], [None] )
         mn = Manager.modelNames[0]
         model = Manager.getModel(mn)

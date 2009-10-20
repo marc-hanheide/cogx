@@ -69,6 +69,14 @@ void ObjectAnalyzer::start()
 	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
 		&ObjectAnalyzer::deletedProtoObject));
 
+  addChangeFilter(createLocalTypeFilter<VisionData::VisualLearnerRecognitionTask>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
+		&ObjectAnalyzer::onChange_VL_RecognitionTask));
+
+  addChangeFilter(createLocalTypeFilter<VisionData::ObjectRecognitionTask>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<ObjectAnalyzer>(this,
+		&ObjectAnalyzer::onChange_OR_RecognitionTask));
+
 }
 
 void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
@@ -81,9 +89,10 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, cons
    addToWorkingMemory(reqId, ptask);
 }
 
-void ObjectAnalyzer::onChangeRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
   VisualLearnerRecognitionTaskPtr ptask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+  log("Recieved results for VisualLearnerRecognitionTask %s", _wmc.address.id.c_str());
   // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
 
   AttrObjectPtr pAttrObject = new AttrObject();
@@ -99,6 +108,23 @@ void ObjectAnalyzer::onChangeRecognitionTask(const cdl::WorkingMemoryChange & _w
   string attrId = newDataID();
   pAttrObject->time = getCASTTime();
   addToWorkingMemory(attrId, pAttrObject);
+}
+
+void ObjectAnalyzer::start_OR_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
+{
+  ObjectRecognitionTaskPtr ptask = new  ObjectRecognitionTask();
+  ptask->protoObjectAddr = addr;
+
+  string reqId(newDataID());
+  log("Adding new ObjectRecognitionTask: %s", reqId.c_str());
+  addToWorkingMemory(reqId, ptask);
+}
+
+void ObjectAnalyzer::onChange_OR_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+{
+  ObjectRecognitionTaskPtr ptask = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
+  log("Recieved results for ObjectRecognitionTask %s", _wmc.address.id.c_str());
+  // TODO: Do sth with the labels of recognized objects
 }
 
 void ObjectAnalyzer::runComponent()
@@ -135,6 +161,7 @@ void ObjectAnalyzer::runComponent()
 
 			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
 			start_VL_RecognitionTask(objPtr, data.addr); 
+			start_OR_RecognitionTask(objPtr, data.addr); 
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
