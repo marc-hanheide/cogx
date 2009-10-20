@@ -173,7 +173,8 @@ public class FeatureValueUtils {
 		if (fv1 instanceof FloatValue && fv2 instanceof FloatValue) {
 			float mean = (((FloatValue)fv1).val + ((FloatValue)fv2).val) / 2.0f;
 			float meanProb = (fv1.independentProb + fv2.independentProb) / 2.0f;
-			FloatValue mergedFV = ProxyConstructor.createFloatValue(mean, meanProb, fv2.timeStamp);
+			FloatValue mergedFV = ProxyConstructor.createFloatValue(mean, meanProb);
+			ProxyConstructor.setTimeStamp(mergedFV, fv2.timeStamp);
 			return mergedFV;
 		}
 		else {
@@ -187,7 +188,7 @@ public class FeatureValueUtils {
 	// FEATURE VALUE CLONING METHODS   
 	// ================================================================= 
 
-	
+	 
 	/**
 	 * Return a new feature value with exactly the same content and probability as fv
 	 * 

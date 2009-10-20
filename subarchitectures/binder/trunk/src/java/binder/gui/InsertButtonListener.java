@@ -28,6 +28,8 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import cast.cdl.WorkingMemoryPointer;
+
 import binder.abstr.ProxyWriter;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
@@ -40,8 +42,9 @@ import binder.components.Binder;
 import binder.components.BinderMonitor;
 import binder.utils.BinderUtils;
 import binder.utils.DistributionGeneration;
+import binder.utils.ProxyConstructor;
 
-public class InsertButtonListener extends ProxyWriter implements ActionListener {
+public class InsertButtonListener implements ActionListener {
 	
 	JPanel proxyPanel;
 	BinderMonitor bm;
@@ -58,8 +61,7 @@ public class InsertButtonListener extends ProxyWriter implements ActionListener 
 		Vector<Feature> fds = new Vector<Feature>();
 
 		Component[] components = proxyPanel.getComponents();
-		
-		Vector<DiscreteProbabilityAssignment> assignments = new Vector<DiscreteProbabilityAssignment>();
+
 		
 		for (int i = 0 ; i < components.length ; i++) {
 			if (components[i].getClass().equals(JPanel.class)) {
@@ -122,7 +124,8 @@ public class InsertButtonListener extends ProxyWriter implements ActionListener 
 											if (subsubsubcompo.getName() != null && 
 													subsubsubcompo.getName().equals("featvalue")) {
 												StringValue stringval = 
-													new StringValue(0, getCASTTime(), ((JTextField)subsubsubcompo).getText());
+													ProxyConstructor.createStringValue(((JTextField)subsubsubcompo).getText(), 0);
+												ProxyConstructor.setTimeStamp(stringval, bm.getCASTTimeInMonitor());
 												value = stringval;
 												log("Feature value: " +  stringval.val);
 											}
@@ -132,14 +135,6 @@ public class InsertButtonListener extends ProxyWriter implements ActionListener 
 												float prob = 
 													Float.parseFloat(((JTextField)subsubsubcompo).getText());								
 												value.independentProb = prob;									
-												DiscreteProbabilityAssignment assignment = 
-													new DiscreteProbabilityAssignment();
-												assignment.featurepairs = new FeatureValuePair[1];
-												assignment.featurepairs[0] = new FeatureValuePair();
-												assignment.featurepairs[0].featlabel = feat.featlabel;
-												assignment.featurepairs[0].featvalue = value;
-												assignment.prob = prob;
-												assignments.add(assignment);
 												log("Feature prob: " +  prob);
 											} 
 										}
@@ -148,46 +143,32 @@ public class InsertButtonListener extends ProxyWriter implements ActionListener 
 								
 								if (value != null)
 								{
-									vals.add(value);
+									ProxyConstructor.addFeatureValueToFeature(feat, value);
 								}
 							
 							}
 						}	
-						feat.alternativeValues = new FeatureValue[vals.size()];
-						int z = 0;
-						for (Enumeration<FeatureValue> e = vals.elements() ; e.hasMoreElements(); ){
-							feat.alternativeValues[z] = e.nextElement();
-							z++;
-						}
-						log("number of feat values in feature: " + vals.size());
 					}
 					
 					fds.add(feat);
 				}
 			}
 		}
-
-		Proxy newProxy = new Proxy();
-		newProxy.entityID = proxyID;
-		newProxy.origin = createWorkingMemoryPointer(subarch, "", "");
-		newProxy.probExists = Float.parseFloat(exists);
 		
-		newProxy.features = new Feature[fds.size()];
+		
+		WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer(subarch, "", "");
+		Proxy newProxy = ProxyConstructor.createNewProxy(origin, proxyID, Float.parseFloat(exists));
+	
 		int z = 0;
 		for (Enumeration<Feature> e = fds.elements(); e.hasMoreElements();) {
-			newProxy.features[z] = e.nextElement();
-			z++;
+			Feature feat = e.nextElement();
+			if (feat.alternativeValues != null && feat.alternativeValues.length > 0) {
+				ProxyConstructor.addFeatureToProxy(newProxy, feat);
+				z++;
+			}
 		}
 		log("number of features in proxy: " + fds.size());
 		
-		newProxy.distribution = DistributionGeneration.generateProbabilityDistribution(newProxy);
-		
-		DiscreteProbabilityDistribution distrib = new DiscreteProbabilityDistribution();
-		distrib.assignments = new DiscreteProbabilityAssignment[assignments.size()];
-		
-		for (int i = 0; i < assignments.size(); i++) {
-			distrib.assignments[i] = assignments.elementAt(i);
-		}
 		
 		try {
 			bm.addToWorkingMemory(newProxy.entityID, Binder.BINDER_SA, newProxy);

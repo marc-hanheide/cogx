@@ -37,6 +37,7 @@ import binder.utils.BinderUtils;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -262,6 +263,10 @@ public class BinderMonitor extends ManagedComponent {
 		if (gui != null) {
 			gui.updateGUI(proxiesV, UnionsV, proxiesToDelete, UnionsToDelete, config);
 		}
+	}
+
+	public CASTTime getCASTTimeInMonitor() {
+		return getCASTTime();
 	}
 	
 	

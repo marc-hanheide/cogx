@@ -199,7 +199,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public StringValue createStringValue(String val, float prob) {
-		return ProxyConstructor.createStringValue(val, prob, getCASTTime());
+		StringValue v = ProxyConstructor.createStringValue(val, prob);
+		ProxyConstructor.setTimeStamp(v, getCASTTime());
+		return v;
 	}
 
 	/**
@@ -213,7 +215,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public AddressValue createAddressValue(String address, float prob) {
-		return ProxyConstructor.createAddressValue(address, prob, getCASTTime());
+		AddressValue v = ProxyConstructor.createAddressValue(address, prob);
+		ProxyConstructor.setTimeStamp(v, getCASTTime());
+		return v;
 	}
 
 	/**
@@ -227,7 +231,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public IntegerValue createIntegerValue(int integer, float prob) {
-		return ProxyConstructor.createIntegerValue(integer, prob, getCASTTime());
+		IntegerValue v =  ProxyConstructor.createIntegerValue(integer, prob);
+		ProxyConstructor.setTimeStamp(v, getCASTTime());
+		return v;
 	}
 
 	/**
@@ -241,7 +247,9 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 
 	public BooleanValue createBooleanValue(boolean val, float prob) {
-		return ProxyConstructor.createBooleanValue(val, prob, getCASTTime());
+		BooleanValue v =  ProxyConstructor.createBooleanValue(val, prob);
+		ProxyConstructor.setTimeStamp(v, getCASTTime());
+		return v;
 	}
 
 	
@@ -256,12 +264,16 @@ public abstract class ProxyWriter extends ManagedComponent {
 	 */
 	
 	public FloatValue createFloatValue(float floatv, float prob) {
-		return ProxyConstructor.createFloatValue(floatv, prob, getCASTTime());
+		FloatValue v =  ProxyConstructor.createFloatValue(floatv, prob);
+		ProxyConstructor.setTimeStamp(v, getCASTTime());
+		return v;
 	}
 	
 	
 	public UnknownValue createUnknownValue(float prob) {
-		return ProxyConstructor.createUnknownValue(prob, getCASTTime());
+		UnknownValue v = ProxyConstructor.createUnknownValue(prob);
+		ProxyConstructor.setTimeStamp(v, getCASTTime());
+		return v;
 	}
 	
 	/**
