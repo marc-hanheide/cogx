@@ -255,6 +255,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	  }				
 	  log("unlocking");
 	  unlockEntry(navCmdId);
+	}
+	catch (DoesNotExistOnWMException) {
+	  log("The NavCommand disappeared while waiting to lock.");
+	  some_error = true;
 	}catch (ConsistencyException e) {
 	  log("Error! ConsistencyException in SpatialTranslation::executeCommand!");
 	}
