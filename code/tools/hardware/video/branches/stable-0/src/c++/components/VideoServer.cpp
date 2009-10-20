@@ -72,7 +72,7 @@ void VideoServer::configure(const map<string,string> & _config)
   map<string,string>::const_iterator it;
 
   // first let the base class configure itself
-  CASTComponent::configure(_config);
+  //CASTComponent::configure(_config);
 
   if((it = _config.find("--camids")) != _config.end())
   {
