@@ -254,8 +254,8 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 	cout << "get_best_proof." << endl;
 
 	int num = 0;
-
-	cin >> num;
+	cin.getline(buf, bufsize);
+	num = atoi(buf);
 
 	cerr << "reading " << num << " queries" << endl;
 

@@ -180,20 +180,20 @@ parseModalisedFormula(vector<Token *>::iterator & it)
 Abducer::Agent
 tokenToAgent(const Token * tok)
 {
-	cerr << "tokenToAgent: \"" << tok->toMercuryString() << "\"" << endl;
+//	cerr << "tokenToAgent: \"" << tok->toMercuryString() << "\"" << endl;
 	if (tok->type() == Atom) {
 		AtomToken * atok = (AtomToken *) tok;
 		if (atok->value() == "h") {
-			cerr << "  human" << endl;
+//			cerr << "  human" << endl;
 			return human;
 		}
 		else {
-			cerr << "  robot" << endl;
+//			cerr << "  robot" << endl;
 			return robot;
 		}
 	}
 	else {
-		cerr << "not an atom!! type" << tok->type() << endl;
+//		cerr << "not an atom!! type" << tok->type() << endl;
 		return human;
 	}
 }
@@ -251,13 +251,14 @@ parseModality(std::vector<Token *>::iterator & it)
 				it++;  // skip the comma
 				if ((*it)->type() == Atom) {
 					AtomToken * shareTok = (AtomToken *) *it;
-					cerr << (*it)->toMercuryString() << endl;
-					it++; cerr << (*it)->toMercuryString() << endl;
+//					cerr << (*it)->toMercuryString() << endl;
+					it++;
+//					cerr << (*it)->toMercuryString() << endl;
 					it++;  // skip '('
-					cerr << (*it)->toMercuryString() << endl;
+//					cerr << (*it)->toMercuryString() << endl;
 
 					if (shareTok->value() == "private") {
-						cerr << "private" << endl;
+//						cerr << "private" << endl;
 						km->share = Private;
 						km->ag = tokenToAgent(*it);
 						km->ag2 = km->ag;
@@ -265,7 +266,7 @@ parseModality(std::vector<Token *>::iterator & it)
 						it++;  // skip ')'
 					}
 					else if (shareTok->value() == "attrib") {
-						cerr << "attrib" << endl;
+//						cerr << "attrib" << endl;
 						km->share = Attribute;
 						km->ag = tokenToAgent(*it);
 						it++;
@@ -275,7 +276,7 @@ parseModality(std::vector<Token *>::iterator & it)
 						it++;  // skip ')'
 					}
 					else if (shareTok->value() == "mutual") {
-						cerr << "mutual" << endl;
+//						cerr << "mutual" << endl;
 						km->share = Mutual;
 						km->ag = tokenToAgent(*it);
 						it++;
