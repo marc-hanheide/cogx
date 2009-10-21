@@ -109,7 +109,7 @@ modalityToString(const ModalityPtr & m)
 						break;
 
 					case Mutual:
-						s += "mutual([h,r])";
+						s += "mutual(h,r)";
 						break;
 				}
 				s += ")";
