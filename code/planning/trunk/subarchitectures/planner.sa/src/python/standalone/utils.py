@@ -3,7 +3,7 @@
 
 import re
 import copy
-import os
+import sys, os
 from itertools import *
 import inspect
 
@@ -330,9 +330,35 @@ def run_process(cmd, input=None, output=PIPE, error=PIPE, dir=None, wait=True):
         process.wait()
     return process
 
+
+
+
+def rmgeneric(path, __func__):
+    assert __func__ in [os.remove, os.rmdir]
+    try:
+        __func__(path)
+    except OSError, (errno, strerror):
+        print "Warning: Error removing %(path)s, %(error)s" % {'path' : path, 'error': strerror }
+
+def removeall(path):
+    if not os.path.isdir(path):
+        return
+    files=os.listdir(path)
+    for x in files:
+        fullpath=os.path.join(path, x)
+        if os.path.isfile(fullpath):
+            f=os.remove
+            rmgeneric(fullpath, f)
+        elif os.path.isdir(fullpath):
+            removeall(fullpath)
+            f=os.rmdir
+            rmgeneric(fullpath, f)
+
+
 def run_unit_tests(args):
     pass
 
 if __name__ == "__main__":
     import sys
     run_unit_tests(sys.argv[1:])
+
