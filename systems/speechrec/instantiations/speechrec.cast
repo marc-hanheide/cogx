@@ -1,0 +1,9 @@
+
+HOST 134.96.187.221
+
+SUBARCHITECTURE speechrec 
+
+JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
+JAVA WM cast.architecture.SubarchitectureWorkingMemory --log
+
+JAVA MG asr asr.ASR --log
