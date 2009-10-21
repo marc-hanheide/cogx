@@ -20,6 +20,9 @@
 package binder.utils;
 
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
 import beliefmodels.adl.Agent;
 import beliefmodels.adl.AgentStatus;
 import beliefmodels.adl.AttributedAgentStatus;
@@ -51,6 +54,7 @@ import beliefmodels.domainmodel.cogx.ContinualFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.FloatValue;
+import binder.gui.ControlPanel;
 
 
 /**
@@ -66,6 +70,9 @@ public class BeliefModelUtils {
 	// flag to activate logging
 	public static boolean LOGGING = true;
 
+	private static Logger logger = ComponentLogger.getLogger(BeliefModelUtils.class);
+
+	
 	public static boolean showProbabilitiesInPrettyPrint = true;
 
 	// ================================================================= 
@@ -695,6 +702,6 @@ public class BeliefModelUtils {
 	 */
 	private static void log(String str) {
 		if (LOGGING)
-			System.out.println("[BeliefModelUtils] "  + str);
+			logger.debug("[BeliefModelUtils] "  + str);
 	}
 }

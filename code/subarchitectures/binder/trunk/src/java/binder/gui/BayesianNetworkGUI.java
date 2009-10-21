@@ -26,12 +26,17 @@ import java.util.Vector;
 
 import javax.swing.JFrame;
 
+import org.apache.log4j.Logger;
+
 import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.FeatureValue;
+import binder.filtering.ConfigurationFilter;
 import binder.utils.FeatureValueUtils;
+
+import cast.core.logging.ComponentLogger;
 
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
@@ -56,7 +61,8 @@ public class BayesianNetworkGUI extends JFrame {
 	
 	HashMap<String,Object> insertedNodes;
 	
-	
+	private static Logger logger = ComponentLogger.getLogger(BayesianNetworkGUI.class);
+
 	Random randomGenerator;
 	
 	public BayesianNetworkGUI () {
@@ -207,6 +213,6 @@ public class BayesianNetworkGUI extends JFrame {
 	
 
 	private void log(String s) {
-		System.out.println("[BayesianNetworkGUI]" + s);
+		logger.debug("[BayesianNetworkGUI]" + s);
 	}
 }

@@ -28,7 +28,10 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
 import cast.cdl.WorkingMemoryPointer;
+import cast.core.logging.ComponentLogger;
 
 import binder.abstr.ProxyWriter;
 import binder.autogen.core.Feature;
@@ -48,6 +51,11 @@ public class InsertButtonListener implements ActionListener {
 	
 	JPanel proxyPanel;
 	BinderMonitor bm;
+	
+	public boolean LOGGING = false;
+	
+	private static Logger logger = ComponentLogger.getLogger(InsertButtonListener.class);
+	
 	
 	public InsertButtonListener(JPanel proxyPanel, BinderMonitor bm) {
 		this.proxyPanel = proxyPanel;
@@ -183,6 +191,7 @@ public class InsertButtonListener implements ActionListener {
 
 
 	private void log(String s) {
-		System.out.println("[InsertButtonListener]" + s);
+		if (LOGGING)
+			logger.debug("[InsertButtonListener]" + s);
 	}
 }

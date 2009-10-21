@@ -24,6 +24,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
 import binder.autogen.bayesiannetworks.FeatureValueCorrelation;
 import binder.autogen.core.Feature;
@@ -36,6 +40,7 @@ import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
+import binder.filtering.EntityFilter;
 import binder.filtering.MaximumSearch;
 import binder.utils.ProbabilityUtils;
 
@@ -54,8 +59,11 @@ public class BayesianNetworkManager {
 	private BayesianNetworkWrapper network;
 
 	// Turn logging on/off
-	boolean logging = false;
+	boolean LOGGING = false;
 
+	private static Logger logger = ComponentLogger.getLogger(BayesianNetworkManager.class);
+
+	
 	// Cache of already computed distributions for a given entity
 	private HashMap<PerceivedEntity,DiscreteProbabilityDistribution> alreadyComputedDistribs;
 
@@ -633,8 +641,8 @@ public class BayesianNetworkManager {
 	 */
 
 	private void log(String s) {
-		if (logging) {
-			System.out.println("[BayesianNetworkManager] " + s);
+		if (LOGGING) {
+			logger.debug("[BayesianNetworkManager] " + s);
 		}
 	}
 }

@@ -5,6 +5,10 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.components.BinderMonitor;
 
 public class ChangeConfigListener implements ActionListener {
@@ -17,6 +21,8 @@ public class ChangeConfigListener implements ActionListener {
 	
 	static boolean LOGGING = true;
 	
+	private static Logger logger = ComponentLogger.getLogger(ChangeConfigListener.class);
+
 	
 	public ChangeConfigListener(BinderMonitor bm, WestArrowPanel panel, WestArrowPanel.DIRECTION dir) {
 		this.bm = bm;
@@ -52,7 +58,7 @@ public class ChangeConfigListener implements ActionListener {
 	
 	public void log(String s) {
 		if (LOGGING) {
-			System.out.println("[ChangeConfigListener] " + s);
+			logger.debug("[ChangeConfigListener] " + s);
 		}
 			
 	}

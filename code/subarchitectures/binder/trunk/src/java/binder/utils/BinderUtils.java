@@ -24,6 +24,10 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -58,6 +62,8 @@ public class BinderUtils {
 	public static boolean ADD_DEFAULT_SALIENCY = false;
 	public static String DEFAULT_SALIENCY = "high";
 	
+	private static Logger logger = ComponentLogger.getLogger(BinderUtils.class);
+
 	
 	// ================================================================= 
 	// EXISTENCE PROBABILITY METHODS   

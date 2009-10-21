@@ -24,6 +24,10 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.AlternativeUnionConfigurations;
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.ProbabilityDistribution;
@@ -33,6 +37,7 @@ import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.bayesiannetwork.BayesianNetworkWrapper;
 import binder.utils.ProbabilityUtils;
 
 
@@ -53,7 +58,9 @@ public class ConfigurationFilter {
 	public static boolean LOGGING = true;
 
 	
+	private static Logger logger = ComponentLogger.getLogger(ConfigurationFilter.class);
 
+	
 	// ===================================================================
 	// METHODS FOR COMPUTATION & NORMALISATION OF CONFIG PROBABILITIES   
 	// =================================================================== 
@@ -423,13 +430,13 @@ public class ConfigurationFilter {
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-		System.out.println("[ConfigFilter] " + s);
+			logger.debug("[ConfigFilter] " + s);
 	}
 	
 	
 	public static void log(String s) {
 		if (LOGGING)
-		System.out.println("[ConfigFilter] " + s);
+			logger.debug("[ConfigFilter] " + s);
 	}
 
 }
