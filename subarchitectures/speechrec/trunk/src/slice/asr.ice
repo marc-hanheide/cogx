@@ -12,8 +12,9 @@
 //
 // ===================================================================
 
-module speechrec {
-module autogen {
+module comsys {
+module datastructs {
+module comsysEssentials {
 
 	// BaseData
 	// The class BaseData provides fields shared by all Comsys objects
@@ -43,7 +44,7 @@ module autogen {
     };
 	
 	sequence<PhonString> PhonStrings;
-
+};
 };
 
 };
