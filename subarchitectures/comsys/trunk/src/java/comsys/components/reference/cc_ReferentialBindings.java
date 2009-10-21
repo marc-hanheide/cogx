@@ -88,7 +88,7 @@ public class cc_ReferentialBindings
 	private int pdIdCounter;	
 	
 	
-	public static final boolean REMOVE_PHANTOM_PROXIES_AFTER_BINDING = true;
+	public static final boolean REMOVE_PHANTOM_PROXIES_AFTER_BINDING = false;
 	
 	
 	@Override
