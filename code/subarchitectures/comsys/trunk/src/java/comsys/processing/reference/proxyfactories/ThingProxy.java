@@ -53,6 +53,9 @@ public class ThingProxy extends AbstractProxyFactory
 			ProxyResults prxs = new ProxyResults();
 			// get the root
 			LFNominal root = lf.root; 
+			
+			if (!root.prop.prop.equals("it")) {
+			
 			// create a base proxy, listing the proposition of the root as proposition, its sort as a sort. 
 			WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer("comsys", lf.root.nomVar, "lf");
 			PhantomProxy prx = ProxyConstructor.createNewPhantomProxy(origin, getEntityID(),  1.0f);
@@ -84,6 +87,7 @@ public class ThingProxy extends AbstractProxyFactory
 			// Add the resulting proxy
 			prxs.addPhantomProxy(prx);
 			// return the result
+			}
 			return prxs; 
 		} // end method
 		
