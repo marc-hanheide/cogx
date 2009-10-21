@@ -1,6 +1,7 @@
 :- module protocol.
 
 :- interface.
+:- import_module list.
 
 :- type modality
 	--->	k
@@ -13,9 +14,9 @@
 	;	clear_facts
 	;	clear_facts_by_modality(modality)
 	;	clear_assumables
-	;	add_fact
-	;	add_assumable
-	;	prove
+	;	add_fact(string)
+	;	add_assumable(string, string, float)
+	;	prove(list(string))
 	;	get_best_proof
 	.
 

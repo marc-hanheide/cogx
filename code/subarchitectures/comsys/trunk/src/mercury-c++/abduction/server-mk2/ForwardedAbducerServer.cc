@@ -1,6 +1,8 @@
 #include "common.h"
 #include "ForwardedAbducerServer.h"
 
+#include "SliceToString.h"
+
 #include "TtyUtils.h"
 
 using namespace std;
@@ -15,8 +17,6 @@ static char buf[bufsize];
 ForwardedAbducerServer::ForwardedAbducerServer()
 {
 	cerr << tty::green << "* initialising abducer context" << tty::dcol << endl;
-//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-
 	cout << "init_ctx." << endl;
 }
 
@@ -24,8 +24,6 @@ void
 ForwardedAbducerServer::loadFile(const string& filename, const Ice::Current&)
 {
 	cerr << tty::green << "* loading file `" << filename << "'" << tty::dcol << endl;
-//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-
 	cout << "load_file(\"" << filename << "\")." << endl;
 
 	if (cin) {
@@ -58,7 +56,6 @@ void
 ForwardedAbducerServer::clearRules(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing rules" << tty::dcol << endl;
-//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 	cout << "clear_rules." << endl;
 }
 
@@ -66,7 +63,6 @@ void
 ForwardedAbducerServer::clearFacts(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing all facts" << tty::dcol << endl;
-//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 	cout << "clear_facts." << endl;
 }
 
@@ -77,25 +73,22 @@ ForwardedAbducerServer::clearFactsByModality(ModalityType type, const Ice::Curre
 		case Event:
 			cerr << tty::green << "* clearing Event facts" << tty::dcol << endl;
 			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//			clear_e_facts(ctx, &ctx);
 			break;
 
 		case Info:
 			cerr << tty::green << "* clearing Info facts" << tty::dcol << endl;
 			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//			clear_i_facts(ctx, &ctx);
 			break;
 
 		case AttState:
 			cerr << tty::green << "* clearing AttState facts" << tty::dcol << endl;
 			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//			clear_a_facts(ctx, &ctx);
 			break;
 
 		case K:
 			cerr << tty::green << "* clearing K facts" << tty::dcol << endl;
-			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-//			clear_k_facts(ctx, &ctx);
+//			cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+			cout << "clear_facts_by_modality(k)." << endl;
 			break;
 
 		default:
@@ -108,7 +101,6 @@ void
 ForwardedAbducerServer::clearAssumables(const Ice::Current&)
 {
 	cerr << tty::green << "* clearing assumables" << tty::dcol << endl;
-//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
 	cout << "clear_assumables." << endl;
 }
 
@@ -116,37 +108,48 @@ void
 ForwardedAbducerServer::addFact(const ModalisedFormulaPtr & fact, const Ice::Current&)
 {
 	cerr << tty::green << "* adding fact: " << fact->p->predSym << "(...)" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-
-/*
-	MR_Word vs;
-	new_varset(&vs);
-
-	MR_Word mprop = modalisedFormulaToMercMProp(fact, &vs);
-	add_mprop_fact(vs, mprop, ctx, &ctx);
-*/
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cout << "add_fact(\"" << modalisedFormulaToString(fact) << ".\")." << endl;
 }
 
 void
 ForwardedAbducerServer::addAssumable(const string & function, const ModalisedFormulaPtr & f, float cost, const Ice::Current&)
 {
 	cerr << tty::green << "* adding assumable: " << f->p->predSym << "(...) / " << function << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
-
-/*
-	MR_Word w_vs;
-	new_varset(&w_vs);
-
-	MR_Word w_mprop = modalisedFormulaToMercMProp(f, &w_vs);
-	add_assumable(cc2m::string(function), w_mprop, cost, ctx, &ctx);	
-*/
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cout << "add_assumable(\"" << function << "\", \"" << modalisedFormulaToString(f) << ".\", " << cost << ")." << endl;
 }
 
 ProveResult
 ForwardedAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::Current&)
 {
 	cerr << tty::green << "* proving" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	string s("prove([");
+
+	vector<MarkedQueryPtr>::const_iterator it = goals.begin();
+	while (it != goals.end()) {
+		s += "\"" + modalisedFormulaToString((*it)->body) + ".\"";
+		it++;
+		if (it != goals.end()) {
+			s += ", ";
+		}
+	}
+	s += "]).";
+
+	cout << s << endl;
+
+	if (cin) {
+		cin.getline(buf, bufsize);
+		cerr << "RESPONSE: " << buf << endl;
+
+		if (*buf == 's') {
+			return ProofFound;
+		}
+		else {
+			return NoProofFound;
+		}
+	}
 
 	return Error;
 /*
@@ -196,9 +199,42 @@ vector<MarkedQueryPtr>
 ForwardedAbducerServer::getBestProof(const Ice::Current&)
 {
 	cerr << tty::green << "* retrieving the last proof" << tty::dcol << endl;
-	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+//	cerr << tty::red << "  [unimplemented]" << tty::dcol << endl;
+	cout << "get_best_proof." << endl;
 
-	throw NoProofException();
+	int num = 0;
+
+	cin >> num;
+
+	vector<MarkedQueryPtr> vect;
+
+	while (cin && num > 0) {
+		cin.getline(buf, bufsize);
+
+		Marking mark;
+		switch (*buf) {
+			case 'A':
+				mark = Assumed;
+				break;
+			case 'P':
+				mark = Proved;
+				break;
+			case 'U':
+			default:
+				mark = Unsolved;
+				break;
+			case 'R':
+				mark = Asserted;
+				break;
+		}
+
+		cerr << buf << endl;
+		// extract the modformula
+	}
+
+	return vect;
+
+//	throw NoProofException();
 
 /*
 	if (haveProof) {
