@@ -45,6 +45,7 @@ inner_loop(!Ctx, !IO) :-
 		 	ReadTermResult = term(_Varset, Term),
 			(if
 				term_to_type(Term, Request),
+				generic_term(Term),
 				is_request(Request)
 			then
 				trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[abd] got a valid request: " ++ ReqStr, !IO) ),
