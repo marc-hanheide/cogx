@@ -142,7 +142,7 @@ void LocalMapManager::runComponent()
   NavData::FNodePtr curNode = getCurrentNavNode();
   int prevNode = -1;
   while(isRunning()){
-    log("lock in isRunning");
+    debug("lock in isRunning");
     lockComponent(); //Don't allow any interface calls while processing a callback
     curNode = getCurrentNavNode();
     if (curNode != 0) {
@@ -203,7 +203,7 @@ void LocalMapManager::runComponent()
 
     }
     unlockComponent();
-    log("unlock in isRunning");
+    debug("unlock in isRunning");
 
     usleep(250000);
   }
