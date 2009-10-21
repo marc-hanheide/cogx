@@ -31,7 +31,8 @@ ForwardedAbducerServer::loadFile(const string& filename, const Ice::Current&)
 
 	if (cin) {
 		cin.getline(buf, bufsize);
-		cerr << "load file reply: " << buf << endl;
+		cerr << tty::red << "  [unimplemented: check success]" << tty::dcol << endl;
+		debug(cerr << "  load file reply: " << buf << endl);
 	}
 
 /*
@@ -144,7 +145,7 @@ ForwardedAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::C
 
 	if (cin) {
 		cin.getline(buf, bufsize);
-		cerr << "RESPONSE: " << buf << endl;
+		debug(cerr << "RESPONSE: " << buf << endl);
 
 		if (*buf == 's') {
 			return ProofFound;
@@ -257,7 +258,7 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 	cin.getline(buf, bufsize);
 	num = atoi(buf);
 
-	cerr << "reading " << num << " queries" << endl;
+	debug(cerr << "reading " << num << " queries" << endl);
 
 	vector<MarkedQueryPtr> vect;
 
@@ -282,7 +283,7 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 		}
 
 		string mfStr(buf+1);
-		cerr << mfStr << endl;
+		debug(cerr << mfStr << endl);
 
 		vector<Token *> toks = tokenise(mfStr);
 		vector<Token *>::iterator it = toks.begin();
@@ -294,11 +295,11 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 				vect.push_back(q);
 			}
 			else {
-				cerr << "q null" << endl;
+				cerr << tty::red << "  NULL in parsing query" << tty::dcol << endl;
 			}
 		}
 		else {
-			cerr << "mf null" << endl;
+			cerr << tty::red << "  NULL in parsing modalised formula" << tty::dcol << endl;
 		}
 
 		num--;

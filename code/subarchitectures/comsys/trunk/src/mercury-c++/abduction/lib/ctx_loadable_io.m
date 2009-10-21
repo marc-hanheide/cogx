@@ -11,6 +11,9 @@
 :- pred print_facts(ctx::in, string::in, io::di, io::uo) is det.
 :- pred print_facts(io.output_stream::in, ctx::in, string::in, io::di, io::uo) is det.
 
+:- pred print_assumables(ctx::in, string::in, io::di, io::uo) is det.
+:- pred print_assumables(io.output_stream::in, ctx::in, string::in, io::di, io::uo) is det.
+
 :- pred print_rules(ctx::in, string::in, io::di, io::uo) is det.
 :- pred print_rules(io.output_stream::in, ctx::in, string::in, io::di, io::uo) is det.
 
@@ -68,15 +71,9 @@ print_rules(Ctx, Indent, !IO) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-print_ctx(Stream, Ctx, !IO) :-
-	print(Stream, "facts:\n", !IO),
-	print_facts(Stream, Ctx, "  ", !IO),
-
-	nl(Stream, !IO),
-
-	print(Stream, "assumables:\n", !IO),
+print_assumables(Stream, Ctx, Indent, !IO) :-
 	map.foldl((pred(FuncName::in, Costs::in, !.IO::di, !:IO::uo) is det :-
-		print(Stream, "  ", !IO),
+		print(Stream, Indent, !IO),
 		print(Stream, FuncName ++ " = ", !IO),
 
 		CostStrs = list.map((func(m(Mod, GProp)-Cost) = S :-
@@ -84,8 +81,22 @@ print_ctx(Stream, Ctx, !IO) :-
 					++ " = " ++ float_to_string(Cost)
 				), map.to_assoc_list(Costs)),
 
-		print(Stream, "[\n    " ++ string.join_list(",\n    ", CostStrs) ++ "\n  ].\n", !IO)
-			), assumables(Ctx), !IO),
+		print(Stream, "[\n    " ++ string.join_list(",\n" ++ Indent ++ Indent, CostStrs) ++ "\n" ++ Indent ++ "].\n", !IO)
+			), assumables(Ctx), !IO).
+
+print_assumables(Ctx, Indent, !IO) :-
+	print_assumables(stdout_stream, Ctx, Indent, !IO).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+print_ctx(Stream, Ctx, !IO) :-
+	print(Stream, "facts:\n", !IO),
+	print_facts(Stream, Ctx, "  ", !IO),
+
+	nl(Stream, !IO),
+
+	print(Stream, "assumables:\n", !IO),
+	print_assumables(Stream, Ctx, "  ", !IO),
 
 	nl(Stream, !IO),
 
