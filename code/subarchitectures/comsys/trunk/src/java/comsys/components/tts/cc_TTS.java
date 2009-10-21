@@ -472,8 +472,22 @@ public class cc_TTS extends ManagedComponent {
 	            BufferedReader br1 = new BufferedReader(isrerr);
 	            String line1 = null;
 	            if ( (line1 = br1.readLine()) != null)
-	                System.out.println(line1);
-	                    
+	                log(line1);
+	            
+	            log("wait for mary server to start");
+	            
+	            while (!line1.trim().startsWith("started in")) {
+	            	log("still waiting...");
+	            	line1 = br1.readLine();
+	            	if (line1==null) {
+	            		log("failure reading from stderr");
+	            		break;
+	            	}
+	            	log(line1);
+	            }
+	            
+	            log("continuing mary clientstart up");
+	            
 	            int exitVal = proc.waitFor();
 	            System.out.println("Process exitValue: " + exitVal);
 
