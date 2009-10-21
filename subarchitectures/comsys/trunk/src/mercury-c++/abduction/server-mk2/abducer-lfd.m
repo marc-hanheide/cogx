@@ -47,77 +47,77 @@ inner_loop(!Ctx, !IO) :-
 				term_to_type(Term, Request),
 				is_request(Request)
 			then
-				print(stderr_stream, "[abd] got a valid request: " ++ ReqStr, !IO),
+				trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[abd] got a valid request: " ++ ReqStr, !IO) ),
 				process_request(Request, !Ctx, !IO),
 				inner_loop(!Ctx, !IO)
 			else
-				print(stderr_stream, "failed to parse the request\n", !IO)
+				trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "failed to parse the request\n", !IO) )
 			)
 		;
 			ReadTermResult = error(_Err, _LineNum),
-			print(stderr_stream, "got an error in read_term\n", !IO)
+			trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "got an error in read_term\n", !IO) )
 		;
 			ReadTermResult = eof,
-			print(stderr_stream, "end of file in read_term\n", !IO)
+			trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "end of file in read_term\n", !IO) )
 		)
 	;
 		ReadResult = error(_Err),
-		print(stderr_stream, "error in read_line\n", !IO),
+		trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "error in read_line\n", !IO) ),
 		true
 	;
 		ReadResult = eof,
-		print(stderr_stream, "end of file in read_line\n", !IO),
+		trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "end of file in read_line\n", !IO) ),
 		true
 	).
 
 :- pred process_request(protocol.request::in, srv_ctx::in, srv_ctx::out, io::di, io::uo) is det.
 
 process_request(init_ctx, _, srv_ctx(new_ctx, no), !IO) :-
-	print(stderr_stream, "[REQUEST] init_ctx\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] init_ctx\n", !IO) ).
 
 process_request(load_file(Filename), !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] load_file\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] load_file\n", !IO) ),
 	loading.load_file(Filename, _Result, !.SCtx^cx, NewCtx, !IO),
 	!:SCtx = !.SCtx^cx := NewCtx,
 	print("ok.\n", !IO),
 	flush_output(!IO),
-	print(stderr_stream, "[done] load_file\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] load_file\n", !IO) ).
 
 process_request(clear_rules, !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] clear_rules\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] clear_rules\n", !IO) ),
 	set_rules(set.init, !.SCtx^cx, NewCtx),
 	!:SCtx = !.SCtx^cx := NewCtx,
-	print(stderr_stream, "[done] clear_rules\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] clear_rules\n", !IO) ).
 
 process_request(clear_facts, !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] clear_facts\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] clear_facts\n", !IO) ),
 	set_facts(set.init, !.SCtx^cx, NewCtx),
 	!:SCtx = !.SCtx^cx := NewCtx,
-	print(stderr_stream, "[done] clear_rules\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] clear_rules\n", !IO) ).
 
 process_request(clear_facts_by_modality(k), !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] clear_facts_by_modality(k)\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] clear_facts_by_modality(k)\n", !IO) ),
 	set_facts(set.filter((pred(vs(m(Mod, _), _)::in) is semidet :-
 		Mod \= [k(_, _)|_]
 			), !.SCtx^cx^facts), !.SCtx^cx, NewCtx),
 	!:SCtx = !.SCtx^cx := NewCtx,
-	print(stderr_stream, "[done] clear_facts_by_modality(k)\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] clear_facts_by_modality(k)\n", !IO) ).
 
 process_request(clear_assumables, !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] clear_assumables\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] clear_assumables\n", !IO) ),
 	set_assumables(map.init, !.SCtx^cx, NewCtx),
 	!:SCtx = !.SCtx^cx := NewCtx,
-	print(stderr_stream, "[done] clear_rules\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] clear_rules\n", !IO) ).
 
 process_request(add_fact(FactStr), !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] add_fact\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] add_fact\n", !IO) ),
 	vs(MProp, VS) = det_string_to_vsmprop(FactStr),
 	add_fact(vs(MProp, VS), !.SCtx^cx, NewCtx),
 	!:SCtx = !.SCtx^cx := NewCtx,
-	print(stderr_stream, "[done] add_fact\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] add_fact\n", !IO) ).
 
 process_request(add_assumable(Function, MPropStr, Cost), !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] add_assumable\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] add_assumable\n", !IO) ),
 	vs(m(Mod, Prop), _VS) = det_string_to_vsmprop(MPropStr),
 	Ass = !.SCtx^cx^assumables,
 	(if map.search(Ass, Function, Mapping0)
@@ -128,10 +128,10 @@ process_request(add_assumable(Function, MPropStr, Cost), !SCtx, !IO) :-
 	map.set(Ass, Function, MappingNew, Ass1),
 	set_assumables(Ass1, !.SCtx^cx, NewCtx),
 	!:SCtx = !.SCtx^cx := NewCtx,
-	print(stderr_stream, "[done] add_assumable\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] add_assumable\n", !IO) ).
 
 process_request(prove(L), !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] prove\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] prove\n", !IO) ),
 	list.map((pred(S::in, Q::out) is det :-
 		vs(MProp, _VS) = det_string_to_vsmprop(S),
 		Q = unsolved(MProp, not_assumable)
@@ -144,7 +144,12 @@ process_request(prove(L), !SCtx, !IO) :-
 	P0 = proof(vs([Qs], varset.init), []),
 	is_ctx_proof(P0),
 
-	print_ctx(stderr_stream, !.SCtx^cx, !IO),
+	print(stderr_stream, "facts:\n", !IO),
+	print_facts(stderr_stream, !.SCtx^cx, "  ", !IO),
+	nl(stderr_stream, !IO),
+	print(stderr_stream, "assumables:\n", !IO),
+	print_assumables(stderr_stream, !.SCtx^cx, "  ", !IO),
+	nl(stderr_stream, !IO),
 
 	Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-Gx)-P::out) is nondet :-
 		prove(0.0, 100.0, P0, P, default_costs, !.SCtx^cx),
@@ -166,7 +171,7 @@ process_request(prove(L), !SCtx, !IO) :-
 		float_compare(CA, CB, Comp)
 			), map.to_assoc_list(DerivsMap), DerivsSorted),
 
-	format(stderr_stream, "  %d proofs found.\n", [i(list.length(DerivsSorted))], !IO),
+	format(stderr_stream, "\n  %d proof(s) found.\n", [i(list.length(DerivsSorted))], !IO),
 
 	list.foldl((pred((Cost-Gz)-Ds::in, !.IO::di, !:IO::uo) is det :-
 		print(stderr_stream, "---------------------------------------------------------------------\n", !IO),
@@ -184,13 +189,14 @@ process_request(prove(L), !SCtx, !IO) :-
 
 		print(stderr_stream, string.from_int(set.count(Ds)) ++ " derivation(s).\n", !IO),
 
-		print(stderr_stream, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
-
-		set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
-			is_ctx_proof(Proof),
-			print_proof_trace(stderr_stream, !.SCtx^cx, Proof, !IO),
-			nl(stderr_stream, !IO)
-				), Ds, !IO)
+		trace[run_time(env("PRINT_DERIVATIONS")), io(!IO)] (
+			print(stderr_stream, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
+			set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
+				is_ctx_proof(Proof),
+				print_proof_trace(stderr_stream, !.SCtx^cx, Proof, !IO),
+				nl(stderr_stream, !IO)
+					), Ds, !IO)
+		)
 
 			), DerivsSorted, !IO),
 
@@ -206,10 +212,10 @@ process_request(prove(L), !SCtx, !IO) :-
 
 	print(Response ++ ".\n", !IO),
 	flush_output(!IO),
-	print(stderr_stream, "[done] prove\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] prove\n", !IO) ).
 
 process_request(get_best_proof, !SCtx, !IO) :-
-	print(stderr_stream, "[REQUEST] get_best_proof\n", !IO),
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[REQUEST] get_best_proof\n", !IO) ),
 	(
 		!.SCtx^best_proof = yes(vs(Qs, VS)),
 		format("%d\n", [i(list.length(Qs))], !IO),
@@ -224,7 +230,7 @@ process_request(get_best_proof, !SCtx, !IO) :-
 		print("0\n", !IO),
 		flush_output(!IO)
 	),
-	print(stderr_stream, "[done] get_best_proof\n", !IO).
+	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[done] get_best_proof\n", !IO) ).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
