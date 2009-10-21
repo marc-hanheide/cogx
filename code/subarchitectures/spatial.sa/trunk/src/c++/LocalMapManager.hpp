@@ -91,6 +91,8 @@ protected:
 
   Cure::TransformedOdomPoseProvider m_TOPP;
 
+  bool m_firstScanReceived;
+
   Cure::Pose3D m_SlamRobotPose;
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;

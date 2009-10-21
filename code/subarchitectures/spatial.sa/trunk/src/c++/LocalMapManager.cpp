@@ -263,6 +263,7 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan)
       m_Mutex.lock();
       m_Glrt1->addScan(cureScan, lpW, m_MaxLaserRange);      
       m_Glrt2->addScan(cureScan, lpW, m_MaxLaserRange);      
+      m_firstScanReceived = true;
       m_Mutex.unlock();
     }
   }
@@ -315,6 +316,13 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
   // Then check if the hypothesis is situated in what looks like door-like 
   // environs.
 
+  while (!m_firstScanReceived) {
+    log("Sleeping, waiting for initial scan");
+    unlockComponent();
+    usleep(500000);
+    lockComponent();
+  }
+
   FrontierInterface::HypothesisEvaluation ret;
   ret.freeSpaceValue = 0;
   ret.unexploredBorderValue = 0;
@@ -361,6 +369,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     getMemoryEntries<NavData::FNode>(nodes);
 
     int totalFreeCells = 0;
+    int totalProcessed = 0;
     //Loop over local grid map
     double x;
     double y;
@@ -390,6 +399,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	  }
 
 	  if (process) {
+	    totalProcessed++;
 	    // Check if this cell is within the node creation radius of some
 	    // other node
 	    for (vector<NavData::FNodePtr>::iterator it2 = nodes.begin();
@@ -427,7 +437,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	}
       }
     }
-    log("Total free cells: %i", totalFreeCells);
+    log("Total free cells: %i; total processed %i", totalFreeCells, totalProcessed);
     m_Mutex.unlock();
   }
   return ret;
