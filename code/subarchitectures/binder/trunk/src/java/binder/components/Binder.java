@@ -993,18 +993,15 @@ public class Binder extends ManagedComponent  {
 	private boolean hasConflicts(Union union1, Union union2) {	
 		for (int i = 0 ; i < union1.includedProxies.length ; i++) {
 			Proxy proxyi = union1.includedProxies[i];
-			if (proxyi.origin.address.subarchitecture == null || proxyi.origin.address.subarchitecture.equals("")) {
-				errlog("WARNING: proxy " + proxyi.entityID + " has no specified subarchitecture!");
-			}
+
 			for (int j = 0 ; j < union2.includedProxies.length ; j++) {
 				Proxy proxyj = union2.includedProxies[j];
 				
-				if (proxyj.origin.address.subarchitecture == null || proxyj.origin.address.subarchitecture.equals("")) {
-					errlog("WARNING: proxy " + proxyj.entityID + " has no specified subarchitecture!");
-				}
+				if (!( proxyj instanceof PhantomProxy)) {
 				
 				if (proxyi.origin.address.subarchitecture.equals(proxyj.origin.address.subarchitecture)) {
 					return true;
+				}
 				}
 			}
 		}	
