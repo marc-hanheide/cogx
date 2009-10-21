@@ -1829,14 +1829,14 @@ public class LFUtils {
 
 	public static comsys.datastructs.lf.LogicalForm convertFromString(String s) { 
 		
-		System.out.println("Converting from String: ["+s+"]");
+		//System.out.println("Converting from String: ["+s+"]");
 
 		// get rid of double spaces
 		while (s.contains("  ")) {
 			   s = s.replace("  "," ");
 		}
 			   
-		System.out.println("Converting from String: ["+s+"]");
+		//System.out.println("Converting from String: ["+s+"]");
 		
 		LogicalForm resultLF = newLogicalForm();
 		
