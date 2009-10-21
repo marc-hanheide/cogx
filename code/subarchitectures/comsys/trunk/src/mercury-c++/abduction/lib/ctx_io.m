@@ -106,9 +106,9 @@ ctx_modality_from_term(functor(atom("generate"), [], _)) = generation.
 
 :- func belief_to_string(belief) = string.
 
-belief_to_string(private(A)) = to_string(A).
-belief_to_string(attrib(A, B)) = to_string(A) ++ "[" ++ to_string(B) ++ "]".
-belief_to_string(mutual(AgS)) = "{" ++ AgSStr ++ "}" :-
+belief_to_string(private(A)) = "private(" ++ to_string(A) ++ ")".
+belief_to_string(attrib(A, B)) = "attrib(" ++ to_string(A) ++ "," ++ to_string(B) ++ ")".
+belief_to_string(mutual(AgS)) = "mutual(" ++ AgSStr ++ ")" :-
 	AgSStr = string.join_list(",", list.map(to_string, set.to_sorted_list(AgS))).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%

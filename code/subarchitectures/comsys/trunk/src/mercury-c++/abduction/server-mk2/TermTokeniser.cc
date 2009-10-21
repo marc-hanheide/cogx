@@ -18,7 +18,9 @@ enum TokeniserState {
 	TSOpenParenth,
 	TSCloseParenth,
 	TSOpenBracket,
-	TSCloseBracket
+	TSCloseBracket,
+	TSOpenCurly,
+	TSCloseCurly
 };
 
 // true iff ch is alphanumeric or an underscore
@@ -93,6 +95,18 @@ tokenise(const string & s)
 			case TSCloseBracket:
 				c_str++;
 				v.push_back(new CloseBracketToken());
+				state = TSUndecided;
+				break;
+
+			case TSOpenCurly:
+				c_str++;
+				v.push_back(new OpenCurlyBracketToken());
+				state = TSUndecided;
+				break;
+
+			case TSCloseCurly:
+				c_str++;
+				v.push_back(new CloseCurlyBracketToken());
 				state = TSUndecided;
 				break;
 
@@ -226,6 +240,14 @@ tokenise(const string & s)
 				else if (*c_str == ']') {
 					//cerr << "close bracket" << endl;
 					state = TSCloseBracket;
+				}
+				else if (*c_str == '{') {
+					//cerr << "open bracket" << endl;
+					state = TSOpenCurly;
+				}
+				else if (*c_str == '}') {
+					//cerr << "close bracket" << endl;
+					state = TSCloseCurly;
 				}
 				else if (isdigit(*c_str)) {
 					//cerr << "float" << endl;

@@ -10,6 +10,8 @@ enum TokenType {
 	CloseParenthesis,
 	OpenBracket,
 	CloseBracket,
+	OpenCurlyBracket,
+	CloseCurlyBracket,
 	VariableName,
 	Atom,
 	Float,
@@ -21,65 +23,81 @@ enum TokenType {
  */
 class Token {
 public:
-	virtual std::string toMercuryString() = 0;
-	virtual TokenType type() = 0;
+	virtual std::string toMercuryString() const = 0;
+	virtual TokenType type() const = 0;
 };
 
 // ','
 class CommaToken : public Token {
 public:
 	//CommaToken();
-	virtual std::string toMercuryString();
-	virtual TokenType type();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
 };
 
 // '.'
 class DotToken : public Token {
 public:
 	//DotToken();
-	virtual std::string toMercuryString();
-	virtual TokenType type();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
 };
 
 // '('
 class OpenParenthesisToken : public Token {
 public:
 	//OpenParenthesisToken();
-	virtual std::string toMercuryString();
-	virtual TokenType type();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
 };
 
 // ')'
 class CloseParenthesisToken : public Token {
 public:
 	//CloseParenthesisToken();
-	virtual std::string toMercuryString();
-	virtual TokenType type();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
 };
 
 // '['
 class OpenBracketToken : public Token {
 public:
 	//OpenBracketToken();
-	virtual std::string toMercuryString();
-	virtual TokenType type();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
 };
 
 // ']'
 class CloseBracketToken : public Token {
 public:
 	//CloseBracketToken();
-	virtual std::string toMercuryString();
-	virtual TokenType type();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
+};
+
+// '{'
+class OpenCurlyBracketToken : public Token {
+public:
+	//OpenBracketToken();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
+};
+
+// '}'
+class CloseCurlyBracketToken : public Token {
+public:
+	//CloseBracketToken();
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
 };
 
 // variable name
 class VariableNameToken : public Token {
 public:
 	VariableNameToken(const std::string & s);
-	virtual std::string toMercuryString();
-	virtual TokenType type();
-	std::string name();  // unescaped name
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
+	std::string name() const;  // unescaped name
 protected:
 	std::string nameValue;
 };
@@ -89,9 +107,9 @@ protected:
 class AtomToken : public Token {
 public:
 	AtomToken(const std::string & s);
-	virtual std::string toMercuryString();
-	virtual TokenType type();
-	std::string value();  // unescaped value
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
+	std::string value() const;  // unescaped value
 protected:
 	std::string atomValue;
 };
@@ -100,9 +118,9 @@ protected:
 class FloatToken : public Token {
 public:
 	FloatToken(double f);
-	virtual std::string toMercuryString();
-	virtual TokenType type();
-	double value();  // unescaped value
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
+	double value() const;  // unescaped value
 protected:
 	double floatValue;
 };
@@ -111,9 +129,9 @@ protected:
 class StringToken : public Token {
 public:
 	StringToken(const std::string & s);
-	virtual std::string toMercuryString();
-	virtual TokenType type();
-	std::string value();  // unescaped
+	virtual std::string toMercuryString() const;
+	virtual TokenType type() const;
+	std::string value() const;  // unescaped
 protected:
 	std::string stringValue;
 };
