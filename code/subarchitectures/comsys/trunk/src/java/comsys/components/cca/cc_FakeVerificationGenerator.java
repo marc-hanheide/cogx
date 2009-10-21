@@ -202,7 +202,12 @@ public class cc_FakeVerificationGenerator
 		Belief b = null;
 		String beliefId = entityField.getText();
 		log("retrieving belief id '" + beliefId + "'");
-		b = getBelief(beliefId);
+		try {
+			b = getBelief(beliefId);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 		if (b == null) {
 			log("no such belief found!");
 			return null;

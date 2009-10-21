@@ -46,7 +46,7 @@ public class ProofStack {
 		pb.assertedBeliefIds = ids.toArray(new String[] {});
 		return pb;
 	}
-
+ 
 	public static Belief[] blockToBeliefs(ProofBlock block, Map<String, Belief> localBeliefs) {
 		List<Belief> bs = new ArrayList<Belief>();
 		for (int i = 0; i < block.assertedBeliefIds.length; i++) {

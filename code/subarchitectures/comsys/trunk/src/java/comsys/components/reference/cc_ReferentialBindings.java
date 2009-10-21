@@ -6,11 +6,12 @@
 //  Copyright 2009 __MyCompanyName__. All rights reserved.
 //
 
-package comsys.components.reference;
 
 //-----------------------------------------------------------------
 // BINDER IMPORTS
 //-----------------------------------------------------------------
+
+package comsys.components.reference;
 
 import beliefmodels.adl.Belief;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
@@ -87,6 +88,7 @@ public class cc_ReferentialBindings
 	private int pdIdCounter;	
 	
 	
+	public static final boolean REMOVE_PHANTOM_PROXIES_AFTER_BINDING = true;
 	
 	
 	@Override
@@ -214,7 +216,7 @@ public class cc_ReferentialBindings
 							PhantomProxy phant = phantIter.next();
 							
 							// get the unions, delete phantom afterwards
-							Vector<Belief> beliefs = getPredictedBindings(phant,true);					
+							Vector<Belief> beliefs = getPredictedBindings(phant, REMOVE_PHANTOM_PROXIES_AFTER_BINDING);					
 							
 							log("Number of possible bindings found for restrTreeRoot: " + beliefs.size());
 							log("===============================");

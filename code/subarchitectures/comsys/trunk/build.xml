@@ -1,10 +1,8 @@
 <!-- Inner build file for a module in the CogX system -->
-<project name="myproject" default="compile" basedir=".">
+<project name="comsys" default="compile" basedir=".">
 
 	<!-- Controls where the output goes -->
 	<property name="output.dir" value="../../output/classes" />
-	<property name="generated.comsys.dir" value="${src.dir}/comsys/datastructs/comsysEssentials"/>
-	<property name="generated.lf.dir" value="${src.dir}/comsys/datastructs/lf"/>
 
         <!-- =================================================================== -->
         <!-- Add JAR files to classpath                                          -->
@@ -21,6 +19,11 @@
 	<property name="src.dir" value="./src/java" />
 	<property name="slice.dir" value="./src/slice" />
 
+	<property name="generated.abducer.dir" value="${src.dir}/Abducer"/>
+	<property name="generated.comsys.dir" value="${src.dir}/comsys/datastructs/comsysEssentials"/>
+	<property name="generated.lf.dir" value="${src.dir}/comsys/datastructs/lf"/>
+
+	
 	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
 	<taskdef name="slice2java" classname="Slice2JavaTask">
 	</taskdef>
@@ -31,9 +34,11 @@
 
 
 	<target name="clean">
-             <delete file="${src.dir}/.depend"/>
+	  <echo message="cleaning comsys mess..."/>
+            <delete file="${src.dir}/.depend"/>
 	     <delete dir="${generated.comsys.dir}"/>
 	     <delete dir="${generated.lf.dir}"/>
+	     <delete dir="${generated.abducer.dir}"/>
 	</target>
 
 	

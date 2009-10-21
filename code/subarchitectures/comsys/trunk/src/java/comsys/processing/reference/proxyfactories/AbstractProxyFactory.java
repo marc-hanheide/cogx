@@ -15,6 +15,8 @@ import comsys.processing.reference.ProxyResults;
 
 import binder.autogen.core.Feature;
 import binder.autogen.featvalues.AddressValue;
+import binder.autogen.featvalues.StringValue;
+
 import binder.utils.ProxyConstructor;
 
 // -------------------------------------------------------
@@ -38,7 +40,9 @@ public abstract class AbstractProxyFactory
 	} // end method
 	
 	protected Feature createSimpleFeature (String feature, String value, CASTTime timestamp) {
-	    return ProxyConstructor.createFeatureWithUniqueFeatureValue (feature, ProxyConstructor.createStringValue (value, 1.0f, timestamp)); 
+		StringValue val = ProxyConstructor.createStringValue (value, 1.0f);
+		ProxyConstructor.setTimeStamp(val, timestamp);
+	    return ProxyConstructor.createFeatureWithUniqueFeatureValue (feature, val); 
 	} 
 	
 	
