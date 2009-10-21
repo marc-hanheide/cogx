@@ -140,8 +140,12 @@ public class ThingProxy extends AbstractProxyFactory
 			PhantomProxy ownerProxy = ownerResults.getPhantomProxyByNom(owner.nomVar); 
 			assert ownerProxy != null; 
 			// construct the relation between the head and the owner directly
-			AddressValue[] sources = createAddressValueArray(ProxyConstructor.createAddressValue(head.entityID, 1.0f, timestamp));
-			AddressValue[] targets = createAddressValueArray(ProxyConstructor.createAddressValue(ownerProxy.entityID, 1.0f, timestamp));
+			AddressValue val1 = ProxyConstructor.createAddressValue(head.entityID, 1.0f);
+			ProxyConstructor.setTimeStamp(val1, timestamp);
+			AddressValue[] sources = createAddressValueArray(val1);
+			AddressValue val2 = ProxyConstructor.createAddressValue(ownerProxy.entityID, 1.0f);
+			ProxyConstructor.setTimeStamp(val2, timestamp);
+			AddressValue[] targets = createAddressValueArray(val2);
 			WorkingMemoryPointer origin = ProxyConstructor.createWorkingMemoryPointer("comsys", headVar, "lf");
 			RelationProxy rprx = ProxyConstructor.createNewRelationProxy(origin, getEntityID(), 1.0f, sources, targets);
 			// construct the results
@@ -157,7 +161,7 @@ public class ThingProxy extends AbstractProxyFactory
 		 
 		 */ 
 		
-		
+		 
 		private ProxyResults mapOwner (PhantomProxy head, LogicalForm lf, String headVar, String depVar, CASTTime timestamp) { 
 			// Construct the proxy for the owner
 			LFNominal owner = LFUtils.lfGetNominal(lf,depVar);
@@ -166,8 +170,12 @@ public class ThingProxy extends AbstractProxyFactory
 			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature("proposition", owner.prop.prop, timestamp));
 			ProxyConstructor.addFeatureToProxy(prx, createSimpleFeature("sort", owner.sort, timestamp));		
 			// Construct the relation between the head and the owner
-			AddressValue[] sources = createAddressValueArray(ProxyConstructor.createAddressValue(head.entityID, 1.0f, timestamp));
-			AddressValue[] targets = createAddressValueArray(ProxyConstructor.createAddressValue(prx.entityID, 1.0f, timestamp));
+			AddressValue val = ProxyConstructor.createAddressValue(head.entityID, 1.0f);
+			ProxyConstructor.setTimeStamp(val, timestamp);
+			AddressValue[] sources = createAddressValueArray(val);
+			AddressValue val2 = ProxyConstructor.createAddressValue(prx.entityID, 1.0f);
+			ProxyConstructor.setTimeStamp(val2, timestamp);
+			AddressValue[] targets = createAddressValueArray(val2);
 			WorkingMemoryPointer origin2 = ProxyConstructor.createWorkingMemoryPointer("comsys", headVar, "lf");
 			RelationProxy rprx = ProxyConstructor.createNewRelationProxy(origin2, getEntityID(), 1.0f, sources, targets);		
 			ProxyConstructor.addFeatureToProxy(rprx, createSimpleFeature("label", "OwnedBy", timestamp));

@@ -22,7 +22,8 @@ import cast.SubarchitectureComponentException;
 // COMSYS IMPORTS
 //-----------------------------------------------------------------
 import comsys.arch.*;
-import comsys.datastructs.comsysEssentials.*;
+import comsys.datastructs.comsysEssentials.RefReadings;
+import comsys.datastructs.comsysEssentials.SelectedLogicalForm;
 import comsys.processing.reference.ReferentialReadings;
 import comsys.utils.datastructs.*;
 
@@ -38,8 +39,7 @@ import java.util.Vector;
 //-----------------------------------------------------------------
 // LOGICAL FORM IMPORTS
 //-----------------------------------------------------------------
-import comsys.datastructs.lf.*;
-
+ 
 
 
 
