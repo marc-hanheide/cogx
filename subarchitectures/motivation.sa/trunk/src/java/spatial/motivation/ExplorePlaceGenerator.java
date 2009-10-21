@@ -19,18 +19,14 @@ import FrontierInterface.PlaceInterface;
 import FrontierInterface.PlaceInterfacePrx;
 import Ice.ObjectImpl;
 import SpatialData.Place;
-import SpatialData.PlaceHolder;
-import SpatialData.PlacePrx;
 import SpatialData.PlaceStatus;
 import SpatialProperties.AssociatedBorderPlaceholderProperty;
-import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.AssociatedSpacePlaceholderProperty;
 import SpatialProperties.DiscreteProbabilityDistribution;
 import SpatialProperties.FloatValue;
+import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.PlaceProperty;
 import cast.CASTException;
-import cast.DoesNotExistOnWMException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
@@ -44,6 +40,27 @@ import cast.core.CASTUtils;
  */
 public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
+	/**
+	 * normalize borderproperties // normalization: Kristoffer Sjöö
+	 * (21.10.2009): the maximum border value should be around(*) 2*pi*d/s where
+	 * d is the maximum allowed scan range (currently 5m) and s is the grid cell
+	 * size (currently 0.1m, I think). Free space max is pi*d2/s2.
+	 * 
+	 * 
+	 * 
+	 */
+	final double borderNormalizeFactor = 2*Math.PI*(5/0.1);
+	/** normalize space property factor
+	 * 
+	 */
+	final double spaceNormalizeFactor = Math.PI*(Math.pow(5.0,2)/Math.pow(0.1,2));
+
+	/**
+	 * Runnable to check the current place
+	 * 
+	 * @author marc
+	 * 
+	 */
 	protected class CurrentPlaceChecker implements Runnable {
 		SpatialFacade spatialFacade;
 		Place currentPlace;
@@ -84,6 +101,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					break;
 				}
 			}
 
@@ -201,8 +219,8 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 		spatialFacade = new SpatialFacade(this, placeInterface);
 
-		currentPlaceChecker = new CurrentPlaceChecker(
-				spatialFacade, new Callable<Place>() {
+		currentPlaceChecker = new CurrentPlaceChecker(spatialFacade,
+				new Callable<Place>() {
 
 					@Override
 					synchronized public Place call() throws Exception {
@@ -214,10 +232,8 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 						return null;
 					}
 				});
-		
+
 		currentPlaceCheckerThread = new Thread(currentPlaceChecker);
-
-
 
 		WMEntrySet.ChangeHandler propertyChangeHandler = new WMEntrySet.ChangeHandler() {
 
@@ -265,38 +281,6 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		spaceProperties.setHandler(propertyChangeHandler);
 		spaceProperties.start();
 
-		// addChangeFilter(
-		// ChangeFilterFactory
-		// .createGlobalTypeFilter(AssociatedSpacePlaceholderProperty.class),
-		// new WorkingMemoryChangeReceiver() {
-		// @Override
-		// public void workingMemoryChanged(WorkingMemoryChange _arg0)
-		// throws CASTException {
-		// associatedSpaceChange(_arg0);
-		// }
-		// });
-		//
-		// addChangeFilter(ChangeFilterFactory
-		// .createGlobalTypeFilter(GatewayPlaceProperty.class),
-		// new WorkingMemoryChangeReceiver() {
-		// @Override
-		// public void workingMemoryChanged(WorkingMemoryChange _arg0)
-		// throws CASTException {
-		// associatedGateway(_arg0);
-		// }
-		// });
-		//
-		// addChangeFilter(
-		// ChangeFilterFactory
-		// .createGlobalTypeFilter(AssociatedBorderPlaceholderProperty.class),
-		// new WorkingMemoryChangeReceiver() {
-		// @Override
-		// public void workingMemoryChanged(WorkingMemoryChange _arg0)
-		// throws CASTException {
-		// associatedBorderChange(_arg0);
-		// }
-		// });
-
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,
 				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -322,80 +306,6 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		});
 		spatialFacade.start();
 	}
-
-	// protected void associatedBorderChange(WorkingMemoryChange _wmc)
-	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-	//
-	// if (_wmc.operation != WorkingMemoryOperation.DELETE) {
-	// AssociatedBorderPlaceholderProperty borderProperty = getMemoryEntry(
-	// _wmc.address, AssociatedBorderPlaceholderProperty.class);
-	//
-	// // first time through, add the place to the source list for the
-	// // place's motive
-	// if (_wmc.operation == WorkingMemoryOperation.ADD) {
-	// assert m_placeIDtoMotiveWMA.containsKey(borderProperty.placeId) :
-	// "place should be written before property";
-	// addReceivers(m_placeIDtoMotiveWMA.get(borderProperty.placeId),
-	// _wmc.address);
-	// }
-	//
-	// m_placeIDtoBorderProperty
-	// .put(
-	// borderProperty.placeId,
-	// getFirstPropertyValue((DiscreteProbabilityDistribution)
-	// borderProperty.distribution));
-	// }
-	// }
-	//
-	// protected void associatedGateway(WorkingMemoryChange _wmc)
-	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-	//
-	// if (_wmc.operation != WorkingMemoryOperation.DELETE) {
-	// GatewayPlaceProperty gatewayProperty = getMemoryEntry(_wmc.address,
-	// GatewayPlaceProperty.class);
-	// // first time through, add the place to the source list for the
-	// // place's motive
-	// if (_wmc.operation == WorkingMemoryOperation.ADD) {
-	// if (m_placeIDtoMotiveWMA.containsKey(gatewayProperty.placeId))
-	// addReceivers(m_placeIDtoMotiveWMA
-	// .get(gatewayProperty.placeId), _wmc.address);
-	// }
-	// // TODO: This is a hacky way of doing it. We just assume that the
-	// // existence of this property is taken as the 100% evidence of
-	// // existence
-	// m_placeIDtoGatewayProperty.put(gatewayProperty.placeId, 1.0);
-	// // m_placeIDtoGatewayProperty
-	// // .put(
-	// // gatewayProperty.placeId,
-	// // getFirstPropertyValue((DiscreteProbabilityDistribution)
-	// // gatewayProperty.distribution));
-	// println("associate gateway to " + gatewayProperty.placeId + ": "
-	// + m_placeIDtoGatewayProperty.get(gatewayProperty.placeId));
-	// }
-	// }
-	//
-	// protected void associatedSpaceChange(WorkingMemoryChange _wmc)
-	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-	// if (_wmc.operation != WorkingMemoryOperation.DELETE) {
-	// AssociatedSpacePlaceholderProperty spaceProperty = getMemoryEntry(
-	// _wmc.address, AssociatedSpacePlaceholderProperty.class);
-	//
-	// // first time through, add the place to the source list for the
-	// // place's motive
-	// if (_wmc.operation == WorkingMemoryOperation.ADD) {
-	// assert m_placeIDtoMotiveWMA.containsKey(spaceProperty.placeId) :
-	// "place should be written before property";
-	// addReceivers(m_placeIDtoMotiveWMA.get(spaceProperty.placeId),
-	// _wmc.address);
-	// }
-	//
-	// m_placeIDtoSpaceProperty
-	// .put(
-	// spaceProperty.placeId,
-	// getFirstPropertyValue((DiscreteProbabilityDistribution)
-	// spaceProperty.distribution));
-	// }
-	// }
 
 	private double getFirstPropertyValue(
 			DiscreteProbabilityDistribution _probabilityDistribution) {
@@ -430,31 +340,22 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 		double spaceMeasure = 0.0;
 		double borderMeasure = 0.0;
 		double gatewayMeasure = 0.0;
-
 		ppaddr = m_placeIDtoSpaceProperty.get(placeID);
 		if (ppaddr != null) {
 			pp = (PlaceProperty) spaceProperties.get(ppaddr);
-			spaceMeasure = getFirstPropertyValue(pp);
+			spaceMeasure = getFirstPropertyValue(pp) / spaceNormalizeFactor;
 		}
 		ppaddr = m_placeIDtoBorderProperty.get(placeID);
 		if (ppaddr != null) {
 			pp = (PlaceProperty) borderProperties.get(ppaddr);
-			borderMeasure = getFirstPropertyValue(pp);
+			borderMeasure = getFirstPropertyValue(pp) / borderNormalizeFactor;
 		}
 		ppaddr = m_placeIDtoGatewayProperty.get(placeID);
 		if (ppaddr != null) {
 			pp = (PlaceProperty) borderProperties.get(ppaddr);
 			gatewayMeasure = getFirstPropertyValue(pp);
 		}
-		//		
-		// Double gatewayMeasureBoxed = m_placeIDtoGatewayProperty.get(placeID);
-		// double gatewayMeasure = gatewayMeasureBoxed == null ? 0
-		// : gatewayMeasureBoxed;
-		//
-		// // A measure of how much of the frontier borders on unknown space
-		// Double borderMeasureBoxed = m_placeIDtoBorderProperty.get(placeID);
-		// double borderMeasure = borderMeasureBoxed == null ? 0
-		// : borderMeasureBoxed;
+
 		_em.informationGain = (spaceMeasure * m_spaceMeasureConstant)
 				+ (borderMeasure * m_borderMeasureConstant)
 				+ (gatewayMeasure * m_gatewayMeasureConstant);
@@ -467,8 +368,9 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 
 	@Override
 	protected void configure(Map<String, String> _config) {
-		m_spaceMeasureConstant = 1;
-		m_borderMeasureConstant = 1;
+		m_spaceMeasureConstant = 0.5;
+		m_borderMeasureConstant = 0.5;
+		m_gatewayMeasureConstant = 0.0;
 
 	}
 
