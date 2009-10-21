@@ -230,25 +230,24 @@ class BasePlanner(object):
     def _post_process(self, task):
         raise NotImplementedError
 
-def create_unique_dir(base_path, unique_dirname_fn, may_exist=True):
+def create_unique_dir(base_path, unique_dirname_fn, may_exist):
     """creates a new subdirectory in base_path. unique_dirname_fn is a
     function that produces a new, unique name every time it is called.
     create_unique_dir() loops until a directory name is produced that
-    does not exist yet, creates the directory and returns its name."""
+    does not exist yet, creates the directory and returns its name.
+    If may_exist is True, then uniqueness is NOT required. Instead a
+    possibly existing directory is just cleaned.
+    """
     while True:
         unique_id = unique_dirname_fn()
         tmp_dir = os.path.join(base_path, unique_id)
         if os.path.exists(tmp_dir):
             if may_exist:
-                try:
-                    shutil.rmtree(tmp_dir)  # remove old version
-                except OSError:
-                    print "Warning: smutil.rmtree failed on:\n\n>>>"
-                    print tmp_dir
-                    print "<<<\n"
+                utils.removeall(tmp_dir)  # remove old version
             else:
                 continue  # create a new, unique name
-        os.makedirs(tmp_dir)
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
         return tmp_dir
 
 class ContinualAxiomsFF(BasePlanner):
