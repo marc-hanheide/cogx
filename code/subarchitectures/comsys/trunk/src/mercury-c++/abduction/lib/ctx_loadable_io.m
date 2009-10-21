@@ -9,9 +9,17 @@
 :- import_module ctx_loadable.
 
 :- pred print_facts(ctx::in, string::in, io::di, io::uo) is det.
+:- pred print_facts(io.output_stream::in, ctx::in, string::in, io::di, io::uo) is det.
+
 :- pred print_rules(ctx::in, string::in, io::di, io::uo) is det.
+:- pred print_rules(io.output_stream::in, ctx::in, string::in, io::di, io::uo) is det.
+
 :- pred print_ctx(ctx::in, io::di, io::uo) is det.
+:- pred print_ctx(io.output_stream::in, ctx::in, io::di, io::uo) is det.
+
 :- pred print_proof_trace(ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
+:- pred print_proof_trace(io.output_stream::in, ctx::in, proof(ctx_modality)::in, io::di, io::uo) is det.
+
 :- func assumptions_to_string(ctx, bag(with_cost_function(mgprop(ctx_modality)))) = string.
 :- func assertions_to_string(ctx, bag(vscope(mtest(ctx_modality)))) = string.
 :- func goal_to_string(vscope(list(query(ctx_modality)))) = string.
@@ -35,65 +43,77 @@
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-print_facts(Ctx, Indent, !IO) :-
+print_facts(Stream, Ctx, Indent, !IO) :-
 	set.fold((pred(Fact::in, !.IO::di, !:IO::uo) is det :-
-		print(Indent, !IO),
-		print(vsmprop_to_string(Fact), !IO),
-		nl(!IO)
+		print(Stream, Indent, !IO),
+		print(Stream, vsmprop_to_string(Fact), !IO),
+		nl(Stream, !IO)
 			), facts(Ctx), !IO).
 
+print_facts(Ctx, Indent, !IO) :-
+	print_facts(stdout_stream, Ctx, Indent, !IO).
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-print_rules(Ctx, Indent, !IO) :-
+print_rules(Stream, Ctx, Indent, !IO) :-
 	set.fold((pred(Rule::in, !.IO::di, !:IO::uo) is det :-
 			% XXX global context
-		print(Indent, !IO),
-		print(vsmrule_to_string(Rule), !IO),
-		nl(!IO)
+		print(Stream, Indent, !IO),
+		print(Stream, vsmrule_to_string(Rule), !IO),
+		nl(Stream, !IO)
 			), rules(Ctx), !IO).
+
+print_rules(Ctx, Indent, !IO) :-
+	print_rules(stdout_stream, Ctx, Indent, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-print_ctx(Ctx, !IO) :-
-	print("facts:\n", !IO),
-	print_facts(Ctx, "  ", !IO),
+print_ctx(Stream, Ctx, !IO) :-
+	print(Stream, "facts:\n", !IO),
+	print_facts(Stream, Ctx, "  ", !IO),
 
-	nl(!IO),
+	nl(Stream, !IO),
 
-	print("assumables:\n", !IO),
+	print(Stream, "assumables:\n", !IO),
 	map.foldl((pred(FuncName::in, Costs::in, !.IO::di, !:IO::uo) is det :-
-		print("  ", !IO),
-		print(FuncName ++ " = ", !IO),
+		print(Stream, "  ", !IO),
+		print(Stream, FuncName ++ " = ", !IO),
 
 		CostStrs = list.map((func(m(Mod, GProp)-Cost) = S :-
 			S = vsmprop_to_string(vs(m(Mod, ground_formula_to_formula(GProp)), varset.init))
 					++ " = " ++ float_to_string(Cost)
 				), map.to_assoc_list(Costs)),
 
-		print("[\n    " ++ string.join_list(",\n    ", CostStrs) ++ "\n  ].\n", !IO)
+		print(Stream, "[\n    " ++ string.join_list(",\n    ", CostStrs) ++ "\n  ].\n", !IO)
 			), assumables(Ctx), !IO),
 
-	nl(!IO),
+	nl(Stream, !IO),
 
-	print("rules:\n", !IO),
-	print_rules(Ctx, "  ", !IO).
+	print(Stream, "rules:\n", !IO),
+	print_rules(Stream, Ctx, "  ", !IO).
+
+print_ctx(Ctx, !IO) :-
+	print_ctx(stdout_stream, Ctx, !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-print_proof_trace(_Ctx, Proof, !IO) :-
-	print("proof trace:\n", !IO),
+print_proof_trace(Ctx, Proof, !IO) :-
+	print_proof_trace(stdout_stream, Ctx, Proof, !IO).
+
+print_proof_trace(Stream, _Ctx, Proof, !IO) :-
+	print(Stream, "proof trace:\n", !IO),
 	Proof^p_goals = vs(RevGoals, Varset0),
 	Qs = reverse(RevGoals),
 	InitQs = det_head(Qs),
 	RemQss = det_tail(Qs),
 
-	print("  " ++ proof_state_to_string(Varset0, InitQs) ++ "\n", !IO),
+	print(Stream, "  " ++ proof_state_to_string(Varset0, InitQs) ++ "\n", !IO),
 
 	GoalsStr = list.map((func(Step-Goal) = GStr :-
 		GStr = "    --->\n"
 				++ ">>  " ++ step_to_string(Step) ++ "\n  " ++ proof_state_to_string(Varset0, Goal)
 				), from_corresponding_lists(reverse(Proof^p_steps), RemQss)),
-	print(string.join_list("\n", GoalsStr) ++ "\n", !IO).
+	print(Stream, string.join_list("\n", GoalsStr) ++ "\n", !IO).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
