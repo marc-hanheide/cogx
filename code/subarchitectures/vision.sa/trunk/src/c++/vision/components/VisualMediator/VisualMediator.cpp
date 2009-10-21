@@ -35,9 +35,19 @@ using namespace beliefmodels::domainmodel::cogx;
 
 void VisualMediator::configure(const map<string,string> & _config)
 {
+//  BindingWorkingMemoryWriter::configure(_config);
+  
   map<string,string>::const_iterator it;
 
   updateThr = UPD_THR_DEFAULT;
+  
+  if (_config.find("-bsa") != _config.end()) {
+	m_bindingSA=_config.find("-bsa")->second;
+  } else if (_config.find("--bsa") != _config.end()) {
+	m_bindingSA=_config.find("--bsa")->second;
+  } else {
+   m_bindingSA="binder";
+  }
 
   if((it = _config.find("--upd")) != _config.end())
   {
@@ -225,9 +235,40 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 	getMemoryEntry<Belief>(_wmc.address);
 
   string unionID;
+  string visObjID;
+  
   if(unionRef(obj->phi, unionID))
   {
 	log("Found reference to union ID %s in belief", unionID.c_str());
+	
+	UnionPtr uni = getMemoryEntry<Union>(unionID, m_bindingSA);
+	
+	vector<ProxyPtr>::iterator it;
+	
+	bool found = false;
+	
+	for(it = uni->includedProxies.begin(); it != uni->includedProxies.end() && !found; it++)
+	  if((*it)->origin->address.subarchitecture == getSubarchitectureID())
+	  {
+		  found = true;
+		  visObjID = (*it)->origin->address.id;
+	  }
+		
+	 if(!found)
+	  return;
+	  
+	log("Found the object of the belief: visualObject ID %s", visObjID.c_str());
+  }
+  else
+	return;
+	
+  vector<Shape> shapes;
+  vector<Color> colors;
+  vector<float> colorDist, shapeDist;
+	
+  if(findAsserted(obj->phi, colors, shapes, colorDist, shapeDist))
+  {
+	log("Found asserted colors or shapes");
   }
   else
 	return;
@@ -283,39 +324,66 @@ bool VisualMediator::unionRef(FormulaPtr fp, string &unionID)
 }
 
 
-bool VisualMediator::colorAsserted(FormulaPtr fp, Color &color)
+bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<Shape> &shapes, vector<float> colorDist, vector<float> shapeDist)
 {
   Formula *f = &(*fp);
 
   if(typeid(*f).name() == "ColorProperty")
   {
-	ColorPropertyPtr col = dynamic_cast<ColorProperty*>(f);
-	unionID =  col->unionRef;	
+	ColorPropertyPtr color = dynamic_cast<ColorProperty*>(f);
+	
+	if(color->cstatus == assertion)
+	{ 
+	  colors.push_back(color->colorValue);
+	
+	  if(color->polarity)
+		colorDist.push_back(color->prob);
+	  else
+		colorDist.push_back(-color->prob);
 
-	return true;
+	  return true;
+	}
+	else
+	  return false;
+  }
+  else if(typeid(*f).name() == "ShapeProperty")
+  {
+	ShapePropertyPtr shape = dynamic_cast<ShapeProperty*>(f);
+	
+	if(shape->cstatus == assertion)
+	{
+	  shapes.push_back(shape->shapeValue);
+	
+	  if(shape->polarity)
+		shapeDist.push_back(shape->prob);
+	  else
+		shapeDist.push_back(-shape->prob);
+
+	  return true;
+	}
+	else
+	  return false;
   }
   else if(typeid(*f).name() == "ComplexFormula")
   {
 	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
-	vector<SuperFormulaPtr>::iterator it; 
+	vector<SuperFormulaPtr>::iterator it;
+	
+	bool found = false;
 
 	for(it = unif->formulae.begin(); it != unif->formulae.end(); it++)
 	{
 	  SuperFormulaPtr sf = *it;
   
-	  if(unionRef(sf, unionID))
-		return true;
+	  if(findAsserted(sf, colors, shapes, colorDist, shapeDist))
+		found = true;
 	}
   
-	unionID = "";
-	return false;
+	return found;
 	
   }
   else
-  {
-	unionID = "";
 	return false;
-  }
 
 }
 

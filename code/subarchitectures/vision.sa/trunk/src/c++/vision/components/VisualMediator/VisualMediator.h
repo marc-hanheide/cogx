@@ -41,6 +41,11 @@ class VisualMediator : public binder::BindingWorkingMemoryWriter
    */
   int updateThr;
   bool doDisplay;
+  
+  /**
+   * Name of the binder subarchitecture
+   */
+  std::string m_bindingSA;
 
   /**
    * status of VisualObject persistency
@@ -92,6 +97,11 @@ class VisualMediator : public binder::BindingWorkingMemoryWriter
 //  bool unionRef(beliefmodels::domainmodel::cogx::SuperFormulaPtr f, std::string &unionID);
 
   bool unionRef(beliefmodels::adl::FormulaPtr f, std::string &unionID);
+  
+  bool findAsserted(beliefmodels::adl::FormulaPtr fp, 
+					std::vector<beliefmodels::domainmodel::cogx::Color> &colors,
+					std::vector<beliefmodels::domainmodel::cogx::Shape> &shapes,
+					std::vector<float> colorDist, std::vector<float> shapeDist);
 
  protected:
   /**
