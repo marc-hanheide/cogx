@@ -20,7 +20,7 @@
 //=================================================================
 //PACKAGE DEFINITION
 //=================================================================
- 
+
 package asr;
 
 //=================================================================
@@ -33,6 +33,7 @@ package asr;
 import java.util.*;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -53,7 +54,7 @@ import vcommerce.core.sc.*;
 import nuance.core.sc.*;
 import nuance.core.util.*;
 
- 
+
 
 //=================================================================
 //CLASS DOCUMENTATION
@@ -89,6 +90,8 @@ public class ASR extends ManagedComponent {
 	// GLOBAL VARIABLES
 	// =================================================================
 
+	final String COMSYS = "comsys";
+	
 	// Constants for the mode -- i.e. the source for input
 	final int ASR_SPEECHREC = 0;
 	final int ASR_GUI = 1;
@@ -109,12 +112,12 @@ public class ASR extends ManagedComponent {
 	// synthesized
 	// and retransmitted to the user
 	boolean playback = false;
- 
+
 	static boolean logging = true;
 
 	// The phonological string object
 	PhonString phonString;
- 
+
 	// =================================================================
 	// CLASS-INTERNAL GLOBAL VARIABLES
 	// =================================================================
@@ -140,7 +143,7 @@ public class ASR extends ManagedComponent {
 	// CONSTRUCTOR METHODS
 	// =================================================================
 
-	
+
 	// =================================================================
 	// CAST RUN COMPONENT
 	// =================================================================
@@ -191,23 +194,23 @@ public class ASR extends ManagedComponent {
 	} // end runComponent
 
 
-  private PhonString createNewPhonString(String recogSequence, float confValue, float NLConfValue, int rank) {
-    
-    PhonString phon = new PhonString();
-    phon.wordSequence = recogSequence;
-    phon.id = newDataID();
-    
-    String[] splits = phon.wordSequence.split(" ");
-    phon.length = splits.length;
-    
-    phon.confidenceValue = confValue;
-    phon.NLconfidenceValue = NLConfValue;
-    phon.rank = rank;
-    
-    return phon;
-  }
-  
-  
+	private PhonString createNewPhonString(String recogSequence, float confValue, float NLConfValue, int rank) {
+
+		PhonString phon = new PhonString();
+		phon.wordSequence = recogSequence;
+		phon.id = newDataID();
+
+		String[] splits = phon.wordSequence.split(" ");
+		phon.length = splits.length;
+
+		phon.confidenceValue = confValue;
+		phon.NLconfidenceValue = NLConfValue;
+		phon.rank = rank;
+
+		return phon;
+	}
+
+
 	static boolean OKBUTTON_PUSHED = false ;
 	// =================================================================
 	// CORE CLASS METHODS
@@ -234,7 +237,7 @@ public class ASR extends ManagedComponent {
 		PhonString result = null;
 
 		result = createNewPhonString (textField.getText(), 1, 1, 1);
-    textField.setText("");
+		textField.setText("");
 		return result;
 	} // end getGUIPhonString
 
@@ -259,11 +262,11 @@ public class ASR extends ManagedComponent {
 
 		String args = "-package " + packageASR + 
 		" lm.Addresses=134.96.187.190 " +
-		    //	" audio.Provider=sip" +
+		//	" audio.Provider=sip" +
 		" audio.Device=@any " +  
 		" client.AllowBargeIn=TRUE " +  
-		    //	" audio.sip.userAgentURI=sip:cosy@localhost " + 
-		    //	" audio.sip.UserAgentPort=" + port +
+		//	" audio.sip.userAgentURI=sip:cosy@localhost " + 
+		//	" audio.sip.UserAgentPort=" + port +
 		" client.NoSpeechTimeoutSecs=" + timeout + 
 		" rec.GrammarWeight=" + grammarweight + 
 		" rec.pass1.gp.WTW=" + WTW +
@@ -286,81 +289,63 @@ public class ASR extends ManagedComponent {
 
 				log("Initialization of speech channel successful");
 
-				// Wait for a call if this is a telephony audio device
-				//	CoreTelephonyControl tc = nsc.getTelephonyControl();
-
-				//		if (tc != null) {
-
-					log("\nWaiting for a SIP phone call...");
-					// Answer the incoming call
-					//	tc.waitForCall().print();
-					//	tc.answerCall();
-
-					log("SIP call answered.\n");
-
-					boolean connected = true;
-
-					while(connected) {
-
-					    log("\nRecording speech...");
-
-						RecResult rec_result ;
-						try {						    				    rec_result = nsc.playAndRecognize(".Top"); 
-}
-						catch (SessionEndedException e) {rec_result = null;}
-
-						if (rec_result != null) {
+				log("\nWaiting for a SIP phone call...");
 
 
-							// Check the returned recognition result.
-							if ((rec_result.getNumResults() > 0) &
-									(rec_result.isNormalRecognition()))
-							{
-								String recString = rec_result.getSingleResult(0).getRecognizedString();
+				log("SIP call answered.\n");
 
-								log("Recognized utterance: " + recString);
+				boolean connected = true;
 
-								RecognitionResult result = new RecognitionResult(
-										rec_result.getSingleResult(0).toString());
-								PhonString phonString = new PhonString();
-								phonString.wordSequence = result.getRecString();
-								phonString.confidenceValue = result.getConfidence();
+				while(connected) {
 
-								log("Confidence score: " + phonString.confidenceValue);
+					log("\nRecording speech...");
 
-								String[] splits = phonString.wordSequence.split(" ");
-								phonString.length = splits.length;
-								phonString.id = newDataID();
-								addToWorkingMemory(phonString.id, phonString);
-								log("PhonString added to the working memory\n");
+					RecResult rec_result ;
+					try {						    			
+						rec_result = nsc.playAndRecognize(".Top"); 
+					}
+					catch (SessionEndedException e) {rec_result = null;}
 
-							}
-							else {
-								// We had a NO_SPEECH_TIMEOUT or something similar
-								log("Nothing intelligible was said");
+					if (rec_result != null) {
 
-								PhonString phonString = new PhonString();
-								phonString.wordSequence = "unrecognized";
-								phonString.length = 1;
-								phonString.id = newDataID();
-								addToWorkingMemory(phonString.id, phonString);
-							}
-							//	}
-						//		else {
-						//	    connected=false;
-							    //	    tc.hangup();
-							//	    nsc.close();
-							//		}
 
-							this.sleepComponent(100);
-						
-							//	if (tc==null) {
-							//	    connected=false;
-							//	    tc.hangup();
-							//	    nsc.close();
-							//		}
-						}   		
-					} 
+						// Check the returned recognition result.
+						if ((rec_result.getNumResults() > 0) &
+								(rec_result.isNormalRecognition()))
+						{
+							String recString = rec_result.getSingleResult(0).getRecognizedString();
+
+							log("Recognized utterance: " + recString);
+
+							RecognitionResult result = new RecognitionResult(
+									rec_result.getSingleResult(0).toString());
+							PhonString phonString = new PhonString();
+							phonString.wordSequence = result.getRecString();
+							phonString.confidenceValue = result.getConfidence();
+
+							log("Confidence score: " + phonString.confidenceValue);
+
+							String[] splits = phonString.wordSequence.split(" ");
+							phonString.length = splits.length;
+							phonString.id = newDataID();
+							addToWorkingMemory(phonString.id, COMSYS, phonString);
+							log("PhonString added to the working memory\n");
+
+						}
+						else {
+							// We had a NO_SPEECH_TIMEOUT or something similar
+							log("Nothing intelligible was said");
+
+							PhonString phonString = new PhonString();
+							phonString.wordSequence = "unrecognized";
+							phonString.length = 1;
+							phonString.id = newDataID();
+							addToWorkingMemory(phonString.id, COMSYS, phonString);
+						}
+					
+						this.sleepComponent(100);
+					}   		
+				} 
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -385,7 +370,7 @@ log("Starting GUI window...");
 
 		PhonString phonString = getGUIPhonString();
 
-       
+
 
 		// Set the length
 		if (phonString != null && phonString.wordSequence != null) {
@@ -413,7 +398,7 @@ log("Starting GUI window...");
 		}
 	}
 
- 
+
 
 	@Override
 	public void configure(Map<String, String> config) {
