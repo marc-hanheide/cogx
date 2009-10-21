@@ -28,7 +28,7 @@
 :- type srv_ctx
 	--->	srv_ctx(
 		cx :: ctx,
-		best_proof :: maybe(proof(ctx_modality))
+		best_proof :: maybe(goal(ctx_modality))
 	).
 
 main(!IO) :-
@@ -144,22 +144,64 @@ process_request(prove(L), !SCtx, !IO) :-
 	P0 = proof(vs([Qs], varset.init), []),
 	is_ctx_proof(P0),
 
-	Proofs0 = set.to_sorted_list(solutions_set((pred(Cost-P::out) is nondet :-
+	print_ctx(stderr_stream, !.SCtx^cx, !IO),
+
+	Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-Gx)-P::out) is nondet :-
 		prove(0.0, 100.0, P0, P, default_costs, !.SCtx^cx),
+		Gx = last_goal(P),
 		Cost = cost(!.SCtx^cx, P, default_costs)
 			))),
 
-	format(stderr_stream, "  %d proofs found.\n", [i(list.length(Proofs0))], !IO),
+	% examine derivations
+	list.foldl((pred((Cost-Gy)-P::in, M0::in, M::out) is det :-
+		(if map.search(M0, Cost-Gy, D0)
+		then D1 = D0
+		else D1 = set.init
+		),
+		set.insert(D1, P, D2),
+		map.set(M0, Cost-Gy, D2, M)
+			), Proofs0, map.init, DerivsMap),
+
+	list.sort((pred((CA-_)-_::in, (CB-_)-_::in, Comp::out) is det :-
+		float_compare(CA, CB, Comp)
+			), map.to_assoc_list(DerivsMap), DerivsSorted),
+
+	format(stderr_stream, "  %d proofs found.\n", [i(list.length(DerivsSorted))], !IO),
+
+	list.foldl((pred((Cost-Gz)-Ds::in, !.IO::di, !:IO::uo) is det :-
+		print(stderr_stream, "---------------------------------------------------------------------\n", !IO),
+		format(stderr_stream, "proof cost = %f\n\n", [f(Cost)], !IO),
+		print(stderr_stream, "proven goal:\n  " ++ goal_to_string(Gz) ++ "\n", !IO),
+		nl(stderr_stream, !IO),
+
+%		print(stderr_stream, "assumptions:\n", !IO),
+%		print(stderr_stream, "  " ++ assumptions_to_string(!.Ctx, goal_assumptions(Gz)) ++ "\n", !IO),
+%		nl(stderr_stream, !IO),
+
+%		print(stderr_stream, "assertions:\n", !IO),
+%		print(stderr_stream, "  " ++ assertions_to_string(!.Ctx, goal_assertions(Gz)) ++ "\n", !IO),
+%		nl(stderr_stream, !IO),
+
+		print(stderr_stream, string.from_int(set.count(Ds)) ++ " derivation(s).\n", !IO),
+
+		print(stderr_stream, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n", !IO),
+
+		set.fold((pred(Proof::in, !.IO::di, !:IO::uo) is det :-
+			is_ctx_proof(Proof),
+			print_proof_trace(stderr_stream, !.SCtx^cx, Proof, !IO),
+			nl(stderr_stream, !IO)
+				), Ds, !IO)
+
+			), DerivsSorted, !IO),
 
 	(if
-		list.sort((pred(CA-_::in, CB-_::in, Comp::out) is det :-
-			float_compare(CA, CB, Comp)
-				), Proofs0, [_ProofCost-Proof1|_])
+		DerivsSorted = [(_Cost-G)-_Ds|_]
 	then
 		Response = "success",
-		!:SCtx = !.SCtx^best_proof := yes(Proof1)
+		!:SCtx = !.SCtx^best_proof := yes(G)
 	else
-		Response = "failure"
+		Response = "failure",
+		!:SCtx = !.SCtx^best_proof := no
 	),
 
 	print(Response ++ ".\n", !IO),
@@ -169,8 +211,7 @@ process_request(prove(L), !SCtx, !IO) :-
 process_request(get_best_proof, !SCtx, !IO) :-
 	print(stderr_stream, "[REQUEST] get_best_proof\n", !IO),
 	(
-		!.SCtx^best_proof = yes(Proof),
-		vs(Qs, VS) = last_goal(Proof),
+		!.SCtx^best_proof = yes(vs(Qs, VS)),
 		format("%d\n", [i(list.length(Qs))], !IO),
 		flush_output(!IO),
 		list.foldl((pred(Q::in, !.IO::di, !:IO::uo) is det :-
