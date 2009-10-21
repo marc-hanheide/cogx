@@ -258,7 +258,7 @@ public class ASR extends ManagedComponent {
 		log("(Press Ctrl+C to stop the recognition client)\n");
 
 		String args = "-package " + packageASR + 
-		" lm.Addresses=localhost " +
+		" lm.Addresses=134.96.187.190 " +
 		    //	" audio.Provider=sip" +
 		" audio.Device=@any " +  
 		" client.AllowBargeIn=TRUE " +  
@@ -273,6 +273,7 @@ public class ASR extends ManagedComponent {
 
 		log("Arguments used for Nuance: " + args);
 
+		
 		while (true) {
 			try {
 				// Create a NuanceConfig object from the command-line arguments
@@ -364,7 +365,7 @@ public class ASR extends ManagedComponent {
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+			} 
 	} // end executeASRTask
 
 
@@ -379,6 +380,9 @@ public class ASR extends ManagedComponent {
 	 */
 
 	protected void executeGUITask() {
+	    
+log("Starting GUI window...");
+
 		PhonString phonString = getGUIPhonString();
 
        
@@ -443,6 +447,8 @@ public class ASR extends ManagedComponent {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+
+		log("Trying to start a new GUI window...");
 
 		Frame frame = null;
 
