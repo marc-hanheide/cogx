@@ -29,7 +29,7 @@ public class BayesianNetworkWrapper {
 	private static final long serialVersionUID = 1L;
 
 	// flag to activate logging
-	public static boolean logging = true ;
+	public static boolean logging = false ;
 	
 	
 	// The bayesian network wrapped in this class
