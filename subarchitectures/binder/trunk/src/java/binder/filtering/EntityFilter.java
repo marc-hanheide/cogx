@@ -265,7 +265,7 @@ public class EntityFilter {
 				newRUnion.psource.alternativeValues[0] = initRUnion.psource.alternativeValues[0];
 			}
 		}
-		else {
+		else if (LOGGING) {
 			log("psource: " + initRUnion.psource);
 			log("psource.featlabel: " + initRUnion.psource.featlabel);
 			log("psource.alternativeValues: " + initRUnion.psource.alternativeValues);
@@ -287,7 +287,7 @@ public class EntityFilter {
 			}
 		}
 		
-		else {
+		else if (LOGGING) {
 			log("usource: " + initRUnion.usource);
 			log("usource.featlabel: " + initRUnion.usource.featlabel);
 			log("usource.alternativeValues: " + initRUnion.usource.alternativeValues);
@@ -307,7 +307,7 @@ public class EntityFilter {
 			}
 		}
 		
-		else {
+		else if (LOGGING) {
 			log("ptarget: " + initRUnion.ptarget);
 			log("ptarget.featlabel: " + initRUnion.ptarget.featlabel);
 			log("ptarget.alternativeValues: " + initRUnion.ptarget.alternativeValues);
@@ -328,7 +328,7 @@ public class EntityFilter {
 				log("newRUnion.utarget.alternativeValues[0] is null!");
 			}
 		}
-		else {
+		else if (LOGGING) {
 			log("utarget: " + initRUnion.utarget);
 			log("utarget.featlabel: " + initRUnion.utarget.featlabel);
 			log("utarget.alternativeValues: " + initRUnion.utarget.alternativeValues);
