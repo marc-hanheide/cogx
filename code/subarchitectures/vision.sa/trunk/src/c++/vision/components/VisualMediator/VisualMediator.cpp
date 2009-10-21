@@ -66,7 +66,7 @@ void VisualMediator::start()
   const char *name = "mediatorSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
-
+log("HELLO, Mediator active");
   if (doDisplay)
   {
   }
@@ -85,10 +85,14 @@ void VisualMediator::start()
 		&VisualMediator::deletedVisualObject));
 
  // a filter for belief updates
-  addChangeFilter(createLocalTypeFilter<Belief>(cdl::WILDCARD),
+  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<VisualMediator>(this,
 		&VisualMediator::updatedBelief));
 
+  
+  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
+	  new MemberFunctionChangeReceiver<VisualMediator>(this,
+		&VisualMediator::updatedBelief));
 }
 
 void VisualMediator::runComponent()

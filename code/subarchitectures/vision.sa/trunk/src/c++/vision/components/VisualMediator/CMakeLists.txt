@@ -7,5 +7,5 @@ include_directories(${COGX_ROOT}/tools/beliefmodels/src/c++/autogen)
 SET(SOURCES VisualMediator.cpp)
  
 add_cast_component(VisualMediator ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} VisionData BinderAbstract)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData BinderAbstract BeliefModels DomainModel)
 
