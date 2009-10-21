@@ -30,7 +30,7 @@ JAVA WM binder.components.BindingWorkingMemory #--log
 JAVA MG fakehaptic binder.fakeproxygenerators.FakeVisualUnknownProxyGenerator --nbproxies 1  --pauses false  --log
 #JAVA MG fakecomsys binder.fakeproxygenerators.FakeComsysProxyGenerator  --nbproxies 1 --pauses true --deleteproxies true --log
 
-JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 300 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
+JAVA MG binder binder.components.Binder --alpha 1.0f --nbestsfilter 10 --addunknowns true --normalise true --bayesiannetworkfile ./subarchitectures/binder/config/bayesiannetwork.txt --log
 JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false --log
 JAVA MG translator binder.components.BeliefModelTranslator --log
 
