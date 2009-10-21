@@ -160,8 +160,8 @@ void ObjectAnalyzer::runComponent()
 			data.visualObjId = objId;
 
 			log("A visual object added for protoObject ID %s", data.addr.id.c_str());
-			start_VL_RecognitionTask(objPtr, data.addr); 
 			start_OR_RecognitionTask(objPtr, data.addr); 
+			start_VL_RecognitionTask(objPtr, data.addr); 
 		  }
 		  catch (DoesNotExistOnWMException e)
 		  {
