@@ -277,11 +277,11 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan) {
 
     if (plan.size() > 0) {
         ActionPtr first_action = plan[0];
+        //log("first action: %s", first_action->fullName.c_str());
         first_action->status = PENDING;
-        writeAction(first_action, task);
 	//nah: don't change this, as ut should be handled by executor
         //task->executionStatus = PENDING;
-        overwriteWorkingMemory(activeTasks[id].address, task);
+        writeAction(first_action, task);
     }
     else {
         log("Task %d succeeded.", task->id);
@@ -333,8 +333,10 @@ void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
         id = newDataID();
         task->firstActionID = id;
         addToWorkingMemory(id, action);
+        overwriteWorkingMemory(activeTasks[task->id].address, task);
     }
     else {
+        overwriteWorkingMemory(activeTasks[task->id].address, task);
         overwriteWorkingMemory(id, action);
     }
 }

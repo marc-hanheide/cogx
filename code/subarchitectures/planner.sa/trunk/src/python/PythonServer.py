@@ -22,8 +22,12 @@ from standalone.planner import Planner as StandalonePlanner
 
 
 TEST_DOMAIN_FN = join(dirname(__file__), "test_data/minidora.domain.mapl")
+class DummyWriter(object):
+  def write(*args):
+    pass
 
 class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
+  
   def __init__(self):
     cast.core.CASTComponent.__init__(self)
     self.client = None
@@ -39,6 +43,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     print "It worked. We got a server:", server
     self.client_name = config.get("--wm", "Planner")
     self.show_dot = "--nodot" not in config
+    if "--log" not in config:
+      sys.stdout = DummyWriter()
+
 
   def getClient(self):
     if not self.client:
@@ -116,6 +123,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       outplan.append(Planner.Action(task.taskID, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
       #outplan.append(Planner.Action(task_desc.id, pnode.action.name, pnode.args, fullname, Planner.Completion.PENDING))
     #print [a.fullName for a in  outplan]
+    print "First action:", ordered_plan[first_action], " == ", outplan[0].fullName
     plan.execution_position = first_action
     
     self.getClient().deliverPlan(task.taskID, outplan);
