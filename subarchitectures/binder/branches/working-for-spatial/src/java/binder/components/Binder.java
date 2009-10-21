@@ -35,10 +35,9 @@ import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.featvalues.AddressValue;
-import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationUnion;
-import binder.utils.BinderUtils;
 import binder.filtering.ConfigurationFilter;
+import binder.utils.BinderUtils;
 import binder.utils.DistributionGeneration;
 import binder.utils.ProbabilityUtils;
 import binder.utils.UnionConstructor;
@@ -744,7 +743,7 @@ public class Binder extends ManagedComponent  {
                 log("bound source of " + union.entityID + " to " + newSource.val);
 			}
 			else {
-				errlog("WARNING: no union has been created for the proxy " + sourceId +
+				log("WARNING: no union has been created for the proxy " + sourceId +
 							", referenced by the relation union " + union.entityID);
 			}
 		}
@@ -765,7 +764,7 @@ public class Binder extends ManagedComponent  {
                 log("bound target of " + union.entityID + " to " + newTarget.val);
 			}
 			else {
-				errlog("WARNING: no union has been created for the proxy " + targetId +
+				log("WARNING: no union has been created for the proxy " + targetId +
 							", referenced by the relation union " + union.entityID);
 			}
 		}
@@ -972,9 +971,9 @@ public class Binder extends ManagedComponent  {
 	
 	
 
-	private static void errlog (String s) {
-		if (ERRLOGGING)
-		System.out.println("[UnionConstructor] " + s);
-	}
+//	private static void errlog (String s) {
+////		if (ERRLOGGING)
+////		System.out.println("[UnionConstructor] " + s);
+//	}
 
 }
