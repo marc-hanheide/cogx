@@ -18,19 +18,19 @@
    <chooser id="c-mood"/> 
    <conditions>
       <!-- <condition features="@type:event"/> -->
-      <condition features="@type:relational"/>   
-      <condition features="@type:action"/>   
-      <condition features="@type:state"/>   
-      <condition features="@type:internal"/>   
+      <condition features="@type:relational @feat:DVPassigned:true"/>   
+      <condition features="@type:action @feat:DVPassigned:true"/>   
+      <condition features="@type:state @feat:DVPassigned:true"/>   
+      <condition features="@type:internal @feat:DVPassigned:true"/>   
       <!-- <condition features="@type:modal"/>   MODAL verbs never receive Mood, the mood of the utterance is determined by the governing verb -->
-      <condition features="@type:communication"/>   
-      <condition features="@type:symbolic"/>   
-      <condition features="@type:action-motion"/>   
-      <condition features="@type:action-non-motion"/>   
-      <condition features="@type:presentational"/>   
-      <condition features="@type:ascription"/>   
-      <condition features="@type:perception"/>   
-      <condition features="@type:cognition"/>   
+      <condition features="@type:communication @feat:DVPassigned:true"/>   
+      <condition features="@type:symbolic @feat:DVPassigned:true"/>   
+      <condition features="@type:action-motion @feat:DVPassigned:true"/>   
+      <condition features="@type:action-non-motion @feat:DVPassigned:true"/>   
+      <condition features="@type:presentational @feat:DVPassigned:true"/>   
+      <condition features="@type:ascription @feat:DVPassigned:true"/>   
+      <condition features="@type:perception @feat:DVPassigned:true"/>   
+      <condition features="@type:cognition @feat:DVPassigned:true"/>   
    </conditions>
    <actions>
       <action choice="indicative">

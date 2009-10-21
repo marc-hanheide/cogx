@@ -729,7 +729,22 @@ public class UtterancePlanner {
 	String answer; 
 	boolean answerbool = false;
 	LFNominal nom = lcs.getNominal();
-	String nomvar = nom.nomVar;
+		 
+		 if (!inq.getParameterValue("nomvar").equals("locus")) { 
+			 String nomID = lcs.getVariableId(inq.getParameterValue("nomvar"));
+			 log(3,"Apply inquiry q-ex-feat to nominal "+nomID);
+			 if (nomID.equals("unknown")) {
+				 throw new UPGException("Unknown nominal for variable "+inq.getParameterValue("nomvar")+" in inquiry q-ex-feat");
+			 } else { 
+				 LogicalForm glf = lcs.getLF();
+				 nom = LFUtils.lfGetNominal(glf, nomID);
+			 } // end if..else check whether variable is known. 
+		 } else { 
+			 nom = lcs.getNominal();
+		 } // end if..else check what nominal to take		 
+
+   String nomvar = nom.nomVar;
+
 	LFNominal lcn = LFUtils.lfGetNominal(lf, nomvar);
 	if (lcn.nomVar.equals("unknown")) { 
 	    throw new UPGException("Unknown locus "+nomvar+" in logical form "+LFUtils.lfToString(lf));

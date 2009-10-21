@@ -349,12 +349,15 @@ public class UPGChoosersReader
 
     public void processStartQExFeat (String eName, Attributes attrs) {
 	String feat = "";
+	String nomvar = "locus";
 	for (int i = 0; i < attrs.getLength(); i++) {
 	    String aName = attrs.getQName(i);
 	    if (aName.equals("feat")) { feat = attrs.getValue(i); }
+ 		 if (aName.equals("nomvar")) { nomvar = attrs.getValue(i); }	    
 	} // end for over attributes
 	currentInq.setCodeId("q-ex-feat");
 	currentInq.setParameterValue("feat",feat);
+   currentInq.setParameterValue("nomvar",nomvar);
     } /// end processStartComponent
 
     /**
