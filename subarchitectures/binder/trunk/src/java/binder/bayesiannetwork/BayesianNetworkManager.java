@@ -34,6 +34,7 @@ import binder.autogen.core.Union;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.utils.BinderUtils;
 import binder.utils.FeatureValueUtils;
 import binder.filtering.MaximumSearch;
 import binder.utils.ProbabilityUtils;
@@ -116,7 +117,16 @@ public class BayesianNetworkManager {
 
 			// distinct computation mechanisms for proxies and unions
 			if (entity instanceof Union) {		
+				if (((Union)entity).includedProxies.length == 3) {
+					System.out.println("--------------");
+					System.out.println("FOUND UNION WITH 3 PROXIES!");
+				}
 				distrib = getPriorDistributionForUnion ((Union) entity);
+				if (((Union)entity).includedProxies.length == 3) {
+					System.out.println("max prob: " + MaximumSearch.getMaximum(distrib));
+					System.out.println("--------------");
+
+				}
 			}
 
 			else {
@@ -246,8 +256,6 @@ public class BayesianNetworkManager {
 			jointDistrib = priorDistribs[0];
 		}
 
-		jointDistrib = filterDistribution (jointDistrib, priorDistribs);
-
 		return jointDistrib;
 	}
 
@@ -258,6 +266,9 @@ public class BayesianNetworkManager {
 		(DiscreteProbabilityDistribution distrib1, DiscreteProbabilityDistribution distrib2) {
 		
 		Vector<DiscreteProbabilityAssignment> jointAsses = new Vector<DiscreteProbabilityAssignment>();
+
+		System.out.println("DISTRIB 1: "  + BinderUtils.getPrettyPrintProbabilityDistribution(distrib1));
+		System.out.println("DISTRIB 2: "  + BinderUtils.getPrettyPrintProbabilityDistribution(distrib2));
 
 		for (int i = 0 ; i< distrib1.assignments.length ; i++) {
 
@@ -281,6 +292,14 @@ public class BayesianNetworkManager {
 		jointDistrib.assignments = new DiscreteProbabilityAssignment[jointAsses.size()];
 		jointDistrib.assignments = jointAsses.toArray(jointDistrib.assignments);
 
+		
+		// filtering
+		DiscreteProbabilityDistribution[] priorDistribs = new DiscreteProbabilityDistribution[2];
+		priorDistribs[0] = distrib1;
+		priorDistribs[1] = distrib2;
+		jointDistrib = filterDistribution (jointDistrib, priorDistribs);
+
+		
 		return jointDistrib;
 	}
 	
@@ -349,7 +368,7 @@ public class BayesianNetworkManager {
 					}
 
 					// Get the joint probability value for featpairs
-					float prob = (float) getJointProbabilityValue(featpairs); 
+					float prob = (float) getIndependentJointProbabilityValue (featpairs); 
 
 					// create a probability assignment for featpairs and add it to the new assignments
 					DiscreteProbabilityAssignment newAssignment = new DiscreteProbabilityAssignment();
@@ -369,6 +388,35 @@ public class BayesianNetworkManager {
 
 
 
+
+	/**
+	 * Compute the joint probability value for the given set of feature-value pairs
+	 * @param featpairs the feature value pairs
+	 * 
+	 * @return the probability value
+	 */
+	public double getIndependentJointProbabilityValue (Vector<FeatureValuePair> featpairs) {
+
+		double result = 1.0f;
+
+		// Loop on the feature value pairs
+		for(Enumeration<FeatureValuePair> e = featpairs.elements(); e.hasMoreElements(); ) {
+			FeatureValuePair featpair1 = e.nextElement();
+
+			// Compute the final probability for featpair1
+			double finalProbForFeatpair1;
+
+			// If featpair1 is conditionally independent from all the other features
+			finalProbForFeatpair1 = getIndependentProb(featpair1.featlabel, featpair1.featvalue);
+
+			// Integrate the probability of featpair1 into the total result
+			result = result * finalProbForFeatpair1;
+		}
+
+		log("joint probability value: " + result);
+		return result;
+	}
+	
 
 	/**
 	 * Compute the joint probability value for the given set of feature-value pairs
@@ -408,6 +456,7 @@ public class BayesianNetworkManager {
 				}
 			}
 
+			System.out.println("featpair: (" + featpair1.featlabel + ", " + FeatureValueUtils.toString(featpair1.featvalue)+ ")");
 			// Compute the final probability for featpair1
 			double finalProbForFeatpair1;
 			if (condProbs < 1.0f) {
@@ -424,13 +473,17 @@ public class BayesianNetworkManager {
 				else {
 					log("WARNING: not implemented yet");
 				}
+				System.out.println("--> condProbs:" + condProbs);
 			}
 			// If featpair1 is conditionally independent from all the other features
 			else {
 				finalProbForFeatpair1 = getIndependentProb(featpair1.featlabel, featpair1.featvalue);
+				System.out.println("--> getIndependentProb:" + finalProbForFeatpair1);
 			}
 
 			// Integrate the probability of featpair1 into the total result
+			
+			System.out.println("finalProbForFeatpair1: " + finalProbForFeatpair1);
 			result = result * finalProbForFeatpair1;
 		}
 
@@ -571,17 +624,21 @@ public class BayesianNetworkManager {
 		// Compute the maximum probability for the prior distribution of the union
 		float maxUnion = MaximumSearch.getMaximum(distrib);
 
+		System.out.println("MAXUnion: " + maxUnion);
+		
 		// And compute the product of the maximum probabilities for the prior distributions
 		// of the included proxies
-		float maxProxies = 1.0f;
+		float maxSubdistribs = 1.0f;
 		for (int i = 0; i < subdistribs.length ; i++) {
-			maxProxies = maxProxies * MaximumSearch.getMaximum(subdistribs[i]);
+			float maxSubdistrib = MaximumSearch.getMaximum(subdistribs[i]);
+			System.out.println("maxsubdistrib: " + maxSubdistrib);
+			maxSubdistribs = maxSubdistribs * maxSubdistrib;
 		} 
 
 		// In case the maximum for the union prior distribution turns out to be moreless equal to the 
 		// product of the maximums for the proxy prior distributions, reduce the probabilities 
 		// of the prior union distribution
-		if (maxUnion < (maxProxies + maxProxies/5)) {
+		if (maxUnion < (maxSubdistribs + maxSubdistribs/5)) {
 			distrib = ProbabilityUtils.multiplyDistributionWithConstantValue(distrib, 0.0000005f);
 		}	
 

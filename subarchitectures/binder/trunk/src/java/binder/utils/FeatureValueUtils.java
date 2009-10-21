@@ -177,6 +177,11 @@ public class FeatureValueUtils {
 			ProxyConstructor.setTimeStamp(mergedFV, fv2.timeStamp);
 			return mergedFV;
 		}
+		
+		if (FeatureValueUtils.haveEqualValue(fv1, fv2)) {
+			return fv1;
+		}
+		
 		else {
 			errlog("WARNING: feature merging for these type of values not implemented yet!");
 		}

@@ -127,12 +127,13 @@ edges {
        P(colour=blue|ling_attribute=red)=0.00001
    }
    
-   ling_proximity -> saliency {
-   		P(saliency=high|ling_proximity=proximal) = 0.999,
-   		P(saliency=high|ling_proximity=distal) = 0.999,
-   		P(saliency=low|ling_proximity=proximal) = 0.001,
-   		P(saliency=low|ling_proximity=distal) = 0.001
+   saliency -> ling_proximity {
+   		P(ling_proximity=proximal|saliency=high) = 0.999,
+   		P(ling_proximity=distal|saliency=high) = 0.999,
+   		P(ling_proximity=proximal|saliency=low) = 0.001,
+   		P(ling_proximity=distal|saliency=low) = 0.001
    	}
+   	
    	
 }
 	
