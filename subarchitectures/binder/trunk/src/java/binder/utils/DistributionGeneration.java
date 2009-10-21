@@ -23,6 +23,10 @@ package binder.utils;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
@@ -50,6 +54,8 @@ public class DistributionGeneration {
 
 	// flag to activate logging
 	public static boolean LOGGING = false;
+
+	private static Logger logger = ComponentLogger.getLogger(DistributionGeneration.class);
 
 	
 	// whether to normalise probability distributions (to sum up to 1.0) 
@@ -337,12 +343,12 @@ public class DistributionGeneration {
 
 	public static void log(String s) {
 		if (LOGGING)
-			System.out.println("[MaximumSearch] " + s);
+			logger.debug("[MaximumSearch] " + s);
 	}
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-			System.err.println("[MaximumSearch] " + s);
+			logger.debug("[MaximumSearch] " + s);
 	}
 
 }

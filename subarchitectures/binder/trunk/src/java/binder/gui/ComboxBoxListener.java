@@ -36,6 +36,10 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 public class ComboxBoxListener implements ActionListener {
 	
 	ControlPanel controlPanel;
@@ -45,6 +49,11 @@ public class ComboxBoxListener implements ActionListener {
 	
 	Vector<JPanel> curFeaturePanels;
 	HashMap<Integer,Vector<JPanel>> curFeatureValuePanels;
+	
+	
+	public boolean LOGGING = false;
+	private static Logger logger = ComponentLogger.getLogger(ComboxBoxListener.class);
+
 	
 	public ComboxBoxListener(ControlPanel controlPanel) {
 		this.controlPanel = controlPanel;
@@ -203,6 +212,7 @@ public class ComboxBoxListener implements ActionListener {
 
 
 	private void log(String s) {
-		System.out.println("[ComboBoxListener]" + s);
+		if (LOGGING)
+		logger.debug("[ComboBoxListener]" + s);
 	}
 }

@@ -19,7 +19,10 @@
 
 package binder.utils;
 
+import org.apache.log4j.Logger;
+
 import cast.cdl.CASTTime;
+import cast.core.logging.ComponentLogger;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.featvalues.AddressValue;
@@ -44,6 +47,8 @@ public class FeatureValueUtils {
 	// flag to activate logging
 	public static boolean LOGGING = false;
 	
+	private static Logger logger = ComponentLogger.getLogger(FeatureValueUtils.class);
+
 
 	// ================================================================= 
 	// UNKNOWN VALUES METHODS   
@@ -305,13 +310,13 @@ public class FeatureValueUtils {
 	 */
 	private static void log(String s) {
 		if (LOGGING) {
-		System.out.println("[FeatureValueUtils] " + s);
+		logger.debug ("[FeatureValueUtils] " + s);
 		}
 	}
 	
 	private static void errlog (String s) {
 		if (ERRLOGGING)
-		System.out.println("[FeatureValueUtils] " + s);
+		logger.debug ("[FeatureValueUtils] " + s);
 	}
 
 }

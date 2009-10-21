@@ -28,6 +28,8 @@ import java.util.Vector;
 
 import javax.swing.JFrame;
 
+import org.apache.log4j.Logger;
+
 
 import binder.abstr.BindingPredictor;
 import binder.autogen.core.Feature;
@@ -45,6 +47,7 @@ import binder.utils.GenericUtils;
 import binder.components.BinderMonitor;
 
 import cast.cdl.CASTTime;
+import cast.core.logging.ComponentLogger;
 
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
@@ -86,6 +89,9 @@ public class BinderMonitorGUI extends JFrame
 	
 	public boolean LOGGING = false;
 
+	private static Logger logger = ComponentLogger.getLogger(BinderMonitorGUI.class);
+
+	
 	HashMap<String,Object> insertedProxies;
 	HashMap<String,Object> insertedUnions;
 	
@@ -657,7 +663,7 @@ public class BinderMonitorGUI extends JFrame
 
 	private void log(String s) {
 		if (LOGGING)
-			System.out.println("[BinderMonitorGUI]" + s);
+			logger.debug("[BinderMonitorGUI]" + s);
 	}
 }
 

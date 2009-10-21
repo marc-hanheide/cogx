@@ -32,6 +32,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.components.BinderMonitor;
 
 // TODO: design a window to control various binder parameters
@@ -48,6 +52,11 @@ public class ControlPanel extends JPanel{
 	
 	BinderMonitor bm;
 
+	public boolean LOGGING = false;
+	
+	private static Logger logger = ComponentLogger.getLogger(ControlPanel.class);
+
+	
 	public ControlPanel(BinderMonitor bm) {
 		super(new BorderLayout());
 		this.bm = bm;

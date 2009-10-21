@@ -23,6 +23,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.UnionConfiguration;
 
 
@@ -39,7 +43,9 @@ public class GenericUtils {
 	// flag to activate logging
 	public static boolean logging = false;
 
+	private static Logger logger = ComponentLogger.getLogger(GenericUtils.class);
 
+	
 	/**
 	 * Extract text from a file (given its path)
 	 * 

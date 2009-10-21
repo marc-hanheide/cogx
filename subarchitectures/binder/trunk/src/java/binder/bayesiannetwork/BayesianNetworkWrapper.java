@@ -4,6 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.bayesiannetworks.BayesianNetwork;
 import binder.autogen.bayesiannetworks.BayesianNetworkEdge;
 import binder.autogen.bayesiannetworks.BayesianNetworkNode;
@@ -12,6 +16,7 @@ import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.bayesiannetwork.configparser.BNConfigParser;
+import binder.filtering.EntityFilter;
 import binder.utils.FeatureValueUtils;
 import binder.utils.GenericUtils;
 
@@ -29,8 +34,10 @@ public class BayesianNetworkWrapper {
 	private static final long serialVersionUID = 1L;
 
 	// flag to activate logging
-	public static boolean logging = false ;
+	public static boolean LOGGING = false ;
 	
+	private static Logger logger = ComponentLogger.getLogger(BayesianNetworkWrapper.class);
+
 	
 	// The bayesian network wrapped in this class
 	BayesianNetwork network;
@@ -259,8 +266,8 @@ public class BayesianNetworkWrapper {
 	 */
 	
 	private static void log(String s) {
-		if (logging) {
-			System.out.println("[BayesianNetworkWrapper] " + s);
+		if (LOGGING) {
+			logger.debug("[BayesianNetworkWrapper] " + s);
 		}
 	}
 }

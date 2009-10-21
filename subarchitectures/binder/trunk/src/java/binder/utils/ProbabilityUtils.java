@@ -22,6 +22,10 @@ package binder.utils;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
@@ -46,7 +50,8 @@ public class ProbabilityUtils {
 	// flag to activate logging
 	public static boolean LOGGING = true;
 
-	
+	private static Logger logger = ComponentLogger.getLogger(ProbabilityUtils.class);
+
 	
 	// ================================================================= 
 	// MARGINAL PROBABILITY VALUES METHODS   
@@ -472,12 +477,12 @@ public class ProbabilityUtils {
 
 	public static void log(String s) {
 		if (LOGGING)
-			System.out.println("[ProbabilityUtils] " + s);
+			logger.debug("[ProbabilityUtils] " + s);
 	}
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-			System.err.println("[ProbabilityUtils] " + s);
+			logger.debug("[ProbabilityUtils] " + s);
 	}
 
 }

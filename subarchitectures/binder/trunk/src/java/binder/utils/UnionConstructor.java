@@ -24,7 +24,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 import cast.cdl.CASTTime;
+import cast.core.logging.ComponentLogger;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
@@ -60,6 +63,8 @@ public class UnionConstructor  {
 	// flag to activate logging
 	public static boolean LOGGING = false;
 	
+	private static Logger logger = ComponentLogger.getLogger(UnionConstructor.class);
+
 	
 	// the Bayesian network manager
 	BayesianNetworkManager BNManager;
@@ -374,11 +379,11 @@ public class UnionConstructor  {
 	
 	private static void log (String s) {
 		if (LOGGING)
-		System.out.println("[UnionConstructor] " + s);
+		logger.debug("[UnionConstructor] " + s);
 	}
 	
 	private static void errlog (String s) {
 		if (ERRLOGGING)
-		System.out.println("[UnionConstructor] " + s);
+			logger.debug("[UnionConstructor] " + s);
 	}
 }

@@ -22,10 +22,13 @@ package binder.filtering;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Union;
-import binder.autogen.core.UnionConfiguration;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
@@ -49,7 +52,8 @@ public class EntityFilter {
 	// flag to activate logging
 	public static boolean LOGGING = false;
 
-
+	private static Logger logger = ComponentLogger.getLogger(EntityFilter.class);
+	
 	// ===================================================================
 	// METHODS FOR FILTERING MAX PROBABILITY UNIONS
 	// =================================================================== 
@@ -423,12 +427,12 @@ public class EntityFilter {
 
 	public static void log(String s) {
 		if (LOGGING)
-			System.out.println("[EntityFilter] " + s);
+			logger.debug("[EntityFilter] " + s);
 	}
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-			System.err.println("[EntityFilter] " + s);
+			logger.debug("[EntityFilter] " + s);
 	}
 
 }

@@ -23,6 +23,10 @@ package binder.filtering;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import binder.autogen.core.PerceivedEntity;
 import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
@@ -48,6 +52,9 @@ public class MaximumSearch {
 	// flag to activate logging
 	public static boolean LOGGING = false;
 
+	private static Logger logger = ComponentLogger.getLogger(MaximumSearch.class);
+
+	
 	// Cache of already computed maximum values for perceived entities
 	public static HashMap<PerceivedEntity,Float> maxForEntities = new HashMap<PerceivedEntity,Float>();
 
@@ -324,11 +331,11 @@ public class MaximumSearch {
 
 	public static void log(String s) {
 		if (LOGGING)
-			System.out.println("[MaximumSearch] " + s);
+			logger.debug("[MaximumSearch] " + s);
 	}
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-			System.err.println("[MaximumSearch] " + s);
+			logger.debug("[MaximumSearch] " + s);
 	}
 }
