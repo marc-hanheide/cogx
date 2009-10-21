@@ -1,7 +1,10 @@
 #include "common.h"
 #include "ForwardedAbducerServer.h"
 
+#include "Tokens.h"
+#include "TermTokeniser.h"
 #include "SliceToString.h"
+#include "StringToSlice.h"
 
 #include "TtyUtils.h"
 
@@ -195,6 +198,54 @@ ForwardedAbducerServer::prove(const vector<MarkedQueryPtr> & goals, const Ice::C
 */
 }
 
+MarkedQueryPtr
+markModalisedFormula(Marking mark, ModalisedFormulaPtr mf)
+{
+	switch (mark) {
+		case Proved: {
+				ProvedQueryPtr q = new ProvedQuery();
+				q->mark = Proved;
+				q->body = mf;
+				return q;
+			}
+			break;
+
+		case Unsolved: {
+				UnsolvedQueryPtr q = new UnsolvedQuery();
+				q->mark = Unsolved;
+				q->body = mf;
+				q->isConst = true;
+				q->constCost = 1.0;
+				q->costFunction = "";
+				return q;
+			}
+			break;
+
+		case Assumed: {
+				AssumedQueryPtr q = new AssumedQuery();
+				q->mark = Assumed;
+				q->body = mf;
+				q->isConst = true;
+				q->constCost = 1.0;
+				q->costFunction = "";
+				return q;
+			}
+			break;
+
+		case Asserted: {
+				AssertedQueryPtr q = new AssertedQuery();
+				q->mark = Asserted;
+				q->body = mf;
+				vector<ModalisedFormulaPtr> v;
+				q->antecedents = v;
+				return q;
+			}
+			break;
+
+	}
+	return NULL;
+}
+
 vector<MarkedQueryPtr>
 ForwardedAbducerServer::getBestProof(const Ice::Current&)
 {
@@ -228,7 +279,20 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 				break;
 		}
 
-		cerr << buf << endl;
+		string mfStr(buf+1);
+		cerr << mfStr << endl;
+
+		vector<Token *> toks = tokenise(mfStr);
+		vector<Token *>::iterator it = toks.begin();
+		ModalisedFormulaPtr mf = parseModalisedFormula(it);
+
+		if (mf) {
+			MarkedQueryPtr q = markModalisedFormula(mark, mf);
+			if (q) {
+				vect.push_back(q);
+			}
+		}
+
 		// extract the modformula
 	}
 
