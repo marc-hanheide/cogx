@@ -737,8 +737,9 @@ public class PlaceMonitor extends ManagedComponent {
 			if (_comaRoom.concepts.length!=0) {
 				for (String _currConcept : _comaRoom.concepts) {
 					if (_currConcept.equals("owl:Thing") 
-							|| _currConcept.equals(":PhysicalRoom") 
-							|| _currConcept.equals(":Portion_of_Space") ) {
+							|| _currConcept.endsWith("PhysicalRoom") 
+							|| _currConcept.endsWith("Portion_of_Space") 
+							|| _currConcept.endsWith("Portion_of_space")) {
 						continue;
 					}
 					log("current concept for proxy feature areaclass: " + _currConcept);
