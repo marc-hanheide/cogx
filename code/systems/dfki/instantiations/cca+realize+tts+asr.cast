@@ -1,11 +1,11 @@
 
 
-SUBARCHITECTURE speechrec 134.96.187.190
+SUBARCHITECTURE speechrec cosy01.dfki.uni-sb.de
 
 JAVA TM cast.architecture.AlwaysPositiveTaskManager --log
 JAVA WM cast.architecture.SubarchitectureWorkingMemory --log
 
-JAVA MG asr asr.ASR --src nuance --package lm/CFG_playmate_CONSTRAINED --log
+JAVA MG asr asr.ASR --src nuance --package george --log
 
 SUBARCHITECTURE comsys localhost
 
