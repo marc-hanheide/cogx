@@ -143,17 +143,17 @@ term_to_mrule(T, m(Mod, R)) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-atomic_formula_to_string(_Varset, p(PredSym, [])) = PredSym.
-atomic_formula_to_string(Varset, p(PredSym, [H|T])) = PredSym ++ "(" ++ ArgStr ++ ")" :-
+atomic_formula_to_string(_Varset, p(PredSym, [])) = "'" ++ PredSym ++ "'".
+atomic_formula_to_string(Varset, p(PredSym, [H|T])) = "'" ++ PredSym ++ "'(" ++ ArgStr ++ ")" :-
 	ArgStr = string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])).
 
 formula_term_to_string(Varset, Arg) = S :-
 	(
 		Arg = t(Functor, []),
-		S = Functor
+		S = "'" ++ Functor ++ "'"
 	;
 		Arg = t(Functor, [H|T]),
-		S = Functor ++ "(" ++ string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])) ++ ")"
+		S = "'" ++ Functor ++ "'(" ++ string.join_list(", ", list.map(formula_term_to_string(Varset), [H|T])) ++ ")"
 	;
 		Arg = v(Var),
 		S = varset.lookup_name(Varset, Var)
@@ -177,7 +177,7 @@ term_to_list_of_mods(T, L) :-
 :- func modality_to_string(list(M)) = string <= (modality(M), stringable(M)).
 
 modality_to_string([]) = "".
-modality_to_string([H|T]) = string.join_list(":", list.map(to_string, [H|T])) ++ ":".
+modality_to_string([H|T]) = "{" ++ string.join_list(", ", list.map(to_string, [H|T])) ++ "}".
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

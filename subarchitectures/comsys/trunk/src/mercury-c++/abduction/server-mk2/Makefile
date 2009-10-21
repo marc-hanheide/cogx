@@ -10,10 +10,10 @@ SLICE_PATH?=../../../slice
 
 BIN=abducer-server-mk2
 
-CXX_HEADERS=Tokens.h TermTokeniser.h TermParsing.h Terms.h TtyUtils.h ForwardedAbducerServer.h SliceToString.h StringToSlice.h
+CXX_HEADERS=Tokens.h TermTokeniser.h Terms.h TtyUtils.h ForwardedAbducerServer.h SliceToString.h StringToSlice.h
 CXX_HEADERS+=Abducer.h
 
-CXX_SOURCES=Tokens.cc TermTokeniser.cc ServerMain.cc TermParsing.cc Terms.cc TtyUtils.cc ForwardedAbducerServer.cc SliceToString.cc StringToSlice.cc
+CXX_SOURCES=Tokens.cc TermTokeniser.cc ServerMain.cc Terms.cc TtyUtils.cc ForwardedAbducerServer.cc SliceToString.cc StringToSlice.cc
 CXX_SOURCES+=Abducer.cc
 
 CXXFLAGS=-Wall
