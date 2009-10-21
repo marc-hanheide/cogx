@@ -15,7 +15,7 @@ Simple first-shot version:
   if asserted then Rheme
 */ -->
 
-<system id="proofStatus.entity" region="infoStruct" metafunction="textual">
+<system id="rhemeAssign.entity" region="infoStruct" metafunction="textual">
    <chooser id="c-proofStatus"/> 
    <conditions>
       <condition features="@type:entity"/> 
@@ -47,7 +47,7 @@ This should only apply to quality in ascription-property; quality to realize as 
 BUT: if quality-standalone were to be generated, this system should apply.
 
 */ -->
-<system id="proofStatus.quality" region="infoStruct" metafunction="textual">
+<system id="rhemeAssign.quality" region="infoStruct" metafunction="textual">
    <chooser id="c-proofStatus"/> 
    <conditions>
       <condition features="@type:quality"/> 
@@ -66,7 +66,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 </system>
 
 
-<system id="proofStatus.event" region="infoStruct" metafunction="textual">
+<system id="rhemeAssign.event" region="infoStruct" metafunction="textual">
    <chooser id="c-proofStatus"/> 
    <conditions>  <!-- all types of events: -->
       <condition features="@type:relational"/>   
@@ -108,6 +108,32 @@ if Rheme present then
 
 Simplest first-shot version
 
+*/ --> 
+
+<system id="rheme.ownership" region="infoStruct" metafunction="textual">
+   <chooser id="c-rheme.ownership"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-true"/>   
+      <condition features="@feat:Rheme:m-rheme-true"/>   
+      <condition features="@feat:Rheme:e-rheme-true"/>   
+   </conditions>
+   <actions>
+      <action choice="speakerRhOwner">
+        	<add-feature feature="RhOwner" value="rh-speaker" dest="CONTENT" /> <!-- must go to main-predicate level -->
+      </action>     
+      
+      <action choice="hearerRhOwner">
+        	<add-feature feature="RhOwner" value="rh-hearer" dest="CONTENT" /> <!-- must go to main-predicate level -->
+      </action>        
+      
+      <action choice="doneRhOwner">
+      </action> 
+        
+   </actions>
+</system>
+
+
+<!-- /**
 @system ownership.theme
 
 if Theme present then
@@ -116,21 +142,24 @@ if Theme present then
 Theme present iff <Rheme> == t-rheme-false or m-rheme-false or e-rheme-false
 no rheme feature also means Theme (for the grammar)
 
-Simplest first-shot version
-
+Following Steedman's approach, we would only ever need Themes owned by (attributed to) H
 */ --> 
 
-<system id="ownership.theme" region="infoStruct" metafunction="textual">
-   <chooser id="default"/> 
+<system id="theme.ownership" region="infoStruct" metafunction="textual">
+   <chooser id="c-theme.ownership"/> 
    <conditions>
       <condition features="@feat:Rheme:t-rheme-false"/>   
       <condition features="@feat:Rheme:m-rheme-false"/>   
       <condition features="@feat:Rheme:e-rheme-false"/>   
    </conditions>
    <actions>
-      <action choice="default">
-        	<add-feature feature="ThOwner" value="th-hearer" />      <!-- BUT: must go to main-predicate level !!!!!! -->
-      </action>     
+      <action choice="hearerThOwner">
+        	<add-feature feature="ThOwner" value="th-hearer" dest="CONTENT" /> <!-- must go to main-predicate level -->
+      </action>   
+
+      <action choice="doneThOwner">
+      </action> 
+        
    </actions>
 </system>
 

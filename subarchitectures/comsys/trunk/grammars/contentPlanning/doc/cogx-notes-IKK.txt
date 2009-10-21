@@ -9,6 +9,20 @@ Java 1.6 problem:
 entry condition checking for @type:substance and @feat:NumberID 
 systems in delimitation and quantification entered though shouldn't be
 for now added checking in the chooser as well
+check for encoding; we use utf=8 but standard is 16, could there be something with this?
+
+
+InfoStruct:
+ # theme/rheme 
+ # ownership
+   agreement
+   focus
+
+
+"questions" in indicative and interrogative mood for clarification
+probablybest to introduce clarif question as a separate cat? or as relation type?
+check if yes/no question, in which case do random choice between indic and interr --> intonation matters!
+
 
 Exclude it-pronominalization when modifiers are present
 this is working:
