@@ -19,6 +19,7 @@ CXX_SOURCES+=Abducer.cc
 CXXFLAGS=-Wall
 CXXFLAGS+=-I. -I$(ICE_HOME)/include
 CXXFLAGS+=-DABDUCER_ICE_VERSION=\"$(ABDUCER_ICE_VERSION)\"
+CXXFLAGS+=-g
 
 LDFLAGS=-L$(ICE_HOME)/lib -lIce -lIceUtil
 
@@ -33,7 +34,8 @@ LIBABDUCER=../lib/libabducer.a
 
 MCFLAGS?=--search-lib-files-dir ../lib \
 		--init-file ../lib/abducer.init \
-		--link-object $(LIBABDUCER)
+		--link-object $(LIBABDUCER) \
+		--cflag -g
 
 #------------------------------------------------------------------------------#
 # You shouldn't need to edit anything below.

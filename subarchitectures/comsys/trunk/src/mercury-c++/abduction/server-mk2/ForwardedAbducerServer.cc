@@ -257,6 +257,8 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 
 	cin >> num;
 
+	cerr << "reading " << num << " queries" << endl;
+
 	vector<MarkedQueryPtr> vect;
 
 	while (cin && num > 0) {
@@ -291,9 +293,15 @@ ForwardedAbducerServer::getBestProof(const Ice::Current&)
 			if (q) {
 				vect.push_back(q);
 			}
+			else {
+				cerr << "q null" << endl;
+			}
+		}
+		else {
+			cerr << "mf null" << endl;
 		}
 
-		// extract the modformula
+		num--;
 	}
 
 	return vect;

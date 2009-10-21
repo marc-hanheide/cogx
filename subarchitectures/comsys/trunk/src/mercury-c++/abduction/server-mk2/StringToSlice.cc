@@ -178,13 +178,23 @@ parseModalisedFormula(vector<Token *>::iterator & it)
 }
 
 Abducer::Agent
-atomTokenToAgent(const AtomToken * tok)
+tokenToAgent(const Token * tok)
 {
-	if (tok->value() == "h") {
-		return human;
+	cerr << "tokenToAgent: \"" << tok->toMercuryString() << "\"" << endl;
+	if (tok->type() == Atom) {
+		AtomToken * atok = (AtomToken *) tok;
+		if (atok->value() == "h") {
+			cerr << "  human" << endl;
+			return human;
+		}
+		else {
+			cerr << "  robot" << endl;
+			return robot;
+		}
 	}
 	else {
-		return robot;
+		cerr << "not an atom!! type" << tok->type() << endl;
+		return human;
 	}
 }
 
@@ -241,28 +251,37 @@ parseModality(std::vector<Token *>::iterator & it)
 				it++;  // skip the comma
 				if ((*it)->type() == Atom) {
 					AtomToken * shareTok = (AtomToken *) *it;
+					cerr << (*it)->toMercuryString() << endl;
+					it++; cerr << (*it)->toMercuryString() << endl;
+					it++;  // skip '('
+					cerr << (*it)->toMercuryString() << endl;
 
 					if (shareTok->value() == "private") {
+						cerr << "private" << endl;
 						km->share = Private;
-						it++;  // skip '('
-						km->ag = atomTokenToAgent((AtomToken *)*it);
+						km->ag = tokenToAgent(*it);
 						km->ag2 = km->ag;
+						it++;
 						it++;  // skip ')'
 					}
 					else if (shareTok->value() == "attrib") {
+						cerr << "attrib" << endl;
 						km->share = Attribute;
-						it++;  // skip '('
-						km->ag = atomTokenToAgent((AtomToken *)*it);
+						km->ag = tokenToAgent(*it);
+						it++;
 						it++;  // skip ','
-						km->ag2 = atomTokenToAgent((AtomToken *)*it);
+						km->ag2 = tokenToAgent(*it);
+						it++;
 						it++;  // skip ')'
 					}
 					else if (shareTok->value() == "mutual") {
+						cerr << "mutual" << endl;
 						km->share = Mutual;
-						it++;  // skip '('
-						km->ag = atomTokenToAgent((AtomToken *)*it);
+						km->ag = tokenToAgent(*it);
+						it++;
 						it++;  // skip ','
-						km->ag2 = atomTokenToAgent((AtomToken *)*it);
+						km->ag2 = tokenToAgent(*it);
+						it++;
 						it++;  // skip ')'
 					}
 
