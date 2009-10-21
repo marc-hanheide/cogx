@@ -26,9 +26,13 @@ import javax.swing.table.TableRowSorter;
 
 import motivation.util.castextensions.WMEntrySet.ChangeHandler;
 import motivation.util.viewer.plugins.Plugin;
+
+import org.apache.log4j.Logger;
+
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.logging.ComponentLogger;
 
 /**
  * @author marc
@@ -52,11 +56,15 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 	private JPanel jPanel = null;
 	private JCheckBox jCheckBox = null;
 	volatile protected boolean freezeView;
+	private Logger logger;
 
+	
+	
+	
 	/**
 	 * This is the default constructor
 	 */
-	public ViewerGUI() {
+	public ViewerGUI(Logger _logger) {
 		super();
 		freezeView = false;
 		counter = 0;
@@ -72,10 +80,15 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 		columnHeadings.add("info2");
 		columnHeadings.add("info3");
 		columnHeadings.add("info4");
+		logger = _logger;
 		initialize();
-
 	}
 
+	public ViewerGUI() {
+		this(ComponentLogger.getLogger(ViewerGUI.class));
+	}
+
+	
 	private synchronized void mapToTableModel() {
 		final Vector<Vector<Object>> v = new Vector<Vector<Object>>(
 				tableContent.values());
@@ -201,14 +214,14 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			String fullName = this.getClass().getPackage().getName()
 					+ ".plugins." + SimpleName + "Info";
 			try {
-				System.out.println("trying to load class " + fullName);
+				logger.debug("trying to load class " + fullName);
 				ClassLoader.getSystemClassLoader().loadClass(fullName);
 				pluginToCall = (Plugin) Class.forName(fullName).newInstance();
-				System.out.println("succeeded... memorize plugin " + fullName
+				logger.debug("succeeded... memorize plugin " + fullName
 						+ "for type " + oType.getSimpleName());
 				break;
 			} catch (ClassNotFoundException e) {
-				System.out.println("no class " + fullName + "exists.");
+				logger.debug("no class " + fullName + "exists.");
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -258,7 +271,7 @@ public class ViewerGUI extends JFrame implements ChangeHandler {
 			tableContent.put(wmc.address, row);
 			break;
 		case DELETE:
-			System.out.println("deleted from table models "+motive.getClass().getSimpleName());
+			logger.debug("deleted from table models "+motive.getClass().getSimpleName());
 			tableContent.remove(wmc.address);
 			break;
 		}
