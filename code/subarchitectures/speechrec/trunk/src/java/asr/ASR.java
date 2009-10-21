@@ -107,6 +107,9 @@ public class ASR extends ManagedComponent {
 	String confidencethreshold;
 	String port;
 	String pruning;
+	
+	
+	public final String PACKAGE_PATH = "D:\\dfki\\cogx\\systems\\speechrec\\lm\\";
 
 	// Whether the result of the speech recognition are to be
 	// synthesized
@@ -260,7 +263,7 @@ public class ASR extends ManagedComponent {
 
 		log("(Press Ctrl+C to stop the recognition client)\n");
 
-		String args = "-package " + packageASR + 
+		String args = "-package " + PACKAGE_PATH + packageASR + 
 		" lm.Addresses=134.96.187.190 " +
 		//	" audio.Provider=sip" +
 		" audio.Device=@any " +  
