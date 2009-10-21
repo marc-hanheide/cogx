@@ -324,7 +324,7 @@ public class EntityFilter {
 			if (initRUnion.utarget.alternativeValues[0] != null) {
 				newRUnion.utarget.alternativeValues[0] = initRUnion.utarget.alternativeValues[0];
 			}
-			else {
+			else if (LOGGING) {
 				log("newRUnion.utarget.alternativeValues[0] is null!");
 			}
 		}
