@@ -264,12 +264,18 @@ public class EntityFilter {
 			if (initRUnion.psource.alternativeValues[0] != null) {
 				newRUnion.psource.alternativeValues[0] = initRUnion.psource.alternativeValues[0];
 			}
+			else {
+				errlog("newRUnion.psource.alternativeValues[0] is null!");
+			}
 		}
-		else if (LOGGING) {
-			log("psource: " + initRUnion.psource);
-			log("psource.featlabel: " + initRUnion.psource.featlabel);
-			log("psource.alternativeValues: " + initRUnion.psource.alternativeValues);
-			log("psource.alternativeValues.length: " + initRUnion.psource.alternativeValues.length);
+		else {
+			errlog("WARNING: source proxy in the relation union is not properly specified!");
+			if (LOGGING) {
+				log("psource: " + initRUnion.psource);
+				log("psource.featlabel: " + initRUnion.psource.featlabel);
+				log("psource.alternativeValues: " + initRUnion.psource.alternativeValues);
+				log("psource.alternativeValues.length: " + initRUnion.psource.alternativeValues.length);
+			}
 		}
 
 		if(initRUnion.usource != null && initRUnion.usource.featlabel != null && 
@@ -286,12 +292,15 @@ public class EntityFilter {
 				log("newRUnion.usource.alternativeValues[0] is null!");
 			}
 		}
-		
-		else if (LOGGING) {
-			log("usource: " + initRUnion.usource);
-			log("usource.featlabel: " + initRUnion.usource.featlabel);
-			log("usource.alternativeValues: " + initRUnion.usource.alternativeValues);
-			log("usource.alternativeValues.length: " + initRUnion.usource.alternativeValues.length);
+
+		else {
+			errlog("WARNING: source union in the relation union is not properly specified!");
+			if (LOGGING) {
+				log("usource: " + initRUnion.usource);
+				log("usource.featlabel: " + initRUnion.usource.featlabel);
+				log("usource.alternativeValues: " + initRUnion.usource.alternativeValues);
+				log("usource.alternativeValues.length: " + initRUnion.usource.alternativeValues.length);
+			}
 		}
 
 		if(initRUnion.ptarget != null && initRUnion.ptarget.featlabel != null && 
@@ -305,19 +314,25 @@ public class EntityFilter {
 			if (initRUnion.ptarget.alternativeValues[0] != null) {
 				newRUnion.ptarget.alternativeValues[0] = initRUnion.ptarget.alternativeValues[0];
 			}
+			else {
+				errlog("newRUnion.ptarget.alternativeValues[0] is null!");
+			}
 		}
-		
-		else if (LOGGING) {
-			log("ptarget: " + initRUnion.ptarget);
-			log("ptarget.featlabel: " + initRUnion.ptarget.featlabel);
-			log("ptarget.alternativeValues: " + initRUnion.ptarget.alternativeValues);
-			log("ptarget.alternativeValues.length: " + initRUnion.ptarget.alternativeValues.length);
+
+		else {
+			errlog("WARNING: target proxy in the relation union is not properly specified!");
+			if (LOGGING) {
+				log("ptarget: " + initRUnion.ptarget);
+				log("ptarget.featlabel: " + initRUnion.ptarget.featlabel);
+				log("ptarget.alternativeValues: " + initRUnion.ptarget.alternativeValues);
+				log("ptarget.alternativeValues.length: " + initRUnion.ptarget.alternativeValues.length);
+			}
 		}
 
 		if(initRUnion.utarget != null && initRUnion.utarget.featlabel != null && 
 				initRUnion.utarget.alternativeValues != null && 
 				initRUnion.utarget.alternativeValues.length > 0) {
-			
+
 			newRUnion.utarget = new Feature();
 			newRUnion.utarget.featlabel = initRUnion.utarget.featlabel;	
 			newRUnion.utarget.alternativeValues = new FeatureValue[1];
@@ -328,11 +343,14 @@ public class EntityFilter {
 				log("newRUnion.utarget.alternativeValues[0] is null!");
 			}
 		}
-		else if (LOGGING) {
-			log("utarget: " + initRUnion.utarget);
-			log("utarget.featlabel: " + initRUnion.utarget.featlabel);
-			log("utarget.alternativeValues: " + initRUnion.utarget.alternativeValues);
-			log("utarget.alternativeValues.length: " + initRUnion.utarget.alternativeValues.length);		
+		else {
+			errlog("WARNING: target union in the relation union is not properly specified!");
+			if (LOGGING) {
+				log("utarget: " + initRUnion.utarget);
+				log("utarget.featlabel: " + initRUnion.utarget.featlabel);
+				log("utarget.alternativeValues: " + initRUnion.utarget.alternativeValues);
+				log("utarget.alternativeValues.length: " + initRUnion.utarget.alternativeValues.length);		
+			}
 		}
 
 		return newRUnion;
