@@ -77,7 +77,7 @@ kde_out = reapproximateKDEusingSMO( kde_aug_kde, pdf_kde_res, kde_ref, useCorrec
 if (unlearning_MakeProperPdf == 1)
     if isequal(usehalfHellinger,1)
         hellOrig = kde_out.otherParams.compressionClusterThresh ;
-        kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', hellOrig/5 ) ;
+        kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', hellOrig/1.5 ) ;
         kde_out = executeOperatorIKDE( kde_out, 'compress_pdf' ) ;
         kde_out = executeOperatorIKDE( kde_out, 'compressionClusterThresh', hellOrig ) ;
     else

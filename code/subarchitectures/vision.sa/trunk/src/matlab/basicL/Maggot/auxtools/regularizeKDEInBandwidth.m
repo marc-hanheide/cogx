@@ -37,14 +37,15 @@ s = diag(S) ;
 %    s( e <= practicallyZero ) = defaultval ;
    
 if min(s) < minVal  
-   id_ok = ( s > minVal ) ;
+   id_ok = find(s > minVal) ;
+   id_notok = find(s <= minVal) ;
    if sum(id_ok) > 0
        defaultval = mean(s( id_ok ))*1e-3 ;
    else
        defaultval = minVal ;
    end
   
-   s( s <= minVal ) = defaultval ;  
+   s( id_notok ) = defaultval ;  
    
    H = U*diag(s)*U' ;
    % reset the bandwidth     
