@@ -123,7 +123,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       outplan.append(Planner.Action(task.taskID, pnode.action.name, uargs, fullname, Planner.Completion.PENDING))
       #outplan.append(Planner.Action(task_desc.id, pnode.action.name, pnode.args, fullname, Planner.Completion.PENDING))
     #print [a.fullName for a in  outplan]
-    print "First action:", ordered_plan[first_action], " == ", outplan[0].fullName
+    if outplan:
+      print "First action:", ordered_plan[first_action], " == ", outplan[0].fullName
+    else:
+      print "Plan is empty"
     plan.execution_position = first_action
     
     self.getClient().deliverPlan(task.taskID, outplan);
