@@ -70,11 +70,12 @@ else
   % the eigenvectors of the covariance matrix.  Their lengths (for
   % the ellipse with unit Mahalanobis radius) are given by the
   % square roots of the corresponding eigenvalues.
-  if (issparse(Sigma))
-    [V, D] = eigs(Sigma);
-  else
-    [V, D] = eig(Sigma);
-  end
+%   if (issparse(Sigma))
+%     [V, D] = eigs(Sigma);
+%   else
+%     [V, D] = eig(Sigma);
+%   end
+  [U,D,V]=svd(Sigma) ;
   % Compute the points on the surface of the ellipse.
   t = linspace(0, 2*pi, n);
   u = [cos(t); sin(t)];
