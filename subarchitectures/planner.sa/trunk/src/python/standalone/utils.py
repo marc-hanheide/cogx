@@ -282,6 +282,27 @@ def is_dated(cfn, fn):
     from os.path import exists, getmtime
     return not exists(cfn) or getmtime(cfn) < getmtime(fn)
 
+def rmgeneric(path, __func__):
+    assert __func__ in [os.remove, os.rmdir]
+    try:
+        __func__(path)
+    except OSError, (errno, strerror):
+        print "Warning: Error removing %(path)s, %(error)s" % {'path' : path, 'error': strerror }
+
+def removeall(path):
+    if not os.path.isdir(path):
+        return
+    files=os.listdir(path)
+    for x in files:
+        fullpath=os.path.join(path, x)
+        if os.path.isfile(fullpath):
+            f=os.remove
+            rmgeneric(fullpath, f)
+        elif os.path.isdir(fullpath):
+            removeall(fullpath)
+            f=os.rmdir
+            rmgeneric(fullpath, f)
+
 def run_command(cmd, input=None, output=None):
     """
     Runs a command, possibly with redirected input/output.

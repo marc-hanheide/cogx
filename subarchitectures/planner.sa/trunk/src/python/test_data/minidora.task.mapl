@@ -10,9 +10,11 @@
 	(= (place_id place1) pid1)
 	(= (place_id place2) pid2)
 	(= (place_id place3) pid3)
-	(place_connectivity place1 pid1)
-	(place_connectivity place2 pid2)
-	(= (position R2D2) pid1)
+	(connected place1 place2)
+	(connected place2 place1)
+	(connected place2 place3)
+	(connected place3 place2)
+	(located R2D2 place1)
 )
 
 (:goal (and
