@@ -436,20 +436,23 @@ void ConvexHullOfPlane(VisionData::SurfacePointSeq &points, std::vector <int> &l
 		CvMat hullMat = cvMat( 1, j-1, CV_32SC1, hull);
 		cvConvexHull2(&pointMat, &hullMat, CV_CLOCKWISE, 0);
 		//draw the hull
-		if (mbDrawWire)	glBegin(GL_LINE_LOOP); else glBegin(GL_POLYGON);
-		glColor3f(1.0,1.0,1.0);
-		Vector3 v3OnPlane;
-		for (int i = 0; i<hullMat.cols; i++)
+		if (hullMat.cols != 0)
 		{
-			v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
-			glVertex3f(v3OnPlane.x,v3OnPlane.y,v3OnPlane.z);
-			mConvexHullPoints.push_back(v3OnPlane);
-			mCenterOfHull += v3OnPlane;
+			if (mbDrawWire)	glBegin(GL_LINE_LOOP); else glBegin(GL_POLYGON);
+			glColor3f(1.0,1.0,1.0);
+			Vector3 v3OnPlane;
+			for (int i = 0; i<hullMat.cols; i++)
+			{
+				v3OnPlane = ProjectOnDominantPlane(PlanePoints3D.at(hull[i]));
+				glVertex3f(v3OnPlane.x,v3OnPlane.y,v3OnPlane.z);
+				mConvexHullPoints.push_back(v3OnPlane);
+				mCenterOfHull += v3OnPlane;
+			}
+			mCenterOfHull /= hullMat.cols;
+			mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
+			glEnd();
+			free( hull );
 		}
-		mCenterOfHull /= hullMat.cols;
-		mConvexHullRadius = sqrt((v3OnPlane.x-mCenterOfHull.x)*(v3OnPlane.x-mCenterOfHull.x)+(v3OnPlane.y-mCenterOfHull.y)*(v3OnPlane.y-mCenterOfHull.y)+(v3OnPlane.z-mCenterOfHull.z)*(v3OnPlane.z-mCenterOfHull.z));
-		glEnd();
-	        free( hull );
 	}
 	free( points2D );
 }
@@ -682,6 +685,7 @@ void DisplayWin()
   }
   else
   {
+	ConvexHullOfPlane(pointsN,points_label);
 	v3size.clear();
 	v3center.clear();
 	vdradius.clear();
@@ -785,7 +789,7 @@ void PlanePopOut::runComponent()
 	if (points.size() == 0)
 		points = tempPoints;
 	else
-	{if (points.at(0).p.x !=0.0)	//log("first point is %f, %f, %f",points.at(0).p.x, points.at(0).p.y, points.at(0).p.z);
+	{	//cout<<"we get "<<points.size()<<" points"<<endl;
 		tempPoints.clear();
 		pointsN.clear();
 		objnumber = 0;
@@ -797,7 +801,7 @@ void PlanePopOut::runComponent()
 	
 
 		if (RANSAC(pointsN,points_label))
-		{
+		{	//cout<<"after ransac we have "<<points.size()<<" points"<<endl;
 			SplitPoints(pointsN,points_label);
 			glutPostRedisplay();
 			glutMainLoopEvent();
