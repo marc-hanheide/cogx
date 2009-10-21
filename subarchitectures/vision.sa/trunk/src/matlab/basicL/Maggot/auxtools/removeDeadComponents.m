@@ -5,11 +5,16 @@
 %%
 function [pdf_out, idx] = removeDeadComponents( pdf_in, eps_dead )
 
-
 idx = find(pdf_in.w>eps_dead) ;
 pdf_out.w = pdf_in.w(idx) ;
 pdf_out.Mu = pdf_in.Mu(:,idx) ;
 pdf_out.Cov = pdf_in.Cov(idx) ;
+
+if isfield(pdf_in, 'suffStat')
+    pdf_out.suffStat.B = pdf_in.suffStat.B(idx) ;
+    pdf_out.suffStat.A = pdf_in.suffStat.A(idx) ;
+    pdf_out.suffStat.subLayer = pdf_in.suffStat.subLayer(idx) ;
+end
 if nargout == 1
     idx = [] ;
 end

@@ -632,7 +632,8 @@ switch operator_data
          if size(input_kde.pdf.Mu,1) == 1
              showkdecolor = 'r' ;
          end
-         visualizeKDE('kde', input_kde, 'input_data', input_data, 'tabulated', showTabulated, 'showkdecolor', showkdecolor) ;
+         visualizeKDE('kde', input_kde, 'input_data', input_data, 'tabulated',...
+             showTabulated, 'showkdecolor', showkdecolor) ;
          out_kde = [] ;
 end
  
