@@ -47,7 +47,7 @@ import cast.core.CASTData;
 import cast.core.CASTUtils;
 
 
-import speechrec.autogen.PhonString;
+import comsys.datastructs.comsysEssentials.PhonString;
 import vcommerce.core.util.*;
 import vcommerce.core.sc.*;
 
