@@ -1,8 +1,6 @@
 % hi
 generate : intention : greeting(h, r) <-
-	dummy_nom1(Nom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
+	utt_head(Nom),
 	i : feat_SpeechAct(Nom, greeting) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
@@ -20,9 +18,7 @@ generate : intention : greeting(h, r) <-
 % no I do not know what this is
 generate : intention : ask_yn(h, Object, Prop, PropValue) <-
 	query_belief(Object, Prop, PropValue, AnswerType),
-	dummy_nom1(Nom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
+	utt_head(Nom),
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, answer) / 1.0,
 	i : feat_AnswerType(Nom, AnswerType) / 1.0,
@@ -38,19 +34,32 @@ generate : it(Nom) <-
 	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
 	i : feat_Salient(Nom, true) / 1.0.
 
+%generate: i_dont_know(Nom) <-
+%	i : feat_CannedText(Nom, 'I_do_not_know') / 1.0.
+
+%@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Polarity>neg ^ <Actor>(i:person ^ I ))
 generate: i_dont_know(Nom) <-
-	i : feat_CannedText(Nom, 'I_do_not_know') / 1.0.
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, cognition) / 1.0,
+		i : prop(ContentNom, know) / 1.0,
+		i : feat_Polarity(ContentNom, neg) / 1.0,
+		i : rel_Actor(ContentNom, ActorNom) / 1.0,
+			i : sort(ActorNom, person) / 1.0,
+			i : prop(ActorNom, 'I') / 1.0.
 
 % what Prop is the Object
 generate : intention : ask_property(h, Object, Prop) <-
 	check_property_value(Object, Prop, Result),
 	reply_to_result(Nom, Object, Prop, Result),
-	utt_head(Nom),
 %	i : feat_CannedText(Nom, 'You_asked_me_about_a_property') / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 reply_to_result(Nom, Object, Prop, unknown) <-
-	utt_head(Nom),
 	generate : i_dont_know(Nom).
 
 %@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ box)  ^ <Color>(b3:quality ^ blue)))
@@ -133,9 +142,7 @@ generate : intention : grounding(discourse, assertionFalsified) <-
 	event : produce(r, Nom) / 1.0.
 
 generate : intention : grounding(vision, assertionFalsified) <-
-	dummy_nom1(Nom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
+	utt_head(Nom),
 	i : feat_CannedText(Nom, 'I_do_not_see_that') / 1.0,
 	event : produce(r, Nom) / 1.0.
 
@@ -189,16 +196,14 @@ equality_to_polarity(X, Y, negative) <-
 %	feat_not_equal_to(Object, Prop, PropValue) / 20.0.
 
 generate : intention : assert_prop(h, Object, Property) <-
-	dummy_nom1(Nom),
+	utt_head(Nom),
 	dummy_nom2(ContentNom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_Relation(Nom, filler) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 %what color does the box have
 generate : intention : need_get_value(Modality, Entity, color) <-
-	dummy_nom1(Nom),
+	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
@@ -207,8 +212,6 @@ generate : intention : need_get_value(Modality, Entity, color) <-
 	k(now, private(r)) : objecttype(Entity, Type),
 %	k(now, attrib(r, h)) : objecttype(Entity, Type) / 1.0,
 	%k(now, attrib(r, h)) : objecttype(Entity, Type),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, question) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
@@ -225,13 +228,11 @@ generate : intention : need_get_value(Modality, Entity, color) <-
 % is the object blue
 %d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
 generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
-	dummy_nom1(Nom),
+	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
 	k(now, private(r)) : objecttype(Entity, Type),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
 	i : feat_SpeechAct(Nom, question) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
@@ -246,9 +247,7 @@ generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis
 	event : produce(r, Nom) / 1.0.
 
 generate : intention : not_understood(Ag) <-
-	dummy_nom1(Nom),
-	i : sort(Nom, dvp) / 1.0,
-	i : prop(Nom, 'c-goal') / 1.0,
+	utt_head(Nom),
 	i : feat_CannedText(Nom, 'Sorry_I_did_not_understand') / 1.0,
 	%i : feat_SpeechAct(Nom, assertion) / 1.0,
 	%i : feat_Relation(Nom, reject) / 1.0,
