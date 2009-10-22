@@ -151,24 +151,31 @@ check_property_value(Union, Prop, unknown) <-
 %	i : feat_Modality(Nom, Modality) / 1.0,
 %	event : produce(r, Nom) / 1.0.
 
-generate : intention : grounding(vision, assertionVerified) <-
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept)
+generate : intention : grounding(Modality, assertionVerified) <-
 	utt_head(Nom),
-	i : feat_CannedText(Nom, 'Yes_I_can_see_that') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-generate : intention : grounding(discourse, assertionVerified) <-
-	utt_head(Nom),
-	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
-	event : produce(r, Nom) / 1.0.
+%generate : intention : grounding(discourse, assertionVerified) <-
+%	utt_head(Nom),
+%	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
+%	event : produce(r, Nom) / 1.0.
 
 generate : intention : grounding(discourse, assertionFalsified) <-
 	utt_head(Nom),
-	i : feat_CannedText(Nom, 'Too_bad') / 1.0,
+	i : feat_Relation(Nom, filler) / 1.0,
 	event : produce(r, Nom) / 1.0.
+%	i : feat_CannedText(Nom, 'Too_bad') / 1.0,
+%	event : produce(r, Nom) / 1.0.
 
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\reject ^ /AcknoModality\vision)
 generate : intention : grounding(vision, assertionFalsified) <-
 	utt_head(Nom),
-	i : feat_CannedText(Nom, 'I_do_not_see_that') / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, reject) / 1.0,
+	i : feat_AcknoModality(Nom, vision) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 grounding_result_to_relation(assertionVerified, accept).
@@ -222,8 +229,7 @@ equality_to_polarity(X, Y, negative) <-
 
 generate : intention : assert_prop(h, Object, Property) <-
 	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	i : feat_Relation(Nom, filler) / 1.0,
+	i : feat_Relation(Nom, hold) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 %what color does the box have
