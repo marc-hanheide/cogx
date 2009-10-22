@@ -59,7 +59,8 @@ public class MaximumSearch {
 	public static HashMap<PerceivedEntity,Float> maxForEntities = new HashMap<PerceivedEntity,Float>();
 
 	
-	
+	public static HashMap<ProbabilityDistribution,Float> maxForDistribs = new HashMap<ProbabilityDistribution,Float>();
+
 	
 	// =================================================================
 	// METHODS TO SEARCH FOR MAXIMUM VALUES IN ENTITIES
@@ -120,22 +121,32 @@ public class MaximumSearch {
 
 	public static float getMaximum (ProbabilityDistribution distrib) {
 
+		float result = 0.0f;
+		
+		if (maxForDistribs.containsKey(distrib)) {
+			result = maxForDistribs.get(distrib);
+		}
+		else {
 		// Case 1: distribution is discrete
 		if (distrib.getClass().equals(DiscreteProbabilityDistribution.class)) {
-			return getMaximum((DiscreteProbabilityDistribution) distrib);
+			result = getMaximum((DiscreteProbabilityDistribution) distrib);
+			maxForDistribs.put(distrib, result);
 		}
 
 		// Case 2: distribution is a combined one
 		else if (distrib.getClass().equals(CombinedProbabilityDistribution.class)) {
-			return getMaximum((CombinedProbabilityDistribution) distrib);
+			result = getMaximum((CombinedProbabilityDistribution) distrib);
+			maxForDistribs.put(distrib, result);
 		}
-
-		// and, "Houston we have a problem" 
 		else {
 			errlog("Sorry, only discrete or combined feature distributions are handled right now");
 			log("Used class: " + distrib.getClass());
-			return 0.0f;
 		}
+		}
+		
+		return result;
+		// and, "Houston we have a problem" 
+		
 	}
 
 

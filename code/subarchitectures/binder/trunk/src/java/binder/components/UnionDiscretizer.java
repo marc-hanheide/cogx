@@ -111,7 +111,7 @@ public class UnionDiscretizer extends ManagedComponent {
 	 * @return the single best (highest-probability) union configuration
 	 */
 	
-	public UnionConfiguration extractBestUnionConfiguration 
+	synchronized public UnionConfiguration extractBestUnionConfiguration 
 	(AlternativeUnionConfigurations alterconfigs) {
 
 		log("--------START DISCRETISATION ----------");
@@ -177,7 +177,7 @@ public class UnionDiscretizer extends ManagedComponent {
 	 * @return the single best (highest-probability) union configuration
 	 */
 	
-	public UnionConfiguration extractUnionConfigurationOfRankN 
+	synchronized public UnionConfiguration extractUnionConfigurationOfRankN 
 	(AlternativeUnionConfigurations alterconfigs, int rank) {
 
 		log("--------START DISCRETISATION ----------");
