@@ -79,7 +79,7 @@ SelfRepresenter::runComponent()
     Marshalling::MarshallerPrx agg(getIceServer<Marshalling::Marshaller>("proxy.marshaller"));
     try {
       cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
-      origin->address.subarchitecture = "no";
+      origin->address.subarchitecture = "spatial.sa";
       origin->address.id = "local";
       origin->type = "data"; //uh oh, do we always need to include this?
 
