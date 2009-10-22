@@ -773,12 +773,10 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 		}	
-		if (union1 instanceof RelationUnion && 
-				! (union2 instanceof RelationUnion)) {
+		if (union1 instanceof RelationUnion) {
 			return true;
 		}
-		else if (! (union1 instanceof RelationUnion) && 
-				union2 instanceof RelationUnion) {
+		else if (union2 instanceof RelationUnion) {
 			return true;
 		}
 
