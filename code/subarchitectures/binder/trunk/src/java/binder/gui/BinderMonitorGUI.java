@@ -107,7 +107,7 @@ public class BinderMonitorGUI extends JFrame
 
 
 	public void init(){		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setSize(1000, 700);
 
 		controlPanel = new ControlPanel(bm);
