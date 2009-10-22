@@ -406,10 +406,6 @@ public class Binder extends ManagedComponent  {
 
 		long initTime = System.currentTimeMillis();
 		
-		Random rand = new Random();
-		int sleepTimeMillisecs = rand.nextInt(3000);
-		sleepComponent(sleepTimeMillisecs);
-		
 		try {
 			// Extract the new proxy
 			Proxy newProxy = getMemoryEntry(wmc.address, Proxy.class);
