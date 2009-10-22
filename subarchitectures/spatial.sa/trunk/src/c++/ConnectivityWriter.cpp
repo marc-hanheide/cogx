@@ -94,7 +94,6 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
 					 binder::autogen::featvalues::BooleanValue(1,getCASTTime(),true));
     m_marshaller->addFeature("connectivity", relationUID, feature);
 
-    sleepComponent(rand()%3000);
     m_marshaller->commitFeatures("connectivity", relationUID);
   }
   else {

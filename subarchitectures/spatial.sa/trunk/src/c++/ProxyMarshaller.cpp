@@ -35,15 +35,15 @@ ProxyMarshaller::start()
 {
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cast::cdl::ADD),
 		  new cast::MemberFunctionChangeReceiver<ProxyMarshaller>(this,
-		    &ProxyMarshaller::newPlace));    
+		    &ProxyMarshaller::newPlace));
 
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cast::cdl::OVERWRITE),
 		  new cast::MemberFunctionChangeReceiver<ProxyMarshaller>(this,
-		    &ProxyMarshaller::changedPlace));    
+		    &ProxyMarshaller::changedPlace));
 
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cast::cdl::DELETE),
 		  new cast::MemberFunctionChangeReceiver<ProxyMarshaller>(this,
-		    &ProxyMarshaller::deletedPlace));    
+		    &ProxyMarshaller::deletedPlace));
 }
 
 void
@@ -68,8 +68,8 @@ ProxyMarshaller::configure(const std::map<std::string, std::string>& _config)
 
 void
 ProxyMarshaller::MarshallingServer::addProxy(const string & type, const string & UID,
-					     double probExists, 
-					     const cast::cdl::WorkingMemoryPointerPtr & origin, 
+					     double probExists,
+					     const cast::cdl::WorkingMemoryPointerPtr & origin,
 					     const Ice::Current &_context)
 {
   m_pOwner->lockComponent();
@@ -78,14 +78,14 @@ ProxyMarshaller::MarshallingServer::addProxy(const string & type, const string &
 }
 
 bool
-ProxyMarshaller::MarshallingServer::addRelation(const string & relationType, 
+ProxyMarshaller::MarshallingServer::addRelation(const string & relationType,
     const string & relationUID,
     const string & sourceType, const string &sourceUID,
     const string & targetType, const string &targetUID,
-    double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin, 
+    double probExists, const cast::cdl::WorkingMemoryPointerPtr & origin,
     const Ice::Current &_context)
 {
-  ProxyMarshaller::RelationCandidate cand (relationType, relationUID, 
+  ProxyMarshaller::RelationCandidate cand (relationType, relationUID,
       sourceType, sourceUID, targetType, targetUID, probExists, origin);
 
   m_pOwner->lockComponent();
@@ -108,7 +108,7 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
   map<string, InternalProxy> &typeMap =
     m_proxyTypeMap[type];
 
-  map<string, InternalProxy>::iterator it = 
+  map<string, InternalProxy>::iterator it =
     typeMap.find(UID);
 
   if (it == typeMap.end()) {
@@ -124,7 +124,7 @@ ProxyMarshaller::addProxy(const string & type, const string & UID,
     typeMap[UID].onBinder = false; //Not represented on binder yet
 
     //updateInternalProxy(typeMap[UID]); //Don't upload it until some features are added
-    
+
     // Check all previously failed relations to see if they work now
 
     for(list<RelationCandidate>::iterator rIt = m_queuedRelations.begin();
@@ -172,7 +172,7 @@ ProxyMarshaller::addRelation(const RelationCandidate &cand)
   map<string, InternalProxy> &relTypeMap =
     m_proxyTypeMap[relationType];
 
-  map<string, InternalProxy>::iterator it = 
+  map<string, InternalProxy>::iterator it =
     relTypeMap.find(relationUID);
 
   if (it == relTypeMap.end()) {
@@ -181,7 +181,7 @@ ProxyMarshaller::addRelation(const RelationCandidate &cand)
     map<string, InternalProxy> &sourceTypeMap =
       m_proxyTypeMap[sourceType];
 
-    map<string, InternalProxy>::iterator sourceIt = 
+    map<string, InternalProxy>::iterator sourceIt =
       sourceTypeMap.find(sourceUID);
 
     if (sourceIt == sourceTypeMap.end()) {
@@ -193,7 +193,7 @@ ProxyMarshaller::addRelation(const RelationCandidate &cand)
       map<string, InternalProxy> &targetTypeMap =
 	m_proxyTypeMap[targetType];
 
-      map<string, InternalProxy>::iterator targetIt = 
+      map<string, InternalProxy>::iterator targetIt =
 	targetTypeMap.find(targetUID);
       if (targetIt == targetTypeMap.end()) {
 	log("Could not create relation proxy; target didn't exist! Queuing...");
@@ -205,7 +205,7 @@ ProxyMarshaller::addRelation(const RelationCandidate &cand)
 	log("creating a new relation proxy.");
 
 	FeatureValues sources;
-	AddressValuePtr source = new AddressValue(1, getCASTTime(), 
+	AddressValuePtr source = new AddressValue(1, getCASTTime(),
 	    sourceIt->second.proxy->entityID);
 	sources.push_back(source);
 
@@ -282,7 +282,7 @@ ProxyMarshaller::deleteProxy(const string & type, const string & UID)
 }
 
 void
-ProxyMarshaller::MarshallingServer::addFeature(const string & proxyType, 
+ProxyMarshaller::MarshallingServer::addFeature(const string & proxyType,
     const string & proxyUID, const binder::autogen::core::FeaturePtr &feature,
 	const Ice::Current &_context)
 {
@@ -292,7 +292,7 @@ ProxyMarshaller::MarshallingServer::addFeature(const string & proxyType,
 }
 
 void
-ProxyMarshaller::addFeature(const string & proxyType, const string & proxyUID, 
+ProxyMarshaller::addFeature(const string & proxyType, const string & proxyUID,
 	const binder::autogen::core::FeaturePtr feature)
 {
   //Check pending relations; add there if applicable
@@ -318,7 +318,7 @@ ProxyMarshaller::addFeature(const string & proxyType, const string & proxyUID,
 //	}
 //      }
 //      if (it != intProxy.proxy->features.end()) {
-//	log("addFeature: Feature %s already exists in proxy type %s, UID %s!", 
+//	log("addFeature: Feature %s already exists in proxy type %s, UID %s!",
 //	    feature->featlabel.c_str(), proxyType.c_str(), proxyUID.c_str());
 //      }
 //      else {
@@ -349,8 +349,8 @@ ProxyMarshaller::MarshallingServer::deleteFeature(const string & proxyType, cons
   m_pOwner->unlockComponent();
 }
 
-void 
-ProxyMarshaller::MarshallingServer::commitFeatures(const string &proxyType, 
+void
+ProxyMarshaller::MarshallingServer::commitFeatures(const string &proxyType,
     const string &proxyUID,
     const Ice::Current &_context)
 {
@@ -401,7 +401,7 @@ ProxyMarshaller::deleteFeature(const string & proxyType, const string & proxyUID
 	}
       }
       if (it == intProxy.proxy->features.end()) {
-	log("deleteFeature: Feature %s not found in proxy type %s, UID %s!", 
+	log("deleteFeature: Feature %s not found in proxy type %s, UID %s!",
 	    featlabel.c_str(), proxyType.c_str(), proxyUID.c_str());
       }
     }
@@ -424,7 +424,7 @@ ProxyMarshaller::MarshallingServer::publishProxy(const string & proxyType, const
   m_pOwner->publishProxy(proxyType, proxyUID);
   m_pOwner->unlockComponent();
 }
-  
+
 void
 ProxyMarshaller::publishProxy(const string & proxyType, const string & proxyUID)
 {
@@ -441,12 +441,14 @@ ProxyMarshaller::updateInternalProxy(InternalProxy &intProxy)
     // Proxy exists on Binder; overwrite its Features
     log("Proxy existed on Binder; overwrite its features");
     log("Proxy has %i features.", intProxy.proxy->features.size());
+    sleepComponent(rand()%4000);
     overwriteProxyInWM(intProxy.proxy);
   }
   else {
     // Proxy is new; add it to Binder
     log("Proxy new on Binder; create it");
     log("Proxy has %i features.", intProxy.proxy->features.size());
+    sleepComponent(rand()%4000);
     addProxyToWM(intProxy.proxy);
     intProxy.onBinder = true;
   }
@@ -463,7 +465,7 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     log("Adding proxy (place, %s)", ss.str().c_str());
     addProxy("place", ss.str(), 1.0, createWorkingMemoryPointer(_wmc.address, _wmc.type));
     m_PlaceAddressToIDMap[_wmc.address.id] = place->id;
-    
+
     // Add place id feature
     log("Adding place_id feature");
     FeaturePtr feature = createFeature("place_id");
@@ -475,14 +477,14 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
     if (place->status == SpatialData::PLACEHOLDER) {
       log("Adding explored feature");
       feature = createFeature("explored");
-      feature->alternativeValues.push_back(createStringValue("false", 1)); 
+      feature->alternativeValues.push_back(createStringValue("false", 1));
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
     else {
       log("Adding non-explored feature");
       feature = createFeature("explored");
-      feature->alternativeValues.push_back(createStringValue("true", 1)); 
+      feature->alternativeValues.push_back(createStringValue("true", 1));
       //binder::autogen::featvalues::IntegerValue(1,1));
       addFeature("place", ss.str(), feature);
     }
@@ -524,7 +526,7 @@ ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 void
 ProxyMarshaller::deletedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  map<string, int>::iterator it = 
+  map<string, int>::iterator it =
     m_PlaceAddressToIDMap.find(_wmc.address.id);
 
   if (it != m_PlaceAddressToIDMap.end()) {
