@@ -91,6 +91,7 @@ public class Binder extends ManagedComponent  {
 	// of the binder WM (modulo filtering)
 	private Vector<UnionConfiguration> currentUnionConfigurations ;
 	
+	
 	public static String BINDER_SA = "binder";
 
 	
@@ -481,10 +482,10 @@ public class Binder extends ManagedComponent  {
 				newUnionConfigs.add(unionConfigWithOrphanProxy);
 				
 				
-			//	if (newUnion instanceof RelationUnion) {
-			//		newUnion = RelationUnionUtils.specifyUnionSourceAndTarget(
-			//				(RelationUnion)newUnion, existingUnionConfig);
-			//	}
+				if (newUnion instanceof RelationUnion) {
+					newUnion = RelationUnionUtils.specifyUnionSourceAndTarget(
+							(RelationUnion)newUnion, existingUnionConfig);
+				}
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
 					UnionConfigurationUtils.createNewUnionConfiguration (existingUnionConfig, newUnion);
@@ -502,7 +503,7 @@ public class Binder extends ManagedComponent  {
 					if ( !hasConflicts(existingUnion, newUnion)) {
 
 		//				log("constructing new union between "  + existingUnion.entityID + " and " + newUnion.entityID );
-						if (!alreadyComputed(existingUnion, alreadyMergedUnions)) {
+						if (true) {
 
 							// If not, construct the merged union
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
@@ -510,11 +511,11 @@ public class Binder extends ManagedComponent  {
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
-			//				if (newMergedUnion instanceof RelationUnion) {
-			//					newMergedUnion = 
-			//						RelationUnionUtils.specifyUnionSourceAndTarget(
-			//								(RelationUnion)newMergedUnion, existingUnionConfig);
-			//				}
+							if (newMergedUnion instanceof RelationUnion) {
+								newMergedUnion = 
+									RelationUnionUtils.specifyUnionSourceAndTarget(
+											(RelationUnion)newMergedUnion, existingUnionConfig);
+							}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						} 

@@ -93,7 +93,7 @@ public class MaximumSearch {
 
 		// if the distribution for the entity has already been computed and included in 
 		// the cache, just return its value
-		if (alreadyComputed(entity)) {
+		if (false) {
 			return maxForEntities.get(entity);
 		}
 
