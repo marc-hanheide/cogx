@@ -55,8 +55,7 @@ understand : event : uttered(h, Nom) <-
 		this(ThisNom),
 		att : refers_to(ThisNom, Ref) / ref_resolution,
 	i : 'rel_Cop-Scope'(AscrNom, WhatNom),  % XXX "questioned" flag?
-	intention : ask_yn(h, Ref, objecttype, no(unknownObjectType)) / 0.5.
-	%?( k(now, private(r)uuu) : objecttype(Ref, not(unknownObjectType))).
+	intention : ask_known(h, Ref, objecttype) / 0.5.
 
 you(Nom) <-
 	i : sort(Nom, person),

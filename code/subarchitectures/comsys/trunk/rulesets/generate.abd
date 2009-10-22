@@ -32,7 +32,8 @@ utt_head(Nom) <-
 generate : it(Nom) <-
 	i : sort(Nom, entity) / 1.0,
 	i : prop(Nom, object) / 1.0,  % will be suppressed anyway
-	i : feat_Salient(Nom, true) / 1.0.
+	i : feat_Salient(Nom, true) / 1.0,
+	i : feat_InfoStatus(Nom, familiar) / 1.0.
 
 %generate: i_dont_know(Nom) <-
 %	i : feat_CannedText(Nom, 'I_do_not_know') / 1.0.
@@ -52,11 +53,15 @@ generate: i_dont_know(Nom) <-
 			i : sort(ActorNom, person) / 1.0,
 			i : prop(ActorNom, 'I') / 1.0.
 
+generate : intention : ask_known(h, Object, Prop) <-
+	check_property_value(Object, Prop, Result),
+	reply_to_result(Nom, Object, Prop, Result),
+	event : produce(r, Nom) / 1.0.
+
 % what Prop is the Object
 generate : intention : ask_property(h, Object, Prop) <-
 	check_property_value(Object, Prop, Result),
 	reply_to_result(Nom, Object, Prop, Result),
-%	i : feat_CannedText(Nom, 'You_asked_me_about_a_property') / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 reply_to_result(Nom, Object, Prop, unknown) <-
@@ -69,7 +74,7 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 	dummy_nom3(TargetNom),
 	dummy_nom4(PropNom),
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
-	i : feat_Relation(Nom, answer) / 1.0,
+	%i : feat_Relation(Nom, answer) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
 		i : rel_Target(ContentNom, TargetNom) / 1.0,
@@ -79,6 +84,11 @@ reply_to_result(Nom, Object, Prop, known(Value)) <-
 add_prop_value_to_protolf(Nom, UsedNom, color, Value) <-
 	i : rel_Color(Nom, UsedNom) / 1.0,
 		i : sort(UsedNom, quality) / 1.0,
+		i : prop(UsedNom, Value) / 1.0.
+
+add_prop_value_to_protolf(Nom, UsedNom, objecttype, Value) <-
+	i : rel_Type(Nom, UsedNom) / 1.0,
+		i : sort(UsedNom, entity) / 1.0,
 		i : prop(UsedNom, Value) / 1.0.
 
 %----------------------------------------------------------------------
@@ -101,14 +111,14 @@ check_property_value(Union, objecttype, known(Value)) <-
 	% make a distinction between "known unknown" and
 	% truly unknown property values.
 
-check_property_value(Union, color, unknown) <-
-	k(now, private(r)) : color(Union, unknownColor).
+%check_property_value(Union, color, unknown) <-
+%	k(now, private(r)) : color(Union, unknownColor).
 
-check_property_value(Union, shape, unknown) <-
-	k(now, private(r)) : shape(Union, unknownShape).
+%check_property_value(Union, shape, unknown) <-
+%	k(now, private(r)) : shape(Union, unknownShape).
 
-check_property_value(Union, objecttyp, unknown) <-
-	k(now, private(r)) : objecttyp(Union, unknownObjectType).
+%check_property_value(Union, objecttyp, unknown) <-
+%	k(now, private(r)) : objecttyp(Union, unknownObjectType).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
