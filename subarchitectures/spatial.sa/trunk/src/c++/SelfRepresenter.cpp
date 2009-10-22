@@ -105,7 +105,7 @@ SelfRepresenter::runComponent()
     origin->address.id = "local";
     origin->type = "data"; //uh oh, do we always need to include this?
 
-  //  while (isRunning()) {
+    if (isRunning()) {
       // Regularly check robot pose
       NavData::FNodePtr curFNode = getCurrentNavNode();
       try {
@@ -142,7 +142,7 @@ SelfRepresenter::runComponent()
 	log("Unable to get current Place!");
       }
       usleep(500000);
-  //  }
+    }
   }
   catch (Ice::Exception e) {
     log("Unexpected ICE exception!");
