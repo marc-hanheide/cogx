@@ -481,10 +481,10 @@ public class Binder extends ManagedComponent  {
 				newUnionConfigs.add(unionConfigWithOrphanProxy);
 				
 				
-				if (newUnion instanceof RelationUnion) {
-					newUnion = RelationUnionUtils.specifyUnionSourceAndTarget(
-							(RelationUnion)newUnion, existingUnionConfig);
-				}
+			//	if (newUnion instanceof RelationUnion) {
+			//		newUnion = RelationUnionUtils.specifyUnionSourceAndTarget(
+			//				(RelationUnion)newUnion, existingUnionConfig);
+			//	}
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
 					UnionConfigurationUtils.createNewUnionConfiguration (existingUnionConfig, newUnion);
@@ -510,11 +510,11 @@ public class Binder extends ManagedComponent  {
 							unionsToMerge.add(newUnion);
 							newMergedUnion = constructor.constructNewUnion(unionsToMerge, existingUnion.entityID, getCASTTime());
 							
-							if (newMergedUnion instanceof RelationUnion) {
-								newMergedUnion = 
-									RelationUnionUtils.specifyUnionSourceAndTarget(
-											(RelationUnion)newMergedUnion, existingUnionConfig);
-							}
+			//				if (newMergedUnion instanceof RelationUnion) {
+			//					newMergedUnion = 
+			//						RelationUnionUtils.specifyUnionSourceAndTarget(
+			//								(RelationUnion)newMergedUnion, existingUnionConfig);
+			//				}
 							
 							alreadyMergedUnions.put(existingUnion, newMergedUnion);
 						} 
@@ -773,10 +773,12 @@ public class Binder extends ManagedComponent  {
 				}
 			}
 		}	
-		if (union1 instanceof RelationUnion) {
+		if (union1 instanceof RelationUnion && 
+				! (union2 instanceof RelationUnion)) {
 			return true;
 		}
-		else if (union2 instanceof RelationUnion) {
+		else if (! (union1 instanceof RelationUnion) && 
+				union2 instanceof RelationUnion) {
 			return true;
 		}
 
