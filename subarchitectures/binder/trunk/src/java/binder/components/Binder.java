@@ -288,7 +288,7 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-			currentUnionConfigurations = recompute(currentUnionConfigurations);	
+	//		currentUnionConfigurations = recompute(currentUnionConfigurations);	
 
 			
 			// Update the alternative union configurations
@@ -302,7 +302,7 @@ public class Binder extends ManagedComponent  {
 			e.printStackTrace();
 		}
 
-		log("--------STOP BINDING UPDATE----------");
+		log("--------STOP BINDING UPDATE (AFTER OVERWRITE) ----------");
 	}
 
 
