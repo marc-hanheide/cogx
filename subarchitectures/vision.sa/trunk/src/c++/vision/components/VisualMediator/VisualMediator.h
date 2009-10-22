@@ -24,6 +24,7 @@
 
 #include <VisionData.hpp>
 #include <BindingWorkingMemoryWriter.hpp>
+#include <BindingWorkingMemoryReader.hpp>
 #include <BinderEssentials.hpp>
 #include <BeliefModels.hpp>
 #include <DomainModel.hpp>
@@ -31,7 +32,10 @@
 namespace cast
 {
 
-class VisualMediator : public binder::BindingWorkingMemoryWriter
+class VisualMediator :  
+  public binder::BindingWorkingMemoryWriter,
+  public binder::BindingWorkingMemoryReader
+
 {
  private:
 
@@ -92,7 +96,6 @@ class VisualMediator : public binder::BindingWorkingMemoryWriter
    * callback function called whenever a Belief changes
    */
   void updatedBelief(const cdl::WorkingMemoryChange & _wmc);
-
 
 //  bool unionRef(beliefmodels::domainmodel::cogx::SuperFormulaPtr f, std::string &unionID);
 
