@@ -129,7 +129,7 @@ module cogx {
 		Shape shapeValue;
 	};  
 	
-	enum Saliency {low, high };
+	enum Saliency {low, high, unknownSaliency};
 	
 	class SaliencyProperty extends ContinualFormula {
 		Saliency sal;
@@ -147,7 +147,7 @@ module cogx {
 		string unionRef;
 	};
 	
-	enum Proximity {proximal, distal };
+	enum Proximity {proximal, distal, unknownProximity};
 	
 	class ProximityProperty extends ContinualFormula {
 		Proximity prox;
