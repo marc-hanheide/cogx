@@ -288,7 +288,7 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-	//		currentUnionConfigurations = recompute(currentUnionConfigurations);	
+			currentUnionConfigurations = recompute(currentUnionConfigurations);	
 
 			
 			// Update the alternative union configurations
@@ -376,7 +376,49 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-	//		currentUnionConfigurations = recompute(currentUnionConfigurations);	
+			log("STEP 1D");
+			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+			}
+			
+			// Compute and normalise confidence scores for the union configurations
+			ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(currentUnionConfigurations);
+			
+			log("STEP 2D");
+			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+			}
+			
+			// based on these scores, compute the existence probabilities for each union
+			BinderUtils.addProbExistsToUnions(currentUnionConfigurations);
+			
+			log("STEP 3D");
+			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+			}
+			// Get the nbest configurations (with N as a parameter)
+			if (nbestsFilter > 0) {
+				currentUnionConfigurations = 
+					ConfigurationFilter.getNBestUnionConfigurations (currentUnionConfigurations, nbestsFilter);
+			}
+			
+			log("STEP 4D");
+			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+			}
+			
+			// Normalise the union distributions
+			if (normaliseDistributions) {
+				log("Normalisation of the probability distributions");
+				normaliseDistributions(currentUnionConfigurations);
+			}
+			
+			log("STEP 5D");
+			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+			}
+			// Compute the marginal probability values for the individual feature values
+			computeMarginalProbabilityValues(currentUnionConfigurations);
 
 			
 			// Update the alternative union configurations
