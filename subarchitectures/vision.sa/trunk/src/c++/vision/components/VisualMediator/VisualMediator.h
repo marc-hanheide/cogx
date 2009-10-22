@@ -102,6 +102,8 @@ class VisualMediator : public binder::BindingWorkingMemoryWriter
 					std::vector<beliefmodels::domainmodel::cogx::Color> &colors,
 					std::vector<beliefmodels::domainmodel::cogx::Shape> &shapes,
 					std::vector<float> colorDist, std::vector<float> shapeDist);
+					
+  bool AttrAgent(beliefmodels::adl::AgentStatusPtr ags);
 
  protected:
   /**

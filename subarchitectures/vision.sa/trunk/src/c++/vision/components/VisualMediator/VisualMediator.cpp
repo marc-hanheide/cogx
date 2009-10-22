@@ -97,6 +97,69 @@ log("HELLO, Mediator active");
 
 void VisualMediator::runComponent()
 {
+  // ADD a test belief
+  
+  sleep(5);
+  
+  log("sumbitting a fake belief 1");
+  
+  BeliefPtr tb = new Belief();
+  
+  tb->ags = new AttributedAgentStatus();
+  
+  ComplexFormulaPtr cf = new ComplexFormula();
+  
+  UnionRefPropertyPtr un =  new UnionRefProperty();
+  un->unionRef = "whatever";
+  
+  cf->formulae.push_back(un);
+  
+  ShapePropertyPtr sh = new ShapeProperty();
+  sh->shapeValue = cubic;
+  sh->polarity = true;
+  sh->prob = 1.0f;
+  sh->cstatus = assertion;
+  
+  cf->formulae.push_back(sh);
+  
+  tb->phi = cf;
+  tb->id = newDataID();
+  
+  addToWorkingMemory(tb->id, m_bindingSA, tb);
+  
+  
+  
+  sleep(5);
+  
+  
+  
+  log("sumbitting a fake belief 2");
+  
+  tb = new Belief();
+  
+  tb->ags = new AttributedAgentStatus();
+  
+  cf = new ComplexFormula();
+  
+  un =  new UnionRefProperty();
+  un->unionRef = "whatever";
+  
+  cf->formulae.push_back(un);
+  
+  ColorPropertyPtr co = new ColorProperty();
+  co->colorValue = red;
+  co->polarity = true;
+  co->prob = 1.0f;
+  co->cstatus = proposition;
+  
+  cf->formulae.push_back(co);
+  
+  tb->phi = cf;
+  tb->id = newDataID();
+  
+  addToWorkingMemory(tb->id, m_bindingSA, tb);
+  
+  
   while(isRunning())
   {
 	ptime t(second_clock::universal_time() + seconds(2));
@@ -235,17 +298,28 @@ void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
 void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 {
+  log("A belief was ubdated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
+  
   BeliefPtr obj =
 	getMemoryEntry<Belief>(_wmc.address);
-
+	
+  debug("Got a belief from WM. ID: %s", _wmc.address.id.c_str());
+  
   string unionID;
   string visObjID;
   
+  if(! AttrAgent(obj->ags))
+  {
+	log("The agent status is not an attributed one - will not learn what I already know");
+	return;
+  }
+  
+  
   if(unionRef(obj->phi, unionID))
   {
-	log("Found reference to union ID %s in belief", unionID.c_str());
+	debug("Found reference to union ID %s in belief", unionID.c_str());
 	
-	UnionPtr uni = getMemoryEntry<Union>(unionID, m_bindingSA);
+	/* UnionPtr uni = getMemoryEntry<Union>(unionID, m_bindingSA);
 	
 	vector<ProxyPtr>::iterator it;
 	
@@ -260,11 +334,14 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 		
 	 if(!found)
 	  return;
-	  
+	 */ 
 	log("Found the object of the belief: visualObject ID %s", visObjID.c_str());
   }
   else
+  {
+	log("No reference to a binding union");
 	return;
+  }
 	
   vector<Shape> shapes;
   vector<Color> colors;
@@ -272,10 +349,15 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 	
   if(findAsserted(obj->phi, colors, shapes, colorDist, shapeDist))
   {
-	log("Found asserted colors or shapes");
+	debug("Found asserted colors or shapes");
+	
+	
   }
   else
+  {
+	debug("No asserted colors or shapes - no learning");
 	return;
+  }
 
 //  VisualObjectData &data = VisualObjectMap[_wmc.address.id];
 
@@ -295,14 +377,14 @@ bool VisualMediator::unionRef(FormulaPtr fp, string &unionID)
 {
   Formula *f = &(*fp);
 
-  if(typeid(*f).name() == "UnionRefProperty")
+  if(typeid(*f) == typeid(UnionRefProperty))
   {
 	UnionRefPropertyPtr unif = dynamic_cast<UnionRefProperty*>(f);
 	unionID =  unif->unionRef;	
 
 	return true;
   }
-  else if(typeid(*f).name() == "ComplexFormula")
+  else if(typeid(*f) == typeid(ComplexFormula))
   {
 	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
 	vector<SuperFormulaPtr>::iterator it; 
@@ -332,7 +414,7 @@ bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<S
 {
   Formula *f = &(*fp);
 
-  if(typeid(*f).name() == "ColorProperty")
+  if(typeid(*f) == typeid(ColorProperty))
   {
 	ColorPropertyPtr color = dynamic_cast<ColorProperty*>(f);
 	
@@ -350,7 +432,7 @@ bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<S
 	else
 	  return false;
   }
-  else if(typeid(*f).name() == "ShapeProperty")
+  else if(typeid(*f) == typeid(ShapeProperty))
   {
 	ShapePropertyPtr shape = dynamic_cast<ShapeProperty*>(f);
 	
@@ -368,7 +450,7 @@ bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<S
 	else
 	  return false;
   }
-  else if(typeid(*f).name() == "ComplexFormula")
+  else if(typeid(*f) == typeid(ComplexFormula))
   {
 	ComplexFormulaPtr unif = dynamic_cast<ComplexFormula*>(f);
 	vector<SuperFormulaPtr>::iterator it;
@@ -392,6 +474,22 @@ bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<S
 }
 
 
+bool VisualMediator::AttrAgent(AgentStatusPtr ags)
+{
+  AgentStatus *as = &(*ags);
+  
+  debug("The agent status class is %s", typeid(*as).name());
+
+  if(typeid(*as) == typeid(AttributedAgentStatus))
+  {
+	return true;
+  }
+  else
+  {
+	return false;
+  }
+
+}
 
 }
 /* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim*/
