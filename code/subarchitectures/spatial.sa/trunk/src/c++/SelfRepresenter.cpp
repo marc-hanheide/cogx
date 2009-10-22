@@ -28,12 +28,12 @@ SelfRepresenter::~SelfRepresenter()
 {
 }
 
-void 
+void
 SelfRepresenter::start()
 {
 }
 
-void 
+void
 SelfRepresenter::stop()
 {
 }
@@ -51,7 +51,7 @@ SelfRepresenter::getCurrentNavNode()
     log("Could not find RobotPose!");
     return 0;
   }
-  
+
   //Find the node closest to the robotPose
   double robotX = robotPoses[0]->x;
   double robotY = robotPoses[0]->y;
@@ -72,7 +72,7 @@ SelfRepresenter::getCurrentNavNode()
   return ret;
 }
 
-void 
+void
 SelfRepresenter::runComponent()
 {
   try {
@@ -84,7 +84,7 @@ SelfRepresenter::runComponent()
       origin->type = "data"; //uh oh, do we always need to include this?
 
       agg->addProxy("robot", "1", 1.0, origin);
-      
+
       FeaturePtr feature = new Feature();
       feature->featlabel = "category";
       feature->alternativeValues.push_back(new
@@ -116,7 +116,7 @@ SelfRepresenter::runComponent()
 	  // Place has changed!
 
 	  // replace position feature
-	  agg->deleteProxy("robotpos", "robot");
+	//  agg->deleteProxy("robotpos", "robot");
 
 	  stringstream ss;
 	  ss << curPlaceID;
@@ -150,7 +150,7 @@ SelfRepresenter::runComponent()
   }
 }
 
-void 
+void
 SelfRepresenter::configure(const std::map<std::string, std::string>& _config)
 {
 }
