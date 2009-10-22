@@ -164,7 +164,7 @@ public class Binder extends ManagedComponent  {
 
 		// Initialisation stuff
 		initializeUnionConfigurations();
-
+		
 		BINDER_SA = this.getSubarchitectureID();
 		
 		log("Binder successfully started");
@@ -236,7 +236,7 @@ public class Binder extends ManagedComponent  {
 	 * @post update of currentUnionConfigurations with the proxy change
 	 */
 
-	private void proxyUpdate (WorkingMemoryChange wmc) {
+	synchronized private void proxyUpdate (WorkingMemoryChange wmc) {
 
 		log("--------START BINDING UPDATE ----------");
 		log("TRIGGERED BY: overwrite of existing proxy ");
@@ -316,7 +316,7 @@ public class Binder extends ManagedComponent  {
 	 * @post update of currentUnionConfigurations to accommodate the proxy deletion
 	 */
 
-	private void proxyDeletion (WorkingMemoryChange wmc) {
+	synchronized private void proxyDeletion (WorkingMemoryChange wmc) {
 
 		log("--------START BINDING UPDATE ----------");
 		log("TRIGGERED BY: proxy deletion (" );
@@ -403,7 +403,7 @@ public class Binder extends ManagedComponent  {
 	 *        proxy insertion
 	 */
 
-	private void proxyInsertion(WorkingMemoryChange wmc) {
+	synchronized private void proxyInsertion(WorkingMemoryChange wmc) {
 		log("--------START BINDING UPDATE ----------");
 
 		long initTime = System.currentTimeMillis();
