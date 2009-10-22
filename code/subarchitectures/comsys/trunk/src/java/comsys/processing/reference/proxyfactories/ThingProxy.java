@@ -15,7 +15,7 @@ package comsys.processing.reference.proxyfactories;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.specialentities.RelationProxy; 
-import binder.utils.ProxyConstructor;
+import binder.constructors.ProxyConstructor;
 
 // -------------------------------------------------------
 // COMSYS imports

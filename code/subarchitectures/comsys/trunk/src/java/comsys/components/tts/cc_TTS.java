@@ -484,7 +484,7 @@ public class cc_TTS extends ManagedComponent {
 	            		break;
 	            	}
 	            	log(line1);
-	            }
+	            } 
 	            
 	            log("continuing mary clientstart up");
 	            
