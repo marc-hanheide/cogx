@@ -106,6 +106,9 @@ SelfRepresenter::runComponent()
     origin->type = "data"; //uh oh, do we always need to include this?
 
     if (isRunning()) {
+
+    sleepComponent(5000);
+
       // Regularly check robot pose
       NavData::FNodePtr curFNode = getCurrentNavNode();
       try {
