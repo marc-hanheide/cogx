@@ -216,6 +216,7 @@
 
 
 <!-- ========== ENTITY REFERENCE ========= -->
+<!-- relations instead of simple features: doesn't work now, to be changed at some point: -->
 
 <utterance>
 <input>
