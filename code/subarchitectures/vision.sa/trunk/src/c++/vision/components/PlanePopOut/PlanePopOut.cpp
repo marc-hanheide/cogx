@@ -685,10 +685,10 @@ void DisplayWin()
   }
   else
   {
-	ConvexHullOfPlane(pointsN,points_label);
 	v3size.clear();
 	v3center.clear();
 	vdradius.clear();
+	ConvexHullOfPlane(pointsN,points_label);
   }
   glDisable(GL_COLOR_MATERIAL);
 
@@ -995,10 +995,13 @@ bool PlanePopOut::RANSAC(VisionData::SurfacePointSeq &points, std::vector <int> 
 		para_c = -para_c;
 		para_d = -para_d;
 	}
-	A = para_a;
-	B = para_b;
-	C = para_c;
-	D = para_d;
+	if (para_a*para_a+para_b*para_b+para_c*para_c != 0)
+	{
+		A = para_a;
+		B = para_b;
+		C = para_c;
+		D = para_d;
+	}
 
 	double dmin = 9999.0;
 	double dmax = 0.0;
