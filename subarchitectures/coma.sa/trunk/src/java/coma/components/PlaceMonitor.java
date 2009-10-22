@@ -347,7 +347,6 @@ public class PlaceMonitor extends ManagedComponent {
 		// get path from WM
 		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
 
-		String category = ((SpatialProperties.StringValue)_objProp.mapValue).value;
 		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
 			
 		// TODO handle probability distribution 
