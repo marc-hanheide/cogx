@@ -476,7 +476,7 @@ public class cc_TTS extends ManagedComponent {
 	            
 	            log("wait for mary server to start");
 	            
-	            while (!line1.trim().startsWith("started in")) {
+	            while (!line1.contains("started in")) {
 	            	log("still waiting...");
 	            	line1 = br1.readLine();
 	            	if (line1==null) {
