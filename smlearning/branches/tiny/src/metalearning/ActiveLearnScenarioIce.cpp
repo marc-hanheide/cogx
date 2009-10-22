@@ -44,12 +44,14 @@ namespace smlearning {
 ///The arm selects an action according to a learning progress
 ///associated to the RNN machine.
 ///
-int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 
+int ActiveLearnScenarioIce::run (int argnr, char *arguments[]) {
+	argc = argnr;
+	argv = arguments;
 
-	Ice::ObjectPrx base = communicator()->stringToProxy("GolemTiny:default -p 8172");
+	/*Ice::ObjectPrx */base = communicator()->stringToProxy("GolemTiny:default -p 8172");
 		
-	TinyPrx pTiny = TinyPrx::checkedCast(base);
+	/*TinyPrx */pTiny = TinyPrx::checkedCast(base);
 	if (!pTiny)
 		throw ExTiny("Invalid proxy");
 	if (argc < 2) {
@@ -58,6 +60,17 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	}
 	
 	shutdownOnInterrupt();
+
+// 	if (!thread.start (this)) {
+// 		cout << "Unable to launch thread!" << endl;
+// 		return 0;
+// 	}
+	run();
+
+}
+
+void ActiveLearnScenarioIce::run () {
+	
 
 
 	// initialize random seed:
@@ -587,7 +600,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	pTiny->releaseActor(pArm);
 	pTiny->releaseActor(pGroundPlane);
 
-	return 0;
+	return;
 }
 
 

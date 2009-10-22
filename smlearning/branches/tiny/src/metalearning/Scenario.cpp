@@ -161,13 +161,26 @@ void Scenario::addBounds(Actor* pActor, std::vector<const Bounds*> &boundsSeq, c
 ///Data are gathered and stored in a binary file for future use
 ///with learning machines running offline learning experiments.
 ///
-bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSequences, int startingPosition) {
+bool Scenario::runSimulatedOfflineExperiment (int argnr, char *arguments[], int nSeq, int startPos) {
+	argc = argnr;
+	argv = arguments;
+	numSequences = nSeq;
+	startingPosition = startPos;
 
+// 	if (!thread.start (this)) {
+// 		cout << "Unable to launch thread!" << endl;
+// 		return 0;
+// 	}
+	run();
+}
+
+
+void Scenario::run () {
 	// Determine configuration file name
 	std::string cfg;
 	//if (argc == 1) {
 		// default configuration file name
-		cfg.assign(argv[0]);
+	cfg.assign(argv[0] );
 		size_t pos = cfg.rfind(".exe"); // Windows only
 		if (pos != std::string::npos) cfg.erase(pos);
 		cfg.append(".xml");
@@ -181,14 +194,14 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	if (!parser->load(FileReadStream(cfg.c_str()))) {
 		printf("unable to load configuration file: %s\n", cfg.c_str());
 		printf("%s <configuration_file>\n", argv[0]);
-		return false;
+		return /*false*/;
 	}
 
 	// Find program XML root context
 	XMLContext* xmlContext = parser->getContextRoot()->getContextFirst("golem");
 	if (xmlContext == NULL) {
 		printf("unknown configuration file: %s\n", cfg.c_str());
-		return false;
+		return /*false*/;
 	}
 
 	// Create program context
@@ -197,7 +210,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	golem::Context::Ptr context = contextDesc.create();
 	if (context == NULL) {
 		printf("unable to create program context");
-		return false;
+		return /*false*/;
 	}
 
 	printf("Use the arrow keys to move the camera.\n");
@@ -236,6 +249,8 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	universeDesc.argc = argc;
 	universeDesc.argv = argv;
 	Universe::Ptr pUniverse = universeDesc.create(*context);
+
+	cout << "pasamos por aca" << endl;
 	
 	// Create scene
 	Scene::Desc sceneDesc;
@@ -247,7 +262,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	std::string armType;
 	if (!XMLData(armType, xmlContext->getContextFirst("arm type"))) {
 		context->getLogger()->post(Message::LEVEL_CRIT, "Unspecified arm type");
-		return false;
+		return /*false*/;
 	}
 	
 	// Setup PhysReacPlanner controller description
@@ -271,7 +286,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	
 	else {
 		context->getLogger()->post(Message::LEVEL_CRIT, "Unknown arm type");
-		return false;
+		return/* false*/;
 	}
 
 	// Create PhysReacPlanner
@@ -279,7 +294,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	PhysReacPlanner *pPhysReacPlanner = dynamic_cast<PhysReacPlanner*>(pScene->createObject(physReacPlannerDesc));
 	if (pPhysReacPlanner == NULL) {
 		context->getLogger()->post(Message::LEVEL_CRIT, "Unable to create ReacPlanner");
-		return false;
+		return/* false*/;
 	}
 
 	// some useful pointers
@@ -795,7 +810,7 @@ bool Scenario::runSimulatedOfflineExperiment (int argc, char *argv[], int numSeq
 	//writing the dataset into binary file
 	writeDownCollectedData(data);
 	/////////////////////////////////////////////////
-	return true;
+	/*return true;*/
 }
 
 ///

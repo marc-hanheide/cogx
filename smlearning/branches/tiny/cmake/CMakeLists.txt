@@ -57,13 +57,21 @@ FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex )
 #	/usr/local/lib/libboost_regex-gcc43-mt-1_39.so.1.39.0 CACHE PATH
 # 	"Path to Boost Regex Library")
 
+FIND_PACKAGE( Qt4 REQUIRED )
+
+SET(QWT_INCLUDE /usr/include/qwt-qt4 CACHE PATH "Path prefix for qwt include")
+SET(QWT_LIBRARY /usr/lib/ CACHE PATH "Path prefix for qwt library")
+
+INCLUDE( ${QT_USE_FILE} )
+
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools GolemTinyIce
 	       pthread rt GL glut expat SMLearning netcdf
- 	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY})
+ 	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
+	       ${QT_LIBRARIES} qwt-qt4)
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}
@@ -76,6 +84,8 @@ INCLUDE_DIRECTORIES(
 	${KNI_INCLUDE}
 	${Boost_INCLUDE_DIRS}
 	${RNNLIB_INCLUDE}
+	${QT_INCLUDE_DIR}
+	${QWT_INCLUDE}
 )
 
 LINK_DIRECTORIES(
@@ -84,6 +94,7 @@ LINK_DIRECTORIES(
 	${GOLEM_LIBRARY}
 	${Boost_LIBRARY_DIRS}
 	${RNNLIB_LIBRARY}
+	${QWT_LIBRARY}
 )
 
 SET(METALEARNING_SOURCES
@@ -122,6 +133,7 @@ INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearnin
 SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/tools/data_handling.cpp
 	${SMLEARNING_ROOT}/src/tools/math_helpers.cpp
+	${SMLEARNING_ROOT}/src/tools/data_plot.cpp
 )
 
 SET(SEQUENCES_TEST_SOURCE
@@ -130,6 +142,10 @@ SET(SEQUENCES_TEST_SOURCE
 
 SET(PARSING_TEST_SOURCE
         ${SMLEARNING_ROOT}/src/tools/parsing_test.cpp
+)
+
+SET(DATA_PLOT_TEST_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/data_plot_test.cpp
 )
 
 SET(N_FOLD_CVSETS_NETS_SOURCE
@@ -145,6 +161,16 @@ SET(TOOLS_HEADERS
 	${SMLEARNING_ROOT}/include/tools/math_helpers.h
 )
 
+SET(DATA_PLOT_MOC_HEADERS
+	${SMLEARNING_ROOT}/include/tools/data_plot.h
+)
+QT4_WRAP_CPP( DATA_PLOT_GEN_MOC ${DATA_PLOT_MOC_HEADERS} )
+
+SET(DATA_PLOT_TEST_MOC_HEADERS
+	${SMLEARNING_ROOT}/include/tools/data_plot_test.h
+)
+QT4_WRAP_CPP( DATA_PLOT_TEST_GEN_MOC ${DATA_PLOT_TEST_MOC_HEADERS} )
+
 SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/defaultnet.config
 	${SMLEARNING_ROOT}/config/offline_experiment.xml
@@ -155,16 +181,17 @@ SET(CONFIG_FILES
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
 # SMLearning library
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES})
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${DATA_PLOT_GEN_MOC})
 # ADD_LIBRARY(${PROJECT_NAME} SHARED ${TOOLS_SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
-ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
+ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
+ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
@@ -174,6 +201,7 @@ INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS data_plot_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
