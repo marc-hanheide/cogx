@@ -11,18 +11,68 @@ systems in delimitation and quantification entered though shouldn't be
 for now added checking in the chooser as well
 check for encoding; we use utf=8 but standard is 16, could there be something with this?
 
+-----
 
 InfoStruct:
  # theme/rheme 
  # ownership
-   agreement
+ # agreement (defaults)
    focus
 
+-----
+
+agreement: should do "contentious" in questions (but not in echo-questions)
+
+-----
 
 "questions" in indicative and interrogative mood for clarification
 probablybest to introduce clarif question as a separate cat? or as relation type?
 check if yes/no question, in which case do random choice between indic and interr --> intonation matters!
 
+-----
+
+Focus:
+
+in the current demos, never more than one attribute (e.g., just type or just color, but not both)
+so, can always put focus on what there is
+
+--> if theme present and not shared (?) then focus it
+    if rheme present then focus it
+
+
+for the future:
+
+if a most-recently-mentioned-comparable-object exists
+  then add <Kontrast>false for every LF-part (nominal) that has the same value as that of the current object being referred to
+
+== verbal context "overrides"
+to see this (experiment!):
+   visual context: yellow pen, orange pen, yellow cup, orange wrapper, blue pen
+   dialogue:
+     h: points to (or adds) yellow pen
+        WHat is this?
+     r: it's a YELLOW PEN  or It's a yellow PEN
+        (less good, but acceptable: It's a YELLOW pen)
+     h: points at orange pen
+        What is this?
+     r: it's an ORANGE pen
+        (definitely not good: it's an orange PEN)
+        --> that is, verbal context wins, other alternatives from visual context are not considered
+ok, one can say, the yellow pen is now the most salient entity, but consider:
+
+visual context: orange pen
+h: adds a yellow pen
+   what is this? 
+r: It's a YELLOW PEN or It's a yellow PEN
+   (I think Its a BLUE pen is acceptable, but worse)
+
+
+-----
+
+Simple properties
+relations instead of simple features: doesn't work now
+
+-----
 
 Exclude it-pronominalization when modifiers are present
 this is working:

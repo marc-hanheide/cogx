@@ -228,4 +228,39 @@ Following Steedman's approach, we will need contentious
    </actions>
 </system>
 
+
+<!-- /**
+@system focus.assignment
+
+Simplest first shot:
+    if theme present and not shared (?) then focus it
+    if rheme present then focus it
+
+*/
+-->
+<system id="focus.assignment" region="infoStruct" metafunction="textual">
+   <chooser id="c-themerheme.type"/> 
+   <conditions>
+      <condition features="@feat:Rheme"/>   <!-- this means either Theme or Rheme is present, which is always -->
+   </conditions>
+   <actions>
+
+      <action choice="t-rheme">
+        	<add-feature feature="Focus" value="t-focus-true"  /> <!-- must go locally -->
+      </action>   
+
+      <action choice="m-rheme">
+        	<add-feature feature="Focus" value="m-focus-true"  /> <!-- must go locally -->
+      </action>   
+      
+      <action choice="e-rheme">
+        	<add-feature feature="Focus" value="e-focus-true"  /> <!-- must go locally -->
+      </action>         
+      
+      <action choice="noRhemeFeature">
+       </action>        
+              
+   </actions>
+</system>
+
 </systems>
