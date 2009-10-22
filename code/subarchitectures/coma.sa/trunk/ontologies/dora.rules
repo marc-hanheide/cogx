@@ -34,6 +34,13 @@
   ->
   (?thing rdfs:subClassOf dora:Object),
   (?loc rdfs:subClassOf dora:PhysicalRoom)]
+  
+[omicsCrispInferenceRule:
+  (?objClass dora:typicalObjectInRoom ?areaClass),
+  (?objIns rdf:type ?objClass),
+  (?areaIns dora:contains ?objIns)
+  ->
+  (?areaIns rdf:type ?areaClass)]  
 
 [sameRoomRuleDirect:
   (?a dora:adjacent ?b),
