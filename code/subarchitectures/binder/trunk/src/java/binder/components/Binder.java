@@ -319,11 +319,13 @@ public class Binder extends ManagedComponent  {
 	private void proxyDeletion (WorkingMemoryChange wmc) {
 
 		log("--------START BINDING UPDATE ----------");
-		log("TRIGGERED BY: proxy deletion ");
+		log("TRIGGERED BY: proxy deletion (" );
 
 		try {
 			// The ID of the deleted proxy
 			String deletedProxyID= wmc.address.id;
+
+			log("proxy to delete: " + deletedProxyID);
 
 			Vector<UnionConfiguration> newUnionConfigs = new Vector<UnionConfiguration>();
 
@@ -374,7 +376,7 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-			currentUnionConfigurations = recompute(currentUnionConfigurations);	
+	//		currentUnionConfigurations = recompute(currentUnionConfigurations);	
 
 			
 			// Update the alternative union configurations
