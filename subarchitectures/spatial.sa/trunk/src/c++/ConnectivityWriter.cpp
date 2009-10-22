@@ -59,7 +59,7 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     getMemoryEntry<SpatialProperties::ConnectivityPathProperty>(wmc.address);
   if (prop != 0) {
     cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
-    origin->address.subarchitecture = "no";
+    origin->address.subarchitecture = "spatial.sa";
     origin->address.id = "local";
     origin->type = "data";
 
