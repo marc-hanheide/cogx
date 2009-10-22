@@ -538,14 +538,54 @@ public class Binder extends ManagedComponent  {
 
 			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
 
-			newUnionConfigs = recompute(newUnionConfigs);
+			
 			
 			if (newProxy.entityID.equals("7:A")) {
 				for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+					log("STEP 1");
 					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+					// Compute and normalise confidence scores for the union configurations
+					ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
+					
+					log("STEP 2");
+					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+
+					// based on these scores, compute the existence probabilities for each union
+					BinderUtils.addProbExistsToUnions(newUnionConfigs);
+					
+					log("STEP 3");
+					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+
+
+					// Get the nbest configurations (with N as a parameter)
+					if (nbestsFilter > 0) {
+						newUnionConfigs = 
+							ConfigurationFilter.getNBestUnionConfigurations (newUnionConfigs, nbestsFilter);
+					}
+					
+					log("STEP 4");
+					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+
+
+					
+					// Normalise the union distributions
+					if (normaliseDistributions) {
+						log("Normalisation of the probability distributions");
+						normaliseDistributions(newUnionConfigs);
+					}
+					log("STEP 6");
+					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+
+					
+					// Compute the marginal probability values for the individual feature values
+					computeMarginalProbabilityValues(newUnionConfigs);
+					
 				}
 			}
-
+			else {
+				newUnionConfigs = recompute(newUnionConfigs);
+			}
+			
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = 
 				UnionConfigurationUtils.buildNewAlternativeUnionConfigurations(newUnionConfigs);
