@@ -49,7 +49,7 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 	public final Agent robotAgent = new Agent("robot");
 	public final Agent humanAgent = new Agent("human");
-	public final SpatioTemporalFrame curFrame = new SpatioTemporalFrame();
+	public SpatioTemporalFrame curFrame = new SpatioTemporalFrame();
 
 	public final float SALIENCY_THRESHOLD = 0.5f;
 
@@ -64,17 +64,14 @@ public class BeliefModelTranslator extends ManagedComponent {
 	public void initializeAgentAndFrame () {
 		robotAgent.id = "robot";
 
-		curFrame.id = "here-and-now";
-		curFrame.persp = new Perspective();
-		curFrame.persp.ags = new Agent[1];
-		curFrame.persp.ags[0] = robotAgent;
-		curFrame.persp.id = "robotperspective";
-		curFrame.spatialint = new SpatialInterval();
-		curFrame.spatialint.id = "here";
-		curFrame.tempint = new TemporalInterval();
-		curFrame.tempint.id = "now";
-		curFrame.tempint.start = getCASTTime().toString();
-		curFrame.tempint.end = getCASTTime().toString();
+		String id = "here-and-now";
+		Agent[] ags = new Agent[1];
+		ags[0] = robotAgent;
+		Perspective persp = new Perspective("robotperspective", ags);
+		SpatialInterval spatialint = new SpatialInterval("here");
+		TemporalInterval tempint = new TemporalInterval("now", getCASTTime().toString(), getCASTTime().toString());
+		
+		curFrame = new SpatioTemporalFrame(id, spatialint, tempint, persp);
 	}
 
 
