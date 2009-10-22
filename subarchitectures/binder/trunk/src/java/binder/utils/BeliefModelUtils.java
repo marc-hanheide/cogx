@@ -34,6 +34,7 @@ import beliefmodels.adl.SpatioTemporalFrame;
 import beliefmodels.domainmodel.cogx.Color;
 import beliefmodels.domainmodel.cogx.ColorProperty;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
+import beliefmodels.domainmodel.cogx.ContinualStatus;
 import beliefmodels.domainmodel.cogx.Graspable;
 import beliefmodels.domainmodel.cogx.GraspableProperty;
 import beliefmodels.domainmodel.cogx.LinguisticAttributeProperty;
@@ -72,6 +73,7 @@ public class BeliefModelUtils {
 
 	private static Logger logger = ComponentLogger.getLogger(BeliefModelUtils.class);
 
+	public static int idCounter = 1;
 	
 	public static boolean showProbabilitiesInPrettyPrint = true;
 
@@ -96,98 +98,99 @@ public class BeliefModelUtils {
 		// types for the colour feature
 		if (featlabel.equals("colour")) {
 
-			ColorProperty property = new ColorProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-
-			if (FeatureValueUtils.hasValue(fv, "red")) { property.colorValue = Color.red; }
-			else if (FeatureValueUtils.hasValue(fv, "blue")) {property.colorValue = Color.blue;	}
-			else if (FeatureValueUtils.hasValue(fv, "green")) {	property.colorValue = Color.green;}
-			else if (FeatureValueUtils.isUnknownValue(fv)) {	property.colorValue = Color.unknownColor;}
+			Color colorValue;
+			if (FeatureValueUtils.hasValue(fv, "red")) { colorValue = Color.red; }
+			else if (FeatureValueUtils.hasValue(fv, "blue")) {colorValue = Color.blue;	}
+			else if (FeatureValueUtils.hasValue(fv, "green")) {	colorValue = Color.green;}
+			else if (FeatureValueUtils.isUnknownValue(fv)) {	colorValue = Color.unknownColor;}
 
 			else {
 				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
 				"\" currently not supported in the typed belief model");
+				colorValue = Color.unknownColor;
 			}
-
+			
+			ColorProperty property = new ColorProperty("c-"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, colorValue);
+			idCounter++;
 			return property;
 		}
 
 		// types for the shape feature
 		else if (featlabel.equals("shape")) {
 
-			ShapeProperty property = new ShapeProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-
-			if (FeatureValueUtils.hasValue(fv, "cylindrical")) { property.shapeValue = Shape.cylindrical; }
-			else if (FeatureValueUtils.hasValue(fv, "spherical")) {	property.shapeValue = Shape.spherical; }
-			else if (FeatureValueUtils.hasValue(fv, "cubic")) { property.shapeValue = Shape.cubic; }
-			else if (FeatureValueUtils.isUnknownValue(fv)) {	property.shapeValue = Shape.unknownShape;}
+			Shape shapeValue;
+			if (FeatureValueUtils.hasValue(fv, "cylindrical")) { shapeValue = Shape.cylindrical; }
+			else if (FeatureValueUtils.hasValue(fv, "spherical")) {	shapeValue = Shape.spherical; }
+			else if (FeatureValueUtils.hasValue(fv, "cubic")) { shapeValue = Shape.cubic; }
+			else if (FeatureValueUtils.isUnknownValue(fv)) {	shapeValue = Shape.unknownShape;}
 
 			else {
 				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
 				"\" currently not supported in the typed belief model");
+				shapeValue = Shape.unknownShape;
 			}
 
+			ShapeProperty property = new ShapeProperty("s-"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, shapeValue);
+			idCounter++;
 			return property;
 		}
 
 		// types for the obj_label feature
 		else if (featlabel.equals("obj_label")) {
 
-			ObjectTypeProperty property = new ObjectTypeProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-
-			if (FeatureValueUtils.hasValue(fv, "mug")) { property.typeValue = ObjectType.mug; }
-			else if (FeatureValueUtils.hasValue(fv,"ball")) { property.typeValue = ObjectType.ball;	}
-			else if (FeatureValueUtils.isUnknownValue(fv)) {	property.typeValue = ObjectType.unknownObjectType; }
+			ObjectType typeValue;
+			if (FeatureValueUtils.hasValue(fv, "mug")) { typeValue = ObjectType.mug; }
+			else if (FeatureValueUtils.hasValue(fv,"ball")) { typeValue = ObjectType.ball;	}
+			else if (FeatureValueUtils.isUnknownValue(fv)) {	typeValue = ObjectType.unknownObjectType; }
 
 			else {
 				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
 				"\" currently not supported in the typed belief model");
+				typeValue = ObjectType.unknownObjectType;
 			}
+			ObjectTypeProperty property = new ObjectTypeProperty("t-"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, typeValue);
+			idCounter++;
 			return property;
 		}
 
 		// types for the graspable feature
 		else if (featlabel.equals("graspable")) {
 
-			GraspableProperty property = new GraspableProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-
-			if (FeatureValueUtils.hasValue(fv, true)) { property.graspableValue = Graspable.grasp;	}
-			else if (FeatureValueUtils.hasValue(fv,false)) { property.graspableValue = Graspable.nograsp; }
-			else if (FeatureValueUtils.isUnknownValue(fv)) { property.graspableValue = Graspable.unknownGrasp; }
+			Graspable graspableValue;
+			if (FeatureValueUtils.hasValue(fv, true)) { graspableValue = Graspable.grasp;	}
+			else if (FeatureValueUtils.hasValue(fv,false)) { graspableValue = Graspable.nograsp; }
+			else if (FeatureValueUtils.isUnknownValue(fv)) { graspableValue = Graspable.unknownGrasp; }
 
 			else {
 				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
 				"\" currently not supported in the typed belief model");
+				graspableValue = Graspable.unknownGrasp;
 			}
 
+			GraspableProperty property = new GraspableProperty("g-"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, graspableValue);
+			idCounter++;
 			return property;
 		}
 
 		// types for the location feature
 		else if (featlabel.equals("location")) {
 
-			LocationProperty property = new LocationProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-			property.location = FeatureValueUtils.toString(fv);
-
+			LocationProperty property = new LocationProperty("l"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, FeatureValueUtils.toString(fv));
+			idCounter++;
 			return property;
 		}
 
 		// types for the ling_label feature
 		else if (featlabel.equals("ling_label")) {
 
-			LinguisticLabelProperty property = new LinguisticLabelProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-			property.label = FeatureValueUtils.toString(fv);
+			LinguisticLabelProperty property = new LinguisticLabelProperty("ll"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, FeatureValueUtils.toString(fv));
+			idCounter++;
 
 			return property;
 		}
@@ -195,49 +198,58 @@ public class BeliefModelUtils {
 		// types for the ling_attribute feature
 		else if (featlabel.equals("ling_attribute")) {
 
-			LinguisticAttributeProperty property = new LinguisticAttributeProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-			property.attribute = FeatureValueUtils.toString(fv);
+			LinguisticAttributeProperty property = new LinguisticAttributeProperty("la"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, FeatureValueUtils.toString(fv));
+			idCounter++;
 
 			return property;
 		}
 
-		// types for the ling_attribute feature
-	/**	else if (featlabel.equals("boundPhantom")) {
 
-			BoundPhantomProxyProperty property = new BoundPhantomProxyProperty();
-			property.prob = fv.independentProb;
-			property.boundProxy = FeatureValueUtils.toString(fv);
-			return property;
-		} */
-		
 		else if (featlabel.equals("unionRef")) {
-			UnionRefProperty property = new UnionRefProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-			property.unionRef = FeatureValueUtils.toString(fv);
+			
+			UnionRefProperty property = new UnionRefProperty("ur"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, FeatureValueUtils.toString(fv));
+			idCounter++;
 			
 			return property;
 		}
 		
 		else if (featlabel.equals("saliency")) {
-			SaliencyProperty property = new SaliencyProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-			if (FeatureValueUtils.hasValue(fv, "low")) { property.sal = Saliency.low; }
-			if (FeatureValueUtils.hasValue(fv, "high")) { property.sal = Saliency.high; }
+
+			Saliency saliencyValue;
+			if (FeatureValueUtils.hasValue(fv, "low")) { saliencyValue = Saliency.low; }
+			else if (FeatureValueUtils.hasValue(fv, "high")) { saliencyValue = Saliency.high; }
+			
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
+				"\" currently not supported in the typed belief model");
+				saliencyValue = Saliency.unknownSaliency;
+			}
+
+			SaliencyProperty property = new SaliencyProperty("s-"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, saliencyValue);
+			idCounter++;
 			
 			return property;
 		}
 		
 		else if (featlabel.equals("ling_proximity")) {
-			ProximityProperty property = new ProximityProperty();
-			property.prob = fv.independentProb;
-			property.polarity = true;
-			if (FeatureValueUtils.hasValue(fv, "proximal")) { property.prox = Proximity.proximal; }
-			if (FeatureValueUtils.hasValue(fv, "distal")) { property.prox = Proximity.distal; }
+
+			Proximity proxValue;
+			if (FeatureValueUtils.hasValue(fv, "proximal")) { proxValue = Proximity.proximal; }
+			else if (FeatureValueUtils.hasValue(fv, "distal")) { proxValue = Proximity.distal; }
 			
+			else {
+				log("WARNING: feature value \"" + FeatureValueUtils.toString(fv) + 
+				"\" currently not supported in the typed belief model");
+				proxValue = Proximity.unknownProximity;
+			}
+
+			ProximityProperty property = new ProximityProperty("p-"+idCounter, fv.independentProb, 
+					ContinualStatus.proposition, true, proxValue);
+			idCounter++;
+		
 			return property;
 		}
 
@@ -246,7 +258,11 @@ public class BeliefModelUtils {
 			log("WARNING: feature \"" + featlabel + 
 			"\" not supported in the typing currently specified for the belief model");
 		}
-		return new UncertainSuperFormula();
+		
+		UncertainSuperFormula formula = new UncertainSuperFormula("us-"+idCounter, fv.independentProb);
+		idCounter++;
+		return formula;
+		
 	}
 
 
