@@ -418,7 +418,7 @@ public class Binder extends ManagedComponent  {
 			BinderUtils.completeProxy(newProxy, addUnknowns, proxyDistribFilter);
 
 			// Perform the binding (either incrementally or by full rebinding)
-			if (!newProxy.entityID.equals("6:A") && !newProxy.entityID.equals("7:A")) {
+			if (!newProxy.entityID.equals("7:A")) {
 			if (incrementalBinding ) {
 				incrementalBinding(newProxy);
 			}
@@ -540,7 +540,7 @@ public class Binder extends ManagedComponent  {
 
 			
 			
-			if (newProxy.entityID.equals("7:A")) {
+			if (newProxy.entityID.equals("6:A")) {
 					log("STEP 1");
 					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
 					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
