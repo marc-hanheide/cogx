@@ -27,6 +27,21 @@
 using namespace smlearning;
 
 int main(int argc, char *argv[]) {
+	
+//  	QApplication a(argc, argv);
 
-	return ActiveLearnScenarioIce().main (argc, argv);
+// 	vector<double> data;
+// 	int max_size = 40;
+// 	MainWindow mainWindow (max_size, data);
+
+// 	mainWindow.resize(600,400);
+	//mainWindow.start();
+	//mainWindow.show();
+
+	//ActiveLearnScenarioIce().setMainWindow (&mainWindow);
+	ActiveLearnScenarioIce().main (argc, argv);
+// 	//ActiveLearnScenarioIce scenario;
+
+// 	a.exec ();
+
 }

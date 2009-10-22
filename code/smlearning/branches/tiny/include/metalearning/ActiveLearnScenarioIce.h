@@ -44,10 +44,19 @@
 #include <metalearning/ActiveRNN.h>
 #include <Helpers.hpp>
 
+#include <qapplication.h>
+#include <qmainwindow.h>
+
+//#include <tools/data_plot_test.h>
+
 namespace smlearning {
 
 class ActiveLearnScenarioIce : public ScenarioIce {
 	ActiveRNN learner;
+	int argc;
+	char** argv;
+	Ice::ObjectPrx base;
+	TinyPrx pTiny;
 public:
 	///
 	///constructor
@@ -60,7 +69,7 @@ public:
 	///associated to the RNN machine.
 	///
 	int run (int argc, char *argv[]);
-
+	virtual void run ();
 };
 
 }; /* namespace smlearning */

@@ -66,8 +66,10 @@ typedef double Real;
 ///This class encapsulates objects, agents and general configuration
 ///of the learning scenario for the robot
 ///
-class ScenarioIce : virtual public Ice::Application
+class ScenarioIce : virtual public Ice::Application/*, protected Runnable*/
 {
+protected:
+	Thread thread;
 public:
 	///
 	///constructor
@@ -81,6 +83,8 @@ public:
 	///with learning machines running offline learning experiments.
 	///
 	int run (int argc, char *argv[]);
+
+	virtual void run () { }
 
 	///
 	///creates polyflap and puts it in the scene
