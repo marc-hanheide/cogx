@@ -441,14 +441,12 @@ ProxyMarshaller::updateInternalProxy(InternalProxy &intProxy)
     // Proxy exists on Binder; overwrite its Features
     log("Proxy existed on Binder; overwrite its features");
     log("Proxy has %i features.", intProxy.proxy->features.size());
-    sleepComponent(rand()%4000);
     overwriteProxyInWM(intProxy.proxy);
   }
   else {
     // Proxy is new; add it to Binder
     log("Proxy new on Binder; create it");
     log("Proxy has %i features.", intProxy.proxy->features.size());
-    sleepComponent(rand()%4000);
     addProxyToWM(intProxy.proxy);
     intProxy.onBinder = true;
   }
