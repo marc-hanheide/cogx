@@ -61,7 +61,7 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     cast::cdl::WorkingMemoryPointerPtr origin = new cast::cdl::WorkingMemoryPointer();
     origin->address.subarchitecture = "no";
     origin->address.id = "local";
-    origin->type = "data"; 
+    origin->type = "data";
 
     int place1 = prop->place1Id;
     int place2 = prop->place2Id;
@@ -90,10 +90,11 @@ ConnectivityWriter::newConnectivity(const cdl::WorkingMemoryChange &wmc)
     // Add the "relationType" label feature
     FeaturePtr feature = new Feature();
     feature->featlabel = "connected";
-    feature->alternativeValues.push_back(new 
+    feature->alternativeValues.push_back(new
 					 binder::autogen::featvalues::BooleanValue(1,getCASTTime(),true));
     m_marshaller->addFeature("connectivity", relationUID, feature);
 
+    sleepComponent(rand()%3000);
     m_marshaller->commitFeatures("connectivity", relationUID);
   }
   else {
@@ -117,7 +118,7 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
 //     if (wmc.type == "ADD") {
 //       FeaturePtr feature = new Feature();
 //       feature->featlabel = "gateway";
-//       feature->alternativeValues.push_back(new 
+//       feature->alternativeValues.push_back(new
 // 	  binder::autogen::featvalues::StringValue(1,getCASTTime(),"gateway"));
 //       m_marshaller->addFeature(type, uid, feature);
 //       m_marshaller->commitFeatures(type, uid);
@@ -130,7 +131,7 @@ ConnectivityWriter::changedGateway(const cdl::WorkingMemoryChange &wmc)
     if (wmc.operation == cdl::ADD) {
       FeaturePtr feature = new Feature();
       feature->featlabel = "gateway";
-      feature->alternativeValues.push_back(new 
+      feature->alternativeValues.push_back(new
 	  binder::autogen::featvalues::StringValue(1,getCASTTime(),"gateway"));
       m_marshaller->addFeature(type, uid, feature);
       m_marshaller->commitFeatures(type, uid);
