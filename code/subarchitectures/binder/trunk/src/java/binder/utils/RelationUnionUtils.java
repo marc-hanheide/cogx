@@ -30,7 +30,12 @@ public class RelationUnionUtils {
 
 	public static RelationUnion specifyUnionSourceAndTarget (RelationUnion union, UnionConfiguration config) {
 		log("start relation processing");
-
+		
+		HashMap<String, String> unionForProxy = getUnionForProxyHashMap(config);
+		
+		Feature usource= getUnionSource(union, unionForProxy);
+		Feature utarget = getUnionTarget(union, unionForProxy);
+	
 		String entityID = union.entityID;
 		ProbabilityDistribution distribution = union.distribution;
 		Proxy[] includedProxies = union.includedProxies;
@@ -39,12 +44,7 @@ public class RelationUnionUtils {
 		CASTTime timeStamp = union.timeStamp;
 		Feature psource = union.psource;
 		Feature ptarget = union.ptarget;
-		
-		HashMap<String, String> unionForProxy = getUnionForProxyHashMap(config);
-		
-		Feature usource= getUnionSource(union, unionForProxy);
-		Feature utarget = getUnionTarget(union, unionForProxy);
-	
+
 		
 		RelationUnion newUnion = new RelationUnion
 			(entityID, probExists, timeStamp, features, distribution, 

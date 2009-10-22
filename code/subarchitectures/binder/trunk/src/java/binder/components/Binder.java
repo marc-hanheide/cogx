@@ -40,6 +40,7 @@ import binder.filtering.ConfigurationFilter;
 import binder.constructors.DistributionGeneration;
 import binder.utils.ProbabilityUtils;
 import binder.utils.RelationUnionUtils;
+import binder.utils.UnionConfigurationUtils;
 import binder.constructors.UnionConstructor;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -59,7 +60,7 @@ import cast.core.CASTData;
  */
 
 public class Binder extends ManagedComponent  {
- 
+  
 
 	// the union constructor
 	private UnionConstructor constructor;
@@ -89,7 +90,6 @@ public class Binder extends ManagedComponent  {
 	// The union configurations computed for the current state 
 	// of the binder WM (modulo filtering)
 	private Vector<UnionConfiguration> currentUnionConfigurations ;
-
 	
 	public static String BINDER_SA = "binder";
 
@@ -273,7 +273,7 @@ public class Binder extends ManagedComponent  {
 							Union updatedUnion = constructor.constructNewUnion(proxies, existingUnion.entityID, getCASTTime());								
 							existingUnionConfig.includedUnions[i] = updatedUnion;
 							
-							if (!isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
+							if (!UnionConfigurationUtils.isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
 								newUnionConfigs.add(existingUnionConfig);
 							}
 						}
@@ -291,7 +291,7 @@ public class Binder extends ManagedComponent  {
 			
 			// Update the alternative union configurations
 			AlternativeUnionConfigurations alters = 
-				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
+				UnionConfigurationUtils.buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
 			updateWM(alters); 
 
 		}
@@ -356,10 +356,10 @@ public class Binder extends ManagedComponent  {
 							}
 							else {
 								existingUnionConfig = 
-									removeUnionFromConfig(existingUnionConfig, existingUnion);
+									UnionConfigurationUtils.removeUnionFromConfig(existingUnionConfig, existingUnion);
 							}
 							
-							if (!isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
+							if (!UnionConfigurationUtils.isConfigurationAlreadyIncluded(newUnionConfigs, existingUnionConfig)) {
 								newUnionConfigs.add(existingUnionConfig);
 							}
 						}
@@ -377,7 +377,7 @@ public class Binder extends ManagedComponent  {
 			
 			// Update the alternative union configurations
 			AlternativeUnionConfigurations alters = 
-				buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
+				UnionConfigurationUtils.buildNewAlternativeUnionConfigurations(currentUnionConfigurations);
 			updateWM(alters); 
 
 		}
@@ -477,7 +477,7 @@ public class Binder extends ManagedComponent  {
 
 				// create a new configuration with an orphan proxy (proxy without corresponding union)
 				UnionConfiguration unionConfigWithOrphanProxy = 
-					createNewUnionConfigurationWithOrphanProxy(existingUnionConfig, newProxy);
+					UnionConfigurationUtils.createNewUnionConfigurationWithOrphanProxy(existingUnionConfig, newProxy);
 				newUnionConfigs.add(unionConfigWithOrphanProxy);
 				
 				
@@ -487,7 +487,7 @@ public class Binder extends ManagedComponent  {
 				}
 				// Create and add a new configuration containing the single-proxy union
 				UnionConfiguration newConfigWithSingleUnion = 
-					createNewUnionConfiguration (existingUnionConfig, newUnion);
+					UnionConfigurationUtils.createNewUnionConfiguration (existingUnionConfig, newUnion);
 				newUnionConfigs.add(newConfigWithSingleUnion);	
 
 				
@@ -524,7 +524,8 @@ public class Binder extends ManagedComponent  {
 						}
 						// create and add a new union configuration with the new merged union
 						UnionConfiguration newConfigWithMergedUnion = 
-							createNewUnionConfiguration (existingUnionConfig, newMergedUnion, existingUnion);
+							UnionConfigurationUtils.createNewUnionConfiguration 
+								(existingUnionConfig, newMergedUnion, existingUnion);
 						newUnionConfigs.add(newConfigWithMergedUnion);
 
 					}				
@@ -537,7 +538,8 @@ public class Binder extends ManagedComponent  {
 			newUnionConfigs = recompute(newUnionConfigs);
 
 			// Add everything to the working memory
-			AlternativeUnionConfigurations alters = buildNewAlternativeUnionConfigurations(newUnionConfigs);
+			AlternativeUnionConfigurations alters = 
+				UnionConfigurationUtils.buildNewAlternativeUnionConfigurations(newUnionConfigs);
 			updateWM(alters); 
 			
 			// update the list of possible unions
@@ -709,46 +711,7 @@ public class Binder extends ManagedComponent  {
 		}
 	}
 	
-	
-	private boolean isConfigurationAlreadyIncluded 
-		(Vector<UnionConfiguration> configs, UnionConfiguration config) {
-		
-		for (int i = 0 ; i < configs.size(); i++) {
-			UnionConfiguration curConfig = configs.elementAt(i);
-			
-			boolean foundMatchingConfig = true;
-			
-			if ((!curConfig.equals(config)) && (curConfig.includedUnions.length == config.includedUnions.length)) {
-						
-				HashMap<String, Union> entityIDsForCurConfig = new HashMap<String, Union>();
-				for (int j = 0 ; j < curConfig.includedUnions.length ; j++) {
-					entityIDsForCurConfig.put(curConfig.includedUnions[j].entityID, curConfig.includedUnions[j]);
-				}
-				
-				for (int j = 0 ; j < config.includedUnions.length ; j++) {
-					if (entityIDsForCurConfig.containsKey(config.includedUnions[j].entityID)) {
-						Union unionInCurConfig = entityIDsForCurConfig.get(config.includedUnions[j].entityID);
-						if (unionInCurConfig.features.length != config.includedUnions[j].features.length) {
-							foundMatchingConfig = false;
-						}
-					}
-					else {
-						foundMatchingConfig = false;
-					}
-				}
-			}
-			else {
-				foundMatchingConfig = false;
-			}
-			
-			if (foundMatchingConfig) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
+
 	/**
 	 * Get a vector containing all elements in the "proxies" array apart from proxyToExclude
 	 * 
@@ -787,145 +750,6 @@ public class Binder extends ManagedComponent  {
 		}
 		return false;
 	}
-
-	
-	/**
-	 * Remove the union from the configuration
-	 * 
-	 * @param existingconfig
-	 * @param unionToDelete
-	 * @return
-	 */
-	private UnionConfiguration removeUnionFromConfig
-	(UnionConfiguration existingconfig, Union unionToDelete) {
-
-		// Aggregate the set of unions which need to be kept
-		Vector<Union> unionsInConfig = new Vector<Union>();
-		for (int i = 0; i < existingconfig.includedUnions.length ; i++) {
-			Union curUnion = existingconfig.includedUnions[i];
-			if (!curUnion.equals(unionToDelete)) {
-				unionsInConfig.add(curUnion);
-			}
-		}
-		
-		// Update the included unions in the configuration
-		existingconfig.includedUnions = new Union[unionsInConfig.size()];
-		existingconfig.includedUnions = unionsInConfig.toArray(existingconfig.includedUnions);
-
-		return existingconfig;
-	}
-	
-	
-	/**
-	 * Build an AlternativeUnionConfigurations containing all configurations listed in
-	 * configuration vector
-	 * 
-	 * @return the new AlternativeUnionConfigurations object
-	 */
-	private AlternativeUnionConfigurations buildNewAlternativeUnionConfigurations
-		(Vector<UnionConfiguration> configs ) {
-
-		UnionConfiguration[] alterconfigs = new UnionConfiguration[configs.size()];
-		for (int i = 0; i < alterconfigs.length ; i++) {
-			alterconfigs[i] = configs.elementAt(i); 
-		}
-		AlternativeUnionConfigurations alters = new AlternativeUnionConfigurations(alterconfigs);
-
-		return alters;
-	}
-
-	
-
-	private UnionConfiguration createNewUnionConfigurationWithOrphanProxy
-		(UnionConfiguration existingUnionConfig, Proxy orphan) {
-	
-		float configProb = -1.0f;
-		Union[] includedUnions = existingUnionConfig.includedUnions;
-		Proxy[] orphanProxies;
-		
-		if (existingUnionConfig.orphanProxies != null) {
-		orphanProxies = new Proxy[existingUnionConfig.orphanProxies.length +1 ];
-		for (int t = 0; t < existingUnionConfig.orphanProxies.length ; t++) {
-			orphanProxies[t] = existingUnionConfig.orphanProxies[t];
-		}
-		orphanProxies[existingUnionConfig.orphanProxies.length] = orphan;
-		}
-		else {
-			orphanProxies = new Proxy[1];
-			orphanProxies[0] = orphan;
-		}
-		
-		UnionConfiguration unionConfigWithOrphanProxy = new UnionConfiguration(includedUnions, orphanProxies, configProb);
-
-		return unionConfigWithOrphanProxy;
-	}
-
-
-	/**
-	 * Create a new union configuration based on an existing one and a new union 
-	 * to add
-	 * 
-	 * @param existingUnionConfig
-	 * @param unionToAdd
-	 * @return
-	 */
-	private UnionConfiguration createNewUnionConfiguration
-	(UnionConfiguration existingUnionConfig, Union unionToAdd) {			
-		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, new Vector<Union>());
-	}
-
-
-	/**
-	 * Create a new union configuration based on an existing configuration, a union
-	 * to add, and an union to remove
-	 * 
-	 * @param existingUnionConfig
-	 * @param unionToAdd
-	 * @param unionToRemove
-	 * @return the new UnionConfiguration
-	 */
-	private UnionConfiguration createNewUnionConfiguration
-	(UnionConfiguration existingUnionConfig, Union unionToAdd, Union unionToRemove) {
-
-		Vector<Union> unionsToRemove = new Vector<Union>();
-		unionsToRemove.add(unionToRemove);
-		return createNewUnionConfiguration(existingUnionConfig, unionToAdd, unionsToRemove);
-	}
-
-	/**
-	 * Create a new union configuration based on an existing configuration, a new
-	 * union to add, and a list of unions to remove
-	 * 
-	 * @param existingUnionConfig
-	 * @param unionToAdd
-	 * @param unionsToRemove
-	 * @return the new UnionConfiguration
-	 */
-	private UnionConfiguration createNewUnionConfiguration
-		(UnionConfiguration existingUnionConfig, 
-			Union unionToAdd, Vector<Union> unionsToRemove) {
-
-		float configProb = -1.0f;
-		int nbUnions = existingUnionConfig.includedUnions.length + 1 - unionsToRemove.size();
-		Union[] includedUnions = new Union[nbUnions];
-		Proxy[] orphanProxies = existingUnionConfig.orphanProxies;
-
-		int count = 0;
-		for (int i = 0 ; i < existingUnionConfig.includedUnions.length; i++) {
-			if (!unionsToRemove.contains(existingUnionConfig.includedUnions[i])) {
-				includedUnions[i- count] = existingUnionConfig.includedUnions[i];
-			}
-			else {
-				count ++;
-			}
-		}
-
-		includedUnions[nbUnions - 1] = unionToAdd;
-		UnionConfiguration newConfig = new UnionConfiguration(includedUnions, orphanProxies, configProb);
-
-		return newConfig;
-	}
-	
 
 	/**
 	 * Check if the two unions are from different originating subarchitectures
