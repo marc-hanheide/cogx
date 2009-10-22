@@ -115,11 +115,6 @@ SelfRepresenter::runComponent()
 	if (curPlaceID != prevPlaceID) {
 	  // Place has changed!
 
-		origin = new cast::cdl::WorkingMemoryPointer();
-		    origin->address.subarchitecture = "no";
-		    origin->address.id = "local";
-		    origin->type = "data"; //uh oh, do we always need to include this?
-
 	  // replace position feature
 	  agg->deleteProxy("robotpos", "robot");
 
