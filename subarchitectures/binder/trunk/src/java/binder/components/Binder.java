@@ -539,6 +539,12 @@ public class Binder extends ManagedComponent  {
 			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
 
 			newUnionConfigs = recompute(newUnionConfigs);
+			
+			if (newProxy.entityID.equals("7:A")) {
+				for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+				}
+			}
 
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = 
