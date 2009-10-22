@@ -23,7 +23,6 @@ module VisionData {
     ObjSeq Objects;
   };
 
-
   sequence<string> IdSeq;
 
   // RGB color
@@ -232,10 +231,18 @@ module VisionData {
   class VisualLearnerRecognitionTask {
     // REQUEST:
     string protoObjectId;
+    cast::cdl::WorkingMemoryAddress protoObjectAddr;
 
     // RESPONSE
-    StringSeq colorLabel;
+    IntSeq colorLabel;
     DoubleSeq colorDistr;
+  };
+
+  class VisualLearnerLearningTask {
+    // REQUEST:
+    cast::cdl::WorkingMemoryAddress protoObjectAddr;
+    IntSeq labels;
+    DoubleSeq confidences;
   };
 
   struct SegmentMask {

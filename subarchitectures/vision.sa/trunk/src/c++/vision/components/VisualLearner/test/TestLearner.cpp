@@ -113,12 +113,12 @@ void CTestRecognizer::onChangeRecognitionTask(const cast::cdl::WorkingMemoryChan
 {
    log("Recognition task %s modified. %d requests in WM.", descAddr(_wmc.address).c_str(), nRequests);
    VisualLearnerRecognitionTaskPtr pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
-   std::vector<string>::iterator pstr;
+   std::vector<int>::iterator plabel;
    std::vector<double>::iterator pdbl;
 
    pdbl = pTask->colorDistr.begin();
-   for( pstr = pTask->colorLabel.begin(); pstr != pTask->colorLabel.end(); pstr++) {
-      log("Label '%s' Distr '%f'", pstr->c_str(), pdbl != pTask->colorDistr.end() ? *pdbl : -1);
+   for( plabel = pTask->colorLabel.begin(); plabel != pTask->colorLabel.end(); plabel++) {
+      log("Label '%d' Distr '%f'", *plabel, pdbl != pTask->colorDistr.end() ? *pdbl : -1);
       if (pdbl != pTask->colorDistr.end()) pdbl++;
    }
 

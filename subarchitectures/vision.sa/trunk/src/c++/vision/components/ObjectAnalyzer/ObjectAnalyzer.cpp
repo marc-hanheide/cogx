@@ -4,6 +4,7 @@
  */
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <boost/format.hpp>
 #include "ObjectAnalyzer.h"
 
 /**
@@ -84,6 +85,7 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, cons
    log("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
    ptask->protoObjectId = addr.id;
+   // TODO: Add learning data: labels, confidences!
 
    string reqId(newDataID());
    addToWorkingMemory(reqId, ptask);
@@ -97,9 +99,9 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
 
   AttrObjectPtr pAttrObject = new AttrObject();
   pAttrObject->protoObjectID = ptask->protoObjectId;
-  vector<string>::const_iterator pstr;
-  for( pstr = ptask->colorLabel.begin(); pstr != ptask->colorLabel.end(); pstr++) {
-    pAttrObject->colorLabel.push_back(*pstr);
+  vector<int>::const_iterator plabel;
+  for( plabel = ptask->colorLabel.begin(); plabel != ptask->colorLabel.end(); plabel++) {
+    pAttrObject->colorLabel.push_back(str(boost::format("%d") % *plabel));
   }
   vector<double>::const_iterator pdbl;
   for( pdbl = ptask->colorDistr.begin(); pdbl != ptask->colorDistr.end(); pdbl++) {

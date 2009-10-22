@@ -51,7 +51,7 @@ void VisualLearner::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 
    log("Added: " + type + ", id: " + id);
    VisualLearnerRecognitionTaskPtr pTask;
-   try{
+   try {
       // get the data from working memory
       // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
       m_RequestIdQueue.push_back(_wmc.address);
@@ -140,11 +140,11 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
    };
    // TODO: lock pProtoObj
 
-   // FIXME --- probably can optimise
-   AttrObjectPtr pAttrObject = new AttrObject(); // will not be added to WM
+   // AttrObjectPtr pAttrObject = new AttrObject(); // will not be added to WM
 
-   VL_recognise_attributes(*pAttrObject, *pProtoObj);
+   VL_recognise_attributes(*pProtoObj, _pTask->colorLabel, _pTask->colorDistr);
 
+   /*
    // copy from pAttrObject to _pTask
    _pTask->colorLabel.clear();
    _pTask->colorDistr.clear();
@@ -160,8 +160,9 @@ bool VisualLearner::recogniseAttributes(VisualLearnerRecognitionTaskPtr _pTask)
       _pTask->colorDistr.push_back(*pdbl);
    }
    // delete pAttrObject;
-   // TODO: unlock pProtoObj
    debug("COPIED");
+   */
+   // TODO: unlock pProtoObj
    return true;
 
    // Now write this back into working memory, this will manage the memory for us.
