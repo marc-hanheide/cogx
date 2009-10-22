@@ -546,7 +546,44 @@ public class Binder extends ManagedComponent  {
 					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
 					}
 					// Compute and normalise confidence scores for the union configurations
-					ConfigurationFilter.computeConfidenceScoresForUnionConfigurations(newUnionConfigs);
+
+					
+					for (Enumeration<UnionConfiguration> e = newUnionConfigs.elements(); e.hasMoreElements() ; ) {
+						UnionConfiguration config = e.nextElement();
+
+						double score = 1.0f;
+						for (int i = 0; i < config.includedUnions.length ; i++) {	
+							Union union = config.includedUnions[i];
+							float val;
+							if (union.probExists > 0.0f) {
+								val = union.probExists;
+							}
+							else  {
+								val = ConfigurationFilter.getProbabilitiesSum (union.distribution);
+								log("val: " + val);
+							}
+							score = score * val;
+							
+						} 
+						
+						if (config.orphanProxies != null) {
+							log("Orphan proxies in config with " + config.includedUnions.length + " unions");
+							for (int i = 0 ; i < config.orphanProxies.length ; i++) {
+								Proxy orphan = config.orphanProxies[i];
+								float probNoUnionExists = (1.0f - orphan.probExists) ;
+								score = score * probNoUnionExists;
+							}
+						}
+						config.configProb = score;
+						log("-----------");
+					}
+					
+					log("STEP 1b");
+					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
+					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
+					}
+					
+					ConfigurationFilter.normaliseConfigProbabilities (newUnionConfigs);
 					
 					log("STEP 2");
 					for (int i = 0 ; i < newUnionConfigs.size(); i++) {

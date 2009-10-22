@@ -196,7 +196,7 @@ public class ConfigurationFilter {
 	 * 
 	 * @param configs the union configurations
 	 */
-	private static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
+	public static void normaliseConfigProbabilities (Vector<UnionConfiguration> configs) {
 
 		// computes the sum of the probabibilities
 		double sum = 0.0f;
