@@ -17,8 +17,8 @@ import binder.autogen.core.Feature;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.StringValue;
 
-import binder.utils.ProxyConstructor;
-
+import binder.constructors.ProxyConstructor;
+ 
 // -------------------------------------------------------
 // BINDER imports
 // -------------------------------------------------------

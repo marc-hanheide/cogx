@@ -13,9 +13,7 @@ package comsys.processing.reference.proxyfactories;
 // -------------------------------------------------------
 
 import binder.autogen.specialentities.PhantomProxy;
-import binder.autogen.featvalues.AddressValue;
-import binder.autogen.specialentities.RelationProxy; 
-import binder.utils.ProxyConstructor;
+import binder.constructors.ProxyConstructor;
 
 // -------------------------------------------------------
 // COMSYS imports
@@ -24,7 +22,6 @@ import binder.utils.ProxyConstructor;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryPointer;
 import comsys.datastructs.lf.LFNominal; 
-import comsys.datastructs.lf.LFRelation; 
 import comsys.datastructs.lf.LogicalForm; 
 import comsys.lf.utils.LFUtils;
 import comsys.processing.reference.ProxyResults;
@@ -33,7 +30,6 @@ import comsys.processing.reference.ProxyResults;
 // JAVA imports
 // -------------------------------------------------------
 
-import java.util.Iterator; 
 
 
 /**
