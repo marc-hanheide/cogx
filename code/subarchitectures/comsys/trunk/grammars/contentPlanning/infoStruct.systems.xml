@@ -100,7 +100,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 
 <!-- /**
 
-@system ownership.rheme
+@system rheme.ownership
 
 if Rheme present then
    if SpeechAct == question then RhOwner = rh-hearer
@@ -134,7 +134,7 @@ Simplest first-shot version
 
 
 <!-- /**
-@system ownership.theme
+@system theme.ownership
 
 if Theme present then
    ThOwner == th-hearer  (standard Theme)
@@ -160,6 +160,71 @@ Following Steedman's approach, we would only ever need Themes owned by (attribut
       <action choice="doneThOwner">
       </action> 
         
+   </actions>
+</system>
+
+
+<!-- /**
+@system theme.agreement
+
+if Theme/Rheme present then
+   Commitment == uncontentious  (standard Theme/Rheme)
+
+Theme present iff <Rheme> == t-rheme-false or m-rheme-false or e-rheme-false
+no rheme feature also means Theme (for the grammar)
+
+Rheme == true
+
+Following Steedman's approach, we will need contentious 
+  - Themes once we want to do indirect denials.
+  - Rhemes for questions (just yes/no?)
+
+*/ --> 
+
+<system id="theme.agreement" region="infoStruct" metafunction="textual">
+   <chooser id="c-themerheme.type"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-false"/>   
+      <condition features="@feat:Rheme:m-rheme-false"/>   
+      <condition features="@feat:Rheme:e-rheme-false"/>   
+   </conditions>
+   <actions>
+      <action choice="t-rheme">
+        	<add-feature feature="Commitment" value="t-uncontentious"  /> <!-- must go locally -->
+      </action>   
+
+      <action choice="m-rheme">
+        	<add-feature feature="Commitment" value="m-uncontentious"  /> <!-- must go locally -->
+      </action>   
+      
+      <action choice="e-rheme">
+        	<add-feature feature="Commitment" value="e-uncontentious"  /> <!-- must go locally -->
+      </action>         
+              
+   </actions>
+</system>
+
+
+<system id="rheme.agreement" region="infoStruct" metafunction="textual">
+   <chooser id="c-themerheme.type"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-true"/>   
+      <condition features="@feat:Rheme:m-rheme-true"/>   
+      <condition features="@feat:Rheme:e-rheme-true"/>   
+   </conditions>
+   <actions>
+      <action choice="t-rheme">
+        	<add-feature feature="Commitment" value="t-uncontentious"  /> <!-- must go locally -->
+      </action>   
+
+      <action choice="m-rheme">
+        	<add-feature feature="Commitment" value="m-uncontentious"  /> <!-- must go locally -->
+      </action>   
+      
+      <action choice="e-rheme">
+        	<add-feature feature="Commitment" value="e-uncontentious"  /> <!-- must go locally -->
+      </action>         
+              
    </actions>
 </system>
 
