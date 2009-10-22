@@ -290,6 +290,7 @@ public class UPDebugger
 	LF lf = LFUtils.convertToLF(planLF);
 	// Dump the LF in the XML format to a file
 		String curDir = System.getProperty("user.dir");
+/*
 		String dumpLFfile =  curDir+"/subarchitectures/comsys/grammars/contentPlanning/dumpedLF.xml";
 		try { 
 			grammar.saveToXml(lf, "", dumpLFfile);
@@ -297,7 +298,7 @@ public class UPDebugger
 			ie.printStackTrace();
 		} 
 		log("Wrote LF to \"" + dumpLFfile + "\"");
-	
+*/	
 		log("Calling realizer for the following logical form: \n"+lf.toString()+"\n");
 		
 	// Realize the XML-based logical form
@@ -340,6 +341,15 @@ public class UPDebugger
 		} else {
 			output = "";
 		}
+
+		String dumpLFfile =  curDir+"/subarchitectures/comsys/grammars/contentPlanning/dumpedLF.xml";
+		try { 
+			grammar.saveToXml(lf, output, dumpLFfile);
+		} catch (Exception ie) { 
+			ie.printStackTrace();
+		} 
+		log("Wrote LF to \"" + dumpLFfile + "\"");
+		
 		return output;
     } // end realizeLfWithGrammar
 

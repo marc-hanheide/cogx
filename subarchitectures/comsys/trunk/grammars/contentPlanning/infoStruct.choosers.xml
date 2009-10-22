@@ -81,4 +81,42 @@
    </dectree>
 </chooser>
 
+
+<chooser id="c-themerheme.type" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@t-rheme-false @m-rheme-false @e-rheme-false @t-rheme-true @m-rheme-true @e-rheme-true @unknown"> <!-- only the "theme" values -->
+		    <f-featval feat="Rheme"/>
+		 </inquiry>			
+            <choicenode answer = "t-rheme-false">
+                <result val="t-rheme"/>
+            </choicenode>
+
+            <choicenode answer = "m-rheme-false">
+                <result val="m-rheme"/>
+            </choicenode>
+
+            <choicenode answer = "e-rheme-false">
+                <result val="e-rheme"/>
+            </choicenode>
+
+            <choicenode answer = "t-rheme-true">
+                <result val="t-rheme"/>
+            </choicenode>
+
+            <choicenode answer = "m-rheme-true">
+                <result val="m-rheme"/>
+            </choicenode>
+
+            <choicenode answer = "e-rheme-true">
+                <result val="e-rheme"/>
+            </choicenode>
+
+		 <choicenode answer = "unknown">   <!-- means Rheme is not there, should never happen! -->
+                <result val="noRhemeFeature"/>
+          </choicenode>
+       </choicenode>
+   </dectree>
+</chooser>
+
 </choosers>
