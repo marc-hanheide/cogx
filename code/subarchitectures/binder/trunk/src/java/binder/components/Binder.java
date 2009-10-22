@@ -288,7 +288,7 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-			recompute(currentUnionConfigurations);	
+			currentUnionConfigurations = recompute(currentUnionConfigurations);	
 
 			
 			// Update the alternative union configurations
@@ -374,7 +374,7 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-			recompute(currentUnionConfigurations);	
+			currentUnionConfigurations = recompute(currentUnionConfigurations);	
 
 			
 			// Update the alternative union configurations
