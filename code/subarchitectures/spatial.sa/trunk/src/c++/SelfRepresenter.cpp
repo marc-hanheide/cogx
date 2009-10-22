@@ -105,10 +105,7 @@ SelfRepresenter::runComponent()
     origin->address.id = "local";
     origin->type = "data"; //uh oh, do we always need to include this?
 
-    if (isRunning()) {
-
-    sleepComponent(5000);
-
+    while (isRunning()) {
       // Regularly check robot pose
       NavData::FNodePtr curFNode = getCurrentNavNode();
       try {
@@ -121,6 +118,7 @@ SelfRepresenter::runComponent()
 	  // replace position feature
 	  agg->deleteProxy("robotpos", "robot");
 
+	  /**
 	  stringstream ss;
 	  ss << curPlaceID;
 
@@ -138,6 +136,7 @@ SelfRepresenter::runComponent()
 
 	  // Foreground relation proxy
 	  agg->commitFeatures("robotpos", "robot");
+	  */
 	}
 	prevPlaceID = curPlaceID;
       }
