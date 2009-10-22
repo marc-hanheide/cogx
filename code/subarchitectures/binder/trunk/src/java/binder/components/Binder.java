@@ -376,77 +376,7 @@ public class Binder extends ManagedComponent  {
 
 			currentUnionConfigurations = newUnionConfigs;
 			
-			log("STEP 1D");
-			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-			}
-			
-			for (Enumeration<UnionConfiguration> e = newUnionConfigs.elements(); e.hasMoreElements() ; ) {
-				UnionConfiguration config = e.nextElement();
-
-				double score = 1.0f;
-				for (int i = 0; i < config.includedUnions.length ; i++) {	
-					Union union = config.includedUnions[i];
-					if (union.includedProxies.length == 2) {
-						log("union with 2 proxies: " + union.probExists);
-						log("distrib: " + union.distribution);
-					}
-					float val;
-					if (union.probExists > 0.0f) {
-						val = union.probExists;
-					}
-					else  {
-						val = ConfigurationFilter.getProbabilitiesSum (union.distribution);
-					}
-					score = score * val;
-					
-				} 
-				
-				if (config.orphanProxies != null) {
-					for (int i = 0 ; i < config.orphanProxies.length ; i++) {
-						Proxy orphan = config.orphanProxies[i];
-						float probNoUnionExists = (1.0f - orphan.probExists) ;
-						score = score * probNoUnionExists;
-					}
-				}
-				config.configProb = score;
-			}
-			
-			log("STEP 2D");
-			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-			}
-			
-			// based on these scores, compute the existence probabilities for each union
-			BinderUtils.addProbExistsToUnions(currentUnionConfigurations);
-			
-			log("STEP 3D");
-			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-			}
-			// Get the nbest configurations (with N as a parameter)
-			if (nbestsFilter > 0) {
-				currentUnionConfigurations = 
-					ConfigurationFilter.getNBestUnionConfigurations (currentUnionConfigurations, nbestsFilter);
-			}
-			
-			log("STEP 4D");
-			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-			}
-			
-			// Normalise the union distributions
-			if (normaliseDistributions) {
-				log("Normalisation of the probability distributions");
-				normaliseDistributions(currentUnionConfigurations);
-			}
-			
-			log("STEP 5D");
-			for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-			log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-			}
-			// Compute the marginal probability values for the individual feature values
-			computeMarginalProbabilityValues(currentUnionConfigurations);
+			currentUnionConfigurations = recompute(currentUnionConfigurations);	
 
 			
 			// Update the alternative union configurations
@@ -612,7 +542,7 @@ public class Binder extends ManagedComponent  {
 
 			
 			
-			if (newProxy.entityID.equals("6:A")) {
+			if (newProxy.entityID.equals("7:A")) {
 					log("STEP 1");
 					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
 					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
