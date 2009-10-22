@@ -33,19 +33,13 @@ import org.apache.log4j.Logger;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.logging.ComponentLogger;
 
-import binder.abstr.ProxyWriter;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
-import binder.autogen.distributions.FeatureValuePair;
-import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
-import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
 import binder.autogen.featvalues.StringValue;
 import binder.components.Binder;
 import binder.components.BinderMonitor;
-import binder.utils.BinderUtils;
-import binder.utils.DistributionGeneration;
-import binder.utils.ProxyConstructor;
+import binder.constructors.ProxyConstructor;
 
 public class InsertButtonListener implements ActionListener {
 	

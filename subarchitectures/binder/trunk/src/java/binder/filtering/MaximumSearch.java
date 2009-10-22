@@ -32,8 +32,8 @@ import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.constructors.DistributionGeneration;
 import binder.utils.BinderUtils;
-import binder.utils.DistributionGeneration;
 import binder.utils.ProbabilityUtils;
 
 
@@ -83,7 +83,9 @@ public class MaximumSearch {
 		}
 
 		// check if distribution is already generated
-		else if (entity.distribution == null) {
+		else if (entity.distribution == null || 
+				(!(entity.distribution instanceof DiscreteProbabilityDistribution) && 
+				!(entity.distribution instanceof CombinedProbabilityDistribution))) {
 			errlog("WARNING: distribution == null, regenerating");
 			BinderUtils.addUnknownFeatureValues(entity.features);
 			entity.distribution = DistributionGeneration.generateProbabilityDistribution(entity);

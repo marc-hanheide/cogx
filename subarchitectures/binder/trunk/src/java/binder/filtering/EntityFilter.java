@@ -24,10 +24,13 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.CASTTime;
 import cast.core.logging.ComponentLogger;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.ProbabilityDistribution;
+import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
@@ -199,15 +202,20 @@ public class EntityFilter {
 	public static Union getBasicUnionWithMaximumProbability (Union union) {
 
 		// create a new union
-		Union newUnion = new Union();
-		newUnion.entityID = union.entityID;
-		newUnion.features = new Feature[union.features.length];
-		newUnion.timeStamp = union.timeStamp;
+		String entityID = union.entityID;
+		Feature[] features = new Feature[union.features.length];
+		CASTTime timeStamp = union.timeStamp;
+
+		float probExists = union.probExists;
+
+		// finish specifiying the new union
+		Proxy[] includedProxies = union.includedProxies;
+		ProbabilityDistribution distribution = union.distribution;
 
 		// verify the distribution exists
 		if (union.distribution == null) {
-			errlog("ERROR: distribution == null, aborting");
-			return newUnion;
+			errlog("ERROR: distribution == null, returning same union");
+			return new Union(entityID, probExists, timeStamp, features, distribution, includedProxies);
 		}
 
 		// Extract the best assignment in the union distribution
@@ -216,20 +224,20 @@ public class EntityFilter {
 
 		// loop on the union features
 		for (int i = 0; i < union.features.length ; i++) {
-			newUnion.features[i] = new Feature();
-			newUnion.features[i].featlabel = union.features[i].featlabel;
+			
+			String featlabel = union.features[i].featlabel;
 
 			// create a single feature value containing the best value 
 			// (specified in the assignment)
-			newUnion.features[i].alternativeValues = new FeatureValue[1];
-			newUnion.features[i].alternativeValues[0] = 
+			FeatureValue[] alternativeValues = new FeatureValue[1];
+			alternativeValues[0] = 
 				getFeatureValueIncludedInAssignment(union.features[i], bestAssign);
+			
+			Feature feat = new Feature(featlabel, alternativeValues);
+			features[i] = feat;
 		}
 
-		// finish specifiying the new union
-		newUnion.includedProxies = union.includedProxies;
-		newUnion.probExists = union.probExists;
-		newUnion.distribution = union.distribution;
+		Union newUnion = new Union(entityID, probExists, timeStamp, features, distribution, includedProxies);
 
 		log("OK, extracted a new union with maximum probability");
 		return newUnion;

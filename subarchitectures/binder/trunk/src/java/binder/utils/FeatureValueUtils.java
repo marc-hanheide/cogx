@@ -31,6 +31,7 @@ import binder.autogen.featvalues.FloatValue;
 import binder.autogen.featvalues.IntegerValue;
 import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
+import binder.constructors.ProxyConstructor;
 
 /**
  * Generic utility methods to manipulate feature values
@@ -63,7 +64,7 @@ public class FeatureValueUtils {
 	 */
 	
 	public static UnknownValue createUnknownValue(float prob) {
-		return new UnknownValue(prob, new CASTTime());
+		return new UnknownValue(prob, new CASTTime(0,0));
 	}
 	
 	/**

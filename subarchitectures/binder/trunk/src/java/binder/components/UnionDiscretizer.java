@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
+import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
 import binder.filtering.ConfigurationFilter;
@@ -116,7 +117,6 @@ public class UnionDiscretizer extends ManagedComponent {
 		log("--------START DISCRETISATION ----------");
 		long initTime = System.currentTimeMillis();
 
-		UnionConfiguration discretizedConfig = new UnionConfiguration();
 
 		log("Number of alternative union configurations: "  + alterconfigs.alterconfigs.length);
 		
@@ -126,6 +126,7 @@ public class UnionDiscretizer extends ManagedComponent {
 
 		Vector<Union> unions = new Vector<Union>();
 
+		UnionConfiguration discretizedConfig;
 		if (bestConfiguration != null) {
 		log("Best union configuration successfully computed");
 		log("Number of unions in selected configuration: " + 
@@ -145,13 +146,16 @@ public class UnionDiscretizer extends ManagedComponent {
 		} 
 		
 		// Create a new configuration with the updated unions
-		discretizedConfig.includedUnions = new Union[unions.size()];
-		discretizedConfig.includedUnions = unions.toArray(discretizedConfig.includedUnions);
-		discretizedConfig.configProb = bestConfiguration.configProb;
+		Union[] includedUnions = new Union[unions.size()];
+		includedUnions = unions.toArray(includedUnions);
+		Proxy[] orphanProxies = bestConfiguration.orphanProxies;
+		double configProb = bestConfiguration.configProb;
+		discretizedConfig = new UnionConfiguration(includedUnions, orphanProxies, configProb);
 
 		}
 		else {
 			errlog("WARNING: no best union configuration could be found! (returned null)");
+			discretizedConfig = new UnionConfiguration(new Union[0], new Proxy[0], 0.0f);
 		}
 		
 		long finalTime = System.currentTimeMillis();
@@ -178,8 +182,6 @@ public class UnionDiscretizer extends ManagedComponent {
 
 		log("--------START DISCRETISATION ----------");
 		long initTime = System.currentTimeMillis();
-
-		UnionConfiguration discretizedConfig = new UnionConfiguration();
  
 		log("Number of alternative union configurations: "  + alterconfigs.alterconfigs.length);
 		
@@ -189,6 +191,8 @@ public class UnionDiscretizer extends ManagedComponent {
 
 		Vector<Union> unions = new Vector<Union>();
 
+		UnionConfiguration discretizedConfig;
+		
 		if (rankNConfig != null) {
 		log("Rank n union configuration successfully computed");
 		log("Number of unions in selected configuration: " + 
@@ -208,13 +212,17 @@ public class UnionDiscretizer extends ManagedComponent {
 		} 
 		
 		// Create a new configuration with the updated unions
-		discretizedConfig.includedUnions = new Union[unions.size()];
-		discretizedConfig.includedUnions = unions.toArray(discretizedConfig.includedUnions);
-		discretizedConfig.configProb = rankNConfig.configProb;
+		Union[] includedUnions = new Union[unions.size()];
+		includedUnions = unions.toArray(includedUnions);
+		Proxy[] orphanProxies = rankNConfig.orphanProxies;
+		double configProb = rankNConfig.configProb;
+
+		discretizedConfig = new UnionConfiguration(includedUnions, orphanProxies, configProb);
 
 		}
 		else {
 			errlog("WARNING: no best union configuration could be found! (returned null)");
+			discretizedConfig = new UnionConfiguration(new Union[0], new Proxy[0], 0.0f);
 		}
 		
 		long finalTime = System.currentTimeMillis();
