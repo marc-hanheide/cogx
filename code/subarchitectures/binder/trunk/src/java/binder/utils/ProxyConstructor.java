@@ -1,9 +1,12 @@
 package binder.utils;
 
 
+import org.apache.log4j.Logger;
+
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
+import cast.core.logging.ComponentLogger;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.Proxy;
@@ -18,6 +21,8 @@ import binder.autogen.specialentities.RelationProxy;
 
 public class ProxyConstructor {
 
+
+	private static Logger logger = ComponentLogger.getLogger(ProxyConstructor.class);
 
 
 	/**

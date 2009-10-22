@@ -3,9 +3,14 @@ package binder.abstr;
 
 import java.util.Vector;
 
+import beliefmodels.adl.AgentStatus;
 import beliefmodels.adl.Belief;
 import beliefmodels.adl.BeliefModel;
+import beliefmodels.adl.Formula;
+import beliefmodels.adl.SpatioTemporalFrame;
+import beliefmodels.adl.SpatioTemporalModel;
 import beliefmodels.domainmodel.cogx.ComplexFormula;
+import beliefmodels.domainmodel.cogx.LogicalOp;
 import beliefmodels.domainmodel.cogx.SuperFormula;
 import beliefmodels.domainmodel.cogx.UnionRefProperty;
 import binder.components.Binder;
@@ -158,12 +163,14 @@ public class BeliefModelInterface extends ManagedComponent{
 	 */
 	public void mergeFormulaIntoBelief (Belief initBelief, SuperFormula formula) {
 		
-		Belief newBelief = new Belief();
-		newBelief.ags = initBelief.ags;
-		newBelief.id = initBelief.id;
-		newBelief.sigma = initBelief.sigma;
+		AgentStatus ags = initBelief.ags;
+		String id = initBelief.id;
+		SpatioTemporalFrame sigma = initBelief.sigma;
 		
+		SuperFormula phi;
+
 		if (initBelief.phi instanceof ComplexFormula) {
+			
 			Vector<SuperFormula> formulae = new Vector<SuperFormula>();
 			
 			for (int i = 0; i < ((ComplexFormula)initBelief.phi).formulae.length; i++) {
@@ -183,14 +190,25 @@ public class BeliefModelInterface extends ManagedComponent{
 				}
 			}
 			
-			newBelief.phi = new ComplexFormula();
-			((ComplexFormula)newBelief.phi).formulae = new SuperFormula[formulae.size()];
-			((ComplexFormula)newBelief.phi).formulae = formulae.toArray(((ComplexFormula)newBelief.phi).formulae);
-			((ComplexFormula)newBelief.phi).op = ((ComplexFormula)initBelief.phi).op;
-			((ComplexFormula)newBelief.phi).prob = ((ComplexFormula)newBelief.phi).prob;
-			newBelief.phi.id = initBelief.phi.id;
+			SuperFormula[] formulaeArray = new SuperFormula[formulae.size()];
+			formulaeArray = formulae.toArray(formulaeArray);
+			LogicalOp op = ((ComplexFormula)initBelief.phi).op;
+			float prob = ((ComplexFormula)initBelief.phi).prob;
+			String phiId = initBelief.phi.id;
+			
+			phi = new ComplexFormula(phiId, prob, op, formulaeArray);
+		}
+		else {
+			SuperFormula[] formulaeArray = new SuperFormula[2];
+			formulaeArray[0] = (SuperFormula) initBelief.phi;
+			formulaeArray[1] = formula;
+			String phiId = initBelief.phi.id;
+			
+			phi = new ComplexFormula(phiId, 1.0f, LogicalOp.and, formulaeArray);
 		}
 		
+		Belief newBelief = new Belief(id, sigma, ags, phi, getCASTTime());
+
 		updateExistingBelief(newBelief);
 		
 	}
@@ -291,15 +309,6 @@ public class BeliefModelInterface extends ManagedComponent{
 		}
 		return null;
 
-		/*
-		for (int i = 0 ; i < currentBeliefModel.k.length ; i++) {
-			Belief b = getMemoryEntry(currentBeliefModel.k[i], Binder.BINDER_SA, Belief.class);
-			if (b.id.equals(beliefId)) {
-				return b;
-			}
-		}
-		return null;
-		*/
 	}
 	
 	

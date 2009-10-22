@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import beliefmodels.adl.Agent;
+import beliefmodels.adl.AgentStatus;
 import beliefmodels.adl.Belief;
 import beliefmodels.adl.BeliefModel;
+import beliefmodels.adl.Formula;
 import beliefmodels.adl.Perspective;
 import beliefmodels.adl.PrivateAgentStatus;
 import beliefmodels.adl.SpatialInterval;
@@ -227,20 +229,18 @@ public class BeliefModelTranslator extends ManagedComponent {
 		// (mutually exclusive) properties
 		else if (feat.alternativeValues.length >1) {
 
-			ComplexFormula featurevalues = new ComplexFormula();
 			SuperFormula[] featvalsArray = new UncertainSuperFormula[feat.alternativeValues.length];
 
 			for (int k = 0 ; k < feat.alternativeValues.length ;k++) {
 				featvalsArray[k] = BeliefModelUtils.createNewProperty(feat.featlabel, feat.alternativeValues[k]);
 				featvalsArray[k].id = "featval-" + (k+1);
 			}
-			featurevalues.formulae = featvalsArray;
-			featurevalues.op = LogicalOp.xor;
-			formula = featurevalues;
+
+			formula = new ComplexFormula(newDataID(),1.0f, LogicalOp.xor, featvalsArray);
 		}
 
 		else {
-			formula = new UncertainSuperFormula();
+			formula = new UncertainSuperFormula(newDataID(), 1.0f);
 			log("WARNING: feature does not contain any feature value");
 		}
 		return formula;
@@ -249,31 +249,27 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 
 	public BeliefModel constructBeliefModel (Vector<Belief> beliefs, String id) {
-
-
-		BeliefModel beliefModel = new BeliefModel();
-	
-		beliefModel.id = id;
 		
-		beliefModel.s = new SpatioTemporalModel();
-		beliefModel.s.frames = new SpatioTemporalFrame[1];
-		beliefModel.s.frames[0] = curFrame;
+		SpatioTemporalModel s = new SpatioTemporalModel();		
+		s.frames = new SpatioTemporalFrame[1];
+		s.frames[0] = curFrame;
 		
-		beliefModel.k = new String[beliefs.size()];
+		String[] k = new String[beliefs.size()];
 
 		for (int i = 0 ; i < beliefs.size(); i++) {
-			beliefModel.k[i] = beliefs.elementAt(i).id;
+			k[i] = beliefs.elementAt(i).id;
 		}
 
-		beliefModel.a = new Agent[] { robotAgent, humanAgent };
-		beliefModel.t = new String[0];
-		beliefModel.f = constructForeground(beliefs);
+		Agent[] a = new Agent[] { robotAgent, humanAgent };
+		String[] t = new String[0];
+		String[] f = constructForeground(beliefs);
 
-		return beliefModel;
+		BeliefModel bmodel = new BeliefModel(id, a, s, k, t, f);
+		return bmodel;
 	}
 
 
-
+ 
 	private boolean containsOnlyOnePhantomProxy (Union union) {
 		return ((union.includedProxies.length == 1) && (union.includedProxies[0] instanceof PhantomProxy));
 	}
@@ -302,7 +298,6 @@ public class BeliefModelTranslator extends ManagedComponent {
 	}
 
 
-
 	/**
 	 * Translate the union configuration into a belief model
 	 * 
@@ -311,15 +306,11 @@ public class BeliefModelTranslator extends ManagedComponent {
 	 */
 	public Belief translateIntoBelief (Union union) {
 
-		Belief belief = new Belief();
 		PrivateAgentStatus status = new PrivateAgentStatus();
 		status.ag = robotAgent;
-		belief.ags = status;
-		belief.id = "b-"+union.entityID;
-		belief.sigma = curFrame;
+		String id = "b-"+union.entityID;
 
 		ComplexFormula formula = new ComplexFormula(); 
-		belief.phi = formula;
 
 		formula.id = "form-"+union.entityID;
 		formula.op = LogicalOp.and;
@@ -337,7 +328,8 @@ public class BeliefModelTranslator extends ManagedComponent {
 			BeliefModelUtils.createNewProperty("unionRef", new AddressValue(1.0f, union.timeStamp, union.entityID));
 		formula.formulae[union.features.length].id = "f" + (union.features.length+1);
 		
-		belief.timeStamp = union.timeStamp;
+		
+		Belief belief = new Belief(id, curFrame, status, formula, union.timeStamp);
 		
 		return belief;
 	}
