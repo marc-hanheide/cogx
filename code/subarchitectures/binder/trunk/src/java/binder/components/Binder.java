@@ -420,14 +420,12 @@ public class Binder extends ManagedComponent  {
 			BinderUtils.completeProxy(newProxy, addUnknowns, proxyDistribFilter);
 
 			// Perform the binding (either incrementally or by full rebinding)
-	//		if (!newProxy.entityID.equals("7:A")) {
 			if (incrementalBinding ) {
 				incrementalBinding(newProxy);
 			}
 			else {
 				fullRebinding();
 			}
-	//		}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -541,94 +539,8 @@ public class Binder extends ManagedComponent  {
 			log("Total number of union configurations generated (before filtering): " + newUnionConfigs.size());
 
 			
-			
-			if (newProxy.entityID.equals("7:A")) {
-					log("STEP 1");
-					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-					}
-					// Compute and normalise confidence scores for the union configurations
-
-					
-					for (Enumeration<UnionConfiguration> e = newUnionConfigs.elements(); e.hasMoreElements() ; ) {
-						UnionConfiguration config = e.nextElement();
-
-						double score = 1.0f;
-						for (int i = 0; i < config.includedUnions.length ; i++) {	
-							Union union = config.includedUnions[i];
-							float val;
-							if (union.probExists > 0.0f) {
-								val = union.probExists;
-								log(union.entityID + "union.probExists: " + val);
-							}
-							else  {
-								val = ConfigurationFilter.getProbabilitiesSum (union.distribution);
-								log(union.entityID + " val: " + val);
-							}
-							score = score * val;
-							
-						} 
-						
-						if (config.orphanProxies != null) {
-							log("nb orphan proxies in config with " + config.includedUnions.length + " unions: " + config.orphanProxies.length);
-							for (int i = 0 ; i < config.orphanProxies.length ; i++) {
-								Proxy orphan = config.orphanProxies[i];
-								float probNoUnionExists = (1.0f - orphan.probExists) ;
-								score = score * probNoUnionExists;
-							}
-						}
-						config.configProb = score;
-						log("-----------");
-					}
-					
-					log("STEP 1b");
-					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-					log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-					}
-					
-					ConfigurationFilter.normaliseConfigProbabilities (newUnionConfigs);
-					
-					log("STEP 2");
-					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-						log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-						}
-					// based on these scores, compute the existence probabilities for each union
-					BinderUtils.addProbExistsToUnions(newUnionConfigs);
-					
-					log("STEP 3");
-					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-						log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-						}
-
-					// Get the nbest configurations (with N as a parameter)
-					if (nbestsFilter > 0) {
-						newUnionConfigs = 
-							ConfigurationFilter.getNBestUnionConfigurations (newUnionConfigs, nbestsFilter);
-					}
-					
-					log("STEP 4");
-					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-						log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-						}
-
-					
-					// Normalise the union distributions
-					if (normaliseDistributions) {
-						log("Normalisation of the probability distributions");
-						normaliseDistributions(newUnionConfigs);
-					}
-					log("STEP 6");
-					for (int i = 0 ; i < newUnionConfigs.size(); i++) {
-						log("config with " + newUnionConfigs.elementAt(i).includedUnions.length + ", prob: " + newUnionConfigs.elementAt(i).configProb);
-						}
-					
-					// Compute the marginal probability values for the individual feature values
-					computeMarginalProbabilityValues(newUnionConfigs);
-					
-			}
-			else {
-				newUnionConfigs = recompute(newUnionConfigs);
-			}
+		
+			newUnionConfigs = recompute(newUnionConfigs);
 			
 			// Add everything to the working memory
 			AlternativeUnionConfigurations alters = 
