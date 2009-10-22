@@ -34,16 +34,13 @@ import binder.autogen.featvalues.StringValue;
 import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.RelationProxy;
 import binder.components.Binder;
-import binder.utils.BinderUtils;
-import binder.utils.ProxyConstructor;
+import binder.constructors.ProxyConstructor;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
-import cast.cdl.CASTTime;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
  
 /**

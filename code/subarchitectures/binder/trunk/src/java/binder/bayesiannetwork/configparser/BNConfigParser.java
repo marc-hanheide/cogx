@@ -47,7 +47,7 @@ public static void log(String s) {
 Vector<FeatureValue> features = new Vector<FeatureValue>();
 Token featvalue;
     featvalue = jj_consume_token(ID);
-                         features.add(new StringValue(0, new CASTTime(), featvalue.image));
+                         features.add(new StringValue(0, new CASTTime(0,0), featvalue.image));
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -60,7 +60,7 @@ Token featvalue;
       }
       jj_consume_token(14);
       featvalue = jj_consume_token(ID);
-                             features.add(new StringValue(0, new CASTTime(), featvalue.image));
+                             features.add(new StringValue(0, new CASTTime(0,0), featvalue.image));
     }
 {if (true) return features;}
     throw new Error("Missing return statement in function");
@@ -77,7 +77,7 @@ Token tok3;
     jj_consume_token(17);
     jj_consume_token(16);
     tok3 = jj_consume_token(PROB);
-   FeatureValue featvalue = new StringValue(0, new CASTTime(), tok2.image);
+   FeatureValue featvalue = new StringValue(0, new CASTTime(0,0), tok2.image);
   featvalue.independentProb = Float.parseFloat (tok3.image);
  // System.out.println( featvalue.independentProb);
  {if (true) return featvalue;}
@@ -168,8 +168,8 @@ Token tok3;
     jj_consume_token(17);
     jj_consume_token(16);
     tok3 = jj_consume_token(PROB);
-  corr.value1 = new StringValue(0, new CASTTime(), tok1.image);
- corr.value2 = new StringValue(0, new CASTTime(), tok2.image);
+  corr.value1 = new StringValue(0, new CASTTime(0,0), tok1.image);
+ corr.value2 = new StringValue(0, new CASTTime(0,0), tok2.image);
   corr.condProb = Float.parseFloat(tok3.image);
  {if (true) return corr;}
     throw new Error("Missing return statement in function");

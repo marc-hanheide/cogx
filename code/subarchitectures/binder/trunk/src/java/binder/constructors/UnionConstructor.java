@@ -17,7 +17,7 @@
 // 02111-1307, USA.                                                                                                         
 // =================================================================                                                        
 
-package binder.utils;
+package binder.constructors;
 
 import java.util.Collection;
 import java.util.Enumeration;
@@ -43,6 +43,9 @@ import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.bayesiannetwork.BayesianNetworkManager;
+import binder.utils.BinderUtils;
+import binder.utils.FeatureValueUtils;
+import binder.utils.ProbabilityUtils;
 
 
 /**
@@ -160,26 +163,27 @@ public class UnionConstructor  {
 	(Vector<PerceivedEntity> includedEntities, String entityID, CASTTime timestamp) {
 		//	log("***** Constructing a new union ****");
 
-		// Create a new union with a new data ID
-		Union union = new Union() ;
-
-		union.entityID = entityID;
-		union.timeStamp = timestamp;
 
 		// Specify the proxies included in the union
-		Vector<Proxy> includedProxies = BinderUtils.getProxies(includedEntities);
-		union.includedProxies = new Proxy[includedProxies.size()];
-		union.includedProxies = includedProxies.toArray(union.includedProxies);
+		Vector<Proxy> includedProxiesV = BinderUtils.getProxies(includedEntities);
+		Proxy[] includedProxies = new Proxy[includedProxiesV.size()];
+		includedProxies = includedProxiesV.toArray(includedProxies);
 		
 		// Extract the possible features for the union
-		Collection<Feature> features = getFeatures(includedEntities);
-		union.features = new Feature[features.size()];
-		union.features = features.toArray(union.features);
+		Collection<Feature> featuresC = getFeatures(includedEntities);
+		Feature[] features = new Feature[featuresC.size()];
+		features = featuresC.toArray(features);
 
-		// Finally, compute the union distribution
 		
+		// Create a new union with a new data ID
+
+		ProbabilityDistribution distrib = new ProbabilityDistribution();		
+		Union union = new Union(entityID, 0.0f, timestamp, features, distrib, includedProxies);
+
+		
+		// Finally, compute the union distribution
 		if  (includedEntities.size() == 1  && 
-				features.size() == includedEntities.elementAt(0).features.length) {
+				features.length == includedEntities.elementAt(0).features.length) {
 			union.distribution = includedEntities.elementAt(0).distribution;
 		}
 		else {
@@ -267,46 +271,47 @@ public class UnionConstructor  {
 			Proxy proxy = union.includedProxies[i];
 
 			// create a new combined probability distribution to specify the full proxy distribution
-			CombinedProbabilityDistribution proxyDistrib = new CombinedProbabilityDistribution();
-			proxyDistrib.opType = OperationType.MULTIPLIED;
-			proxyDistrib.distributions = new DiscreteProbabilityDistribution[2];
+			OperationType opType = OperationType.MULTIPLIED;
+			ProbabilityDistribution[] distributions = new DiscreteProbabilityDistribution[2];
 
 			// define the first subdistribution to be the posterior distribution of the proxy
-			proxyDistrib.distributions[0] = proxy.distribution;
+			distributions[0] = proxy.distribution;
 	
 			// computes the prior distribution of the proxy
 			DiscreteProbabilityDistribution priorDistribForProxy = BNManager.getPriorDistribution(proxy);
 
 			// inverts the result, and define it as the second subdistribution
-			proxyDistrib.distributions[1] = 
-				ProbabilityUtils.invertDistribution(priorDistribForProxy);
+			distributions[1] = 	ProbabilityUtils.invertDistribution(priorDistribForProxy);
 
 			// adds the proxy distribution to the list of all proxy distributions
+			CombinedProbabilityDistribution proxyDistrib = new CombinedProbabilityDistribution(distributions, opType);
+
 			proxiesDistrib.add(proxyDistrib);
 		}
 
 		// create a new combined distribution, of size |proxiesDistrib| + 1
-		CombinedProbabilityDistribution finalDistrib = new CombinedProbabilityDistribution();
-		finalDistrib.opType = OperationType.MULTIPLIED;
-		finalDistrib.distributions = new ProbabilityDistribution[proxiesDistrib.size() + 1];
+		OperationType fOpType = OperationType.MULTIPLIED;
+		ProbabilityDistribution[] fDistributions = new ProbabilityDistribution[proxiesDistrib.size() + 1];
 
 		// define the first subdistribution to be the prior union distribution 
 		// multiplied by a particular factor (controlling the binder greediness)
 		float multiplicationFactor = 1.0f / ((float)Math.pow(ALPHA_CONST, (union.includedProxies.length - 1)));
-		finalDistrib.distributions[0] = 
+		fDistributions[0] = 
 			ProbabilityUtils.multiplyDistributionWithConstantValue(priorDistrib, multiplicationFactor);
 
 		// and define all the other subdistributions to be the proxy distributions
 		for (int i = 1 ; i < proxiesDistrib.size() + 1 ; i++ ) {
-			finalDistrib.distributions[i] = proxiesDistrib.elementAt(i-1);
+			fDistributions[i] = proxiesDistrib.elementAt(i-1);
 		}
+		
+		CombinedProbabilityDistribution finalDistrib = new CombinedProbabilityDistribution(fDistributions, fOpType);
 
 		return finalDistrib;
 	}
 
 
 
-	
+	 
 	// ================================================================= 
 	// UTILITY METHODS   
 	// ================================================================= 

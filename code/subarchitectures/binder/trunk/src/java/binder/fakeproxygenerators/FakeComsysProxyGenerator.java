@@ -23,9 +23,9 @@ package binder.fakeproxygenerators;
 import cast.cdl.WorkingMemoryPointer;
 import binder.autogen.core.*;
 import binder.autogen.specialentities.PhantomProxy;
-import binder.utils.ProxyConstructor;
+import binder.constructors.ProxyConstructor;
 
-
+ 
 /**
  * Fake proxy generator for ComSys: creation of fake phantom proxies, insertion into the
  * binder working memory, and prediction of best binding unions for these phantom

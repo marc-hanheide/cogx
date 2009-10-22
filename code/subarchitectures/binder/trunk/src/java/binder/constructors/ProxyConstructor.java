@@ -1,4 +1,4 @@
-package binder.utils;
+package binder.constructors;
 
 
 import org.apache.log4j.Logger;
@@ -9,6 +9,7 @@ import cast.cdl.WorkingMemoryPointer;
 import cast.core.logging.ComponentLogger;
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
+import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Proxy;
 import binder.autogen.featvalues.AddressValue;
 import binder.autogen.featvalues.BooleanValue;
@@ -41,9 +42,10 @@ public class ProxyConstructor {
 	public static WorkingMemoryPointer createWorkingMemoryPointer (String subarchId, String localDataId,
 			String localDataType) {
 		
-		WorkingMemoryPointer origin = new WorkingMemoryPointer();
-		origin.address = new WorkingMemoryAddress(localDataId, subarchId);
-		origin.type = localDataType;
+		WorkingMemoryAddress address = new WorkingMemoryAddress(localDataId, subarchId);
+		String type = localDataType;
+		WorkingMemoryPointer origin = new WorkingMemoryPointer(address, type);
+
 		return origin;
 	}
 	
@@ -59,13 +61,10 @@ public class ProxyConstructor {
 	 * @return a new proxy
 	 */
 	public static Proxy createNewProxy(WorkingMemoryPointer origin, String entityID, float probExists) {
+	
+		ProbabilityDistribution emptyDistrib = new ProbabilityDistribution();	
+		Proxy newProxy = new Proxy(entityID, probExists, new CASTTime(0,0), new Feature[0], emptyDistrib, origin);
 
-		Proxy newProxy = new Proxy();
-
-		newProxy.entityID = entityID;
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
 		return newProxy;
 	}
 	
@@ -128,12 +127,8 @@ public class ProxyConstructor {
 	public static PhantomProxy createNewPhantomProxy
 		(WorkingMemoryPointer origin, String entityID, float probExists) {
 
-		PhantomProxy newProxy = new PhantomProxy();
-
-		newProxy.entityID = entityID;
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
+		ProbabilityDistribution emptyDistrib = new ProbabilityDistribution();	
+		PhantomProxy newProxy = new PhantomProxy(entityID, probExists, new CASTTime(0,0), new Feature[0], emptyDistrib, origin);
 
 		return newProxy;
 	}
@@ -215,20 +210,15 @@ public class ProxyConstructor {
 	public static RelationProxy createNewRelationProxy(WorkingMemoryPointer origin,
 			String entityID, float probExists, AddressValue[] sources, AddressValue[] targets) {
 
-		RelationProxy newProxy = new RelationProxy();
 
-		newProxy.entityID = entityID;
-		newProxy.origin = origin;
-		newProxy.probExists = probExists;
-		newProxy.features = new Feature[0];
+		Feature source = new Feature("source", sources);
 
-		newProxy.source = new Feature();
-		newProxy.source.featlabel = "source";
-		newProxy.source.alternativeValues = sources;
+		Feature target = new Feature("target", targets);
 
-		newProxy.target = new Feature();
-		newProxy.target.featlabel = "target";
-		newProxy.target.alternativeValues = targets;
+		ProbabilityDistribution emptyDistrib = new ProbabilityDistribution();	
+
+		RelationProxy newProxy = new RelationProxy
+			(entityID, probExists, new CASTTime(0,0), new Feature[0], emptyDistrib, origin,source, target);
 
 		return newProxy;
 	}
@@ -275,9 +265,7 @@ public class ProxyConstructor {
 	 */
 
 	public static StringValue createStringValue(String val, float prob) {
-		StringValue stringVal = new StringValue();
-		stringVal.val = val;
-		stringVal.independentProb = prob;
+		StringValue stringVal = new StringValue(prob, new CASTTime(0,0), val);
 		return stringVal;
 	}
 
@@ -292,9 +280,7 @@ public class ProxyConstructor {
 	 */
 
 	public static AddressValue createAddressValue(String address, float prob) {
-		AddressValue addressVal = new AddressValue();
-		addressVal.val = address;
-		addressVal.independentProb = prob;
+		AddressValue addressVal = new AddressValue(prob, new CASTTime(0,0), address);
 		return addressVal;
 	}
 
@@ -309,9 +295,7 @@ public class ProxyConstructor {
 	 */
 
 	public static FloatValue createFloatValue(float floatv, float prob) {
-		FloatValue floatVal = new FloatValue();
-		floatVal.val = floatv;
-		floatVal.independentProb = prob;
+		FloatValue floatVal = new FloatValue(prob, new CASTTime(0,0), floatv);
 		return floatVal;
 	} 
 	
@@ -327,9 +311,7 @@ public class ProxyConstructor {
 	 */
 
 	public static IntegerValue createIntegerValue(int integer, float prob) {
-		IntegerValue integerVal = new IntegerValue();
-		integerVal.val = integer;
-		integerVal.independentProb = prob;
+		IntegerValue integerVal = new IntegerValue(prob, new CASTTime(0,0), integer);
 		return integerVal;
 	}
 
@@ -344,9 +326,7 @@ public class ProxyConstructor {
 	 */
 
 	public static BooleanValue createBooleanValue(boolean val, float prob) {
-		BooleanValue boolVal = new BooleanValue();
-		boolVal.val = val;
-		boolVal.independentProb = prob;
+		BooleanValue boolVal = new BooleanValue(prob, new CASTTime(0,0), val);
 		return boolVal;
 	}
 	
@@ -362,8 +342,7 @@ public class ProxyConstructor {
 	 */
 
 	public static UnknownValue createUnknownValue(float prob) {
-		UnknownValue unknownVal = new UnknownValue();
-		unknownVal.independentProb = prob;
+		UnknownValue unknownVal = new UnknownValue(prob, new CASTTime(0,0));
 		return unknownVal;
 	}
 
@@ -377,9 +356,7 @@ public class ProxyConstructor {
 	 */
 
 	public static Feature createFeature(String featlabel) {
-		Feature feat = new Feature();
-		feat.featlabel = featlabel;
-		feat.alternativeValues = new FeatureValue[0];
+		Feature feat = new Feature(featlabel, new FeatureValue[0]);
 		return feat;
 	} 
 

@@ -53,7 +53,6 @@ public class BeliefModelTranslator extends ManagedComponent {
 
 	public final float SALIENCY_THRESHOLD = 0.5f;
 
-	
 	HashMap<String, Belief> currentBeliefs = new HashMap<String, Belief>() ;
 	
 	// =================================================================

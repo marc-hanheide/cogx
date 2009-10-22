@@ -18,7 +18,7 @@
 // =================================================================                                                        
 
 
-package binder.utils;
+package binder.constructors;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -35,6 +35,7 @@ import binder.autogen.distributions.FeatureValuePair;
 import binder.autogen.distributions.combined.CombinedProbabilityDistribution;
 import binder.autogen.distributions.discrete.DiscreteProbabilityAssignment;
 import binder.autogen.distributions.discrete.DiscreteProbabilityDistribution;
+import binder.utils.ProbabilityUtils;
 
 
 /**

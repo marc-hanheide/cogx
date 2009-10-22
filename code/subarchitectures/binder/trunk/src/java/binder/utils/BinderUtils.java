@@ -42,6 +42,8 @@ import binder.autogen.featvalues.UnknownValue;
 import binder.autogen.specialentities.PhantomProxy;
 import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
+import binder.constructors.DistributionGeneration;
+import binder.constructors.ProxyConstructor;
 import binder.filtering.EntityFilter;
 
 
@@ -140,7 +142,8 @@ public class BinderUtils {
 		}
 		
 		// if the probability distribution of the updated proxy is unavailable, regenerate it
-		if (proxy.distribution == null) {
+		if (proxy.distribution == null || 
+				!(proxy.distribution instanceof DiscreteProbabilityDistribution)) {
 			proxy.distribution = 
 				DistributionGeneration.generateProbabilityDistribution(proxy);
 			
