@@ -193,20 +193,25 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 	 * @see cast.core.CASTComponent#runComponent()
 	 */
 	@Override
-	protected void runComponent() {
+	protected final void runComponent() {
 		while (isRunning()) {
 			Motive motive=null;
 			try {
 				log("runComponent: waiting for motive event");
 				motive = checkMotiveQueue.take();
-				if (motive.thisEntry!=null) 
-					motive=getMemoryEntry(motive.thisEntry, Motive.class);
+				if (motive.thisEntry!=null) {
+					// update from WM
+					try{
+						motive=getMemoryEntry(motive.thisEntry, Motive.class);
+					} catch (CASTException e) {
+						// ignore this exception
+						println("CASTExecption in runComponent while reading the motive from WM... shouldn't be a big deal: "+e.message);
+					}
+					
+				}
 				log("runComponent: check motive");
 				checkMotive(motive);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (CASTException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -249,7 +254,12 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 			PermissionException, UnknownSubarchitectureException {
 		if (motive.thisEntry != null) {
 			log("we remove the motive from WM with ID " + motive.thisEntry.id);
-			deleteFromWorkingMemory(motive.thisEntry);
+			try {
+				deleteFromWorkingMemory(motive.thisEntry);
+			}
+			catch (DoesNotExistOnWMException e) {
+				// safely ignore if it has been deleted already
+			}
 		}
 	}
 	

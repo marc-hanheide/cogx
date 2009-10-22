@@ -49,65 +49,13 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	 * 
 	 * 
 	 */
-	final double borderNormalizeFactor = 2*Math.PI*(5/0.1);
-	/** normalize space property factor
-	 * 
-	 */
-	final double spaceNormalizeFactor = Math.PI*(Math.pow(5.0,2)/Math.pow(0.1,2));
-
+	final double borderNormalizeFactor = 2 * Math.PI * (5 / 0.1);
 	/**
-	 * Runnable to check the current place
-	 * 
-	 * @author marc
+	 * normalize space property factor
 	 * 
 	 */
-	protected class CurrentPlaceChecker implements Runnable {
-		SpatialFacade spatialFacade;
-		Place currentPlace;
-		Callable<Place> placeChangedCallable;
-
-		/**
-		 * @param spatialFacade
-		 * @param placeChangedCallable
-		 */
-		public CurrentPlaceChecker(SpatialFacade spatialFacade,
-				Callable<Place> placeChangedCallable) {
-			super();
-			this.spatialFacade = spatialFacade;
-			this.placeChangedCallable = placeChangedCallable;
-		}
-
-		synchronized void setPlace(Place place) {
-			currentPlace = place;
-		}
-
-		synchronized Place getPlace() {
-			return currentPlace;
-		}
-
-		@Override
-		public void run() {
-			while (isRunning()) {
-				try {
-					Place placeRightNow = spatialFacade.getCurrentPlace();
-					if (currentPlace == null
-							|| placeRightNow.id != currentPlace.id) {
-						setPlace(placeRightNow);
-						placeChangedCallable.call();
-					}
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					break;
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					break;
-				}
-			}
-
-		}
-
-	}
+	final double spaceNormalizeFactor = Math.PI
+			* (Math.pow(5.0, 2) / Math.pow(0.1, 2));
 
 	WMEntrySet borderProperties;
 	WMEntrySet gatewayProperties;
@@ -121,10 +69,6 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	private double m_spaceMeasureConstant;
 	private double m_borderMeasureConstant;
 	private double m_gatewayMeasureConstant;
-	private PlaceInterfacePrx placeInterface;
-	private SpatialFacade spatialFacade;
-	private Thread currentPlaceCheckerThread;
-	private CurrentPlaceChecker currentPlaceChecker;
 
 	public ExplorePlaceGenerator() {
 		super();
@@ -150,6 +94,8 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	@Override
 	protected boolean checkMotive(Motive motive) {
 		try {
+			if (!SpatialFacade.get(this).isAlive())
+				SpatialFacade.get(this).start();
 			Place source = getMemoryEntry(motive.referenceEntry, Place.class);
 
 			// if it is a yet unexplored one...
@@ -158,10 +104,10 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 			if (source.status == PlaceStatus.PLACEHOLDER) {
 				log("  it's a placeholder, so it should be considered as a motive");
 
-				Place currentPlace = currentPlaceChecker.getPlace();
+				Place currentPlace = SpatialFacade.get(this).getPlace();
 				if (currentPlace != null) {
 					log("we are currently at place " + currentPlace.id);
-					motive.costs = (float) spatialFacade.queryCosts(
+					motive.costs = (float) SpatialFacade.get(this).queryCosts(
 							currentPlace.id, ((ExploreMotive) motive).placeID);
 				} else {
 					motive.costs = Float.MAX_VALUE;
@@ -196,6 +142,9 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 			}
 		} catch (CASTException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return false;
 	}
@@ -209,31 +158,21 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 	protected void start() {
 		super.start();
 		try {
-			placeInterface = this.getIceServer("place.manager",
-					PlaceInterface.class, PlaceInterfacePrx.class);
+			SpatialFacade.get(this).registerPlaceChangedCallback(
+					new SpatialFacade.PlaceChangedHandler() {
 
+						@Override
+						public synchronized void update(Place p) {
+							for (Ice.ObjectImpl m : motives.getMapByType(
+									ExploreMotive.class).values())
+								scheduleCheckMotive((Motive) m);
+
+						}
+					});
 		} catch (CASTException e1) {
-			println("error setting up connection to PlaceManager");
+			println("exception when registering placeChangedCallbacks");
 			e1.printStackTrace();
 		}
-
-		spatialFacade = new SpatialFacade(this, placeInterface);
-
-		currentPlaceChecker = new CurrentPlaceChecker(spatialFacade,
-				new Callable<Place>() {
-
-					@Override
-					synchronized public Place call() throws Exception {
-						log("place has changed... we have to check all ExploreMotives");
-						for (ObjectImpl m : motives.getMapByType(
-								ExploreMotive.class).values()) {
-							scheduleCheckMotive((Motive) m);
-						}
-						return null;
-					}
-				});
-
-		currentPlaceCheckerThread = new Thread(currentPlaceChecker);
 
 		WMEntrySet.ChangeHandler propertyChangeHandler = new WMEntrySet.ChangeHandler() {
 
@@ -294,8 +233,6 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 					p = getMemoryEntry(_wmc.address, Place.class);
 					newMotive.placeID = p.id;
 					// start the place checker thread here
-					if (!currentPlaceCheckerThread.isAlive())
-						currentPlaceCheckerThread.start();
 
 				} catch (CASTException e) {
 					// TODO Auto-generated catch block
@@ -304,7 +241,7 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 				scheduleCheckMotive(newMotive);
 			}
 		});
-		spatialFacade.start();
+
 	}
 
 	private double getFirstPropertyValue(
