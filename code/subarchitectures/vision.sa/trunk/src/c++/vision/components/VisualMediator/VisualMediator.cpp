@@ -63,6 +63,10 @@ void VisualMediator::configure(const map<string,string> & _config)
 
 void VisualMediator::start()
 {
+  //must call super start to ensure that the reader sets up change
+  //filters
+  BindingWorkingMemoryReader::start();
+
   const char *name = "mediatorSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
@@ -84,7 +88,7 @@ log("HELLO, Mediator active");
 	  new MemberFunctionChangeReceiver<VisualMediator>(this,
 		&VisualMediator::deletedVisualObject));
 
- // a filter for belief updates
+ // filters for belief updates
   addChangeFilter(createGlobalTypeFilter<Belief>(cdl::ADD),
 	  new MemberFunctionChangeReceiver<VisualMediator>(this,
 		&VisualMediator::updatedBelief));
@@ -97,14 +101,13 @@ log("HELLO, Mediator active");
 
 void VisualMediator::runComponent()
 {
-  // ADD a test belief
-  
+  // ADD a test beliefs
+ /* 
   sleep(5);
   
   log("sumbitting a fake belief 1");
   
-  BeliefPtr tb = new Belief();
-  
+  BeliefPtr tb = new Belief();  
   tb->ags = new AttributedAgentStatus();
   
   ComplexFormulaPtr cf = new ComplexFormula();
@@ -128,17 +131,14 @@ void VisualMediator::runComponent()
   addToWorkingMemory(tb->id, m_bindingSA, tb);
   
   
-  
   sleep(5);
-  
   
   
   log("sumbitting a fake belief 2");
   
   tb = new Belief();
-  
   tb->ags = new AttributedAgentStatus();
-  
+
   cf = new ComplexFormula();
   
   un =  new UnionRefProperty();
@@ -158,7 +158,7 @@ void VisualMediator::runComponent()
   tb->id = newDataID();
   
   addToWorkingMemory(tb->id, m_bindingSA, tb);
-  
+  */
   
   while(isRunning())
   {
@@ -298,7 +298,7 @@ void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
 void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 {
-  log("A belief was ubdated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
+  log("A belief was updated. ID: %s SA: %s", _wmc.address.id.c_str(), _wmc.address.subarchitecture.c_str());
   
   BeliefPtr obj =
 	getMemoryEntry<Belief>(_wmc.address);
@@ -317,24 +317,53 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   
   if(unionRef(obj->phi, unionID))
   {
-	debug("Found reference to union ID %s in belief", unionID.c_str());
-	
-	/* UnionPtr uni = getMemoryEntry<Union>(unionID, m_bindingSA);
+	debug("Found reference to union ID %s SA %s in belief", unionID.c_str(), m_bindingSA.c_str());
+
+	UnionPtr uni;
+
+	if(m_currentUnions.find(unionID) != m_currentUnions.end())
+	  uni = m_currentUnions[unionID];
+	else
+	{
+	  if(m_haveAddr)
+	  {
+		addrFetchThenExtract(m_currentUnionsAddr);
+
+		if(m_currentUnions.find(unionID) != m_currentUnions.end())
+		  uni = m_currentUnions[unionID];
+		else
+		{
+		  log("Union ID %s not in the current configuration. There are %i unions in the configuration.", unionID.c_str(), m_currentUnions.size());
+		  return;
+		}    
+	  }
+	  else
+	  {
+		log("Union ID %s not in the current configuration. There are %i unions in the configuration.", unionID.c_str(), m_currentUnions.size());
+		return;
+	  }
+	}
+
+	debug("Union ID %s exists", uni->entityID.c_str());
 	
 	vector<ProxyPtr>::iterator it;
 	
 	bool found = false;
-	
+	string ourSA = getSubarchitectureID();
+
 	for(it = uni->includedProxies.begin(); it != uni->includedProxies.end() && !found; it++)
-	  if((*it)->origin->address.subarchitecture == getSubarchitectureID())
+	  if((*it)->origin->address.subarchitecture == ourSA)
 	  {
 		  found = true;
 		  visObjID = (*it)->origin->address.id;
 	  }
-		
+	
 	 if(!found)
-	  return;
-	 */ 
+	 {
+		log("The belief concerns no proxy from our SA");  
+		return;
+	 }
+ 
 	log("Found the object of the belief: visualObject ID %s", visObjID.c_str());
   }
   else
@@ -359,17 +388,7 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 	return;
   }
 
-//  VisualObjectData &data = VisualObjectMap[_wmc.address.id];
 
-//  CASTTime time=getCASTTime();
-
-//  data.status= STABLE;
-//  data.lastUpdateTime = time;
-  //	queuesNotEmpty->post();proxyToAdd.push(obj.addr.id);
-
-//  debug("A VisualObject ID %s ",data.addr.id.c_str());
-
-  //  queuesNotEmpty->post();
 }
 
 
