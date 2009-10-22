@@ -447,7 +447,9 @@ ProxyMarshaller::updateInternalProxy(InternalProxy &intProxy)
     // Proxy is new; add it to Binder
     log("Proxy new on Binder; create it");
     log("Proxy has %i features.", intProxy.proxy->features.size());
-    addProxyToWM(intProxy.proxy);
+    if (intProxy.proxy.entityID != "7:A")
+    {    addProxyToWM(intProxy.proxy);
+    }
     intProxy.onBinder = true;
   }
 }
