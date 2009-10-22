@@ -26,11 +26,13 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import cast.cdl.CASTTime;
 import cast.core.logging.ComponentLogger;
 
 import binder.autogen.core.Feature;
 import binder.autogen.core.FeatureValue;
 import binder.autogen.core.PerceivedEntity;
+import binder.autogen.core.ProbabilityDistribution;
 import binder.autogen.core.Proxy;
 import binder.autogen.core.Union;
 import binder.autogen.core.UnionConfiguration;
@@ -235,14 +237,21 @@ public class BinderUtils {
 
 	public static RelationUnion convertIntoRelationUnion (Union bunion) {
 
-		RelationUnion runion = new RelationUnion();
-		runion.entityID = bunion.entityID;
-		runion.features = bunion.features;
-		runion.distribution = bunion.distribution;
-		runion.includedProxies = bunion.includedProxies;
-		runion.probExists = bunion.probExists;
-		runion.timeStamp = bunion.timeStamp;
+		String entityID = bunion.entityID;
+		Feature[] features = bunion.features;
+		ProbabilityDistribution distribution = bunion.distribution;
+		Proxy[] includedProxies = bunion.includedProxies;
+		float probExists = bunion.probExists;
+		CASTTime timeStamp = bunion.timeStamp;
 
+		Feature psource = new Feature("psource", new FeatureValue[0]);
+		Feature ptarget = new Feature("ptarget", new FeatureValue[0]);
+		Feature usource = new Feature("usource", new FeatureValue[0]);
+		Feature utarget = new Feature("utarget", new FeatureValue[0]);
+		
+		RelationUnion runion = new RelationUnion(entityID, probExists, timeStamp, 
+				features, distribution, includedProxies, psource, ptarget, usource, utarget);
+		  
 		return runion;
 	}
 

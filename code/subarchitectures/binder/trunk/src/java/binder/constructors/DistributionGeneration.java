@@ -344,12 +344,12 @@ public class DistributionGeneration {
 
 	public static void log(String s) {
 		if (LOGGING)
-			logger.debug("[MaximumSearch] " + s);
+			logger.debug("[DistribGeneration] " + s);
 	}
 
 	public static void errlog(String s) {
 		if (ERRLOGGING)
-			logger.debug("[MaximumSearch] " + s);
+			logger.debug("[DistribGeneration] " + s);
 	}
 
 }
