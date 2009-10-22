@@ -5,16 +5,16 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
+
+import cast.core.logging.ComponentLogger;
+
 import com.hp.hpl.jena.ontology.Individual;
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.reasoner.rulesys.BuiltinRegistry;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.util.PrefixMapping2;
 
 import de.dfki.lt.crowl.ConfigError;
 import de.dfki.lt.crowl.Crowl;
@@ -26,7 +26,7 @@ public class CrowlWrapper {
 	private Crowl  m_mycrowl;
 	private String m_crowlConfigFile = "subarchitectures/coma/ontologies/crowl.cfg";
 	private boolean m_logging;
-	
+	private Logger m_logger = ComponentLogger.getLogger(CrowlWrapper.class);
 	
 	/**
 	 * The class constructor that allows you to specify 
@@ -678,7 +678,9 @@ public class CrowlWrapper {
 	
 	
 	private void log(String _msg) {
-		if (m_logging) System.out.println("[CrowlWrapper: " + _msg + "]");
+//		if (m_logging) System.out.println("[CrowlWrapper: " + _msg + "]");
+
+		m_logger.info(_msg);
 	}
 	
 }
