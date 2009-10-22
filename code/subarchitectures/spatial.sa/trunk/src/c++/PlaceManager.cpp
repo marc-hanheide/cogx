@@ -418,28 +418,32 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 {
   debug("newObject called");
   try {
-    lockEntry(objID.address.id, cdl::LOCKEDODR);
+    lockEntry(objID.address, cdl::LOCKEDODR);
     vector<NavData::FNodePtr> nodes;
     getMemoryEntries<NavData::FNode>(nodes, 0);
 
-    NavData::ObjDataPtr object = getMemoryEntry<NavData::ObjData>(objID.address);
-    unlockEntry(objID.address.id);
-
-    string category;
-    double objX;
-    double objY;
+    NavData::ObjDataPtr object;
     try {
-      //Find the node closest to the robotPose
-      objX = object->x;
-      objY = object->y;
-      category = object->category;
+      object = getMemoryEntry<NavData::ObjData>(objID.address);
+      unlockEntry(objID.address);
     }
     catch (DoesNotExistOnWMException e) {
       log("Error! New ObjData couldn't be read!");
-      unlockEntry(objID.address.id);
+      unlockEntry(objID.address);
       debug("newObject exited");
       return;
     }
+      
+    string category;
+    double objX;
+    double objY;
+    //Find the node closest to the robotPose
+    objX = object->x;
+    objY = object->y;
+    category = object->category;
+    
+    log("newObject is of category %s", category.c_str());
+
 
     double minDistance = FLT_MAX;
     NavData::FNodePtr closestNode = 0;
