@@ -557,17 +557,18 @@ public class Binder extends ManagedComponent  {
 							float val;
 							if (union.probExists > 0.0f) {
 								val = union.probExists;
+								log(union.entityID + "union.probExists: " + val);
 							}
 							else  {
 								val = ConfigurationFilter.getProbabilitiesSum (union.distribution);
-								log("val: " + val);
+								log(union.entityID + " val: " + val);
 							}
 							score = score * val;
 							
 						} 
 						
 						if (config.orphanProxies != null) {
-							log("Orphan proxies in config with " + config.includedUnions.length + " unions");
+							log("nb orphan proxies in config with " + config.includedUnions.length + " unions: " + config.orphanProxies.length);
 							for (int i = 0 ; i < config.orphanProxies.length ; i++) {
 								Proxy orphan = config.orphanProxies[i];
 								float probNoUnionExists = (1.0f - orphan.probExists) ;
