@@ -113,6 +113,14 @@ public class BinderUtils {
 				}
 			}
 		}
+		
+		for (Iterator<Union> e = unions.iterator() ; e.hasNext() ; ) {
+			Union u = e.next();
+
+			if (u.probExists == 0.0f) {
+				u.probExists = 0.000000000001f;
+			}
+		}
 	}
 
 
