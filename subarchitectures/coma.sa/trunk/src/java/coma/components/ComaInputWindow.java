@@ -280,7 +280,7 @@ public class ComaInputWindow extends ManagedComponent {
 	private void createAndShowGUI() {
 		//Create and set up the window.
 		JFrame frame = new JFrame("coma GUI");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		//Set up the content pane.
 		addComponentsToPane(frame.getContentPane());
