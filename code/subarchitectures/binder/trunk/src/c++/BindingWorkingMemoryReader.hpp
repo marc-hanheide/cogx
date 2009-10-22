@@ -3,7 +3,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <autogen/BinderEssentials.hpp>
-#include <vector>
+#include <map>
 
 /**
  * Abstract class for retrieving elements currently present in the
@@ -19,18 +19,23 @@ namespace binder {
   class BindingWorkingMemoryReader : 
     public virtual cast::ManagedComponent {
 
-    const std::vector<autogen::core::UnionPtr> & 
+    const std::map<std::string, autogen::core::UnionPtr> & 
     getUnions() const {
       return m_currentUnions;
     }
 
   protected:
     virtual void start();
-    
-    std::vector<autogen::core::UnionPtr> m_currentUnions;
+    void addrFetchThenExtract(const cast::cdl::WorkingMemoryAddress & _addr);
 
+    std::map<std::string, autogen::core::UnionPtr> m_currentUnions;
+
+    cast::cdl::WorkingMemoryAddress m_currentUnionsAddr;
+
+    bool m_haveAddr;
+    
   private:
-    void fetchThenExtract(const cast::cdl::WorkingMemoryChange & _wmc);
+    void fetchThenExtract(const cast::cdl::WorkingMemoryChange & _wmc);   
     void extractUnionsFromConfig (autogen::core::UnionConfigurationPtr _config);
     
   };
