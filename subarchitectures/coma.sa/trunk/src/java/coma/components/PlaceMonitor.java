@@ -6,29 +6,24 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
-import binder.autogen.core.Feature;
-import binder.autogen.core.FeatureValue;
-import binder.autogen.featvalues.BooleanValue;
-import binder.autogen.featvalues.IntegerValue;
-import binder.autogen.featvalues.StringValue;
-
-import coma.aux.ComaHelper;
-import comadata.ComaReasonerInterfacePrx;
-import comadata.ComaRoom;
-
-import Marshalling.MarshallerPrx;
 import Marshalling.Marshaller;
+import Marshalling.MarshallerPrx;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialProperties.ConnectivityPathProperty;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
+import binder.autogen.core.Feature;
+import binder.autogen.core.FeatureValue;
+import binder.autogen.featvalues.BooleanValue;
+import binder.autogen.featvalues.IntegerValue;
+import binder.autogen.featvalues.StringValue;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -43,6 +38,10 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTData;
+
+import coma.aux.ComaHelper;
+import comadata.ComaReasonerInterfacePrx;
+import comadata.ComaRoom;
 
 /**
  * This is a simple monitor that replicates spatial WM entries, *PLACES*, inside coma.
@@ -347,8 +346,10 @@ public class PlaceMonitor extends ManagedComponent {
 	private void processAddedObjectProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
-		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ _objProp.category + ". The probability distribution is not yet taken into account!");
-		
+
+		String category = ((SpatialProperties.StringValue)_objProp.mapValue).value;
+		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
+			
 		// TODO handle probability distribution 
 //		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
 		
@@ -360,7 +361,8 @@ public class PlaceMonitor extends ManagedComponent {
 		
 	private void createObject(ObjectPlaceProperty _objProp) {
 		// the place is immediately asserted to contain an instance of the object category
-		m_comareasoner.addInstance("dora:object"+_objProp.placeId, "dora:" + ComaHelper.firstCap(_objProp.category));
+		String category = ((SpatialProperties.StringValue)_objProp.mapValue).value;
+		m_comareasoner.addInstance("dora:object"+_objProp.placeId, "dora:" + ComaHelper.firstCap(category));
 		m_comareasoner.addRelation("dora:object"+_objProp.placeId, "dora:in", "dora:place"+_objProp.placeId);
 	}
 
