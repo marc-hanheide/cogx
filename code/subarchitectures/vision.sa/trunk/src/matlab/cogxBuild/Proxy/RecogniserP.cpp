@@ -1,150 +1,51 @@
-/* vim:set fileencoding=utf-8 sw=3 ts=8 et:vim */
 /** 
- * @brief Proxy for the VisualLearner component.
+ * @brief Proxy for the FeatureExtractor component of FeatureLearning.
+ *
+ * The images of ROI can be transfromed before feature extraction.
+ * @see FE_extract_features_transform
  *
  * @author Marko Mahnic
  */
-#include <stdio.h>
-#include <stdarg.h>
-#include <string>
-#include <cv.h>
-#include <highgui.h>
-#include <VisionData.hpp>
-
+#include "cv.h"
+#include "highgui.h"
+#include "VisionData.hpp"
 #include "MatlabHelper.h"
-#include "VisualLearnerProxy.h"
 #include "libVisualLearnerCtf.h"
-#include "initlib.h"
 
-using namespace std;
-using namespace VisionData;
-
-class CInitializer
+//void FE_recognise_attributes(VisionData::ROI &Roi)
+void VL_recognise_attributes(VisionData::AttrObject &Attrs, VisionData::ProtoObject &Object)
 {
-public:
-   CInitializer() {
-      printf("VisualLearnerProxy initializing\n");
-      InitVisualLearnerLib();
-
-      // Load global variables (was: R_RunComponent)
-      mwArray flag(1); // 1 - show dialogs
-      CLFstart(flag);
-   }
-   ~CInitializer() {
-      printf("VisualLearnerProxy terminating\n");
-      TermVisualLearnerLib();
-   }
-} *pInitializer=NULL;
-class CTerminator
-{
-public:
-   ~CTerminator() {
-      if (pInitializer) delete pInitializer;
-      pInitializer = NULL;
-   }
-} Terminator;
-static void CheckInit()
-{
-   if (!pInitializer) pInitializer = new CInitializer();
-}
-
-static void addLabels(mwArray &ans, double weight, vector<int> &labels, vector<double> &probs)
-{
-   unsigned n_dims = ans.NumberOfDimensions();
-   // TODO: assert n_dims = 1
-   mwArray dims = ans.GetDimensions();
-   double dim0 = dims.Get(mwSize(1), 1);
-   for (int i = 0; i < dim0; i++) {
-      double label = ans.Get(mwSize(1), i+1);
-      labels.push_back((int)label);
-      probs.push_back(weight);
-   }
-}
-
-void VL_LoadAvModels(const char* filename)
-{
-   CheckInit();
-   mwArray fname (filename);
-   LRloadAVmodels(fname);
-}
-
-//void FE_recognise_attributes(ROI &Roi)
-void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vector<double> &probs)
-{
-   CheckInit();
    // Add the ROI to Matlab engine
-   mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
-         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
-   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
-
+   mwArray x = CMatlabHelper::iplImage2array(&(Object.image[0]), 
+          Object.image.width, Object.image.height, 3); // WISH: number of channels in image
+   
    // Add the segmentation mask to the Matlab engine.
-   mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
-         Object.mask.width, Object.mask.height, 1);
-   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
+   mwArray b0 = CMatlabHelper::iplImage2array(&(Object.mask.data[0]), 
+         Object.mask.width, Object.mask.hieght, 1);
 
-   mwArray ansYes, ansPy, answ;
+   // Segment the Roi.
+   //mwArray b;
+   //cosyFeatureExtractor_limitvalue(1, b, b0, mwArray(1.0)); // TODO: Rename
 
-   // Extract features and recognise.
+   // Extract features.
    mwArray f;
-   cogxVisualLearner_recognise(3, ansYes, ansPy, answ, x, b0);
+   cogxVisualLearner_recognise(1, f, x, b); // TODO: Rename, extract + recognise
 
-   labels.clear();
-   probs.clear();
-   addLabels(ansYes, 1.0, labels, probs);
-   addLabels(ansPy, 0.5, labels, probs);
+   // Add extracted features to the Roi.
+   CMatlabHelper::array2idl(f, Attrs); // TODO: Attrs is not a Matlab::Matrix !
 }
 
-void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
+void VL_prepare()
 {
-   vector<int> labels;
-   vector<double> probs;
-   // Features need to be calculated every time! In CoSy they were stored in ROI.
-   VL_recognise_attributes(Object, labels, probs);
-
-   // Put features of the ROI to the matlab engine.
-   // TODO: copy labels+probs 2 features; HOW?????
-   mwArray features; // = CMatlabHelper::idl2array(Roi.m_features);
-
-   long cntPlus = 0, cntMinus = 0;
-   for (unsigned i = 0; i < task.labels.size(); i++) {
-     if (task.confidences[i] > 0) cntPlus++;
-     if (task.confidences[i] < 0) cntMinus++;
-   }
-
-   if (cntPlus > 0) {
-      mwArray avw(cntPlus, 2, mxDOUBLE_CLASS, mxREAL);
-      int row = 1;
-      for (unsigned i = 0; i < task.labels.size(); i++) {
-        if (task.confidences[i] > 0) {
-           avw(row, 1) =  (double) task.labels[i];
-           avw(row, 2) =  (double) task.confidences[i];
-           row++;
-        }
-      }
-      cogxVisualLearner_update(features, avw);
-   }
-
-   if (cntMinus > 0) {
-      mwArray avw(cntMinus, 2, mxDOUBLE_CLASS, mxREAL);
-      int row = 1;
-      for (unsigned i = 0; i < task.labels.size(); i++) {
-        if (task.confidences[i] < 0) {
-           avw(row, 1) =  (double) task.labels[i];
-           avw(row, 2) =  (double) - task.confidences[i];
-           row++;
-        }
-      }
-      cogxVisualLearner_unlearn(features, avw);
-   }
+   // cvNamedWindow( "FE_Transform", CV_WINDOW_AUTOSIZE );
 }
 
-
-// typedef unsigned char BYTE;
+typedef unsigned char BYTE;
 
 // Assumption: channels in raw data are BGR, 8 bits per channel (uchar), 4 byte alignment.
 // Channels in CvMat are stored in the same matrix cell (CvScalar).
 // NOT TESTED!
-//~ static CvMat* rawImage2cvmat(Image &image)
+//~ static CvMat* rawImage2cvmat(VisionData::Image &image)
 //~ {
 //~    printf("rawImage2cvmat\n");
 //~    const unsigned align = 4;
@@ -166,7 +67,7 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 
 /// Copies image data from \p ImageFrame structure to a \p IplImage object.
 /// Assumption: rows are 4-byte aligned.
-//IplImage* rawImage2iplImage(Image &Image)
+//IplImage* rawImage2iplImage(VisionData::Image &Image)
 //{
 //   IplImage *img = cvCreateImage(cvSize(Image.width, Image.height), 
 //      IPL_DEPTH_8U, 3); // WISH: number of Channels in Image
@@ -209,7 +110,7 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 //~ }
 
 // @param matrix3x3 Array with the parameters of the perspective transformation, storage: [Row0; Row1; Row2]
-//static CvMat* getTrafoAndOutputBox(BBox2D &bbox, float* matrix3x3, BBox2D &outBox)
+//static CvMat* getTrafoAndOutputBox(VisionData::BBox2D &bbox, float* matrix3x3, VisionData::BBox2D &outBox)
 //{
 //   // printf("getTrafoAndOutputBox\n");
 //   struct _roi_position { double x0, y0, x1, y1; } ROI;
@@ -227,7 +128,7 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 
 //   CvMat H = cvMat(3, 3, CV_32FC1, matrix3x3);
 //   CvMat *matTraRoi = cvCreateMat(4, 1, CV_32FC3); // Transformed ROI, a polygon
-
+   
 //   // cvPerspectiveTransform doesn't work as expected, so: Transform + normalize
 //   cvTransform(matbbRoi, matTraRoi, &H); // NOT cvPerspectiveTransform
 //   for (int i=0; i < 4; i++) { // Normalize
@@ -235,7 +136,7 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 //      for (int c = 0; c < 3; c++) coord.val[c] /= coord.val[2];
 //      cvSet2D(matTraRoi, i, 0, coord);
 //   }      
-
+   
 //   CvPoint2D32f traRoi[4];
 //   for (int i=0; i < 4; i++) {
 //      CvScalar coord = cvGet2D(matTraRoi, i, 0);
@@ -262,7 +163,7 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 //   outBox.m_center.m_y = (traRoiYmin + traRoiYmax) / 2;
 //   outBox.m_size.m_x = (traRoiXmax - traRoiXmin);
 //   outBox.m_size.m_y = (traRoiYmax - traRoiYmin);
-
+   
 //   // Shift ROI and transformed ROI to image (0, 0)
 //   for (int i=0; i < 4; i++) {
 //      bbRoi[i].x -= ROI.x0;
@@ -284,12 +185,12 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 // 4. transform with cvWarpPerspective (B = CA)
 // 5. create matlab array out, same size as B
 // 6. copy B to out; beware: channels are separeted in out!
-//static mwArray transformRaw2array(Image &image, BBox2D &bbox, float* matrix3x3)
+//static mwArray transformRaw2array(VisionData::Image &image, VisionData::BBox2D &bbox, float* matrix3x3)
 //{
 //   // printf("transformRaw2array\n");
 //   IplImage *A = rawImage2iplImage(image);
 
-//   BBox2D outBox;
+//   VisionData::BBox2D outBox;
 //   CvMat *H1 = getTrafoAndOutputBox(bbox, matrix3x3, outBox);
 //   IplImage *B = cvCreateImage(cvSize(outBox.m_size.m_x, outBox.m_size.m_y), IPL_DEPTH_8U, image.m_nChannels); 
 
@@ -299,29 +200,27 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
 
 //   mwArray out = CMatlabHelper::iplImage2array(B);
 //   cvReleaseImage(&B);
-
+   
 //   return out;
 //}
 
 // Extract features from ROI. 
 // Transform the image before extraction.
 // @param matrix3x3 Array with the parameters of the perspective transformation, storage: [Row0; Row1; Row2]
-/*void FE_extract_features_transform(ROI &Roi, float* matrix3x3)
-  {
-// Add the ROI to Matlab engine
-mwArray x = transformRaw2array(Roi.m_region, Roi.m_bbox, matrix3x3);
-mwArray b0 = transformRaw2array(Roi.m_mask, Roi.m_bbox, matrix3x3);
+/*void FE_extract_features_transform(VisionData::ROI &Roi, float* matrix3x3)
+{
+   // Add the ROI to Matlab engine
+   mwArray x = transformRaw2array(Roi.m_region, Roi.m_bbox, matrix3x3);
+   mwArray b0 = transformRaw2array(Roi.m_mask, Roi.m_bbox, matrix3x3);
+   
+   // Segment the Roi.
+   mwArray b;
+   cosyFeatureExtractor_limitvalue(1, b, b0, mwArray(1.0));
+   
+   // Extract features.
+   mwArray f;
+   cosyFeatureExtractor_extract(1, f, x, b);
 
-// Segment the Roi.
-mwArray b;
-cosyFeatureExtractor_limitvalue(1, b, b0, mwArray(1.0));
-
-// Extract features.
-mwArray f;
-cosyFeatureExtractor_extract(1, f, x, b);
-
-// Add extracted features to the Roi.
-CMatlabHelper::array2idl(f, Roi.m_features);
+   // Add extracted features to the Roi.
+   CMatlabHelper::array2idl(f, Roi.m_features);
 }*/
-
-

@@ -25,13 +25,16 @@ if(UNIX)
    set(CTF_LIB)
    set(CTF_SOLIB    "lib${LIBRARY_NAME}Ctf.so")
    set(CTF_SOPROXY  "lib${LIBRARY_NAME}Proxy.so")
+   file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
+   file(GLOB SOLIB_EXISTS  ${PREBUILT_DIR}/${CTF_SOLIB})
    set(OUTLIBRARIES
-      ${PREBUILT_DIR}/${CTF_ARCHIVE}
       ${PREBUILT_DIR}/${CTF_SOLIB}
       ${PREBUILT_DIR}/${CTF_SOPROXY}
    )
    set(OUTRUNTIMES)
-   file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
+   if(CTF_EXISTS)
+      set(OUTLIBRARIES ${OUTLIBRARIES} ${PREBUILT_DIR}/${CTF_ARCHIVE})
+   endif(CTF_EXISTS)
 elseif(WIN32)
    set(CTF_ARCHIVE  "${LIBRARY_NAME}Ctf.ctf")
    set(CTF_LIB      "${LIBRARY_NAME}Ctf.lib")
@@ -40,29 +43,23 @@ elseif(WIN32)
    set(OUTLIBRARIES
       ${PREBUILT_DIR}/${CTF_LIB}
    )
-   set(OUTRUNTIMES
-      ${PREBUILT_DIR}/${CTF_ARCHIVE}.ctf
-      ${PREBUILT_DIR}/${CTF_SOLIB}.dll
-      ${PREBUILT_DIR}/${CTF_SOPROXY}.dll
-   )
    file(GLOB CTF_EXISTS  ${PREBUILT_DIR}/${CTF_ARCHIVE})
+   file(GLOB SOLIB_EXISTS  ${PREBUILT_DIR}/${CTF_SOLIB})
+   set(OUTRUNTIMES
+      ${PREBUILT_DIR}/${CTF_SOLIB}
+      ${PREBUILT_DIR}/${CTF_SOPROXY}
+   )
+   if(CTF_EXISTS)
+      set(OUTRUNTIMES ${OUTRUNTIMES} ${PREBUILT_DIR}/${CTF_ARCHIVE})
+   endif(CTF_EXISTS)
 endif(UNIX)
 
-if (CTF_EXISTS)
-   install(FILES   ${OUTLIBRARIES} 
-      DESTINATION lib
-   )
-
-   #~ INSTALL(FILES   ${OUTHEADERS}
-   #~    DESTINATION include/vision/matlab
-   #~ )
-
+if (SOLIB_EXISTS)
+   install(FILES   ${OUTLIBRARIES} DESTINATION lib)
    if (OUTRUNTIMES)
-      install(FILES   ${OUTRUNTIMES}
-         DESTINATION lib
-      )
+      install(FILES   ${OUTRUNTIMES} DESTINATION lib)
    endif(OUTRUNTIMES)
-else (CTF_EXISTS)
+else (SOLIB_EXISTS)
    if(CTF_ARCHIVE)
       file(GLOB CTF_INSTALLED  ${PREBUILT_DIR}/${CTF_ARCHIVE})
    endif(CTF_ARCHIVE)
@@ -84,5 +81,5 @@ else (CTF_EXISTS)
          "   See: BUILD_VISUAL_LEARNER_CTF (Advanced)\n"
       )
    endif (NOT CTF_INSTALLED)
-endif (CTF_EXISTS)
+endif (SOLIB_EXISTS)
 

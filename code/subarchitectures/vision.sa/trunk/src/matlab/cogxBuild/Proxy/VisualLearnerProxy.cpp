@@ -61,6 +61,20 @@ static void addLabels(mwArray &ans, double weight, vector<int> &labels, vector<d
    }
 }
 
+static void copyLabels(const mwArray &ans, vector<int> &labels, vector<double> &probs)
+{
+   unsigned n_dims = ans.NumberOfDimensions();
+   // TODO: assert n_dims = 2
+   mwArray dims = ans.GetDimensions();
+   double dim0 = dims.Get(mwSize(1), 1);
+   for (int i = 0; i < dim0; i++) {
+      double label  = ans.Get(mwSize(2), i+1, 1);
+      double weight = ans.Get(mwSize(2), i+1, 2);
+      labels.push_back((int)label);
+      probs.push_back(weight);
+   }
+}
+
 void VL_LoadAvModels(const char* filename)
 {
    CheckInit();
@@ -82,16 +96,13 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
          Object.mask.width, Object.mask.height, 1);
    printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
 
-   mwArray ansYes, ansPy, answ;
-
    // Extract features and recognise.
-   mwArray f;
-   cogxVisualLearner_recognise(3, ansYes, ansPy, answ, x, b0);
+   mwArray rCqnt;
+   cogxVisualLearner_recognise(1, rCqnt, x, b0);
 
    labels.clear();
    probs.clear();
-   addLabels(ansYes, 1.0, labels, probs);
-   addLabels(ansPy, 0.5, labels, probs);
+   copyLabels(rCqnt, labels, probs);
 }
 
 void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
@@ -137,7 +148,6 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
       cogxVisualLearner_unlearn(features, avw);
    }
 }
-
 
 // typedef unsigned char BYTE;
 
