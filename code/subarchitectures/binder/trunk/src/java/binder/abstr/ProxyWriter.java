@@ -398,6 +398,27 @@ public abstract class ProxyWriter extends ManagedComponent {
 	} 
 	
 	/**
+	 * Delete an existing proxy
+	 * 
+	 * @param proxy
+	 *            the proxy to delete
+	 */
+
+	protected void deleteEntityInWM(String proxyId) {
+
+		try {
+//			removeOriginInfo(proxy);
+			deleteFromWorkingMemory(proxyId, Binder.BINDER_SA);
+			log("existing Proxy succesfully deleted from the binder working memory");
+
+		} catch (DoesNotExistOnWMException e) {
+			log("Sorry, the proxy does not exist in the binder working memory");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	} 
+	
+	/**
 	 * Stores a mapping from the source to the proxy which is created from it.
 	 * 
 	 * @param _proxy

@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Vector;
 
 import binder.autogen.core.AlternativeUnionConfigurations;
@@ -404,7 +405,11 @@ public class Binder extends ManagedComponent  {
 		log("--------START BINDING UPDATE ----------");
 
 		long initTime = System.currentTimeMillis();
-
+		
+		Random rand = new Random();
+		int sleepTimeMillisecs = rand.nextInt(3000);
+		sleepComponent(sleepTimeMillisecs);
+		
 		try {
 			// Extract the new proxy
 			Proxy newProxy = getMemoryEntry(wmc.address, Proxy.class);
@@ -503,7 +508,7 @@ public class Binder extends ManagedComponent  {
 					if ( !hasConflicts(existingUnion, newUnion)) {
 
 		//				log("constructing new union between "  + existingUnion.entityID + " and " + newUnion.entityID );
-						if (true) {
+						if (!alreadyComputed(existingUnion, alreadyMergedUnions)) {
 
 							// If not, construct the merged union
 							Vector<PerceivedEntity> unionsToMerge = new Vector<PerceivedEntity>();
