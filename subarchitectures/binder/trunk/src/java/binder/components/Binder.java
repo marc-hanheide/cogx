@@ -420,14 +420,14 @@ public class Binder extends ManagedComponent  {
 			BinderUtils.completeProxy(newProxy, addUnknowns, proxyDistribFilter);
 
 			// Perform the binding (either incrementally or by full rebinding)
-			if (!newProxy.entityID.equals("7:A")) {
+	//		if (!newProxy.entityID.equals("7:A")) {
 			if (incrementalBinding ) {
 				incrementalBinding(newProxy);
 			}
 			else {
 				fullRebinding();
 			}
-			}
+	//		}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
