@@ -1,0 +1,12 @@
+#Available commands:
+#Wait; - "block" until all outstanding navcommands are complete (otherwise, the MSAT will not synchronize these commands)
+#MoveForward <distance>; Move forward the specified distance (Issue SpatialData::GOFORWARD)
+#MoveBackward <distance>; (SpatialData::GOBACK)
+#Turn {left|right}; - Turn 90 degrees (SpatialData::TURN)
+#GoToPlace <placeID>; - travel to specified Place, along edge going from current Place
+#(?)LookFor <name>; - Start object search procedure (ObjectData::FIND_OBJECTS). Use internal identifier string.
+#(?)ThisIsThe <name>; - Create an object tag.
+#(?)NavGraphMustHave <areas> <nodes>; - Verify contents of nav graph. Areas: number of different areas; nodes: number of free nodes.
+#(?)CurrentAreaMustBe <area>; - Verify the robot's topological position is <area>
+#(?)WeKnowWhereThisIs <objectname>; - Verify that the navgraph contains an object node of the specified name
+
