@@ -1,11 +1,15 @@
 package comsys.components.cca;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.*;
 
 import comsys.arch.ComsysException;
@@ -76,6 +80,9 @@ public class cc_CCA extends BeliefModelInterface {
 	
 	private String rulesetFilename = null;
 
+	private String protoLFFilename = null;
+	BufferedWriter plfLog = null;
+
 	private Counter counter = null;
 	
     // =================================================================
@@ -122,10 +129,31 @@ public class cc_CCA extends BeliefModelInterface {
 		else {
 			log("no ruleset to read");
 		}
+
+		if (protoLFFilename != null) {
+			try {
+				log("logging proto-LFs to `" + protoLFFilename + "'");
+				plfLog =  new BufferedWriter(new FileWriter(protoLFFilename, true));
+			} catch (IOException e) {
+				log("proto-LF log file not found and/or cannot be created");
+			}
+		}
+
 		ccaEngine.initAbducer();
 		
     } // end init
-    
+   
+    private void logProtoLF(LogicalForm lf) {
+    	if (plfLog != null) {
+    		try {
+				plfLog.write(LFUtils.lfToString(lf) + "\n");
+				plfLog.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+				plfLog = null;
+			}
+    	}
+    }
     
 	public void start() {
 		super.start();
@@ -459,6 +487,7 @@ public class cc_CCA extends BeliefModelInterface {
 					for (int i = 0; i < roots.size(); i++) {
 		    			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(actionProof), roots.elementAt(i));
 		    			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
+		    			logProtoLF(prodLF);
 		    			realizeLogicalForm(prodLF);
 					}
 				}
@@ -756,6 +785,9 @@ public class cc_CCA extends BeliefModelInterface {
     public void configure(Map<String, String> _config) {
     	if (_config.containsKey("--ruleset")) {
     		rulesetFilename = _config.get("--ruleset");
+    	}
+    	if (_config.containsKey("--protoLFlog")) {
+    		protoLFFilename = _config.get("--protoLFlog");
     	}
 	}
     
