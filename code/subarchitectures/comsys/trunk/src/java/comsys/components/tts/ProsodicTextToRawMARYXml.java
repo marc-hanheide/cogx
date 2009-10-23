@@ -7,7 +7,7 @@ import java.util.*;
 
 public class ProsodicTextToRawMARYXml {
 
-	private static boolean debug=true;
+	private static boolean debug=false;
 	private static final String XMLtag_whitespace = new String(" ");
 	private static final String XMLtag_hyphen = new String("-");
 	private static final String XMLtag_ACCENT_open = new String("<t");
@@ -23,7 +23,7 @@ public class ProsodicTextToRawMARYXml {
 	private static final String XMLtag_BOUNDARY_close = new String("/>");
 	
 	private static String RAWMARYXMLHead;
-	private static String GenretedXMLFileLocation;
+	private static String GenratedXMLFileLocation;
 	private static Integer UtteranceCount=0;
 	private static String stub;
 	private static boolean prosody=false;
@@ -35,7 +35,7 @@ public class ProsodicTextToRawMARYXml {
 		// TODO Auto-generated method stub
 		
 		//Save some global variables
-		GenretedXMLFileLocation = new String(args[2]);
+		GenratedXMLFileLocation = new String(args[2]);
 		RAWMARYXMLHead = new String(args[1]);
 		
 		String l_xmlfile = new String();
@@ -86,7 +86,7 @@ public class ProsodicTextToRawMARYXml {
 				
 				//Synthesize this file
 				try {
-						SynthesisRAWMaryXMLInput.Utter(GenretedXMLFileLocation.concat(l_xmlfile),l_voicename);
+						SynthesisRAWMaryXMLInput.Utter(GenratedXMLFileLocation.concat(l_xmlfile),l_voicename);
 						Thread.sleep(2500);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -221,7 +221,6 @@ public class ProsodicTextToRawMARYXml {
 		if(debug){
 			System.out.println("WriteToXML got: " + i_xmlstring);
 			System.out.println("XML Head is: " + RAWMARYXMLHead);
-		
 		}
 		
 		//Prepare the header section of MaryXML file
@@ -266,25 +265,41 @@ public class ProsodicTextToRawMARYXml {
 		l_xmlfilename.append(l_datetime);
 		l_xmlfilename.append(".xml");
 		
-		
-		
+		if(debug){
+			System.out.println("Writing file to location: " + GenratedXMLFileLocation);
+		}
 		try {
-			File l_outputdit = new File(GenretedXMLFileLocation);
+			File l_outputdit = new File(GenratedXMLFileLocation);
 			boolean l_dir = l_outputdit.exists();
 			if(l_dir){
-				System.out.println(" Write2XML directory exist: " + GenretedXMLFileLocation);
+				if(debug){
+				System.out.println(" Write2XML directory exist: " + GenratedXMLFileLocation);
+				}
 			}else{
-				System.out.println(" Write2XML directory created:" + GenretedXMLFileLocation);
+				if(debug){
+				System.out.println(" Write2XML directory created:" + GenratedXMLFileLocation);
+				}
 				l_outputdit.mkdirs();
 			}
-			
-			BufferedWriter l_xml_out = new BufferedWriter(new FileWriter(GenretedXMLFileLocation.concat(l_xmlfilename.toString())));
+			if(debug){
+				System.out.println("Writing file ");
+			}
+			BufferedWriter l_xml_out = new BufferedWriter(new FileWriter(GenratedXMLFileLocation.concat(l_xmlfilename.toString())));
 			l_xml_out.write(l_rawxml_final.toString());
 			l_xml_out.close();
 			}
 		catch (Exception fx) {
-			System.out.println(" Write2XML: " + fx.toString());
+			System.out.println("Error in Write2XML: " + fx.toString());
 		}
 		return l_xmlfilename.toString();
+	}
+	public static String ToRawMaryXml(String i_prsdyInp, String i_maryxmlheader, String i_outputLoc){
+		//Save some global variables
+		GenratedXMLFileLocation = i_outputLoc;
+		RAWMARYXMLHead = i_maryxmlheader;
+		stub="sys";
+		prosody=true;
+		
+		return ConvertToRawMarxXml(i_prsdyInp);
 	}
 }
