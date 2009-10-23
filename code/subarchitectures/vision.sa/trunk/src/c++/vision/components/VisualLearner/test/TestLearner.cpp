@@ -101,6 +101,7 @@ void CTestRecognizer::configure(const std::map<std::string,std::string> & _confi
       istr >> mode;
       if (mode == "standalone") testmode = mode;
       else if (mode == "fake-proto") testmode = mode;
+      else if (mode == "learning") testmode = mode;
       else testmode = "***unknown***";
       log("TEST MODE: %s", testmode.c_str());
    }
