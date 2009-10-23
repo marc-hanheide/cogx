@@ -16,6 +16,7 @@ import comsys.datastructs.comsysEssentials.RefReading;
 import comsys.datastructs.comsysEssentials.RefReadings;
 
 import comsys.processing.reference.readingfactories.CognitionReadings;
+import comsys.processing.reference.readingfactories.CommunicationReadings;
 import comsys.processing.reference.readingfactories.CopulaReadings;
 import comsys.processing.reference.readingfactories.DUnitsReadings;
 import comsys.processing.reference.readingfactories.GreetingReadings;
