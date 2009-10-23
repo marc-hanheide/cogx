@@ -16,7 +16,10 @@ if nargin>0
 
    x1=cutBG(x,b);
 
-   imshow(x1,'Parent',LRaxRoi);
+   %imshow(x1,'Parent',LRaxRoi);
+   image(size(x1,1),size(x1,2),x1,'Parent',LRaxRoi);
+   axis(LRaxRoi,'equal');
+   axis(LRaxRoi,'off');
 
    set(LRtxFisRoi,'Visible','on');
    set(LRtxFroi,'String',[num2str(f','%.2g  ') ' ]']);

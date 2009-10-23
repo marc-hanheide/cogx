@@ -1,4 +1,5 @@
 function showRec(ansYes,ansPy,answ,f)
+%function showRec(answ,f)
 
 global LRguiR avAcronyms
 global LRaxRoi LRtxFroi LRaxRec LRtxRec LRtxFrec LRtxFisRec
@@ -9,14 +10,15 @@ THRs=currMode.THRs;
 MaxTyp=1;%min(1,THRs(1)*4);
 
 if ~isempty(answ)
-   recYes=idx2name(ansYes,avAcronyms);
-   recPy=idx2name(ansPy,avAcronyms);
 
-   str=recYes;
-   if ~isempty(recPy)
-      str=[str '    (' recPy ' )'];
-   end
-   set(LRtxRec,'String',str);
+  recYes=idx2name(ansYes,avAcronyms);
+  recPy=idx2name(ansPy,avAcronyms);
+
+  str=recYes;
+  if ~isempty(recPy)
+     str=[str '    (' recPy ' )'];
+  end
+  set(LRtxRec,'String',str);
 
    bar(LRaxRec,answ(:,2),'b');
    set(LRaxRec,'XTickLabel',avAcronyms(answ(:,1),:));
