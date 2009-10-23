@@ -410,7 +410,7 @@ public class cc_TTS extends ManagedComponent {
 					log("Trying to say the following: ["+soi.phonString+"]");
                     // Synthesize speech locally
                     ttsLocal.speak(soi.phonString);
-
+                    Thread.sleep(2500);
                     // Synthesize speech remotely
           /**          byte[] data = ttsRemote.speak(soi.phonString);
                     if (data != null) {
