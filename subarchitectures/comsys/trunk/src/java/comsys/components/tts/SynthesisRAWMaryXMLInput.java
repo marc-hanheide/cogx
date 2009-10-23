@@ -29,7 +29,7 @@ public class SynthesisRAWMaryXMLInput {
        //	m_ttsLocal = new TTSLocal(m_mary, "female", false, "en_US", "WAVE");
     	m_ttsLocal = new TTSLocal(m_mary,"RAWMARYXML", i_voicename, false, "WAVE");
 		
-       	System.out.println("synthesize input file: "+ i_filename);
+       	//System.out.println("Synthesize RAWMARYXML file: "+ i_filename);
        	
        	StringBuffer output = new StringBuffer();
 		try {
@@ -41,7 +41,7 @@ public class SynthesisRAWMaryXMLInput {
 			output.append(" ");
 			
 			}
-			System.out.println(output.toString());
+			// System.out.println(output.toString());
 			in.close();
 			}
 		catch (Exception fx) {

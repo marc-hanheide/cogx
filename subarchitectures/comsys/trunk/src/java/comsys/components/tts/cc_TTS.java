@@ -33,6 +33,7 @@ package comsys.components.tts;
 // CAST IMPORTS
 // -----------------------------------------------------------------
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -41,6 +42,7 @@ import comsys.datastructs.comsysEssentials.*;
 import comsys.arch.ProcessingData;
 import comsys.arch.ComsysException;
 import comsys.arch.ComsysGoals;
+import comsys.components.tts.*;
 
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -90,32 +92,38 @@ public class cc_TTS extends ManagedComponent {
     private Vector<ProcessingData> m_dataObjects;
 
     // Identifiers for ProcessData objects
-    private int pdIdCounter;
+    private int m_pdIdCounter;
 
     // The name of the voice to be used
-    static String voiceName = "female";
+    static String m_voiceName = "female";
 
     // mary server host
-    static String serverHost =
+    static String m_serverHost =
             System.getProperty("server.host", "susan.dfki.uni-sb.de");
 
     // mary server port
-    static int serverPort =
+    static int m_serverPort =
             Integer.getInteger("server.port", 59125).intValue();
 
     // completely ignore mary if this is set
     private boolean m_bNoMary = false;
 
     // mary client
-    static MaryClient mary;
+    static MaryClient m_mary;
 
     // local and remote silence
     private static boolean m_bSilentModeLocal = false;
     private static boolean m_bSilentModeRemote = false;
 
+    private static String m_RAWMARYXMLHeader=null;
+	private static String m_GenrtdXMLFileLoc=null;
+	private static boolean m_DelGenrtdXMLFile=true;
+	
+	
     // local and remote TTS
-    TTSLocal ttsLocal;
-   // TTSRemote ttsRemote;
+    TTSLocal m_ttsLocal;
+   // TTSRemote m_ttsRemote;
+    
 
     // =================================================================
     // CONSTRUCTOR METHODS
@@ -129,7 +137,7 @@ public class cc_TTS extends ManagedComponent {
         m_dataToProcessingGoalMap = new Hashtable<String, String>();
         m_taskToTaskTypeMap = new Hashtable<String, String>();
         m_dataObjects = new Vector<ProcessingData>();
-        pdIdCounter = 0;
+        m_pdIdCounter = 0;
         // synthesis
 
         // nah: making all the comsys queue changes... don't want to
@@ -277,8 +285,8 @@ public class cc_TTS extends ManagedComponent {
     /** Returns a new identifier for a ProcessingData object */
 
     private String newProcessingDataId() {
-        String result = "pd" + pdIdCounter;
-        pdIdCounter++;
+        String result = "pd" + m_pdIdCounter;
+        m_pdIdCounter++;
         return result;
     } // end newProcessingDataId
 
@@ -409,10 +417,41 @@ public class cc_TTS extends ManagedComponent {
                 else {
 					log("Trying to say the following: ["+soi.phonString+"]");
                     // Synthesize speech locally
-                    ttsLocal.speak(soi.phonString);
-                    Thread.sleep(2500);
+					
+					//Changes for Prosodic Grammar
+					if(soi.phonString.contains("%")){
+						//do mary xml
+						String l_xmlfile = new String();
+						l_xmlfile=ProsodicTextToRawMARYXml.ToRawMaryXml(soi.phonString, m_RAWMARYXMLHeader, m_GenrtdXMLFileLoc);
+						
+						//A function that takes the prosodic text as input and returns a filename
+						log("XML file written: ["+m_GenrtdXMLFileLoc.concat(l_xmlfile)+"]");
+						
+						//Synthesize this file
+						try {
+								SynthesisRAWMaryXMLInput.Utter(m_GenrtdXMLFileLoc.concat(l_xmlfile),m_voiceName);
+								
+								//Delete the generated RAWMaryXML
+								if(m_DelGenrtdXMLFile){
+									File f = new File(m_GenrtdXMLFileLoc.concat(l_xmlfile));
+									if(!f.exists()){
+										boolean success = f.delete();
+									    if (!success)
+									     throw new IllegalArgumentException("Delete RamMaryXMl failed");
+									}
+								}
+								Thread.sleep(2500);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}else {
+						m_ttsLocal.speak(soi.phonString);
+	                    Thread.sleep(2500);	
+					}
+                    
                     // Synthesize speech remotely
-          /**          byte[] data = ttsRemote.speak(soi.phonString);
+          /**          byte[] data = m_ttsRemote.speak(soi.phonString);
                     if (data != null) {
                         // .. and insert an AudioData object into the
                         // working memory
@@ -527,21 +566,17 @@ public class cc_TTS extends ManagedComponent {
 
             // voice name
             if (_config.containsKey("--voice")) {
-                voiceName = _config.get("--voice");
+                m_voiceName = _config.get("--voice");
             }
 
             // IP address of the Mary server
             if (_config.containsKey("--serverHost")) {
-                serverHost = _config.get("--serverHost");
+                m_serverHost = _config.get("--serverHost");
             }
-
-			
 			
             // port of the mary server
             if (_config.containsKey("--serverPort")) {
-                serverPort =
-                        Integer.valueOf(_config
-                            .get("--serverPort"));
+                m_serverPort = Integer.valueOf(_config.get("--serverPort"));
             }
 
 			String startingUp = ""; 
@@ -551,8 +586,25 @@ public class cc_TTS extends ManagedComponent {
                 startingUp = _config.get("--startingUp");
             }						
 			
+            // Location of RAWMARYXMLHeader 
+            if (_config.containsKey("--rawMaryXmlHeader")) {
+                m_RAWMARYXMLHeader = _config.get("--rawMaryXmlHeader");
+            }
+            
+            // Location of temporarily storing generated MaryXMLFiles
+            if (_config.containsKey("--writeXmlTo")) {
+                m_GenrtdXMLFileLoc = _config.get("--writeXmlTo");
+            }
+            
+         // Location of temporarily storing generated MaryXMLFiles
+            if (_config.containsKey("--delXml")) {
+            	String tmp = _config.get("--DelXml");
+            	if(tmp.equals("yes")) m_DelGenrtdXMLFile =true;
+            	else m_DelGenrtdXMLFile =false;
+            }
+            
             try {
-                mary = new MaryClient(serverHost, serverPort);
+                m_mary = new MaryClient(m_serverHost, m_serverPort);
                 // speakLocal("hello !");
             }
 
@@ -561,13 +613,13 @@ public class cc_TTS extends ManagedComponent {
             }
 
             // create local and remote TTS
-            ttsLocal =
-		new TTSLocal(mary, "TEXT", voiceName, m_bSilentModeLocal, "WAVE");
-       //     ttsRemote =
-       //             new TTSRemote(mary, voiceName, m_bSilentModeRemote);
+            m_ttsLocal =
+		new TTSLocal(m_mary, "TEXT", m_voiceName, m_bSilentModeLocal, "WAVE");
+       //     m_ttsRemote =
+       //             new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
 			
 			if (!startingUp.equals("")) { 
-				ttsLocal.speak(startingUp);
+				m_ttsLocal.speak(startingUp);
 			}
 			
         }
