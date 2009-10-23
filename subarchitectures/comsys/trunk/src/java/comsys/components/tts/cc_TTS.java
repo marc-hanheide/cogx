@@ -434,7 +434,8 @@ public class cc_TTS extends ManagedComponent {
 								//Delete the generated RAWMaryXML
 								if(m_DelGenrtdXMLFile){
 									File f = new File(m_GenrtdXMLFileLoc.concat(l_xmlfile));
-									if(!f.exists()){
+									if(f.exists()){
+										log("XML file deleted: ["+m_GenrtdXMLFileLoc.concat(l_xmlfile)+"]");
 										boolean success = f.delete();
 									    if (!success)
 									     throw new IllegalArgumentException("Delete RamMaryXMl failed");
@@ -598,7 +599,7 @@ public class cc_TTS extends ManagedComponent {
             
          // Location of temporarily storing generated MaryXMLFiles
             if (_config.containsKey("--delXml")) {
-            	String tmp = _config.get("--DelXml");
+            	String tmp = _config.get("--delXml");
             	if(tmp.equals("true")) m_DelGenrtdXMLFile =true;
             	else m_DelGenrtdXMLFile =false;
             }
