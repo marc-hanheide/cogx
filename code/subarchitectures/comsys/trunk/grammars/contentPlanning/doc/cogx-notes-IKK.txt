@@ -21,6 +21,34 @@ InfoStruct:
 
 -----
 
+Insert <proofStatus> into all templates
+
+-----
+
+Problems:
+
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>action)
+"Sure thing"
+has Rheme=true but no other InfoStruct features; why?
+
+
+relational-attribute modifiers (type m-location) don't get any InfoStruct feat assigned for now
+
+in compounds don't currently inherit rheme/theme from head, thus expect problem in grammar
+
+-----
+
+InfoStruct defaults
+
+Theme
+ - ascription target (but maybe not in a question)
+
+
+Background
+ - what in quest
+
+-----
+
 agreement: should do "contentious" in questions (but not in echo-questions)
 
 -----
@@ -173,6 +201,22 @@ Acknowledgments with modality are completely hacked by templates
 --------------------------------
 see cogx-targets for more to do
 --------------------------------
+
+
+
+
+
+========================
+Utterance planner
+========================
+
+Oct 2009:
+
+Chooser call from a system: would be useful to be able to give a locus as argument; see infoStruct.systems, how rheme assignment is done for color, shape etc. One could call the same chooser on different nominal, would be more lelegant; currently have to have different systems and call different choosers. 
+
+
+
+
 
 
 

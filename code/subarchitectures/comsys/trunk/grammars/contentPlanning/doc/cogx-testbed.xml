@@ -168,6 +168,7 @@
 <realizations>
 <string>I can do that</string>
 <string>a sure thing</string>
+<string>sure thing</string>
 <string>yes I can try that</string>
 </realizations>
 </utterance>
@@ -228,6 +229,20 @@
 <realizations>
 <string>the big red ball</string>
 <string>the red big ball</string>
+</realizations>
+</utterance>
+
+<utterance>
+<input>
+<!--
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Shape>round ^ <NumberID>2 ^ <InfoStatus>familiar))
+-->
+@d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Shape\round ^ /NumberID\2 ^ /InfoStatus\familiar))
+</input>
+<realizations>
+<string>the second big red round ball</string>
+<string>the 2nd red big round ball</string>
+<!-- *** NOTE: etc. all possible word orders -->
 </realizations>
 </utterance>
 

@@ -20,8 +20,84 @@
 			<result val="proof-status-asserted"/>
 		 </choicenode>
 		 <choicenode answer = "unknown">
-			<result val="proof-status-unknown"/>
-	     </choicenode>
+			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+         </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-proofStatus.iheritance.color" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+		    <f-featval feat="ProofStatus" nomvar="COLOR" />
+		 </inquiry>			
+		 <choicenode answer = "assumed">  
+			<result val="proof-status-assumed"/>			
+		 </choicenode>
+		 <choicenode answer = "asserted">
+			<result val="proof-status-asserted"/>
+		 </choicenode>
+		 <choicenode answer = "unknown">
+			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+         </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-proofStatus.iheritance.size" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+		    <f-featval feat="ProofStatus" nomvar="SIZE" />
+		 </inquiry>			
+		 <choicenode answer = "assumed">  
+			<result val="proof-status-assumed"/>			
+		 </choicenode>
+		 <choicenode answer = "asserted">
+			<result val="proof-status-asserted"/>
+		 </choicenode>
+		 <choicenode answer = "unknown">
+			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+         </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-proofStatus.iheritance.shape" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+		    <f-featval feat="ProofStatus" nomvar="SHAPE" />
+		 </inquiry>			
+		 <choicenode answer = "assumed">  
+			<result val="proof-status-assumed"/>			
+		 </choicenode>
+		 <choicenode answer = "asserted">
+			<result val="proof-status-asserted"/>
+		 </choicenode>
+		 <choicenode answer = "unknown">
+			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+         </choicenode>
+	   </choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-proofStatus.iheritance.ordinal" region="infoStruct" metafunction="textual">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
+		    <f-featval feat="ProofStatus" nomvar="ORDINAL" />
+		 </inquiry>			
+		 <choicenode answer = "assumed">  
+			<result val="proof-status-assumed"/>			
+		 </choicenode>
+		 <choicenode answer = "asserted">
+			<result val="proof-status-asserted"/>
+		 </choicenode>
+		 <choicenode answer = "unknown">
+			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+         </choicenode>
 	   </choicenode>
    </dectree>
 </chooser>
@@ -75,7 +151,7 @@
             </choicenode>
 
 		 <choicenode answer = "false">
-                <result val="hearerThOwner"/>
+                <result val="hearerThOwner"/>  <!-- defaut -->
           </choicenode>
        </choicenode>
    </dectree>
