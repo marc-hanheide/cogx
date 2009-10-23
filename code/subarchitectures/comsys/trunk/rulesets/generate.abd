@@ -152,18 +152,18 @@ check_property_value(Union, Prop, unknown) <-
 %	event : produce(r, Nom) / 1.0.
 
 % @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept)
-generate : intention : grounding(Modality, assertionVerified) <-
+generate : intention : grounding(Ag, Modality, assertionVerified) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, accept) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-%generate : intention : grounding(discourse, assertionVerified) <-
+%generate : intention : grounding(h, discourse, assertionVerified) <-
 %	utt_head(Nom),
 %	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
 %	event : produce(r, Nom) / 1.0.
 
-generate : intention : grounding(discourse, assertionFalsified) <-
+generate : intention : grounding(h, discourse, assertionFalsified) <-
 	utt_head(Nom),
 	i : feat_Relation(Nom, filler) / 1.0,
 	event : produce(r, Nom) / 1.0.
@@ -171,7 +171,7 @@ generate : intention : grounding(discourse, assertionFalsified) <-
 %	event : produce(r, Nom) / 1.0.
 
 % @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\reject ^ /AcknoModality\vision)
-generate : intention : grounding(vision, assertionFalsified) <-
+generate : intention : grounding(r, vision, assertionFalsified) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, assertion) / 1.0,
 	i : feat_Relation(Nom, reject) / 1.0,

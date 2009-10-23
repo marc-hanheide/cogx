@@ -371,6 +371,7 @@ public class cc_CCA extends BeliefModelInterface {
     	if (ccaEngine.stack.beliefPresent(gb.id)) {
         	ContextUpdate cu = new ContextUpdate();
     		cu.intention = PredicateFactory.predicate("grounding", new Term[] {
+    				PredicateFactory.term("r"),
 	    			PredicateFactory.term(gb.grounding.modality), // source modality
 	    			//PredicateFactory.term(gb.id), // belief id
 	    			PredicateFactory.term(gb.grounding.gstatus.toString())  // grounding status
@@ -530,8 +531,9 @@ public class cc_CCA extends BeliefModelInterface {
 			Belief[] updates = new Belief[0];
 			
 			if (cu.intention.predSym.equals("grounding")) {
-				String modality = ((FunctionTerm) cu.intention.args[0]).functor;
-				String result = ((FunctionTerm) cu.intention.args[1]).functor;
+				Agent sourceAgent = ProofUtils.proofAgentStringToAgent(((FunctionTerm) cu.intention.args[0]).functor);
+				String modality = ((FunctionTerm) cu.intention.args[1]).functor;
+				String result = ((FunctionTerm) cu.intention.args[2]).functor;
 
 				int idxValueNeed = ccaEngine.stack.findTopmostBlockByIntention("need_get_value");
 				int idxValueVerify = ccaEngine.stack.findTopmostBlockByIntention("need_verify_hypothesis");

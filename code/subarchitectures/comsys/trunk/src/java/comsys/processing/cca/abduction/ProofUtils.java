@@ -165,6 +165,21 @@ public class ProofUtils {
 		return bAgent;
 	}
 	
+	public static beliefmodels.adl.Agent proofAgentStringToAgent(String s) {
+		beliefmodels.adl.Agent bAgent = new beliefmodels.adl.Agent();
+		if (s.equals("h")) {
+			bAgent.id = "human";
+			return bAgent;
+		}
+		else if (s.equals("r")) {
+			bAgent.id = "robot";
+			return bAgent;
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public static AgentStatus kModalityToAgentStatus(KModality m) {
 		//System.out.println("kModalityToAgentStatus: share=" + m.share.toString() + ", act=" + m.act.toString() + ", pat=" + m.pat.toString());
 		switch (m.share) {

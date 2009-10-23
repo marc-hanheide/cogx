@@ -244,13 +244,13 @@ marker_no(Nom) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, 'No').
 
-understand : event : uttered(h, Nom) <-
+understand : event : uttered(Ag, Nom) <-
 	marker_yes(Nom),
-	intention : grounding(discourse, assertionVerified) / 1.0.
+	intention : grounding(Ag, discourse, assertionVerified) / 1.0.
 
-understand : event : uttered(h, Nom) <-
+understand : event : uttered(Ag, Nom) <-
 	marker_no(Nom),
-	intention : grounding(discourse, assertionFalsified) / 1.0.
+	intention : grounding(Ag, discourse, assertionFalsified) / 1.0.
 
 d_units_list(Nom, FirstNom, NextNom) <-
 	i : sort(Nom, 'd-units'),
@@ -258,7 +258,7 @@ d_units_list(Nom, FirstNom, NextNom) <-
 	i : rel_First(Nom, FirstNom),
 	i : rel_Next(Nom, NextNom).
 
-understand : event : uttered(h, Nom) <-
+understand : event : uttered(Ag, Nom) <-
 	d_units_list(Nom, NoNom, NextNom),
 	no_marker(NoNom),
 	d_units_list(NextNom, NomA, NomB),
@@ -267,7 +267,7 @@ understand : event : uttered(h, Nom) <-
 	att : refers_to(SubjNom, Union) / reference_resolution,
 	polarity(Nom, Polarity),
 	assert_prop_noint(SubjNom, Union, Polarity),
-	intention : grounding(discourse, assertionFalsified) / 1.0.
+	intention : grounding(Ag, discourse, assertionFalsified) / 1.0.
 
 assert_prop_noint(Nom, Union, Polarity) <-
 	i : sort(Nom, 'q-color'),
