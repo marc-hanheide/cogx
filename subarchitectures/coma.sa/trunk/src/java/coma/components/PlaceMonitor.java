@@ -719,7 +719,7 @@ public class PlaceMonitor extends ManagedComponent {
 			} else {
 				log("creating a new room proxy");
 				m_proxyMarshall.addProxy("room", _currRoomUID, 1, 
-						new WorkingMemoryPointer( new WorkingMemoryAddress(this.getSubarchitectureID(), _wmid), _comaRoom.ice_id()));
+						new WorkingMemoryPointer(new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
 				m_existingRoomProxies.add(_currRoomUID);
 				
 				// room ID:
@@ -737,7 +737,7 @@ public class PlaceMonitor extends ManagedComponent {
 			boolean _unknown = true;
 			if (_comaRoom.concepts.length!=0) {
 				for (String _currConcept : _comaRoom.concepts) {
-					if (true) continue;
+//					if (true) continue;
 					if (_currConcept.equals("owl:Thing") 
 							|| _currConcept.endsWith("PhysicalRoom") 
 							|| _currConcept.endsWith("Portion_of_Space") 
@@ -778,7 +778,7 @@ public class PlaceMonitor extends ManagedComponent {
 				} else {
 					m_proxyMarshall.addRelation("contains", _relUID, 
 							"room", _currRoomUID, "place", new Long(_currContPlID).toString(), 
-							1, new WorkingMemoryPointer( new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
+							1, new WorkingMemoryPointer(new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
 					Feature _containsFtr = new Feature();
 					_containsFtr.featlabel = "contains";
 					_containsFtr.alternativeValues = new FeatureValue[1];
@@ -1095,7 +1095,7 @@ public class PlaceMonitor extends ManagedComponent {
 //		_newPlaceProxy.distribution = ProbabilityUtils.generateProbabilityDistribution(_newPlaceProxy);
 //
 //		try {
-////			addToWorkingMemory(new WorkingMemoryAddress(m_bindingSA,_newPlaceProxy.entityID), _newPlaceProxy);
+////			addToWorkingMemory(new WorkingMemoryAddress(_newPlaceProxy.entityID,m_bindingSA), _newPlaceProxy);
 //			addToWorkingMemory(new WorkingMemoryAddress(_newPlaceProxy.entityID, m_bindingSA), _newPlaceProxy);
 //		} catch (AlreadyExistsOnWMException e) {
 //			// TODO Auto-generated catch block
@@ -1266,7 +1266,7 @@ public class PlaceMonitor extends ManagedComponent {
 //		_newPlaceProxy.distribution = ProbabilityDistributionUtils.generateProbabilityDistribution(_newPlaceProxy);
 //
 //		try {
-////			addToWorkingMemory(new WorkingMemoryAddress(m_bindingSA,_newPlaceProxy.entityID), _newPlaceProxy);
+////			addToWorkingMemory(new WorkingMemoryAddress(_newPlaceProxy.entityID,m_bindingSA), _newPlaceProxy);
 //			addToWorkingMemory(new WorkingMemoryAddress(_newPlaceProxy.entityID, m_bindingSA), _newPlaceProxy);
 //		} catch (AlreadyExistsOnWMException e) {
 //			// TODO Auto-generated catch block
