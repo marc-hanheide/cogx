@@ -31,17 +31,6 @@
 
 :- func cost(C, cost_function, vscope(mprop(M))) = float <= (context(C, M), modality(M)).
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
-
-:- type context_change(C) == pred(C, C).
-:- inst context_change == (pred(in, out) is det).
-
-:- pred effect(mgprop(M)) `with_type` context_change(C) <= (context(C, M), modality(M)).
-:- mode effect(in) `with_inst` context_change.
-
-:- type geffect(C, M) == pred(mgprop(M), C, C).
-:- inst geffect == (pred(in, in, out) is det).
-
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -73,14 +62,4 @@ cost(C, F, Prop) = Cost :-
 	(if singleton_set(Costs, Cost0)
 	then Cost = Cost0
 	else error("error in cost/3: prop=" ++ string(Prop) ++ ", length=" ++ string.from_int(set.count(Costs)))
-	).
-
-%------------------------------------------------------------------------------%
-
-effect(MGProp, !Ctx) :-
-	(if MGProp = m(_, p("in_focus", [t(_Arg, [])]))
-		%member(att(next), Ctx)
-	then true
-		%add_to_focus(Arg, !DC)
-	else true
 	).
