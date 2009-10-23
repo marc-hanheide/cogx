@@ -25,7 +25,7 @@ understand : event : clarify(X, CR) <-
 	i : cr_entity(CR, Entity),
 	i : cr_modality(CR, Modality),
 	to_assertion_question(Prop, Entity),
-	intention : need_get_value(Modality, Entity, Prop) / 0.5.
+	intention : need_get_value(Modality, Entity, Prop, not_repeated) / 0.5.
 
 to_assertion_question(color, Entity) <-
 	?( k(now, private(r)) : color(Entity, unknownColor)).
