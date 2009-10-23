@@ -344,11 +344,12 @@ public class PlaceMonitor extends ManagedComponent {
 	}
 	
 	private void processAddedObjectProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		// get path from WM
+		log("processAddedObjectProperty() called.");
+		// get object from WM
 		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
 		
-		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
-			
+		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ _objProp.category + " and mapValue " + ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
+		
 		// TODO handle probability distribution 
 //		DiscreteProbabilityDistribution _gatewayProbability = (DiscreteProbabilityDistribution) _gateProp.distribution;
 		
@@ -706,7 +707,7 @@ public class PlaceMonitor extends ManagedComponent {
 	}
 	
 	private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
-		debug("maintainRoomProxy() called");
+		log("maintainRoomProxy() called");
 		
 		if (m_proxyMarshall!=null) {
 			// current room UID:
@@ -717,7 +718,7 @@ public class PlaceMonitor extends ManagedComponent {
 				log("updating an existing room proxy.");
 				
 			} else {
-				log("creating a new room proxy");
+				log("creating a new room proxy.");
 				m_proxyMarshall.addProxy("room", _currRoomUID, 1, 
 						new WorkingMemoryPointer(new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
 				m_existingRoomProxies.add(_currRoomUID);
@@ -732,12 +733,12 @@ public class PlaceMonitor extends ManagedComponent {
 			
 			// areaclasses
 			// first clean existing areaclass facts
-			m_proxyMarshall.deleteFeature("room", _currRoomUID, "areaclass");
+			String _areaclassFeatlabel = "areaclass";
+			m_proxyMarshall.deleteFeature("room", _currRoomUID, _areaclassFeatlabel);
 			// now create individual feature-value pairs for all concepts
 			boolean _unknown = true;
 			if (_comaRoom.concepts.length!=0) {
 				for (String _currConcept : _comaRoom.concepts) {
-//					if (true) continue;
 					if (_currConcept.equals("owl:Thing") 
 							|| _currConcept.endsWith("PhysicalRoom") 
 							|| _currConcept.endsWith("Portion_of_Space") 
@@ -746,24 +747,24 @@ public class PlaceMonitor extends ManagedComponent {
 					}
 					_currConcept = _currConcept.replace(":", "");
 					log("current concept for proxy feature areaclass: " + _currConcept);
-					String _featlabel = "areaclass";
 					FeatureValue[] _alternativeValues = new FeatureValue[1];
 					_alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
-					Feature _classFtr = new Feature(_featlabel, _alternativeValues);
+					Feature _classFtr = new Feature(_areaclassFeatlabel, _alternativeValues);
 					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 					_unknown = false;
 				}
 			} 
 			if (_unknown) {
-				String _featlabel = "areaclass";
+				log("areaclass set to unknown.");
 				FeatureValue[] _alternativeValues = new FeatureValue[1];
 				_alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
-				Feature _classFtr = new Feature(_featlabel, _alternativeValues);
+				Feature _classFtr = new Feature(_areaclassFeatlabel, _alternativeValues);
 				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 			}
-			 m_proxyMarshall.commitFeatures("room", _currRoomUID);
+			
+			
+			m_proxyMarshall.commitFeatures("room", _currRoomUID);
 			log("maintained proxy for " + _currRoomUID);
-
 
 			// containment
 			HashSet<String> prevKnownRels = m_existingRelationProxies.remove(_currRoomUID);
