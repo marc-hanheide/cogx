@@ -2,8 +2,7 @@ package dora;
 
 import java.util.Map;
 
-import comadata.ComaRoom;
-
+import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
@@ -16,7 +15,10 @@ import SpatialData.PlaceStatus;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
 import VisionData.DetectionCommand;
+import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
+
+import comadata.ComaRoom;
 
 /**
  * - found new place N - found new placeholder N - found new room N - seen
@@ -49,11 +51,18 @@ public class DoraVerbalisation extends ManagedComponent {
 		}
 	};
 
-	private static final TextGenerator<ExploreMotive> EXPLORE_MOTIVE_ACTIVATED = new TextGenerator<ExploreMotive>() {
+	private static final TextGenerator<Motive> MOTIVE_ACTIVATED = new TextGenerator<Motive>() {
 		@Override
-		public String toText(ExploreMotive _i) {
-			return "Activated motive to explore hypothesis for Place "
-					+ _i.placeID;
+		public String toText(Motive _i) {
+
+			if (_i instanceof ExploreMotive) {
+				return "Activated motive to explore hypothesis for Place "
+						+ ((ExploreMotive) _i).placeID;
+			} else if (_i instanceof CategorizeRoomMotive) {
+				return "Activated motive to determine category of room "
+						+ ((CategorizeRoomMotive) _i).roomId;
+			}
+			return "";
 		}
 	};
 
@@ -75,24 +84,26 @@ public class DoraVerbalisation extends ManagedComponent {
 	private static final TextGenerator<ObjectPlaceProperty> OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
 		@Override
 		public String toText(ObjectPlaceProperty _i) {
-			return "I something that appears to be "
+			return "I see something that appears to be "
 					+ ((SpatialProperties.StringValue) _i.mapValue).value;
 		}
 	};
 
+	private static final TextGenerator<VisualObject> VISUAL_OBJECT_GENERATOR = new TextGenerator<VisualObject>() {
+		@Override
+		public String toText(VisualObject _i) {
+			if (_i.detectionConfidence > 0.5) {
+				return "That looks like " + _i.label;
+			} else {
+				return "";
+			}
+		}
+	};
 
 	private static Accessor<Motive, MotiveStatus> MOTIVE_STATUS_ACCESSOR = new Accessor<Motive, MotiveStatus>() {
 		@Override
 		public MotiveStatus access(Motive _entry) {
 			return _entry.status;
-		}
-	};
-
-	private static Accessor<ExploreMotive, MotiveStatus> EXPLORE_MOTIVE_STATUS_ACCESSOR = new Accessor<ExploreMotive, MotiveStatus>() {
-		@Override
-		public MotiveStatus access(ExploreMotive _entry) {
-			// TODO Why does this all not work with inheritance
-			return MOTIVE_STATUS_ACCESSOR.access(_entry);
 		}
 	};
 
@@ -159,21 +170,21 @@ public class DoraVerbalisation extends ManagedComponent {
 		// say stuff...
 
 		// when all motives are activated
-		m_verbals.verbaliseOnStateTransition(ExploreMotive.class,
-				EXPLORE_MOTIVE_STATUS_ACCESSOR, MotiveStatus.SURFACED,
-				MotiveStatus.ACTIVE, EXPLORE_MOTIVE_ACTIVATED);
+		m_verbals.verbaliseOnStateTransition(Motive.class,
+				MOTIVE_STATUS_ACCESSOR, MotiveStatus.SURFACED,
+				MotiveStatus.ACTIVE, MOTIVE_ACTIVATED);
 
 		// when places are created
-		m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
-
-		// when places are explored
-		m_verbals.verbaliseOnStateTransition(Place.class,
-				PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
-				PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
-
-		// when places are deleted (i.e. exploration could be carried out)
-		m_verbals.verbaliseOnDeletion(Place.class,
-				PLACE_EXPLORATION_FAILED_GENERATOR);
+//		m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
+		
+		 // when places are explored
+		 m_verbals.verbaliseOnStateTransition(Place.class,
+		 PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
+		 PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
+		//
+		// // when places are deleted (i.e. exploration could be carried out)
+		// m_verbals.verbaliseOnDeletion(Place.class,
+		// PLACE_EXPLORATION_FAILED_GENERATOR);
 
 		// when navigation is told to move the robot
 		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
@@ -190,14 +201,22 @@ public class DoraVerbalisation extends ManagedComponent {
 		m_verbals.verbaliseOnAddition(DetectionCommand.class,
 				DETECTION_COMMAND_GENERATOR);
 
-		// when an object is added to the spatial mode
-		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
-				OBJECT_PROPERTY_GENERATOR);
+		// when an object is added to the spatial model -> this is once per
+		// object class in place
+//		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
+//				OBJECT_PROPERTY_GENERATOR);
 
-		m_verbals.verbaliseOnOverwrite(ComaRoom.class, new RoomCategoryTextGenerator());
+		// when an object is recognised at all -> is this every positive
+		// recognition result
+		m_verbals.verbaliseOnAddition(VisualObject.class,
+				VISUAL_OBJECT_GENERATOR);
 
-		m_verbals.verbaliseCannedTextOnAddition(GatewayPlaceProperty.class, "Ah ha. Looks like there is a door here");
-		
+		m_verbals.verbaliseOnOverwrite(ComaRoom.class,
+				new RoomCategoryTextGenerator());
+
+		m_verbals.verbaliseCannedTextOnAddition(GatewayPlaceProperty.class,
+				"Ah ha. Looks like there is a door here");
+
 	}
 
 	public void runComponent() {
