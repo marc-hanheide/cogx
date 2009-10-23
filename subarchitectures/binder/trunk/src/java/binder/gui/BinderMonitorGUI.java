@@ -108,6 +108,7 @@ public class BinderMonitorGUI extends JFrame
 
 	public void init(){		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setTitle("Binder GUI");		
 		setSize(1000, 700);
 
 		controlPanel = new ControlPanel(bm);
@@ -516,6 +517,7 @@ public class BinderMonitorGUI extends JFrame
 
 		try {
 			mxGraphComponent graphComponent = new mxGraphComponent(graph);
+			// getContentPane().removeAll();
 			getContentPane().add(graphComponent);
 			setVisible(true);
 		}
@@ -599,7 +601,7 @@ public class BinderMonitorGUI extends JFrame
  
 		try {
 		mxGraphComponent graphComponent = new mxGraphComponent(graph);
-
+		//getContentPane().removeAll();
 		getContentPane().add(graphComponent);
 		setVisible(true);
 		}
