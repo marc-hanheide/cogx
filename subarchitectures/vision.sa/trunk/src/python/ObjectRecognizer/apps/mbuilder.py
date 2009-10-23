@@ -265,6 +265,7 @@ class CModelBuilderWnd(QtGui.QMainWindow):
 
     def prepareCapture(self, cameraInfo):
         self.devCapture = capture.CCameraCapture(device=cameraInfo.id)
+        self.devCapture.convertRbgBgr = self.ui.ckSwapRedBlue.isChecked()
         self.devCapture.start()
         self.tmCamera.start(1000.0 / self.devCapture.fps)
 
