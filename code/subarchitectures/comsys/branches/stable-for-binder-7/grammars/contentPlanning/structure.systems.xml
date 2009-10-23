@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+<!-- /**
+
+@system structure.dvp-identification
+
+*/ --> 
+
+   <system id="structure.dvp-identification" region="STRUCTURE" metafunction="ideational">
+      <chooser id="default"/>
+      <conditions>
+          <condition features="@type:dvp"/>
+      </conditions>
+      <actions>
+	  <action choice="default">
+	    <identify-nomvar mode="*LOCUS*" src="DVP" scope="global"/>
+	  </action>
+      </actions>
+   </system>
+
+   <system id="structure.content-presence" region="STRUCTURE" metafunction="ideational">
+	<chooser id="c-structure.content-presence"/>
+      <conditions>
+          <condition features="@type:dvp"/>
+      </conditions>
+      <actions>
+
+	  <action choice="content-canned">
+	  </action>
+
+	  <action choice="content-present">
+		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />
+		<add-feature feature="DVPassigned" value="true" dest="CONTENT" />
+<!--		<move-locus nomvar="CONTENT" /> -->
+	  </action>
+
+	  <action choice="content-absent">
+		<add-relation mode="Content" dest="content" type="marker" /> 
+		<identify-nomvar mode="Content" dest="CONTENT" scope="global" />
+		<add-feature feature="DVPassigned" value="true" dest="CONTENT" />
+<!--		<move-locus nomvar="CONTENT" /> -->
+<!-- 
+IMPORTANT NOTE: when inserting LF-templates for full sentences later, the top nominal has to be called "content", so that the @content:marker() that was inserted here because there was no content specified in the original input LF gets properly replaced by the new content !!!!!!!!!!
+-->
+	  </action>
+      </actions>
+   </system>
+
+
+   <system id="structure.rfx-generation" region="STRUCTURE" metafunction="ideational">
+      <chooser id="default"/>
+      <conditions>
+          <condition features="@type:rfx"/>
+      </conditions>
+      <actions>
+	  <action choice="default">
+	    <generate-rfx/>
+	  </action>
+      </actions>
+   </system>
+
+
+<system id="gre.thing" region="THING" metafunction="ideational">
+   <chooser id="default"/>
+   <conditions>
+      <condition features="@type:gre"/>
+   </conditions>
+   <actions>
+      <action choice="default">
+		<identify-nomvar root="DVP" mode="Gre" dest="GRE" scope="global"/>
+		<generate-rfx nomvar="GRE"/>
+      </action>
+   </actions>
+</system>
+
+<!-- taken out; assuming a nominal always has a proposition 
+     idea: in case no proposition was included in input, we'll fill it with "object", so that something can be realized 
+<system id="object.thing" region="THING" metafunction="ideational">
+	<chooser id="c-objet.thing"/>
+      <conditions>
+          <condition features="@type:entity"/>
+          <condition features="@type:thing"/>
+          <condition features="@type:physical"/>
+      </conditions>
+      <actions>
+	  <action choice="thing-absent">
+		<add-proposition propositions="@object" />
+	  </action>
+	  <action choice="thing-present">
+	  </action>
+   </actions>
+</system>
+-->
+
+   <system id="structure.list" region="STRUCTURE" metafunction="ideational">
+	<chooser id="c-structure.list"/>
+      <conditions>
+          <condition features="@feat:List"/>
+      </conditions>
+      <actions>
+	  <action choice="conjunction">
+		<add-proposition propositions="@and" />
+	  </action>
+
+	  <action choice="disjunction">
+		<add-proposition propositions="@or" />
+	  </action>
+
+	  <action choice="list">
+		<add-proposition propositions="@list" />
+	  </action>
+      
+      <action choice="no-list">
+	  </action>
+      
+    </actions>
+   </system>
+
+
+</systems>

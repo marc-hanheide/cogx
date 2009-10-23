@@ -1,0 +1,391 @@
+Starting the utterance planning debugger standalone:
+korbay:[~/CogX/cogx-svn/dfki] % java comsys.processing.uttplan.UPDebugger
+
+-------
+To do
+-------
+
+Java 1.6 problem:
+entry condition checking for @type:substance and @feat:NumberID 
+systems in delimitation and quantification entered though shouldn't be
+for now added checking in the chooser as well
+check for encoding; we use utf=8 but standard is 16, could there be something with this?
+
+-----
+
+InfoStruct Problems:
+
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>action)
+"Sure thing"
+has Rheme=true but no other InfoStruct features; why?
+
+
+relational-attribute modifiers (type m-location) don't get any InfoStruct feat assigned for now
+
+in compounds don't currently inherit rheme/theme from head, thus expect problem in grammar
+
+
+-----
+
+Insert <proofStatus> into all templates
+
+
+-----
+
+InfoStruct defaults
+
+Theme
+ - ascription target (but maybe not in a question)
+
+
+Background
+ - what in quest
+
+
+agreement: should do "contentious" in questions (but not in echo-questions)
+
+-----
+
+"questions" in indicative and interrogative mood for clarification
+probably best to introduce clarif question as a separate cat? or as relation type?
+check if yes/no question, in which case do random choice between indic and interr --> intonation matters!
+
+-----
+
+Focus:
+
+in the current demos, never more than one attribute (e.g., just type or just color, but not both)
+so, can always put focus on what there is
+
+--> if theme present and not shared (?) then focus it
+    if rheme present then focus it
+
+
+for the future:
+
+if a most-recently-mentioned-comparable-object exists
+  then add <Kontrast>false for every LF-part (nominal) that has the same value as that of the current object being referred to
+
+== verbal context "overrides"
+to see this (experiment!):
+   visual context: yellow pen, orange pen, yellow cup, orange wrapper, blue pen
+   dialogue:
+     h: points to (or adds) yellow pen
+        WHat is this?
+     r: it's a YELLOW PEN  or It's a yellow PEN
+        (less good, but acceptable: It's a YELLOW pen)
+     h: points at orange pen
+        What is this?
+     r: it's an ORANGE pen
+        (definitely not good: it's an orange PEN)
+        --> that is, verbal context wins, other alternatives from visual context are not considered
+ok, one can say, the yellow pen is now the most salient entity, but consider:
+
+visual context: orange pen
+h: adds a yellow pen
+   what is this? 
+r: It's a YELLOW PEN or It's a yellow PEN
+   (I think Its a BLUE pen is acceptable, but worse)
+
+
+-----
+
+Simple properties
+relations instead of simple features: doesn't work now
+
+-----
+
+Exclude it-pronominalization when modifiers are present
+this is working:
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
+this is not:
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
+
+Parse 7: np : 
+  @context1_0:entity(context ^ 
+                     <Delimitation>unique ^ 
+                     <Num>sg ^ 
+                     <Quantification>specific ^ 
+                     <Modifier>(big1_0:q-size ^ big) ^ 
+                     <Modifier>(red1_0:q-color ^ red))
+
+
+Distinguish feedback according to <Modality>
+(vision, discourse)
+
+
+Check whether conjunction/disjunction in ascription works with all types of objects and all speech acts
+
+
+DORA: "going to the kitchen"
+
+"I (do not) know this is red"
+"I (do not) know what this is"
+  @know1_0:cognition(know ^ 
+                     <Mood>ind ^ 
+                     <Tense>pres ^ 
+                     <Actor>(i1_0:person ^ I ^ 
+                             <Num>sg) ^ 
+                     <Patient>(what1_0:entity ^ what ^ 
+                               <Scope-in>(be1_0:ascription ^ be ^ 
+                                          <Tense>pres ^ 
+                                          <Cop-Restr>(context1_0:entity ^ context ^ 
+                                                      <Delimitation>unique ^ 
+                                                      <Num>sg ^ 
+                                                      <Proximity>proximal ^ 
+                                                      <Quantification>specific) ^ 
+                                          <Cop-Scope>what1_0:entity ^ 
+                                          <Subject>context1_0:entity)) ^ 
+                     <Subject>i1_0:person)
+
+
+
+Ascription wh-questions: alternative formulations
+-- what color does the box have
+-- which box has blue color
+-- what object is this (object)
+
+
+Multiple properties in ascription
+The box is red and big. --> list of properties, not list within one property
+
+Acknowledgment
+alternative form:
+"Yes you are right"
+
+
+Multiple utterances within a turn
+e.g., sorry, (but) no
+      yes, I see
+      yes, it is blue
+      no, it is not blue
+      no/sorry, I do not see that
+      yes, it's red
+      yes, a red ball	
+      ok thanks
+      hm, what is that
+Problems:
+  -- multiple <Content>s  --> need to be extracted and collected into a du-list
+  -- Content-nominal reappears  --> messed up graph structure, messed up referencing within LF
+
+
+NPs with demonstrative determiners
+e.g., this/that ball
+
+
+Proximal vs. distal reference currently selected at random
+e.g., this/that	  
+      this/that ball
+
+
+
+References to multiple objects (set of objects)
+
+e.g., the/these/those balls
+      the 3 balls
+      these/those
+      they				   
+
+
+Acknowledgments with modality are completely hacked by templates
+
+
+
+--------------------------------
+see cogx-targets for more to do
+--------------------------------
+
+
+
+
+
+========================
+Utterance planner
+========================
+
+Oct 2009:
+
+Chooser call from a system: would be useful to be able to give a locus as argument; see infoStruct.systems, how rheme assignment is done for color, shape etc. One could call the same chooser on different nominal, would be more lelegant; currently have to have different systems and call different choosers. 
+
+
+
+
+
+
+
+
+============
+COSY notes   (partly out of date)
+============
+
+===============================
+Utterance planning to-do list:
+===============================
+(items with "#" are done; items with "??" may not be relevant anymore)
+
+------------------
+Planner / debugger
+------------------
+
+- ascription + <InfoStatus>familiar in Target: scope-replacement does not happen; why oh why?
+
+- @feat:x without value in system entry condition does not seem to work
+
+- extra "^" in some LF parts, see e.g., 
+:p @d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ box)  ^ <Location>(b3:m-location ^ <Questioned>true))  ) 
+Resulting logical form:       
+(@d1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(e1:ascription ^ be ^ <DVPassigned>true ^ <AscriptionTargetReplaced>true ^ <Tense>pres ^ <Mood>int ^ <AscriptionProperty>location ^ <AscriptionRelsReplaced>true ^ <QWhProperty>true ^  <Cop-Restr>(b2:entity ^ box ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Cop-Scope>(b3:m-location ^ where ^ <Questioned>true) ^  <Subject>(b2:entity ^ box ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Wh-Restr>(w1:m-location ^ )))
+
+
+# inquiry for checking whether a given nominal is the destination (=dependent) of a given relation: needs to look up, not down from the given nominal: f-rel-type, q-deprel-type 
+
+- action for getting the type of a nominal under a certain relation
+
+- ?? copy-feature when applied to copying a nominal under a relation does not create a correct output structure (dangling "^")
+  :p @e1:ascription(<Target>(b2:thing ^ box)  ^ <Property>(b3:q-size ^ big)
+
+# support OR in <choicenode> in chooser 
+
+- type subsumption in system-entry conditions and in queries
+  (now doing it explicitly)
+
+- making sure words used in LF are in the lexicon (or otherwise handling the ensuing situation when no output is generated appropriately, which needs to be done anyway)
+
+# random choices: random pick in a system, or in a chooser or through random inquiry code?
+  through random inquiry code result seems best and most general 
+  (can combine random informed decisions in a chooser)
+  see utterancePlanner.java: UPResult runSystem 
+  see UPGchoiceNode,....
+
+- debugger: feed an edited LF to realizer
+
+# add-feature needs a destination attribute
+
+# LF traversal if system structure.dvp-ident is used
+
+# redux creates a list:
+
+# something is wrong with copy-feature when there are multiple Modifiers
+# something is wrong with processing an LF with an embedded element
+# cleaning up of irrelevant features in the output ("model reduction")
+- cleaning up of dangling relations (currently not needed)
+
+
+------------------------
+Content planning grammar
+------------------------
+
+- "what is this room" doesnt work, because what is of type entity: <Cop-Scope>(w1:entity ^ what), but without  delim and quant, and that's hard to block
+   so, generating  "what room is this " instead
+
+# <system id="question.wh" region="QUESTIONS" metafunction="ideational">
+<!-- need to make sure that this system only ges entered for wh-questions, or that is only inserts specifier for them and not for other ascriptions! -->
+ 
+# quantification and delimitation for pronouns (--> no delim!)
+
+- calling refex algo from the planner
+
+# unique delimitation for expressions produced with refex algo
+  feature <Unique>true|false
+
+# exclude nominals under <Subject> relation from applying delimitation and quantification
+# exclude nominals under <Compound> relation, too (currently done by assigning type "dummy")
+
+- handling persons: seems to work now at least for simple case; don't know how about embedded in some relation
+  Parse 3: np : 
+   @g1:person(GJ)
+
+- pronouns should get <Num>sg
+   @b1:entity(it)
+
+- Delim and Quant of prop-owner1:entity under Cop-Scope in ascription:
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ ball)  ^ <Owner>(b3:person ^ GJ)))
+@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ ball)  ^ <Owner>(b3:entity ^ robot)))
+
+Final reduced LF: (@e1:ascription(be ^ <Tense>pres ^ <Mood>ind ^  <Cop-Restr>(b2:entity ^ ball ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Subject>(b2:entity ^ ball ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential) ^  <Cop-Scope>(prop-owner1:entity ^  ^  <Owner>(b3:entity ^ robot ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>existential))))       
+
+
+- where-ascription questions
+
+- which/what decision un wh-questions
+
+- "How big" would probably be better than "Which size"; but: answer "big"???
+
+- <Owner> in ascription doesn't work: LF not correct yet
+
+-  ascription wh-question: 
+   <Shape>(b3:quality ^ shape ^ <Questioned>true))  )
+   input could be just 
+    <Shape>(b3:quality ^ <Questioned>true))  )
+ 
+# simple quantification & grammatical number
+# real quantification using Quantity (see comments in system for known problems)
+# simple delimitation
+
+# delimitation and quantification: update "a/one ball" w.r.t. grammar
+
+- handling list structures in OpenCCG format: should already work (if LF does not get messed up)
+  decision: input will have FIRST/NEXT list structure 
+   - moving locus over conjuncts: not necessary
+   - inserting list structure for OpenCCG: not necesary
+  test for the presence of first and next in system structure.list: removed the system, don't see need
+  # check how come <Next> doesn't get NP attributes  
+  # fix that list entity gets plural and nothing else
+  remaining problems: reuse of nominals in modifying features (if any, the LF does not generate)
+
+- modifying attributes
+  - make simple and complexer version available in parallel!
+  - in simple form: <Attribute>value
+    # color = only simple string value, nothing fancy; almost done: missing copy feature value;
+    # size (same as color) 
+problem with current solution: nominal always has the same name when system (re)entered 
+- change modifying attributes to the more general: <Property>(p1:q-color ^ red)
+  this will make input specification consistent for generating color as attribute of something and generating it stand-alone (as an answer to "What color does x have?")
+   - color, size 
+   - location (PP!)
+
+- <Quantity>2 does not generate; why?; don't see a prob in LF
+
+- speech act types:
+# simple mood and tense
+# greetings: opening
+- thanking
+# ascription assertions (x is red. x is big.)
+# ascription questions (What color is/has x? How big is x? 
+
+- assigning InfoStatus to familiar entities from discourse context
+
+- making fool-proof: fill system structure.emptyinput
+  it should handle the situation when no input is given from which something sensible would be planned;
+for
+- a nominal with or without type and no other features, produce "something"
+- ..??
+
+  but note: "something" could be produced also in embedded positions when head prop is missing; but, it should not overwrite  cases where the planner planned something
+
+
+---------------------------
+Problems to look at with GJ
+---------------------------
+
+# LF gets messed up in UPDebugger.java: startInterface class
+
+# utt planner not descending deeper into LF:	
+
+# renaming a relation: rewriting a relation (or feature) name
+
+-- adjoin-lf in TRANSITIVITY: perception.insert not working, though according to manual
+[UPL] In system perception.insert the chooser c-perception.insert returns as answer "insert-perception-ind"
+[UPL] Running action steps
+[UPL] Handling stepid adjoin-lf
+[UPL] Running code for action step adjoin-lf
+[UPL] Warning: The auxiliary LF has a root of type "perception" different from dependent type "entity"
+[UPL] Non-empty auxiliary node will be replaced: nominal "t1" has relations!
+[UPL] Adding nominal org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal@c06a6d
+[UPL] Adding nominal org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal@8b3fee
+[UPL] Adding nominal org.cognitivesystems.repr.lf.autogen.LFEssentials.LFNominal@125f92
+[UPL] Locus: @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Modality>vision ^ <contentPresent>true ^<Content>b1)
+	(DVP=d1), (CONTENT=b1)
+
+
+

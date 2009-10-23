@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /**
+
+@system blabla
+
+*/ --> 
+
+<system id="mood" region="MOOD" metafunction="ideational">
+   <chooser id="c-mood"/> 
+   <conditions>
+      <!-- <condition features="@type:event"/> -->
+      <condition features="@type:relational @feat:DVPassigned:true"/>   
+      <condition features="@type:action @feat:DVPassigned:true"/>   
+      <condition features="@type:state @feat:DVPassigned:true"/>   
+      <condition features="@type:internal @feat:DVPassigned:true"/>   
+      <!-- <condition features="@type:modal"/>   MODAL verbs never receive Mood, the mood of the utterance is determined by the governing verb -->
+      <condition features="@type:communication @feat:DVPassigned:true"/>   
+      <condition features="@type:symbolic @feat:DVPassigned:true"/>   
+      <condition features="@type:action-motion @feat:DVPassigned:true"/>   
+      <condition features="@type:action-non-motion @feat:DVPassigned:true"/>   
+      <condition features="@type:presentational @feat:DVPassigned:true"/>   
+      <condition features="@type:ascription @feat:DVPassigned:true"/>   
+      <condition features="@type:perception @feat:DVPassigned:true"/>   
+      <condition features="@type:cognition @feat:DVPassigned:true"/>   
+   </conditions>
+   <actions>
+      <action choice="indicative">
+	   <add-feature feature="Mood" value="ind" />
+      </action>      
+
+      <action choice="interrogative">
+	   <add-feature feature="Mood" value="int" />
+      </action>
+
+      <action choice="imperative">
+	   <add-feature feature="Mood" value="imp" />
+      </action>
+
+      <action choice="no-mood">  
+	    <!-- not inserting anything as default, because there are utterances which should not have mood -->
+      </action>
+
+
+   </actions>
+</system>
+
+
+</systems>

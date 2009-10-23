@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-attribute.color" region="ATTRIBUTES" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+	     <q-ex-feat feat="Color"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="color"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-color"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.size" region="ATTRIBUTES" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+	     <q-ex-feat feat="Size"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="size"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-size"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.shape" region="ATTRIBUTES" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+	     <q-ex-feat feat="Shape"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="shape"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-shape"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.name" region="ATTRIBUTES" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+	     <q-ex-feat feat="Name"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="name"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-name"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.topin" region="ATTRIBUTES" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="TopIn"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="topin"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-topin"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.topon" region="ATTRIBUTES" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="TopOn"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="topon"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-topon"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.topat" region="ATTRIBUTES" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="TopAt"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="topat"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-topat"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+<chooser id="c-attribute.nearto" region="ATTRIBUTES" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="NearTo"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="nearto"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-nearto"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-attribute.nextto" region="ATTRIBUTES" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="NextTo"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="nextto"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="no-nextto"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+<chooser id="c-attribute.NumberID" region="ATTRIBUTES" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="NumberID" />
+		 </inquiry>			
+		 <choicenode answer = "true">  
+			<result val="numberID-present"/>			
+		 </choicenode>
+		 <choicenode answer = "false">
+			<result val="numberID-absent"/>
+		 </choicenode>
+	 </choicenode>
+   </dectree>
+</chooser>
+
+
+</choosers>

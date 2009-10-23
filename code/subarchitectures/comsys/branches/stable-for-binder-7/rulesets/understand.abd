@@ -1,0 +1,355 @@
+% h: hi robot
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, 'd-units'),
+	i : prop(Nom, list),
+	i : rel_First(Nom, FirstNom),
+		i : sort(FirstNom, greeting),
+		i : prop(FirstNom, GreetProp),
+	i : rel_Next(Nom, NextNom),
+		i : sort(NextNom, animate),
+		i : prop(NextNom, Robot),
+	intention : greeting(h, r) / 0.1.
+
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, greeting),
+	i : prop(Nom, GreetProp),
+	intention : greeting(h, r) / 0.5.
+
+%event : clarify(h, CR) <-
+%	i : cr_modality(CR, vision),
+%	i : cr_entity(CR, Entity),
+%	event : new_object_visible(Entity) / 10.0.
+
+understand : event : clarify(X, CR) <-
+	i : cr_need(CR, Prop),
+	i : cr_entity(CR, Entity),
+	i : cr_modality(CR, Modality),
+	to_assertion_question(Prop, Entity),
+	intention : need_get_value(Modality, Entity, Prop, not_repeated) / 0.5.
+
+to_assertion_question(color, Entity) <-
+	?( k(now, private(r)) : color(Entity, unknownColor)).
+
+understand : event : clarify(X, CR) <-
+	i : cr_need(CR, Prop, Hypothesis),
+	i : cr_modality(CR, Modality),
+	i : cr_entity(CR, Entity),
+	to_asserted_predicate(Prop, Entity, Hypothesis),
+	intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) / 0.5.
+
+to_asserted_predicate(color, Entity, Value) <-
+	?( k(now, private(r)) : color(Entity, Value) ).
+
+% h: do you know what this is
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),  % type of cognition
+	i : feat_Mood(Nom, int),  % question
+	i : rel_Actor(Nom, ActorNom),
+		you(ActorNom),
+	i : rel_Patient(Nom, WhatNom),
+		what(WhatNom),
+
+	i : sort(AscrNom, ascription),
+	i : 'rel_Cop-Restr'(AscrNom, ThisNom),
+		this(ThisNom),
+		att : refers_to(ThisNom, Ref) / ref_resolution,
+	i : 'rel_Cop-Scope'(AscrNom, WhatNom),  % XXX "questioned" flag?
+	intention : ask_known(h, Ref, objecttype) / 0.5.
+
+me(Nom) <-
+	i : sort(Nom, person),
+	i : prop(Nom, 'I').
+
+you(Nom) <-
+	i : sort(Nom, person),
+	i : prop(Nom, you).
+
+what(Nom) <-
+	i : sort(Nom, entity),
+	i : prop(Nom, what).
+
+this(Nom) <-
+	i : sort(Nom, entity),
+	i : feat_Delimitation(Nom, unique),
+	i : feat_Num(Nom, sg),
+	i : feat_Proximity(Nom, proximal),
+	i : feat_Quantification(Nom, specific).
+
+% h: this is a X
+% --> objecttype
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, ind),
+	i : 'feat_Tense'(Nom, pres),
+	i : 'rel_Subject'(Nom, ThisNom),
+	i : 'rel_Cop-Restr'(Nom, ThisNom),
+		this(ThisNom),
+	att : refers_to(ThisNom, Red) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	assert_prop(Ref, ScopeNom).
+
+% h: X is Y
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, ind),
+	i : 'feat_Tense'(Nom, pres),
+	polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	assert_prop(RestrRef, Polarity, ScopeNom).
+
+%ind_ascription(Nom) <-
+%	i : sort(Nom, ascription),
+%	i : 'feat_Mood'(Nom, ind),
+%	i : 'feat_Tense'(Nom, pres),
+%	polarity(Nom, Polarity),
+%	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),
+%	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+%	assert_prop(RestrRef, Polarity, ScopeNom).
+
+%h: is X Y
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	%polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	query_prop(ScopeNom, Prop, PropValue),
+	intention : ask_yn(h, RestrRef, Prop, PropValue) / 0.2.
+
+query_prop(Nom, color, PropValue) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, PropValue).
+
+query_prop(Nom, shape, PropValue) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, PropValue).
+
+query_prop(Nom, objecttype, PropValue) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, PropValue),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+%h: what Prop is Ref
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	%polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, what),
+		i : rel_Scope(WhNom, QueryNom),
+			i : prop(QueryNom, XProp),
+	to_property(XProp, Prop),
+	intention : ask_property(h, RestrRef, Prop) / 0.2.
+
+to_property(object, objecttype).
+to_property(P, P) <-
+	P \= object.
+
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	%polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, what),
+	intention : ask_property(h, RestrRef, objecttype) / 5.2.
+
+% could you tell me
+understand : event : uttered(h, Nom) <-
+	i:sort(Nom, communication),
+%	i:prop(Nom, tell),
+%	i:feat_Mood(Nom, int),
+%	i:rel_Recipient(Nom, RecipNom),
+%		me(RecipNom),
+%	i:rel_Actor(Nom, ActNom),
+%	i:rel_Subject(Nom, ActNom),
+%		you(ActNom),
+	i:rel_Patient(Nom, WhNom),
+%	i:rel_Modifier(Nom, ModalNom),
+%		i:sort(ModalNom, modal)
+%		i:prop(ModalNom, could),
+
+%	i:sort(BeNom, ascription),
+%	i:prop(BeNom, be),
+%	i:feat_Tense(BeNom, pres),
+	i:'rel_Cop-Restr'(BeNom, RefNom),
+	i:rel_Subject(BeNom, RefNom),
+%		this(RefNom),
+
+%	i:'rel_Cop-Scope'(BeNom, WhNom),
+		i:'rel_Scope-in'(WhNom, BeNom),
+%		what(WhNom),
+
+	att : refers_to(RefNom, UnionRef) / ref_resolution,
+	intention : ask_known(h, UnionRef, objecttype) / 0.5.
+
+
+% h: is X Y
+%event : uttered(h, Nom) <-
+%	i : sort(Nom, ascription),
+%	i : 'feat_Mood'(Nom, int),
+%	i : 'feat_Tense'(Nom, pres),
+%	polarity(Nom, Polarity),
+%	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),
+%	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+%	assert_prop(RestrRef, Polarity, ScopeNom),
+%	intention : question_about(RestrRef) / 1.0.
+
+polarity(Nom, Polarity) <-
+	i : feat_Polarity(Nom, Polarity).
+
+polarity(Nom, pos) <-
+	assume_positive_polarity(Nom) / 2.0.
+
+%-------------------------------------------------------------------------
+
+% "good" etc
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, Prop),
+	intention : positive_feedback(Nom) / 2.0.
+
+%understand : event : uttered(h, Nom) <-
+%	i : sort(Nom, marker),
+%	i : prop(Nom, yes),
+%	intention : answer_yn(h, positive) / 1.0.
+
+marker_yes(Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, yes).
+
+marker_no(Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, 'No').
+
+understand : event : uttered(Ag, Nom) <-
+	marker_yes(Nom),
+	intention : grounding(Ag, discourse, assertionVerified) / 1.0.
+
+understand : event : uttered(Ag, Nom) <-
+	marker_no(Nom),
+	intention : grounding(Ag, discourse, assertionFalsified) / 1.0.
+
+d_units_list(Nom, FirstNom, NextNom) <-
+	i : sort(Nom, 'd-units'),
+	i : prop(Nom, list),
+	i : rel_First(Nom, FirstNom),
+	i : rel_Next(Nom, NextNom).
+
+understand : event : uttered(Ag, Nom) <-
+	d_units_list(Nom, NoNom, NextNom),
+	no_marker(NoNom),
+	d_units_list(NextNom, NomA, NomB),
+	i : feat_Mood(NomA, ind),
+	i : rel_Subject(NomA, SubjNom),
+	att : refers_to(SubjNom, Union) / reference_resolution,
+	polarity(Nom, Polarity),
+	assert_prop_noint(SubjNom, Union, Polarity),
+	intention : grounding(Ag, discourse, assertionFalsified) / 1.0.
+
+assert_prop_noint(Nom, Union, Polarity) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : color(Union, PolarProp) ).
+
+assert_prop_noint(Nom, Union, Polarity) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : shape(Union, PolarProp) ).
+
+assert_prop_noint(Nom, objecttype, PropValue) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, PropValue),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+assert_prop_noint(Nom, Union, Polarity) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ).
+
+%understand : event : uttered(h, Nom) <-
+%	i : sort(Nom, marker),
+%	i : prop(Nom, 'No'),
+%	intention : answer_yn(h, negative) / 1.0.
+
+%event : uttered(h, Nom) <-
+%	intention : not_understood(r, Nom) / 50.0.
+
+%-------------------------------------------------------------------------
+
+%event : uttered(h, Nom) <-
+%	i : sort(Nom, ascription),
+%	i : prop(Nom, be),
+%	i : 'feat_Mood'(Nom, ind),
+%	i : 'feat_Tense'(Nom, pres),
+%	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),
+%	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+%	assert_prop(RestrRef, ScopeNom).
+
+assert_prop(RestrRef, Polarity, Nom) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : color(RestrRef, PolarProp) ),
+	intention : assert_prop(h, RestrRef, color) / 0.5.
+
+assert_prop(RestrRef, Polarity, Nom) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, Prop),
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : shape(RestrRef, PolarProp) ),
+	intention : assert_prop(h, RestrRef, shape) / 0.5.
+
+assert_prop(Ref, Polarity, Nom) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, Prop),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
+	polarprop(Prop, Polarity, PolarProp),
+	?( k(now, attrib(r, h)) : objecttype(Ref, PolarProp) ),
+	intention : assert_prop(h, Ref, objecttype) / 0.5.
+
+maybe_assert_modifier(Ref, Polarity, Nom) <-
+	no_modifier(Nom) / 8.0.
+
+maybe_assert_modifier(Ref, Polarity, Nom) <-
+	i : rel_Modifier(Nom, ModifierNom),
+	assert_prop(Ref, Polarity, ModifierNom).
+
+polarprop(Prop, pos, Prop).
+polarprop(Prop, neg, not(Prop)).

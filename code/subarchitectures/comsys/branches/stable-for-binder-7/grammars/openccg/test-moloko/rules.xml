@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../rules.xsd" name="moloko">
+  <application dir="forward"/>
+  <application dir="backward"/>
+  <composition harmonic="true" dir="forward"/>
+  <composition harmonic="false" dir="forward"/>
+  <composition harmonic="true" dir="backward"/>
+  <composition harmonic="false" dir="backward"/>
+  <typeraising useDollar="true" dir="forward"/>
+  <typeraising useDollar="false" dir="forward"/>
+  <substitution harmonic="true" dir="forward"/>
+  <substitution harmonic="false" dir="forward"/>
+  <substitution harmonic="true" dir="backward"/>
+  <substitution harmonic="false" dir="backward"/>
+  <typechanging name="prep-s">
+    <arg>
+      <complexcat>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+      </complexcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="s">
+          <fs inheritsFrom="10"/>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash mode="*" dir="\"/>
+        <atomcat type="s">
+          <fs id="10">
+            <feat attr="index">
+              <lf>
+                <nomvar name="E0"/>
+              </lf>
+            </feat>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="E0">
+            <diamond mode="Property">
+              <nomvar name="M"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+  <typechanging name="prep-n">
+    <arg>
+      <complexcat>
+        <atomcat type="pp">
+          <fs id="25">
+            <feat attr="index">
+              <lf>
+                <nomvar name="M"/>
+              </lf>
+            </feat>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+      </complexcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="n">
+          <fs inheritsFrom="30">
+            <feat val="-" attr="coord"/>
+          </fs>
+        </atomcat>
+        <slash/>
+        <dollar name="1"/>
+        <slash mode="*" dir="\"/>
+        <atomcat type="n">
+          <fs id="30">
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS:pers-vals"/>
+            </feat>
+            <feat val="basic" attr="nform"/>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="T">
+            <diamond mode="Property">
+              <nomvar name="M"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+  <typechanging name="adj">
+    <arg>
+      <atomcat type="adj">
+        <fs id="25">
+          <feat attr="index">
+            <lf>
+              <nomvar name="M"/>
+            </lf>
+          </feat>
+          <feat val="+" attr="modifiable"/>
+        </fs>
+      </atomcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="n">
+          <fs inheritsFrom="30">
+            <feat val="-" attr="coord"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="n">
+          <fs id="30">
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS:pers-vals"/>
+            </feat>
+            <feat val="basic" attr="nform"/>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="T">
+            <diamond mode="Property">
+              <nomvar name="M"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+  <typechanging name="det">
+    <arg>
+      <atomcat type="det">
+        <fs id="25">
+          <feat attr="index">
+            <lf>
+              <nomvar name="M"/>
+            </lf>
+          </feat>
+        </fs>
+      </atomcat>
+    </arg>
+    <result>
+      <complexcat>
+        <atomcat type="np">
+          <fs id="30">
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS:pers-vals"/>
+            </feat>
+            <feat attr="case">
+              <featvar name="CASE:case-vals"/>
+            </feat>
+            <feat val="basic" attr="nform"/>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <slash mode="&gt;" dir="/"/>
+        <atomcat type="n">
+          <fs id="30">
+            <feat attr="index">
+              <lf>
+                <nomvar name="T"/>
+              </lf>
+            </feat>
+            <feat attr="num">
+              <featvar name="NUM:num-vals"/>
+            </feat>
+            <feat attr="pers">
+              <featvar name="PERS:pers-vals"/>
+            </feat>
+            <feat val="basic" attr="nform"/>
+            <feat val="+" attr="modifiable"/>
+          </fs>
+        </atomcat>
+        <lf>
+          <satop nomvar="T">
+            <diamond mode="Det">
+              <nomvar name="M"/>
+            </diamond>
+          </satop>
+        </lf>
+      </complexcat>
+    </result>
+  </typechanging>
+</rules>

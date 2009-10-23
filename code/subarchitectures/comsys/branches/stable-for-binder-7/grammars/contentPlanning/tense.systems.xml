@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+<!-- /**
+
+@system tense
+
+Only assign tense if there already is mood
+
+*/ --> 
+
+<system id="tense" region="TENSE" metafunction="ideational">
+   <chooser id="c-tense"/> 
+   <conditions>
+      <!-- <condition features="@type:event"/>  -->
+      <condition features="@type:relational  @feat:Mood"/>   
+      <condition features="@type:action  @feat:Mood"/>   
+      <condition features="@type:state  @feat:Mood"/>   
+      <condition features="@type:internal  @feat:Mood"/>   
+      <!-- <condition features="@type:modal"/>   MODAL verbs never receive tense, the tense of the utterance is determined by the governing verb --> 
+      <condition features="@type:communication  @feat:Mood"/>   
+      <condition features="@type:symbolic  @feat:Mood"/>   
+      <condition features="@type:action-motion  @feat:Mood"/>   
+      <condition features="@type:action-non-motion  @feat:Mood"/>   
+      <condition features="@type:presentational  @feat:Mood"/>   
+      <condition features="@type:ascription  @feat:Mood"/>   
+      <condition features="@type:perception @feat:Mood"/>   
+      <condition features="@type:cognition  @feat:Mood"/>   	   
+   </conditions>
+   <actions>
+      <action choice="do-tense">
+	   <add-feature feature="Tense" value="pres" />
+      </action>     
+      <action choice="no-tense">
+      </action>   	   
+   </actions>
+</system>
+
+
+
+</systems>
