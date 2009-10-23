@@ -35,7 +35,7 @@ if ~isempty(mC(1).name)
       if numd>2
          set(ha,'ztick',[]);
       end
-      set(ha,'Box','Off');
+      %set(ha,'Box','Off');
       
       %       set(ha,'ytick',[]);
       %       set(ha,'xtick',[]);
