@@ -95,6 +95,7 @@ class CConsistencyCalculator(object):
         for r in rs: m = max(m, max(aList[r[0]:r[1]]))
         return m
 
+    # Find scale and rotation consistency of features
     def getConsistency(self, dists, fpExample, fpView):
         nor = self.nOrientations; nscl = self.nScales
         R = CConsistency(dists, fpExample, fpView, nor, nscl)
@@ -217,25 +218,37 @@ class CObjectMatcher:
         for vpidx, vx in enumerate(model.viewPoints):
             allgrps = vx.featurePacks[0]
 
-            dists = comp.matchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
+            res = comp.homographyMatchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
+            (dists, hmgrMatch, homography) = res
             if len(dists) < 1: continue
+            if hmgrMatch == None: numHmgrMatch = 0
+            else: numHmgrMatch = len(hmgrMatch)
 
-            dists.sort(key=lambda x: x[1][0])
+            LOG.debug("Descriptors: (Ex=%d, M=%d), Matched: sifts=%d, with hmgr=%d" % (
+                len(example.descriptors), len(allgrps.descriptors), len(dists), numHmgrMatch
+            ))
+
+            # print "BEFORE ", dists[:10]
+            # dists.sort(key=lambda x: x[1][0])
+            # print "AFTER ", dists[:10]
+
             maxMatches = len(vx.featurePacks[0])
             # H: shorten if the example has more features than the view; 
             #    duplicate matches may still remain among best scores
             dists = dists[:maxMatches]
             score = self.calcDistScore(dists)
             consist = consistCalc.getConsistency(dists, example, allgrps)
-            #cf = consist.getConsistentFeatures(maxRotDeg=20)
-            #score2 = self.calcDistScore(cf)
-            #print vx.vpLambda,
-            #print "-- Score: %.1f Consistent: %.2f, Cons.Score: %.1f, ScoreFac: %.2f" % (
-            #    score, 1.0 * len(cf) / len(example.descriptors),
-            #    score2, score2/score)
+            hmgrScore = self.calcDistScore(hmgrMatch)
+
+            cf = consist.getConsistentFeatures(maxRotDeg=20)
+            score2 = self.calcDistScore(cf)
+            LOG.debug("-- Score: %.1f Consistent: %.2f, Cons.Score: %.1f, ScoreFac: %.2f; HmgrScore: %.2f" % (
+               score, 1.0 * len(cf) / len(dists),
+               score2, score2/score, hmgrScore)
+            )
             #consist.dump()
 
-            bvsort.add([vx, consist], score)
+            bvsort.add([vx, consist], score * 0.1 + hmgrScore)
 
         self._setBestResults(bvsort)
         # TODO: approximate pose estimation - rotations are missing 
@@ -318,45 +331,51 @@ class CObjectMatcher:
 
 # An attempt to upgrade the recognizer to a detector
 # TODO: Use geometric matching to score each view
-class CObjectDetector(CObjectMatcher):
-    def __init__(self):
-        self.bestViews = []
-        self.consists = []
-        self.scores = []
-        self.totalScore = 0.0
-        self.descriptorMatcher = None
+#class CObjectDetector(CObjectMatcher):
+#    def __init__(self):
+#        self.bestViews = []
+#        self.consists = []
+#        self.scores = []
+#        self.totalScore = 0.0
+#        self.descriptorMatcher = None
 
-    # model - CObjectModel
-    # example - Featurepack
-    def match(self, model, example):
-        if model == None or example == None: return 0
-        comp = self.descriptorMatcher
-        self._clear()
-        bvsort = comparator.CPriq(maxcount = len(model.viewPoints)/2, best=max)
-        consistCalc = CConsistencyCalculator()
-        for vpidx, vx in enumerate(model.viewPoints):
-            allgrps = vx.featurePacks[0]
+#    # model - CObjectModel
+#    # example - Featurepack
+#    def match(self, model, example):
+#        if model == None or example == None: return 0
+#        comp = self.descriptorMatcher
+#        self._clear()
+#        bvsort = comparator.CPriq(maxcount = len(model.viewPoints)/2, best=max)
+#        consistCalc = CConsistencyCalculator()
+#        for vpidx, vx in enumerate(model.viewPoints):
+#            allgrps = vx.featurePacks[0]
 
-            (dists, homography) = comp.homographyMatchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
-            if len(dists) < 1: continue
-            LOG.debug("# Matched sifts %d/%d" % (len(dists), len(allgrps.descriptors)))
+#            res = comp.homographyMatchLists(example.descriptors, allgrps.descriptors, maxRatio=0.8)
+#            (dists, hmgrMatch, homography) = res
 
-            dists.sort(key=lambda x: x[1][0])
-            maxMatches = len(vx.featurePacks[0])
-            # H: shorten if the example has more features than the view; 
-            #    duplicate matches may still remain among best scores
-            scfactor = 1.0
-            if len(dists) < 4: scfactor = len(dists) / 4.0
-            dists = dists[:maxMatches]
-            score = self.calcDistScore(dists) * scfactor
-            consist = consistCalc.getConsistency(dists, example, allgrps)
+#            if len(dists) < 1: continue
+#            if hmgrMatch == None: numHmgrMatch = 0
+#            else: numHmgrMatch = len(hmgrMatch)
+#            LOG.debug("Descriptors: (%d, %d), Matched sifts %d, Matched with hmgr: %d" % (
+#                len(example.descriptors), len(allgrps.descriptors), len(dists), numHmgrMatch
+#            ))
 
-            bvsort.add([vx, consist], score)
+#            dists.sort(key=lambda x: x[1][0])
+#            maxMatches = len(vx.featurePacks[0])
+#            # H: shorten if the example has more features than the view; 
+#            #    duplicate matches may still remain among best scores
+#            scfactor = 1.0
+#            if numHmgrMatch < 4: scfactor = numHmgrMatch / 4.0
+#            dists = dists[:maxMatches]
+#            score = self.calcDistScore(dists) * scfactor
+#            consist = consistCalc.getConsistency(dists, example, allgrps)
 
-        self._setBestResults(bvsort)
-        # TODO: approximate pose estimation - rotations are missing 
-        #for el in bvsort.toplist:
-        #    print "Score", el[0], el[1][0].id
+#            bvsort.add([vx, consist], score)
 
-        return len(self.bestViews)
+#        self._setBestResults(bvsort)
+#        # TODO: approximate pose estimation - rotations are missing 
+#        #for el in bvsort.toplist:
+#        #    print "Score", el[0], el[1][0].id
+
+#        return len(self.bestViews)
 
