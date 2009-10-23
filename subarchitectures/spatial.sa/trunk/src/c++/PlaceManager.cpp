@@ -487,6 +487,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 	  SpatialProperties::ObjectPlacePropertyPtr objProp =
 	    new SpatialProperties::ObjectPlaceProperty();
 	  objProp->placeId = placeID;
+	  objProp->distribution = discDistr;
 	  objProp->mapValue = objCat;
 	  objProp->mapValueReliable = 1;
 
@@ -1348,10 +1349,11 @@ PlaceManager::processPlaceArrival(bool failed)
 
       //Once any new Placeholders have been added, it's safe to stop the robot
       //and signal the client component that we're done moving
-      if (arrivalCase == 1 || arrivalCase == 4) {
+      if (arrivalCase == 1) {
 	// In Case 2, it's still quite likely that there's a new Place
 	// at the location we're heading for.
 	// In Case 3, the robot will already have stopped moving
+	// In Case 4, we may be moving for some other reason and shouldn't stop
 	// In Case 5, we don't need to stop
 	cancelMovement();
       }
