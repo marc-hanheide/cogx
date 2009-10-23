@@ -9,10 +9,11 @@
 extern void VL_recognise_attributes(
       const VisionData::ProtoObject &Object,
       std::vector<int> &labels,
-      std::vector<double> &probabilitites);
+      std::vector<double> &distribution);
 
-extern void VL_update(
-      const VisionData::VisualLearnerLearningTask &task,
-      VisionData::ProtoObject &Object);
+extern void VL_update_model(
+      VisionData::ProtoObject &Object,
+      std::vector<int> &labels,
+      std::vector<double> &distribution);
 
 extern void VL_LoadAvModels(const char* filename);

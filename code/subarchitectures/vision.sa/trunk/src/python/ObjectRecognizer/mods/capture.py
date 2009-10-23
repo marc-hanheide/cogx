@@ -10,9 +10,16 @@ def copyFrame(frame, copyData=True):
     if copyData: cv.cvCopy(frame, copy)
     return copy
 
+def swapRB(frame):
+    copy = cv.cvCreateImage(cv.cvSize(frame.width, frame.height), frame.depth, frame.nChannels)
+    # cv.cvConvertImage(frame, copy, cv.CV_CVTIMG_SWAP_RB)
+    cv.cvCvtColor(frame, copy, cv.CV_RGB2BGR)
+    return copy
+
 class CCapture:
     def __init__(self):
         self.capture = None
+        self.convertRbgBgr = False
 
     def __del__(self):
         self.stop()
@@ -21,6 +28,7 @@ class CCapture:
         if self.capture == None: return None
         frame = hg.cvQueryFrame(self.capture)
         if frame == None: return None
+        if self.convertRbgBgr: return swapRB(frame)
         if copy: return copyFrame(frame)
         return frame
 
