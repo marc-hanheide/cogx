@@ -123,7 +123,7 @@ understand : event : uttered(h, Nom) <-
 	att : refers_to(RestrNom, RestrRef) / ref_resolution,
 	i : 'rel_Cop-Scope'(Nom, ScopeNom),
 	query_prop(ScopeNom, Prop, PropValue),
-	intention : ask_yn(h, RestrRef, Prop, yes(PropValue)) / 0.2.
+	intention : ask_yn(h, RestrRef, Prop, PropValue) / 0.2.
 
 query_prop(Nom, color, PropValue) <-
 	i : sort(Nom, 'q-color'),
