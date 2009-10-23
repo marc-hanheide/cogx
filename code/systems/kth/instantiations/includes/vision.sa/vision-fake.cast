@@ -1,0 +1,4 @@
+SUBARCHITECTURE vision.sa
+JAVA WM                       cast.architecture.SubarchitectureWorkingMemory
+JAVA TM                       cast.architecture.AlwaysPositiveTaskManager
+JAVA MG not-much-of-a-looker  vision.components.ObjectDetectorFAKE --confidence-0.7 calculator --default-confidence 0 
