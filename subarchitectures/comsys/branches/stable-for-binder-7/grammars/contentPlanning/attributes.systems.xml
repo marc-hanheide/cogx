@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /**
+
+@system blabla
+
+*/ --> 
+
+<system id="attribute.color" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.color"/>  <!-- check if color feature present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="color">
+	   <add-relation mode="Modifier" 
+	                 dest="color" type="q-color"/>
+		<identify-nomvar mode="*LOCUS*" dest="ENTITY4COLOR" scope="global" />
+        <copy-feature mode="relation"  srcfeat="Color" destfeat="Modifier" destnom="color" />
+      </action>      
+      <action choice="no-color">
+      </action>
+   </actions>
+</system>
+
+
+<system id="attribute.size" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.size"/>  <!-- check if size feature present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="size">
+	   <add-relation mode="Modifier" 
+	                 dest="size" type="q-size"/>
+		<identify-nomvar mode="*LOCUS*" dest="ENTITY4SIZE" scope="global" />
+       <copy-feature mode="relation"  srcfeat="Size" destfeat="Modifier" destnom="size" />					 
+      </action>      
+      <action choice="no-size">
+      </action>
+   </actions>
+</system>
+
+<system id="attribute.shape" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.shape"/>  <!-- check if shape feature present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="shape">
+	   <add-relation mode="Modifier" 
+	                 dest="shape" type="q-shape"/>
+		<identify-nomvar mode="*LOCUS*" dest="ENTITY4SHAPE" scope="global" />
+       <copy-feature mode="relation"  srcfeat="Shape" destfeat="Modifier" destnom="shape" />					 
+      </action>      
+      <action choice="no-shape">
+      </action>
+   </actions>
+</system>
+
+<system id="attribute.name" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.name"/>  <!-- check if name feature present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="name">
+	   <add-relation mode="Compound" 
+	                 dest="name" type="entity"/> <!-- this type will block inserting delim and quant -->	
+		<identify-nomvar mode="*LOCUS*" dest="ENTITY4NAME" scope="global" />
+       <copy-feature mode="relation"  srcfeat="Name" destfeat="Compound" destnom="name" />		
+      </action>      
+      <action choice="no-name">
+      </action>
+   </actions>
+</system>
+
+
+<!-- /**
+@system attribute.name takes the value of the name feature and turns it into a proposition that must hold on a nominal.
+This is to get the lexicalization of a person's name.
+*/ --> 
+
+<system id="attribute.name.person" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.name"/>
+   <conditions>
+      <condition features="@type:person"/>  
+   </conditions>
+   <actions>
+      <action choice="name"> 
+       	 <copy-feature srcfeat="Name" mode="proposition" /> 
+      </action>
+      <action choice="no-name">
+      </action>
+   </actions>
+</system>
+
+
+
+<system id="attribute.topin" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.topin"/>  <!-- check if topin relation present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="topin">
+	    <identify-nomvar mode="*LOCUS*" src="x1" scope="global" />
+	    <replace-relation root="x1" mode="TopIn" lf="@x1:entity(bla ^ &lt;Modifier&gt;(mod-loc1:m-location ^ in ^ &lt;Anchor&gt;(loc1:entity))"  foot="loc1" />
+	  </action>      
+      <action choice="no-topin">
+      </action>
+   </actions>
+</system>
+
+<system id="attribute.topon" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.topon"/>  <!-- check if topon relation present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="topon">
+	    <identify-nomvar mode="*LOCUS*" src="x1" scope="global" />
+	    <replace-relation root="x1" mode="TopOn" lf="@x1:entity(bla ^ &lt;Modifier&gt;(mod-loc2:m-location ^ on ^ &lt;Anchor&gt;(loc2:entity))"  foot="loc2" />
+	  </action>      
+      <action choice="no-topon">
+      </action>
+   </actions>
+</system>
+
+<system id="attribute.topat" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.topat"/>  <!-- check if topat relation present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="topat">
+	    <identify-nomvar mode="*LOCUS*" src="x1" scope="global" />
+	    <replace-relation root="x1" mode="TopAt" lf="@x1:entity(bla ^ &lt;Modifier&gt;(mod-loc3:m-location ^ at ^ &lt;Anchor&gt;(loc3:entity))"  foot="loc3" />
+	  </action>      
+      <action choice="no-topat">
+      </action>
+   </actions>
+</system>
+
+
+<system id="attribute.nearto" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.nearto"/>  <!-- check if near-to present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="nearto">
+  	    <replace-relation mode="NearTo" lf="@x1:entity(bla ^ &lt;Modifier&gt;(mod-loc4:m-location ^ near ^ &lt;Anchor&gt;(loc4:entity))"  foot="loc4" />
+      </action>
+	  
+      <action choice="no-nearto">
+      </action>
+   </actions>
+</system>
+
+<system id="attribute.nextto" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.nextto"/>  <!-- check if near-to present -->
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:physical"/>  <!-- other than mass -->
+      <condition features="@type:e-substance"/> 	  	  
+   </conditions>
+   <actions>
+      <action choice="nextto">
+  	    <replace-relation mode="NextTo" lf="@x1:entity(bla ^ &lt;Modifier&gt;(mod-loc5:m-location ^ next ^ &lt;Anchor&gt;(loc5:entity))"  foot="loc5" />
+      </action>
+	  
+      <action choice="no-nextto">
+      </action>
+   </actions>
+</system>
+
+
+
+<system id="attribute.NumberID" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.NumberID"/>
+   <conditions>
+      <condition features="@type:entity @feat:NumberID @feat:PRONOMINALIZED:false"/> 	  
+   </conditions>
+   <actions>
+      <action choice="numberID-present">
+	   <add-relation mode="Modifier" 
+	                 dest="floornum" type="number-ordinal"/>
+		<identify-nomvar mode="*LOCUS*" dest="ENTITY4ORDINAL" scope="global" />
+       <copy-feature mode="relation"  srcfeat="NumberID" destfeat="Modifier" destnom="floornum" />	
+      </action> 
+      
+      <action choice="numberID-absent">
+      </action>
+   </actions>
+</system>
+
+
+
+</systems>

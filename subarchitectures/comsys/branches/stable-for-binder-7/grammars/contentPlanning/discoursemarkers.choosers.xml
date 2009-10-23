@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-relation-type" region="DISCOURSE-MARKERS" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@accept @reject @alreadytrue @answer @hold @unknown"> 
+	     <f-featval nomvar="DVP" feat="Relation" val="unknown" /> 
+	     </inquiry>
+  	     <choicenode answer="accept">   <!-- ACCEPT -->
+                <inquiry id="ex-featval" type="string" answerset="@true @false">
+                    <q-ex-fv nomvar="DVP" feat="AcknoModality" val="vision"/>
+                </inquiry>
+                <choicenode answer="true">  <!-- accept vision -->
+                    <inquiry id="random" type="string" answerset="@vision-ackno1 @vision-ackno2 @vision-ackno3"> 
+                    </inquiry>
+                    <choicenode answer="vision-ackno1">
+                        <result val="vision-ackno1"/>
+                    </choicenode>
+                    <choicenode answer="vision-ackno2">
+                        <result val="vision-ackno2"/>
+                    </choicenode>			
+                    <choicenode answer="vision-ackno3">
+                        <result val="vision-ackno3"/>
+                    </choicenode>			
+                </choicenode>
+
+			<choicenode answer="false">  <!-- non-vision accept -->
+				<inquiry id="ex-featval" type="string" answerset="@true @false">
+					<q-ex-fv nomvar="DVP" feat="AcknoModality" val="action"/>
+				</inquiry>			
+                <choicenode answer="true">  <!-- explicit ref to action -->
+					 <inquiry id="random" type="string" answerset="@action-ackno2 @action-ackno1 @action-ackno3"> 
+					 </inquiry>			
+                     <choicenode answer="action-ackno1">
+						<result val="action-ackno1"/>
+					 </choicenode>
+					 <choicenode answer="action-ackno2">
+						<result val="action-ackno2"/>
+					 </choicenode>			
+					 <choicenode answer="action-ackno3">
+						<result val="action-ackno3"/>
+					 </choicenode>				
+				</choicenode>
+				<choicenode answer="false">  <!-- no explicit ref to action -->
+                    <inquiry id="random" type="string" answerset="@accept-ok @accept-yes @accept-isee"> 
+                    </inquiry>
+                    <choicenode answer="accept-ok">			
+                 				<result val="accept-ok"/>
+                    </choicenode>
+                    <choicenode answer="accept-yes">			
+                 				<result val="accept-yes"/>
+                    </choicenode>
+                    <choicenode answer="accept-fine">			
+                 				<result val="accept-fine"/>
+                    </choicenode>
+                    <choicenode answer="accept-isee">			
+                 				<result val="accept-isee"/>
+                    </choicenode>
+				</choicenode>
+			</choicenode>  <!-- end non-vision accept -->
+	     </choicenode>  <!-- end accept -->
+
+	     <choicenode answer="reject">   <!-- REJECT -->
+			<inquiry id="ex-featval" type="string" answerset="@true @false">
+				<q-ex-fv nomvar="DVP" feat="AcknoModality" val="vision"/>
+			</inquiry>
+			<choicenode answer="true">   <!-- reject vision modality -->
+				 <inquiry id="random" type="string" answerset="@vision-rej1 @vision-rej2 @vision-rej3"> 
+				 </inquiry>			
+				 <choicenode answer="vision-rej1">
+					<result val="vision-rej1"/>
+				 </choicenode>
+				 <choicenode answer="vision-rej2">
+					<result val="vision-rej2"/>
+				 </choicenode>			
+				 <choicenode answer="vision-rej3">
+					<result val="vision-rej3"/>
+				 </choicenode>			
+			</choicenode>			
+			<choicenode answer="false">  <!-- reject no vision modality -->
+				 <inquiry id="random" type="string" answerset="@reject-sorry @reject-no @reject-dontthinkthat"> 
+				 </inquiry>
+                 <choicenode answer="reject-sorry">			
+                 				<result val="reject-sorry"/>
+                 </choicenode>
+                 <choicenode answer="reject-no">			
+                 				<result val="reject-no"/>
+                 </choicenode>
+                 <choicenode answer="reject-dontthinkthat">			
+                 				<result val="reject-dontthinkthat"/>
+                 </choicenode>
+			</choicenode>
+	     </choicenode>
+
+	     <choicenode answer="alreadytrue">  <!-- ALREADY TRUE -->
+	       <result val="already-true"/>
+	     </choicenode>
+
+	     <choicenode answer="hold">  <!-- ALREADY TRUE -->
+	       <result val="hold"/>
+	     </choicenode>
+
+
+	     <choicenode answer="answer">  <!-- ANSWER -->
+                <inquiry id="f-featval" type="string" answerset="@positive @negative @unknown">
+                    <f-featval nomvar="DVP" feat="AnswerType" val="unknown"/>
+				 </inquiry>
+                 <choicenode answer="positive">			
+                 				<result val="answer-positive"/>
+                 </choicenode>
+                 <choicenode answer="negative">			
+                 				<result val="answer-negative"/>
+                 </choicenode>
+                 <choicenode answer="unknown">			
+                 				<result val="answer-unknowntype"/>
+                 </choicenode>
+	     </choicenode>
+         
+         <choicenode answer="filler">  <!-- FILLER -->
+              <inquiry id="random" type="string" answerset="@filler-aha @filler-hum"> 
+              </inquiry>
+              <choicenode answer="filler-aha">
+                  <result val="filler-aha"/>
+              </choicenode>
+              <choicenode answer="filler-hum">
+                  <result val="filler-hum"/>
+              </choicenode>
+	     </choicenode>
+         
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+<chooser id="c-speechact-type" region="DISCOURSE-MARKERS" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@assertion @greeting @ thanking"> 
+	     <f-featval nomvar="DVP" feat="SpeechAct" val="unknown" /> 
+	     </inquiry>
+  	     <choicenode answer="assertion">
+	       <result val="donothing"/>
+	     </choicenode>
+	     <choicenode answer="greeting">
+			 <inquiry id="random" type="string" answerset="@hello @hi @hithere"> 
+			 </inquiry>
+			 <choicenode answer="hello">
+			   <result val="hello"/>
+			 </choicenode>			 
+			 <choicenode answer="hi">
+			   <result val="hi"/>
+			 </choicenode>	
+			 <choicenode answer="hithere">
+			   <result val="hithere"/>
+			 </choicenode>	
+	     </choicenode>
+
+	     <choicenode answer="thanking">
+			   <result val="thanks"/>
+	     </choicenode>
+
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+<chooser id="c-feedback-type" region="DISCOURSE-MARKERS" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@parser @unknown"> 
+	     <f-featval nomvar="DVP" feat="FeedBackSource" val="unknown" /> 
+	     </inquiry>
+  	     <choicenode answer="unknown">
+	       <result val="donothing"/>
+	     </choicenode>
+	     <choicenode answer="parser">
+			 <inquiry id="random" type="string" answerset="@parser-neg-var1 @parser-neg-var2"> 
+			 </inquiry>
+			 <choicenode answer="parser-neg-var1">
+			   <result val="parser-neg-var1"/>
+			 </choicenode>			 
+			 <choicenode answer="parser-neg-var2">
+			   <result val="parser-neg-var2"/>
+			 </choicenode>	
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+
+
+</choosers>

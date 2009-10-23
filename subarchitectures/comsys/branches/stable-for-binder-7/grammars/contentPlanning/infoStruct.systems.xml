@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what action steps are built-in, and
+     what formats the definitions of systems should take, see the file
+     "../ucpsystems.xsd".  
+-->
+
+<systems> 
+
+
+<!-- /** @system proofStatus.entity
+
+Simple first-shot version: 
+  if assumed then Theme
+  if asserted then Rheme
+*/ -->
+
+<system id="rhemeAssign.entity" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus"/> 
+   <conditions>
+      <condition features="@type:entity"/> 
+      <condition features="@type:ont-entity"/> 
+      <condition features="@type:thing"/> 	  
+      <condition features="@type:animate"/> 	  
+      <condition features="@type:person"/> 	  
+      <condition features="@type:physical"/>  <!-- other than mass -->
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="t-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="t-rheme-true" />
+      </action>   
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>     
+   </actions>
+</system>
+
+
+<!-- /** @system proofStatus.quality
+
+Simple first-shot version: 
+  if assumed then Theme
+  if asserted then Rheme
+  
+This should only apply to quality in ascription-property; quality to realize as a modifier is curretly modeled as a feature in the input, ad thus should not trigger this system.
+
+BUT: if quality-standalone were to be generated, this system should apply.
+
+*/ -->
+<system id="rhemeAssign.quality" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus"/> 
+   <conditions>
+      <condition features="@type:quality"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.color" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.inheritance.color"/> 
+   <conditions>
+      <condition features="@type:q-color"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.size" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.inheritance.size"/> 
+   <conditions>
+      <condition features="@type:q-size"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.shape" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.inheritance.shape"/> 
+   <conditions>
+      <condition features="@type:q-shape"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.ordinal" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.inheritance.ordinal"/> 
+   <conditions>
+      <condition features="@type:number-ordinal"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+
+
+
+<system id="rhemeAssign.event" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus"/> 
+   <conditions>  <!-- all types of events: -->
+      <condition features="@type:event"/>   
+      <condition features="@type:relational"/>   
+      <condition features="@type:action"/>   
+      <condition features="@type:state"/>   
+      <condition features="@type:internal"/>   
+      <condition features="@type:modal"/>  
+      <condition features="@type:communication"/>   
+      <condition features="@type:symbolic"/>   
+      <condition features="@type:action-motion"/>   
+      <condition features="@type:action-non-motion"/>   
+      <condition features="@type:presentational"/>   
+      <condition features="@type:ascription"/>   
+      <condition features="@type:perception"/>   
+      <condition features="@type:cognition"/>
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="e-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="e-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+
+
+<!-- /**
+
+@system rheme.ownership
+
+if Rheme present then
+   if SpeechAct == question then RhOwner = rh-hearer
+   if SpeechAct == assertion then RhOwner = rh-speaker
+
+Simplest first-shot version
+
+*/ --> 
+
+<system id="rheme.ownership" region="infoStruct" metafunction="textual">
+   <chooser id="c-rheme.ownership"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-true"/>   
+      <condition features="@feat:Rheme:m-rheme-true"/>   
+      <condition features="@feat:Rheme:e-rheme-true"/>   
+   </conditions>
+   <actions>
+      <action choice="speakerRhOwner">
+        	<add-feature feature="RhOwner" value="rh-speaker" dest="CONTENT" /> <!-- must go to main-predicate level -->
+      </action>     
+      
+      <action choice="hearerRhOwner">
+        	<add-feature feature="RhOwner" value="rh-hearer" dest="CONTENT" /> <!-- must go to main-predicate level -->
+      </action>        
+      
+      <action choice="doneRhOwner">
+      </action> 
+        
+   </actions>
+</system>
+
+
+<!-- /**
+@system theme.ownership
+
+if Theme present then
+   ThOwner == th-hearer  (standard Theme)
+
+Theme present iff <Rheme> == t-rheme-false or m-rheme-false or e-rheme-false
+no rheme feature also means Theme (for the grammar)
+
+Following Steedman's approach, we would only ever need Themes owned by (attributed to) H
+*/ --> 
+
+<system id="theme.ownership" region="infoStruct" metafunction="textual">
+   <chooser id="c-theme.ownership"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-false"/>   
+      <condition features="@feat:Rheme:m-rheme-false"/>   
+      <condition features="@feat:Rheme:e-rheme-false"/>   
+   </conditions>
+   <actions>
+      <action choice="hearerThOwner">
+        	<add-feature feature="ThOwner" value="th-hearer" dest="CONTENT" /> <!-- must go to main-predicate level -->
+      </action>   
+
+      <action choice="doneThOwner">
+      </action> 
+        
+   </actions>
+</system>
+
+
+<!-- /**
+@system theme.agreement
+
+if Theme/Rheme present then
+   Commitment == uncontentious  (standard Theme/Rheme)
+
+Theme present iff <Rheme> == t-rheme-false or m-rheme-false or e-rheme-false
+no rheme feature also means Theme (for the grammar)
+
+Rheme == true
+
+Following Steedman's approach, we will need contentious 
+  - Themes once we want to do indirect denials.
+  - Rhemes for questions (just yes/no?)
+
+*/ --> 
+
+<system id="theme.agreement" region="infoStruct" metafunction="textual">
+   <chooser id="c-themerheme.type"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-false"/>   
+      <condition features="@feat:Rheme:m-rheme-false"/>   
+      <condition features="@feat:Rheme:e-rheme-false"/>   
+   </conditions>
+   <actions>
+      <action choice="t-rheme">
+        	<add-feature feature="Commitment" value="t-uncontentious"  /> <!-- must go locally -->
+      </action>   
+
+      <action choice="m-rheme">
+        	<add-feature feature="Commitment" value="m-uncontentious"  /> <!-- must go locally -->
+      </action>   
+      
+      <action choice="e-rheme">
+        	<add-feature feature="Commitment" value="e-uncontentious"  /> <!-- must go locally -->
+      </action>         
+              
+   </actions>
+</system>
+
+
+<system id="rheme.agreement" region="infoStruct" metafunction="textual">
+   <chooser id="c-themerheme.type"/> 
+   <conditions>
+      <condition features="@feat:Rheme:t-rheme-true"/>   
+      <condition features="@feat:Rheme:m-rheme-true"/>   
+      <condition features="@feat:Rheme:e-rheme-true"/>   
+   </conditions>
+   <actions>
+      <action choice="t-rheme">
+        	<add-feature feature="Commitment" value="t-uncontentious"  /> <!-- must go locally -->
+      </action>   
+
+      <action choice="m-rheme">
+        	<add-feature feature="Commitment" value="m-uncontentious"  /> <!-- must go locally -->
+      </action>   
+      
+      <action choice="e-rheme">
+        	<add-feature feature="Commitment" value="e-uncontentious"  /> <!-- must go locally -->
+      </action>         
+              
+   </actions>
+</system>
+
+
+<!-- /**
+@system focus.assignment
+
+Simplest first shot:
+    if theme present and not shared (?) then focus it
+    if rheme present then focus it
+
+*/
+-->
+<system id="focus.assignment" region="infoStruct" metafunction="textual">
+   <chooser id="c-themerheme.type"/> 
+   <conditions>
+      <condition features="@feat:Rheme"/>   <!-- this means either Theme or Rheme is present, which it is always -->
+   </conditions>
+   <actions>
+
+      <action choice="t-rheme">
+        	<add-feature feature="Focus" value="t-focus-true"  /> <!-- must go locally -->
+      </action>   
+
+      <action choice="m-rheme">
+        	<add-feature feature="Focus" value="m-focus-true"  /> <!-- must go locally -->
+      </action>   
+      
+      <action choice="e-rheme">
+        	<add-feature feature="Focus" value="e-focus-true"  /> <!-- must go locally -->
+      </action>         
+      
+      <action choice="noRhemeFeature">
+       </action>        
+              
+   </actions>
+</system>
+
+
+
+
+
+</systems>

@@ -1,0 +1,34 @@
+To start the utterance planner debugger:
+korbay:[~/dfki] % java comsys.processing.uttplan.UPDebugger
+Utterance Planner Debugger v.0.25
+
+An example of planning a communicative goal:
+
+:p @d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <Size>big ^ <InfoStatus>familiar ^ object)  ^ <Type>(b3:entity ^ <Color>red ^ box))) 
+
+Then call the realization:
+:r
+
+
+
+Utterance planner input:
+
+======
+Syntax
+======
+HLDS
+
+=========
+Structure
+=========
+ 
+@d1:dvp(c-goal  ^ <SpeechAct>...  ^ <Relation>...  ^  <Modality>... ^ <Content>(...) )
+
+where 
+
+None of the structure elements is required (but the planner is not (yet) completely fool-proof, so ommissions may lead to no output sentence being generated). 
+
+See doc/cogx-testbed.xml for examples of what can be handled.
+See doc/cogx-lf.txt for a description of the LF elements
+See doc/cogx-targets-Y1.txt for target sentences from demo scripts and alike
+See doc/cogx-notes-ikk.txt for to-do and other notes

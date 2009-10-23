@@ -1,0 +1,74 @@
+NOTE: this is out of date.
+
+----------------------------------------------------------------------
+
+SYNTAX OF THIS FILE:
+
+White characters at the beginning and end of each line are first discarded.
+Empty lines and those that begin with a `#' are ignored.
+
+Every other line must then consist of either a FACT or a RULE (on one
+line!).
+
+PROPOSITIONS.
+
+The syntax of propositions is similar to that of facts in Prolog: every
+proposition is of the form
+
+  p(a1, a2, a3...)
+
+Where p is a predicate symbol and a1, a2, a3 etc are either variables
+(strings that begin with a capital letter), or terms. Term has the following
+form:
+
+  f(t1, t2, t3...)
+
+where f is a function symbol and t1... are either variables or terms.
+
+MODALIZED PROPOSITIONS.
+
+Modalized propositions have the following syntax:
+
+  c1 : c2 : c3... : p(...)
+
+Where p(...) is a proposition and c1... are "context references".
+(See the definition of string_as_ctx_ref/2 in context.m).
+A proposition is also a modalized proposition (with no context references
+attached to it).
+
+FACTS.
+
+Facts have the form
+
+  MP.
+
+where MP is a modalized proposition. (Currently, facts may contain variables
+although we might want to change that in the future.)
+
+RULES.
+
+Rules have this syntax:
+
+  Antecedents -> Head.
+  c1... : (Antecedents -> Head).
+  [] : (Antecedents -> Head).
+  [] : c1... : (Antecedents -> Head).
+
+[] means that the rule is an axiom.
+c1... are modalities as in modalized propositions.
+Head is a modalized proposition.
+Antecedents are a list of modalized propositions with cost function
+  annotation (see below), delimited by ','.
+
+A modalized proposition with cost function has the form
+
+  MP / #.#
+or
+  MP / function_name
+
+where MP is a modalized proposition,
+#.# stands for a float -- this means that the assumption cost for
+the given proposition is constant and equal to the given number.
+`function_name' is a name of function that takes the D-context,
+given proposition and returns a float. (For the moment, these are defined
+in context.m).

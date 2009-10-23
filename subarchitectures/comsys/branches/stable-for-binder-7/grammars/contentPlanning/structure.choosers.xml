@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- For a complete description of what inquiry code is built-in, and
+     what formats the definitions of choosers should take, see the file
+     "../ucpchoosers.xsd".
+--> 
+
+<choosers>
+
+<chooser id="c-structure.content-presence" region="STRUCTURE" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
+	     <q-ex-rel val="Content"/>	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="content-present"/>
+	     </choicenode>
+         
+	     <choicenode answer="false">
+            <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+                <q-ex-feat feat="CannedText"/>	                                 
+            </inquiry>
+            <choicenode answer="true">
+                <result val="content-canned"/>
+            </choicenode>
+            <choicenode answer="false">
+                <result val="content-absent"/>
+            </choicenode>
+            <choicenode answer="unknown">
+                <result val="content-absent"/>
+            </choicenode>
+        </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+<chooser id="c-structure.list" region="STRUCTURE" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="f-featval" type="string" answerset="@conjunction @disjunction @list @unknown"> 
+	     <f-featval  feat="List" />	                                 
+	     </inquiry>
+  	     <choicenode answer="disjunction">
+	       <result val="disjunction"/>
+	     </choicenode>
+	     <choicenode answer="conjunction">
+	       <result val="conjunction"/>
+	     </choicenode>
+	     <choicenode answer="list">
+	       <result val="conjunction"/>
+	     </choicenode>
+	     <choicenode answer="unknown">
+	       <result val="no-list"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+
+
+
+<!-- taken out; assuming a nominal always has a proposition 
+<chooser id="c-object.thing" region="THING" metafunction="ideational">
+
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-prop" type="string" answerset="@true @false"> 
+	     <q-prop />	                                 
+	     </inquiry>
+  	     <choicenode answer="true">
+	       <result val="thing-present"/>
+	     </choicenode>
+	     <choicenode answer="false">
+	       <result val="thing-absent"/>
+	     </choicenode>
+	</choicenode>
+   </dectree>
+</chooser>
+-->
+
+
+
+</choosers>

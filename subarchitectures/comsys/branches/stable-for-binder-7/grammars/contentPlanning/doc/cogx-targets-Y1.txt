@@ -1,0 +1,160 @@
+
+======
+Demo script Sept 30 09
+
+h: “hi robot”
+r: “hello”							
+h: puts a red box in front of the robot
+r: “hm.. what IS that” (situated grounding feedback)		
+h: “do you know what this is?”
+r: “no I do not know what this is” (situated grounding)		
+h: “this is a box”						
+r: “let me see” (linguistic grounding feedback)
+   “is the box red or orange?” / “what color does the box have?” (situated grounding)	
+h: “it is red”
+r: “okay thanks” (situated grounding ... the question is, should we have linguistic feedback here too, like before?)
+
+======
+
+======
+DORA templates
+======
+
+- found new place N
+- found new placeholder N
+- found new room N
+- seen object O
+- room N is categorised as a C
+- found a doorway
+- going to place N
+- going room categorise room b
+- activated goals G
+- planning for active goals
+- planning succeeded/failed
+- executing plan
+- executing next action
+- action succeeded/failed
+- plan execution succeeded/failed
+
+
+======
+DORA
+======
+
+From: Nick Hawes <n.a.hawes@cs.bham.ac.uk>
+Date: 7 July 2009 12:03:17 GMT+01:00
+To: Geert-Jan Kruijff <gj@dfki.de>
+Subject: Re: Reference resolution for Year 1 scenarios
+
+So, the Dora list... (some of which are a little far-fetched based on expected overall system performance)
+
+We could probably get by with just fairly simple references to areas for year 1 (the current area, proximal areas, and areas visited in the past). Anything on top of that is a bonus.
+
+
+Idexicals that should be resolved to either the current area, or some other area
+
+
+"This is the corridor"
+"This is GJ's office"
+"This is the meeting room"
+"This is the robot lab"
+"What room is this?"
+
+Perhaps the same with variations...
+
+"That is the X"
+"That was the X"
+"The room we just went in was the X"
+"The room where you saw the Nau was the robot lab"
+"You are now in the X"
+"GJ is in his office"
+
+
+Questions
+
+"Did you see the cooker in the kitchen?"
+"Have you been into the meeting room?"
+"Do you know the kitchen"
+
+"Where are you?"
+"Where are you going?"
+"What are you doing?"
+
+"Where is GJ?"
+"Have you seen Pierre?"
+"Is Nick in his office?"
+
+Commands
+
+"Follow me" (I guess "me" still needs to be resolved to a particular human)
+"Bring me some cornflakes"
+"Bring me my mug"
+"Tell Jeremy I'll be late"
+"Take this book to the meeting room"
+"Take the Borland book to the meeting room"
+"Here is a book. Take it to the meeting room"
+"Go to the kitchen"
+
+
+
+========================
+
+=======
+GEORGE
+=======
+
+
+From: Danijel Skocaj <danijel.skocaj@fri.uni-lj.si>
+Date: 7 July 2009 16:10:18 GMT+01:00
+To: Nick Hawes <n.a.hawes@cs.bham.ac.uk>
+Subject: Re: Reference resolution for Year 1 scenarios
+
+Hi,
+
+Here is the list, which is supposed to be used in George scenario. Not all of them will be used in Y1, though. All the expressions marked with asterisks are planned to be used in Y1. Almost all of them are taken from https://vicos.fri.uni-lj.si/trac/cogx/attachment/wiki/documents/scenarios/documents/scenarioY1.pdf .
+
+*This object is <feature value>.
+*This object is <feature values>.
+*The object is not <feature values>.
+*No, the object is not <feature value>!
+*Yes./no.
+The <feature values> object is <spatial relation> <feature values> object.
+Give me the <feature values> object!
+*The <feature value> object is <feature value> object.
+*This is not <feature value> object.
+*No, the object is not <feature values>!
+
+*What do you see?
+*Is this object <feature value>?
+*What <feature> is this object?
+*Is this object <feature value>?
+Yes, you are right.
+
+These are <feature value> objects.
+Are these objects <feature value>?
+
+This is <object name>.
+Is this <object name>?
+Is this object <object name>?
+
+We would also like that the robot is able to generate the following expressions:
+
+I don't know this object.
+I don't know these objects.
+*I don't know.
+*OK.
+I think this object is <feature value>. Am I right?
+*Is this object <feature value>?
+*I see <feature values> object.
+*Yes./No./I don't know/I'm not sure, but I think yes.
+*I'm not sure, but I think it is <feature value>.
+Not all of them./No, none of them.
+*This is <feature values> object.
+This is <object name>.
+It is <feature values>.
+
+Where:
+<feature>: colour, shape
+<feature value>: red, green, blue, yellow; white, black, grey, orange, brown, purple, square, triangular, circular, elongated; box,
+cylinder, sphere, flat
+<object name>: the tea box, the ball, the car, the bottle, the book, etc.
