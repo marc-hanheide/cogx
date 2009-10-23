@@ -219,10 +219,14 @@ public class BinderMonitor extends ManagedComponent {
 			
 			// Extract the unions in the union configuration
 			int nbRelationUnions = 0;
+			int nbUnionsWithMoreThanOneProxy = 0;
 			for (int i = 0 ; i < config.includedUnions.length ; i++) {
 				Union u = config.includedUnions[i];
 				if (u instanceof RelationUnion) {
 					nbRelationUnions++;
+				}
+				if (u.includedProxies.length > 1) {
+					nbUnionsWithMoreThanOneProxy++;
 				}
 				UnionsV.add(config.includedUnions[i]);
 			}
@@ -234,6 +238,7 @@ public class BinderMonitor extends ManagedComponent {
 				unionText += " = " + config.includedUnions.length;
 			}
 			log("Current number of unions: " + unionText);
+			log("Number of unions with more than one proxy: " + nbUnionsWithMoreThanOneProxy);
 			
 			// Check if proxies need to be deleted from the monitor
 			for (Enumeration<Proxy> e = lastProxies.elements(); e.hasMoreElements(); ) {

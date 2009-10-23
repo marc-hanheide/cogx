@@ -145,7 +145,7 @@ public class Test2 extends AbstractTester{
 			log("Now creating random proxy " + (i + 1));
 			Proxy proxy = createNewRandomProxy();
 			addProxyToWM(proxy);
-			sleepComponent(20);
+	//		sleepComponent(40);
 		}
 		
 		int counts = 0;
@@ -161,8 +161,15 @@ public class Test2 extends AbstractTester{
 		boolean result = (curConfig.includedUnions.length == (NUMBER_OF_PROXIES - nbLowProbabilityProxies));
 		
 		if (!result) {
-			System.out.println("Final number of unions: " + curConfig.includedUnions.length);
+			System.out.println("\nFinal number of unions: " + curConfig.includedUnions.length);
 			System.out.println("expected number: " +(NUMBER_OF_PROXIES - nbLowProbabilityProxies));
+			int nbWeirdUnions = 0 ;
+			for (int i = 0 ; i < curConfig.includedUnions.length; i++) {
+				if (curConfig.includedUnions[i].includedProxies.length > 1) {
+					nbWeirdUnions++;
+				}
+			}
+			System.out.println("Number of unions with more than one proxy: " + nbWeirdUnions);
 		}
 		
 		return result;
