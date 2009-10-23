@@ -120,7 +120,7 @@ void VisualLearner::runComponent()
             if (updateModel(pTaskData)) {
                debug("Will overwrite task: %s", descAddr(addr).c_str());
                // sleepComponent(100);
-               overwriteWorkingMemory(addr, pTaskData);
+               overwriteWorkingMemory(addr, pTaskData); // Not changed, but write to notify owner!
             }
             // TODO: unlock pTaskData
          }
