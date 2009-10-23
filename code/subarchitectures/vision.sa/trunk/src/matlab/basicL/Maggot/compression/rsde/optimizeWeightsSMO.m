@@ -27,9 +27,9 @@ C = (C+C') + diag(C_diag) ;
  
 %    alpha = reduceSolve(C,P,2)';
 
-alpha = SMO(C,P')' ;
+alpha_vals = SMO(C,P')' ;
 
-f_input.w = alpha' ;
+f_input.w = alpha_vals' ;  f_input.w = f_input.w / sum(f_input.w) ;
 [ f_out, idx_selected ]= removeDeadComponents( f_input, eps_dead ) ;
 if nargout == 1
     idx_selected = [] ;
