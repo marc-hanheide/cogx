@@ -10,3 +10,7 @@ if fid~=-1
       eval(lines{i})
    end
 end
+
+if 0
+   showOneModel();
+end;
