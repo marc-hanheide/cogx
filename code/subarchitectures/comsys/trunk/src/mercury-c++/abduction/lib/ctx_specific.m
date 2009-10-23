@@ -51,6 +51,8 @@
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 :- instance context(ctx, ctx_modality) where [
+	pred(find_fact/4) is find_ctx_fact,
+	pred(find_rule/4) is find_ctx_rule,
 	pred(fact_found/3) is ctx_fact,
 	pred(rule_found/3) is ctx_rule,
 	pred(assumable_func/4) is ctx_assumable_func,
@@ -87,6 +89,18 @@ explicit_facts(Ctx) = Ctx^ctx_expl_facts.
 :- func ctx_min_assumption_cost(ctx, ctx_modality) = float.
 
 ctx_min_assumption_cost(_, _) = 0.1.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred find_ctx_fact(ctx::in, list(ctx_modality)::in, string::in, vscope(mprop(ctx_modality))::out) is nondet.
+
+find_ctx_fact(Ctx, Ms, PredSym, VSMProp) :-
+	fail.
+
+:- pred find_ctx_rule(ctx::in, list(ctx_modality)::in, string::in, vscope(mrule(ctx_modality))::out) is nondet.
+
+find_ctx_rule(Ctx, Ms, PredSym, VSMRule) :-
+	fail.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

@@ -5,6 +5,7 @@
 :- interface.
 
 :- import_module formula, modality.
+:- import_module list.
 :- import_module costs.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
@@ -14,11 +15,17 @@
 	pred fact_found(C, vscope(mprop(M)), vscope(mprop(M))),
 	mode fact_found(in, in, out) is nondet,
 
+	pred find_fact(C, list(M), string, vscope(mprop(M))),
+	mode find_fact(in, in, in, out) is nondet,
+
 %	pred fact(C, vscope(mprop(M))),
 %	mode fact(in, out) is nondet,
 
 	pred rule_found(C, vscope(mprop(M)), vscope(mrule(M))),
 	mode rule_found(in, in, out) is nondet,
+
+	pred find_rule(C, list(M), string, vscope(mrule(M))),
+	mode find_rule(in, in, in, out) is nondet,
 
 	pred assumable_func(C, cost_function_name, mgprop(M), float),
 	mode assumable_func(in, in, out, out) is nondet,
