@@ -4,11 +4,17 @@
 %**orig**: this->eval("mFS.AVmeans");
 %**orig**: this->eval("mFS.AVvars");
 %**orig**: this->eval("LRvisUpdate");
-function cogxVisualLearner_unlearn(features, avw)
+function cogxVisualLearner_unlearn(X, B, avw)
    global mAV
-   global currMode
+   
+   global Params
+   B = double(B);
+   B = (B==120);
+   X = uint8(X);
+   f = extAPfeatures(X,B,Params.FV);
 
-   mAV = MKDBFunlearn(features, avw(:,1), mAV);
+
+   mAV = MKDBFunlearn(f, avw(:,1), mAV);
    LRvisUpdate;
    asvSave;
    disp(['MATLAB: cogxVisualLearner_unlearn DONE']);

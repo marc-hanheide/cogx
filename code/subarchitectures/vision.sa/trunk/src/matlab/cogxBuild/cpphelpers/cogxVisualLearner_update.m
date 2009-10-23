@@ -4,11 +4,18 @@
 %**orig**: this->eval("mFS.AVmeans");
 %**orig**: this->eval("mFS.AVvars");
 %**orig**: this->eval("LRvisUpdate");
-function cogxVisualLearner_update(features, avw)
+function cogxVisualLearner_update(X,B, avw)
    global mAV
    global avAcronyms
+   
+   global Params
+   B = double(B);
+   B = (B==120);
+   X = uint8(X);
+   f = extAPfeatures(X,B,Params.FV);
 
-   mAV = MKDBFupdate(features, avw, mAV);
+
+   mAV = MKDBFupdate(f, avw, mAV);
    disp(['Updated: ' idx2name(avw(:,1)',avAcronyms)]);
    LRvisUpdate;
    asvSave;

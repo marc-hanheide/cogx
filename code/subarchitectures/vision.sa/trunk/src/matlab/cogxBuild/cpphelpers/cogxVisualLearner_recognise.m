@@ -3,7 +3,7 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B)
    % B - segmentation mask - byte_array
    % Copied from cosyFeatureExtractor_limitvalue
    B = double(B); % TODO: is it really necessary to convert the mask to double?
-   B(B > 1.0) = 1.0;
+   B = (B==120);
 
    disp(['MATLAB: cogxVisualLearner_recognise']);
    % Copied from cosyFeatureExtractor_extract
