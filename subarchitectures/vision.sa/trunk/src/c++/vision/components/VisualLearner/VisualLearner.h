@@ -32,7 +32,8 @@ class VisualLearner : public ManagedComponent {
    private:
       WmAddressVector m_RecogTaskId_Queue;
       WmAddressVector m_LearnTaskId_Queue;
-      void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+      void onAdd_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+      void onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc);
       bool recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
       bool updateModel(VisionData::VisualLearnerLearningTaskPtr _pTask);
 

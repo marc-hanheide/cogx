@@ -40,12 +40,15 @@ void VisualLearner::start()
    ManagedComponent::start();
 
    addChangeFilter(createLocalTypeFilter<VisualLearnerRecognitionTask>(cdl::ADD),
-         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAddRecognitionTask));
+         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_RecognitionTask));
+
+   addChangeFilter(createLocalTypeFilter<VisualLearnerLearningTask>(cdl::ADD),
+         new MemberFunctionChangeReceiver<VisualLearner>(this, &VisualLearner::onAdd_LearningTask));
 }
 
-void VisualLearner::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+void VisualLearner::onAdd_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
-   debug("::onAddRecognitionTask");
+   debug("::onAdd_RecognitionTask");
    string type(_wmc.type);
    string id(_wmc.address.id);
 
@@ -58,16 +61,34 @@ void VisualLearner::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
       log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
    }
    catch(cast::DoesNotExistOnWMException){
-      log("VisualLearner.OnAdd: VisualLearnerRecognitionTask deleted while working...\n");
+      log("VisualLearner.OnAdd: VL_RecognitionTask deleted while working...\n");
       return;
    };
+}
 
+void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
+{
+   debug("::onAdd_LearningTask");
+   string type(_wmc.type);
+   string id(_wmc.address.id);
 
-} // VisualLearner::WorkingMemoryChange
+   log("Added: " + type + ", id: " + id);
+   VisualLearnerLearningTaskPtr pTask;
+   try {
+      // get the data from working memory
+      // pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+      m_LearnTaskId_Queue.push_back(_wmc.address);
+      log("Request addr pushed: %s", descAddr(_wmc.address).c_str());
+   }
+   catch(cast::DoesNotExistOnWMException){
+      log("VisualLearner.OnAdd: VL_LearningTask deleted while working...\n");
+      return;
+   };
+}
 
 void VisualLearner::runComponent()
 {
-   debug("VisualLearner::runComponent");
+   debug("::runComponent");
    sleep(3011);
 
    WmAddressVector::iterator pwma;
@@ -79,7 +100,7 @@ void VisualLearner::runComponent()
       pwma = m_RecogTaskId_Queue.begin();
       if (pwma != m_RecogTaskId_Queue.end()) {
          cdl::WorkingMemoryAddress addr = *pwma;
-         log("Recognition Request addr popped: %s", descAddr(addr).c_str());
+         log("VL_Recognition Request addr popped: %s", descAddr(addr).c_str());
          VisualLearnerRecognitionTaskPtr pTaskData;
          try{
             // get the data from working memory
@@ -96,7 +117,7 @@ void VisualLearner::runComponent()
             // TODO: unlock pTaskData
          }
          catch(cast::DoesNotExistOnWMException){
-            log("VisualLearner.run: VisualLearnerRecognitionTask deleted while working...\n");
+            log("run: VisualLearnerRecognitionTask deleted while working...\n");
          };
          // TODO: catch other stuff from Matlab Proxy
 
