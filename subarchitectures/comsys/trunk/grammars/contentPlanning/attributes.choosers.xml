@@ -7,7 +7,7 @@
 
 <choosers>
 
-<chooser id="c-attribute.color" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.color" region="ATTRIBUTES" metafunction="ideational">
 
    <dectree>
        <choicenode answer="*TOP*">
@@ -24,7 +24,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.size" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.size" region="ATTRIBUTES" metafunction="ideational">
 
    <dectree>
        <choicenode answer="*TOP*">
@@ -41,7 +41,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.shape" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.shape" region="ATTRIBUTES" metafunction="ideational">
 
    <dectree>
        <choicenode answer="*TOP*">
@@ -58,7 +58,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.name" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.name" region="ATTRIBUTES" metafunction="ideational">
 
    <dectree>
        <choicenode answer="*TOP*">
@@ -75,7 +75,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.topin" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.topin" region="ATTRIBUTES" metafunction="ideational">
 
    <dectree>
        <choicenode answer="*TOP*">
@@ -92,7 +92,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.topon" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.topon" region="ATTRIBUTES" metafunction="ideational">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
@@ -108,7 +108,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.topat" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.topat" region="ATTRIBUTES" metafunction="ideational">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
@@ -125,7 +125,7 @@
 </chooser>
 
 
-<chooser id="c-attribute.nearto" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.nearto" region="ATTRIBUTES" metafunction="ideational">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="q-ex-rel" type="string" answerset="@true @false"> 
@@ -141,7 +141,7 @@
    </dectree>
 </chooser>
 
-<chooser id="c-attribute.nextto" region="IDEATIONAL" metafunction="ideational">
+<chooser id="c-attribute.nextto" region="ATTRIBUTES" metafunction="ideational">
 
    <dectree>
        <choicenode answer="*TOP*">
@@ -157,5 +157,23 @@
 	</choicenode>
    </dectree>
 </chooser>
+
+
+<chooser id="c-attribute.NumberID" region="ATTRIBUTES" metafunction="ideational">
+   <dectree>
+       <choicenode answer="*TOP*">
+         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
+		    <q-ex-feat feat="NumberID" />
+		 </inquiry>			
+		 <choicenode answer = "true">  
+			<result val="numberID-present"/>			
+		 </choicenode>
+		 <choicenode answer = "false">
+			<result val="numberID-absent"/>
+		 </choicenode>
+	 </choicenode>
+   </dectree>
+</chooser>
+
 
 </choosers>

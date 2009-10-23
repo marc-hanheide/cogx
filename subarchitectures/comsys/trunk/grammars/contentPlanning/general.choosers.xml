@@ -7,22 +7,6 @@
 
 <choosers>
 
-<chooser id="c-general.check.feature.NumberID" region="GENERAL" metafunction="ideational">
-   <dectree>
-       <choicenode answer="*TOP*">
-         <inquiry id="q-ex-feat" type="string" answerset="@true @false"> 
-		    <q-ex-fv feat="NumberID" />
-		 </inquiry>			
-		 <choicenode answer = "true">  
-			<result val="numberID-absent"/>			
-		 </choicenode>
-		 <choicenode answer = "false">
-			<result val="numberID-present"/>
-		 </choicenode>
-	 </choicenode>
-   </dectree>
-</chooser>
-
 
 <chooser id="c-general.check.type.substance" region="GENERAL" metafunction="ideational">
    <dectree>

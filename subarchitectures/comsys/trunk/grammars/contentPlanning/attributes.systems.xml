@@ -25,7 +25,8 @@
       <action choice="color">
 	   <add-relation mode="Modifier" 
 	                 dest="color" type="q-color"/>
-       <copy-feature mode="relation"  srcfeat="Color" destfeat="Modifier" destnom="color" />
+		<identify-nomvar mode="Modifier" dest="COLOR" scope="global" />
+        <copy-feature mode="relation"  srcfeat="Color" destfeat="Modifier" destnom="color" />
       </action>      
       <action choice="no-color">
       </action>
@@ -44,6 +45,7 @@
       <action choice="size">
 	   <add-relation mode="Modifier" 
 	                 dest="size" type="q-size"/>
+		<identify-nomvar mode="Modifier" dest="SIZE" scope="global" />
        <copy-feature mode="relation"  srcfeat="Size" destfeat="Modifier" destnom="size" />					 
       </action>      
       <action choice="no-size">
@@ -62,6 +64,7 @@
       <action choice="shape">
 	   <add-relation mode="Modifier" 
 	                 dest="shape" type="q-shape"/>
+		<identify-nomvar mode="Modifier" dest="SHAPE" scope="global" />
        <copy-feature mode="relation"  srcfeat="Shape" destfeat="Modifier" destnom="shape" />					 
       </action>      
       <action choice="no-shape">
@@ -80,6 +83,7 @@
       <action choice="name">
 	   <add-relation mode="Compound" 
 	                 dest="name" type="entity"/> <!-- this type will block inserting delim and quant -->	
+		<identify-nomvar mode="Compound" dest="NAME" scope="global" />
        <copy-feature mode="relation"  srcfeat="Name" destfeat="Compound" destnom="name" />		
       </action>      
       <action choice="no-name">
@@ -195,6 +199,25 @@ This is to get the lexicalization of a person's name.
    </actions>
 </system>
 
+
+
+<system id="attribute.NumberID" region="ATTRIBUTES" metafunction="ideational">
+   <chooser id="c-attribute.NumberID"/>
+   <conditions>
+      <condition features="@type:entity @feat:NumberID @feat:PRONOMINALIZED:false"/> 	  
+   </conditions>
+   <actions>
+      <action choice="numberID-present">
+	   <add-relation mode="Modifier" 
+	                 dest="floornum" type="number-ordinal"/>
+		<identify-nomvar mode="Modifier" dest="ORDINAL" scope="global" />
+       <copy-feature mode="relation"  srcfeat="NumberID" destfeat="Modifier" destnom="floornum" />	
+      </action> 
+      
+      <action choice="numberID-absent">
+      </action>
+   </actions>
+</system>
 
 
 

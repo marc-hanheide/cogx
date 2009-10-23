@@ -19,7 +19,10 @@ Simple first-shot version:
    <chooser id="c-proofStatus"/> 
    <conditions>
       <condition features="@type:entity"/> 
+      <condition features="@type:ont-entity"/> 
       <condition features="@type:thing"/> 	  
+      <condition features="@type:animate"/> 	  
+      <condition features="@type:person"/> 	  
       <condition features="@type:physical"/>  <!-- other than mass -->
     </conditions>
    <actions>
@@ -65,10 +68,85 @@ BUT: if quality-standalone were to be generated, this system should apply.
     </actions>
 </system>
 
+<system id="rhemeAssign.color" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.iheritance.color"/> 
+   <conditions>
+      <condition features="@type:q-color"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.size" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.iheritance.size"/> 
+   <conditions>
+      <condition features="@type:q-size"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.shape" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.iheritance.shape"/> 
+   <conditions>
+      <condition features="@type:q-shape"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+<system id="rhemeAssign.ordinal" region="infoStruct" metafunction="textual">
+   <chooser id="c-proofStatus.iheritance.ordinal"/> 
+   <conditions>
+      <condition features="@type:number-ordinal"/> 
+    </conditions>
+   <actions>
+      <action choice="proof-status-assumed">
+        	<add-feature feature="Rheme" value="m-rheme-false" />
+      </action>     
+      <action choice="proof-status-asserted">
+        	<add-feature feature="Rheme" value="m-rheme-true" />
+      </action>     
+      <action choice="proof-status-unknown">
+        	<add-feature feature="ProofStatus" value="unknown" />
+      </action>   
+    </actions>
+</system>
+
+
+
 
 <system id="rhemeAssign.event" region="infoStruct" metafunction="textual">
    <chooser id="c-proofStatus"/> 
    <conditions>  <!-- all types of events: -->
+      <condition features="@type:event"/>   
       <condition features="@type:relational"/>   
       <condition features="@type:action"/>   
       <condition features="@type:state"/>   
@@ -241,7 +319,7 @@ Simplest first shot:
 <system id="focus.assignment" region="infoStruct" metafunction="textual">
    <chooser id="c-themerheme.type"/> 
    <conditions>
-      <condition features="@feat:Rheme"/>   <!-- this means either Theme or Rheme is present, which is always -->
+      <condition features="@feat:Rheme"/>   <!-- this means either Theme or Rheme is present, which it is always -->
    </conditions>
    <actions>
 
@@ -262,5 +340,9 @@ Simplest first shot:
               
    </actions>
 </system>
+
+
+
+
 
 </systems>
