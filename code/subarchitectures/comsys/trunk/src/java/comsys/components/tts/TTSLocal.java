@@ -57,7 +57,7 @@ public class TTSLocal {
 	// Silence
 	private boolean m_bSilentMode;
 	
-   
+	 
 	/** 
 	 * Create a local TTS system.
 	 *
@@ -103,7 +103,7 @@ public class TTSLocal {
 		        //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
 		        m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, baos);
 		        
-		        
+			    	   
 			   AudioInputStream ais = AudioSystem.getAudioInputStream(
 			            new ByteArrayInputStream(baos.toByteArray()));
 			        LineListener lineListener = new LineListener() {
@@ -113,16 +113,16 @@ public class TTSLocal {
 			                } else if (event.getType() == LineEvent.Type.STOP) {
 			                    System.err.println("Audio stopped playing.");
 			                } else if (event.getType() == LineEvent.Type.OPEN) {
-			                    System.err.println("Audio line opened.");
+			                  	System.err.println("Audio line opened.");			                 
 			                } else if (event.getType() == LineEvent.Type.CLOSE) {
-			                    System.err.println("Audio line closed.");
+			                    System.err.println("Audio line closed.");			                    
 			                }
 			            }
 			        };
 
 			        AudioPlayer ap = new AudioPlayer(ais, lineListener);
 			        ap.start();
-			   
+			       			   
 		   }
 		   catch (Exception e) {e.printStackTrace() ; } 
 		   }
