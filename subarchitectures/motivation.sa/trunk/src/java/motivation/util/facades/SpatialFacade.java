@@ -158,6 +158,8 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 			if (ptcr.status == PathQueryStatus.QUERYCOMPLETED) {
 				component.log("we found a path and computed costs of "
 						+ ptcr.cost);
+				if (ptcr.cost>1E99)
+					return Double.MAX_VALUE;
 				return ptcr.cost;
 			} else {
 				component.println("could not find path from " + from + " to "
@@ -179,7 +181,7 @@ public class SpatialFacade extends Thread implements ChangeHandler {
 			}
 		}
 
-		return Long.MAX_VALUE;
+		return Double.MAX_VALUE;
 	}
 
 	@Override

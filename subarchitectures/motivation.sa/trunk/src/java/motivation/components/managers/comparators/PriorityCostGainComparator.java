@@ -19,8 +19,7 @@ public class PriorityCostGainComparator extends CascadedComparator {
 	public PriorityCostGainComparator() {
 		super();
 		super.addComparator(new PriorityComparator());
-		super.addComparator(new InformationGainComparator());
-		super.addComparator(new InvertAgeComparator());
+		super.addComparator(new JoinedGainCostComparator());
 	}
 
 
