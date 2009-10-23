@@ -28,7 +28,7 @@
 :- type srv_ctx
 	--->	srv_ctx(
 		cx :: ctx,
-		best_proof :: maybe(goal(ctx_modality))
+		best_proof :: maybe(proof(ctx_modality))
 	).
 
 main(!IO) :-
@@ -142,7 +142,7 @@ process_request(prove(L), !SCtx, !IO) :-
 	%varset.merge_renaming(VS0, VSA, VS, Renaming),
 	%PA = rename_vars_in_formula(Renaming, PA0),
 
-	P0 = proof(vs([Qs], varset.init), []),
+	P0 = vs(Qs, varset.init),
 	is_ctx_proof(P0),
 
 	print(stderr_stream, "facts:\n", !IO),
@@ -152,14 +152,14 @@ process_request(prove(L), !SCtx, !IO) :-
 	print_assumables(stderr_stream, !.SCtx^cx, "  ", !IO),
 	nl(stderr_stream, !IO),
 
-	Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-Gx)-P::out) is nondet :-
+	Proofs0 = set.to_sorted_list(solutions_set((pred((Cost-P)::out) is nondet :-
 		prove(0.0, 100.0, P0, P, default_costs, !.SCtx^cx),
-		Gx = last_goal(P),
 		Cost = cost(!.SCtx^cx, P, default_costs)
 			))),
 
 	% examine derivations
-	list.foldl((pred((Cost-Gy)-P::in, M0::in, M::out) is det :-
+/*
+	list.foldl((pred((Cost-Gy)::in, M0::in, M::out) is det :-
 		(if map.search(M0, Cost-Gy, D0)
 		then D1 = D0
 		else D1 = set.init
@@ -167,18 +167,19 @@ process_request(prove(L), !SCtx, !IO) :-
 		set.insert(D1, P, D2),
 		map.set(M0, Cost-Gy, D2, M)
 			), Proofs0, map.init, DerivsMap),
+*/
 
-	list.sort((pred((CA-_)-_::in, (CB-_)-_::in, Comp::out) is det :-
+	list.sort((pred((CA-_)::in, (CB-_)::in, Comp::out) is det :-
 		float_compare(CA, CB, Comp)
-			), map.to_assoc_list(DerivsMap), DerivsSorted),
+			), Proofs0, Proofs),
 
-	format(stderr_stream, "\n  %d proof(s) found.\n", [i(list.length(DerivsSorted))], !IO),
+	format(stderr_stream, "\n  %d proof(s) found.\n", [i(list.length(Proofs))], !IO),
 
-	list.foldl((pred((Cost-Gz)-Ds::in, !.IO::di, !:IO::uo) is det :-
+	list.foldl((pred((Cost-Gz)::in, !.IO::di, !:IO::uo) is det :-
 		print(stderr_stream, "---------------------------------------------------------------------\n", !IO),
 		format(stderr_stream, "proof cost = %f\n\n", [f(Cost)], !IO),
 		print(stderr_stream, "proven goal:\n  " ++ goal_to_string(Gz) ++ "\n", !IO),
-		nl(stderr_stream, !IO),
+		nl(stderr_stream, !IO)
 
 %		print(stderr_stream, "assumptions:\n", !IO),
 %		print(stderr_stream, "  " ++ assumptions_to_string(!.Ctx, goal_assumptions(Gz)) ++ "\n", !IO),
@@ -188,6 +189,7 @@ process_request(prove(L), !SCtx, !IO) :-
 %		print(stderr_stream, "  " ++ assertions_to_string(!.Ctx, goal_assertions(Gz)) ++ "\n", !IO),
 %		nl(stderr_stream, !IO),
 
+/*
 		print(stderr_stream, string.from_int(set.count(Ds)) ++ " derivation(s).\n", !IO),
 
 		trace[run_time(env("PRINT_DERIVATIONS")), io(!IO)] (
@@ -198,11 +200,11 @@ process_request(prove(L), !SCtx, !IO) :-
 				nl(stderr_stream, !IO)
 					), Ds, !IO)
 		)
-
-			), DerivsSorted, !IO),
+*/
+			), Proofs, !IO),
 
 	(if
-		DerivsSorted = [(_Cost-G)-_Ds|_]
+		Proofs = [(_Cost-G)|_]
 	then
 		Response = "success",
 		!:SCtx = !.SCtx^best_proof := yes(G)
@@ -247,7 +249,7 @@ dissect_query(asserted(impl(_, MProp))) = "R"-MProp.
 
 :- func default_costs = costs.
 
-default_costs = costs(1.0, 1.0, 0.1).
+default_costs = costs(1.0, 1.0).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 

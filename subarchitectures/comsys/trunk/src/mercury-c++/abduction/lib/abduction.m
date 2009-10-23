@@ -28,20 +28,15 @@
 	;	factor(subst, varset)
 	.
 
-:- type proof(M)
-	--->	proof(
-		p_goals :: vscope(list(list(query((M))))),  % in reverse order
-		p_steps :: list(step(M))  % in reverse order
-	).
+:- type proof(M) == vscope(list(query(M))).
 
 :- type costs
 	--->	costs(
 		fact_cost :: float,
-		rule_cost :: float,
-		min_assumption_cost :: float
+		assertion_cost :: float
 	).
 
-:- type goal(M) == vscope(list(query(M))).
+%:- type goal(M) == vscope(list(query(M))).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -49,18 +44,14 @@
 
 :- pred prove(float::in, float::in, proof(M)::in, proof(M)::out, costs::in, C::in) is nondet <= (modality(M), context(C, M)).
 
-:- func last_goal(proof(M)) = vscope(list(query(M))) <= modality(M).
+%:- func last_goal(proof(M)) = vscope(list(query(M))) <= modality(M).
 
-:- func goal_assumptions(goal(M)) = bag(with_cost_function(mgprop(M))) <= modality(M).
-:- func goal_assertions(goal(M)) = bag(vscope(mtest(M))) <= modality(M).
+:- func goal_assumptions(proof(M)) = bag(with_cost_function(mgprop(M))) <= modality(M).
+:- func goal_assertions(proof(M)) = bag(vscope(mtest(M))) <= modality(M).
 
-:- func step_cost(C, step(M), costs) = float <= (context(C, M), modality(M)).
+:- func query_cost(C, varset, query(M), costs) = float <= (context(C, M), modality(M)).
 :- func cost(C, proof(M), costs) = float <= (context(C, M), modality(M)).
 %:- func goal_cost(C, goal(M), float) = float <= (context(C, M), modality(M)).
-
-%------------------------------------------------------------------------------%
-
-:- pred interpret(goal(M)::in, C::in, C::out) is det <= (context(C, M), modality(M)).
 
 %------------------------------------------------------------------------------%
 
@@ -71,7 +62,7 @@
 :- import_module string, float.
 :- import_module modality.
 
-new_proof(Goal, Varset) = proof(vs([Goal], Varset), []).
+new_proof(Goal, Varset) = vs(Goal, Varset).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -88,21 +79,15 @@ goal_assertions(vs(Qs, VS)) = As :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-last_goal(Proof) = G :-
-	(if Proof^p_goals = vs([Last|_Prev], Varset)
-	then G = vs(Last, Varset)
-	else error("empty proof in last_goal/1")
-	).
+query_cost(_Ctx, _VS, unsolved(_, _), _) = 0.0.
+query_cost(Ctx, VS, assumed(MProp, CostFunction), _Costs) = context.cost(Ctx, CostFunction, vs(MProp, VS)).
+query_cost(_Ctx, _VS, proved(_), Costs) = Costs^fact_cost.
+query_cost(_Ctx, _VS, asserted(_), Costs) = Costs^assertion_cost.
 
-step_cost(Ctx, assume(VSMProp, _Subst, CostFunction), _Costs) = context.cost(Ctx, CostFunction, VSMProp).
-step_cost(_Ctx, use_fact(_, _), Costs) = Costs^fact_cost.
-step_cost(_Ctx, resolve_rule(_, _), Costs) = Costs^rule_cost.
-step_cost(_Ctx, factor(_, _), _Costs) = 0.0.
-
-cost(Ctx, Proof, Costs) = Cost :-
-	list.foldl((pred(Step::in, C0::in, C::out) is det :-
-		C = C0 + step_cost(Ctx, Step, Costs)
-			), Proof^p_steps, 0.0, Cost).
+cost(Ctx, vs(Qs, VS), Costs) = Cost :-
+	list.foldl((pred(Q::in, C0::in, C::out) is det :-
+		C = C0 + query_cost(Ctx, VS, Q, Costs)
+			), Qs, 0.0, Cost).
 
 /*
 goal_cost(Ctx, vs(Qs, VS), Costs) = Cost :-
@@ -127,7 +112,7 @@ goal_solved(L) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 prove(CurCost, CostBound, P0, P, Costs, Ctx) :-
-	P0 = proof(vs([L0|Ls], VS0), Ss0),
+	P0 = vs(L0, VS0),
 	(if
 		goal_solved(L0)
 	then
@@ -143,10 +128,12 @@ prove(CurCost, CostBound, P0, P, Costs, Ctx) :-
 				), LAss),
 		P = P0
 	else
-		transform(Step, L0, VS0, L, VS, Ctx),
-		P1 = proof(vs([L, L0|Ls], VS), [Step|Ss0]),
+		transform(L0, VS0, L, VS, Ctx),
+		P1 = vs(L, VS),
 
-		StepCost = step_cost(Ctx, Step, Costs),
+%		StepCost = step_cost(Ctx, Step, Costs),
+		% XXX TODO: costs here!
+		StepCost = 1.0,
 		CurCost + StepCost =< CostBound,
 
 		prove(CurCost + StepCost, CostBound, P1, P, Costs, Ctx)
@@ -169,15 +156,15 @@ segment_proof_state(Qs, {QsL, cf(QUnsolved, F), QsR} ) :-
 
 %------------------------------------------------------------------------------%
 
-:- pred transform(step(M)::out,
+:- pred transform(
 		list(query(M))::in, varset::in,
 		list(query(M))::out, varset::out,
 		C::in) is nondet <= (modality(M), context(C, M)).
 
-transform(Step, L0, VS0, L, VS, Ctx) :-
+transform(L0, VS0, L, VS, Ctx) :-
 	segment_proof_state(L0, SegL0),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "[", !IO) ),
-	step(Step, SegL0, VS0, L, VS, Ctx),
+	step(_Step, SegL0, VS0, L, VS, Ctx),
 	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "]", !IO) ).
 
 %------------------------------------------------------------------------------%
@@ -381,26 +368,3 @@ apply_subst_to_query(Subst, unsolved(MProp, F)) = unsolved(apply_subst_to_mprop(
 apply_subst_to_query(Subst, proved(MProp)) = proved(apply_subst_to_mprop(Subst, MProp)).
 apply_subst_to_query(Subst, assumed(MProp, F)) = assumed(apply_subst_to_mprop(Subst, MProp), F).
 apply_subst_to_query(Subst, asserted(MTest)) = asserted(apply_subst_to_mtest(Subst, MTest)).
-
-%------------------------------------------------------------------------------%
-
-interpret(vs(Qs, _Varset), !Ctx) :-
-	% call the effects
-	list.foldl((pred(Q::in, !.Ctx::in, !:Ctx::out) is det :-
-		(if
-			( Q = proved(MProp)
-			; Q = assumed(MProp, _)
-			; Q = asserted(prop(MProp))
-			; Q = asserted(impl(_, MProp))
-			),
-			MProp = m(Mod, Prop),
-			ground_formula(Prop, GProp)
-		then
-			effect(m(Mod, GProp), !Ctx)
-		else
-			% this happens only when there is an unsolved or non-ground
-			% query in the goal.
-			%error("unsolved query in interpret/3")
-			true
-		)
-			), Qs, !Ctx).

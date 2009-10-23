@@ -64,6 +64,8 @@ print_ctx(Ctx, !IO) :-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 print_proof_trace(_Ctx, Proof, !IO) :-
+	true.
+/*
 	print("proof trace:\n", !IO),
 	Proof^p_goals = vs(RevGoals, Varset0),
 	Qs = reverse(RevGoals),
@@ -77,6 +79,7 @@ print_proof_trace(_Ctx, Proof, !IO) :-
 				++ ">>  " ++ step_to_string(Step) ++ "\n  " ++ proof_state_to_string(Varset0, Goal)
 				), from_corresponding_lists(reverse(Proof^p_steps), RemQss)),
 	print(string.join_list("\n", GoalsStr) ++ "\n", !IO).
+*/
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
