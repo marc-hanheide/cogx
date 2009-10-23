@@ -82,6 +82,11 @@ add_subdirectory (src/c++/vision/components/ObjectRecognizer)
 add_subdirectory (src/python/ObjectRecognizer)
 endif (BUILD_SA_VISION_OBJRECOGNIZER)
 
+option(BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB "build convex hull display" YES)
+if (BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB)
+add_subdirectory (src/c++/vision/components/DisplayConvexHullPB)
+endif (BUILD_SA_VISION_DISPLAY_CONVEXHULL_PB)
+
 option(BUILD_SA_VISION_VISLEARNER "Build UOL visual learning component" NO) # default NO until fully integrated
 option(BUILD_SA_VISION_VISLEARNER_CTF "Build Matlab CTF for UOL visual learner; off=use prebuilt CTF" NO)
 mark_as_advanced(BUILD_SA_VISION_VISLEARNER_CTF)
