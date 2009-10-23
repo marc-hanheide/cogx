@@ -3,17 +3,16 @@ package coma.components;
 import Ice.Current;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import comadata.ComaReasonerInterfacePrx;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class ComaInputWindow extends ManagedComponent {
@@ -40,6 +39,7 @@ public class ComaInputWindow extends ManagedComponent {
 		if (args.containsKey("--reasoner-name")) {
 			m_comareasoner_component_name=args.get("--reasoner-name");
 		}
+		
 	}
 
 	public void start() {
@@ -255,7 +255,8 @@ public class ComaInputWindow extends ManagedComponent {
 	freeForm.addActionListener(new ActionListener(){
 		public void actionPerformed(ActionEvent ae){
 			debug("requested free form input window");
-			String str = JOptionPane.showInputDialog(null, "Enter a SPARQL query: ", lastInputFreeForm); 
+			String str = (String) JOptionPane.showInputDialog(null, null, "Enter a SPARQL query: ", JOptionPane.PLAIN_MESSAGE, null, null, lastInputFreeForm);  
+//			showInputDialog(null, "Enter a SPARQL query: ", lastInputFreeForm); 
 //					"SPARQL", 1);
 			if(str != null) {
 				log("Executing SPARQL query: " + str);

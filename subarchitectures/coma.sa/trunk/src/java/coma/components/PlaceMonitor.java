@@ -346,7 +346,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private void processAddedObjectProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
-
+		
 		debug("got a callback for an ADDED ObjectPlaceProperty for " + _objProp.placeId + " with category "+ ((SpatialProperties.StringValue)_objProp.mapValue).value + ". The probability distribution is not yet taken into account!");
 			
 		// TODO handle probability distribution 
@@ -737,29 +737,31 @@ public class PlaceMonitor extends ManagedComponent {
 			boolean _unknown = true;
 			if (_comaRoom.concepts.length!=0) {
 				for (String _currConcept : _comaRoom.concepts) {
+					if (true) continue;
 					if (_currConcept.equals("owl:Thing") 
 							|| _currConcept.endsWith("PhysicalRoom") 
 							|| _currConcept.endsWith("Portion_of_Space") 
 							|| _currConcept.endsWith("Portion_of_space")) {
 						continue;
 					}
+					_currConcept = _currConcept.replace(":", "");
 					log("current concept for proxy feature areaclass: " + _currConcept);
-					Feature _classFtr = new Feature();
-					_classFtr.featlabel = "areaclass";
-					_classFtr.alternativeValues = new FeatureValue[1];
-					_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
+					String _featlabel = "areaclass";
+					FeatureValue[] _alternativeValues = new FeatureValue[1];
+					_alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
+					Feature _classFtr = new Feature(_featlabel, _alternativeValues);
 					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 					_unknown = false;
 				}
 			} 
 			if (_unknown) {
-				Feature _classFtr = new Feature();
-				_classFtr.featlabel = "areaclass";
-				_classFtr.alternativeValues = new FeatureValue[1];
-				_classFtr.alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
+				String _featlabel = "areaclass";
+				FeatureValue[] _alternativeValues = new FeatureValue[1];
+				_alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
+				Feature _classFtr = new Feature(_featlabel, _alternativeValues);
 				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 			}
-			m_proxyMarshall.commitFeatures("room", _currRoomUID);
+			 m_proxyMarshall.commitFeatures("room", _currRoomUID);
 			log("maintained proxy for " + _currRoomUID);
 
 

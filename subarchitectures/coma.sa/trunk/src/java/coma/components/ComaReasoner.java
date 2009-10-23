@@ -140,8 +140,15 @@ public class ComaReasoner extends ManagedComponent {
 		public String executeSPARQL(String sparqlQuery, Current current) {
 			ResultSet _results = m_reasoner.executeSPARQLQuery(sparqlQuery);
 			OutputStream stream = new ByteArrayOutputStream();
-			ResultSetFormatter.out(stream, _results);
-			return stream.toString();
+			String returnString = "";
+			if (_results==null) {
+				returnString = "SPARQL Syntax Error!";
+			}
+			else { 
+				ResultSetFormatter.out(stream, _results);
+				returnString = stream.toString();
+			}
+			return returnString;
 		}
 
 		
