@@ -12,8 +12,8 @@ INCLUDE includes/vision.sa/vision-fake.cast
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-INCLUDE includes/binder.sa/binder.cast
-#INCLUDE includes/binder.sa/binder-quiet.cast
+#INCLUDE includes/binder.sa/binder.cast
+INCLUDE includes/binder.sa/binder-quiet.cast
 
 # coma ########################################################################
 INCLUDE includes/coma.sa/coma-base.cast
