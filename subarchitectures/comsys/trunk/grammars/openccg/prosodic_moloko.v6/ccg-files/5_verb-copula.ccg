@@ -27,9 +27,9 @@
   def cop-entry(arg, sem){
  
   #PROSG09: we comment 
-  #     entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-  #    entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
-       entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
+      entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+      entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+      entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
   }
      # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
      #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
@@ -37,8 +37,8 @@
 
   #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
   def cop-entry-ip(arg, sem){
-       entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-       entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+   #    entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+   #    entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
   }
 
    #---  Families ----
