@@ -277,6 +277,7 @@ generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
 	k(now, private(r)) : objecttype(Entity, Type),
+	i : feat_withIS(Nom, true) / 1.0,
 	i : feat_SpeechAct(Nom, question) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
@@ -288,6 +289,7 @@ generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, Hypothesis) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
+			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 generate : intention : not_understood(Ag) <-
