@@ -100,12 +100,12 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   AttrObjectPtr pAttrObject = new AttrObject();
   pAttrObject->protoObjectID = ptask->protoObjectId;
   vector<int>::const_iterator plabel;
-  for( plabel = ptask->colorLabel.begin(); plabel != ptask->colorLabel.end(); plabel++) {
-    pAttrObject->colorLabel.push_back(str(boost::format("%d") % *plabel));
+  for( plabel = ptask->labels.begin(); plabel != ptask->labels.end(); plabel++) {
+    pAttrObject->labels.push_back(str(boost::format("%d") % *plabel));
   }
   vector<double>::const_iterator pdbl;
-  for( pdbl = ptask->colorDistr.begin(); pdbl != ptask->colorDistr.end(); pdbl++) {
-    pAttrObject->colorDistr.push_back(*pdbl);
+  for( pdbl = ptask->distribution.begin(); pdbl != ptask->distribution.end(); pdbl++) {
+    pAttrObject->distribution.push_back(*pdbl);
   }
   string attrId = newDataID();
   pAttrObject->time = getCASTTime();
