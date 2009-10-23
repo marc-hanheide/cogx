@@ -599,7 +599,7 @@ public class cc_TTS extends ManagedComponent {
          // Location of temporarily storing generated MaryXMLFiles
             if (_config.containsKey("--delXml")) {
             	String tmp = _config.get("--DelXml");
-            	if(tmp.equals("yes")) m_DelGenrtdXMLFile =true;
+            	if(tmp.equals("true")) m_DelGenrtdXMLFile =true;
             	else m_DelGenrtdXMLFile =false;
             }
             
