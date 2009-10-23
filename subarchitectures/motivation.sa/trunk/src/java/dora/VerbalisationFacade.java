@@ -57,11 +57,13 @@ public class VerbalisationFacade {
 	}
 
 	/**
-	 * @param greeting
+	 * @param _text
 	 */
-	protected void verbaliseCannedText(String greeting) {
-		LogicalForm _greetingLF = lfForCannedText(greeting);
-		verbaliseLF(_greetingLF);
+	protected void verbaliseCannedText(String _text) {
+		if (!_text.isEmpty()) {
+			LogicalForm _greetingLF = lfForCannedText(_text);
+			verbaliseLF(_greetingLF);
+		}
 	}
 
 	/**
@@ -154,7 +156,6 @@ public class VerbalisationFacade {
 				});
 	}
 
-	
 	public <EntryType extends Ice.ObjectImpl> void verbaliseOnOverwrite(
 			final Class<EntryType> _entryClass,
 			final TextGenerator<EntryType> _generator) {
@@ -184,10 +185,11 @@ public class VerbalisationFacade {
 					}
 				});
 	}
-	
+
 	/**
 	 * Verbalise when an object of this type is deleted. The generator is passed
-	 * the last available instance of the deleted object. Keeps track of objects using a WMEntrySet.
+	 * the last available instance of the deleted object. Keeps track of objects
+	 * using a WMEntrySet.
 	 * 
 	 * @param <EntryType>
 	 * @param _entryClass
