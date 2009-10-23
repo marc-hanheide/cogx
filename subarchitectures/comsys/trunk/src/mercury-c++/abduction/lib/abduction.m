@@ -222,7 +222,7 @@ step(assume(vs(m(MQ, PQ), VS), Uni, F),
 
 	% resolution with a fact
 step(use_fact(vs(m(MF, PF), VS), Uni),
-		{QsL0, cf(m(MQ, PQ0), _F), QsR0}, VS0,
+		{QsL0, cf(m(MQ, PQ0), not_assumable), QsR0}, VS0,
 		QsL ++ [proved(m(MQ, PQ))] ++ QsR, VS,
 		Ctx) :-
 
