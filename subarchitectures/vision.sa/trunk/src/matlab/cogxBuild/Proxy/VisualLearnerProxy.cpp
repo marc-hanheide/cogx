@@ -105,30 +105,32 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
    copyLabels(rCqnt, labels, probs);
 }
 
-void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
+void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<double> &distribution);
 {
-   vector<int> labels;
+   vector<int> proto_labels;
    vector<double> probs;
-   // Features need to be calculated every time! In CoSy they were stored in ROI.
-   VL_recognise_attributes(Object, labels, probs);
 
-   // Put features of the ROI to the matlab engine.
-   // TODO: copy labels+probs 2 features; HOW?????
-   mwArray features; // = CMatlabHelper::idl2array(Roi.m_features);
+   // Features need to be calculated every time! In CoSy they were stored in ROI.
+   VL_recognise_attributes(Object, proto_labels, probs);
+   mwArray features(proto_labels.size(), 2, mxDOUBLE_CLASS, mxREAL);
+   for (unsigned i = 0; i < proto_labels.size(); i++) {
+      features(i, 1) =  (double) proto_labels[i];
+      features(i, 2) =  (double) probs[i];
+   }
 
    long cntPlus = 0, cntMinus = 0;
-   for (unsigned i = 0; i < task.labels.size(); i++) {
-     if (task.confidences[i] > 0) cntPlus++;
-     if (task.confidences[i] < 0) cntMinus++;
+   for (unsigned i = 0; i < labels.size(); i++) {
+      if (distribution[i] > 0) cntPlus++;
+      if (distribution[i] < 0) cntMinus++;
    }
 
    if (cntPlus > 0) {
       mwArray avw(cntPlus, 2, mxDOUBLE_CLASS, mxREAL);
       int row = 1;
-      for (unsigned i = 0; i < task.labels.size(); i++) {
-        if (task.confidences[i] > 0) {
-           avw(row, 1) =  (double) task.labels[i];
-           avw(row, 2) =  (double) task.confidences[i];
+      for (unsigned i = 0; i < labels.size(); i++) {
+        if (distribution[i] > 0) {
+           avw(row, 1) =  (double) labels[i];
+           avw(row, 2) =  (double) distribution[i];
            row++;
         }
       }
@@ -138,10 +140,10 @@ void VL_update(const VisualLearnerLearningTask &task, ProtoObject &Object)
    if (cntMinus > 0) {
       mwArray avw(cntMinus, 2, mxDOUBLE_CLASS, mxREAL);
       int row = 1;
-      for (unsigned i = 0; i < task.labels.size(); i++) {
-        if (task.confidences[i] < 0) {
-           avw(row, 1) =  (double) task.labels[i];
-           avw(row, 2) =  (double) - task.confidences[i];
+      for (unsigned i = 0; i < labels.size(); i++) {
+        if (distribution[i] < 0) {
+           avw(row, 1) =  (double) labels[i];
+           avw(row, 2) =  (double) - distribution[i];
            row++;
         }
       }

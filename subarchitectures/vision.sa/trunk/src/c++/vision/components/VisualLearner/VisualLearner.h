@@ -30,9 +30,11 @@ class VisualLearner : public ManagedComponent {
       virtual void start();
 
    private:
-      WmAddressVector m_RequestIdQueue;
+      WmAddressVector m_RecogTaskId_Queue;
+      WmAddressVector m_LearnTaskId_Queue;
       void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
       bool recogniseAttributes(VisionData::VisualLearnerRecognitionTaskPtr _pTask);
+      bool updateModel(VisionData::VisualLearnerLearningTaskPtr _pTask);
 
       //string allowedSoiSource;
       //void quip(CASTData<ComedyEssentials::Joke> *_pData);
