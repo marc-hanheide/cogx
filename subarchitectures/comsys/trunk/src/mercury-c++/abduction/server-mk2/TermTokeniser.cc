@@ -137,16 +137,8 @@ tokenise(const string & s)
 			case TSVerbatimAtom: {
 					string tmp = string("");
 					bool finished = false;
-					bool escape = false;
 					while (*c_str && !finished) {
-						if (escape) {
-							tmp += escaped(*c_str);
-							escape = false;
-						}
-						else if (*c_str == '\\') {
-							escape = true;
-						}
-						else if (*c_str == '\'') {
+						if (*c_str == '\'') {
 							finished = true;
 						}
 						else {
