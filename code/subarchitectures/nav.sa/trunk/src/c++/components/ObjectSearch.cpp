@@ -1008,28 +1008,33 @@ void ObjectSearch::Recognize(){
 	while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED) {
 	  sleepComponent(10);
 	}
-	log("now moving extras");
-	int n = 1;
-	while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
-	  m_status = 	RECOGNITIONINPROGRESS;
-	  MovePanTilt(anglediff + n*m_ptustep);
-	  PostRecognitionCommand();
-	  while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
-	    sleepComponent(10);
-	  }
-	  n++;
-	}
-	n= 1;
-	while(anglediff - n*m_ptustep > -M_PI/2  && m_status != STOPPED){
-	  m_status = 	RECOGNITIONINPROGRESS;
-	  MovePanTilt(anglediff - n*m_ptustep);
-	  PostRecognitionCommand();
-	  while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED)  {
-	    sleepComponent(10);
-	  }
-	  n++;
-	}
 
+	//this only makes sense if using ptu
+	if(m_CtrlPTU) {
+
+	  log("now moving extras");
+	  int n = 1;
+	  while(anglediff + n*m_ptustep < M_PI/2  && m_status != STOPPED){
+	    m_status = 	RECOGNITIONINPROGRESS;
+	    MovePanTilt(anglediff + n*m_ptustep);
+	    PostRecognitionCommand();
+	    while(m_status != RECOGNITIONINCOMPLETE  && m_status != STOPPED)  {
+	      sleepComponent(10);
+	    }
+	    n++;
+	  }
+	  n= 1;
+	  while(anglediff - n*m_ptustep > -M_PI/2  && m_status != STOPPED){
+	    m_status = 	RECOGNITIONINPROGRESS;
+	    MovePanTilt(anglediff - n*m_ptustep);
+	    PostRecognitionCommand();
+	    while(m_status != RECOGNITIONINCOMPLETE && m_status != STOPPED)  {
+	      sleepComponent(10);
+	    }
+	    n++;
+	  }
+	  
+	}
 	//belt up for safety
 	lockComponent();	
 }
