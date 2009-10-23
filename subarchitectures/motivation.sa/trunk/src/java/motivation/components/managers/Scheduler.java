@@ -168,12 +168,13 @@ public class Scheduler extends ManagedComponent {
 			log("ok, let's schedule " + numberToSchedule + " motives of the "
 					+ surfacedMotives.size() + " surfaced ones.");
 			for (Motive m : sortedMotives.subList(0, numberToSchedule)) {
-				m.status = MotiveStatus.ACTIVE;
-				m.tries++;
-				m.rank = rankCount++;
 				try {
+					debug("activating motive "+m.thisEntry.id);
 					lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
 					getMemoryEntry(m.thisEntry, Motive.class);
+					m.status = MotiveStatus.ACTIVE;
+					m.tries++;
+					m.rank = rankCount++;
 					overwriteWorkingMemory(m.thisEntry, m);
 				} catch (DoesNotExistOnWMException e) {
 					// safely ignore
