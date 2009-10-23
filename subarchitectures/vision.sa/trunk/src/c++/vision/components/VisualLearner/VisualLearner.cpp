@@ -89,7 +89,7 @@ void VisualLearner::onAdd_LearningTask(const cdl::WorkingMemoryChange & _wmc)
 void VisualLearner::runComponent()
 {
    debug("::runComponent");
-   sleep(3011);
+   sleepComponent(3011);
 
    WmAddressVector::iterator pwma;
    bool foundSomething;
