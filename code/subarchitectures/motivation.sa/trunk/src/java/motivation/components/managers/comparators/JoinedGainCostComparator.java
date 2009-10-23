@@ -13,8 +13,10 @@ public class JoinedGainCostComparator implements Comparator<Motive> {
 	 */
 	@Override
 	public int compare(Motive arg0, Motive arg1) {
-		double compareValue0 = arg0.informationGain / (arg0.costs*2);
-		double compareValue1 = arg1.informationGain / (arg1.costs*2);
+		double div0=Math.max(1e-3,arg0.costs);
+		double div1=Math.max(1e-3,arg1.costs);
+		double compareValue0 = arg0.informationGain / div0;
+		double compareValue1 = arg1.informationGain / div1;
 		
 		if (compareValue0 < compareValue1)
 			return 1;
