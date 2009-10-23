@@ -122,7 +122,7 @@ public class TTSLocal {
 
 			        AudioPlayer ap = new AudioPlayer(ais, lineListener);
 			        ap.start();
-			        ap.join();
+			        ap.join(500);
 			       			   
 		   }
 		   catch (Exception e) {e.printStackTrace() ; } 
