@@ -33,8 +33,8 @@
 
 :- implementation.
 
-:- import_module require.
-:- import_module list, pair, map, float.
+:- import_module require, solutions.
+:- import_module list, pair, map, float, multi_map.
 :- import_module costs.
 :- import_module varset.
 
@@ -42,8 +42,8 @@
 
 :- type ctx
 	--->	ctx(
-		ctx_facts :: set(vscope(mprop(ctx_modality))),
-		ctx_rules :: set(vscope(mrule(ctx_modality))),  % this doesn't really belong here, does it?
+		ctx_facts :: multi_map(pair(list(ctx_modality), string), vscope(mprop(ctx_modality))),
+		ctx_rules :: multi_map(pair(list(ctx_modality), string), vscope(mrule(ctx_modality))),
 		ctx_assumables :: map(cost_function_name, map(mgprop(ctx_modality), float))
 	).
 
@@ -56,17 +56,20 @@
 	func(min_assumption_cost/2) is ctx_min_assumption_cost
 ].
 
-new_ctx = ctx(set.init, set.init, map.init).
+new_ctx = ctx(multi_map.init, multi_map.init, map.init).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
 add_fact(Prop, Ctx0, Ctx) :-
 	Facts = Ctx0^ctx_facts,
-	Ctx = Ctx0^ctx_facts := set.insert(Facts, Prop).
+	Prop = vs(m(Mod, p(PredSym, _Args)), _VS),
+	Ctx = Ctx0^ctx_facts := multi_map.add(Facts, Mod-PredSym, Prop).
 
 add_rule(Rule, Ctx0, Ctx) :-
 	Rules = Ctx0^ctx_rules,
-	Ctx = Ctx0^ctx_rules := set.insert(Rules, Rule).
+	Rule = vs(m(Mod, _-Head), _VS),
+	m(ModH, p(PredSym, _)) = rule_head_mprop(Head),
+	Ctx = Ctx0^ctx_rules := multi_map.add(Rules, (Mod++ModH)-PredSym, Rule).
 
 add_assumable(FuncName-Costs, Ctx0, Ctx) :-
 	AssumFuncs = Ctx0^ctx_assumables,
@@ -74,20 +77,30 @@ add_assumable(FuncName-Costs, Ctx0, Ctx) :-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-set_facts(Facts, Ctx0, Ctx) :-
-	Ctx = Ctx0^ctx_facts := Facts.
+	% XXX these!
 
-set_rules(Rules, Ctx0, Ctx) :-
-	Ctx = Ctx0^ctx_rules := Rules.
+set_facts(Facts, Ctx0, Ctx) :-
+	set.fold((pred(Fact::in, Fs0::in, Fs::out) is det :-
+		Fact = vs(m(Mod, p(PredSym, _Args)), _VS),
+		Fs = multi_map.add(Fs0, Mod-PredSym, Fact)
+			), Facts, multi_map.init, NewFacts),
+	Ctx = Ctx0^ctx_facts := NewFacts.
+
+set_rules(_Rules, Ctx0, Ctx) :-
+	Ctx = Ctx0^ctx_rules := multi_map.init.
 
 set_assumables(Assumables, Ctx0, Ctx) :-
 	Ctx = Ctx0^ctx_assumables := Assumables.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
-facts(Ctx) = Ctx^ctx_facts.
+facts(Ctx) = solutions_set(pred(Fact::out) is nondet :-
+	multi_map.member(Ctx^ctx_facts, _, Fact)
+		).
 
-rules(Ctx) = Ctx^ctx_rules.
+rules(Ctx) = solutions_set(pred(Rule::out) is nondet :-
+	multi_map.member(Ctx^ctx_rules, _, Rule)
+		).
 
 assumables(Ctx) = Ctx^ctx_assumables.
 
@@ -95,16 +108,20 @@ assumables(Ctx) = Ctx^ctx_assumables.
 
 :- pred find_ctx_fact(ctx::in, list(ctx_modality)::in, string::in, vscope(mprop(ctx_modality))::out) is nondet.
 
-find_ctx_fact(Ctx, Ms, PredSym, vs(m(Ms, p(PredSym, Args)), VS)) :-
-	set.member(vs(m(Ms, p(PredSym, Args)), VS), Ctx^ctx_facts).
+find_ctx_fact(Ctx, Ms, PredSym, Fact) :-
+	multi_map.nondet_search(Ctx^ctx_facts, Ms-PredSym, Fact).
+%find_ctx_fact(Ctx, Ms, PredSym, vs(m(Ms, p(PredSym, Args)), VS)) :-
+%	set.member(vs(m(Ms, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
 find_ctx_fact(_Ctx, Ms, "=", vs(m(Ms, p("=", [v(V), v(V)])), VS)) :-
 	new_named_var(varset.init, "X", V, VS).
 
 :- pred find_ctx_rule(ctx::in, list(ctx_modality)::in, string::in, vscope(mrule(ctx_modality))::out) is nondet.
 
-find_ctx_rule(Ctx, Ms, PredSym, VSMRule) :-
-	set.member(VSMRule, Ctx^ctx_rules).
+find_ctx_rule(Ctx, Ms, PredSym, Rule) :-
+	multi_map.nondet_search(Ctx^ctx_rules, Ms-PredSym, Rule).
+%find_ctx_rule(Ctx, Ms, PredSym, VSMRule) :-
+%	set.member(VSMRule, Ctx^ctx_rules).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -113,14 +130,16 @@ find_ctx_rule(Ctx, Ms, PredSym, VSMRule) :-
 :- pred ctx_fact(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mprop(ctx_modality))::out) is nondet.
 
 ctx_fact(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(Mod, p(PredSym, Args)), VS)) :-
-	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "F", !IO) ),
-	set.member(vs(m(Mod, p(PredSym, Args)), VS), Ctx^ctx_facts).
+	fail.
+%	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "F", !IO) ),
+%	set.member(vs(m(Mod, p(PredSym, Args)), VS), Ctx^ctx_facts).
 
 ctx_fact(_Ctx, vs(m(Mod, p("=", [T01, T02])), VS), vs(m(Mod, p("=", [T1, T2])), VS)) :-
-	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "=", !IO) ),
-	unify_terms(T01, T02, Subst),
-	T1 = apply_subst_to_term(Subst, T01),
-	T2 = apply_subst_to_term(Subst, T02).
+	fail.
+%	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "=", !IO) ),
+%	unify_terms(T01, T02, Subst),
+%	T1 = apply_subst_to_term(Subst, T01),
+%	T2 = apply_subst_to_term(Subst, T02).
 
 /*
 ctx_fact(_Ctx, vs(m(Mod, p("\\=", [T1, T2])), VS),
@@ -140,16 +159,17 @@ ctx_fact(_Ctx, vs(m(Mod, p("\\=", [T1, T2])), VS),
 :- pred ctx_rule(ctx::in, vscope(mprop(ctx_modality))::in, vscope(mrule(ctx_modality))::out) is nondet.
 
 ctx_rule(Ctx, vs(m(_, p(PredSym, _)), _), vs(m(ModR, Ante-Head), VS)) :-
-	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "R", !IO) ),
-	set.member(vs(m(ModR, Ante-Head), VS), Ctx^ctx_rules),
-	(
-		Head = std(m(_, p(PredSym, _)))
-	;
-		Head = test(MTest),
-		( MTest = prop(m(_, p(PredSym, _)))
-		; MTest = impl(_, m(_, p(PredSym, _)))
-		)
-	).
+	fail.
+%	trace[compile_time(flag("debug")), io(!IO)] ( print(stderr_stream, "R", !IO) ),
+%	set.member(vs(m(ModR, Ante-Head), VS), Ctx^ctx_rules),
+%	(
+%		Head = std(m(_, p(PredSym, _)))
+%	;
+%		Head = test(MTest),
+%		( MTest = prop(m(_, p(PredSym, _)))
+%		; MTest = impl(_, m(_, p(PredSym, _)))
+%		)
+%	).
 
 :- pred ctx_assumable_func(ctx::in, cost_function_name::in, mgprop(ctx_modality)::out, float::out) is nondet.
 
