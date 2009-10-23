@@ -7,13 +7,13 @@ option(BUILD_ABDUCER "Build abducer" YES)
 
 if(BUILD_ABDUCER)
 
-find_package(Mercury REQUIRED)
+	find_package(Mercury REQUIRED)
 
-# build the abducer
-add_custom_target (
-	abducer ALL
-	make MERCURY_HOME=${MERCURY_HOME} ICE_HOME=${ICE_HOME}
-	WORKING_DIRECTORY ${COMSYS_ROOT}/src/mercury-c++/abduction
-)
+	# build the abducer
+	add_custom_target (
+		abducer ALL
+		make MERCURY_HOME=${MERCURY_HOME} ICE_HOME=${ICE_HOME}
+		WORKING_DIRECTORY ${COMSYS_ROOT}/src/mercury-c++/abduction
+	)
 
 endif(BUILD_ABDUCER)
