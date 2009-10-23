@@ -78,7 +78,7 @@
 	<!-- Basic compilation                                                   -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="slice,expandlibs" description="compiles the source code">
-		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" executable="/System/Library/Frameworks/JavaVM.Framework/Versions/1.6.0/Home/bin/javac" fork="yes" compiler="javac1.6">
 		<classpath refid="build.classpath"/> </javac>
 	</target>
 
