@@ -35,9 +35,11 @@ JAVA MG discretizer binder.components.UnionDiscretizer --onlymaxfeatvalues false
 JAVA MG translator binder.components.BeliefModelTranslator --log
 
 JAVA MG monitor binder.components.BinderMonitor --gui --log
-JAVA MG bmmonitor binder.components.BeliefModelMonitor --log
+JAVA MG bmmonitor binder.components.BeliefModelMonitor #--log
 
 JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer #--log
+#JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent --subscribe "beliefmodels.adl.Belief"
+
 
 
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log 
