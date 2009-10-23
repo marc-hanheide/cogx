@@ -110,7 +110,7 @@ public class RoomUnionEventRelation extends
 	private boolean findComaRoomIdInUnions(Union[] unions, long searchedRoomID) {
 		for (Union union : unions) {
 			for (Feature f : union.features) {
-				if (f.featlabel.equals("roomID")) {
+				if (f.featlabel.equals("roomID") && f.alternativeValues[0] instanceof IntegerValue) {
 					int placeId = ((IntegerValue) f.alternativeValues[0]).val;
 					if (placeId == searchedRoomID) {
 						component.debug("found corresponding ID");
