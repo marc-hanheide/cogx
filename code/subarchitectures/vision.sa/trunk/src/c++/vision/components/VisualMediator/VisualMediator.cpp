@@ -188,6 +188,8 @@ void VisualMediator::runComponent()
 			ProxyPtr proxy = createNewProxy (origin, 1.0f);
 
 			addFeatureToProxy (proxy, label);
+			
+			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
 
 			addProxyToWM(proxy);
 
@@ -352,7 +354,7 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
 	string ourSA = getSubarchitectureID();
 
 	for(it = uni->includedProxies.begin(); it != uni->includedProxies.end() && !found; it++)
-	  if((*it)->origin->address.subarchitecture == ourSA)
+	  if((*it)->origin->address.subarchitecture == ourSA && (*it)->origin->type == "VisualObject")
 	  {
 		  found = true;
 		  visObjID = (*it)->origin->address.id;
@@ -380,15 +382,16 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   {
 	debug("Found asserted colors or shapes");
 	
+	VisualLearnerLearningTaskPtr ltask = addFeatureListToLearnTask(visObjID, colors, shapes, colorDist, shapeDist);
+	addToWorkingMemory(newDataID(), ltask);
 	
+	log("Added a learning task for visual object ID %s", visObjID);
   }
   else
   {
 	debug("No asserted colors or shapes - no learning");
 	return;
   }
-
-
 }
 
 
@@ -509,6 +512,174 @@ bool VisualMediator::AttrAgent(AgentStatusPtr ags)
   }
 
 }
+
+void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, DoubleSeq distribution)
+{
+  vector<int>::iterator labi;
+  vector<double>::iterator disti = distribution.begin();
+  
+  for(labi = labels.begin(); labi != labels.end(); labi++)
+  {
+	FeatureValuePtr value;
+
+	switch(*labi)
+	{
+		case 1:
+			value = createStringValue ("red", *disti);
+			break;
+
+		case 2:
+			value = createStringValue ("green", *disti);	
+			break;
+			
+		case 3:
+			value = createStringValue ("blue", *disti);
+			break;
+
+		case 4:
+			value = createStringValue ("yellow", *disti);	
+			break;
+			
+		case 5:
+			value = createStringValue ("black", *disti);
+			break;
+
+		case 6:
+			value = createStringValue ("white", *disti);	
+			break;
+			
+		case 7:
+			value = createStringValue ("orange", *disti);
+			break;
+
+		case 8:
+			value = createStringValue ("pink", *disti);	
+			break;
+			
+		case 11:
+			value = createStringValue ("compact", *disti);
+			break;
+
+		case 12:
+			value = createStringValue ("elongated", *disti);	
+			break;
+
+		default:
+			value = createStringValue ("unknown", *disti);
+			break;
+	}
+	
+	FeaturePtr label;
+	if(*labi < 10)
+	{
+//	  value = createStringValue (colorStrEnums[*labi], *disti);
+	  label = createFeatureWithUniqueFeatureValue ("Color", value);
+	  
+	  addFeatureToProxy (proxy, label);
+	}
+	else if(*labi < 13)
+	{
+//	  value = createStringValue (shapeStrEnums[*labi], *disti);
+	  label = createFeatureWithUniqueFeatureValue ("Shape", value);
+	  
+	  addFeatureToProxy (proxy, label);
+	} 	
+	
+	disti++;
+  }
+	  
+}
+
+
+VisualLearnerLearningTaskPtr VisualMediator::addFeatureListToLearnTask(const string visualObjID,
+				vector<Color> colors, vector<Shape> shapes,
+				vector<float> colorDist, vector<float> shapeDist)
+{
+  VisualObjectPtr objPtr = getMemoryEntry<VisualObject>(visualObjID);
+  
+  VisualLearnerLearningTaskPtr ltask = new VisualLearnerLearningTask();
+  
+  ltask->visualObjectId = visualObjID;
+  ltask->protoObjectId = objPtr->protoObjectID;
+  
+  vector<float>::iterator disti = colorDist.begin();
+  
+  for(vector<Color>::iterator labi = colors.begin(); labi != colors.end(); labi++)
+  {
+	ltask->distribution.push_back(*disti);
+	disti++;
+//	ltask->labels.push_back((int) *labi);
+
+	switch(*labi)
+	{
+		case red:
+			ltask->labels.push_back(1);		
+			break;
+
+		case green:
+			ltask->labels.push_back(2);		
+			break;
+			
+		case blue:
+			ltask->labels.push_back(3);	
+			break;
+
+		case yellow:
+			ltask->labels.push_back(4);		
+			break;
+/*			
+		case black:
+			ltask->labels.push_back(5);	
+			break;
+
+		case white:
+			ltask->labels.push_back(6);		
+			break;
+			
+		case orange:
+			ltask->labels.push_back(7);	
+			break;
+
+		case pink:
+			ltask->labels.push_back(8);		
+			break;
+*/		
+		default:
+			ltask->labels.push_back(0);
+			break;
+			
+	}
+
+  }
+  
+  disti = colorDist.begin();
+  
+  for(vector<Shape>::iterator labi = shapes.begin(); labi != shapes.end(); labi++)
+  {
+	ltask->distribution.push_back(*disti);
+	disti++;
+//	ltask->labels.push_back((int) *labi + 10);
+	
+	switch(*labi)
+	{ 
+		case spherical:
+			ltask->labels.push_back(11);	
+			break;
+
+		case cylindrical:
+			ltask->labels.push_back(12);		
+			break;
+			
+		default:
+			ltask->labels.push_back(10);
+			break;
+	}
+
+  }
+  
+  return ltask;  
+}
+
 
 }
 /* vim:set fileencoding=utf-8 sw=2 ts=4 noet:vim*/
