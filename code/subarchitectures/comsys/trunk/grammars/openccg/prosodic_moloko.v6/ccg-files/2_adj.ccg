@@ -54,7 +54,7 @@
   rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
 
  #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
-  rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
+  #rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
 
 #######################
 ## DICTIONARY FORMS  ##

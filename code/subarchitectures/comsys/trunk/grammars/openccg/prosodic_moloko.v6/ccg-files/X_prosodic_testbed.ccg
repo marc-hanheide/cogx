@@ -83,4 +83,28 @@ is it a "red_H*" "box_L+H*" LH%: 0 ;
 is it a "red_L+H*" "box_H*" LH%: 0 ;
 is it a red box LL%: 0 ;        
 a red box LL%: 0 ;
+
+##### content planner ######
+the "box_L+H*" LH% is "blue_H*" LL%:1;
+the "box_L+H*" LH% "is_H*" "blue_H*" LL%:1;
+
+the "box_L+H*" is LH% "blue_H*" LL%:1;
+the "box_L+H*" "is_L+H*" LH% "blue_H*" LL%:1;
+
+the "box_H*" LL% is "blue_L+H*" LH%:1;
+the "box_H*" LL% "is_L+H*" "blue_L+H*" LH%:1;
+
+the "box_H*" is blue LL%:1;
+the box is "blue_H*" LL%:1;
+the box "is_H*" blue LL%:1;
+the "box_H*" "is_H*" "blue_H*" LL%:1;
+
+the "box_L+H*" "is_L+H*" "blue_L+H*" LH%:1;
+the "box_L+H*" is "blue_L+H*" LH%:1;
+the "box_L+H*" is blue LH%:1;
+the box is "blue_L+H*" LH%:1;
+the box "is_L+H*" blue LH%:1;
+
+the "box_L+H*" LH% "is_H*" LL% "blue_L+H*" LH%:1;
+
 }
