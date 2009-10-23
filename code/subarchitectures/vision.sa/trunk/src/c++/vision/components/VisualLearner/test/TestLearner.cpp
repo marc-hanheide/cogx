@@ -326,6 +326,7 @@ void CTestRecognizer::runComponent()
       while(isRunning()) {
          if (issued <= learningStepsComplete && issued < 6) {
             issued++;
+            log("Steps issued: %d, complete: %d", issued, learningStepsComplete);
             _test_performLearningStep(issued, protoId);
          }
          sleepComponent(500);
