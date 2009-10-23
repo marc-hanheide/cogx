@@ -541,7 +541,8 @@ public class cc_CCA extends BeliefModelInterface {
 					// "yes" as a response to the robot's "what color is the box?"
 					related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
 					cu.intention = related.intention;
-					cu.intention.predSym = "again_" + cu.intention.predSym;
+					cu.intention.args[3] = PredicateFactory.term("repeated");
+					cu.intention.predSym = cu.intention.predSym;
 					updates = new Belief[0];
 					ccaEngine.stack.push(related);
 				}
