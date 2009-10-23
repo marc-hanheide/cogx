@@ -25,6 +25,8 @@ public class ProsodicTextToRawMARYXml {
 	private static String RAWMARYXMLHead;
 	private static String GenretedXMLFileLocation;
 	private static Integer UtteranceCount=0;
+	private static String stub;
+	private static boolean prosody=false;
 	
 	/**
 	 * @param args
@@ -59,28 +61,34 @@ public class ProsodicTextToRawMARYXml {
 				if(l_utterance.startsWith("h")){
 					l_voicename="hmm-jmk";
 					l_substr=2;
+					stub="h";
 				}else if(l_utterance.startsWith("r")){
 					l_voicename="us2";
 					l_substr=2;
+					stub="r";
 				}else {
 					l_voicename="us2"; 
 					l_substr=0;
+					stub="g";
 				}
 				
 				
 			//Keep the trace of line count
 				++UtteranceCount;
+			//Just an indicator
+				if(l_utterance.contains("_")) prosody= true;
+				else prosody= false;
 			//pass this line to the conversion function
 				l_xmlfile=ConvertToRawMarxXml(l_utterance.substring(l_substr));
 				
 				//A function that takes the prosodic text as input and returns a filename
 				System.out.println("XML file written: "+ l_xmlfile);
 				
-				//Synthesiz this file
+				//Synthesize this file
 				try {
 						SynthesisRAWMaryXMLInput.Utter(GenretedXMLFileLocation.concat(l_xmlfile),l_voicename);
 						Thread.sleep(2500);
-				} catch (InterruptedException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -114,6 +122,7 @@ public class ProsodicTextToRawMARYXml {
 			l_returned_xml=HandleAccentedWord(l_word);
 			l_xmlstring.append(l_returned_xml);
 			l_xmlstring.append(XMLtag_whitespace);
+			
 		}
 		else if(isBoundaryTone(l_word)){
 			//token is boundary tone
@@ -123,7 +132,8 @@ public class ProsodicTextToRawMARYXml {
 		}
 		else {
 			l_xmlstring.append(l_word);	
-			l_xmlstring.append(XMLtag_whitespace);	
+			l_xmlstring.append(XMLtag_whitespace);
+			
 		}
 				
 		}
@@ -239,6 +249,10 @@ public class ProsodicTextToRawMARYXml {
 		//Now write this all to a XML file 
 		StringBuffer l_xmlfilename = new StringBuffer();
 		l_xmlfilename.append(UtteranceCount.toString());
+		l_xmlfilename.append(stub);
+		if (prosody) l_xmlfilename.append("_prsdy");
+		else l_xmlfilename.append("_dflt");
+		
 		l_xmlfilename.append("_maryxml");
 		
 		Date l_date = new Date();
