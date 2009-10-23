@@ -104,17 +104,17 @@ class VisualMediator :
   bool findAsserted(beliefmodels::adl::FormulaPtr fp, 
 					std::vector<beliefmodels::domainmodel::cogx::Color> &colors,
 					std::vector<beliefmodels::domainmodel::cogx::Shape> &shapes,
-					std::vector<float> colorDist, std::vector<float> shapeDist);
+					std::vector<float> &colorDist, std::vector<float> &shapeDist);
 					
   bool AttrAgent(beliefmodels::adl::AgentStatusPtr ags);
   
   void addFeatureListToProxy(binder::autogen::core::ProxyPtr proxy, VisionData::IntSeq labels,
 							 VisionData::DoubleSeq distribution);
 							 
-  VisionData::VisualLearnerLearningTaskPtr addFeatureListToLearnTask(std::string visualObjID,
-				std::vector<beliefmodels::domainmodel::cogx::Color> colors,
-				std::vector<beliefmodels::domainmodel::cogx::Shape> shapes,
-				std::vector<float> colorDist, std::vector<float> shapeDist);
+  void compileAndSendLearnTask(std::string visualObjID,
+				std::vector<beliefmodels::domainmodel::cogx::Color> &colors,
+				std::vector<beliefmodels::domainmodel::cogx::Shape> &shapes,
+				std::vector<float> &colorDist, std::vector<float> &shapeDist);
 
  protected:
   /**

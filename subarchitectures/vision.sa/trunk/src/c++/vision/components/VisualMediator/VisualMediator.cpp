@@ -382,10 +382,9 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   {
 	debug("Found asserted colors or shapes");
 	
-	VisualLearnerLearningTaskPtr ltask = addFeatureListToLearnTask(visObjID, colors, shapes, colorDist, shapeDist);
-	addToWorkingMemory(newDataID(), ltask);
+	compileAndSendLearnTask(visObjID, colors, shapes, colorDist, shapeDist);
 	
-	log("Added a learning task for visual object ID %s", visObjID);
+	log("Added a learning task for visual object ID %s", visObjID.c_str());
   }
   else
   {
@@ -432,7 +431,8 @@ bool VisualMediator::unionRef(FormulaPtr fp, string &unionID)
 }
 
 
-bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<Shape> &shapes, vector<float> colorDist, vector<float> shapeDist)
+bool VisualMediator::findAsserted(FormulaPtr fp, vector<Color> &colors, vector<Shape> &shapes,
+								  vector<float> &colorDist, vector<float> &shapeDist)
 {
   Formula *f = &(*fp);
 
@@ -591,9 +591,9 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 }
 
 
-VisualLearnerLearningTaskPtr VisualMediator::addFeatureListToLearnTask(const string visualObjID,
-				vector<Color> colors, vector<Shape> shapes,
-				vector<float> colorDist, vector<float> shapeDist)
+void VisualMediator::compileAndSendLearnTask(const string visualObjID,
+				vector<Color> &colors, vector<Shape> &shapes,
+				vector<float> &colorDist, vector<float> &shapeDist)
 {
   VisualObjectPtr objPtr = getMemoryEntry<VisualObject>(visualObjID);
   
@@ -602,29 +602,35 @@ VisualLearnerLearningTaskPtr VisualMediator::addFeatureListToLearnTask(const str
   ltask->visualObjectId = visualObjID;
   ltask->protoObjectId = objPtr->protoObjectID;
   
+  debug("Size of color list %i, distribution list %i", colors.size(), colorDist.size());  
+  
   vector<float>::iterator disti = colorDist.begin();
   
   for(vector<Color>::iterator labi = colors.begin(); labi != colors.end(); labi++)
   {
-	ltask->distribution.push_back(*disti);
+	ltask->distribution.push_back((double) (*disti));
 	disti++;
 //	ltask->labels.push_back((int) *labi);
 
 	switch(*labi)
 	{
 		case red:
+			debug("Adding red color to learning task");
 			ltask->labels.push_back(1);		
 			break;
 
 		case green:
+			debug("Adding green color to learning task");
 			ltask->labels.push_back(2);		
 			break;
 			
 		case blue:
+			debug("Adding blue color to learning task");
 			ltask->labels.push_back(3);	
 			break;
 
 		case yellow:
+			debug("Adding yellow color to learning task");
 			ltask->labels.push_back(4);		
 			break;
 /*			
@@ -644,15 +650,15 @@ VisualLearnerLearningTaskPtr VisualMediator::addFeatureListToLearnTask(const str
 			ltask->labels.push_back(8);		
 			break;
 */		
-		default:
+		default:debug("unknown");
 			ltask->labels.push_back(0);
 			break;
 			
 	}
-
   }
+  debug("Size of shape list %i, distribution list %i", shapes.size(), shapeDist.size());
   
-  disti = colorDist.begin();
+  disti = shapeDist.begin();
   
   for(vector<Shape>::iterator labi = shapes.begin(); labi != shapes.end(); labi++)
   {
@@ -663,10 +669,12 @@ VisualLearnerLearningTaskPtr VisualMediator::addFeatureListToLearnTask(const str
 	switch(*labi)
 	{ 
 		case spherical:
+			debug("Adding spherical shape to learning task");
 			ltask->labels.push_back(11);	
 			break;
 
 		case cylindrical:
+			debug("Adding cylindrical shape to learning task");
 			ltask->labels.push_back(12);		
 			break;
 			
@@ -676,8 +684,11 @@ VisualLearnerLearningTaskPtr VisualMediator::addFeatureListToLearnTask(const str
 	}
 
   }
+  debug("Leaning task compiled");
   
-  return ltask;  
+  addToWorkingMemory(newDataID(), subarchitectureID(), ltask);
+  
+  debug("Learning task sent");
 }
 
 

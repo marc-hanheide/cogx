@@ -112,7 +112,7 @@ void VisualLearner::runComponent()
          VisualLearnerLearningTaskPtr pTaskData;
          try{
             // get the data from working memory
-            pTaskData = getMemoryEntry<VisualLearnerLearningTaskPtr>(addr);
+            pTaskData = getMemoryEntry<VisualLearnerLearningTask>(addr);
             foundSomething = true;
 
             // TODO: check if pTaskData is valid

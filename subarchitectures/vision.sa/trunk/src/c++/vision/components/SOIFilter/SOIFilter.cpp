@@ -978,12 +978,12 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	
 	ROIPtr roiPtr = projectSOI(image.camPars, *soiPtr);
 	
-	IplImage *iplImgBGR = convertImageToIpl(image);
-	IplImage *iplImg = cvCreateImage(cvGetSize(iplImgBGR),
-                          iplImgBGR->depth,
-                          iplImgBGR->nChannels);
+	IplImage *iplImg = convertImageToIpl(image);
+//	IplImage *iplImg = cvCreateImage(cvGetSize(iplImgBGR),
+//                          iplImgBGR->depth,
+//                          iplImgBGR->nChannels);
     
-	cvCvtColor(iplImgBGR, iplImg, CV_BGR2RGB);	
+//	cvCvtColor(iplImgBGR, iplImg, CV_BGR2RGB);	
 
 	CvRect rect;
 	
