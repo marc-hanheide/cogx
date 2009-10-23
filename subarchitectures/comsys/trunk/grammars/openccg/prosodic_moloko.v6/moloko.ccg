@@ -1003,7 +1003,7 @@ feature {
   rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
 
  #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
-  rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
+  #rule {typechange: adj(pre-n)$1 => s() +cop-adj-ip()$1 : EVENT(MODIFIER());}
 
 #######################
 ## DICTIONARY FORMS  ##
@@ -1983,9 +1983,9 @@ HH%: th-hearer;
   def cop-entry(arg, sem){
  
   #PROSG09: we comment 
-  #     entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-  #    entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
-       entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
+      entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+      entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+      entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
   }
      # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
      #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
@@ -1993,8 +1993,8 @@ HH%: th-hearer;
 
   #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
   def cop-entry-ip(arg, sem){
-       entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
-       entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+   #    entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+   #    entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
   }
 
    #---  Families ----
@@ -4450,6 +4450,30 @@ is it a "red_H*" "box_L+H*" LH%: 0 ;
 is it a "red_L+H*" "box_H*" LH%: 0 ;
 is it a red box LL%: 0 ;        
 a red box LL%: 0 ;
+
+##### content planner ######
+the "box_L+H*" LH% is "blue_H*" LL%:1;
+the "box_L+H*" LH% "is_H*" "blue_H*" LL%:1;
+
+the "box_L+H*" is LH% "blue_H*" LL%:1;
+the "box_L+H*" "is_L+H*" LH% "blue_H*" LL%:1;
+
+the "box_H*" LL% is "blue_L+H*" LH%:1;
+the "box_H*" LL% "is_L+H*" "blue_L+H*" LH%:1;
+
+the "box_H*" is blue LL%:1;
+the box is "blue_H*" LL%:1;
+the box "is_H*" blue LL%:1;
+the "box_H*" "is_H*" "blue_H*" LL%:1;
+
+the "box_L+H*" "is_L+H*" "blue_L+H*" LH%:1;
+the "box_L+H*" is "blue_L+H*" LH%:1;
+the "box_L+H*" is blue LH%:1;
+the box is "blue_L+H*" LH%:1;
+the box "is_L+H*" blue LH%:1;
+
+the "box_L+H*" LH% "is_H*" LL% "blue_L+H*" LH%:1;
+
 }
 
 
