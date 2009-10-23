@@ -2,14 +2,20 @@ package dora;
 
 import java.util.Map;
 
+import comadata.ComaRoom;
+
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
 import motivation.slice.PlanProxy;
 import motivation.util.castextensions.Accessor;
+import SpatialData.AVSCommand;
 import SpatialData.NavCommand;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
+import SpatialProperties.GatewayPlaceProperty;
+import SpatialProperties.ObjectPlaceProperty;
+import VisionData.DetectionCommand;
 import cast.architecture.ManagedComponent;
 
 /**
@@ -33,8 +39,12 @@ public class DoraVerbalisation extends ManagedComponent {
 			switch (_i.cmd) {
 			case GOTOPLACE:
 				return "Going to Place " + _i.destId[0];
+			case TURNTO:
+				return "Turning";
+
 			default:
-				return "I'm doing something, but I don't want talk about it";
+				// return "I'm doing something, but I don't want talk about it";
+				return "";
 			}
 		}
 	};
@@ -42,9 +52,34 @@ public class DoraVerbalisation extends ManagedComponent {
 	private static final TextGenerator<ExploreMotive> EXPLORE_MOTIVE_ACTIVATED = new TextGenerator<ExploreMotive>() {
 		@Override
 		public String toText(ExploreMotive _i) {
-			return "Activated motive to explore hypothesis for Place " + _i.placeID;
+			return "Activated motive to explore hypothesis for Place "
+					+ _i.placeID;
 		}
 	};
+
+	private static final String[] DETECTION_COMMAND_SAYINGS = {
+			"Looking here.", "Having a look-see", "What have we here" };
+
+	private static final TextGenerator<DetectionCommand> DETECTION_COMMAND_GENERATOR = new TextGenerator<DetectionCommand>() {
+		private int m_sayingIndex = 0;
+
+		@Override
+		public String toText(DetectionCommand _i) {
+			if (m_sayingIndex == DETECTION_COMMAND_SAYINGS.length) {
+				m_sayingIndex = 0;
+			}
+			return DETECTION_COMMAND_SAYINGS[m_sayingIndex++];
+		}
+	};
+
+	private static final TextGenerator<ObjectPlaceProperty> OBJECT_PROPERTY_GENERATOR = new TextGenerator<ObjectPlaceProperty>() {
+		@Override
+		public String toText(ObjectPlaceProperty _i) {
+			return "I something that appears to be "
+					+ ((SpatialProperties.StringValue) _i.mapValue).value;
+		}
+	};
+
 
 	private static Accessor<Motive, MotiveStatus> MOTIVE_STATUS_ACCESSOR = new Accessor<Motive, MotiveStatus>() {
 		@Override
@@ -147,6 +182,22 @@ public class DoraVerbalisation extends ManagedComponent {
 		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
 				"Starting plan execution.");
 
+		// when AVS is triggered
+		m_verbals.verbaliseCannedTextOnAddition(AVSCommand.class,
+				"Having a look around");
+
+		// when a recognition command is triggered’
+		m_verbals.verbaliseOnAddition(DetectionCommand.class,
+				DETECTION_COMMAND_GENERATOR);
+
+		// when an object is added to the spatial mode
+		m_verbals.verbaliseOnAddition(ObjectPlaceProperty.class,
+				OBJECT_PROPERTY_GENERATOR);
+
+		m_verbals.verbaliseOnOverwrite(ComaRoom.class, new RoomCategoryTextGenerator());
+
+		m_verbals.verbaliseCannedTextOnAddition(GatewayPlaceProperty.class, "Ah ha. Looks like there is a door here");
+		
 	}
 
 	public void runComponent() {
