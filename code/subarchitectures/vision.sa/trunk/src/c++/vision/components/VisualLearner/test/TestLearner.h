@@ -14,6 +14,8 @@ class CTestRecognizer: public cast::ManagedComponent
 private:
    std::string testmode;
    int nRequests;
+   int learningStepsComplete;
+   std::vector<int> labels;
 
    // Proof of concept
    class CMyVideoClient: public cast::VideoClient {
@@ -34,17 +36,22 @@ protected:
    void configure(const std::map<std::string,std::string> & _config);
 
    // Capture Recognition Task events
-   void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onDeleteRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onChangeRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onAdd_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onDelete_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onChange_RecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+
+   // Capture Learning Task events
+   void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onDelete_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
 
    // not really used, just for logging
    void onAddProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onAddAttrObject(const cast::cdl::WorkingMemoryChange & _wmc);
 
    // Some helpers for testing
    void _test_addRecognitionTask();
    VisionData::ProtoObjectPtr loadFakeProtoObject();
+   void _test_performLearningStep(int issued, std::string protoId);
 };
 
 //class CommandListener: public cast::WorkingMemoryChangeReceiver 
