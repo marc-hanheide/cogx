@@ -202,8 +202,14 @@ class PDDLWriter(mapl.writer.MAPLWriter):
     
     def write_predicates(self, preds, functions):
         strings = []
+        domain_modal = []
         for pred in preds:
-            if not pred.builtin:
+            if pred.builtin:
+                continue
+            
+            if any(map(lambda arg: isinstance(arg.type, types.FunctionType), pred.args)):
+                domain_modal.append(pred)
+            else:
                 strings.append(self.write_predicate(pred))
                 
         for func in functions:
@@ -212,7 +218,7 @@ class PDDLWriter(mapl.writer.MAPLWriter):
             strings.append(";; Function %s" % func.name)
             pred = predicates.Predicate(func.name, func.args+[predicates.Parameter("?val", func.type)])
             strings.append(self.write_predicate(pred))
-            for mod in self.modal:
+            for mod in self.modal + domain_modal:
                 args =[]
                 for arg in mod.args:
                     if isinstance(arg.type, types.FunctionType):
