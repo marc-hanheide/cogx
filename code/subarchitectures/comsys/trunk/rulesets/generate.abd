@@ -232,12 +232,21 @@ generate : intention : assert_prop(h, Object, Property) <-
 	i : feat_Relation(Nom, hold) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
+generate : intention : again_need_get_value(Modality, Entity, Prop) <-
+	dummy_againnom(AgNom),
+	i : sort(AgNom, dvp) / 1.0,
+	i : prop(AgNom, 'c-goal') / 1.0,
+	i : feat_CannedText(AgNom, 'That_is_not_what_I_meant') / 1.0,
+	event : produce(r, AgNom) / 1.0,
+	generate : intention : need_get_value(Modality, Entity, Prop).
+
 %what color does the box have
 generate : intention : need_get_value(Modality, Entity, color) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
+	i : feat_withIS(Nom, true) / 1.0,
 	%k(now, private(r)) : objecttype(Object, box),
 	%k(now, private(r)) : color(Object, unknownColor),
 	k(now, private(r)) : objecttype(Entity, Type),
@@ -254,6 +263,7 @@ generate : intention : need_get_value(Modality, Entity, color) <-
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, color) / 1.0,
 			i : feat_Questioned(QualityNom, true) / 1.0,
+			i : feat_InfoStatus(QualityNom, asserted) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
 % is the object blue
