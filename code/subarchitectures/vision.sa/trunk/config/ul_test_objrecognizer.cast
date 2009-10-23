@@ -9,11 +9,11 @@ CPP TM AlwaysPositiveTaskManager
 # CPP MG VideoServer OpenCvLiveServer --camids 0 --devnums 0
 
 # reading stored images
-CPP MG VideoServer OpenCvImgSeqServer --camids "0" --devnums "0" --files "subarchitectures/vision.sa/config/test-objrecognizer/video/SwGreenTea/smaller40/image_%d.jpg" --start 0 --end 15 --framerate_ms 300
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --devnums "0" --files "subarchitectures/vision.sa/config/test-objrecognizer/video/SwGreenTea/clutter100/image_%d.jpg" --start 0 --end 15 --framerate_ms 300
 
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid "0"
 
-CPP MG recognizer ObjectRecognizer --videohost localhost --videoname VideoServer --models "SwGreenTea ShelcoreCube TwLemonTea" --modeldir "subarchitectures/vision.sa/config/test-objrecognizer/model" --matcher-cuda --log true --testmode 2
+CPP MG recognizer ObjectRecognizer --videohost localhost --videoname VideoServer --models "SwGreenTea ShelcoreCube TwLemonTea" --modeldir "subarchitectures/vision.sa/config/test-objrecognizer/model" --matcher-cuda --log true # --testmode 2
 
-# TODO: CPP MG recognizer.test  TestObjectRecognizer --testmode "standalone" --log 
+CPP MG recognizer.test  TestObjectRecognizer --testmode 2 --log 
 

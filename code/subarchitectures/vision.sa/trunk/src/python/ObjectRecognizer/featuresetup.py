@@ -217,17 +217,26 @@ class CDescriptorMatcherCuda(CDescriptorMatcher):
     def homographyMatchLists(self, list1, list2, maxRatio=1.0):
         res = siftcuda.homographyMatchDescriptors(list1, list2)
         if res == None:
-            result = []
+            siftMatch = []
+            hmgrMatch = []
             homography = None
         else:
-            (iidx, homography) = res
-            if iidx == None: result = []
+            (siftIidx, hmgrIidx, homography) = res
+            if siftIidx == None:
+                siftMatch = []
+                hmgrMatch = []
             else:
-                result = [
-                (p[0], [( distance(list1[p[0]], list2[p[1]]), p[1])])
-                for p in iidx if p[1] >= 0
+                siftMatch = [
+                (p[0], [( p[3], p[1])])
+                for p in siftIidx if p[1] >= 0
                 ]
-        return (result, homography)
+                if hmgrIidx == None: hmgrMatch = []
+                else:
+                    hmgrMatch = [
+                    (p[0], [( distance(list1[p[0]], list2[p[1]]), p[1])])
+                    for p in hmgrIidx if p[1] >= 0
+                    ]
+        return (siftMatch, hmgrMatch, homography)
 
 
 class CSiftSetup:

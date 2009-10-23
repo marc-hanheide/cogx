@@ -14,4 +14,5 @@ link_cast_component(${CAST_COMPONENT_NAME}
 
 add_subdirectory(pysiftgpu/siftgpu)
 add_subdirectory(pysiftgpu/siftcuda)
+add_subdirectory(test)
 

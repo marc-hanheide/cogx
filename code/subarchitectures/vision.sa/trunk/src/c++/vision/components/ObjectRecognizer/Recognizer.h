@@ -34,15 +34,15 @@ protected:
    /* Capture addition/change of a Recognition Task
     */
    void onAddRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onDeleteRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
-   void onChangeRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   //void onDeleteRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+   //void onChangeRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
 
    // Workers
    void doRecognize(const cast::cdl::WorkingMemoryChange & _wmc);
    void abortRecognition(const cast::cdl::WorkingMemoryChange & _wmc, VisionData::ObjectRecognitionTaskPtr cmd);
 
    // Some helpers for testing
-   void _test_addRecognitionTask();
+   // void _test_addRecognitionTask();
 private:
    PyObject* pyProcessImage(Video::Image &image, const int *region);
    void pyParseMatches(PyObject *pMatches, VisionData::ObjectRecognitionMatchPtr &imatch);

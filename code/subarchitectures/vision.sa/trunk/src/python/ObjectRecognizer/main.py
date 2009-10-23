@@ -83,8 +83,8 @@ def printMatches(matcher):
     for p in pose: print " %.3f\t%.1f\t%.1f\t%.1f" % p
 
 Setup = CSiftSetup(extractor=CSiftSetup.GPU, matcher=CSiftSetup.CUDA)
-# Matcher = objectmatcher.CObjectMatcher()
-Matcher = objectmatcher.CObjectDetector()
+Matcher = objectmatcher.CObjectMatcher()
+# Matcher = objectmatcher.CObjectDetector()
 Manager = CModelManager()
 
 def reconfigSift(extractor, matcher):

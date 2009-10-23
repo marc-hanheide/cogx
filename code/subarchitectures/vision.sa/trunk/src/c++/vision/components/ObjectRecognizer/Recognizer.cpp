@@ -99,7 +99,7 @@ extern "C" {
 
 CRecognizer::CRecognizer()
 {
-   testmode = 0;
+   testmode = 0; // Set manually for debugging
 }
 
 void CRecognizer::configure(const map<string,string> & _config)
@@ -113,17 +113,17 @@ void CRecognizer::configure(const map<string,string> & _config)
       videoServerName = it->second;
    }
 
-   if((it = _config.find("--testmode")) != _config.end())
-   {
-      string mode;
-      istringstream istr(it->second);
-      istr >> mode;
-      if (mode == "1") testmode = 1;
-      else if (mode == "2") testmode = 2;
-      else if (mode == "3") testmode = 3;
-      else testmode = 0;
-      log("TEST MODE: %ld", testmode);
-   }
+   //if((it = _config.find("--testmode")) != _config.end())
+   //{
+   //   string mode;
+   //   istringstream istr(it->second);
+   //   istr >> mode;
+   //   if (mode == "1") testmode = 1;
+   //   else if (mode == "2") testmode = 2;
+   //   else if (mode == "3") testmode = 3;
+   //   else testmode = 0;
+   //   log("TEST MODE: %ld", testmode);
+   //}
 
    if((it = _config.find("--modeldir")) != _config.end())
    {
@@ -187,29 +187,29 @@ void CRecognizer::start()
             this, &CRecognizer::onAddRecognitionTask)
          );
 
-   if (testmode) {
-      addChangeFilter(
-           createLocalTypeFilter<ObjectRecognitionTask>(cdl::DELETE),
-           new MemberFunctionChangeReceiver<CRecognizer>(
-              this, &CRecognizer::onDeleteRecognitionTask)
-           );
+   //if (testmode) {
+   //   addChangeFilter(
+   //        createLocalTypeFilter<ObjectRecognitionTask>(cdl::DELETE),
+   //        new MemberFunctionChangeReceiver<CRecognizer>(
+   //           this, &CRecognizer::onDeleteRecognitionTask)
+   //        );
 
-      addChangeFilter(
-           createLocalTypeFilter<ObjectRecognitionTask>(cdl::OVERWRITE),
-           new MemberFunctionChangeReceiver<CRecognizer>(
-              this, &CRecognizer::onChangeRecognitionTask)
-           );
-   }
+   //   addChangeFilter(
+   //        createLocalTypeFilter<ObjectRecognitionTask>(cdl::OVERWRITE),
+   //        new MemberFunctionChangeReceiver<CRecognizer>(
+   //           this, &CRecognizer::onChangeRecognitionTask)
+   //        );
+   //}
 }
 
-void CRecognizer::_test_addRecognitionTask()
-{
-   string id(newDataID());
-   ObjectRecognitionTaskPtr task = new ObjectRecognitionTask();
-   println("Adding new task");
-   addToWorkingMemory(id, getSubarchitectureID(), task);
-   sleepComponent(5000);
-}
+//void CRecognizer::_test_addRecognitionTask()
+//{
+//   string id(newDataID());
+//   ObjectRecognitionTaskPtr task = new ObjectRecognitionTask();
+//   println("Adding new task");
+//   addToWorkingMemory(id, getSubarchitectureID(), task);
+//   sleepComponent(5000);
+//}
 
 static int Processing = 0;
 void CRecognizer::runComponent()
@@ -217,8 +217,8 @@ void CRecognizer::runComponent()
    sleepComponent(2000);
 
    while(isRunning()) {
-      if (testmode && ! Processing)
-         _test_addRecognitionTask();
+      //if (testmode && ! Processing)
+      //   _test_addRecognitionTask();
 
       sleepComponent(100);
    }
@@ -227,53 +227,51 @@ void CRecognizer::runComponent()
 
 void CRecognizer::onAddRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
-   log("Recognition task added.");
+   log("OR: Recognition task recieved.");
    // TODO: add to queue and process in main loop
    doRecognize(_wmc);
 }
 
-void CRecognizer::onDeleteRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
-{
-   log("Recognition task removed.");
-}
+//void CRecognizer::onDeleteRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+//{
+//   log("Recognition task removed.");
+//}
 
-void CRecognizer::onChangeRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
-{
-   log("Recognition task modified.");
-   ObjectRecognitionTaskPtr pcmd = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
-   std::vector<string>::iterator itstr;
-   std::vector<double>::iterator itdbl;
+//void CRecognizer::onChangeRecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+//{
+//   log("Recognition task modified.");
+//   ObjectRecognitionTaskPtr pcmd = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
+//   std::vector<string>::iterator itstr;
+//   std::vector<double>::iterator itdbl;
 
-   ostringstream msg;
-   std::vector<VisionData::ObjectRecognitionMatchPtr>::iterator pmatch;
-   for (pmatch = pcmd->matches.begin(); pmatch < pcmd->matches.end(); pmatch++) {
-      println("Match for '%s' ID: [%s]", (*pmatch)->sourceType.c_str(), (*pmatch)->sourceId.id.c_str());
-      msg.str("");
-      for (itstr = (*pmatch)->objectId.begin(); itstr != (*pmatch)->objectId.end(); itstr++) {
-         msg << *itstr << ", ";
-      }
-      println("Labels: %s", msg.str().c_str());
+//   ostringstream msg;
+//   std::vector<VisionData::ObjectRecognitionMatchPtr>::iterator pmatch;
+//   for (pmatch = pcmd->matches.begin(); pmatch < pcmd->matches.end(); pmatch++) {
+//      println("Match for '%s' ID: [%s]", (*pmatch)->sourceType.c_str(), (*pmatch)->sourceId.id.c_str());
+//      msg.str("");
+//      for (itstr = (*pmatch)->objectId.begin(); itstr != (*pmatch)->objectId.end(); itstr++) {
+//         msg << *itstr << ", ";
+//      }
+//      println("Labels: %s", msg.str().c_str());
 
-      msg.str("");
-      for (itdbl = (*pmatch)->probability.begin(); itdbl != (*pmatch)->probability.end(); itdbl++) {
-         msg << *itdbl << ", ";
-      }
-      println("Probabilities: %s", msg.str().c_str());
-   }
+//      msg.str("");
+//      for (itdbl = (*pmatch)->probability.begin(); itdbl != (*pmatch)->probability.end(); itdbl++) {
+//         msg << *itdbl << ", ";
+//      }
+//      println("Probabilities: %s", msg.str().c_str());
+//   }
 
-   // TODO: dump the request!
-   if (testmode) {
-      sleepComponent(500);
-      deleteFromWorkingMemory(_wmc.address);
-   }
-}
+//   // TODO: dump the request!
+//   //if (testmode) {
+//   //   sleepComponent(500);
+//   //   deleteFromWorkingMemory(_wmc.address);
+//   //}
+//}
 
 void CRecognizer::abortRecognition(const cast::cdl::WorkingMemoryChange & _wmc, ObjectRecognitionTaskPtr pcmd)
 {
    // TODO set some flag in ObjectRecognitionTask?
-   if (testmode) {
-      log("Recognition task aborted.");
-   }
+   log("Recognition task aborted.");
    overwriteWorkingMemory(_wmc.address, pcmd);
 }
 
@@ -295,13 +293,13 @@ PyObject* CRecognizer::pyProcessImage(Video::Image &image, const int *region)
    if (pModule) {
       PyObject *pFunc = NULL;
       // TODO: string funcname;
-      if (testmode == 1)
-         pFunc = PyObject_GetAttrString(pModule, "testCppInterface");
-      else if (testmode == 2)
-         pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
-      else if (testmode == 3)
-         pFunc = PyObject_GetAttrString(pModule, "testMatching");
-      else
+      //if (testmode == 1)
+      //   pFunc = PyObject_GetAttrString(pModule, "testCppInterface");
+      //else if (testmode == 2)
+      //   pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
+      //else if (testmode == 3)
+      //   pFunc = PyObject_GetAttrString(pModule, "testMatching");
+      //else
          pFunc = PyObject_GetAttrString(pModule, "findMatchingObject");
 
       if (! pFunc || !PyCallable_Check(pFunc)) {
@@ -346,14 +344,16 @@ void CRecognizer::pyParseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &
 {
    if (PyTuple_Check(pMatches)) {
       int len = PyTuple_Size(pMatches);
-      if (testmode) println("Tuple length %d", len);
+      ostringstream ostr;
       if (len != 3) {
          println("Tuple of wrong size. Something went wrong.");
       }
       else {
+         if (testmode) ostr << "Result (" << len << ":";
          for (int i = 0; i < len; i++) {
             PyObject *pList = PyTuple_GetItem(pMatches, i);
-            if (testmode) println("List: %d", PyList_Check(pList));
+            if (testmode)
+               ostr << (PyList_Check(pList) ? " list " : " NOT-A-LIST ");
             int len = PyList_Size(pList);
             if (i == 0) {
                for (int j = 0; j < len; j++) {
@@ -371,13 +371,16 @@ void CRecognizer::pyParseMatches(PyObject *pMatches, ObjectRecognitionMatchPtr &
                // TODO Pose PDFs: list of arrays
             }
          }
+         if (testmode) {
+            ostr << ")";
+            println(ostr.str());
+         }
       }
    }
 }
 
 void CRecognizer::doRecognize(const cdl::WorkingMemoryChange & _wmc)
 {
-   log("Recognition task added.");
    ObjectRecognitionTaskPtr pcmd;
    try {
       pcmd = getMemoryEntry<ObjectRecognitionTask>(_wmc.address);
