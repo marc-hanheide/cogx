@@ -273,10 +273,13 @@ public class ContinualCollaborativeActivity {
 	 */
 	public void addAnchoringContext (BoundReadings boundReadings) {
 		log("adding anchoring context");
+//		log("got " + boundReadings.bindings.length + " reading(s)");
 		for (ArrayIterator readingsIter = new ArrayIterator(boundReadings.bindings); readingsIter.hasNext(); ) { 
 			// get all the bindings for one reading
 			ReadingBindings readingBindings = (ReadingBindings) readingsIter.next();
 			// cycle over the bindings for the individual nominals, within this reading
+//			log("got " + readingBindings.bindings.length + " binding(s)");
+			
 			for (ArrayIterator bindingsIter = new ArrayIterator(readingBindings.bindings); bindingsIter.hasNext(); ) { 
 				RefBinding binding = (RefBinding) bindingsIter.next(); 
 				// the binding(s) are for the following nominal variable: 
@@ -285,6 +288,7 @@ public class ContinualCollaborativeActivity {
 
 				Anchor[] antecedents = null;
 				
+//				log("got " + binding.antecedents.length + " binding anchor(s)");
 				if (binding.antecedents.length == 0) {
 					log("! no binding anchors for " + binding.nomVar);
 					

@@ -446,10 +446,20 @@ public class cc_CCA extends BeliefModelInterface {
 				log("Action proof:\n" + PrettyPrinting.proofToString(actionProof));
 				
 				// TODO: do this in a less hardcoded way
-				if (toBeRealised(actionProof)) {				
-	    			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(actionProof), "dummy1");
-	    			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
-	    			realizeLogicalForm(prodLF);
+				if (toBeRealised(actionProof)) {
+					ModalisedFormula[] fs = ProofUtils.proofToFacts(actionProof);
+					Vector<String> roots = new Vector<String>();
+					for (int i = 0; i < fs.length; i++) {
+						if (fs[i].p.predSym.equals("sort") && ProofUtils.termToString(fs[i].p.args[1]).equals("dvp")) {
+							roots.add(ProofUtils.termToString(fs[i].p.args[0]));
+						}
+					}
+					log(roots.size() + " proto-LFs for realisation");
+					for (int i = 0; i < roots.size(); i++) {
+		    			LogicalForm prodLF = AbducerUtils.factsToLogicalForm(ProofUtils.proofToFacts(actionProof), roots.elementAt(i));
+		    			log("will realise this proto-LF: " + LFUtils.lfToString(prodLF));
+		    			realizeLogicalForm(prodLF);
+					}
 				}
 				else {
 					log("no action found in the action intention proof");
@@ -517,65 +527,80 @@ public class cc_CCA extends BeliefModelInterface {
 			// * falsification -- change the formula, put on top of the stack (at the end)
 			// * neither of these -- change the formula appropriately, but leave it where it was
 
-			Belief[] updates = null;
+			Belief[] updates = new Belief[0];
 			
 			if (cu.intention.predSym.equals("grounding")) {
 				String modality = ((FunctionTerm) cu.intention.args[0]).functor;
 				String result = ((FunctionTerm) cu.intention.args[1]).functor;
 
-				ProofBlock related = ccaEngine.stack.retrieveBlockByIntention("need_verify_hypothesis");
+				int idxValueNeed = ccaEngine.stack.findTopmostBlockByIntention("need_get_value");
+				int idxValueVerify = ccaEngine.stack.findTopmostBlockByIntention("need_verify_hypothesis");
 				
-				Agent speaker = new Agent("human");
-				
-				if (related != null && result.equals("assertionVerified")) {
-					updates = new Belief[related.assertedBeliefIds.length];
-					for (int i = 0; i < related.assertedBeliefIds.length; i++) {
-						Belief b = getBelief(related.assertedBeliefIds[i]);
-
-						if (b.ags instanceof PrivateAgentStatus) {
-							b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
-						}
-						if (b.ags instanceof AttributedAgentStatus) {
-							b.ags = BeliefUtils.raise((AttributedAgentStatus) b.ags);
-						}
-						if (b.ags instanceof MutualAgentStatus) {
-							b.ags = BeliefUtils.addToGroup((MutualAgentStatus) b.ags, speaker);
-						}
-
-						b.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, 1.0f);
-						updates[i] = b;
-					}
+				ProofBlock related = null;
+				if (idxValueNeed < idxValueVerify) {
+					// "yes" as a response to the robot's "what color is the box?"
+					related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
+					cu.intention = related.intention;
+					cu.intention.predSym = "again_" + cu.intention.predSym;
+					updates = new Belief[0];
+					ccaEngine.stack.push(related);
 				}
-				else if (related != null && result.equals("assertionFalsified")) {
+				else {
+					// expected response
+					related = ccaEngine.stack.retrieveBlockByIntention("need_verify_hypothesis");
 					
-					if (pi.assertedBeliefIds.length == 0) {
-						// no reason, just flip the polarities
+					Agent speaker = new Agent("human");
+					
+					if (related != null && result.equals("assertionVerified")) {
 						updates = new Belief[related.assertedBeliefIds.length];
 						for (int i = 0; i < related.assertedBeliefIds.length; i++) {
 							Belief b = getBelief(related.assertedBeliefIds[i]);
-
+	
 							if (b.ags instanceof PrivateAgentStatus) {
 								b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
 							}
-
-							b.phi = BeliefUtils.swapPolarityOfAssertions((SuperFormula) b.phi);
+							if (b.ags instanceof AttributedAgentStatus) {
+								b.ags = BeliefUtils.raise((AttributedAgentStatus) b.ags);
+							}
+							if (b.ags instanceof MutualAgentStatus) {
+								b.ags = BeliefUtils.addToGroup((MutualAgentStatus) b.ags, speaker);
+							}
+	
+							b.phi = BeliefUtils.changeAssertionsToPropositions((SuperFormula) b.phi, 1.0f);
 							updates[i] = b;
 						}
 					}
-					else {
-						// with reason, overwrite the belief formula
-						// TODO: consistency
-						assert related.assertedBeliefIds.length == 1;
-						updates = new Belief[1];
+					else if (related != null && result.equals("assertionFalsified")) {
 						
-						Belief b = getBelief(related.assertedBeliefIds[0]);
-
-						if (b.ags instanceof PrivateAgentStatus) {
-							b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+						if (pi.assertedBeliefIds.length == 0) {
+							// no reason, just flip the polarities
+							updates = new Belief[related.assertedBeliefIds.length];
+							for (int i = 0; i < related.assertedBeliefIds.length; i++) {
+								Belief b = getBelief(related.assertedBeliefIds[i]);
+	
+								if (b.ags instanceof PrivateAgentStatus) {
+									b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+								}
+	
+								b.phi = BeliefUtils.swapPolarityOfAssertions((SuperFormula) b.phi);
+								updates[i] = b;
+							}
 						}
-
-						b.phi = cu.beliefs[0].phi;
-						updates[0] = b;
+						else {
+							// with reason, overwrite the belief formula
+							// TODO: consistency
+							assert related.assertedBeliefIds.length == 1;
+							updates = new Belief[1];
+							
+							Belief b = getBelief(related.assertedBeliefIds[0]);
+	
+							if (b.ags instanceof PrivateAgentStatus) {
+								b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+							}
+	
+							b.phi = cu.beliefs[0].phi;
+							updates[0] = b;
+						}
 					}
 					// push it back, it's still asserted
 					ccaEngine.stack.push(related);
@@ -587,33 +612,62 @@ public class cc_CCA extends BeliefModelInterface {
 			else if (cu.intention.predSym.equals("assert_prop")) {
 				
 				// need_get_value(vision, 0:G, color)
-				ProofBlock related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
-				
-				Agent speaker = new Agent("human");
 
-				if (related != null) {
+				int idxValueNeed = ccaEngine.stack.findTopmostBlockByIntention("need_get_value");
+				int idxValueVerify = ccaEngine.stack.findTopmostBlockByIntention("need_verify_hypothesis");
+
+				ProofBlock related = null;
+				if (idxValueNeed < idxValueVerify) {
+					
+					related = ccaEngine.stack.retrieveBlockByIntention("need_get_value");
+					
+					Agent speaker = new Agent("human");
+	
+					if (related != null) {
+						
+						assert related.assertedBeliefIds.length == 1;
+		
+						updates = new Belief[1];
+						
+						Belief b = getBelief(related.assertedBeliefIds[0]);
+						
+						if (b.ags instanceof PrivateAgentStatus) {
+							b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
+						}
+	
+						b.phi = cu.beliefs[0].phi;
+						updates[0] = b;
+						cu.beliefs = updates;
+	
+						// push back as we still haven't grounded it
+						ccaEngine.stack.push(related);
+					}
+					else {
+						// related == null, i.e. no explicit info request from the robot
+						// (this doesn't exclude verification requests from the robot!)
+						ccaEngine.stack.push(pi);
+					}
+				}
+				else {
+					// overwrite
+					related = ccaEngine.stack.retrieveBlockByIntention("need_verify_hypothesis");
+
+					Agent speaker = new Agent("human");
 					
 					assert related.assertedBeliefIds.length == 1;
-	
 					updates = new Belief[1];
 					
 					Belief b = getBelief(related.assertedBeliefIds[0]);
-					
+
 					if (b.ags instanceof PrivateAgentStatus) {
 						b.ags = BeliefUtils.attribute((PrivateAgentStatus) b.ags, speaker);
 					}
 
 					b.phi = cu.beliefs[0].phi;
 					updates[0] = b;
-					cu.beliefs = updates;
 
-					// push back as we still haven't grounded it
+					cu.beliefs = updates;
 					ccaEngine.stack.push(related);
-				}
-				else {
-					// related == null, i.e. no explicit info request from the robot
-					// (this doesn't exclude verification requests from the robot!)
-					ccaEngine.stack.push(pi);
 				}
 			}
 			

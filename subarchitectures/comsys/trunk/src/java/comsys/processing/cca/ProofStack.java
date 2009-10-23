@@ -91,6 +91,16 @@ public class ProofStack {
 		return result;
 	}
 
+	public int findTopmostBlockByIntention(String intentionPredSym) {
+		boolean found = false;
+		for (int i = 0; i < blocks.length; i++) {
+			if (blocks[i].intention.predSym.equals(intentionPredSym)) {
+				return i;
+			}
+		}
+		return 999;  // ugly
+	}
+	
 	public ProofBlock retrieveBlockByIntention(String intentionPredSym) {
 		boolean found = false;
 		ProofBlock result = null;
