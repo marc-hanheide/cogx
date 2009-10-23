@@ -88,11 +88,6 @@ void CTestRecognizer::start()
          this, &CTestRecognizer::onAddProtoObject)
       );
 
-   addChangeFilter(
-      createLocalTypeFilter<AttrObject>(cdl::ADD),
-      new MemberFunctionChangeReceiver<CTestRecognizer>(
-         this, &CTestRecognizer::onAddAttrObject)
-      );
 }
 
 void CTestRecognizer::configure(const std::map<std::string,std::string> & _config)
@@ -158,6 +153,7 @@ void CTestRecognizer::onChange_RecognitionTask(const cast::cdl::WorkingMemoryCha
          for( plabel = pTask->labels.begin(); plabel != pTask->labels.end(); plabel++) {
             labels.push_back(*plabel);
          std::sort(labels.begin(), labels.end(), intLower);
+         }
       }
    }
 }
@@ -166,19 +162,19 @@ void CTestRecognizer::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & 
 {
    nRequests++;
    log("Learning task %s added. %d requests in WM.", descAddr(_wmc.address).c_str(), nRequests);
-   VisualLearnerRecognitionTaskPtr pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+   VisualLearnerLearningTaskPtr pTask = getMemoryEntry<VisualLearnerLearningTask>(_wmc.address);
 
    std::vector<int>::iterator plabel;
    std::vector<double>::iterator pdbl;
    ostringstream ostr;
-   ostr << "Labels: "
+   ostr << "Labels: ";
    for( plabel = pTask->labels.begin(); plabel != pTask->labels.end(); plabel++) {
       ostr << "'" << *plabel << "' ";
    }
    log(ostr.str());
 
    ostringstream ostr2;
-   ostr2 << "Distr: "
+   ostr2 << "Distr: ";
    for( pdbl = pTask->distribution.begin(); pdbl != pTask->distribution.end(); pdbl++) {
       ostr2 << *pdbl << " ";
    }
@@ -194,7 +190,7 @@ void CTestRecognizer::onDelete_LearningTask(const cast::cdl::WorkingMemoryChange
 void CTestRecognizer::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    log("Learning task %s modified. %d requests in WM.", descAddr(_wmc.address).c_str(), nRequests);
-   VisualLearnerRecognitionTaskPtr pTask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+   VisualLearnerLearningTaskPtr pTask = getMemoryEntry<VisualLearnerLearningTask>(_wmc.address);
    std::vector<int>::iterator plabel;
    std::vector<double>::iterator pdbl;
 
@@ -268,7 +264,7 @@ void CTestRecognizer::_test_performLearningStep(int issued, string protoId)
    std::vector<int>::iterator plabel;
    int n;
    if (issued == 1 || issued == 3 || issued == 5) {
-      log("STEP %d: RECOGNITION", issued)
+      log("STEP %d: RECOGNITION", issued);
       VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
       ptask->protoObjectId = protoId;
 
@@ -276,7 +272,7 @@ void CTestRecognizer::_test_performLearningStep(int issued, string protoId)
       addToWorkingMemory(reqId, ptask);
    }
    else if (issued == 2) {
-      log("STEP %d: LEARNING", issued)
+      log("STEP %d: LEARNING", issued);
       VisualLearnerLearningTaskPtr ptask = new VisualLearnerLearningTask();
       ptask->protoObjectId = protoId;
       std::vector<double> &distrib = ptask->distribution;
@@ -284,7 +280,7 @@ void CTestRecognizer::_test_performLearningStep(int issued, string protoId)
       double sum = 0;
       for( plabel = labels.begin(); plabel != labels.end(); plabel++) {
          ptask->labels.push_back(*plabel);
-         n = rand(100);
+         n = rand() % 100;
          distrib.push_back(n);
          sum += n;
       }
@@ -294,20 +290,19 @@ void CTestRecognizer::_test_performLearningStep(int issued, string protoId)
       addToWorkingMemory(reqId, ptask);
    }
    else if (issued == 4) {
-      log("STEP %d: UNLEARNING", issued)
+      log("STEP %d: UNLEARNING", issued);
       VisualLearnerLearningTaskPtr ptask = new VisualLearnerLearningTask();
       ptask->protoObjectId = protoId;
       std::vector<double> &distrib = ptask->distribution;
 
-      string reqId(newDataID());
       double sum = 0;
       for( plabel = labels.begin(); plabel != labels.end(); plabel++) {
          ptask->labels.push_back(*plabel);
-         n = rand(100);
+         n = rand() % 100;
          distrib.push_back(n);
          sum += n;
       }
-      for (n = 0; n < dist.size(); n++) {
+      for (n = 0; n < distrib.size(); n++) {
          distrib[n] = distrib[n] / sum;
          if (n % 2 == 0) distrib[n] = -distrib[n];
       }
@@ -325,7 +320,7 @@ void CTestRecognizer::runComponent()
       ProtoObjectPtr pproto = loadFakeProtoObject();
       string protoId = newDataID();
       addToWorkingMemory(protoId, pproto);
-      learningStepComplete = 0;
+      learningStepsComplete = 0;
       int issued = 0;
       while(isRunning()) {
          if (issued <= learningStepsComplete && issued < 6) {
