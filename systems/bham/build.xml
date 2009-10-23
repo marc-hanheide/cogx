@@ -1,8 +1,10 @@
 <!-- Top level make file for CogX system -->
 <project name="cogx" default="all">
+        <property name="debug" value="true" />
 
 	<property name="castslice.dir" value="/usr/local/share" />
 	<property name="cast.jar" value="/usr/local/share/java/cast.jar" />
+	<property name="log4j.jar" value="/usr/share/java/log4j-1.2.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
 	<property name="plannerslice.dir" value="${basedir}/subarchitectures/planner.sa/src/slice" />
 	<property name="binderslice.dir" value="${basedir}/subarchitectures/binder/src/slice" />
