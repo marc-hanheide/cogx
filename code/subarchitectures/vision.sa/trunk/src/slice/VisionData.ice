@@ -243,17 +243,18 @@ module VisionData {
     DoubleSeq distribution;
     
     // ASYNC DATA 
-    
     string visualObjectId;
   };
 
   class VisualLearnerLearningTask {
     // REQUEST:
     string protoObjectId;
-    string visualObjectId;
     
     IntSeq labels;
     DoubleSeq distribution;
+
+    // ASYNC DATA 
+    string visualObjectId;
   };
 
   struct SegmentMask {
