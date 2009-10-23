@@ -8,6 +8,8 @@
 module VisionData {
 
   sequence<cogx::Math::Vector3> Vector3Seq;
+  sequence<string> StringSeq;
+  sequence<double> DoubleSeq;
 
   struct OneObj {
     Vector3Seq pPlane;
@@ -136,10 +138,14 @@ module VisionData {
 
     // a value between 0 and 1
     double salience;
+    
+    // Property distribution
+    IntSeq labels;
+    DoubleSeq distribution;
+    
+    // Source proto object
+    string protoObjectID;
   };
-
-  sequence<string> StringSeq;
-  sequence<double> DoubleSeq;
 
   class DetectionCommand {
     StringSeq labels;
@@ -231,18 +237,23 @@ module VisionData {
   class VisualLearnerRecognitionTask {
     // REQUEST:
     string protoObjectId;
-    cast::cdl::WorkingMemoryAddress protoObjectAddr;
 
     // RESPONSE
-    IntSeq colorLabel;
-    DoubleSeq colorDistr;
+    IntSeq labels;
+    DoubleSeq distribution;
+    
+    // ASYNC DATA 
+    
+    string visualObjectId;
   };
 
   class VisualLearnerLearningTask {
     // REQUEST:
-    cast::cdl::WorkingMemoryAddress protoObjectAddr;
+    string protoObjectId;
+    string visualObjectId;
+    
     IntSeq labels;
-    DoubleSeq confidences;
+    DoubleSeq distribution;
   };
 
   struct SegmentMask {
@@ -280,9 +291,9 @@ module VisionData {
     // Source proto object
     string protoObjectID;
 
-    // Color distribution
-    StringSeq colorLabel;
-    DoubleSeq colorDistr;
+    // Property distribution
+    StringSeq labels;
+    DoubleSeq distribution;
 
     // time the object was last changed
     cast::cdl::CASTTime time;
