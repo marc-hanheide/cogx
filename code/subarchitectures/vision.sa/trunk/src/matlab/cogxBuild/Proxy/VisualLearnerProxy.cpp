@@ -105,18 +105,18 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<int> &labels, vec
    copyLabels(rCqnt, labels, probs);
 }
 
-void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<double> &distribution);
+void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<double> &distribution)
 {
-   vector<int> proto_labels;
-   vector<double> probs;
+   CheckInit();
+   // Add the ROI to Matlab engine
+   mwArray x = CMatlabHelper::iplImage2array(&(Object.image.data[0]), 
+         Object.image.width, Object.image.height, 3); // WISH: number of channels in image
+   printf("Object Image: %dx%d\n", Object.image.width, Object.image.height);
 
-   // Features need to be calculated every time! In CoSy they were stored in ROI.
-   VL_recognise_attributes(Object, proto_labels, probs);
-   mwArray features(proto_labels.size(), 2, mxDOUBLE_CLASS, mxREAL);
-   for (unsigned i = 0; i < proto_labels.size(); i++) {
-      features(i, 1) =  (double) proto_labels[i];
-      features(i, 2) =  (double) probs[i];
-   }
+   // Add the segmentation mask to the Matlab engine.
+   mwArray b0 = CMatlabHelper::iplImage2array( &(Object.mask.data[0]), 
+         Object.mask.width, Object.mask.height, 1);
+   printf("Object Mask: %dx%d\n", Object.mask.width, Object.mask.height);
 
    long cntPlus = 0, cntMinus = 0;
    for (unsigned i = 0; i < labels.size(); i++) {
@@ -134,7 +134,7 @@ void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<
            row++;
         }
       }
-      cogxVisualLearner_update(features, avw);
+      cogxVisualLearner_update(x, b0, avw);
    }
 
    if (cntMinus > 0) {
@@ -147,7 +147,7 @@ void VL_update_model(ProtoObject &Object, std::vector<int> &labels, std::vector<
            row++;
         }
       }
-      cogxVisualLearner_unlearn(features, avw);
+      cogxVisualLearner_unlearn(x, b0, avw);
    }
 }
 
