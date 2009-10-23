@@ -778,7 +778,7 @@ public class PlaceMonitor extends ManagedComponent {
 				} else {
 					m_proxyMarshall.addRelation("contains", _relUID, 
 							"room", _currRoomUID, "place", new Long(_currContPlID).toString(), 
-							1, new WorkingMemoryPointer( new WorkingMemoryAddress(this.getSubarchitectureID(), _wmid), _comaRoom.ice_id()));
+							1, new WorkingMemoryPointer( new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
 					Feature _containsFtr = new Feature();
 					_containsFtr.featlabel = "contains";
 					_containsFtr.alternativeValues = new FeatureValue[1];
