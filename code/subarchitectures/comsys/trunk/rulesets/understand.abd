@@ -57,6 +57,10 @@ understand : event : uttered(h, Nom) <-
 	i : 'rel_Cop-Scope'(AscrNom, WhatNom),  % XXX "questioned" flag?
 	intention : ask_known(h, Ref, objecttype) / 0.5.
 
+me(Nom) <-
+	i : sort(Nom, person),
+	i : prop(Nom, 'I').
+
 you(Nom) <-
 	i : sort(Nom, person),
 	i : prop(Nom, you).
@@ -169,6 +173,36 @@ understand : event : uttered(h, Nom) <-
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		i : prop(WhNom, what),
 	intention : ask_property(h, RestrRef, objecttype) / 5.2.
+
+% could you tell me
+understand : event : uttered(h, Nom) <-
+	i:sort(Nom, communication),
+%	i:prop(Nom, tell),
+%	i:feat_Mood(Nom, int),
+%	i:rel_Recipient(Nom, RecipNom),
+%		me(RecipNom),
+%	i:rel_Actor(Nom, ActNom),
+%	i:rel_Subject(Nom, ActNom),
+%		you(ActNom),
+	i:rel_Patient(Nom, WhNom),
+%	i:rel_Modifier(Nom, ModalNom),
+%		i:sort(ModalNom, modal)
+%		i:prop(ModalNom, could),
+
+%	i:sort(BeNom, ascription),
+%	i:prop(BeNom, be),
+%	i:feat_Tense(BeNom, pres),
+	i:'rel_Cop-Restr'(BeNom, RefNom),
+	i:rel_Subject(BeNom, RefNom),
+%		this(RefNom),
+
+%	i:'rel_Cop-Scope'(BeNom, WhNom),
+		i:'rel_Scope-in'(WhNom, BeNom),
+%		what(WhNom),
+
+	att : refers_to(RefNom, UnionRef) / ref_resolution,
+	intention : ask_known(h, UnionRef, objecttype) / 0.5.
+
 
 % h: is X Y
 %event : uttered(h, Nom) <-
