@@ -36,6 +36,7 @@
 :- import_module require.
 :- import_module list, pair, map, float.
 :- import_module costs.
+:- import_module varset.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
@@ -47,6 +48,8 @@
 	).
 
 :- instance context(ctx, ctx_modality) where [
+	pred(find_fact/4) is find_ctx_fact,
+	pred(find_rule/4) is find_ctx_rule,
 	pred(fact_found/3) is ctx_fact,
 	pred(rule_found/3) is ctx_rule,
 	pred(assumable_func/4) is ctx_assumable_func,
@@ -87,6 +90,21 @@ facts(Ctx) = Ctx^ctx_facts.
 rules(Ctx) = Ctx^ctx_rules.
 
 assumables(Ctx) = Ctx^ctx_assumables.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- pred find_ctx_fact(ctx::in, list(ctx_modality)::in, string::in, vscope(mprop(ctx_modality))::out) is nondet.
+
+find_ctx_fact(Ctx, Ms, PredSym, vs(m(Ms, p(PredSym, Args)), VS)) :-
+	set.member(vs(m(Ms, p(PredSym, Args)), VS), Ctx^ctx_facts).
+
+find_ctx_fact(_Ctx, Ms, "=", vs(m(Ms, p("=", [v(V), v(V)])), VS)) :-
+	new_named_var(varset.init, "X", V, VS).
+
+:- pred find_ctx_rule(ctx::in, list(ctx_modality)::in, string::in, vscope(mrule(ctx_modality))::out) is nondet.
+
+find_ctx_rule(Ctx, Ms, PredSym, VSMRule) :-
+	set.member(VSMRule, Ctx^ctx_rules).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
 
