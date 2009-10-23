@@ -107,10 +107,15 @@ public class ExplorePlaceGenerator extends AbstractMotiveGenerator {
 				Place currentPlace = SpatialFacade.get(this).getPlace();
 				if (currentPlace != null) {
 					log("we are currently at place " + currentPlace.id);
-					motive.costs = (float) SpatialFacade.get(this).queryCosts(
+					double costs = SpatialFacade.get(this).queryCosts(
 							currentPlace.id, ((ExploreMotive) motive).placeID);
-				} else {
-					motive.costs = Float.MAX_VALUE;
+					if (costs < Double.MAX_VALUE)
+						motive.costs = (float) SpatialFacade.get(this)
+								.queryCosts(currentPlace.id,
+										((ExploreMotive) motive).placeID);
+					else {
+						println("couldn't compute proper costs... leaving costs untouched");
+					}
 				}
 				addHypothesisFeatures((ExploreMotive) motive);
 
