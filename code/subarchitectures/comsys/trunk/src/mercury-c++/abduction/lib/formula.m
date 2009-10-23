@@ -139,6 +139,10 @@
 :- pred unify_formulas(atomic_formula::in, atomic_formula::in, subst::out) is semidet.
 :- pred unify_terms(formula.term::in, formula.term::in, subst::out) is semidet.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+:- func rule_head_mprop(rule_head(M)) = mprop(M) is det <= modality(M).
+
 %------------------------------------------------------------------------------%
 
 :- implementation.
@@ -288,3 +292,9 @@ term_to_ground_term(t(Functor, Terms)) = t(Functor, GroundTerms) :-
 
 ground_term(ground_term_to_term(GroundTerm)::out, GroundTerm::in).
 ground_term(Term::in, term_to_ground_term(Term)::out).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -%
+
+rule_head_mprop(std(MProp)) = MProp.
+rule_head_mprop(test(prop(MProp))) = MProp.
+rule_head_mprop(test(impl(_, MProp))) = MProp.
