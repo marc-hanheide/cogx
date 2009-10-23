@@ -107,6 +107,7 @@ public class ReferentialReadings {
 	public void init () { 
 		readingFactories = new HashMap();
 		readingFactories.put("ascription",new CopulaReadings());
+		readingFactories.put("communication", new CommunicationReadings());		
 		readingFactories.put("cognition", new CognitionReadings());
 		readingFactories.put("d-units", new DUnitsReadings());
 		readingFactories.put("greeting", new GreetingReadings());		
