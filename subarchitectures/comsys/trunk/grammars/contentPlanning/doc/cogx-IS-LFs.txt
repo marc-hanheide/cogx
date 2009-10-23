@@ -55,7 +55,7 @@ Parse 4: du{index=E_13:ascription} :
                                 <Num>sg ^ 
                                 <Quantification>specific ^ 
                                 <Rheme>t-rheme-false) ^ 
-                    <Cop-Scope>x1_0:quality ^ 
+            <this is errenous>  <Cop-Scope>x1_0:quality ^ 
                     <Modifier>(blue1_0:q-color ^ blue ^ 
                                <Commitment>m-uncontentious ^ 
                                <Focus>m-focus-true ^ 
@@ -161,8 +161,8 @@ Note:
 Theme (L+H*) focus placement can be varied with appropriate values on feature:
 <Focus> 
 e.g.
- the box_L+H* is blue LL%
- the box is blue_L+H* LL%
+ the box_L+H* is blue LH%
+ the box is blue_L+H* LH%
 
 -------------------
 
@@ -187,7 +187,7 @@ Parse 2: du{index=E_39:ascription} :
                                 <Num>sg ^ 
                                 <Quantification>specific ^ 
                                 <Rheme>t-rheme-false) ^ 
-                    <Cop-Scope>x1_0:quality ^ 
+            <this is errenous>  <Cop-Scope>x1_0:quality ^ 
                     <Modifier>(blue1_0:q-color ^ blue ^ 
                                <Commitment>m-uncontentious ^ 
                                <Focus>m-focus-true ^ 
