@@ -13,19 +13,7 @@ check for encoding; we use utf=8 but standard is 16, could there be something wi
 
 -----
 
-InfoStruct:
- # theme/rheme 
- # ownership
- # agreement (defaults)
-   focus
-
------
-
-Insert <proofStatus> into all templates
-
------
-
-Problems:
+InfoStruct Problems:
 
 @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^ <AcknoModality>action)
 "Sure thing"
@@ -35,6 +23,12 @@ has Rheme=true but no other InfoStruct features; why?
 relational-attribute modifiers (type m-location) don't get any InfoStruct feat assigned for now
 
 in compounds don't currently inherit rheme/theme from head, thus expect problem in grammar
+
+
+-----
+
+Insert <proofStatus> into all templates
+
 
 -----
 
@@ -47,14 +41,13 @@ Theme
 Background
  - what in quest
 
------
 
 agreement: should do "contentious" in questions (but not in echo-questions)
 
 -----
 
 "questions" in indicative and interrogative mood for clarification
-probablybest to introduce clarif question as a separate cat? or as relation type?
+probably best to introduce clarif question as a separate cat? or as relation type?
 check if yes/no question, in which case do random choice between indic and interr --> intonation matters!
 
 -----
