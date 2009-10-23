@@ -21,16 +21,19 @@
 		 </choicenode>
 		 <choicenode answer = "unknown">
 			<result val="proof-status-asserted"/>  <!-- Rheme is the default --> 
+            <!-- check if in ascr -->
+            
+            
          </choicenode>
 	   </choicenode>
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.iheritance.color" region="infoStruct" metafunction="textual">
+<chooser id="c-proofStatus.inheritance.color" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
-		    <f-featval feat="ProofStatus" nomvar="COLOR" />
+		    <f-featval feat="ProofStatus" nomvar="ENTITY4COLOR" />
 		 </inquiry>			
 		 <choicenode answer = "assumed">  
 			<result val="proof-status-assumed"/>			
@@ -45,11 +48,11 @@
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.iheritance.size" region="infoStruct" metafunction="textual">
+<chooser id="c-proofStatus.inheritance.size" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
-		    <f-featval feat="ProofStatus" nomvar="SIZE" />
+		    <f-featval feat="ProofStatus" nomvar="ENTITY4SIZE" />
 		 </inquiry>			
 		 <choicenode answer = "assumed">  
 			<result val="proof-status-assumed"/>			
@@ -64,11 +67,11 @@
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.iheritance.shape" region="infoStruct" metafunction="textual">
+<chooser id="c-proofStatus.inheritance.shape" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
-		    <f-featval feat="ProofStatus" nomvar="SHAPE" />
+		    <f-featval feat="ProofStatus" nomvar="ENTITY4SHAPE" />
 		 </inquiry>			
 		 <choicenode answer = "assumed">  
 			<result val="proof-status-assumed"/>			
@@ -83,11 +86,11 @@
    </dectree>
 </chooser>
 
-<chooser id="c-proofStatus.iheritance.ordinal" region="infoStruct" metafunction="textual">
+<chooser id="c-proofStatus.inheritance.ordinal" region="infoStruct" metafunction="textual">
    <dectree>
        <choicenode answer="*TOP*">
          <inquiry id="f-featval" type="string" answerset="@assumed @asserted @unknown"> 
-		    <f-featval feat="ProofStatus" nomvar="ORDINAL" />
+		    <f-featval feat="ProofStatus" nomvar="ENTITY4ORDINAL" />
 		 </inquiry>			
 		 <choicenode answer = "assumed">  
 			<result val="proof-status-assumed"/>			

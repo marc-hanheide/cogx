@@ -249,7 +249,7 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red))
 -->
 @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red)
 </input>
@@ -264,7 +264,7 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true))
 -->
 @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true)
 </input>
@@ -279,7 +279,7 @@
 <utterance>
 <input>
 <!--
-@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar)
+@d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Content>(b1:entity ^ ball ^ <Size>big ^ <Color>red ^ <Salient>true ^ <InfoStatus>familiar))
 *** NOT YET WORKING ***
 -->
 @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Content\(b1:entity ^ ball ^ /Size\big ^ /Color\red ^ /Salient\true ^ /InfoStatus>familiar)

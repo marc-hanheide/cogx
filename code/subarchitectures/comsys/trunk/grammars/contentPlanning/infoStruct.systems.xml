@@ -69,7 +69,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 </system>
 
 <system id="rhemeAssign.color" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.iheritance.color"/> 
+   <chooser id="c-proofStatus.inheritance.color"/> 
    <conditions>
       <condition features="@type:q-color"/> 
     </conditions>
@@ -87,7 +87,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 </system>
 
 <system id="rhemeAssign.size" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.iheritance.size"/> 
+   <chooser id="c-proofStatus.inheritance.size"/> 
    <conditions>
       <condition features="@type:q-size"/> 
     </conditions>
@@ -105,7 +105,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 </system>
 
 <system id="rhemeAssign.shape" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.iheritance.shape"/> 
+   <chooser id="c-proofStatus.inheritance.shape"/> 
    <conditions>
       <condition features="@type:q-shape"/> 
     </conditions>
@@ -123,7 +123,7 @@ BUT: if quality-standalone were to be generated, this system should apply.
 </system>
 
 <system id="rhemeAssign.ordinal" region="infoStruct" metafunction="textual">
-   <chooser id="c-proofStatus.iheritance.ordinal"/> 
+   <chooser id="c-proofStatus.inheritance.ordinal"/> 
    <conditions>
       <condition features="@type:number-ordinal"/> 
     </conditions>
