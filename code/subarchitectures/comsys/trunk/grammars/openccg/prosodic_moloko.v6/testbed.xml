@@ -96,6 +96,22 @@
   <item string="is it a red_L+H* box_H* LH%" numOfParses="0"/>
   <item string="is it a red box LL%" numOfParses="0"/>
   <item string="a red box LL%" numOfParses="0"/>
+  <item string="the box_L+H* LH% is blue_H* LL%" numOfParses="1"/>
+  <item string="the box_L+H* LH% is_H* blue_H* LL%" numOfParses="1"/>
+  <item string="the box_L+H* is LH% blue_H* LL%" numOfParses="1"/>
+  <item string="the box_L+H* is_L+H* LH% blue_H* LL%" numOfParses="1"/>
+  <item string="the box_H* LL% is blue_L+H* LH%" numOfParses="1"/>
+  <item string="the box_H* LL% is_L+H* blue_L+H* LH%" numOfParses="1"/>
+  <item string="the box_H* is blue LL%" numOfParses="1"/>
+  <item string="the box is blue_H* LL%" numOfParses="1"/>
+  <item string="the box is_H* blue LL%" numOfParses="1"/>
+  <item string="the box_H* is_H* blue_H* LL%" numOfParses="1"/>
+  <item string="the box_L+H* is_L+H* blue_L+H* LH%" numOfParses="1"/>
+  <item string="the box_L+H* is blue_L+H* LH%" numOfParses="1"/>
+  <item string="the box_L+H* is blue LH%" numOfParses="1"/>
+  <item string="the box is blue_L+H* LH%" numOfParses="1"/>
+  <item string="the box is_L+H* blue LH%" numOfParses="1"/>
+  <item string="the box_L+H* LH% is_H* LL% blue_L+H* LH%" numOfParses="1"/>
   <item string="the" numOfParses="6"/>
   <item string="the pizza" numOfParses="3"/>
   <item string="the pizza on" numOfParses="3"/>
