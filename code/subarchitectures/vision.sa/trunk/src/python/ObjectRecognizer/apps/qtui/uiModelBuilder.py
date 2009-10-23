@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'modelBuilder.ui'
 #
-# Created: Fri Sep 11 14:16:33 2009
+# Created: Fri Oct 23 16:20:02 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -86,6 +86,9 @@ class Ui_ModelBuilder(object):
         self.horizontalLayout_6.addWidget(self.ckCalcSift)
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem1)
+        self.ckSwapRedBlue = QtGui.QCheckBox(self.widget)
+        self.ckSwapRedBlue.setObjectName("ckSwapRedBlue")
+        self.horizontalLayout_6.addWidget(self.ckSwapRedBlue)
         self.verticalLayout_4.addLayout(self.horizontalLayout_6)
         spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem2)
@@ -256,6 +259,7 @@ class Ui_ModelBuilder(object):
         self.btZoomIn.setText(QtGui.QApplication.translate("ModelBuilder", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.btZoomOut.setText(QtGui.QApplication.translate("ModelBuilder", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.ckCalcSift.setText(QtGui.QApplication.translate("ModelBuilder", "Calculate SIFT", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckSwapRedBlue.setText(QtGui.QApplication.translate("ModelBuilder", "SwapRB", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("ModelBuilder", "Camera position", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("ModelBuilder", "Capture", None, QtGui.QApplication.UnicodeUTF8))
         self.btCaptureSetup.setText(QtGui.QApplication.translate("ModelBuilder", "Setup...", None, QtGui.QApplication.UnicodeUTF8))
