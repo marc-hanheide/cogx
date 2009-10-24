@@ -85,12 +85,13 @@ void ObjectAnalyzer::start_VL_RecognitionTask(const ProtoObjectPtr& pproto, cons
    log("Adding new VisualLearnerRecognitionTask");
    VisualLearnerRecognitionTaskPtr ptask = new VisualLearnerRecognitionTask();
    ptask->protoObjectId = addr.id;
+
    // TODO: Add learning data: labels, confidences!
 
    string reqId(newDataID());
    addToWorkingMemory(reqId, ptask);
 }
-
+/*
 void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
 {
   VisualLearnerRecognitionTaskPtr ptask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
@@ -111,6 +112,33 @@ void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange 
   pAttrObject->time = getCASTTime();
   addToWorkingMemory(attrId, pAttrObject);
 }
+*/
+
+void ObjectAnalyzer::onChange_VL_RecognitionTask(const cdl::WorkingMemoryChange & _wmc)
+{
+  VisualLearnerRecognitionTaskPtr ptask = getMemoryEntry<VisualLearnerRecognitionTask>(_wmc.address);
+  log("Recieved results for VisualLearnerRecognitionTask %s", _wmc.address.id.c_str());
+  // ProtoObjectData &data = ProtoObjectMap[ptask->protoObjectId];
+
+  VisualObjectPtr pvobj = new VisualObject;
+	pvobj->label = "unkknown";
+	pvobj->labelConfidence = 1.0f;
+	pvobj->protoObjectID = ptask->protoObjectId;
+	
+  vector<int>::const_iterator plabel;
+  for( plabel = ptask->labels.begin(); plabel != ptask->labels.end(); plabel++) {
+    pvobj->labels.push_back(*plabel);
+  }
+  
+  vector<double>::const_iterator pdbl;
+  for( pdbl = ptask->distribution.begin(); pdbl != ptask->distribution.end(); pdbl++) {
+    pvobj->distribution.push_back(*pdbl);
+  }
+
+	pvobj->time = getCASTTime();
+  overwriteWorkingMemory(ProtoObjectMap[ptask->protoObjectId].visualObjId, pvobj);
+}
+
 
 void ObjectAnalyzer::start_OR_RecognitionTask(const ProtoObjectPtr& pproto, const WorkingMemoryAddress &addr)
 {
