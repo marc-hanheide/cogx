@@ -11,6 +11,8 @@ function [pcx,pxc,pc]=MKDBFrecP(F,mC)
 %     Note: only already learned Cs are considered and their numbers (sequence) do not
 %     neccesarilly correspond to their names (numbers) in general
 
+
+
 MINCONF=3; %minimum number of previously observed objects of the particular category
 
 %CM=[1:6;1 1 1 1 2 2]'; %concept number -> concept group mapping
@@ -18,6 +20,8 @@ MINCONF=3; %minimum number of previously observed objects of the particular cate
 %CM=[1:7;1 1 1 1 2 2 2]'; %concept number -> concept group mapping
 %CM=[1:11;1 1 1 1 1 1 1 1 1 2 2]';
 CM=[1:8;1 1 1 1 2 2 2 2]'; %concept number -> concept group mapping
+
+
 
 global currMode
 if ~isempty(currMode)
@@ -58,7 +62,7 @@ for j=1:numC
    pc(j,1)=cj;
    pci(j)=mC(j).conf/sumCG(CM(find(CM(:,1)==cj),2));
    for i=1:N
-      if mC(j).conf>=MINCONF
+   if mC(j).conf>=MINCONF
          rC = executeOperatorIKDE( mC(j).kde, 'input_data', F(:,i), 'evalPdfOnData', 'selectSubDimensions', mC(j).Fb ) ;
          pxc(j,i+1)=rC.evalpdf;
       else  %if conf<MINCONF only a few samples have been observed => no model yet
@@ -67,6 +71,7 @@ for j=1:numC
    end;
 end;
 pc(:,2:N+1)=repmat(pci,1,N);
+
 
 sumpxcpc=zeros(nCG,N+1);
 for i=1:nCG

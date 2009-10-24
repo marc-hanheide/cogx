@@ -4,6 +4,8 @@ function showLmodels(mC,Fnames,Cnames,sphw,hp)
 
 %return;
 
+%disp('Showing models...');
+
 if nargin<4
    sphw=[2 ceil(length(mC)/2)];
 end;
