@@ -273,7 +273,7 @@ void ObjectSearch::runComponent() {
   lockComponent();
   setupPushScan2d(*this, -1);
   setupPushOdometry(*this, -1);
-  MovePanTilt(20 , 5*M_PI/180);
+  MovePanTilt(0 , 5*M_PI/180);
   unlockComponent();
   
   //clock_t start_time,elapsed;
@@ -291,41 +291,41 @@ void ObjectSearch::runComponent() {
   }
 }
 void ObjectSearch::MovePanTilt(double pan,double tolerance){
-		if (m_CtrlPTU)
-		{
-		log(" Moving pantilt to: %f with %f tolerance", pan, tolerance);
-		ptz::PTZPose p;
-		ptz::PTZReading ptuPose;
-		p.pan = pan ;
-		p.tilt = 0.0;
-		p.zoom = 0;
-		m_PTUServer->setPose(p);
-		bool run = true;
-		ptuPose = m_PTUServer->getPose();
-		double actualpose = ptuPose.pose.pan;
-		while(run){
-			m_PTUServer->setPose(p);
-			ptuPose = m_PTUServer->getPose();
-			actualpose = ptuPose.pose.pan;
-			log("actualpose is: %f", actualpose);
-			if (pan > actualpose){
-				if (actualpose > abs(pan) - tolerance){
-					log("false actualpose is: %f, %f", actualpose, abs(pan) + tolerance);
-					run = false;
-				}
-					}
-			if (actualpose > pan){
-				if (actualpose < abs(pan) + tolerance)
-					run = false;
-					}
-		    if(pan == actualpose)
-				run = false;
-			
-			usleep(10000);
-		}
-		log("Moved.");
-		sleep(1);
-		}
+  if (m_CtrlPTU)
+    {
+      log(" Moving pantilt to: %f with %f tolerance", pan, tolerance);
+      ptz::PTZPose p;
+      ptz::PTZReading ptuPose;
+      p.pan = pan;
+      p.tilt = -45 * M_PI / 180;
+      p.zoom = 0;
+      m_PTUServer->setPose(p);
+      bool run = true;
+      ptuPose = m_PTUServer->getPose();
+      double actualpose = ptuPose.pose.pan;
+      while(run){
+	m_PTUServer->setPose(p);
+	ptuPose = m_PTUServer->getPose();
+	actualpose = ptuPose.pose.pan;
+	log("actualpose is: %f", actualpose);
+	if (pan > actualpose){
+	  if (actualpose > abs(pan) - tolerance){
+	    log("false actualpose is: %f, %f", actualpose, abs(pan) + tolerance);
+	    run = false;
+	  }
+	}
+	if (actualpose > pan){
+	  if (actualpose < abs(pan) + tolerance)
+	    run = false;
+	}
+	if(pan == actualpose)
+	  run = false;
+	
+	usleep(10000);
+      }
+      log("Moved.");
+      sleep(1);
+    }
 }
 NavData::ObjectSearchPlanPtr ObjectSearch::ConvertPlantoIce()
 { 

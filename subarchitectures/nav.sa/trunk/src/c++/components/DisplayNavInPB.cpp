@@ -566,7 +566,7 @@ void DisplayNavInPB::runComponent() {
       m_PeekabotClient.sync();
 
       if( s.failed() ) {
-        log("Bundle failed with error message: %s", 
+        debug("Bundle failed with error message: %s", 
             s.get_error_message().c_str());
       }
       
