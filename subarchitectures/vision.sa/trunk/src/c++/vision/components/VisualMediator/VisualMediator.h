@@ -74,6 +74,7 @@ class VisualMediator :
 
   std::queue<std::string> proxyToAdd;
   std::queue<std::string> proxyToDelete;
+  std::queue<std::string> proxyToUpdate;
 
   boost::interprocess::named_semaphore* queuesNotEmpty;
 
