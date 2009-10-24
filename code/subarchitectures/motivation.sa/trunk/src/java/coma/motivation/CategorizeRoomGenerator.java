@@ -3,19 +3,12 @@
  */
 package coma.motivation;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import SpatialData.Place;
-
 import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizeRoomMotive;
-import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
-import motivation.slice.MotivePriority;
 import motivation.util.facades.SpatialFacade;
+import SpatialData.Place;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -36,8 +29,18 @@ import comadata.ComaRoom;
  */
 public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
+	/**
+	 * This is an array of roomIds to be blocked, i.e. no CategorizeRoomMotive
+	 * are generated when this ComaRomm is created
+	 */
+	final private long[] blockedRoomIds = { 0, 2 };
+
 	public CategorizeRoomGenerator() {
 		super();
+		if (blockedRoomIds.length > 0) {
+			println("***** CAUTION: There are blocked rooms defined in "
+					+ CategorizeRoomGenerator.class.getCanonicalName());
+		}
 	}
 
 	/*
@@ -61,23 +64,24 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 			// we assume here, that a room initially has two concepts:
 			// Portion_of_Space and PhysicalRoom; but we are trying to obtain
 			// more
-			
+
 			if (source.concepts.length <= 2) {
 				CategorizeRoomMotive crm = (CategorizeRoomMotive) motive;
 				log("  nothing's known about it, so it should be considered as a motive");
 				// The more places are contained the more information we get
 				// from this room!
-				crm.informationGain = 1.0-(1.0/source.containedPlaceIds.length);
+				crm.informationGain = 1.0 - (1.0 / source.containedPlaceIds.length);
 				Place currentPlace = SpatialFacade.get(this).getPlace();
-				double estimated_costs=0.0;
+				double estimated_costs = 0.0;
 				for (long p : source.containedPlaceIds) {
-					estimated_costs+=SpatialFacade.get(this).queryCosts(currentPlace.id, p);
+					estimated_costs += SpatialFacade.get(this).queryCosts(
+							currentPlace.id, p);
 				}
-				if (source.containedPlaceIds.length>0)
+				if (source.containedPlaceIds.length > 0)
 					crm.costs = (float) (estimated_costs / source.containedPlaceIds.length);
 				else
 					crm.costs = (float) 0.0;
-				
+
 				crm.roomId = source.roomId;
 				write(crm);
 				return true;
@@ -117,13 +121,19 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 						CategorizeRoomMotive newMotive = MotiveFactory
 								.createCategorizeRoomMotive(_wmc.address);
 
-						// ComaRoom p;
-						// try {
-						// p = getMemoryEntry(_wmc.address, ComaRoom.class);
-						// // initialize fields of motive here
-						// } catch (CASTException e) {
-						// e.printStackTrace();
-						// }
+						ComaRoom p;
+
+						try {
+							p = getMemoryEntry(_wmc.address, ComaRoom.class);
+							for (long blockedRoom : blockedRoomIds) {
+								if (p.roomId == blockedRoom) {
+									println("ignore room " + p.roomId
+											+ " as it is a blocked rooms");
+								}
+							}
+						} catch (CASTException e) {
+							e.printStackTrace();
+						}
 						checkMotive(newMotive);
 					}
 				});
