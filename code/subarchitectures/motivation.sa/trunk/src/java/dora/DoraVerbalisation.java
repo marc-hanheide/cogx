@@ -178,16 +178,16 @@ public class DoraVerbalisation extends ManagedComponent {
 //		m_verbals.verbaliseOnAddition(Place.class, NEW_PLACE_GENERATOR);
 		
 		 // when places are explored
-		 m_verbals.verbaliseOnStateTransition(Place.class,
-		 PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
-		 PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
+//		 m_verbals.verbaliseOnStateTransition(Place.class,
+//		 PLACE_STATUS_ACCESSOR, PlaceStatus.PLACEHOLDER,
+//		 PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
 		//
 		// // when places are deleted (i.e. exploration could be carried out)
 		// m_verbals.verbaliseOnDeletion(Place.class,
 		// PLACE_EXPLORATION_FAILED_GENERATOR);
 
-		// when navigation is told to move the robot
-		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
+//		// when navigation is told to move the robot
+//		m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
 
 		// when plan execution is triggered
 		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
