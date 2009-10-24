@@ -3,6 +3,7 @@ COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-dat
 COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
 
 
+
 SUBARCHITECTURE spatial.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
