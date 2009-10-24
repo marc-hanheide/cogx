@@ -129,6 +129,7 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 								if (p.roomId == blockedRoom) {
 									println("ignore room " + p.roomId
 											+ " as it is a blocked rooms");
+									return;
 								}
 							}
 						} catch (CASTException e) {
