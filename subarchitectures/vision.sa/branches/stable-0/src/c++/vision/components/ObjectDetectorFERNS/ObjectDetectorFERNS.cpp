@@ -380,24 +380,25 @@ void ObjectDetectorFERNS::setupFERNS() throw(runtime_error)
 
     detectors[i]->set_maximum_number_of_points_to_detect(1000);
 
-    trackers[i] = new template_matching_based_tracker();
-    string trackerfn = model_images[i] + string(".tracker_data");
-    if (!trackers[i]->load(trackerfn.c_str()))
-    {
-      log("Training template matching...\n");
-      trackers[i]->learn(detectors[i]->model_image,
-         5, // number of used matrices (coarse-to-fine)
-         40, // max motion in pixel used to train to coarser matrix
-         20, 20, // defines a grid. Each cell will have one tracked point.
-         detectors[i]->u_corner[0], detectors[i]->v_corner[1],
-         detectors[i]->u_corner[2], detectors[i]->v_corner[2],
-         40, 40, // neighbordhood for local maxima selection
-         10000 // number of training samples
-         );
-      trackers[i]->save(trackerfn.c_str());
+    if (mode==DETECT_AND_TRACK) {
+     trackers[i] = new template_matching_based_tracker();
+     string trackerfn = model_images[i] + string(".tracker_data");
+     if (!trackers[i]->load(trackerfn.c_str()))
+     {
+       log("Training template matching...\n");
+       trackers[i]->learn(detectors[i]->model_image,
+          5, // number of used matrices (coarse-to-fine)
+          40, // max motion in pixel used to train to coarser matrix
+          20, 20, // defines a grid. Each cell will have one tracked point.
+          detectors[i]->u_corner[0], detectors[i]->v_corner[1],
+          detectors[i]->u_corner[2], detectors[i]->v_corner[2],
+          40, 40, // neighbordhood for local maxima selection
+          10000 // number of training samples
+          );
+       trackers[i]->save(trackerfn.c_str());
+     }
+     trackers[i]->initialize();
     }
-    trackers[i]->initialize();
-
     last_frame_ok[i] = false;
   }
 }
