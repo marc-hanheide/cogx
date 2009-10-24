@@ -15,7 +15,11 @@
 #define Shrink_SOI 1
 #define Upper_BG 1.8
 #define Lower_BG 1.2	// 1.2-1.8 radius of BoundingSphere
-#define min_height_of_obj 0.015	//unit cm, due to the error of stereo, >0.01 is suggested
+#define min_height_of_obj 0.02	//unit cm, due to the error of stereo, >0.01 is suggested
+#define rate_of_centers 0.5	//compare two objs, if distance of centers of objs more than rate*old radius, judge two objs are different
+#define ratio_of_radius 0.5	//compare two objs, ratio of two radiuses 
+#define Torleration 2		// Torleration error, even there are "Torleration" frames without data, previous data will still be used
+				//this makes stable obj
 
 /**
  * The function called to create a new instance of our component.
@@ -69,6 +73,7 @@ vector< VisionData::SurfacePointSeq > EQPointsSeq; //equivocal points
 double A, B, C, D;
 int N;  // 1/N points will be used
 bool mbDrawWire;
+int m_torleration;
 Vector3 v3dmax;
 Vector3 v3dmin;
 
@@ -760,6 +765,7 @@ void PlanePopOut::configure(const map<string,string> & _config)
     str >> boolalpha >> useGlobalPoints;
   }
   println("use global points: %d", (int)useGlobalPoints);
+  m_torleration = 0;
 }
 
 void PlanePopOut::start()
@@ -829,7 +835,7 @@ void PlanePopOut::runComponent()
 			{
 				CurrentObjList.at(i).id = newDataID();
 				SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r, CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-//cout<<"x in SOI after add in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<CurrentObjList.at(i).id<<endl;
+cout<<" ID of this added SOI (empty) = "<<CurrentObjList.at(i).id<<endl;
 				addToWorkingMemory(CurrentObjList.at(i).id, obj);	
 			}
 			PreviousObjList = CurrentObjList;
@@ -849,7 +855,7 @@ void PlanePopOut::runComponent()
 						CurrentObjList.at(i).c = PreviousObjList.at(j).c*4/5 + CurrentObjList.at(i).c/5;
 						
 						SOIPtr obj = createObj(CurrentObjList.at(i).c, CurrentObjList.at(i).s, CurrentObjList.at(i).r,CurrentObjList.at(i).pointsInOneSOI, CurrentObjList.at(i).BGInOneSOI, CurrentObjList.at(i).EQInOneSOI);
-//cout<<"x in SOI after overwrite in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<PreviousObjList.at(j).id<<endl;
+//cout<<" ID of this overwrite SOI = "<<PreviousObjList.at(j).id<<endl;
 						overwriteWorkingMemory(PreviousObjList.at(j).id, obj);	
 						break;
 					}
@@ -863,13 +869,14 @@ void PlanePopOut::runComponent()
 				{
 					CurrentObjList.at(newObjList.at(i)).id = newDataID();
 					SOIPtr obj = createObj(CurrentObjList.at(newObjList.at(i)).c, CurrentObjList.at(newObjList.at(i)).s, CurrentObjList.at(newObjList.at(i)).r,CurrentObjList.at(newObjList.at(i)).pointsInOneSOI, CurrentObjList.at(newObjList.at(i)).BGInOneSOI, CurrentObjList.at(newObjList.at(i)).EQInOneSOI);
-//cout<<"x in SOI after add 2 in WM = "<<obj->boundingSphere.pos.x<<" ID of this SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
+cout<<" ID of this added SOI = "<<CurrentObjList.at(newObjList.at(i)).id<<endl;
 					addToWorkingMemory(CurrentObjList.at(newObjList.at(i)).id, obj);	
 					PreviousObjList.push_back(CurrentObjList.at(newObjList.at(i)));//update PreviousObjList
 				}
 			}
-			if (PreviousObjList.size()!=CurrentObjList.size()) //need to delete the disappeared objects
+			if (PreviousObjList.size()!=CurrentObjList.size() && m_torleration > Torleration) //need to delete the disappeared objects
 			{
+				m_torleration = 0;
 				std::vector <unsigned int> disappearedObjList; //store the serial number of disappeared objects in PreviousObjList
 				for(unsigned int i=0; i<PreviousObjList.size(); i++)
 				{
@@ -890,6 +897,7 @@ void PlanePopOut::runComponent()
 					for(unsigned int i=0; i<disappearedObjList.size(); i++)// delete all objects
 					{
 						deleteFromWorkingMemory(PreviousObjList.at(disappearedObjList.at(i)).id);
+cout<<" ID of this deleted SOI = "<<PreviousObjList.at(disappearedObjList.at(i)).id<<endl;
 					}
 					std::vector<ObjPara> new_PreviousList;
 					new_PreviousList.reserve(PreviousObjList.size()-disappearedObjList.size());
@@ -911,7 +919,11 @@ void PlanePopOut::runComponent()
 					new_PreviousList.clear();
 				}
 			}
-		
+			else if (PreviousObjList.size()!=CurrentObjList.size() && m_torleration < Torleration)
+				{
+					m_torleration++;
+					PreviousObjList = CurrentObjList;
+				}		
 		}
 	}
 //cout<<"SOI in the WM = "<<PreviousObjList.size()<<endl;
@@ -1129,7 +1141,7 @@ SOIPtr PlanePopOut::createObj(Vector3 center, Vector3 size, double radius, Visio
 
 bool PlanePopOut::Compare2SOI(ObjPara obj1, ObjPara obj2)
 {
-	if (sqrt((obj1.c.x-obj2.c.x)*(obj1.c.x-obj2.c.x)+(obj1.c.y-obj2.c.y)*(obj1.c.y-obj2.c.y)+(obj1.c.z-obj2.c.z)*(obj1.c.z-obj2.c.z))<0.30*obj1.r && obj1.r/obj2.r>0.5 && obj1.r/obj2.r<2)
+	if (sqrt((obj1.c.x-obj2.c.x)*(obj1.c.x-obj2.c.x)+(obj1.c.y-obj2.c.y)*(obj1.c.y-obj2.c.y)+(obj1.c.z-obj2.c.z)*(obj1.c.z-obj2.c.z))<rate_of_centers*obj1.r && obj1.r/obj2.r>ratio_of_radius && obj1.r/obj2.r<1/ratio_of_radius)
 		return true; //the same object
 	else	
 		return false; //not the same one
