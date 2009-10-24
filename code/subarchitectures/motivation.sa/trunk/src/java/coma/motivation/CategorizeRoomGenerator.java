@@ -3,6 +3,8 @@
  */
 package coma.motivation;
 
+import java.util.Map;
+
 import motivation.components.generators.AbstractMotiveGenerator;
 import motivation.factories.MotiveFactory;
 import motivation.slice.CategorizeRoomMotive;
@@ -29,6 +31,23 @@ import comadata.ComaRoom;
  */
 public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
+	private boolean blockRooms;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cast.core.CASTComponent#configure(java.util.Map)
+	 */
+	@Override
+	protected void configure(Map<String, String> config) {
+		if ((config.get("--blockrooms")) != null) {
+			blockRooms = true;
+			println("***** CAUTION: There are blocked rooms defined in "
+					+ CategorizeRoomGenerator.class.getCanonicalName());
+		} else
+			blockRooms = false;
+	}
+
 	/**
 	 * This is an array of roomIds to be blocked, i.e. no CategorizeRoomMotive
 	 * are generated when this ComaRomm is created
@@ -37,10 +56,6 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
 	public CategorizeRoomGenerator() {
 		super();
-		if (blockedRoomIds.length > 0) {
-			println("***** CAUTION: There are blocked rooms defined in "
-					+ CategorizeRoomGenerator.class.getCanonicalName());
-		}
 	}
 
 	/*
@@ -125,11 +140,13 @@ public class CategorizeRoomGenerator extends AbstractMotiveGenerator {
 
 						try {
 							p = getMemoryEntry(_wmc.address, ComaRoom.class);
-							for (long blockedRoom : blockedRoomIds) {
-								if (p.roomId == blockedRoom) {
-									println("ignore room " + p.roomId
-											+ " as it is a blocked rooms");
-									return;
+							if (blockRooms) {
+								for (long blockedRoom : blockedRoomIds) {
+									if (p.roomId == blockedRoom) {
+										println("ignore room " + p.roomId
+												+ " as it is a blocked rooms");
+										return;
+									}
 								}
 							}
 						} catch (CASTException e) {
