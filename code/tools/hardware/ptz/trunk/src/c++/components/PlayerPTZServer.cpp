@@ -58,7 +58,7 @@ namespace ptz {
     m_ptzProxy = shared_ptr<PlayerCc::PtzProxy>(new PlayerCc::PtzProxy(m_playerClient.get(), 
 								       m_playerPTZDeviceID));
 
-    //going to work in position mode for now
+    //going to work in position mode 
     m_ptzProxy->SelectControlMode(PLAYER_PTZ_POSITION_CONTROL);
 
   }
@@ -75,13 +75,15 @@ namespace ptz {
     reading.pose.pan = m_ptzProxy->GetPan(); 
     reading.pose.tilt = m_ptzProxy->GetTilt();
     reading.pose.zoom = m_ptzProxy->GetZoom();
-
+    log("PlayerPTZServer::getPose %f %f %f",reading.pose.pan,reading.pose.tilt,reading.pose.zoom);
     return reading;      
   }
   
   void 
   PlayerPTZServer::setPose(const PTZPose & _pose) {
     assert(m_ptzProxy);
+    log("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,_pose.zoom);
+    //m_ptzProxy->SetCam(_pose.pan * M_PI / 180, _pose.tilt * M_PI / 180, _pose.zoom * M_PI / 180);
     m_ptzProxy->SetCam(_pose.pan, _pose.tilt, _pose.zoom);
   }
 }
