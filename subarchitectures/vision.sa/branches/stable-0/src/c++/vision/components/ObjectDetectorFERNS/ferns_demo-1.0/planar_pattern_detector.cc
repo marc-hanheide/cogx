@@ -259,7 +259,7 @@ bool planar_pattern_detector::estimate_H(void)
 				      model_points[i].potential_correspondent->fr_u(), model_points[i].potential_correspondent->fr_v(),
                                       model_points[i].class_score);
 
-  return H_estimator->ransac(&H, 10., 1500, 0.99, true) > 10;
+  return H_estimator->ransac(&H, 10., 1500, 0.99, true) > 4;
 }
 
 //! test()
