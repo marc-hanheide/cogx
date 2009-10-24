@@ -15,8 +15,11 @@ function cogxVisualLearner_update(X,B, avw)
    f = extAPfeatures(X,B,Params.FV);
 
 
-   mAV = MKDBFupdate(f, avw, mAV);
-   disp(['Updated: ' idx2name(avw(:,1)',avAcronyms)]);
+  % mAV = MKDBFupdate(f, avw, mAV);
+%   mAV = MKDBFupdate(f, [avw(:,1) ones(size(avw,1),1)], mAV);
+   mAV = MKDBFupdate(f, avw(:,1), mAV);
+
+disp(['Updated: ' idx2name(avw(:,1)',avAcronyms)]);
    LRvisUpdate;
    asvSave;
    disp(['MATLAB: cogxVisualLearner_update DONE']);

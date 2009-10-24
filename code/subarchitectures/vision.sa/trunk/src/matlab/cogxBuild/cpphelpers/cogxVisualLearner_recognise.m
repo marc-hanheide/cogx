@@ -22,7 +22,6 @@ function [rCqnt] = cogxVisualLearner_recognise(X, B)
    % global ANSyes ANSpy
    global avAcronyms
 
-   % Ali je answ = rCqnt ?
    rCqnt = MKDBFrec(f, mAV);
    if currMode.qnt2qlD==0
      ansQl = qnt2ql(rCqnt, currMode.THRs);

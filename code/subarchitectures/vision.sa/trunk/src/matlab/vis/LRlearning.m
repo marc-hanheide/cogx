@@ -22,7 +22,7 @@ function varargout = LRlearning(varargin)
 
 % Edit the above text to modify the response to help LRlearning
 
-% Last Modified by GUIDE v2.5 19-Oct-2009 23:35:00
+% Last Modified by GUIDE v2.5 24-Oct-2009 14:59:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -100,4 +100,13 @@ for i=1:lastfig
 end;
 close(lastfig);
 
+
+
+
+% --- Executes on button press in pb_redrawModels.
+function pb_redrawModels_Callback(hObject, eventdata, handles)
+% hObject    handle to pb_redrawModels (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+LRvisUpdate
 
