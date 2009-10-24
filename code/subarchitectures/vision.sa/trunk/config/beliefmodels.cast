@@ -1,9 +1,11 @@
 HOST localhost
 
 SUBARCHITECTURE vision.sa 
-CPP WM SubarchitectureWorkingMemory
+CPP WM SubarchitectureWorkingMemory --log --debug
 CPP TM AlwaysPositiveTaskManager
 CPP MG mediator VisualMediator -sba binder --log true --debug true
+
+JAVA MG taskViewer motivation.util.viewer.ViewerCastComponent  --subscribe "VisionData.VisualLearnerLearningTask" --log --debug
 
 SUBARCHITECTURE binder 
 
@@ -22,7 +24,6 @@ JAVA MG translator binder.components.BeliefModelTranslator --log
 JAVA MG monitor binder.components.BinderMonitor --gui
 JAVA MG bmvisualizer beliefmodels.util.viewer.BeliefModelChartViewer
 JAVA MG beliefViewer motivation.util.viewer.ViewerCastComponent  --subscribe "beliefmodels.adl.Belief" 
-JAVA MG unionViewer motivation.util.viewer.ViewerCastComponent  --subscribe "binder.autogen.core.UnionConfiguration"
 
 #JAVA MG test binder.abstr.BindingWorkingMemoryReader --log
 
