@@ -35,7 +35,7 @@ using namespace beliefmodels::domainmodel::cogx;
 
 void VisualMediator::configure(const map<string,string> & _config)
 {
-//  BindingWorkingMemoryWriter::configure(_config);
+  BindingWorkingMemoryWriter::configure(_config);
   
   map<string,string>::const_iterator it;
 
@@ -170,7 +170,6 @@ void VisualMediator::runComponent()
 
 	  if(!proxyToAdd.empty())
 	  { 
-
 		log("An add object instruction");
 		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
 
@@ -195,7 +194,7 @@ void VisualMediator::runComponent()
 
 			data.proxyId = proxy->entityID;
 
-			log("A visual proxy ID %s added for object ID %s",
+			log("A visual proxy ID %s added for visual object ID %s",
 				proxy->entityID.c_str(), data.addr.id.c_str());
 
 		  }
@@ -206,6 +205,43 @@ void VisualMediator::runComponent()
 		}
 
 		proxyToAdd.pop();
+	  }
+	  else if(!proxyToUpdate.empty())
+	  {
+		log("An update object instruction");
+		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
+		
+		if(data.status == STABLE)
+		{
+		  try
+		  {
+			VisualObjectPtr objPtr = getMemoryEntry<VisionData::VisualObject>(data.addr);
+
+			WorkingMemoryPointerPtr origin = createWorkingMemoryPointer(getSubarchitectureID(), data.addr.id, "VisualObject");
+
+			FeatureValuePtr value = createStringValue (objPtr->label.c_str(), objPtr->labelConfidence);
+			FeaturePtr label = createFeatureWithUniqueFeatureValue ("label", value);
+
+			ProxyPtr proxy = createNewProxy (origin, 1.0f);
+
+			addFeatureToProxy (proxy, label);
+			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
+			
+			proxy->entityID = data.proxyId;
+			
+			overwriteProxyInWM(proxy);
+			
+			log("A visual proxy ID %s was updated following the visual object ID %s",
+				proxy->entityID.c_str(), data.addr.id.c_str());
+
+		  }
+		  catch (DoesNotExistOnWMException e)
+		  {
+			log("VisualObject ID: %s was removed before it could be processed", data.addr.id.c_str());
+		  }
+		}
+		
+		proxyToUpdate.pop();
 	  }
 	  else if(!proxyToDelete.empty())
 	  {
@@ -274,11 +310,10 @@ void VisualMediator::updatedVisualObject(const cdl::WorkingMemoryChange & _wmc)
 
   data.status= STABLE;
   data.lastUpdateTime = time;
-  //	queuesNotEmpty->post();proxyToAdd.push(obj.addr.id);
-
+  proxyToUpdate.push(data.addr.id);
   debug("A VisualObject ID %s ",data.addr.id.c_str());
-
-  //  queuesNotEmpty->post();
+  
+  queuesNotEmpty->post();
 }
 
 void VisualMediator::deletedVisualObject(const cdl::WorkingMemoryChange & _wmc)
@@ -313,7 +348,7 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   if(! AttrAgent(obj->ags))
   {
 	log("The agent status is not an attributed one - will not learn what I already know");
-	return;
+//	return;
   }
   
   
