@@ -1,3 +1,4 @@
+<http://dora.cogx.eu#Juice> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Kitchen> .
 <http://dora.cogx.eu#AC_adapter> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Studio> .
 <http://dora.cogx.eu#AC_adapter> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Office> .
 <http://dora.cogx.eu#Alarm_clock> <http://dora.cogx.eu#typicalObjectInRoom> <http://dora.cogx.eu#Bedroom> .
