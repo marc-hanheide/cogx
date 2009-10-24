@@ -126,7 +126,7 @@ void StereoCamera::ReadSVSCalib(const string &calibfile)
   inverse(cam[RIGHT].pose, cam[RIGHT].pose);
 
   inImgSize.width = cam[LEFT].width;
-  inImgSize.height = cam[LEFT].width;
+  inImgSize.height = cam[LEFT].height;
 }
 
 /**
