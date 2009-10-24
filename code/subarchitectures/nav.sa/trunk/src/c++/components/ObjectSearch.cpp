@@ -514,24 +514,30 @@ void ObjectSearch::GenViewPoints() {
     std::vector<double> angles;
     log("creating placeinterface proxy");
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    log("created placeinterface proxy");
+
+//     std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
+//     while (obj.empty()) {
+//       log("loop obj.empty()");
+//       //nah: why only 20?
+//       //getWorkingMemoryEntries<NavData::FNode>(20, obj);	
+//       getWorkingMemoryEntries<NavData::FNode>(obj);	
+//       usleep(1000);
+//     }
+
+//     NavData::FNodeSequence fnodeseq;
+//     for (unsigned int i = 0; i < obj.size() ; i++)
+//       {
+// 	fnodeseq.push_back(obj[i]->getData());
+//     }
     
-    std::vector< boost::shared_ptr<CASTData<NavData::FNode> > > obj;
-    while (obj.empty()) {
-      getWorkingMemoryEntries<NavData::FNode>(20, obj);	
-      usleep(1000);
-    }
-    NavData::FNodeSequence fnodeseq;
-    for (unsigned int i = 0; i < obj.size() ; i++)
-    {
-    	fnodeseq.push_back(obj[i]->getData());
-    }
-    
-    for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/90)
+    for (double rad= 0 ; rad < M_PI*2 ; rad = rad + M_PI/90) {
         angles.push_back(rad);
+    }
 
     while (i < m_samplesize) {
 
-      //log("processing sample %i/%i", i+1, m_samplesize);
+      debug("processing sample %i/%i", i+1, m_samplesize);
       
       randx = rand();
       randy = rand();
@@ -566,7 +572,7 @@ void ObjectSearch::GenViewPoints() {
       }
     }
     
-    //log("Calculating view cones for generated samples");
+    log("Calculating view cones for generated samples");
     Cure::Pose3D candidatePose;
     XVector3D a;
     
@@ -582,7 +588,7 @@ void ObjectSearch::GenViewPoints() {
         //log("CurrentPose.Theta : %f", candidatePose.getTheta());
         candidatePoses.push_back(candidatePose);
     }
-    //log("View Cones calculated.");
+    log("View Cones calculated.");
     displayOn = true;
 }
 long ObjectSearch::GetClosestFNode(double xW, double yW){
