@@ -63,7 +63,7 @@ DataPlot::DataPlot(int size, QString title, vector<double> lpD, vector<double> e
 	QwtPlotCurve *lpCurve = new QwtPlotCurve("Learning progress");
 	lpCurve->attach(this);
 
-	QwtPlotCurve *eCurve = new QwtPlotCurve("Error");
+	QwtPlotCurve *eCurve = new QwtPlotCurve("Norm. Sum of Squares Error");
 	eCurve->attach(this);
 
 	// Set curve styles

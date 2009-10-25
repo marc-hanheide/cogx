@@ -56,6 +56,10 @@ R normalize(R const& value, R const& min, R const& max) {
 	return -1.0 + (res*2.0);
 }
 
+template <typename R>
+R denormalize (R const& value, R const& min, R const& max) {
+	return (value + 1.0)/2*(max-min)+min;
+}
 
 ///
 ///computer an orthogonal vector to some vector (which could be a surface normal vector)

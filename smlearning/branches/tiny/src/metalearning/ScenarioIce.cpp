@@ -42,7 +42,7 @@ namespace smlearning {
 
 
 ///
-///creates a polyflap object
+///creates a polyflap object given position and rotation angle
 ///
 void ScenarioIce::setupPolyflap(TinyPrx &pTiny, RigidBodyPrx& pObject, golem::tinyice::Vec3 position, Real rotationZ, golem::tinyice::Vec3 dimensions) {
 
@@ -86,6 +86,57 @@ void ScenarioIce::setupPolyflap(TinyPrx &pTiny, RigidBodyPrx& pObject, golem::ti
 		pTiny->releaseActor(pObject);
 	pObject = RigidBodyPrx::checkedCast(pTiny->createActor(ActorDescPtr(pObjectDesc)));
 }
+
+///
+///creates a polyflap object given pose
+///
+void ScenarioIce::setupPolyflap(TinyPrx &pTiny, RigidBodyPrx& pObject, golem::tinyice::Mat34 pose, golem::tinyice::Vec3 dimensions) {
+
+	// setup an object (polyflap) as a set of two boxes
+	RigidBodyDesc* pObjectDesc = new RigidBodyDescI;
+	const Real objectWidthY = dimensions.v1 * 0.5;
+	const Real objectWidthZ = dimensions.v1 * 0.5;
+	const Real objectLength = dimensions.v2 * 0.5;
+	const Real objectHeight = dimensions.v3 * 0.5;
+	const Real objectAngle = 0.5*REAL_PI;
+	const Real objectThickness = 0.001;
+	// Y-up shape
+	BoxShapeDesc* pYShapeDesc = new BoxShapeDescI;
+	pYShapeDesc->dimensions.v1 = objectWidthY;
+	pYShapeDesc->dimensions.v2 = objectLength;
+	pYShapeDesc->dimensions.v3 = objectThickness;
+	pYShapeDesc->localPose.p.v1 = 0.0;
+	pYShapeDesc->localPose.p.v2 = objectLength;
+	pYShapeDesc->localPose.p.v3 = objectThickness;
+	pYShapeDesc->density = 0.5;
+	pYShapeDesc->color.r = 0.0;
+	pYShapeDesc->color.g = 0.0;
+	pYShapeDesc->color.b = 255.0;
+	
+	pObjectDesc->shapes.push_back(ShapeDescPtr(pYShapeDesc));
+	// Y-up shape
+	BoxShapeDesc* pZShapeDesc = new BoxShapeDescI;
+	double objectSin = ::sin(objectAngle), objectCos = ::cos(objectAngle);
+	pZShapeDesc->dimensions.v1 = objectWidthZ;
+	pZShapeDesc->dimensions.v2 = objectHeight;
+	pZShapeDesc->dimensions.v3 = objectThickness;
+	pZShapeDesc->localPose.p.v1 = 0.0;
+	pZShapeDesc->localPose.p.v2 = objectCos*objectHeight;
+	pZShapeDesc->localPose.p.v3 = objectSin*objectHeight + objectThickness;
+	pZShapeDesc->density = 0.5;
+	pZShapeDesc->color.r = 0.0;
+	pZShapeDesc->color.g = 0.0;
+	pZShapeDesc->color.b = 255.0;
+	rotX(pZShapeDesc->localPose.R, objectAngle);
+	pObjectDesc->shapes.push_back(ShapeDescPtr(pZShapeDesc));
+	// global pose
+	pObjectDesc->globalPose = pose;
+	// delete previous object, create a new one. Optionally only global pose can be set
+	if (pObject)
+		pTiny->releaseActor(pObject);
+	pObject = RigidBodyPrx::checkedCast(pTiny->createActor(ActorDescPtr(pObjectDesc)));
+}
+
 
 
 ///

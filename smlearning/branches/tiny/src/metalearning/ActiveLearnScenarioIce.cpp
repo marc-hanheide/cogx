@@ -150,7 +150,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	//a number that slightly greater than the maximal reachable space of the arm
 	//    - used for workspace position normalization and later as a position upper bound
 	//      for random polyflap position
-	const Real maxRange = 0.7;
+	const Real maxRange = 0.4;
 
 	//minimal duration of a movement (by normal speed)
 	const Real minDuration = 5.0;
@@ -247,9 +247,6 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	orientationT.v2 = 0.0*REAL_PI;
 	orientationT.v3 = 0.0*REAL_PI;
 
-	// Object pointer
-	RigidBodyPrx pPolyflapObject;
-
 	int numSequences = 10000;
 	int startingPosition = 0;
 	if (argc > 2)
@@ -260,6 +257,8 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	//start of the experiment loop
 	int e = 0;
 	while (e<numSequences && !pTiny->interrupted()) {
+		// Object pointer
+		RigidBodyPrx pPolyflapObject;
 		//polyflap object
 		setupPolyflap(pTiny, pPolyflapObject, startPolyflapPosition, startPolyflapZRotation, polyflapDimensions);
 		/*golem::Bounds::SeqPtr curPol = pPolyflapObject->getGlobalBoundsSeq();*/
@@ -350,9 +349,9 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		motorcommandVector.push_back(normalize<Real>(coefs[2], -5, 5));
 		motorcommandVector.push_back(normalize<Real>(coefs[3], -5, 5));
 		//initial position, normalized
-		motorcommandVector.push_back(normalize(positionT.v1, -maxRange, maxRange));
-		motorcommandVector.push_back(normalize(positionT.v2, -maxRange, maxRange));
-		motorcommandVector.push_back(normalize(positionT.v3, -maxRange, maxRange));
+		motorcommandVector.push_back(normalize(positionT.v1, /*-maxRange*/0.0, maxRange));
+		motorcommandVector.push_back(normalize(positionT.v2, /*-maxRange*/0.0, maxRange));
+		motorcommandVector.push_back(normalize(positionT.v3, /*-maxRange*/0.0, maxRange));
 		//innitial orientation, normalized
 		motorcommandVector.push_back(normalize(orientationT.v1, -REAL_PI, REAL_PI));
 		motorcommandVector.push_back(normalize(orientationT.v2, -REAL_PI, REAL_PI));
@@ -478,9 +477,9 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 					/////////////////////////////////////////////////
 					//writing in the feature vector
 					//the position of the polyflap (position of both sides separately)
-					features.push_back(normalize(polyFlapPose.p.v1, -maxRange, maxRange));
-					features.push_back(normalize(polyFlapPose.p.v2, -maxRange, maxRange));
-					features.push_back(normalize(polyFlapPose.p.v3, -maxRange, maxRange));
+					features.push_back(normalize(polyFlapPose.p.v1, /*-maxRange*/0.0, maxRange));
+					features.push_back(normalize(polyFlapPose.p.v2, /*-maxRange*/0.0, maxRange));
+					features.push_back(normalize(polyFlapPose.p.v3, /*-maxRange*/0.0, maxRange));
 					features.push_back(normalize(polyFlapPose.R.m11, -1.0, 1.0));
 					features.push_back(normalize(polyFlapPose.R.m12, -1.0, 1.0));
 					features.push_back(normalize(polyFlapPose.R.m13, -1.0, 1.0));
@@ -528,6 +527,8 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 			
 		} //end of the if(checkPosition...) block
 
+		if (pPolyflapObject)
+			pTiny->releaseActor(pPolyflapObject);
 		//initialize RNN learner with a dummy dataset
 		//TODO: this is a hack!
 		string dummyDataFile = "tmp_dummy";
@@ -548,6 +549,11 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
 		vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
 		plotApp->updateData(startPosition-1, learnProgData, errorData);
+		golem::tinyice::Mat34 predictedPfPose = getPfPoseFromOutputActivations (learner.net->outputLayer->outputActivations, motorcommandVector.size(), maxRange);
+		RigidBodyPrx predictedPolyflapObject;
+		setupPolyflap(pTiny, predictedPolyflapObject, predictedPfPose, polyflapDimensions);
+		
+
 		
 		//OFF collision detection
 		pArm->setCollisionGroup(0x0);
@@ -570,6 +576,8 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 		// wait for completion of the action (until the arm moves to the initial pose)
 		pArm->waitForEnd(60.0);
 
+		if (predictedPolyflapObject)
+			pTiny->releaseActor(predictedPolyflapObject);
 
 
 
@@ -600,8 +608,6 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	// wait until the arm is ready to accept new commands, but no longer than 60 seconds
 	(void)pArm->waitForEnd(60.0);
 	
-	if (pPolyflapObject)
-		pTiny->releaseActor(pPolyflapObject);
 	pTiny->releaseActor(pArm);
 	pTiny->releaseActor(pGroundPlane);
 
@@ -613,6 +619,36 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 
 	
 	return 0;
+}
+
+golem::tinyice::Mat34  ActiveLearnScenarioIce::getPfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange) {
+	int finalActIndex = outputActivations.shape[0] - 1;
+// 	cout << finalActIndex << endl;
+	int outputsize = outputActivations.shape[1];
+// 	cout << outputsize << endl;
+
+// 	cout << startIndex << endl;
+
+	golem::tinyice::Mat34 predictedPfPose;
+
+	predictedPfPose.p.v1 = denormalize(outputActivations[finalActIndex][startIndex++], /*-maxRange*/0.0, maxRange);
+	predictedPfPose.p.v2 = denormalize(outputActivations[finalActIndex][startIndex++], /*-maxRange*/0.0, maxRange);
+	predictedPfPose.p.v3 = denormalize(outputActivations[finalActIndex][startIndex++], /*-maxRange*/0.0, maxRange);
+	predictedPfPose.R.m11 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m12 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m13 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m21 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m22 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m23 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m31 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m32 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	predictedPfPose.R.m33 = denormalize(outputActivations[finalActIndex][startIndex++], -1.0, 1.0);
+	assert (startIndex == outputsize);
+	
+	return predictedPfPose;
+	
+
+
 }
 
 

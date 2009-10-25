@@ -69,7 +69,7 @@ void ActiveRNN::build (string dataFile, int smregionsCount, int patternSize, ost
 		learnProg_errors.second = errorsHistory;
 		learnProg_errorsMap[i] = learnProg_errors;
 	}
-	normalizationFactor = patternSize * 4 * 0.5;
+	normalizationFactor = patternSize /** 4*/ * 0.5;
 
 }
 

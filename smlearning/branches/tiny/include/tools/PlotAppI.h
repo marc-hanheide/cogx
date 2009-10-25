@@ -204,17 +204,31 @@ public:
 		else
 			estartIndex = 0;
 		cout << "updating data..." << endl;
+		double min = 10000.0;
+		double max = -10000.0;
 		for (int i=0; i< plot_size; i++) {
 			if (i < lpstartIndex) 
 				plot->learnprogData[i] = 0.0;				
 			else {
 				plot->learnprogData[i] = lpD[i-lpstartIndex];	
 			}
+			if (plot->learnprogData[i] < min)
+				min = plot->learnprogData[i];
+			if (plot->learnprogData[i] > max)
+				max = plot->learnprogData[i];
 			if (i < estartIndex)
 				plot->errorData[i] = 0.0;
 			else
 				plot->errorData[i] = eD[i-estartIndex];
+			if (plot->errorData[i] < min)
+				min = plot->errorData[i];
+			if (plot->errorData[i] > max)
+				max = plot->errorData[i];
+			
+			
 		}
+		plot->setAxisScale(QwtPlot::yLeft, min-0.02, max+0.02);
+
 	}
 
 	void updateData(int r, vector<double> lpD, vector<double> eD)
