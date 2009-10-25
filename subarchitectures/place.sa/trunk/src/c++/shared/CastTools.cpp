@@ -33,8 +33,30 @@ namespace place
 
 double castTimeToSeconds(const cast::cdl::CASTTime &time)
 {
-  return time.s + 10e-6 * time.us;
+  return static_cast<double>(time.s) + 1e-6 * static_cast<double>(time.us);
 }
+
+cast::cdl::CASTTime castTimeDiff(const cast::cdl::CASTTime &time1,
+    const cast::cdl::CASTTime &time2)
+{
+  if (time1<time2)
+    return castTimeDiff(time2, time1);
+
+  cast::cdl::CASTTime ret;
+  ret.s = time1.s-time2.s;
+  if (time1.us<time2.us)
+  {
+    ret.s-=1;
+    ret.us=1e6-(time2.us-time1.us);
+  }
+  else
+  {
+    ret.us=time1.us-time2.us;
+  }
+  return ret;
+}
+
+
 
 
 }

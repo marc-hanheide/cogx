@@ -29,6 +29,7 @@
 #include "Monitor.h"
 #include "MonitorDialog.h"
 #include "shared/ConfigFile.h"
+#include "shared/CastTools.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 // Qt
@@ -275,7 +276,7 @@ void PlaceMonitor::wmChange(const cast::cdl::WorkingMemoryChange & change)
   {
     // Send the change to the dialog
     _dialog->addWmChange(change.operation, change.address.id,
-        change.src, change.type, time.s+10e-6*time.us);
+        change.src, change.type, castTimeToSeconds(time));
   }
 }
 
@@ -298,7 +299,7 @@ void PlaceMonitor::newDataProviderCommandAck(const cast::cdl::WorkingMemoryChang
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName, "", cmd->src, time.s+10e-6*time.us);
+    _dialog->newCommand(cmdName, "", cmd->src, castTimeToSeconds(time));
   }
 }
 
@@ -337,7 +338,7 @@ void PlaceMonitor::newDataSaverCommandAck(const cast::cdl::WorkingMemoryChange &
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName, cmdParams, cmd->src, time.s+10e-6*time.us);
+    _dialog->newCommand(cmdName, cmdParams, cmd->src, castTimeToSeconds(time));
   }
 }
 
@@ -362,7 +363,7 @@ void PlaceMonitor::newVisualProcessorCommandAck(const cast::cdl::WorkingMemoryCh
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName, "", cmd->src, time.s+10e-6*time.us);
+    _dialog->newCommand(cmdName, "", cmd->src, castTimeToSeconds(time));
   }
 }
 
@@ -421,7 +422,7 @@ void PlaceMonitor::newLaserProcessorCommandAck(const cast::cdl::WorkingMemoryCha
 
   if (_dialog)
   {
-    _dialog->newCommand(cmdName, "", cmd->src, time.s+10e-6*time.us);
+    _dialog->newCommand(cmdName, "", cmd->src, castTimeToSeconds(time));
   }
 }
 

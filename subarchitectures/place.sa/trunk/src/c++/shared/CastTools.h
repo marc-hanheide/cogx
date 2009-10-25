@@ -35,6 +35,15 @@ namespace place
 {
   double castTimeToSeconds(const cast::cdl::CASTTime &time);
 
+  cast::cdl::CASTTime castTimeDiff(const cast::cdl::CASTTime &time1,
+      const cast::cdl::CASTTime &time2);
+
+  inline double castTimeDiffToSeconds(const cast::cdl::CASTTime &time1,
+      const cast::cdl::CASTTime &time2)
+  {
+    return castTimeToSeconds(castTimeDiff(time1,time2));
+  }
+
 }
 
 
