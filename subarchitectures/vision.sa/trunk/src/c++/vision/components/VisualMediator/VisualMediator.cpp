@@ -70,7 +70,7 @@ void VisualMediator::start()
   const char *name = "mediatorSemaphore";
   named_semaphore(open_or_create, name, 0);
   queuesNotEmpty = new named_semaphore(open_only, name);
-log("HELLO, Mediator active");
+  log("Mediator active");
   if (doDisplay)
   {
   }
@@ -186,8 +186,7 @@ void VisualMediator::runComponent()
 
 			ProxyPtr proxy = createNewProxy (origin, 1.0f);
 
-			addFeatureToProxy (proxy, label);
-			
+			addFeatureToProxy (proxy, label);	
 			addFeatureListToProxy(proxy, objPtr->labels, objPtr->distribution);
 
 			addProxyToWM(proxy);
@@ -208,9 +207,9 @@ void VisualMediator::runComponent()
 	  }
 	  else if(!proxyToUpdate.empty())
 	  {
-		log("An update object instruction");
-		VisualObjectData &data = VisualObjectMap[proxyToAdd.front()];
-		
+		log("An update object instruction"); 
+		VisualObjectData &data = VisualObjectMap[proxyToUpdate.front()];
+	
 		if(data.status == STABLE)
 		{
 		  try
@@ -348,7 +347,7 @@ void VisualMediator::updatedBelief(const cdl::WorkingMemoryChange & _wmc)
   if(! AttrAgent(obj->ags))
   {
 	log("The agent status is not an attributed one - will not learn what I already know");
-//	return;
+	return;
   }
   
   
@@ -451,11 +450,9 @@ bool VisualMediator::unionRef(FormulaPtr fp, string &unionID)
   
 	  if(unionRef(sf, unionID))
 		return true;
-	}
-  
+	}  
 	unionID = "";
-	return false;
-	
+	return false;	
   }
   else
   {
@@ -553,6 +550,8 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
   vector<int>::iterator labi;
   vector<double>::iterator disti = distribution.begin();
   
+  vector<FeatureValuePtr> colorValues, shapeValues;
+  
   for(labi = labels.begin(); labi != labels.end(); labi++)
   {
 	FeatureValuePtr value;
@@ -608,21 +607,22 @@ void VisualMediator::addFeatureListToProxy(ProxyPtr proxy, IntSeq labels, Double
 	if(*labi < 10)
 	{
 //	  value = createStringValue (colorStrEnums[*labi], *disti);
-	  label = createFeatureWithUniqueFeatureValue ("Color", value);
-	  
-	  addFeatureToProxy (proxy, label);
+	  colorValues.push_back(value);
 	}
 	else if(*labi < 13)
 	{
 //	  value = createStringValue (shapeStrEnums[*labi], *disti);
-	  label = createFeatureWithUniqueFeatureValue ("Shape", value);
-	  
-	  addFeatureToProxy (proxy, label);
+	  shapeValues.push_back(value);  
 	} 	
 	
 	disti++;
   }
-	  
+  
+  if(colorValues.size() > 0)
+	addFeatureToProxy(proxy, createFeatureWithAlternativeFeatureValues ("colour", colorValues)); //!!!!!!!
+	
+  if(shapeValues.size() > 0)   
+	addFeatureToProxy(proxy, createFeatureWithAlternativeFeatureValues ("shape", shapeValues));	
 }
 
 
