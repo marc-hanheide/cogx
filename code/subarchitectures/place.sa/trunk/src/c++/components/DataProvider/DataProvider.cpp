@@ -277,7 +277,7 @@ Robotbase::Odometry PlaceDataProvider::RobotbaseServer::pullOdometry(const Ice::
 void PlaceDataProvider::RobotbaseServer::execMotionCommand(const ::Robotbase::MotionCommand& cmd,
                        const Ice::Current&)
 {
-  cerr << "LOL! You've just tried to move the robot while I stream from a database :-)" << endl;
+//  cerr << "LOL! You've just tried to move the robot while I stream from a database :-)" << endl;
 }
 
 
@@ -355,27 +355,23 @@ void PlaceDataProvider::runComponent()
     ts.tv_sec += 1;
 
     // Wait if necessary
-    debug("1111111111...");
     pthread_mutex_lock(&_signalMutex);
     if (!_wasSignal)
       pthread_cond_timedwait(&_signalCond, &_signalMutex, &ts);
-    debug("222222222222222...");
 
     // Handle signal if signal arrived
     if ((!isRunning()) || (!_wasSignal))
       pthread_mutex_unlock(&_signalMutex);
     else
     {
-      debug("333333333...");
       _wasSignal=false;
       pthread_mutex_unlock(&_signalMutex);
-      debug("44444444...");
 
       // Check for too high framerate (we shouldn't output data too fast!)
-      debug("%f %f", castTimeToSeconds(getCASTTime()), castTimeToSeconds(_lastGrabTimestamp));
       cdl::CASTTime tmpTime = getCASTTime();
-      double timeDiff = castTimeToSeconds(tmpTime - _lastGrabTimestamp);
-      debug("%f", timeDiff);
+      println("%f %f %d %d", castTimeToSeconds(tmpTime), castTimeToSeconds(_lastGrabTimestamp), tmpTime.s, tmpTime.us);
+      double timeDiff = castTimeDiffToSeconds(tmpTime, _lastGrabTimestamp);
+      println("%f", timeDiff);
       if (timeDiff < 0.05)
         usleep((0.05-timeDiff)*1000000.0);
       _lastGrabTimestamp = getCASTTime();

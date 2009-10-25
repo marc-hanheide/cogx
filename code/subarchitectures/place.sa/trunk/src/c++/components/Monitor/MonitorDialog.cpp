@@ -37,6 +37,7 @@
 #include "StatsDialog.h"
 #include "WMDialog.h"
 #include <PlaceData.hpp>
+#include "shared/CastTools.h"
 // Qt
 #include <QMessageBox>
 #include <QFileDialog>
@@ -215,15 +216,15 @@ void MonitorDialog::newImage(const PlaceData::ImagePtr image)
 
       // Emit signal
       emit updatePreviewImageSignal(tmpImage, image->frameNo,
-          image->realTimeStamp.s + 10e-6*image->realTimeStamp.us);
+          castTimeToSeconds(image->realTimeStamp));
     }
   }
 
   if (_statsDialog->isVisible())
   {
     emit updateImageStatsSignal(image->frameNo,
-        image->realTimeStamp.s + 10e-6*image->realTimeStamp.us,
-        image->wmTimeStamp.s + 10e-6*image->wmTimeStamp.us );
+        castTimeToSeconds(image->realTimeStamp),
+        castTimeToSeconds(image->wmTimeStamp));
   }
 }
 
@@ -245,17 +246,17 @@ void MonitorDialog::newLaserScan(const PlaceData::LaserScanPtr scan)
 
     if (_previewDialog->isVisible())
       emit updatePreviewLaserScanSignal(startAngle, angleStep, max, range,
-          scan->frameNo, scan->realTimeStamp.s + 10e-6*scan->realTimeStamp.us);
+          scan->frameNo, castTimeToSeconds(scan->realTimeStamp));
     if (_mapDialog->isVisible())
       emit addMapLaserScanSignal(startAngle, angleStep, max, range,
-          scan->frameNo, scan->realTimeStamp.s + 10e-6*scan->realTimeStamp.us);
+          scan->frameNo, castTimeToSeconds(scan->realTimeStamp));
   }
 
   if (_statsDialog->isVisible())
   {
     emit updateLaserScanStatsSignal(scan->frameNo,
-        scan->realTimeStamp.s + 10e-6*scan->realTimeStamp.us,
-        scan->wmTimeStamp.s + 10e-6*scan->wmTimeStamp.us);
+        castTimeToSeconds(scan->realTimeStamp),
+        castTimeToSeconds(scan->wmTimeStamp));
   }
 }
 
@@ -280,17 +281,17 @@ void MonitorDialog::newOdometry(const PlaceData::OdometryPtr odom)
 
     if (_previewDialog->isVisible())
       emit updatePreviewOdometrySignal(x, y, theta,
-          odom->frameNo, odom->realTimeStamp.s + 10e-6*odom->realTimeStamp.us);
+          odom->frameNo, castTimeToSeconds(odom->realTimeStamp));
     if (_mapDialog->isVisible())
       emit addMapOdometrySignal(x, y, theta, odom->frameNo,
-          odom->realTimeStamp.s + 10e-6 * odom->realTimeStamp.us);
+          castTimeToSeconds(odom->realTimeStamp));
   }
 
   if (_statsDialog->isVisible())
   {
     emit updateOdometryStatsSignal(odom->frameNo,
-        odom->realTimeStamp.s + 10e-6*odom->realTimeStamp.s,
-        odom->wmTimeStamp.s + 10e-6*odom->wmTimeStamp.us);
+        castTimeToSeconds(odom->realTimeStamp),
+        castTimeToSeconds(odom->wmTimeStamp));
   }
 }
 
@@ -322,9 +323,9 @@ void MonitorDialog::newVisualProcessorStatus(const PlaceData::VisualProcessorSta
     if (_statsDialog->isVisible())
     {
       emit updateVisualProcessorStatsSignal(
-          stat->processingStartTimeStamp.s + 10e-6*stat->processingStartTimeStamp.us,
-          stat->extractionEndTimeStamp.s + 10e-6*stat->extractionEndTimeStamp.us,
-          stat->classificationEndTimeStamp.s + 10e-6*stat->classificationEndTimeStamp.us );
+          castTimeToSeconds(stat->processingStartTimeStamp),
+          castTimeToSeconds(stat->extractionEndTimeStamp),
+          castTimeToSeconds(stat->classificationEndTimeStamp));
     }
   }
 }
@@ -354,9 +355,9 @@ void MonitorDialog::newLaserProcessorStatus(const PlaceData::LaserProcessorStatu
     if (_statsDialog->isVisible())
     {
       emit updateLaserProcessorStatsSignal(
-          stat->processingStartTimeStamp.s + 10e-6*stat->processingStartTimeStamp.us,
-          stat->extractionEndTimeStamp.s + 10e-6*stat->extractionEndTimeStamp.us,
-          stat->classificationEndTimeStamp.s + 10e-6*stat->classificationEndTimeStamp.us );
+          castTimeToSeconds(stat->processingStartTimeStamp),
+          castTimeToSeconds(stat->extractionEndTimeStamp),
+          castTimeToSeconds(stat->classificationEndTimeStamp));
     }
   }
 }
