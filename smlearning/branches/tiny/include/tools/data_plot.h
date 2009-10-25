@@ -20,12 +20,14 @@ class DataPlot : public QwtPlot
 {
     Q_OBJECT
 public:
-	double *data;
+	double *learnprogData;
+	double *errorData;
 	int plot_size;
-	DataPlot(int plot_size, QString title, vector<double> data, QWidget* = NULL);
+	DataPlot(int plot_size, QString title, vector<double> lpD, vector<double> eD, QWidget* = NULL);
 	~DataPlot () {
 		delete d_x;
-		delete data;
+		delete learnprogData;
+		delete errorData;
 	}
 
 

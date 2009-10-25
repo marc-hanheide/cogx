@@ -36,6 +36,7 @@
  */
 
 #include <metalearning/ActiveLearnScenarioIce.h>
+#include <PlotApp.hh>
 
 namespace smlearning {
 
@@ -45,13 +46,14 @@ namespace smlearning {
 ///associated to the RNN machine.
 ///
 
-int ActiveLearnScenarioIce::run (int argnr, char *arguments[]) {
-	argc = argnr;
-	argv = arguments;
+int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
+	//argc = argnr;
+	//argv = arguments;
 
-	/*Ice::ObjectPrx */base = communicator()->stringToProxy("GolemTiny:default -p 8172");
+	Ice::ObjectPrx base1 = communicator()->stringToProxy("GolemTiny:default -p 8172");
+
 		
-	/*TinyPrx */pTiny = TinyPrx::checkedCast(base);
+	TinyPrx pTiny = TinyPrx::checkedCast(base1);
 	if (!pTiny)
 		throw ExTiny("Invalid proxy");
 	if (argc < 2) {
@@ -61,18 +63,19 @@ int ActiveLearnScenarioIce::run (int argnr, char *arguments[]) {
 	
 	shutdownOnInterrupt();
 
-// 	if (!thread.start (this)) {
-// 		cout << "Unable to launch thread!" << endl;
-// 		return 0;
-// 	}
-	run();
+	try {
 
-}
-
-void ActiveLearnScenarioIce::run () {
+	Ice::ObjectPrx base2 = communicator()->stringToProxy("DataPlotter:default -p 8174");
+	smlearning::plotting::PlottingAppPrx plotApp = smlearning::plotting::PlottingAppPrx::checkedCast(base2);
+	if (!plotApp)
+		throw "Invalid proxy";
+	int smregionsCount = 18;
+	plotApp->init (smregionsCount, learner.SMOOTHING + learner.TIMEWINDOW);
+	plotApp->resize(600,400);
 	
+	plotApp->show();
 
-
+	
 	// initialize random seed:
 	srand ((unsigned)time(NULL) );
 
@@ -183,7 +186,6 @@ void ActiveLearnScenarioIce::run () {
 	//Arranged in a vector associated to region indices
 	//sequences and featureVectors are created
 	//in every loop run
-	int smregionsCount = 18;
 	vector<DataSet> data;
 	for (int i=0; i<smregionsCount; i++) {
 		DataSet currentDataset;
@@ -314,7 +316,7 @@ void ActiveLearnScenarioIce::run () {
 			startPosition = startingPosition;
 		
 		setCoordinatesIntoTarget(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, side, center, top, over);
-		cout << "Position " << startPosition << endl;
+		cout << "Position " << startPosition-1 << endl;
 
 		// and set target waypoint
 		golem::tinyice::GenWorkspaceState target;
@@ -543,6 +545,9 @@ void ActiveLearnScenarioIce::run () {
 		trainseq.targetPatterns.reshape(targetShape);
 		load_sequence (trainseq.inputs.data, trainseq.targetPatterns.data, seq);
 		learner.update (trainseq, startPosition-1);
+		vector<double> learnProgData = learner.learnProg_errorsMap[startPosition-1].first;
+		vector<double> errorData = learner.learnProg_errorsMap[startPosition-1].second;		
+		plotApp->updateData(startPosition-1, learnProgData, errorData);
 		
 		//OFF collision detection
 		pArm->setCollisionGroup(0x0);
@@ -600,7 +605,14 @@ void ActiveLearnScenarioIce::run () {
 	pTiny->releaseActor(pArm);
 	pTiny->releaseActor(pGroundPlane);
 
-	return;
+	} catch (const Ice::Exception& ex) {
+		std::cerr << ex << std::endl;
+	} catch (const char* msg) {
+		std::cerr << msg << std::endl;
+	}
+
+	
+	return 0;
 }
 
 

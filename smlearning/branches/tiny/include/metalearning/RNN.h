@@ -46,7 +46,6 @@ struct RNN {
 	}
 
 	~RNN () {
-		delete net;
 	}
 	
 	///
