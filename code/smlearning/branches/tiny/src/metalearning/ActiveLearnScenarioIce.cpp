@@ -259,7 +259,7 @@ int ActiveLearnScenarioIce::run (int argc, char *argv[]) {
 	
 	//start of the experiment loop
 	int e = 0;
-	while (e<numSequences && !pTiny->isUniverseInterrupted()) {
+	while (e<numSequences && !pTiny->interrupted()) {
 		//polyflap object
 		setupPolyflap(pTiny, pPolyflapObject, startPolyflapPosition, startPolyflapZRotation, polyflapDimensions);
 		/*golem::Bounds::SeqPtr curPol = pPolyflapObject->getGlobalBoundsSeq();*/
