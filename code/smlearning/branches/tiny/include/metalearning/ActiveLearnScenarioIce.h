@@ -69,6 +69,12 @@ public:
 	///associated to the RNN machine.
 	///
 	int run (int argc, char *argv[]);
+
+	///
+	///get final predicted polyflap pose from the neural network activation
+	///
+	golem::tinyice::Mat34 getPfPoseFromOutputActivations (rnnlib::SeqBuffer<double> outputActivations, int startIndex, Real maxRange);
+	
 };
 
 }; /* namespace smlearning */

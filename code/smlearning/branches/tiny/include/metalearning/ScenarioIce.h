@@ -87,10 +87,15 @@ public:
 	//virtual void run () { }
 
 	///
-	///creates polyflap and puts it in the scene
+	///creates polyflap and puts it in the scene (using position and rotation angle)
 	///
 	void setupPolyflap(TinyPrx& pTiny, RigidBodyPrx& pObject, golem::tinyice::Vec3 position, Real rotationZ, golem::tinyice::Vec3 dimensions);
-
+	
+	///
+	///creates polyflap and puts it in the scene (using pose)
+	///
+	void setupPolyflap(TinyPrx &pTiny, RigidBodyPrx& pObject, golem::tinyice::Mat34 pose, golem::tinyice::Vec3 dimensions);
+	
 	///
 	///creates a finger actor and sets bounds
 	///
