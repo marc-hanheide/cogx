@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 	//mainWindow.show();
 
 	//ActiveLearnScenarioIce().setMainWindow (&mainWindow);
-	ActiveLearnScenarioIce().main (argc, argv);
+	return ActiveLearnScenarioIce().main (argc, argv);
 // 	//ActiveLearnScenarioIce scenario;
 
 // 	a.exec ();

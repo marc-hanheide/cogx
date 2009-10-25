@@ -64,6 +64,10 @@ SET(QWT_LIBRARY /usr/lib/ CACHE PATH "Path prefix for qwt library")
 
 INCLUDE( ${QT_USE_FILE} )
 
+SET(ICE_INCLUDE /usr/include CACHE PATH "Path prefix for ZeroC Ice include")
+SET(ICE_LIBRARY /usr/lib CACHE PATH "Path prefix for ZeroC Ice library")
+SET(ICE_BIN /usr/bin CACHE PATH "Path prefix for ZeroC Ice binaries")
+
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
@@ -71,10 +75,12 @@ LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools GolemTinyIce
 	       pthread rt GL glut expat SMLearning netcdf
  	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY}
-	       ${QT_LIBRARIES} qwt-qt4)
+	       ${QT_LIBRARIES} qwt-qt4
+	       Ice IceUtil)
 
 INCLUDE_DIRECTORIES(
 	${SMLEARNING_INCLUDE}
+	${SMLEARNING_ROOT}/slice
 	${GOLEM_INCLUDE}
 	${GOLEM_INCLUDE}/demo/common
 	${PHYSX_INCLUDE}/SDKs/Physics/include
@@ -86,6 +92,7 @@ INCLUDE_DIRECTORIES(
 	${RNNLIB_INCLUDE}
 	${QT_INCLUDE_DIR}
 	${QWT_INCLUDE}
+	${ICE_INCLUDE}
 )
 
 LINK_DIRECTORIES(
@@ -95,6 +102,7 @@ LINK_DIRECTORIES(
 	${Boost_LIBRARY_DIRS}
 	${RNNLIB_LIBRARY}
 	${QWT_LIBRARY}
+	${ICE_LIBRARY}
 )
 
 SET(METALEARNING_SOURCES
@@ -160,6 +168,7 @@ SET(TOOLS_HEADERS
 	${SMLEARNING_ROOT}/include/tools/data_handling.h
 	${SMLEARNING_ROOT}/include/tools/math_helpers.h
 )
+INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
 SET(DATA_PLOT_MOC_HEADERS
 	${SMLEARNING_ROOT}/include/tools/data_plot.h
@@ -178,33 +187,84 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/valid.nc
 )
 
-INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
+###
+###PlotApp Ice interface
+###
+SET(PLOTAPP_MOC_HEADERS
+	${SMLEARNING_ROOT}/include/tools/PlotAppI.h
+)
+QT4_WRAP_CPP( PLOTAPP_GEN_MOC ${PLOTAPP_MOC_HEADERS} )
+
+SET(PLOTAPP_HEADERS
+        ${SMLEARNING_ROOT}/slice/PlotApp.hh
+)
+SET(PLOTAPP_SOURCES
+        ${SMLEARNING_ROOT}/slice/PlotApp.cc
+)
+ADD_CUSTOM_COMMAND(
+        OUTPUT ${SMLEARNING_ROOT}/slice/PlotApp.cc ${SMLEARNING_ROOT}/slice/PlotApp.hh
+	COMMAND ${ICE_BIN}/slice2cpp
+	ARGS --header-ext hh --source-ext cc --output-dir ${SMLEARNING_ROOT}/slice ${SMLEARNING_ROOT}/slice/PlotApp.ice
+	DEPENDS ${SMLEARNING_ROOT}/slice/PlotApp.ice
+	COMMENT "slice2cpp"
+)
+
+SET(DATA_PLOT_TEST_SERVER_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/data_plot_test_server.cpp
+        ${SMLEARNING_ROOT}/slice/PlotApp.cc
+)
+
+SET(DATA_PLOT_TEST_CLIENT_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/data_plot_test_client.cpp
+        ${SMLEARNING_ROOT}/slice/PlotApp.cc
+)
+
+SET(PLOT_SOURCES
+        ${PLOTAPP_SOURCES}
+	${DATA_PLOT_GEN_MOC}
+	${PLOTAPP_GEN_MOC}
+)
+
+SET(DATA_PLOT_SERVER_SOURCE
+        ${SMLEARNING_ROOT}/src/tools/data_plot_server.cpp
+        ${SMLEARNING_ROOT}/slice/PlotApp.cc
+)
+
 
 # SMLearning library
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${DATA_PLOT_GEN_MOC})
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${PLOT_SOURCES})
 # ADD_LIBRARY(${PROJECT_NAME} SHARED ${TOOLS_SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
+ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(ensemble_off_experiment ${ENSEMBLE_OFF_EXPERIMENT_SOURCE})
-ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
+ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
+ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
+ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
+
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/tools/training.sh DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS ensemble_off_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS sequences_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS parsing_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS data_plot_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)
+INSTALL(TARGETS data_plot_test_server RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS data_plot_test_client RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS data_plot_server RUNTIME DESTINATION bin/SMLearning)
+
+
 
 ## SMLearning tools library
 #ADD_EXECUTABLE(tools_test ${TOOLS_SOURCES})

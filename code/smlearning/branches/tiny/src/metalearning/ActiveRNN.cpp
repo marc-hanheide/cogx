@@ -62,8 +62,10 @@ void ActiveRNN::build (string dataFile, int smregionsCount, int patternSize, ost
 	//build the map for learning progress and errors list associations
 	for (int i=0; i<smregionsCount; i++) {
 		vector<double> errorsHistory;
-		pair<double, vector<double> > learnProg_errors;
-		learnProg_errors.first = 0.0;
+		vector<double> learnProgHistory;
+		learnProgHistory.push_back (0.0);
+		pair<vector<double>, vector<double> > learnProg_errors;
+		learnProg_errors.first = learnProgHistory;
 		learnProg_errors.second = errorsHistory;
 		learnProg_errorsMap[i] = learnProg_errors;
 	}
@@ -95,6 +97,8 @@ double ActiveRNN::update (const rnnlib::DataSequence& seq, int smregionIdx, ostr
 		learnProg_errorsMap[smregionIdx].second.erase (learnProg_errorsMap[smregionIdx].second.begin());
 	out << "\tLearning progress: " << endl;
 	out << "\t" << updateLearnProgress (smregionIdx) << endl;
+	if (learnProg_errorsMap[smregionIdx].first.size () > SMOOTHING+TIMEWINDOW)
+		learnProg_errorsMap[smregionIdx].first.erase (learnProg_errorsMap[smregionIdx].first.begin());
 
 	return error;
 
@@ -118,8 +122,11 @@ double ActiveRNN::updateLearnProgress (int smregionIdx) {
 	double accCurrSmoothError = 0.0;
 	for (int i=firstCurrSmoothErrorIdx; i<learnProg_errorsMap[smregionIdx].second.size(); i++)
 		accCurrSmoothError += learnProg_errorsMap[smregionIdx].second[i];
-	accCurrSmoothError /= smoothing; 
-	return learnProg_errorsMap[smregionIdx].first = -(accCurrSmoothError - accPrevSmoothError);
+	accCurrSmoothError /= smoothing;
+	
+	learnProg_errorsMap[smregionIdx].first.push_back (-(accCurrSmoothError - accPrevSmoothError));
+	
+	return learnProg_errorsMap[smregionIdx].first.back();
 	
 }
 
@@ -130,9 +137,9 @@ int ActiveRNN::chooseSMRegion () {
 	double maxLearningProgress = -1.0;
 	int regionIdx = -1;
 	for (int i=0; i<learnProg_errorsMap.size(); i++)
-		if (learnProg_errorsMap[i].first > maxLearningProgress) {
+		if (learnProg_errorsMap[i].first.back() > maxLearningProgress) {
 			regionIdx = i;
-			maxLearningProgress = learnProg_errorsMap[i].first;
+			maxLearningProgress = learnProg_errorsMap[i].first.back();
 		}
 			
 	return regionIdx;

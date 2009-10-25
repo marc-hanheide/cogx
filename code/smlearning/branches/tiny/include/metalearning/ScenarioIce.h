@@ -68,8 +68,8 @@ typedef double Real;
 ///
 class ScenarioIce : virtual public Ice::Application/*, protected Runnable*/
 {
-protected:
-	Thread thread;
+	//protected:
+	//Thread thread;
 public:
 	///
 	///constructor
@@ -84,7 +84,7 @@ public:
 	///
 	int run (int argc, char *argv[]);
 
-	virtual void run () { }
+	//virtual void run () { }
 
 	///
 	///creates polyflap and puts it in the scene

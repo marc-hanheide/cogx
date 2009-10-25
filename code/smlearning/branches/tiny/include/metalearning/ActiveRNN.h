@@ -46,8 +46,6 @@ struct ActiveRNN : RNN {
 	ActiveRNN () : RNN () {	}
 
 	~ActiveRNN () {
-		delete opt;
-		delete header;
 	}
 
 	///
@@ -71,7 +69,7 @@ struct ActiveRNN : RNN {
 	///associative map of an indexed sensorimotor region and corresponding
 	///learning progress and error history
 	///
-	map<int, pair<double, vector<double> > > learnProg_errorsMap;
+	map<int, pair<vector<double>, vector<double> > > learnProg_errorsMap;
 
 	///methods
 
