@@ -5,5 +5,5 @@ INCLUDE includes/place.sa/spatial_db.cast
 
 # place #####################################################################
 INCLUDE includes/place.sa/base_db-bcr.cast
-INCLUDE includes/place.sa/aux.cast
+INCLUDE includes/place.sa/aux_db-bcr.cast
 
