@@ -23,6 +23,7 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
+   
 
    This package is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -174,7 +175,8 @@ int ScenarioIce::run (int argc, char *argv[]) {
 			}			
 
 		}
-		pKatArm->gripperClose(5.0, thresholdData);
+		pKatArm->gripperClose(10.0, thresholdData);
+
 		
 	}
 	else {
@@ -317,7 +319,7 @@ int ScenarioIce::run (int argc, char *argv[]) {
 		startingPosition = atoi(argv[3]);
 	
 	//start of the experiment loop
-	for (int e=0; e<numSequences && !pTiny->isUniverseInterrupted(); e++) {
+	for (int e=0; e<numSequences && !pTiny->interrupted(); e++) {
 		//polyflap object
 		setupPolyflap(pTiny, pPolyflapObject, startPolyflapPosition, startPolyflapZRotation, polyflapDimensions);
 		/*golem::Bounds::SeqPtr curPol = pPolyflapObject->getGlobalBoundsSeq();*/
