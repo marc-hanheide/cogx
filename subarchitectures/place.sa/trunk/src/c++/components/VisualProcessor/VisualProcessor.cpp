@@ -208,7 +208,7 @@ void PlaceVisualProcessor::createInvalidVisualResults(PlaceData::VisualResultsPt
   visRes->imageWmTimeStamp.s=0;
   visRes->imageWmTimeStamp.us=0;
   visRes->multiclassAlg=PlaceData::SmaOaO;
-  visRes->hypFindAlg=0;
+  visRes->hypFindAlg=-1;
   visRes->confidenceThreshold = 0.0;
   visRes->confident = false;
 }

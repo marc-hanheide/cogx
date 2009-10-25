@@ -369,9 +369,9 @@ void PlaceDataProvider::runComponent()
 
       // Check for too high framerate (we shouldn't output data too fast!)
       cdl::CASTTime tmpTime = getCASTTime();
-      println("%f %f %d %d", castTimeToSeconds(tmpTime), castTimeToSeconds(_lastGrabTimestamp), tmpTime.s, tmpTime.us);
+      // println("%f %f %d %d", castTimeToSeconds(tmpTime), castTimeToSeconds(_lastGrabTimestamp), tmpTime.s, tmpTime.us);
       double timeDiff = castTimeDiffToSeconds(tmpTime, _lastGrabTimestamp);
-      println("%f", timeDiff);
+      // println("%f", timeDiff);
       if (timeDiff < 0.05)
         usleep((0.05-timeDiff)*1000000.0);
       _lastGrabTimestamp = getCASTTime();
@@ -577,10 +577,10 @@ void PlaceDataProvider::pullImage(PlaceData::ImagePtr image)
   image->status = PlaceData::DsValid;
   image->frameNo = _frameNo;
   image->realTimeStamp = imageData.time;
-  if (_videoServer==VS_STD)
+  if (_videoServerType==VS_STD)
     convertImageRGB24(imageData, image->imageBuffer);
   else
-    throw(CASTException(exceptionMessage(__HERE__, "Incorrect video server mode in pullImage()!")));
+    throw(CASTException(exceptionMessage(__HERE__, "Incorrect video server type!")));
 }
 
 
@@ -601,12 +601,16 @@ cast::cdl::CASTTime PlaceDataProvider::outputImage()
     }
     else
     { // Grab from hardware server
-      if (_videoServer==VS_STD)
+      if (_videoServerType==VS_STD)
         pullImage(image);
+      else
+        throw(CASTException(exceptionMessage(__HERE__, "Unknown video server type!" )));
     }
   }
   else
   {
+    debug("Vision not used, created invalid image.");
+
     // Return empty
     image->status = PlaceData::DsInvalid;
     image->frameNo = _frameNo;
@@ -615,7 +619,6 @@ cast::cdl::CASTTime PlaceDataProvider::outputImage()
     image->imageBuffer.width=0;
     image->imageBuffer.height=0;
 
-    debug("Vision not used, created invalid image.");
   }
 
   // Set the WM timestamp

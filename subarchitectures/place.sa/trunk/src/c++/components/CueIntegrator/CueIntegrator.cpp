@@ -266,6 +266,7 @@ void PlaceCueIntegrator::createInvalidIntegratedResults(PlaceData::IntegratedRes
   intgRes->usedLaser=false;
   intgRes->confident=false;
   intgRes->hypFindAlg=-1;
+  intgRes->multiclassAlg=PlaceData::SmaOaO;
 }
 
 
