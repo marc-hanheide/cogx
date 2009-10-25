@@ -230,11 +230,11 @@ void PlaceDataProvider::receiveScan2d(const Laser::Scan2d &scan)
   pthread_mutex_lock(&_scanQueueMutex);
 
   _scanQueue.push_back(scan);
-  cdl::CASTTime tDiff = _scanQueue.front().time -_scanQueue.back().time;
+  cdl::CASTTime tDiff = castTimeDiff(_scanQueue.front().time, _scanQueue.back().time);
   while ((castTimeToSeconds(tDiff) > _queueTimeWindow) || (_scanQueue.size() > 100))
   {
     _scanQueue.pop_front();
-    tDiff = _scanQueue.front().time - _scanQueue.back().time;
+    tDiff = castTimeDiff(_scanQueue.front().time, _scanQueue.back().time);
   }
 
   pthread_mutex_unlock(&_scanQueueMutex);
@@ -255,11 +255,11 @@ void PlaceDataProvider::receiveOdometry(const Robotbase::Odometry &odom)
   pthread_mutex_lock(&_odometryQueueMutex);
 
   _odometryQueue.push_back(odom);
-  cdl::CASTTime tDiff = _odometryQueue.front().time - _odometryQueue.back().time;
+  cdl::CASTTime tDiff = castTimeDiff(_odometryQueue.front().time, _odometryQueue.back().time);
   while((castTimeToSeconds(tDiff) > _queueTimeWindow) || (_odometryQueue.size() > 100))
   {
     _odometryQueue.pop_front();
-    tDiff = _odometryQueue.front().time - _odometryQueue.back().time;
+    tDiff = castTimeDiff(_odometryQueue.front().time, _odometryQueue.back().time);
   }
 
   pthread_mutex_unlock(&_odometryQueueMutex);
@@ -409,15 +409,15 @@ void PlaceDataProvider::runComponent()
       if (_useVision)
         log("-> Image (timestamp: %fs, difference to ref. time: %fs)",
                 castTimeToSeconds(imageTimestamp),
-                castTimeToSeconds(imageTimestamp-refTimestamp) );
+                castTimeDiffToSeconds(imageTimestamp, refTimestamp) );
       if (_useLaser)
         log("-> Laser scan (timestamp: %fs, difference to ref. time: %fs)",
                 castTimeToSeconds(scanTimestamp),
-                castTimeToSeconds(scanTimestamp - refTimestamp) );
+                castTimeDiffToSeconds(scanTimestamp, refTimestamp) );
       if (_useOdometry)
         log("-> Odometry (timestamp: %fs, difference to ref. time: %fs)",
                 castTimeToSeconds(odomTimestamp),
-                castTimeToSeconds(odomTimestamp - refTimestamp) );
+                castTimeDiffToSeconds(odomTimestamp, refTimestamp) );
     }
   }
 
@@ -668,7 +668,7 @@ void PlaceDataProvider::findLaserScan(const cast::cdl::CASTTime& refT, PlaceData
       list<Laser::Scan2d>::iterator minDiffScanIter=_scanQueue.begin();
       for(list<Laser::Scan2d>::iterator iter=_scanQueue.begin(); iter!=_scanQueue.end(); iter++)
       {
-        double tDiff = fabs(castTimeToSeconds(refT - iter->time));
+        double tDiff = fabs(castTimeDiffToSeconds(refT, iter->time));
         if (tDiff < minTimeDiff)
         {
           minTimeDiff = tDiff;
