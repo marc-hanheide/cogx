@@ -1,0 +1,1 @@
+CPP MG VideoServer OpenCvLiveServer  --videoname VideoServer --camids 0  --devnums 0  --camconfigs "subarchitectures/vision.sa/config/cam.cal"
