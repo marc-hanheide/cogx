@@ -348,7 +348,7 @@ void PlaceLaserProcessor::createInvalidLaserResults(PlaceData::LaserResultsPtr l
   lasRes->scanWmTimeStamp.s=0;
   lasRes->scanWmTimeStamp.us=0;
   lasRes->multiclassAlg=PlaceData::SmaOaO;
-  lasRes->hypFindAlg=0;
+  lasRes->hypFindAlg=-1;
   lasRes->confidenceThreshold = 0.0;
   lasRes->confident = false;
 }
