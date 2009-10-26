@@ -567,7 +567,7 @@ void DisplayNavInPB::runComponent() {
 
       if( s.failed() ) {
         debug("Bundle failed with error message: %s", 
-            s.get_error_message().c_str());
+	      s.get_error_message().c_str());
       }
       
 
