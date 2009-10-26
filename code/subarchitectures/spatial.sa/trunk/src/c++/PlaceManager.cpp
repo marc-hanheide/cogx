@@ -135,6 +135,9 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::newObject));
+  addChangeFilter(createLocalTypeFilter<NavData::ObjData>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlaceManager>(this,
+	&PlaceManager::newObject));
 
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
   if (m_useLocalMaps) {
@@ -334,57 +337,8 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 	int newEdgeEndId = getPlaceFromNodeID(oobj->endNodeId)->id;
 	double newEdgeCost = oobj->cost;
 
-	SpatialProperties::FloatValuePtr costValue1 = 
-	  new SpatialProperties::FloatValue;
-	SpatialProperties::FloatValuePtr costValue2 = 
-	  new SpatialProperties::FloatValue;
-	costValue1->value = newEdgeCost;
-	costValue2->value = numeric_limits<double>::infinity();
-
-	SpatialProperties::ValueProbabilityPair pair1 =
-	{ costValue1, 0.9 };
-	SpatialProperties::ValueProbabilityPair pair2 =
-	{ costValue2, 0.1 };
-
-	SpatialProperties::ValueProbabilityPairs pairs;
-	pairs.push_back(pair1);
-	pairs.push_back(pair2);
-
-	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-	  new SpatialProperties::DiscreteProbabilityDistribution;
-	discDistr->data = pairs;
-
-	SpatialProperties::ConnectivityPathPropertyPtr connectivityProp1 =
-	  new SpatialProperties::ConnectivityPathProperty;
-	connectivityProp1->place1Id = newEdgeStartId;
-	connectivityProp1->place2Id = newEdgeEndId;
-	connectivityProp1->distribution = discDistr;
-	connectivityProp1->mapValue = costValue1;
-	connectivityProp1->mapValueReliable = 1;
-	SpatialProperties::ConnectivityPathPropertyPtr connectivityProp2 =
-	  new SpatialProperties::ConnectivityPathProperty;
-	connectivityProp2->place1Id = newEdgeEndId;
-	connectivityProp2->place2Id = newEdgeStartId;
-	connectivityProp2->distribution = discDistr;
-	connectivityProp2->mapValue = costValue1;
-	connectivityProp2->mapValueReliable = 1;
-
-	// Add the properties, if they're not already there
-	set<int> &place1Connectivities = m_connectivities[connectivityProp1->place1Id];
-	if (place1Connectivities.find(connectivityProp1->place2Id) ==
-	    place1Connectivities.end()) {
-	  string newID = newDataID();
-	  addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
-	  place1Connectivities.insert(connectivityProp1->place2Id);
-	}
-
-	set<int> &place2Connectivities = m_connectivities[connectivityProp2->place1Id];
-	if (place2Connectivities.find(connectivityProp2->place2Id) ==
-	    place2Connectivities.end()) {
-	  string newID = newDataID();
-	  addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp2);
-	  place2Connectivities.insert(connectivityProp2->place2Id);
-	}
+	createConnectivityProperty(newEdgeCost, newEdgeStartId, newEdgeEndId);
+	createConnectivityProperty(newEdgeCost, newEdgeEndId, newEdgeStartId);
       }
       catch (IceUtil::NullHandleException e) {
 	log("Error! edge objects disappeared from memory!");
@@ -676,43 +630,7 @@ PlaceManager::evaluateUnexploredPaths()
 		m_hypIDCounter++;
 
 		// Add connectivity property (one-way)
-		set<int> &curPlaceConnectivities = m_connectivities[currentPlaceID];
-		if (curPlaceConnectivities.find(newPlaceID) == 
-		    curPlaceConnectivities.end())
-		{
-		  SpatialProperties::FloatValuePtr costValue1 = 
-		    new SpatialProperties::FloatValue;
-		  SpatialProperties::FloatValuePtr costValue2 = 
-		    new SpatialProperties::FloatValue;
-		  costValue1->value = m_hypPathLength;
-		  costValue2->value = numeric_limits<double>::infinity();
-
-		  SpatialProperties::ValueProbabilityPair pair1 =
-		  { costValue1, 0.9 };
-		  SpatialProperties::ValueProbabilityPair pair2 =
-		  { costValue2, 0.1 };
-
-		  SpatialProperties::ValueProbabilityPairs pairs;
-		  pairs.push_back(pair1);
-		  pairs.push_back(pair2);
-
-		  SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
-		    new SpatialProperties::DiscreteProbabilityDistribution;
-		  discDistr->data = pairs;
-
-		  SpatialProperties::ConnectivityPathPropertyPtr connectivityProp1 =
-		    new SpatialProperties::ConnectivityPathProperty;
-		  connectivityProp1->place1Id = currentPlaceID;
-		  connectivityProp1->place2Id = newPlaceID;
-		  connectivityProp1->distribution = discDistr;
-		  connectivityProp1->mapValue = costValue1;
-		  connectivityProp1->mapValueReliable = 1;
-
-		  string newID = newDataID();
-		  addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
-		  curPlaceConnectivities.insert(newPlaceID); 
-		}
-
+		createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
 		p.m_data->status = SpatialData::PLACEHOLDER;
 		p.m_WMid = newDataID();
 		log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
@@ -1042,8 +960,6 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
   debug("beginPlaceTransition exited");
 }
 
-//TODO: placeholder upgrade on new node
-
 void 
 PlaceManager::endPlaceTransition(int failed)
 {
@@ -1070,13 +986,13 @@ PlaceManager::processPlaceArrival(bool failed)
     debug("processPlaceArrival called");
     debug("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
 
+    int wasHeadingForPlace = m_goalPlaceForCurrentPath;
+    int wasComingFromNode = m_startNodeForCurrentPath;
     map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
-      m_PlaceIDToHypMap.find(m_goalPlaceForCurrentPath);
+      m_PlaceIDToHypMap.find(wasHeadingForPlace);
 
     bool wasExploring = it != (m_PlaceIDToHypMap.end());
 
-    int wasHeadingForPlace = m_goalPlaceForCurrentPath;
-    int wasComingFromNode = m_startNodeForCurrentPath;
 
     NavData::FNodePtr curNode = getCurrentNavNode();
     if (curNode != 0) {
@@ -1104,28 +1020,9 @@ PlaceManager::processPlaceArrival(bool failed)
 	  map<int, PlaceHolder>::iterator it2 = m_Places.find(wasHeadingForPlace);
 
 	  if (it2 != m_Places.end()) {
-	    log("  Upgrading Place %i from Placeholder status", wasHeadingForPlace);
-	    string goalPlaceWMID = it2->second.m_WMid;
-	    try {
-	      debug("lock 1");
-	      lockEntry(goalPlaceWMID, cdl::LOCKEDODR);
-	      deletePlaceholderProperties(wasHeadingForPlace);
-	      it2->second.m_data->status = SpatialData::TRUEPLACE;
-	      debug("overwrite 4: %s", goalPlaceWMID.c_str());
-	      overwriteWorkingMemory(goalPlaceWMID, it2->second.m_data);
-	      m_PlaceIDToNodeMap[wasHeadingForPlace] = curNode;
-	      unlockEntry(goalPlaceWMID);
-	      debug("unlock 1");
-	    }
-	    catch (DoesNotExistOnWMException e) {
-	      log("The Place has disappeared! Re-adding it!");
-	      addToWorkingMemory<SpatialData::Place>(goalPlaceWMID, it2->second.m_data);
-	      m_PlaceIDToNodeMap[wasHeadingForPlace] = curNode;
-	    }
-
-	    deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
-	    m_HypIDToWMIDMap.erase(goalHyp->hypID);
-	    m_PlaceIDToHypMap.erase(it);
+	    //Upgrade Place "wasHeadingForPlace"; delete hypothesis goalHyp; 
+	    //make the Place refer to node curNode
+	    upgradePlaceholder(wasHeadingForPlace, it2->second, curNode, goalHyp->hypID);
 
 	    if (curNodeGateway == 1) {
 	      addNewGatewayProperty(wasHeadingForPlace);
@@ -1259,31 +1156,10 @@ PlaceManager::processPlaceArrival(bool failed)
 			return;
 		      }
 
-		      log("Upgrading Placeholder with id %d, associating with node %d",
-			  (int)placeholder->id, curNodeId);
-
 		      map<int, PlaceHolder>::iterator it3 = m_Places.find(placeholder->id);
 		      if (it3 != m_Places.end()) {
-			string placeholderWMID = it3->second.m_WMid;
-			try {
-			  debug("lock 2");
-			  lockEntry(placeholderWMID, cdl::LOCKEDODR);
-			  it3->second.m_data->status = SpatialData::TRUEPLACE;
-			  debug("overwrite 5: %s", placeholderWMID.c_str());
-			  overwriteWorkingMemory(placeholderWMID, it3->second.m_data);
-			  unlockEntry(placeholderWMID);
-			  debug("unlock 2");
-			}
-			catch (DoesNotExistOnWMException e) {
-			  log("Error! placeholder was missing! Re-adding!");
-			  addToWorkingMemory<SpatialData::Place>(placeholderWMID,
-			      it3->second.m_data);
-			}
-			m_PlaceIDToNodeMap[placeholder->id] = curNode;
-
-			deleteFromWorkingMemory(m_HypIDToWMIDMap[hyp->hypID]); //Delete NodeHypothesis
-			m_HypIDToWMIDMap.erase(hyp->hypID);
-			m_PlaceIDToHypMap.erase(placeholder->id);
+			upgradePlaceholder(placeholder->id, it3->second,
+			    curNode, hyp->hypID);
 
 			//Write the Gateway property if present
 			if (curNodeGateway == 1) {
@@ -1547,4 +1423,99 @@ PlaceManager::PlaceServer::getCurrentPlace(const Ice::Current &_context) {
   SpatialData::PlacePtr curPlace = m_pOwner->getPlaceFromNodeID(curNode->nodeId);
   m_pOwner->unlockComponent();
   return curPlace;
+}
+
+void
+PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData::FNodePtr newNode, int hypothesisID)
+{
+  log("  Upgrading Place %d from Placeholder status; associating with node %d", placeID, newNode->nodeId);
+  string goalPlaceWMID = placeholder.m_WMid;
+  try {
+    debug("lock 1");
+    lockEntry(goalPlaceWMID, cdl::LOCKEDODR);
+    deletePlaceholderProperties(placeID);
+    placeholder.m_data->status = SpatialData::TRUEPLACE;
+    debug("overwrite 4: %s", goalPlaceWMID.c_str());
+    overwriteWorkingMemory(goalPlaceWMID, placeholder.m_data);
+    m_PlaceIDToNodeMap[placeID] = newNode;
+    unlockEntry(goalPlaceWMID);
+    debug("unlock 1");
+  }
+  catch (DoesNotExistOnWMException e) {
+    log("The Place has disappeared! Re-adding it!");
+    addToWorkingMemory<SpatialData::Place>(goalPlaceWMID, placeholder.m_data);
+    m_PlaceIDToNodeMap[placeID] = newNode;
+  }
+
+  deleteFromWorkingMemory(m_HypIDToWMIDMap[hypothesisID]); //Delete NodeHypothesis
+  m_HypIDToWMIDMap.erase(hypothesisID);
+  m_PlaceIDToHypMap.erase(placeID);
+
+  // Delete placeholder properties for the Place in question
+
+  // 1: Free space properties
+  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
+    try {
+      lockEntry(m_freeSpaceProperties[placeID], cdl::LOCKEDOD);
+      deleteFromWorkingMemory(m_freeSpaceProperties[placeID]);
+    }
+    catch (DoesNotExistOnWMException) {
+      log("Error! gateway property was already missing!");
+    }
+    m_freeSpaceProperties.erase(placeID);
+  }
+
+  // 2: Border properties
+  if (m_borderProperties.find(placeID) != m_borderProperties.end()) {
+    try {
+      lockEntry(m_borderProperties[placeID], cdl::LOCKEDOD);
+      deleteFromWorkingMemory(m_borderProperties[placeID]);
+    }
+    catch (DoesNotExistOnWMException) {
+      log("Error! gateway property was already missing!");
+    }
+    m_borderProperties.erase(placeID);
+  }
+}
+
+void
+PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID)
+{
+  set<int> &place1Connectivities = m_connectivities[place1ID];
+  if (place1Connectivities.find(place2ID) == 
+      place1Connectivities.end()) {
+    SpatialProperties::FloatValuePtr costValue1 = 
+      new SpatialProperties::FloatValue;
+    SpatialProperties::FloatValuePtr costValue2 = 
+      new SpatialProperties::FloatValue;
+    costValue1->value = m_hypPathLength;
+    costValue2->value = numeric_limits<double>::infinity();
+
+    SpatialProperties::ValueProbabilityPair pair1 =
+    { costValue1, 0.9 };
+    SpatialProperties::ValueProbabilityPair pair2 =
+    { costValue2, 0.1 };
+
+    SpatialProperties::ValueProbabilityPairs pairs;
+    pairs.push_back(pair1);
+    pairs.push_back(pair2);
+
+    SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
+      new SpatialProperties::DiscreteProbabilityDistribution;
+    discDistr->data = pairs;
+
+    SpatialProperties::ConnectivityPathPropertyPtr connectivityProp1 =
+      new SpatialProperties::ConnectivityPathProperty;
+    connectivityProp1->place1Id = place1ID;
+    connectivityProp1->place2Id = place2ID;
+    connectivityProp1->distribution = discDistr;
+    connectivityProp1->mapValue = costValue1;
+    connectivityProp1->mapValueReliable = 1;
+
+    string newID = newDataID();
+    addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
+
+    set<int> &place1Connectivities = m_connectivities[place1ID];
+    place1Connectivities.insert(place2ID); 
+  }
 }

@@ -115,9 +115,12 @@ class PlaceManager : public cast::ManagedComponent
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
     void processPlaceArrival(bool failed); 
 
+    void upgradePlaceholder(int placeID, PlaceHolder &holder, 
+	NavData::FNodePtr newNode, int hypothesisID);
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
 
+    void createConnectivityProperty(double cost, int place1ID, int place2ID);
     // Helper function to create Gateway properties
     void addNewGatewayProperty(int placeID);
 
