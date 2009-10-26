@@ -38,8 +38,6 @@ extern "C" {
 
 LocalMapManager::LocalMapManager()
 {
-  cure_debug_level = -10;
-
   m_RobotServerHost = "localhost";
 }
 
