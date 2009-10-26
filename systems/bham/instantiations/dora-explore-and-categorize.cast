@@ -5,13 +5,13 @@ HOST localhost
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-binder.cast
-INCLUDE includes/spatial.sa/spatial-objsearch.cast
+#INCLUDE includes/spatial.sa/spatial-objsearch.cast
 #INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 # vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
-INCLUDE includes/vision.sa/video-files-server.cast
-INCLUDE includes/vision.sa/vision-objects.cast
+#INCLUDE includes/vision.sa/video-files-server.cast
+#INCLUDE includes/vision.sa/vision-objects.cast
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
