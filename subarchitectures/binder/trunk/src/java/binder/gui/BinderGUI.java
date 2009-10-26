@@ -12,7 +12,7 @@ import binder.utils.GenericUtils;
 
 import cast.core.logging.ComponentLogger;
 
-import com.jgoodies.forms.layout.*;
+// import com.jgoodies.forms.layout.*;
 /*
  * Created by JFormDesigner on Fri Oct 23 23:10:43 CEST 2009
  */
