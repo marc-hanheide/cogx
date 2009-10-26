@@ -59,7 +59,8 @@ private:
    */
   std::vector<std::string> model_images;
   /**
-   * just filename bases (without path and without suffix like .jpg)
+   * Labels (e.g. object names, category names) for the detectors.
+   * Typically several detectors will share a label.
    */
   std::vector<std::string> model_labels;
   /**
