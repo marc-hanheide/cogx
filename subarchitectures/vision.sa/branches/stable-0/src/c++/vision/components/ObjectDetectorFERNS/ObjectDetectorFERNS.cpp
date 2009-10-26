@@ -247,24 +247,37 @@ void ObjectDetectorFERNS::configure(const map<string,string> & _config)
     while(istr >> model)
     {
       string label;
-      // remove pathname: find last of '/' (Unix) or '\' (DOS)
-      size_t start = model.find_last_of("/\\");
-      if(start == string::npos)
-        start = 0;
+      // find label name, either given explicitely as
+      // some/path/foo-front.jpg:foolabel
+      // or if no ':' is found by implicitly assuming stripped filename as
+      // label: foo-front
+      size_t label_pos = model.find_last_of(":");
+      if(label_pos != string::npos && label_pos < model.size() - 1)
+      {
+        label = model.substr(label_pos + 1, string::npos);
+        model = model.substr(0, label_pos);
+      }
       else
-        start++;
-      // remove suffix .jpg etc: find last '.'
-      size_t end = model.find_last_of(".");
-      if(end == string::npos)
-        end = model.size();
-      label = model.substr(start, end - start);
+      {
+        // remove pathname: find last of '/' (Unix) or '\' (DOS)
+        size_t start = model.find_last_of("/\\");
+        if(start == string::npos)
+          start = 0;
+        else
+          start++;
+        // remove suffix .jpg etc: find last '.'
+        size_t end = model.find_last_of(".");
+        if(end == string::npos)
+          end = model.size();
+        label = model.substr(start, end - start);
+      }
       model_images.push_back(model);
       model_labels.push_back(label);
     }
 
     ostringstream ostr;
     for(size_t i = 0; i < model_images.size(); i++)
-      ostr << " '" << model_images[i] << "'";
+      ostr << " " << model_images[i] << ":" << model_labels[i];
     log("using models: %s", ostr.str().c_str());
   }
 
@@ -504,7 +517,7 @@ void ObjectDetectorFERNS::postObjectsToWM(const vector<string> & labels,
 
 void ObjectDetectorFERNS::postAllObjectsToWM(const Video::Image &image)
 {
-  for(size_t i = 0; i < model_images.size(); i++)
+  for(size_t i = 0; i < model_labels.size(); i++)
     postObjectToWM_Internal(i, image);
 }
 
