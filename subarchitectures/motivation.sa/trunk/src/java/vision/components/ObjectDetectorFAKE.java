@@ -77,7 +77,7 @@ public class ObjectDetectorFAKE extends ManagedComponent implements
 		}
 		
 //		because vision is never this quick...
-//		sleepComponent(100);
+		sleepComponent(2000);
 
 		for (String label : dc.labels) {
 			// for the time being just fail
