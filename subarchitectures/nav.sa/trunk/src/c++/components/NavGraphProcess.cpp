@@ -54,7 +54,6 @@ NavGraphProcess::NavGraphProcess()
   m_MaxNumFNodes = 10000;
 
   m_DontWriteFiles = false;
-  cure_debug_level = 30;
 
   m_MotionDetector = 0;
   m_RemoveMotionBeams = false;
