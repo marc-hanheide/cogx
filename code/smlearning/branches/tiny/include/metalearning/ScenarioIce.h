@@ -97,9 +97,14 @@ public:
 	void setupPolyflap(TinyPrx &pTiny, RigidBodyPrx& pObject, golem::tinyice::Mat34 pose, golem::tinyice::Vec3 dimensions);
 	
 	///
-	///creates a finger actor and sets bounds
+	///creates a finger actor setting shapes
 	///
 	void createFinger(JointPrx& pEffector, ArmPrx& pArm);
+
+	///
+	///creates a gripper actor settings shapes
+	///
+	void createGripper(JointPrx& pEffector, ArmPrx& pArm);
 
 	///
 	///Hack to solve a collision problem (don't know if it is still there):
