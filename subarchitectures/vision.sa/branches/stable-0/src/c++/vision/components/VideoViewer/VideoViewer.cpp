@@ -77,6 +77,8 @@ void VideoViewer::receiveImages(const std::vector<Video::Image>& images)
 
 void VideoViewer::runComponent()
 {
+  sleepComponent(5000);
+
   println("press <s> to stop/start receving images");
   while(isRunning())
   {
