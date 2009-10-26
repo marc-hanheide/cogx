@@ -50,8 +50,6 @@ NavControl::NavControl()
 
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
-  cure_debug_level = -10;
-
   m_RobotServerHost = "localhost";
 
   m_NumInhibitors = 0;

@@ -49,8 +49,6 @@ extern "C" {
 }
 
 DisplayNavInPB::DisplayNavInPB() {
-  cure_debug_level = -10;
-
   m_LaserConnected = false;
 
   m_NoPeopleModel = false;

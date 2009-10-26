@@ -58,8 +58,6 @@ SlamProcess::SlamProcess()
   m_LastOdom.setTime(0);
   m_LastUsedOdom.setTime(0);
   
-  cure_debug_level = 30;
-
   m_RobotPoseIdString = "";
 
   m_DontWriteFiles = false;
