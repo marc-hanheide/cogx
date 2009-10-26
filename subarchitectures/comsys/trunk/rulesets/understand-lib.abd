@@ -1,8 +1,12 @@
 to_assertion_question(color, Entity) <-
 	?( k(now, private(r)) : color(Entity, unknownColor)).
 
+%-------------------------------------------------------------------------
+
 to_asserted_predicate(color, Entity, Value) <-
 	?( k(now, private(r)) : color(Entity, Value) ).
+
+%-------------------------------------------------------------------------
 
 me(Nom) <-
 	i : sort(Nom, person),
@@ -13,7 +17,7 @@ you(Nom) <-
 	i : prop(Nom, you).
 
 what(Nom) <-
-	i : sort(Nom, entity),
+%	i : sort(Nom, entity),
 	i : prop(Nom, what).
 
 this(Nom) <-
@@ -22,6 +26,8 @@ this(Nom) <-
 	i : feat_Num(Nom, sg),
 	i : feat_Proximity(Nom, proximal),
 	i : feat_Quantification(Nom, specific).
+
+%-------------------------------------------------------------------------
 
 query_prop(Nom, color, PropValue) <-
 	i : sort(Nom, 'q-color'),
@@ -38,9 +44,18 @@ query_prop(Nom, objecttype, PropValue) <-
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific).
 
+%-------------------------------------------------------------------------
+
+property_sort(color, 'q-color').
+property_sort(shape, 'q-shape').
+property_sort(objecttype, thing).
+
 to_property(object, objecttype).
+to_property(thing, objecttype).
 to_property(P, P) <-
-	P \= object.
+	property_sort(P, PropSort).
+
+%-------------------------------------------------------------------------
 
 polarity(Nom, Polarity) <-
 	i : feat_Polarity(Nom, Polarity).
@@ -50,16 +65,16 @@ polarity(Nom, pos) <-
 
 %-------------------------------------------------------------------------
 
-object_id(Nom, Id) <-
+union_id(Nom, UnionId) <-
 	d_units_list(Nom, FirstNom, NextNom),
-	att : refers_to(FirstNom, Id) / reference_resolution.
+	att : refers_to(FirstNom, UnionId) / reference_resolution.
 
-object_id(Nom, Id) <-
-	att : refers_to(Nom, Id) / reference_resolution.
+union_id(Nom, Id) <-
+	att : refers_to(Nom, UnionId) / reference_resolution.
 
 %-------------------------------------------------------------------------
 
-marker_yes(Nom) <-
+marker_yes(Nom, Marker) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, yes).
 
@@ -67,33 +82,33 @@ marker_no(Nom) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, 'No').
 
+%-------------------------------------------------------------------------
+
 d_units_list(Nom, FirstNom, NextNom) <-
 	i : sort(Nom, 'd-units'),
 	i : prop(Nom, list),
 	i : rel_First(Nom, FirstNom),
 	i : rel_Next(Nom, NextNom).
 
+%-------------------------------------------------------------------------
+
 assert_prop_noint(Nom, Union, Polarity) <-
-	i : sort(Nom, 'q-color'),
+	property_sort(color, Sort),
+	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : color(Union, PolarProp) ).
 
 assert_prop_noint(Nom, Union, Polarity) <-
-	i : sort(Nom, 'q-shape'),
+	property_sort(shape, Sort),
+	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : shape(Union, PolarProp) ).
 
-assert_prop_noint(Nom, objecttype, PropValue) <-
-	i : sort(Nom, thing),
-	i : prop(Nom, PropValue),
-	i : feat_Delimitation(Nom, existential),
-	i : feat_Num(Nom, sg),
-	i : feat_Quantification(Nom, specific).
-
 assert_prop_noint(Nom, Union, Polarity) <-
-	i : sort(Nom, thing),
+	property_sort(shape, Sort),
+	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
 	i : feat_Delimitation(Nom, existential),
 	i : feat_Num(Nom, sg),
@@ -101,6 +116,8 @@ assert_prop_noint(Nom, Union, Polarity) <-
 	%maybe_assert_modifier(Ref, Polarity, Nom),  % XXX explosion!!
 	polarprop(Prop, Polarity, PolarProp),
 	?( k(now, attrib(r, h)) : objecttype(Union, PolarProp) ).
+
+%-------------------------------------------------------------------------
 
 assert_prop(RestrRef, Polarity, Nom) <-
 	i : sort(Nom, 'q-color'),
@@ -127,6 +144,8 @@ assert_prop(Ref, Polarity, Nom) <-
 	?( k(now, attrib(r, h)) : objecttype(Ref, PolarProp) ),
 	intention : assert_prop(h, Ref, objecttype) / 0.5.
 
+%-------------------------------------------------------------------------
+
 maybe_assert_modifier(Ref, Polarity, Nom) <-
 	no_modifier(Nom) / 8.0.
 
@@ -134,6 +153,7 @@ maybe_assert_modifier(Ref, Polarity, Nom) <-
 	i : rel_Modifier(Nom, ModifierNom),
 	assert_prop(Ref, Polarity, ModifierNom).
 
+%-------------------------------------------------------------------------
+
 polarprop(Prop, pos, Prop).
 polarprop(Prop, neg, not(Prop)).
-

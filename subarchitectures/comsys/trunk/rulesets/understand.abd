@@ -140,10 +140,6 @@ understand : event : uttered(h, Nom) <-
 	to_property(XProp, Prop),
 	intention : ask_property(h, RestrRef, Prop) / 0.2.
 
-to_property(object, objecttype).
-to_property(P, P) <-
-	P \= object.
-
 understand : event : uttered(h, Nom) <-
 	i : sort(Nom, ascription),
 	i : 'feat_Mood'(Nom, int),
@@ -157,7 +153,7 @@ understand : event : uttered(h, Nom) <-
 		i : prop(WhNom, what),
 	intention : ask_property(h, RestrRef, objecttype) / 5.2.
 
-% could you tell me
+% could you tell me what X is
 understand : event : uttered(h, Nom) <-
 	i:sort(Nom, communication),
 %	i:prop(Nom, tell),
@@ -200,27 +196,14 @@ understand : event : uttered(h, Nom) <-
 %	assert_prop(RestrRef, Polarity, ScopeNom),
 %	intention : question_about(RestrRef) / 1.0.
 
-polarity(Nom, Polarity) <-
-	i : feat_Polarity(Nom, Polarity).
-
-polarity(Nom, pos) <-
-	assume_positive_polarity(Nom) / 2.0.
-
 %-------------------------------------------------------------------------
 
 understand : event : uttered(h, Nom) <-
 	d_units_list(Nom, FirstNom, NextNom),
 	i : sort(FirstNom, marker),
 	i : prop(FirstNom, and),
-	object_id(NextNom, ObjectId),
-	intention : reuse_last_intention(h, ObjectId) / 10.0.
-
-object_id(Nom, Id) <-
-	d_units_list(Nom, FirstNom, NextNom),
-	att : refers_to(FirstNom, Id) / reference_resolution.
-
-object_id(Nom, Id) <-
-	att : refers_to(Nom, Id) / reference_resolution.
+	union_id(NextNom, UnionId),
+	intention : reuse_last_intention(h, UnionId) / 10.0.
 
 %-------------------------------------------------------------------------
 
