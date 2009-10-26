@@ -58,7 +58,7 @@ SpatialControl::SpatialControl()
 
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
-  cure_debug_level = 60;
+  cure_debug_level = 30;
 
   m_RobotServerHost = "localhost";
 
