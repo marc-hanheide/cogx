@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -43,7 +44,7 @@ import binder.constructors.ProxyConstructor;
 
 public class InsertButtonListener implements ActionListener {
 	
-	JPanel proxyPanel;
+	InsertProxyWindow frame;
 	BinderMonitor bm;
 	
 	public boolean LOGGING = false;
@@ -51,8 +52,8 @@ public class InsertButtonListener implements ActionListener {
 	private static Logger logger = ComponentLogger.getLogger(InsertButtonListener.class);
 	
 	
-	public InsertButtonListener(JPanel proxyPanel, BinderMonitor bm) {
-		this.proxyPanel = proxyPanel;
+	public InsertButtonListener(InsertProxyWindow frame, BinderMonitor bm) {
+		this.frame = frame;
 		this.bm = bm;
 	}
 
@@ -62,7 +63,7 @@ public class InsertButtonListener implements ActionListener {
 		String exists = "";
 		Vector<Feature> fds = new Vector<Feature>();
 
-		Component[] components = proxyPanel.getComponents();
+		Component[] components = frame.proxyPanel.getComponents();
 
 		
 		for (int i = 0 ; i < components.length ; i++) {
@@ -171,6 +172,8 @@ public class InsertButtonListener implements ActionListener {
 		}
 		log("number of features in proxy: " + fds.size());
 		
+       	frame.dispose();
+
 		
 		try {
 			bm.addToWorkingMemory(newProxy.entityID, Binder.BINDER_SA, newProxy);

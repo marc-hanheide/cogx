@@ -33,6 +33,7 @@ import binder.autogen.specialentities.RelationProxy;
 import binder.autogen.specialentities.RelationUnion;
 import binder.filtering.ConfigurationComparator;
 import binder.gui.BinderMonitorGUI;
+import binder.gui.BindingVisualizer;
 import binder.utils.BinderUtils;
 import cast.architecture.ManagedComponent;
 import cast.architecture.ChangeFilterFactory;
@@ -54,7 +55,7 @@ import cast.core.CASTData;
 public class BinderMonitor extends ManagedComponent {
 
 	// If a GUI is used, pointer to the GUI component
-	private BinderMonitorGUI gui;
+	private BindingVisualizer gui;
 	
 	// Vector listing all the proxies currently in the WM
 	private Vector<Proxy> lastProxies;
@@ -163,7 +164,7 @@ public class BinderMonitor extends ManagedComponent {
 	@Override
 	public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--gui")) {
-			 gui = new BinderMonitorGUI(this);
+			 gui = new BindingVisualizer(this);
 	//		 gui.LOGGING = false;
 		} 
 	}
