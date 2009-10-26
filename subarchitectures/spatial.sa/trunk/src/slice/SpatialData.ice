@@ -262,8 +262,8 @@ module SpatialData {
    
     // Target location, in the coordinate system of the Sensory layer
     // (I.e. robocentric, not necessarily robot-relative) (input)
-    DoubleOpt  pose;
-    DoubleOpt angle;
+    DoubleOpt  pose; //(x,y) or (x,y,a); for GOTOPOSITION
+    DoubleOpt angle; //Used for TURN, TURNTO and ROTATEABS
     DoubleOpt distance;
 
     // A tolerance can be specified; exact semantics as yet
