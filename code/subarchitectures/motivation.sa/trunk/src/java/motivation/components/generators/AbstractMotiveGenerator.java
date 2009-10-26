@@ -241,8 +241,6 @@ public abstract class AbstractMotiveGenerator extends ManagedComponent {
 			} else {
 				overwriteWorkingMemory(motive.thisEntry, motive);
 			}
-		} catch (PermissionException e) {
-
 		} catch (CASTException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
