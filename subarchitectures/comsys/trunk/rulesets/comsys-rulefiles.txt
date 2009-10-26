@@ -5,4 +5,4 @@
 ./subarchitectures/comsys/rulesets/generate-engagement.abd
 ./subarchitectures/comsys/rulesets/generate.abd
 ./subarchitectures/comsys/rulesets/dummy-nominals.abd
-./subarchitectures/comsys/rulesets/cheating.abd
+./subarchitectures/comsys/rulesets/debug.abd
