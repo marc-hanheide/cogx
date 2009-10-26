@@ -162,19 +162,35 @@ public class Scheduler extends ManagedComponent {
 					.values());
 			// rank the motives according to the comparator
 			Collections.sort(sortedMotives, motiveComparator);
+			// best ranked motives no at the end of that list
+			Collections.reverse(sortedMotives);
 
 			int rankCount = 0;
 			int numberToSchedule = Math.min(sortedMotives.size(), freeCapacity);
 			log("ok, let's schedule " + numberToSchedule + " motives of the "
 					+ surfacedMotives.size() + " surfaced ones.");
-			for (Motive m : sortedMotives.subList(0, numberToSchedule)) {
+			for (Motive m:sortedMotives) {
+				try {
+					debug("rank motive "+m.thisEntry.id);
+					lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
+					getMemoryEntry(m.thisEntry, Motive.class);
+					m.rank = rankCount++;
+					overwriteWorkingMemory(m.thisEntry, m);
+				} catch (DoesNotExistOnWMException e) {
+					// safely ignore
+				} finally {
+					unlockEntry(m.thisEntry);
+				}
+				
+			}
+			
+			for (Motive m : sortedMotives.subList(sortedMotives.size()-numberToSchedule,sortedMotives.size())) {
 				try {
 					debug("activating motive "+m.thisEntry.id);
 					lockEntry(m.thisEntry, WorkingMemoryPermissions.LOCKEDO);
 					getMemoryEntry(m.thisEntry, Motive.class);
 					m.status = MotiveStatus.ACTIVE;
 					m.tries++;
-					m.rank = rankCount++;
 					overwriteWorkingMemory(m.thisEntry, m);
 				} catch (DoesNotExistOnWMException e) {
 					// safely ignore

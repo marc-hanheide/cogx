@@ -110,7 +110,6 @@ public class PlanAllManager extends ManagedComponent {
 	@Override
 	protected void configure(Map<String, String> arg0) {
 		log("configure manager");
-		super.configure(arg0);
 		String valStr;
 		if ((valStr = arg0.get("--failsafetimeout")) != null)
 			failsafeTimeoutSecs = Integer.parseInt(valStr);
