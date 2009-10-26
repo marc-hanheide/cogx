@@ -33,7 +33,7 @@ namespace cast
 
 class SOIFilter : public ManagedComponent,
 		  public VideoClient,
-      public StereoClient
+      	  public StereoClient
 {
 private:
 
@@ -45,6 +45,7 @@ private:
    * component ID of the video server to connect to
    */
   std::string videoServerName;
+  std::string stereoServerName;
   /**
    * our ICE proxy to the video server
    */

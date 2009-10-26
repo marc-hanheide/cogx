@@ -6,6 +6,8 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "SOIFilter.h"
 
+#include <fstream>
+
 #define TIME_THR_DEFAULT 500
 #define UPD_THR_DEFAULT 5
 #define CAM_ID_DEFAULT 0
@@ -377,7 +379,7 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   // draw foreground points
   for(size_t i = 0; i < projPoints.size(); i++)
   {
-    cvCircle(img, cvPoint(projPoints[i].x, projPoints[i].y), 3, CV_RGB(0,255,0));
+//    cvCircle(img, cvPoint(projPoints[i].x, projPoints[i].y), 3, CV_RGB(0,255,0));
   }
 
   // draw convex hull
@@ -393,7 +395,7 @@ void SOIFilter::drawProjectedSOIPoints(IplImage *img, const vector<CvPoint> proj
   // draw background points inside SOI
   for(size_t i = 0; i < bgProjPoints.size(); i++)
   {
-    cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
+//    cvCircle(img, cvPoint(bgProjPoints[i].x, bgProjPoints[i].y), 3, CV_RGB(255,0,0));
   }
 }
 
@@ -510,9 +512,9 @@ vector<CvScalar> SOIFilter::getSortedHlsList(vector<SurfacePoint> surfPoints)
 	{
 	  CvScalar v;
 	  //log("red: %i green: %i blue: %i", surfPoints[i].c.r, surfPoints[i].c.g, surfPoints[i].c.b);	  
-	  v.val[0] = surfPoints[i].c.b;
+	  v.val[0] = surfPoints[i].c.r;
 	  v.val[1] = surfPoints[i].c.g;
-	  v.val[2] = surfPoints[i].c.r;
+	  v.val[2] = surfPoints[i].c.b;
 	  
 	  cvSet2D(src, 0, i, v);
 	}
@@ -1006,8 +1008,8 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
 	
 	IplImage *iplPatch = cvCreateImage(cvSize(cvGetSize(iplImg).width*ratio, 
 											  cvGetSize(iplImg).height*ratio),
-                          iplImgBGR->depth,
-                          iplImgBGR->nChannels);;
+                          iplImg->depth,
+                          iplImg->nChannels);;
 	
 	cvResize(iplImg, iplPatch, CV_INTER_LINEAR );
 	
@@ -1063,12 +1065,32 @@ void SOIFilter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, Segme
     	cvShowImage("Last segmentation",segPatch);
     	cvShowImage("Last object cost image", costPatch);
     	cvShowImage("Last surface cost image", bgCostPatch);
+    	
+    	// temp HACK OUTPUT
+    	
+    	string id =  newDataID();
+    	string patchName = string("patch") + id + string(".bmp");
+    	string segName = string("segmentation") + id + string(".bmp");
+    	string listName = string("points") + id + string(".txt");
+    	
+    	cvSaveImage(patchName.c_str(), iplPatch);
+    	cvSaveImage(segName.c_str(), segPatch);
+    	
+    	filebuf points;
+  		points.open(listName.c_str(), ios::out);
+  		ostream os(&points);
+  		
+  		for(size_t i = 0; i < soiPtr->points.size(); i++)
+  			os << soiPtr->points[i].p.x << " " << soiPtr->points[i].p.y << " " << soiPtr->points[i].p.z << "\n";
+
+  		points.close();
+
     }
    
     cvReleaseImage(&iplPatch);
     cvReleaseImage(&iplImg);
     cvReleaseImage(&iplPatchHLS);
-	cvReleaseImage(&iplImgBGR);
+//	cvReleaseImage(&iplImgBGR);
 //	cvReleaseImage(&segPatch);
 	cvReleaseImage(&costPatch);
 	cvReleaseImage(&bgCostPatch);
