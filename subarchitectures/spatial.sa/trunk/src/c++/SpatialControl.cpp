@@ -58,7 +58,7 @@ SpatialControl::SpatialControl()
 
   m_CurrentCmdFinalStatus = NavData::UNKNOWN;
   
-  cure_debug_level = 50;
+  cure_debug_level = 10;
 
   m_RobotServerHost = "localhost";
 
@@ -145,7 +145,7 @@ void SpatialControl::configure(const map<string,string>& _config)
                                              Cure::HelpFunctions::deg2rad(10));
   Cure::NavController::setUsePathTrimming(false);
   Cure::NavController::setMaxPathTrimDist(3);
-  Cure::NavController::setProgressTimeout(60);
+  Cure::NavController::setProgressTimeout(10);
   Cure::NavController::setGotoMaxSpeeds(maxGotoV, maxGotoW);
   Cure::NavController::setGatewayMaxSpeeds(0.3, 0.3);
   
