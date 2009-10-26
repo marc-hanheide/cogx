@@ -53,7 +53,7 @@ public class SpatialActionInterface extends ManagedComponent {
 	 * AVS timeout. If less than or equal to 0 there is no timeout. Default to 5
 	 * minutes.
 	 */
-	private long m_avsTimeoutMillis = 300000;
+	private long m_avsTimeoutMillis = 0;
 
 	private class AlwaysSucceedsExecutor implements ActionExecutor {
 
