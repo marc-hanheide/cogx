@@ -136,7 +136,7 @@ void ObjectSearch::configure(const map<string,string>& _config) {
     m_tiltRads = 0.0;
     it = _config.find("--tilt");
     if (it != _config.end()) {
-        m_tiltRads = (atof(it->second.c_str()))*M_PI/180;
+        m_tiltRads = -(atof(it->second.c_str()))*M_PI/180;
     }
     log("Tilt pose set to: %f",m_tiltRads);
 
@@ -285,7 +285,7 @@ void ObjectSearch::runComponent() {
   lockComponent();
   setupPushScan2d(*this, -1);
   setupPushOdometry(*this, -1);
-  MovePanTilt(0 , 0, 5*M_PI/180);
+  MovePanTilt(m_ptustep, m_tiltRads);
   unlockComponent();
   
   //clock_t start_time,elapsed;
@@ -305,7 +305,7 @@ void ObjectSearch::runComponent() {
 void ObjectSearch::MovePanTilt(double pan, double tilt, double tolerance){
   if (m_CtrlPTU)
     {
-      log(" Moving pantilt to: %f with %f tolerance", pan, tolerance);
+      log(" Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
       ptz::PTZPose p;
       ptz::PTZReading ptuPose;
       p.pan = pan;
