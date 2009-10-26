@@ -107,10 +107,10 @@ generate : intention : grounding(Ag, Modality, assertionVerified) <-
 	i : feat_Relation(Nom, accept) / 1.0,
 	event : produce(r, Nom) / 1.0.
 
-%generate : intention : grounding(h, discourse, assertionVerified) <-
-%	utt_head(Nom),
-%	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
-%	event : produce(r, Nom) / 1.0.
+generate : intention : grounding(h, discourse, assertionVerified) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, thanking) / 1.0,
+	event : produce(r, Nom) / 1.0.
 
 generate : intention : grounding(h, discourse, assertionFalsified) <-
 	utt_head(Nom),
@@ -162,7 +162,6 @@ generate : intention : need_get_value0(Modality, Entity, color) <-
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
-	i : feat_withIS(Nom, true) / 1.0,
 	%k(now, private(r)) : objecttype(Object, box),
 	%k(now, private(r)) : color(Object, unknownColor),
 	k(now, private(r)) : objecttype(Entity, Type),
@@ -175,6 +174,7 @@ generate : intention : need_get_value0(Modality, Entity, color) <-
 			i : sort(TargetNom, entity) / 1.0,
 			i : feat_InfoStatus(TargetNom, familiar) / 1.0,
 			i : prop(TargetNom, Type) / 1.0,
+			i : feat_ProofStatus(TargetNom, assumed) / 1.0,
 		i : rel_Color(ContentNom, QualityNom) / 1.0,
 			i : sort(QualityNom, quality) / 1.0,
 			i : prop(QualityNom, color) / 1.0,
@@ -192,7 +192,6 @@ generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis
 	dummy_nom3(TargetNom),
 	dummy_nom4(QualityNom),
 	k(now, private(r)) : objecttype(Entity, Type),
-	i : feat_withIS(Nom, true) / 1.0,
 	i : feat_SpeechAct(Nom, question) / 1.0,
 	i : rel_Content(Nom, ContentNom) / 1.0,
 		i : sort(ContentNom, ascription) / 1.0,
