@@ -752,6 +752,7 @@ public class PlaceMonitor extends ManagedComponent {
 					Feature _classFtr = new Feature(_areaclassFeatlabel, _alternativeValues);
 					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
 					_unknown = false;
+					break;
 				}
 			} 
 			if (_unknown) {
