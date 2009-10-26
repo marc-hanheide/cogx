@@ -377,5 +377,10 @@ generate : intention : reuse_last_intention(h) <-
 
 generate : intention : positive_feedback(h) <-
 	utt_head(Nom),
-	i : feat_CannedText(Nom, 'Thank_you') / 1.0,
+	i : feat_SpeechAct(Nom, thanking) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : disengage(h) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Bye') / 1.0,
 	event : produce(r, Nom) / 1.0.
